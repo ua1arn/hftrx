@@ -11,6 +11,7 @@
 #include "formats.h"
 
 #if defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102)
+#include "gpio.h"
 #include "touch.h"
 
 #define TSC_ILI2102_ADDR		0x82
@@ -48,8 +49,8 @@ board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 		return 0;
 	}
 
-	i2chw_write(TSC_ILI2102_ADDR, & command, 1);
-	i2chw_read(TSC_ILI2102_ADDR, read_buf, sizeof(read_buf));
+	i2chwx_write(TWIHARD_PTR, TSC_ILI2102_ADDR, & command, 1);
+	i2chwx_read(TWIHARD_PTR, TSC_ILI2102_ADDR, read_buf, sizeof(read_buf));
 
 	if (read_buf[0])
 	{
@@ -74,8 +75,8 @@ void board_tsc_initialize(void)
 	uint8_t command = REG_FIRMWARE_VERSION;
 	uint8_t read_buf[3], status;
 
-	status = i2chw_write(TSC_ILI2102_ADDR, & command, 1);
-	i2chw_read(TSC_ILI2102_ADDR, read_buf, sizeof(read_buf));
+	status = i2chwx_write(TWIHARD_PTR, TSC_ILI2102_ADDR, & command, 1);
+	i2chwx_read(TWIHARD_PTR, TSC_ILI2102_ADDR, read_buf, sizeof(read_buf));
 
 	if (status)
 	{

@@ -2030,7 +2030,14 @@ static void clock_set_pll_cpu(uint32_t clk)
 	val = (2 << 0) | (1 << 8) | (2 << 16);
 	CCU->CPU_AXI_CFG_REG = val;
 }
+
 ///
+// V3s
+void sysinit_boot_disconnect(void)
+{
+
+
+}
 
 // V3s
 void allwnr_v3s_pll_initialize(void)
@@ -2210,7 +2217,13 @@ uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void)
 }
 
 // Allwinner H3
-sysinit_pll_initialize(int forced)
+void sysinit_boot_disconnect(void)
+{
+
+
+}
+// Allwinner H3
+void sysinit_pll_initialize(int forced)
 {
 
 
@@ -2272,7 +2285,7 @@ void set_a64_pll_cpux_axi(unsigned n, unsigned k, unsigned m, unsigned p)
 //	val = CCU->PLL_CPU_CTRL_REG;
 //	val &= ~(1 << 29);
 //	CCU->PLL_CPU_CTRL_REG = val;
-	//local_delay_ms(1);
+	//local_delay_us(1 * 1000);
 
 	/* Set and change cpu clk src */
 	val = CCU->CPUX_AXI_CFG_REG;
@@ -2284,7 +2297,7 @@ void set_a64_pll_cpux_axi(unsigned n, unsigned k, unsigned m, unsigned p)
 		0;
 	CCU->CPUX_AXI_CFG_REG = val;
 
-	//local_delay_ms(1);
+	//local_delay_us(1 * 1000);
 	//sys_uart_puts("set_pll_cpux_axi Ok \n");
 //	TP();
 //    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnr_a64_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
@@ -2333,7 +2346,7 @@ void allwnr_a64_module_pll_enable(volatile uint32_t * reg)
 		/* Wait pll stable */
 		while(!(* reg & (UINT32_C(1) << 28)))
 			;
-		//local_delay_ms(20);
+		//local_delay_us(20 * 1000);
 
 		/* Lock disable */
 //		val = * reg;
@@ -2918,11 +2931,8 @@ uint_fast32_t allwnr_a64_get_smhc1_freq(void)
 	}
 }
 
-// Allwinner A64 PLL initialize
-void
-sysinit_pll_initialize(int forced)
+void sysinit_boot_disconnect(void)
 {
-
 	{
 		// Disable SD hosts
 
@@ -2955,6 +2965,13 @@ sysinit_pll_initialize(int forced)
 
 	USBPHY0->HCI_ICR = 0;
 	USBPHY1->HCI_ICR = 0;
+}
+
+// Allwinner A64 PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
+
 
 	allwnr_a64_pll_initialize();
 
@@ -3046,12 +3063,13 @@ void allwnr_t507_module_pll_enable(volatile uint32_t * ctrlreg, unsigned N)
 		/* Wait pll stable */
 		while(! (* ctrlreg & (UINT32_C(1) << 28)))	// LOCK
 			;
-		//local_delay_ms(20);
+		//local_delay_us(20 * 1000);
 
 		/* Lock disable */
 //		val = * ctrlreg;
 //		val &= ~(1 << 29);
 //		* ctrlreg = val;
+		* ctrlreg &= ~ (UINT32_C(1) << 29);	// LOCK_ENABLE
 
 	}
 }
@@ -3888,9 +3906,14 @@ uint_fast64_t allwnr_t507_get_tcon_tv1_freq(void)
 uint_fast64_t allwnr_t507_get_hdmi0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->HDMI0_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) << ((clkreg >> 8) & 0x03);	// FACTOR_N
 	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x0F);	// FACTOR_M
-	const uint_fast32_t pgdiv = M;
-	// SCLK = Clock Source/M
+	const uint_fast32_t pgdiv = M * N;
+	// SCLK = Clock Source/M/Т
+	//	000: PLL_VIDEO0(1X)
+	//	001: PLL_VIDEO0(4X)
+	//	010: PLL_VIDEO1(1X)
+	//	011: PLL_VIDEO1(4X)
 	switch ((clkreg >> 24) & 0x03)	/* CLK_SRC_SEL */
 	{
 	default:
@@ -4123,8 +4146,7 @@ uint_fast32_t allwnr_t507_get_smhc2_freq(void)
 	}
 }
 
-// Allwinner T507/H618/H616 PLL initialize
-void sysinit_pll_initialize(int forced)
+void sysinit_boot_disconnect(void)
 {
 	{
 		// Disable SD hosts
@@ -4137,6 +4159,7 @@ void sysinit_pll_initialize(int forced)
 		(void) CCU->SMHC_BGR_REG;
 		CCU->SMHC_BGR_REG = 000000000;
 		(void) CCU->SMHC_BGR_REG;
+		HARDWARE_SDIO_HANGOFF();
 	}
 
 	{
@@ -4148,17 +4171,28 @@ void sysinit_pll_initialize(int forced)
 	}
 
 	/* IOMMU off */
+	if (0)
 	{
 #if ! defined(__aarch64__)
 		IOMMU->IOMMU_RESET_REG &= ~ (UINT32_C(1) << 31);	// IOMMU_RESET
 		IOMMU->IOMMU_ENABLE_REG &= ~ (UINT32_C(1) << 0);	// ENABLE
 #endif
-		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);
+		CCU->IOMMU_BGR_REG &= ~ (UINT32_C(1) << 0);	// IOMMU_GATING (only gating, no RESET bit)
 	}
+//	IOMMU->IOMMU_RESET_REG = 0;
+//	(void) IOMMU->IOMMU_RESET_REG;
+//	IOMMU->IOMMU_ENABLE_REG = 0;
+//	(void) IOMMU->IOMMU_ENABLE_REG;
 
+	//printhex32(IOMMU_BASE, IOMMU, sizeof * IOMMU);
+}
+
+// Allwinner T507/H618/H616 PLL initialize
+void sysinit_pll_initialize(int forced)
+{
 	set_t507_axi_sel(0x00, 1, 1);	// OSC24 as source
-
-	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
+	CCU->PSI_AHB1_AHB2_CFG_REG = 0;	// OSC24M/1
+	CCU->APB2_CFG_REG = 0;	// OSC24M/1
 	PRCM->CPUS_CFG_REG = 0;
 	PRCM->APBS1_CFG_REG = 0;
 
@@ -4174,26 +4208,12 @@ void sysinit_pll_initialize(int forced)
 //	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG, 99);
 //	allwnr_t507_module_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG, 99);
 
-#if WITHGPUHW
+#if WITHGPUHW && 0
 	allwnr_t507_module_pll_spr(& CCU->PLL_GPU0_CTRL_REG, & CCU->PLL_GPU0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	allwnr_t507_module_pll_enable(& CCU->PLL_GPU0_CTRL_REG, 36);
 #endif /* WITHGPUHW */
 
 	// [02.507]CPU=1008 MHz,PLL6=600 Mhz,AHB=200 Mhz, APB1=100Mhz  MBus=400Mhz
-
-#if 1
-	PRCM->CPUS_CFG_REG =
-		0x03 * (UINT32_C(1) << 24) | // CPUS_CLK_SRC_SEL PLL_PERI0(X1)
-		(0) * (UINT32_C(1) << 8) |	// CLK_DIV_RATIO_N /1
-		(6 - 1) * (UINT32_C(1) << 0) | 	// FACTOR_M /6
-		0;
-	PRCM->APBS1_CFG_REG =
-		(4 - 1) |
-		0;
-#else
-	PRCM->CPUS_CFG_REG = 0;
-	PRCM->APBS1_CFG_REG = 0;
-#endif
 
 	if (forced)
 	{
@@ -4232,6 +4252,15 @@ void sysinit_pll_initialize(int forced)
 		(3 - 1) * (UINT32_C(1) << 0) |		// FACTOR_M 1..4
 		0;
 
+	PRCM->CPUS_CFG_REG =
+		0x03 * (UINT32_C(1) << 24) | // CPUS_CLK_SRC_SEL PLL_PERI0(X1)
+		(0) * (UINT32_C(1) << 8) |	// CLK_DIV_RATIO_N /1
+		(6 - 1) * (UINT32_C(1) << 0) | 	// FACTOR_M /6
+		0;
+	PRCM->APBS1_CFG_REG =
+		(4 - 1) |
+		0;
+
 	CCU->MBUS_CFG_REG =
 		(UINT32_C(1) << 31) |	// CLK_GATING
 		(UINT32_C(1) << 30) |	// MBUS_RST
@@ -4255,7 +4284,788 @@ void sysinit_pll_initialize(int forced)
 
 }
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R828)
+#elif CPUSTYLE_A733
+
+
+uint_fast32_t allwnr_a733_get_rc16M_freq(void)
+{
+	return 16 * 1000 * 1000;
+}
+
+uint_fast32_t allwnr_a733_get_hosc_freq(void)
+{
+	return WITHCPUXOSC;
+}
+
+uint_fast32_t allwnr_a733_get_dcxo_freq(void)
+{
+	return 24 * 1000 * 1000;
+}
+
+uint_fast32_t allwnr_a733_get_rtc_32k_freq(void)
+{
+	return allwnr_a733_get_rc16M_freq() / 512;
+}
+
+uint_fast32_t allwnr_a733_get_pll_ref_freq(void)
+{
+	const uint_fast32_t ctlreg = RTC->XO_CTRL_REG;
+
+	switch ((ctlreg >> 14) & 0x03)
+	{
+	default:
+	case 0x00:
+		return 24 * 1000 * 1000;
+	case 0x01:
+		return 19200 * 1000;
+	case 0x02:
+		return 26 * 1000 * 1000;
+	case 0x03:
+		return 24 * 1000 * 1000;
+	}
+}
+
+// CPUX -  ARMCortexTM-A76x2 ARMCortexTM-A55x6
+// The primary clock sourceof core0/core1/core2/core3/core4/core5 is CPU_L_PLL;
+// and their backup clock sourceis 26MHz, CPU_BACK_PLL, and 1.2GHz.
+uint_fast32_t allwnr_a733_get_cpu_l_pll_freq(void)
+{
+	const uint_fast32_t pllreg = CPU_PLL_CFG->CPU_L_PLL_CTRL_REG;
+//	const uint_fast32_t PLL_NDET = (pllreg >> 23) & 0x01;
+//	const uint_fast32_t PLL_TDIV = (pllreg >> 22) & 0x01;
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 20) & 0x03);
+	const uint_fast32_t P = UINT32_C(1) + ((pllreg >> 16) & 0x0F);
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 0) & 0x0F);
+	//	The CPU_L_PLL = InputFreq*N/P/(M0*M1).
+	//	The CPU_L_PLL VCO = InputFreq*N/P
+	return allwnr_a733_get_pll_ref_freq() * N / P / (M0 * M1);
+}
+
+// The primary clock source of core6/core7 is CPU_B_PLL;
+// and their backup clock source is 26MHz, CPU_BACK_PLL, and 1.2 GHz.
+uint_fast32_t allwnr_a733_get_cpu_b_pll_freq(void)
+{
+	const uint_fast32_t pllreg = CPU_PLL_CFG->CPU_B_PLL_CTRL_REG;
+//	const uint_fast32_t PLL_NDET = (pllreg >> 23) & 0x01;
+//	const uint_fast32_t PLL_TDIV = (pllreg >> 22) & 0x01;
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 20) & 0x03);
+	const uint_fast32_t P = UINT32_C(1) + ((pllreg >> 16) & 0x0F);
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 0) & 0x0F);
+	//	The CPU_L_PLL = InputFreq*N/P/(M0*M1).
+	//	The CPU_L_PLL VCO = InputFreq*N/P
+	return allwnr_a733_get_pll_ref_freq() * N / P / (M0 * M1);
+}
+
+uint_fast32_t allwnr_a733_get_dsu_pll_freq(void)
+{
+	const uint_fast32_t pllreg = CPU_PLL_CFG->CPU_DSU_PLL_CTRL_REG;
+//	const uint_fast32_t PLL_NDET = (pllreg >> 23) & 0x01;
+//	const uint_fast32_t PLL_TDIV = (pllreg >> 22) & 0x01;
+	const uint_fast32_t M0 = UINT32_C(1) + ((pllreg >> 20) & 0x03);
+	const uint_fast32_t P = UINT32_C(1) + ((pllreg >> 16) & 0x0F);
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 0) & 0x0F);
+	//	The CPU_DSU_PLL = InputFreq*N/P/(M0*M1).
+	//	The CPU_DSU_PLL VCO = InputFreq*N/P
+	return allwnr_a733_get_pll_ref_freq() * N / P / (M0 * M1);
+}
+
+uint_fast32_t allwnr_a733_get_pll_video0_4x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	VIDEO0PLL4X = InputFreq *N/M1/P0.
+	//	VIDEO0PLL3X = InputFreq *N/M1/P1.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P0);
+}
+
+uint_fast32_t allwnr_a733_get_pll_video1_4x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	VIDEO1PLL4X = InputFreq *N/M1/P0.
+	//	VIDEO1PLL3X = InputFreq *N/M1/P1.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P0);
+}
+
+uint_fast32_t allwnr_a733_get_pll_video2_4x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VIDEO2_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	VIDEO2PLL4X = InputFreq *N/M1/P0.
+	//	VIDEO2PLL3X = InputFreq *N/M1/P1.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P0);
+}
+
+uint_fast32_t allwnr_a733_get_pll_video0_3x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VIDEO0_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	VIDEO0PLL4X = InputFreq *N/M1/P0.
+	//	VIDEO0PLL3X = InputFreq *N/M1/P1.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P1);
+}
+
+uint_fast32_t allwnr_a733_get_pll_video1_3x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VIDEO1_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	VIDEO0PLL4X = InputFreq *N/M1/P0.
+	//	VIDEO0PLL3X = InputFreq *N/M1/P1.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P1);
+}
+
+uint_fast32_t allwnr_a733_get_pll_video2_3x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_VIDEO2_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	VIDEO2PLL4X = InputFreq *N/M1/P0.
+	//	VIDEO2LL3X = InputFreq *N/M1/P1.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P1);
+}
+
+// Default: 1200 MHz
+uint_fast32_t allwnr_a733_get_pll_peri0_2x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_PERI0_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t P2 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	PERI0PLL2X = 24MHz*N/M1/P0.
+	//	PERI0_800M = 24MHz*N/M1/P1.
+	//	PERI0_480M = 24MHz*N/M1/P2.
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P0);
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_800M_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_PERI0_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t P2 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	PERI0PLL2X = 24MHz*N/M1/P0.
+	//	PERI0_800M = 24MHz*N/M1/P1.
+	//	PERI0_480M = 24MHz*N/M1/P2.
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P1);
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_480M_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_PERI0_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t P2 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	PERI0PLL2X = 24MHz*N/M1/P0.
+	//	PERI0_800M = 24MHz*N/M1/P1.
+	//	PERI0_480M = 24MHz*N/M1/P2.
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P2);
+}
+
+// Note: When DCXO is 26MHz, DEPLL4X is 1044 MHz by default, and DEPLL4X is 696 MHz by default.
+uint_fast32_t allwnr_a733_get_pll_de_3x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_DE_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	DEPLL4X = InputFreq *N/M1/P0.
+	//	DEPLL3X = InputFreq *N/M1/P1.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P1);
+}
+
+// Note: When DCXO is 26MHz, DEPLL4X is 1044 MHz by default, and DEPLL4X is 696 MHz by default.
+uint_fast32_t allwnr_a733_get_pll_de_4x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_DE_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	DEPLL4X = InputFreq *N/M1/P0.
+	//	DEPLL3X = InputFreq *N/M1/P1.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P0);
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_600M_freq(void)
+{
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	return allwnr_a733_get_pll_peri0_2x_freq() / 2;
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_400M_freq(void)
+{
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	return allwnr_a733_get_pll_peri0_2x_freq() / 3;
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_300M_freq(void)
+{
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_peri0_600M_freq() / 2;
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_200M_freq(void)
+{
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_peri0_400M_freq() / 2;
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_160M_freq(void)
+{
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_peri0_480M_freq() / 3;
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri0_150M_freq(void)
+{
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_peri0_300M_freq() / 2;
+}
+
+
+// cores 0..5 - Cortex-A55
+uint_fast32_t allwnr_a733_get_cpux_L_freq(void)
+{
+	return allwnr_a733_get_cpu_l_pll_freq();
+}
+
+// cores 6..7 - Cortex-A76
+uint_fast32_t allwnr_a733_get_cpux_B_freq(void)
+{
+	return allwnr_a733_get_cpu_b_pll_freq();
+}
+
+uint_fast32_t allwnr_a733_get_dsu_freq(void)
+{
+	return allwnr_a733_get_dsu_pll_freq();
+}
+
+// The primary clock source of core6/core7 is CPU_B_PLL;
+// and their backup clock source is 26MHz, CPU_BACK_PLL, and 1.2 GHz.
+
+// CPUS - RISC-V core
+uint_fast32_t allwnr_a733_get_cpus_freq(void)
+{
+	return 24 * 1000 * 1000;
+}
+
+//	The bus frequencies are as follows.
+//	. AHB: The typical frequency is 200 MHz .The maximum frequency is no more than 200 MHz.
+//	. APB0: The typical frequency is 100 MHz .The maximum frequency is no more than 100 MHz.
+//	. APB1: The typical frequency is 100 MHz .The maximum frequency is no more than 100 MHz.
+//	. APB_UART: The frequency is configured based on UART request, which is no more than 160 MHz.
+//	. NSI: The typical frequency is 700 MHz .The maximum frequency is no more than 700 MHz.
+//	. MBUS: The typical frequency is 600 MHz .The maximum frequency is no more than 600 MHz.
+
+uint_fast32_t allwnr_a733_get_ahb_freq(void)
+{
+	return 200 * 1000 * 1000;
+}
+
+uint_fast32_t allwnr_a733_get_apb0_freq(void)
+{
+	return 100 * 1000 * 1000;
+}
+
+uint_fast32_t allwnr_a733_get_apb1_freq(void)
+{
+	return 100 * 1000 * 1000;
+}
+
+uint_fast32_t allwnr_a733_get_apb_uart_freq(void)
+{
+	return 24 * 1000 * 1000;
+}
+
+uint_fast32_t allwnr_a733_get_nsi_freq(void)
+{
+	return 700 * 1000 * 1000;
+}
+
+uint_fast32_t allwnr_a733_get_mbus_freq(void)
+{
+	return 600 * 1000 * 1000;
+}
+
+uint_fast32_t allwnr_a733_get_sysclk24M_freq(void)
+{
+	return 24 * 1000 * 1000;
+}
+
+// NOTE:UART0..UARG5 working clock sources from APB_UART
+uint_fast32_t allwnr_a733_get_uart_freq(void)
+{
+	return allwnr_a733_get_apb_uart_freq();
+}
+
+// NOTE: TWI0..TWI12 working clock sources from APB1.
+uint_fast32_t allwnr_a733_get_twi_freq(void)
+{
+	return allwnr_a733_get_apb1_freq();
+}
+
+uint_fast32_t allwnr_a733_get_s_twi_freq(void)
+{
+	return allwnr_a733_get_apb1_freq();
+}
+
+uint_fast32_t allwnr_a733_get_spi0_freq(void)
+{
+	return allwnr_a733_get_sysclk24M_freq();
+}
+
+uint_fast32_t allwnr_a733_get_spi1_freq(void)
+{
+	return allwnr_a733_get_sysclk24M_freq();
+}
+
+uint_fast32_t allwnr_a733_get_spi2_freq(void)
+{
+	return allwnr_a733_get_sysclk24M_freq();
+}
+
+uint_fast32_t allwnr_a733_get_spi3_freq(void)
+{
+	return allwnr_a733_get_sysclk24M_freq();
+}
+
+uint_fast32_t allwnr_a733_get_hdmi_tv_freq(void)
+{
+	const uint_fast32_t ctlreg = CCU->HDMI_TV_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) + ((ctlreg >> 8) & 0x1F);
+	const uint_fast32_t M = UINT32_C(1) + ((ctlreg >> 0) & 0x1F);
+	//	HDMI_TV_CLK = Clock Source/M/N.
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	000: VIDEO0PLL4X
+	//	001: VIDEO1PLL4X
+	//	010: VIDEO2PLL4X
+	//	011: PERI0PLL2X
+	switch ((ctlreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		return allwnr_a733_get_pll_video0_4x_freq() / (M * N);
+	case 0x01:
+		return allwnr_a733_get_pll_video1_4x_freq() / (M * N);
+	case 0x02:
+		return allwnr_a733_get_pll_video2_4x_freq() / (M * N);
+	case 0x03:
+		return allwnr_a733_get_pll_peri0_2x_freq() / (M * N);
+	}
+}
+
+uint_fast32_t allwnr_a733_get_v0_tconlcd0_freq(void)
+{
+	const uint_fast32_t ctlreg = CCU->VO0_TCONLCD0_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((ctlreg >> 0) & 0x1F);
+	//	VO0_TCONLCD0_CLK = Clock Source/M
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	000: VIDEO0PLL4X
+	//	001: VIDEO1PLL4X
+	//	010: VIDEO2PLL4X
+	//	011:PERI0PLL2X
+	switch ((ctlreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		return allwnr_a733_get_pll_video0_4x_freq() / M;
+	case 0x01:
+		return allwnr_a733_get_pll_video1_4x_freq() / M;
+	case 0x02:
+		return allwnr_a733_get_pll_video2_4x_freq() / M;
+	case 0x03:
+		return allwnr_a733_get_pll_peri0_2x_freq() / M;
+	}
+}
+
+uint_fast32_t allwnr_a733_get_v0_tconlcd1_freq(void)
+{
+	const uint_fast32_t ctlreg = CCU->VO0_TCONLCD1_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((ctlreg >> 0) & 0x1F);
+	//	VO0_TCONLCD0_CLK = Clock Source/M
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	000: VIDEO0PLL4X
+	//	001: VIDEO1PLL4X
+	//	010: VIDEO2PLL4X
+	//	011:PERI0PLL2X
+	switch ((ctlreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		return allwnr_a733_get_pll_video0_4x_freq() / M;
+	case 0x01:
+		return allwnr_a733_get_pll_video1_4x_freq() / M;
+	case 0x02:
+		return allwnr_a733_get_pll_video2_4x_freq() / M;
+	case 0x03:
+		return allwnr_a733_get_pll_peri0_2x_freq() / M;
+	}
+}
+
+uint_fast32_t allwnr_a733_get_tcon_dsi0_freq(void)
+{
+	const uint_fast32_t ctlreg = CCU->DSI0_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((ctlreg >> 0) & 0x1F);
+	//	DSI0_CLK = Clock Source/M.
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	000: SYS_CLK24M
+	//	001: PERI0_200M
+	//	010: PERI0_150M
+	switch ((ctlreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		return allwnr_a733_get_sysclk24M_freq() / M;
+	case 0x01:
+		return allwnr_a733_get_pll_peri0_200M_freq() / M;
+	case 0x02:
+		return allwnr_a733_get_pll_peri0_150M_freq() / M;
+	}
+}
+
+uint_fast32_t allwnr_a733_get_tcon_dsi1_freq(void)
+{
+	const uint_fast32_t ctlreg = CCU->DSI1_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((ctlreg >> 0) & 0x1F);
+	//	DSI1_CLK = Clock Source/M.
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	000: SYS_CLK24M
+	//	001: PERI0_200M
+	//	010: PERI0_150M
+	switch ((ctlreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		return allwnr_a733_get_sysclk24M_freq() / M;
+	case 0x01:
+		return allwnr_a733_get_pll_peri0_200M_freq() / M;
+	case 0x02:
+		return allwnr_a733_get_pll_peri0_150M_freq() / M;
+	}
+}
+
+uint_fast32_t allwnr_a733_get_de0_freq(void)
+{
+	const uint_fast32_t ctlreg = CCU->DE0_CLK_REG;
+	const uint_fast32_t M = UINT32_C(1) + ((ctlreg >> 0) & 0x1F);
+	//	DE0_CLK = Clock Source/M.
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	000: DEPLL3X
+	//	001: DEPLL4X
+	//	010: PERI0_480M
+	//	011: PERI0_400M
+	//	100: PERI0_300M
+	//	101: VIDEO0PLL4X
+	//	110: VIDEO2PLL4X
+	switch ((ctlreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		return allwnr_a733_get_pll_de_3x_freq() / M;
+	case 0x01:
+		return allwnr_a733_get_pll_de_4x_freq() / M;
+	case 0x02:
+		return allwnr_a733_get_pll_peri0_480M_freq() / M;
+	case 0x03:
+		return allwnr_a733_get_pll_peri0_400M_freq() / M;
+	case 0x04:
+		return allwnr_a733_get_pll_peri0_300M_freq() / M;
+	case 0x05:
+		return allwnr_a733_get_pll_video0_4x_freq() / M;
+	case 0x06:
+		return allwnr_a733_get_pll_video2_4x_freq() / M;
+	}
+}
+
+void sysinit_boot_disconnect(void)
+{
+	CCU->USB0_BGR_REG = 0;
+	CCU->USB1_BGR_REG = 0;
+	CCU->USB2_BGR_REG = 0;
+
+	CCU->SMHC0_BGR_REG = 0;
+	CCU->SMHC1_BGR_REG = 0;
+	CCU->SMHC2_BGR_REG = 0;
+	CCU->SMHC3_BGR_REG = 0;
+}
+
+static uint32_t read32(const volatile uint32_t * addr)
+{
+	return * addr;
+}
+
+static void write32(volatile uint32_t * addr, uint32_t value)
+{
+	* addr = value;
+}
+
+#define clrsetbits_le32(addr, clear, set) write32((addr), (read32(addr) & ~(clear)) | (set))
+#define setbits_le32(addr, set) write32((addr), read32(addr) | (set))
+#define clrbits_le32(addr, clear) write32((addr), read32(addr) & ~(clear))
+
+/* cpu pll */
+#define PLL_CPU_CTRL_REG_PLL_EN_OFFSET 31
+#define PLL_CPU_CTRL_REG_PLL_LDO_EN_OFFSET 30
+#define PLL_CPU_CTRL_REG_LOCK_ENABLE_OFFSET 29
+#define PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET 27
+#define PLL_CPU_CTRL_REG_PLL_UPDATE_OFFSET 26
+#define PLL_CPU_CTRL_REG_PLL_LOCK_OFFSET 28
+
+#ifdef BIT
+	#undef BIT
+	#define BIT(n) (UINT32_C(1) << (n))
+#else
+	#define BIT(n) (UINT32_C(1) << (n))
+#endif
+
+static void
+a733_enable_pll(volatile uint32_t * ctrlreg, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p)
+{
+	uint32_t reg_val;
+
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_PLL_LDO_EN_OFFSET));
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
+
+	reg_val = read32(ctrlreg);
+	reg_val &= ~((0x3 << 20) | (0xf << 16) | (0xff << 8) | (0xf << 0));
+	reg_val |= ((m0 << 20) | (p << 16) | (n << 8) | (m1 << 0));
+	write32(ctrlreg, reg_val);
+
+	/* delay for pll */
+	local_delay_us(20);
+
+	/* pll enable */
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_PLL_EN_OFFSET));
+
+	/* lock enable */
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_LOCK_ENABLE_OFFSET));
+
+	/* enable update bit */
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_PLL_UPDATE_OFFSET));
+	/* wait update done */
+	while (read32(ctrlreg) & BIT(PLL_CPU_CTRL_REG_PLL_UPDATE_OFFSET))
+		;
+
+	/* wait PLL_CPUX lockbit */
+	for (int i = 0; i < 3; i++) {
+		while (!(read32(ctrlreg) & BIT(PLL_CPU_CTRL_REG_PLL_LOCK_OFFSET)))
+			;
+		local_delay_us(5);
+	}
+	local_delay_us(20);
+}
+
+static void
+a733_set_pll(volatile uint32_t * ctrlreg, uint32_t m0, uint32_t n, uint32_t m1, uint32_t p)
+{
+	uint32_t reg_val;
+
+	/* clear pll lock */
+	clrbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET) | BIT(PLL_CPU_CTRL_REG_LOCK_ENABLE_OFFSET));
+	reg_val = read32(ctrlreg);
+	reg_val &= ~((0x3 << 20) | (0xf << 16) | (0xff << 8) | (0xf << 0));
+	reg_val |= ((m0 << 20) | (p << 16) | (n << 8) | (m1 << 0));
+	write32(ctrlreg, reg_val);
+
+	/* delay for pll */
+	local_delay_us(20);
+
+//	PRINTF("CLK: PLL CPU 0x%08x: 0x%08x, m0 = %d, n = %d, m1 = %d, p = %d\n", addr, read32(addr), m0, n, m1, p);
+
+	/* lock enable */
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_LOCK_ENABLE_OFFSET));
+
+	/* enable update bit */
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_PLL_UPDATE_OFFSET));
+	/* wait update done */
+	while (read32(ctrlreg) & BIT(PLL_CPU_CTRL_REG_PLL_UPDATE_OFFSET))
+		;
+
+	/* wait PLL_CPUX lockbit */
+	for (int i = 0; i < 3; i++) {
+		while (!(read32(ctrlreg) & BIT(PLL_CPU_CTRL_REG_PLL_LOCK_OFFSET)))
+			;
+		local_delay_us(5);
+	}
+	local_delay_us(20);
+
+	/* enable pll output */
+	setbits_le32(ctrlreg, BIT(PLL_CPU_CTRL_REG_PLL_OUTPUT_GATE_OFFSET));
+	local_delay_us(20);
+}
+
+
+#define  sunxi_clk_get_hosc_type() 26///
+
+#define CPU_PLL_FACTOR_N_24M(x) calcdivround2((x), sunxi_clk_get_hosc_type())//(((x) + (24) - 1) / (24))
+
+static void a733_set_pll_cpux_axi(void)
+{
+	// DynamIQ big.LITTLE Architecture Arm® CPU, up to 2.0 GHz
+	/* Set A76 Core 1.008GHz, A55 Core 1.008GHz, DSU 744MHz */
+	const unsigned cpuLfreq = (sunxi_clk_get_hosc_type() == 24) ? 1008 : 2000; // 1014
+	const unsigned cpuBfreq = (sunxi_clk_get_hosc_type() == 24) ? 1008 : 2000; // 1014
+	const unsigned dsufreq = (sunxi_clk_get_hosc_type() == 24) ? 744 : 780;
+
+	// CPU_L
+	{
+		a733_enable_pll(& CPU_PLL_CFG->CPU_L_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
+		clrsetbits_le32(& CPU_PLL_CFG->CPU_L_PLL_CLK_REG,
+			(0x07 << 24) | (0x03 << 16),	//
+			(0x00 << 24) | (0x00 << 16)	// 000: CPU_SLOW_CLK, FACTOR_P = 1
+			);
+		a733_set_pll(& CPU_PLL_CFG->CPU_L_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(cpuLfreq), 0x0, 0x0);
+		local_delay_us(20);
+		clrsetbits_le32(& CPU_PLL_CFG->CPU_L_PLL_CLK_REG,
+			(0x07 << 24) | (0x03 << 16),
+			(0x03 << 24) | (0x00 << 16)	// 011: CPU_L_PLL/P, FACTOR_P = 1
+			);
+	}
+
+	// CPU_B
+	{
+		a733_enable_pll(& CPU_PLL_CFG->CPU_B_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
+		clrsetbits_le32(& CPU_PLL_CFG->CPU_B_PLL_CLK_REG,
+			(0x07 << 24) | (0x03 << 16),	//
+			(0x00 << 24) | (0x00 << 16)	// 000: CPU_SLOW_CLK, FACTOR_P = 1
+			);
+		a733_set_pll(& CPU_PLL_CFG->CPU_B_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(cpuBfreq), 0x0, 0x0);
+		local_delay_us(20);
+		clrsetbits_le32(& CPU_PLL_CFG->CPU_B_PLL_CLK_REG,
+			(0x07 << 24) | (0x03 << 16),
+			(0x03 << 24) | (0x00 << 16)	// 011: CPU_B_PLL/P, FACTOR_P = 1
+			);
+	}
+
+	// DSU
+	{
+		a733_enable_pll(& CPU_PLL_CFG->CPU_DSU_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(480), 0x0, 0x0);
+		clrsetbits_le32(& CPU_PLL_CFG->CPU_DSU_PLL_CLK_REG,
+			(0x07 << 24) | (0x03 << 16),	//
+			(0x00 << 24) | (0x00 << 16)	// 000: CPU_SLOW_CLK, FACTOR_P = 1
+			);
+		a733_set_pll(& CPU_PLL_CFG->CPU_DSU_PLL_CTRL_REG, 0x0, CPU_PLL_FACTOR_N_24M(dsufreq), 0x0, 0x0);
+		local_delay_us(20);
+		clrsetbits_le32(& CPU_PLL_CFG->CPU_DSU_PLL_CLK_REG,
+			(0x07 << 24) | (0x03 << 16),
+			(0x03 << 24) | (0x00 << 16)	// 011: CPU_DSU_PLL/P, FACTOR_P = 1
+			);
+	}
+}
+
+// ---
+
+static void a733_ccu_pll_enable(volatile uint32_t * reg)
+{
+	* reg |= (UINT32_C(1) << 30);	// PLL_LDO_EN
+	local_delay_us(1 * 1000);
+	* reg |= (UINT32_C(1) << 27);	// PLL_OUTPUT0_GATE
+	* reg |= (UINT32_C(1) << 26);	// PLL_OUTPUT1_GATE
+	* reg |= (UINT32_C(1) << 25);	// PLL_OUTPUT2_GATE
+
+	* reg |= (UINT32_C(1) << 31);	// PLL_EN
+	local_delay_us(1 * 1000);
+	* reg |= (UINT32_C(1) << 29);	// LOCK_ENABLE
+	while ((* reg & (UINT32_C(1) << 28)) == 0)	// LOCK
+		;
+//	* reg |= (UINT32_C(1) << 24);	// ???
+	local_delay_us(20 * 1000);
+}
+
+void sysinit_pll_initialize(int forced)
+{
+	//fill32delay(CCU_BASE + 0x0a0, ccu_pattern, ARRAY_SIZE(ccu_pattern));
+//	CCU->CCMU_SEC_SWITCH_REG |= (UINT32_C(1) << 2);	// MBUS_SEC
+//	CCU->CCMU_SEC_SWITCH_REG |= (UINT32_C(1) << 1);	// BUS_SEC
+//	CCU->CCMU_SEC_SWITCH_REG |= (UINT32_C(1) << 0);	// PLL_SEC
+
+	//a733_cpu_pll_enable(& CPU_PLL_CFG->CPU_DSU_PLL_CTRL_REG, 21);
+
+	//a733_cpu_pll_enable(& CPU_PLL_CFG->CPU_L_PLL_CTRL_REG, 44);	// cores 0..5
+	//a733_cpu_pll_enable(& CPU_PLL_CFG->CPU_B_PLL_CTRL_REG, 44);	// cores 6..7
+
+	a733_set_pll_cpux_axi();
+
+	a733_ccu_pll_enable(& CCU->PLL_PERI0_CTRL_REG);
+	a733_ccu_pll_enable(& CCU->PLL_PERI1_CTRL_REG);
+	a733_ccu_pll_enable(& CCU->PLL_DE_CTRL_REG);
+	a733_ccu_pll_enable(& CCU->PLL_VIDEO0_CTRL_REG);
+	a733_ccu_pll_enable(& CCU->PLL_VIDEO1_CTRL_REG);
+	a733_ccu_pll_enable(& CCU->PLL_VIDEO2_CTRL_REG);
+
+
+	// test
+//	S_PRCM->CPUX_ISO_EN_REG = 0x19030000;
+//	S_PRCM->CPUX_ISO_EN_REG = 0x00000000;
+
+}
+
+#elif (CPUSTYLE_A133)
 
 
 static void set_a133_axi_sel(unsigned sel, unsigned APBdiv, unsigned AXIdiv)
@@ -4311,6 +5121,25 @@ uint_fast32_t allwnr_a133_get_s_twi_freq(void)
 	return allwnr_a133_get_hosc_freq();
 }
 
+uint_fast32_t allwnr_a133_get_spi0_freq(void)
+{
+	return allwnr_a133_get_hosc_freq();
+}
+
+uint_fast32_t allwnr_a133_get_spi1_freq(void)
+{
+	return allwnr_a133_get_hosc_freq();
+}
+
+uint_fast32_t allwnr_a133_get_spi2_freq(void)
+{
+	return allwnr_a133_get_hosc_freq();
+}
+
+void sysinit_boot_disconnect(void)
+{
+}
+
 // Allwinner A133 PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -4338,7 +5167,7 @@ sysinit_pll_initialize(int forced)
 	CCU->PSI_AHB1_AHB2_CFG_REG = 0;
 
 	CCU->MBUS_CFG_REG = 0x80000000;
-	local_delay_ms(1);
+	local_delay_us(1 * 1000);
 	CCU->MBUS_CFG_REG = 0xC0000000;
 
 	PRCM->CPUS_CFG_REG = 0;
@@ -4360,7 +5189,7 @@ static void t113_set_pll_cpu(unsigned N)
 	CCU->PLL_CPU_CTRL_REG = 0x4A001000;
 #endif
 	(void) CCU->PLL_CPU_CTRL_REG;
-	local_delay_ms(10);
+	local_delay_us(10 * 1000);
 
 	/* Set default clk to 1008mhz */
 	val = CCU->PLL_CPU_CTRL_REG;
@@ -4381,7 +5210,7 @@ static void t113_set_pll_cpu(unsigned N)
 	(void) CCU->PLL_CPU_CTRL_REG;
 
 	/* Wait pll stable */
-	//local_delay_ms(100);
+	//local_delay_us(100 * 1000)
 	while((CCU->PLL_CPU_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 		;
 
@@ -5629,11 +6458,8 @@ void allwnr_t113_pll_initialize(int N)
 #endif
 }
 
-// Allwinner T113/F133/D1s PLL initialize
-void
-sysinit_pll_initialize(int forced)
+void sysinit_boot_disconnect(void)
 {
-
 	{
 		// Disable SD hosts
 
@@ -5656,6 +6482,13 @@ sysinit_pll_initialize(int forced)
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 		CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RSTN
 	}
+}
+
+// Allwinner T113/F133/D1s PLL initialize
+void
+sysinit_pll_initialize(int forced)
+{
+
 #if CPUSTYLE_F133
 	allwnr_t113_pll_initialize(forced ? RV_PLL_CPU_N : 17);
 #else
@@ -5899,6 +6732,12 @@ void vm14_pll_initialize(void)
 #endif
 }
 
+void sysinit_boot_disconnect(void)
+{
+
+
+}
+
 // 1892ВМ14Я PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -6042,6 +6881,10 @@ void r7s721_pll_initialize(void)
 #if ((TARGET_RZA1 == TARGET_RZA1H) || (TARGET_RZA1 == TARGET_RZA1M))
 	CPG.FRQCR2 = 0x0001u;
 #endif
+}
+
+void sysinit_boot_disconnect(void)
+{
 }
 
 // r7s721 PLL initialize
@@ -6270,7 +7113,7 @@ void hardware_spi_io_delay(void)
 	}
 
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R828)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133) && defined (TIMER)
 
 	// Таймер электронного ключа
 	void TIMER0_IRQHandler(void)
@@ -6298,6 +7141,37 @@ void hardware_spi_io_delay(void)
 			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 
 			TIMER->TMR_IRQ_STA_REG = (UINT32_C(1) << IX);	// TMR1_IRQ_PEND
+		}
+	}
+
+#elif (CPUSTYLE_A733) && defined (Timer1_CPUX)
+
+	// Таймер электронного ключа
+	void TIMER1_0_IRQHandler(void)
+	{
+		enum { IX = 0 };
+		const portholder_t st = Timer1_CPUX->TMR_IRQ_STA_REG;
+		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR0_IRQ_PEND
+		{
+			// Таймер электронного ключа
+			// 1/20 dot length interval timer
+			spool_elkeybundle();
+
+			Timer1_CPUX->TMR_IRQ_STA_REG = (UINT32_C(1) << IX);	// TMR0_IRQ_PEND
+		}
+	}
+
+	// Таймер "тиков"
+	void TIMER1_1_IRQHandler(void)
+	{
+		enum { IX = 1 };
+		const portholder_t st = Timer1_CPUX->TMR_IRQ_STA_REG;
+		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR1_IRQ_PEND
+		{
+			// timebase
+			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+
+			Timer1_CPUX->TMR_IRQ_STA_REG = (UINT32_C(1) << IX);	// TMR1_IRQ_PEND
 		}
 	}
 
@@ -6403,7 +7277,7 @@ void hardware_spi_io_delay(void)
 	{
 	}
 
-	void RAMFUNC_NONILINE
+	void
 	SysTick_Handler_Active(void)
 	{
 		spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
@@ -6455,6 +7329,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	arm_hardware_set_handler_system(SysTick_IRQn, SysTick_Handler_Active);		// разрешение прерывания игнорируется для системныз векторов
 	SysTick_Config(calcdivround2(BOARD_SYSTICK_FREQ, ticksfreq));	// CMSIS устанавливает SysTick_CTRL_CLKSOURCE_Msk
+	arm_hardware_set_handler_system(SysTick_IRQn, SysTick_Handler_Active);		// разрешение прерывания игнорируется для системныз векторов
 
 #elif CPUSTYLE_ATMEGA328
 
@@ -6599,7 +7474,30 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Enable timer control
 	PL1_SetControl(1);
 
-#elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_A133  || CPUSTYLE_R828 )
+#elif CPUSTYLE_A733
+	// timebase timer
+	const unsigned ix = 1;
+	Timer1_CPUX->TMR [ix].CTRL_REG = 0;
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_HOSC_FREQ, ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
+
+	Timer1_CPUX->TMR [ix].INTV_VALUE_REG = value;
+	Timer1_CPUX->TMR [ix].CTRL_REG =
+		0 * (UINT32_C(1) << 7) |	// TMR1_MODE 0: Periodic mode.
+		prei * (UINT32_C(1) << 4) |
+		0x01 * (UINT32_C(1) << 2) |	// TMR1_CLK_SRC 01: OSC24M
+		(UINT32_C(1) << 0) | // TMR1_EN
+		0;
+
+	while ((Timer1_CPUX->TMR [ix].CTRL_REG & (UINT32_C(1) << 1)) != 0)
+		;
+	Timer1_CPUX->TMR [ix].CTRL_REG |= (UINT32_C(1) << 1);	// TMR1_RELOAD
+
+	Timer1_CPUX->TMR_IRQ_EN_REG |= (UINT32_C(1) << (0 + ix));	// TMR1_IRQ_EN
+
+	arm_hardware_set_handler_system(TIMER1_1_IRQn, TIMER1_1_IRQHandler);	// timebase timer
+
+#elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_A133 || CPUSTYLE_A733)
 
 	// timebase timer
 	const unsigned ix = 1;
@@ -6708,7 +7606,7 @@ void stm32mp1_pll1_slow(uint_fast8_t slow)
 }
 
 
-void stm32mp1_pll_initialize(void)
+void stm32mp1_pll_initialize(int forced_unused)
 {
 
 	//return;
@@ -7392,15 +8290,21 @@ uint_fast32_t hardware_get_dotclock(uint_fast32_t dotfreq)
 	return stm32mp1_get_pll4_freq() / pll4divq;
 }
 
+void sysinit_boot_disconnect(void)
+{
+	SPIDF_HANGOFF();
+}
+
 // STM32MP1 PLL initialize
 void
 sysinit_pll_initialize(int forced)
 {
-
+	if (forced)
+		return;
 #if WITHISBOOTLOADER
 	// PLL только в bootloader.
 	// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
-	stm32mp1_pll_initialize();
+	stm32mp1_pll_initialize(forced);
 #endif /* WITHISBOOTLOADER */
 
 	stm32mp1_usb_clocks_initialize();
@@ -9879,6 +10783,10 @@ void hardware_set_dotclock(uint_fast32_t dotfreq)
 #endif
 }
 
+void sysinit_boot_disconnect(void)
+{
+}
+
 // ZYNQ 7000 PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -9953,6 +10861,11 @@ local_delay_ms(50);
 
 #if CPUSTYLE_STM32H7XX
 
+
+void sysinit_boot_disconnect(void)
+{
+}
+
 // STM32H7xx PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -9994,6 +10907,12 @@ sysinit_pll_initialize(int forced)
 #endif /* CPUSTYLE_STM32H7XX */
 
 #if CPUSTYLE_STM32F7XX
+
+void sysinit_boot_disconnect(void)
+{
+
+
+}
 
 // STM32F7xx PLL initialize
 void
@@ -10843,6 +11762,10 @@ found:
 
 #if WITHCPUADCHW
 
+/* макрооределение для расчёта количества "тиков" для выдержки величин задержек. */
+// STM32 specific
+#define NTICKSADC01(t_uS01) ((uint_fast16_t) (((uint_fast32_t) (t_uS01) * ADC_FREQ + 5) / 10000000))
+
 // Получение битов используемых каналов АЦП (до шестнадцати штук).
 static portholder_t
 build_adc_mask(void)
@@ -10856,24 +11779,6 @@ build_adc_mask(void)
 	}
 	return mask;
 }
-
-#if 0
-	// Set up ADCB0 on PB0 to read temp sensor. More of this can be achieved by using driver from appnote AVR1300
-	PORTQ.PIN2CTRL = (PORTQ.PIN2CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLDOWN_gc;	// This pin must be grounded to "enable" NTC-resistor
-	PORTB.DIRCLR = PIN0;
-	PORTB.PIN0CTRL = (PORTB.PIN0CTRL & ~PORT_OPC_gm);
-
-	ADC_CalibrationValues_Load(&ADCB);  // Load factory calibration data for ADC
-	ADCB.CH0.CTRL = (ADCB.CH0.CTRL & ~ADC_CH_INPUTMODE_gm) | ADC_CH_INPUTMODE_SINGLEENDED_gc; // Single ended input
-	ADCB.CH0.MUXCTRL = (ADCB.CH0.MUXCTRL & ~ADC_CH_MUXPOS_gm) | ADC_CH_MUXPOS_PIN0_gc; // Pin 0 is input
-	ADCB.REFCTRL = (ADCB.REFCTRL & ~ADC_REFSEL_gm) | ADC_REFSEL_VCC_gc;	// Internal AVCC/1.6 as reference
-
-	ADCB.CTRLB |= ADC_FREERUN_bm; // Free running mode
-	ADCB.PRESCALER = (ADCB.PRESCALER & ~ADC_PRESCALER_gm) | ADC_PRESCALER_DIV512_gc; // Divide clock by 1024.
-	ADCB.CTRLB = (ADCB.CTRLB & ~ADC_RESOLUTION_gm) | ADC_RESOLUTION_8BIT_gc; // Set 8 bit resolution
-	ADCB.CTRLA |= ADC_ENABLE_bm; // Enable ADC
-
-#endif
 
 void hardware_adc_initialize(void)
 {
@@ -11105,7 +12010,7 @@ void hardware_adc_initialize(void)
 		adc->CR |= ADC_CR_ADVREGEN;		// Enable ADC regulator
 
 	}
-	local_delay_ms(5); // Wait for regulator is on
+	local_delay_us(5 * 1000); // Wait for regulator is on
 
 	// Initialize ADCs
 	for (i = 0; i < board_get_adcinputs(); ++ i)
@@ -11569,219 +12474,12 @@ void hardware_adc_initialize(void)
 
 #endif /* WITHCPUADCHW */
 
-
-#if SIDETONE_TARGET_BIT != 0
-
-
-#if CPUSTYLE_ATMEGA
-
-	#if CPUSTYLE_ATMEGA_XXX4
-		//enum { TCCR2A_WORK = (UINT32_C(1) << COM2A0) | (UINT32_C(1) << WGM21), TCCR2A_DISCONNECT = (UINT32_C(1) << WGM21) };
-	#elif CPUSTYLE_ATMEGA328
-	#else
-		enum { TCCR2WGM = (UINT32_C(1) << WGM21) | (UINT32_C(1) << COM20) };	// 0x18
-	#endif
-#endif
-
-/* после изменения набора формируемых звуков - обновление программирования таймера. */
-void hardware_sounds_disable(void)
-{
-
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	HARDWARE_SIDETONE_DISCONNECT();
-
-#elif CPUSTYLE_AT91SAM7S
-
-	HARDWARE_SIDETONE_DISCONNECT();
-
-#elif CPUSTYLE_STM32F
-
-	TIM4->CR1 = 0x00;
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-
-}
-
-
-
-
-// called from interrupt or with disabled interrupts
-// всегда включаем генерацию выходного сигнала
-void hardware_sounds_setfreq(
-	uint_fast8_t prei,
-	unsigned value
-	)
-{
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	TC0->TC_CHANNEL [1].TC_CMR =
-		(TC0->TC_CHANNEL [1].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
-	TC0->TC_CHANNEL [1].TC_RC = value;	// программирование полупериода (выход с триггерам)
-
-	HARDWARE_SIDETONE_CONNECT();
-
-#elif CPUSTYLE_AT91SAM7S
-
-	AT91C_BASE_TCB->TCB_TC1.TC_CMR =
-		(AT91C_BASE_TCB->TCB_TC1.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
-	AT91C_BASE_TCB->TCB_TC1.TC_RC = value;	// программирование полупериода (выход с триггерам)
-
-	HARDWARE_SIDETONE_CONNECT();
-
-#elif CPUSTYLE_STM32F
-
-	TIM4->PSC = ((UINT32_C(1) << prei) - 1) & TIM_PSC_PSC;
-
-	TIM4->CCR3 = (value / 2) & TIM_CCR3_CCR3;	// TIM4_CH3 - sound output
-	TIM4->ARR = value;
-	TIM4->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* разрешить перезагрузку и включить таймер */
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-
-}
-
-/*
-	формирование сигнала самоконтроля.
-	На процессоре AT91SAM7S64 манипуляция осуществляется отключением таймера от выхода.
-	Повторный запуск таймера возможен только с флагом AT91C_TC_SWTRG, а при этом
-	происходит его сброс (перезапуск) - тон искажённый.
-*/
-void
-hardware_beep_initialize(void)
-{
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	// --- TC1 used to generate CW sidetone ---
-	// PA15: Peripheral B: TIOA1
-	PMC->PMC_PCER0 = (UINT32_C(1) << ID_TC1);	 // разрешить тактированние этого блока (ID_TC0..ID_TC5 avaliable)
-
-	//TC0->TC_BMR = (TC0->TC_BMR & ~ TC_BMR_TC1XC1S_Msk) | TC_BMR_TC1XC1S_TIOA0;
-	TC0->TC_CHANNEL [1].TC_CCR = TC_CCR_CLKDIS; // disable TC1 clock
-
-	TC0->TC_CHANNEL [1].TC_CMR =
-					TC_CMR_BSWTRG_NONE | TC_CMR_BEEVT_NONE | TC_CMR_BCPC_NONE | TC_CMR_BCPB_NONE // TIOB: none
-					| TC_CMR_ASWTRG_NONE | TC_CMR_AEEVT_NONE | TC_CMR_ACPC_TOGGLE | TC_CMR_ACPA_NONE // TIOA: toggle on RC
-					| TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC /*TC_CMR_WAVESEL_UP_AUTO */ // waveform mode, up to RC
-					| TC_CMR_ENETRG | TC_CMR_EEVT_XC2 | TC_CMR_EEVTEDG_NONE // no ext. trigger
-					| (0 * TC_CMR_CPCDIS)
-					| (0 * TC_CMR_CPCSTOP)
-					| TC_CMR_BURST_NONE
-					| (0 * TC_CMR_CLKI)
-					| TC_CMR_TCCLKS_TIMER_CLOCK1;
-
-	TC0->TC_CHANNEL [1].TC_CCR = TC_CCR_SWTRG | TC_CCR_CLKEN; // reset and enable clock
-	//AT91C_BASE_TCB->TCB_TC1.TC_CCR = TC_CMR_CLKDIS; // reset and enable TC1 clock
-
-	// Timer outputs, connected to pin(s)
-	HARDWARE_SIDETONE_INITIALIZE();
-
-#elif CPUSTYLE_AT91SAM7S
-
-	// --- TC1 used to generate CW sidetone ---
-	// PA15: Peripheral B: TIOA1
-	AT91C_BASE_PMC->PMC_PCER = (UINT32_C(1) << AT91C_ID_TC1); // разрешить тактированние этого блока (AT91C_ID_TC0..AT91C_ID_TC2 avaliable)
-
-	////AT91C_BASE_TCB->TCB_BMR = (AT91C_BASE_TCB->TCB_BMR & ~ AT91C_TCB_TC1XC1S) | AT91C_TCB_TC1XC1S_TIOA0;
-	AT91C_BASE_TCB->TCB_TC1.TC_CCR = AT91C_TC_CLKDIS; // disable TC1 clock
-
-	AT91C_BASE_TCB->TCB_TC1.TC_CMR =
-					AT91C_TC_BSWTRG_NONE | AT91C_TC_BEEVT_NONE | AT91C_TC_BCPC_NONE | AT91C_TC_BCPB_NONE // TIOB: none
-					| AT91C_TC_ASWTRG_NONE | AT91C_TC_AEEVT_NONE | AT91C_TC_ACPC_TOGGLE | AT91C_TC_ACPA_NONE // TIOA: toggle on RC
-					| AT91C_TC_WAVE | AT91C_TC_WAVESEL_UP_AUTO // waveform mode, up to RC
-					| AT91C_TC_ENETRG | AT91C_TC_EEVT_XC2 | AT91C_TC_EEVTEDG_NONE // no ext. trigger
-					| (0 * AT91C_TC_CPCDIS)
-					| (0 * AT91C_TC_CPCSTOP)
-					| AT91C_TC_BURST_NONE
-					| (0 * AT91C_TC_CLKI)
-					| AT91C_TC_CLKS_TIMER_DIV1_CLOCK;
-
-	AT91C_BASE_TCB->TCB_TC1.TC_CCR = AT91C_TC_SWTRG | AT91C_TC_CLKEN; // reset and enable clock
-	//AT91C_BASE_TCB->TCB_TC1.TC_CCR = AT91C_TC_CLKDIS; // reset and enable TC1 clock
-
-	// Timer outputs, connected to pin(s)
-	HARDWARE_SIDETONE_INITIALIZE();
-
-#elif CPUSTYLE_STM32F
-
-	// apb1
-	RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;   //подаем тактирование на TIM4
-	__DSB();
-
-	TIM4->CCMR2 = TIM_CCMR2_OC3M_0 | TIM_CCMR2_OC3M_1 | TIM_CCMR2_OC3M_2;	// Output Compare 3 Mode
-	TIM4->CCER = TIM_CCER_CC3E;
-
-	HARDWARE_SIDETONE_INITIALIZE();
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-
-}
-
-// return code: prescaler
-uint_fast8_t
-hardware_calc_sound_params(
-	uint_least16_t tonefreq,	/* tonefreq - частота в десятых долях герца. Минимум - 400 герц (определено набором команд CAT). */
-	unsigned * pvalue)
-{
-
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, pvalue, 1);
-
-#elif CPUSTYLE_AT91SAM7S
-
-	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, pvalue, 1);
-
-#elif CPUSTYLE_STM32F
-
-	// for tim1 use apb2, for other apb1
-	// now - tim4
-	// TIM4 - 16-bit timer
-	return calcdivider(calcdivround2(10UL * PCLK2_FREQ, tonefreq), STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, pvalue, 1);
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-}
-
-#else /* SIDETONE_TARGET_BIT != 0 */
-
-void
-hardware_beep_initialize(void)
-{
-}
-
-#endif /* SIDETONE_TARGET_BIT != 0 */
-
 #if WITHELKEY
 
 void
 hardware_elkey_timer_initialize(void)
 {
-#if CPUSTYLE_ATMEGA
-
-	// Timer/Counter 1 used for electronic key synchronisation with 1/20 of dot length
-	//// TCCR1B = (UINT32_C(1) << WGM12) | (UINT32_C(1) << CS12) | (UINT32_C(1) << CS10);		// CTC mode (mode4) and 1/1024 prescaler
-	//// OCR1A = 0xffff;
-
-	#if CPUSTYLE_ATMEGA_XXX4
-		// Timer/Counter 1 Interrupt(s) initialization
-		TIMSK1 |= (UINT32_C(1) << OCIE1A);	// Timer/Counter 1 interrupt enable
-	#elif CPUSTYLE_ATMEGA328
-		// Timer/Counter 1 Interrupt(s) initialization
-		TIMSK1 |= (UINT32_C(1) << OCIE1A);	// Timer/Counter 1 interrupt enable
-	#else /* CPUSTYLE_ATMEGA_XXX4 */
-		TIMSK |= (UINT32_C(1) << OCIE1A);	// Timer/Counter 1 interrupt enable
-		//TIMSK |= 0x10;	// Timer/Counter 1 interrupt enable
-	#endif /* CPUSTYLE_ATMEGA_XXX4 */
-
-#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 	// TC2 used for electronic key synchronisation with 1/20 of dot length
 	// TC2 used for generate 1/20 of morse dot length intervals
 	//
@@ -11877,7 +12575,7 @@ hardware_elkey_timer_initialize(void)
 
 	arm_hardware_set_handler_overrealtime(TIM3_IRQn, TIM3_IRQHandler);
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_A133
 
 	// elkey timer
 	const unsigned ix = 0;
@@ -11886,6 +12584,17 @@ hardware_elkey_timer_initialize(void)
 	TIMER->TMR_IRQ_EN_REG |= (UINT32_C(1) << (0 + ix));	// TMR0_IRQ_EN
 
 	arm_hardware_set_handler_overrealtime(TIMER0_IRQn, TIMER0_IRQHandler);	// elkey timer
+
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
+	// elkey timer
+	const unsigned ix = 0;
+	Timer1_CPUX->TMR[ix].CTRL_REG = 0;
+
+	Timer1_CPUX->TMR_IRQ_EN_REG |= (UINT32_C(1) << (0 + ix));	// TMR0_IRQ_EN
+
+	arm_hardware_set_handler_overrealtime(TIMER1_0_IRQn, TIMER1_0_IRQHandler);	// elkey timer
 
 #else
 	#warning Undefined CPUSTYLE_XXX
@@ -11959,7 +12668,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		1 * (UINT32_C(1) << 0) |	// Enables the interrupts when counting starts.
 		0;
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H3
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_H3 || CPUSTYLE_A133
 
 	const unsigned ix = 0;
 	unsigned value;
@@ -11976,6 +12685,27 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	while ((TIMER->TMR [ix].CTRL_REG & (UINT32_C(1) << 1)) != 0)
 		;
 	TIMER->TMR [ix].CTRL_REG |= UINT32_C(1) << 1;	// TMR0_RELOAD
+
+#elif CPUSTYLE_A733
+
+	const unsigned ix = 0;
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_HOSC_FREQ, ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
+
+	Timer1_CPUX->TMR [ix].INTV_VALUE_REG = value;
+	Timer1_CPUX->TMR [ix].CTRL_REG =
+		0 * (UINT32_C(1) << 7) |	// TMR0_MODE 0: Periodic mode.
+		prei * (UINT32_C(1) << 4) |
+		0x01 * (UINT32_C(1) << 2) |	// TMR1_CLK_SRC 01: OSC24M
+		(UINT32_C(1) << 0) | // TMR0_EN
+		0;
+
+	while ((Timer1_CPUX->TMR [ix].CTRL_REG & (UINT32_C(1) << 1)) != 0)
+		;
+	Timer1_CPUX->TMR [ix].CTRL_REG |= UINT32_C(1) << 1;	// TMR0_RELOAD
+
+#elif CPUSTYLE_A133
+	#warning CPUSTYLE_A133 to be implemented
 
 #else
 	#warning Undefined CPUSTYLE_XXX

@@ -18,8 +18,8 @@
 
 #include "xparameters_ps.h"
 
-#define STDIN_BASEADDRESS 0xE0000000
-#define STDOUT_BASEADDRESS 0xE0000000
+#define STDIN_BASEADDRESS 0xE0001000
+#define STDOUT_BASEADDRESS 0xE0001000
 
 /******************************************************************/
 
@@ -213,9 +213,9 @@
 /******************************************************************/
 
 
-/* Peripheral Definitions for peripheral AUDIO_AXI_I2S_ADI_0 */
-#define XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR 0x43C20000
-#define XPAR_AUDIO_AXI_I2S_ADI_0_HIGHADDR 0x43C2FFFF
+/* Peripheral Definitions for peripheral AUDIO_AXI_I2S_ADI_1 */
+#define XPAR_AUDIO_AXI_I2S_ADI_1_BASEADDR 0x43C20000
+#define XPAR_AUDIO_AXI_I2S_ADI_1_HIGHADDR 0x43C2FFFF
 
 
 /* Peripheral Definitions for peripheral AUDIO_FIFO_MIC */
@@ -236,11 +236,6 @@
 /* Peripheral Definitions for peripheral IQ_MODEM_AXI_DDS_FTW */
 #define XPAR_IQ_MODEM_AXI_DDS_FTW_BASEADDR 0x43CB0000
 #define XPAR_IQ_MODEM_AXI_DDS_FTW_HIGHADDR 0x43CB0FFF
-
-
-/* Peripheral Definitions for peripheral IQ_MODEM_AXI_DDS_FTW_SUB */
-#define XPAR_IQ_MODEM_AXI_DDS_FTW_SUB_BASEADDR 0x43CC0000
-#define XPAR_IQ_MODEM_AXI_DDS_FTW_SUB_HIGHADDR 0x43CC0FFF
 
 
 /* Peripheral Definitions for peripheral IQ_MODEM_AXI_DDS_RTS */
@@ -358,7 +353,7 @@
 /******************************************************************/
 
 
-/* Canonical Definitions for peripheral AUDIO_AXI_I2S_ADI_0 */
+/* Canonical Definitions for peripheral AUDIO_AXI_I2S_ADI_1 */
 #define XPAR_AXI_I2S_ADI_0_BASEADDR 0x43C20000
 #define XPAR_AXI_I2S_ADI_0_HIGHADDR 0x43C2FFFF
 
@@ -383,14 +378,9 @@
 #define XPAR_AXI_AXIS_WRITER_2_HIGHADDR 0x43CB0FFF
 
 
-/* Canonical Definitions for peripheral IQ_MODEM_AXI_DDS_FTW_SUB */
-#define XPAR_AXI_AXIS_WRITER_3_BASEADDR 0x43CC0000
-#define XPAR_AXI_AXIS_WRITER_3_HIGHADDR 0x43CC0FFF
-
-
 /* Canonical Definitions for peripheral IQ_MODEM_AXI_DDS_RTS */
-#define XPAR_AXI_AXIS_WRITER_4_BASEADDR 0x43CD0000
-#define XPAR_AXI_AXIS_WRITER_4_HIGHADDR 0x43CD0FFF
+#define XPAR_AXI_AXIS_WRITER_3_BASEADDR 0x43CD0000
+#define XPAR_AXI_AXIS_WRITER_3_HIGHADDR 0x43CD0FFF
 
 
 /* Canonical Definitions for peripheral IQ_MODEM_BLKMEM_CNT */
@@ -409,8 +399,8 @@
 
 
 /* Canonical Definitions for peripheral IQ_MODEM_MODULATOR_FIFO_IQ_TX */
-#define XPAR_AXI_AXIS_WRITER_5_BASEADDR 0x43C60000
-#define XPAR_AXI_AXIS_WRITER_5_HIGHADDR 0x43C60FFF
+#define XPAR_AXI_AXIS_WRITER_4_BASEADDR 0x43C60000
+#define XPAR_AXI_AXIS_WRITER_4_HIGHADDR 0x43C60FFF
 
 
 

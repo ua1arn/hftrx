@@ -13,7 +13,6 @@
 #include "buffers.h"
 #include "audio.h"
 #include "ft8.h"
-#include "gui/framework/gui.h"
 #include "display2.h"
 
 #include <pthread.h>
@@ -45,6 +44,35 @@ int get_mouse_move(uint_fast16_t * x, uint_fast16_t * y);
 
 #define PIDFILE 		"/var/run/hftrx.pid"
 #define MAX_WAIT_TIME 	1
+
+#if AXI_IRQ_CONTROL && IQ_VIA_XDMA
+
+void pl_irq_disable_all(void)
+{
+	uint32_t reg = xdma_read_user(AXI_LITE_PL_CONTROL);
+	reg &= ~ 0xFF;
+	xdma_write_user(AXI_LITE_PL_CONTROL, reg);
+}
+
+void pl_irq_enable(uint32_t i)
+{
+	ASSERT(i < irq_pl_count);
+
+	uint32_t reg = xdma_read_user(AXI_LITE_PL_CONTROL);
+	reg |= (1 << i);
+	xdma_write_user(AXI_LITE_PL_CONTROL, reg);
+}
+
+void pl_irq_disable(uint32_t i)
+{
+	ASSERT(i < irq_pl_count);
+
+	uint32_t reg = xdma_read_user(AXI_LITE_PL_CONTROL);
+	reg &= ~ (1 << i);
+	xdma_write_user(AXI_LITE_PL_CONTROL, reg);
+}
+
+#endif /* AXI_IRQ_CONTROL && IQ_VIA_XDMA */
 
 #if defined (AXI_LITE_UARTLITE) && IQ_VIA_XDMA
 
@@ -87,6 +115,7 @@ void uartlite_reset(void)
 pthread_t timer_spool_t, iq_interrupt_t, ft8t_t, nmea_t, pps_t, disp_t, audio_interrupt_t;
 static struct cond_thread ct_iq;
 int pcie_status = 0;
+int global_stop = 0;
 
 void linux_wait_iq(void)
 {
@@ -361,7 +390,7 @@ void * process_linux_timer_spool(void * args)
 {
 	const int delay = (1000 / TICKS_FREQUENCY) * 1000;
 
-	while(1)
+	while(! global_stop)
 	{
 		spool_systimerbundle();
 		usleep(delay);
@@ -381,7 +410,7 @@ void * linux_nmea_spool(void * args)
 	const int bufsize = 256;
 	char buf[bufsize];
 
-	while(1)
+	while(! global_stop)
 	{
 		usleep(5000);
 		memset(buf, 0, bufsize);
@@ -405,7 +434,7 @@ void * linux_pps_thread(void * args)
         return 0;
     }
 
-    while(1)
+    while(! global_stop)
     {
         //Acknowledge IRQ
         if (write(fd_pps, &uio_key, sizeof(uio_key)) < 0) {
@@ -884,9 +913,10 @@ void prog_spi_exchange(
 
 void * iq_rx_blkmem;
 volatile uint32_t * ftw, * ftw_sub, * rts, * modem_ctrl, * ph_fifo, * iq_count_rx, * iq_fifo_rx, * iq_fifo_tx, * mic_fifo;
-volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, hw_vfo_sel = 0;
+volatile static uint8_t rx_fir_shift = 0, rx_cic_shift = 0, tx_shift = 0, tx_state = 0, resetn_modem = 1, adc_driver = 0;
 volatile static uint8_t fir_load_rst = 0, iq_test = 0, wnb_state = 0, resetn_stream = 0;
 int fd_int = 0;
+int32_t iq_test_max = 0;
 
 uint8_t rxbuf[SIZERX8] = { 0 };
 
@@ -894,7 +924,7 @@ void update_modem_ctrl(void)
 {
 	uint32_t v = ((rx_fir_shift & 0xFF) << rx_fir_shift_pos) 	| ((tx_shift & 0xFF) << tx_shift_pos)
 			| ((rx_cic_shift & 0xFF) << rx_cic_shift_pos) 		| (!! tx_state << tx_state_pos)
-			| (!! resetn_modem << resetn_modem_pos) 			| (!! hw_vfo_sel << hw_vfo_sel_pos)
+			| (!! resetn_modem << resetn_modem_pos) 			| (!! adc_driver << adc_driver_pos)
 			| (!! hamradio_get_gadcrand() << adc_rand_pos) 		| (!! iq_test << iq_test_pos)
 			| (!! wnb_state << wnb_pos)							| (!! resetn_stream << stream_reset_pos)
 			| (!! fir_load_rst << fir_load_reset_pos)			| 0;
@@ -1003,7 +1033,7 @@ uint8_t wnb_state_switch(uint8_t v)
 
 uint32_t iq_cic_test_process(void)
 {
-	return 0;
+	return iq_test_max;
 }
 
 void iq_cic_test(uint32_t val)
@@ -1128,55 +1158,6 @@ void stream_event_handler(void)
 	}
 }
 
-void * eth_stream_interrupt_thread(void * args)
-{
-	ssize_t nb;
-
-	int fd = open(LINUX_STREAM_INT_FILE, O_RDWR);
-    if (fd < 0) {
-        PRINTF("%s open failed\n", LINUX_STREAM_INT_FILE);
-        return NULL;
-    }
-
-	struct pollfd fds = {
-		.fd = fd,
-		.events = POLLIN,
-	};
-
-	resetn_stream = 1;
-	update_modem_ctrl();
-
-    while(1)
-    {
-    	uint32_t intr = 1; /* unmask */
-
-#if ! IQ_VIA_XDMA
-		nb = write(fd, & intr, sizeof(intr));
-		if (nb != (ssize_t) sizeof(intr)) {
-			perror("write");
-			close(fd);
-			exit(EXIT_FAILURE);
-		}
-#endif /* ! IQ_VIA_XDMA */
-
-		int ret = poll(& fds, 1, -1);
-		if (ret >= 1) {
-			nb = read(fd, & intr, sizeof(intr));
-			if (nb == (ssize_t) sizeof(intr) && stream_state == STREAM_CONNECTED)
-			{
-				uint32_t pos = get_stream_pos();
-				uint16_t offset = pos >= 512 ? 0 : 4096;
-				stream_receive(streambuf, offset);
-				safe_cond_signal(& ct_rts);
-			}
-		} else {
-			perror("poll()");
-			close(fd);
-			exit(EXIT_FAILURE);
-		}
-    }
-}
-
 void * eth_main_thread(void * args)
 {
 	struct sockaddr_in addr, addrClient;
@@ -1215,7 +1196,7 @@ void * eth_main_thread(void * args)
 	local_snprintf_P(strbuf, ARRAY_SIZE(strbuf), "Accepted TCP connection from %s:%d", inet_ntoa(addrClient.sin_addr), TCP_PORT);
 	stream_log(strbuf);
 
-	while(1)
+	while(! global_stop)
 	{
 		if(ioctl(sockClient, FIONREAD, & size) < 0) perror("FIONREAD");
 		if(size >= 4)
@@ -1311,13 +1292,25 @@ void server_stop(void)
 		server_kill();
 		linux_cancel_thread(eth_main_t);
 		stream_state = STREAM_IDLE;
+		resetn_stream = 0;
+		update_modem_ctrl();
+#if AXI_IRQ_CONTROL
+	pl_irq_disable(irq_iq_hf_stream);
+#endif /* AXI_IRQ_CONTROL */
 	}
 }
 
 void server_start(void)
 {
 	if (stream_state == STREAM_IDLE)
+	{
+		resetn_stream = 1;
+		update_modem_ctrl();
+#if AXI_IRQ_CONTROL
+		pl_irq_enable(irq_iq_hf_stream);
+#endif /* AXI_IRQ_CONTROL */
 		linux_create_thread(& eth_main_t, eth_main_thread, 50, stream_thread_core);
+	}
 }
 
 #endif /* WITHEXTIO_LAN */
@@ -1407,10 +1400,7 @@ void linux_iq_init(void)
 	iq_rx_blkmem =  (uint32_t *) get_blockmem_ptr(XPAR_IQ_MODEM_BLKMEM_READER_BASEADDR, 1);
 #endif /* DDS1_TYPE == DDS_TYPE_ZYNQ_PL */
 #if IQ_VIA_XDMA
-	pcie_init();
-	pcie_status = pcie_open();
-	if (pcie_status < 0)
-		perror("pcie init");
+	pcie_status = pcie_init();
 #endif /* DDS1_TYPE == DDS_TYPE_XDMA */
 #if WITHEXTIO_LAN
 #if IQ_VIA_ZYNQ_PL
@@ -1423,7 +1413,6 @@ void linux_iq_init(void)
 
 	set_stream_rate(STREAM_RATE_192K);
 	linux_init_cond(& ct_rts);
-	linux_create_thread(& eth_int_t, eth_stream_interrupt_thread, 90, stream_thread_core);
 #endif /* WITHEXTIO_LAN */
 #if defined (XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR)
 	reg_write(XPAR_AUDIO_AXI_I2S_ADI_0_BASEADDR + AUDIO_REG_I2S_CLK_CTRL, (64 / 2 - 1) << 16 | (4 / 2 - 1));
@@ -1465,6 +1454,12 @@ void xdma_iq_event_handler(void)
 		xdma_write_user(AXI_LITE_IQ_TX_FIFO, t[i]);
 
 	release_dmabuffer32tx(addr32tx);
+
+	if (iq_test)
+	{
+		int32_t * b = (int32_t *) rxbuf;
+		arm_max_no_idx_q31(b, DMABUFFSIZE32RX, & iq_test_max);
+	}
 
 	iq_mutex_unlock();
 }
@@ -1638,6 +1633,10 @@ void xdma_iq_init(void)
 	usleep(100);
 	modem_reset(1);
 
+#if AXI_IRQ_CONTROL
+	pl_irq_enable(irq_iq_hf);
+#endif /* AXI_IRQ_CONTROL */
+
 	linux_create_thread(& xdma_t, xdma_event_thread, 95, iq_thread_core);
 	linux_init_cond(& ct_iq);
 }
@@ -1686,7 +1685,7 @@ void * linux_iq_interrupt_thread(void * args)
         return NULL;
     }
 
-    while(1)
+    while(! global_stop)
     {
 #if 1
     	uint32_t intr = 1; /* unmask */
@@ -1733,7 +1732,7 @@ void * audio_interrupt_thread(void * args)
 	for (int i = 0; i < DMABUFFSIZE16TX; i ++)
 		* ph_fifo = 1;
 
-    while(1)
+    while(! global_stop)
     {
     	uint32_t intr = 1; /* unmask */
 
@@ -1798,17 +1797,6 @@ void zynq_pl_init(void)
 	reg_write(AXI_DCDC_PWM_ADDR + 4, dcdc_pwm_duty);
 #endif /* defined AXI_DCDC_PWM_ADDR */
 
-#if WITHCPUFANPWM
-	{
-		const float FS = powf(2, 32);
-		uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
-		reg_write(XPAR_FAN_PWM_RX_BASEADDR + 0, fan_pwm_period);
-
-		uint32_t fan_pwm_duty = FS * (1.0f - 0.6f) - 1;
-		reg_write(XPAR_FAN_PWM_RX_BASEADDR + 4, fan_pwm_duty);
-	}
-#endif /* WITHCPUFANPWM */
-
 	modem_reset(1);
 
 	linux_init_cond(& ct_iq);
@@ -1818,6 +1806,27 @@ void zynq_pl_init(void)
 #endif /* DDS1_TYPE  == DDS_TYPE_ZYNQ_PL */
 
 /*************************************************************/
+
+#if WITHCPUFANPWM
+static uint8_t fan_duty = 0;
+
+uint8_t linux_fan_pwm_set(int8_t d)
+{
+	if (d < 0) return fan_duty;
+
+	fan_duty = d >= 100 ? 100 : d;
+	float dutyF = fan_duty / 100.0f;
+	const float FS = powf(2, 32);
+
+	uint32_t fan_pwm_period = 25000 * FS / REFERENCE_FREQ;
+	reg_write(AXI_FAN_PWM_BASEADDR + 0, fan_pwm_period);
+
+	uint32_t fan_pwm_duty = FS * (1.0f - dutyF) - 1;
+	reg_write(AXI_FAN_PWM_BASEADDR + 4, fan_pwm_duty);
+
+	return fan_duty;
+}
+#endif /* WITHCPUFANPWM */
 
 int check_and_terminate_existing_instance(void)
 {
@@ -1955,6 +1964,7 @@ void linux_cancel_thread(pthread_t tid)
 static void handle_sig(int sig)
 {
 	printf("Waiting for process to finish... Got signal %d\n", sig);
+	global_stop = 1;
 	linux_exit();
 }
 
@@ -2063,6 +2073,151 @@ int linux_get_battery_charge_level(void)
 
 #endif /* WITHSYSFSBATTERY */
 
+#if AMS1117_ONBOARDADC
+
+#define ADS1117_ADDR_8BIT   (0x48 << 1)
+
+#define PGA_4_096V          (0b001 << 9)
+#define DR_128SPS           (0b100 << 5)
+#define COMP_QUE_DISABLE    0b11
+#define CONVERSION_DELAY_US 10000
+#define MUX_SINGLE(x)       (((0b100) | (x)) << 12)
+
+pthread_mutex_t g_adc_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_t ams1117_thread;
+double v_adc[ams1117_channels_count];
+
+int ams1117_write_reg(uint8_t reg, uint16_t value)
+{
+    uint8_t buf[3] = { reg, (value >> 8) & 0xFF, value & 0xFF };
+    return i2chw_write(ADS1117_ADDR_8BIT, buf, 3);
+}
+
+int16_t ams1117_read_reg16(uint8_t reg)
+{
+	uint8_t buf[2] = { reg, 0 };
+
+    if (i2chw_write(ADS1117_ADDR_8BIT, buf, 1)) return -1;
+    if (i2chw_read(ADS1117_ADDR_8BIT, buf, 2)) return -1;
+
+    return (buf[0] << 8) | buf[1];
+}
+
+int16_t ams1117_read_channel_once(uint8_t ch)
+{
+    if (ch >= ams1117_channels_count) return -1;
+
+    uint16_t config = 0;
+    config |= 0x8000;
+    config |= MUX_SINGLE(ch);
+    config |= PGA_4_096V;
+    config |= (1 << 8);
+    config |= DR_128SPS;
+    config |= COMP_QUE_DISABLE;
+
+    if (ams1117_write_reg(0x01, config)) return -1;
+
+    usleep(CONVERSION_DELAY_US);
+    return ams1117_read_reg16(0x00);
+}
+
+double raw_to_voltage(int16_t raw)
+{
+    return ((double) raw * 4.096) / 32768.0;
+}
+
+int ams1117_get_channel(uint8_t ch)
+{
+	if(ch >= ams1117_channels_count) return 0;
+
+	pthread_mutex_lock(& g_adc_mutex);
+	int c = v_adc[ch] * 1000;
+	pthread_mutex_unlock(& g_adc_mutex);
+
+	return c;
+}
+
+#if WITHCURRLEVEL_1117
+double acs712_vzero = 2.5;
+
+void asc712_offset_calibrate(void)
+{
+    // Калибровка смещения ACS712
+    double vsum = 0.0;
+    int valid = 0;
+    for (int i = 0; i < 10; i ++)
+    {
+        int16_t raw = ams1117_read_channel_once(ams1117_cnannel_asc712);
+        if (raw >= 0) {
+            vsum += raw_to_voltage(raw);
+            valid ++;
+        }
+        usleep(5000);
+    }
+
+    acs712_vzero = (valid > 0) ? vsum / valid : 0.0;
+    printf("ACS712 zero offset: %.4f V\n", acs712_vzero);
+}
+
+int get_current_1117(void)
+{
+	pthread_mutex_lock(& g_adc_mutex);
+	int c = (v_adc[ams1117_cnannel_asc712] - acs712_vzero) / ACS712_SENSITIVITY;
+	pthread_mutex_unlock(& g_adc_mutex);
+
+	return c;
+}
+
+#endif /* WITHCURRLEVEL_1117 */
+
+#if WITHVOLTLEVEL_1117
+int get_voltage_1117(void)
+{
+	pthread_mutex_lock(& g_adc_mutex);
+	int v = (int) (v_adc[ams1117_cnannel_voltage] * VBUS_DIVIDER_RATIO);
+	pthread_mutex_unlock(& g_adc_mutex);
+
+	return v;
+}
+#endif /* WITHVOLTLEVEL_1117 */
+
+void * ams1117_loop_thread(void * args)
+{
+#if WITHCURRLEVEL_1117
+	asc712_offset_calibrate();
+#endif /* WITHCURRLEVEL_1117 */
+
+    while (1)
+    {
+    	int16_t raw_values[ams1117_channels_count];
+
+		pthread_mutex_lock(& g_adc_mutex);
+
+		for (int ch = 0; ch < ams1117_channels_count; ch++)
+		{
+			raw_values[ch] = ams1117_read_channel_once(ch);
+			v_adc[ch] = raw_to_voltage(raw_values[ch]);
+		}
+
+		pthread_mutex_unlock(& g_adc_mutex);
+
+#if 0
+		for (int ch = 0; ch < ams1117_channels_count; ch++)
+			printf("Ch%d: raw=%6d  V=%.2f V\n", ch, raw_values[ch], v_adc[ch]);
+
+		printf("-----------------------------\n");
+
+		usleep(500000);
+#else
+		usleep(50000);
+#endif
+    }
+
+    return NULL;
+}
+
+#endif /* AMS1117_ONBOARDADC */
+
 void linux_subsystem_init(void)
 {
     if (check_and_terminate_existing_instance() != 0) {
@@ -2091,6 +2246,9 @@ void linux_subsystem_init(void)
 #endif /* WITHSPIDEV */
 #if IQ_VIA_ZYNQ_PL || IQ_VIA_XDMA
 	linux_iq_init();
+#if AXI_IRQ_CONTROL
+	pl_irq_disable_all();
+#endif /* AXI_IRQ_CONTROL */
 #elif IQ_VIA_USB
 	linux_usb_init();
 #endif /* IQ_VIA_ZYNQ_PL || IQ_VIA_XDMA */
@@ -2099,11 +2257,19 @@ void linux_subsystem_init(void)
 	iq_shift_fir_rx(CALIBRATION_IQ_FIR_RX_SHIFT);
 	iq_shift_tx(CALIBRATION_TX_SHIFT);
 #endif /* WITHIQSHIFT */
+#if NEORV32_RT
+	if (pcie_status > 0)
+		neorv32_load_firmware();
+#endif /* NEORV32_RT */
 }
 
 void linux_user_init(void)
 {
 	linux_create_thread(& timer_spool_t, process_linux_timer_spool, 50, spool_thread_core);
+
+#if AMS1117_ONBOARDADC
+	linux_create_thread(& ams1117_thread, ams1117_loop_thread, 50, spool_thread_core);
+#endif /* AMS1117_ONBOARDADC */
 
 	evdev_initialize();
 #if WITHNMEA && WITHLFM && CPUSTYLE_XC7Z
@@ -2120,6 +2286,9 @@ void linux_user_init(void)
 #if WITHSYSFSBATTERY
 	sysfs_battery_init();
 #endif /* WITHSYSFSBATTERY */
+#if WITHCPUFANPWM
+	linux_fan_pwm_set(20);
+#endif /* WITHCPUFANPWM */
 }
 
 #if defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_LINUX)
@@ -2180,7 +2349,7 @@ void lclspin_unlock(lclspinlock_t * __restrict p)
 	pthread_mutex_unlock(p);
 }
 
-#if WITHDSPEXTFIR && IQ_VIA_ZYNQ_PL
+#if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && IQ_VIA_ZYNQ_PL
 volatile uint32_t * fir_reload = NULL;
 static adapter_t plfircoefsout;		/* параметры преобразования к PL */
 
@@ -2190,6 +2359,7 @@ void board_fpga_fir_initialize(void)
 	fir_reload = (uint32_t *) get_highmem_ptr(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR);
 }
 
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	if (fir_reload)
@@ -2226,7 +2396,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 		}
 	}
 }
-#elif WITHDSPEXTFIR && IQ_VIA_XDMA
+#elif (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && IQ_VIA_XDMA
 static adapter_t plfircoefsout;		/* параметры преобразования к PL */
 
 void board_fpga_fir_initialize(void)
@@ -2234,6 +2404,7 @@ void board_fpga_fir_initialize(void)
 	adpt_initialize(& plfircoefsout, HARDWARE_COEFWIDTH, 0, "fpgafircoefsout");
 }
 
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
 void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	const int iHalfLen = (Ntap - 1) / 2;
@@ -2245,7 +2416,7 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 	for (; i <= iHalfLen; ++ i)
 	{
 		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
-		m = coeff > m ? coeff : m;
+		m = abs(coeff) > m ? coeff : m;
 	}
 
 	while(m > 0)
@@ -2270,7 +2441,17 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 		xdma_write_user(AXI_LITE_FIR_COEFFS, coeff << bits);
 	}
 }
-#endif /* WITHDSPEXTFIR && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL) */
+#else
+
+void board_fpga_fir_initialize(void)
+{
+}
+
+void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+{
+}
+
+#endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL) */
 
 #if RTC1_TYPE == RTC_TYPE_LINUX
 void board_rtc_getdate(
@@ -2631,8 +2812,12 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 
 void linux_exit(void)
 {
-	//linux_usb_stop();
+	hamradio_set_moxmode(0);
 
+	usleep(50000);
+#if IQ_VIA_USB
+	linux_usb_stop();
+#endif /* IQ_VIA_USB */
 #if WITHAD936XIIO
 	iio_stop_stream();
 #endif /* WITHAD936XIIO */
@@ -2665,15 +2850,20 @@ void linux_exit(void)
 	munmap((void *) modem_ctrl, sysconf(_SC_PAGESIZE));
 	munmap((void *) ph_fifo, sysconf(_SC_PAGESIZE));
 	munmap((void *) iq_count_rx, sysconf(_SC_PAGESIZE));
-	munmap((void *) iq_count_tx, sysconf(_SC_PAGESIZE));
 	munmap((void *) iq_fifo_tx, sysconf(_SC_PAGESIZE));
+#if defined (AXI_XGPO_ADDR)
 	munmap((void *) xgpo, sysconf(_SC_PAGESIZE));
+#endif /* defined (AXI_XGPO_ADDR) */
+#if defined (AXI_XGPI_ADDR)
 	munmap((void *) xgpi, sysconf(_SC_PAGESIZE));
-
-#if WITHDSPEXTFIR
+#endif /* defined (AXI_XGPI_ADDR) */
+#if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
 	munmap((void *) fir_reload, sysconf(_SC_PAGESIZE));
-#endif /* WITHDSPEXTFIR */
+#endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
 #endif
+#if NEORV32_RT
+	neorv32_reset_assert();
+#endif /* NEORV32_RT */
 #if IQ_VIA_XDMA
 	xdma_close();
 #endif /* IQ_VIA_XDMA */

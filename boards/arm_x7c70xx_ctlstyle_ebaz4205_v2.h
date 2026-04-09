@@ -14,6 +14,12 @@
 		#error Wrong CPU selected. XC7Z020 expected
 	#endif /* ! defined(XC7Z020) */
 
+	// Выбор используемой цветовой палитры
+	#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_WHITE	1
+	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
+
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
@@ -56,7 +62,7 @@
 	// +++ вариации прошивки, специфические для разных частот опорного генератора
 
 	//#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
-	#define DIRECT_61M440_X1	1
+	#define DIRECT_49M152_X1	1
 	#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..56 MHz */
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
@@ -181,10 +187,12 @@
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
-	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
-	#define WITHDSPLOCALTXFIR	1
+	#define WITHDSPEXTDDC 1				/* Квадратуры обрабатываются аппаратным DUC/DDC */
+	//#define WITHDSPEXTTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
+	//#define WITHDSPEXTRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
+	#define WITHDSPLOCALTXFIR 1			/* Фильтрация квадратур на передаче осуществляется программно */
+	#define WITHDSPLOCALRXFIR 1			/* Фильтрация квадратур на приёме осуществляется программно */
+
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
@@ -224,7 +232,7 @@
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#if 1
-			#define REALREFERENCE_FREQ 		61439600L
+//			#define REALREFERENCE_FREQ 		61439600L
 			#define WITHTOUCHGUI			1
 			#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 			#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
@@ -238,9 +246,9 @@
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 			#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
-			#define WITHLFM					1
-			#define WITHNMEA				1
-			#define WITHGNSS				1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */
+//			#define WITHLFM					1
+//			#define WITHNMEA				1
+//			#define WITHGNSS				1	/* В конфигурации трбуется разбирать поток NMEA от навигационного модуля */
 //			#define WITHEXTRFBOARDTEST		1
 			#define DMABUFCLUSTER			32
 			#define WITHIQSHIFT				1
@@ -260,11 +268,11 @@
 	//#define WITHVIEW_3DSS		1
 
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	
 
 	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	////#define WITHCAT		1	/* используется CAT */
@@ -290,7 +298,7 @@
 	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
 	
 	////*#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
-	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
+	
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#if 0
@@ -323,7 +331,7 @@
 	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
 	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
-	#define RTC1_TYPE RTC_TYPE_DS1307
+//	#define RTC1_TYPE RTC_TYPE_DS1307
 
 	// End of NVRAM definitions section
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */

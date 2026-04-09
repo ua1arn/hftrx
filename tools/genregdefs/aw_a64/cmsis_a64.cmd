@@ -1,7 +1,7 @@
-SET CONVERTER=..\Debug\genregdefs.exe --cortexa5x --guid "{DADB7421-2CE1-4351-A89A-B0338D2EB5AF}"
+SET CONVERTER=..\Debug\genregdefs.exe --cortexa5x "core64_ca.h" --guid "{DADB7421-2CE1-4351-A89A-B0338D2EB5AF}"
 SET OUTFILE=..\..\..\arch\aw_a64\device.h
 SET FILELIST= ve.csv gic.csv cpusubsysctrl.csv ccu.csv sys_cfg.csv ndfc.csv tsc.csv uart.csv gpio.csv smhc.csv i2s_pcm.csv dmic.csv owa.csv audio_codec.csv twi.csv spi.csv cir_rx.csv tpadc.csv gpadc.csv ce.csv rtc.csv iommu.csv ths.csv timer.csv hstimer.csv ^
-	usbehci.csv usbotg.csv usbphyc.csv usb_ehci_capability.csv usb_ohci_capability.csv ^
+	..\aw_generic\usbehci.csv ..\aw_generic\usbotg.csv usbphyc.csv ..\aw_generic\usb_ehci_capability.csv ..\aw_generic\usb_ohci_capability.csv ^
 	de2.csv di.csv gpu.csv dsi.csv tcon0.csv tcon1.csv ^
 	cpux_cfg.csv cpux_mbist.csv ddrphyc.csv sid.csv spinlock.csv ^
 	dmac.csv pwm.csv emac.csv msgbox.csv smc.csv spc.csv mipi_dsi.csv mipi_dsi_phy.csv hdmi.csv ^

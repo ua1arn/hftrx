@@ -319,9 +319,6 @@
 	//#define WITHIF4DSP	1			/*  "Дятел" */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
-	//#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-//	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
@@ -462,7 +459,7 @@
 	#else
 		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#endif
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	
 
 
 	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
@@ -485,7 +482,7 @@
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
-	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
+	//#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 //	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
@@ -504,7 +501,7 @@
 	//#define LFMTICKSFREQ ARMI2SRATE
 	
 	////*#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
-	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
+	
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 	#if 0
 		#define WITHLWIP 1

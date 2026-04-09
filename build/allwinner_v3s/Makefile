@@ -19,7 +19,7 @@
 TRGT2 = arm-none-eabi
 TRGT = $(TRGT2)-
 
-#XFEL = ../../tools/xfel-windows-v1.3.4/xfel
+#XFEL = ../../tools/xfel-windows-v1.3.5/xfel
 XFEL = ./xfel_fixed_t113-s3
 
 #UADEFS += -D"WITHSMPSYSTEM"
@@ -64,7 +64,7 @@ CORE += -mfpu=neon-vfpv4
 #OPT = -Ofast -flto
 OPT = -Ofast
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 USBXDIR = $(PRJROOT)/src/hal
 
 # List all default C defines here, like -D_DEBUG=1
@@ -76,7 +76,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(ARCHDIR) \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source
+	$(CMSISDIR)/Include $(CMSISDIR)/Source
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC

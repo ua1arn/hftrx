@@ -105,7 +105,7 @@
 	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define WITHSDRAM_PMC1	1	/* power management chip */
+	
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -157,8 +157,8 @@
 	
 	//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
-	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
@@ -570,7 +570,7 @@
 #define targettsc1		TARGET_EXT1_CS_EMIO	// external SPI device (front panel board)
 #define targetlcd		TARGET_EXT1_CS_EMIO	// external SPI device (front panel board)
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 
 	#define WITHSPICSEMIO	1	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
 
@@ -625,15 +625,9 @@
 	#define	SPI_MISO_MIO 	41	//	SPI_MISO	C36	C17	PS_MIO41_501
 	#define	SPI_SCLK_MIO 	40	//	SPI_SCLK	C39	D14	PS_MIO40_501
 
-	#define SPI_SCLK_C()	do { gpio_writepin(SPI_SCLK_MIO, 0); } while (0)
-	#define SPI_SCLK_S()	do { gpio_writepin(SPI_SCLK_MIO, 1); } while (0)
-
-	#define SPI_MOSI_C()	do { gpio_writepin(SPI_MOSI_MIO, 0); } while (0)
-	#define SPI_MOSI_S()	do { gpio_writepin(SPI_MOSI_MIO, 1); } while (0)
-
 	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI0_INITIALIZE() do { \
 		enum { IOTYPE = TARGET_SPI_IOTYPE }; \
 		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 1); \
 		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 0); \
@@ -662,10 +656,9 @@
 		gpio_input2(SPI_MISO_MIO, pinmode_input); \
 	} while (0)
 
-
 	#define HARDWARE_SPI_FREQ (xc7z_get_spi_freq())
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 #if WITHUART1HW
 
@@ -748,6 +741,8 @@
 
 	#define GET_TWCK() (gpio_readpin(TARGET_TWI_TWCK_MIO))
 	#define GET_TWD() (gpio_readpin(TARGET_TWI_TWD_MIO))
+
+	//#define TWIHARD_PTR I2C0
 
 #endif /* WITHTWISW || WITHTWIHW */
 
@@ -1062,6 +1057,8 @@
 				gpio_peripherial(SPDIF_D2_MIO, qspi_pinmode_io);	/*  */ \
 				gpio_peripherial(SPDIF_D3_MIO, qspi_pinmode_io);	/*  */ \
 			} while (0)
+
+		#define SPIDFHARD_PTR XQSPIPS
 
 		#else /* WIHSPIDFHW */
 

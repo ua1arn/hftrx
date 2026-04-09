@@ -47,7 +47,7 @@
 void lvgl_gui_init(lv_obj_t * parent);
 #endif /* WITHLVGL */
 
-#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
+#if defined(DDS1_TYPE) && ((DDS1_TYPE == DDS_TYPE_FPGAV1) || (DDS1_TYPE == DDS_TYPE_FPGAV2))
 	#error "DDS_TYPE_FPGAV1 not supported with Linux"
 #endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
 
@@ -129,6 +129,7 @@ extern pthread_mutex_t linux_md;
 #define LCLSPINLOCK_t		pthread_mutex_t
 #define LCLSPINLOCK_INIT	PTHREAD_MUTEX_INITIALIZER
 #define LCLSPINLOCK_INITIALIZE(p)	do { memcpy((void *) p, & linux_md, sizeof(linux_md)); } while(0)
+#define LCLSPINLOCK_UNINITIALIZE(p)	do { } while(0)
 
 struct cond_thread {
     pthread_cond_t   ready_cond;
@@ -172,6 +173,7 @@ char * get_alsa_out(void);
 void alsa_switch_out(void);
 void alsa_close(void);
 int linux_get_battery_charge_level(void);
+uint8_t linux_fan_pwm_set(int8_t d);
 
 uint8_t linux_xgpi_read_pin(uint8_t pin);
 void linux_xgpo_write_pin(uint8_t pin, uint8_t val);
@@ -233,6 +235,13 @@ void dcache_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас в э
 void dcache_clean(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то
 void dcache_clean_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void dcache_clean_all(void);
+
+int get_voltage_1117(void);
+int get_current_1117(void);
+int ams1117_get_channel(uint8_t ch);
+
+int neorv32_load_firmware(void);
+void neorv32_reset_assert(void);
 
 #endif /* LINUX_SUBSYSTEM */
 #endif /* LINUX_SUBSYSTEM_H */

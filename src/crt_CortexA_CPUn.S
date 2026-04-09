@@ -55,8 +55,9 @@
 	/* Standard definitions of mode bits and interrupt (I & F) flags in PSRs */
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
- 
-	.section ".text"
+ 	STACKSIZEALL = 512
+
+	.section ".noinit"
 	.code 32
 
 	.align 4, 0
@@ -91,41 +92,41 @@ Reset_CPUx_Handler:
 	*/
 	ldr		r2, = aarch32_stack_top
 	ldr		r2, [r2]
-	mov		r3, #4096
-	msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
-	mov   sp, r2
-	mov   lr, #0
-	sub	r2, r3, r2
-
-	msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
-	mov   sp, r2
-	mov   lr, #0
-	sub	r2, r3, r2
-
-	msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
-	mov   sp, r2
-	mov   lr, #0
-	sub	r2, r3, r2
+	mov		r3, #STACKSIZEALL
 
 	msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
 	mov   sp, r2
 	mov   lr, #0
-	sub	r2, r3, r2
+	sub	r2, r2, r3
+
+	msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r2, r3
+
+	msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r2, r3
+
+	msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r2, r3
 
 	msr   CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
 	mov   sp, r2
 	mov   lr, #0
-	sub	r2, r3, r2
+	sub	r2, r2, r3
 
 	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
 	mov   sp, r2
 	mov   lr, #0
-	sub	r2, r3, r2
+	sub	r2, r2, r3
 
 	msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
 	mov   sp, r2
 	mov   lr, #0
-	sub	r2, r3, r2
 
 	ldr		r2, =Reset_CPUn_Handler
 	mov		lr, pc

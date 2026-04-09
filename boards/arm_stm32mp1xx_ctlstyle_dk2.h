@@ -12,6 +12,7 @@
 #ifndef ARM_STM32MP1_LFBGA354_CTLSTYLE_DK2_H_INCLUDED
 #define ARM_STM32MP1_LFBGA354_CTLSTYLE_DK2_H_INCLUDED 1
 
+	#define COLORSTYLE_BLUE2	1
 
 	#if 0
 		// Обновление загрузчика
@@ -209,7 +210,7 @@
 	//#define WITHLWIP 1
 	#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
 	//#define TSC1_TYPE TSC_TYPE_S3402	/* Capasitive touch screen controller S3402 (on panel H497TLB01.4) */
-	#define TSC1_TYPE TSC_TYPE_USBTOUCH
+	//#define TSC1_TYPE TSC_TYPE_USBTOUCH
 	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEFATFS		1	// Запись звука на SD CARD
 	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */

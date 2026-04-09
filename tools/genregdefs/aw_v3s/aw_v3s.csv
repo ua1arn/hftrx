@@ -1,0 +1,46 @@
+#type; USBOTG
+#base; USBOTG 0x01C19000
+
+#irq; USB_DEVICE 103
+
+#typeend;
+
+#type; USB_EHCI_Capability
+#base; USBEHCI 0x01C1A000
+
+#irq; USB_EHCI 104
+
+#typeend;
+
+#type; USB_OHCI_Capability
+#base; USBOHCI 0x01C1A400
+
+#irq; USB_OHCI 105
+
+#typeend;
+
+#type; UART
+
+#base; UART0 0x01C28000
+#base; UART1 0x01C28400
+#base; UART2 0x01C28800
+
+#irq; UART0 32
+#irq; UART1 33
+#irq; UART2 34
+#typeend;
+
+#type; TWI
+
+#base; TWI0 0x01C2AC00
+#base; TWI1 0x01C2B000
+#irq; TWI0 38
+#irq; TWI1 39
+#typeend;
+
+#type; SPI; Serial Peripheral Interface
+#base; SPI 0x01C68000
+
+#irq; SPI 97; SPI interrupt
+
+#typeend;

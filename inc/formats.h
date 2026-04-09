@@ -24,16 +24,14 @@ int local_vsnprintf_P( char * __restrict buffer, size_t count, const char * __re
 // Отладочная печать
 void debug_printf_P(const char * __restrict format, ... ) __attribute__ ((__format__ (__printf__, 1, 2)));
 
-char * safestrcpy(char * dst, size_t blen, const char * src);
-void strtrim(char * s);
-
 void printhex(uintptr_t offs, const void * buff, unsigned length);
+void printhex16(uintptr_t voffs, const void * vbuff, unsigned length);
 void printhex32(uintptr_t voffs, const void * vbuff, unsigned length);
 void printhex64(uintptr_t voffs, const void * vbuff, unsigned length);
+void mem2hex(uintptr_t address, unsigned size);
 
 // spool-based functions for debug
-int dbg_puts_impl_P(const char * s);
-int dbg_puts_impl(const char * s);
+int dbg_puts_impl(const char * s);	/* печать строки без использования форматных преоьразования */
 int dbg_putchar(int c);
 int dbg_writechar(int c);	/* вывод символа без преобразования '\n' в пару символов '\r' '\n' */
 int dbg_getchar(char * r);
@@ -44,6 +42,7 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 		do { \
 			static const char this_file [] = __FILE__; \
 			PRINTF(PSTR("At %d in %s.\n"), __LINE__, this_file); \
+			dbg_flush(); \
 		} while(0)
 #else /* WITHDEBUG */
 	#define TP() do { } while(0)
@@ -58,24 +57,29 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 #if WITHDEBUG && 1
 	#define ASSERT(v) do { if ((v) == 0) { \
 		PRINTF(PSTR("%s(%d): Assert '%s'\n"), __FILE__, __LINE__, (# v)); \
+		dbg_flush(); \
 		for (;;) ; \
 		} } while (0)
 	#define ASSERT2(v, f, l) do { if ((v) == 0) { \
 		PRINTF(PSTR("%s(%d): Assert '%s'\n"), (f), (l), (# v)); \
+		dbg_flush(); \
 		for (;;) ; \
 		} } while (0)
 	#define ASSERT3(v, f, l, m) do { if ((v) == 0) { \
 		PRINTF(PSTR("%s(%d): Assert '%s' (%s)\n"), (f), (l), (# v), (m)); \
+		dbg_flush(); \
 		for (;;) ; \
 		} } while (0)
 
 	#define VERIFY(v) do { if ((v) == 0) { \
 		PRINTF(PSTR("%s(%d): Verify '%s'\n"), __FILE__, __LINE__, (# v)); \
+		dbg_flush(); \
 		for (;;) ; \
 		} } while (0)
 
 	#define VERIFY3(v, f, l, m) do { if ((v) == 0) { \
 		PRINTF(PSTR("%s(%d): Verify '%s' (%s)\n"), f, l, (# v), (m)); \
+		dbg_flush(); \
 		for (;;) ; \
 		} } while (0)
 

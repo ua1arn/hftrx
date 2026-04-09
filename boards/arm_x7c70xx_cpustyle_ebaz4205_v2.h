@@ -18,6 +18,7 @@
 
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+
 #if WITHINTEGRATEDDSP
 	//#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
 	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
@@ -39,7 +40,7 @@
 #define CALIBRATION_IQ_CIC_RX_SHIFT		63
 #define CALIBRATION_TX_SHIFT			23
 
-#define WITHUART0HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
+//#define WITHUART0HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
 #define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 
 //#define WITHCAT_UART1		1
@@ -109,7 +110,7 @@
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define WITHSDRAM_PMC1	1	/* power management chip */
+	
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -674,10 +675,6 @@
 		xc7z_gpio_output(SPI_MOSI_MIO); \
 		xc7z_gpio_input(SPI_MISO_MIO); \
 		} while (0)
-	#define HARDWARE_SPI_CONNECT() do { \
-		} while (0)
-	#define HARDWARE_SPI_DISCONNECT() do { \
-		} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
 
@@ -991,6 +988,7 @@
 					arm_hardware_piof_altfn50(SPDIF_MISO_BIT, AF_QUADSPI_AF10); /* PF9 MISO */ \
 					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /* PB6 CS */ \
 				} while (0)
+		#define SPIDFHARD_PTR XQSPIPS
 
 		#else /* WIHSPIDFHW */
 

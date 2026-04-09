@@ -1,0 +1,165 @@
+
+#type; DE_TOP; Display Engine (DE) TOP
+#regdef; GATE_CFG;	 	0x000;	SCLK_GATE DE SCLK Gating Register
+#regdef; BUS_CFG;		0x004;	? HCLK_GATE ? DE HCLK Gating Register
+#regdef; RST_CFG;		0x008;	AHB_RESET DE AHB Reset register
+#regdef; DIV_CFG;		0x00C;	SCLK_DIV DE SCLK Division register
+#regdef; SEL_CFG;		0x010;	? DE2TCON ? MUX register - lower bit swap DE outputs
+#regdef; DE_IP_CFG; 	0x024;	DE IP Configure Register
+#typeend;
+
+#type; DE_GLB; Display Engine (DE) - Global Control
+#regdef; GLB_CTL;	 	0x000;	Global control register
+#regdef; GLB_STS;		0x004;	Global status register
+#regdef; GLB_DBUFFER;	0x008;	Global double buffer control register
+#regdef; GLB_SIZE;		0x00C;	Global size register
+#typeend;
+
+#type; DE_BLD; Display Engine (DE) - Blender
+#regdef; BLD_EN_COLOR_CTL;	0x000; BLD_FILL_COLOR_CTL Offset 0x000 BLD fill color control register
+#aggreg; CH; 0x004 6; Pipe [0..3] - but six elements
+#regdef; BLD_FILL_COLOR;	0x000; BLD fill color register
+#regdef; BLD_CH_ISIZE;	0x004; BLD input memory size register
+#regdef; BLD_CH_OFFSET;	0x008; BLD input memory offset register
+#regdef; padding 0; 0x010; Need for address arithmetics
+#aggregend;
+#regdef; ROUTE;			0x0080; BLD_CH_RTCTL BLD routing control register (default value 0x00543210)
+#regdef; PREMULTIPLY; 	0x0084; BLD pre-multiply control register
+#regdef; BKCOLOR; 0x088;
+#regdef; OUTPUT_SIZE; 0x08C;
+#regdef; BLD_MODE; 0x0090 6; BLD_CTL SUN8I_MIXER_BLEND_MODE
+#regdef; CK_CTL; 0x00B0;
+#regdef; CK_CFG; 0x0B4;
+#regdef; CK_MAX; 0x0C0 4;
+#regdef; CK_MIN; 0x0E0 4;
+#regdef; OUT_CTL; 0x0FC;
+#typeend;
+
+#type; DE_VI; Display Engine (DE) - VI surface
+
+#aggreg; CFG; 0x000 4;
+#regdef; ATTR; 0x000;
+#regdef; SIZE; 0x004;
+#regdef; COORD; 0x008;
+#regdef; PITCH; 0x00C 3; ix=0: Y, ix=1: U/UV channel, ix=3: V channel 
+#regdef; TOP_LADDR; 0x018 3;
+#regdef; BOT_LADDR; 0x024 3;
+#aggregend;
+#regdef; FCOLOR; 0x0C0 4;
+#regdef; TOP_HADDR; 0x0D0 3;
+#regdef; BOT_HADDR; 0x0DC 3;
+#regdef; OVL_SIZE; 0x0E8 2; OVL_Y, OVL_UV overlay window size register
+#regdef; HORI; 0x0F0 2;	OVL_V horizontal down sample control register
+#regdef; VERT; 0x0F8 2; OVL_V vertical down sample control register
+
+#regdef; padding 0; 0x800; set size
+#typeend;
+
+#type; DE_UI; Display Engine (DE) - UI surface
+
+#aggreg; CFG; 0x000 4;
+#regdef;  ATTR; 0x000; 
+#regdef;  SIZE; 0x004; 
+#regdef;  COORD; 0x008; 
+#regdef;  PITCH; 0x00C; 
+#regdef;  TOP_LADDR; 0x010; 
+#regdef;  BOT_LADDR; 0x014; 
+#regdef;  FCOLOR; 0x018; 
+#regdef; padding 0; 0x020; Need for address arithmetics
+#aggregend;
+#regdef;  TOP_HADDR; 0x080; 
+#regdef;  BOT_HADDR; 0x084; 
+#regdef;  OVL_SIZE; 0x088; 
+
+#regdef; padding 0; 0x800; set size
+#typeend;
+
+# exploration - not final info
+
+#type; DE_VEP; Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks
+
+#aggreg; FCE; 0x0000 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x0800; Need for address arithmetics
+#aggregend;
+#aggreg; PEAK; 0x0800 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x0800; Need for address arithmetics
+#aggregend;
+#aggreg; LCTI; 0x1000 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x0800; Need for address arithmetics
+#aggregend;
+#aggreg; BLS; 0x1800 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x0800; Need for address arithmetics
+#aggregend;
+#aggreg; FCC; 0x2000 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x0800; Need for address arithmetics
+#aggregend;
+#aggreg; VEP_TOP; 0x7000 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x1000; Need for address arithmetics
+#aggregend;
+#typeend;
+
+# exploration - not final info
+
+#type; DE_DEP; DRC (dynamic range controller)
+
+#aggreg; DRC; 0x0000 1;
+#regdef;  CFG; 0x000; 
+#regdef; padding 0; 0x8000; Need for address arithmetics
+#aggregend;
+#typeend;
+
+#type; DE_UIS; UI Scaler(UIS) provides RGB format image resizing function
+#regdef; UIS_CTRL_REG; 0x000; Control register
+#regdef; UIS_STATUS_REG; 0x008; Status register
+#regdef; UIS_FIELD_CTRL_REG; 0x00C; Field control register
+#regdef; UIS_BIST_REG; 0x010; BIST control register
+#regdef; UIS_OUTSIZE_REG; 0x040; Output size register
+#regdef; UIS_INSIZE_REG; 0x080; Input size register
+#regdef; UIS_HSTEP_REG; 0x088; Horizontal step register
+#regdef; UIS_VSTEP_REG; 0x08C; Vertical step register
+#regdef; UIS_HPHASE_REG; 0x090; Horizontal initial phase register
+#regdef; UIS_VPHASE0_REG; 0x098; Vertical initial phase 0 register
+#regdef; UIS_VPHASE1_REG; 0x09C; Vertical initial phase 1 register
+#regdef; UIS_HCOEF_REGN; 0x200 16; Horizontal filter coefficient register N (N=0:15)
+#typeend;
+
+#type; DE_VSU; Video Scaler Unit (VSU), VS
+#regdef; VSU_CTRL_REG; 0x0000; VSU Module Control Register
+#regdef; VSU_STATUS_REG; 0x0008; VSU Status Register
+#regdef; VSU_FIELD_CTRL_REG; 0x000C; VSU Field Control Register
+#regdef; VSU_SCALE_MODE_REG; 0x0010; VSU Scale Mode Setting Register
+#regdef; VSU_DIRECTION_THR_REG; 0x0020; VSU Direction Detection Threshold Register
+#regdef; VSU_EDGE_THR_REG; 0x0024; VSU Edge Detection Setting Register
+#regdef; VSU_EDSCALER_CTRL_REG; 0x0028; VSU Edge-Direction Scaler Control Register
+#regdef; VSU_ANGLE_THR_REG; 0x002C; VSU Angle Reliability Setting Register
+#regdef; VSU_SHARP_EN_REG; 0x0030; VSU Sharpness Control Enable Register
+#regdef; VSU_SHARP_CORING_REG; 0x0034; VSU Sharpness Control Coring Setting Register
+#regdef; VSU_SHARP_GAIN0_REG; 0x0038; VSU Sharpness Control Gain Setting 0 Register
+#regdef; VSU_SHARP_GAIN1_REG; 0x003C; VSU Sharpness Control Gain Setting 1 Register
+#regdef; VSU_OUT_SIZE_REG; 0x0040; VSU Output Size Register
+#regdef; VSU_GLOBAL_ALPHA_REG; 0x0044; VSU Output Global Alpha Register
+#regdef; VSU_Y_SIZE_REG; 0x0080; VSU Y Channel Size Register
+#regdef; VSU_Y_HSTEP_REG; 0x0088; VSU Y Channel Horizontal Step Register
+#regdef; VSU_Y_VSTEP_REG; 0x008C; VSU Y Channel Vertical Step Register
+#regdef; VSU_Y_HPHASE_REG; 0x0090; VSU Y Channel Horizontal Initial Phase Register
+#regdef; VSU_Y_VPHASE0_REG; 0x0098; VSU Y Channel Vertical Initial Phase 0 Register
+#regdef; VSU_Y_VPHASE1_REG; 0x009C; VSU Y Channel Vertical Initial Phase 1 Register
+#regdef; VSU_C_SIZE_REG; 0x00C0; VSU C Channel Size Register
+#regdef; VSU_C_HSTEP_REG; 0x00C8; VSU C Channel Horizontal Step Register
+#regdef; VSU_C_VSTEP_REG; 0x00CC; VSU C Channel Vertical Step Register
+#regdef; VSU_C_HPHASE_REG; 0x00D0; VSU C Channel Horizontal Initial Phase Register
+#regdef; VSU_C_VPHASE0_REG; 0x00D8; VSU C Channel Vertical Initial Phase 0 Register
+#regdef; VSU_C_VPHASE1_REG; 0x00DC; VSU C Channel Vertical Initial Phase 1 Register
+#regdef; VSU_Y_HCOEF0_REGN; 0x200 32; 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; VSU_Y_HCOEF1_REGN; 0x300 32; 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1
+#regdef; VSU_Y_VCOEF_REGN; 0x400 32; 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1))
+#regdef; VSU_C_HCOEF0_REGN; 0x600 32; 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; VSU_C_HCOEF1_REGN; 0x700 32; 0x700+N*4 VSU C Channel Horizontal Filter Co efficient1 Register N N = M 1))
+#regdef; VSU_C_VCOEF_REGN; 0x800 32; 0x800+N*4 VSU C Channel Vertical Filter Coefficient Register N N = M 1))
+#typeend;

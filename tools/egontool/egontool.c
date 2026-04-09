@@ -192,10 +192,15 @@ static int process(
 
 static void printfield32(const void * buff, const char * name, unsigned offset)
 {
-	printf("%04X: '%-12s'=0x%08X\n", offset, name, get_uint32_le((const uint8_t *) buff + offset));
+	printf("%04X: %-12s=0x%08X\n", offset, name, get_uint32_le((const uint8_t *) buff + offset));
 }
 
-static void printfile(FILE * fp)
+static void printfieldtext(const void * buff, const char * name, unsigned offset, unsigned lentht)
+{
+	printf("%04X: %-12s='%*.*s'\n", offset, name, lentht, lentht, (const char *)((const uint8_t *) buff + offset));
+}
+
+static void printfile(FILE * fp, const char * name)
 {
 	boot_file_head_t head = { 0 };
 	size_t n;
@@ -206,6 +211,7 @@ static void printfile(FILE * fp)
 		fprintf(stderr, "Not enough data (sizeof head=%d, n=%d)\n", sizeof head, n);
 		return;
 	}
+	printf("file: '%s'\n", name);
 	printf("magic: '%8.8s'\n", head.magic);
 	printf("length: %u (0x%x) bytes\n", (unsigned) head.length, (unsigned) head.length);
 
@@ -217,8 +223,8 @@ static void printfile(FILE * fp)
 	printfield32(& head, "file_head_vsn", offsetof(boot_file_head_t, file_head_vsn));
 	printfield32(& head, "Boot_vsn", offsetof(boot_file_head_t, Boot_vsn));
 	printfield32(& head, "eGON_vsn", offsetof(boot_file_head_t, eGON_vsn));
+	printfieldtext(& head, "platform", offsetof(boot_file_head_t, platform), 8);
 }
-
 
 static int printFLAG;
 
@@ -288,7 +294,7 @@ int main(int argc, char* argv[])
 			fprintf(stderr, "Can not open file '%s'...\n", infilename);
 			return 1;
 		}
-		printfile(infile);
+		printfile(infile, infilename);
 
 //		fseek(infile, 0x38, SEEK_SET);
 //		for (i = 0; i < 40; ++ i)

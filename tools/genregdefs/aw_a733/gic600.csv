@@ -1,0 +1,218 @@
+## corelink_gic600_generic_interrupt_controller_technical_reference_manual_100336_0106_00_en.pdf
+
+## 4.4.1 Redistributor Implementation Identification Register, GICR_IIDR
+## GIC_DistributorImplementer()=0201643B
+##  GIC-600 0x1 = r1 0x6 = p4. 0x43B = Arm.
+
+## 4.2 Distributor registers (GICD/GICDA) summary
+
+#type; GICD; GIC Distributor
+
+#regdef;	GICD_CTLR;			0x0000;		Distributor Control Register
+#regdefr;	GICD_TYPER;			0x0004;		Distributor Controller Type Register
+#regdefr;	GICD_IIDR;			0x0008;		Distributor Implementer Identification Register
+#regdef;	GICD_FCTLR;			0x0020;		Function Control Register
+#regdef;	GICD_SAC;			0x0024;		Secure Access Control Register
+#regdefw;	GICD_SETSPI_NSR;	0x0040;		Non-secure SPI Set Register
+#regdefw;	GICD_CLRSPI_NSR;	0x0048;		Non-secure SPI Clear Register
+#regdefw;	GICD_SETSPI_SR;		0x0050;		Secure SPI Set Register
+#regdefw;	GICD_CLRSPI_SR;		0x0058;		Non-secure SPI Set Register
+
+#regdef;	GICD_IGROUPR;		0x0080 32;	Interrupt Group Registers
+#regdef;	GICD_ISENABLER;		0x0100 32;	Interrupt Set-Enable Registers
+#regdef;	GICD_ICENABLER;		0x0180 32;	Interrupt Clear-Enable Registers
+#regdef;	GICD_ISPENDR;		0x0200 32;	Interrupt Set-Pending Registers
+#regdef;	GICD_ICPENDR;		0x0280 32;	Interrupt Clear-Pending Registers
+#regdef;	GICD_ISACTIVER;		0x0300 32;	Interrupt Set-Active Registers
+#regdef;	GICD_ICACTIVER;		0x0380 32;	Interrupt Clear-Active Registers
+
+#regdef;	GICD_IPRIORITYR;	0x0400 256;	Interrupt Priority Registers
+#regdef;	GICD_ITARGETSR;		0x0800 256;	Interrupt Processor Targets Registersi
+#regdef;	GICD_ICFGR;			0x0C00 64;	Interrupt Configuration Registers
+#regdef;	GICD_IGRPMODR;		0x0D00 32;	Interrupt Group Modifier Registers
+#regdef;	GICD_NSACR;			0x0E00 64;	Non-secure Access Control Registers
+
+##regdefw; 	GICD_SGIR;			0x0F00;  	GICv4 Software Generated Interrupt Register
+##regdef; 	GICD_CPENDSGIR;		0x0F10 4;  	GICv4 SGI Clear-Pending Register
+##regdef; 	GICD_SPENDSGIR;		0x0F20 4;  	GICv4 SGI Set-Pending Registers
+
+#regdef;	GICD_IROUTER 8;		0x6100 988;	Interrupt Routing Registers.
+
+#regdef;	GICD_CHIPSR;		0xC000;		Chip Status Register
+#regdef;	GICD_DCHIPR;		0xC004;		Default Chip Register
+#regdef;	GICD_CHIPRn 8;		0xC008 4;	Chip Registers
+#regdef;	GICD_ICLARn;		0xE008 4;	The first register is GICD_ICLAR2. 4.2.9 Interrupt Class Registers, GICD_ICLARn on page 4-118
+#regdef;	GICD_IERRRn;		0xE108;		The first register is GICD_IERRR1. 4.2.10 Interrupt Error Registers, GICD_IERRRn on page 4-119
+
+#regdefr; 	GICD_CFGID 8;		0xF000;		Configuration ID Register
+
+#regdefr; 	GICD_PIDR4;			0xFFD0;		Peripheral ID 4 Register
+#regdefr; 	GICD_PIDR5;			0xFFD4;		Peripheral ID 5 Register
+#regdefr; 	GICD_PIDR6;			0xFFD8;		Peripheral ID 6 Register
+#regdefr; 	GICD_PIDR7;			0xFFDC;		Peripheral ID 7 Register
+#regdefr; 	GICD_PIDR0;			0xFFE0;		Peripheral ID 0 Register
+#regdefr; 	GICD_PIDR1;			0xFFE4;		Peripheral ID 1 Register
+#regdefr; 	GICD_PIDR2;			0xFFE8;		Peripheral ID 2 Register
+#regdefr; 	GICD_PIDR3;			0xFFEC;		Peripheral ID 3 Register
+#regdefr; 	GICD_CIDR0;			0xFFF0;		Component ID 0 Register
+#regdefr; 	GICD_CIDR1;			0xFFF4;		Component ID 1 Register
+#regdefr; 	GICD_CIDR2;			0xFFF8;		Component ID 2 Register
+#regdefr; 	GICD_CIDR3;			0xFFFC;		Component ID 3 Register
+
+#typeend;
+
+## Table 4-35 ITS control register summary
+
+#type; GICT; GIC ITS translation
+
+#regdef;	GICT_CTLR;			0x0000;		Distributor Control Register
+#regdef;	GICT_TYPER;			0x0004;		Distributor Controller Type Register
+#regdef;	GICT_IIDR;			0x0008;		Distributor Implementer Identification Register
+#regdef;	GICT_FCTLR;			0x0020;		Function Control Register
+
+#regdef; 	GICT_OPR 8; 		0x0028; 	Operations Register
+#regdef; 	GICT_OPSR 8; 		0x0030; 	Operation Status Register
+#regdef; 	GICT_GICT_CBASER 8; 0x0080; 	Command Queue Control Register
+#regdef; 	GICT_CWRITER 8; 	0x0088; 	Command Queue Write Pointer Register
+#regdef; 	GICT_CREADR 8; 		0x0090; 	Command Queue Read Pointer Register
+#regdef; 	GICT_BASER0 8; 		0x0100; 	ITS Translation Table Descriptor Register0
+#regdef; 	GICT_BASER1 8; 		0x0108; 	ITS Translation Table Descriptor Register0
+
+#regdefr; 	GICT_CFGID 8;		0xF000;		Configuration ID Register
+
+#regdefr; 	GICT_PIDR4;			0xFFD0;		Peripheral ID 4 Register
+#regdefr; 	GICT_PIDR5;			0xFFD4;		Peripheral ID 5 Register
+#regdefr; 	GICT_PIDR6;			0xFFD8;		Peripheral ID 6 Register
+#regdefr; 	GICT_PIDR7;			0xFFDC;		Peripheral ID 7 Register
+#regdefr; 	GICT_PIDR0;			0xFFE0;		Peripheral ID 0 Register
+#regdefr; 	GICT_PIDR1;			0xFFE4;		Peripheral ID 1 Register
+#regdefr; 	GICT_PIDR2;			0xFFE8;		Peripheral ID 2 Register
+#regdefr; 	GICT_PIDR3;			0xFFEC;		Peripheral ID 3 Register
+#regdefr; 	GICT_CIDR0;			0xFFF0;		Component ID 0 Register
+#regdefr; 	GICT_CIDR1;			0xFFF4;		Component ID 1 Register
+#regdefr; 	GICT_CIDR2;			0xFFF8;		Component ID 2 Register
+#regdefr; 	GICT_CIDR3;			0xFFFC;		Component ID 3 Register
+
+#typeend;
+
+## 4.6 ITS control register summary
+
+#type; GITS; GIC Secure Access Control
+
+#regdefr; 	GITS_CFGID 8;		0xF000;		Configuration ID Register
+
+#regdefr; 	GITS_PIDR4;			0xFFD0;		Peripheral ID 4 Register
+#regdefr; 	GITS_PIDR5;			0xFFD4;		Peripheral ID 5 Register
+#regdefr; 	GITS_PIDR6;			0xFFD8;		Peripheral ID 6 Register
+#regdefr; 	GITS_PIDR7;			0xFFDC;		Peripheral ID 7 Register
+#regdefr; 	GITS_PIDR0;			0xFFE0;		Peripheral ID 0 Register
+#regdefr; 	GITS_PIDR1;			0xFFE4;		Peripheral ID 1 Register
+#regdefr; 	GITS_PIDR2;			0xFFE8;		Peripheral ID 2 Register
+#regdefr; 	GITS_PIDR3;			0xFFEC;		Peripheral ID 3 Register
+#regdefr; 	GITS_CIDR0;			0xFFF0;		Component ID 0 Register
+#regdefr; 	GITS_CIDR1;			0xFFF4;		Component ID 1 Register
+#regdefr; 	GITS_CIDR2;			0xFFF8;		Component ID 2 Register
+#regdefr; 	GITS_CIDR3;			0xFFFC;		Component ID 3 Register
+
+#typeend;
+
+## 4.7 ITS translation register summary
+
+#type; GITS_TRANSLATION
+
+#regdefw; 	GITS_TRANSLATER;			0x0040;		ITS Translation Register
+#regdef; pad 0; 0x10000; alignment
+
+#typeend;
+
+#type; GICP; GIC Performance Monitoring Unit
+
+#regdef; 	GICP_EVCNTRn;		0x0000 5; 	Event Counter Registers
+#regdef; 	GICP_EVTYPERn;		0x0400 5; 	Event Type Configuration Registers
+#regdefr; 	GICP_SVRn;			0x0600 5; 	Shadow Value Registers
+#regdef; 	GICP_FRn;			0x0A00 5; 	Filter Registers
+
+#regdef; 	GICP_CNTENSET0 8;	0x0C00; 	Counter Enable Set Register 0
+#regdef; 	GICP_CNTENCLR0 8;	0x0C20;		Counter Enable Clear Register 0
+#regdef; 	GICP_INTENSET0 8;	0x0C40;		Interrupt Contribution Enable Set Register 0
+#regdef; 	GICP_INTENCLR0 8;	0x0C60;		Interrupt Contribution Enable Clear Register 0
+#regdef; 	GICP_OVSCLR0 8;		0x0C80;		Overflow Status Clear Register 0
+#regdef; 	GICP_OVSSET0 8;		0x0CC0;		Overflow Status Set Register 0
+
+#regdefw; 	GICP_CAPR;			0x0D88;		Counter Shadow Value Capture Register
+#regdefr; 	GICP_CFGR;			0x0E00;		Configuration Information Register
+#regdef; 	GICP_CR;			0x0E04;		Control Register
+#regdef; 	GICP_IRQCR;			0x0E50;		Interrupt Configuration Register
+
+#regdefr; 	GICP_PIDR4;			0xFFD0;		Peripheral ID 4 Register
+#regdefr; 	GICP_PIDR5;			0xFFD4;		Peripheral ID 5 Register
+#regdefr; 	GICP_PIDR6;			0xFFD8;		Peripheral ID 6 Register
+#regdefr; 	GICP_PIDR7;			0xFFDC;		Peripheral ID 7 Register
+#regdefr; 	GICP_PIDR0;			0xFFE0;		Peripheral ID 0 Register
+#regdefr; 	GICP_PIDR1;			0xFFE4;		Peripheral ID 1 Register
+#regdefr; 	GICP_PIDR2;			0xFFE8;		Peripheral ID 2 Register
+#regdefr; 	GICP_PIDR3;			0xFFEC;		Peripheral ID 3 Register
+#regdefr; 	GICP_CIDR0;			0xFFF0;		Component ID 0 Register
+#regdefr; 	GICP_CIDR1;			0xFFF4;		Component ID 1 Register
+#regdefr; 	GICP_CIDR2;			0xFFF8;		Component ID 2 Register
+#regdefr; 	GICP_CIDR3;			0xFFFC;		Component ID 3 Register
+
+#typeend;
+
+## corelink_gic600_generic_interrupt_controller_technical_reference.pdf
+## 4.4 Redistributor registers for control and physical LPIs summary
+
+#type; GICR; GIC Redistributor 
+
+#regdef;  	GICR_CTLR;  		0x0000; 	Redistributor Control Register
+#regdefr; 	GICR_IIDR; 			0x0004; 
+#regdef;  	GICR_TYPER; 		0x0008; 
+#regdef;  	GICR_WAKER; 		0x0014; 
+#regdef;  	GICR_FCTLR; 		0x0020; 
+#regdef;  	GICR_PWRR; 			0x0024; 
+#regdef;  	GICR_CLASS; 		0x0028; 
+#regdef;  	GICR_SETLPIR 8; 	0x0040; 
+#regdef;  	GICR_CLRLPIR 8; 	0x0048; 
+#regdef;  	GICR_PROPBASER 8; 	0x0070; 	Redistributor Properties Base Address Register
+#regdef;  	GICR_PENDBASER 8; 	0x0078; 	Redistributor LPI Pending Table Base Address Register
+#regdef;  	GICR_INVLPIR 8; 	0x00A0; 
+#regdef;  	GICR_INVALLR 8; 	0x00A8; 
+#regdef;  	GICR_SYNCR; 		0x00C0; 
+
+#regdefr; 	GICR_PIDR4;			0xFFD0;		Peripheral ID 4 Register
+#regdefr; 	GICR_PIDR5;			0xFFD4;		Peripheral ID 5 Register
+#regdefr; 	GICR_PIDR6;			0xFFD8;		Peripheral ID 6 Register
+#regdefr; 	GICR_PIDR7;			0xFFDC;		Peripheral ID 7 Register
+#regdefr; 	GICR_PIDR0;			0xFFE0;		Peripheral ID 0 Register
+#regdefr; 	GICR_PIDR1;			0xFFE4;		Peripheral ID 1 Register
+#regdefr; 	GICR_PIDR2;			0xFFE8;		Peripheral ID 2 Register
+#regdefr; 	GICR_PIDR3;			0xFFEC;		Peripheral ID 3 Register
+#regdefr; 	GICR_CIDR0;			0xFFF0;		Component ID 0 Register
+#regdefr; 	GICR_CIDR1;			0xFFF4;		Component ID 1 Register
+#regdefr; 	GICR_CIDR2;			0xFFF8;		Component ID 2 Register
+#regdefr; 	GICR_CIDR3;			0xFFFC;		Component ID 3 Register
+
+#typeend;
+
+## corelink_gic600_generic_interrupt_controller_technical_reference.pdf
+## 4.4 Redistributor registers for control and physical LPIs summary
+
+#type; GICA; Distributor registers (GICA) for message-based SPIs
+
+#regdefw; GICA_SETSPI_NSR; 	0x0040; 	Aliased Non-secure SPI Set Register
+#regdefw; GICA_CLRSPI_NSR; 	0x0048; 	Aliased Non-secure SPI Clear Register
+#regdefw; GICA_SETSPI_SR; 	0x0050; 	Aliased Secure SPI Set Register
+#regdefw; GICA_CLRSPI_SR; 	0x0058; 	Aliased Secure SPI Clear Register
+#regdef; pad 0; 0x10000; alignment
+
+#typeend;
+
+## corelink_gic600_generic_interrupt_controller_technical_reference.pdf
+## 4.5 Redistributor registers for SGIs and PPIs summary
+
+#type; GICR_PPI_LPI; GIC Redistributor 
+
+#regdef;	GICR_PPI_LPI_IPRIORITYR;	0x0400 8;	Interrupt Priority Registers
+#regdef; pad 0; 0x10000; alignment
+
+#typeend;

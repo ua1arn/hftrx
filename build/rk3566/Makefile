@@ -22,6 +22,7 @@ TRGT2 = arm-none-eabi
 TRGT = $(TRGT2)-
 
 XROCK = ../../tools/xrock-windows-v1.1.2/xrock
+BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -39,7 +40,7 @@ LDSCRIPT_APP = ./rk3566_app.ld
 ARCHDIR = $(PRJROOT)/arch/rk3566
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_RK356X"=1 -D"CPUSTYLE_CA53"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_RK356X"=1
 #UDEFS += -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
@@ -61,7 +62,7 @@ CORE = -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
 #OPT = -Ofast -flto
 OPT = -Ofast
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 USBXDIR = $(PRJROOT)/src/hal
 
 # List all default C defines here, like -D_DEBUG=1
@@ -73,7 +74,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(ARCHDIR) \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source
+	$(CMSISDIR)/Include $(CMSISDIR)/Source
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -239,7 +240,7 @@ allZ:
 	@echo $(abspath $(OBJS))
 
 bootloader: BOOT2
-	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
+	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_t507_boot.map - address of SystemDRAMInit
@@ -257,15 +258,16 @@ endif
 ddrinit_h616: ddrinit_h616_lpddr3.bin
 	$(XROCK) write 0x00028000 ddrinit_h616_lpddr3.bin
 	$(XROCK) exec $(SystemDRAMInit)
+	$(BUSYBOX) sleep 2s
 
 ddrinit_t507_:
 	$(XROCK) ddr lpddr4
-	busybox sleep 1s
+	$(BUSYBOX) sleep 2s
 
 ddrinit_t507:
 	$(XROCK) write 0x00028000 ddrinit_t507_lpddr4.bin
 	$(XROCK) exec $(SystemDRAMInit)
-
+	$(BUSYBOX) sleep 2s
 
 _app_run:
 	$(XROCK) maskrom rk3566_ddr_1056MHz_v1.16.bin rk356x_usbplug_v1.17.bin --rc4-off

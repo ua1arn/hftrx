@@ -23,25 +23,6 @@ display_clear(const gxdrawb_t * db)
 {
 }
 
-uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
-{
-	* yp = 0;
-	return 0;
-}
-
-
-uint_fast16_t
-display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
-{
-	return x + 1;
-}
-
-uint_fast16_t
-display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
-{
-	return x + 1;
-}
-
 
 /* аппаратный сброс дисплея - перед инициализаций */
 /* вызывается при разрешённых прерываниях. */

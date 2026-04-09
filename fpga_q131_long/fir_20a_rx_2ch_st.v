@@ -112,7 +112,7 @@ wire [48:0] mlu_resx_0_n;
 mlu_nd Umlu_0_n (.clk(clk), .data_in(tdl_dat_0_n), .coef_in(coef_st_0_n), .clk_en(clk_en), .mlu_out(mlu_resx_0_n) );
 defparam Umlu_0_n.DATA_WIDTH = 28;
 defparam Umlu_0_n.COEF_WIDTH = COEF_WIDTH;
-defparam Umlu_0_n.PIPE = 4;
+defparam Umlu_0_n.PIPE = 5;
 defparam Umlu_0_n.DSP_USE = "YES";
 wire [48:0] mlu_res_0_n;
 mac_tl Umtl_0_n             (.clk(clk), 
@@ -124,7 +124,7 @@ wire [48:0] mlu_resx_1_n;
 mlu_nd Umlu_1_n (.clk(clk), .data_in(tdl_dat_1_n), .coef_in(coef_st_1_n), .clk_en(clk_en), .mlu_out(mlu_resx_1_n) );
 defparam Umlu_1_n.DATA_WIDTH = 28;
 defparam Umlu_1_n.COEF_WIDTH = COEF_WIDTH;
-defparam Umlu_1_n.PIPE = 4;
+defparam Umlu_1_n.PIPE = 5;
 defparam Umlu_1_n.DSP_USE = "YES";
 wire [48:0] mlu_res_1_n;
 mac_tl Umtl_1_n             (.clk(clk), 
@@ -163,7 +163,7 @@ mcv_ctrl_deci ctrl
 defparam ctrl.REG_LEN   = 24;
 defparam ctrl.DECI_FACT   = 20;
 defparam ctrl.DECI_WIDTH   = 5;
-defparam ctrl.PIPE_DLY  = 969;
+defparam ctrl.PIPE_DLY  = 970;
 defparam ctrl.PIPE_WIDTH  = 10;
 defparam ctrl.IS_ODD  = 0;
 defparam ctrl.IS_SYM  = 0;

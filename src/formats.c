@@ -7,7 +7,6 @@
 
 #include "hardware.h"
 #include "formats.h"
-#include "gui/framework/gui.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -20,19 +19,15 @@
 
 #if ! FORMATFROMLIBRARY
 
-//#if CPUSTYLE_ATMEGA
-//#define FETCH(c, fmt) ((c) = pgm_read_byte((fmt) ++))
-//#else
 #define FETCH(c, fmt) ((c) = * (fmt) ++)
 #define LOOK(fmt) (* (fmt))
-//#endif
+typedef long long signed int 	FMT_SLONGLONG;
+typedef long long unsigned int 	FMT_ULONGLONG;
 
 static	char *
-uconvert(long unsigned n, uint_fast8_t base, char * s, const FLASHMEM char * dg)
+uconvert(FMT_ULONGLONG n, uint_fast8_t base, char * s, const char * dg)
 {	do
 	{
-		//const ldiv_t v = ldiv(n, base);	// AVR GCC: нельзя применять ldiv - при переполнении (числа вроде -1L) неправильно считает
-
 		* -- s = dg[(int) (n % base)];
 		n = n / base;
 	} while (n != 0);
@@ -66,26 +61,21 @@ static uint_fast8_t local_isdigit(char c)
 static int
 local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pfmt, va_list args)
 {
-	enum { TMP_S_SIZE = 14 };
+	enum { TMP_S_SIZE = 64 };
 	int	rj, altern;
 	char c, signc, fillc;
 	int maxwidth, width, i;
 	union
 	{
-#ifdef	__NOLONG__
-		int	lval;
-#else
-		signed long 	lval;
-		//unsigned long 	ulval;
-#endif
+		FMT_SLONGLONG lval;
 		void * pval;
 		/* double dval;	*/
 	} u;
 	char	 	* cp;
 	char		s [TMP_S_SIZE + 1];
 	int		len;
-	static const FLASHMEM char	lcase[17] = { "0123456789abcdef" };
-	static const FLASHMEM char	ucase[17] = { "0123456789ABCDEF" };
+	static const char	lcase[17] = { "0123456789abcdef" };
+	static const char	ucase[17] = { "0123456789ABCDEF" };
 	static char null_s[] = "(null)";
 
 	u.lval = 0;	/* Supress GCC warning. */
@@ -132,8 +122,10 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 				rj = 0, width = - width; /* fillc ? */
 		}
 		else
+		{
 			for (width = 0; local_isdigit((unsigned char) c); FETCH(c, pfmt))
 				width = width * 10 + c - '0';
+		}
 		/*************************************/
 
 		/*	Has prec.	*/
@@ -162,7 +154,17 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 			else
 			{
 				FETCH(c, pfmt);
-				u.lval = va_arg(args, long);
+				switch (c)
+				{
+				case 'x':
+				case 'X':
+				case 'u':
+					u.lval = va_arg(args, unsigned long);
+					break;
+				default:
+					u.lval = va_arg(args, signed long);
+					break;
+				}
 			}
 			break;
 		case 'h':
@@ -205,7 +207,7 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 		case 'd':
 		case 'i':
 			if (u.lval < 0)
-			{	cp = uconvert((unsigned long) (- u.lval), 10, s + TMP_S_SIZE, lcase);
+			{	cp = uconvert(- u.lval, 10, s + TMP_S_SIZE, lcase);
 				* -- cp = '-';
 				break;
 			}
@@ -357,14 +359,6 @@ int local_vsnprintf_P( char * __restrict buffer, size_t count, const FLASHMEM ch
 	return n == -1 ? count - 1 : n;	// изменено от стандартного поведения = всегда длинну возвращаем.
 }
 
-char *
-safestrcpy(char * dst, size_t blen, const char * src)
-{
-	ASSERT(dst != NULL);
-	ASSERT(src != NULL);
-	return strncpy(dst, src, blen);
-}
-
 #if WITHDEBUG
 
 
@@ -455,6 +449,26 @@ printhex(uintptr_t voffs, const void * vbuff, unsigned length)
 }
 
 void
+printhex16(uintptr_t voffs, const void * vbuff, unsigned length)
+{
+	const volatile uint16_t * buff = (const volatile uint16_t *) vbuff;
+	enum { ROWSIZE = 16 };	/* elements in one row */
+	unsigned i, j;
+	unsigned rows = ((length + 3) / 4 + ROWSIZE - 1) / ROWSIZE;
+
+	for (i = 0; i < rows; ++ i)
+	{
+		const int remaining = (length + 1) / 2 - i * ROWSIZE;
+		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
+		debug_printf_P(PSTR("%08" PRIX32 ":"), (uint32_t) (voffs + i * ROWSIZE * 2));
+		for (j = 0; j < trl; ++ j)
+			debug_printf_P(PSTR(" %04" PRIX16), buff [i * ROWSIZE + j]);
+
+		debug_printf_P(PSTR("\n"));
+	}
+}
+
+void
 printhex32(uintptr_t voffs, const void * vbuff, unsigned length)
 {
 	const volatile uint32_t * buff = (const volatile uint32_t *) vbuff;
@@ -497,6 +511,123 @@ printhex64(uintptr_t voffs, const void * vbuff, unsigned length)
 	}
 }
 
+static void
+print2hex(unsigned v)
+{
+    PRINTF("%02X", v & 0xFF);
+}
+
+static void
+hexdata(unsigned long address, unsigned char type, const unsigned char * data, unsigned length)
+{
+    unsigned cks = 0;
+    unsigned i;
+    cks += (length >> 0) & 0xFF;
+    cks += (address >> 8) & 0xFF;
+    cks += (address >> 0) & 0xFF;
+    cks += (type >> 0) & 0xFF;
+    for (i = 0; i < length; ++ i)
+    {
+        cks += data [i];
+    }
+    PRINTF(":");
+    print2hex(length);
+    print2hex(address >> 8);
+    print2hex(address >> 0);
+    print2hex(type);
+    for (i = 0; i < length; ++ i)
+    {
+        print2hex(data [i]);
+    }
+    print2hex(0 - cks);
+    PRINTF("\n");
+}
+
+static unsigned long getsplit(unsigned long address)
+{
+    return address >> 16;
+}
+
+// :020000042000DA
+// :020000042001D9
+// :020000042003D7
+// :02 0000 04 2003 D7
+static void printsegment(unsigned long address)
+{
+    unsigned char buff [2];
+
+    buff [0] = (unsigned char) (address >> 24);
+    buff [1] = (unsigned char) (address >> 16);
+    hexdata(0, 0x04, buff, 2);
+}
+
+static void startlinearaddress(unsigned long address)
+{
+    unsigned char buff [4];
+
+    buff [0] = (unsigned char) (address >> 24);
+    buff [1] = (unsigned char) (address >> 16);
+    buff [2] = (unsigned char) (address >> 8);
+    buff [3] = (unsigned char) (address >> 0);
+    hexdata(0, 0x05, buff, 4);
+}
+
+void mem2hex(uintptr_t address, unsigned size)
+{
+	const uint8_t * gbuff = (const uint8_t *) address;
+	unsigned runaddress = 0;
+    enum { ROWSIZE = 32 };
+    unsigned long pageoffset = 0;
+    int c;
+    unsigned length;
+    unsigned score;
+    unsigned char buff [ROWSIZE];
+    score = 0;
+    length = 0;
+    for (score = 0; score < size; ++ score)
+    {
+        c = gbuff [score];
+
+       	buff [length] = (unsigned char) c;
+        if (++ length >= ROWSIZE)
+        {
+            if (getsplit(pageoffset) != getsplit(address))
+            {
+                printsegment(address);
+                pageoffset = address;
+            }
+            hexdata(address, 0x00, buff, length);
+            address += length;
+            length = 0;
+        }
+    }
+    if (length != 0)
+    {
+        if (getsplit(pageoffset) != getsplit(address))
+        {
+            printsegment(address);
+            pageoffset = address;
+        }
+        hexdata(address, 0x00, buff, length);
+        address += length;
+        length = 0;
+    }
+    // Finalize
+    if (1)
+    {
+        hexdata(runaddress, 0x01, NULL, 0);
+
+    }
+    else
+    {
+        if (runaddress < 0x10000uL && pageoffset == 0)
+            hexdata(runaddress, 0x01, NULL, 0);
+        else
+            startlinearaddress(runaddress);
+    }
+
+}
+
 #else /* WITHDEBUG */
 
 void debug_printf_P(const FLASHMEM char *__restrict format, ... )
@@ -514,41 +645,17 @@ printhex32(uintptr_t voffs, const void * buff, unsigned length)
 {
 }
 
-#endif /* WITHDEBUG */
-
-void strtrim(char * s)
+void
+printhex64(uintptr_t voffs, const void * buff, unsigned length)
 {
-	// удаляем пробелы и табы с начала строки:
-	int i = 0;
-	// Пoиск первого не-пробела
-	while ((s [i] == ' ') || (s [i] == '\t'))
-	{
-		i ++;
-	}
-	if (i > 0)
-	{
-		size_t slen = strlen(s);
-		// todo: memmove use
-		int j;
-		for (j = 0; j < slen; j ++)
-		{
-			s [j] = s [j + i];
-		}
-		s [j] = '\0';
-	}
-
-	// удаляем пробелы и табы с конца строки:
-	// todo: check empy sring case (strlen(s) == 0)
-	i = strlen(s) - 1;
-	while ((s [i] == ' ') || (s [i] == '\t'))
-	{
-		i --;
-	}
-	if (i < (strlen(s) - 1))
-	{
-		s [i + 1] = '\0';
-	}
 }
+
+void
+mem2hex(uintptr_t address, unsigned size)
+{
+
+}
+#endif /* WITHDEBUG */
 
 #if WITHDEBUG
 
@@ -557,31 +664,23 @@ int dbg_getchar(char * r)
 	return HARDWARE_DEBUG_GETCHAR(r);
 }
 
+static LCLSPINLOCK_t printloack = LCLSPINLOCK_INIT;
+
+int dbg_writechar(int c)
+{
+	LCLSPIN_LOCK(& printloack);
+	while (HARDWARE_DEBUG_PUTCHAR(c) == 0)
+		;
+	LCLSPIN_UNLOCK(& printloack);
+	return c;
+}
+
 int dbg_putchar(int c)
 {
 	if (c == '\n')
 		dbg_putchar('\r');
 
-	while (HARDWARE_DEBUG_PUTCHAR(c) == 0)
-		;
-	return c;
-}
-
-int dbg_writechar(int c)
-{
-	while (HARDWARE_DEBUG_PUTCHAR(c) == 0)
-		;
-	return c;
-}
-
-int dbg_puts_impl_P(const FLASHMEM char * s)
-{
-	char c;
-	while ((c = * s ++) != '\0')
-	{
-		dbg_putchar(c);
-	}
-	return 0;
+	return dbg_writechar(c);
 }
 
 int dbg_puts_impl(const char * s)
@@ -620,11 +719,6 @@ int dbg_writechar(int c)
 	return c;
 }
 
-int dbg_puts_impl_P(const FLASHMEM char * s)
-{
-	(void) s;
-	return 0;
-}
 int dbg_puts_impl(const char * s)
 {
 	(void) s;

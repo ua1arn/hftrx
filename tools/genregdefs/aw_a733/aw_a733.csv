@@ -1,0 +1,539 @@
+# Allwinner A733 peripherials #base
+
+#type; GPIO; Port Controller
+
+#base; GPIOB 0x02000100
+#base; GPIOC 0x02000180
+#base; GPIOD 0x02000200
+#base; GPIOE 0x02000280
+#base; GPIOF 0x02000300
+#base; GPIOG 0x02000380
+#base; GPIOH 0x02000400
+##base; GPIOI 0x02000480
+#base; GPIOJ 0x02000500
+#base; GPIOK 0x02000580
+
+#typeend;
+
+#type; GPIOINT
+#base; GPIOINTB 0x02000140
+#base; GPIOINTC 0x020001C0
+#base; GPIOINTD 0x020002$0
+#base; GPIOINTE 0x020002C0
+#base; GPIOINTF 0x02000340
+#base; GPIOINTG 0x020003C0
+#base; GPIOINTH 0x02000440
+##base; GPIOINTI 0x020004C0
+#base; GPIOINTJ 0x02000540
+#base; GPIOINTK 0x020005C0
+#irq; GPIOB 	101; GPIOB_NS
+#irq; GPIOB_S 	102 
+#irq; GPIOC 	103; GPIOC_NS
+#irq; GPIOC_S 	104 
+#irq; GPIOD 	105; GPIOD_NS
+#irq; GPIOD_S 	106 
+#irq; GPIOE 	107; GPIOE_NS
+#irq; GPIOE_S 	108 
+#irq; GPIOF 	109; GPIOF_NS
+#irq; GPIOF_S 	110 
+#irq; GPIOG 	111; GPIOG_NS
+#irq; GPIOG_S 	112 
+#irq; GPIOH 	113; GPIOH_NS
+#irq; GPIOH_S 	114 
+##irq; GPIOI 	115; GPIOI_NS
+##irq; GPIOI_S 	116 
+#irq; GPIOJ 	117; GPIOJ_NS
+#irq; GPIOJ_S 	118 
+#irq; GPIOK 	119; GPIOK_NS
+#irq; GPIOK_S 	120 
+
+#irq; S_GPIOL_S 229
+#irq; S_GPIOL 	230; S_GPIOL_NS
+#irq; S_GPIOM_S 231
+#irq; S_GPIOM 	232; S_GPIOM_NS
+#typeend;
+
+#type; GPIOBLOCK
+#base; GPIOBLOCK 0x02000080; Virtual base for port A
+#typeend;
+
+#type; S_GPIO; Secure Port Controller
+#base; S_GPIOL 0x07025000
+#base; S_GPIOM 0x07025030
+#typeend;
+
+#type; TWI; Two Wire Interface (TWI)
+#base; TWI0 0x02510000
+#base; TWI1 0x02511000
+#base; TWI2 0x02512000
+#base; TWI3 0x02513000
+#base; TWI4 0x02514000
+#base; TWI5 0x02515000
+#base; TWI6 0x02516000
+#base; TWI7 0x02517000
+#base; TWI8 0x02518000
+#base; TWI9 0x02519000
+#base; TWI10 0x0251A000
+#base; TWI11 0x0251B000
+#base; TWI12 0x0251C000
+
+#base; S_TWI0 0x07083000
+#base; S_TWI1 0x07084000
+#base; S_TWI2 0x07085000
+
+#irq; TWI0 43
+#irq; TWI1 44
+#irq; TWI2 45
+#irq; TWI3 46
+#irq; TWI4 47
+#irq; TWI5 48
+#irq; TWI6 49
+#irq; TWI7 50
+#irq; TWI8 51
+#irq; TWI9 52
+#irq; TWI10 53
+#irq; TWI11 54
+#irq; TWI12 55
+
+#irq; S_TWI0 235
+#irq; S_TWI1 236
+#irq; S_TWI2 237
+#typeend;
+
+#type; SPI; Serial Peripheral Interface
+#base; SPI0 0x02540000
+#base; SPI1 0x02541000
+#base; SPI2 0x02542000
+#base; SPI3 0x02543000
+#base; S_SPI 0x07092000
+
+#irq; SPI0 56
+#irq; SPI1 57
+#irq; SPI2 58
+#irq; SPI3 59
+#irq; S_SPI 242
+#typeend;
+
+#type; TIMER0
+
+#base; Timer0_CPUX 0x03009000 
+#base; Timer0_CPUS 0x07091000
+
+#irq; TIMER0 121
+#irq; TIMER1 122
+#irq; TIMER2 123
+#irq; TIMER3 124
+#irq; TIMER4 125
+#irq; TIMER5 126
+#irq; TIMER6 127
+#irq; TIMER7 128
+#irq; TIMER8 129
+#irq; TIMER9 130
+#typeend;
+
+#type; TIMER1
+
+#base; Timer1_CPUX 0x02052000 
+
+#irq; TIMER1_0 131
+#irq; TIMER1_1 132
+#irq; TIMER1_2 133
+#irq; TIMER1_3 134
+#typeend;
+
+#type; UART
+#base; UART0 0x02500000 
+#base; UART1 0x02501000 
+#base; UART2 0x02502000 
+#base; UART3 0x02503000 
+#base; UART4 0x02504000 
+#base; UART5 0x02505000 
+#base; UART6 0x02506000 
+#base; S_UART0 0x07080000 
+#base; S_UART1 0x07081000 
+#irq; UART0 34
+#irq; UART1 35
+#irq; UART2 36
+#irq; UART3 37
+#irq; UART4 38
+#irq; UART5 39
+#irq; UART6 40
+#irq; S_UART0 233
+#irq; S_UART1 234
+#typeend;
+
+
+#type; GIC
+#base; GIC  0x03400000
+#typeend;
+
+## https://github.com/Rabs9/radxa-cubie-a7a-maximum-overclock/blob/175a3bc09d0434d883ff5696fd09844a07ecedf6/dts/source/radxa-cubie-a7a.dts#L405
+
+#type; GIC_DISTRIBUTOR; GICD
+#base; GIC_DISTRIBUTOR  0x03400000; GICD
+
+#typeend;
+
+#type; GIC_REDISTRIBUTOR; GICD GIC Distributor
+#base; GIC_REDISTRIBUTOR  0x03460000; GIC Redistributor 
+#typeend;
+
+## GIC_INTERFACE_BASE not need - access via cp15
+
+##type; GIC_INTERFACE; GICC GIC CPU Interface
+##base; GIC_INTERFACE 0x03460000; GICC GIC CPU Interface
+##typeend;
+
+#type; GICD; GIC Distributor
+#base; GICD 0x03400000; GIC Distributor 
+#typeend;
+
+#type; GICT; GIC ITS translation
+#base; GICT 0x03420000; GIC ITS translation
+#typeend;
+
+#type; GICP; GIC Performance Monitoring Unit
+#base; GICP 0x03430000; GIC Performance Monitoring Unit
+#typeend;
+
+#type; GITS; GIC Secure Access Control
+#base; GITS 0x03440000; GIC Secure Access Control
+#typeend;
+
+#type; GICR; GIC Redistributor 
+#base; GICR0 0x03460000; GIC Redistributor 
+##base; GICR1 0x03480000; GIC Redistributor 
+##base; GICR2 0x034A0000; GIC Redistributor 
+##base; GICR3 0x034C0000; GIC Redistributor 
+##base; GICR4 0x034E0000; GIC Redistributor 
+##base; GICR5 0x03500000; GIC Redistributor 
+##base; GICR6 0x03520000; GIC Redistributor 
+##base; GICR7 0x03540000; GIC Redistributor 
+#typeend;
+
+
+#type; GIC_INTERFACE; GICC GIC CPU Interface
+#irq; SGI0 0
+#irq; SGI1 1
+#irq; SGI2 2
+#irq; SGI3 3
+#irq; SGI4 4
+#irq; SGI5 5
+#irq; SGI6 6
+#irq; SGI7 7
+#irq; SGI8 8
+#irq; SGI9 9
+#irq; SGI10 10
+#irq; SGI11 11
+#irq; SGI12 12
+#irq; SGI13 13
+#irq; SGI14 14
+#irq; SGI15 15
+
+#irq; PPI_22 22; nCOMMIRQ[7:0] Interrupt-driven debug communications operation
+#irq; PMU 23; nPMUIRQ[7:0] PMU interrupt request
+#irq; CTI 24; CTIIRQ[7:0] CTI interrupt
+#irq; VirtualMaintenanceInterrupt 25; nVCPUMNTIRQ[7:0] Virtual CPU interface maintenance interrupt
+#irq; HypervisorTimer 26; nCNTHPIRQ[7:0] Hypervisor physical timer event
+#irq; VirtualTimer 27; nCNTVIRQ[7:0] Virtual timer event
+#irq; HypervisorVirtualTimer 28; nCNTHVIRQ[7:0] Hypervisor virtual timer event
+#irq; SecurePhysicalTimer 29; nCNTPSIRQ[7:0] Secure physical timer event
+#irq; NonSecurePhysicalTimer 30; nCNTPNSIRQ[7:0] Nonsecure physical timer event
+
+#typeend;
+
+#type; SID; Security ID
+#base; SID 0x03006000
+#typeend;
+
+#type; RTC; Real Time Clock (RTC)
+
+#base; RTC 0x07090000
+#irq; RTC_ALARM 228
+
+#typeend;
+
+## USB 2.0 blocks
+
+#type; USBOTG; USB OTG Dual-Role Device controller
+#base; USB0_DEVICE 0x04100000
+#irq; USB0_DEVICE 188
+#typeend;
+
+#type; USB_EHCI_Capability
+#base; USB0_EHCI 0x04101000
+#base; USB1_EHCI 0x04201000
+#irq; USB0_EHCI 189
+#irq; USB1_EHCI 191
+#typeend;
+
+#type; USB_OHCI_Capability
+#base; USB0_OHCI 0x04101400
+#base; USB1_OHCI 0x04201400
+#irq; USB0_OHCI 190
+#irq; USB1_OHCI 192
+#typeend;
+
+## USB 3 blocks
+
+#type; USB3P1_DRD
+#base; USB3P1_DRD 0x06A00000
+
+#irq; USB2 187; 
+#typeend;
+
+#type; DMAC
+#base; DMAC 0x04601000
+#base; DMA0 0x04601000
+#base; DMA1 0x04024000
+
+#irq; DMA0_CPUX_NS 143
+#irq; DMA0_CPUX_S 144
+#irq; DMA1_CPUX_NS 145
+#irq; DMA1_CPUX_S 146
+
+#typeend;
+
+#type; CPUS_INTERRUPT_CTRL;
+#base; CPUS_INTERRUPT_CTRL 0x02055000
+#typeend;
+
+#type; RV_INTERRUPT_CTRL;
+#base; RV_INTERRUPT_CTRL 0x02056000
+#typeend;
+
+#type; I2S_PCM
+
+#base; I2S0 0x02033000
+#base; I2S1 0x02033000
+#base; I2S2 0x02034000
+#base; I2S3 0x02034000
+#base; I2S4 0x02034000
+
+#irq; I2S_PCM0 74
+#irq; I2S_PCM1 75
+#irq; I2S_PCM2 76
+#irq; I2S_PCM3 77
+#irq; I2S_PCM4 61
+
+#typeend;
+
+
+#type; SMHC; SD-MMC Host Controller
+#base; SMHC0 0x04020000
+#base; SMHC1 0x04021000
+#base; SMHC2 0x04022000
+#base; SMHC3 0x04023000
+
+#irq; SMHC0 193
+#irq; SMHC1 194
+#irq; SMHC2 195
+#irq; SMHC3 196
+#typeend;
+
+
+#type; DISPLAY0_TOP
+#base; DISPLAY0_TOP 0x05500000
+#typeend;
+
+#type; DISPLAY1_TOP
+#base; DISPLAY1_TOP 0x05510000
+#typeend;
+
+## TCON_LCD Controller
+#type; TCON_LCD
+#base; TCON_LCD0 0x05501000
+#base; TCON_LCD1 0x05502000 TCON_LCD1 register is the same with TCON_LCD0
+#irq; TCON0_LCD0 86
+#irq; TCON0_LCD1 87
+#typeend;
+
+## TCON_TV Controller
+#type; TCON_TV
+#base; TCON_TV0 0x05730000
+#base; TCON_TV1 0x05731000
+#irq; TCON_TV0 89
+#irq; TCON_TV1 90
+#typeend;
+
+## eDP
+#type; eDP_CTRL
+#base; eDP_CTRL 0x05740000
+#typeend;
+
+#type; eDP_REG_PAD
+#base; eDP_REG_PAD 0x05760000
+#irq; EDP 94
+#typeend;
+
+
+## mipi dsi
+
+#type; MIPI_DSI
+#base; COMBO_PHY_TX_DSI0 0x05506000
+#base; COMBO_PHY_TX_DSI1 0x05508000
+
+#irq; DSI0 91
+#irq; DSI1 92
+
+#typeend;
+
+#type; HDMI_TX 
+#base; HDMI_TX0 0x05520000
+#irq; HDMI 93
+#typeend;
+
+#type; DE; Display Engine (DE)
+#base; DE 0x05000000
+#typeend;
+
+#type; DE_TOP; Display Engine (DE) TOP (APB)
+#base; DE_TOP 0x05008000
+#irq; DE 82; DE interrupt
+#typeend;
+
+#type; DE_GLB; Display Engine (DE) - Global Control
+#base; DE_MIXER0_GLB 0x05008100; RT-Mixer0
+#base; DE_MIXER1_GLB 0x05008140; RT-Mixer1
+#typeend;
+
+# DE0 dedicated for TCON_LCD0/TCON_TV0, 
+# DE1 dedicated for TCON_LCD1/TCON_TV1 tv output blocks
+# 7.1.2. Block Diagram - Allwinner_T5_Series_User_Manual-v1.3.pdf
+
+#type; DE_BLD; Display Engine (DE) - Blender
+#base; DE_MIXER0_BLD 0x05281000
+#base; DE_MIXER1_BLD 0x052A1000
+#typeend;
+
+#type; RTWB_RCQ
+#base; RTWB_RCQ 0x05008200
+#typeend;
+
+
+#type; DE_VI; Display Engine (DE) - VI surface
+
+#base; DE_VI1 0x05101000
+#base; DE_VI2 0x05121000
+#base; DE_VI3 0x05141000
+
+#typeend;
+
+#type; DE_UI; Display Engine (DE) - UI surface
+
+#base; DE_UI1   0x051C1000
+#base; DE_UI2   0x051E1000
+#base; DE_UI3   0x05201000  
+#typeend;
+
+#type; DE_VSU; Video Scaler Unit (VSU)
+
+#base; DE_VSU1 0x05104000; VI1 Scaler
+#base; DE_VSU2 0x05124000; VI2 Scaler
+#base; DE_VSU3 0x05144000; VI3 Scaler
+#typeend;
+
+#type; DE_UIS; UI Scaler(UIS) provides RGB format image resizing function
+
+#base; DE_UIS1 0x051C4000; UI1 Scaler
+#base; DE_UIS2 0x051E4000; UI2 Scaler
+#base; DE_UIS3 0x05204000; UI3 Scaler
+#typeend;
+
+# define SUN50I_MIXER_FCE_EN			0x70000: 10A0000
+#type; DE_FCE; Fresh and Contrast Enhancement (FCE)
+
+#base; DE_FCE1 0x05110000; VI1 FCE
+#base; DE_FCE2 0x05130000; VI2 FCE
+#base; DE_FCE3 0x05150000; VI3 FCE
+#base; DE_FCE4 0x051D0000; UI1 FCE
+#base; DE_FCE5 0x051F0000; UI2 FCE
+#base; DE_FCE6 0x05210000; UI3 FCE
+#typeend;
+
+# define SUN50I_MIXER_BLS_EN			0x71800
+#type; DE_BLS; Blue Level Stretch (BLS)
+
+#base; DE_BLS1 0x05111000; VI1 BLS
+#base; DE_BLS2 0x05131000; VI2 BLS
+#base; DE_BLS3 0x05151000; VI3 BLS
+#base; DE_BLS4 0x051D1000; UI1 BLS
+#base; DE_BLS5 0x051F1000; UI2 BLS
+#base; DE_BLS6 0x05211000; UI3 BLS
+#typeend;
+
+#type; DE_FCC; Fancy color curvature (FCC)
+
+#base; DE_FCC1 0x05111400; VI1 FCC
+#base; DE_FCC2 0x05131400; VI2 FCC
+#base; DE_FCC3 0x05151400; VI3 FCC
+#base; DE_FCC4 0x051D1400; UI1 FCC
+#base; DE_FCC5 0x051F1400; UI2 FCC
+#base; DE_FCC6 0x05211400; UI3 FCC
+#typeend;
+
+
+#type; G2D_TOP; Graphic 2D top
+#base; G2D 0x05440000
+#base; G2D_TOP 0x05440000
+#irq; G2D 83
+#typeend;
+
+#type; G2D_MIXER; Graphic 2D (G2D) Engine Video Mixer
+#base; G2D_MIXER 0x05440100
+#base; G2D_MIXER1 0x05440200
+#base; G2D_MIXER2 0x05440300
+#typeend;
+
+#type; G2D_BLD; Graphic 2D (G2D) Engine Blender
+#base; G2D_BLD 0x05440400
+#typeend;
+
+#type; G2D_VI; Graphic 2D VI surface
+#base; G2D_V0 0x05440800
+#typeend;
+
+#type; G2D_WB; Graphic 2D (G2D) Engine Write Back
+#base; G2D_WB 0x05443000
+#typeend;
+
+#type; G2D_UI; Graphic 2D UI surface
+#base; G2D_UI0 0x05441000
+#base; G2D_UI1 0x05441800
+#base; G2D_UI2 0x05442000
+#typeend;
+
+#type; G2D_VSU; Graphic 2D Video Scaler
+#base; G2D_VSU 0x05448000
+#typeend;
+
+#type; G2D_ROT; Graphic 2D Rotate
+#base; G2D_ROT 0x05468000
+#typeend;
+
+
+#type; R_CPUCFG; SUNXI_R_CPUCFG_BASE
+#base; R_CPUCFG 0x07050000; 
+
+#typeend;
+
+#type; PPU; PCK-600 S_PPU (PCK600).
+#base; PPU 0x07051000; 
+##base; PPU 0x07060000; 
+##base; PPU0 0x07060000; 
+##base; PPU1 0x07061000; 
+##base; PPU2 0x07062000; 
+##base; PPU3 0x07063000; 
+##base; PPU4 0x07064000; 
+##base; PPU5 0x07065000; 
+##base; PPU6 0x07066000; 
+##base; PPU7 0x07067000; 
+
+#irq; PCK600_QCHANNEL 221; STBY PCK600 Q-CHANNEL interrupt.
+#irq; PCK600_CPU 244; CPUIDLE interrupt
+
+#irqv; PCK600_QCHANNEL 17; STBY PCK600 Q-CHANNEL interrupt.
+#irqv; PCK600_CPU 40; CPUIDLE interrupt
+
+#typeend;
+

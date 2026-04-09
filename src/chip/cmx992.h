@@ -1,4 +1,9 @@
-/* $Id$ */
+//* $Id$ */
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
+
 //
 // cmx991/cmx992 chip interface
 //

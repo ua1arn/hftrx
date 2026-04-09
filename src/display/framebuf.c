@@ -19,9 +19,9 @@
 #include "spi.h"	// hardware_spi_master_send_frame
 #include "utils.h"
 #include "display2.h"
-#include "fontmaps.h"
 #include <string.h>
 
+//#define WITHRTMXRCQ (1 && (CPUSTYLE_T113 || CPUSTYLE_F133))	// Render Commands Queue use
 
 #if WITHLVGL
 
@@ -136,7 +136,7 @@ static unsigned awxx_get_srcformat(unsigned keyflag)
 	return (keyflag & BITBLT_FLAG_SRC_ABGR8888) ? 0x01 : VI_ImageFormat;
 }
 
-static unsigned awxx_g2d_get_ui_attr(unsigned srcFormat)
+static uint_fast32_t awxx_g2d_get_ui_attr(unsigned srcFormat)
 {
 	unsigned ui_attr = 0;
 	ui_attr = UINT32_C(255) << 24;
@@ -150,16 +150,17 @@ static unsigned awxx_g2d_get_ui_attr(unsigned srcFormat)
 	return ui_attr;
 }
 
-static unsigned awxx_g2d_get_vi_attr(unsigned srcFormat)
+// UI Overlay - using UI overlay layer input data format
+static uint_fast32_t awxx_g2d_get_vi_as_ui_attr(unsigned srcFormat)
 {
-	unsigned vi_attr = 0;
-	vi_attr = UINT32_C(255) << 24;
-	vi_attr |= srcFormat << 8;
-	vi_attr |= UINT32_C(1) << 15;
+	uint_fast32_t vi_attr = 0;
+	vi_attr = UINT32_C(255) << 24;	// ????? is a need?
+	vi_attr |= (srcFormat & 0x1F) * (UINT32_C(1) << 8);
+	vi_attr |= UINT32_C(1) << 15;	// UI Overlay - using UI overlay layer input data format
 	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	vi_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
 	//vi_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
-	vi_attr |= 1;
+	vi_attr |= 1;	// Layer enable
 	return vi_attr;
 }
 
@@ -223,16 +224,55 @@ static void g2d_rtmx_release(void)
 	LCLSPIN_UNLOCK(& rtmxlock);
 }
 
+// Render Commands Queue lock
+static LCLSPINLOCK_t rtmxrcqlock;
+
+static void g2d_rtmx_rcq_accure(void)
+{
+	LCLSPIN_LOCK(& rtmxrcqlock);
+}
+static void g2d_rtmx_rcq_release(void)
+{
+	LCLSPIN_UNLOCK(& rtmxrcqlock);
+}
+
 #if defined (G2D_MIXER)
 
 static void aw_g2d_initialize(void)
 {
 }
 
+enum
+{
+	xG2D_SM_TDLR_1 = 0x00,
+	xG2D_SM_DTLR_1 = 0x01,
+	xG2D_SM_TDRL_1 = 0x02,
+	xG2D_SM_DTRL_1 = 0x03,
+};
+
+#define G2D_SCANORFER 0
+
 /* Отключаем все источники */
-static void awxx_g2d_mixer_reset(void)
+static void awxx_g2d_mixer_reset(unsigned scanorder)
 {
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
+//	G2D_MIXER->G2D_MIXER_CTRL = 0x7FFFFFFF;
+//	PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
+
+	// G2D_MIXER_CTRL:
+	// bit 31: start
+	// bit 8: ?
+
+	// bit 7:4 - scan order
+	//	G2D_SM_TDLR_1  =    0x00, ??
+	//	G2D_SM_DTLR_1  = 	0x01,
+	//	G2D_SM_TDRL_1  =    0x02,
+	//	G2D_SM_DTRL_1  =    0x03,
+
+	G2D_MIXER->G2D_MIXER_CTRL =
+		!! 0x00 * (UINT32_C(1) << 8) |		// G2D_MIXER_CTL_BIST_EN
+		scanorder * (UINT32_C(1) << 4) |	// G2D_MIXER_CTL_SCAN_ORDER
+		0;
 
 	//	memset32(G2D_V0, 0, sizeof * G2D_V0);
 	//	memset32(G2D_UI0, 0, sizeof * G2D_UI0);
@@ -245,7 +285,7 @@ static void awxx_g2d_mixer_reset(void)
 	//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 
 	G2D_VSU->VS_CTRL = 0;
-	G2D_ROT->ROT_CTL = 0;
+	G2D_ROT->ROT_CTL = 0;// valid rot_ctl bits 400001F2
 	G2D_V0->V0_ATTCTL = 0;
 	G2D_UI0->UI_ATTR = 0;
 	G2D_UI1->UI_ATTR = 0;
@@ -254,20 +294,6 @@ static void awxx_g2d_mixer_reset(void)
 	G2D_BLD->BLD_KEY_CTL = 0;
 }
 
-// Register Configuration Queue setup
-static void awxx_rcq(uintptr_t buff, unsigned len)
-{
-	G2D_TOP->RCQ_CTRL = 0;	// При  0 тут возможна установка параметров
-	G2D_TOP->RCQ_HEADER_LOW_ADDR = ptr_lo32(buff);
-	G2D_TOP->RCQ_HEADER_HIGH_ADDR = ptr_hi32(buff);
-	G2D_TOP->RCQ_HEADER_LEN = len;
-
-	ASSERT(G2D_TOP->RCQ_HEADER_LOW_ADDR == ptr_lo32(buff));
-	ASSERT(G2D_TOP->RCQ_HEADER_HIGH_ADDR == ptr_hi32(buff));
-	ASSERT(G2D_TOP->RCQ_HEADER_LEN == len);
-}
-
-
 /* Запуск и ожидание завершения работы G2D */
 /* 0 - timeout. 1 - OK */
 static int hwacc_rtmx_waitdone(void)
@@ -275,17 +301,17 @@ static int hwacc_rtmx_waitdone(void)
 	unsigned n = 0x2000000;
 	for (;;)
 	{
-		const uint_fast32_t MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
+		const uint_fast32_t INT_MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
 		const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INTERRUPT;
 		//const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
-		if (((mixer_int & MASK) != 0))
+		if (((mixer_int & INT_MASK) != 0))
 		{
-			G2D_MIXER->G2D_MIXER_INTERRUPT = MASK;
+			G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;	// clear interrupt flag
 			break;
 		}
-//		if (((rot_int & MASK) != 0))
+//		if (((rot_int & INT_MASK) != 0))
 //		{
-//			G2D_ROT->ROT_INT = MASK;
+//			G2D_ROT->ROT_INT = INT_MASK;
 //			break;
 //		}
 		if (-- n == 0)
@@ -301,35 +327,560 @@ static int hwacc_rtmx_waitdone(void)
 /* Запускаем и ждём завершения обработки */
 static void awxx_g2d_rtmix_startandwait(void)
 {
+	const uint_fast32_t INT_MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
+	G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;	// clear interrupt flag - не работает без жиого ожидание сброса G2D_MIXER_CTRL
 	G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
-	if (hwacc_rtmx_waitdone() == 0)
-	{
-		PRINTF("awxx_g2d_rtmix_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
-		ASSERT(0);
-	}
+	local_wait32mask(& G2D_MIXER->G2D_MIXER_CTRL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
+//	local_wait32mask(& G2D_MIXER->G2D_MIXER_INTERRUPT, INT_MASK, INT_MASK, 100);
+//	if (hwacc_rtmx_waitdone() == 0)
+//	{
+//		PRINTF("awxx_g2d_rtmix_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
+//		ASSERT(0);
+//	}
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
 
+static void awg2d_set_vi_oneplan(
+	G2D_VI_TypeDef * vi,
+	uint_fast32_t attr,
+	uint_fast32_t stride, uintptr_t addr,
+	uint_fast16_t sw, uint_fast16_t sh	// Размеры окна источника
+	)
+{
+	vi->V0_ATTCTL = attr;
+	vi->V0_PITCH0 = stride;	// Y/RGB/ARGB data memory
+	vi->V0_LADD0 = ptr_lo32(addr);
+	vi->V0_PITCH1 = stride;	// U/UV data memory
+	vi->V0_LADD1 = ptr_lo32(addr);
+	vi->V0_PITCH2 = stride;	// V data memory
+	vi->V0_LADD2 = ptr_lo32(addr);
+	vi->V0_HADD =
+		((ptr_hi32(addr) & 0xFF) << 0) |	// part of V0_LADD0 - Y/RGB/ARGB data memory
+		((ptr_hi32(addr) & 0xFF) << 8) |	// part of V0_LADD1 - U/UV data memory
+		((ptr_hi32(addr) & 0xFF) << 16) |	// part of V0_LADD2 - V data memory
+		0;
+
+}
+
+static uint_fast32_t awxx_g2d_get_vi_attr_yuv(void)
+{
+	const uint_fast32_t srcFormat = 0x0A;	// 0x0A Planar YUV420
+	uint_fast32_t vi_attr = 0;
+	vi_attr = UINT32_C(255) << 24;	// ????? is a need?
+	vi_attr |= (srcFormat & 0x1F) * (UINT32_C(1) << 8);
+	//vi_attr |= UINT32_C(1) << 15;	// UI Overlay - using UI overlay layer input data format
+	//vi_attr |= G2D_GLOBAL_ALPHA << 1; // linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	vi_attr |= xG2D_PIXEL_ALPHA << 1; // нужно для работы color key linux sample use G2D_PIXEL_ALPHA -> 0xFF000401
+	//vi_attr |= (UINT32_C(1) << 4);	/* Use FILLC register */
+	vi_attr |= 1;	// Layer enable
+	return vi_attr;
+}
+
+static void awg2d_set_vi_yuv(
+	G2D_VI_TypeDef * vi,
+	uint_fast32_t attr,
+	uint_fast32_t stride, uintptr_t addr,
+	uint_fast16_t sw, uint_fast16_t sh	// Размеры окна источника
+	)
+{
+	const uintptr_t addr0 = addr;
+	const uintptr_t addr1 = addr + (sw * 1 * sh);
+	const uintptr_t addr2 = addr1;
+	vi->V0_ATTCTL = attr;
+	vi->V0_PITCH0 = sw * 1;	// Y/RGB/ARGB data memory
+	vi->V0_LADD0 = ptr_lo32(addr0);
+	vi->V0_PITCH1 = sw * 1;	// U/UV data memory
+	vi->V0_LADD1 = ptr_lo32(addr1);
+	vi->V0_PITCH2 = sw * 1;	// V data memory
+	vi->V0_LADD2 = ptr_lo32(addr2);
+	vi->V0_HADD =
+		((ptr_hi32(addr0) & 0xFF) << 0) |	// part of V0_LADD0 - Y/RGB/ARGB data memory
+		((ptr_hi32(addr1) & 0xFF) << 8) |	// part of V0_LADD1 - U/UV data memory
+		((ptr_hi32(addr2) & 0xFF) << 16) |	// part of V0_LADD2 - V data memory
+		0;
+
+}
+
+#if WITHRTMXRCQ
+
+//	union g2d_rcq_irq_ctl {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int rcq_sel:1;
+//			unsigned int res0:3;
+//			unsigned int task_end_irq_en:1;
+//			unsigned int res1:1;
+//			unsigned int rcq_cfg_finish_irq_en:1;
+//			unsigned int res2:25;
+//		} bits;
+//	};
+//
+//	union g2d_rcq_status {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int task_end_irq:1;
+//			unsigned int res0:1;
+//			unsigned int cfg_finish_irq:1;
+//			unsigned int res1:5;
+//			unsigned int frame_cnt:8;
+//			unsigned int res2:16;
+//		} bits;
+//	};
+//
+//	union g2d_rcq_ctrl {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int update:1;
+//			unsigned int res0:31;
+//		} bits;
+//	};
+//
+//	union g2d_rcq_header_len {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int rcq_header_len:16;
+//			unsigned int res0:16;
+//		} bits;
+//	};
+
+
+static void awxx_g2d_top_rcq_irq_en(int flag)
+{
+	if (flag)
+	{
+		G2D_TOP->RCQ_IRQ_CTL |= (UINT32_C(1) << 4); //.bits.task_end_irq_en = en; // bit 4
+		//G2D_TOP->RCQ_IRQ_CTL |= (UINT32_C(1) << 7); //.bits.rcq_cfg_finish_irq_en = en; // bit 7
+	}
+	else
+	{
+		G2D_TOP->RCQ_IRQ_CTL &= ~ (UINT32_C(1) << 4); //.bits.task_end_irq_en = en; // bit 4
+		//G2D_TOP->RCQ_IRQ_CTL &= ~ (UINT32_C(1) << 7); //.bits.rcq_cfg_finish_irq_en = en; // bit 7
+	}
+}
+
+static unsigned awxx_g2d_top_rcq_task_irq_query(void)
+{
+	// bit 0
+	const uint_fast32_t status = G2D_TOP->RCQ_STATUS;
+	G2D_TOP->RCQ_STATUS = status;// | (UINT32_C(1) << 0);
+	if (status & (UINT32_C(1) << 0))	// task_end_irq
+	{
+		//PRINTF("awxx_g2d_top_rcq_task_irq_query: status=%08X\n", (unsigned) status);
+		return 1;
+	}
+//	if (G2D_TOP->RCQ_STATUS.bits.task_end_irq & 0x1) {
+//		G2D_TOP->RCQ_STATUS.bits.task_end_irq = 1;
+//		return 1;
+//	}
+	return 0;
+}
+#if 1
+static unsigned awxx_g2d_top_rcq_cfg_irq_query(void)
+{
+	// bit 2
+	const uint_fast32_t status = G2D_TOP->RCQ_STATUS;
+	G2D_TOP->RCQ_STATUS = status;
+	if (status & (UINT32_C(1) << 2))	// cfg_finish_irq
+	{
+		return 1;
+	}
+//	if (G2D_TOP->RCQ_STATUS.bits.cfg_finish_irq & 0x1) {
+//		G2D_TOP->RCQ_STATUS.bits.cfg_finish_irq = 1;
+//		return 1;
+//	}
+	return 0;
+}
+#endif
+
+static unsigned awxx_g2d_top_get_rcq_frame_cnt(void)
+{
+	return (G2D_TOP->RCQ_STATUS >> 8) &  0xFF; //.bits.frame_cnt;
+}
+
+/* Запуск и ожидание завершения работы G2D RCQ */
+/* 0 - timeout. 1 - OK */
+static int hwacc_rcq_waitdone(void)
+{
+	unsigned n = 0x2000000;
+	for (;;)
+	{
+		if (awxx_g2d_top_rcq_task_irq_query())
+			break;
+		if (-- n == 0)
+		{
+			PRINTF("G2D_TOP->RCQ_CTRL=%08X, G2D_TOP->RCQ_STATUS=%08X\n", (unsigned) G2D_TOP->RCQ_CTRL, (unsigned) G2D_TOP->RCQ_STATUS);
+			//PRINTF("G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
+			return 0;
+		}
+	}
+	return 1;
+}
+
+// Register Configuration Queue setup
+static void awxx_g2d_top_set_rcq_head(void * addr, unsigned len)
+{
+	//PRINTF("h G2D_TOP->RCQ_CTRL=%08X, G2D_TOP->RCQ_STATUS=%08X\n", (unsigned) G2D_TOP->RCQ_CTRL, (unsigned) G2D_TOP->RCQ_STATUS);
+	//PRINTF("awxx_g2d_top_set_rcq_head: addr=%p, len=%u\n", addr, len);
+	const uintptr_t buff = (uintptr_t) addr;
+	ASSERT(len == (len & 0xFFFF));
+	//G2D_TOP->RCQ_CTRL = 0;	// При  0 тут возможна установка параметров
+	G2D_TOP->RCQ_HEADER_LOW_ADDR = ptr_lo32(buff);
+	G2D_TOP->RCQ_HEADER_HIGH_ADDR = ptr_hi32(buff);
+	G2D_TOP->RCQ_HEADER_LEN = len;
+
+	ASSERT(G2D_TOP->RCQ_HEADER_LOW_ADDR == ptr_lo32(buff));
+	ASSERT(G2D_TOP->RCQ_HEADER_HIGH_ADDR == ptr_hi32(buff));
+	ASSERT(G2D_TOP->RCQ_HEADER_LEN == len);
+	// bit 0
+	G2D_TOP->RCQ_CTRL |= (UINT32_C(1) << 0);	// update
+	while ((G2D_TOP->RCQ_CTRL & (UINT32_C(1) << 0)) != 0)
+		;
+	//awxx_g2d_top_rcq_irq_en(1);
+	//G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
+	//G2D_TOP->RCQ_CTRL;
+
+	if (hwacc_rcq_waitdone() == 0)
+	{
+		//PRINTF("awxx_g2d_rcq_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
+		ASSERT(0);
+	}
+	//PRINTF("G2D_TOP->RCQ_CTRL=%08X, G2D_TOP->RCQ_STATUS=%08X\n", (unsigned) G2D_TOP->RCQ_CTRL, (unsigned) G2D_TOP->RCQ_STATUS);
+//	G2D_TOP->RCQ_CTRL = 0;
+//	G2D_TOP->RCQ_HEADER_LEN = 0;
+	//G2D_TOP->RCQ_STATUS = 0;
+	//ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
+}
+
+
+//	union rcq_hd_dw0 {
+//		__u32 dwval;
+//		struct {
+//			__u32 len:24;
+//			__u32 high_addr:8;
+//		} bits;
+//	};
+//
+//	union rcq_hd_dirty {
+//		__u32 dwval;
+//		struct {
+//			__u32 dirty:1;
+//			__u32 res0:15;
+//			__u32 n_header_len : 16; /*next frame header length*/
+//		} bits;
+//	};
+//
+//	struct g2d_rcq_head {
+//		__u32 low_addr; /* 32 bytes align */
+//		union rcq_hd_dw0 dw0;
+//		union rcq_hd_dirty dirty;
+//		__u32 reg_offset; /* offset_addr based on g2d_reg_base */
+//	};
+
+typedef struct
+{
+	__IO uint32_t low_addr; /* 32 bytes align */
+	__IO uint32_t dw0;	// 31:24 - high addr, 23:0 - len
+	__IO uint32_t dirty;	// 32:16 - header len, 0 - dirty
+	__IO uint32_t reg_offset;
+} awxx_g2d_rcq_head_t;
+
+static void rcqhinit(awxx_g2d_rcq_head_t * h, int active, void * data, unsigned datalen, unsigned nextlen, unsigned reg_offset)
+{
+	//PRINTF("h=%p, data=%p next=%08X\n", h, data, nextlen);
+	uintptr_t const addr = (uintptr_t) data;
+	ASSERT(nextlen == (nextlen & 0xFFFF));
+	ASSERT(datalen == (datalen & 0xFFFFFF));
+	h->low_addr = ptr_lo32(addr);
+	h->dw0 =
+		(ptr_hi32(addr) & 0xFF) * (UINT32_C(1) << 24) |	// high addr
+		(datalen & 0xFFFFFF) * (UINT32_C(1) << 0) |	// registers for update length
+		0;
+	h->dirty =
+		(nextlen & 0xFFFF) * (UINT32_C(1) << 16) |	// header len
+		!! active * (UINT32_C(1) << 0) |	// dirty
+		0;
+	h->reg_offset = reg_offset;
+}
 
 static void
 awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
-		unsigned srcFormat, unsigned sstride,
+	unsigned srcFormat, unsigned sstride,
+	uint_fast32_t ssizehw, uintptr_t saddr,
+	uint_fast16_t sw, uint_fast16_t sh,	// Размеры окна источника
+	unsigned tstride, uint_fast32_t tsizehw,
+	uintptr_t taddr,
+	uint_fast16_t tw, uint_fast16_t th	// Размеры окна получателя
+	)
+{
+	static ALIGNX_BEGIN struct rcq
+	{
+		awxx_g2d_rcq_head_t h1;
+		awxx_g2d_rcq_head_t h2;
+		awxx_g2d_rcq_head_t h3;
+		awxx_g2d_rcq_head_t h4;
+		ALIGNX_BEGIN G2D_BLD_TypeDef bldv ALIGNX_END;
+		ALIGNX_BEGIN G2D_UI_TypeDef ui2v ALIGNX_END;
+		ALIGNX_BEGIN G2D_WB_TypeDef wbv ALIGNX_END;
+		ALIGNX_BEGIN G2D_VI_TypeDef vi0v ALIGNX_END;
+	} rcq0 ALIGNX_END;
+
+	G2D_BLD_TypeDef * const bld = & rcq0.bldv;
+	G2D_UI_TypeDef * const ui2 = & rcq0.ui2v;
+	G2D_VI_TypeDef * const vi0 = & rcq0.vi0v;
+	G2D_WB_TypeDef * const wb = & rcq0.wbv;
+
+	rcqhinit(& rcq0.h1, 1, & rcq0.bldv, sizeof rcq0.bldv, offsetof(struct rcq, h2) - offsetof(struct rcq, h1), G2D_BLD_BASE - G2D_BASE);
+	rcqhinit(& rcq0.h2, 1, & rcq0.ui2v, sizeof rcq0.ui2v, offsetof(struct rcq, h3) - offsetof(struct rcq, h2), G2D_UI2_BASE - G2D_BASE);
+	rcqhinit(& rcq0.h3, 1, & rcq0.vi0v, sizeof rcq0.vi0v, offsetof(struct rcq, h4) - offsetof(struct rcq, h3), G2D_V0_BASE - G2D_BASE);
+	rcqhinit(& rcq0.h4, 1, & rcq0.wbv, sizeof rcq0.wbv, 0, G2D_WB_BASE - G2D_BASE);
+
+	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
+	{
+		const COLOR24_T keycolor24 = awxx_key_color_conversion(keycolor);
+		/* 5.10.9.10 BLD color key control register */
+		//G2D_BLD->BLD_KEY_CTL = 0x03;	/* G2D_CK_SRC = 0x03, G2D_CK_DST = 0x01 */
+		bld->BLD_KEY_CTL =
+			(0x01u << 1) |// KEY0_MATCH_DIR 1: when the pixel value matches source image, it displays the pixel form destination image.
+			(UINT32_C(1) << 0) |// KEY0_EN 1: enable color key in Alpha Blender0.
+			0;
+		/* 5.10.9.11 BLD color key configuration register */
+		bld->BLD_KEY_CON =
+			0 * (UINT32_C(1) << 2) |// KEY0R_MATCH 0: match color if value inside keys range
+			0 * (UINT32_C(1) << 1) |// KEY0G_MATCH 0: match color if value inside keys range
+			0 * (UINT32_C(1) << 0) |// KEY0B_MATCH 0: match color if value inside keys range
+			0;
+		bld->BLD_KEY_MAX = keycolor24;
+		bld->BLD_KEY_MIN = keycolor24;
+		/* установка поверхности - источника (анализируется) */
+		ui2->UI_ATTR = awxx_g2d_get_ui_attr(srcFormat);
+		ui2->UI_PITCH = sstride;
+		ui2->UI_FILLC = 0;
+		ui2->UI_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		ui2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+		ui2->UI_SIZE = ssizehw; // параметры окна исходного буфера
+		ui2->UI_LADD = ptr_lo32(saddr);
+		ui2->UI_HADD = ptr_hi32(saddr);
+		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
+		awg2d_set_vi_oneplan(vi0, awxx_g2d_get_vi_as_ui_attr(VI_ImageFormat), tstride, taddr, dx, dy);
+		vi0->V0_FILLC = 0;
+		vi0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		vi0->V0_MBSIZE = tsizehw; // сколько брать от исходного буфера
+		vi0->V0_SIZE = tsizehw; // параметры окна исходного буфера
+		bld->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
+		/* источник когда есть совпадние */
+		bld->BLD_CH_ISIZE[0] = tsizehw;
+		bld->BLD_CH_OFFSET[0] = 0; // ((row) << 16) | ((col) << 0);
+		/* источник для анализа */
+		bld->BLD_CH_ISIZE[1] = tsizehw;
+		bld->BLD_CH_OFFSET[1] = 0; // ((row) << 16) | ((col) << 0);
+		bld->BLD_FILL_COLOR_CTL =
+			(UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable
+			(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable
+			0;
+		bld->ROP_CTL = 0x00F0; // 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		bld->ROP_INDEX[0] = 0; // ? зависят от ROP_CTL
+		bld->ROP_INDEX[1] = 0;
+		bld->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+	}
+	else
+	{
+		rcqhinit(& rcq0.h2, 0, & rcq0.ui2v, sizeof rcq0.ui2v, offsetof(struct rcq, h3) - offsetof(struct rcq, h2), G2D_UI2_BASE - G2D_BASE);
+		/* без keycolor */
+		/* установка поверхности - источника (безусловно) */
+		//		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr();
+		//		G2D_UI2->UI_PITCH = sstride;
+		//		G2D_UI2->UI_FILLC = 0;
+		//		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		//		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+		//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
+		//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
+		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
+		awg2d_set_vi_oneplan(vi0, awxx_g2d_get_vi_as_ui_attr(srcFormat), sstride, saddr, sw, sh);
+		vi0->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
+		vi0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		vi0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
+		vi0->V0_SIZE = ssizehw; // параметры окна исходного буфера
+		bld->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
+		bld->BLD_CH_ISIZE[0] = ssizehw;
+		bld->BLD_CH_OFFSET[0] = 0; // ((row) << 16) | ((col) << 0);
+		bld->BLD_CH_ISIZE[1] = ssizehw;
+		bld->BLD_CH_OFFSET[1] = 0; // ((row) << 16) | ((col) << 0);
+		bld->BLD_KEY_CTL = 0;
+		bld->BLD_KEY_CON = 0;
+		bld->BLD_FILL_COLOR_CTL =
+			(UINT32_C(1) << 8) |	// 8: P0_EN Pipe0 enable - VI0
+			//(UINT32_C(1) << 9) |	// 9: P1_EN Pipe1 enable - UI2
+			0;
+		bld->ROP_CTL = 0x00F0; // 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		bld->ROP_INDEX[0] = 0; // ? зависят от ROP_CTL
+		bld->ROP_INDEX[1] = 0;
+		//bld->BLD_CTL = 0x00010001;	// G2D_BLD_COPY
+		//bld->BLD_CTL = 0x00000000;	// G2D_BLD_CLEAR
+		bld->BLD_CTL = awxx_bld_ctl2(3, 1); //awxx_bld_ctl(3, 1, 3, 1); //0x03010301;	// G2D_BLD_SRCOVER - default value
+	}
+	//bld->BLD_FILLC0 = ~ 0;
+	//bld->BLD_PREMUL_CTL |= (UINT32_C(1) << 0);	// 0 or 1 - sel 1 or sel 0
+	bld->BLD_OUT_COLOR = 0x00000000; /* 0x00000000 */
+	bld->BLD_CSC_CTL = 0x00000000; /* 0x00000000 */
+	bld->BLD_BK_COLOR = 0;
+	bld->BLD_PREMUL_CTL = 0x00000000; /* 0x00000000 */
+	/* Write-back settings */
+	wb->WB_ATT = WB_ImageFormat;
+	wb->WB_SIZE = tsizehw;
+	wb->WB_PITCH0 = tstride; /* taddr buffer stride */
+	wb->WB_LADD0 = ptr_lo32(taddr);
+	wb->WB_HADD0 = ptr_hi32(taddr);
+
+	g2d_rtmx_accure();
+	g2d_rtmx_rcq_accure();
+	awxx_g2d_mixer_reset(G2D_SCANORFER); /* Отключаем все источники */
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
+	dcache_clean((uintptr_t) & rcq0, sizeof rcq0);
+	awxx_g2d_top_set_rcq_head(& rcq0, 4 * sizeof (awxx_g2d_rcq_head_t));
+	g2d_rtmx_rcq_release();
+	g2d_rtmx_release();
+}
+
+// Возврат не-0, если операция выполнена аппаратурой
+static int
+aw_g2d_fillrect(
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	PACKEDCOLORPIP_T * __restrict buffer_UNUSED,
+	uint_fast16_t dx_UNUSED,	// ширина буфера
+	uintptr_t taddr,
+	uint_fast32_t tstride,
+	uint_fast32_t tsizehw,
+	unsigned alpha,
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color,	// цвет
+	unsigned fillmask
+	)
+{
+	static ALIGNX_BEGIN struct rcq
+	{
+		awxx_g2d_rcq_head_t h1;
+		awxx_g2d_rcq_head_t h2;
+		awxx_g2d_rcq_head_t h3;
+		ALIGNX_BEGIN G2D_BLD_TypeDef bldv ALIGNX_END;
+		ALIGNX_BEGIN G2D_UI_TypeDef ui2v ALIGNX_END;
+		ALIGNX_BEGIN G2D_WB_TypeDef wbv ALIGNX_END;
+	} rcq0 ALIGNX_END;
+
+	G2D_BLD_TypeDef * const bld = & rcq0.bldv;
+	G2D_UI_TypeDef * const ui2 = & rcq0.ui2v;
+	G2D_WB_TypeDef * const wb = & rcq0.wbv;
+
+	rcqhinit(& rcq0.h1, 1, & rcq0.bldv, sizeof rcq0.bldv, offsetof(struct rcq, h2) - offsetof(struct rcq, h1), G2D_BLD_BASE - G2D_BASE);
+	rcqhinit(& rcq0.h2, 1, & rcq0.ui2v, sizeof rcq0.ui2v, offsetof(struct rcq, h3) - offsetof(struct rcq, h2), G2D_UI2_BASE - G2D_BASE);
+	rcqhinit(& rcq0.h3, 1, & rcq0.wbv, sizeof rcq0.wbv, 0, G2D_WB_BASE - G2D_BASE);
+
+	const uint_fast32_t toffset = 0;	// не может быть использован в случае использования информации в буфере (FILL_FLAG_MIXBG) ((row) << 16) | ((col) << 0);
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	if (fillmask & FILL_FLAG_MIXBG)
+	{
+		/* установка поверхности - источника (анализируется) */
+		ui2->UI_ATTR = awxx_g2d_get_ui_attr(UI_ImageFormat);
+		ui2->UI_PITCH = tstride;
+		ui2->UI_LADD = ptr_lo32(taddr);
+		ui2->UI_HADD = ptr_hi32(taddr);
+		ui2->UI_FILLC = 0;
+		ui2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		ui2->UI_MBSIZE = tsizehw; // сколько брать от исходного буфера
+		ui2->UI_SIZE = tsizehw;		// параметры окна исходного буфера
+
+		bld->BLD_FILL_COLOR [0] =
+			alpha * (UINT32_C(1) << 24) |
+			COLORPIP_R(color) * (UINT32_C(1) << 16) |
+			COLORPIP_G(color) * (UINT32_C(1) << 8) |
+			COLORPIP_B(color) * (UINT32_C(1) << 0) |
+			0;
+		bld->BLD_SIZE = tsizehw;	// размер выходного буфера
+		bld->ROP_CTL = 0*0xAAF0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		bld->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
+		bld->ROP_INDEX [1] = 0;
+		bld->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
+		bld->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
+
+		bld->BLD_CH_ISIZE [0] = tsizehw;
+		bld->BLD_CH_OFFSET [0] = toffset;
+		bld->BLD_CH_ISIZE [1] = tsizehw;
+		bld->BLD_CH_OFFSET [1] = toffset;
+
+		bld->BLD_FILL_COLOR_CTL =
+			(UINT32_C(1) << 9) |    	// P1_EN: Pipe1 enable - old frame buffer
+			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
+			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
+			0;
+		bld->BLD_CTL = awxx_bld_ctl2(1, 3); // отрисовка полупрозначного прямоугольника уменьшает интенсивность цветов под ним (alpha канал не меняется)
+
+	}
+	else
+	{
+		rcqhinit(& rcq0.h2, 0, & rcq0.ui2v, sizeof rcq0.ui2v, offsetof(struct rcq, h3) - offsetof(struct rcq, h2), G2D_UI2_BASE - G2D_BASE);
+
+		bld->BLD_FILL_COLOR [0] =
+			COLORPIP_A(color) * (UINT32_C(1) << 24) |
+			COLORPIP_R(color) * (UINT32_C(1) << 16) |
+			COLORPIP_G(color) * (UINT32_C(1) << 8) |
+			COLORPIP_B(color) * (UINT32_C(1) << 0) |
+			0;
+		bld->BLD_SIZE = tsizehw;	// размер выходного буфера
+		bld->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		bld->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
+		bld->ROP_INDEX [1] = 0;
+		bld->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
+		bld->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
+
+		bld->BLD_CH_ISIZE [0] = tsizehw;
+		bld->BLD_CH_OFFSET [0] = toffset;
+
+		// BLD_FILL_COLOR_CTL: BLD_FILLC [0] или BLD_BK_COLOR
+		bld->BLD_FILL_COLOR_CTL =
+			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
+			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
+			0;
+		bld->BLD_CTL = awxx_bld_ctl2(0, 0); // G2D_BLD_CLEAR
+
+	}
+
+	/* Write-back settings */
+	wb->WB_ATT = WB_ImageFormat;
+	wb->WB_SIZE = tsizehw;
+	wb->WB_PITCH0 = tstride;
+	wb->WB_LADD0 = ptr_lo32(taddr);
+	wb->WB_HADD0 = ptr_hi32(taddr);
+
+	g2d_rtmx_accure();
+	g2d_rtmx_rcq_accure();
+	awxx_g2d_mixer_reset(G2D_SCANORFER); /* Отключаем все источники */
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
+	dcache_clean((uintptr_t) & rcq0, sizeof rcq0);
+	awxx_g2d_top_set_rcq_head(& rcq0, 3 * sizeof (awxx_g2d_rcq_head_t));
+	g2d_rtmx_rcq_release();
+	g2d_rtmx_release();
+
+	return 1;
+}
+
+#else
+
+static void
+awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
+		unsigned srcUIFormat, unsigned sstride,
 		uint_fast32_t ssizehw, uintptr_t saddr,
+		uint_fast16_t sw, uint_fast16_t sh,	// Размеры окна источника
 		unsigned tstride, uint_fast32_t tsizehw,
-		uintptr_t taddr
+		uintptr_t taddr,
+		uint_fast16_t tw, uint_fast16_t th	// Размеры окна получателя
 		)
 {
-	//	memset32(G2D_V0, 0, sizeof * G2D_V0);
-	//	memset32(G2D_UI0, 0, sizeof * G2D_UI0);
-	//	memset32(G2D_UI1, 0, sizeof * G2D_UI1);
-	//	memset32(G2D_UI2, 0, sizeof * G2D_UI2);
-	//	memset32(G2D_BLD, 0, sizeof * G2D_BLD);
-	//	memset32(G2D_WB, 0, sizeof * G2D_WB);
-	//	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
-	//	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 	g2d_rtmx_accure();
+	awxx_g2d_mixer_reset(G2D_SCANORFER); /* Отключаем все источники */
+
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
-	awxx_g2d_mixer_reset(); /* Отключаем все источники */
 	if ((keyflag & BITBLT_FLAG_CKEY) != 0)
 	{
 		const COLOR24_T keycolor24 = awxx_key_color_conversion(keycolor);
@@ -348,7 +899,7 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		G2D_BLD->BLD_KEY_MAX = keycolor24;
 		G2D_BLD->BLD_KEY_MIN = keycolor24;
 		/* установка поверхности - источника (анализируется) */
-		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(srcFormat);
+		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(srcUIFormat);
 		G2D_UI2->UI_PITCH = sstride;
 		G2D_UI2->UI_FILLC = 0;
 		G2D_UI2->UI_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
@@ -357,14 +908,11 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		G2D_UI2->UI_LADD = ptr_lo32(saddr);
 		G2D_UI2->UI_HADD = ptr_hi32(saddr);
 		/* эта поверхность источник данных когда есть совпадение с ключевым цветом */
-		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(VI_ImageFormat);
-		G2D_V0->V0_PITCH0 = tstride;
+		awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_as_ui_attr(VI_ImageFormat), tstride, taddr, tw, th);
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = tsizehw; // сколько брать от исходного буфера
 		G2D_V0->V0_SIZE = tsizehw; // параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(taddr);
-		G2D_V0->V0_HADD = (ptr_hi32(taddr) & 0xFF) << 0;
 		G2D_BLD->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
 		/* источник когда есть совпадние */
 		G2D_BLD->BLD_CH_ISIZE[0] = tsizehw;
@@ -385,22 +933,26 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	{
 		/* без keycolor */
 		/* установка поверхности - источника (безусловно) */
-		//		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr();
-		//		G2D_UI2->UI_PITCH = sstride;
-		//		G2D_UI2->UI_FILLC = 0;
-		//		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		//		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
-		//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
-		//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
-		//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
-		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
-		G2D_V0->V0_PITCH0 = sstride;
+//		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(UI_ImageFormat);
+//		G2D_UI2->UI_PITCH = sstride;
+//		G2D_UI2->UI_LADD = ptr_lo32(saddr);
+//		G2D_UI2->UI_HADD = ptr_hi32(saddr);
+//		G2D_UI2->UI_FILLC = 0;
+//		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+//		G2D_UI2->UI_MBSIZE = ssizehw; // сколько брать от исходного буфера
+//		G2D_UI2->UI_SIZE = ssizehw;		// параметры окна исходного буфера
+		if (keyflag & BITBLT_FLAG_SRC_YUV420)
+		{
+			awg2d_set_vi_yuv(G2D_V0, awxx_g2d_get_vi_attr_yuv(), sstride, saddr, sw, sh);
+		}
+		else
+		{
+			awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_as_ui_attr(srcUIFormat), sstride, saddr, sw, sh);
+		}
 		G2D_V0->V0_FILLC = 0; //TFTRGB(255, 0, 0);    // unused
 		G2D_V0->V0_COOR = 0; // координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; // сколько брать от исходного буфера
 		G2D_V0->V0_SIZE = ssizehw; // параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(saddr);
-		G2D_V0->V0_HADD = ptr_hi32(saddr);
 		G2D_BLD->BLD_SIZE = tsizehw; // размер выходного буфера после scaler
 		G2D_BLD->BLD_CH_ISIZE[0] = ssizehw;
 		G2D_BLD->BLD_CH_OFFSET[0] = 0; // ((row) << 16) | ((col) << 0);
@@ -431,13 +983,132 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	G2D_WB->WB_PITCH0 = tstride; /* taddr buffer stride */
 	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
 	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
+
 	awxx_g2d_rtmix_startandwait(); /* Запускаем и ждём завершения обработки */
 	g2d_rtmx_release();
 }
 
+// Возврат не-0, если операция выполнена аппаратурой
+static int
+aw_g2d_fillrect(
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	PACKEDCOLORPIP_T * __restrict buffer_UNUSED,
+	uint_fast16_t dx_UNUSED,	// ширина буфера
+	uintptr_t taddr,
+	uint_fast32_t tstride,
+	uint_fast32_t tsizehw,
+	unsigned alpha,
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color,	// цвет
+	unsigned fillmask
+	)
+{
+	const uint_fast32_t toffset = 0;	// не может быть использован в случае использования информации в буфере (FILL_FLAG_MIXBG) ((row) << 16) | ((col) << 0);
+	g2d_rtmx_accure();
+	awxx_g2d_mixer_reset(G2D_SCANORFER);	/* Отключаем все источники */
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	if (fillmask & FILL_FLAG_MIXBG)
+	{
+		/* установка поверхности - источника (анализируется) */
+		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(UI_ImageFormat);
+		G2D_UI2->UI_PITCH = tstride;
+		G2D_UI2->UI_FILLC = 0;
+		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
+		G2D_UI2->UI_MBSIZE = tsizehw; // сколько брать от исходного буфера
+		G2D_UI2->UI_SIZE = tsizehw;		// параметры окна исходного буфера
+		G2D_UI2->UI_LADD = ptr_lo32(taddr);
+		G2D_UI2->UI_HADD = ptr_hi32(taddr);
+
+		G2D_BLD->BLD_FILL_COLOR [0] =
+			alpha * (UINT32_C(1) << 24) |
+			COLORPIP_R(color) * (UINT32_C(1) << 16) |
+			COLORPIP_G(color) * (UINT32_C(1) << 8) |
+			COLORPIP_B(color) * (UINT32_C(1) << 0) |
+			0;
+		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
+		G2D_BLD->ROP_CTL = 0*0xAAF0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		G2D_BLD->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
+		G2D_BLD->ROP_INDEX [1] = 0;
+		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
+		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
+
+		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
+		G2D_BLD->BLD_CH_OFFSET [0] = toffset;
+		G2D_BLD->BLD_CH_ISIZE [1] = tsizehw;
+		G2D_BLD->BLD_CH_OFFSET [1] = toffset;
+
+		G2D_BLD->BLD_FILL_COLOR_CTL =
+			(UINT32_C(1) << 9) |    	// P1_EN: Pipe1 enable - old frame buffer
+			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
+			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
+			0;
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(1, 3); // отрисовка полупрозначного прямоугольника уменьшает интенсивность цветов под ним (alpha канал не меняется)
+
+	}
+	else
+	{
+		G2D_BLD->BLD_FILL_COLOR [0] =
+			COLORPIP_A(color) * (UINT32_C(1) << 24) |
+			COLORPIP_R(color) * (UINT32_C(1) << 16) |
+			COLORPIP_G(color) * (UINT32_C(1) << 8) |
+			COLORPIP_B(color) * (UINT32_C(1) << 0) |
+			0;
+		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
+		G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
+		G2D_BLD->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
+		G2D_BLD->ROP_INDEX [1] = 0;
+		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
+		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
+
+		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
+		G2D_BLD->BLD_CH_OFFSET [0] = toffset;
+
+		// BLD_FILL_COLOR_CTL: BLD_FILLC [0] или BLD_BK_COLOR
+		G2D_BLD->BLD_FILL_COLOR_CTL =
+			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
+			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
+			0;
+		G2D_BLD->BLD_CTL = awxx_bld_ctl2(0, 0); // G2D_BLD_CLEAR
+
+	}
+
+	/* Write-back settings */
+	G2D_WB->WB_ATT = WB_ImageFormat;
+	G2D_WB->WB_SIZE = tsizehw;
+	G2D_WB->WB_PITCH0 = tstride;
+	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
+	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
+
+	awxx_g2d_rtmix_startandwait();		/* Запускаем и ждём завершения обработки */
+	g2d_rtmx_release();
+	return 1;
+}
+#endif
+
 #endif /* defined (G2D_MIXER) */
 
 #if defined (G2D_ROT)
+
+static uint_fast32_t g2d_rot_ctl(
+	unsigned mx, unsigned my,
+	unsigned quadrant
+	)
+{
+	uint_fast32_t rot_ctl = 0;	// valid rot_ctl bits 400001F2
+	// bit 0: enable
+	// bit 31: start (self-cleaning)
+	rot_ctl |= 0x00 * (UINT32_C(1) << 30);	// bit 30 ? is not a RESET
+	rot_ctl |= 0x00 * (UINT32_C(1) << 8);	// bit 8 ?
+	rot_ctl |= 0x00 * (UINT32_C(1) << 2);	// bit 2 ?
+	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horizontal
+	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
+	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+	return rot_ctl;
+}
 
 /* Запуск и ожидание завершения работы G2D  (ROT) */
 /* 0 - timeout. 1 - OK */
@@ -446,17 +1117,17 @@ static int hwacc_rot_waitdone(void)
 	unsigned n = 0x2000000;
 	for (;;)
 	{
-		const uint_fast32_t MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
+		const uint_fast32_t INT_MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
 		//const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INTERRUPT;
 		const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
-//		if (((mixer_int & MASK) != 0))
+//		if (((mixer_int & INT_MASK) != 0))
 //		{
-//			G2D_MIXER->G2D_MIXER_INTERRUPT = MASK;
+//			G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;
 //			break;
 //		}
-		if (((rot_int & MASK) != 0))
+		if (((rot_int & INT_MASK) != 0))
 		{
-			G2D_ROT->ROT_INT = MASK;
+			G2D_ROT->ROT_INT = INT_MASK;
 			break;
 		}
 		if (-- n == 0)
@@ -471,16 +1142,18 @@ static int hwacc_rot_waitdone(void)
 
 static void awxx_g2d_rot_startandwait(void)
 {
-	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start
-	if (hwacc_rot_waitdone() == 0)
-	{
-		PRINTF("awxx_g2d_rot_startandwait: timeout G2D_ROT->ROT_CTL=%08X\n", (unsigned) G2D_ROT->ROT_CTL);
-		ASSERT(0);
-	}
+	const uint_fast32_t INT_MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
+	G2D_ROT->ROT_INT = INT_MASK;	// clear interrupt flag
+	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start module
+	local_wait32mask(& G2D_ROT->ROT_CTL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
+//	local_wait32mask(& G2D_ROT->ROT_CTL, INT_MASK, INT_MASK, 100);
+//	if (hwacc_rot_waitdone() == 0)
+//	{
+//		PRINTF("awxx_g2d_rot_startandwait: timeout G2D_ROT->ROT_CTL=%08X\n", (unsigned) G2D_ROT->ROT_CTL);
+//		ASSERT(0);
+//	}
 	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
 }
-
-#endif /* defined (G2D_ROT) */
 
 /* Коприрование с применением блока G2D_ROT */
 static void
@@ -501,6 +1174,7 @@ hwaccel_rotcopy(
 	G2D_ROT->ROT_IFMT = ROT_ImageFormat;
 
 	G2D_ROT->ROT_ISIZE = ssizehw;
+	ASSERT(G2D_ROT->ROT_ISIZE == ssizehw);
 	G2D_ROT->ROT_IPITCH0 = sstride;	// Y/RGB/ARGB data memory. Should be 128bit aligned.
 //	G2D_ROT->ROT_IPITCH1 = sstride;	// U/UV data memory
 //	G2D_ROT->ROT_IPITCH2 = sstride; // V data memory
@@ -515,6 +1189,7 @@ hwaccel_rotcopy(
 //	G2D_ROT->ROT_OPITCH1 = tstride;
 //	G2D_ROT->ROT_OPITCH2 = tstride;
 	G2D_ROT->ROT_OSIZE = tsizehw;
+	ASSERT(G2D_ROT->ROT_OSIZE == tsizehw);
 	G2D_ROT->ROT_OLADD0 = ptr_lo32(taddr);	// Alignment not required
 	G2D_ROT->ROT_OHADD0 = ptr_hi32(taddr) & 0xff;
 //	G2D_ROT->ROT_OLADD1 = ptr_lo32(taddr);
@@ -531,6 +1206,8 @@ hwaccel_rotcopy(
 	g2d_rot_release();
 
 }
+
+#endif /* defined (G2D_ROT) */
 
 #if ! defined (G2D_MIXER)
 
@@ -588,7 +1265,6 @@ aw_g2d_fillrect(
 //	}
 	else if (w > 1 && h > 1 && color == bgcolor)
 	{
-		//const uint_fast32_t ssizehw = ((uint_fast32_t) (DIM_Y - 1) << 16) | ((DIM_X - 1) << 0);	// вызывает странные записи в память если ширниа одинаковая а высота получателя меньше.
 		const uint_fast32_t ssizehw = tsizehw;
 		dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 		hwaccel_rotcopy((uintptr_t) bgscreen, GXADJ(DIM_X) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw, 0);
@@ -816,125 +1492,51 @@ static void vsu_fir_bytable(volatile uint32_t * p, unsigned offset)
 	}
 }
 
+
+//	union g2d_mixer_rop_ctrl {
+//		unsigned int dwval;
+//		struct {
+//			unsigned int type:1;	// bit 0
+//			unsigned int res0:3;
+//			unsigned int blue_bypass_en:1;
+//			unsigned int green_bypass_en:1;
+//			unsigned int red_bypass_en:1;
+//			unsigned int alpha_bypass_en:1;
+//			unsigned int blue_ch_sel:2;
+//			unsigned int green_ch_sel:2;
+//			unsigned int red_ch_sel:2;
+//			unsigned int alpha_ch_sel:2;
+//			unsigned int res1:16;
+//		} bits;
+//	};
+
 // https://github.com/DongshanPI/D1s-Melis/blob/b289fdae3e6245c3f185259903c91e7db204cfb5/ekernel/drivers/hal/source/g2d_rcq/g2d_mixer_type.h#L375
 // ROP_INDEX structure:
 //	union g2d_mixer_rop_ch3_index0 {
 //		unsigned int dwval;
 //		struct {
-//			unsigned int index0node0:3;
-//			unsigned int index0node1:1;
+//			unsigned int index0node0:3;		// bit 0..2
+//			unsigned int index0node1:1;		// bit 3
 //			unsigned int index0node2:1;
 //			unsigned int index0node3:1;
 //			unsigned int index0node4:4;
 //			unsigned int index0node5:1;
 //			unsigned int index0node6:4;
 //			unsigned int index0node7:1;
-//			unsigned int ch0ign_en:1;
+//			unsigned int ch0ign_en:1;		// bit 16
 //			unsigned int ch1ign_en:1;
 //			unsigned int ch2ign_en:1;
 //			unsigned int res0:13;
 //		} bits;
 //	};
 
-// Возврат не-0, если операция выполнена аппаратурой
-static int
-aw_g2d_fillrect(
-	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
-	int_fast32_t dstinvalidatesize,
-	PACKEDCOLORPIP_T * __restrict buffer_UNUSED,
-	uint_fast16_t dx_UNUSED,	// ширина буфера
-	uintptr_t taddr,
-	uint_fast32_t tstride,
-	uint_fast32_t tsizehw,
-	unsigned alpha,
-	uint_fast16_t w,	// ширниа
-	uint_fast16_t h,	// высота
-	COLORPIP_T color,	// цвет
-	unsigned fillmask
-	)
-{
-	const uint_fast32_t toffset = 0;	// не может быть использован в случае использования информации в буфере (FILL_FLAG_MIXBG) ((row) << 16) | ((col) << 0);
-	g2d_rtmx_accure();
-	awxx_g2d_mixer_reset();	/* Отключаем все источники */
-	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
-
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	if (fillmask & FILL_FLAG_MIXBG)
-	{
-		/* установка поверхности - источника (анализируется) */
-		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(VI_ImageFormat);
-		G2D_UI2->UI_PITCH = tstride;
-		G2D_UI2->UI_FILLC = 0;
-		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
-		G2D_UI2->UI_MBSIZE = tsizehw; // сколько брать от исходного буфера
-		G2D_UI2->UI_SIZE = tsizehw;		// параметры окна исходного буфера
-		G2D_UI2->UI_LADD = ptr_lo32(taddr);
-		G2D_UI2->UI_HADD = ptr_hi32(taddr);
-
-		G2D_BLD->BLD_FILL_COLOR [0] =
-			alpha * (UINT32_C(1) << 24) |
-			COLORPIP_R(color) * (UINT32_C(1) << 16) |
-			COLORPIP_G(color) * (UINT32_C(1) << 8) |
-			COLORPIP_B(color) * (UINT32_C(1) << 0) |
-			0;
-		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
-		G2D_BLD->ROP_CTL = 0*0xAAF0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-		G2D_BLD->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
-		G2D_BLD->ROP_INDEX [1] = 0;
-		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
-		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
-
-		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET [0] = toffset;
-		G2D_BLD->BLD_CH_ISIZE [1] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET [1] = toffset;
-
-		G2D_BLD->BLD_FILL_COLOR_CTL =
-			(UINT32_C(1) << 9) |    	// P1_EN: Pipe1 enable - old frame buffer
-			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
-			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
-			0;
-		G2D_BLD->BLD_CTL = awxx_bld_ctl2(1, 3); // отрисовка полупрозначного прямоугольника уменьшает интенсивность цветов под ним (alpha канал не меняется)
-
-	}
-	else
-	{
-		G2D_BLD->BLD_FILL_COLOR [0] =
-			COLORPIP_A(color) * (UINT32_C(1) << 24) |
-			COLORPIP_R(color) * (UINT32_C(1) << 16) |
-			COLORPIP_G(color) * (UINT32_C(1) << 8) |
-			COLORPIP_B(color) * (UINT32_C(1) << 0) |
-			0;
-		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
-		G2D_BLD->ROP_CTL = 0*0x00F0;	// 0x00F0 G2D_V0, 0x55F0 UI1, 0xAAF0 UI2
-		G2D_BLD->ROP_INDEX [0] = 0;		// ? зависят от ROP_CTL
-		G2D_BLD->ROP_INDEX [1] = 0;
-		G2D_BLD->BLD_PREMUL_CTL=0*0x00000001; /* 0x00000001 */
-		G2D_BLD->BLD_OUT_COLOR=0*0x002; //0*0x00000001; /* 0x00000001 */
-
-		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
-		G2D_BLD->BLD_CH_OFFSET [0] = toffset;
-
-		// BLD_FILL_COLOR_CTL: BLD_FILLC [0] или BLD_BK_COLOR
-		G2D_BLD->BLD_FILL_COLOR_CTL =
-			(UINT32_C(1) << 8) |    	// P0_EN: Pipe0 enable
-			(UINT32_C(1) << 0) |		// P0_FCEN: Pipe0 fill color enable
-			0;
-		G2D_BLD->BLD_CTL = awxx_bld_ctl2(0, 0); // G2D_BLD_CLEAR
-
-	}
-
-	/* Write-back settings */
-	G2D_WB->WB_ATT = WB_ImageFormat;
-	G2D_WB->WB_SIZE = tsizehw;
-	G2D_WB->WB_PITCH0 = tstride;
-	G2D_WB->WB_LADD0 = ptr_lo32(taddr);
-	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
-
-	awxx_g2d_rtmix_startandwait();		/* Запускаем и ждём завершения обработки */
-	g2d_rtmx_release();
-	return 1;
-}
+// https://github.com/snegovick/sunxi-g2d/blob/77a50a4ced54e1f77f6f5cb7fe0f8364a6d9b899/module/sunxi_g2d_regs.h#L172C1-L178C1
+//	#define ROP_CTL         (0x080 + G2D_BLD)
+//	#define ROP_CTL_TYPE  BIT(0)
+//	#define ROP_CTL_BLUE_BYPASS_EN  BIT(4)
+//	#define ROP_CTL_GREEN_BYPASS_EN  BIT(5)
+//	#define ROP_CTL_RED_BYPASS_EN  BIT(6)
+//	#define ROP_CTL_ALPHA_BYPASS_EN  BIT(7)
 #endif
 
 #elif (WITHMDMAHW || WITHDMA2DHW) && (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
@@ -1184,9 +1786,17 @@ void lvglhw_initialize(void)
 
 // https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
 
+#if WITHAWG2DHW
+void arm_hardware_awg2d_initialize(void)
+{
+
+}
+#endif
+
 void arm_hardware_mdma_initialize(void)
 {
 	LCLSPINLOCK_INITIALIZE(& rtmxlock);
+	LCLSPINLOCK_INITIALIZE(& rtmxrcqlock);
 	LCLSPINLOCK_INITIALIZE(& rotlock);
 
 #if CPUSTYLE_T507
@@ -1257,6 +1867,33 @@ void arm_hardware_mdma_initialize(void)
 		//PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
 
 	}
+#elif CPUSTYLE_A733
+
+    CCU->G2D_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+	CCU->G2D_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	CCU->G2D_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+
+	G2D_TOP->G2D_SCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_SCLK_GATE;
+	G2D_TOP->G2D_HCLK_GATE |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// Gate open: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_HCLK_GATE;
+	G2D_TOP->G2D_AHB_RST &= ~ (UINT32_C(1) << 1) & ~ (UINT32_C(1) << 0);	// Assert reset: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_AHB_RST;
+	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
+	(void) G2D_TOP->G2D_AHB_RST;
+
+    memset32((void *) (G2D_TOP_BASE + 0), ~0, 256);	// strange line for G2D_ROT
+    //memset32(G2D_ROT, ~0, 256);
+//	G2D_TOP->G2D_SCLK_GATE = ~0;
+//	G2D_TOP->G2D_HCLK_GATE = ~0;
+//	G2D_TOP->G2D_AHB_RST = ~0;
+
+//	memset32((void *) (G2D_TOP_BASE + 0), ~0, 256 * 1024);	// strange line for G2D_ROT
+//    printhex32(G2D_TOP_BASE, G2D_TOP, 4 * 1024);
+//    printhex32(G2D_ROT_BASE, G2D_ROT, 1 * 1024);
+
+	local_delay_ms(10);
+//    printhex32(0x05468000, (void *) 0x05468000, 4 * 1024);
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	// https://github.com/lianghuixin/licee4.4/blob/bfee1d63fa355a54630244307296a00a973b70b0/linux-4.4/drivers/char/sunxi_g2d/g2d_bsp_v2.c
@@ -1309,10 +1946,11 @@ void arm_hardware_mdma_initialize(void)
 	// G2D version=01100114
 	//PRINTF("G2D version=%08" PRIX32 "\n", G2D_TOP->G2D_VERSION);
 
-	//memset32(G2D_TOP, 0xFF, sizeof * G2D_TOP);
-	awxx_rcq(0xDEADBEEF, 64);
 //	PRINTF("G2D_TOP:\n");
 //	printhex32(G2D_TOP_BASE, G2D_TOP, 256);
+
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
 #else
 	#error Unhandled CPUSTYLE_xxx
 #endif
@@ -1346,13 +1984,6 @@ typedef struct _draw_awrot_unit_t {
 
 
 #if defined (G2D_MIXER)
-
-static void
-awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
-		unsigned srcFormat, unsigned sstride,
-		uint_fast32_t ssizehw, uintptr_t saddr,
-		unsigned tstride, uint_fast32_t tsizehw,
-		uintptr_t taddr);
 
 // на t113 пока не работает правильно (чёрный квадрат под Emma Smith)
 static void
@@ -1407,8 +2038,7 @@ draw_awg2d_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
-			tsizehw, taddr);
+	awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, sw, sh, tstride, tsizehw, taddr, tw, th);
 }
 
 static void
@@ -1463,8 +2093,7 @@ draw_awg2d_layer(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
-			tsizehw, taddr);
+	awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, sw, sh, tstride, tsizehw, taddr, tw, th);
 }
 
 static void
@@ -1850,10 +2479,7 @@ draw_awrot_image(lv_draw_task_t * t, const lv_draw_image_dsc_t * dsc, const lv_a
 	unsigned quadrant = 0;
 	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
 	const uint_fast32_t tsizehw = tsizehw4 [quadrant];
-	uint_fast32_t rot_ctl = 0;
-	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horizontal
-	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
-	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+	const uint_fast32_t rot_ctl = g2d_rot_ctl(mx, my, quadrant);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
@@ -2779,7 +3405,7 @@ colpip_mem_at_debug(
 {
 	if (x >= db->dx || y >= db->dy || db->buffer == NULL)
 	{
-		PRINTF("colpip_mem_at(%s/%d): dx=%u, dy=%u, x=%d, y=%d, savestring='%s', savewhere='%s'\n", file, line, db->dx, db->dy, x, y, savestring, savewhere);
+		PRINTF("colpip_mem_at(%s/%d): dx=%u, dy=%u, x=%d, y=%d\n", file, line, db->dx, db->dy, x, y);
 	}
 	ASSERT(x < db->dx);
 	ASSERT(y < db->dy);
@@ -2800,7 +3426,7 @@ colpip_const_mem_at_debug(
 {
 	if (x >= db->dx || y >= db->dy || db->buffer == NULL)
 	{
-		PRINTF("colpip_const_mem_at_debug(%s/%d): dx=%u, dy=%u, x=%d, y=%d, savestring='%s', savewhere='%s'\n", file, line, db->dx, db->dy, x, y, savestring, savewhere);
+		PRINTF("colpip_const_mem_at_debug(%s/%d): dx=%u, dy=%u, x=%d, y=%d\n", file, line, db->dx, db->dy, x, y);
 	}
 	ASSERT(x < db->dx);
 	ASSERT(y < db->dy);
@@ -2937,7 +3563,7 @@ void colpip_fillrect(
 	COLORPIP_T color	// цвет
 	)
 {
-	colpip_rectangle(db, x, y, w, h, color, FILL_FLAG_NONE, 0);
+	colpip_rectangle(db, x, y, w, h, color, FILL_FLAG_NONE, 0 /* alpha */);
 }
 
 // копирование с поворотом
@@ -2979,10 +3605,7 @@ void colpip_copyrotate(
 	const unsigned quadrant = (angle % 360) / 90;
 	const uint_fast32_t ssizehw = ((h - 1) << 16) | ((w - 1) << 0); // source size
 	const uint_fast32_t tsizehw = tsizehw4 [quadrant];
-	uint_fast32_t rot_ctl = 0;
-	rot_ctl |= !! mx * (UINT32_C(1) << 7);	// flip horizontal
-	rot_ctl |= !! my * (UINT32_C(1) << 6);	// flip vertical
-	rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+	const uint_fast32_t rot_ctl = g2d_rot_ctl(mx, my, quadrant);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
@@ -3305,10 +3928,7 @@ void hwaccel_bitblt(
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	unsigned rot_ctl = 0;
-	rot_ctl |= !! (keyflag & BITBLT_FLAG_XMIRROR) * (UINT32_C(1) << 7);	// flip horizontal
-	rot_ctl |= !! (keyflag & BITBLT_FLAG_YMIRROR) * (UINT32_C(1) << 6);	// flip vertical
-	//rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+	const uint_fast32_t rot_ctl = g2d_rot_ctl(!! (keyflag & BITBLT_FLAG_XMIRROR), !! (keyflag & BITBLT_FLAG_YMIRROR), 0);
 	hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, rot_ctl);
 
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
@@ -3341,16 +3961,12 @@ void hwaccel_bitblt(
 
 	if ((keyflag & BITBLT_FLAG_XMIRROR) || (keyflag & BITBLT_FLAG_YMIRROR))
 	{
-		unsigned rot_ctl = 0;
-		rot_ctl |= !! (keyflag & BITBLT_FLAG_XMIRROR) * (UINT32_C(1) << 7);	// flip horizontal
-		rot_ctl |= !! (keyflag & BITBLT_FLAG_YMIRROR) * (UINT32_C(1) << 6);	// flip vertical
-		//rot_ctl |= ((0 - quadrant) & 0x03) * (UINT32_C(1) << 4);	// rotate (0: 0deg, 1: 90deg CW, 2: 180deg CW, 3: 270deg CW)
+		const uint_fast32_t rot_ctl = g2d_rot_ctl(!! (keyflag & BITBLT_FLAG_XMIRROR), !! (keyflag & BITBLT_FLAG_YMIRROR), 0);
 		hwaccel_rotcopy(saddr, sstride, ssizehw, taddr, tstride, tsizehw, rot_ctl);
 	}
 	else
 	{
-		awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, tstride,
-				tsizehw, taddr);
+		awg2d_bitblt(keyflag, keycolor, srcFormat, sstride, ssizehw, saddr, sw, sh, tstride, tsizehw, taddr, sw, sh);	// Размеры совпадают
 	}
 
 
@@ -3420,26 +4036,7 @@ void hwaccel_stretchblt(
 	unsigned keyflag, COLORPIP_T keycolor
 	)
 {
-#if WITHMDMAHW && CPUSTYLE_ALLWINNER && ! defined (G2D_MIXER)
-
-	//#warning T507/H616 STRETCH BLT should be implemented
-
-	const unsigned srcFormat = awxx_get_srcformat(keyflag);
-	enum { PIXEL_SIZE = sizeof (PACKEDCOLORPIP_T) };
-	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
-	const uint_fast32_t ssizehw = ((sh - 1) << 16) | ((sw - 1) << 0);
-	const unsigned sstride = sdb->stride;
-	const unsigned tstride = tdb->stride;
-	const uintptr_t srclinear = (uintptr_t) sdb->buffer;
-	const uintptr_t dstlinear = (uintptr_t) tdb->buffer;
-
-
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
-
-	hwaccel_rotcopy(srclinear, sstride, ssizehw, dstlinear, tstride, tsizehw, 0);
-
-#elif WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
+#if WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
 	/* Использование G2D для формирования изображений */
 
 //	memset32(G2D_V0, 0, sizeof * G2D_V0);
@@ -3468,7 +4065,7 @@ void hwaccel_stretchblt(
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
 	g2d_rtmx_accure();
-	awxx_g2d_mixer_reset();	/* Отключаем все источники */
+	awxx_g2d_mixer_reset(G2D_SCANORFER);	/* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
 //	G2D_TOP->G2D_AHB_RST &= ~ ((UINT32_C(1) << 1) | (UINT32_C(1) << 0));	// Assert reset: 0x02: rot, 0x01: mixer
@@ -3548,24 +4145,28 @@ void hwaccel_stretchblt(
 		G2D_BLD->BLD_KEY_MIN = keycolor24;
 
 		/* Данные для замены совпавших с keycolor */
-		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(VI_ImageFormat);
+		G2D_UI2->UI_ATTR = awxx_g2d_get_ui_attr(UI_ImageFormat);
 		G2D_UI2->UI_PITCH = tstride;
+		G2D_UI2->UI_LADD = ptr_lo32(dstlinear);
+		G2D_UI2->UI_HADD = ptr_hi32(dstlinear);
 		G2D_UI2->UI_FILLC = 0;
 		G2D_UI2->UI_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_UI2->UI_MBSIZE = tsizehw; // сколько брать от исходного буфера
 		G2D_UI2->UI_SIZE = tsizehw;		// параметры окна исходного буфера
-		G2D_UI2->UI_LADD = ptr_lo32(dstlinear);
-		G2D_UI2->UI_HADD = ptr_hi32(dstlinear);
 
 		/* Подача данных на вход VSU */
-		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
-		G2D_V0->V0_PITCH0 = sstride;
+		if (keyflag & BITBLT_FLAG_SRC_YUV420)
+		{
+			awg2d_set_vi_yuv(G2D_V0, awxx_g2d_get_vi_attr_yuv(), sstride, srclinear, sw, sh);
+		}
+		else
+		{
+			awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_as_ui_attr(srcFormat), sstride, srclinear, sw, sh);
+		}
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
 		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
-		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) << 0;
 
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		/* источник когда есть совпадние ??? */
@@ -3604,14 +4205,18 @@ void hwaccel_stretchblt(
 	}
 	else
 	{
-		G2D_V0->V0_ATTCTL = awxx_g2d_get_vi_attr(srcFormat);
-		G2D_V0->V0_PITCH0 = sstride;
+		if (keyflag & BITBLT_FLAG_SRC_YUV420)
+		{
+			awg2d_set_vi_yuv(G2D_V0, awxx_g2d_get_vi_attr_yuv(), sstride, srclinear, sw, sh);
+		}
+		else
+		{
+			awg2d_set_vi_oneplan(G2D_V0, awxx_g2d_get_vi_as_ui_attr(srcFormat), sstride, srclinear, sw, sh);
+		}
 		G2D_V0->V0_FILLC = 0;
 		G2D_V0->V0_COOR = 0;			// координаты куда класть. Фон заполняенся цветом BLD_BK_COLOR
 		G2D_V0->V0_MBSIZE = ssizehw; 	// сколько брать от исходного буфера
 		G2D_V0->V0_SIZE = ssizehw;		// параметры окна исходного буфера
-		G2D_V0->V0_LADD0 = ptr_lo32(srclinear);
-		G2D_V0->V0_HADD = (ptr_hi32(srclinear) & 0xFF) << 0;
 
 		G2D_BLD->BLD_SIZE = tsizehw;	// размер выходного буфера
 		G2D_BLD->BLD_CH_ISIZE [0] = tsizehw;
@@ -3637,35 +4242,10 @@ void hwaccel_stretchblt(
 	g2d_rtmx_release();
 
 #else
-
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	colpip_fillrect(tdb, 0, 0, w, h, COLORPIP_GREEN);
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	PRINTF("hwaccel_stretchblt: Used stub\n");
+	hwaccel_bitblt(dstinvalidateaddr, dstinvalidatesize, tdb, srcinvalidateaddr, srcinvalidatesize, sdb, ulmin(w, sw), ulmin16(h, sh), keyflag, keycolor);
 
 #endif
-}
-
-// копирование буфера с поворотом вправо на 90 градусов (четверть оборота).
-void hwaccel_ra90(
-	const gxdrawb_t * tdb,	// получатель
-	uint_fast16_t tx,	// горизонтальная координата пикселя (0..dx-1) слева направо - в исходном нижний
-	uint_fast16_t ty,	// вертикальная координата пикселя (0..dy-1) сверху вниз - в исходном левый
-	const gxdrawb_t * sdb	// источник
-	)
-{
-	if (sdb->dx == 0 || sdb->dy == 0)
-		return;
-
-	uint_fast16_t x;	// x получателя
-	for (x = 0; x < sdb->dy; ++ x)
-	{
-		uint_fast16_t y;	// y получателя
-		for (y = 0; y < sdb->dx; ++ y)
-		{
-			const COLORPIP_T pixel = * colpip_const_mem_at(sdb, y, sdb->dy - 1 - x);	// выборка из исхолного битмапа
-			* colpip_mem_at(tdb, tx + x, ty + y) = pixel;
-		}
-	}
 }
 
 
@@ -3862,31 +4442,6 @@ void colpip_stretchblt(
 			keyflag, keycolor);
 
 }
-
-// скоприовать прямоугольник с типом пикселей соответствующим pip
-// с поворотом вправо на 90 градусов
-void colpip_bitblt_ra90(
-	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
-	int_fast32_t dstinvalidatesize,
-	const gxdrawb_t * tdb,	// получатель
-	uint_fast16_t x,	// получатель Позиция
-	uint_fast16_t y,	// получатель
-	uintptr_t srcinvalidateaddr,	// параметры clean источника
-	int_fast32_t srcinvalidatesize,
-	const gxdrawb_t * sdb 	// источник
-	)
-{
-	//ASSERT(((uintptr_t) src % DCACHEROWSIZE) == 0);	// TODO: добавиль парамтр для flush исходного растра
-	hwaccel_ra90(
-		//dstinvalidateaddr, dstinvalidatesize,	// target area clean invalidate parameters
-		tdb,
-		x, y,
-		//srcinvalidateaddr, srcinvalidatesize,	// параметры clean источника
-		sdb
-		);
-}
-
-
 
 #if LCDMODE_COLORED
 
@@ -4180,232 +4735,6 @@ void arm_hardware_dma2d_initialize(void)
 #endif /* WITHDMA2DHW */
 
 
-#if WITHGPUHW && (CPUSTYLE_T507)
-//#define GPU_CTRLBASE (GPU_BASE + 0x10000)
-
-// https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/panfrost/panfrost_regs.h
-
-/* GPU_COMMAND values */
-#define GPU_COMMAND_NOP                0x00 /* No operation, nothing happens */
-#define GPU_COMMAND_SOFT_RESET         0x01 /* Stop all external bus interfaces, and then reset the entire GPU. */
-#define GPU_COMMAND_HARD_RESET         0x02 /* Immediately reset the entire GPU. */
-#define GPU_COMMAND_PRFCNT_CLEAR       0x03 /* Clear all performance counters, setting them all to zero. */
-#define GPU_COMMAND_PRFCNT_SAMPLE      0x04 /* Sample all performance counters, writing them out to memory */
-#define GPU_COMMAND_CYCLE_COUNT_START  0x05 /* Starts the cycle counter, and system timestamp propagation */
-#define GPU_COMMAND_CYCLE_COUNT_STOP   0x06 /* Stops the cycle counter, and system timestamp propagation */
-#define GPU_COMMAND_CLEAN_CACHES       0x07 /* Clean all caches */
-#define GPU_COMMAND_CLEAN_INV_CACHES   0x08 /* Clean and invalidate all caches */
-#define GPU_COMMAND_SET_PROTECTED_MODE 0x09 /* Places the GPU in protected mode */
-
-
-/* GPU_STATUS values */
-#define GPU_STATUS_PRFCNT_ACTIVE            (1 << 2)    /* Set if the performance counters are active. */
-#define GPU_STATUS_PROTECTED_MODE_ACTIVE    (1 << 7)    /* Set if protected mode is active */
-
-
-/* IRQ flags */
-#define GPU_FAULT               (1 << 0)    /* A GPU Fault has occurred */
-#define MULTIPLE_GPU_FAULTS     (1 << 7)    /* More than one GPU Fault occurred. */
-#define RESET_COMPLETED         (1 << 8)    /* Set when a reset has completed. */
-#define POWER_CHANGED_SINGLE    (1 << 9)    /* Set when a single core has finished powering up or down. */
-#define POWER_CHANGED_ALL       (1 << 10)   /* Set when all cores have finished powering up or down. */
-
-#define PRFCNT_SAMPLE_COMPLETED (1 << 16)   /* Set when a performance count sample has completed. */
-#define CLEAN_CACHES_COMPLETED  (1 << 17)   /* Set when a cache clean operation has completed. */
-
-#define GPU_IRQ_REG_ALL (GPU_FAULT | MULTIPLE_GPU_FAULTS | 0*RESET_COMPLETED \
-		| POWER_CHANGED_ALL | PRFCNT_SAMPLE_COMPLETED)
-
-static void gpu_command(unsigned cmd)
-{
-	while ((GPU_CONTROL->GPU_STATUS & (UINT32_C(1) << 0)) != 0)
-		;
-	GPU_CONTROL->GPU_COMMAND = cmd;
-//	unsigned v1 = GPU_CONTROL->GPU_STATUS;
-//	unsigned v2 = GPU_CONTROL->GPU_STATUS;
-//	unsigned v3 = GPU_CONTROL->GPU_STATUS;
-//	PRINTF("cmd: %08X, Status: %08X, %08X, %08X\n", cmd, v1, v2, v3);
-}
-
-static void gpu_wait(unsigned mask)
-{
-	while ((GPU_CONTROL->GPU_IRQ_RAWSTAT & mask) != mask)
-		;
-	GPU_CONTROL->GPU_IRQ_CLEAR = mask;
-}
-
-/* AS_COMMAND register commands */
-#define AS_COMMAND_NOP			0x00	/* NOP Operation */
-#define AS_COMMAND_UPDATE		0x01	/* Broadcasts the values in AS_TRANSTAB and ASn_MEMATTR to all MMUs */
-#define AS_COMMAND_LOCK			0x02	/* Issue a lock region command to all MMUs */
-#define AS_COMMAND_UNLOCK		0x03	/* Issue a flush region command to all MMUs */
-#define AS_COMMAND_FLUSH		0x04	/* Flush all L2 caches then issue a flush region command to all MMUs
-						   (deprecated - only for use with T60x) */
-#define AS_COMMAND_FLUSH_PT		0x04	/* Flush all L2 caches then issue a flush region command to all MMUs */
-#define AS_COMMAND_FLUSH_MEM		0x05	/* Wait for memory accesses to complete, flush all the L1s cache then
-						   flush all L2 caches then issue a flush region command to all MMUs */
-
-
-static void gpu_as_command(unsigned as, unsigned cmd)
-{
-
-}
-
-void GPU_IRQHandler(void)
-{
-	PRINTF("GPU_IRQHandler\n");
-	PRINTF("GPU_CONTROL->GPU_IRQ_STATUS=%08X\n", (unsigned) GPU_CONTROL->GPU_IRQ_STATUS);
-	ASSERT(0);
-}
-
-void GPU_JOB_IRQHandler(void)
-{
-	PRINTF("GPU_JOB_IRQHandler\n");
-	ASSERT(0);
-}
-
-void GPU_MMU_IRQHandler(void)
-{
-	PRINTF("GPU_MMU_IRQHandler\n");
-	ASSERT(0);
-}
-
-void GPU_EVENT_IRQHandler(void)
-{
-	PRINTF("GPU_EVENT_IRQHandler\n");
-	ASSERT(0);
-}
-
-void gpu_fillrect(
-	PACKEDCOLORPIP_T * __restrict buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uintptr_t taddr,
-	uint_fast32_t tstride,
-	uint_fast32_t tsizehw,
-	unsigned alpha,
-	COLOR24_T color24,
-	uint_fast16_t w,	// ширниа
-	uint_fast16_t h,	// высота
-	COLORPIP_T color	// цвет
-	)
-{
-	if (w == 0 || h == 0)
-		return;
-	if (w == 1 && h == 1)
-	{
-		* buffer = TFTALPHA(alpha, color24);
-		return;
-	}
-
-	int32_t triangle0 [3] [2] = { { 0, 0 }, { 0, h - 1}, { w - 1, 0 } };
-	int32_t triangle1 [3] [2] = { { w - 1, h - 1 }, { 0, h - 1}, { w - 1, 0 } };
-}
-
-// Graphic processor unit
-void board_gpu_initialize(void)
-{
-	PRINTF("board_gpu_initialize start.\n");
-	{
-		//PRINTF("1 CCU->PLL_GPU0_CTRL_REG = %08X\n", (unsigned) CCU->PLL_GPU0_CTRL_REG);
-
-		const unsigned N = 600 * 2 / 24;
-		const unsigned M1 = 1;
-		const unsigned M0 = 2;
-		// PLL_GPU0 = 24 MHz*N/M0/M1
-		CCU->PLL_GPU0_CTRL_REG = 0;
-		allwnr_t507_module_pll_spr(& CCU->PLL_GPU0_CTRL_REG, & CCU->PLL_GPU0_PAT0_CTRL_REG);	// Set Spread Frequency Mode
-		CCU->PLL_GPU0_CTRL_REG &= ~ (UINT32_C(1) << 31) & ~ (UINT32_C(1) << 27);
-		CCU->PLL_GPU0_CTRL_REG |=
-			(N - 1) * (UINT32_C(1) << 8) |
-			(M1 - 1) * (UINT32_C(1) << 1) |
-			(M0 - 1) * (UINT32_C(1) << 0) |
-			0;
-		CCU->PLL_GPU0_CTRL_REG |= (UINT32_C(1) << 31); // PLL_ENABLE
-		CCU->PLL_GPU0_CTRL_REG |= (UINT32_C(1) << 29); // LOCK_ENABLE
-		while ((CCU->PLL_GPU0_CTRL_REG  & (UINT32_C(1) << 28)) == 0)	// LOCK
-			;
-		CCU->PLL_GPU0_CTRL_REG |= (UINT32_C(1) << 27); // PLL_OUTPUT_ENABLE
-		//PRINTF("2 CCU->PLL_GPU0_CTRL_REG = %08X\n", (unsigned) CCU->PLL_GPU0_CTRL_REG);
-
-	}
-
-	CCU->GPU_CLK1_REG |= (UINT32_C(1) << 31);	// PLL_PERI_BAK_CLK_GATING
-	CCU->GPU_CLK0_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-
-	PRCM->GPU_PWROFF_GATING = 0;
-
-	CCU->GPU_BGR_REG |= (UINT32_C(1) << 0);	// Clock Gating
-	CCU->GPU_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert Reset
-	CCU->GPU_BGR_REG |= (UINT32_C(1) << 16);	// De-assert Reset
-
-	PRINTF("allwnr_t507_get_gpu_freq()=%" PRIuFAST32 " MHz\n", allwnr_t507_get_gpu_freq() / 1000 / 1000);
-
-	// https://github.com/bakhi/GPUReplay/blob/accce5d2bcbe5794b895156997f50a6fda86a87c/replayer/include/midgard/mali_kbase_gpu_id.h#L26
-
-	// Mali G31 MP2 (Panfrost)
-	PRINTF("board_gpu_initialize: GPU_ID=0x%08X (expected 0x%08X)\n", (unsigned) GPU_CONTROL->GPU_ID, 0x70930000);
-
-	arm_hardware_set_handler_system(GPU_IRQn, GPU_IRQHandler);
-	arm_hardware_set_handler_system(GPU_EVENT_IRQn, GPU_EVENT_IRQHandler);
-	arm_hardware_set_handler_system(GPU_JOB_IRQn, GPU_JOB_IRQHandler);
-	arm_hardware_set_handler_system(GPU_MMU_IRQn, GPU_MMU_IRQHandler);
-
-	GPU_CONTROL->GPU_IRQ_CLEAR = GPU_IRQ_REG_ALL;
-	GPU_CONTROL->GPU_IRQ_MASK = GPU_IRQ_REG_ALL;
-
-	GPU_JOB_CONTROL->JOB_IRQ_CLEAR = 0xFFFFFFFF;
-	GPU_JOB_CONTROL->JOB_IRQ_MASK = 0xFFFFFFFF;
-
-	GPU_MMU->MMU_IRQ_CLEAR = 0xFFFFFFFF;
-	GPU_MMU->MMU_IRQ_MASK = 0xFFFFFFFF;
-
-	gpu_command(GPU_COMMAND_HARD_RESET);
-	gpu_wait(RESET_COMPLETED);
-	gpu_command(GPU_COMMAND_SOFT_RESET);
-	gpu_wait(RESET_COMPLETED);
-	gpu_command(GPU_COMMAND_NOP);
-
-	// https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/panfrost/panfrost_mmu.c
-
-	PRINTF("board_gpu_initialize done.\n");
-
-	unsigned i;
-
-	memset32(GPU_MMU->MMU_AS, ~ UINT32_C(0), sizeof GPU_MMU->MMU_AS);
-	for (i = 0; i < ARRAY_SIZE(GPU_MMU->MMU_AS); ++ i)
-	{
-		printhex32((uintptr_t) & GPU_MMU->MMU_AS [i], & GPU_MMU->MMU_AS [i], sizeof GPU_MMU->MMU_AS [i]);
-	}
-}
-
-#elif CPUSTYLE_STM32MP1
-
-void GPU_IRQHandler(void)
-{
-	PRINTF("GPU_IRQHandler\n");
-}
-
-// Graphic processor unit
-void board_gpu_initialize(void)
-{
-	PRINTF("board_gpu_initialize start.\n");
-
-	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_GPUEN;
-	(void) RCC->MP_AHB6ENSETR;
-	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_GPULPEN;
-	(void) RCC->MP_AHB6LPENSETR;
-
-	PRINTF("board_gpu_initialize: PRODUCTID=%08lX\n", (unsigned long) GPU->PRODUCTID);
-
-//
-	arm_hardware_set_handler_system(GPU_IRQn, GPU_IRQHandler);
-
-	PRINTF("board_gpu_initialize done.\n");
-}
-
-#endif /* WITHGPUHW */
-
-
 /* g2d/mdma/gpu/dma2d initialize */
 void display_gpu_initialize(void)
 {
@@ -4418,6 +4747,10 @@ void display_gpu_initialize(void)
 	// Image construction hardware
 	arm_hardware_mdma_initialize();
 #endif /* WITHMDMAHW */
+#if WITHAWG2DHW
+	// Image construction hardware
+	arm_hardware_awg2d_initialize();
+#endif /* WITHAWG2DHW */
 #if WITHGPUHW
 	board_gpu_initialize();		// GPU controller
 #endif /* WITHGPUHW */

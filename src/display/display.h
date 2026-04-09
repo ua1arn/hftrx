@@ -199,6 +199,7 @@ typedef struct gxdrawb_tag
 } gxdrawb_t;
 
 void gxdrawb_initialize(gxdrawb_t * db, PACKEDCOLORPIP_T * buffer, uint_fast16_t dx, uint_fast16_t dy);
+void gxdrawb_initialize_yuv(gxdrawb_t * db, const void * buffer, uint_fast16_t dx, uint_fast16_t dy);
 void gxdrawb_initlvgl(gxdrawb_t * db, void * layer);
 
 enum gxstyle_texthalign
@@ -215,6 +216,8 @@ enum gxstyle_textvalign
 	GXSTYLE_VALIGN_BOTTOM
 };
 
+typedef struct unifont_tag unifont_t;
+
 typedef struct gxstyle_tag
 {
 	PACKEDCOLORPIP_T textcolor, bgcolor;
@@ -224,27 +227,14 @@ typedef struct gxstyle_tag
 	uint_fast16_t bgbackoffh;	// уменьшение размера плашки по вертикали
 	enum gxstyle_texthalign	texthalign;
 	enum gxstyle_textvalign textvalign;
-	uint_fast16_t (* font_draw_char)(
-		const gxdrawb_t * db,
-		uint_fast16_t x,
-		uint_fast16_t y,
-		char cc,
-		COLORPIP_T fg
-		);
-	uint_fast16_t (* font_draw_big)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg);
-	uint_fast16_t (* font_draw_half)(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t ci, uint_fast8_t width2, COLORPIP_T fg);
-	uint_fast8_t (* font_width)(char cc);
-	uint_fast8_t (* font_height)(void);
+	const unifont_t * font;		// Шрифт, который будет использоваться
 } gxstyle_t;
 
 void gxstyle_initialize(gxstyle_t * dbstyle);
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a);
 void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a);
-uint_fast16_t gxstyle_strwidth(const gxstyle_t * dbstyle, const char * s);
-void gxstyle_setsmallfont(gxstyle_t * dbstyle);
-void gxstyle_setsmallfont2(gxstyle_t * dbstyle);
-void gxstyle_setsbigandhalffont(gxstyle_t * dbstyle);
+void gxstyle_setfont(gxstyle_t * dbstyle, const unifont_t * font);
 void gxstyle_setbgbackoff(gxstyle_t * dbstyle, unsigned x, unsigned y);
 void gxstyle_setbgradius(gxstyle_t * dbstyle, unsigned r);
 void gxstyle_setbgrfilled(gxstyle_t * dbstyle, unsigned f);
@@ -262,32 +252,8 @@ void display_gpu_initialize(void);		/* g2d/mdma/gpu/dma2d initialize */
 // Используется при выводе на графический индикатор с кординатами и размерами по сетке
 void display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstyle);		// Выдача строки из ОЗУ в указанное место экрана.
 // Используется при выводе на графический индикатор с кординатами и размерами в пикселях
-void pix_display_text(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * s);
-// Используется при выводе на графический индикатор с кординатами и размерами в пикселях
 // Многострочное отображение
 void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstyle, const char * const * slines, unsigned nlines);
-
-uint_fast16_t colorpip_put_char_small(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	char cc,
-	COLORPIP_T fg
-	);
-uint_fast16_t colorpip_put_char_small2(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	char cc,
-	COLORPIP_T fg
-	);
-uint_fast16_t colorpip_x2_put_char_small(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	char cc,
-	COLORPIP_T fg
-	);
 
 void tc358768_initialize(const videomode_t * vdmode);
 void tc358768_wakeup(const videomode_t * vdmode);
@@ -301,6 +267,8 @@ void sii9022x_deinitialize(void);
 void panel_initialize(const videomode_t * vdmode);
 void panel_wakeup(void);
 void panel_deinitialize(void);
+
+void awxxx_hdmi_init(const videomode_t * vdmode, uint_fast32_t inputclock);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(const gxdrawb_t * db);	// Заполниить цветом фона
@@ -339,65 +307,6 @@ void colpip_point_xor(
 	COLORPIP_T color
 	);
 
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
-colpip_string_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg		// цвет вывода текста
-	);
-
-// Используется при выводе на графический индикатор,
-void
-colpip_string_x2ra90_count(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T fg,		// цвет вывода текста
-	COLORPIP_T bg,		// цвет вывода текста
-	const char * s,		// строка для вывода
-	size_t len			// количество символов
-	);
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void
-colpip_string2_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg		// цвет вывода текста
-	);
-// Используется при выводе на графический индикатор,
-// transparent background - не меняем цвет фона.
-void colpip_string3_tbg(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	const char * s,
-	COLORPIP_T fg		// цвет вывода текста
-	);
-// Используется при выводе на графический индикатор,
-// Возвращает ширину строки в пикселях
-uint_fast16_t strwidth3(
-	const char * s
-	);
-// Возвращает ширину строки в пикселях
-uint_fast16_t strwidth2(
-	const char * s
-	);
-// Возвращает ширину строки в пикселях
-uint_fast16_t strwidth(
-	const char * s
-	);
-// Возвращает высоту строки в пикселях
-uint_fast16_t strheight(
-	const char * s
-	);
-
 void display_bar(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,
@@ -413,15 +322,6 @@ void display_bar(
 	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
 	);
 
-
-// большие и средние цифры (частота)
-uint_fast16_t display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
-uint_fast16_t display_put_char_small(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
-uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
-uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle);
-// большие и средние цифры (частота)
-uint_fast16_t render_char_big(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
-uint_fast16_t render_char_half(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char cc);
 
 void display_swrmeter(const gxdrawb_t * db,
 	uint_fast8_t x,
@@ -467,13 +367,15 @@ colpip_rectangle(
 	unsigned alpha
 	);
 
+// colpip_bitblt & colpip_stretchblt flags
 #define BITBLT_FLAG_NONE			0u
 #define BITBLT_FLAG_CKEY			(1u << 0)	// colpip_bitblt use keycolor parameter
 #define BITBLT_FLAG_XMIRROR			(1u << 1)
 #define BITBLT_FLAG_YMIRROR			(1u << 2)
-#define BITBLT_FLAG_SRC_ABGR8888	(1u << 3)	/* исходный имедж - ABGR8888 (от LuPng) */
+#define BITBLT_FLAG_SRC_ABGR8888	(1u << 3)	/* исходный видеобуфер - ABGR8888 (от LuPng) */
+#define BITBLT_FLAG_SRC_YUV420		(1u << 4)	/* исходный видеобуфер - 0x01 Interleaved YUV422( Y1V0Y0U0, 0x0A Planar YUV420 (думаю) */
 
-// скоприовать прямоугольник с типом пикселей соответствующим pip
+// скоприовать прямоугольник
 void colpip_bitblt(
 	uintptr_t dstinvalidateaddr,	int_fast32_t dstinvalidatesize,	// параметры clean invalidate получателя
 	const gxdrawb_t * tdb,	// получатель
@@ -485,7 +387,7 @@ void colpip_bitblt(
 	unsigned bitbltmask, COLORPIP_T keycolor
 	);
 
-// скоприовать прямоугольник с типом пикселей соответствующим pip
+// скоприовать прямоугольник с масштабированием
 void colpip_stretchblt(
 	uintptr_t dstinvalidateaddr,	int_fast32_t dstinvalidatesize,	// параметры clean invalidate получателя
 	const gxdrawb_t * tdb,	// получатель
@@ -512,27 +414,6 @@ void colpip_copyrotate(
 	uint_fast8_t mx,	// X mirror flag
 	uint_fast8_t my,	// X mirror flag
 	unsigned angle	// positive CCW angle
-	);
-
-// скоприовать прямоугольник с типом пикселей соответствующим pip
-// с поворотом вправо на 90 градусов
-void colpip_bitblt_ra90(
-	uintptr_t dstinvalidateaddr,	// параметры clean invalidate получателя
-	int_fast32_t dstinvalidatesize,
-	const gxdrawb_t * tdb,	// получатель
-	uint_fast16_t x,	// получатель Позиция
-	uint_fast16_t y,	// получатель
-	uintptr_t srcinvalidateaddr,	// параметры clean источника
-	int_fast32_t srcinvalidatesize,
-	const gxdrawb_t * sdb 	// источник
-	);
-
-void
-colpip_string3_at_xy(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	const char * __restrict s
 	);
 
 uint_fast8_t colpip_hasalpha(void);
@@ -658,16 +539,18 @@ void colmain_fb_list(uintptr_t * frames);	// получение массива �
 //-----------------------
 #define LCDMODE_TVOUT_PAGES	5	// Используются буферы: один для полготовки изоображения, один готовый к отображению, один текцщий отображаемый
 
+// PAL - 720 * 576
+// NTSC - 720 * 480
 #if WITHHDMITVHW
-	// Второй дисплей масщтабиует на лету, на вход VI иждут кадры, совпадающие с основным дисплеем
+	// Второй дисплей мастабирует на лету, на вход VI идут кадры, совпадающие с основным дисплеем
 	#define TVD_WIDTH  DIM_X
 	#define TVD_HEIGHT DIM_Y
 	typedef PACKEDCOLORPIP_T PACKEDTVBUFF_T;
 	typedef COLORPIP_T TVBUFF_T;
 	#define TVMODE_PIXELSIZE LCDMODE_PIXELSIZE
 #else /* WITHHDMITVHW */
-	#define TVD_WIDTH  720
-	#define TVD_HEIGHT 576
+	#define TVD_WIDTH  720	// PAL width
+	#define TVD_HEIGHT 576	// PAL height
 	typedef uint8_t PACKEDTVBUFF_T;
 	typedef uint_fast8_t TVBUFF_T;
 	#define TVMODE_PIXELSIZE 1
@@ -698,14 +581,6 @@ void hwaccel_bitblt(
 	unsigned keyflag, COLORPIP_T keycolor
 	);
 
-// копирование буфера с поворотом вправо на 90 градусов (четверть оборота).
-void hwaccel_ra90(
-	const gxdrawb_t * tdb,	// получатель
-	uint_fast16_t tx,	// горизонтальная координата пикселя (0..dx-1) слева направо - в исходном нижний
-	uint_fast16_t ty,	// вертикальная координата пикселя (0..dy-1) сверху вниз - в исходном левый
-	const gxdrawb_t * sdb	// источник
-	);
-
 // Установить прозрачность для прямоугольника
 void display_transparency(const gxdrawb_t * db,
 	uint_fast16_t x1, uint_fast16_t y1,
@@ -726,25 +601,6 @@ void gpu_fillrect(
 	COLORPIP_T color	// цвет
 	);
 
-uint_fast8_t bigfont_width(char cc);
-uint_fast8_t halffont_width(char cc);
-uint_fast8_t smallfont_width(char cc);
-uint_fast8_t smallfont2_width(char cc);
-uint_fast8_t smallfont2_height(void);
-uint_fast8_t smallfont3_width(char cc);
-uint_fast8_t smallfont_height(void);
-
-void
-display_string3(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y,
-	uint_fast16_t w,
-	uint_fast16_t h,
-	const char * __restrict s,
-	COLORPIP_T fg, COLORPIP_T bg
-	);
-
 void colpip_line(
 	const gxdrawb_t * db,
 	int xn, int yn,
@@ -753,32 +609,13 @@ void colpip_line(
 	int antialiasing
 	);
 
-// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
-void
-display_freq(
-	const gxdrawb_t * db,
-	uint_fast8_t xcell,	// x координата начала вывода значения
-	uint_fast8_t ycell,	// y координата начала вывода значения
-	uint_fast8_t xspan,
-	uint_fast8_t yspan,
-	int_fast32_t freq,
-	uint_fast8_t width, // = 8;	// full width
-	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
-	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
-	uint_fast8_t rj,	// = 1;		// right truncated
-	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
-	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf,		// 0 - только большие цифры
-	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
-	);
-
 void
 pix_display_value_big(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
 	uint_fast16_t ypix,	// y координата начала вывода значения
-	uint_fast16_t xspanpix,
-	uint_fast16_t yspanpix,
+	uint_fast16_t w,
+	uint_fast16_t h,
 	int_fast32_t freq,
 	uint_fast8_t width, // = 8;	// full width
 	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
@@ -788,40 +625,6 @@ pix_display_value_big(
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
 	uint_fast8_t withhalf,		// 0 - только большие цифры
 	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
-	);
-
-// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
-/* из предварительно подготовленных буферов */
-void
-rendered_value_big(
-	const gxdrawb_t * db,
-	uint_fast8_t xcell,	// x координата начала вывода значения
-	uint_fast8_t ycell,	// y координата начала вывода значения
-	uint_fast8_t xspan,
-	uint_fast8_t yspan,
-	int_fast32_t freq,
-	uint_fast8_t width, // = 8;	// full width
-	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
-	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
-	uint_fast8_t rj,	// = 1;		// right truncated
-	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
-	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf		// 0 - только большие цифры
-	);
-
-void
-pix_rendered_value_big(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix,	// x координата начала вывода значения
-	uint_fast16_t ypix,	// y координата начала вывода значения
-	int_fast32_t freq,
-	uint_fast8_t width, // = 8;	// full width
-	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
-	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
-	uint_fast8_t rj,	// = 1;		// right truncated
-	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
-	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
-	uint_fast8_t withhalf		// 0 - только большие цифры
 	);
 
 void rendered_value_big_initialize(const gxstyle_t * gxstylep);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
@@ -874,35 +677,7 @@ int display_vtty_maxx(void);
 int display_vtty_maxy(void);
 void display_vtty_gotoxy(unsigned x, unsigned y);
 
-void display_vtty_x2_initialize(void);
-int display_vtty_x2_putchar(char ch);
-// копирование растра в видеобуфер отображения
-void display_vtty_x2_show(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y
-	);
-// копирование растра в видеобуфер отображения
-// с поворотом вправо на 90 градусов
-void display_vtty_x2_show_ra90(
-	const gxdrawb_t * db,
-	uint_fast16_t x,
-	uint_fast16_t y
-	);
-void display_vtty_x2_printf(const char * format, ...);
-
-int display_vtty_x2_maxx(void);
-int display_vtty_x2_maxy(void);
-void display_vtty_x2_gotoxy(unsigned x, unsigned y);
-
-void openvg_init(const uintptr_t * frames);
-void openvg_deinit(void);
-void openvg_next(unsigned page);		// текущий буфер отрисовки становится отображаемым, OpenVG переключается на следующий буфер
-
 void lvglhw_initialize(void);
-
-extern const char * savestring;
-extern const char * savewhere;
 
 #if 1//WITHRLEDECOMPRESS
 

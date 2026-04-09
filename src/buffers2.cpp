@@ -13,13 +13,17 @@
 #include "display/display.h"
 #include <atomic>
 
-//#undef RAMNC
-//#define RAMNC
+//#define WITHSEQTEST (1 && WITHDEBUG)
+//#define WITHBUFFERSDEBUG (1 && WITHDEBUG)
 
-//#define WITHBUFFERSDEBUG WITHDEBUG
 #ifndef BUFOVERSIZE
 	#define BUFOVERSIZE 1
 #endif /* BUFOVERSIZE */
+
+//#undef RAMNC
+//#define RAMNC
+#define RAMNCRX RAMNC	// память буферов приёма откуда-либо
+#define RAMNCTX RAMNC	// память буферов передачи куда-либо
 
 // Одна из задач resampler - привести частоту кодека к требуемой для 48 кГц (lrckf=24576000, (clk=24571428)) = 0.99981396484375
 // Для USB - исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
@@ -48,7 +52,7 @@ static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
-#define VOICE32RX_CAPACITY (4 * BUFOVERSIZE)
+#define VOICE32RX_CAPACITY (8 * BUFOVERSIZE)
 #define VOICE32TX_CAPACITY (16 * BUFOVERSIZE)
 
 #define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
@@ -425,7 +429,7 @@ struct buffitem
 	void * tag3;
 };
 
-template <typename buffitem_t, int hasresample, int hacheckready, int SKIPSAMPLES>
+template <typename buffitem_t, int hasresample, int HASCHECKREADY, int SKIPSAMPLES>
 class blists
 {
 	typedef typeof(buffitem_t::v) element_t;
@@ -463,7 +467,7 @@ public:
 //		PRINTF("dmahandle(%s)\n", name);
 //
 //	}
-	blists(IRQL_t airql, const char * aname, buffitem_t * storage, unsigned capacity) :
+	blists(IRQL_t airql, const char * aname, buffitem_t * const storage, unsigned capacity) :
 		irqllockarg(airql),
 #if WITHBUFFERSDEBUG
 		errallocate(0),
@@ -540,14 +544,26 @@ public:
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 	}
 
+	bool waut_readybuffer_raw(uint_fast32_t timeMS)
+	{
+		return local_waitlist(& readylist, & irqllocl.lock, timeMS) == 0;
+	}
+
 	// получить из списка готовых
-	bool get_readybuffer_raw(element_t * * dest)
+	bool get_readybuffer_raw(element_t * * dest, uint_fast32_t timeMS = 0)
 	{
 		IRQL_t oldIrql;
+		if (timeMS != 0)
+		{
+			// Запрос с ненулевым аргументром timeMS может возникнуть только из выделенных потоков
+			if (local_waitlist(& readylist, & irqllocl.lock, timeMS) != 0)	// timeot
+				return false;
+		}
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& readylist))
 		{
-			const PLIST_ENTRY t = RemoveTailList(& readylist);
+			const PRLIST_ENTRY t = RemoveTailList(& readylist);
+			ASSERT(readycount != 0);
 			-- readycount;
 			fiforeadyupdate();
 	#if WITHBUFFERSDEBUG
@@ -571,8 +587,8 @@ public:
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& freelist))
 		{
-			const PLIST_ENTRY t = RemoveTailList(& freelist);
-			ASSERT(freecount != 0);
+			const PRLIST_ENTRY t = RemoveTailList(& freelist);
+			ASSERT3(freecount != 0, __FILE__, __LINE__, name);
 			-- freecount;
 			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
@@ -589,6 +605,7 @@ public:
 		return false;
 	}
 
+	// получить не более нужного количества буферов из списка заполненных
 	unsigned take_readys(LIST_ENTRY * list, unsigned n)
 	{
 		unsigned v = 0;
@@ -598,7 +615,8 @@ public:
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
 		while (n -- && ! IsListEmpty(& readylist))
 		{
-			const PLIST_ENTRY t = RemoveTailList(& readylist);
+			const PRLIST_ENTRY t = RemoveTailList(& readylist);
+			ASSERT3(readycount, __FILE__, __LINE__, name);
 			-- readycount;
 			InsertHeadList(list, t);
 			++ v;
@@ -613,10 +631,9 @@ public:
 		IRQL_t oldIrql;
 
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
-
 		while (! IsListEmpty(list))
 		{
-			const PLIST_ENTRY t = RemoveTailList(list);
+			const PRLIST_ENTRY t = RemoveTailList(list);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
 			ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
@@ -624,33 +641,56 @@ public:
 			InsertHeadList(& freelist, t);
 			++ freecount;
 		}
-
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
 	}
 
-	bool get_readybuffer(element_t * * dest)
+	bool wait_readybuffer(uint_fast32_t timeMS)
 	{
+		if (hasresample)
+		{
+			return false;
+		}
+		else
+		{
+			const bool stoutready = outready;
+			if (HASCHECKREADY && ! stoutready)
+				return false;
+			return waut_readybuffer_raw(timeMS);
+
+		}
+
+	}
+
+	bool get_readybuffer(element_t * * dest, uint_fast32_t timeMS = 0)
+	{
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
+		const bool stoutready = outready;
+		const int streadycount = readycount;
+		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+
 		if (hasresample)
 		{
 			const unsigned wbgss = element_t::ss * element_t::nch;	// кодчиество байтов одного сэмпла на вссе каналы
 			const unsigned total = get_datasize();	// полный размер буфера
 			const unsigned SKIPBUFFS = SKIPSAMPLES / (total / wbgss);
-			if (! outready)
+
+			if (! stoutready)
 				return false;
 			if (wbskip != 0)
 			{
-				-- wbskip;
+				-- wbskip;	// statistics
 				return get_readybufferarj(dest, false, false);
 			}
-			else if (readycount <= MINMLEVEL)
+			else if (streadycount <= MINMLEVEL)
 			{
-				++ wbadded;
+				++ wbadded;	// statistics
 				wbskip = SKIPBUFFS;
 				return get_readybufferarj(dest, true, false);
 			}
-			else if (readycount >= MAXLEVEL)
+			else if (streadycount >= MAXLEVEL)
 			{
-				++ wbdeleted;
+				++ wbdeleted;	// statistics
 				wbskip = SKIPBUFFS;
 				return get_readybufferarj(dest, false, true);
 			}
@@ -661,9 +701,9 @@ public:
 		}
 		else
 		{
-			if (hacheckready && ! outready)
+			if (HASCHECKREADY && ! stoutready)
 				return false;
-			return get_readybuffer_raw(dest);
+			return get_readybuffer_raw(dest, timeMS);
 		}
 	}
 
@@ -728,8 +768,8 @@ public:
 		unsigned fin = fqin.getfreq();
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
-		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
-		PRINTF(" %s:e=%d,y=%d,f=%d,%uH/%uH", name, errallocate, readycount, freecount, (unsigned) fin, (unsigned) fout);
+		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, (unsigned) freecount);
+		PRINTF(" %s:e=%d,y=%d,f=%d,%uH/%uH", name, errallocate, (unsigned) readycount, (unsigned) freecount, (unsigned) fin, (unsigned) fout);
 		if (hasresample)
 		{
 			PRINTF("+%u,-%u", wbadded, wbdeleted);
@@ -828,10 +868,10 @@ public:
 	}
 };
 
-template <typename sample_t, typename element_t, int hasresample, int hacheckready, int skipsamples>
-class dmahandle: public blists<element_t, hasresample, hacheckready, skipsamples>
+template <typename sample_t, typename element_t, int hasresample, int HASCHECKREADY, int skipsamples>
+class dmahandle: public blists<element_t, hasresample, HASCHECKREADY, skipsamples>
 {
-	typedef blists<element_t, hasresample, hacheckready, skipsamples> parent_t;
+	typedef blists<element_t, hasresample, HASCHECKREADY, skipsamples> parent_t;
 	typedef typeof (element_t::v) wel_t;
 	typedef typeof (wel_t::buff [0]) rawsample_t;
 	wel_t * wb;
@@ -852,7 +892,7 @@ public:
 	}
 
 	// поэлементное заполнение буферов
-	void savedata(sample_t ch0, sample_t ch1, unsigned (* putcbf)(rawsample_t * b, sample_t ch0, sample_t ch1))
+	void savedata(sample_t ch0, sample_t ch1, int32_t v3, unsigned (* putcbf)(rawsample_t * b, sample_t ch0, sample_t ch1, int32_t v3))
 	{
 		if (wb == NULL)
 		{
@@ -860,7 +900,7 @@ public:
 				return;
 			wbn = 0;
 		}
-		wbn += putcbf(wb->buff + wbn, ch0, ch1);
+		wbn += putcbf(wb->buff + wbn, ch0, ch1, v3);
 		if (wbn >= ARRAY_SIZE(wb->buff))
 		{
 			parent_t::save_readybuffer(wb);
@@ -966,7 +1006,7 @@ static RAMFRAMEBUFF denoise16buf_t denoise16buf [SPEEX_CAPACITY];
 static denoise16dma_t denoise16list(IRQL_REALTIME, "denoise16", denoise16buf, ARRAY_SIZE(denoise16buf));
 
 // получить готоввый
-uint_fast8_t takespeexready(speexel_t * * dest)
+uint_fast8_t takespeexready(speexel_t * * dest, uint_fast32_t timeMS)
 {
 	denoise16_t * addr;
 	if (denoise16list.get_readybuffer(& addr))
@@ -1029,9 +1069,13 @@ typedef buffitem<voice16tx_t> voice16txbuf_t;
 typedef dmahandle<FLOAT_t, voice16rxbuf_t, VOICE16RX_RESAMPLING, 1, SKIPSAMPLES_HDMI> voice16rxdma_t;
 typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_RESAMPLING, 1, SKIPSAMPLES_HDMI> voice16txdma_t;
 
-static RAMNC voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
-static RAMNC voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
-
+#if WITHFPGAPIPE_CODEC1
+static voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
+static voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
+#else
+static RAMNCRX voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
+static RAMNCTX voice16txbuf_t voice16txbuf [VOICE16TX_CAPACITY];
+#endif
 
 static voice16rxdma_t codec16rx(IRQL_REALTIME, "16rx", voice16rxbuf, ARRAY_SIZE(voice16rxbuf));		// from codec
 static voice16txdma_t codec16tx(IRQL_REALTIME, "16tx", voice16txbuf, ARRAY_SIZE(voice16txbuf));		// to codec
@@ -1089,7 +1133,7 @@ static unsigned getcbf_dmabuffer16rx(aubufv_t * b, FLOAT_t * dest)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabuffer16tx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned putcbf_dmabuffer16tx(aubufv_t * b, FLOAT_t ch0, FLOAT_t ch1, int32_t v3)
 {
 	b [DMABUFF16TX_LEFT] = adpt_output(& afcodectx, ch0);
 	b [DMABUFF16TX_RIGHT] = adpt_output(& afcodectx, ch1);
@@ -1132,7 +1176,7 @@ void release_dmabuffer16rx(uintptr_t addr)
 
 void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1)
 {
-	codec16tx.savedata(ch0, ch1, putcbf_dmabuffer16tx);
+	codec16tx.savedata(ch0, ch1, 0, putcbf_dmabuffer16tx);
 }
 
 /* Перенос из FPGA PIPE в формируемый буфер виртуального кодекв */
@@ -1243,7 +1287,7 @@ typedef buffitem<hdmi48tx_t> hdmi48txbuf_t;
 
 typedef dmahandle<FLOAT_t, hdmi48txbuf_t, HDMI48TX_RESAMPLING, 1, SKIPSAMPLES_HDMI> hdmi48txdma_t;
 
-static RAMNC hdmi48txbuf_t hdmi48txbuf [HDMI48TX_CAPACITY];
+static RAMNCTX hdmi48txbuf_t hdmi48txbuf [HDMI48TX_CAPACITY];
 
 
 static hdmi48txdma_t hdmi48tx(IRQL_REALTIME, "hdtx", hdmi48txbuf, ARRAY_SIZE(hdmi48txbuf));		// to codec
@@ -1314,7 +1358,7 @@ int_fast32_t datasize_dmabufferhdmi48tx(void) /* parameter for DMA CPU to HDMI *
 
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabufferhdmi48tx(hdmi48bufv_t * b, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned putcbf_dmabufferhdmi48tx(hdmi48bufv_t * b, FLOAT_t ch0, FLOAT_t ch1, int32_t v3)
 {
 	b [0] = adpt_output(& adhdmi48tx, ch0);
 	b [1] = adpt_output(& adhdmi48tx, ch1);
@@ -1323,7 +1367,7 @@ static unsigned putcbf_dmabufferhdmi48tx(hdmi48bufv_t * b, FLOAT_t ch0, FLOAT_t 
 
 void elfill_dmabufferhdmi48tx(FLOAT_t ch0, FLOAT_t ch1)
 {
-	hdmi48tx.savedata(ch0, ch1, putcbf_dmabufferhdmi48tx);
+	hdmi48tx.savedata(ch0, ch1, 0, putcbf_dmabufferhdmi48tx);
 }
 
 #endif /* WITHHDMITVHW */
@@ -1342,7 +1386,7 @@ typedef buffitem<moni16_t> moni16buf_t;
 
 // sidetone forming
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned putcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1, int32_t v3)
 {
 	ASSERT(DMABUFFSTEP16MONI == 2);
 	b [0] = ch0;
@@ -1409,7 +1453,7 @@ typedef ALIGNX_BEGIN struct voices32tx_tag
 
 typedef buffitem<voice32tx_t> voice32txbuf_t;
 
-static RAMNC voice32txbuf_t voice32txbuf [VOICE32TX_CAPACITY];
+static RAMNCTX voice32txbuf_t voice32txbuf [VOICE32TX_CAPACITY];
 
 typedef dmahandle<FLOAT_t, voice32txbuf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> voice32txdma_t;
 
@@ -1427,7 +1471,7 @@ int_fast32_t datasize_dmabuffer32tx(void)
 }
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t ch1, int32_t delta)
 {
 
 #if WITHTXCPATHCALIBRATE
@@ -1437,7 +1481,9 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 	buff [DMABUF32TXI] = adpt_output(& ifcodectx, ch0);
 	buff [DMABUF32TXQ] = adpt_output(& ifcodectx, ch1);
 #endif /* WITHTXCPATHCALIBRATE */
-
+#if WITHFPGAPIPE_NCORX0
+	buff [DMABUF32TX_NCO1] = delta;
+#endif /* WITHFPGAPIPE_NCORX0 */
 #if (CPUSTYLE_XC7Z || CPUSTYLE_RK356X) && WITHLFM
 	if (iflfmactive())
 	{
@@ -1451,9 +1497,9 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 	return DMABUFFSTEP32TX;
 }
 
-void elfill_dmabuffer32tx(FLOAT_t ch0, FLOAT_t ch1)
+void elfill_dmabuffer32tx(FLOAT_t ch0, FLOAT_t ch1, int32_t v3)
 {
-	voice32tx.savedata(ch0, ch1, putcbf_dmabuffer32tx);
+	voice32tx.savedata(ch0, ch1, v3, putcbf_dmabuffer32tx);
 }
 
 void release_dmabuffer32tx(uintptr_t addr)
@@ -1530,7 +1576,8 @@ uintptr_t getfilled_dmabuffer32tx(void)
 	{
 		IFDACvalue_t * const buff = dest->buff + i * DMABUFFSTEP32TX;
 	#if WITHFPGAPIPE_NCORX0
-		buff [DMABUF32TX_NCO1] = dspfpga_get_nco1();
+		buff [DMABUF32TX_NCO1] += dspfpga_get_nco1();
+		//buff [DMABUF32TX_NCO1] = dspfpga_get_nco1();
 	#endif /* WITHFPGAPIPE_NCORX0 */
 	#if WITHFPGAPIPE_NCORX1
 		buff [DMABUF32TX_NCO2] = dspfpga_get_nco2();
@@ -1554,7 +1601,7 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 
 typedef buffitem<voice32rx_t> voice32rxbuf_t;
 
-static RAMNC voice32rxbuf_t voice32rxbuf [VOICE32RX_CAPACITY];
+static RAMNCRX voice32rxbuf_t voice32rxbuf [VOICE32RX_CAPACITY];
 
 typedef dmahandle<int_fast32_t, voice32rxbuf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> voice32rxdma_t;
 
@@ -1598,6 +1645,7 @@ uintptr_t getfilled_dmabuffer32rx(void)
 
 // Обработка сразу в прерывании
 #define TXSPOOLCOND (LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM)))
+//#define TXSPOOLCOND 1	// Force in-interrupt 32rx stream parsing
 #if ! TXSPOOLCOND
 #define TXSPOOLCORE 3
 #endif
@@ -1606,12 +1654,27 @@ static void dsphftrxproc_spool_user(void * ctx)
 {
 	voice32rx_t * dest;
 	(void) ctx;
-	if (voice32rx.get_readybuffer(& dest))
+	while (voice32rx.get_readybuffer(& dest))
 	{
 		process_dmabuffer32rx(dest->buff);
 		voice32rx.release_buffer(dest);
 		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 	}
+}
+
+static int dsphftrxproc_spool_user_thread(void * ctx)
+{
+	voice32rx_t * dest;
+	(void) ctx;
+	for (;;)
+	{
+		if (voice32rx.get_readybuffer(& dest, LOCAL_WAITINFINITY) == false)
+			continue;
+		process_dmabuffer32rx(dest->buff);
+		voice32rx.release_buffer(dest);
+		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
+	}
+	return 0;
 }
 
 void save_dmabuffer32rx(uintptr_t addr)
@@ -1620,6 +1683,7 @@ void save_dmabuffer32rx(uintptr_t addr)
 	voice32rx.save_readybuffer(p);
 	// dsphftrxproc_spool_user on other CPUs
 #if TXSPOOLCOND
+	#warning rx process in interrupt
 	dsphftrxproc_spool_user(NULL);
 #endif /* TXSPOOLCOND */
 }
@@ -1640,7 +1704,7 @@ typedef struct
 
 typedef buffitem<uacout48_t> uacout48buf_t;
 
-static RAMNC uacout48buf_t uacout48buf [UACOUT48_CAPACITY];
+static RAMNCRX uacout48buf_t uacout48buf [UACOUT48_CAPACITY];
 
 typedef dmahandle<FLOAT_t, uacout48buf_t, 1, 1, SKIPSAMPLES_USB> uacout48dma_t;
 
@@ -2249,7 +2313,7 @@ uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest)
 //}
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned putcbf_dmabufferbtio48(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned putcbf_dmabufferbtio48(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1, int32_t ch_unused)
 {
 	b [0] = ch0;
 	b [1] = ch1;
@@ -2266,7 +2330,7 @@ static unsigned putcbf_dmabufferbtio48(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1)
 
 void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1)
 {
-	btin48k.savedata(ch0, ch1, putcbf_dmabufferbtio48);
+	btin48k.savedata(ch0, ch1, 0, putcbf_dmabufferbtio48);
 }
 ///////
 // can not be zero
@@ -2479,7 +2543,7 @@ typedef enum
 	} uacinrts192_t;
 
 	typedef buffitem<uacinrts192_t> uacinrts192buf_t;
-	static RAMNC uacinrts192buf_t uacinrts192buf [UACINRTS192_CAPACITY];
+	static RAMNCTX uacinrts192buf_t uacinrts192buf [UACINRTS192_CAPACITY];
 
 	typedef dmahandle<int_fast32_t, uacinrts192buf_t, 1, 1, SKIPSAMPLES_USB> uacinrts192dma_t;
 
@@ -2506,7 +2570,7 @@ typedef enum
 
 	void elfill_dmabufferuacinrts192(int_fast32_t ch0, int_fast32_t ch1)
 	{
-		uacinrts192.savedata(ch0, ch1, putcbf_dmabufferuacinrts192);
+		uacinrts192.savedata(ch0, ch1, 0, putcbf_dmabufferuacinrts192);
 	}
 
 	// can not be zero
@@ -2559,7 +2623,7 @@ typedef enum
 	} uacinrts96_t;
 
 	typedef buffitem<uacinrts96_t> uacinrts96buf_t;
-	static RAMNC uacinrts96buf_t uacinrts96buf [UACINRTS96_CAPACITY];
+	static RAMNCTX uacinrts96buf_t uacinrts96buf [UACINRTS96_CAPACITY];
 
 	typedef dmahandle<int_fast32_t, uacinrts96buf_t, 1, 1, SKIPSAMPLES_USB> uacinrts96dma_t;
 
@@ -2579,14 +2643,14 @@ typedef enum
 	}
 
 	// Возвращает количество элементов буфера, обработанных за вызов
-	static unsigned putcbf_dmabufferuacinrts96(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1)
+	static unsigned putcbf_dmabufferuacinrts96(uint8_t * b, int_fast32_t ch0, int_fast32_t ch1, int32_t delta)
 	{
 		return uacinrts96adpt.poketransf_LE(& if2rts96out, b, ch0, ch1);
 	}
 
 	void elfill_dmabufferuacinrts96(int_fast32_t ch0, int_fast32_t ch1)
 	{
-		uacinrts96.savedata(ch0, ch1, putcbf_dmabufferuacinrts96);
+		uacinrts96.savedata(ch0, ch1, 0, putcbf_dmabufferuacinrts96);
 	}
 
 	// can not be zero
@@ -2639,7 +2703,7 @@ typedef struct
 
 typedef buffitem<uacin48_t> uacin48buf_t;
 
-static RAMNC uacin48buf_t uacin48buf [UACIN48_CAPACITY];
+static RAMNCTX uacin48buf_t uacin48buf [UACIN48_CAPACITY];
 
 typedef dmahandle<FLOAT_t, uacin48buf_t, 1, 1, SKIPSAMPLES_USB> uacin48dma_t;
 
@@ -2651,7 +2715,7 @@ static uacin48adpt_t uacin48adpt(UACIN_AUDIO48_SAMPLEBYTES * 8, 0, "uacin48");
 static uacin48dma_t uacin48(IRQL_REALTIME, "uacin48", uacin48buf, ARRAY_SIZE(uacin48buf));
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned uacin48_putcbf(uint8_t * b, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned uacin48_putcbf(uint8_t * b, FLOAT_t ch0, FLOAT_t ch1, int32_t v3)
 {
 	return uacin48adpt.poke_LE(b, ch0, ch1);
 }
@@ -2670,7 +2734,7 @@ int_fast32_t datasize_dmabufferuacin48(void)
 
 void elfill_dmabufferuacin48(FLOAT_t ch0, FLOAT_t ch1)
 {
-	uacin48.savedata(ch0, ch1, uacin48_putcbf);
+	uacin48.savedata(ch0, ch1, 0, uacin48_putcbf);
 }
 
 // can not be zero
@@ -2693,7 +2757,7 @@ uintptr_t getfilled_dmabufferuacin48(void)
 		return (uintptr_t) & dest->buff;
 	}
 	uacin48.debug();
-	PRINTF("uacin48.readycount=%u\n", uacin48.readycount);
+	PRINTF("uacin48.readycount=%u\n", (unsigned) uacin48.readycount);
 	ASSERT(0);
 	return 0;
 }
@@ -2868,8 +2932,8 @@ typedef blists<modems8_t, MODEM8_CAPACITY> modems8list_t;
 
 static RAMFRAMEBUFF modems8list_t modems8list(MODEM8_IRQL, "mdm8");
 
-//static RAMBIGDTCM LIST_HEAD2 modemsfree8;		// Свободные буферы
-//static RAMBIGDTCM LIST_HEAD2 modemsrx8;	// Буферы с принятымти через модем данными
+//static LIST_HEAD modemsfree8;		// Свободные буферы
+//static LIST_HEAD modemsrx8;	// Буферы с принятымти через модем данными
 //static LIST_ENTRY modemstx8;	// Буферы с данными для передачи через модем
 
 
@@ -2878,9 +2942,9 @@ size_t takemodemrxbuffer(uint8_t * * dest)
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_REALTIME, & oldIrql);
-	if (! IsListEmpty2(& modemsrx8))
+	if (! IsListEmpty(& modemsrx8))
 	{
-		PLIST_ENTRY t = RemoveTailList2(& modemsrx8);
+		PRLIST_ENTRY t = RemoveTailList(& modemsrx8);
 		LowerIrql(oldIrql);
 		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
 		* dest = p->buff;
@@ -2896,9 +2960,9 @@ size_t takemodembuffer(uint8_t * * dest)
 {
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_REALTIME, & oldIrql);
-	if (! IsListEmpty2(& modemsfree8))
+	if (! IsListEmpty(& modemsfree8))
 	{
-		PLIST_ENTRY t = RemoveTailList2(& modemsfree8);
+		PRLIST_ENTRY t = RemoveTailList(& modemsfree8);
 		LowerIrql(oldIrql);
 		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
 		* dest = p->buff;
@@ -2909,28 +2973,15 @@ size_t takemodembuffer(uint8_t * * dest)
 	return 0;
 }
 
-// Буферы для заполнения данными
-// вызывается из real-time обработчика прерывания
-size_t takemodembuffer_low(uint8_t * * dest)
-{
-	if (! IsListEmpty2(& modemsfree8))
-	{
-		PLIST_ENTRY t = RemoveTailList2(& modemsfree8);
-		modems8_t * const p = CONTAINING_RECORD(t, modems8_t, item);
-		* dest = p->buff;
-		return (MODEMBUFFERSIZE8 * sizeof p->buff [0]);
-	}
-	* dest = NULL;
-	return 0;
-}
-
 // Готов буфер с принятыми данными
-// вызывается из real-time обработчика прерывания
-void savemodemrxbuffer_low(uint8_t * dest, size_t length)
+void savemodemrxbuffer(uint8_t * dest, size_t length)
 {
+	IRQL_t oldIrql;
 	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
 	p->length = length;
-	InsertHeadList2(& modemsrx8, & p->item);
+	RiseIrql(IRQL_REALTIME, & oldIrql);
+	InsertHeadList(& modemsrx8, & p->item);
+	LowerIrql(oldIrql);
 }
 
 void releasemodembuffer(uint8_t * dest)
@@ -2938,15 +2989,8 @@ void releasemodembuffer(uint8_t * dest)
 	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
 	IRQL_t oldIrql;
 	RiseIrql(IRQL_REALTIME, & oldIrql);
-	InsertHeadList2(& modemsfree8, & p->item);
+	InsertHeadList(& modemsfree8, & p->item);
 	LowerIrql(oldIrql);
-}
-
-// вызывается из real-time обработчика прерывания
-void releasemodembuffer_low(uint8_t * dest)
-{
-	modems8_t * const p = CONTAINING_RECORD(dest, modems8_t, buff);
-	InsertHeadList2(& modemsfree8, & p->item);
 }
 
 #endif /* WITHMODEM */
@@ -2977,7 +3021,7 @@ typedef dmahandle<FLOAT_t, recordswav48buf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> rec
 static recordswav48dma_t recordswav48dma(IRQL_REALTIME, "rec", recordswav48buf, ARRAY_SIZE(recordswav48buf));
 
 // Возвращает количество элементов буфера, обработанных за вызов
-static unsigned recordswav48_putcbf(int16_t * buff, FLOAT_t ch0, FLOAT_t ch1)
+static unsigned recordswav48_putcbf(int16_t * buff, FLOAT_t ch0, FLOAT_t ch1, int32_t v3)
 {
 #if WITHUSEAUDIOREC2CH
 
@@ -2997,7 +3041,7 @@ static unsigned recordswav48_putcbf(int16_t * buff, FLOAT_t ch0, FLOAT_t ch1)
 
 void elfill_recordswav48(FLOAT_t ch0, FLOAT_t ch1)
 {
-	recordswav48dma.savedata(ch0, ch1, recordswav48_putcbf);
+	recordswav48dma.savedata(ch0, ch1, 0, recordswav48_putcbf);
 }
 
 // user-mode function
@@ -3139,13 +3183,13 @@ void recordsampleSD(FLOAT_t left, FLOAT_t right)
 	{
 #if WITHUSBUACIN
 #if WITHUSBUACIN2
-	#if WITHRTS96
+	#if WITHRTS96 && WITHINTEGRATEDDSP
 		if (uacinrtsalt == UACINRTSALT_RTS96)
 		{
 			elfill_dmabufferuacinrts96(ch0, ch1);
 		}
 	#endif /* WITHRTS96 */
-	#if WITHRTS192
+	#if WITHRTS192 && WITHINTEGRATEDDSP
 	#endif /* WITHRTS192 */
 #else
 	#if WITHRTS96
@@ -3233,12 +3277,12 @@ deliverylist_t speexinfloat;	// вход speex
 
 void elfill_dmabufferrx16rec(FLOAT_t ch0, FLOAT_t ch1)
 {
-	rx16rec.savedata(ch0, ch1, putcbf_dmabuffer16moni);
+	rx16rec.savedata(ch0, ch1, 0, putcbf_dmabuffer16moni);
 }
 
 void elfill_dmabuffermoni16(FLOAT_t ch0, FLOAT_t ch1)
 {
-	moni16.savedata(ch0, ch1, putcbf_dmabuffer16moni);
+	moni16.savedata(ch0, ch1, 0, putcbf_dmabuffer16moni);
 }
 
 uint_fast8_t voicerec16_get(FLOAT32P_t * v)
@@ -3433,14 +3477,13 @@ saverts192quad(const IFADCvalue_t * buff)
 }
 #endif /* WITHDSPEXTDDC && WITHRTS192 */
 
-#if 0
+#if WITHSEQTEST
 
 // Проверка качества линии передачи от FPGA
 static int32_t seqNext [DMABUFFSTEP32RX];
-static uint_fast8_t  seqValid [DMABUFFSTEP32RX];
+static uint_fast8_t  seqNextValid [DMABUFFSTEP32RX];
 static int seqErrors;
 static int seqTotal;
-static int seqRun;
 static int seqDone;
 
 enum { MAXSEQHIST = DMABUFCLUSTER + 5 };
@@ -3451,13 +3494,14 @@ static unsigned seqPos;
 static unsigned seqAfterError;
 static unsigned seqValidateSkip;
 static int iMAX, qMAX, deltaMAX;
+static int32_t seqPresent, seqExpected;
 
-static int historyStop;
-
+static volatile int historyStop;
+static const int testSlot = 2;
 static void historyUserPrint(void * ctx)
 {
-	PRINTF("seqErrors=%d, seqTotal=%d, seqRun=%d\n", seqErrors, seqTotal, seqRun);
-	PRINTF("iMAX=%d(0x%08X), qMAX=%d(0x%08X), deltaMAX=%d\n", iMAX, iMAX, qMAX, qMAX, deltaMAX);
+	PRINTF("seqErrors=%d, seqTotal=%d, seqPresent=%08X, seqExpected=%08X\n", seqErrors, seqTotal, (unsigned) seqPresent, (unsigned) seqExpected);
+	//PRINTF("iMAX=%d(0x%08X), qMAX=%d(0x%08X), deltaMAX=%d\n", iMAX, iMAX, qMAX, qMAX, deltaMAX);
 	unsigned i;
 	for (i = 0; i < MAXSEQHIST; ++ i)
 	{
@@ -3468,6 +3512,13 @@ static void historyUserPrint(void * ctx)
 			PRINTF("%08X ", (unsigned) seqHist [ix] [col]);
 		PRINTF("\n");
 	}
+//	seqValidateSkip = 0;
+	seqAfterError = 0;
+	seqErrors = 0;
+	seqNextValid [testSlot] = 0;
+	seqPos = 0;
+	memset(seqHist, 0xE5, sizeof seqHist);
+	historyStop = 0;
 }
 
 static dpcobj_t userprintdpc;
@@ -3493,6 +3544,8 @@ static void historySave(const int32_t * base)
 
 static void rangeValidate(const int32_t * b)
 {
+	if (historyStop)
+		return;
 	int32_t i = b [DMABUF32RX0I] << 4;
 	int32_t q = b [DMABUF32RX0Q] << 4;
 	const int32_t delta = INT32_MAX / 100;
@@ -3513,9 +3566,11 @@ static void rangeValidate(const int32_t * b)
 	historyPrint();
 }
 
-static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
+static void validateSeq(uint_fast8_t slot)
 {
-	if (seqValidateSkip < 60000)
+	if (historyStop)
+		return;
+	if (seqValidateSkip < 6000)
 	{
 		++ seqValidateSkip;
 		return;
@@ -3524,8 +3579,7 @@ static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 	// Was error, record tail
 	if (seqAfterError)
 	{
-		seqAfterError = seqAfterError - 1;
-		if (seqAfterError == 0)
+		if (-- seqAfterError == 0)
 		{
 			historyPrint();
 		}
@@ -3535,25 +3589,19 @@ static void validateSeq(uint_fast8_t slot, int32_t v, const int32_t * base)
 	if (seqDone)
 		return;
 
-	if (! seqValid [slot])
-	{
-		seqValid [slot] = 1;
-	}
-	else
+	const int32_t v = seqHist [seqPos] [slot];
+	if (seqNextValid [slot])
 	{
 		if (seqNext [slot] != v)
 		{
+			seqPresent = v;
+			seqExpected = seqNext [slot];
 			++ seqErrors;
-			seqRun = 0;
-			if (seqErrors == 2 && seqAfterError == 0)
-				seqAfterError = 4;	// Еще четыре фрейма и стоп
-		}
-		else
-		{
-			++ seqRun;
+			seqAfterError = 4;	// Еще четыре фрейма и стоп
 		}
 		++ seqTotal;
 	}
+	seqNextValid [slot] = 1;
 	seqNext [slot] = v + 1;
 }
 #endif
@@ -3639,24 +3687,30 @@ static void savetestadc(IFADCvalue_t v0, IFADCvalue_t v1)
 void process_dmabuffer32rx(const IFADCvalue_t * buff)
 {
 	unsigned i;
+#if WITHFPGAPIPE_FPGASTATUS
+	/* получение состояния от FPGA через I2S канал */
+	board_savefpgastatus(buff [DMABUFF32RX_STATUS0], buff [DMABUFF32RX_STATUS1]);
+#endif /* WITHFPGAPIPE_FPGASTATUS */
+#if 0 && WITHDEBUG && defined (DMABUFF32RX_ADCTEST_C0)
+	savetestadc(buff [DMABUFF32RX_ADCTEST_C0], buff [DMABUFF32RX_ADCTEST_C1]);
+#endif /* WITHDEBUG && defined (DMABUFF32RX_ADCTEST_C0) */
 	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFFSTEP32RX)
 	{
 		const IFADCvalue_t * const b = buff + i;
 		//
-#if 0
+#if WITHSEQTEST
 	historySave(b);	// Save data for history
-	rangeValidate(b);
+//	rangeValidate(b);
 	if (0)
 	{
 		// Проверка качества линии передачи от FPGA
 		uint_fast8_t slot;
 		for (slot = 0; slot < DMABUFFSTEP32RX; ++ slot)
-			validateSeq(slot, b [slot], b);
+			validateSeq(slot);
 	}
-	else if (0)
+	else if (1)
 	{
-		uint_fast8_t slot = 0;	// slot 4
-		validateSeq(slot, b [slot], b);
+		validateSeq(testSlot);
 	}
 #endif
 #if 0
@@ -3687,9 +3741,6 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 		//elfill_dmabuffer16rx(adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_LEFT]), adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_RIGHT]));
 		elfill_dmabuffer16rx_raw(b [DMABUFF32RX_CODEC1_LEFT], b [DMABUFF32RX_CODEC1_RIGHT]);
 #endif /* WITHFPGAPIPE_CODEC1 */
-#if 0 && WITHDEBUG && defined (DMABUFF32RX_ADCTEST_C0)
-		savetestadc(b [DMABUFF32RX_ADCTEST_C0], b [DMABUFF32RX_ADCTEST_C1]);
-#endif /* WITHDEBUG && defined (DMABUFF32RX_ADCTEST_C0) */
 	}
 
 #if WITHWFM
@@ -3705,32 +3756,6 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 #if WITHUSBUAC && WITHUSBHW
 
 /* +++ UAC OUT data save */
-
-void
-buffers_set_uacinalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
-{
-	//PRINTF(PSTR("buffers_set_uacinalt: v=%d\n"), (int) v);
-	uacinalt = v;
-}
-
-void
-buffers_set_uacinrtsalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
-{
-	//PRINTF(PSTR("buffers_set_uacinrtsalt: v=%d\n"), (int) v);
-	uacinrtsalt = v;
-}
-
-uint_fast8_t buffers_get_uacoutactive(void)
-{
-	return uacoutalt != UACOUTALT_NONE;
-}
-
-void
-buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC OUT interface */
-{
-	//PRINTF(PSTR("buffers_set_uacoutalt: v=%d\n"), (int) v);
-	uacoutalt = v;
-}
 
 /* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep)
@@ -3805,9 +3830,9 @@ uintptr_t getfilled_dmabufferuacinrtsX(uint_fast16_t * sizep)
 #endif /* WITHUSBUAC */
 
 /* предполагается что тут значения нормирования в диапазоне -1..+1 */
-void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
+void deliveryfloat(deliverylist_t * RESTRICTED_POINTER list, FLOAT_t ch0, FLOAT_t ch1)
 {
-	PLIST_ENTRY t;
+	PRLIST_ENTRY t;
 	IRQL_t oldIrql;
 
 	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
@@ -3820,10 +3845,10 @@ void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 /* предполагается что тут значения нормирования в диапазоне -1..+1 */
-void deliveryfloat_buffer(deliverylist_t * list, const FLOAT_t * ch0, const FLOAT_t * ch1, unsigned n)
+void deliveryfloat_buffer(deliverylist_t * RESTRICTED_POINTER list, const FLOAT_t * ch0, const FLOAT_t * ch1, unsigned n)
 {
 	IRQL_t oldIrql;
-	PLIST_ENTRY t;
+	PRLIST_ENTRY t;
 
 	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
@@ -3838,10 +3863,10 @@ void deliveryfloat_buffer(deliverylist_t * list, const FLOAT_t * ch0, const FLOA
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
-void deliveryint(deliverylist_t * list, int_fast32_t ch0, int_fast32_t ch1)
+void deliveryint(deliverylist_t * RESTRICTED_POINTER list, int_fast32_t ch0, int_fast32_t ch1)
 {
 	IRQL_t oldIrql;
-	PLIST_ENTRY t;
+	PRLIST_ENTRY t;
 
 	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
@@ -3852,7 +3877,7 @@ void deliveryint(deliverylist_t * list, int_fast32_t ch0, int_fast32_t ch1)
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
-void subscribefloat(deliverylist_t * list, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1))
+void subscribefloat(deliverylist_t * RESTRICTED_POINTER list, subscribefloat_t * target, void * ctx, void (* pfn)(void * ctx, FLOAT_t ch0, FLOAT_t ch1))
 {
 	IRQL_t oldIrql;
 
@@ -3863,7 +3888,7 @@ void subscribefloat(deliverylist_t * list, subscribefloat_t * target, void * ctx
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
-void unsubscribefloat(deliverylist_t * list, subscribefloat_t * target)
+void unsubscribefloat(deliverylist_t * RESTRICTED_POINTER list, subscribefloat_t * target)
 {
 	IRQL_t oldIrql;
 
@@ -3872,7 +3897,7 @@ void unsubscribefloat(deliverylist_t * list, subscribefloat_t * target)
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
-void subscribeint32(deliverylist_t * list, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
+void subscribeint32(deliverylist_t * RESTRICTED_POINTER list, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1))
 {
 	IRQL_t oldIrql;
 
@@ -3883,7 +3908,7 @@ void subscribeint32(deliverylist_t * list, subscribeint32_t * target, void * ctx
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
-void unsubscribeint32(deliverylist_t * list, subscribeint32_t * target)
+void unsubscribeint32(deliverylist_t * RESTRICTED_POINTER list, subscribeint32_t * target)
 {
 	IRQL_t oldIrql;
 
@@ -3892,7 +3917,7 @@ void unsubscribeint32(deliverylist_t * list, subscribeint32_t * target)
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
 
-void deliverylist_initialize(deliverylist_t * list, IRQL_t irqlv)
+void deliverylist_initialize(deliverylist_t * RESTRICTED_POINTER list, IRQL_t irqlv)
 {
 	InitializeListHead(& list->head);
 	list->irql = irqlv;
@@ -4545,7 +4570,25 @@ int64_t transform_do64(
 	return (v << tfm->lshift64) >> tfm->rshift64;
 }
 
+void buffers_start(void)
+{
+#if WITHINTEGRATEDDSP
 
+#if ! TXSPOOLCOND
+
+	#warning rx process in spool
+	// работа на всех ядрах, кроме нулевого
+	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, dsphftrxproc_spool_user_thread, NULL, 1 * 1024 * 1024, "dsphftrxproc_spool_user_thread") == NULL)
+	{
+		static dpcobj_t dsphftrxproc_spool_dpc;
+		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, NULL);
+		board_dpc_addentry(& dsphftrxproc_spool_dpc, TXSPOOLCORE);
+	}
+
+#endif /* ! TXSPOOLCOND */
+
+#endif /* WITHINTEGRATEDDSP */
+}
 // инициализация системы буферов
 void buffers_initialize(void)
 {
@@ -4576,13 +4619,13 @@ void buffers_initialize(void)
 	adpt_initialize(& sdcardio, audiorec_getwidth(), 0, "sdcardio");
 #endif /* WITHUSEAUDIOREC */
 
-#if WITHRTS96
+#if WITHRTS96 && WITHINTEGRATEDDSP
 	/* канал квадратур USB AUDIO */
 	adpt_initialize(& ifspectrumin96, WITHADAPTERRTS96_WIDTH, WITHADAPTERRTS96_SHIFT, "ifspectrumin96");
 	adpt_initialize(& rts96in, UACIN_RTS96_SAMPLEBYTES * 8, 0, "rts96in");
 	transform_initialize(& if2rts96out, & ifspectrumin96, & rts96in);
 #endif /* WITHRTS96 */
-#if WITHRTS192
+#if WITHRTS192 && WITHINTEGRATEDDSP
 	/* канал квадратур USB AUDIO */
 	adpt_initialize(& ifspectrumin192, WITHADAPTERRTS192_WIDTH, WITHADAPTERRTS192_SHIFT, "ifspectrumin192");
 	adpt_initialize(& rts192in, UACIN_RTS192_SAMPLEBYTES * 8, 0, "rts192in");
@@ -4628,14 +4671,6 @@ void buffers_initialize(void)
 	subscribeint32(& rtstargetsint, & uacinrtssubscribe, NULL, savesampleout96stereo);
 
 #endif /* WITHRTS192 */
-
-#if ! TXSPOOLCOND
-
-	static dpcobj_t dsphftrxproc_spool_dpc;
-	dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, NULL);
-	board_dpc_addentry(& dsphftrxproc_spool_dpc, TXSPOOLCORE);
-
-#endif /* ! TXSPOOLCOND */
 
 #if WITHUSEUSBBT
 
@@ -4722,6 +4757,42 @@ void buffers_initialize(void)
 
 #endif /* WITHUSEUSBBT */
 
+#endif /* WITHINTEGRATEDDSP */
+}
+
+void
+buffers_set_uacinalt(uint_fast8_t v, uint_fast8_t ep)	/* выбор альтернативной конфигурации для UAC IN interface */
+{
+#if WITHUSBHW && WITHUSBUAC && WITHINTEGRATEDDSP
+	//PRINTF(PSTR("buffers_set_uacinalt: v=%d\n"), (int) v);
+	uacinalt = v;
+#endif /* WITHINTEGRATEDDSP */
+}
+
+void
+buffers_set_uacinrtsalt(uint_fast8_t v, uint_fast8_t ep)	/* выбор альтернативной конфигурации для UAC IN interface */
+{
+#if WITHUSBHW && WITHUSBUAC && WITHINTEGRATEDDSP
+	//PRINTF(PSTR("buffers_set_uacinrtsalt: v=%d\n"), (int) v);
+	uacinrtsalt = v;
+#endif /* WITHINTEGRATEDDSP */
+}
+
+uint_fast8_t buffers_get_uacoutactive(void)
+{
+#if WITHUSBHW && WITHUSBUAC && WITHINTEGRATEDDSP
+	return uacoutalt != UACOUTALT_NONE;
+#else /* WITHINTEGRATEDDSP */
+	return 0;
+#endif /* WITHINTEGRATEDDSP */
+}
+
+void
+buffers_set_uacoutalt(uint_fast8_t v, uint_fast8_t ep)	/* выбор альтернативной конфигурации для UAC OUT interface */
+{
+#if WITHUSBHW && WITHUSBUAC && WITHINTEGRATEDDSP
+	//PRINTF(PSTR("buffers_set_uacoutalt: v=%d\n"), (int) v);
+	uacoutalt = v;
 #endif /* WITHINTEGRATEDDSP */
 }
 

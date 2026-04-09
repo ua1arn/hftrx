@@ -1,0 +1,7 @@
+## DISPLAY1_TOP - TCON_TV0 and TCON_TV1 - and then HDMI and eDP
+#type; DISPLAY1_TOP;	VIDEO_OUT1_SYS
+
+#regdef; TV_CLK_EDP_I2S1_SRC; 0x0000; TCON_TV Clock Select And EDP I2S1 Select Register
+#regdef; VO1_MODULE_GATING; 0x0020; TCON_TV Output To HDMI Gating Register
+
+#typeend;

@@ -7,7 +7,7 @@
 
 	enum {
 		DLES = 35,		// spectrum window upper line
-        DLE1 = 120 - GRID2Y(1),		// 96-5
+        DLE1 = 120 - GRID2Y(1) - 1,		// 96-5
 		DLE_unused
 	};
 
@@ -16,7 +16,7 @@
 		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
 
 		BDTH_ALLRX = 64, 		// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(79 /* DLE1 - DLES */),	// количество строк, отведенное под панораму и волопад.
+		BDCV_ALLRX = DLE1 - DLES - 1,	// количество строк, отведенное под панораму и волопад.
 
 		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
 		BDTH_RIGHTRX = BDTH_ALLRXBARS - BDTH_LEFTRX,	// ширина индикатора плюсов
@@ -68,10 +68,10 @@
 	// 600/5 = 120, 1024/16=64
 	// 480/5 = 96, 800/16=50
 	// 272/5 = 54, 480/16=30 (old)
-	//#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	//#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-	//#define SMALLCHARH 15 /* Font height */
-	//#define SMALLCHARW 16 /* Font width */
+	
+	
+	
+	
 	static const dzone_t dzones [] =
 	{
 			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
@@ -128,21 +128,21 @@
 		{	41, 25, 0, 4, display2_bkin3,		& dzi_default, PGALL, },	// BREAK-IN
 		{	45,	25,	5, 4, display2_wpm5, 		& dzi_default, PGALL, },	// 22WPM
 
-		//{	24, 30,	10, 0, display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
+		//{	24, 30,	10, 0, display2_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 		{	37, 30,	8, 0, display2_freqdelta8, 	& dzi_default, PGALL, },	// выход ЧМ демодулятора
 
 	#if WITHSPECTRUMWF
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX, display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX),	BDCV_ALLRX, display2_gcombo,	& dzi_default, PGSPE, },// подготовка изображения спектра
+		{	0,	DLES,	(BDTH_ALLRX),	BDCV_ALLRX, display2_wfl_init,	& dzi_default,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	(BDTH_ALLRX),	BDCV_ALLRX, display2_latchcombo,	& dzi_default,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	(BDTH_ALLRX),	BDCV_ALLRX, display2_gcombo,	& dzi_default, PGSPE, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 
-		{	0,	DLE1,	12, 4, display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
-		{	13,	DLE1,	9, 4, display2_span9,		& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
-		{	23, DLE1,	4, 4, display2_thermo,	& dzi_default, PGALL, },	// thermo sensor
-		{	28, DLE1,	3, 4, display2_usbsts3,		& dzi_default, PG0, },	// USB host status
-		{	32, DLE1,	7, 4, display2_classa7,		& dzi_default, PG0, },	// Class-A power amplifier
-		//{	28, DLE1,	10, 4, display_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
+		{	0,	DLE1,	12, 5, display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
+		{	13,	DLE1,	9, 5, display2_span9,		& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	23, DLE1,	6, 5, display2_thermo,		& dzi_default, PGALL, },	// thermo sensor
+		{	30, DLE1,	3, 5, display2_usbsts3,		& dzi_default, PG0, },	// USB host status
+		{	34, DLE1,	7, 5, display2_classa7,		& dzi_default, PG0, },	// Class-A power amplifier
+		//{	28, DLE1,	10, 4, display2_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
 		{	0,				DLES,	BDTH_ALLRX, (DLE1 - DLES) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
@@ -156,9 +156,9 @@
 		{	20, 25,	5, 4, display2_voltlevelV, & dzi_voltlevel, PGSLP, },	// voltmeter with "V"
 
 	#if 0
-		{	0,	0,	0, 0, display2_vtty_init,	& dzi_default,	PGINI, },	// Подготовка видеобуфера окна протокола
-		{	0,	0, 0, 0, display2_vtty,	& dzi_default, PG0, },		// Вывод текущего состояния протокола
-		{	0,	(DIM_Y - GRID2Y(5)) / 5, 0, 0, display2_freqsof9,	& dzi_default, PG0, },		// Вывод текущего состояния протокола
+		{	0,	0, 50, 96 - 5, display2_vtty_init,	& dzi_default,	PGINI, },	// Подготовка видеобуфера окна протокола
+		{	0,	0, 50, 96 - 5, display2_vtty,	& dzi_default, PG0, },		// Вывод текущего состояния протокола
+		//{	0,	(DIM_Y - GRID2Y(5)) / 5, 0, 0, display2_freqsof9,	& dzi_default, PG0, },		// Вывод текущего состояния протокола
 	#endif
 
 		{	0,	0,	0, 0, display2_showmain,	& dzi_default, REDRSUBSET_SHOW, }, // запись подготовленного изображения на главный дисплей
@@ -181,7 +181,7 @@
 	{
 		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
-		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->w = GRID2X((BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 	#define DISPLC_RADIUS 	0	// радиус закругления углов плиток в dzones

@@ -8,7 +8,7 @@
 #if LINUX_SUBSYSTEM && WITHSDL2VIDEO
 
 #include "linux_subsystem.h"
-#include "gui/framework/gui_events.h"
+//#include "gui/framework/gui_events.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
@@ -22,6 +22,7 @@ SDL_Window * window;
 SDL_Texture * texture;
 SDL_Texture * mouse_cursor;
 int cursor_width, cursor_height;
+extern int global_stop;
 
 int sdl2_render_init(void)
 {
@@ -43,6 +44,9 @@ int sdl2_render_init(void)
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 #endif /* ! X11 */
+
+    SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
+    SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
 
     window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, DIM_X, DIM_Y,
     		SDL_WINDOW_FULLSCREEN_DESKTOP
@@ -111,11 +115,13 @@ int sdl2_render_init(void)
 	SDL_FreeSurface(surface);
 #endif /* MOUSE_EVDEV */
 
+#if GUI_EXTERNAL_FONTS
 	if (TTF_Init() == -1)
 	{
 		printf("TTF init error\n");
 		return 0;
 	}
+#endif /* GUI_EXTERNAL_FONTS */
 
 #if WITHTOUCHGUI
 	gui_sdl2_set_renderer(renderer);
@@ -140,19 +146,12 @@ void sdl2_render_update(uintptr_t frame)
 	SDL_RenderCopy(renderer, texture, NULL, & destRect);
 
 #if WITHTOUCHGUI
-	SDL_Texture * guitex = SDL_CreateTexture(renderer,
-	    SDL_PIXELFORMAT_ARGB8888,
-	    SDL_TEXTUREACCESS_TARGET,
-	    DIM_X, DIM_Y);
 	SDL_Texture * old_target = SDL_GetRenderTarget(renderer);
-	SDL_SetRenderTarget(renderer, guitex);
+	if (old_target != NULL) SDL_SetRenderTarget(renderer, NULL);
 
 	gui_sdl2_walkthrough();
 
-	SDL_SetRenderTarget(renderer, old_target);
-	SDL_SetTextureBlendMode(guitex, SDL_BLENDMODE_BLEND);
-	SDL_RenderCopy(renderer, guitex, NULL, & destRect);
-	SDL_DestroyTexture(guitex);
+	if (old_target != NULL) SDL_SetRenderTarget(renderer, old_target);
 #endif /* WITHTOUCHGUI */
 
 #if MOUSE_EVDEV
@@ -191,7 +190,7 @@ void * sdl2_events_thread(void * args)
 {
 	SDL_Event e;
 
-	while(1)
+	while(! global_stop)
 	{
 		while (SDL_PollEvent(& e) != 0)
 		{

@@ -13,8 +13,6 @@
     #include BOARD_DSTYLE_LVGL
 #elif defined (BOARD_DSTYLE)
     #include BOARD_DSTYLE
-#elif DSTYLE_G_X320_Y240
-    #include "g_x320_y240.h"
 #elif DSTYLE_G_X480_Y272 && WITHSPECTRUMWF && ! WITHTOUCHGUI
     #include "g_x480_y272_spectrum_notouch.h"
 #elif DSTYLE_G_X480_Y272

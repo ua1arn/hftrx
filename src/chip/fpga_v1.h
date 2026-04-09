@@ -13,16 +13,24 @@ extern "C" {
 extern const phase_t phase_0;
 
 #define FPGAREG_V1_SPIMODE		SPIC_MODE3	// FPGA ACCESS SPI MODE SHOULD BE mode3 (gates used)
-#ifndef FPGAREG_V1_SPISPEED
-	#define FPGAREG_V1_SPISPEED		SPIC_SPEEDUFAST
+#ifndef FPGAREG_V1_SPEEDC
+	#define FPGAREG_V1_SPEEDC		SPIC_SPEEDUFAST
 #endif
 
 #define FPGA_DECODE_CTLREG	(1u << 0)
-#define FPGA_DECODE_NCO1	(1u << 1)
-#define FPGA_DECODE_FQMETER	(0)
 #define FPGA_DECODE_NBLVL	(1u << 6)
 
-
+#if WITHFPGAIF_FRAMEBITS == 512
+	// Bits in status word for 'long' fpga firmware version
+	#define FPGA_STATUS_ADC1OVF 	(UINT32_C(1) << 0)
+	#define FPGA_STATUS_ADC2OVF 	(UINT32_C(1) << 1)
+	#define FPGA_STATUS_ADC3OVF 	(UINT32_C(1) << 2)
+	#define FPGA_STATUS_ADC4OVF 	(UINT32_C(1) << 3)
+	#define FPGA_STATUS_TXDIS		(UINT32_C(1) << 4)	// TX disable input
+	#define FPGA_STATUS_PTTFRONT 	(UINT32_C(1) << 5)
+	#define FPGA_STATUS_PTTREAR 	(UINT32_C(1) << 6)
+	#define FPGA_STATUS_TUNEREQ 	(UINT32_C(1) << 7)
+#endif
 // Send a frame of bytes via SPI
 static void
 board_fpga1_spi_send_frame(
@@ -31,7 +39,7 @@ board_fpga1_spi_send_frame(
 	unsigned int size
 	)
 {
-	prog_spi_io(target, FPGAREG_V1_SPISPEED, FPGAREG_V1_SPIMODE, buff, size, NULL, 0, NULL, 0);
+	prog_spi_io(target, FPGAREG_V1_SPEEDC, FPGAREG_V1_SPIMODE, buff, size, NULL, 0, NULL, 0);
 }
 
 // Read a frame of bytes via SPI
@@ -43,7 +51,7 @@ board_fpga1_spi_exchange_frame(
 	unsigned int size
 	)
 {
-	prog_spi_exchange(target, FPGAREG_V1_SPISPEED, CTLREG_SPIMODE, tbuff, rbuff, size);
+	prog_spi_exchange(target, FPGAREG_V1_SPEEDC, CTLREG_SPIMODE, tbuff, rbuff, size);
 }
 
 /* programming FPGA SPI registers */

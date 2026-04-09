@@ -23,6 +23,7 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
+#if WITHTX
 #if WITHPOWERTRIM
 	#if WITHLOWPOWEREXTTUNE
 		(const struct paramdefdef [1]) {
@@ -52,6 +53,7 @@ const struct menudef menutable [] =
 	},
 	#endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
+#endif /* WITHTX */
 	(const struct paramdefdef [1]) {
 		QLABEL("TUNER L"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
@@ -120,6 +122,19 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHAUTOTUNER_N7DDCALGOT */
+#if WITHMGLOOP
+	(const struct paramdefdef [1]) {
+		QLABEL("MLA C"), 7, 0, RJ_UNSIGNED,	ISTEPLARGE_1,
+		ITEM_VALUE,
+		0, MLAPARAMC_MAX,
+		OFFSETOF(struct nvmap, bandgroups [0].otxants [0].mlaparamc),
+		getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
+		& mlaparamc,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+#endif /* WITHMGLOOP */
 #endif /* WITHAUTOTUNER */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
@@ -160,7 +175,7 @@ const struct menudef menutable [] =
 //	},
 #endif
 	(const struct paramdefdef [1]) {
-		QLABEL2("SHOW dBm", "Show dBm"), 8, 3, RJ_YES,	ISTEP1,
+		QLABEL3("SHOW dBm", "Show dBm", "SHOW DBM"), 8, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gshowdbm),
@@ -594,6 +609,39 @@ const struct menudef menutable [] =
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& bwprop_ssbtx.afresponce,
+		getafresponcebase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+	(const struct paramdefdef [1]) {
+		QLABEL("NFM TX HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
+		RMT_BWPROPSRIGHT_BASE(BWPROPI_NFMTX),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& bwprop_nfmtx.right100,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+	(const struct paramdefdef [1]) {
+		QLABEL("NFM TX LO"), 7, 2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
+		RMT_BWPROPSLEFT_BASE(BWPROPI_NFMTX),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& bwprop_nfmtx.left10_width10,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+	(const struct paramdefdef [1]) {
+		QLABEL("NFM TXAFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
+		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_NFMTX),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& bwprop_nfmtx.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
@@ -1233,7 +1281,7 @@ const struct menudef menutable [] =
 	& xgcwssbtx,
 #endif /* WITHTX && WITHIF4DSP */
 #endif /* WITHELKEY */
-#if WITHDSPEXTDDC	/* Квадратуры получаются внешней аппаратурой */
+#if WITHDSPEXTDDC	/* Квадратуры обрабатываются аппаратным DUC/DDC */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("RF ADC"), 0, 0, 0, 0,
@@ -1371,7 +1419,7 @@ const struct menudef menutable [] =
 	& xrfgain1,	// Усиление ПЧ/ВЧ в процентах
 	#endif /* ! WITHPOTIFGAIN */
 #endif /* WITHIF4DSP */
-#if (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP
+#if WITHINTEGRATEDDSP
 	(const struct paramdefdef [1]) {
 		QLABEL2("KEY BEEP", "Keys Beep"), 6, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
 		ITEM_VALUE,
@@ -1383,20 +1431,7 @@ const struct menudef menutable [] =
 		getzerobase, 
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
-#endif /* (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP */
-#if WITHMUTEALL && WITHTX
-	(const struct paramdefdef [1]) {
-		QLABEL("MUTE ALL"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, gmuteall),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gmuteall,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-#endif /* WITHMUTEALL && WITHTX */
+#endif /* WITHINTEGRATEDDSP */
 #if WITHIF4DSP
 	& xgsquelch,
 #if ! WITHPOTNFMSQL
@@ -2330,13 +2365,14 @@ const struct menudef menutable [] =
 
 	& xgtxtot,			/* разрешённое время передачи */
 	& xgamdepth,		/* Глубина модуляции в АМ - 0..100% */
+	& xgnfmdeviation,
 	& xggaincwtx,		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 
 #endif /* WITHIF4DSP */
 #if WITHFANTIMER
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	(const struct paramdefdef [1]) {
-		QLABEL2("FAN TEMP", "FAN Temp"), 7, 0, RJ_ON,	ISTEP1,
+		QLABEL3("FAN TEMP", "FAN Temp", "FAN TEMP"), 7, 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gfanpatempflag),
@@ -2347,7 +2383,7 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL2("FAN TMIN", "FAN T Min"), 7, 0, RJ_SIGNED,	ISTEP1,
+		QLABEL3("FAN TMIN", "FAN T Min", "FAN TMIN"), 7, 0, RJ_SIGNED,	ISTEP1,
 		ITEM_VALUE,
 		10, 70,
 		OFFSETOF(struct nvmap, gfanpaofftemp),
@@ -2358,7 +2394,7 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	(const struct paramdefdef [1]) {
-		QLABEL2("FAN TMAX", "FAN T Max"), 7, 0, RJ_SIGNED,	ISTEP1,
+		QLABEL3("FAN TMAX", "FAN T Max", "FAN TMAX"), 7, 0, RJ_SIGNED,	ISTEP1,
 		ITEM_VALUE,
 		10, 70,
 		OFFSETOF(struct nvmap, gfanpaontemp),
@@ -2370,7 +2406,7 @@ const struct menudef menutable [] =
 	},
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 	(const struct paramdefdef [1]) {
-		QLABEL2("FAN TIME", "FAN Time"), 7, 0, RJ_UNSIGNED,	ISTEP5,
+		QLABEL3("FAN TIME", "FAN Time", "FAN TIME"), 7, 0, RJ_UNSIGNED,	ISTEP5,
 		ITEM_VALUE,
 		0, FANPATIMEMAX,
 		OFFSETOF(struct nvmap, gfanpatime),
@@ -2382,7 +2418,7 @@ const struct menudef menutable [] =
 	},
 	#if WITHFANPWM
 	(const struct paramdefdef [1]) {
-		QLABEL2("FAN FLOW", "FAN Flow"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+		QLABEL3("FAN FLOW", "FAN Flow", "FAN FLOW"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		WITHFANPWMMIN, WITHFANPWMMAX,
 		OFFSETOF(struct nvmap, gfanpapwm),
@@ -3182,7 +3218,7 @@ const struct menudef menutable [] =
 	},
 #endif /* defined (DAC1_TYPE) */
 	(const struct paramdefdef [1]) {
-		QLABEL("REF FREQ"), 9, 3, RJ_UNSIGNED, ISTEP1,		/* ввод реальной частоты опорного генератора через меню. */
+		QLABEL("REF FREQ"), 9, 3, RJ_UNSIGNED, ISTEPLARGE_1,		/* ввод реальной частоты опорного генератора через меню. */
 		ITEM_VALUE,
 		0, OSCSHIFT * 2 - 1, 
 		OFFSETOF(struct nvmap, refbias),

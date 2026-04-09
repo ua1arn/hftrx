@@ -29,7 +29,6 @@ typedef enum
 
 typedef enum
 {
-	SPIC_SPEED100k 	= 100000,	/* 100 kHz для XPT2046 */
 	SPIC_SPEED200k 	= 200000,	/* 200 kHz для XPT2046 */
 	SPIC_SPEED400k 	= 400000,	/* 400 kHz для MCP3208, DS1305 */
 	SPIC_SPEED1M 	= 1000000,	/* 1 MHz для XPT2046 */
@@ -60,7 +59,6 @@ typedef enum
 
 typedef enum
 {
-	SPIC_SPEED100k,	/* 100 kHz для XPT2046  */
 	SPIC_SPEED200k,	/* 200 kHz для XPT2046  */
 	SPIC_SPEED400k,	/* 400 kHz для MCP3208, DS1305 */
 	SPIC_SPEED1M,	/* 1 MHz для XPT2046 */
@@ -265,9 +263,11 @@ typedef struct lclspinlock_tag {
 #if WITHDEBUG
 	#define LCLSPINLOCK_INIT { 0, "z", 0, 255 }
 	#define LCLSPINLOCK_INITIALIZE(p) do { (p)->lock = 0; (p)->file = "n"; (p)->line = 0, (p)->cpuid = 255; } while (0)
+	#define LCLSPINLOCK_UNINITIALIZE(p) do { } while (0)
 #else /* WITHDEBUG */
 	#define LCLSPINLOCK_INIT { 0, }
 	#define LCLSPINLOCK_INITIALIZE(p) do { (p)->lock = 0; } while (0)
+	#define LCLSPINLOCK_UNINITIALIZE(p) do { } while (0)
 #endif /* WITHDEBUG */
 
 typedef struct irqlspinlock_tag
@@ -277,6 +277,7 @@ typedef struct irqlspinlock_tag
 
 #define IRQLSPINLOCK_INIT { LCLSPINLOCK_INIT }
 #define IRQLSPINLOCK_INITIALIZE(p) do { LCLSPINLOCK_INITIALIZE(& (p)->lock); } while (0)
+#define IRQLSPINLOCK_UNINITIALIZE(p) do { LCLSPINLOCK_UNINITIALIZE(p); } while (0)
 
 #else /* ! LINUX_SUBSYSTEM */
 
@@ -289,6 +290,7 @@ typedef struct irqlspinlock_tag
 extern pthread_mutex_t linux_md;	/* added by mgs */
 #define IRQLSPINLOCK_INIT PTHREAD_MUTEX_INITIALIZER
 #define IRQLSPINLOCK_INITIALIZE(p) do { LCLSPINLOCK_INITIALIZE(p); } while (0)
+#define IRQLSPINLOCK_UNINITIALIZE(p) do { LCLSPINLOCK_UNINITIALIZE(p); } while (0)
 
 #endif /* ! LINUX_SUBSYSTEM */
 
@@ -307,30 +309,25 @@ void InitializeIrql(IRQL_t newIRQL);
 	/* Пока привязка процессора обрабатывающего прерывание по приоритету. */
 	#define TARGETCPU_SYSTEM (1u << 0)		// CPU #0
 	#define TARGETCPU_RT 	(1u << 1)		// CPU #1
-	#define TARGETCPU_RT2	(1u << 2)		// CPU #2
-	#define TARGETCPU_RT3 	(1u << 3)		// CPU #3
 	#define TARGETCPU_OVRT 	(1u << 0)		// CPU #0
-	#define TARGETCPU_CPU0 (1u << 0)		// CPU #0
-	#define TARGETCPU_CPU1 (1u << 1)		// CPU #1
 
 	void lclspin_lock(lclspinlock_t * __restrict lock, const char * file, int line);
+	int lclspin_traylock(lclspinlock_t * __restrict lock, const char * file, int line);
 	void lclspin_unlock(lclspinlock_t * __restrict lock);
 	void lclspin_enable(void);	// Allwinner H3 - может работать с блокировками только после включения MMU
 
 	#define LCLSPIN_LOCK(p) do { lclspin_lock(p, __FILE__, __LINE__); } while (0)
+	#define LCLSPIN_TRAYLOCK(p) (lclspin_traylock(p, __FILE__, __LINE__))
 	#define LCLSPIN_UNLOCK(p) do { lclspin_unlock(p); } while (0)
 
 #else /* WITHSMPSYSTEM */
 	/* Единственный процесор. */
 	#define TARGETCPU_SYSTEM (1u << 0)		// CPU #0
 	#define TARGETCPU_RT (1u << 0)			// CPU #0
-	#define TARGETCPU_RT2 (1u << 0)			// CPU #0
-	#define TARGETCPU_RT3 (1u << 0)			// CPU #0
 	#define TARGETCPU_OVRT (1u << 0)		// CPU #0
-	#define TARGETCPU_CPU0 (1u << 0)		// CPU #0
-	#define TARGETCPU_CPU1 (1u << 0)		// CPU #0
 
 	#define LCLSPIN_LOCK(p) do { (void) p; } while (0)
+	#define LCLSPIN_TRAYLOCK(p) ((void) p, 1)
 	#define LCLSPIN_UNLOCK(p) do { (void) p; } while (0)
 	#define SPIN_LOCK2(p, f, l) do { (void) p; } while (0)
 	#define SPIN_UNLOCK2(p) do { (void) p; } while (0)
@@ -350,6 +347,11 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK(p); } while (0)
 
 #endif  /* ! LINUX_SUBSYSTEM */
+
+	// wait expected state of variable
+	// return non-zero: timeout error
+	// timeMS may be LOCAL_WAITINFINITY
+	int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS);
 
 	#define USBSYS_IRQL IRQL_SYSTEM
 	#define CATSYS_IRQL IRQL_SYSTEM
@@ -452,6 +454,20 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMNC __attribute__((section(".ramnc")))
 
+#elif CPUSTYLE_A733
+	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
+	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+	#define RAMNC __attribute__((section(".ramnc")))
+
 #elif CPUSTYLE_A133
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
@@ -467,6 +483,20 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAMNC __attribute__((section(".ramnc")))
 
 #elif CPUSTYLE_T113
+	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
+	#define RAMFUNC			__attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+	#define RAMNC __attribute__((section(".ramnc")))
+
+#elif CPUSTYLE_T153
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
@@ -684,6 +714,15 @@ void InitializeIrql(IRQL_t newIRQL);
 	#error Undefined CPUSTYLE_xxxx
 
 #endif
+
+#if CPUSTYLE_XC7Z
+#include "xc7z_inc.h"
+#endif
+
+#if WITHTOUCHGUI
+#include "gui.h"
+#include "gui_user_ext.h"
+#endif /* WITHTOUCHGUI */
 
 #ifdef __cplusplus
 }

@@ -37,9 +37,9 @@
 
 // Clock period, SCLK no less then 80 nS (частота не выше 12.5 МГц)
 #define NAU8822_SPIMODE			SPIC_MODE3
-#ifndef NAU8822_SPISPEED
-	#define NAU8822_SPISPEED 		SPIC_SPEED1M	// УМЕНЬШЕНО С 10 МГц до 1 - помехи
-#endif /* NAU8822_SPISPEED */
+#ifndef NAU8822_SPEEDC
+	#define NAU8822_SPEEDC 		SPIC_SPEED1M	// УМЕНЬШЕНО С 10 МГц до 1 - помехи
+#endif /* NAU8822_SPEEDC */
 #define NAU8822_ADDRESS_W		0x34	// 8-bit I2C address: 0x34
 
 /* data is
@@ -63,7 +63,7 @@ static void nau8822_setreg_16(
 	uint_fast16_t datav			/* 9 bit value */
 	)
 {
-	const uint_fast16_t fulldata = (0x7F & regv) * (UINT32_C(1) << 9) | (datav & 0x1ff);
+	const uint_fast16_t fulldata = (0x7F & regv) * (UINT16_C(1) << 9) | (datav & 0x1ff);
 	//PRINTF("nau8822_setreg: regv=%02X, datav=%03X\n", (unsigned) regv, (unsigned) datav);
 
 #if CODEC_TYPE_NAU8822_USE_SPI
@@ -76,7 +76,7 @@ static void nau8822_setreg_16(
 		fulldata >> 8, fulldata >> 0,
 	};
 
-	prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+	prog_spi_io(target, NAU8822_SPEEDC, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 #endif
 
 #else /* CODEC_TYPE_NAU8822_USE_SPI */
@@ -104,8 +104,8 @@ static void nau8822_setreg_16_2(
 	uint_fast16_t datav2			/* 9 bit value */
 	)
 {
-	const uint_fast16_t fulldata1 = ((0x7F & regv) + 0) * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
-	const uint_fast16_t fulldata2 = ((0x7F & regv) + 1) * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
+	const uint_fast16_t fulldata1 = ((0x7F & regv) + 0) * (UINT16_C(1) << 9) | (datav1 & 0x1ff);
+	const uint_fast16_t fulldata2 = ((0x7F & regv) + 1) * (UINT16_C(1) << 9) | (datav2 & 0x1ff);
 	//PRINTF("nau8822_setreg: regv=%02X, datav=%03X\n", (unsigned) regv, (unsigned) datav);
 
 #if CODEC_TYPE_NAU8822_USE_SPI
@@ -119,7 +119,7 @@ static void nau8822_setreg_16_2(
 		fulldata2 >> 8, fulldata2 >> 0,
 	};
 
-	prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+	prog_spi_io(target, NAU8822_SPEEDC, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 #endif
 
 #else /* CODEC_TYPE_NAU8822_USE_SPI */
@@ -154,14 +154,14 @@ static void nau8822_setreg_24(
 	)
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
-	const uint_fast32_t fulldata = (0x7F & regv) * (UINT32_C(1) << 9) | (datav & 0x1ff);
+	const uint_fast16_t fulldata = (0x7F & regv) * (UINT16_C(1) << 9) | (datav & 0x1ff);
 	const uint8_t txbuf [] =
 	{
 		0x10,
 		fulldata >> 8, fulldata >> 0,
 	};
 
-	prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+	prog_spi_io(target, NAU8822_SPEEDC, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 }
 
 /* Запись двух регистров на смежных адресах */
@@ -172,8 +172,8 @@ static void nau8822_setreg_24_2(
 	)
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
-	const uint_fast32_t fulldata1 = ((0x7F & regv) + 0) * (UINT32_C(1) << 9) | (datav1 & 0x1ff);
-	const uint_fast32_t fulldata2 = ((0x7F & regv) + 1) * (UINT32_C(1) << 9) | (datav2 & 0x1ff);
+	const uint_fast16_t fulldata1 = ((0x7F & regv) + 0) * (UINT16_C(1) << 9) | (datav1 & 0x1ff);
+	const uint_fast16_t fulldata2 = ((0x7F & regv) + 1) * (UINT16_C(1) << 9) | (datav2 & 0x1ff);
 	const uint8_t txbuf [] =
 	{
 		0x10,
@@ -181,7 +181,7 @@ static void nau8822_setreg_24_2(
 		fulldata2 >> 8, fulldata2 >> 0,
 	};
 
-	prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+	prog_spi_io(target, NAU8822_SPEEDC, NAU8822_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 }
 
 static uint_fast16_t nau8822_getreg_32(
@@ -189,7 +189,7 @@ static uint_fast16_t nau8822_getreg_32(
 	)
 {
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
-	const uint_fast32_t fulldata = (0x7F & regv) * (UINT32_C(1) << 9);
+	const uint_fast16_t fulldata = (0x7F & regv) * (UINT16_C(1) << 9);
 	const uint8_t txbuf [] =
 	{
 		0x20,
@@ -198,7 +198,7 @@ static uint_fast16_t nau8822_getreg_32(
 	};
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
-	prog_spi_exchange(target, NAU8822_SPISPEED, NAU8822_SPIMODE, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	prog_spi_exchange(target, NAU8822_SPEEDC, NAU8822_SPIMODE, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 
 	return USBD_peek_u16(rxbuf) & 0x01FF;
 }

@@ -2,6 +2,6 @@
 the_ROM_image:
 {
 [bootloader] fsbl_4205v2.elf
-bitstream_ebaz7020.bit
+bitstream_4205v2.bit
 tc1_xc7z020_app.elf
 }

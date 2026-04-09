@@ -130,7 +130,10 @@
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	
 	
-	
+	/* Заглушка для работы без дисплея */
+	#define WITHLCDBACKLIGHTMIN	0
+	#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
+
 
 	
 	#define WITHPABIASMIN		0
@@ -221,8 +224,14 @@
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 // прямой ввод частоты с клавиш
-	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
+//	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	
+	#define COLORSTYLE_GREEN	1
+	//#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_BLUE2 1
+	//#define COLORSTYLE_WHITE	1
+	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
+	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 	
 
 	/* Board hardware configuration */
@@ -255,9 +264,12 @@
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
-	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	#define WITHDSPEXTDDC 1				/* Квадратуры обрабатываются аппаратным DUC/DDC */
+	#define WITHDSPEXTTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
+	#define WITHDSPEXTRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
+	//#define WITHDSPLOCALTXFIR 1			/* Фильтрация квадратур на передаче осуществляется программно */
+	//#define WITHDSPLOCALRXFIR 1			/* Фильтрация квадратур на приёме осуществляется программно */
+
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 
@@ -338,7 +350,7 @@
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
-	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+	//#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 
 	#if 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
@@ -378,8 +390,8 @@
 	//
 	//#define WITHBEACON	1	/* Используется режим маяка */
 	#define WITHVOX			1	/* используется VOX */
-	#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-	#define WITHSWRMTR	1		/* Измеритель КСВ */
+	//#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+	//#define WITHSWRMTR	1		/* Измеритель КСВ */
 	
 	
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
@@ -403,7 +415,7 @@
 	//#define WITHLFM		1	/* LFM MODE */
 	
 	#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
-	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
+	
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */

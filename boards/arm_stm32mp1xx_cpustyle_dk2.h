@@ -66,7 +66,7 @@
 
 
 // OHCI at USB1HSFSP2_BASE
-#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
+//#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
 #define WITHSDRAM_PMC1	1	/* power management chip - need for HDMI and AUDIO */
 
@@ -115,8 +115,8 @@
 	#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 
 	
-	#define WITHUSBHW_EHCI		USB1_EHCI
-	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port (Microchip USB2514 USB 2.0 hub controller, shared with USB_OTG_HS), 1 - 2nd PHY port. See USBPHYC_MISC_SWITHOST_VAL
+//	#define WITHUSBHW_EHCI		USB1_EHCI
+//	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port (Microchip USB2514 USB 2.0 hub controller, shared with USB_OTG_HS), 1 - 2nd PHY port. See USBPHYC_MISC_SWITHOST_VAL
 
 #elif 1
 	/* конфигурация для загрузки application через USB DFU */
@@ -342,12 +342,12 @@
 			arm_hardware_pioc_inputs(1uL << 9);	/* PC9 - SDIO_D1	*/ \
 			arm_hardware_pioc_inputs(1uL << 10);	/* PC10 - SDIO_D2	*/ \
 			arm_hardware_pioc_inputs(1uL << 11);	/* PC11 - SDIO_D3	*/ \
-			arm_hardware_piod_updown(_xMask, 0, 1uL << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 9);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 10);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_updown(_xMask, 0, 1uL << 11);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_updown(1uL << 2, 0, 1uL << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(1uL << 12, 0, 1uL << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(1uL << 8, 0, 1uL << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_updown(1uL << 9, 0, 1uL << 9);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_updown(1uL << 10, 0, 1uL << 10);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_updown(1uL << 11, 0, 1uL << 11);	/* PC11 - SDIO_D3	*/ \
 		} while (0)
 	#else /* WITHSDHCHW4BIT */
 		#define HARDWARE_SDIO_INITIALIZE()	do { \
@@ -475,7 +475,7 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
 //#define SPI_IOUPDATE_BIT		(1uL << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
 	#define SPI_ALLCS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
@@ -527,7 +527,7 @@
 	#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)
 	#define	SPI_MISO_BIT			(1uL << 4)	// * PB4 бит, через который идет ввод с SPI.
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI1_INITIALIZE() do { \
 			arm_hardware_piob_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PB3 */ \
 			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PB5 */ \
 			arm_hardware_piob_inputs(SPI_MISO_BIT); /* PB4 */ \
@@ -548,7 +548,7 @@
 	#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 // WITHUART1HW
 #define HARDWARE_UART1_INITIALIZE() do { \
@@ -611,6 +611,9 @@
 		} while (0)
 
 #endif /* WITHKEYBOARD */
+
+#define PMIC_I2C_W 0x66    // 7bit: 0x33
+#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
 #if 1 // WITHTWISW || WITHTWIHW
 	// list: 0x50, 0x66
@@ -676,7 +679,7 @@
 
 #endif // WITHTWISW || WITHTWIHW
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+#if 0//WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
@@ -712,40 +715,6 @@
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-#if WITHDSPEXTFIR
-	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
-
-	// FPGA PIN_23
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CS_BIT (1uL << 13)	/* PC13 - fir CS ~FPGA_FIR_CLK */
-
-	// FPGA PIN_8
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_BIT (1uL << 1)	/* PD1 - fir1 WE */
-
-	// FPGA PIN_7
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_BIT (1uL << 0)	/* PD0 - fir2 WE */
-
-	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
-			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_pioc_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
-		} while (0)
-#endif /* WITHDSPEXTFIR */
-
-#if 0
-	/* получение состояния переполнения АЦП */
-	#define TARGET_FPGA_OVF_INPUT		(GPIOC->IDR)
-	#define TARGET_FPGA_OVF_BIT			(0 * 1u << 8)	// PC8
-	#define TARGET_FPGA_OVF_GET			((TARGET_FPGA_OVF_INPUT & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
-	#define TARGET_FPGA_OVF_INITIALIZE() do { \
-				arm_hardware_pioc_inputs(TARGET_FPGA_OVF_BIT); \
-			} while (0)
-#endif
 
 #if WITHCPUDACHW
 	/* включить нужные каналы */
@@ -943,7 +912,8 @@
 #endif /* LCDMODE_LTDC */
 
 	#define WITHBOOTSD 1	/* загрузка с SD CARD (если нет - с QSPI FLASH). */
-	#define USERFIRSTSBLOCK (USERFIRSTOFFSET / 512)
+	//#define USERFIRSTSBLOCK (USERFIRSTOFFSET / 512)
+	#define USERFIRSTSBLOCK 0
 
 	#if WIHSPIDFSW || WIHSPIDFHW
 		/* Выводы соединения с QSPI BOOT NOR FLASH */

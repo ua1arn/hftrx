@@ -151,6 +151,11 @@
     #define __L2C_PRESENT             0U
     #warning "__L2C_PRESENT not defined in device header file; using default!"
   #endif
+
+	#ifndef __L3C_PRESENT
+	  #define __L3C_PRESENT             0U
+	  #warning "__L3C_PRESENT not defined in device header file; using default!"
+	#endif
 #endif
 
 /* IO definitions (access restrictions to peripheral registers) */
@@ -177,12 +182,58 @@
 #define __set_RG64(reg, Rs)         __ASM volatile("MSR " reg ", %0" : : "r" (Rs) : "memory" )
 
 
+ /** \brief  AArch64 System registers to access the Generic Interrupt Controller CPU interface
+ */
+ #if defined(__GNUC__)
+   #define ICC_BPR0_EL1           S3_0_C12_C8_3
+   #define ICC_BPR1_EL1           S3_0_C12_C12_3
+   #define ICC_CTLR_EL1           S3_0_C12_C12_4
+   #define ICC_CTLR_EL3           S3_6_C12_C12_4
+   #define ICC_EOIR0_EL1          S3_0_C12_C8_1
+   #define ICC_EOIR1_EL1          S3_0_C12_C12_1
+   #define ICC_HPPIR0_EL1         S3_0_C12_C8_2
+   #define ICC_HPPIR1_EL1         S3_0_C12_C12_2
+   #define ICC_IAR0_EL1           S3_0_C12_C8_0
+   #define ICC_IAR1_EL1           S3_0_C12_C12_0
+   #define ICC_IGRPEN0_EL1        S3_0_C12_C12_6
+   #define ICC_IGRPEN1_EL1        S3_0_C12_C12_7
+   #define ICC_IGRPEN1_EL3        S3_6_C12_C12_7
+   #define ICC_PMR_EL1            S3_0_C4_C6_0
+   #define ICC_RPR_EL1            S3_0_C12_C11_3
+   #define ICC_SGI0R_EL1          S3_0_C12_C11_7
+   #define ICC_SGI1R_EL1          S3_0_C12_C11_5
+   #define ICC_SRE_EL1            S3_0_C12_C12_5
+   #define ICC_SRE_EL2            S3_4_C12_C9_5
+   #define ICC_SRE_EL3            S3_6_C12_C12_5
+ #endif /* __GNUC__ */
+
+ #ifndef __STRINGIFY
+   #define __STRINGIFY(x)                         #x
+ #endif
+
+ #ifndef __MSR
+   #define __MSR(sysreg, val) \
+     __asm volatile ("msr " __STRINGIFY(sysreg) ", %0\n" : : "r"((uint64_t)(val)))
+ #endif
+
+ #ifndef __MRS
+ #define __MRS(sysreg, pVal) \
+   __asm volatile ("mrs  %0, " __STRINGIFY(sysreg) "\n" : "=r"((*pVal)))
+ #endif
+
 
 /**
 \brief   Send Event Local
 \details  Send Event Local is a hint instruction that causes an event to be signaled locally without requiring the event to be  signaled to other PEs in the multiprocessor system.
 */
 #define __SEVL()         do { __ASM volatile ("sevl"); } while (0)
+
+ /**
+  * This instruction is a hint instruction. Software with a multithreading capability can use a YIELD instruction to indicate to
+  * the PE that it is performing a task, for example a spin-lock, that could be swapped out to improve overall system
+  * performance. The PE can use this hint to suspend and resume multiple software threads if it supports the capability.
+  */
+#define __YIELD()         do { __ASM volatile ("YIELD"); } while (0)
 
 /**
 \brief   Load-acquire exclusive register byte (8 bit)
@@ -194,7 +245,7 @@ __STATIC_FORCEINLINE uint32_t __LDAXRB(const volatile uint8_t *ptr)
 {
 	uint32_t result;
 
-	__ASM volatile ("ldaxrb %w0, %1" : "=r" (result) : "Q" (*ptr) : );
+	__ASM volatile ("ldaxrb %w0, %1" : "=r" (result) : "Q" (*ptr) : "memory");
 	return result;    /* Add explicit type cast here */
 }
 
@@ -210,7 +261,7 @@ __STATIC_FORCEINLINE uint32_t __STXRB(uint32_t value, volatile uint8_t *ptr)
 {
 	uint32_t result;
 
-	__ASM volatile ("stxrb %w0, %w2, %1" : "=&r" (result), "=Q" (*ptr) : "r" (value) : "memory" );
+	__ASM volatile ("stxrb %w0, %w2, %1" : "=&r" (result), "=Q" (*ptr) : "r" (value) : "memory");
 	return (result);
 }
 
@@ -225,6 +276,13 @@ __STATIC_FORCEINLINE void __STLRB(uint32_t value, volatile uint8_t *ptr)
 	__ASM volatile ("stlrb %w1, %0" : "=Q" (*ptr) : "r" (value) : "memory" );
 }
 
+
+__STATIC_FORCEINLINE uint64_t __get_SP64(void)
+{
+	uint64_t result;
+	__ASM volatile("MOV  %0, sp" : "=r" (result) : : "memory");
+	return result;
+}
 
 __STATIC_FORCEINLINE uint32_t __get_MIDR_EL1(void)
 {
@@ -352,6 +410,11 @@ __STATIC_FORCEINLINE uint64_t __get_CPUECTLR_EL1(void)
 	return result;
 }
 
+__STATIC_FORCEINLINE void __set_CPUECTLR_EL1(uint64_t value)
+{
+	__set_RG64("S3_1_C15_C2_1", value);
+}
+
 __STATIC_FORCEINLINE uint64_t __get_MAIR_EL3(void)
 {
 	uint64_t result;
@@ -428,10 +491,17 @@ __STATIC_FORCEINLINE void __set_VBAR_EL3(uint64_t value)
 	__set_RG64("VBAR_EL3", value);
 }
 
-__STATIC_FORCEINLINE void __set_DACR32_EL2(uint32_t value)
+__STATIC_FORCEINLINE void __set_DACR32_EL2(uint64_t value)
 {
 	// MSR DACR32_EL2, <Xt> ; Write Xt to DACR32_EL2
-	__set_RG32("DACR32_EL2", value);
+	__set_RG64("DACR32_EL2", value);
+}
+
+__STATIC_FORCEINLINE uint64_t __get_DACR32_EL2(void)
+{
+	uint64_t result;
+	__get_RG64("DACR32_EL2", result);
+	return result;
 }
 
 __STATIC_FORCEINLINE void __set_CSSELR_EL1(uint32_t value)
@@ -445,9 +515,40 @@ __STATIC_FORCEINLINE void __set_CPUACTLR_EL1(uint64_t value)
 	__set_RG64("S3_1_C15_C2_0", value);
 }
 
-__STATIC_FORCEINLINE void __set_CPUECTLR_EL1(uint64_t value)
+// RVBAR_EL1, Reset Vector Base Address Register (if EL2 and EL3 not implemented)
+__STATIC_FORCEINLINE void __set_RVBAR_EL1(uint64_t value)
 {
-	__set_RG64("S3_1_C15_C2_1", value);
+	__set_RG64("RVBAR_EL1", value);
+}
+__STATIC_FORCEINLINE uint64_t __get_RVBAR_EL1(void)
+{
+	uint64_t result;
+	__get_RG64("RVBAR_EL1", result);
+	return result;
+}
+
+// RVBAR_EL2, Reset Vector Base Address Register (if EL3 not implemented)
+__STATIC_FORCEINLINE void __set_RVBAR_EL2(uint64_t value)
+{
+	__set_RG64("RVBAR_EL2", value);
+}
+__STATIC_FORCEINLINE uint64_t __get_RVBAR_EL2(void)
+{
+	uint64_t result;
+	__get_RG64("RVBAR_EL2", result);
+	return result;
+}
+
+// RVBAR_EL3, Reset Vector Base Address Register (if EL3 implemented)
+__STATIC_FORCEINLINE void __set_RVBAR_EL3(uint64_t value)
+{
+	__set_RG64("RVBAR_EL3", value);
+}
+__STATIC_FORCEINLINE uint64_t __get_RVBAR_EL3(void)
+{
+	uint64_t result;
+	__get_RG64("RVBAR_EL3", result);
+	return result;
 }
 
 __STATIC_FORCEINLINE uint32_t __get_DAIF(void)
@@ -459,30 +560,18 @@ __STATIC_FORCEINLINE uint32_t __get_DAIF(void)
 }
 
 // 4.3.42 Secure Configuration Register
-__STATIC_FORCEINLINE void __set_SCR_EL3(uint32_t value)
+__STATIC_FORCEINLINE void __set_SCR_EL3(uint64_t value)
 {
 	// MSR CSSELR_EL1, <Xt> ; Write Xt to CSSELR_EL1
 	__set_RG32("SCR_EL3", value);
 }
 
-__STATIC_FORCEINLINE uint32_t __get_SCR_EL3(void)
+__STATIC_FORCEINLINE uint64_t __get_SCR_EL3(void)
 {
-	uint32_t result;
+	uint64_t result;
 	__get_RG32("SCR_EL3", result);
 	return result;
 }
-
-#define __get_MPIDR() 	(__get_MPIDR_EL1())
-#define __get_IFAR() 	(__get_FAR_EL1())
-#define __get_DFAR() 	(__get_FAR_EL2())
-#define __get_DFSR() 	(__get_ESR_EL1())
-
-
-#define __set_DCCMVAC(v) __set_DCCVAC64(v)
-#define __set_DCCIMVAC(v) __set_DCCIVAC64(v)
-#define __set_DCIMVAC(v) __set_DCIVAC64(v)
-#define __get_CTR() (__get_CTR_EL0())
-
 
  /*******************************************************************************
   *                 Register Abstraction
@@ -1055,6 +1144,7 @@ typedef struct
 #if (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || \
     defined(DOXYGEN)
 
+#if defined(GIC_DISTRIBUTOR_BASE)
 /** \brief  Structure type to access the Generic Interrupt Controller Distributor (GICD)
 */
 typedef struct
@@ -1265,7 +1355,64 @@ typedef struct
 #define GICDistributor_IROUTER_Aff3_Msk       (0xFFUL << GICDistributor_IROUTER_Aff3_Pos)          /*!< GICDistributor IROUTER: Aff3 Mask */
 #define GICDistributor_IROUTER_Aff3(x)        (((uint64_t)(((uint64_t)(x)) << GICDistributor_IROUTER_Aff3_Pos)) & GICDistributor_IROUTER_Aff3_Msk)
 
+#endif /* GIC_DISTRIBUTOR_BASE */
 
+
+#if defined (GIC_REDISTRIBUTOR_BASE)
+
+/*
+ * @brief GICR
+ */
+/*!< GICR GIC Redistributor  */
+typedef struct
+{
+    __IOM uint32_t CTLR;                              /*!< Offset 0x000 Redistributor Control Register */
+    __IM  uint32_t IIDR;                              /*!< Offset 0x004  */
+    __IOM uint32_t TYPER;                             /*!< Offset 0x008  */
+         RESERVED(0x00C[0x0014 - 0x000C], uint8_t)
+    __IOM uint32_t WAKER;                             /*!< Offset 0x014  */
+         RESERVED(0x018[0x0020 - 0x0018], uint8_t)
+    __IOM uint32_t FCTLR;                             /*!< Offset 0x020  */
+    __IOM uint32_t PWRR;                              /*!< Offset 0x024  */
+    __IOM uint32_t CLASS;                             /*!< Offset 0x028  */
+         RESERVED(0x02C[0x0040 - 0x002C], uint8_t)
+    __IOM uint64_t SETLPIR;                           /*!< Offset 0x040  */
+    __IOM uint64_t CLRLPIR;                           /*!< Offset 0x048  */
+         RESERVED(0x050[0x0070 - 0x0050], uint8_t)
+    __IOM uint64_t PROPBASER;                         /*!< Offset 0x070 Redistributor Properties Base Address Register */
+    __IOM uint64_t PENDBASER;                         /*!< Offset 0x078 Redistributor LPI Pending Table Base Address Register */
+         RESERVED(0x080[0x00A0 - 0x0080], uint8_t)
+    __IOM uint64_t INVLPIR;                           /*!< Offset 0x0A0  */
+    __IOM uint64_t INVALLR;                           /*!< Offset 0x0A8  */
+         RESERVED(0x0B0[0x00C0 - 0x00B0], uint8_t)
+    __IOM uint32_t SYNCR;                             /*!< Offset 0x0C0  */
+         RESERVED(0x0C4[0xFFD0 - 0x00C4], uint8_t)
+    __IM  uint32_t PIDR4;                             /*!< Offset 0xFFD0 Peripheral ID 4 Register */
+    __IM  uint32_t PIDR5;                             /*!< Offset 0xFFD4 Peripheral ID 5 Register */
+    __IM  uint32_t PIDR6;                             /*!< Offset 0xFFD8 Peripheral ID 6 Register */
+    __IM  uint32_t PIDR7;                             /*!< Offset 0xFFDC Peripheral ID 7 Register */
+    __IM  uint32_t PIDR0;                             /*!< Offset 0xFFE0 Peripheral ID 0 Register */
+    __IM  uint32_t PIDR1;                             /*!< Offset 0xFFE4 Peripheral ID 1 Register */
+    __IM  uint32_t PIDR2;                             /*!< Offset 0xFFE8 Peripheral ID 2 Register */
+    __IM  uint32_t PIDR3;                             /*!< Offset 0xFFEC Peripheral ID 3 Register */
+    __IM  uint32_t CIDR0;                             /*!< Offset 0xFFF0 Component ID 0 Register */
+    __IM  uint32_t CIDR1;                             /*!< Offset 0xFFF4 Component ID 1 Register */
+    __IM  uint32_t CIDR2;                             /*!< Offset 0xFFF8 Component ID 2 Register */
+    __IM  uint32_t CIDR3;                             /*!< Offset 0xFFFC Component ID 3 Register */
+} GICRedistributor_Type; /* size of structure = 0x10000 */
+
+#define GICRedistributor      ((GICRedistributor_Type      *)     GIC_REDISTRIBUTOR_BASE ) /*!< \brief GIC ReDistributor register set access pointer */
+
+// https://developer.arm.com/documentation/ddi0601/2025-12/External-Registers/GICR-CTLR--Redistributor-Control-Register?lang=en
+__STATIC_FORCEINLINE void GIC_RedistributorWait(void)
+{
+	while ((GICRedistributor->CTLR & (UINT32_C(1) << 3)) != 0)	// Bit 3, not a 31
+			;
+}
+
+#endif /* GIC_REDISTRIBUTOR_BASE */
+
+#if defined(GIC_INTERFACE_BASE)
 
 /** \brief  Structure type to access the Generic Interrupt Controller Interface (GICC)
 */
@@ -1393,6 +1540,8 @@ typedef struct
 #define GICInterface_DIR_INTID(x)           (((uint32_t)(((uint32_t)(x)) /*<< GICInterface_DIR_INTID_Pos*/)) & GICInterface_DIR_INTID_Msk)
 #endif /*  (__GIC_PRESENT == 1U) || defined(DOXYGEN) */
 
+#endif /* GIC_INTERFACE_BASE */
+
 #if (defined(__TIM_PRESENT) && (__TIM_PRESENT == 1U)) || \
      defined(DOXYGEN)
 #if ((__CORTEX_A == 5U) || (__CORTEX_A == 9U)) || defined(DOXYGEN)
@@ -1477,55 +1626,53 @@ typedef struct
 
 /** \brief  Set DCISW
  */
-__STATIC_FORCEINLINE void __set_DCISW64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCISW(uint64_t value)
 {
 	__ASM volatile("DC ISW, %0" : : "r" (value) : "memory");
 }
 
 /** \brief Clean by Set/Way DCCSW
  */
-__STATIC_FORCEINLINE void __set_DCCSW64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCCSW(uint64_t value)
 {
 	__ASM volatile("DC CSW, %0" : : "r" (value) : "memory");
 }
 
 /** \brief CISW Clean and invalidate by Set/Way DCCISW
  */
-__STATIC_FORCEINLINE void __set_DCCISW64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCCISW(uint64_t value)
 {
 	__ASM volatile("DC CISW, %0" : : "r" (value) : "memory");
 }
 
 /** \brief CIVAC Clean and Invalidate by Virtual Address to Point of Coherency DCCIMVAC
  */
-__STATIC_FORCEINLINE void __set_DCCIVAC64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCCIVAC(uint64_t value)
 {
 	__ASM volatile("DC CIVAC, %0" : : "r" (value) : "memory");
 }
 
 /** \brief CVAC Clean by Virtual Address to Point of Coherency DCCMVAC
  */
-__STATIC_FORCEINLINE void __set_DCCVAC64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCCVAC(uint64_t value)
 {
 	__ASM volatile("DC CVAC, %0" : : "r" (value) : "memory");
 }
 
 /** \brief IVAC Invalidate by Virtual Address, to Point of Coherency DCIMVAC
  */
-__STATIC_FORCEINLINE void __set_DCIVAC64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCIVAC(uint64_t value)
 {
 	__ASM volatile("DC IVAC, %0" : : "r" (value) : "memory");
 }
 
 /** \brief  ZVA Cache zero by Virtual Address
  */
-__STATIC_FORCEINLINE void __set_DCZVA64(uint64_t value)
+__STATIC_FORCEINLINE void __set_DCZVA(uint64_t value)
 {
 	__ASM volatile("DC ZVA, %0" : : "r" (value) : "memory");
 }
 
-///////////////
-///
 __STATIC_FORCEINLINE void __set_SCTLR_EL1(uint64_t value)
 {
 	__set_RG64("SCTLR_EL1", value);
@@ -1539,8 +1686,6 @@ __STATIC_FORCEINLINE uint64_t __get_SCTLR_EL1(void)
 	return result;
 }
 
-///////////////
-///
 __STATIC_FORCEINLINE void __set_SCTLR_EL2(uint64_t value)
 {
 	__set_RG64("SCTLR_EL2", value);
@@ -1554,8 +1699,6 @@ __STATIC_FORCEINLINE uint64_t __get_SCTLR_EL2(void)
 	return result;
 }
 
-
-
 __STATIC_FORCEINLINE uint64_t __get_ID_AA64MMFR2_EL1(void)
 {
 	uint64_t result;
@@ -1563,8 +1706,7 @@ __STATIC_FORCEINLINE uint64_t __get_ID_AA64MMFR2_EL1(void)
 	__get_RG64("ID_AA64MMFR2_EL1", result);
 	return result;
 }
-///////////////
-///
+
 __STATIC_FORCEINLINE void __set_SCTLR_EL3(uint64_t value)
 {
 	__set_RG64("SCTLR_EL3", value);
@@ -1577,8 +1719,7 @@ __STATIC_FORCEINLINE uint64_t __get_SCTLR_EL3(void)
 	__get_RG64("SCTLR_EL3", result);
 	return result;
 }
-///////////////
-///
+
 __STATIC_FORCEINLINE void __set_ACTLR_EL3(uint32_t value)
 {
 	__set_RG32("ACTLR_EL3", value);
@@ -1598,6 +1739,7 @@ __STATIC_FORCEINLINE void __set_PMCCNTR_EL0(uint64_t value)
 	__set_RG64("PMCCNTR_EL0", value);
 }
 
+// PMCCNTR_EL0, Performance Monitors Cycle Count Register
 __STATIC_FORCEINLINE uint64_t __get_PMCCNTR_EL0(void)
 {
 	uint64_t result;
@@ -1634,14 +1776,12 @@ __STATIC_FORCEINLINE uint64_t __get_PMCNTENSET_EL0(void)
 	return result;
 }
 
-///////////////
-///
-__STATIC_FORCEINLINE void __set_CPACR_EL1(uint32_t value)
+__STATIC_INLINE void __set_CPACR_EL1(uint32_t value)
 {
 	__set_RG32("CPACR_EL1", value);
 }
 
-__STATIC_FORCEINLINE uint32_t __get_CPACR_EL1(void)
+__STATIC_INLINE uint32_t __get_CPACR_EL1(void)
 {
 	uint32_t result;
 	// MRS <Xt>, CPACR_EL1 ; Read CPACR_EL1 into Xt
@@ -1649,7 +1789,7 @@ __STATIC_FORCEINLINE uint32_t __get_CPACR_EL1(void)
 	return result;
 }
 
-__STATIC_FORCEINLINE uint32_t __get_DCZID_EL0(void)
+__STATIC_INLINE uint32_t __get_DCZID_EL0(void)
 {
 	uint32_t result;
 	// MRS <Xt>, DCZID_EL0 ; Read DCZID_EL0 into Xt
@@ -1665,10 +1805,131 @@ __STATIC_FORCEINLINE uint32_t __get_DCZID_EL0(void)
 		10 EL2
 		11 EL3
 */
-__STATIC_FORCEINLINE uint32_t __get_CURRENTEL(void)
+
+__STATIC_INLINE uint64_t __get_CurrentEL(void)
+{
+	uint64_t result;
+    __get_RG32("CurrentEL", result);
+    return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL1(void)
 {
 	uint32_t result;
-	__get_RG32("CURRENTEL", result);
+	__MRS(ICC_SRE_EL1, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL1(uint32_t value)
+{
+	__MSR(ICC_SRE_EL1, value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL2(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL2, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL2(uint32_t value)
+{
+	__MSR(ICC_SRE_EL2, value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL3(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL3, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL3(uint32_t value)
+{
+	__MSR(ICC_SRE_EL3, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
+{
+	__MSR(ICC_PMR_EL1, value);
+}
+
+// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
+__STATIC_FORCEINLINE void __set_ICC_CTLR_EL1(uint64_t value)
+{
+	__MSR(ICC_CTLR_EL1, value);
+}
+
+// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
+__STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL1(void)
+{
+	uint64_t result;
+    __MRS(ICC_CTLR_EL1, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_CTLR_EL3(uint64_t value)
+{
+	__MSR(ICC_CTLR_EL3, value);
+}
+
+__STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL3(void)
+{
+	uint64_t result;
+    __MRS(ICC_CTLR_EL3, &result);
+    return result;
+}
+
+// AArch32 (CLUSTERCFR) and AArch64 (CLUSTERCFR_EL1)
+// MRS <Xt>, S3_0_C15_C3_0; Read CLUSTERCFR_EL1 into Xt
+// MRC p15, 0, <Rt>, c15, c3, 0; Read CLUSTERCFR into Rt
+__STATIC_FORCEINLINE uint64_t __get_CLUSTERCFR_EL1(void)
+{
+	uint64_t result;
+	// MRS <Xt>, MIDR_EL1 ; Read MIDR_EL1 into Xt
+	__get_RG32("S3_0_C15_C3_0", result);
+	return result;
+}
+
+// AArch32 (CLUSTERECTLR) and AArch64 (CLUSTERECTLR_EL1)
+// MRS <Xt>, S3_0_C15_C3_4; Read CLUSTERECTLR_EL1 into Xt
+// MSR S3_0_C15_C3_4, <Xt>; Write Xt into CLUSTERECTLR_EL1
+// MRC p15, 0, <Rt>, c15, c3, 4; Read CLUSTERECTLR into Rt
+// MCR p15, 0, <Rt>, c15, c3, 4; Write Rt into CLUSTERECTLR
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERECTLR_EL1(void)
+{
+	uint64_t result;
+	__get_RG32("S3_0_C15_C3_4", result);
+	return result;
+}
+__STATIC_FORCEINLINE void __set_CLUSTERECTLR_EL1(uint32_t v)
+{
+	uint64_t value = v;
+	__set_RG32("S3_0_C15_C3_4", value);
+}
+// MRS <Xt>, S3_0_C15_C3_5; Read CLUSTERPWRCTLR_EL1 into Xt
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRCTLR_EL1(void)
+{
+	uint64_t result;
+	__get_RG32("S3_0_C15_C3_5", result);
+	return result;
+}
+__STATIC_FORCEINLINE void __set_CLUSTERPWRCTLR_EL1(uint32_t v)
+{
+	uint64_t value = v;
+	__set_RG32("S3_0_C15_C3_5", value);
+}
+// MSR S3_0_C15_C3_6, <Xt>; Write Xt into CLUSTERPWRDN_EL1
+__STATIC_FORCEINLINE void __set_CLUSTERPWRDN_EL1(uint32_t v)
+{
+	uint64_t value = v;
+	__set_RG32("S3_0_C15_C3_6", value);
+}
+// MRS <Xt>, S3_0_C15_C3_6; Read CLUSTERPWRDN_EL1 into Xt
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRDN_EL1(void)
+{
+	uint64_t result;
+	__get_RG32("S3_0_C15_C3_6", result);
 	return result;
 }
 
@@ -1679,7 +1940,6 @@ __STATIC_FORCEINLINE uint32_t __get_CURRENTEL(void)
 */
 __STATIC_FORCEINLINE void L1C_EnableCaches(void)
 {
-	__set_CPUECTLR_EL1(__get_CPUECTLR_EL1() | (UINT32_C(1) << 6));	// // The SMP bit
 	__set_SCTLR_EL3( __get_SCTLR_EL3() | SCTLR_EL3_I_Msk | SCTLR_EL3_C_Msk);
 	__ISB();
 }
@@ -1745,7 +2005,7 @@ __STATIC_FORCEINLINE void L1C_InvalidateICacheAll(void) {
 * \param [in] va Pointer to data to clear the cache for.
 */
 __STATIC_FORCEINLINE void L1C_CleanDCacheMVA(void *va) {
-  __set_DCCVAC64((uintptr_t)va);
+  __set_DCCVAC((uintptr_t)va);
   __DMB();     //ensure the ordering of data cache maintenance operations and their effects
 }
 
@@ -1753,7 +2013,7 @@ __STATIC_FORCEINLINE void L1C_CleanDCacheMVA(void *va) {
 * \param [in] va Pointer to data to invalidate the cache for.
 */
 __STATIC_FORCEINLINE void L1C_InvalidateDCacheMVA(void *va) {
-  __set_DCIVAC64((uintptr_t)va);
+  __set_DCIVAC((uintptr_t)va);
   __DMB();     //ensure the ordering of data cache maintenance operations and their effects
 }
 
@@ -1761,7 +2021,7 @@ __STATIC_FORCEINLINE void L1C_InvalidateDCacheMVA(void *va) {
 * \param [in] va Pointer to data to invalidate the cache for.
 */
 __STATIC_FORCEINLINE void L1C_CleanInvalidateDCacheMVA(void *va) {
-	__set_DCCIVAC64((uintptr_t)va);
+	__set_DCCIVAC((uintptr_t)va);
 	__DMB();     //ensure the ordering of data cache maintenance operations and their effects
 }
 
@@ -1829,9 +2089,9 @@ __STATIC_FORCEINLINE void __L1C_MaintainDCacheSetWay(uint32_t level, uint32_t ma
     	uint64_t Dummy = (level << 1U) | (((uint32_t)set) << log2_linesize) | (((uint32_t)way) << shift_way);
       switch (maint)
       {
-        case 0U: __set_DCISW64(Dummy);  break;
-        case 1U: __set_DCCSW64(Dummy);  break;
-        default: __set_DCCISW64(Dummy); break;
+        case 0U: __set_DCISW(Dummy);  break;
+        case 1U: __set_DCCSW(Dummy);  break;
+        default: __set_DCCISW(Dummy); break;
       }
     }
   }
@@ -1988,11 +2248,20 @@ __STATIC_INLINE void L2C_CleanInvPa (void *pa)
 #if (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || \
      defined(DOXYGEN)
 
+#if defined(GIC_DISTRIBUTOR_BASE)
+
+__STATIC_FORCEINLINE void GIC_DistributorWait(void)
+{
+	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
+		;
+}
+
 /** \brief  Enable the interrupt distributor using the GIC's CTLR register.
 */
 __STATIC_INLINE void GIC_EnableDistributor(void)
 {
   GICDistributor->CTLR |= 1U;
+  GIC_DistributorWait();
 }
 
 /** \brief Disable the interrupt distributor using the GIC's CTLR register.
@@ -2000,6 +2269,7 @@ __STATIC_INLINE void GIC_EnableDistributor(void)
 __STATIC_INLINE void GIC_DisableDistributor(void)
 {
   GICDistributor->CTLR &=~1U;
+  GIC_DistributorWait();
 }
 
 /** \brief Read the GIC's TYPER register.
@@ -2035,36 +2305,6 @@ __STATIC_INLINE void GIC_SetTarget(IRQn_Type IRQn, uint32_t cpu_target)
 __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
 {
   return (GICDistributor->ITARGETSR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
-}
-
-/** \brief Enable the CPU's interrupt interface.
-*/
-__STATIC_INLINE void GIC_EnableInterface(void)
-{
-  GICInterface->CTLR |= 1U; //enable interface
-}
-
-/** \brief Disable the CPU's interrupt interface.
-*/
-__STATIC_INLINE void GIC_DisableInterface(void)
-{
-  GICInterface->CTLR &=~1U; //disable distributor
-}
-
-/** \brief Read the CPU's IAR register.
-* \return GICInterface_Type::IAR
-*/
-__STATIC_INLINE IRQn_Type GIC_AcknowledgePending(void)
-{
-  return (IRQn_Type)(GICInterface->IAR);
-}
-
-/** \brief Writes the given interrupt number to the CPU's EOIR register.
-* \param [in] IRQn The interrupt to be signaled as finished.
-*/
-__STATIC_INLINE void GIC_EndInterrupt(IRQn_Type IRQn)
-{
-  GICInterface->EOIR = IRQn;
 }
 
 /** \brief Enables the given interrupt using GIC's ISENABLER register.
@@ -2188,6 +2428,63 @@ __STATIC_INLINE uint32_t GIC_GetPriority(IRQn_Type IRQn)
   return (GICDistributor->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
 }
 
+/** \brief Get the status for a given interrupt.
+* \param [in] IRQn The interrupt to get status for.
+* \return 0 - not pending/active, 1 - pending, 2 - active, 3 - pending and active
+*/
+__STATIC_INLINE uint32_t GIC_GetIRQStatus(IRQn_Type IRQn)
+{
+  uint32_t pending, active;
+
+  active = ((GICDistributor->ISACTIVER[IRQn / 32U])  >> (IRQn % 32U)) & 1UL;
+  pending = ((GICDistributor->ISPENDR[IRQn / 32U]) >> (IRQn % 32U)) & 1UL;
+
+  return ((active<<1U) | pending);
+}
+
+/** \brief Generate a software interrupt using GIC's SGIR register.
+* \param [in] IRQn Software interrupt to be generated.
+* \param [in] target_list List of CPUs the software interrupt should be forwarded to.
+* \param [in] filter_list Filter to be applied to determine interrupt receivers.
+*/
+__STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
+{
+  GICDistributor->SGIR = ((filter_list & 3U) << 24U) | ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
+}
+#endif /* GIC_DISTRIBUTOR_BASE */
+
+#if defined(GIC_INTERFACE_BASE)
+
+/** \brief Enable the CPU's interrupt interface.
+*/
+__STATIC_INLINE void GIC_EnableInterface(void)
+{
+  GICInterface->CTLR |= 1U; //enable interface
+}
+
+/** \brief Disable the CPU's interrupt interface.
+*/
+__STATIC_INLINE void GIC_DisableInterface(void)
+{
+  GICInterface->CTLR &=~1U; //disable distributor
+}
+
+/** \brief Read the CPU's IAR register.
+* \return GICInterface_Type::IAR
+*/
+__STATIC_INLINE IRQn_Type GIC_AcknowledgePending(void)
+{
+  return (IRQn_Type)(GICInterface->IAR);
+}
+
+/** \brief Writes the given interrupt number to the CPU's EOIR register.
+* \param [in] IRQn The interrupt to be signaled as finished.
+*/
+__STATIC_INLINE void GIC_EndInterrupt(IRQn_Type IRQn)
+{
+  GICInterface->EOIR = IRQn;
+}
+
 /** \brief Set the interrupt priority mask using CPU's PMR register.
 * \param [in] priority Priority mask to be set.
 */
@@ -2220,30 +2517,6 @@ __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
   return GICInterface->BPR;
 }
 
-/** \brief Get the status for a given interrupt.
-* \param [in] IRQn The interrupt to get status for.
-* \return 0 - not pending/active, 1 - pending, 2 - active, 3 - pending and active
-*/
-__STATIC_INLINE uint32_t GIC_GetIRQStatus(IRQn_Type IRQn)
-{
-  uint32_t pending, active;
-
-  active = ((GICDistributor->ISACTIVER[IRQn / 32U])  >> (IRQn % 32U)) & 1UL;
-  pending = ((GICDistributor->ISPENDR[IRQn / 32U]) >> (IRQn % 32U)) & 1UL;
-
-  return ((active<<1U) | pending);
-}
-
-/** \brief Generate a software interrupt using GIC's SGIR register.
-* \param [in] IRQn Software interrupt to be generated.
-* \param [in] target_list List of CPUs the software interrupt should be forwarded to.
-* \param [in] filter_list Filter to be applied to determine interrupt receivers.
-*/
-__STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
-{
-  GICDistributor->SGIR = ((filter_list & 3U) << 24U) | ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
-}
-
 /** \brief Get the interrupt number of the highest interrupt pending from CPU's HPPIR register.
 * \return GICInterface_Type::HPPIR
 */
@@ -2260,10 +2533,283 @@ __STATIC_INLINE uint32_t GIC_GetInterfaceId(void)
   return GICInterface->IIDR;
 }
 
+#else /* GIC_INTERFACE_BASE */
+
+
+/* ICC_SGIR */
+#define ICC_SGIR_TARGETLIST_SHIFT (0)
+#define ICC_SGIR_TARGETLIST_MASK  (0xffff)
+#define ICC_SGIR_AFF_MASK         (0xff)
+#define ICC_SGIR_AFF1_SHIFT       (16)
+#define ICC_SGIR_INTID_SHIFT      (24)
+#define ICC_SGIR_INTID_MASK       (0xf)
+#define ICC_SGIR_AFF2_SHIFT       (32)
+#define ICC_SGIR_IRM_SHIFT        (40)
+#define ICC_SGIR_IRM_MASK         (0x1)
+#define ICC_SGIR_RS_SHIFT         (44)
+#define ICC_SGIR_RS_MASK          (0xf)
+#define ICC_SGIR_AFF3_SHIFT       (48)
+
+#define MPIDR_TO_RS(mpidr) (MPIDR_TO_AFF_LEVEL(mpidr, 0) >> 4)
+
+#define COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, intid, irm, rs, tlist) \
+    ((((uint64_t)(aff3) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF3_SHIFT) |  \
+     (((uint64_t)(rs) & ICC_SGIR_RS_MASK) << ICC_SGIR_RS_SHIFT) |       \
+     (((uint64_t)(irm) & ICC_SGIR_IRM_MASK) << ICC_SGIR_IRM_SHIFT) |    \
+     (((uint64_t)(aff2) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF2_SHIFT) |  \
+     (((intid) & ICC_SGIR_INTID_MASK) << ICC_SGIR_INTID_SHIFT) |        \
+     (((aff1) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF1_SHIFT) |            \
+     (((tlist) & ICC_SGIR_TARGETLIST_MASK) << ICC_SGIR_TARGETLIST_SHIFT))
+
+#define GIC_REDISTRIBUTOR_STRIDE (0x20000)
+#define GICR_SGI_BASE_OFF        (0x10000)
+
+#define GICR_TYPER_LAST_SHIFT (4)
+#define GICR_TYPER_LAST_MASK  (1 << GICR_TYPER_LAST_SHIFT)
+#define GICR_TYPER_AFF_SHIFT  (32)
+
+#define GICR_WAKER_PS_SHIFT (1)
+#define GICR_WAKER_CA_SHIFT (2)
+
+#define ioreg32(name) \
+	__STATIC_INLINE void __set_ ## name (uint32_t value) \
+	{ \
+		__MSR(name, (value)); \
+	} \
+	__STATIC_INLINE uint32_t __get_ ## name (void) \
+	{ 	uint32_t resut;\
+	__MRS(name, (& resut)); \
+		return resut; \
+	}
+
+/** \brief Enable the CPU's interrupt interface.
+*/
+__STATIC_INLINE void GIC_EnableInterface(void)
+{
+    __MSR(ICC_IGRPEN1_EL3, 1);
+    __MSR(ICC_IGRPEN1_EL1, 1);
+//    __MSR(ICC_IGRPEN0_EL1, 1);
+}
+
+/** \brief Disable the CPU's interrupt interface.
+*/
+__STATIC_INLINE void GIC_DisableInterface(void)
+{
+    __MSR(ICC_IGRPEN1_EL3, 0);
+    __MSR(ICC_IGRPEN1_EL1, 0);
+//    __MSR(ICC_IGRPEN0_EL1, 0);
+}
+
+/** \brief Configures the group priority and subpriority split point using CPU's BPR register.
+* \param [in] binary_point Amount of bits used as subpriority.
+*/
+__STATIC_INLINE void GIC_SetBinaryPoint(uint32_t binary_point)
+{
+    __MSR(ICC_BPR1_EL1, binary_point & 7U);
+//    __MSR(ICC_BPR0_EL1, binary_point & 7U);
+}
+
+/** \brief Get the interrupt number of the highest interrupt pending from CPU's HPPIR register.
+* \return GICInterface_Type::HPPIR
+*/
+__STATIC_INLINE uint32_t GIC_GetHighPendingIRQ(void)
+{
+    uint32_t result;
+    __MRS(ICC_HPPIR1_EL1, &result);
+    return result;
+}
+
+/** \brief Get the interrupt number of the highest interrupt pending from CPU's HPPIR register.
+* \return GICInterface_Type::HPPIR
+*/
+__STATIC_INLINE uint32_t GIC_GetHighPendingIRQG0(void)
+{
+    uint32_t result;
+    __MRS(ICC_HPPIR0_EL1, &result);
+    return result;
+}
+
+/** \brief Read the CPU's IAR register.
+* \return GICInterface_Type::IAR
+*/
+__STATIC_INLINE IRQn_Type GIC_AcknowledgePending(void)
+{
+    uint32_t result;
+    __MRS(ICC_IAR1_EL1, &result);
+    return (IRQn_Type)(result);
+}
+
+/** \brief Read the CPU's IAR register.
+* \return GICInterface_Type::IAR
+*/
+__STATIC_INLINE IRQn_Type GIC_AcknowledgePendingG0(void)
+{
+    uint32_t result;
+    __MRS(ICC_IAR0_EL1, &result);
+    return (IRQn_Type)(result);
+}
+
+/** \brief Writes the given interrupt number to the CPU's EOIR register.
+* \param [in] IRQn The interrupt to be signaled as finished.
+*/
+__STATIC_INLINE void GIC_EndInterrupt(IRQn_Type IRQn)
+{
+    __MSR(ICC_EOIR1_EL1, (uint32_t)IRQn);
+}
+
+/** \brief Writes the given interrupt number to the CPU's EOIR register.
+* \param [in] IRQn The interrupt to be signaled as finished.
+*/
+__STATIC_INLINE void GIC_EndInterruptG0(IRQn_Type IRQn)
+{
+    __MSR(ICC_EOIR0_EL1, (uint32_t)IRQn);
+}
+
+/** \brief Read the current group priority and subpriority split point from CPU's BPR register.
+* \return GICInterface_Type::BPR
+*/
+__STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
+{
+    uint32_t result;
+    __MRS(ICC_BPR1_EL1, &result);
+    return result;
+}
+
+/** \brief Read the current group priority and subpriority split point from CPU's BPR register.
+* \return GICInterface_Type::BPR
+*/
+__STATIC_INLINE uint32_t GIC_GetBinaryPointG0(void)
+{
+    uint32_t result;
+    __MRS(ICC_BPR0_EL1, &result);
+    return result;
+}
+
+/** \brief Set the interrupt priority mask using CPU's PMR register.
+* \param [in] priority Priority mask to be set.
+*/
+__STATIC_INLINE void GIC_SetInterfacePriorityMask(uint32_t priority)
+{
+    __MSR(ICC_PMR_EL1, priority & 0xFFUL);
+}
+
+/** \brief Read the current interrupt priority mask from CPU's PMR register.
+* \result GICInterface_Type::PMR
+*/
+__STATIC_INLINE uint32_t GIC_GetInterfacePriorityMask(void)
+{
+    uint32_t result;
+    __MRS(ICC_PMR_EL1, &result);
+    return result;
+}
+
+#endif /* GIC_INTERFACE_BASE */
+
+#if defined(GIC_REDISTRIBUTOR_BASE)
+
+/** \brief Get the Redistributor base.
+*/
+__STATIC_INLINE GICRedistributor_Type *GIC_GetRdist(void)
+{
+#if 1
+	return (GICRedistributor_Type *) GICR0_BASE;
+#else
+    uintptr_t rd_addr = GIC_REDISTRIBUTOR_BASE;
+    uint32_t rd_aff, aff = GIC_MPIDRtoAffinity();
+    uint64_t rd_typer;
+
+  do {
+        rd_typer = ((GICRedistributor_Type *)rd_addr)->TYPER;
+        rd_aff = rd_typer >> GICR_TYPER_AFF_SHIFT;
+
+        if (rd_aff == aff)
+            return (GICRedistributor_Type *)rd_addr;
+
+        rd_addr += GIC_REDISTRIBUTOR_STRIDE;
+    } while (!(rd_typer & GICR_TYPER_LAST_MASK));
+
+    return NULL;
+#endif
+}
+
+/** \brief Get the Redistributor SGI_base.
+*/
+__STATIC_INLINE void *GIC_GetRdistSGIBase(void *rd_base)
+{
+    return (void *)((uintptr_t)rd_base + GICR_SGI_BASE_OFF);
+}
+
+/**
+ *
+ */
+__STATIC_INLINE uint32_t GIC_GetRedistPriority(IRQn_Type IRQn)
+{
+    GICDistributor_Type *const s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
+
+    return (s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+}
+
+/**
+ *
+ */
+__STATIC_INLINE void GIC_RedistWakeUp(void)
+{
+  GICRedistributor_Type *const s_RedistBaseAddrs = GIC_GetRdist();
+
+    if (!s_RedistBaseAddrs)
+        return;
+
+    if (!(s_RedistBaseAddrs->WAKER & (1 << GICR_WAKER_CA_SHIFT)))
+        return;
+
+  s_RedistBaseAddrs->WAKER &= ~ (1 << GICR_WAKER_PS_SHIFT);
+    while (s_RedistBaseAddrs->WAKER & (1 << GICR_WAKER_CA_SHIFT))
+        ;
+}
+
+/**
+ *
+ */
+__STATIC_INLINE void GIC_SetRedistPriority(IRQn_Type IRQn, uint32_t priority)
+{
+    GICDistributor_Type *const s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
+    const uint32_t mask = s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
+
+    s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
+}
+
+/** \brief Initialize the interrupt redistributor.
+*/
+__STATIC_INLINE void GIC_RedistInit(void)
+{
+    uint32_t i;
+    uint32_t priority_field;
+
+  /* Priority level is implementation defined.
+   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
+   priority field and read back the value stored.*/
+    GIC_SetRedistPriority((IRQn_Type)31U, 0xFFU);
+    priority_field = GIC_GetRedistPriority((IRQn_Type)31U);
+
+  /* Wakeup the GIC */
+    GIC_RedistWakeUp();
+
+    for (i = 0; i < 32; i++)
+    {
+      //Disable the SPI interrupt
+        GIC_DisableIRQ((IRQn_Type)i);
+      //Set priority
+      GIC_SetRedistPriority((IRQn_Type)i, priority_field*2U/3U);
+    }
+}
+#endif /* GIC_REDISTRIBUTOR_BASE */
+
+#if defined (GIC_DISTRIBUTOR_BASE)
 /** \brief Set the interrupt group from the GIC's IGROUPR register.
 * \param [in] IRQn The interrupt to be queried.
 * \param [in] group Interrupt group number: 0 - Group 0, 1 - Group 1
 */
+// Group 0 (Secure) and Group 1 (Non-secure).
 __STATIC_INLINE void GIC_SetGroup(IRQn_Type IRQn, uint32_t group)
 {
   uint32_t igroupr = GICDistributor->IGROUPR[IRQn / 32U];
@@ -2322,6 +2868,7 @@ __STATIC_INLINE void GIC_DistInit(void)
   //Enable distributor
   GIC_EnableDistributor();
 }
+#endif /* GIC_DISTRIBUTOR_BASE */
 
 /** \brief Initialize the CPU's interrupt interface
 */
@@ -2367,9 +2914,13 @@ __STATIC_INLINE void GIC_CPUInterfaceInit(void)
 __STATIC_INLINE void GIC_Enable(void)
 {
   GIC_DistInit();
+#if defined(GIC_REDISTRIBUTOR_BASE)
+  GIC_RedistInit();
+#endif /* GIC_REDISTRIBUTOR_BASE */
   GIC_CPUInterfaceInit(); //per CPU
 }
-#endif
+
+#endif /* (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || defined(DOXYGEN) */
 
 /* ##########################  Generic Timer functions  ############################ */
 #if (defined(__TIM_PRESENT) && (__TIM_PRESENT == 1U)) || \
@@ -3516,6 +4067,32 @@ __STATIC_INLINE void MMU_InvalidateTLB(void)
 #endif
 }
 
+
+/** \brief  Enable Floating Point Unit */
+__STATIC_INLINE void __FPU_Enable(void)
+{
+  uint32_t temp=0;
+  __ASM volatile
+  (
+    // In AArch64, you do not need to enable access to the NEON and FP registers.
+    // However, access to  the NEON and FP registers can still be trapped.
+
+    // Disable trapping of   accessing in EL3 and EL2.
+    "        MSR    CPTR_EL3, XZR    \n"
+    "        MSR    CPTR_EL2, XZR    \n"
+
+    // Disable access trapping in EL1 and EL0.
+    "        MOV    %0, #(0x3 << 20) \n"
+
+    // FPEN disables trapping to EL1.
+    "        MSR    CPACR_EL1, %0    \n"
+
+    //Ensure that subsequent instructions occur in the context of VFP/NEON access permitted
+    "        ISB                       "
+
+    : : "r"(temp): "cc"
+  );
+}
 
 #ifdef __cplusplus
 }

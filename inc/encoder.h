@@ -20,7 +20,6 @@ extern "C" {
 #define ENCODER_SLOW_STEPS 48	/* шагов на один оборот валкодера на минимальной скорости вращения  */
 #define ENCODER_MENU_STEPS 24	/* количество изменений настраиваемого параметра на один оборот валкодера */
 
-#define HISTLEN 4		// кое-где дальше есть код, в неявном виде использующий это значение
 #define ENCTICKSMAX ENCNTICKS(125)
 #define ENCNTICKS(v) ((v + (ENC_TICKS_PERIOD - 1)) / ENC_TICKS_PERIOD)
 #define ENCTICKS_FREQUENCY (1000 / ENC_TICKS_PERIOD)
@@ -29,10 +28,10 @@ typedef struct encoder_tag encoder_t;
 
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void));
 
-int_least16_t encoder_get_delta(encoder_t * e);
-void encoder_pushback(encoder_t * const e, int outsteps);
+int32_t encoder_get_delta(encoder_t * e);
+void encoder_pushback(encoder_t * const e, int32_t outsteps);
 
-int_least16_t
+int32_t
 encoder_getrotatehires(
 	encoder_t * const e,
 	uint_fast8_t * jumpsize	/* jumpsize - во сколько раз увеличивается скорость перестройки */
@@ -43,11 +42,11 @@ void encoders_clear(void);	/* накопитель сбрасывается */
 void encoders_initialize(void);
 
 void encoder_kbdctl(
-	uint_fast8_t code, 		// код клавиши
+	uint_fast16_t code, 		// код клавиши
 	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
 	);
 
-void encoder_set_resolution(encoder_t * e, uint_fast8_t resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
+void encoder1_set_resolution(unsigned resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
 unsigned encoder_get_actualresolution(encoder_t * e);	// возвращает количество инкрементов на оборот
 
 #define ENCODER_NORMALIZED_RESOLUTION (1440)	// виртуальных импульсов за оборот в секунду - нормализованная скорость
@@ -56,7 +55,7 @@ unsigned encoder_get_actualresolution(encoder_t * e);	// возвращает к
 #define ENCRESSCALE 4U
 
 #define ENC_DYNA_MAX 4
-
+#if WITHENCODER
 extern encoder_t encoder1;	// Main RX tuning knob
 #if WITHENCODER_SUB
 extern encoder_t encoder_sub;	// Sub RX tuning knob
@@ -68,6 +67,7 @@ extern encoder_t encoder_ENC1F;
 extern encoder_t encoder_ENC2F;
 extern encoder_t encoder_ENC3F;
 extern encoder_t encoder_ENC4F;
+#endif /* WITHENCODER */
 extern encoder_t encoder_kbd;
 
 

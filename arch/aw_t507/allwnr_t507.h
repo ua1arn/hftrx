@@ -32,14 +32,16 @@
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
+#define __DSP_PRESENT           1U       /* Set to 1 if DSP extension are present */
 
 #include "device.h"
+//#include "a-profile/gicv2.h"
 
 #include "system_allwnr_t507.h"
 
 typedef USB_EHCI_Capability_TypeDef USB_EHCI_CapabilityTypeDef;		/* For ST Middleware compatibility */
 
-enum DMAC_SrcReqType
+typedef enum DMAC_SrcReqType
 {
 	DMAC_SrcReqSRAM = 0,
 	DMAC_SrcReqDRAM = 1,
@@ -75,9 +77,9 @@ enum DMAC_SrcReqType
 	DMAC_SrcReqTWI4_RX,
 
 	DMAC_SrcReqS_TWI0_RX = 48	// S_TWI0
-};
+} DMAC_SrcReq_TypeDef;
 
-enum DMAC_DstReqType
+typedef enum DMAC_DstReqType
 {
 	DMAC_DstReqSRAM = 0,
 	DMAC_DstReqDRAM = 1,
@@ -114,7 +116,41 @@ enum DMAC_DstReqType
 	DMAC_DstReqTWI4_TX,
 
 	DMAC_SrcReqS_TWI0_TX = 48	// S_TWI0
-};
+} DMAC_DstReq_TypeDef;
+
+#define DMAC_CONFIG_DEST_ADDR_MODE_Pos 24	// DMA Destination Address Mode
+#define DMAC_CONFIG_SRC_ADDR_MODE_Pos 8	// DMA Source Address Mode
+#define DMAC_PARAM_DEST_ADDR_HIBITS_Pos 18	// DMA transfers the higher 2 bits of the 34-bit destination address
+#define DMAC_PARAM_DEST_ADDR_HIBITS_Msk (UINT32_C(0x03) << DMAC_PARAM_DEST_ADDR_HIBITS_Pos)
+#define DMAC_PARAM_SRC_ADDR_HIBITS_Pos 16	// DMA transfers the high 2 bits of the 34-bit source address
+#define DMAC_PARAM_SRC_ADDR_HIBITS_Msk (UINT32_C(0x03) << DMAC_PARAM_SRC_ADDR_HIBITS_Pos)
+
+typedef enum
+{
+	GPIO_CFG_IN  = 0x00,
+	GPIO_CFG_OUT = 0x01,
+	GPIO_CFG_AF2 = 0x02,
+	GPIO_CFG_AF3 = 0x03,
+	GPIO_CFG_AF4 = 0x04,
+	GPIO_CFG_AF5 = 0x05,
+	GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
+	GPIO_CFG_IODISABLE = 0x07
+} GPIOMode_TypeDef;
+
+typedef enum
+{
+	GPIO_DRV_0 = 0x00,	// Level 0 minimal
+	GPIO_DRV_1 = 0x01,	// Level 1
+	GPIO_DRV_2 = 0x02,	// Level 2
+	GPIO_DRV_3 = 0x03	// LEvel 3 maximal
+} GPIODrv_TypeDef;
+
+typedef enum
+{
+	GPIO_PULL_NONE = 0x00,	// Pull-up/down disable
+	GPIO_PULL_UP = 0x01,	// Pull-up
+	GPIO_PULL_DOWN = 0x02	// Pull-down. Other codes reserved
+} GPIOPull_TypeDef;
 
 #if defined (USE_HAL_DRIVER)
   #include "t113s3_hal.h"

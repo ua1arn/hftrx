@@ -48,11 +48,25 @@ extern "C" {
 #define WITHSPPARTMIN		0		/*  % */
 #define WITHSPPARTMAX		100		/*  % */
 
-#define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
-#define	BOARD_IFGAIN_MAX	24		/* код управления усилением ВЧ тракта */
+#if WITHPOTIFGAIN
+	// потенциометром
+	#define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
+	#define	BOARD_IFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
+#else /* WITHPOTIFGAIN */
+	// валкодером
+	#define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
+	#define	BOARD_IFGAIN_MAX	24		/* код управления усилением ВЧ тракта */
+#endif /* WITHPOTIFGAIN */
 
-#define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
-#define	BOARD_AFGAIN_MAX	24		/* код управления усилением НЧ тракта */
+#if WITHPOTAFGAIN
+	// потенциометром
+	#define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
+	#define	BOARD_AFGAIN_MAX	255		/* код управления усилением НЧ тракта */
+#else /* WITHPOTAFGAIN */
+	// валкодером
+	#define	BOARD_AFGAIN_MIN	0		/* код управления усилением НЧ тракта */
+	#define	BOARD_AFGAIN_MAX	24		/* код управления усилением НЧ тракта */
+#endif /* WITHPOTAFGAIN */
 
 #define WITHLINEINGAINMIN	0		/* код управления усилением входа с линии */
 #define WITHLINEINGAINMAX	255		/* код управления усилением входа с линии */
@@ -463,7 +477,7 @@ enum
 #define TXGFV_TX_AM		(UINT8_C(1) << 4)
 #define TXGFV_TX_NFM	(UINT8_C(1) << 5)
 
-void seq_set_txgate(const portholder_t * txgfp, const uint_fast8_t * sdtnp);	/* как включать передатчик в данном режиме работы из прерываний */
+void seq_set_txgate(const portholder_t * txgfp, const uint8_t * sdtnp);	/* как включать передатчик в данном режиме работы из прерываний */
 
 void hardware_cw_diagnostics_noirq(
 	uint_fast8_t c1,
@@ -3349,6 +3363,7 @@ int n7ddc_tune(int linearC, int linearL, int (* cb)(void * ctx), void * ctx);	//
 void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type);
 unsigned n7ddc_get_swr(void);
 
+#define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1
 unsigned get_swr_cached(unsigned rangemax);
 
 void gui_update(void);
@@ -3385,6 +3400,7 @@ enum
 	ISTEP10 = 10,
 	ISTEP50 = 50,
 	ISTEP100 = 100,
+	ISTEPLARGE_1 = 255
 	//ISTEPG,
 	//
 };
@@ -3697,6 +3713,13 @@ param_format(
 	size_t count,	// размер буфера
 	int_fast32_t value
 	);
+size_t
+param_formatabel(
+	const struct paramdefdef * pd,
+	char * buff,
+	size_t count,	// размер буфера
+	const char * (* getlabel)(const struct paramdefdef * pd)	// функция получения указателя на строку с названием параметра
+	);
 void
 param_setvalue(
 	const struct paramdefdef * pd,
@@ -3712,6 +3735,7 @@ param_load(
 	);
 
 
+extern unsigned volatile nmeamgloop_status, nmeamgloop_position;
 
 #ifdef __cplusplus
 }

@@ -15,6 +15,8 @@
 
 	#define WITHBRANDSTR "Falcon"
 	#define WITHBANDR1BBU 1
+	//#define DEFAULTDIALFREQ	44900000
+	#define DEFAULTDIALFREQ	14130000
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -250,7 +252,7 @@
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	
 	#define WITHENCODER_SUB	1		/* есть второй валкодер */
-	#define ENCDIV_DEFAULT 2
+	#define ENCDIV_DEFAULT 4
 	#define ENCDYNAMIC_DEFAULT 0
 	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 
@@ -274,7 +276,7 @@
 
 	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
 	#define CODEC_TYPE_NAU8822_USE_SPI	1
-	#define NAU8822_USE_SPI4	1	// SPI 4-Wire 24-bit Write and 32-bit Read Operation
+	//#define NAU8822_USE_SPI4	1	// SPI 4-Wire 24-bit Write and 32-bit Read Operation
 	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 	//#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
 	#define WITHAFCODEC1HAVELINEINLEVEL 1	// (rear panel mini-din 6 pin input)
@@ -303,9 +305,12 @@
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
-	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	#define WITHDSPEXTDDC 1				/* Квадратуры обрабатываются аппаратным DUC/DDC */
+	#define WITHDSPEXTTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
+	#define WITHDSPEXTRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
+	//#define WITHDSPLOCALTXFIR 1			/* Фильтрация квадратур на передаче осуществляется программно */
+	//#define WITHDSPLOCALRXFIR 1			/* Фильтрация квадратур на приёме осуществляется программно */
+
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
@@ -356,7 +361,6 @@
 			#define WITHALPHA			24
 			#define FORMATFROMLIBRARY 	1
 			
-			#define WITHAFGAINDEFAULT	(150 * BOARD_AFGAIN_MAX / 255)
 			#define WITHALTERNATIVEFONTS	1
 			#define WITHAFEQUALIZER		1
 			#define WITHALTERNATIVELAYOUT	1
@@ -445,7 +449,7 @@
 	#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 	//#define WITHANTSELECT	1	/* Управление переключением антенн */
 
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	
 //	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
 //	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
 
@@ -469,7 +473,8 @@
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
-	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
+//	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
+	#define WITHLOCKFULL	1	/* блокировка всего управления, а не только перестройки */
 
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
@@ -488,7 +493,7 @@
 	//#define WITHLFM		1	/* LFM MODE */
 	//#define LFMTICKSFREQ ARMI2SRATE
 	////*#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
-	//#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
+	//
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#if 0

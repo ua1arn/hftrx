@@ -18,8 +18,8 @@
 #include "spi.h"
 
 #define NVRAM_SPIMODE SPIC_MODE3		// mode 3 or mode 0 suppeoted by FRAM chip.
-#ifndef NVRAM_SPISPEED
-	#define NVRAM_SPISPEED SPIC_SPEEDFAST
+#ifndef NVRAM_SPEEDC
+	#define NVRAM_SPEEDC SPIC_SPEEDFAST
 #endif
 
 #define WREN	0x06
@@ -88,7 +88,7 @@ eeprom_read_status(
 {
 	static const uint8_t cmd_rdsr [] = { RDSR }; /* read status register */
 	uint8_t v;
-	prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, cmd_rdsr, ARRAY_SIZE(cmd_rdsr), NULL, 0, & v, 1);
+	prog_spi_io(target, NVRAM_SPEEDC, NVRAM_SPIMODE, cmd_rdsr, ARRAY_SIZE(cmd_rdsr), NULL, 0, & v, 1);
 	return v;
 }
 
@@ -101,7 +101,7 @@ eeprom_writeenable(
 	// +++ РАЗРЕШЕНИЕ ЗАПИСИ
 	static const uint8_t cmd_wren [] = { WREN }; /* set write-enable latch */
 
-	prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, cmd_wren, ARRAY_SIZE(cmd_wren), NULL, 0, NULL, 0);
+	prog_spi_io(target, NVRAM_SPEEDC, NVRAM_SPIMODE, cmd_wren, ARRAY_SIZE(cmd_wren), NULL, 0, NULL, 0);
 	// --- РАЗРЕШЕНИЕ ЗАПИСИ
 }
 
@@ -126,7 +126,7 @@ eeprom_a1_write(
 		(addr > 0xff) * 0x08 | WRITE,	/* write, a8=0 or a8=1 */
 		(addr & 0xFF),
 	};
-	prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), data, len, NULL, 0);
+	prog_spi_io(target, NVRAM_SPEEDC, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), data, len, NULL, 0);
 	// --- Запись данных
 }
 
@@ -144,7 +144,7 @@ eeprom_a1_read(
 		(addr > 0xff) * 0x08 | READ,	/* read, a8=0 or a8=1 */
 		(addr & 0xFF),
 	};
-	prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), NULL, 0, data, len);
+	prog_spi_io(target, NVRAM_SPEEDC, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), NULL, 0, data, len);
 }
 
 /* two bytes address 2K-byte chips */
@@ -164,7 +164,7 @@ eeprom_a2_write(
 		(uint_fast8_t) (addr >> 8),
 		(uint_fast8_t) (addr >> 0),
 	};
-	prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), data, len, NULL, 0);
+	prog_spi_io(target, NVRAM_SPEEDC, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), data, len, NULL, 0);
 }
 
 /* two bytes address 2K-byte chips */
@@ -182,7 +182,7 @@ eeprom_a2_read(
 		(uint_fast8_t) (addr >> 8),
 		(uint_fast8_t) (addr >> 0),
 	};
-	prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), NULL, 0, data, len);
+	prog_spi_io(target, NVRAM_SPEEDC, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), NULL, 0, data, len);
 }
 
 /* three bytes address 512K-byte chips */
@@ -204,7 +204,7 @@ eeprom_a3_write(
 		(uint_fast8_t) (addr >> 0),
 	};
 
-	prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), data, len, NULL, 0);
+	prog_spi_io(target, NVRAM_SPEEDC, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), data, len, NULL, 0);
 }
 
 /* three bytes address 512K-byte chips */
@@ -223,7 +223,7 @@ eeprom_a3_read(
 		(uint_fast8_t) (addr >> 0),
 	};
 
-	prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), NULL, 0, data, len);
+	prog_spi_io(target, NVRAM_SPEEDC, NVRAM_SPIMODE, cmd, ARRAY_SIZE(cmd), NULL, 0, data, len);
 }
 
 static void
@@ -246,7 +246,7 @@ eeprom_initialize(
 	local_delay_ms(20);
 
 	// принудительное "передёргивание" сигнала чипселект - решение проблемы с запуском.
-	//prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, cmd_wren, ARRAY_SIZE(cmd_wren), NULL, 0, NULL, 0);
+	//prog_spi_io(target, NVRAM_SPEEDC, NVRAM_SPIMODE, cmd_wren, ARRAY_SIZE(cmd_wren), NULL, 0, NULL, 0);
 	spi_cs_ping(target);
 
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
@@ -255,12 +255,12 @@ eeprom_initialize(
 
 	// +++ РАЗРЕШЕНИЕ ЗАПИСИ
 	static const uint8_t cmd_wren [] = { WREN }; /* set write-enable latch */
-	prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, cmd_wren, ARRAY_SIZE(cmd_wren), NULL, 0, NULL, 0);
+	prog_spi_io(target, NVRAM_SPEEDC, NVRAM_SPIMODE, cmd_wren, ARRAY_SIZE(cmd_wren), NULL, 0, NULL, 0);
 	// --- РАЗРЕШЕНИЕ ЗАПИСИ
 
 	// +++ WSR 0
 	static const uint8_t wrsr_0 [] = { WRSR, 0x00 }; /* set status register data */
-	prog_spi_io(target, NVRAM_SPISPEED, NVRAM_SPIMODE, wrsr_0, ARRAY_SIZE(wrsr_0), NULL, 0, NULL, 0);
+	prog_spi_io(target, NVRAM_SPEEDC, NVRAM_SPIMODE, wrsr_0, ARRAY_SIZE(wrsr_0), NULL, 0, NULL, 0);
 	// --- WSR 0
 }
 
@@ -433,7 +433,9 @@ nvram_write_baremetal(nvramaddress_t addr, const uint8_t * data, unsigned len)
 	}
 	else
 	{
-		memcpy(p, data, len);
+		unsigned i;
+		for (i = 0; len --; ++ i)
+ 			p [i] = data [i];
 	}
 	//dcache_clean((uintptr_t) BKPSRAM_BASE, 4096);
 	stm32f4xx_bddisable();
@@ -504,7 +506,9 @@ nvram_read_baremetal(nvramaddress_t addr, uint8_t * data, unsigned len)
 	}
 	else
 	{
-		memcpy(data, b, len);
+		unsigned i;
+		for (i = 0; len --; ++ i)
+ 			data [i] = p [i];
 	}
 
 #elif (NVRAM_TYPE == NVRAM_TYPE_CPUEEPROM)

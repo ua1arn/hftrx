@@ -21,6 +21,7 @@ TRGT2 = arm-none-eabi
 TRGT = $(TRGT2)-
 
 DFUUTIL = ./dfu-util
+BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -62,7 +63,7 @@ CORE += -mfpu=neon-vfpv4
 #OPT = -Ofast
 OPT = -Ofast -flto
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
@@ -79,7 +80,7 @@ DINCDIR = \
 	$(ARCHDIR) \
 	$(HALDIR)/Inc \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source \
+	$(CMSISDIR)/Include $(CMSISDIR)/Source \
 	$(RTOSXDIR)/Include \
 	$(CMSISDIR)/Core_A/Source
 		

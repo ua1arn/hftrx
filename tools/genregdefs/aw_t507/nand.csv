@@ -1,9 +1,4 @@
 #type; NDFC; Nand Flash Controller
-
-#base; NAND0 0x04011000
-
-#irq; NAND0 66; NAND0 interrupt
-
 #regdef; NDFC_CTL; 0x0000; NDFC Configure and Control Register
 #regdef; NDFC_ST; 0x0004; NDFC Status Information Register
 #regdef; NDFC_INT; 0x0008; NDFC Interrupt Control Register
@@ -38,6 +33,6 @@
 #regdefr; NDFC_MDMA_CUR_BUF_ADDR; 0x0210; NDFC MBUS DMA Current Buffer Address Register
 #regdef; NDFC_DMA_CNT; 0x0214; NDFC DMA Byte Counter Register
 #regdef; NDFC_IO_DATA; 0x0300; NDFC Input/Output Data Register
-; 
+
 #regdef; padding 0; 4096; Placeholder for 0x40 alignment
 #typeend;

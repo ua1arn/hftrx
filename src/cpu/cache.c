@@ -20,11 +20,6 @@ sysinit_cache_initialize(void)
 	//PRINTF("dcache_rowsize=%u, icache_rowsize=%u\n", dcache_rowsize(), icache_rowsize());
 	ASSERT(DCACHEROWSIZE == dcache_rowsize());
 	ASSERT(ICACHEROWSIZE == icache_rowsize());
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-//	PRINTF("GIC_BINARY_POINT=%u\n", GIC_BINARY_POINT);
-//	PRINTF("GIC_GetBinaryPoint()=%u\n", (unsigned) GIC_GetBinaryPoint());
-	ASSERT(GIC_BINARY_POINT == GIC_GetBinaryPoint());
-#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 #endif /* ! LINUX_SUBSYSTEM */
 
 #if defined (__CORTEX_M)
@@ -274,6 +269,26 @@ int_fast32_t icache_rowsize(void)
 
 #elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
 
+
+#if __aarch64__
+#define __set_DCCMVAC(v) __set_DCCVAC(v)
+#define __set_DCCIMVAC(v) __set_DCCIVAC(v)
+#define __set_DCIMVAC(v) __set_DCIVAC(v)
+#define __get_CTR() (__get_CTR_EL0())
+
+#else
+
+/** \brief  Get CTR
+\return		Cache Type Register value
+*/
+__STATIC_INLINE uint32_t __get_CTR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 0, 0, 1);
+	return result;
+}
+#endif
+
 //	MVA
 //	For more information about the possible meaning when the table shows that an MVA is required
 // 	see Terms used in describing the maintenance operations on page B2-1272.
@@ -328,18 +343,6 @@ void L1_InvalidateDCache_by_Addr(void * addr, int32_t op_size)
 		// Cache Invalidate operation is not follow by memory-writes
 	}
 }
-
-#if (! defined(__aarch64__))
-/** \brief  Get CTR
-\return		Cache Type Register value
-*/
-uint32_t __get_CTR(void)
-{
-	uint32_t result;
-	__get_CP(15, 0, result, 0, 0, 1);
-	return result;
-}
-#endif
 
 int_fast32_t dcache_rowsize(void)
 {

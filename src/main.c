@@ -15,7 +15,6 @@
 void
 lowinitialize(void)
 {
-#if ! WITHRTOS
 	board_beep_initialize();
 	//hardware_cw_diagnostics_noirq(1, 0, 1);	// 'K'
 #if WITHDEBUG
@@ -24,7 +23,7 @@ lowinitialize(void)
 	//HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 
 
-	dbg_puts_impl_P(PSTR("Version " __DATE__ " " __TIME__ " 1 debug session starts.\n"));
+	dbg_puts_impl("Version " __DATE__ " " __TIME__ " 1 debug session starts.\n");
 	// выдача повторяющегося символа для тестирования скорости передачи, если ошибочная инициализация
 	//for (;;)
 	//	hardware_putchar(0xff);
@@ -47,8 +46,6 @@ lowinitialize(void)
 
 	board_initialize();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	cpu_initdone();			/* секция init (в которой лежит образ для загрузки в FPGA) больше не нужна */
-#endif /* ! WITHRTOS */
-
 }
 
 /* Главная функция программы */
@@ -58,17 +55,9 @@ main(void)
 {
 #if LINUX_SUBSYSTEM
 	linux_subsystem_init();
-#endif /* LINUX_SUBSYSTEM */
-#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
+#else /* LINUX_SUBSYSTEM */
 	sysinit_gpio_initialize();
-	local_delay_initialize();
-#endif /* (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM */
-#if WITHDEBUG && (! (CPUSTYLE_ARM || CPUSTYLE_RISCV) /* || WITHISBOOTLOADER */)
-
-	HARDWARE_DEBUG_INITIALIZE();
-	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-
-#endif /* WITHDEBUG && (! (CPUSTYLE_ARM || CPUSTYLE_RISCV) */
+#endif /* LINUX_SUBSYSTEM */
 
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
@@ -79,14 +68,9 @@ main(void)
 	global_enableIRQ();
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
 	midtests();
-
 	initialize2();	/* вызывается при разрешённых прерываниях. */
-#if WITHLWIP
-	network_initialize();
-#endif /* WITHLWIP */
 	application_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
-
 #if LINUX_SUBSYSTEM
 	linux_user_init();
 #endif /* LINUX_SUBSYSTEM */

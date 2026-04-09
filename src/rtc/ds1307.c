@@ -25,9 +25,9 @@ static int ds1307_readbuff(
 {
 #if WITHTWIHW
 	uint8_t bufw = r;
-	if (i2chw_write(DS1307_ADDRESS_W, & bufw, 1))
+	if (i2chwx_write(TWIHARD_PTR, DS1307_ADDRESS_W, & bufw, 1))
 		return 1;
-	return i2chw_read(DS1307_ADDRESS_W, b, n);
+	return i2chwx_read(TWIHARD_PTR, DS1307_ADDRESS_W, b, n);
 #elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write_withrestart(r);	// register address
@@ -60,7 +60,7 @@ static int ds1307_writebuff(
 	uint8_t buff [n + 1];
 	buff [0] = r;
 	memcpy(buff + 1, b, n);
-	return i2chw_write(DS1307_ADDRESS_W, buff, n + 1);
+	return i2chwx_write(TWIHARD_PTR, DS1307_ADDRESS_W, buff, n + 1);
 #elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(r);	// register address
@@ -98,7 +98,7 @@ void board_rtc_settime(
 	buf [1] = ds1307_bin2bcd(seconds);
 	buf [2] = ds1307_bin2bcd(minutes);
 	buf [3] = ds1307_bin2bcd(hours);
-	i2chw_write(DS1307_ADDRESS_W, buf, 4);
+	i2chwx_write(TWIHARD_PTR, DS1307_ADDRESS_W, buf, 4);
 #elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(0x00);	// register address
@@ -129,7 +129,7 @@ void board_rtc_setdatetime(
 	buf [5] = ds1307_bin2bcd(dayofmonth);
 	buf [6] = ds1307_bin2bcd(month);
 	buf [7] = ds1307_bin2bcd(year % 100);
-	i2chw_write(DS1307_ADDRESS_W, buf, 8);
+	i2chwx_write(TWIHARD_PTR, DS1307_ADDRESS_W, buf, 8);
 #elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(0x00);	// register address
@@ -158,7 +158,7 @@ void board_rtc_setdate(
 	buf [1] = ds1307_bin2bcd(dayofmonth);
 	buf [2] = ds1307_bin2bcd(month);
 	buf [3] = ds1307_bin2bcd(year % 100);
-	i2chw_write(DS1307_ADDRESS_W, buf, 4);
+	i2chwx_write(TWIHARD_PTR, DS1307_ADDRESS_W, buf, 4);
 #elif WITHTWISW
 	i2c_start(DS1307_ADDRESS_W);
 	i2c_write(0x04);	// register address
@@ -229,7 +229,7 @@ uint_fast8_t board_rtc_chip_initialize(void)
 {
 #if WITHTWIHW
 	uint8_t buf[2] = { 0x0E, 0x00 };
-	int status = i2chw_write(DS1307_ADDRESS_W, buf, 2);
+	int status = i2chwx_write(TWIHARD_PTR, DS1307_ADDRESS_W, buf, 2);
 	if (status)
 	{
 		PRINTF("rtc DS1307 initialize fail: %d\n", status);

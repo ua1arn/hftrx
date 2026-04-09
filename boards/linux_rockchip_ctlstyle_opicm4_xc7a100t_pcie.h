@@ -25,9 +25,9 @@
 
 #if 0
 	#define XVTR_R820T2			1	// ad936x
-//	#define	WITHAD936XIIO		1	// External AD936x board
+//	#define	WITHAD936XIIO		1	// ADALM Pluto clone
 //todo: объединить эти 2 дефайна
-	#define WITHAD936XDEV		1
+	#define WITHAD936XDEV		1	// прямое управление AD936x
 #endif
 
 	// --- вариации прошивки, специфические для разных частот
@@ -52,7 +52,6 @@
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 	
-
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
@@ -74,10 +73,12 @@
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	#define WITHIF4DSP	1			/*  "Дятел" */
-	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
-	#define WITHDSPLOCALTXFIR 1
+	#define WITHDSPEXTDDC 1				/* Квадратуры обрабатываются аппаратным DUC/DDC */
+	//#define WITHDSPEXTTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
+	//#define WITHDSPEXTRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
+	#define WITHDSPLOCALTXFIR 1			/* Фильтрация квадратур на передаче осуществляется программно */
+	#define WITHDSPLOCALRXFIR 1			/* Фильтрация квадратур на приёме осуществляется программно */
+
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
@@ -94,12 +95,14 @@
 	#define WITHAFSPECTRE			1		/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHFFTSIZEAF 			512		/* Отображение спектра НЧ сигнвлв */
 	#define WITHTOUCHGUI			1
+	#define GUI_USE_CACHE			1
 //	#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHALPHA				192
 	#define FORMATFROMLIBRARY 		1
 	#define WITHAFGAINDEFAULT		20
 //	#define WITHAFEQUALIZER			1
+	#define WITHALTERNATIVEFONTS	1
 	#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 	#define WITHFT8					1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 //	#define WITHGNSS				1
@@ -119,8 +122,7 @@
 //	#define MOUSE_EVDEV				1
 //	#define MOUSE_CURSOR_PATH		"./arrow.png"
 //	#define BLUETOOTH_ALSA			1
-
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	#define NEORV32_RT				1	// синтезированный процессор neorv32 для critical realtime tasks (LFM, например)
 
 	#define WITHTX	1
 	#if WITHTX
@@ -136,7 +138,7 @@
 	//#define WITHBCBANDS		1		/* в таблице диапазонов присутствуют вещательные диапазоны */
 	//#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
 	
-	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
+	
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 
 	/* что за память настроек и частот используется в контроллере */

@@ -12,10 +12,10 @@
 #include "keyboard.h"
 #include "encoder.h"
 #include "formats.h"
+#include "fontsys.h"
 
 #include <string.h>
 #include <math.h>
-#include "gui/framework/gui.h"
 #include "src/touch/touch.h"
 #include <atomic>
 
@@ -1208,17 +1208,11 @@ static const dzitem_t dzi_voxtune =
 };
 
 
-#if WITHALTERNATIVEFONTS
-	#include "display/fonts/ub_fonts.h"
-#endif /* WITHALTERNATIVEFONTS */
-
 #if WITHRLEDECOMPRESS
 	#include "display/pictures_RLE.h"
 #endif /* WITHRLEDECOMPRESS */
 
 #if LCDMODE_LTDC
-
-	#include "display/fontmaps.h"
 
 	// получить адрес в видеобуфере, соответствующий ячейке
 	static PACKEDCOLORPIP_T * getscratchwnd(
@@ -1282,8 +1276,6 @@ void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t
 
 #if WITHALTERNATIVELAYOUT
 
-#if SMALLCHARW2
-
 typedef struct {
 	uint_fast8_t chars_W2;
 	const COLORPIP_T * pcolor;
@@ -1294,6 +1286,7 @@ typedef struct {
 	gxdrawb_t dbv;
 } label_bg_t;
 
+// Заготовленные background
 static label_bg_t label_bg [] = {
 		{ 5, & colors_2state_alt [0], },
 		{ 5, & colors_2state_alt [1], },
@@ -1319,21 +1312,59 @@ void layout_init(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t ygrid, u
 	} while (++ i < ARRAY_SIZE(label_bg));
 }
 
+static void local_strtrim(char * s)
+{
+	// удаляем пробелы и табы с начала строки:
+	int i = 0;
+	// Пoиск первого не-пробела
+	while ((s [i] == ' ') || (s [i] == '\t'))
+	{
+		i ++;
+	}
+	if (i > 0)
+	{
+		size_t slen = strlen(s);
+		// todo: memmove use
+		size_t j;
+		for (j = 0; j < slen; j ++)
+		{
+			s [j] = s [j + i];
+		}
+		s [j] = '\0';
+	}
+
+	// удаляем пробелы и табы с конца строки:
+	if (strlen(s))
+	{
+		size_t i = strlen(s) - 1;
+		while ((s [i] == ' ') || (s [i] == '\t'))
+		{
+			i --;
+		}
+		if (i < (strlen(s) - 1))
+		{
+			s [i + 1] = '\0';
+		}
+	}
+}
+
 void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORPIP_T color_fg, COLORPIP_T color_bg)
 {
+#if WITHALTERNATIVEFONTS
+	const unifont_t * const font = & unifont_gothic_12x16p;
+#else /* WITHALTERNATIVEFONTS */
+	const unifont_t * const font = & unifont_small2;
+#endif /* WITHALTERNATIVEFONTS */
 	uint_fast16_t xx = GRID2X(xgrid);
 	uint_fast16_t yy = GRID2Y(ygrid);
 	label_bg_t * lbl_bg = NULL;
 	uint_fast8_t i = 0;
 	char buf [slen + 1];
 	strcpy(buf, str);
-	strtrim(buf);
-#if WITHALTERNATIVEFONTS
-	const uint_fast16_t width_str = getwidth_Pstring(buf, & gothic_12x16_p);
-#else
-	const uint_fast16_t width_str = strwidth2(buf);
-#endif /* WITHALTERNATIVEFONTS */
+	local_strtrim(buf);
 
+	uint_fast16_t height_str;
+	const uint_fast16_t width_str = unifont_textsize(font, buf, TEXTSIZE_AUTO, & height_str);
 	const uint_fast16_t width_p = chars_W2 * SMALLCHARW2;
 
 	if (! width_str)
@@ -1360,22 +1391,17 @@ void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t
 	}
 	else
 	{
-		colmain_rounded_rect(db, xx, yy, xx + width_p, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
+		colmain_rounded_rect(db, xx, yy, xx + width_p - 1, yy + height_str + 5, 5, color_bg, 1);
 	}
 
 	//ASSERT(width_p >= width_str);
 	if (width_p >= width_str)
 	{
-#if WITHALTERNATIVEFONTS
 		//PRINTF("%s: xx=%d, width_p=%d, width_str=%d, buf='%s'\n", __func__, xx, width_p, width_str, buf);
-		UB_Font_DrawPString(db, xx + (width_p - width_str) / 2 , yy + 2, buf, & gothic_12x16_p, color_fg);
-#else
-		colpip_string2_tbg(db, xx + (width_p - width_str) / 2 , yy + 4, buf, color_fg);
-#endif /* WITHALTERNATIVEFONTS */
+		unifont_text(db, xx + (width_p - width_str) / 2 , yy + 2, font, buf, TEXTSIZE_AUTO, color_fg);
 	}
 
 }
-#endif /* SMALLCHARW2 */
 #else
 void layout_label1_medium(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORPIP_T color_fg, COLORPIP_T color_bg)
 {
@@ -2083,6 +2109,7 @@ static void sm_draw_dial_rx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 static void
 display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 {
+	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
 	display2_smeter15_layout_dial(smpr);
 	const int32_t markers [] =
 	{
@@ -2114,8 +2141,6 @@ display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 		smpr->gm + 5 * smpr->step2,
 	};
 
-	const uint_fast16_t pad2w3 = strwidth3("ZZ");
-
 	unsigned p;
 	unsigned i;
 
@@ -2135,8 +2160,10 @@ display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 
 		colpip_radius(db, smpr->xcneddle, smpr->ycneddle, markers [i], smpr->r1, smpr->r1 + 8, smetercolor, 1, 1);
 		polar_to_dek(smpr->xcneddle, smpr->ycneddle, markers [i], smpr->r1 + 6, & xx, & yy, 1);
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
-		colpip_string3_tbg(db, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf2, COLORPIP_YELLOW);
+		const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+		uint_fast16_t sh3;
+		const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
+		unifont_text(db, xx - sw3 / 2, yy - sh3 * 3 / 2, font, buf2, slen3, COLORPIP_YELLOW);
 	}
 	for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 	{
@@ -2150,8 +2177,10 @@ display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 
 		colpip_radius(db, smpr->xcneddle, smpr->ycneddle, markersR [i], smpr->r1, smpr->r1 + 8, smeterpluscolor, 1, 1);
 		polar_to_dek(smpr->xcneddle, smpr->ycneddle, markersR [i], smpr->r1 + 6, & xx, & yy, 1);
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "+%u", p);
-		colpip_string3_tbg(db, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORPIP_RED);
+		const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "+%u", p);
+		uint_fast16_t sh3;
+		const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
+		unifont_text(db, xx - sw3 / 2, yy - sh3 * 3 / 2, font, buf2, slen3, COLORPIP_RED);
 	}
 	for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 	{
@@ -2238,6 +2267,7 @@ static void sm_draw_dial_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 static void
 display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 {
+	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
 	display2_smeter15_layout_dial(smpr);
 	const int32_t markersTX_pwr [] =
 	{
@@ -2260,7 +2290,6 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 		smpr->gs + 2 * smpr->step3,
 		smpr->gs + 3 * smpr->step3,
 	};
-	const uint_fast16_t pad2w3 = strwidth3("ZZ");
 
 	unsigned p;
 	unsigned i;
@@ -2273,6 +2302,7 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 
 	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
 
+	// Разметка шкалы мощности
 	for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr) - 1; ++ i, p += 10)
 	{
 		if (i % 2 == 0)
@@ -2282,13 +2312,16 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 
 			colpip_radius(db, smpr->xcneddle, smpr->ycneddle, markersTX_pwr [i], smpr->r1, smpr->r1 + 8, smetercolor, 1, 1);
 			polar_to_dek(smpr->xcneddle, smpr->ycneddle, markersTX_pwr [i], smpr->r1 + 6, & xx, & yy, 1);
-			local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
-			colpip_string3_tbg(db, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORPIP_YELLOW);
+			const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+			uint_fast16_t sh3;
+			const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
+			unifont_text(db, xx - sw3 / 2, yy - sh3 * 3 / 2, font, buf2, slen3, COLORPIP_YELLOW);
 		}
 		else
 			colpip_radius(db, smpr->xcneddle, smpr->ycneddle, markersTX_pwr [i], smpr->r1, smpr->r1 + 4, smetercolor, 1, 1);
 	}
 
+	// Разметка шкалы КСВ
 	for (p = 1, i = 0; i < ARRAY_SIZE(markersTX_swr); ++ i, p += 1)
 	{
 		char buf2 [10];
@@ -2296,8 +2329,10 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 
 		colpip_radius(db, smpr->xcneddle, smpr->ycneddle, markersTX_swr [i], smpr->r2, smpr->r2 - 8, smetercolor, 1, 1);
 		polar_to_dek(smpr->xcneddle, smpr->ycneddle, markersTX_swr [i], smpr->r2 - 16, & xx, & yy, 1);
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
-		colpip_string3_tbg(db, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf2, COLORPIP_YELLOW);
+		const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+		uint_fast16_t sh3;
+		const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
+		unifont_text(db, xx - sw3 / 2, yy, font, buf2, slen3, COLORPIP_YELLOW);
 	}
 	colpip_segm(db, smpr->xcneddle, smpr->ycneddle, smpr->gs, smpr->gm, smpr->r1, 1, smetercolor, 1, 1);
 	colpip_segm(db, smpr->xcneddle, smpr->ycneddle, smpr->gm, smpr->ge, smpr->r1, 1, smetercolor, 1, 1);
@@ -2403,6 +2438,7 @@ display2_smeter15_layout_bars(smeter_params_t * smpr)
 static void
 display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 {
+	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
 	display2_smeter15_layout_bars(smpr);
 	const int32_t markersTX_pwr [] =
 	{
@@ -2425,7 +2461,6 @@ display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 		smpr->gs + 2 * smpr->step3,
 		smpr->gs + 3 * smpr->step3,
 	};
-	const uint_fast16_t pad2w3 = strwidth3("ZZ");
 
 	// SMETER_TYPE_DIAL data
 	// координаты оси стрелки
@@ -2452,8 +2487,10 @@ display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 		{
 			char buf2 [10];
 			colpip_line(db, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 10, COLORPIP_WHITE, 0);
-			local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
-			colpip_string3_tbg(db, markersTX_pwr [i] - strwidth3(buf2) / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORPIP_YELLOW);
+			const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+			uint_fast16_t sh3;
+			const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
+			unifont_text(db, markersTX_pwr [i] - sw3 / 2, smpr->r1 - 10 - sh3 - 2, font, buf2, slen3, COLORPIP_YELLOW);
 		}
 		else
 			colpip_line(db, markersTX_pwr [i], smpr->r1, markersTX_pwr [i], smpr->r1 - 5, COLORPIP_WHITE, 0);
@@ -2466,8 +2503,10 @@ display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 	{
 		char buf2 [10];
 		colpip_line(db, markersTX_swr [i], smpr->r2, markersTX_swr [i], smpr->r2 + 10, COLORPIP_WHITE, 0);
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
-		colpip_string3_tbg(db, markersTX_swr [i] - strwidth3(buf2) / 2, smpr->r2 + 12, buf2, COLORPIP_YELLOW);
+		const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+		uint_fast16_t sh3;
+		const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
+		unifont_text(db, markersTX_swr [i] - sw3 / 2, smpr->r2 + 12, font, buf2, slen3, COLORPIP_YELLOW);
 	}
 
 	dcache_clean(db->cachebase, db->cachesize);
@@ -2480,6 +2519,8 @@ display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 static void
 display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 {
+	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
+	const unifont_t * const fontsm2 = & unifont_small2;	// SMALL2
 	display2_smeter15_layout_bars(smpr);
 	const int32_t markers [] =
 	{
@@ -2511,8 +2552,6 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 		smpr->gm + 5 * smpr->step2,
 	};
 
-	const uint_fast16_t pad2w3 = strwidth3("ZZ");
-
 	unsigned p;
 	unsigned i;
 
@@ -2528,15 +2567,20 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 
 	colpip_line(db, smpr->gs, smpr->r1, smpr->gm, smpr->r1, COLORPIP_WHITE, 0);
 	colpip_line(db, smpr->gm, smpr->r1, smpr->ge, smpr->r1, COLORPIP_RED, 0);
-	colpip_string2_tbg(db, smpr->gs - SMALLCHARW2, smpr->r1 - SMALLCHARH2 - 2, "Sm", COLORPIP_YELLOW);
+	static const char sm_text [] = "Sm";
+	uint_fast16_t shx;
+	const uint_fast16_t swx = unifont_textsize(fontsm2, sm_text, TEXTSIZE_AUTO, & shx);
+	unifont_text(db, smpr->gs - swx / 2, smpr->r1 - shx - 2, fontsm2, sm_text, TEXTSIZE_AUTO, COLORPIP_YELLOW);
 
 	for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 	{
 		char buf2 [10];
 		uint_fast16_t xx, yy;
 		colpip_line(db, markers [i], smpr->r1, markers [i], smpr->r1 - 10, COLORPIP_WHITE, 0);
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
-		colpip_string3_tbg(db, markers [i] - SMALLCHARW3 / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORPIP_YELLOW);
+		const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "%u", p);
+        uint_fast16_t sh3;
+        const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
+        unifont_text(db, markers [i] - sw3 / 2, smpr->r1 - 10 - sh3 - 2, font, buf2, slen3, COLORPIP_YELLOW);
 	}
 	for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 	{
@@ -2547,8 +2591,10 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 	{
 		char buf2 [10];
 		colpip_line(db, markersR [i], smpr->r1, markersR [i], smpr->r1 - 10, COLORPIP_RED, 0);
-		local_snprintf_P(buf2, ARRAY_SIZE(buf2), "+%u", p);
-		colpip_string3_tbg(db, markersR [i] - strwidth3(buf2) / 2, smpr->r1 - 10 - SMALLCHARH3 - 2, buf2, COLORPIP_YELLOW);
+		const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), "+%u", p);
+		uint_fast16_t sh3;
+		const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
+		unifont_text(db, markersR [i] - sw3 / 2, smpr->r1 - 10 - sh3 - 2, font, buf2, slen3, COLORPIP_YELLOW);
 	}
 	for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 	{
@@ -2635,8 +2681,30 @@ display2_smeter15(const gxdrawb_t * db,
 
 #endif /* LCDMODE_LTDC */
 
+// Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
+static void
+display2_freq_big(
+	const gxdrawb_t * db,
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	int_fast32_t freq,
+	uint_fast8_t width, // = 8;	// full width
+	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
+	uint_fast8_t comma2,	// = comma + 3;		// comma position (from right, inside width)
+	uint_fast8_t rj,	// = 1;		// right truncated
+	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
+	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
+	uint_fast8_t withhalf,		// 0 - только большие цифры
+	const gxstyle_t * dbstylep	/* foreground and background colors, text alignment */
+	)
+{
+	pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep);
+}
+
 // Отображение частоты. Герцы так же большим шрифтом.
-static void display_freqXa_big(const gxdrawb_t * db,
+static void display2_freqXa_big(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -2658,7 +2726,7 @@ static void display_freqXa_big(const gxdrawb_t * db,
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
 
-		display_freq(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, x, y, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 #endif /* WITHDIRECTFREQENER */
 	else
@@ -2667,7 +2735,7 @@ static void display_freqXa_big(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		display_freq(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, x, y, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 0, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2683,7 +2751,6 @@ static void display2_freqX_a_init(
 	)
 {
 #if WITHPRERENDER
-	/* valid chars: "0123456789 #._" */
 	rendered_value_big_initialize(& dbstylev_1freqv);
 #endif /* WITHPRERENDER */
 }
@@ -2710,11 +2777,7 @@ static void display2_freqX_a(
 	else if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
-	#if WITHPRERENDER
-		rendered_value_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1);	// отрисовываем верхнюю часть строки
-	#else /* WITHPRERENDER */
-		display_freq(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
-	#endif /* WITHPRERENDER */
+		display2_freq_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 #endif /* WITHDIRECTFREQENER */
 	else
@@ -2723,17 +2786,13 @@ static void display2_freqX_a(
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-	#if WITHPRERENDER
-		rendered_value_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
-	#else /* WITHPRERENDER */
-		display_freq(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
-	#endif /* WITHPRERENDER */
+		display2_freq_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 }
 
 // Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
 // FREQ B
-static void display_freqchr_a(
+static void display2_freqchr_a(
 	const gxdrawb_t * db,
 	uint_fast8_t xcell,
 	uint_fast8_t ycell,
@@ -2755,7 +2814,7 @@ static void display_freqchr_a(
 	{
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
-		display_freq(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 #endif /* WITHDIRECTFREQENER */
 	else
@@ -2764,13 +2823,13 @@ static void display_freqchr_a(
 
 		const uint_fast32_t freq = hamradio_get_freq_a();
 
-		display_freq(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, 255, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 }
 
 // Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
 // FREQ B
-static void display_freqchr_b(const gxdrawb_t * db,
+static void display2_freqchr_b(const gxdrawb_t * db,
 	uint_fast8_t xcell,
 	uint_fast8_t ycell,
 	uint_fast8_t xspan,
@@ -2793,7 +2852,7 @@ static void display_freqchr_b(const gxdrawb_t * db,
 	{
 		const editfreq2_t * const efp = (const editfreq2_t *) pctx->pv;
 
-		display_freq(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, UINT8_MAX, rj, efp->blinkpos + 1, efp->blinkstate, 1, dbstylep);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, xcell, ycell, xspan, yspan, efp->freq, fullwidth, comma, UINT8_MAX, rj, efp->blinkpos + 1, efp->blinkstate, 1, dbstylep);	// отрисовываем верхнюю часть строки
 	}
 #endif /* WITHDIRECTFREQENER */
 	else
@@ -2802,7 +2861,7 @@ static void display_freqchr_b(const gxdrawb_t * db,
 
 		const uint_fast32_t freq = hamradio_get_freq_b();
 
-		display_freq(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, UINT8_MAX, 1, blinkpos, blinkstate, 1, dbstylep);	// отрисовываем верхнюю часть строки
+		display2_freq_big(db, xcell, ycell, xspan, yspan, freq, fullwidth, comma, UINT8_MAX, 1, blinkpos, blinkstate, 1, dbstylep);	// отрисовываем верхнюю часть строки
 	}
 }
 
@@ -2827,7 +2886,7 @@ static void display2_freqX_b(const gxdrawb_t * db,
 }
 
 // отладочная функция измерителя опорной частоты
-static void display_freqmeter10(const gxdrawb_t * db,
+static void display2_freqmeter10(const gxdrawb_t * db,
 		uint_fast8_t xcell,
 		uint_fast8_t ycell,
 		uint_fast8_t xspan,
@@ -2945,26 +3004,7 @@ static void display_2states(const gxdrawb_t * db,
 #else /* LCDMODE_COLORED */
 	const char * const labels [2] = { state0, state1, };
 #endif /* LCDMODE_COLORED */
-#if 0
-	const uint_fast16_t x = GRID2X(xcell);
-	const uint_fast16_t y = GRID2Y(ycell);
-	const uint_fast16_t w = SMALLCHARW * xspan;
-	const uint_fast16_t h = SMALLCHARH;
-	const gxstyle_t * const dbstylep = & dbstylev_2state [1],			// массив стилей
-
-	display2text_states(db, xcell, ycell, labels, dbstylev_2state, 1, xspan, yspan);
-
-	colmain_rounded_rect(
-			db,
-			x, y, x + w - 1, y + h - 1,
-			5,
-			state ? COLORPIP_WHITE : dbstylev_2state [1].bgcolor,
-			dbstylep->bgradius,
-			dbstylep->bgfilled
-			);
-#else
 	display2text_states(db, xcell, ycell, labels, dbstylev_2state, state, xspan, yspan);
-#endif
 }
 
 // Параметры, не меняющие состояния цветом
@@ -3269,7 +3309,7 @@ static void display2_notch7alt(const gxdrawb_t * db,
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
 	const char * const label = hamradio_get_notchtype5_P();
 	const char * const labels [2] = { label, label, };
-	layout_label1_medium(db, x, y, label, strlen_P(label), 7, COLORPIP_BLACK, colors_2state_alt [state]);
+	layout_label1_medium(db, x, y, label, strlen(label), 7, COLORPIP_BLACK, colors_2state_alt [state]);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
@@ -3333,7 +3373,7 @@ static void display2_vfomode5alt(const gxdrawb_t * db,
 {
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const labels [1] = { hamradio_get_vfomode3_value(& state), };
-	layout_label1_medium(db, x, y, labels [0], strlen_P(labels [0]), 5, COLORPIP_BLACK, colors_2state_alt [state]);
+	layout_label1_medium(db, x, y, labels [0], strlen(labels [0]), 5, COLORPIP_BLACK, colors_2state_alt [state]);
 }
 
 // VFO mode with memory ch info
@@ -3797,7 +3837,7 @@ static void display2_preovf5alt(const gxdrawb_t * db,
 	else
 	{
 		const char * str = hamradio_get_pre_value();
-		layout_label1_medium(db, x, y, str, strlen_P(str), chars_W2, COLORPIP_BLACK, colors_2state_alt [1]);
+		layout_label1_medium(db, x, y, str, strlen(str), chars_W2, COLORPIP_BLACK, colors_2state_alt [1]);
 	}
 #endif /* ! LCDMODE_DUMMY */
 }
@@ -3831,10 +3871,10 @@ static void display2_ant7alt(const gxdrawb_t * db,
 {
 #if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
 	const char * const labels [1] = { hamradio_get_ant5_value(), };
-	layout_label1_medium(db, x, y, labels [0], strlen_P(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
+	layout_label1_medium(db, x, y, labels [0], strlen(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
 #elif WITHANTSELECT
 	const char * const labels [1] = { hamradio_get_ant5_value(), };
-	layout_label1_medium(db, x, y, labels [0], strlen_P(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
+	layout_label1_medium(db, x, y, labels [0], strlen(labels [0]), 7, COLORPIP_BLACK, colors_2state_alt [1]);
 #endif /* WITHANTSELECT */
 }
 
@@ -3861,7 +3901,7 @@ static void display2_att5alt(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_att_value_P(), };
-	layout_label1_medium(db, x, y, labels [0], strlen_P(labels [0]), 5, COLORPIP_BLACK, colors_2state_alt [1]);
+	layout_label1_medium(db, x, y, labels [0], strlen(labels [0]), 5, COLORPIP_BLACK, colors_2state_alt [1]);
 }
 
 // RX att, при передаче показывает TX
@@ -3916,23 +3956,6 @@ static void display2_mode3_a(const gxdrawb_t * db,
 	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 }
 
-#if WITHTOUCHGUI
-
-static void display2_mode_lower_a(const gxdrawb_t * db,
-		uint_fast8_t x,
-		uint_fast8_t y,
-		uint_fast8_t xspan,
-		uint_fast8_t yspan,
-		dctx_t * pctx
-		)
-{
-	char labels[5];
-	local_snprintf_P(labels, ARRAY_SIZE(labels), " %s", hamradio_get_mode_a_value_P());
-	colpip_string2_tbg(db, GRID2X(x), GRID2Y(y), labels, dbstylev_1state.textcolor);
-}
-
-#endif /* WITHTOUCHGUI */
-
 // SSB/CW/AM/FM/...
 static void display2_mode3_b(const gxdrawb_t * db,
 		uint_fast8_t x,
@@ -3945,6 +3968,7 @@ static void display2_mode3_b(const gxdrawb_t * db,
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const label = hamradio_get_mode_b_value_P(& state);
     const char * const labels [2] = { label, label };
+    ASSERT(state < ARRAY_SIZE(labels));
     display2text_states(db, x, y, labels, dbstylev_2rxB, state, xspan, yspan);
 }
 
@@ -4029,7 +4053,7 @@ static void display2_thermo(const gxdrawb_t * db,
 	else if (tempv >= 300)
 		gxstyle_textcolor(& dbstylev, COLORPIP_YELLOW, display2_getbgcolor());
 	else
-		gxstyle_textcolor(& dbstylev, dbstylev_1statePSU.textcolor, dbstylev_1statePSU.bgcolor);
+		gxstyle_textcolor(& dbstylev, COLORPIP_GREEN, dbstylev_1statePSU.bgcolor);
 
 	display_text(db, x , y, b, xspan, yspan, & dbstylev);
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
@@ -4065,7 +4089,7 @@ static void display2_thermoC(const gxdrawb_t * db,
 	else if (tempv >= 300)
 		gxstyle_textcolor(& dbstylev, COLORPIP_YELLOW, display2_getbgcolor());
 	else
-		gxstyle_textcolor(& dbstylev, dbstylev_1statePSU.textcolor, dbstylev_1statePSU.bgcolor);
+		gxstyle_textcolor(& dbstylev, COLORPIP_GREEN, display2_getbgcolor());
 
 	display_text(db, x , y, b, xspan, yspan, & dbstylev);
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
@@ -4221,9 +4245,25 @@ static void display2_siglevel4(
 #endif /* WITHIF4DSP */
 }
 
+unsigned volatile nmeamgloop_status, nmeamgloop_position;
+
+void display2_mla28(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+#if WITHMGLOOP
+	char b [xspan + 1];
+
+	local_snprintf_P(b, ARRAY_SIZE(b), "C=%u S=%u",
+		(unsigned) nmeamgloop_position,
+		(unsigned) nmeamgloop_status
+		);
+	display_text(db, x, y, b, xspan, yspan, & dbstylev_1statePSU);
+#endif /* WITHMGLOOP */
+}
+
 // Отображение КСВ в меню
 void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
+#if WITHTX
 	adcvalholder_t r;
 	adcvalholder_t f;
 	const uint_fast16_t swr = tuner_get_swr0(TUS_SWRMAX, & r, & f);
@@ -4235,6 +4275,7 @@ void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 		f,
 		r);
 	display_text(db, x, y, b, xspan, yspan, & dbstylev_1statePSU);
+#endif /* WITHTX */
 }
 
 #if WITHIF4DSP
@@ -4637,10 +4678,16 @@ void wait_iq(const gxdrawb_t * db,
 // количество точек в отображении мощности на диспле
 static uint_fast16_t display_getpwrfullwidth(void)
 {
-	return GRID2X(CHARS2GRID(BDTH_ALLPWR));
+	return GRID2X(BDTH_ALLPWR);
 }
 
 #endif /* WITHBARS */
+
+static uint_fast16_t display2_cell2pix(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
+{
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
+}
 
 // Адресация для s-meter
 static uint_fast8_t
@@ -4670,7 +4717,7 @@ display_bars_x_pwr(
 	)
 {
 #if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-	return display_bars_x_rx(x, xoffs + CHARS2GRID(BDTH_ALLSWR + BDTH_SPACESWR));
+	return display_bars_x_rx(x, xoffs + BDTH_ALLSWR + BDTH_SPACESWR);
 #else
 	return display_bars_x_rx(x, xoffs);
 #endif
@@ -4710,14 +4757,14 @@ void display_swrmeter(const gxdrawb_t * db,
 	gxstyle_textcolor(& dbstylev, DSGN_SWRCOLOR, DSGN_BGCOLOR);
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, CHARS2GRID(0)), y, & ypix);
+	uint_fast16_t xpix = display2_cell2pix(display_bars_x_swr(x, 0), y, & ypix);
 	display_bar(db, xpix, ypix, BDTH_ALLSWR, rowspan, mapleftval, fullscale, fullscale, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL, & dbstylev);
 
 	if (BDTH_SPACESWR != 0)
 	{
 		// заполняем пустое место за индикаторм КСВ
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_swr(x, CHARS2GRID(BDTH_ALLSWR)), y, & ypix);
+		uint_fast16_t xpix = display2_cell2pix(display_bars_x_swr(x, BDTH_ALLSWR), y, & ypix);
 		display_bar(db, xpix, ypix, BDTH_SPACESWR, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev);
 	}
 
@@ -4747,14 +4794,14 @@ static void display_pwrmeter(const gxdrawb_t * db,
 	gxstyle_textcolor(& dbstylev, DSGN_PWRCOLOR, DSGN_BGCOLOR);
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(0)), y, & ypix);
+	uint_fast16_t xpix = display2_cell2pix(display_bars_x_pwr(x, 0), y, & ypix);
 	display_bar(db, xpix, ypix, BDTH_ALLPWR, rowspan, mapleftval, mapleftmax, fullscale, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF, & dbstylev);
 
 	if (BDTH_SPACEPWR != 0)
 	{
 		// заполняем пустое место за индикаторм мощности
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLPWR)), y, & ypix);
+		uint_fast16_t xpix = display2_cell2pix(display_bars_x_pwr(x, BDTH_ALLPWR), y, & ypix);
 		display_bar(db, xpix, ypix, BDTH_SPACEPWR, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev);
 	}
 
@@ -4782,17 +4829,17 @@ static void display_smeter(const gxdrawb_t * db,
 	const int_fast16_t maprightmax = display_mapbar(tracemax10, level9, level9 + delta2, delta2, tracemax10 - level9, delta2); // delta2 - invisible
 
 	uint_fast16_t ypix;
-	uint_fast16_t xpix = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(0)), y, & ypix);
+	uint_fast16_t xpix = display2_cell2pix(display_bars_x_rx(x, 0), y, & ypix);
 	display_bar(db, xpix, ypix, BDTH_LEFTRX, rowspan, mapleftval, mapleftmax, delta1, PATTERN_BAR_HALF, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYHALF, & dbstylev_smbar);		//ниже 9 баллов ничего
 	//
 	uint_fast16_t ypix2;
-	uint_fast16_t xpix2 = display_wrdata_begin(display_bars_x_rx(x, CHARS2GRID(BDTH_LEFTRX)), y, & ypix2);
+	uint_fast16_t xpix2 = display2_cell2pix(display_bars_x_rx(x, BDTH_LEFTRX), y, & ypix2);
 	display_bar(db, xpix2, ypix2, BDTH_RIGHTRX, rowspan, maprightval, maprightmax, delta2, PATTERN_BAR_FULL, PATTERN_BAR_FULL, PATTERN_BAR_EMPTYFULL, & dbstylev_smbarplus);		// выше 9 баллов ничего нет.
 
 	if (BDTH_SPACERX != 0)
 	{
 		uint_fast16_t ypix;
-		uint_fast16_t xpix = display_wrdata_begin(display_bars_x_pwr(x, CHARS2GRID(BDTH_ALLRX)), y, & ypix);
+		uint_fast16_t xpix = display2_cell2pix(display_bars_x_pwr(x, BDTH_ALLRX), y, & ypix);
 		display_bar(db, xpix, ypix, BDTH_SPACERX, rowspan, 0, 1, 1, PATTERN_SPACE, PATTERN_SPACE, PATTERN_SPACE, & dbstylev_smbarplus);
 	}
 
@@ -4911,7 +4958,7 @@ static COLORPIP_T display2_rxbwcolor(COLORPIP_T colorfg, COLORPIP_T colorbg)
 
 #if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 
-enum { ALLDX = GRID2X(CHARS2GRID(BDTH_ALLRX)) };
+enum { ALLDX = GRID2X(BDTH_ALLRX) };
 
 // Параметры фильтров данных спектра и водопада
 // устанавливаются через меню
@@ -6959,7 +7006,7 @@ static uint_fast8_t
 isvisibletext(
 	uint_fast16_t dx, // ширина буфера
 	uint_fast16_t x, // начало строки
-	uint_fast16_t w	// ширина строки со значением частоты
+	size_t w	// ширина строки со значением частоты
 	)
 {
 	return (x + w) <= dx;
@@ -6975,6 +7022,7 @@ display_colorgrid_xor(
 	int_fast32_t bw		// span
 	)
 {
+	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
 	const int MARKERH = 10;
 
 	//
@@ -6992,13 +7040,13 @@ display_colorgrid_xor(
 			if (xmarker != UINT16_MAX)
 			{
 				char buf2 [16];
-				uint_fast16_t freqw;	// ширина строки со значением частоты
-				local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
-				freqw = strwidth3(buf2);
-				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
-				if (isvisibletext(DIM_X, xtext, freqw))
+				const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
+				uint_fast16_t sh3;
+				const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
+				uint_fast16_t xtext = xmarker >= (sw3 + 1) / 2 ? xmarker - (sw3 + 1) / 2 : UINT16_MAX;
+				if (isvisibletext(DIM_X, xtext, sw3))
 				{
-					colpip_string3_tbg(db, xtext, row0, buf2, colordigits);
+					unifont_text(db, xtext, row0, font, buf2, slen3, colordigits);
 					colpip_xor_vline(db, xmarker, row0 + MARKERH, h - MARKERH, colorgridlines);
 				}
 				else
@@ -7022,7 +7070,7 @@ display_colorgrid_set(
 	const struct dispmap * dm
 	)
 {
-	const uint_fast8_t markerh = 10;
+	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t halfbw = bw / 2;
@@ -7049,14 +7097,14 @@ display_colorgrid_set(
 			if (xmarker != UINT16_MAX)
 			{
 				char buf2 [16];
-				uint_fast16_t freqw;	// ширина строки со значением частоты
-				local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
-				freqw = strwidth3(buf2);
-				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
-				if (isvisibletext(DIM_X, xtext, freqw))
+				const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
+				uint_fast16_t sh3;
+				const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
+				uint_fast16_t xtext = xmarker >= (sw3 + 1) / 2 ? xmarker - (sw3 + 1) / 2 : UINT16_MAX;
+				if (isvisibletext(DIM_X, xtext, sw3))
 				{
-					colpip_string3_tbg(db, xtext, y, buf2, colordigits);
-					colpip_set_vline(db, xmarker, y + markerh, h - markerh, colorgridlines);
+					unifont_text(db, xtext, y, font, buf2, slen3, colordigits);
+					colpip_set_vline(db, xmarker, y + sh3, h - sh3, colorgridlines);
 				}
 				else
 					colpip_set_vline(db, xmarker, y, h, colorgridlines);
@@ -7080,6 +7128,7 @@ display_colorgrid_3dss(
 	int_fast32_t bw		// span
 	)
 {
+	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
 	const uint_fast16_t row = row0 + h + 3;
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
@@ -7095,12 +7144,12 @@ display_colorgrid_3dss(
 			if (xmarker != UINT16_MAX)
 			{
 				char buf2 [16];
-				uint_fast16_t freqw;	// ширина строки со значением частоты
-				local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
-				freqw = strwidth3(buf2);
-				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
-				if (isvisibletext(DIM_X, xtext, freqw))
-					colpip_string3_tbg(db, xtext, row, buf2, colordigits);
+				const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
+				uint_fast16_t sh3;
+				const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
+				uint_fast16_t xtext = xmarker >= (sw3 + 1) / 2 ? xmarker - (sw3 + 1) / 2 : UINT16_MAX;
+				if (isvisibletext(DIM_X, xtext, sw3))
+					unifont_text(db, xtext, row, font, buf2, slen3, colordigits);
 
 				colpip_set_vline(db, xmarker, row0, h, colorgridlines3dss);
 			}
@@ -7904,7 +7953,6 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
     	const uint_fast32_t f0 = dm->f0;	/* frequency at middle of spectrum */
     	const int_fast32_t bw = dm->bw;
 
-    	const uint_fast8_t markerh = 10;
     	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
     	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
     	const int_fast32_t halfbw = bw / 2;
@@ -7959,7 +8007,7 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
 		            lv_point_precise_set(& l.p1, coord->x1 + xmarker, coord->y1);
 		            lv_point_precise_set(& l.p2, coord->x1 + xmarker, coord->y2);
 		            lv_draw_line(layer, & l);
-					//colpip_set_vline(db, xmarker, y + markerh, alldy - markerh, colorgridlines);
+					//colpip_set_vline(db, xmarker, y + sh3, alldy - sh3, colorgridlines);
 
 		            // текст маркера частоты
 		    	    lv_draw_label_dsc_t label;
@@ -7971,7 +8019,7 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
 		            lv_area_t labelcoord;
 		            lv_area_set(& labelcoord, coord->x1 + xmarker - 100, coord->y1, coord->x1 + xmarker + 100, coord->y2);
 		            lv_draw_label(layer, & label, & labelcoord);
-		            //colpip_string3_tbg(db, xtext, y, buf2, colordigits);
+		            //unifont_text(db, xtext, y, font, buf2, TEXTSIZE_AUTO, colordigits);
     			}
     		}
     	}
@@ -8867,7 +8915,6 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	const uint_fast32_t f0 = dm->f0;	/* frequency at middle of spectrum */
     	const int_fast32_t bw = dm->bw;
 
-    	const uint_fast8_t markerh = 10;
     	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
     	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
     	const int_fast32_t halfbw = bw / 2;
@@ -8922,7 +8969,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		            lv_point_precise_set(& l.p1, coord->x1 + xmarker, coord->y1);
 		            lv_point_precise_set(& l.p2, coord->x1 + xmarker, coord->y2);
 		            lv_draw_line(layer, & l);
-					//colpip_set_vline(db, xmarker, y + markerh, alldy - markerh, colorgridlines);
+					//colpip_set_vline(db, xmarker, y + sh3, alldy - sh3, colorgridlines);
 
 		            // текст маркера частоты
 		    	    lv_draw_label_dsc_t label;
@@ -8935,7 +8982,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 		            lv_area_t labelcoord;
 		            lv_area_set(& labelcoord, coord->x1 + xmarker - 100, coord->y1, coord->x1 + xmarker + 100, coord->y2);
 		            lv_draw_label(layer, & label, & labelcoord);
-		            //colpip_string3_tbg(db, xtext, y, buf2, colordigits);
+		            //unifont_text(db, xtext, y, font, buf2, TEXTSIZE_AUTO, colordigits);
     			}
     		}
     	}
@@ -9167,17 +9214,16 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 
 #if WITHRENDERHTML
 
-#include <string.h>
-#include <stdexcept>
-
 #include "display/display.h"
-#include "display/fontmaps.h"
 #include "display2.h"
 
 #include "litehtml.h"
-#include <litehtml/encodings.h>
-#include <litehtml/el_text.h>
-#include <litehtml/render_item.h>
+#include "litehtml/encodings.h"
+#include "litehtml/el_text.h"
+#include "litehtml/render_item.h"
+
+#include <string.h>
+#include <stdexcept>
 
 
 namespace litehtml
@@ -9189,10 +9235,10 @@ class hftrxgd: public litehtml::document_container
 public:
 	litehtml::uint_ptr create_font(const font_description& descr, const document* doc, litehtml::font_metrics* fm);
 	void delete_font(litehtml::uint_ptr hFont);
-	int text_width(const char *text, litehtml::uint_ptr hFont);
+	pixel_t text_width(const char *text, litehtml::uint_ptr hFont);
 	void draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos);
-	int pt_to_px(int pt) const;
-	int get_default_font_size() const;
+	pixel_t pt_to_px(float pt) const;
+	pixel_t get_default_font_size() const;
 	const char* get_default_font_name() const;
 	void draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_marker &marker);
 	void load_image(const char *src, const char *baseurl, bool redraw_on_ready);
@@ -9244,17 +9290,18 @@ static COLORPIP_T getCOLORPIP(const litehtml::web_color &color)
 
 litehtml::uint_ptr hftrxgd::create_font(const font_description& descr, const document* doc, litehtml::font_metrics* fm)
 {
+	const unifont_t * const font = & unifont_small;
 	//PRINTF("create_font: faceName='%s', size=%d\n", faceName, size);
 	if (fm)
 	{
-		fm->font_size = 12; //?????size;
+		fm->font_size = font->font_drawheight(font); //?????size;
 		fm->ascent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_ascent(metrics));
 		fm->descent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_descent(metrics));
-		fm->height = SMALLCHARH; //PANGO_PIXELS((double)pango_font_metrics_get_height(metrics));
-		fm->x_height = fm->height;
+		fm->height = font->font_drawheight(font); //PANGO_PIXELS((double)pango_font_metrics_get_height(metrics));
+		fm->x_height = font->font_drawheight(font);
 		fm->draw_spaces = true;
 	}
-	return 1;
+	return litehtml::uint_ptr(font);
 }
 
 void hftrxgd::delete_font(litehtml::uint_ptr hFont)
@@ -9262,28 +9309,31 @@ void hftrxgd::delete_font(litehtml::uint_ptr hFont)
 	(void) hFont;
 }
 
-int hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
+pixel_t hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
 {
+	const unifont_t * const font = (const unifont_t *) hFont;
 	//PRINTF("text_width: text='%s'\n", text);
-	(void) hFont;
-	return SMALLCHARW * strlen(text);
+	uint_fast16_t height_str;
+	const uint_fast16_t width_str = unifont_textsize(font, text, TEXTSIZE_AUTO, & height_str);
+	return width_str;
 }
 
 void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos)
 {
+	const unifont_t * const font = (const unifont_t *) hFont;
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//PRINTF("draw_text: text='%s'\n", text);
 
 	//colpip_fillrect(db, pos.left(), pos.top(), pos.width, pos.height, getCOLORPIP(color));
-	colpip_string_tbg(db, pos.left(), pos.top(), text, getCOLORPIP(color));
+	unifont_text(db, pos.left(), pos.top(), font, text, TEXTSIZE_AUTO, getCOLORPIP(color));
 }
 
-int hftrxgd::pt_to_px(int pt) const
+pixel_t hftrxgd::pt_to_px(float pt) const
 {
 	return pt;
 }
 
-int hftrxgd::get_default_font_size() const
+pixel_t hftrxgd::get_default_font_size() const
 {
 	return 12;
 }
@@ -9348,11 +9398,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 
 		const uint_fast32_t freq = hamradio_get_freq_pathi(pathi);
 
-#if WITHPRERENDER
-		pix_rendered_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
-#else /* WITHPRERENDER */
-		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1);	// отрисовываем верхнюю часть строки
-#endif /* WITHPRERENDER */
+		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
 	}
 	else if (! strcmp(url.c_str(), dzi_gcombo.id))
 	{
@@ -9756,6 +9802,33 @@ display_walktrough(
 		(* dzp->redraw)(db, dzp->x, dzp->y, dzp->colspan, dzp->rowspan, pctx);
 	}
 }
+// выполнение отрисовки всех элементов за раз.
+// Например при работе в меню
+static void
+display_walktrough_redraw(
+	const gxdrawb_t * db,
+	uint_fast16_t subset,
+	dctx_t * pctx
+	)
+{
+	static uint_fast8_t iredraw = 0;
+	const uint_fast8_t istart = iredraw;
+	for (; ; )
+	{
+		const struct dzone * const dzp = & dzones [iredraw];
+
+		if (validforredraw(dzp, subset) != 0)
+		{
+			(* dzp->redraw)(db, dzp->x, dzp->y, dzp->colspan, dzp->rowspan, pctx);
+			iredraw = (iredraw + 1) % WALKCOUNT;
+			break;
+
+		}
+		iredraw = (iredraw + 1) % WALKCOUNT;
+		if (iredraw == istart)
+			break;
+	}
+}
 
 //static int redrawreq;
 //
@@ -9936,7 +10009,7 @@ void display2_bgprocess(
 	// обычное отображение, без LVGL или litehtml
 	gxdrawb_t dbv;
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-	display_walktrough(& dbv, REDRSUBSET(ix), pctx);
+	display_walktrough_redraw(& dbv, REDRSUBSET(ix), pctx);	// redraw
 #endif
 }
 
@@ -9965,7 +10038,6 @@ static void display2_stylesupdate(void)
 	// Параметры отображения частоты основного приемника
 	gxstyle_initialize(& dbstylev_1freqv);
 	gxstyle_textcolor(& dbstylev_1freqv, DSGN_BIGCOLOR,	DSGN_BIGCOLORBACK);
-	gxstyle_setsbigandhalffont(& dbstylev_1freqv);	// функции отрисовки частоты большим шрифтом
 	gxstyle_setbgbackoff(& dbstylev_1freqv, 0, 0); // уменьшение размера плашки
 	gxstyle_setbgradius(& dbstylev_1freqv, 0);
 
@@ -9990,8 +10062,8 @@ static void display2_stylesupdate(void)
 	gxstyle_initialize(& dbstylev_2stateSmall [1]);
 	gxstyle_textcolor(& dbstylev_2stateSmall [0], DSGN_LABELINACTIVETEXT, DSGN_LABELINACTIVEBACK);
 	gxstyle_textcolor(& dbstylev_2stateSmall [1], DSGN_LABELACTIVETEXT, DSGN_LABELACTIVEBACK);
-	gxstyle_setsmallfont2(& dbstylev_2stateSmall [0]);
-	gxstyle_setsmallfont2(& dbstylev_2stateSmall [1]);
+	gxstyle_setfont(& dbstylev_2stateSmall [0], & unifont_small2);	// may be used unifont_gothic_12x16p
+	gxstyle_setfont(& dbstylev_2stateSmall [1], & unifont_small2);
 	gxstyle_texthalign(& dbstylev_2stateSmall [0], GXSTYLE_HALIGN_LEFT);
 	gxstyle_texthalign(& dbstylev_2stateSmall [1], GXSTYLE_HALIGN_LEFT);
 
@@ -10322,7 +10394,7 @@ void display2_initialize(void)
 				sel.parse("#id3", no_quirks_mode);	// select by id
 				//sel.parse(".BIG-FREQ", no_quirks_mode);	// Select by class
 				hftrx_timeels = hftrxmain_docs [page]->root()->select_all(sel);
-				PRINTF("hftrx_timeels size=%d\n", hftrx_timeels.size());
+				PRINTF("hftrx_timeels size=%d\n", (int) hftrx_timeels.size());
 	//			for (litehtml::element::ptr& el : hftrx_timeels)
 	//			{
 	//				for (const litehtml::element::ptr& el2 : el->children())

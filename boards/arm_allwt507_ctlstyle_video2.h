@@ -354,13 +354,6 @@
 	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	//#define WITHRTOS	1	/* Использование RTOS */
 
-	//#define WITHIF4DSP	1			/*  "Дятел" */
-	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
-	//
-	//#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
-	//#define WITHDSPLOCALTXFIR	1
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
@@ -485,7 +478,7 @@
 	#else
 		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#endif
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	
 
 
 	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
@@ -527,7 +520,7 @@
 	//#define LFMTICKSFREQ ARMI2SRATE
 	
 	////*#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
-	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
+	
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#if 0

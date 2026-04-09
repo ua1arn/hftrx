@@ -232,7 +232,7 @@
 	//#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 
 	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
-	//#define COLORSTYLE_GREEN	1
+	#define COLORSTYLE_GREEN	1
 	//#define COLORSTYLE_BLUE	1
 	//#define COLORSTYLE_RED	1
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
@@ -297,9 +297,12 @@
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
-	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	#define WITHDSPEXTDDC 1				/* Квадратуры обрабатываются аппаратным DUC/DDC */
+	#define WITHDSPEXTTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
+	#define WITHDSPEXTRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
+	//#define WITHDSPLOCALTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
+	//#define WITHDSPLOCALRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
+
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
@@ -437,7 +440,7 @@
 	#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 	//#define WITHANTSELECT	1	/* Управление переключением антенн */
 
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	
 //	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
 //	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
 
@@ -480,7 +483,7 @@
 	//#define WITHLFM		1	/* LFM MODE */
 	//#define LFMTICKSFREQ ARMI2SRATE
 	////*#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
-	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
+	
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#if 0

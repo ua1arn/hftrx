@@ -1,0 +1,36 @@
+#type; TIMER
+## Timer0_CPUX and Timer0_CPUS - Timer_CPUSregisteristhesamewithTIMER0_CPUX
+
+#regdef; TMR_IRQ_EN_REG; 0x0000; Timer IRQ Enable Register
+#regdef; TMR_IRQ_STA_REG; 0x0004; Timer Status Register
+#regdef; TIMER_SEC_REG; 0x0008; Timer Secure Register
+
+#aggreg; TMR; 0x0020 2; Timer
+#regdef; CTRL_REG; 		0x000; Timer n Control Register
+#regdef; TIMER_IVL_REG; 0x004; TimerLowIntervalValueRegister
+#regdef; TIMER_CVL_REG; 0x008; TimerLowCurrentValueRegister
+#regdef; TIMER_IVH_REG; 0x00C; TimerHighIntervalValueRegiste
+#regdef; TIMER_CVH_REG; 0x010; TimerHighCurrentValueRegister
+#regdef; TIMER_CV_READ_SEL_REG; 0x014; TimerCurrentValueReadSelectRegister
+#regdef; padding 0; 0x020; Placeholder for 0x010 alignment
+#aggregend;
+
+#regdef; padding 0; 1024; Placeholder for 0x40 alignment
+#typeend;
+
+#type; TIMER1
+## Timer1_CPUX
+
+#regdef; TMR_IRQ_EN_REG; 0x0000; Timer IRQ Enable Register
+#regdef; TMR_IRQ_STA_REG; 0x0004; Timer Status Register
+
+#aggreg; TMR; 0x0010 4; Timer
+#regdef; CTRL_REG; 0x000; Timer n Control Register
+#regdef; INTV_VALUE_REG; 0x004; Timer n Interval Value Register
+#regdef; CUR_VALUE_REG; 0x008; Timer n Current Value Register
+#regdef; padding 0; 0x010; Placeholder for 0x010 alignment
+#aggregend;
+
+
+#regdef; padding 0; 1024; Placeholder for 0x40 alignment
+#typeend;

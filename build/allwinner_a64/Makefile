@@ -20,7 +20,8 @@ TRGT2 = arm-none-eabi
 #TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
-XFEL = ../../tools/xfel-windows-v1.3.4/xfel
+XFEL = ../../tools/xfel-windows-v1.3.5/xfel
+BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -37,7 +38,7 @@ LDSCRIPT_APP = ./allwnr_a64_app.ld
 ARCHDIR = $(PRJROOT)/arch/aw_a64
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_A64"=1 -D"CPUSTYLE_CA53"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_A64"=1
 #UDEFS += -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
@@ -60,7 +61,7 @@ CORE = -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
 OPT = -Os -flto
 #OPT = -Ofast
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 USBXDIR = $(PRJROOT)/src/hal
 
 # List all default C defines here, like -D_DEBUG=1
@@ -72,7 +73,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(ARCHDIR) \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source
+	$(CMSISDIR)/Include $(CMSISDIR)/Source
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -242,17 +243,18 @@ bootloader: BOOT2
 BOOT2: fsbl.bt0
 
 fsbl.bt0: $(PROJECT)_boot.bin
-	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
+	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool -old -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a64_boot.map
-SystemDRAMInit = 0x0001ba28
-SystemExecAARCH64 = 0x0001aa04
+SystemDRAMInit = 0x0001badc
+SystemExecAARCH64 = 0x0001a978
 
 # Invoke SystemInit 
 ddr_init: fsbl_frz.alw32
 	$(XFEL) write 0x00018000 fsbl_frz.alw32
 	$(XFEL) exec $(SystemDRAMInit)
+	$(BUSYBOX) sleep 2s
 
 # test bootloader
 _app_run: fsbl.bt0
@@ -309,7 +311,7 @@ clean: version
 	-$(RM) -R $(OBJDIR64)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
-	-$(RM) $(PROJECT)_app.alw32 fsbl.bt0 $(PROJECT)_app.bin $(PROJECT)_boot.bin 
+	-$(RM) $(PROJECT)_app.alw32 fsbl.bt0 $(PROJECT)_app.bin $(PROJECT)_boot.bin
 
 version:
 	$(CC) --version

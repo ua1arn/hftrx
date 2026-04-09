@@ -15,6 +15,7 @@
 #include "formats.h"
 
 #include <string.h>
+#include "dram_glue.h"
 
 #define CONFIG_SYS_SDRAM_BASE 0x40000000
 
@@ -284,7 +285,7 @@ struct h616_dram_para {
 
 static inline int ns_to_t(int nanoseconds)
 {
-	const unsigned int ctrl_freq = BOARD_CONFIG_DRAM_CLK / 2;
+	const unsigned int ctrl_freq = CONFIG_DRAM_CLK / 2;
 
 	return DIV_ROUND_UP(ctrl_freq * (uint_fast64_t) nanoseconds, 1000);
 }
@@ -1747,7 +1748,7 @@ static uint64_t mctl_calc_size(struct h616_dram_para *para)
 uint64_t sunxi_dram_init(void)
 {
 	 struct h616_dram_para para = {
-		.clk = BOARD_CONFIG_DRAM_CLK,
+		.clk = CONFIG_DRAM_CLK,
 		.type = BOARD_CONFIG_DRAM_TYPE,
 	};
 	uint64_t size;
@@ -1766,16 +1767,17 @@ uint64_t sunxi_dram_init(void)
 	return size;
 };
 
-void arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
-	uint64_t v = sunxi_dram_init();
-	PRINTF("arm_hardware_sdram_initialize: %u MB\n", (unsigned) (v / 1024 / 1024));
+	uint64_t memsize = sunxi_dram_init();
+	PRINTF("arm_hardware_sdram_initialize: %u MB\n", (unsigned) (memsize / 1024 / 1024));
 
 //	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x00, 0xE5, 0x80);
 //	memset((void *) CONFIG_SYS_SDRAM_BASE + 0x80, 0xDF, 0x80);
 //	printhex(CONFIG_SYS_SDRAM_BASE, (void *) CONFIG_SYS_SDRAM_BASE, 2 * 0x80);
 
 	PRINTF("arm_hardware_sdram_initialize done, ddr=%u MHz\n", (unsigned) (allwnr_t507_get_dram_freq() / 1000 / 1000));
+	return ! memsize;
 }
 #endif /* WITHSDRAMHW */

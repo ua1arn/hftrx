@@ -43,7 +43,7 @@
 #if WITHISBOOTLOADER
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define WITHSDRAM_PMC1	1	/* power management chip */
+	
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -515,7 +515,7 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
 
 	#define targetdataflash 0xFF
@@ -577,6 +577,7 @@
 		arm_hardware_piog_outputs(targetxad2, 1 * targetxad2); /*  */ \
 	} while (0)
 
+	#define WITHSPI0HW 		1	/* Использование аппаратного контроллера SPI0 */
 	// MOSI & SCK port
 	#define	SPI_SCLK_BIT			(UINT32_C(1) << 2)	// PC2 SPI0_CLK
 	#define	SPI_MOSI_BIT			(UINT32_C(1) << 4)	// PC4 SPI0_MOSI
@@ -605,19 +606,15 @@
 	#define HARDWARE_SPI_FREQ (allwnr_t113_get_spi0_freq())
 	#define	SPIDFHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI0_INITIALIZE() do { \
 		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
 		arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
 		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
 		arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2);  /* PC6 SPI0_WP/D2 */ \
 		arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2);  /* PC7 SPI0_HOLD/D3 */ \
 	} while (0)
-	#define HARDWARE_SPI_CONNECT() do { \
-	} while (0)
-	#define HARDWARE_SPI_DISCONNECT() do { \
-	} while (0)
 
-#else /* WITHSPIHW || WITHSPISW */
+#else /* WITHSPIHW */
 
 	#define targetext1		(0)		// PE8 ext1 on front panel
 	#define targetxad2		(0)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
@@ -627,7 +624,7 @@
 	#define targetadc2		(0) 		// PE9 ADC MCP3208-BI/SL chip select (potentiometers)
 	#define targetfpga1		(0)		// PE10 FPGA control registers CS1
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 // WITHUART0HW
 #define HARDWARE_UART0_INITIALIZE() do { \
@@ -718,13 +715,12 @@
 		arm_hardware_piog_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piog_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 		} while (0) 
-	#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+#if 0//WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); } while (0)
@@ -756,44 +752,9 @@
 		When initialization is complete, the INIT_DONE pin is released and pulled high. 
 		This low-to-high transition signals that the device has entered user mode.
 	*/
-	#define HARDWARE_FPGA_IS_USER_MODE() (local_delay_ms(100), (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
+	#define HARDWARE_FPGA_IS_USER_MODE() ((FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
-
-#if WITHDSPEXTFIR
-	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
-
-	// FPGA PIN_23
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); } while (0) // do { GPIOC->BSRR = BSRR_C(v); (void) GPIOC->BSRR; } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); } while (0) // do { GPIOC->BSRR = BSRR_S(v); (void) GPIOC->BSRR; } while (0)
-	#define TARGET_FPGA_FIR_CS_BIT 0//(UINT32_C(1) << 13)	/* PC13 - fir CS ~FPGA_FIR_CLK */
-
-	// FPGA PIN_8
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { gpioX_setstate(GPIOD, (v), !! (1) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR1_WE_BIT 0//(UINT32_C(1) << 1)	/* PD1 - fir1 WE */
-
-	// FPGA PIN_7
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { gpioX_setstate(GPIOD, (v), !! (1) * (v)); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR2_WE_BIT 0//(UINT32_C(1) << 0)	/* PD0 - fir2 WE */
-
-	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
-			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_pioc_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
-		} while (0)
-#endif /* WITHDSPEXTFIR */
-
-#if 0
-	/* получение состояния переполнения АЦП */
-	#define TARGET_FPGA_OVF_INPUT		(GPIOC->DATA)
-	#define TARGET_FPGA_OVF_BIT			(UINT32_C(1) << 8)	// PC8
-	#define TARGET_FPGA_OVF_GET			((TARGET_FPGA_OVF_INPUT & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
-	#define TARGET_FPGA_OVF_INITIALIZE() do { \
-				arm_hardware_pioc_inputs(TARGET_FPGA_OVF_BIT); \
-			} while (0)
-#endif
 
 #if WITHCPUDACHW
 	/* включить нужные каналы */

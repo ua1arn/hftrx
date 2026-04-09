@@ -61,9 +61,9 @@ __Vectors64:
 	.org __Vectors64 + 0x200	// Current EL with SPx
 	b	_curr_el_spx_sync		/* Synchronous */
 	.org __Vectors64 + 0x280	// Current EL with SPx
-	b	_curr_el_spx_irq		/* IRQ/vIRQ */
+	b	_curr_el_spx_irq		/* IRQ/vIRQ - used now */
 	.org __Vectors64 + 0x300	// Current EL with SPx
-	b	_curr_el_spx_fiq		/* FIQ/vFIQ */
+	b	_curr_el_spx_fiq		/* FIQ/vFIQ - used now */
 	.org __Vectors64 + 0x380	// Current EL with SPx
 	b	_curr_el_spx_serror		/* SError/vSError */
 
@@ -90,6 +90,8 @@ __Vectors64:
    	//.code 64
    
 	.global Reset_Handler
+	.global run_task_curr
+
    	.extern addr64_preparedata
    	.extern SystemInit
    	.extern _start
@@ -115,7 +117,16 @@ Reset_Handler:
 	BL SystemInit
 	BL addr64_preparedata	/* fill .bss and prepare constant data */
 
+	ldr x29, = STACKSIZESYSBOOT
 	ldr x30, =__stack
+	MSR SPSR_fiq, x30
+	sub x30, x30, x29
+	MSR SPSR_und, x30
+	sub x30, x30, x29
+	MSR SPSR_abt, x30
+	sub x30, x30, x29
+	MSR SPSR_irq, x30
+	sub x30, x30, x29
 	mov sp, x30
 	mov x30, XZR
 /*
@@ -139,85 +150,6 @@ Reset_Handler:
 	.align 4, 0
 	.ascii " DREAM RX project " __DATE__ " " __TIME__ " "
 	.align 4, 0
-/****************************************************************************/
-/*                         Default interrupt handler                        */
-/****************************************************************************/
-#if 0
-	.section ".text"
-   //.code 64
-/* ================================================================== */
-/* Entry point for the IRQ handler */
-/* ================================================================== */
-/*
-	• 13 general-purpose 32-bit registers, R0 to R12.
-	• Three 32-bit registers with special uses, SP, LR, and PC, that can be described as R13 to R15.
-
-	Figure B1-2 ARM core registers, PSRs, and ELR_hyp, showing register banking
-*/
-/*
-	11.66 MSR (general-purpose register to PSR)
-	fields mnemonics:
-	c	control field mask byte, PSR[7:0] (privileged software execution)
-	x	extension field mask byte, PSR[15:8] (privileged software execution)
-	s	status field mask byte, PSR[23:16] (privileged software execution)
-	f	flags field mask byte, PSR[31:24] (privileged software execution).
-*/
- 	.align 	4, 0
-    .func   IRQ_Handler
-IRQ_Handler:
-
-	sub     lr, lr, #4                  // Pre-adjust LR
-	srsfd   sp!, #ARM_MODE_SYS              // Save LR_irq and SPSR_irq on to the SYS stack
-	//cps		#ARM_MODE_SYS                   // Change to SYS mode
-	cpsid   if,#ARM_MODE_SYS                   // Change to SYS mode and disable interrupts
-	push    {r0-r3, r4-r11, r12, lr}            // Save APCS corruptible registers
-
-	mov     r3, sp                      // Move SP into R3
-	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
-	sub     sp, sp, r3                  // Adjust stack
-	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
-
- 	VMRS	R1, FPSID
-	VMSR	FPSID, R1
-
-	VMRS	R1, FPSCR
-	VMRS	R2, FPEXC
- 	PUSH 	{R1, R2}
-
-	VPUSH.F32	{D0-D15}
-	VPUSH.F32	{D16-D31}
-
-    // Initialise FPSCR to a known state
-    // FPSCR Loaded in to R1
- 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
-	AND     R1,R1,R3
-	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
-
- 	LDR		R0, =IRQ_Handler_GIC
-	MOV		LR, PC
-	BX		R0     /* and jump... */
-
- 	VMRS	R1, FPSID
-	VMSR	FPSID, R1
-
-	VPOP.F32	{D16-D31}
- 	VPOP.F32	{D0-D15}
-	POP 	{R1, R2}
-	VMSR	FPSCR, R1
-	VMSR	FPEXC, R2
-
-	pop     {r3, r4}                    // Restore stack adjustment(R3) and user data(R4)
-	add     sp, sp, r3                  // Unadjust stack
-
-
-	//clrex                               // Clear exclusive monitor for interrupted code
-	pop     {r0-r3, r4-r11, r12, lr}            // Restore stacked APCS registers
-	rfefd   sp!                         // Return from IRQ handler - RFEIA instruction
-
-	.endfunc
-
-#endif
-
 
 
 /* Vector Table
@@ -259,16 +191,15 @@ IRQ_Handler:
 /*
  * exception_frame offset definitions
  */
-#define EXC_FRAME_SIZE (288)	/* sizeof(struct _exception_frame) */
+#define EXC_FRAME_SIZE (784)	/* sizeof(struct _exception_frame) */
 #define EXC_EXC_TYPE_OFFSET (0)	/* __asm_offsetof(struct _exception_frame, exc_type) */
 #define EXC_EXC_ESR_OFFSET (8)	/* __asm_offsetof(struct _exception_frame, exc_esr) */
 #define EXC_EXC_SP_OFFSET (16)	/* __asm_offsetof(struct _exception_frame, exc_sp) */
 #define EXC_EXC_ELR_OFFSET (24)	/* __asm_offsetof(struct _exception_frame, exc_elr) */
 #define EXC_EXC_SPSR_OFFSET (32)/* __asm_offsetof(struct _exception_frame, exc_spsr) */
 
-	.section ".text"
-
-.macro push_trapframe
+.macro push_trapframe_int
+	/* total 240 bytes = 30 qwords */
 	/*
 	 * store generic registers from (x29,x30) pair to (x1,x2) pair.
 	 */
@@ -287,13 +218,41 @@ IRQ_Handler:
 	stp	x5, x6, [sp, #-16]!
 	stp	x3, x4, [sp, #-16]!
 	stp	x1, x2, [sp, #-16]!
+.endm
 
+.macro pop_trapframe_int
+	/* total 240 bytes = 30 qwords */
+	/*
+	 * Restore generic registers from (x29,x30) pair to (x1,x2) pair.
+	 */
+	 /* 15 * 2 * 8 bytes = 240 bytes */
+	ldp	x1, x2, [sp], #16
+	ldp	x3, x4, [sp], #16
+	ldp	x5, x6, [sp], #16
+	ldp	x7, x8, [sp], #16
+	ldp	x9, x10, [sp], #16
+	ldp	x11, x12, [sp], #16
+	ldp	x13, x14, [sp], #16
+	ldp	x15, x16, [sp], #16
+	ldp	x17, x18, [sp], #16
+	ldp	x19, x20, [sp], #16
+	ldp	x21, x22, [sp], #16
+	ldp	x23, x24, [sp], #16
+	ldp	x25, x26, [sp], #16
+	ldp	x27, x28, [sp], #16
+	ldp	x29, x30, [sp], #16
+
+.endm
+
+.macro push_trapframe_float
+	/* total 544 bytes = 68 qwords */
 	/* Wait for FPU operation done */
  	mrs	x1, FPSR
 
 	/*
 	 * store floating point registers from (q30,q31) pair to (q0,q1) pair.
 	 */
+	/* 512 bytes */
 	stp q30, q31, [sp, #-32]!
 	stp q28, q29, [sp, #-32]!
 	stp q26, q27, [sp, #-32]!
@@ -312,6 +271,7 @@ IRQ_Handler:
 	stp q0, q1, [sp, #-32]!
 
 	/* Save VFP control state */
+	 /* 32 bytes */
 	mrs	x1, FPCR
 	mrs x2, FPEXC32_EL2
 	stp	x1, x2, [sp, #-16]!
@@ -319,6 +279,41 @@ IRQ_Handler:
 	//mrs	x1, FPCR
 	mrs x2, FPSR
 	stp	x1, x2, [sp, #-16]!
+.endm
+
+.macro pop_trapframe_float
+	/* total 544 bytes = 68 qwords */
+	/* Wait for FPU operation done */
+ 	mrs	x1, FPSR
+	/* Restore VFP control state */
+	ldp	x1, x2, [sp], #16
+	//msr	FPCR, x1
+	msr FPSR, x2
+
+	ldp	x1, x2, [sp], #16
+	msr	FPCR, x1
+	msr FPEXC32_EL2, x2
+
+	/*
+	 * Restore floating point registers from (q0,q1) pair to (q30,q31) pair.
+	 */
+	 /* 512 bytes */
+	ldp q0, q1, [sp], #32
+	ldp q2, q3, [sp], #32
+	ldp q4, q5, [sp], #32
+	ldp q6, q7, [sp], #32
+	ldp q8, q9, [sp], #32
+	ldp q10, q11, [sp], #32
+	ldp q12, q13, [sp], #32
+	ldp q14, q15, [sp], #32
+	ldp q16, q17, [sp], #32
+	ldp q18, q19, [sp], #32
+	ldp q20, q21, [sp], #32
+	ldp q22, q23, [sp], #32
+	ldp q24, q25, [sp], #32
+	ldp q26, q27, [sp], #32
+	ldp q28, q29, [sp], #32
+	ldp q30, q31, [sp], #32
 .endm
 
 .macro store_traped_sp
@@ -338,7 +333,7 @@ IRQ_Handler:
 .endm
 
 .macro build_trapframe exc_type
-
+	/* Total 48 bytes = 6 qwords */
 	/*
 	 * Store (spsr, x0)
 	 */
@@ -358,11 +353,11 @@ IRQ_Handler:
 .endm
 
 .macro restore_trapframe
-
+	/* Total 48 bytes = 6 qwords */
 	/*
 	 * Drop exception type, esr,
 	 */
-	add	sp, sp, #16
+	add	sp, sp, #16	/* 0, 1 */
 	/*
 	 * Drop exception stack pointer and restore ELR_EL3
 	 */
@@ -376,242 +371,234 @@ IRQ_Handler:
 	msr	SPSR_EL3, x21
 .endm
 
-.macro pop_trapframe
-
-	/* Wait for FPU operation done */
- 	mrs	x1, FPSR
-	/* Restire VFP control state */
-	ldp	x1, x2, [sp], #16
-	//msr	FPCR, x1
-	msr FPSR, x2
-
-	ldp	x1, x2, [sp], #16
-	msr	FPCR, x1
-	msr FPEXC32_EL2, x2
-
-	/*
-	 * Restore gstore floating point registers from (q0,q1) pair to (q30,q31) pair.
-	 */
-	ldp q0, q1, [sp], #32
-	ldp q2, q3, [sp], #32
-	ldp q4, q5, [sp], #32
-	ldp q6, q7, [sp], #32
-	ldp q8, q9, [sp], #32
-	ldp q10, q11, [sp], #32
-	ldp q12, q13, [sp], #32
-	ldp q14, q15, [sp], #32
-	ldp q16, q17, [sp], #32
-	ldp q18, q19, [sp], #32
-	ldp q20, q21, [sp], #32
-	ldp q22, q23, [sp], #32
-	ldp q24, q25, [sp], #32
-	ldp q26, q27, [sp], #32
-	ldp q28, q29, [sp], #32
-	ldp q30, q31, [sp], #32
-
-	/*
-	 * Restore generic registers from (x29,x30) pair to (x1,x2) pair.
-	 */
-	ldp	x1, x2, [sp], #16
-	ldp	x3, x4, [sp], #16
-	ldp	x5, x6, [sp], #16
-	ldp	x7, x8, [sp], #16
-	ldp	x9, x10, [sp], #16
-	ldp	x11, x12, [sp], #16
-	ldp	x13, x14, [sp], #16
-	ldp	x15, x16, [sp], #16
-	ldp	x17, x18, [sp], #16
-	ldp	x19, x20, [sp], #16
-	ldp	x21, x22, [sp], #16
-	ldp	x23, x24, [sp], #16
-	ldp	x25, x26, [sp], #16
-	ldp	x27, x28, [sp], #16
-	ldp	x29, x30, [sp], #16
-
-.endm
-
 .macro call_common_trap_handler, codeN, tail=fname
 	mov	x0, sp
 	BL uncommon_trap_handler_\codeN
 .endm
 
+	.section ".text"
+
 	text_align
 _curr_el_sp0_sync:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_SYNC_SP0
 	store_traped_sp
 	call_common_trap_handler 1
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float	/* total 544 bytes = 68 qwords */
+	pop_trapframe_int
 	ERET
 
 	text_align
 _curr_el_sp0_irq:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_IRQ_SP0
 	store_traped_sp
 	call_common_trap_handler 2
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
 	ERET
 
 	text_align
 _curr_el_sp0_fiq:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_FIQ_SP0
 	store_traped_sp
 	call_common_trap_handler 3
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
 	ERET
 
 	text_align
 _curr_el_sp0_serror:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_SERR_SP0
 	store_traped_sp
 	call_common_trap_handler 4
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
 	ERET
 
 	text_align
 _curr_el_spx_sync:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_SYNC_SPX
 	store_nested_sp
 	//call_common_trap_handler 5
+	mov	x0, sp
 	BL SError_Handler
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
 	ERET
 
+// IRQ/vIRQ
 	text_align
 _curr_el_spx_irq:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_IRQ_SPX
 	store_nested_sp
 	//call_common_trap_handler 6
-	BL VIRQ_Handler		// Calls from EL3 system
-	restore_trapframe
-	pop_trapframe
-	ERET
+	mov	x0, sp
+	B VIRQ_Handler		// Calls from EL3 system
+//	BL VIRQ_Handler		// Calls from EL3 system
+//	restore_trapframe
+//	pop_trapframe_float
+//	pop_trapframe_int
+//	ERET
 
 	text_align
 _curr_el_spx_fiq:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_FIQ_SPX
 	store_nested_sp
-	call_common_trap_handler 7
-	restore_trapframe
-	pop_trapframe
+	//call_common_trap_handler 7
+	mov	x0, sp
+	B VFIQ_Handler		// Calls from EL3 system
+//	BL VFIQ_Handler		// Calls from EL3 system
+//	restore_trapframe
+//	pop_trapframe_float
+//	pop_trapframe_int
+//	ERET
+
+	text_align
+run_task_curr:
+	mov	sp, x0
+	restore_trapframe	/* Total 48 bytes = 6 qwords */
+	pop_trapframe_float	/* total 544 bytes = 68 qwords */
+	pop_trapframe_int	/* total 240 bytes = 30 qwords */
 	ERET
 
 	text_align
 _curr_el_spx_serror:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_SERR_SPX
 	store_nested_sp
 	call_common_trap_handler 8
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
 	ERET
 
 
 	text_align
 _lower_el_aarch64_sync:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_SYNC_AARCH64
 	store_traped_sp
 	call_common_trap_handler 9
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
 	ERET
 
 	text_align
 _lower_el_aarch64_irq:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_IRQ_AARCH64
 	store_traped_sp
 	call_common_trap_handler 10
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
 	ERET
 
 	text_align
 _lower_el_aarch64_fiq:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_FIQ_AARCH64
 	store_traped_sp
 	call_common_trap_handler 11
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
 	ERET
 
 	text_align
 _lower_el_aarch64_serror:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_SERR_AARCH64
 	store_traped_sp
 	call_common_trap_handler 12
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
 	ERET
-
 
 	text_align
 _lower_el_aarch32_sync:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_SYNC_AARCH32
 	store_traped_sp
 	call_common_trap_handler 13
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
 	ERET
 
 	text_align
 _lower_el_aarch32_irq:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_IRQ_AARCH32
 	store_traped_sp
 	call_common_trap_handler 14
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
 	ERET
 
 	text_align
 _lower_el_aarch32_fiq:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_FIQ_AARCH32
 	store_traped_sp
 	call_common_trap_handler 15
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
 	ERET
 
 	text_align
 _lower_el_aarch32_serror:
-	push_trapframe
+	push_trapframe_int
+	push_trapframe_float
 	build_trapframe AARCH64_EXC_SERR_AARCH32
 	store_traped_sp
 	call_common_trap_handler 16
 	restore_traped_sp
 	restore_trapframe
-	pop_trapframe
+	pop_trapframe_float
+	pop_trapframe_int
 	ERET
-
-
 
    	.ltorg
 

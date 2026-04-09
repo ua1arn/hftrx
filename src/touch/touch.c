@@ -15,6 +15,7 @@
 #include "src/display/display.h"
 #include "display2.h"
 #include "gpio.h"
+#include "fontsys.h"
 
 uint_fast16_t
 tcsnormalize(
@@ -216,7 +217,7 @@ void board_tsc_calibration(void)
 					colpip_segm(& dbv, p_display [i].x, p_display [i].y, 0, 360, 15, r0, COLOR_WHITEALL, 0, 0);
 				}
 			}
-			colpip_string_tbg(& dbv, xstep * 2, ystep * 5, "CALIBRATE", COLOR_WHITEALL);
+			unifont_text(& dbv, xstep * 2, ystep * 5, & unifont_small, "CALIBRATE", TEXTSIZE_AUTO, COLOR_WHITEALL);
 			colmain_nextfb();
 			// wait answer
 			unsigned as;
@@ -236,7 +237,7 @@ void board_tsc_calibration(void)
 			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 			// стереть фон
 			colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, COLOR_BLACK);
-			colpip_string_tbg(& dbv, xstep * 2, ystep * 5, "CALIBRATE DONE", COLOR_WHITEALL);
+			unifont_text(& dbv, xstep * 2, ystep * 5, & unifont_small, "CALIBRATE DONE", TEXTSIZE_AUTO, COLOR_WHITEALL);
 			colmain_nextfb();
 			//PRINTF("tsc: calibrate target %u done\n", (unsigned) tg);
 		}

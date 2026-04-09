@@ -1,4 +1,9 @@
+## used as:
+##	volatile uint32_t * const rvaddr = ((volatile uint32_t *) (R_CPUCFG_BASE + 0x1A4));	// See Allwinner_H5_Manual_v1.0.pdf, page 85
+
 #type; R_CPUCFG
 #base; R_CPUCFG 0x01F01C00
+
+#regdef; SOFTENTRY; 0x01A4 4; The Soft Entry Address Register of CPUx (x=0..1)
 
 #typeend;

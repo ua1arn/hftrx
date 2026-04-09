@@ -1,0 +1,42 @@
+Connecting to target via JTAG
+TotalIRLen = 9, IRPrint = 0x0011
+JTAG chain detection found 2 devices:
+ #0 Id: 0x6BA00477, IRLen: 04, CoreSight JTAG-DP
+ #1 Id: 0x06500041, IRLen: 05, Unknown device
+DPv0 detected
+Scanning AP map to find all available APs
+AP[3]: Stopped AP scan as end of AP map has been reached
+AP[0]: AXI-AP (IDR: 0x44770004)
+AP[1]: APB-AP (IDR: 0x54770002)
+AP[2]: AHB-AP (IDR: 0x24770011)
+Iterating through AP map to find APB-AP to use
+AP[0]: Skipped. Not an APB-AP
+AP[1]: APB-AP found
+ROMTbl[0][1]: CompAddr: E0082000 CID: B105F00D, PID: 001BB101 TSG
+ROMTbl[0][2]: CompAddr: E0083000 CID: B105900D, PID: 002BB914 TPIU
+ROMTbl[0][3]: CompAddr: E0090000 CID: B105100D, PID: 000A0001 ROM Table
+ROMTbl[1][0]: CompAddr: E0091000 CID: B105900D, PID: 003BB908 CSTF
+ROMTbl[1][1]: CompAddr: E0092000 CID: B105900D, PID: 001BB961 TMC
+ROMTbl[1][2]: CompAddr: E0093000 CID: B105900D, PID: 005BB912 TPIU
+ROMTbl[1][3]: CompAddr: E0094000 CID: B105900D, PID: 005BB906 CTI (?)
+ROMTbl[0][4]: CompAddr: E00A0000 CID: B105900D, PID: 001BB963 STM
+ROMTbl[0][6]: CompAddr: E00D0000 CID: B105900D, PID: 005BBC07 Cortex-A7
+Found Cortex-A7 r0p5
+6 code breakpoints, 4 data breakpoints
+Debug architecture ARMv7.1
+Data endian: little
+Main ID register: 0x410FC075
+I-Cache L1: 32 KB, 512 Sets, 32 Bytes/Line, 2-Way
+D-Cache L1: 32 KB, 128 Sets, 64 Bytes/Line, 4-Way
+Unified-Cache L2: 256 KB, 512 Sets, 64 Bytes/Line, 8-Way
+System control register:
+  Instruction endian: little
+  Level-1 instruction cache enabled
+  Level-1 data cache enabled
+  MMU enabled
+  Branch prediction enabled
+Memory zones:
+  Zone: "Default" Description: Default access mode
+  Zone: "APB-AP (AP1)" Description: DMA like acc. in AP1 addr. space
+  Zone: "AHB-AP (AP2)" Description: DMA like acc. in AP2 addr. space
+Cortex-A7 identified.

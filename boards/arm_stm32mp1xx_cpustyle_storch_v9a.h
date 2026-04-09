@@ -19,7 +19,6 @@
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 
-//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
@@ -56,7 +55,7 @@
 	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define WITHSDRAM_PMC1	1	/* power management chip */
+	
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -143,7 +142,7 @@
 //	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 //	#define WITHUSBHOST_DMAENABLE 1
 
-	#define WITHTINYUSB 1
+	//#define WITHTINYUSB 1
 	
 	#if WITHTINYUSB
 		#define BOARD_TUH_RHPORT 1
@@ -155,13 +154,13 @@
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 	#define WITHOHCIHW_OHCIPORT 0
 
-	#define WITHUSBHW_EHCI		USB1_EHCI
-	#define WITHUSBHW_EHCI_IRQ	USBH_EHCI_IRQn
-	#define WITHUSBHW_EHCI_IX	0
-
-	#define WITHUSBHW_OHCI		USB1HSFSP2_BASE
-	#define WITHUSBHW_OHCI_IRQ	USBH_OHCI_IRQn
-	#define WITHUSBHW_OHCI_IX	0
+//	#define WITHUSBHW_EHCI		USB1_EHCI
+//	#define WITHUSBHW_EHCI_IRQ	USBH_EHCI_IRQn
+//	#define WITHUSBHW_EHCI_IX	0
+//
+//	#define WITHUSBHW_OHCI		USB1HSFSP2_BASE
+//	#define WITHUSBHW_OHCI_IRQ	USBH_OHCI_IRQn
+//	#define WITHUSBHW_OHCI_IX	0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
     #define WITHCAT_LWIP        1    /* использовать виртуальный последовательный порт на USB соединении */
@@ -602,10 +601,18 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
 	#define SPI_ALLCS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); (void) GPIOE->BSRR; } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); (void) GPIOE->BSRR; } while (0)
+
+//	#define FPGALOADER_SPEEDC SPIC_SPEED4M
+//	#define FPGAREG_V1_SPEEDC SPIC_SPEED4M
+//	#define SPIDF_SPEEDC 		SPIC_SPEED4M
+//	#define NVRAM_SPEEDC 		SPIC_SPEED4M
+//	#define NAU8822_SPEEDC 	SPIC_SPEED400k
+//	#define CTLREG_SPEEDC		SPIC_SPEED400k
+	#define XPT2046_SPEEDC 	SPIC_SPEED400k
 
 	#define targetext1		(UINT32_C(1) << 8)		// PE8 ext1 on front panel
 	#define targetxad2		(UINT32_C(1) << 7)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
@@ -665,7 +672,7 @@
 	#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)
 	#define	SPI_MISO_BIT			(UINT32_C(1) << 4)	// * PB4 бит, через который идет ввод с SPI.
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI1_INITIALIZE() do { \
 			arm_hardware_piob_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PB3 */ \
 			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PB5 */ \
 			arm_hardware_piob_inputs(SPI_MISO_BIT); /* PB4 */ \
@@ -681,13 +688,22 @@
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
 		} while (0)
 
-	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
-	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
+	#define WITHSPI1HW 1
+	/* to be removed... */
+	#define SPIHARD_IX 1    /* 0 - SPI0, 1: SPI1... */
+	#define SPIHARD_PTR SPI1    /* 0 - SPI0, 1: SPI1... */
+
+	#define HARDWARE_FPGA_LOADER_SPIHARD_PTR SPIHARD_PTR
+	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPIHARD_PTR
+
+	// сделать зависящим от target
+	#define SPI_GET_PTR(target) ((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )
+
 	//#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 // WITHUART1HW
 #define HARDWARE_UART1_INITIALIZE() do { \
@@ -771,7 +787,7 @@
 
 #endif // WITHTWISW
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+#if 1//WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); (void) GPIOC->BSRR; } while (0)
@@ -796,6 +812,12 @@
 			arm_hardware_pioc_inputs(FPGA_INIT_DONE_BIT); \
 		} while (0)
 
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
+	#define HARDWARE_FPGA_RESET() do { \
+		board_fpga_loader_initialize(); \
+		board_fpga_reset(); \
+	} while (0)
+
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	/*
 		After the option bit to enable INIT_DONE is programmed into the device (during the first
@@ -804,10 +826,18 @@
 		This low-to-high transition signals that the device has entered user mode.
 	*/
 	#define HARDWARE_FPGA_IS_USER_MODE() (local_delay_ms(100), (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
+#else	/* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
+
+
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
+	#define HARDWARE_FPGA_RESET() do { \
+		board_fpga_loader_initialize(); \
+		board_fpga_reset(); \
+	} while (0)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-#if WITHDSPEXTFIR
+#if 1
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
 
 	// FPGA PIN_23
@@ -830,7 +860,7 @@
 			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
 			arm_hardware_pioc_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
-#endif /* WITHDSPEXTFIR */
+#endif
 
 #if 1
 	/* получение состояния переполнения АЦП */
@@ -1164,6 +1194,7 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
+			/* HARDWARE_FPGA_RESET(); */ \
 			I2S2HW_POOLDOWN(); \
 			BOARD_BLINK_INITIALIZE(); \
 			HARDWARE_KBD_INITIALIZE(); \

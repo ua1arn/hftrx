@@ -175,5 +175,6 @@ static inline int timeout_elapsed(uint64_t expire_cnt)
 #define mdelay(msec) do { local_delay_ms(msec); } while (0)
 #define udelay(usec) do { local_delay_ms(usec); } while (0)
 void timer_init(const timer_ops_t *ops_ptr);
+int pmic_ddr_power_init(enum ddr_type ddr_type);
 
 #endif /* SRC_SDRAM_STM32MP1_PLATFORM_DEF_H_ */

@@ -479,7 +479,7 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
 	#define SPI_ALLCS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
@@ -549,7 +549,7 @@
 	#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)
 	#define	SPI_MISO_BIT			(UINT32_C(1) << 4)	// * PB4 бит, через который идет ввод с SPI.
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI1_INITIALIZE() do { \
 			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
 			arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
@@ -564,27 +564,34 @@
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
 		} while (0)
 
-	#define HARDWARE_UART1_INITIALIZE() do { \
-			const uint_fast32_t TXMASK = (UINT32_C(1) << 9); /* PA9: TX DATA line (2 MHz) */ \
-			const uint_fast32_t RXMASK = (UINT32_C(1) << 10); /* PA10: RX DATA line (2 MHz) - pull-up RX data */  \
-			arm_hardware_pioa_altfn2m(TXMASK, AF_USART1);  \
-			arm_hardware_pioa_altfn2m(RXMASK, AF_USART1);  \
-			arm_hardware_pioa_updown(RXMASK, RXMASK, 0); \
-		} while (0)
-	#define HARDWARE_UART2_INITIALIZE() do { \
-			const uint_fast32_t TXMASK = (UINT32_C(1) << 5); /* PD5: TX DATA line (2 MHz) */ \
-			const uint_fast32_t RXMASK = (UINT32_C(1) << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
-			arm_hardware_piod_altfn2m(TXMASK, AF_USART2); \
-			arm_hardware_piod_altfn2m(RXMASK, AF_USART2); \
-			arm_hardware_piod_updown(RXMASK, RXMASK, 0); \
-		} while (0)
 
 	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
 	//#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
 	#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 
+	// сделать зависящим от target
+	#define SPI_GET_PTR(target) ((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )
+
+	#define	HARDWARE_FPGA_FIR_SPIHARD_PTR SPIHARD_PTR
+	#define	HARDWARE_FPGA_LOADER_SPIHARD_PTR SPIHARD_PTR
+
 #endif
+
+#define HARDWARE_UART1_INITIALIZE() do { \
+		const uint_fast32_t TXMASK = (UINT32_C(1) << 9); /* PA9: TX DATA line (2 MHz) */ \
+		const uint_fast32_t RXMASK = (UINT32_C(1) << 10); /* PA10: RX DATA line (2 MHz) - pull-up RX data */  \
+		arm_hardware_pioa_altfn2m(TXMASK, AF_USART1);  \
+		arm_hardware_pioa_altfn2m(RXMASK, AF_USART1);  \
+		arm_hardware_pioa_updown(RXMASK, RXMASK, 0); \
+	} while (0)
+#define HARDWARE_UART2_INITIALIZE() do { \
+		const uint_fast32_t TXMASK = (UINT32_C(1) << 5); /* PD5: TX DATA line (2 MHz) */ \
+		const uint_fast32_t RXMASK = (UINT32_C(1) << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
+		arm_hardware_piod_altfn2m(TXMASK, AF_USART2); \
+		arm_hardware_piod_altfn2m(RXMASK, AF_USART2); \
+		arm_hardware_piod_updown(RXMASK, RXMASK, 0); \
+	} while (0)
 
 #define HARDWARE_SIDETONE_INITIALIZE() do { \
 	} while (0)
@@ -612,7 +619,7 @@
 
 #endif // WITHTWISW
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+#if 1//WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
@@ -637,6 +644,12 @@
 			arm_hardware_pioe_inputs(FPGA_INIT_DONE_BIT); \
 		} while (0)
 
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
+	#define HARDWARE_FPGA_RESET() do { \
+		board_fpga_loader_initialize(); \
+		board_fpga_reset(); \
+	} while (0)
+
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	/*
 		After the option bit to enable INIT_DONE is programmed into the device (during the first
@@ -646,9 +659,17 @@
 	*/
 	#define HARDWARE_FPGA_IS_USER_MODE() ((FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
 
+#else /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
+
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
+	#define HARDWARE_FPGA_RESET() do { \
+		board_fpga_loader_initialize(); \
+		board_fpga_reset(); \
+	} while (0)
+
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-#if WITHDSPEXTFIR
+#if 1
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
 	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
@@ -667,7 +688,7 @@
 			arm_hardware_pioh_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
 			arm_hardware_pioe_outputs(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
-#endif /* WITHDSPEXTFIR */
+#endif
 
 #if 1
 	/* получение состояния переполнения АЦП */
@@ -880,6 +901,7 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
+		/* HARDWARE_FPGA_RESET(); */ \
 		HARDWARE_SIDETONE_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \
 		HARDWARE_BL_INITIALIZE(); \

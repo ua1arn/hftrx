@@ -17,10 +17,10 @@
 		BDTH_ALLRXBARS = 30,	// ширина зоны для отображение барграфов на индикаторе
 #if 1
 		BDTH_ALLRX = 50, //DIM_X / GRID2X(1),	// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(49),	// количество строк, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = (49),	// количество строк, отведенное под S-метр, панораму, иные отображения
 #else
 		BDTH_ALLRX = 40,	// ширина зоны для отображение графического окна на индикаторе
-		BDCV_ALLRX = ROWS2GRID(55),	// количество строк, отведенное под S-метр, панораму, иные отображения
+		BDCV_ALLRX = (55),	// количество строк, отведенное под S-метр, панораму, иные отображения
 #endif
 
 		BDTH_LEFTRX = 17,	// ширина индикатора баллов (без плюсов)
@@ -76,10 +76,10 @@
 
 	// 480/5 = 96, 800/16=50
 	// 272/5 = 54, 480/16=30 (old)
-	//#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	//#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-	//#define SMALLCHARH 15 /* Font height */
-	//#define SMALLCHARW 16 /* Font width */
+	
+	
+	
+	
 	static const dzone_t dzones [] =
 	{
 		{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
@@ -142,7 +142,7 @@
 		{	13,	DLE1,	9,	0,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	0,	0,	display2_thermo,	REDRM_VOLT, PGALL, },	// thermo sensor
 		{	28, DLE1,	3,	0,	display2_usbsts3,		REDRM_BARS, PGALL, },	// USB host status
-		//{	28, DLE1,	0,	0,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
+		//{	28, DLE1,	0,	0,	display2_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 		{	39, DLE1,	5,	0,	display2_currlevel, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
 		{	45, DLE1,	5,	0,	display2_voltlevelV, REDRM_VOLT, PGALL, },	// voltmeter with "V"
@@ -178,7 +178,7 @@
 	{
 		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
-		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->w = DIM_X; //GRID2X((BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 	#define DISPLC_RADIUS 	0	// радиус закругления углов плиток в dzones

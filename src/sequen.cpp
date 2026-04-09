@@ -290,16 +290,16 @@ static const
 	portholder_t txgfva0 [TXGFI_SIZE] =	// усостояния выходов для разных режимов
 		{ TXGFV_RX, TXGFV_TRANS, TXGFV_TX_SSB, TXGFV_TX_SSB }; // для SSB
 static const
-	uint_fast8_t sdtnva0 [TXGFI_SIZE] =	// признаки включения самоконтроля для разных режимов
+	uint8_t sdtnva0 [TXGFI_SIZE] =	// признаки включения самоконтроля для разных режимов
 		{ 0, 0, 0, 0 };	// для SSB
 
 static const portholder_t * txgfp = txgfva0;	// параметры управления трактом
-static const uint_fast8_t * sdtnp = sdtnva0;	// параметры управления самоконтролем
+static const uint8_t * sdtnp = sdtnva0;	// параметры управления самоконтролем
 
 /* как включать тракт в данном режиме работы из прерываний */
 void seq_set_txgate(
 	const portholder_t * atxgfp,
-	const uint_fast8_t * asdtnp
+	const uint8_t * asdtnp
 	)
 {
 	IRQL_t oldIrql;

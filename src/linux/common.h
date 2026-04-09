@@ -19,7 +19,7 @@ enum {
 	rx_cic_shift_pos 	= 16,
 	tx_state_pos 		= 24,
 	resetn_modem_pos 	= 25,
-	hw_vfo_sel_pos		= 26,
+	adc_driver_pos		= 26,
 	adc_rand_pos 		= 27,
 	iq_test_pos			= 28,
 	wnb_pos				= 29,

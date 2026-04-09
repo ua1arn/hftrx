@@ -62,10 +62,10 @@
 
 	// 480/5 = 96, 800/16=50
 	// 272/5 = 54, 480/16=30 (old)
-	//#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	//#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-	//#define SMALLCHARH 15 /* Font height */
-	//#define SMALLCHARW 16 /* Font width */
+	
+	
+	
+	
 	static const dzone_t dzones [] =
 	{
 
@@ -119,26 +119,27 @@
 		{	40, 25, 4, 5, display2_bkin3,		& dzi_compat, PGALL, },	// BREAK-IN
 		{	44,	25,	6, 5, display2_wpm5, 		& dzi_compat, PGALL, },	// 22WPM
 
-		//{	24, 30,	10, 5, display_freqmeter10, & dzi_compat, PGALL, },	// измеренная частота опоры
+		//{	24, 30,	10, 5, display2_freqmeter10, & dzi_compat, PGALL, },	// измеренная частота опоры
 		//{	36, 30,	8, 5, display2_freqdelta8, & dzi_compat, PGALL, },	// выход ЧМ демодулятора
 
 	#if WITHSPECTRUMWF
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_compat,	PGINI, },	// формирование палитры водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX,	display2_latchcombo,	& dzi_compat,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	CHARS2GRID(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_compat, PG0, },// подготовка изображения спектра
+		{	0,	DLES,	(BDTH_ALLRX), BDCV_ALLRX, display2_wfl_init,	& dzi_compat,	PGINI, },	// формирование палитры водопада
+		{	0,	DLES,	(BDTH_ALLRX), BDCV_ALLRX,	display2_latchcombo,	& dzi_compat,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_compat, PG0, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
 
-		{	0,	DLE1,	13, 5, display2_datetime12,	& dzi_compat, PGALL,	},	// DATE&TIME Jan-01 13:40
-		{	13,	DLE1,	10, 5, display2_span9,		& dzi_compat, PG0, },	/* Получить информацию об ошибке настройки в режиме SAM */
+//		{	0,	DLE1,	13, 5, display2_datetime12,	& dzi_compat, PGALL,	},	// DATE&TIME Jan-01 13:40
+//		{	13,	DLE1,	10, 5, display2_span9,		& dzi_compat, PG0, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	6, 5, display2_thermo,		& dzi_compat, PG0, },	// thermo sensor
 		{	29, DLE1,	4, 5, display2_usbsts3,		& dzi_compat, PG0, },	// USB host status
 		{	33, DLE1,	3, 5, display2_btsts2,		& dzi_compat, PG0, },	// USB host status
 		{	36, DLE1,	8, 5, display2_classa7,		& dzi_compat, PG0, },	// Class-A power amplifier
-		//{	28, DLE1,	10, 5, display_freqmeter10, & dzi_compat, PGALL, },	// измеренная частота опоры
+		//{	28, DLE1,	10, 5, display2_freqmeter10, & dzi_compat, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
 		{	0,				DLES,	BDTH_ALLRX, (DLE1 - DLES) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 	#if WITHAUTOTUNER
+		{	0, 			DLE1,	28, 5, display2_mla28,	& dzi_compat, PGALL, },	// SWR METER display
 		{	28, 			DLE1,	20, 5, display2_swrsts20,	& dzi_compat, REDRSUBSET_MENU, },	// SWR METER display
 	#endif /* WITHAUTOTUNER */
 	#endif /* WITHMENU */
@@ -148,9 +149,9 @@
 		{	20, 25,	5, 5, display2_voltlevelV, & dzi_compat, PGSLP, },	// voltmeter with "V"
 
 	#if 0
-		{	0,	0,	0, 0, display2_vtty_init,	& dzi_compat,	PGINI, },	// Подготовка видеобуфера окна протокола
-		{	0,	0, 0, 0, display2_vtty,	& dzi_compat, PG0, },		// Вывод текущего состояния протокола
-		{	0,	(DIM_Y - GRID2Y(5)) / 5, 9, 5, display2_freqsof9,	& dzi_compat, PG0, },		// Вывод текущего состояния протокола
+		{	0,	0,	50, 96 - 5, display2_vtty_init,	& dzi_compat,	PGINI, },	// Подготовка видеобуфера окна протокола
+		{	0,	0, 50, 96 - 5, display2_vtty,	& dzi_compat, PG0, },		// Вывод текущего состояния протокола
+		//{	0,	(DIM_Y - GRID2Y(5)) / 5, 9, 5, display2_freqsof9,	& dzi_compat, PG0, },		// Вывод текущего состояния протокола
 	#endif
 
 		//{	0, 0,	0, 0, display2_demorect, & dzi_compat, PGALL, },	// voltmeter with "V"
@@ -174,7 +175,7 @@
 	{
 		p->x = GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = GRID2Y(DLES);	// позиция верхнего левого угла в пикселях
-		p->w = GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->w = GRID2X((BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 

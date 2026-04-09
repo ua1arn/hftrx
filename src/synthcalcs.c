@@ -69,9 +69,9 @@
 /* функция преобразования требуемой частоты в FTW при заданной тактовой частоте DDS */
 /* divider - это делитель опорной частоты перед DDS, умноженный на делитель выходной частоты ЗА DDS. */
 static ftw_t 
-freq2ftw(uint_fast32_t freq, uint_fast16_t divider, uint_fast64_t ddsosc)
+freq2ftw(int_fast32_t freq, int_fast16_t divider, int_fast64_t ddsosc)
 {
-	const uint_fast64_t d = (uint_fast64_t) divider << FTW_RESOLUTION;
+	const int_fast64_t d = (int_fast64_t) divider << FTW_RESOLUTION;
 	return (freq * d) / ddsosc;
 }
 #endif /* FTW_RESOLUTION */
@@ -197,7 +197,7 @@ uint_fast32_t dspfpga_get_nco1(void)
 	}
 	return mirror_nco1;
 #else /* WITHLFM && LO1MODE_DIRECT */
-	return mirror_nco1;
+	return mirror_nco1;// + nfmdevi();
 #endif /* WITHLFM && LO1MODE_DIRECT */
 }
 
@@ -385,6 +385,12 @@ synth_maxlabloop1_setfreq(
 }
 
 #elif LO1MODE_DIRECT
+
+uint_least64_t nfmftw(int f)
+{
+	return freq2ftw(f, dds1refdiv * 1, dds1ref * (uint_fast64_t) 1);    /* преобразование требуемой частоты в фазу */
+
+}
 
 static void synth_direct1_setfreq(
 	uint_fast8_t pathi,	/* номер тракта - 0/1: main/sub */

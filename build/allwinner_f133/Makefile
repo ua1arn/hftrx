@@ -20,8 +20,9 @@ TRGT2 = riscv-none-elf
 TRGT = $(TRGT2)-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
-#XFEL = ../../tools/xfel-windows-v1.3.4/xfel
+#XFEL = ../../tools/xfel-windows-v1.3.5/xfel
 XFEL = ./xfel_fixed_t113-s3
+BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -48,7 +49,7 @@ SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex
 BIN  = $(CP) -O binary
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/15.2.0/liblto_plugin.dll
-OBJDUMP   = $(TRGT)objdump
+OBJDUMP = $(TRGT)objdump
 
 # The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).
 
@@ -62,7 +63,7 @@ CORE = -march=rv64imafd_zicsr -mabi=lp64d -mcmodel=medany -fno-stack-protector -
 #OPT = -Ofast -flto
 OPT = -Ofast
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 USBXDIR = $(PRJROOT)/src/hal
 TINYUSBDIR = $(PRJROOT)/lib/hftrx_tinyusb
@@ -82,7 +83,7 @@ DINCDIR += \
 	$(USBXDIR)
 	
 DINCDIR += \
-	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source
+	$(CMSISDIR)/Include $(CMSISDIR)/Source
 	
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -260,7 +261,9 @@ _app_run: fsbl.f133
 	$(XFEL) exec 0x00028000 
 
 flash:
-	-$(XFEL) spinor write 0x00000000 fsbl.f133
+	-$(XFEL) spinor write 0x00020000 fsbl.bt0
+	-$(XFEL) spinor write 0x00010000 fsbl.bt0
+	-$(XFEL) spinor write 0x00000000 fsbl.bt0
 	$(XFEL) spinor write 0x00040000 $(PROJECT)_app.f133
 
 erase:
@@ -272,7 +275,7 @@ BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.f133: $(PROJECT)_boot.bin
-	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
+	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool -rv -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.f133
 	
 $(PROJECT)_app.f133: $(PROJECT)_app.bin
@@ -297,19 +300,21 @@ $(OBJSA_APP) $(ZOBJSA):
 %_app.elf: $(OBJS) $(OBJSA_APP) $(LDSCRIPT_APP)
 	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
-	$(OBJDUMP) -d $(PROJECT)_app.elf >$(PROJECT)_app.lst
 
 %hex: %elf
 	$(HEX) $< $@
+	$(OBJDUMP) -d $< >$(PROJECT)_app.lst
 
 %bin: %elf
 	$(BIN) $< $@
+	$(OBJDUMP) -d $< >$(PROJECT)_app.lst
 
 clean: version
 	-$(RM) -R $(OBJDIR)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 	-$(RM) $(PROJECT)_app.f133 fsbl.f133 $(PROJECT)_app.bin $(PROJECT)_boot.bin 
+	-$(RM) $(PROJECT)_app.lst 
 
 version:
 	$(CC) --version

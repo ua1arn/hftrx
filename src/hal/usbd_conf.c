@@ -617,6 +617,12 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 //	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 26);	// USBEHCI_RST
 	CCU->BUS_SOFT_RST_REG0 |= (UINT32_C(1) << 24);	// USB_OTG_Device_RST
 
+	// By Ozerot:
+	// Исправлено:
+	CCU->USBPHY_CFG = 0x101;
+	// И добавлено:
+	USB->PHY_OTGCTL = 1;
+
 	//	HCI:
 	//	01C1A800: 00000000 00000001 00000000 00000000 00000002 00000000 023438E4 00000053
 	//	01C1A820: 00240000 00000000
@@ -625,6 +631,40 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	printhex32(USBPHY_BASE, USBPHY, sizeof * USBPHY);
 
 	arm_hardware_set_handler_system(USB_DEVICE_IRQn, device_OTG_HS_IRQHandler);
+
+#elif CPUSTYLE_A133
+	#warning CPUSTYLE_A133 should be handled
+
+    arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
+    arm_hardware_disable_handler(USB20_HOST0_EHCI_IRQn);
+    arm_hardware_disable_handler(USB20_HOST0_OHCI_IRQn);
+
+	CCU->USB_BGR_REG |= (UINT32_C(1) << 24);	// USBOTG0_RST
+	CCU->USB_BGR_REG |= (UINT32_C(1) << 8);	// USBOTG0_GATING
+
+	CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
+	CCU->USB0_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY0
+
+	arm_hardware_set_handler_system(USB20_OTG_DEVICE_IRQn, device_OTG_HS_IRQHandler);
+
+#elif CPUSTYLE_A733
+	//#warning CPUSTYLE_A733 To be done
+
+    arm_hardware_disable_handler(USB0_DEVICE_IRQn);
+    arm_hardware_disable_handler(USB0_EHCI_IRQn);
+    arm_hardware_disable_handler(USB0_OHCI_IRQn);
+
+	CCU->USB0_BGR_REG &= ~ (UINT32_C(1) << 20);	// USB0_EHCI_RST
+	CCU->USB0_BGR_REG &= ~ (UINT32_C(1) << 16);	// USB0_OHCI_RST
+
+	CCU->USB0_BGR_REG |= (UINT32_C(1) << 24);	// USB0_DEVICE_RST
+	CCU->USB0_BGR_REG |= (UINT32_C(1) << 8);	// USB0_DEVICE_GATING
+
+	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN Gating Clock for USB0 HOST OHCI
+	CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USBPHY0_RST
+	CCU->USB0_CLK_REG |= (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY0
+
+	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
 #else
 	#error HAL_PCD_MspInit should be implemented
@@ -747,7 +787,35 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 
 	arm_hardware_disable_handler(USB_DEVICE_IRQn);
 
+#elif CPUSTYLE_A133
+	#warning CPUSTYLE_A133 should be handled
+	CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 8);	// USBOTG0_GATING
+
+	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
+	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY0
+	CCU->USB_BGR_REG &= ~ (UINT32_C(1) << 24);	// USBOTG0_RST
+
+	arm_hardware_disable_handler(USB20_OTG_DEVICE_IRQn);
+
+#elif CPUSTYLE_A733
+	//#warning CPUSTYLE_A733 To be done
+
+    arm_hardware_disable_handler(USB0_DEVICE_IRQn);
+    arm_hardware_disable_handler(USB0_EHCI_IRQn);
+    arm_hardware_disable_handler(USB0_OHCI_IRQn);
+
+	CCU->USB0_BGR_REG &= ~ (UINT32_C(1) << 20);	// USB0_EHCI_RST
+	CCU->USB0_BGR_REG &= ~ (UINT32_C(1) << 16);	// USB0_OHCI_RST
+
+	CCU->USB0_BGR_REG &= ~ (UINT32_C(1) << 24);	// USB0_DEVICE_RST
+	CCU->USB0_BGR_REG &= ~ (UINT32_C(1) << 8);	// USB0_DEVICE_GATING
+
+	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 31);	// USB0_CLKEN Gating Clock for USB0 HOST OHCI
+	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 30);	// USBPHY0_RST
+	CCU->USB0_CLK_REG &= ~ (UINT32_C(1) << 29);	// SCLK_GATING_USBPHY0
+
 #else
+
 	#error HAL_PCD_MspDeInit should be implemented
 #endif
 }

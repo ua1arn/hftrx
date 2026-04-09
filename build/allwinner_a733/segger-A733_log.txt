@@ -1,0 +1,38 @@
+
+Connecting to target via JTAG
+TotalIRLen = 8, IRPrint = 0x0011
+JTAG chain detection found 2 devices:
+ #0 Id: 0x5BA00477, IRLen: 04, CoreSight JTAG-DP
+ #1 Id: 0x2BA06477, IRLen: 04, CoreSight JTAG-DP
+DPv0 detected
+Scanning AP map to find all available APs
+AP[2]: Stopped AP scan as end of AP map has been reached
+AP[0]: AHB-AP (IDR: 0x64770001)
+AP[1]: APB-AP (IDR: 0x44770002)
+Iterating through AP map to find APB-AP to use
+AP[0]: Skipped. Not an APB-AP
+AP[1]: APB-AP found
+No AP map specified by user. Setting auto-detected AP map.
+Scanning ROMTbl @ 0x80000000
+End of ROM table
+Connect failed. Resetting via Reset pin and trying again.
+TotalIRLen = 8, IRPrint = 0x0011
+JTAG chain detection found 2 devices:
+ #0 Id: 0x5BA00477, IRLen: 04, CoreSight JTAG-DP
+ #1 Id: 0x2BA06477, IRLen: 04, CoreSight JTAG-DP
+DPv0 detected
+Scanning AP map to find all available APs
+AP[2]: Stopped AP scan as end of AP map has been reached
+AP[0]: AHB-AP (IDR: 0x64770001)
+AP[1]: APB-AP (IDR: 0x44770002)
+Iterating through AP map to find APB-AP to use
+AP[0]: Skipped. Not an APB-AP
+AP[1]: APB-AP found
+No AP map specified by user. Setting auto-detected AP map.
+Scanning ROMTbl @ 0x80000000
+End of ROM table
+
+****** Error: Error while scanning ROM table
+Could not determine core debug registers + core CTI. Debugging not possible
+
+Cannot connect to target.

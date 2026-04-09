@@ -18,6 +18,7 @@
 #include "formats.h"
 #include "gpio.h"
 #include "buffers.h"
+#include "clocks.h"
 
 #include <string.h>
 

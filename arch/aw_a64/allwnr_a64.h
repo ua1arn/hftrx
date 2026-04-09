@@ -37,6 +37,7 @@
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
+#define __DSP_PRESENT           1U       /* Set to 1 if DSP extension are present */
 
 #include "device.h"
 
@@ -101,6 +102,39 @@ enum DMAC_DstReqType
 	DMAC_DstReqSPI0_TX = 23,
 	DMAC_DstReqSPI1_TX
 };
+
+#define DMAC_CONFIG_DEST_ADDR_MODE_Pos 21	// DMA Destination Address Mode 0x0: Linear Mode 0x1: IO Mode
+#define DMAC_CONFIG_SRC_ADDR_MODE_Pos 5	// DMA Source Address Mode Address Mode 0x0: Linear Mode 0x1: IO Mode
+#define DMAC_PARAM_DEST_ADDR_HIBITS_Pos 18	// DMA transfers the higher 1 bits of the 33-bit destination address
+#define DMAC_PARAM_DEST_ADDR_HIBITS_Msk (UINT32_C(0x01) << DMAC_PARAM_DEST_ADDR_HIBITS_Pos)
+#define DMAC_PARAM_SRC_ADDR_HIBITS_Pos 16	// DMA transfers the high 1 bits of the 33-bit source address
+#define DMAC_PARAM_SRC_ADDR_HIBITS_Msk (UINT32_C(0x01) << DMAC_PARAM_SRC_ADDR_HIBITS_Pos)
+
+typedef enum {
+	GPIO_CFG_IN  = 0x00,
+	GPIO_CFG_OUT = 0x01,
+	GPIO_CFG_AF2 = 0x02,
+	GPIO_CFG_AF3 = 0x03,
+	GPIO_CFG_AF4 = 0x04,
+	GPIO_CFG_AF5 = 0x05,
+	GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
+	GPIO_CFG_IODISABLE = 0x07
+} GPIOMode_TypeDef;
+
+typedef enum
+{
+	GPIO_DRV_0 = 0x00,	// Level 0 minimal
+	GPIO_DRV_1 = 0x01,	// Level 1
+	GPIO_DRV_2 = 0x02,	// Level 2
+	GPIO_DRV_3 = 0x03	// LEvel 3 maximal
+} GPIODrv_TypeDef;
+
+typedef enum
+{
+	GPIO_PULL_NONE = 0x00,	// Pull-up/down disable
+	GPIO_PULL_UP = 0x01,	// Pull-up
+	GPIO_PULL_DOWN = 0x02	// Pull-down. Other codes reserved
+} GPIOPull_TypeDef;
 
 #if defined (USE_HAL_DRIVER)
  #include "t113s3_hal.h"

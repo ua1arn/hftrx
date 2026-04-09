@@ -24,7 +24,7 @@ enum
 	BDTH_ALLPWR = 9,
 	BDTH_SPACEPWR = 0,
 
-	BDCV_ALLRX = ROWS2GRID(55),	// количество строк, отведенное под S-метр, панораму, иные отображения
+	BDCV_ALLRX = (55),	// количество строк, отведенное под S-метр, панораму, иные отображения
 	//
 	B_unused
 };
@@ -57,10 +57,10 @@ enum
 
 // 480/5 = 96, 800/16=50
 // 272/5 = 54, 480/16=30 (old)
-//#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-//#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-//#define SMALLCHARH 15 /* Font height */
-//#define SMALLCHARW 16 /* Font width */
+
+
+
+
 static const dzone_t dzones [] =
 {
 	{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
@@ -85,7 +85,7 @@ static const dzone_t dzones [] =
 	{
 		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
 		p->y = 0;	// позиция верхнего левого угла в пикселях
-		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
+		p->w = DIM_X; //GRID2X((BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = DIM_Y;				// размер по вертикали в пикселях
 		//p->frame = (uintptr_t) 0;
 	}

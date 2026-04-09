@@ -330,15 +330,30 @@ void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
 	}
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R828)
+#elif (CPUSTYLE_A133)
 
 	const unsigned ix = thisPORT;
 
 	/* Open the clock gate for uart0 */
-	CCU->UART_BGR_REG |= (1u << (ix + 0));
+	CCU->UART_BGR_REG |= (UINT32_C(1) << (ix + 0));
 
 	/* De-assert uart0 reset */
-	CCU->UART_BGR_REG |= (1u << (ix + 16));
+	CCU->UART_BGR_REG |= (UINT32_C(1) << (ix + 16));
+
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
+	HARDWARE_UART0_INITIALIZE();
+	if (debug == 0)
+	{
+	   serial_set_handler(UART0_IRQn, UART0_IRQHandler);
+	}
+
+#elif (CPUSTYLE_A733)
+
+	/* Open the clock gate for uart0 */
+	CCU->UART0_BGR_REG |= (UINT32_C(1) << 0);
+
+	/* De-assert uart0 reset */
+	CCU->UART0_BGR_REG |= (UINT32_C(1) << 16);
 
 	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
 	HARDWARE_UART0_INITIALIZE();
@@ -440,7 +455,7 @@ hardware_uart0_set_speed(uint_fast32_t baudrate)
 
 	hardware_uartx_set_speed(UARTBASENAME(thisPORT), xc7z_get_uart_freq(), baudrate);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R818)
+#elif CPUSTYLE_ALLWINNER
 
 	hardware_uartx_set_speed(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, baudrate);
 

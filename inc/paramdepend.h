@@ -419,17 +419,6 @@ extern "C" {
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x07,
-	} GPIOMode_TypeDef;
-
 	#define HARDWARE_NCORES 4
 	#if defined(__aarch64__)
 		#define WITHCPUNAME "Allw A64_64"
@@ -438,7 +427,7 @@ extern "C" {
 	#endif
 
 
-#elif (CPUSTYLE_A133 || CPUSTYLE_R828)
+#elif (CPUSTYLE_A133)
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
@@ -463,17 +452,6 @@ extern "C" {
 
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
-
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x07,
-	} GPIOMode_TypeDef;
 
 	#define HARDWARE_NCORES 4
 	#if defined(__aarch64__)
@@ -508,22 +486,48 @@ extern "C" {
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x07,
-	} GPIOMode_TypeDef;
-
 	#define HARDWARE_NCORES 4
 	#if defined(__aarch64__)
 		#define WITHCPUNAME "Allw T507_64"
 	#else
 		#define WITHCPUNAME "Allw T507"
+	#endif
+
+
+#elif CPUSTYLE_A733
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#define HARDWARE_CLK16M_RC_FREQ 16000000u
+
+	#define CPU_FREQ	(allwnr_a733_get_cpux_L_freq())	// ARM CPUs domain core0..core5 - Cortex-A55
+	#define HARDWARE_UART_FREQ (allwnr_a733_get_uart_freq())
+
+	#define CPU_PL1_FREQ (allwnr_a733_get_hosc_freq())	/* PL1 times source frequency */
+	#define HARDWARE_HOSC_FREQ (allwnr_a733_get_hosc_freq())	/* PL1 times source frequency */
+
+	#define TICKS_FREQUENCY 1000	// Hz
+
+	#define SEQ_TICKS_PERIOD	1	// 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
+	#define ENC_TICKS_PERIOD	5	// 5 ms
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+
+	#if defined(__aarch64__)
+		#define HARDWARE_NCORES 8
+	#else
+		#define HARDWARE_NCORES 6
+	#endif
+	#if defined(__aarch64__)
+		#define WITHCPUNAME "Allw A733_64"
+	#else
+		#define WITHCPUNAME "Allw A733"
 	#endif
 
 #elif CPUSTYLE_T113
@@ -550,27 +554,36 @@ extern "C" {
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_AF6 = 0x06,
-		GPIO_CFG_AF7 = 0x07,
-		GPIO_CFG_AF8 = 0x08,
-		GPIO_CFG_AF9 = 0x09,
-		GPIO_CFG_AF10 = 0x0A,
-		GPIO_CFG_AF11 = 0x0B,
-		GPIO_CFG_AF12 = 0x0C,
-		GPIO_CFG_AF13 = 0x0D,
-		GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x0F,
-	} GPIOMode_TypeDef;
-
 	#define HARDWARE_NCORES 2
 	#define WITHCPUNAME "Allw T113-s3"
+
+
+#elif CPUSTYLE_T153
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#define HARDWARE_CLK16M_RC_FREQ 16000000uL
+
+	#define CPU_FREQ	(allwnr_t153_get_arm_freq())
+	#define HARDWARE_UART_FREQ (allwnr_t153_get_uart_freq())
+	#define CPU_PL1_FREQ (allwnr_t153_get_hosc_freq())	/* PL1 times source frequency */
+	#define HARDWARE_HOSC_FREQ (allwnr_t153_get_hosc_freq())	/* PL1 times source frequency */
+
+	#define TICKS_FREQUENCY 1000	// Hz
+
+	#define SEQ_TICKS_PERIOD	1	// 5 ms
+	#define KBD_TICKS_PERIOD    5    // 5 ms - keyboard and HW ADC restart period
+	#define ENC_TICKS_PERIOD	5	// 5 ms
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
+
+	#define HARDWARE_NCORES 4
+	#define WITHCPUNAME "Allw T153"
 
 #elif CPUSTYLE_H3
 
@@ -595,17 +608,6 @@ extern "C" {
 
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
-
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x07,
-	} GPIOMode_TypeDef;
 
 	#define HARDWARE_NCORES 4
 	#if defined(__aarch64__)
@@ -639,17 +641,6 @@ extern "C" {
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_EINT = 0x06,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x07,
-	} GPIOMode_TypeDef;
-
 	#define HARDWARE_NCORES 1
 	#define WITHCPUNAME "Allw V3s"
 
@@ -675,25 +666,6 @@ extern "C" {
 
 	#define SPISPEED 		(12500000)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
-
-	typedef enum {
-		GPIO_CFG_IN  = 0x00,
-		GPIO_CFG_OUT = 0x01,
-		GPIO_CFG_AF2 = 0x02,
-		GPIO_CFG_AF3 = 0x03,
-		GPIO_CFG_AF4 = 0x04,
-		GPIO_CFG_AF5 = 0x05,
-		GPIO_CFG_AF6 = 0x06,
-		GPIO_CFG_AF7 = 0x07,
-		GPIO_CFG_AF8 = 0x08,
-		GPIO_CFG_AF9 = 0x09,
-		GPIO_CFG_AF10 = 0x0A,
-		GPIO_CFG_AF11 = 0x0B,
-		GPIO_CFG_AF12 = 0x0C,
-		GPIO_CFG_AF13 = 0x0D,
-		GPIO_CFG_EINT = 0x0E,	/* external interrupt sense (input) */
-		GPIO_CFG_IODISABLE = 0x0F,
-	} GPIOMode_TypeDef;
 
 	#define HARDWARE_NCORES 1
 	#define WITHCPUNAME "Allw F133-A"
@@ -800,11 +772,27 @@ extern "C" {
 	#define ARM_REALTIME_PRIORITY	((const uint32_t) gARM_REALTIME_PRIORITY)
 	#define ARM_SYSTEM_PRIORITY	((const uint32_t) gARM_SYSTEM_PRIORITY)
 
-	#define IRQL_USER 0xFF	// TODO: verify value
-	#define IRQL_BOARD ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 3, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
-	#define IRQL_SYSTEM ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 2, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
-	#define IRQL_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
-	#define IRQL_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+
+	enum
+	{
+		PRIOv_IPC_ONLY,
+		PRIOv_OVERREALTIME,
+		PRIOv_REALTIME,
+		PRIOv_SYSTEM,
+		PRIOv_BOARD,
+		PRIOv_USER,
+		//
+		PRIOv_count
+	};
+
+	#define IRQL_USER 0xFF//((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_USER, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_BOARD ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_BOARD, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_SYSTEM ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_SYSTEM, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_REALTIME, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_OVERREALTIME, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_IPC_ONLY ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_IPC_ONLY, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+
+	#define GICI_DECODE_IRQL(irql) (0)	// TODO: use NVIC_DecodePriority
 
 	#define global_enableIRQ() do { __enable_irq(); } while (0)
 	#define global_disableIRQ() do { __disable_irq(); } while (0)
@@ -820,7 +808,7 @@ extern "C" {
 
 #elif (__GIC_PRESENT == 1)
 
-	typedef uint8_t IRQL_t;
+	typedef uint32_t IRQL_t;
 
 	enum
 	{
@@ -850,6 +838,7 @@ extern "C" {
 
 	#define GICD_ENCODE_PRIORITY(priov) 	((uint32_t) ((priov) << (GIC_BINARY_POINT + 1)))	// Value for GICDistributor->IPRIORITYR[n]
 	#define GICI_ENCODE_IRQL(priov) 		((IRQL_t) ((priov) << (GIC_BINARY_POINT + 1)))	// value for GICInterface->PMR
+	#define GICI_DECODE_IRQL(irql) 			(((uint32_t) (irql) >> (GIC_BINARY_POINT + 1)))	// value from GICInterface->PMR
 
 	// value for GIC_SetInterfacePriorityMask
 	#define IRQL_IPC 			(GICI_ENCODE_IRQL(PRIOv_IPC))
@@ -871,46 +860,57 @@ extern "C" {
 
 	// https://github.com/NienfengYao/armv8-bare-metal/blob/572c6f95880e70aa92fe9fed4b8ad7697082a764/aarch64.c#L63
 	#if defined(__aarch64__)
-		// MSR DAIFCLR, #IRQ_bit
+		// MSR DAIFCLR, #IRQ_bit and #FIR_bit
 		#define global_enableIRQ() do { \
-				__ASM volatile("MSR DAIFClr, %0\n\t" : : "i" (7)  : "memory"); \
-				/*__set_RG32C("DAIFCLR", 0x07); */ /* I bit of DAIF */ \
+			__ASM volatile("MSR DAIFClr, %0\n\t" : : "i" (3)  : "memory"); \
 			} while (0)
-		// MSR DAIFSET, #IRQ_bit
+		// MSR DAIFSET,  #IRQ_bit and #FIR_bit
 		#define global_disableIRQ() do { \
-				__ASM volatile("MSR DAIFSet, %0\n\t" : : "i" (7)  : "memory"); \
-				/*__set_RG32C("DAIFSET", 0x07); *//* I bit of DAIF */ \
+			__ASM volatile("MSR DAIFSet, %0\n\t" : : "i" (3)  : "memory"); \
 			} while (0)
 
 	#else /* defined(__aarch64__) */
 
 		#define global_enableIRQ() do { \
+			__enable_fault_irq(); \
 			__enable_irq(); \
 			} while (0)
 		#define global_disableIRQ() do { \
 			__disable_irq(); \
+			__disable_fault_irq(); \
 			} while (0)
+
 	#endif /* defined(__aarch64__) */
 
 #elif CPUSTYLE_RISCV
 
 	typedef uint_xlen_t IRQL_t;
 
-	#define ARM_IPC_PRIORITY			5
-	#define ARM_OVERREALTIME_PRIORITY	4	/* валкодер и телеграф */
-	#define ARM_REALTIME_PRIORITY		3	/* звук */
-	#define ARM_SYSTEM_PRIORITY			2	/* таймеры, USB */
-	#define ARM_BOARD_PRIORITY			1	/* установка параметров */
-	#define ARM_USER_PRIORITY			0	/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
-
-	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
-	#define global_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
+	enum
+	{
+		ARM_USER_PRIORITY = 0,		/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+		ARM_BOARD_PRIORITY,			/* установка параметров */
+		ARM_SYSTEM_PRIORITY,		/* таймеры, USB */
+		ARM_REALTIME_PRIORITY,		/* звук */
+		ARM_OVERREALTIME_PRIORITY,	/* валкодер и телеграф */
+		ARM_IPC_ONLY_PRIORITY,
+		//
+		PRIOv_count
+	};
 
 	#define IRQL_USER				ARM_USER_PRIORITY
 	#define IRQL_SYSTEM 			ARM_SYSTEM_PRIORITY
 	#define IRQL_BOARD				ARM_BOARD_PRIORITY
 	#define IRQL_REALTIME 			ARM_REALTIME_PRIORITY
 	#define IRQL_OVERREALTIME		ARM_OVERREALTIME_PRIORITY
+	#define IRQL_IPC_ONLY			ARM_IPC_ONLY_PRIORITY
+
+	#define GICD_ENCODE_PRIORITY(priov) 	(priov)	// Value for GICDistributor->IPRIORITYR[n]
+	#define GICI_ENCODE_IRQL(priov) 		(priov)	// value for GICInterface->PMR
+	#define GICI_DECODE_IRQL(irql) 			(irql)	// value from GICInterface->PMR
+
+	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
+	#define global_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 
@@ -926,6 +926,41 @@ extern "C" {
 	#define global_disableIRQ() do {  } while (0)
 
 #endif /* CPUSTYLE_ARM_CM3 */
+
+enum
+{
+	UPRIO_REALTIME,
+	UPRIO_USER,
+	UPRIO_IDLE,
+	//
+	UPRIO_count
+};
+
+#define TASK_AFFINITY_ALL (~0U)
+void task_scheduler_initialize(void);
+void task_ticker(void);
+void __NO_RETURN task_scheduler_othercores(void);
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name);
+void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name);
+void task_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
+void tasks_print(void);
+
+
+#define LOCAL_WAITINFINITY UINT32_MAX
+// wait expected state of variable
+// return non-zero: timeout error
+// timeMS may be LOCAL_WAITINFINITY
+int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS);
+int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS);
+
+// wait non-zero state of variable
+// return non-zero: timeout error
+// timeMS may be LOCAL_WAITINFINITY
+int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS);
+
+void local_delay_us(uint_fast32_t timeUS);	// may be LOCAL_WAITINFINITY
+void local_delay_ms(uint_fast32_t timeMS);	// may be LOCAL_WAITINFINITY
+void local_delay_initialize(void);	// setup parameters for loop-nased delays
 
 /* STM32: In HS mode and when the DMA is used, all variables and data structures dealing
    with the DMA during the transaction process should be 4-bytes aligned */    
@@ -970,9 +1005,10 @@ extern "C" {
 #define DDS_TYPE_AD9851		5	// AD9850 and AD9851 supported
 #define DDS_TYPE_AD9835		6	// AD9832 and AD9835 supported
 #define DDS_TYPE_FPGAV1		7	// NCO, DDC/DUC
-#define DDS_TYPE_ATTINY2313	8	// experemental: nco=/7, dds=/9
-#define DDS_TYPE_ZYNQ_PL 	9
-#define DDS_TYPE_LINUX		10
+#define DDS_TYPE_FPGAV2		8	// NCO, DDC/DUC
+#define DDS_TYPE_ATTINY2313	9	// experemental: nco=/7, dds=/9
+#define DDS_TYPE_ZYNQ_PL 	10
+#define DDS_TYPE_LINUX		11
 
 #define	ADC_TYPE_AD9246		15
 
@@ -1070,10 +1106,6 @@ extern "C" {
 
 		#define NVRAM_END 32767U		/* на самом деле 64 килобайт, но в этом применении использeем не более 32K */
 
-	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_CPUEEPROM) && CPUSTYLE_ATMEGA
-
-		#define NVRAM_END E2END
-
 	#elif defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_BKPSRAM) && CPUSTYLE_STM32F
 
 		#define NVRAM_END 4095U		/* 4K of RAM at BKPSRAM_BASE */
@@ -1163,31 +1195,23 @@ extern "C" {
  */
 #if DIM_X == 480 && DIM_Y == 272
 	#define DSTYLE_G_X480_Y272	1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif (DIM_X == 800 && DIM_Y == 480) || (DIM_X == 1366 && DIM_Y == 768)
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 1024 && DIM_Y == 600
 	//#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 1920 && DIM_Y == 1080
 	//#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1195,16 +1219,12 @@ extern "C" {
 	//#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
 	//#define DSTYLE_G_X1280_Y480	1	/* LQ123K3LG01 panel (1280*480) - 12.3" display LVDS mode */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 1024 && DIM_Y == 768
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define DSTYLE_G_X1024_Y768	1	/* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display - DE mode required */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
@@ -1212,122 +1232,13 @@ extern "C" {
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
 	//#define DSTYLE_G_X1280_Y720	1	/* xxxxx panel (1280*720) - 7" display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif DIM_X == 720 && DIM_Y == 1280
 	#define DSTYLE_G_X480_Y272	1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
 	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-
-#elif DIM_X == 220 && DIM_Y == 176
-	#define DSTYLE_G_X220_Y176	1	// Индикатор 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 с контроллером ILI9225С
-	#define CHAR_W	8
-	#define CHAR_H	8
-	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-		
-#elif DIM_X == 240 && DIM_Y == 128
-	#define DSTYLE_G_X240_Y128	1
-	#define CHAR_W	8
-	#define CHAR_H	8
-	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 2)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-
-#elif DIM_X == 160 && DIM_Y == 128
-	#define DSTYLE_G_X160_Y128	1	// ST7735
-	#define CHAR_W	8
-	#define CHAR_H	8
-	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-
-#elif DIM_X == 128 && DIM_Y == 64
-	#define DSTYLE_G_X128_Y64	1	
-	#define CHAR_W	6
-	#define CHAR_H	8
-	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-
-#elif DIM_X == 132 && DIM_Y == 64
-	#define DSTYLE_G_X132_Y64	1
-	//#define DSTYLE_G_X128_Y64	1	/* RDX0077 - проверки дизайна на других индикаторах	*/
-	#define CHAR_W	6
-	#define CHAR_H	8
-	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-
-#elif DIM_X == 133 && DIM_Y == 64
-	// LCDMODE_TIC154
-	// LCDMODE_TIC218
-	#define DSTYLE_G_X132_Y64	1
-	//#define DSTYLE_G_X128_Y64	1	/* RDX0077 - проверки дизайна на других индикаторах	*/
-	#define CHAR_W	6
-	#define CHAR_H	8
-	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-
-#elif DIM_X == 176 && DIM_Y == 132		
-	#define DSTYLE_G_X176_Y132	1		// ls020/lph88
-	#define CHAR_W	8
-	#define CHAR_H	8
-	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-
-#elif DIM_X == 320 && DIM_Y == 240
-	#define DSTYLE_G_X320_Y240	1	
-	#define CHAR_W	10
-	#define CHAR_H	8
-	#define SMALLCHARH 16 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-
-#elif DIM_X == 64 && DIM_Y == 32
-	#define DSTYLE_G_X64_Y32	1	
-	#define CHAR_W	6
-	#define CHAR_H	8
-	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
-
-#elif DIM_X == 128 && DIM_Y == 32
-	#define DSTYLE_G_X64_Y32	1	/* G1203H - проверки	*/
-	//#define DSTYLE_G_X128_Y32	1	
-	#define CHAR_W	6
-	#define CHAR_H	8
-	#define SMALLCHARH 8 /* Font height */
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 #elif LCDMODE_DUMMY
 
@@ -1337,27 +1248,14 @@ extern "C" {
 	#define DIM_Y 272
 	#define LCDMODE_COLORED	1
 
-	#define CHAR_W 6
-	#define CHAR_H 8
-
-	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейки сетки разметки отображния */
-	#define GRID2X(cellsx) ((cellsx) * CHAR_W)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
-	#define GRID2Y(cellsy) ((cellsy) * CHAR_H)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
 
 	#define DISPLAY_FPS	10	/* обновление показаний частоты за секунду */
 	#define DISPLAYSWR_FPS 5	/* количество обновлений SWR за секунду */
 #else
 	#error Unrecognized dislay layout used (LCDMODE_XXXX)
 #endif
-
-#define X2GRID(pix) ((pix) / GRID2X(1))	// переход от пикселей к ячейкам разметки экрана
-#define Y2GRID(pix) ((pix) / GRID2Y(1))	// переход от пикселей к ячейкам разметки экрана
-
-
-#define HALFCOUNT_FREQA 1
-#define HALFCOUNT_SMALL 1
-#define HALFCOUNT_BIG 1
 
 // Определения функциональности в зависимости от того, какой набор управляющих битов имеется.
 #if CTLREGMODE_NOCTLREG			// Отсутствующий регистр управления
@@ -1450,7 +1348,6 @@ extern "C" {
 	#error WIHSPIDFSW and WIHSPIDFHW can not be used in same time
 #endif /* WIHSPIDFSW && WIHSPIDFHW */
 
-#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 #define WITHPRERENDER (1 && WITHLTDCHW && (LCDMODE_RGB565 || LCDMODE_ARGB8888))		/* использование предварительно построенных изображений при отображении частоты */
 
 #if WITHTOUCHGUI
@@ -1491,10 +1388,6 @@ extern "C" {
 
 // Поддержка FatFS если запрошена поддержка однорго из носителей
 #define WITHUSEFATFS (WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK)
-
-#if defined WITHDSPLOCALFIR && defined WITHDSPLOCALTXFIR
-	#undef WITHDSPLOCALTXFIR
-#endif
 
 #if (WIHSPIDFSW || WIHSPIDFHW) && WIHSPIDFOVERSPI
 	#error WIHSPIDFOVERSPI and ( WIHSPIDFSW or WIHSPIDFHW ) can not be used together

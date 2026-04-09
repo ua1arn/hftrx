@@ -37,7 +37,7 @@ arch_no_sym      : 1
 num_bank_set    : 1
 num_mac         : 2
 num_cycles      : 24
-arch_pipeline      : 2
+arch_pipeline      : 3
 poly_type       : 2
 poly_fact       : 20
 device_family   : 21

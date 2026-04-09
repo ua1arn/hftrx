@@ -21,8 +21,9 @@ TRGT2 = arm-none-eabi
 #TRGT2 = aarch64-none-elf
 TRGT = $(TRGT2)-
 
-_XFEL = ../../tools/xfel-windows-v1.3.2/xfel
+_XFEL = ../../tools/xfel-windows-v1.3.4/xfel
 XFEL = ./xfel_lpddr4
+BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -39,7 +40,7 @@ LDSCRIPT_APP = ./allwnr_a133_app.ld
 ARCHDIR = $(PRJROOT)/arch/aw_a133
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_A133"=1 -D"CPUSTYLE_CA53"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_A133"=1
 #UDEFS += -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
@@ -61,7 +62,7 @@ CORE = -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
 #OPT = -Ofast -flto
 OPT = -Ofast
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 USBXDIR = $(PRJROOT)/src/hal
 
 # List all default C defines here, like -D_DEBUG=1
@@ -73,7 +74,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(ARCHDIR) \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source
+	$(CMSISDIR)/Include $(CMSISDIR)/Source
 
 # List all default libraries here
 #DLIBS = -lm -larm_cortexA9lneon_math
@@ -236,32 +237,21 @@ allZ:
 	@echo $(abspath $(OBJS))
 
 bootloader: BOOT2
-	busybox grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | busybox awk -e '{ print $$2, "=", $$1 }' | busybox sort
+	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a133_boot.map - address of SystemDRAMInit
 ifeq (1, 1)
 # a133
-SystemDRAMInit = 0x000332d0
-SystemExecAARCH64 = 0x000313f8
-# H616
-else
-SystemDRAMInit = 0x00032a84
-SystemExecAARCH64 = 0x00031560
+SystemDRAMInit = 0x0002c3ac
+SystemExecAARCH64 = 0x00029858
 endif
 
 # Invoke SystemInit 
-ddrinit_a133__: ddrinit_a133.bin
-	$(XFEL) write 0x00028000 ddrinit_a133.bin
+ddrinit_a133: ddrinit_a133_lpddr4.bin
+	$(XFEL) write 0x00028000 ddrinit_a133_lpddr4.bin
 	$(XFEL) exec $(SystemDRAMInit)
-
-ddrinit_a133_:
-	$(XFEL) ddr lpddr4
-	busybox sleep 1s
-
-ddrinit_a133: ddrinit_a133.bin
-	$(XFEL) write 0x00028000 ddrinit_a133.bin
-	$(XFEL) exec $(SystemDRAMInit)
+	$(BUSYBOX) sleep 2s
 
 app_run: $(PROJECT)_app.alw32 ddrinit_a133
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32

@@ -3,3 +3,58 @@
 #irq; GPADC 89
 #irqrv; GPADC 73
 #typeend;
+
+#type; USBOTG; USB OTG Dual-Role Device controller
+#base; USBOTG0 0x01C19000
+#irq; USBOTG0 103
+
+#typeend;
+#type; USB_EHCI_Capability
+#base; USBEHCI0 0x01C1A000
+#base; USBEHCI1 0x01C1B000
+#irq; USBEHCI0 104
+#irq; USBEHCI1 106
+
+#typeend;
+
+#type; USB_OHCI_Capability
+#base; USBOHCI0 0x01C1A400
+#base; USBOHCI1 0x01C1B400
+#irq; USBOHCI0 105
+#irq; USBOHCI1 107
+
+#typeend;
+
+#type; UART
+#base; UART0 0x01C28000
+#base; UART1 0x01C28400
+#base; UART2 0x01C28800
+#base; UART3 0x01C28C00
+#base; UART4 0x01C29000
+#base; R_UART 0x01F02800
+#irq; UART0 32
+#irq; UART1 33
+#irq; UART2 34
+#irq; UART3 35
+#irq; UART4 36
+#irq; R_UART 70
+
+#typeend;
+#type; TWI
+#base; R_TWI 0x01F02400
+#base; TWI0 0x01C2AC00
+#base; TWI1 0x01C2B000
+#base; TWI2 0x01C2B400
+#irq; R_TWI 76
+#irq; TWI0 38
+#irq; TWI1 39
+#irq; TWI2 40
+#typeend;
+
+#type; SPI; Serial Peripheral Interface
+#base; SPI0 0x01C68000
+#base; SPI1 0x01C69000
+#irq; SPI0 97
+#irq; SPI1 98
+#typeend;
+

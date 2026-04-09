@@ -7,6 +7,9 @@
 //
 #include "hardware.h"
 
+
+#if (defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_CS4272)) || (defined (CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272))
+
 #include "board.h"
 
 #include "formats.h"
@@ -34,6 +37,7 @@
 	#define CS4272_ADDRESS_R(tg)	(CS4272_ADDRESS_W(tg) + 1)
 
 #endif
+
 
 //memory address pointers
 #define MODE_CONTROL_1 0x1 //memory address pointer for modeControl1
@@ -74,33 +78,21 @@ static void cs4272_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = tg ? targetcodec2 : targetcodec2;	/* addressing to chip */
 
-	#if WITHSPILOWSUPPORTT || 1
-		// Работа совместно с фоновым обменом SPI по прерываниям
-		const uint8_t txbuf [3] =
-		{
-			CS4272_ADDRESS_W(tg),
-			mapv,
-			datav,
-		};
+	// Работа совместно с фоновым обменом SPI по прерываниям
+	const uint8_t txbuf [3] =
+	{
+		CS4272_ADDRESS_W(tg),
+		mapv,
+		datav,
+	};
 
-		prog_spi_io(target, CS4272_SPIC_SPEED, CS4272_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
-
-	#else /* WITHSPILOWSUPPORTT */
-
-		spi_select2(target, CS4272_SPIMODE, CS4272_SPIC_SPEED);	/* Enable SPI */
-		spi_progval8_p1(target, CS4272_ADDRESS_W(tg));		// Chip Aaddress, D0=0: write
-		spi_progval8_p2(target, mapv);
-		spi_progval8_p2(target, datav);
-		spi_complete(target);
-		spi_unselect(target);
-
-	#endif /* WITHSPILOWSUPPORTT */
+	prog_spi_io(target, CS4272_SPIC_SPEED, CS4272_SPIMODE, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
 
 #else
 
 	#if WITHTWIHW
 		uint8_t buff [] = { mapv, datav, };
-		i2chw_write(CS4272_ADDRESS_W(tg), buff, ARRAY_SIZE(buff));
+		i2chwx_write(TWIHARD_PTR, CS4272_ADDRESS_W(tg), buff, ARRAY_SIZE(buff));
 	#elif WITHTWISW
 		// кодек управляется по I2C
 		i2c_start(CS4272_ADDRESS_W(tg));
@@ -137,8 +129,8 @@ static uint_fast8_t cs4272_getreg(
 
 	#if WITHTWIHW
 		uint8_t buff [] = { mapv, };
-		i2chw_write(CS4272_ADDRESS_W(tg), buff, ARRAY_SIZE(buff));
-		i2chw_read(CS4272_ADDRESS_R(tg), & v, 1);
+		i2chwx_write(TWIHARD_PTR, CS4272_ADDRESS_W(tg), buff, ARRAY_SIZE(buff));
+		i2chwx_read(TWIHARD_PTR, CS4272_ADDRESS_R(tg), & v, 1);
 	#elif WITHTWISW
 
 		// кодек управляется по I2C
@@ -277,7 +269,7 @@ const codec2if_t * board_getfpgacodecif(void)
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_CS4272)
 
 /* требуется ли подача тактирования для инициадизации кодека */
-static uint_fast8_t nau8822_clocksneed(void)
+static uint_fast8_t cs4272_clocksneed(void)
 {
 	return 1;
 }
@@ -329,3 +321,5 @@ board_getaudiocodecif(void)
 }
 
 #endif /* defined(CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272) */
+
+#endif /* (defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_CS4272)) || (defined (CODEC2_TYPE) && (CODEC2_TYPE == CODEC_TYPE_CS4272)) */

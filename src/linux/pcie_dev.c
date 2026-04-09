@@ -60,13 +60,6 @@ int pcie_init()
             free(xdma.buffer_c2h);
             printf("Error allocate buffer , OOM--error code: %d\n", ENOMEM);
         }
-	
-    return status;
-}
-
-int pcie_open()
-{
-    int status = 1;
 
     /* open XDMA Host-to-Card 0 device */
     xdma.h2c0 = open(xdma.h2c0_path, O_RDWR);
@@ -105,6 +98,7 @@ cleanup_handles:
     if (xdma.c2h0) close(xdma.c2h0);
     if (xdma.h2c0) close(xdma.h2c0);
     if (xdma.user) close(xdma.user);
+
     return status;
 }
 
@@ -167,8 +161,9 @@ long xdma_h2c_transfer(long offset, unsigned long size, char* snd_content)
 //transfer data from FPGA Card to Host PC
 long xdma_c2h_transfer(long offset, unsigned long size, char* rcv_content)
 {
-    if(size < 5){
-        read_device(xdma.c2h0, offset, 10, xdma.buffer_c2h);
+    if(size < 5) // fix IP Xilinx XDMA bug
+    {
+        read_device(xdma.c2h0, offset, 8, xdma.buffer_c2h);
         memcpy(rcv_content, xdma.buffer_c2h, size);
         return size;
     }

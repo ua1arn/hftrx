@@ -38,33 +38,13 @@ static i2cp_t i2cp_2 =
 /* задержка обепечивает скорость обмена по I2C при программной реализации протокола - 1/2 периода частоты 400 кГц */
 static void i2c_delay(const i2cp_t * p)
 {
-	local_delay_us(p->usdelayv);
+	local_delay_ms(25);
 #if LCDMODEX_SII9022A
 	local_delay_us(25);
 #endif /* LCDMODEX_SII9022A */
-#if PCF8576C
-	local_delay_us(15);
-#endif /* PCF8576C */
 }
 
-#if CPUSTYLE_ATMEGA
-	#define SET_TWCK() do { TARGET_TWI_TWCK_DDR &= ~ TARGET_TWI_TWCK; } while (0)	// SCL = 1
-	#define CLR_TWCK() do { TARGET_TWI_TWCK_DDR |= TARGET_TWI_TWCK; } while (0)	// SCL = 0
-	#define SET_TWD() do { TARGET_TWI_TWD_DDR &= ~ TARGET_TWI_TWD;  } while (0)	// SDA = 1
-	#define CLR_TWD() do { TARGET_TWI_TWD_DDR |= TARGET_TWI_TWD; } while (0)	// SDA = 0
-
-	#define GET_TWCK() ((TARGET_TWI_TWCK_PIN & TARGET_TWI_TWCK) != 0)
-	#define GET_TWD() ((TARGET_TWI_TWD_PIN & TARGET_TWI_TWD) != 0)
-
-	#define SET2_TWCK() do { TARGET_TWI2_TWCK_DDR &= ~ TARGET_TWI2_TWCK; } while (0)	// SCL = 1
-	#define CLR2_TWCK() do { TARGET_TWI2_TWCK_DDR |= TARGET_TWI2_TWCK; } while (0)	// SCL = 0
-	#define SET2_TWD() do { TARGET_TWI2_TWD_DDR &= ~ TARGET_TWI2_TWD; } while (0)	// SDA = 1
-	#define CLR2_TWD() do { TARGET_TWI2_TWD_DDR |= TARGET_TWI2_TWD; } while (0)	// SDA = 0
-
-	#define GET2_TWCK() ((TARGET_TWI2_TWCK_PIN & TARGET_TWI2_TWCK) != 0)
-	#define GET2_TWD() ((TARGET_TWI2_TWD_PIN & TARGET_TWI2_TWD) != 0)
-
-#elif CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z
 
 	#if WITHTWISW && ! defined (TWISOFT_INITIALIZE)
 
@@ -115,374 +95,10 @@ static void i2c_delay(const i2cp_t * p)
 	#error Undefined CPUSTYLE_xxx
 #endif
 
-#if defined (TWISOFT_INITIALIZE)
 
-static void i2c_softbusrelease(void)
-{
-#if 0
-	uint_fast8_t i;
-	// release I2C bus
-	CLR_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-	SET_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR_TWCK();
-		SET_TWCK();
-	}
-#endif
-}
+#if WITHTWIHW && ! LINUX_SUBSYSTEM
 
-#endif /* defined (TWISOFT_INITIALIZE) */
-
-#if defined (TWISOFT2_INITIALIZE)
-
-static void i2c2_softbusrelease(void)
-{
-	uint_fast8_t i;
-	// release I2C bus
-	CLR2_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR2_TWCK();
-		SET2_TWCK();
-	}
-	SET2_TWD();
-	for (i = 0; i < 24; ++ i)
-	{
-		CLR2_TWCK();
-		SET2_TWCK();
-	}
-}
-
-#endif /* defined (TWISOFT2_INITIALIZE) */
-
-#if WITHTWIHW
-
-#if CPUSTYLE_ATMEGA
-
-#include <util/twi.h>
-
-void i2c_initialize(void)
-{
-	const i2cp_t * const p1 = & i2cp_1;
-	const i2cp_t * const p2 = & i2cp_2;
-
-	TWISOFT_INITIALIZE();
-	i2c_softbusrelease();
-	hardware_twi_master_configure();
-
-#if WITHTWIHW
-	TWIHARD_INITIALIZE();
-#endif
-}
-
-
-enum i2c_read_mode_t
-{
-	I2C_START,
-	I2C_DATA,
-	I2C_DATA_ACK,
-	I2C_STOP
-};
-
-#define MAX_TRIES 1 // 50 
-
-/* START I2C Routine */ 
-static uint_fast8_t 
-i2c_transmit(uint_fast8_t type) 
-{ 
-	uint_fast8_t w;
-
-	switch (type) 
-	{ 
-	default:
-	case I2C_START: // Send Start Condition 
-		TWCR = (1U << TWINT) | (1U << TWSTA) | (1U << TWEN); 
-		break; 
-	case I2C_DATA: // Send Data with No-Acknowledge 
-		TWCR = (1U << TWINT) | (1U << TWEN); 
-		break; 
-	case I2C_DATA_ACK: // Send Data with Acknowledge 
-		TWCR = (1U << TWEA) | (1U << TWINT) | (1U << TWEN); 
-		break; 
-	case I2C_STOP: // Send Stop Condition 
-		TWCR = (1U << TWINT) | (1U << TWEN) | (1U << TWSTO); 
-		return 0; 
-	} 
-
-	// Wait for TWINT flag set on Register TWCR 
-	w = 255;
-	while (w -- && !(TWCR & (1U << TWINT)))
-		local_delay_us(1);
-
-	// Return TWI Status Register, mask the prescaller bits (TWPS1,TWPS0) 
-	return (TWSR & TW_STATUS_MASK); 
-	//return TW_STATUS;
-} 
-
-/* char */ void i2c_start(
-	//uint_fast8_t dev_id, uint_fast8_t dev_addr, uint_fast8_t rw_type
-	uint_fast8_t addr
-	) 
-{ 
-	uint_fast8_t n = 0; 
-	uint_fast8_t twi_status; 
-	//char r_val = -1; 
-
-i2c_retry: 
-	if (n++ >= MAX_TRIES) 
-	{
-		return ; //r_val; 
-	}
-
-	// Transmit Start Condition 
-	twi_status = i2c_transmit(I2C_START); 
-
-	// Check the TWI Status 
-	if (twi_status == TW_MT_ARB_LOST) 
-		goto i2c_retry; 
-	if ((twi_status != TW_START) && (twi_status != TW_REP_START)) 
-		goto i2c_quit; 
-
-	// Send slave address (SLA_W) 
-	TWDR = addr; // (dev_id & 0xF0) | (dev_addr & 0x07) | rw_type; 
-
-	// Transmit I2C Data 
-	twi_status = i2c_transmit(I2C_DATA); 
-
-	// Check the TWSR status 
-	if ((twi_status == TW_MT_SLA_NACK) || (twi_status == TW_MT_ARB_LOST)) 
-		goto i2c_retry; 
-	if (twi_status != TW_MT_SLA_ACK) 
-		goto i2c_quit; 
-
-	//r_val=0; 
-
-i2c_quit: 
-	return; // r_val; 
-} 
-
-// Вызвать после последнего i2c_write()
-void i2c_waitsend(void)
-{
-
-}
-
-void i2c_stop(void) 
-{ 
-	//uint_fast8_t twi_status; 
-
-	// Transmit I2C Data 
-	/*twi_status = */ i2c_transmit(I2C_STOP); 
-} 
-
-/* char */ void i2c_write(uint_fast8_t data)
-{ 
-	uint_fast8_t twi_status; 
-	//char r_val = -1; 
-
-	// Send the Data to I2C Bus 
-	TWDR = data; 
-
-	// Transmit I2C Data 
-	twi_status = i2c_transmit(I2C_DATA); 
-
-	// Check the TWSR status 
-	if (twi_status != TW_MT_DATA_ACK) goto i2c_quit; 
-
-	//r_val=0; 
-
-i2c_quit: 
-	return; // r_val; 
-} 
-
-// запись, после чего restart
-/* char */ void i2c_write_withrestart(uint_fast8_t data)
-{
-	i2c_write(data);
-	i2c_waitsend();
-
-}
-
-// запись, после чего restart
-/* char */ void i2c_write_withrestart(uint_fast8_t data)
-{
-	i2c_write(data);
-	i2c_waitsend();
-	
-}
-
-//#define I2C_READ_ACK 1  // i2c_read parameter
-//#define I2C_READ_NACK 0		// ack_type - last parameterr in read block
-
-// tested
-void i2c_read(uint8_t *data, uint_fast8_t ack_type)
-{ 
-	uint_fast8_t twi_status; 
-	//char r_val = -1; 
-
-	if (ack_type == I2C_READ_ACK || ack_type == I2C_READ_ACK_1) 
-	{ 
-		// Read I2C Data and Send Acknowledge 
-		twi_status = i2c_transmit(I2C_DATA_ACK); 
-
-		if (twi_status != TW_MR_DATA_ACK) 
-			goto i2c_quit; 
-		// Get the Data 
-		* data = TWDR; 
-		//r_val=0; 
-	} else if (ack_type == I2C_READ_ACK_NACK) { 
-		// чтение первого и единственного байта по I2C
-		// Read I2C Data and Send No Acknowledge 
-		twi_status = i2c_transmit(I2C_DATA); 
-		// Get the Data 
-		* data = TWDR; 
-		//r_val=0; 
-
-		//if (twi_status != TW_MR_DATA_NACK) 
-		//	goto i2c_quit; 
-		////twi_status = i2c_transmit(I2C_STOP); 
-
-		//if (twi_status != TW_MR_DATA_NACK) 
-		//	goto i2c_quit; 
-	} else { 
-		// Read I2C Data and Send No Acknowledge 
-		twi_status = i2c_transmit(I2C_DATA); 
-
-		if (twi_status != TW_MR_DATA_NACK) 
-			goto i2c_quit; 
-		// Get the Data 
-		* data = TWDR; 
-		//r_val=0; 
-	} 
-
-
-
-
-i2c_quit: 
-	return ;//r_val; 
-} 
-
-
-#elif CPUSTYLE_AT91SAM7S
-
-// On ARM machines
-
-/* char */ void i2c_start(
-	uint_fast8_t address
-	) 
-{
-	if (address & 0x01)
-	{	
-		AT91C_BASE_TWI->TWI_MMR = AT91C_TWI_IADRSZ_NO | (AT91C_TWI_DADR & (address << 15)) | AT91C_TWI_MREAD;
-	}
-	else
-	{
-		AT91C_BASE_TWI->TWI_MMR = AT91C_TWI_IADRSZ_NO | (AT91C_TWI_DADR & (address << 15));
-	}
-}
-
-// Вызвать после последнего i2c_write()
-void i2c_waitsend(void)
-{
-
-}
-
-void i2c_stop(void)
-{
-	
-    AT91C_BASE_TWI->TWI_CR = AT91C_TWI_STOP;
-	unsigned w = 255;
-	while (w -- && (AT91C_BASE_TWI->TWI_SR & AT91C_TWI_TXCOMP) == 0)
-		local_delay_us(1);
-
-}
-
-/* char */ void i2c_write(
-	uint_fast8_t byte
-	)
-{
-	unsigned w = 255;
-	while (w -- && (AT91C_BASE_TWI->TWI_SR & AT91C_TWI_TXRDY) == 0)
-		local_delay_us(1);
-    AT91C_BASE_TWI->TWI_THR = byte;
-
-	//return 0;
-}
-	
-// запись, после чего restart
-/* char */ void i2c_write_withrestartX(const i2cp_t * p, uint_fast8_t data)
-{
-	i2c_writeX(p, data);
-	i2c_waitsendX(p);
-	
-}
-
-void i2c_readX(const i2cp_t * p, uint8_t *data, uint_fast8_t ack_type)
-{
-	switch (ack_type)
-	{
-	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
-		{
-			// Чтение единственного (первого и последнего) байта.
-			AT91C_BASE_TWI->TWI_CR = AT91C_TWI_START | AT91C_TWI_STOP;
-			// Дождаться окончания перехода в состояние STOP
-			unsigned w = 255;
-			while (w -- && (AT91C_BASE_TWI->TWI_SR & AT91C_TWI_TXCOMP) == 0)	
-				local_delay_us(1);
-			* data = AT91C_BASE_TWI->TWI_RHR;
-		}
-		break;
-
-	case I2C_READ_NACK:
-		{
-			// Чтение последнего байта.
-			// Дождаться окончания перехода в состояние STOP
-			AT91C_BASE_TWI->TWI_CR = AT91C_TWI_STOP;
-			unsigned w = 255;
-			while ( w -- && (AT91C_BASE_TWI->TWI_SR & AT91C_TWI_TXCOMP) == 0)
-				local_delay_us(1);
-			* data = AT91C_BASE_TWI->TWI_RHR;
-		}
-		break;
-
-	case I2C_READ_ACK_1:
-			AT91C_BASE_TWI->TWI_CR = AT91C_TWI_START;
-	case I2C_READ_ACK:
-		{
-			// первый и последующие байты в последовательном чтении.
-			unsigned w = 255;
-			while (w -- && (AT91C_BASE_TWI->TWI_SR & AT91C_TWI_RXRDY) == 0)
-				local_delay_us(1);
-			* data = AT91C_BASE_TWI->TWI_RHR;
-		}
-		break;
-
-	}
-	return ;//0;
-}
-
-
-void i2c_initialize(void)
-{
-	const i2cp_t * const p1 = & i2cp_1;
-	const i2cp_t * const p2 = & i2cp_2;
-	TWISOFT_INITIALIZE();
-	i2c_softbusrelease();
-
-    // Configure clock
-	hardware_twi_master_configure();
-#if WITHTWIHW
-	TWIHARD_INITIALIZE();
-#endif
-}
-
-#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
+#if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
 
 /** 
@@ -1370,8 +986,9 @@ void i2c_initialize(void)
 
 #elif (CPUSTYLE_XC7Z) && WITHTWIHW
 
-#include "xc7z_inc.h"
 static XIicPs xc7z_iicps;
+
+void hardware_twi_master_configure(void) {}
 
 void hardware_iicps_configure(void)
 {
@@ -1501,7 +1118,7 @@ enum {
 };
 
 struct i2c_msg_t {
-	int addr;
+	int addr7;
 	int len;
 	void * buf;
 };
@@ -1515,7 +1132,8 @@ static void t113_i2c_set_rate(TWI_TypeDef * twi, uint_fast32_t rate, uint_fast32
 {
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(pclk, rate * 10), 4, (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1), & value, 1);
-	//PRINTF("t113_i2c_set_rate: M=%d, N=%d\n", value, prei);
+//	PRINTF("t113_i2c_set_rate: twi->TWI_CCR=0x%08X\n", (unsigned) twi->TWI_CCR);
+//	PRINTF("t113_i2c_set_rate: M=%d, N=%d\n", value, prei);
 
 	twi->TWI_CCR =
 		0*(UINT32_C(1) << 7) | // CLK_DUTY : 50%
@@ -1524,67 +1142,47 @@ static void t113_i2c_set_rate(TWI_TypeDef * twi, uint_fast32_t rate, uint_fast32
 		0;
 }
 
-//const uint32_t timeout1;
+#define TWI_CNTR_M_STA (UINT32_C(1) << 5)
+#define TWI_CNTR_M_STP (UINT32_C(1) << 4)
+#define TWI_CNTR_INT_FLAG (UINT32_C(1) << 3)
 
-static int t113_i2c_wait_status(TWI_TypeDef * twi){
-	const uint32_t timeout = sys_now()+5*10;	//sys_now()+5мс
-	do {
-		if ((twi->TWI_CNTR & (1 << 3))){	// INT_FLAG
-			unsigned int stat = twi->TWI_STAT;
-			//PRINTF("t113_i2c_wait_status1 = 0x%02X\n", stat);
-			return stat;
-		}
-	} while (sys_now()<timeout);
+#define TWI_tout 	5	// 5 ms
 
-	//I2C_ERROR_COUNT++;
-	// PRINTF("t113_i2c_wait_status = I2C_STAT_BUS_ERROR\n");
-	return I2C_STAT_BUS_ERROR;
+static int twi_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS)
+{
+	return local_wait32mask(flag, mask, state, timeMS);
 }
 
-static int t113_i2c_start(TWI_TypeDef * twi){
+static int t113_i2c_wait_status(TWI_TypeDef * twi)
+{
+	if (twi_wait32mask(& twi->TWI_CNTR, TWI_CNTR_INT_FLAG, TWI_CNTR_INT_FLAG, TWI_tout))	// INT_FLAG
+		return I2C_STAT_BUS_ERROR;
+	return twi->TWI_STAT;
+}
+
+static int t113_i2c_start(TWI_TypeDef * twi)
+{
 	//PRINTF("I2C start\n");
-	twi->TWI_CNTR |= (1u << 5) | (1u << 3);	// M_STA INT_FLAG
-	const uint32_t timeout = sys_now()+5*100;	//sys_now()+5мс
-	do {
-		if (!(twi->TWI_CNTR & (1 << 5)))	// M_STA
-		{
-			//PRINTF("I2C start ok\n");
-			return t113_i2c_wait_status(twi);
-		}
-	} while (sys_now()<timeout);
-	//PRINTF("I2C start out\n");
-	return t113_i2c_wait_status(twi);
+	twi->TWI_CNTR |= TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG;	// M_STA INT_FLAG
+	if (twi_wait32mask(& twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout))
+		return I2C_STAT_BUS_ERROR;
+	return twi->TWI_STAT;
 }
 
-static int t113_i2c_stop(TWI_TypeDef * twi){
-	uint32_t val;
-
-	val = twi->TWI_CNTR;
-	val |= (1 << 4) | (1 << 3);	// M_STP INT_FLAG
-	twi->TWI_CNTR = val;
-	const uint32_t timeout = sys_now()+5*10;
-	do {
-		if (!(twi->TWI_CNTR & (1 << 4)))	// M_STP
-		{
-			return 0;
-		}
-	} while (sys_now()<timeout);
-	return 1;
+static int t113_i2c_stop(TWI_TypeDef * twi)
+{
+	twi->TWI_CNTR |= TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG;	// M_STP INT_FLAG
+	if (twi_wait32mask(& twi->TWI_CNTR, TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, TWI_tout))
+		return I2C_STAT_BUS_ERROR;
+	return twi->TWI_STAT;
 }
 
 static int t113_i2c_restart(TWI_TypeDef * twi){
 	//PRINTF("I2C start\n");
-	twi->TWI_CNTR |= (1u << 5) | (1u << 3);	// M_STA INT_FLAG
-	const uint32_t timeout = sys_now()+5*100;	//sys_now()+5мс
-	do {
-		if (!(twi->TWI_CNTR & (1 << 5)))	// M_STA
-		{
-			//PRINTF("I2C start ok\n");
-			return t113_i2c_wait_status(twi);
-		}
-	} while (sys_now()<timeout);
-	//PRINTF("I2C start out\n");
-	return t113_i2c_wait_status(twi);
+	twi->TWI_CNTR |= TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG;	// M_STA INT_FLAG
+	if (twi_wait32mask(& twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout))
+		return I2C_STAT_BUS_ERROR;
+	return twi->TWI_STAT;
 }
 
 static int t113_i2c_send_data(TWI_TypeDef * twi, uint8_t dat)
@@ -1599,7 +1197,7 @@ static int t113_i2c_read(TWI_TypeDef * twi, struct i2c_msg_t * msg){
 	uint8_t * p = msg->buf;
 	int len = msg->len;
 
-	if (t113_i2c_send_data(twi, (uint8_t)((msg->addr << 1) | 1)) != I2C_STAT_TX_AR_ACK)
+	if (t113_i2c_send_data(twi, (uint8_t)((msg->addr7 << 1) | 1)) != I2C_STAT_TX_AR_ACK)
 		return -1;
 	if (len == 0)	/* Handle zero count for probes */
 		return 0;
@@ -1625,7 +1223,7 @@ static int t113_i2c_write(TWI_TypeDef * twi, struct i2c_msg_t * msg)
 	uint8_t * p = msg->buf;
 	int len = msg->len;
 
-	if (t113_i2c_send_data(twi, (uint8_t)(msg->addr << 1)) != I2C_STAT_TX_AW_ACK){
+	if (t113_i2c_send_data(twi, (uint8_t)(msg->addr7 << 1)) != I2C_STAT_TX_AW_ACK){
 		return -1;
 	}
 	if (len == 0)	/* Handle zero count for probes */
@@ -1783,7 +1381,7 @@ int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint
 {
 	int res;
 	struct i2c_msg_t  msgs;
-	msgs.addr = slave_address8b >> 1;
+	msgs.addr7 = slave_address8b >> 1;
 	msgs.len = size;
 	msgs.buf = (void *) buf;
 
@@ -1813,7 +1411,7 @@ int i2chwx_write(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * bu
 {
 	int res;
 	struct i2c_msg_t  msgs;
-	msgs.addr = slave_address8b >> 1;
+	msgs.addr7 = slave_address8b >> 1;
 	msgs.len = size;
 	msgs.buf = (void *) buf;
 
@@ -1843,7 +1441,7 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 {
 	int res;
 	struct i2c_msg_t  msgs;
-	msgs.addr = slave_address8b >> 1;
+	msgs.addr7 = slave_address8b >> 1;
 	msgs.len = wsize;
 	msgs.buf = (void *) wbuf;
 
@@ -1888,7 +1486,7 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 	return 0;
 }
 
-void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq)
+void i2chwx_initialize(TWI_t * twi, unsigned TWIx, uint_fast32_t busfreq, uint_fast32_t sclfreq)
 {
 #if CPUSTYLE_ALLWINNER
 	if (0)
@@ -1896,6 +1494,7 @@ void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq
 
 	}
 #if defined (S_TWI0) && defined (PRCM)
+	// T507, H6161, H618, A133
 	else if (twi == S_TWI0)
 	{
 		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
@@ -1904,6 +1503,7 @@ void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq
 	}
 #endif /* defined (S_TWI0) */
 #if defined (S_TWI1) && defined (PRCM)
+	// A133
 	else if (twi == S_TWI1)
 	{
 		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 1);	// Open the clock gate
@@ -1911,20 +1511,47 @@ void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq
 		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 17);	// De-assert reset
 	}
 #endif /* defined (S_TWI1) */
-#if defined (R_TWI) && defined (PRCM)
+#if defined (S_TWI2) && defined (PRCM)
+	// A133
+	else if (twi == S_TWI2)
+	{
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 2);	// Open the clock gate
+		PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 18);	// Assert reset
+		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 18);	// De-assert reset
+	}
+#endif /* defined (S_TWI1) */
+#if CPUSTYLE_A733
+	else if (twi == S_TWI0)
+	{
+		S_PRCM->S_TWI_BGR_REG |= (UINT32_C(1) << (TWIx + 0));	// Open the clock gate
+		S_PRCM->S_TWI_BGR_REG &= ~ (UINT32_C(1) << (TWIx + 16));	// Assert reset
+		S_PRCM->S_TWI_BGR_REG |= (UINT32_C(1) << (TWIx + 16));	// De-assert reset
+	}
+	else if (twi == S_TWI1)
+	{
+		S_PRCM->S_TWI_BGR_REG |= (UINT32_C(1) << (TWIx + 0));	// Open the clock gate
+		S_PRCM->S_TWI_BGR_REG &= ~ (UINT32_C(1) << (TWIx + 16));	// Assert reset
+		S_PRCM->S_TWI_BGR_REG |= (UINT32_C(1) << (TWIx + 16));	// De-assert reset
+	}
+	else if (twi == S_TWI2)
+	{
+		S_PRCM->S_TWI_BGR_REG |= (UINT32_C(1) << (TWIx + 0));	// Open the clock gate
+		S_PRCM->S_TWI_BGR_REG &= ~ (UINT32_C(1) << (TWIx + 16));	// Assert reset
+		S_PRCM->S_TWI_BGR_REG |= (UINT32_C(1) << (TWIx + 16));	// De-assert reset
+	}
+#elif CPUSTYLE_A64
 	// A64
 	else if (twi == R_TWI)
 	{
-		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
-		PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
-		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
+		// https://github.com/torvalds/linux/blob/d4560686726f7a357922f300fc81f5964be8df04/drivers/clk/sunxi-ng/ccu-sun8i-r.c#L62
+
+		R_PRCM->APB0_CLK_GATING_REG |= (UINT32_C(1) << 6);	// R_TWI Open the clock gate
+		R_PRCM->APB0_SOFT_RST_REG &= ~ (UINT32_C(1) << 6);	// Assert R_TWI reset
+		R_PRCM->APB0_SOFT_RST_REG |= (UINT32_C(1) << 6);	// De-assert R_TWI reset
 	}
-#endif /* defined (S_TWI0) */
-#if CPUSTYLE_A64
 	else
 	{
 
-		const unsigned TWIx = TWIHARD_IX;
 		CCU->BUS_CLK_GATING_REG3 |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
 		CCU->BUS_SOFT_RST_REG4 &= ~ (UINT32_C(1) << (0 + TWIx));	// Assert reset
 		CCU->BUS_SOFT_RST_REG4 |= UINT32_C(1) << (0 + TWIx);	// De-assert reset
@@ -1932,12 +1559,12 @@ void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq
 #else
 	else
 	{
-		const unsigned TWIx = TWIHARD_IX;
 		CCU->TWI_BGR_REG |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
 		CCU->TWI_BGR_REG &= ~ (UINT32_C(1) << (16 + TWIx));	// Assert reset
 		CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
 	}
 #endif
+
 	t113_i2c_set_rate(twi, sclfreq, busfreq);
 
 	twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
@@ -1947,6 +1574,16 @@ void i2chwx_initialize(TWI_t * twi, uint_fast32_t busfreq, uint_fast32_t sclfreq
 		;
 
 	t113_i2c_stop(twi);
+
+#elif CPUSTYLE_STM32MP1
+
+#elif CPUSTYLE_STM32H7XX
+
+#elif CPUSTYLE_STM32F
+
+#elif CPUSTYLE_RK356X
+
+#elif CPUSTYLE_R7S721
 
 #endif
 }
@@ -1958,49 +1595,62 @@ void i2c_initialize(void)
 	i2c_softbusrelease();
 #endif
 
+#if defined (TWIHARD_PTR) && defined (TWIHARD_INITIALIZE)
+	#warning Change cpuconfix_xxx wint specialized initialization
 	hardware_twi_master_configure();
-
-#if defined (TWIHARD_PTR)
 	TWIHARD_INITIALIZE();
 	t113_i2c_stop(TWIHARD_PTR);
 #endif /* defined (TWIHARD_PTR) */
 
-#if defined (TWIHARD2_PTR)
+#if defined (TWIHARD2_PTR) && defined (TWIHARD2_INITIALIZE)
+	#warning Change cpuconfix_xxx wint specialized initialization
+	hardware_twi_master_configure();
 	TWIHARD2_INITIALIZE();
 	t113_i2c_stop(TWIHARD2_PTR);
 #endif /* defined (TWIHARD2_PTR) */
 
+	// Specialized inits
 #if WITHSTWI0HW
-	i2chwx_initialize(TWIHARD_S_PTR, TWIHARD_FREQ, 400000);
+	i2chwx_initialize(S_TWI0, 0, TWIHARD_S_TWI0_FREQ, 400000);
 	HARDWARE_S_TWI0_INITIALIZE();
 #endif
 
+#if WITHSTWIHW
+	i2chwx_initialize(R_TWI, 0, TWIHARD_S_TWI_FREQ, 400000);
+	HARDWARE_S_TWI_INITIALIZE();
+#endif
+
+#if WITHSTWI1HW
+	i2chwx_initialize(S_TWI1, 1, TWIHARD_S_TWI1_FREQ, 400000);
+	HARDWARE_S_TWI1_INITIALIZE();
+#endif
+
 #if WITHTWI0HW
-	i2chwx_initialize(TWIBASENAME(0), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(0), 0, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI0_INITIALIZE();
 #endif
 #if WITHTWI1HW
-	i2chwx_initialize(TWIBASENAME(1), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(1), 1, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI1_INITIALIZE();
 #endif
 #if WITHTWI2HW
-	i2chwx_initialize(TWIBASENAME(2), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(2), 2, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI2_INITIALIZE();
 #endif
 #if WITHTWI3HW
-	i2chwx_initialize(TWIBASENAME(3), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(3), 3, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI3_INITIALIZE();
 #endif
 #if WITHTWI4HW
-	i2chwx_initialize(TWIBASENAME(4), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(4), 4, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI4_INITIALIZE();
 #endif
 #if WITHTWI5HW
-	i2chwx_initialize(TWIBASENAME(5), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(5), 5, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI5_INITIALIZE();
 #endif
 #if WITHTWI6HW
-	i2chwx_initialize(TWIBASENAME(6), TWIHARD_FREQ, 400000);
+	i2chwx_initialize(TWIBASENAME(6), 6, TWIHARD_FREQ, 400000);
 	HARDWARE_TWI6_INITIALIZE();
 #endif
 
@@ -2013,13 +1663,56 @@ void i2c_initialize(void)
 #else
 	#error I2C hardware implementation for CPUSTYLE_xxx is not avaliable
 
-#endif // CPUSTYLE_ATMEGA
+#endif
 
 #endif
 
 #if WITHTWISW
 
 // программно-реализованный I2C интерфейс
+#if defined (TWISOFT_INITIALIZE)
+
+static void i2c_softbusrelease(void)
+{
+	uint_fast8_t i;
+	// release I2C bus
+	CLR_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR_TWCK();
+		SET_TWCK();
+	}
+	SET_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR_TWCK();
+		SET_TWCK();
+	}
+}
+
+#endif /* defined (TWISOFT_INITIALIZE) */
+
+#if defined (TWISOFT2_INITIALIZE)
+
+static void i2c2_softbusrelease(void)
+{
+	uint_fast8_t i;
+	// release I2C bus
+	CLR2_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR2_TWCK();
+		SET2_TWCK();
+	}
+	SET2_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR2_TWCK();
+		SET2_TWCK();
+	}
+}
+
+#endif /* defined (TWISOFT2_INITIALIZE) */
 
 //you'll need to change for a different processor.
 
@@ -2039,7 +1732,7 @@ void i2c_initialize(void)
 	// программирование выводов, управляющих I2C
 	TWISOFT_INITIALIZE();
 
-#if 0
+#if 1
 	i2c_softbusrelease();
 
 #endif
@@ -2062,6 +1755,7 @@ void i2c_initialize(void)
 #endif /* WITHTWIHW */
 }
 
+#ifdef TWISOFT_INITIALIZE
 
 //The following 4 functions provide the primitive start, stop, read and write sequences. 
 // All I2C transactions can be built up from these.
@@ -2191,6 +1885,8 @@ void i2c_writeX(const i2cp_t * p, uint_fast8_t d)
 	i2c_waitsendX(p);
 }
 
+#endif /* TWISOFT_INITIALIZE */
+
 #ifdef TWISOFT2_INITIALIZE
 
 
@@ -2199,9 +1895,8 @@ void i2c_writeX(const i2cp_t * p, uint_fast8_t d)
 
 // i2c start bit sequence
 // negative edge on SD while SCL is HIGH
-void i2c2_start(uint_fast8_t address)
+void i2c2_startX(const i2cp_t * p, uint_fast8_t address)
 {
-
 	SET2_TWD();	//SDA = 1;
 	i2c_delay(p);
 	SET2_TWCK();	//SCL = 1;
@@ -2216,13 +1911,13 @@ void i2c2_start(uint_fast8_t address)
 }
 
 // Вызвать после последнего i2c_write()
-void i2c2_waitsend(void)
+void i2c2_waitsendX(const i2cp_t * p)
 {
 
 }
 
 // i2c stop bit sequence
-void i2c2_stop(void)
+void i2c2_stopX(const i2cp_t * p)
 {
 	CLR2_TWD();//SDA = 0;
 	i2c_delay(p);
@@ -2233,7 +1928,7 @@ void i2c2_stop(void)
 
 }
 
-void i2c2_read(uint8_t *data, uint_fast8_t ack_type)
+void i2c2_readX(const i2cp_t * p, uint8_t *data, uint_fast8_t ack_type)
 {
 	char x, d=0;
 	SET2_TWD();
@@ -2275,7 +1970,7 @@ void i2c2_read(uint8_t *data, uint_fast8_t ack_type)
 	//return 0;
 }
 
-void i2c2_write(uint_fast8_t d)
+void i2c2_writeX(const i2cp_t * p, uint_fast8_t d)
 {
 	uint_fast8_t x;
 	//char b;
@@ -2316,7 +2011,7 @@ void i2c2_write(uint_fast8_t d)
 }
 
 // запись, после чего restart
-/* char */ void i2c2_write_withrestart(uint_fast8_t data)
+/* char */ void i2c2_write_withrestartX(const i2cp_t * p, uint_fast8_t data)
 {
 	i2c2_write(data);
 	i2c2_waitsend();
@@ -2326,345 +2021,6 @@ void i2c2_write(uint_fast8_t d)
 #endif /* WITHTWISW */
 
 #endif /* WITHTWIHW || WITHTWISW */
-
-#if WITHTWIHW
-
-void hardware_twi_master_configure(void)
-{
-#if CPUSTYLE_ATMEGA
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, SCL_CLOCK * 2) - 8, ATMEGA_TWBR_WIDTH, ATMEGA_TWBR_TAPS, & value, 0);
-
-	TWSR = prei; 	/* prescaler */
-	TWBR = value;
-	TWCR = (1U << TWEN);
-
-#elif CPUSTYLE_AT91SAM7S
-
-	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_TWI) | (1UL << AT91C_ID_PIOA);
-	//
-    // Reset the TWI
-    AT91C_BASE_TWI->TWI_CR = AT91C_TWI_SWRST;
-    (void) AT91C_BASE_TWI->TWI_RHR;
-
-    // Set master mode
-    AT91C_BASE_TWI->TWI_CR = AT91C_TWI_MSEN;
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, SCL_CLOCK * 2) - 3, AT91SAM7_TWI_WIDTH, AT91SAM7_TWI_TAPS, & value, 0);
-
-    AT91C_BASE_TWI->TWI_CWGR = (prei << 16) | (value << 8) | value;
-
-#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	PMC->PMC_PCER0 = (1UL << ID_TWI0);	 // разрешить тактированние этого блока
-	//
-    // Reset the TWI
-    TWI0->TWI_CR = TWI_CR_SWRST;
-    (void) TWI0->TWI_RHR;
-
-    // Set master mode
-    TWI0->TWI_CR = TWI_CR_MSEN;
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, SCL_CLOCK * 2) - 4, ATSAM3S_TWI_WIDTH, ATSAM3S_TWI_TAPS, & value, 1);
-	//prei = 0;
-	//value = 70;
-    TWI0->TWI_CWGR = TWI_CWGR_CKDIV(prei) | TWI_CWGR_CHDIV(value) | TWI_CWGR_CLDIV(value);
-
-#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
-
-	//конфигурирую непосредствено I2С
-	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
-	(void) RCC->APB1ENR;
-
-	I2C1->CR1 |= I2C_CR1_SWRST;
-	I2C1->CR1 &= ~ I2C_CR1_SWRST;
-	I2C1->CR1 &= ~ I2C_CR1_PE; // все конфигурации необходимо проводить только со сброшеным битом PE
-
-/*
-	The FREQ bits must be configured with the APB clock frequency value (I2C peripheral
-	connected to APB). The FREQ field is used by the peripheral to generate data setup and
-	hold times compliant with the I2C specifications. The minimum allowed frequency is 2 MHz,
-	the maximum frequency is limited by the maximum APB frequency (42 MHz) and an intrinsic
-	limitation of 46 MHz.
-
-*/
-
-	I2C1->CR2 = (I2C1->CR2 & ~ (I2C_CR2_FREQ)) |
-		((I2C_CR2_FREQ_0 * 42) & I2C_CR2_FREQ) |
-		0;
-	// (1000 ns / 125 ns = 8 + 1)
-	// (1000 ns / 22 ns = 45 + 1)
-	I2C1->TRISE = 46; //время установления логического уровня в количестве цыклах тактового генератора I2C
-
-	I2C1->CCR = (I2C1->CCR & ~ (I2C_CCR_CCR | I2C_CCR_FS | I2C_CCR_DUTY)) |
-		(calcdivround2(BOARD_I2C_FREQ, SCL_CLOCK * 25) & I2C_CCR_CCR) |	// Делитель для получения 10 МГц (400 кHz * 25)
-	#if SCL_CLOCK == 400000UL
-		I2C_CCR_FS |
-		I2C_CCR_DUTY | // T high = 9 * CCR * TPCLK1, T low = 16 * CCR * TPCLK1: full cycle = 25 * CCR * TPCLK1
-	#endif /* SCL_CLOCK == 400000UL */
-		0;
-
-	I2C1->CR1 |= I2C_CR1_ACK | I2C_CR1_PE; // включаю тактирование переферии I2С
-
-#elif CPUSTYLE_STM32F7XX
-	//конфигурирую непосредствено I2С
-	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
-	(void) RCC->APB1ENR;
-
-	// Disable the I2Cx peripheral
-	I2C1->CR1 &= ~ I2C_CR1_PE;
-	while ((I2C1->CR1 & I2C_CR1_PE) != 0)
-		;
-
-	// Set timings. Asuming I2CCLK is 50 MHz (APB1 clock source)
-	I2C1->TIMINGR =
-		//0x00912732 |		// Discovery BSP code from ST examples
-		0x00913742 |		// подобрано для 400 кГц
-		4 * (1uL << I2C_TIMINGR_PRESC_Pos) |			// prescaler, was: 0
-		0;
-
-
-
-	// Use 7-bit addresses
-	I2C1->CR2 &= ~ I2C_CR2_ADD10;
-
-	// Enable auto-end mode
-	//I2C1->CR2 |= I2C_CR2_AUTOEND;
-
-	// Disable the analog filter
-	I2C1->CR1 |= I2C_CR1_ANFOFF;
-
-	// Disable NOSTRETCH
-	I2C1->CR1 |= I2C_CR1_NOSTRETCH;
-
-	// Enable the I2Cx peripheral
-	I2C1->CR1 |= I2C_CR1_PE;
-
-#elif CPUSTYLE_STM32H7XX
-	//конфигурирую непосредствено I2С
-	RCC->APB1LENR |= (RCC_APB1LENR_I2C1EN); //вкл тактирование контроллера I2C
-	(void) RCC->APB1LENR;
-
-	// Disable the I2Cx peripheral
-	I2C1->CR1 &= ~ I2C_CR1_PE;
-	while ((I2C1->CR1 & I2C_CR1_PE) != 0)
-		;
-
-	// Set timings. Asuming I2CCLK is 50 MHz (APB1 clock source)
-	I2C1->TIMINGR =
-		//0x00912732 |		// Discovery BSP code from ST examples
-		0x00913742 |		// подобрано для 400 кГц
-		4 * (1uL << I2C_TIMINGR_PRESC_Pos) |			// prescaler, was: 0
-		0;
-
-
-
-	// Use 7-bit addresses
-	I2C1->CR2 &= ~ I2C_CR2_ADD10;
-
-	// Enable auto-end mode
-	//I2C1->CR2 |= I2C_CR2_AUTOEND;
-
-	// Disable the analog filter
-	I2C1->CR1 |= I2C_CR1_ANFOFF;
-
-	// Disable NOSTRETCH
-	I2C1->CR1 |= I2C_CR1_NOSTRETCH;
-
-	// Enable the I2Cx peripheral
-	I2C1->CR1 |= I2C_CR1_PE;
-
-#elif LINUX_SUBSYSTEM
-
-#elif CPUSTYLE_XC7Z
-
-	unsigned iicix = XPAR_XIICPS_0_DEVICE_ID;
-	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (UINT32_C(1) << (18 + iicix));	// APER_CLK_CTRL.I2C0_CPU_1XCLKACT
-
-#elif CPUSTYLE_A64
-
-	const uint_fast32_t sclfreq = 400000;
-
-#if defined (TWIHARD_PTR)
-	{
-		TWI_TypeDef * const twi = TWIHARD_PTR;
-		if (0)
-		{
-
-		}
-	#if defined (R_TWI)
-		else if (twi == R_TWI)
-		{
-			// https://github.com/torvalds/linux/blob/d4560686726f7a357922f300fc81f5964be8df04/drivers/clk/sunxi-ng/ccu-sun8i-r.c#L62
-
-			R_PRCM->APB0_CLK_GATING_REG |= (UINT32_C(1) << 6);	// R_TWI Open the clock gate
-			R_PRCM->APB0_SOFT_RST_REG &= ~ (UINT32_C(1) << 6);	// Assert R_TWI reset
-			R_PRCM->APB0_SOFT_RST_REG |= (UINT32_C(1) << 6);	// De-assert R_TWI reset
-		}
-	#endif /* defined (R_TWI) */
-		else
-		{
-			const unsigned TWIx = TWIHARD_IX;
-			CCU->BUS_CLK_GATING_REG3 |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
-			CCU->BUS_SOFT_RST_REG4 &= ~ (UINT32_C(1) << (0 + TWIx));	// Assert reset
-			CCU->BUS_SOFT_RST_REG4 |= UINT32_C(1) << (0 + TWIx);	// De-assert reset
-		}
-
-		t113_i2c_set_rate(twi, sclfreq, TWIHARD_FREQ);
-
-		twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
-
-		twi->TWI_SRST |= UINT32_C(1) << 0;
-		while ((twi->TWI_SRST & (UINT32_C(1) << 0)) != 0)
-			;
-	}
-#endif /* defined (TWIHARD_PTR) */
-
-#if defined (TWIHARD2_PTR)
-	{
-		TWI_TypeDef * const twi = TWIHARD2_PTR;
-		if (0)
-		{
-
-		}
-	#if defined (R_TWI)
-		else if (twi == R_TWI)
-		{
-			// https://github.com/torvalds/linux/blob/d4560686726f7a357922f300fc81f5964be8df04/drivers/clk/sunxi-ng/ccu-sun8i-r.c#L62
-
-			R_PRCM->APB0_CLK_GATING_REG |= (UINT32_C(1) << 6);	// R_TWI Open the clock gate
-			R_PRCM->APB0_SOFT_RST_REG &= ~ (UINT32_C(1) << 6);	// Assert R_TWI reset
-			R_PRCM->APB0_SOFT_RST_REG |= (UINT32_C(1) << 6);	// De-assert R_TWI reset
-		}
-	#endif /* defined (R_TWI) */
-		else
-		{
-			const unsigned TWIx = TWIHARD2_IX;
-			CCU->BUS_CLK_GATING_REG3 |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
-			CCU->BUS_SOFT_RST_REG4 &= ~ (UINT32_C(1) << (0 + TWIx));	// Assert reset
-			CCU->BUS_SOFT_RST_REG4 |= UINT32_C(1) << (0 + TWIx);	// De-assert reset
-		}
-
-		t113_i2c_set_rate(twi, sclfreq, TWIHARD2_FREQ);
-
-		twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
-
-		twi->TWI_SRST |= UINT32_C(1) << 0;
-		while ((twi->TWI_SRST & (UINT32_C(1) << 0)) != 0)
-			;
-	}
-#endif /* defined (TWIHARD_PTR) */
-
-#elif CPUSTYLE_ALLWINNER
-
-	const uint_fast32_t sclfreq = 400000;
-
-#if defined (TWIHARD_S_PTR)
-	{
-		const unsigned TWIx = TWIHARD_S_IX;
-		TWI_TypeDef * const twi = TWIHARD_S_PTR;
-		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
-		PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
-		PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
-
-		t113_i2c_set_rate(twi, sclfreq, TWIHARD_S_FREQ);
-
-		twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
-
-		twi->TWI_SRST |= UINT32_C(1) << 0;
-		while ((twi->TWI_SRST & (UINT32_C(1) << 0)) != 0)
-			;
-	}
-#endif /* defined (TWIHARD_S_PTR) */
-
-#if defined (TWIHARD_PTR)
-	{
-		TWI_TypeDef * const twi = TWIHARD_PTR;
-		if (0)
-		{
-
-		}
-	#if defined (S_TWI0) && defined (PRCM)
-		else if (twi == S_TWI0)
-		{
-			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
-			PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
-			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
-		}
-	#endif /* defined (S_TWI0) */
-	#if defined (S_TWI1) && defined (PRCM)
-		else if (twi == S_TWI1)
-		{
-			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 1);	// Open the clock gate
-			PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 17);	// Assert reset
-			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 17);	// De-assert reset
-		}
-	#endif /* defined (S_TWI1) */
-		else
-		{
-			const unsigned TWIx = TWIHARD_IX;
-			CCU->TWI_BGR_REG |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
-			CCU->TWI_BGR_REG &= ~ (UINT32_C(1) << (16 + TWIx));	// Assert reset
-			CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
-		}
-
-		t113_i2c_set_rate(twi, sclfreq, TWIHARD_FREQ);
-
-		twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
-
-		twi->TWI_SRST |= UINT32_C(1) << 0;
-		while ((twi->TWI_SRST & (UINT32_C(1) << 0)) != 0)
-			;
-	}
-#endif /* defined (TWIHARD_PTR) */
-
-#if defined (TWIHARD2_PTR)
-	{
-		TWI_TypeDef * const twi = TWIHARD2_PTR;
-		if (0)
-		{
-
-		}
-	#if defined (S_TWI0)
-		else if (twi == S_TWI0)
-		{
-			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
-			PRCM->R_TWI_BGR_REG &= ~ (UINT32_C(1) << 16);	// Assert reset
-			PRCM->R_TWI_BGR_REG |= (UINT32_C(1) << 16);	// De-assert reset
-		}
-	#endif /* defined (S_TWI0) */
-		else
-		{
-			const unsigned TWIx = TWIHARD2_IX;
-			CCU->TWI_BGR_REG |= UINT32_C(1) << (0 + TWIx);	// Open the clock gate
-			CCU->TWI_BGR_REG &= ~ (UINT32_C(1) << (16 + TWIx));	// Assert reset
-			CCU->TWI_BGR_REG |= UINT32_C(1) << (16 + TWIx);	// De-assert reset
-		}
-
-		t113_i2c_set_rate(twi, sclfreq, TWIHARD2_FREQ);
-
-		twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
-
-		twi->TWI_SRST |= UINT32_C(1) << 0;
-		while ((twi->TWI_SRST & (UINT32_C(1) << 0)) != 0)
-			;
-	}
-#endif /* defined (TWIHARD_PTR) */
-
-#elif CPUSTYLE_ROCKCHIP
-	#warning Unimplemented CPUSTYLE_ROCKCHIP
-
-#else
-	#error Undefined CPUSTYLE_XXX
-#endif
-}
-
-#endif /* WITHTWIHW */
 
 #if (WITHTWISW) && ! LINUX_SUBSYSTEM
 

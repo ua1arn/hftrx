@@ -22,7 +22,7 @@
 
 #type; GPIOBLOCK; Port Controller
 #base; GPIOBLOCK 0x0300B000
-#base; GPIOBLOCK_L 0x01F02C00
+##base; GPIOBLOCK_L 0x01F02C00
 
 #aggreg; GPIO_PINS; 0x0000 9; GPIO pin control
 #regdef; CFG; 0x000 4; Configure Register

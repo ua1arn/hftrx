@@ -71,10 +71,12 @@
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	#define WITHIF4DSP	1			/*  "Дятел" */
-	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
-	#define WITHDSPLOCALTXFIR 1
+	#define WITHDSPEXTDDC 1				/* Квадратуры обрабатываются аппаратным DUC/DDC */
+	//#define WITHDSPEXTTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
+	#define WITHDSPEXTRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
+	#define WITHDSPLOCALTXFIR 1			/* Фильтрация квадратур на передаче осуществляется программно */
+	//#define WITHDSPLOCALRXFIR 1		/* Фильтрация квадратур на приёме осуществляется программно */
+
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
@@ -91,6 +93,7 @@
 	#define WITHAFSPECTRE			1		/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHFFTSIZEAF 			512		/* Отображение спектра НЧ сигнвлв */
 	#define WITHTOUCHGUI			1
+	#define GUI_USE_CACHE			1
 	#define WITHALTERNATIVEFONTS	1
 	#define WITHGUIDEBUG			1	/* вывод отладочной информации на экран по удержанию Break-In */
 	#define WITHAFSPECTRE			1	/* показ спктра прослушиваемого НЧ сигнала. */
@@ -120,7 +123,7 @@
 	#define WITHSWRSCAN				1
 	#define WITHREVERB				1
 
-	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
+	
 
 	#define WITHTX	1
 	#if WITHTX
@@ -136,7 +139,7 @@
 	//#define WITHBCBANDS		1		/* в таблице диапазонов присутствуют вещательные диапазоны */
 	//#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
 	
-	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
+	
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 
 	/* что за память настроек и частот используется в контроллере */

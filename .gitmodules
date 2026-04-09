@@ -25,3 +25,6 @@
 [submodule "lib/rt-thread"]
 	path = lib/rt-thread
 	url = https://github.com/RT-Thread/rt-thread.git
+[submodule "lib/simple-gui"]
+	path = lib/simple-gui
+	url = https://github.com/RA4ASN/Simple-GUI.git

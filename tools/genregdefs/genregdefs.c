@@ -22,6 +22,8 @@ static int flag_cortexm4 = 0;
 static int flag_cortexm7 = 0;
 static int flag_cortexa5x = 0;
 static const char *guardstring = "00003039";
+static const char *string_cortexa5x = "undefined.h";
+
 /* debug stuff */
 #if 0
 
@@ -43,6 +45,12 @@ struct defdfn
 	char *name;
 	char *value;
 	char *comment;
+};
+
+struct commendfn
+{
+	LIST_ENTRY item;
+	char *line;
 };
 
 enum regsccess
@@ -93,6 +101,7 @@ struct parsedfile
 	LIST_ENTRY item;
 	LIST_ENTRY regslist;
 	LIST_ENTRY defineslist;
+	LIST_ENTRY commentslist;
 
 	char bname[VNAME_MAX];
 	char *comment;
@@ -289,13 +298,35 @@ static const char * textbyacc(enum regsccess flag)
 	{
 	default:
 	case REGRW:
-		return "__IO";	/* read/write access */
+		return "__IOM";	/* read/write access */
 	case REGRO:
-		return "__I ";	/* read only access */
+		return "__IM ";	/* read only access */
 	case REGWO:
-		return "__O ";	/* write only access */
+		return "__OM ";	/* write only access */
 	}
 }
+
+static const char *const fldtypes[] =
+{
+	"uint0_t", "uint8_t ", "uint16_t", "uint24_t", "uint32_t",
+	"uint40_t", "uint48_t", "uint56_t", "uint64_t",
+};
+
+static const char *const fmttypes[] =
+{
+	"PRIX0", "PRIX8", "PRIX16", "PRIX24", "PRIX32",
+	"PRIX40", "PRIX48", "PRIX56", "PRIX64",
+};
+
+const char * getcastnamebysize(unsigned fldsize)
+{
+	return fldtypes [fldsize];
+}
+const char * const getformatnamebysize(unsigned fldsize)
+{
+	return fmttypes [fldsize];
+}
+
 /* Generate list of registers. Return last offset */
 unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 {
@@ -307,9 +338,6 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 	{
 		const struct regdfn *const regp = CONTAINING_RECORD(t, struct regdfn,
 				item);
-		static const char *fldtypes[] =
-		{ "uint32_t", "uint8_t ", "uint16_t", "uint24_t", "uint32_t",
-				"uint40_t", "uint48_t", "uint56_t", "uint64_t", };
 
 		char fldtype[VNAME_MAX];
 
@@ -327,7 +355,7 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 		else
 		{
 			_snprintf(fldtype, sizeof fldtype / sizeof fldtype[0], "%s",
-					fldtypes[regp->fldsize]);
+					getcastnamebysize(regp->fldsize));
 		}
 
 		if (regp->fldoffs > offs || regp->fldsize == 0)
@@ -362,7 +390,7 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 				emitline(indent + INDENT, "} %s [0x%03X];", regp->fldname,
 						regp->fldrept);
 				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
-						regp->fldoffs + baseoffset, regp->comment);
+						regp->fldoffs + baseoffset, regp->comment ? regp->comment : "");
 			}
 			else if (regp->fldsize != 0)
 			{
@@ -384,7 +412,7 @@ unsigned genreglist(int indent, const LIST_ENTRY *regslist, unsigned baseoffset)
 					offs += regp->fldsize;
 				}
 				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
-						regp->fldoffs + baseoffset, regp->comment);
+						regp->fldoffs + baseoffset, regp->comment ? regp->comment : "");
 			}
 		}
 		else
@@ -413,6 +441,19 @@ void gendefines(struct parsedfile *pfl)
 	}
 }
 
+void gencomments(struct parsedfile *pfl)
+{
+	LIST_ENTRY * const head = & pfl->commentslist;
+	LIST_ENTRY * t;
+	emitline(0, "/*\n");
+	for (t = head->Flink; t != head; t = t->Flink)
+	{
+		struct commendfn *const p = CONTAINING_RECORD(t, struct commendfn, item);
+		emitline(0, " * %s\n", p->line);
+	}
+	emitline(0, " */\n");
+}
+
 void genstruct(struct parsedfile *pfl)
 {
 	unsigned offs;
@@ -432,6 +473,18 @@ void genstruct(struct parsedfile *pfl)
 			offs);
 }
 
+void genstructprintcalls(struct parsedfile *pfl)
+{
+	int i;
+	for (i = 0; i < pfl->base_count; ++i)
+	{
+		const char * const objname = pfl->base_xnames[i];
+		emitline(INDENT,
+				"%s_Type_print(%s, \"%s\");\n",
+				pfl->bname, objname, objname);
+	}
+}
+
 void genstructprint(struct parsedfile *pfl)
 {
 	PLIST_ENTRY t;
@@ -448,16 +501,19 @@ void genstructprint(struct parsedfile *pfl)
 
 		if (p->fldsize != 0)
 		{
+			//const char * const castname = getcastnamebysize(p->fldsize);
+			const char * const formatname = getformatnamebysize(p->fldsize);
 			if (p->fldrept)
 			{
 				// Array forming
 				unsigned i;
-				for (i = 0; i < 4 && i < p->fldrept; ++i)
+				for (i = 0; i < 1024 && i < p->fldrept; ++i)
 				{
-					emitline(
-					INDENT,
-							"PRINTF(\"%%s->%s [%u] = 0x%%08X; /* 0x%%08X @ 0x%03X */\\n\", base, (unsigned) p->%s [%u], (unsigned) p->%s [%u]);",
-							p->fldname, i, p->fldoffs + i * p->fldsize, p->fldname, i, p->fldname, i);
+					emitline(INDENT,
+							"PRINTF(\"%%s->%s [%u] = 0x%%08\" %s \"; /* 0x%%08\" %s \" @ 0x%03X */\\n\", "
+							"base, p->%s [%u], p->%s [%u]);",
+							p->fldname, i, formatname, formatname, p->fldoffs + i * p->fldsize, p->fldname, i, p->fldname, i);
+
 					emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n",
 							p->fldoffs + i * p->fldsize, p->comment);
 				}
@@ -466,8 +522,8 @@ void genstructprint(struct parsedfile *pfl)
 			{
 				// Plain field
 				emitline(INDENT,
-						"PRINTF(\"%%s->%s = 0x%%08X; /* 0x%%08X @ 0x%03X */\\n\", base, (unsigned) p->%s, (unsigned) p->%s );",
-						p->fldname, p->fldoffs, p->fldname, p->fldname);
+						"PRINTF(\"%%s->%s = 0x%%08\" %s \"; /* 0x%%08\" %s \" @ 0x%03X */\\n\", base, p->%s, p->%s );",
+						p->fldname, formatname, formatname, p->fldoffs, p->fldname, p->fldname);
 				emitline(COMMENTPOS, "/*!< Offset 0x%03X %s */\n", p->fldoffs,
 						p->comment);
 			}
@@ -790,6 +846,17 @@ static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead)
 	}
 }
 
+// Peripherial block multi-line comments
+static void storecomments(struct parsedfile *pfl, const char * s)
+{
+	struct commendfn * const p = malloc(sizeof (struct commendfn));
+	if (p == NULL)
+		return;
+	p->line = strdup(s);
+	InsertTailList(& pfl->commentslist, & p->item);
+	//fprintf(stderr, "Parsed [%s]: typname='%s', comment='%s'\n", token0, typname, comment);
+}
+
 // 0 - end of file
 // 1 - register definition ok
 static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file)
@@ -835,10 +902,21 @@ static int parseregfile(struct parsedfile *pfl, FILE *fp, const char *file)
 	{
 		//fprintf(stderr, "0 token0=%s\n", token0);
 		memset(comment, 0, sizeof comment);
-		if (1 == sscanf(token0, "#comment; %1023[^\n]\n", comment))
+		if (0)
+		{
+
+		}
+		else if (1 == sscanf(token0, "#rem; %1023[^\n]\n", comment))
 		{
 			//fprintf(stderr, "Parsed comment='%s'\n", comment);
-			pfl->comment = strdup(comment);
+			storecomments(pfl, comment);
+			if (nextline(fp) == 0)
+				break;
+		}
+		else if (1 == sscanf(token0, "#comment; %1023[^\n]\n", comment))
+		{
+			//fprintf(stderr, "Parsed comment='%s'\n", comment);
+			storecomments(pfl, comment);
 			if (nextline(fp) == 0)
 				break;
 		}
@@ -952,6 +1030,7 @@ static int loadregs(struct parsedfile *pfl, FILE *fp, const char *file)
 
 	InitializeListHead(&pfl->regslist);
 	InitializeListHead(&pfl->defineslist);
+	InitializeListHead(&pfl->commentslist);
 
 	pfl->file = strdup(file);
 	pfl->comment = NULL;
@@ -1024,6 +1103,20 @@ static void freedefines(PLIST_ENTRY p)
 	}
 }
 
+/* release memory of comments */
+static void freecomments(PLIST_ENTRY p)
+{
+	PLIST_ENTRY t;
+	//fprintf(stderr, "Release memory\n");
+	for (t = p->Flink; t != p;)
+	{
+		struct commendfn *const defp = CONTAINING_RECORD(t, struct commendfn, item);
+		t = t->Flink;
+		free(defp->line);
+		free(defp);
+	}
+}
+
 static void freeregs(struct parsedfile *pfl)
 {
 	int i;
@@ -1045,6 +1138,7 @@ static void freeregs(struct parsedfile *pfl)
 	//free(pfl->sss);
 	freeregdfn(&pfl->regslist);
 	freedefines(&pfl->defineslist);
+	freecomments(&pfl->commentslist);
 	free(pfl->comment);
 	free(pfl->file);
 }
@@ -1165,14 +1259,13 @@ static void loadfile(const char *file)
 
 static void processfile_periphregs(struct parsedfile *pfl)
 {
-
 	if (!IsListEmpty(&pfl->regslist))
 	{
+		if (!IsListEmpty(&pfl->commentslist))
+		{
+			gencomments(pfl);
+		}
 		genstruct(pfl);
-	}
-	else
-	{
-		//fprintf(stderr, "#error No registers in '%s'\n", pfl->bname);
 	}
 }
 
@@ -1195,6 +1288,14 @@ static void processfile_periphregsdebug(struct parsedfile *pfl)
 	if (!IsListEmpty(&pfl->regslist))
 	{
 		genstructprint(pfl);
+	}
+}
+
+static void processfile_periphregsdebugcalls(struct parsedfile *pfl)
+{
+	if (!IsListEmpty(&pfl->regslist))
+	{
+		genstructprintcalls(pfl);
 	}
 }
 
@@ -1508,6 +1609,8 @@ static void generate_debug(void)
 	emitline(0, "#ifndef %s" "\n", headrname);
 	emitline(0, "#define %s" "\n", headrname);
 	emitline(0, "#ifdef PRINTF\n");
+	emitline(0, "#include <stdint.h>" "\n");
+	emitline(0, "#include <inttypes.h>" "\n");
 
 	/* structures */
 
@@ -1517,6 +1620,20 @@ static void generate_debug(void)
 				item);
 		processfile_periphregsdebug(pfl);
 	}
+
+	emitline(0,
+			"static void all_Type_print(const char * label)\n");
+	emitline(0, "{\n");
+	emitline(INDENT, "PRINTF(\"%%s\\n\", label);" "\n");
+	/* structures */
+	for (t = parsedfiles.Flink; t != &parsedfiles; t = t->Flink)
+	{
+		struct parsedfile *const pfl = CONTAINING_RECORD(t, struct parsedfile,
+				item);
+		processfile_periphregsdebugcalls(pfl);
+	}
+
+	emitline(0, "}\n");
 	emitline(0, "#endif /* PRINTF */\n");
 	emitline(0, "#endif /* %s */" "\n", headrname);
 
@@ -1723,8 +1840,8 @@ static void generate_cmsis(void)
 		}
 		else if (flag_cortexa5x)
 		{
-			emitline(0, "#if __aarch64__\n");
-			emitline(4, "#include <core64_ca.h>\n");
+			emitline(0, "#if defined(__aarch64__)\n");
+			emitline(4, "#include <%s>\n", string_cortexa5x);
 			emitline(0, "#else\n");
 			emitline(4, "#include <core_ca.h>\n");
 			emitline(0, "#endif\n");
@@ -1852,8 +1969,9 @@ int main(int argc, char *argv[], char *envp[])
 		else if (argc > 1 && strcmp(argv[1], "--cortexa5x") == 0)
 		{
 			flag_cortexa5x = 1;
-			--argc;
-			++argv;
+			string_cortexa5x = argv[2];
+			argc -= 2;
+			argv += 2;
 		}
 		else if (argc > 1 && strcmp(argv[1], "--debug") == 0)
 		{

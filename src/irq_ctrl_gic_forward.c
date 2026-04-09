@@ -6,6 +6,7 @@
 //
 
 #include "hardware.h"
+#include "formats.h"
 
 #if (__CORTEX_A != 0)
 
@@ -38,9 +39,10 @@
 #include "RTE_Components.h"
 #include CMSIS_device_header
 
-#include "a-profile/irq_ctrl.h"
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
+#include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
 /// Number of implemented interrupt lines
 #ifndef IRQ_GIC_LINE_COUNT
@@ -197,7 +199,7 @@ int32_t IRQ_SetMode (IRQn_ID_t irqn, uint32_t mode) {
 
       if (val != 0U) {
         // Security extensions are supported
-        secure = 1U;
+        secure = 1U;	// Group 0 (Secure) and Group 1 (Non-secure).
       } else {
         secure = 0U;
         status = -1;
@@ -218,9 +220,7 @@ int32_t IRQ_SetMode (IRQn_ID_t irqn, uint32_t mode) {
       GIC_SetConfiguration((IRQn_Type)irqn, cfg);
       GIC_SetTarget       ((IRQn_Type)irqn, cpu);
 
-      if (secure != 0U) {
-        GIC_SetGroup ((IRQn_Type)irqn, secure);
-      }
+      GIC_SetGroup ((IRQn_Type)irqn, secure);	// Group 0 (Secure) and Group 1 (Non-secure).
     }
   }
 
@@ -252,6 +252,8 @@ uint32_t IRQ_GetMode (IRQn_ID_t irqn) {
     }
     // Get interrupt CPU targets
     mode |= GIC_GetTarget ((IRQn_Type)irqn) << IRQ_MODE_CPU_Pos;
+
+    mode |= GIC_GetGroup((IRQn_Type)irqn) << IRQ_MODE_DOMAIN_Pos;
 
   } else {
     mode = IRQ_MODE_ERROR;
@@ -402,7 +404,7 @@ uint32_t IRQ_GetPriority (IRQn_ID_t irqn) {
 
 /// Set priority masking threshold.
 int32_t IRQ_SetPriorityMask (uint32_t priority) {
-  GIC_SetInterfacePriorityMask (GICInterface_PMR_Priority(priority));
+  GIC_SetInterfacePriorityMask (priority);
   return (0);
 }
 
@@ -443,4 +445,4 @@ uint32_t IRQ_GetPriorityGroupBits (void) {
 
 #endif
 
-#endif /* (__CORTEX_A != 0) && CPUSTYLE_ARM && (! defined(__aarch64__)) */
+#endif /* (__CORTEX_A != 0) */

@@ -5622,8 +5622,17 @@
    <register>
     <name>TV_CLK_SRC_RGB_SRC</name>
     <displayName>TV_CLK_SRC_RGB_SRC</displayName>
-    <description>TCON_TV Clock Select and RGB Source Select Register</description>
+    <description>tcon_tv_setup TCON_TV Clock Select and RGB Source Select Register</description>
     <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>dsi_src_select</name>
+    <displayName>dsi_src_select</displayName>
+    <description>dsi_src_select bit 4: dsi1_src_sel bit 0: dsi0_src_sel</description>
+    <addressOffset>0x004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -7813,7 +7822,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>G2D_TOP</name>
+  <name>G2D</name>
   <description>Graphic 2D top</description>
   <baseAddress>0x05410000</baseAddress>
   <interrupt>
@@ -7922,6 +7931,15 @@
     <resetValue>0x00000000</resetValue>
    </register>
   </registers>
+  </peripheral>
+  <peripheral derivedFrom="G2D">
+  <name>G2D_TOP</name>
+  <baseAddress>0x05410000</baseAddress>
+  <interrupt>
+   <name>G2D</name>
+   <value>105</value>
+   <description></description>
+  </interrupt>
   </peripheral>
   <peripheral>
   <name>G2D_UI0</name>
@@ -8045,7 +8063,7 @@
    <register>
     <name>V0_PITCH0</name>
     <displayName>V0_PITCH0</displayName>
-    <description>V0_PITCH0</description>
+    <description>V0_PITCH0 Y/RGB/ARGB data memory</description>
     <addressOffset>0x00C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -8054,7 +8072,7 @@
    <register>
     <name>V0_PITCH1</name>
     <displayName>V0_PITCH1</displayName>
-    <description>V0_PITCH1</description>
+    <description>V0_PITCH1 U/UV data memory</description>
     <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -8063,7 +8081,7 @@
    <register>
     <name>V0_PITCH2</name>
     <displayName>V0_PITCH2</displayName>
-    <description>V0_PITCH2</description>
+    <description>V0_PITCH2 V data memory</description>
     <addressOffset>0x014</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -8072,7 +8090,7 @@
    <register>
     <name>V0_LADD0</name>
     <displayName>V0_LADD0</displayName>
-    <description>V0_LADD0</description>
+    <description>V0_LADD0 Y/RGB/ARGB data memory</description>
     <addressOffset>0x018</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -8081,7 +8099,7 @@
    <register>
     <name>V0_LADD1</name>
     <displayName>V0_LADD1</displayName>
-    <description>V0_LADD1</description>
+    <description>V0_LADD1 U/UV data memory</description>
     <addressOffset>0x01C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -8090,7 +8108,7 @@
    <register>
     <name>V0_LADD2</name>
     <displayName>V0_LADD2</displayName>
-    <description>V0_LADD2</description>
+    <description>V0_LADD2 V data memory</description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -16048,6 +16066,125 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>CPUX_MSGBOX</name>
+  <description>Message Box</description>
+  <baseAddress>0x03003000</baseAddress>
+  <registers>
+   <cluster>
+    <dim>2</dim>
+    <addressOffset>0x00000020</addressOffset>
+    <registers>
+     <register>
+      <name>MSGBOX_RD_IRQ_EN_REG</name>
+      <displayName>MSGBOX_RD_IRQ_EN_REG</displayName>
+      <description>0x0020+N*0x0100 (N=0-1) MSGBOX Read IRQ Enable Register</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>MSGBOX_RD_IRQ_STATUS_REG</name>
+      <displayName>MSGBOX_RD_IRQ_STATUS_REG</displayName>
+      <description>0x0024+N*0x0100 (N=0-1) MSGBOX Read IRQ Status Register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>MSGBOX_WR_IRQ_EN_REG</name>
+      <displayName>MSGBOX_WR_IRQ_EN_REG</displayName>
+      <description>0x0030+N*0x0100 (N=0-1) MSGBOX Write IRQ Enable Register</description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>MSGBOX_WR_IRQ_STATUS_REG</name>
+      <displayName>MSGBOX_WR_IRQ_STATUS_REG</displayName>
+      <description>0x0034+N*0x0100 (N=0-1) MSGBOX Write IRQ Status Register</description>
+      <addressOffset>0x014</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>MSGBOX_DEBUG_REG</name>
+      <displayName>MSGBOX_DEBUG_REG</displayName>
+      <description>0x0040+N*0x0100 (N=0-1) MSGBOX Debug Register</description>
+      <addressOffset>0x020</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <cluster>
+      <dim>4</dim>
+      <addressOffset>0x00000030</addressOffset>
+      <register>
+       <name>MSGBOX_FIFO_STATUS_REG</name>
+       <displayName>MSGBOX_FIFO_STATUS_REG</displayName>
+       <description>0x0050+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX FIFO Status Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x010</dimIncrement>
+     </cluster>
+     <cluster>
+      <dim>4</dim>
+      <addressOffset>0x00000040</addressOffset>
+      <register>
+       <name>MSGBOX_MSG_STATUS_REG</name>
+       <displayName>MSGBOX_MSG_STATUS_REG</displayName>
+       <description>0x0060+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Message Status Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x010</dimIncrement>
+     </cluster>
+     <cluster>
+      <dim>4</dim>
+      <addressOffset>0x00000050</addressOffset>
+      <register>
+       <name>MSGBOX_MSG_REG</name>
+       <displayName>MSGBOX_MSG_REG</displayName>
+       <description>0x0070+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Message Queue Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x010</dimIncrement>
+     </cluster>
+     <cluster>
+      <dim>4</dim>
+      <addressOffset>0x00000060</addressOffset>
+      <register>
+       <name>MSGBOX_WR_INT_THRESHOLD_REG</name>
+       <displayName>MSGBOX_WR_INT_THRESHOLD_REG</displayName>
+       <description>0x0080+N*0x0100+P*0x0004 (N=0-1)(P=0-3) MSGBOX Write IRQ Threshold Register</description>
+       <addressOffset>0x000</addressOffset>
+       <size>0x20</size>
+       <access>read-write</access>
+       <resetValue>0x00000000</resetValue>
+      </register>
+      <dimIncrement>0x010</dimIncrement>
+     </cluster>
+    </registers>
+    <dimIncrement>0x200</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="CPUX_MSGBOX">
+  <name>DSP_MSGBOX</name>
+  <baseAddress>0x01701000</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>OWA</name>
   <description>One Wire Audio (TX only)</description>
   <baseAddress>0x02036000</baseAddress>
@@ -17756,6 +17893,108 @@
    <value>32</value>
    <description></description>
   </interrupt>
+  </peripheral>
+  <peripheral>
+  <name>SPINLOCK</name>
+  <description>Spin Lock module</description>
+  <baseAddress>0x03005000</baseAddress>
+  <registers>
+   <register>
+    <name>SPINLOCK_SYSTATUS_REG</name>
+    <displayName>SPINLOCK_SYSTATUS_REG</displayName>
+    <description>Spinlock System Status Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_STATUS_REG</name>
+    <displayName>SPINLOCK_STATUS_REG</displayName>
+    <description>Spinlock Status Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_IRQ_EN_REG</name>
+    <displayName>SPINLOCK_IRQ_EN_REG</displayName>
+    <description>Spinlock Interrupt Enable Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_IRQ_STA_REG</name>
+    <displayName>SPINLOCK_IRQ_STA_REG</displayName>
+    <description>Spinlock Interrupt Status Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID0_REG</name>
+    <displayName>SPINLOCK_LOCKID0_REG</displayName>
+    <description>Spinlock Lockid0 Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID1_REG</name>
+    <displayName>SPINLOCK_LOCKID1_REG</displayName>
+    <description>Spinlock Lockid1 Register</description>
+    <addressOffset>0x084</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID2_REG</name>
+    <displayName>SPINLOCK_LOCKID2_REG</displayName>
+    <description>Spinlock Lockid2 Register</description>
+    <addressOffset>0x088</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID3_REG</name>
+    <displayName>SPINLOCK_LOCKID3_REG</displayName>
+    <description>Spinlock Lockid3 Register</description>
+    <addressOffset>0x08C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPINLOCK_LOCKID4_REG</name>
+    <displayName>SPINLOCK_LOCKID4_REG</displayName>
+    <description>Spinlock Lockid4 Register</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>32</dim>
+    <addressOffset>0x00000100</addressOffset>
+    <register>
+     <name>SPINLOCK_LOCK_REG</name>
+     <displayName>SPINLOCK_LOCK_REG</displayName>
+     <description>Spinlock Register N (N = 0 to 31)</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x080</dimIncrement>
+   </cluster>
+  </registers>
   </peripheral>
   <peripheral>
   <name>SYSMAP</name>
@@ -20544,7 +20783,7 @@
   </peripheral>
   <peripheral>
   <name>USBOTG0</name>
-  <description></description>
+  <description>USB OTG Dual-Role Device controller</description>
   <baseAddress>0x04100000</baseAddress>
   <interrupt>
    <name>USB0_DEVICE</name>
@@ -20553,7 +20792,7 @@
   </interrupt>
   <registers>
    <cluster>
-    <dim>6</dim>
+    <dim>16</dim>
     <addressOffset>0x00000000</addressOffset>
     <register>
      <name>USB_EPFIFO</name>
@@ -20564,7 +20803,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x018</dimIncrement>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
    <register>
     <name>USB_GCS</name>
@@ -20576,38 +20815,20 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB_INTTX</name>
-    <displayName>USB_INTTX</displayName>
-    <description>USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register</description>
+    <name>USB_EPINTF</name>
+    <displayName>USB_EPINTF</displayName>
+    <description>USB_INTTX - lower 16, USB_INTRX - high 16, USB_EPINTF USB Endpoint Interrupt Flag Register</description>
     <addressOffset>0x044</addressOffset>
-    <size>0x10</size>
+    <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB_INTRX</name>
-    <displayName>USB_INTRX</displayName>
-    <description>USB_INTRX USB_EPINTF</description>
-    <addressOffset>0x046</addressOffset>
-    <size>0x10</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USB_INTTXE</name>
-    <displayName>USB_INTTXE</displayName>
-    <description>USB_INTTXE USB_EPINTE USB Endpoint Interrupt Enable Register</description>
+    <name>USB_EPINTE</name>
+    <displayName>USB_EPINTE</displayName>
+    <description>USB_INTTXE - lower 16, USB_INTRXE - high 16,  USB_EPINTE USB Endpoint Interrupt Enable Register</description>
     <addressOffset>0x048</addressOffset>
-    <size>0x10</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USB_INTRXE</name>
-    <displayName>USB_INTRXE</displayName>
-    <description>USB_INTRXE USB_EPINTE</description>
-    <addressOffset>0x04A</addressOffset>
-    <size>0x10</size>
+    <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
@@ -20686,18 +20907,9 @@
    <register>
     <name>USB_RXCOUNT</name>
     <displayName>USB_RXCOUNT</displayName>
-    <description>USB_RXCOUNT</description>
+    <description>USB_RXCOUNT, USB_RXPKTCNT - high 16 bits</description>
     <addressOffset>0x088</addressOffset>
-    <size>0x10</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USB_RXPKTCNT</name>
-    <displayName>USB_RXPKTCNT</displayName>
-    <description>USB_RXPKTCNT</description>
-    <addressOffset>0x08A</addressOffset>
-    <size>0x10</size>
+    <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
@@ -20871,7 +21083,7 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>8</dim>
+    <dim>16</dim>
     <addressOffset>0x00000540</addressOffset>
     <registers>
      <register>
@@ -20911,7 +21123,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x080</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
   </registers>
   </peripheral>

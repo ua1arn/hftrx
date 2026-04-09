@@ -336,8 +336,11 @@ extern "C" {
 			#define DMABUFF32RX_CODEC1_LEFT 	12		/* индекс сэмпла левого канала от кодека (через PIPE) */
 			#define	DMABUFF32RX_CODEC1_RIGHT 	13		/* индекс сэмпла правого канала от кодека (через PIPE)  */
 
-			#define DMABUFF32RX_ADCTEST_C0 14			// состояние выходов RF ADC
-			#define DMABUFF32RX_ADCTEST_C1 15
+			#define DMABUFF32RX_STATUS0 	14		/* s37data[63..32] - status */
+			#define	DMABUFF32RX_STATUS1 	15		/* s37data[31..0] - FQ meter */
+
+//			#define DMABUFF32RX_ADCTEST_C0 14			// состояние выходов RF ADC
+//			#define DMABUFF32RX_ADCTEST_C1 15
 
 			// ws=0: 00 02 04 06
 			// ws=1: 01 03 05 07
@@ -751,6 +754,7 @@ extern "C" {
 // Buffers interface functions
 void buffers_initialize(void);
 void dsp_processtx(unsigned nsamples);	/* выборка CNT32TX семплов из источников звука и формирование потока на передатчик */
+void buffers_start(void);
 
 uintptr_t getfilled_dmabufferuacinX(uint_fast16_t * sizep);	/* получить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
 void release_dmabufferuacinX(uintptr_t addr);	/* освободить буфер одного из типов, которые могут использоваться для передаяи аудиоданных в компьютер по USB */
@@ -968,30 +972,26 @@ void playwavstop(void);
 
 // Обслуживание модема
 size_t takemodemtxbuffer(uint8_t * * dest);	// Буферы с данными для передачи через модем
-size_t takemodemtxbuffer_low(uint8_t * * dest);	// Буферы с данными для передачи через модем
 uint_fast8_t statusmodemtxbuffer(void);		// есть ли буферы для передачи
 size_t takemodemrxbuffer(uint8_t * * dest);	// Буферы с принятымти через модем данными
 size_t takemodembuffer(uint8_t * * dest);	// Буферы для заполнения данными
-size_t takemodembuffer_low(uint8_t * * dest);	// Буферы для заполнения данными
 void savemodemrxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфер с принятыми данными
-void savemodemrxbuffer_low(uint8_t * dest, unsigned size_t);	// Готов буфер с принятыми данными
 void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфер с данными для передачи
 void releasemodembuffer(uint8_t * dest);
-void releasemodembuffer_low(uint8_t * dest);
 
 void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 
-void buffers_set_uacinalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
-void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC OUT interface */
-void buffers_set_uacinrtsalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
+void buffers_set_uacinalt(uint_fast8_t v, uint_fast8_t ep_no);	/* выбор альтернативной конфигурации для UAC IN interface */
+void buffers_set_uacoutalt(uint_fast8_t v, uint_fast8_t ep_no);	/* выбор альтернативной конфигурации для UAC OUT interface */
+void buffers_set_uacinrtsalt(uint_fast8_t v, uint_fast8_t ep_no);	/* выбор альтернативной конфигурации для UAC IN RTS interface */
 uint_fast8_t buffers_get_uacoutactive(void);
 uint_fast8_t buffers_get_btoutactive(void);
 
-void DMAC_USB_RX_initialize_UACOUT48(uint32_t ep);
-void DMAC_USB_TX_initialize_UACIN48(uint32_t ep);
-void DMAC_USB_TX_initialize_UACINRTS96(uint32_t ep);
-void DMAC_USB_TX_initialize_UACINRTS192(uint32_t ep);
+void DMAC_USB_RX_initialize_UACOUT48(uint_fast8_t ep_no, int start);
+void DMAC_USB_TX_initialize_UACIN48(uint_fast8_t ep_no, int start);
+void DMAC_USB_TX_initialize_UACINRTS96(uint_fast8_t ep_no, int start);
+void DMAC_USB_TX_initialize_UACINRTS192(uint_fast8_t ep_no, int start);
 
 
 #define CATPCOUNTSIZE (13)

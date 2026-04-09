@@ -8,7 +8,7 @@
 #typeend;
 
 #type; GPIOBLOCK
-#base; GPIOBLOCK 0x02000000
+#base; GPIOBLOCK 0x02000000; Virtual base for port A
 #typeend;
 
 #type; GPIOINT
@@ -83,6 +83,21 @@
 #irqrv; WATCHDOG 79
 #typeend;
 
+#type; SPI; Serial Peripheral Interface
+#base; SPI0 0x04025000
+#base; SPI1 0x04026000
+#base; SPI_DBI 0x04026000
+
+#irqrv; SPI0 31
+#irqrv; SPI1 32
+#irq; SPI0 47
+#irq; SPI1 48
+#typeend;
+
+#type; PWM; Pulse Width Modulation module
+#base; PWM 0x02000C00
+#typeend;
+
 #type; DMIC
 #base; DMIC 0x02031000
 #typeend;
@@ -93,8 +108,174 @@
 #irqrv; GPADC 73
 #typeend;
 
+#type; SPINLOCK; Spin Lock module
+#base; SPINLOCK 0x03005000
+#typeend;
+
+#type; MSGBOX; Message Box
+#base; CPUX_MSGBOX 0x03003000
+#base; DSP_MSGBOX 0x01701000
+#irq; CPUX_MSGBOX_R 32
+#typeend;
+
 #type; TPADC
 #base; TPADC 0x02009C00
 #irq; TPADC 94
 #irqrv; TPADC 78
 #typeend;
+
+#type; USBOTG
+#base; USBOTG0 0x04100000
+#irq; USB0_DEVICE 61
+#irqrv; USB0_DEVICE 45
+#typeend;
+
+#type; USB_EHCI_Capability
+#base; USBEHCI0 0x04101000
+#base; USBEHCI1 0x04200000
+#irq; USB0_EHCI 62
+#irq; USB1_EHCI 65
+#irqrv; USB0_EHCI 46
+#irqrv; USB1_EHCI 49
+#typeend;
+
+#type; USB_OHCI_Capability
+#base; USBOHCI0 0x04101400
+#base; USBOHCI1 0x04200400
+#irq; USB0_OHCI 63
+#irq; USB1_OHCI 66
+#irqrv; USB0_OHCI 47
+#irqrv; USB1_OHCI 50
+#typeend;
+
+#type; G2D_TOP; Graphic 2D top
+#base; G2D 0x05410000
+#base; G2D_TOP 0x05410000
+#irq; G2D 121
+#irqrv; G2D 105
+#typeend;
+
+#type; G2D_ROT; Graphic 2D Rotate
+#base; G2D_ROT 0x05438000
+#typeend;
+
+#type; G2D_MIXER; Graphic 2D (G2D) Engine Video Mixer
+#base; G2D_MIXER 0x05410100
+#typeend;
+
+#type; G2D_BLD; Graphic 2D (G2D) Engine Blender
+#base; G2D_BLD 0x05410400
+#typeend;
+
+#type; G2D_VI; Graphic 2D VI surface
+#base; G2D_V0 0x05410800
+#typeend;
+
+#type; G2D_WB; Graphic 2D (G2D) Engine Write Back
+#base; G2D_WB 0x05413000
+#typeend;
+
+#type; G2D_UI; Graphic 2D UI surface
+#base; G2D_UI0 0x05411000
+#base; G2D_UI1 0x05411800
+#base; G2D_UI2 0x05412000
+#typeend;
+
+#type; G2D_VSU; Graphic 2D Video Scaler
+#base; G2D_VSU 0x05418000
+#typeend;
+
+
+# Allwinner_DE3.0_Spec_V1.0.pdf
+
+# https://linux-sunxi.org/images/d/dd/Allwinner_DE3.0_Spec_V1.0.pdf
+
+#type; DE; Display Engine (DE)
+#base; DE 0x05000000
+#typeend;
+
+#type; DE_TOP; Display Engine (DE) TOP
+#base; DE_TOP 0x05000000
+#irq; DE 119
+#irqrv; DE 103
+#typeend;
+
+#type; DE_GLB; Display Engine (DE) - Global Control
+#base; DE_MIXER0_GLB 0x05100000; RT-Mixer 0
+#base; DE_MIXER1_GLB 0x05200000; RT-Mixer 1
+#typeend;
+
+# T113x_User_Manual_V1.1.pdf
+# Two alpha blending channels for main display, one channel for aux display
+
+#type; DE_UI; Display Engine (DE) - UI surface
+#base; DE_MIXER0_UI1 0x05103000; RT-Mixer 0 UI surface
+##base; DE_MIXER0_UI2 0x05104000; RT-Mixer 0 UI surface
+##base; DE_MIXER0_UI3 0x05105000; RT-Mixer 0 UI surface
+#typeend;
+
+# exploration - not final info
+
+#type; DE_VEP; Fresh and Contrast Enhancement (FCE), Peak, Chrominance transient improvement (CTI) LCTI, Blue Level Stretch (BLS), ancy color curvature (FCC), VEP_TOP blocks
+#base; DE_MIXER0_VEP0 0x05120000
+#base; DE_MIXER0_VEP1 0x05140000
+#base; DE_MIXER1_VEP0 0x05220000
+#typeend;
+
+#type; DE_VI; Display Engine (DE) - VI surface
+#base; DE_MIXER0_VI1 0x05102000; RT-Mixer 0 VI surface
+#base; DE_MIXER1_VI1 0x05202000; RT-Mixer 1 VI surface
+#typeend;
+
+#type; DE_UIS; UI Scaler(UIS) provides RGB format image resizing function
+#base; DE_MIXER0_UIS1 0x05140000; DE_MIXER0_UI1 Scaler TBD
+#base; DE_MIXER0_UIS2 0x05150000; DE_MIXER0_UI2 Scaler TBD
+#base; DE_MIXER0_UIS3 0x05160000; DE_MIXER0_UI3 Scaler TBD
+#base; DE_MIXER1_UIS1 0x05240000; DE_MIXER1_UI1 Scaler TBD
+#typeend;
+
+#type; DE_VSU; Video Scaler Unit (VSU), VS
+#base; DE_MIXER0_VSU1 0x05120000; DE_MIXER0_VI1 Scaler
+#base; DE_MIXER0_VSU2 0x05140000
+#base; DE_MIXER1_VSU1 0x05220000; DE_MIXER1_VI1 Scaler
+#typeend;
+
+#type; DE_BLD; Display Engine (DE) - Blender
+#base; DE_MIXER0_BLD 0x05101000; RT-Mixer 0
+#base; DE_MIXER1_BLD 0x05201000; RT-Mixer 1
+#type; DE_GLB; Display Engine (DE) - Global Control
+#typeend;
+
+#type; DE_DEP; DRC (dynamic range controller)
+#base; DE_MIXER0_DEP 0x051A0000
+#typeend;
+# Television Decoder (TVD) is an interface that transforms Composite Video Broadcast Signal (CVBS) or component signal into YUV data.
+
+#type; TVD_TOP; Video Decoding
+#base; TVD_TOP 0x05C00000
+#irq; TVD 139
+#irqrv; TVD 123
+#typeend;
+
+#type; TVD0; Video Decoding
+#base; TVD0 0x05C01000
+#typeend;
+
+#type; TCON_TV
+#base; TCON_TV0 0x05470000
+#irq; TCON_TV0 123
+#irqrv; TCON_TV0 107
+#typeend;
+
+#type; TCON_LCD; Timing Controller_LCD (TCON_LCD)
+#base; TCON_LCD0 0x05461000
+#irq; TCON_LCD0 122
+#irqrv; TCON_LCD0 106
+#typeend;
+
+#type; VE; Video Encoding
+#base; VENCODER 0x01C0E000
+#irq; VE 98
+#irqrv; VE 82
+#typeend;
+

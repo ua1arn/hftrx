@@ -126,7 +126,6 @@ static uint_fast8_t bootloader_copyapp(
 static void __NO_RETURN
 bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 {
-	const unsigned targetcore = 0;	// Номер ядра, на котором будет запущено приложение (aarch64/rv64)
 	dcache_clean_all();
 	global_disableIRQ();
 
@@ -201,14 +200,15 @@ bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 
 	if (allwnr_t113_get_chipid() == CHIPID_T113M4020DC0 && x64bit)
 	{
+		const unsigned core = 0;
 		// start RV64 core as application
 		CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);				// RISC-V_MCLK_EN
 		CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);
-		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << targetcore));	/* Assert rv64 reset */
+		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 0 * ((UINT32_C(1) << core));	/* Assert rv64 reset */
 		CCU->RISC_GATING_REG = (UINT32_C(1) << 31) | (UINT32_C(0x16AA) << 0);	/* key required for modifications (d1-h_user_manual_v1.0.pdf, page 152). */
 		RISC_CFG->RISC_STA_ADD0_REG = ptr_lo32(startfunc);
 		RISC_CFG->RISC_STA_ADD1_REG = ptr_hi32(startfunc);
-		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << targetcore));	/* De-assert rv64 reset */
+		CCU->RISC_RST_REG = (UINT32_C(0x16AA) << 16) | 1 * ((UINT32_C(1) << core));	/* De-assert rv64 reset */
 		C0_CPUX_CFG->C0_RST_CTRL &= ~ UINT32_C(0x03);		// CORE_RESET assert for aarch32 core1 and core0
 	}
 	else
@@ -223,43 +223,11 @@ bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 		}
 	}
 
-#elif defined (__CORTEX_A) && (__CORTEX_A == 53U)  && (! defined(__aarch64__))
+#elif (__ARM_ARCH == 8) && (! defined(__aarch64__))
 
 	if (x64bit)
 	{
-		// Start aarch64 core as application
-		//__set_RVBAR_EL3(startfunc);
-	#if CPUSTYLE_A64
-		CPUX_CFG->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-		CPUX_CFG->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
-	#elif CPUSTYLE_H616
-		C0_CPUX_CFG_H616->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-		C0_CPUX_CFG_H616->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
-	#elif CPUSTYLE_T507
-		CPU_SUBSYS_CTRL->RVBARADDR [targetcore].LOW = ptr_lo32(startfunc);
-		CPU_SUBSYS_CTRL->RVBARADDR [targetcore].HIGH = ptr_hi32(startfunc);
-	#else
-		#error Unexpected CPUSTYLE_xxx
-	#endif
-		// RMR - Reset Management Register
-		// https://developer.arm.com/documentation/ddi0500/j/CIHHJJEI
-		enum { CODE = 0x03 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
-		//enum { CODE = 0x02 };	// bits: 0x02 - request warm reset,  0x01: - aarch64 (0x00 - aarch32)
-
-		//__set_CP(15, 0, result, 12, 0, 2);
-		//__set_CP(15, 4, result, 12, 0, 2);	// HRMR - UndefHandler
-		// G8.2.123 RMR, Reset Management Register
-		__set_CP(15, 0, CODE, 12, 0, 2);	// RMR_EL1 - work okay
-		//__set_CP(15, 3, result, 12, 0, 2);	// RMR_EL2 - UndefHandler
-		//__set_CP(15, 6, result, 12, 0, 2);	// RMR_EL3 - UndefHandler
-
-		__ISB();
-		__WFI();
-
-		for (;;)
-		{
-			__WFE();
-		}
+		run64(startfunc);
 	}
 	else
 	{
@@ -404,7 +372,7 @@ void bootloader_fatfs_mainloop(void)
 
 #if BOOTLOADER_RAMSIZE
 	uintptr_t ip;
-	uint_fast64_t ip64;
+	uint_fast8_t x64bit;
 	if (bootloader_get_start((uintptr_t) header, & ip, & x64bit) != 0)	/* проверка сигнатуры и получение стартового адреса */
 	{
 		PRINTF("bootloader_fatfs_mainloop start: can not load '%s'\n", IMAGENAME);
@@ -545,7 +513,7 @@ void bootloader_mainloop(void)
 		}
 		if (bootloader_get_start(drambase, & ip, & x64bit) == 0)
 		{
-			PRINTF("bootloader: go to ip=%08lX\n", (unsigned long) ip);
+			PRINTF("bootloader: go to ip=%08lX, x64bit=%u\n", (unsigned long) ip, (unsigned) x64bit);
 			/* Perform an Attach-Detach operation on USB bus */
 			bootloader_launch_app(ip, x64bit);
 		}
@@ -595,7 +563,7 @@ void __attribute__((used)) SystemExecAARCH64(void)
 	uint_fast8_t x64bit;
 	if (bootloader_get_start((uintptr_t) header, & ip, & x64bit) == 0)	/* проверка сигнатуры и получение стартового адреса */
 	{
-		PRINTF("Start address ip=%08X\n", (unsigned) ip);
+		PRINTF("Start address ip=%08X (64bit=%u)\n", (unsigned) ip, (unsigned) x64bit);
 		bootloader_launch_app(ip, x64bit);
 		for (;;)
 			;
@@ -608,7 +576,7 @@ void __attribute__((used)) SystemExecAARCH64(void)
 
 #else
 
-void SystemExecAARCH64(void)
+void __attribute__((used)) SystemExecAARCH64(void)
 {
 
 }

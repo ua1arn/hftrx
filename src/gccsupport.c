@@ -5,15 +5,22 @@
 // UA1ARN
 //
 
-#include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include "formats.h"	/* зависящие от процессора функции работы с портами */
+#include "hardware.h"
+
+#if ! LINUX_SUBSYSTEM
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
+#include "formats.h"	/* Отладочная печать */
 
-#if ! LINUX_SUBSYSTEM
+#include <sys/stat.h>
+#include <sys/unistd.h>
+#include <sys/reent.h>
+#include <string.h>
+#include <errno.h>
+#include <malloc.h>
 
 #if (CPUSTYLE_RISCV || defined(__aarch64__))
 
@@ -106,11 +113,6 @@ void _stack_init(void)
 
 }
 
-#include <sys/stat.h>
-#include <sys/unistd.h>
-#include <string.h>
-#include <errno.h>
-
 static int SER_GetChar(void)
 {
 
@@ -191,12 +193,6 @@ _READ_WRITE_RETURN_TYPE __attribute__((used)) (_write)(int fd, const void * ptr,
 	return (i);
 }
 
-struct _reent * __getreent(void)
-{
-    static struct _reent r [4];
-    PRINTF("__getreent: CPU%u\n", arm_hardware_cpuid());
-    return r + arm_hardware_cpuid();
-}
 
 #if defined(__aarch64__) && 0
 
@@ -209,19 +205,19 @@ void * memset(void * dst, int v, size_t n)
 	return dst;
 }
 
-void * memcpy(void * dst, const void * src, size_t n)
+void * memcpy(void * __RESTRICT  dst, const void * __RESTRICT  src, size_t n)
 {
-	volatile uint8_t * d = (volatile uint8_t *) dst;
-	const volatile uint8_t * s = (const volatile uint8_t *) src;
+	volatile uint8_t * __RESTRICT  d = (volatile uint8_t *) dst;
+	const volatile uint8_t * __RESTRICT  s = (const volatile uint8_t *) src;
 	while (n --)
 		* d ++ = * s ++;
 	return dst;
 }
 
-void * memmove(void * dst, const void * src, size_t n)
+void * memmove(void * __RESTRICT  dst, const void * __RESTRICT  src, size_t n)
 {
-	volatile uint8_t * d = (volatile uint8_t *) dst;
-	const volatile uint8_t * s = (const volatile uint8_t *) src;
+	volatile uint8_t * __RESTRICT  d = (volatile uint8_t *) dst;
+	const volatile uint8_t * __RESTRICT  s = (const volatile uint8_t *) src;
 	if (s >= d && s < (d + n))
 	{
 		// If overlaps
@@ -238,19 +234,173 @@ void * memmove(void * dst, const void * src, size_t n)
 	return dst;
 }
 
-size_t strlen(const char * s1)
+size_t strlen(const char  * __RESTRICT s1)
 {
-	volatile const char * s = s1;
+	volatile const char * __RESTRICT  s = s1;
 	size_t n = 0;
 	while (* s ++ != '\0')
 		++ n;
 	return n;
 }
+
+int strcmp(const char * __RESTRICT  s1, const char * __RESTRICT  s2)
+{
+	volatile const char * __RESTRICT  vs1 = s1;
+	volatile const char * __RESTRICT  vs2 = s2;
+	while (* vs1 && * vs2)
+	{
+		int r = (unsigned char) * vs1 - (unsigned char) * vs2;
+		if (r)
+			return r;
+		++ vs1;
+		++ vs2;
+	}
+	return (unsigned char) * vs1 - (unsigned char) * vs2;
+}
 #endif /* defined(__aarch64__) */
 
-#endif /* ! LINUX_SUBSYSTEM */
+#if 0
+
+static LCLSPINLOCK_t lockmalloc = LCLSPINLOCK_INIT;
+
+void __malloc_lock(struct _reent * reent)
+{
+	PRINTF("%s: %p core%u\n", __func__, reent, board_dpc_coreid());
+	//LCLSPIN_LOCK(& lockmalloc);
+}
+
+void __malloc_unlock(struct _reent * reent)
+{
+	PRINTF("%s: %p core%u\n", __func__, reent, board_dpc_coreid());
+	//LCLSPIN_UNLOCK(& lockmalloc);
+}
+
+#endif
+
+#if 0
+#if defined __SINGLE_THREAD__
+	#warning Have __SINGLE_THREAD__
+#endif
+#if defined __DYNAMIC_REENT__
+	#warning Have __DYNAMIC_REENT__
+#endif
+
+
+// Check __DYNAMIC_REENT__ and __SINGLE_THREAD__
+struct _reent * __getreent(void)
+{
+    static struct _reent r [16];
+    PRINTF("__getreent: CPU%u\n", arm_hardware_cpuid());
+    return r + arm_hardware_cpuid();
+}
+
+/* Make sure that Newlib was compiled with retargetable locking support. */
+#ifndef _RETARGETABLE_LOCKING
+#error "Newlib must be compiled with retargetable locking support"
+#endif
+
+struct custom_lock
+{
+	LCLSPINLOCK_t lock;
+	IRQL_t oldIrql;
+};
+
+/* Static locks */
+struct custom_lock __lock___malloc_recursive_mutex;		// Используется ld и при работе программы
+struct custom_lock __lock___env_recursive_mutex;		// Используется ld
+struct custom_lock __lock___sfp_recursive_mutex;		// Используется ld
+struct custom_lock __lock___sinit_recursive_mutex;
+struct custom_lock __lock___atexit_recursive_mutex;
+
+struct custom_lock __lock___at_quick_exit_mutex;
+struct custom_lock __lock___tz_mutex;
+struct custom_lock __lock___dd_hash_mutex;
+struct custom_lock __lock___arc4random_mutex;
+
+// 	Allocate lock related resources.
+void __retarget_lock_init(_LOCK_T *lock)
+{
+	struct custom_lock * * const lpp = (struct custom_lock * *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lpp, board_dpc_coreid());
+	LCLSPINLOCK_INITIALIZE(& (* lpp)->lock);
+}
+
+// Allocate recursive lock related resources.
+void __retarget_lock_init_recursive(_LOCK_T *lock)
+{
+	struct custom_lock * * const lpp = (struct custom_lock * *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lpp, board_dpc_coreid());
+	LCLSPINLOCK_INITIALIZE(& (* lpp)->lock);
+}
+
+// Free lock related resources.
+void __retarget_lock_close(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	LCLSPINLOCK_UNINITIALIZE((* lpp)->lock);
+}
+
+// Free recursive lock related resources.
+void __retarget_lock_close_recursive(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	LCLSPINLOCK_UNINITIALIZE((* lpp)->lock);
+}
+
+// Acquire lock immediately after the lock object is available.
+void __retarget_lock_acquire(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	LCLSPIN_LOCK(& lp->lock);
+}
+
+// Acquire recursive lock immediately after the lock object is available.
+void __retarget_lock_acquire_recursive(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	//LCLSPIN_LOCK(& lp->lock);
+}
+
+// Acquire lock if the lock object is available.
+int __retarget_lock_try_acquire(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	return 0;
+}
+
+// Acquire recursive lock if the lock object is available.
+int __retarget_lock_try_acquire_recursive(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	return 0;
+}
+
+// Relinquish the lock ownership.
+void __retarget_lock_release(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	LCLSPIN_UNLOCK(& lp->lock);
+}
+
+// Relinquish the recursive lock ownership.
+void __retarget_lock_release_recursive(_LOCK_T lock)
+{
+	struct custom_lock * const lp = (struct custom_lock *) lock;
+	PRINTF("%s: %p core%u\n", __func__, lp, board_dpc_coreid());
+	//LCLSPIN_UNLOCK(& lp->lock);
+}
+#endif
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+#endif /* ! LINUX_SUBSYSTEM */
 

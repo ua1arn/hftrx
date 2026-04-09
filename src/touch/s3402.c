@@ -12,6 +12,7 @@
 
 #if defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_S3402)
 
+#include "gpio.h"
 #include "touch.h"
 
 #define TSC_I2C_ADDR (0x20 * 2)

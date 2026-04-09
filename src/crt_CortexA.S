@@ -64,6 +64,8 @@
 	 STACKSIZEIRQ = 64
 
 	 STACKSIZESYSBOOT = 512
+
+	 STACKSIZEALL = 512
   
 	.section ".isr_vector", "ax"
 	.code 32
@@ -91,36 +93,13 @@ PAbortAddr: .word PAbort_Handler
 DAbortAddr: .word DAbort_Handler
 HypAddr:  	.word Hyp_Handler
 IRQAddr:    .word VIRQ_Handler
-FIQAddr:    .word FIQ_Handler
+FIQAddr:    .word VFRQ_Handler
 
 	/* Force link */
 	.word SystemExecAARCH64
 	.word SystemDRAMInit
 
-   .ltorg
-
-	.align 6
-	.global __Vectors_rtos
-__Vectors_rtos:
-	ldr pc, ResetAddr_rtos    /* Reset                 */
-	ldr pc, UndefAddr_rtos    /* Undefined instruction */
-	ldr pc, SWIAddr_rtos      /* Software interrupt    */
-	ldr pc, PAbortAddr_rtos   /* Prefetch abort        */
-	ldr pc, DAbortAddr_rtos   /* Data abort            */
-	ldr pc, HypAddr_rtos 		/* Entry to Hyp mode	 */
-	ldr pc, IRQAddr_rtos      /* IRQ interrupt         */
-	ldr pc, FIQAddr_rtos      /* FIQ interrupt         */
-
-
-ResetAddr_rtos:     .word Reset_Handler
-UndefAddr_rtos:     .word Undef_Handler
-SWIAddr_rtos:       .word FreeRTOS_SWI_Handler
-PAbortAddr_rtos:    .word PAbort_Handler
-DAbortAddr_rtos:    .word DAbort_Handler
-HypAddr_rtos:  	 .word Hyp_Handler
-IRQAddr_rtos:       .word FreeRTOS_IRQ_Handler
-FIQAddr_rtos:       .word FIQ_Handler
-   .ltorg
+    .ltorg
 
 
    	.section ".startup0", "ax"
@@ -216,7 +195,42 @@ gotosleep:
 	mov   lr, pc
 	bx    r2     /* And jump... */
 
-	ldr   sp, =__stack	/* New stack may be placed in DDR RAM */
+	ldr   r2, =__stack	/* New stack may be placed in DDR RAM */
+	mov		r3, #STACKSIZEALL
+
+	msr   CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT     /* 0x12 IRQ Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r2, r3
+
+	msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r2, r3
+
+	msr   CPSR_c, #ARM_MODE_ABORT | I_BIT | F_BIT   /* 0x17 Abort Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r2, r3
+
+	msr   CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT     /* 0x11 FIQ Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r2, r3
+
+	msr   CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT     /* 0x16 Monitor Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r2, r3
+
+	msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
+	mov   sp, r2
+	mov   lr, #0
+	sub	r2, r2, r3
+
+	msr   CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT     /* 0x1F Priviledged Operating Mode */
+	mov   sp, r2
+	mov   lr, #0
 
 	ldr   r2, =fill_bss
 	mov   lr, pc
@@ -343,7 +357,7 @@ ExitFunction:
 VIRQ_Handler:
 
 	sub     lr, lr, #4                  // Pre-adjust LR
-	srsfd   sp!, #ARM_MODE_SYS              // Save LR_irq and SPSR_irq on to the SYS stack
+	srsfd   sp!, #ARM_MODE_SYS              // SRSDB, Save LR_irq and SPSR_irq on to the SYS stack
 	//cps		#ARM_MODE_SYS                   // Change to SYS mode
 	cpsid   if,#ARM_MODE_SYS                   // Change to SYS mode and disable interrupts
 	push    {r0-r3, r4-r11, r12, lr}            // Save APCS corruptible registers
@@ -369,9 +383,92 @@ VIRQ_Handler:
 	AND     R1,R1,R3
 	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
 
- 	LDR		R0, =IRQ_Handler_GIC
-	MOV		LR, PC
-	BX		R0     /* and jump... */
+	MOV		R0, SP
+ 	LDR		R2, =IRQ_Handler_aarch32
+	BX		R2     /* and jump... */
+	.endfunc
+   	.ltorg
+
+ 	.align 	4, 0
+    .func   SWI_Handler
+SWI_Handler:
+
+	srsfd   sp!, #ARM_MODE_SYS              // SRSDB, Save LR_irq and SPSR_irq on to the SYS stack
+	//cps		#ARM_MODE_SYS                   // Change to SYS mode
+	cpsid   if,#ARM_MODE_SYS                   // Change to SYS mode and disable interrupts
+	push    {r0-r3, r4-r11, r12, lr}            // Save APCS corruptible registers
+
+	mov     r3, sp                      // Move SP into R3
+	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
+	sub     sp, sp, r3                  // Adjust stack
+	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
+
+ 	VMRS	R1, FPSID
+	VMSR	FPSID, R1
+
+	VMRS	R1, FPSCR
+	VMRS	R2, FPEXC
+ 	PUSH 	{R1, R2}
+
+	VPUSH.F32	{D0-D15}
+	VPUSH.F32	{D16-D31}
+
+    // Initialise FPSCR to a known state
+    // FPSCR Loaded in to R1
+ 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
+	AND     R1,R1,R3
+	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
+
+	MOV		R0, SP
+ 	LDR		R2, =SWI_Handler_aarch32
+	BX		R2     /* and jump... */
+	.endfunc
+   	.ltorg
+
+ 	.align 	4, 0
+    .func   VFRQ_Handler
+VFRQ_Handler:
+
+	sub     lr, lr, #4                  // Pre-adjust LR
+	srsfd   sp!, #ARM_MODE_SYS              // SRSDB, Save LR_irq and SPSR_irq on to the SYS stack
+	//cps		#ARM_MODE_SYS                   // Change to SYS mode
+	cpsid   if,#ARM_MODE_SYS                   // Change to SYS mode and disable interrupts
+	push    {r0-r3, r4-r11, r12, lr}            // Save APCS corruptible registers
+
+	mov     r3, sp                      // Move SP into R3
+	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
+	sub     sp, sp, r3                  // Adjust stack
+	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
+
+ 	VMRS	R1, FPSID
+	VMSR	FPSID, R1
+
+	VMRS	R1, FPSCR
+	VMRS	R2, FPEXC
+ 	PUSH 	{R1, R2}	// FPSCR, FPEXC
+
+	VPUSH.F32	{D0-D15}
+	VPUSH.F32	{D16-D31}
+
+    // Initialise FPSCR to a known state
+    // FPSCR Loaded in to R1
+ 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
+	AND     R1,R1,R3
+	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
+
+ 	MOV		R0, SP
+	LDR		R2, =FIQ_Handler_aarch32
+	//MOV		LR, PC
+	BX		R2     /* and jump... */
+
+	.endfunc
+   	.ltorg
+
+ 	.align 	4, 0
+    .func   run_task_curr_aarch32
+    .global run_task_curr_aarch32
+run_task_curr_aarch32:
+	MOV		SP, R0
 
  	VMRS	R1, FPSID
 	VMSR	FPSID, R1
@@ -384,8 +481,6 @@ VIRQ_Handler:
 
 	pop     {r3, r4}                    // Restore stack adjustment(R3) and user data(R4)
 	add     sp, sp, r3                  // Unadjust stack
-
-
 	//clrex                               // Clear exclusive monitor for interrupted code
 	pop     {r0-r3, r4-r11, r12, lr}            // Restore stacked APCS registers
 	rfefd   sp!                         // Return from IRQ handler - RFEIA instruction

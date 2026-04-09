@@ -61,7 +61,21 @@
 	#define WITHCAT_UART1		1
 #endif
 
+#if WITHISBOOTLOADER
+	#define WITHSDRAM_PMC1	1	/* ST PMC1 power management chip */
 
+	// PMC1 on MYIC-YA157C-xxx board
+	#define PMIC_I2C_W 0x66	// 7bit: 0x33
+	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
+
+	// See WITHSDRAM_PMC1
+	void board_myir_pmc1_initialize(void);
+
+	/* Контроллер питания AXP305 */
+	#define BOARD_PMIC_INITIALIZE() do { \
+		board_myir_pmc1_initialize(); /* Voltages are set here */ \
+	} while (0)
+#endif
 
 #if WITHISBOOTLOADER
 
@@ -71,7 +85,6 @@
 	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define WITHSDRAM_PMC1	1	/* power management chip */
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -88,7 +101,7 @@
 	//#define WITHUSBDEV_DMAENABLE 1
 
 	//#define WITHUSBHW_HOST		USB_OTG_HS
-	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
+	//#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBHOST_DMAENABLE 1
 
 //	
@@ -598,7 +611,7 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { gpioX_setstate(GPIOA, (v), 1 * (v)); } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
 	#define SPI_ALLCS_PORT_S(v)	do { gpioX_setstate(GPIOH, (v), 1 * (v)); } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { gpioX_setstate(GPIOH, (v), 0 * (v)); } while (0)
@@ -611,11 +624,18 @@
 	#define targetadc2		(UINT32_C(1) << 6) 		// PH6 ADC MCP3208-BI/SL chip select (potentiometers)
 	#define targetfpga1		(UINT32_C(1) << 14)		// PH14 FPGA control registers CS1
 
-
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
 	#define targettsc1 		targetext1	/* XPT2046 SPI chip select signal */
 	#define targetnone 0				/* FPGA image loader pseudo chip select signal */
+
+	#define FPGALOADER_SPEEDC SPIC_SPEED4M
+	#define FPGAREG_V1_SPEEDC SPIC_SPEED4M
+	#define SPIDF_SPEEDC 		SPIC_SPEED4M
+	#define NVRAM_SPEEDC 		SPIC_SPEED4M
+	#define NAU8822_SPEEDC 	SPIC_SPEED400k
+	#define CTLREG_SPEEDC		SPIC_SPEED400k
+	#define XPT2046_SPEEDC 	SPIC_SPEED400k
 
 	/* Perform delay after assert or de-assert specific CS line */
 	#define SPI_CS_DELAY(target) do { \
@@ -661,40 +681,35 @@
 	//	SPI1_SCK	PZ0	AF_5
 	//	SPI1_MISO	PZ1 AF_5
 	//	SPI1_MOSI	PZ2 AF_5
-	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpioX_setstate(GPIOZ, (v), 0 * (v)); } while (0)
-	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpioX_setstate(GPIOZ, (v), 1 * (v)); } while (0)
 	#define	SPI_SCLK_BIT			(UINT32_C(1) << 0)	// PZ0 бит, через который идет синхронизация SPI
-
-	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpioX_setstate(GPIOZ, (v), 0 * (v)); } while (0)
-	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpioX_setstate(GPIOZ, (v), 1 * (v)); } while (0)
 	#define	SPI_MOSI_BIT			(UINT32_C(1) << 2)	// PZ2 бит, через который идет вывод
-
-	#define SPI_TARGET_MISO_PIN		(gpioX_getinputs(GPIOZ))
 	#define	SPI_MISO_BIT			(UINT32_C(1) << 1)	// PZ1 бит, через который идет ввод с SPI.
 
-	#define SPIIO_INITIALIZE() do { \
-			arm_hardware_pioz_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PZ0 */ \
-			arm_hardware_pioz_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PZ2 */ \
-			arm_hardware_pioz_inputs(SPI_MISO_BIT); /* PZ1 */ \
+	#define HARDWARE_SPI1_INITIALIZE() do { \
+		arm_hardware_pioz_altfn20(SPI_SCLK_BIT, AF_SPI1); /* AF_5 В этих процессорах и входы и выходы переключаются на ALT FN */ \
+		arm_hardware_pioz_altfn20(SPI_MOSI_BIT, AF_SPI1); /* AF_5 В этих процессорах и входы и выходы переключаются на ALT FN */ \
+		arm_hardware_pioz_altfn20(SPI_MISO_BIT, AF_SPI1); /* AF_5 В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_pioz_altfn20(SPI_SCLK_BIT, AF_SPI1); /* AF_5 В этих процессорах и входы и выходы переключаются на ALT FN */ \
-			arm_hardware_pioz_altfn20(SPI_MOSI_BIT, AF_SPI1); /* AF_5 В этих процессорах и входы и выходы переключаются на ALT FN */ \
-			arm_hardware_pioz_altfn20(SPI_MISO_BIT, AF_SPI1); /* AF_5 В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
-			arm_hardware_pioz_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); \
-			arm_hardware_pioz_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); \
-			arm_hardware_pioz_inputs(SPI_MISO_BIT); \
 		} while (0)
 
-	//#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
-	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
-	//#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
+	#define WITHSPI1HW 1
+	/* to be removed... */
+	#define SPIHARD_IX 1    /* 0 - SPI0, 1: SPI1... */
+	#define SPIHARD_PTR SPI1    /* 0 - SPI0, 1: SPI1... */
+
+	#define HARDWARE_FPGA_LOADER_SPIHARD_PTR SPIHARD_PTR
+	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPIHARD_PTR
+
+	// сделать зависящим от target
+	#define SPI_GET_PTR(target) ((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )
+
 	#define HARDWARE_SPI_FREQ (hardware_get_spi_freq())
 	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 // WITHUART1HW
 // UART1_TX PG11, UART1_RX PB2
@@ -779,7 +794,7 @@
 
 #endif // WITHTWISW
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+#if 1//WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	// FPGA INTERFACE
 	//	FPGA_NSTATUS	PA14
@@ -811,6 +826,12 @@
 			arm_hardware_piof_inputs(FPGA_INIT_DONE_BIT); \
 		} while (0)
 
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
+	#define HARDWARE_FPGA_RESET() do { \
+		board_fpga_loader_initialize(); \
+		board_fpga_reset(); \
+	} while (0)
+
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	/*
 		After the option bit to enable INIT_DONE is programmed into the device (during the first
@@ -820,9 +841,17 @@
 	*/
 	#define HARDWARE_FPGA_IS_USER_MODE() (local_delay_ms(100), (FPGA_INIT_DONE_INPUT & FPGA_INIT_DONE_BIT) != 0)
 
+#else	/* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
+
+	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
+	#define HARDWARE_FPGA_RESET() do { \
+		board_fpga_loader_initialize(); \
+		board_fpga_reset(); \
+	} while (0)
+
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-#if WITHDSPEXTFIR
+#if 1
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
 	//	FPGA_FIR1_WE	PG2	не мощные
 	//	FPGA_FIR2_WE	PG3	не мощные
@@ -845,7 +874,7 @@
 			arm_hardware_piog_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
 			arm_hardware_piog_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
-#endif /* WITHDSPEXTFIR */
+#endif
 
 #if 1
 	/* получение состояния переполнения АЦП */
@@ -1231,6 +1260,7 @@
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 		HARDWARE_ETH_RESET(); \
+		/* HARDWARE_FPGA_RESET(); */ \
 		BOARD_BLINK_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \

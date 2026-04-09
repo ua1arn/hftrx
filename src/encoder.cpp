@@ -9,6 +9,9 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "encoder.h"
+
+#if WITHENCODER
+
 #include "keyboard.h"	/* функция опроса электронного ключа */
 //#include "display.h"	/* test */
 #include "formats.h"	// for debug prints
@@ -27,15 +30,20 @@ typedef std::atomic<int32_t> atomicpos_t;
 static atomicpos_t position_kbd;	/* накопитель от клавиатуры - знаковое число */
 #endif /* WITHKBDENCODER */
 
+#include "arm_math.h"
+
+#define HISTLEN 4	// размер окна фильтра скорости
+
 struct encoder_tag
 {
 	atomicpos_t position;	// обновляется по прерыванию
+	atomicpos_t account;	// обновляется по прерыванию
 	uint8_t old_val;
 	uint_fast8_t (* getpins)(void);
 
 	/* перенесено из глобальной области видимости */
 	IRQLSPINLOCK_t encspeedlock;
-	unsigned enchist [HISTLEN];
+	q31_t enchist [HISTLEN];
 	uint_fast8_t tichist;	// Должно поместиться число от 0 до TICKSMAX включительно
 	uint_fast8_t enchistindex;
 };
@@ -45,13 +53,24 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->old_val = agetpins();
 	e->getpins = agetpins;
 	e->position = 0;
+	e->account = 0;
 
-	//e->rotate = 0;
+	e->tichist = 0;
 	e->enchistindex = 0;
-	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
-	ASSERT(HISTLEN == 4);
-
+	arm_fill_q31(0, e->enchist, HISTLEN);
 	IRQLSPINLOCK_INITIALIZE(& e->encspeedlock);
+}
+
+static void encoder_clear(encoder_t * e)
+{
+	IRQL_t oldIrql;
+
+	e->position = 0;
+	e->account = 0;
+	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
+	arm_fill_q31(0, e->enchist, HISTLEN);
+	e->tichist = 0;
+	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
 }
 
 /* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
@@ -141,18 +160,6 @@ void spool_encinterrupts_ccw(void * ctx)
 	e->old_val = new_val;
 }
 
-static void encoder_clear(encoder_t * e)
-{
-	IRQL_t oldIrql;
-
-	e->position = 0;
-	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
-	e->enchist [0] = e->enchist [1] = e->enchist [2] = e->enchist [3] = 0;
-	ASSERT(HISTLEN == 4);
-	e->tichist = 0;
-	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
-}
-
 static int safegetposition_kbd(void)
 {
 #if WITHKBDENCODER
@@ -172,9 +179,8 @@ static uint_fast8_t encoder1_dynamic = 1;
 //#define ENCODER_ACTUAL_RESOLUTION (encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
 //static uint_fast8_t encoder_resolution;
 
-void encoder_set_resolution(encoder_t * e, uint_fast8_t v, uint_fast8_t encdynamic)
+void encoder1_set_resolution(unsigned v, uint_fast8_t encdynamic)
 {
-	//encoder_resolution = v;	/* используется учетверение шагов */
 	encoder1_actual_resolution = v * 4 * ENCRESSCALE;	/* используется учетверение шагов */
 	encoder1_dynamic = encdynamic;
 }
@@ -183,6 +189,32 @@ void encoder_set_resolution(encoder_t * e, uint_fast8_t v, uint_fast8_t encdynam
 unsigned encoder_get_actualresolution(encoder_t * e)
 {
 	return encoder1_actual_resolution;
+}
+
+/* получение количества шагов, накопленного с момента предыдущего опроса */
+int32_t
+encoder_get_delta(
+	encoder_t * const e
+	)
+{
+	return
+		std::atomic_exchange(& e->position, 0) +
+		std::atomic_exchange(& e->account, 0) +
+		0;
+}
+
+/* получение количества шагов, накопленного с момента предыдущего опроса */
+static int32_t
+encoder_get_deltaspeed(
+	encoder_t * const e
+	)
+{
+	return (int32_t) std::atomic_exchange(& e->position, 0);
+}
+
+void encoder_pushback(encoder_t * const e, int32_t outsteps)
+{
+	e->account += outsteps;
 }
 
 static int local_iabs(int v)
@@ -195,9 +227,10 @@ static void
 encspeed_spool(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
-	const int p1 = encoder_get_delta(e);
+	const int p1 = encoder_get_deltaspeed(e);	// получить накопленные шаги и сбросить их
 	const int p1kbd = safegetposition_kbd();
-	encoder_pushback(e, p1 + p1kbd);
+	const int p1sum = p1 + p1kbd;
+	encoder_pushback(e, p1sum);	// обратно внести накопленные шаги
 
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
@@ -207,10 +240,10 @@ encspeed_spool(void * ctx)
 	   включившемся ускорении пользователь меняет направление - движется назад к пропущенной частоте. при этом для
 	   предсказуемости перестройки ускорение не должно изменяться.
 	*/
-	e->enchist [e->enchistindex] += local_iabs(p1) + local_iabs(p1kbd);
+	e->enchist [e->enchistindex] += local_iabs(p1sum);
 	if (++ e->tichist >= ENCTICKSMAX)	// уменьшение предела - уменьшает "постояную времени" измерителя скорости валкодера
 	{	
-		e->tichist  = 0;
+		e->tichist = 0;
 		e->enchistindex = (e->enchistindex + 1) % HISTLEN;
 		e->enchist [e->enchistindex] = 0;		// Очередная ячейка накопления шагов очищается перед использованием.
 	}
@@ -235,6 +268,15 @@ void encoders_clear(void)
 	encoder_clear(& encoder_ENC4F);
 }
 
+// в cmsis dsp нет функции arm_accumulate_q31, пока делаем свою.
+static void accumulate_q31(const q31_t * pSrc, uint32_t blockSize, q31_t * pResult)
+{
+	int32_t v = 0;
+	while (blockSize --)
+		v += * pSrc ++;
+	* pResult = v;
+}
+
 /* получение количества шагов и скорости вращения. */
 static int_least16_t
 encoder_get_snapshotproportional(
@@ -244,7 +286,7 @@ encoder_get_snapshotproportional(
 {
 	const int hrotate = encoder_get_delta(e);
 	
-	unsigned s;				// количество шагов за время измерения
+	q31_t s;				// количество шагов за время измерения
 	unsigned tdelta;	// Время измерения
 
 	IRQL_t oldIrql;
@@ -252,11 +294,9 @@ encoder_get_snapshotproportional(
 
 	// параметры изменерения скорости не модифицируем
 	// 1. количество шагов за время измерения
-	// HISTLEN == 4
-	s = e->enchist [0] + e->enchist [1] + e->enchist [2] + e->enchist [3]; // количество шагов валкодера за время наблюдений
-	ASSERT(HISTLEN == 4);
+	accumulate_q31(e->enchist, HISTLEN, & s);	// количество шагов валкодера за время наблюдений
 	// 2. Время измерения
-	tdelta = e->tichist + ENCTICKSMAX * (HISTLEN - 1); // во всех остальных слотах, кроме текущего, количество тиков максимальное.
+	tdelta = e->tichist + ENCTICKSMAX * HISTLEN; // во всех остальных слотах, кроме текущего, количество тиков максимальное.
 	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
 
 
@@ -264,25 +304,12 @@ encoder_get_snapshotproportional(
 	// Расчёт скорости. Результат - (1 / ENCODER_NORMALIZED_RESOLUTION) долей оборота за секунду
 	// Если результат ENCODER_NORMALIZED_RESOLUTION это обозначает один оборот в секунду
 	// ((s * ENCTICKS_FREQUENCY) / t) - результат в размерности "импульсов в секунду".
-	* speed = ((s * (uint_fast32_t) ENCTICKS_FREQUENCY * ENCODER_NORMALIZED_RESOLUTION) / (tdelta * (uint_fast32_t) encoder_get_actualresolution(e)));
+	* speed = (s * (uint_fast32_t) ENCTICKS_FREQUENCY * ENCODER_NORMALIZED_RESOLUTION) /
+			(tdelta * (uint_fast32_t) encoder_get_actualresolution(e));
 
 	return hrotate;
 }
 
-
-/* получение количества шагов, накопленного с момента предыдущего опроса */
-int_least16_t
-encoder_get_delta(
-	encoder_t * const e
-	)
-{
-	return std::atomic_exchange(& e->position, 0);
-}
-
-void encoder_pushback(encoder_t * const e, int outsteps)
-{
-	e->position += outsteps;
-}
 
 encoder_t encoder1;	// Main RX tuning knob
 #if WITHENCODER2
@@ -299,7 +326,7 @@ encoder_t encoder_kbd;
 
 // вызывается из обработчика таймерного прерывания - клавиатура.
 void encoder_kbdctl(
-	uint_fast8_t code, 		// код клавиши
+	uint_fast16_t code, 		// код клавиши
 	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
 	)
 {
@@ -312,7 +339,7 @@ void encoder_kbdctl(
 }
 /* получение накопленного значения прерываний от валкодера.
 		накопитель сбрасывается */
-int_least16_t 
+int32_t
 encoder_getrotatehires(
 	encoder_t * const e,
 	uint_fast8_t * jumpsize	/* jumpsize - во сколько раз увеличивается скорость перестройки */
@@ -327,14 +354,16 @@ encoder_getrotatehires(
 	static const accel velotable [] =
 	{
 		{	ENCODER_NORMALIZED_RESOLUTION * 45U / 10U,	200U },	// 4.5 оборота в секунду
-		{	ENCODER_NORMALIZED_RESOLUTION * 25U / 10U,	20U },	// 2.5 оборота в секунду
-		{	ENCODER_NORMALIZED_RESOLUTION * 16U / 10U,	5U },	// 1.6 оборота в секунду
-		{	ENCODER_NORMALIZED_RESOLUTION * 8U / 10U, 2U },	// 0.8 оборота в секунду - удвоение шага
+		{	ENCODER_NORMALIZED_RESOLUTION * 30U / 10U,	100U },	// 3 оборота в секунду
+		{	ENCODER_NORMALIZED_RESOLUTION * 20U / 10U,	20U },	// 2 оборота в секунду
+		{	ENCODER_NORMALIZED_RESOLUTION * 10U / 10U,	10U },	// 1.6 оборота в секунду
+		{	ENCODER_NORMALIZED_RESOLUTION * 8U / 10U, 5U },	// 0.8 оборота в секунду
+		{	ENCODER_NORMALIZED_RESOLUTION * 5U / 10U, 2U },	// 0.5 оборота в секунду - удвоение шага
 	};
 
 
 	unsigned speed;
-	int_least16_t nrotate = encoder_get_snapshotproportional(e, & speed);
+	const int32_t nrotate = encoder_get_snapshotproportional(e, & speed);
 
 	if (encoder1_dynamic != 0)
 	{
@@ -348,6 +377,10 @@ encoder_getrotatehires(
 			if (speed >= vtspeed)
 			{
 				* jumpsize = velotable [i].muliplier;
+				if (nrotate)
+				{
+					//PRINTF("[%d] n=%d s=%d\n", i, (int) nrotate, (int) speed);
+				}
 				return nrotate;
 			}
 		}
@@ -469,3 +502,30 @@ void encoder_indev_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 }
 
 #endif /* WITHLVGL */
+
+#else /* WITHENCODER */
+/* STUB */
+/* вызывается при запрещённых прерываниях */
+void encoders_initialize(void)
+{
+
+}
+/* накопитель сбрасывается */
+void encoders_clear(void)
+{
+}
+
+void encoder_pushback(encoder_t * const e, int32_t outsteps)
+{
+}
+
+
+// вызывается из обработчика таймерного прерывания - клавиатура.
+void encoder_kbdctl(
+	uint_fast16_t code, 		// код клавиши
+	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
+	)
+{
+}
+
+#endif /* WITHENCODER */

@@ -552,29 +552,19 @@
 ////#define TARGET_CS4272_RESET_PORT_S(v)		do { R7S721_TARGET_PORT_S(7, v); } while (0)
 ////#define TARGET_CS4272_RESET_PORT_C(v)		do { R7S721_TARGET_PORT_C(7, v); } while (0)
 ////#define TARGET_CS4272_RESET_BIT		(1U << 2)	// PD2
+#if WITHSPIHW
+	// RSPI0 used
 
-// RSPI0 used
-#define SPIHARD_PTR (& RSPI1)
-#define SPIHARD_IX 1		// 0: RSPI0, 1: RSPI1
+	// MOSI & SCK port
+	#define	SPI_SCLK_BIT			(1U << 12)	// * P6_12 бит, через который идет синхронизация SPI RSPI1
+	#define	SPI_MOSI_BIT			(1U << 14)	// * P6_14 бит, через который идет вывод (или ввод в случае двунаправленного SPI).RSPI1
+	#define	SPI_MISO_BIT			(1U << 15)	// * P6_15 бит, через который идет ввод с SPI.RSPI1
 
-// MOSI & SCK port
-#define SPI_TARGET_SCLK_PORT_S(v) do {	R7S721_TARGET_PORT_S(6, v); } while (0)
-#define SPI_TARGET_SCLK_PORT_C(v) do {	R7S721_TARGET_PORT_C(6, v); } while (0)
-#define	SPI_SCLK_BIT			(1U << 12)	// * P6_12 бит, через который идет синхронизация SPI RSPI1
-
-#define SPI_TARGET_MOSI_PORT_S(v) do {	R7S721_TARGET_PORT_S(6, v); } while (0)
-#define SPI_TARGET_MOSI_PORT_C(v) do {	R7S721_TARGET_PORT_C(6, v); } while (0)
-#define	SPI_MOSI_BIT			(1U << 14)	// * P6_14 бит, через который идет вывод (или ввод в случае двунаправленного SPI).RSPI1
-
-#define SPI_TARGET_MISO_PIN		(R7S721_INPUT_PORT(6))		// was PINA 
-#define	SPI_MISO_BIT			(1U << 15)	// * P6_15 бит, через который идет ввод с SPI.RSPI1
-
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI1_INITIALIZE() do { \
 			arm_hardware_pio6_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
 			arm_hardware_pio6_inputs(SPI_MISO_BIT); \
 		} while (0)
 
-#if WITHSPIHW
 
 	#define HARDWARE_SPI_CONNECT() do { \
 			arm_hardware_pio6_alternative(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, R7S721_PIOALT_3);	/* PIO disable */ \
@@ -583,6 +573,14 @@
 			arm_hardware_pio6_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT);	/* PIO enable */ \
 		} while (0)
 
+	// RSPI0 used
+	#define SPIHARD_IX 1		// 0: RSPI0, 1: RSPI1
+	#define SPIHARD_PTR (& RSPI1)
+	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPIHARD_PTR
+	#define HARDWARE_FPGA_LOADER_SPIHARD_PTR SPIHARD_PTR
+
+	// сделать зависящим от target
+	#define SPI_GET_PTR(target) ((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )
 
 #endif /* WITHSPIHW */
 
@@ -603,7 +601,7 @@
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
 			arm_hardware_pio1_outputs(TARGET_TWI_TWCK | TARGET_TWI_TWD, TARGET_TWI_TWCK | TARGET_TWI_TWD); \
-		} while (0) 
+		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
@@ -648,12 +646,18 @@
 		} while (0)
 
 	#define HARDWARE_FPGA_RESET() do { \
+		board_fpga_loader_initialize(); \
+			/*board_fpga_reset(); */ \
+		} while (0)
+#else /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
+
+	#define HARDWARE_FPGA_RESET() do { \
+		board_fpga_loader_initialize(); \
 			/*board_fpga_reset(); */ \
 		} while (0)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-#if WITHDSPEXTFIR
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
 	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { R7S721_TARGET_PORT_C(3, v); } while (0)
 	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { R7S721_TARGET_PORT_S(3, v); } while (0)
@@ -672,7 +676,6 @@
 				arm_hardware_pio1_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
 				arm_hardware_pio1_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
 			} while (0)
-#endif /* WITHDSPEXTFIR */
 
 	/* получение состояния переполнения АЦП */
 	#define TARGET_FPGA_OVF_BIT		(1u << 8)	// P3_8
@@ -932,7 +935,7 @@
 		HARDWARE_DCDC_INITIALIZE(); \
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_FPGA_LOADER_INITIALIZE(); \
-		HARDWARE_FPGA_RESET(); \
+		/* HARDWARE_FPGA_RESET(); */ \
 		TUNE_INITIALIZE(); \
 		HARDWARE_USB0_INITIALIZE(); \
 		HARDWARE_USB1_INITIALIZE(); \

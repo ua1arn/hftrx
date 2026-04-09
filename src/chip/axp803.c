@@ -1,8 +1,11 @@
+/* $Id$ */
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
+
 /*
  * axp803.c
- *
- *  Created on: 7 февр. 2023 г.
- *      Author: User
  *
  *      Taken from https://github.com/jernejsk/u-boot/blob/25fa60a9ee1a92d751c0c3a4a8d4acc2495800cc/drivers/power/axp803.c
  */
@@ -71,9 +74,7 @@ static int pmic_bus_init(void)
 static int pmic_bus_read(uint8_t reg, uint8_t * data)
 {
 	uint8_t bufw = reg;
-	if (i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1))
-		return 1;
-	return i2chwx_read(TWIHARD_S_PTR, PMIC_I2C_R, data, 1);
+	return i2chwx_exchange(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1, data, 1);
 }
 
 static int pmic_bus_write(uint8_t reg, uint8_t data)
@@ -555,6 +556,49 @@ static int axp_set_dcdcd(unsigned int mvolt)
 //}
 //#endif
 
+#if 0
+// axp803
+// https://github.com/ARM-software/arm-trusted-firmware/blob/master/drivers/allwinner/axp/axp803.c
+const struct axp_regulator axp_regulators[] = {
+	{"aldo1",  700, 3300, 100, NA, 0x28, 0x13, 5},
+	{"dcdc1", 1600, 3400, 100, NA, 0x20, 0x10, 0},
+	{"dcdc5",  800, 1840,  10, 32, 0x24, 0x10, 4},
+	{"dcdc6",  600, 1520,  10, 50, 0x25, 0x10, 5},
+	{"dldo1",  700, 3300, 100, NA, 0x15, 0x12, 3},
+	{"dldo2",  700, 4200, 100, 27, 0x16, 0x12, 4},
+	{"dldo3",  700, 3300, 100, NA, 0x17, 0x12, 5},
+	{"dldo4",  700, 3300, 100, NA, 0x18, 0x12, 6},
+	{"fldo1",  700, 1450,  50, NA, 0x1c, 0x13, 2},
+	{}
+};
+#endif
+#if 0
+// https://github.com/ARM-software/arm-trusted-firmware/blob/master/drivers/allwinner/axp/axp805.c
+// AXP805
+/*
+ * The "dcdcd" split changes the step size by a factor of 5, not 2;
+ * disallow values above the split to maintain accuracy.
+ */
+const struct axp_regulator axp_regulators[] = {
+	{"dcdca",  600, 1520,  10, 50, 0x12, 0x10, 0},
+	{"dcdcb", 1000, 2550,  50, NA, 0x13, 0x10, 1},
+	{"dcdcc",  600, 1520,  10, 50, 0x14, 0x10, 2},
+	{"dcdcd",  600, 1500,  20, NA, 0x15, 0x10, 3},
+	{"dcdce", 1100, 3400, 100, NA, 0x16, 0x10, 4},
+	{"aldo1",  700, 3300, 100, NA, 0x17, 0x10, 5},
+	{"aldo2",  700, 3300, 100, NA, 0x18, 0x10, 6},
+	{"aldo3",  700, 3300, 100, NA, 0x19, 0x10, 7},
+	{"bldo1",  700, 1900, 100, NA, 0x20, 0x11, 0},
+	{"bldo2",  700, 1900, 100, NA, 0x21, 0x11, 1},
+	{"bldo3",  700, 1900, 100, NA, 0x22, 0x11, 2},
+	{"bldo4",  700, 1900, 100, NA, 0x23, 0x11, 3},
+	{"cldo1",  700, 3300, 100, NA, 0x24, 0x11, 4},
+	{"cldo2",  700, 4200, 100, 27, 0x25, 0x11, 5},
+	{"cldo3",  700, 3300, 100, NA, 0x26, 0x11, 6},
+	{}
+};
+#endif
+
 // AXP 305 - контроллер питания производства Allwinner - аналог Datasheet AXP805
 
 int board_orangepi_zero2_axp305_initialize(void)
@@ -854,15 +898,13 @@ static int axp858_getaldor(int aldo_num)
 {
 	switch (aldo_num)
 	{
+	default:
+		ASSERT(0);
 	case 1:	return AXP858_ALDO1_CTRL;
 	case 2:	return AXP858_ALDO2_CTRL;
 	case 3:	return AXP858_ALDO3_CTRL;
 	case 4:	return AXP858_ALDO4_CTRL;
 	case 5:	return AXP858_ALDO5_CTRL;
-	default:
-		ASSERT(0);
-		for (;;)
-			;
 	}
 }
 
@@ -1197,7 +1239,7 @@ int board_helperboard_t507_axp853_initialize(void)
 	}
 
 	pmu_axp858_ap_reset_enable();	// без этой строчки не инициализируется после reset
-	axp858_set_sw(0);
+	//axp858_set_sw(0);
 
 	// https://artmemtech.com/
 	// artmem atl4b0832
@@ -1231,9 +1273,9 @@ int board_helperboard_t507_axp853_initialize(void)
 
 	PRINTF("PMIC: AXP853T/AXP858 ON\n");
 	local_delay_initialize();
-	local_delay_ms_nocache(100);
+	local_delay_ms(100);
 	axp858_set_sw(1);
-	local_delay_ms_nocache(100);
+	local_delay_ms(100);
 	PRINTF("PMIC: AXP853T/AXP858 done\n");
 	dbg_flush();
 
@@ -1410,9 +1452,9 @@ int board_helperboard_a133_axp707_initialize(void)
 
 	PRINTF("PMIC: axp707 ON\n");
 	local_delay_initialize();
-	local_delay_ms_nocache(100);
+	local_delay_ms(100);
 	axp707_set_sw(1);
-	local_delay_ms_nocache(100);
+	local_delay_ms(100);
 	PRINTF("PMIC: axp707 done\n");
 	dbg_flush();
 #endif

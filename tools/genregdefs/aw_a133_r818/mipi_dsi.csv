@@ -1,15 +1,4 @@
-## DSI0 0x06504000
-## DSI_CORE 0x06504000
-## DSI_CONFIG_REG 0x06504400
-## DPSS_TOP0 0x0651 0000
-
-## COMBO_PHY_TX_DSI 0x06504000
-## COMBO_PHY_TX_GPIO_DSI 0x06504400
-
 #type; DSI0;  MIPI DSI System (A133/R818)
-#base; DSI0 0x06504000
-#irq; DSI0 100; DSI0 interrupt
-
 #regdef; DSI_CTL_REG;			0x0000; DSI Control Register
 #regdef; DSI_GINT0_REG;			0x0004; DSI Global Interrupt Register0
 #regdef; DSI_GINT1_REG;			0x0008; DSI Global Interrupt Register1

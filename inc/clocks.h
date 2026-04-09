@@ -86,7 +86,7 @@ uint_fast32_t stm32h7xx_get_spi4_5_freq(void);
 uint_fast32_t stm32h7xx_get_adc_freq(void);
 uint_fast32_t stm32f7xx_pllq_initialize(void); // Настроить выход PLLQ на 48 МГц
 
-void stm32mp1_pll_initialize(void);
+void stm32mp1_pll_initialize(int forced);
 void stm32mp1_usb_clocks_initialize(void);
 void stm32mp1_audio_clocks_initialize(void);
 uint_fast32_t stm32mp1_get_hse_freq(void);
@@ -164,8 +164,8 @@ uint_fast32_t allwnr_v3s_get_twi_freq(void);
 
 #endif /* (CPUSTYLE_V3S) */
 
-#if (CPUSTYLE_A133 || CPUSTYLE_R828)
-// Allwinner V3s
+#if (CPUSTYLE_A133)
+// Allwinner A133
 
 uint_fast32_t allwnr_a133_get_hosc_freq(void);
 uint_fast32_t allwnr_a133_get_cpux_freq(void);
@@ -173,6 +173,9 @@ uint_fast32_t allwnr_a133_get_uart_freq(void);
 uint_fast32_t allwnr_a133_get_spi_freq(void);
 uint_fast32_t allwnr_a133_get_twi_freq(void);
 uint_fast32_t allwnr_a133_get_s_twi_freq(void);
+uint_fast32_t allwnr_a133_get_spi0_freq(void);
+uint_fast32_t allwnr_a133_get_spi1_freq(void);
+uint_fast32_t allwnr_a133_get_spi2_freq(void);
 
 #endif /* (CPUSTYLE_V3S) */
 
@@ -256,8 +259,8 @@ uint_fast32_t allwnr_t113_get_chipid(void);
 #define CHIPID_H616			0x2300
 #define CHIPID_T507			0x2300
 
-// Allwinner A64
 #if CPUSTYLE_A64
+// Allwinner A64
 void allwnr_a64_module_pll_enable(volatile uint32_t * reg);
 uint_fast32_t allwnr_a64_get_hosc_freq(void);
 uint_fast32_t allwnr_a64_get_pll_hsic_freq(void);
@@ -292,6 +295,7 @@ uint_fast32_t allwnr_a64_get_nand_freq(void);
 #endif /* CPUSTYLE_A64 */
 
 #if (CPUSTYLE_H3)
+// Allwinner H3
 uint_fast32_t allwnr_h3_get_pll_video_freq(void);
 uint_fast32_t allwnr_h3_get_hosc_freq(void);
 uint_fast32_t allwnr_h3_get_uart_freq(void);
@@ -305,8 +309,42 @@ uint_fast32_t allwnr_h3_get_hdmi_freq(void);
 uint_fast32_t allwnr_h3_get_hdmi_slow_freq(void);
 #endif /* CPUSTYLE_H3 */
 
-// Allwinner T507/T507-H/H616
+#if CPUSTYLE_A733
+// Allwinner A733
+uint_fast32_t allwnr_a733_get_sysclk24M_freq(void);
+uint_fast32_t allwnr_a733_get_hosc_freq(void);
+uint_fast32_t allwnr_a733_get_losc_freq(void);
+uint_fast32_t allwnr_a733_get_cpux_L_freq(void);	// ARM CPUs core0..core5 - Cortex-A55
+uint_fast32_t allwnr_a733_get_cpux_B_freq(void);	// ARM CPUs core6..core7 - Cortex-A76
+uint_fast32_t allwnr_a733_get_dsu_freq(void);
+uint_fast32_t allwnr_a733_get_cpus_freq(void);	// RISC-V CPU
+uint_fast32_t allwnr_a733_get_uart_freq(void);
+uint_fast32_t allwnr_a733_get_s_uart_freq(void);
+uint_fast32_t allwnr_a733_get_twi_freq(void);
+uint_fast32_t allwnr_a733_get_s_twi_freq(void);
+uint_fast32_t allwnr_a733_get_spi0_freq(void);
+uint_fast32_t allwnr_a733_get_spi1_freq(void);
+uint_fast32_t allwnr_a733_get_spi2_freq(void);
+uint_fast32_t allwnr_a733_get_spif_freq(void);
+uint_fast32_t allwnr_a733_get_spi23_freq(void);
+
+uint_fast32_t allwnr_a733_get_hdmi_tv_freq(void);
+uint_fast32_t allwnr_a733_get_tcon_dsi0_freq(void);
+uint_fast32_t allwnr_a733_get_tcon_dsi1_freq(void);
+uint_fast32_t allwnr_a733_get_v0_tconlcd0_freq(void);
+uint_fast32_t allwnr_a733_get_v0_tconlcd1_freq(void);
+uint_fast32_t allwnr_a733_get_de0_freq(void);
+uint_fast32_t allwnr_a733_get_pll_peri0_2x_freq(void);
+
+uint_fast32_t allwnr_a733_get_pll_video0_4x_freq(void);
+uint_fast32_t allwnr_a733_get_pll_video1_4x_freq(void);
+uint_fast32_t allwnr_a733_get_pll_video2_4x_freq(void);
+uint_fast32_t allwnr_a733_get_pll_ref_freq(void);
+
+#endif /* CPUSTYLE_A733 */
+
 #if CPUSTYLE_T507
+// Allwinner T507/T507-H/H616
 uint_fast64_t allwnr_t507_get_pll_peri0_x1_freq(void);
 uint_fast64_t allwnr_t507_get_pll_peri1_x1_freq(void);
 uint_fast32_t allwnr_t507_get_pll_audio_1x_freq(void);
@@ -521,39 +559,30 @@ calcdividerselect(
 		TC_CMR_TCCLKS_TIMER_CLOCK5, // is a TCxCLK = MCLK / 1024
 	};
 
-#elif CPUSTYLE_ATMEGA
+#elif CPUSTYLE_XC7Z
 
-	// Параметры функции calcdivider().
 	enum
 	{
-		ATMEGA_SPCR_WIDTH = 0,			ATMEGA_SPCR_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2),
-
-		ATMEGA128_TIMER0_WIDTH = 8,		ATMEGA128_TIMER0_TAPS = (1024 | 256 | 128 | 64 | 32 | 8 | 1),
-		ATMEGA_TIMER0_WIDTH = 8,		ATMEGA_TIMER0_TAPS = (1024 | 256 | 64 | 8 | 1),
-		ATMEGA_TIMER1_WIDTH = 16,		ATMEGA_TIMER1_TAPS = (1024 | 256 | 64 | 8 | 1),
-		ATMEGA_TIMER2_WIDTH = 8,		ATMEGA_TIMER2_TAPS = (1024 | 256 | 128 | 64 | 32 | 8 | 1),
-		ATMEGAXXX4_TIMER3_WIDTH = 16,	ATMEGAXXX4_TIMER3_TAPS = (1024 | 256 | 64 | 8 | 1),	/* avaliable only on ATMega1284P */
-
-		ATMEGA_UBR_WIDTH = 12,	ATMEGA_UBR_TAPS = (16 | 8),	/* UBR: USART Baud Rate Register */
-		ATMEGA_TWBR_WIDTH = 8,	ATMEGA_TWBR_TAPS = (64 | 16 | 4 | 1),	/* TWBR: TWI Bit Rate Register */
-		ATMEGA_ADPS_WIDTH = 0,	ATMEGA_ADPS_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2),	/* ADPS2:0: ADC Prescaler Select Bits */
-
-		ATMEGA8_TIMER2_WIDTH = 8,		ATMEGA8_TIMER2_TAPS = (1024 | 256 | 128 | 64 | 32 | 8 | 1),
-		//
-		ATMEGA8_fillPAD
-
+		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1),	// FPGA0_CLK_CTRL
+		XC7Z_SPI_BR_WIDTH = 0, XC7Z_SPI_BR_TAPS = (256 | 128 | 64 | 32 | 16 | 8 | 4)
 	};
-	// spcr и spsr - скорость SPI. Индексы соответствуют номерам битов в ATMEGA_SPCR_TAPS
-	// Document: 8272E-AVR-04/2013, Table 18-5. Relationship between SCK and the oscillator frequency.
-	static const struct spcr_spsr_tag { uint_fast8_t spsr, spcr; } spcr_spsr [] =
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_A733)
+	enum
 	{
-		{ (1U << SPI2X), 	(0U << SPR1) | (0U << SPR0), }, 	/* /2 */
-		{ (0U << SPI2X), 	(0U << SPR1) | (0U << SPR0), }, 	/* /4 */
-		{ (1U << SPI2X), 	(0U << SPR1) | (1U << SPR0), }, 	/* /8 */
-		{ (0U << SPI2X), 	(0U << SPR1) | (1U << SPR0), }, 	/* /16 */
-		{ (1U << SPI2X), 	(1U << SPR1) | (0U << SPR0), }, 	/* /32 */
-		{ (0U << SPI2X), 	(1U << SPR1) | (0U << SPR0), }, 	/* /64 */
-		{ (0U << SPI2X), 	(1U << SPR1) | (1U << SPR0), }, 	/* /128 */
+		ALLWNR_TIMER_WIDTH = 32, ALLWNR_TIMER_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1),
+		ALLWNR_PWM_WIDTH = 8, ALLWNR_PWM_TAPS = (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2),
+		ALLWNT113_I2Sx_CLK_WIDTH = 5, ALLWNT113_I2Sx_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
+		ALLWNT113_AudioCodec_CLK_WIDTH = 5, ALLWNT113_AudioCodec_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
+		ALLWNT113_AudioHUB_CLK_WIDTH = 0, ALLWNT113_AudioHUB_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
+		ALLWNT113_DMIC_CLK_WIDTH = 5, ALLWNT113_DMIC_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
+		ALLWNT_SPI_CLK_WIDTH = 4, ALLWNT_SPI_CLK_TAPS = ( 8 | 4 | 2 | 1),	// CCU register
+		ALLWNT_SPI_CCI_WIDTH = 8, ALLWNT_SPI_CCI_TAPS = 1,	// SPI register
+		ALLWNR_TCONTV_WIDTH = 4, ALLWNR_TCONTV_TAPS = (8 | 4 | 2 | 1), // t113: TCONTV_CLK_REG, t507: TCON_TV0_CLK_REG, TCON_TV1_CLK_REG
+		ALLWNT113_TCONLCD_WIDTH = 4, ALLWNT113_TCONLCD_TAPS = (8 | 4 | 2 | 1), // TCONLCD_CLK_REG - T507 can not use
+		ALLWNT113_DSI_WIDTH = 4, ALLWNT113_DSI_TAPS = (1), // DSI_CLK_REG
+		//
+		ALLWNT113_pad
 	};
 
 #elif CPUSTYLE_R7S721
@@ -573,34 +602,11 @@ calcdividerselect(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		);
 
-#elif CPUSTYLE_XC7Z
-
-	enum
-	{
-		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1),	// FPGA0_CLK_CTRL
-		XC7Z_SPI_BR_WIDTH = 0, XC7Z_SPI_BR_TAPS = (256 | 128 | 64 | 32 | 16 | 8 | 4)
-	};
-
-#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_R828
-	enum
-	{
-		ALLWNR_TIMER_WIDTH = 32, ALLWNR_TIMER_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1),
-		ALLWNR_PWM_WIDTH = 8, ALLWNR_PWM_TAPS = (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2),
-		ALLWNT113_I2Sx_CLK_WIDTH = 5, ALLWNT113_I2Sx_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
-		ALLWNT113_AudioCodec_CLK_WIDTH = 5, ALLWNT113_AudioCodec_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
-		ALLWNT113_AudioHUB_CLK_WIDTH = 0, ALLWNT113_AudioHUB_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
-		ALLWNT113_DMIC_CLK_WIDTH = 5, ALLWNT113_DMIC_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
-		ALLWNT_SPI_CLK_WIDTH = 4, ALLWNT_SPI_CLK_TAPS = ( 8 | 4 | 2 | 1),	// CCU register
-		ALLWNT_SPI_CCI_WIDTH = 8, ALLWNT_SPI_CCI_TAPS = 1,	// SPI register
-		ALLWNR_TCONTV_WIDTH = 4, ALLWNR_TCONTV_TAPS = (8 | 4 | 2 | 1), // TCON_TV0_CLK_REG
-		//
-		ALLWNT113_pad
-	};
-
 #else
 	//#warning Undefined CPUSTYLE_XXX
 #endif
 
+void sysinit_boot_disconnect(void);
 void sysinit_pll_initialize(int forced);	// PLL initialize
 
 #ifdef __cplusplus

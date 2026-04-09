@@ -373,6 +373,38 @@ void hardware_uart5_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	   serial_set_handler(UART5_IRQn, UART5_IRQHandler);
 	}
 
+#elif (CPUSTYLE_A133)
+
+	const unsigned ix = thisPORT;
+
+	/* Open the clock gate for uart0 */
+	CCU->UART_BGR_REG |= (UINT32_C(1) << (ix + 0));
+
+	/* De-assert uart0 reset */
+	CCU->UART_BGR_REG |= (UINT32_C(1) << (ix + 16));
+
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
+	HARDWARE_UART5_INITIALIZE();
+	if (debug == 0)
+	{
+	   serial_set_handler(UART5_IRQn, UART5_IRQHandler);
+	}
+
+#elif (CPUSTYLE_A733)
+
+	/* Open the clock gate for uart0 */
+	CCU->UART5_BGR_REG |= (UINT32_C(1) << 0);
+
+	/* De-assert uart0 reset */
+	CCU->UART5_BGR_REG |= (UINT32_C(1) << 16);
+
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
+	HARDWARE_UART5_INITIALIZE();
+	if (debug == 0)
+	{
+	   serial_set_handler(UART5_IRQn, UART5_IRQHandler);
+	}
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif

@@ -1932,11 +1932,11 @@
   </peripheral>
   <peripheral>
   <name>USBOTG</name>
-  <description></description>
+  <description>USB OTG Dual-Role Device controller</description>
   <baseAddress>0x01C19000</baseAddress>
   <registers>
    <cluster>
-    <dim>6</dim>
+    <dim>16</dim>
     <addressOffset>0x00000000</addressOffset>
     <register>
      <name>USB_EPFIFO</name>
@@ -1947,7 +1947,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x018</dimIncrement>
+    <dimIncrement>0x040</dimIncrement>
    </cluster>
    <register>
     <name>USB_GCS</name>
@@ -1959,38 +1959,20 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB_INTTX</name>
-    <displayName>USB_INTTX</displayName>
-    <description>USB_INTTX USB_EPINTF USB Endpoint Interrupt Flag Register</description>
+    <name>USB_EPINTF</name>
+    <displayName>USB_EPINTF</displayName>
+    <description>USB_INTTX - lower 16, USB_INTRX - high 16, USB_EPINTF USB Endpoint Interrupt Flag Register</description>
     <addressOffset>0x044</addressOffset>
-    <size>0x10</size>
+    <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>USB_INTRX</name>
-    <displayName>USB_INTRX</displayName>
-    <description>USB_INTRX USB_EPINTF</description>
-    <addressOffset>0x046</addressOffset>
-    <size>0x10</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USB_INTTXE</name>
-    <displayName>USB_INTTXE</displayName>
-    <description>USB_INTTXE USB_EPINTE USB Endpoint Interrupt Enable Register</description>
+    <name>USB_EPINTE</name>
+    <displayName>USB_EPINTE</displayName>
+    <description>USB_INTTXE - lower 16, USB_INTRXE - high 16,  USB_EPINTE USB Endpoint Interrupt Enable Register</description>
     <addressOffset>0x048</addressOffset>
-    <size>0x10</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USB_INTRXE</name>
-    <displayName>USB_INTRXE</displayName>
-    <description>USB_INTRXE USB_EPINTE</description>
-    <addressOffset>0x04A</addressOffset>
-    <size>0x10</size>
+    <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
@@ -2069,18 +2051,9 @@
    <register>
     <name>USB_RXCOUNT</name>
     <displayName>USB_RXCOUNT</displayName>
-    <description>USB_RXCOUNT</description>
+    <description>USB_RXCOUNT, USB_RXPKTCNT - high 16 bits</description>
     <addressOffset>0x088</addressOffset>
-    <size>0x10</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>USB_RXPKTCNT</name>
-    <displayName>USB_RXPKTCNT</displayName>
-    <description>USB_RXPKTCNT</description>
-    <addressOffset>0x08A</addressOffset>
-    <size>0x10</size>
+    <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
@@ -2254,7 +2227,7 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>8</dim>
+    <dim>16</dim>
     <addressOffset>0x00000540</addressOffset>
     <registers>
      <register>
@@ -2294,7 +2267,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x080</dimIncrement>
+    <dimIncrement>0x100</dimIncrement>
    </cluster>
   </registers>
   </peripheral>

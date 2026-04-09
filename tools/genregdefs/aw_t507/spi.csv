@@ -1,8 +1,5 @@
+
 #type; SPI; Serial Peripheral Interface
-#base; SPI0 0x05010000
-#base; SPI1 0x05011000
-#irq; SPI0 44
-#irq; SPI1 45
 
 
 #regdef; SPI_GCR; 0x0004; SPI Global Control Register

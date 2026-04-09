@@ -21,9 +21,9 @@ TRGT2 = arm-none-eabi
 TRGT = $(TRGT2)-
 
 PRJROOT := ../..
-OBJDIR = obj
+OBJDIR = o
 
-ZINQ_BOOT_DIR := E:
+ZINQ_BOOT_DIR := F:
 XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_Y7Z020.elf
 
 #
@@ -67,12 +67,14 @@ ARCHDIR = $(PRJROOT)/arch/zynq
 
 #ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_myir
 ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020_ebaz
-#ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
+#ZYNQLIBSRC += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
+GUILIBDIR = $(PRJROOT)/lib/simple-gui
+GUIUSERDIR = $(PRJROOT)/src/simple-gui
 
 # full qualified name
 ZYNQLIB = zynq7020.a
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
@@ -88,8 +90,10 @@ DINCDIR = \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
-	$(CMSISDIR)/Core/Include $(CMSISDIR)/Core/Source \
-	$(ZYNQLIBSRC)
+	$(CMSISDIR)/Include $(CMSISDIR)/Source \
+	$(ZYNQLIBSRC) \
+ 	$(GUILIBDIR)  \
+ 	$(GUIUSERDIR)
 
 # List all default libraries here
 #DLIBS = -lm -larm_cortexA9lneon_math
@@ -111,9 +115,12 @@ SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 #SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
 #SRCDIRS += $(OPENVGDIR)/src
+SRCDIRS += $(GUILIBDIR)
 
 # cmsis-dsp
 include ../cmsis_dsp.mak
+
+ifeq (1, 0) 
 
 # CherryUSB
 include ../cherryusb.mak
@@ -144,6 +151,8 @@ include ../lwip.mak
 
 # custom application
 include ../custom0.mak
+
+endif
 
 # Define project name here
 PROJECT = tc1_xc7z020
@@ -258,7 +267,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 all: bitstreams $(PROJECT)_app_xyl32.bin
 	-sh -c "cp $(PROJECT)_app_xyl32.bin $(ZINQ_BOOT_DIR)/$(PROJECT)_app_xyl32.bin"
 
-bitstreams: bitstream_ant_20.h bitstream_myir7020.h bitstream_ebaz7020.h   
+bitstreams: bitstream_ant_20.h bitstream_myir7020.h bitstream_4205v2.h   
 
 bitstream_ant_20.h: bitstream_ant_20.bit
 	./bit2c bitstream_ant_20.bit bitstream_ant_20.h
@@ -266,8 +275,8 @@ bitstream_ant_20.h: bitstream_ant_20.bit
 bitstream_myir7020.h: bitstream_myir7020.bit
 	./bit2c  bitstream_myir7020.bit bitstream_myir7020.h 
   
-bitstream_ebaz7020.h: bitstream_ebaz7020.bit
-	./bit2c  bitstream_ebaz7020.bit bitstream_ebaz7020.h
+bitstream_4205v2.h: bitstream_4205v2.bit
+	./bit2c  bitstream_4205v2.bit bitstream_4205v2.h
 	
 bootloader: bitstreams BOOT2
  
@@ -275,8 +284,8 @@ ifeq (1, 0)
 app_run: $(PROJECT)_app.elf bitstream_myir7020.bit app_run_myir7020.tcl
 	xsct.bat app_run_myir7020.tcl 
 else  
-app_run: $(PROJECT)_app.elf bitstream_ebaz7020.bit app_run_ebaz7020.tcl
-	xsct.bat app_run_ebaz7020.tcl
+app_run: $(PROJECT)_app.elf bitstream_4205v2.bit app_run_4205v2.tcl
+	xsct.bat app_run_4205v2.tcl
 endif
 
 lib: $(ZYNQLIB)

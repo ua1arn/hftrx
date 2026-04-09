@@ -6,12 +6,12 @@
 //
 
 #include "hardware.h"
-#include "board.h"
 #include "formats.h"
-#include "gpio.h"
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
+#include "board.h"
+#include "gpio.h"
 
 // При необходимости разместить в файле конфигурации платы.
 //#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
@@ -84,7 +84,7 @@ static void gt911_intconnect(void)
 /* return non-zero then error */
 int gt911_set_reg(uint_fast16_t reg)
 {
-#if WITHTWIHW
+#if WITHTWIHW && CPUSTYLE_XC7Z
 	uint8_t buf[2] = { (reg >> 8), (reg & 0xFF), };
 	return i2chw_write(gt911_addr, buf, 2);
 #elif WITHTWISW
@@ -102,7 +102,7 @@ int gt911_set_reg(uint_fast16_t reg)
 /* return non-zero then error */
 int gt911_read(uint_fast16_t reg, uint8_t * buf, size_t len)
 {
-#if WITHTWIHW
+#if WITHTWIHW && CPUSTYLE_XC7Z
 	if (gt911_set_reg(reg))
 		return 1;
 	return i2chw_read(gt911_addr, buf, len);
@@ -140,7 +140,7 @@ int gt911_read(uint_fast16_t reg, uint8_t * buf, size_t len)
 /* return non-zero then error */
 int gt911_write_reg(uint_fast16_t reg, uint8_t val)
 {
-#if WITHTWIHW
+#if WITHTWIHW && CPUSTYLE_XC7Z
 	uint8_t buf[3] = { (reg >> 8), (reg & 0xFF), val, };
 	return i2chw_write(gt911_addr, buf, 3);
 #elif WITHTWISW

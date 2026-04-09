@@ -559,7 +559,7 @@ void SDRAM_InitSequence(void)
 
   SDRAM_Init
   */
-void arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(void)
 {
   FMC_SDRAMInitTypeDef  FMC_SDRAMInitStructure;
   FMC_SDRAMTimingInitTypeDef  FMC_SDRAMTimingInitStructure;
@@ -671,7 +671,7 @@ void arm_hardware_sdram_initialize(void)
 
 #elif CPUSTYLE_STM32H7XX
 
-void arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(void)
 {
 	ASSERT(0);
 }
@@ -769,11 +769,13 @@ void arm_hardware_sdram_initialize(void)
 
 
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
-void arm_hardware_sdram_initialize(void)
+// External memory region(s) - non-zero if error
+int arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
-	VERIFY(PS7_INIT_SUCCESS == ps7_init());
-	PRINTF("arm_hardware_sdram_initialize done\n");
+	int ec = ps7_init();
+	PRINTF("arm_hardware_sdram_initialize done, ec=%d\n", ec);
+	return ec != PS7_INIT_SUCCESS;
 }
 
 #elif CPUSTYLE_A64

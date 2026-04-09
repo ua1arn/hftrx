@@ -54,7 +54,7 @@
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define WITHSDRAM_PMC1	1	/* power management chip */
+	
 
 	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
@@ -116,8 +116,8 @@
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
-	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-	//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 	#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 	//#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
@@ -611,10 +611,6 @@
 		xc7z_gpio_output(SPI_MOSI_MIO); \
 		xc7z_gpio_input(SPI_MISO_MIO); \
 		} while (0)
-	#define HARDWARE_SPI_CONNECT() do { \
-		} while (0)
-	#define HARDWARE_SPI_DISCONNECT() do { \
-		} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
 
@@ -1036,9 +1032,11 @@
 				gpio_output2(HARDWARE_NAND_D2_MIO, (v2 & (0x01 << 2)) != 0, pinmode_output); \
 				gpio_output2(HARDWARE_NAND_D1_MIO, (v2 & (0x01 << 1)) != 0, pinmode_output); \
 				gpio_output2(HARDWARE_NAND_D0_MIO, (v2 & (0x01 << 0)) != 0, pinmode_output); \
+				__DSB(); \
 			} while (0)
 
 			#define HARDWARE_NAND_DATA_GET() ( \
+				__DSB(), \
 				gpio_readpin(HARDWARE_NAND_D7_MIO) * (1u << 7) + \
 				gpio_readpin(HARDWARE_NAND_D6_MIO) * (1u << 6) + \
 				gpio_readpin(HARDWARE_NAND_D5_MIO) * (1u << 5) + \
@@ -1052,6 +1050,7 @@
 
 			#define HARDWARE_NAND_BUS_READ() do { \
 				const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 1); \
+				__DSB(); \
 				gpio_input2(HARDWARE_NAND_D7_MIO, pinmode_input); \
 				gpio_input2(HARDWARE_NAND_D6_MIO, pinmode_input); \
 				gpio_input2(HARDWARE_NAND_D5_MIO, pinmode_input); \

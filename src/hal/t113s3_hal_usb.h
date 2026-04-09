@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-#define USB_MAX_EP_NO		5	// T113: 5 (EP1..EP5), T507: 4 (EP1..EP4)
+#define USB_MAX_EP_NO		15	// T113: 5 (EP1..EP5), T507: 4 (EP1..EP4) - количество endpoints, не считая ep0
 
 typedef enum {
 	USB_RETVAL_NOTCOMP = 0,
@@ -33,16 +33,12 @@ typedef __PACKED_STRUCT
     uint16_t wLength;
 } uSetupPKG, *pSetupPKG;
 
+#if WITHUSBDMSC
+
 typedef struct {
 
 	//uint32_t ConfigDesc_Len;
 	__ALIGN_BEGIN uint8_t MaxLUNv [4] __ALIGN_END;
-
-	//EP protocol
-	#define USB_PRTCL_ILL  	0
-	#define USB_PRTCL_ISO  	1
-	#define USB_PRTCL_BULK 	2
-	#define USB_PRTCL_INT  	3
 
 	//Bulk Only Device State Machine
 	#define USB_BO_IDLE				0
@@ -65,6 +61,35 @@ typedef struct {
 
 typedef struct
 {
+    uint32_t dCBWSig;
+    uint32_t dCBWTag;
+    uint32_t dCBWDTL;
+    uint8_t  bmCBWFlg;
+    uint8_t  bCBWLUN   : 4;
+    uint8_t  bCBWRes1  : 4;   //Reserved
+    uint8_t  bCBWCBL   : 5;
+    uint8_t  bCBWRes2  : 3;   //Reserved
+    uint8_t  CBWCB[16];
+} uCBWPKG, *pCBWPKG;
+
+typedef struct
+{
+  	uint32_t dCSWSig;
+  	uint32_t dCSWTag;
+  	uint32_t dCSWDataRes;
+  	uint8_t  bCSWStatus;
+} uCSWPKG, *pCSWPKG;
+
+#endif /* WITHUSBDMSC */
+
+//EP protocol
+#define USB_PRTCL_ILL  	0
+#define USB_PRTCL_ISO  	1
+#define USB_PRTCL_BULK 	2
+#define USB_PRTCL_INT  	3
+
+typedef struct
+{
   void      *buf;      /* the start address of a transfer data buffer */
   uint16_t  length;    /* the number of bytes in the buffer */
   uint16_t  remaining; /* the number of bytes remaining in the buffer */
@@ -84,9 +109,10 @@ typedef struct {
 	#define USB_SPEED_HS		1
 	#define USB_SPEED_FS		2
 	#define USB_SPEED_LS		3
-	uint32_t speed;
-	uint32_t srp;
-	uint32_t hnp;
+	uint32_t speed;	// USB_SPEED_HS or USB_SPEED_FS
+	unsigned lastepn;	// последний номер EP, который можно использовать
+//	uint32_t srp;
+//	uint32_t hnp;
 
 	//usb irq record
 //	volatile uint32_t busirq_status;
@@ -96,8 +122,8 @@ typedef struct {
 //	volatile uint32_t connect;
 //	volatile uint32_t suspend;
 //	volatile uint32_t reset;
-	#define USB_OTG_A_DEVICE			0
-	#define USB_OTG_B_DEVICE			1
+//	#define USB_OTG_A_DEVICE			0
+//	#define USB_OTG_B_DEVICE			1
 	//volatile uint32_t otg_dev;
 
 	//Signals for usb debug
@@ -120,7 +146,7 @@ typedef struct {
 	//USB_RETVAL ep0_ret;
 
 	USB_RETVAL eptx_ret[USB_MAX_EP_NO];
-	USB_RETVAL eprx_ret[USB_MAX_EP_NO];
+	//USB_RETVAL eprx_ret[USB_MAX_EP_NO];
 	volatile uint32_t eptx_flag[USB_MAX_EP_NO];
 	volatile uint32_t eprx_flag[USB_MAX_EP_NO];
 	#define USB_EPX_SETUP					0
@@ -157,54 +183,31 @@ typedef struct {
 	uint32_t		 dmatx_last_transferv[USB_MAX_EP_NO];
 #endif /* WITHUSBDEV_DMAENABLE */
 	//Timer
-	#define USB_IDLE_TIMER								0x0
-	#define USB_DEVICE_VBUS_DET_TIMER			0x1
-	#define USB_HOST_RESET_TIMER					0x2
-	#define USB_HOST_RESUME_TIMER					0x3
-	#define USB_HOST_SUSPEND_TIMER				0x4
-	#define USB_HOST_DELAY_TIMER					0x5
+//	#define USB_IDLE_TIMER								0x0
+//	#define USB_DEVICE_VBUS_DET_TIMER			0x1
+//	#define USB_HOST_RESET_TIMER					0x2
+//	#define USB_HOST_RESUME_TIMER					0x3
+//	#define USB_HOST_SUSPEND_TIMER				0x4
+//	#define USB_HOST_DELAY_TIMER					0x5
 //	uint32_t timer;     //timer purpose
 //	#define USB_DEVICE_VBUS_DET_TIMEOUT		10  //10ms
 //	uint32_t timeout;   //timeout value (in ms)
 //	uint32_t loop;      //Loop counter
 
-	#define USB_BUFFER_SIZE							256
-
 	//uint32_t power_debouce;
 	uSetupPKG setup_packet;
+	// для будущего приведения в порядок
 	pipe_state_t pipe0;
-	pipe_state_t pipe[2][7];   /* pipe[direction][endpoint number - 1] */
+	pipe_state_t pipes[2][USB_MAX_EP_NO];   /* pipe[direction][endpoint number - 1] */
 	uint16_t     remaining_ctrl; /* The number of bytes remaining in data stage of control transfer. */
 	int8_t       status_out;
+
+	#define USB_EPOUT_TIMEOUTMAX 0x1000
+	uint32_t epout_timeoutv[USB_MAX_EP_NO];
 
 } usb_struct, *pusb_struct;
 
 #define REQUEST_TYPE_INVALID  (0xFFu)
-
-#if WITHUSBDMSC
-
-typedef struct
-{
-    uint32_t dCBWSig;
-    uint32_t dCBWTag;
-    uint32_t dCBWDTL;
-    uint8_t  bmCBWFlg;
-    uint8_t  bCBWLUN   : 4;
-    uint8_t  bCBWRes1  : 4;   //Reserved
-    uint8_t  bCBWCBL   : 5;
-    uint8_t  bCBWRes2  : 3;   //Reserved
-    uint8_t  CBWCB[16];
-} uCBWPKG, *pCBWPKG;
-
-typedef struct
-{
-  	uint32_t dCSWSig;
-  	uint32_t dCSWTag;
-  	uint32_t dCSWDataRes;
-  	uint8_t  bCSWStatus;
-} uCSWPKG, *pCSWPKG;
-
-#endif /* WITHUSBDMSC */
 
 //VBUS Level
 #define USB_VBUS_SESSEND		0
@@ -226,10 +229,10 @@ typedef struct
   * @{
   */
 // Эти значения пишутся в регистр USB_OTG_DCFG после умножения на USB_OTG_DCFG_DSPD_0
-#define USB_OTG_SPEED_HIGH                     0U	// 00: High speed
-#define USB_OTG_SPEED_HIGH_IN_FULL             1U	// Full speed using HS
-#define USB_OTG_SPEED_LOW                      2U	// Reserved
-#define USB_OTG_SPEED_FULL                     3U	// Full speed using internal FS PHY
+//#define USB_OTG_SPEED_HIGH                     0U	// 00: High speed
+//#define USB_OTG_SPEED_HIGH_IN_FULL             1U	// Full speed using HS
+//#define USB_OTG_SPEED_LOW                      2U	// Reserved
+//#define USB_OTG_SPEED_FULL                     3U	// Full speed using internal FS PHY
 /**
   * @}
   */
@@ -263,9 +266,9 @@ typedef struct
 /** @defgroup USB_Core_PHY_   USB Core PHY
   * @{
   */
-#define USB_OTG_ULPI_PHY                       1U
-#define USB_OTG_EMBEDDED_PHY                   2U
-#define USB_OTG_HS_EMBEDDED_PHY                3U
+//#define USB_OTG_ULPI_PHY                       1U
+//#define USB_OTG_EMBEDDED_PHY                   2U
+//#define USB_OTG_HS_EMBEDDED_PHY                3U
 /**
   * @}
   */
@@ -284,13 +287,13 @@ typedef USBOTG_TypeDef	PCD_TypeDef;	/* processor peripherial */
 /**
   * @brief  USB Mode definition
   */
-typedef enum
-{
-   USB_OTG_DEVICE_MODE  = 0U,
-   USB_OTG_HOST_MODE    = 1U,
-   USB_OTG_DRD_MODE     = 2U
-
-} xUSB_OTG_ModeTypeDef;
+//typedef enum
+//{
+//   USB_OTG_DEVICE_MODE  = 0U,
+//   USB_OTG_HOST_MODE    = 1U,
+//   USB_OTG_DRD_MODE     = 2U
+//
+//} xUSB_OTG_ModeTypeDef;
 
 /**
   * @brief  URB States definition
@@ -493,15 +496,15 @@ typedef USB_OTG_CfgTypeDef     PCD_InitTypeDef;
 typedef USB_OTG_EPTypeDef      PCD_EPTypeDef;
 
 
-#define PIPE_NUM      (16)
-
-typedef struct {
-	int        enable;
-	uint16_t    status;
-	uint32_t    req_size;
-	uint32_t    data_cnt;
-	uint8_t     *p_data;
-} pipe_ctrl_t;
+//#define PIPE_NUM      (16)
+//
+//typedef struct {
+//	int        enable;
+//	uint16_t    status;
+//	uint32_t    req_size;
+//	uint32_t    data_cnt;
+//	uint8_t     *p_data;
+//} pipe_ctrl_t;
 
 /**
   * @brief  PCD Handle Structure definition

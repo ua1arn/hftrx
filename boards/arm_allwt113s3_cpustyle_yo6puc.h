@@ -42,7 +42,7 @@
 	//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define WITHSDRAM_PMC1	1	/* power management chip */
+	
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -476,7 +476,7 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
 //#define SPI_IOUPDATE_BIT		(UINT32_C(1) << 15)	// * PA15
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
 
 	#define targetdataflash 0xFF
@@ -553,6 +553,7 @@
 		arm_hardware_piog_outputs(targetnvram, 1 * targetnvram); /*  */ \
 	} while (0)
 
+	#define WITHSPI0HW 		1	/* Использование аппаратного контроллера SPI0 */
 	// MOSI & SCK port
 	#define	SPI_SCLK_BIT			(UINT32_C(1) << 2)	// PC2 SPI0_CLK
 	#define	SPI_MOSI_BIT			(UINT32_C(1) << 4)	// PC4 SPI0_MOSI
@@ -581,19 +582,15 @@
 	#define HARDWARE_SPI_FREQ (allwnr_t113_get_spi0_freq())
 	#define	SPIDFHARD_PTR SPI0	/* 0 - SPI0, 1: SPI1... */
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI0_INITIALIZE() do { \
 		arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
 		arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
 		arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
 		arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2);  /* PC6 SPI0_WP/D2 */ \
 		arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2);  /* PC7 SPI0_HOLD/D3 */ \
 	} while (0)
-	#define HARDWARE_SPI_CONNECT() do { \
-	} while (0)
-	#define HARDWARE_SPI_DISCONNECT() do { \
-	} while (0)
 
-#else /* WITHSPIHW || WITHSPISW */
+#else /* WITHSPIHW */
 
 	#define targetext1		(0)		// PE8 ext1 on front panel
 	#define targetxad2		(0)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
@@ -603,7 +600,7 @@
 	#define targetadc2		(0) 		// PE9 ADC MCP3208-BI/SL chip select (potentiometers)
 	#define targetfpga1		(0)		// PE10 FPGA control registers CS1
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 // WITHUART0HW
 #define HARDWARE_UART0_INITIALIZE() do { \
@@ -674,7 +671,6 @@
 		arm_hardware_pioe_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF4);	/* TWI1-SCK PE0 */ \
 		arm_hardware_pioe_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF4);		/* TWI1-SDA PE1 */ \
 	} while (0)
-	#define	TWIHARD_IX 1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
@@ -715,7 +711,7 @@
 	#define	TWIHARD0_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 #endif // WITHTWISW || WITHTWIHW
 
-#if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
+#if 0//WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); } while (0)
@@ -742,7 +738,8 @@
 
 	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
 	#define HARDWARE_FPGA_RESET() do { \
-		/* board_fpga_reset(); */ \
+		board_fpga_loader_initialize(); \
+		board_fpga_reset(); \
 	} while (0)
 
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
@@ -758,12 +755,13 @@
 
 	/* необходимость функции под вопросом (некоторые FPGA не грузятся с этой процедурой) */
 	#define HARDWARE_FPGA_RESET() do { \
-		/* board_fpga_reset(); */ \
+		board_fpga_loader_initialize(); \
+		board_fpga_reset(); \
 	} while (0)
 
 #endif /* WITHFPGAWAIT_AS || WITHFPGALOAD_PS */
 
-#if WITHDSPEXTFIR
+#if 1
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
 
 	// FPGA PIN_23
@@ -792,7 +790,7 @@
 			arm_hardware_piog_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
 			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
-#endif /* WITHDSPEXTFIR */
+#endif
 
 #if 0
 	/* получение состояния переполнения АЦП */
@@ -1146,7 +1144,7 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-		HARDWARE_FPGA_RESET(); \
+		/* HARDWARE_FPGA_RESET(); */ \
 		BOARD_BLINK_INITIALIZE();\
 		HARDWARE_KBD_INITIALIZE(); \
 		/*HARDWARE_DAC_INITIALIZE(); */\

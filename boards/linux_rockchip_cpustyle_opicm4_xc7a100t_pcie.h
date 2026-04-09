@@ -34,14 +34,15 @@
 #define	AXI_LITE_STREAM_RATE		0x00008000
 #define	AXI_LITE_STREAM_POS			0x00009000
 #define	AXI_LITE_FIR_COEFFS			0x0000C000
-#define	AXI_LITE_GPO				0x00031000
+#define	AXI_LITE_PL_CONTROL			0x00031000
+#define AXI_LITE_PL_STATUS			0x00033000
 
 #define CALIBRATION_IQ_FIR_RX_SHIFT		56	// 56 - sw FIR, 50 - hw FIR
-#define CALIBRATION_IQ_CIC_RX_SHIFT		61
+#define CALIBRATION_IQ_CIC_RX_SHIFT		60
 #define CALIBRATION_TX_SHIFT			27
 
 #define LINUX_XDMA_IQ_EVENT_FILE	"/dev/xdma0_events_0"
-//#define LINUX_STREAM_INT_FILE		"/dev/xdma0_events_1"
+#define LINUX_STREAM_INT_FILE		"/dev/xdma0_events_1"
 #define LINUX_AD936X_INT_FILE		"/dev/xdma0_events_2"
 #define LINUX_I2C_FILE				"/dev/i2c-3"
 #define LINUX_FB_FILE				"/dev/fb0"
@@ -50,6 +51,24 @@
 #define MOUSE_EVENT_NAME			"Mouse"
 #define MEMORYCELLS_DB_FILE			"/usr/hftrx_data/memory_cells.db"
 #define NVRAM_DB_FILE				"/usr/hftrx_data/nvram.db"
+
+#define AXI_IRQ_CONTROL	1
+
+#if NEORV32_RT
+	#define NEORV32_FW_NAME			"/root/neorv32_raw_exe.bin"
+	#define NEORV32_FW_LOAD_ADDR	0xC0030000
+	#define NEORV32_RESET_MASK		(1 << 9)
+	#define NEORV32_RUN_MASK		(1 << 0)
+#endif /* NEORV32_RT */
+
+// первые 8 бит регистра AXI_LITE_PL_CONTROL для прерываний
+enum {
+	irq_iq_hf,
+	irq_iq_hf_stream,
+	irq_iq_ad936x,
+
+	irq_pl_count
+};
 
 #if WITHCPUTEMPERATURE
 	#define GET_CPU_TEMPERATURE() (linux_get_cpu_temp())
@@ -85,6 +104,6 @@
 #define HARDWARE_DEBUG_FLUSH()	do {} while (0)
 #define ENCODER_INITIALIZE()	do {} while (0)
 
-#define ADC_PGA_GPIO_SETSTATE(v)	do { reg_write(AXI_LITE_GPO, ! v); } while (0)
+//#define ADC_PGA_GPIO_SETSTATE(v)	do { reg_write(AXI_LITE_PL_CONTROL, ! v); } while (0)
 
 #endif /* LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A100T_PCIE_H_INCLUDED */

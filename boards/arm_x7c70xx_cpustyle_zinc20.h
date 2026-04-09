@@ -36,7 +36,7 @@
 //#define WITHPS7BOARD_MYC_Y7Z020 1
 #define WITHPS7BOARD_ZINC20 1		// XC7Z020-1CLG484C, dual bank MT41K256M16HA-125IT
 
-#define GPIO_IOTYPE_500	GPIO_IOTYPE_LVCMOS33
+#define GPIO_IOTYPE_500	GPIO_IOTYPE_LVCMOS18
 #define GPIO_IOTYPE_501	GPIO_IOTYPE_LVCMOS18
 
 #define WITHUART0HW	1	/*	Используется периферийный контроллер последовательного порта UART0 */
@@ -51,7 +51,7 @@
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
-#if 0
+#if 1
 	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 #endif
@@ -61,7 +61,7 @@
 	//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	//#define WITHSDRAM_PMC1	1	/* power management chip */
+	
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -83,7 +83,7 @@
 	#define WITHUSBHOST_HIGHSPEEDULPI	1
 	//#define WITHUSBHOST_DMAENABLE 1
 
-#if 1
+#if 0
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	
 	#define WITHUSBHW_EHCI		EHCI0
@@ -119,8 +119,10 @@
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
-	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-	//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+#if 1
+	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+#endif
 
 	//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
@@ -140,7 +142,7 @@
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
 
-#if 1
+#if 0
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	
 	#define WITHUSBHW_EHCI		EHCI0
@@ -381,8 +383,8 @@
 		gpio_peripherial(HARDWARE_SDIO_CLK_MIO, miopin_ctl);	/*  SD_CLK */ \
 		gpio_input2(HARDWARE_SDIO_CDN, miopin_sense);	/*  SD_CDN */ \
 		gpio_input2(HARDWARE_SDIO_WP, miopin_sense);	/*  SD_WP */ \
-		PRINTF("HARDWARE_SDIO_INITIALIZE: miopin_ctl=%08lX\n", miopin_ctl); \
-		PRINTF("HARDWARE_SDIO_INITIALIZE: miopin_sense=%08lX\n", miopin_sense); \
+		PRINTF("HARDWARE_SDIO_INITIALIZE: miopin_ctl=%08X\n", (unsigned) miopin_ctl); \
+		PRINTF("HARDWARE_SDIO_INITIALIZE: miopin_sense=%08X\n", (unsigned) miopin_sense); \
 	} while (0)
 	#define HARDWARE_SDIOSENSE_INITIALIZE() do { \
 	} while (0)
@@ -528,7 +530,7 @@
 
 // All CS trough EMIO
 
-#if WITHSPIHW || WITHSPISW
+#if WITHSPIHW
 
 	#define WITHSPICSEMIO	1	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
 
@@ -595,7 +597,7 @@
 
 	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
 
-	#define SPIIO_INITIALIZE() do { \
+	#define HARDWARE_SPI0_INITIALIZE() do { \
 		enum { IOTYPE = TARGET_SPI_IOTYPE }; \
 		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 1); \
 		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 0); \
@@ -625,7 +627,7 @@
 	} while (0)
 
 
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* WITHSPIHW */
 
 #if WITHUART0HW
 
@@ -1051,6 +1053,7 @@
 				gpio_output2(SPDIF_D2_MIO, 1, pinmode_output);  \
 				gpio_output2(SPDIF_D3_MIO, 1, pinmode_output);  \
 			} while (0)
+		#define SPIDFHARD_PTR XQSPIPS
 
 		#else /* WIHSPIDFHW */
 
@@ -1168,6 +1171,7 @@
 			} while (0)
 
 			#define HARDWARE_NAND_DATA_GET() ( \
+				__DSB(), \
 				gpio_readpin(HARDWARE_NAND_D7_MIO) * (1u << 7) + \
 				gpio_readpin(HARDWARE_NAND_D6_MIO) * (1u << 6) + \
 				gpio_readpin(HARDWARE_NAND_D5_MIO) * (1u << 5) + \
@@ -1189,17 +1193,18 @@
 				gpio_input2(HARDWARE_NAND_D2_MIO, pinmode_input); \
 				gpio_input2(HARDWARE_NAND_D1_MIO, pinmode_input); \
 				gpio_input2(HARDWARE_NAND_D0_MIO, pinmode_input); \
+				__DSB(); \
 			} while (0)
 
 			#define HARDWARE_NAND_BUS_WRITE() do { \
 			} while (0)
 
-			#define HARDWARE_NAND_CSB_SET(state) do { gpio_writepin(HARDWARE_NAND_CSB_MIO, !! (state)); __DSB(); } while (0)
-			#define HARDWARE_NAND_ALE_SET(state) do { gpio_writepin(HARDWARE_NAND_ALE_MIO, !! (state)); __DSB(); } while (0)
-			#define HARDWARE_NAND_CLE_SET(state) do { gpio_writepin(HARDWARE_NAND_CLE_MIO, !! (state)); __DSB(); } while (0)
-			#define HARDWARE_NAND_WEB_SET(state) do { gpio_writepin(HARDWARE_NAND_WEB_MIO, !! (state)); __DSB(); } while (0)
-			#define HARDWARE_NAND_REB_SET(state) do { gpio_writepin(HARDWARE_NAND_REB_MIO, !! (state)); __DSB(); } while (0)
-			#define HARDWARE_NAND_WPB_SET(state) do { gpio_writepin(HARDWARE_NAND_WPB_MIO, !! (state)); __DSB(); } while (0) /* optional */
+			#define HARDWARE_NAND_CSB_SET(state) do { gpio_writepin(HARDWARE_NAND_CSB_MIO, !! (state)); } while (0)
+			#define HARDWARE_NAND_ALE_SET(state) do { gpio_writepin(HARDWARE_NAND_ALE_MIO, !! (state)); } while (0)
+			#define HARDWARE_NAND_CLE_SET(state) do { gpio_writepin(HARDWARE_NAND_CLE_MIO, !! (state)); } while (0)
+			#define HARDWARE_NAND_WEB_SET(state) do { gpio_writepin(HARDWARE_NAND_WEB_MIO, !! (state)); } while (0)
+			#define HARDWARE_NAND_REB_SET(state) do { gpio_writepin(HARDWARE_NAND_REB_MIO, !! (state)); } while (0)
+			#define HARDWARE_NAND_WPB_SET(state) do { gpio_writepin(HARDWARE_NAND_WPB_MIO, !! (state)); } while (0) /* optional */
 
 		#elif WITHNANDHW
 
@@ -1236,7 +1241,7 @@
 #endif
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_IS_USERBOOT() 1//(((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
+	#define BOARD_IS_USERBOOT() 0//(((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
 		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 	} while (0)
