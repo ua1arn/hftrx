@@ -717,23 +717,23 @@
 
 #endif /* WITHKEYBOARD */
 
-#if (WITHTWIHW) && (WITHFLATLINK | WITHMIPIDSISHW)
+#if (WITHTWISW || WITHTWIHW) && (WITHFLATLINK | WITHMIPIDSISHW)
 	// RaspberyPI mipi-dsi board diagnostics:
 	//	addr8bit=0x70, addr7bit=0x38 - looks like Capacitive Touch Panel Controller FT5406 www.focaltech-systems.com
 	//	addr8bit=0x8A, addr7bit=0x45
+
 	#define WITHTWI2HW	1
 	// TWI2-SCK PD20 SCL
 	// TWI2-SDA PD21 SDA
-	#define TARGET_TWI_TWCK		(UINT32_C(1) << 20)		// TWI2-SCK PD20 SCL
-
-	#define TARGET_TWI_TWD		(UINT32_C(1) << 21)		// TWI2-SDA PD21 SDA
+	#define TARGET_TWI2_TWCK		(UINT32_C(1) << 20)		// TWI2-SCK PD20 SCL
+	#define TARGET_TWI2_TWD		(UINT32_C(1) << 21)		// TWI2-SDA PD21 SDA
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	HARDWARE_TWI2_INITIALIZE() do { \
-		arm_hardware_piod_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI2-SCK PD20 SCL */ \
-		arm_hardware_piod_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI2-SDA PD21 SDA */ \
-		arm_hardware_piod_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
-		arm_hardware_piod_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
+		arm_hardware_piod_altfn2m(TARGET_TWI2_TWCK, GPIO_CFG_AF3);	/* TWI2-SCK PD20 SCL */ \
+		arm_hardware_piod_altfn2m(TARGET_TWI2_TWD, GPIO_CFG_AF3);		/* TWI2-SDA PD21 SDA */ \
+		arm_hardware_piod_updown(TARGET_TWI2_TWCK, TARGET_TWI2_TWCK, 0); \
+		arm_hardware_piod_updown(TARGET_TWI2_TWD, TARGET_TWI2_TWD, 0); \
 		} while (0)
 	#define	TWIHARD_MIPIDSI_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
@@ -744,15 +744,16 @@
 	// TWI1-SCK PG8 SCL
 	// TWI1-SDA PG9 SDA
 	#define WITHTWI1HW	1
-	#define TARGET_TWI_TWCK		(UINT32_C(1) << 8)		// TWI1-SCK PG8 SCL
-	#define TARGET_TWI_TWD		(UINT32_C(1) << 9)		// TWI1-SDA PG9 SDA
+	#define TARGET_TWI1_TWCK		(UINT32_C(1) << 8)		// TWI1-SCK PG8 SCL - pin UART1_RTS
+	#define TARGET_TWI1_TWD		(UINT32_C(1) << 9)		// TWI1-SDA PG9 SDA - pin UART1_CTS
+
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	HARDWARE_TWI1_INITIALIZE() do { \
-		arm_hardware_piog_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF3);	/* TWI1-SCK PG8 SCL */ \
-		arm_hardware_piog_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF3);		/* TWI1-SDA PG9 SDA */ \
-		arm_hardware_piog_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
-		arm_hardware_piog_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
+		arm_hardware_piog_altfn2m(TARGET_TWI1_TWCK, GPIO_CFG_AF3);	/* TWI1-SCK PG8 SCL */ \
+		arm_hardware_piog_altfn2m(TARGET_TWI1_TWD, GPIO_CFG_AF3);		/* TWI1-SDA PG9 SDA */ \
+		arm_hardware_piog_updown(TARGET_TWI1_TWCK, TARGET_TWI1_TWCK, 0); \
+		arm_hardware_piog_updown(TARGET_TWI1_TWD, TARGET_TWI1_TWD, 0); \
 		} while (0) 
 	#define	TWIHARD_PTR TWI1	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
