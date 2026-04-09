@@ -5475,7 +5475,9 @@ void dsp_initialize(void)
 	}
 
 	// работа на всех ядрах, кроме нулевого
+#if ! LINUX_SUBSYSTEM
 	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, user_audioproc_thread, NULL, 16 * 1024 * 1024, "user_audioproc_thread") == NULL)
+#endif /* ! LINUX_SUBSYSTEM */
 	{
 		static dpcobj_t user_audioproc_dpc;
 		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);

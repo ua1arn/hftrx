@@ -2535,6 +2535,11 @@ void task_ticker(void) {}
 // хотим завершить выполнение кванта, не дожидаясь прерывания
 void task_yield(void) {}
 
+int local_waitlist(PRLIST_ENTRY list, void * lock, uint_fast32_t timeMS)
+{
+	return 1;
+}
+
 #else /* ! LINUX_SUBSYSTEM */
 
 // Non-linux, non-scheduler

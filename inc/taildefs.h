@@ -340,18 +340,21 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define IRQLSPIN_LOCK(p, oldIrql, newirql) do { RiseIrql((newirql), (oldIrql)); LCLSPIN_LOCK(& (p)->lock); } while (0)
 	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK(& (p)->lock); LowerIrql(oldIrql); } while (0)
 
+	int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS);
+
 #else  /* ! LINUX_SUBSYSTEM */
 
 	/* Linux targets: No any hardware IRQ control */
 	#define IRQLSPIN_LOCK(p, oldIrql, newirql) do { LCLSPIN_LOCK(p); } while (0)
 	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK(p); } while (0)
 
+	int local_waitlist(PRLIST_ENTRY list, void * lock, uint_fast32_t timeMS);
+
 #endif  /* ! LINUX_SUBSYSTEM */
 
 	// wait expected state of variable
 	// return non-zero: timeout error
 	// timeMS may be LOCAL_WAITINFINITY
-	int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS);
 
 	#define USBSYS_IRQL IRQL_SYSTEM
 	#define CATSYS_IRQL IRQL_SYSTEM

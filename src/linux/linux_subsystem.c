@@ -2341,12 +2341,12 @@ pthread_mutex_t linux_md = PTHREAD_MUTEX_INITIALIZER;
 
 void lclspin_lock(lclspinlock_t * __restrict p, const char * file, int line)
 {
-	pthread_mutex_lock(p);
+	pthread_mutex_lock((pthread_mutex_t *) p);
 }
 
 void lclspin_unlock(lclspinlock_t * __restrict p)
 {
-	pthread_mutex_unlock(p);
+	pthread_mutex_unlock((pthread_mutex_t *) p);
 }
 
 #if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && IQ_VIA_ZYNQ_PL

@@ -151,7 +151,14 @@ uint_fast8_t dummy_getchar(char * cp);
   #define __RESTRICT                        __restrict
 #endif
 
-typedef pthread_mutex_t lclspinlock_t;
+typedef union
+{
+  struct __pthread_mutex_s __data;
+  char __size[__SIZEOF_PTHREAD_MUTEX_T];
+  long int __align;
+  void * lock;
+} ext_pthread_mutex_t;
+typedef ext_pthread_mutex_t lclspinlock_t;
 
 void linux_exit(void);
 void linux_subsystem_init(void);
