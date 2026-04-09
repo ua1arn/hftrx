@@ -75,6 +75,7 @@ MPU6050_Base::MPU6050_Base(uint8_t address, void *wireObj):devAddr(address), wir
  * the default internal clock source.
  */
 void MPU6050_Base::initialize() {
+	PRINTF("getDeviceID()=0x%02X\n", getDeviceID());
     setClockSource(MPU6050_CLOCK_PLL_XGYRO);
 
     setFullScaleGyroRange(MPU6050_GYRO_FS_250);
@@ -2842,8 +2843,10 @@ void MPU6050_Base::setStandbyZGyroEnabled(bool enabled) {
  * @return Current FIFO buffer size
  */
 uint16_t MPU6050_Base::getFIFOCount() {
-    VERIFY(I2Cdev::readBytes(devAddr, MPU6050_RA_FIFO_COUNTH, 2, buffer, I2Cdev::readTimeout, wireObj) == 2);
-    return (((uint16_t)buffer[0]) << 8) | buffer[1];
+	int n = I2Cdev::readBytes(devAddr, MPU6050_RA_FIFO_COUNTH, 2, buffer, I2Cdev::readTimeout, wireObj);
+    if (n == 2)
+    	return (((uint16_t)buffer[0]) << 8) | buffer[1];
+    return 0;
 }
 
 // FIFO_R_W register
@@ -2961,7 +2964,7 @@ void MPU6050_Base::setFIFOByte(uint8_t data) {
  * @see MPU6050_WHO_AM_I_LENGTH
  */
 uint8_t MPU6050_Base::getDeviceID() {
-    I2Cdev::readBits(devAddr, MPU6050_RA_WHO_AM_I, MPU6050_WHO_AM_I_BIT, MPU6050_WHO_AM_I_LENGTH, buffer, I2Cdev::readTimeout, wireObj);
+    VERIFY(I2Cdev::readBits(devAddr, MPU6050_RA_WHO_AM_I, MPU6050_WHO_AM_I_BIT, MPU6050_WHO_AM_I_LENGTH, buffer, I2Cdev::readTimeout, wireObj));
     return buffer[0];
 }
 /** Set Device ID.
@@ -3050,24 +3053,24 @@ void MPU6050_Base::setZFineGain(int8_t gain) {
 
 int16_t MPU6050_Base::getXAccelOffset() {
 	uint8_t SaveAddress = ((getDeviceID() < 0x38 )? MPU6050_RA_XA_OFFS_H:0x77); // MPU6050,MPU9150 Vs MPU6500,MPU9250
-	I2Cdev::readBytes(devAddr, SaveAddress, 2, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBytes(devAddr, SaveAddress, 2, buffer, I2Cdev::readTimeout, wireObj) == 2);
 	return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 void MPU6050_Base::setXAccelOffset(int16_t offset) {
 	uint8_t SaveAddress = ((getDeviceID() < 0x38 )? MPU6050_RA_XA_OFFS_H:0x77); // MPU6050,MPU9150 Vs MPU6500,MPU9250
-	I2Cdev::writeWord(devAddr, SaveAddress, offset, wireObj);
+	VERIFY(I2Cdev::writeWord(devAddr, SaveAddress, offset, wireObj));
 }
 
 // YA_OFFS_* register
 
 int16_t MPU6050_Base::getYAccelOffset() {
 	uint8_t SaveAddress = ((getDeviceID() < 0x38 )? MPU6050_RA_YA_OFFS_H:0x7A); // MPU6050,MPU9150 Vs MPU6500,MPU9250
-	I2Cdev::readBytes(devAddr, SaveAddress, 2, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBytes(devAddr, SaveAddress, 2, buffer, I2Cdev::readTimeout, wireObj) == 2);
 	return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 void MPU6050_Base::setYAccelOffset(int16_t offset) {
 	uint8_t SaveAddress = ((getDeviceID() < 0x38 )? MPU6050_RA_YA_OFFS_H:0x7A); // MPU6050,MPU9150 Vs MPU6500,MPU9250
-	I2Cdev::writeWord(devAddr, SaveAddress, offset, wireObj);
+	VERIFY(I2Cdev::writeWord(devAddr, SaveAddress, offset, wireObj));
 }
 
 // ZA_OFFS_* register
@@ -3095,89 +3098,89 @@ void MPU6050_Base::setXGyroOffset(int16_t offset) {
 // YG_OFFS_USR* register
 
 int16_t MPU6050_Base::getYGyroOffset() {
-    I2Cdev::readBytes(devAddr, MPU6050_RA_YG_OFFS_USRH, 2, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBytes(devAddr, MPU6050_RA_YG_OFFS_USRH, 2, buffer, I2Cdev::readTimeout, wireObj) == 2);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 void MPU6050_Base::setYGyroOffset(int16_t offset) {
-    I2Cdev::writeWord(devAddr, MPU6050_RA_YG_OFFS_USRH, offset, wireObj);
+	VERIFY(I2Cdev::writeWord(devAddr, MPU6050_RA_YG_OFFS_USRH, offset, wireObj));
 }
 
 // ZG_OFFS_USR* register
 
 int16_t MPU6050_Base::getZGyroOffset() {
-    I2Cdev::readBytes(devAddr, MPU6050_RA_ZG_OFFS_USRH, 2, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBytes(devAddr, MPU6050_RA_ZG_OFFS_USRH, 2, buffer, I2Cdev::readTimeout, wireObj) == 2);
     return (((int16_t)buffer[0]) << 8) | buffer[1];
 }
 void MPU6050_Base::setZGyroOffset(int16_t offset) {
-    I2Cdev::writeWord(devAddr, MPU6050_RA_ZG_OFFS_USRH, offset, wireObj);
+	VERIFY(I2Cdev::writeWord(devAddr, MPU6050_RA_ZG_OFFS_USRH, offset, wireObj));
 }
 
 // INT_ENABLE register (DMP functions)
 
 bool MPU6050_Base::getIntPLLReadyEnabled() {
-    I2Cdev::readBit(devAddr, MPU6050_RA_INT_ENABLE, MPU6050_INTERRUPT_PLL_RDY_INT_BIT, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBit(devAddr, MPU6050_RA_INT_ENABLE, MPU6050_INTERRUPT_PLL_RDY_INT_BIT, buffer, I2Cdev::readTimeout, wireObj));
     return buffer[0];
 }
 void MPU6050_Base::setIntPLLReadyEnabled(bool enabled) {
-    I2Cdev::writeBit(devAddr, MPU6050_RA_INT_ENABLE, MPU6050_INTERRUPT_PLL_RDY_INT_BIT, enabled, wireObj);
+	VERIFY(I2Cdev::writeBit(devAddr, MPU6050_RA_INT_ENABLE, MPU6050_INTERRUPT_PLL_RDY_INT_BIT, enabled, wireObj));
 }
 bool MPU6050_Base::getIntDMPEnabled() {
-    I2Cdev::readBit(devAddr, MPU6050_RA_INT_ENABLE, MPU6050_INTERRUPT_DMP_INT_BIT, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBit(devAddr, MPU6050_RA_INT_ENABLE, MPU6050_INTERRUPT_DMP_INT_BIT, buffer, I2Cdev::readTimeout, wireObj));
     return buffer[0];
 }
 void MPU6050_Base::setIntDMPEnabled(bool enabled) {
-    I2Cdev::writeBit(devAddr, MPU6050_RA_INT_ENABLE, MPU6050_INTERRUPT_DMP_INT_BIT, enabled, wireObj);
+	VERIFY(I2Cdev::writeBit(devAddr, MPU6050_RA_INT_ENABLE, MPU6050_INTERRUPT_DMP_INT_BIT, enabled, wireObj));
 }
 
 // DMP_INT_STATUS
 
 bool MPU6050_Base::getDMPInt5Status() {
-    I2Cdev::readBit(devAddr, MPU6050_RA_DMP_INT_STATUS, MPU6050_DMPINT_5_BIT, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBit(devAddr, MPU6050_RA_DMP_INT_STATUS, MPU6050_DMPINT_5_BIT, buffer, I2Cdev::readTimeout, wireObj));
     return buffer[0];
 }
 bool MPU6050_Base::getDMPInt4Status() {
-    I2Cdev::readBit(devAddr, MPU6050_RA_DMP_INT_STATUS, MPU6050_DMPINT_4_BIT, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBit(devAddr, MPU6050_RA_DMP_INT_STATUS, MPU6050_DMPINT_4_BIT, buffer, I2Cdev::readTimeout, wireObj));
     return buffer[0];
 }
 bool MPU6050_Base::getDMPInt3Status() {
-    I2Cdev::readBit(devAddr, MPU6050_RA_DMP_INT_STATUS, MPU6050_DMPINT_3_BIT, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBit(devAddr, MPU6050_RA_DMP_INT_STATUS, MPU6050_DMPINT_3_BIT, buffer, I2Cdev::readTimeout, wireObj));
     return buffer[0];
 }
 bool MPU6050_Base::getDMPInt2Status() {
-    I2Cdev::readBit(devAddr, MPU6050_RA_DMP_INT_STATUS, MPU6050_DMPINT_2_BIT, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBit(devAddr, MPU6050_RA_DMP_INT_STATUS, MPU6050_DMPINT_2_BIT, buffer, I2Cdev::readTimeout, wireObj));
     return buffer[0];
 }
 bool MPU6050_Base::getDMPInt1Status() {
-    I2Cdev::readBit(devAddr, MPU6050_RA_DMP_INT_STATUS, MPU6050_DMPINT_1_BIT, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBit(devAddr, MPU6050_RA_DMP_INT_STATUS, MPU6050_DMPINT_1_BIT, buffer, I2Cdev::readTimeout, wireObj));
     return buffer[0];
 }
 bool MPU6050_Base::getDMPInt0Status() {
-    I2Cdev::readBit(devAddr, MPU6050_RA_DMP_INT_STATUS, MPU6050_DMPINT_0_BIT, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBit(devAddr, MPU6050_RA_DMP_INT_STATUS, MPU6050_DMPINT_0_BIT, buffer, I2Cdev::readTimeout, wireObj));
     return buffer[0];
 }
 
 // INT_STATUS register (DMP functions)
 
 bool MPU6050_Base::getIntPLLReadyStatus() {
-    I2Cdev::readBit(devAddr, MPU6050_RA_INT_STATUS, MPU6050_INTERRUPT_PLL_RDY_INT_BIT, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBit(devAddr, MPU6050_RA_INT_STATUS, MPU6050_INTERRUPT_PLL_RDY_INT_BIT, buffer, I2Cdev::readTimeout, wireObj));
     return buffer[0];
 }
 bool MPU6050_Base::getIntDMPStatus() {
-    I2Cdev::readBit(devAddr, MPU6050_RA_INT_STATUS, MPU6050_INTERRUPT_DMP_INT_BIT, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBit(devAddr, MPU6050_RA_INT_STATUS, MPU6050_INTERRUPT_DMP_INT_BIT, buffer, I2Cdev::readTimeout, wireObj));
     return buffer[0];
 }
 
 // USER_CTRL register (DMP functions)
 
 bool MPU6050_Base::getDMPEnabled() {
-    I2Cdev::readBit(devAddr, MPU6050_RA_USER_CTRL, MPU6050_USERCTRL_DMP_EN_BIT, buffer, I2Cdev::readTimeout, wireObj);
+	VERIFY(I2Cdev::readBit(devAddr, MPU6050_RA_USER_CTRL, MPU6050_USERCTRL_DMP_EN_BIT, buffer, I2Cdev::readTimeout, wireObj));
     return buffer[0];
 }
 void MPU6050_Base::setDMPEnabled(bool enabled) {
-    I2Cdev::writeBit(devAddr, MPU6050_RA_USER_CTRL, MPU6050_USERCTRL_DMP_EN_BIT, enabled, wireObj);
+	VERIFY(I2Cdev::writeBit(devAddr, MPU6050_RA_USER_CTRL, MPU6050_USERCTRL_DMP_EN_BIT, enabled, wireObj));
 }
 void MPU6050_Base::resetDMP() {
-    I2Cdev::writeBit(devAddr, MPU6050_RA_USER_CTRL, MPU6050_USERCTRL_DMP_RESET_BIT, true, wireObj);
+	VERIFY(I2Cdev::writeBit(devAddr, MPU6050_RA_USER_CTRL, MPU6050_USERCTRL_DMP_RESET_BIT, true, wireObj));
 }
 
 // BANK_SEL register
@@ -3186,13 +3189,13 @@ void MPU6050_Base::setMemoryBank(uint8_t bank, bool prefetchEnabled, bool userBa
     bank &= 0x1F;
     if (userBank) bank |= 0x20;
     if (prefetchEnabled) bank |= 0x40;
-    I2Cdev::writeByte(devAddr, MPU6050_RA_BANK_SEL, bank, wireObj);
+    VERIFY(I2Cdev::writeByte(devAddr, MPU6050_RA_BANK_SEL, bank, wireObj));
 }
 
 // MEM_START_ADDR register
 
 void MPU6050_Base::setMemoryStartAddress(uint8_t address) {
-    I2Cdev::writeByte(devAddr, MPU6050_RA_MEM_START_ADDR, address, wireObj);
+    VERIFY(I2Cdev::writeByte(devAddr, MPU6050_RA_MEM_START_ADDR, address, wireObj));
 }
 
 // MEM_R_W register
@@ -3269,8 +3272,11 @@ bool MPU6050_Base::writeMemoryBlock(const uint8_t *data, uint16_t dataSize, uint
         if (verify && verifyBuffer) {
             setMemoryBank(bank);
             setMemoryStartAddress(address);
-            I2Cdev::readBytes(devAddr, MPU6050_RA_MEM_R_W, chunkSize, verifyBuffer, I2Cdev::readTimeout, wireObj);
+            VERIFY(chunkSize == I2Cdev::readBytes(devAddr, MPU6050_RA_MEM_R_W, chunkSize, verifyBuffer, I2Cdev::readTimeout, wireObj));
             if (memcmp(progBuffer, verifyBuffer, chunkSize) != 0) {
+            	PRINTF("Block write verification error\n");
+            	printhex(0, verifyBuffer, chunkSize);
+            	ASSERT(0);
                 /*Serial.print("Block write verification error, bank ");
                 Serial.print(bank, DEC);
                 Serial.print(", address ");
