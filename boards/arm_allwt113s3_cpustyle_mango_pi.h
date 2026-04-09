@@ -735,11 +735,12 @@
 		arm_hardware_piod_updown(TARGET_TWI_TWCK, TARGET_TWI_TWCK, 0); \
 		arm_hardware_piod_updown(TARGET_TWI_TWD, TARGET_TWI_TWD, 0); \
 		} while (0)
-	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_MIPIDSI_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_t113_get_twi_freq()) // APBS2_CLK allwnr_t507_get_apb2_freq() or allwnr_t507_get_apbs2_freq()
 
+#endif /* WITHTWISW || WITHTWIHW */
 
-#elif WITHTWISW || WITHTWIHW
+#if WITHTWISW || WITHTWIHW
 	// TWI1-SCK PG8 SCL
 	// TWI1-SDA PG9 SDA
 	#define WITHTWI1HW	1
