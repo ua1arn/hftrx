@@ -4632,6 +4632,10 @@ void buffers_initialize(void)
 	transform_initialize(& if2rts192out, & ifspectrumin192, & rts192in);
 #endif /* WITHRTS192 */
 
+#if WITHVITA49RX
+	/* VITA 49.0-2015 streaming source support */
+#endif /* WITHVITA49RX */
+
 #if WITHINTEGRATEDDSP
 
 	deliverylist_initialize(& rtstargetsint, IRQL_REALTIME);
