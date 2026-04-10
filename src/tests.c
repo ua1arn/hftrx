@@ -8917,7 +8917,7 @@ void hightests(void)
 		mpu6500_test();
 	}
 #endif
-#if 1
+#if 0
 	{
 		// i2c bus test i2c test twi bus test twi test
 		unsigned n = 3;

@@ -170,6 +170,9 @@ include ../litehtml.mak
 # LWIP
 include ../lwip.mak
 
+# mpu6500 tests
+include ../mpu6500.mak
+
 # custom application
 include ../custom0.mak
 
