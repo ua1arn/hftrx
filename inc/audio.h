@@ -357,6 +357,15 @@ void transform_initialize(transform_t * tfm, const adapter_t * informat, const a
 	extern adapter_t ifspectrumin192;	/* канал от FPGA к процессору */
 #endif /* defined CODEC2_TYPE */
 
+#if WITHVITA49RX
+	extern adapter_t vita49rx;	/* канал передачи в поток vita-49 */
+	extern transform_t rts96tovita49;
+#endif /* WITHVITA49RX */
+#if WITHVITA49RX
+	extern adapter_t vita49tx;	/* канал получения данных из потока vita-49 для пердачи в эфир */
+	extern transform_t vita49torts96;
+#endif /* WITHVITA49RX */
+
 /* AGC */
 
 
