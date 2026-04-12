@@ -1881,6 +1881,111 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>GAMC0_TOP</name>
+  <description></description>
+  <baseAddress>0x04508000</baseAddress>
+  <interrupt>
+   <name>GMAC0_TOP</name>
+   <value>78</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GMAC1_TOP</name>
+   <value>79</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GMAC2_TOP</name>
+   <value>133</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>GMAC_CFG_REG</name>
+    <displayName>GMAC_CFG_REG</displayName>
+    <description>GMAC Config Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GMAC_PTP_TIMESTAMP_LOW_REG</name>
+    <displayName>GMAC_PTP_TIMESTAMP_LOW_REG</displayName>
+    <description>GMAC PTP Timestamp Low Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GMAC_PTP_TIMESTAMP_HIGH_REG</name>
+    <displayName>GMAC_PTP_TIMESTAMP_HIGH_REG</displayName>
+    <description>GMAC PTP Timestamp High Register</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GMAC_STAT_INT_REG</name>
+    <displayName>GMAC_STAT_INT_REG</displayName>
+    <description>GMAC Low Power Interrupt Status Register</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GMAC_CLK_GATE_CFG_REG</name>
+    <displayName>GMAC_CLK_GATE_CFG_REG</displayName>
+    <description>GMAC Clock Gate Config Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="GAMC0_TOP">
+  <name>GAMC1_TOP</name>
+  <baseAddress>0x04518000</baseAddress>
+  <interrupt>
+   <name>GMAC0_TOP</name>
+   <value>78</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GMAC1_TOP</name>
+   <value>79</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GMAC2_TOP</name>
+   <value>133</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral derivedFrom="GAMC0_TOP">
+  <name>GAMC2_TOP</name>
+  <baseAddress>0x04528000</baseAddress>
+  <interrupt>
+   <name>GMAC0_TOP</name>
+   <value>78</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GMAC1_TOP</name>
+   <value>79</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>GMAC2_TOP</name>
+   <value>133</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
   <name>GPIOA</name>
   <description>Port Controller</description>
   <baseAddress>0x03604080</baseAddress>

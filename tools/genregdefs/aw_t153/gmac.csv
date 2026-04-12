@@ -1,0 +1,12 @@
+#type; GMAC_TOP;
+
+#regdef; GMAC_CFG_REG; 					0x0000; GMAC Config Register
+#regdef; GMAC_PTP_TIMESTAMP_LOW_REG; 	0x0040; GMAC PTP Timestamp Low Register
+#regdef; GMAC_PTP_TIMESTAMP_HIGH_REG; 	0x0048; GMAC PTP Timestamp High Register
+#regdef; GMAC_STAT_INT_REG; 			0x004C; GMAC Low Power Interrupt Status Register
+#regdef; GMAC_CLK_GATE_CFG_REG; 		0x0080; GMAC Clock Gate Config Register
+
+#typeend;
+
+#type; GMAC_IP;
+#typeend;

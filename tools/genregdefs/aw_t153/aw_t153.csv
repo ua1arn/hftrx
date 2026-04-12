@@ -68,3 +68,33 @@
 
 #typeend;
 
+#type; GMAC_TOP;
+#base; GAMC0_TOP 0x04508000
+#base; GAMC1_TOP 0x04518000
+#base; GAMC2_TOP 0x04528000
+
+#irq; GMAC0_TOP 78
+#irq; GMAC1_TOP 79
+#irq; GMAC2_TOP 133
+
+#typeend;
+
+#type; GMAC_IP;
+#base; GAMC0_IP 0x04500000
+#base; GAMC1_IP 0x04510000
+#base; GAMC2_IP 0x04520000
+
+#irq; GMAC0_PWR_CLK_CTRL 	124
+#irq; GMAC0_PERCH_TX 		125
+#irq; GMAC0_PERCH_RX 		126
+
+#irq; GMAC1_PWR_CLK_CTRL 	127
+#irq; GMAC1_PERCH_TX 		128
+#irq; GMAC1_PERCH_RX 		129
+
+#irq; GMAC2_PWR_CLK_CTRL 	130
+#irq; GMAC2_PERCH_TX 		131
+#irq; GMAC2_PERCH_RX 		132
+#typeend;
+
+
