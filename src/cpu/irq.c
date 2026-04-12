@@ -2077,7 +2077,7 @@ static thread_item_t * startedtask [HARDWARE_NCORES];
 static IRQLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 static LIST_ENTRY threads_list [UPRIO_count];
 
-static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, unsigned uprio, const char * name)
+static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, unsigned uprio, unsigned irql, const char * name)
 {
 	ASSERT(ARRAY_SIZE(threads_list) > uprio);
 	thread->affinity = affinity;
@@ -2091,7 +2091,7 @@ static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn
 	// Установить параметры потока для запуска
 	context_init(stackframe, fn, ctx);
 	thread->cpuframe = stackframe;
-	thread->irql = IRQL_USER;
+	thread->irql = irql;
 	thread->uprio = uprio;
 	thread->guard = thread;	// debug signature
 	thread->check_ready = NULL;
@@ -2112,7 +2112,7 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
 	if (thread != NULL)
 	{
-		thread_add(thread, affinity, fn, ctx, ramsize, UPRIO_USER, name);
+		thread_add(thread, affinity, fn, ctx, ramsize, UPRIO_USER, IRQL_USER, name);
 	}
 	return thread;
 }
@@ -2127,7 +2127,7 @@ void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * c
 	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
 	if (thread != NULL)
 	{
-		thread_add(thread, affinity, fn, ctx, ramsize, UPRIO_REALTIME, name);
+		thread_add(thread, affinity, fn, ctx, ramsize, UPRIO_REALTIME, IRQL_USER, name);
 	}
 	return thread;
 }
@@ -2144,7 +2144,7 @@ void task_scheduler_initialize(void)
 	{
 		thread_item_t * const thread = & idle_threads [i];
 		//
-		thread_add(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, UPRIO_IDLE, "idle");
+		thread_add(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, UPRIO_IDLE, IRQL_IPC, "idle");
 	}
 	threads_not_started = 0;
 }
@@ -2191,11 +2191,13 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 			{
 				// Нашли подходящий поток
 				RemoveEntryList(& tp->item);
+				ASSERT(tp->check_ready == NULL);
 				return tp;
 			}
 		}
 	}
 	RemoveEntryList(& taskin->item);
+	ASSERT(taskin->check_ready == NULL);
 	return taskin;
 }
 
