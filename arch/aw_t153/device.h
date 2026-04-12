@@ -53,6 +53,18 @@ typedef enum IRQn
     SPI1_IRQn = 49,                                   /*!< SPI Serial Peripheral Interface */
     SPI2_IRQn = 50,                                   /*!< SPI Serial Peripheral Interface */
     SPI3_IRQn = 53,                                   /*!< SPI Serial Peripheral Interface */
+    GMAC0_TOP_IRQn = 78,                              /*!< GMAC_TOP  */
+    GMAC1_TOP_IRQn = 79,                              /*!< GMAC_TOP  */
+    GMAC0_PWR_CLK_CTRL_IRQn = 124,                    /*!< GMAC_IP  */
+    GMAC0_PERCH_TX_IRQn = 125,                        /*!< GMAC_IP  */
+    GMAC0_PERCH_RX_IRQn = 126,                        /*!< GMAC_IP  */
+    GMAC1_PWR_CLK_CTRL_IRQn = 127,                    /*!< GMAC_IP  */
+    GMAC1_PERCH_TX_IRQn = 128,                        /*!< GMAC_IP  */
+    GMAC1_PERCH_RX_IRQn = 129,                        /*!< GMAC_IP  */
+    GMAC2_PWR_CLK_CTRL_IRQn = 130,                    /*!< GMAC_IP  */
+    GMAC2_PERCH_TX_IRQn = 131,                        /*!< GMAC_IP  */
+    GMAC2_PERCH_RX_IRQn = 132,                        /*!< GMAC_IP  */
+    GMAC2_TOP_IRQn = 133,                             /*!< GMAC_TOP  */
     UART8_IRQn = 180,                                 /*!< UART  */
     UART9_IRQn = 181,                                 /*!< UART  */
 
@@ -98,6 +110,12 @@ typedef enum IRQn
 #define SPI1_BASE ((uintptr_t) 0x04026000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI2_BASE ((uintptr_t) 0x04027000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI3_BASE ((uintptr_t) 0x04028000)            /*!< SPI Serial Peripheral Interface Base */
+#define GAMC0_IP_BASE ((uintptr_t) 0x04500000)        /*!< GMAC_IP  Base */
+#define GAMC0_TOP_BASE ((uintptr_t) 0x04508000)       /*!< GMAC_TOP  Base */
+#define GAMC1_IP_BASE ((uintptr_t) 0x04510000)        /*!< GMAC_IP  Base */
+#define GAMC1_TOP_BASE ((uintptr_t) 0x04518000)       /*!< GMAC_TOP  Base */
+#define GAMC2_IP_BASE ((uintptr_t) 0x04520000)        /*!< GMAC_IP  Base */
+#define GAMC2_TOP_BASE ((uintptr_t) 0x04528000)       /*!< GMAC_TOP  Base */
 #define PRCM_BASE ((uintptr_t) 0x07010000)            /*!< PRCM  Base */
 
 #include <core_ca.h>
@@ -414,6 +432,21 @@ typedef struct CCU_Type
     __IOM uint32_t FRE_UP_LIM_REG;                    /*!< Offset 0x1F64 Frequency Up Limit Register */
     __IOM uint32_t FRE_DOWN_LIM_REG;                  /*!< Offset 0x1F68 Frequency Down Limit Register */
 } CCU_TypeDef; /* size of structure = 0x1F6C */
+/*
+ * @brief GMAC_TOP
+ */
+/*!< GMAC_TOP  */
+typedef struct GMAC_TOP_Type
+{
+    __IOM uint32_t GMAC_CFG_REG;                      /*!< Offset 0x000 GMAC Config Register */
+         RESERVED(0x004[0x0040 - 0x0004], uint8_t)
+    __IOM uint32_t GMAC_PTP_TIMESTAMP_LOW_REG;        /*!< Offset 0x040 GMAC PTP Timestamp Low Register */
+         RESERVED(0x044[0x0048 - 0x0044], uint8_t)
+    __IOM uint32_t GMAC_PTP_TIMESTAMP_HIGH_REG;       /*!< Offset 0x048 GMAC PTP Timestamp High Register */
+    __IOM uint32_t GMAC_STAT_INT_REG;                 /*!< Offset 0x04C GMAC Low Power Interrupt Status Register */
+         RESERVED(0x050[0x0080 - 0x0050], uint8_t)
+    __IOM uint32_t GMAC_CLK_GATE_CFG_REG;             /*!< Offset 0x080 GMAC Clock Gate Config Register */
+} GMAC_TOP_TypeDef; /* size of structure = 0x084 */
 /*
  * @brief GPIO
  */
@@ -870,6 +903,9 @@ typedef struct USB_OHCI_Capability_Type
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define SPI2 ((SPI_TypeDef *) SPI2_BASE)              /*!< SPI2 Serial Peripheral Interface register set access pointer */
 #define SPI3 ((SPI_TypeDef *) SPI3_BASE)              /*!< SPI3 Serial Peripheral Interface register set access pointer */
+#define GAMC0_TOP ((GMAC_TOP_TypeDef *) GAMC0_TOP_BASE)/*!< GAMC0_TOP  register set access pointer */
+#define GAMC1_TOP ((GMAC_TOP_TypeDef *) GAMC1_TOP_BASE)/*!< GAMC1_TOP  register set access pointer */
+#define GAMC2_TOP ((GMAC_TOP_TypeDef *) GAMC2_TOP_BASE)/*!< GAMC2_TOP  register set access pointer */
 #define PRCM ((PRCM_TypeDef *) PRCM_BASE)             /*!< PRCM  register set access pointer */
 
 #ifdef __cplusplus
