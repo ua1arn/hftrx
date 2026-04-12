@@ -632,10 +632,6 @@ void __NO_RETURN IRQ_Handler_aarch32(void * frame);	// crt_CortexA.S
 void __NO_RETURN FIQ_Handler_aarch32(void * frame);	// crt_CortexA.S
 void __NO_RETURN run_task_curr_aarch32(void * frame);	// run task with frame
 
-
-void IRQ_Handler_GIC(void);
-void FIQ_Handler_GIC(void);
-
 /* Отображение номеров каналов АЦП процессоров STM32Fxxx в каналы процессора STM32H7 */
 typedef struct adcinmap_tag
 {

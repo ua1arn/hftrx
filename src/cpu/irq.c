@@ -1141,7 +1141,7 @@ void irqlog_print(void)
 /* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
 // See ARM IHI 0048B.b document
 // GIC secutity group 1 used
-void IRQ_Handler_GIC_G1(void)
+static void IRQ_Handler_GIC_G1(void)
 {
 	// per-cpu:
 	// GICC_AHPPIR
@@ -1232,7 +1232,7 @@ void IRQ_Handler_GIC_G1(void)
 // See ARM IHI 0048B.b document
 
 // Только в aarch32 Cortex-A55
-void FIQ_Handler_GIC_G0(void)
+static void FIQ_Handler_GIC_G0(void)
 {
 	// per-cpu:
 	// GICC_AHPPIR
@@ -1320,12 +1320,12 @@ void FIQ_Handler_GIC_G0(void)
 }
 #endif /* (__CORTEX_A == 55U) */
 
-void IRQ_Handler_GIC(void)
+static void IRQ_Handler_GIC(void)
 {
 	IRQ_Handler_GIC_G1();
 }
 // Call from vFIQ handler aarch32
-void FIQ_Handler_GIC(void)
+static void FIQ_Handler_GIC(void)
 {
 #if (__CORTEX_A == 55U)
 	FIQ_Handler_GIC_G0();
