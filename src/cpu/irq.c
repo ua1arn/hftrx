@@ -1990,12 +1990,12 @@ static volatile int threads_not_started = 999;
 
 static uint_fast32_t get_td_us(uint_fast32_t timeUS)
 {
-	return timeUS * (uint_fast64_t) cpu_getdebugticksfreq() / (1000 * 1000);
+	return timeUS * (cpu_getdebugticksfreq() / (1000 * 1000));
 }
 
 static uint_fast32_t get_td_ms(uint_fast32_t timeMS)
 {
-	return timeMS * (uint_fast64_t) cpu_getdebugticksfreq() / 1000;
+	return timeMS * (cpu_getdebugticksfreq() / 1000);
 }
 
 // WITHRTOS
