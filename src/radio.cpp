@@ -13758,21 +13758,17 @@ uint_fast8_t hamradio_get_volt_value(void)
 
 #endif /* WITHVOLTLEVEL */
 
-#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
-
-// Градусы в десятых долях
-// Read from thermo sensor ST LM235Z (2 kOhm to +12)
+// Градусы в десятых долях (может быть отрицательным)
 int_fast16_t hamradio_get_PAtemp_value(void)
 {
-	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET;
-
 	// XTHERMOIX - данные с АЦП напрямую
 #if WITHTDIRECTDATA
 
 	return (sadcvalholder_t) board_getadc_filtered_truevalue(XTHERMOMRRIX);	// 0.1 градуса
 
 #elif WITHTARGETVREF
-
+	// Implict WITHTHERMOLEVEL
+	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET;
 	unsigned Vref_mV = board_getadc_unfiltered_truevalue(VREFMVMRRIX); //WITHTARGETVREF;//ADCVREF_CPU * 100;
 	if (Vref_mV == 0)
 		Vref_mV = WITHTARGETVREF;
@@ -13781,12 +13777,14 @@ int_fast16_t hamradio_get_PAtemp_value(void)
 
 #elif WITHREFSENSOR
 	// Измерение опрного напряжения
+	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET;
 	const uint_fast8_t vrefi = VREFIX;
 	const adcvalholder_t ref = board_getadc_unfiltered_truevalue(vrefi);	// текущее значение данного АЦП
 	if (ref != 0)
 	{
 		const unsigned Vref_mV = (uint_fast32_t) board_getadc_fsval(vrefi) * WITHREFSENSORVAL / ref;
-		const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
+		const unsigned vrefff = (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER;
+		const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, vrefff);
 		return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
 	}
 	else
@@ -13797,21 +13795,25 @@ int_fast16_t hamradio_get_PAtemp_value(void)
 
 #elif WITHTHERMOLEVEL2
 
+	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET;
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
 	const unsigned vrefff = (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER;
 	const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, vrefff) - (int32_t) board_getadc_filtered_u32(XTHERMOREFMRRIX, 0, vrefff);
 	return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
 
-#else /* WITHREFSENSOR */
+#elif WITHTHERMOLEVEL
 
+	// Read from thermo sensor ST LM235Z (2 kOhm to +12)
+	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET;
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
-	const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
+	const unsigned vrefff = (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER;
+	const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, vrefff);
 	return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
+#else
+	return 0;
 
-#endif /* WITHREFSENSOR */
+#endif
 }
-
-#endif /* WITHTHERMOLEVEL || WITHTHERMOLEVEL2 */
 
 #if (WITHCURRLEVEL || WITHCURRLEVEL2)
 
