@@ -14,7 +14,7 @@
 #define LINUX_ROCKCHIP_CPUSTYLE_OPICM4_XC7A50T_PCIE_LITE_H_INCLUDED 1
 
 #define WITHSPIDEV		1	/* Linux SPI userspace API */
-#define WITHTWIHW 		1	/* Использование аппаратного контроллера TWI (I2C) */
+//#define WITHTWIHW 		1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHSDL2VIDEO	1	/* Вывод графики посредством Linux Simple DirectMedia Layer v2 */
 #define	IQ_VIA_XDMA		1
 
@@ -78,7 +78,7 @@ enum {
 
 #define LINUX_NMEA_FILE			"/dev/ttyPS1"
 #define LINUX_XDMA_IQ_EVENT_FILE	"/dev/xdma0_events_0"
-#define LINUX_I2C_FILE			"/dev/i2c-3"
+#define LINUX_I2C_FILE			"/dev/i2c-2"
 #define LINUX_FB_FILE			"/dev/fb0"
 #define LINUX_TTY_FILE			"/dev/tty0"
 #define LINUX_STREAM_INT_FILE	"/dev/xdma0_events_1"
