@@ -34,10 +34,6 @@
 #include "btstack.h"
 #endif /* WITHUSEUSBBT */
 
-#if WITHFT8
-	#include "ft8.h"
-#endif /* WITHFT8 */
-
 #if XVTR_R820T2
 	extern uint8_t ad936x_active;
 #endif /* XVTR_R820T2 */
@@ -22318,9 +22314,6 @@ application_initialize(void)
 #if WITHRTTY
 	RTTYDecoder_Init();
 #endif /* WITHRTTY */
-#if WITHFT8
-	ft8_initialize();
-#endif /* WITHFT8 */
 
 #if WITHSUBTONES && 1
 	dtmf_initialize();
