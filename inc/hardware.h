@@ -916,10 +916,6 @@ void mpu6500_test(void);
 #include "taildefs.h"
 #include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
 
-#if LINUX_SUBSYSTEM
-	#include <src/linux/linux_subsystem.h>
-#endif /* LINUX_SUBSYSTEM */
-
 #if (__ARM_ARCH == 8) && ! defined(__aarch64__)
 
 // DDI0500J_cortex_a53_r0p4_trm.pdf

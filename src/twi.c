@@ -1148,14 +1148,19 @@ static void t113_i2c_set_rate(TWI_TypeDef * twi, uint_fast32_t rate, uint_fast32
 
 #define TWI_tout 	5	// 5 ms
 
-static int twi_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS)
+static int twi_wait32mask(TWI_TypeDef * twi, volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS)
 {
-	return local_wait32mask(flag, mask, state, timeMS);
+	int f = local_wait32mask(flag, mask, state, timeMS);
+	if (f)
+	{
+		//PRINTF("twi_wait32mask: timeout. twi=%pm flag=%p, state=%08X mask=%08X\n", twi, flag, (unsigned) mask, (unsigned) state);
+	}
+	return f;
 }
 
 static int t113_i2c_wait_status(TWI_TypeDef * twi)
 {
-	if (twi_wait32mask(& twi->TWI_CNTR, TWI_CNTR_INT_FLAG, TWI_CNTR_INT_FLAG, TWI_tout))	// INT_FLAG
+	if (twi_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_INT_FLAG, TWI_CNTR_INT_FLAG, TWI_tout))	// INT_FLAG
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }
@@ -1164,7 +1169,7 @@ static int t113_i2c_start(TWI_TypeDef * twi)
 {
 	//PRINTF("I2C start\n");
 	twi->TWI_CNTR |= TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG;	// M_STA INT_FLAG
-	if (twi_wait32mask(& twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout))
+	if (twi_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout))
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }
@@ -1172,7 +1177,7 @@ static int t113_i2c_start(TWI_TypeDef * twi)
 static int t113_i2c_stop(TWI_TypeDef * twi)
 {
 	twi->TWI_CNTR |= TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG;	// M_STP INT_FLAG
-	if (twi_wait32mask(& twi->TWI_CNTR, TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, TWI_tout))
+	if (twi_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, TWI_tout))
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }
@@ -1180,7 +1185,7 @@ static int t113_i2c_stop(TWI_TypeDef * twi)
 static int t113_i2c_restart(TWI_TypeDef * twi){
 	//PRINTF("I2C start\n");
 	twi->TWI_CNTR |= TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG;	// M_STA INT_FLAG
-	if (twi_wait32mask(& twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout))
+	if (twi_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout))
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }

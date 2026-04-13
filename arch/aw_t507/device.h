@@ -330,7 +330,6 @@ typedef enum IRQn
 #define R_WDOG_BASE ((uintptr_t) 0x07020400)          /*!< R_WDOG  Base */
 #define GPIOL_BASE ((uintptr_t) 0x07022000)           /*!< GPIO Port Controller Base */
 #define R_UART_BASE ((uintptr_t) 0x07080000)          /*!< UART  Base */
-#define R_TWI_BASE ((uintptr_t) 0x07081400)           /*!< TWI  Base */
 #define S_TWI0_BASE ((uintptr_t) 0x07081400)          /*!< TWI  Base */
 #define R_CAN0_BASE ((uintptr_t) 0x07082000)          /*!< R_CAN Car Area Network controller Base */
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL T507/H618 CPU Subsystem Control Register List Base */
@@ -2526,7 +2525,7 @@ typedef struct PRCM_Type
          RESERVED(0x010[0x012C - 0x0010], uint8_t)
     __IOM uint32_t R_TWD_BGR_REG;                     /*!< Offset 0x12C R_TWD Bus Gating Reset Register */
          RESERVED(0x130[0x019C - 0x0130], uint8_t)
-    __IOM uint32_t R_TWI_BGR_REG;                     /*!< Offset 0x19C R_TWI Bus Gating Reset Register */
+    __IOM uint32_t R_TWI_BGR_REG;                     /*!< Offset 0x19C S_TWI0 Bus Gating Reset Register */
          RESERVED(0x1A0[0x01AC - 0x01A0], uint8_t)
     __IOM uint32_t R_CAN_BGR_REG;                     /*!< Offset 0x1AC R_CAN Bus Gating Reset Register */
          RESERVED(0x1B0[0x01BC - 0x01B0], uint8_t)
@@ -3897,7 +3896,6 @@ typedef struct VE_Type
 #define PRCM ((PRCM_TypeDef *) PRCM_BASE)             /*!< PRCM Power Reset Clock Management module register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL Port Controller register set access pointer */
 #define R_UART ((UART_TypeDef *) R_UART_BASE)         /*!< R_UART  register set access pointer */
-#define R_TWI ((TWI_TypeDef *) R_TWI_BASE)            /*!< R_TWI  register set access pointer */
 #define S_TWI0 ((TWI_TypeDef *) S_TWI0_BASE)          /*!< S_TWI0  register set access pointer */
 #define R_CAN0 ((R_CAN_TypeDef *) R_CAN0_BASE)        /*!< R_CAN0 Car Area Network controller register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL T507/H618 CPU Subsystem Control Register List register set access pointer */

@@ -13,37 +13,7 @@ extern "C" {
 	#error PLEASE, DO NOT USE THIS FILE DIRECTLY. USE FILE "hardware.h" INSTEAD.
 #endif
 
-#if WITHSPIDEV && LINUX_SUBSYSTEM
-
-#include <linux/spi/spidev.h>
-
-typedef enum
-{
-	SPIC_MODE0 = SPI_MODE_0,
-	SPIC_MODE1 = SPI_MODE_1,
-	SPIC_MODE2 = SPI_MODE_2,
-	SPIC_MODE3 = SPI_MODE_3,
-	//
-	SPIC_MODES_COUNT = 4
-} spi_modes_t;
-
-typedef enum
-{
-	SPIC_SPEED200k 	= 200000,	/* 200 kHz для XPT2046 */
-	SPIC_SPEED400k 	= 400000,	/* 400 kHz для MCP3208, DS1305 */
-	SPIC_SPEED1M 	= 1000000,	/* 1 MHz для XPT2046 */
-	SPIC_SPEED2M 	= 2000000,	/* 2 MHz */
-	SPIC_SPEED4M 	= 4000000,	/* 4 MHz для CS4272 */
-	SPIC_SPEED10M 	= 10000000,	/* 10 MHz для ILI9341 */
-	SPIC_SPEED12M 	= 12000000,	/* 12 MHz */
-	SPIC_SPEEDFAST 	= 12000000,
-	SPIC_SPEED25M 	= 25000000,	/* 25 MHz  */
-	SPIC_SPEEDUFAST = 10000000,
-} spi_speeds_t;
-
-#include <src/linux/linux_subsystem.h>
-
-#else /* WITHSPIDEV */
+#if ! (WITHSPIDEV && LINUX_SUBSYSTEM)
 
 typedef enum
 {
@@ -77,7 +47,7 @@ typedef enum
 	SPIC_SPEEDS_COUNT
 } spi_speeds_t;
 
-#endif /* WITHSPIDEV && LINUX_SUBSYSTEM */
+#endif /* ! (WITHSPIDEV && LINUX_SUBSYSTEM) */
 
 #define MULTIVFO ((HYBRID_NVFOS > 1) && (LO1MODE_HYBRID || LO1MODE_FIXSCALE))
 
@@ -283,7 +253,7 @@ typedef struct irqlspinlock_tag
 
 /* Linux targets: No any hardware IRQ control */
 
-#include <src/linux/linux_subsystem.h>
+#include "linux_support.h"
 
 #define IRQLSPINLOCK_t lclspinlock_t
 

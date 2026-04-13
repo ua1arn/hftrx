@@ -23,10 +23,6 @@
 
 #include "dspdefines.h"
 
-#if WITHFT8
-	#include "ft8.h"
-#endif /* WITHFT8 */
-
 //#define WITHDOUBLEFIRCOEFS 1
 
 #if 0
@@ -3626,10 +3622,6 @@ static RAMFUNC FLOAT_t mikeinmux(
 	const FLOAT32P_t vi0pairbt = getsampmlebt2();	// с BT (или 0, если ещё не запустился) */
 	FLOAT_t vi0fmike = vi0airpmike.IV;
 
-#if WITHFT8
-	ft8_txfill(& vi0fmike);	// todo: add new DSPCTL_FT8 mode
-#endif /* WITHFT8 */
-
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
@@ -5475,9 +5467,7 @@ void dsp_initialize(void)
 	}
 
 	// работа на всех ядрах, кроме нулевого
-#if ! LINUX_SUBSYSTEM
 	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, user_audioproc_thread, NULL, 16 * 1024 * 1024, "user_audioproc_thread") == NULL)
-#endif /* ! LINUX_SUBSYSTEM */
 	{
 		static dpcobj_t user_audioproc_dpc;
 		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);

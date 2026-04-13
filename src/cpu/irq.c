@@ -2099,7 +2099,8 @@ static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn
 
 	// включаем в список задач
 	InsertTailList(& threads_list [uprio], & thread->item);
-	//PRINTF("Added thread at uprio=%u, affinity=%02X (frame=%p), stack[%p..%p]\n", uprio, affinity, stackframe, stackframe, (void *) top);
+
+	//PRINTF("Added thread at uprio=%u, irql=%d, affinity=%02X (frame=%p), stack[%p..%p]\n", uprio, irql, affinity, stackframe, stackframe, (void *) top);
 }
 
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
@@ -2383,7 +2384,9 @@ static void *
 task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 {
 	const unsigned core = arm_hardware_cpuid();
+	IRQL_t irql;
 	ASSERT(threads_not_started == 0);
+	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC);
 	if (startedtask [core] == NULL)
 	{
 		thread_item_t * const thread = & base_threads [core];
@@ -2396,10 +2399,11 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		// получаем состояние процесора при первом перрывании
 		thread->affinity = 1U << core;
 		startedtask [core] = thread;
-		//PRINTF("task_scheduler0: add default %p, flag=%u, core=%u\n", thread, flag, core);
+
+		//PRINTF("task_scheduler0: add default %p, flag=%u, core=%u, irql=%u\n", thread, flag, core, irql);
 	}
+	startedtask [core]->irql = irql;
 	startedtask [core]->cpuframe = oldframe;
-	IRQLSPIN_LOCK(& threadslock, & startedtask [core]->irql, IRQL_IPC_ONLY);
 	if (flag)
 	{
 		task_svc(startedtask [core], code, oldframe);
@@ -2540,6 +2544,11 @@ void task_yield(void) {}
 int local_waitlist(PRLIST_ENTRY list, void * lock, uint_fast32_t timeMS)
 {
 	return 1;
+}
+
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
+{
+	return NULL;
 }
 
 #else /* ! LINUX_SUBSYSTEM */
@@ -2770,7 +2779,7 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 // Атрибут RAMFUNC_NONILINE убран, так как функция
 // используется в инициализации SDRAM на процессорах STM32F746.
 // TODO: перекалибровать для FLASH контроллеров.
-void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
+void /* RAMFUNC_NONILINE */ local_delay_us(uint_fast32_t timeUS)
 {
 	if (timeUS == 0)
 		return;

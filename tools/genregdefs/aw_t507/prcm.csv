@@ -4,7 +4,7 @@
 #regdef; CPUS_CFG_REG; 0x0000; CPUS Configuration Register
 #regdef; APBS1_CFG_REG; 0x000C; APBS1 Configuration Register
 #regdef; R_TWD_BGR_REG; 0x012C; R_TWD Bus Gating Reset Register
-#regdef; R_TWI_BGR_REG; 0x019C; R_TWI Bus Gating Reset Register
+#regdef; R_TWI_BGR_REG; 0x019C; S_TWI0 Bus Gating Reset Register
 #regdef; R_CAN_BGR_REG; 0x01AC; R_CAN Bus Gating Reset Register
 #regdef; R_RSB_BGR_REG; 0x01BC; R_RSB Bus Gating Reset Register
 #regdef; R_IR_RX_CLK_REG; 0x01C0; R_IR_RX Clock Register

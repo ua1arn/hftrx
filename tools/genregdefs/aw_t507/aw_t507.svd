@@ -14911,7 +14911,7 @@
    <register>
     <name>R_TWI_BGR_REG</name>
     <displayName>R_TWI_BGR_REG</displayName>
-    <description>R_TWI Bus Gating Reset Register</description>
+    <description>S_TWI0 Bus Gating Reset Register</description>
     <addressOffset>0x19C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -18761,40 +18761,6 @@
   <peripheral derivedFrom="TWI0">
   <name>TWI4</name>
   <baseAddress>0x05003000</baseAddress>
-  <interrupt>
-   <name>TWI0</name>
-   <value>38</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>TWI1</name>
-   <value>39</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>TWI2</name>
-   <value>40</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>TWI3</name>
-   <value>41</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>TWI4</name>
-   <value>42</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>S_TWI0</name>
-   <value>137</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="TWI0">
-  <name>R_TWI</name>
-  <baseAddress>0x07081400</baseAddress>
   <interrupt>
    <name>TWI0</name>
    <value>38</value>
