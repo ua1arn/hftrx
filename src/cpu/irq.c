@@ -2542,6 +2542,11 @@ int local_waitlist(PRLIST_ENTRY list, void * lock, uint_fast32_t timeMS)
 	return 1;
 }
 
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
+{
+	return NULL;
+}
+
 #else /* ! LINUX_SUBSYSTEM */
 
 // Non-linux, non-scheduler
@@ -2770,7 +2775,7 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 // Атрибут RAMFUNC_NONILINE убран, так как функция
 // используется в инициализации SDRAM на процессорах STM32F746.
 // TODO: перекалибровать для FLASH контроллеров.
-void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
+void /* RAMFUNC_NONILINE */ local_delay_us(uint_fast32_t timeUS)
 {
 	if (timeUS == 0)
 		return;
