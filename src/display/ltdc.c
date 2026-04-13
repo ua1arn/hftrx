@@ -3739,20 +3739,18 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
     		(lvds_prei) * (UINT32_C(1) << 8) | // prescaler code
     		(lvds_divider) * (UINT32_C(1) << 0) |
     		0;
-    	TCONLCD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
+        TCONLCD_CCU_CLK_REG |= (UINT32_C(1) << 31);
+       local_delay_us(10);
 
+        CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
 
-		CCU->TCONLCD_BGR_REG &= ~ (UINT32_C(1) << 16);	// Set the LVDS reset of TCON LCD BUS GATING RESET register;
-		CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
-
-		CCU->LVDS_BGR_REG &= ~ (UINT32_C(1) << 16); // LVDS0_RST: Assert reset
-		CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
+        CCU->TCONLCD_BGR_REG &= ~ (UINT32_C(1) << 16);	// Set the LVDS reset of TCON LCD BUS GATING RESET register;
+        CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 16);	// Release the LVDS reset of TCON LCD BUS GATING RESET register;
+        local_delay_us(10);
 
 	//PRINTF("t113_tconlvds_CCU_configuration: BOARD_TCONLCDFREQ=%u MHz\n", (unsigned) (BOARD_TCONLCDFREQ / 1000 / 1000));
     }
-    local_delay_us(10);
 
-    CCU->TCONLCD_BGR_REG |= (UINT32_C(1) << 0);	// Open the clock gate
 #if WITHDSIHW
     // DSI_CLK_REG
     {
@@ -3789,7 +3787,34 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
     	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
 
    }
+#else
+    {
+    	PRINTF("t113_tconlvds_CCU_configuration(): setup DSI_CLK_REG\n");
+        const unsigned dsidivider = 2;
+    	// T113
+    	//	000: HOSC
+    	//	001: PLL_PERI(1X)
+    	//	010: PLL_VIDEO0(2X)
+    	//	011: PLL_VIDEO1(2X)
+    	//	100: PLL_AUDIO1(DIV2)
+    	CCU->DSI_CLK_REG = (CCU->DSI_CLK_REG & ~ ((UINT32_C(7) << 24) | UINT32_C(0x0F) << 0)) |
+    		0x03 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL PLL_VIDEO1(2X)
+    		(dsidivider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M
+    		0;
+
+    	CCU->DSI_CLK_REG |= UINT32_C(1) << 31;		// DSI_CLK_GATING
+
+    	CCU->DSI_BGR_REG |= UINT32_C(1) << 0;	// DSI_GATING
+    	CCU->DSI_BGR_REG |= UINT32_C(1) << 16;	// DSI_RST
+        local_delay_us(10);
+
+    }
 #endif /* WITHDSIHW */
+
+
+    CCU->LVDS_BGR_REG &= ~ (UINT32_C(1) << 16); // LVDS0_RST: Assert reset
+    CCU->LVDS_BGR_REG |= (UINT32_C(1) << 16); // LVDS0_RST: De-assert reset
+
     local_delay_us(10);
 
 #else
