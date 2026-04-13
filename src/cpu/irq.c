@@ -2383,7 +2383,9 @@ static void *
 task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 {
 	const unsigned core = arm_hardware_cpuid();
+	IRQL_t irql;
 	ASSERT(threads_not_started == 0);
+	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC_ONLY);
 	if (startedtask [core] == NULL)
 	{
 		thread_item_t * const thread = & base_threads [core];
@@ -2398,8 +2400,8 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		startedtask [core] = thread;
 		//PRINTF("task_scheduler0: add default %p, flag=%u, core=%u\n", thread, flag, core);
 	}
+	startedtask [core]->irql = irql;
 	startedtask [core]->cpuframe = oldframe;
-	IRQLSPIN_LOCK(& threadslock, & startedtask [core]->irql, IRQL_IPC_ONLY);
 	if (flag)
 	{
 		task_svc(startedtask [core], code, oldframe);
