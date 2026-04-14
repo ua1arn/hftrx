@@ -3491,7 +3491,7 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active);
 int hamradio_walkmenu_getgroupanme(const void * groupitem, char * buff, size_t count);
 int hamradio_walkmenu_getparamanme(const void * paramitem, char * buff, size_t count);
 int hamradio_walkmenu_getparamvalue(const void * paramitem, char * buff, size_t count);
-int_fast16_t hamradio_get_PAtemp_value(void);	// Градусы в десятых долях
+int_fast16_t hamradio_get_PAtemp_value(void);	// Градусы в десятых долях (может быть отрицательным)
 int_fast16_t hamradio_get_bottomdb(void);	/* значения со знаком */
 int_fast16_t hamradio_get_pacurrent_value(void);	// Ток в десятках милиампер, может быть отрицательным
 int_fast16_t hamradio_get_topdb(void);	/* значения со знаком */
