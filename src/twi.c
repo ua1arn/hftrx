@@ -1159,45 +1159,43 @@ static void t113_i2c_reset(TWI_TypeDef * twi)
 	}
 }
 
-static int t113_i2c_wait32mask(TWI_TypeDef * twi, volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS)
+static int t113_i2c_wait32mask(TWI_TypeDef * twi, volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS, const char * file, int line)
 {
 	int f = local_wait32mask(flag, mask, state, timeMS);
 	if (f)
 	{
-		//PRINTF("t113_i2c_wait32mask: timeout. twi=%p, flag=%p, state=%08X mask=%08X\n", twi, flag, (unsigned) mask, (unsigned) state);
+		//PRINTF("t113_i2c_wait32mask: timeout. twi=%p, flag=%p, state=%08X mask=%08X [%08X] at %s(%d)\n", twi, flag, (unsigned) state, (unsigned) mask, (unsigned) * flag, file, line);
 	}
 	return f;
 }
 
-static int t113_i2c_wait_status(TWI_TypeDef * twi)
+static int t113_i2c_wait_status(TWI_TypeDef * twi, const char * file, int line)
 {
-	if (t113_i2c_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_INT_FLAG, TWI_CNTR_INT_FLAG, TWI_tout))	// INT_FLAG
+	if (t113_i2c_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_INT_FLAG, TWI_CNTR_INT_FLAG, TWI_tout, file, line))	// INT_FLAG
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }
 
 static int t113_i2c_start(TWI_TypeDef * twi)
 {
-	//PRINTF("I2C start\n");
 	twi->TWI_CNTR |= TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG;	// M_STA INT_FLAG
-	if (t113_i2c_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout))
+	if (t113_i2c_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout, __FILE__, __LINE__))
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }
 
-static int t113_i2c_stop(TWI_TypeDef * twi)
+static int t113_i2c_stop(TWI_TypeDef * twi, const char * file, int line)
 {
-	twi->TWI_CNTR |= TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG;	// M_STP INT_FLAG
-	if (t113_i2c_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, TWI_tout))
+	twi->TWI_CNTR |= TWI_CNTR_M_STP | 0*TWI_CNTR_INT_FLAG;	// M_STP INT_FLAG
+	if (t113_i2c_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STP | 0*TWI_CNTR_INT_FLAG, TWI_tout, file, line))
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }
 
 static int t113_i2c_restart(TWI_TypeDef * twi)
 {
-	//PRINTF("I2C start\n");
 	twi->TWI_CNTR |= TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG;	// M_STA INT_FLAG
-	if (t113_i2c_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout))
+	if (t113_i2c_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout, __FILE__, __LINE__))
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }
@@ -1207,7 +1205,7 @@ static int t113_i2c_send_data(TWI_TypeDef * twi, uint8_t dat)
 	twi->TWI_DATA = dat;
 	twi->TWI_CNTR |= (1 << 3);	// INT_FLAG
 
-	return t113_i2c_wait_status(twi);
+	return t113_i2c_wait_status(twi, __FILE__, __LINE__);
 }
 
 static int t113_i2c_read(TWI_TypeDef * twi, struct i2c_msg_t * msg){
@@ -1220,13 +1218,15 @@ static int t113_i2c_read(TWI_TypeDef * twi, struct i2c_msg_t * msg){
 		return 0;
 	twi->TWI_CNTR = twi->TWI_CNTR | (1 << 2);
 	while (len > 0){
-		if (len == 1){
+		if (len == 1)
+		{
+			// last byte
 			twi->TWI_CNTR = (twi->TWI_CNTR & ~(1 << 2)) | (1 << 3);
-			if (t113_i2c_wait_status(twi) != I2C_STAT_RXD_NAK)
+			if (t113_i2c_wait_status(twi, __FILE__, __LINE__) != I2C_STAT_RXD_NAK)
 				return -1;
 		}else{
 			twi->TWI_CNTR = twi->TWI_CNTR | (1 << 3);
-			if (t113_i2c_wait_status(twi) != I2C_STAT_RXD_ACK)
+			if (t113_i2c_wait_status(twi, __FILE__, __LINE__) != I2C_STAT_RXD_ACK)
 				return -1;
 		}
 		*p++ = twi->TWI_DATA;
@@ -1283,7 +1283,7 @@ int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint
 	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_START) {
 		//PRINTF("i2chw_read start error\n");
-		t113_i2c_stop(twi);
+		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
 	}
 	res = t113_i2c_read(twi, &msgs);
@@ -1291,7 +1291,7 @@ int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint
 		t113_i2c_reset(twi);
 		return 1;
 	}
-	t113_i2c_stop(twi);
+	t113_i2c_stop(twi, __FILE__, __LINE__);
 	return 0;
 }
 
@@ -1308,7 +1308,7 @@ int i2chwx_write(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * bu
 	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_START) {
 		//PRINTF("i2chw_write start error\n");
-		t113_i2c_stop(twi);
+		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
 	}
 	res = t113_i2c_write(twi, &msgs);
@@ -1316,7 +1316,7 @@ int i2chwx_write(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * bu
 		t113_i2c_reset(twi);
 		return 1;
 	}
-	t113_i2c_stop(twi);
+	t113_i2c_stop(twi, __FILE__, __LINE__);
 	return 0;
 }
 
@@ -1333,7 +1333,7 @@ int i2chwx_write2(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * b
 	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_START) {
 		//PRINTF("i2chw_write start error\n");
-		t113_i2c_stop(twi);
+		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
 	}
 	res = t113_i2c_write(twi, &msgs);
@@ -1348,7 +1348,7 @@ int i2chwx_write2(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * b
 		t113_i2c_reset(twi);
 		return 1;
 	}
-	t113_i2c_stop(twi);
+	t113_i2c_stop(twi, __FILE__, __LINE__);
 	return 0;
 }
 
@@ -1365,7 +1365,7 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_START) {
 		//PRINTF("i2chw_exchange 1 start error\n");
-		t113_i2c_stop(twi);
+		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
 	}
 	res = t113_i2c_write(twi, &msgs);
@@ -1381,7 +1381,7 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_RSTART) {
 		//PRINTF("i2chw_exchange 2 start error\n");
-		t113_i2c_stop(twi);
+		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
 	}
 	res = t113_i2c_read(twi, &msgs);
@@ -1389,7 +1389,7 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 		t113_i2c_reset(twi);
 		return 1;
 	}
-	t113_i2c_stop(twi);
+	t113_i2c_stop(twi, __FILE__, __LINE__);
 	return 0;
 }
 
@@ -1477,7 +1477,7 @@ void i2chwx_initialize(TWI_t * twi, unsigned TWIx, uint_fast32_t busfreq, uint_f
 	t113_i2c_reset(twi);
 
 	twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
-	t113_i2c_stop(twi);
+	t113_i2c_stop(twi, __FILE__, __LINE__);
 
 #elif CPUSTYLE_STM32MP1
 
