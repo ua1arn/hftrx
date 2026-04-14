@@ -1156,12 +1156,12 @@ static int t113_i2c_wait32mask(TWI_TypeDef * twi, uint_fast32_t mask, uint_fast3
 
 static int t113_i2c_reset(TWI_TypeDef * twi)
 {
-	twi->TWI_SRST |= 1u << 0;
+	twi->TWI_SRST |= UINT32_C(1) << 0;	// SOFT_RST
 	volatile uint32_t * const flag = & twi->TWI_SRST;
-	const int f = local_wait32mask(flag, (1u << 0), 0 * (1u << 0), TWI_tout);
+	const int f = local_wait32mask(flag, (UINT32_C(1) << 0), 0 * (UINT32_C(1) << 0), TWI_tout);
 	if (f)
 	{
-		//PRINTF("t113_i2c_reset: timeout. twi=%pm flag=%p, state=%08X mask=%08X\n", twi, flag, (unsigned) mask, (unsigned) state);
+		//PRINTF("t113_i2c_reset: timeout. twi=%pm flag=%p, state=%08X mask=%08X\n", twi, flag);
 	}
 	return f;
 }
