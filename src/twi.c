@@ -1102,10 +1102,10 @@ enum {
 };
 
 enum {
-	I2C_STAT_BUS_ERROR	= 0x00,
-	I2C_STAT_TX_START	= 0x08,
-	I2C_STAT_TX_RSTART	= 0x10,
-	I2C_STAT_TX_AW_ACK	= 0x18,
+	I2C_STAT_BUS_ERROR	= 0x00,	// Bus error
+	I2C_STAT_TX_START	= 0x08, // START condition transmitted
+	I2C_STAT_TX_RSTART	= 0x10, // Repeated START condition transmitted
+	I2C_STAT_TX_AW_ACK	= 0x18,	// Address + Write bit transmitted, ACK received
 	I2C_STAT_TX_AW_NAK	= 0x20,
 	I2C_STAT_TXD_ACK	= 0x28,
 	I2C_STAT_TXD_NAK	= 0x30,
@@ -1192,10 +1192,10 @@ static int t113_i2c_stop(TWI_TypeDef * twi, const char * file, int line)
 	return twi->TWI_STAT;
 }
 
-static int t113_i2c_restart(TWI_TypeDef * twi)
+static int t113_i2c_stopstart(TWI_TypeDef * twi)
 {
-	twi->TWI_CNTR |= TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG;	// M_STA INT_FLAG
-	if (t113_i2c_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout, __FILE__, __LINE__))
+	twi->TWI_CNTR |= TWI_CNTR_M_STA | TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG;	// M_STA INT_FLAG
+	if (t113_i2c_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout, __FILE__, __LINE__))
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }
@@ -1378,9 +1378,9 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 	msgs.len = rsize;
 	msgs.buf = (void *) rbuf;
 
-	res = t113_i2c_start(twi);
-	if (res != I2C_STAT_TX_RSTART) {
-		//PRINTF("i2chw_exchange 2 start error\n");
+	res = t113_i2c_stopstart(twi);
+	if (res != I2C_STAT_TX_START) {
+		PRINTF("i2chw_exchange 2 start error %08X\n", (unsigned) res);
 		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
 	}
