@@ -1202,20 +1202,9 @@ static int t113_i2c_restart(TWI_TypeDef * twi)
 	return twi->TWI_STAT;
 }
 
-// Send one byte
-static int t113_i2c_send_byte(TWI_TypeDef * twi, uint8_t dat)
-{
-	twi->TWI_DATA = dat;
-	twi->TWI_CNTR |= (1 << 3);	// INT_FLAG
-
-	return t113_i2c_wait_status(twi);
-}
-
 // Send address and read data
-static int t113_i2c_read(TWI_TypeDef * twi, uint8_t addr7, uint8_t * p, int len)
+static int t113_i2c_read_buff(TWI_TypeDef * twi, uint8_t * p, int len)
 {
-	if (t113_i2c_send_byte(twi, (uint8_t)((addr7 << 1) | 1)) != I2C_STAT_TX_AR_ACK)
-		return -1;
 	if (len == 0)	/* Handle zero count for probes */
 		return 0;
 	twi->TWI_CNTR = twi->TWI_CNTR | TWI_CNTR_A_ACK;	// A_ACK
@@ -1237,6 +1226,15 @@ static int t113_i2c_read(TWI_TypeDef * twi, uint8_t addr7, uint8_t * p, int len)
 		len--;
 	}
 	return 0;
+}
+
+// Send one byte
+static int t113_i2c_send_byte(TWI_TypeDef * twi, uint8_t dat)
+{
+	twi->TWI_DATA = dat;
+	twi->TWI_CNTR |= TWI_CNTR_INT_FLAG;	// INT_FLAG
+
+	return t113_i2c_wait_status(twi);
 }
 
 // Send address and data
@@ -1265,7 +1263,6 @@ static int t113_i2c_send_buff(TWI_TypeDef * twi, const uint8_t * p, int len)
 // LSB of slave_address8b ignored */
 int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
-	const uint8_t addr7 = slave_address8b >> 1;
 	int res;
 
 	res = t113_i2c_start(twi);
@@ -1274,7 +1271,12 @@ int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint
 		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_read(twi, addr7, buf, size);
+	res = t113_i2c_address8(twi, slave_address8b | 0x01);
+	if (res != 0) {
+		t113_i2c_reset(twi);
+		return 1;
+	}
+	res = t113_i2c_read_buff(twi, buf, size);
 	if (res != 0) {
 		t113_i2c_reset(twi);
 		return 1;
@@ -1287,7 +1289,6 @@ int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint
 // LSB of slave_address8b ignored */
 int i2chwx_write(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 {
-	const uint8_t addr7 = slave_address8b >> 1;
 	int res;
 
 	res = t113_i2c_start(twi);
@@ -1296,7 +1297,7 @@ int i2chwx_write(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * bu
 		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_address8(twi, addr7 | 0x00);
+	res = t113_i2c_address8(twi, slave_address8b & ~ 0x01);
 	if (res != 0) {
 		t113_i2c_reset(twi);
 		return 1;
@@ -1313,7 +1314,6 @@ int i2chwx_write(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * bu
 // Запись двух блоков друг за другом - напромер адрес регистра и данные
 int i2chwx_write2(TWI_t * twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size, const uint8_t * buf2, uint32_t size2)
 {
-	const uint8_t addr7 = slave_address8b >> 1;
 	int res;
 
 	res = t113_i2c_start(twi);
@@ -1322,7 +1322,7 @@ int i2chwx_write2(TWI_t * twi, uint16_t slave_address8b, const uint8_t * buf, ui
 		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_address8(twi, addr7 | 0x00);
+	res = t113_i2c_address8(twi, slave_address8b & ~ 0x01);
 	if (res != 0) {
 		t113_i2c_reset(twi);
 		return 1;
@@ -1354,7 +1354,7 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_address8(twi, addr7 | 0x00);
+	res = t113_i2c_address8(twi, slave_address8b & ~ 0x01);
 	if (res != 0) {
 		t113_i2c_reset(twi);
 		return 1;
@@ -1372,12 +1372,12 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_address8(twi, addr7 | 0x01);
+	res = t113_i2c_address8(twi, slave_address8b | 0x01);
 	if (res != 0) {
 		t113_i2c_reset(twi);
 		return 1;
 	}
-	res = t113_i2c_read(twi, addr7, rbuf, rsize);
+	res = t113_i2c_read_buff(twi, rbuf, rsize);
 	if (res != 0) {
 		t113_i2c_reset(twi);
 		return 1;
