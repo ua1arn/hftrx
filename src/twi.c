@@ -1150,9 +1150,9 @@ static void t113_i2c_set_rate(TWI_TypeDef * twi, uint_fast32_t rate, uint_fast32
 
 static void t113_i2c_reset(TWI_TypeDef * twi)
 {
-
+	int f;
 	twi->TWI_SRST |= 1u << 0;
-	int f = local_wait32mask(& twi->TWI_SRST, (1u << 0), 0 * (1u << 0), TWI_tout);
+	f = local_wait32mask(& twi->TWI_SRST, (1u << 0), 0 * (1u << 0), TWI_tout);
 	if (f)
 	{
 		PRINTF("t113_i2c_reset: timeout\n");
@@ -1161,7 +1161,7 @@ static void t113_i2c_reset(TWI_TypeDef * twi)
 
 static int t113_i2c_wait32mask(TWI_TypeDef * twi, volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS, const char * file, int line)
 {
-	int f = local_wait32mask(flag, mask, state, timeMS);
+	const int f = local_wait32mask(flag, mask, state, timeMS);
 	if (f)
 	{
 		//PRINTF("t113_i2c_wait32mask: timeout. twi=%p, flag=%p, state=%08X mask=%08X [%08X] at %s(%d)\n", twi, flag, (unsigned) state, (unsigned) mask, (unsigned) * flag, file, line);
