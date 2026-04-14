@@ -1164,7 +1164,7 @@ static int t113_i2c_wait32mask(TWI_TypeDef * twi, volatile uint32_t * flag, uint
 	const int f = local_wait32mask(flag, mask, state, timeMS);
 	if (f)
 	{
-		//PRINTF("t113_i2c_wait32mask: timeout. twi=%p, flag=%p, state=%08X mask=%08X [%08X] at %s(%d)\n", twi, flag, (unsigned) state, (unsigned) mask, (unsigned) * flag, file, line);
+		PRINTF("t113_i2c_wait32mask: timeout. twi=%p, flag=%p, state=%08X mask=%08X [%08X] at %s(%d)\n", twi, flag, (unsigned) state, (unsigned) mask, (unsigned) * flag, file, line);
 	}
 	return f;
 }
@@ -1354,6 +1354,7 @@ int i2chwx_write2(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * b
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
+// Send address, read data without STOP condition
 int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
 {
 	int res;
@@ -1378,8 +1379,8 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 	msgs.len = rsize;
 	msgs.buf = (void *) rbuf;
 
-	res = t113_i2c_stopstart(twi);
-	if (res != I2C_STAT_TX_START) {
+	res = t113_i2c_start(twi);
+	if (res != I2C_STAT_TX_RSTART) {
 		PRINTF("i2chw_exchange 2 start error %08X\n", (unsigned) res);
 		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
@@ -2137,6 +2138,7 @@ int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 	return i2chwx_write(TWIHARD_PTR, slave_address8b, buf, size);
 }
 
+// Use repeated start without stop
 int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
 {
 	return i2chwx_exchange(TWIHARD_PTR, slave_address8b, wbuf, wsize, rbuf, rsize);

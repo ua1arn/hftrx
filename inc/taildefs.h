@@ -207,14 +207,14 @@ void hardware_twi_master_configure(void);
 int i2chwx_read(TWI_t * twi, uint16_t slave_address8b, uint8_t * buf, uint32_t size);
 int i2chwx_write(TWI_t * twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size);
 int i2chwx_write2(TWI_t * twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size, const uint8_t * buf2, uint32_t size2);
-int i2chwx_exchange(TWI_t * twi, uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize);	// Use restart for read
+int i2chwx_exchange(TWI_t * twi, uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize);	// Use repeated start without stop
 
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
 int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size);
 int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size);
 int i2chw_write2(uint16_t slave_address8b, const uint8_t * buf, uint32_t size, const uint8_t * buf2, uint32_t size2);
-int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize);	// Use restart for read
+int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize);	// Use repeated start without stop
 // --- TWI
 
 #if ! LINUX_SUBSYSTEM
