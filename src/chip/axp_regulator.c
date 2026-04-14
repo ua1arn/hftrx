@@ -14,12 +14,18 @@
 int pmic_bus_read(uint8_t reg, uint8_t * data)
 {
 	uint8_t bufw = reg;
+	if (i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1))
+		return 1;
+	return i2chwx_read(TWIHARD_S_PTR, PMIC_I2C_R, data, 1);
 	return i2chwx_exchange(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1, data, 1);
 }
 
 static int pmic_read(uint8_t reg, uint8_t * data)
 {
 	uint8_t bufw = reg;
+	if (i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1))
+		return 1;
+	return i2chwx_read(TWIHARD_S_PTR, PMIC_I2C_R, data, 1);
 	return i2chwx_exchange(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1, data, 1);
 }
 
@@ -39,15 +45,18 @@ static int pmic_reg_read(uint8_t reg)
 {
 	const uint8_t bufw = reg;
 	uint8_t rv;
-	int ec = i2chwx_exchange(TWIHARD_S_PTR, PMIC_I2C_W | 0x01, & bufw, 1, & rv, 1);
-	return (ec < 0) ? ec : rv;
+	if (i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1))
+		return - 1;
+	int ec = i2chwx_read(TWIHARD_S_PTR, PMIC_I2C_R, & rv, 1);
+	//int ec = i2chwx_exchange(TWIHARD_S_PTR, PMIC_I2C_W | 0x01, & bufw, 1, & rv, 1);
+	return (ec) ? - 1 : rv;
 }
 
-static int pmic_reg_write(uint8_t reg, uint8_t data)
-{
-	const uint8_t bufw [] = { reg, data };
-	return i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W & ~ 0x01, bufw, ARRAY_SIZE(bufw));
-}
+//static int pmic_reg_write(uint8_t reg, uint8_t data)
+//{
+//	const uint8_t bufw [] = { reg, data };
+//	return i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W & ~ 0x01, bufw, ARRAY_SIZE(bufw));
+//}
 
 static int pmic_bus_setbits(uint8_t reg, uint8_t bits)
 {

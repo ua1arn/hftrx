@@ -1117,6 +1117,12 @@ enum {
 	I2C_STAT_IDLE		= 0xf8,
 };
 
+struct i2c_msg_t {
+	int addr7;
+	int len;
+	void * buf;
+};
+
 // The TWI bus is sampled by the TWI at the frequency defined by F0:
 // Fsamp = F0 = Fin / 2^CLK_N
 // F1 = F0 / (CLK_M + 1)
@@ -1139,86 +1145,76 @@ static void t113_i2c_set_rate(TWI_TypeDef * twi, uint_fast32_t rate, uint_fast32
 #define TWI_CNTR_M_STA (UINT32_C(1) << 5)
 #define TWI_CNTR_M_STP (UINT32_C(1) << 4)
 #define TWI_CNTR_INT_FLAG (UINT32_C(1) << 3)
-#define TWI_CNTR_A_ACK (UINT32_C(1) << 2)
 
 #define TWI_tout 	5	// 5 ms
 
-static int t113_i2c_wait32mask(TWI_TypeDef * twi, uint_fast32_t mask, uint_fast32_t state, int timeMS)
+static int twi_wait32mask(TWI_TypeDef * twi, volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, int timeMS)
 {
-	volatile uint32_t * const flag = & twi->TWI_CNTR;
-	const int f = local_wait32mask(flag, mask, state, timeMS);
+	int f = local_wait32mask(flag, mask, state, timeMS);
 	if (f)
 	{
-		//PRINTF("t113_i2c_wait32mask: timeout. twi=%pm flag=%p, state=%08X mask=%08X\n", twi, flag, (unsigned) mask, (unsigned) state);
+		//PRINTF("twi_wait32mask: timeout. twi=%pm flag=%p, state=%08X mask=%08X\n", twi, flag, (unsigned) mask, (unsigned) state);
 	}
 	return f;
 }
 
-static int t113_i2c_reset(TWI_TypeDef * twi)
-{
-	twi->TWI_SRST |= UINT32_C(1) << 0;	// SOFT_RST
-	volatile uint32_t * const flag = & twi->TWI_SRST;
-	const int f = local_wait32mask(flag, (UINT32_C(1) << 0), 0 * (UINT32_C(1) << 0), TWI_tout);
-	if (f)
-	{
-		//PRINTF("t113_i2c_reset: timeout. twi=%pm flag=%p, state=%08X mask=%08X\n", twi, flag);
-	}
-	return f;
-}
-
-// Wait TWI_CNTR_INT_FLAG
 static int t113_i2c_wait_status(TWI_TypeDef * twi)
 {
-	//PRINTF("t113_i2c_wait_status\n");
-	if (t113_i2c_wait32mask(twi, TWI_CNTR_INT_FLAG, TWI_CNTR_INT_FLAG, TWI_tout))	// INT_FLAG
+	if (twi_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_INT_FLAG, TWI_CNTR_INT_FLAG, TWI_tout))	// INT_FLAG
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }
 
 static int t113_i2c_start(TWI_TypeDef * twi)
 {
-	//PRINTF("t113_i2c_start\n");
+	//PRINTF("I2C start\n");
 	twi->TWI_CNTR |= TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG;	// M_STA INT_FLAG
-	if (t113_i2c_wait32mask(twi, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout))
+	if (twi_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout))
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }
 
 static int t113_i2c_stop(TWI_TypeDef * twi)
 {
-	//PRINTF("t113_i2c_stop\n");
 	twi->TWI_CNTR |= TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG;	// M_STP INT_FLAG
-	if (t113_i2c_wait32mask(twi, TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, TWI_tout))
+	if (twi_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STP | TWI_CNTR_INT_FLAG, TWI_tout))
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }
 
 static int t113_i2c_restart(TWI_TypeDef * twi)
 {
-	//PRINTF("t113_i2c_restart\n");
-	twi->TWI_CNTR |= TWI_CNTR_M_STP | TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG;	// M_STA INT_FLAG
-	if (t113_i2c_wait32mask(twi, TWI_CNTR_M_STP | TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STP | 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout))
+	//PRINTF("I2C start\n");
+	twi->TWI_CNTR |= TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG;	// M_STA INT_FLAG
+	if (twi_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout))
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }
 
-// Send address and read data
-static int t113_i2c_read_buff(TWI_TypeDef * twi, uint8_t * p, int len)
+static int t113_i2c_send_data(TWI_TypeDef * twi, uint8_t dat)
 {
+	twi->TWI_DATA = dat;
+	twi->TWI_CNTR |= (1 << 3);	// INT_FLAG
+
+	return t113_i2c_wait_status(twi);
+}
+
+static int t113_i2c_read(TWI_TypeDef * twi, struct i2c_msg_t * msg){
+	uint8_t * p = msg->buf;
+	int len = msg->len;
+
+	if (t113_i2c_send_data(twi, (uint8_t)((msg->addr7 << 1) | 1)) != I2C_STAT_TX_AR_ACK)
+		return -1;
 	if (len == 0)	/* Handle zero count for probes */
 		return 0;
-	twi->TWI_CNTR = twi->TWI_CNTR | TWI_CNTR_A_ACK;	// A_ACK
-	while (len > 0)
-	{
-		if (len == 1)
-		{
-			twi->TWI_CNTR = (twi->TWI_CNTR & ~ TWI_CNTR_A_ACK) | TWI_CNTR_INT_FLAG; // A_ACK INT_FLAG
+	twi->TWI_CNTR = twi->TWI_CNTR | (1 << 2);
+	while (len > 0){
+		if (len == 1){
+			twi->TWI_CNTR = (twi->TWI_CNTR & ~(1 << 2)) | (1 << 3);
 			if (t113_i2c_wait_status(twi) != I2C_STAT_RXD_NAK)
 				return -1;
-		}
-		else
-		{
-			twi->TWI_CNTR = twi->TWI_CNTR | TWI_CNTR_INT_FLAG;
+		}else{
+			twi->TWI_CNTR = twi->TWI_CNTR | (1 << 3);
 			if (t113_i2c_wait_status(twi) != I2C_STAT_RXD_ACK)
 				return -1;
 		}
@@ -1228,42 +1224,188 @@ static int t113_i2c_read_buff(TWI_TypeDef * twi, uint8_t * p, int len)
 	return 0;
 }
 
-// Send one byte
-static int t113_i2c_send_byte(TWI_TypeDef * twi, uint8_t dat)
+static int t113_i2c_write(TWI_TypeDef * twi, struct i2c_msg_t * msg)
 {
-	twi->TWI_DATA = dat;
-	twi->TWI_CNTR |= TWI_CNTR_INT_FLAG;	// INT_FLAG
+	uint8_t * p = msg->buf;
+	int len = msg->len;
 
-	return t113_i2c_wait_status(twi);
-}
-
-// Send address and data
-static int t113_i2c_address8(TWI_TypeDef * twi, uint8_t addr8)
-{
-	if (t113_i2c_send_byte(twi, addr8) != I2C_STAT_TX_AW_ACK)
-	{
+	if (t113_i2c_send_data(twi, (uint8_t)(msg->addr7 << 1)) != I2C_STAT_TX_AW_ACK){
 		return -1;
 	}
-	return 0;
-}
-
-// Send only data
-static int t113_i2c_send_buff(TWI_TypeDef * twi, const uint8_t * p, int len)
-{
+	if (len == 0)	/* Handle zero count for probes */
+		return 0;
 	while (len > 0)
 	{
-		if (t113_i2c_send_byte(twi, *p++) != I2C_STAT_TXD_ACK)
+		if (t113_i2c_send_data(twi, *p++) != I2C_STAT_TXD_ACK)
 			return -1;
 		len--;
 	}
 	return 0;
 }
 
+static int t113_i2c_write_buff(TWI_TypeDef * twi, struct i2c_msg_t * msg)
+{
+	uint8_t * p = msg->buf;
+	int len = msg->len;
+
+	if (len == 0)	/* Handle zero count for probes */
+		return 0;
+	while (len > 0)
+	{
+		if (t113_i2c_send_data(twi, *p++) != I2C_STAT_TXD_ACK)
+			return -1;
+		len--;
+	}
+	return 0;
+}
+//
+//unsigned char I2C_WriteByte(unsigned char slaveAddr, const unsigned char* pBuffer, unsigned char WriteAddr){
+//	//записываем адрес который хотим прочитать
+//	unsigned char wr_buf[2];
+//	int res;
+//
+//	wr_buf[0] = WriteAddr;
+//	wr_buf[1] = pBuffer[0];
+//
+//	struct i2c_msg_t  msgs;
+//	msgs.addr = slaveAddr;
+//	msgs.len = 2;
+//	msgs.buf = wr_buf;
+//	//генереруем старт
+//	if (t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_START){
+//		 //PRINTF("I2C start error\n");
+//		return 0;
+//	}
+//	 //PRINTF("I2C start ok\n");
+//
+//	res = t113_i2c_write(&pdat_i2c, &msgs);
+//	if (res!=0){
+//		 //PRINTF("I2C write err\n");
+//		return 0;
+//	}else{
+//		 //PRINTF("I2C write ok\n");
+//	}
+//	 //PRINTF("I2C t113_i2c_stop in\n");
+//	t113_i2c_stop(&pdat_i2c);
+//	 //PRINTF	("I2C t113_i2c_stop ok\n");
+//
+//	return 1;
+//}
+
+
+//// возвращает 1 если все хорошо и 0 если что-то не так
+//unsigned char I2C_ReadBuffer(unsigned char slaveAddr, unsigned char* pBuffer, unsigned char ReadAddr, unsigned short NumByteToRead){
+//	int res;
+//	//PRINTF("!!!!!=====I2C_ReadBuffer=====!!!!!\n");
+//	//записываем адрес который хотим прочитать
+//	struct i2c_msg_t  msgs;
+//	msgs.addr = slaveAddr;
+//	msgs.len = 1;
+//	msgs.buf = &ReadAddr;
+//
+//	//генереруем старт
+//
+//	res = t113_i2c_start(&pdat_i2c);
+//	if (res != I2C_STAT_TX_START){
+//		//PRINTF("I2C start error\n");
+//		t113_i2c_stop(&pdat_i2c);
+//		return 0;
+//	}
+//	//PRINTF("I2C start ok\n");
+//
+//	res = t113_i2c_write(&pdat_i2c, &msgs);
+//	if (res!=0){
+//		//PRINTF("I2C write err\n");
+//		return 0;
+//	}
+//	//PRINTF("I2C write ok\n");
+//
+//	if (t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_RSTART){	//генерируем рестарт
+//		//PRINTF("I2C restart error\n");
+//		return 0;
+//	}
+//	//PRINTF("I2C restart Ok\n");
+//	//читаем регистр
+//	msgs.addr = slaveAddr;
+//	msgs.len = NumByteToRead;
+//	msgs.buf = pBuffer;
+//
+//	res = t113_i2c_read(&pdat_i2c, &msgs);
+//	if (res!=0){
+//		//PRINTF("I2C read err\n");
+//		//I2C_ERROR = 0x04;
+//		return 0;
+//	}
+//	//PRINTF("I2C read ok\n");
+///**/
+//	//PRINTF("I2C t113_i2c_stop in\n");
+//	t113_i2c_stop(&pdat_i2c);
+//	//PRINTF("I2C t113_i2c_stop ok\n");
+//
+//	return 1;
+//}
+//
+//// возвращает 1 если все хорошо и 0 если что-то не так
+//unsigned char I2C_WriteBuffer(unsigned char slaveAddr, const unsigned char* pBuffer, unsigned char ReadAddr, unsigned short NumByteToWrite){
+//	int res;
+//	//PRINTF("!!!!!=====I2C_WriteBuffer=====!!!!!\n");
+//	//записываем адрес который хотим прочитать
+//	struct i2c_msg_t  msgs;
+//	msgs.addr = slaveAddr;
+//	msgs.len = 1;
+//	msgs.buf = &ReadAddr;
+//
+//	//генереруем старт
+//
+//	res = t113_i2c_start(&pdat_i2c);
+//	if (res != I2C_STAT_TX_START){
+//		//PRINTF("I2C start error\n");
+//		t113_i2c_stop(&pdat_i2c);
+//		return 0;
+//	}
+//	//PRINTF("I2C start ok\n");
+//
+//	res = t113_i2c_write(&pdat_i2c, &msgs);
+//	if (res!=0){
+//		//PRINTF("I2C write err\n");
+//		return 0;
+//	}
+//	//PRINTF("I2C write ok\n");
+//
+//	if (t113_i2c_start(&pdat_i2c) != I2C_STAT_TX_RSTART){	//генерируем рестарт
+//		//PRINTF("I2C restart error\n");
+//		return 0;
+//	}
+//	//PRINTF("I2C restart Ok\n");
+//	//читаем регистр
+//	msgs.addr = slaveAddr;
+//	msgs.len = NumByteToWrite;
+//	msgs.buf = (void *) pBuffer;
+//
+//	res = t113_i2c_write(&pdat_i2c, &msgs);
+//	if (res!=0){
+//		//PRINTF("I2C write err\n");
+//		//I2C_ERROR = 0x04;
+//		return 0;
+//	}
+//	//PRINTF("I2C write ok\n");
+///**/
+//	//PRINTF("I2C t113_i2c_stop in\n");
+//	t113_i2c_stop(&pdat_i2c);
+//	//PRINTF("I2C t113_i2c_stop ok\n");
+//
+//	return 1;
+//}
+
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
 int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
 	int res;
+	struct i2c_msg_t  msgs;
+	msgs.addr7 = slave_address8b >> 1;
+	msgs.len = size;
+	msgs.buf = (void *) buf;
 
 	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_START) {
@@ -1271,14 +1413,14 @@ int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint
 		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_address8(twi, slave_address8b | 0x01);
+	res = t113_i2c_read(twi, &msgs);
 	if (res != 0) {
-		t113_i2c_reset(twi);
-		return 1;
-	}
-	res = t113_i2c_read_buff(twi, buf, size);
-	if (res != 0) {
-		t113_i2c_reset(twi);
+		//PRINTF("i2chw_read read err\n");
+		//I2C_ERROR = 0x04;
+//		twi->TWI_CNTR &= ~ (1u << 4);
+		twi->TWI_SRST |= 1u << 0;
+		while ((twi->TWI_SRST & (1u << 0)) != 0)
+			;
 		return 1;
 	}
 	t113_i2c_stop(twi);
@@ -1290,6 +1432,10 @@ int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint
 int i2chwx_write(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 {
 	int res;
+	struct i2c_msg_t  msgs;
+	msgs.addr7 = slave_address8b >> 1;
+	msgs.len = size;
+	msgs.buf = (void *) buf;
 
 	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_START) {
@@ -1297,24 +1443,29 @@ int i2chwx_write(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * bu
 		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_address8(twi, slave_address8b & ~ 0x01);
+	res = t113_i2c_write(twi, &msgs);
 	if (res != 0) {
-		t113_i2c_reset(twi);
-		return 1;
-	}
-	res = t113_i2c_send_buff(twi, buf, size);
-	if (res != 0) {
-		t113_i2c_reset(twi);
+		//PRINTF("i2chw_write write err\n");
+		//I2C_ERROR = 0x04;
+//		twi->TWI_CNTR &= ~ (1u << 4);
+		twi->TWI_SRST |= 1u << 0;
+		while ((twi->TWI_SRST & (1u << 0)) != 0)
+			;
 		return 1;
 	}
 	t113_i2c_stop(twi);
 	return 0;
 }
 
-// Запись двух блоков друг за другом - напромер адрес регистра и данные
-int i2chwx_write2(TWI_t * twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size, const uint8_t * buf2, uint32_t size2)
+/* return non-zero then error */
+// LSB of slave_address8b ignored */
+int i2chwx_write2(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size, const uint8_t * buf2, uint32_t size2)
 {
 	int res;
+	struct i2c_msg_t  msgs;
+	msgs.addr7 = slave_address8b >> 1;
+	msgs.len = size;
+	msgs.buf = (void *) buf;
 
 	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_START) {
@@ -1322,19 +1473,26 @@ int i2chwx_write2(TWI_t * twi, uint16_t slave_address8b, const uint8_t * buf, ui
 		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_address8(twi, slave_address8b & ~ 0x01);
+	res = t113_i2c_write(twi, &msgs);
 	if (res != 0) {
-		t113_i2c_reset(twi);
+		//PRINTF("i2chw_write write err\n");
+		//I2C_ERROR = 0x04;
+//		twi->TWI_CNTR &= ~ (1u << 4);
+		twi->TWI_SRST |= 1u << 0;
+		while ((twi->TWI_SRST & (1u << 0)) != 0)
+			;
 		return 1;
 	}
-	res = t113_i2c_send_buff(twi, buf, size);
+	msgs.len = size2;
+	msgs.buf = (void *) buf2;
+	res = t113_i2c_write_buff(twi, &msgs);
 	if (res != 0) {
-		t113_i2c_reset(twi);
-		return 1;
-	}
-	res = t113_i2c_send_buff(twi, buf2, size2);
-	if (res != 0) {
-		t113_i2c_reset(twi);
+		//PRINTF("i2chw_write write err\n");
+		//I2C_ERROR = 0x04;
+//		twi->TWI_CNTR &= ~ (1u << 4);
+		twi->TWI_SRST |= 1u << 0;
+		while ((twi->TWI_SRST & (1u << 0)) != 0)
+			;
 		return 1;
 	}
 	t113_i2c_stop(twi);
@@ -1345,8 +1503,11 @@ int i2chwx_write2(TWI_t * twi, uint16_t slave_address8b, const uint8_t * buf, ui
 // LSB of slave_address8b ignored */
 int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
 {
-	const uint8_t addr7 = slave_address8b >> 1;
 	int res;
+	struct i2c_msg_t  msgs;
+	msgs.addr7 = slave_address8b >> 1;
+	msgs.len = wsize;
+	msgs.buf = (void *) wbuf;
 
 	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_START) {
@@ -1354,32 +1515,35 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_address8(twi, slave_address8b & ~ 0x01);
+	res = t113_i2c_write(twi, &msgs);
 	if (res != 0) {
-		t113_i2c_reset(twi);
-		return 1;
-	}
-	res = t113_i2c_send_buff(twi, wbuf, wsize);
-	if (res != 0) {
-		t113_i2c_reset(twi);
+		//PRINTF("i2chw_exchange write err\n");
+		//I2C_ERROR = 0x04;
+//		twi->TWI_CNTR &= ~ (1u << 4);
+		twi->TWI_SRST |= 1u << 0;
+		while ((twi->TWI_SRST & (1u << 0)) != 0)
+			;
 		return 1;
 	}
 
 	// New start without stop
-	res = t113_i2c_start(twi);	// may be t113_i2c_restart
+	msgs.len = rsize;
+	msgs.buf = (void *) rbuf;
+
+	res = t113_i2c_start(twi);
 	if (res != I2C_STAT_TX_RSTART) {
 		//PRINTF("i2chw_exchange 2 start error\n");
 		t113_i2c_stop(twi);
 		return 1;
 	}
-	res = t113_i2c_address8(twi, slave_address8b | 0x01);
+	res = t113_i2c_read(twi, &msgs);
 	if (res != 0) {
-		t113_i2c_reset(twi);
-		return 1;
-	}
-	res = t113_i2c_read_buff(twi, rbuf, rsize);
-	if (res != 0) {
-		t113_i2c_reset(twi);
+		//PRINTF("i2chw_exchange read err\n");
+		//I2C_ERROR = 0x04;
+//		twi->TWI_CNTR &= ~ (1u << 4);
+		twi->TWI_SRST |= 1u << 0;
+		while ((twi->TWI_SRST & (1u << 0)) != 0)
+			;
 		return 1;
 	}
 	t113_i2c_stop(twi);
@@ -1469,7 +1633,9 @@ void i2chwx_initialize(TWI_t * twi, unsigned TWIx, uint_fast32_t busfreq, uint_f
 
 	twi->TWI_CNTR =  UINT32_C(1) << 6;	// BUS_EN
 
-	t113_i2c_reset(twi);
+	twi->TWI_SRST |= UINT32_C(1) << 0;
+	while ((twi->TWI_SRST & (UINT32_C(1) << 0)) != 0)
+		;
 
 	t113_i2c_stop(twi);
 
@@ -1499,6 +1665,13 @@ void i2c_initialize(void)
 	TWIHARD_INITIALIZE();
 	t113_i2c_stop(TWIHARD_PTR);
 #endif /* defined (TWIHARD_PTR) */
+
+#if defined (TWIHARD2_PTR) && defined (TWIHARD2_INITIALIZE)
+	#warning Change cpuconfix_xxx wint specialized initialization
+	hardware_twi_master_configure();
+	TWIHARD2_INITIALIZE();
+	t113_i2c_stop(TWIHARD2_PTR);
+#endif /* defined (TWIHARD2_PTR) */
 
 	// Specialized inits
 #if WITHSTWI0HW
@@ -2124,16 +2297,30 @@ int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 	return i2chwx_write(TWIHARD_PTR, slave_address8b, buf, size);
 }
 
-int i2chw_write2(uint16_t slave_address8b, const uint8_t * buf, uint32_t size, const uint8_t * buf2, uint32_t size2)
-{
-	return i2chwx_write2(TWIHARD_PTR, slave_address8b, buf, size, buf2, size2);
-}
-
 int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
 {
 	return i2chwx_exchange(TWIHARD_PTR, slave_address8b, wbuf, wsize, rbuf, rsize);
 }
 
 #endif /* defined (TWIHARD_PTR) */
+
+#if defined (TWIHARD2_PTR)
+
+int i2chw2_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
+{
+	return i2chwx_read(TWIHARD2_PTR, slave_address8b, buf, size);
+}
+
+int i2chw2_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
+{
+	return i2chwx_write(TWIHARD2_PTR, slave_address8b, buf, size);
+}
+
+int i2chw2_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
+{
+	return i2chwx_exchange(TWIHARD2_PTR, slave_address8b, wbuf, wsize, rbuf, rsize);
+}
+
+#endif /* defined (TWIHARD2_PTR) */
 
 #endif /* WITHTWISW || WITHTWIHW */

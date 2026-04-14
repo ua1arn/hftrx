@@ -73,7 +73,10 @@ static int pmic_bus_init(void)
 
 static int pmic_bus_read(uint8_t reg, uint8_t * data)
 {
-	uint8_t bufw = reg;
+	const uint8_t bufw = reg;
+	if (i2chwx_write(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1))
+		return 1;
+	return i2chwx_read(TWIHARD_S_PTR, PMIC_I2C_R, data, 1);
 	return i2chwx_exchange(TWIHARD_S_PTR, PMIC_I2C_W, & bufw, 1, data, 1);
 }
 
@@ -1216,9 +1219,14 @@ int board_helperboard_t507_axp853_initialize(void)
 	uint8_t axp_chip_id = 0xFF;
 	int ret;
     PRINTF("PMIC: AXP853T/AXP858\n");
+	dbg_flush();
 	ret = pmic_bus_init();
 	if (ret)
+	{
+		PRINTF("PMIC: AXP853T/AXP858 bys error\n");
+		dbg_flush();
 		return ret;
+	}
 
 	ret = pmic_bus_read(AXP858_CHIP_ID, &axp_chip_id);
 

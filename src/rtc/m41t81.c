@@ -36,7 +36,9 @@ static int m41t81_readbuff(
 #if WITHTWIHW
 
 	const uint8_t bufw [1] = { r };
-
+	if (i2chwx_write(M41T81_TWIPTR, M41T81_ADDRESS_W, bufw, ARRAY_SIZE(bufw)))
+		return 1;
+	return i2chwx_read(M41T81_TWIPTR, M41T81_ADDRESS_R, b, n);
 	return i2chwx_exchange(M41T81_TWIPTR, M41T81_ADDRESS_W, bufw, ARRAY_SIZE(bufw), b, n);
 
 #elif WITHTWISW
@@ -68,8 +70,8 @@ static int m41t81_writebuff(
 	)
 {
 #if WITHTWIHW
-	const uint8_t buff [1] = { r };
-	return i2chwx_write2(M41T81_TWIPTR, M41T81_ADDRESS_W, buff, n + 1, b, n);
+	const uint8_t bufw [1] = { r };
+	return i2chwx_write2(M41T81_TWIPTR, M41T81_ADDRESS_W, bufw, ARRAY_SIZE(bufw), b, n);
 
 #elif WITHTWISW
 	i2c_start(M41T81_ADDRESS_W);
