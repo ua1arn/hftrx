@@ -1986,7 +1986,7 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 
 #endif /* ! LINUX_SUBSYSTEM */
 
-static volatile int threads_not_started = 999;
+static volatile uint8_t threads_not_started = 1;
 
 static uint_fast32_t get_td_us(uint_fast32_t timeUS)
 {
@@ -2147,6 +2147,10 @@ void task_scheduler_initialize(void)
 		//
 		thread_add(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, UPRIO_IDLE, IRQL_IPC, "idle");
 	}
+}
+
+void task_scheduler_start(void)
+{
 	threads_not_started = 0;
 }
 
@@ -2385,6 +2389,8 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 {
 	const unsigned core = arm_hardware_cpuid();
 	IRQL_t irql;
+	if (threads_not_started)
+		return oldframe;
 	ASSERT(threads_not_started == 0);
 	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC);
 	if (startedtask [core] == NULL)
@@ -2453,6 +2459,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 		v.t0 = sys_now();
 		v.td = timeMS;
 		v.guard = & v;
+		//PRINTF("local_delay_ms: t0=0x%08X, td=0x%08X\n", (unsigned) v.t0, (unsigned) v.td);
 		task_sysfn(TASKFN_SUSPEND, & v);
 	}
 }
@@ -2483,6 +2490,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 		v.mask = mask;
 		v.state = state;
 		v.guard = & v;
+		//PRINTF("local_wait8mask: flag=%p, mask=0x%08X, state=0x%08X, t0=0x%08X, td=0x%08X\n", flag, (unsigned) mask, (unsigned) state, (unsigned) v.t0, (unsigned) v.td);
 		return task_sysfn(TASKFN_WAIT8, & v);
 	}
 }
@@ -2512,8 +2520,8 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
-		//PRINTF("local_wait32mask: flag=%p, mask=0x%08X, state=0x%08X, t0=0x%08X, td=0x%08X\n", flag, (unsigned) mask, (unsigned) state, (unsigned) v.t0, (unsigned) v.td);
 		v.guard = & v;
+		//PRINTF("local_wait32mask: flag=%p, mask=0x%08X, state=0x%08X, t0=0x%08X, td=0x%08X\n", flag, (unsigned) mask, (unsigned) state, (unsigned) v.t0, (unsigned) v.td);
 		return task_sysfn(TASKFN_WAIT32, & v);
 	}
 }
@@ -2537,6 +2545,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 
 // заглушки для компиляции
 void task_scheduler_initialize(void) {}
+void task_scheduler_start(void) {}
 void task_ticker(void) {}
 // хотим завершить выполнение кванта, не дожидаясь прерывания
 void task_yield(void) {}
@@ -2556,6 +2565,11 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 // Non-linux, non-scheduler
 
 void task_scheduler_initialize(void)
+{
+
+}
+
+void task_scheduler_start(void)
 {
 
 }

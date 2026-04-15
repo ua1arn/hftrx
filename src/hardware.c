@@ -1610,7 +1610,7 @@ sysinit_debug_initialize(void)
 // получение частоты, с которой инкрементируется счетчик
 uint_fast32_t cpu_getdebugticksfreq(void)
 {
-	return CPU_FREQ;
+	return SystemCoreClock;//CPU_FREQ;
 }
 
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
@@ -2773,6 +2773,7 @@ void cpump_runuser(void)
 	{
 		LCLSPIN_UNLOCK(& cpu1userstart [core]);
 	}
+	task_scheduler_start();
 }
 
 #else /* WITHSMPSYSTEM */
