@@ -2450,6 +2450,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 
 		const uint_fast32_t t0 = cpu_getdebugticks();
 		const uint_fast32_t td = get_td_ms(timeMS);
+		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) GIC_GetInterfacePriorityMask());
 		while ((uint32_t) (cpu_getdebugticks() - t0) < td)
 			;
 	}
@@ -2460,6 +2461,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 		v.td = timeMS;
 		v.guard = & v;
 		//PRINTF("local_delay_ms: t0=0x%08X, td=0x%08X\n", (unsigned) v.t0, (unsigned) v.td);
+		//PRINTF("2 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) v.t0, (unsigned) v.td, (unsigned) GIC_GetInterfacePriorityMask());
 		task_sysfn(TASKFN_SUSPEND, & v);
 	}
 }
