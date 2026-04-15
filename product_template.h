@@ -131,6 +131,7 @@
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
 	//#include "boards/arm_allwt507_ctlstyle_veloci_v0.h"
 	#include "boards/arm_allwt507_ctlstyle_veloci_v0_UA1CEI.h"
+	//#include "boards/arm_allwt507_ctlstyle_veloci_v0_RK1AQ.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt507_cpustyle_veloci_v0.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
