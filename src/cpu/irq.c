@@ -3161,7 +3161,7 @@ void Hyp_Handler(void)
 
 #if defined(__aarch64__) //defined(__ARM_ARCH) && (__ARM_ARCH == 8)
 
-static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, int line)
+static void lclspin_lock_work(LCLSPINLOCK_T * __restrict p, const char * file, int line)
 {
 #if WITHDEBUG
 	unsigned v = SPINLOCKLOOPS;
@@ -3210,7 +3210,7 @@ static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, i
 #endif /* WITHDEBUG */
 }
 
-static int lclspin_traylock_work(lclspinlock_t * __restrict p, const char * file, int line)
+static int lclspin_traylock_work(LCLSPINLOCK_T * __restrict p, const char * file, int line)
 {
 	// Note:__SEVL,  __LDAXRB and __STXRB are CMSIS functions
 //	.func spin_lock
@@ -3240,7 +3240,7 @@ static int lclspin_traylock_work(lclspinlock_t * __restrict p, const char * file
 	return 1;
 }
 
-static void lclspin_unlock_work(lclspinlock_t * __restrict p)
+static void lclspin_unlock_work(LCLSPINLOCK_T * __restrict p)
 {
 	// Note: __STLRB CMSIS function
 	//__DMB(); // Ensure memory operations completed before
@@ -3253,7 +3253,7 @@ static void lclspin_unlock_work(lclspinlock_t * __restrict p)
 #else
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
-static int lclspin_traylock_work(lclspinlock_t * __restrict p, const char * file, int line)
+static int lclspin_traylock_work(LCLSPINLOCK_T * __restrict p, const char * file, int line)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	int status;
@@ -3271,7 +3271,7 @@ static int lclspin_traylock_work(lclspinlock_t * __restrict p, const char * file
 #endif /* WITHDEBUG */
 	return 1;
 }
-static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, int line)
+static void lclspin_lock_work(LCLSPINLOCK_T * __restrict p, const char * file, int line)
 {
 #if WITHDEBUG
 	unsigned v = SPINLOCKLOOPS;
@@ -3308,7 +3308,7 @@ static void lclspin_lock_work(lclspinlock_t * __restrict p, const char * file, i
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
-void spin_lock2(volatile lclspinlock_t * p, const char * file, int line)
+void spin_lock2(volatile LCLSPINLOCK_T * p, const char * file, int line)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	int status;
@@ -3338,7 +3338,7 @@ void spin_lock2(volatile lclspinlock_t * p, const char * file, int line)
 }
 */
 
-static void lclspin_unlock_work(lclspinlock_t * __restrict p)
+static void lclspin_unlock_work(LCLSPINLOCK_T * __restrict p)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	__DMB(); // Ensure memory operations completed before
@@ -3349,34 +3349,34 @@ static void lclspin_unlock_work(lclspinlock_t * __restrict p)
 
 #endif
 
-static void lclspin_lock_dummy(lclspinlock_t * __restrict p, const char * file, int line)
+static void lclspin_lock_dummy(LCLSPINLOCK_T * __restrict p, const char * file, int line)
 {
 }
 
-static int lclspin_traylock_dummy(lclspinlock_t * __restrict p, const char * file, int line)
+static int lclspin_traylock_dummy(LCLSPINLOCK_T * __restrict p, const char * file, int line)
 {
 	return 1;
 }
 
-void lclspin_unlock_dummy(lclspinlock_t * __restrict p)
+void lclspin_unlock_dummy(LCLSPINLOCK_T * __restrict p)
 {
 }
 
-static void (* lclspin_lock_p)(lclspinlock_t * __restrict p, const char * file, int line) = & lclspin_lock_dummy;
-static int (* lclspin_traylock_p)(lclspinlock_t * __restrict p, const char * file, int line) = & lclspin_traylock_dummy;
-static void (* lclspin_unlock_p)(lclspinlock_t * __restrict p) = & lclspin_unlock_dummy;
+static void (* lclspin_lock_p)(LCLSPINLOCK_T * __restrict p, const char * file, int line) = & lclspin_lock_dummy;
+static int (* lclspin_traylock_p)(LCLSPINLOCK_T * __restrict p, const char * file, int line) = & lclspin_traylock_dummy;
+static void (* lclspin_unlock_p)(LCLSPINLOCK_T * __restrict p) = & lclspin_unlock_dummy;
 
-void lclspin_lock(lclspinlock_t * __restrict p, const char * file, int line)
+void lclspin_lock(LCLSPINLOCK_T * __restrict p, const char * file, int line)
 {
 	lclspin_lock_p(p, file, line);
 }
 
-int lclspin_traylock(lclspinlock_t * __restrict p, const char * file, int line)
+int lclspin_traylock(LCLSPINLOCK_T * __restrict p, const char * file, int line)
 {
 	return lclspin_traylock_p(p, file, line);
 }
 
-void lclspin_unlock(lclspinlock_t * __restrict p)
+void lclspin_unlock(LCLSPINLOCK_T * __restrict p)
 {
 	lclspin_unlock_p(p);
 }
