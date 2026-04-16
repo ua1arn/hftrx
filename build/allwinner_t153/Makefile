@@ -129,8 +129,8 @@ DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
 
-# cmsis
-include ../cmsis.mak
+# simple-gui
+include ../simple-gui.mak
 
 # cmsis
 include ../cmsis.mak

@@ -117,6 +117,9 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
+# simple-gui
+include ../simple-gui.mak
+
 # cmsis
 include ../cmsis.mak
 

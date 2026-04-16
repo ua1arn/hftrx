@@ -115,6 +115,9 @@ SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(OPENVGDIR)/src
 #SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
 
+# simple-gui
+include ../simple-gui.mak
+
 # cmsis
 include ../cmsis.mak
 
