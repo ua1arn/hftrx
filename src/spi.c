@@ -4945,6 +4945,12 @@ int testchipDATAFLASH(void)
 	return 1;
 }
 
+unsigned long chipsizeDATAFLASH(void)
+{
+
+	return 64 * 1024 * 1024;	// 64 MB
+}
+
 void spidf_initialize(void)
 {
 }

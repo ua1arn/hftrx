@@ -215,10 +215,8 @@ enum
 	STRING_ID_IQSPECTRUM,
 
 	STRING_ID_DFU,
-#if WIHSPIDFHW || WIHSPIDFSW
 	STRING_ID_DFU_0,
 	STRING_ID_DFU_1,
-#endif /* WIHSPIDFHW || WIHSPIDFSW */
 	STRING_ID_DFU_2,	/* RAM target for debug */
 	// 
 	STRING_ID_MTP,
@@ -4736,7 +4734,7 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	//
 	n += DFU_InterfaceAssociationDesc(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, INTERFACE_DFU_count);
 
-#if WIHSPIDFHW || WIHSPIDFSW
+#if 1//WIHSPIDFHW || WIHSPIDFSW
 	n += DFU_InterfaceDesc(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_0);	/* DFU Interface Descriptor */
 	n += DFU_FunctionalDescReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
 	ialt += 1;
@@ -5850,7 +5848,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdescv, uint_fast8_t ft8cnv)
 #endif /* WITHUSBHID */
 	
 #if WITHUSBDFU
-#if WIHSPIDFHW || WIHSPIDFSW
+#if 1//WIHSPIDFHW || WIHSPIDFSW
 #if defined (BOOTLOADER_APPSIZE)
 	{
 		const int status = testchipDATAFLASH();
