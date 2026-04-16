@@ -5832,7 +5832,7 @@ typedef struct fftbuff_tag
 
 static LIST_ENTRY fftbuffree;
 static LIST_ENTRY fftbufready;
-static IRQLSPINLOCK_t fftlock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t fftlock = IRQLSPINLOCK_INIT;
 #define FFTLOCL_IRQL IRQL_REALTIME
 
 // realtime-mode function

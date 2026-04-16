@@ -1795,9 +1795,9 @@ void arm_hardware_awg2d_initialize(void)
 
 void arm_hardware_mdma_initialize(void)
 {
-	LCLSPINLOCK_INITIALIZE(& rtmxlock);
-	LCLSPINLOCK_INITIALIZE(& rtmxrcqlock);
-	LCLSPINLOCK_INITIALIZE(& rotlock);
+	IRQLSPINLOCK_INITIALIZE(& rtmxlock);
+	IRQLSPINLOCK_INITIALIZE(& rtmxrcqlock);
+	IRQLSPINLOCK_INITIALIZE(& rotlock);
 
 #if CPUSTYLE_T507
 	{

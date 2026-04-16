@@ -443,7 +443,7 @@ class blists
 {
 	typedef typeof(buffitem_t::v) element_t;
 public:
-	IRQLSPINLOCK_t irqllocl;
+	LCLSPINLOCK_t irqllocl;
 	IRQL_t irqllockarg;
 #if WITHBUFFERSDEBUG
 	int errallocate;
@@ -555,7 +555,7 @@ public:
 
 	bool waut_readybuffer_raw(uint_fast32_t timeMS)
 	{
-		return local_waitlist(& readylist, & irqllocl.lock, timeMS) == 0;
+		return local_waitlist(& readylist, & irqllocl, timeMS) == 0;
 	}
 
 	// получить из списка готовых
@@ -565,7 +565,7 @@ public:
 		if (timeMS != 0)
 		{
 			// Запрос с ненулевым аргументром timeMS может возникнуть только из выделенных потоков
-			if (local_waitlist(& readylist, & irqllocl.lock, timeMS) != 0)	// timeot
+			if (local_waitlist(& readylist, & irqllocl, timeMS) != 0)	// timeot
 				return false;
 		}
 		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);

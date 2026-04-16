@@ -12762,7 +12762,7 @@ updateboard_noui(
 	return full2;
 }
 
-static IRQLSPINLOCK_t boardupdatelock;
+static LCLSPINLOCK_t boardupdatelock;
 /* полная перенастройка */
 void updateboard(void)
 {
@@ -12806,7 +12806,7 @@ uint_fast8_t hamradio_get_bkin_value(void)
 	return gbkinenable;
 }
 
-static IRQLSPINLOCK_t lockcwmsg = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t lockcwmsg = IRQLSPINLOCK_INIT;
 static const char * usersend;
 
 void uif_key_sendcw(const char * msg)
@@ -14501,8 +14501,8 @@ static uint_fast8_t cat_answer_ready_uart(void)
 	return 1;
 }
 
-static IRQLSPINLOCK_t catsyslock = IRQLSPINLOCK_INIT;
-static IRQLSPINLOCK_t usbsyslock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t catsyslock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t usbsyslock = IRQLSPINLOCK_INIT;
 
 #if WITHUSBHW && WITHUSBCDCACM
 static uint_fast8_t cat_answer_ready_cdcacm(void)

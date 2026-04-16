@@ -195,7 +195,7 @@ static uint32_t dwDTERate [WITHUSBCDCACM_N];
 	#define SECOND_CDC_OFFSET 1
 #endif /* WITHUSBCDCACM_N > 1 */
 
-static IRQLSPINLOCK_t catlock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t catlock = IRQLSPINLOCK_INIT;
 
 /* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
 /* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */

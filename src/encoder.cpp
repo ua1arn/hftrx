@@ -42,7 +42,7 @@ struct encoder_tag
 	uint_fast8_t (* getpins)(void);
 
 	/* перенесено из глобальной области видимости */
-	IRQLSPINLOCK_t encspeedlock;
+	LCLSPINLOCK_t encspeedlock;
 	q31_t enchist [HISTLEN];
 	uint_fast8_t tichist;	// Должно поместиться число от 0 до TICKSMAX включительно
 	uint_fast8_t enchistindex;

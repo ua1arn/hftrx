@@ -1136,7 +1136,7 @@ void irqlog_print(void)
 //	return id;
 //}
 
-//static RAMDTCM LCLSPINLOCK_t giclock = LCLSPINLOCK_INIT;
+//static RAMDTCM LCLSPINLOCK_t giclock = IRQLSPINLOCK_INIT;
 
 /* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
 // See ARM IHI 0048B.b document
@@ -2074,7 +2074,7 @@ static thread_item_t idle_threads [HARDWARE_NCORES];
 static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
 static thread_item_t * startedtask [HARDWARE_NCORES];
 
-static IRQLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 static LIST_ENTRY threads_list [UPRIO_count];
 
 static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, unsigned uprio, unsigned irql, const char * name)
@@ -3161,7 +3161,7 @@ void Hyp_Handler(void)
 
 #if defined(__aarch64__) //defined(__ARM_ARCH) && (__ARM_ARCH == 8)
 
-static void lclspin_lock_work(LCLSPINLOCK_T * __restrict p, const char * file, int line)
+static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 {
 #if WITHDEBUG
 	unsigned v = SPINLOCKLOOPS;
@@ -3210,7 +3210,7 @@ static void lclspin_lock_work(LCLSPINLOCK_T * __restrict p, const char * file, i
 #endif /* WITHDEBUG */
 }
 
-static int lclspin_traylock_work(LCLSPINLOCK_T * __restrict p, const char * file, int line)
+static int lclspin_traylock_work(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 {
 	// Note:__SEVL,  __LDAXRB and __STXRB are CMSIS functions
 //	.func spin_lock
@@ -3240,7 +3240,7 @@ static int lclspin_traylock_work(LCLSPINLOCK_T * __restrict p, const char * file
 	return 1;
 }
 
-static void lclspin_unlock_work(LCLSPINLOCK_T * __restrict p)
+static void lclspin_unlock_work(LCLSPINLOCK_t * __restrict p)
 {
 	// Note: __STLRB CMSIS function
 	//__DMB(); // Ensure memory operations completed before
@@ -3253,7 +3253,7 @@ static void lclspin_unlock_work(LCLSPINLOCK_T * __restrict p)
 #else
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
-static int lclspin_traylock_work(LCLSPINLOCK_T * __restrict p, const char * file, int line)
+static int lclspin_traylock_work(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	int status;
@@ -3271,7 +3271,7 @@ static int lclspin_traylock_work(LCLSPINLOCK_T * __restrict p, const char * file
 #endif /* WITHDEBUG */
 	return 1;
 }
-static void lclspin_lock_work(LCLSPINLOCK_T * __restrict p, const char * file, int line)
+static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 {
 #if WITHDEBUG
 	unsigned v = SPINLOCKLOOPS;
@@ -3308,7 +3308,7 @@ static void lclspin_lock_work(LCLSPINLOCK_T * __restrict p, const char * file, i
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html
 // Memory attribute SHARED required for ldrex.. and strex.. functionality
-void spin_lock2(volatile LCLSPINLOCK_T * p, const char * file, int line)
+void spin_lock2(volatile LCLSPINLOCK_t * p, const char * file, int line)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	int status;
@@ -3338,7 +3338,7 @@ void spin_lock2(volatile LCLSPINLOCK_T * p, const char * file, int line)
 }
 */
 
-static void lclspin_unlock_work(LCLSPINLOCK_T * __restrict p)
+static void lclspin_unlock_work(LCLSPINLOCK_t * __restrict p)
 {
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	__DMB(); // Ensure memory operations completed before
@@ -3349,34 +3349,34 @@ static void lclspin_unlock_work(LCLSPINLOCK_T * __restrict p)
 
 #endif
 
-static void lclspin_lock_dummy(LCLSPINLOCK_T * __restrict p, const char * file, int line)
+static void lclspin_lock_dummy(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 {
 }
 
-static int lclspin_traylock_dummy(LCLSPINLOCK_T * __restrict p, const char * file, int line)
+static int lclspin_traylock_dummy(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 {
 	return 1;
 }
 
-void lclspin_unlock_dummy(LCLSPINLOCK_T * __restrict p)
+void lclspin_unlock_dummy(LCLSPINLOCK_t * __restrict p)
 {
 }
 
-static void (* lclspin_lock_p)(LCLSPINLOCK_T * __restrict p, const char * file, int line) = & lclspin_lock_dummy;
-static int (* lclspin_traylock_p)(LCLSPINLOCK_T * __restrict p, const char * file, int line) = & lclspin_traylock_dummy;
-static void (* lclspin_unlock_p)(LCLSPINLOCK_T * __restrict p) = & lclspin_unlock_dummy;
+static void (* lclspin_lock_p)(LCLSPINLOCK_t * __restrict p, const char * file, int line) = & lclspin_lock_dummy;
+static int (* lclspin_traylock_p)(LCLSPINLOCK_t * __restrict p, const char * file, int line) = & lclspin_traylock_dummy;
+static void (* lclspin_unlock_p)(LCLSPINLOCK_t * __restrict p) = & lclspin_unlock_dummy;
 
-void lclspin_lock(LCLSPINLOCK_T * __restrict p, const char * file, int line)
+void lclspin_lock(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 {
 	lclspin_lock_p(p, file, line);
 }
 
-int lclspin_traylock(LCLSPINLOCK_T * __restrict p, const char * file, int line)
+int lclspin_traylock(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 {
 	return lclspin_traylock_p(p, file, line);
 }
 
-void lclspin_unlock(LCLSPINLOCK_T * __restrict p)
+void lclspin_unlock(LCLSPINLOCK_t * __restrict p)
 {
 	lclspin_unlock_p(p);
 }
@@ -3549,11 +3549,11 @@ uint_fast8_t arm_hardware_cpuid(void)
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
-static RAMDTCM LCLSPINLOCK_t gicdistrib_lock = LCLSPINLOCK_INIT;
+static RAMDTCM LCLSPINLOCK_t gicdistrib_lock = IRQLSPINLOCK_INIT;
 
 #if WITHSMPSYSTEM
 
-static RAMDTCM LCLSPINLOCK_t populate_lock = LCLSPINLOCK_INIT;
+static RAMDTCM LCLSPINLOCK_t populate_lock = IRQLSPINLOCK_INIT;
 
 //static uint8_t gicshadow_target [1024];
 //static uint8_t gicshadow_config [1024];
@@ -3602,8 +3602,8 @@ static void arm_hardware_populate_initialize(void)
 	{
 		gicshadow_prio [int_id] = GIC_GetPriority((IRQn_Type) int_id);
 	}
-	//LCLSPINLOCK_INITIALIZE(& gicdistrib_lock);
-	//LCLSPINLOCK_INITIALIZE(& populate_lock);
+	//IRQLSPINLOCK_INITIALIZE(& gicdistrib_lock);
+	//IRQLSPINLOCK_INITIALIZE(& populate_lock);
 
 	LCLSPIN_LOCK(& gicdistrib_lock);
 	GIC_SetPriority(BOARD_SGI_IRQ, ARM_IPC_PRIORITY);	// non-atomic operation
@@ -3858,7 +3858,7 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 typedef struct dpcdata
 {
 	void * tag1;
-	IRQLSPINLOCK_t lock;
+	LCLSPINLOCK_t lock;
 	LIST_ENTRY dpclistentries;	// list of dpcobj_t - периодичски вызываемые функции
 	LIST_ENTRY dpclistcalls;	// list of dpcobj_t = однократно вызываемые функции
 	void * tag2;
@@ -3895,7 +3895,7 @@ static void dpcobj_release(dpcobj_t * dp)
 {
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [dp->coreid];
-	IRQLSPINLOCK_t * const lock = & dpc->lock;
+	LCLSPINLOCK_t * const lock = & dpc->lock;
 	ASSERT(dpc == dpc->tag1);
 	ASSERT(dpc == dpc->tag2);
 	ASSERT(dp == dp->tag1);
@@ -3912,7 +3912,7 @@ static uint_fast8_t dpcobj_accure(dpcobj_t * dp)
 
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [dp->coreid];
-	IRQLSPINLOCK_t * const lock = & dpc->lock;
+	LCLSPINLOCK_t * const lock = & dpc->lock;
 	ASSERT(dpc == dpc->tag1);
 	ASSERT(dpc == dpc->tag2);
 	ASSERT(dp == dp->tag1);
@@ -3931,7 +3931,7 @@ uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
 {
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [dp->coreid];
-	IRQLSPINLOCK_t * const lock = & dpc->lock;
+	LCLSPINLOCK_t * const lock = & dpc->lock;
 	ASSERT(dpc == dpc->tag1);
 	ASSERT(dpc == dpc->tag2);
 	ASSERT(dp == dp->tag1);
@@ -3973,7 +3973,7 @@ uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 {
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
-	IRQLSPINLOCK_t * const lock = & dpc->lock;
+	LCLSPINLOCK_t * const lock = & dpc->lock;
 	ASSERT(coreid < HARDWARE_NCORES);
 	ASSERT(dpc == dpc->tag1);
 	ASSERT(dpc == dpc->tag2);
@@ -4000,7 +4000,7 @@ uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
 	//PRINTF("board_dpc_addentry: dp=%p, coreid=%u\n", dp, (unsigned) coreid);
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
-	IRQLSPINLOCK_t * const lock = & dpc->lock;
+	LCLSPINLOCK_t * const lock = & dpc->lock;
 	ASSERT(coreid < HARDWARE_NCORES);
 	ASSERT(dpc == dpc->tag1);
 	ASSERT(dpc == dpc->tag2);
@@ -4025,7 +4025,7 @@ void board_dpc_processing(void)
 {
 	const uint_fast8_t coreid = board_dpc_coreid();
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
-	IRQLSPINLOCK_t * const lock = & dpc->lock;
+	LCLSPINLOCK_t * const lock = & dpc->lock;
 //	char b [32];
 //	local_snprintf_P(b, ARRAY_SIZE(b), "coreid=%u", coreid);
 //	ASSERT3(coreid < HARDWARE_NCORES, __FILE__, __LINE__, b);

@@ -91,7 +91,7 @@
 #define  wBoot_dma_requestrx(sect)     0
 #define  wBoot_dma_requesttx(sect)     0
 
-static IRQLSPINLOCK_t lockusbdev = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t lockusbdev = IRQLSPINLOCK_INIT;
 static usb_struct * volatile gpusb = NULL;
 
 #if WITHUSBDMSC
@@ -2116,7 +2116,7 @@ static __ALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_E
 	#define SECOND_CDC_OFFSET 1
 #endif /* WITHUSBCDCACM_N > 1 */
 
-static IRQLSPINLOCK_t catlock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t catlock = IRQLSPINLOCK_INIT;
 
 /* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
 /* хранимое значение после получения CDC_SET_CONTROL_LINE_STATE */

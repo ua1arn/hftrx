@@ -665,7 +665,7 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 
 #elif CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
 
-static IRQLSPINLOCK_t gpiobank_ctx [8];
+static LCLSPINLOCK_t gpiobank_ctx [8];
 
 // временная подготовка к работе с gpio.
 // Вызывается из SystemInit() - после работы память будет затерта
@@ -675,7 +675,7 @@ void sysinit_gpio_initialize(void)
 
 	for (i = 0; i < ARRAY_SIZE(gpiobank_ctx); ++ i)
 	{
-		IRQLSPINLOCK_t * const lck = & gpiobank_ctx [i];
+		LCLSPINLOCK_t * const lck = & gpiobank_ctx [i];
 		IRQLSPINLOCK_INITIALIZE(lck);
 	}
 	eithlist_initialize();
@@ -683,13 +683,13 @@ void sysinit_gpio_initialize(void)
 
 void gpiobank_lock(unsigned bank, IRQL_t * oldIrql)
 {
-	IRQLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
+	LCLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
 	IRQLSPIN_LOCK(lck, oldIrql, GPIOIRQL);
 }
 
 void gpiobank_unlock(unsigned bank, IRQL_t oldIrql)
 {
-	IRQLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
+	LCLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
 	IRQLSPIN_UNLOCK(lck, oldIrql);
 }
 
@@ -823,7 +823,7 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void * ctx), void * ctx
 
 typedef struct gpio_ctx
 {
-	IRQLSPINLOCK_t lock;
+	LCLSPINLOCK_t lock;
 	portholder_t data;
 } gpio_ctx_t;
 
@@ -928,13 +928,13 @@ typedef uint32_t irqstatus_t;
 
 static void gpioX_lock(const GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
-	IRQLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
+	LCLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
 	IRQLSPIN_LOCK(lck, oldIrql, GPIOIRQL);
 }
 
 static void gpioX_unlock(const GPIO_TypeDef * gpio, IRQL_t irql)
 {
-	IRQLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
+	LCLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
 	IRQLSPIN_UNLOCK(lck, irql);
 }
 
@@ -1434,8 +1434,8 @@ gpioX_onchangeinterrupt(
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 
-static IRQLSPINLOCK_t gpiodatas_ctx [26];	// GPIOA..GPIOK
-static IRQLSPINLOCK_t gpioz_data_ctx;
+static LCLSPINLOCK_t gpiodatas_ctx [26];	// GPIOA..GPIOK
+static LCLSPINLOCK_t gpioz_data_ctx;
 
 // временная подготовка к работе с gpio.
 // Вызывается из SystemInit() - после работы память будет затерта
@@ -1449,13 +1449,13 @@ void sysinit_gpio_initialize(void)
 
 	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx); ++ i)
 	{
-		IRQLSPINLOCK_t * const lck = & gpiodatas_ctx [i];
+		LCLSPINLOCK_t * const lck = & gpiodatas_ctx [i];
 		IRQLSPINLOCK_INITIALIZE(lck);
 	}
 	eithlist_initialize();
 }
 
-static IRQLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
+static LCLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
 {
 #if defined(GPIOZ)
 	if (gpio == GPIOZ)

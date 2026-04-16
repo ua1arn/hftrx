@@ -2420,7 +2420,7 @@ static DE_UI_TypeDef * de3_getui(int rtmixid, int id)
 	}
 }
 
-static IRQLSPINLOCK_t rtmixlock [2];
+static LCLSPINLOCK_t rtmixlock [2];
 
 /* Установка новых адресов видеобуфера производится из прерываний на IRQL_OVERREALTIME */
 static void de3_lockbld(int rtmixid, IRQL_t * oldIrql)
@@ -2899,7 +2899,7 @@ static void hardware_de_global_initialize(void)
 
 	for (i = 0; i < ARRAY_SIZE(rtmixlock); ++ i)
 	{
-		IRQLSPINLOCK_t * const lck = & rtmixlock [i];
+		LCLSPINLOCK_t * const lck = & rtmixlock [i];
 		IRQLSPINLOCK_INITIALIZE(lck);
 	}
 #if CPUSTYLE_H3

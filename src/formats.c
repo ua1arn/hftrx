@@ -368,7 +368,7 @@ int local_vsnprintf_P( char * __restrict buffer, size_t count, const FLASHMEM ch
 /*	User-side of console output.			*/
 // использование библиотечной функции (поддержка печати чисел с плавающей точкой).
 
-//IRQLSPINLOCK_t printflock = IRQLSPINLOCK_INIT;
+//LCLSPINLOCK_t printflock = IRQLSPINLOCK_INIT;
 
 void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 {
@@ -664,7 +664,7 @@ int dbg_getchar(char * r)
 	return HARDWARE_DEBUG_GETCHAR(r);
 }
 
-static IRQLSPINLOCK_t printloack = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t printloack = IRQLSPINLOCK_INIT;
 
 int dbg_writechar(int c)
 {

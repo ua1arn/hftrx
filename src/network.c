@@ -322,7 +322,7 @@ typedef struct nic_buffer_tag
 	struct pbuf *frame;
 } nic_buffer_t;
 
-static IRQLSPINLOCK_t nicbufflock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t nicbufflock = IRQLSPINLOCK_INIT;
 #define NICBUFFLOCK_IRQL IRQL_SYSTEM
 
 static void nicbuff_lock(IRQL_t * oldIrql)

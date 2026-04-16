@@ -194,7 +194,7 @@ xpt2406_interrupt_handler(void * ctx)
 	PRINTF("xpt2046 interrupt: x=%5u, y=%5u z1=%5u, z2=%5u\n", x, y, z1, z2);
 }
 
-static IRQLSPINLOCK_t tsclock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t tsclock = IRQLSPINLOCK_INIT;
 
 static volatile uint_fast16_t gx, gy, gz;
 static volatile uint_fast8_t gready;

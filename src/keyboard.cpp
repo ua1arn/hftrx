@@ -304,7 +304,7 @@ kbd_scan_local(kbdst_t * kbdp, uint_fast16_t * key)
 		return 0;
 }
 
-static IRQLSPINLOCK_t irqllock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t irqllock = IRQLSPINLOCK_INIT;
 
 // вызывается с частотой TICKS_FREQUENCY герц
 // после завершения полного цикла ADC по всем входам.

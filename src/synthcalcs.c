@@ -87,7 +87,7 @@ static volatile uint_fast64_t rlfm_position;// = 0;
 static volatile uint_fast64_t rlfm_nsteps;
 static volatile uint_fast64_t rlfm_currfreqX;	//текущач частота
 static volatile uint_fast64_t rlfm_freqStepX;	//шаг приращения
-static IRQLSPINLOCK_t lfmlock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t lfmlock = IRQLSPINLOCK_INIT;
 
 // Вызывается из обработчика PPS при совпадении времени начала.
 void lfm_run(void)

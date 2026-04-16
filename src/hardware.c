@@ -242,8 +242,8 @@ void xc7z_hardware_initialize(void)
 
 #endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
 
-static IRQLSPINLOCK_t tickerslock = IRQLSPINLOCK_INIT;
-static IRQLSPINLOCK_t adcdoneslock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t tickerslock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t adcdoneslock = IRQLSPINLOCK_INIT;
 static VLIST_ENTRY tickers;
 static VLIST_ENTRY adcdones;
 
@@ -2644,7 +2644,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 
 #if WITHSMPSYSTEM
 
-static LCLSPINLOCK_t cpu1init = LCLSPINLOCK_INIT;
+static LCLSPINLOCK_t cpu1init = IRQLSPINLOCK_INIT;
 static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 
 // Инициализация второго  и далее ппрцессора - сюда попадаем из crt_CortexA_CPUn.S
@@ -2722,11 +2722,11 @@ void cpump_initialize(void)
 	cortexa_cpuinfo();
 
 	lclspin_enable();	// Allwinner H3 - может работать с блокировками только после включения MMU
-	LCLSPINLOCK_INITIALIZE(& cpu1init);
+	IRQLSPINLOCK_INITIALIZE(& cpu1init);
 	for (core = 1; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 	{
 
-		LCLSPINLOCK_INITIALIZE(& cpu1userstart [core]);
+		IRQLSPINLOCK_INITIALIZE(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1userstart [core]);
 		LCLSPIN_LOCK(& cpu1init);
 

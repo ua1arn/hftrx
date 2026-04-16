@@ -389,7 +389,7 @@ typedef struct lowspiio_tag
 } lowspiio_t;
 
 #if USESPILOCK
-static IRQLSPINLOCK_t spicslock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t spicslock = IRQLSPINLOCK_INIT;
 #define SPICSLOCK_IRQL IRQL_SYSTEM
 #endif /* USESPILOCK */
 
@@ -429,7 +429,7 @@ void spidf_operate_unlock(QSPI_t * const qspi, IRQL_t irql)
 
 #else /* USESPIDFSHARESPI */
 
-static IRQLSPINLOCK_t spidfcslock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t spidfcslock = IRQLSPINLOCK_INIT;
 #define SPIDFCSLOCK_IRQL IRQL_SYSTEM
 
 // todo: сделать в контексте одного канала QSPI
@@ -2592,7 +2592,7 @@ void prog_spi_io(
 #define SPIDF_SPEEDC SPIC_SPEEDFAST
 #endif
 
-static IRQLSPINLOCK_t spidflock = IRQLSPINLOCK_INIT;	// протокольная блокировка (несколько физических обменов)
+static LCLSPINLOCK_t spidflock = IRQLSPINLOCK_INIT;	// протокольная блокировка (несколько физических обменов)
 #define SPIDFLOCK_IRQL IRQL_SYSTEM
 
 static void accureDATAFLASH(IRQL_t * oldIRQL)

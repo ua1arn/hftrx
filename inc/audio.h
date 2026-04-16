@@ -622,7 +622,7 @@ typedef struct subscribefint_tag
 typedef struct deliverylist_tag
 {
 	LIST_ENTRY head;
-	IRQLSPINLOCK_t listlock;
+	LCLSPINLOCK_t listlock;
 	IRQL_t irql;
 } deliverylist_t;
 
