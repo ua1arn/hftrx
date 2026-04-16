@@ -63,12 +63,10 @@ CORE += -mfpu=neon-vfpv4
 #OPT = -Ofast
 OPT = -Ofast -flto
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
-RTOSXDIR = $(CMSISDIR)/RTOS2
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -79,10 +77,7 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(ARCHDIR) \
 	$(HALDIR)/Inc \
-	$(USBXDIR) \
-	$(CMSISDIR)/Include $(CMSISDIR)/Source \
-	$(RTOSXDIR)/Include \
-	$(CMSISDIR)/Core_A/Source
+	$(USBXDIR)
 		
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -177,6 +172,13 @@ include ../custom0.mak
 
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR)
+
+ifeq (1, 1)
+# ARM CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
+DINCDIR += $(CMSISDIR)/Include $(CMSISDIR)/Source
+UDEFS += -D"CMSIS_device_header"=\"hardware.h\"
+endif
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)

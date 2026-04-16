@@ -64,7 +64,6 @@ CORE += -mfpu=neon-vfpv4
 #OPT = -Ofast -flto
 OPT = -Ofast
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 USBXDIR = $(PRJROOT)/src/hal
 
 # List all default C defines here, like -D_DEBUG=1
@@ -75,8 +74,7 @@ DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
 	$(ARCHDIR) \
-	$(USBXDIR) \
-	$(CMSISDIR)/Include $(CMSISDIR)/Source
+	$(USBXDIR)
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -121,6 +119,13 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
+
+ifeq (1, 1)
+# ARM CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
+DINCDIR += $(CMSISDIR)/Include $(CMSISDIR)/Source
+UDEFS += -D"CMSIS_device_header"=\"hardware.h\"
+endif
 
 ifeq (1, 1)
 # ST USB DEVICE

@@ -67,8 +67,6 @@ CORE = -mcpu=cortex-a55 -mfpu=vfpv4 --specs=nosys.specs -mfloat-abi=softfp
 #OPT = -Ofast -flto
 OPT = -Ofast
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
-#CMSISDIR = $(PRJROOT)/arch/Core_AArch64
 USBXDIR = $(PRJROOT)/src/hal
 
 # List all default C defines here, like -D_DEBUG=1
@@ -79,8 +77,7 @@ DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
 	$(ARCHDIR) \
-	$(USBXDIR) \
-	$(CMSISDIR)/Include $(CMSISDIR)/Source
+	$(USBXDIR)
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -139,6 +136,9 @@ MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
+
+# cmsis
+include ../cmsis.mak
 
 # cmsis-dsp
 include ../cmsis_dsp.mak

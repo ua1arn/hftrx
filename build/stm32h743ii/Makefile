@@ -56,13 +56,11 @@ CORE = -mcpu=cortex-m7 -mthumb -mfloat-abi=hard -mfpu=fpv5-d16 -ftree-vectorize 
 #OPT = -Og
 OPT = -Ofast -flto
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32H7xx_HAL_Driver
-RTOSXDIR = $(CMSISDIR)/RTOS2
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -76,10 +74,7 @@ DINCDIR = \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(MDLWHOSTDIR) \
-	$(USBXDIR) \
-	$(CMSISDIR)/Include \
-	$(RTOSXDIR)/Include \
-	$(RTOSXDIR)/RTX/Include
+	$(USBXDIR)
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -130,6 +125,13 @@ SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
+
+ifeq (1, 1)
+# ARM CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
+DINCDIR += $(CMSISDIR)/Include $(CMSISDIR)/Source
+UDEFS += -D"CMSIS_device_header"=\"hardware.h\"
+endif
 
 ifeq (1, 1)
 # ST USB DEVICE

@@ -74,7 +74,6 @@ ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7010_zm
 ZYNQLIB = zynq7010.a
 
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
@@ -90,7 +89,6 @@ DINCDIR = \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
-	$(CMSISDIR)/Include $(CMSISDIR)/Source \
 	$(ZYNQLIBSRC)
 
 # List the default directory to look for the libraries here
@@ -116,6 +114,13 @@ SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 #SRCDIRS += $(OPENVGDIR)/src
 #SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx 
+
+ifeq (1, 1)
+# ARM CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
+DINCDIR += $(CMSISDIR)/Include $(CMSISDIR)/Source
+UDEFS += -D"CMSIS_device_header"=\"hardware.h\"
+endif
 
 # cmsis-dsp
 include ../cmsis_dsp.mak

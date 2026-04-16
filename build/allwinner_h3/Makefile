@@ -65,7 +65,6 @@ CORE += -mfpu=neon-vfpv4
 #OPT = -Ofast -flto
 OPT = -Ofast
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 USBXDIR = $(PRJROOT)/src/hal
 
 # List all default C defines here, like -D_DEBUG=1
@@ -76,8 +75,7 @@ DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
 	$(ARCHDIR) \
-	$(USBXDIR) \
-	$(CMSISDIR)/Include $(CMSISDIR)/Source
+	$(USBXDIR)
 
 # List all default libraries here
 #DLIBS = -lm -larm_cortexA9lneon_math
@@ -133,6 +131,9 @@ MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
+
+# cmsis
+include ../cmsis.mak
 
 # cmsis-dsp
 include ../cmsis_dsp.mak

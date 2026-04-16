@@ -63,7 +63,6 @@ CORE += -mfpu=neon-vfpv3
 #OPT = -Ofast -flto -mlong-calls
 OPT = -Ofast -flto
 
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
@@ -79,9 +78,7 @@ DINCDIR = \
 	$(ARCHDIR) \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
-	$(USBXDIR) \
-	$(CMSISDIR)/Include $(CMSISDIR)/Source \
-	$(CMSISDIR)/Core_A/Source
+	$(USBXDIR)
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDSPDIR)/Lib/GCC
@@ -159,6 +156,14 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
+
+ifeq (1, 1)
+# ARM CMSIS
+CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
+DINCDIR += $(CMSISDIR)/Include $(CMSISDIR)/Source
+UDEFS += -D"CMSIS_device_header"=\"hardware.h\"
+endif
+
 SRCDIRS += $(HALDIR)
 SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
 
