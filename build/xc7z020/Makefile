@@ -109,7 +109,6 @@ SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 #SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
 #SRCDIRS += $(OPENVGDIR)/src
-SRCDIRS += $(GUILIBDIR)
 
 # simple-gui
 include ../simple-gui.mak

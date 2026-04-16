@@ -3,3 +3,5 @@ GUIUSERDIR = $(PRJROOT)/src/simple-gui
 DINCDIR += \
  	$(GUILIBDIR)  \
  	$(GUIUSERDIR)
+SRCDIRS += \
+ 	$(GUILIBDIR)
