@@ -664,14 +664,15 @@ int dbg_getchar(char * r)
 	return HARDWARE_DEBUG_GETCHAR(r);
 }
 
-static LCLSPINLOCK_t printloack = LCLSPINLOCK_INIT;
+static IRQLSPINLOCK_t printloack = IRQLSPINLOCK_INIT;
 
 int dbg_writechar(int c)
 {
-	LCLSPIN_LOCK(& printloack);
+	IRQL_t irql;
+	IRQLSPIN_LOCK(& printloack, & irql, IRQL_IPC_ONLY);
 	while (HARDWARE_DEBUG_PUTCHAR(c) == 0)
 		;
-	LCLSPIN_UNLOCK(& printloack);
+	IRQLSPIN_UNLOCK(& printloack, irql);
 	return c;
 }
 
