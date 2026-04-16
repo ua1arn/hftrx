@@ -122,8 +122,8 @@
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
 	#define WITHMIPIDSISHW_LANES 2	/* mipi-dsi port lanes number */
-	#define BOARD_DSTYLE "g_x800_y480.h"
-	#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
+//	#define BOARD_DSTYLE "g_x800_y480.h"
+//	#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
 	//#define BOARD_DSTYLE_LVGL "g_x800_y480_linux_lvgl.h"
 
 #elif 1
@@ -316,7 +316,7 @@
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 			#define WITHDEFAULTVIEW		VIEW_3DSS
-			#define WITHFT8					1
+			//#define WITHFT8					1
 		#else
 			#define WITHDISPLAY_FPS		15
 			#define WITHDISPLAYSWR_FPS	15
