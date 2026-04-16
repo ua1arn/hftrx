@@ -127,13 +127,6 @@ SRCDIRS += $(HALDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 
 ifeq (1, 1)
-# ARM CMSIS
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
-DINCDIR += $(CMSISDIR)/Include $(CMSISDIR)/Source
-UDEFS += -D"CMSIS_device_header"=\"hardware.h\"
-endif
-
-ifeq (1, 1)
 # ST USB DEVICE
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 DINCDIR += $(MDLWUSBDIR)/Core/Inc
@@ -146,6 +139,9 @@ MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
+
+# cmsis
+include ../cmsis.mak
 
 # cmsis-dsp
 include ../cmsis_dsp.mak

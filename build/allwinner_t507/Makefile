@@ -119,6 +119,13 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 
+ifeq (1, 1)
+# ST USB DEVICE
+MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
+DINCDIR += $(MDLWUSBDIR)/Core/Inc
+SRCDIRS += $(MDLWUSBDIR)
+endif
+
 ifeq (1, 0)
 # ST USB HOST
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library

@@ -137,6 +137,9 @@ DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
 
+# cmsis
+include ../cmsis.mak
+
 # cmsis-dsp
 include ../cmsis_dsp.mak
 
@@ -172,13 +175,6 @@ include ../custom0.mak
 
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR)
-
-ifeq (1, 1)
-# ARM CMSIS
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
-DINCDIR += $(CMSISDIR)/Include $(CMSISDIR)/Source
-UDEFS += -D"CMSIS_device_header"=\"hardware.h\"
-endif
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)

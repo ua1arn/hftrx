@@ -118,13 +118,6 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 
-ifeq (1, 1)
-# ARM CMSIS
-CMSISDIR = $(PRJROOT)/CMSIS_6/CMSIS/Core
-DINCDIR += $(CMSISDIR)/Include $(CMSISDIR)/Source
-UDEFS += -D"CMSIS_device_header"=\"hardware.h\"
-endif
-
 ifeq (1, 0)
 # ST USB DEVICE
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
@@ -138,6 +131,9 @@ MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 DINCDIR += $(MDLWHOSTDIR)/Core/Inc
 SRCDIRS += $(MDLWHOSTDIR)
 endif
+
+# cmsis
+include ../cmsis.mak
 
 # cmsis-dsp
 include ../cmsis_dsp.mak
