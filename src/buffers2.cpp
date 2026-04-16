@@ -443,7 +443,7 @@ class blists
 {
 	typedef typeof(buffitem_t::v) element_t;
 public:
-	LCLSPINLOCK_t irqllocl;
+	LCLSPINLOCK_t irqllock;
 	IRQL_t irqllockarg;
 #if WITHBUFFERSDEBUG
 	int errallocate;
@@ -497,7 +497,7 @@ public:
 	{
 		InitializeListHead(& freelist);
 		InitializeListHead(& readylist);
-		IRQLSPINLOCK_INITIALIZE(& irqllocl);
+		IRQLSPINLOCK_INITIALIZE(& irqllock);
 		for (unsigned i = 0; i < capacity; ++ i)
 		{
 			buffitem_t * const p = & storage [i];
@@ -523,12 +523,12 @@ public:
 		ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
 		ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 
 		InsertHeadList(& freelist, & p->item);
 		++ freecount;
 
-		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 	}
 
 	// сохранить в списке готовых
@@ -540,7 +540,7 @@ public:
 		ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 
 		InsertHeadList(& readylist, & p->item);
 		++ readycount;
@@ -550,12 +550,12 @@ public:
 		++ saveount;
 #endif /* WITHBUFFERSDEBUG */
 
-		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 	}
 
 	bool waut_readybuffer_raw(uint_fast32_t timeMS)
 	{
-		return local_waitlist(& readylist, & irqllocl, timeMS) == 0;
+		return local_waitlist(& readylist, & irqllock, timeMS) == 0;
 	}
 
 	// получить из списка готовых
@@ -565,10 +565,10 @@ public:
 		if (timeMS != 0)
 		{
 			// Запрос с ненулевым аргументром timeMS может возникнуть только из выделенных потоков
-			if (local_waitlist(& readylist, & irqllocl, timeMS) != 0)	// timeot
+			if (local_waitlist(& readylist, & irqllock, timeMS) != 0)	// timeot
 				return false;
 		}
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& readylist))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(& readylist);
@@ -578,7 +578,7 @@ public:
 	#if WITHBUFFERSDEBUG
 			fqout.pass(get_datasize() / ((* dest)->ss * (* dest)->nch));
 	#endif /* WITHBUFFERSDEBUG */
-			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+			IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
 			ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
@@ -586,20 +586,20 @@ public:
 			* dest = & p->v;
 			return true;
 		}
-		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 		return false;
 	}
 	// получить из списка свободных
 	bool get_freebuffer_raw(element_t * * dest)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& freelist))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(& freelist);
 			ASSERT3(freecount != 0, __FILE__, __LINE__, name);
 			-- freecount;
-			IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+			IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 			buffitem_t * const p = CONTAINING_RECORD(t, buffitem_t, item);
 			ASSERT3(p->tag0 == this, __FILE__, __LINE__, name);
 			ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
@@ -610,7 +610,7 @@ public:
 #if WITHBUFFERSDEBUG
 		++ errallocate;
 #endif /* WITHBUFFERSDEBUG */
-		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 		return false;
 	}
 
@@ -621,7 +621,7 @@ public:
 		IRQL_t oldIrql;
 
 		InitializeListHead(list);
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 		while (n -- && ! IsListEmpty(& readylist))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(& readylist);
@@ -631,7 +631,7 @@ public:
 			++ v;
 		}
 		fiforeadyupdate();
-		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 		return v;
 	}
 
@@ -639,7 +639,7 @@ public:
 	{
 		IRQL_t oldIrql;
 
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 		while (! IsListEmpty(list))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(list);
@@ -650,7 +650,7 @@ public:
 			InsertHeadList(& freelist, t);
 			++ freecount;
 		}
-		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 	}
 
 	bool wait_readybuffer(uint_fast32_t timeMS)
@@ -673,10 +673,10 @@ public:
 	bool get_readybuffer(element_t * * dest, uint_fast32_t timeMS = 0)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 		const bool stoutready = outready;
 		const int streadycount = readycount;
-		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 
 		if (hasresample)
 		{
@@ -756,10 +756,10 @@ public:
 	{
 #if WITHBUFFERSDEBUG
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 		unsigned fin = fqin.getfreq();
 		unsigned fout = fqout.getfreq();
-		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
 		PRINTF(" %s:e=%d,y=%d,f=%d,%uk/%uk", name, errallocate, readycount, freecount, (unsigned) ((fin + 500) / 1000), (unsigned) ((fout + 500) / 1000));
 		if (hasresample)
@@ -773,10 +773,10 @@ public:
 	{
 #if WITHBUFFERSDEBUG
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllocl, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 		unsigned fin = fqin.getfreq();
 		unsigned fout = fqout.getfreq();
-		IRQLSPIN_UNLOCK(& irqllocl, oldIrql);
+		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, (unsigned) freecount);
 		PRINTF(" %s:e=%d,y=%d,f=%d,%uH/%uH", name, errallocate, (unsigned) readycount, (unsigned) freecount, (unsigned) fin, (unsigned) fout);
 		if (hasresample)
