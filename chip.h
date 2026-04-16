@@ -1,9 +1,9 @@
-/*
- * chip.h
- *
- *  Created on: Nov 16, 2023
- *      Author: Gena
- */
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
 
 #ifndef CHIP_H_
 #define CHIP_H_
