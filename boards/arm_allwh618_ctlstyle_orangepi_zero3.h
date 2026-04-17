@@ -336,7 +336,7 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
 
-	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
+	
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
