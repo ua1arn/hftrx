@@ -1200,19 +1200,19 @@ static int t113_i2c_stopstart(TWI_TypeDef * twi)
 	return twi->TWI_STAT;
 }
 
-static int t113_i2c_send_data(TWI_TypeDef * twi, uint8_t dat)
+static int t113_i2c_send_data(TWI_TypeDef * twi, uint8_t dat, const char * file, int line)
 {
 	twi->TWI_DATA = dat;
 	twi->TWI_CNTR |= (1 << 3);	// INT_FLAG
 
-	return t113_i2c_wait_status(twi, __FILE__, __LINE__);
+	return t113_i2c_wait_status(twi, file, line);
 }
 
 static int t113_i2c_read(TWI_TypeDef * twi, struct i2c_msg_t * msg){
 	uint8_t * p = msg->buf;
 	int len = msg->len;
 
-	if (t113_i2c_send_data(twi, (uint8_t)((msg->addr7 << 1) | 1)) != I2C_STAT_TX_AR_ACK)
+	if (t113_i2c_send_data(twi, (uint8_t)((msg->addr7 << 1) | 1), __FILE__, __LINE__) != I2C_STAT_TX_AR_ACK)
 		return -1;
 	if (len == 0)	/* Handle zero count for probes */
 		return 0;
@@ -1240,14 +1240,14 @@ static int t113_i2c_write(TWI_TypeDef * twi, struct i2c_msg_t * msg)
 	uint8_t * p = msg->buf;
 	int len = msg->len;
 
-	if (t113_i2c_send_data(twi, (uint8_t)(msg->addr7 << 1)) != I2C_STAT_TX_AW_ACK){
+	if (t113_i2c_send_data(twi, (uint8_t)(msg->addr7 << 1), __FILE__, __LINE__) != I2C_STAT_TX_AW_ACK){
 		return -1;
 	}
 	if (len == 0)	/* Handle zero count for probes */
 		return 0;
 	while (len > 0)
 	{
-		if (t113_i2c_send_data(twi, *p++) != I2C_STAT_TXD_ACK)
+		if (t113_i2c_send_data(twi, * p ++, __FILE__, __LINE__) != I2C_STAT_TXD_ACK)
 			return -1;
 		len--;
 	}
@@ -1263,7 +1263,7 @@ static int t113_i2c_write_buff(TWI_TypeDef * twi, struct i2c_msg_t * msg)
 		return 0;
 	while (len > 0)
 	{
-		if (t113_i2c_send_data(twi, *p++) != I2C_STAT_TXD_ACK)
+		if (t113_i2c_send_data(twi, * p ++, __FILE__, __LINE__) != I2C_STAT_TXD_ACK)
 			return -1;
 		len--;
 	}
