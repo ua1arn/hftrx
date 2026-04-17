@@ -4247,12 +4247,12 @@ static void display2_siglevel4(
 
 unsigned volatile nmeamgloop_status, nmeamgloop_position;
 
-void display2_mla28(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+void display2_mla9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 #if WITHMGLOOP
 	char b [xspan + 1];
 
-	local_snprintf_P(b, ARRAY_SIZE(b), "C=%u S=%u",
+	local_snprintf_P(b, ARRAY_SIZE(b), "C=%u S%u",
 		(unsigned) nmeamgloop_position,
 		(unsigned) nmeamgloop_status
 		);
@@ -4285,6 +4285,7 @@ int_fast32_t display2_zoomedbw(void)
 }
 #endif /* WITHIF4DSP */
 
+/* полоса обзора панорамы */
 static void display2_span9(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,

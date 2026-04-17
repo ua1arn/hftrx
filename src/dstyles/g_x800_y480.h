@@ -127,9 +127,12 @@
 		{	0,	DLES,	(BDTH_ALLRX), BDCV_ALLRX,	display2_latchcombo,	& dzi_compat,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 		{	0,	DLES,	(BDTH_ALLRX), BDCV_ALLRX, display2_gcombo,	& dzi_compat, PG0, },// подготовка изображения спектра
 	#endif /* WITHSPECTRUMWF */
-
-//		{	0,	DLE1,	13, 5, display2_datetime12,	& dzi_compat, PGALL,	},	// DATE&TIME Jan-01 13:40
-//		{	13,	DLE1,	10, 5, display2_span9,		& dzi_compat, PG0, },	/* Получить информацию об ошибке настройки в режиме SAM */
+		{	0,	DLE1,	13, 5, display2_datetime12,	& dzi_compat, PG0, },	// DATE&TIME Jan-01 13:40
+#if WITHMGLOOP
+		{	13, DLE1, 	10, 5, display2_mla9,		& dzi_compat, PG0, },
+#else /* WITHMGLOOP */
+		{	13,	DLE1,	10, 5, display2_span9,		& dzi_compat, PG0, },	/* полоса обзора панорамы */
+#endif /* WITHMGLOOP */
 		{	23, DLE1,	6, 5, display2_thermo,		& dzi_compat, PG0, },	// thermo sensor
 		{	29, DLE1,	4, 5, display2_usbsts3,		& dzi_compat, PG0, },	// USB host status
 		{	33, DLE1,	3, 5, display2_btsts2,		& dzi_compat, PG0, },	// USB host status
