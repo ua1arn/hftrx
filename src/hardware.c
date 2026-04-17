@@ -254,6 +254,7 @@ void ticker_initialize_ext(ticker_t * p, unsigned nticks, void (* cb)(void *), v
 	p->cb = cb;
 	p->ctx = ctx;
 	p->mode = mode;
+	p->guard = p;
 }
 
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx)
@@ -285,7 +286,7 @@ void ticker_initialize_user_display(ticker_t * p, unsigned nticks, dpcobj_t * dp
 void ticker_add(ticker_t * p)
 {
 	IRQL_t oldIrql;
-
+	ASSERT(p->guard == p);
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	ASSERT(tickers.Blink != NULL && tickers.Flink != NULL);
 	InsertHeadVList(& tickers, & p->item);
@@ -295,6 +296,7 @@ void ticker_add(ticker_t * p)
 void ticker_remove(ticker_t * p)
 {
 	IRQL_t oldIrql;
+	ASSERT(p->guard == p);
 
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	RemoveEntryVList(& p->item);
@@ -305,6 +307,7 @@ void ticker_remove(ticker_t * p)
 void ticker_start(ticker_t * p)
 {
 	IRQL_t oldIrql;
+	ASSERT(p->guard == p);
 
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	switch (p->mode)
@@ -322,6 +325,7 @@ void ticker_setperiod(ticker_t * p, unsigned nticks)
 {
 	IRQL_t oldIrql;
 
+	ASSERT(p->guard == p);
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	if (p->period < nticks)
 	{
@@ -348,6 +352,7 @@ static void tickers_event(void)
 		ASSERT(t != NULL);
 		PVLIST_ENTRY tnext = t->Blink;	/* текущий элемент может быть удалён из списка */
 		ticker_t * const p = CONTAINING_RECORD(t, ticker_t, item);
+		ASSERT(p->guard == p);
 	
 		switch (p->mode)
 		{

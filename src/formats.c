@@ -669,7 +669,7 @@ static LCLSPINLOCK_t printloack = IRQLSPINLOCK_INIT;
 int dbg_writechar(int c)
 {
 	IRQL_t irql;
-	IRQLSPIN_LOCK(& printloack, & irql, IRQL_IPC_ONLY);
+	IRQLSPIN_LOCK(& printloack, & irql, IRQL_IPC);
 	while (HARDWARE_DEBUG_PUTCHAR(c) == 0)
 		;
 	IRQLSPIN_UNLOCK(& printloack, irql);
