@@ -723,6 +723,7 @@ typedef struct ticker_tag
 	void (* cb)(void *);
 	void * ctx;
 	enum ticker_mode mode;
+	void * guard;
 } ticker_t;
 
 struct dpcobj_tag;
