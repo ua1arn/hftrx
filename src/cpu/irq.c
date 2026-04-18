@@ -2118,21 +2118,6 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 	return thread;
 }
 
-void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
-{
-	if (threads_not_started)
-	{
-		PRINTF("Wrong call of thread_create_realtime: '%s'\n", name);
-	}
-	ASSERT(threads_not_started == 0);
-	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
-	if (thread != NULL)
-	{
-		thread_add(thread, affinity, fn, ctx, ramsize, UPRIO_REALTIME, IRQL_USER, name);
-	}
-	return thread;
-}
-
 void task_scheduler_initialize(void)
 {
 	unsigned i;
@@ -2580,11 +2565,6 @@ void __NO_RETURN task_scheduler_othercores(void)
 }
 
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
-{
-	return NULL;
-}
-
-void * thread_create_realtime(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
 {
 	return NULL;
 }

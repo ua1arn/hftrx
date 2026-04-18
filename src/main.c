@@ -23,7 +23,7 @@ lowinitialize(void)
 	//HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 
 
-	dbg_puts_impl("Version " __DATE__ " " __TIME__ " 1 debug session starts.\n");
+	PRINTF("Version " __DATE__ " " __TIME__ " 1 debug session starts.\n");
 	// выдача повторяющегося символа для тестирования скорости передачи, если ошибочная инициализация
 	//for (;;)
 	//	hardware_putchar(0xff);

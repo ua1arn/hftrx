@@ -8,9 +8,6 @@
 #include <alloca.h>
 
 
-void dbg_puts(const char * s);
-void dbg_putchar(uint_fast8_t c);
-
 void UART_putc(uint_fast8_t c)
 {
 	if (c == '\n')

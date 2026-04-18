@@ -19355,7 +19355,7 @@ applowinitialize(void)
 	kbd_initialize();
 
 #if WITHDEBUG
-	dbg_puts_impl("Most of hardware initialized.\n");
+	PRINTF("Most of hardware initialized.\n");
 #endif
 	//for (;;);
 	//hardware_cw_diagnostics_noirq(1, 1, 0);	// 'S'
@@ -19721,7 +19721,7 @@ void initialize2(void)
 	buffers_start();
 
 #if WITHDEBUG
-	dbg_puts_impl("initialize2: finished.\n");
+	PRINTF("initialize2: finished.\n");
 #endif
 }
 
@@ -21764,87 +21764,6 @@ hamradio_mainloop_beacon(void)
 	}
 }
 
-#endif
-
-#if 0 && WITHDEBUG
-
-static void local_gets(char * buff, size_t len)
-{
-	size_t pos = 0;
-
-	for (;;)
-	{
-		char c;
-		if (dbg_getchar(& c))
-		{
-			if (c == '\r')
-			{
-				dbg_putchar('\n');
-				buff [pos] = '\0';
-				return;
-			}
-			if ((pos + 1) >= len)
-				continue;
-			if (isprint((unsigned char) c))
-			{
-				buff [pos ++] = c;
-				dbg_putchar(c);
-				continue;
-			}
-			if (pos != 0 && c == '\b')
-			{
-				PRINTF(PSTR("\b \b"));
-				-- pos;
-				continue;
-			}
-		}
-	}
-}
-
-static void siggen_mainloop(void)
-{
-
-	PRINTF(PSTR("RF Signal generator\n"));
-	uint_fast8_t tx = 0;
-	// signal-generator tests
-	board_set_attvalue(0);
-	updateboard();
-	for (;;)
-	{
-		PRINTF(PSTR("Enter tx=%d, command (a#/g/n):\n"), tx);
-		char buff [132];
-		local_gets(buff, sizeof buff / sizeof buff [0]);
-		char * cp = buff;
-		while (isspace((unsigned char) * cp))
-			++ cp;
-		switch (tolower((unsigned char) * cp))
-		{
-		case 'a':
-			// set att value
-			++ cp;
-			unsigned long value = _strtoul_r(& treent, cp, NULL, 10);
-			PRINTF(PSTR("RFSG ATT value: %lu\n"), value);
-			if (value < 63)
-			{
-				board_set_attvalue(value);
-				updateboard();
-			}
-			break;
-		case 'g':
-			// generaton on
-			PRINTF(PSTR("RFSG output ON\n"));
-			tx = 1;
-			updateboard();
-			break;
-		case 'n':
-			// generator off
-			PRINTF(PSTR("RFSG output OFF\n"));
-			tx = 0;
-			updateboard();
-			break;
-		}
-	}
-}
 #endif
 
 #if WITHSUBTONES
