@@ -1719,9 +1719,7 @@ mdma_startandwait(void)
 	{
 		ASSERT((MDMA_CH->CISR & MDMA_CISR_TEIF_Msk) == 0);	/* Channel x transfer error interrupt flag */
 	}
-	//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 	ASSERT((MDMA_CH->CISR & MDMA_CISR_TEIF_Msk) == 0);	/* Channel x transfer error interrupt flag */
-
 }
 
 void arm_hardware_mdma_initialize(void)

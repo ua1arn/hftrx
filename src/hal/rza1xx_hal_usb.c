@@ -690,7 +690,7 @@ void USBPhyHw_process(PCD_HandleTypeDef *hpcd)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
 	USBD_HandleTypeDef * const pdev = hpcd->pData;
-	//__DMB();
+
     /* Register Save */
     uint16_t intsts0 = USBx->INTSTS0;
     uint16_t brdysts = USBx->BRDYSTS;
@@ -1874,7 +1874,7 @@ static void RAMFUNC_NONILINE r7s721_usbX_dma1_dmatx_handler(void)
 {
 #error To be complete for DMA
 	DMAC12.CHCFG_n |= DMAC12_CHCFG_n_REN;	// REN bit
-	//__DMB();
+
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -2112,7 +2112,7 @@ static uintptr_t dma_invalidateuacout48(uintptr_t addr)
 static RAMFUNC_NONILINE void r7s721_usbX_dma0_dmarx_handler(void)
 {
 #error To be complete for DMA
-	//__DMB();
+
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -2947,7 +2947,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 // Renesas, usb device
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
-	//__DMB();
+
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
 	USBD_HandleTypeDef * const pdev = hpcd->pData;
 	const uint_fast16_t intsts0 = USBx->INTSTS0;
@@ -3160,7 +3160,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 // Renesas, usb host
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 {
-	//__DMB();
+
 	USB_OTG_GlobalTypeDef * const USBx = hhcd->Instance;
 	const uint_fast16_t intsts0 = USBx->INTSTS0;
 	const uint_fast16_t intsts1 = USBx->INTSTS1;

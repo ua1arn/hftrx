@@ -355,7 +355,7 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler_codec1_rx(void)
 	if ((DMA1->LISR & DMA_LISR_TCIF3) != 0)
 	{
 		DMA1->LIFCR = DMA_LIFCR_CTCIF3;	// Clear TC interrupt flag
-		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+
 		const uint_fast8_t b = (DMA1_Stream3->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
@@ -377,7 +377,7 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler_codec1_rx(void)
 	if ((DMA1->LISR & DMA_LISR_TCIF0) != 0)
 	{
 		DMA1->LIFCR = DMA_LIFCR_CTCIF0;	// Clear TC interrupt flag
-		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+
 		const uint_fast8_t b = (DMA1_Stream0->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
@@ -400,7 +400,7 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler_codec1_tx(void)
 	if ((DMA1->HISR & DMA_HISR_TCIF4) != 0)
 	{
 		DMA1->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
-		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+
 		const uint_fast8_t b = (DMA1_Stream4->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
@@ -1845,7 +1845,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler_fpga_rx(void)
 	if ((DMA2->HISR & DMA_HISR_TCIF5) != 0)
 	{
 		DMA2->HIFCR = DMA_HIFCR_CTCIF5;	// Clear TC interrupt flag соответствующий stream
-		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+
 		const uint_fast8_t b = (DMA2_Stream5->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
@@ -1869,7 +1869,7 @@ void DMA2_Stream1_IRQHandler_fpga_tx(void)
 	if ((DMA2->LISR & DMA_LISR_TCIF1) != 0)
 	{
 		DMA2->LIFCR = DMA_LIFCR_CTCIF1;	// Clear TC interrupt flag
-		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+
 		const uint_fast8_t b = (DMA2_Stream1->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
 		{
@@ -2440,7 +2440,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_codec1_rx(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream7->CR & DMA_SxCR_CT) != 0;
-		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+
 
 		if (b != 0)
 		{
@@ -2526,7 +2526,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_wfm_rx(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream7->CR & DMA_SxCR_CT) != 0;
-		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+
 
 		if (b != 0)
 		{
@@ -2556,7 +2556,7 @@ void DMA2_Stream4_IRQHandler_codec1_tx(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_A->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream4->CR & DMA_SxCR_CT) != 0;
-		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+
 
 		if (b != 0)
 		{
@@ -2584,7 +2584,7 @@ void DMA2_Stream4_IRQHandler_fpga_tx(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_A->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream4->CR & DMA_SxCR_CT) != 0;
-		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+
 
 		if (b != 0)
 		{
@@ -2612,7 +2612,7 @@ void DMA2_Stream4_IRQHandler_32tx_sub(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_A->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream4->CR & DMA_SxCR_CT) != 0;
-		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+
 
 		if (b != 0)
 		{
@@ -7670,7 +7670,7 @@ static unsigned get_ssif_dwl(unsigned datalength)
 
 static RAMFUNC_NONILINE void r7s721_ssif0_rxdma_audiorx(void)
 {
-	//__DMB();
+
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -7698,7 +7698,7 @@ static RAMFUNC_NONILINE void r7s721_ssif0_rxdma_audiorx(void)
 
 static void r7s721_ssif0_txdma_audio(void)
 {
-	//__DMB();
+
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -7964,7 +7964,7 @@ static const codechw_t audiocodec_ssif0_duplex_slave =
 
 static void r7s721_ssif1_txdma_fpgatx(void)
 {
-	//__DMB();
+
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -7992,7 +7992,7 @@ static void r7s721_ssif1_txdma_fpgatx(void)
 
 static RAMFUNC_NONILINE void r7s721_ssif1_rxdma_fpgarx(void)
 {
-	//__DMB();
+
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -8245,7 +8245,7 @@ static const codechw_t fpgacodechw_ssif1_duplex_slave =
 
 static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_WFMrx(void)
 {
-	//__DMB();
+
 	DMAC4.CHCFG_n |= DMAC4_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.

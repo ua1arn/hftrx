@@ -865,8 +865,8 @@ void linux_dds_ftw_sub(const uint_least64_t * value);	// Установка це
 void linux_dds_rts(const uint_least64_t * value);		// Установка центральной частоты панорамного индикатора
 void linux_rxtx_state(uint8_t tx);
 
-uint32_t sys_now(void);
-uint32_t board_millis(void);	// tinyusb
+uint32_t sys_now(void);	// LwIP callback
+uint32_t board_millis(void);	// TinyUsb callback
 int sys_dram_init(void);	// 0 - error
 int main(void);
 void SystemInit(void);

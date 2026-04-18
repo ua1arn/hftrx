@@ -2235,7 +2235,7 @@ void __NO_RETURN task_scheduler_othercores(void)
 	for (;;)
 	{
 		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
-		__DMB();
+		//__DMB();
 	}
 }
 
