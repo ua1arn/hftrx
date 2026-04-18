@@ -7317,7 +7317,7 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 
 	uis->UIS_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 	if (local_wait32mask(& uis->UIS_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
-		TP();
+		PRINTF("t507_de2_uis_init: timeout\n");
 }
 
 static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int vich)
@@ -7365,7 +7365,7 @@ static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 	if (local_wait32mask(& vsu->VSU_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
-		TP();
+		PRINTF("t507_de2_vsu_init: timeout\n");
 }
 #endif /* CPUSTYLE_T507 */
 
