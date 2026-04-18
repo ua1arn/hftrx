@@ -1694,7 +1694,6 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#define TASKRAM_SIZE (1024 * 1024)
 typedef struct thread_item_tag thread_item_t;
 static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1);
 
@@ -1979,6 +1978,8 @@ static uint_fast32_t get_td_ms(uint_fast32_t timeMS)
 // WITHRTOS
 #if 0
 
+#define IDLETASKRAM_SIZE (16 * 1024)
+
 typedef struct check_ready_tag
 {
 	int (* ready)(const struct check_ready_tag * ch, struct thread_item_tag * thread, uint_fast32_t tn, volatile void * arg1);
@@ -2067,7 +2068,7 @@ static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn
 	ASSERT(ARRAY_SIZE(threads_list) > uprio);
 	thread->affinity = affinity;
 	thread->allocated = aligned_alloc(DCACHEROWSIZE, ramsize);
-	//thread->allocated = malloc(TASKRAM_SIZE);
+	//thread->allocated = malloc(IDLETASKRAM_SIZE);
 	ASSERT(thread->allocated != NULL);
 	while (thread->allocated == NULL)
 		;
@@ -2115,7 +2116,7 @@ void task_scheduler_initialize(void)
 	{
 		thread_item_t * const thread = & idle_threads [i];
 		//
-		thread_add(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, UPRIO_IDLE, IRQL_USER, "idle");
+		thread_add(thread, 1U << i, task_idle, NULL, IDLETASKRAM_SIZE, UPRIO_IDLE, IRQL_USER, "idle");
 	}
 }
 
@@ -2172,12 +2173,10 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 		}
 	}
 	RemoveEntryList(& taskin->item);
-	{
-		if (taskin->check_ready)
-		{
-			tasks_print();
-		}
 
+	if (taskin->check_ready)
+	{
+		tasks_print();
 	}
 	ASSERT(taskin->check_ready == NULL);
 	return taskin;
