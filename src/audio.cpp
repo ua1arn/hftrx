@@ -5473,7 +5473,7 @@ void dsp_initialize(void)
 		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);
 
 		// CPUSTYLE_STM32MP1: DSP обработка выполняется в обработчике REALTIME прерываний от DMA - CORE #1 - потому туда помещать ещё аудиообработку проблематично по произволдительности
-	#if LINUX_SUBSYSTEM || ! WITHINTEGRATEDDSP || ! WITHSMPSYSTEM || CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1
+	#if ! WITHINTEGRATEDDSP || ! WITHSMPSYSTEM || CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1
 		board_dpc_addentry(& user_audioproc_dpc, 0);
 	#elif (HARDWARE_NCORES == 2)
 		board_dpc_addentry(& user_audioproc_dpc, 1);

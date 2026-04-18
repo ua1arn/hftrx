@@ -259,9 +259,9 @@ uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt)
 
 uint_fast8_t gt911_initialize(void)
 {
-#if (WITHTWISW) && ! LINUX_SUBSYSTEM
+#if (WITHTWISW)
 	i2cp_intiialize(& tp_i2cp, I2CP_I2C1, 400000);
-#endif /* (WITHTWISW) && ! LINUX_SUBSYSTEM */
+#endif /* (WITHTWISW) */
 
 	gt911_io_initialize();
 
@@ -322,23 +322,8 @@ uint_fast8_t
 board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
 	* zr = 0;	// stub
-#if LINUX_SUBSYSTEM
-	static uint32_t oldt = sys_now();
-	static uint_fast16_t x = 0, y = 0, p = 0;
 
-	uint32_t t = sys_now();
-	if (t - oldt > 20)		// перед чтениями координат нужна задержка минимум на 15 + 5 ms
-	{
-		oldt = t;
-		p = gt911_getXY(& x, & y);
-	}
-
-	* xr = x;
-	* yr = y;
-	return p;
-#else
 	return gt911_getXY(xr, yr);
-#endif /* LINUX_SUBSYSTEM */
 }
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911) */

@@ -9,7 +9,7 @@
 
 #include "dspdefines.h"
 
-#if WITHINTEGRATEDDSP && ! LINUX_SUBSYSTEM
+#if WITHINTEGRATEDDSP
 
 	#if ARM_MATH_NEON
 		#include "CommonTables/arm_neon_tables.c"

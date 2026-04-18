@@ -7,8 +7,6 @@
 
 #include "hardware.h"
 
-#if ! LINUX_SUBSYSTEM
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -401,6 +399,3 @@ void __retarget_lock_release_recursive(_LOCK_T lock)
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-
-#endif /* ! LINUX_SUBSYSTEM */
-

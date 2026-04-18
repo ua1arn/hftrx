@@ -933,7 +933,7 @@ static lv_obj_t * dzi_create_encf4(lv_obj_t * parent, const struct dzone * dzp, 
 #endif /* WITHLVGL */
 
 
-#if ! WITHTOUCHGUI && ! LINUX_SUBSYSTEM
+#if ! WITHTOUCHGUI
 
 void gui_update(void)
 {
@@ -4656,20 +4656,6 @@ static int_fast16_t display_mapbar(
 	return mapright;
 }
 
-
-void wait_iq(const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
-	uint_fast8_t xspan,
-	uint_fast8_t yspan,
-	dctx_t * pctx
-	)
-{
-#if LINUX_SUBSYSTEM
-	linux_wait_iq();
-#endif
-}
-
 /* Описания расположения элементов на дисплеях */
 
 #include "dstyles/dstyles.h"
@@ -6902,10 +6888,7 @@ static void wfsetupnew(void)
 	wflclear();	// Очистка водопада
 }
 
-#if ! LINUX_SUBSYSTEM
-	#include "dsp/window_functions.h"
-#endif /* ! LINUX_SUBSYSTEM */
-
+#include "dsp/window_functions.h"
 
 static void
 display2_wfl_init(
@@ -9845,9 +9828,6 @@ uint_fast8_t display2_mouse(uint_fast16_t xe, uint_fast16_t ye, unsigned evcode,
 #if WITHLVGL
 	return 0;
 
-#elif LINUX_SUBSYSTEM
-	return 0;
-
 #elif WITHRENDERHTML
 	litehtml::position::vector redraw_boxes;
 	hftrxmain_docs [menuset]->on_lbutton_down(xe, ye, 0, 0, redraw_boxes);
@@ -9920,12 +9900,6 @@ void display2_bgprocess(
 	compat_pctx = pctx;
 	lv_timer_handler();
 	return;
-
-#elif LINUX_SUBSYSTEM
-	gxdrawb_t dbv;
-	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
-	// may be REDRSUBSET(ix)
-	display_walktrough(& dbv, REDRSUBSET(menuset), pctx);
 
 #elif ! LCDMODE_LTDC
 	return;

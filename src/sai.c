@@ -8562,12 +8562,6 @@ static const codechw_t * const channels [] =
 		& fpgaiqhw_dummy,			// Интерфейс к IF кодеку/FPGA
 		& fpgaspectrumhw_dummy,		// Интерфейс к FPGA - широкополосный канал (WFM)
 
-#elif LINUX_SUBSYSTEM
-
-		& audiocodechw_dummy,		// Интерфейс к НЧ кодеку
-		& fpgaiqhw_dummy,			// Интерфейс к IF кодеку/FPGA
-		& fpgaspectrumhw_dummy,		// Интерфейс к FPGA - широкополосный канал (WFM)
-
 #elif CPUSTYLE_R7S721
 
 	#if WITHCODEC1_SSIF0_DUPLEX_MASTER

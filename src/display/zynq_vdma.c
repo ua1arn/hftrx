@@ -8,7 +8,7 @@
 #include <limits.h>
 #include "formats.h"	// for debug prints
 
-#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_XC7Z
 
 #include <xdebug.h>
 #include <xil_io.h>
@@ -513,6 +513,6 @@ int Vdma_Start(XAxiVdma *InstancePtr)
 	return XST_SUCCESS;
 }
 
-#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
+#endif /* CPUSTYLE_XC7Z */
 
 #endif /* WITHLTDCHW */

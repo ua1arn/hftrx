@@ -249,7 +249,7 @@ void board_tsc_calibration(void)
 #endif /* WITHTSC5PCALIBRATE */
 }
 
-#if ! LINUX_SUBSYSTEM && defined (TSC1_TYPE) && TSC1_TYPE != TSC_TYPE_EVDEV
+#if defined (TSC1_TYPE) && TSC1_TYPE != TSC_TYPE_EVDEV
 
 uint_fast8_t
 board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
@@ -269,7 +269,7 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	return 0;
 }
 
-#endif /* ! LINUX_SUBSYSTEM && defined (TSC1_TYPE) && TSC1_TYPE != TSC_TYPE_EVDEV */
+#endif /* defined (TSC1_TYPE) && TSC1_TYPE != TSC_TYPE_EVDEV */
 
 #if WITHLVGL && 0
 

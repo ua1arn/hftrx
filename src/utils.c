@@ -7,9 +7,7 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "utils.h"
-#if ! LINUX_SUBSYSTEM
 #include <machine/endian.h>
-#endif /* ! LINUX_SUBSYSTEM */
 
 // битовые маски, соответствующие биту в байте по его номеру.
 const uint_fast8_t rbvalues [8] =
@@ -113,7 +111,7 @@ USBD_peek_u16(
 	const uint8_t * __RESTRICT buff
 	)
 {
-#if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
 	return __UNALIGNED_UINT16_READ(buff);
 #else
 	return
@@ -129,7 +127,7 @@ USBD_peek_u24(
 	const uint8_t * __RESTRICT buff
 	)
 {
-#if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
 	return
 		((uint_fast32_t) buff [2] << 16) +
 		__UNALIGNED_UINT16_READ(buff);
@@ -148,7 +146,7 @@ USBD_peek_u32(
 	const uint8_t * __RESTRICT buff
 	)
 {
-#if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
 	return __UNALIGNED_UINT32_READ(buff);
 #else
 	return
@@ -163,7 +161,7 @@ USBD_peek_u32(
 /* Little endian memory layout */
 unsigned USBD_poke_u32(uint8_t * __RESTRICT buff, uint_fast32_t v)
 {
-#if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
 	__UNALIGNED_UINT32_WRITE(buff, v);
 #else
 	buff [0] = LO_BYTE(v);
@@ -203,7 +201,7 @@ USBD_peek_IEEE_FLOAT(
 		int32_t i;
 	} v;
 
-#if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
 	v.i = __UNALIGNED_UINT32_READ(buff);
 #else
 //#error Write code
@@ -228,7 +226,7 @@ unsigned USBD_poke_IEEE_FLOAT(uint8_t * __RESTRICT buff, float f)
 	} v;
 
 	v.f = f;
-#if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
 	__UNALIGNED_UINT32_WRITE(buff, v.i);
 #else
 //#error Write code
@@ -248,7 +246,7 @@ USBD_peek_u16_BE(
 	const uint8_t * __RESTRICT buff
 	)
 {
-#if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
 	return 0xFFFF & (__REV16(__UNALIGNED_UINT16_READ(buff)));
 #else
 	return
@@ -264,7 +262,7 @@ USBD_peek_u32_BE(
 	const uint8_t * __RESTRICT buff
 	)
 {
-#if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
 	return __REV(__UNALIGNED_UINT32_READ(buff));
 #else
 	return
@@ -297,7 +295,7 @@ USBD_peek_u64_BE(
 /* Big endian memory layout */
 unsigned USBD_poke_u32_BE(uint8_t * __RESTRICT buff, uint_fast32_t v)
 {
-#if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
 	__UNALIGNED_UINT32_WRITE(buff, __REV(v));
 #else
 	buff [3] = LO_BYTE(v);
@@ -329,7 +327,7 @@ unsigned USBD_poke_u64_BE(uint8_t * __RESTRICT buff, uint_fast64_t v)
 /* Little endian memory layout */
 unsigned USBD_poke_u24(uint8_t * __RESTRICT buff, uint_fast32_t v)
 {
-#if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
 	__UNALIGNED_UINT16_WRITE(buff, v);
 	buff [2] = HI_24BY(v);
 #else
@@ -345,7 +343,7 @@ unsigned USBD_poke_u24(uint8_t * __RESTRICT buff, uint_fast32_t v)
 /* Little endian memory layout */
 unsigned USBD_poke_u16(uint8_t * __RESTRICT buff, uint_fast16_t v)
 {
-#if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
 	__UNALIGNED_UINT16_WRITE(buff, v);
 #else
 	buff [0] = LO_BYTE(v);
@@ -359,7 +357,7 @@ unsigned USBD_poke_u16(uint8_t * __RESTRICT buff, uint_fast16_t v)
 /* Big endian memory layout */
 unsigned USBD_poke_u16_BE(uint8_t * __RESTRICT buff, uint_fast16_t v)
 {
-#if (_BYTE_ORDER == _LITTLE_ENDIAN) && ! LINUX_SUBSYSTEM
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
 	__UNALIGNED_UINT16_WRITE(buff, __REV16(v));
 #else
 	buff [1] = LO_BYTE(v);

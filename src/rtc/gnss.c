@@ -275,15 +275,11 @@ void nmeagnss_initialize(void)
 //	static uint8_t rxb [512];
 //	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
 
-#if ! LINUX_SUBSYSTEM
-
 	HARDWARE_NMEA_INITIALIZE(baudrate);
 	HARDWARE_NMEA_SET_SPEED(baudrate);
 	HARDWARE_NMEA_ENABLERX(1);
 	HARDWARE_NMEA_ENABLETX(0);
 	NMEA_1PPS_INITIALIZE();
-
-#endif /*  ! LINUX_SUBSYSTEM */
 }
 
 //static timeholder_t th;

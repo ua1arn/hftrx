@@ -34,10 +34,6 @@
 #include "btstack.h"
 #endif /* WITHUSEUSBBT */
 
-#if XVTR_R820T2
-	extern uint8_t ad936x_active;
-#endif /* XVTR_R820T2 */
-
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
 #endif /* WITHUSEFATFS */
@@ -11757,9 +11753,6 @@ void
 user_audioproc(void * ctx)
 {
 	(void) ctx;
-#if LINUX_SUBSYSTEM
-	linux_wait_iq();
-#endif /* LINUX_SUBSYSTEM */
 #if ! WITHSKIPUSERMODE
 	speexel_t * p;
 	while (takespeexready(& p, 0))
@@ -11817,9 +11810,7 @@ int user_audioproc_thread(void * ctx)	// user-mode processing - NR, эквала
 	for (;;)
 	{
 		(void) ctx;
-	#if LINUX_SUBSYSTEM
-		linux_wait_iq();
-	#endif /* LINUX_SUBSYSTEM */
+
 	#if ! WITHSKIPUSERMODE
 		speexel_t * p;
 		if (takespeexready(& p, LOCAL_WAITINFINITY))
@@ -12735,22 +12726,6 @@ updateboard_noui(
 			const uint_fast32_t lo1 = synth_freq2lo1(freq, pathi);
 			synth_lo1_setfreq(pathi, lo1, getlo1div(gtx)); /* установка частоты первого гетеродина */
 			synth_rts1_setfreq(pathi, getlo0(lo0hint) - freq);	// Установка центральной частоты панорамного индикатора
-
-			if (pathi == 0)
-			{
-				// Хотя, сюда правильнее было бы передавать то же что и в synth_lo1_setfreq - lo1
-				// Или, перенести туда
-				// для учёта боковой и смещения частоты для алгоритма Уивера.
-				// Пока, передаём dial frequency
-
-		#if LINUX_SUBSYSTEM && WITHAD936XIIO
-				if (get_ad936x_stream_status())
-					ad936x_set_freq(freq);
-		#elif LINUX_SUBSYSTEM && WITHAD936XDEV
-				ad936xdev_set_freq(freq);
-		#endif /* #if LINUX_SUBSYSTEM && WITHAD936XIIO */
-
-			}
 		}
 	}
 
@@ -18416,14 +18391,7 @@ freqvalid(
 	uint_fast8_t tx			// могут накладываться дополнительные ограничения
 	)
 {
-#if XVTR_R820T2
-	if (get_ad936x_stream_status())
-		return (freq >= XVRTUNE_BOTTOM && freq < TUNE_TOP);
-	else
-		return (freq >= TUNE_BOTTOM && freq < NOXVRTUNE_TOP);
-#else
 	return (freq >= TUNE_BOTTOM && freq < TUNE_TOP);	/* частота внутри допустимого диапазона */
-#endif /* XVTR_R820T2 */
 }
 
 #if WITHKEYBOARD
@@ -20149,13 +20117,6 @@ processmainlooptuneknobs(inputevent_t * ev)
 	int_least16_t nrotate_sub = event_getRotateHiRes(& ev->encSUB, & jumpsize_sub, genc1div * gencderate);
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC_MAIN;
-#elif WITHENCODER2 && LINUX_SUBSYSTEM
-	int_least16_t nrotate_main = 0;	// ignore encoder
-	jumpsize_main = 1;
-	jumpsize_sub = 1;
-	int_least16_t nrotate_sub = linux_get_enc2();
-	uint_fast16_t step_main = gstep_ENC_MAIN;
-	uint_fast16_t step_sub = gstep_ENC2;
 #elif WITHENCODER2
 	int_least16_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
 	int_least16_t nrotate_sub = event_getRotateHiRes(& ev->encFN, & jumpsize_sub, genc2div);
@@ -21681,9 +21642,6 @@ application_mainloop(void)
 	for (;;)
 	{
 		hamradio_main_step();
-#if LINUX_SUBSYSTEM
-		usleep(1000);
-#endif /* LINUX_SUBSYSTEM */
 	}
 }
 

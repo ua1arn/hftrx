@@ -15,9 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#if ! LINUX_SUBSYSTEM
-	#include <machine/endian.h>
-#endif /* ! LINUX_SUNSYSTEM */
+#include <machine/endian.h>
 
 enum { SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE, SPDFIO_numwires };
 
@@ -2565,9 +2563,7 @@ void spi_initialize(void)
 #endif /* WITHSPIHW */
 }
 
-//#else /* WITHSPIHW || WITHSPISW */
-#elif ! LINUX_SUBSYSTEM
-
+#else /* WITHSPIHW || WITHSPISW */
 
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
@@ -4904,30 +4900,6 @@ void bootloader_chiperase(void)
 	fullEraseDATAFLASH();
 }
 
-#elif LINUX_SUBSYSTEM
-
-void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)
-{
-}
-
-unsigned long sectorsizeDATAFLASH(void)
-{
-	return 0;
-}
-
-int testchipDATAFLASH(void)
-{
-	return 1;
-}
-
-void spidf_initialize(void)
-{
-}
-
-void hangoffDATAFLASH(void)
-{
-}
-
 #else /* WIHSPIDFHW || WIHSPIDFSW */
 
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)
@@ -5525,7 +5497,7 @@ static uint32_t InitQspi(void)
 
 #endif /* CPUSTYLE_XC7Z && WIHSPIDFHW */
 
-#if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && ! LINUX_SUBSYSTEM && FPGA_ARTIX7
+#if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && FPGA_ARTIX7
 
 void board_reload_fir_artix7_p1(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2)
 {
@@ -5558,7 +5530,7 @@ void board_reload_fir_artix7_spidone(SPI_t * spi, IRQL_t irql)
 	spi_operate_unlock(spi, irql);
 }
 
-#elif (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && ! LINUX_SUBSYSTEM
+#elif (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
 
 // Передача одного (первого) 32-битного значения и формирование строба.
 void board_fpga_fir_coef_p1(SPI_t * spi, int_fast32_t v)
@@ -5692,7 +5664,7 @@ board_fpga_fir_disconnect(SPI_t * spi, IRQL_t irql)
 #endif
 	spi_operate_unlock(spi, irql);
 }
-#endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) && ! LINUX_SUBSYSTEM */
+#endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
 
 
 void board_fpga_loader_initialize(void)

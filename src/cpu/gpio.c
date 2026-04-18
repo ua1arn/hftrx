@@ -663,7 +663,7 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 	}
 }
 
-#elif CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#elif CPUSTYLE_XC7Z
 
 static LCLSPINLOCK_t gpiobank_ctx [8];
 

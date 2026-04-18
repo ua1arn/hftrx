@@ -45,7 +45,7 @@ void xtrap(void)
 }
 #endif
 
-#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM && defined (XPAR_XGPIOPS_0_DEVICE_ID)
+#if CPUSTYLE_XC7Z && defined (XPAR_XGPIOPS_0_DEVICE_ID)
 
 extern uint8_t bd_space[];
 
@@ -240,7 +240,7 @@ void xc7z_hardware_initialize(void)
 {
 }
 
-#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
+#endif /* CPUSTYLE_XC7Z */
 
 static LCLSPINLOCK_t tickerslock = IRQLSPINLOCK_INIT;
 static LCLSPINLOCK_t adcdoneslock = IRQLSPINLOCK_INIT;
@@ -1343,7 +1343,7 @@ sysinit_fpu_initialize(void)
 		SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
 	#endif
 
-#elif defined(__aarch64__) && ! LINUX_SUBSYSTEM
+#elif defined(__aarch64__)
 
 	// FPU
 	//__FPU_Enable_fixed();
@@ -1562,7 +1562,7 @@ sysinit_sdram_initialize(void)
 static void
 sysinit_debug_initialize(void)
 {
-#if WITHDEBUG && ! LINUX_SUBSYSTEM
+#if WITHDEBUG
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 #endif /* WITHDEBUG */
@@ -1624,7 +1624,7 @@ uint_fast32_t cpu_getdebugticks(void)
 #if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 	return DWT->CYCCNT;	// use TIMESTAMP_GET();
 
-#elif defined(__aarch64__) && ! LINUX_SUBSYSTEM
+#elif defined(__aarch64__)
 	return (uint32_t) __get_PMCCNTR_EL0();
 
 #elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
@@ -1723,7 +1723,7 @@ sysinit_perfmeter_initialize(void)
 static void
 sysinit_vbar_initialize(void)
 {
-#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
+#if defined(__aarch64__)
 
 	extern unsigned long __Vectors64;
 	const uintptr_t vbase = (uintptr_t) & __Vectors64;
@@ -1943,15 +1943,6 @@ void SystemCoreClockUpdate(void)
 	SystemCoreClock = CPU_FREQ;
 }
 
-#if LINUX_SUBSYSTEM
-// Stub
-void
-SystemInit(void)
-{
-
-}
-#else /* LINUX_SUBSYSTEM */
-
 void softdelay(void)
 {
 	volatile int i = 100;
@@ -2060,8 +2051,6 @@ void __attribute__((used)) SystemDRAMInit(void)
 		PRINTF("sysinit_sdram_initialize() failure.\n");
 	}
 }
-
-#endif /* LINUX_SUBSYSTEM */
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
@@ -2894,7 +2883,7 @@ void watchdog_ping(void)
 #endif /* WITHWATCHDOG */
 }
 
-#if ! LINUX_SUBSYSTEM && ((__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV)
+#if ((__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV)
 
 /* зависящая от процессора карта распределения memory regions */
 unsigned

@@ -336,10 +336,8 @@ extern "C" {
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-#if ! LINUX_SUBSYSTEM
 	#include "arch/zynq/zynq7000.h"
 	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
-#endif /* ! LINUX_SUBSYSTEM */
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
@@ -347,19 +345,7 @@ extern "C" {
 	#define ALIGNX_BEGIN __ALIGNED(32)
 	#define ALIGNX_END /* nothing */
 
-#elif (CPUSTYLE_RK356X || CPUSTYLE_BROADCOM) && LINUX_SUBSYSTEM
-
-	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
-
-	#define DCACHEROWSIZE 32
-	#define ICACHEROWSIZE 32
-
-	#define ALIGNX_BEGIN //__ALIGNED(32)
-	#define ALIGNX_END /* nothing */
-
-	#define __NO_RETURN
-
-#elif CPUSTYLE_RK356X && ! LINUX_SUBSYSTEM
+#elif CPUSTYLE_RK356X
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define CPUSTYLE_ROCKCHIP	1		/* */

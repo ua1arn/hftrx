@@ -119,7 +119,7 @@ void display_uninitialize(void)
 }
 
 
-#if WITHLVGL //&& ! LINUX_SUBSYSTEM
+#if WITHLVGL
 
 #include "lvgl.h"
 //#include "../demos/lv_demos.h"
@@ -282,7 +282,7 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 }
 
 
-#endif /* WITHLVGL //&& ! LINUX_SUBSYSTEM */
+#endif /* WITHLVGL  */
 
 // Используется при выводе на графический индикатор с кординатами и размерами в пикселях
 // Многострочное отображение
@@ -732,7 +732,7 @@ void colmain_rounded_rect(
 	ASSERT((r * 2) < (x2 - x1));
 	ASSERT((r * 2) < (y2 - y1));
 
-#if CPUSTYLE_ALLWINNER && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_ALLWINNER
 
 	const uint_fast16_t wpartial = (x2 - x1 + 1 + 1) / 2;
 	const uint_fast16_t hpartial = (y2 - y1 + 1 + 1) / 2;

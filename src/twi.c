@@ -96,7 +96,7 @@ static void i2c_delay(const i2cp_t * p)
 #endif
 
 
-#if WITHTWIHW && ! LINUX_SUBSYSTEM
+#if WITHTWIHW
 
 #if CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
@@ -981,8 +981,6 @@ void i2c_initialize(void)
 	TWIHARD_INITIALIZE();
 #endif
 }
-
-#elif LINUX_SUBSYSTEM
 
 #elif (CPUSTYLE_XC7Z) && WITHTWIHW
 
@@ -1948,7 +1946,7 @@ void i2c2_writeX(const i2cp_t * p, uint_fast8_t d)
 
 #endif /* WITHTWIHW || WITHTWISW */
 
-#if (WITHTWISW) && ! LINUX_SUBSYSTEM
+#if (WITHTWISW)
 
 /* скорость обмена */
 void i2cp_intiialize(i2cp_t * p, unsigned ch, unsigned freq)
@@ -2143,7 +2141,7 @@ void i2c2_stop(void)
 
 #endif
 
-#endif /* (WITHTWISW) && ! LINUX_SUBSYSTEM */
+#endif /* (WITHTWISW) */
 
 #if WITHTWISW || WITHTWIHW
 

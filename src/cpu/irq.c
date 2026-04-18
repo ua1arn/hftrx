@@ -17,24 +17,6 @@
 
 #include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
-#if WITHFT8
-
-#include "ft8.h"
-
-void xcz_ipi_sendmsg_c0(uint8_t msg)
-{
-	ft8.int_core0 = msg;
-	GIC_SendSGI(ft8_interrupt_core0, TARGETCPU_CPU0, 0x00); // Forward the interrupt to the CPU interfaces specified in the CPUTargetList field
-}
-
-void xcz_ipi_sendmsg_c1(uint8_t msg)
-{
-	ft8.int_core1 = msg;
-	GIC_SendSGI(ft8_interrupt_core1, TARGETCPU_CPU1, 0x00); // Forward the interrupt to the CPU interfaces specified in the CPUTargetList field
-}
-
-#endif
-
 #if 0
 
 static const char * mode_trig(uint32_t mode)
@@ -1712,8 +1694,6 @@ void IRQ15_Handler(void)
 
 #endif /* CPUSTYLE_RISCV */
 
-#if ! LINUX_SUBSYSTEM
-
 #define TASKRAM_SIZE (1024 * 1024)
 typedef struct thread_item_tag thread_item_t;
 static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1);
@@ -1984,8 +1964,6 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 	#warning unsupported context switch on this CPU
 #endif
 
-#endif /* ! LINUX_SUBSYSTEM */
-
 static volatile uint8_t threads_not_started = 1;
 
 static uint_fast32_t get_td_us(uint_fast32_t timeUS)
@@ -1999,7 +1977,7 @@ static uint_fast32_t get_td_ms(uint_fast32_t timeMS)
 }
 
 // WITHRTOS
-#if 0 && ! LINUX_SUBSYSTEM
+#if 0 && ! LINUXUBSYSTEM
 
 typedef struct thread_item_tag
 {
@@ -2528,26 +2506,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 	return task_sysfn(TASKFN_WAITLIST, & v);
 }
 
-#elif LINUX_SUBSYSTEM
-
-// заглушки для компиляции
-void task_scheduler_initialize(void) {}
-void task_scheduler_start(void) {}
-void task_ticker(void) {}
-// хотим завершить выполнение кванта, не дожидаясь прерывания
-void task_yield(void) {}
-
-int local_waitlist(PRLIST_ENTRY list, void * lock, uint_fast32_t timeMS)
-{
-	return 1;
-}
-
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
-{
-	return NULL;
-}
-
-#else /* ! LINUX_SUBSYSTEM */
+#else
 
 // Non-linux, non-scheduler
 
@@ -2646,7 +2605,7 @@ void task_yield(void)
 {
 }
 
-#endif /* ! LINUX_SUBSYSTEM */
+#endif /* */
 
 
 #if CPUSTYLE_ARM || CPUSTYLE_RISCV
@@ -2659,28 +2618,7 @@ void local_delay_initialize(void)
 	cpufreqMHz = CPU_FREQ / 1000000;
 }
 
-
-#if 0 //LINUX_SUBSYSTEM
-
-#include <linux/delay.h> // недоступно в юзерспейсе, только для модулей ядра
-
-void local_delay_us(uint_fast32_t timeUS)
-{
-	if (timeUS == 0)
-		return;
-
-	udelay(timeUS);
-}
-
-void local_delay_ms(uint_fast32_t timeMS)
-{
-	if (timeMS == 0)
-		return;
-
-	mdelay(timeMS);
-}
-
-#elif LINUX_SUBSYSTEM // 0
+#if 0
 
 static unsigned long
 local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
@@ -2768,9 +2706,7 @@ void /* RAMFUNC_NONILINE */ local_delay_us(uint_fast32_t timeUS)
 {
 	if (timeUS == 0)
 		return;
-#if 0 //LINUX_SUBSYSTEM
-	usleep(timeUS);
-#else
+#if 0
 	// Частота процессора приволится к мегагерцам.
 	const unsigned long top = local_delay_uscycles(timeUS, cpufreqMHz);
 	//
@@ -2778,15 +2714,13 @@ void /* RAMFUNC_NONILINE */ local_delay_us(uint_fast32_t timeUS)
 	for (t = 0; t < top; ++ t)
 	{
 	}
-#endif /* LINUX_SUBSYSTEM */
+#endif /*  */
 }
 // exactly as required
 //
 void local_delay_ms(uint_fast32_t timeMS)
 {
-#if 0 //LINUX_SUBSYSTEM
-	usleep(timeMS * 1000);
-#else
+#if 0
 	if (timeMS == 0)
 		return;
 	// Частота процессора приволится к мегагерцам.
@@ -2799,7 +2733,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 		{
 		}
 	}
-#endif /* LINUX_SUBSYSTEM */
+#endif /* */
 }
 
 #else
@@ -2818,7 +2752,7 @@ void local_delay_us(uint_fast32_t timeUS)
 
 #endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
 
-#if defined(__aarch64__) && ! LINUX_SUBSYSTEM
+#if defined(__aarch64__)
 
 void uncommon_trap_handler_1(void * frame) { PRINTF("uncommon_trap_handler_1:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x000
 void uncommon_trap_handler_2(void * frame) { PRINTF("uncommon_trap_handler_2:\n"); printhex64((uintptr_t) frame, frame, context_size()); for (;;) ; }	// 0x080
@@ -2896,7 +2830,7 @@ void SError_Handler(void * frame)
 	}
 }
 
-#elif (__CORTEX_A != 0) && ! defined(__aarch64__) && ! defined(__riscv) && ! LINUX_SUBSYSTEM
+#elif (__CORTEX_A != 0) && ! defined(__aarch64__) && ! defined(__riscv)
 
 //	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
 //	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
@@ -3124,7 +3058,7 @@ void Hyp_Handler(void)
 #endif /* __CORTEX_A */
 #endif
 
-#if CPUSTYLE_ARM && WITHSMPSYSTEM && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_ARM && WITHSMPSYSTEM
 
 #define SPINLOCKLOOPS 0xFFFFFFFF
 
@@ -3370,7 +3304,6 @@ void lclspin_enable(void)
 /* Работа с текущим ядром */
 void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int line)
 {
-#if ! LINUX_SUBSYSTEM
 #if WITHDEBUG
 	const unsigned core = arm_hardware_cpuid();
 #endif /* WITHDEBUG */
@@ -3421,14 +3354,11 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	lastline [core] = line;
 	lastirql [core] = newIRQL;
 #endif /* WITHDEBUG */
-
-#endif /* ! LINUX_SUBSYSTEM */
 }
 
 /* Работа с текущим ядром */
 void LowerIrql_DEBUG(IRQL_t newIRQL, const char * file, int line)
 {
-#if ! LINUX_SUBSYSTEM
 #if WITHDEBUG
 	const unsigned core = arm_hardware_cpuid();
 #endif /* WITHDEBUG */
@@ -3455,8 +3385,6 @@ void LowerIrql_DEBUG(IRQL_t newIRQL, const char * file, int line)
 	lastline [core] = line;
 	lastirql [core] = newIRQL;
 #endif /* WITHDEBUG */
-
-#endif /* ! LINUX_SUBSYSTEM */
 }
 
 void InitializeIrql(IRQL_t newIRQL)
@@ -3464,7 +3392,7 @@ void InitializeIrql(IRQL_t newIRQL)
 	LowerIrql(newIRQL);
 }
 
-#if (CPUSTYLE_ARM || CPUSTYLE_RISCV) && ! LINUX_SUBSYSTEM
+#if (CPUSTYLE_ARM || CPUSTYLE_RISCV)
 
 uint_fast8_t arm_hardware_clustersize(void)
 {
@@ -3597,15 +3525,12 @@ void arm_hardware_populte_second_initialize(void)
 #endif /* WITHSMPSYSTEM */
 #endif
 
-#if ! LINUX_SUBSYSTEM
-
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
 {
 	const IRQn_Type int_id = (IRQn_Type) int_ida;
 	//PRINTF("arm_hardware_set_handler: int_id=%u\n", (unsigned) int_id);
-#if LINUX_SUBSYSTEM
-#elif CPUSTYLE_AT91SAM7S
+#if CPUSTYLE_AT91SAM7S
 
 	const uint_fast32_t mask32 = (1UL << int_id);
 
@@ -3710,8 +3635,7 @@ void arm_hardware_enable_handler(uint_fast16_t int_ida)
 	//PRINTF("arm_hardware_disable_handler: int_id=%u\n", (unsigned) int_id);
 	ASSERT(arm_hardware_cpuid() == 0);
 
-#if LINUX_SUBSYSTEM
-#elif CPUSTYLE_AT91SAM7S
+#if CPUSTYLE_AT91SAM7S
 
 	const uint_fast32_t mask32 = (1UL << int_id);
 
@@ -3759,8 +3683,7 @@ void arm_hardware_disable_handler(uint_fast16_t int_ida)
 	//PRINTF("arm_hardware_disable_handler: int_id=%u\n", (unsigned) int_id);
 	ASSERT(arm_hardware_cpuid() == 0);
 
-#if LINUX_SUBSYSTEM
-#elif CPUSTYLE_AT91SAM7S
+#if CPUSTYLE_AT91SAM7S
 
 	const uint_fast32_t mask32 = (1UL << int_id);
 
@@ -3818,8 +3741,6 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 {
 	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);
 }
-
-#endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
 
 ////////////////////
 /// поддержка отложенного вызова user-mode функций
@@ -3917,23 +3838,17 @@ uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
 // 0..HARDWARE_NCORES-1
 uint_fast8_t board_dpc_coreid(void)
 {
-#if LINUX_SUBSYSTEM
-	return 0;
-#else /* LINUX_SUBSYSTEM */
 	return arm_hardware_cpuid();
-#endif /* LINUX_SUBSYSTEM */
 }
 // получить core id потока для обновления дисплея
 // 0..HARDWARE_NCORES-1
 uint_fast8_t board_dpc_display_coreid(void)
 {
-#if LINUX_SUBSYSTEM
-	return 0;
-#elif HARDWARE_NCORES > 2
+#if HARDWARE_NCORES > 2
 	return 1;
-#else /* LINUX_SUBSYSTEM */
+#else /* */
 	return 0;
-#endif /* LINUX_SUBSYSTEM */
+#endif /* */
 }
 
 // Запрос отложенного вызова user-mode функций

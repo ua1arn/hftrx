@@ -1653,7 +1653,7 @@ uintptr_t getfilled_dmabuffer32rx(void)
 }
 
 // Обработка сразу в прерывании
-#define TXSPOOLCOND (LINUX_SUBSYSTEM || (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM)))
+#define TXSPOOLCOND (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM))
 //#define TXSPOOLCOND 1	// Force in-interrupt 32rx stream parsing
 #if ! TXSPOOLCOND
 #define TXSPOOLCORE 3
@@ -4243,8 +4243,6 @@ void colmain_nextfb(void)
 	hardware_ltdc_main_set(RTMIXIDLCD, frame);
 #elif defined(RTMIXIDTV)
 	hardware_ltdc_main_set(RTMIXIDTV, frame);
-#elif LINUX_SUBSYSTEM
-	hardware_ltdc_main_set(0, frame);
 #endif /* WITHHDMITVHW */
 
 	drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера

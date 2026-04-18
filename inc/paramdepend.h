@@ -736,23 +736,7 @@ extern "C" {
 
 #endif
 
-#if LINUX_SUBSYSTEM
-
-	/* Linux targets: No any hardware IRQ control */
-
-	typedef uint_fast32_t IRQL_t;
-
-	#define IRQL_USER 				0
-	#define IRQL_IPC 				0
-	#define IRQL_SYSTEM 			0
-	#define IRQL_BOARD	 			0
-	#define IRQL_REALTIME 			0
-	#define IRQL_OVERREALTIME 		0
-
-	#define global_enableIRQ() do {  } while (0)
-	#define global_disableIRQ() do {  } while (0)
-
-#elif defined (__CORTEX_M)
+#if defined (__CORTEX_M)
 
 	/* Cortex-M targets */
 

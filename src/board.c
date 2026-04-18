@@ -783,7 +783,7 @@ prog_gpioreg(void)
 	//BOARD_FRONT_GREEN_SETSTATE(! glob_tx);
 #endif
 
-#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_XC7Z
 	xcz_rxtx_state(glob_tx);
 #if defined (PREAMP_MIO)
 #if TARGET_RFADC_PGA_EMIO			// если есть управление PGA, LTC6401 всегда включено
@@ -810,11 +810,7 @@ prog_gpioreg(void)
 	xc7z_gpio_output(TARGET_OPA2674_CTRL_EMIO);
 	xc7z_writepin(TARGET_OPA2674_CTRL_EMIO, ! glob_tx);
 #endif /* defined (TARGET_DAC_SLEEP_EMIO) */
-#endif /* CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM */
-
-#if LINUX_SUBSYSTEM
-	linux_rxtx_state(glob_tx);
-#endif /* LINUX_SUBSYSTEM */
+#endif /* CPUSTYLE_XC7Z */
 }
 
 /* 
@@ -4484,8 +4480,6 @@ static void board_fpga_loader_XDCFG(void)
 
 #endif /* WITHFPGALOAD_DCFG */
 
-#if ! LINUX_SUBSYSTEM
-
 #if (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
 
 #if CPUSTYLE_XC7Z
@@ -4924,8 +4918,6 @@ void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t 
 
 #endif /* (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR) */
 
-#endif /* ! LINUX_SUBSYSTEM */
-
 /* получения признака переполнения АЦП приёмного тракта */
 uint_fast8_t boad_fpga_adcoverflow(void)
 {
@@ -4952,7 +4944,7 @@ static void adcfilters_initialize(void);
 */
 void board_initialize(void)
 {
-#if CPUSTYLE_XC7Z && ! LINUX_SUBSYSTEM
+#if CPUSTYLE_XC7Z
 	xc7z_hardware_initialize();
 #endif /* CPUSTYLE_XC7Z */
 #if WITHFPGALOAD_DCFG
@@ -7463,9 +7455,7 @@ void board_savefpgastatus(uint_fast32_t status, uint_fast32_t fqmeter)
 #if defined(RTC1_TYPE)
 
 #include <time.h>
-	#if ! LINUX_SUBSYSTEM
 #include <sys/_timeval.h>
-#endif /* ! LINUX_SUBSYSTEM */
 
 /* поддержка получения времени */
 int _gettimeofday(struct timeval *p, void *tz)
@@ -7543,7 +7533,7 @@ int _gettimeofday(struct timeval *p, void *tz)
 	return 0;
 }
 
-#elif ! LINUX_SUBSYSTEM
+#else
 
 #include <time.h>
 #include <sys/_timeval.h>
@@ -7603,7 +7593,7 @@ void board_get_serialnr(uint_fast32_t * sn)
 #endif
 }
 
-#if WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM
+#if WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER
 
 #define FPGA_DECODE_CIC_SHIFT	(10u)
 #define FPGA_DECODE_FIR_SHIFT	(11u)
@@ -7669,7 +7659,7 @@ void iq_cic_test(uint32_t val)
 	hamradio_set_gdactest(val);
 }
 
-#endif /* WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM */
+#endif /* WITHIQSHIFT && ! CPUSTYLE_XC7Z && ! WITHISBOOTLOADER */
 
 #if 0
 //void chip_t113_id(void)

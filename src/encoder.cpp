@@ -441,7 +441,7 @@ void encoders_initialize(void)
 #endif /* WITHENCODER2 && ! ENCODER2_NOSPOOL */
 }
 
-#if 0 //WITHLVGL && WITHLVGL && LINUX_SUBSYSTEM
+#if 0 //WITHLVGL && WITHLVGL
 
 #include "lv_drivers/indev/evdev.h"
 

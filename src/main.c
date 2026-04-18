@@ -53,11 +53,7 @@ int
 //__attribute__ ((used))
 main(void)
 {
-#if LINUX_SUBSYSTEM
-	linux_subsystem_init();
-#else /* LINUX_SUBSYSTEM */
 	sysinit_gpio_initialize();
-#endif /* LINUX_SUBSYSTEM */
 
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
@@ -72,9 +68,6 @@ main(void)
 	initialize2();	/* вызывается при разрешённых прерываниях. */
 	application_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
-#if LINUX_SUBSYSTEM
-	linux_user_init();
-#endif /* LINUX_SUBSYSTEM */
 
 #if WITHISBOOTLOADER && WITHISBOOTLOADERFATFS
 	bootloader_fatfs_mainloop();

@@ -64,43 +64,6 @@ const uint8_t infobar_places[infobar_num_places] = {
 #endif /* defined(INFOBAR_CUSTOM) */
 };
 
-#if WITHFT8
-
-#include "ft8.h"
-
-const uint_fast32_t ft8_bands[] = {
-		1840000uL,
-		3573000uL,
-		5357000uL,
-		7074000uL,
-		10136000uL,
-		14074000uL,
-		18100000uL,
-		21074000uL,
-		24915000uL,
-		28074000uL,
-};
-
-enum {
-	ft8_band_default = 3, 						// 40m
-	ft8_txfreq_default = 1500,
-	ft8_txfreq_equal_default = 1,
-	ft8_mode = SUBMODE_USB,
-	ft8_bands_count = ARRAY_SIZE(ft8_bands),
-};
-
-typedef enum {
-	FT8_STATE_INIT,
-	FT8_STATE_TX_REQ,	// передача вызываемому корреспонденту рапорта
-	FT8_STATE_RX_ANS,	// прием от корреспондента ответа
-	FT8_STATE_TX_END,	// передача корреспонденту завершения связи 73
-	FT8_STATE_RX_ACK,	// прием от корреспондента подтверждения 73
-} ft8_state_t;
-
-ft8_state_t ft8_state;
-
-#endif /* #if WITHFT8 */
-
 void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 {
 	memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
@@ -120,38 +83,10 @@ void load_settings(void)
 	if (gui_nvram.freq_swipe_step == UINT8_MAX)
 		gui_nvram.freq_swipe_step = freq_swipe_step_default;
 
-#if WITHFT8
-	if ((uint8_t) gui_nvram.ft8_callsign[0] == UINT8_MAX)
-		local_snprintf_P(gui_nvram.ft8_callsign, ARRAY_SIZE(gui_nvram.ft8_callsign), "RA4ASN");
-
-	if ((uint8_t) gui_nvram.ft8_snr[0] == UINT8_MAX)
-		local_snprintf_P(gui_nvram.ft8_snr, ARRAY_SIZE(gui_nvram.ft8_snr), "-20");
-
-	if ((uint8_t) gui_nvram.ft8_qth[0] == UINT8_MAX)
-		local_snprintf_P(gui_nvram.ft8_qth, ARRAY_SIZE(gui_nvram.ft8_qth), "LO10");
-
-	if ((uint8_t) gui_nvram.ft8_end[0] == UINT8_MAX)
-		local_snprintf_P(gui_nvram.ft8_end, ARRAY_SIZE(gui_nvram.ft8_end), "RR73");
-
-	if ((uint8_t) gui_nvram.ft8_band == UINT8_MAX)
-		gui_nvram.ft8_band = ft8_band_default;
-
-	if (gui_nvram.ft8_txfreq_val == UINT32_MAX)
-		gui_nvram.ft8_txfreq_val = ft8_txfreq_default;
-
-	if (gui_nvram.ft8_txfreq_equal == UINT8_MAX)
-		gui_nvram.ft8_txfreq_equal = ft8_txfreq_equal_default;
-#endif /* WITHFT8 */
-
 	if (gui_nvram.micprofile != micprofile_default && gui_nvram.micprofile < NMICPROFCELLS)
 		hamradio_load_mic_profile(gui_nvram.micprofile, 1);
 	else
 		gui_nvram.micprofile = micprofile_default;
-
-#if WITHAD936XIIO
-	if (hamradio_get_freq_rx() >= NOXVRTUNE_TOP && ! get_ad936x_stream_status())
-		hamradio_set_freq(7012000uL);
-#endif /* WITHAD936XIIO */
 }
 
 void save_settings(void)
@@ -549,9 +484,6 @@ void gui_main_process(void)
 		gui_obj_create("btn_main07", COMMON_BUTTON_STYLE, 0, 0, "");				// btn_ft8
 		gui_obj_create("btn_main08", COMMON_BUTTON_STYLE, 0, 0, "Options");			// btn_Options
 
-#if WITHFT8
-		gui_obj_set_prop("btn_main07", GUI_OBJ_TEXT, "FT8");
-#endif /* WITHFT8 */
 #if WITHAUDIOSAMPLESREC
 		gui_obj_set_prop("btn_main06", GUI_OBJ_TEXT, "AF|samples");
 #endif /* WITHAUDIOSAMPLESREC */
@@ -633,22 +565,6 @@ void gui_main_process(void)
 				hamradio_set_gnotch(! hamradio_get_gnotch());
 				update = 1;
 			}
-#if WITHFT8
-			else if (gui_check_obj(name, "btn_main07"))
-			{
-				if (get_parent_window() != NO_PARENT_WINDOW)
-				{
-					close_window(OPEN_PARENT_WINDOW);
-					footer_buttons_state(CANCELLED);
-				}
-				else
-				{
-					window_t * const win = get_win(WINDOW_FT8);
-					open_window(win);
-					footer_buttons_state(DISABLED, "btn_main07");
-				}
-			}
-#endif /* WITHFT8 */
 #if WITHSPKMUTE
 			else if (gui_check_obj(name, "btn_main05"))
 			{
@@ -1169,10 +1085,6 @@ void gui_main_process(void)
 	}
 #endif /* WITHTHERMOLEVEL */
 
-#if WITHFT8 && ! LINUX_SUBSYSTEM
-	ft8_walkthrough_core0(seconds);
-#endif /* WITHFT8 && ! LINUX_SUBSYSTEM */
-
 #if WITHGUIDEBUG
 	if (debug_view)
 	{
@@ -1191,39 +1103,17 @@ static uint32_t mems[memory_cells_count];
 
 static uint32_t load_mems(uint_fast8_t cell, uint_fast8_t set)
 {
-#if LINUX_SUBSYSTEM && defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX)
-	if (cell == 0)
-		load_memory_cells(mems, memory_cells_count);
-
-	if (set)
-		hamradio_set_freq(mems[cell]);
-
-	return mems[cell];
-#else
 	return hamradio_load_memory_cells(cell, set);
-#endif /* LINUX_SUBSYSTEM && defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX) */
 }
 
 static void clean_mems(uint_fast8_t cell)
 {
-#if LINUX_SUBSYSTEM && defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX)
-	GUI_ASSERT(cell < memory_cells_count);
-	mems[cell] = 0;
-	write_memory_cells(mems, memory_cells_count);
-#else
 	hamradio_clean_memory_cells(cell);
-#endif /* LINUX_SUBSYSTEM && defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX) */
 }
 
 static void write_mems(uint_fast8_t cell)
 {
-#if LINUX_SUBSYSTEM && defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX)
-	GUI_ASSERT(cell < memory_cells_count);
-	mems[cell] = hamradio_get_freq_rx();
-	write_memory_cells(mems, memory_cells_count);
-#else
 	hamradio_save_memory_cells(cell);
-#endif /* LINUX_SUBSYSTEM && defined(NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_LINUX) */
 }
 
 void window_memory_process(void)
@@ -1349,12 +1239,6 @@ void window_bands_process(void)
 				gui_obj_set_prop(name, GUI_OBJ_LOCK, BUTTON_LOCKED);
 
 			gui_obj_set_prop(name, GUI_OBJ_PAYLOAD, bands[i].init_freq);
-
-#if WITHAD936XIIO || WITHAD936XDEV
-			if ((get_ad936x_stream_status() && bands[i].init_freq < NOXVRTUNE_TOP) ||
-					(! get_ad936x_stream_status() && bands[i].init_freq > NOXVRTUNE_TOP))
-				gui_obj_set_prop(name, GUI_OBJ_STATE, DISABLED);
-#endif /* WITHAD936XIIO || WITHAD936XDEV */
 		}
 
 		char * btn0 = get_obj_name_by_idx(TYPE_BUTTON, 0);
@@ -1378,12 +1262,6 @@ void window_bands_process(void)
 				gui_obj_set_prop(name, GUI_OBJ_LOCK, BUTTON_LOCKED);
 
 			gui_obj_set_prop(name, GUI_OBJ_PAYLOAD, bands[j - 1].init_freq);
-
-#if WITHAD936XIIO || WITHAD936XDEV
-			if ((get_ad936x_stream_status() && bands[j - 1].init_freq < NOXVRTUNE_TOP) ||
-					(! get_ad936x_stream_status() && bands[j - 1].init_freq > NOXVRTUNE_TOP))
-				gui_obj_set_prop(name, GUI_OBJ_STATE, DISABLED);
-#endif /* WITHAD936XIIO || WITHAD936XDEV */
 		}
 
 		btn0 = get_obj_name_by_idx(TYPE_BUTTON, i);
@@ -1437,15 +1315,9 @@ void window_options_process(void)
 		idx = gui_obj_create("btn_Display", LONG_BUTTON_STYLE, 0, 0, "Display|settings");
 		idx = gui_obj_create("btn_gui", LONG_BUTTON_STYLE, 0, 0, "GUI|settings");
 		idx = gui_obj_create("btn_Utils", LONG_BUTTON_STYLE, 0, 0, "Utils");
-#if WITHAD936XIIO || WITHAD936XDEV
-		idx = gui_obj_create("btn_936x", LONG_BUTTON_STYLE, 0, 0, "AD936x");
-#endif /* WITHAD936XIIO || WITHAD936XDEV */
 #if defined (RTC1_TYPE)
 		idx = gui_obj_create("btn_Time", LONG_BUTTON_STYLE, 0, 0, "Set time|& date");
 #endif /* defined (RTC1_TYPE) */
-#if LINUX_SUBSYSTEM
-		idx = gui_obj_create("btn_exit", LONG_BUTTON_STYLE, 0, 0, "Terminate|program");
-#endif /* LINUX_SUBSYSTEM */
 
 		gui_arrange_objects_from(get_obj_name_by_idx(TYPE_BUTTON, 0), idx + 1, 4, 6);
 
@@ -1477,14 +1349,6 @@ void window_options_process(void)
 			}
 			else if (gui_check_obj(name, "btn_Display"))
 				open_window(get_win(WINDOW_DISPLAY));
-#if LINUX_SUBSYSTEM
-			else if (gui_check_obj(name, "btn_exit"))
-				linux_exit();		// Terminate all
-#endif /* LINUX_SUBSYSTEM */
-#if WITHAD936XIIO || WITHAD936XDEV
-			else if (gui_check_obj(name, "btn_936x"))
-				open_window(get_win(WINDOW_AD936X));
-#endif /* WITHAD936XIIO || WITHAD936XDEV*/
 		}
 		break;
 
@@ -1600,9 +1464,6 @@ void window_utilites_process(void)
 #if WITHIQSHIFT
 		idx = gui_obj_create("btn_shift", LONG_BUTTON_STYLE, 0, 0, "IQ shift");
 #endif /* WITHIQSHIFT */
-#if LINUX_SUBSYSTEM && WITHEXTIO_LAN
-		idx = gui_obj_create("btn_stream", LONG_BUTTON_STYLE, 0, 0, "IQ LAN|Stream");
-#endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
 #if 0
 		idx = gui_obj_create("btn_kbdtest", LONG_BUTTON_STYLE, 0, 0, "Keyboard|test");
 #endif
@@ -1645,10 +1506,6 @@ void window_utilites_process(void)
 			else if (gui_check_obj(name, "btn_shift"))
 				open_window(get_win(WINDOW_SHIFT));
 #endif /* WITHIQSHIFT */
-#if LINUX_SUBSYSTEM && WITHEXTIO_LAN
-			else if (gui_check_obj(name, "btn_stream"))
-				open_window(get_win(WINDOW_EXTIOLAN));
-#endif /* LINUX_SUBSYSTEM && WITHEXTIO_LAN */
 			else if (gui_check_obj(name, "btn_kbdtest"))
 				open_window(get_win(WINDOW_KBD_TEST));
 #if WITHCPUFANPWM
@@ -2750,400 +2607,6 @@ void gui_open_sys_menu(void)
 
 // ****** Common windows ***********************************************************************
 
-#if WITHFT8
-
-static uint8_t parse_ft8buf = 0, idx_cqcall = 0, cq_filter = 0;
-static char cq_call[6][10];
-
-void hamradio_gui_parse_ft8buf(void)
-{
-	parse_ft8buf = 1;
-	idx_cqcall = 0;
-	memset(cq_call, 0, sizeof(cq_call));
-}
-
-static void parse_ft8_answer(char * str, gui_color_t * color, uint8_t * cq_flag)
-{
-	* color = COLORPIP_WHITE;
-	* cq_flag = 0;
-	char tmpstr[TEXT_ARRAY_SIZE];
-	char lexem[10][10]; // time; freq; snr; text 2 - 4 pcs
-	char * next;
-	strcpy(tmpstr, str);
-
-	char * l = strtok_r(tmpstr, " ", & next);
-	for (uint8_t i = 0; i < ARRAY_SIZE(lexem); i ++)
-	{
-		if (l == NULL)
-			break;
-
-		strcpy(lexem[i], l);
-		l = strtok_r(NULL, " ", & next);
-	}
-
-	if (! strcmp(lexem[3], "CQ") && strcmp(lexem[4], "CQ") && strcmp(lexem[4], "DX"))
-	{
-		* color = COLORPIP_GREEN;
-		* cq_flag = 1;
-		if (idx_cqcall < ARRAY_SIZE(cq_call))
-			strcpy(cq_call[idx_cqcall ++], lexem[4]);
-	}
-	else if (! strcmp(lexem[3], gui_nvram.ft8_callsign))
-	{
-		* color = COLORPIP_RED;
-		* cq_flag = 1;
-		strcpy(cq_call[idx_cqcall ++], lexem[4]);
-	}
-}
-
-void window_ft8_bands_process(void)
-{
-	if (is_win_init())
-	{
-		uint8_t cols = ft8_bands_count > 10 ? 4 : 5, interval = 15, x = 0, y = 0;
-		char btn_name[NAME_ARRAY_SIZE];
-		uint32_t rx_freq = hamradio_get_freq_rx();
-
-		for (int i = 0; i < ft8_bands_count; i ++)
-		{
-			local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_bands_%02d", i);
-			gui_obj_create(btn_name, COMMON_BUTTON_STYLE, 0, 0, "");
-			gui_obj_set_prop(btn_name, GUI_OBJ_TEXT_FMT, "%dk", ft8_bands[i] / 1000);
-			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, i);
-			gui_obj_set_prop(btn_name, GUI_OBJ_LOCK, rx_freq == ft8_bands[i]);
-		}
-
-		gui_arrange_objects_from("btn_bands_00", ft8_bands_count, cols, interval);
-
-		calculate_window_position(WINDOW_POSITION_AUTO);
-	}
-
-	GET_FROM_WM_QUEUE(WINDOW_FT8_BANDS)
-	{
-	case WM_MESSAGE_ACTION:
-		if (IS_BUTTON_PRESS)
-		{
-			gui_nvram.ft8_band = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
-			hamradio_set_freq(ft8_bands[gui_nvram.ft8_band]);
-			close_window(OPEN_PARENT_WINDOW);
-		}
-		break;
-
-	default:
-		break;
-	}
-}
-
-void window_ft8_settings_process(void)
-{
-	if (is_win_init())
-	{
-		uint8_t interval = 20;
-
-		gui_obj_create("btn_callsign", COMMON_BUTTON_STYLE, 0, 0, "Callsign");
-		gui_obj_create("btn_qth", COMMON_BUTTON_STYLE, 0, 0, "QTH");
-		gui_obj_create("btn_freq", COMMON_BUTTON_STYLE, 0, 0, "TX freq");
-		gui_obj_create("btn_freq_eq", COMMON_BUTTON_STYLE, 0, 0, "TX on RX|freq");
-		gui_obj_create("btn_time0", COMMON_BUTTON_STYLE, 0, 0, "Time >0<");
-		gui_obj_create("btn_OK", SMALL_BUTTON_STYLE, 0, 0, "OK");
-
-		gui_obj_create("lbl_callsign", COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_qth", COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txfreq", COLORPIP_WHITE, 10);
-
-		gui_arrange_objects_from("btn_callsign", 4, 1, interval);
-		gui_arrange_objects_from("btn_freq_eq", 3, 3, interval);
-
-		gui_obj_align_to("lbl_callsign", "btn_callsign", ALIGN_RIGHT_UP_MID, interval);
-		gui_obj_align_to("lbl_qth", "btn_qth", ALIGN_RIGHT_UP_MID, interval);
-		gui_obj_align_to("lbl_txfreq", "btn_freq", ALIGN_RIGHT_UP_MID, interval);
-
-		gui_obj_set_prop("lbl_txfreq", GUI_OBJ_TEXT_FMT, "%d Hz", (int) gui_nvram.ft8_txfreq_val);
-		gui_obj_set_prop("lbl_callsign", GUI_OBJ_TEXT_FMT, "%s", gui_nvram.ft8_callsign);
-		gui_obj_set_prop("lbl_qth", GUI_OBJ_TEXT_FMT, "%s", gui_nvram.ft8_qth);
-		gui_obj_set_prop("btn_freq_eq", GUI_OBJ_LOCK, gui_nvram.ft8_txfreq_equal);
-
-		calculate_window_position(WINDOW_POSITION_AUTO);
-	}
-
-	GET_FROM_WM_QUEUE(WINDOW_FT8_SETTINGS)
-	{
-	case WM_MESSAGE_ACTION:
-		if (IS_BUTTON_PRESS)
-		{
-			if (gui_check_obj(name, "btn_OK"))
-				close_window(OPEN_PARENT_WINDOW);
-			else if (gui_check_obj(name, "btn_freq"))
-			{
-				int f = gui_nvram.ft8_txfreq_val;
-				keyboard_edit_digits(& f);
-				uint32_t l = hamradio_get_low_bp(0) * 10;
-				uint32_t h = hamradio_get_high_bp(0) * 10;
-				gui_nvram.ft8_txfreq_val = (f >= l && f <= h) ? f : gui_nvram.ft8_txfreq_val;
-			}
-			else if (gui_check_obj(name, "btn_time0"))
-			{
-		#if defined (RTC1_TYPE)
-				uint_fast8_t hour, minute, seconds;
-				board_rtc_cached_gettime(& hour, & minute, & seconds);
-				seconds = 0;
-				board_rtc_settime(hour, minute, seconds);
-		#endif /* defined (RTC1_TYPE) */
-			}
-			else if (gui_check_obj(name, "btn_freq_eq"))
-			{
-				gui_nvram.ft8_txfreq_equal = ! gui_nvram.ft8_txfreq_equal;
-				gui_obj_set_prop("btn_freq_eq", GUI_OBJ_LOCK, gui_nvram.ft8_txfreq_equal);
-			}
-			else if (gui_check_obj(name, "btn_callsign"))
-				keyboard_edit_string((uintptr_t) & gui_nvram.ft8_callsign, 10, 0);
-			else if (gui_check_obj(name, "btn_qth"))
-				keyboard_edit_string((uintptr_t) & gui_nvram.ft8_qth, 10, 0);
-		}
-
-		break;
-
-	default:
-		break;
-	}
-}
-
-void window_ft8_process(void)
-{
-	static uint8_t update = 0, selected_label_cq = 255, selected_label_tx = 0;
-	static uint8_t backup_mode = 0, work = 0, labels_tx_update = 0;
-	static uint32_t backup_freq = 0, backup_zoom = 0;
-	static const int snr = -10;
-	static uint8_t viewtemp;
-	char nameobj[NAME_ARRAY_SIZE];
-	char buf[NAME_ARRAY_SIZE];
-
-	if (is_win_init())
-	{
-		uint8_t interval = 20;
-
-		gui_obj_create("btn_tx", COMMON_BUTTON_STYLE, 0, 0, "Transmit");
-		gui_obj_create("btn_filter", COMMON_BUTTON_STYLE, 0, 0, "View|all");
-		gui_obj_create("btn_bands", COMMON_BUTTON_STYLE, 0, 0, "FT8|bands");
-		gui_obj_create("btn_settings", COMMON_BUTTON_STYLE, 0, 0, "Edit|settings");
-		gui_obj_create("lbl_cq_title", COLORPIP_GREEN, 3);
-		gui_obj_create("lbl_tx_title", COLORPIP_GREEN, 3);
-		gui_obj_create("lbl_cq0", COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq1", COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq2", COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq3", COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq4", COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_cq5", COLORPIP_WHITE, 8);
-		gui_obj_create("lbl_txmsg0", COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txmsg1", COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txmsg2", COLORPIP_WHITE, 10);
-		gui_obj_create("lbl_txmsg3", COLORPIP_WHITE, 10);
-		gui_obj_create("tf_ft8", 37, 26, UP, & msgothic_11x13_mono);
-
-		gui_obj_set_prop("lbl_cq_title", GUI_OBJ_TEXT, "CQ:");
-		gui_obj_set_prop("lbl_cq_title", GUI_OBJ_STATE, DISABLED);
-		gui_obj_set_prop("lbl_tx_title", GUI_OBJ_TEXT, "TX:");
-		gui_obj_set_prop("lbl_tx_title", GUI_OBJ_STATE, DISABLED);
-		gui_obj_set_prop("lbl_txmsg0", GUI_OBJ_TEXT_FMT, "CQ %s %s", gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
-		gui_obj_set_prop("lbl_txmsg1", GUI_OBJ_TEXT, "");
-		gui_obj_set_prop("lbl_txmsg2", GUI_OBJ_TEXT, "");
-		gui_obj_set_prop("lbl_txmsg3", GUI_OBJ_TEXT, "");
-		gui_obj_set_prop("lbl_cq0", GUI_OBJ_PAYLOAD, 0);
-		gui_obj_set_prop("lbl_cq1", GUI_OBJ_PAYLOAD, 1);
-		gui_obj_set_prop("lbl_cq2", GUI_OBJ_PAYLOAD, 2);
-		gui_obj_set_prop("lbl_cq3", GUI_OBJ_PAYLOAD, 3);
-		gui_obj_set_prop("lbl_cq4", GUI_OBJ_PAYLOAD, 4);
-		gui_obj_set_prop("lbl_cq5", GUI_OBJ_PAYLOAD, 5);
-		gui_obj_set_prop("lbl_txmsg0", GUI_OBJ_PAYLOAD, 10);
-		gui_obj_set_prop("lbl_txmsg1", GUI_OBJ_PAYLOAD, 11);
-		gui_obj_set_prop("lbl_txmsg2", GUI_OBJ_PAYLOAD, 12);
-		gui_obj_set_prop("lbl_txmsg3", GUI_OBJ_PAYLOAD, 13);
-
-		gui_obj_align_to("lbl_cq_title", "tf_ft8", ALIGN_RIGHT_UP, interval);
-		gui_obj_align_to("lbl_tx_title", "lbl_cq_title", ALIGN_RIGHT_UP, interval * 4);
-
-		gui_obj_align_to("lbl_cq0", "lbl_cq_title", ALIGN_DOWN_LEFT, interval);
-		gui_arrange_objects_from("lbl_cq0", 6, 1, interval);
-
-		gui_obj_align_to("lbl_txmsg0", "lbl_tx_title", ALIGN_DOWN_LEFT, interval);
-		gui_arrange_objects_from("lbl_txmsg0", 4, 1, interval);
-
-		gui_obj_align_to("btn_tx", "lbl_txmsg3", ALIGN_DOWN_LEFT, interval);
-		gui_arrange_objects_from("btn_tx", 4, 2, interval);
-
-#if ! WITHTX
-		gui_obj_set_prop("btn_tx", GUI_OBJ_STATE, DISABLED);
-#endif
-
-		local_snprintf_P(buf, NAME_ARRAY_SIZE, "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands[gui_nvram.ft8_band] / 1000, hour, minute, seconds);
-		window_set_title(buf);
-		calculate_window_position(WINDOW_POSITION_FULLSCREEN);
-
-		if (! work)
-		{
-			backup_freq = hamradio_get_freq_rx();
-			backup_mode = hamradio_get_submode();
-			backup_zoom = hamradio_get_gzoomxpow2();
-			viewtemp = hamradio_get_viewstyle();
-			hamradio_settemp_viewstyle(VIEW_LINE);
-
-			hamradio_set_freq(ft8_bands[gui_nvram.ft8_band]);
-			hamradio_change_submode(ft8_mode, 0);
-			hamradio_set_gzoomxpow2(BOARD_FFTZOOM_POW2MAX);
-			memset(ft8.rx_text, '\0', ft8_text_records * ft8_text_length);
-			ft8_set_state(1);
-		}
-		work = 0;
-
-		hamradio_set_lock(1);
-		display2_set_page_temp(display_getpagegui());
-	}
-
-	if (parse_ft8buf)
-	{
-		parse_ft8buf = 0;
-		selected_label_cq = 255;
-
-		memset(cq_call, 0, sizeof(cq_call));
-
-		for (uint8_t i = 0; i < ft8.decoded_messages; i ++)
-		{
-			char * msg = ft8.rx_text[i];
-			remove_end_line_spaces(msg);
-			if (! strlen(msg)) break;
-			gui_color_t colorline;
-			uint8_t cq_flag = 0;
-			parse_ft8_answer(msg, & colorline, & cq_flag);
-
-			if (cq_filter)	// выводить только общие вызовы
-			{
-				if (cq_flag)
-					gui_obj_set_prop("tf_ft8", GUI_OBJ_TEXT, msg, colorline);
-			}
-			else			// выводить все сообщения
-				gui_obj_set_prop("tf_ft8", GUI_OBJ_TEXT, msg, colorline);
-		}
-
-		update = 1;
-	}
-
-	GET_FROM_WM_QUEUE(WINDOW_FT8)
-	{
-	case WM_MESSAGE_ACTION:
-		if (IS_BUTTON_PRESS)
-		{
-			if (gui_check_obj(name, "btn_tx"))
-			{
-				local_snprintf_P(nameobj, NAME_ARRAY_SIZE, "lbl_txmsg%d", selected_label_tx);
-				strncpy(ft8.tx_text, gui_obj_get_string_prop(nameobj, GUI_OBJ_TEXT), ft8_text_length - 1);
-				ft8.tx_freq = (float) gui_nvram.ft8_txfreq_val;
-				ft8_do_encode();
-			}
-			else if (gui_check_obj(name, "btn_filter"))
-			{
-				cq_filter = ! cq_filter;
-				gui_obj_set_prop("btn_filter", GUI_OBJ_TEXT_FMT, "%s", cq_filter ? "View|CQ only" : "View|all");
-			}
-			else if (gui_check_obj(name, "btn_settings"))
-			{
-				work = 1;
-				window_t * win2 = get_win(WINDOW_FT8_SETTINGS);
-				open_window(win2);
-			}
-			else if (gui_check_obj(name, "btn_bands"))
-			{
-				work = 1;
-				window_t * win2 = get_win(WINDOW_FT8_BANDS);
-				open_window(win2);
-			}
-		}
-		else if (IS_LABEL_PRESS)
-		{
-			int p = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
-			if (p < 10)
-			{
-				selected_label_cq = p;
-				labels_tx_update = 1;
-			}
-			else
-				selected_label_tx = p - 10;
-			update = 1;
-		}
-
-		break;
-
-	case WM_MESSAGE_CLOSE:
-		if (! work)
-		{
-			hamradio_set_freq(backup_freq);
-			hamradio_change_submode(backup_mode, 0);
-			hamradio_settemp_viewstyle(viewtemp);
-			hamradio_set_gzoomxpow2(backup_zoom);
-			ft8_set_state(0);
-			save_settings();
-		}
-		display2_set_page_temp(display_getpage0());
-		return;
-
-		break;
-
-	case WM_MESSAGE_UPDATE:
-		update = 1;
-		break;
-
-	default:
-		break;
-	}
-
-	if (update)
-	{
-		update = 0;
-
-		for (uint8_t i = 0; i < 6; i ++)
-		{
-			local_snprintf_P(nameobj, NAME_ARRAY_SIZE, "lbl_cq%d", i);
-
-			if (strlen(cq_call[i]))
-			{
-				gui_obj_set_prop(nameobj, GUI_OBJ_TEXT, cq_call[i]);
-				gui_obj_set_prop(nameobj, GUI_OBJ_VISIBLE, VISIBLE);
-
-				if (gui_obj_get_int_prop(nameobj, GUI_OBJ_PAYLOAD) == selected_label_cq)
-					gui_obj_set_prop(nameobj, GUI_OBJ_COLOR, COLORPIP_YELLOW);
-			}
-			else
-			{
-				gui_obj_set_prop(nameobj, GUI_OBJ_VISIBLE, NON_VISIBLE);
-				gui_obj_set_prop(nameobj, GUI_OBJ_COLOR, COLORPIP_WHITE);
-			}
-		}
-
-		for (uint8_t i = 0; i < 4; i ++)
-		{
-			local_snprintf_P(nameobj, NAME_ARRAY_SIZE, "lbl_txmsg%d", i);
-			gui_obj_set_prop(nameobj, GUI_OBJ_COLOR, i == selected_label_tx ? COLORPIP_YELLOW : COLORPIP_WHITE);
-		}
-
-		if (labels_tx_update)
-		{
-			labels_tx_update = 0;
-			gui_obj_set_prop("lbl_txmsg1", GUI_OBJ_TEXT_FMT, "%s %s %s", cq_call[selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
-			gui_obj_set_prop("lbl_txmsg2", GUI_OBJ_TEXT_FMT, "%s %s %s", cq_call[selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_snr);
-			gui_obj_set_prop("lbl_txmsg3", GUI_OBJ_TEXT_FMT, "%s %s %s", cq_call[selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_end);
-		}
-
-		local_snprintf_P(buf, NAME_ARRAY_SIZE, "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands[gui_nvram.ft8_band] / 1000, hour, minute, seconds);
-		window_set_title(buf);
-	}
-}
-#else
-void window_ft8_bands_process(void) 	{}
-void window_ft8_settings_process(void) 	{}
-void window_ft8_process(void) 			{}
-#endif /* WITHFT8 */
-
-// *********************************************************************************************************************************************************************
-
 void window_af_process(void)
 {
 	static enc_var_t bp_t;
@@ -4213,70 +3676,6 @@ void window_lfm_spectre_process(void)
 #endif /* WITHLFM  */
 }
 
-#if WITHEXTIO_LAN
-
-void stream_log(char * str)
-{
-	if (get_parent_window() == WINDOW_EXTIOLAN)
-	{
-		textfield_add_string("tf_log", str, COLORPIP_WHITE);
-		put_to_wm_queue(get_win(WINDOW_EXTIOLAN), WM_MESSAGE_UPDATE);
-	}
-}
-
-void window_stream_process(void)
-{
-	static uint8_t update = 0;
-
-	if (is_win_init())
-	{
-		gui_obj_create("tf_log", 50, 15, DOWN, & msgothic_11x13_mono);
-		gui_obj_create("btn_state", LONG_BUTTON_STYLE, 0, 0, "");
-
-		gui_obj_set_prop("tf_log", GUI_OBJ_POS, 0, 0);
-		gui_obj_align_to("btn_state", "tf_log", ALIGN_DOWN_MID, 10);
-
-		update = 1;
-		calculate_window_position(WINDOW_POSITION_AUTO);
-	}
-
-	GET_FROM_WM_QUEUE(WINDOW_EXTIOLAN)
-	{
-	case WM_MESSAGE_ACTION:
-		if (IS_BUTTON_PRESS)
-		{
-			if (gui_check_obj(name, "btn_state"))
-			{
-				if (stream_get_state())
-					server_stop();
-				else
-					server_start();
-			}
-			update = 1;
-		}
-		break;
-
-	case WM_MESSAGE_UPDATE:
-		update = 1;
-		break;
-
-	default:
-		break;
-	}
-
-	if (update)
-	{
-		update = 0;
-
-		const char * states[] = { "Start server", "Stop listening", "Disconnect &|stop server", };
-		gui_obj_set_prop("btn_state", GUI_OBJ_TEXT, states[stream_get_state()]);
-	}
-}
-
-#else
-void window_stream_process(void) {}
-#endif /* # WITHEXTIO_LAN */
-
 void window_wnbconfig_process(void)
 {
 #if WITHWNB
@@ -4337,171 +3736,6 @@ void window_wnbconfig_process(void)
 	}
 #endif /* WITHWNB */
 }
-
-#if WITHAD936XIIO
-void window_ad936x_process(void)
-{
-	uint8_t update = 0;
-	static int status = 10, gain_mode = 0, gain_val = 20;
-
-	const char * status_str[3] = { "AD936x found", "Error", "Streaming" };
-	const char * button_str[3] = { "Start", "Find", "Stop" };
-	const char * gainmode_str[2] = { "Gain|manual", "Gain|auto" };
-	static char uri[20] = "usb:";
-
-	if (is_win_init())
-	{
-		gui_obj_create("lbl_status", COLORPIP_WHITE, 9);
-		gui_obj_create("lbl_status_str", COLORPIP_WHITE, 20);
-		gui_obj_create("lbl_iio_name", COLORPIP_WHITE, 9);
-		gui_obj_create("lbl_iio_val", COLORPIP_WHITE, 20);
-		gui_obj_create("btn_uri_edit", COMMON_BUTTON_STYLE, 0, 0, "Edit...");
-		gui_obj_create("btn_action", COMMON_BUTTON_STYLE, 0, 0, "Find");
-		gui_obj_create("btn_gain_type", COMMON_BUTTON_STYLE, 0, 0, "Gain|manual");
-		gui_obj_create("btn_gain_add", SMALL_BUTTON_STYLE, 0, 0, "+");
-		gui_obj_create("btn_gain_sub", SMALL_BUTTON_STYLE, 0, 0, "-");
-
-		gui_obj_set_prop("lbl_status", GUI_OBJ_POS, 0, 0);
-		gui_obj_set_prop("lbl_status", GUI_OBJ_TEXT, "Status: ");
-		gui_obj_align_to("lbl_status_str", "lbl_status", ALIGN_RIGHT_UP, 10);
-		gui_obj_set_prop("lbl_status_str", GUI_OBJ_TEXT, "");
-		gui_obj_align_to("lbl_iio_name", "lbl_status", ALIGN_DOWN_LEFT, 10);
-		gui_obj_set_prop("lbl_iio_name", GUI_OBJ_TEXT, "URI:    ");
-		gui_obj_align_to("lbl_iio_val", "lbl_iio_name", ALIGN_RIGHT_UP, 10);
-		gui_obj_align_to("btn_uri_edit", "lbl_iio_name", ALIGN_DOWN_LEFT, 10);
-		gui_obj_align_to("btn_action", "btn_uri_edit", ALIGN_RIGHT_UP, 10);
-		gui_obj_align_to("btn_gain_type", "btn_action", ALIGN_DOWN_LEFT, 10);
-		gui_obj_align_to("btn_gain_sub", "btn_gain_type", ALIGN_LEFT_UP, 10);
-		gui_obj_set_prop("btn_gain_sub", GUI_OBJ_PAYLOAD, -1);
-		gui_obj_align_to("btn_gain_add", "btn_gain_type", ALIGN_RIGHT_UP, 10);
-		gui_obj_set_prop("btn_gain_add", GUI_OBJ_PAYLOAD, 1);
-
-		enable_window_move();
-		calculate_window_position(WINDOW_POSITION_AUTO);
-		update = 1;
-	}
-
-	GET_FROM_WM_QUEUE(WINDOW_AD936X)
-	{
-	case WM_MESSAGE_ACTION:
-		if (IS_BUTTON_PRESS)
-		{
-			if (gui_check_obj(name, "btn_uri_edit"))
-				keyboard_edit_string((uintptr_t) & uri, ARRAY_SIZE(uri), 0);
-			else if (gui_check_obj(name, "btn_action"))
-			{
-				if (status == 10 || status == 1)
-					status = iio_ad936x_find(uri);
-				else if (status == 0)
-					status = iio_ad936x_start(uri);
-				else if (status == 2)
-					status = iio_ad936x_stop();
-
-				update = 1;
-			}
-			else if (gui_check_obj(name, "btn_gain_type"))
-			{
-				gain_mode = ! gain_mode;
-				iio_ad936x_set_gain(gain_mode, gain_val);
-				update = 1;
-			}
-			else if (gui_check_obj(name, "btn_gain_add") || gui_check_obj(name, "btn_gain_sub"))
-			{
-				int p = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
-
-				if (gain_val + p > 3 || gain_val + p < 70)
-				{
-					gain_val += p;
-					iio_ad936x_set_gain(gain_mode, gain_val);
-					update = 1;
-				}
-			}
-		}
-	break;
-
-	case WM_MESSAGE_UPDATE:
-		update = 1;
-		break;
-
-	default:
-		break;
-	}
-
-	if (update)
-	{
-		update = 0;
-
-		gui_obj_set_prop("lbl_iio_val", GUI_OBJ_TEXT_FMT, "%s", uri);
-		gui_obj_set_prop("btn_gain_type", GUI_OBJ_STATE, status != 2 ? DISABLED : CANCELLED);
-		gui_obj_set_prop("btn_gain_add", GUI_OBJ_STATE, (status == 2 && ! gain_mode) ? CANCELLED : DISABLED);
-		gui_obj_set_prop("btn_gain_sub", GUI_OBJ_STATE, (status == 2 && ! gain_mode) ? CANCELLED : DISABLED);
-
-		if (gain_mode)
-			gui_obj_set_prop("btn_gain_type", GUI_OBJ_TEXT, "Gain|auto");
-		else
-			gui_obj_set_prop("btn_gain_type", GUI_OBJ_TEXT_FMT, "Gain|%d dB", gain_val);
-
-		if (status < 10)
-		{
-			gui_obj_set_prop("lbl_status_str", GUI_OBJ_TEXT_FMT, "%s",  status_str[status]);
-			gui_obj_set_prop("btn_action", GUI_OBJ_TEXT_FMT, "%s", button_str[status]);
-		}
-	}
-}
-#elif WITHAD936XDEV
-void window_ad936x_process(void)
-{
-	static uint32_t freq = 7012000;
-
-	if (is_win_init())
-	{
-		uint8_t p = ad936xdev_present();
-		uint8_t s = get_ad936x_stream_status();
-
-		gui_obj_create("btn_switch", LONG_BUTTON_STYLE, 0, 0, "");
-
-		if (s)
-			gui_obj_set_prop("btn_switch", GUI_OBJ_TEXT, "Switch|to HF");
-		else
-		{
-			gui_obj_set_prop("btn_switch", GUI_OBJ_TEXT_FMT, "%s", p ? "Switch|to UHF" : "AD936x|not found");
-			gui_obj_set_prop("btn_switch", GUI_OBJ_STATE, p ? CANCELLED : DISABLED);
-		}
-
-		calculate_window_position(WINDOW_POSITION_AUTO);
-	}
-
-	GET_FROM_WM_QUEUE(WINDOW_AD936X)
-	{
-	case WM_MESSAGE_ACTION:
-		if (IS_BUTTON_PRESS)
-		{
-			if (gui_check_obj(name, "btn_switch"))
-			{
-				if (get_ad936x_stream_status())
-				{
-					gui_obj_set_prop("btn_switch", GUI_OBJ_TEXT, "Switch|to UHF");
-					ad936xdev_sleep();
-					hamradio_set_freq(freq);
-				}
-				else
-				{
-					gui_obj_set_prop("btn_switch", GUI_OBJ_TEXT, "Switch|to HF");
-					ad936xdev_wake();
-					freq = hamradio_get_freq_rx();
-					hamradio_set_freq(433000000);
-					ad936x_set_rtstune_offset(0);
-				}
-			}
-		}
-
-	default:
-		break;
-	}
-}
-#else
-void window_ad936x_process(void) {}
-#endif /* WITHAD936XDEV */
 
 void window_as_process(void)
 {

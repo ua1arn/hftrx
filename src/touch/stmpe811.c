@@ -280,9 +280,9 @@ void board_tsc_initialize(void)
 	unsigned chip_id;
 	unsigned ver;
 
-#if (WITHTWISW) && ! LINUX_SUBSYSTEM
+#if (WITHTWISW)
 	i2cp_intiialize(& tp_i2cp, I2CP_I2C1, 400000);
-#endif /* (WITHTWISW) && ! LINUX_SUBSYSTEM */
+#endif /* (WITHTWISW) */
 	/* Soft reset */
 	i2cperiph_write8(STMPE811_I2C_ADDR8, STMPE811_REG_SYS_CTRL1, 0x02);
 

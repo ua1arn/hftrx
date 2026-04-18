@@ -249,7 +249,7 @@ typedef struct
 	const void * dzpv;
 } lv_compat_t;
 
-#if 0//defined (G2D_ROT) && ! LINUX_SUBSYSTEM
+#if 0//defined (G2D_ROT)
 
 	#include "misc/lv_types.h"
 	#include "misc/lv_color.h"
@@ -281,7 +281,7 @@ typedef struct
 										(__draw_task),                              \
 										(__draw_dsc))
 
-#endif /* defined (G2D_ROT) && ! LINUX_SUBSYSTEM */
+#endif /* defined (G2D_ROT) */
 
 #endif /* WITHLVGL */
 

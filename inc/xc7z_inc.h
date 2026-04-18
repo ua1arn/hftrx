@@ -1,9 +1,6 @@
 #ifndef XC7Z_INC_H_INCLUDED   /* prevent circular inclusions */
 #define XC7Z_INC_H_INCLUDED   /* by using protection macros */
-#if LINUX_SUBSYSTEM
-	/* No Vivado headers used */
-
-#elif defined(XC7Z010) && WITHPS7BOARD_ZM10
+#if defined(XC7Z010) && WITHPS7BOARD_ZM10
 	#include "lib/zynq/src_7010_zm/xparameters.h"
 	#include "lib/zynq/src_7010_zm/xil_exception.h"
 	#include "lib/zynq/src_7010_zm/xil_types.h"

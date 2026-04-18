@@ -1049,11 +1049,6 @@ void spool_0p128(void);	// OPERA support
 		#define TUNE_TOP (DUCDDC_FREQ * 1 + 56000000L)		/* верхняя частота настройки */
 		//#define TUNE_TOP 56000000L		/* верхняя частота настройки */
 		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки без трансвертора */
-	#elif BANDSELSTYLERE_UPCONV56M && XVTR_R820T2
-		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
-		#define NOXVRTUNE_TOP 56000000L		/* верхняя частота настройки без AD936x */
-		#define XVRTUNE_BOTTOM 70000000L		/* нижняя частота настройки AD936x */
-		#define TUNE_TOP 3000000000L		/* верхняя частота настройки */
 	#elif BANDSELSTYLERE_UPCONV56M
 		#define TUNE_BOTTOM 30000L		/* 30 kHz нижняя частота настройки */
 		#define TUNE_TOP 56000000L		/* верхняя частота настройки */

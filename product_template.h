@@ -223,22 +223,6 @@
 	#include "boards/arm_rockchip_ctlstyle_opi3b.h"	// Плата Orange Pi OPI 3B RK3566
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_rockchip_cpustyle_opi3b.h"	// Плата Orange Pi OPI 3B RK3566
-#elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
-	#include "boards/linux_rockchip_ctlstyle_opicm4_xc7a50t_pcie_lite.h"
-	#include "paramdepend.h"
-	#include "boards/linux_rockchip_cpustyle_opicm4_xc7a50t_pcie_lite.h"
-#elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
-	#include "boards/linux_rockchip_ctlstyle_opicm4_xc7a50t_pcie_full.h"
-	#include "paramdepend.h"
-	#include "boards/linux_rockchip_cpustyle_opicm4_xc7a50t_pcie_full.h"
-#elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
-	#include "boards/linux_rockchip_ctlstyle_opicm4_xc7a100t_pcie.h"
-	#include "paramdepend.h"
-	#include "boards/linux_rockchip_cpustyle_opicm4_xc7a100t_pcie.h"
-#elif CPUSTYLE_RK356X && CTLSTYLE_STORCH_V7 && LINUX_SUBSYSTEM && 0
-	#include "boards/linux_allwinner_ctlstyle_opi4pro_xc7a100t.h"
-	#include "paramdepend.h"
-	#include "boards/linux_allwinner_cpustyle_opi4pro_xc7a100t.h"
 #else
 	#define LCDMODE_DUMMY	1
 	#define	BOARDPOWERMAX 1

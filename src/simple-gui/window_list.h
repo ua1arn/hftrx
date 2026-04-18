@@ -31,14 +31,8 @@
     X(3D,                UTILS,         ALIGN_CENTER_X, "Donut 3d ASCII demo",       1, window_3d_process) 				\
 	X(SWR_SCANNER,       UTILS,         ALIGN_CENTER_X, "SWR band scanner",          0, window_swrscan_process) 		\
 	X(AP_REVERB_SETT,    AUDIOSETTINGS, ALIGN_CENTER_X, "Reverberator settings",     1, window_ap_reverb_process) 		\
-    X(FT8,               DUMMY,         ALIGN_CENTER_X, "FT8 terminal",              1, window_ft8_process) 			\
-    X(FT8_BANDS,         FT8,           ALIGN_CENTER_X, "FT8 bands",                 0, window_ft8_bands_process) 		\
-    X(FT8_SETTINGS,      FT8,           ALIGN_CENTER_X, "FT8 settings",              0, window_ft8_settings_process) 	\
 	X(SHIFT,             UTILS,         ALIGN_CENTER_X, "IQ shift",                  1, window_shift_process) 			\
     X(LFM,               UTILS,         ALIGN_RIGHT_X,  "LFM",                       1, window_lfm_process) 			\
     X(LFM_SPECTRE,       LFM,           ALIGN_CENTER_X, "LFM spectre draw",          1, window_lfm_spectre_process)		\
-	X(EXTIOLAN,          UTILS,         ALIGN_CENTER_X, "LAN IQ Stream server",      1, window_stream_process) 			\
 	X(WNBCONFIG,         RECEIVE,       ALIGN_CENTER_X, "WNB config",                1, window_wnbconfig_process) 		\
-	X(AD936X,            OPTIONS,       ALIGN_CENTER_X, "AD936x config",             1, window_ad936x_process) 			\
-	X(AS,                DUMMY,         ALIGN_CENTER_X, "AF samples",                1, window_as_process)				\
 	X(FANPWM,            UTILS,         ALIGN_CENTER_X, "FAN PWM control",           1, window_fanpwm_process)

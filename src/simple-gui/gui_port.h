@@ -19,11 +19,8 @@
 #define GUI_COLOR_BUTTON_PR_LOCKED		TFTRGB(0x3C, 0x3C, 0x00)
 #define GUI_COLOR_BUTTON_DISABLED		GUI_COLOR_GRAY
 
-#if LINUX_SUBSYSTEM
-	#define GUI_DEBUG_PRINT	printf
-#else
-	#define GUI_DEBUG_PRINT	PRINTF
-#endif
+#define GUI_DEBUG_PRINT	PRINTF
+
 
 #define GUI_ASSERT(v) do { if ((v) == 0) { \
 		GUI_DEBUG_PRINT("%s(%d): Assert '%s'\n", __FILE__, __LINE__, (# v)); \

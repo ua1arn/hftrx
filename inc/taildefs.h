@@ -13,8 +13,6 @@ extern "C" {
 	#error PLEASE, DO NOT USE THIS FILE DIRECTLY. USE FILE "hardware.h" INSTEAD.
 #endif
 
-#if ! (WITHSPIDEV && LINUX_SUBSYSTEM)
-
 typedef enum
 {
 	SPIC_MODE0,
@@ -46,8 +44,6 @@ typedef enum
 	//
 	SPIC_SPEEDS_COUNT
 } spi_speeds_t;
-
-#endif /* ! (WITHSPIDEV && LINUX_SUBSYSTEM) */
 
 #define MULTIVFO ((HYBRID_NVFOS > 1) && (LO1MODE_HYBRID || LO1MODE_FIXSCALE))
 
@@ -125,9 +121,7 @@ typedef enum
 
 // +++ TWI
 /* TWI (I2C) interface */
-#if ! LINUX_SUBSYSTEM
-	#define I2C_RETRIES 3	/* количество повторов */
-#endif /* ! LINUX_SUBSYSTEM */
+#define I2C_RETRIES 3	/* количество повторов */
 
 /* target device speed */
 typedef struct i2c_parameters
@@ -217,8 +211,6 @@ int i2chw_write2(uint16_t slave_address8b, const uint8_t * buf, uint32_t size, c
 int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize);	// Use repeated start without stop
 // --- TWI
 
-#if ! LINUX_SUBSYSTEM
-
 typedef struct irqlspinlock_tag {
 	ALIGNX_BEGIN volatile uint8_t lock ALIGNX_END;
 #if WITHDEBUG
@@ -237,19 +229,6 @@ typedef struct irqlspinlock_tag {
 	#define IRQLSPINLOCK_INITIALIZE(p) do { (p)->lock = 0; } while (0)
 	#define IRQLSPINLOCK_UNINITIALIZE(p) do { } while (0)
 #endif /* WITHDEBUG */
-
-#else /* ! LINUX_SUBSYSTEM */
-
-/* Linux targets: No any hardware IRQ control */
-
-#include "linux_support.h"
-
-extern pthread_mutex_t linux_md;	/* added by mgs */
-#define IRQLSPINLOCK_INIT PTHREAD_MUTEX_INITIALIZER
-#define IRQLSPINLOCK_INITIALIZE(p) do { IRQLSPINLOCK_INITIALIZE(p); } while (0)
-#define IRQLSPINLOCK_UNINITIALIZE(p) do { IRQLSPINLOCK_UNINITIALIZE(p); } while (0)
-
-#endif /* ! LINUX_SUBSYSTEM */
 
 /* newIRQL - уровень приоритета, прерывания с которым и ниже которого требуется запретить */
 /* Работа с текущим ядром */
@@ -291,23 +270,11 @@ void InitializeIrql(IRQL_t newIRQL);
 
 #endif /* WITHSMPSYSTEM */
 
-#if ! LINUX_SUBSYSTEM
-
 	/* Захват spinlock с установкой требуемого IRQL и сохранением ранее установленного */
 	#define IRQLSPIN_LOCK(p, oldIrql, newirql) do { RiseIrql((newirql), (oldIrql)); LCLSPIN_LOCK((p)); } while (0)
 	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK((p)); LowerIrql(oldIrql); } while (0)
 
 	int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS);
-
-#else  /* ! LINUX_SUBSYSTEM */
-
-	/* Linux targets: No any hardware IRQ control */
-	#define IRQLSPIN_LOCK(p, oldIrql, newirql) do { LCLSPIN_LOCK(p); } while (0)
-	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK(p); } while (0)
-
-	int local_waitlist(PRLIST_ENTRY list, void * lock, uint_fast32_t timeMS);
-
-#endif  /* ! LINUX_SUBSYSTEM */
 
 	// wait expected state of variable
 	// return non-zero: timeout error
@@ -344,21 +311,7 @@ void InitializeIrql(IRQL_t newIRQL);
 
 	void board_dpc_initialize(void);	/* инициализация списка user-mode опросных функций */
 
-#if LINUX_SUBSYSTEM
-	#define RAMFUNC_NONILINE //__attribute__((__section__(".itcm"), noinline))
-	#define RAMFUNC			//__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
-	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
-	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
-	#define RAMDTCM			//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
-	#define RAMBIGDTCM		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
-	#define RAMNC //__attribute__((section(".ramnc")))
-
-#elif CPUSTYLE_R7S721
+#if CPUSTYLE_R7S721
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
 	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* память доступная лоя DMA обмена */

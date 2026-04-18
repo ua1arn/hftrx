@@ -5,7 +5,7 @@
 #include "formats.h"
 #include <math.h>
 
-#if CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM && WITHINTEGRATEDDSP && defined (XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR)
+#if CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && WITHINTEGRATEDDSP && defined (XPAR_IQ_MODEM_MODEM_CONTROL_BASEADDR)
 
 enum {
 	rx_fir_shift_pos 	= 0,
@@ -320,26 +320,4 @@ void xcz_audio_tx_enable(uint_fast8_t state)
 
 #endif /* WITHRTS96 */
 
-#elif ! LINUX_SUBSYSTEM // заглушки для бутлоадера
-
-void xcz_rxtx_state(uint8_t tx)
-{
-
-}
-
-void xcz_dds_ftw(const uint_least64_t * val)
-{
-	mirror_nco2 = 0;
-}
-
-void xcz_dds_ftw_sub(const uint_least64_t * val)
-{
-	mirror_nco2 = 0;
-}
-
-void xcz_dds_rts(const uint_least64_t * val)
-{
-	mirror_ncorts = 0;
-}
-
-#endif /* CPUSTYLE_XC7Z && ! WITHISBOOTLOADER && ! LINUX_SUBSYSTEM */
+#endif /* CPUSTYLE_XC7Z && ! WITHISBOOTLOADER */
