@@ -1977,7 +1977,7 @@ static uint_fast32_t get_td_ms(uint_fast32_t timeMS)
 }
 
 // WITHRTOS
-#if 0 && ! LINUXUBSYSTEM
+#if 0
 
 typedef struct thread_item_tag
 {
