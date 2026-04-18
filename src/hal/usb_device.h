@@ -159,6 +159,34 @@ void MX_USB_HOST_DeInit(void);
 void MX_USB_HOST_Process(void);
 void MX_USB_DEVICE_Process(void);
 
+#if WITHUSBHW && WITHUSBDFU
+
+
+/**************************************************/
+/* Special Commands  with Download Request        */
+/**************************************************/
+#define DFU_CMD_GETCOMMANDS            0x00
+#define DFU_CMD_SETADDRESSPOINTER      0x21
+#define DFU_CMD_ERASE                  0x41
+
+#define DFU_MEDIA_ERASE                0x00
+#define DFU_MEDIA_PROGRAM              0x01
+
+
+typedef struct
+{
+  const char* pStrDesc;
+  USBD_StatusTypeDef (* Init)     (void);
+  USBD_StatusTypeDef (* DeInit)   (void);
+  USBD_StatusTypeDef (* Erase)    (uintptr_t Add);
+  USBD_StatusTypeDef (* Write)    (uint8_t *src, uintptr_t dest, uint32_t Len);
+  uint8_t* (* Read)     (uintptr_t src, uint8_t *dest, uint32_t Len);
+  USBD_StatusTypeDef (* GetStatus)(uintptr_t Add, uint8_t cmd, uint8_t *buff);
+} USBD_DFU_MediaTypeDef;
+
+extern USBD_DFU_MediaTypeDef USBD_DFU_fops_HS;
+
+#endif /* WITHUSBHW && WITHUSBDFU */
 
 #ifdef __cplusplus
 }
