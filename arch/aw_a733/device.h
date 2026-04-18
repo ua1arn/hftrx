@@ -2652,23 +2652,25 @@ typedef struct TCON_LCD_Type
     __IOM uint32_t LCD_BASIC3_REG;                    /*!< Offset 0x054 LCD Basic Timing Register3 */
     __IOM uint32_t LCD_HV_IF_REG;                     /*!< Offset 0x058 LCD HV Panel Interface Register */
          RESERVED(0x05C[0x0060 - 0x005C], uint8_t)
-    __IOM uint32_t LCD_CPU_IF_REG;                    /*!< Offset 0x060 LCD CPU Panel Interface Register */
-    __IOM uint32_t LCD_CPU_WR_REG;                    /*!< Offset 0x064 LCD CPU Panel Write Data Regist er */
-    __IOM uint32_t LCD_CPU_RD0_REG;                   /*!< Offset 0x068 LCD CPU Panel Read Data Register0 */
-    __IOM uint32_t LCD_CPU_RD1_REG;                   /*!< Offset 0x06C LCD CPU Panel Read Data Register1 */
+    __IOM uint32_t LCD_CPU_IF_REG;                    /*!< Offset 0x060 LCD Cpu Panel Interface Register */
+    __IOM uint32_t LCD_CPU_WR_REG;                    /*!< Offset 0x064 LCD Cpu Panel Write Data Register */
+    __IOM uint32_t LCD_CPU_RD0_REG;                   /*!< Offset 0x068 LCD Cpu Panel Read Data Register0 */
+    __IOM uint32_t LCD_CPU_RD1_REG;                   /*!< Offset 0x06C LCD Cpu Panel Read Data Register1 */
          RESERVED(0x070[0x0084 - 0x0070], uint8_t)
-    __IOM uint32_t LCD_LVDS_IF_REG;                   /*!< Offset 0x084 LCD LVDS Configure Register - AKA tcon0_lvds_ctl */
+    __IOM uint32_t LCD_LVDS_IF_REG;                   /*!< Offset 0x084 LCD LVDS Interface Register */
     __IOM uint32_t LCD_IO_POL_REG;                    /*!< Offset 0x088 LCD IO Polarity Register */
     __IOM uint32_t LCD_IO_TRI_REG;                    /*!< Offset 0x08C LCD IO Control Register */
          RESERVED(0x090[0x00FC - 0x0090], uint8_t)
     __IOM uint32_t LCD_DEBUG_REG;                     /*!< Offset 0x0FC LCD Debug Register */
     __IOM uint32_t LCD_CEU_CTL_REG;                   /*!< Offset 0x100 LCD CEU Control Register */
          RESERVED(0x104[0x0110 - 0x0104], uint8_t)
-    __IOM uint32_t LCD_CEU_COEF_MUL_REG [0x001];      /*!< Offset 0x110 LCD CEU Coefficient Register0(N=0..10) 0x0110+N*0x04 */
-         RESERVED(0x114[0x011C - 0x0114], uint8_t)
-    __IOM uint32_t LCD_CEU_COEF_ADD_REG [0x003];      /*!< Offset 0x11C LCD CEU Coefficient Register1(N=0,1,2) 0x011C+N*0x10 */
-         RESERVED(0x128[0x0140 - 0x0128], uint8_t)
-    __IOM uint32_t LCD_CEU_COEF_RANG_REG [0x003];     /*!< Offset 0x140 LCD CEU Coefficient Register2(N=0,1,2) 0x0140+N*0x04 */
+    __IOM uint32_t LCD_CEU_COEF_MUL_REG0 [0x003];     /*!< Offset 0x110 0x0110+N*0x4 (N=0~2) LCD CEU Coefficient Register */
+    __IOM uint32_t LCD_CEU_COEF_ADD_REG0;             /*!< Offset 0x11C 0x011C+N*0x10 (N=0~2) LCD CEU Coefficient Register */
+    __IOM uint32_t LCD_CEU_COEF_MUL_REG1 [0x003];     /*!< Offset 0x120 0x0120+N*0x4 (N=0~2) LCD CEU Coefficient Register */
+    __IOM uint32_t LCD_CEU_COEF_ADD_REG1;             /*!< Offset 0x12C 0x011C+N*0x10 (N=0~2) LCD CEU Coefficient Register */
+    __IOM uint32_t LCD_CEU_COEF_MUL_REG2 [0x003];     /*!< Offset 0x130 0x0130+N*0x4 (N=0~2) LCD CEU Coefficient Register */
+    __IOM uint32_t LCD_CEU_COEF_ADD_REG2;             /*!< Offset 0x13C 0x011C+N*0x10 (N=0~2) LCD CEU Coefficient Register */
+    __IOM uint32_t LCD_CEU_COEF_RANG_REG [0x003];     /*!< Offset 0x140 0x0140+N*0x04 (N=0~2) LCD CEU Coefficient Register */
          RESERVED(0x14C[0x0160 - 0x014C], uint8_t)
     __IOM uint32_t LCD_CPU_TRI0_REG;                  /*!< Offset 0x160 LCD CPU Panel Trigger Register0 */
     __IOM uint32_t LCD_CPU_TRI1_REG;                  /*!< Offset 0x164 LCD CPU Panel Trigger Register1 */
@@ -2676,28 +2678,16 @@ typedef struct TCON_LCD_Type
     __IOM uint32_t LCD_CPU_TRI3_REG;                  /*!< Offset 0x16C LCD CPU Panel Trigger Register3 */
     __IOM uint32_t LCD_CPU_TRI4_REG;                  /*!< Offset 0x170 LCD CPU Panel Trigger Register4 */
     __IOM uint32_t LCD_CPU_TRI5_REG;                  /*!< Offset 0x174 LCD CPU Panel Trigger Register5 */
-         RESERVED(0x178[0x0180 - 0x0178], uint8_t)
-    __IOM uint32_t LCD_CMAP_CTL_REG;                  /*!< Offset 0x180 LCD Color Map Control Register */
-         RESERVED(0x184[0x0190 - 0x0184], uint8_t)
-    __IOM uint32_t LCD_CMAP_ODD0_REG;                 /*!< Offset 0x190 LCD Color Map Odd Line Register0 */
-    __IOM uint32_t LCD_CMAP_ODD1_REG;                 /*!< Offset 0x194 LCD Color Map Odd Line Register1 */
-    __IOM uint32_t LCD_CMAP_EVEN0_REG;                /*!< Offset 0x198 LCD Color Map Even Line Register0 */
-    __IOM uint32_t LCD_CMAP_EVEN1_REG;                /*!< Offset 0x19C LCD Color Map Even Line Register1 */
-         RESERVED(0x1A0[0x01F0 - 0x01A0], uint8_t)
+         RESERVED(0x178[0x01F0 - 0x0178], uint8_t)
     __IOM uint32_t LCD_SAFE_PERIOD_REG;               /*!< Offset 0x1F0 LCD Safe Period Register */
-         RESERVED(0x1F4[0x0200 - 0x01F4], uint8_t)
-    __IOM uint32_t tcon_mul_ctl;                      /*!< Offset 0x200 https://github.com/qiaoweibiao/T507_Kernel/blob/98fcc7d3f112e51b0edfb71536da89cb2115106f/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_sun50iw1/de_lcd_type.h#L691 */
-         RESERVED(0x204[0x0220 - 0x0204], uint8_t)
+         RESERVED(0x1F4[0x0220 - 0x01F4], uint8_t)
     __IOM uint32_t LCD_LVDS_ANA_REG [0x002];          /*!< Offset 0x220 LCD LVDS Analog Register 0/1 LCD_LVDS0_ANA_REG LCD_LVDS1_ANA_REG */
-         RESERVED(0x228[0x023C - 0x0228], uint8_t)
-    __IOM uint32_t LCD_FSYNC_GEN_CTRL_REG;            /*!< Offset 0x23C Module Enable and Output Value Register */
-    __IOM uint32_t LCD_FSYNC_GEN_DLY_REG;             /*!< Offset 0x240 Fsync Active Time Register */
-         RESERVED(0x244[0x0400 - 0x0244], uint8_t)
-    __IOM uint32_t LCD_GAMMA_TABLE_REG [0x100];       /*!< Offset 0x400 LCD Gamma Table Register 0x0400-0x07FF */
-         RESERVED(0x800[0x0FF4 - 0x0800], uint8_t)
-    __IOM uint32_t LCD_3D_FIFO_BIST_REG;              /*!< Offset 0xFF4 LCD 3D FIFO Bist Register */
-    __IOM uint32_t LCD_TRI_FIFO_BIST_REG;             /*!< Offset 0xFF8 LCD Trigger FIFO Bist Register */
-         RESERVED(0xFFC[0x1000 - 0x0FFC], uint8_t)
+    __IOM uint32_t FSYNC_GEN_CTRL_REG;                /*!< Offset 0x228 LCD  FSYNC  Generate  Control Register */
+    __IOM uint32_t FSYNC_GEN_DLY_REG;                 /*!< Offset 0x22C LCD FSYNC Generate Delay Register */
+    __IOM uint32_t LCD_SYNC_CTL_REG;                  /*!< Offset 0x230 LCD Sync Control Register */
+         RESERVED(0x234[0x0248 - 0x0234], uint8_t)
+    __IOM uint32_t LCD_LVDS_LMAP_REG [0x002];         /*!< Offset 0x248 LCD LVDS Lane Map Register0/1 */
+         RESERVED(0x250[0x1000 - 0x0250], uint8_t)
 } TCON_LCD_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief TCON_TV
