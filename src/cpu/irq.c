@@ -1979,6 +1979,13 @@ static uint_fast32_t get_td_ms(uint_fast32_t timeMS)
 // WITHRTOS
 #if 0
 
+typedef struct check_ready_tag
+{
+	int (* ready)(const struct check_ready_tag * ch, struct thread_item_tag * thread, uint_fast32_t tn, volatile void * arg1);
+	void (* print)(const struct check_ready_tag * ch, volatile void * arg1);
+	const char * name;
+} check_ready_t;
+
 typedef struct thread_item_tag
 {
 	LIST_ENTRY item;
@@ -1987,7 +1994,7 @@ typedef struct thread_item_tag
 	void * allocated;
 	IRQL_t irql;
 	unsigned uprio;
-	int (* check_ready)(struct thread_item_tag * thread, uint_fast32_t tn, volatile void * arg1);
+	const check_ready_t * check_ready;
 	volatile void * check_ready_obj;
 	const char * name;
 	void * guard;	// debug signature
@@ -2127,7 +2134,7 @@ static int task_isready(thread_item_t * tp, uint_fast32_t tn)
 {
 	if (tp->check_ready != NULL)
 	{
-		if (tp->check_ready(tp, tn, tp->check_ready_obj))
+		if (tp->check_ready->ready(tp->check_ready, tp, tn, tp->check_ready_obj))
 		{
 			tp->check_ready = NULL;	// признак готовности
 			return 1;
@@ -2165,14 +2172,27 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 		}
 	}
 	RemoveEntryList(& taskin->item);
+	{
+		if (taskin->check_ready)
+		{
+			tasks_print();
+			for (;;)
+				;
+		}
+
+	}
 	ASSERT(taskin->check_ready == NULL);
 	return taskin;
 }
 
 static void thread_print(const thread_item_t * const tp)
 {
-	PRINTF("    task %p: name='%s', uprio=%u. irql=%u (prio=%u), affinity=%08X, cond=%p(%p)\n", tp, tp->name, tp->uprio, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity, tp->check_ready, tp->check_ready_obj);
-
+	PRINTF("    task %p: name='%s', uprio=%u. irql=%u (prio=%u), affinity=%08X ", tp, tp->name, tp->uprio, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity);
+	if (tp->check_ready)
+	{
+		tp->check_ready->print(tp->check_ready, tp->check_ready_obj);
+	}
+	PRINTF("\n");
 }
 void tasks_print(void)
 {
@@ -2229,7 +2249,17 @@ static int ready_timeout(uint_fast32_t tn, uint_fast32_t t0, uint_fast32_t td)
 	return (uint32_t) (tn - t0) >= td;
 }
 
-static int readyfn_suspend(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
+
+static void print_suspend(const check_ready_t * chrdyttag, volatile void * arg1)
+{
+	volatile struct taskfnparam_suspend * const param = (volatile struct taskfnparam_suspend *) arg1;
+	ASSERT(param != NULL);
+	ASSERT(param->guard == param);
+	PRINTF("%s: ", chrdyttag->name);
+	//PRINTF("td=%u", (unsigned) param->td);
+}
+
+static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_suspend * const param = (volatile struct taskfnparam_suspend *) arg1;
 	if (param == NULL || param->guard != param)
@@ -2242,7 +2272,16 @@ static int readyfn_suspend(thread_item_t * thread, uint_fast32_t tn, volatile vo
 	return ready_timeout(tn, param->t0, param->td);
 }
 
-static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
+static void print_wait32(const check_ready_t * chrdyttag, volatile void * arg1)
+{
+	volatile struct taskfnparam_wait32 * const param = (volatile struct taskfnparam_wait32 *) arg1;
+	ASSERT(param != NULL);
+	ASSERT(param->guard == param);
+	PRINTF("%s: ", chrdyttag->name);
+	//PRINTF("flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
+}
+
+static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_wait32 * const param = (volatile struct taskfnparam_wait32 *) arg1;
 	if (param == NULL || param->guard != param)
@@ -2266,7 +2305,16 @@ static int readyfn_wait32(thread_item_t * thread, uint_fast32_t tn, volatile voi
 	return 0;
 }
 
-static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
+static void print_wait8(const check_ready_t * chrdyttag, volatile void * arg1)
+{
+	volatile struct taskfnparam_wait8 * const param = (volatile struct taskfnparam_wait8 *) arg1;
+	ASSERT(param != NULL);
+	ASSERT(param->guard == param);
+	PRINTF("%s: ", chrdyttag->name);
+	//PRINTF("flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
+}
+
+static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_wait8 * const param = (volatile struct taskfnparam_wait8 *) arg1;
 	ASSERT(param != NULL);
@@ -2285,7 +2333,15 @@ static int readyfn_wait8(thread_item_t * thread, uint_fast32_t tn, volatile void
 	return 0;
 }
 
-static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
+static void print_waitlist(const check_ready_t * chrdyttag, volatile void * arg1)
+{
+	volatile struct taskfnparam_waitlist * const param = (volatile struct taskfnparam_waitlist *) arg1;
+	ASSERT(param != NULL);
+	ASSERT(param->guard == param);
+	PRINTF("%s: ", chrdyttag->name);
+}
+
+static int readyfn_waitlist(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_waitlist * const param = (volatile struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
@@ -2308,6 +2364,38 @@ static int readyfn_waitlist(thread_item_t * thread, uint_fast32_t tn, volatile v
 	return 0;
 }
 
+static const check_ready_t readytag_wait8 =
+{
+	.ready = readyfn_wait8,
+	.print = print_wait8,
+	//
+	.name = "wait8"
+};
+
+static const check_ready_t readytag_wait32 =
+{
+	.ready = readyfn_wait32,
+	.print = print_wait32,
+	//
+	.name = "wait32"
+};
+
+static const check_ready_t readytag_suspend =
+{
+	.ready = readyfn_suspend,
+	.print = print_suspend,
+	//
+	.name = "suspend"
+};
+
+static const check_ready_t readytag_waitlist =
+{
+	.ready = readyfn_waitlist,
+	.print = print_waitlist,
+	//
+	.name = "waitlist"
+};
+
 static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
 {
 	ASSERT(threads_not_started == 0);
@@ -2324,28 +2412,28 @@ static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * 
 	case TASKFN_SUSPEND:
 		{
 			thread->check_ready_obj = arg1;
-			thread->check_ready = readyfn_suspend;
+			thread->check_ready = & readytag_suspend;
 			return;
 		}
 
 	case TASKFN_WAIT32:
 		{
 			thread->check_ready_obj = arg1;
-			thread->check_ready = readyfn_wait32;
+			thread->check_ready = & readytag_wait32;
 			return;
 		}
 
 	case TASKFN_WAIT8:
 		{
 			thread->check_ready_obj = arg1;
-			thread->check_ready = readyfn_wait8;
+			thread->check_ready = & readytag_wait8;
 			return;
 		}
 
 	case TASKFN_WAITLIST:
 		{
 			thread->check_ready_obj = arg1;
-			thread->check_ready = readyfn_waitlist;
+			thread->check_ready = & readytag_waitlist;
 			return;
 		}
 	}
