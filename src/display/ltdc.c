@@ -2508,7 +2508,7 @@ static void t113_de_update(int rtmixid)
 		return;
 
     glb->GLB_DBUFFER = UINT32_C(1);		// 1: register value be ready for update (self-cleaning bit)
-    if (local_wait32mask(& glb->GLB_DBUFFER, UINT32_C(1), 0 * UINT32_C(1), 500))
+    if (local_wait32mask(& glb->GLB_DBUFFER, UINT32_C(1), 0 * UINT32_C(1), 100))
     {
     	PRINTF("t113_de_update timeout, rtmixid=%d\n", rtmixid);
     }

@@ -2190,10 +2190,13 @@ static void thread_print(const thread_item_t * const tp)
 	PRINTF("    task %p: name='%s', uprio=%u. irql=%u (prio=%u), affinity=%08X ", tp, tp->name, tp->uprio, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity);
 	if (tp->check_ready)
 	{
+		ASSERT(tp->check_ready->print);
+		ASSERT(tp->check_ready_obj);
 		tp->check_ready->print(tp->check_ready, tp->check_ready_obj);
 	}
 	PRINTF("\n");
 }
+
 void tasks_print(void)
 {
 	unsigned uprio;
@@ -2256,7 +2259,7 @@ static void print_suspend(const check_ready_t * chrdyttag, volatile void * arg1)
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	PRINTF("%s: ", chrdyttag->name);
-	//PRINTF("td=%u", (unsigned) param->td);
+	PRINTF("td=%u", (unsigned) param->td);
 }
 
 static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
@@ -2278,7 +2281,7 @@ static void print_wait32(const check_ready_t * chrdyttag, volatile void * arg1)
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	PRINTF("%s: ", chrdyttag->name);
-	//PRINTF("flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
+	PRINTF("flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
 }
 
 static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
@@ -2311,7 +2314,7 @@ static void print_wait8(const check_ready_t * chrdyttag, volatile void * arg1)
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	PRINTF("%s: ", chrdyttag->name);
-	//PRINTF("flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
+	PRINTF("flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
 }
 
 static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
