@@ -16543,9 +16543,9 @@
     <dim>3</dim>
     <addressOffset>0x00000110</addressOffset>
     <register>
-     <name>LCD_CEU_COEF_MUL_REG0</name>
-     <displayName>LCD_CEU_COEF_MUL_REG0</displayName>
-     <description>0x0110+N*0x4 (N=0~2) LCD CEU Coefficient Register</description>
+     <name>LCD_CEU_COEF_MUL0_REG</name>
+     <displayName>LCD_CEU_COEF_MUL0_REG</displayName>
+     <description>0x0110+N*0x4 (N=0~2) LCD CEU Coefficient Register RED</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -16554,8 +16554,8 @@
     <dimIncrement>0x00C</dimIncrement>
    </cluster>
    <register>
-    <name>LCD_CEU_COEF_ADD_REG0</name>
-    <displayName>LCD_CEU_COEF_ADD_REG0</displayName>
+    <name>LCD_CEU_COEF_ADD0_REG</name>
+    <displayName>LCD_CEU_COEF_ADD0_REG</displayName>
     <description>0x011C+N*0x10 (N=0~2) LCD CEU Coefficient Register</description>
     <addressOffset>0x11C</addressOffset>
     <size>0x20</size>
@@ -16566,9 +16566,9 @@
     <dim>3</dim>
     <addressOffset>0x00000120</addressOffset>
     <register>
-     <name>LCD_CEU_COEF_MUL_REG1</name>
-     <displayName>LCD_CEU_COEF_MUL_REG1</displayName>
-     <description>0x0120+N*0x4 (N=0~2) LCD CEU Coefficient Register</description>
+     <name>LCD_CEU_COEF_MUL1_REG</name>
+     <displayName>LCD_CEU_COEF_MUL1_REG</displayName>
+     <description>0x0120+N*0x4 (N=0~2) LCD CEU Coefficient Register GREEN</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -16577,8 +16577,8 @@
     <dimIncrement>0x00C</dimIncrement>
    </cluster>
    <register>
-    <name>LCD_CEU_COEF_ADD_REG1</name>
-    <displayName>LCD_CEU_COEF_ADD_REG1</displayName>
+    <name>LCD_CEU_COEF_ADD1_REG</name>
+    <displayName>LCD_CEU_COEF_ADD1_REG</displayName>
     <description>0x011C+N*0x10 (N=0~2) LCD CEU Coefficient Register</description>
     <addressOffset>0x12C</addressOffset>
     <size>0x20</size>
@@ -16589,9 +16589,9 @@
     <dim>3</dim>
     <addressOffset>0x00000130</addressOffset>
     <register>
-     <name>LCD_CEU_COEF_MUL_REG2</name>
-     <displayName>LCD_CEU_COEF_MUL_REG2</displayName>
-     <description>0x0130+N*0x4 (N=0~2) LCD CEU Coefficient Register</description>
+     <name>LCD_CEU_COEF_MUL2_REG</name>
+     <displayName>LCD_CEU_COEF_MUL2_REG</displayName>
+     <description>0x0130+N*0x4 (N=0~2) LCD CEU Coefficient Register BLUE</description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -16600,8 +16600,8 @@
     <dimIncrement>0x00C</dimIncrement>
    </cluster>
    <register>
-    <name>LCD_CEU_COEF_ADD_REG2</name>
-    <displayName>LCD_CEU_COEF_ADD_REG2</displayName>
+    <name>LCD_CEU_COEF_ADD2_REG</name>
+    <displayName>LCD_CEU_COEF_ADD2_REG</displayName>
     <description>0x011C+N*0x10 (N=0~2) LCD CEU Coefficient Register</description>
     <addressOffset>0x13C</addressOffset>
     <size>0x20</size>
@@ -16622,60 +16622,20 @@
     </register>
     <dimIncrement>0x00C</dimIncrement>
    </cluster>
-   <register>
-    <name>LCD_CPU_TRI0_REG</name>
-    <displayName>LCD_CPU_TRI0_REG</displayName>
-    <description>LCD CPU Panel Trigger Register0</description>
-    <addressOffset>0x160</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI1_REG</name>
-    <displayName>LCD_CPU_TRI1_REG</displayName>
-    <description>LCD CPU Panel Trigger Register1</description>
-    <addressOffset>0x164</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI2_REG</name>
-    <displayName>LCD_CPU_TRI2_REG</displayName>
-    <description>LCD CPU Panel Trigger Register2</description>
-    <addressOffset>0x168</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI3_REG</name>
-    <displayName>LCD_CPU_TRI3_REG</displayName>
-    <description>LCD CPU Panel Trigger Register3</description>
-    <addressOffset>0x16C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI4_REG</name>
-    <displayName>LCD_CPU_TRI4_REG</displayName>
-    <description>LCD CPU Panel Trigger Register4</description>
-    <addressOffset>0x170</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>LCD_CPU_TRI5_REG</name>
-    <displayName>LCD_CPU_TRI5_REG</displayName>
-    <description>LCD CPU Panel Trigger Register5</description>
-    <addressOffset>0x174</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>6</dim>
+    <addressOffset>0x00000160</addressOffset>
+    <register>
+     <name>LCD_CPU_TRI0_REG</name>
+     <displayName>LCD_CPU_TRI0_REG</displayName>
+     <description>LCD CPU Panel Trigger Register0..5</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x018</dimIncrement>
+   </cluster>
    <register>
     <name>LCD_SAFE_PERIOD_REG</name>
     <displayName>LCD_SAFE_PERIOD_REG</displayName>

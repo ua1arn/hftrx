@@ -2855,25 +2855,20 @@ typedef struct TCON_LCD_Type
     __IOM uint32_t LCD_DEBUG_REG;                     /*!< Offset 0x0FC LCD Debug Register */
     __IOM uint32_t LCD_CEU_CTL_REG;                   /*!< Offset 0x100 LCD CEU Control Register */
          RESERVED(0x104[0x0110 - 0x0104], uint8_t)
-    __IOM uint32_t LCD_CEU_COEF_MUL_REG [0x001];      /*!< Offset 0x110 LCD CEU Coefficient Register0(N=0..10) 0x0110+N*0x04 */
-         RESERVED(0x114[0x011C - 0x0114], uint8_t)
-    __IOM uint32_t LCD_CEU_COEF_ADD_REG [0x003];      /*!< Offset 0x11C LCD CEU Coefficient Register1(N=0,1,2) 0x011C+N*0x10 */
-         RESERVED(0x128[0x0140 - 0x0128], uint8_t)
+    __IOM uint32_t LCD_CEU_COEF_MUL0_REG [0x003];     /*!< Offset 0x110 0x0110+N*0x4 (N=0~2) LCD CEU Coefficient Register RED */
+    __IOM uint32_t LCD_CEU_COEF_ADD0_REG;             /*!< Offset 0x11C 0x011C+N*0x10 (N=0~2) LCD CEU Coefficient Register */
+    __IOM uint32_t LCD_CEU_COEF_MUL1_REG [0x003];     /*!< Offset 0x120 0x0120+N*0x4 (N=0~2) LCD CEU Coefficient Register GREEN */
+    __IOM uint32_t LCD_CEU_COEF_ADD1_REG;             /*!< Offset 0x12C 0x011C+N*0x10 (N=0~2) LCD CEU Coefficient Register */
+    __IOM uint32_t LCD_CEU_COEF_MUL2_REG [0x003];     /*!< Offset 0x130 0x0130+N*0x4 (N=0~2) LCD CEU Coefficient Register BLUE */
+    __IOM uint32_t LCD_CEU_COEF_ADD2_REG;             /*!< Offset 0x13C 0x011C+N*0x10 (N=0~2) LCD CEU Coefficient Register */
     __IOM uint32_t LCD_CEU_COEF_RANG_REG [0x003];     /*!< Offset 0x140 LCD CEU Coefficient Register2(N=0,1,2) 0x0140+N*0x04 */
          RESERVED(0x14C[0x0160 - 0x014C], uint8_t)
-    __IOM uint32_t LCD_CPU_TRI0_REG;                  /*!< Offset 0x160 LCD CPU Panel Trigger Register0 */
-    __IOM uint32_t LCD_CPU_TRI1_REG;                  /*!< Offset 0x164 LCD CPU Panel Trigger Register1 */
-    __IOM uint32_t LCD_CPU_TRI2_REG;                  /*!< Offset 0x168 LCD CPU Panel Trigger Register2 */
-    __IOM uint32_t LCD_CPU_TRI3_REG;                  /*!< Offset 0x16C LCD CPU Panel Trigger Register3 */
-    __IOM uint32_t LCD_CPU_TRI4_REG;                  /*!< Offset 0x170 LCD CPU Panel Trigger Register4 */
-    __IOM uint32_t LCD_CPU_TRI5_REG;                  /*!< Offset 0x174 LCD CPU Panel Trigger Register5 */
+    __IOM uint32_t LCD_CPU_TRI_REG [0x006];           /*!< Offset 0x160 LCD CPU Panel Trigger Register0..5 */
          RESERVED(0x178[0x0180 - 0x0178], uint8_t)
     __IOM uint32_t LCD_CMAP_CTL_REG;                  /*!< Offset 0x180 LCD Color Map Control Register */
          RESERVED(0x184[0x0190 - 0x0184], uint8_t)
-    __IOM uint32_t LCD_CMAP_ODD0_REG;                 /*!< Offset 0x190 LCD Color Map Odd Line Register0 */
-    __IOM uint32_t LCD_CMAP_ODD1_REG;                 /*!< Offset 0x194 LCD Color Map Odd Line Register1 */
-    __IOM uint32_t LCD_CMAP_EVEN0_REG;                /*!< Offset 0x198 LCD Color Map Even Line Register0 */
-    __IOM uint32_t LCD_CMAP_EVEN1_REG;                /*!< Offset 0x19C LCD Color Map Even Line Register1 */
+    __IOM uint32_t LCD_CMAP_ODD_REG [0x002];          /*!< Offset 0x190 LCD Color Map Odd Line Register0/1 */
+    __IOM uint32_t LCD_CMAP_EVEN_REG [0x002];         /*!< Offset 0x198 LCD Color Map Even Line Register0/1 */
          RESERVED(0x1A0[0x01F0 - 0x01A0], uint8_t)
     __IOM uint32_t LCD_SAFE_PERIOD_REG;               /*!< Offset 0x1F0 LCD Safe Period Register */
          RESERVED(0x1F4[0x0200 - 0x01F4], uint8_t)
