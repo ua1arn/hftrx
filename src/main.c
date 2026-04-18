@@ -65,6 +65,7 @@ main(void)
 	cpu_initialize();		// в случае ARM - инициализация прерываний и контроллеров, AVR - запрет JTAG
 	lowinitialize();	/* вызывается при запрещённых прерываниях. */
 	applowinitialize();	/* вызывается при запрещённых прерываниях. */
+	task_scheduler_start();
 	global_enableIRQ();
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
 	midtests();

@@ -2566,15 +2566,9 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 
 // Non-linux, non-scheduler
 
-void task_scheduler_initialize(void)
-{
-
-}
-
-void task_scheduler_start(void)
-{
-
-}
+void task_scheduler_initialize(void) {}
+void task_scheduler_start(void) {}
+void task_ticker(void) {}
 
 void __NO_RETURN task_scheduler_othercores(void)
 {
@@ -2611,11 +2605,6 @@ static void * task_scheduler(void * oldframe)
 static void * task_scheduler2(unsigned code, void * oldframe)
 {
 	return oldframe;
-}
-
-void task_ticker(void)
-{
-
 }
 
 static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
