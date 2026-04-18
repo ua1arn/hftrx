@@ -2171,7 +2171,7 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 
 static void thread_print(const thread_item_t * const tp)
 {
-	PRINTF("    task %p: name='%s', irql=%u (prio=%u), affinity=%08X, cond=%p(%p)\n", tp, tp->name, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity, tp->check_ready, tp->check_ready_obj);
+	PRINTF("    task %p: name='%s', uprio=%u. irql=%u (prio=%u), affinity=%08X, cond=%p(%p)\n", tp, tp->name, tp->uprio, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity, tp->check_ready, tp->check_ready_obj);
 
 }
 void tasks_print(void)
@@ -2182,6 +2182,11 @@ void tasks_print(void)
 	for (core = 0; core < ARRAY_SIZE(base_threads); ++ core)
 	{
 		thread_print(& base_threads [core]);
+	}
+	PRINTF("tasks_print: idle\n");
+	for (core = 0; core < ARRAY_SIZE(idle_threads); ++ core)
+	{
+		thread_print(& idle_threads [core]);
 	}
 	PRINTF("tasks_print: started\n");
 	for (core = 0; core < ARRAY_SIZE(startedtask); ++ core)
