@@ -24,11 +24,13 @@
 #regdef; TCON0_IO_POL_REG; 0x088; TCON0 IO polarity register
 #regdef; TCON0_IO_TRI_REG; 0x08C; TCON0 IO trigger register
 #regdef; TCON_CEU_CTL_REG; 0x100; TCON CEU control register
-#regdef; TCON_CEU_COEF_MUL_REG; 0x110 11; TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10)
-#aggreg; TCON_CEU_COEF; 0x13C 3; TCON CEU coefficient register1 (N=0,1,2)
-#regdef; TCON_CEU_COEF_ADD_REG; 0x00c;  0x11C+N*0x10 TCON CEU coefficient register1 (N=0,1,2)
+
+#aggreg; TCON_CEU_COEF; 0x110 3; TCON CEU coefficient register1 (N=0,1,2)
+#regdef; MUL_REG; 0x000 3; TCON CEU coefficient register0 (N=0,1,2, 4,5,6, 8,9,10)
+#regdef; ADD_REG; 0x00C;  0x11C+N*0x10 TCON CEU coefficient register1 (N=0,1,2)
 #regdef; pad 0; 0x010
 #aggregend;
+
 #regdef; TCON_SAFE_PERIOD_REG; 0x1F0; TCON safe period register
 #regdef; TCON0_LVDS_ANA0_REG; 0x220; TCON LVDS analog register0
 #regdef; TCON0_GAMMA_TABLE_REG; 0x400 256; Gamma Table 0x400-0x7FF

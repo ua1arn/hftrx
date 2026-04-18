@@ -2471,14 +2471,13 @@ typedef struct TCON0_Type
          RESERVED(0x090[0x0100 - 0x0090], uint8_t)
     __IOM uint32_t TCON_CEU_CTL_REG;                  /*!< Offset 0x100 TCON CEU control register */
          RESERVED(0x104[0x0110 - 0x0104], uint8_t)
-    __IOM uint32_t TCON_CEU_COEF_MUL_REG [0x00B];     /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10) */
     struct
     {
-             RESERVED(0x000[0x000C - 0x0000], uint8_t)
-        __IOM uint32_t TCON_CEU_COEF_ADD_REG;         /*!< Offset 0x148 0x11C+N*0x10 TCON CEU coefficient register1 (N=0,1,2) */
+        __IOM uint32_t MUL_REG [0x003];               /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2, 4,5,6, 8,9,10) */
+        __IOM uint32_t ADD_REG;                       /*!< Offset 0x11C 0x11C+N*0x10 TCON CEU coefficient register1 (N=0,1,2) */
              RESERVED(0x010[0x0010 - 0x0010], uint8_t)
-    } TCON_CEU_COEF [0x003];                          /*!< Offset 0x13C TCON CEU coefficient register1 (N=0,1,2) */
-         RESERVED(0x16C[0x01F0 - 0x016C], uint8_t)
+    } TCON_CEU_COEF [0x003];                          /*!< Offset 0x110 TCON CEU coefficient register1 (N=0,1,2) */
+         RESERVED(0x140[0x01F0 - 0x0140], uint8_t)
     __IOM uint32_t TCON_SAFE_PERIOD_REG;              /*!< Offset 0x1F0 TCON safe period register */
          RESERVED(0x1F4[0x0220 - 0x01F4], uint8_t)
     __IOM uint32_t TCON0_LVDS_ANA0_REG;               /*!< Offset 0x220 TCON LVDS analog register0 */
@@ -2513,8 +2512,13 @@ typedef struct TCON1_Type
          RESERVED(0x0F8[0x0100 - 0x00F8], uint8_t)
     __IOM uint32_t TCON_CEU_CTL_REG;                  /*!< Offset 0x100 TCON CEU control register */
          RESERVED(0x104[0x0110 - 0x0104], uint8_t)
-    __IOM uint32_t TCON_CEU_COEF_MUL_REG [0x00B];     /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10) */
-         RESERVED(0x13C[0x0160 - 0x013C], uint8_t)
+    struct
+    {
+        __IOM uint32_t MUL_REG [0x003];               /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2, 4,5,6, 8,9,10) */
+        __IOM uint32_t ADD_REG;                       /*!< Offset 0x11C 0x11C+N*0x10 TCON CEU coefficient register1 (N=0,1,2) */
+             RESERVED(0x010[0x0010 - 0x0010], uint8_t)
+    } TCON_CEU_COEF [0x003];                          /*!< Offset 0x110 TCON CEU coefficient register1 (N=0,1,2) */
+         RESERVED(0x140[0x0160 - 0x0140], uint8_t)
     __IOM uint32_t TCON_CEU_COEF_RANG_REG [0x003];    /*!< Offset 0x160 TCON CEU coefficient register2 (N=0,1,2) */
          RESERVED(0x16C[0x01F0 - 0x016C], uint8_t)
     __IOM uint32_t TCON_SAFE_PERIOD_REG;              /*!< Offset 0x1F0 TCON safe period register */

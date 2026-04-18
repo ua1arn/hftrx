@@ -3088,12 +3088,12 @@ typedef struct TCON_LCD_Type
     __IOM uint32_t LCD_DEBUG_REG;                     /*!< Offset 0x0FC LCD Debug Register */
     __IOM uint32_t LCD_CEU_CTL_REG;                   /*!< Offset 0x100 LCD CEU Control Register */
          RESERVED(0x104[0x0110 - 0x0104], uint8_t)
-    __IOM uint32_t LCD_CEU_COEF_MUL_REG [0x003];      /*!< Offset 0x110 LCD CEU Coefficient Register0 0x0110+N*0x04 (N=0..10) N=0: Rr, N=1: Rg, N=2: Rb, N=4: Gr, N=5: Gg, N=6: Gb, N=8: Br, N=9: Bg, N=10: Bb */
-    __IOM uint32_t LCD_CEU_COEF_ADD0_REG;             /*!< Offset 0x11C LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2) N=0: Rc, N=1: Gc, N=2: Bc */
-         RESERVED(0x120[0x012C - 0x0120], uint8_t)
-    __IOM uint32_t LCD_CEU_COEF_ADD1_REG;             /*!< Offset 0x12C LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2) */
-         RESERVED(0x130[0x013C - 0x0130], uint8_t)
-    __IOM uint32_t LCD_CEU_COEF_ADD2_REG;             /*!< Offset 0x13C LCD CEU Coefficient Register1 0x011C+N*0x10 (N=0,1,2) */
+    struct
+    {
+        __IOM uint32_t MUL_REG [0x003];               /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2, 4,5,6, 8,9,10) */
+        __IOM uint32_t ADD_REG;                       /*!< Offset 0x11C 0x11C+N*0x10 TCON CEU coefficient register1 (N=0,1,2) */
+             RESERVED(0x010[0x0010 - 0x0010], uint8_t)
+    } TCON_CEU_COEF [0x003];                          /*!< Offset 0x110 TCON CEU coefficient register1 (N=0,1,2) */
     __IOM uint32_t LCD_CEU_COEF_RANG_REG [0x003];     /*!< Offset 0x140 LCD CEU Coefficient Register2 0x0140+N*0x04 (N=0,1,2) */
          RESERVED(0x14C[0x0160 - 0x014C], uint8_t)
     __IOM uint32_t LCD_CPU_TRIx_REG [0x006];          /*!< Offset 0x160 LCD CPU Panel Trigger Register0 */
@@ -3142,8 +3142,11 @@ typedef struct TCON_TV_Type
     __IOM uint32_t TV_DEBUG_REG;                      /*!< Offset 0x0FC TV Debug Register */
     __IOM uint32_t TV_CEU_CTL_REG;                    /*!< Offset 0x100 TV CEU Control Register */
          RESERVED(0x104[0x0110 - 0x0104], uint8_t)
-    __IOM uint32_t TV_CEU_COEF_MUL_REG [0x00B];       /*!< Offset 0x110 TV CEU Coefficient Register0 0x0110+N*0x04(N=0-10) */
-         RESERVED(0x13C[0x0140 - 0x013C], uint8_t)
+    struct
+    {
+        __IOM uint32_t MUL_REG [0x003];               /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2, 4,5,6, 8,9,10) */
+             RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
+    } TCON_CEU_COEF [0x003];                          /*!< Offset 0x110 TCON CEU coefficient register1 (N=0,1,2) */
     __IOM uint32_t TV_CEU_COEF_RANG_REG [0x003];      /*!< Offset 0x140 TV CEU Coefficient Register2 0x0140+N*0x04(N=0-2) */
          RESERVED(0x14C[0x01F0 - 0x014C], uint8_t)
     __IOM uint32_t TV_SAFE_PERIOD_REG;                /*!< Offset 0x1F0 TV Safe Period Register */

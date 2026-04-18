@@ -16,11 +16,13 @@
 #regdef; TCON1_IO_POL_REG; 0x0F0; TCON1 IO polarity register
 #regdef; TCON1_IO_TRI_REG; 0x0F4; TCON1 IO trigger register
 #regdef; TCON_CEU_CTL_REG; 0x100; TCON CEU control register
-#regdef; TCON_CEU_COEF_MUL_REG; 0x110 11; TCON CEU coefficient register0 (N=0,1,2,4,5,6,8,9,10)
-##aggreg; TCON_CEU_COEF; 0x11C 3; TCON CEU coefficient (N=0,1,2)
-##regdef; TCON_CEU_COEF_ADD_REG; 0x00; 0x11C+N*0x10 TCON CEU coefficient register1 (N=0,1,2)
-##regdef; pad 0; 0x10
-##aggregend;
+
+#aggreg; TCON_CEU_COEF; 0x110 3; TCON CEU coefficient register1 (N=0,1,2)
+#regdef; MUL_REG; 0x000 3; TCON CEU coefficient register0 (N=0,1,2, 4,5,6, 8,9,10)
+#regdef; ADD_REG; 0x00C;  0x11C+N*0x10 TCON CEU coefficient register1 (N=0,1,2)
+#regdef; pad 0; 0x010
+#aggregend;
+
 #regdef; TCON_CEU_COEF_RANG_REG; 0x160 3; TCON CEU coefficient register2 (N=0,1,2)
 #regdef; TCON_SAFE_PERIOD_REG; 0x1F0; TCON safe period register
 #regdef; TCON1_FILL_CTL_REG; 0x300; TCON1 fill data control register
