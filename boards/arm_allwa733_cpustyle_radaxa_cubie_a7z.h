@@ -905,7 +905,7 @@
 		0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */ \
 		0)
 
-	#define HARDWARE_LVDS_INITIALIZE() do { \
+	#define xHARDWARE_LVDS_INITIALIZE() do { \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF3); 	/* PD0 LVDS0_V0P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF3); 	/* PD1 LVDS0_V0N */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF3); 	/* PD2 LVDS0_V1P */ \
@@ -916,6 +916,11 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF3); 	/* PD7 LVDS0_CKN */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF3); 	/* PD8 LVDS0_V3P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
+	} while (0)
+
+	#define HARDWARE_LVDS_INITIALIZE() do { \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 16, GPIO_CFG_AF3); 	/* PD16 LVDS1_CKP */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 17, GPIO_CFG_AF3); 	/* PD17 LVDS1_CKN */ \
 	} while (0)
 	#define HARDWARE_HDMI_INITIALIZE() do { \
 	} while (0)
@@ -941,7 +946,7 @@
 		#define BOARD_TCONLCDFREQ (allwnr_a733_get_v0_tconlcd0_freq())
 		#define TCONLCD_IRQ TCON0_LCD0_IRQn
 		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
-		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
+		#define TCONLCD_LVDSIX 1	/* 0 -LVDS0 */
 		#define RTMIXIDLCD 1	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#endif
 
