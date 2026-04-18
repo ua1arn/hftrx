@@ -2130,7 +2130,7 @@ void task_scheduler_initialize(void)
 	{
 		thread_item_t * const thread = & idle_threads [i];
 		//
-		thread_add(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, UPRIO_IDLE, IRQL_IPC, "idle");
+		thread_add(thread, 1U << i, task_idle, NULL, TASKRAM_SIZE, UPRIO_IDLE, IRQL_USER, "idle");
 	}
 }
 
