@@ -2176,8 +2176,6 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 		if (taskin->check_ready)
 		{
 			tasks_print();
-			for (;;)
-				;
 		}
 
 	}
