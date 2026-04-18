@@ -85,8 +85,6 @@ main(void)
 #elif WITHISBOOTLOADER
 	bootloader_mainloop();
 #elif 0
-	siggen_mainloop();
-#elif 0
 	hamradio_mainloop_beacon();
 #else
 	application_mainloop();
