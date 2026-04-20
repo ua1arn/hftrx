@@ -217,7 +217,11 @@ hardware_uart7_putchar(uint_fast8_t c)
 
 void hardware_uart7_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate)
 {
+#if WITHUART7HW_FIFO
 	int fifo = 1;
+#else /* WITHUART7HW_FIFO */
+	int fifo = 0;
+#endif /* WITHUART7HW_FIFO */
 #if CPUSTYLE_STM32F1XX
 
 	RCC->APB1ENR |= RCC_APB1ENR_UART7EN; // Включение тактирования UART7.

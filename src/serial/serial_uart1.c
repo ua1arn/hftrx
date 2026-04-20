@@ -234,7 +234,11 @@ hardware_uart1_putchar(uint_fast8_t c)
 
 void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd)
 {
+#if WITHUART1HW_FIFO
 	int fifo = 1;
+#else /* WITHUART1HW_FIFO */
+	int fifo = 0;
+#endif /* WITHUART1HW_FIFO */
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	#if HARDWARE_ARM_USEUSART1

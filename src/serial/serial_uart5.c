@@ -209,7 +209,11 @@ hardware_uart5_putchar(uint_fast8_t c)
 
 void hardware_uart5_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd)
 {
+#if WITHUART5HW_FIFO
 	int fifo = 1;
+#else /* WITHUART5HW_FIFO */
+	int fifo = 0;
+#endif /* WITHUART5HW_FIFO */
 #if CPUSTYLE_STM32F1XX
 
 	RCC->APB1ENR |= RCC_APB1ENR_UART5EN; // Включение тактирования UART5.
