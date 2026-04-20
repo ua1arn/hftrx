@@ -8,8 +8,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре STM32MP1xx
 // rmainunit_v5km7.pcb STM32MP1xx, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_R1BBU_H_INCLUDED
-#define ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_R1BBU_H_INCLUDED 1
+#ifndef ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_UA1CEI_H_INCLUDED
+#define ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_UA1CEI_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
 	#define WITHBANDR1BBU 1
@@ -212,8 +212,13 @@
 
 	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
 
-	#define COLORSTYLE_GREEN	1
-	//#define COLORSTYLE_RED	1
+	// Выбор используемой цветовой палитры
+	//#define COLORSTYLE_GREEN	1
+	#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_BLUE2 1
+	//#define COLORSTYLE_WHITE	1
+	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
+	#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -268,7 +273,7 @@
 	//#define LCDMODE_ARGB8888	1	/* Экран с тремя видеобуферами 32 бит ARGB8888 */
 
 	
-	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
+	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 1
 
@@ -369,9 +374,9 @@
 #else /* WITHISBOOTLOADER */
 
 	
-	#define ENCRES_DEFAULT ENCRES_128
+	#define ENCRES_DEFAULT ENCRES_360
 	//#define ENCRES_DEFAULT ENCRES_24
-	#define WITHDIRECTFREQENER	1 // прямой ввод частоты с клавиш
+	//#define WITHDIRECTFREQENER	1 // прямой ввод частоты с клавиш
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	
 	
@@ -430,7 +435,7 @@
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
@@ -489,57 +494,15 @@
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
-	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	//#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
-
-	#if 0
-		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
-	#elif 0
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define WITHBBOXFREQ	26985000L		// частота после включения
-		//#define WITHBBOXFREQ	(26985000L - 260)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
-		//#define WITHBBOXFREQ	(26985000L - 1600)		// частота после включения
-		//#define WITHBBOXFREQ	(14070000L - 1000)		// прослушивание BPSK частот
-		//#define WITHBBOXFREQ	(14065000L - 135)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
-		//#define WITHBBOXFREQ	14065000L		// частота после включения
-		//#define WITHBBOXFREQ	(14065000L - 1000)		// частота после включения
-		//#define WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
-		#define WITHBBOXSUBMODE	SUBMODE_BPSK	// единственный режим работы
-		//#define WITHBBOXFREQ	27100000L		// частота после включения
-		//#define WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
-		//#define WITHBBOXTX		1		// автоматический переход на передачу
-		//#define WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE
-	#elif 0
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define WITHBBOXFREQ	136000L		// частота после включения
-		#define WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
-		#define WITHBBOXREC	1		// автоматическое включение режима записи после подачи питания
-	#elif 0
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define WITHBBOXFREQ	7030000L		// частота после включения
-		#define WITHBBOXSUBMODE	SUBMODE_LSB	// единственный режим работы
-		#define WITHBBOXTX		1		// автоматический переход на передачу
-		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE
-	#elif 0
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define WITHBBOXFREQ	7030000L		// частота после включения
-		#define WITHBBOXSUBMODE	SUBMODE_CWZ	// единственный режим работы
-		#define WITHBBOXTX		1		// автоматический переход на передачу
-		//#define WITHBBOXMIKESRC BOARD_TXAUDIO_2TONE
-	#endif
-
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	#if 0
+	#if 1
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHTPA100W_UA1CEI_V2 1
 		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
-	#elif 1
+	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
@@ -639,7 +602,7 @@
 	//#define WITHRTCLSI	1				/* тестирование без кварца 32.768 кГц */
 
 	
-	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
@@ -816,4 +779,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_R1BBU_H_INCLUDED */
+#endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_UA1CEI_H_INCLUDED */
