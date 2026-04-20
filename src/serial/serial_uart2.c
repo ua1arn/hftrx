@@ -324,6 +324,7 @@ void hardware_uart2_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	(void) RCC->APB1RSTCLRR;
 
 	hardware_uartx_initialize(UARTBASENAME(thisPORT), stm32mp1_uart2_4_get_freq(), defbaudrate, bits, parity, odd, fifo);
+    HARDWARE_UART2_INITIALIZE();    /* Присоединить периферию к выводам */
 	if (debug == 0)
 	{
 		serial_set_handler(USART2_IRQn, USART2_IRQHandler);
