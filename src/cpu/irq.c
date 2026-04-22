@@ -2116,8 +2116,22 @@ void task_scheduler_initialize(void)
 	{
 		thread_item_t * const thread = & idle_threads [i];
 		const unsigned core = i % HARDWARE_NCORES;
+		const IRQL_t irql = GICI_ENCODE_IRQL(PRIOv_IPC + (i / HARDWARE_NCORES));
+		switch (irql)
+		{
+//		case IRQL_USER:
+//		case IRQL_SYSTEM:
+//		case IRQL_REALTIME:
+//		case IRQL_OVERREALTIME:
+//		case IRQL_BOARD:
+		case IRQL_IPC:
+		case IRQL_IPC_ONLY:
+			continue;
+		default:
+			break;
+		}
 		//
-		thread_add(thread, 1U << core, task_idle, NULL, IDLETASKRAM_SIZE, UPRIO_IDLE, GICI_ENCODE_IRQL(PRIOv_IPC + (i / HARDWARE_NCORES)), "idle");
+		thread_add(thread, 1U << core, task_idle, NULL, IDLETASKRAM_SIZE, UPRIO_IDLE, irql, "idle");
 	}
 }
 
