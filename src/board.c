@@ -3597,40 +3597,6 @@ uint_fast8_t board_get_catmux(void)
 // --- Набор функций требования установки сигналов на управляющих выходах.
 /////////////////////////////////////////////
 
-#if (DDS1_TYPE == DDS_TYPE_ATTINY2313) || (DDS2_TYPE == DDS_TYPE_ATTINY2313) || (DDS3_TYPE == DDS_TYPE_ATTINY2313)
-static void prog_softdds_freq(
-	spitarget_t target,		/* addressing to chip */
-	const ftw_t * value
-	)
-{
-#if 1
-	const uint_fast32_t v32 = * value;
-
-	IRQL_t irql
-	spi_operate_lock(& irql);
-	spi_select(target, SPIC_MODE3);	/* start sending data to target chip */
-	spi_progval8_p1(target, v32 >> 24);
-	spi_progval8_p2(target, v32 >> 16);
-	spi_progval8_p2(target, v32 >> 8);
-	spi_progval8_p2(target, v32 >> 0);
-	spi_complete(target);
-	spi_unselect(target);	/* done sending data to target chip */
-	spi_operate_unlock(irql);
-
-#else
-	i2c_start(targetdds1 == targetdds1 ? 0xf8 : 0xf0);	// addr+wr
-
-	i2c_write(v32 >> 24);
-	i2c_write(v32 >> 16);
-	i2c_write(v32 >> 8);
-	i2c_write(v32 >> 0);
-	i2c_waitsend();
-	i2c_stop();
-#endif
-}
-#endif
-
-
 #if defined(DDS1_TYPE)
 
 #if WITHLO1LEVELADJ
@@ -3714,8 +3680,6 @@ prog_dds1_ftw(const ftw_t * value)
 		prog_ad9851_freq(targetdds1, value, DDS1_CLK_MUL);
 	#elif (DDS1_TYPE == DDS_TYPE_AD9835)
 		prog_ad9835_freq(targetdds1, value, & dds1_profile);
-	#elif (DDS1_TYPE == DDS_TYPE_ATTINY2313)
-		prog_softdds_freq(targetdds1, value);
 	#elif (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 		xcz_dds_rts(value);
 	#else
@@ -3784,8 +3748,6 @@ prog_dds1_ftw_noioupdate(const ftw_t * value)
 	prog_ad9851_freq(targetdds1, value, DDS1_CLK_MUL);
 #elif (DDS1_TYPE == DDS_TYPE_AD9835)
 	prog_ad9835_freq(targetdds1, value, & dds1_profile);
-#elif (DDS1_TYPE == DDS_TYPE_ATTINY2313)
-	prog_softdds_freq(targetdds1, value);
 #else
 	//(void) target;
 
@@ -3850,8 +3812,6 @@ void prog_dds2_ftw(const ftw_t * value)
 	prog_ad9851_freq(targetdds2, value, DDS2_CLK_MUL);
 #elif (DDS2_TYPE == DDS_TYPE_AD9835)
 	prog_ad9835_freq(targetdds2, value, & dds2_profile);
-#elif (DDS2_TYPE == DDS_TYPE_ATTINY2313)
-	prog_softdds_freq(targetdds2, value);
 
 #endif
 }
@@ -3909,8 +3869,6 @@ void prog_dds3_ftw(const ftw_t * value)
 	prog_ad9851_freq(targetdds3, value, DDS3_CLK_MUL);
 #elif (DDS3_TYPE == DDS_TYPE_AD9835)
 	prog_ad9835_freq(targetdds3, value, & dds3_profile);
-#elif (DDS3_TYPE == DDS_TYPE_ATTINY2313)
-	prog_softdds_freq(targetdsd3, value);
 
 #endif
 }

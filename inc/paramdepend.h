@@ -990,9 +990,8 @@ void local_delay_initialize(void);	// setup parameters for loop-nased delays
 #define DDS_TYPE_AD9835		6	// AD9832 and AD9835 supported
 #define DDS_TYPE_FPGAV1		7	// NCO, DDC/DUC
 #define DDS_TYPE_FPGAV2		8	// NCO, DDC/DUC
-#define DDS_TYPE_ATTINY2313	9	// experemental: nco=/7, dds=/9
-#define DDS_TYPE_ZYNQ_PL 	10
-#define DDS_TYPE_LINUX		11
+#define DDS_TYPE_ZYNQ_PL 	9
+#define DDS_TYPE_LINUX		10
 
 #define	ADC_TYPE_AD9246		15
 
