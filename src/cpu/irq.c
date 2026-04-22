@@ -1978,7 +1978,7 @@ static uint_fast32_t get_td_ms(uint_fast32_t timeMS)
 // WITHRTOS
 #if 0
 
-#define IDLETASKRAM_SIZE (16 * 1024)
+#define IDLETASKRAM_SIZE (256 * 1024)
 
 typedef struct check_ready_tag
 {
@@ -2056,7 +2056,7 @@ static int task_idle(void * ctx)
 	return 0;
 }
 
-static thread_item_t idle_threads [HARDWARE_NCORES];
+static thread_item_t idle_threads [HARDWARE_NCORES * (PRIOv_count - PRIOv_IPC)];
 static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
 static thread_item_t * startedtask [HARDWARE_NCORES];
 
@@ -2112,11 +2112,12 @@ void task_scheduler_initialize(void)
 	{
 		InitializeListHead(& threads_list [i]);
 	}
-	for (i = 0; i < HARDWARE_NCORES; ++ i)
+	for (i = 0; i < ARRAY_SIZE(idle_threads); ++ i)
 	{
 		thread_item_t * const thread = & idle_threads [i];
+		const unsigned core = i % HARDWARE_NCORES;
 		//
-		thread_add(thread, 1U << i, task_idle, NULL, IDLETASKRAM_SIZE, UPRIO_IDLE, IRQL_USER, "idle");
+		thread_add(thread, 1U << core, task_idle, NULL, IDLETASKRAM_SIZE, UPRIO_IDLE, GICI_ENCODE_IRQL(PRIOv_IPC + (i / HARDWARE_NCORES)), "idle");
 	}
 }
 
