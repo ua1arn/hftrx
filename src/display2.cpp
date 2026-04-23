@@ -10063,8 +10063,13 @@ static void display2_stylesupdate(void)
 	gxstyle_textcolor(& dbstylev_1fmenu, DSGN_FMENUTEXT, DSGN_FMENUBACK);
 
 	// Параметры отображения текстов без вариантов (время)
+#if COLORSTYLE_BLUE
+	gxstyle_initialize(& dbstylev_1stateTime);
+	gxstyle_textcolor(& dbstylev_1stateTime, COLORPIP_GREEN, COLORPIP_BLACK);
+#else /* COLORSTYLE_BLUE */
 	gxstyle_initialize(& dbstylev_1stateTime);
 	gxstyle_textcolor(& dbstylev_1stateTime, DSGN_BIGCOLOR, DSGN_BIGCOLORBACK);
+#endif /* COLORSTYLE_BLUE */
 
 	gxstyle_initialize(& dbstylev_lock);
 	gxstyle_textcolor(& dbstylev_lock, DSGN_LOCKCOLOR, DSGN_BGCOLOR);
