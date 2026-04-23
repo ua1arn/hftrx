@@ -1439,19 +1439,10 @@ static void display2_af_spectre15(const gxdrawb_t * db, uint_fast8_t xgrid, uint
 
 #if WITHSPECTRUMWF
 
-#if WITHGRADIENT_FIXED
-    #include "pancolor.h"
-#endif /* WITHGRADIENT_FIXED */
-
 // get color from signal strength
 // Get FFT color warmth (blue to red)
 COLOR24_T colorgradient(unsigned pos, unsigned maxpos)
 {
-#if WITHGRADIENT_FIXED
-	// построение цветных градиентов по готовой таблице.
-	const COLOR24_T c = pancolor [ARRAY_SIZE(pancolor) - 1 - normalize(pos, 0, maxpos, ARRAY_SIZE(pancolor) - 1)];
-	return COLOR24(COLOR24_R(c), COLOR24_G(c), COLOR24_B(c));
-#endif /* WITHGRADIENT_FIXED */
 	// построение цветных градиентов от UA3REO
 	uint_fast8_t red = 0;
 	uint_fast8_t green = 0;
@@ -5014,11 +5005,7 @@ enum { NROWSWFL = GRID2Y(BDCV_ALLRX) };
 #elif LCDMODE_LTDC
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	#if WITHGRADIENT_FIXED
-		enum { PALETTESIZE = ARRAY_SIZE(pancolor) };
-	#else /* WITHGRADIENT_FIXED */
-		enum { PALETTESIZE = 256 };
-	#endif /* WITHGRADIENT_FIXED */
+	enum { PALETTESIZE = 256 };
 
 	static uint_fast16_t row3dss;		// строка, в которую последней занесены данные
 
@@ -6908,7 +6895,7 @@ display2_wfl_init(
 #if ! defined (COLORPIP_SHADED)
 	{
 		int i;
-		// Init 256 colors palette
+		// Init colors palette
 		for (i = 0; i < PALETTESIZE; ++ i)
 		{
 			const COLOR24_T c = colorgradient(i, PALETTESIZE - 1);
@@ -10063,13 +10050,8 @@ static void display2_stylesupdate(void)
 	gxstyle_textcolor(& dbstylev_1fmenu, DSGN_FMENUTEXT, DSGN_FMENUBACK);
 
 	// Параметры отображения текстов без вариантов (время)
-#if COLORSTYLE_BLUE
 	gxstyle_initialize(& dbstylev_1stateTime);
-	gxstyle_textcolor(& dbstylev_1stateTime, COLORPIP_GREEN, COLORPIP_BLACK);
-#else /* COLORSTYLE_BLUE */
-	gxstyle_initialize(& dbstylev_1stateTime);
-	gxstyle_textcolor(& dbstylev_1stateTime, DSGN_BIGCOLOR, DSGN_BIGCOLORBACK);
-#endif /* COLORSTYLE_BLUE */
+	gxstyle_textcolor(& dbstylev_1stateTime, DSGN_TIMECOLOR, DSGN_TIMECOLORBACK);
 
 	gxstyle_initialize(& dbstylev_lock);
 	gxstyle_textcolor(& dbstylev_lock, DSGN_LOCKCOLOR, DSGN_BGCOLOR);
