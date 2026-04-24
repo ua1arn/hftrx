@@ -489,10 +489,10 @@ void bootloader_mainloop(void)
 			PRINTF("No targed device\n");
 			break;
 		}
-		dc = disk_read(targetDEV,(void *) drambase, BOOTLOADER_SELFSIZE / 512, 1);
+		dc = disk_read(targetDEV, (void *) drambase, BOOTLOADER_SELFSIZE / 512, 1);
 		if (dc != 0)
 		{
-			PRINTF("bootloade header read error\n");
+			PRINTF("bootloader header read error\n");
 			break;
 		}
 		if (bootloader_get_start_no_cks(drambase, & ip, & length) != 0)

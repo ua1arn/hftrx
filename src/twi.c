@@ -1144,7 +1144,7 @@ static void t113_i2c_set_rate(TWI_TypeDef * twi, uint_fast32_t rate, uint_fast32
 #define TWI_CNTR_M_STP (UINT32_C(1) << 4)
 #define TWI_CNTR_INT_FLAG (UINT32_C(1) << 3)
 
-#define TWI_tout 	5	// 5 ms
+#define TWI_tout 	15	// 5 ms
 
 static void t113_i2c_reset(TWI_TypeDef * twi)
 {
