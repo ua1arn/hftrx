@@ -179,7 +179,7 @@
 	//#define COLORSTYLE_BLUE2 1
 	//#define COLORSTYLE_WHITE	1
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
-	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
+	
 
 	//#define LCDMODE_RGB565	1	/* Экран 16 бит (три страницы) */
 	//#define LCDMODE_RGB565 1	/* Экран 16 бит */

@@ -324,6 +324,9 @@ typedef struct
 	#define DSGN_BIGCOLOR 			COLORPIP_YELLOW 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
+	#define DSGN_TIMECOLOR 			COLORPIP_YELLOW 		// цвет отображения времени/даты
+	#define DSGN_TIMECOLORBACK 		COLORPIP_BLACK
+
 	#define DSGN_SPECTRUMPEAKS 	COLORPIP_DARKGRAY
 	#define DSGN_SPECTRUMLINE	COLORPIP_YELLOW
 	#define DSGN_SPECTRUMFENCE	COLORPIP_WHITE
@@ -496,6 +499,9 @@ typedef struct
 	#define DSGN_BIGCOLOR 			COLORPIP_RED 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
+	#define DSGN_TIMECOLOR 			COLORPIP_RED 		// цвет отображения времени/даты
+	#define DSGN_TIMECOLORBACK 		COLORPIP_BLACK
+
 	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 	#define DSGN_FMENUACTIVEBACK	COLORPIP_DARKRED
 	#define DSGN_FMENUINACTIVETEXT	COLORPIP_BLACK
@@ -550,8 +556,12 @@ typedef struct
 	#define DSGN_AFSPECTRE_COLOR DSGN_SPECTRUMBG2
 
 #elif COLORSTYLE_GREEN
+
 	#define DSGN_BIGCOLOR 			COLORPIP_YELLOW 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
+
+	#define DSGN_TIMECOLOR 			COLORPIP_YELLOW 		// цвет отображения времени/даты
+	#define DSGN_TIMECOLORBACK 		COLORPIP_BLACK
 
 	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 	#define DSGN_FMENUACTIVEBACK	COLORPIP_DARKGREEN
@@ -614,6 +624,9 @@ typedef struct
 	#define DSGN_BIGCOLOR 			COLORPIP_WHITE 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
+	#define DSGN_TIMECOLOR 			COLORPIP_WHITE 		// цвет отображения времени/даты
+	#define DSGN_TIMECOLORBACK 		COLORPIP_BLACK
+
 	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 	#define DSGN_FMENUACTIVEBACK	COLORPIP_BLACK
 	#define DSGN_FMENUINACTIVETEXT	COLORPIP_DARKCYAN
@@ -672,6 +685,9 @@ typedef struct
 
 	#define DSGN_BIGCOLOR 			COLORPIP_DARKCYAN 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
+
+	#define DSGN_TIMECOLOR 			COLORPIP_GREEN 		// цвет отображения времени/даты
+	#define DSGN_TIMECOLORBACK 		COLORPIP_BLACK
 
 	#define DSGN_FMENUACTIVETEXT	COLORPIP_WHITE
 	#define DSGN_FMENUACTIVEBACK	COLORPIP_DARKCYAN
@@ -733,6 +749,9 @@ typedef struct
 
 	#define DSGN_BIGCOLOR             COLORPIP_WHITE     // цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK         COLORPIP_BLACK
+
+	#define DSGN_TIMECOLOR 			COLORPIP_WHITE 		// цвет отображения времени/даты
+	#define DSGN_TIMECOLORBACK 		COLORPIP_BLACK
 
 	#define DSGN_FMENUACTIVETEXT    COLORPIP_WHITE
 	#define DSGN_FMENUACTIVEBACK    COLORPIP_GRAY

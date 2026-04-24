@@ -348,7 +348,7 @@
 
 	
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
-	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
+	
 
 	//#define WITHRENDERHTML	1	/* Использование библиотеки litehtml для формирования изображения на дисплее */
 	#define COLORSTYLE_GREEN	1
