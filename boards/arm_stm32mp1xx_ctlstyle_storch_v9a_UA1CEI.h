@@ -12,12 +12,12 @@
 #define ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_UA1CEI_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
-	#define WITHBANDR1BBU 1
-	#define BUFOVERSIZE 5
 
 	#if ! defined(STM32MP157Axx) && ! defined(STM32MP153Dxx)
 		#error Wrong CPU selected. STM32MP157Axx expected
 	#endif /* ! defined(STM32MP157Axx) */
+
+	#define DEFAULTDIALFREQ	14130000
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -51,7 +51,7 @@
 
 			//#define PLL1DIVN	54	// 12*54 = 648 MHz
 			//#define PLL1DIVN	66	// 12*66 = 792 MHz
-			#define PLL1DIVN	57//(stm32mp1_overdrived() ? 66 : 54)	// Auto select
+			#define PLL1DIVN	(stm32mp1_overdrived() ? 66 : 54)	// Auto select
 
 			// PLL2_1600
 			#if 1
@@ -218,7 +218,7 @@
 	//#define COLORSTYLE_BLUE2 1
 	//#define COLORSTYLE_WHITE	1
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
-	#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
+	//#define WITHGRADIENT_FIXED 1	/* использование массива цветов как базы для создания палитры водопада. */
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -435,7 +435,7 @@
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
@@ -459,8 +459,8 @@
 		#define WITHVIEW_3DSS		1
 		#define WITHVIEW_3DSS_MARK	1
 		#define WITHSPECBETA_DEFAULT	30
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+//		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+//		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#if 0
 			#define WITHTOUCHGUI		1
 			#define WITHDISPLAY_FPS		30
