@@ -1143,6 +1143,7 @@ static void t113_i2c_set_rate(TWI_TypeDef * twi, uint_fast32_t rate, uint_fast32
 #define TWI_CNTR_M_STA (UINT32_C(1) << 5)
 #define TWI_CNTR_M_STP (UINT32_C(1) << 4)
 #define TWI_CNTR_INT_FLAG (UINT32_C(1) << 3)
+#define TWI_CNTR_A_ACK (UINT32_C(1) << 2)	// Assert Acknowledge
 
 #define TWI_tout 	15	// 5 ms
 
@@ -1201,7 +1202,7 @@ static int t113_i2c_stopstart(TWI_TypeDef * twi)
 static int t113_i2c_send_data(TWI_TypeDef * twi, uint8_t dat, const char * file, int line)
 {
 	twi->TWI_DATA = dat;
-	twi->TWI_CNTR |= (1 << 3);	// INT_FLAG
+	twi->TWI_CNTR |= TWI_CNTR_INT_FLAG;	// INT_FLAG
 
 	return t113_i2c_wait_status(twi, file, line);
 }
@@ -1211,24 +1212,29 @@ static int t113_i2c_read(TWI_TypeDef * twi, struct i2c_msg_t * msg)
 	uint8_t * p = msg->buf;
 	int len = msg->len;
 
-	if (t113_i2c_send_data(twi, (uint8_t)((msg->addr7 << 1) | 1), __FILE__, __LINE__) != I2C_STAT_TX_AR_ACK)
+	if (t113_i2c_send_data(twi, (uint8_t)((msg->addr7 << 1) | 0x01), __FILE__, __LINE__) != I2C_STAT_TX_AR_ACK)
+	{
 		return -1;
+	}
 	if (len == 0)	/* Handle zero count for probes */
 		return 0;
-	twi->TWI_CNTR = twi->TWI_CNTR | (1 << 2);
-	while (len > 0){
+	twi->TWI_CNTR = twi->TWI_CNTR | TWI_CNTR_A_ACK;
+	while (len > 0)
+	{
 		if (len == 1)
 		{
 			// last byte
-			twi->TWI_CNTR = (twi->TWI_CNTR & ~(1 << 2)) | (1 << 3);
+			twi->TWI_CNTR = (twi->TWI_CNTR & ~ TWI_CNTR_A_ACK) | TWI_CNTR_INT_FLAG;
 			if (t113_i2c_wait_status(twi, __FILE__, __LINE__) != I2C_STAT_RXD_NAK)
 				return -1;
-		}else{
-			twi->TWI_CNTR = twi->TWI_CNTR | (1 << 3);
+		}
+		else
+		{
+			twi->TWI_CNTR = twi->TWI_CNTR | TWI_CNTR_INT_FLAG;
 			if (t113_i2c_wait_status(twi, __FILE__, __LINE__) != I2C_STAT_RXD_ACK)
 				return -1;
 		}
-		*p++ = twi->TWI_DATA;
+		* p ++ = twi->TWI_DATA;
 		len--;
 	}
 	return 0;
@@ -1239,7 +1245,8 @@ static int t113_i2c_write(TWI_TypeDef * twi, struct i2c_msg_t * msg)
 	uint8_t * p = msg->buf;
 	int len = msg->len;
 
-	if (t113_i2c_send_data(twi, (uint8_t)(msg->addr7 << 1), __FILE__, __LINE__) != I2C_STAT_TX_AW_ACK){
+	if (t113_i2c_send_data(twi, (uint8_t)(msg->addr7 << 1), __FILE__, __LINE__) != I2C_STAT_TX_AW_ACK)
+	{
 		return -1;
 	}
 	if (len == 0)	/* Handle zero count for probes */
@@ -1248,7 +1255,7 @@ static int t113_i2c_write(TWI_TypeDef * twi, struct i2c_msg_t * msg)
 	{
 		if (t113_i2c_send_data(twi, * p ++, __FILE__, __LINE__) != I2C_STAT_TXD_ACK)
 			return -1;
-		len--;
+		len --;
 	}
 	return 0;
 }
@@ -1281,12 +1288,13 @@ int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint
 
 	res = t113_i2c_start(twi, __FILE__, __LINE__);
 	if (res != I2C_STAT_TX_START) {
-		//PRINTF("i2chw_read start error\n");
+		PRINTF("i2chwx_read start error\n");
 		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
 	}
 	res = t113_i2c_read(twi, &msgs);
-	if (res != 0) {
+	if (res != 0)
+	{
 		t113_i2c_reset(twi, __FILE__, __LINE__);
 		return 1;
 	}
@@ -1311,7 +1319,7 @@ int i2chwx_write(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * bu
 
 	res = t113_i2c_start(twi, __FILE__, __LINE__);
 	if (res != I2C_STAT_TX_START) {
-		//PRINTF("i2chw_write start error\n");
+		PRINTF("i2chwx_write start error\n");
 		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
 	}
@@ -1341,18 +1349,18 @@ int i2chwx_write2(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * b
 
 	res = t113_i2c_start(twi, __FILE__, __LINE__);
 	if (res != I2C_STAT_TX_START) {
-		//PRINTF("i2chw_write start error\n");
+		PRINTF("i2chwx_write2 start error\n");
 		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
 	}
-	res = t113_i2c_write(twi, &msgs);
+	res = t113_i2c_write(twi, & msgs);
 	if (res != 0) {
 		t113_i2c_reset(twi, __FILE__, __LINE__);
 		return 1;
 	}
 	msgs.len = size2;
 	msgs.buf = (void *) buf2;
-	res = t113_i2c_write_buff(twi, &msgs);
+	res = t113_i2c_write_buff(twi, & msgs);
 	if (res != 0) {
 		t113_i2c_reset(twi, __FILE__, __LINE__);
 		return 1;
@@ -1379,7 +1387,7 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 
 	res = t113_i2c_start(twi, __FILE__, __LINE__);
 	if (res != I2C_STAT_TX_START) {
-		//PRINTF("i2chw_exchange 1 start error\n");
+		PRINTF("i2chwx_exchange 1 start error\n");
 		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
 	}
