@@ -8913,6 +8913,30 @@ void hightests(void)
 #endif
 #if 0
 	{
+		// SD test
+		arm_hardware_piof_outputs(UINT32_C(1) << 0, 1 * UINT32_C(1) << 0);	/* PF0 - SDC0_D1 TMS	*/
+		arm_hardware_piof_outputs(UINT32_C(1) << 1, 1 * UINT32_C(1) << 1);	/* PF1 - SDC0_D0 TDI	*/
+		arm_hardware_piof_outputs(UINT32_C(1) << 2, 1 * UINT32_C(1) << 2);	/* PF2 - SDC0_CK (UART0-TX AF3)	*/
+		arm_hardware_piof_outputs(UINT32_C(1) << 3, 1 * UINT32_C(1) << 3);	/* PF3 - SDC0_CMD TDO	*/
+		arm_hardware_piof_outputs(UINT32_C(1) << 4, 1 * UINT32_C(1) << 4);	/* PF4 - SDC0_D3 (UART0-RX AF3) */
+		arm_hardware_piof_outputs(UINT32_C(1) << 5, 1 * UINT32_C(1) << 5);	/* PF5 - SDC0_D2 TCK	*/
+
+		for (;;)
+		{
+			unsigned pos;
+			for (pos = 0; pos < 6; ++ pos)
+			{
+				const unsigned mask = 1U << pos;
+				gpioX_setstate(GPIOF, mask, 1 * mask);
+				local_delay_ms(10);
+				gpioX_setstate(GPIOF, mask, 0 * mask);
+			}
+		}
+
+	}
+#endif
+#if 0
+	{
 		// i2c bus test i2c test twi bus test twi test
 		unsigned n = 3;
 		for (;n --;)
