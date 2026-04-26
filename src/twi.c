@@ -1178,7 +1178,7 @@ static int t113_i2c_wait_status(TWI_TypeDef * twi, const char * file, int line)
 static int t113_i2c_start(TWI_TypeDef * twi, const char * file, int line)
 {
 	twi->TWI_CNTR |= TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG;	// M_STA INT_FLAG
-	if (t113_i2c_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout, __FILE__, __LINE__))
+	if (t113_i2c_wait32mask(twi, & twi->TWI_CNTR, TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, 0*TWI_CNTR_M_STA | TWI_CNTR_INT_FLAG, TWI_tout, file, line))
 		return I2C_STAT_BUS_ERROR;
 	return twi->TWI_STAT;
 }
@@ -1235,7 +1235,7 @@ static int t113_i2c_read(TWI_TypeDef * twi, struct i2c_msg_t * msg)
 				return -1;
 		}
 		* p ++ = twi->TWI_DATA;
-		len--;
+		len --;
 	}
 	return 0;
 }
