@@ -148,25 +148,6 @@ spi_cs_enable(
 
 #elif CPUSTYLE_ARM || CPUSTYLE_RISCV
 
-	#if WITHSPISPLIT
-		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
-		switch (target)
-		{
-		case SPI_CSEL0:
-			SPI0_TARGET_PORT_C(SPI0_CS_BIT);
-			break;
-		case SPI_CSEL1:
-			SPI1_TARGET_PORT_C(SPI1_CS_BIT);
-			break;
-	  #if defined (SPI_CSEL2)
-		case SPI_CSEL2:
-			SPI2_TARGET_PORT_C(SPI2_CS_BIT);
-			break;
-	  #endif
-		}
-
-	#endif /* WITHSPISPLIT */
-
 	// бездешифраторная схема управления - CS формируются выходами процессора напрямую.
 	#if SPI_ALLCS_BITS != 0 && SPI_ALLCS_BITSNEG != 0
 		if ((target & SPI_ALLCS_BITSNEG) != 0)
@@ -250,40 +231,38 @@ prog_pulse_ioupdate(void)
 
 #if WITHSPISW
 
-#if ! WITHSPISPLIT
-	/*
-	 * просто выдача тактового сигнала и чтение одного бита
-	 */
-	static
-	uint_fast8_t 
-	//RAMFUNC_NONILINE 
-	spi_pulse_clk(void)
-	{
-		SCLK_NPULSE();	/* latch to chips */
+/*
+ * просто выдача тактового сигнала и чтение одного бита
+ */
+static
+uint_fast8_t
+//RAMFUNC_NONILINE
+spi_pulse_clk(void)
+{
+	SCLK_NPULSE();	/* latch to chips */
 
-		#if CPUSTYLE_XC7Z || CPUSTYLE_RK356X
-			return SPI_TARGET_MISO_PIN != 0;
-		#else /*  */
-			return (SPI_TARGET_MISO_PIN & SPI_MISO_BIT) != 0;
-		#endif /*  */
-	}
+	#if defined SPI_MISO_BIT
+		return (SPI_TARGET_MISO_PIN & SPI_MISO_BIT) != 0;
+	#else /*  */
+		return SPI_TARGET_MISO_PIN != 0;
+	#endif /*  */
+}
 
-	//////////////////////////
-	// Получение 8 бит с SPI
-	uint_fast8_t 
-	prog_spi_read_byte_impl(uint_fast8_t bytetosend)
+//////////////////////////
+// Получение 8 бит с SPI
+uint_fast8_t
+prog_spi_read_byte_impl(uint_fast8_t bytetosend)
+{
+	uint_fast8_t i = 8;
+	uint_fast8_t v = 0;
+	while (i --)
 	{
-		uint_fast8_t i = 8;
-		uint_fast8_t v = 0;
-		while (i --)
-		{
-			SDO_SET(bytetosend & 0x80);		// запись бита информации
-			v = v * 2 + spi_pulse_clk();	// спадающий перепад на SPI CLK переключает FRAM в режим выдачи
-			bytetosend <<= 1;
-		}
-		return v;
+		SDO_SET(bytetosend & 0x80);		// запись бита информации
+		v = v * 2 + spi_pulse_clk();	// спадающий перепад на SPI CLK переключает FRAM в режим выдачи
+		bytetosend <<= 1;
 	}
-#endif /* ! WITHSPISPLIT */
+	return v;
+}
 
 static 
 //RAMFUNC_NONILINE 

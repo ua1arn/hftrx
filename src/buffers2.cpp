@@ -1493,7 +1493,7 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 #if WITHFPGAPIPE_NCORX0
 	buff [DMABUF32TX_NCO1] = delta;
 #endif /* WITHFPGAPIPE_NCORX0 */
-#if (CPUSTYLE_XC7Z || CPUSTYLE_RK356X) && WITHLFM
+#if WITHLFM
 	if (iflfmactive())
 	{
 		ftw_t v = dspfpga_get_nco1();
@@ -1501,7 +1501,7 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 		v = dspfpga_get_ncorts();
 		xcz_dds_rts(& v);
 	}
-#endif /* (CPUSTYLE_XC7Z || CPUSTYLE_RK356X) && WITHLFM */
+#endif /* WITHLFM */
 
 	return DMABUFFSTEP32TX;
 }
