@@ -385,8 +385,8 @@ extern "C" {
 void cpu_initialize(void);
 void arm_hardware_reset(void);
 void cpu_initdone(void);	// секция init больше не нужна
-uint_fast32_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
-uint_fast32_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
+uint_fast64_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
+uint_fast64_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
 
 void tickers_initialize(void);
 void tickers_deinitialize(void);

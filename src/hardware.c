@@ -1226,7 +1226,7 @@ uint32_t hardware_get_random(void)
 		;
 	return RNG->DR;
 
-#elif CPUSTYLE_T507 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_H3 || CPUSTYLE_A133
+#elif CPUSTYLE_ALLWINNER
 
 	return cpu_getdebugticks();
 
@@ -1610,7 +1610,7 @@ sysinit_debug_initialize(void)
 
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 // получение частоты, с которой инкрементируется счетчик
-uint_fast32_t cpu_getdebugticksfreq(void)
+uint_fast64_t cpu_getdebugticksfreq(void)
 {
 	return SystemCoreClock;//CPU_FREQ;
 }
@@ -1619,13 +1619,13 @@ uint_fast32_t cpu_getdebugticksfreq(void)
 // получение из аппаратного счетчика монотонно увеличивающегося кода
 // see sysinit_perfmeter_initialize() in hardware.c
 // Счетчик увеличивается с частотой процессора
-uint_fast32_t cpu_getdebugticks(void)
+uint_fast64_t cpu_getdebugticks(void)
 {
 #if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 	return DWT->CYCCNT;	// use TIMESTAMP_GET();
 
 #elif defined(__aarch64__)
-	return (uint32_t) __get_PMCCNTR_EL0();
+	return __get_PMCCNTR_EL0();
 
 #elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
 	{
@@ -1640,7 +1640,7 @@ uint_fast32_t cpu_getdebugticks(void)
 
 #elif defined(__riscv)
 
-	return (uint32_t) csr_read_mcycle();
+	return csr_read_mcycle();
 
 #else
 	#warning Wrong CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
