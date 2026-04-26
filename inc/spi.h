@@ -79,31 +79,27 @@ void spi_initialize(void);	// отдельно инициализация SPI
 		} while (0)
 
 		#define SDO_SET(val) do { 								\
-				if ((val) != 0) 								\
-					{ SPI_MOSI_S(); hardware_spi_io_delay();  } \
-				else 											\
-					{ SPI_MOSI_C(); hardware_spi_io_delay();  } \
-			} while (0)
+			if ((val) != 0) 								\
+				{ SPI_MOSI_S(); hardware_spi_io_delay();  } \
+			else 											\
+				{ SPI_MOSI_C(); hardware_spi_io_delay();  } \
+		} while (0)
 
 	#elif CPUSTYLE_ARM
 		// при программной реализации SPI
 		// поддерживается режим SPI MODE 3
-		#define SCLK_SET() do { \
-				{ SPI_TARGET_SCLK_PORT_S(SPI_SCLK_BIT); hardware_spi_io_delay(); } \
-			} while (0)
 
-		#define SCLK_CLR() do { \
-				{ SPI_TARGET_SCLK_PORT_C(SPI_SCLK_BIT); hardware_spi_io_delay();  } \
-			} while (0)
-
-		#define SCLK_NPULSE() do { SCLK_CLR(); SCLK_SET(); } while (0)
+		#define SCLK_NPULSE() do { 							\
+			SPI_TARGET_SCLK_PORT_C(SPI_SCLK_BIT); hardware_spi_io_delay(); 			\
+			SPI_TARGET_SCLK_PORT_S(SPI_SCLK_BIT); hardware_spi_io_delay(); 			\
+		} while (0)
 			
 		#define SDO_SET(val) do { \
-				if ((val) != 0) \
-					{ SPI_TARGET_MOSI_PORT_S(SPI_MOSI_BIT); hardware_spi_io_delay();  } \
-				else \
-					{ SPI_TARGET_MOSI_PORT_C(SPI_MOSI_BIT); hardware_spi_io_delay();  } \
-			} while (0)
+			if ((val) != 0) \
+				{ SPI_TARGET_MOSI_PORT_S(SPI_MOSI_BIT); hardware_spi_io_delay();  } \
+			else \
+				{ SPI_TARGET_MOSI_PORT_C(SPI_MOSI_BIT); hardware_spi_io_delay();  } \
+		} while (0)
 
 	#else
 
@@ -112,12 +108,11 @@ void spi_initialize(void);	// отдельно инициализация SPI
 	#endif
 
 	//интерфейс с платой - выдача одного бита на последовательный канал
-	#define prog_bit(target, bitv) \
-		do { \
-			(void) (target); \
-			SDO_SET(bitv);	/* запись бита информации */ \
-			SCLK_NPULSE();	/* latch to chips */ \
-		} while (0)
+	#define prog_bit(target, bitv) do { \
+		(void) (target); \
+		SDO_SET(bitv);	/* запись бита информации */ \
+		SCLK_NPULSE();	/* latch to chips */ \
+	} while (0)
 	// ---------------- end of optimizations
 
 	void prog_val_impl(
@@ -195,11 +190,6 @@ void prog_spi_exchange32(
 	uint32_t * rxbuff,
 	unsigned int size
 	);
-
-void hardware_spi_slave_initialize(void);		
-void hardware_spi_slave_enable(uint_fast8_t spimode);	
-void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len);
-
 
 void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix);		/* инициализация и перевод в состояние "отключено" */
 void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, int_fast32_t spispeed);

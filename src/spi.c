@@ -773,7 +773,6 @@ prog_select_init(void)
 
 	//spi_to_write(target);
 	spi_allcs_disable();	// chip select inactive
-	//SCLK_SET();	// initial state of SCLK - logical "1" - обеспечивается в hardwate_spi_select_init()
 }
 
 
