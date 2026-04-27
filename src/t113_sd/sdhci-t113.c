@@ -194,8 +194,13 @@ static void WaitAfterReset(struct sdhci_t * sdhci)
  }
  while((s&SDXC_FIFO_RESET)||(s&SDXC_SOFT_RESET)); //ждём пока оба бита FIFO_RST и SOFT_RST не сбросятся
 */
-	while (read32(sdhci->base + SD_GCTL) & (SDXC_FIFO_RESET | SDXC_SOFT_RESET))
-		;
+//	while (read32(sdhci->base + SD_GCTL) & (SDXC_FIFO_RESET | SDXC_SOFT_RESET))
+//		;
+	if (local_wait32mask(& sdhci->instance->SMHC_CTRL, (SDXC_FIFO_RESET | SDXC_SOFT_RESET), 0* (SDXC_FIFO_RESET | SDXC_SOFT_RESET), 250))
+	{
+		TP();
+	}
+	sdhci->instance->SMHC_RINTSTS = 0xffffffff;
 
 }
 
@@ -256,23 +261,34 @@ static int t113_transfer_command(struct sdhci_t * sdhci, struct sdhci_cmd_t * cm
 	sdhci->instance->SMHC_CTRL |= (UINT32_C(1) << 31);	// NO DMA, всегда чтение процессором
 
 	sdhci->instance->SMHC_CMD = SDXC_START | cmdval | cmd->cmdidx;
-	while (sdhci->instance->SMHC_CMD & SDXC_START)
-		 ;
+//	while (sdhci->instance->SMHC_CMD & SDXC_START)
+//		 ;
+	if (local_wait32mask(& sdhci->instance->SMHC_CMD, SDXC_START, 0* SDXC_START, 250))
+	{
+		TP();
+		return 0;
+	}
 
 //	timeout = ktime_add_ms(ktime_get(),1);
-	do {
-		status = read32(sdhci->base + SD_RISR);
+//	do {
+//		status = read32(sdhci->base + SD_RISR);
+//
+///*		if(ktime_after(ktime_get(), timeout) || (status & SDXC_INTERRUPT_ERROR_BIT))
+//		{
+//			write32(sdhci->base + SD_GCTL, SDXC_HARDWARE_RESET);
+//			write32(sdhci->base + SD_RISR, 0xffffffff);
+//                        WaitAfterReset(sdhci);
+//
+//			return 0;
+//		}*/
+//
+//	} while(!(status & SDXC_COMMAND_DONE));
 
-/*		if(ktime_after(ktime_get(), timeout) || (status & SDXC_INTERRUPT_ERROR_BIT))
-		{
-			write32(sdhci->base + SD_GCTL, SDXC_HARDWARE_RESET);
-			write32(sdhci->base + SD_RISR, 0xffffffff);
-                        WaitAfterReset(sdhci);
-
-			return 0;
-		}*/
-
-	} while(!(status & SDXC_COMMAND_DONE));
+	if (local_wait32mask(& sdhci->instance->SMHC_RINTSTS, SDXC_COMMAND_DONE, SDXC_COMMAND_DONE, 250))
+	{
+		TP();
+		return 0;
+	}
 
 	if(cmd->resptype & MMC_RSP_BUSY)
 	{
@@ -304,7 +320,9 @@ static int t113_transfer_command(struct sdhci_t * sdhci, struct sdhci_cmd_t * cm
 	{
 		cmd->response[0] = read32(sdhci->base + SD_RESP0);
 	}
-	write32(sdhci->base + SD_RISR, 0xffffffff);
+
+	//write32(sdhci->base + SD_RISR, 0xffffffff);
+	sdhci->instance->SMHC_RINTSTS = 0xffffffff;
 	return 1;
 }
 
