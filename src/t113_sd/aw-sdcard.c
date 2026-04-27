@@ -707,6 +707,7 @@ int sdcard_init(void)
 
 	if(!go_idle_state(hci))
 	{
+    	PRINTF("go_idle_state error\n");
 		return 0;
 	}
 
@@ -714,10 +715,15 @@ int sdcard_init(void)
 
 	if(!sd_send_op_cond(hci, card))
 	{
+    	PRINTF("sd_send_op_cond error: tray MMC\n");
 		if(!mmc_send_op_cond(hci, card))
 		{
+	    	PRINTF("mmc_send_op_cond error: tray SDIO\n");
 			if (!sdio_send_op_cond(hci, card))
+			{
+		    	PRINTF("sdio_send_op_cond error\n");
 				return 0;
+			}
 			PRINTF("SDIO device detected\n");
 		}
 	}
@@ -728,7 +734,10 @@ int sdcard_init(void)
 		cmd.cmdarg = 0;
 		cmd.resptype = MMC_RSP_R1;
 		if(!sdhci_t113_transfer(hci, &cmd, NULL))
+		{
+	    	PRINTF("MMC_SEND_CID error\n");
 			return 0;
+		}
 		card->cid[0] = cmd.response[0];
 		card->cid[1] = cmd.response[1];
 		card->cid[2] = cmd.response[2];
@@ -738,7 +747,10 @@ int sdcard_init(void)
 		cmd.cmdarg = 0;
 		cmd.resptype = MMC_RSP_R1;
 		if(!sdhci_t113_transfer(hci, &cmd, NULL))
+		{
+	    	PRINTF("MMC_SEND_CSD error\n");
 			return 0;
+		}
 		card->csd[0] = cmd.response[0];
 		card->csd[1] = cmd.response[1];
 		card->csd[2] = cmd.response[2];
@@ -755,7 +767,10 @@ int sdcard_init(void)
 		cmd.cmdarg = 0;
 		cmd.resptype = MMC_RSP_R2;
 		if(!sdhci_t113_transfer(hci, &cmd, NULL))
+		{
+	    	PRINTF("MMC_ALL_SEND_CID error\n");
 			return 0;
+		}
 
 		card->cid[0] = cmd.response[0];
 		card->cid[1] = cmd.response[1];
@@ -766,7 +781,10 @@ int sdcard_init(void)
 		cmd.cmdarg = card->rca << 16;
 		cmd.resptype = MMC_RSP_R6;
 		if(!sdhci_t113_transfer(hci, &cmd, NULL))
+		{
+	    	PRINTF("SD_CMD_SEND_RELATIVE_ADDR error\n");
 			return 0;
+		}
 		if(card->version & SD_VERSION_SD)
 			card->rca = (cmd.response[0] >> 16) & 0xffff;
 
@@ -774,7 +792,10 @@ int sdcard_init(void)
 		cmd.cmdarg = card->rca << 16;
 		cmd.resptype = MMC_RSP_R2;
 		if(!sdhci_t113_transfer(hci, &cmd, NULL))
+		{
+	    	PRINTF("MMC_SEND_CSD error\n");
 			return 0;
+		}
 		card->csd[0] = cmd.response[0];
 		card->csd[1] = cmd.response[1];
 		card->csd[2] = cmd.response[2];
@@ -784,11 +805,17 @@ int sdcard_init(void)
 		cmd.cmdarg = card->rca << 16;
 		cmd.resptype = MMC_RSP_R1;
 		if(!sdhci_t113_transfer(hci, &cmd, NULL))
+		{
+	    	PRINTF("MMC_SELECT_CARD error\n");
 			return 0;
+		}
 		do {
 			status = mmc_status(hci, card);
 			if(status < 0)
+			{
+		    	TP();
 				return 0;
+			}
 		} while(status != MMC_STATUS_TRAN);
 	}
 
@@ -1053,7 +1080,7 @@ int sdcard_init(void)
 			cmd.resptype = MMC_RSP_R1;
 			if(!sdhci_t113_transfer(hci, &cmd, NULL))
 			{
-				//PRINTF("Can not set card width to code %i\n", width);
+				PRINTF("Can not set card width to code %i\n", (int) width);
 				return 0;
 			}
 			else
@@ -1088,7 +1115,10 @@ int sdcard_init(void)
 	cmd.cmdarg = card->read_bl_len;
 	cmd.resptype = MMC_RSP_R1;
 	if(!sdhci_t113_transfer(hci, &cmd, NULL))
+	{
+    	PRINTF("MMC_SET_BLOCKLEN error\n");
 		return 0;
+	}
 
 #if 0
 	//PRINTF("SD/MMC card at the '%s' host controller:\n", hci->name);

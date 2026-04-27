@@ -331,7 +331,8 @@ static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount,
 	uint64_t count = (uint64_t) blkcount * blksize;
 	uint32_t * tmp = buf;
 	uint32_t status, err, done;
-
+	ASSERT(count);
+	sdhci->instance->SMHC_RINTSTS = SDXC_INTERRUPT_ERROR_BIT;
 	while (count >= sizeof(uint32_t))
 	{
 		if ((read32(sdhci->base + SD_STAR) & SDXC_FIFO_EMPTY) == 0)
@@ -346,9 +347,15 @@ static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount,
 
 		}
 	}
+	ASSERT(count == 0);
+	while ((read32(sdhci->base + SD_STAR) & SDXC_FIFO_EMPTY) == 0)
+	{
+		TP();
+		read32(sdhci->base + SD_FIFO);
+	}
 
 	do {
-		status = read32(sdhci->base + SD_RISR);
+		status = sdhci->instance->SMHC_RINTSTS;
 		err = status & SDXC_INTERRUPT_ERROR_BIT;
 		if(blkcount > 1)
 			done = status & SDXC_AUTO_COMMAND_DONE;
@@ -358,13 +365,13 @@ static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount,
 
 	if(err & SDXC_INTERRUPT_ERROR_BIT)
         {
-		PRINTF("2 rd err=%08X, done=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) done, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
+		PRINTF("2 rd err=%08X, done=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) done, (unsigned) count, (unsigned) sdhci->instance->SMHC_RINTSTS);
 		return 0;
         }
 
 	if(count)
         {
-		PRINTF("3 rd err=%08X, done=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) done, (unsigned) count, (unsigned) read32(sdhci->base + SD_RISR));
+		PRINTF("3 rd err=%08X, done=%08X, count=%u (%08X)\n", (unsigned) err, (unsigned) done, (unsigned) count, (unsigned) sdhci->instance->SMHC_RINTSTS);
 		return 0;
         }
 	return 1;
@@ -431,6 +438,7 @@ static int t113_transfer_data(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, 
 	{
 		if(!t113_transfer_command(sdhci, cmd, dat))
 		{
+			TP();
 			return 0;
 		}
 		ret = read_bytes(sdhci, (uint32_t *)dat->buf, dat->blkcnt, dat->blksz);
@@ -439,9 +447,14 @@ static int t113_transfer_data(struct sdhci_t * sdhci, struct sdhci_cmd_t * cmd, 
 	{
 		if(!t113_transfer_command(sdhci, cmd, dat))
 		{
+			TP();
 			return 0;
 		}
 		ret = write_bytes(sdhci, (uint32_t *)dat->buf, dat->blkcnt, dat->blksz);
+	}
+	if (ret == 0)
+	{
+		TP();
 	}
 	return ret;
 }
@@ -523,9 +536,9 @@ int sdhci_t113_setclock(struct sdhci_t * sdhci, uint32_t clock)
 //			clock = 1000000;
 //	}
 
-	if (clock > 10000000)
-		clock = 10000000;
-    ratio = SMHCHARD_FREQ / (4 * clock);	// Измерения частоты сигнала CLK показали, что деление на 4 а не на 2
+//	if (clock > 10000000)
+//		clock = 10000000;
+    ratio = calcdivround2(SMHCHARD_FREQ, (4 * clock));	// Измерения частоты сигнала CLK показали, что деление на 4 а не на 2
 
 
     if (ratio == 0)

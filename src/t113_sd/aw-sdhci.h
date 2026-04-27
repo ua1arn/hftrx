@@ -18,7 +18,7 @@ extern "C" {
 
 #include "aw-sdmmc.h"
 
-#define read32(r)    (*(volatile uint32_t*)(r))
+#define read32(r)    (*(volatile uint32_t*)((r)))
 #define write32(r,v) do {(*(volatile uint32_t*)(r))=(v); } while (0)
 
 //----------------------------------------------------
