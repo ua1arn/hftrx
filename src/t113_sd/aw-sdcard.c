@@ -184,7 +184,7 @@ static int sd_send_if_cond(struct sdhci_t * hci, struct sdcard_t * card)
 static int sd_send_op_cond(struct sdhci_t * hci, struct sdcard_t * card)
 {
 	struct sdhci_cmd_t cmd = { 0 };
-	int retries = 100;
+	int retries = 1000;
 
 	do {
 		cmd.cmdidx = MMC_APP_CMD;
