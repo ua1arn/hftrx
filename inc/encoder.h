@@ -28,13 +28,13 @@ typedef struct encoder_tag encoder_t;
 
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void));
 
-int32_t encoder_get_delta(encoder_t * e);
-void encoder_pushback(encoder_t * const e, int32_t outsteps);
+int encoder_get_delta(encoder_t * e);
+void encoder_pushback(encoder_t * const e, int outsteps);
 
-int32_t
+int
 encoder_getrotatehires(
 	encoder_t * const e,
-	uint_fast8_t * jumpsize	/* jumpsize - во сколько раз увеличивается скорость перестройки */
+	unsigned * jumpsize	/* jumpsize - во сколько раз увеличивается скорость перестройки */
 	);
 
 void encoders_clear(void);	/* накопитель сбрасывается */

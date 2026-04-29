@@ -71,14 +71,16 @@ void keyevent_initialize(keyevent_t * e)
 typedef struct knobevent_tag
 {
 	encoder_t * enc;
-	int16_t delta;
-	uint_fast8_t jumpsize;
+	int delta;
+	unsigned jumpsize;
+	uint8_t lowres;
 } knobevent_t;
 
-void knobevent_initialize(knobevent_t * e, encoder_t * aenc)
+void knobevent_initialize(knobevent_t * e, encoder_t * aenc, uint_fast8_t alowres)
 {
 	e->delta = 0;
 	e->enc = aenc;
+	e->lowres = alowres;
 }
 
 typedef struct mouseevent_tag
@@ -126,24 +128,24 @@ void inputevent_initialize(inputevent_t * e)
 	keyevent_initialize(& e->frontkeyevent);
 	keyevent_initialize(& e->dtmfkeyevent);
 #if WITHENCODER
-	knobevent_initialize(& e->encMAIN, & encoder1);
+	knobevent_initialize(& e->encMAIN, & encoder1, 0);
 #if WITHENCODER_SUB
-	knobevent_initialize(& e->encSUB, & encoder_sub);
+	knobevent_initialize(& e->encSUB, & encoder_sub, 0);
 #endif /* WITHENCODER_SUB */
 #if WITHENCODER2
-	knobevent_initialize(& e->encFN, & encoder2);
+	knobevent_initialize(& e->encFN, & encoder2, 1);
 #endif /* WITHENCODER2 */
 #if WITHENCODER_1F
-	knobevent_initialize(& e->encF1, & encoder_ENC1F);
+	knobevent_initialize(& e->encF1, & encoder_ENC1F, 1);
 #endif /* WITHENCODER_1F */
 #if WITHENCODER_2F
-	knobevent_initialize(& e->encF2, & encoder_ENC2F);
+	knobevent_initialize(& e->encF2, & encoder_ENC2F, 1);
 #endif /* WITHENCODER_2F */
 #if WITHENCODER_3F
-	knobevent_initialize(& e->encF3, & encoder_ENC3F);
+	knobevent_initialize(& e->encF3, & encoder_ENC3F, 1);
 #endif /* WITHENCODER_3F */
 #if WITHENCODER_4F
-	knobevent_initialize(& e->encF4, & encoder_ENC4F);
+	knobevent_initialize(& e->encF4, & encoder_ENC4F, 1);
 #endif /* WITHENCODER_4F */
 #endif /* WITHENCODER */
 	mouseevent_initialize(& e->mouse);
@@ -198,7 +200,7 @@ static int_least16_t event_getRotate_Menu(knobevent_t * e)
 	return d.quot;
 }
 
-static int_least16_t event_getRotate_LoRes(knobevent_t * e, int derate)
+static int_fast32_t event_getRotate_LoRes(knobevent_t * e, int derate)
 {
 	div_t d;
 	d = div(e->delta, derate);
@@ -207,7 +209,7 @@ static int_least16_t event_getRotate_LoRes(knobevent_t * e, int derate)
 	return d.quot;
 }
 
-static void event_pushback_LoRes(knobevent_t * e, int_least16_t delta, int derate)
+static void event_pushback_LoRes(knobevent_t * e, int_fast32_t delta, int derate)
 {
 	encoder_pushback(e->enc, (int) delta * derate);
 }
@@ -1047,7 +1049,9 @@ param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e)
 	const uint_fast16_t step = (pd->qistep == ISTEPLARGE_1) ? 1 : pd->qistep;
 	uint_fast8_t jumpsize_main;
 
-	const int_least16_t nrotate = pd->qistep == ISTEPLARGE_1 ? event_getRotateHiRes(e, & jumpsize_main, genc1div) : event_getRotate_Menu(e);
+	const int_fast32_t nrotate = e->lowres ?
+			event_getRotate_LoRes(e, BOARD_ENC3F_DIVIDE) :
+			(pd->qistep == ISTEPLARGE_1 ? event_getRotateHiRes(e, & jumpsize_main, genc1div) : event_getRotate_Menu(e));
 
 	if (nrotate == 0)
 		return 0;
@@ -1094,7 +1098,7 @@ param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e)
 /* модификация и сохранение параметра по валкодеру
  * - возврат не-0  в случае модификации */
 static uint_fast8_t
-param_rotate(const struct paramdefdef * pd, int_least16_t nrotate)
+param_rotate(const struct paramdefdef * pd, int_fast32_t nrotate)
 {
 	/* редактирование паратметра */
 	unsigned nvalues;
@@ -9269,7 +9273,7 @@ uif_encoder2_hold(void)
 /* обработка вращения второго валкодера */
 static uint_fast8_t
 uif_encoder2_rotate(
-	int_least16_t nrotate	/* знаковое число - на сколько повернут валкодер */
+	int_fast32_t nrotate	/* знаковое число - на сколько повернут валкодер */
 	)
 {
 	if (nrotate == 0)
@@ -9319,7 +9323,7 @@ uif_encoder2_rotate(
 /* заглушка - возвращает 0, если не включена оьработка */
 static uint_fast8_t
 uif_encoder2_rotate(
-	int_least16_t nrotate	/* знаковое число - на сколько повернут валкодер */
+	int_fast32_t nrotate	/* знаковое число - на сколько повернут валкодер */
 	)
 {
 	return 0;
@@ -14248,9 +14252,14 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 	}
 #endif /* WITHENCODER_2F */
 #if WITHENCODER_3F
-	/* редактирование параметра в middle bar */
-	if (! inmenu)
+	if (inmenu)
 	{
+		/* редактирование параметра в пункте меню */
+
+	}
+	else
+	{
+		/* редактирование параметра в middle bar */
 		unsigned nitems;
 		const unsigned apos = gmiddlepos [mode];
 		const struct paramdefdef * const pd = mdt [mode].middlemenu(& nitems) [gmiddlepos [mode]];
@@ -14281,9 +14290,14 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 	}
 #endif /* WITHENCODER_3F */
 #if WITHENCODER_4F
-	/* перемещение по middle bar */
-	if (! inmenu)
+	if (inmenu)
 	{
+		/* навигация по меню */
+
+	}
+	else
+	{
+		/* перемещение по middle bar */
 		const int_least16_t delta = event_getRotate_LoRes(& ev->encF4, BOARD_ENC4F_DIVIDE);
 		if (delta)
 		{
@@ -17786,6 +17800,16 @@ processmenukeyandencoder(inputevent_t * ev)
 		return 1;
 	}
 #endif /* WITHENCODER */
+#if WITHENCODER_3F
+	/* редактирование значения с помощью поворота валкодера. */
+	if (param_rotate_knob(mp->pd, & ev->encF3))	// модификация и сохранение параметра
+	{
+		/* обновление отображения пункта */
+		board_wakeup();
+		updateboard();
+		return 1;
+	}
+#endif /* WITHENCODER_3F */
 
 	if (! ev->frontkeyevent.kbready)
 		return 0;
@@ -20108,23 +20132,23 @@ processmainlooptuneknobs(inputevent_t * ev)
 
 	/* переход по частоте - шаг берётся из gstep_ENC_MAIN */
 #if WITHBBOX && defined (WITHBBOXFREQ)
-	int_least16_t nrotate_main = 0;	// ignore encoder
-	int_least16_t nrotate_sub = 0;	// ignore encoder
+	int_fast32_t nrotate_main = 0;	// ignore encoder
+	int_fast32_t nrotate_sub = 0;	// ignore encoder
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC2;
 #elif WITHENCODER_SUB
-	int_least16_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
-	int_least16_t nrotate_sub = event_getRotateHiRes(& ev->encSUB, & jumpsize_sub, genc1div * gencderate);
+	int_fast32_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
+	int_fast32_t nrotate_sub = event_getRotateHiRes(& ev->encSUB, & jumpsize_sub, genc1div * gencderate);
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC_MAIN;
 #elif WITHENCODER2
-	int_least16_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
-	int_least16_t nrotate_sub = event_getRotateHiRes(& ev->encFN, & jumpsize_sub, genc2div);
+	int_fast32_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
+	int_fast32_t nrotate_sub = event_getRotateHiRes(& ev->encFN, & jumpsize_sub, genc2div);
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC2;
 #else
-	int_least16_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
-	int_least16_t nrotate_sub = 0;
+	int_fast32_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
+	int_fast32_t nrotate_sub = 0;
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = 0;
 #endif

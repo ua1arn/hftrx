@@ -11903,14 +11903,14 @@ void hightests(void)
 		// На индикаторе отображается скорость в оборотах в секунду
 		for (;;)
 		{
-			uint_fast8_t jumpsize;
-			int_least16_t nrotate = encoder_getrotatehires(& encoder1, & jumpsize);
+			unsigned jumpsize;
+			int_least32_t nrotate = encoder_getrotatehires(& encoder1, & jumpsize);
 			(void) nrotate;
 			//display_gotoxy(0, 1);		// курсор в начало второй строки
 			//display_debug_digit(jumpsize, 7, 0, 0);
 			if (nrotate)
 			{
-				PRINTF("n=%5d s=%d\n", nrotate, (int) jumpsize);
+				PRINTF("n=%5d s=%d\n", (int) nrotate, (int) jumpsize);
 
 			}
 			local_delay_ms(100);

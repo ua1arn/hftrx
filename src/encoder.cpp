@@ -192,7 +192,7 @@ unsigned encoder_get_actualresolution(encoder_t * e)
 }
 
 /* получение количества шагов, накопленного с момента предыдущего опроса */
-int32_t
+int
 encoder_get_delta(
 	encoder_t * const e
 	)
@@ -204,15 +204,15 @@ encoder_get_delta(
 }
 
 /* получение количества шагов, накопленного с момента предыдущего опроса */
-static int32_t
+static int
 encoder_get_deltaspeed(
 	encoder_t * const e
 	)
 {
-	return (int32_t) std::atomic_exchange(& e->position, 0);
+	return std::atomic_exchange(& e->position, 0);
 }
 
-void encoder_pushback(encoder_t * const e, int32_t outsteps)
+void encoder_pushback(encoder_t * const e, int outsteps)
 {
 	e->account += outsteps;
 }
@@ -339,16 +339,16 @@ void encoder_kbdctl(
 }
 /* получение накопленного значения прерываний от валкодера.
 		накопитель сбрасывается */
-int32_t
+int_fast32_t
 encoder_getrotatehires(
 	encoder_t * const e,
-	uint_fast8_t * jumpsize	/* jumpsize - во сколько раз увеличивается скорость перестройки */
+	unsigned * jumpsize	/* jumpsize - во сколько раз увеличивается скорость перестройки */
 	)
 {
 	typedef struct accel_tag
 	{
 		unsigned speed;
-		uint_fast8_t muliplier;
+		unsigned muliplier;
 	} accel;
 
 	static const accel velotable [] =
