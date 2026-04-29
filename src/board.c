@@ -1719,6 +1719,21 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_POWERCUTBACK,
 			HARDWARE_OPA2674I_FULLPOWER,
 		};
+		static const uint8_t fanspeedcodes [5][3] =
+		{
+				{ 0, 0, 0 },	// off
+				{ 0, 0, 1 },	// minimal speed
+				{ 0, 1, 1 },
+				{ 1, 1, 1 },	// maximal speed
+		};
+		enum { FANSPEED_OFF = 0, FANSPEED_MIN = 1, FANSPEED_MAX = ARRAY_SIZE(fanspeedcodes)  - 1 };
+#if WITHFANPWM
+		ASSERT(WITHFANPWMMIN == FANSPEED_MIN);
+		ASSERT(WITHFANPWMMAX == FANSPEED_MAX);
+		const unsigned fanspeed = glob_fanflag ? glob_fanpwm : FANSPEED_OFF;
+#else /* WITHFANPWM */
+		const unsigned fanspeed = FANSPEED_OFF;
+#endif /* WITHFANPWM */
 		const spitarget_t target = targetctl1;
 
 		rbtype_t rbbuff [10] = { 0 };
@@ -1741,15 +1756,18 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBVAL8(0100, glob_tuner_bypass ? 0 : glob_tuner_C);
 		RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
 		RBVAL(0070, glob_tuner_bypass ? 0 : glob_tuner_L, 7);
-
-		//RBBIT(0067, 0);	// UNUSED
-		RBBIT(0066, 0);	// undefined
+#if WITHFANPWM
+		RBBIT(0067, fanspeedcodes [fanspeed][0]);	// fan0 - 2.2 OMm in series
+		RBBIT(0066, fanspeedcodes [fanspeed][1]);	// fan1 - 2.2 OMm in series
+		RBBIT(0060, fanspeedcodes [fanspeed][2]);	// fan2 - 2.2 OMm in series
+#else /* WITHFANPWM */
+		RBBIT(0060, glob_fanflag);	// fan
+#endif /* WITHFANPWM */
 		RBBIT(0065, glob_classamode);	// class A
 		RBBIT(0064, glob_rxantenna);	// RX ANT
 		RBBIT(0063, ! glob_tuner_bypass);	// Energized - tuner on
 		RBBIT(0062, ! glob_classamode);	// hi power out
 		RBBIT(0061, txgated);	//
-		RBBIT(0060, glob_fanflag);	// fan
 
 		RBBIT(0057, glob_antenna);	// Ant A/B
 		RBVAL(0050, 1U << glob_bandf2, 7);	// LPF6..LPF0
@@ -1887,13 +1905,13 @@ prog_ctrlreg(uint_fast8_t plane)
 				{ 1, 1, 1, 1 },	// maximal speed
 		};
 		enum { FANSPEED_OFF = 0, FANSPEED_MIN = 1, FANSPEED_MAX = ARRAY_SIZE(fanspeedcodes)  - 1 };
-#if WITHFANTIMER
+#if WITHFANPWM
 		ASSERT(WITHFANPWMMIN == FANSPEED_MIN);
 		ASSERT(WITHFANPWMMAX == FANSPEED_MAX);
 		const unsigned fanspeed = glob_fanflag ? glob_fanpwm : FANSPEED_OFF;
-#else /* WITHFANTIMER */
+#else /* WITHFANPWM */
 		const unsigned fanspeed = FANSPEED_OFF;
-#endif /* WITHFANTIMER */
+#endif /* WITHFANPWM */
 
 		const spitarget_t target = targetctl1;
 
@@ -6444,10 +6462,10 @@ static const uint8_t adcinputs [] =
 #endif /* WITHVOLTSENSOR */
 
 #if WITHTHERMOLEVEL2
-	XTHERMOREFIX,		// Exernal thermo sensor ST LM235Z
-	XTHERMOIX,		// Exernal thermo sensor ST LM235Z
+	XTHERMOREFIX,		// External thermo sensor ST LM235Z
+	XTHERMOIX,		// External thermo sensor ST LM235Z
 #elif WITHTHERMOLEVEL
-	XTHERMOIX,		// Exernal thermo sensor ST LM235Z
+	XTHERMOIX,		// External thermo sensor ST LM235Z
 #endif /* WITHTHERMOLEVEL */
 
 #if WITHPOTIFGAIN
