@@ -611,8 +611,8 @@
 //	#define SPIDF_SPEEDC 		SPIC_SPEED4M
 //	#define NVRAM_SPEEDC 		SPIC_SPEED4M
 //	#define NAU8822_SPEEDC 	SPIC_SPEED400k
-//	#define CTLREG_SPEEDC		SPIC_SPEED400k
 	#define XPT2046_SPEEDC 	SPIC_SPEED400k
+	#define CTLREG_SPEEDC 	SPIC_SPEED400k
 
 	#define targetext1		(UINT32_C(1) << 8)		// PE8 ext1 on front panel
 	#define targetxad2		(UINT32_C(1) << 7)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
