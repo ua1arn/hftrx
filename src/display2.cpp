@@ -10007,7 +10007,7 @@ static void display2_stylesupdate(void)
 	gxstyle_initialize(& dbstylev_2rxB [0]);
 	gxstyle_textcolor(& dbstylev_2rxB [0], DSGN_LABELINACTIVETEXT, DSGN_LABELINACTIVEBACK);
 	gxstyle_initialize(& dbstylev_2rxB [1]);
-	gxstyle_textcolor(& dbstylev_2rxB [1], DSGN_LABELACTIVETEXT, DSGN_LABELACTIVEBACK);
+	gxstyle_textcolor(& dbstylev_2rxB [1], DSGN_SPLITFREQTEXT, DSGN_SPLITFREQBACK);
 
 	// Параметры отображения текстов без вариантов
 	gxstyle_initialize(& dbstylev_1statePSU);
