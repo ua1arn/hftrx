@@ -1040,15 +1040,10 @@ param_keyclick(const struct paramdefdef * pd)
 // Получить delta для модификации значения параметра в меню в пониженной чувствительности валкодера
 static int_fast32_t get_paramvalue_knob_lores(knobevent_t * e)
 {
-	int derateMAIN = encoder_get_actualresolution(e->enc) * e->derate / ENCODER_MENU_STEPS;
-#if WITHENCODER_3F
+	const int derateMAIN = encoder_get_actualresolution(e->enc) * e->derate / ENCODER_MENU_STEPS;
 	const int_fast32_t nrotate = e->lowres ?
 		event_getRotate(e) :
 		event_getRotateReduced(e, derateMAIN ? derateMAIN : 1);
-#else
-	const int_fast32_t nrotate =
-			event_getRotateReduced(e, derateMAIN ? derateMAIN : 1);
-#endif
 	return nrotate;
 }
 
@@ -1056,14 +1051,9 @@ static int_fast32_t get_paramvalue_knob_lores(knobevent_t * e)
 static int_fast32_t get_paramvalue_knob_hires(knobevent_t * e)
 {
 	uint_fast8_t jumpsize_main = 1;
-#if WITHENCODER_3F
 	const int_fast32_t nrotate = e->lowres ?
 			event_getRotate(e) :
 			event_getRotateAccelerated(e, & jumpsize_main, 1);
-#else
-	const int_fast32_t nrotate =
-			event_getRotateAccelerated(e, & jumpsize_main, 1);
-#endif
 	return nrotate * (int) jumpsize_main;
 }
 
