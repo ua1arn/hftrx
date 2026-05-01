@@ -74,13 +74,15 @@ typedef struct knobevent_tag
 	int delta;
 	unsigned jumpsize;
 	uint8_t lowres;
+	int derate;
 } knobevent_t;
 
-void knobevent_initialize(knobevent_t * e, encoder_t * aenc, uint_fast8_t alowres)
+void knobevent_initialize(knobevent_t * e, encoder_t * aenc, uint_fast8_t alowres, int aderate)
 {
 	e->delta = 0;
 	e->enc = aenc;
 	e->lowres = alowres;
+	e->derate = aderate;
 }
 
 typedef struct mouseevent_tag
@@ -123,39 +125,6 @@ typedef struct inputevent_tag
 	mouseevent_t mouse;
 } inputevent_t;
 
-void inputevent_initialize(inputevent_t * e)
-{
-	keyevent_initialize(& e->frontkeyevent);
-	keyevent_initialize(& e->dtmfkeyevent);
-#if WITHENCODER
-	knobevent_initialize(& e->encMAIN, & encoder1, 0);
-#if WITHENCODER_SUB
-	knobevent_initialize(& e->encSUB, & encoder_sub, 0);
-#endif /* WITHENCODER_SUB */
-#if WITHENCODER2
-	knobevent_initialize(& e->encFN, & encoder2, 1);
-#endif /* WITHENCODER2 */
-#if WITHENCODER_1F
-	knobevent_initialize(& e->encF1, & encoder_ENC1F, 1);
-#endif /* WITHENCODER_1F */
-#if WITHENCODER_2F
-	knobevent_initialize(& e->encF2, & encoder_ENC2F, 1);
-#endif /* WITHENCODER_2F */
-#if WITHENCODER_3F
-	knobevent_initialize(& e->encF3, & encoder_ENC3F, 1);
-#endif /* WITHENCODER_3F */
-#if WITHENCODER_4F
-	knobevent_initialize(& e->encF4, & encoder_ENC4F, 1);
-#endif /* WITHENCODER_4F */
-#endif /* WITHENCODER */
-	mouseevent_initialize(& e->mouse);
-}
-
-// Параметры ставяться в setgsubmode
-static uint_fast16_t gstep_ENC_MAIN;
-static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
-static uint_fast16_t gencderate = 1;
-
 #if WITHENCODER
 
 #if defined (ENCDIV_DEFAULT)
@@ -191,19 +160,9 @@ static int_least16_t event_getRotateHiRes(knobevent_t * e, uint_fast8_t * jsize,
 /* получение "редуцированного" количества прерываний от валкодера.
  * То что осталось после деления на scale, остается в накопителе
  */
-static int_least16_t event_getRotate_Menu(knobevent_t * e)
+static int_fast32_t event_getRotate(knobevent_t * e, int derate)
 {
-	const int derate = encoder_get_actualresolution(e->enc) * genc1div / ENCODER_MENU_STEPS;
 	const div_t d = div(e->delta, derate);
-	encoder_pushback(e->enc, d.rem);
-	e->delta = 0;
-	return d.quot;
-}
-
-static int_fast32_t event_getRotate_LoRes(knobevent_t * e, int derate)
-{
-	div_t d;
-	d = div(e->delta, derate);
 	encoder_pushback(e->enc, d.rem);
 	e->delta = 0;
 	return d.quot;
@@ -220,6 +179,41 @@ static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшае
 
 #endif /* WITHENCODER */
 
+
+// производится на каждом цикле получения состояния органов управления
+void inputevent_initialize(inputevent_t * e)
+{
+	keyevent_initialize(& e->frontkeyevent);
+	keyevent_initialize(& e->dtmfkeyevent);
+	mouseevent_initialize(& e->mouse);
+
+#if WITHENCODER
+	knobevent_initialize(& e->encMAIN, & encoder1, 0, genc1div);
+#if WITHENCODER_SUB
+	knobevent_initialize(& e->encSUB, & encoder_sub, 0, genc1div);
+#endif /* WITHENCODER_SUB */
+#if WITHENCODER2
+	knobevent_initialize(& e->encFN, & encoder2, 1, genc2div);
+#endif /* WITHENCODER2 */
+#if WITHENCODER_1F
+	knobevent_initialize(& e->encF1, & encoder_ENC1F, 1, BOARD_ENC1F_DIVIDE);
+#endif /* WITHENCODER_1F */
+#if WITHENCODER_2F
+	knobevent_initialize(& e->encF2, & encoder_ENC2F, 1, BOARD_ENC2F_DIVIDE);
+#endif /* WITHENCODER_2F */
+#if WITHENCODER_3F
+	knobevent_initialize(& e->encF3, & encoder_ENC3F, 1, BOARD_ENC3F_DIVIDE);
+#endif /* WITHENCODER_3F */
+#if WITHENCODER_4F
+	knobevent_initialize(& e->encF4, & encoder_ENC4F, 1, BOARD_ENC4F_DIVIDE);
+#endif /* WITHENCODER_4F */
+#endif /* WITHENCODER */
+}
+
+// Параметры ставяться в setgsubmode
+static uint_fast16_t gstep_ENC_MAIN;
+static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
+static uint_fast16_t gencderate = 1;
 
 
 /* система отказа от передачи при аварийных ситуациях */
@@ -1034,6 +1028,37 @@ param_keyclick(const struct paramdefdef * pd)
 }
 
 #if WITHENCODER
+
+// Получить delta для модификации значения параметра в меню в пониженной чувствительности валкодера
+static int_fast32_t get_paramvalue_knob_lores(knobevent_t * e)
+{
+	const int derateMAIN = encoder_get_actualresolution(e->enc) * genc1div / ENCODER_MENU_STEPS;
+#if WITHENCODER_3F
+	const int_fast32_t nrotate = e->lowres ?
+		event_getRotate(e, BOARD_ENC3F_DIVIDE) :
+		event_getRotate(e, derateMAIN);
+#else
+	const int_fast32_t nrotate =
+		event_getRotate(e, derateMAIN);
+#endif
+	return nrotate;
+}
+
+// Получить delta для модификации значения параметра в меню в нормальной чувствительности валкодера
+static int_fast32_t get_paramvalue_knob_hires(knobevent_t * e)
+{
+	uint_fast8_t jumpsize_main = 1;
+#if WITHENCODER_3F
+	const int_fast32_t nrotate = e->lowres ?
+			event_getRotate(e, BOARD_ENC3F_DIVIDE) :
+			event_getRotateHiRes(e, & jumpsize_main, genc1div);
+#else
+	const int_fast32_t nrotate =
+			event_getRotateHiRes(e, & jumpsize_main, genc1div);
+#endif
+	return nrotate * (int) jumpsize_main;
+}
+
 /* модификация и сохранение параметра по валкодеру
  * - возврат не-0  в случае модификации */
 static uint_fast8_t
@@ -1046,19 +1071,11 @@ param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e)
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
-	const uint_fast16_t step = (pd->qistep == ISTEPLARGE_1) ? 1 : pd->qistep;
-	uint_fast8_t jumpsize_main;
-#if WITHENCODER_3F
-	const int_fast32_t nrotate = e->lowres ?
-			event_getRotate_LoRes(e, BOARD_ENC3F_DIVIDE) :
-			(pd->qistep == ISTEPLARGE_1 ? event_getRotateHiRes(e, & jumpsize_main, genc1div) : event_getRotate_Menu(e));
-#else
-	const int_fast32_t nrotate =
-			(pd->qistep == ISTEPLARGE_1 ? event_getRotateHiRes(e, & jumpsize_main, genc1div) : event_getRotate_Menu(e));
-#endif
+	const uint_fast16_t step = (pd->qistep == ISTEPLARGE_1) ?
+			ISTEP1 : pd->qistep;
+	const int_fast32_t nrotate = (pd->qistep == ISTEPLARGE_1) ?
+			get_paramvalue_knob_hires(e) : get_paramvalue_knob_lores(e);
 
-	if (nrotate == 0)
-		return 0;
 	if (! ismenukinddp(pd, ITEM_VALUE) || step == ISTEP_RO)
 		return 0;
 
@@ -14206,7 +14223,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 	// +++ получение состояния органов управления */
 #if WITHENCODER_1F
 	{
-		const int_least16_t delta = event_getRotate_LoRes(& ev->encF1, BOARD_ENC1F_DIVIDE);
+		const int_least32_t delta = event_getRotate(& ev->encF1, BOARD_ENC1F_DIVIDE);
 		if (delta)
 			bring_enc1f();
 		switch (enc1f_sel)
@@ -14239,7 +14256,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 #endif /* WITHENCODER_1F */
 #if WITHENCODER_2F
 	{
-		const int_least16_t delta = event_getRotate_LoRes(& ev->encF2, BOARD_ENC2F_DIVIDE);
+		const int_least32_t delta = event_getRotate(& ev->encF2, BOARD_ENC2F_DIVIDE);
 		if (delta)
 			bring_enc2f();
 		switch (enc2f_sel)
@@ -14268,7 +14285,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 		const unsigned apos = gmiddlepos [mode];
 		const struct paramdefdef * const pd = mdt [mode].middlemenu(& nitems) [gmiddlepos [mode]];
 
-		int_least16_t delta = event_getRotate_LoRes(& ev->encF3, BOARD_ENC3F_DIVIDE);
+		int_least32_t delta = event_getRotate(& ev->encF3, BOARD_ENC3F_DIVIDE);
 		changed |= param_rotate(pd, delta);	// модификация и сохранение параметра
 		if (delta)
 			bring_enc3f();
@@ -14302,7 +14319,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 	else
 	{
 		/* перемещение по middle bar */
-		const int_least16_t delta = event_getRotate_LoRes(& ev->encF4, BOARD_ENC4F_DIVIDE);
+		const int_least32_t delta = event_getRotate(& ev->encF4, BOARD_ENC4F_DIVIDE);
 		if (delta)
 		{
 			unsigned middlerowsize;
@@ -17763,7 +17780,7 @@ processmenukeyandencoder(inputevent_t * ev)
 #if WITHENCODER_4F
 	if (! ev->frontkeyevent.kbready)
 	{
-		const int_least16_t delta = event_getRotate_LoRes(& ev->encF4, BOARD_ENC4F_DIVIDE);  // перемещение по меню также с помощью 2го энкодера
+		const int_least32_t delta = event_getRotate(& ev->encF4, BOARD_ENC4F_DIVIDE);  // перемещение по меню также с помощью 2го энкодера
 
 		if (delta > 0)
 		{
@@ -17779,7 +17796,7 @@ processmenukeyandencoder(inputevent_t * ev)
 #elif WITHENCODER2
 	if (! ev->frontkeyevent.kbready)
 	{
-		const int_least16_t nr2 = event_getRotate_LoRes(& ev->encFN, genc2div);  // перемещение по меню также с помощью 2го энкодера
+		const int_least32_t nr2 = event_getRotate(& ev->encFN, genc2div);  // перемещение по меню также с помощью 2го энкодера
 
 		if (nr2 > 0)
 		{
