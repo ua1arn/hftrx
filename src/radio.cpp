@@ -19399,6 +19399,8 @@ void initialize2(void)
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 	gxstyle_t dbstylev;
 	gxstyle_initialize(& dbstylev);
+	gxstyle_setbgradius(& dbstylev, 0);	// без закруглений
+	gxstyle_setbgbackoff(& dbstylev, 0, 0); // уменьшение размера плашки
 #endif /* ! LCDMODE_DUMMY */
 	uint_fast8_t mclearnvram;
 
@@ -19665,10 +19667,11 @@ void initialize2(void)
 
 #if ! LCDMODE_DUMMY
 			char msg [32];
-			local_snprintf_P(msg, ARRAY_SIZE(msg), "NVRAM fault %d", (int) (NVRAM_END + 1));
+			const int n = local_snprintf_P(msg, ARRAY_SIZE(msg), "NVRAM fault %d", (int) (NVRAM_END + 1));
 			display2_fillbg(& dbv);
-			display_text(& dbv, 0, 0, msg, strlen(msg), MSGYCELLS, & dbstylev);
-			display_text(& dbv, 10, 20, msg, strlen(msg), MSGYCELLS, & dbstylev);
+			PRINTF("Error: '%s'\n", msg);
+			display_text(& dbv, 0, 0, msg, n, MSGYCELLS, & dbstylev);
+			display_text(& dbv, 10, 20, msg, n, MSGYCELLS, & dbstylev);
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
