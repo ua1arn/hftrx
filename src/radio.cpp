@@ -6665,34 +6665,34 @@ typedef struct encfnitem_tag
 	int (* getlabel)(void * ctx, char * buff, size_t count);
 } encfnitem_t;
 
-static int getlabelAFGAIN(void * ctx, char * buff, size_t count)
+static int getlabelAFGAINx(void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = & xafgain1;
 	const int_fast32_t value = param_getvalue(pd);
 	int n = 0;
 	n += local_snprintf_P(buff + n, count - n, "AF ");
-	n += param_format(pd, buff + n, count - n, value);
+	n += param_formatpercents(pd, buff + n, count - n, value);
 	return n;
 }
 
-static int getlabelAFGAINx(void * ctx, char * buff, size_t count)
+static int getlabelAFGAIN(void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = & xafgain1;
 	const int_fast32_t value = param_getvalue(pd);
 	return local_snprintf_P(buff, count, "AF %2d", (int) value);
 }
 
-static int getlabelRFGAIN(void * ctx, char * buff, size_t count)
+static int getlabelRFGAINx(void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = & xrfgain1;
 	const int_fast32_t value = param_getvalue(pd);
 	int n = 0;
 	n += local_snprintf_P(buff + n, count - n, "RF ");
-	n += param_format(pd, buff + n, count - n, value);
+	n += param_formatpercents(pd, buff + n, count - n, value);
 	return n;
 }
 
-static int getlabelRFGAINs(void * ctx, char * buff, size_t count)
+static int getlabelRFGAIN(void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = & xrfgain1;
 	const int_fast32_t value = param_getvalue(pd);
@@ -17650,6 +17650,22 @@ param_formatabel(
 }
 
 size_t
+param_formatpercents(
+	const struct paramdefdef * pd,
+	char * buff,
+	size_t count,	// размер буфера
+	int_fast32_t value
+	)
+{
+	buff [0] = '\0';
+	if (! ismenukinddp(pd, ITEM_VALUE))
+	{
+		return 0;
+	}
+	return local_snprintf_P(buff, count, "%d", (int) ((value - pd->qbottom) * 100 / (pd->qupper - pd->qbottom)));
+}
+
+size_t
 param_format(
 	const struct paramdefdef * pd,
 	char * buff,
@@ -17694,6 +17710,8 @@ param_format(
 		return local_snprintf_P(buff, count, "%s", value ? "YES" : "NO");
 	case RJ_ON:
 		return local_snprintf_P(buff, count, "%s", value ? "ON" : "OFF");
+	case RJ_PERCENTS:
+		return local_snprintf_P(buff, count, "%d", (int) ((value - pd->qbottom) * 100 / (pd->qupper - pd->qbottom)));
 
 	case RJ_SIGNED:
 		switch (pd->qcomma)

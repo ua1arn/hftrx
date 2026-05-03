@@ -3417,6 +3417,7 @@ enum
 	RJ_SIGNED,		/* отображние знакового числа (меню на втором валкодере) */
 	RJ_UNSIGNED,		/* отображние знакового числа (меню на втором валкодере) */
 	RJ_CB,			/* для получения текста есть callback функция */
+	RJ_PERCENTS,	/* отображение в процентах от диапазона допустимых значений */
 	//
 	RJ_notused
 };
@@ -3708,6 +3709,13 @@ int infocb_txrx(char * b, size_t len, int * pstate);
 
 size_t
 param_format(
+	const struct paramdefdef * pd,
+	char * buff,
+	size_t count,	// размер буфера
+	int_fast32_t value
+	);
+size_t
+param_formatpercents(
 	const struct paramdefdef * pd,
 	char * buff,
 	size_t count,	// размер буфера
