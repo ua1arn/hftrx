@@ -6661,44 +6661,78 @@ uint_fast8_t hamradio_get_bringSWR(const char * * label)
 
 typedef struct encfnitem_tag
 {
-	int v;
-	const char * label;
+	void * ctx;
+	int (* getlabel)(void * ctx, char * buff, size_t count);
 } encfnitem_t;
+
+static int getlabelAFGAIN(void * ctx, char * buff, size_t count)
+{
+	const struct paramdefdef * const pd = & xafgain1;
+	const int_fast32_t value = param_getvalue(pd);
+	int n = 0;
+	n += local_snprintf_P(buff + n, count - n, "AF ");
+	n += param_format(pd, buff + n, count - n, value);
+	return n;
+}
+
+static int getlabelAFGAINx(void * ctx, char * buff, size_t count)
+{
+	const struct paramdefdef * const pd = & xafgain1;
+	const int_fast32_t value = param_getvalue(pd);
+	return local_snprintf_P(buff, count, "AF %2d", (int) value);
+}
+
+static int getlabelRFGAIN(void * ctx, char * buff, size_t count)
+{
+	const struct paramdefdef * const pd = & xrfgain1;
+	const int_fast32_t value = param_getvalue(pd);
+	int n = 0;
+	n += local_snprintf_P(buff + n, count - n, "RF ");
+	n += param_format(pd, buff + n, count - n, value);
+	return n;
+}
+
+static int getlabelRFGAINs(void * ctx, char * buff, size_t count)
+{
+	const struct paramdefdef * const pd = & xrfgain1;
+	const int_fast32_t value = param_getvalue(pd);
+	return local_snprintf_P(buff, count, "RF %2d", (int) value);
+}
+
+static int getlabelENC2F(void * ctx, char * buff, size_t count)
+{
+	return local_snprintf_P(buff, count, "ENC2F");
+}
+
+static int getlabelENC3F(void * ctx, char * buff, size_t count)
+{
+	return local_snprintf_P(buff, count, "ENC3F");
+}
+
+static int getlabelENC4F(void * ctx, char * buff, size_t count)
+{
+	return local_snprintf_P(buff, count, "ENC4F");
+}
 
 static const encfnitem_t enclabelsENC1FN [] =
 {
-		{
-			0,
-			"AF gain"
-		},
-		{
-			0,
-			"RF gain"
-		},
+	{ NULL, getlabelAFGAIN, },
+	{ NULL, getlabelRFGAIN, },
 };
 
 static const encfnitem_t enclabelsENC2FN [] =
 {
-		{
-			0,
-			"ENC2F"
-		},
+	{ NULL, getlabelENC2F, },
 };
 
 static const encfnitem_t enclabelsENC3FN [] =
 {
-		{
-			0,
-			"ENC3F"
-		},
+	{ NULL, getlabelENC3F, },
 };
 
 static const encfnitem_t enclabelsENC4FN [] =
 {
-		{
-			0,
-			"ENC4F"
-		},
+	{ NULL, getlabelENC3F, },
 };
 
 static uint_fast8_t enc1f_sel;
@@ -6707,27 +6741,31 @@ static uint_fast8_t enc3f_sel;
 static uint_fast8_t enc4f_sel;
 
 /* получить надпись для отображения состояние ENC1F */
-void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count)
+int hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count)
 {
-	local_snprintf_P(buff, count, "%s", enclabelsENC1FN [enc1f_sel].label);
+	const encfnitem_t * const ei = & enclabelsENC1FN [enc1f_sel];
+	return ei->getlabel(ei->ctx, buff, count);
 }
 
 /* получить надпись для отображения состояние ENC2F */
-void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t count)
+int hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t count)
 {
-	local_snprintf_P(buff, count, "%s", enclabelsENC2FN [enc2f_sel].label);
+	const encfnitem_t * const ei = & enclabelsENC2FN [enc2f_sel];
+	return ei->getlabel(ei->ctx, buff, count);
 }
 
 /* получить надпись для отображения состояние ENC3F */
-void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t count)
+int hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t count)
 {
-	local_snprintf_P(buff, count, "%s", enclabelsENC3FN [enc3f_sel].label);
+	const encfnitem_t * const ei = & enclabelsENC3FN [enc3f_sel];
+	return ei->getlabel(ei->ctx, buff, count);
 }
 
 /* получить надпись для отображения состояние ENC4F */
-void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t count)
+int hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t count)
 {
-	local_snprintf_P(buff, count, "%s", enclabelsENC4FN [enc4f_sel].label);
+	const encfnitem_t * const ei = & enclabelsENC4FN [enc4f_sel];
+	return ei->getlabel(ei->ctx, buff, count);
 }
 
 ///
