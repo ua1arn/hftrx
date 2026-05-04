@@ -3202,7 +3202,7 @@ static struct bandrange  const bandsmap [] =
 #if WITHBANDR1BBU
 	{ BMF(4105000 - BANDPAD), 	BMF(4105000 + BANDPAD), 	BMF(4105000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_4105000kHz, "4.4M"},
 #endif /* WITHBANDR1BBU */
-	{ BMF(4750000), 			BMF(5060000), 				BMF(4750000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_SWLOW, "", },				/*  */
+	//{ BMF(4750000), 			BMF(5060000), 				BMF(4750000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_SWLOW, "", },				/*  */
 #if WITHBANDR1BBU
 	{ BMF(4865000 - BANDPAD), 	BMF(4865000 + BANDPAD), 	BMF(4865000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_4865000kHz, "4.4M"},
 #endif /* WITHBANDR1BBU */
@@ -3309,6 +3309,31 @@ static struct bandrange  const bandsmap [] =
 #define XBANDS_BASE1	(HBANDS_COUNT + 1)	/* вторая из двух ячеек с обзорными диапазонами */
 #define MBANDS_BASE (HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT)	/* первая ячейка с фиксированными настройками */
 
+static void bandsmap_verify(void)
+{
+	unsigned i;
+
+	for (i = 0; i < HBANDS_COUNT; ++ i)
+	{
+		const struct bandrange * const br = & bandsmap [i];
+		ASSERT(br->bottom < br->top);
+		ASSERT(br->bottom <= br->init);
+		ASSERT(br->init < br->top);
+
+		if (i < (HBANDS_COUNT - 1))
+		{
+			const struct bandrange * const bn = & bandsmap [i + 1];
+			if (br->top < bn->bottom)
+			{
+
+			}
+			else
+			{
+				PRINTF("Overlapped! %u\n", i);
+			}
+		}
+	}
+}
 
 #if WITHSWLMODE
 
@@ -20160,7 +20185,7 @@ static void hamradio_main_initialize(void)
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 	}
 	// начальная инициализация
-
+	bandsmap_verify();
 	seq_purge();
 
 #if FQMODEL_GEN500
