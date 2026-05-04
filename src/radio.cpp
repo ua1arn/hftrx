@@ -17662,7 +17662,7 @@ param_formatpercents(
 	{
 		return 0;
 	}
-	return local_snprintf_P(buff, count, "%d", (int) ((value - pd->qbottom) * 100 / (pd->qupper - pd->qbottom)));
+	return local_snprintf_P(buff, count, "%d", (int) ((value - pd->qbottom - pd->funcoffs()) * 100 / (pd->qupper - pd->qbottom)));
 }
 
 size_t
