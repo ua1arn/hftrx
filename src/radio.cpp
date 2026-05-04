@@ -74,13 +74,15 @@ typedef struct knobevent_tag
 	int delta;
 	unsigned jumpsize;
 	uint8_t lowres;
+	int derate;
 } knobevent_t;
 
-void knobevent_initialize(knobevent_t * e, encoder_t * aenc, uint_fast8_t alowres)
+void knobevent_initialize(knobevent_t * e, encoder_t * aenc, uint_fast8_t alowres, int aderate)
 {
 	e->delta = 0;
 	e->enc = aenc;
 	e->lowres = alowres;
+	e->derate = aderate;
 }
 
 typedef struct mouseevent_tag
@@ -123,39 +125,6 @@ typedef struct inputevent_tag
 	mouseevent_t mouse;
 } inputevent_t;
 
-void inputevent_initialize(inputevent_t * e)
-{
-	keyevent_initialize(& e->frontkeyevent);
-	keyevent_initialize(& e->dtmfkeyevent);
-#if WITHENCODER
-	knobevent_initialize(& e->encMAIN, & encoder1, 0);
-#if WITHENCODER_SUB
-	knobevent_initialize(& e->encSUB, & encoder_sub, 0);
-#endif /* WITHENCODER_SUB */
-#if WITHENCODER2
-	knobevent_initialize(& e->encFN, & encoder2, 1);
-#endif /* WITHENCODER2 */
-#if WITHENCODER_1F
-	knobevent_initialize(& e->encF1, & encoder_ENC1F, 1);
-#endif /* WITHENCODER_1F */
-#if WITHENCODER_2F
-	knobevent_initialize(& e->encF2, & encoder_ENC2F, 1);
-#endif /* WITHENCODER_2F */
-#if WITHENCODER_3F
-	knobevent_initialize(& e->encF3, & encoder_ENC3F, 1);
-#endif /* WITHENCODER_3F */
-#if WITHENCODER_4F
-	knobevent_initialize(& e->encF4, & encoder_ENC4F, 1);
-#endif /* WITHENCODER_4F */
-#endif /* WITHENCODER */
-	mouseevent_initialize(& e->mouse);
-}
-
-// Параметры ставяться в setgsubmode
-static uint_fast16_t gstep_ENC_MAIN;
-static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
-static uint_fast16_t gencderate = 1;
-
 #if WITHENCODER
 
 #if defined (ENCDIV_DEFAULT)
@@ -178,11 +147,23 @@ static uint_fast8_t genc2dynamic = 0;
 
 
 
-static int_least16_t event_getRotateHiRes(knobevent_t * e, uint_fast8_t * jsize, int derate)
+static int_least16_t event_getRotateAccelerated(knobevent_t * e, uint_fast8_t * jsize, int derate)
 {
-	const div_t d = div(e->delta, derate);
+	ASSERT(derate);
+	const div_t d = div(e->delta, e->derate * derate);
 	encoder_pushback(e->enc, d.rem);
 	* jsize = e->jumpsize;
+	e->delta = 0;
+	return d.quot;
+}
+
+/* получение "редуцированного" количества прерываний от валкодера.
+ * То что осталось после деления на scale, остается в накопителе
+ */
+static int_fast32_t event_getRotate(knobevent_t * e)
+{
+	const div_t d = div(e->delta, e->derate);
+	encoder_pushback(e->enc, d.rem);
 	e->delta = 0;
 	return d.quot;
 }
@@ -191,27 +172,13 @@ static int_least16_t event_getRotateHiRes(knobevent_t * e, uint_fast8_t * jsize,
 /* получение "редуцированного" количества прерываний от валкодера.
  * То что осталось после деления на scale, остается в накопителе
  */
-static int_least16_t event_getRotate_Menu(knobevent_t * e)
+static int_fast32_t event_getRotateReduced(knobevent_t * e, int derate)
 {
-	const int derate = encoder_get_actualresolution(e->enc) * genc1div / ENCODER_MENU_STEPS;
-	const div_t d = div(e->delta, derate);
+	ASSERT(derate);
+	const div_t d = div(e->delta, e->derate * derate);
 	encoder_pushback(e->enc, d.rem);
 	e->delta = 0;
 	return d.quot;
-}
-
-static int_fast32_t event_getRotate_LoRes(knobevent_t * e, int derate)
-{
-	div_t d;
-	d = div(e->delta, derate);
-	encoder_pushback(e->enc, d.rem);
-	e->delta = 0;
-	return d.quot;
-}
-
-static void event_pushback_LoRes(knobevent_t * e, int_fast32_t delta, int derate)
-{
-	encoder_pushback(e->enc, (int) delta * derate);
 }
 
 #else /* WITHENCODER */
@@ -220,6 +187,41 @@ static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшае
 
 #endif /* WITHENCODER */
 
+
+// производится на каждом цикле получения состояния органов управления
+void inputevent_initialize(inputevent_t * e)
+{
+	keyevent_initialize(& e->frontkeyevent);
+	keyevent_initialize(& e->dtmfkeyevent);
+	mouseevent_initialize(& e->mouse);
+
+#if WITHENCODER
+	knobevent_initialize(& e->encMAIN, & encoder1, 0, genc1div);
+#if WITHENCODER_SUB
+	knobevent_initialize(& e->encSUB, & encoder_sub, 0, genc1div);
+#endif /* WITHENCODER_SUB */
+#if WITHENCODER2
+	knobevent_initialize(& e->encFN, & encoder2, 1, genc2div);
+#endif /* WITHENCODER2 */
+#if WITHENCODER_1F
+	knobevent_initialize(& e->encF1, & encoder_ENC1F, 1, BOARD_ENC1F_DIVIDE);
+#endif /* WITHENCODER_1F */
+#if WITHENCODER_2F
+	knobevent_initialize(& e->encF2, & encoder_ENC2F, 1, BOARD_ENC2F_DIVIDE);
+#endif /* WITHENCODER_2F */
+#if WITHENCODER_3F
+	knobevent_initialize(& e->encF3, & encoder_ENC3F, 1, BOARD_ENC3F_DIVIDE);
+#endif /* WITHENCODER_3F */
+#if WITHENCODER_4F
+	knobevent_initialize(& e->encF4, & encoder_ENC4F, 1, BOARD_ENC4F_DIVIDE);
+#endif /* WITHENCODER_4F */
+#endif /* WITHENCODER */
+}
+
+// Параметры ставяться в setgsubmode
+static uint_fast16_t gstep_ENC_MAIN;
+static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
+static uint_fast16_t gencderate = 1;
 
 
 /* система отказа от передачи при аварийных ситуациях */
@@ -1034,6 +1036,27 @@ param_keyclick(const struct paramdefdef * pd)
 }
 
 #if WITHENCODER
+
+// Получить delta для модификации значения параметра в меню в пониженной чувствительности валкодера
+static int_fast32_t get_paramvalue_knob_lores(knobevent_t * e)
+{
+	const int derateMAIN = encoder_get_actualresolution(e->enc) * e->derate / ENCODER_MENU_STEPS;
+	const int_fast32_t nrotate = e->lowres ?
+		event_getRotate(e) :
+		event_getRotateReduced(e, derateMAIN ? derateMAIN : 1);
+	return nrotate;
+}
+
+// Получить delta для модификации значения параметра в меню в нормальной чувствительности валкодера
+static int_fast32_t get_paramvalue_knob_hires(knobevent_t * e)
+{
+	uint_fast8_t jumpsize_main = 1;
+	const int_fast32_t nrotate = e->lowres ?
+			event_getRotate(e) :
+			event_getRotateAccelerated(e, & jumpsize_main, 1);
+	return nrotate * (int) jumpsize_main;
+}
+
 /* модификация и сохранение параметра по валкодеру
  * - возврат не-0  в случае модификации */
 static uint_fast8_t
@@ -1046,19 +1069,11 @@ param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e)
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
-	const uint_fast16_t step = (pd->qistep == ISTEPLARGE_1) ? 1 : pd->qistep;
-	uint_fast8_t jumpsize_main;
-#if WITHENCODER_3F
-	const int_fast32_t nrotate = e->lowres ?
-			event_getRotate_LoRes(e, BOARD_ENC3F_DIVIDE) :
-			(pd->qistep == ISTEPLARGE_1 ? event_getRotateHiRes(e, & jumpsize_main, genc1div) : event_getRotate_Menu(e));
-#else
-	const int_fast32_t nrotate =
-			(pd->qistep == ISTEPLARGE_1 ? event_getRotateHiRes(e, & jumpsize_main, genc1div) : event_getRotate_Menu(e));
-#endif
+	const uint_fast16_t step = (pd->qistep == ISTEPLARGE_1) ?
+			ISTEP1 : pd->qistep;
+	const int_fast32_t nrotate = (pd->qistep == ISTEPLARGE_1) ?
+			get_paramvalue_knob_hires(e) : get_paramvalue_knob_lores(e);
 
-	if (nrotate == 0)
-		return 0;
 	if (! ismenukinddp(pd, ITEM_VALUE) || step == ISTEP_RO)
 		return 0;
 
@@ -6671,44 +6686,78 @@ uint_fast8_t hamradio_get_bringSWR(const char * * label)
 
 typedef struct encfnitem_tag
 {
-	int v;
-	const char * label;
+	void * ctx;
+	int (* getlabel)(void * ctx, char * buff, size_t count);
 } encfnitem_t;
+
+static int getlabelAFGAINx(void * ctx, char * buff, size_t count)
+{
+	const struct paramdefdef * const pd = & xafgain1;
+	const int_fast32_t value = param_getvalue(pd);
+	int n = 0;
+	n += local_snprintf_P(buff + n, count - n, "AF ");
+	n += param_formatpercents(pd, buff + n, count - n, value);
+	return n;
+}
+
+static int getlabelAFGAIN(void * ctx, char * buff, size_t count)
+{
+	const struct paramdefdef * const pd = & xafgain1;
+	const int_fast32_t value = param_getvalue(pd);
+	return local_snprintf_P(buff, count, "AF %2d", (int) value);
+}
+
+static int getlabelRFGAINx(void * ctx, char * buff, size_t count)
+{
+	const struct paramdefdef * const pd = & xrfgain1;
+	const int_fast32_t value = param_getvalue(pd);
+	int n = 0;
+	n += local_snprintf_P(buff + n, count - n, "RF ");
+	n += param_formatpercents(pd, buff + n, count - n, value);
+	return n;
+}
+
+static int getlabelRFGAIN(void * ctx, char * buff, size_t count)
+{
+	const struct paramdefdef * const pd = & xrfgain1;
+	const int_fast32_t value = param_getvalue(pd);
+	return local_snprintf_P(buff, count, "RF %2d", (int) value);
+}
+
+static int getlabelENC2F(void * ctx, char * buff, size_t count)
+{
+	return local_snprintf_P(buff, count, "ENC2F");
+}
+
+static int getlabelENC3F(void * ctx, char * buff, size_t count)
+{
+	return local_snprintf_P(buff, count, "ENC3F");
+}
+
+static int getlabelENC4F(void * ctx, char * buff, size_t count)
+{
+	return local_snprintf_P(buff, count, "ENC4F");
+}
 
 static const encfnitem_t enclabelsENC1FN [] =
 {
-		{
-			0,
-			"AF gain"
-		},
-		{
-			0,
-			"RF gain"
-		},
+	{ NULL, getlabelAFGAIN, },
+	{ NULL, getlabelRFGAIN, },
 };
 
 static const encfnitem_t enclabelsENC2FN [] =
 {
-		{
-			0,
-			"ENC2F"
-		},
+	{ NULL, getlabelENC2F, },
 };
 
 static const encfnitem_t enclabelsENC3FN [] =
 {
-		{
-			0,
-			"ENC3F"
-		},
+	{ NULL, getlabelENC3F, },
 };
 
 static const encfnitem_t enclabelsENC4FN [] =
 {
-		{
-			0,
-			"ENC4F"
-		},
+	{ NULL, getlabelENC3F, },
 };
 
 static uint_fast8_t enc1f_sel;
@@ -6717,27 +6766,31 @@ static uint_fast8_t enc3f_sel;
 static uint_fast8_t enc4f_sel;
 
 /* получить надпись для отображения состояние ENC1F */
-void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count)
+int hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count)
 {
-	local_snprintf_P(buff, count, "%s", enclabelsENC1FN [enc1f_sel].label);
+	const encfnitem_t * const ei = & enclabelsENC1FN [enc1f_sel];
+	return ei->getlabel(ei->ctx, buff, count);
 }
 
 /* получить надпись для отображения состояние ENC2F */
-void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t count)
+int hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t count)
 {
-	local_snprintf_P(buff, count, "%s", enclabelsENC2FN [enc2f_sel].label);
+	const encfnitem_t * const ei = & enclabelsENC2FN [enc2f_sel];
+	return ei->getlabel(ei->ctx, buff, count);
 }
 
 /* получить надпись для отображения состояние ENC3F */
-void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t count)
+int hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t count)
 {
-	local_snprintf_P(buff, count, "%s", enclabelsENC3FN [enc3f_sel].label);
+	const encfnitem_t * const ei = & enclabelsENC3FN [enc3f_sel];
+	return ei->getlabel(ei->ctx, buff, count);
 }
 
 /* получить надпись для отображения состояние ENC4F */
-void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t count)
+int hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t count)
 {
-	local_snprintf_P(buff, count, "%s", enclabelsENC4FN [enc4f_sel].label);
+	const encfnitem_t * const ei = & enclabelsENC4FN [enc4f_sel];
+	return ei->getlabel(ei->ctx, buff, count);
 }
 
 ///
@@ -14146,22 +14199,6 @@ refreshperformed_freqs(void)
 	counterupdatedfreqs = n;
 }
 
-//// Проверка разрешения обновления громкости.
-//static uint_fast8_t
-//refreshenabled_volume(void)
-//{
-//	return counterupdatedvolume == 0;		/* таймер дошёл до нуля - можно обновлять. */
-//}
-//
-//// подтверждение выполненного обновления дисплея (индикация частоты).
-//static void
-//refreshperformed_volume(void)
-//{
-//	const uint_fast32_t n = UINTICKS(50);	// 50 ms - обновление с частотой 20 герц
-//
-//	counterupdatedvolume = n;
-//}
-
 static uint_fast8_t processpots(void)
 {
 	uint_fast8_t changed = 0;
@@ -14231,7 +14268,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 	// +++ получение состояния органов управления */
 #if WITHENCODER_1F
 	{
-		const int_least16_t delta = event_getRotate_LoRes(& ev->encF1, BOARD_ENC1F_DIVIDE);
+		const int_least32_t delta = event_getRotate(& ev->encF1);
 		if (delta)
 			bring_enc1f();
 		switch (enc1f_sel)
@@ -14243,15 +14280,6 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 			if (delta == 0)
 				break;
 			changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), bring_afvolume);
-//			if (refreshenabled_volume())
-//			{
-//				refreshperformed_volume();
-//				changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), bring_afvolume);
-//			}
-//			else
-//			{
-//				event_pushback_LoRes(& ev->encF1, delta, BOARD_ENC1F_DIVIDE);
-//			}
 			break;
 		case 1:
 			if (delta == 0)
@@ -14264,7 +14292,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 #endif /* WITHENCODER_1F */
 #if WITHENCODER_2F
 	{
-		const int_least16_t delta = event_getRotate_LoRes(& ev->encF2, BOARD_ENC2F_DIVIDE);
+		const int_least32_t delta = event_getRotate(& ev->encF2);
 		if (delta)
 			bring_enc2f();
 		switch (enc2f_sel)
@@ -14293,7 +14321,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 		const unsigned apos = gmiddlepos [mode];
 		const struct paramdefdef * const pd = mdt [mode].middlemenu(& nitems) [gmiddlepos [mode]];
 
-		int_least16_t delta = event_getRotate_LoRes(& ev->encF3, BOARD_ENC3F_DIVIDE);
+		int_least32_t delta = event_getRotate(& ev->encF3);
 		changed |= param_rotate(pd, delta);	// модификация и сохранение параметра
 		if (delta)
 			bring_enc3f();
@@ -14327,7 +14355,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 	else
 	{
 		/* перемещение по middle bar */
-		const int_least16_t delta = event_getRotate_LoRes(& ev->encF4, BOARD_ENC4F_DIVIDE);
+		const int_least32_t delta = event_getRotate(& ev->encF4);
 		if (delta)
 		{
 			unsigned middlerowsize;
@@ -17647,6 +17675,22 @@ param_formatabel(
 }
 
 size_t
+param_formatpercents(
+	const struct paramdefdef * pd,
+	char * buff,
+	size_t count,	// размер буфера
+	int_fast32_t value
+	)
+{
+	buff [0] = '\0';
+	if (! ismenukinddp(pd, ITEM_VALUE))
+	{
+		return 0;
+	}
+	return local_snprintf_P(buff, count, "%d", (int) ((value - pd->qbottom - pd->funcoffs()) * 100 / (pd->qupper - pd->qbottom)));
+}
+
+size_t
 param_format(
 	const struct paramdefdef * pd,
 	char * buff,
@@ -17691,6 +17735,8 @@ param_format(
 		return local_snprintf_P(buff, count, "%s", value ? "YES" : "NO");
 	case RJ_ON:
 		return local_snprintf_P(buff, count, "%s", value ? "ON" : "OFF");
+	case RJ_PERCENTS:
+		return local_snprintf_P(buff, count, "%d", (int) ((value - pd->qbottom) * 100 / (pd->qupper - pd->qbottom)));
 
 	case RJ_SIGNED:
 		switch (pd->qcomma)
@@ -17788,7 +17834,7 @@ processmenukeyandencoder(inputevent_t * ev)
 #if WITHENCODER_4F
 	if (! ev->frontkeyevent.kbready)
 	{
-		const int_least16_t delta = event_getRotate_LoRes(& ev->encF4, BOARD_ENC4F_DIVIDE);  // перемещение по меню также с помощью 2го энкодера
+		const int_least32_t delta = event_getRotate(& ev->encF4);  // перемещение по меню также с помощью 2го энкодера
 
 		if (delta > 0)
 		{
@@ -17804,7 +17850,7 @@ processmenukeyandencoder(inputevent_t * ev)
 #elif WITHENCODER2
 	if (! ev->frontkeyevent.kbready)
 	{
-		const int_least16_t nr2 = event_getRotate_LoRes(& ev->encFN, genc2div);  // перемещение по меню также с помощью 2го энкодера
+		const int_least32_t nr2 = event_getRotate(& ev->encFN);  // перемещение по меню также с помощью 2го энкодера
 
 		if (nr2 > 0)
 		{
@@ -19434,6 +19480,8 @@ void initialize2(void)
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 	gxstyle_t dbstylev;
 	gxstyle_initialize(& dbstylev);
+	gxstyle_setbgradius(& dbstylev, 0);	// без закруглений
+	gxstyle_setbgbackoff(& dbstylev, 0, 0); // уменьшение размера плашки
 #endif /* ! LCDMODE_DUMMY */
 	uint_fast8_t mclearnvram;
 
@@ -19700,10 +19748,11 @@ void initialize2(void)
 
 #if ! LCDMODE_DUMMY
 			char msg [32];
-			local_snprintf_P(msg, ARRAY_SIZE(msg), "NVRAM fault %d", (int) (NVRAM_END + 1));
+			const int n = local_snprintf_P(msg, ARRAY_SIZE(msg), "NVRAM fault %d", (int) (NVRAM_END + 1));
 			display2_fillbg(& dbv);
-			display_text(& dbv, 0, 0, msg, strlen(msg), MSGYCELLS, & dbstylev);
-			display_text(& dbv, 10, 20, msg, strlen(msg), MSGYCELLS, & dbstylev);
+			PRINTF("Error: '%s'\n", msg);
+			display_text(& dbv, 0, 0, msg, n, MSGYCELLS, & dbstylev);
+			display_text(& dbv, 10, 20, msg, n, MSGYCELLS, & dbstylev);
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -19926,8 +19975,12 @@ static void
 dpc_displatch_timer_fn(void * ctx)
 {
 	(void) ctx;
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 	display2_latch();
+	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 }
+
 // User-mode function. Вызывается для выполнения latch спектра и панорамы
 static void
 dpc_displatch_refresh_fn(void * ctx)
@@ -19955,7 +20008,10 @@ dpc_displatch_refresh_fn(void * ctx)
 		dctx.type = DCTX_FREQ;
 		dctx.pv = & ef;
 
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 		display2_bgprocess(0, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+		IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 	}
 #endif
 #if WITHMENU
@@ -19965,12 +20021,18 @@ dpc_displatch_refresh_fn(void * ctx)
 		dctx.type = DCTX_MENU;
 		dctx.pv = mp;
 
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 		display2_bgprocess(1, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+		IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 	}
 #endif /* WITHMENU */
 	else
 	{
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 		display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
+		IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 	}
 }
 
@@ -20035,7 +20097,7 @@ static void hamradio_main_initialize(void)
 	{
 		static ticker_t ticker;
 
-		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), refreshticker_cb, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), refreshticker_cb, NULL);	// вызывается с частотой 1/UI_TICKS_PERIOD (например, 20 Гц) с запрещенными прерываниями.
 		ticker_add(& ticker);
 	}
 
@@ -20166,17 +20228,17 @@ processmainlooptuneknobs(inputevent_t * ev)
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC2;
 #elif WITHENCODER_SUB
-	int_fast32_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
-	int_fast32_t nrotate_sub = event_getRotateHiRes(& ev->encSUB, & jumpsize_sub, genc1div * gencderate);
+	int_fast32_t nrotate_main = event_getRotateAccelerated(& ev->encMAIN, & jumpsize_main, gencderate);
+	int_fast32_t nrotate_sub = event_getRotateAccelerated(& ev->encSUB, & jumpsize_sub, gencderate);
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC_MAIN;
 #elif WITHENCODER2
-	int_fast32_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
-	int_fast32_t nrotate_sub = event_getRotateHiRes(& ev->encFN, & jumpsize_sub, genc2div);
+	int_fast32_t nrotate_main = event_getRotateAccelerated(& ev->encMAIN, & jumpsize_main, gencderate);
+	int_fast32_t nrotate_sub = event_getRotateAccelerated(& ev->encFN, & jumpsize_sub, 1);
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = gstep_ENC2;
 #else
-	int_fast32_t nrotate_main = event_getRotateHiRes(& ev->encMAIN, & jumpsize_main, genc1div * gencderate);
+	int_fast32_t nrotate_main = event_getRotateAccelerated(& ev->encMAIN, & jumpsize_main, gencderate);
 	int_fast32_t nrotate_sub = 0;
 	uint_fast16_t step_main = gstep_ENC_MAIN;
 	uint_fast16_t step_sub = 0;

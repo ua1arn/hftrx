@@ -1728,10 +1728,6 @@ static size_t context_size(void)
 // Установить параметры потока для запуска
 static void context_init(exception_frame_t * __restrict oldframe, void * fn, void * arg)
 {
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
-
 	exception_frame_t * const f = (exception_frame_t *) oldframe;
 	memset(oldframe, 0, context_size());	// CPU/FPU registers,
 
@@ -1751,8 +1747,6 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 	f->fpexc32_el2 = 0;
 	f->exc_elr_el3 = (uintptr_t) fn;
 	f->x0 = (uintptr_t) arg;
-
-#pragma GCC diagnostic pop
 }
 
 static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
@@ -1768,7 +1762,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static int task_sysfn(unsigned arg0, volatile void * arg1)
+static uint64_t task_sysfn(unsigned arg0, volatile void * arg1)
 {
 	uint64_t result;
 	__ASM volatile(
@@ -1841,7 +1835,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static int task_sysfn(unsigned arg0, volatile void * arg1)
+static uint32_t task_sysfn(unsigned arg0, volatile void * arg1)
 {
 	uint32_t result = 0;
 	__ASM volatile(
@@ -1882,7 +1876,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static int task_sysfn(unsigned arg0, volatile void * arg1)
+static uint32_t task_sysfn(unsigned arg0, volatile void * arg1)
 {
 	uint32_t result = 0;
 	__ASM volatile(
@@ -1932,9 +1926,9 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static int task_sysfn(unsigned arg0, volatile void * arg1)
+static uint64_t task_sysfn(unsigned arg0, volatile void * arg1)
 {
-	uint32_t result = 0;
+	uint64_t result = 0;
 	__ASM volatile(
 		"\t" "mv x3,%1\n"
 		"\t" "mv x4,%2\n"

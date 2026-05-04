@@ -3417,6 +3417,7 @@ enum
 	RJ_SIGNED,		/* отображние знакового числа (меню на втором валкодере) */
 	RJ_UNSIGNED,		/* отображние знакового числа (меню на втором валкодере) */
 	RJ_CB,			/* для получения текста есть callback функция */
+	RJ_PERCENTS,	/* отображение в процентах от диапазона допустимых значений */
 	//
 	RJ_notused
 };
@@ -3604,10 +3605,10 @@ void hamradio_disable_keyboard_redirect(void);
 void hamradio_enable_encoder2_redirect (void);
 void hamradio_enable_keyboard_redirect(void);
 void hamradio_get_antivox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
-void hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC1F */
-void hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояняя ENC2F */
-void hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC3F */
-void hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC4F */
+int hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC1F */
+int hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояняя ENC2F */
+int hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC3F */
+int hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC4F */
 void hamradio_get_mic_agc_limits(uint_fast8_t * min, uint_fast8_t * max);
 void hamradio_get_mic_clip_limits(uint_fast8_t * min, uint_fast8_t * max);
 void hamradio_get_mic_level_limits(uint_fast8_t * min, uint_fast8_t * max);
@@ -3708,6 +3709,13 @@ int infocb_txrx(char * b, size_t len, int * pstate);
 
 size_t
 param_format(
+	const struct paramdefdef * pd,
+	char * buff,
+	size_t count,	// размер буфера
+	int_fast32_t value
+	);
+size_t
+param_formatpercents(
 	const struct paramdefdef * pd,
 	char * buff,
 	size_t count,	// размер буфера
