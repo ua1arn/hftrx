@@ -565,7 +565,7 @@
 		#endif /* WITHPOTPOWER */
 
 		#if WITHTHERMOLEVEL
-			XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
+			XTHERMOIX = 9,		// PB1 External thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHCURRLEVEL

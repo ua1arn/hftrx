@@ -577,7 +577,7 @@
 		PAREFERIX2 = BOARD_ADCX2IN(3),	// reference (1/2 питания ACS712ELCTR-30B-T).
 
 		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCX2IN(4),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+			XTHERMOIX = BOARD_ADCX2IN(4),		// MCP3208 CH4 External thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
@@ -596,7 +596,7 @@
 			#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
 			#define THERMOSENSOR_OFFSET 	(- 2730)	// 2.98 volt = 25 Celsius, 10 mV/C
 			#define THERMOSENSOR_DENOM	 	1	// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
-			XTHERMOIX = BOARD_ADCX1IN(0),		// J15/MU) Exernal thermo sensor ST LM235Z
+			XTHERMOIX = BOARD_ADCX1IN(0),		// J15/MU) External thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
@@ -638,7 +638,7 @@
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCX1IN(0),		// Exernal thermo sensor ST LM235Z
+			XTHERMOIX = BOARD_ADCX1IN(0),		// External thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHSWRMTR

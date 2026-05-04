@@ -472,7 +472,7 @@
 		POTWPM = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
 	#endif /* WITHPOTWPM */
 	#if WITHTHERMOLEVEL
-		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 External thermo sensor ST LM235Z
 	#endif /* WITHTHERMOLEVEL */
 	#if WITHVOLTLEVEL 
 		VOLTSOURCE = BOARD_ADCXIN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
@@ -495,7 +495,7 @@
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
 	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
-	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+	#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки

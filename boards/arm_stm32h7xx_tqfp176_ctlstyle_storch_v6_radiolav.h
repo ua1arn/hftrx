@@ -488,7 +488,7 @@
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
 	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
 	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
-	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+	#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
@@ -523,7 +523,7 @@
 	#endif /* WITHPOTNFMSQL */
 
 	#if WITHTHERMOLEVEL
-		XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
+		XTHERMOIX = 9,		// PB1 External thermo sensor ST LM235Z
 	#endif /* WITHTHERMOLEVEL */
 
 	#if WITHCURRLEVEL
