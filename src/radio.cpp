@@ -19983,7 +19983,10 @@ dpc_displatch_refresh_fn(void * ctx)
 		dctx.type = DCTX_FREQ;
 		dctx.pv = & ef;
 
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 		display2_bgprocess(0, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+		IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 	}
 #endif
 #if WITHMENU
@@ -19993,12 +19996,18 @@ dpc_displatch_refresh_fn(void * ctx)
 		dctx.type = DCTX_MENU;
 		dctx.pv = mp;
 
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 		display2_bgprocess(1, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
+		IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 	}
 #endif /* WITHMENU */
 	else
 	{
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 		display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
+		IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 	}
 }
 
