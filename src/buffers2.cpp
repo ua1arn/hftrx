@@ -1018,7 +1018,7 @@ static denoise16dma_t denoise16list(IRQL_REALTIME, "denoise16", denoise16buf, AR
 uint_fast8_t takespeexready(speexel_t * * dest, uint_fast32_t timeMS)
 {
 	denoise16_t * addr;
-	if (denoise16list.get_readybuffer(& addr))
+	if (denoise16list.get_readybuffer(& addr, timeMS))
 	{
 		* dest = addr->buff;
 		return 1;
