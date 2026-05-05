@@ -553,11 +553,6 @@ public:
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 	}
 
-	bool wait_readybuffer_raw(uint_fast32_t timeMS)
-	{
-		return local_waitlist(& readylist, & irqllock, timeMS) == 0;
-	}
-
 	// получить из списка готовых
 	bool get_readybuffer_raw(element_t * * dest, uint_fast32_t timeMS = 0)
 	{
@@ -651,23 +646,6 @@ public:
 			++ freecount;
 		}
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
-	}
-
-	bool wait_readybuffer(uint_fast32_t timeMS)
-	{
-		if (hasresample)
-		{
-			return false;
-		}
-		else
-		{
-			const bool stoutready = outready;
-			if (HASCHECKREADY && ! stoutready)
-				return false;
-			return wait_readybuffer_raw(timeMS);
-
-		}
-
 	}
 
 	bool get_readybuffer(element_t * * dest, uint_fast32_t timeMS = 0)
