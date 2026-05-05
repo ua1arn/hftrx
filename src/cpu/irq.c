@@ -2050,7 +2050,7 @@ static int task_idle(void * ctx)
 	return 0;
 }
 
-static thread_item_t idle_threads [HARDWARE_NCORES * (PRIOv_count - PRIOv_IPC)];
+//static thread_item_t idle_threads [HARDWARE_NCORES * (PRIOv_count - PRIOv_IPC)];
 static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
 static thread_item_t * startedtask [HARDWARE_NCORES];
 
@@ -2106,27 +2106,27 @@ void task_scheduler_initialize(void)
 	{
 		InitializeListHead(& threads_list [i]);
 	}
-	for (i = 0; i < ARRAY_SIZE(idle_threads); ++ i)
-	{
-		thread_item_t * const thread = & idle_threads [i];
-		const unsigned core = i % HARDWARE_NCORES;
-		const IRQL_t irql = GICI_ENCODE_IRQL(PRIOv_IPC + (i / HARDWARE_NCORES));
-		switch (irql)
-		{
-//		case IRQL_USER:
-//		case IRQL_SYSTEM:
-//		case IRQL_REALTIME:
-//		case IRQL_OVERREALTIME:
-//		case IRQL_BOARD:
-		case IRQL_IPC:
-		case IRQL_IPC_ONLY:
-			continue;
-		default:
-			break;
-		}
-		//
-		thread_add(thread, 1U << core, task_idle, NULL, IDLETASKRAM_SIZE, UPRIO_IDLE, irql, "idle");
-	}
+//	for (i = 0; i < ARRAY_SIZE(idle_threads); ++ i)
+//	{
+//		thread_item_t * const thread = & idle_threads [i];
+//		const unsigned core = i % HARDWARE_NCORES;
+//		const IRQL_t irql = GICI_ENCODE_IRQL(PRIOv_IPC + (i / HARDWARE_NCORES));
+//		switch (irql)
+//		{
+////		case IRQL_USER:
+////		case IRQL_SYSTEM:
+////		case IRQL_REALTIME:
+////		case IRQL_OVERREALTIME:
+////		case IRQL_BOARD:
+//		case IRQL_IPC:
+//		case IRQL_IPC_ONLY:
+//			continue;
+//		default:
+//			break;
+//		}
+//		//
+//		thread_add(thread, 1U << core, task_idle, NULL, IDLETASKRAM_SIZE, UPRIO_IDLE, irql, "idle");
+//	}
 }
 
 void task_scheduler_start(void)
@@ -2212,11 +2212,11 @@ void tasks_print(void)
 	{
 		thread_print(& base_threads [core]);
 	}
-	PRINTF("tasks_print: idle\n");
-	for (core = 0; core < ARRAY_SIZE(idle_threads); ++ core)
-	{
-		thread_print(& idle_threads [core]);
-	}
+//	PRINTF("tasks_print: idle\n");
+//	for (core = 0; core < ARRAY_SIZE(idle_threads); ++ core)
+//	{
+//		thread_print(& idle_threads [core]);
+//	}
 	PRINTF("tasks_print: started\n");
 	for (core = 0; core < ARRAY_SIZE(startedtask); ++ core)
 	{
@@ -2407,44 +2407,37 @@ static const check_ready_t readytag_waitlist =
 
 static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
 {
-	ASSERT(threads_not_started == 0);
 	switch (arg0)
 	{
 	default:
 		return;
 	case TASKFN_NOP:
-		{
-			ASSERT(arg1 == NULL);
-			return;
-		}
+		ASSERT(arg1 == NULL);
+		return;
 
 	case TASKFN_SUSPEND:
-		{
-			thread->check_ready_obj = arg1;
-			thread->check_ready = & readytag_suspend;
-			return;
-		}
+		ASSERT(threads_not_started == 0);
+		thread->check_ready_obj = arg1;
+		thread->check_ready = & readytag_suspend;
+		return;
 
 	case TASKFN_WAIT32:
-		{
-			thread->check_ready_obj = arg1;
-			thread->check_ready = & readytag_wait32;
-			return;
-		}
+		ASSERT(threads_not_started == 0);
+		thread->check_ready_obj = arg1;
+		thread->check_ready = & readytag_wait32;
+		return;
 
 	case TASKFN_WAIT8:
-		{
-			thread->check_ready_obj = arg1;
-			thread->check_ready = & readytag_wait8;
-			return;
-		}
+		ASSERT(threads_not_started == 0);
+		thread->check_ready_obj = arg1;
+		thread->check_ready = & readytag_wait8;
+		return;
 
 	case TASKFN_WAITLIST:
-		{
-			thread->check_ready_obj = arg1;
-			thread->check_ready = & readytag_waitlist;
-			return;
-		}
+		ASSERT(threads_not_started == 0);
+		thread->check_ready_obj = arg1;
+		thread->check_ready = & readytag_waitlist;
+		return;
 	}
 }
 
@@ -2510,14 +2503,14 @@ void local_delay_ms(uint_fast32_t timeMS)
 {
 	if (timeMS == 0)
 		return;
-	if (threads_not_started)
+	if (threads_not_started || 1)
 	{
 
 		const uint_fast64_t t0 = cpu_getdebugticks();
 		const uint_fast64_t td = get_td_ms(timeMS);
 		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) GIC_GetInterfacePriorityMask());
 		while ((uint64_t) (cpu_getdebugticks() - t0) < td)
-			;
+			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	}
 	else
 	{
@@ -2537,7 +2530,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 {
 	if (timeMS == 0)
 		return 0;
-	if (threads_not_started)
+	if (threads_not_started || 1)
 	{
 		const uint_fast64_t t0 = cpu_getdebugticks();
 		const uint_fast64_t td = get_td_ms(timeMS);
@@ -2545,6 +2538,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 		{
 			if (((* flag & mask) == state))
 				return 0;
+			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 		} while ((uint64_t) (cpu_getdebugticks() - t0) < td);
 		return 1;
 	}
@@ -2568,7 +2562,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 {
 	if (timeMS == 0)
 		return 0;
-	if (threads_not_started)
+	if (threads_not_started || 1)
 	{
 		const uint_fast64_t t0 = cpu_getdebugticks();
 		const uint_fast64_t td = get_td_ms(timeMS);
@@ -2576,6 +2570,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		{
 			if (((* flag & mask) == state))
 				return 0;
+			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 		} while ((uint64_t) (cpu_getdebugticks() - t0) < td);
 		return 1;
 	}
@@ -2599,13 +2594,35 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 {
 	if (timeMS == 0)
 		return 0;
-	volatile struct taskfnparam_waitlist v;
-	v.t0 = sys_now();
-	v.td = timeMS;
-	v.list = list;
-	v.lock = lock;
-	v.guard = & v;
-	return task_sysfn(TASKFN_WAITLIST, & v);
+	if (threads_not_started || 1)
+	{
+		const uint_fast64_t t0 = cpu_getdebugticks();
+		const uint_fast64_t td = get_td_ms(timeMS);
+		do
+		{
+			if (LCLSPIN_TRAYLOCK(lock))
+			{
+				const int f = IsListEmpty(list);
+				LCLSPIN_UNLOCK(lock);
+				if (! f)
+				{
+					return 0;	// дождались
+				}
+			}
+			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+		} while ((uint64_t) (cpu_getdebugticks() - t0) < td);
+		return 1;	// Завепшение по таймауту
+	}
+	else
+	{
+		volatile struct taskfnparam_waitlist v;
+		v.t0 = sys_now();
+		v.td = timeMS;
+		v.list = list;
+		v.lock = lock;
+		v.guard = & v;
+		return task_sysfn(TASKFN_WAITLIST, & v);
+	}
 }
 
 #else
