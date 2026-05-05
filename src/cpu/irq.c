@@ -2730,7 +2730,6 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 				return 0;	// дождались
 			}
 		}
-		task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	} while ((uint64_t) (cpu_getdebugticks() - t0) < td);
 	return 1;	// Завепшение по таймауту
 }
