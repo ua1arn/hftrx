@@ -2717,7 +2717,22 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 // return non-zero: timeout error
 int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS)
 {
-	return 1;
+	const uint_fast64_t t0 = cpu_getdebugticks();
+	const uint_fast64_t td = get_td_ms(timeMS);
+	do
+	{
+		if (LCLSPIN_TRAYLOCK(lock))
+		{
+			const int f = IsListEmpty(list);
+			LCLSPIN_UNLOCK(lock);
+			if (! f)
+			{
+				return 0;	// дождались
+			}
+		}
+		task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+	} while ((uint64_t) (cpu_getdebugticks() - t0) < td);
+	return 1;	// Завепшение по таймауту
 }
 // хотим завершить выполнение кванта, не дожидаясь прерывания
 void task_yield(void)

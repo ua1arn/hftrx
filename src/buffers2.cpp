@@ -553,7 +553,7 @@ public:
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 	}
 
-	bool waut_readybuffer_raw(uint_fast32_t timeMS)
+	bool wait_readybuffer_raw(uint_fast32_t timeMS)
 	{
 		return local_waitlist(& readylist, & irqllock, timeMS) == 0;
 	}
@@ -664,7 +664,7 @@ public:
 			const bool stoutready = outready;
 			if (HASCHECKREADY && ! stoutready)
 				return false;
-			return waut_readybuffer_raw(timeMS);
+			return wait_readybuffer_raw(timeMS);
 
 		}
 
