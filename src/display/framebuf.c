@@ -294,6 +294,36 @@ static void awxx_g2d_mixer_reset(unsigned scanorder)
 	G2D_BLD->BLD_KEY_CTL = 0;
 }
 
+/* Запуск и ожидание завершения работы G2D */
+/* 0 - timeout. 1 - OK */
+static int hwacc_rtmx_waitdone(void)
+{
+    unsigned n = 0x2000000;
+    for (;;)
+    {
+        const uint_fast32_t INT_MASK = (UINT32_C(1) << 0);    /* FINISH_IRQ */
+        const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INTERRUPT;
+        //const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
+        if (((mixer_int & INT_MASK) != 0))
+        {
+            G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;    // clear interrupt flag
+            break;
+        }
+//        if (((rot_int & INT_MASK) != 0))
+//        {
+//            G2D_ROT->ROT_INT = INT_MASK;
+//            break;
+//        }
+        if (-- n == 0)
+        {
+            PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X, G2D_MIXER->G2D_MIXER_INTERRUPT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL, (unsigned) G2D_MIXER->G2D_MIXER_INTERRUPT);
+            //PRINTF("G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
+            return 0;
+        }
+    }
+    return 1;
+}
+
 /* Запускаем и ждём завершения обработки */
 static void awxx_g2d_rtmix_startandwait(void)
 {
@@ -301,11 +331,16 @@ static void awxx_g2d_rtmix_startandwait(void)
 	const uint_fast32_t INT_MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
 	G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;	// clear interrupt flag - не работает без этого ожидание сброса G2D_MIXER_CTRL
 	G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
-//	if (local_wait32mask(& G2D_MIXER->G2D_MIXER_CTRL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
-//		TP();
+	(void) G2D_MIXER->G2D_MIXER_CTRL;
+#if 1
+	hwacc_rtmx_waitdone();
+#else
 	if (local_wait32mask(& G2D_MIXER->G2D_MIXER_INTERRUPT, INT_MASK, INT_MASK, 100))
 		TP();
+	if (local_wait32mask(& G2D_MIXER->G2D_MIXER_CTRL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
+		TP();
 	G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;	// clear interrupt flag
+#endif
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
 
