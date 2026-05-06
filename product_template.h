@@ -28,7 +28,7 @@
 
 // Allwinner
 // Для создания образа (payload), используемого для инициализации DDR памяти при загрузке программ, загружаемых утилитой xfel,
-// смещается начало и размер используемой памяти (смотреть файл (allwnr_t507_boot.ld) и разрешить WITHISBOOTLOADER
+// смещается начало и размер используемой памяти (смотреть файл allwnr_t507_boot.ld) и разрешить WITHISBOOTLOADER
 
 // Renesas bootloader specific
 // Сперва выполняем make lib при закомментированном WITHISBOOTLOADER0 и открытом WITHISBOOTLOADER
