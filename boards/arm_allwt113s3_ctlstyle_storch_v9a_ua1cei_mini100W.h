@@ -580,7 +580,6 @@
 	#if WITHPOTPOWER
 		POTPOWER = WPM_POTIX,			// регулировка мощности
 	#endif /* WITHPOTPOWER */
-	VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
 
 	//#define WITHALTERNATIVEFONTS    1
 
@@ -608,6 +607,7 @@
 		PAREFERIX2 = BOARD_ADCX2IN(3),	// reference (1/2 питания ACS712ELCTR-30B-T).
 
 		XTHERMOIX = BOARD_ADCX2IN(4),		// MCP3208 CH4 External thermo sensor ST LM235Z
+		VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
 
 		// ST LM235Z
 		#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
@@ -663,13 +663,11 @@
 		#if WITHCURRLEVEL
 			PASENSEIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
-		#if WITHVOLTLEVEL
-			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
-		#endif /* WITHVOLTLEVEL */
 
 		#if WITHTHERMOLEVEL
 			XTHERMOIX = BOARD_ADCX1IN(0),		// External thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
+		VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
 
 		#if WITHSWRMTR
 			FWD = BOARD_ADCX1IN(5), REF = BOARD_ADCX1IN(4),	// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
