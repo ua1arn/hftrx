@@ -6708,6 +6708,7 @@ uint_fast8_t hamradio_get_bringSWR(const char * * label)
 
 ///
 
+#if WITHIF4DSP
 
 typedef struct encfnitem_tag
 {
@@ -6817,6 +6818,8 @@ int hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t count)
 	const encfnitem_t * const ei = & enclabelsENC4FN [enc4f_sel];
 	return ei->getlabel(ei->ctx, buff, count);
 }
+
+#endif /* WITHIF4DSP */
 
 ///
 static uint_fast16_t actbring_tuneA;
