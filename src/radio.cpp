@@ -3217,7 +3217,7 @@ static struct bandrange  const bandsmap [] =
 		3. 5366.0 - weak signal полоса 20 hz.
 		На самом деле "цифра" около 5,357,0, CW 5.351.5 и выше SSB около 5.360.0
 	*/
-	{ BMF(5298000), 			BMF(5408000), 				BMF(5351500), 		BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, 	BANDGROUP_5p35MHz, "", },		/* 60-meters band */
+	{ BMF(5351500 - BANDPAD), 	BMF(5366500 + BANDPAD), 	BMF(5351500), 		BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, 	BANDGROUP_5p35MHz, "", },		/* 60-meters band */
 #if WITHBANDR1BBU
 	{ BMF(5415000 - BANDPAD), 	BMF(5415000 + BANDPAD), 	BMF(5415000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_5415000kHz, "4.4M"},
 #endif /* WITHBANDR1BBU */
@@ -3323,13 +3323,13 @@ static void bandsmap_verify(void)
 		if (i < (HBANDS_COUNT - 1))
 		{
 			const struct bandrange * const bn = & bandsmap [i + 1];
-			if (br->top < bn->bottom)
+			if (br->top <= bn->bottom)
 			{
 
 			}
 			else
 			{
-				PRINTF("Overlapped! %u\n", i);
+				PRINTF("Overlapped %u: %u-%u (%u) and %u-%u (%u)\n", i, (unsigned) br->bottom, (unsigned) br->top, (unsigned) br->init, (unsigned) bn->bottom, (unsigned) bn->top, (unsigned) bn->init);
 			}
 		}
 	}
