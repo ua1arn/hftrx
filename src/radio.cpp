@@ -6942,7 +6942,7 @@ static uint_fast8_t tuner_ant;
 
 static void board_set_tuner_group(void)
 {
-	//PRINTF(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
+	//PRINTF(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d, bypass=%d\n"), tunercap, tunerind, tunertype, ! tunerwork);
 	// todo: добавить учет включенной антенны
 	board_set_tuner_C(tunercap);
 	board_set_tuner_L(tunerind);
@@ -13706,7 +13706,7 @@ uif_key_bypasstoggle(void)
 	tunerwork = calc_next(tunerwork, 0, 1);	// переключаем в противоположное состояние
 
 	storetuner(bg, ant);
-	board_set_tuner_group();
+	updateboard_tuner();
 
 	if (tunerwork == 0)
 	{
@@ -13736,6 +13736,7 @@ uif_key_atunerstart(void)
 	{
 		tunerwork = oldtunerwork;
 	}
+	updateboard_tuner();
 	updateboard();
 }
 
