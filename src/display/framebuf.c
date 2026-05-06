@@ -204,22 +204,22 @@ static uint_fast32_t awxx_bld_ctl2(
 
 static LCLSPINLOCK_t rotlock;
 
-static void g2d_rot_accure(void)
+static void g2d_rot_accure(IRQL_t * pirql)
 {
-	LCLSPIN_LOCK(& rotlock);
+	IRQLSPIN_LOCK(& rotlock, pirql, IRQL_BOARD);
 }
-static void g2d_rot_release(void)
+static void g2d_rot_release(IRQL_t irql)
 {
-	LCLSPIN_UNLOCK(& rotlock);
+	IRQLSPIN_UNLOCK(& rotlock, irql);
 }
 
 static LCLSPINLOCK_t rtmxlock;
 
-static void g2d_rtmx_accure(void)
+static void g2d_rtmx_accure(IRQL_t * pirql)
 {
 	LCLSPIN_LOCK(& rtmxlock);
 }
-static void g2d_rtmx_release(void)
+static void g2d_rtmx_release(IRQL_t irql)
 {
 	LCLSPIN_UNLOCK(& rtmxlock);
 }
@@ -294,49 +294,18 @@ static void awxx_g2d_mixer_reset(unsigned scanorder)
 	G2D_BLD->BLD_KEY_CTL = 0;
 }
 
-/* Запуск и ожидание завершения работы G2D */
-/* 0 - timeout. 1 - OK */
-static int hwacc_rtmx_waitdone(void)
-{
-	unsigned n = 0x2000000;
-	for (;;)
-	{
-		const uint_fast32_t INT_MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
-		const uint_fast32_t mixer_int = G2D_MIXER->G2D_MIXER_INTERRUPT;
-		//const uint_fast32_t rot_int = G2D_ROT->ROT_INT;
-		if (((mixer_int & INT_MASK) != 0))
-		{
-			G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;	// clear interrupt flag
-			break;
-		}
-//		if (((rot_int & INT_MASK) != 0))
-//		{
-//			G2D_ROT->ROT_INT = INT_MASK;
-//			break;
-//		}
-		if (-- n == 0)
-		{
-			PRINTF("G2D_MIXER->G2D_MIXER_CTRL=%08X, G2D_MIXER->G2D_MIXER_INTERRUPT=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL, (unsigned) G2D_MIXER->G2D_MIXER_INTERRUPT);
-			//PRINTF("G2D_ROT->ROT_CTL=%08X, G2D_ROT->ROT_INT=%08X\n", (unsigned) G2D_ROT->ROT_CTL, (unsigned) G2D_ROT->ROT_INT);
-			return 0;
-		}
-	}
-	return 1;
-}
-
 /* Запускаем и ждём завершения обработки */
 static void awxx_g2d_rtmix_startandwait(void)
 {
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 	const uint_fast32_t INT_MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
-	G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;	// clear interrupt flag - не работает без жиого ожидание сброса G2D_MIXER_CTRL
+	G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;	// clear interrupt flag - не работает без этого ожидание сброса G2D_MIXER_CTRL
 	G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
-	local_wait32mask(& G2D_MIXER->G2D_MIXER_CTRL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
-//	local_wait32mask(& G2D_MIXER->G2D_MIXER_INTERRUPT, INT_MASK, INT_MASK, 100);
-//	if (hwacc_rtmx_waitdone() == 0)
-//	{
-//		PRINTF("awxx_g2d_rtmix_startandwait: timeout G2D_MIXER->G2D_MIXER_CTRL=%08X\n", (unsigned) G2D_MIXER->G2D_MIXER_CTRL);
-//		ASSERT(0);
-//	}
+//	if (local_wait32mask(& G2D_MIXER->G2D_MIXER_CTRL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
+//		TP();
+	if (local_wait32mask(& G2D_MIXER->G2D_MIXER_INTERRUPT, INT_MASK, INT_MASK, 100))
+		TP();
+	G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;	// clear interrupt flag
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
 
@@ -877,7 +846,8 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 		uint_fast16_t tw, uint_fast16_t th	// Размеры окна получателя
 		)
 {
-	g2d_rtmx_accure();
+	IRQL_t irql;
+	g2d_rtmx_accure(& irql);
 	awxx_g2d_mixer_reset(G2D_SCANORFER); /* Отключаем все источники */
 
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
@@ -985,7 +955,7 @@ awg2d_bitblt(unsigned keyflag, COLORPIP_T keycolor,
 	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 
 	awxx_g2d_rtmix_startandwait(); /* Запускаем и ждём завершения обработки */
-	g2d_rtmx_release();
+	g2d_rtmx_release(irql);
 }
 
 // Возврат не-0, если операция выполнена аппаратурой
@@ -1005,8 +975,9 @@ aw_g2d_fillrect(
 	unsigned fillmask
 	)
 {
+	IRQL_t irql;
 	const uint_fast32_t toffset = 0;	// не может быть использован в случае использования информации в буфере (FILL_FLAG_MIXBG) ((row) << 16) | ((col) << 0);
-	g2d_rtmx_accure();
+	g2d_rtmx_accure(& irql);
 	awxx_g2d_mixer_reset(G2D_SCANORFER);	/* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
@@ -1084,7 +1055,7 @@ aw_g2d_fillrect(
 	G2D_WB->WB_HADD0 = ptr_hi32(taddr);
 
 	awxx_g2d_rtmix_startandwait();		/* Запускаем и ждём завершения обработки */
-	g2d_rtmx_release();
+	g2d_rtmx_release(irql);
 	return 1;
 }
 #endif
@@ -1167,7 +1138,8 @@ hwaccel_rotcopy(
 	uint_fast32_t rot_ctl
 	)
 {
-	g2d_rot_accure();
+	IRQL_t irql;
+	g2d_rot_accure(& irql);
 	ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
 
 	G2D_ROT->ROT_CTL = 0;
@@ -1203,7 +1175,7 @@ hwaccel_rotcopy(
 	G2D_ROT->ROT_CTL = rot_ctl;
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 0);		// ENABLE
 	awxx_g2d_rot_startandwait();		/* Запускаем и ждём завершения обработки */
-	g2d_rot_release();
+	g2d_rot_release(irql);
 
 }
 
@@ -4057,12 +4029,12 @@ void hwaccel_stretchblt(
 	const unsigned tstride = GXADJ(tdb->dx) * PIXEL_SIZE;
 	const uintptr_t srclinear = (uintptr_t) sdb->buffer;
 	const uintptr_t dstlinear = (uintptr_t) tdb->buffer;
-
+	IRQL_t irql;
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	dcache_clean(srcinvalidateaddr, srcinvalidatesize);
 
-	g2d_rtmx_accure();
+	g2d_rtmx_accure(& irql);
 	awxx_g2d_mixer_reset(G2D_SCANORFER);	/* Отключаем все источники */
 	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 
@@ -4237,7 +4209,7 @@ void hwaccel_stretchblt(
 	G2D_WB->WB_SIZE = tsizehw;
 
 	awxx_g2d_rtmix_startandwait();		/* Запускаем и ждём завершения обработки */
-	g2d_rtmx_release();
+	g2d_rtmx_release(irql);
 
 #else
 	PRINTF("hwaccel_stretchblt: Used stub\n");
