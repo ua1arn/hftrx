@@ -498,7 +498,7 @@
 		POTWPM = BOARD_ADCXIN(2),			// MCP3208 CH2 потенциометр управления скоростью передачи в телеграфе
 	#endif /* WITHPOTWPM */
 	#if WITHTHERMOLEVEL
-		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 External thermo sensor ST LM235Z
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 	#endif /* WITHTHERMOLEVEL */
 

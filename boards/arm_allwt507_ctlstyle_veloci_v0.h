@@ -573,8 +573,8 @@
 
 		PASENSEIX2 = BOARD_ADCX2IN(2),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(3),	// reference (1/2 питания ACS712ELCTR-30B-T).
-		XTHERMOIX = BOARD_ADCX2IN(4),		// MCP3208 DA6 Exernal thermo sensor TI LM35
-		XTHERMOREFIX = BOARD_ADCX2IN(6),		// MCP3208 DA6 Exernal thermo sensor TI LM35 (reference)
+		XTHERMOIX = BOARD_ADCX2IN(4),		// MCP3208 DA6 External thermo sensor TI LM35
+		XTHERMOREFIX = BOARD_ADCX2IN(6),		// MCP3208 DA6 External thermo sensor TI LM35 (reference)
 		VOLTSOURCE = BOARD_ADCX2IN(5),		// Средняя точка делителя напряжения питания
 
 		/* кеширование днных */
