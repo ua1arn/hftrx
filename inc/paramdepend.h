@@ -421,9 +421,9 @@ extern "C" {
 
 	#define HARDWARE_NCORES 4
 	#if defined(__aarch64__)
-		#define WITHCPUNAME "Allw A64_64"
+		#define WITHCPUNAME "Allwinner A64_64"
 	#else
-		#define WITHCPUNAME "Allw A64"
+		#define WITHCPUNAME "Allwinner A64"
 	#endif
 
 
@@ -455,9 +455,9 @@ extern "C" {
 
 	#define HARDWARE_NCORES 4
 	#if defined(__aarch64__)
-		#define WITHCPUNAME "Allw A133_64"
+		#define WITHCPUNAME "Allwinner A133_64"
 	#else
-		#define WITHCPUNAME "Allw A133"
+		#define WITHCPUNAME "Allwinner A133"
 	#endif
 
 
@@ -488,9 +488,9 @@ extern "C" {
 
 	#define HARDWARE_NCORES 4
 	#if defined(__aarch64__)
-		#define WITHCPUNAME "Allw T507_64"
+		#define WITHCPUNAME "Allwinner T507_64"
 	#else
-		#define WITHCPUNAME "Allw T507"
+		#define WITHCPUNAME "Allwinner T507"
 	#endif
 
 
@@ -525,9 +525,9 @@ extern "C" {
 		#define HARDWARE_NCORES 6
 	#endif
 	#if defined(__aarch64__)
-		#define WITHCPUNAME "Allw A733_64"
+		#define WITHCPUNAME "Allwinner A733_64"
 	#else
-		#define WITHCPUNAME "Allw A733"
+		#define WITHCPUNAME "Allwinner A733"
 	#endif
 
 #elif CPUSTYLE_T113
@@ -555,7 +555,7 @@ extern "C" {
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	#define HARDWARE_NCORES 2
-	#define WITHCPUNAME "Allw T113-s3"
+	#define WITHCPUNAME "Allwinner T113-s3"
 
 
 #elif CPUSTYLE_T153
@@ -583,7 +583,7 @@ extern "C" {
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	#define HARDWARE_NCORES 4
-	#define WITHCPUNAME "Allw T153"
+	#define WITHCPUNAME "Allwinner T153"
 
 #elif CPUSTYLE_H3
 
@@ -611,9 +611,9 @@ extern "C" {
 
 	#define HARDWARE_NCORES 4
 	#if defined(__aarch64__)
-		#define WITHCPUNAME "Allw H3_64"
+		#define WITHCPUNAME "Allwinner H3_64"
 	#else
-		#define WITHCPUNAME "Allw H3"
+		#define WITHCPUNAME "Allwinner H3"
 	#endif
 
 
@@ -642,7 +642,7 @@ extern "C" {
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	#define HARDWARE_NCORES 1
-	#define WITHCPUNAME "Allw V3s"
+	#define WITHCPUNAME "Allwinner V3s"
 
 #elif CPUSTYLE_F133
 
@@ -668,7 +668,7 @@ extern "C" {
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	#define HARDWARE_NCORES 1
-	#define WITHCPUNAME "Allw F133-A"
+	#define WITHCPUNAME "Allwinner F133-A"
 
 #elif CPUSTYLE_RK356X
 	// Rockchip RK356х
