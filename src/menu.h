@@ -123,17 +123,7 @@ const struct menudef menutable [] =
 	},
 #endif /* WITHAUTOTUNER_N7DDCALGOT */
 #if WITHMGLOOP
-	(const struct paramdefdef [1]) {
-		QLABEL("MLA C"), 7, 0, RJ_UNSIGNED,	ISTEPLARGE_1,
-		ITEM_VALUE,
-		0, MLAPARAMC_MAX,
-		OFFSETOF(struct nvmap, bandgroups [0].otxants [0].mlaparamc),
-		getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
-		& mlaparamc,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xmlaparamc,
 #endif /* WITHMGLOOP */
 #endif /* WITHAUTOTUNER */
 /* group name +++ */

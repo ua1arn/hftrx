@@ -4293,8 +4293,8 @@ struct nvmap
 #define RMT_FILTER_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].filter)
 #define RMT_STEP_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].step)
 
-#define RMT_TXPOWER_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txpower)
-#define RMT_TXCOMPR_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txcompr)
+//#define RMT_TXPOWER_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txpower)
+//#define RMT_TXCOMPR_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txcompr)
 #define RMT_TXAUDIOINDEX_BASE(i) OFFSETOF(struct nvmap, modes [(i)].txaudioindex)
 #define RMT_MIDDLEMENUPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].gmidmenupos)
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
@@ -9092,6 +9092,21 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 	return base + RMT_PAMPBG3_BASE(bg, ant, rxant) - RMT_PAMPBG3_BASE(0, 0, 0);
 }
 
+#if WITHMGLOOP && WITHAUTOTUNER
+static const struct paramdefdef xmlaparamc =
+{
+	QLABEL("MLA C"), 7, 0, RJ_UNSIGNED,	ISTEPLARGE_1,
+	ITEM_VALUE,
+	0, MLAPARAMC_MAX,
+	OFFSETOF(struct nvmap, bandgroups [0].otxants [0].mlaparamc),
+	getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
+	& mlaparamc,
+	NULL,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+#endif /* WITHMGLOOP && WITHAUTOTUNER */
+
 #if WITHTX
 
 #if WITHPACLASSA
@@ -9308,6 +9323,9 @@ static const struct paramdefdef * enc2menus [] =
 		getifshiftbase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHIFSHIFT && ! WITHPOTIFSHIFT */
+#if WITHMGLOOP && WITHAUTOTUNER
+	& xmlaparamc,
+#endif /* WITHMGLOOP && WITHAUTOTUNER */
 };
 
 #define ENC2POS_COUNT (sizeof enc2menus / sizeof enc2menus [0])
