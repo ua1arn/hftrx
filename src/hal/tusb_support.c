@@ -2061,8 +2061,21 @@ void ohciehci_clk_init(void)
 	switch (ix)
 	{
 	case 0:
+		CCU->USB0_CLK_REG |= (UINT32_C(1) << 31);	// USB0_CLKEN
+		CCU->USB0_CLK_REG |= (UINT32_C(1) << 30);	// USB0_PHY_RSTN
+		CCU->USB0_BGR_REG &= ~ (UINT32_C(1) << 8);	// USB0_DEVICE_GATING.
+		CCU->USB0_BGR_REG |= (UINT32_C(1) << 20);	// USB0_EHCI_RST
+		CCU->USB0_BGR_REG |= (UINT32_C(1) << 4);	// USB0_EHCI_GATING
+		CCU->USB0_BGR_REG |= (UINT32_C(1) << 16);	// USB0_OHCI_RST
+		CCU->USB0_BGR_REG |= (UINT32_C(1) << 0);	// USB0_OHCI_GATING
 		break;
 	case 1:
+		CCU->USB1_CLK_REG |= (UINT32_C(1) << 31);	// USB1_CLKEN
+		CCU->USB1_CLK_REG |= (UINT32_C(1) << 30);	// USB1_PHY_RSTN
+		CCU->USB1_BGR_REG |= (UINT32_C(1) << 20);	// USB1_EHCI_RST
+		CCU->USB1_BGR_REG |= (UINT32_C(1) << 4);	// USB1_EHCI_GATING
+		CCU->USB1_BGR_REG |= (UINT32_C(1) << 16);	// USB1_OHCI_RST
+		CCU->USB1_BGR_REG |= (UINT32_C(1) << 0);	// USB1_OHCI_GATING
 		break;
 	}
 
