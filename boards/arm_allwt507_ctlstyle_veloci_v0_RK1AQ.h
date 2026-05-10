@@ -327,6 +327,7 @@
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
+	//#define WITHNOAUDIPROC	1
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
