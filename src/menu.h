@@ -54,73 +54,13 @@ const struct menudef menutable [] =
 	#endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
 #endif /* WITHTX */
-	(const struct paramdefdef [1]) {
-		QLABEL("TUNER L"), 7, 0, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE,
-		LMIN, LMAX,
-		OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunerind),
-		getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
-		& tunerind,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("TUNER C"), 7, 0, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE,
-		CMIN, CMAX,
-		OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunercap),
-		getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
-		& tunercap,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("TUNER TY"), 7, 0, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE,
-		0, KSCH_COUNT - 1,
-		OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunertype),
-		getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
-		NULL,
-		& tunertype,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("TUNER WT"), 7, 0, RJ_UNSIGNED,	ISTEP5,	// задержка перед измерением после переключения реле
-		ITEM_VALUE, 
-		10, 250,
-		OFFSETOF(struct nvmap, gtunerdelay),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gtunerdelay,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xtunerind,
+	& xtunercap,
+	& xtunertype,
+	& xgtunerdelay,
 #if WITHAUTOTUNER_N7DDCALGO
-	(const struct paramdefdef [1]) {
-		QLABEL("C LINEAR"), 7, 0, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gn7ddclinearC),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gn7ddclinearC,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("L LINEAR"), 7, 0, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gn7ddclinearL),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gn7ddclinearL,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgn7ddclinearC,
+	& xgn7ddclinearL,
 #endif /* WITHAUTOTUNER_N7DDCALGOT */
 #if WITHMGLOOP
 	& xmlaparamc,
@@ -2192,28 +2132,8 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
-	(const struct paramdefdef [1]) {
-		QLABEL("DATA MOD"), 5, 0, RJ_MDMMODE, 	ISTEP1,
-		ITEM_VALUE,
-		0, 1,			/* 0: BPSK, 1: QPSK */
-		OFFSETOF(struct nvmap, gmodemmode),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gmodemmode,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("DATA SPD"), 7, 2, RJ_MDMSPEED, 	ISTEP1,
-		ITEM_VALUE,
-		0, ARRAY_SIZE(modembr2int100) - 1,
-		OFFSETOF(struct nvmap, gmodemspeed),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gmodemspeed,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgmodemmode,
+	& xgmodemspeed,
 #endif /* WITHMODEM */
 #if WITHLFM
 /* group name +++ */
