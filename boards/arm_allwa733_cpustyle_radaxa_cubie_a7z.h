@@ -246,11 +246,6 @@
 		#endif /* WITHLWIP && ! WITHETHHW */
 		//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 	
-		#if WIHSPIDFHW || WIHSPIDFSW
-			#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-			#define WITHUSBWCID	1
-		#endif /* WIHSPIDFHW || WIHSPIDFSW */
-	
 		#if WIHSPIDFHW || WIHSPIDFSW || (WITHSDHC0HW && WITHSDHCHW)
 			#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 			#define WITHUSBWCID	1
