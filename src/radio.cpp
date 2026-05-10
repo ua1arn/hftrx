@@ -567,182 +567,6 @@ static const uint_fast8_t catbr2int [] =
 	115200u / BRSCALE,	// 115200
 };
 
-#if WITHLFM
-
-	#define LFMFREQBIAS 20000
-
-#if defined WITHLFMTOFFSET
-	static uint_fast16_t lfmtoffset = WITHLFMTOFFSET;
-#else
-	static uint_fast16_t lfmtoffset = 0;
-#endif /* WITHLFMTOFFSET */
-	static uint_fast16_t lfmtinterval = 5 * 60;
-	static uint_fast8_t lfmmode = 1;
-	static uint_fast16_t lfmstart100k = 80;
-	static uint_fast16_t lfmstop100k = 350;
-	static uint_fast16_t lfmspeed1k = 100;
-	static uint_fast16_t lfmfreqbias = LFMFREQBIAS;
-
-	static const struct paramdefdef xlfmmode =
-	{
-		QLABEL("LFM MODE"), 8, 3, RJ_ON, 	ISTEP1,
-		ITEM_VALUE,
-		0, 1,			/* LFM mode enable */
-		OFFSETOF(struct nvmap, lfmmode),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& lfmmode,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	};
-	static const struct paramdefdef xlfmstart100k =
-	{
-		QLABEL("LFM STRT"), 5, 1, 0, 	ISTEP1,
-		ITEM_VALUE,
-		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
-		OFFSETOF(struct nvmap, lfmstart100k),
-		getselector0, nvramoffs0, valueoffs0,
-		& lfmstart100k,
-		NULL,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	   };
-	static const struct paramdefdef xlfmstop100k =
-	{
-		QLABEL("LFM STOP"), 5, 1, 0, 	ISTEP1,
-		ITEM_VALUE,
-		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
-		OFFSETOF(struct nvmap, lfmstop100k),
-		getselector0, nvramoffs0, valueoffs0,
-		& lfmstop100k,
-		NULL,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	   };
-	static const struct paramdefdef xlfmspeed1k =
-	{
-		QLABEL("LFM SPD"), 5, 0, 0, 	ISTEP1,
-		ITEM_VALUE,
-		50, 550,			/* 50 kHz/sec..550 kHz/sec, 1 kHz/sec steps */
-		OFFSETOF(struct nvmap, lfmspeed1k),
-		getselector0, nvramoffs0, valueoffs0,
-		& lfmspeed1k,
-		NULL,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	   };
-	// Секунды от начала часа до запуска
-	static const struct paramdefdef xlfmtoffset =
-	{
-		QLABEL("LFM OFST"), 5, 0, 0, 	ISTEP1,
-		ITEM_VALUE,
-		0, 60 * 60 - 1,			/* 0..59:59 */
-		OFFSETOF(struct nvmap, lfmtoffset),
-		getselector0, nvramoffs0, valueoffs0,
-		& lfmtoffset,
-		NULL,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	   };
-	// Интервал в секундах между запусками в пределах часа
-	static const struct paramdefdef xlfmtinterval =
-	{
-		QLABEL("LFM PERI"), 5, 0, 0, 	ISTEP1,
-		ITEM_VALUE,
-		1, 60 * 60 - 1,			/* 00:01..59:59 */
-		OFFSETOF(struct nvmap, lfmtinterval),
-		getselector0, nvramoffs0, valueoffs0,
-		& lfmtinterval,
-		NULL,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	   };
-	static const struct paramdefdef xlfmfreqbias =
-	{
-        QLABEL("LFM SHFT"), 5 + WSIGNFLAG, 0, RJ_SIGNED,     ISTEP1,
-        ITEM_VALUE,
-        0, 2 * LFMFREQBIAS,            /*  */
-        OFFSETOF(struct nvmap, lfmfreqbias),
-        getselector0, nvramoffs0, valueoffs0,
-        & lfmfreqbias,
-        NULL,
-        getlfmbias,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-   };
-
-// Используются параметры
-// lfmtoffset - Секунды от начала часа до запуска
-// lfmtinterval - Интервал в секундах между запусками в пределах часа
-// возврат не-0 в случае подходящего времени для запуска.
-uint_fast8_t
-islfmstart(unsigned now)
-{
-	unsigned s;
-	for (s = lfmtoffset; s < 60 * 60; s += lfmtinterval)
-	{
-		if (s == now)
-			return 1;
-	}
-	return 0;
-}
-
-uint_fast16_t hamradio_get_lfmtinterval(void)
-{
-	return lfmtinterval;
-}
-
-void hamradio_set_lfmtinterval(uint_fast16_t v)
-{
-	if (lfmtinterval < 60 * 60)
-		lfmtinterval = v;
-}
-
-uint_fast8_t hamradio_get_lfmmode(void)
-{
-	return lfmmode;
-}
-
-void hamradio_set_lfmmode(uint_fast8_t v)
-{
-	lfmmode = v != 0;
-
-	updateboard();
-}
-
-uint_fast16_t hamradio_get_lfmstop100k(void)
-{
-	return lfmstop100k;
-}
-
-void hamradio_set_lfmstop100k(uint_fast16_t v)
-{
-	if (v > 80 && v <= 350)
-		lfmstop100k = v;
-
-	updateboard();
-}
-
-uint_fast16_t hamradio_get_lfmtoffset(void)
-{
-	return lfmtoffset;
-}
-
-void hamradio_set_lfmtoffset(uint_fast16_t v)
-{
-	if (v < 60)
-		lfmtoffset = v;
-
-	updateboard();
-}
-
-void hamradio_lfm_disable(void)
-{
-	lfm_disable();
-	updateboard();
-}
-
-#endif /* WITHLFM */
-
 
 static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при приеме телеграфа или самоконтроль (в десятках герц) */
 
@@ -6501,15 +6325,6 @@ static const struct paramdefdef xgbusfreq =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif
-
-#if WITHLFM
-
-static int_fast32_t getlfmbias(void)
-{
-	return - LFMFREQBIAS;
-}
-
-#endif /* WITHLFM */
 //
 //#define ADCOFFSETMID (512 / 2)
 //static int_fast32_t getadcoffsbase(void)
@@ -12451,6 +12266,199 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 
 #endif /* WITHCAT */
 
+#if WITHLFM
+
+	#define LFMFREQBIAS 20000
+
+#if defined WITHLFMTOFFSET
+	static uint_fast16_t lfmtoffset = WITHLFMTOFFSET;
+#else
+	static uint_fast16_t lfmtoffset = 0;
+#endif /* WITHLFMTOFFSET */
+	static uint_fast16_t lfmtinterval = 5 * 60;
+	static uint_fast8_t lfmmode = 1;
+	static uint_fast16_t lfmstart100k = 80;
+	static uint_fast16_t lfmstop100k = 350;
+	static uint_fast16_t lfmspeed1k = 100;
+	static uint_fast16_t lfmfreqbias = LFMFREQBIAS;
+
+	static int_fast32_t getlfmbias(void)
+	{
+		return - LFMFREQBIAS;
+	}
+
+	static const struct paramdefdef xlfmmode =
+	{
+		QLABEL("LFM MODE"), 8, 3, RJ_ON, 	ISTEP1,
+		ITEM_VALUE,
+		0, 1,			/* LFM mode enable */
+		OFFSETOF(struct nvmap, lfmmode),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& lfmmode,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xlfmstart100k =
+	{
+		QLABEL("LFM STRT"), 5, 1, 0, 	ISTEP1,
+		ITEM_VALUE,
+		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
+		OFFSETOF(struct nvmap, lfmstart100k),
+		getselector0, nvramoffs0, valueoffs0,
+		& lfmstart100k,
+		NULL,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	   };
+	static const struct paramdefdef xlfmstop100k =
+	{
+		QLABEL("LFM STOP"), 5, 1, 0, 	ISTEP1,
+		ITEM_VALUE,
+		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
+		OFFSETOF(struct nvmap, lfmstop100k),
+		getselector0, nvramoffs0, valueoffs0,
+		& lfmstop100k,
+		NULL,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	   };
+	static const struct paramdefdef xlfmspeed1k =
+	{
+		QLABEL("LFM SPD"), 5, 0, 0, 	ISTEP1,
+		ITEM_VALUE,
+		50, 550,			/* 50 kHz/sec..550 kHz/sec, 1 kHz/sec steps */
+		OFFSETOF(struct nvmap, lfmspeed1k),
+		getselector0, nvramoffs0, valueoffs0,
+		& lfmspeed1k,
+		NULL,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	   };
+	// Секунды от начала часа до запуска
+	static const struct paramdefdef xlfmtoffset =
+	{
+		QLABEL("LFM OFST"), 5, 0, 0, 	ISTEP1,
+		ITEM_VALUE,
+		0, 60 * 60 - 1,			/* 0..59:59 */
+		OFFSETOF(struct nvmap, lfmtoffset),
+		getselector0, nvramoffs0, valueoffs0,
+		& lfmtoffset,
+		NULL,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	   };
+	// Интервал в секундах между запусками в пределах часа
+	static const struct paramdefdef xlfmtinterval =
+	{
+		QLABEL("LFM PERI"), 5, 0, 0, 	ISTEP1,
+		ITEM_VALUE,
+		1, 60 * 60 - 1,			/* 00:01..59:59 */
+		OFFSETOF(struct nvmap, lfmtinterval),
+		getselector0, nvramoffs0, valueoffs0,
+		& lfmtinterval,
+		NULL,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	   };
+	static const struct paramdefdef xlfmfreqbias =
+	{
+        QLABEL("LFM SHFT"), 5 + WSIGNFLAG, 0, RJ_SIGNED,     ISTEP1,
+        ITEM_VALUE,
+        0, 2 * LFMFREQBIAS,            /*  */
+        OFFSETOF(struct nvmap, lfmfreqbias),
+        getselector0, nvramoffs0, valueoffs0,
+        & lfmfreqbias,
+        NULL,
+        getlfmbias,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+   };
+
+// Используются параметры
+// lfmtoffset - Секунды от начала часа до запуска
+// lfmtinterval - Интервал в секундах между запусками в пределах часа
+// возврат не-0 в случае подходящего времени для запуска.
+uint_fast8_t
+islfmstart(unsigned now)
+{
+	unsigned s;
+	for (s = lfmtoffset; s < 60 * 60; s += lfmtinterval)
+	{
+		if (s == now)
+			return 1;
+	}
+	return 0;
+}
+
+uint_fast16_t hamradio_get_lfmtinterval(void)
+{
+	return lfmtinterval;
+}
+
+void hamradio_set_lfmtinterval(uint_fast16_t v)
+{
+	if (lfmtinterval < 60 * 60)
+		lfmtinterval = v;
+}
+
+uint_fast8_t hamradio_get_lfmmode(void)
+{
+	return lfmmode;
+}
+
+void hamradio_set_lfmmode(uint_fast8_t v)
+{
+	lfmmode = v != 0;
+
+	updateboard();
+}
+
+uint_fast16_t hamradio_get_lfmstop100k(void)
+{
+	return lfmstop100k;
+}
+
+void hamradio_set_lfmstop100k(uint_fast16_t v)
+{
+	if (v > 80 && v <= 350)
+		lfmstop100k = v;
+
+	updateboard();
+}
+
+uint_fast16_t hamradio_get_lfmtoffset(void)
+{
+	return lfmtoffset;
+}
+
+void hamradio_set_lfmtoffset(uint_fast16_t v)
+{
+	if (v < 60)
+		lfmtoffset = v;
+
+	updateboard();
+}
+
+void hamradio_lfm_disable(void)
+{
+	lfm_disable();
+	updateboard();
+}
+
+int board_islfmmode(void)
+{
+	return lfmmode;
+}
+
+#else /* WITHLFM */
+
+int board_islfmmode(void)
+{
+	return 0;
+}
+
+#endif /* WITHLFM */
+
 /* Если изменяемый параметр отличается от старого значения - возврат 1 */
 /* модификация параметра с учетом границ изменения значения */
 static uint_fast8_t
@@ -17316,14 +17324,6 @@ static void dpc_1s_timer_fn(void * arg)
 #endif /* WITHCAT */
 }
 
-int board_islfmmode(void)
-{
-#if WITHLFM
-	return lfmmode;
-#else /* WITHLFM */
-	return 0;
-#endif /* WITHLFM */
-}
 
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 
