@@ -251,8 +251,10 @@
 			#define WITHUSBWCID	1
 		#endif /* WIHSPIDFHW || WIHSPIDFSW */
 	
-		//#define WITHUSBDMTP	1	/* MTP USB Device */
-		//#define WITHUSBDMSC	1	/* MSC USB device */
+		#if WIHSPIDFHW || WIHSPIDFSW || (WITHSDHC0HW && WITHSDHCHW)
+			#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+			#define WITHUSBWCID	1
+		#endif /*  WIHSPIDFHW || WIHSPIDFSW || (WITHSDHC2HW && WITHSDHCHW) */
 	#endif
 #endif /* WITHISBOOTLOADER */
 
