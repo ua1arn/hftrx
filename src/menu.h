@@ -3339,52 +3339,12 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
-	(const struct paramdefdef [1]) {
-		QLABEL("VERSION"), 7, 0, RJ_CB, 	ISTEP_RO,	// тип процессора
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, 0,
-		MENUNONVRAM,
-		getselector0, nvramoffs0, valueoffs0,
-		& gzero,
-		NULL,
-		getzerobase,
-		getvaltextcompiled, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("S/N"), 7, 0, RJ_CB, 	ISTEP_RO,	// Индивидуальный номер изделия
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, 0,
-		MENUNONVRAM,
-		getselector0, nvramoffs0, valueoffs0,
-		& gzero,
-		NULL,
-		getzerobase,
-		getvaltextserialnum, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgversion,
+	& xgserialnum,
 	& xgcputype,
 	& xgcpufreq,
 #if CPUSTYLE_STM32MP1
-	(const struct paramdefdef [1]) {
-		QLABEL("DDR FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота памяти
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, 0,
-		MENUNONVRAM,
-		getselector0, nvramoffs0, valueoffs0,
-		& gzero,
-		NULL,
-		getddrfreqbase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("BUS FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота шины
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, 0,
-		MENUNONVRAM,
-		getselector0, nvramoffs0, valueoffs0,
-		& gzero,
-		NULL,
-		getaxissfreqbase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgddrfreq,
+	& xgbusfreq,
 #endif
 };
