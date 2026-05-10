@@ -5329,6 +5329,42 @@ enum
 		static uint_fast8_t greverb;		/* ревербератор */
 		static uint_fast8_t greverbdelay = 100;		/* ревербератор - задержка (ms) */
 		static uint_fast8_t greverbloss = WITHREVERBLOSSMAX;		/* ревербератор - ослабление на возврате */
+		static const struct paramdefdef xgreverb =
+		{
+			QLABEL2("REVERB", "Reverberator"), 7, 0, RJ_ON,	ISTEP1,
+			ITEM_VALUE,
+			0, 1, 					/* ревербератор */
+			OFFSETOF(struct nvmap, greverb),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& greverb,
+			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgreverbdelay =
+		{
+			QLABEL2("RVB TIME", "Reverb Delay"), 7, 0, RJ_UNSIGNED, ISTEP1,
+			ITEM_VALUE,
+			WITHREVERBDELAYMIN, WITHREVERBDELAYMAX, 					/* ревербератор - задержка */
+			OFFSETOF(struct nvmap, greverbdelay),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& greverbdelay,
+			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgreverbloss =
+		{
+			QLABEL2("RVB LOSS", "Reverb Loss"), 7, 0, RJ_UNSIGNED, ISTEP1,
+			ITEM_VALUE,
+			WITHREVERBLOSSMIN, WITHREVERBLOSSMAX, 					/* ревербератор - ослабление на возврате */
+			OFFSETOF(struct nvmap, greverbloss),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& greverbloss,
+			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
 	#endif /* WITHREVERB */
 
 	#if WITHUSBHW && WITHUSBUAC
