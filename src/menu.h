@@ -2149,85 +2149,13 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
-	(const struct paramdefdef [1]) {
-		QLABEL("LFM MODE"), 8, 3, RJ_ON, 	ISTEP1,
-		ITEM_VALUE,
-		0, 1,			/* LFM mode enable */
-		OFFSETOF(struct nvmap, lfmmode),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& lfmmode,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("LFM STRT"), 5, 1, 0, 	ISTEP1,
-		ITEM_VALUE,
-		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
-		OFFSETOF(struct nvmap, lfmstart100k),
-		getselector0, nvramoffs0, valueoffs0,
-		& lfmstart100k,
-		NULL,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("LFM STOP"), 5, 1, 0, 	ISTEP1,
-		ITEM_VALUE,
-		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
-		OFFSETOF(struct nvmap, lfmstop100k),
-		getselector0, nvramoffs0, valueoffs0,
-		& lfmstop100k,
-		NULL,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("LFM SPD"), 5, 0, 0, 	ISTEP1,
-		ITEM_VALUE,
-		50, 550,			/* 50 kHz/sec..550 kHz/sec, 1 kHz/sec steps */
-		OFFSETOF(struct nvmap, lfmspeed1k),
-		getselector0, nvramoffs0, valueoffs0,
-		& lfmspeed1k,
-		NULL,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	// Секунды от начала часа до запуска
-	(const struct paramdefdef [1]) {
-		QLABEL("LFM OFST"), 5, 0, 0, 	ISTEP1,
-		ITEM_VALUE,
-		0, 60 * 60 - 1,			/* 0..59:59 */
-		OFFSETOF(struct nvmap, lfmtoffset),
-		getselector0, nvramoffs0, valueoffs0,
-		& lfmtoffset,
-		NULL,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	// Интервал в секундах между запусками в пределах часа
-	(const struct paramdefdef [1]) {
-		QLABEL("LFM PERI"), 5, 0, 0, 	ISTEP1,
-		ITEM_VALUE,
-		1, 60 * 60 - 1,			/* 00:01..59:59 */
-		OFFSETOF(struct nvmap, lfmtinterval),
-		getselector0, nvramoffs0, valueoffs0,
-		& lfmtinterval,
-		NULL,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-    (const struct paramdefdef [1]) {
-        QLABEL("LFM SHFT"), 5 + WSIGNFLAG, 0, RJ_SIGNED,     ISTEP1,
-        ITEM_VALUE,
-        0, 2 * LFMFREQBIAS,            /*  */
-        OFFSETOF(struct nvmap, lfmfreqbias),
-        getselector0, nvramoffs0, valueoffs0,
-        & lfmfreqbias,
-        NULL,
-        getlfmbias,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-   },
+	& xlfmmode,
+	& xlfmstart100k,
+	& xlfmstop100k,
+	& xlfmspeed1k,
+	& xlfmtoffset,
+	& xlfmtinterval,
+	& xlfmfreqbias,
 #endif /* WITHLFM */
 
 #if WITHTX

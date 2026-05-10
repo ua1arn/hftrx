@@ -583,6 +583,92 @@ static const uint_fast8_t catbr2int [] =
 	static uint_fast16_t lfmspeed1k = 100;
 	static uint_fast16_t lfmfreqbias = LFMFREQBIAS;
 
+	static const struct paramdefdef xlfmmode =
+	{
+		QLABEL("LFM MODE"), 8, 3, RJ_ON, 	ISTEP1,
+		ITEM_VALUE,
+		0, 1,			/* LFM mode enable */
+		OFFSETOF(struct nvmap, lfmmode),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& lfmmode,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xlfmstart100k =
+	{
+		QLABEL("LFM STRT"), 5, 1, 0, 	ISTEP1,
+		ITEM_VALUE,
+		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
+		OFFSETOF(struct nvmap, lfmstart100k),
+		getselector0, nvramoffs0, valueoffs0,
+		& lfmstart100k,
+		NULL,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	   };
+	static const struct paramdefdef xlfmstop100k =
+	{
+		QLABEL("LFM STOP"), 5, 1, 0, 	ISTEP1,
+		ITEM_VALUE,
+		(TUNE_BOTTOM / 100000) + 1, (TUNE_TOP / 100000) - 1,			/* 1.0 MHz.. 55.0 MHz in 100 kHz steps */
+		OFFSETOF(struct nvmap, lfmstop100k),
+		getselector0, nvramoffs0, valueoffs0,
+		& lfmstop100k,
+		NULL,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	   };
+	static const struct paramdefdef xlfmspeed1k =
+	{
+		QLABEL("LFM SPD"), 5, 0, 0, 	ISTEP1,
+		ITEM_VALUE,
+		50, 550,			/* 50 kHz/sec..550 kHz/sec, 1 kHz/sec steps */
+		OFFSETOF(struct nvmap, lfmspeed1k),
+		getselector0, nvramoffs0, valueoffs0,
+		& lfmspeed1k,
+		NULL,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	   };
+	// Секунды от начала часа до запуска
+	static const struct paramdefdef xlfmtoffset =
+	{
+		QLABEL("LFM OFST"), 5, 0, 0, 	ISTEP1,
+		ITEM_VALUE,
+		0, 60 * 60 - 1,			/* 0..59:59 */
+		OFFSETOF(struct nvmap, lfmtoffset),
+		getselector0, nvramoffs0, valueoffs0,
+		& lfmtoffset,
+		NULL,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	   };
+	// Интервал в секундах между запусками в пределах часа
+	static const struct paramdefdef xlfmtinterval =
+	{
+		QLABEL("LFM PERI"), 5, 0, 0, 	ISTEP1,
+		ITEM_VALUE,
+		1, 60 * 60 - 1,			/* 00:01..59:59 */
+		OFFSETOF(struct nvmap, lfmtinterval),
+		getselector0, nvramoffs0, valueoffs0,
+		& lfmtinterval,
+		NULL,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	   };
+	static const struct paramdefdef xlfmfreqbias =
+	{
+        QLABEL("LFM SHFT"), 5 + WSIGNFLAG, 0, RJ_SIGNED,     ISTEP1,
+        ITEM_VALUE,
+        0, 2 * LFMFREQBIAS,            /*  */
+        OFFSETOF(struct nvmap, lfmfreqbias),
+        getselector0, nvramoffs0, valueoffs0,
+        & lfmfreqbias,
+        NULL,
+        getlfmbias,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+   };
 
 // Используются параметры
 // lfmtoffset - Секунды от начала часа до запуска
@@ -6619,7 +6705,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		return modembr2int100 [gmodemspeed];
 	}
 
-	const struct paramdefdef xgmodemmode =
+	static const struct paramdefdef xgmodemmode =
 	{
 		QLABEL("DATA MOD"), 5, 0, RJ_MDMMODE, 	ISTEP1,
 		ITEM_VALUE,
@@ -6631,7 +6717,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	const struct paramdefdef xgmodemspeed =
+	static const struct paramdefdef xgmodemspeed =
 	{
 		QLABEL("DATA SPD"), 7, 2, RJ_MDMSPEED, 	ISTEP1,
 		ITEM_VALUE,
@@ -9133,7 +9219,7 @@ static const struct paramdefdef xmlaparamc =
 #endif /* WITHMGLOOP && WITHAUTOTUNER */
 
 #if WITHAUTOTUNER
-const struct paramdefdef xtunerind =
+static const struct paramdefdef xtunerind =
 {
 	QLABEL("TUNER L"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
@@ -9145,7 +9231,7 @@ const struct paramdefdef xtunerind =
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-const struct paramdefdef xtunercap =
+static const struct paramdefdef xtunercap =
 {
 	QLABEL("TUNER C"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
@@ -9157,7 +9243,7 @@ const struct paramdefdef xtunercap =
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-const struct paramdefdef xtunertype =
+static const struct paramdefdef xtunertype =
 {
 	QLABEL("TUNER TY"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
@@ -9169,7 +9255,7 @@ const struct paramdefdef xtunertype =
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-const struct paramdefdef xgtunerdelay =
+static const struct paramdefdef xgtunerdelay =
 {
 	QLABEL("TUNER WT"), 7, 0, RJ_UNSIGNED,	ISTEP5,	// задержка перед измерением после переключения реле
 	ITEM_VALUE,
@@ -9182,7 +9268,7 @@ const struct paramdefdef xgtunerdelay =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #if WITHAUTOTUNER_N7DDCALGO
-const struct paramdefdef xgn7ddclinearC =
+static const struct paramdefdef xgn7ddclinearC =
 {
 	QLABEL("C LINEAR"), 7, 0, RJ_YES,	ISTEP1,
 	ITEM_VALUE,
@@ -9194,7 +9280,7 @@ const struct paramdefdef xgn7ddclinearC =
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-const struct paramdefdef xgn7ddclinearL =
+static const struct paramdefdef xgn7ddclinearL =
 {
 	QLABEL("L LINEAR"), 7, 0, RJ_YES,	ISTEP1,
 	ITEM_VALUE,
