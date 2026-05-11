@@ -339,7 +339,7 @@ int board_radaxa_cubie_axp318w_initialize(void)
 		return ret;
 	}
 
-	if (1)
+	if (0)
 	{
 		uint8_t registers [0xEE];
 		unsigned reg;
