@@ -301,13 +301,34 @@ static void axp318w_setstate(const char * name, unsigned state)
 	ASSERT(ec >= 0);
 }
 
+// non-zero if error
+static int axp318w_versioncheck(void)
+{
+	uint8_t axp318_chip_id;
+	int ret;
+
+	ret = pmic_bus_read(AXP313_CHIP_VERSION, &axp318_chip_id);
+	if (ret)
+	{
+		PRINTF("pmic_bus_read() failure.\n");
+		dbg_flush();
+		return ret;
+	}
+
+	PRINTF("axp318_chip_id=0x%02X (expected 0x%02X)\n", axp318_chip_id, 0xFF);
+
+	dbg_flush();
+	if (!(axp318_chip_id == 0xFF))
+		return -1;
+    PRINTF("axp318_chip_id=OK\n");
+    return 0;
+}
 // board-specific
 
 int board_radaxa_cubie_axp318w_initialize(void)
 {
 
 	PRINTF("START PMIC \n");
-	uint8_t axp318_chip_id;
 	int ret;
 
 	ret = axpXXX_bus_init();
@@ -318,7 +339,7 @@ int board_radaxa_cubie_axp318w_initialize(void)
 		return ret;
 	}
 
-	if (0)
+	if (1)
 	{
 		uint8_t registers [0xEE];
 		unsigned reg;
@@ -330,20 +351,12 @@ int board_radaxa_cubie_axp318w_initialize(void)
 		PRINTF("axp318 registers (count = 0x%02X):\n", reg);
 		printhex(0, registers, reg);
 	}
-//	ret = pmic_bus_read(AXP313_CHIP_VERSION, &axp318_chip_id);
-//	if (ret)
-//	{
-//		PRINTF("pmic_bus_read() failure.\n");
-//			dbg_flush();
-//		return ret;
-//	}
-
-//	PRINTF("axp318_chip_id=0x%02X (expected 0x%02X)\n", axp318_chip_id, 0x4B);
-//
-//	dbg_flush();
-//	if (!(axp318_chip_id == 0x4B))
-//		return -1;
-//    PRINTF("axp318_chip_id=OK\n");
+	ret = axp318w_versioncheck();
+	if (ret)
+	{
+		dbg_flush();
+		return ret;
+	}
 
     // Radaxa Cubie A7Z voltages:
 	//	SWOUT1 VCC33-LDO 3.3V with ON/OFF
@@ -398,7 +411,7 @@ int board_radaxa_cubie_axp318w_initialize(void)
 #endif
 	//axpXXX_print(axp318_regulators);
 
-	PRINTF("axp318 INIT END\n");
+	PRINTF("1 axp318 INIT END\n");
 	dbg_flush();
 	return 0;
 
@@ -434,20 +447,12 @@ int board_orangepi4pro_axp318w_initialize(void)
 		PRINTF("axp318 registers (count = 0x%02X):\n", reg);
 		printhex(0, registers, reg);
 	}
-//	ret = pmic_bus_read(AXP313_CHIP_VERSION, &axp318_chip_id);
-//	if (ret)
-//	{
-//		PRINTF("pmic_bus_read() failure.\n");
-//			dbg_flush();
-//		return ret;
-//	}
-
-//	PRINTF("axp318_chip_id=0x%02X (expected 0x%02X)\n", axp318_chip_id, 0x4B);
-//
-//	dbg_flush();
-//	if (!(axp318_chip_id == 0x4B))
-//		return -1;
-//    PRINTF("axp318_chip_id=OK\n");
+	ret = axp318w_versioncheck();
+	if (ret)
+	{
+		dbg_flush();
+		return ret;
+	}
 
     // Radaxa Cubie A7Z voltages:
 	//	SWOUT1 VCC33-LDO 3.3V with ON/OFF
@@ -503,7 +508,7 @@ int board_orangepi4pro_axp318w_initialize(void)
 #endif
 	//axpXXX_print(axp318_regulators);
 
-	PRINTF("axp318 INIT END\n");
+	PRINTF("2 axp318 INIT END\n");
 	dbg_flush();
 	return 0;
 }
