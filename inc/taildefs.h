@@ -187,8 +187,9 @@ void hardware_twi_master_configure(void);
 	typedef TWI_TypeDef TWI_t;
 	#define TWIBASENAME(port) TWIBASEconcat(I2C, port)
 #elif CPUSTYLE_XC7Z
-	typedef void /*SPI_Registers */ TWI_t;
-	#define TWIBASENAME(port) TWIBASEconcat(I2C, port)
+	//typedef void /*SPI_Registers */ TWI_t;
+	typedef XIicPs TWI_t;
+	#define TWIBASENAME(port) TWIBASEconcat(xc7z_iicps, port)
 //	#define TWIHARD_PTR TWI0	// TODO: move to cpu configuration
 #else
 	typedef void TWI_t;

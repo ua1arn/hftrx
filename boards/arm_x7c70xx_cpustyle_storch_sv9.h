@@ -743,7 +743,9 @@
 	#define GET_TWCK() (gpio_readpin(TARGET_TWI_TWCK_MIO))
 	#define GET_TWD() (gpio_readpin(TARGET_TWI_TWD_MIO))
 
-	#define TWIHARD_PTR 0
+	#include "iicps_v3_13/xiicps.h"
+	extern XIicPs xc7z_iicps0;
+	#define TWIHARD_PTR (& xc7z_iicps0)
 
 #endif /* WITHTWISW || WITHTWIHW */
 

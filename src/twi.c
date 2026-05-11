@@ -984,32 +984,32 @@ void i2c_initialize(void)
 
 #elif (CPUSTYLE_XC7Z) && WITHTWIHW
 
-static XIicPs xc7z_iicps;
+XIicPs xc7z_iicps0;
 
 void hardware_twi_master_configure(void) {}
 
-void hardware_iicps_configure(void)
+void hardware_iicps_configure(TWI_t * twi)
 {
 	XIicPs_Config *Config = XIicPs_LookupConfig(XPAR_XIICPS_0_DEVICE_ID);
-	XIicPs_CfgInitialize(& xc7z_iicps, Config, Config->BaseAddress);
+	XIicPs_CfgInitialize(twi, Config, Config->BaseAddress);
 
-	int Status = XIicPs_SelfTest(& xc7z_iicps);
+	int Status = XIicPs_SelfTest(twi);
 	if (Status != XST_SUCCESS)
 	{
 		//PRINTF("iicps init error %d\n", Status);
 		ASSERT(0);
 	}
-	XIicPs_SetSClk(& xc7z_iicps, 100000);
-	XIicPs_SetOptions(& xc7z_iicps, XIICPS_7_BIT_ADDR_OPTION);
-	XIicPs_ClearOptions(& xc7z_iicps, XIICPS_10_BIT_ADDR_OPTION | XIICPS_SLAVE_MON_OPTION | XIICPS_REP_START_OPTION);
+	XIicPs_SetSClk(twi, 100000);
+	XIicPs_SetOptions(twi, XIICPS_7_BIT_ADDR_OPTION);
+	XIicPs_ClearOptions(twi, XIICPS_10_BIT_ADDR_OPTION | XIICPS_SLAVE_MON_OPTION | XIICPS_REP_START_OPTION);
 }
 
 /* return non-zero then error */
-int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
+int i2chwx_read(TWI_t * twi, uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
-	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
+	while (XIicPs_BusIsBusy(twi)) { }
 
-	int Status = XIicPs_MasterRecvPolled(& xc7z_iicps, buf, size, slave_address8b >> 1);
+	int Status = XIicPs_MasterRecvPolled(twi, buf, size, slave_address8b >> 1);
 	if (Status != XST_SUCCESS)
 	{
 		PRINTF("iicps receive error %d from address %x\n", Status, slave_address8b);
@@ -1020,11 +1020,11 @@ int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 }
 
 /* return non-zero then error */
-int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
+int i2chwx_write(TWI_t * twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 {
-	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
+	while (XIicPs_BusIsBusy(twi)) { }
 
-	int Status = XIicPs_MasterSendPolled(& xc7z_iicps, (uint8_t *) buf, size, slave_address8b >> 1);
+	int Status = XIicPs_MasterSendPolled(twi, (uint8_t *) buf, size, slave_address8b >> 1);
 	if (Status != XST_SUCCESS)
 	{
 		PRINTF("iicps write error %d to address %x\n", Status, slave_address8b);
@@ -1032,23 +1032,31 @@ int i2chw_write(uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
 	}
 	return Status != XST_SUCCESS;
 }
+
+/* return non-zero then error */
+int i2chwx_write2(TWI_t * twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size, const uint8_t * buf2, uint32_t size2)
+{
+	ASSERT(0);
+	return 1;
+}
+
 /* return non-zero then error */
 // LSB of slave_address8b ignored */
 // TODO: Use restart for read - check XIICPS_REP_START_OPTION
-int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
+int i2chwx_exchange(TWI_t * twi, uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
 {
 	int Status;
-	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
+	while (XIicPs_BusIsBusy(twi)) { }
 
-	Status = XIicPs_MasterSendPolled(& xc7z_iicps, (uint8_t *) wbuf, wsize, slave_address8b >> 1);
+	Status = XIicPs_MasterSendPolled(twi, (uint8_t *) wbuf, wsize, slave_address8b >> 1);
 	if (Status != XST_SUCCESS)
 	{
 		PRINTF("iicps write error %d to address %x\n", Status, slave_address8b);
 		return 1;
 	}
-	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
+	while (XIicPs_BusIsBusy(twi)) { }
 
-	Status = XIicPs_MasterRecvPolled(& xc7z_iicps, rbuf, rsize, slave_address8b >> 1);
+	Status = XIicPs_MasterRecvPolled(twi, rbuf, rsize, slave_address8b >> 1);
 	if (Status != XST_SUCCESS)
 	{
 		PRINTF("iicps receive error %d from address %x\n", Status, slave_address8b);
@@ -1056,16 +1064,6 @@ int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsiz
 	}
 
 	return Status != XST_SUCCESS;
-}
-
-int i2chwx_exchange(TWI_t * twi, uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
-{
-	return i2chw_exchange(slave_address8b, wbuf, wsize, rbuf, rsize);
-}
-
-int i2chwx_write(TWI_t * twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
-{
-	return i2chw_write(slave_address8b, buf, size);
 }
 
 void i2c_initialize(void)
@@ -1091,7 +1089,7 @@ void i2c_initialize(void)
 #endif /* defined (TWIHARD_INITIALIZE) */
 
 	hardware_twi_master_configure();	// clocks - pass XPAR_XIICPS_0_DEVICE_ID
-	hardware_iicps_configure();			// Peripheral
+	hardware_iicps_configure(& xc7z_iicps0);			// Peripheral
 }
 
 #elif (CPUSTYLE_ALLWINNER)
@@ -2192,7 +2190,7 @@ void i2c2_stop(void)
 
 #if WITHTWISW || WITHTWIHW
 
-#if defined (TWIHARD_PTR) && ! CPUSTYLE_XC7Z
+#if defined (TWIHARD_PTR)
 
 int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
