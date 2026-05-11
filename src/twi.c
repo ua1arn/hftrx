@@ -2192,7 +2192,7 @@ void i2c2_stop(void)
 
 #if WITHTWISW || WITHTWIHW
 
-#if defined (TWIHARD_PTR) && TWIHARD_PTR
+#if defined (TWIHARD_PTR) && ! CPUSTYLE_XC7Z
 
 int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
