@@ -1720,6 +1720,19 @@ __STATIC_FORCEINLINE uint64_t __get_SCTLR_EL3(void)
 	return result;
 }
 
+__STATIC_FORCEINLINE void __set_HCR_EL2(uint64_t value)
+{
+	__set_RG64("HCR_EL2", value);
+}
+
+__STATIC_FORCEINLINE uint64_t __get_HCR_EL2(void)
+{
+	uint64_t result;
+	// MRS <Xt>, HCR_EL2 ; Read HCR_EL2 into Xt
+	__get_RG64("HCR_EL2", result);
+	return result;
+}
+
 __STATIC_FORCEINLINE void __set_ACTLR_EL3(uint32_t value)
 {
 	__set_RG32("ACTLR_EL3", value);
@@ -1789,13 +1802,21 @@ __STATIC_INLINE uint32_t __get_CPACR_EL1(void)
 	return result;
 }
 
-__STATIC_INLINE uint32_t __get_DCZID_EL0(void)
+// D24.2.44 DCZID_EL0, Data Cache Zero ID Register
+__STATIC_INLINE uint64_t __get_DCZID_EL0(void)
 {
-	uint32_t result;
+	uint64_t result;
 	// MRS <Xt>, DCZID_EL0 ; Read DCZID_EL0 into Xt
-	__get_RG32("DCZID_EL0", result);
+	__get_RG64("DCZID_EL0", result);
 	return result;
 }
+
+// Rise trap
+//__STATIC_INLINE void __set_DCZID_EL0(uint64_t value)
+//{
+//	// MRS <Xt>, DCZID_EL0 ; Read DCZID_EL0 into Xt
+//	__set_RG64("DCZID_EL0", value);
+//}
 
 /* CurrentEL, Current Exception Level
 	EL, bits [3:2]
