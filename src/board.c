@@ -3699,7 +3699,7 @@ prog_dds1_ftw(const ftw_t * value)
 	#elif (DDS1_TYPE == DDS_TYPE_AD9835)
 		prog_ad9835_freq(targetdds1, value, & dds1_profile);
 	#elif (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
-		xcz_dds_rts(value);
+		xcz_dds_ftw(value);
 	#else
 		//(void) target;
 
@@ -3717,7 +3717,7 @@ prog_rts1_ftw(const ftw_t * value)
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1_rts(targetfpga1, value);
 #elif (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
-	xcz_dds_ftw(value);
+	xcz_dds_rts(value);
 #endif
 }
 

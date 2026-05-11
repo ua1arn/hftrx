@@ -19,8 +19,6 @@ extern "C" {
 #include "xen_console.h"
 #endif
 
-#include "formats.h"
-
 /*----------------------------------------------------*/
 /* Use the following parameter passing structure to   */
 /* make xil_printf re-entrant.                        */

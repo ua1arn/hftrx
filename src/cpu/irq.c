@@ -3699,7 +3699,11 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 
 	// peripherial (hardware) interrupts using the GIC 1-N model.
 	uint_fast32_t cfg = GIC_GetConfiguration(int_id) & 0x03u;
+#if CPUSTYLE_XC7Z
+	cfg |= 0x02u;	/* Set edge triggered configuration */
+#else
 	cfg &= ~ 0x02u;	/* Set level sensitive configuration */
+#endif /* CPUSTYLE_XC7Z */
 	cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
 #if ! CPUSTYLE_R7S721
 	/* do not change edge/level settings of specified interrupts - leave initialized at start-up */

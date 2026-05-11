@@ -13156,25 +13156,29 @@ static LCLSPINLOCK_t boardupdatelock;
 /* полная перенастройка */
 void updateboard(void)
 {
-	uint_fast8_t f;
+#if WITHTOUCHGUI
+	if (updateboard_noui(1))
+		gui_update();
+#else
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
-	f = updateboard_noui(1);
+	updateboard_noui(1);
 	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
-	if (f)
-		gui_update();
+#endif /* WITHTOUCHGUI */
 }
 
 /* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 void updateboard_freq(void)
 {
-	uint_fast8_t f;
+#if WITHTOUCHGUI
+	if (updateboard_noui(0))
+		gui_update();
+#else
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
-	f = updateboard_noui(0);
+	updateboard_noui(0);
 	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
-	if (f)
-		gui_update();
+#endif /* WITHTOUCHGUI */
 }
 
 

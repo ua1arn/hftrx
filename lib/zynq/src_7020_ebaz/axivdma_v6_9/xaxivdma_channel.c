@@ -385,7 +385,7 @@ int XAxiVdma_ChannelStartParking(XAxiVdma_Channel *Channel)
 	u32 CrBits;
 
 	if (!XAxiVdma_ChannelIsRunning(Channel)) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Channel is not running, cannot start park mode\r\n");
 
 		return XST_FAILURE;
@@ -476,7 +476,7 @@ int XAxiVdma_ChannelSetBdAddrs(XAxiVdma_Channel *Channel, UINTPTR BdAddrPhys,
 	UINTPTR CurrVirt = BdAddrVirt;
 
 	if (Channel->HasSG && XAxiVdma_ChannelIsBusy(Channel)) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Channel is busy, cannot setup engine for transfer\r\n");
 
 		return XST_DEVICE_BUSY;
@@ -539,13 +539,13 @@ int XAxiVdma_ChannelStartTransfer(XAxiVdma_Channel *Channel,
 	int Status;
 
 	if (!Channel->IsValid) {
-		PRINTF( "Channel not initialized\r\n");
+		xdbg_printf(XDBG_DEBUG_ERROR, "Channel not initialized\r\n");
 
 		return XST_FAILURE;
 	}
 
 	if (Channel->HasSG && XAxiVdma_ChannelIsBusy(Channel)) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Channel is busy, cannot setup engine for transfer\r\n");
 
 		return XST_DEVICE_BUSY;
@@ -553,7 +553,7 @@ int XAxiVdma_ChannelStartTransfer(XAxiVdma_Channel *Channel,
 
 	Status = XAxiVdma_ChannelConfig(Channel, ChannelCfgPtr);
 	if (Status != XST_SUCCESS) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Channel config failed %d\r\n", Status);
 
 		return Status;
@@ -562,7 +562,7 @@ int XAxiVdma_ChannelStartTransfer(XAxiVdma_Channel *Channel,
 	Status = XAxiVdma_ChannelSetBufferAddr(Channel,
 	    ChannelCfgPtr->FrameStoreStartAddr, Channel->AllCnt);
 	if (Status != XST_SUCCESS) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Channel setup buffer addr failed %d\r\n", Status);
 
 		return Status;
@@ -570,7 +570,7 @@ int XAxiVdma_ChannelStartTransfer(XAxiVdma_Channel *Channel,
 
 	Status = XAxiVdma_ChannelStart(Channel);
 	if (Status != XST_SUCCESS) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Channel start failed %d\r\n", Status);
 
 		return Status;
@@ -606,13 +606,13 @@ int XAxiVdma_ChannelConfig(XAxiVdma_Channel *Channel,
 	u32 stride_align;
 
 	if (!Channel->IsValid) {
-		PRINTF( "Channel not initialized\r\n");
+		xdbg_printf(XDBG_DEBUG_ERROR, "Channel not initialized\r\n");
 
 		return XST_FAILURE;
 	}
 
 	if (Channel->HasSG && XAxiVdma_ChannelIsBusy(Channel)) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Channel is busy, cannot config!\r\n");
 
 		return XST_DEVICE_BUSY;
@@ -683,14 +683,14 @@ int XAxiVdma_ChannelConfig(XAxiVdma_Channel *Channel,
 
 		if ((!XAxiVdma_ChannelIsRunning(Channel)) &&
 		    Channel->HasSG) {
-			PRINTF(
+			xdbg_printf(XDBG_DEBUG_ERROR,
 			    "Channel is not running, cannot set park mode\r\n");
 
 			return XST_INVALID_PARAM;
 		}
 
 		if (ChannelCfgPtr->FixedFrameStoreAddr > XAXIVDMA_FRM_MAX) {
-			PRINTF(
+			xdbg_printf(XDBG_DEBUG_ERROR,
 			    "Invalid frame to park on %d\r\n",
 			    ChannelCfgPtr->FixedFrameStoreAddr);
 
@@ -777,7 +777,7 @@ int XAxiVdma_ChannelConfig(XAxiVdma_Channel *Channel,
 			Status = XAxiVdma_BdSetVsize(BdPtr,
 			             ChannelCfgPtr->VertSizeInput);
 			if (Status != XST_SUCCESS) {
-				PRINTF(
+				xdbg_printf(XDBG_DEBUG_ERROR,
 				    "Set vertical size failed %d\r\n", Status);
 
 				return Status;
@@ -786,7 +786,7 @@ int XAxiVdma_ChannelConfig(XAxiVdma_Channel *Channel,
 			Status = XAxiVdma_BdSetHsize(BdPtr,
 			    ChannelCfgPtr->HoriSizeInput);
 			if (Status != XST_SUCCESS) {
-				PRINTF(
+				xdbg_printf(XDBG_DEBUG_ERROR,
 				    "Set horizontal size failed %d\r\n", Status);
 
 				return Status;
@@ -795,7 +795,7 @@ int XAxiVdma_ChannelConfig(XAxiVdma_Channel *Channel,
 			Status = XAxiVdma_BdSetStride(BdPtr,
 			    ChannelCfgPtr->Stride);
 			if (Status != XST_SUCCESS) {
-				PRINTF(
+				xdbg_printf(XDBG_DEBUG_ERROR,
 				    "Set stride size failed %d\r\n", Status);
 
 				return Status;
@@ -804,7 +804,7 @@ int XAxiVdma_ChannelConfig(XAxiVdma_Channel *Channel,
 			Status = XAxiVdma_BdSetFrmDly(BdPtr,
 			ChannelCfgPtr->FrameDelay);
 			if (Status != XST_SUCCESS) {
-				PRINTF(
+				xdbg_printf(XDBG_DEBUG_ERROR,
 				    "Set frame delay failed %d\r\n", Status);
 
 				return Status;
@@ -873,7 +873,7 @@ int XAxiVdma_ChannelSetBufferAddr(XAxiVdma_Channel *Channel,
 	int Loop16 = 0;
 
 	if (!Channel->IsValid) {
-		PRINTF( "Channel not initialized\r\n");
+		xdbg_printf(XDBG_DEBUG_ERROR, "Channel not initialized\r\n");
 
 		return XST_FAILURE;
 	}
@@ -886,7 +886,7 @@ int XAxiVdma_ChannelSetBufferAddr(XAxiVdma_Channel *Channel,
 	for (i = 0; i < NumFrames; i++) {
 		if (!Channel->HasDRE) {
 			if (BufferAddrSet[i] & WordLenBits) {
-				PRINTF(
+				xdbg_printf(XDBG_DEBUG_ERROR,
 				    "Unaligned address %d: %x without DRE\r\n",
 				    i, BufferAddrSet[i]);
 
@@ -957,14 +957,14 @@ int XAxiVdma_ChannelStart(XAxiVdma_Channel *Channel)
 	u32 CrBits;
 
 	if (!Channel->IsValid) {
-		PRINTF( "Channel not initialized\r\n");
+		xdbg_printf(XDBG_DEBUG_ERROR, "Channel not initialized\r\n");
 
 		return XST_FAILURE;
 	}
 
 	if (Channel->HasSG && XAxiVdma_ChannelIsBusy(Channel)) {
 
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Start DMA channel while channel is busy\r\n");
 
 		return XST_DEVICE_BUSY;
@@ -1023,7 +1023,7 @@ int XAxiVdma_ChannelStart(XAxiVdma_Channel *Channel)
 		return XST_SUCCESS;
 	}
 	else {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Failed to start channel %x\r\n",
 			    (unsigned int)Channel->ChanBase);
 
@@ -1104,13 +1104,13 @@ int XAxiVdma_ChannelSetFrmCnt(XAxiVdma_Channel *Channel, u8 FrmCnt, u8 DlyCnt)
 	u32 CrBits;
 
 	if (!Channel->IsValid) {
-		PRINTF( "Channel not initialized\r\n");
+		xdbg_printf(XDBG_DEBUG_ERROR, "Channel not initialized\r\n");
 
 		return XST_FAILURE;
 	}
 
 	if (!FrmCnt) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Frame counter value must be non-zero\r\n");
 
 		return XST_INVALID_PARAM;
@@ -1122,14 +1122,14 @@ int XAxiVdma_ChannelSetFrmCnt(XAxiVdma_Channel *Channel, u8 FrmCnt, u8 DlyCnt)
 	if (Channel->DbgFeatureFlags & XAXIVDMA_ENABLE_DBG_FRM_CNTR) {
 		CrBits |= (FrmCnt << XAXIVDMA_FRMCNT_SHIFT);
 	} else {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Channel Frame counter is disabled\r\n");
 		return XST_NO_FEATURE;
 	}
 	if (Channel->DbgFeatureFlags & XAXIVDMA_ENABLE_DBG_DLY_CNTR) {
 		CrBits |= (DlyCnt << XAXIVDMA_DELAY_SHIFT);
 	} else {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Channel Delay counter is disabled\r\n");
 		return XST_NO_FEATURE;
 	}
@@ -1160,7 +1160,7 @@ void XAxiVdma_ChannelGetFrmCnt(XAxiVdma_Channel *Channel, u8 *FrmCnt,
 	u32 CrBits;
 
 	if (!Channel->IsValid) {
-		PRINTF( "Channel not initialized\r\n");
+		xdbg_printf(XDBG_DEBUG_ERROR, "Channel not initialized\r\n");
 
 		*FrmCnt = 0;
 		return;
@@ -1172,14 +1172,14 @@ void XAxiVdma_ChannelGetFrmCnt(XAxiVdma_Channel *Channel, u8 *FrmCnt,
 		*FrmCnt = (CrBits & XAXIVDMA_FRMCNT_MASK) >>
 				XAXIVDMA_FRMCNT_SHIFT;
 	} else {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Channel Frame counter is disabled\r\n");
 	}
 	if (Channel->DbgFeatureFlags & XAXIVDMA_ENABLE_DBG_DLY_CNTR) {
 		*DlyCnt = (CrBits & XAXIVDMA_DELAY_MASK) >>
 				XAXIVDMA_DELAY_SHIFT;
 	} else {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Channel Delay counter is disabled\r\n");
 	}
 
@@ -1204,7 +1204,7 @@ void XAxiVdma_ChannelEnableIntr(XAxiVdma_Channel *Channel, u32 IntrType)
 	u32 CrBits;
 
 	if ((IntrType & XAXIVDMA_IXR_ALL_MASK) == 0) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Enable intr with null intr mask value %x\r\n",
 		    (unsigned int)IntrType);
 
@@ -1240,7 +1240,7 @@ void XAxiVdma_ChannelDisableIntr(XAxiVdma_Channel *Channel, u32 IntrType)
 	u32 IrqBits;
 
 	if ((IntrType & XAXIVDMA_IXR_ALL_MASK) == 0) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Disable intr with null intr mask value %x\r\n",
 		    (unsigned int)IntrType);
 
@@ -1292,7 +1292,7 @@ void XAxiVdma_ChannelIntrClear(XAxiVdma_Channel *Channel, u32 IntrType)
 {
 
 	if ((IntrType & XAXIVDMA_IXR_ALL_MASK) == 0) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Clear intr with null intr mask value %x\r\n",
 		    (unsigned int)IntrType);
 
@@ -1411,7 +1411,7 @@ static void XAxiVdma_BdSetAddr(XAxiVdma_Bd *BdPtr, u32 Addr)
 static int XAxiVdma_BdSetVsize(XAxiVdma_Bd *BdPtr, int Vsize)
 {
 	if ((Vsize <= 0) || (Vsize > XAXIVDMA_VSIZE_MASK)) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Vertical size %d is not valid\r\n", Vsize);
 
 		return XST_INVALID_PARAM;
@@ -1436,7 +1436,7 @@ static int XAxiVdma_BdSetVsize(XAxiVdma_Bd *BdPtr, int Vsize)
 static int XAxiVdma_BdSetHsize(XAxiVdma_Bd *BdPtr, int Hsize)
 {
 	if ((Hsize <= 0) || (Hsize > XAXIVDMA_HSIZE_MASK)) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Horizontal size %d is not valid\r\n", Hsize);
 
 		return XST_INVALID_PARAM;
@@ -1463,7 +1463,7 @@ static int XAxiVdma_BdSetStride(XAxiVdma_Bd *BdPtr, int Stride)
 	u32 Bits;
 
 	if ((Stride <= 0) || (Stride > XAXIVDMA_STRIDE_MASK)) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Stride size %d is not valid\r\n", Stride);
 
 		return XST_INVALID_PARAM;
@@ -1494,7 +1494,7 @@ static int XAxiVdma_BdSetFrmDly(XAxiVdma_Bd *BdPtr, int FrmDly)
 	u32 Bits;
 
 	if ((FrmDly < 0) || (FrmDly > XAXIVDMA_FRMDLY_MAX)) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "FrmDly size %d is not valid\r\n", FrmDly);
 
 		return XST_INVALID_PARAM;

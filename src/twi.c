@@ -1058,6 +1058,16 @@ int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsiz
 	return Status != XST_SUCCESS;
 }
 
+int i2chwx_exchange(TWI_t * twi, uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsize, uint8_t * rbuf, uint32_t rsize)
+{
+	return i2chw_exchange(slave_address8b, wbuf, wsize, rbuf, rsize);
+}
+
+int i2chwx_write(TWI_t * twi, uint16_t slave_address8b, const uint8_t * buf, uint32_t size)
+{
+	return i2chw_write(slave_address8b, buf, size);
+}
+
 void i2c_initialize(void)
 {
 	const i2cp_t * const p1 = & i2cp_1;
@@ -2182,7 +2192,7 @@ void i2c2_stop(void)
 
 #if WITHTWISW || WITHTWIHW
 
-#if defined (TWIHARD_PTR)
+#if defined (TWIHARD_PTR) && TWIHARD_PTR
 
 int i2chw_read(uint16_t slave_address8b, uint8_t * buf, uint32_t size)
 {
@@ -2200,6 +2210,6 @@ int i2chw_exchange(uint16_t slave_address8b, const uint8_t * wbuf, uint32_t wsiz
 	return i2chwx_exchange(TWIHARD_PTR, slave_address8b, wbuf, wsize, rbuf, rsize);
 }
 
-#endif /* defined (TWIHARD_PTR) */
+#endif /* defined (TWIHARD_PTR) && TWIHARD_PTR */
 
 #endif /* WITHTWISW || WITHTWIHW */

@@ -339,8 +339,9 @@
 			#define WITHRLEDECOMPRESS		1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 			#define WITHDEFAULTVIEW			VIEW_3DSS
 			#define REALREFERENCE_FREQ 		122879000L
-			#define WITHSWRPROT				0	/* защита от превышения КСВ */
+			#define WITHSWRPROT				1	/* защита от превышения КСВ */
 			#define WITHSWRSCAN				1	/* сканирование КСВ по диапазону, при наличии аппаратной возможности */
+			#define WITHIQSHIFT				1
 		#else
 			#define WITHDISPLAY_FPS		15
 			#define WITHDISPLAYSWR_FPS	15
