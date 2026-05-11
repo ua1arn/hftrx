@@ -24,16 +24,8 @@
 	#define WITHCPUXOSC 26000000u	/* На процессоре установлен генератор 26.000 МГц */
 	#define HARDWARE_ADDRSPACE_GB (8)	// Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
 
-	//  PLL_CPUX=24MHz*N/P
-#if 0
-	/* 1396 MHz */
-	#define PLL_CPU_N 	116
-	#define PLL_CPU_P_POW 1
-#else
-	/* 1200 MHz */
-	#define PLL_CPU_N 	100
-	#define PLL_CPU_P_POW 1
-#endif
+	#define CPUB_FREQ_MHz 1300//2000
+	#define CPUL_FREQ_MHz 1300//2000
 
 	/* модели синтезаторов - схемы частотообразования */
 
