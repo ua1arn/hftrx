@@ -1613,6 +1613,11 @@ sysinit_debug_initialize(void)
 uint_fast64_t cpu_getdebugticksfreq(void)
 {
 	return SystemCoreClock;//CPU_FREQ;
+#if WITHISBOOTLOADER
+	return CPU_FREQ;	// пока ОЗУ не инициализированно
+#else /* WITHISBOOTLOADER */
+	return SystemCoreClock;//CPU_FREQ;
+#endif /* WITHISBOOTLOADER */
 }
 
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
@@ -1936,7 +1941,7 @@ SystemInit_BOOT0(void)
 
 #endif /* CPUSTYLE_VM14 */
 
-uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
+uint32_t SystemCoreClock = 24000000;     /*!< System Clock Frequency (Core Clock)  */
 
 void SystemCoreClockUpdate(void)
 {
