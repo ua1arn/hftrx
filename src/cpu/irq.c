@@ -2706,6 +2706,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 {
 	const uint_fast64_t t0 = cpu_getdebugticks();
 	const uint_fast64_t td = get_td_ms(timeMS);
+	//PRINTF("local_wait32mask: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
 	{
 		if (((* flag & mask) == state))
@@ -2719,6 +2720,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 {
 	const uint_fast64_t t0 = cpu_getdebugticks();
 	const uint_fast64_t td = get_td_ms(timeMS);
+	//PRINTF("local_waitlist: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
 	{
 		if (LCLSPIN_TRAYLOCK(lock))
