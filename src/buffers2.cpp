@@ -1471,7 +1471,7 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 #if WITHFPGAPIPE_NCORX0
 	buff [DMABUF32TX_NCO1] = delta;
 #endif /* WITHFPGAPIPE_NCORX0 */
-#if WITHLFM
+#if WITHLFM && defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	if (iflfmactive())
 	{
 		ftw_t v = dspfpga_get_nco1();
@@ -1479,7 +1479,7 @@ static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t c
 		v = dspfpga_get_ncorts();
 		xcz_dds_rts(& v);
 	}
-#endif /* WITHLFM */
+#endif /* WITHLFM && defined (DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_ZYNQ_PL) */
 
 	return DMABUFFSTEP32TX;
 }
