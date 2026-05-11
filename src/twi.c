@@ -1292,7 +1292,7 @@ int i2chwx_read(TWI_t * const twi, uint16_t slave_address8b, uint8_t * buf, uint
 
 	res = t113_i2c_start(twi, __FILE__, __LINE__);
 	if (res != I2C_STAT_TX_START) {
-		PRINTF("i2chwx_read start error\n");
+		PRINTF("i2chwx_read start error (slave_address8b=0x%02X)\n", (unsigned) slave_address8b);
 		t113_i2c_reset(twi, __FILE__, __LINE__);
 		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
@@ -1326,7 +1326,7 @@ int i2chwx_write(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * bu
 
 	res = t113_i2c_start(twi, __FILE__, __LINE__);
 	if (res != I2C_STAT_TX_START) {
-		PRINTF("i2chwx_write start error\n");
+		PRINTF("i2chwx_write start error (slave_address8b=0x%02X)\n", (unsigned) slave_address8b);
 		t113_i2c_reset(twi, __FILE__, __LINE__);
 		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
@@ -1359,7 +1359,7 @@ int i2chwx_write2(TWI_t * const twi, uint16_t slave_address8b, const uint8_t * b
 
 	res = t113_i2c_start(twi, __FILE__, __LINE__);
 	if (res != I2C_STAT_TX_START) {
-		PRINTF("i2chwx_write2 start error\n");
+		PRINTF("i2chwx_write2 start error (slave_address8b=0x%02X)\n", (unsigned) slave_address8b);
 		t113_i2c_reset(twi, __FILE__, __LINE__);
 		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
@@ -1401,7 +1401,7 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 
 	res = t113_i2c_start(twi, __FILE__, __LINE__);
 	if (res != I2C_STAT_TX_START) {
-		PRINTF("i2chwx_exchange 1 start error\n");
+		PRINTF("i2chwx_exchange 1 start error (slave_address8b=0x%02X)\n", (unsigned) slave_address8b);
 		t113_i2c_reset(twi, __FILE__, __LINE__);
 		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
@@ -1419,7 +1419,7 @@ int i2chwx_exchange(TWI_t * const twi, uint16_t slave_address8b, const uint8_t *
 
 	res = t113_i2c_start(twi, __FILE__, __LINE__);
 	if (res != I2C_STAT_TX_RSTART) {
-		PRINTF("i2chw_exchange 2 start error %08X\n", (unsigned) res);
+		PRINTF("i2chwx_exchange 2 start error (slave_address8b=0x%02X)\n", (unsigned) slave_address8b);
 		t113_i2c_reset(twi, __FILE__, __LINE__);
 		t113_i2c_stop(twi, __FILE__, __LINE__);
 		return 1;
