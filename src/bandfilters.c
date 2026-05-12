@@ -412,6 +412,7 @@ void bandf_calc_initialize(void)
 
 #elif \
 	WITHTPA100W_UA1CEI_V2 || \
+	CTLREGMODE_VELOCI_V0 || \
 	0
 	//	 2.000
 	//	 3.850
