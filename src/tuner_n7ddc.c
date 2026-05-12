@@ -19,10 +19,11 @@ static unsigned char C_linear = 0, L_linear = 0;
 #endif
 
 #define SWRENOUGH 120
+#define SWRENOUGH110 120
 static unsigned L_mult = 1, C_mult = 1, P_High = 0, K_Mult = 32;
 
-static int min_for_start, max_for_start, max_swr;
-static int SWR, P_max, swr_a;
+static int max_swr;
+static int SWR, swr_a;
 
 static unsigned lastout_ind;
 static unsigned lastout_cap;
@@ -387,23 +388,22 @@ static int sub_tune(int (*cb)(void *ctx), void *ctx) {
 
 // return 1 if no power, 2 if aborted
 static int tune(int (*cb)(void *ctx), void *ctx) {
-	P_max = 0;
 	int ec;
 	//
 	if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
 		return ec;
-	if (SWR < 110)
+	if (SWR < SWRENOUGH110)
 		return N7DDCTUNE_OK;
 
 	atu_reset();
 
-	local_delay_ms(50);
+	//local_delay_ms(50);
 	if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
 		return ec;
 	swr_a = SWR;
-	if (SWR < 110)
+	if (SWR < SWRENOUGH110)
 		return N7DDCTUNE_OK;
-	if (max_swr > 110 && SWR > max_swr)
+	if (max_swr > SWRENOUGH110 && SWR > max_swr)
 		return N7DDCTUNE_OK;
 
 	ec = sub_tune(cb, ctx);
