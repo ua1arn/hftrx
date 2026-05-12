@@ -7985,6 +7985,31 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
+#if 0
+	{
+		// DC ZVA usage test
+		uint_fast64_t v;
+		v = __get_DCZID_EL0();
+		PRINTF("1 __get_DCZID_EL0()=%016" PRIXFAST64 "\n", __get_DCZID_EL0());
+		//__set_DCZID_EL0(v | (UINT64_C(1) << 4)); // Set Data Zero Prohibited. This field indicates whether use of DC ZVA instructions is permitted or prohibited.
+		PRINTF("1 __get_HCR_EL2()=%016" PRIXFAST64 "\n", __get_HCR_EL2());
+
+		// Modify HCR_EL2.TDZ
+		__set_HCR_EL2(__get_HCR_EL2() & ~ (UINT64_C(1) << 34));	// Clear E2H bit
+		__set_HCR_EL2(__get_HCR_EL2() & ~ (UINT64_C(1) << 27));	// Clear TGE bit
+		__set_HCR_EL2(__get_HCR_EL2() & ~ (UINT64_C(1) << 28));	// Clear TDZ bit
+		__set_HCR_EL2(__get_HCR_EL2() | (UINT64_C(1) << 28));	// Set TDZ bit
+//		__set_HCR_EL2(__get_HCR_EL2() | (UINT64_C(1) << 34));	// Set E2H bit
+//		__set_HCR_EL2(__get_HCR_EL2() | (UINT64_C(1) << 27));	// Set TGE bit
+		PRINTF("2 __get_HCR_EL2()=%016" PRIXFAST64 "\n", __get_HCR_EL2());
+
+		__set_SCTLR_EL1(__get_SCTLR_EL1() & ~ (UINT64_C(1) << 14));	// Clear DZE
+		__set_SCTLR_EL2(__get_SCTLR_EL2() & ~ (UINT64_C(1) << 14));	// Clear DZE
+		//__set_SCTLR_EL3(__get_SCTLR_EL3() & ~ (UINT64_C(1) << 14));	// No DZE here... Clear DZE
+
+		PRINTF("1 __get_DCZID_EL0()=%016" PRIXFAST64 "\n", __get_DCZID_EL0());
+	}
+#endif
 #if 0 && defined (R_CPUCFG) && WITHDEBUG
 	{
 		#include "aw_t507.txt"
