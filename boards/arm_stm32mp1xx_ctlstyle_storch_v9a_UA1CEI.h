@@ -574,10 +574,6 @@
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	
-	#define WITHFANPWM		1	/* есть управление скоростью вентилятора */
-	#define WITHFANPWMMIN 1
-	#define WITHFANPWMMAX 3
-
 	/* что за память настроек и частот используется в контроллере */
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25XXXX	// SERIAL FRAM AUTODETECT
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// Так же при использовании FM25040A - 5 вольт, 512 байт
@@ -704,6 +700,10 @@
 		#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
 		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
 		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+
+		#define WITHFANPWM		1	/* есть управление скоростью вентилятора */
+		#define WITHFANPWMMIN 1
+		#define WITHFANPWMMAX 3
 
 	#elif WITHAUTOTUNER_AVBELNN
 

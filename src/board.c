@@ -138,8 +138,8 @@ static uint_fast16_t 	glob_bcdfreq1k;	/* отображаемая частота
 static uint_fast8_t 	glob_tuner_C, glob_tuner_L, glob_tuner_type, glob_tuner_bypass;
 static uint_fast8_t 	glob_autotune;	/* Находимся в режиме настройки согласующего устройства */
 static uint_fast16_t 	glob_mla_paramC;
-static uint_fast8_t		glob_stage1level = 2;	/* index of code for A1..A0 of OPA2674I-14D in stage 1 */
-static uint_fast8_t		glob_stage2level = 2;	/* index of code for A1..A0 of OPA2674I-14D in stage 2 */
+static const uint_fast8_t		glob_stage1level = 2;	/* index of code for A1..A0 of OPA2674I-14D in stage 1 */
+static const uint_fast8_t		glob_stage2level = 2;	/* index of code for A1..A0 of OPA2674I-14D in stage 2 */
 
 static uint_fast8_t		glob_sdcardpoweron;	/* не-0: включить питание SD CARD */
 static uint_fast8_t		glob_hostvbuson;/* не-0: включить питание USB FLASH */
@@ -1719,7 +1719,8 @@ prog_ctrlreg(uint_fast8_t plane)
 			HARDWARE_OPA2674I_POWERCUTBACK,
 			HARDWARE_OPA2674I_FULLPOWER,
 		};
-		static const uint8_t fanspeedcodes [5][3] =
+#if WITHFANPWM && WITHFANPWMMAX == 3
+		static const uint8_t fanspeedcodes [4][3] =
 		{
 				{ 0, 0, 0 },	// off
 				{ 0, 0, 1 },	// minimal speed
@@ -1727,12 +1728,21 @@ prog_ctrlreg(uint_fast8_t plane)
 				{ 1, 1, 1 },	// maximal speed
 		};
 		enum { FANSPEED_OFF = 0, FANSPEED_MIN = 1, FANSPEED_MAX = ARRAY_SIZE(fanspeedcodes)  - 1 };
+#elif WITHFANPWM && WITHFANPWMMAX == 4
+		static const uint8_t fanspeedcodes [5][4] =
+		{
+				{ 0, 0, 0, 0 },	// off
+				{ 0, 0, 0, 1 },	// minimal speed
+				{ 0, 0, 1, 1 },
+				{ 0, 1, 1, 1 },
+				{ 1, 1, 1, 1 },	// maximal speed
+		};
+		enum { FANSPEED_OFF = 0, FANSPEED_MIN = 1, FANSPEED_MAX = ARRAY_SIZE(fanspeedcodes)  - 1 };
+#endif
 #if WITHFANPWM
 		ASSERT(WITHFANPWMMIN == FANSPEED_MIN);
 		ASSERT(WITHFANPWMMAX == FANSPEED_MAX);
 		const unsigned fanspeed = glob_fanflag ? glob_fanpwm : FANSPEED_OFF;
-#else /* WITHFANPWM */
-		const unsigned fanspeed = FANSPEED_OFF;
 #endif /* WITHFANPWM */
 		const spitarget_t target = targetctl1;
 
@@ -3526,25 +3536,25 @@ board_set_scalelo1(uint_fast8_t v)
 	}
 }
 
-void
-board_set_stage1level(uint_fast8_t v)
-{
-	if (glob_stage1level != v)
-	{
-		glob_stage1level = v;
-		board_ctlreg1changed();
-	}
-}
-
-void
-board_set_stage2level(uint_fast8_t v)
-{
-	if (glob_stage2level != v)
-	{
-		glob_stage2level = v;
-		board_ctlreg1changed();
-	}
-}
+//void
+//board_set_stage1level(uint_fast8_t v)
+//{
+//	if (glob_stage1level != v)
+//	{
+//		glob_stage1level = v;
+//		board_ctlreg1changed();
+//	}
+//}
+//
+//void
+//board_set_stage2level(uint_fast8_t v)
+//{
+//	if (glob_stage2level != v)
+//	{
+//		glob_stage2level = v;
+//		board_ctlreg1changed();
+//	}
+//}
 
 void
 board_set_sdcardpoweron(uint_fast8_t v)

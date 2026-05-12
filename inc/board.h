@@ -135,8 +135,8 @@ void board_set_reset_n(uint_fast8_t v);	/* установка сигнала RES
 void board_set_flt_reset_n(uint_fast8_t v);	/* установка сигнала RESET блокам фильтров в FPGA */
 void board_set_i2s_enable(uint_fast8_t v);	/* разрешение генерации тактовой частоты для I2S в FPGA */
 
-void board_set_stage1level(uint_fast8_t v);		/* управление током первого каскада усиления hermes */
-void board_set_stage2level(uint_fast8_t v);		/* управление током второго каскада усиления hermes */
+//void board_set_stage1level(uint_fast8_t v);		/* управление током первого каскада усиления hermes */
+//void board_set_stage2level(uint_fast8_t v);		/* управление током второго каскада усиления hermes */
 void board_set_sdcardpoweron(uint_fast8_t n);	/* не-0: включить питание SD CARD */
 void board_set_usbhostvbuson(uint_fast8_t n);	/* не-0: включить питание USB FLASH */
 void board_set_attvalue(uint_fast8_t v);		/* установить значение аттенюатора сигнал-генератора */
