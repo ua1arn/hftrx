@@ -385,8 +385,17 @@ extern "C" {
 void cpu_initialize(void);
 void arm_hardware_reset(void);
 void cpu_initdone(void);	// секция init больше не нужна
-uint_fast64_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
-uint_fast64_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
+
+#if defined(__aarch64__) || (defined(__riscv) && (__riscv_xlen == 64))
+	typedef uint64_t dbgcount_t;
+	typedef uint_fast64_t dbgcountfast_t;
+#else
+	typedef uint32_t dbgcount_t;
+	typedef uint_fast32_t dbgcountfast_t;
+#endif
+
+dbgcountfast_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
+dbgcountfast_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
 
 void tickers_initialize(void);
 void tickers_deinitialize(void);

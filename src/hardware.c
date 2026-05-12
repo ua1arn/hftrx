@@ -1610,7 +1610,7 @@ sysinit_debug_initialize(void)
 
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 // получение частоты, с которой инкрементируется счетчик
-uint_fast64_t cpu_getdebugticksfreq(void)
+dbgcountfast_t cpu_getdebugticksfreq(void)
 {
 	return SystemCoreClock;//CPU_FREQ;
 #if WITHISBOOTLOADER
@@ -1624,7 +1624,8 @@ uint_fast64_t cpu_getdebugticksfreq(void)
 // получение из аппаратного счетчика монотонно увеличивающегося кода
 // see sysinit_perfmeter_initialize() in hardware.c
 // Счетчик увеличивается с частотой процессора
-uint_fast64_t cpu_getdebugticks(void)
+
+dbgcountfast_t cpu_getdebugticks(void)
 {
 #if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 	return DWT->CYCCNT;	// use TIMESTAMP_GET();
