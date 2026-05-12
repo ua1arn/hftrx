@@ -960,3 +960,15 @@ elkey_get_ptt(void)
 	return 0;
 #endif /* WITHELKEY */
 }
+
+
+/*
+	Машинно-независимый обработчик прерываний.
+	Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
+*/
+RAMFUNC void spool_elkeybundle(void)
+{
+#if WITHELKEY
+	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
+#endif /* WITHELKEY */
+}

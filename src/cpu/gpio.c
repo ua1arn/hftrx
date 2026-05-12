@@ -9389,18 +9389,6 @@ arm_hardware_pioi_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 #endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
 
 
-/*
-	Машинно-независимый обработчик прерываний.
-	Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
-*/
-RAMFUNC void spool_elkeybundle(void)
-{
-#if WITHELKEY
-	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
-#endif /* WITHELKEY */
-}
-
-
 #if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F
 /* прерывания от валколера при наличии в системе вложенных прерываний вызываются на уровне приоритета REALTINE */
 RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
