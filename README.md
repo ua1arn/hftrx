@@ -1,7 +1,10 @@
-# Трансивер КВ диапазона «Storch» (Аист)
+# Трансиверы КВ диапазона «Storch» (Аист) и «Velociraptor»
 
 ![image](doc/images/storch.jpg)
 *Фотография R6BK*
+
+![image](doc/images/velociraptor.jpg)
+*Фотография UA1ARN*
 
 ## Основные характеристики
 
