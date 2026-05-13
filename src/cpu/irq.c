@@ -2509,7 +2509,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 		const dbgcountfast_t t0 = cpu_getdebugticks();
 		const dbgcountfast_t td = get_td_ms(timeMS);
 		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) GIC_GetInterfacePriorityMask());
-		while ((dbgcount_t) (cpu_getdebugticks() - t0) < td)
+		while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td)
 			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	}
 	else
@@ -2539,7 +2539,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 			if (((* flag & mask) == state))
 				return 0;
 			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while ((dbgcount_t) (cpu_getdebugticks() - t0) < td);
+		} while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td);
 		return 1;
 	}
 	else
@@ -2571,7 +2571,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 			if (((* flag & mask) == state))
 				return 0;
 			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while ((dbgcount_t) (cpu_getdebugticks() - t0) < td);
+		} while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td);
 		return 1;
 	}
 	else
@@ -2610,7 +2610,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 				}
 			}
 			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while ((dbgcount_t) (cpu_getdebugticks() - t0) < td);
+		} while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td);
 		return 1;	// Завепшение по таймауту
 	}
 	else
@@ -2681,7 +2681,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 
     const dbgcountfast_t t0 = cpu_getdebugticks();
     const dbgcountfast_t td = get_td_ms(timeMS);
-    while ((dbgcount_t) (cpu_getdebugticks() - t0) < td)
+    while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td)
     	;
 }
 
@@ -2696,7 +2696,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 	{
 		if (((* flag & mask) == state))
 			return 0;
-	} while ((dbgcount_t) (cpu_getdebugticks() - t0) < td);
+	} while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td);
 	return 1;
 }
 
@@ -2711,7 +2711,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 	{
 		if (((* flag & mask) == state))
 			return 0;
-	} while ((dbgcount_t) (cpu_getdebugticks() - t0) < td);
+	} while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td);
 	return 1;
 }
 // wait expected state of variable
@@ -2732,7 +2732,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 				return 0;	// дождались
 			}
 		}
-	} while ((dbgcount_t) (cpu_getdebugticks() - t0) < td);
+	} while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td);
 	return 1;	// Завепшение по таймауту
 }
 // хотим завершить выполнение кванта, не дожидаясь прерывания
@@ -2880,7 +2880,7 @@ void local_delay_us(uint_fast32_t timeUS)
 
 	const dbgcountfast_t t0 = cpu_getdebugticks();	// Счетчик увеличивается с частотой процессора
 	const dbgcountfast_t td = get_td_us(timeUS);
-	while ((dbgcount_t) (cpu_getdebugticks() - t0) < td)
+	while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td)
 		;
 }
 
