@@ -1655,6 +1655,28 @@ dbgcountfast_t cpu_getdebugticks(void)
 #endif
 }
 
+// получение маски на разрядность аппаратного счётчика
+dbgcountfast_t cpu_getdebugticksmask(void)
+{
+#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
+	return UINT32_MAX;	// DWT->CYCCNT width is 32
+
+#elif defined(__aarch64__)
+	return UINT64_MAX;	// PMCCNTR width is 64
+
+#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
+	return UINT32_MAX;	// PMCCNTR width is 32
+
+#elif defined(__riscv)
+	return UINT64_MAX;	// mcycle width is 64
+
+#else
+	#warning Wrong CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
+	return UINT32_MAX;
+
+#endif
+}
+
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 static void
 sysinit_perfmeter_initialize(void)
