@@ -1634,6 +1634,14 @@ dbgcountfast_t cpu_getdebugticks(void)
 	return __get_PMCCNTR_EL0();
 
 #elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
+	if (0)
+	{
+		uint64_t result;
+		// MRRC{<c>}{<q>} <coproc>, {#}<opc1>, <Rt>, <Rt2>, <CRm>
+		// cp, op1, Rt, CRm
+		__get_CP64(15, 9, result, 0);
+		return result;
+	}
 	{
 		uint32_t result;
 		// Read CCNT Register
@@ -1641,7 +1649,7 @@ dbgcountfast_t cpu_getdebugticks(void)
 		//	MCR p15, 0, <Rt>, c9, c13, 0 : Write Rt to PMCCNTR
 		//asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));
 		__get_CP(15, 0, result, 9, 13, 0);
-		return(result);
+		return result;
 	}
 
 #elif defined(__riscv)
