@@ -226,7 +226,10 @@
 
 #else /* WITHISBOOTLOADER */
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
-
+	#if 0
+		#define WITHMGLOOP 1
+		#define WITHMGLOOP_BAUDRATE 57600
+	#endif
 	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
 	
 	//#define FORMATFROMLIBRARY 	1
@@ -239,8 +242,8 @@
 
 	// Выбор используемой цветовой палитры
 	//#define COLORSTYLE_GREEN	1
-	//#define COLORSTYLE_BLUE	1
-	#define COLORSTYLE_BLUE2 1
+	#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_BLUE2 1
 	//#define COLORSTYLE_WHITE	1
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 	

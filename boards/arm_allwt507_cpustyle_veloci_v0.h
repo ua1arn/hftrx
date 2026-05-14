@@ -36,7 +36,12 @@
 #define WITHUART5HW	1		/* mini dinn8	*/
 //#define WITHCAT_UART5 1
 
-#define WITHCAT_MUX 1		/* переключаемый USB UAC или UART канал управления. */
+#if WITHMGLOOP
+	#define WITHMGLOOP_UART5 1
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+#else /* WITHMGLOOP */
+	#define WITHCAT_MUX 1		/* переключаемый USB UAC или UART канал управления. */
+#endif /* WITHMGLOOP */
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)

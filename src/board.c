@@ -5260,6 +5260,15 @@ static void prog_rfadc_initialize(void)
 	#define USER_NMEAX_ONRXCHAR user_uart0_onrxchar
 	#define USER_NMEAX_ONTXCHAR user_uart0_ontxchar
 
+#elif WITHMGLOOP_UART5
+	#define HARDWARE_NMEAX_INITIALIZE hardware_uart5_initialize
+	#define HARDWARE_NMEAX_SET_SPEED hardware_uart5_set_speed
+	#define HARDWARE_NMEAX_ENABLETX hardware_uart5_enabletx
+	#define HARDWARE_NMEAX_ENABLERX hardware_uart5_enablerx
+	#define HARDWARE_NMEAX_tx hardware_uart5_tx
+	#define USER_NMEAX_ONRXCHAR user_uart5_onrxchar
+	#define USER_NMEAX_ONTXCHAR user_uart5_ontxchar
+
 #else /* WITHMGLOOP_UART4 */
 	#error Missing serial port assignments
 
@@ -5841,7 +5850,7 @@ hardware_ptt_port_initialize(void)
 #if defined (PTT_INITIALIZE)
 	PTT_INITIALIZE();
 #endif /* defined (PTT_INITIALIZE) */
-#if WITHCAT
+#if WITHCAT && defined (FROMCAT_RTS_INITIALIZE)
 	FROMCAT_RTS_INITIALIZE();
 #endif /* WITHCAT */
 }
