@@ -1963,7 +1963,11 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// RF BOARD DD20 SN74HC595PW
 		RBBIT(0005, glob_tx);		// PTT_OUT
+#if WITHMGLOOP
+		RBBIT(0004, 1);				// DIN8_TUNCONTROL - mode selection for MINI DIN8 socket
+#else
 		RBBIT(0004, glob_catmux == BOARD_CATMUX_DIN8);				// DIN8_TUNCONTROL - mode selection for MINI DIN8 socket
+#endif
 		RBVAL(0000, glob_bandf3, 4);		/* D3:D0: DIN8 EXT PA band select */
 
 		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);

@@ -151,8 +151,12 @@ static const dzone_t dzones [] =
 	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_latchcombo,	NULL,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_gcombo,		& dzi_gcombo, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
 
+#if WITHMGLOOP
+	{	0, 	DLEB, 	10, 5, display2_mla9,		& dzi_compat, PGALL, },
+#else /* WITHMGLOOP */
 	{	0,	DLEB,	13,	5,	display2_datetime12,	& dzi_datetime12, PGALL,	},	// DATE&TIME Jan-01 13:40
 	//{	13,	DLEB,	10,	5,	display2_span9,			& dzi_default, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
+#endif /* WITHMGLOOP */
 	{	23, DLEB,	6,	5,	display2_thermo,		& dzi_thermo, PG0, },	// thermo sensor
 	{	29, DLEB,	4,	5,	display2_usbsts3,		& dzi_usbact, PG0, },	// USB host status
 	{	33, DLEB,	3,	5,	display2_btsts2,		& dzi_btact, PG0, },	// USB host status
