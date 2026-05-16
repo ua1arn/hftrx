@@ -299,13 +299,13 @@ typedef struct desc_options
 static unsigned usbd_get_productId(const desc_options_t * opts)
 {
 
-#if defined (USB_FUNCTION_PRODUCT_ID_OVERRIDE)
-	return USB_FUNCTION_PRODUCT_ID_OVERRIDE;
-#endif /* USB_FUNCTION_PRODUCT_ID_OVERRIDE */
-
 	if (opts->ft8cn != 0)
 		return 0x5732;	// Need for FT8CN
 	unsigned v = 0;
+
+#if defined (USB_FUNCTION_PRODUCT_ID_OVERRIDE)
+	return USB_FUNCTION_PRODUCT_ID_OVERRIDE;
+#endif /* USB_FUNCTION_PRODUCT_ID_OVERRIDE */
 
 #if WITHISBOOTLOADER && 0
 	v = USB_FUNCTION_PRODUCT_ID;
@@ -347,12 +347,12 @@ static unsigned usbd_get_productId(const desc_options_t * opts)
 
 static unsigned usbd_get_vendorId(const desc_options_t * opts)
 {
-#if defined (USB_FUNCTION_VENDOR_ID_OVERRIDE)
-	return USB_FUNCTION_VENDOR_ID_OVERRIDE;
-#endif /* USB_FUNCTION_VENDOR_ID_OVERRIDE */
 
 	if (opts->ft8cn != 0)
 		return 0x0483;	// Need for FT8CN - ST (SGS Thomson Microelectronics)
+#if defined (USB_FUNCTION_VENDOR_ID_OVERRIDE)
+	return USB_FUNCTION_VENDOR_ID_OVERRIDE;
+#endif /* USB_FUNCTION_VENDOR_ID_OVERRIDE */
 	return USB_FUNCTION_VENDOR_ID;
 }
 
