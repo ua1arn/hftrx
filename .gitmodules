@@ -22,3 +22,4 @@
 [submodule "lib/simple-gui"]
 	path = lib/simple-gui
 	url = https://github.com/RA4ASN/Simple-GUI.git
+	branch = version-1-old

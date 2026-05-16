@@ -549,7 +549,7 @@ static inline uint8_t __gui_get_touch_event(uint16_t * x, uint16_t * y)
 
 static inline uint8_t lp_delay_10ms(uint8_t init)
 {
-	return 0;
+	return 1;
 }
 
 #define TIME_PROFILE_START(label)      ((void)0)

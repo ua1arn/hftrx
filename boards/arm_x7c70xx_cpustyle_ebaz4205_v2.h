@@ -727,20 +727,38 @@
 
 #endif /* WITHKEYBOARD */
 
-#if WITHTWISW
+#if WITHTWISW || WITHTWIHW
+
+	#include "xc7z_inc.h"
+	extern XIicPs xc7z_iicps0;
+	#define TWIHARD_PTR (& xc7z_iicps0)
+
+	#define TARGET_TWI_IOTYPE 			GPIO_IOTYPE_LVCMOS33
 	#define TARGET_TWI_TWCK_MIO			58		// EMIO 58
 	#define TARGET_TWI_TWD_MIO			57		// EMIO 57
 
-	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
-	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-		/*gpio_peripherial(TARGET_TWI_TWD_MIO, pinmode);*/	/*  PS_MIO43_501 SDA */ \
-		/*gpio_peripherial(TARGET_TWI_TWCK_MIO, pinmode);*/	/*  PS_MIO42_501 SCL */ \
-		/* i2chw_initialize(); */ \
+		const portholder_t pinmode = MIO_PIN_VALUE(1, 1, TARGET_TWI_IOTYPE, 0, 0x02, 0, 0, 0, 0); \
+		gpio_peripherial(TARGET_TWI_TWD_MIO, pinmode);	\
+		gpio_peripherial(TARGET_TWI_TWCK_MIO, pinmode);	\
 	} while (0)
 
+	#define TWISOFT_INITIALIZE() do { \
+		const portholder_t pinmode =  MIO_PIN_VALUE(1, 1, TARGET_TWI_IOTYPE, 0, 0, 0, 0, 0, 0); \
+		gpio_opendrain2(TARGET_TWI_TWD_MIO, 0, pinmode);  \
+		gpio_opendrain2(TARGET_TWI_TWCK_MIO, 0, pinmode); \
+	} while(0)
 
-#endif // WITHTWISW
+	#define SET_TWCK() do { gpio_drive(TARGET_TWI_TWCK_MIO, 0); } while (0)
+	#define CLR_TWCK() do { gpio_drive(TARGET_TWI_TWCK_MIO, 1); } while (0)
+
+	#define SET_TWD() do { gpio_drive(TARGET_TWI_TWD_MIO, 0); } while (0)
+	#define CLR_TWD() do { gpio_drive(TARGET_TWI_TWD_MIO, 1); } while (0)
+
+	#define GET_TWCK() (gpio_readpin(TARGET_TWI_TWCK_MIO))
+	#define GET_TWD() (gpio_readpin(TARGET_TWI_TWD_MIO))
+
+#endif // WITHTWISW || WITHTWIHW
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 

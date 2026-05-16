@@ -217,7 +217,7 @@ void gt911_fwResolution(uint_fast16_t maxX, uint_fast16_t maxY)
 	cfg [3] = (maxY & 0xff);
 	cfg [4] = (maxY >> 8);
 	cfg [5] = 1;			// одно касание
-	cfg [15] = 0xf;			// период опроса 15 + 5 мс
+	cfg [15] = 0x5;			// период опроса 5 + 5 мс
 	cfg [len - 2] = gt911_calcChecksum(cfg, len - 2);
 	cfg [len - 1] = 1;
 
