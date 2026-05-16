@@ -3185,7 +3185,7 @@ static unsigned CDCACM_InterfaceDescDataIf_a(
 		* buff ++ = bInterfaceNumber;   /* bInterfaceNumber: Number of Interface */
 		* buff ++ = 0x00;		/* bAlternateSetting: Alternate setting  - zero-based index  */
 		* buff ++ = bNumEndpoints;   /* bNumEndpoints: Two endpoints used: data in and data out */
-		* buff ++ = CDC_DATA_INTERFACE_CLASS;   /* bInterfaceClass: CDC */
+		* buff ++ = CDC_DATA_INTERFACE_CLASS;   /* bInterfaceClass: 0x0a: CDC */
 		* buff ++ = 0x00;   /* bInterfaceSubClass: */
 		* buff ++ = 0x00;   /* bInterfaceProtocol: */
 		* buff ++ = STRING_ID_0;   /* iInterface: */
@@ -3649,7 +3649,7 @@ static unsigned CDCECM_InterfaceDescDataIf(
 		* buff ++ = bInterfaceNumber; // Index of this interface. (bInterfaceNumber) ?????????? (3<) (1<<) (1<M)
 		* buff ++ = 0x00;				// 0 Index of this alternate setting. (bAlternateSetting) - zero-based index
 		* buff ++ = bNumEndpoints;							// 2 endpoints.   (bNumEndpoints)
-		* buff ++ = CDC_DATA_INTERFACE_CLASS;		// 10 CDC Data (bInterfaceClass)
+		* buff ++ = CDC_DATA_INTERFACE_CLASS;		/* bInterfaceClass: 0x0a: CDC */
 		* buff ++ = 0x00;							// bInterfaceSubclass)
 		* buff ++ = 0x00;             /* 0 bInterfaceProtocol */
 		* buff ++ = STRING_ID_0;                   /* 0 Unused iInterface */
@@ -3902,7 +3902,7 @@ static unsigned CDCNCM_InterfaceDescDataIf(
 		* buff ++ = bInterfaceNumber; // Index of this interface. (bInterfaceNumber) ?????????? (3<) (1<<) (1<M)
 		* buff ++ = bAlternateSetting;				// 0 Index of this alternate setting. (bAlternateSetting) - zero-based index
 		* buff ++ = bNumEndpoints;							// 2 endpoints.   (bNumEndpoints)
-		* buff ++ = CDC_DATA_INTERFACE_CLASS;		// 10 CDC Data (bInterfaceClass)
+		* buff ++ = CDC_DATA_INTERFACE_CLASS;		/* bInterfaceClass: 0x0a: CDC */
 		* buff ++ = 0x00;							// bInterfaceSubclass)
 		* buff ++ = 0x01;             				/* bInterfaceProtocol 0x01  NCM10-20101124-track.pdf Table 4-3 NCM Data Class Protocol Code */
 		* buff ++ = STRING_ID_0;                   /* 0 Unused iInterface */
