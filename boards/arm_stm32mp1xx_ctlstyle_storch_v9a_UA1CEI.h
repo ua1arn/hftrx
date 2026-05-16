@@ -12,6 +12,7 @@
 #define ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_UA1CEI_H_INCLUDED 1
 
 	//#define WITHBRANDSTR "Falcon"
+	#define USER_BUILD_ID 71
 
 	#if ! defined(STM32MP157Axx) && ! defined(STM32MP153Dxx)
 		#error Wrong CPU selected. STM32MP157Axx expected
