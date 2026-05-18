@@ -13,9 +13,8 @@
 #ifndef ARM_ALW_T507_CTL_VELOCI_V0_UA1CEI_H_INCLUDED
 #define ARM_ALW_T507_CTL_VELOCI_V0_UA1CEI_H_INCLUDED 1
 
-	#define WITHBRANDSTR "Falcon"
-	#define WITHBANDR1BBU 1
-	//#define DEFAULTDIALFREQ	44900000
+	#define WITHBRANDSTR "Raptor"
+    #define USER_BUILD_ID 70
 	#define DEFAULTDIALFREQ	14130000
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
@@ -229,6 +228,10 @@
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
 
 	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
+	#define WITHMGLOOP 1
+	#define WITHMGLOOP_BAUDRATE 57600
+	#define WITHBANDR1BBU 1
+	//#define DEFAULTDIALFREQ	44900000
 	
 	//#define FORMATFROMLIBRARY 	1
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */

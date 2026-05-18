@@ -8036,6 +8036,7 @@ uif_pwbutton_press(void)
 {
 	txreq_rx(& txreqst0, NULL);	// переходим на приём
 	gpoweronhold = 0;
+	sleepflag = 1;
 	updateboard();
 }
 
@@ -17278,22 +17279,25 @@ static void dpc_1s_timer_fn(void * arg)
 	}
 #endif /* WITHTX */
 #if WITHSLEEPTIMER
-		if (gsleeptime == 0)
+		if (gpoweronhold)
 		{
-			// Функция выключена
-			if (sleepflag != 0)
+			if (gsleeptime == 0)
 			{
-				sleepflag = 0;
-				sleepflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+				// Функция выключена
+				if (sleepflag != 0)
+				{
+					sleepflag = 0;
+					sleepflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+				}
+				sleepcount = 0;
 			}
-			sleepcount = 0;
-		}
-		else if (sleepflag == 0)		// ещё не выключили
-		{
-			if (++ sleepcount >= gsleeptime * 60)
+			else if (sleepflag == 0)		// ещё не выключили
 			{
-				sleepflag = 1;
-				sleepflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+				if (++ sleepcount >= gsleeptime * 60)
+				{
+					sleepflag = 1;
+					sleepflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+				}
 			}
 		}
 #endif /* WITHSLEEPTIMER */
