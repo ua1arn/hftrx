@@ -681,8 +681,8 @@
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 
-		FWD = BOARD_ADCX2IN(0),
-		REF = BOARD_ADCX2IN(1),
+		FWD = BOARD_ADCX2IN(0), REF = BOARD_ADCX2IN(1),
+		//FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
 		
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */

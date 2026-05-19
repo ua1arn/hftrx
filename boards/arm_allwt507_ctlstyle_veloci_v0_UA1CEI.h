@@ -228,9 +228,9 @@
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
 
 	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
-	#define WITHMGLOOP 1
-	#define WITHMGLOOP_BAUDRATE 57600
-	#define WITHBANDR1BBU 1
+//	#define WITHMGLOOP 1
+//	#define WITHMGLOOP_BAUDRATE 57600
+//	#define WITHBANDR1BBU 1
 	//#define DEFAULTDIALFREQ	44900000
 	
 	//#define FORMATFROMLIBRARY 	1
