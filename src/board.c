@@ -1959,7 +1959,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		//RBBIT(0013, 0);			/* D3: unused */
 		RBBIT(0012, (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
 		RBBIT(0011, (glob_bandf == 0));		// D1: средневолновый ФНЧ - управление реле на входе фильтров
-		RBBIT(0010, 1);						// D0: 1 - снять SHUTDOWN с усилителя LM4950/PAM8406
+		RBBIT(0010, glob_poweron);						// D0: 1 - снять SHUTDOWN с усилителя LM4950/PAM8406
 
 		// RF BOARD DD20 SN74HC595PW
 		RBBIT(0005, glob_tx);		// PTT_OUT
