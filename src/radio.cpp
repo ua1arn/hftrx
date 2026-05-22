@@ -3599,7 +3599,7 @@ struct onerxant_tag {
 	uint8_t att;		/* режим аттенюатора */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
-#define MLAPARAMC_MAX 10000
+#define MLAPARAMC_MAX 65530
 struct onetxant_tag {
 #if WITHAUTOTUNER
 	uint8_t tunercap;
@@ -18966,7 +18966,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;
 #endif /* WITHELKEY */
 
-#if WITHELKEY
+#if WITHELKEY && 0
 
 	case KBD_CODE_CWMSG1:
 		uif_key_sendcw("CQ UA1ATD/P RR0106");
