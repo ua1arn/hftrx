@@ -1836,8 +1836,8 @@ prog_ctrlreg(uint_fast8_t plane)
 		// DD42 SN74HC595PW
 		RBBIT(0037, xvrtr && ! glob_tx);	// D7 - XVR_RXMODE
 		RBBIT(0036, xvrtr && glob_tx);		// D6 - XVR_TXMODE
-		RBBIT(0035, 0);			// D5: CTLSPARE2
-		RBBIT(0034, glob_rxantenna);			// D4: CTLSPARE1 - RX ANT
+		RBBIT(0035, glob_antenna);			// D5: CTLSPARE2 - ANT SELECT
+		RBBIT(0034, glob_rxantenna);		// D4: CTLSPARE1 - RX ANT
 		RBBIT(0033, 0);			// D3: not used
 	#if WITHBLPWMCTL && WITHLCDBACKLIGHT
 		// Имеется управление яркостью подсветки дисплея через PWM
