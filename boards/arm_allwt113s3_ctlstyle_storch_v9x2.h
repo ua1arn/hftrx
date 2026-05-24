@@ -397,6 +397,7 @@
 		#define FULLSET7	1
 	#else
 		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
+		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны CTKSPARE2 и CTLSPARE1 */
 	#endif
 	
 
