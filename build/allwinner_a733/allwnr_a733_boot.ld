@@ -6,7 +6,8 @@
 MEMORY
 {
   RAM (rwx)	 : ORIGIN = 0x00047000 + 256, 	LENGTH = (0x00074000 - 0x00047000) + 512k - 256		/* 180k + 512k */
-  boottestRAM (rwx)    : ORIGIN = 0x00074000 + 256,     LENGTH = 512k - 32k - 256        /* base addres for bootloader tests */
+  boottestRAM1 (rwx)    : ORIGIN = 0x00074000 + 256,     LENGTH = 512k - 32k - 256        /* base addres for bootloader tests */
+  boottestRAM2 (rwx)    : ORIGIN = 0x00048c00 + 256,     LENGTH = 32k + 240k - 256        /* base addres for bootloader tests */
   DDR3 (rwx) : ORIGIN = 0x40000000 + 128M, 	LENGTH = 1024M - 128M		/*  */
 }
 

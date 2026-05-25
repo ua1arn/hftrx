@@ -65,7 +65,7 @@ CORE = -mcpu=cortex-a55 -mfpu=vfpv4 --specs=nosys.specs -mfloat-abi=softfp
 # Define optimisation level here
 #OPT = -Og
 #OPT = -Ofast -flto
-OPT = -Ofast
+OPT = -Os -flto
 
 USBXDIR = $(PRJROOT)/src/hal
 
@@ -248,12 +248,12 @@ allZ:
 	@echo $(abspath $(OBJS))
 
 bootloader: BOOT2
-	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
+	$(BUSYBOX) grep -E -e ' Reset_Handler$$' -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool -base 0x00040000 -reset 0x00040100 $(PROJECT)_boot.bin fsbl.bt0
 	
 lib: bootloader
-	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort >bootparam.mak
-	$(BUSYBOX) cp fsbl.bt0 $(DDRINITBLOB)
+	$(BUSYBOX) grep -E -e ' Reset_Handler$$' -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort >bootparam.mak
+	$(BUSYBOX) cp $(PROJECT)_boot.bin $(DDRINITBLOB)
 
 # Take from tc1_a733_boot.map - address of SystemDRAMInit, SystemExecAARCH64
 ifeq (1, 1)
@@ -274,7 +274,7 @@ ddrinit_a733_:
 	$(BUSYBOX) sleep 2s
 
 ddrinit: $(DDRINITBLOB)
-	$(XFEL) write 0x00074000 $(DDRINITBLOB)
+	$(XFEL) write $(Reset_Handler) $(DDRINITBLOB)
 	$(XFEL) exec $(SystemDRAMInit)
 	$(BUSYBOX) sleep 2s
 
@@ -288,8 +288,8 @@ app_run: $(PROJECT)_app.alw32 ddrinit
 
 # debug for bootloader - check .ld file
 _app_run: bootloader
-	$(XFEL) write 0x00074000 fsbl.bt0
-	$(XFEL) exec 0x00074000 
+	$(XFEL) write $(Reset_Handler) $(PROJECT)_boot.bin
+	$(XFEL) exec $(Reset_Handler) 
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.bt0
