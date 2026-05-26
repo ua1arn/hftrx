@@ -19,18 +19,27 @@
 #include <stdlib.h>	 // For aligned_alloc
 #include <math.h>
 
-#if 0
+
+void softdelay(void)
+{
+	volatile int i = 1000000;
+	while (i --)
+	{
+		__NOP();
+	}
+}
+
 void blinkloop(void)
 {
-#if 0 && defined (BOARD_BLINK_INITIALIZE)
+#if 1 && defined (BOARD_BLINK_INITIALIZE)
 	{
 		BOARD_BLINK_INITIALIZE();
 		for (;;)
 		{
 			BOARD_BLINK_SETSTATE(1);
-			local_delay_us(100 * 1000);
+			softdelay();
 			BOARD_BLINK_SETSTATE(0);
-			local_delay_us(100 * 1000);
+			softdelay();
 		}
 	}
 #endif
@@ -43,7 +52,6 @@ void xtrap(void)
 	for (;;)
 		;
 }
-#endif
 
 #if CPUSTYLE_XC7Z && defined (XPAR_XGPIOPS_0_DEVICE_ID)
 
@@ -1977,15 +1985,6 @@ uint32_t SystemCoreClock = 24000000;     /*!< System Clock Frequency (Core Clock
 void SystemCoreClockUpdate(void)
 {
 	SystemCoreClock = CPU_FREQ;
-}
-
-void softdelay(void)
-{
-	volatile int i = 100;
-	while (i --)
-	{
-		__NOP();
-	}
 }
 
 
