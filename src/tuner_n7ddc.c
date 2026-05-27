@@ -19,7 +19,7 @@ static unsigned char C_linear = 0, L_linear = 0;
 #endif
 
 #define SWRENOUGH 120
-#define SWRENOUGH110 120
+#define SWRENOUGH110 110
 static unsigned L_mult = 1, C_mult = 1, P_High = 0, K_Mult = 32;
 
 static int max_swr;

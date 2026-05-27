@@ -6941,6 +6941,8 @@ unsigned hamradio_get_pwr(void)
 }
 #endif /* WITHTX */
 
+static LCLSPINLOCK_t boardupdatelock;
+
 #if WITHAUTOTUNER
 
 enum phases
@@ -6968,7 +6970,14 @@ static void board_set_tuner_group(void)
 static void updateboard_tuner(void)
 {
 	//PRINTF(PSTR("updateboard_tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
+#if WITHTOUCHGUI
 	board_set_tuner_group();
+#else
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+	board_set_tuner_group();
+	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
+#endif /* WITHTOUCHGUI */
 	board_update();		/* вывести забуферированные изменения в регистры */
 }
 
@@ -13153,8 +13162,6 @@ updateboard_noui(
 
 	return full2;
 }
-
-static LCLSPINLOCK_t boardupdatelock;
 /* полная перенастройка */
 void updateboard(void)
 {
