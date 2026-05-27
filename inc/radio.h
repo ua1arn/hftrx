@@ -3360,7 +3360,7 @@ void bt_initialize(void);
 #define N7DDCTUNE_ABORT 2	// Aborted by keyboard
 int n7ddc_tune(int linearC, int linearL, int (* cb)(void * ctx), void * ctx);	// 1 if no power, 2 if aborted
 
-void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type);
+void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type);	// Set tuner parameters, wait tuner ADC delay
 unsigned n7ddc_get_swr(void);
 
 #define SWRMIN 10	// минимум - соответствует SWR = 1.0, точность = 0.1

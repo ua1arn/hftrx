@@ -7079,6 +7079,7 @@ static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
 
 #if WITHAUTOTUNER_N7DDCALGO
 
+// Set tuner parameters, wait tuner ADC delay
 void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type)
 {
 	tunerind = inductors;
