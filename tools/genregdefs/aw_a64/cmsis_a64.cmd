@@ -1,4 +1,4 @@
-SET CONVERTER=..\Debug\genregdefs.exe --cortexa5x "core64_ca.h" --guid "{DADB7421-2CE1-4351-A89A-B0338D2EB5AF}"
+SET CONVERTER=..\Debug\genregdefs.exe --cortexa5x "core_ca53.h" --guid "{DADB7421-2CE1-4351-A89A-B0338D2EB5AF}"
 SET OUTFILE=..\..\..\arch\aw_a64\device.h
 SET FILELIST= ve.csv gic.csv cpusubsysctrl.csv ccu.csv sys_cfg.csv ndfc.csv tsc.csv uart.csv gpio.csv smhc.csv i2s_pcm.csv dmic.csv owa.csv audio_codec.csv twi.csv spi.csv cir_rx.csv tpadc.csv gpadc.csv ce.csv rtc.csv iommu.csv ths.csv timer.csv hstimer.csv ^
 	..\aw_generic\usbehci.csv ..\aw_generic\usbotg.csv usbphyc.csv ..\aw_generic\usb_ehci_capability.csv ..\aw_generic\usb_ohci_capability.csv ^

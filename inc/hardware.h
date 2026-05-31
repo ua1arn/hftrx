@@ -913,6 +913,10 @@ void mpu6500_test(void);
 #include "taildefs.h"
 #include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
 
+#if defined(__aarch64__)
+#include "core64_ca.h"
+#endif
+
 #if (__ARM_ARCH == 8) && ! defined(__aarch64__)
 
 // DDI0500J_cortex_a53_r0p4_trm.pdf

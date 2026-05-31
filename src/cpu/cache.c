@@ -404,6 +404,15 @@ void L2_InvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
 }
 #endif /* (__L2C_PRESENT == 1) */
 
+#ifdef __aarch64__
+//#include "ca_mmu_64.h"
+/** \brief  Clean and invalidate the whole data cache.
+ */
+__STATIC_FORCEINLINE void L1C_CleanInvalidateDCacheAll(void) {
+  //L1C_CleanInvalidateCache(2);
+}
+#endif
+
 // Записать содержимое кэша данных в память
 // применяется после начальной инициализации среды выполнния
 void dcache_clean_all(void)
