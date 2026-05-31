@@ -915,6 +915,27 @@ void mpu6500_test(void);
 
 #if defined(__aarch64__)
 #include "core64_ca.h"
+#else
+
+#define MPIDR_AFFLVL_MASK (0xffULL)
+#define MPIDR_AFF0_SHIFT     (0ULL)
+#define MPIDR_AFF1_SHIFT     (8ULL)
+#define MPIDR_AFF2_SHIFT    (16ULL)
+#define MPIDR_AFF3_SHIFT    (32ULL)
+#define MPIDR_MT_MASK      (0x1ULL)
+#define MPIDR_MT_SHIFT	    (24ULL)
+
+#define MPIDR_SUPPORT_MT(mpidr) ((mpidr >> MPIDR_MT_SHIFT) & MPIDR_MT_MASK)
+
+
+#define MPIDR_TO_AFF_LEVEL(mpidr, aff_level) (((mpidr) >> MPIDR_AFF##aff_level##_SHIFT) & MPIDR_AFFLVL_MASK)
+
+#define MPIDR_AFFINITY_MASK                   \
+  ((MPIDR_AFFLVL_MASK << MPIDR_AFF3_SHIFT)  | \
+   (MPIDR_AFFLVL_MASK << MPIDR_AFF2_SHIFT)  | \
+   (MPIDR_AFFLVL_MASK << MPIDR_AFF1_SHIFT)  | \
+   (MPIDR_AFFLVL_MASK << MPIDR_AFF0_SHIFT))
+
 #endif
 
 #if (__ARM_ARCH == 8) && ! defined(__aarch64__)
