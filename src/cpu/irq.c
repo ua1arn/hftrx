@@ -3527,6 +3527,52 @@ void InitializeIrql(IRQL_t newIRQL)
 	LowerIrql(newIRQL);
 }
 
+#if (__CORTEX_A == 55U)
+// AArch32 (CLUSTERCFR) and AArch64 (CLUSTERCFR_EL1)
+// MRS <Xt>, S3_0_C15_C3_0; Read CLUSTERCFR_EL1 into Xt
+// MRC p15, 0, <Rt>, c15, c3, 0; Read CLUSTERCFR into Rt
+__STATIC_FORCEINLINE uint64_t __get_CLUSTERCFR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 15, 3, 0);
+	return result;
+}
+
+// AArch32 (CLUSTERECTLR) and AArch64 (CLUSTERECTLR_EL1)
+// MRS <Xt>, S3_0_C15_C3_4; Read CLUSTERECTLR_EL1 into Xt
+// MSR S3_0_C15_C3_4, <Xt>; Write Xt into CLUSTERECTLR_EL1
+// MRC p15, 0, <Rt>, c15, c3, 4; Read CLUSTERECTLR into Rt
+// MCR p15, 0, <Rt>, c15, c3, 4; Write Rt into CLUSTERECTLR
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERECTLR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 15, 3, 4);
+	return result;
+}
+
+// MRC p15, 0, <Rt>, c15, c3, 5; Read CLUSTERPWRCTLR into Rt
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRCTLR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 15, 3, 5);
+	return result;
+}
+// MCR p15, 0, <Rt>, c15, c3, 5; Write Rt into CLUSTERPWRCTLR
+__STATIC_FORCEINLINE void __set_CLUSTERPWRCTLR(uint32_t value)
+{
+	__set_CP(15, 0, value, 15, 3, 5);
+}
+
+//MRC p15, 0, <Rt>, c15, c3, 6; Read CLUSTERPWRDN into Rt
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRDN(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 15, 3, 6);
+	return result;
+}
+
+#endif /* (__CORTEX_A == 55U)  */
+
 #if (CPUSTYLE_ARM || CPUSTYLE_RISCV)
 
 uint_fast8_t arm_hardware_clustersize(void)
