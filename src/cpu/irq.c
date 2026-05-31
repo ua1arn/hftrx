@@ -3527,11 +3527,11 @@ void InitializeIrql(IRQL_t newIRQL)
 	LowerIrql(newIRQL);
 }
 
-#if (__CORTEX_A == 55U)
+#if (__CORTEX_A == 55U) && ! __aarch64__
 // AArch32 (CLUSTERCFR) and AArch64 (CLUSTERCFR_EL1)
 // MRS <Xt>, S3_0_C15_C3_0; Read CLUSTERCFR_EL1 into Xt
 // MRC p15, 0, <Rt>, c15, c3, 0; Read CLUSTERCFR into Rt
-__STATIC_FORCEINLINE uint64_t __get_CLUSTERCFR(void)
+__STATIC_FORCEINLINE uint32_t __get_CLUSTERCFR(void)
 {
 	uint32_t result;
 	__get_CP(15, 0, result, 15, 3, 0);
