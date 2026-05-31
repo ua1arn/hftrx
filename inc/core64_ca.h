@@ -2266,6 +2266,49 @@ __STATIC_INLINE void L2C_CleanInvPa (void *pa)
 #endif
 
 /* ##########################  GIC functions  ###################################### */
+
+
+/* ICC_SGIR */
+#define ICC_SGIR_TARGETLIST_SHIFT (0)
+#define ICC_SGIR_TARGETLIST_MASK  (0xffff)
+#define ICC_SGIR_AFF_MASK         (0xff)
+#define ICC_SGIR_AFF1_SHIFT       (16)
+#define ICC_SGIR_INTID_SHIFT      (24)
+#define ICC_SGIR_INTID_MASK       (0xf)
+#define ICC_SGIR_AFF2_SHIFT       (32)
+#define ICC_SGIR_IRM_SHIFT        (40)
+#define ICC_SGIR_IRM_MASK         (0x1)
+#define ICC_SGIR_RS_SHIFT         (44)
+#define ICC_SGIR_RS_MASK          (0xf)
+#define ICC_SGIR_AFF3_SHIFT       (48)
+
+#define GIC_REDISTRIBUTOR_STRIDE (0x20000)
+#define GICR_SGI_BASE_OFF        (0x10000)
+
+#define GICR_TYPER_LAST_SHIFT (4)
+#define GICR_TYPER_LAST_MASK  (1 << GICR_TYPER_LAST_SHIFT)
+#define GICR_TYPER_AFF_SHIFT  (32)
+
+#define MPIDR_TO_RS(mpidr) (MPIDR_TO_AFF_LEVEL(mpidr, 0) >> 4)
+
+#define COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, intid, irm, rs, tlist) \
+    ((((uint64_t)(aff3) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF3_SHIFT) |  \
+     (((uint64_t)(rs) & ICC_SGIR_RS_MASK) << ICC_SGIR_RS_SHIFT) |       \
+     (((uint64_t)(irm) & ICC_SGIR_IRM_MASK) << ICC_SGIR_IRM_SHIFT) |    \
+     (((uint64_t)(aff2) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF2_SHIFT) |  \
+     (((intid) & ICC_SGIR_INTID_MASK) << ICC_SGIR_INTID_SHIFT) |        \
+     (((aff1) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF1_SHIFT) |            \
+     (((tlist) & ICC_SGIR_TARGETLIST_MASK) << ICC_SGIR_TARGETLIST_SHIFT))
+
+#define MPIDR_TO_RS(mpidr) (MPIDR_TO_AFF_LEVEL(mpidr, 0) >> 4)
+
+#if (__CORTEX_A == 55U) && CPUSTYLE_A733
+#include "gicv6.h"
+#else
+#include "gicv2.h"
+#endif
+
+/* ##########################  GIC functions  ###################################### */
 #if (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || \
      defined(DOXYGEN)
 
@@ -2556,38 +2599,6 @@ __STATIC_INLINE uint32_t GIC_GetInterfaceId(void)
 
 #else /* GIC_INTERFACE_BASE */
 
-
-/* ICC_SGIR */
-#define ICC_SGIR_TARGETLIST_SHIFT (0)
-#define ICC_SGIR_TARGETLIST_MASK  (0xffff)
-#define ICC_SGIR_AFF_MASK         (0xff)
-#define ICC_SGIR_AFF1_SHIFT       (16)
-#define ICC_SGIR_INTID_SHIFT      (24)
-#define ICC_SGIR_INTID_MASK       (0xf)
-#define ICC_SGIR_AFF2_SHIFT       (32)
-#define ICC_SGIR_IRM_SHIFT        (40)
-#define ICC_SGIR_IRM_MASK         (0x1)
-#define ICC_SGIR_RS_SHIFT         (44)
-#define ICC_SGIR_RS_MASK          (0xf)
-#define ICC_SGIR_AFF3_SHIFT       (48)
-
-#define MPIDR_TO_RS(mpidr) (MPIDR_TO_AFF_LEVEL(mpidr, 0) >> 4)
-
-#define COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, intid, irm, rs, tlist) \
-    ((((uint64_t)(aff3) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF3_SHIFT) |  \
-     (((uint64_t)(rs) & ICC_SGIR_RS_MASK) << ICC_SGIR_RS_SHIFT) |       \
-     (((uint64_t)(irm) & ICC_SGIR_IRM_MASK) << ICC_SGIR_IRM_SHIFT) |    \
-     (((uint64_t)(aff2) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF2_SHIFT) |  \
-     (((intid) & ICC_SGIR_INTID_MASK) << ICC_SGIR_INTID_SHIFT) |        \
-     (((aff1) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF1_SHIFT) |            \
-     (((tlist) & ICC_SGIR_TARGETLIST_MASK) << ICC_SGIR_TARGETLIST_SHIFT))
-
-#define GIC_REDISTRIBUTOR_STRIDE (0x20000)
-#define GICR_SGI_BASE_OFF        (0x10000)
-
-#define GICR_TYPER_LAST_SHIFT (4)
-#define GICR_TYPER_LAST_MASK  (1 << GICR_TYPER_LAST_SHIFT)
-#define GICR_TYPER_AFF_SHIFT  (32)
 
 #define GICR_WAKER_PS_SHIFT (1)
 #define GICR_WAKER_CA_SHIFT (2)
