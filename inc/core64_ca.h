@@ -2303,9 +2303,9 @@ __STATIC_INLINE void L2C_CleanInvPa (void *pa)
 #define MPIDR_TO_RS(mpidr) (MPIDR_TO_AFF_LEVEL(mpidr, 0) >> 4)
 
 #if (__CORTEX_A == 55U) && CPUSTYLE_A733
-#include "gicv6.h"
+#include "gicv6_64.h"
 #else
-#include "gicv2.h"
+#include "gicv2_64.h"
 #endif
 
 /* ##########################  GIC functions  ###################################### */
