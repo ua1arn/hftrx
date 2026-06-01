@@ -1,5 +1,5 @@
 /*
- * core_ca53.h
+ * core64_ca.h
  */
 /* $Id$ */
 //
@@ -172,6 +172,7 @@
 #define     __OM     volatile            /*!< \brief Defines 'write only' structure member permissions */
 #define     __IOM    volatile            /*!< \brief Defines 'read / write' structure member permissions */
 #define RESERVED(N, T) T RESERVED##N;    // placeholder struct members used for "reserved" areas
+
 
 // __ASM volatile("MSR DAIFClr, %0\n\t" : : "i" (7)  : "memory");
 
