@@ -7232,9 +7232,9 @@ __STATIC_INLINE bool sGIC_GetARE(void)
     return !!(GICDistributor->CTLR & 0x30);
 }
 #if defined __aarch64__
-ioreg32(ICC_IGRPEN0_EL1)
-ioreg32(ICC_IGRPEN1_EL1)
-ioreg32(ICC_IGRPEN1_EL3)
+//ioreg32(ICC_IGRPEN0_EL1)
+//ioreg32(ICC_IGRPEN1_EL1)
+//ioreg32(ICC_IGRPEN1_EL3)
 
 #endif
 #endif

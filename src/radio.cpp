@@ -6796,7 +6796,7 @@ static const encfnitem_t enclabelsENC3FN [] =
 
 static const encfnitem_t enclabelsENC4FN [] =
 {
-	{ NULL, getlabelENC3F, },
+	{ NULL, getlabelENC4F, },
 };
 
 static uint_fast8_t enc1f_sel;

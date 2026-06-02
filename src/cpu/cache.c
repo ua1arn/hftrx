@@ -408,9 +408,14 @@ void L2_InvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
 // применяется после начальной инициализации среды выполнния
 void dcache_clean_all(void)
 {
-	L1C_CleanInvalidateDCacheAll();
+#if __aarch64__
+	extern uint32_t Reset_Handler, __stack;
+	dcache_clean_invalidate((uintptr_t) & Reset_Handler, (uintptr_t) & __stack - (uintptr_t) & Reset_Handler);
+#else
+    L1C_CleanInvalidateDCacheAll();
 #if (__L2C_PRESENT == 1)
-	L2C_CleanInvAllByWay();
+    L2C_CleanInvAllByWay();
+#endif
 #endif
 }
 
