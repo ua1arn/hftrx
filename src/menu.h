@@ -249,70 +249,12 @@ const struct menudef menutable [] =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
-	(const struct paramdefdef [1]) {
-		QLABEL("TM YEAR"), 7, 0, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE, 
-		2015, 2099, 
-		MENUNONVRAM,
-		getselector0, nvramoffs0, valueoffs0,
-		& grtcyear,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("TM MONTH"), 7, 3, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_LISTSELECT,
-		1, 12, 
-		MENUNONVRAM,
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& grtcmonth,
-		getzerobase, /* складывается со смещением и отображается */
-		getvaltextmonth, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("TM DAY"), 7, 0, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE, 
-		1, 31, 
-		MENUNONVRAM,
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& grtcday,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("TM HOUR"), 7, 0, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE, 
-		0, 23, 
-		MENUNONVRAM,
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& grtchour,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("TM MIN"), 7, 0, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE, 
-		0, 59, 
-		MENUNONVRAM,
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& grtcminute,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("TM SET"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE, 
-		0, 1, 
-		MENUNONVRAM,
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& grtcstrobe,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgrtcyear,
+	& xgrtcmonth,
+	& xgrtcday,
+	& xgrtchour,
+	& xgrtcmin,
+	& xgrtcstrobe,
 #endif /* defined (RTC1_TYPE) */
 /* group name +++ */
 	(const struct paramdefdef [1]) {

@@ -9985,28 +9985,93 @@ gsubmodechange(
 
 #if defined (RTC1_TYPE)
 
-	static uint_fast16_t grtcyear;
-	static uint_fast8_t grtcmonth, grtcday;
-	static uint_fast8_t grtchour, grtcminute, grtcseconds;
+static uint_fast16_t grtcyear;
+static uint_fast8_t grtcmonth, grtcday;
+static uint_fast8_t grtchour, grtcminute, grtcseconds;
 
-	static uint_fast8_t grtcstrobe;
-	static uint_fast8_t grtcstrobe_shadow;
+static uint_fast8_t grtcstrobe;
+static uint_fast8_t grtcstrobe_shadow;
 
-	static void getstamprtc(void)
+static const struct paramdefdef xgrtcyear = {
+	QLABEL("TM YEAR"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	ITEM_VALUE,
+	2015, 2099,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	& grtcyear,
+	NULL,
+	getzerobase, /* складывается со смещением и отображается */
+};
+static const struct paramdefdef xgrtcmonth = {
+	QLABEL("TM MONTH"), 7, 3, RJ_CB,	ISTEP1,
+	ITEM_VALUE | ITEM_LISTSELECT,
+	1, 12,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& grtcmonth,
+	getzerobase, /* складывается со смещением и отображается */
+	getvaltextmonth, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgrtcday = {
+	QLABEL("TM DAY"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	ITEM_VALUE,
+	1, 31,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& grtcday,
+	getzerobase, /* складывается со смещением и отображается */
+};
+static const struct paramdefdef xgrtchour = {
+	QLABEL("TM HOUR"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	ITEM_VALUE,
+	0, 23,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& grtchour,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgrtcmin = {
+	QLABEL("TM MIN"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	ITEM_VALUE,
+	0, 59,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& grtcminute,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgrtcstrobe = {
+	QLABEL("TM SET"), 7, 3, RJ_YES,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& grtcstrobe,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
+static void getstamprtc(void)
+{
+	grtcstrobe = 0;
+	grtcstrobe_shadow = 0;
+	board_rtc_getdatetime(& grtcyear, & grtcmonth, & grtcday, & grtchour, & grtcminute, & grtcseconds);
+}
+
+static void board_setrtcstrobe(uint_fast8_t val)
+{
+	if (val != grtcstrobe_shadow && val != 0)
 	{
-		grtcstrobe = 0;
-		grtcstrobe_shadow = 0;
-		board_rtc_getdatetime(& grtcyear, & grtcmonth, & grtcday, & grtchour, & grtcminute, & grtcseconds);
+		board_rtc_setdatetime(grtcyear, grtcmonth, grtcday, grtchour, grtcminute, 0);
 	}
-
-	static void board_setrtcstrobe(uint_fast8_t val)
-	{
-		if (val != grtcstrobe_shadow && val != 0)
-		{
-			board_rtc_setdatetime(grtcyear, grtcmonth, grtcday, grtchour, grtcminute, 0);
-		}
-		grtcstrobe_shadow = val;
-	}
+	grtcstrobe_shadow = val;
+}
 
 #endif /* defined (RTC1_TYPE) */
 
