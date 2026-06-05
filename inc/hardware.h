@@ -664,7 +664,7 @@ void looptests(void);	// Периодически вызывается в гла
 void dcache_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас в эту память будем читать по DMA
 void dcache_clean(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то
 void dcache_clean_invalidate(uintptr_t base, int_fast32_t size);	// Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
-void dcache_clean_all(void);
+void dcache_clean_invalidate_all(void);
 
 int_fast32_t icache_rowsize(void);
 int_fast32_t dcache_rowsize(void);

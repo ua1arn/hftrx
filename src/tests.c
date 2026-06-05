@@ -9048,12 +9048,12 @@ void hightests(void)
 		// cache line size test
 		static __ALIGNED(256) uint8_t data [256];
 		memset(data, 0xE5, sizeof data);
-		dcache_clean_all();
+		dcache_clean_invalidate_all();
 		memset(data, 0x00, sizeof data);
 		__DSB();
 		__set_DCIMVAC((uintptr_t) data);	// Invalidate data cache line by address.
 		//dcache_invalidate((uintptr_t) data, 8);
-		//dcache_clean_all();
+		//dcache_clean_invalidate_all();
 		printhex((uintptr_t) data, data, sizeof data);
 		for (;;)
 			;
@@ -9208,7 +9208,7 @@ void hightests(void)
 					0x00B50023, // 23 00 B5 00
 					0x0000006F, // 6F 00 00 00,
 			};
-			dcache_clean_all();
+			dcache_clean_invalidate_all();
 
 			/* reset RISC-V core */
 			CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);				// RISC-V_MCLK_EN

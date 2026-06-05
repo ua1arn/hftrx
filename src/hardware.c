@@ -2282,7 +2282,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 //	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
 //		;
 
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
+	dcache_clean_invalidate_all();	// startup code should be copied in to sysram for example.
 
 	/* Generate an IT to core 1 */
 	GIC_SendSGI(SGI8_IRQn, UINT32_C(1) << core, 0x00);	// CPU1, filer=0 Forward the interrupt to the CPU interfaces specified in the CPUTargetList field
@@ -2301,7 +2301,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	ASSERT(core != 0);
 
 	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
+	dcache_clean_invalidate_all();	// startup code should be copied in to sysram for example.
 	/* Generate an IT to core 1 */
 	__SEV();
 }
@@ -2326,7 +2326,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	CPUX_CFG->C_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
 
 	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
+	dcache_clean_invalidate_all();	// startup code should be copied in to sysram for example.
 
 	// Не влияют
 	// Register width state.Determines which execution state the processor boots into after a cold reset.
@@ -2355,7 +2355,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	CPUCFG->CPU [core].CPU_RST_CTRL_REG &= ~ CORE_RESET_MASK;	// CORE_RESET (3..0) assert
 
 	* rvaddr = startfunc;	// C0_CPUX_CFG->C_CTRL_REG0 AA64nAA32 игнорироуется
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
+	dcache_clean_invalidate_all();	// startup code should be copied in to sysram for example.
 
 	CPUCFG->CPU [core].CPU_RST_CTRL_REG |= CORE_RESET_MASK;	// CORE_RESET (3..0) de-assert
 }
@@ -2490,11 +2490,11 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	//	070501E0: FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF 00000000 00000000 00000000 00000000
 	* rvaddr = startfunc;
 	ASSERT(* rvaddr == startfunc);
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
+	dcache_clean_invalidate_all();	// startup code should be copied in to sysram for example.
 
 	CLUSTER_CFG->C0_CPU [core].C0_CPUx_CTRL_REG |= CORE_RESET_MASK;	// CORE_RESET 1: de-assert
 #else
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
+	dcache_clean_invalidate_all();	// startup code should be copied in to sysram for example.
 #endif
 }
 
@@ -2526,7 +2526,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	R_CPUCFG->SOFTENTRY [core] = startfunc;
 	ASSERT(R_CPUCFG->SOFTENTRY [core] == startfunc);
 
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
+	dcache_clean_invalidate_all();	// startup code should be copied in to sysram for example.
 
 	C0_CPUX_CFG_H616->C0_RST_CTRL |= CORE_RESET_MASK;	// 60... CORE_RESET 1: de-assert
 }
@@ -2556,7 +2556,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	//R_CPUCFG->HOTPLUGFLAG = 0xFA50392F;
 	R_CPUCFG->SOFTENTRY [core] = startfunc;
 	ASSERT(R_CPUCFG->SOFTENTRY [core] == startfunc);
-	dcache_clean_all();	// startup code should be copied in to sysram for example.
+	dcache_clean_invalidate_all();	// startup code should be copied in to sysram for example.
 
 	C0_CPUX_CFG->C0_CPUx_CTRL_REG [core] |= C0_CORE_RESET_MASK;	// CORE_RESET 1: de-assert
 }

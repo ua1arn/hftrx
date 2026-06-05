@@ -126,7 +126,7 @@ static uint_fast8_t bootloader_copyapp(
 static void __NO_RETURN
 bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 {
-	dcache_clean_all();
+	dcache_clean_invalidate_all();
 	global_disableIRQ();
 
 	/* вынесение в отдельную функцию приводит к незхапуску application */

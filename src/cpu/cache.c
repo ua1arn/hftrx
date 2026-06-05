@@ -237,9 +237,9 @@ void dcache_clean(uintptr_t base, int_fast32_t dsize)
 
 // Записать содержимое кэша данных в память
 // применяется после начальной инициализации среды выполнния
-void dcache_clean_all(void)
+void dcache_clean_invalidate_all(void)
 {
-	SCB_CleanDCache();	// DCCMVAC register used.
+	SCB_CleanInvalidateDCache();	// DCCISW register used.
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
@@ -406,7 +406,7 @@ void L2_InvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
 
 // Записать содержимое кэша данных в память
 // применяется после начальной инициализации среды выполнния
-void dcache_clean_all(void)
+void dcache_clean_invalidate_all(void)
 {
 #if __aarch64__
 	extern uint32_t Reset_Handler, __stack;
@@ -527,7 +527,7 @@ void dcache_clean_invalidate(uintptr_t base, int_fast32_t dsize)
 
 // Записать содержимое кэша данных в память
 // применяется после начальной инициализации среды выполнния
-void dcache_clean_all(void)
+void dcache_clean_invalidate_all(void)
 {
 	__ASM volatile(".4byte 0x0010000b\n":::"memory"); /* dcache.call */
 }
@@ -559,7 +559,7 @@ void dcache_clean(uintptr_t base, int_fast32_t dsize)
 
 // Записать содержимое кэша данных в память
 // применяется после начальной инициализации среды выполнния
-void dcache_clean_all(void)
+void dcache_clean_invalidate_all(void)
 {
 }
 
