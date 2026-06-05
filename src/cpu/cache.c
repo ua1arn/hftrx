@@ -264,26 +264,6 @@ int_fast32_t icache_rowsize(void)
 
 #elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
 
-
-#if __aarch64__
-#define __set_DCCMVAC(v) __set_DCCVAC(v)
-#define __set_DCCIMVAC(v) __set_DCCIVAC(v)
-#define __set_DCIMVAC(v) __set_DCIVAC(v)
-#define __get_CTR() (__get_CTR_EL0())
-
-#else
-
-/** \brief  Get CTR
-\return		Cache Type Register value
-*/
-__STATIC_INLINE uint32_t __get_CTR(void)
-{
-	uint32_t result;
-	__get_CP(15, 0, result, 0, 0, 1);
-	return result;
-}
-#endif
-
 //	MVA
 //	For more information about the possible meaning when the table shows that an MVA is required
 // 	see Terms used in describing the maintenance operations on page B2-1272.
@@ -298,7 +278,11 @@ void L1_CleanDCache_by_Addr(void * addr, int32_t op_size)
 		__DSB();
 		do
 		{
+#if __aarch64__
+			__set_DCCVAC(op_mva);	// Clean data cache line by address.
+#else /* __aarch64__ */
 			__set_DCCMVAC(op_mva);	// Clean data cache line by address.
+#endif /* __aarch64__ */
 			op_mva += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
@@ -315,7 +299,11 @@ void L1_CleanInvalidateDCache_by_Addr(void * addr, int32_t op_size)
 		__DSB();
 		do
 		{
+#if __aarch64__
+			__set_DCCIVAC(op_mva);	// Clean and Invalidate data cache by address.
+#else /* __aarch64__ */
 			__set_DCCIMVAC(op_mva);	// Clean and Invalidate data cache by address.
+#endif /* __aarch64__ */
 			op_mva += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
@@ -331,7 +319,11 @@ void L1_InvalidateDCache_by_Addr(void * addr, int32_t op_size)
 		uintptr_t op_mva = (uintptr_t) addr;
 		do
 		{
+#if __aarch64__
+			__set_DCIVAC(op_mva);	// Invalidate data cache line by address.
+#else /* __aarch64__ */
 			__set_DCIMVAC(op_mva);	// Invalidate data cache line by address.
+#endif /* __aarch64__ */
 			op_mva += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
@@ -339,18 +331,28 @@ void L1_InvalidateDCache_by_Addr(void * addr, int32_t op_size)
 	}
 }
 
+static uint32_t get_ctr(void)
+{
+#if __aarch64__
+	const uint32_t v = __get_CTR_EL0();
+#else /* __aarch64__ */
+	const uint32_t v = __get_CTR();
+#endif /* __aarch64__ */
+	return v;
+}
+
 int_fast32_t dcache_rowsize(void)
 {
-	const uint32_t v = __get_CTR();
+	const uint32_t v = get_ctr();
 	const uint32_t DminLine = (v >> 16) & 0x0F;	// Log2 of the number of words in the smallest cache line of all the data caches and unified caches that are controlled by the processor
-	return 4 << DminLine;
+	return INT32_C(4) << DminLine;
 }
 
 int_fast32_t icache_rowsize(void)
 {
-	const uint32_t v = __get_CTR();
+	const uint32_t v = get_ctr();
 	const uint32_t IminLine = (v >> 0) & 0x0F;	// Log2 of the number of words in the smallest cache line of all the instruction caches and unified caches that are controlled by the processor
-	return 4 << IminLine;
+	return INT32_C(4) << IminLine;
 }
 
 #if (__L2C_PRESENT == 1)

@@ -2672,7 +2672,6 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
 
    PRINTF(PSTR(" WR1:%x "), SDMMC1->RESP1);
  	dcache_clean_invalidate((uintptr_t) buffer, 512 * size);	// Сейчас эту память будем записывать по DMA, потом содержимое не требуется
-  //SCB_CleanDCache_by_Addr(buffer, size*512);
 
    //Program data length register
    SDMMC1->DLEN = size * 512;

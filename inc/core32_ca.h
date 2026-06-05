@@ -13,6 +13,18 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#if ! defined(__aarch64__)
+
+/** \brief  Get CTR
+\return		Cache Type Register value
+*/
+__STATIC_INLINE uint32_t __get_CTR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 0, 0, 1);
+	return result;
+}
+#endif
 
 #if (__ARM_ARCH == 8) && ! defined(__aarch64__)
 
