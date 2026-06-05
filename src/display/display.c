@@ -282,7 +282,7 @@ void gxdrawb_initlvgl(gxdrawb_t * db, void * layerv)
 void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t ypix, uint_fast16_t w, uint_fast16_t h, const gxstyle_t * dbstylep, const char * const * slines, unsigned nlines)
 {
 	size_t len;
-	const unifont_t * const font = dbstylep->font;
+	const unifont_t * const font = dbstylep->gfont;
 
 #if ! WITHLVGL
 	if (font == NULL)
@@ -320,7 +320,7 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 			l.align = LV_TEXT_ALIGN_RIGHT;
 			l.flag = 0*LV_TEXT_FLAG_EXPAND | LV_TEXT_FLAG_FIT;
 			l.text = s;
-			l.font = & Epson_LTDC_small;
+			l.font = dbstylep->lvglfont;
 			//PRINTF("display_string: x/y=%d/%d '%s'\n", (int) xpix, (int) xpix, s);
 			lv_draw_rect(layer, & d, & coords);
 			lv_draw_label(layer, & l, & coords);
@@ -478,7 +478,7 @@ pix_display_value_big(
 // вывести единственный символ
 static uint_fast16_t display_put_char(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
 {
-	const unifont_t * const font = dbstyle->font;
+	const unifont_t * const font = dbstyle->gfont;
 	if (font == NULL)
 		return x;
 	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
@@ -500,7 +500,7 @@ pix_display_value_small(
 	const gxstyle_t * dbstylep	/* foreground and background colors, text alignment */
 	)
 {
-	const unifont_t * const font = dbstylep->font;
+	const unifont_t * const font = dbstylep->gfont;
 //	if (width > ARRAY_SIZE(vals10))
 //		width = ARRAY_SIZE(vals10);
 	const uint_fast8_t wsign = (width & WSIGNFLAG) != 0;
@@ -1747,6 +1747,7 @@ void display_do_AA(
 	uint_fast16_t height
 	)
 {
+	ASSERT(db);
 	//PRINTF("display_do_AA: col=%u, row=%u, widt=%u, height=%u\n", col, row, width, height);
 	if (width < 2 || height < 2)
 		return;	// обрабатывать нечего
@@ -1798,28 +1799,38 @@ void display_do_AA(
 void
 display_text(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t xspan, uint_fast8_t yspan, const gxstyle_t * dbstylep)
 {
+	ASSERT(db);
 	pix_display_texts(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), dbstylep, & s, 1);
 }
 
-void gxstyle_setfont(gxstyle_t * dbstyle, const unifont_t * font)
+void gxstyle_setfont(gxstyle_t * dbstyle, const unifont_t * font, const void * lvglfont)
 {
-	dbstyle->font = font;
+	ASSERT(dbstyle);
+	ASSERT(font);
+	dbstyle->gfont = font;
+#if WITHLVGL
+	ASSERT(lvglfont);
+	dbstyle->lvglfont = lvglfont;
+#endif /* WITHLVGL */
 }
 
 // уменьшение размера плашки
 void gxstyle_setbgbackoff(gxstyle_t * dbstyle, unsigned x, unsigned y)
 {
+	ASSERT(dbstyle);
 	dbstyle->bgbackoffw = x;	// уменьшение размера плашки по горизонтали
 	dbstyle->bgbackoffh = y;	// уменьшение размера плашки по вертикали
 }
 
 void gxstyle_setbgradius(gxstyle_t * dbstyle, unsigned r)
 {
+	ASSERT(dbstyle);
 	dbstyle->bgradius = r;
 }
 
 void gxstyle_setbgrfilled(gxstyle_t * dbstyle, unsigned f)
 {
+	ASSERT(dbstyle);
 	dbstyle->bgfilled = f;
 }
 
@@ -1827,9 +1838,14 @@ void gxstyle_setbgrfilled(gxstyle_t * dbstyle, unsigned f)
 
 void gxstyle_initialize(gxstyle_t * dbstyle)
 {
+	ASSERT(dbstyle);
 	memset(dbstyle, 0, sizeof * dbstyle);
 	gxstyle_textcolor(dbstyle, COLORPIP_WHITE, COLORPIP_BLACK);
-	gxstyle_setfont(dbstyle, & unifont_small);
+#if WITHLVGL
+	gxstyle_setfont(dbstyle, & unifont_small, & Epson_LTDC_small);
+#else /* WITHLVGL */
+	gxstyle_setfont(dbstyle, & unifont_small, NULL);
+#endif /* WITHLVGL */
 	gxstyle_texthalign(dbstyle, GXSTYLE_HALIGN_RIGHT);
 	gxstyle_textvalign(dbstyle, GXSTYLE_VALIGN_CENTER);
 	gxstyle_setbgradius(dbstyle, display2_gettileradius());
@@ -1840,6 +1856,7 @@ void gxstyle_initialize(gxstyle_t * dbstyle)
 
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg)
 {
+	ASSERT(dbstyle);
 #if ! LCDMODE_LTDC_L24
 	dbstyle->textcolor = fg;
 	dbstyle->bgcolor = bg;
@@ -1857,10 +1874,12 @@ void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg)
 
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a)
 {
+	ASSERT(dbstyle);
 	dbstyle->texthalign = a;
 }
 
 void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a)
 {
+	ASSERT(dbstyle);
 	dbstyle->textvalign = a;
 }

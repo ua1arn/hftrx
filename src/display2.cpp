@@ -10008,14 +10008,19 @@ static void display2_stylesupdate(void)
 	gxstyle_textcolor(& dbstylev_2state [0], DSGN_LABELINACTIVETEXT, DSGN_LABELINACTIVEBACK);
 	gxstyle_initialize(& dbstylev_2state [1]);
 	gxstyle_textcolor(& dbstylev_2state [1], DSGN_LABELACTIVETEXT, DSGN_LABELACTIVEBACK);
-	// Параметры отображения состояний из двух вариантов
 
+	// Параметры отображения состояний из двух вариантов (маленьким шрифтом)
 	gxstyle_initialize(& dbstylev_2stateSmall [0]);
 	gxstyle_initialize(& dbstylev_2stateSmall [1]);
 	gxstyle_textcolor(& dbstylev_2stateSmall [0], DSGN_LABELINACTIVETEXT, DSGN_LABELINACTIVEBACK);
 	gxstyle_textcolor(& dbstylev_2stateSmall [1], DSGN_LABELACTIVETEXT, DSGN_LABELACTIVEBACK);
-	gxstyle_setfont(& dbstylev_2stateSmall [0], & unifont_small2);	// may be used unifont_gothic_12x16p
-	gxstyle_setfont(& dbstylev_2stateSmall [1], & unifont_small2);
+#if WITHLVGL
+	gxstyle_setfont(& dbstylev_2stateSmall [0], & unifont_small2, & Epson_LTDC_small2);	// may be used unifont_gothic_12x16p
+	gxstyle_setfont(& dbstylev_2stateSmall [1], & unifont_small2, & Epson_LTDC_small2);
+#else /* WITHLVGL */
+	gxstyle_setfont(& dbstylev_2stateSmall [0], & unifont_small2, NULL);	// may be used unifont_gothic_12x16p
+	gxstyle_setfont(& dbstylev_2stateSmall [1], & unifont_small2, NULL);
+#endif /* WITHLVGL */
 	gxstyle_texthalign(& dbstylev_2stateSmall [0], GXSTYLE_HALIGN_LEFT);
 	gxstyle_texthalign(& dbstylev_2stateSmall [1], GXSTYLE_HALIGN_LEFT);
 
