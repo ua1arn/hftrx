@@ -269,11 +269,11 @@ int_fast32_t icache_rowsize(void)
 // 	see Terms used in describing the maintenance operations on page B2-1272.
 // 	When the data is stated to be an MVA, it does not have to be cache line aligned.
 
-void L1_CleanDCache_by_Addr(void * addr, int32_t op_size)
+void L1_CleanDCache_by_Addr(void * addr, int32_t dsize)
 {
-	if (op_size > 0)
+	if (dsize > 0)
 	{
-		//int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
 		uintptr_t op_mva = (uintptr_t) addr;
 		__DSB();
 		do
@@ -290,11 +290,11 @@ void L1_CleanDCache_by_Addr(void * addr, int32_t op_size)
 	}
 }
 
-void L1_CleanInvalidateDCache_by_Addr(void * addr, int32_t op_size)
+void L1_CleanInvalidateDCache_by_Addr(void * addr, int32_t dsize)
 {
-	if (op_size > 0)
+	if (dsize > 0)
 	{
-		//int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
 		uintptr_t op_mva = (uintptr_t) addr;
 		__DSB();
 		do
@@ -311,11 +311,11 @@ void L1_CleanInvalidateDCache_by_Addr(void * addr, int32_t op_size)
 	}
 }
 
-void L1_InvalidateDCache_by_Addr(void * addr, int32_t op_size)
+void L1_InvalidateDCache_by_Addr(void * addr, int32_t dsize)
 {
-	if (op_size > 0)
+	if (dsize > 0)
 	{
-		//int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
 		uintptr_t op_mva = (uintptr_t) addr;
 		do
 		{
