@@ -7790,7 +7790,12 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 // подготовка изображения спектра и волрада
 static void display2_gcombo(const gxdrawb_t * db, uint_fast8_t xgrid, uint_fast8_t ygrid, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
+	const uint_fast16_t x0pix = GRID2X(xgrid);
+	const uint_fast16_t y0pix = GRID2Y(xgrid);
+	const uint_fast16_t alldx = GRID2X(xspan);
+	const uint_fast16_t alldy = GRID2Y(yspan);
 	const uint_fast8_t hspectrum = (uint_fast16_t) yspan * glob_spectrumpart / 100;
+	const uint_fast16_t hspectrumpix = (uint_fast32_t) alldy * glob_spectrumpart / 100;
 	switch (glob_view_style)
 	{
 #if WITHVIEW_3DSS
@@ -9367,7 +9372,9 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 		uint_fast8_t y = layer.border_box.top() / 5;
 		uint_fast8_t w = layer.border_box.width / 16;
 		uint_fast8_t h = layer.border_box.height / 5;
-		display2_gcombo(db, x, y, w, h, NULL);
+		PRINTF("draw_image: %s: x/y=%f/%f, w/h=%f/%f\n", url.c_str(), layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height);
+		PRINTF("draw_image: %s: x/y=%u/%u, w/h=%u/%u\n", url.c_str(), x, y, w, h);
+		//display2_gcombo(db, x, y, w, h, NULL);
 
 	}
 	else
