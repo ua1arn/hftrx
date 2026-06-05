@@ -9993,7 +9993,7 @@ static uint_fast8_t grtcstrobe;
 static uint_fast8_t grtcstrobe_shadow;
 
 static const struct paramdefdef xgrtcyear = {
-	QLABEL("TM YEAR"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL2("TM YEAR", "Year"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	2015, 2099,
 	MENUNONVRAM,
@@ -10003,7 +10003,7 @@ static const struct paramdefdef xgrtcyear = {
 	getzerobase, /* складывается со смещением и отображается */
 };
 static const struct paramdefdef xgrtcmonth = {
-	QLABEL("TM MONTH"), 7, 3, RJ_CB,	ISTEP1,
+	QLABEL2("TM MONTH", "Month"), 7, 3, RJ_CB,	ISTEP1,
 	ITEM_VALUE | ITEM_LISTSELECT,
 	1, 12,
 	MENUNONVRAM,
@@ -10014,7 +10014,7 @@ static const struct paramdefdef xgrtcmonth = {
 	getvaltextmonth, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgrtcday = {
-	QLABEL("TM DAY"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL2("TM DAY", "Day"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	1, 31,
 	MENUNONVRAM,
@@ -10024,7 +10024,7 @@ static const struct paramdefdef xgrtcday = {
 	getzerobase, /* складывается со смещением и отображается */
 };
 static const struct paramdefdef xgrtchour = {
-	QLABEL("TM HOUR"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL2("TM HOUR", "Hour"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	0, 23,
 	MENUNONVRAM,
@@ -10035,7 +10035,7 @@ static const struct paramdefdef xgrtchour = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgrtcmin = {
-	QLABEL("TM MIN"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL2("TM MIN", "Minute"), 7, 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	0, 59,
 	MENUNONVRAM,
@@ -10046,7 +10046,7 @@ static const struct paramdefdef xgrtcmin = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgrtcstrobe = {
-	QLABEL("TM SET"), 7, 3, RJ_YES,	ISTEP1,
+	QLABEL2("TM SET", "Set"), 7, 3, RJ_YES,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	MENUNONVRAM,
