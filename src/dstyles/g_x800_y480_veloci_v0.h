@@ -142,11 +142,6 @@ static const dzone_t dzones [] =
 	//{	24, 30,	10,	5,	display2_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
 	//{	36, 30,	8,	5,	display2_freqdelta8, & dzi_default, PGALL, },	// выход ЧМ демодулятора
 
-#if 1
-	// Middle bar
-	{	0, MIDMENU,	BDTH_ALLRX,	8,	display2_midbar,  & dzi_compat, PG0, },
-#endif
-
 	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_wfl_init,		NULL,	PGINI, },	// формирование палитры водопада
 	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_latchcombo,	NULL,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 	{	0,	DLES,	BDTH_ALLRX,	DLEB - DLES - 1,	display2_gcombo,		& dzi_gcombo, PGWFL | PGSPE, },// подготовка изображения спектра и волрада
@@ -164,10 +159,12 @@ static const dzone_t dzones [] =
 	//{	28, DLEB,	10,	5,	display2_freqmeter10, 	& dzi_default, PGALL, },	// измеренная частота опоры
 
 #if WITHMENU
-	{	0,				DLEM,	BDTH_ALLRX, (DLEB - DLEM) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+	{	0, DLEM,	BDTH_ALLRX, (DLEB - DLEM) - 1, display2_multilinemenu_block,	& dzi_compat, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 #if WITHAUTOTUNER
-	{	29, 			DLEB,	21,	5,	display2_swrsts20,	& dzi_compat, REDRSUBSET_MENU, },	// SWR METER display
+	{	29, DLEB,	21,	5,			display2_swrsts20,	& dzi_compat, REDRSUBSET_MENU, },	// SWR METER display
 #endif /* WITHAUTOTUNER */
+	// Middle bar
+	{	0, MIDMENU,	BDTH_ALLRX,	8,	display2_midbar,  & dzi_compat, PG0, },
 #endif /* WITHMENU */
 
 	// sleep mode display
