@@ -164,7 +164,7 @@ static const dzone_t dzones [] =
 	{	29, DLEB,	21,	5,			display2_swrsts20,	& dzi_compat, REDRSUBSET_MENU, },	// SWR METER display
 #endif /* WITHAUTOTUNER */
 	// Middle bar
-	{	0, MIDMENU,	BDTH_ALLRX,	8,	display2_midbar,  & dzi_compat, PG0, },
+	{	0, MIDMENU,	BDTH_ALLRX,	8,	display2_midbar,  	& dzi_compat, PG0, },
 #endif /* WITHMENU */
 
 	// sleep mode display
