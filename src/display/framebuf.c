@@ -3412,9 +3412,9 @@ colpip_mem_at_debug(
 	{
 		PRINTF("colpip_mem_at(%s/%d): dx=%u, dy=%u, x=%d, y=%d\n", file, line, db->dx, db->dy, x, y);
 	}
-	ASSERT(x < db->dx);
-	ASSERT(y < db->dy);
-	ASSERT(db->buffer != NULL);
+	ASSERT2(x < db->dx, file, line);
+	ASSERT2(y < db->dy, file, line);
+	ASSERT2(db->buffer != NULL, file, line);
 
 	return & db->buffer [y * GXADJ(db->dx) + x];
 }
@@ -3787,14 +3787,16 @@ void colpip_fill(
 
 
 // поставить цветную точку.
-void colpip_point(
+void (colpip_point_debug)(
 	const gxdrawb_t * db,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T color
+	COLORPIP_T color,
+	const char * file,
+	int line
 	)
 {
-	* colpip_mem_at(db, col, row) = color;
+	* colpip_mem_at_debug(db, col, row, file, line) = color;
 }
 
 // поставить цветную точку (модификация с сохранением старого изоьражения).

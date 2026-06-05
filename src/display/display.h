@@ -295,12 +295,22 @@ void colpip_rect(
 	);
 
 // Поставить цветную точку.
-void colpip_point(
+void (colpip_point)(
 	const gxdrawb_t * db,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORPIP_T color
 	);
+void (colpip_point_debug)(
+	const gxdrawb_t * db,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORPIP_T color,
+	const char * file,
+	int line
+	);
+// Поставить цветную точку.
+#define colpip_point(db, col, row, color) do { colpip_point_debug((db), (col), (row), (color), __FILE__, __LINE__); } while (0)
 
 // поставить цветную точку (модификация с сохранением старого изоьражения).
 void colpip_point_xor(
