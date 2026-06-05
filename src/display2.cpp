@@ -783,18 +783,8 @@ static lv_obj_t * dzi_create_3dss(lv_obj_t * parent, const struct dzone * dzp, c
 // отображение водопада/спектра/3DSS
 static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
-#if 0
-	lv_obj_t * const lbl = lv_wtrf_create(parent);
-
-	lv_obj_add_style(lbl, & xxdivstyle, 0);
-	lv_obj_add_style(lbl, & xxscopestyle, 0);
-
-	uiupdates(lbl);
-	return lbl;
-#else
-
-    static int32_t col_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };				// занимаем всю ширину родителя
-    static int32_t row_dsc[] = { LV_GRID_FR(2), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
+    static const int32_t col_dsc[] = { LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST };				// занимаем всю ширину родителя
+    static const int32_t row_dsc[] = { LV_GRID_FR(2), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST };	// занимаем 1/2 высоты родителя
 
     lv_obj_t * cont = lv_obj_create(parent);
     lv_obj_set_style_grid_column_dsc_array(cont, col_dsc, 0);
@@ -814,7 +804,6 @@ static lv_obj_t * dzi_create_gcombo(lv_obj_t * parent, const struct dzone * dzp,
 
 	uiupdates(cont);
 	return cont;
-#endif
 }
 
 static lv_obj_t * dzi_create_middlemenu(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
@@ -8026,7 +8015,7 @@ static void lv_sscp3dss_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
 	const lv_event_code_t code = lv_event_get_code(e);
-    LV_ASSERT_OBJ(obj, MY_CLASS_3DSS);
+    LV_CHECK_OBJ(obj, MY_CLASS_3DSS, return);
 
     if (LV_EVENT_DRAW_MAIN == code)
     {
@@ -8052,11 +8041,11 @@ static void lv_sscp3dss_size_changed_event_cb(lv_event_t * e)
 {
     lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
 	lv_sscp3dss_t * const sscp3dss = (lv_sscp3dss_t *) obj;
-    //PRINTF("sscp3dss size changed: w/h=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords));
 
     lv_area_t coords;
     lv_obj_get_coords(obj, & coords);	// координаты объекта
 	const int_fast32_t h = lv_area_get_height(& coords);
+    PRINTF("sscp3dss size changed: w/h=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords));
 
 	// Формирование градиента в требуемой высоте
     lv_obj_t * gradcanvas = lv_canvas_create(obj);
@@ -8372,7 +8361,7 @@ static void lv_info_event(const lv_obj_class_t * class_p, lv_event_t * e)
     LV_UNUSED(class_p);
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
 	const lv_event_code_t code = lv_event_get_code(e);
-    LV_ASSERT_OBJ(obj, MY_CLASS_INFO);
+    LV_CHECK_OBJ(obj, MY_CLASS_INFO, return);
 
     // текст обновляем перед отрисовкой
     if (LV_EVENT_DRAW_MAIN_BEGIN == code)
@@ -8494,7 +8483,7 @@ static void lv_smtr2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
 	const lv_event_code_t code = lv_event_get_code(e);
-    LV_ASSERT_OBJ(obj, MY_CLASS_SMTR2);
+    LV_CHECK_OBJ(obj, MY_CLASS_SMTR2, return);
 
     if (LV_EVENT_ROTARY == code)
     {
@@ -8524,7 +8513,7 @@ static void lv_compat_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
 	const lv_event_code_t code = lv_event_get_code(e);
-    LV_ASSERT_OBJ(obj, MY_CLASS_COMPAT);
+    LV_CHECK_OBJ(obj, MY_CLASS_COMPAT, return);
 
     if (LV_EVENT_DRAW_MAIN == code)
     {
@@ -8548,7 +8537,7 @@ static void lv_wtrf2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
 	const lv_event_code_t code = lv_event_get_code(e);
-    LV_ASSERT_OBJ(obj, MY_CLASS_WTRF2);
+    LV_CHECK_OBJ(obj, MY_CLASS_WTRF2, return);
 
     if (LV_EVENT_DRAW_MAIN == code)
     {
@@ -8594,9 +8583,9 @@ lv_obj_t * lv_sscp2_create(lv_obj_t * parent)
 
 static void lv_sscp2_size_changed_event_cb(lv_event_t * e)
 {
+    return;	// FIXME
     lv_obj_t * const obj = (lv_obj_t *) lv_event_get_target(e);
 	lv_sscp2_t * const sscp2 = (lv_sscp2_t *) obj;
-    //PRINTF("sscp2 size changed: w/h=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords));
 
     lv_area_t coords;
     lv_obj_get_coords(obj, & coords);	// координаты объекта
@@ -8605,6 +8594,7 @@ static void lv_sscp2_size_changed_event_cb(lv_event_t * e)
 	// Формирование градиента в требуемой высоте
     lv_obj_t * gradcanvas = lv_canvas_create(obj);
     lv_obj_add_flag(gradcanvas, LV_OBJ_FLAG_HIDDEN);
+    PRINTF("sscp2 size changed: w/h=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords));
 
     lv_canvas_set_draw_buf(gradcanvas, & sscp2->gdrawb);
     lv_layer_t layer;
@@ -8988,7 +8978,7 @@ static void lv_sscp2_event(const lv_obj_class_t * class_p, lv_event_t * e) {
 
     lv_obj_t  * const obj = (lv_obj_t *) lv_event_get_target(e);
 	const lv_event_code_t code = lv_event_get_code(e);
-    LV_ASSERT_OBJ(obj, MY_CLASS_SSCP2);
+    LV_CHECK_OBJ(obj, MY_CLASS_SSCP2, return);
 
     if (LV_EVENT_DRAW_MAIN == code)
     {

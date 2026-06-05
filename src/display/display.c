@@ -70,9 +70,6 @@ void display_bar(
 		colpip_fillrect(db, x + wmark, y, 	1, h, 				dbstyle->textcolor);
 }
 
-#if 1//! WITHLVGL
-
-
 // Выдать один цветной пиксель (фон/символ)
 static void
 ltdc_pixel(
@@ -86,10 +83,6 @@ ltdc_pixel(
 	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
 	* tgr = v ? dbstyle->textcolor : dbstyle->bgcolor;
 }
-
-
-#endif /* ! WITHLVGL */
-
 
 /* аппаратный сброс дисплея - перед инициализаций */
 void
@@ -220,7 +213,7 @@ void display_lvgl_initialize(void)
 				LV_DISPLAY_RENDER_MODE_DIRECT);
 	    //lv_display_set_3rd_draw_buffer(disp, & dbuf_3_3);
 	    lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
-	    lv_display_set_antialiasing(disp, false);
+	    //lv_display_set_antialiasing(disp, false);
 
 	    lv_obj_t * const obj = lv_label_create(lv_display_get_screen_active(disp));
 	    lv_label_set_text_static(obj, "LCD/LVDS display");
@@ -253,7 +246,7 @@ void display_lvgl_initialize(void)
 				LV_DISPLAY_RENDER_MODE_DIRECT);
 	    //lv_display_set_3rd_draw_buffer(disp, & dbuf_3_3);
 	    lv_display_set_color_format(disp, (lv_color_format_t) display_get_lvformat());
-	    lv_display_set_antialiasing(disp, false);
+	    //lv_display_set_antialiasing(disp, false);
 
 	    lv_obj_t * const obj = lv_label_create(lv_display_get_screen_active(disp));
 	    lv_label_set_text_static(obj, "HDMI display");

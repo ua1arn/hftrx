@@ -20379,9 +20379,9 @@ dpc_displatch_timer_fn(void * ctx)
 {
 	(void) ctx;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+	//IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 	display2_latch();
-	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
+	//IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 }
 
 // User-mode function. Вызывается для выполнения latch спектра и панорамы

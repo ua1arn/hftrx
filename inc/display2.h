@@ -157,15 +157,12 @@ uint_fast8_t display_getpagegui(void);
 
 #include "lvgl.h"
 #include "../demos/lv_demos.h"
-#include "layouts/grid/lv_grid.h"
 //#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
 
 #include "core/lv_obj_private.h"
 #include "core/lv_obj_class_private.h"
 #include "widgets/label/lv_label_private.h"
 #include "widgets/image/lv_image_private.h"
-#include "layouts/grid/lv_grid.h"
-#include "misc/lv_event.h"
 
 void styles_init(void);	// инициализация стилей, используемых объектами главного окна
 void lvgl_test(void);	// создание элементов на главном окне

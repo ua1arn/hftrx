@@ -6727,7 +6727,6 @@ static void lidar_parse(unsigned char c)
 
 #include "lvgl.h"
 #include "../demos/lv_demos.h"
-#include "layouts/grid/lv_grid.h"
 //#include "../demos/vector_graphic/lv_demo_vector_graphic.h"
 //#include "src/lvgl_gui/styles.h"
 
