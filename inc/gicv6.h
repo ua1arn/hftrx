@@ -1139,6 +1139,119 @@ __STATIC_INLINE uint32_t GIC_GetGroup(IRQn_Type IRQn)
 }
 #define GIC_GetSecurity         GIC_GetGroup
 
+
+
+
+/* ctrl register access in non-secure */
+#define GICD_CTLR_RWP     31
+#define GICD_CTLR_ARE_NS  4
+#define GICD_CTLR_ENGRP1A 1
+#define GICD_CTLR_ENGRP1  0
+
+#define GICR_CTLR_RWP 3
+
+enum gic_rwp {
+    GICD_RWP,
+    GICR_RWP,
+};
+
+#define GICV6_BIT(pos) (UINT32_C(1) << (pos))
+
+/** \brief Get the Redistributor base.
+*/
+__STATIC_INLINE GICRedistributor_Type *GIC_GetRdist(void)
+{
+#if 1
+	return (GICRedistributor_Type *) GICR0_BASE;
+#else
+    uintptr_t rd_addr = GIC_REDISTRIBUTOR_BASE;
+    uint32_t rd_aff, aff = GIC_MPIDRtoAffinity();
+    uint64_t rd_typer;
+
+  do {
+        rd_typer = ((GICRedistributor_Type *)rd_addr)->TYPER;
+        rd_aff = rd_typer >> GICR_TYPER_AFF_SHIFT;
+
+        if (rd_aff == aff)
+            return (GICRedistributor_Type *)rd_addr;
+
+        rd_addr += GIC_REDISTRIBUTOR_STRIDE;
+    } while (!(rd_typer & GICR_TYPER_LAST_MASK));
+
+    return NULL;
+#endif
+}
+
+/** \brief Wait for register write pending.
+*/
+__STATIC_INLINE void GIC_WaitRWP(enum gic_rwp rwp)
+{
+	volatile int ii;
+	for (ii = 10000000; ii --;) __NOP();
+	return;
+    uint32_t rwp_mask;
+    uint32_t __IM *base;
+
+  if (rwp == GICR_RWP) {
+        base = &GIC_GetRdist()->CTLR;
+        if (!base)
+            return;
+        rwp_mask = GICV6_BIT(GICR_CTLR_RWP);
+  } else if (rwp == GICD_RWP) {
+        base = &GICDistributor->CTLR;
+        rwp_mask = GICV6_BIT(GICD_CTLR_RWP);
+  } else {
+        return;
+    }
+
+    while (*base & rwp_mask)
+        ;
+}
+
+/** \brief Initialize the interrupt distributor.
+*/
+__STATIC_INLINE void GIC_DistInitZ(void)
+{
+    uint32_t i;
+    uint32_t num_irq = 0U;
+    uint32_t priority_field;
+    uint32_t ppi_priority;
+
+  //A reset sets all bits in the IGROUPRs corresponding to the SPIs to 0,
+  //configuring all of the interrupts as Secure.
+
+  //Disable interrupt forwarding
+    GIC_DisableDistributor();
+  //Get the maximum number of interrupts that the GIC supports
+    num_irq = 32U * ((GIC_DistributorInfo() & 0x1FU) + 1U);
+
+  /* Priority level is implementation defined.
+   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
+   priority field and read back the value stored.
+   Use PPI, as it is always accessible, even for a Guest OS using a hypervisor.
+   Then restore the initial state.*/
+    ppi_priority = GIC_GetPriority((IRQn_Type)31U);
+    GIC_SetPriority((IRQn_Type)31U, 0xFFU);
+    priority_field = GIC_GetPriority((IRQn_Type)31U);
+    GIC_SetPriority((IRQn_Type)31U, ppi_priority);
+
+    for (i = 32U; i < num_irq; i++)
+    {
+      /* Use non secure group1 for all SPI */
+        GIC_SetGroup((IRQn_Type) i, 1);
+      //Disable the SPI interrupt
+        GIC_DisableIRQ((IRQn_Type)i);
+      //Set level-sensitive (and N-N model)
+        GIC_SetConfiguration((IRQn_Type)i, 0U);
+      //Set priority
+      GIC_SetPriority((IRQn_Type)i, priority_field*2U/3U);
+    }
+
+  /* Enable distributor with ARE_NS and NS_Group1 */
+    GICDistributor->CTLR = ((1U << GICD_CTLR_ARE_NS) | (1U << GICD_CTLR_ENGRP1A));
+    GIC_WaitRWP(GICD_RWP);
+}
+
 /** \brief Initialize the interrupt distributor.
 */
 __STATIC_INLINE void GIC_DistInit(void)
@@ -1231,31 +1344,6 @@ __STATIC_INLINE void GIC_Enable(void)
 #define GICR_SGI_BASE_OFF        (0x10000)
 #define GICR_WAKER_PS_SHIFT (1)
 #define GICR_WAKER_CA_SHIFT (2)
-
-/** \brief Get the Redistributor base.
-*/
-__STATIC_INLINE GICRedistributor_Type *GIC_GetRdist(void)
-{
-#if 1
-	return (GICRedistributor_Type *) GICR0_BASE;
-#else
-    uintptr_t rd_addr = GIC_REDISTRIBUTOR_BASE;
-    uint32_t rd_aff, aff = GIC_MPIDRtoAffinity();
-    uint64_t rd_typer;
-
-  do {
-        rd_typer = ((GICRedistributor_Type *)rd_addr)->TYPER;
-        rd_aff = rd_typer >> GICR_TYPER_AFF_SHIFT;
-
-        if (rd_aff == aff)
-            return (GICRedistributor_Type *)rd_addr;
-
-        rd_addr += GIC_REDISTRIBUTOR_STRIDE;
-    } while (!(rd_typer & GICR_TYPER_LAST_MASK));
-
-    return NULL;
-#endif
-}
 
 /** \brief Get the Redistributor SGI_base.
 */
