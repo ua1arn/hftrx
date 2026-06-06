@@ -276,6 +276,192 @@ typedef struct
 #define GICDistributor_IROUTER_Aff3_Pos       32UL                                                 /*!< GICDistributor IROUTER: Aff3 Position */
 #define GICDistributor_IROUTER_Aff3_Msk       (0xFFUL << GICDistributor_IROUTER_Aff3_Pos)          /*!< GICDistributor IROUTER: Aff3 Mask */
 #define GICDistributor_IROUTER_Aff3(x)        (((uint64_t)(((uint64_t)(x)) << GICDistributor_IROUTER_Aff3_Pos)) & GICDistributor_IROUTER_Aff3_Msk)
+
+#endif /* GIC_DISTRIBUTOR_BASE */
+
+#if defined (GIC_DISTRIBUTOR_BASE)
+
+__STATIC_FORCEINLINE void GIC_DistributorWait(void)
+{
+	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
+		;
+}
+
+/** \brief  Enable the interrupt distributor using the GIC's CTLR register.
+*/
+__STATIC_INLINE void GIC_EnableDistributor(void)
+{
+  GICDistributor->CTLR |= 1U;
+  GIC_DistributorWait();
+}
+
+/** \brief Disable the interrupt distributor using the GIC's CTLR register.
+*/
+__STATIC_INLINE void GIC_DisableDistributor(void)
+{
+  GICDistributor->CTLR &=~1U;
+  GIC_DistributorWait();
+}
+
+/** \brief Read the GIC's TYPER register.
+* \return GICDistributor_Type::TYPER
+*/
+__STATIC_INLINE uint32_t GIC_DistributorInfo(void)
+{
+  return (GICDistributor->TYPER);
+}
+
+/** \brief Reads the GIC's IIDR register.
+* \return GICDistributor_Type::IIDR
+*/
+__STATIC_INLINE uint32_t GIC_DistributorImplementer(void)
+{
+  return (GICDistributor->IIDR);
+}
+
+/** \brief Sets the GIC's ITARGETSR register for the given interrupt.
+* \param [in] IRQn Interrupt to be configured.
+* \param [in] cpu_target CPU interfaces to assign this interrupt to.
+*/
+__STATIC_INLINE void GIC_SetTarget(IRQn_Type IRQn, uint32_t cpu_target)
+{
+  uint32_t mask = GICDistributor->ITARGETSR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
+  GICDistributor->ITARGETSR[IRQn / 4U] = mask | ((cpu_target & 0xFFUL) << ((IRQn % 4U) * 8U));
+}
+
+/** \brief Read the GIC's ITARGETSR register.
+* \param [in] IRQn Interrupt to acquire the configuration for.
+* \return GICDistributor_Type::ITARGETSR
+*/
+__STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
+{
+  return (GICDistributor->ITARGETSR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+}
+
+#endif /* GIC_DISTRIBUTOR_BASE */
+
+#if defined (GIC_DISTRIBUTOR_BASE)
+
+/** \brief Enables the given interrupt using GIC's ISENABLER register.
+* \param [in] IRQn The interrupt to be enabled.
+*/
+__STATIC_INLINE void GIC_EnableIRQ(IRQn_Type IRQn)
+{
+  GICDistributor->ISENABLER[IRQn / 32U] = 1U << (IRQn % 32U);
+}
+
+/** \brief Get interrupt enable status using GIC's ISENABLER register.
+* \param [in] IRQn The interrupt to be queried.
+* \return 0 - interrupt is not enabled, 1 - interrupt is enabled.
+*/
+__STATIC_INLINE uint32_t GIC_GetEnableIRQ(IRQn_Type IRQn)
+{
+  return (GICDistributor->ISENABLER[IRQn / 32U] >> (IRQn % 32U)) & 1UL;
+}
+
+/** \brief Disables the given interrupt using GIC's ICENABLER register.
+* \param [in] IRQn The interrupt to be disabled.
+*/
+__STATIC_INLINE void GIC_DisableIRQ(IRQn_Type IRQn)
+{
+  GICDistributor->ICENABLER[IRQn / 32U] = 1U << (IRQn % 32U);
+}
+
+/** \brief Get interrupt pending status from GIC's ISPENDR register.
+* \param [in] IRQn The interrupt to be queried.
+* \return 0 - interrupt is not pending, 1 - interrupt is pendig.
+*/
+__STATIC_INLINE uint32_t GIC_GetPendingIRQ(IRQn_Type IRQn)
+{
+  uint32_t pend;
+
+  if (IRQn >= 16U) {
+    pend = (GICDistributor->ISPENDR[IRQn / 32U] >> (IRQn % 32U)) & 1UL;
+  } else {
+    // INTID 0-15 Software Generated Interrupt
+    pend = (GICDistributor->SPENDSGIR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+    // No CPU identification offered
+    if (pend != 0U) {
+      pend = 1U;
+    } else {
+      pend = 0U;
+    }
+  }
+
+  return (pend);
+}
+
+/** \brief Sets the given interrupt as pending using GIC's ISPENDR register.
+* \param [in] IRQn The interrupt to be enabled.
+*/
+__STATIC_INLINE void GIC_SetPendingIRQ(IRQn_Type IRQn)
+{
+  if (IRQn >= 16U) {
+    GICDistributor->ISPENDR[IRQn / 32U] = 1U << (IRQn % 32U);
+  } else {
+    // INTID 0-15 Software Generated Interrupt
+    // Forward the interrupt to the CPU interface that requested it
+    GICDistributor->SGIR = (IRQn | 0x02000000U);
+  }
+}
+
+/** \brief Clears the given interrupt from being pending using GIC's ICPENDR register.
+* \param [in] IRQn The interrupt to be enabled.
+*/
+__STATIC_INLINE void GIC_ClearPendingIRQ(IRQn_Type IRQn)
+{
+  if (IRQn >= 16U) {
+    GICDistributor->ICPENDR[IRQn / 32U] = 1U << (IRQn % 32U);
+  } else {
+    // INTID 0-15 Software Generated Interrupt
+    GICDistributor->CPENDSGIR[IRQn / 4U] = 1U << ((IRQn % 4U) * 8U);
+  }
+}
+
+/** \brief Sets the interrupt configuration using GIC's ICFGR register.
+* \param [in] IRQn The interrupt to be configured.
+* \param [in] int_config Int_config field value. Bit 0: Reserved (0 - N-N model, 1 - 1-N model for some GIC before v1)
+*                                           Bit 1: 0 - level sensitive, 1 - edge triggered
+*/
+__STATIC_INLINE void GIC_SetConfiguration(IRQn_Type IRQn, uint32_t int_config)
+{
+  uint32_t icfgr = GICDistributor->ICFGR[IRQn / 16U];  /* read current register content */
+  uint32_t shift = (IRQn % 16U) << 1U;                 /* calculate shift value */
+
+  int_config &= 3U;                                    /* only 2 bits are valid */
+  icfgr &= (~(3U         << shift));                   /* clear bits to change */
+  icfgr |= (  int_config << shift);                    /* set new configuration */
+
+  GICDistributor->ICFGR[IRQn / 16U] = icfgr;           /* write new register content */
+}
+
+/** \brief Get the interrupt configuration from the GIC's ICFGR register.
+* \param [in] IRQn Interrupt to acquire the configuration for.
+* \return Int_config field value. Bit 0: Reserved (0 - N-N model, 1 - 1-N model for some GIC before v1)
+*                                 Bit 1: 0 - level sensitive, 1 - edge triggered
+*/
+__STATIC_INLINE uint32_t GIC_GetConfiguration(IRQn_Type IRQn)
+{
+  return (GICDistributor->ICFGR[IRQn / 16U] >> ((IRQn % 16U) << 1U)) & 3UL;
+}
+
+/** \brief Set the priority for the given interrupt in the GIC's IPRIORITYR register.
+* \param [in] IRQn The interrupt to be configured.
+* \param [in] priority The priority for the interrupt, lower values denote higher priorities.
+*/
+__STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
+{
+  uint32_t mask = GICDistributor->IPRIORITYR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
+  GICDistributor->IPRIORITYR[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
+}
+
+/** \brief Read the current interrupt priority from GIC's IPRIORITYR register.
+* \param [in] IRQn The interrupt to be queried.
+*/
+__STATIC_INLINE uint32_t GIC_GetPriority(IRQn_Type IRQn)
+{
+  return (GICDistributor->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+}
 #endif /* GIC_DISTRIBUTOR_BASE */
 
 #if defined (GIC_INTERFACE_BASE)
@@ -407,67 +593,6 @@ typedef struct
 
 #endif /* GIC_INTERFACE_BASE */
 
-
-#if defined (GIC_DISTRIBUTOR_BASE)
-
-__STATIC_FORCEINLINE void GIC_DistributorWait(void)
-{
-	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
-		;
-}
-
-/** \brief  Enable the interrupt distributor using the GIC's CTLR register.
-*/
-__STATIC_INLINE void GIC_EnableDistributor(void)
-{
-  GICDistributor->CTLR |= 1U;
-  GIC_DistributorWait();
-}
-
-/** \brief Disable the interrupt distributor using the GIC's CTLR register.
-*/
-__STATIC_INLINE void GIC_DisableDistributor(void)
-{
-  GICDistributor->CTLR &=~1U;
-  GIC_DistributorWait();
-}
-
-/** \brief Read the GIC's TYPER register.
-* \return GICDistributor_Type::TYPER
-*/
-__STATIC_INLINE uint32_t GIC_DistributorInfo(void)
-{
-  return (GICDistributor->TYPER);
-}
-
-/** \brief Reads the GIC's IIDR register.
-* \return GICDistributor_Type::IIDR
-*/
-__STATIC_INLINE uint32_t GIC_DistributorImplementer(void)
-{
-  return (GICDistributor->IIDR);
-}
-
-/** \brief Sets the GIC's ITARGETSR register for the given interrupt.
-* \param [in] IRQn Interrupt to be configured.
-* \param [in] cpu_target CPU interfaces to assign this interrupt to.
-*/
-__STATIC_INLINE void GIC_SetTarget(IRQn_Type IRQn, uint32_t cpu_target)
-{
-  uint32_t mask = GICDistributor->ITARGETSR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
-  GICDistributor->ITARGETSR[IRQn / 4U] = mask | ((cpu_target & 0xFFUL) << ((IRQn % 4U) * 8U));
-}
-
-/** \brief Read the GIC's ITARGETSR register.
-* \param [in] IRQn Interrupt to acquire the configuration for.
-* \return GICDistributor_Type::ITARGETSR
-*/
-__STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
-{
-  return (GICDistributor->ITARGETSR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
-}
-#endif /* GIC_DISTRIBUTOR_BASE */
-
 #if defined (GIC_INTERFACE_BASE)
 
 /** \brief Enable the CPU's interrupt interface.
@@ -499,131 +624,8 @@ __STATIC_INLINE void GIC_EndInterrupt(IRQn_Type IRQn)
 {
   GICInterface->EOIR = IRQn;
 }
+
 #endif /* GIC_INTERFACE_BASE */
-
-#if defined (GIC_DISTRIBUTOR_BASE)
-
-/** \brief Enables the given interrupt using GIC's ISENABLER register.
-* \param [in] IRQn The interrupt to be enabled.
-*/
-__STATIC_INLINE void GIC_EnableIRQ(IRQn_Type IRQn)
-{
-  GICDistributor->ISENABLER[IRQn / 32U] = 1U << (IRQn % 32U);
-}
-
-/** \brief Get interrupt enable status using GIC's ISENABLER register.
-* \param [in] IRQn The interrupt to be queried.
-* \return 0 - interrupt is not enabled, 1 - interrupt is enabled.
-*/
-__STATIC_INLINE uint32_t GIC_GetEnableIRQ(IRQn_Type IRQn)
-{
-  return (GICDistributor->ISENABLER[IRQn / 32U] >> (IRQn % 32U)) & 1UL;
-}
-
-/** \brief Disables the given interrupt using GIC's ICENABLER register.
-* \param [in] IRQn The interrupt to be disabled.
-*/
-__STATIC_INLINE void GIC_DisableIRQ(IRQn_Type IRQn)
-{
-  GICDistributor->ICENABLER[IRQn / 32U] = 1U << (IRQn % 32U);
-}
-
-/** \brief Get interrupt pending status from GIC's ISPENDR register.
-* \param [in] IRQn The interrupt to be queried.
-* \return 0 - interrupt is not pending, 1 - interrupt is pendig.
-*/
-__STATIC_INLINE uint32_t GIC_GetPendingIRQ(IRQn_Type IRQn)
-{
-  uint32_t pend;
-
-  if (IRQn >= 16U) {
-    pend = (GICDistributor->ISPENDR[IRQn / 32U] >> (IRQn % 32U)) & 1UL;
-  } else {
-    // INTID 0-15 Software Generated Interrupt
-    pend = (GICDistributor->SPENDSGIR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
-    // No CPU identification offered
-    if (pend != 0U) {
-      pend = 1U;
-    } else {
-      pend = 0U;
-    }
-  }
-
-  return (pend);
-}
-
-/** \brief Sets the given interrupt as pending using GIC's ISPENDR register.
-* \param [in] IRQn The interrupt to be enabled.
-*/
-__STATIC_INLINE void GIC_SetPendingIRQ(IRQn_Type IRQn)
-{
-  if (IRQn >= 16U) {
-    GICDistributor->ISPENDR[IRQn / 32U] = 1U << (IRQn % 32U);
-  } else {
-    // INTID 0-15 Software Generated Interrupt
-    // Forward the interrupt to the CPU interface that requested it
-    GICDistributor->SGIR = (IRQn | 0x02000000U);
-  }
-}
-
-/** \brief Clears the given interrupt from being pending using GIC's ICPENDR register.
-* \param [in] IRQn The interrupt to be enabled.
-*/
-__STATIC_INLINE void GIC_ClearPendingIRQ(IRQn_Type IRQn)
-{
-  if (IRQn >= 16U) {
-    GICDistributor->ICPENDR[IRQn / 32U] = 1U << (IRQn % 32U);
-  } else {
-    // INTID 0-15 Software Generated Interrupt
-    GICDistributor->CPENDSGIR[IRQn / 4U] = 1U << ((IRQn % 4U) * 8U);
-  }
-}
-
-/** \brief Sets the interrupt configuration using GIC's ICFGR register.
-* \param [in] IRQn The interrupt to be configured.
-* \param [in] int_config Int_config field value. Bit 0: Reserved (0 - N-N model, 1 - 1-N model for some GIC before v1)
-*                                           Bit 1: 0 - level sensitive, 1 - edge triggered
-*/
-__STATIC_INLINE void GIC_SetConfiguration(IRQn_Type IRQn, uint32_t int_config)
-{
-  uint32_t icfgr = GICDistributor->ICFGR[IRQn / 16U];  /* read current register content */
-  uint32_t shift = (IRQn % 16U) << 1U;                 /* calculate shift value */
-
-  int_config &= 3U;                                    /* only 2 bits are valid */
-  icfgr &= (~(3U         << shift));                   /* clear bits to change */
-  icfgr |= (  int_config << shift);                    /* set new configuration */
-
-  GICDistributor->ICFGR[IRQn / 16U] = icfgr;           /* write new register content */
-}
-
-/** \brief Get the interrupt configuration from the GIC's ICFGR register.
-* \param [in] IRQn Interrupt to acquire the configuration for.
-* \return Int_config field value. Bit 0: Reserved (0 - N-N model, 1 - 1-N model for some GIC before v1)
-*                                 Bit 1: 0 - level sensitive, 1 - edge triggered
-*/
-__STATIC_INLINE uint32_t GIC_GetConfiguration(IRQn_Type IRQn)
-{
-  return (GICDistributor->ICFGR[IRQn / 16U] >> ((IRQn % 16U) << 1U)) & 3UL;
-}
-
-/** \brief Set the priority for the given interrupt in the GIC's IPRIORITYR register.
-* \param [in] IRQn The interrupt to be configured.
-* \param [in] priority The priority for the interrupt, lower values denote higher priorities.
-*/
-__STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
-{
-  uint32_t mask = GICDistributor->IPRIORITYR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
-  GICDistributor->IPRIORITYR[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
-}
-
-/** \brief Read the current interrupt priority from GIC's IPRIORITYR register.
-* \param [in] IRQn The interrupt to be queried.
-*/
-__STATIC_INLINE uint32_t GIC_GetPriority(IRQn_Type IRQn)
-{
-  return (GICDistributor->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
-}
-#endif /* GIC_DISTRIBUTOR_BASE */
 
 #if defined (GIC_INTERFACE_BASE)
 /** \brief Set the interrupt priority mask using CPU's PMR register.
