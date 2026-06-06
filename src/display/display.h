@@ -227,14 +227,17 @@ typedef struct gxstyle_tag
 	uint_fast16_t bgbackoffh;	// уменьшение размера плашки по вертикали
 	enum gxstyle_texthalign	texthalign;
 	enum gxstyle_textvalign textvalign;
-	const unifont_t * font;		// Шрифт, который будет использоваться
+	const unifont_t * gfont;		// Шрифт, который будет использоваться
+#if WITHLVGL
+	const void * lvglfont;		// Шрифт, который будет использоваться
+#endif /* WITHLVGL */
 } gxstyle_t;
 
 void gxstyle_initialize(gxstyle_t * dbstyle);
 void gxstyle_textcolor(gxstyle_t * dbstyle, COLORPIP_T fg, COLORPIP_T bg);
 void gxstyle_texthalign(gxstyle_t * dbstyle, enum gxstyle_texthalign a);
 void gxstyle_textvalign(gxstyle_t * dbstyle, enum gxstyle_textvalign a);
-void gxstyle_setfont(gxstyle_t * dbstyle, const unifont_t * font);
+void gxstyle_setfont(gxstyle_t * dbstyle, const unifont_t * font, const void * lvglfont);
 void gxstyle_setbgbackoff(gxstyle_t * dbstyle, unsigned x, unsigned y);
 void gxstyle_setbgradius(gxstyle_t * dbstyle, unsigned r);
 void gxstyle_setbgrfilled(gxstyle_t * dbstyle, unsigned f);
@@ -292,12 +295,22 @@ void colpip_rect(
 	);
 
 // Поставить цветную точку.
-void colpip_point(
+void (colpip_point)(
 	const gxdrawb_t * db,
 	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
 	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORPIP_T color
 	);
+void (colpip_point_debug)(
+	const gxdrawb_t * db,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORPIP_T color,
+	const char * file,
+	int line
+	);
+// Поставить цветную точку.
+#define colpip_point(db, col, row, color) do { colpip_point_debug((db), (col), (row), (color), __FILE__, __LINE__); } while (0)
 
 // поставить цветную точку (модификация с сохранением старого изоьражения).
 void colpip_point_xor(
