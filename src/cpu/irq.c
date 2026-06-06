@@ -2911,7 +2911,7 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 // 0x280
 void __NO_RETURN VIRQ_Handler(void * frame)
 {
-	//dbg_putchar('I');
+	//while (HARDWARE_DEBUG_PUTCHAR('I') == 0) ;
 	IRQ_Handler_GIC();		// Group 1 handler
 	run_task_curr(task_scheduler(frame));
 }
@@ -2921,11 +2921,10 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 // 0x300
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
-	//dbg_putchar('F');
-#if (__CORTEX_A == 55U) && __aarch64__
-	IRQ_Handler_GIC();
-#elif (__CORTEX_A == 55U)
-	FIQ_Handler_GIC();		// Group 1 handler
+	//while (HARDWARE_DEBUG_PUTCHAR('F') == 0) ;
+#if (__CORTEX_A == 55U)
+	FIQ_Handler_GIC();
+	IRQ_Handler_GIC();		// Group 1 handler
 #else
 	IRQ_Handler_GIC();		// Group 1 handler
 #endif /* (__CORTEX_A == 55U) */
@@ -3714,11 +3713,7 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 //		ASSERT((0x03 & GIC_GetConfiguration(int_id)) == cfg);
 	}
 #endif /* ! CPUSTYLE_R7S721 */
-#if (__CORTEX_A == 55U) && __aarch64__
-	GIC_SetGroup(int_id, 1);
-#else /* (__CORTEX_A == 55U) && __aarch64__ */
 	GIC_SetGroup(int_id, 0);
-#endif /* (__CORTEX_A == 55U) && __aarch64__ */
 
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 
