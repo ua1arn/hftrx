@@ -23,47 +23,6 @@ extern "C" {
 #define __get_RG64(reg, Rt)         __ASM volatile("MRS %0, " reg : "=r" (Rt) : : "memory" )
 #define __set_RG64(reg, Rs)         __ASM volatile("MSR " reg ", %0" : : "r" (Rs) : "memory" )
 
-
- /** \brief  AArch64 System registers to access the Generic Interrupt Controller CPU interface
- */
- #if defined(__GNUC__)
-   #define ICC_BPR0_EL1           S3_0_C12_C8_3
-   #define ICC_BPR1_EL1           S3_0_C12_C12_3
-   #define ICC_CTLR_EL1           S3_0_C12_C12_4
-   #define ICC_CTLR_EL3           S3_6_C12_C12_4
-   #define ICC_EOIR0_EL1          S3_0_C12_C8_1
-   #define ICC_EOIR1_EL1          S3_0_C12_C12_1
-   #define ICC_HPPIR0_EL1         S3_0_C12_C8_2
-   #define ICC_HPPIR1_EL1         S3_0_C12_C12_2
-   #define ICC_IAR0_EL1           S3_0_C12_C8_0
-   #define ICC_IAR1_EL1           S3_0_C12_C12_0
-   #define ICC_IGRPEN0_EL1        S3_0_C12_C12_6
-   #define ICC_IGRPEN1_EL1        S3_0_C12_C12_7
-   #define ICC_IGRPEN1_EL3        S3_6_C12_C12_7
-   #define ICC_PMR_EL1            S3_0_C4_C6_0
-   #define ICC_RPR_EL1            S3_0_C12_C11_3
-   #define ICC_SGI0R_EL1          S3_0_C12_C11_7
-   #define ICC_SGI1R_EL1          S3_0_C12_C11_5
-   #define ICC_SRE_EL1            S3_0_C12_C12_5
-   #define ICC_SRE_EL2            S3_4_C12_C9_5
-   #define ICC_SRE_EL3            S3_6_C12_C12_5
- #endif /* __GNUC__ */
-
- #ifndef __STRINGIFY
-   #define __STRINGIFY(x)                         #x
- #endif
-
- #ifndef __MSR
-   #define __MSR(sysreg, val) \
-     __asm volatile ("msr " __STRINGIFY(sysreg) ", %0\n" : : "r"((uint64_t)(val)))
- #endif
-
- #ifndef __MRS
- #define __MRS(sysreg, pVal) \
-   __asm volatile ("mrs  %0, " __STRINGIFY(sysreg) "\n" : "=r"((*pVal)))
- #endif
-
-
 /**
 \brief   Send Event Local
 \details  Send Event Local is a hint instruction that causes an event to be signaled locally without requiring the event to be  signaled to other PEs in the multiprocessor system.

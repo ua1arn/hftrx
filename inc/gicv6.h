@@ -662,6 +662,31 @@ __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 
 #if defined (__aarch64__)
 
+/** \brief  AArch64 System registers to access the Generic Interrupt Controller CPU interface
+*/
+#if defined(__GNUC__)
+  #define ssICC_BPR0_EL1           S3_0_C12_C8_3
+  #define ssICC_BPR1_EL1           S3_0_C12_C12_3
+  #define ssICC_CTLR_EL1           S3_0_C12_C12_4
+  #define ssICC_CTLR_EL3           S3_6_C12_C12_4
+  #define ssICC_EOIR0_EL1          S3_0_C12_C8_1
+  #define ssICC_EOIR1_EL1          S3_0_C12_C12_1
+  #define ssICC_HPPIR0_EL1         S3_0_C12_C8_2
+  #define ssICC_HPPIR1_EL1         S3_0_C12_C12_2
+  #define ssICC_IAR0_EL1           S3_0_C12_C8_0
+  #define ssICC_IAR1_EL1           S3_0_C12_C12_0
+  #define ssICC_IGRPEN0_EL1        S3_0_C12_C12_6
+  #define ssICC_IGRPEN1_EL1        S3_0_C12_C12_7
+  #define ssICC_IGRPEN1_EL3        S3_6_C12_C12_7
+  #define ssICC_PMR_EL1            S3_0_C4_C6_0
+  #define ssICC_RPR_EL1            S3_0_C12_C11_3
+  #define ssICC_SGI0R_EL1          S3_0_C12_C11_7
+  #define ssICC_SGI1R_EL1          S3_0_C12_C11_5
+  #define ssICC_SRE_EL1            S3_0_C12_C12_5
+  #define ssICC_SRE_EL2            S3_4_C12_C9_5
+  #define ssICC_SRE_EL3            S3_6_C12_C12_5
+#endif /* __GNUC__ */
+
 #ifndef __STRINGIFY
   #define __STRINGIFY(x)                         #x
 #endif
@@ -678,147 +703,148 @@ __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 
 __STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL1(void)
 {
-	uint32_t result;
-	__MRS(ICC_SRE_EL1, & result);
+	uint64_t result;
+	__MRS(ssICC_SRE_EL1, & result);
 	return result;
 }
 
 __STATIC_FORCEINLINE void __set_ICC_SRE_EL1(uint32_t value)
 {
-	__MSR(ICC_SRE_EL1, value);
+	__MSR(ssICC_SRE_EL1, value);
 }
 
 __STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL2(void)
 {
-	uint32_t result;
-	__MRS(ICC_SRE_EL2, & result);
+	uint64_t result;
+	__MRS(ssICC_SRE_EL2, & result);
 	return result;
 }
 
 __STATIC_FORCEINLINE void __set_ICC_SRE_EL2(uint32_t value)
 {
-	__MSR(ICC_SRE_EL2, value);
+	__MSR(ssICC_SRE_EL2, value);
 }
 
 __STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL3(void)
 {
-	uint32_t result;
-	__MRS(ICC_SRE_EL3, & result);
+	uint64_t result;
+	__MRS(ssICC_SRE_EL3, & result);
 	return result;
 }
 
 __STATIC_FORCEINLINE uint32_t __get_ICC_BPR1_EL1(void)
 {
-	uint32_t result;
-	__MRS(ICC_BPR1_EL1, & result);
+	uint64_t result;
+	__MRS(ssICC_BPR1_EL1, & result);
 	return result;
 }
 
 __STATIC_FORCEINLINE uint32_t __get_ICC_BPR0_EL1(void)
 {
-	uint32_t result;
-	__MRS(ICC_BPR0_EL1, & result);
+	uint64_t result;
+	__MRS(ssICC_BPR0_EL1, & result);
 	return result;
 }
 
 __STATIC_FORCEINLINE uint32_t __get_ICC_PMR_EL1(void)
 {
-	uint32_t result;
-	__MRS(ICC_PMR_EL1, & result);
+	uint64_t result;
+	__MRS(ssICC_PMR_EL1, & result);
 	return result;
 }
 
 __STATIC_FORCEINLINE uint32_t __get_ICC_HPPIR0_EL1(void)
 {
-	uint32_t result;
-	__MRS(ICC_HPPIR0_EL1, & result);
+	uint64_t result;
+	__MRS(ssICC_HPPIR0_EL1, & result);
 	return result;
 }
 
 __STATIC_FORCEINLINE uint32_t __get_ICC_HPPIR1_EL1(void)
 {
-	uint32_t result;
-	__MRS(ICC_HPPIR1_EL1, & result);
+	uint64_t result;
+	__MRS(ssICC_HPPIR1_EL1, & result);
 	return result;
 }
 
 __STATIC_FORCEINLINE void __set_ICC_SRE_EL3(uint32_t value)
 {
-	__MSR(ICC_SRE_EL3, value);
+	__MSR(ssICC_SRE_EL3, value);
 }
 
 __STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
 {
-	__MSR(ICC_PMR_EL1, value);
+	__MSR(ssICC_PMR_EL1, value);
 }
 
 
 __STATIC_FORCEINLINE void __set_ICC_EOIR0_EL1(uint32_t value)
 {
-	__MSR(ICC_EOIR0_EL1, value);
+	__MSR(ssICC_EOIR0_EL1, value);
 }
 
 __STATIC_FORCEINLINE void __set_ICC_EOIR1_EL1(uint32_t value)
 {
-	__MSR(ICC_EOIR1_EL1, value);
+	__MSR(ssICC_EOIR1_EL1, value);
 }
 
 __STATIC_FORCEINLINE void __set_ICC_BPR0_EL1(uint32_t value)
 {
-	__MSR(ICC_BPR0_EL1, value);
+	__MSR(ssICC_BPR0_EL1, value);
 }
 
 __STATIC_FORCEINLINE void __set_ICC_BPR1_EL1(uint32_t value)
 {
-	__MSR(ICC_BPR1_EL1, value);
+	__MSR(ssICC_BPR1_EL1, value);
 }
 
 // ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
 __STATIC_FORCEINLINE void __set_ICC_CTLR_EL1(uint64_t value)
 {
-	__MSR(ICC_CTLR_EL1, value);
+	__MSR(ssICC_CTLR_EL1, value);
 }
 
 // ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
 __STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL1(void)
 {
 	uint64_t result;
-    __MRS(ICC_CTLR_EL1, &result);
+    __MRS(ssICC_CTLR_EL1, &result);
     return result;
 }
 
 __STATIC_FORCEINLINE void __set_ICC_CTLR_EL3(uint64_t value)
 {
-	__MSR(ICC_CTLR_EL3, value);
+	__MSR(ssICC_CTLR_EL3, value);
 }
 
 __STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL3(void)
 {
 	uint64_t result;
-    __MRS(ICC_CTLR_EL3, &result);
+    __MRS(ssICC_CTLR_EL3, &result);
     return result;
 }
 
 __STATIC_FORCEINLINE uint32_t __get_ICC_IAR0_EL1(void)
 {
 	uint32_t result;
-    __MRS(ICC_IAR0_EL1, &result);
+    __MRS(ssICC_IAR0_EL1, &result);
     return result;
 }
 
 __STATIC_FORCEINLINE uint32_t __get_ICC_IAR1_EL1(void)
 {
 	uint32_t result;
-    __MRS(ICC_IAR1_EL1, &result);
+    __MRS(ssICC_IAR1_EL1, &result);
     return result;
 }
 
 /** \brief  Set __set_ICC_IGRPEN0 EL1
     \param [in]    igrpen0  VBAR value to set
  */
-__STATIC_FORCEINLINE void __set_ICC_IGRPEN1_EL1(uint64_t igrpen0)
+__STATIC_FORCEINLINE void __set_ICC_IGRPEN1_EL1(uint64_t igrpen1)
 {
-  __ASM volatile("MSR  icc_igrpen1_el1, %0" : : "r" (igrpen0) : "memory");
+	__MSR(ssICC_IGRPEN1_EL1, igrpen1);
+  //__ASM volatile("MSR  icc_igrpen1_el1, %0" : : "r" (igrpen1) : "memory");
 }
 
 #else /* defined (__aarch64__) */
