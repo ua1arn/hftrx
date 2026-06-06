@@ -1184,29 +1184,29 @@ __STATIC_INLINE GICRedistributor_Type *GIC_GetRdist(void)
 
 /** \brief Wait for register write pending.
 */
-__STATIC_INLINE void GIC_WaitRWP(enum gic_rwp rwp)
-{
-	volatile int ii;
-	for (ii = 10000000; ii --;) __NOP();
-	return;
-    uint32_t rwp_mask;
-    uint32_t __IM *base;
-
-  if (rwp == GICR_RWP) {
-        base = &GIC_GetRdist()->CTLR;
-        if (!base)
-            return;
-        rwp_mask = GICV6_BIT(GICR_CTLR_RWP);
-  } else if (rwp == GICD_RWP) {
-        base = &GICDistributor->CTLR;
-        rwp_mask = GICV6_BIT(GICD_CTLR_RWP);
-  } else {
-        return;
-    }
-
-    while (*base & rwp_mask)
-        ;
-}
+//__STATIC_INLINE void GIC_WaitRWP(enum gic_rwp rwp)
+//{
+//	volatile int ii;
+//	for (ii = 10000000; ii --;) __NOP();
+//	return;
+//    uint32_t rwp_mask;
+//    uint32_t __IM *base;
+//
+//  if (rwp == GICR_RWP) {
+//        base = &GIC_GetRdist()->CTLR;
+//        if (!base)
+//            return;
+//        rwp_mask = GICV6_BIT(GICR_CTLR_RWP);
+//  } else if (rwp == GICD_RWP) {
+//        base = &GICDistributor->CTLR;
+//        rwp_mask = GICV6_BIT(GICD_CTLR_RWP);
+//  } else {
+//        return;
+//    }
+//
+//    while (*base & rwp_mask)
+//        ;
+//}
 
 /** \brief Initialize the interrupt distributor.
 */
@@ -1249,7 +1249,8 @@ __STATIC_INLINE void GIC_DistInitZ(void)
 
   /* Enable distributor with ARE_NS and NS_Group1 */
     GICDistributor->CTLR = ((1U << GICD_CTLR_ARE_NS) | (1U << GICD_CTLR_ENGRP1A));
-    GIC_WaitRWP(GICD_RWP);
+    //GIC_WaitRWP(GICD_RWP);
+    GIC_DistributorWait();
 }
 
 /** \brief Initialize the interrupt distributor.
@@ -1259,6 +1260,7 @@ __STATIC_INLINE void GIC_DistInit(void)
   uint32_t i;
   uint32_t num_irq = 0U;
   uint32_t priority_field;
+  uint32_t ppi_priority;
 
   //A reset sets all bits in the IGROUPRs corresponding to the SPIs to 0,
   //configuring all of the interrupts as Secure.
@@ -1270,9 +1272,13 @@ __STATIC_INLINE void GIC_DistInit(void)
 
   /* Priority level is implementation defined.
    To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
-   priority field and read back the value stored.*/
-  GIC_SetPriority((IRQn_Type)0U, 0xFFU);
-  priority_field = GIC_GetPriority((IRQn_Type)0U);
+   priority field and read back the value stored.
+   Use PPI, as it is always accessible, even for a Guest OS using a hypervisor.
+   Then restore the initial state.*/
+    ppi_priority = GIC_GetPriority((IRQn_Type)31U);
+    GIC_SetPriority((IRQn_Type)31U, 0xFFU);
+    priority_field = GIC_GetPriority((IRQn_Type)31U);
+    GIC_SetPriority((IRQn_Type)31U, ppi_priority);
 
   for (i = 32U; i < num_irq; i++)
   {
@@ -1285,8 +1291,13 @@ __STATIC_INLINE void GIC_DistInit(void)
       //Set target list to CPU0
       GIC_SetTarget((IRQn_Type)i, 1U);
   }
-  //Enable distributor
-  GIC_EnableDistributor();
+
+  /* Enable distributor with ARE_NS and NS_Group1 */
+//    GICDistributor->CTLR = ((1U << GICD_CTLR_ARE_NS) | (1U << GICD_CTLR_ENGRP1A));
+//    GIC_DistributorWait();
+   //GIC_WaitRWP(GICD_RWP);
+    //Enable distributor
+    GIC_EnableDistributor();
 }
 #endif /* GIC_DISTRIBUTOR_BASE */
 
