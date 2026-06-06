@@ -325,13 +325,13 @@ __STATIC_FORCEINLINE void __set_CPUECTLR_EL1(uint64_t value)
 __STATIC_FORCEINLINE void __set_SCR_EL3(uint64_t value)
 {
 	// MSR CSSELR_EL1, <Xt> ; Write Xt to CSSELR_EL1
-	__set_RG32("SCR_EL3", value);
+	__set_RG64("SCR_EL3", value);
 }
 
 __STATIC_FORCEINLINE uint64_t __get_SCR_EL3(void)
 {
 	uint64_t result;
-	__get_RG32("SCR_EL3", result);
+	__get_RG64("SCR_EL3", result);
 	return result;
 }
 

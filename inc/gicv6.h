@@ -769,33 +769,33 @@ __STATIC_FORCEINLINE uint32_t __get_ICC_HPPIR1_EL1(void)
 	return result;
 }
 
-__STATIC_FORCEINLINE void __set_ICC_SRE_EL3(uint32_t value)
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL3(uint64_t value)
 {
 	__MSR(ssICC_SRE_EL3, value);
 }
 
-__STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
+__STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint64_t value)
 {
 	__MSR(ssICC_PMR_EL1, value);
 }
 
 
-__STATIC_FORCEINLINE void __set_ICC_EOIR0_EL1(uint32_t value)
+__STATIC_FORCEINLINE void __set_ICC_EOIR0_EL1(uint64_t value)
 {
 	__MSR(ssICC_EOIR0_EL1, value);
 }
 
-__STATIC_FORCEINLINE void __set_ICC_EOIR1_EL1(uint32_t value)
+__STATIC_FORCEINLINE void __set_ICC_EOIR1_EL1(uint64_t value)
 {
 	__MSR(ssICC_EOIR1_EL1, value);
 }
 
-__STATIC_FORCEINLINE void __set_ICC_BPR0_EL1(uint32_t value)
+__STATIC_FORCEINLINE void __set_ICC_BPR0_EL1(uint64_t value)
 {
 	__MSR(ssICC_BPR0_EL1, value);
 }
 
-__STATIC_FORCEINLINE void __set_ICC_BPR1_EL1(uint32_t value)
+__STATIC_FORCEINLINE void __set_ICC_BPR1_EL1(uint64_t value)
 {
 	__MSR(ssICC_BPR1_EL1, value);
 }
