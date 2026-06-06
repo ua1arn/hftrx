@@ -21,8 +21,10 @@ static int flag_cortexm3 = 0;
 static int flag_cortexm4 = 0;
 static int flag_cortexm7 = 0;
 static int flag_cortexa5x = 0;
+static int flag_cortexa7 = 0;
 static const char *guardstring = "00003039";
-static const char *string_cortexa5x = "undefined.h";
+static char *string_cortexa5x = "undefined.h";
+static char *string_cortexa7 = "undefined.h";
 
 /* debug stuff */
 #if 0
@@ -1838,12 +1840,30 @@ static void generate_cmsis(void)
 		{
 			emitline(0, "#include <core_cm3.h>\n");
 		}
-		else if (flag_cortexa5x)
+		else if (flag_cortexa5x || flag_cortexa7)
 		{
+			static const char sep [] = ":";
+			char * token ;
 			emitline(0, "#if defined(__aarch64__)\n");
-			emitline(4, "#include <%s>\n", string_cortexa5x);
+			if (flag_cortexa5x)
+			{
+				token = strtok(string_cortexa5x, sep);
+				while (token != NULL)
+				{
+					emitline(4, "#include <%s>\n", token);
+					token = strtok(NULL, sep);
+				}
+			}
 			emitline(0, "#else\n");
-			emitline(4, "#include <core_ca.h>\n");
+			if (flag_cortexa7)
+			{
+				token = strtok(string_cortexa7, sep);
+				while (token != NULL)
+				{
+					emitline(4, "#include <%s>\n", token);
+					token = strtok(NULL, sep);
+				}
+			}
 			emitline(0, "#endif\n");
 		}
 		else
@@ -1970,6 +1990,13 @@ int main(int argc, char *argv[], char *envp[])
 		{
 			flag_cortexa5x = 1;
 			string_cortexa5x = argv[2];
+			argc -= 2;
+			argv += 2;
+		}
+		else if (argc > 1 && strcmp(argv[1], "--cortexa7") == 0)
+		{
+			flag_cortexa7 = 1;
+			string_cortexa7 = argv[2];
 			argc -= 2;
 			argv += 2;
 		}

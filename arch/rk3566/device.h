@@ -72,7 +72,7 @@ typedef enum IRQn
 #if defined(__aarch64__)
     #include <core_ca53.h>
 #else
-    #include <core_ca.h>
+    #include <core_ca7.h>
 #endif
 
 /*
