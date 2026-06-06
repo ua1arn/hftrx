@@ -1156,13 +1156,13 @@ static void IRQ_Handler_GIC_G1(void)
 	// IHI0048B_b_gic_architecture_specification.pdf
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
 
+	//dbg_putchar('Y');
 	if (int_id == 1022)
 	{
 	}
 
 	if (int_id >= 1020)
 	{
-		//dbg_putchar('2');
 		//LCLSPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
@@ -1187,22 +1187,16 @@ static void IRQ_Handler_GIC_G1(void)
 			(* f)();	    /* Call interrupt handler */
 			global_disableIRQ();					/* modify I bit in CPSR */
 		}
-		else
-		{
-//			dbg_putchar('$');
-		}
 
 	}
 	else
 	{
-		//dbg_putchar('3');
 		//LCLSPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
 		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
 		//LCLSPIN_UNLOCK(& giclock);
 	}
-	//dbg_putchar(' ');
 
 	GIC_EndInterrupt((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
 	//GICInterface->EOIR = gicc_iar;
@@ -1249,13 +1243,13 @@ static void FIQ_Handler_GIC_G0(void)
 	// IHI0048B_b_gic_architecture_specification.pdf
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
 
+	//dbg_putchar('X');
 	if (int_id == 1022)
 	{
 	}
 
 	if (int_id >= 1020)
 	{
-		//dbg_putchar('X');
 		//LCLSPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
@@ -1275,20 +1269,14 @@ static void FIQ_Handler_GIC_G0(void)
 
 		if (f != (IRQHandler_t) 0)
 		{
-//			dbg_putchar('_');
 			global_enableIRQ();						/* modify I bit in CPSR */
 			(* f)();	    /* Call interrupt handler */
 			global_disableIRQ();					/* modify I bit in CPSR */
-		}
-		else
-		{
-//			dbg_putchar(']');
 		}
 
 	}
 	else
 	{
-		//dbg_putchar('3');
 		//LCLSPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
