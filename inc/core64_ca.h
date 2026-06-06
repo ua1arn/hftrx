@@ -1303,13 +1303,6 @@ __STATIC_INLINE void L2C_CleanInvPa (void *pa)
 #define ICC_SGIR_RS_MASK          (0xf)
 #define ICC_SGIR_AFF3_SHIFT       (48)
 
-#define GIC_REDISTRIBUTOR_STRIDE (0x20000)
-#define GICR_SGI_BASE_OFF        (0x10000)
-
-#define GICR_TYPER_LAST_SHIFT (4)
-#define GICR_TYPER_LAST_MASK  (1 << GICR_TYPER_LAST_SHIFT)
-#define GICR_TYPER_AFF_SHIFT  (32)
-
 #define MPIDR_TO_RS(mpidr) (MPIDR_TO_AFF_LEVEL(mpidr, 0) >> 4)
 
 #define COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, intid, irm, rs, tlist) \

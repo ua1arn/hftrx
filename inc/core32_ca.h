@@ -165,6 +165,43 @@ __STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRDN(void)
 #endif /* (__CORTEX_A == 55U)  */
 
 
+/* Register MPIDR_EL1 */
+typedef union
+{
+  struct
+  {
+    uint64_t Aff0:8;
+    uint64_t Aff1:8;
+    uint64_t Aff2:8;
+    uint64_t MT:1;
+    RESERVED(0:5, uint64_t)
+    uint64_t U:1;
+    RESERVED(1:1, uint64_t)
+    uint64_t Aff3:8;
+    RESERVED(2:24, uint64_t)
+  } b;                                   /*!< \brief Structure used for bit  access */
+  uint64_t w;                            /*!< \brief Type      used for word access */
+} MPIDR_EL1_Type;
+
+#define MPIDR_AFFLVL_MASK (0xffULL)
+#define MPIDR_AFF0_SHIFT     (0ULL)
+#define MPIDR_AFF1_SHIFT     (8ULL)
+#define MPIDR_AFF2_SHIFT    (16ULL)
+#define MPIDR_AFF3_SHIFT    (32ULL)
+#define MPIDR_MT_MASK      (0x1ULL)
+#define MPIDR_MT_SHIFT	    (24ULL)
+
+#define MPIDR_SUPPORT_MT(mpidr) ((mpidr >> MPIDR_MT_SHIFT) & MPIDR_MT_MASK)
+
+
+#define MPIDR_TO_AFF_LEVEL(mpidr, aff_level) (((mpidr) >> MPIDR_AFF##aff_level##_SHIFT) & MPIDR_AFFLVL_MASK)
+
+#define MPIDR_AFFINITY_MASK                   \
+  ((MPIDR_AFFLVL_MASK << MPIDR_AFF3_SHIFT)  | \
+   (MPIDR_AFFLVL_MASK << MPIDR_AFF2_SHIFT)  | \
+   (MPIDR_AFFLVL_MASK << MPIDR_AFF1_SHIFT)  | \
+   (MPIDR_AFFLVL_MASK << MPIDR_AFF0_SHIFT))
+
 #ifdef __cplusplus
  }
 #endif /* __cplusplus */
