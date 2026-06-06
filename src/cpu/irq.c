@@ -1306,14 +1306,17 @@ static void IRQ_Handler_GIC(void)
 {
 	IRQ_Handler_GIC_G1();
 }
-// Call from vFIQ handler aarch32
+
+// Call from VFIQ_Handler aarch64
+// Call from FIQ_Handler_aarch32
 static void FIQ_Handler_GIC(void)
 {
 #if (__CORTEX_A == 55U)
 	FIQ_Handler_GIC_G0();
-#else /* (__CORTEX_A == 55U) */
-	IRQ_Handler_GIC_G1();	// Group 1 handler
-#endif /* (__CORTEX_A == 55U) */
+#else
+	ASSERT(0);
+	IRQ_Handler_GIC_G1();
+#endif
 }
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
@@ -2923,7 +2926,7 @@ void __NO_RETURN VFIQ_Handler(void * frame)
 {
 	//while (HARDWARE_DEBUG_PUTCHAR('F') == 0) ;
 #if (__CORTEX_A == 55U)
-	FIQ_Handler_GIC();
+	FIQ_Handler_GIC();		// Group 0 handler
 	IRQ_Handler_GIC();		// Group 1 handler
 #else
 	IRQ_Handler_GIC();		// Group 1 handler
