@@ -1213,7 +1213,7 @@ static void IRQ_Handler_GIC_G1(void)
 /* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
 // See ARM IHI 0048B.b document
 
-// Только в aarch32 Cortex-A55
+// Только в Cortex-A55
 static void FIQ_Handler_GIC_G0(void)
 {
 	// per-cpu:

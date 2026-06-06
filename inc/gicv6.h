@@ -976,8 +976,6 @@ __STATIC_INLINE void GIC_EnableInterface(void)
 {
 	__set_ICC_IGRPEN0_EL1(1);
 	__set_ICC_IGRPEN1_EL1(1);
-    //__MCR32(sICC_IGRPEN0_EL1, 1);
-    //__MCR32(sICC_IGRPEN1_EL1, 1);
 }
 
 /** \brief Disable the CPU's interrupt interface.
@@ -986,8 +984,6 @@ __STATIC_INLINE void GIC_DisableInterface(void)
 {
 	__set_ICC_IGRPEN0_EL1(0);
 	__set_ICC_IGRPEN1_EL1(0);
-    //__MCR32(sICC_IGRPEN0_EL1, 0);
-    //__MCR32(sICC_IGRPEN1_EL1, 0);
 }
 
 /** \brief Read the CPU's IAR register.
@@ -995,9 +991,7 @@ __STATIC_INLINE void GIC_DisableInterface(void)
 */
 __STATIC_INLINE IRQn_Type GIC_AcknowledgePending(void)
 {
-    uint32_t result = __get_ICC_IAR1_EL1();
-    //__MRC32(sICC_IAR1_EL1, &result);
-    return (IRQn_Type)(result);
+    return (IRQn_Type) __get_ICC_IAR1_EL1();
 }
 
 /** \brief Read the CPU's IAR register.
@@ -1005,9 +999,7 @@ __STATIC_INLINE IRQn_Type GIC_AcknowledgePending(void)
 */
 __STATIC_INLINE IRQn_Type GIC_AcknowledgePendingG0(void)
 {
-    uint32_t result = __get_ICC_IAR0_EL1();
-    //__MRC32(sICC_IAR0_EL1, &result);
-    return (IRQn_Type)(result);
+    return (IRQn_Type) __get_ICC_IAR0_EL1();
 }
 
 /** \brief Writes the given interrupt number to the CPU's EOIR register.
@@ -1016,7 +1008,6 @@ __STATIC_INLINE IRQn_Type GIC_AcknowledgePendingG0(void)
 __STATIC_INLINE void GIC_EndInterrupt(IRQn_Type IRQn)
 {
 	__set_ICC_EOIR1_EL1((uint32_t)IRQn);
-    //__MCR32(sICC_EOIR1_EL1, (uint32_t)IRQn);
 }
 
 /** \brief Writes the given interrupt number to the CPU's EOIR register.
@@ -1025,7 +1016,6 @@ __STATIC_INLINE void GIC_EndInterrupt(IRQn_Type IRQn)
 __STATIC_INLINE void GIC_EndInterruptG0(IRQn_Type IRQn)
 {
 	__set_ICC_EOIR0_EL1((uint32_t)IRQn);
-    //__MCR32(sICC_EOIR0_EL1, (uint32_t)IRQn);
 }
 
 /** \brief Set the interrupt priority mask using CPU's PMR register.
@@ -1034,7 +1024,6 @@ __STATIC_INLINE void GIC_EndInterruptG0(IRQn_Type IRQn)
 __STATIC_INLINE void GIC_SetInterfacePriorityMask(uint32_t priority)
 {
 	__set_ICC_PMR_EL1(priority & 0xFFUL);
-    //__MCR32(sICC_PMR_EL1, priority & 0xFFUL);
 }
 
 /** \brief Read the current interrupt priority mask from CPU's PMR register.
@@ -1042,9 +1031,7 @@ __STATIC_INLINE void GIC_SetInterfacePriorityMask(uint32_t priority)
 */
 __STATIC_INLINE uint32_t GIC_GetInterfacePriorityMask(void)
 {
-    uint32_t result = __get_ICC_PMR_EL1();
-    //__MRC32(sICC_PMR_EL1, &result);
-    return result& 0xFFUL;
+    return __get_ICC_PMR_EL1() & 0xFFUL;
 }
 
 /** \brief Configures the group priority and subpriority split point using CPU's BPR register.
@@ -1054,8 +1041,6 @@ __STATIC_INLINE void GIC_SetBinaryPoint(uint32_t binary_point)
 {
 	__set_ICC_BPR0_EL1(binary_point & 7U);
 	__set_ICC_BPR1_EL1(binary_point & 7U);
-    //__MCR32(sICC_BPR0_EL1, binary_point & 7U);
-    //__MCR32(sICC_BPR1_EL1, binary_point & 7U);
 }
 
 /** \brief Read the current group priority and subpriority split point from CPU's BPR register.
@@ -1063,9 +1048,7 @@ __STATIC_INLINE void GIC_SetBinaryPoint(uint32_t binary_point)
 */
 __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 {
-    uint32_t result = __get_ICC_BPR1_EL1();
-    //__MRC32(sICC_BPR1_EL1, &result);
-    return result;
+    return __get_ICC_BPR1_EL1();
 }
 
 /** \brief Get the interrupt number of the highest interrupt pending from CPU's HPPIR register.
@@ -1073,9 +1056,7 @@ __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 */
 __STATIC_INLINE uint32_t GIC_GetHighPendingIRQ(void)
 {
-    uint32_t result = __get_ICC_HPPIR1_EL1();
-    //__MRC32(sICC_HPPIR1_EL1, &result);
-    return result;
+    return __get_ICC_HPPIR1_EL1();
 }
 
 /** \brief Get the interrupt number of the highest interrupt pending from CPU's HPPIR register.
@@ -1083,9 +1064,7 @@ __STATIC_INLINE uint32_t GIC_GetHighPendingIRQ(void)
 */
 __STATIC_INLINE uint32_t GIC_GetHighPendingIRQG0(void)
 {
-    uint32_t result = __get_ICC_HPPIR0_EL1();
-    //__MRC32(sICC_HPPIR0_EL1, &result);
-    return result;
+    return __get_ICC_HPPIR0_EL1();
 }
 
 #endif /* GIC_INTERFACE_BASE */
