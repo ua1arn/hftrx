@@ -8,9 +8,6 @@
 #ifndef INC_GICV6_H_
 #define INC_GICV6_H_
 
-
-
-
 #if (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || \
     defined(DOXYGEN)
 
@@ -669,6 +666,169 @@ __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 
 #else  /* GIC_INTERFACE_BASE */
 
+#if defined (__aarch64__)
+
+#ifndef __STRINGIFY
+  #define __STRINGIFY(x)                         #x
+#endif
+
+#ifndef __MSR
+  #define __MSR(sysreg, val) \
+    __asm volatile ("msr " __STRINGIFY(sysreg) ", %0\n" : : "r"((uint64_t)(val)))
+#endif
+
+#ifndef __MRS
+#define __MRS(sysreg, pVal) \
+  __asm volatile ("mrs  %0, " __STRINGIFY(sysreg) "\n" : "=r"((*pVal)))
+#endif
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL1(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL1, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL1(uint32_t value)
+{
+	__MSR(ICC_SRE_EL1, value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL2(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL2, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL2(uint32_t value)
+{
+	__MSR(ICC_SRE_EL2, value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL3(void)
+{
+	uint32_t result;
+	__MRS(ICC_SRE_EL3, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_BPR1_EL1(void)
+{
+	uint32_t result;
+	__MRS(ICC_BPR1_EL1, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_BPR0_EL1(void)
+{
+	uint32_t result;
+	__MRS(ICC_BPR0_EL1, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_PMR_EL1(void)
+{
+	uint32_t result;
+	__MRS(ICC_PMR_EL1, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_HPPIR0_EL1(void)
+{
+	uint32_t result;
+	__MRS(ICC_HPPIR0_EL1, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_HPPIR1_EL1(void)
+{
+	uint32_t result;
+	__MRS(ICC_HPPIR1_EL1, & result);
+	return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL3(uint32_t value)
+{
+	__MSR(ICC_SRE_EL3, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
+{
+	__MSR(ICC_PMR_EL1, value);
+}
+
+
+__STATIC_FORCEINLINE void __set_ICC_EOIR0_EL1(uint32_t value)
+{
+	__MSR(ICC_EOIR0_EL1, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_EOIR1_EL1(uint32_t value)
+{
+	__MSR(ICC_EOIR1_EL1, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_BPR0_EL1(uint32_t value)
+{
+	__MSR(ICC_BPR0_EL1, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_BPR1_EL1(uint32_t value)
+{
+	__MSR(ICC_BPR1_EL1, value);
+}
+
+// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
+__STATIC_FORCEINLINE void __set_ICC_CTLR_EL1(uint64_t value)
+{
+	__MSR(ICC_CTLR_EL1, value);
+}
+
+// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
+__STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL1(void)
+{
+	uint64_t result;
+    __MRS(ICC_CTLR_EL1, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_CTLR_EL3(uint64_t value)
+{
+	__MSR(ICC_CTLR_EL3, value);
+}
+
+__STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL3(void)
+{
+	uint64_t result;
+    __MRS(ICC_CTLR_EL3, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_IAR0_EL1(void)
+{
+	uint32_t result;
+    __MRS(ICC_IAR0_EL1, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_IAR1_EL1(void)
+{
+	uint32_t result;
+    __MRS(ICC_IAR1_EL1, &result);
+    return result;
+}
+
+/** \brief  Set __set_ICC_IGRPEN0 EL1
+    \param [in]    igrpen0  VBAR value to set
+ */
+__STATIC_FORCEINLINE void __set_ICC_IGRPEN1_EL1(uint64_t igrpen0)
+{
+  __ASM volatile("MSR  icc_igrpen1_el1, %0" : : "r" (igrpen0) : "memory");
+}
+
+#else /* defined (__aarch64__) */
+
 /** \brief  AArch64 System registers to access the Generic Interrupt Controller CPU interface
 */
 #if defined(__GNUC__)
@@ -702,20 +862,110 @@ __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 #define __MRC32(sysreg, pVal) \
   __asm volatile ("MRC  " sysreg "\n" : "=r"((*pVal)))
 
+__STATIC_FORCEINLINE uint32_t __get_ICC_HPPIR0_EL1(void)
+{
+	uint32_t result;
+    __MRC32(sICC_HPPIR0_EL1, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_HPPIR1_EL1(void)
+{
+	uint32_t result;
+    __MRC32(sICC_HPPIR1_EL1, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_BPR0_EL1(void)
+{
+	uint32_t result;
+    __MRC32(sICC_BPR0_EL1, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_BPR1_EL1(void)
+{
+	uint32_t result;
+    __MRC32(sICC_BPR1_EL1, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_IAR0_EL1(void)
+{
+	uint32_t result;
+    __MRC32(sICC_IAR0_EL1, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_IAR1_EL1(void)
+{
+	uint32_t result;
+    __MRC32(sICC_IAR1_EL1, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_PMR_EL1(void)
+{
+	uint32_t result;
+    __MRC32(sICC_PMR_EL1, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_EOIR0_EL1(uint32_t value)
+{
+    __MCR32(sICC_EOIR0_EL1, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_EOIR1_EL1(uint32_t value)
+{
+    __MCR32(sICC_EOIR1_EL1, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_BPR0_EL1(uint32_t value)
+{
+    __MCR32(sICC_BPR0_EL1, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_BPR1_EL1(uint32_t value)
+{
+    __MCR32(sICC_BPR1_EL1, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_IGRPEN0_EL1(uint32_t value)
+{
+    __MCR32(sICC_IGRPEN0_EL1, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_IGRPEN1_EL1(uint32_t value)
+{
+    __MCR32(sICC_IGRPEN1_EL1, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
+{
+    __MCR32(sICC_PMR_EL1, value);
+}
+
+#endif	/* defined (__aarch64__) */
+
 /** \brief Enable the CPU's interrupt interface.
 */
 __STATIC_INLINE void GIC_EnableInterface(void)
 {
-    __MCR32(sICC_IGRPEN0_EL1, 1);
-    __MCR32(sICC_IGRPEN1_EL1, 1);
+	__set_ICC_IGRPEN0_EL1(1);
+	__set_ICC_IGRPEN1_EL1(1);
+    //__MCR32(sICC_IGRPEN0_EL1, 1);
+    //__MCR32(sICC_IGRPEN1_EL1, 1);
 }
 
 /** \brief Disable the CPU's interrupt interface.
 */
 __STATIC_INLINE void GIC_DisableInterface(void)
 {
-    __MCR32(sICC_IGRPEN0_EL1, 0);
-    __MCR32(sICC_IGRPEN1_EL1, 0);
+	__set_ICC_IGRPEN0_EL1(0);
+	__set_ICC_IGRPEN1_EL1(0);
+    //__MCR32(sICC_IGRPEN0_EL1, 0);
+    //__MCR32(sICC_IGRPEN1_EL1, 0);
 }
 
 /** \brief Read the CPU's IAR register.
@@ -723,8 +973,8 @@ __STATIC_INLINE void GIC_DisableInterface(void)
 */
 __STATIC_INLINE IRQn_Type GIC_AcknowledgePending(void)
 {
-    uint32_t result;
-    __MRC32(sICC_IAR1_EL1, &result);
+    uint32_t result = __get_ICC_IAR1_EL1();
+    //__MRC32(sICC_IAR1_EL1, &result);
     return (IRQn_Type)(result);
 }
 
@@ -733,8 +983,8 @@ __STATIC_INLINE IRQn_Type GIC_AcknowledgePending(void)
 */
 __STATIC_INLINE IRQn_Type GIC_AcknowledgePendingG0(void)
 {
-    uint32_t result;
-    __MRC32(sICC_IAR0_EL1, &result);
+    uint32_t result = __get_ICC_IAR0_EL1();
+    //__MRC32(sICC_IAR0_EL1, &result);
     return (IRQn_Type)(result);
 }
 
@@ -743,7 +993,8 @@ __STATIC_INLINE IRQn_Type GIC_AcknowledgePendingG0(void)
 */
 __STATIC_INLINE void GIC_EndInterrupt(IRQn_Type IRQn)
 {
-    __MCR32(sICC_EOIR1_EL1, (uint32_t)IRQn);
+	__set_ICC_EOIR1_EL1((uint32_t)IRQn);
+    //__MCR32(sICC_EOIR1_EL1, (uint32_t)IRQn);
 }
 
 /** \brief Writes the given interrupt number to the CPU's EOIR register.
@@ -751,7 +1002,8 @@ __STATIC_INLINE void GIC_EndInterrupt(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_EndInterruptG0(IRQn_Type IRQn)
 {
-    __MCR32(sICC_EOIR0_EL1, (uint32_t)IRQn);
+	__set_ICC_EOIR0_EL1((uint32_t)IRQn);
+    //__MCR32(sICC_EOIR0_EL1, (uint32_t)IRQn);
 }
 
 /** \brief Set the interrupt priority mask using CPU's PMR register.
@@ -759,7 +1011,8 @@ __STATIC_INLINE void GIC_EndInterruptG0(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_SetInterfacePriorityMask(uint32_t priority)
 {
-    __MCR32(sICC_PMR_EL1, priority & 0xFFUL);
+	__set_ICC_PMR_EL1(priority & 0xFFUL);
+    //__MCR32(sICC_PMR_EL1, priority & 0xFFUL);
 }
 
 /** \brief Read the current interrupt priority mask from CPU's PMR register.
@@ -767,8 +1020,8 @@ __STATIC_INLINE void GIC_SetInterfacePriorityMask(uint32_t priority)
 */
 __STATIC_INLINE uint32_t GIC_GetInterfacePriorityMask(void)
 {
-    uint32_t result;
-    __MRC32(sICC_PMR_EL1, &result);
+    uint32_t result = __get_ICC_PMR_EL1();
+    //__MRC32(sICC_PMR_EL1, &result);
     return result& 0xFFUL;
 }
 
@@ -777,8 +1030,10 @@ __STATIC_INLINE uint32_t GIC_GetInterfacePriorityMask(void)
 */
 __STATIC_INLINE void GIC_SetBinaryPoint(uint32_t binary_point)
 {
-    __MCR32(sICC_BPR0_EL1, binary_point & 7U);
-    __MCR32(sICC_BPR1_EL1, binary_point & 7U);
+	__set_ICC_BPR0_EL1(binary_point & 7U);
+	__set_ICC_BPR1_EL1(binary_point & 7U);
+    //__MCR32(sICC_BPR0_EL1, binary_point & 7U);
+    //__MCR32(sICC_BPR1_EL1, binary_point & 7U);
 }
 
 /** \brief Read the current group priority and subpriority split point from CPU's BPR register.
@@ -786,8 +1041,8 @@ __STATIC_INLINE void GIC_SetBinaryPoint(uint32_t binary_point)
 */
 __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 {
-    uint32_t result;
-    __MRC32(sICC_BPR1_EL1, &result);
+    uint32_t result = __get_ICC_BPR1_EL1();
+    //__MRC32(sICC_BPR1_EL1, &result);
     return result;
 }
 
@@ -796,8 +1051,8 @@ __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 */
 __STATIC_INLINE uint32_t GIC_GetHighPendingIRQ(void)
 {
-    uint32_t result;
-    __MRC32(sICC_HPPIR1_EL1, &result);
+    uint32_t result = __get_ICC_HPPIR1_EL1();
+    //__MRC32(sICC_HPPIR1_EL1, &result);
     return result;
 }
 
@@ -806,8 +1061,8 @@ __STATIC_INLINE uint32_t GIC_GetHighPendingIRQ(void)
 */
 __STATIC_INLINE uint32_t GIC_GetHighPendingIRQG0(void)
 {
-    uint32_t result;
-    __MRC32(sICC_HPPIR0_EL1, &result);
+    uint32_t result = __get_ICC_HPPIR0_EL1();
+    //__MRC32(sICC_HPPIR0_EL1, &result);
     return result;
 }
 
@@ -968,6 +1223,110 @@ __STATIC_INLINE void GIC_Enable(void)
   GIC_DistInit();
   GIC_CPUInterfaceInit(); //per CPU
 }
+
+#if defined(GIC_REDISTRIBUTOR_BASE)
+
+#define GIC_REDISTRIBUTOR_STRIDE (0x20000)
+#define GICR_SGI_BASE_OFF        (0x10000)
+#define GICR_WAKER_PS_SHIFT (1)
+#define GICR_WAKER_CA_SHIFT (2)
+
+/** \brief Get the Redistributor base.
+*/
+__STATIC_INLINE GICRedistributor_Type *GIC_GetRdist(void)
+{
+#if 1
+	return (GICRedistributor_Type *) GICR0_BASE;
+#else
+    uintptr_t rd_addr = GIC_REDISTRIBUTOR_BASE;
+    uint32_t rd_aff, aff = GIC_MPIDRtoAffinity();
+    uint64_t rd_typer;
+
+  do {
+        rd_typer = ((GICRedistributor_Type *)rd_addr)->TYPER;
+        rd_aff = rd_typer >> GICR_TYPER_AFF_SHIFT;
+
+        if (rd_aff == aff)
+            return (GICRedistributor_Type *)rd_addr;
+
+        rd_addr += GIC_REDISTRIBUTOR_STRIDE;
+    } while (!(rd_typer & GICR_TYPER_LAST_MASK));
+
+    return NULL;
+#endif
+}
+
+/** \brief Get the Redistributor SGI_base.
+*/
+__STATIC_INLINE void *GIC_GetRdistSGIBase(void *rd_base)
+{
+    return (void *)((uintptr_t)rd_base + GICR_SGI_BASE_OFF);
+}
+
+/**
+ *
+ */
+__STATIC_INLINE uint32_t GIC_GetRedistPriority(IRQn_Type IRQn)
+{
+    GICDistributor_Type *const s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
+
+    return (s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+}
+
+/**
+ *
+ */
+__STATIC_INLINE void GIC_RedistWakeUp(void)
+{
+  GICRedistributor_Type *const s_RedistBaseAddrs = GIC_GetRdist();
+
+    if (!s_RedistBaseAddrs)
+        return;
+
+    if (!(s_RedistBaseAddrs->WAKER & (1 << GICR_WAKER_CA_SHIFT)))
+        return;
+
+  s_RedistBaseAddrs->WAKER &= ~ (1 << GICR_WAKER_PS_SHIFT);
+    while (s_RedistBaseAddrs->WAKER & (1 << GICR_WAKER_CA_SHIFT))
+        ;
+}
+
+/**
+ *
+ */
+__STATIC_INLINE void GIC_SetRedistPriority(IRQn_Type IRQn, uint32_t priority)
+{
+    GICDistributor_Type *const s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
+    const uint32_t mask = s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
+
+    s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
+}
+
+/** \brief Initialize the interrupt redistributor.
+*/
+__STATIC_INLINE void GIC_RedistInit(void)
+{
+    uint32_t i;
+    uint32_t priority_field;
+
+  /* Priority level is implementation defined.
+   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
+   priority field and read back the value stored.*/
+    GIC_SetRedistPriority((IRQn_Type)31U, 0xFFU);
+    priority_field = GIC_GetRedistPriority((IRQn_Type)31U);
+
+  /* Wakeup the GIC */
+    GIC_RedistWakeUp();
+
+    for (i = 0; i < 32; i++)
+    {
+      //Disable the SPI interrupt
+        GIC_DisableIRQ((IRQn_Type)i);
+      //Set priority
+      GIC_SetRedistPriority((IRQn_Type)i, priority_field*2U/3U);
+    }
+}
+#endif /* GIC_REDISTRIBUTOR_BASE */
 #endif
 
 #endif /* INC_GICV6_H_ */

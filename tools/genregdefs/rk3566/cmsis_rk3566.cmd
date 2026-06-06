@@ -1,6 +1,6 @@
 @rem CONFIG_MACH_SUN8xxxx
 
-SET CONVERTER=..\Debug\genregdefs.exe --cortexa5x "core_ca53.h" --cortexa7 "core_ca7.h" --guid "{2F3EAF83-E6C0-48a6-A374-C924EDE2E572}"
+SET CONVERTER=..\Debug\genregdefs.exe --cortexa5x "core_ca53.h:a-profile/gicv2.h" --cortexa7 "core_ca.h" --guid "{2F3EAF83-E6C0-48a6-A374-C924EDE2E572}"
 SET OUTFILE=..\..\..\arch\rk3566\device.h
 SET FILELIST=gic.csv ^
 	uart.csv twi.csv

@@ -1,6 +1,6 @@
 @rem CONFIG_MACH_SUN50IW9
 
-SET CONVERTER=..\Debug\genregdefs.exe --cortexa5x "core_ca53.h" --cortexa7 "core_ca7.h" --guid "{13407CD6-4A45-4d15-9E8C-7F0C1F8E0873}"
+SET CONVERTER=..\Debug\genregdefs.exe --cortexa5x "core_ca53.h:a-profile/gicv2.h" --cortexa7 "core_ca.h" --guid "{13407CD6-4A45-4d15-9E8C-7F0C1F8E0873}"
 SET OUTFILE=..\..\..\arch\aw_t507\device.h
 SET FILELIST= ^
 	ccu.csv sid.csv prcm.csv gic.csv gpio.csv ^

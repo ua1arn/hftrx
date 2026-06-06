@@ -339,8 +339,9 @@ typedef enum IRQn
 
 #if defined(__aarch64__)
     #include <core_ca53.h>
+    #include <a-profile/gicv2.h>
 #else
-    #include <core_ca7.h>
+    #include <core_ca.h>
 #endif
 
 /*

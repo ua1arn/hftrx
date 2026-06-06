@@ -1023,6 +1023,8 @@ typedef struct
 #define L2C_310           ((L2C_310_TypeDef *)L2C_310_BASE) /*!< \brief L2C_310 register set access pointer */
 #endif
 
+#if 0
+
 #if (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || \
     defined(DOXYGEN)
 
@@ -1423,6 +1425,7 @@ typedef struct
 #endif /*  (__GIC_PRESENT == 1U) || defined(DOXYGEN) */
 
 #endif /* GIC_INTERFACE_BASE */
+#endif
 
 #if (defined(__TIM_PRESENT) && (__TIM_PRESENT == 1U)) || \
      defined(DOXYGEN)
@@ -1718,73 +1721,6 @@ __STATIC_INLINE uint64_t __get_CurrentEL(void)
     return result;
 }
 
-__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL1(void)
-{
-	uint32_t result;
-	__MRS(ICC_SRE_EL1, & result);
-	return result;
-}
-
-__STATIC_FORCEINLINE void __set_ICC_SRE_EL1(uint32_t value)
-{
-	__MSR(ICC_SRE_EL1, value);
-}
-
-__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL2(void)
-{
-	uint32_t result;
-	__MRS(ICC_SRE_EL2, & result);
-	return result;
-}
-
-__STATIC_FORCEINLINE void __set_ICC_SRE_EL2(uint32_t value)
-{
-	__MSR(ICC_SRE_EL2, value);
-}
-
-__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL3(void)
-{
-	uint32_t result;
-	__MRS(ICC_SRE_EL3, & result);
-	return result;
-}
-
-__STATIC_FORCEINLINE void __set_ICC_SRE_EL3(uint32_t value)
-{
-	__MSR(ICC_SRE_EL3, value);
-}
-
-__STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
-{
-	__MSR(ICC_PMR_EL1, value);
-}
-
-// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
-__STATIC_FORCEINLINE void __set_ICC_CTLR_EL1(uint64_t value)
-{
-	__MSR(ICC_CTLR_EL1, value);
-}
-
-// ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)
-__STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL1(void)
-{
-	uint64_t result;
-    __MRS(ICC_CTLR_EL1, &result);
-    return result;
-}
-
-__STATIC_FORCEINLINE void __set_ICC_CTLR_EL3(uint64_t value)
-{
-	__MSR(ICC_CTLR_EL3, value);
-}
-
-__STATIC_FORCEINLINE uint64_t __get_ICC_CTLR_EL3(void)
-{
-	uint64_t result;
-    __MRS(ICC_CTLR_EL3, &result);
-    return result;
-}
-
 // AArch32 (CLUSTERCFR) and AArch64 (CLUSTERCFR_EL1)
 // MRS <Xt>, S3_0_C15_C3_0; Read CLUSTERCFR_EL1 into Xt
 // MRC p15, 0, <Rt>, c15, c3, 0; Read CLUSTERCFR into Rt
@@ -1986,6 +1922,8 @@ __STATIC_INLINE void L2C_CleanInvPa (void *pa)
      (((tlist) & ICC_SGIR_TARGETLIST_MASK) << ICC_SGIR_TARGETLIST_SHIFT))
 
 #define MPIDR_TO_RS(mpidr) (MPIDR_TO_AFF_LEVEL(mpidr, 0) >> 4)
+
+#if 0
 
 #if (__CORTEX_A == 55U) && CPUSTYLE_A733
 #include "gicv6_64.h"
@@ -2638,6 +2576,7 @@ __STATIC_INLINE void GIC_Enable(void)
 }
 
 #endif /* (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || defined(DOXYGEN) */
+#endif
 
 /* ##########################  Generic Timer functions  ############################ */
 #if (defined(__TIM_PRESENT) && (__TIM_PRESENT == 1U)) || \
