@@ -1085,6 +1085,7 @@ void irqlog_print(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
+//#define WITHIRQTRACE 1
 
 //#define INT_ID_MASK		0x3ffuL
 /* Interrupt IDs reported by the HPPIR and IAR registers */
@@ -1155,8 +1156,9 @@ static void IRQ_Handler_GIC_G1(void)
 
 	// IHI0048B_b_gic_architecture_specification.pdf
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
-
-	//dbg_putchar('Y');
+#if WITHIRQTRACE
+	dbg_putchar('Y');
+#endif /* WITHIRQTRACE */
 	if (int_id == 1022)
 	{
 	}
@@ -1174,11 +1176,13 @@ static void IRQ_Handler_GIC_G1(void)
 	{
 		const IRQHandler_t f = IRQ_GetHandler(int_id);
 
-//		static const char hex [16] = "0123456789ABCDEF";
-//		if ((int_id >> 8) & 0x0F)
-//			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
-//		dbg_putchar(hex [(int_id >> 4) & 0x0F]);
-//		dbg_putchar(hex [(int_id >> 0) & 0x0F]);
+#if WITHIRQTRACE
+		static const char hex [16] = "0123456789ABCDEF";
+		if ((int_id >> 8) & 0x0F)
+			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
+		dbg_putchar(hex [(int_id >> 4) & 0x0F]);
+		dbg_putchar(hex [(int_id >> 0) & 0x0F]);
+#endif /* WITHIRQTRACE */
 
 		if (f != (IRQHandler_t) 0)
 		{
@@ -1243,7 +1247,9 @@ static void FIQ_Handler_GIC_G0(void)
 	// IHI0048B_b_gic_architecture_specification.pdf
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
 
-	//dbg_putchar('X');
+#if WITHIRQTRACE
+	dbg_putchar('Y');
+#endif /* WITHIRQTRACE */
 	if (int_id == 1022)
 	{
 	}
@@ -1261,11 +1267,13 @@ static void FIQ_Handler_GIC_G0(void)
 	{
 		const IRQHandler_t f = IRQ_GetHandler(int_id);
 
-//		static const char hex [16] = "0123456789ABCDEF";
-//		if ((int_id >> 8) & 0x0F)
-//			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
-//		dbg_putchar(hex [(int_id >> 4) & 0x0F]);
-//		dbg_putchar(hex [(int_id >> 0) & 0x0F]);
+#if WITHIRQTRACE
+		static const char hex [16] = "0123456789ABCDEF";
+		if ((int_id >> 8) & 0x0F)
+			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
+		dbg_putchar(hex [(int_id >> 4) & 0x0F]);
+		dbg_putchar(hex [(int_id >> 0) & 0x0F]);
+#endif /* WITHIRQTRACE */
 
 		if (f != (IRQHandler_t) 0)
 		{
