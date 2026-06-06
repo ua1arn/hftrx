@@ -2000,7 +2000,7 @@ static void cortexa_cpuinfo(void)
 			__get_MPIDR_EL1()
 			);
 	dbg_flush();
-#else
+#else /* defined(__aarch64__) */
 	dbg_putchar('$');
 	PRINTF("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08X, SCTLR=%08X, ACTLR=%08X, sp=%08" PRIX32 ", MPIDR=%08" PRIX32 "\n",
 			(unsigned) arm_hardware_cpuid(),
@@ -2013,7 +2013,7 @@ static void cortexa_cpuinfo(void)
 			__get_MPIDR()
 			);
 	dbg_flush();
-#endif
+#endif /* defined(__aarch64__) */
 }
 
 
@@ -2308,9 +2308,9 @@ static u_register_t read_mpidr(void)
 {
 #if __aarch64__
 	return __get_MPIDR_EL1();
-#else
+#else /* defined(__aarch64__) */
 	return __get_MPIDR();
-#endif
+#endif /* defined(__aarch64__) */
 }
 
 #define STATE_ON			8
@@ -2651,7 +2651,7 @@ void cpump_initialize(void)
 		//PRINTF("core%u stack: 0x%08X..0x%08X\n", core, (unsigned) ((uintptr_t) p), (unsigned) aarch64_stack_top);
 		aarch64_mp_cpuN_start((uintptr_t) Reset_CPUx_Handler, core);
 		arm_hardware_core_poweron(core);
-#else
+#else /* defined(__aarch64__) */
 		static const uint64_t aarch32_stack_size = UINT32_C(16) * 1024 * 1024;	/* crt_CortexA_CPUn.S */
 		extern uint32_t aarch32_stack_top;			/* crt_CortexA_CPUn.S */
 		extern void Reset_CPUx_Handler(void);		/* crt_CortexA_CPUn.S */
@@ -2665,7 +2665,7 @@ void cpump_initialize(void)
 		//PRINTF("core%u stack: 0x%08X..0x%08X\n", core, (unsigned) ((uintptr_t) p), (unsigned) aarch32_stack_top);
 		aarch32_mp_cpuN_start((uintptr_t) Reset_CPUx_Handler, core);
 		arm_hardware_core_poweron(core);
-#endif
+#endif /* defined(__aarch64__) */
 
 		LCLSPIN_LOCK(& cpu1init);	/* ждем пока запустившийся процессор не освободит этот spinlock */
 		LCLSPIN_UNLOCK(& cpu1init);
