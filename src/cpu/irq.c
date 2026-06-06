@@ -1157,7 +1157,7 @@ static void IRQ_Handler_GIC_G1(void)
 	// IHI0048B_b_gic_architecture_specification.pdf
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
 #if WITHIRQTRACE
-	dbg_putchar('Y');
+	//dbg_putchar('X');
 #endif /* WITHIRQTRACE */
 	if (int_id == 1022)
 	{
@@ -1177,6 +1177,7 @@ static void IRQ_Handler_GIC_G1(void)
 		const IRQHandler_t f = IRQ_GetHandler(int_id);
 
 #if WITHIRQTRACE
+		dbg_putchar('X');
 		static const char hex [16] = "0123456789ABCDEF";
 		if ((int_id >> 8) & 0x0F)
 			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
@@ -1248,7 +1249,7 @@ static void FIQ_Handler_GIC_G0(void)
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
 
 #if WITHIRQTRACE
-	dbg_putchar('Y');
+	//dbg_putchar('Y');
 #endif /* WITHIRQTRACE */
 	if (int_id == 1022)
 	{
@@ -1268,6 +1269,7 @@ static void FIQ_Handler_GIC_G0(void)
 		const IRQHandler_t f = IRQ_GetHandler(int_id);
 
 #if WITHIRQTRACE
+		dbg_putchar('Y');
 		static const char hex [16] = "0123456789ABCDEF";
 		if ((int_id >> 8) & 0x0F)
 			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
