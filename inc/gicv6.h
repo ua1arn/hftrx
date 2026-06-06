@@ -8,9 +8,9 @@
 #ifndef INC_GICV6_H_
 #define INC_GICV6_H_
 
+/* ##########################  GIC functions  ###################################### */
 #if (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || \
-    defined(DOXYGEN)
-
+     defined(DOXYGEN)
 
 #if defined (GIC_REDISTRIBUTOR_BASE)
 
@@ -407,12 +407,6 @@ typedef struct
 
 #endif /* GIC_INTERFACE_BASE */
 
-#endif /*  (__GIC_PRESENT == 1U) || defined(DOXYGEN) */
-
-
-/* ##########################  GIC functions  ###################################### */
-#if (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || \
-     defined(DOXYGEN)
 
 #if defined (GIC_DISTRIBUTOR_BASE)
 
@@ -1327,6 +1321,7 @@ __STATIC_INLINE void GIC_RedistInit(void)
     }
 }
 #endif /* GIC_REDISTRIBUTOR_BASE */
-#endif
+
+#endif /* (__GIC_PRESENT == 1U)) || defined(DOXYGEN) */
 
 #endif /* INC_GICV6_H_ */
