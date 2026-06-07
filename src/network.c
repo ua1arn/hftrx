@@ -85,7 +85,7 @@ static void init_dhserv(void)
 		IP4_ADDR(& dhcpentries [i].addr, myIP [0], myIP [1], myIP [2], myIP [3] + 5);
 		memcpy(& dhcpentries [i].subnet, myNETMASK, 4);
 	}
-	IP4_ADDR(& dhcp_config.router, myIP [0], myIP [1], myIP [2], myIP [3]);
+	IP4_ADDR(& dhcp_config.router, myGATEWAY [0], myGATEWAY [1], myGATEWAY [2], myGATEWAY [3]);
 	IP4_ADDR(& dhcp_config.dns, myIP [0], myIP [1], myIP [2], myIP [3]);
 
 	while (dhserv_init(& dhcp_config) != ERR_OK)
