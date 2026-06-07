@@ -37,9 +37,9 @@
 
 #define DHCP_SERVER 1
 
-static uint8_t myIP [4] = { 192, 168, 17, 33 };
-static uint8_t myNETMASK [4] = {255, 255, 255, 0};
-static uint8_t myGATEWAY [4] = { 0, 0, 0, 0 };
+static ip4_addr_t myIP = IPADDR4_INIT_BYTES(192, 168, 17, 33);
+static ip4_addr_t myNETMASK = IPADDR4_INIT_BYTES(255, 255, 255, 0);
+static ip4_addr_t myGATEWAY = IPADDR4_INIT_BYTES( 0, 0, 0, 0);
 
 /*
  *  В конфигурации описано имя и размер
@@ -82,11 +82,15 @@ static void init_dhserv(void)
 
 	for (int i = 0; i < ARRAY_SIZE(dhcpentries); ++ i)
 	{
-		IP4_ADDR(& dhcpentries [i].addr, myIP [0], myIP [1], myIP [2], myIP [3] + 5);
-		memcpy(& dhcpentries [i].subnet, myNETMASK, 4);
+		u16_t p1 = ip4_addr1_16_val(myIP);
+		u16_t p2 = ip4_addr2_16_val(myIP);
+		u16_t p3 = ip4_addr3_16_val(myIP);
+		u16_t p4 = ip4_addr4_16_val(myIP) + 5;
+		IP4_ADDR(& dhcpentries [i].addr, p1, p2, p3, p4);
+		dhcpentries [i].subnet = myNETMASK;
 	}
-	IP4_ADDR(& dhcp_config.router, myGATEWAY [0], myGATEWAY [1], myGATEWAY [2], myGATEWAY [3]);
-	IP4_ADDR(& dhcp_config.dns, myIP [0], myIP [1], myIP [2], myIP [3]);
+	ip4_addr_copy(dhcp_config.router, myGATEWAY);
+	ip4_addr_copy(dhcp_config.dns, myIP);
 
 	while (dhserv_init(& dhcp_config) != ERR_OK)
 		;
@@ -102,7 +106,7 @@ static bool dns_query_proc(const char *name, ip4_addr_t *addr)
 		  strcmp(name, "www.run.stm") == 0
 		  )
   {
-	IP4_ADDR(addr, myIP [0], myIP [1], myIP [2], myIP [3]);
+	ip4_addr_copy(* addr, myIP);
     return true;
   }
   return false;
@@ -605,20 +609,11 @@ static void init_netif(void)
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 
-	static ip_addr_t netmask;// [4] = NETMASK;
-	static ip_addr_t gateway;// [4] = GATEWAY;
-
-	IP4_ADDR(& netmask, myNETMASK [0], myNETMASK [1], myNETMASK [2], myNETMASK [3]);
-	IP4_ADDR(& gateway, myGATEWAY [0], myGATEWAY [1], myGATEWAY [2], myGATEWAY [3]);
-
-	static ip_addr_t vaddr;// [4]  = IPADDR;
-	IP4_ADDR(& vaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
-
 	struct netif  *netif = & nic_netif_data;
 	netif->hwaddr_len = 6;
 	memcpy(netif->hwaddr, hwaddrv, 6);
 
-	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
+	netif = netif_add(netif, & myIP, & myNETMASK, & myGATEWAY, NULL, netif_init_cb, ip_input);
 	netif_set_default(netif);
 
 	while (!netif_is_up(netif))
