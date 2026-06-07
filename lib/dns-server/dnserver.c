@@ -148,7 +148,7 @@ static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 
 	len = parse_next_query(header + 1, p->len - sizeof(dns_header_t), &query);
 	if (len < 0) goto error;
-	if (!query_proc(query.name, &host_addr)) goto error;
+	if (!query_proc(query.name, &host_addr)) goto notfound;
 
 	len += sizeof(dns_header_t);
 	out = pbuf_alloc(PBUF_TRANSPORT, len + 16, PBUF_POOL);
@@ -171,6 +171,33 @@ static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 
 error:
 	pbuf_free(p);
+	return;
+
+notfound:
+	/* name lookup fail */
+
+	len += sizeof(dns_header_t);
+	out = pbuf_alloc(PBUF_TRANSPORT, len /*+ sizeof(struct dns_answer)*/, PBUF_POOL);
+	if (out == NULL) goto error;
+
+	memcpy(out->payload, p->payload, len);
+	header = (dns_header_t *)out->payload;
+	header->flags.qr = 1;    /* replay */
+	header->flags.rcode = 5;    // Refused
+	header->n_record[1] = htons(0);
+//    answer = (struct dns_answer *)((uint8_t *)out->payload + len);
+//    answer->name = htons(0xC00C);
+//    answer->type = htons(1);
+//    answer->Class = htons(1);
+//    answer->ttl = htonl(32);
+//    answer->len = htons(4);
+//    answer->addr = 0;//host_addr.addr;
+
+	udp_sendto(upcb, out, addr, port);
+	pbuf_free(out);
+	pbuf_free(p);
+	return;
+
 }
 
 err_t dnserv_init(const ip_addr_t *bind, uint16_t port, dns_query_proc_t qp)

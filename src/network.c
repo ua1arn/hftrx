@@ -112,10 +112,9 @@ static bool dns_query_proc(const char *name, ip4_addr_t *addr)
 #if 1
 static void init_dnserv(void)
 {
-	ip4_addr_t ipaddr = * IP_ADDR_ANY;
 	//IP4_ADDR(& ipaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
 
-	while (dnserv_init(& ipaddr, 53, dns_query_proc) != ERR_OK)
+	while (dnserv_init(IP_ADDR_ANY, 53, dns_query_proc) != ERR_OK)
 		;
 }
 #endif
