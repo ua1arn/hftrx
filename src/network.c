@@ -82,14 +82,14 @@ static void init_dhserv(void)
 
 	for (int i = 0; i < ARRAY_SIZE(dhcpentries); ++ i)
 	{
-		u16_t p1 = ip4_addr1_16_val(myIP);
-		u16_t p2 = ip4_addr2_16_val(myIP);
-		u16_t p3 = ip4_addr3_16_val(myIP);
-		u16_t p4 = ip4_addr4_16_val(myIP) + 5;
+		const u8_t p1 = ip4_addr1_val(myIP);
+		const u8_t p2 = ip4_addr2_val(myIP);
+		const u8_t p3 = ip4_addr3_val(myIP);
+		const u8_t p4 = ip4_addr4_val(myIP) + 5;
 		IP4_ADDR(& dhcpentries [i].addr, p1, p2, p3, p4);
 		dhcpentries [i].subnet = myNETMASK;
 	}
-	ip4_addr_copy(dhcp_config.router, myGATEWAY);
+	ip4_addr_copy(dhcp_config.router, myGATEWAY);	// 0.0.0.0 - не назначается (иначе не работают другие интерфейсы)
 	ip4_addr_copy(dhcp_config.dns, myIP);
 
 	while (dhserv_init(& dhcp_config) != ERR_OK)
