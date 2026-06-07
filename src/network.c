@@ -40,7 +40,7 @@
 static ip4_addr_t myIP = IPADDR4_INIT_BYTES(192, 168, 17, 33);
 static ip4_addr_t myNETMASK = IPADDR4_INIT_BYTES(255, 255, 255, 0);
 static ip4_addr_t myGATEWAY = IPADDR4_INIT_BYTES( 0, 0, 0, 0);
-
+#define LOCALNETNAME "storch"
 /*
  *  В конфигурации описано имя и размер
  *
@@ -75,7 +75,7 @@ static void init_dhserv(void)
 	{
 		IPADDR4_INIT_BYTES(192, 168, 7, 1), 67,
 		IPADDR4_INIT_BYTES(192, 168, 7, 1),
-		"stm",
+		LOCALNETNAME,
 		ARRAY_SIZE(dhcpentries),
 		dhcpentries
 	};
@@ -101,11 +101,19 @@ static void init_dhserv(void)
 static bool dns_query_proc(const char *name, ip4_addr_t *addr)
 {
 	PRINTF("dns_query_proc: name='%s'\n", name);
+	if (strcmp(name, "wpad." LOCALNETNAME) == 0)
+	{
+		PRINTF("dns_query_proc: name='%s' -> loopback\n", name);
+		ip4_addr_set_loopback(addr);
+		return true;
+	}
   if (
-		  strcmp(name, "run.stm") == 0 ||
-		  strcmp(name, "www.run.stm") == 0
+		  strcmp(name, LOCALNETNAME) == 0 ||
+		  strcmp(name, "run." LOCALNETNAME) == 0 ||
+		  strcmp(name, "www.run." LOCALNETNAME) == 0
 		  )
   {
+		PRINTF("dns_query_proc: name='%s' !!!!!!!!!!!!!!!!!!!!!!!!\n", name);
 	ip4_addr_copy(* addr, myIP);
     return true;
   }
