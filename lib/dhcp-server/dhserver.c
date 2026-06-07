@@ -2,17 +2,17 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2015 by Sergey Fetisov <fsenok@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -86,40 +86,33 @@ typedef struct
     uint8_t  dp_giaddr[4];    /* gateway IP address */
     uint8_t  dp_chaddr[16];   /* client hardware address */
     uint8_t  dp_legacy[192];
-    uint8_t  dp_magic[4];     
+    uint8_t  dp_magic[4];
     uint8_t  dp_options[275]; /* options area */
 } DHCP_TYPE;
 
 DHCP_TYPE dhcp_data;
 static struct udp_pcb *pcb = NULL;
-static dhcp_config_t *config = NULL;
-
-
-static uint32_t getsafe32(const uint8_t * p)
-{
-	return
-			((uint32_t) p [0] << 0) |
-			((uint32_t) p [1] << 8) |
-			((uint32_t) p [2] << 16) |
-			((uint32_t) p [3] << 24) |
-			0;
-}
-
-static void putsafe32(uint8_t * p, uint32_t v)
-{
-	p [0] = (v >> 0) & 0xFF;
-	p [1] = (v >> 8) & 0xFF;
-	p [2] = (v >> 16) & 0xFF;
-	p [3] = (v >> 24) & 0xFF;
-}
+static const dhcp_config_t *config = NULL;
 
 char magic_cookie[] = {0x63,0x82,0x53,0x63};
 
-static dhcp_entry_t *entry_by_ip(uint32_t ip)
+static ip4_addr_t get_ip(const uint8_t *pnt)
+{
+  ip4_addr_t result;
+  memcpy(&result, pnt, sizeof(result));
+  return result;
+}
+
+static void set_ip(uint8_t *pnt, ip4_addr_t value)
+{
+  memcpy(pnt, &value.addr, sizeof(value.addr));
+}
+
+static dhcp_entry_t *entry_by_ip(ip4_addr_t ip)
 {
 	int i;
 	for (i = 0; i < config->num_entry; i++)
-		if (getsafe32(config->entries[i].addr) == ip)
+		if (config->entries[i].addr.addr == ip.addr)
 			return &config->entries[i];
 	return NULL;
 }
@@ -143,7 +136,7 @@ static dhcp_entry_t *vacant_address(void)
 	int i;
 	for (i = 0; i < config->num_entry; i++)
 		if (is_vacant(config->entries + i))
-			return config->entries + 1;
+			return config->entries + i;
 	return NULL;
 }
 
@@ -169,11 +162,11 @@ uint8_t *find_dhcp_option(uint8_t *attrs, int size, uint8_t attr)
 int fill_options(void *dest,
 	uint8_t msg_type,
 	const char *domain,
-	uint32_t dns,
+	ip4_addr_t dns,
 	int lease_time,
-	uint32_t serverid,
-	uint32_t router,
-	uint32_t subnet)
+	ip4_addr_t serverid,
+	ip4_addr_t router,
+	ip4_addr_t subnet)
 {
 	uint8_t *ptr = (uint8_t *)dest;
 	/* ACK message type */
@@ -184,7 +177,7 @@ int fill_options(void *dest,
 	/* dhcp server identifier */
 	*ptr++ = DHCP_SERVERID;
 	*ptr++ = 4;
-	putsafe32(ptr, serverid);
+	set_ip(ptr, serverid);
 	ptr += 4;
 
 	/* lease time */
@@ -198,15 +191,15 @@ int fill_options(void *dest,
 	/* subnet mask */
 	*ptr++ = DHCP_SUBNETMASK;
 	*ptr++ = 4;
-	putsafe32(ptr, subnet);
+	set_ip(ptr, subnet);
 	ptr += 4;
 
 	/* router */
-	if (router != 0)
+	if (router.addr != 0)
 	{
 		*ptr++ = DHCP_ROUTER;
 		*ptr++ = 4;
-		putsafe32(ptr, router);
+		set_ip(ptr, router);
 		ptr += 4;
 	}
 
@@ -221,11 +214,11 @@ int fill_options(void *dest,
 	}
 
 	/* domain name server (DNS) */
-	if (dns != 0)
+	if (dns.addr != 0)
 	{
 		*ptr++ = DHCP_DNSSERVER;
 		*ptr++ = 4;
-		putsafe32(ptr, dns);
+		set_ip(ptr, dns);
 		ptr += 4;
 	}
 
@@ -234,16 +227,28 @@ int fill_options(void *dest,
 	return ptr - (uint8_t *)dest;
 }
 
-static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const struct ip4_addr *addr, u16_t port)
+static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port)
 {
 	uint8_t *ptr;
 	dhcp_entry_t *entry;
 	struct pbuf *pp;
+	struct netif *netif = netif_get_by_index(p->if_idx);
 
-	int n = p->len;
+	(void)arg;
+	(void)addr;
+
+	unsigned n = p->len;
 	if (n > sizeof(dhcp_data)) n = sizeof(dhcp_data);
 	memcpy(&dhcp_data, p->payload, n);
-	switch (dhcp_data.dp_options[2])
+
+	ptr = find_dhcp_option(dhcp_data.dp_options, sizeof(dhcp_data.dp_options), DHCP_MESSAGETYPE);
+	if (ptr == NULL)
+	{
+		pbuf_free(p);
+		return;
+	}
+
+	switch (ptr[2])
 	{
 		case DHCP_DISCOVER:
 			entry = entry_by_mac(dhcp_data.dp_chaddr);
@@ -253,8 +258,7 @@ static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 			dhcp_data.dp_op = 2; /* reply */
 			dhcp_data.dp_secs = 0;
 			dhcp_data.dp_flags = 0;
-			//*(uint32_t *)dhcp_data.dp_yiaddr = *(uint32_t *)entry->addr;
-			memcpy(dhcp_data.dp_yiaddr, entry->addr, 4);
+			set_ip(dhcp_data.dp_yiaddr, entry->addr);
 			memcpy(dhcp_data.dp_magic, magic_cookie, 4);
 
 			memset(dhcp_data.dp_options, 0, sizeof(dhcp_data.dp_options));
@@ -262,11 +266,11 @@ static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 			fill_options(dhcp_data.dp_options,
 				DHCP_OFFER,
 				config->domain,
-				getsafe32(config->dns),
-				entry->lease, 
-				getsafe32(config->addr),
-				getsafe32(config->addr),
-				getsafe32(entry->subnet));
+				config->dns,
+				entry->lease,
+				*netif_ip4_addr(netif),
+				config->router,
+				*netif_ip4_netmask(netif));
 
 			pp = pbuf_alloc(PBUF_TRANSPORT, sizeof(dhcp_data), PBUF_POOL);
 			if (pp == NULL) break;
@@ -287,7 +291,7 @@ static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 			if (entry != NULL) free_entry(entry);
 
 			/* 3. find requested ipaddr */
-			entry = entry_by_ip(getsafe32(ptr));
+			entry = entry_by_ip(get_ip(ptr));
 			if (entry == NULL) break;
 			if (!is_vacant(entry)) break;
 
@@ -304,11 +308,11 @@ static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 			fill_options(dhcp_data.dp_options,
 				DHCP_ACK,
 				config->domain,
-				getsafe32(config->dns),
-				entry->lease, 
-				getsafe32(config->addr),
-				getsafe32(config->addr),
-				getsafe32(entry->subnet));
+				config->dns,
+				entry->lease,
+				*netif_ip4_addr(netif),
+				config->router,
+				*netif_ip4_netmask(netif));
 
 			/* 6. send ACK */
 			pp = pbuf_alloc(PBUF_TRANSPORT, sizeof(dhcp_data), PBUF_POOL);
@@ -325,7 +329,7 @@ static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 	pbuf_free(p);
 }
 
-err_t dhserv_init(dhcp_config_t *c)
+err_t dhserv_init(const dhcp_config_t *c)
 {
 	err_t err;
 	udp_init();

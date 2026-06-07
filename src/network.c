@@ -65,16 +65,16 @@ static void init_dhserv(void)
 	PRINTF("network_initialize: init_dhserv\n");
 	static dhcp_entry_t dhcpentries [] =
 	{
-		{ {0}, {192, 168, 7, 2}, {255, 255, 255, 0}, 24 * 60 * 60 },
-		{ {0}, {192, 168, 7, 3}, {255, 255, 255, 0}, 24 * 60 * 60 },
-		{ {0}, {192, 168, 7, 4}, {255, 255, 255, 0}, 24 * 60 * 60 },
-		{ {0}, {192, 168, 7, 5}, {255, 255, 255, 0}, 24 * 60 * 60 },
+		{ {0}, IPADDR4_INIT_BYTES(192, 168, 7, 2), IPADDR4_INIT_BYTES(255, 255, 255, 0), 24 * 60 * 60 },
+		{ {0}, IPADDR4_INIT_BYTES(192, 168, 7, 3), IPADDR4_INIT_BYTES(255, 255, 255, 0), 24 * 60 * 60 },
+		{ {0}, IPADDR4_INIT_BYTES(192, 168, 7, 4), IPADDR4_INIT_BYTES(255, 255, 255, 0), 24 * 60 * 60 },
+		{ {0}, IPADDR4_INIT_BYTES(192, 168, 7, 5), IPADDR4_INIT_BYTES(255, 255, 255, 0), 24 * 60 * 60 },
 	};
 
 	static dhcp_config_t dhcp_config =
 	{
-		{192, 168, 7, 1}, 67,
-		{192, 168, 7, 1},
+		IPADDR4_INIT_BYTES(192, 168, 7, 1), 67,
+		IPADDR4_INIT_BYTES(192, 168, 7, 1),
 		"stm",
 		ARRAY_SIZE(dhcpentries),
 		dhcpentries
@@ -82,14 +82,11 @@ static void init_dhserv(void)
 
 	for (int i = 0; i < ARRAY_SIZE(dhcpentries); ++ i)
 	{
-		memcpy(dhcpentries [i].addr, myIP, 4);
-		memcpy(dhcpentries [i].subnet, myNETMASK, 4);
-		dhcpentries [i].addr [3] += i + 5;
+		IP4_ADDR(& dhcpentries [i].addr, myIP [0], myIP [1], myIP [2], myIP [3] + 5);
+		memcpy(& dhcpentries [i].subnet, myNETMASK, 4);
 	}
-	memcpy(dhcp_config.addr, myIP, 4);
-	memcpy(dhcp_config.dns, myIP, 4);
-//	IP4_ADDR(& dhcp_config.addr, myIP [0], myIP [1], myIP [2], myIP [3] );
-//	IP4_ADDR(& dhcp_config.dns, myIP [0], myIP [1], myIP [2], myIP [3]);
+	IP4_ADDR(& dhcp_config.router, myIP [0], myIP [1], myIP [2], myIP [3]);
+	IP4_ADDR(& dhcp_config.dns, myIP [0], myIP [1], myIP [2], myIP [3]);
 
 	while (dhserv_init(& dhcp_config) != ERR_OK)
 		;
@@ -99,6 +96,7 @@ static void init_dhserv(void)
 
 static bool dns_query_proc(const char *name, ip4_addr_t *addr)
 {
+	PRINTF("dns_query_proc: name='%s'\n", name);
   if (
 		  strcmp(name, "run.stm") == 0 ||
 		  strcmp(name, "www.run.stm") == 0
@@ -114,8 +112,8 @@ static bool dns_query_proc(const char *name, ip4_addr_t *addr)
 #if 1
 static void init_dnserv(void)
 {
-	ip4_addr_t ipaddr;
-	IP4_ADDR(& ipaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
+	ip4_addr_t ipaddr = * IP_ADDR_ANY;
+	//IP4_ADDR(& ipaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
 
 	while (dnserv_init(& ipaddr, 53, dns_query_proc) != ERR_OK)
 		;

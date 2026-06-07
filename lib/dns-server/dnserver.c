@@ -2,17 +2,17 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2015 by Sergey Fetisov <fsenok@gmail.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -37,7 +37,7 @@ dns_query_proc_t query_proc = NULL;
 #pragma pack(push, 1)
 typedef struct
 {
-#if LWIP_BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
 	uint8_t rd: 1,     /* Recursion Desired */
 	        tc: 1,     /* Truncation Flag */
 	        aa: 1,     /* Authoritative Answer Flag */
@@ -83,14 +83,21 @@ typedef struct dns_query
 	uint16_t Class;
 } dns_query_t;
 
+static uint16_t get_uint16(const uint8_t *pnt)
+{
+  uint16_t result;
+  memcpy(&result, pnt, sizeof(result));
+  return result;
+}
+
 static int parse_next_query(void *data, int size, dns_query_t *query)
 {
 	int len;
-	int lables;
+	int labels;
 	uint8_t *ptr;
 
 	len = 0;
-	lables = 0;
+	labels = 0;
 	ptr = (uint8_t *)data;
 
 	while (true)
@@ -100,7 +107,7 @@ static int parse_next_query(void *data, int size, dns_query_t *query)
 		lable_len = *ptr++;
 		size--;
 		if (lable_len == 0) break;
-		if (lables > 0)
+		if (labels > 0)
 		{
 			if (len == DNS_MAX_HOST_NAME_LEN) return -2;
 			query->name[len++] = '.';
@@ -111,26 +118,28 @@ static int parse_next_query(void *data, int size, dns_query_t *query)
 		len += lable_len;
 		ptr += lable_len;
 		size -= lable_len;
-		lables++;
+		labels++;
 	}
 
 	if (size < 4) return -1;
 	query->name[len] = 0;
-	query->type = *(uint16_t *)ptr;
+	query->type = get_uint16(ptr);
 	ptr += 2;
-	query->Class = *(uint16_t *)ptr;
+	query->Class = get_uint16(ptr);
 	ptr += 2;
 	return ptr - (uint8_t *)data;
 }
 
-static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const struct ip4_addr *addr, u16_t port)
+static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port)
 {
 	int len;
 	dns_header_t *header;
 	static dns_query_t query;
 	struct pbuf *out;
-	ip_addr_t host_addr;
+	ip4_addr_t host_addr;
 	dns_answer_t *answer;
+
+	(void)arg;
 
 	if (p->len <= sizeof(dns_header_t)) goto error;
 	header = (dns_header_t *)p->payload;
@@ -139,20 +148,15 @@ static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 
 	len = parse_next_query(header + 1, p->len - sizeof(dns_header_t), &query);
 	if (len < 0) goto error;
-	if (!query_proc(query.name, &host_addr))
-	{
-		//debug_printf_P("udp_recv_proc: '%s' not found\n", query.name);
-		goto notfound;
-	}
+	if (!query_proc(query.name, &host_addr)) goto error;
 
-	/* name lookup okay */
 	len += sizeof(dns_header_t);
-	out = pbuf_alloc(PBUF_TRANSPORT, len + sizeof(struct dns_answer), PBUF_POOL);
+	out = pbuf_alloc(PBUF_TRANSPORT, len + 16, PBUF_POOL);
 	if (out == NULL) goto error;
 
 	memcpy(out->payload, p->payload, len);
 	header = (dns_header_t *)out->payload;
-	header->flags.qr = 1;	/* replay */
+	header->flags.qr = 1;
 	header->n_record[1] = htons(1);
 	answer = (struct dns_answer *)((uint8_t *)out->payload + len);
 	answer->name = htons(0xC00C);
@@ -161,42 +165,15 @@ static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 	answer->ttl = htonl(32);
 	answer->len = htons(4);
 	answer->addr = host_addr.addr;
-	
-	udp_sendto(upcb, out, addr, port);
-	pbuf_free(out);
-	pbuf_free(p);
-	return;
-
-notfound:
-	/* name lookup fail */
-
-	len += sizeof(dns_header_t);
-	out = pbuf_alloc(PBUF_TRANSPORT, len /*+ sizeof(struct dns_answer)*/, PBUF_POOL);
-	if (out == NULL) goto error;
-
-	memcpy(out->payload, p->payload, len);
-	header = (dns_header_t *)out->payload;
-	header->flags.qr = 1;	/* replay */
-	header->flags.rcode = 5;	// Refused
-	header->n_record[1] = htons(0);
-//	answer = (struct dns_answer *)((uint8_t *)out->payload + len);
-//	answer->name = htons(0xC00C);
-//	answer->type = htons(1);
-//	answer->Class = htons(1);
-//	answer->ttl = htonl(32);
-//	answer->len = htons(4);
-//	answer->addr = 0;//host_addr.addr;
 
 	udp_sendto(upcb, out, addr, port);
 	pbuf_free(out);
-	pbuf_free(p);
-	return;
 
 error:
 	pbuf_free(p);
 }
 
-err_t dnserv_init(ip_addr_t *bind, uint16_t port, dns_query_proc_t qp)
+err_t dnserv_init(const ip_addr_t *bind, uint16_t port, dns_query_proc_t qp)
 {
 	err_t err;
 	udp_init();
@@ -215,7 +192,7 @@ err_t dnserv_init(ip_addr_t *bind, uint16_t port, dns_query_proc_t qp)
 	return ERR_OK;
 }
 
-void dnserv_free()
+void dnserv_free(void)
 {
 	if (pcb == NULL) return;
 	udp_remove(pcb);
