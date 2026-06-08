@@ -3595,7 +3595,7 @@ static uint8_t gicshadow_prio [1024];
 static void arm_hardware_gicsfetch(void)
 {
 	// Get ITLinesNumber
-	const unsigned ITLinesNumber = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
+	const unsigned ITLinesNumber = ((GIC_DistributorInfo() & 0x1F) + 1) * 32;
 	unsigned int_id;
 
 	LCLSPIN_LOCK(& gicdistrib_lock);

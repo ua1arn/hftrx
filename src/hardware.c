@@ -2578,6 +2578,8 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	LCLSPIN_UNLOCK(& cpu1userstart [core]);
 	InitializeIrql(IRQL_USER);	// nested interrupts support
 
+	GIC_SetPriority(SGI15_IRQn, ARM_SYSTEM_PRIORITY);	// for tests, non-atomic operation
+
 #if CPUSTYLE_VM14
 	{
 		unsigned mask = 1u << 24; // GC24 - DBGLED1

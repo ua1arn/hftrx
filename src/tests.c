@@ -2383,7 +2383,7 @@ void printAllEnabledIRQs(void)
 {
 
 	// Get ITLinesNumber
-	const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
+	const unsigned n = ((GIC_DistributorInfo() & 0x1F) + 1) * 32;
 	unsigned i;
 	PRINTF("printAllEnabledIRQs stare: n=%u\n", n);
 	// 32 - skip SGI handlers (keep enabled for CPU1 start).
@@ -7970,6 +7970,14 @@ void nand_tests(void)
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
 
+#if WITHDEBUG && 0
+static void ipchandlers(void)
+{
+	unsigned core = arm_hardware_cpuid();
+	PRINTF("Handler: core = %u\n", core);
+}
+
+#endif
 void hightests(void)
 {
 #if LCDMODE_LTDC
@@ -7981,7 +7989,21 @@ void hightests(void)
 #if 1 && defined (__GNUC__)
 	{
 
-		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
+		PRINTF("__GNUC__=%d, __GNUC_MINOR__=%d\n", (int) __GNUC__, (int) __GNUC_MINOR__);
+	}
+#endif
+#if 0
+	{
+		unsigned core;
+		PRINTF("IPC interrupte demo\n");
+		arm_hardware_set_handler_system(SGI15_IRQn, ipchandlers);
+		for (core = 0; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
+		{
+			GIC_SendSGI(SGI15_IRQn, 1U << core, 0x00);	// other CORE, filer=0
+			local_delay_ms(250);
+
+		}
+		arm_hardware_disable_handler(SGI15_IRQn);
 	}
 #endif
 #if 0

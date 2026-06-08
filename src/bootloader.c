@@ -164,7 +164,7 @@ bootloader_launch_app(uintptr_t startfunc, uint_fast8_t x64bit)
 	// Disable all IRQs
 	{
 		// Get ITLinesNumber
-		const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
+		const unsigned n = ((GIC_DistributorInfo() & 0x1F) + 1) * 32;
 		unsigned i;
 		// 32 - skip SGI handlers (keep enabled for CPU1 start).
 		for (i = 32; i < n; ++ i)
