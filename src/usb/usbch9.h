@@ -225,11 +225,6 @@ enum
 /* Последовательность функций в данном enum должна соответствовать порядку использования в fill_Configuration_main_group */
 enum interfaces_tag
 {
-#if WITHUSBDFU
-	/* Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10 */
-	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
-#endif /* WITHUSBDFU */
-
 #if WITHUSBCDCACM
 	// функция виртуального последовательного порта
 	INTERFACE_CDC_base,
@@ -237,6 +232,11 @@ enum interfaces_tag
 	INTERFACE_CDC_DATA,		/* CDC ACM data Interface */
 	INTERFACE_CDC_last = INTERFACE_CDC_base + WITHUSBCDCACM_N * 2 - 1,
 #endif /* WITHUSBCDCACM */
+
+#if WITHUSBDFU
+	/* Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10 */
+	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
+#endif /* WITHUSBDFU */
 
 #if WITHUSBUAC
 	#if WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUTRENESAS
