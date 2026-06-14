@@ -21,7 +21,7 @@ TRGT2 = arm-none-eabi
 TRGT = $(TRGT2)-
 
 #XFEL = ../../tools/xfel-windows-v1.3.5/xfel
-XFEL = ./xfel_fixed_t113-s3
+XFEL = ./xfel_t153_fixed
 BUSYBOX = busybox
 
 #UADEFS += -D"WITHSMPSYSTEM"
