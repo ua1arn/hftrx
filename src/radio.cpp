@@ -19928,7 +19928,9 @@ void initialize2(void)
 #endif /*  ! LCDMODE_DUMMY */
 		PRINTF(PSTR("%s\n"), msg);
 		for (;;)
-			;
+		{
+			watchdog_ping();
+		}
 	}
 	PRINTF(PSTR("KBD ok\n"));
 
@@ -19962,7 +19964,9 @@ void initialize2(void)
 		wrong_NVRAM_END();
 		//hardware_cw_diagnostics(0, 0, 0);	// 'S'
 		for (;;)
-			;
+		{
+			watchdog_ping();
+		}
 	}
 	else
 	{
@@ -20025,7 +20029,7 @@ void initialize2(void)
 #if ! LCDMODE_DUMMY
 			static const char msg [] = "ERASE: Press SPL";
 			display2_fillbg(& dbv);
-			display_text(db, 0, 0, msg, strlen(msg), MSGYCELLS, & dbstylev);
+			display_text(& dbv, 0, 0, msg, strlen(msg), MSGYCELLS, & dbstylev);
 			colmain_nextfb();
 #endif /* ! LCDMODE_DUMMY */
 
@@ -20033,6 +20037,7 @@ void initialize2(void)
 			{
 				while (kbd_scan(& kbch) == 0)
 				{
+					watchdog_ping();
 					kbd_pass();
 					local_delay_ms(KBD_TICKS_PERIOD * 1000 / TICKS_FREQUENCY);
 				}
@@ -20077,7 +20082,9 @@ void initialize2(void)
 
 			PRINTF(PSTR("NVRAM fault1\n"));
 			for (;;)
-				;
+			{
+				watchdog_ping();
+			}
 		}
 #if WITHMENU
 		defaultsettings();		/* загрузка в nvram установок по умолчанию */
@@ -20118,6 +20125,7 @@ void initialize2(void)
 			{
 				while (kbd_scan(& kbch) == 0)
 				{
+					watchdog_ping();
 					kbd_pass();
 					local_delay_ms(KBD_TICKS_PERIOD * 1000 / TICKS_FREQUENCY);
 				}
