@@ -853,6 +853,16 @@ __STATIC_FORCEINLINE void __set_ICC_IGRPEN1_EL1(uint64_t igrpen1)
   //__ASM volatile("MSR  icc_igrpen1_el1, %0" : : "r" (igrpen1) : "memory");
 }
 
+//__STATIC_FORCEINLINE void __set_ICC_SGI1R_EL1(uint64_t value)
+//{
+//	__MSR(ssICC_SGI1R_EL1, value);
+//}
+
+__STATIC_FORCEINLINE void __set_ICC_SGI0R_EL1(uint64_t value)
+{
+	__MSR(ssICC_SGI0R_EL1, value);
+}
+
 #else /* defined (__aarch64__) */
 
 /** \brief  AArch64 System registers to access the Generic Interrupt Controller CPU interface
@@ -972,6 +982,12 @@ __STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
     __MCR32(sICC_PMR_EL1, value);
 }
 
+__STATIC_FORCEINLINE void __set_ICC_SGI1R_EL1(uint32_t value)
+{
+    __MCR32(sICC_SGI1R_EL1, value);
+    __MCR32(sICC_SGI0R_EL1, value);
+}
+
 #endif	/* defined (__aarch64__) */
 
 /** \brief Enable the CPU's interrupt interface.
@@ -1087,6 +1103,63 @@ __STATIC_INLINE uint32_t GIC_GetIRQStatus(IRQn_Type IRQn)
   return ((active<<1U) | pending);
 }
 
+/* ICC_SGIR */
+#define ICC_SGIR_TARGETLIST_SHIFT (0)
+#define ICC_SGIR_TARGETLIST_MASK  (0xffff)
+#define ICC_SGIR_AFF_MASK         (0xff)
+#define ICC_SGIR_AFF1_SHIFT       (16)
+#define ICC_SGIR_INTID_SHIFT      (24)
+#define ICC_SGIR_INTID_MASK       (0xf)
+#define ICC_SGIR_AFF2_SHIFT       (32)
+#define ICC_SGIR_IRM_SHIFT        (40)
+#define ICC_SGIR_IRM_MASK         (0x1)
+#define ICC_SGIR_RS_SHIFT         (44)
+#define ICC_SGIR_RS_MASK          (0xf)
+#define ICC_SGIR_AFF3_SHIFT       (48)
+
+#define COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, intid, irm, rs, tlist) \
+    ((((uint64_t)(aff3) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF3_SHIFT) |  \
+     (((uint64_t)(rs) & ICC_SGIR_RS_MASK) << ICC_SGIR_RS_SHIFT) |       \
+     (((uint64_t)(irm) & ICC_SGIR_IRM_MASK) << ICC_SGIR_IRM_SHIFT) |    \
+     (((uint64_t)(aff2) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF2_SHIFT) |  \
+     (((intid) & ICC_SGIR_INTID_MASK) << ICC_SGIR_INTID_SHIFT) |        \
+     (((aff1) & ICC_SGIR_AFF_MASK) << ICC_SGIR_AFF1_SHIFT) |            \
+     (((tlist) & ICC_SGIR_TARGETLIST_MASK) << ICC_SGIR_TARGETLIST_SHIFT))
+
+#define MPIDR_TO_RS(mpidr) (MPIDR_TO_AFF_LEVEL(mpidr, 0) >> 4)
+
+/** \brief Generate a software interrupt (Affinity Routing version).
+* \param [in] IRQn Software interrupt to be generated.
+* \param [in] target_aff Target affinity in MPIDR form.
+* \param [in] tlist List of CPUs the software interrupt should be forwarded to.
+*/
+__STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16_t tlist)
+{
+    uint32_t aff3, aff2, aff1, rs;
+    uint64_t val;
+
+    if (IRQn >= 16)
+        return;
+
+    aff1 = MPIDR_TO_AFF_LEVEL(target_aff, 1);
+    aff2 = MPIDR_TO_AFF_LEVEL(target_aff, 2);
+    aff3 = MPIDR_TO_AFF_LEVEL(target_aff, 3);
+    rs = MPIDR_TO_RS(target_aff);
+    val = COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, IRQn, 0, rs, tlist);
+
+    __DSB();
+    __set_ICC_SGI1R_EL1(val);
+    //__MSR(ICC_SGI1R_EL1, val);
+    __ISB();
+}
+
+/** \brief Get the Affinity Routing status.
+*/
+__STATIC_INLINE bool GIC_GetARE(void)
+{
+    return !!(GICDistributor->CTLR & 0x30);
+}
+
 /** \brief Generate a software interrupt using GIC's SGIR register.
 * \param [in] IRQn Software interrupt to be generated.
 * \param [in] target_list List of CPUs the software interrupt should be forwarded to.
@@ -1094,7 +1167,15 @@ __STATIC_INLINE uint32_t GIC_GetIRQStatus(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
 {
-  GICDistributor->SGIR = ((filter_list & 3U) << 24U) | ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
+    if (IRQn >= 16)
+        return;
+
+  if (GIC_GetARE()) {
+    /* affinity routing */
+        GIC_SendSGI_ARE(IRQn, target_list, target_list);
+  } else {
+        GICDistributor->SGIR = ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
+    }
 }
 
 #if defined (GIC_INTERFACE_BASE)
