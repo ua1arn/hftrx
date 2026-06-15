@@ -215,7 +215,7 @@ void board_update_time(uint32_t sec);
 #define PBUF_POOL_BUFSIZE 			1700
 #define PBUF_LINK_HLEN 				16
 
-#define ARP_TABLE_SIZE 				10
+#define ARP_TABLE_SIZE 				100
 #define ARP_QUEUEING 				1
 
 #define NO_SYS                          1

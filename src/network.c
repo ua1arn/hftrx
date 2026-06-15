@@ -36,8 +36,10 @@
 
 
 #define DHCP_SERVER 1
+#define DNS_SERVER 1
 
 static ip4_addr_t myIP = IPADDR4_INIT_BYTES(192, 168, 17, 33);
+static ip4_addr_t zeroIP = IPADDR4_INIT_BYTES(0, 0, 0, 0);
 static ip4_addr_t myNETMASK = IPADDR4_INIT_BYTES(255, 255, 255, 0);
 static ip4_addr_t myGATEWAY = IPADDR4_INIT_BYTES( 0, 0, 0, 0);
 #define LOCALNETNAME "storch"
@@ -121,7 +123,7 @@ static bool dns_query_proc(const char *name, ip4_addr_t *addr)
 }
 
 
-#if 1
+#if DNS_SERVER
 static void init_dnserv(void)
 {
 	//IP4_ADDR(& ipaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
@@ -621,11 +623,20 @@ static void init_netif(void)
 	netif->hwaddr_len = 6;
 	memcpy(netif->hwaddr, hwaddrv, 6);
 
+#if DHCP_SERVER
 	netif = netif_add(netif, & myIP, & myNETMASK, & myGATEWAY, NULL, netif_init_cb, ip_input);
 	netif_set_default(netif);
+#else
+	netif = netif_add(netif, & zeroIP, & zeroIP, & zeroIP, netif, netif_init_cb, ip_input);
+	netif_set_link_up(netif);
+	netif_set_up(netif);
+#endif
 
 	while (!netif_is_up(netif))
 		;
+#if ! DHCP_SERVER
+	dhcp_start(netif);
+#endif
 
 #if LWIP_AUTOIP
 	  autoip_start(netif);
@@ -650,7 +661,9 @@ void network_initialize(void)
 	#if DHCP_SERVER
 		  init_dhserv();
 	#endif /* DHCP_SERVER */
-	  init_dnserv();
+	#if DNS_SERVER
+		  init_dnserv();
+	#endif
 #endif
 
 #if LWIP_HTTPD_CGI
