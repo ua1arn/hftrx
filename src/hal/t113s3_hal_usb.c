@@ -2386,12 +2386,10 @@ usbd_cdc_tx(void * ctx, uint_fast8_t c)
 
 static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 {
-	const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
-	const uint32_t bo_ep_out = (USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset) & 0x0F);
-
 #if ! WITHCDCWITHDMA_OUT
 	do
 	{
+		const uint32_t bo_ep_out = (USBD_CDCACM_OUT_EP(USBD_EP_CDCACM_OUT, offset) & 0x0F);
 		// Handle OUT pipe (from host to device)
 	 	if (!pusb->eprx_flag[bo_ep_out-1])
 		{
@@ -2427,8 +2425,10 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 	} while (0);
 #endif
 #if ! WITHCDCWITHDMA_IN
+	// IN pipe
 	do
 	{
+		const uint32_t bo_ep_in = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_IN, offset) & 0x0F);
 		switch (pusb->eptx_ret[bo_ep_in-1])
 		{
 		case USB_RETVAL_NOTCOMP:
@@ -2449,6 +2449,35 @@ static void usb_dev_bulk_xfer_cdc(pusb_struct pusb, unsigned offset)
 	 	//TP();
 
 	} while (0);
+
+#if 0
+	// INT pipe
+	do
+	{
+		const uint32_t bo_ep_int = (USBD_CDCACM_IN_EP(USBD_EP_CDCACM_NOTIFY, offset) & 0x0F);
+		static const uint8_t notify [VIRTUAL_COM_PORT_NOTIFY_SIZE];
+
+		switch (pusb->eptx_ret[bo_ep_int-1])
+		{
+		case USB_RETVAL_NOTCOMP:
+			pusb->eptx_ret[bo_ep_int-1] = epx_in_handler_dev(pusb, bo_ep_int, (uintptr_t) & notify, sizeof notify, USB_PRTCL_INT);
+			break;
+		case USB_RETVAL_COMPERR:
+			pusb->eptx_ret[bo_ep_int-1] = USB_RETVAL_COMPOK;
+			break;
+		case USB_RETVAL_COMPOK:
+			break;
+		}
+//		// Handle IN pipe (from device to host)
+//	 	if (!pusb->eptx_flag[bo_ep_int-1])
+//		{
+//			break;
+//		}
+//	 	pusb->eptx_flag[bo_ep_int-1] = 0;
+	 	//TP();
+
+	} while (0);
+#endif
 #endif
 }
 
@@ -2823,17 +2852,31 @@ static void awxx_setup_fifo(pusb_struct pusb)
 				// Interrupt-driven Transfer data from device to host
 				usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipein));
 				ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << pipein));
+				// Interrupt-driven Transfer data from device to host
+				usb_set_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipeint));
+				ASSERT(usb_get_eptx_interrupt_enable(pusb) & (UINT32_C(1) << pipeint));
 
 			}
 			else
 			{
-				// Dedicated DMA Transfer data from device to host
-				const uint_fast8_t dmach = CDC_PIPEINDMA(offset);
-				set_dma_ep_embedded(pusb, pipein, 1, dmach);
-				usb_fifo_accessed_by_dma(pusb, pipein, 1);
-				usb_clear_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipein));
-				usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
-				ASSERT(usb_get_dma_interrupt_enable(pusb) & (UINT32_C(1) << dmach));
+				{
+					// Dedicated DMA Transfer data from device to host
+					const uint_fast8_t dmach = CDC_PIPEINDMA(offset);
+					set_dma_ep_embedded(pusb, pipein, 1, dmach);
+					usb_fifo_accessed_by_dma(pusb, pipein, 1);
+					usb_clear_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipein));
+					usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
+					ASSERT(usb_get_dma_interrupt_enable(pusb) & (UINT32_C(1) << dmach));
+				}
+				{
+					// Dedicated DMA Transfer data from device to host
+					const uint_fast8_t dmach = CDC_PIPEINTDMA(offset);
+					set_dma_ep_embedded(pusb, pipeint, 1, dmach);
+					usb_fifo_accessed_by_dma(pusb, pipeint, 1);
+					usb_clear_eptx_interrupt_enable(pusb, (UINT32_C(1) << pipeint));
+					usb_set_dma_interrupt_enable(pusb, (UINT32_C(1) << dmach));
+					ASSERT(usb_get_dma_interrupt_enable(pusb) & (UINT32_C(1) << dmach));
+				}
 			}
 
 			// Transfer data from host to device
