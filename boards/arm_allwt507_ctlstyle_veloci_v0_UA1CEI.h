@@ -225,7 +225,7 @@
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
 
 #else /* WITHISBOOTLOADER */
-	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
+	#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
 
 	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
 //	#define WITHMGLOOP 1
