@@ -35,13 +35,48 @@
 #include "lwip/apps/httpd.h"
 
 
-#define DHCP_SERVER 1
-#define DNS_SERVER 1
+//#define DHCP_SERVER 1
+//#define DNS_SERVER 1
 
 static ip4_addr_t myIP = IPADDR4_INIT_BYTES(192, 168, 17, 33);
 static ip4_addr_t myNETMASK = IPADDR4_INIT_BYTES(255, 255, 255, 0);
 static ip4_addr_t myGATEWAY = IPADDR4_INIT_BYTES( 0, 0, 0, 0);
 #define LOCALNETNAME "storch"
+
+
+/* Параметры интерфейса для отображения в меню */
+size_t getvaltextethaddr(char * buff, size_t count, int_fast32_t value)
+{
+	const u8_t p1 = ip4_addr1_val(myIP);
+	const u8_t p2 = ip4_addr2_val(myIP);
+	const u8_t p3 = ip4_addr3_val(myIP);
+	const u8_t p4 = ip4_addr4_val(myIP);
+	/* Название видеорежима для отображения в меню */
+	return local_snprintf_P(buff, count, "%u.%u.%u.%u", p1, p2, p3, p4);
+}
+
+/* Параметры интерфейса для отображения в меню */
+size_t getvaltextethmask(char * buff, size_t count, int_fast32_t value)
+{
+	const u8_t p1 = ip4_addr1_val(myNETMASK);
+	const u8_t p2 = ip4_addr2_val(myNETMASK);
+	const u8_t p3 = ip4_addr3_val(myNETMASK);
+	const u8_t p4 = ip4_addr4_val(myNETMASK);
+	/* Название видеорежима для отображения в меню */
+	return local_snprintf_P(buff, count, "%u.%u.%u.%u", p1, p2, p3, p4);
+}
+
+/* Параметры интерфейса для отображения в меню */
+size_t getvaltextethgateway(char * buff, size_t count, int_fast32_t value)
+{
+	const u8_t p1 = ip4_addr1_val(myGATEWAY);
+	const u8_t p2 = ip4_addr2_val(myGATEWAY);
+	const u8_t p3 = ip4_addr3_val(myGATEWAY);
+	const u8_t p4 = ip4_addr4_val(myGATEWAY);
+	/* Название видеорежима для отображения в меню */
+	return local_snprintf_P(buff, count, "%u.%u.%u.%u", p1, p2, p3, p4);
+}
+
 /*
  *  В конфигурации описано имя и размер
  *

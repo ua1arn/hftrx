@@ -1787,6 +1787,24 @@ const struct menudef menutable [] =
 #endif /* WITHUSBUAC */
 #endif /* WITHIF4DSP */
 #endif /* WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN || WITHUSEUSBBT) */
+#if WITHLWIP
+	/* group name +++ */
+		(const struct paramdefdef [1]) {
+			QLABEL3("ETH", "Ethernet", "ETH"), 0, 0, 0, 0,
+			ITEM_GROUP,
+			0, 0,
+			OFFSETOF(struct nvmap, ggrpeth),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			NULL,
+			NULL,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		},
+	/* group name --- */
+		& xgethaddr,
+		& xgethmask,
+		& xgethgateway,
+#endif /* WITHLWIP */
 #if WITHIF4DSP
 /* group name +++ */
 	(const struct paramdefdef [1]) {

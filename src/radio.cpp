@@ -3813,6 +3813,9 @@ struct nvmap
 	uint16_t	ggrpusb; // последний посещённый пункт группы
 #endif
 
+#if WITHLWIP
+	uint16_t ggrpeth;
+#endif /* WITHLWIP */
 #if WITHIF4DSP
 	uint16_t	ggrpagc; // последний посещённый пункт группы
 	uint16_t	ggrpagcssb; // последний посещённый пункт группы
@@ -3828,6 +3831,12 @@ struct nvmap
 	uint8_t bwpropsafresponce [BWPROPI_count];	/* Наклон АЧХ */
 
 	struct agcseti_tag afsets [AGCSETI_COUNT];	/* режимы приема */
+
+#if WITHLWIP
+	uint8_t gethaddr;
+	uint8_t gethmask;
+	uint8_t gethgateway;
+#endif /* WITHLWIP */
 
 	uint8_t gagcoff;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
@@ -4033,7 +4042,6 @@ struct nvmap
 	uint16_t si570_xtall_offset;
 #endif
 
-
 #if WITHCAT
 	uint16_t	ggrpcat; // последний посещённый пункт группы
 	uint8_t catenable;	/* удаленное управление разрешено */
@@ -4113,7 +4121,6 @@ struct nvmap
 	uint8_t elkeyslope;	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 #endif /* WITHVIBROPLEX */
 #endif /* WITHELKEY */
-
 
 	uint8_t gbigstep;		/* больщой шаг валкодера */
 	uint8_t genc1div;		/* во сколько раз уменьшаем разрешение валкодера. */
@@ -4646,6 +4653,54 @@ static const struct paramdefdef xhdmiformat =
 	getvaltexthdmiformat, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif /* WITHHDMITVHW */
+
+#if WITHLWIP
+
+static uint_fast8_t gethaddr;
+/* Адрес сетевого интерфейса */
+static const struct paramdefdef xgethaddr =
+{
+	QLABEL3("IPADDR", "IP Address", "IP ADDR"), 7, 5, RJ_CB, ISTEP_RO,
+	ITEM_VALUE | ITEM_LISTSELECT,
+	0, HDMIFORMATS_count - 1,
+	OFFSETOF(struct nvmap, gethaddr),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gethaddr,
+	getzerobase, /* складывается со смещением и отображается */
+	getvaltextethaddr, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
+static uint_fast8_t gethmask;
+/* Адрес сетевого интерфейса */
+static const struct paramdefdef xgethmask =
+{
+	QLABEL3("IPMASK", "IP Mask", "IP MASK"), 7, 5, RJ_CB, ISTEP_RO,
+	ITEM_VALUE | ITEM_LISTSELECT,
+	0, HDMIFORMATS_count - 1,
+	OFFSETOF(struct nvmap, gethmask),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gethmask,
+	getzerobase, /* складывается со смещением и отображается */
+	getvaltextethmask, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
+static uint_fast8_t gethgateway;
+/* Адрес сетевого интерфейса */
+static const struct paramdefdef xgethgateway =
+{
+	QLABEL3("IP GW", "IP Gateway", "IP GW"), 7, 5, RJ_CB, ISTEP_RO,
+	ITEM_VALUE | ITEM_LISTSELECT,
+	0, HDMIFORMATS_count - 1,
+	OFFSETOF(struct nvmap, gethgateway),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gethgateway,
+	getzerobase, /* складывается со смещением и отображается */
+	getvaltextethgateway, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+#endif /* WITHLWIP */
 
 #if WITHLO1LEVELADJ
 	static uint_fast8_t lo1level = WITHLO1LEVELADJINITIAL; //100;	/* уровень (амплитуда) LO1 в процентах */
