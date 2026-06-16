@@ -39,7 +39,6 @@
 #define DNS_SERVER 1
 
 static ip4_addr_t myIP = IPADDR4_INIT_BYTES(192, 168, 17, 33);
-static ip4_addr_t zeroIP = IPADDR4_INIT_BYTES(0, 0, 0, 0);
 static ip4_addr_t myNETMASK = IPADDR4_INIT_BYTES(255, 255, 255, 0);
 static ip4_addr_t myGATEWAY = IPADDR4_INIT_BYTES( 0, 0, 0, 0);
 #define LOCALNETNAME "storch"
@@ -627,7 +626,7 @@ static void init_netif(void)
 	netif = netif_add(netif, & myIP, & myNETMASK, & myGATEWAY, NULL, netif_init_cb, ip_input);
 	netif_set_default(netif);
 #else
-	netif = netif_add(netif, & zeroIP, & zeroIP, & zeroIP, netif, netif_init_cb, ip_input);
+	netif = netif_add(netif, IP4_ADDR_ANY, IP4_ADDR_ANY, IP4_ADDR_ANY, NULL, netif_init_cb, ip_input);
 	netif_set_link_up(netif);
 	netif_set_up(netif);
 #endif
