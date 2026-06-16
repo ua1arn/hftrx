@@ -1372,7 +1372,7 @@ gpioX_onchangeinterrupt(
 
 	gpioint->EINT_DEB =
 			0x00 * (UINT32_C(1) << 4) | // 0..7: The selected clock source is prescaled by 2^n
-			0x00 * (UINT32_C(1) << 0) |	// 0: LOSC 32KHz, 1: HOSC 24MHz
+			0x01 * (UINT32_C(1) << 0) |	// 0: LOSC 32KHz, 1: HOSC 24MHz
 			0;
 
 	for (pos = 0; pos < 32; ++ pos)
