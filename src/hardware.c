@@ -2481,7 +2481,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 
 	C0_CPUX_CFG->C0_RST_CTRL &= ~ CORE_RESET_MASK;	// CORE_RESET assert
 	R_CPUCFG->SOFTENTRY [core] = startfunc;
-	dcache_clean_all();				// startup code should be copied in to sysram for example.
+	dcache_clean_invalidate_all();				// startup code should be copied in to sysram for example.
 	C0_CPUX_CFG->C0_RST_CTRL |= CORE_RESET_MASK;	// CORE_RESET de-assert
 }
 
@@ -2533,7 +2533,7 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
     PMCTR->ALWAYS_MISC0 = startfunc;	/* необходимо для встроенного ROM */
     //
     SMCTR->BOOT_REMAP = 0x03; //SMCTR_BOOT_REMAP_BOOTROM;//SMCTR_BOOT_REMAP_SPRAM;
-    dcache_clean_all();    // startup code should be copied in to sysram for example.
+    dcache_clean_invalidate_all();    // startup code should be copied in to sysram for example.
 
     PMCTR->WARM_BOOT_OVRD = 0x01;	/* с этим не реагирует на RESET button */
 
