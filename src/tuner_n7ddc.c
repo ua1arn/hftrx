@@ -5,22 +5,22 @@
 #include "formats.h"
 #include "board.h"
 
-static unsigned char ind = 0, cap = 0, SW = 0, step_cap = 0, step_ind = 0;
+static unsigned ind = 0, cap = 0, SW = 0, step_cap = 0, step_ind = 0;
 
-static unsigned char C_linear = 0, L_linear = 0;
+static unsigned C_linear = 0, L_linear = 0;
 #if FULLSET7
-	static const unsigned char L_q = 7, C_q = 7;
+	static const unsigned L_q = 7, C_q = 7;
 #elif FULLSET_7L8C
-	static const unsigned char L_q = 7, C_q = 8;
+	static const unsigned L_q = 7, C_q = 8;
 #elif FULLSET_8L7C
-	static const unsigned char L_q = 8, C_q = 7;
+	static const unsigned L_q = 8, C_q = 7;
 #elif FULLSET8
-	static const unsigned char L_q = 8, C_q = 8;
+	static const unsigned L_q = 8, C_q = 8;
 #endif
 
 #define SWRENOUGH 120
 #define SWRENOUGH110 110
-static unsigned L_mult = 1, C_mult = 1, P_High = 0, K_Mult = 32;
+static unsigned L_mult = 1, C_mult = 1;
 
 static int max_swr;
 static int SWR, swr_a;
@@ -83,7 +83,7 @@ static int local_get_swr(int (*cb)(void *ctx), void *ctx) {
 
 // return 1 for abort
 static int sharp_cap(int (*cb)(void *ctx), void *ctx) {
-	unsigned char range, count, max_range, min_range;
+	unsigned range, count, max_range, min_range;
 	int min_SWR;
 	int ec;
 
@@ -132,7 +132,7 @@ static int sharp_cap(int (*cb)(void *ctx), void *ctx) {
 
 // return 1 for abort
 static int sharp_ind(int (*cb)(void *ctx), void *ctx) {
-	unsigned char range, count, max_range, min_range;
+	unsigned range, count, max_range, min_range;
 	int min_SWR;
 	int ec;
 	range = step_ind * L_mult;
@@ -185,8 +185,8 @@ static int sharp_ind(int (*cb)(void *ctx), void *ctx) {
 
 // return 1 for abort
 static int coarse_cap(int (*cb)(void *ctx), void *ctx) {
-	unsigned char step = 3;
-	unsigned char count;
+	unsigned step = 3;
+	unsigned count;
 	int min_swr;
 	int ec;
 
@@ -223,9 +223,9 @@ static int coarse_cap(int (*cb)(void *ctx), void *ctx) {
 
 // return 1 for abort
 static int coarse_tune(int (*cb)(void *ctx), void *ctx) {
-	unsigned char step = 3;
-	unsigned char count;
-	unsigned char mem_cap, mem_step_cap;
+	unsigned step = 3;
+	unsigned count;
+	unsigned mem_cap, mem_step_cap;
 	int min_swr;
 	int ec;
 
@@ -465,6 +465,8 @@ int n7ddc_tune(int linearC, int linearL, int (*cb)(void *ctx), void *ctx) {
 	int ec;
 	C_linear = linearC;
 	L_linear = linearL;
+	L_mult = 1;
+	C_mult = 1;
 	atu_reset();
 
 	for (i = 0; i < 32; ++i) {
@@ -477,20 +479,24 @@ int n7ddc_tune(int linearC, int linearL, int (*cb)(void *ctx), void *ctx) {
 	}
 
 	for (i = 0; i < 6; i++) //на всякий случай 6 проходов
-			{
+	{
 		PRINTF("n7ddc_tune: START LOOP\n");
 		if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
 			return ec;
 		if (SWR <= SWRENOUGH)
+		{
+			PRINTF("n7ddc_tune: SWR <= SWRENOUGH: %u %u\n", SWR, SWRENOUGH);
 			break;
-		else {
+		}
+		else
+		{
 			int ec = tune(cb, ctx);
 			if (ec != 0)
 				return ec;
 		}
 	}
 	n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
-	PRINTF("n7ddc_tune: DONE\n");
+	PRINTF("n7ddc_tune: DONE (i = %u)\n", i);
 	return N7DDCTUNE_OK;
 
 }
