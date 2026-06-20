@@ -29,32 +29,32 @@ static unsigned lastout_ind;
 static unsigned lastout_cap;
 static unsigned lastout_SW;
 
-static void set_ind(unsigned char Ind) {
+static void set_ind(unsigned Ind) {
 	lastout_ind = Ind;
 	//n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
 }
 
 static unsigned lastout_cap;
 
-static void set_cap(unsigned char Cap) {
+static void set_cap(unsigned Cap) {
 	lastout_cap = Cap;
 	//n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
 }
 
-static void set_indcap(unsigned char Ind, unsigned char Cap) {
+static void set_indcap(unsigned Ind, unsigned Cap) {
 	lastout_ind = Ind;
 	lastout_cap = Cap;
 	//n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
 }
 
-static void set_indcapSW(unsigned char Ind, unsigned char Cap, unsigned char SW) {
+static void set_indcapSW(unsigned Ind, unsigned Cap, unsigned SW) {
 	lastout_SW = SW;
 	lastout_ind = Ind;
 	lastout_cap = Cap;
 	//n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
 }
 
-static void set_sw(unsigned char SW) {  // 0 - IN,  1 - OUT
+static void set_sw(unsigned SW) {  // 0 - IN,  1 - OUT
 	lastout_SW = SW;
 	//n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
 }
