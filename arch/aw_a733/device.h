@@ -1453,7 +1453,7 @@ typedef struct GICD_Type
     __IOM uint32_t GICD_ISACTIVER [0x020];            /*!< Offset 0x300 Interrupt Set-Active Registers */
     __IOM uint32_t GICD_ICACTIVER [0x020];            /*!< Offset 0x380 Interrupt Clear-Active Registers */
     __IOM uint32_t GICD_IPRIORITYR [0x100];           /*!< Offset 0x400 Interrupt Priority Registers */
-    __IOM uint32_t GICD_ITARGETSR [0x100];            /*!< Offset 0x800 Interrupt Processor Targets Registersi */
+         RESERVED(0x800[0x0C00 - 0x0800], uint8_t)
     __IOM uint32_t GICD_ICFGR [0x040];                /*!< Offset 0xC00 Interrupt Configuration Registers */
     __IOM uint32_t GICD_IGRPMODR [0x020];             /*!< Offset 0xD00 Interrupt Group Modifier Registers */
          RESERVED(0xD80[0x0E00 - 0x0D80], uint8_t)
@@ -1531,14 +1531,14 @@ typedef struct GICP_Type
     __IM  uint32_t GICP_CIDR3;                        /*!< Offset 0xFFFC Component ID 3 Register */
 } GICP_TypeDef; /* size of structure = 0x10000 */
 /*
- * @brief GICR
+ * @brief GICR_1
  */
-/*!< GICR GIC Redistributor  */
-typedef struct GICR_Type
+/*!< GICR_1 GIC Redistributor for control and physical LPIs */
+typedef struct GICR_1_Type
 {
     __IOM uint32_t GICR_CTLR;                         /*!< Offset 0x000 Redistributor Control Register */
     __IM  uint32_t GICR_IIDR;                         /*!< Offset 0x004  */
-    __IOM uint32_t GICR_TYPER;                        /*!< Offset 0x008  */
+    __IOM uint32_t GICR_TYPER;                        /*!< Offset 0x008 4.4.2 Interrupt Controller Type Register, GICR_TYPER on page 4-128 */
          RESERVED(0x00C[0x0014 - 0x000C], uint8_t)
     __IOM uint32_t GICR_WAKER;                        /*!< Offset 0x014  */
          RESERVED(0x018[0x0020 - 0x0018], uint8_t)
@@ -1569,7 +1569,45 @@ typedef struct GICR_Type
     __IM  uint32_t GICR_CIDR1;                        /*!< Offset 0xFFF4 Component ID 1 Register */
     __IM  uint32_t GICR_CIDR2;                        /*!< Offset 0xFFF8 Component ID 2 Register */
     __IM  uint32_t GICR_CIDR3;                        /*!< Offset 0xFFFC Component ID 3 Register */
-} GICR_TypeDef; /* size of structure = 0x10000 */
+} GICR_1_TypeDef; /* size of structure = 0x10000 */
+/*
+ * @brief GICR_2
+ */
+/*!< GICR_2 GIC Redistributor for SGIs and PPIs summary  */
+typedef struct GICR_2_Type
+{
+         RESERVED(0x000[0x0080 - 0x0000], uint8_t)
+    __IOM uint32_t GICR_IGROUPR0;                     /*!< Offset 0x080 Interrupt Group Register */
+         RESERVED(0x084[0x0100 - 0x0084], uint8_t)
+    __IOM uint32_t GICR_ISENABLER0;                   /*!< Offset 0x100 Interrupt Set-Enable Register */
+         RESERVED(0x104[0x0180 - 0x0104], uint8_t)
+    __IOM uint32_t GICR_ICENABLER0;                   /*!< Offset 0x180 Interrupt Clear-Enable Register */
+         RESERVED(0x184[0x0200 - 0x0184], uint8_t)
+    __IOM uint32_t GICR_ISPENDR0;                     /*!< Offset 0x200 Interrupt Set-Pending Register */
+         RESERVED(0x204[0x0280 - 0x0204], uint8_t)
+    __IOM uint32_t GICR_ICPENDR0;                     /*!< Offset 0x280 Peripheral Clear Pending Register */
+         RESERVED(0x284[0x0300 - 0x0284], uint8_t)
+    __IOM uint32_t GICR_ISACTIVER0;                   /*!< Offset 0x300  */
+         RESERVED(0x304[0x0380 - 0x0304], uint8_t)
+    __IOM uint32_t GICR_ICACTIVER0;                   /*!< Offset 0x380  */
+         RESERVED(0x384[0x0400 - 0x0384], uint8_t)
+    __IOM uint32_t GICR_IPRIORITYRn [0x008];          /*!< Offset 0x400  */
+         RESERVED(0x420[0x0C00 - 0x0420], uint8_t)
+    __IOM uint32_t GICR_ICFGRn;                       /*!< Offset 0xC00 Interrupt Configuration Registers	 */
+         RESERVED(0xC04[0x0D00 - 0x0C04], uint8_t)
+    __IOM uint32_t GICR_IGRPMODR0;                    /*!< Offset 0xD00 Interrupt Group Modifier Registers	 */
+         RESERVED(0xD04[0x0E00 - 0x0D04], uint8_t)
+    __IOM uint32_t GICR_NSACR;                        /*!< Offset 0xE00 Non-secure Access Control Register	 */
+         RESERVED(0xE04[0xC000 - 0x0E04], uint8_t)
+    __IM  uint32_t GICR_MISCSTATUSR;                  /*!< Offset 0xC000 4.5.1 Miscellaneous Status Register, GICR_MISCSTATUSR on page 4-136 */
+         RESERVED(0xC004[0xC008 - 0xC004], uint8_t)
+    __IM  uint32_t GICR_IERRVR;                       /*!< Offset 0xC008 4.5.2 Interrupt Error Valid Register, GICR_IERRVR on page 4-137 */
+         RESERVED(0xC00C[0xC010 - 0xC00C], uint8_t)
+    __IOM uint32_t GICR_SGIDR;                        /*!< Offset 0xC010 4.5.3 SGI Default Register, GICR_SGIDR on page 4-138  */
+         RESERVED(0xC014[0xFFF0 - 0xC014], uint8_t)
+    __IM  uint32_t GICR_CFGID0;                       /*!< Offset 0xFFF0 4.5.4 Configuration ID0 Register, GICR_CFGID0 on page 4-138 */
+    __IM  uint32_t GICR_CFGID1;                       /*!< Offset 0xFFF4 4.5.5 Configuration ID1 Register, GICR_CFGID1 on page 4-139 */
+} GICR_2_TypeDef; /* size of structure = 0xFFF8 */
 /*
  * @brief GICR_PPI_LPI
  */
@@ -3083,7 +3121,6 @@ typedef struct USB_OHCI_Capability_Type
 #define GICT ((GICT_TypeDef *) GICT_BASE)             /*!< GICT GIC ITS translation register set access pointer */
 #define GICP ((GICP_TypeDef *) GICP_BASE)             /*!< GICP GIC Performance Monitoring Unit register set access pointer */
 #define GITS ((GITS_TypeDef *) GITS_BASE)             /*!< GITS GIC Secure Access Control register set access pointer */
-#define GICR0 ((GICR_TypeDef *) GICR0_BASE)           /*!< GICR0 GIC Redistributor  register set access pointer */
 #define SMHC0 ((SMHC_TypeDef *) SMHC0_BASE)           /*!< SMHC0 SD-MMC Host Controller register set access pointer */
 #define SMHC1 ((SMHC_TypeDef *) SMHC1_BASE)           /*!< SMHC1 SD-MMC Host Controller register set access pointer */
 #define SMHC2 ((SMHC_TypeDef *) SMHC2_BASE)           /*!< SMHC2 SD-MMC Host Controller register set access pointer */

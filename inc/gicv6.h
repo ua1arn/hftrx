@@ -24,39 +24,39 @@
 /*!< GICR GIC Redistributor  */
 typedef struct
 {
-    __IOM uint32_t CTLR;                              /*!< Offset 0x000 Redistributor Control Register */
-    __IM  uint32_t IIDR;                              /*!< Offset 0x004  */
-    __IOM uint32_t TYPER;                             /*!< Offset 0x008  */
+    __IOM uint32_t CTLR;                         /*!< Offset 0x000 Redistributor Control Register */
+    __IM  uint32_t IIDR;                         /*!< Offset 0x004  */
+    __IOM uint32_t TYPER;                        /*!< Offset 0x008 4.4.2 Interrupt Controller Type Register, TYPER on page 4-128 */
          RESERVED(0x00C[0x0014 - 0x000C], uint8_t)
-    __IOM uint32_t WAKER;                             /*!< Offset 0x014  */
+    __IOM uint32_t WAKER;                        /*!< Offset 0x014  */
          RESERVED(0x018[0x0020 - 0x0018], uint8_t)
-    __IOM uint32_t FCTLR;                             /*!< Offset 0x020  */
-    __IOM uint32_t PWRR;                              /*!< Offset 0x024  */
-    __IOM uint32_t CLASS;                             /*!< Offset 0x028  */
+    __IOM uint32_t FCTLR;                        /*!< Offset 0x020  */
+    __IOM uint32_t PWRR;                         /*!< Offset 0x024  */
+    __IOM uint32_t CLASS;                        /*!< Offset 0x028  */
          RESERVED(0x02C[0x0040 - 0x002C], uint8_t)
-    __IOM uint64_t SETLPIR;                           /*!< Offset 0x040  */
-    __IOM uint64_t CLRLPIR;                           /*!< Offset 0x048  */
+    __IOM uint64_t SETLPIR;                      /*!< Offset 0x040  */
+    __IOM uint64_t CLRLPIR;                      /*!< Offset 0x048  */
          RESERVED(0x050[0x0070 - 0x0050], uint8_t)
-    __IOM uint64_t PROPBASER;                         /*!< Offset 0x070 Redistributor Properties Base Address Register */
-    __IOM uint64_t PENDBASER;                         /*!< Offset 0x078 Redistributor LPI Pending Table Base Address Register */
+    __IOM uint64_t PROPBASER;                    /*!< Offset 0x070 Redistributor Properties Base Address Register */
+    __IOM uint64_t PENDBASER;                    /*!< Offset 0x078 Redistributor LPI Pending Table Base Address Register */
          RESERVED(0x080[0x00A0 - 0x0080], uint8_t)
-    __IOM uint64_t INVLPIR;                           /*!< Offset 0x0A0  */
-    __IOM uint64_t INVALLR;                           /*!< Offset 0x0A8  */
+    __IOM uint64_t INVLPIR;                      /*!< Offset 0x0A0  */
+    __IOM uint64_t INVALLR;                      /*!< Offset 0x0A8  */
          RESERVED(0x0B0[0x00C0 - 0x00B0], uint8_t)
-    __IOM uint32_t SYNCR;                             /*!< Offset 0x0C0  */
+    __IOM uint32_t SYNCR;                        /*!< Offset 0x0C0  */
          RESERVED(0x0C4[0xFFD0 - 0x00C4], uint8_t)
-    __IM  uint32_t PIDR4;                             /*!< Offset 0xFFD0 Peripheral ID 4 Register */
-    __IM  uint32_t PIDR5;                             /*!< Offset 0xFFD4 Peripheral ID 5 Register */
-    __IM  uint32_t PIDR6;                             /*!< Offset 0xFFD8 Peripheral ID 6 Register */
-    __IM  uint32_t PIDR7;                             /*!< Offset 0xFFDC Peripheral ID 7 Register */
-    __IM  uint32_t PIDR0;                             /*!< Offset 0xFFE0 Peripheral ID 0 Register */
-    __IM  uint32_t PIDR1;                             /*!< Offset 0xFFE4 Peripheral ID 1 Register */
-    __IM  uint32_t PIDR2;                             /*!< Offset 0xFFE8 Peripheral ID 2 Register */
-    __IM  uint32_t PIDR3;                             /*!< Offset 0xFFEC Peripheral ID 3 Register */
-    __IM  uint32_t CIDR0;                             /*!< Offset 0xFFF0 Component ID 0 Register */
-    __IM  uint32_t CIDR1;                             /*!< Offset 0xFFF4 Component ID 1 Register */
-    __IM  uint32_t CIDR2;                             /*!< Offset 0xFFF8 Component ID 2 Register */
-    __IM  uint32_t CIDR3;                             /*!< Offset 0xFFFC Component ID 3 Register */
+    __IM  uint32_t PIDR4;                        /*!< Offset 0xFFD0 Peripheral ID 4 Register */
+    __IM  uint32_t PIDR5;                        /*!< Offset 0xFFD4 Peripheral ID 5 Register */
+    __IM  uint32_t PIDR6;                        /*!< Offset 0xFFD8 Peripheral ID 6 Register */
+    __IM  uint32_t PIDR7;                        /*!< Offset 0xFFDC Peripheral ID 7 Register */
+    __IM  uint32_t PIDR0;                        /*!< Offset 0xFFE0 Peripheral ID 0 Register */
+    __IM  uint32_t PIDR1;                        /*!< Offset 0xFFE4 Peripheral ID 1 Register */
+    __IM  uint32_t PIDR2;                        /*!< Offset 0xFFE8 Peripheral ID 2 Register */
+    __IM  uint32_t PIDR3;                        /*!< Offset 0xFFEC Peripheral ID 3 Register */
+    __IM  uint32_t CIDR0;                        /*!< Offset 0xFFF0 Component ID 0 Register */
+    __IM  uint32_t CIDR1;                        /*!< Offset 0xFFF4 Component ID 1 Register */
+    __IM  uint32_t CIDR2;                        /*!< Offset 0xFFF8 Component ID 2 Register */
+    __IM  uint32_t CIDR3;                        /*!< Offset 0xFFFC Component ID 3 Register */
 } GICRedistributor_Type; /* size of structure = 0x10000 */
 
 #define GICRedistributor      ((GICRedistributor_Type      *)     GIC_REDISTRIBUTOR_BASE ) /*!< \brief GIC ReDistributor register set access pointer */
@@ -75,41 +75,59 @@ __STATIC_FORCEINLINE void GIC_RedistributorWait(void)
 */
 typedef struct
 {
-  __IOM uint32_t CTLR;                 /*!< \brief  Offset: 0x000 (R/W) Distributor Control Register */
-  __IM  uint32_t TYPER;                /*!< \brief  Offset: 0x004 (R/ ) Interrupt Controller Type Register */
-  __IM  uint32_t IIDR;                 /*!< \brief  Offset: 0x008 (R/ ) Distributor Implementer Identification Register */
-        RESERVED(0, uint32_t)
-  __IOM uint32_t STATUSR;              /*!< \brief  Offset: 0x010 (R/W) Error Reporting Status Register, optional */
-        RESERVED(1[11], uint32_t)
-  __OM  uint32_t SETSPI_NSR;           /*!< \brief  Offset: 0x040 ( /W) Set SPI Register */
-        RESERVED(2, uint32_t)
-  __OM  uint32_t CLRSPI_NSR;           /*!< \brief  Offset: 0x048 ( /W) Clear SPI Register */
-        RESERVED(3, uint32_t)
-  __OM  uint32_t SETSPI_SR;            /*!< \brief  Offset: 0x050 ( /W) Set SPI, Secure Register */
-        RESERVED(4, uint32_t)
-  __OM  uint32_t CLRSPI_SR;            /*!< \brief  Offset: 0x058 ( /W) Clear SPI, Secure Register */
-        RESERVED(5[9], uint32_t)
-  __IOM uint32_t IGROUPR[32];          /*!< \brief  Offset: 0x080 (R/W) Interrupt Group Registers */
-  __IOM uint32_t ISENABLER[32];        /*!< \brief  Offset: 0x100 (R/W) Interrupt Set-Enable Registers */
-  __IOM uint32_t ICENABLER[32];        /*!< \brief  Offset: 0x180 (R/W) Interrupt Clear-Enable Registers */
-  __IOM uint32_t ISPENDR[32];          /*!< \brief  Offset: 0x200 (R/W) Interrupt Set-Pending Registers */
-  __IOM uint32_t ICPENDR[32];          /*!< \brief  Offset: 0x280 (R/W) Interrupt Clear-Pending Registers */
-  __IOM uint32_t ISACTIVER[32];        /*!< \brief  Offset: 0x300 (R/W) Interrupt Set-Active Registers */
-  __IOM uint32_t ICACTIVER[32];        /*!< \brief  Offset: 0x380 (R/W) Interrupt Clear-Active Registers */
-  __IOM uint32_t IPRIORITYR[255];      /*!< \brief  Offset: 0x400 (R/W) Interrupt Priority Registers */
-        RESERVED(6, uint32_t)
-  __IOM uint32_t  ITARGETSR[255];      /*!< \brief  Offset: 0x800 (R/W) Interrupt Targets Registers */
-        RESERVED(7, uint32_t)
-  __IOM uint32_t ICFGR[64];            /*!< \brief  Offset: 0xC00 (R/W) Interrupt Configuration Registers */
-  __IOM uint32_t IGRPMODR[32];         /*!< \brief  Offset: 0xD00 (R/W) Interrupt Group Modifier Registers */
-        RESERVED(8[32], uint32_t)
-  __IOM uint32_t NSACR[64];            /*!< \brief  Offset: 0xE00 (R/W) Non-secure Access Control Registers */
-  __OM  uint32_t SGIR;                 /*!< \brief  Offset: 0xF00 ( /W) Software Generated Interrupt Register */
-        RESERVED(9[3], uint32_t)
-  __IOM uint32_t CPENDSGIR[4];         /*!< \brief  Offset: 0xF10 (R/W) SGI Clear-Pending Registers */
-  __IOM uint32_t SPENDSGIR[4];         /*!< \brief  Offset: 0xF20 (R/W) SGI Set-Pending Registers */
-        RESERVED(10[5236], uint32_t)
-  __IOM uint64_t IROUTER[988];         /*!< \brief  Offset: 0x6100(R/W) Interrupt Routing Registers */
+    __IOM uint32_t CTLR;                         /*!< Offset 0x000 Distributor Control Register */
+    __IM  uint32_t TYPER;                        /*!< Offset 0x004 Distributor Controller Type Register */
+    __IM  uint32_t IIDR;                         /*!< Offset 0x008 Distributor Implementer Identification Register */
+         RESERVED(0x00C[0x0020 - 0x000C], uint8_t)
+    __IOM uint32_t FCTLR;                        /*!< Offset 0x020 Function Control Register */
+    __IOM uint32_t SAC;                          /*!< Offset 0x024 Secure Access Control Register */
+         RESERVED(0x028[0x0040 - 0x0028], uint8_t)
+    __OM  uint32_t SETSPI_NSR;                   /*!< Offset 0x040 Non-secure SPI Set Register */
+         RESERVED(0x044[0x0048 - 0x0044], uint8_t)
+    __OM  uint32_t CLRSPI_NSR;                   /*!< Offset 0x048 Non-secure SPI Clear Register */
+         RESERVED(0x04C[0x0050 - 0x004C], uint8_t)
+    __OM  uint32_t SETSPI_SR;                    /*!< Offset 0x050 Secure SPI Set Register */
+         RESERVED(0x054[0x0058 - 0x0054], uint8_t)
+    __OM  uint32_t CLRSPI_SR;                    /*!< Offset 0x058 Non-secure SPI Set Register */
+         RESERVED(0x05C[0x0080 - 0x005C], uint8_t)
+    __IOM uint32_t IGROUPR [0x020];              /*!< Offset 0x080 Interrupt Group Registers */
+    __IOM uint32_t ISENABLER [0x020];            /*!< Offset 0x100 Interrupt Set-Enable Registers */
+    __IOM uint32_t ICENABLER [0x020];            /*!< Offset 0x180 Interrupt Clear-Enable Registers */
+    __IOM uint32_t ISPENDR [0x020];              /*!< Offset 0x200 Interrupt Set-Pending Registers */
+    __IOM uint32_t ICPENDR [0x020];              /*!< Offset 0x280 Interrupt Clear-Pending Registers */
+    __IOM uint32_t ISACTIVER [0x020];            /*!< Offset 0x300 Interrupt Set-Active Registers */
+    __IOM uint32_t ICACTIVER [0x020];            /*!< Offset 0x380 Interrupt Clear-Active Registers */
+    __IOM uint32_t IPRIORITYR [0x100];           /*!< Offset 0x400 Interrupt Priority Registers */
+         RESERVED(0x800[0x0C00 - 0x0800], uint8_t)
+    __IOM uint32_t ICFGR [0x040];                /*!< Offset 0xC00 Interrupt Configuration Registers */
+    __IOM uint32_t IGRPMODR [0x020];             /*!< Offset 0xD00 Interrupt Group Modifier Registers */
+         RESERVED(0xD80[0x0E00 - 0x0D80], uint8_t)
+    __IOM uint32_t NSACR [0x040];                /*!< Offset 0xE00 Non-secure Access Control Registers */
+         RESERVED(0xF00[0x6100 - 0x0F00], uint8_t)
+    __IOM uint64_t IROUTER [0x3DC];              /*!< Offset 0x6100 Interrupt Routing Registers. */
+         RESERVED(0x7FE0[0xC000 - 0x7FE0], uint8_t)
+    __IOM uint32_t CHIPSR;                       /*!< Offset 0xC000 Chip Status Register */
+    __IOM uint32_t DCHIPR;                       /*!< Offset 0xC004 Default Chip Register */
+    __IOM uint64_t CHIPRn [0x004];               /*!< Offset 0xC008 Chip Registers */
+         RESERVED(0xC028[0xE008 - 0xC028], uint8_t)
+    __IOM uint32_t ICLARn [0x004];               /*!< Offset 0xE008 The first register is ICLAR2. 4.2.9 Interrupt Class Registers, ICLARn on page 4-118 */
+         RESERVED(0xE018[0xE108 - 0xE018], uint8_t)
+    __IOM uint32_t IERRRn;                       /*!< Offset 0xE108 The first register is IERRR1. 4.2.10 Interrupt Error Registers, IERRRn on page 4-119 */
+         RESERVED(0xE10C[0xF000 - 0xE10C], uint8_t)
+    __IM  uint64_t CFGID;                        /*!< Offset 0xF000 Configuration ID Register */
+         RESERVED(0xF008[0xFFD0 - 0xF008], uint8_t)
+    __IM  uint32_t PIDR4;                        /*!< Offset 0xFFD0 Peripheral ID 4 Register */
+    __IM  uint32_t PIDR5;                        /*!< Offset 0xFFD4 Peripheral ID 5 Register */
+    __IM  uint32_t PIDR6;                        /*!< Offset 0xFFD8 Peripheral ID 6 Register */
+    __IM  uint32_t PIDR7;                        /*!< Offset 0xFFDC Peripheral ID 7 Register */
+    __IM  uint32_t PIDR0;                        /*!< Offset 0xFFE0 Peripheral ID 0 Register */
+    __IM  uint32_t PIDR1;                        /*!< Offset 0xFFE4 Peripheral ID 1 Register */
+    __IM  uint32_t PIDR2;                        /*!< Offset 0xFFE8 Peripheral ID 2 Register */
+    __IM  uint32_t PIDR3;                        /*!< Offset 0xFFEC Peripheral ID 3 Register */
+    __IM  uint32_t CIDR0;                        /*!< Offset 0xFFF0 Component ID 0 Register */
+    __IM  uint32_t CIDR1;                        /*!< Offset 0xFFF4 Component ID 1 Register */
+    __IM  uint32_t CIDR2;                        /*!< Offset 0xFFF8 Component ID 2 Register */
+    __IM  uint32_t CIDR3;                        /*!< Offset 0xFFFC Component ID 3 Register */
 }  GICDistributor_Type;
 
 #define GICDistributor      ((GICDistributor_Type      *)     GIC_DISTRIBUTOR_BASE ) /*!< \brief GIC Distributor register set access pointer */
