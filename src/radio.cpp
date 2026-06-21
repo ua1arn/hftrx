@@ -19823,8 +19823,6 @@ static void dpc_0p1_s_timer_fn(void * ctx)
 void
 applowinitialize(void)
 {
-	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */
-
 #if WITHCAT
 
 	HARDWARE_CAT_INITIALIZE();
