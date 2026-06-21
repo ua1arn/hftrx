@@ -228,38 +228,38 @@ typedef struct
 #define GICDistributor_CLRSPI_SR_INTID_Msk    (0x3FFU /*<< GICDistributor_CLRSPI_SR_INTID_Pos*/)  /*!< GICDistributor CLRSPI_SR: INTID Mask */
 #define GICDistributor_CLRSPI_SR_INTID(x)     (((uint32_t)(((uint32_t)(x)) /*<< GICDistributor_CLRSPI_SR_INTID_Pos*/)) & GICDistributor_CLRSPI_SR_INTID_Msk)
 
-/* GICDistributor ITARGETSR Register */
-#define GICDistributor_ITARGETSR_CPU0_Pos     0U                                                   /*!< GICDistributor ITARGETSR: CPU0 Position */
-#define GICDistributor_ITARGETSR_CPU0_Msk     (0x1U /*<< GICDistributor_ITARGETSR_CPU0_Pos*/)      /*!< GICDistributor ITARGETSR: CPU0 Mask */
-#define GICDistributor_ITARGETSR_CPU0(x)      (((uint8_t)(((uint8_t)(x)) /*<< GICDistributor_ITARGETSR_CPU0_Pos*/)) & GICDistributor_ITARGETSR_CPU0_Msk)
-
-#define GICDistributor_ITARGETSR_CPU1_Pos     1U                                                   /*!< GICDistributor ITARGETSR: CPU1 Position */
-#define GICDistributor_ITARGETSR_CPU1_Msk     (0x1U << GICDistributor_ITARGETSR_CPU1_Pos)          /*!< GICDistributor ITARGETSR: CPU1 Mask */
-#define GICDistributor_ITARGETSR_CPU1(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU1_Pos)) & GICDistributor_ITARGETSR_CPU1_Msk)
-
-#define GICDistributor_ITARGETSR_CPU2_Pos     2U                                                   /*!< GICDistributor ITARGETSR: CPU2 Position */
-#define GICDistributor_ITARGETSR_CPU2_Msk     (0x1U << GICDistributor_ITARGETSR_CPU2_Pos)          /*!< GICDistributor ITARGETSR: CPU2 Mask */
-#define GICDistributor_ITARGETSR_CPU2(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU2_Pos)) & GICDistributor_ITARGETSR_CPU2_Msk)
-
-#define GICDistributor_ITARGETSR_CPU3_Pos     3U                                                   /*!< GICDistributor ITARGETSR: CPU3 Position */
-#define GICDistributor_ITARGETSR_CPU3_Msk     (0x1U << GICDistributor_ITARGETSR_CPU3_Pos)          /*!< GICDistributor ITARGETSR: CPU3 Mask */
-#define GICDistributor_ITARGETSR_CPU3(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU3_Pos)) & GICDistributor_ITARGETSR_CPU3_Msk)
-
-#define GICDistributor_ITARGETSR_CPU4_Pos     4U                                                   /*!< GICDistributor ITARGETSR: CPU4 Position */
-#define GICDistributor_ITARGETSR_CPU4_Msk     (0x1U << GICDistributor_ITARGETSR_CPU4_Pos)          /*!< GICDistributor ITARGETSR: CPU4 Mask */
-#define GICDistributor_ITARGETSR_CPU4(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU4_Pos)) & GICDistributor_ITARGETSR_CPU4_Msk)
-
-#define GICDistributor_ITARGETSR_CPU5_Pos     5U                                                   /*!< GICDistributor ITARGETSR: CPU5 Position */
-#define GICDistributor_ITARGETSR_CPU5_Msk     (0x1U << GICDistributor_ITARGETSR_CPU5_Pos)          /*!< GICDistributor ITARGETSR: CPU5 Mask */
-#define GICDistributor_ITARGETSR_CPU5(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU5_Pos)) & GICDistributor_ITARGETSR_CPU5_Msk)
-
-#define GICDistributor_ITARGETSR_CPU6_Pos     6U                                                   /*!< GICDistributor ITARGETSR: CPU6 Position */
-#define GICDistributor_ITARGETSR_CPU6_Msk     (0x1U << GICDistributor_ITARGETSR_CPU6_Pos)          /*!< GICDistributor ITARGETSR: CPU6 Mask */
-#define GICDistributor_ITARGETSR_CPU6(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU6_Pos)) & GICDistributor_ITARGETSR_CPU6_Msk)
-
-#define GICDistributor_ITARGETSR_CPU7_Pos     7U                                                   /*!< GICDistributor ITARGETSR: CPU7 Position */
-#define GICDistributor_ITARGETSR_CPU7_Msk     (0x1U << GICDistributor_ITARGETSR_CPU7_Pos)          /*!< GICDistributor ITARGETSR: CPU7 Mask */
-#define GICDistributor_ITARGETSR_CPU7(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU7_Pos)) & GICDistributor_ITARGETSR_CPU7_Msk)
+///* GICDistributor ITARGETSR Register */
+//#define GICDistributor_ITARGETSR_CPU0_Pos     0U                                                   /*!< GICDistributor ITARGETSR: CPU0 Position */
+//#define GICDistributor_ITARGETSR_CPU0_Msk     (0x1U /*<< GICDistributor_ITARGETSR_CPU0_Pos*/)      /*!< GICDistributor ITARGETSR: CPU0 Mask */
+//#define GICDistributor_ITARGETSR_CPU0(x)      (((uint8_t)(((uint8_t)(x)) /*<< GICDistributor_ITARGETSR_CPU0_Pos*/)) & GICDistributor_ITARGETSR_CPU0_Msk)
+//
+//#define GICDistributor_ITARGETSR_CPU1_Pos     1U                                                   /*!< GICDistributor ITARGETSR: CPU1 Position */
+//#define GICDistributor_ITARGETSR_CPU1_Msk     (0x1U << GICDistributor_ITARGETSR_CPU1_Pos)          /*!< GICDistributor ITARGETSR: CPU1 Mask */
+//#define GICDistributor_ITARGETSR_CPU1(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU1_Pos)) & GICDistributor_ITARGETSR_CPU1_Msk)
+//
+//#define GICDistributor_ITARGETSR_CPU2_Pos     2U                                                   /*!< GICDistributor ITARGETSR: CPU2 Position */
+//#define GICDistributor_ITARGETSR_CPU2_Msk     (0x1U << GICDistributor_ITARGETSR_CPU2_Pos)          /*!< GICDistributor ITARGETSR: CPU2 Mask */
+//#define GICDistributor_ITARGETSR_CPU2(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU2_Pos)) & GICDistributor_ITARGETSR_CPU2_Msk)
+//
+//#define GICDistributor_ITARGETSR_CPU3_Pos     3U                                                   /*!< GICDistributor ITARGETSR: CPU3 Position */
+//#define GICDistributor_ITARGETSR_CPU3_Msk     (0x1U << GICDistributor_ITARGETSR_CPU3_Pos)          /*!< GICDistributor ITARGETSR: CPU3 Mask */
+//#define GICDistributor_ITARGETSR_CPU3(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU3_Pos)) & GICDistributor_ITARGETSR_CPU3_Msk)
+//
+//#define GICDistributor_ITARGETSR_CPU4_Pos     4U                                                   /*!< GICDistributor ITARGETSR: CPU4 Position */
+//#define GICDistributor_ITARGETSR_CPU4_Msk     (0x1U << GICDistributor_ITARGETSR_CPU4_Pos)          /*!< GICDistributor ITARGETSR: CPU4 Mask */
+//#define GICDistributor_ITARGETSR_CPU4(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU4_Pos)) & GICDistributor_ITARGETSR_CPU4_Msk)
+//
+//#define GICDistributor_ITARGETSR_CPU5_Pos     5U                                                   /*!< GICDistributor ITARGETSR: CPU5 Position */
+//#define GICDistributor_ITARGETSR_CPU5_Msk     (0x1U << GICDistributor_ITARGETSR_CPU5_Pos)          /*!< GICDistributor ITARGETSR: CPU5 Mask */
+//#define GICDistributor_ITARGETSR_CPU5(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU5_Pos)) & GICDistributor_ITARGETSR_CPU5_Msk)
+//
+//#define GICDistributor_ITARGETSR_CPU6_Pos     6U                                                   /*!< GICDistributor ITARGETSR: CPU6 Position */
+//#define GICDistributor_ITARGETSR_CPU6_Msk     (0x1U << GICDistributor_ITARGETSR_CPU6_Pos)          /*!< GICDistributor ITARGETSR: CPU6 Mask */
+//#define GICDistributor_ITARGETSR_CPU6(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU6_Pos)) & GICDistributor_ITARGETSR_CPU6_Msk)
+//
+//#define GICDistributor_ITARGETSR_CPU7_Pos     7U                                                   /*!< GICDistributor ITARGETSR: CPU7 Position */
+//#define GICDistributor_ITARGETSR_CPU7_Msk     (0x1U << GICDistributor_ITARGETSR_CPU7_Pos)          /*!< GICDistributor ITARGETSR: CPU7 Mask */
+//#define GICDistributor_ITARGETSR_CPU7(x)      (((uint8_t)(((uint8_t)(x)) << GICDistributor_ITARGETSR_CPU7_Pos)) & GICDistributor_ITARGETSR_CPU7_Msk)
 
 /* GICDistributor SGIR Register */
 #define GICDistributor_SGIR_INTID_Pos         0U                                                   /*!< GICDistributor SGIR: INTID Position */
@@ -341,14 +341,33 @@ __STATIC_INLINE uint32_t GIC_DistributorImplementer(void)
   return (GICDistributor->IIDR);
 }
 
+/** \brief Get the Affinity Routing status.
+*/
+__STATIC_INLINE bool GIC_GetARE(void)
+{
+    return !! (GICDistributor->CTLR & 0x30);
+}
+
 /** \brief Sets the GIC's ITARGETSR register for the given interrupt.
 * \param [in] IRQn Interrupt to be configured.
 * \param [in] cpu_target CPU interfaces to assign this interrupt to.
 */
 __STATIC_INLINE void GIC_SetTarget(IRQn_Type IRQn, uint32_t cpu_target)
 {
-  uint32_t mask = GICDistributor->ITARGETSR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
-  GICDistributor->ITARGETSR[IRQn / 4U] = mask | ((cpu_target & 0xFFUL) << ((IRQn % 4U) * 8U));
+	if (IRQn >= 32)
+	{
+		if (GIC_GetARE())
+		{
+			/* affinity routing */
+			GICDistributor->IROUTER[IRQn] = cpu_target;
+		}
+		else
+		{
+			/* legacy */
+			uint32_t mask = GICDistributor->ITARGETSR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
+			GICDistributor->ITARGETSR[IRQn / 4U] = mask | ((cpu_target & 0xFFUL) << ((IRQn % 4U) * 8U));
+		}
+	}
 }
 
 /** \brief Read the GIC's ITARGETSR register.
@@ -357,7 +376,28 @@ __STATIC_INLINE void GIC_SetTarget(IRQn_Type IRQn, uint32_t cpu_target)
 */
 __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
 {
-  return (GICDistributor->ITARGETSR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+    uint64_t cpu_target = 0;
+
+    if (IRQn >= 32)
+    {
+        if (GIC_GetARE())
+        {
+      /* affinity routing */
+            cpu_target = GICDistributor->IROUTER[IRQn];
+        }
+        else
+        {
+      /* legacy */
+            cpu_target = (GICDistributor->ITARGETSR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+        }
+    }
+    else
+    {
+      /* local */
+        cpu_target = __get_MPIDR_EL1() & MPIDR_AFFINITY_MASK;
+    }
+
+    return cpu_target;
 }
 
 #endif /* GIC_DISTRIBUTOR_BASE */
@@ -395,22 +435,22 @@ __STATIC_INLINE void GIC_DisableIRQ(IRQn_Type IRQn)
 */
 __STATIC_INLINE uint32_t GIC_GetPendingIRQ(IRQn_Type IRQn)
 {
-  uint32_t pend;
+	uint32_t pend;
 
-  if (IRQn >= 16U) {
-    pend = (GICDistributor->ISPENDR[IRQn / 32U] >> (IRQn % 32U)) & 1UL;
-  } else {
-    // INTID 0-15 Software Generated Interrupt
-    pend = (GICDistributor->SPENDSGIR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
-    // No CPU identification offered
-    if (pend != 0U) {
-      pend = 1U;
-    } else {
-      pend = 0U;
-    }
-  }
+	if (IRQn >= 16) {
+		pend = (GICDistributor->ISPENDR[IRQn / 32U] >> (IRQn % 32U)) & 1UL;
+	} else {
+	// INTID 0-15 Software Generated Interrupt
+		pend = (GICDistributor->SPENDSGIR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+		// No CPU identification offered
+		if (pend != 0U) {
+			pend = 1U;
+		} else {
+			pend = 0U;
+		}
+	}
 
-  return (pend);
+	return (pend);
 }
 
 /** \brief Sets the given interrupt as pending using GIC's ISPENDR register.
@@ -418,13 +458,14 @@ __STATIC_INLINE uint32_t GIC_GetPendingIRQ(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_SetPendingIRQ(IRQn_Type IRQn)
 {
-  if (IRQn >= 16U) {
-    GICDistributor->ISPENDR[IRQn / 32U] = 1U << (IRQn % 32U);
-  } else {
-    // INTID 0-15 Software Generated Interrupt
-    // Forward the interrupt to the CPU interface that requested it
-    GICDistributor->SGIR = (IRQn | 0x02000000U);
-  }
+	if (IRQn >= 16) {
+		GICDistributor->ISPENDR[IRQn / 32U] = 1U << (IRQn % 32U);
+	} else {
+		// INTID 0-15 Software Generated Interrupt
+		GICDistributor->SPENDSGIR[IRQn / 4U] = 1U << ((IRQn % 4U) * 8U);
+		// Forward the interrupt to the CPU interface that requested it
+		GICDistributor->SGIR = (IRQn | 0x02000000U);
+	}
 }
 
 /** \brief Clears the given interrupt from being pending using GIC's ICPENDR register.
@@ -432,12 +473,12 @@ __STATIC_INLINE void GIC_SetPendingIRQ(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_ClearPendingIRQ(IRQn_Type IRQn)
 {
-  if (IRQn >= 16U) {
-    GICDistributor->ICPENDR[IRQn / 32U] = 1U << (IRQn % 32U);
-  } else {
-    // INTID 0-15 Software Generated Interrupt
-    GICDistributor->CPENDSGIR[IRQn / 4U] = 1U << ((IRQn % 4U) * 8U);
-  }
+	if (IRQn >= 16U) {
+		GICDistributor->ICPENDR[IRQn / 32U] = 1U << (IRQn % 32U);
+	} else {
+		// INTID 0-15 Software Generated Interrupt
+		GICDistributor->CPENDSGIR[IRQn / 4U] = 1U << ((IRQn % 4U) * 8U);
+	}
 }
 
 /** \brief Sets the interrupt configuration using GIC's ICFGR register.
@@ -1171,29 +1212,27 @@ __STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16
     __ISB();
 }
 
-/** \brief Get the Affinity Routing status.
-*/
-__STATIC_INLINE bool GIC_GetARE(void)
-{
-    return !!(GICDistributor->CTLR & 0x30);
-}
-
 /** \brief Generate a software interrupt using GIC's SGIR register.
 * \param [in] IRQn Software interrupt to be generated.
 * \param [in] target_list List of CPUs the software interrupt should be forwarded to.
 * \param [in] filter_list Filter to be applied to determine interrupt receivers.
 */
+__STATIC_INLINE void GIC_SendSGI_v6(IRQn_Type IRQn, uint64_t target_aff, uint16_t target_list)
+{
+	if (IRQn >= 16)
+		return;
+
+	if (GIC_GetARE()) {
+		/* affinity routing */
+		GIC_SendSGI_ARE(IRQn, target_aff, target_list);
+	} else {
+		GICDistributor->SGIR = ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
+	}
+}
+// gicv2.h template
 __STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
 {
-    if (IRQn >= 16)
-        return;
-
-  if (GIC_GetARE()) {
-    /* affinity routing */
-        GIC_SendSGI_ARE(IRQn, target_list, target_list);
-  } else {
-        GICDistributor->SGIR = ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
-    }
+  GICDistributor->SGIR = ((filter_list & 3U) << 24U) | ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
 }
 
 #if defined (GIC_INTERFACE_BASE)
