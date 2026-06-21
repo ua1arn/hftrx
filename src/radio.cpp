@@ -19823,6 +19823,7 @@ static void dpc_0p1_s_timer_fn(void * ctx)
 void
 applowinitialize(void)
 {
+	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */
 
 #if WITHCAT
 
@@ -19854,9 +19855,6 @@ applowinitialize(void)
 	ua1cei_magloop_initialize();
 #endif /* WITHMGLOOP */
 
-#if WITHWATCHDOG
-	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */
-#endif /* WITHWATCHDOG */
 
 	buffers_initialize();
 

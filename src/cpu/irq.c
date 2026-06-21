@@ -4123,9 +4123,7 @@ void board_dpc_processing(void)
 void testsloopprocessing(void)
 {
 	board_dpc_processing();		// обработка отложенного вызова user mode функций
-#if WITHWATCHDOG
 	watchdog_ping();
-#endif /* WITHWATCHDOG */
 }
 
 // Вызывается из main - для CORE0
