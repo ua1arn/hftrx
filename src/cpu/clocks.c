@@ -5365,9 +5365,12 @@ void allwnr_t113_module_pll_spr(volatile uint32_t * pllctrlreg, volatile uint32_
 		1 * (UINT32_C(1) << 29) | // SPR_FREQ_MODE
 		1 * (UINT32_C(1) << 20) | // WAVE_STEP
 		0x00;
+	(void) * pat0;
 	* pat0 |= (UINT32_C(1) << 31); // SIG_DELT_PAT_EN
+	(void) * pat0;
 
 	* pllctrlreg |= (UINT32_C(1) << 24);	// PLL_SDM_ENABLE
+	(void) * pllctrlreg;
 }
 
 void allwnr_t113_module_pll_n(volatile uint32_t * pllctrlreg, unsigned N)
@@ -5376,24 +5379,42 @@ void allwnr_t113_module_pll_n(volatile uint32_t * pllctrlreg, unsigned N)
 	* pllctrlreg = (* pllctrlreg & ~ UINT32_C(0xFF00)) |
 		(N - 1) * (UINT32_C(1) << 8) |
 		0;
+	(void) * pllctrlreg;
+}
+
+static void shortsoftdelay(void)
+{
+	volatile int i = 1000;
+	while (i --)
+	{
+		__NOP();
+	}
 }
 
 void allwnr_t113_module_pll_enable(volatile uint32_t * pllctrlreg)
 {
 	* pllctrlreg &= ~ (UINT32_C(1) << 31);
+	(void) * pllctrlreg;
 	{
 		// Set PLL freq
 
 
 		// Enable PLL
 		* pllctrlreg |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);
+		(void) * pllctrlreg;
 
 		/* Lock enable */
 		* pllctrlreg |= (UINT32_C(1) << 29);
+		(void) * pllctrlreg;
 
+		shortsoftdelay();
 		/* Wait pll stable */
-		while(!(* pllctrlreg & (UINT32_C(1) << 28)))
-			;
+		if (local_wait32mask(pllctrlreg, (UINT32_C(1) << 28), (UINT32_C(1) << 28), 100))
+		{
+			PRINTF("allwnr_t113_module_pll_enable: wait %p for bit28 timeout\n", pllctrlreg);
+		}
+//		while(!(* pllctrlreg & (UINT32_C(1) << 28)))
+//			;
 	}
 }
 
@@ -6433,15 +6454,20 @@ void allwnr_t113_pll_initialize(int N)
 	f133_set_axi(0x00, 1, 1);	// OSC24
 #endif
 	local_delay_initialize();
+	local_delay_ms(25);
 	CCU->PSI_CLK_REG = 0;	// AHB freq from OSC24
 	CCU->APB0_CLK_REG = 0;	// переключаем источник APB0 на HOSC
 	CCU->APB1_CLK_REG = 0;	// переключаем источник APB1 на HOSC
 
+	local_delay_ms(25);
 	allwnr_t113_module_pll_spr(& CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	//allwnr_t113_module_pll_n(& CCU->PLL_PERI_CTRL_REG, 96);
+	local_delay_ms(25);
 	allwnr_t113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
+	local_delay_ms(25);
 
 	t113_set_pll_cpu(N);	// see sdram.c
+	local_delay_ms(25);
 
 #if CPUSTYLE_T113
 	t113_set_axi(0x03, 4, 2);
@@ -6449,14 +6475,20 @@ void allwnr_t113_pll_initialize(int N)
 	f133_set_axi(0x05, 2, 1);	// 101: PLL_CPU
 #endif
 	local_delay_initialize();
+	local_delay_ms(25);
 
 	t113_set_mbus();
+	local_delay_ms(25);
 	t113_set_psi_ahb();
+	local_delay_ms(25);
 	t113_set_apb0(UINT32_C(100) * 1000 * 1000);	// 100 MHz
+	local_delay_ms(25);
 	t113_set_apb1(UINT32_C(300) * 1000 * 1000);	// 192 MHz - for 4M baud rate
+	local_delay_ms(25);
 #if CPUSTYLE_F133
 	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);	// не проищзволит видимого эффекта
 #endif
+	local_delay_ms(25);
 }
 
 void sysinit_boot_disconnect(void)
