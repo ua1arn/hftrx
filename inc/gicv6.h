@@ -1047,7 +1047,7 @@ __STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
     __MCR32(sICC_PMR_EL1, value);
 }
 
-__STATIC_FORCEINLINE void __set_ICC_SGI1R_EL1(uint32_t value)
+__STATIC_FORCEINLINE void __set_ICC_SGI1R_EL1(uint64_t value)
 {
     __MCR32(sICC_SGI1R_EL1, value);
 }
@@ -1224,6 +1224,7 @@ __STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16
 
     __DSB();
     __set_ICC_SGI1R_EL1(val);
+    __set_ICC_SGI0R_EL1(val);	/* added by mgs */
     __ISB();
 }
 
