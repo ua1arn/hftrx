@@ -10,6 +10,7 @@ SET FILELIST= ^
 	ccu.csv ppu.csv rtc.csv prcm.csv sid.csv r_cpucfg.csv cpu_subsys.csv intctrl.csv ^
 	g2d.csv de33.csv tcon_tv.csv tconlcd.csv hdmi.csv ^
 	display0_top.csv display1_top.csv ^
+	pcie30.csv ^
 	aw_a733.csv
 
 %CONVERTER% %FILELIST% > %OUTFILE%

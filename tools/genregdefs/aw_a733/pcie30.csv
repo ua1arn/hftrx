@@ -1,0 +1,13 @@
+# PCIe3.0 DM
+
+#type; PCIe; 
+#base; PCIe 0x06400000; 
+
+#regdef; PCIE_ADDR_PAGE_CFG; 0x0000; PCIe Address Page Configuration Register
+
+#typeend;
+
+
+## PCIE_SLAVE
+## 0x20000000---0x27FFFFFF
+## 0x440000000---0x53FFFFFFF

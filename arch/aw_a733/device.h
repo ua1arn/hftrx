@@ -284,6 +284,7 @@ typedef enum IRQn
 #define TCON_TV1_BASE ((uintptr_t) 0x05731000)        /*!< TCON_TV TV Output Base */
 #define eDP_CTRL_BASE ((uintptr_t) 0x05740000)        /*!< eDP_CTRL  Base */
 #define eDP_REG_PAD_BASE ((uintptr_t) 0x05760000)     /*!< eDP_REG_PAD  Base */
+#define PCIe_BASE ((uintptr_t) 0x06400000)            /*!< PCIe  Base */
 #define USB3P1_DRD_BASE ((uintptr_t) 0x06A00000)      /*!< USB3P1_DRD  Base */
 #define S_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< PRCM Power Reset Clock Management (PRCM) Base */
 #define S_GPIOL_BASE ((uintptr_t) 0x07025000)         /*!< S_GPIO Secure Port Controller Base */
@@ -2328,6 +2329,14 @@ typedef struct I2S_PCM_Type
     __IOM uint32_t ASRCMBISTSTAT;                     /*!< Offset 0x0A0 ASRC MBIST Test Status Register */
 } I2S_PCM_TypeDef; /* size of structure = 0x0A4 */
 /*
+ * @brief PCIe
+ */
+/*!< PCIe  */
+typedef struct PCIe_Type
+{
+    __IOM uint32_t PCIE_ADDR_PAGE_CFG;                /*!< Offset 0x000 PCIe Address Page Configuration Register */
+} PCIe_TypeDef; /* size of structure = 0x004 */
+/*
  * @brief PPU
  */
 /*!< PPU PCK-600 S_PPU (PCK600). */
@@ -3189,6 +3198,7 @@ typedef struct USB_OHCI_Capability_Type
 #define HDMI_TX0 ((HDMI_TX_TypeDef *) HDMI_TX0_BASE)  /*!< HDMI_TX0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0 TV Output register set access pointer */
 #define TCON_TV1 ((TCON_TV_TypeDef *) TCON_TV1_BASE)  /*!< TCON_TV1 TV Output register set access pointer */
+#define PCIe ((PCIe_TypeDef *) PCIe_BASE)             /*!< PCIe  register set access pointer */
 #define S_PRCM ((PRCM_TypeDef *) S_PRCM_BASE)         /*!< S_PRCM Power Reset Clock Management (PRCM) register set access pointer */
 #define S_GPIOL ((S_GPIO_TypeDef *) S_GPIOL_BASE)     /*!< S_GPIOL Secure Port Controller register set access pointer */
 #define S_GPIOM ((S_GPIO_TypeDef *) S_GPIOM_BASE)     /*!< S_GPIOM Secure Port Controller register set access pointer */
