@@ -343,7 +343,7 @@ __STATIC_INLINE uint32_t GIC_DistributorImplementer(void)
 
 /** \brief Get the Affinity Routing status.
 */
-__STATIC_INLINE bool GIC_GetARE(void)
+__STATIC_INLINE int GIC_GetARE(void)
 {
     return !! (GICDistributor->CTLR & 0x30);
 }
@@ -359,13 +359,19 @@ __STATIC_INLINE void GIC_SetTarget(IRQn_Type IRQn, uint32_t cpu_target)
 		if (GIC_GetARE())
 		{
 			/* affinity routing */
-			GICDistributor->IROUTER[IRQn] = cpu_target;
+			GICDistributor->IROUTER [IRQn] =
+					GICDistributor_IROUTER_IRM(1) |	/* Interrupts routed to any PE defined as a participating node. */
+					//GICDistributor_IROUTER_Aff0(cpu_target) |
+					GICDistributor_IROUTER_Aff1(cpu_target) |
+					//GICDistributor_IROUTER_Aff2(cpu_target) |
+					//GICDistributor_IROUTER_Aff3(cpu_target) |
+					0;
 		}
 		else
 		{
 			/* legacy */
-			uint32_t mask = GICDistributor->ITARGETSR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
-			GICDistributor->ITARGETSR[IRQn / 4U] = mask | ((cpu_target & 0xFFUL) << ((IRQn % 4U) * 8U));
+//			uint32_t mask = GICDistributor->ITARGETSR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
+//			GICDistributor->ITARGETSR[IRQn / 4U] = mask | ((cpu_target & 0xFFUL) << ((IRQn % 4U) * 8U));
 		}
 	}
 }
@@ -382,13 +388,13 @@ __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
     {
         if (GIC_GetARE())
         {
-      /* affinity routing */
-            cpu_target = GICDistributor->IROUTER[IRQn];
+        	/* affinity routing */
+            cpu_target = (GICDistributor->IROUTER[IRQn] & GICDistributor_IROUTER_Aff1_Msk) >> GICDistributor_IROUTER_Aff1_Pos;
         }
         else
         {
-      /* legacy */
-            cpu_target = (GICDistributor->ITARGETSR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+        	/* legacy */
+            cpu_target = 0;//(GICDistributor->ITARGETSR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
         }
     }
     else
@@ -409,7 +415,7 @@ __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_EnableIRQ(IRQn_Type IRQn)
 {
-  GICDistributor->ISENABLER[IRQn / 32U] = 1U << (IRQn % 32U);
+  GICDistributor->ISENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
 }
 
 /** \brief Get interrupt enable status using GIC's ISENABLER register.
@@ -418,7 +424,7 @@ __STATIC_INLINE void GIC_EnableIRQ(IRQn_Type IRQn)
 */
 __STATIC_INLINE uint32_t GIC_GetEnableIRQ(IRQn_Type IRQn)
 {
-  return (GICDistributor->ISENABLER[IRQn / 32U] >> (IRQn % 32U)) & 1UL;
+  return (GICDistributor->ISENABLER[IRQn / 32U] >> (IRQn % 32U)) & UINT32_C(1);
 }
 
 /** \brief Disables the given interrupt using GIC's ICENABLER register.
@@ -426,7 +432,7 @@ __STATIC_INLINE uint32_t GIC_GetEnableIRQ(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_DisableIRQ(IRQn_Type IRQn)
 {
-  GICDistributor->ICENABLER[IRQn / 32U] = 1U << (IRQn % 32U);
+  GICDistributor->ICENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
 }
 
 /** \brief Get interrupt pending status from GIC's ISPENDR register.
@@ -438,10 +444,10 @@ __STATIC_INLINE uint32_t GIC_GetPendingIRQ(IRQn_Type IRQn)
 	uint32_t pend;
 
 	if (IRQn >= 16) {
-		pend = (GICDistributor->ISPENDR[IRQn / 32U] >> (IRQn % 32U)) & 1UL;
+		pend = (GICDistributor->ISPENDR[IRQn / 32U] >> (IRQn % 32U)) & UINT32_C(1);
 	} else {
 	// INTID 0-15 Software Generated Interrupt
-		pend = (GICDistributor->SPENDSGIR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+		pend = 0;//(GICDistributor->SPENDSGIR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
 		// No CPU identification offered
 		if (pend != 0U) {
 			pend = 1U;
@@ -459,12 +465,12 @@ __STATIC_INLINE uint32_t GIC_GetPendingIRQ(IRQn_Type IRQn)
 __STATIC_INLINE void GIC_SetPendingIRQ(IRQn_Type IRQn)
 {
 	if (IRQn >= 16) {
-		GICDistributor->ISPENDR[IRQn / 32U] = 1U << (IRQn % 32U);
+		GICDistributor->ISPENDR[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
 	} else {
 		// INTID 0-15 Software Generated Interrupt
-		GICDistributor->SPENDSGIR[IRQn / 4U] = 1U << ((IRQn % 4U) * 8U);
-		// Forward the interrupt to the CPU interface that requested it
-		GICDistributor->SGIR = (IRQn | 0x02000000U);
+//		GICDistributor->SPENDSGIR[IRQn / 4U] = 1U << ((IRQn % 4U) * 8U);
+//		// Forward the interrupt to the CPU interface that requested it
+//		GICDistributor->SGIR = (IRQn | 0x02000000U);
 	}
 }
 
@@ -474,10 +480,10 @@ __STATIC_INLINE void GIC_SetPendingIRQ(IRQn_Type IRQn)
 __STATIC_INLINE void GIC_ClearPendingIRQ(IRQn_Type IRQn)
 {
 	if (IRQn >= 16U) {
-		GICDistributor->ICPENDR[IRQn / 32U] = 1U << (IRQn % 32U);
+		GICDistributor->ICPENDR[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
 	} else {
 		// INTID 0-15 Software Generated Interrupt
-		GICDistributor->CPENDSGIR[IRQn / 4U] = 1U << ((IRQn % 4U) * 8U);
+		//GICDistributor->CPENDSGIR[IRQn / 4U] = UINT32_C(1) << ((IRQn % 4U) * 8U);
 	}
 }
 
@@ -489,11 +495,11 @@ __STATIC_INLINE void GIC_ClearPendingIRQ(IRQn_Type IRQn)
 __STATIC_INLINE void GIC_SetConfiguration(IRQn_Type IRQn, uint32_t int_config)
 {
   uint32_t icfgr = GICDistributor->ICFGR[IRQn / 16U];  /* read current register content */
-  uint32_t shift = (IRQn % 16U) << 1U;                 /* calculate shift value */
+  const uint32_t shift = (IRQn % 16U) << 1U;                 /* calculate shift value */
 
   int_config &= 3U;                                    /* only 2 bits are valid */
-  icfgr &= (~(3U         << shift));                   /* clear bits to change */
-  icfgr |= (  int_config << shift);                    /* set new configuration */
+  icfgr &= (~ (UINT32_C(0x03) << shift));                   /* clear bits to change */
+  icfgr |= (  int_config 	  << shift);                    /* set new configuration */
 
   GICDistributor->ICFGR[IRQn / 16U] = icfgr;           /* write new register content */
 }
@@ -505,7 +511,7 @@ __STATIC_INLINE void GIC_SetConfiguration(IRQn_Type IRQn, uint32_t int_config)
 */
 __STATIC_INLINE uint32_t GIC_GetConfiguration(IRQn_Type IRQn)
 {
-  return (GICDistributor->ICFGR[IRQn / 16U] >> ((IRQn % 16U) << 1U)) & 3UL;
+  return (GICDistributor->ICFGR[IRQn / 16U] >> ((IRQn % 16U) << 1U)) & UINT32_C(0x03);
 }
 
 /** \brief Set the priority for the given interrupt in the GIC's IPRIORITYR register.
@@ -514,8 +520,8 @@ __STATIC_INLINE uint32_t GIC_GetConfiguration(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 {
-  uint32_t mask = GICDistributor->IPRIORITYR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
-  GICDistributor->IPRIORITYR[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
+  uint32_t mask = GICDistributor->IPRIORITYR[IRQn / 4U] & ~ (UINT32_C(0xFF) << ((IRQn % 4U) * 8U));
+  GICDistributor->IPRIORITYR[IRQn / 4U] = mask | ((priority & UINT32_C(0xFF)) << ((IRQn % 4U) * 8U));
 }
 
 /** \brief Read the current interrupt priority from GIC's IPRIORITYR register.
@@ -523,7 +529,7 @@ __STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 */
 __STATIC_INLINE uint32_t GIC_GetPriority(IRQn_Type IRQn)
 {
-  return (GICDistributor->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+  return (GICDistributor->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & UINT32_C(0xFF);
 }
 #endif /* GIC_DISTRIBUTOR_BASE */
 
@@ -1044,7 +1050,6 @@ __STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
 __STATIC_FORCEINLINE void __set_ICC_SGI1R_EL1(uint32_t value)
 {
     __MCR32(sICC_SGI1R_EL1, value);
-    __MCR32(sICC_SGI0R_EL1, value);
 }
 
 #endif	/* defined (__aarch64__) */
@@ -1206,9 +1211,19 @@ __STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16
     rs = MPIDR_TO_RS(target_aff);
     val = COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, IRQn, 0, rs, tlist);
 
+    rs = 0; /* RangeSelector */
+    val =
+    		(target_aff & 0xFF) * (UINT64_C(1) << 16) |	/* aff1 */
+    		(target_aff & 0xFF) * (UINT64_C(1) << 32) |	/* aff2 */
+    		(target_aff & 0xFF) * (UINT64_C(1) << 48) |	/* aff3 */
+    		(1) * (UINT64_C(1) << 40) |	/* IRM */
+    		(rs & 0x0F) * (UINT64_C(1) << 44) |	/* RangeSelector RS */
+    		(IRQn & 0xF) * (UINT64_C(1) << 24) | /* INTID */
+			(tlist & 0xFF) * (UINT64_C(1) << 0) |
+		0;
+
     __DSB();
     __set_ICC_SGI1R_EL1(val);
-    //__MSR(ICC_SGI1R_EL1, val);
     __ISB();
 }
 
@@ -1257,7 +1272,7 @@ __STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t 
 		/* affinity routing */
 		GIC_SendSGI_ARE(IRQn, target_aff, target_list);
 	} else {
-		GICDistributor->SGIR = ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
+		//GICDistributor->SGIR = ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
 	}
 }
 

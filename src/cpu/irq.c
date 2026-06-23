@@ -3558,7 +3558,7 @@ uint_fast8_t arm_hardware_cpuid(void)
 
 #elif (__CORTEX_A == 55U) && defined(__aarch64__)
 	// Cortex-A computers
-	return (__get_MPIDR_EL1() >> 8) & 0xFF;
+	return (__get_MPIDR_EL1() >> MPIDR_AFF1_SHIFT) & MPIDR_AFFLVL_MASK;
 
 #elif defined(__aarch64__)
 	// Cortex-A53 computers
