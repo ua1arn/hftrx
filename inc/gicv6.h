@@ -1212,16 +1212,47 @@ __STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16
     __ISB();
 }
 
+/** \brief Calculate log2 rounded up
+*  - log(0)  => 0
+*  - log(1)  => 0
+*  - log(2)  => 1
+*  - log(3)  => 2
+*  - log(4)  => 2
+*  - log(5)  => 3
+*        :      :
+*  - log(16) => 4
+*  - log(32) => 5
+*        :      :
+* \param [in] n input value parameter
+* \return log2(n)
+*/
+__STATIC_FORCEINLINE uint8_t __log2_upX(uint32_t n)
+{
+  if (n < 2U) {
+    return 0U;
+  }
+  uint8_t log = 0U;
+  uint32_t t = n;
+  while(t > 1U)
+  {
+    log++;
+    t >>= 1U;
+  }
+  if (n & 1U) { log++; }
+  return log;
+}
+
 /** \brief Generate a software interrupt using GIC's SGIR register.
 * \param [in] IRQn Software interrupt to be generated.
 * \param [in] target_list List of CPUs the software interrupt should be forwarded to.
 * \param [in] filter_list Filter to be applied to determine interrupt receivers.
 */
-__STATIC_INLINE void GIC_SendSGI_v6(IRQn_Type IRQn, uint64_t target_aff, uint16_t target_list)
+__STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
 {
 	if (IRQn >= 16)
 		return;
 
+	const uint64_t target_aff = __log2_upX(target_list);
 	if (GIC_GetARE()) {
 		/* affinity routing */
 		GIC_SendSGI_ARE(IRQn, target_aff, target_list);
@@ -1229,10 +1260,15 @@ __STATIC_INLINE void GIC_SendSGI_v6(IRQn_Type IRQn, uint64_t target_aff, uint16_
 		GICDistributor->SGIR = ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
 	}
 }
-// gicv2.h template
-__STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
+
+/** \brief Generate a software interrupt using GIC's SGIR register.
+* \param [in] IRQn Software interrupt to be generated.
+* \param [in] target_list List of CPUs the software interrupt should be forwarded to.
+* \param [in] filter_list Filter to be applied to determine interrupt receivers.
+*/
+__STATIC_INLINE void GIC_SendSGI_v2(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
 {
-  GICDistributor->SGIR = ((filter_list & 3U) << 24U) | ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
+  //GICDistributor->SGIR = ((filter_list & 3U) << 24U) | ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
 }
 
 #if defined (GIC_INTERFACE_BASE)
