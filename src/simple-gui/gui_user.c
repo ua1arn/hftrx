@@ -1079,9 +1079,18 @@ void gui_main_process(void)
 #if 0 //WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
 	if (hamradio_get_tx())
 	{
-		const ldiv_t t = ldiv(hamradio_get_PAtemp_value(), 10);
-		local_snprintf_P(buf, buflen, "%d.%dC ", t.quot, t.rem);
-		GUI_DEBUG_PRINT("%s\n", buf);		// пока вывод в консоль
+		const int_fast16_t tv = hamradio_get_PAtemp_value();
+		if (tv != INT16_MAX)
+		{
+			const ldiv_t t = ldiv(tv, 10);
+			local_snprintf_P(buf, buflen, "%d.%dC ", t.quot, t.rem);
+			GUI_DEBUG_PRINT("%s\n", buf);		// пока вывод в консоль
+		}
+		else
+		{
+			// термодатчик не подключен
+			GUI_DEBUG_PRINT("%s\n", "T--");		// пока вывод в консоль
+		}
 	}
 #endif /* WITHTHERMOLEVEL */
 

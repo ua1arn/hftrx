@@ -14279,6 +14279,7 @@ uint_fast8_t hamradio_get_volt_value(void)
 #endif /* WITHVOLTLEVEL */
 
 // Градусы в десятых долях (может быть отрицательным)
+// INT16_MAX - термодатчик не подключен
 int_fast16_t hamradio_get_PAtemp_value(void)
 {
 	// XTHERMOIX - данные с АЦП напрямую
@@ -14309,8 +14310,9 @@ int_fast16_t hamradio_get_PAtemp_value(void)
 	}
 	else
 	{
+		// термодатчик не подключен
 		PRINTF(PSTR("hamradio_get_PAtemp_value: ref=%u\n"), ref);
-		return 999;
+		return INT16_MAX;
 	}
 
 #elif WITHTHERMOLEVEL2
@@ -14318,7 +14320,10 @@ int_fast16_t hamradio_get_PAtemp_value(void)
 	const int_fast16_t thermo_offset = THERMOSENSOR_OFFSET;
 	const unsigned Vref_mV = ADCVREF_CPU * 100;
 	const unsigned vrefff = (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER;
-	const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, vrefff) - (int32_t) board_getadc_filtered_u32(XTHERMOREFMRRIX, 0, vrefff);
+	const uint_fast32_t tvreff = board_getadc_filtered_u32(XTHERMOREFMRRIX, 0, vrefff);
+	const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, vrefff) - (int32_t) tvreff;
+	if (tvreff == 0)
+		return INT16_MAX;
 	return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
 
 #elif WITHTHERMOLEVEL
@@ -14330,7 +14335,7 @@ int_fast16_t hamradio_get_PAtemp_value(void)
 	const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, vrefff);
 	return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
 #else
-	return 0;
+	return UINT16_MAX;
 
 #endif
 }
@@ -17351,7 +17356,13 @@ static void dpc_1s_timer_fn(void * arg)
 			const int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
 			const int_fast16_t tempon = ulmax16(gfanpaontemp, gfanpaofftemp) * 10;
 			const int_fast16_t tempoff = ulmin16(gfanpaontemp, gfanpaofftemp) * 10;
-			if (fanpaflag)
+			if (tempv == INT16_MAX)
+			{
+				// термодатчик не подключен
+				fanpaflag = 0;	// включаем
+				fanpaflagch = 1;
+			}
+			else if (fanpaflag)
 			{
 				// выключено
 				if (tempv >= tempon)
@@ -19706,6 +19717,10 @@ txreq_process0(txreq_t * txreqp)
 #endif
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), (int) gtempvmax * 10);
+	else if (hamradio_get_PAtemp_value() == INT16_MAX)
+	{
+		// термодатчик не подключен
+	}
 	else if (txreqa && gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
 	{
 		// перегрев
@@ -23137,31 +23152,39 @@ int infocb_thermo(char * b, size_t len, int * pstate)
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	int_fast16_t tempv = hamradio_get_PAtemp_value();	// Градусы в десятых долях
 
-	// 50+ - красный
-	// 30+ - желтый
-	// ниже 30 зеленый
-	if (tempv > 999)
-		tempv = 999; //- tempv;
+	if (tempv != INT16_MAX)
+	{
+		// 50+ - красный
+		// 30+ - желтый
+		// ниже 30 зеленый
+		if (tempv > 999)
+			tempv = 999; //- tempv;
 
-	if (tempv < 0)
-	{
-		tempv = 0; //- tempv;
-	}
-	else if (tempv >= 500)
-	{
-		;
-	}
-	else if (tempv >= 300)
-	{
-		;
+		if (tempv < 0)
+		{
+			tempv = 0; //- tempv;
+		}
+		else if (tempv >= 500)
+		{
+			;
+		}
+		else if (tempv >= 300)
+		{
+			;
+		}
+		else
+		{
+			;
+		}
+		const int thermoa = tempv / 10;
+		const int thermos01a = tempv > 0 ? (tempv % 10) : (- tempv % 10);
+		return local_snprintf_P(b, len, "%d.%d", thermoa, thermos01a);
 	}
 	else
 	{
-		;
+		// термодатчик не подключен
+		return local_snprintf_P(b, len, "T--");
 	}
-	const int thermoa = tempv / 10;
-	const int thermos01a = tempv > 0 ? (tempv % 10) : (- tempv % 10);
-	return local_snprintf_P(b, len, "%d.%d", thermoa, thermos01a);
 #else
 	return 0;
 #endif

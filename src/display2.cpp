@@ -4018,24 +4018,32 @@ static void display2_thermo(const gxdrawb_t * db,
 	gxstyle_initialize(& dbstylev);
 	char b [xspan + 1];
 
-	// 50+ - красный
-	// 30+ - желтый
-	// ниже 30 зеленый
-	if (tempv > 999)
-		tempv = 999;
-	else if (tempv < - 999)
-		tempv = - 999;
+	if (tempv != INT16_MAX)
+	{
+		// 50+ - красный
+		// 30+ - желтый
+		// ниже 30 зеленый
+		if (tempv > 999)
+			tempv = 999;
+		else if (tempv < - 999)
+			tempv = - 999;
 
-	const div_t d = div(tempv, 10);
-	local_snprintf_P(b, ARRAY_SIZE(b), "%+d.%1d", d.quot, iabs(d.rem));
-	if (tempv >= 500)
-		gxstyle_textcolor(& dbstylev, COLORPIP_RED, display2_getbgcolor());
-	else if (tempv >= 300)
-		gxstyle_textcolor(& dbstylev, COLORPIP_YELLOW, display2_getbgcolor());
+		const div_t d = div(tempv, 10);
+		local_snprintf_P(b, ARRAY_SIZE(b), "%+d.%1d", d.quot, iabs(d.rem));
+		if (tempv >= 500)
+			gxstyle_textcolor(& dbstylev, COLORPIP_RED, display2_getbgcolor());
+		else if (tempv >= 300)
+			gxstyle_textcolor(& dbstylev, COLORPIP_YELLOW, display2_getbgcolor());
+		else
+			gxstyle_textcolor(& dbstylev, COLORPIP_GREEN, dbstylev_1statePSU.bgcolor);
+
+		display_text(db, x, y, b, xspan, yspan, & dbstylev);
+	}
 	else
-		gxstyle_textcolor(& dbstylev, COLORPIP_GREEN, dbstylev_1statePSU.bgcolor);
-
-	display_text(db, x , y, b, xspan, yspan, & dbstylev);
+	{
+		// термодатчик не подключен
+		display_text(db, x, y, "T--", xspan, yspan, & dbstylev);
+	}
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
 
@@ -4054,24 +4062,32 @@ static void display2_thermoC(const gxdrawb_t * db,
 	gxstyle_initialize(& dbstylev);
 	char b [xspan + 1];
 
-	// 50+ - красный
-	// 30+ - желтый
-	// ниже 30 зеленый
-	if (tempv > 999)
-		tempv = 999;
-	else if (tempv < - 999)
-		tempv = - 999;
+	if (tempv != INT16_MAX)
+	{
+		// 50+ - красный
+		// 30+ - желтый
+		// ниже 30 зеленый
+		if (tempv > 999)
+			tempv = 999;
+		else if (tempv < - 999)
+			tempv = - 999;
 
-	const div_t d = div(tempv, 10);
-	local_snprintf_P(b, ARRAY_SIZE(b), "%+d.%1dC", d.quot, iabs(d.rem));
-	if (tempv >= 500)
-		gxstyle_textcolor(& dbstylev, COLORPIP_RED, display2_getbgcolor());
-	else if (tempv >= 300)
-		gxstyle_textcolor(& dbstylev, COLORPIP_YELLOW, display2_getbgcolor());
+		const div_t d = div(tempv, 10);
+		local_snprintf_P(b, ARRAY_SIZE(b), "%+d.%1dC", d.quot, iabs(d.rem));
+		if (tempv >= 500)
+			gxstyle_textcolor(& dbstylev, COLORPIP_RED, display2_getbgcolor());
+		else if (tempv >= 300)
+			gxstyle_textcolor(& dbstylev, COLORPIP_YELLOW, display2_getbgcolor());
+		else
+			gxstyle_textcolor(& dbstylev, COLORPIP_GREEN, display2_getbgcolor());
+
+		display_text(db, x , y, b, xspan, yspan, & dbstylev);
+	}
 	else
-		gxstyle_textcolor(& dbstylev, COLORPIP_GREEN, display2_getbgcolor());
-
-	display_text(db, x , y, b, xspan, yspan, & dbstylev);
+	{
+		// термодатчик не подключен
+		display_text(db, x , y, "T--", xspan, yspan, & dbstylev);
+	}
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 }
 
