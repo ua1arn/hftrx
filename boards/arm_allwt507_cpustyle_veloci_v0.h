@@ -1382,13 +1382,13 @@
 
 	void stmpe811_interrupt_handler(void * ctx);
 
-	#define BOARD_GPIOA_STMPE811_INT_PIN (UINT32_C(1) << 3)		/* PA3 : tsc interrupt XS26, pin 08 */
+	#define BOARD_STMPE811_INT_PIN (UINT32_C(1) << 7)		/* PE7 : TSC interrupt */
 
 	#define BOARD_STMPE811_INT_CONNECT() do { \
 		static einthandler_t h; \
-		arm_hardware_pioa_inputs(BOARD_GPIOA_STMPE811_INT_PIN); \
-		arm_hardware_pioa_updown(BOARD_GPIOA_STMPE811_INT_PIN, BOARD_GPIOA_STMPE811_INT_PIN, 0); \
-		arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_STMPE811_INT_PIN, 1 * BOARD_GPIOA_STMPE811_INT_PIN, 0 * BOARD_GPIOA_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h, stmpe811_interrupt_handler); \
+		arm_hardware_pioe_inputs(BOARD_STMPE811_INT_PIN); \
+		arm_hardware_pioe_updown(BOARD_STMPE811_INT_PIN, BOARD_STMPE811_INT_PIN, 0); \
+		arm_hardware_pioe_onchangeinterrupt(BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h, stmpe811_interrupt_handler); \
 	} while (0)
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
 
@@ -1401,21 +1401,21 @@
 
 	void gt911_interrupt_handler(void * ctx);
 
-	#define BOARD_GPIOA_GT911_INT_PIN (UINT32_C(1) << 3)		/* PA3 : tsc interrupt XS26, pin 08 */
-	#define BOARD_GT911_RESET_PIN (UINT32_C(1) << 4)			/* PA10 : tsc/LCD reset, XS26, pin 22 */
+	#define BOARD_GPIOA_GT911_INT_PIN (UINT32_C(1) << 7)		/* PE7 : tsc interrupt XS26, pin 08 */
+	#define BOARD_GT911_RESET_PIN (UINT32_C(1) << x)			/* Pxxx : tsc/LCD reset, XS26, pin 22 */
 
-	#define BOARD_GT911_RESET_SET(v) do { gpioX_setstate(GPIOA, BOARD_GT911_RESET_PIN, !! (v)); local_delay_us(1); } while (0)
-	#define BOARD_GT911_INT_SET(v) do { gpioX_setstate(GPIOA, BOARD_GPIOA_GT911_INT_PIN, !! (v)); local_delay_us(1); } while (0)
+	#define BOARD_GT911_RESET_SET(v) do { gpioX_setstate(GPIOE, BOARD_GT911_RESET_PIN, !! (v)); local_delay_us(1); } while (0)
+	#define BOARD_GT911_INT_SET(v) do { gpioX_setstate(GPIOE, BOARD_GPIOA_GT911_INT_PIN, !! (v)); local_delay_us(1); } while (0)
 
 	#define BOARD_GT911_RESET_INITIO_1() do { \
-		arm_hardware_pioa_outputs2m(BOARD_GPIOA_GT911_INT_PIN, 1 * BOARD_GPIOA_GT911_INT_PIN); \
-		arm_hardware_pioa_outputs2m(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
+		arm_hardware_pioe_outputs2m(BOARD_GPIOA_GT911_INT_PIN, 1 * BOARD_GPIOA_GT911_INT_PIN); \
+		arm_hardware_pioe_outputs2m(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
 		 local_delay_ms(200);  \
 	} while (0)
 
 	#define BOARD_GT911_RESET_INITIO_2() do { \
-		arm_hardware_pioa_inputs(BOARD_GPIOA_GT911_INT_PIN); \
-		arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_GT911_INT_PIN, 0); \
+		arm_hardware_pioe_inputs(BOARD_GPIOA_GT911_INT_PIN); \
+		arm_hardware_pioe_updown(_xMask, BOARD_GPIOA_GT911_INT_PIN, 0); \
 	} while (0)
 
 	#define BOARD_GT911_INT_CONNECT() do { \
