@@ -216,7 +216,7 @@ static int t113_transfer_command(struct sdhci_t * sdhci, struct sdhci_cmd_t * cm
 //		timeout = ktime_add_ms(ktime_get(), 1);
 
 		do {
-			status = read32(sdhci->base + SD_STAR);
+			status = sdhci->instance->SMHC_STATUS;	// 0x3C sdhci->instance->SMHC_STATUS
 
 /*			if(ktime_after(ktime_get(), timeout))
 			{
@@ -295,7 +295,7 @@ static int t113_transfer_command(struct sdhci_t * sdhci, struct sdhci_cmd_t * cm
 //		timeout = ktime_add_ms(ktime_get(), 1);
 
 		do {
-			status = read32(sdhci->base + SD_STAR);
+			status = sdhci->instance->SMHC_STATUS;
 
 /*			if(ktime_after(ktime_get(), timeout))
 			{
@@ -333,9 +333,9 @@ static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount,
 	uint32_t status, err, done;
 	ASSERT(count);
 	sdhci->instance->SMHC_RINTSTS = SDXC_INTERRUPT_ERROR_BIT;
-	while (count >= sizeof(uint32_t))
+	while (count >= sizeof (uint32_t))
 	{
-		if ((read32(sdhci->base + SD_STAR) & SDXC_FIFO_EMPTY) == 0)
+		if ((sdhci->instance->SMHC_STATUS & SDXC_FIFO_EMPTY) == 0)
 		{
 			*(tmp) = read32(sdhci->base + SD_FIFO);
 			tmp++;
@@ -348,7 +348,7 @@ static int read_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount,
 		}
 	}
 	ASSERT(count == 0);
-	while ((read32(sdhci->base + SD_STAR) & SDXC_FIFO_EMPTY) == 0)
+	while ((sdhci->instance->SMHC_STATUS & SDXC_FIFO_EMPTY) == 0)
 	{
 		TP();
 		read32(sdhci->base + SD_FIFO);
@@ -385,9 +385,9 @@ static int write_bytes(struct sdhci_t * sdhci, uint32_t * buf, uint32_t blkcount
 
 	while (count >= sizeof(uint32_t))
 	{
-		if(!(read32(sdhci->base + SD_STAR) & SDXC_FIFO_FULL))
+		if(!(sdhci->instance->SMHC_STATUS & SDXC_FIFO_FULL))
 		{
-			write32(sdhci->base + SD_FIFO, *tmp);
+			write32(sdhci->base + SD_FIFO, * tmp);
 			tmp++;
 			count -= sizeof(uint32_t);
 		}
