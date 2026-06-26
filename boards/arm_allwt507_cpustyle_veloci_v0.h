@@ -898,8 +898,8 @@
 	#define targetadck		(UINT32_C(1) << 21)		// PE21 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
 	#define targetxad2		(UINT32_C(1) << 16)		// PE16 ext2 external SPI device (PA BOARD ADC) CSEXT2
 	#define targetfpga1gate	(UINT32_C(1) << 11)		// PE11 data gate for all FPGA SPI operations (0: active)
-	#define targetfpga1only	(UINT32_C(1) << 17)	// PE17 FPGA control registers CS1
-	#define targetfpga1		(targetfpga1only | targetfpga1gate)	// PE17 FPGA control registers CS1
+	#define targetfpga1only	(UINT32_C(1) << 17)		// PE17 FPGA control registers CS1
+	#define targetfpga1		(targetfpga1only | targetfpga1gate)
 
 	#define SPI_DRIVE_CODEC1 GPIO_DRV_0
 	#define SPI_DRIVE(drv) do { \
