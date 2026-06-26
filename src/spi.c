@@ -39,13 +39,6 @@ char nameDATAFLASH [64] = "NoChip";
 #endif
 #define FPGALOADER_SPIMODE SPIC_MODE3	// FPGA ACCESS SPI MODE SHOULD BE mode3 (gates used)
 
-
-// Эти три функции должны использоваться везде, где надо работать с SPI.
-#define prog_select(target) do { prog_select_impl(target); } while (0)
-#define prog_unselect(target) do { prog_unselect_impl(target); } while (0)
-#define prog_read_byte(target, v)  ((void) (target), prog_spi_read_byte_impl(v))
-
-
 // wait expected state of variable
 // return non-zero: timeout error
 static void spi_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fast32_t state)
@@ -56,10 +49,10 @@ static void spi_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fa
 
 void prog_pulse_ioupdate(void);
 
-void prog_select_impl(
+static void prog_select(
 	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
 	);
-void prog_unselect_impl(
+static void prog_unselect(
 	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
 	);
 
@@ -251,7 +244,7 @@ spi_pulse_clk(void)
 //////////////////////////
 // Получение 8 бит с SPI
 uint_fast8_t
-prog_spi_read_byte_impl(uint_fast8_t bytetosend)
+prog_spi_read_byte(uint_fast8_t bytetosend)
 {
 	uint_fast8_t i = 8;
 	uint_fast8_t v = 0;
@@ -265,7 +258,6 @@ prog_spi_read_byte_impl(uint_fast8_t bytetosend)
 }
 
 static 
-//RAMFUNC_NONILINE 
 uint8_t phase_getbit(
 	const phase_t * v,
 	uint_fast8_t i		/* bit position, LSB = 0 */
@@ -281,7 +273,7 @@ uint8_t phase_getbit(
 
 
 /* send bits (starting from MSB) */
-void RAMFUNC_NONILINE (prog_phbits_impl)(
+void prog_phbits(
 	spitarget_t target,	/* addressing to chip */
 	const phase_t * val,
 	uint_fast8_t i,				/* left of 1-st bit to set */
@@ -294,7 +286,7 @@ void RAMFUNC_NONILINE (prog_phbits_impl)(
 	}
 }
 
-void RAMFUNC_NONILINE (prog_val_impl)(
+void prog_val(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast8_t value,
 	uint_fast8_t n				/* number of bits to send */
@@ -309,7 +301,7 @@ void RAMFUNC_NONILINE (prog_val_impl)(
 }
 
 // выдача 8-ми бит на SPI
-void NOINLINEAT (prog_val8_impl)(
+void prog_val8(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast8_t value
 	)
@@ -715,7 +707,7 @@ void prog_spi_exchange32(
  * интерфейс с платой - управление чипселектом
  */
 
-void prog_select_impl(
+static void prog_select(
 	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
 	)
 {
@@ -727,7 +719,7 @@ void prog_select_impl(
 	spi_cs_enable(target);	// chip select active
 }
 
-void prog_unselect_impl(
+static void prog_unselect(
 	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
 	)
 {
