@@ -5970,6 +5970,13 @@ const uint8_t * getrbfimage(size_t * count)
 
 #endif /* LCDMODE_DUMMY || ! CPUSTYLE_R7S721 */
 
+static void fpga_prog_spi(
+	const uint8_t * txbuff1, unsigned int txsize1
+	)
+{
+	prog_spi_io(targetnone, FPGALOADER_SPEEDC, FPGALOADER_SPIMODE, txbuff1, txsize1, NULL, 0, NULL, 0);
+}
+
 /* FPGA загружается процессором с помощью SPI */
 static void board_fpga_loader_PS_gated(void)
 {
@@ -6037,7 +6044,7 @@ restart:
 		//PRINTF("fpga: start sending RBF image (%lu of 16-bit words)\n", rbflength);
 		if (rbflength != 0)
 		{
-			prog_spi_io(targetnone, FPGALOADER_SPEEDC, FPGALOADER_SPIMODE, rbfbase, rbflength, NULL, 0, NULL, 0);
+			fpga_prog_spi(rbfbase, rbflength);
 			//size_t n = rbflength - 1;
 
 			PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
@@ -6047,7 +6054,7 @@ restart:
 			{
 				static const uint8_t fill [16];
 				++ wcd;
-				prog_spi_io(targetnone, FPGALOADER_SPEEDC, FPGALOADER_SPIMODE, fill, ARRAY_SIZE(fill), NULL, 0, NULL, 0);
+				fpga_prog_spi(fill, ARRAY_SIZE(fill));
 				local_delay_ms(1);
 			}
 

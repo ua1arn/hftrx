@@ -792,9 +792,6 @@
 #if WITHTX
 
 	#define HARDWARE_GET_TXDISABLE() (board_fpgastatus_gettxdisable())
-	// +++
-	// TXDISABLE input - PE11
-	// ---
 
 	// +++
 	// PTT input - PD10
@@ -900,8 +897,9 @@
 	#define targetcodec1	(UINT32_C(1) << 20)		// PE20 on-board codec1 NAU8822L
 	#define targetadck		(UINT32_C(1) << 21)		// PE21 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
 	#define targetxad2		(UINT32_C(1) << 16)		// PE16 ext2 external SPI device (PA BOARD ADC) CSEXT2
-	#define targetfpga1mask	(UINT32_C(1) << 11)		// PE11 data gate for all FPGA SPI operations (0: active)
-	#define targetfpga1		((UINT32_C(1) << 17) | targetfpga1mask)	// PE17 FPGA control registers CS1
+	#define targetfpga1gate	(UINT32_C(1) << 11)		// PE11 data gate for all FPGA SPI operations (0: active)
+	#define targetfpga1only	(UINT32_C(1) << 17)	// PE17 FPGA control registers CS1
+	#define targetfpga1		(targetfpga1only | targetfpga1gate)	// PE17 FPGA control registers CS1
 
 	#define SPI_DRIVE_CODEC1 GPIO_DRV_0
 	#define SPI_DRIVE(drv) do { \
@@ -935,7 +933,7 @@
 		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 0 * (target)); } break; */\
 		case targetctl1: { gpioX_setstate(GPIOE, targetctl1, 1 * targetctl1); gpioX_setstate(GPIOI, OE_CTL1_BIT, 0 * OE_CTL1_BIT); } break; \
 		default: { gpioX_setstate(GPIOE, (target), 1 * (target)); } break; \
-		case targetnone: break; \
+		case targetnone: { } break; /* FPGA image loader */ \
 		} \
 	} while (0)
 
@@ -962,14 +960,14 @@
 		arm_hardware_pioe_outputs20m(targetnvram, 1 * targetnvram); /*  */ \
 		arm_hardware_pioe_outputs20m(targetctl1, 1 * targetctl1); /*  */ \
 		arm_hardware_pioe_outputs20m(targetcodec1, 1 * targetcodec1); /*  */ \
-		arm_hardware_pioe_outputs20m(targetfpga1, 1 * targetfpga1); /*  */ \
 		arm_hardware_pioe_outputs20m(targetadck, 1 * targetadck); /*  */ \
 		arm_hardware_pioe_outputs20m(targetxad2, 1 * targetxad2); /*  */ \
-		arm_hardware_pioe_outputs20m(targetfpga1mask, 1 * targetfpga1mask); /*  */ \
+		arm_hardware_pioe_outputs20m(targetfpga1only, 1 * targetfpga1only); /*  */ \
+		arm_hardware_pioe_outputs20m(targetfpga1gate, 1 * targetfpga1gate); /*  */ \
 	} while (0)
 	/* разрешение обмена с FPGA  использованием SPI */
 	#define TARGET_FPGA_GATE(_on) do { \
-		 gpioX_setstate(GPIOE, targetfpga1mask, ! (_on) * targetfpga1mask); \
+		 gpioX_setstate(GPIOE, targetfpga1gate, ! (_on) * targetfpga1gate); \
 	} while (0)
 
 	// MOSI & SCK port
@@ -1118,6 +1116,7 @@
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
+			arm_hardware_pioe_outputs20m(targetfpga1gate, 1 * targetfpga1gate); /*  */ \
 			arm_hardware_pioe_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
 			arm_hardware_pioe_inputs(FPGA_NSTATUS_BIT); \
 			arm_hardware_pioe_inputs(FPGA_CONF_DONE_BIT); \
