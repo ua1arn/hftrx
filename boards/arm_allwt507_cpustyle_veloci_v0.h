@@ -994,11 +994,8 @@
 	} while (0)
 	#define WITHSPI1HW	1	// Use SPI1
 
-	/* to be removed... */
-	#define SPIHARD_IX 1    /* 0 - SPI0, 1: SPI1... */
 	#define SPIHARD_PTR SPI1    /* 0 - SPI0, 1: SPI1... */
 	#define	SPIDFHARD_PTR SPIHARD_PTR
-	#define SPIDFHARD_IX SPIHARD_IX
 
 	#define HARDWARE_FPGA_LOADER_SPIHARD_PTR SPIHARD_PTR
 	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPIHARD_PTR
