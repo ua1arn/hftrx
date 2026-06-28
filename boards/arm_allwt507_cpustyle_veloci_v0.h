@@ -789,6 +789,28 @@
 		arm_hardware_piof_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF3);	/* PF3 - SDC0_CMD TDO	*/ \
 	} while (0)
 
+#if 0
+	/* Module BA7 interface */
+	#define HOSTBB_PTTTOMODEM_BIT  (UINT32_C(1) << 8)		// PE8 - PTT_IN to modem
+	#define HOSTBB_PTTFROMMODEM_BIT  (UINT32_C(1) << 10)	// PE9 - PTT_OUT from modem
+	#define HOSTBB_RESET_BIT  (UINT32_C(1) << 1)			// PE1 - RESET OUT
+	#define HOSTBB_MOD_INT_BIT  (UINT32_C(1) << 10)			// PA10 - HOST_MOD_INT
+
+	#define HOSTBB_INITIALIZE() do { \
+		arm_hardware_pioe_inputs(HOSTBB_PTTFROMMODEM_BIT); /* set as input with pull-up */ \
+		arm_hardware_pioe_updown(HOSTBB_PTTFROMMODEM_BIT, HOSTBB_PTTFROMMODEM_BIT, 0); \
+		arm_hardware_pioe_opendrain(HOSTBB_PTTTOMODEM_BIT, HOSTBB_PTTTOMODEM_BIT); /* open drain */ \
+		arm_hardware_pioe_opendrain(HOSTBB_RESET_BIT, 0 * HOSTBB_RESET_BIT); /* open drain */ \
+		local_delay_ms(10); \
+		arm_hardware_pioe_opendrain(HOSTBB_RESET_BIT, 1 * HOSTBB_RESET_BIT); /* open drain */ \
+	} while (0)
+	#define HOSTBB_GET_PTT() (0)
+#else
+	#define HOSTBB_INITIALIZE() do { \
+	} while (0)
+	#define HOSTBB_GET_PTT() (0)
+#endif
+
 #if WITHTX
 
 	#define HARDWARE_GET_TXDISABLE() (board_fpgastatus_gettxdisable())
@@ -816,6 +838,7 @@
 			(PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || /* PTT_FRONT */ \
 			/* (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || */ \
 			(PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0 || /* rear PTT */ \
+			HOSTBB_GET_PTT() || \
 			0 \
 		)
 	#define PTT_INITIALIZE() do { \
@@ -1525,6 +1548,7 @@
 	/*TXDISABLE_INITIALIZE(); */ \
 	TUNE_INITIALIZE(); \
 	USBD_EHCI_INITIALIZE(); \
+	HOSTBB_INITIALIZE(); \
 } while (0)
 
 // TUSB parameters
