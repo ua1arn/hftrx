@@ -23,7 +23,7 @@ static unsigned C_linear = 0, L_linear = 0;
 static unsigned L_mult = 1, C_mult = 1;
 
 static int max_swr;
-static int SWR, swr_a;
+static int SWR;
 
 static unsigned lastout_ind;
 static unsigned lastout_cap;
@@ -82,7 +82,9 @@ static int local_get_swr(int (*cb)(void *ctx), void *ctx) {
 }
 
 // return 1 for abort
-static int sharp_cap(int (*cb)(void *ctx), void *ctx) {
+static int sharp_cap(int (*cb)(void *ctx), void *ctx)
+{
+	PRINTF("sharp_cap\n");
 	unsigned range, count, max_range, min_range;
 	int min_SWR;
 	int ec;
@@ -131,7 +133,9 @@ static int sharp_cap(int (*cb)(void *ctx), void *ctx) {
 }
 
 // return 1 for abort
-static int sharp_ind(int (*cb)(void *ctx), void *ctx) {
+static int sharp_ind(int (*cb)(void *ctx), void *ctx)
+{
+	PRINTF("sharp_ind\n");
 	unsigned range, count, max_range, min_range;
 	int min_SWR;
 	int ec;
@@ -153,6 +157,7 @@ static int sharp_ind(int (*cb)(void *ctx), void *ctx) {
 		return ec;
 
 	min_SWR = SWR;
+	PRINTF("sharp_ind: from %u to %u, step=%u\n", min_range + L_mult, max_range, L_mult);
 	for (count = min_range + L_mult; count <= max_range; count += L_mult) {
 		set_ind(count);
 		if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
@@ -184,7 +189,9 @@ static int sharp_ind(int (*cb)(void *ctx), void *ctx) {
 }
 
 // return 1 for abort
-static int coarse_cap(int (*cb)(void *ctx), void *ctx) {
+static int coarse_cap(int (*cb)(void *ctx), void *ctx)
+{
+	PRINTF("coarse_cap\n");
 	unsigned step = 3;
 	unsigned count;
 	int min_swr;
@@ -222,7 +229,9 @@ static int coarse_cap(int (*cb)(void *ctx), void *ctx) {
 }
 
 // return 1 for abort
-static int coarse_tune(int (*cb)(void *ctx), void *ctx) {
+static int coarse_tune(int (*cb)(void *ctx), void *ctx)
+{
+	PRINTF("coarse_tune\n");
 	unsigned step = 3;
 	unsigned count;
 	unsigned mem_cap, mem_step_cap;
@@ -271,7 +280,9 @@ static int coarse_tune(int (*cb)(void *ctx), void *ctx) {
 }
 
 // return 1 for abort
-static int sub_tune(int (*cb)(void *ctx), void *ctx) {
+static int sub_tune(int (*cb)(void *ctx), void *ctx)
+{
+	PRINTF("sub_tune\n");
 	int ec;
 	int swr_mem, ind_mem, cap_mem;
 	//
@@ -388,7 +399,9 @@ static int sub_tune(int (*cb)(void *ctx), void *ctx) {
 }
 
 // return 1 if no power, 2 if aborted
-static int tune(int (*cb)(void *ctx), void *ctx) {
+static int tune0(int (*cb)(void *ctx), void *ctx)
+{
+	PRINTF("tune0\n");
 	int ec;
 	//
 	if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
@@ -401,7 +414,6 @@ static int tune(int (*cb)(void *ctx), void *ctx) {
 	//local_delay_ms(50);
 	if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
 		return ec;
-	swr_a = SWR;
 	if (SWR < SWRENOUGH110)
 		return N7DDCTUNE_OK;
 	if (max_swr > SWRENOUGH110 && SWR > max_swr)
@@ -490,13 +502,13 @@ int n7ddc_tune(int linearC, int linearL, int (*cb)(void *ctx), void *ctx) {
 		}
 		else
 		{
-			int ec = tune(cb, ctx);
+			int ec = tune0(cb, ctx);
 			if (ec != 0)
 				return ec;
 		}
 	}
 	n7ddc_settuner(lastout_ind, lastout_cap, lastout_SW);
-	PRINTF("n7ddc_tune: DONE (i = %u)\n", i);
+	PRINTF("n7ddc_tune: DONE (i = %u), SWR=%u\n", i, SWR);
 	return N7DDCTUNE_OK;
 
 }

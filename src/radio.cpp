@@ -7036,14 +7036,6 @@ static void updateboard_tuner(void)
 	board_update();		/* вывести забуферированные изменения в регистры */
 }
 
-// ожидание требуемого времени после выдачи параметров на тюнер.
-static void tuner_waitadc(void)
-{
-	uint_fast8_t n = (gtunerdelay + 4) / 5;
-	while (n --)
-		local_delay_ms(5);
-}
-
 
 // SWR=1: return 100
 // no power: return 0
@@ -7062,7 +7054,7 @@ unsigned n7ddc_get_swr(void)
 
 	if (f < minforward)
 	{
-		PRINTF("n7ddc_get_swr: No forward power (f=%u,r=%u,mf=%d),L=%u,C=%u,T=%u\n", f, r, minforward, tunerind, tunercap, tunertype);
+		PRINTF("n7ddc_get_swr: No forward power (f=%u,r=%u,mf=%d),L=%u,C=%u,T=%u,work=%u\n", f, r, minforward, tunerind, tunercap, tunertype, tunerwork);
 		return 0;	// алгоритм тюнера рассматривает эту ситуацию как "нет сигнала"
 	}
 	else if (f <= r)
@@ -7070,7 +7062,7 @@ unsigned n7ddc_get_swr(void)
 
 	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * 100 / (f - r);
 	unsigned result = swr10 > fs ? fs : swr10;
-	PRINTF("n7ddc_get_swr: swr=%u (f=%u,r=%u),L=%u,C=%u,T=%u\n", result, f, r, tunerind, tunercap, tunertype);
+	PRINTF("n7ddc_get_swr: swr=%u (f=%u,r=%u),L=%u,C=%u,T=%u,work=%u\n", result, f, r, tunerind, tunercap, tunertype, tunerwork);
 	return result;
 }
 
@@ -7141,6 +7133,12 @@ static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
 	mlaparamc = loadvfy16up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].mlaparamc), 0, MLAPARAMC_MAX, 0);	// в новых диапазонах - тоюнер не включаем по умолчанию
 }
 
+// ожидание требуемого времени после выдачи параметров на тюнер.
+static void tuner_waitadc(void)
+{
+	local_delay_ms(gtunerdelay);
+}
+
 #if WITHAUTOTUNER_N7DDCALGO
 
 // Set tuner parameters, wait tuner ADC delay
@@ -7151,7 +7149,7 @@ void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type)
 	tunertype = type;
 
 	updateboard_tuner();
-	local_delay_ms(gtunerdelay);
+	tuner_waitadc();
 }
 
 
