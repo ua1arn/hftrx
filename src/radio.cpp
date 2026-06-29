@@ -7024,7 +7024,6 @@ static void board_set_tuner_group(void)
 // выдача параметров на тюнер
 static void updateboard_tuner(void)
 {
-	//PRINTF(PSTR("updateboard_tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
 #if WITHTOUCHGUI
 	board_set_tuner_group();
 #else

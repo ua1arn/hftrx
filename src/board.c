@@ -1932,7 +1932,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBVAL8(0060, glob_tuner_bypass ? 0 : glob_tuner_C);		// D0..D7: capacitors
 
 		// TUNWER
-		RBBIT(0057, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
+		RBBIT(0057, glob_tuner_bypass ? 0 : glob_tuner_type);	// 0 - понижающий, 1 - повышающий
 		RBVAL(0050, glob_tuner_bypass ? 0 : glob_tuner_L, 7);	// D0..D6: Inductors
 
 		// POWERAMP DD2 SN74HC595PW
