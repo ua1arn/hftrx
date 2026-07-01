@@ -24,31 +24,11 @@
 #if WITHTX
 #if WITHPOWERTRIM
 	#if WITHLOWPOWEREXTTUNE
-		(const struct paramdefdef [1]) {
-			QLABEL("ATU PWR"), 7, 0, RJ_UNSIGNED, ISTEP5,		/* мощность при работе автоматического согласующего устройства */
-			ITEM_VALUE,
-			WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-			OFFSETOF(struct nvmap, gtunepower),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& gtunepower,
-			getzerobase,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		},
+		& xgtunepower,
 	#endif /* WITHLOWPOWEREXTTUNE */
 #elif WITHPOWERLPHP
 	#if WITHLOWPOWEREXTTUNE
-	(const struct paramdefdef [1]) {
-		QLABEL("ATU PWR"), 7, 0, RJ_CB,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
-		ITEM_VALUE | ITEM_LISTSELECT,
-		0, PWRMODE_COUNT - 1,
-		OFFSETOF(struct nvmap, gtunepower),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gtunepower,
-		getzerobase,
-		getvaltextpwrmode, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+		& xgtunepowerlphp,
 	#endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
 #endif /* WITHTX */

@@ -11485,6 +11485,36 @@ makebandf2adjust(
 	return slmin(b, slmax(outv, 0));
 }
 
+#if WITHTX
+#if WITHPOWERTRIM
+static const struct paramdefdef xgtunepower =
+{
+	QLABEL("ATU PWR"), 7, 0, RJ_UNSIGNED, ISTEP5,		/* мощность при работе автоматического согласующего устройства */
+	ITEM_VALUE,
+	WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+	OFFSETOF(struct nvmap, gtunepower),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gtunepower,
+	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+#elif WITHPOWERLPHP
+static const struct paramdefdef xgtunepowerlphp =
+{
+	QLABEL("ATU PWR"), 7, 0, RJ_CB,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+	ITEM_VALUE | ITEM_LISTSELECT,
+	0, PWRMODE_COUNT - 1,
+	OFFSETOF(struct nvmap, gtunepower),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gtunepower,
+	getzerobase,
+	getvaltextpwrmode, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+#endif
+#endif /* WITHTX */
+
 /* возвращает 0..WITHPOWERTRIMMAX */
 static uint_fast8_t
 getactualtxpwr(void)
