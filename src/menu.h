@@ -1360,94 +1360,14 @@
 	& xgmikeequalizer_param4,
 #endif /* WITHAFCODEC1HAVEPROC */
 #if WITHAFEQUALIZER
-	(const struct paramdefdef [1]) {
-		QLABEL2("RX EQ", "RX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, geqrx),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& geqrx,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL2("RX 0.4k", "RX EQ 400 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		OFFSETOF(struct nvmap, geqrxparams [0]),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& geqrxparams [0],
-		hamradio_get_af_equalizer_base,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL2("RX 1.5k", "RX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		OFFSETOF(struct nvmap, geqrxparams [1]),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& geqrxparams [1],
-		hamradio_get_af_equalizer_base,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL2("RX 2.7k", "RX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		OFFSETOF(struct nvmap, geqrxparams [2]),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& geqrxparams [2],
-		hamradio_get_af_equalizer_base,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL2("TX EQ", "TX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, geqtx),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& geqtx,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL2("TX 0.4k", "TX EQ 400 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		OFFSETOF(struct nvmap, geqtxparams [0]),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& geqtxparams [0],
-		hamradio_get_af_equalizer_base,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL2("TX 1.5k", "TX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		OFFSETOF(struct nvmap, geqtxparams [1]),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& geqtxparams [1],
-		hamradio_get_af_equalizer_base,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL2("TX 2.7k", "TX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		OFFSETOF(struct nvmap, geqtxparams [2]),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& geqtxparams [2],
-		hamradio_get_af_equalizer_base,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgeqrx,
+	& xgeqrxparams_0,
+	& xgeqrxparams_1,
+	& xgeqrxparams_2,
+	& xgeqtx,
+	& xgeqtxparams_0,
+	& xgeqtxparams_1,
+	& xgeqtxparams_2,
 #endif /* WITHAFEQUALIZER */
 #endif /* WITHTX && WITHIF4DSP */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
