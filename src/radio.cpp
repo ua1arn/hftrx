@@ -5530,11 +5530,6 @@ enum
 			return - EQUALIZERBASE;
 		}
 		static uint_fast8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-		static uint_fast8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS] =
-		{
-			// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE
-		};
 		// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 		static const struct paramdefdef xgmikeequalizer =
 		{
@@ -5546,6 +5541,72 @@ enum
 			NULL,
 			& gmikeequalizer,
 			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static uint_fast8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS] =
+		{
+			// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
+			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE
+		};
+		// Эквалайзер 80Hz, 230 Hz, 650 Hz, 1.8 kHz, 5.3 kHz
+		static const struct paramdefdef xgmikeequalizer_param0 =
+		{
+			QLABEL("EQUA .08"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			ITEM_VALUE,
+			0, EQUALIZERBASE * 2,
+			OFFSETOF(struct nvmap, gmikeequalizerparams [0]),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gmikeequalizerparams [0],
+			getequalizerbase, /* складывается с -12 и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgmikeequalizer_param1 =
+		{
+			QLABEL("EQUA .23"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			ITEM_VALUE,
+			0, EQUALIZERBASE * 2,
+			OFFSETOF(struct nvmap, gmikeequalizerparams [1]),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gmikeequalizerparams [1],
+			getequalizerbase, /* складывается с -12 и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgmikeequalizer_param2 =
+		{
+			QLABEL("EQUA .65"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			ITEM_VALUE,
+			0, EQUALIZERBASE * 2,
+			OFFSETOF(struct nvmap, gmikeequalizerparams [2]),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gmikeequalizerparams [2],
+			getequalizerbase, /* складывается с -12 и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgmikeequalizer_param3 =
+		{
+			QLABEL("EQUA 1.8"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			ITEM_VALUE,
+			0, EQUALIZERBASE * 2,
+			OFFSETOF(struct nvmap, gmikeequalizerparams [3]),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gmikeequalizerparams [3],
+			getequalizerbase, /* складывается с -12 и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgmikeequalizer_param4 =
+		{
+			QLABEL("EQUA 5.3"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			ITEM_VALUE,
+			0, EQUALIZERBASE * 2,
+			OFFSETOF(struct nvmap, gmikeequalizerparams [4]),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gmikeequalizerparams [4],
+			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 	#endif /* WITHAFCODEC1HAVEPROC */
