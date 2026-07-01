@@ -402,9 +402,9 @@
 	
 
 
-	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
+	
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
-	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
+	
 	#define WITHCAT		1	/* используется CAT */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */

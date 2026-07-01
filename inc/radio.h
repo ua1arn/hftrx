@@ -135,7 +135,6 @@ extern "C" {
 
 	#define WITHNOTCHFREQ		1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
 	#define WITHSAM				1	/* synchronous AM demodulation */
-	//#define WITHIFSHIFT			1	/* используется IF SHIFT */
 	#define WITHMIC1LEVEL		1	/* установка усиления микрофона */
 
 	#define	SQUELCHMAX	255	/* Kenwood's value */
@@ -326,15 +325,6 @@ extern uint_fast16_t lo4offsets [2]; 	/* частота (без базы) тре
 
 int_fast32_t getlo4base(void); /* = IF3FREQBASE */
 int_fast32_t getcefreqshiftbase(void); /* = (int_fast32_t) 0 - IF3CEOFFS */
-
-int_fast32_t 
-getif3byedge(
-	const filter_t * workfilter,
-	uint_fast8_t mode,			/* код семейства режима работы */
-	uint_fast8_t mix4lsb,		/* формируем гетеродин для указанной боковой полосы */
-	uint_fast8_t tx,			/* для режима передачи - врежиме CW - смещения частоты не требуется. */
-	uint_fast8_t cwpitch10
-	);
 
 int_fast32_t
 getif3filtercenter(
@@ -752,28 +742,7 @@ void spool_0p128(void);	// OPERA support
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
 #endif	/* DIRECT_48M0_X8 */
 
-#define IF3_TYPE_DCRX	1
-#define IF3_TYPE_128	2
-#define IF3_TYPE_200	3
-#define IF3_TYPE_215	4
-#define IF3_TYPE_455	5
-#define IF3_TYPE_500	6
-#define IF3_TYPE_5000	7
-#define IF3_TYPE_5500	8
-#define IF3_TYPE_5645	9	// Drake R-4C and Drake T-4XC (Drake Twins) - 5645 kHz
-#define IF3_TYPE_6000	10
-#define IF3_TYPE_8000	11
-#define IF3_TYPE_8192	12
-#define IF3_TYPE_8215	13	// кварцевые фильтры от  трансивера FT-747 - 8215 kHz
-#define IF3_TYPE_8868	14
-#define IF3_TYPE_9045	15
-#define IF3_TYPE_9000	16
-#define IF3_TYPE_10000	17
-#define IF3_TYPE_10700	18
-#define IF3_TYPE_CUSTOM	19	// параметры частот задаются отдельными define, вынесеными в board\*_cylstyle_*.h
-#define IF3_TYPE_BYPASS	20
-#define IF3_TYPE_6000_SW2015	21	// слегка другая частота верхнего ската
-#define IF3_TYPE_5250	22
+#define IF3_TYPE_BYPASS	1
 
 /* все возможные фильтры. Не ноль соответствующем бите IF3_FMASK разрешает включение/выключение данного фильтра. */
 #define IF3_FMASK_0P3	(1U << 0)	/* наличие фильтра 0.3 кГц	*/

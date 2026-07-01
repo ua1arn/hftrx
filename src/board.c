@@ -6457,12 +6457,6 @@ static const uint8_t adcinputs [] =
 #if WITHPOTPOWER
 	POTPOWER,			// регулировка мощности
 #endif /* WITHPOTPOWER */
-#if WITHPOTPBT
-	POTPBT,		// потенциометр управления сужением полосы ПЧ
-#endif /* WITHPOTPBT */
-#if WITHIFSHIFT && WITHPOTIFSHIFT
-	POTIFSHIFT,	// потенциометр управления сдвигом полосы ПЧ
-#endif /* WITHIFSHIFT && WITHPOTIFSHIFT */
 #if WITHPOTNOTCH && WITHNOTCHFREQ
 	POTNOTCH,			// потенциометр управления частотой NOTCH фильтра
 #endif /* WITHPOTNOTCH && WITHNOTCHFREQ */

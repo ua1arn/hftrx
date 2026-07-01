@@ -456,10 +456,6 @@ void blinkloop(void);
 	#error Undefined CPUSTYLE_xxxx
 #endif
 
-// Sample usage:
-///* все возможные в данной конфигурации фильтры */
-//#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
-
 
 #include "mslist.h"
 

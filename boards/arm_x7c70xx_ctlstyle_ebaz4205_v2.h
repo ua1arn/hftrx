@@ -274,7 +274,7 @@
 
 	
 
-	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
+	
 	////#define WITHCAT		1	/* используется CAT */
 	#define WITHTX	1
 	#if WITHTX

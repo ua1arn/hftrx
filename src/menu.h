@@ -301,28 +301,8 @@
 		getvaltextnotchmode, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 	#if ! WITHPOTNOTCH
-	(const struct paramdefdef [1]) {
-		QLABEL("NTCH FRQ"), 7, 3, RJ_UNSIGNED, ISTEP50,		/* управление частотой NOTCH. */
-		ITEM_VALUE,
-		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
-		OFFSETOF(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
-		getselector0, nvramoffs0, valueoffs0,
-		& gnotchfreq.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("NTCH WDT"), 7, 3, RJ_UNSIGNED, ISTEP50,		/* полоса режекции NOTCH. */
-		ITEM_VALUE,
-		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
-		OFFSETOF(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
-		getselector0, nvramoffs0, valueoffs0,
-		& gnotchwidth.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgnotchfreq,
+	& xgnotchwidth,
 	#endif /* ! WITHPOTNOTCH */
 #elif WITHNOTCHONOFF
 /* group name +++ */
@@ -350,25 +330,6 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHNOTCHFREQ */
-
-#if defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX)
-#if ! WITHPOTPBT && WITHPBT // && (LO3_SIDE != LOCODE_INVALID)
-/* group name +++ */
-	(const struct paramdefdef [1]) {
-		QLABEL("PBT"), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		OFFSETOF(struct nvmap, ggrppbts),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		NULL,
-		NULL,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-/* group name --- */
-	& xgpbtoffset,
-#endif /* ! WITHPOTPBT && WITHPBT && (LO3_SIDE != LOCODE_INVALID) */
-#endif /* defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) */
 
 #if WITHELKEY
 /* group name +++ */

@@ -258,9 +258,9 @@
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
-	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
+	
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
-	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
+	
 	#define WITHCAT			1	/* используется CAT (через USB CDC) */
 	//
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */

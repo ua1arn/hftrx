@@ -4317,72 +4317,6 @@ static const struct paramdefdef xggainnfmrx10 =
 };
 #endif /* WITHIF4DSP */
 
-#if WITHIFSHIFT
-	enum { IFSHIFTTMIN = 0, IFSHIFTHALF = 3000, IFSHIFTMAX = 2 * IFSHIFTHALF };
-	#if WITHIFSHIFTOFFSET
-		/* есть начальный сдвиг полосы пропускания */
-		static dualctl16_t ifshifoffset =
-		{
-				IFSHIFTHALF + WITHIFSHIFTOFFSET,		/* if shift offset value */
-				IFSHIFTHALF + WITHIFSHIFTOFFSET,		/* if shift offset value */
-		};
-	#else
-		/* Без начального сдвига полосы пропускания */
-		static dualctl16_t ifshifoffset =
-		{
-				IFSHIFTHALF,		/* if shift offset value */
-				IFSHIFTHALF,		/* if shift offset value */
-		};
-	#endif
-	static int_fast32_t getifshiftbase(void)
-	{
-		return 0 - IFSHIFTHALF;
-	}
-	// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
-	static const struct paramdefdef xifshifoffset =
-	{
-		QLABEL("IF SHIFT"), 4 + WSIGNFLAG, 2, RJ_SIGNED, 	ISTEP50,
-		ITEM_VALUE,
-		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
-		OFFSETOF(struct nvmap, ifshifoffset),
-		getselector0, nvramoffs0, valueoffs0,
-		& ifshifoffset.value,
-		NULL,
-		getifshiftbase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-#endif /* WITHIFSHIFT */
-
-#if WITHPBT // && (LO3_SIDE != LOCODE_INVALID)
-	enum { PBTMIN = 0, PBTHALF = 2560, PBTMAX = 5100 };	// Значения для управления потенциометром
-	static dualctl16_t gpbtoffset =
-	{
-			PBTHALF;		/* pbt offset value */
-			PBTHALF;		/* pbt offset value */
-	};
-	static int_fast32_t getpbtbase(void)
-	{
-		return 0L - PBTHALF;
-	}
-	// Для отображения на дисплее
-	int_fast32_t hamradio_get_pbtvalue(void)
-	{
-		return gpbtoffset.value + getpbtbase();
-	}
-	static const struct paramdefdef xgpbtoffset =
-	{
-		QLABEL("PBT"), 4 + WSIGNFLAG, 2, RJ_SIGNED, 	ISTEP50,
-		ITEM_VALUE,
-		PBTMIN, PBTMAX,			/* -15 kHz..+15 kHz in 5 Hz steps */
-		OFFSETOF(struct nvmap, pbtoffset),
-		getselector0, nvramoffs0, valueoffs0,
-		& gpbtoffset.value,
-		NULL,
-		getpbtbase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	};
-#endif /* WITHPBT */
-
 #if (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ	/* подстройка частоты гетеродина через меню. */
 	enum { LO2AMIN = 0, LO2AHALF = 15000, LO2AMAX = 2 * LO2AHALF };
 	static uint_fast16_t lo3offset = LO2AHALF;
@@ -4454,9 +4388,37 @@ static uint_fast8_t gusefast;
 	static uint_fast8_t gnotch;	// on/off
 	static dualctl16_t gnotchfreq = { 1000, 1000 };
 	static dualctl16_t gnotchwidth = { 500, 500 };
+
+	static const struct paramdefdef xgnotchfreq =
+	{
+		QLABEL3("NOTCH FRQ", "Notch FREQ", "NOTCH FRQ"),
+		0, 0,
+		RJ_UNSIGNED,		// rj
+		ISTEP50,
+		ITEM_VALUE,
+		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
+		OFFSETOF(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
+		getselector0, nvramoffs0, valueoffs0,
+		& gnotchfreq.value,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	};
+	static const struct paramdefdef xgnotchwidth =
+	{
+		QLABEL3("NTCH WDT", "Notch WDT", "NOTCH WDT"), 7, 3, RJ_UNSIGNED, ISTEP50,		/* полоса режекции NOTCH. */
+		ITEM_VALUE,
+		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
+		OFFSETOF(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
+		getselector0, nvramoffs0, valueoffs0,
+		& gnotchwidth.value,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 #endif /* WITHNOTCHFREQ */
 
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
+// включение
 static const struct paramdefdef xgnotch =
 {
 	QLABEL3("NOTCH", "Notch", "NOTCH"), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
@@ -5164,7 +5126,7 @@ enum
 	static uint_fast8_t gtxaudio [MODE_COUNT];
 	static const struct paramdefdef xgmike_ssb =
 	{
-		QLABEL("MIC SSB"), 8, 5, RJ_CB,	ISTEP1,
+		QLABEL3("MIC SSB", "Mike SSB", "MIC SSB"), 8, 5, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_SSB),
@@ -5176,7 +5138,7 @@ enum
 	};
 	static const struct paramdefdef xgmike_dig =
 	{
-		QLABEL("MIC DIG"), 8, 5, RJ_CB,	ISTEP1,
+		QLABEL3("MIC DIG", "Mike DIG", "MIC DIG"), 8, 5, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_DIGI),
@@ -5188,7 +5150,7 @@ enum
 	};
 	static const struct paramdefdef xgmike_am =
 	{
-		QLABEL("MIC AM"), 8, 5, RJ_CB,	ISTEP1,
+		QLABEL3("MIC AM", "Mike FM", "MIC FM"), 8, 5, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_AM),
@@ -5200,7 +5162,7 @@ enum
 	};
 	static const struct paramdefdef xgmike_fm =
 	{
-		QLABEL("MIC FM"), 8, 5, RJ_CB,	ISTEP1,
+		QLABEL3("MIC FM", "Mike FM", "MIC FM"), 8, 5, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_NFM),
@@ -5212,7 +5174,7 @@ enum
 	};
 	static const struct paramdefdef xgmikeagc =
 	{
-		QLABEL("MIC AGC"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL3("MIC AGC", "Mike AGC", "MIC AGC"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 					/* Включение программной АРУ перед модулятором */
 		OFFSETOF(struct nvmap, gmikeagc),
@@ -5236,7 +5198,7 @@ enum
 	};
 	static const struct paramdefdef xgmikehclip =
 	{
-		QLABEL("MIC CLIP"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("MIC CLIP", "Mike CLIP", "MIKE CLIP"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		0, 90, 					/* Ограничение */
 		OFFSETOF(struct nvmap, gmikehclip),
@@ -6266,8 +6228,6 @@ static uint_fast8_t stayfreq;			/* при изменении режимов кн
 #if LO1PHASES
 	static uint_fast16_t phasesmap [2]; /* приемник [0] и передатчик [1] - коррекция фазы - в nvram phaserx и phasetx */
 #endif /* LO1PHASES */
-
-static uint_fast8_t dctxmodecw;	/* при передаче предполагается, что частоты if2 и далее равны 0 - формирование телеграфа на передачу DDS */
 
 #if 1//WITHBARS
 
@@ -8262,16 +8222,9 @@ getpbt(
 	uint_fast8_t tx				/* признак передачи */
 	)
 {
-#if WITHPBT // && (LO3_SIDE != LOCODE_INVALID)
-	if (tx || mdt [mode].wpbt == 0)
-		return 0;
-	return gpbtoffset.value + getpbtbase();	/* из индицируемого значения получить знаковое */
-
-#else /* WITHPBT */
 	(void) mode;
 	(void) tx;
 	return 0;
-#endif /* WITHPBT */
 }
 /* получаем IF SHIFT offset для текущего режима работы */
 /* TODO: сделать зависимым от текущего фильтра */
@@ -8283,19 +8236,10 @@ getifshift(
 	uint_fast8_t tx				/* признак передачи */
 	)
 {
-#if WITHIFSHIFT
-	if (tx || mdt [mode].wifshift == 0)
-		return 0;
-	return ifshifoffset.value + getifshiftbase();	/* из индицируемого значения получить знаковое */
-
-#else /* WITHIFSHIFT */
-
 	(void) workfilter;
 	(void) mode;
 	(void) tx;
 	return 0;
-
-#endif /* WITHIFSHIFT */
 }
 
 static uint_fast32_t
@@ -9967,50 +9911,14 @@ static const struct paramdefdef * enc2menus [] =
 	& xgmik1level,
 #endif /* ITHMIC1LEVEL */
 #if WITHIF4DSP
-	(const struct paramdefdef [1]) {
-		QLABELENC2("MIKE CLIP"),
-		0, 0,
-		RJ_UNSIGNED,
-		ISTEP1,
-		ITEM_VALUE,
-		WITHMIKECLIPMIN, WITHMIKECLIPMAX, 		/* Ограничение */
-		OFFSETOF(struct nvmap, gmikehclip),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gmikehclip,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgmikehclip,
 #endif /* WITHIF4DSP */
 #endif /* WITHTX */
 #if WITHNOTCHFREQ && ! WITHPOTNOTCH
-	(const struct paramdefdef [1]) {
-		QLABELENC2("NOTCH FRQ"),
-		0, 0,
-		RJ_UNSIGNED,		// rj
-		ISTEP50,
-		ITEM_VALUE,
-		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
-		OFFSETOF(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
-		getselector0, nvramoffs0, valueoffs0,
-		& gnotchfreq.value,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgnotchfreq,
 #endif /* WITHNOTCHFREQ && ! WITHPOTNOTCH */
 #if WITHIF4DSP
-	(const struct paramdefdef [1]) {
-		QLABELENC2("NR LEVEL"),
-		0, 0,
-		RJ_UNSIGNED,		// rj
-		ISTEP1,		/* nr level */
-		ITEM_VALUE,
-		0, NRLEVELMAX,
-		OFFSETOF(struct nvmap, gnoisereductvl),	/* уровень сигнала болше которого открывается шумодав */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gnoisereductvl,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgnoisereductvl,
 #if ! WITHPOTNFMSQL
 	& xgsquelchNFM,
 #endif /* ! WITHPOTNFMSQL */
@@ -10022,22 +9930,6 @@ static const struct paramdefdef * enc2menus [] =
 	& xgviewstyle,
 #endif /* WITHSPECTRUMWF */
 #endif /* WITHIF4DSP */
-#if WITHIFSHIFT && ! WITHPOTIFSHIFT
-	// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
-	(const struct paramdefdef [1]) {
-		QLABELENC2("IF SHIFT"),
-		0, 0,
-		RJ_SIGNED,		// rj
-		ISTEP50,
-		ITEM_VALUE,
-		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
-		OFFSETOF(struct nvmap, ifshifoffset),
-		getselector0, nvramoffs0, valueoffs0,
-		& ifshifoffset.value,
-		NULL,
-		getifshiftbase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHIFSHIFT && ! WITHPOTIFSHIFT */
 #if WITHMGLOOP && WITHAUTOTUNER
 	& xmlaparamc,
 #endif /* WITHMGLOOP && WITHAUTOTUNER */
@@ -11201,12 +11093,8 @@ getlo4ref(
 	uint_fast8_t tx				/* для режима передачи - врежиме CW - смещения частоты не требуется. */
 	)
 {
-#if WITHIF4DSP
 	// Выравнивание IF с привязкой к центру фильтра основной селекции
 	return getif3filtercenter(workfilter);
-#else
-	return getif3byedge(workfilter, mode, mix4lsb, tx, gcwpitch10);
-#endif
 }
 
 // вызывается из user mode
@@ -13245,11 +13133,7 @@ updateboard_noui(
 			ASSERT(pamodetempl != NULL);
 			// расчёт частот в тракте
 			//
-		#if defined (IF3_MODEL) && (IF3_MODEL == IF3_TYPE_DCRX)
-			enum { dc = 1 };	/* работа в режиме прямого преобразования со всегда нулевой частотой LO4 */
-		#else
-			const uint_fast8_t dc = dctxmodecw && gtx && pamodetempl->txcw;	// на передачу формируем первым гетеродином
-		#endif
+			enum { dc = 0 };
 
 			const filter_t * workfilter;
 			if (gtx != 0)
@@ -15148,20 +15032,6 @@ static uint_fast8_t processpots(void)
 		changed |= FLAGNE_U16_CAT(& afgain1, board_getpot_filtered_u16(POTAFGAIN, BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, & afgainstate), CAT_AG_INDEX);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 	}
 #endif /* WITHPOTAFGAIN */
-#if WITHPBT && WITHPOTPBT
-	{
-		/* установка gpbtoffset PBTMIN, PBTMAX, midscale = PBTHALF */
-		static adcvalholder_t pbtstate;
-		changed |= flagne_u16(& gpbtoffset, board_getpot_filtered_u16(POTPBT, PBTMIN, PBTMAX, & pbtstate) / 10 * 10);
-	}
-#endif /* WITHPBT && WITHPOTPBT */
-#if WITHIFSHIFT && WITHPOTIFSHIFT
-	{
-		/* установка gifshftoffset IFSHIFTTMIN, IFSHIFTMAX, midscale = IFSHIFTHALF */
-		static adcvalholder_t ifshiftstate;
-		changed |= flagne_u16(& ifshifoffset.value, board_getpot_filtered_u16(POTIFSHIFT, IFSHIFTTMIN, IFSHIFTMAX, & ifshiftstate) / 10 * 10);
-	}
-#endif /* WITHIFSHIFT && WITHPOTIFSHIFT */
 #if WITHPOTNOTCH && WITHNOTCHFREQ
 	{
 		static adcvalholder_t notchstate;
@@ -21788,28 +21658,7 @@ int_fast32_t hamradio_getequalizerbase(void)
 
 int_fast16_t hamradio_if_shift(int_fast8_t step)
 {
-#if WITHIFSHIFT
-
-	if (step != 0)
-	{
-		int_fast16_t val = ifshifoffset.value + step * ISTEP50;
-
-		if (val < IFSHIFTTMIN)
-			val = IFSHIFTTMIN;
-
-		if (val > IFSHIFTMAX)
-			val = IFSHIFTMAX;
-
-		ifshifoffset.value = val;
-		updateboard();
-	}
-	return ifshifoffset.value + getifshiftbase();	// Добавить учет признака наличия сдвига
-
-#else /* WITHIFSHIFT */
-
 	return 0;
-
-#endif /* WITHIFSHIFT */
 }
 
 #if WITHELKEY
