@@ -5189,6 +5189,18 @@ enum
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	static uint_fast8_t gmikeboost20db;	// предусилитель микрофона
+	static const struct paramdefdef xgmikeboost20db =
+	{
+		QLABEL2("MICBOOST", "Mike boost"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1, 					// предусилитель сигнала с микрофона
+		OFFSETOF(struct nvmap, gmikeboost20db),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gmikeboost20db,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
 #if WITHNOAUDIPROC

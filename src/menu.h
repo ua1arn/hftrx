@@ -1349,20 +1349,10 @@
 	& xgreverbdelay,
 	& xgreverbloss,
 #endif /* WITHREVERB */
-	(const struct paramdefdef [1]) {
-		QLABEL2("MICBOOST", "Mike boost"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,	
-		0, 1, 					// предусилитель сигнала с микрофона
-		OFFSETOF(struct nvmap, gmikeboost20db),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gmikeboost20db,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgmikeboost20db,
 	#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
 	& xgmikeequalizer,	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
+	// Эквалайзер 80Hz, 230 Hz, 650 Hz, 1.8 kHz, 5.3 kHz
 	(const struct paramdefdef [1]) {
 		QLABEL("EQUA .08"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
 		ITEM_VALUE,
