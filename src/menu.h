@@ -1178,39 +1178,7 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* */
-	(const struct paramdefdef [1]) {
-		QLABEL("ADC DITH"), 8, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gdither),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gdither,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-//	(const struct paramdefdef [1]) {
-//		QLABEL("ADC FIFO"), 8, 3, RJ_ON,	ISTEP1,	/*  */
-//		ITEM_VALUE,
-//		0, 1,
-//		OFFSETOF(struct nvmap, gadcfifo),
-//		getselector0, nvramoffs0, valueoffs0,
-//		NULL,
-//		& gadcfifo,
-//		getzerobase,
-//		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-//	},
-//	(const struct paramdefdef [1]) {
-//		QLABEL("ADC OFFS"), 5 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,	/* смещение для выходного сигнала с АЦП */
-//		ITEM_VALUE,
-//		ADCOFFSETMID - 200, ADCOFFSETMID + 200,
-//		OFFSETOF(struct nvmap, gadcoffset),
-//		getselector0, nvramoffs0, valueoffs0,
-//		& gadcoffset,
-//		NULL,
-//		getadcoffsbase,	/* складывается со смещением и отображается */
-//		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-//	},
+	& xgdither,
 #endif /* WITHDSPEXTDDC */
 #if WITHTX
 #if WITHVOX
@@ -1297,28 +1265,8 @@
 #if ! WITHPOTNFMSQL
 	& xgsquelchNFM,
 #endif /* ! WITHPOTNFMSQL */
-	(const struct paramdefdef [1]) {
-		QLABEL2("SDTN LVL", "SDTN Level"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
-		ITEM_VALUE,
-		0, 100, 
-		OFFSETOF(struct nvmap, gsidetonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gsidetonelevel,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("MONI EN"), 8, 3, RJ_ON,	ISTEP1,		/* Select the monitoring sound output enable */
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gmoniflag),	/* разрешение самопрослушивания */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gmoniflag,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgsidetonelevel,
+	& xgmoniflag,
 #endif /* WITHIF4DSP */
 #if WITHTX && WITHIF4DSP
 #if WITHWAVPLAYER || WITHSENDWAV

@@ -6720,9 +6720,38 @@ static const struct paramdefdef xgkeybeep10 =
 	void playhandler(uint8_t code);
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 
+#if WITHIF4DSP
+	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+	static const struct paramdefdef xgsidetonelevel =
+	{
+		QLABEL2("SDTN LVL", "SDTN Level"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gsidetonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gsidetonelevel,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
+	static uint_fast8_t gmoniflag;		/* разрешение самопрослушивания */
+	static const struct paramdefdef xgmoniflag =
+	{
+		QLABEL("MONI EN"), 8, 3, RJ_ON,	ISTEP1,		/* Select the monitoring sound output enable */
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gmoniflag),	/* разрешение самопрослушивания */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gmoniflag,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+#endif /* WITHIF4DSP */
+
 #if  defined (ADC1_TYPE) && (ADC1_TYPE == ADC_TYPE_AD9246)
 	// 14 bit AD9246 + LTC6401-20
-	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gdigigainmax = 86;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	static uint_fast16_t gfsadcpower10 [2] =
 	{
@@ -6731,7 +6760,6 @@ static const struct paramdefdef xgkeybeep10 =
 	};
 #else /*  */
 	// 16 bit LTC2208 + LTC6401-20
-	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static uint_fast8_t gdigigainmax = 120;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	static uint_fast16_t gfsadcpower10 [2] =
 	{
@@ -6765,8 +6793,6 @@ static const struct paramdefdef xgkeybeep10 =
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
-	static uint_fast8_t gmoniflag;		/* разрешение самопрослушивания */
-
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LTC2208 */
 		#if (ADC1_TYPE == ADC_TYPE_AD9246)
@@ -6786,6 +6812,18 @@ static const struct paramdefdef xgkeybeep10 =
 		#else /* WITHTXINHDISABLE */
 			static const uint_fast8_t gtxinhenable = 1;	/* разрешение реакции на вход tx_inh */
 		#endif /* WITHTXINHDISABLE */
+		static const struct paramdefdef xgdither =
+		{
+			QLABEL("ADC DITH"), 8, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
+			ITEM_VALUE,
+			0, 1,
+			OFFSETOF(struct nvmap, gdither),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gdither,
+			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
 	#endif /* WITHDSPEXTDDC */
 
 #endif /* WITHIF4DSP */
