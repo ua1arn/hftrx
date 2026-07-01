@@ -4379,6 +4379,7 @@ static uint_fast8_t glocks [2];
 #endif /* WITHLCDBACKLIGHTOFF */
 static uint_fast8_t gusefast;
 
+#if WITHIF4DSP
 
 #if WITHNOTCHONOFF
 	static uint_fast8_t gnotchtype;
@@ -4432,6 +4433,8 @@ static const struct paramdefdef xgnotch =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
+
+#endif /* WITHIF4DSP */
 
 #if WITHSPLIT
 	static uint_fast8_t gvfoab;	/* (vfoa/vfob) */
