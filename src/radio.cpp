@@ -4323,6 +4323,18 @@ static uint_fast8_t gagcmode;
 #if WITHIF4DSP
 static uint_fast8_t gnoisereducts [MODE_COUNT];	// noise reduction level
 static uint_fast8_t gnoisereductvl = 25;	// noise reduction
+static const struct paramdefdef xgnoisereductvl =
+{
+	QLABEL("NR LEVEL"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	ITEM_VALUE,
+	0, NRLEVELMAX,
+	OFFSETOF(struct nvmap, gnoisereductvl),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gnoisereductvl,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 
 static const struct paramdefdef xgnoisereduct =
 {
@@ -4427,6 +4439,19 @@ static const struct paramdefdef xggainnfmrx10 =
 	{
 		return 0 - IFSHIFTHALF;
 	}
+	// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
+	static const struct paramdefdef xifshifoffset =
+	{
+		QLABEL("IF SHIFT"), 4 + WSIGNFLAG, 2, RJ_SIGNED, 	ISTEP50,
+		ITEM_VALUE,
+		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
+		OFFSETOF(struct nvmap, ifshifoffset),
+		getselector0, nvramoffs0, valueoffs0,
+		& ifshifoffset.value,
+		NULL,
+		getifshiftbase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
 #endif /* WITHIFSHIFT */
 
 #if WITHPBT // && (LO3_SIDE != LOCODE_INVALID)
@@ -4445,6 +4470,18 @@ static const struct paramdefdef xggainnfmrx10 =
 	{
 		return gpbtoffset.value + getpbtbase();
 	}
+	static const struct paramdefdef xgpbtoffset =
+	{
+		QLABEL("PBT"), 4 + WSIGNFLAG, 2, RJ_SIGNED, 	ISTEP50,
+		ITEM_VALUE,
+		PBTMIN, PBTMAX,			/* -15 kHz..+15 kHz in 5 Hz steps */
+		OFFSETOF(struct nvmap, pbtoffset),
+		getselector0, nvramoffs0, valueoffs0,
+		& gpbtoffset.value,
+		NULL,
+		getpbtbase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 #endif /* WITHPBT */
 
 #if (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ	/* подстройка частоты гетеродина через меню. */
@@ -4479,11 +4516,26 @@ static const struct paramdefdef xgcwpitch10 =
 
 #endif
 
+#if WITHDSPEXTDDC
+
 #if WITHOVFHIDE
 	static uint_fast8_t gshowovf = 0;		/* Показ индикатора переполнения АЦП */
 #else /* WITHOVFHIDE */
 	static uint_fast8_t gshowovf = 1;		/* Показ индикатора переполнения АЦП */
 #endif /* WITHOVFHIDE */
+	static const struct paramdefdef xgshowovf =
+	{
+		QLABEL2("SHOW OVF", "ADC OVF Show"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* разрешение или запрет раскраски спектра */
+		OFFSETOF(struct nvmap, gshowovf),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gshowovf,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+#endif /* WITHDSPEXTDDC */
 
 static uint_fast8_t glocks [2];
 #if WITHLCDBACKLIGHTOFF

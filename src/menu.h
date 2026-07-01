@@ -218,17 +218,7 @@
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 #endif /* WITHSPECTRUMWF */
 #if WITHDSPEXTDDC
-	(const struct paramdefdef [1]) {
-		QLABEL2("SHOW OVF", "ADC OVF Show"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,							/* разрешение или запрет раскраски спектра */
-		OFFSETOF(struct nvmap, gshowovf),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gshowovf,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgshowovf,
 #endif /* WITHDSPEXTDDC */
 #if WITHHDMITVHW
 	& xhdmiformat,	/* Видеорежим внешнего HDMI монитора */
@@ -268,17 +258,7 @@
 	},
 /* group name --- */
 #if WITHIF4DSP
-	(const struct paramdefdef [1]) {
-		QLABEL("NR LEVEL"), 7, 0, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE,
-		0, NRLEVELMAX, 
-		OFFSETOF(struct nvmap, gnoisereductvl),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gnoisereductvl,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgnoisereductvl,
 #endif /* WITHIF4DSP */
 #if WITHIF4DSP
 	& xfltbw_cwwide,
@@ -540,18 +520,7 @@
 #endif /* WITHIF4DSP */
 
 #if WITHIFSHIFT && ! WITHPOTIFSHIFT
-	// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
-	(const struct paramdefdef [1]) {
-		QLABEL("IF SHIFT"), 4 + WSIGNFLAG, 2, RJ_SIGNED, 	ISTEP50,
-		ITEM_VALUE,
-		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
-		OFFSETOF(struct nvmap, ifshifoffset),
-		getselector0, nvramoffs0, valueoffs0,
-		& ifshifoffset.value,
-		NULL,
-		getifshiftbase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xifshifoffset,
 #endif /* WITHIFSHIFT && ! WITHPOTIFSHIFT */
 
 #if WITHDUALFLTR	/* Переворот боковых за счёт переключения фильтра верхней или нижней боковой полосы */
@@ -1100,17 +1069,7 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
-	(const struct paramdefdef [1]) {
-		QLABEL("PBT"), 4 + WSIGNFLAG, 2, RJ_SIGNED, 	ISTEP50,
-		ITEM_VALUE,
-		PBTMIN, PBTMAX,			/* -15 kHz..+15 kHz in 5 Hz steps */
-		OFFSETOF(struct nvmap, pbtoffset),
-		getselector0, nvramoffs0, valueoffs0,
-		& gpbtoffset,
-		NULL,
-		getpbtbase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgpbtoffset,
 #endif /* ! WITHPOTPBT && WITHPBT && (LO3_SIDE != LOCODE_INVALID) */
 #endif /* defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) */
 
