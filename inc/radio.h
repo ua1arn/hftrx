@@ -3465,8 +3465,6 @@ struct menudef
 {
 	const struct paramdefdef * pd;
 };
-extern const struct menudef menutable [];
-uint_fast16_t menutable_size(void);
 
 // sorted version
 const char * hamradio_change_view_style(uint_fast8_t v);

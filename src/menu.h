@@ -7,8 +7,6 @@
 // Описание меню, используется только в main.c
 //
 
-const struct menudef menutable [] =
-{
 #if WITHAUTOTUNER && 1 // Tuner parameters debug
 /* group name +++ */
 	(const struct paramdefdef [1]) {
@@ -1292,17 +1290,7 @@ const struct menudef menutable [] =
 	#endif /* ! WITHPOTIFGAIN */
 #endif /* WITHIF4DSP */
 #if WITHINTEGRATEDDSP
-	(const struct paramdefdef [1]) {
-		QLABEL2("KEY BEEP", "Keys Beep"), 6, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
-		ITEM_VALUE,
-		80, 250,			/* 800 Hz..2500, Hz in 50 Hz steps */
-		OFFSETOF(struct nvmap, gkeybeep10),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gkeybeep10,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgkeybeep10,
 #endif /* WITHINTEGRATEDDSP */
 #if WITHIF4DSP
 	& xgsquelch,
@@ -1394,139 +1382,19 @@ const struct menudef menutable [] =
 	#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	& xglineamp,	/* подстройка усиления с линейного входа через меню. */
 	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
-	(const struct paramdefdef [1]) {
-		QLABEL("MIC SSB"), 8, 5, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIOINDEX_BASE(MODE_SSB),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gtxaudio [MODE_SSB],
-		getzerobase, /* складывается со смещением и отображается */
-		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("MIC DIG"), 8, 5, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIOINDEX_BASE(MODE_DIGI),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gtxaudio [MODE_DIGI],
-		getzerobase, /* складывается со смещением и отображается */
-		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("MIC AM"), 8, 5, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIOINDEX_BASE(MODE_AM),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gtxaudio [MODE_AM],
-		getzerobase, /* складывается со смещением и отображается */
-		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("MIC FM"), 8, 5, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
-		RMT_TXAUDIOINDEX_BASE(MODE_NFM),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gtxaudio [MODE_NFM],
-		getzerobase, /* складывается со смещением и отображается */
-		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("MIC AGC"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,	
-		0, 1, 					/* Включение программной АРУ перед модулятором */
-		OFFSETOF(struct nvmap, gmikeagc),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gmikeagc,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("MICAGCGN"), 7, 0, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,	
-		WITHMIKEAGCMIN, WITHMIKEAGCMAX, 	/* максимальное усиление АРУ микрофона в дБ */
-		OFFSETOF(struct nvmap, gmikeagcgain),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gmikeagcgain,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("MIC CLIP"), 7, 0, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,	
-		0, 90, 					/* Ограничение */
-		OFFSETOF(struct nvmap, gmikehclip),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gmikehclip,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgmike_ssb,
+	& xgmike_dig,
+	& xgmike_am,
+	& xgmike_fm,
+	& xgmikeagc,
+	& xgmikeagcgain,
+	& xgmikehclip,
 #if WITHCOMPRESSOR
-	(const struct paramdefdef [1]) {
-		QLABEL("COMP ATK"), 7, 0, RJ_UNSIGNED, ISTEP5,
-		ITEM_VALUE,	
-		WITHCOMPATTACKMIN, WITHCOMPATTACKMAX,
-		OFFSETOF(struct nvmap, gcompressor_attack),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gcompressor_attack,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("COMP RLS"), 7, 0, RJ_UNSIGNED, ISTEP5,
-		ITEM_VALUE,	
-		WITHCOMPRELEASEMIN, WITHCOMPRELEASEMAX,
-		OFFSETOF(struct nvmap, gcompressor_release),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gcompressor_release,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("COMP HLD"), 7, 0, RJ_UNSIGNED, ISTEP5,
-		ITEM_VALUE,	
-		WITHCOMPHOLDMIN, WITHCOMPHOLDMAX,
-		OFFSETOF(struct nvmap, gcompressor_hold),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gcompressor_hold,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("COMP GN"), 7, 0, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,	
-		WITHCOMPGAINMIN, WITHCOMPGAINMAX,
-		OFFSETOF(struct nvmap, gcompressor_gain),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gcompressor_gain,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("COMP TH"), 7, 0, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,	
-		WITHCOMPTHRESHOLDMIN, WITHCOMPTHRESHOLDMAX,
-		OFFSETOF(struct nvmap, gcompressor_threshold),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gcompressor_threshold,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgcompressor_attack,
+	& xgcompressor_release,
+	& xgcompressor_hold,
+	& xgcompressor_gain,
+	& gcompressor_threshold,
 #endif /* WITHCOMPRESSOR */
 #if WITHREVERB
 	& xgreverb,
@@ -3307,4 +3175,3 @@ const struct menudef menutable [] =
 	& xgddrfreq,
 	& xgbusfreq,
 #endif
-};

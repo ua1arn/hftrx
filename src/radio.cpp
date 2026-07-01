@@ -5197,13 +5197,161 @@ enum
 	static uint_fast8_t gmikehclip = 25;		/* Ограничитель */
 #endif /* WITHNOAUDIPROC */
 
+
+	static uint_fast8_t gtxaudio [MODE_COUNT];
+	static const struct paramdefdef xgmike_ssb =
+	{
+		QLABEL("MIC SSB"), 8, 5, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
+		RMT_TXAUDIOINDEX_BASE(MODE_SSB),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gtxaudio [MODE_SSB],
+		getzerobase, /* складывается со смещением и отображается */
+		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgmike_dig =
+	{
+		QLABEL("MIC DIG"), 8, 5, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
+		RMT_TXAUDIOINDEX_BASE(MODE_DIGI),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gtxaudio [MODE_DIGI],
+		getzerobase, /* складывается со смещением и отображается */
+		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgmike_am =
+	{
+		QLABEL("MIC AM"), 8, 5, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
+		RMT_TXAUDIOINDEX_BASE(MODE_AM),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gtxaudio [MODE_AM],
+		getzerobase, /* складывается со смещением и отображается */
+		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgmike_fm =
+	{
+		QLABEL("MIC FM"), 8, 5, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
+		RMT_TXAUDIOINDEX_BASE(MODE_NFM),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gtxaudio [MODE_NFM],
+		getzerobase, /* складывается со смещением и отображается */
+		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgmikeagc =
+	{
+		QLABEL("MIC AGC"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1, 					/* Включение программной АРУ перед модулятором */
+		OFFSETOF(struct nvmap, gmikeagc),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gmikeagc,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgmikeagcgain =
+	{
+		QLABEL("MICAGCGN"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		ITEM_VALUE,
+		WITHMIKEAGCMIN, WITHMIKEAGCMAX, 	/* максимальное усиление АРУ микрофона в дБ */
+		OFFSETOF(struct nvmap, gmikeagcgain),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gmikeagcgain,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgmikehclip =
+	{
+		QLABEL("MIC CLIP"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		ITEM_VALUE,
+		0, 90, 					/* Ограничение */
+		OFFSETOF(struct nvmap, gmikehclip),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gmikehclip,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 	#if WITHCOMPRESSOR
 		static uint_fast8_t gcompressor_attack = 30;
 		static uint_fast8_t gcompressor_release = 20;
 		static uint_fast8_t gcompressor_hold = 10;
 		static uint_fast8_t gcompressor_gain = 6;
 		static uint_fast8_t gcompressor_threshold = 20;
+
+		static const struct paramdefdef xgcompressor_attack =
+		{
+			QLABEL("COMP ATK"), 7, 0, RJ_UNSIGNED, ISTEP5,
+			ITEM_VALUE,
+			WITHCOMPATTACKMIN, WITHCOMPATTACKMAX,
+			OFFSETOF(struct nvmap, gcompressor_attack),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gcompressor_attack,
+			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgcompressor_release =
+		{
+			QLABEL("COMP RLS"), 7, 0, RJ_UNSIGNED, ISTEP5,
+			ITEM_VALUE,
+			WITHCOMPRELEASEMIN, WITHCOMPRELEASEMAX,
+			OFFSETOF(struct nvmap, gcompressor_release),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gcompressor_release,
+			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgcompressor_hold =
+		{
+			QLABEL("COMP HLD"), 7, 0, RJ_UNSIGNED, ISTEP5,
+			ITEM_VALUE,
+			WITHCOMPHOLDMIN, WITHCOMPHOLDMAX,
+			OFFSETOF(struct nvmap, gcompressor_hold),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gcompressor_hold,
+			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgcompressor_gain =
+		{
+			QLABEL("COMP GN"), 7, 0, RJ_UNSIGNED, ISTEP1,
+			ITEM_VALUE,
+			WITHCOMPGAINMIN, WITHCOMPGAINMAX,
+			OFFSETOF(struct nvmap, gcompressor_gain),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gcompressor_gain,
+			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgcompressor_threshold =
+		{
+			QLABEL("COMP TH"), 7, 0, RJ_UNSIGNED, ISTEP1,
+			ITEM_VALUE,
+			WITHCOMPTHRESHOLDMIN, WITHCOMPTHRESHOLDMAX,
+			OFFSETOF(struct nvmap, gcompressor_threshold),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gcompressor_threshold,
+			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
 	#endif /* WITHCOMPRESSOR */
+
 	#if WITHREVERB
 		static uint_fast8_t greverb;		/* ревербератор */
 		static uint_fast8_t greverbdelay = 100;		/* ревербератор - задержка (ms) */
@@ -6404,15 +6552,31 @@ static const struct paramdefdef xgbusfreq =
 	}
 #endif /* defined (REFERENCE_FREQ) */
 
+#if WITHINTEGRATEDDSP
+
 static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий клавиш - 880 Гц - нота ля второй октавы (A5) (аналогично FT1000) */
 
+static const struct paramdefdef xgkeybeep10 =
+{
+	QLABEL2("KEY BEEP", "Keys Beep"), 6, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
+	ITEM_VALUE,
+	80, 250,			/* 800 Hz..2500, Hz in 50 Hz steps */
+	OFFSETOF(struct nvmap, gkeybeep10),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gkeybeep10,
+	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
+#endif /* WITHINTEGRATEDDSP */
 
 #if WITHMIC1LEVEL
 	static uint_fast16_t gmik1level = (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) / 4 + WITHMIKEINGAINMIN;
 	/* подстройка усиления микрофонного усилителя через меню. */
 	static const struct paramdefdef xgmik1level =
 	{
-		QLABEL3("MIC LEVL", "MIC Level", "MIC LEVL"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("MIC LEVL", "MIC Level", "MIKE LEVEL"), 7, 0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
 		OFFSETOF(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
@@ -9034,8 +9198,6 @@ getdefaultbandsubmode(
 }
 
 
-static uint_fast8_t gtxaudio [MODE_COUNT];
-
 static uint_fast8_t gmiddlepos [MODE_COUNT];
 
 #if WITHIF4DSP
@@ -9390,19 +9552,7 @@ static const struct paramdefdef * enc2menus [] =
 	& xgsubtoneirx,	//  Continuous Tone-Coded Squelch System or CTCSS freq
 #endif /* WITHPOWERTRIM */
 #if WITHMIC1LEVEL
-	(const struct paramdefdef [1]) {
-		QLABELENC2("MIKE LEVL"),
-		0, 0,
-		RJ_UNSIGNED,
-		ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
-		ITEM_VALUE,
-		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
-		OFFSETOF(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
-		getselector0, nvramoffs0, valueoffs0,
-		& gmik1level,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
+	& xgmik1level,
 #endif /* ITHMIC1LEVEL */
 #if WITHIF4DSP
 	(const struct paramdefdef [1]) {
@@ -13185,7 +13335,9 @@ updateboard_noui(
 		board_set_bandf2(bandf2hint);	/* включение нужного полосового фильтра (ФНЧ) передатчика */
 		board_set_bandf3(bandf3hint);	/* управление через разъем ACC */
 	#endif /* CTLSTYLE_IGOR */
+	#if WITHINTEGRATEDDSP
 		board_keybeep_setfreq(gkeybeep10 * 10);	// Частота озвучивания нажатий клавиш (герц)
+	#endif /* WITHINTEGRATEDDSP */
 
 	#if WITHFANTIMER
 		board_setfanflag(! fanpaflag);	// fanpaflag - сигнал выключения вентилятора
@@ -17708,20 +17860,23 @@ const char * hamradio_midvalue5(uint_fast8_t section, uint_fast8_t * active)
 
 ///
 
+static const struct menudef menutable_main_size [] =
+{
 #include "menu.h"
+};
 
-#define MENUROW_COUNT (ARRAY_SIZE(menutable))
+#define MENUROW_COUNT (ARRAY_SIZE(menutable_main_size))
 
-uint_fast16_t menutable_size(void)
+static uint_fast16_t menutable_size(void)
 {
 	return MENUROW_COUNT;
 }
 
 static uint_fast8_t ginmenu0;
-static const struct menudef * gmp0 = menutable;
+static const struct menudef * gmp0 = menutable_main_size;
 
 static nvramaddress_t gposnvram = MENUNONVRAM;	// место в мамяти с позицией в текущей группе
-static const struct menudef * gmpgroup = menutable;
+static const struct menudef * gmpgroup = menutable_main_size;
 static uint_fast8_t gmenulevel;	// 0 - groups, 1 - inside group
 static uint_fast16_t gmenufirstitem [2] = { 0, 1 };
 static uint_fast16_t gmenulastitem [2] = { MENUROW_COUNT - 1, MENUROW_COUNT - 1 };
@@ -17765,7 +17920,7 @@ loadsettings(void)
 
 	for (i = 0; i < menutable_size(); ++ i)
 	{
-		const struct menudef * const mp = & menutable [i];
+		const struct menudef * const mp = & menutable_main_size [i];
 		const struct paramdefdef * const pd = mp->pd;
 		if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
 		{
@@ -17810,7 +17965,7 @@ defaultsettings(void)
 
 	for (i = 0; i < menutable_size(); ++ i)
 	{
-		const struct menudef * const mp = & menutable [i];
+		const struct menudef * const mp = & menutable_main_size [i];
 		if (! ismenukinddp(mp->pd, ITEM_NOINITNVRAM))
 		{
 			savemenuvalue(mp->pd);
@@ -17857,7 +18012,7 @@ static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_f
 static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
 {
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
-	const uint_fast16_t index = (int) (mp - menutable);
+	const uint_fast16_t index = (int) (mp - menutable_main_size);
 	uint_fast16_t y_position_groups = ycell;
 	uint_fast16_t index_groups = 0;
 	uint_fast16_t selected_group_left_margin; // первый элемент группы
@@ -17871,7 +18026,7 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 
 	//ищем границы текущей группы параметров
 	uint_fast16_t selected_group_finder = index;
-	while (selected_group_finder > 0 && ! ismenukinddp(menutable [selected_group_finder].pd, ITEM_GROUP))
+	while (selected_group_finder > 0 && ! ismenukinddp(menutable_main_size [selected_group_finder].pd, ITEM_GROUP))
 		selected_group_finder --;
 	selected_group_left_margin = selected_group_finder;
 
@@ -17880,7 +18035,7 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 	uint_fast16_t selected_params_index = 0;
 	for (el = 0; el < menutable_size(); el ++)
 	{
-		const struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable_main_size [el];
 		if (ismenukinddp(mv->pd, ITEM_GROUP))
 		{
 			index_groups ++;
@@ -17894,7 +18049,7 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 	// выводим на экран блок с параметрами
 	for (el = 0; el < menutable_size(); el ++)
 	{
-		const struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable_main_size [el];
 		if (ismenukinddp(mv->pd, ITEM_GROUP))
 		{
 			index_groups ++;
@@ -17933,7 +18088,7 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
 {
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
-	const uint_fast16_t index = (int) (mp - menutable);
+	const uint_fast16_t index = (int) (mp - menutable_main_size);
 	uint_fast8_t y_position_params = ycell;
 	uint_fast16_t index_params = 0;
 	uint_fast16_t selected_group_left_margin; // первый элемент группы
@@ -17948,11 +18103,11 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 
 	// ищем границы текущей группы параметров
 	uint_fast16_t selected_group_finder = index;
-	while (selected_group_finder > 0 && ! ismenukinddp(menutable [selected_group_finder].pd, ITEM_GROUP))
+	while (selected_group_finder > 0 && ! ismenukinddp(menutable_main_size [selected_group_finder].pd, ITEM_GROUP))
 		selected_group_finder --;
 	selected_group_left_margin = selected_group_finder;
 	selected_group_finder ++;
-	while (selected_group_finder < menutable_size() && ! ismenukinddp(menutable [selected_group_finder].pd, ITEM_GROUP))
+	while (selected_group_finder < menutable_size() && ! ismenukinddp(menutable_main_size [selected_group_finder].pd, ITEM_GROUP))
 		selected_group_finder ++;
 	selected_group_right_margin = selected_group_finder - 1;	// последний элмент в списке параметров данной группы
 
@@ -17960,7 +18115,7 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 	uint_fast16_t selected_params_index = 0;
 	for (el = 0; el < menutable_size(); el ++)
 	{
-		const struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable_main_size [el];
 		if (ismenukinddp(mv->pd, ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin || el > selected_group_right_margin)
@@ -17976,7 +18131,7 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 	// выводим на экран блок с параметрами
 	for (el = 0; el < menutable_size(); el ++)
 	{
-		const struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable_main_size [el];
 		if (ismenukinddp(mv->pd, ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin)
@@ -18020,7 +18175,7 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
-	const uint_fast16_t index = (int) (mp - menutable);
+	const uint_fast16_t index = (int) (mp - menutable_main_size);
 	uint_fast8_t y_position_params = y;
 	uint_fast16_t index_params = 0;
 	uint_fast16_t selected_group_left_margin; // первый элемент группы
@@ -18035,11 +18190,11 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 
 	//ищем границы текущей группы параметров
 	uint_fast16_t selected_group_finder = index;
-	while (selected_group_finder > 0 && ! ismenukinddp(menutable [selected_group_finder].pd, ITEM_GROUP))
+	while (selected_group_finder > 0 && ! ismenukinddp(menutable_main_size [selected_group_finder].pd, ITEM_GROUP))
 		selected_group_finder --;
 	selected_group_left_margin = selected_group_finder;
 	selected_group_finder ++;
-	while (selected_group_finder < menutable_size() && ! ismenukinddp(menutable [selected_group_finder].pd, ITEM_GROUP))
+	while (selected_group_finder < menutable_size() && ! ismenukinddp(menutable_main_size [selected_group_finder].pd, ITEM_GROUP))
 		selected_group_finder ++;
 	selected_group_right_margin = selected_group_finder - 1;	// последний элмент в списке параметров данной группы
 
@@ -18047,7 +18202,7 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 	uint_fast16_t selected_params_index = 0;
 	for (el = 0; el < menutable_size(); el ++)
 	{
-		const struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable_main_size [el];
 		if (ismenukinddp(mv->pd, ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin || el > selected_group_right_margin)
@@ -18063,7 +18218,7 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 	// выводим на экран блок с параметрами
 	for (el = 0; el < menutable_size(); el ++)
 	{
-		const struct paramdefdef * const pd = menutable [el].pd;
+		const struct paramdefdef * const pd = menutable_main_size [el].pd;
 		if (ismenukinddp(pd, ITEM_VALUE))
 		{
 			if (el < selected_group_left_margin)
@@ -18280,7 +18435,7 @@ static uint_fast16_t menulooklast(uint_fast16_t menupos)
 	const struct menudef * mp;
 	do
 	{
-		mp = & menutable [++ menupos];
+		mp = & menutable_main_size [++ menupos];
 	} while (menupos < menutable_size() && ismenukinddp(mp->pd, ITEM_VALUE) != 0);
 	return menupos - 1;
 }
@@ -18295,7 +18450,7 @@ processmenukeyandencoder(inputevent_t * ev)
 	uint_fast16_t firstitem = gmenufirstitem [gmenulevel];
 	uint_fast16_t lastitem = gmenulastitem [gmenulevel];
 	const struct menudef * mp = gmp0;
-	uint_fast16_t menupos = mp - menutable;
+	uint_fast16_t menupos = mp - menutable_main_size;
 	multimenuwnd_t window;
 	const uint_fast8_t itemmask = gmenulevel ? ITEM_VALUE : ITEM_GROUP;
 
@@ -18393,7 +18548,7 @@ processmenukeyandencoder(inputevent_t * ev)
 			{
 				/* найти группу в которой находимся */
 				menupos = calc_prev(menupos, 0, menutable_size() - 1);
-				mp = & menutable [menupos];
+				mp = & menutable_main_size [menupos];
 			}
 			while (ismenukinddp(mp->pd, ITEM_VALUE));
 			setinmenu(1, mp);
@@ -18409,7 +18564,7 @@ processmenukeyandencoder(inputevent_t * ev)
 			const uint_fast16_t first = menupos + 1;	/* следующий за текущим пунктом */
 			const uint_fast16_t last = menulooklast(first);
 
-			if (ismenukinddp(menutable [first].pd, ITEM_VALUE))
+			if (ismenukinddp(menutable_main_size [first].pd, ITEM_VALUE))
 			{
 			#if defined (RTC1_TYPE)
 				getstamprtc();
@@ -18419,7 +18574,7 @@ processmenukeyandencoder(inputevent_t * ev)
 				gmpgroup = mp;
 				gposnvram = mp->pd->qnvram;	// место в памяти с позицией в текущей группе
 				menupos = loadvfy16up(gposnvram, first, last, first);
-				setinmenu(1, & menutable [menupos]);
+				setinmenu(1, & menutable_main_size [menupos]);
 				gmenufirstitem [1] = first;
 				gmenulastitem [1] = last;
 			}
@@ -18502,7 +18657,7 @@ processmenukeyandencoder(inputevent_t * ev)
 		{
 			/* проход по определённому типу элементов (itemmask) */
 			menupos = calc_dir(! window.reverse, menupos, firstitem, lastitem);
-			mp = & menutable [menupos];
+			mp = & menutable_main_size [menupos];
 		}
 		while (! ismenukinddp(mp->pd, itemmask));
 		goto menuswitch;
@@ -18523,7 +18678,7 @@ processmenukeyandencoder(inputevent_t * ev)
 		{
 			/* если спецпункты запрещены - ищем обычный */
 			menupos = calc_dir(window.reverse, menupos, firstitem, lastitem);
-			mp = & menutable [menupos];
+			mp = & menutable_main_size [menupos];
 		}
 		while (! ismenukinddp(mp->pd, itemmask));
 
@@ -18564,7 +18719,7 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 
 	for (menupos = 0; menupos < menutable_size(); ++ menupos)
 	{
-		const struct menudef * const mp = & menutable [menupos];
+		const struct menudef * const mp = & menutable_main_size [menupos];
 		if (ismenukinddp(mp->pd, ITEM_VALUE) == 0)
 			continue;
 		const int r = strcmp(name, mp->pd->qlabel);
@@ -18611,20 +18766,20 @@ void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const 
 	uint_fast16_t menupos;
 	for (menupos = 0; menupos < menutable_size(); ++ menupos)
 	{
-        const struct menudef * mp = & menutable [menupos];
+        const struct menudef * mp = & menutable_main_size [menupos];
         if (ismenukinddp(mp->pd, ITEM_GROUP) == 0)
         	continue;
         const struct menudef * const mpgroup = mp ++;	/* группа */
         void * const groupctx = groupcb ? (* groupcb)(walkctx, mpgroup->pd) : NULL;
         //PRINTF("group: %s\n", mpgroup->pd->qlabel);
-        for (; mp < (menutable + menutable_size()) && ismenukinddp(mp->pd, ITEM_VALUE); ++ mp)
+        for (; mp < (menutable_main_size + menutable_size()) && ismenukinddp(mp->pd, ITEM_VALUE); ++ mp)
         {
             //PRINTF(" item: %s\n", mp->pd->qlabel);
         	if (itemcb)
         		(* itemcb)(walkctx, groupctx, mp->pd);
 		}
         /* not an ITEM_VALUE */
-        menupos = mp - menutable - 1;
+        menupos = mp - menutable_main_size - 1;
 	}
 
 }
@@ -19455,7 +19610,7 @@ processmainloopkeyboard(inputevent_t * ev)
 		ASSERT(ginmenu0 == 0);
 		{
 			uint_fast16_t menupos = loadvfy16up(RMT_GROUP_BASE, 0, menutable_size() - 1, 0);
-			const struct menudef * mpgroup = menutable + menupos;
+			const struct menudef * mpgroup = menutable_main_size + menupos;
 			gmenulevel = 0;
 			setinmenu(1, mpgroup);
 		}
@@ -21487,7 +21642,7 @@ uint_fast16_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 #endif /* defined (RTC1_TYPE) */
 	for (el = 0; el < menutable_size(); el ++)
 	{
-		const struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable_main_size [el];
 		if (ismenukinddp(mv->pd, ITEM_GROUP))
 		{
 			menu_names_t * const v = & vals [count];
@@ -21506,7 +21661,7 @@ uint_fast16_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_
 
 	for (el = index + 1; el < menutable_size(); el ++)
 	{
-		const struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable_main_size [el];
 		if (ismenukinddp(mv->pd, ITEM_GROUP))
 			break;
 		if (ismenukinddp(mv->pd, ITEM_VALUE))
@@ -21531,7 +21686,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 
 	for (el = index; el <= index + cnt; el ++)
 	{
-		const struct menudef * const mv = & menutable [el];
+		const struct menudef * const mv = & menutable_main_size [el];
 		if (ismenukinddp(mv->pd, ITEM_VALUE))
 		{
 			param_format(mv->pd, vals->name, ARRAY_SIZE(vals->name), param_getvalue(mv->pd));
@@ -21543,7 +21698,7 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 
 const char * hamradio_gui_edit_menu_item(uint_fast16_t index, int_least16_t rotate)
 {
-	const struct paramdefdef * const pd = menutable [index].pd;
+	const struct paramdefdef * const pd = menutable_main_size [index].pd;
 	if (param_rotate(pd, rotate))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
 		updateboard();
@@ -21553,7 +21708,7 @@ const char * hamradio_gui_edit_menu_item(uint_fast16_t index, int_least16_t rota
 
 	static char menuw [20];						// буфер для вывода значений системного меню
 
-	param_format(menutable [index].pd, menuw, ARRAY_SIZE(menuw), param_getvalue(menutable [index].pd));
+	param_format(menutable_main_size [index].pd, menuw, ARRAY_SIZE(menuw), param_getvalue(menutable_main_size [index].pd));
 	return menuw;
 }
 #endif /* WITHMENU */
