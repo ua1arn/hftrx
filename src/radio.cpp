@@ -5143,7 +5143,7 @@ enum
 	// Громкость в процентах
 	static const struct paramdefdef xafgain1 =
 	{
-		QLABEL3("AF Gain", "Volume", "VOLUME"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("AF Gain", "Volume", "VOLUME"), 7, 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 #if WITHPOTAFGAIN
@@ -5160,7 +5160,7 @@ enum
 	// Усиление ПЧ/ВЧ в процентах
 	static const struct paramdefdef xrfgain1 =
 	{
-		QLABEL3("RF GAIN", "RF Gain", "RF GAIN"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("RF GAIN", "RF Gain", "RF GAIN"), 7, 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 #if WITHPOTIFGAIN
@@ -6784,7 +6784,7 @@ typedef struct encfnitem_tag
 	int (* getlabel)(void * ctx, char * buff, size_t count);
 } encfnitem_t;
 
-static int getlabelAFGAINx(void * ctx, char * buff, size_t count)
+static int getlabelAFGAIN(void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = & xafgain1;
 	const int_fast32_t value = param_getvalue(pd);
@@ -6794,14 +6794,14 @@ static int getlabelAFGAINx(void * ctx, char * buff, size_t count)
 	return n;
 }
 
-static int getlabelAFGAIN(void * ctx, char * buff, size_t count)
+static int getlabelAFGAINss(void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = & xafgain1;
 	const int_fast32_t value = param_getvalue(pd);
 	return local_snprintf_P(buff, count, "AF %2d", (int) value);
 }
 
-static int getlabelRFGAINx(void * ctx, char * buff, size_t count)
+static int getlabelRFGAIN(void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = & xrfgain1;
 	const int_fast32_t value = param_getvalue(pd);
@@ -6811,7 +6811,7 @@ static int getlabelRFGAINx(void * ctx, char * buff, size_t count)
 	return n;
 }
 
-static int getlabelRFGAIN(void * ctx, char * buff, size_t count)
+static int getlabelRFGAINsss(void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = & xrfgain1;
 	const int_fast32_t value = param_getvalue(pd);
@@ -17527,6 +17527,9 @@ const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
 		& xgzoomxpow2,
 	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
+	#if WITHTX && WITHPOWERTRIM
+		& xgnormalpower,
+	#endif /* WITHTX && WITHPOWERTRIM */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -17556,6 +17559,9 @@ const struct paramdefdef * const * getmiddlemenu_ssb(unsigned * size)
 	#if WITHUSEDUALWATCH
 		& xmainsubrxmode,
 	#endif /* WITHUSEDUALWATCH */
+	#if WITHTX && WITHPOWERTRIM
+		& xgnormalpower,
+	#endif /* WITHTX && WITHPOWERTRIM */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -17579,6 +17585,9 @@ const struct paramdefdef * const * getmiddlemenu_am(unsigned * size)
 	#if WITHIF4DSP
 		& xgnoisereduct,
 	#endif /* WITHIF4DSP */
+	#if WITHTX && WITHPOWERTRIM
+		& xgnormalpower,
+	#endif /* WITHTX && WITHPOWERTRIM */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -17596,6 +17605,9 @@ const struct paramdefdef * const * getmiddlemenu_digi(unsigned * size)
 	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
 		& xgzoomxpow2,
 	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
+	#if WITHTX && WITHPOWERTRIM
+		& xgnormalpower,
+	#endif /* WITHTX && WITHPOWERTRIM */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -17627,6 +17639,9 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
 		& xgzoomxpow2,
 	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
+	#if WITHTX && WITHPOWERTRIM
+		& xgnormalpower,
+	#endif /* WITHTX && WITHPOWERTRIM */
 	};
 
 	* size = ARRAY_SIZE(middlemenu);
@@ -17647,6 +17662,9 @@ const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * nitems)
 	#if WITHIF4DSP
 		& xgnoisereduct,
 	#endif /* WITHIF4DSP */
+	#if WITHTX && WITHPOWERTRIM
+		& xgnormalpower,
+	#endif /* WITHTX && WITHPOWERTRIM */
 	};
 
 	* nitems = ARRAY_SIZE(middlemenu);
@@ -18153,7 +18171,7 @@ param_formatpercents(
 	{
 		return 0;
 	}
-	return local_snprintf_P(buff, count, "%d", (int) ((value - pd->qbottom - pd->funcoffs()) * 100 / (pd->qupper - pd->qbottom)));
+	return local_snprintf_P(buff, count, "%-3d", (int) ((value - pd->qbottom - pd->funcoffs()) * 100 / (pd->qupper - pd->qbottom)));
 }
 
 size_t
