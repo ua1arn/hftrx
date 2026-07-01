@@ -4258,6 +4258,7 @@ unsigned nvram_tlv_getparam(unsigned * base)
 #endif /* WITHUSEUSBBT */
 
 
+
 /* переменные, вынесенные из главной функции - определяют текущий тежим рботы
    и частоту настройки
    */
@@ -9720,7 +9721,7 @@ static const struct paramdefdef xgtxgate =
 enum { gtxgate = 0 };
 #endif /* WITHTX */
 
-#if WITHIF4DSP
+#if WITHIF4DSP && WITHMENU
 // CW filter bandwidth for WIDE
 static const struct paramdefdef xfltbw_cwwide =
 {
@@ -9776,7 +9777,259 @@ static const struct paramdefdef xfltsofter_cwnarrow =
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-#endif /* WITHIF4DSP */
+static const struct paramdefdef xgssbwide_high = {
+	QLABEL("SSB W HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
+	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_ssbwide.right100,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgssbwide_low = {
+	QLABEL("SSB W LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
+	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_ssbwide.left10_width10,
+	getzerobase, /* складывается со смещением и отображается */
+};
+static const struct paramdefdef xgssbwide_afr = {
+	QLABEL("SSBW AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
+	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBWIDE),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_ssbwide.afresponce,
+	getafresponcebase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgssbmedium_high = {
+	QLABEL("SSB M HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB MEDIUM */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
+	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBMEDIUM),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_ssbmedium.right100,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgssbmedium_low = {
+	QLABEL("SSB M LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB MEDIUM */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
+	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBMEDIUM),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_ssbmedium.left10_width10,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgssbmedium_afr = {
+	QLABEL("SSBM AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
+	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBMEDIUM),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_ssbmedium.afresponce,
+	getafresponcebase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgssbnarrow_high = {
+	QLABEL("SSB N HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB NARROW */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
+	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBNARROW),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_ssbnarrow.right100,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgssbnarrow_low = {
+	QLABEL("SSB N LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB NARROW */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
+	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBNARROW),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_ssbnarrow.left10_width10,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgssbnarrow_afr = {
+	QLABEL("SSBN AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
+	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBNARROW),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_ssbnarrow.afresponce,
+	getafresponcebase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgamwide_high = {
+	QLABEL("AM W HI"), 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
+	RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_amwide.right100,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgamwide_low = {
+	QLABEL("AM W LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
+	RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_amwide.left10_width10,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgamwide_afr = {
+	QLABEL("AM W AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
+	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMWIDE),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_amwide.afresponce,
+	getafresponcebase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgamnarrow_high = {
+	QLABEL("AM N HI"), 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM NARROW */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
+	RMT_BWPROPSRIGHT_BASE(BWPROPI_AMNARROW),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_amnarrow.right100,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgamnarrow_low = {
+	QLABEL("AM N LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM NARROW */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
+	RMT_BWPROPSLEFT_BASE(BWPROPI_AMNARROW),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_amnarrow.left10_width10,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgamnarrow_afr = {
+	QLABEL("AM N AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
+	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMNARROW),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_amnarrow.afresponce,
+	getafresponcebase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgssbtx_high = {
+	QLABEL("SSBTX HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
+	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBTX),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_ssbtx.right100,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgssbtx_low = {
+	QLABEL("SSBTX LO"), 7, 2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
+	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBTX),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_ssbtx.left10_width10,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgssbtx_afr = {
+	QLABEL("SSBTXAFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
+	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBTX),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_ssbtx.afresponce,
+	getafresponcebase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgnfmtx_high = {
+	QLABEL("NFM TX HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
+	RMT_BWPROPSRIGHT_BASE(BWPROPI_NFMTX),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_nfmtx.right100,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgnfmtx_low = {
+	QLABEL("NFM TX LO"), 7, 2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
+	RMT_BWPROPSLEFT_BASE(BWPROPI_NFMTX),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_nfmtx.left10_width10,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgnfmtx_afr = {
+	QLABEL("NFM TXAFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
+	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_NFMTX),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_nfmtx.afresponce,
+	getafresponcebase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgdigiwide_high = {
+	QLABEL("DIGI HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
+	RMT_BWPROPSRIGHT_BASE(BWPROPI_DIGIWIDE),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_digiwide.right100,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xgdigiwide_low = {
+	QLABEL("DIGI LO"), 7, 2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
+	RMT_BWPROPSLEFT_BASE(BWPROPI_DIGIWIDE),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& bwprop_digiwide.left10_width10,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+#endif /* WITHMENU && WITHIF4DSP */
 
 #if WITHTOUCHGUI
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
