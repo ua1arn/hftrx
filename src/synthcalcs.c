@@ -552,14 +552,7 @@ void synth_lo2_setfreq(
 {
 	if (f < 0)
 		f = - f;
-#if LO2_DDSGENERATED
-	#if defined(DDS3_TYPE)
-		const ftw_t ph = freq2ftw(f, dds3refdiv * od, dds3ref);    /* преобразование требуемой частоты в фазу */
-		prog_dds3_ftw(& ph);
-	#else
-		(void) od;
-	#endif
-#endif /* LO2_DDSGENERATED */
+	(void) od;
 }
 
 // Установка частоты гетеродина, осуществляющего passband tuning - PBT
@@ -571,14 +564,7 @@ void synth_lo3_setfreq(
 {
 	if (f < 0)
 		f = - f;
-#if ! LO2_DDSGENERATED
-	#if defined(DDS3_TYPE)
-		const ftw_t ph = freq2ftw(f, dds3refdiv * od, dds3ref);    /* преобразование требуемой частоты в фазу */
-		prog_dds3_ftw(& ph);
-	#else
-		(void) od;
-	#endif
-#endif /* ! LO2_DDSGENERATED */
+	(void) od;
 }
 
 

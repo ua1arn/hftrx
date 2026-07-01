@@ -3927,109 +3927,7 @@ struct nvmap
 	uint8_t lo1level;	/* уровень (амплитуда) LO1 в процентах */
 #endif /* WITHLO1LEVELADJ */
 
-#if defined (IF3_MODEL) && (IF3_MODEL == IF3_TYPE_DCRX)
-
-#elif WITHDUALFLTR		/* Переворот боковых за счёт переключения фильтра верхней или нижней боковой полосы */
-	uint16_t lo4offset;			/* частота (без базы) третьего гетеродина */
-#elif WITHFIXEDBFO
-	uint8_t glo4lsb;			/* признак LSB на последней ПЧ */
-	uint16_t lo4offset;			/* частота (без базы) третьего гетеродина */
-#elif WITHDUALBFO
-	uint16_t lo4offsets [2];		/* частота (без базы) третьего гетеродина в USB и LSB */
-#endif
-
-#if WITHIFSHIFT
-	uint16_t ifshifoffset;	/* смещение частоты пропускания в режиме If SHIFT */
-#endif /* WITHIFSHIFT */
-
 	uint16_t	ggrpfilters; // последний посещённый пункт группы
-
-#if (defined (IF3_MODEL) && (IF3_MODEL != IF3_TYPE_DCRX) && (IF3_MODEL != IF3_TYPE_BYPASS))
-
-	uint8_t dcrxmode;	/* settings menu option - RX acts as direct conversion */
-	uint8_t dctxmodessb, dctxmodecw;	/* settings menu option - TX acts as direct conversion */
-
-
-#if WITHPBT //&& (LO3_SIDE != LOCODE_INVALID)
-	uint16_t	ggrppbts; // последний посещённый пункт группы
-	uint16_t pbtoffset;	/* смещение частоты пропускания в режиме PBT */
-#endif /* WITHPBT && (LO3_SIDE != LOCODE_INVALID) */
-
-	/* параметры подстройки центральной частоты узких фильтров */
-#if (IF3_FMASK & IF3_FMASK_0P3)
-	uint8_t hascw0p3;			/* наличие в плате фильтра на 0.3 кГц */
-	uint16_t carr0p3;	/* settings menu option */
-#endif
-#if (IF3_FMASK & IF3_FMASK_0P5)
-	uint8_t hascw0p5;			/* наличие в плате фильтра на 0.5 кГц */
-	uint16_t carr0p5;	/* settings menu option */
-#endif
-
-	/* параметры подстройки частот скатов широких фильтров */
-#if (IF3_FMASK & IF3_FMASK_1P8)
-	uint8_t hascw1p8;			/* наличие в плате фильтра на 1.8 кГц */
-	uint16_t usbe1p8;	/* settings menu option */
-	uint16_t lsbe1p8;	/* settings menu option */
-#endif
-#if (IF3_FMASK & IF3_FMASK_2P4)
-	uint8_t hascw2p4;			/* наличие в плате фильтра на 2.4 кГц */
-	uint16_t usbe2p4;	/* settings menu option */
-	uint16_t lsbe2p4;	/* settings menu option */
-	#if WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P4) != 0
-		uint16_t usbe2p4tx;	/* settings menu option */
-		uint16_t lsbe2p4tx;	/* settings menu option */
-	#endif
-#endif
-#if (IF3_FMASK & IF3_FMASK_2P7)
-	uint8_t hascw2p7;			/* наличие в плате фильтра на 2.7 кГц */
-	uint16_t usbe2p7;	/* settings menu option */
-	uint16_t lsbe2p7;	/* settings menu option */
-	#if WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7) != 0
-		uint16_t usbe2p7tx;	/* settings menu option */
-		uint16_t lsbe2p7tx;	/* settings menu option */
-	#endif
-#endif
-#if (IF3_FMASK & IF3_FMASK_3P1)
-	uint16_t usbe3p1;	/* settings menu option */
-	uint16_t lsbe3p1;	/* settings menu option */
-	#if WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_3P1) != 0
-		uint16_t usbe3p1tx;	/* settings menu option */
-		uint16_t lsbe3p1tx;	/* settings menu option */
-	#endif
-#endif
-
-	/* параметры подстройки центральной частоты широких фильтров */
-#if (IF3_FMASK & IF3_FMASK_6P0)
-	uint8_t hascw6p0;			/* наличие в плате фильтра на 6.0 кГц */
-	uint16_t cfreq6k;
-#endif
-#if (IF3_FMASK & IF3_FMASK_7P8)
-	uint16_t cfreq7p8k;
-#endif
-#if (IF3_FMASK & IF3_FMASK_8P0)
-	uint16_t cfreq8k;
-#endif
-#if (IF3_FMASK & IF3_FMASK_9P0)
-	uint16_t cfreq9k;
-#endif
-#if (IF3_FMASK & IF3_FMASK_15P0)
-	uint16_t cfreq15k;
-	uint16_t cfreq15k_nfm;
-#endif
-#if (IF3_FMASK & IF3_FMASK_17P0)
-	uint16_t cfreq17k;
-#endif
-#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P4)
-	uint8_t hascw2p4_tx;
-#endif /* WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P4) */
-#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7)
-	uint8_t hascw2p7_tx;
-#endif /* WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7) */
-#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_3P1)
-	uint8_t hascw3p1_tx;
-#endif /* WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7) */
-
-#endif
 
 #if defined(REFERENCE_FREQ)
 #if defined (DAC1_TYPE)
@@ -10865,14 +10763,6 @@ getsidelo1(
 #endif
 }
 
-#if WITHFIXEDBFO 	/* переворачивание боковой полосы за счёт изменения частоты первого гетеродина */
-	#if defined(LSBONLO4DEFAULT)
-		static uint_fast8_t glo4lsb = LSBONLO4DEFAULT;	/* признак LSB на последней ПЧ - модифицируется через меню. */
-	#else
-		static uint_fast8_t glo4lsb = 0;	/* признак LSB на последней ПЧ - модифицируется через меню. */
-	#endif
-#endif /* WITHFIXEDBFO */
-
 // Возврат кода варианта управления последнм гетеродином
 // LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 static uint_fast8_t
@@ -10882,17 +10772,9 @@ getsidelo4(void)
 	/* Управление последгтм гетеродином предопределено в конфигурационном файле */
 	return LO4_SIDE;	// LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 
-#elif WITHDUALFLTR	/* Переворот боковых за счёт переключения фильтра верхней или нижней боковой полосы */
-
-	return LOCODE_TARGETED;	// LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
-
-#elif WITHFIXEDBFO	/* переворачивание боковой полосы за счёт изменения частоты первого гетеродина */
-
-	return glo4lsb ? LOCODE_UPPER : LOCODE_LOWER;		/* признак LSB на последней ПЧ */
-
 #else
 
-	#error Undefined LO4_SIDE value LOCODE_XXX and no WITHDUALFLTR or WITHFIXEDBFO
+	#error Undefined LO4_SIDE value
 
 #endif
 }
@@ -10934,37 +10816,6 @@ gethintlo0(
 }
 
 
-#if FQMODEL_UW3DI
-
-static uint_fast8_t
-getlo2xtal(
-	uint_fast8_t mix2lsb,	/* формируем гетеродин для указанной боковой полосы */
-	uint_fast8_t hintlo2	/* код пятиисотых килогерц приходит в зависимости от частоты настройки в режиме интерполятора */
-	)
-{
-	uint_fast8_t n;
-	if (mix2lsb)
-		n = (hintlo2 + IF2FREQTOP / HINTLO2_GRANULARITY);
-	else
-		n = labs(hintlo2 - IF2FREQBOTOM / HINTLO2_GRANULARITY);
-	switch (n)
-	{
-		case 8000000L / HINTLO2_GRANULARITY:	return 0;	/* 1.8 и 14 мегагерц */
-		case 10000000L / HINTLO2_GRANULARITY:	return 1;	/* 3.5 мегагерц */
-		case 13500000L / HINTLO2_GRANULARITY:	return 2;	/* 7 мегагерц */
-		case 4000000L / HINTLO2_GRANULARITY:	return 3;	/* 10.1 мегагерц */
-		case 12000000L / HINTLO2_GRANULARITY:	return 4;	/* 18.68 мегагерц */
-		case 15000000L / HINTLO2_GRANULARITY:	return 5;	/* 21 мегагерц */
-		case 18500000L / HINTLO2_GRANULARITY:	return 6;	/* 24.89 мегагерц */
-		case 22000000L / HINTLO2_GRANULARITY:	return 7;	/* 28.0 мегагерц */
-		case 22500000L / HINTLO2_GRANULARITY:	return 8;	/* 28.5 мегагерц */
-		case 23000000L / HINTLO2_GRANULARITY:	return 9;	/* 29.0 мегагерц */
-		case 23500000L / HINTLO2_GRANULARITY:	return 10;	/* 29.5 мегагерц */
-	}
-	return 0;
-}
-
-#endif	/* FQMODEL_UW3DI */
 
 /* Возврат номера кварца для второго гетеродина */
 static uint_fast8_t
@@ -10972,16 +10823,11 @@ gethintlo2(
 	uint_fast32_t freq
 	)
 {
-#if FQMODEL_UW3DI
-	return freq / HINTLO2_GRANULARITY;
-#else
 	return 0;
-#endif
 }
 
 /* получаем частоту LO2 для текущего режима работы */
 static int_fast32_t
-//NOINLINEAT
 getlo2(
 	const filter_t * workfilter,
 	uint_fast8_t mode,		/* код семейства режимов работы */
@@ -10990,44 +10836,10 @@ getlo2(
 	uint_fast8_t hintlo2	/* код пятиисотых килогерц приходит в зависимости от частоты настройки в режиме интерполятора */
 	)
 {
-#if WITHWFM
-	if (mode == MODE_WFM)
-		return 0;
-#endif /* WITHWFM */
-#if FQMODEL_10M7_500K && (LO2_SIDE == LOCODE_TARGETED)
-
-	/* RU6BK: 1-st if=10.7 MHz, 2-nd if=500k, fixed BFO */
-	const int_fast32_t if2 = 10700000L;
-	const int_fast32_t if3 = 500000L;
-	if (mix2lsb)
-		return if2 + if3;
-	else
-		return if2 - if3;
-
-#elif FQMODEL_UW3DI
-	// LO2 формируется набором кварцев или PLL
-	// получаем частоту для справки
-	if (mix2lsb)
-		return (hintlo2 + IF2FREQTOP / HINTLO2_GRANULARITY) * HINTLO2_GRANULARITY;
-	else
-		return labs(hintlo2 - IF2FREQBOTOM / HINTLO2_GRANULARITY) * HINTLO2_GRANULARITY;
-
-#elif /*defined (PLL2_TYPE) && */ (LO2_SIDE != LOCODE_INVALID)
-	// LO2 формируется PLL с зависимостью от режима работы и приёма/передачи
-	return (int_fast32_t) (((uint_least64_t) getsynthref(mode) * * getplo2n(workfilter, tx) / * getplo2r(workfilter, tx)) >> LO2_POWER2);
-
-#elif (LO2_SIDE != LOCODE_INVALID)
-	// LO2 формируется PLL или прямо берётся с опорного генератора
-	(void) tx;
-	return (int_fast32_t) (((uint_least64_t) getsynthref(mode) * LO2_PLL_N / LO2_PLL_R) >> LO2_POWER2);
-
-#else
 	// LO2 отсутствует
 	(void) mode;
 	(void) tx;
 	return 0;
-
-#endif
 }
 
 /* получаем LO3 для текущего режима работы */
@@ -11039,19 +10851,10 @@ getlo3(
 	uint_fast8_t tx		/* признак работы в режиме передачи */
 	)
 {
-#if (LO3_SIDE != LOCODE_INVALID)
-  #if LO3_FREQADJ	/* подстройка частоты гетеродина через меню. */
-	return (lo3base + lo3offset) >> LO3_POWER2;
-  #else
-	return (int_fast32_t) ((uint_least64_t) getsynthref(mode) * LO3_PLL_N / LO3_PLL_R >> LO3_POWER2);
-  #endif
-
-#else
 	/* смесителя #2A вообще нет в тракте */
 	(void) mode;
 	(void) mix3lsb;
 	return 0;
-#endif
 }
 
 /* перенастройка формирования гетеродина для указанного режима. */
@@ -11088,19 +10891,6 @@ update_lo2(
 	uint_fast8_t hint		/* код пятиисотых килогерц приходит в зависимости от частоты настройки в режиме интерполятора */
 	)
 {
-#if FQMODEL_UW3DI
-	board_set_lo2xtal(getlo2xtal(lsb, hint));	// установка номера кварца
-#elif defined (PLL2_TYPE) && (LO2_SIDE != LOCODE_INVALID)
-	(void) hint;
-	prog_pll2_r(getplo2r(workfilter, tx));		/* программирование PLL2 в случае управляемой частоты второго гетеродина */
-	prog_pll2_n(getplo2n(workfilter, tx));		/* программирование PLL2 в случае управляемой частоты второго гетеродина */
-#elif LO2_DDSGENERATED
-	(void) mode;
-	(void) hint;
-	(void) lsb;
-	(void) tx;
-	synth_lo2_setfreq(pathi, f, od);		// for IGOR or EW2DZ or FQMODEL_10M7_500K
-#else
 	/* смесителя #2 вообще нет в тракте */
 	(void) mode;
 	(void) hint;
@@ -11108,7 +10898,6 @@ update_lo2(
 	(void) f;
 	(void) od;
 	(void) tx;
-#endif
 }
 
 
@@ -11385,11 +11174,9 @@ getsidelo5(
 #if defined (LO5_SIDE)
 	/* Управление этим гетеродином предопределено в конфигурационном файле */
 	return LO5_SIDE;	// LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
-#elif WITHFIXEDBFO || WITHDUALBFO	/* переворачивание боковой полосы за счёт изменения частоты первого гетеродина */
-	return LOCODE_LOWER;	/* При преобразовании на этом гетеродине нет инверсии спектра */
 #else
 	return mdt [mode].lo5side [tx];
-#endif /* WITHFIXEDBFO || WITHDUALBFO */
+#endif /* */
 }
 
 static uint_fast8_t
@@ -11414,13 +11201,7 @@ getlo4ref(
 	uint_fast8_t tx				/* для режима передачи - врежиме CW - смещения частоты не требуется. */
 	)
 {
-#if WITHFIXEDBFO || WITHDUALFLTR
-	// Выравнивание IF с привязкой к скату фильтра основной селекции
-	return getlo4baseflt(workfilter) + lo4offset;
-#elif WITHDUALBFO
-	// Выравнивание IF с привязкой к скату фильтра основной селекции
-	return getlo4baseflt(workfilter) + lo4offsets [mix4lsb];
-#elif WITHIF4DSP
+#if WITHIF4DSP
 	// Выравнивание IF с привязкой к центру фильтра основной селекции
 	return getif3filtercenter(workfilter);
 #else
@@ -13503,34 +13284,11 @@ updateboard_noui(
 			// и с согласованием центральных частот полос пропускания.
 			// Вариант с согласованием центральных частот - это случай включённого узкого фильтра ПЧ и телеграфного режима.
 			// Или, случай WITHIF4DSP.
-	#if WITHFIXEDBFO || WITHDUALFLTR
-			// Выравнивание IF с привязкой к скату фильтра основной селекции
-			// расчёт использует freqif4, freqlo5 == 0
-			const int_fast32_t freqlo4 = freqlo4ref - freqlo5;	// если гетеродин один
-			const int_fast32_t freqif3 = dc ? freqif4 : (freqlo4 + UPPERTOSIGN(mixXlsbs [4], freqif4));
-	#elif WITHDUALBFO
-			// Выравнивание IF с привязкой к скату фильтра основной селекции
-			// расчёт использует freqif4, freqlo5 == 0
-			const int_fast32_t freqlo4 = freqlo4ref - freqlo5;	// гетеродинов два - для разных скатов фильтра
-			const int_fast32_t freqif3 = dc ? freqif4 : (freqlo4 + UPPERTOSIGN(mixXlsbs [4], freqif4));
-	#elif WITHIF4DSP
+	#if WITHIF4DSP
 			// Выравнивание IF с привязкой к центру фильтра основной селекции
 			// расчёт использует freqif4, freqlo5
 			const int_fast32_t freqlo4 = freqlo4ref - freqlo5;	// Надо согласовать центр фильтра с частотой переноса на baseband
 			const int_fast32_t freqif3 = dc ? freqif4 : (freqlo4 + UPPERTOSIGN(mixXlsbs [4], freqif4));
-	#elif 0
-			// todo: не работает сохранение картины приёма при переключении SSB->CW, зато работает IF SHIFT
-			// Выравнивание IF с привязкой к скату фильтра основной селекции
-			// расчёт использует freqif4, freqif5 = - ifshift
-			const int_fast32_t freqlo4 = dc ? 0 : (freqlo4ref - UPPERTOSIGN(mixXlsbs [4], freqif4));	// used for programming BFO
-			const int_fast32_t freqif3 = dc ? freqif4 : (freqlo4ref - UPPERTOSIGN(mixXlsbs [4], freqif5));
-
-	#elif 0
-			// todo: работает сохранение картины приёма при переключении SSB->CW, но IF SHIFT меняет частоту приёма
-			// Выравнивание IF с привязкой к скату фильтра основной селекции
-			// расчёт использует freqif4, freqif5 = - ifshift
-			const int_fast32_t freqlo4 = dc ? 0 : (freqlo4ref - UPPERTOSIGN(mixXlsbs [4], freqif4));	// used for programming BFO
-			const int_fast32_t freqif3 = dc ? freqif4 : (freqlo4ref + UPPERTOSIGN(mixXlsbs [4], freqif4) - UPPERTOSIGN(mixXlsbs [4], freqif5));
 	#else
 			// Убран возврат ifshif в getlo6
 			const int_fast32_t freqif3 = dc ? freqif4 : (freqlo4ref - UPPERTOSIGN(mixXlsbs [4], ifshift));
@@ -13990,7 +13748,7 @@ void updateboard(void)
 }
 
 /* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
-void updateboard_freq(void)
+static void updateboard_freq(void)
 {
 #if WITHTOUCHGUI
 	if (updateboard_noui(0))
@@ -15171,11 +14929,7 @@ const char * hamradio_get_rxbw_value4(void)
 
 const char * hamradio_get_rxbw_label3(void)
 {
-#if WITHFIXEDBFO
-	return PSTR("");
-#else /* WITHFIXEDBFO */
 	return getrxfilter(gsubmode, gfi)->labelf3;
-#endif /* WITHFIXEDBFO */
 }
 
 

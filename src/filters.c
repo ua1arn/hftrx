@@ -1927,31 +1927,6 @@ static const filter_t * const FLASHMEM gfa [] =
 
 #define GFA_SIZE (sizeof gfa / sizeof gfa [0])	/* количество фильтров в системе */
 
-
-#if WITHFIXEDBFO 	/* переворачивание боковой полосы за счёт изменения частоты первого гетеродина */
-	uint_fast16_t lo4offset = (uint_fast16_t) (LO4FREQ - IF3FREQBASE);			/* частота (без базы) третьего гетеродина */
-#elif WITHDUALFLTR	/* переворачивание боковой полосы за счёт переключения фильтров */
-	uint_fast16_t lo4offset = (uint_fast16_t) (LO4FREQ - IF3FREQBASE);			/* частота (без базы) третьего гетеродина */
-#elif WITHDUALBFO	/* переворачивание боковой полосы за счёт переключения BFO */
-	uint_fast16_t lo4offsets [2] = 
-	{
-		(uint_fast16_t) (IF3LOWER - IF3FREQBASE),			/* частота (без базы) третьего гетеродина USB */
-		(uint_fast16_t) (IF3UPPER - IF3FREQBASE),			/* частота (без базы) третьего гетеродина LSB */
-	};
-#endif
-
-#if WITHDUALFLTR || WITHDUALBFO || WITHFIXEDBFO
-
-/* нстройка центральной частоты для тех фильтров, у которых нет индивидуальной настройки скатов */
-
-int_fast32_t 
-getlo4base(void) /* = IF3FREQBASE */
-{
-	return IF3FREQBASE;
-}
-
-#endif /* WITHDUALFLTR || WITHDUALBFO || WITHFIXEDBFO */
-
 int_fast32_t 
 getcefreqshiftbase(void) /* = (int_fast32_t) 0 - IF3CEOFFS */
 {
