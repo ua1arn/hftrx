@@ -5287,6 +5287,7 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 
 	__ALIGNED(64) PACKEDCOLORPIP_T m_buffscrollcolor [GXSIZE(w, h)];
 	int16_t m_buffscrollpwr [GXSIZE(w, h)];
+	const FLOAT_t m_level0;
 
 	FLOAT_t m_spavgarray [w * 1];	// h == 1
 	FLOAT_t m_yoldwfl [w * 1];	// h == 1
@@ -5312,6 +5313,7 @@ public:
 
 public:
 	scrollbf() :
+		m_level0(db2ratio(WITHMINFSPOWER)),
 		scrollcolor(centerx, centery, m_buffscrollcolor, NROWSWFL),
 		scrollpwr(centerx, centery, m_buffscrollpwr, NROWSWFL),
 		/* one-row objects */
@@ -5334,12 +5336,12 @@ public:
 		ypeakspe.setupnew(w, agc0);
 #endif /* WITHSECTRUMPEAKS */
 		scrollcolor.setupnew(w, display2_bgcolorwfl());
-		scrollpwr.setupnew(w, 0);
+		scrollpwr.setupnew(w, m_level0);
 		/* one-row objects */
-		spavgarray.setupnew(w, 0);
-		yoldwfl.setupnew(w, 0);
-		yoldspe.setupnew(w, 0);
-		yold3dss.setupnew(w, 0);
+		spavgarray.setupnew(w, m_level0);
+		yoldwfl.setupnew(w, m_level0);
+		yoldspe.setupnew(w, m_level0);
+		yold3dss.setupnew(w, m_level0);
 	}
 	/* + продвижение по истории */
 	void shiftrows()
@@ -5354,19 +5356,18 @@ public:
 		if (pixels)
 		{
 			//centerx = (centerx + w + pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
-			// TODO: очистить освобождающиеся зоны
 #if WITHSECTRUMPEAKS
 			agcstate_t agc0;
 			agc_state_initialize(& agc0, & peakparams);
 			ypeakspe.shiftleft(w, pixels, agc0);
 #endif /* WITHSECTRUMPEAKS */
 			scrollcolor.shiftleft(w, pixels, display2_bgcolorwfl());
-			scrollpwr.shiftleft(w, pixels, 0);
+			scrollpwr.shiftleft(w, pixels, m_level0);
 			/* one-row objects */
-			spavgarray.shiftleft(w, pixels, 0);
-			yoldwfl.shiftleft(w, pixels, 0);
-			yoldspe.shiftleft(w, pixels, 0);
-			yold3dss.shiftleft(w, pixels, 0);
+			spavgarray.shiftleft(w, pixels, m_level0);
+			yoldwfl.shiftleft(w, pixels, m_level0);
+			yoldspe.shiftleft(w, pixels, m_level0);
+			yold3dss.shiftleft(w, pixels, m_level0);
 		}
 	}
 	// частота уменьшилась - надо сдвигать картинку вправо
@@ -5377,19 +5378,18 @@ public:
 		if (pixels)
 		{
 			//centerx = (centerx + w - pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
-			// TODO: очистить освобождающиеся зоны
 #if WITHSECTRUMPEAKS
 			agcstate_t agc0;
 			agc_state_initialize(& agc0, & peakparams);
 			ypeakspe.shiftright(w, pixels, agc0);
 #endif /* WITHSECTRUMPEAKS */
 			scrollcolor.shiftright(w, pixels, display2_bgcolorwfl());
-			scrollpwr.shiftright(w, pixels, 0);
+			scrollpwr.shiftright(w, pixels, m_level0);
 			/* one-row objects */
-			spavgarray.shiftright(w, pixels, 0);
-			yoldwfl.shiftright(w, pixels, 0);
-			yoldspe.shiftright(w, pixels, 0);
-			yold3dss.shiftright(w, pixels, 0);
+			spavgarray.shiftright(w, pixels, m_level0);
+			yoldwfl.shiftright(w, pixels, m_level0);
+			yoldspe.shiftright(w, pixels, m_level0);
+			yold3dss.shiftright(w, pixels, m_level0);
 		}
 	}
 
