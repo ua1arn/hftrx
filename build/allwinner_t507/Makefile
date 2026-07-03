@@ -229,6 +229,16 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 #CPFLAGS += -fno-inline-functions 
 #CPFLAGS += -fwhole-program
 
+	
+# Take from tc1_t507_boot.map - address of SystemDRAMInit, SystemExecAARCH64
+LOADERCPU=t507
+#LOADERCPU=h618
+#LOADERCPU=h616
+
+DDRINITBLOB=ddrinit_$(LOADERCPU).bin
+DDRINITPARAM=bootparam_$(LOADERCPU).mak
+
+-include ./$(DDRINITPARAM)
 
 #
 # makefile rules
@@ -249,52 +259,20 @@ bootloader: BOOT2
 	./egontool -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 lib: bootloader
-	$(BUSYBOX) grep -E -e ' Reset_Handler$$' -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort >bootparam.mak
+	$(BUSYBOX) grep -E -e ' Reset_Handler$$' -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort >$(DDRINITPARAM)
 	$(BUSYBOX) cp $(PROJECT)_boot.bin $(DDRINITBLOB)
-	
-# Take from tc1_t507_boot.map - address of SystemDRAMInit, SystemExecAARCH64
-ifeq (1, 1)
-# T507
-DDRINIT=ddrinit_t507
--include ./bootparam.mak
-DDRINITBLOB=ddrinit_t507_lpddr4.bin
-else
-# H616
-#SystemDRAMInit = 0x0002d650
-#SystemExecAARCH64 = 0x0002920c
-#DDRINIT=ddrinit_h616
-# H618 + LPDDR4
-SystemDRAMInit = 0x0002c8c4
-SystemExecAARCH64 = 0x00029014
-DDRINIT=ddrinit_h618
-DDRINITBLOB=ddrinit_h618_lpddr4.bin
-endif
 
-# Invoke SystemInit 
-ddrinit_h616: ddrinit_h616_lpddr3.bin
+# Invoke SystemDRAMInit 
+ddrinit: $(DDRINITBLOB)
 	$(XFEL) write 0x00028000 $(DDRINITBLOB)
 	$(XFEL) exec $(SystemDRAMInit)
 	$(BUSYBOX) sleep 2s
 
-ddrinit_h618: ddrinit_h618_lpddr4.bin
-	$(XFEL) write 0x00028000 $(DDRINITBLOB)
-	$(XFEL) exec $(SystemDRAMInit)
-	$(BUSYBOX) sleep 2s
-
-ddrinit_t507_:
-	$(XFEL) ddr lpddr4
-	$(BUSYBOX) sleep 2s
-
-ddrinit_t507: ddrinit_t507_lpddr4.bin
-	$(XFEL) write 0x00028000 $(DDRINITBLOB)
-	$(XFEL) exec $(SystemDRAMInit)
-	$(BUSYBOX) sleep 2s
-
-app_run: $(PROJECT)_app.alw32 $(DDRINIT)
+app_run: $(PROJECT)_app.alw32 ddrinit
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
-	$(XFEL) exec $(SystemExecAARCH64)
+	$(XFEL) exec 0x40000100
 
-app_run64: $(PROJECT)_app.alw32 $(DDRINIT)
+app_run64: $(PROJECT)_app.alw32 ddrinit
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec $(SystemExecAARCH64)
 
