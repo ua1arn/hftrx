@@ -21,7 +21,7 @@
 
 #include "dspdefines.h"
 
-//#define WITHSECTRUMPEAKS 1	// Рисование peak value
+#define WITHSECTRUMPEAKS 1	// Рисование peak value
 
 #if LVGL_VERSION_MAJOR == 9 && LVGL_VERSION_MINOR < 3
 void lv_obj_set_flag(lv_obj_t * obj, lv_obj_flag_t f, bool v)
@@ -5332,7 +5332,7 @@ public:
 	{
 #if WITHSECTRUMPEAKS
 		agcstate_t agc0;
-		agc_state_initialize(& agc0, & peakparams);
+		agc_state_initialize2(& agc0, & peakparams);
 		ypeakspe.setupnew(w, agc0);
 #endif /* WITHSECTRUMPEAKS */
 		scrollcolor.setupnew(w, display2_bgcolorwfl());
@@ -5358,7 +5358,7 @@ public:
 			//centerx = (centerx + w + pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
 #if WITHSECTRUMPEAKS
 			agcstate_t agc0;
-			agc_state_initialize(& agc0, & peakparams);
+			agc_state_initialize2(& agc0, & peakparams);
 			ypeakspe.shiftleft(w, pixels, agc0);
 #endif /* WITHSECTRUMPEAKS */
 			scrollcolor.shiftleft(w, pixels, display2_bgcolorwfl());
@@ -5380,7 +5380,7 @@ public:
 			//centerx = (centerx + w - pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
 #if WITHSECTRUMPEAKS
 			agcstate_t agc0;
-			agc_state_initialize(& agc0, & peakparams);
+			agc_state_initialize2(& agc0, & peakparams);
 			ypeakspe.shiftright(w, pixels, agc0);
 #endif /* WITHSECTRUMPEAKS */
 			scrollcolor.shiftright(w, pixels, display2_bgcolorwfl());

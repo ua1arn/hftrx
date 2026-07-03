@@ -3154,6 +3154,15 @@ void agc_state_initialize(agcstate_t * __restrict st, const agcparams_t * __rest
 	st->agcslowcap = streingth_log;
 }
 
+// hack for peaks display
+void agc_state_initialize2(agcstate_t * __restrict st, const agcparams_t * __restrict agcp)
+{
+	agc_state_initialize(st, agcp);
+
+	st->agcfastcap = db2ratio(WITHMINFSPOWER);
+	st->agcslowcap = db2ratio(WITHMINFSPOWER);
+}
+
 // TODO: eliminate LOGF
 // are equal:
 //gain = valelout / adjsig * powf(10.0f, log10f(adjsig / valelin) * agcfactor);
