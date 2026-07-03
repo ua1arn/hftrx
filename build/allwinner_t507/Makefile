@@ -245,15 +245,19 @@ allZ:
 	@echo $(abspath $(OBJS))
 
 bootloader: BOOT2
-	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
+	$(BUSYBOX) grep -E -e ' Reset_Handler$$' -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
 	./egontool -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
+	
+lib: bootloader
+	$(BUSYBOX) grep -E -e ' Reset_Handler$$' -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort >bootparam.mak
+	$(BUSYBOX) cp $(PROJECT)_boot.bin $(DDRINITBLOB)
 	
 # Take from tc1_t507_boot.map - address of SystemDRAMInit, SystemExecAARCH64
 ifeq (1, 1)
 # T507
-SystemDRAMInit = 0x0002d890
-SystemExecAARCH64 = 0x00029510
 DDRINIT=ddrinit_t507
+-include ./bootparam.mak
+DDRINITBLOB=ddrinit_t507_lpddr4.bin
 else
 # H616
 #SystemDRAMInit = 0x0002d650
@@ -263,16 +267,17 @@ else
 SystemDRAMInit = 0x0002c8c4
 SystemExecAARCH64 = 0x00029014
 DDRINIT=ddrinit_h618
+DDRINITBLOB=ddrinit_h618_lpddr4.bin
 endif
 
 # Invoke SystemInit 
 ddrinit_h616: ddrinit_h616_lpddr3.bin
-	$(XFEL) write 0x00028000 ddrinit_h616_lpddr3.bin
+	$(XFEL) write 0x00028000 $(DDRINITBLOB)
 	$(XFEL) exec $(SystemDRAMInit)
 	$(BUSYBOX) sleep 2s
 
 ddrinit_h618: ddrinit_h618_lpddr4.bin
-	$(XFEL) write 0x00028000 ddrinit_h618_lpddr4.bin
+	$(XFEL) write 0x00028000 $(DDRINITBLOB)
 	$(XFEL) exec $(SystemDRAMInit)
 	$(BUSYBOX) sleep 2s
 
@@ -281,7 +286,7 @@ ddrinit_t507_:
 	$(BUSYBOX) sleep 2s
 
 ddrinit_t507: ddrinit_t507_lpddr4.bin
-	$(XFEL) write 0x00028000 ddrinit_t507_lpddr4.bin
+	$(XFEL) write 0x00028000 $(DDRINITBLOB)
 	$(XFEL) exec $(SystemDRAMInit)
 	$(BUSYBOX) sleep 2s
 
