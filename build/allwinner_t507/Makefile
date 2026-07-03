@@ -300,7 +300,7 @@ app_run64: $(PROJECT)_app.alw32 $(DDRINIT)
 
 # debug for bootloader - check .ld file
 _app_run: bootloader
-	$(XFEL) write 0x00028000 fsbl.bt0
+	$(XFEL) write 0x00028000 $(PROJECT)_boot.bin
 	$(XFEL) exec 0x00028000 
 
 flash:

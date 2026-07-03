@@ -1,3 +1,3 @@
-Reset_Handler = 0x00028100
-SystemDRAMInit = 0x0002df70
-SystemExecAARCH64 = 0x000295a4
+Reset_Handler = 0x00028000
+SystemDRAMInit = 0x0002de98
+SystemExecAARCH64 = 0x000294c8
