@@ -129,11 +129,15 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwh616_cpustyle_orangepi_zero2.h"
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
-	//#include "boards/arm_allwt507_ctlstyle_veloci_v0.h"
-	#include "boards/arm_allwt507_ctlstyle_veloci_v0_UA1CEI.h"
-	//#include "boards/arm_allwt507_ctlstyle_veloci_v0_RK1AQ.h"
+	//#include "boards/arm_allwt507_ctlstyle_veloci_v0.h"			// Rrfboard_v3a.pcb
+	//#include "boards/arm_allwt507_ctlstyle_veloci_v0_UA1CEI.h"	// Rrfboard_v3a.pcb, old PA thermo sensor
+	#include "boards/arm_allwt507_ctlstyle_veloci_v0_RK1AQ.h"	// Rrfboard_v3a.pcb
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwt507_cpustyle_veloci_v0.h"
+	#include "boards/arm_allwt507_cpustyle_veloci_v0.h"	// Rrfboard_v3a.pcb
+#elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwt507_ctlstyle_veloci_v1.h"	// Rrfboard_v4.pcb, Rrfboard_v4a.pcb
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt507_cpustyle_veloci_v1.h"// Rrfboard_v4.pcb, Rrfboard_v4a.pcb
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt507_ctlstyle_xhelperboard_t507.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */

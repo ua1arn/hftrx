@@ -10,8 +10,10 @@
 // HelperBoard T507 Core Board
 // ARM® Cortex®-A53 MPCore Processor Revision: r0p4
 
-#ifndef ARM_ALW_T507_CTL_VELOCI_V0_RK1AQ_H_INCLUDED
-#define ARM_ALW_T507_CTL_VELOCI_V0_RK1AQ_H_INCLUDED 1
+// Rrfboard_v4.pcb, Rrfboard_v4a.pcb
+
+#ifndef ARM_ALW_T507_CTL_VELOCI_V1_H_INCLUDED
+#define ARM_ALW_T507_CTL_VELOCI_V1_H_INCLUDED 1
 
 	#define WITHBRANDSTR "Falcon"
 	//#define WITHBANDR1BBU 1
@@ -275,7 +277,7 @@
 	//#define CODEC_TYPE_WM8731_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
 	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
-	#define CODEC_TYPE_NAU8822_USE_SPI	1
+	//#define CODEC_TYPE_NAU8822_USE_SPI	1
 	//#define NAU8822_USE_SPI4	1	// SPI 4-Wire 24-bit Write and 32-bit Read Operation
 	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 	//#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
@@ -506,7 +508,7 @@
 
 //	#define WITHTSC5PCALIBRATE 1	/* Калибровка по пяти точкам */
 //	#define TSC1_TYPE TSC_TYPE_XPT2046	/* Resistive touch screen controller XPTEK XPT2046 */
-	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
@@ -605,4 +607,4 @@
 	#define BOARDPOWERMIN	0	// Нижний предел регулировки (показываемый на дисплее)
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
-#endif /* ARM_ALW_T507_CTL_VELOCI_V0_RK1AQ_H_INCLUDED */
+#endif /* ARM_ALW_T507_CTL_VELOCI_V1_H_INCLUDED */
