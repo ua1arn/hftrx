@@ -1029,15 +1029,15 @@
 #endif /* WITHSPIHW */
 
 #if WITHDEBUG
-// WITHUART0HW
-// Используется периферийный контроллер последовательного порта UART0 */
-#define HARDWARE_UART0_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 0; /* PH0 UART0-TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0-RX - pull-up RX data */  \
-		arm_hardware_pioh_altfn2m(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_altfn2m(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
-	} while (0)
+	// WITHUART0HW
+	// Используется периферийный контроллер последовательного порта UART0 */
+	#define HARDWARE_UART0_INITIALIZE() do { \
+			const portholder_t TXMASK = UINT32_C(1) << 0; /* PH0 UART0-TX */ \
+			const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0-RX - pull-up RX data */  \
+			arm_hardware_pioh_altfn2m(TXMASK, GPIO_CFG_AF2); \
+			arm_hardware_pioh_altfn2m(RXMASK, GPIO_CFG_AF2); \
+			arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
+		} while (0)
 #else /* WITHDEBUG */
 	// WITHUART0HW
 	// Используется периферийный контроллер последовательного порта UART0 */
