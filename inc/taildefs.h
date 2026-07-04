@@ -34,7 +34,9 @@ typedef enum
 	SPIC_SPEED4M,	/* 4 MHz для CS4272 */
 	SPIC_SPEED10M,	/* 10 MHz для ILI9341 */
 	SPIC_SPEED12M,	/* 12 MHz */
+	SPIC_SPEED24M,	/* 24 MHz - на системах с Allwinner */
 	SPIC_SPEED25M,	/* 25 MHz  */
+	SPIC_SPEED50M,	/* 50 MHz  */
 
 	SPIC_SPEEDFAST,
 	SPIC_SPEEDUFAST,	// Скорость для загрузки FPGA

@@ -2525,7 +2525,9 @@ void spi_initialize(void)
 	hardware_spi_master_setfreq(spi, SPIC_SPEED4M, 4000000);	/* 4 MHz для CS4272 */
 	hardware_spi_master_setfreq(spi, SPIC_SPEED10M, 10000000);	/* 10 MHz для ILI9341 */
 	hardware_spi_master_setfreq(spi, SPIC_SPEED12M, 12000000);	/* 12 MHz */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED24M, 24000000);	/* 24 MHz  */
 	hardware_spi_master_setfreq(spi, SPIC_SPEED25M, 25000000);	/* 25 MHz  */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED50M, 50000000);	/* 50 MHz  */
 
 	hardware_spi_master_setfreq(spi, SPIC_SPEEDFAST, SPISPEED);
 	hardware_spi_master_setfreq(spi, SPIC_SPEEDUFAST, SPISPEEDUFAST);
