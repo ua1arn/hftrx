@@ -1028,6 +1028,7 @@
 
 #endif /* WITHSPIHW */
 
+#if WITHDEBUG
 // WITHUART0HW
 // Используется периферийный контроллер последовательного порта UART0 */
 #define HARDWARE_UART0_INITIALIZE() do { \
@@ -1037,6 +1038,17 @@
 		arm_hardware_pioh_altfn2m(RXMASK, GPIO_CFG_AF2); \
 		arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
+#else /* WITHDEBUG */
+	// WITHUART0HW
+	// Используется периферийный контроллер последовательного порта UART0 */
+	#define HARDWARE_UART0_INITIALIZE() do { \
+		const portholder_t TXMASK = UINT32_C(1) << 2; /* PF2 UART0-TX */ \
+		const portholder_t RXMASK = UINT32_C(1) << 4; /* PF4 UART0-RX - pull-up RX data */  \
+		arm_hardware_piof_altfn2m(TXMASK, GPIO_CFG_AF3); \
+		arm_hardware_piof_altfn2m(RXMASK, GPIO_CFG_AF3); \
+		arm_hardware_piof_updown(RXMASK | TXMASK, RXMASK, 0); \
+	} while (0)
+#endif /* WITHDEBUG */
 
 // WITHUART5HW
 // Используется периферийный контроллер последовательного порта UART5 (rear panel) */
