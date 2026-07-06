@@ -1064,7 +1064,7 @@ static FLOAT_t getmaxresponce(void)
 }
 
 void dsp_cfft(
-  const arm_cfft_instance_f32 * S,
+  const ARM_MORPH(arm_cfft_instance) * S,
 	  FLOAT_t * p,
         uint8_t ifftFlag
 		)

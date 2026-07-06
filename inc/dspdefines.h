@@ -105,7 +105,7 @@ extern "C" {
 	#include "arm_math.h"
 	#include "arm_const_structs.h"
 
-void dsp_cfft(const arm_cfft_instance_f32 * S, FLOAT_t * p, uint8_t ifftFlag);
+void dsp_cfft(const ARM_MORPH(arm_cfft_instance) * S, FLOAT_t * p, uint8_t ifftFlag);
 
 #endif /* WITHINTEGRATEDDSP */
 
