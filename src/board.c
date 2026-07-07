@@ -1813,7 +1813,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	#elif FULLSET8
 		#warning Add code
 
-	#elif FULLSET7
+	#elif FULLSET7 && 0
 
 		/* +++ Управление согласующим устройством */
 		/* регистр управления массивом конденсаторов */
@@ -1823,6 +1823,14 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0057, ! glob_tuner_bypass);		// pin 7: обход СУ
 		RBVAL(0050, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);			/* pin 15, 1..6: Inductors tuner bank 	*/
 		/* --- Управление согласующим устройством */
+
+	#elif FULLSET_7L8C || FULLSET7
+		// TUNWER
+		/* 7 indictors, 7/8 capacitors */
+		RBVAL8(0060, glob_tuner_bypass ? 0 : glob_tuner_C);		// D0..D7: capacitors
+		// TUNWER
+		RBBIT(0057, glob_tuner_bypass ? 0 : glob_tuner_type);	// 0 - понижающий, 1 - повышающий
+		RBVAL(0050, glob_tuner_bypass ? 0 : glob_tuner_L, 7);	// D0..D6: Inductors
 
 	#else
 		#error WITHAUTOTUNER and unknown details

@@ -285,8 +285,8 @@
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
 
 	// Выбор используемой цветовой палитры
-	#define COLORSTYLE_GREEN	1
-	//#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_GREEN	1
+	#define COLORSTYLE_BLUE	1
 	//#define COLORSTYLE_BLUE2	1
 	//#define COLORSTYLE_WHITE	1
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
@@ -385,16 +385,20 @@
 		#define WITHTPA100W_UA1CEI_V2 1	/* Есть функция автотюнера */
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		#define WITHAUTOTUNER	1			/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
-		#define FULLSET8	1
+		#define FULLSET8	1				/* 8 indictors, 8 capacitors */
 		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
 		#define WITHANTSELECT	1	/* Управление переключением антенн */
-	#elif 0
+	#elif 1
 		/* TUNER by R3KBL */
-		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		#define WITHAUTOTUNER	1			/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
-		#define FULLSET7	1
+		#define FULLSET7		1			/* 7 indictors, 7 capacitors */
+	#elif 1
+		#define WITHAUTOTUNER	1			/* Есть функция автотюнера */
+		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+		#define FULLSET_7L8C	1			/* 7 indictors, 8 capacitors */
 	#else
 		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны CTKSPARE2 и CTLSPARE1 */
