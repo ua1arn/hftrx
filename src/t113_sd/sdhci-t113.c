@@ -500,28 +500,25 @@ int sdhci_t113_setwidth(struct sdhci_t * sdhci, uint32_t width)
 
 int sdhci_t113_update_clk(struct sdhci_t * sdhci)
 {
-	uint32_t cmd = (UINT32_C(1) << 21) | (UINT32_C(1) << 13);	// PRG_CLK WAIT_PRE_OVER
+	const uint32_t cmd = (UINT32_C(1) << 21) | 1*(UINT32_C(1) << 13);	// PRG_CLK WAIT_PRE_OVER
+	ASSERT((sdhci->instance->SMHC_CMD & SDXC_START) == 0);
+	//sdhci->instance->SMHC_CMD = cmd;
+	sdhci->instance->SMHC_CMD = cmd | SDXC_START;
+	PRINTF("sdhci_t113_update_clk: sdhci->instance->SMHC_CMD=%08X\n", (unsigned) sdhci->instance->SMHC_CMD);
+	PRINTF("sdhci_t113_update_clk: sdhci->instance->SMHC_RINTSTS=%08X\n", (unsigned) sdhci->instance->SMHC_RINTSTS);
+	if (local_wait32mask(& sdhci->instance->SMHC_CMD, SDXC_START, 0 * SDXC_START, 250))
+	{
+		TP();
+		PRINTF("sdhci_t113_update_clk: Timeout\n");
+		PRINTF("sdhci->instance->SMHC_CMD=%08X\n", (unsigned) sdhci->instance->SMHC_CMD);
+		sdhci->instance->SMHC_RINTSTS = sdhci->instance->SMHC_RINTSTS;
+		return 0;
+	}
+	TP();
 
-	//TP();
-	write32(sdhci->base + SD_CMDR, cmd | SDXC_START);
-	while(read32(sdhci->base + SD_CMDR) & SDXC_START)
-		;
-	//TP();
-
-//	ktime_t timeout = ktime_add_ms(ktime_get(), 1);
-
-	do {
-
-/*		if(ktime_after(ktime_get(), timeout))
-                {
-			return 0;
-                }*/
-
-	} while(read32(sdhci->base + SD_CMDR) & SDXC_START);
-	//TP();
-
-	write32(sdhci->base + SD_RISR, read32(sdhci->base + SD_RISR));
-	//TP();
+	//write32(sdhci->base + SD_RISR, read32(sdhci->base + SD_RISR));	// 0x38
+	sdhci->instance->SMHC_RINTSTS = sdhci->instance->SMHC_RINTSTS;
+	TP();
 	return 1;
 }
 

@@ -5265,7 +5265,7 @@ void hardware_sdhost_initialize(void)
 	{
 		// Automatic divisors calculation
 		unsigned clksrc = 1;	// 01: PLL_PERI0(2X)
-		uint_fast32_t needfreq = UINT32_C(200) * 1000 * 1000;
+		uint_fast32_t needfreq = UINT32_C(100) * 1000 * 1000;
 		unsigned dvalue;
 		unsigned prei = calcdivider(calcdivround2(allwnr_t507_get_pll_peri0_x2_freq(), needfreq), 4, (8 | 4 | 1 | 2), & dvalue, 1);
 		SMHCHARD_CCU_CLK_REG =
@@ -5277,6 +5277,10 @@ void hardware_sdhost_initialize(void)
 		SMHCHARD_CCU_CLK_REG |= UINT32_C(1) << 31;	// SCLK_GATING
 	}
 
+	CCU->SMHC_BGR_REG &= ~ (UINT32_C(1) << (ix + 0)); // SMHCx_GATING
+	(void) CCU->SMHC_BGR_REG;
+	CCU->SMHC_BGR_REG &= ~ (UINT32_C(1) << (ix + 16)); // SMHCx_RESET
+	(void) CCU->SMHC_BGR_REG;
 	CCU->SMHC_BGR_REG |= UINT32_C(1) << (ix + 0); // SMHCx_GATING
 	(void) CCU->SMHC_BGR_REG;
 	CCU->SMHC_BGR_REG &= ~ (UINT32_C(1) << (ix + 16)); // SMHCx_RESET
