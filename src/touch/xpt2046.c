@@ -273,8 +273,8 @@ void board_tsc_initialize(void)
 }
 
 #if WITHTSC5PCALIBRATE
-// результат калибровки
 #if (DIM_X == 800) && (DIM_Y == 480) && TSCCALIBPOINTS == 9
+// результат калибровки
 static tPoint calpoints [TSCCALIBPOINTS] =
 {
 	{ 756, 889, }, /* point 0 */
@@ -286,6 +286,20 @@ static tPoint calpoints [TSCCALIBPOINTS] =
 	{ 761, 3402, }, /* point 6 */
 	{ 2034, 3412, }, /* point 7 */
 	{ 3317, 3382, }, /* point 8 */
+};
+#elif LCDMODE_HSD100IFW3 && (DIM_X == 1024) && (DIM_Y == 600) && TSCCALIBPOINTS == 9
+// результат калибровки
+static tPoint calpoints [TSCCALIBPOINTS] =
+{
+	{ 842, 726, }, /* point 0 */
+	{ 2021, 736, }, /* point 1 */
+	{ 3227, 752, }, /* point 2 */
+	{ 816, 1838, }, /* point 3 */
+	{ 1991, 1890, }, /* point 4 */
+	{ 3185, 1864, }, /* point 5 */
+	{ 761, 2942, }, /* point 6 */
+	{ 1996, 3034, }, /* point 7 */
+	{ 3235, 3154, }, /* point 8 */
 };
 #else
 #error Provide calibration data
