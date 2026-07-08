@@ -1814,7 +1814,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		#warning Add code
 
 	#elif FULLSET7 && 0
-
+		/* TUNER by R3KBL */
 		/* +++ Управление согласующим устройством */
 		/* регистр управления массивом конденсаторов */
 		RBBIT(0067, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
