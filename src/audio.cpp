@@ -1063,18 +1063,14 @@ static FLOAT_t getmaxresponce(void)
 	return r;
 }
 
-void dsp_cfft(
-  const ARM_MORPH(arm_cfft_instance) * S,
-	  FLOAT_t * p,
-        uint8_t ifftFlag
-		)
+void dsp_cfft(const ARM_MORPH(arm_cfft_instance) * S, FLOAT_t * p, uint_fast8_t ifftFlag)
 {
 #if ARM_MATH_NEON
 	FLOAT_t outBuff [S->fftLen * 2];
 	ARM_MORPH(arm_cfft)(S, p, outBuff, NULL, ifftFlag);
 	ARM_MORPH(arm_copy)(p, outBuff, ARRAY_SIZE(outBuff));
 #else /* ARM_MATH_NEON */
-	ARM_MORPH(arm_cfft)(S, p, ifftFlag, 1);
+	ARM_MORPH(arm_cfft)(S, p, ifftFlag, /* bitReverseFlag */ 1);
 #endif /* ARM_MATH_NEON */
 }
 
