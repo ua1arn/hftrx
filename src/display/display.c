@@ -920,6 +920,44 @@ static const videomode_t vdmode0 =
 	.interlaced = 0
 };
 
+#elif LCDMODE_HSD100IFW3
+
+/* HSD100IFW3 panel (1024*600) - 10.1" display HV mode */
+// Check LCD_LVDS_IF_REG_VALUE - bit27 should be "1"
+
+static const videomode_t vdmode0 =
+{
+	.width = 1024,   /* LCD PIXEL WIDTH            */
+	.height = 600,   /* LCD PIXEL HEIGHT           */
+	/**
+	* @brief  HSD100IFW3 Timing
+	* MODE=0 (DE)
+	* When selected DE mode, VSYNC & HSYNC must pulled HIGH
+	* MODE=1 (SYNC)
+	* When selected sync mode, de must be grounded.
+	*/
+
+	.hsync = 6,   /* Horizontal synchronization 1..140 */
+	.hbp = 39,    /* Horizontal back porch */
+	.hfp = 368,    /* Horizontal front porch  16..216  (r6dan: 140-160-180)  */
+
+	/* from r6dan: tvb+tvpw=23 is fixed */
+	.vsync = 1,    /* Vertical synchronization 1..20 */
+	.vbp = 24,    /* Vertical back porch */
+	.vfp = 15,    /* Vertical front porch  1..127  (r6dan: 2-12-22) */
+
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
+	.vsyncneg = 1,   /* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,   /* Negative polarity required for HSYNC signal */
+	.deneg = 0,    /* Negative DE polarity: (normal: DE is 0 while sync) */
+	.lq43reset = 0, // HSD100IFW3 require DE reset
+	.fps = 60, /* frames per second */
+	.ntsc = 0,
+	.interlaced = 0
+};
+
 #elif LCDMODE_LQ123K3LG01
 
 /* LQ123K3LG01 panel (1280*480) - 12.3" display LVDS mode */
