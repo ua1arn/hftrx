@@ -18184,9 +18184,8 @@ static void display2_menu_group(const gxdrawb_t * db, uint_fast8_t xcell, uint_f
 }
 
 // Отображение многострочного меню для больших экранов (группы)
-static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
+static void display2_multilinemenu_block_groups(const struct menudesc * pmd, const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
 {
-	const struct menudesc * const pmd = & mdsc0;
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - pmd->menutable);
 	uint_fast16_t y_position_groups = ycell;
@@ -18261,9 +18260,8 @@ static void display2_multilinemenu_block_groups(const gxdrawb_t * db, uint_fast8
 }
 
 // Отображение многострочного меню для больших экранов (параметры)
-static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
+static void display2_multilinemenu_block_params(const struct menudesc * pmd, const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx, const char * (* getlabel)(const struct paramdefdef * pd))
 {
-	const struct menudesc * const pmd = & mdsc0;
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - pmd->menutable);
 	uint_fast8_t y_position_params = ycell;
@@ -18349,9 +18347,8 @@ static void display2_multilinemenu_block_params(const gxdrawb_t * db, uint_fast8
 }
 
 // Отображение многострочного меню для больших экранов (значения)
-static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+static void display2_multilinemenu_block_vals(const struct menudesc * pmd, const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
-	const struct menudesc * const pmd = & mdsc0;
 	const struct menudef * const mp = (const struct menudef *) pctx->pv;
 	const uint_fast16_t index = (int) (mp - pmd->menutable);
 	uint_fast8_t y_position_params = y;
@@ -18440,6 +18437,7 @@ static void display2_multilinemenu_block_vals(const gxdrawb_t * db, uint_fast8_t
 // вызывается по dzones
 void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint_fast8_t ycell, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
+	const struct menudesc * const pmd = & mdsc0;
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
 	multimenuwnd_t w;
@@ -18460,9 +18458,9 @@ void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint
 		const uint_fast8_t namesspan = valuesx - namesx;
 		const uint_fast8_t valuesspan = xspan - valuesx;
 
-		display2_multilinemenu_block_groups(db, groupx, ycell, groupspan, yspan, pctx, pd_getshortlabel);
-		display2_multilinemenu_block_params(db, namesx, ycell, namesspan, yspan, pctx, pd_getshortlabel);
-		display2_multilinemenu_block_vals(db, valuesx, ycell, valuesspan, yspan, pctx);
+		display2_multilinemenu_block_groups(pmd, db, groupx, ycell, groupspan, yspan, pctx, pd_getshortlabel);
+		display2_multilinemenu_block_params(pmd, db, namesx, ycell, namesspan, yspan, pctx, pd_getshortlabel);
+		display2_multilinemenu_block_vals(pmd, db, valuesx, ycell, valuesspan, yspan, pctx);
 	}
 	else
 	{
@@ -18473,9 +18471,9 @@ void display2_multilinemenu_block(const gxdrawb_t * db, uint_fast8_t xcell, uint
 		const uint_fast8_t namesspan = valuesx - namesx;
 		const uint_fast8_t valuesspan = xspan - 1 - valuesx;
 
-		display2_multilinemenu_block_groups(db, groupx, ycell, groupspan, yspan, pctx, pd_getlonglabel);
-		display2_multilinemenu_block_params(db, namesx, ycell, namesspan, yspan, pctx, pd_getlonglabel);
-		display2_multilinemenu_block_vals(db, valuesx, ycell, valuesspan, yspan, pctx);
+		display2_multilinemenu_block_groups(pmd, db, groupx, ycell, groupspan, yspan, pctx, pd_getlonglabel);
+		display2_multilinemenu_block_params(pmd, db, namesx, ycell, namesspan, yspan, pctx, pd_getlonglabel);
+		display2_multilinemenu_block_vals(pmd, db, valuesx, ycell, valuesspan, yspan, pctx);
 	}
 }
 #endif /* WITHMENU */
