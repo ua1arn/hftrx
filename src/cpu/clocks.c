@@ -5180,6 +5180,21 @@ sysinit_pll_initialize(int forced)
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
+static void t113_delay_us(uint_fast32_t us)
+{
+	__NOP();
+	__NOP();
+	__NOP();
+	__NOP();
+	return;
+	while (us --)
+	{
+		volatile int i;
+		for (i = 2; i --;)
+			__NOP();
+	}
+}
+
 static void t113_set_pll_cpu(unsigned N)
 {
 	// F133: CCU->PLL_CPU_CTRL_REG=0xCA002900
@@ -5190,7 +5205,6 @@ static void t113_set_pll_cpu(unsigned N)
 	CCU->PLL_CPU_CTRL_REG = 0x4A001000;
 #endif
 	(void) CCU->PLL_CPU_CTRL_REG;
-	local_delay_us(10 * 1000);
 
 	/* Set default clk to 1008mhz */
 	val = CCU->PLL_CPU_CTRL_REG;
@@ -5211,7 +5225,7 @@ static void t113_set_pll_cpu(unsigned N)
 	(void) CCU->PLL_CPU_CTRL_REG;
 
 	/* Wait pll stable */
-	//local_delay_us(100 * 1000)
+	t113_delay_us(10 * 1000);
 	while((CCU->PLL_CPU_CTRL_REG & (UINT32_C(1) << 28)) == 0)
 		;
 
@@ -6454,22 +6468,22 @@ void allwnr_t113_pll_initialize(int N)
 	f133_set_axi(0x00, 1, 1);	// OSC24
 #endif
 	local_delay_initialize();
-	local_delay_ms(25);
+	t113_delay_us(25 * 1000);
 	CCU->PSI_CLK_REG = 0;	// AHB freq from OSC24
 	CCU->APB0_CLK_REG = 0;	// переключаем источник APB0 на HOSC
 	CCU->APB1_CLK_REG = 0;	// переключаем источник APB1 на HOSC
 	local_delay_initialize();
 
-	local_delay_ms(25);
+	t113_delay_us(25 * 1000);
 	allwnr_t113_module_pll_spr(& CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 	//allwnr_t113_module_pll_n(& CCU->PLL_PERI_CTRL_REG, 96);
-	local_delay_ms(25);
+	t113_delay_us(25 * 1000);
 	allwnr_t113_module_pll_enable(& CCU->PLL_PERI_CTRL_REG);
-	local_delay_ms(25);
+	t113_delay_us(25 * 1000);
 
 	t113_set_pll_cpu(N);	// see sdram.c
 	local_delay_initialize();
-	local_delay_ms(25);
+	t113_delay_us(25 * 1000);
 
 #if CPUSTYLE_T113
 	t113_set_axi(0x03, 4, 2);
@@ -6477,25 +6491,25 @@ void allwnr_t113_pll_initialize(int N)
 	f133_set_axi(0x05, 2, 1);	// 101: PLL_CPU
 #endif
 	local_delay_initialize();
-	local_delay_ms(25);
+	t113_delay_us(25 * 1000);
 
 	t113_set_mbus();
 	local_delay_initialize();
-	local_delay_ms(25);
+	t113_delay_us(25 * 1000);
 	t113_set_psi_ahb();
 	local_delay_initialize();
-	local_delay_ms(25);
+	t113_delay_us(25 * 1000);
 	t113_set_apb0(UINT32_C(100) * 1000 * 1000);	// 100 MHz
 	local_delay_initialize();
-	local_delay_ms(25);
+	t113_delay_us(25 * 1000);
 	t113_set_apb1(UINT32_C(300) * 1000 * 1000);	// 192 MHz - for 4M baud rate
 	local_delay_initialize();
-	local_delay_ms(25);
+	t113_delay_us(25 * 1000);
 #if CPUSTYLE_F133
 	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);	// не проищзволит видимого эффекта
 #endif
 	local_delay_initialize();
-	local_delay_ms(25);
+	t113_delay_us(25 * 1000);
 }
 
 void sysinit_boot_disconnect(void)
@@ -10829,66 +10843,66 @@ sysinit_pll_initialize(int forced)
 {
 #if WITHISBOOTLOADER
 
-if (! forced)
-{
-	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
-	SCLR->FPGA_RST_CTRL	= 0xF;	// Assert FPGA top-level output resets.
-	SCLR->LVL_SHFTR_EN 	= 0;	// Disable the level shifters.
+	if (! forced)
+	{
+		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+		SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
+		SCLR->FPGA_RST_CTRL	= 0xF;	// Assert FPGA top-level output resets.
+		SCLR->LVL_SHFTR_EN 	= 0;	// Disable the level shifters.
 
-	// Нельзя - перестает работать DEBUG
-	//SCLR->APER_CLK_CTRL = 0;	// All AMBA Clock control disable
+		// Нельзя - перестает работать DEBUG
+		//SCLR->APER_CLK_CTRL = 0;	// All AMBA Clock control disable
 
-	// PLL только в bootloader.
-	// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
+		// PLL только в bootloader.
+		// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
 
-	xc7z_arm_pll_initialize();
-	xc7z_ddr_pll_initialize();
-	xc7z_io_pll_initialize();
+		xc7z_arm_pll_initialize();
+		xc7z_ddr_pll_initialize();
+		xc7z_io_pll_initialize();
 
 
-	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	XDCFG->CTRL &= ~ (UINT32_C(1) << 29);	// PCFG_POR_CNT_4K
+		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+		XDCFG->CTRL &= ~ (UINT32_C(1) << 29);	// PCFG_POR_CNT_4K
 
-	////EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
+		////EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
 
-	// PL Clock 0 Output control
-	SCLR->FPGA0_CLK_CTRL = (SCLR->FPGA0_CLK_CTRL & ~ (0x03F03F30U)) |
-			((uint_fast32_t) SCLR_FPGA0_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
-			((uint_fast32_t) SCLR_FPGA0_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
-			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-			0;
+		// PL Clock 0 Output control
+		SCLR->FPGA0_CLK_CTRL = (SCLR->FPGA0_CLK_CTRL & ~ (0x03F03F30U)) |
+				((uint_fast32_t) SCLR_FPGA0_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+				((uint_fast32_t) SCLR_FPGA0_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+				0;
 
-	// PL Clock 1 Output control
-	SCLR->FPGA1_CLK_CTRL = (SCLR->FPGA1_CLK_CTRL & ~ (0x03F03F30U)) |
-			((uint_fast32_t) SCLR_FPGA1_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
-			((uint_fast32_t) SCLR_FPGA1_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
-			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-			0;
+		// PL Clock 1 Output control
+		SCLR->FPGA1_CLK_CTRL = (SCLR->FPGA1_CLK_CTRL & ~ (0x03F03F30U)) |
+				((uint_fast32_t) SCLR_FPGA1_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+				((uint_fast32_t) SCLR_FPGA1_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+				0;
 
-	// PL Clock 2 Output control
-	SCLR->FPGA2_CLK_CTRL = (SCLR->FPGA2_CLK_CTRL & ~ (0x03F03F30U)) |
-			((uint_fast32_t) SCLR_FPGA2_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
-			((uint_fast32_t) SCLR_FPGA2_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
-			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-			0;
+		// PL Clock 2 Output control
+		SCLR->FPGA2_CLK_CTRL = (SCLR->FPGA2_CLK_CTRL & ~ (0x03F03F30U)) |
+				((uint_fast32_t) SCLR_FPGA2_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+				((uint_fast32_t) SCLR_FPGA2_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+				0;
 
-	// PL Clock 3 Output control
-	SCLR->FPGA3_CLK_CTRL = (SCLR->FPGA3_CLK_CTRL & ~ (0x03F03F30U)) |
-			((uint_fast32_t) SCLR_FPGA3_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
-			((uint_fast32_t) SCLR_FPGA3_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
-			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-			0;
+		// PL Clock 3 Output control
+		SCLR->FPGA3_CLK_CTRL = (SCLR->FPGA3_CLK_CTRL & ~ (0x03F03F30U)) |
+				((uint_fast32_t) SCLR_FPGA3_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+				((uint_fast32_t) SCLR_FPGA3_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+				0;
 
-	////EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
-	SCLR->CLK_621_TRUE = (SCLR->CLK_621_TRUE & ~ (0x00000001U)) |
-			0x00000001U |
-			0;
+		////EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
+		SCLR->CLK_621_TRUE = (SCLR->CLK_621_TRUE & ~ (0x00000001U)) |
+				0x00000001U |
+				0;
 
-	SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
-}
-local_delay_initialize();
-local_delay_ms(50);
+		SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
+	}
+	local_delay_initialize();
+	local_delay_ms(50);
 
 #endif /* WITHISBOOTLOADER */
 }
