@@ -410,6 +410,7 @@
 	
 //	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
 //	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
+	#define WITHOVFHIDE 1		/* скрыть показ OVF */
 
 	
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */

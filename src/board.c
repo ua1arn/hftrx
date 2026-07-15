@@ -145,7 +145,11 @@ static uint_fast8_t		glob_sdcardpoweron;	/* не-0: включить питан�
 static uint_fast8_t		glob_hostvbuson;/* не-0: включить питание USB FLASH */
 static uint_fast8_t		glob_attvalue;	// значение аттенюатора в дециюбелах
 static uint_fast8_t		glob_tsc_reset = 1;
+#if WITHOVFHIDE
+static uint_fast8_t		glob_showovf = 0;	/* Показ индикатора переполнения АЦП */
+#else /* WITHOVFHIDE */
 static uint_fast8_t		glob_showovf = 1;	/* Показ индикатора переполнения АЦП */
+#endif /* WITHOVFHIDE */
 
 static void prog_update_noplanes(void);
 
