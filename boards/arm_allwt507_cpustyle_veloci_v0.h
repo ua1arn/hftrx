@@ -979,6 +979,7 @@
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
+		if (gpioX_checkcfg(GPIOI, OE_CTL1_BIT, GPIO_CFG_OUT)) return; \
 		/*arm_hardware_pioc_outputs20m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
 		arm_hardware_pioi_outputs20m(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
 		arm_hardware_pioe_outputs20m(targettsc1, 1 * targettsc1); /*  */ \

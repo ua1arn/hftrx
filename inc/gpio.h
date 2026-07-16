@@ -620,6 +620,12 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 		unsigned drv,	// 0..3: minimal..maximal drive strength
 		unsigned pull	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 		);
+	// Возвращет не-0, если режим совпадает
+	uint_fast8_t gpioX_checkcfg(
+		GPIO_TypeDef * gpio,
+		portholder_t iopins,	// mask
+		unsigned cfg	// GPIO_CFG_xxx
+		);
 #if CPUSTYLE_A733
 	void s_gpioX_prog(
 		S_GPIO_TypeDef * gpio,

@@ -1165,6 +1165,25 @@ void gpioX_prog(
 	gpioX_progUnsafe(gpio, iopins, cfg, drv, pull);
 	gpioX_unlock(gpio, oldIrql);
 }
+// Возвращет не-0, если режим совпадает
+uint_fast8_t gpioX_checkcfg(
+	GPIO_TypeDef * gpio,
+	portholder_t iopins,	// mask
+	unsigned cfg	// GPIO_CFG_xxx
+	)
+{
+	const portholder_t cfg0 = power4(iopins >> 0);	/* CFG0 bits */
+	const portholder_t cfg1 = power4(iopins >> 8);	/* CFG1 bits */
+	const portholder_t cfg2 = power4(iopins >> 16);	/* CFG2 bits */
+	const portholder_t cfg3 = power4(iopins >> 24);	/* CFG3 bits */
+
+	return
+		(gpio->CFG [0] & (cfg0 * 0x0F)) == (cfg * cfg0) &&
+		(gpio->CFG [1] & (cfg1 * 0x0F)) == (cfg * cfg1) &&
+		(gpio->CFG [2] & (cfg2 * 0x0F)) == (cfg * cfg2) &&
+		(gpio->CFG [3] & (cfg3 * 0x0F)) == (cfg * cfg3) &&
+		1;
+}
 
 /* Установка состояния выходов именно так как оно передано в state: 0: притянут у земле, 1: отпустили.
  * при инициалищации программируем или на ввод или на вывод 0.
