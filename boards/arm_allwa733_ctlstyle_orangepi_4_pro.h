@@ -66,7 +66,7 @@
 	#define CTLREGMODE_NOCTLREG 1
 
 	
-	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
+	
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	//#define KEYB_VELOCI24_V0	1	/* 24 кнопки на 6 линий */
