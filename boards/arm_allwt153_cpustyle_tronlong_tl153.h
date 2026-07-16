@@ -815,7 +815,7 @@ void user_uart5_onoverflow(void);
 	// en: 0/1, level=WITHLCDBACKLIGHTMIN..WITHLCDBACKLIGHTMAX
 	// level=WITHLCDBACKLIGHTMIN не приводит к выключениию подсветки
 	#define HARDWARE_BL_SET(en, level) do { \
-		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, !! en * ((level) - WITHLCDBACKLIGHTMIN + 1) * 100 / (WITHLCDBACKLIGHTMAX - WITHLCDBACKLIGHTMIN + 1)); \
+		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, !! en * ((level) - WITHLCDBACKLIGHTMIN + 1) * BOARD_PWM_DUTY_MAX / (WITHLCDBACKLIGHTMAX - WITHLCDBACKLIGHTMIN + 1)); \
 	} while (0)
 #else
 	#define	HARDWARE_BL_INITIALIZE() do { \

@@ -8251,7 +8251,7 @@ void hightests(void)
 #if 0 && WITHDEBUG
 	{
 		dcdcsynctest();
-//		hardware_bl_pwm_set_duty(HARDWARE_DCDC_PWMCH, 1000000, 50);
+//		hardware_bl_pwm_set_duty(HARDWARE_DCDC_PWMCH, 1000000, BOARD_PWM_DUTY_MAX / 2);
 //		for (;;)
 //			;
 	}

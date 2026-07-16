@@ -916,7 +916,7 @@
 	// en: 0/1, level=WITHLCDBACKLIGHTMIN..WITHLCDBACKLIGHTMAX
 	// level=WITHLCDBACKLIGHTMIN не приводит к выключениию подсветки
 	#define HARDWARE_BL_SET(en, level) do { \
-		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, !! (en) * (level) * 100 / WITHLCDBACKLIGHTMAX); \
+		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, !! (en) * (level) * BOARD_PWM_DUTY_MAX / WITHLCDBACKLIGHTMAX); \
 	} while (0)
 #else /* WITHISBOOTLOADER */
 	#if LCDMODE_LQ043T3DX02K

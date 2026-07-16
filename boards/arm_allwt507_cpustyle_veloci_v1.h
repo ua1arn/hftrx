@@ -1298,7 +1298,7 @@
 	// en: 0/1, level=WITHLCDBACKLIGHTMIN..WITHLCDBACKLIGHTMAX
 	// level=WITHLCDBACKLIGHTMIN не приводит к выключениию подсветки
 	#define HARDWARE_BL_SET(en, level) do { \
-		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, !! (en) * (level) * 100 / WITHLCDBACKLIGHTMAX); \
+		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, !! (en) * (level) * BOARD_PWM_DUTY_MAX / WITHLCDBACKLIGHTMAX); \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 0, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD0 LVDS0_V0P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 1, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD1 LVDS0_V0N */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 2, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD2 LVDS0_V1P */ \

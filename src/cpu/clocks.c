@@ -11785,7 +11785,7 @@ found:
 			;
 	}
 
-	// d: 0..100 - требуемое заполнение выходного сигнала в проценнтах
+	// d: 0..BOARD_PWM_DUTY_MAX - требуемое заполнение выходного сигнала
 	void hardware_bl_pwm_set_duty(unsigned pwmch, uint_fast32_t freq, uint_fast32_t d)
 	{
 		const unsigned cycle = calcdivround2(PWMTICKSFREQ, freq);
