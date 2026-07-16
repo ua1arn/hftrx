@@ -284,7 +284,7 @@ lv_obj_t * lv_hamradiomenu_create(lv_obj_t * parent)
 		ctx.menu = menu;
 		ctx.section_first = section_first;
 		hamradio_walkmenu(& ctx, dzicreategroup, dzicreateitem);
-		lv_obj_set_flag(menu, LV_OBJ_FLAG_SCROLLABLE, true);
+		lv_obj_set_scrollable(menu, true);
 		lv_menu_set_sidebar_page(menu, root_page);
 	    if (1)
 	    {

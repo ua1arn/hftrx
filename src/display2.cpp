@@ -110,7 +110,7 @@ static void lvstales_initialize(void)
 {
     ASSERT(lv_screen_active());
 
-	lv_obj_clear_flag(lv_screen_active(), LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scrollable(lv_screen_active(), false);
 
 	{
 		lv_style_t * const s = & xxmainstyle;
@@ -8070,7 +8070,7 @@ static void lv_sscp3dss_size_changed_event_cb(lv_event_t * e)
 
 	// Формирование градиента в требуемой высоте
     lv_obj_t * gradcanvas = lv_canvas_create(obj);
-    lv_obj_add_flag(gradcanvas, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_set_hidden(gradcanvas, true);
 
     lv_canvas_set_draw_buf(gradcanvas, & sscp3dss->gdrawb);
     lv_layer_t layer;
@@ -8614,7 +8614,7 @@ static void lv_sscp2_size_changed_event_cb(lv_event_t * e)
 
 	// Формирование градиента в требуемой высоте
     lv_obj_t * gradcanvas = lv_canvas_create(obj);
-    lv_obj_add_flag(gradcanvas, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_set_hidden(gradcanvas, true);
     PRINTF("sscp2 size changed: w/h=%d/%d\n", (int) lv_area_get_width(& coords), (int) lv_area_get_height(& coords));
 
     lv_canvas_set_draw_buf(gradcanvas, & sscp2->gdrawb);
@@ -9888,7 +9888,7 @@ void display2_bgprocess(
 			lv_obj_t * const wnd = xxmainwnds [page];
 			if (wnd == NULL)
 				continue;
-			lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != ix);
+			lv_obj_set_hidden(wnd, page != ix);
 		}
 	}
 	sendupdates();
@@ -10127,7 +10127,7 @@ void display2_initialize(void)
 
 			lv_obj_add_style(wnd, & xxmainstyle, 0);
 			lv_obj_set_size(wnd, lv_obj_get_width(parent), lv_obj_get_height(parent));
-			lv_obj_set_flag(wnd, LV_OBJ_FLAG_SCROLLABLE, false);
+			lv_obj_set_scrollable(wnd, false);
 			lv_obj_set_style_rotary_sensitivity(wnd, 1, LV_PART_MAIN);	// не помогло. Объект должен быть editable
 
 			unsigned i;
@@ -10163,7 +10163,7 @@ void display2_initialize(void)
 			// Включаем завершённую страницу
 			if (lv_obj_get_child_count(wnd) != 0)
 			{
-				lv_obj_set_flag(wnd, LV_OBJ_FLAG_HIDDEN, page != 0);
+				lv_obj_set_hidden(wnd, page != 0);
 #if WITHLVGLINDEV
 				switch (page)
 				{
