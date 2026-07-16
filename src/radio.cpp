@@ -5528,6 +5528,10 @@ enum
 		{
 			AF_EQUALIZER_BASE, AF_EQUALIZER_BASE, AF_EQUALIZER_BASE
 		};
+		static uint_fast8_t geqrxparams [AF_EQUALIZER_BANDS] =
+		{
+			AF_EQUALIZER_BASE, AF_EQUALIZER_BASE, AF_EQUALIZER_BASE
+		};
 
 		static const struct paramdefdef xgeqrx =
 		{
@@ -5626,10 +5630,6 @@ enum
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 
-		static uint_fast8_t geqrxparams [AF_EQUALIZER_BANDS] =
-		{
-			AF_EQUALIZER_BASE, AF_EQUALIZER_BASE, AF_EQUALIZER_BASE
-		};
 
 		int_fast32_t hamradio_get_af_equalizer_base(void)
 		{
@@ -21793,6 +21793,7 @@ void hamradio_enable_encoder2_redirect(void)
 #if WITHMENU
 uint_fast16_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 {
+	const struct menudesc * const pmd = & mdsc0;
 	uint_fast16_t el;
 	uint_fast16_t count = 0;
 
@@ -21815,6 +21816,7 @@ uint_fast16_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 
 uint_fast16_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index, uint_fast8_t max_count)
 {
+	const struct menudesc * const pmd = & mdsc0;
 	uint_fast16_t el;
 	uint_fast16_t count = 0;
 
@@ -21841,6 +21843,7 @@ uint_fast16_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_
 
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt)
 {
+	const struct menudesc * const pmd = & mdsc0;
 	uint_fast16_t el;
 
 	for (el = index; el <= index + cnt; el ++)
@@ -21857,7 +21860,8 @@ void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t ind
 
 const char * hamradio_gui_edit_menu_item(uint_fast16_t index, int_least16_t rotate)
 {
-	const struct paramdefdef * const pd = menutable [index].pd;
+	const struct menudesc * const pmd = & mdsc0;
+	const struct paramdefdef * const pd = pmd->menutable [index].pd;
 	if (param_rotate(pd, rotate))	/* модификация и сохранение параметра по валкодеру - возврат не-0  в случае модификации */
 	{
 		updateboard();
