@@ -11789,7 +11789,7 @@ found:
 	void hardware_bl_pwm_set_duty(unsigned pwmch, uint_fast32_t freq, uint_fast32_t d)
 	{
 		const unsigned cycle = calcdivround2(PWMTICKSFREQ, freq);
-		const unsigned duty = cycle - cycle * d / 100;
+		const unsigned duty = cycle - cycle * d / BOARD_PWM_DUTY_MAX;
 		//PRINTF("hardware_bl_pwm_set_duty: pwmch=%u, cycle=%u, duty=%u\n", pwmch, (unsigned) cycle, (unsigned) duty);
 		PWM->PER |= (UINT32_C(1) << (0 + pwmch));
 		PWM->CH [pwmch].PPR =

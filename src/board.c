@@ -72,12 +72,11 @@ static uint_fast8_t 	glob_forcexvrtr;	// принудительно включи
 static volatile uint_fast8_t 	glob_catmux = BOARD_CATMUX_USBCDC;
 
 #if WITHLCDBACKLIGHT
-	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMIN;	// включаем дисплей для работы в тествх в hightests()
-	static uint_fast8_t 	glob_bglightoff = 1;	// выключаем дисплей
+	static uint_fast8_t 	glob_bglight = WITHLCDBACKLIGHTMAX;	// включаем дисплей для работы в тествх в hightests()
 #else /* WITHLCDBACKLIGHT */
 	static uint_fast8_t 	glob_bglight = 0;	// включаем дисплей для работы в тествх в hightests()
-	static uint_fast8_t 	glob_bglightoff = 0;	// выключаем дисплей
 #endif /* WITHLCDBACKLIGHT */
+static uint_fast8_t 	glob_bglightoff = 0;	// выключаем дисплей
 
 static uint_fast8_t 	glob_kblight = 1;
 static uint_fast8_t 	glob_poweron = 1;

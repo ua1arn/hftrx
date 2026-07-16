@@ -979,7 +979,7 @@
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
-		if (gpioX_checkcfg(GPIOI, OE_CTL1_BIT, GPIO_CFG_OUT)) return; \
+		if (gpioX_checkcfg(GPIOI, OE_CTL1_BIT, GPIO_CFG_OUT)) break; /* preventing power hang-off */ \
 		/*arm_hardware_pioc_outputs20m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
 		arm_hardware_pioi_outputs20m(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
 		arm_hardware_pioe_outputs20m(targettsc1, 1 * targettsc1); /*  */ \
@@ -1292,12 +1292,13 @@
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t ENmask = (UINT32_C(1) << 28); /* PD28 */ \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_BL_PWMCH); \
+		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, BOARD_PWM_DUTY_MAX); \
 		arm_hardware_piod_altfn2m(ENmask, GPIO_CFG_AF2); /* PD28 - PWM0 */ \
 	} while (0)
 	// en: 0/1, level=WITHLCDBACKLIGHTMIN..WITHLCDBACKLIGHTMAX
 	// level=WITHLCDBACKLIGHTMIN не приводит к выключениию подсветки
 	#define HARDWARE_BL_SET(en, level) do { \
-		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, !! (en) * (level) * 100 / WITHLCDBACKLIGHTMAX); \
+		hardware_bl_pwm_set_duty(HARDWARE_BL_PWMCH, HARDWARE_BL_FREQ, !! (en) * (level) * BOARD_PWM_DUTY_MAX / WITHLCDBACKLIGHTMAX); \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 0, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD0 LVDS0_V0P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 1, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD1 LVDS0_V0N */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 2, (en) ? GPIO_CFG_AF3 : GPIO_CFG_IODISABLE); 	/* PD2 LVDS0_V1P */ \
