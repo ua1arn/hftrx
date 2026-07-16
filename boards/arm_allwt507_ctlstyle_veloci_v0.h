@@ -77,8 +77,8 @@
 	#define CTLREGMODE_VELOCI_V0	1	/* T507-H portable trx */
 	//#define CTLREGMODE_NOCTLREG 1
 
-	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
-	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
+	
+	
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	#define KEYB_VELOCI24_V0	1	/* 24 кнопки на 6 линий */

@@ -197,8 +197,8 @@
 
 	#define CTLREGMODE_NOCTLREG	1
 
-	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
-	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
+	
+	
 
 	#define WITHNETRESOURCE 1	// поддержка ресурсного протокола
 	#define LCDMODE_RGB565	1	/* Экран с тремя видеобуферами RGB565 */

@@ -67,8 +67,8 @@
 	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
-	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
-	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
+	
+	
 
 	// Выбор используемой цветовой палитры
 	#define COLORSTYLE_GREEN	1

@@ -93,7 +93,7 @@
 	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
-	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
+	
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	#define KEYBOARD_SINGLE	1

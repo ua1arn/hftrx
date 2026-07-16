@@ -86,8 +86,8 @@
 	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
-	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
-	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
+	
+	
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
@@ -132,8 +132,8 @@
 
 #elif 1
 
-	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
-	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
+	
+	
 
 	#define WITHNETRESOURCE 1	// поддержка ресурсного протокола
 	#define LCDMODE_RGB565	1	/* Экран с тремя видеобуферами RGB565 */
@@ -144,8 +144,8 @@
 
 #elif 1
 
-	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
-	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
+	
+	
 
 	#define WITHNETRESOURCE 1	// поддержка ресурсного протокола
 	#define LCDMODE_RGB565 1	/* Экран 16 бит */
