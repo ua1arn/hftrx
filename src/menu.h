@@ -405,17 +405,7 @@
 #endif /* WITHTX && WITHUSBUAC */
 #endif /* WITHTX && WITHIF4DSP */
 #if WITHUSEAUDIOREC
-	(const struct paramdefdef [1]) {
-		QLABEL("SD RECRD"), 8, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, recmode),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& recmode,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgrecmode,
 #endif /* WITHUSEAUDIOREC */
 /* group name +++ */
 	(const struct paramdefdef [1]) {

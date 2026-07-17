@@ -4054,7 +4054,7 @@ struct nvmap
 #endif /* WITHLFM */
 
 #if WITHUSEAUDIOREC
-	uint8_t recmode;	/* автоматически начинаем запись на SD CARD при включении */
+	uint8_t grecmode;	/* автоматически начинаем запись на SD CARD при включении */
 #endif /* WITHUSEAUDIOREC */
 
 #if (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ	/* подстройка частоты гетеродина через меню. */
@@ -4565,10 +4565,22 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 
 #if WITHUSEAUDIOREC
 	#if defined (WITHBBOX) && defined (WITHBBOXREC)
-		static uint_fast8_t recmode = WITHBBOXREC;	/* автоматически начинаем запись на SD CARD при включении */
+		static uint_fast8_t grecmode = WITHBBOXREC;	/* автоматически начинаем запись на SD CARD при включении */
 	#else /* defined (WITHBBOX) && defined (WITHBBOXREC) */
-		static uint_fast8_t recmode;	/* автоматически начинаем запись на SD CARD при включении */
+		static uint_fast8_t grecmode;	/* автоматически начинаем запись на SD CARD при включении */
 	#endif /* defined (WITHBBOX) && defined (WITHBBOXREC) */
+	static const struct paramdefdef xgrecmode =
+	{
+		QLABEL("SD RECRD"), 8, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, grecmode),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& grecmode,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 #endif /* WITHUSEAUDIOREC */
 
 #if WITHHDMITVHW
@@ -21363,9 +21375,9 @@ hamradio_main_step(void)
 			alignmode = 0;	// в nvram осталась не-0
 		}
 	#if WITHUSEAUDIOREC
-		if (recmode)
+		if (grecmode)
 		{
-			recmode = 0;
+			grecmode = 0;
 			sdcardrecord();
 		}
 	#endif /* WITHUSEAUDIOREC */
