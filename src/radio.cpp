@@ -4379,12 +4379,36 @@ static uint_fast8_t gusefast;
 #if WITHNOTCHONOFF
 	static uint_fast8_t gnotchtype;
 	static uint_fast8_t gnotch;	// on/off
+	static const struct paramdefdef xgnotchtype =
+	{
+		QLABEL("NOTCH"), 8, 3, RJ_CB,	ISTEP1,		/* управление режимом NOTCH */
+		ITEM_VALUE | ITEM_LISTSELECT,
+		0, NOTCHMODE_COUNT - 1,
+		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gnotchtype,
+		getzerobase, /* складывается со смещением и отображается */
+		getvaltextnotchmode, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 #elif WITHNOTCHFREQ
 	static uint_fast8_t gnotchtype;
 	static uint_fast8_t gnotch;	// on/off
 	static dualctl16_t gnotchfreq = { 1000, 1000 };
 	static dualctl16_t gnotchwidth = { 500, 500 };
 
+	static const struct paramdefdef xgnotchtype =
+	{
+		QLABEL("NOTCH"), 8, 3, RJ_CB,	ISTEP1,		/* управление режимом NOTCH */
+		ITEM_VALUE | ITEM_LISTSELECT,
+		0, NOTCHMODE_COUNT - 1,
+		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gnotchtype,
+		getzerobase, /* складывается со смещением и отображается */
+		getvaltextnotchmode, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 	static const struct paramdefdef xgnotchfreq =
 	{
 		QLABEL3("NOTCH FRQ", "Notch FREQ", "NOTCH FRQ"),
@@ -4619,12 +4643,36 @@ static const struct paramdefdef xgethgateway =
 
 #if defined (WITHDISPLAY_FPS)
 	static uint_fast8_t gdisplayfreqsfps = WITHDISPLAY_FPS;
+	static const struct paramdefdef xgdisplayfreqsfps =
+	{
+		QLABEL("FREQ FPS"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+		ITEM_VALUE,
+		4, 35,							/* частота обновления показаний частоты от 5 до 35 раз в секунду */
+		OFFSETOF(struct nvmap, gdisplayfreqsfps),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gdisplayfreqsfps,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 #else /* defined (WITHDISPLAY_FPS) */
 	static uint_fast8_t gdisplayfreqsfps = DISPLAY_FPS;
 #endif /* defined (WITHDISPLAY_FPS) */
 
 #if defined (WITHDISPLAYSWR_FPS)
 	static uint_fast8_t glatchfps = WITHDISPLAYSWR_FPS;	// частота latch
+	static const struct paramdefdef xglatchfps =
+	{
+		QLABEL("BARS FPS"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+		ITEM_VALUE,
+		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
+		OFFSETOF(struct nvmap, glatchfps),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& glatchfps,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 #else /* defined (WITHDISPLAYSWR_FPS) */
 	static uint_fast8_t glatchfps = DISPLAYSWR_FPS;	// частота latch
 #endif /* defined (WITHDISPLAYSWR_FPS) */
@@ -4637,6 +4685,18 @@ static const struct paramdefdef xgethgateway =
 
 #if defined (WITHVIEW_3DSS_MARK)	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	static uint_fast8_t gview3dss_mark = WITHVIEW_3DSS_MARK;
+	static const struct paramdefdef xgview3dss_mark =
+	{
+		QLABEL2("FREQ MRK", "Freq marker"), 7, 5, RJ_YES, ISTEP1,
+		ITEM_VALUE,
+		0, 1,				/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+		OFFSETOF(struct nvmap, gview3dss_mark),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gview3dss_mark,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 #else /* defined (WITHVIEW_3DSS_MARK) */
 	static uint_fast8_t gview3dss_mark = 0;
 #endif /* defined (WITHVIEW_3DSS_MARK) */
@@ -4657,6 +4717,43 @@ static const struct paramdefdef xgethgateway =
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
 	static uint_fast8_t glvlgridstep = 12;	/* Шаг сетки уровней в децибелах */
 	static uint_fast8_t grxbwsatu = 50;	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+
+	static const struct paramdefdef xgtxloopback =
+	{
+		QLABEL2("SPEC TX", "TX Spectrum"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,							/* разрешение или запрет раскраски спектра */
+		OFFSETOF(struct nvmap, gtxloopback),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gtxloopback,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xglvlgridstep =
+	{
+		QLABEL("STEP DB"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+		ITEM_VALUE,
+		3, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
+		OFFSETOF(struct nvmap, glvlgridstep),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& glvlgridstep,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgrxbwsatu =
+	{
+		QLABEL2("RXBW IND", "RX BW Indicator"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+		ITEM_VALUE,
+		0, 100,			/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+		OFFSETOF(struct nvmap, grxbwsatu),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& grxbwsatu,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 #if defined (WITHSPECBETA_DEFAULT)
 	static uint_fast8_t gspecbeta100 = WITHSPECBETA_DEFAULT;
 #else /* defined (WITHSPECBETA_DEFAULT) */
@@ -4667,6 +4764,30 @@ static const struct paramdefdef xgethgateway =
 #else /* defined (WITHWFLBETA_DEFAULT) */
 	static uint_fast8_t gwflbeta100 = 50;	/* beta = 0.1 .. 1.0 */
 #endif /* defined (WITHWFLBETA_DEFAULT) */
+	static const struct paramdefdef xgspecbeta100 =
+	{
+		QLABEL("BETA PAN"), 7, 2, RJ_UNSIGNED,	ISTEP1,
+		ITEM_VALUE,
+		10, 100,							/* beta - парамеры видеофильтра спектра */
+		OFFSETOF(struct nvmap, gspecbeta100),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gspecbeta100,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgwflbeta100 =
+	{
+		QLABEL("BETA WFL"), 7, 2, RJ_UNSIGNED,	ISTEP1,
+		ITEM_VALUE,
+		10, 100,							/* beta - парамеры видеофильтра водопада */
+		OFFSETOF(struct nvmap, gwflbeta100),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gwflbeta100,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 
 static unsigned getselector_bandgroup(unsigned * count)
 {
@@ -4865,6 +4986,18 @@ static uint_fast8_t gpoweronhold = 1;	/* выдать "1" на выход уде
 #endif /* LCDMODE_COLORED */
 
 static uint_fast8_t gshowdbm = 1;	// Отображение уровня сигнала в dBm или S-memter
+static const struct paramdefdef xgshowdbm =
+{
+	QLABEL3("SHOW dBm", "Show dBm", "SHOW DBM"), 8, 3, RJ_YES,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, gshowdbm),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gshowdbm,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 
 #if WITHAUTOTUNER
 

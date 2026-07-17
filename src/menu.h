@@ -82,117 +82,27 @@
 //		getzerobase, /* складывается со смещением и отображается */
 //	},
 #endif
-	(const struct paramdefdef [1]) {
-		QLABEL3("SHOW dBm", "Show dBm", "SHOW DBM"), 8, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gshowdbm),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gshowdbm,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("FREQ FPS"), 7, 0, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE,
-		4, 35,							/* частота обновления показаний частоты от 5 до 35 раз в секунду */
-		OFFSETOF(struct nvmap, gdisplayfreqsfps),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gdisplayfreqsfps,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgshowdbm,
+	& xgdisplayfreqsfps,
 #if WITHBARS
-	(const struct paramdefdef [1]) {
-		QLABEL("BARS FPS"), 7, 0, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE,
-		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
-		OFFSETOF(struct nvmap, glatchfps),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& glatchfps,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xglatchfps,
 #endif /* WITHBARS */
 #if WITHSPECTRUMWF
 	& xgviewstyle,	/* стиль отображения спектра и панорамы */
 	& xgspectrumpart,	/* Часть отведенной под спектр высоты экрана 0..100 */
 #if WITHVIEW_3DSS
-	(const struct paramdefdef [1]) {
-		QLABEL2("FREQ MRK", "Freq marker"), 7, 5, RJ_YES, ISTEP1,
-		ITEM_VALUE,
-		0, 1,				/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
-		OFFSETOF(struct nvmap, gview3dss_mark),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gview3dss_mark,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgview3dss_mark,
 #endif /* WITHVIEW_3DSS */
 	& xgtopdb,	/* нижний предел FFT */
 	& xgbottomdb,	/* верхний предел FFT */
-	(const struct paramdefdef [1]) {
-		QLABEL("STEP DB"), 7, 0, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE,
-		3, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
-		OFFSETOF(struct nvmap, glvlgridstep),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& glvlgridstep,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL2("RXBW IND", "RX BW Indicator"), 7, 0, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE,
-		0, 100,			/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
-		OFFSETOF(struct nvmap, grxbwsatu),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& grxbwsatu,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xglvlgridstep,
+	& xgrxbwsatu,
 #if BOARD_FFTZOOM_POW2MAX > 0
 	& xgzoomxpow2,	/* уменьшение отображаемого участка спектра */
 #endif /* BOARD_FFTZOOM_POW2MAX > 0 */
-	(const struct paramdefdef [1]) {
-		QLABEL2("SPEC TX", "TX Spectrum"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,							/* разрешение или запрет раскраски спектра */
-		OFFSETOF(struct nvmap, gtxloopback),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gtxloopback,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("BETA PAN"), 7, 2, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE,
-		10, 100,							/* beta - парамеры видеофильтра спектра */
-		OFFSETOF(struct nvmap, gspecbeta100),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gspecbeta100,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("BETA WFL"), 7, 2, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE,
-		10, 100,							/* beta - парамеры видеофильтра водопада */
-		OFFSETOF(struct nvmap, gwflbeta100),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gwflbeta100,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgtxloopback,
+	& xgspecbeta100,
+	& xgwflbeta100,
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	& xgsmetertype,
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
@@ -289,17 +199,7 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
-	(const struct paramdefdef [1]) {
-		QLABEL("NOTCH"), 8, 3, RJ_CB,	ISTEP1,		/* управление режимом NOTCH */
-		ITEM_VALUE | ITEM_LISTSELECT,
-		0, NOTCHMODE_COUNT - 1,
-		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gnotchtype,
-		getzerobase, /* складывается со смещением и отображается */
-		getvaltextnotchmode, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgnotchtype,
 	#if ! WITHPOTNOTCH
 	& xgnotchfreq,
 	& xgnotchwidth,
@@ -318,17 +218,7 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
-	(const struct paramdefdef [1]) {
-		QLABEL("NOTCH"), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
-		ITEM_VALUE,
-		0, NOTCHMODE_COUNT - 1,
-		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gnotch,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgnotch,
 #endif /* WITHNOTCHFREQ */
 
 #if WITHELKEY
