@@ -1808,7 +1808,7 @@ static FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 //#if (__ARM_FP & 0x08) && 1
 
 // Calculate window function (blackman-harris, hamming, rectangular)
-static double fir_design_windowL(int iCnt, int iCoefNum, int wtype)
+static float64_t fir_design_windowL(int iCnt, int iCoefNum, int wtype)
 {
 	const double n = iCoefNum - 1;
 	const double a = (double) M_TWOPI * iCnt / n;
@@ -1921,7 +1921,7 @@ static double fir_design_windowL(int iCnt, int iCoefNum, int wtype)
 
 // Расчёт фильтра нижних частот
 // Расчёт фильтра без наложения оконной функции
-static void fir_design_lowpassL(double *dCoeff, int iCoefNum, int iCoefNumLimited, double m_fCutHigh)
+static void fir_design_lowpassL(float64_t *dCoeff, int iCoefNum, int iCoefNumLimited, float64_t m_fCutHigh)
 {
 	const int iHalfLen = (iCoefNum - 1) / 2;
 	const int iHalfLenLimited = (iCoefNumLimited - 1) / 2;
@@ -2028,7 +2028,7 @@ static void fir_design_applaywindow(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int
 }
 
 // Наложение оконной функции
-static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int iCoefNum)
+static void fir_design_applaywindowL(float64_t *dCoeff, const float64_t *dWindow, int iCoefNum)
 {
 	arm_mult_f64(dCoeff, dWindow, dCoeff, NtapCoeffs(iCoefNum));
 }
@@ -2057,7 +2057,7 @@ static void fir_design_windowbuff_half(FLOAT_t *dWindow, int iCoefNum, int iCoef
 
 // подготовка буфера с оконной функцией
 // Учитываем симметрию.
-static void fir_design_windowbuffL_half(double *dWindow, int iCoefNum, int iCoefNumLimited)
+static void fir_design_windowbuffL_half(float64_t *dWindow, int iCoefNum, int iCoefNumLimited)
 {
 	const int j = NtapCoeffs(iCoefNum);
 	const int k = NtapCoeffs(iCoefNumLimited);
@@ -2067,7 +2067,7 @@ static void fir_design_windowbuffL_half(double *dWindow, int iCoefNum, int iCoef
     ASSERT((iCoefNum % 2) == 1);
     for (iCnt = 0; iCnt < k; iCnt ++)
 	{
-		dWindow [iCnt + offs] = fir_design_window(iCnt, iCoefNumLimited, BOARD_WTYPE_FILTERS);
+		dWindow [iCnt + offs] = fir_design_windowL(iCnt, iCoefNumLimited, BOARD_WTYPE_FILTERS);
 	}
     /* заполнение нулями неиспольщуемой части */
     for (iCnt = 0; iCnt < offs; iCnt ++)
@@ -2086,7 +2086,7 @@ static void fir_design_scale(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t dScale)
 }
 
 // Масштабирование для симметричного фильтра
-static void fir_design_scaleL(double * dCoeff, int iCoefNum, double dScale)
+static void fir_design_scaleL(float64_t * dCoeff, int iCoefNum, float64_t dScale)
 {
 	if (dScale == 1)
 		return;
@@ -2149,7 +2149,7 @@ static void fir_design_lowpass_freq_scaled(FLOAT_t * dCoeff, const FLOAT_t * dWi
 //#if (__ARM_FP & 0x08) && 1
 
 // с управлением крутизной скатов и нормированием усиления, с наложением окна
-static void fir_design_lowpass_freq_scaledL(double * dCoeff, const double * dWindow, int iCoefNum, int iCoefNumLimited, int iCutHigh, double dGain)
+static void fir_design_lowpass_freq_scaledL(float64_t * dCoeff, const float64_t * dWindow, int iCoefNum, int iCoefNumLimited, int iCutHigh, double dGain)
 {
 	fir_design_lowpassL(dCoeff, iCoefNum, iCoefNumLimited, fir_design_normfreqL(iCutHigh));
 	fir_design_applaywindowL(dCoeff, dWindow, iCoefNum);
@@ -2207,7 +2207,7 @@ static void fir_design_copy_integersL(int_fast32_t * lCoeff, const double * dCoe
 	}
 }
 
-static void fir_design_integer_lowpass_scaledL(double * dCoeff, int_fast32_t *lCoeff, const double *dWindow, int iCoefNum, int iCoefNumLimited, int iCutHigh, double dGain, const adapter_t * ap)
+static void fir_design_integer_lowpass_scaledL(float64_t * dCoeff, int_fast32_t *lCoeff, const float64_t *dWindow, int iCoefNum, int iCoefNumLimited, int iCutHigh, float64_t dGain, const adapter_t * ap)
 {
 	fir_design_lowpass_freq_scaledL(dCoeff, dWindow, iCoefNum, iCoefNumLimited, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 	fir_design_copy_integersL(lCoeff, dCoeff, iCoefNum, ap);
