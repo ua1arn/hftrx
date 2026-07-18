@@ -435,9 +435,37 @@
 #define LV_USE_ASSERT_MEM_INTEGRITY 0   /**< Check the integrity of `lv_mem` after critical operations. (Slow) */
 #define LV_USE_ASSERT_OBJ           0   /**< Check the object's type and existence (e.g. not deleted). (Slow) */
 
-/** Add a custom handler when assert happens e.g. to restart MCU. */
-#define LV_ASSERT_HANDLER_INCLUDE <stdint.h>
-#define LV_ASSERT_HANDLER while(1);     /**< Halt by default */
+
+/** Disable warning saying `LV_ASSERT_HANDLER_INCLUDE` is deprecated.
+ *  This setting allows you to keep using old LVGL versions which rely on
+ *  LV_ASSERT_HANDLER_INCLUDE without triggering a compiler warning.
+ *
+ *  LV_ASSERT_HANDLER_INCLUDE has been deprecated in favor of the new approach:
+ *  define LV_ASSERT_CUSTOM_INCLUDE with the header path, and place the
+ *  LV_ASSERT_HANDLER macro definition inside that header instead.
+ *
+ *  Only enable this if you are maintaining compatibility with existing code
+ *  that uses LV_ASSERT_HANDLER_INCLUDE and cannot migrate immediately.
+ *  New projects should use LV_ASSERT_CUSTOM_INCLUDE and LV_ASSERT_HANDLER
+ *  directly.
+ */
+#define LV_DISABLE_ASSERT_HANDLER_INCLUDE_WARNING 0
+
+/** Use LV_ASSERT_CUSTOM_INCLUDE to define the path to a file defining a
+ *  custom LV_ASSERT_HANDLER
+ */
+#define LV_ASSERT_USE_CUSTOM_INCLUDE 0
+
+#if LV_ASSERT_USE_CUSTOM_INCLUDE
+/** Optional header to override assert-related macros.
+ *
+ *  LV_ASSERT_HANDLER
+ *    Statement to execute when an assertion fails.
+ *    e.g. #define LV_ASSERT_HANDLER my_assert_failed(__FILE__, __LINE__);
+ */
+#define LV_ASSERT_CUSTOM_INCLUDE ""
+
+#endif /*LV_ASSERT_USE_CUSTOM_INCLUDE*/
 
 /*-------------
  * Debug
