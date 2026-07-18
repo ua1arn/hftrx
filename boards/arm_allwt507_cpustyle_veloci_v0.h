@@ -894,6 +894,14 @@
 
 #endif /* WITHELKEY */
 
+#if 1
+	#define NMEA_RESET_BIT				(UINT32_C(1) << 5)		// PH5 - NMEA_RESET
+	#define BOARD_NMEARESET(state) do { gpioX_setstateUnsafe(GPIOH, NMEA_RESET_BIT, !! (state) * NMEA_RESET_BIT); } while (0)
+	#define BOARD_NMEARESET_INITIALIZE() do { \
+			arm_hardware_pioh_outputs(NMEA_RESET_BIT, 0); /* PH5 - nmea_reset output */ \
+		} while (0)
+#endif
+
 // IOUPDATE = PA15
 //#define SPI_IOUPDATE_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); (void) GPIOA->BSRR; } while (0)
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
@@ -1565,6 +1573,7 @@
 	TUNE_INITIALIZE(); \
 	USBD_EHCI_INITIALIZE(); \
 	HOSTBB_INITIALIZE(); \
+	BOARD_NMEARESET_INITIALIZE(); \
 } while (0)
 
 // TUSB parameters

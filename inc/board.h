@@ -10,6 +10,7 @@
 #define BOARD_H_INCLUDED
 
 #include "synthcalcs.h"
+#include "gpio.h"
 
 #include <stdint.h>
 
