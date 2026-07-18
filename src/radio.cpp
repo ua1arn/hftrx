@@ -12375,11 +12375,11 @@ typedef struct rxaproc_tag
 
 #if WITHNOSPEEX
 	// NLMS NR
-	arm_lms_norm_instance_f32 lms2_Norm_instance;
-	float32_t lms2_stateF32 [NOISE_REDUCTION_TAPS + NOISE_REDUCTION_BLOCK_SIZE - 1];
-	float32_t lms2_normCoeff_f32 [NOISE_REDUCTION_TAPS];
-	float32_t ref [NOISE_REDUCTION_REFERENCE_SIZE];
-	float32_t lms2_errsig2 [NOISE_REDUCTION_BLOCK_SIZE];
+	ARM_MORPH(arm_lms_norm_instance) lms2_Norm_instance;
+	FLOAT_t lms2_stateF32 [NOISE_REDUCTION_TAPS + NOISE_REDUCTION_BLOCK_SIZE - 1];
+	FLOAT_t lms2_normCoeff_f32 [NOISE_REDUCTION_TAPS];
+	FLOAT_t ref [NOISE_REDUCTION_REFERENCE_SIZE];
+	FLOAT_t lms2_errsig2 [NOISE_REDUCTION_BLOCK_SIZE];
 	uint_fast16_t refold;
 	uint_fast16_t refnew;
 
@@ -12460,7 +12460,7 @@ static void InitNoiseReduction(void)
 
 #if WITHNOSPEEX
 
-		arm_lms_norm_init_f32(& nrp->lms2_Norm_instance, NOISE_REDUCTION_TAPS, nrp->lms2_normCoeff_f32, nrp->lms2_stateF32, NOISE_REDUCTION_STEP, NOISE_REDUCTION_BLOCK_SIZE);
+		ARM_MORPH(arm_lms_norm_init)(& nrp->lms2_Norm_instance, NOISE_REDUCTION_TAPS, nrp->lms2_normCoeff_f32, nrp->lms2_stateF32, NOISE_REDUCTION_STEP, NOISE_REDUCTION_BLOCK_SIZE);
 		ARM_MORPH(arm_fill)(0, nrp->ref, NOISE_REDUCTION_REFERENCE_SIZE);
 		ARM_MORPH(arm_fill)(0, nrp->lms2_normCoeff_f32, NOISE_REDUCTION_TAPS);
 
@@ -12486,10 +12486,10 @@ static void InitNoiseReduction(void)
 
 #if WITHNOSPEEX
 
-static void processNoiseReduction(rxaproc_t * nrp, const float* bufferIn, float* bufferOut)
+static void processNoiseReduction(rxaproc_t * nrp, const FLOAT_t * bufferIn, FLOAT_t* bufferOut)
 {
-	arm_copy_f32(bufferIn, & nrp->ref [nrp->refnew], NOISE_REDUCTION_BLOCK_SIZE);
-	arm_lms_norm_f32(& nrp->lms2_Norm_instance, bufferIn, & nrp->ref [nrp->refold], bufferOut, nrp->lms2_errsig2, NOISE_REDUCTION_BLOCK_SIZE);
+	ARM_MORPH(arm_copy)(bufferIn, & nrp->ref [nrp->refnew], NOISE_REDUCTION_BLOCK_SIZE);
+	ARM_MORPH(arm_lms_norm)(& nrp->lms2_Norm_instance, bufferIn, & nrp->ref [nrp->refold], bufferOut, nrp->lms2_errsig2, NOISE_REDUCTION_BLOCK_SIZE);
 
 	nrp->refold += NOISE_REDUCTION_BLOCK_SIZE;
 	if (nrp->refold >= NOISE_REDUCTION_REFERENCE_SIZE)
