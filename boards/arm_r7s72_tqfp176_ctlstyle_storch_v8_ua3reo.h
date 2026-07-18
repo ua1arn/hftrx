@@ -281,7 +281,7 @@
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 	
-	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
+	
 	
 	#define WITHCAT			1	/* используется CAT (через USB CDC) */
 	//

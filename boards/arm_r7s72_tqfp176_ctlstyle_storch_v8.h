@@ -268,7 +268,7 @@
 	#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	
-	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
+	
 	
 	#define WITHCAT			1	/* используется CAT (через USB CDC) */
 	//

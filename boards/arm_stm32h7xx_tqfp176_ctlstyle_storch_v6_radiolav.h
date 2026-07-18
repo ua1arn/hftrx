@@ -373,7 +373,7 @@
 		//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 		#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
 	#endif
-	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
+	
 	
 	#define WITHCAT		1	/* используется CAT */
 	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. Без CAT (WITHCAT) */

@@ -414,7 +414,7 @@
 	#define WITHOVFHIDE 1		/* скрыть показ OVF */
 
 	
-	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
+	
 	
 	#define WITHCAT		1	/* используется CAT */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
