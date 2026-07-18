@@ -3865,6 +3865,12 @@ void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler
 	arm_hardware_set_handler(int_id, handler, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT);
 }
 
+// Set interrupt vector wrapper - for specified CPU
+void arm_hardware_set_handler_overrealtime_cpu(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t targetcpu)
+{
+	arm_hardware_set_handler(int_id, handler, ARM_OVERREALTIME_PRIORITY, targetcpu);
+}
+
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void))
 {

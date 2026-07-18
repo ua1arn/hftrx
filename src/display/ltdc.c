@@ -4369,7 +4369,7 @@ static void t113_set_and_open_interrupt_function(void)
 	// enabling the irq after io settings
 #if WITHLTDCHWVBLANKIRQ
 	TCONLCD_GINT0_REG = LCD_VB_INT_EN;
-	arm_hardware_set_handler_overrealtime(TCONLCD_IRQ, TCONLCD_IRQHandler);
+	arm_hardware_set_handler_overrealtime_cpu(TCONLCD_IRQ, TCONLCD_IRQHandler, WITHLTDCHWVBLANKIRQ_CPU);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
 #endif /* WITHLTDCHWVBLANKIRQ */
 #endif /* defined (TCONLCD_PTR) */
@@ -4382,7 +4382,7 @@ static void t113_tcontv_set_and_open_interrupt_function(void)
 	// enabling the irq after io settings
 #if WITHLTDCHWVBLANKIRQ
 	TCONTV_GINT0_REG = TVOUT_VB_INT_EN;
-	arm_hardware_set_handler_overrealtime(TCONTV_IRQ, TCONTV_IRQHandler);
+	arm_hardware_set_handler_overrealtime_cpu(TCONTV_IRQ, TCONTV_IRQHandler, WITHLTDCHWVBLANKIRQ_CPU);
 	//PRINTF("TCON_LCD_set_handler:TCON_LCD0->LCD_GINT0_REG 0x%x\n", TCON_LCD0->LCD_GINT0_REG);
 #endif /* WITHLTDCHWVBLANKIRQ */
 #endif /* defined (TCONTV_PTR) */

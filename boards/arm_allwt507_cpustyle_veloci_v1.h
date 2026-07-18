@@ -153,7 +153,9 @@
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через интерфйс LVDS	*/
 	#define WITHGPUHW	1	/* Graphic processor unit - Mali G31 MP2 (Panfrost)*/
 	#define WITHHDMITVHW 1	/* HDMI hardware output */
-	#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
+//	#define TARGETCPU_OVRT_VBLANK 	(1u << 2)		// CPU #0 - отличающийся от CPU для телеграфного ключа
+//	//#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
+//	#define WITHLTDCHWVBLANKIRQ_CPU TARGETCPU_OVRT_VBLANK	/* CPU отличающийся от CPU для телеграфного ключа */
 #endif
 
 	#if WITHINTEGRATEDDSP
