@@ -58,6 +58,7 @@ static const struct params params0 [] =
 	{	"colmain1fb",	"Frame buffer for display 1 (HDMI)", },
 
 	{	"eth0io",	"Ethernet0 buffers", },
+	{	"txcwenvelop",	"TX CW enbelop", },
 
 };
 
