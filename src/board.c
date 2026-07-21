@@ -7279,6 +7279,7 @@ void board_set_wpm(
 		glob_wpm = wpm;
 		// Переход от WPM к частоте прерываний таймера
 		// константа 60 в вычислениях - это 60 секунд.
+		// На практике период: 60 WPM = 1 mS, 40 WPM = 1.5 mS
 		const uint_fast32_t ticksfreq = (uint_fast32_t) PARIS_NUMDOTS * ELKEY_DISCRETE * wpm / 60;
 
 		hardware_elkey_set_speed(ticksfreq);

@@ -7167,6 +7167,7 @@ void hardware_spi_io_delay(void)
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133) && defined (TIMER)
 
 	// Таймер электронного ключа
+	// На практике - 60 WPM = 1 mS, 40 WPM = 1.5 mS
 	void TIMER0_IRQHandler(void)
 	{
 		enum { IX = 0 };

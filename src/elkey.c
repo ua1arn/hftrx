@@ -965,8 +965,9 @@ elkey_get_ptt(void)
 /*
 	Машинно-независимый обработчик прерываний.
 	Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
+	На практике период: 60 WPM = 1 mS, 40 WPM = 1.5 mS
 */
-RAMFUNC void spool_elkeybundle(void)
+void spool_elkeybundle(void)
 {
 #if WITHELKEY
 	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
