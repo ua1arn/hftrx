@@ -827,18 +827,14 @@ typedef struct gpio_ctx
 	portholder_t data;
 } gpio_ctx_t;
 
-//TODO: revert to 16 instead 26
-static gpio_ctx_t gpiodatas_ctx [26];	/* GPIOA..GPIOP */
-
-#if defined (GPIOL)
-static gpio_ctx_t gpiodata_L_ctx;
-#endif /* defined (GPIOL) */
+static gpio_ctx_t gpiodatas_ctx [26];	/* GPIOA..GPIOZ */
+#define GPIODATA_BY_NAME(ch) (& gpiodatas_ctx [(ch) - 'A'])
 
 static gpio_ctx_t * gpioX_get_ctx(const GPIO_TypeDef * gpio)
 {
 #if defined (GPIOL)
 	if (gpio == GPIOL)
-		return & gpiodata_L_ctx;
+		return GPIODATA_BY_NAME('L');
 #endif /* defined (GPIOL) */
 
 	return & gpiodatas_ctx [gpio - (GPIO_TypeDef *) GPIOBLOCK_BASE];
@@ -847,11 +843,44 @@ static gpio_ctx_t * gpioX_get_ctx(const GPIO_TypeDef * gpio)
 static GPIO_TypeDef * gpioX_get_port(const gpio_ctx_t * ctx)
 {
 #if defined (GPIOL)
-	if (ctx == & gpiodata_L_ctx)
+	if (ctx == GPIODATA_BY_NAME('L'))
 		return GPIOL;
 #endif /* defined (GPIOL) */
+
 	return (GPIO_TypeDef *) GPIOBLOCK_BASE + (ctx - gpiodatas_ctx);
 }
+
+#if CPUSTYLE_A733
+
+static gpio_ctx_t * s_gpioX_get_ctx(const S_GPIO_TypeDef * gpio)
+{
+#if defined (S_GPIOL)
+	if (gpio == S_GPIOL)
+		return GPIODATA_BY_NAME('L');
+#endif /* defined (S_GPIOL) */
+#if defined (S_GPIOM)
+	if (gpio == S_GPIOM)
+		return GPIODATA_BY_NAME('M');
+#endif /* defined (S_GPIOM) */
+	ASSERT(0);
+	return NULL;
+}
+
+static S_GPIO_TypeDef * s_gpioX_get_port(const gpio_ctx_t * ctx)
+{
+#if defined (S_GPIOL)
+	if (ctx == GPIODATA_BY_NAME('L'))
+		return S_GPIOL;
+#endif /* defined (S_GPIOL) */
+#if defined (S_GPIOM)
+	if (ctx == GPIODATA_BY_NAME('M'))
+		return S_GPIOM;
+#endif /* defined (S_GPIOM) */
+	ASSERT(0);
+	return NULL;
+}
+
+#endif /* CPUSTYLE_A733 */
 
 // чтение выходов, запрограммированных на ВЫВОД. Те, что INPUT - дают бит "0"
 // Надо для обеспечение работы программного open drain
@@ -871,16 +900,6 @@ static portholder_t awx_readoutputs(GPIO_TypeDef * gpio)
 	return v;
 }
 
-static uint32_t readl(uintptr_t addr)
-{
-	return * (volatile uint32_t *) addr;
-}
-
-static void writel(uint32_t value, uintptr_t addr)
-{
-	* (volatile uint32_t *) addr = value;
-}
-
 //#define	R_PRCM_BASE	 ((uintptr_t) 0x01F01400)
 
 // временная подготовка к работе с gpio.
@@ -889,7 +908,7 @@ void sysinit_gpio_initialize(void)
 {
 	unsigned i;
 
-	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx); ++ i)
+	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx) && i < ARRAY_SIZE(GPIOBLOCK->GPIO_PINS); ++ i)
 	{
 		gpio_ctx_t * const lck = & gpiodatas_ctx [i];
 		IRQLSPINLOCK_INITIALIZE(& lck->lock);
@@ -897,8 +916,8 @@ void sysinit_gpio_initialize(void)
 	}
 
 #if defined (GPIOL)
-	IRQLSPINLOCK_INITIALIZE(& gpiodata_L_ctx.lock);
-	gpiodata_L_ctx.data = awx_readoutputs(GPIOL);
+	IRQLSPINLOCK_INITIALIZE(& GPIODATA_BY_NAME('L')->lock);
+	GPIODATA_BY_NAME('L')->data = awx_readoutputs(GPIOL);
 #endif /* defined (GPIOL) */
 
 	eithlist_initialize();
@@ -938,6 +957,20 @@ static void gpioX_unlock(const GPIO_TypeDef * gpio, IRQL_t irql)
 	IRQLSPIN_UNLOCK(lck, irql);
 }
 
+#if CPUSTYLE_A733
+static void s_gpioX_lock(const S_GPIO_TypeDef * gpio, IRQL_t * oldIrql)
+{
+	LCLSPINLOCK_t * const lck = & s_gpioX_get_ctx(gpio)->lock;
+	IRQLSPIN_LOCK(lck, oldIrql, GPIOIRQL);
+}
+
+static void s_gpioX_unlock(const S_GPIO_TypeDef * gpio, IRQL_t irql)
+{
+	LCLSPINLOCK_t * const lck = & s_gpioX_get_ctx(gpio)->lock;
+	IRQLSPIN_UNLOCK(lck, irql);
+}
+#endif /* CPUSTYLE_A733 */
+
 void gpioX_setstateUnsafe(
 	GPIO_TypeDef * gpio,
 	portholder_t iopins,
@@ -966,7 +999,8 @@ void gpioX_setstate(
 }
 
 #if CPUSTYLE_A733
-void s_gpioX_setstate(
+
+void s_gpioX_setstateUnsafe(
 	S_GPIO_TypeDef * gpio,
 	portholder_t iopins,
 	portholder_t state
@@ -982,6 +1016,17 @@ void s_gpioX_setstate(
 	gpio->DATA = * data;
 	(void) gpio->DATA;
 
+	//s_gpioX_unlock(gpio, oldIrql);
+}
+void s_gpioX_setstate(
+	S_GPIO_TypeDef * gpio,
+	portholder_t iopins,
+	portholder_t state
+	)
+{
+	//	IRQL_t oldIrql;
+	//	s_gpioX_lock(gpio, & oldIrql);
+	s_gpioX_setstateUnsafe(gpio, iopins, state);
 	//s_gpioX_unlock(gpio, oldIrql);
 }
 
@@ -1461,17 +1506,13 @@ gpioX_onchangeinterrupt(
 
 
 static LCLSPINLOCK_t gpiodatas_ctx [26];	// GPIOA..GPIOK
-static LCLSPINLOCK_t gpioz_data_ctx;
+#define GPIODATA_BY_NAME(ch) (& gpiodatas_ctx [(ch) - 'A'])
 
 // временная подготовка к работе с gpio.
 // Вызывается из SystemInit() - после работы память будет затерта
 void sysinit_gpio_initialize(void)
 {
 	unsigned i;
-
-#if defined(GPIOZ)
-	IRQLSPINLOCK_INITIALIZE(& gpioz_data_ctx);	// PIOZ
-#endif /* defined(GPIOZ) */
 
 	for (i = 0; i < ARRAY_SIZE(gpiodatas_ctx); ++ i)
 	{
@@ -1485,7 +1526,7 @@ static LCLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
 {
 #if defined(GPIOZ)
 	if (gpio == GPIOZ)
-		return & gpioz_data_ctx;	// PIOZ
+		return GPIODATA_BY_NAME('Z');	// PIOZ
 #endif /* defined(GPIOZ) */
 	return & gpiodatas_ctx [((uintptr_t) gpio - GPIOA_BASE) / 0x1000];
 }

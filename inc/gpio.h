@@ -644,6 +644,11 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 		portholder_t iopins,
 		portholder_t state	// mask of required state
 		);
+	void s_gpioX_setstateUnsafe(
+		S_GPIO_TypeDef * gpio,
+		portholder_t iopins,
+		portholder_t state	// mask of required state
+		);
 #endif /* CPUSTYLE_A733 */
 #endif /* (CPUSTYLE_ALLWINNER || CPUSTYLE_T507 || CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX || CPUSTYLE_VM14) */
 
