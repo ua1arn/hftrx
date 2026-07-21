@@ -604,6 +604,11 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 		portholder_t iopins,
 		portholder_t state	// mask of required state
 		);
+	void gpioX_setstateUnsafe(
+		GPIO_TypeDef * gpio,
+		portholder_t iopins,
+		portholder_t state	// mask of required state
+		);
 	/* Установка состояния выходов именно так как оно передано в state: 0: притянут у земле, 1: отпустили */
 	void gpioX_setopendrain(
 		GPIO_TypeDef * gpio,

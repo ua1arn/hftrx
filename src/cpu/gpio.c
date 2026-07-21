@@ -938,6 +938,19 @@ static void gpioX_unlock(const GPIO_TypeDef * gpio, IRQL_t irql)
 	IRQLSPIN_UNLOCK(lck, irql);
 }
 
+void gpioX_setstateUnsafe(
+	GPIO_TypeDef * gpio,
+	portholder_t iopins,
+	portholder_t state
+	)
+{
+	portholder_t * const data = & gpioX_get_ctx(gpio)->data;
+
+	* data = (* data & ~ iopins) | (state & iopins);
+	gpio->DATA = * data;
+	(void) gpio->DATA;
+}
+
 /* Отсутствие атомарных операций модификации состояния выводов требует исключительного доступа */
 /*!< Atomic port state change */
 void gpioX_setstate(
@@ -948,13 +961,7 @@ void gpioX_setstate(
 {
 	IRQL_t oldIrql;
 	gpioX_lock(gpio, & oldIrql);
-	portholder_t * const data = & gpioX_get_ctx(gpio)->data;
-
-	* data = (* data & ~ iopins) | (state & iopins);
-
-	gpio->DATA = * data;
-	(void) gpio->DATA;
-
+	gpioX_setstateUnsafe(gpio, iopins, state);
 	gpioX_unlock(gpio, oldIrql);
 }
 
