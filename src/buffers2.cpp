@@ -4247,7 +4247,8 @@ void colmain_nextfb(void)
 
 #if defined(RTMIXIDLCD)
 	hardware_ltdc_main_set(RTMIXIDLCD, frame);
-#elif defined(RTMIXIDTV)
+#endif /* RTMIXIDLCD */
+#if defined(RTMIXIDTV)
 	hardware_ltdc_main_set(RTMIXIDTV, frame);
 #endif /* WITHHDMITVHW */
 
