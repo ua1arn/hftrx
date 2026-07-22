@@ -955,6 +955,14 @@ void save_dmabuffereth0io(uintptr_t addr); /* save to queue Ethernet0 buffers */
 int_fast32_t cachesize_dmabuffereth0io(void); /* parameter for cache manipulation functions Ethernet0 buffers */
 int_fast32_t datasize_dmabuffereth0io(void); /* parameter for DMA Ethernet0 buffers */
 
+/* TX CW enbelop */
+uintptr_t allocate_dmabuffertxcwenvelop(void); /* take free buffer TX CW enbelop */
+uintptr_t getfilled_dmabuffertxcwenvelop(void); /* take from queue TX CW enbelop */
+void release_dmabuffertxcwenvelop(uintptr_t addr);  /* release TX CW enbelop */
+void save_dmabuffertxcwenvelop(uintptr_t addr); /* save to queue TX CW enbelop */
+int_fast32_t cachesize_dmabuffertxcwenvelop(void); /* parameter for cache manipulation functions TX CW enbelop */
+int_fast32_t datasize_dmabuffertxcwenvelop(void); /* parameter for DMA TX CW enbelop */
+
 //-----------------------
 
 /* audio samples for recording */
