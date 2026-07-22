@@ -7247,47 +7247,6 @@ board_get_pressed_key(void)
 
 #endif /* WITHKEYBOARD */
 
-#if WITHELKEY
-
-
-// P 2 + 4 + 4 + 2 + 2
-// A 2 + 4 + 2
-// R 2 + 4 + 2 + 2
-// I 2 + 2 + 2
-// S 2 + 2 + 2 + 2
-// space: 4 (между словами семь интервалов)
-// total: 30 + 16 = 46 dits
-// 60000 / 46 = 1304
-//
-#define PARIS_NUMDOTS 50	//46	// количество одноточечных интервалов при передаче слова PARIS и паузы между словами
-//#define WPMSCALE (60000U / PARIS_NUMDOTS)	// длительность одной точки в мс при передаче одного слова PARIS за минуту.
-
-// 46 * wpm / 60 - частота в герцах следования перепадов состояния линии выхода манипуляции с точками
-
-// одна точка формируется десятью (ELKEY_DISCRETE) периодами прерываний
-// 20 Hz = 1 точка и 1 пауза за 1 секунду
-
-static uint_fast8_t glob_wpm;
-
-/* обработка меню - установить скорость */
-void board_set_wpm(
-	uint_fast8_t wpm
-	)
-{
-	if (glob_wpm != wpm)
-	{
-		glob_wpm = wpm;
-		// Переход от WPM к частоте прерываний таймера
-		// константа 60 в вычислениях - это 60 секунд.
-		// На практике период: 60 WPM = 1 mS, 40 WPM = 1.5 mS
-		const uint_fast32_t ticksfreq = (uint_fast32_t) PARIS_NUMDOTS * ELKEY_DISCRETE * wpm / 60;
-
-		hardware_elkey_set_speed(ticksfreq);
-	}
-}
-
-#endif /* WITHELKEY */
-
 #if 0
 // 
 void hardware_cw_diagnostics_noirq(

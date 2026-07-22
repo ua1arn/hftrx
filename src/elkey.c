@@ -859,16 +859,6 @@ void elkeyx_initialize(elkey_t * const elkey, uint_fast8_t state)
 #endif /* WITHVIBROPLEX */
 	elkey->vibroplex_derate = 0;
 }
-/* инициализация сиквенсора и телеграфного ключа. Выполняется при запрещённых прерываниях. */
-void elkey_initialize(void)
-{
-	hardware_elkey_ports_initialize();
-	hardware_elkey_timer_initialize();
-	elkeyx_initialize(& elkey0, ELKEY_STATE_INITIALIZE);
-#if WITHCAT
-	elkeyx_initialize(& elkey1, ELKEY_STATE_AUTO_INITIALIZE);
-#endif /* WITHCAT */
-}
 
 #endif /* WITHELKEY */
 
@@ -962,6 +952,8 @@ elkey_get_ptt(void)
 }
 
 
+#if WITHELKEY
+
 /*
 	Машинно-независимый обработчик прерываний.
 	Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
@@ -972,4 +964,61 @@ void spool_elkeybundle(void)
 #if WITHELKEY
 	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
 #endif /* WITHELKEY */
+#if defined BOARD_NMEARESET
+	if (0)
+	{
+		static int state;
+		BOARD_NMEARESET(state);
+		state = ! state;
+	}
+#endif
 }
+
+/* инициализация сиквенсора и телеграфного ключа. Выполняется при запрещённых прерываниях. */
+void elkey_initialize(void)
+{
+	hardware_elkey_ports_initialize();
+	hardware_elkey_timer_initialize();
+	elkeyx_initialize(& elkey0, ELKEY_STATE_INITIALIZE);
+#if WITHCAT
+	elkeyx_initialize(& elkey1, ELKEY_STATE_AUTO_INITIALIZE);
+#endif /* WITHCAT */
+}
+
+// P 2 + 4 + 4 + 2 + 2
+// A 2 + 4 + 2
+// R 2 + 4 + 2 + 2
+// I 2 + 2 + 2
+// S 2 + 2 + 2 + 2
+// space: 4 (между словами семь интервалов)
+// total: 30 + 16 = 46 dits
+// 60000 / 46 = 1304
+//
+#define PARIS_NUMDOTS 50	//46	// количество одноточечных интервалов при передаче слова PARIS и паузы между словами
+//#define WPMSCALE (60000U / PARIS_NUMDOTS)	// длительность одной точки в мс при передаче одного слова PARIS за минуту.
+
+// 46 * wpm / 60 - частота в герцах следования перепадов состояния линии выхода манипуляции с точками
+
+// одна точка формируется десятью (ELKEY_DISCRETE) периодами прерываний
+// 20 Hz = 1 точка и 1 пауза за 1 секунду
+
+static uint_fast8_t glob_wpm;
+
+/* обработка меню - установить скорость */
+void board_set_wpm(
+	uint_fast8_t wpm
+	)
+{
+	if (glob_wpm != wpm)
+	{
+		glob_wpm = wpm;
+		// Переход от WPM к частоте прерываний таймера
+		// константа 60 в вычислениях - это 60 секунд.
+		// На практике период: 60 WPM = 1 mS, 40 WPM = 1.5 mS
+		const uint_fast32_t ticksfreq = (uint_fast32_t) PARIS_NUMDOTS * ELKEY_DISCRETE * wpm / 60;
+
+		hardware_elkey_set_speed(ticksfreq);
+	}
+}
+
+#endif /* WITHELKEY */
