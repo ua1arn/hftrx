@@ -7958,8 +7958,11 @@ static void ipchandlers(void)
 
 ///LRADC_DATA=Vin/Vref*64
 
-void gpadc_init(void)
+static void gpadc_init(void)
 {
+	PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+	local_delay_ms(10);
+	CCU->GPADC_BGR_REG &= ~ (UINT32_C(1) << 16);///0: Assert reset
 	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 16);///1: De-assert reset
 	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 0);///1: Pass clock
 
@@ -7988,7 +7991,7 @@ static int resequal(float r1, float r2)
 	return delta > 0.95 && delta < 1.15;
 }
 
-void gpadc_test(void)
+static void gpadc_test(void)
 {
 	if (local_wait32mask(& GPADC->GP_DATA_INTS, (UINT32_C(1) << 0), 1 * (UINT32_C(1) << 0), 100))
 	{
@@ -8017,6 +8020,8 @@ void gpadc_test(void)
 			PRINTF("Config-5\n");
 		else if (resequal(RB, 27000))
 			PRINTF("Config-6\n");
+		else if (resequal(RB, 68000))
+			PRINTF("Config-7\n");
 		else
 			PRINTF("Config-8\n");
 	}
