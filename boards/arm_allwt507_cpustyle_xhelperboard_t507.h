@@ -89,11 +89,11 @@ void user_uart5_ontxchar(void * ctx);
 	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
 	// See WITHSDRAM_AXP853
-	int board_helperboard_t507_axp853_initialize(void);
+	int board_helperboard_t507_lpddr4_axp853_initialize(void);
 
 	/* Контроллер питания AXP305 */
 	#define BOARD_PMIC_INITIALIZE() do { \
-		board_helperboard_t507_axp853_initialize(); /* Voltages are set here */ \
+		board_helperboard_t507_lpddr4_axp853_initialize(); /* Voltages are set here */ \
 	} while (0)
 
 #endif /* WITHISBOOTLOADER */

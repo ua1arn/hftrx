@@ -1214,7 +1214,7 @@ static int pmu_axp858_ap_reset_enable(void)
 	return 0;
 }
 
-int board_helperboard_t507_axp853_initialize(void)
+int board_helperboard_t507_lpddr4_axp853_initialize(void)
 {
 	uint8_t axp_chip_id = 0xFF;
 	int ret;
