@@ -7970,8 +7970,12 @@ void gpadc_init(void)
 
 
 	GPADC->GP_CTRL |= (UINT32_C(1) << 17);///calibration
-	while((GPADC->GP_CTRL & (UINT32_C(1) << 17)) != 0) // Wait for calibration complete
-		;
+	if (local_wait32mask(& GPADC->GP_CTRL, (UINT32_C(1) << 17), 0 * (UINT32_C(1) << 17), 100))
+	{
+		PRINTF("GPADC calibration timeout\n");
+	}
+//	while((GPADC->GP_CTRL & (UINT32_C(1) << 17)) != 0) // Wait for calibration complete
+//		;
 
 	GPADC->GP_CS_EN =
 		(UINT32_C(1) << 0) | // CH0 enable
@@ -7983,13 +7987,21 @@ void gpadc_init(void)
 
 void gpadc_test(void)
 {
-//	while((GPADC->GP_DATA_INTS & (UINT32_C(1) << 16)) == 0) // Wait for FIFO_DATA_PENDING
+	if (local_wait32mask(& GPADC->GP_DATA_INTS, (UINT32_C(1) << 0), 1 * (UINT32_C(1) << 0), 100))
+	{
+		PRINTF("GPADC read ch0 data timeout\n");
+	}
+//	while((GPADC->GP_DATA_INTS & (UINT32_C(1) << 0)) == 0) // Wait for CH0_DATA_PENGDING
 //		;
-//	GPADC->GP_DATA_INTS = (UINT32_C(1) << 16);	// Clear FIFO_DATA_PENDING
-  int Vin;
-  ///Vin=GPADC->GP_CH0_DATA*Vref/4095.f*2.8f;///2.8f my divide resistors
-  Vin=GPADC->GP_CH0_DATA;//*Vref/64.f;
-  PRINTF("GPADC= %d (%d mV)\n", (int) Vin, 1800 * Vin / 4095);
+	GPADC->GP_DATA_INTS = (UINT32_C(1) << 0);	// Clear CH0_DATA_PENGDING
+	int Vout;
+	///Vin=GPADC->GP_CH0_DATA*Vref/4095.f*2.8f;///2.8f my divide resistors
+	Vout = GPADC->GP_CH0_DATA & 0x0FFF;
+	PRINTF("GPADC= %d (%d mV)\n", (int) Vout, 1800 * Vout / 4095);
+	int RA = 10000;	// lower part
+	int FS = 4095;
+	int RB = RA / (((float) FS / (float) Vout) - 1);
+	PRINTF("RB=%u\n", RB);
 }
 #endif
 
@@ -8010,6 +8022,9 @@ void hightests(void)
 #if 0
 	{
 		gpadc_init();
+		gpadc_test();
+		gpadc_test();
+		gpadc_test();
 		gpadc_test();
 	}
 #endif
