@@ -222,10 +222,14 @@ int arm_hardware_sdram_initialize(void)
 
 	switch (configtype)
 	{
-	case 1:
+	case 1:	// HelperBoard v1.2 2021 - LPDDR4 32 bit
 		memsizeB = sunxi_dram_init();
 		memsizeMB = memsizeB / 1024 / 1024;
 		break;
+//	case 5:	// HelperBoard v1.1 2026 - LPDDR3 32 bit
+//		memsizeB = sunxi_dram_init();
+//		memsizeMB = memsizeB / 1024 / 1024;
+//		break;
 	default:
 		PRINTF("Not handled memory config value\n");
 		break;
