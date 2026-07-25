@@ -52,7 +52,7 @@ typedef enum IRQn
     EMAC1_IRQn = 47,                                  /*!< EMAC The Ethernet Medium Access Controller (EMAC) enables a host to transmi */
     PWM_IRQn = 48,                                    /*!< PWM Pulse Width Modulation module */
     TS0_IRQn = 49,                                    /*!< TSC Transport Stream Controller */
-    GPADC_IRQn = 50,                                  /*!< GPADC  */
+    GPADC_IRQn = 50,                                  /*!< GPADC General Purpose ADC */
     THS_IRQn = 51,                                    /*!< THS THS interrupt */
     LRADC_IRQn = 52,                                  /*!< LRADC The Low Rate ADC(LRADC */
     OWA_IRQn = 53,                                    /*!< OWA One Wire Audio */
@@ -278,7 +278,7 @@ typedef enum IRQn
 #define TSG0_BASE ((uintptr_t) 0x05060040)            /*!< TSG Transport Stream Controller Base */
 #define TSF0_BASE ((uintptr_t) 0x05060100)            /*!< TSF Transport Stream Controller Base */
 #define TSD0_BASE ((uintptr_t) 0x05060180)            /*!< TSD Transport Stream Controller Base */
-#define GPADC_BASE ((uintptr_t) 0x05070000)           /*!< GPADC  Base */
+#define GPADC_BASE ((uintptr_t) 0x05070000)           /*!< GPADC General Purpose ADC Base */
 #define THS_BASE ((uintptr_t) 0x05070400)             /*!< THS Thermal Sensor Base */
 #define LRADC_BASE ((uintptr_t) 0x05070800)           /*!< LRADC The Low Rate ADC(LRADC Base */
 #define OWA_BASE ((uintptr_t) 0x05093000)             /*!< OWA One Wire Audio Base */
@@ -1457,7 +1457,7 @@ typedef struct GICV_Type
 /*
  * @brief GPADC
  */
-/*!< GPADC  */
+/*!< GPADC General Purpose ADC */
 typedef struct GPADC_Type
 {
     __IOM uint32_t GP_SR_CON;                         /*!< Offset 0x000 GPADC Sample Rate Configure Register */
@@ -1485,8 +1485,7 @@ typedef struct GPADC_Type
     __IM  uint32_t GP_CH1_DATA;                       /*!< Offset 0x084 GPADC CH1 Data Register */
     __IM  uint32_t GP_CH2_DATA;                       /*!< Offset 0x088 GPADC CH2 Data Register */
     __IM  uint32_t GP_CH3_DATA;                       /*!< Offset 0x08C GPADC CH3 Data Register */
-         RESERVED(0x090[0x0400 - 0x0090], uint8_t)
-} GPADC_TypeDef; /* size of structure = 0x400 */
+} GPADC_TypeDef; /* size of structure = 0x090 */
 /*
  * @brief GPIO
  */
@@ -3844,7 +3843,7 @@ typedef struct VE_Type
 #define TSG0 ((TSG_TypeDef *) TSG0_BASE)              /*!< TSG0 Transport Stream Controller register set access pointer */
 #define TSF0 ((TSF_TypeDef *) TSF0_BASE)              /*!< TSF0 Transport Stream Controller register set access pointer */
 #define TSD0 ((TSD_TypeDef *) TSD0_BASE)              /*!< TSD0 Transport Stream Controller register set access pointer */
-#define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC  register set access pointer */
+#define GPADC ((GPADC_TypeDef *) GPADC_BASE)          /*!< GPADC General Purpose ADC register set access pointer */
 #define THS ((THS_TypeDef *) THS_BASE)                /*!< THS Thermal Sensor register set access pointer */
 #define LRADC ((LRADC_TypeDef *) LRADC_BASE)          /*!< LRADC The Low Rate ADC(LRADC register set access pointer */
 #define OWA ((OWA_TypeDef *) OWA_BASE)                /*!< OWA One Wire Audio register set access pointer */

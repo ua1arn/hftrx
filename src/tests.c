@@ -7938,6 +7938,61 @@ static void ipchandlers(void)
 }
 
 #endif
+
+
+#if 0
+//void chip_t113_id(void)
+//{
+//  uint32_t id[4];
+//    char sid;
+//
+//  id[0] = read32(0x03006200 + 0x0);
+//  id[1] = read32(0x03006200 + 0x4);
+//  id[2] = read32(0x03006200 + 0x8);
+//  id[3] = read32(0x03006200 + 0xc);
+//
+//  PRINTF("ID= %02x-%02x-%02x-%02x \n", id[0], id[1], id[2], id[3]);
+//  //flag_VSync=1;
+//  sprintf(text,"ID=%02x-%02x-%02x-%02x",(int)id[0]>>24, (int)id[1]>>24, (int)id[2]>>24, (int)id[3]>>24);
+//}
+
+///LRADC_DATA=Vin/Vref*64
+
+void gpadc_init(void)
+{
+	TP();
+	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 16);///1: De-assert reset
+	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 0);///1: Pass clock
+
+	//GPADC->GP_SR_CON |= (0x2f << 0);
+	GPADC->GP_CTRL |= (0x2 << 18);///continuous mode
+
+
+
+	GPADC->GP_CTRL |= (UINT32_C(1) << 17);///calibration
+	while((GPADC->GP_CTRL & (UINT32_C(1) << 17)) != 0) // Wait for calibration complete
+		;
+
+	GPADC->GP_CS_EN =
+		(UINT32_C(1) << 0) | // CH0 enable
+		0;
+	GPADC->GP_CTRL |= (UINT32_C(1) << 16);	// ADC Function Enable
+
+	TP();
+}
+
+void gpadc_test(void)
+{
+//	while((GPADC->GP_DATA_INTS & (UINT32_C(1) << 16)) == 0) // Wait for FIFO_DATA_PENDING
+//		;
+//	GPADC->GP_DATA_INTS = (UINT32_C(1) << 16);	// Clear FIFO_DATA_PENDING
+  int Vin;
+  ///Vin=GPADC->GP_CH0_DATA*Vref/4095.f*2.8f;///2.8f my divide resistors
+  Vin=GPADC->GP_CH0_DATA;//*Vref/64.f;
+  PRINTF("GPADC= %d (%d mV)\n", (int) Vin, 1800 * Vin / 4095);
+}
+#endif
+
 void hightests(void)
 {
 #if LCDMODE_LTDC
@@ -7950,6 +8005,12 @@ void hightests(void)
 	{
 
 		PRINTF("__GNUC__=%d, __GNUC_MINOR__=%d\n", (int) __GNUC__, (int) __GNUC_MINOR__);
+	}
+#endif
+#if 0
+	{
+		gpadc_init();
+		gpadc_test();
 	}
 #endif
 #if 0

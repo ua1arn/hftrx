@@ -6769,7 +6769,7 @@
   </peripheral>
   <peripheral>
   <name>GPADC</name>
-  <description></description>
+  <description>General Purpose ADC</description>
   <baseAddress>0x05070000</baseAddress>
   <interrupt>
    <name>GPADC</name>
