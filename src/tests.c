@@ -7960,7 +7960,6 @@ static void ipchandlers(void)
 
 void gpadc_init(void)
 {
-	TP();
 	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 16);///1: De-assert reset
 	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 0);///1: Pass clock
 
@@ -7981,8 +7980,12 @@ void gpadc_init(void)
 		(UINT32_C(1) << 0) | // CH0 enable
 		0;
 	GPADC->GP_CTRL |= (UINT32_C(1) << 16);	// ADC Function Enable
+}
 
-	TP();
+static int resequal(float r1, float r2)
+{
+	const float delta = r1 / r2;
+	return delta > 0.95 && delta < 1.15;
 }
 
 void gpadc_test(void)
@@ -7991,17 +7994,32 @@ void gpadc_test(void)
 	{
 		PRINTF("GPADC read ch0 data timeout\n");
 	}
-//	while((GPADC->GP_DATA_INTS & (UINT32_C(1) << 0)) == 0) // Wait for CH0_DATA_PENGDING
-//		;
-	GPADC->GP_DATA_INTS = (UINT32_C(1) << 0);	// Clear CH0_DATA_PENGDING
-	int Vout;
-	///Vin=GPADC->GP_CH0_DATA*Vref/4095.f*2.8f;///2.8f my divide resistors
-	Vout = GPADC->GP_CH0_DATA & 0x0FFF;
-	PRINTF("GPADC= %d (%d mV)\n", (int) Vout, 1800 * Vout / 4095);
-	int RA = 10000;	// lower part
-	int FS = 4095;
-	int RB = RA / (((float) FS / (float) Vout) - 1);
-	PRINTF("RB=%u\n", RB);
+	else
+	{
+		GPADC->GP_DATA_INTS = (UINT32_C(1) << 0);	// Clear CH0_DATA_PENGDING
+
+		int Vout = GPADC->GP_CH0_DATA & 0x0FFF;
+		int RA = 10000;	// lower part
+		int FS = 4095;
+		int RB = RA / (((float) FS / (float) Vout) - 1);
+		PRINTF("GPADC= %d (%d mV), RB=%d\n", (int) Vout, 1800 * Vout / 4095, RB);
+		if (0)
+			;
+		else if (resequal(RB, 1000))
+			PRINTF("Config-1\n");
+		else if (resequal(RB, 2700))
+			PRINTF("Config-2\n");
+		else if (resequal(RB, 5100))
+			PRINTF("Config-3\n");
+		else if (resequal(RB, 8200))
+			PRINTF("Config-4\n");
+		else if (resequal(RB, 14000))
+			PRINTF("Config-5\n");
+		else if (resequal(RB, 27000))
+			PRINTF("Config-6\n");
+		else
+			PRINTF("Config-8\n");
+	}
 }
 #endif
 
