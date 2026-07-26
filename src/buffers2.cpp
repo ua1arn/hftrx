@@ -1769,34 +1769,6 @@ uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest)
 
 #endif /* WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) */
 
-#if WITHTX && 0
-
-typedef FLOAT_t txenveloptype_t;
-/* TX CW enbelop */
-typedef ALIGNX_BEGIN struct txcwenvelop_tag
-{
-	txenveloptype_t buff [DMABUFFSIZEHDMI48TX];
-	enum { ss = sizeof (buff), nch = DMABUFFSTEPHDMI48TX };	// resampling support
-} ALIGNX_END txcwenveloptx_t;
-
-typedef buffitem<hdmi48tx_t> hdmi48txbuf_t;
-
-typedef dmahandle<txenveloptype_t, txcwenveloptx_t, HDMI48TX_RESAMPLING, 1, SKIPSAMPLES_HDMI> txcwenvelopdma_t;
-
-static FLOAT_t txcwenvelopbuf [HDMI48TX_CAPACITY];
-
-
-static txcwenvelopdma_t txcwenvelop(IRQL_REALTIME, "txcw", txcwenvelopbuf, ARRAY_SIZE(txcwenvelopbuf));
-
-/* TX CW enbelop */
-uintptr_t allocate_dmabuffertxcwenvelop(void); /* take free buffer TX CW enbelop */
-uintptr_t getfilled_dmabuffertxcwenvelop(void); /* take from queue TX CW enbelop */
-void release_dmabuffertxcwenvelop(uintptr_t addr);  /* release TX CW enbelop */
-void save_dmabuffertxcwenvelop(uintptr_t addr); /* save to queue TX CW enbelop */
-int_fast32_t cachesize_dmabuffertxcwenvelop(void); /* parameter for cache manipulation functions TX CW enbelop */
-int_fast32_t datasize_dmabuffertxcwenvelop(void); /* parameter for DMA TX CW enbelop */
-#endif /* WITHTX */
-
 #if 0
 
 typedef struct
