@@ -14,7 +14,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 
-#if (((__ARM_FP & 0x08) && defined(__aarch64__)) || (__riscv_d)) && 0
+#if (((__ARM_FP & 0x08) && defined(__aarch64__)) || (__riscv_d)) && 1
 
 	typedef double FLOAT_t;
 
