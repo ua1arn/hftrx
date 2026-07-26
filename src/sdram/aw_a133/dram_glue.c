@@ -138,7 +138,7 @@ int mctl_mem_matches_original(uint64_t offset)
 }
 #endif
 
-int arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(int configtype)
 {
 	uint64_t memsizeB;
 	unsigned memsizeMB;

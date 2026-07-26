@@ -139,80 +139,8 @@ int mctl_mem_matches_original(uint64_t offset)
 #endif
 
 
-static void gpadc_init(void)
+int arm_hardware_sdram_initialize(int configtype)
 {
-	PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-	local_delay_ms(10);
-	CCU->GPADC_BGR_REG &= ~ (UINT32_C(1) << 16);///0: Assert reset
-	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 16);///1: De-assert reset
-	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 0);///1: Pass clock
-
-	//GPADC->GP_SR_CON |= (0x2f << 0);
-	GPADC->GP_CTRL |= (0x2 << 18);///continuous mode
-
-
-
-	GPADC->GP_CTRL |= (UINT32_C(1) << 17);///calibration
-	if (local_wait32mask(& GPADC->GP_CTRL, (UINT32_C(1) << 17), 0 * (UINT32_C(1) << 17), 100))
-	{
-		PRINTF("GPADC calibration timeout\n");
-	}
-//	while((GPADC->GP_CTRL & (UINT32_C(1) << 17)) != 0) // Wait for calibration complete
-//		;
-
-	GPADC->GP_CS_EN =
-		(UINT32_C(1) << 0) | // CH0 enable
-		0;
-	GPADC->GP_CTRL |= (UINT32_C(1) << 16);	// ADC Function Enable
-}
-
-static int resequal(float r1, float r2)
-{
-	const float delta = r1 / r2;
-	return delta > 0.95 && delta < 1.15;
-}
-
-static int gpadc_test(void)
-{
-	if (local_wait32mask(& GPADC->GP_DATA_INTS, (UINT32_C(1) << 0), 1 * (UINT32_C(1) << 0), 100))
-	{
-		PRINTF("GPADC read ch0 data timeout\n");
-	}
-	else
-	{
-		GPADC->GP_DATA_INTS = (UINT32_C(1) << 0);	// Clear CH0_DATA_PENGDING
-
-		int Vout = GPADC->GP_CH0_DATA & 0x0FFF;
-		int RA = 10000;	// lower part
-		int FS = 4095;
-		int RB = RA / (((float) FS / (float) Vout) - 1);
-		PRINTF("GPADC= %d (%d mV), RB=%d\n", (int) Vout, 1800 * Vout / 4095, RB);
-		if (0)
-			return -1;
-		else if (resequal(RB, 1000))
-			return 1;//PRINTF("Config-1\n");
-		else if (resequal(RB, 2700))
-			return 2;//PRINTF("Config-2\n");
-		else if (resequal(RB, 5100))
-			return 3;//PRINTF("Config-3\n");
-		else if (resequal(RB, 8200))
-			return 4;//PRINTF("Config-4\n");
-		else if (resequal(RB, 14000))
-			return 5;//PRINTF("Config-5\n");
-		else if (resequal(RB, 27000))
-			return 6;//PRINTF("Config-6\n");
-		else if (resequal(RB, 68000))
-			return 7;//PRINTF("Config-7\n");
-		else
-			return 1;//PRINTF("Config-8\n");
-
-	}
-}
-
-int arm_hardware_sdram_initialize(void)
-{
-	gpadc_init();
-	const int configtype = gpadc_test();
 	uint64_t memsizeB = 0;
 	unsigned memsizeMB = 0;
 	// https://artmemtech.com/
@@ -226,10 +154,10 @@ int arm_hardware_sdram_initialize(void)
 		memsizeB = sunxi_dram_init();
 		memsizeMB = memsizeB / 1024 / 1024;
 		break;
-//	case 5:	// HelperBoard v1.1 2026 - LPDDR3 32 bit
+	case 5:	// HelperBoard v1.1 2026 - LPDDR3 32 bit
 //		memsizeB = sunxi_dram_init();
 //		memsizeMB = memsizeB / 1024 / 1024;
-//		break;
+		break;
 	default:
 		PRINTF("Not handled memory config value\n");
 		break;

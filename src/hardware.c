@@ -1437,11 +1437,11 @@ stsinit_irql_initialize(void)
 
 // non-zero if error
 static int
-sysinit_sdram_initialize(void)
+sysinit_sdram_initialize(int configtype)
 {
 	int ec = 0;
 #if WITHSDRAMHW && WITHISBOOTLOADER
-	ec = arm_hardware_sdram_initialize();
+	ec = arm_hardware_sdram_initialize(configtype);
 #endif /* WITHSDRAMHW && WITHISBOOTLOADER */
 	if (ec)
 		return ec;
@@ -1834,9 +1834,11 @@ static void sysinit_smp_initialize(void)
 
 
 // инициализация контроллера питания (не только DDR память. бывает и GPIO)
-void sysinit_pmic_initialize(void)
+void sysinit_pmic_initialize(int configtype)
 {
-#if defined (BOARD_PMIC_INITIALIZE)
+#if defined (BOARD_PMIC_SELECTOR)
+	BOARD_PMIC_SELECTOR(configtype);
+#elif defined (BOARD_PMIC_INITIALIZE)
 	BOARD_PMIC_INITIALIZE();
 #endif /* BOARD_PMIC_INITIALIZE */
 }
@@ -1908,6 +1910,93 @@ static void sysinit_dsu_initialize()
 #endif /* (__CORTEX_A == 55U) */
 }
 
+#if CPUSTYLE_ALLWINNER && CPUSTYLE_T507
+
+static void gpadc_init(void)
+{
+	PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
+	local_delay_ms(10);
+	CCU->GPADC_BGR_REG &= ~ (UINT32_C(1) << 16);///0: Assert reset
+	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 16);///1: De-assert reset
+	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 0);///1: Pass clock
+
+	//GPADC->GP_SR_CON |= (0x2f << 0);
+	GPADC->GP_CTRL |= (0x2 << 18);///continuous mode
+
+
+
+	GPADC->GP_CTRL |= (UINT32_C(1) << 17);///calibration
+	if (local_wait32mask(& GPADC->GP_CTRL, (UINT32_C(1) << 17), 0 * (UINT32_C(1) << 17), 100))
+	{
+		PRINTF("GPADC calibration timeout\n");
+	}
+//	while((GPADC->GP_CTRL & (UINT32_C(1) << 17)) != 0) // Wait for calibration complete
+//		;
+
+	GPADC->GP_CS_EN =
+		(UINT32_C(1) << 0) | // CH0 enable
+		0;
+	GPADC->GP_CTRL |= (UINT32_C(1) << 16);	// ADC Function Enable
+}
+
+static int resequal(float r1, float r2)
+{
+	const float delta = r1 / r2;
+	return delta > 0.95 && delta < 1.15;
+}
+
+static int gpadc_test(void)
+{
+	if (local_wait32mask(& GPADC->GP_DATA_INTS, (UINT32_C(1) << 0), 1 * (UINT32_C(1) << 0), 100))
+	{
+		PRINTF("GPADC read ch0 data timeout\n");
+		return -1;
+	}
+	else
+	{
+		GPADC->GP_DATA_INTS = (UINT32_C(1) << 0);	// Clear CH0_DATA_PENGDING
+
+		int Vout = GPADC->GP_CH0_DATA & 0x0FFF;
+		int RA = 10000;	// lower part
+		int FS = 4095;
+		int RB = RA / (((float) FS / (float) Vout) - 1);
+		PRINTF("GPADC= %d (%d mV), RB=%d\n", (int) Vout, 1800 * Vout / 4095, RB);
+		if (0)
+			return -1;
+		else if (resequal(RB, 1000))
+			return 1;//PRINTF("Config-1\n");
+		else if (resequal(RB, 2700))
+			return 2;//PRINTF("Config-2\n");
+		else if (resequal(RB, 5100))
+			return 3;//PRINTF("Config-3\n");
+		else if (resequal(RB, 8200))
+			return 4;//PRINTF("Config-4\n");
+		else if (resequal(RB, 14000))
+			return 5;//PRINTF("Config-5\n");
+		else if (resequal(RB, 27000))
+			return 6;//PRINTF("Config-6\n");
+		else if (resequal(RB, 68000))
+			return 7;//PRINTF("Config-7\n");
+		else
+			return 8;//PRINTF("Config-8\n");
+
+	}
+}
+#endif
+
+int sysinit_getconfigtype(void)
+{
+#if CPUSTYLE_ALLWINNER && CPUSTYLE_T507
+	gpadc_init();
+	int v = gpadc_test();
+	PRINTF("sysinit_getconfigtype: configtype=%d\n", v);
+	dbg_flush();
+	return v;
+#else
+	return 0;
+#endif
+}
+
 // watchdog disable, clock initialize, cache enable
 void
 SystemInit(void)
@@ -1938,7 +2027,8 @@ SystemInit(void)
 #ifdef BOARD_BLINK_INITIALIZE
 	BOARD_BLINK_INITIALIZE();
 #endif
-	sysinit_pmic_initialize();
+	const int configtype = sysinit_getconfigtype();
+	sysinit_pmic_initialize(configtype);
 	sysinit_pll_initialize(1);		// PLL iniitialize - overdrived freq
 	SystemCoreClockUpdate();
 #ifdef USE_HAL_DRIVER
@@ -1946,7 +2036,7 @@ SystemInit(void)
 #endif /* USE_HAL_DRIVER */
 	local_delay_initialize();
 	sysinit_debug_initialize();
-	int ec = sysinit_sdram_initialize();
+	int ec = sysinit_sdram_initialize(configtype);
 	if (ec)
 	{
 		PRINTF("sysinit_sdram_initialize() failure.\n");
@@ -1976,8 +2066,9 @@ void __attribute__((used)) SystemDRAMInit(void)
 	sysinit_perfmeter_initialize();
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
-	sysinit_pmic_initialize();
-	int ec = sysinit_sdram_initialize();
+	const int configtype = sysinit_getconfigtype();
+	sysinit_pmic_initialize(configtype);
+	int ec = sysinit_sdram_initialize(configtype);
 	if (ec)
 	{
 		PRINTF("sysinit_sdram_initialize() failure.\n");

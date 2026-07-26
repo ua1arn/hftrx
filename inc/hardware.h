@@ -403,9 +403,11 @@ void tickers_deinitialize(void);
 void spool_systimerbundle(void);
 void spool_elkeybundle(void);
 void sysinit_gpio_initialize(void);	// временная подготовка к работе с gpio.
-void sysinit_pmic_initialize(void);	// инициализация контроллера питания (не только DDR память. бывает и GPIO)
+void sysinit_pmic_initialize(int configtype);	// инициализация контроллера питания (не только DDR память. бывает и GPIO)
 void hardware_adc_startonescan(void);
 void stm32mp1_pll1_slow(uint_fast8_t slow);
+int sysinit_getconfigtype(void);
+int arm_hardware_sdram_initialize(int configtype);	// External memory region(s) - non-zero if error
 
 void hardware_timer_initialize(uint_fast32_t ticksfreq);
 
@@ -498,7 +500,6 @@ uint32_t hardware_get_random(void);
 void arm_hardware_dma2d_initialize(void);	// Graphic 2D engine
 void arm_hardware_mdma_initialize(void);	// Graphic 2D engine
 void arm_hardware_awg2d_initialize(void);	// Graphic 2D engine
-int arm_hardware_sdram_initialize(void);	// External memory region(s) - non-zero if error
 
 
 typedef struct videomode_tag

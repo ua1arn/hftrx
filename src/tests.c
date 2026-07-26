@@ -7939,95 +7939,6 @@ static void ipchandlers(void)
 
 #endif
 
-
-#if 0
-//void chip_t113_id(void)
-//{
-//  uint32_t id[4];
-//    char sid;
-//
-//  id[0] = read32(0x03006200 + 0x0);
-//  id[1] = read32(0x03006200 + 0x4);
-//  id[2] = read32(0x03006200 + 0x8);
-//  id[3] = read32(0x03006200 + 0xc);
-//
-//  PRINTF("ID= %02x-%02x-%02x-%02x \n", id[0], id[1], id[2], id[3]);
-//  //flag_VSync=1;
-//  sprintf(text,"ID=%02x-%02x-%02x-%02x",(int)id[0]>>24, (int)id[1]>>24, (int)id[2]>>24, (int)id[3]>>24);
-//}
-
-///LRADC_DATA=Vin/Vref*64
-
-static void gpadc_init(void)
-{
-	PRCM->VDD_SYS_PWROFF_GATING_REG |= (UINT32_C(1) << 4); // ANA_VDDON_GATING
-	local_delay_ms(10);
-	CCU->GPADC_BGR_REG &= ~ (UINT32_C(1) << 16);///0: Assert reset
-	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 16);///1: De-assert reset
-	CCU->GPADC_BGR_REG |= (UINT32_C(1) << 0);///1: Pass clock
-
-	//GPADC->GP_SR_CON |= (0x2f << 0);
-	GPADC->GP_CTRL |= (0x2 << 18);///continuous mode
-
-
-
-	GPADC->GP_CTRL |= (UINT32_C(1) << 17);///calibration
-	if (local_wait32mask(& GPADC->GP_CTRL, (UINT32_C(1) << 17), 0 * (UINT32_C(1) << 17), 100))
-	{
-		PRINTF("GPADC calibration timeout\n");
-	}
-//	while((GPADC->GP_CTRL & (UINT32_C(1) << 17)) != 0) // Wait for calibration complete
-//		;
-
-	GPADC->GP_CS_EN =
-		(UINT32_C(1) << 0) | // CH0 enable
-		0;
-	GPADC->GP_CTRL |= (UINT32_C(1) << 16);	// ADC Function Enable
-}
-
-static int resequal(float r1, float r2)
-{
-	const float delta = r1 / r2;
-	return delta > 0.95 && delta < 1.15;
-}
-
-static void gpadc_test(void)
-{
-	if (local_wait32mask(& GPADC->GP_DATA_INTS, (UINT32_C(1) << 0), 1 * (UINT32_C(1) << 0), 100))
-	{
-		PRINTF("GPADC read ch0 data timeout\n");
-	}
-	else
-	{
-		GPADC->GP_DATA_INTS = (UINT32_C(1) << 0);	// Clear CH0_DATA_PENGDING
-
-		int Vout = GPADC->GP_CH0_DATA & 0x0FFF;
-		int RA = 10000;	// lower part
-		int FS = 4095;
-		int RB = RA / (((float) FS / (float) Vout) - 1);
-		PRINTF("GPADC= %d (%d mV), RB=%d\n", (int) Vout, 1800 * Vout / 4095, RB);
-		if (0)
-			;
-		else if (resequal(RB, 1000))
-			PRINTF("Config-1\n");
-		else if (resequal(RB, 2700))
-			PRINTF("Config-2\n");
-		else if (resequal(RB, 5100))
-			PRINTF("Config-3\n");
-		else if (resequal(RB, 8200))
-			PRINTF("Config-4\n");
-		else if (resequal(RB, 14000))
-			PRINTF("Config-5\n");
-		else if (resequal(RB, 27000))
-			PRINTF("Config-6\n");
-		else if (resequal(RB, 68000))
-			PRINTF("Config-7\n");
-		else
-			PRINTF("Config-8\n");
-	}
-}
-#endif
-
 void hightests(void)
 {
 #if LCDMODE_LTDC
@@ -8040,15 +7951,6 @@ void hightests(void)
 	{
 
 		PRINTF("__GNUC__=%d, __GNUC_MINOR__=%d\n", (int) __GNUC__, (int) __GNUC_MINOR__);
-	}
-#endif
-#if 0
-	{
-		gpadc_init();
-		gpadc_test();
-		gpadc_test();
-		gpadc_test();
-		gpadc_test();
 	}
 #endif
 #if 0

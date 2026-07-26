@@ -130,7 +130,7 @@ int printf_dram(const char *format, ...)
 //	IRQLSPIN_UNLOCK(& printflock, irql);
 	return n;
 }
-int arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(int configtype)
 {
 	uint64_t memsizeB ;
 

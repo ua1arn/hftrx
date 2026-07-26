@@ -716,7 +716,7 @@ int sys_dram_init(void)
 	return 1;
 }
 
-int arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(int configtype)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
 //	PRINTF("default: allwnr_t113_get_pll_ddr_freq()=%" PRIuFAST64 "\n", allwnr_t113_get_pll_ddr_freq());

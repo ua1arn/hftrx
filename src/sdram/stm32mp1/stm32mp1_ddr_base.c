@@ -1939,7 +1939,7 @@ static uint32_t ddr_check_rand(unsigned long sizeee)
 }
 
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
-int arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(int configtype)
 {
 	unsigned uret;
 	struct ddr_info ddr_priv_data;

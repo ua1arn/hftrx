@@ -822,7 +822,7 @@ int sys_dram_init(void)
 ///
 
 
-int arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(int configtype)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
 

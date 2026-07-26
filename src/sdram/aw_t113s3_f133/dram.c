@@ -193,7 +193,7 @@ int sys_dram_init(void)
 
 #endif /* CPUSTYLE_T113, CPUSTYLE_F133 */
 
-int arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(int configtype)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
 	PRINTF("default: allwnr_t113_get_pll_ddr_freq()=%ukHz\n", (unsigned) (allwnr_t113_get_pll_ddr_freq() / 1000));

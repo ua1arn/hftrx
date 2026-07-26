@@ -1767,7 +1767,7 @@ uint64_t sunxi_dram_init(void)
 	return size;
 };
 
-int arm_hardware_sdram_initialize(void)
+int arm_hardware_sdram_initialize(int configtype)
 {
 	PRINTF("arm_hardware_sdram_initialize start, cpux=%u MHz\n", (unsigned) (allwnr_t507_get_cpux_freq() / 1000 / 1000));
 	uint64_t memsize = sunxi_dram_init();
