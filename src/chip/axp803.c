@@ -1218,7 +1218,7 @@ int board_helperboard_t507_lpddr4_axp853_initialize(void)
 {
 	uint8_t axp_chip_id = 0xFF;
 	int ret;
-    PRINTF("PMIC: AXP853T/AXP858\n");
+    PRINTF("PMIC: LPDDR4, AXP853T/AXP858\n");
 	dbg_flush();
 	ret = pmic_bus_init();
 	if (ret)
@@ -1261,7 +1261,7 @@ int board_helperboard_t507_lpddr4_axp853_initialize(void)
 	VERIFY(0 == axp858_set_dcdc2(1000));	// VDD-CPU 0.88..1.2 volt recommended
 	VERIFY(0 == axp858_set_dcdc3(950));		// VDD-SYS 0.9..0.99 volt recommended
 	VERIFY(0 == axp858_set_dcdc4(1100));		// VDD-GPU 0.81..1.2 volt recommended
-	VERIFY(0 == axp858_set_dcdc5(1100));	// VCC-DRAM - 1.1 volt for LPDDR4
+	VERIFY(0 == axp858_set_dcdc5(1100));	// VCC-DRAM - 1.1 volt for LPDDR4, 1.2 volt for LPDDR3
 
 	VERIFY(0 == axp858_set_aldo1(1800));	// VCC_PG/VCC_PC, SDIO, eMMC I/O
 	VERIFY(0 == axp858_set_aldo2(1800));	// AVCC/VCC-PLL/VCC-DCXO/AC107-DVCC
@@ -1294,7 +1294,7 @@ int board_helperboard_t507_lpddr3_axp853_initialize(void)
 {
 	uint8_t axp_chip_id = 0xFF;
 	int ret;
-    PRINTF("PMIC: AXP853T/AXP858\n");
+    PRINTF("PMIC: LPDDR3, AXP853T/AXP858\n");
 	dbg_flush();
 	ret = pmic_bus_init();
 	if (ret)
@@ -1337,7 +1337,7 @@ int board_helperboard_t507_lpddr3_axp853_initialize(void)
 	VERIFY(0 == axp858_set_dcdc2(1000));	// VDD-CPU 0.88..1.2 volt recommended
 	VERIFY(0 == axp858_set_dcdc3(950));		// VDD-SYS 0.9..0.99 volt recommended
 	VERIFY(0 == axp858_set_dcdc4(1100));		// VDD-GPU 0.81..1.2 volt recommended
-	VERIFY(0 == axp858_set_dcdc5(1100));	// VCC-DRAM - 1.1 volt for LPDDR4
+	VERIFY(0 == axp858_set_dcdc5(1200));	// VCC-DRAM - 1.1 volt for LPDDR4, 1.2 volt for LPDDR3
 
 	VERIFY(0 == axp858_set_aldo1(1800));	// VCC_PG/VCC_PC, SDIO, eMMC I/O
 	VERIFY(0 == axp858_set_aldo2(1800));	// AVCC/VCC-PLL/VCC-DCXO/AC107-DVCC
