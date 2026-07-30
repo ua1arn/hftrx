@@ -378,7 +378,6 @@ void nmeatuner_onrxchar(uint_fast8_t c)
 	if (nmeaparser_onrxchar(& nmeatuner, c))
 	{
 		nmeatuner_parse(& nmeatuner);
-		nmeaparser_reset(& nmeatuner);
 	}
 }
 
@@ -5249,7 +5248,6 @@ void nmeatuner_onrxchar(uint_fast8_t c)
 	if (nmeaparser_onrxchar(& nmeatuner, c))
 	{
 		nmeatuner_parse(& nmeatuner);
-		nmeaparser_reset(& nmeatuner);
 	}
 }
 

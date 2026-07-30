@@ -30,7 +30,7 @@ static unsigned nmeaparser_get_buffsize(struct nmeaparser * np, uint_fast8_t fie
 	return np->nmea_charssmall;
 }
 
-char * nmeaparser_get_buff(struct nmeaparser * np, uint_fast8_t field)
+char * nmeaparser_get_buff(const struct nmeaparser * np, uint_fast8_t field)
 {
 	ASSERT(field < np->nmea_params);
 	return & np->buff [field * np->nmea_charssmall];
@@ -50,7 +50,6 @@ static uint_fast8_t hex2int(uint_fast8_t c)
 /* вызывается из обработчика прерываний */
 // принятый символ с последовательного порта
 // возврат не-0 после принятого сообщения с правильной контрольной суммой.
-// для дальнейшего приёма надо опять вызывать nmeaparser_initialize
 uint_fast8_t nmeaparser_onrxchar(struct nmeaparser * np, uint_fast8_t c)
 {
 	switch (np->state)
@@ -98,11 +97,11 @@ uint_fast8_t nmeaparser_onrxchar(struct nmeaparser * np, uint_fast8_t c)
 		break;
 
 	case NMEAST_CHSLO:
+		np->state = NMEAST_INITIALIZED;	// не совпало - продолжаем приём
 		if (np->checksum == (np->chsval + hex2int(c)))
 		{
 			return 1;	// принятое сообщение
 		}
-		np->state = NMEAST_INITIALIZED;	// не совпало - продолжаем приём
 		break;
 
 	default:
@@ -111,3 +110,31 @@ uint_fast8_t nmeaparser_onrxchar(struct nmeaparser * np, uint_fast8_t c)
 	return 0;
 }
 
+static uint_fast8_t npeaparser_calcxorv(
+	const char * s,
+	size_t len
+	)
+{
+	unsigned char r = '*';
+	while (len --)
+		r ^= (unsigned char) * s ++;
+	return r & 0xff;
+}
+
+size_t nmeaparser_rebuild(const struct nmeaparser * np, char * buff, size_t len)
+{
+	//static const char hex [] = "0123456789ABCDEF";
+	size_t n = 0;
+	unsigned field;
+	if (np->param == 0)
+		return 0;
+	n += local_snprintf_P(buff + n, len - n, "$%s", nmeaparser_get_buff(np, 0));
+	for (field = 1; field < np->param; ++ field)
+	{
+		n += local_snprintf_P(buff + n, len - n, ",%s", nmeaparser_get_buff(np, field));
+	}
+	const unsigned xorv = npeaparser_calcxorv(buff + 1, n - 1);
+	n += local_snprintf_P(buff + n, len - n, "*%02X\r\n", xorv);
+
+	return n;
+}

@@ -45,8 +45,9 @@ struct nmeaparser
 
 void nmeaparser_initialize(struct nmeaparser * np, unsigned nparams, unsigned fieldsize, char * buff);
 uint_fast8_t nmeaparser_onrxchar(struct nmeaparser * np, uint_fast8_t c);
-char * nmeaparser_get_buff(struct nmeaparser * np, uint_fast8_t field);
+char * nmeaparser_get_buff(const struct nmeaparser * np, uint_fast8_t field);
 void nmeaparser_reset(struct nmeaparser * np);
+size_t nmeaparser_rebuild(const struct nmeaparser * np, char * buff, size_t len);
 
 
 #ifdef __cplusplus
