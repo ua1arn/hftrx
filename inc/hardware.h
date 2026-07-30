@@ -918,7 +918,8 @@ void mpu6500_test(void);
 #if defined(__aarch64__)
 #include "core64_ca.h"
 #elif defined(__riscv)
-#else
+
+#elif defined(__CORTEX_A)
 #include "core32_ca.h"
 #endif
 

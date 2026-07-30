@@ -13,7 +13,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#if ! defined(__aarch64__)
+#if ! defined(__aarch64__) && defined(__CORTEX_A)
 
 /** \brief  Get CTR
 \return		Cache Type Register value
