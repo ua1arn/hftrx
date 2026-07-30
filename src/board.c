@@ -301,6 +301,25 @@ board_ctlregs_spi_send_frame(
 
 #include "nmea.h"
 
+enum
+{
+	//	ответ:
+	NMF_CODE, //	$ANSW,
+
+	NMF_STATE, //	состояние устройства
+	NMF_FWD, //	V_FWD, //ADC датчик апрямой волны
+	NMF_REF, //	V_REF, //ADC датчика отраженной волны
+	NMF_C_SENS, //	C_SENS, //ADC датчика тока ACS712
+	NMF_12V_SENS, //	U_SENS, //ADC входного напряжения питания 12V
+	NMF_T_SENS, //	T_SENS, //ADC датчика температуры LM235
+
+	NMEA_PARAMS
+};
+
+#define NMEA_CHARSSMALL		24
+//#define NMEA_CHARSBIG		257
+//#define NMEA_BIGFIELD		255	// номер большого поля
+
 static uint_fast8_t calcxorv(
 	const char * s,
 	size_t len
@@ -322,12 +341,12 @@ static struct nmeaparser nmeatuner;
 // произошла потеря символа (символов) при получении данных с компорта
 void nmeatuner_rxoverflow(void)
 {
-	nmeaparser_initialize(& nmeatuner);
+	nmeaparser_reset(& nmeatuner);
 }
 /* вызывается из обработчика прерываний */
 void nmeatuner_disconnect(void)
 {
-	nmeaparser_initialize(& nmeatuner);
+	nmeaparser_reset(& nmeatuner);
 }
 
 void nmeatuner_parse(struct nmeaparser * np)
@@ -359,7 +378,7 @@ void nmeatuner_onrxchar(uint_fast8_t c)
 	if (nmeaparser_onrxchar(& nmeatuner, c))
 	{
 		nmeatuner_parse(& nmeatuner);
-		nmeaparser_initialize(& nmeatuner);
+		nmeaparser_reset(& nmeatuner);
 	}
 }
 
@@ -532,9 +551,11 @@ void nmeatuner_initialize(void)
 	static uint8_t txb [2048];
 	static uint8_t rxb [512];
 	const uint_fast32_t baudrate = 250000L;
-	nmeaparser_initialize(& nmeatuner);
 	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
 	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
+
+	static char nmeabuff [NMEA_PARAMS * NMEA_CHARSSMALL];
+	nmeaparser_initialize(& nmeatuner, NMEA_PARAMS, NMEA_CHARSSMALL, nmeabuff);
 
 	hardware_uart2_initialize(0, baudrate, 8, 0, 0);
 	hardware_uart2_set_speed(baudrate);
@@ -5136,6 +5157,20 @@ static void prog_rfadc_initialize(void)
 #if WITHMGLOOP
 
 #include "nmea.h"
+enum
+{
+	//	ответ:
+	NMF_CODE, //	$ANSW,
+
+	P_POS,
+	P_STATE,
+
+	NMEA_PARAMS
+};
+
+#define NMEA_CHARSSMALL		24
+//#define NMEA_CHARSBIG		257
+//#define NMEA_BIGFIELD		255	// номер большого поля
 
 #if WITHMGLOOP_UART4
 	#define HARDWARE_NMEAX_INITIALIZE hardware_uart4_initialize
@@ -5176,12 +5211,12 @@ static struct nmeaparser nmeatuner;
 // произошла потеря символа (символов) при получении данных с компорта
 void nmeatuner_rxoverflow(void)
 {
-	nmeaparser_initialize(& nmeatuner);
+	nmeaparser_reset(& nmeatuner);
 }
 /* вызывается из обработчика прерываний */
 void nmeatuner_disconnect(void)
 {
-	nmeaparser_initialize(& nmeatuner);
+	nmeaparser_reset(& nmeatuner);
 }
 
 void nmeatuner_parse(struct nmeaparser * np)
@@ -5214,7 +5249,7 @@ void nmeatuner_onrxchar(uint_fast8_t c)
 	if (nmeaparser_onrxchar(& nmeatuner, c))
 	{
 		nmeatuner_parse(& nmeatuner);
-		nmeaparser_initialize(& nmeatuner);
+		nmeaparser_reset(& nmeatuner);
 	}
 }
 
@@ -5376,7 +5411,9 @@ void ua1cei_magloop_initialize(void)
 
 	uint8_queue_init(& txq, txb, ARRAY_SIZE(txb));
 	uint8_queue_init(& rxq, rxb, ARRAY_SIZE(rxb));
-	nmeaparser_initialize(& nmeatuner);
+
+	static char nmeabuff [NMEA_PARAMS * NMEA_CHARSSMALL];
+	nmeaparser_initialize(& nmeatuner, NMEA_PARAMS, NMEA_CHARSSMALL, nmeabuff);
 
 	HARDWARE_NMEAX_INITIALIZE(0, baudrate, 8, 0, 0);
 	HARDWARE_NMEAX_SET_SPEED(baudrate);

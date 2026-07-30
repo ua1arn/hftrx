@@ -1,44 +1,39 @@
-/*
- * nmea.c
- *
- *  Created on: Jul 30, 2026
- *      Author: Gena
- */
+/* $Id$ */
+//
+// Проект HF Dream Receiver (КВ приёмник мечты)
+// автор Гена Завидовский mgs2001@mail.ru
+// UA1ARN
+//
 
 
 #include "hardware.h"
 #include "formats.h"
 #include "nmea.h"
 
-void nmeaparser_initialize(struct nmeaparser * np)
+void nmeaparser_initialize(struct nmeaparser * np, unsigned nparams, unsigned fieldsize, char * buff)
+{
+	np->nmea_params = nparams;
+	np->nmea_charssmall = fieldsize;
+	np->buff = buff;
+	nmeaparser_reset(np);
+}
+
+void nmeaparser_reset(struct nmeaparser * np)
 {
 	np->state = NMEAST_INITIALIZED;
+
 }
 
 static unsigned nmeaparser_get_buffsize(struct nmeaparser * np, uint_fast8_t field)
 {
-	ASSERT(field < NMEA_PARAMS);
-//	switch (field)
-//	{
-//	case NMEA_BIGFIELD:
-//		return NMEA_CHARSBIG;
-//	default:
-//		return NMEA_CHARSSMALL;
-//	}
-	return NMEA_CHARSSMALL;
+	ASSERT(field < np->nmea_params);
+	return np->nmea_charssmall;
 }
 
 char * nmeaparser_get_buff(struct nmeaparser * np, uint_fast8_t field)
 {
-	ASSERT(field < NMEA_PARAMS);
-//	switch (field)
-//	{
-//	case NMEA_BIGFIELD:
-//		return np->buffbig;
-//	default:
-//		return np->buffsmall [field];
-//	}
-	return np->buffsmall [field];
+	ASSERT(field < np->nmea_params);
+	return & np->buff [field * np->nmea_charssmall];
 }
 
 static uint_fast8_t hex2int(uint_fast8_t c)
@@ -87,7 +82,7 @@ uint_fast8_t nmeaparser_onrxchar(struct nmeaparser * np, uint_fast8_t c)
 			// переходим к приёму контрольной суммы
 			np->state = NMEAST_CHSHI;
 		}
-		else if (np->param < NMEA_PARAMS && np->chars < (nmeaparser_get_buffsize(np, np->param) - 1))
+		else if (np->param < np->nmea_params && np->chars < (nmeaparser_get_buffsize(np, np->param) - 1))
 		{
 			nmeaparser_get_buff(np, np->param) [np->chars] = c;
 			np->chars += 1;
