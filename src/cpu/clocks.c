@@ -12059,7 +12059,8 @@ void hardware_adc_initialize(void)
 
 		adc->CR &= ~ ADC_CR_DEEPPWD;	// Disable deep sleep ADC mode
 		adc->CR |= ADC_CR_ADVREGEN;		// Enable ADC regulator
-
+	    while ((adc->ISR & ADC_ISR_LDORDY) == 0)              // Wait ADC regulator
+	    	;
 	}
 	local_delay_us(5 * 1000); // Wait for regulator is on
 
