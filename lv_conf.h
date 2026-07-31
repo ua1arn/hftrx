@@ -89,9 +89,6 @@
     /** Size of memory available for `lv_malloc()` in bytes (>= 2kB) */
     #define LV_MEM_SIZE (6400 * 1024U)          /**< [bytes] */
 
-    /** Size of the memory expand for `lv_malloc()` in bytes */
-    #define LV_MEM_POOL_EXPAND_SIZE 0
-
     /** Set an address for the memory pool instead of allocating it as a normal array. Can be in external SRAM too. */
     #define LV_MEM_ADR 0     /**< 0: unused*/
     /* Instead of an address give a memory allocator that will be called to get a memory pool for LVGL. E.g. my_malloc */
@@ -775,18 +772,76 @@
 
 #define LV_USE_CALENDAR   1
 #if LV_USE_CALENDAR
-    #define LV_CALENDAR_WEEK_STARTS_MONDAY 0
-    #if LV_CALENDAR_WEEK_STARTS_MONDAY
-        #define LV_CALENDAR_DEFAULT_DAY_NAMES {"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"}
-    #else
-        #define LV_CALENDAR_DEFAULT_DAY_NAMES {"Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"}
-    #endif
+/** Calendar week starts monday */
+#define LV_CALENDAR_WEEK_STARTS_MONDAY 0
 
-    #define LV_CALENDAR_DEFAULT_MONTH_NAMES {"January", "February", "March",  "April", "May",  "June", "July", "August", "September", "October", "November", "December"}
-    #define LV_USE_CALENDAR_HEADER_ARROW 1
-    #define LV_USE_CALENDAR_HEADER_DROPDOWN 1
-    #define LV_USE_CALENDAR_CHINESE 0
-#endif  /*LV_USE_CALENDAR*/
+/** Shortened string for Monday */
+#define LV_MONDAY_STR "Mo"
+
+/** Shortened string for Tuesday */
+#define LV_TUESDAY_STR "Tu"
+
+/** Shortened string for Wednesday */
+#define LV_WEDNESDAY_STR "We"
+
+/** Shortened string for Thursday */
+#define LV_THURSDAY_STR "Th"
+
+/** Shortened string for Friday */
+#define LV_FRIDAY_STR "Fr"
+
+/** Shortened string for Saturday */
+#define LV_SATURDAY_STR "Sa"
+
+/** Shortened string for Sunday */
+#define LV_SUNDAY_STR "Su"
+
+/** String for January */
+#define LV_JANUARY_STR "January"
+
+/** String for February */
+#define LV_FEBRUARY_STR "February"
+
+/** String for March */
+#define LV_MARCH_STR "March"
+
+/** String for April */
+#define LV_APRIL_STR "April"
+
+/** String for May */
+#define LV_MAY_STR "May"
+
+/** String for June */
+#define LV_JUNE_STR "June"
+
+/** String for July */
+#define LV_JULY_STR "July"
+
+/** String for August */
+#define LV_AUGUST_STR "August"
+
+/** String for September */
+#define LV_SEPTEMBER_STR "September"
+
+/** String for October */
+#define LV_OCTOBER_STR "October"
+
+/** String for November */
+#define LV_NOVEMBER_STR "November"
+
+/** String for December */
+#define LV_DECEMBER_STR "December"
+
+/** Use calendar header arrow */
+#define LV_USE_CALENDAR_HEADER_ARROW 1
+
+/** Use calendar header dropdown */
+#define LV_USE_CALENDAR_HEADER_DROPDOWN 1
+
+/** Use chinese calendar */
+#define LV_USE_CALENDAR_CHINESE 0
+
+#endif /*LV_USE_CALENDAR*/
 
 #define LV_USE_CANVAS     1
 
