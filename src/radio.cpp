@@ -4655,6 +4655,9 @@ static const struct paramdefdef xgethgateway =
 
 #if defined (WITHDISPLAY_FPS)
 	static uint_fast8_t gdisplayfreqsfps = WITHDISPLAY_FPS;
+#else /* defined (WITHDISPLAY_FPS) */
+	static uint_fast8_t gdisplayfreqsfps = DISPLAY_FPS;
+#endif /* defined (WITHDISPLAY_FPS) */
 	static const struct paramdefdef xgdisplayfreqsfps =
 	{
 		QLABEL("FREQ FPS"), 7, 0, RJ_UNSIGNED,	ISTEP1,
@@ -4667,12 +4670,12 @@ static const struct paramdefdef xgethgateway =
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-#else /* defined (WITHDISPLAY_FPS) */
-	static uint_fast8_t gdisplayfreqsfps = DISPLAY_FPS;
-#endif /* defined (WITHDISPLAY_FPS) */
 
 #if defined (WITHDISPLAYSWR_FPS)
 	static uint_fast8_t glatchfps = WITHDISPLAYSWR_FPS;	// частота latch
+#else /* defined (WITHDISPLAYSWR_FPS) */
+	static uint_fast8_t glatchfps = DISPLAYSWR_FPS;	// частота latch
+#endif /* defined (WITHDISPLAYSWR_FPS) */
 	static const struct paramdefdef xglatchfps =
 	{
 		QLABEL("BARS FPS"), 7, 0, RJ_UNSIGNED,	ISTEP1,
@@ -4685,9 +4688,6 @@ static const struct paramdefdef xgethgateway =
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-#else /* defined (WITHDISPLAYSWR_FPS) */
-	static uint_fast8_t glatchfps = DISPLAYSWR_FPS;	// частота latch
-#endif /* defined (WITHDISPLAYSWR_FPS) */
 #if WITHSPECTRUMWF
 #if defined (WITHDEFAULTVIEW)		/* стиль отображения спектра и панорамы */
 	static uint_fast8_t gviewstyle = WITHDEFAULTVIEW;
@@ -4697,6 +4697,9 @@ static const struct paramdefdef xgethgateway =
 
 #if defined (WITHVIEW_3DSS_MARK)	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	static uint_fast8_t gview3dss_mark = WITHVIEW_3DSS_MARK;
+#else /* defined (WITHVIEW_3DSS_MARK) */
+	static uint_fast8_t gview3dss_mark = 0;
+#endif /* defined (WITHVIEW_3DSS_MARK) */
 	static const struct paramdefdef xgview3dss_mark =
 	{
 		QLABEL2("FREQ MRK", "Freq marker"), 7, 5, RJ_YES, ISTEP1,
@@ -4709,9 +4712,6 @@ static const struct paramdefdef xgethgateway =
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-#else /* defined (WITHVIEW_3DSS_MARK) */
-	static uint_fast8_t gview3dss_mark = 0;
-#endif /* defined (WITHVIEW_3DSS_MARK) */
 
 	/* складывается со смещением и отображается */
 	static int_fast32_t getrfdbbase(void)
