@@ -1663,29 +1663,33 @@ typedef struct GPU_CONTROL_Type
 /*!< GPU_JOB_CONTROL  */
 typedef struct GPU_JOB_CONTROL_Type
 {
-    __IOM uint32_t JOB_IRQ_RAWSTAT;                   /*!< Offset 0x000 Raw interrupt status register */
-    __IOM uint32_t JOB_IRQ_CLEAR;                     /*!< Offset 0x004 Interrupt clear register */
-    __IOM uint32_t JOB_IRQ_MASK;                      /*!< Offset 0x008 Interrupt mask register */
-    __IOM uint32_t JOB_IRQ_STATUS;                    /*!< Offset 0x00C Interrupt status register */
-         RESERVED(0x010[0x0080 - 0x0010], uint8_t)
+    __IOM uint32_t JOB_INT_RAWSTAT;                   /*!< Offset 0x000 Internal Interrupt Status */
+    __IOM uint32_t JOB_INT_CLEAR;                     /*!< Offset 0x004  */
+    __IOM uint32_t JOB_INT_MASK;                      /*!< Offset 0x008  */
+    __IOM uint32_t JOB_INT_STATUS;                    /*!< Offset 0x00C  */
+    __IOM uint32_t JOB_IRQ_RAWSTAT;                   /*!< Offset 0x010 Raw interrupt status register - External IRQ Line Status */
+    __IOM uint32_t JOB_IRQ_CLEAR;                     /*!< Offset 0x014 Interrupt clear register */
+    __IOM uint32_t JOB_IRQ_MASK;                      /*!< Offset 0x018 Interrupt mask register */
+    __IOM uint32_t JOB_IRQ_STATUS;                    /*!< Offset 0x01C Interrupt status register */
+         RESERVED(0x020[0x0840 - 0x0020], uint8_t)
     struct
     {
-        __IOM uint32_t JS_HEAD_NEXT_LO;               /*!< Offset 0x080  */
-        __IOM uint32_t JS_HEAD_NEXT_HI;               /*!< Offset 0x084  */
-        __IOM uint32_t JS_TAIL_NEXT_LO;               /*!< Offset 0x088  */
-        __IOM uint32_t JS_TAIL_NEXT_HI;               /*!< Offset 0x08C  */
-        __IOM uint32_t JS_CONFIG;                     /*!< Offset 0x090  */
-        __IOM uint32_t JS_COMMAND;                    /*!< Offset 0x094  */
-        __IOM uint32_t JS_STATUS;                     /*!< Offset 0x098  */
-        __IOM uint32_t JS_TAIL_LO;                    /*!< Offset 0x09C  */
-        __IOM uint32_t JS_TAIL_HI;                    /*!< Offset 0x0A0  */
-        __IOM uint32_t JS_HEAD_LO;                    /*!< Offset 0x0A4  */
-        __IOM uint32_t JS_HEAD_HI;                    /*!< Offset 0x0A8  */
-        __IOM uint32_t JS_AFFINITY;                   /*!< Offset 0x0AC  */
-        __IOM uint32_t JS_X_CONFIG;                   /*!< Offset 0x0B0  */
+        __IOM uint32_t JS_HEAD_NEXT_LO;               /*!< Offset 0x840  */
+        __IOM uint32_t JS_HEAD_NEXT_HI;               /*!< Offset 0x844  */
+        __IOM uint32_t JS_TAIL_NEXT_LO;               /*!< Offset 0x848  */
+        __IOM uint32_t JS_TAIL_NEXT_HI;               /*!< Offset 0x84C  */
+        __IOM uint32_t JS_CONFIG;                     /*!< Offset 0x850  */
+        __IOM uint32_t JS_COMMAND;                    /*!< Offset 0x854  */
+        __IOM uint32_t JS_STATUS;                     /*!< Offset 0x858  */
+        __IOM uint32_t JS_TAIL_LO;                    /*!< Offset 0x85C  */
+        __IOM uint32_t JS_TAIL_HI;                    /*!< Offset 0x860  */
+        __IOM uint32_t JS_HEAD_LO;                    /*!< Offset 0x864  */
+        __IOM uint32_t JS_HEAD_HI;                    /*!< Offset 0x868  */
+        __IOM uint32_t JS_AFFINITY;                   /*!< Offset 0x86C  */
+        __IOM uint32_t JS_X_CONFIG;                   /*!< Offset 0x870  */
              RESERVED(0x034[0x0040 - 0x0034], uint8_t)
-    } LOOP [0x003];                                   /*!< Offset 0x080 Bifrost: Slot 0 (0x80), Slot 1 (0xC0), Slot 2 (0x100) */
-} GPU_JOB_CONTROL_TypeDef; /* size of structure = 0x140 */
+    } LOOP [0x003];                                   /*!< Offset 0x840 Bifrost: Slot 0 (0x80), Slot 1 (0xC0), Slot 2 (0x100) */
+} GPU_JOB_CONTROL_TypeDef; /* size of structure = 0x900 */
 /*
  * @brief GPU_MMU
  */
@@ -1696,27 +1700,27 @@ typedef struct GPU_MMU_Type
     __OM  uint32_t MMU_IRQ_CLEAR;                     /*!< Offset 0x004 (WO) Interrupt clear register */
     __IOM uint32_t MMU_IRQ_MASK;                      /*!< Offset 0x008 (RW) Interrupt mask register */
     __IM  uint32_t MMU_IRQ_STATUS;                    /*!< Offset 0x00C (RO) Interrupt status register */
-         RESERVED(0x010[0x0800 - 0x0010], uint8_t)
+         RESERVED(0x010[0x0400 - 0x0010], uint8_t)
     struct
     {
-        __IOM uint32_t AS_TRANSTAB_LO;                /*!< Offset 0x800 (RW) Translation Table Base Address for address space n, low word */
-        __IOM uint32_t AS_TRANSTAB_HI;                /*!< Offset 0x804 (RW) Translation Table Base Address for address space n, high word */
-        __IOM uint32_t AS_MEMATTR_LO;                 /*!< Offset 0x808 (RW) Memory attributes for address space n, low word. */
-        __IOM uint32_t AS_MEMATTR_HI;                 /*!< Offset 0x80C (RW) Memory attributes for address space n, high word. */
-        __IOM uint32_t AS_LOCKADDR_LO;                /*!< Offset 0x810 (RW) Lock region address for address space n, low word */
-        __IOM uint32_t AS_LOCKADDR_HI;                /*!< Offset 0x814 (RW) Lock region address for address space n, high word */
-        __OM  uint32_t AS_COMMAND;                    /*!< Offset 0x818 (WO) MMU command register for address space n */
-        __IM  uint32_t AS_FAULTSTATUS;                /*!< Offset 0x81C (RO) MMU fault status register for address space n */
-        __IM  uint32_t AS_FAULTADDRESS_LO;            /*!< Offset 0x820 (RO) Fault Address for address space n, low word */
-        __IM  uint32_t AS_FAULTADDRESS_HI;            /*!< Offset 0x824 (RO) Fault Address for address space n, high word */
-        __IM  uint32_t AS_STATUS;                     /*!< Offset 0x828 (RO) Status flags for address space n */
+        __IOM uint32_t AS_TRANSTAB_LO;                /*!< Offset 0x400 (RW) Translation Table Base Address for address space n, low word */
+        __IOM uint32_t AS_TRANSTAB_HI;                /*!< Offset 0x404 (RW) Translation Table Base Address for address space n, high word */
+        __IOM uint32_t AS_MEMATTR_LO;                 /*!< Offset 0x408 (RW) Memory attributes for address space n, low word. */
+        __IOM uint32_t AS_MEMATTR_HI;                 /*!< Offset 0x40C (RW) Memory attributes for address space n, high word. */
+        __IOM uint32_t AS_LOCKADDR_LO;                /*!< Offset 0x410 (RW) Lock region address for address space n, low word */
+        __IOM uint32_t AS_LOCKADDR_HI;                /*!< Offset 0x414 (RW) Lock region address for address space n, high word */
+        __OM  uint32_t AS_COMMAND;                    /*!< Offset 0x418 (WO) MMU command register for address space n */
+        __IM  uint32_t AS_FAULTSTATUS;                /*!< Offset 0x41C (RO) MMU fault status register for address space n */
+        __IM  uint32_t AS_FAULTADDRESS_LO;            /*!< Offset 0x420 (RO) Fault Address for address space n, low word */
+        __IM  uint32_t AS_FAULTADDRESS_HI;            /*!< Offset 0x424 (RO) Fault Address for address space n, high word */
+        __IM  uint32_t AS_STATUS;                     /*!< Offset 0x428 (RO) Status flags for address space n */
              RESERVED(0x02C[0x0030 - 0x002C], uint8_t)
-        __IOM uint32_t AS_TRANSCFG_LO;                /*!< Offset 0x830 (RW) Translation table configuration for address space n, low word */
-        __IOM uint32_t AS_TRANSCFG_HI;                /*!< Offset 0x834 (RW) Translation table configuration for address space n, high word */
-        __IM  uint32_t AS_FAULTEXTRA_LO;              /*!< Offset 0x838 (RO) Secondary fault address for address space n, low word */
-        __IM  uint32_t AS_FAULTEXTRA_HI;              /*!< Offset 0x83C (RO) Secondary fault address for address space n, high word */
-    } MMU_AS [0x010];                                 /*!< Offset 0x800 Configuration registers for address space 0..15 */
-} GPU_MMU_TypeDef; /* size of structure = 0xC00 */
+        __IOM uint32_t AS_TRANSCFG_LO;                /*!< Offset 0x430 (RW) Translation table configuration for address space n, low word */
+        __IOM uint32_t AS_TRANSCFG_HI;                /*!< Offset 0x434 (RW) Translation table configuration for address space n, high word */
+        __IM  uint32_t AS_FAULTEXTRA_LO;              /*!< Offset 0x438 (RO) Secondary fault address for address space n, low word */
+        __IM  uint32_t AS_FAULTEXTRA_HI;              /*!< Offset 0x43C (RO) Secondary fault address for address space n, high word */
+    } MMU_AS [0x010];                                 /*!< Offset 0x400 Configuration registers for address space 0..15 */
+} GPU_MMU_TypeDef; /* size of structure = 0x800 */
 /*
  * @brief HDMI_TX
  */

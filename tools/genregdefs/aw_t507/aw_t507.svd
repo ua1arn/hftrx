@@ -8363,10 +8363,46 @@
   <baseAddress>0x01801000</baseAddress>
   <registers>
    <register>
+    <name>JOB_INT_RAWSTAT</name>
+    <displayName>JOB_INT_RAWSTAT</displayName>
+    <description>Internal Interrupt Status</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>JOB_INT_CLEAR</name>
+    <displayName>JOB_INT_CLEAR</displayName>
+    <description></description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>JOB_INT_MASK</name>
+    <displayName>JOB_INT_MASK</displayName>
+    <description></description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>JOB_INT_STATUS</name>
+    <displayName>JOB_INT_STATUS</displayName>
+    <description></description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>JOB_IRQ_RAWSTAT</name>
     <displayName>JOB_IRQ_RAWSTAT</displayName>
-    <description>Raw interrupt status register</description>
-    <addressOffset>0x000</addressOffset>
+    <description>Raw interrupt status register - External IRQ Line Status</description>
+    <addressOffset>0x010</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -8375,7 +8411,7 @@
     <name>JOB_IRQ_CLEAR</name>
     <displayName>JOB_IRQ_CLEAR</displayName>
     <description>Interrupt clear register</description>
-    <addressOffset>0x004</addressOffset>
+    <addressOffset>0x014</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -8384,7 +8420,7 @@
     <name>JOB_IRQ_MASK</name>
     <displayName>JOB_IRQ_MASK</displayName>
     <description>Interrupt mask register</description>
-    <addressOffset>0x008</addressOffset>
+    <addressOffset>0x018</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -8393,14 +8429,14 @@
     <name>JOB_IRQ_STATUS</name>
     <displayName>JOB_IRQ_STATUS</displayName>
     <description>Interrupt status register</description>
-    <addressOffset>0x00C</addressOffset>
+    <addressOffset>0x01C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
     <dim>3</dim>
-    <addressOffset>0x00000080</addressOffset>
+    <addressOffset>0x00000840</addressOffset>
     <registers>
      <register>
       <name>JS_HEAD_NEXT_LO</name>
@@ -8567,7 +8603,7 @@
    </register>
    <cluster>
     <dim>16</dim>
-    <addressOffset>0x00000800</addressOffset>
+    <addressOffset>0x00000400</addressOffset>
     <registers>
      <register>
       <name>AS_TRANSTAB_LO</name>

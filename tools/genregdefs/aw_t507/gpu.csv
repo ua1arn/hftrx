@@ -132,12 +132,16 @@
 #type; GPU_JOB_CONTROL
 #base; GPU_JOB_CONTROL 0x01801000
 
-#regdef; JOB_IRQ_RAWSTAT         ; 0x000   ; Raw interrupt status register
-#regdef; JOB_IRQ_CLEAR           ; 0x004   ; Interrupt clear register
-#regdef; JOB_IRQ_MASK            ; 0x008   ; Interrupt mask register
-#regdef; JOB_IRQ_STATUS          ; 0x00C   ; Interrupt status register
+#regdef; JOB_INT_RAWSTAT;    0x00	; Internal Interrupt Status
+#regdef; JOB_INT_CLEAR;      0x04	; 
+#regdef; JOB_INT_MASK;       0x08	; 
+#regdef; JOB_INT_STATUS;     0x0C	;
+#regdef; JOB_IRQ_RAWSTAT;    0x10  	; Raw interrupt status register - External IRQ Line Status
+#regdef; JOB_IRQ_CLEAR;      0x14  	; Interrupt clear register
+#regdef; JOB_IRQ_MASK;       0x18  	; Interrupt mask register
+#regdef; JOB_IRQ_STATUS;     0x1C  	; Interrupt status register
 
-#aggreg; LOOP; 0x080 3; Bifrost: Slot 0 (0x80), Slot 1 (0xC0), Slot 2 (0x100)
+#aggreg; LOOP; 0x840 3; Bifrost: Slot 0 (0x80), Slot 1 (0xC0), Slot 2 (0x100)
 #regdef; JS_HEAD_NEXT_LO;	0x00;
 #regdef; JS_HEAD_NEXT_HI;	0x04;
 #regdef; JS_TAIL_NEXT_LO;	0x08;
@@ -165,7 +169,7 @@
 #regdef; MMU_IRQ_MASK           ; 0x008   ; (RW) Interrupt mask register
 #regdefr; MMU_IRQ_STATUS        ; 0x00C   ; (RO) Interrupt status register
 
-#aggreg; MMU_AS; 0x800 16; Configuration registers for address space 0..15
+#aggreg; MMU_AS; 0x400 16; Configuration registers for address space 0..15
 
 #regdef; AS_TRANSTAB_LO         ; 0x00	; (RW) Translation Table Base Address for address space n, low word
 #regdef; AS_TRANSTAB_HI         ; 0x04	; (RW) Translation Table Base Address for address space n, high word
