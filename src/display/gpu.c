@@ -186,50 +186,6 @@ void gpu_fillrect(
 	int32_t triangle1 [3] [2] = { { w - 1, h - 1 }, { 0, h - 1}, { w - 1, 0 } };
 }
 
-#include <stdint.h>
-
-// 1. Описываем структуру ОДНОГО слота задач (Job Slot)
-typedef struct {
-    volatile uint32_t JS_HEAD_NEXT_LO;    // +0x00 (Смещение внутри слота)
-    volatile uint32_t JS_HEAD_NEXT_HI;    // +0x04
-    volatile uint32_t JS_TAIL_NEXT_LO;    // +0x08
-    volatile uint32_t JS_TAIL_NEXT_HI;    // +0x0C
-    volatile uint32_t JS_CONFIG;          // +0x10
-    volatile uint32_t JS_COMMAND;         // +0x14 (Сюда пишем 0x01 для СТАРТА)
-    volatile uint32_t JS_STATUS;          // +0x18
-    volatile uint32_t JS_TAIL_LO;         // +0x1C
-    volatile uint32_t JS_TAIL_HI;         // +0x20
-    volatile uint32_t JS_HEAD_LO;         // +0x24
-    volatile uint32_t JS_HEAD_HI;         // +0x28
-    volatile uint32_t JS_AFFINITY;        // +0x2C
-    volatile uint32_t JS_X_CONFIG;        // +0x30
-    volatile uint32_t reserved[3];        // +0x34 - +0x3F (Паддинг до 64 байт / 0x40)
-} MALI_JOB_SLOT_t;
-
-// 2. Описываем главную структуру управления задачами
-typedef struct {
-    volatile uint32_t JOB_INT_RAWSTAT;    // +0x00
-    volatile uint32_t JOB_INT_CLEAR;      // +0x04
-    volatile uint32_t JOB_INT_MASK;       // +0x08
-    volatile uint32_t JOB_INT_STATUS;     // +0x0C
-    volatile uint32_t JOB_IRQ_RAWSTAT;    // +0x10
-    volatile uint32_t JOB_IRQ_CLEAR;      // +0x14
-    volatile uint32_t JOB_IRQ_MASK;       // +0x18
-    volatile uint32_t JOB_IRQ_STATUS;     // +0x1C
-
-    // Свободное пространство (паддинг) от 0x20 до 0x80, где начинаются слоты
-    volatile uint32_t reserved_global[24];
-
-    // Массив слотов, который ожидает компилятор
-    // В Bifrost три аппаратных слота: Slot 0 (0x80), Slot 1 (0xC0), Slot 2 (0x100)
-    MALI_JOB_SLOT_t LOOP[3];
-
-} MALI_JOB_CONTROL_t;
-
-
-//
-#include <stdint.h>
-
 // Типы задач (Job Types) для Mali Bifrost
 #define JOB_TYPE_NULL      0
 #define JOB_TYPE_VERTEX    1
@@ -300,10 +256,6 @@ GPU_ALIGN static mali_framebuffer_desc fb_desc;
 #define COMMAND_SLOT_VERTEX   0
 #define COMMAND_SLOT_FRAGMENT 1
 
-#undef GPU_JOB_CONTROL
-
-#define GPU_JOB_CONTROL ((MALI_JOB_CONTROL_t *) GPU_JOB_CONTROL_BASE)/*!< GPU_JOB_CONTROL  register set access pointer */
-
 // Регистры отправки команд в слот (сверьтесь со структурой GPU_JOB_CONTROL в panfrost_regs.h)
 // Обычные имена регистров в драйвере Panfrost: JS_COMMAND, JS_HEAD_NEXT
 
@@ -353,14 +305,19 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     PRINTF("Submitting Vertex Job to Slot 0...\n");
 
     // Записываем физический адрес начала структуры v_job в регистр указателя слота 0
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_HEAD_NEXT_HI = (uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_HEAD_NEXT_LO = (uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
+    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_HEAD_NEXT_HI = ptr_hi32((uintptr_t)&v_job);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
+    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_HEAD_NEXT_LO = ptr_lo32((uintptr_t)&v_job);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
 
     // Команда START (обычно значение 0x01 в регистр JS_COMMAND)
     GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_COMMAND = 0x01;
+    __asm__ volatile("dsb sy" : : : "memory");
     TP();
 
     local_delay_ms(200);
+    PRINTF("GPU_MMU:\n");
+    printhex32(GPU_MMU_BASE, GPU_MMU, 512);
+    PRINTF("GPU_JOB_CONTROL:\n");
+    printhex32(GPU_JOB_CONTROL_BASE, GPU_JOB_CONTROL, 512);
     PRINTF("GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
     // Ожидание завершения работы аппаратного тайлера геометрии
     // В hftrx прерывания выводят ASSERT(0), поэтому опрашиваем статус в цикле (polling)
@@ -374,8 +331,8 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     // 5. Запуск цепочки растеризации фрагментов в Slot 1
     PRINTF("Submitting Fragment Job to Slot 1...\n");
 
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_HEAD_NEXT_HI = (uint32_t)(((uintptr_t)&f_job >> 32) & 0xFFFFFFFF);
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_HEAD_NEXT_LO = (uint32_t)((uintptr_t)&f_job & 0xFFFFFFFF);
+    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_HEAD_NEXT_HI = ptr_hi32((uintptr_t)&f_job);//(uint32_t)(((uintptr_t)&f_job >> 32) & 0xFFFFFFFF);
+    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_HEAD_NEXT_LO = ptr_lo32((uintptr_t)&f_job);//(uint32_t)((uintptr_t)&f_job & 0xFFFFFFFF);
     GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_COMMAND = 0x01;
 
     local_delay_ms(200);
@@ -482,7 +439,121 @@ void gpu_draw_triangle2(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_
     // 5. Запуск цепочки через регистры планировщика (Слот 0 и Слот 1)
     // ... [Код отправки в регистры JS_HEAD_NEXT и ожидания прерываний из предыдущего ответа] ...
 }
+#define MALI_GPU_CONTROL_BASE  0x01800000
 
+// Регистры разблокировки и оверрайдов (Блок управления питанием)
+#define GPU_PWR_KEY                     0x0050
+#define GPU_PWR_OVERRIDE1               0x0058
+#define GPU_PWR_KEY_UNLOCK              0x2968A819
+
+// ИСПРАВЛЕНО: Регистры подачи команд питания (Write-Only) для Bifrost
+#define REG_L2_PWRON                    0x01A0
+#define REG_TILER_PWRON                 0x0190
+#define REG_SHADER_PWRON                0x0180
+
+// ИСПРАВЛЕНО: Регистры РЕАЛЬНОЙ готовности (Read-Only) по вашим смещениям
+#define REG_SHADER_READY                0x0140
+#define REG_TILER_READY                 0x0150 // То самое смещение 0x150!
+#define REG_L2_READY                    0x0160
+
+void mali_bifrost_power_on(void)
+{
+    volatile uint32_t *gpu_pwr_key   = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + GPU_PWR_KEY);
+    volatile uint32_t *gpu_pwr_ovr1  = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + GPU_PWR_OVERRIDE1);
+
+    volatile uint32_t *l2_pwron      = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_L2_PWRON);
+    volatile uint32_t *l2_ready      = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_L2_READY);
+
+    volatile uint32_t *tiler_pwron   = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_TILER_PWRON);
+    volatile uint32_t *tiler_ready   = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_TILER_READY);
+
+    volatile uint32_t *shader_pwron  = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_SHADER_PWRON);
+    volatile uint32_t *shader_ready  = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_SHADER_READY);
+
+    PRINTF("Mali-G31: Initializing power-up via Bifrost v6 Register Map...\n");
+
+    // 1. Снимаем программную защиту с контроллера питания
+    *gpu_pwr_key = GPU_PWR_KEY_UNLOCK;
+    __asm__ volatile("dsb sy" : : : "memory");
+
+    // Фиксация стабильности шин питания
+    *gpu_pwr_ovr1 = 0xFFF | (0x20 << 16);
+    __asm__ volatile("dsb sy" : : : "memory");
+
+    // 2. Включаем L2 Кэш (Бит 0 = Включить домен 0)
+    *l2_pwron = 0x00000001;
+    __asm__ volatile("dsb sy" : : : "memory");
+
+    //TP();
+   // Ожидаем готовность L2 на смещении 0x160
+    while ((*l2_ready & 0x00000001) == 0) {
+        // Опрос готовности L2-интерфейса
+    }
+
+    // 3. Включаем блок геометрии (Tiler) через смещение 0x190
+    *tiler_pwron = 0x00000001;
+    __asm__ volatile("dsb sy" : : : "memory");
+
+    //TP();
+   // Ожидаем готовность тайлера на вашем смещении 0x150
+    while ((*tiler_ready & 0x00000001) == 0) {
+        // Если зависает здесь, значит на GPU не подана частота от CCU Allwinner
+    }
+    //TP();
+#define REG_STACK_PWRON   0xE20
+#define REG_STACK_READY   0xE10
+
+	// Добавьте этот кусок в mali_bifrost_power_on() СТРОГО ПЕРЕД включением шейдеров:
+	volatile uint32_t *stack_pwron = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_STACK_PWRON);
+	volatile uint32_t *stack_ready = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_STACK_READY);
+
+	PRINTF("Mali-G31: Powering up Shader Core Stack (0x1D0)...\n");
+	*stack_pwron = 0x00000001; // Включаем базовый стек
+	__asm__ volatile("dsb sy" : : : "memory");
+	local_delay_ms(100);
+	PRINTF("*stack_ready=%08X\n", (unsigned) *stack_ready);
+	PRINTF("*tiler_ready=%08X\n", (unsigned) *tiler_ready);
+
+    //TP();
+//	while ((*stack_ready & 0x00000001) == 0) {
+//		// Ожидание готовности стека ядер на смещении 0xE10
+////		PRINTF("*stack_ready=%08X\n", (unsigned) *stack_ready);
+////		PRINTF("*tiler_ready=%08X\n", (unsigned) *tiler_ready);
+//	}
+	local_delay_ms(100);
+    //TP();
+	// 4. Включаем 2 вычислительных ядра (Shader Cores) для MP2 (Маска 0x03) через 0x180
+    *shader_pwron = 0x00000003;
+    __asm__ volatile("dsb sy" : : : "memory");
+
+	local_delay_ms(100);
+	PRINTF("*shader_ready=%08X\n", (unsigned) *shader_ready);
+   //TP();
+   // Ожидаем готовность ядер на смещении 0x140
+    while ((*shader_ready & 0x00000003) != 0x00000001) {	// was: 0x00000003
+        // Ожидание готовности обоих шейдерных ядер
+    	   // ТОЛЬКО ОДНО ЯДРО
+    }
+    //TP();
+
+    PRINTF("Mali-G31: Success! L2, Tiler (0x150), and Shaders (0x140) are READY.\n");
+}
+
+
+#define REG_L2_PWR_DOMAIN_COMMAND      0x0010
+#define REG_L2_PWR_DOMAIN_STATUS       0x0014
+
+void mali_bifrost_l2_ready(void)
+{
+    volatile uint32_t *l2_pwr_cmd  = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_L2_PWR_DOMAIN_COMMAND);
+    volatile uint32_t *l2_pwr_stat = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_L2_PWR_DOMAIN_STATUS);
+
+    // Принудительно включаем и запитываем L2 кэш GPU
+    *l2_pwr_cmd = 0xFFFFFFFF;
+    while ((*l2_pwr_stat & 0x1) == 0) {
+        // Ожидание готовности кэш-памяти GPU
+    }
+}
 
 void gpu_test(void)
 {
@@ -500,6 +571,7 @@ void gpu_test(void)
 	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
 #endif
 
+
     uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
     gpu_draw_triangle(fbaddr, DIM_X, DIM_Y);
     colmain_nextfb();
@@ -508,6 +580,69 @@ void gpu_test(void)
     for (;;)
     	;
 
+}
+#define GPU_L2_MMU_CONFIG  0x0008 // Смещение внутри блока GPU_CONTROL (0x01800008)
+#define MALI_GPU_MMU_BASE 0x01802000
+
+// Смещения регистров внутри блока AS0 (база 0x01802800)
+#define MMU_AS0_TRANSTAB_LO   (MALI_GPU_MMU_BASE + 0x800 + 0x00)
+#define MMU_AS0_TRANSTAB_HI   (MALI_GPU_MMU_BASE + 0x800 + 0x04)
+#define MMU_AS0_MEMATTR_LO    (MALI_GPU_MMU_BASE + 0x800 + 0x08)
+#define MMU_AS0_COMMAND       (MALI_GPU_MMU_BASE + 0x800 + 0x18)
+#define MMU_AS0_STATUS        (MALI_GPU_MMU_BASE + 0x800 + 0x1C)
+
+void mali_g31_mmu_activate(uintptr_t l1_page_table_phys)
+{
+    volatile uint32_t *as0_transtab_lo = (volatile uint32_t *)MMU_AS0_TRANSTAB_LO;
+    volatile uint32_t *as0_transtab_hi = (volatile uint32_t *)MMU_AS0_TRANSTAB_HI;
+    volatile uint32_t *as0_memattr_lo  = (volatile uint32_t *)MMU_AS0_MEMATTR_LO;
+    volatile uint32_t *as0_command     = (volatile uint32_t *)MMU_AS0_COMMAND;
+    volatile uint32_t *as0_status      = (volatile uint32_t *)MMU_AS0_STATUS;
+
+    PRINTF("Mali-G31: Writing page table pointer to MMU AS0...\n");
+
+    // 1. Установка атрибутов кэширования для дескрипторов (Inner/Outer Write-Back)
+    *as0_memattr_lo = 0x0A22;
+
+    // 2. Формируем 64-битное значение TRANSTAB.
+    // Бит 0 (LPAE) и Бит 1 (Включение MMU трансляции) = 0x03
+    uint64_t transtab_val = (uint64_t)l1_page_table_phys | 0x03;
+
+    // Пишем в строгом порядке: сначала HI, затем LO
+    *as0_transtab_hi = (uint32_t)((transtab_val >> 32) & 0xFFFFFFFF);
+    *as0_transtab_lo = (uint32_t)(transtab_val & 0xFFFFFFFF);
+
+    __asm__ volatile("dsb sy" : : : "memory");
+
+    // 3. Ждем, пока автомат MMU выйдет из состояния BUSY (если был занят)
+    while (*as0_status & 0x1) {
+        // Опрос бита BUSY
+    }
+
+    // 4. Подаем команду UPDATE (0x01) — заставляем MMU прочитать таблицу страниц из ОЗУ
+    *as0_command = 0x01;
+    __asm__ volatile("dsb sy" : : : "memory");
+
+    // 5. Ожидаем завершения чтения конфигурации
+    while (*as0_status & 0x1) {
+        // Как только MMU примет таблицу, этот бит сбросится в 0
+    }
+
+    PRINTF("Mali-G31: MMU AS0 translation is now hardware-enabled!\n");
+}
+
+void mali_bifrost_open_mmu_bus(void)
+{
+    volatile uint32_t *l2_mmu_config = (volatile uint32_t *)(0x01800000 + GPU_L2_MMU_CONFIG);
+
+    // Читаем текущие особенности чипа
+    uint32_t val = *l2_mmu_config;
+
+    // Для Mali-G31 (Bifrost r0p3) необходимо принудительно выставить биты 0 и 1,
+    // чтобы открыть внутренний интерконнект от процессоров к MMU и снять изоляцию.
+    *l2_mmu_config = val | 0x00000003;
+
+    __asm__ volatile("dsb sy" : : : "memory");
 }
 
 // Graphic processor unit
@@ -571,6 +706,8 @@ void board_gpu_initialize(void)
 
 	GPU_MMU->MMU_IRQ_CLEAR = 0xFFFFFFFF;
 	GPU_MMU->MMU_IRQ_MASK = 0xFFFFFFFF;
+    PRINTF("1 GPU_MMU:\n");
+    printhex32(GPU_MMU_BASE, GPU_MMU, 512);
 
 	gpu_command(GPU_COMMAND_HARD_RESET);
 	gpu_wait(RESET_COMPLETED);
@@ -582,19 +719,34 @@ void board_gpu_initialize(void)
 
 	PRINTF("board_gpu_initialize done.\n");
 
+	mali_bifrost_power_on();
+	mali_bifrost_open_mmu_bus();
 
-    PRINTF("Initializing Mali MMU...\n");
+
+    // 4. Проверяем! Теперь регистры MMU обязаны ожить
+    volatile uint32_t *mmu_int_rawstat = (volatile uint32_t *)0x01802000;
+    PRINTF("MMU Raw Interrupt Status: 0x%08X\n", (unsigned)*mmu_int_rawstat);
+    // (Если мост открылся, здесь вместо 0x00000000 перестанет падать мертвый ноль шины,
+    // и вы сможете писать в TRANSTAB и подавать команду UPDATE).
+    PRINTF("GPU_CONTROL->GPU_STATUS=%08X\n", (unsigned) GPU_CONTROL->GPU_STATUS);
 
     // 1. Создаем таблицы страниц в ОЗУ
     gpu_mmu_setup_tables();
 
+    dcache_clean((uintptr_t) gpu_l1_page_table, sizeof gpu_l1_page_table);
+   mali_g31_mmu_activate((uintptr_t) gpu_l1_page_table);
+
+	mali_bifrost_l2_ready();
     unsigned as = 0; // Используем Address Space 0
+#if 0
+    PRINTF("Initializing Mali MMU...\n");
+
 
     // 2. Задаем атрибуты памяти (MEMATTR)
     // Задаем конфигурацию слоев кэширования для индексов PTE (внутренний/внешний write-back, uncached)
     // Значение 0x0A22 (эквивалент из драйвера Panfrost для Bifrost)
-    GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x0A22;
     GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0;
+    GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x0A22;
 
     // 3. Записываем базовый адрес таблицы первого уровня в TRANSTAB
     // Регистр TRANSTAB помимо адреса (сдвинутого) содержит биндинг конфигурации (AArch64 LPAE)
@@ -605,10 +757,12 @@ void board_gpu_initialize(void)
     transtab_val |= 0x3;
 
     // Записываем 64-битное значение (если регистры 32-битные, пишем LO и HI отдельно)
-    GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = (uint32_t)((transtab_val >> 32) & 0xFFFFFFFF);
-    GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = (uint32_t)(transtab_val & 0xFFFFFFFF);
-
+    GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = ptr_hi32(transtab_val);
+    GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = ptr_lo32(transtab_val);
+#endif
     dcache_clean((uintptr_t) gpu_l1_page_table, sizeof gpu_l1_page_table);
+    PRINTF("2 GPU_MMU:\n");
+    printhex32(GPU_MMU_BASE, GPU_MMU, 512);
 
     // 4. Подаем команду обновления конфигурации MMU
     gpu_as_command(as, AS_COMMAND_UPDATE);

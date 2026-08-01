@@ -56,10 +56,10 @@
 //#define GPU_STATUS			0x34
 #define   GPU_STATUS_PRFCNT_ACTIVE	BIT(2)
 #define GPU_LATEST_FLUSH_ID		0x38
-#define GPU_PWR_KEY			0x50	/* (WO) Power manager key register */
+//#define GPU_PWR_KEY			0x50	/* (WO) Power manager key register */
 #define  GPU_PWR_KEY_UNLOCK		0x2968A819
 #define GPU_PWR_OVERRIDE0		0x54	/* (RW) Power manager override settings */
-#define GPU_PWR_OVERRIDE1		0x58	/* (RW) Power manager override settings */
+//#define GPU_PWR_OVERRIDE1		0x58	/* (RW) Power manager override settings */
 #define GPU_FAULT_STATUS		0x3C
 #define GPU_FAULT_ADDRESS_LO		0x40
 #define GPU_FAULT_ADDRESS_HI		0x44
@@ -170,10 +170,10 @@
 #define L2_PWRACTIVE_LO			0x260	/* (RO) Level 2 cache active bitmap, low word */
 #define L2_PWRACTIVE_HI			0x264	/* (RO) Level 2 cache active bitmap, high word */
 
-#define GPU_JM_CONFIG			0xF00   /* (RW) Job Manager configuration register (Implementation specific register) */
-#define GPU_SHADER_CONFIG		0xF04	/* (RW) Shader core configuration settings (Implementation specific register) */
-#define GPU_TILER_CONFIG		0xF08   /* (RW) Tiler core configuration settings (Implementation specific register) */
-#define GPU_L2_MMU_CONFIG		0xF0C	/* (RW) Configuration of the L2 cache and MMU (Implementation specific register) */
+//#define GPU_JM_CONFIG			0xF00   /* (RW) Job Manager configuration register (Implementation specific register) */
+//#define GPU_SHADER_CONFIG		0xF04	/* (RW) Shader core configuration settings (Implementation specific register) */
+//#define GPU_TILER_CONFIG		0xF08   /* (RW) Tiler core configuration settings (Implementation specific register) */
+//#define GPU_L2_MMU_CONFIG		0xF0C	/* (RW) Configuration of the L2 cache and MMU (Implementation specific register) */
 
 /* L2_MMU_CONFIG register */
 #define L2_MMU_CONFIG_ALLOW_SNOOP_DISPARITY_SHIFT	23
