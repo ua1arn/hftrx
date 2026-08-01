@@ -314,10 +314,15 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     TP();
 
     local_delay_ms(200);
-    PRINTF("GPU_MMU:\n");
-    printhex32(GPU_MMU_BASE, GPU_MMU, 512);
+//    PRINTF("GPU_MMU:\n");
+//    printhex32(GPU_MMU_BASE, GPU_MMU, 4096);
+//    memset32(GPU_JOB_CONTROL, ~0, 4096);
+    PRINTF("f_job: %p\n", & f_job);
+    PRINTF("v_job: %p\n", & v_job);
     PRINTF("GPU_JOB_CONTROL:\n");
-    printhex32(GPU_JOB_CONTROL_BASE, GPU_JOB_CONTROL, 512);
+    printhex32(GPU_JOB_CONTROL_BASE, GPU_JOB_CONTROL, 4096);
+//    for (;;)
+//    	;
     PRINTF("GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
     // Ожидание завершения работы аппаратного тайлера геометрии
     // В hftrx прерывания выводят ASSERT(0), поэтому опрашиваем статус в цикле (polling)
@@ -645,6 +650,35 @@ void mali_bifrost_open_mmu_bus(void)
     __asm__ volatile("dsb sy" : : : "memory");
 }
 
+void mali_g31_mmu_enable(uintptr_t l1_page_table_phys_addr)
+{
+    unsigned as = 0; // Шейдерный домен по умолчанию
+
+    // 1. Задаем свойства кэширования для дескрипторов таблиц страниц
+    GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x0A22;
+
+    // 2. Формируем 64-битное значение корня таблиц (Включаем LPAE + Активация = 0x03)
+    uint64_t transtab_val = (uint64_t)l1_page_table_phys_addr | 0x03;
+
+    // 3. Записываем адрес в регистры AS0 (теперь они строго на 0x01802400)
+    GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = (uint32_t)(transtab_val >> 32);
+    GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = (uint32_t)(transtab_val & 0xFFFFFFFF);
+
+    __asm__ volatile("dsb sy" : : : "memory");
+
+    // 4. Ждем, пока MMU освободится
+    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
+
+    // 5. Отправляем команду UPDATE для применения таблиц
+    GPU_MMU->MMU_AS[as].AS_COMMAND = 0x01;
+    __asm__ volatile("dsb sy" : : : "memory");
+
+    // 6. Ожидаем окончания защелкивания таблиц аппаратурой Mali
+    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
+
+    PRINTF("Mali-G31: MMU Address Space 0 successfully enabled at offset 0x400!\n");
+}
+
 // Graphic processor unit
 void board_gpu_initialize(void)
 {
@@ -706,8 +740,8 @@ void board_gpu_initialize(void)
 
 	GPU_MMU->MMU_IRQ_CLEAR = 0xFFFFFFFF;
 	GPU_MMU->MMU_IRQ_MASK = 0xFFFFFFFF;
-    PRINTF("1 GPU_MMU:\n");
-    printhex32(GPU_MMU_BASE, GPU_MMU, 512);
+//    PRINTF("1 GPU_MMU:\n");
+//    printhex32(GPU_MMU_BASE, GPU_MMU, 4096);
 
 	gpu_command(GPU_COMMAND_HARD_RESET);
 	gpu_wait(RESET_COMPLETED);
@@ -734,40 +768,11 @@ void board_gpu_initialize(void)
     gpu_mmu_setup_tables();
 
     dcache_clean((uintptr_t) gpu_l1_page_table, sizeof gpu_l1_page_table);
-   mali_g31_mmu_activate((uintptr_t) gpu_l1_page_table);
+    mali_g31_mmu_activate((uintptr_t) gpu_l1_page_table);
 
 	mali_bifrost_l2_ready();
-    unsigned as = 0; // Используем Address Space 0
-#if 0
-    PRINTF("Initializing Mali MMU...\n");
 
-
-    // 2. Задаем атрибуты памяти (MEMATTR)
-    // Задаем конфигурацию слоев кэширования для индексов PTE (внутренний/внешний write-back, uncached)
-    // Значение 0x0A22 (эквивалент из драйвера Panfrost для Bifrost)
-    GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0;
-    GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x0A22;
-
-    // 3. Записываем базовый адрес таблицы первого уровня в TRANSTAB
-    // Регистр TRANSTAB помимо адреса (сдвинутого) содержит биндинг конфигурации (AArch64 LPAE)
-    uint64_t transtab_val = (uintptr_t)gpu_l1_page_table;
-
-    // Для Bifrost/AArch64 формат трансляции: бит 0..1 = тип (обычно 0x2 или 0x3 для включения перевода)
-    // Драйвер Panfrost использует флаг (3 << 0) для указания режима уровней и включения MMU
-    transtab_val |= 0x3;
-
-    // Записываем 64-битное значение (если регистры 32-битные, пишем LO и HI отдельно)
-    GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = ptr_hi32(transtab_val);
-    GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = ptr_lo32(transtab_val);
-#endif
-    dcache_clean((uintptr_t) gpu_l1_page_table, sizeof gpu_l1_page_table);
-    PRINTF("2 GPU_MMU:\n");
-    printhex32(GPU_MMU_BASE, GPU_MMU, 512);
-
-    // 4. Подаем команду обновления конфигурации MMU
-    gpu_as_command(as, AS_COMMAND_UPDATE);
-
-    PRINTF("Mali MMU for AS0 configured successfully.\n");
+	mali_g31_mmu_enable((uintptr_t) gpu_l1_page_table);
 
     // Тест чтения регистров возможностей
     //gpu_test();
