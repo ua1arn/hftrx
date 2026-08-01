@@ -594,7 +594,6 @@ typedef struct GPIOBLOCK_Type
         __IOM uint32_t DATA;                          /*!< Offset 0x010 Data Register */
         __IOM uint32_t DRV [0x002];                   /*!< Offset 0x014 Multi_Driving Register */
         __IOM uint32_t PULL [0x002];                  /*!< Offset 0x01C Pull Register */
-             RESERVED(0x024[0x0024 - 0x0024], uint8_t)
     } GPIO_PINS [0x008];                              /*!< Offset 0x000 GPIO pin control */
          RESERVED(0x120[0x0200 - 0x0120], uint8_t)
     struct
@@ -1295,7 +1294,6 @@ typedef struct TCON_Type
         __IOM uint32_t TCON1_FILL_BEGIN_REG;          /*!< Offset 0x304 TCON1 fill data begin register (N=0,1,2) */
         __IOM uint32_t TCON1_FILL_END_REG;            /*!< Offset 0x308 TCON1 fill data end register (N=0,1,2) */
         __IOM uint32_t TCON1_FILL_DATA0_REG;          /*!< Offset 0x30C TCON1 fill data value register (N=0,1,2) */
-             RESERVED(0x00C[0x000C - 0x000C], uint8_t)
     } TCON1_FILL [0x003];                             /*!< Offset 0x304 TCON1 fill data (N=0,1,2) */
          RESERVED(0x328[0x0400 - 0x0328], uint8_t)
     __IOM uint32_t TCON1_GAMMA_TABLE_REG [0x100];     /*!< Offset 0x400 Gamma Table 0x400-0x7FF */

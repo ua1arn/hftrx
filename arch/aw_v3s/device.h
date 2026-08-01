@@ -240,7 +240,6 @@ typedef struct GPIO_Type
     __IOM uint32_t DATA;                              /*!< Offset 0x010 Data Register */
     __IOM uint32_t DRV [0x002];                       /*!< Offset 0x014 Multi_Driving Register */
     __IOM uint32_t PULL [0x002];                      /*!< Offset 0x01C Pull Register */
-         RESERVED(0x024[0x0024 - 0x0024], uint8_t)
 } GPIO_TypeDef; /* size of structure = 0x024 */
 /*
  * @brief GPIOBLOCK
@@ -254,7 +253,6 @@ typedef struct GPIOBLOCK_Type
         __IOM uint32_t DATA;                          /*!< Offset 0x010 Data Register */
         __IOM uint32_t DRV [0x002];                   /*!< Offset 0x014 Multi_Driving Register */
         __IOM uint32_t PULL [0x002];                  /*!< Offset 0x01C Pull Register */
-             RESERVED(0x024[0x0024 - 0x0024], uint8_t)
     } GPIO_PINS [0x007];                              /*!< Offset 0x000 GPIO pin control */
          RESERVED(0x0FC[0x0200 - 0x00FC], uint8_t)
     struct

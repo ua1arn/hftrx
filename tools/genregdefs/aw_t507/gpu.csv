@@ -165,7 +165,7 @@
 #regdef; MMU_IRQ_MASK           ; 0x008   ; (RW) Interrupt mask register
 #regdefr; MMU_IRQ_STATUS        ; 0x00C   ; (RO) Interrupt status register
 
-#aggreg; MMU_AS; 0x100 16; Configuration registers for address space 0..15
+#aggreg; MMU_AS; 0x800 16; Configuration registers for address space 0..15
 
 #regdef; AS_TRANSTAB_LO         ; 0x00	; (RW) Translation Table Base Address for address space n, low word
 #regdef; AS_TRANSTAB_HI         ; 0x04	; (RW) Translation Table Base Address for address space n, high word

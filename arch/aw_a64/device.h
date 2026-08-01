@@ -2476,7 +2476,6 @@ typedef struct TCON0_Type
     {
         __IOM uint32_t MUL_REG [0x003];               /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2, 4,5,6, 8,9,10) */
         __IOM uint32_t ADD_REG;                       /*!< Offset 0x11C 0x11C+N*0x10 TCON CEU coefficient register1 (N=0,1,2) */
-             RESERVED(0x010[0x0010 - 0x0010], uint8_t)
     } TCON_CEU_COEF [0x003];                          /*!< Offset 0x110 TCON CEU coefficient register1 (N=0,1,2) */
          RESERVED(0x140[0x01F0 - 0x0140], uint8_t)
     __IOM uint32_t TCON_SAFE_PERIOD_REG;              /*!< Offset 0x1F0 TCON safe period register */
@@ -2517,7 +2516,6 @@ typedef struct TCON1_Type
     {
         __IOM uint32_t MUL_REG [0x003];               /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2, 4,5,6, 8,9,10) */
         __IOM uint32_t ADD_REG;                       /*!< Offset 0x11C 0x11C+N*0x10 TCON CEU coefficient register1 (N=0,1,2) */
-             RESERVED(0x010[0x0010 - 0x0010], uint8_t)
     } TCON_CEU_COEF [0x003];                          /*!< Offset 0x110 TCON CEU coefficient register1 (N=0,1,2) */
          RESERVED(0x140[0x0160 - 0x0140], uint8_t)
     __IOM uint32_t TCON_CEU_COEF_RANG_REG [0x003];    /*!< Offset 0x160 TCON CEU coefficient register2 (N=0,1,2) */

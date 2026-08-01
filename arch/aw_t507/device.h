@@ -1696,28 +1696,27 @@ typedef struct GPU_MMU_Type
     __OM  uint32_t MMU_IRQ_CLEAR;                     /*!< Offset 0x004 (WO) Interrupt clear register */
     __IOM uint32_t MMU_IRQ_MASK;                      /*!< Offset 0x008 (RW) Interrupt mask register */
     __IM  uint32_t MMU_IRQ_STATUS;                    /*!< Offset 0x00C (RO) Interrupt status register */
-         RESERVED(0x010[0x0100 - 0x0010], uint8_t)
+         RESERVED(0x010[0x0800 - 0x0010], uint8_t)
     struct
     {
-        __IOM uint32_t AS_TRANSTAB_LO;                /*!< Offset 0x100 (RW) Translation Table Base Address for address space n, low word */
-        __IOM uint32_t AS_TRANSTAB_HI;                /*!< Offset 0x104 (RW) Translation Table Base Address for address space n, high word */
-        __IOM uint32_t AS_MEMATTR_LO;                 /*!< Offset 0x108 (RW) Memory attributes for address space n, low word. */
-        __IOM uint32_t AS_MEMATTR_HI;                 /*!< Offset 0x10C (RW) Memory attributes for address space n, high word. */
-        __IOM uint32_t AS_LOCKADDR_LO;                /*!< Offset 0x110 (RW) Lock region address for address space n, low word */
-        __IOM uint32_t AS_LOCKADDR_HI;                /*!< Offset 0x114 (RW) Lock region address for address space n, high word */
-        __OM  uint32_t AS_COMMAND;                    /*!< Offset 0x118 (WO) MMU command register for address space n */
-        __IM  uint32_t AS_FAULTSTATUS;                /*!< Offset 0x11C (RO) MMU fault status register for address space n */
-        __IM  uint32_t AS_FAULTADDRESS_LO;            /*!< Offset 0x120 (RO) Fault Address for address space n, low word */
-        __IM  uint32_t AS_FAULTADDRESS_HI;            /*!< Offset 0x124 (RO) Fault Address for address space n, high word */
-        __IM  uint32_t AS_STATUS;                     /*!< Offset 0x128 (RO) Status flags for address space n */
+        __IOM uint32_t AS_TRANSTAB_LO;                /*!< Offset 0x800 (RW) Translation Table Base Address for address space n, low word */
+        __IOM uint32_t AS_TRANSTAB_HI;                /*!< Offset 0x804 (RW) Translation Table Base Address for address space n, high word */
+        __IOM uint32_t AS_MEMATTR_LO;                 /*!< Offset 0x808 (RW) Memory attributes for address space n, low word. */
+        __IOM uint32_t AS_MEMATTR_HI;                 /*!< Offset 0x80C (RW) Memory attributes for address space n, high word. */
+        __IOM uint32_t AS_LOCKADDR_LO;                /*!< Offset 0x810 (RW) Lock region address for address space n, low word */
+        __IOM uint32_t AS_LOCKADDR_HI;                /*!< Offset 0x814 (RW) Lock region address for address space n, high word */
+        __OM  uint32_t AS_COMMAND;                    /*!< Offset 0x818 (WO) MMU command register for address space n */
+        __IM  uint32_t AS_FAULTSTATUS;                /*!< Offset 0x81C (RO) MMU fault status register for address space n */
+        __IM  uint32_t AS_FAULTADDRESS_LO;            /*!< Offset 0x820 (RO) Fault Address for address space n, low word */
+        __IM  uint32_t AS_FAULTADDRESS_HI;            /*!< Offset 0x824 (RO) Fault Address for address space n, high word */
+        __IM  uint32_t AS_STATUS;                     /*!< Offset 0x828 (RO) Status flags for address space n */
              RESERVED(0x02C[0x0030 - 0x002C], uint8_t)
-        __IOM uint32_t AS_TRANSCFG_LO;                /*!< Offset 0x130 (RW) Translation table configuration for address space n, low word */
-        __IOM uint32_t AS_TRANSCFG_HI;                /*!< Offset 0x134 (RW) Translation table configuration for address space n, high word */
-        __IM  uint32_t AS_FAULTEXTRA_LO;              /*!< Offset 0x138 (RO) Secondary fault address for address space n, low word */
-        __IM  uint32_t AS_FAULTEXTRA_HI;              /*!< Offset 0x13C (RO) Secondary fault address for address space n, high word */
-             RESERVED(0x040[0x0040 - 0x0040], uint8_t)
-    } MMU_AS [0x010];                                 /*!< Offset 0x100 Configuration registers for address space 0..15 */
-} GPU_MMU_TypeDef; /* size of structure = 0x500 */
+        __IOM uint32_t AS_TRANSCFG_LO;                /*!< Offset 0x830 (RW) Translation table configuration for address space n, low word */
+        __IOM uint32_t AS_TRANSCFG_HI;                /*!< Offset 0x834 (RW) Translation table configuration for address space n, high word */
+        __IM  uint32_t AS_FAULTEXTRA_LO;              /*!< Offset 0x838 (RO) Secondary fault address for address space n, low word */
+        __IM  uint32_t AS_FAULTEXTRA_HI;              /*!< Offset 0x83C (RO) Secondary fault address for address space n, high word */
+    } MMU_AS [0x010];                                 /*!< Offset 0x800 Configuration registers for address space 0..15 */
+} GPU_MMU_TypeDef; /* size of structure = 0xC00 */
 /*
  * @brief HDMI_TX
  */
@@ -2877,7 +2876,6 @@ typedef struct TCON_LCD_Type
     {
         __IOM uint32_t MUL_REG [0x003];               /*!< Offset 0x110 TCON CEU coefficient register0 (N=0,1,2, 4,5,6, 8,9,10) */
         __IOM uint32_t ADD_REG;                       /*!< Offset 0x11C 0x11C+N*0x10 TCON CEU coefficient register1 (N=0,1,2) */
-             RESERVED(0x010[0x0010 - 0x0010], uint8_t)
     } TCON_CEU_COEF [0x003];                          /*!< Offset 0x110 TCON CEU coefficient register1 (N=0,1,2) */
     __IOM uint32_t LCD_CEU_COEF_RANG_REG [0x003];     /*!< Offset 0x140 LCD CEU Coefficient Register2(N=0,1,2) 0x0140+N*0x04 */
          RESERVED(0x14C[0x0160 - 0x014C], uint8_t)

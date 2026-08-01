@@ -8567,7 +8567,7 @@
    </register>
    <cluster>
     <dim>16</dim>
-    <addressOffset>0x00000100</addressOffset>
+    <addressOffset>0x00000800</addressOffset>
     <registers>
      <register>
       <name>AS_TRANSTAB_LO</name>
