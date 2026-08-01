@@ -137,6 +137,24 @@
 #regdef; JOB_IRQ_MASK            ; 0x008   ; Interrupt mask register
 #regdef; JOB_IRQ_STATUS          ; 0x00C   ; Interrupt status register
 
+#aggreg; LOOP; 0x080 3; Bifrost: Slot 0 (0x80), Slot 1 (0xC0), Slot 2 (0x100)
+#regdef; JS_HEAD_NEXT_LO;	0x00;
+#regdef; JS_HEAD_NEXT_HI;	0x04;
+#regdef; JS_TAIL_NEXT_LO;	0x08;
+#regdef; JS_TAIL_NEXT_HI;	0x0C;
+#regdef; JS_CONFIG;      	0x10;
+#regdef; JS_COMMAND;     	0x14;
+#regdef; JS_STATUS;      	0x18;
+#regdef; JS_TAIL_LO;     	0x1C;
+#regdef; JS_TAIL_HI;     	0x20;
+#regdef; JS_HEAD_LO;     	0x24;
+#regdef; JS_HEAD_HI;     	0x28;
+#regdef; JS_AFFINITY;    	0x2C;
+#regdef; JS_X_CONFIG;    	0x30;
+
+#regdef; padding 0; 0x40; Placeholder for 0x40 alignment
+#aggregend;
+
 #typeend;
 
 #type; GPU_MMU
