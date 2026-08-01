@@ -7351,9 +7351,8 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 	{
 		for (uint_fast16_t x = 0; x < alldx; ++ x)
 		{
-			// ломанная
 			const int val = vals [x];
-			uint_fast16_t ynew = y0pix + alldy - 1 - val;
+			const uint_fast16_t ynew = y0pix + alldy - 1 - val;
 
 			switch (glob_view_style)
 			{
