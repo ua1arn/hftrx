@@ -7261,6 +7261,23 @@ static void display2_latchcombo(
 	(void) yspan;
 	(void) pctx;
 }
+
+static void display2_polilyne_power(const gxdrawb_t * db, uint_fast16_t x0pix, uint_fast16_t y0pix, uint_fast16_t alldx, uint_fast16_t alldy, const int * vals, COLORPIP_T color)
+{
+	int val0 = vals [0];
+	uint_fast16_t yold = y0pix + alldy - 1 - val0;
+	// пиковые значения спектра
+	for (uint_fast16_t x = 1; x < alldx; ++ x)
+	{
+		const int val = vals [x];
+		uint_fast16_t ynew = y0pix + alldy - 1 - val;
+		colpip_line(db, x0pix + x - 1, yold, x0pix + x, ynew, color, 0);
+		val0 = val;
+		yold = ynew;
+	}
+
+}
+
 // подготовка изображения спектра
 static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
@@ -7324,22 +7341,11 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 		}
 	}
 
-	uint_fast16_t ylast = 0;
 	display_colorgrid_set(db, x0pix, y0pix, alldx, alldy, f0, bw, & latched_dm);	// отрисовка маркеров частот
 
 	if (1)
 	{
-		// пиковые значения спектра
-		for (uint_fast16_t x = 0; x < alldx; ++ x)
-		{
-			int val;
-			for (val = peaks [x]; val > vals [x]; -- val)
-			{
-				uint_fast16_t ynew = y0pix + alldy - 1 - val;
-				colpip_point(db, x0pix + x, ynew, DSGN_SPECTRUMPEAKS);
-				break;	// только одна точка
-    		}
-		}
+		display2_polilyne_power(db, x0pix, y0pix, alldx, alldy, peaks, DSGN_SPECTRUMPEAKS);
 	}
 	if (1)
 	{
@@ -7349,29 +7355,21 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 			const int val = vals [x];
 			uint_fast16_t ynew = y0pix + alldy - 1 - val;
 
-			if (glob_view_style == VIEW_COLOR) 		// раскрашенный цветовым градиентом спектр
+			switch (glob_view_style)
 			{
+			case VIEW_COLOR:		// раскрашенный цветовым градиентом спектр
 				for (uint_fast16_t y = y0pix + alldy - 1, i = 0; y > ynew; y --, i ++)
 				{
 					const uint_fast16_t ix = normalize(i, 0, alldy - 1, PALETTESIZE - 1);
 					colpip_point(db, x0pix + x, y, wfpalette [ix]);
 				}
-			}
-			else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
-			{
+				break;
+			case VIEW_FILL: // залитый зеленым спектр
 				colpip_set_vline(db, x0pix + x, ynew, alldy + y0pix - ynew, DSGN_SPECTRUMFG);
+				break;
 			}
-			else if (glob_view_style == VIEW_DOTS) // Отдельные точки
-			{
-				colpip_point(db, x0pix + x, ynew, DSGN_SPECTRUMFG);
-			}
-
-			if (x && glob_view_style != VIEW_DOTS)
-			{
-				colpip_line(db, x0pix + x - 1, ylast, x0pix + x, ynew, DSGN_SPECTRUMLINE, 1);
-			}
-			ylast = ynew;
 		}
+		display2_polilyne_power(db, x0pix, y0pix, alldx, alldy, vals, DSGN_SPECTRUMLINE);
 	}
 
 	if (colpip_hasalpha())
@@ -8819,21 +8817,6 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	}
    	}
 
-    if (glob_view_style == VIEW_DOTS)
-    {
-    	// Без заполнения спектра
-    	const PACKEDCOLORPIP_T colordots = DSGN_SPECTRUMLINE;
-        int32_t x;
-    	for (x = 0; x < alldx - 1; ++ x)
-    	{
-    		const int val = vals [x];
-			const int32_t ydst = alldy - 1 - val;
-
-			void * const dst = lv_draw_layer_go_to_xy(layer, coord->x1 + x, coord->y1 + ydst);
-			lv_memcpy(dst, & colordots, LV_COLOR_FORMAT_GET_SIZE(display_get_lvformat()));
-    	}
-   	}
-
     if (glob_view_style == VIEW_FILL)
     {
     	// Одноцветное заполнение спектра
@@ -8853,7 +8836,6 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	}
    	}
 
-    if (glob_view_style != VIEW_DOTS)
     {
     	// линия спектра
         lv_draw_line_dsc_t l;

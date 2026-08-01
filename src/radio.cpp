@@ -4827,7 +4827,6 @@ static const char * const view_types [VIEW_count] =
 	"LINE",
 	"FILL",
 	"COLOR",
-	"DOTS",
 #if WITHVIEW_3DSS
 	"3DSS",
 #endif /* WITHVIEW_3DSS */
