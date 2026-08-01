@@ -224,12 +224,12 @@
 
 
 /* Job Control regs */
-#define JOB_INT_RAWSTAT			0x1000
-#define JOB_INT_CLEAR			0x1004
-#define JOB_INT_MASK			0x1008
-#define JOB_INT_STAT			0x100c
-#define JOB_INT_JS_STATE		0x1010
-#define JOB_INT_THROTTLE		0x1014
+//#define JOB_INT_RAWSTAT			0x1000
+//#define JOB_INT_CLEAR			0x1004
+//#define JOB_INT_MASK			0x1008
+//#define JOB_INT_STAT			0x100c
+//#define JOB_INT_JS_STATE		0x1010
+//#define JOB_INT_THROTTLE		0x1014
 
 #define MK_JS_MASK(j)			(0x10001 << (j))
 #define JOB_INT_MASK_ERR(j)		BIT((j) + 16)
