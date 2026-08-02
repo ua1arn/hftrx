@@ -24,90 +24,57 @@
 
 #include "panfrost_regs.h"
 
-
 #define MALI_PTE_VALID          (1ULL << 0)
-#define MALI_PTE_PAGE           (1ULL << 1)  // Для Level 3 (4KB) или Level 2 (2MB Block)
+#define MALI_PTE_BLOCK          (0ULL << 1) // Финальный блок (разрешен на L1 для 1GB и на L2 для 2MB)
+#define MALI_PTE_PAGE           (1ULL << 1) // Указатель на следующую таблицу (на L0, L1, L2)
 #define MALI_PTE_USER           (1ULL << 6)
 #define MALI_PTE_SHARE_OUTER    (2ULL << 8)
-#define MALI_PTE_SHARE_INNER    (3ULL << 8)
-#define MALI_PTE_XN             (1ULL << 54) // Execute Never
-
-// Атрибуты памяти (индексы в регистре MEMATTR)
-#define MALI_PTE_ATTR_WRITE_ALLOC  (0ULL << 2) // Cacheable
-#define MALI_PTE_ATTR_UNCACHED     (1ULL << 2) // Non-cacheable (для Framebuffer/Commands)
-
-#include <stdint.h>
-
-// Корневая таблица 1-го уровня (Level 1 Page Directory). Покрывает до 512 ГБ.
-__attribute__((aligned(4096))) static uint64_t gpu_mmu_l1_table[512];
-
-// Четыре таблицы 2-го уровня (Level 2 Page Tables).
-// Каждая таблица содержит 512 блоков по 2 МБ, покрывая ровно 1 Гигабайт пространства.
-__attribute__((aligned(4096))) static uint64_t gpu_mmu_l2_table[4][512];
-
-#define MALI_PTE_AF   (1ULL << 10) // Access Flag - Бит 10 (Разрешает прямой доступ к странице без прерываний)
-
-#include <stdint.h>
-
-#define MALI_PTE_AF   (1ULL << 10) // Access Flag - Бит 10 (Устраняет ошибку 0xC8)
-#define MALI_PTE_VALID          (1ULL << 0)
-#define MALI_PTE_BLOCK          (0ULL << 1) // Блок (только для L1 и L2)
-#define MALI_PTE_PAGE           (1ULL << 1) // Страница/Таблица (для L1, L2 и L3)
-#define MALI_PTE_USER           (1ULL << 6)
-#define MALI_PTE_SHARE_INNER    (3ULL << 8)
 #define MALI_PTE_AF             (1ULL << 10) // Access Flag
-#define MALI_PTE_ATTR_UNCACHED  (1ULL << 2)  // Index 1 из MEMATTR
-#define MALI_PTE_VALID          (1ULL << 0)
-#define MALI_PTE_BLOCK          (0ULL << 1)
-#define MALI_PTE_PAGE           (1ULL << 1)
-#define MALI_PTE_USER           (1ULL << 6)
+#define MALI_PTE_ATTR_IDX_1     (1ULL << 2)  // Non-Cacheable домен (0x22 из MEMATTR)
 
-// ИСПРАВЛЕНО: Для Bifrost в связке с Allwinner T507/H616 используется Outer Shareable (2ULL)
-// или Non-Shareable (0ULL), так как Inner Shareable без включенного TrustZone/ОС сбоит на шине AXI.
-#define MALI_PTE_SHARE_OUTER    (2ULL << 8)
+// Корневая таблица Уровня 0 (Level 0)
+__attribute__((aligned(4096))) static uint64_t gpu_mmu_l0_strict_table [512];
 
-// ИСПРАВЛЕНО: Бит Access Flag (бит 10)
-#define MALI_PTE_AF             (1ULL << 10)
+// Плоская таблица Уровня 1 (Level 1) на 4 гигабайтных блока
+__attribute__((aligned(4096))) static uint64_t gpu_mmu_l1_block_table [512];
 
-// ИСПРАВЛЕНО: Индекс атрибута памяти (биты 4:2).
-// Значение 1 указывает на Индекс 1 в MEMATTR (который мы сделаем 0x22 - Non-Cacheable).
-#define MALI_PTE_ATTR_IDX_1     (1ULL << 2)
 
-__attribute__((aligned(4096))) static uint64_t gpu_mmu_l1_table[512];
-__attribute__((aligned(4096))) static uint64_t gpu_mmu_l2_flat_table[2048];
-
-void gpu_mmu_build_4gb_identity_table(void)
+void gpu_mmu_build_4gb_l1_blocks(void)
 {
-    PRINTF("Mali-G31: Building 4GB Identity Mapping with Panfrost Coherency flags...\n");
+    PRINTF("Mali-G31: Building 4GB Identity Mapping via L0->L1 block structure...\n");
 
-    for (int i = 0; i < 512; i++)  gpu_mmu_l1_table[i] = 0;
-    for (int i = 0; i < 2048; i++) gpu_mmu_l2_flat_table[i] = 0;
+    // Полностью зануляем таблицы
+    for (int i = 0; i < 512; i++) {
+        gpu_mmu_l0_strict_table[i] = 0;
+        gpu_mmu_l1_block_table[i] = 0;
+    }
 
     uint64_t phys_addr = 0x00000000;
 
-    // Заполняем все 4 ГБ пространства (2048 блоков по 2 МБ)
-    for (int i = 0; i < 2048; i++) {
-        // Собираем дескриптор с флагами OUTER Shareable и жестким принудительным AF
-        gpu_mmu_l2_flat_table[i] = phys_addr |
-                                   MALI_PTE_VALID |
-                                   MALI_PTE_BLOCK |
-                                   MALI_PTE_USER |
-                                   MALI_PTE_SHARE_OUTER | /* Сменили на Outer */
-                                   MALI_PTE_AF |          /* Бит 10 взведен */
-                                   MALI_PTE_ATTR_IDX_1;   /* Ссылка на Non-Cacheable домен */
-
-        phys_addr += (2ULL * 1024ULL * 1024ULL);
-    }
-
-    // Связываем L1 с L2 кусками
+    // 1. Заполняем таблицу Уровня 1 (L1) четырьмя честными блоками по 1 Гигабайту
     for (int gb = 0; gb < 4; gb++) {
-        uint64_t l2_chunk_phys = (uintptr_t)&gpu_mmu_l2_flat_table[gb * 512];
-        gpu_mmu_l1_table[gb] = l2_chunk_phys | MALI_PTE_VALID | MALI_PTE_PAGE;
+        // На Уровне 1 бит 1 равен 0 (BLOCK) — это легитимный конечный 1ГБ кусок памяти в LPAE
+        gpu_mmu_l1_block_table[gb] = phys_addr |
+                                     MALI_PTE_VALID |
+                                     MALI_PTE_BLOCK |
+                                     MALI_PTE_USER |	// if commented - MMU Fault Status (0x01802420): 0x7C0002C8
+                                     MALI_PTE_SHARE_OUTER |
+                                     MALI_PTE_AF |          /* Бит 10 взведен */
+                                     MALI_PTE_ATTR_IDX_1 |
+									 0;
+
+        phys_addr += (1ULL * 1024ULL * 1024ULL * 1024ULL); // Шаг 1 ГБ
     }
 
-    // Синхронизируем через функцию вашего проекта hftrx
-    dcache_clean((uintptr_t)gpu_mmu_l1_table, sizeof(gpu_mmu_l1_table));
-    dcache_clean((uintptr_t)gpu_mmu_l2_flat_table, sizeof(gpu_mmu_l2_flat_table));
+    // 2. Связываем корневую таблицу L0 с нашей L1 таблицей блоков
+    // Индекс 0 покрывает первые 512 Гигабайт, что с избытком накрывает наши 4 ГБ.
+    // На Уровне 0 дескриптор ОБЯЗАН быть Table Pointer (VALID + PAGE)
+    uint64_t l1_table_phys = (uintptr_t)gpu_mmu_l1_block_table;
+    gpu_mmu_l0_strict_table [0] = l1_table_phys | MALI_PTE_VALID | MALI_PTE_PAGE;
+
+    // 3. Синхронизируем память через dcache_clean вашего проекта hftrx
+    dcache_clean((uintptr_t)gpu_mmu_l0_strict_table, sizeof(gpu_mmu_l0_strict_table));
+    dcache_clean((uintptr_t)gpu_mmu_l1_block_table, sizeof(gpu_mmu_l1_block_table));
 
     __asm__ volatile("dsb sy" : : : "memory");
 }
@@ -687,54 +654,6 @@ void gpu_test(void)
 
 }
 #define GPU_L2_MMU_CONFIG  0x0008 // Смещение внутри блока GPU_CONTROL (0x01800008)
-#define MALI_GPU_MMU_BASE 0x01802000
-
-// Смещения регистров внутри блока AS0 (база 0x01802800)
-#define MMU_AS0_TRANSTAB_LO   (MALI_GPU_MMU_BASE + 0x800 + 0x00)
-#define MMU_AS0_TRANSTAB_HI   (MALI_GPU_MMU_BASE + 0x800 + 0x04)
-#define MMU_AS0_MEMATTR_LO    (MALI_GPU_MMU_BASE + 0x800 + 0x08)
-#define MMU_AS0_COMMAND       (MALI_GPU_MMU_BASE + 0x800 + 0x18)
-#define MMU_AS0_STATUS        (MALI_GPU_MMU_BASE + 0x800 + 0x1C)
-
-void mali_g31_mmu_activate(uintptr_t l1_page_table_phys)
-{
-    volatile uint32_t *as0_transtab_lo = (volatile uint32_t *)MMU_AS0_TRANSTAB_LO;
-    volatile uint32_t *as0_transtab_hi = (volatile uint32_t *)MMU_AS0_TRANSTAB_HI;
-    volatile uint32_t *as0_memattr_lo  = (volatile uint32_t *)MMU_AS0_MEMATTR_LO;
-    volatile uint32_t *as0_command     = (volatile uint32_t *)MMU_AS0_COMMAND;
-    volatile uint32_t *as0_status      = (volatile uint32_t *)MMU_AS0_STATUS;
-
-    PRINTF("Mali-G31: Writing page table pointer to MMU AS0...\n");
-
-    // 1. Установка атрибутов кэширования для дескрипторов (Inner/Outer Write-Back)
-    *as0_memattr_lo = 0x0A22;
-
-    // 2. Формируем 64-битное значение TRANSTAB.
-    // Бит 0 (LPAE) и Бит 1 (Включение MMU трансляции) = 0x03
-    uint64_t transtab_val = (uint64_t)l1_page_table_phys | 0x03;
-
-    // Пишем в строгом порядке: сначала HI, затем LO
-    *as0_transtab_hi = (uint32_t)((transtab_val >> 32) & 0xFFFFFFFF);
-    *as0_transtab_lo = (uint32_t)(transtab_val & 0xFFFFFFFF);
-
-    __asm__ volatile("dsb sy" : : : "memory");
-
-    // 3. Ждем, пока автомат MMU выйдет из состояния BUSY (если был занят)
-    while (*as0_status & 0x1) {
-        // Опрос бита BUSY
-    }
-
-    // 4. Подаем команду UPDATE (0x01) — заставляем MMU прочитать таблицу страниц из ОЗУ
-    *as0_command = 0x01;
-    __asm__ volatile("dsb sy" : : : "memory");
-
-    // 5. Ожидаем завершения чтения конфигурации
-    while (*as0_status & 0x1) {
-        // Как только MMU примет таблицу, этот бит сбросится в 0
-    }
-
-    PRINTF("Mali-G31: MMU AS0 translation is now hardware-enabled!\n");
-}
 
 void mali_bifrost_open_mmu_bus(void)
 {
@@ -755,10 +674,15 @@ void mali_g31_mmu_enable(uintptr_t l1_page_table_phys_addr)
     unsigned as = 0; // Шейдерный домен по умолчанию
 
     // 1. Задаем свойства кэширования для дескрипторов таблиц страниц
-    GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x0A22;
+    GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x22AA;
+    // 2. Настраиваем каноничную маску атрибутов кэширования для Bifrost (Panfrost)
+	// Индекс 0 = 0xAA (Cacheable), Индекс 1 = 0x22 (Non-Cacheable)
+	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x000022AA;
+	__asm__ volatile("dsb sy" : : : "memory");
 
-    // 2. Формируем 64-битное значение корня таблиц (Включаем LPAE + Активация = 0x03)
-    uint64_t transtab_val = (uint64_t)l1_page_table_phys_addr | 0x03;
+	// 3. Загружаем физический адрес плоской таблицы
+	// Младшие биты 0x03 включают режим трансляции LPAE
+	uint64_t transtab_val = (uintptr_t)gpu_mmu_l0_strict_table | 0x03;
 
     // 3. Записываем адрес в регистры AS0 (теперь они строго на 0x01802400)
     GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = (uint32_t)(transtab_val >> 32);
@@ -902,25 +826,11 @@ void board_gpu_initialize(void)
 //	gpu_as_command(0, AS_COMMAND_FLUSH_MEM);
 
     // 1. Создаем таблицы страниц в ОЗУ
-	gpu_mmu_build_4gb_identity_table();
-
-    mali_g31_mmu_activate((uintptr_t) gpu_mmu_l1_table);
+    gpu_mmu_build_4gb_l1_blocks();
 
 	mali_bifrost_l2_ready();
 
-	mali_g31_mmu_enable((uintptr_t) gpu_mmu_l1_table);
-
-    mali_g31_mmu_activate((uintptr_t) gpu_mmu_l1_table);
-
-	mali_bifrost_l2_ready();
-
-	mali_g31_mmu_enable((uintptr_t) gpu_mmu_l1_table);
-
-	gpu_as_command(0, AS_COMMAND_NOP);
-	gpu_as_command(0, AS_COMMAND_UPDATE);
-	gpu_as_command(0, AS_COMMAND_INVALIDATE);
-	gpu_as_command(0, AS_COMMAND_FLUSH_PT);
-	gpu_as_command(0, AS_COMMAND_FLUSH_MEM);
+	mali_g31_mmu_enable((uintptr_t) gpu_mmu_l0_strict_table);
     unsigned as = 0; // Наш Address Space 0 (смещение 0x400 от 0x01802000)
 
     // 2. ИСПРАВЛЕНО: Задаем каноничную маску атрибутов памяти для Bifrost v6!
@@ -929,7 +839,7 @@ void board_gpu_initialize(void)
     __asm__ volatile("dsb sy" : : : "memory");
 
     // 3. Загружаем корень таблиц первого уровня
-    uint64_t transtab_val = (uintptr_t)gpu_mmu_l1_table | 0x03; // LPAE + Enable
+    uint64_t transtab_val = (uintptr_t)gpu_mmu_l0_strict_table | 0x03; // LPAE + Enable
     GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = (uint32_t)(transtab_val >> 32);
     GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = (uint32_t)(transtab_val & 0xFFFFFFFF);
     __asm__ volatile("dsb sy" : : : "memory");
@@ -943,6 +853,13 @@ void board_gpu_initialize(void)
     GPU_MMU->MMU_AS[as].AS_COMMAND = 0x01; // AS_COMMAND_UPDATE
     __asm__ volatile("dsb sy" : : : "memory");
     while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
+
+
+	gpu_as_command(as, AS_COMMAND_NOP);
+	gpu_as_command(as, AS_COMMAND_UPDATE);
+	gpu_as_command(as, AS_COMMAND_INVALIDATE);
+//	gpu_as_command(as, AS_COMMAND_FLUSH_PT);
+//	gpu_as_command(as, AS_COMMAND_FLUSH_MEM);
 
     PRINTF("Mali-G31: MMU Coherency initialized successfully.\n");
 
