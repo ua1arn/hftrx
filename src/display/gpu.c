@@ -273,7 +273,7 @@ typedef struct __attribute__((packed)) {
     uint32_t vertex_count;     // Количество вершин (для 1 треугольника = 3)
     uint32_t attributes;       // Настройки формата вершин
     uint64_t primitive_size;
-    uint64_t draw_flags;
+    uint64_t renderer_state;
 } mali_tiler_job;
 
 // Расширенный дескриптор для Fragment задач
@@ -289,6 +289,7 @@ typedef struct __attribute__((packed)) {
 
     __IO uint32_t clear_color;            /* +0x38: Цвет очистки экрана в формате ARGB8888 (если включен флаг) */
     __IO uint32_t fragment_flags;         /* +0x3C: Флаги фрагментного конвейера (биты очистки, глубина, трафарет) */
+    __IO uint32_t r1 [2];
 } mali_fragment_job;
 
 // Выравнивание для кэш-линий GPU
@@ -306,17 +307,112 @@ GPU_ALIGN static mali_tiler_job    v_job;
 GPU_ALIGN static mali_fragment_job f_job;
 
 // Область памяти для кучи тайлера (Mali Tiler требует буфер для сортировки геометрии)
-__attribute__((aligned(4096))) static uint8_t tiler_heap_mem[64 * 00 * 1024];
+__attribute__((aligned(4096))) static uint8_t tiler_heap_mem[64 * 300 * 1024];
+
+#include <stdint.h>
+
+/**
+  * @brief Дескриптор конкретной поверхности цвета (Render Target Descriptor)
+  * Размер: ровно 32 байта (0x20)
+  */
+typedef struct __attribute__((packed)) {
+    __IO uint64_t base_address;          /* +0x00: Физический адрес буфера экрана (из вашего Display Engine) */
+    __IO uint32_t stride;                /* +0x08: Шаг строки в байтах (width * 4 для 32-бит ARGB) */
+    __IO uint32_t format;                /* +0x0C: Формат пикселя (0x18001000 для ARGB8888, 0x18005000 для BGRA8888) */
+    __IO uint32_t flags;                 /* +0x10: Аппаратные флаги поверхности (Panfrost пишет 0x00000000 для линейного буфера) */
+    __IO uint32_t reserved_rt[3];        /* +0x14 - +0x1F: Паддинг */
+} mali_render_target_desc_t;
+
+/**
+  * @brief Главный глобальный дескриптор Framebuffer для Bifrost v6
+  * Размер: ровно 128 байт (0x80). Должен бытьpacked и выровнен по кэш-линии (64 байта).
+  */
+typedef struct __attribute__((packed)) {
+    /* --- Глобальные параметры окна (0x00 - 0x1F) --- */
+    __IO uint32_t width_minus_1;         /* +0x00: Ширина экрана минус 1 (например, 799 для 800) */
+    __IO uint32_t height_minus_1;        /* +0x04: Высота экрана минус 1 (например, 479 для 480) */
+    __IO uint32_t sample_count;          /* +0x08: Мультисэмплинг (MSAA). Пишем 0x00000001 (1 sample / без MSAA) */
+    __IO uint32_t msub_config;           /* +0x0C: Внутренняя конфигурация плиточного процессора (Panfrost пишет 0) */
+    __IO uint64_t rt_pointer;            /* +0x10: 64-бит физ. адрес, указывающий на массив поверхностей Render Targets (на смещение +0x40) */
+    __IO uint64_t reserved_hdr;          /* +0x18: Резерв */
+
+    /* --- Параметры очистки и вспомогательных буферов (0x20 - 0x3F) --- */
+    __IO uint64_t zs_address;            /* +0x20: Физический адрес буфера глубины/трафарета (Depth/Stencil). 0, если выключен */
+    __IO uint32_t zs_stride;             /* +0x28: Шаг буфера глубины */
+    __IO uint32_t clear_flags;           /* +0x2C: Флаги очистки */
+    __IO uint32_t padding_hdr[4];        /* +0x30 - +0x3F: Паддинг до 64 байт */
+
+    /* --- Массив описания поверхностей вывода (0x40 - 0x7F) --- */
+    /* Аппаратно заголовок и первая RT сгруппированы вместе. В `rt_pointer` мы передадим адрес этой ячейки. */
+    mali_render_target_desc_t rt[1];     /* +0x40: Описание Render Target 0 (Цветовой буфер экрана) */
+
+} mali_framebuffer_desc_t;
 
 typedef struct __attribute__((packed)) {
-    uint64_t base_address;  // Физический адрес экрана (из вашего Display Engine)
-    uint32_t width;
-    uint32_t height;
-    uint32_t stride;        // Шаг строки в байтах (width * 4 для 32-бит RGBA)
-    uint32_t format;        // Формат пикселя (например, 0x18004000 для RGBA8888)
+    /* --- Глобальные параметры окна (0x00 - 0x1F) --- */
+    __IO uint32_t width_minus_1;         /* +0x00: Ширина экрана минус 1 (например, 799 для 800) */
+    __IO uint32_t height_minus_1;        /* +0x04: Высота экрана минус 1 (например, 479 для 480) */
+    __IO uint32_t sample_count;          /* +0x08: Мультисэмплинг (MSAA). Пишем 0x00000001 (1 sample / без MSAA) */
+    __IO uint32_t msub_config;           /* +0x0C: Внутренняя конфигурация плиточного процессора (Panfrost пишет 0) */
+    __IO uint64_t rt_pointer;            /* +0x10: 64-бит физ. адрес, указывающий на массив поверхностей Render Targets (на смещение +0x40) */
+    __IO uint64_t reserved_hdr;          /* +0x18: Резерв */
+
+    /* --- Параметры очистки и вспомогательных буферов (0x20 - 0x3F) --- */
+    __IO uint64_t zs_address;            /* +0x20: Физический адрес буфера глубины/трафарета (Depth/Stencil). 0, если выключен */
+    __IO uint32_t zs_stride;             /* +0x28: Шаг буфера глубины */
+    __IO uint32_t clear_flags;           /* +0x2C: Флаги очистки */
+    __IO uint32_t padding_hdr[4];        /* +0x30 - +0x3F: Паддинг до 64 байт */
+
+    /* --- Массив описания поверхностей вывода (0x40 - 0x7F) --- */
+    /* Аппаратно заголовок и первая RT сгруппированы вместе. В `rt_pointer` мы передадим адрес этой ячейки. */
+    mali_render_target_desc_t rt[1];     /* +0x40: Описание Render Target 0 (Цветовой буфер экрана) */
 } mali_framebuffer_desc;
 
 GPU_ALIGN static mali_framebuffer_desc fb_desc;
+
+// Минимальный вершинный шейдер (Vertex Shader) для Bifrost
+// Задача: Пропустить координаты вершин (X, Y, Z, W) без изменений на стадию растеризации
+RAMNC GPU_ALIGN static const uint32_t bifrost_vertex_shader_code[] = {
+    0x7C003C00, 0x00000000, 0x00000000, 0x00000000, // Инструкция прохода позиции (Pass-through)
+    0x00000000, 0x00000000, 0x00000000, 0x00000000  // Конец шейдера (Команда терминации потока)
+};
+
+// Минимальный фрагментный/пиксельный шейдер (Fragment Shader) для Bifrost
+// Задача: Записать фиксированный цвет RGBA (0.0, 1.0, 0.0, 1.0) - Чистый зеленый
+RAMNC GPU_ALIGN static const uint32_t bifrost_fragment_shader_code[] = {
+    0x9C003C00, 0x0000FFFF, 0x00000000, 0x3F800000, // Запись зеленого компонента в квад-вектор
+    0x00000000, 0x00000000, 0x00000000, 0x00000000  // Команда вывода в Render Target 0 и выход
+};
+
+// Структура описания шейдера для планировщика задач Bifrost
+typedef struct __attribute__((packed)) {
+    uint64_t shader_code_ptr;    // Физический адрес бинарного кода шейдера
+    uint32_t properties;         // Флаги: количество регистров, тип шейдера
+    uint16_t stack_size;         // Размер стека для потоков (0 для заглушки)
+    uint16_t reserved;
+    uint64_t preload_regs;       // Настройки предварительной загрузки регистров
+    uint64_t uniform_buffer_ptr; // Адрес констант (Uniforms), если есть
+} mali_shader_state;
+
+// Контекст состояния отрисовки (Renderer State)
+typedef struct __attribute__((packed)) {
+    mali_shader_state vertex_shader;
+    mali_shader_state fragment_shader;
+    uint32_t blend_equation;     // Формула смешивания цветов (Alpha blending)
+    uint32_t blend_constant;     // Константа прозрачности
+    uint64_t attribute_meta_ptr; // Описание формата входных вершин (X, Y, Z)
+} mali_renderer_state;
+
+GPU_ALIGN static mali_renderer_state gpu_program_state;
+
+typedef struct __attribute__((packed)) {
+    uint64_t buffer_ptr;  // Физический адрес массива координат triangle_vertices
+    uint32_t stride;      // Шаг между вершинами: sizeof(float) * 3 = 12 байт
+    uint32_t size;        // Общий размер буфера вершин в байтах
+    uint32_t format;      // Код формата Bifrost: 0x0400000A (3D Float вектор)
+} mali_attribute_meta;
+
+GPU_ALIGN static mali_attribute_meta gpu_vertex_input_meta;
 
 // Номера слотов задач (обычно слот 0 - Vertex/Compute, слот 1 - Fragment)
 #define COMMAND_SLOT_VERTEX   0
@@ -351,18 +447,45 @@ void gpu_diagnose_fault(unsigned slot)
 
 // Регистры отправки команд в слот (сверьтесь со структурой GPU_JOB_CONTROL в panfrost_regs.h)
 // Обычные имена регистров в драйвере Panfrost: JS_COMMAND, JS_HEAD_NEXT
+void gpu_diagnose_slot1_fault(void)
+{
+    // Читаем статус ошибки Слота 1 (смещение 0x24 от 0x1880 -> адрес 0x018018A4)
+    uint32_t slot1_status = GPU_JOB_CONTROL->LOOP[1].JS_STATUS;
+
+    // Физический адрес, на котором споткнулся Fragment-парсер
+    uint32_t fault_lo = GPU_JOB_CONTROL->LOOP[1].JS_HEAD_LO;
+    uint32_t fault_hi = GPU_JOB_CONTROL->LOOP[1].JS_HEAD_HI;
+
+    PRINTF("\n-> FRAGMENT STAGE FAULT DIAGNOSIS:\n");
+    PRINTF("   Slot 1 JS_STATUS (0x18A4) = 0x%08X\n", (unsigned)slot1_status);
+    PRINTF("   Slot 1 Stopped at Address: 0x%08X%08X\n", (unsigned)fault_hi, (unsigned)fault_lo);
+
+    // Проверяем, не ругнулся ли при этом MMU (адресное пространство AS0 на 0x400)
+    PRINTF("   MMU Fault Status (0x01802420) = 0x%08X\n", (unsigned)GPU_MMU->MMU_AS [0].AS_FAULTSTATUS);
+    PRINTF("   MMU Fault Address = 0x%08X%08X\n",
+           (unsigned)GPU_MMU->MMU_AS [0].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS [0].AS_FAULTADDRESS_LO);
+}
+#define MALI_BIFROST_PRIM_TRIANGLES          (0x4ULL << 0)   /* Тип примитива: GL_TRIANGLES */
+#define MALI_BIFROST_PRIM_INDEX_NONE         (0x0ULL << 4)   /* Без индексного буфера (Arrays Mode) */
+#define MALI_BIFROST_PRIM_INDEX_U16          (0x2ULL << 4)   /* Если бы использовался Index Buffer uint16_t */
+#define MALI_BIFROST_PRIM_CULL_NONE          (0x0ULL << 8)   /* Выключить отсечение нелицевых граней (No Culling) */
+#define MALI_BIFROST_PRIM_CULL_CCW           (0x1ULL << 8)   /* Отсекать Counter-Clockwise полигоны */
+#define MALI_BIFROST_PRIM_CULL_CW            (0x2ULL << 8)   /* Отсекать Clockwise полигоны */
+
+void gpu_draw_triangle2(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height);
 
 void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height)
 {
+	gpu_draw_triangle2(framebuffer_phys_addr, width, height);
     PRINTF("Assembling GPU Job Chain for Triangle...\n");
     // https://android.googlesource.com/platform/external/mesa3d/+/e061bf004b5/src/panfrost/include/panfrost-job.h
 
     // 1. Инициализация описания целевого экрана (Framebuffer)
-    fb_desc.base_address = framebuffer_phys_addr;
-    fb_desc.width = width;
-    fb_desc.height = height;
-    fb_desc.stride = width * 4;
-    fb_desc.format = MALI_FB_FORMAT_ARGB8888;//0x18004000; // Простой формат записи RGBA8888 в Bifrost
+    fb_desc.rt [0].base_address = framebuffer_phys_addr;
+    fb_desc.rt [0].stride = width * 4;
+    fb_desc.rt [0].format = MALI_FB_FORMAT_ARGB8888;//0x18004000; // Простой формат записи RGBA8888 в Bifrost
+    fb_desc.sample_count = 1;
+    fb_desc.rt_pointer = (uintptr_t) & fb_desc.rt [0] | 0x3;
 
     // 2. Настройка первой задачи: Координаты и геометрия (Vertex / Tiler Job)
     v_job.header.job_type = JOB_TYPE_TILER;
@@ -373,7 +496,10 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     v_job.tiler_heap = (uintptr_t)tiler_heap_mem;
     v_job.vertex_buffer = (uintptr_t)triangle_vertices;
     v_job.vertex_count = 3; // 3 вершины формируют 1 треугольник
-    v_job.draw_flags = 0x00000004; // Флаг типа примитива: TRIANGLES
+    //v_job.draw_flags = MALI_BIFROST_PRIM_TRIANGLES; // Флаг типа примитива: TRIANGLES
+    // Формула Panfrost для привязки Renderer State в Bifrost v6
+    v_job.renderer_state = (uintptr_t)&gpu_program_state | 0x0000000000000007ULL;
+
 
     // 3. Настройка второй задачи: Отрисовка пикселей (Fragment Job)
     f_job.header.job_type = JOB_TYPE_FRAGMENT;
@@ -385,6 +511,9 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     f_job.tile_render_list = (uintptr_t)tiler_heap_mem; // Читает геометрию из кучи тайлера
     f_job.width_minus_1 = width - 1;
     f_job.height_minus_1 = height - 1;
+    // Формула расчета шага тайлов дисплея для Bifrost v6
+    uint32_t stride = (width + 15) / 16; // Округление ширины до сетки тайлов 16x16
+    f_job.stride_and_format = (stride & 0xFFFF);// | (1U << 16);
     f_job.clear_color = 0xFF0000FF; // Фоновый цвет очистки, если нужно (Красный)
 
     // КРИТИЧЕСКИ ВАЖНО: Выталкиваем структуры из кэша ядер процессора (CPU L1/L2) в ОЗУ,
@@ -394,6 +523,14 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
      dcache_clean((uintptr_t)&f_job, sizeof(f_job));
      dcache_clean((uintptr_t)&fb_desc, sizeof(fb_desc));
      dcache_clean((uintptr_t)triangle_vertices, sizeof(triangle_vertices));
+     dcache_clean((uintptr_t)& gpu_program_state, sizeof(gpu_program_state));
+
+
+     PRINTF("v_job: %p (%u)\n", & v_job, (unsigned) sizeof v_job);
+     PRINTF("f_job: %p (%u)\n", & f_job, (unsigned) sizeof f_job);
+     PRINTF("fb_desc: %p (%u)\n", & fb_desc, (unsigned) sizeof fb_desc);
+     PRINTF("triangle_vertices: %p (%u)\n", & triangle_vertices, (unsigned) sizeof triangle_vertices);
+     PRINTF("gpu_program_state: %p (%u)\n", & gpu_program_state, (unsigned) sizeof gpu_program_state);
 
     // 4. Запуск цепочки геометрии в Slot 0
     PRINTF("Submitting Vertex Job to Slot 0...\n");
@@ -424,8 +561,6 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     local_delay_ms(200);
 //    PRINTF("GPU_MMU:\n");
 //    printhex32(GPU_MMU_BASE, GPU_MMU, 4096);
-    PRINTF("v_job: %p (%u)\n", & v_job, (unsigned) sizeof v_job);
-    PRINTF("f_job: %p(%u)\n", & f_job, (unsigned) sizeof f_job);
     //memset32(GPU_JOB_CONTROL, ~0, 4096);
 //	PRINTF("GPU_JOB_CONTROL:\n");
 //	printhex32(GPU_JOB_CONTROL_BASE, GPU_JOB_CONTROL, 4096);
@@ -472,6 +607,7 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     printhex32((uintptr_t) & v_job, & v_job, sizeof v_job);
     PRINTF("f_job:\n");
     printhex32((uintptr_t) & f_job, & f_job, sizeof f_job);
+    gpu_diagnose_slot1_fault();
     // Ожидание завершения отрисовки пикселей в память кадра
     while ((GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT & (1 << COMMAND_SLOT_FRAGMENT)) == 0) {
         // Опрос статуса
@@ -484,50 +620,6 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
 }
 
 #define GPU_ALIGN __attribute__((aligned(64)))
-
-// Минимальный вершинный шейдер (Vertex Shader) для Bifrost
-// Задача: Пропустить координаты вершин (X, Y, Z, W) без изменений на стадию растеризации
-RAMNC GPU_ALIGN static const uint32_t bifrost_vertex_shader_code[] = {
-    0x7C003C00, 0x00000000, 0x00000000, 0x00000000, // Инструкция прохода позиции (Pass-through)
-    0x00000000, 0x00000000, 0x00000000, 0x00000000  // Конец шейдера (Команда терминации потока)
-};
-
-// Минимальный фрагментный/пиксельный шейдер (Fragment Shader) для Bifrost
-// Задача: Записать фиксированный цвет RGBA (0.0, 1.0, 0.0, 1.0) - Чистый зеленый
-RAMNC GPU_ALIGN static const uint32_t bifrost_fragment_shader_code[] = {
-    0x9C003C00, 0x0000FFFF, 0x00000000, 0x3F800000, // Запись зеленого компонента в квад-вектор
-    0x00000000, 0x00000000, 0x00000000, 0x00000000  // Команда вывода в Render Target 0 и выход
-};
-
-// Структура описания шейдера для планировщика задач Bifrost
-typedef struct __attribute__((packed)) {
-    uint64_t shader_code_ptr;    // Физический адрес бинарного кода шейдера
-    uint32_t properties;         // Флаги: количество регистров, тип шейдера
-    uint16_t stack_size;         // Размер стека для потоков (0 для заглушки)
-    uint16_t reserved;
-    uint64_t preload_regs;       // Настройки предварительной загрузки регистров
-    uint64_t uniform_buffer_ptr; // Адрес констант (Uniforms), если есть
-} mali_shader_state;
-
-// Контекст состояния отрисовки (Renderer State)
-typedef struct __attribute__((packed)) {
-    mali_shader_state vertex_shader;
-    mali_shader_state fragment_shader;
-    uint32_t blend_equation;     // Формула смешивания цветов (Alpha blending)
-    uint32_t blend_constant;     // Константа прозрачности
-    uint64_t attribute_meta_ptr; // Описание формата входных вершин (X, Y, Z)
-} mali_renderer_state;
-
-GPU_ALIGN static mali_renderer_state gpu_program_state;
-
-typedef struct __attribute__((packed)) {
-    uint64_t buffer_ptr;  // Физический адрес массива координат triangle_vertices
-    uint32_t stride;      // Шаг между вершинами: sizeof(float) * 3 = 12 байт
-    uint32_t size;        // Общий размер буфера вершин в байтах
-    uint32_t format;      // Код формата Bifrost: 0x0400000A (3D Float вектор)
-} mali_attribute_meta;
-
-GPU_ALIGN static mali_attribute_meta gpu_vertex_input_meta;
 
 
 void gpu_draw_triangle2(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height)
