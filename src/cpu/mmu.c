@@ -22,43 +22,6 @@
 
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV
 
-#if WITHGPUHW
-// GPU MMU
-
-static unsigned gpu_MaliG31_4k_mcached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
-{
-	return USBD_poke_u32(b, UINT64_C(0));//TTB_SMALLSECTION_AARCH32_4K_CACHED(addr, ro, xn);
-}
-static unsigned gpu_MaliG31_4k_mncached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
-{
-	return USBD_poke_u32(b, UINT64_C(0));//TTB_SMALLSECTION_AARCH32_4K_NCACHED(addr, ro, xn);
-}
-static unsigned gpu_MaliG31_4k_mdevice(uint8_t * b, uint_fast64_t addr)
-{
-	return USBD_poke_u32(b, UINT64_C(0));//TTB_SMALLSECTION_AARCH32_4K_DEVICE(addr);
-}
-static unsigned gpu_MaliG31_4k_mnoaccess(uint8_t * b, uint_fast64_t addr)
-{
-	return USBD_poke_u32(b, UINT32_C(0));
-}
-// Next level table
-static unsigned gpu_MaliG31_4k_mtable(uint8_t * b, uint_fast64_t addr, int level)
-{
-	// 1KB granulation address
-	return USBD_poke_u32(b, UINT64_C(0));//TTB_AARCH32_PAGETABLE(addr);	// First-level table entry - Page table
-}
-
-static const getmmudesc_t gpu_MaliG31_table4k =
-{
-	.mcached = gpu_MaliG31_4k_mcached,
-	.mncached = gpu_MaliG31_4k_mncached,
-	.mdevice = gpu_MaliG31_4k_mdevice,
-	.mnoaccess = gpu_MaliG31_4k_mnoaccess,
-	.mtable = gpu_MaliG31_4k_mtable
-};
-
-#endif /* WITHGPUHW */
-
 #if defined (__CORTEX_M)
 	#if CPUSTYLE_STM32H7XX
 
@@ -1421,56 +1384,6 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 
 #endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV */
 
-#if WITHGPUHW && (CPUSTYLE_T507)
-	// pages of 1 MB
-	#define GPU_MALIG31_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB * 1024)
-	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t gpu_ttb0_base [GPU_MALIG31_LEVEL0_SIZE * sizeof (uint32_t)];	// вся физическая память страницами по 1 мегабайт
-	static const mmulayout_t gpummuinfo [] =
-	{
-		{
-			.arch = & gpu_MaliG31_table4k,
-			.phyaddr = 0x00000000,	/* Начало физической памяти */
-			.phybytes = NULL,
-			.phypageszlog2 = 20,	// 1MB
-			.pagecount = GPU_MALIG31_LEVEL0_SIZE,
-			.table = gpu_ttb0_base,
-			.level = INT_MAX,	// memory pages with access bits
-			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
-		},
-	};
-	//static const int gpuglongdesc = 0;
-
-	#define MALI_PTE_VALID          (1ULL << 0)
-	#define MALI_PTE_BLOCK          (0ULL << 1) // Финальный блок (разрешен на L1 для 1GB и на L2 для 2MB)
-	#define MALI_PTE_PAGE           (1ULL << 1) // Указатель на следующую таблицу (на L0, L1, L2)
-	#define MALI_PTE_USER           (1ULL << 6)
-	#define MALI_PTE_SHARE_OUTER    (2ULL << 8)
-	#define MALI_PTE_AF             (1ULL << 10) // Access Flag
-	#define MALI_PTE_ATTR_IDX_1     (1ULL << 2)  // Non-Cacheable домен (0x22 из MEMATTR)
-
-	/* зависящая от процессора карта распределения memory regions */
-	static unsigned
-	gpu_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, uint8_t * b, uint_fast64_t phys_addr, int ro, int xn)
-	{
-        uint64_t desc = phys_addr |
-                                     MALI_PTE_VALID |
-                                     MALI_PTE_BLOCK |
-                                     MALI_PTE_USER |	// if commented - MMU Fault Status (0x01802420): 0x7C0002C8
-                                     MALI_PTE_SHARE_OUTER |
-                                     MALI_PTE_AF |          /* Бит 10 взведен */
-                                     MALI_PTE_ATTR_IDX_1 |
-									 0;
-        //return USBD_poke_u64(b, dsec);
-		return 4;
-	}
-
-	uintptr_t hardware_get_g31_mmutable(void)
-	{
-		return (uintptr_t) ttb0_base;//gpu_ttb0_base;
-	}
-
-#endif /* WITHGPUHW && (CPUSTYLE_T507) */
-
 /* Один раз - инициализация таблиц в памяти */
 void
 sysinit_mmu_tables(void)
@@ -1484,10 +1397,6 @@ sysinit_mmu_tables(void)
 //	getmmudesc_print(& aarch32_table_1M, "aarch32_table_1M");
 #elif defined (__CORTEX_M)
 
-#endif
-
-#if WITHGPUHW && (CPUSTYLE_T507)
-	fillmmu(gpummuinfo, ARRAY_SIZE(gpummuinfo), gpu_mempage_accessbits);
 #endif
 	//PRINTF("sysinit_mmu_tables done.\n");
 }

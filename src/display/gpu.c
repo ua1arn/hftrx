@@ -24,61 +24,6 @@
 
 //#include "panfrost_regs.h"
 
-#define MALI_PTE_VALID          (1ULL << 0)
-#define MALI_PTE_BLOCK          (0ULL << 1) // Финальный блок (разрешен на L1 для 1GB и на L2 для 2MB)
-#define MALI_PTE_PAGE           (1ULL << 1) // Указатель на следующую таблицу (на L0, L1, L2)
-#define MALI_PTE_USER           (1ULL << 6)
-#define MALI_PTE_SHARE_OUTER    (2ULL << 8)
-#define MALI_PTE_AF             (1ULL << 10) // Access Flag
-#define MALI_PTE_ATTR_IDX_1     (1ULL << 2)  // Non-Cacheable домен (0x22 из MEMATTR)
-
-// Корневая таблица Уровня 0 (Level 0)
-__attribute__((aligned(4096))) static uint64_t gpu_mmu_l0_strict_table [512];
-
-// Плоская таблица Уровня 1 (Level 1) на 4 гигабайтных блока
-__attribute__((aligned(4096))) static uint64_t gpu_mmu_l1_block_table [512];
-
-
-void gpu_mmu_build_4gb_l1_blocks(void)
-{
-    PRINTF("Mali-G31: Building 4GB Identity Mapping via L0->L1 block structure...\n");
-
-    // Полностью зануляем таблицы
-    for (int i = 0; i < 512; i++) {
-        gpu_mmu_l0_strict_table[i] = 0;
-        gpu_mmu_l1_block_table[i] = 0;
-    }
-
-    uint64_t phys_addr = 0x00000000;
-
-    // 1. Заполняем таблицу Уровня 1 (L1) четырьмя честными блоками по 1 Гигабайту
-    for (int gb = 0; gb < 4; gb++) {
-        // На Уровне 1 бит 1 равен 0 (BLOCK) — это легитимный конечный 1ГБ кусок памяти в LPAE
-        gpu_mmu_l1_block_table[gb] = phys_addr |
-                                     MALI_PTE_VALID |
-                                     MALI_PTE_BLOCK |
-                                     MALI_PTE_USER |	// if commented - MMU Fault Status (0x01802420): 0x7C0002C8
-                                     MALI_PTE_SHARE_OUTER |
-                                     MALI_PTE_AF |          /* Бит 10 взведен */
-                                     MALI_PTE_ATTR_IDX_1 |
-									 0;
-
-        phys_addr += (1ULL * 1024ULL * 1024ULL * 1024ULL); // Шаг 1 ГБ
-    }
-
-    // 2. Связываем корневую таблицу L0 с нашей L1 таблицей блоков
-    // Индекс 0 покрывает первые 512 Гигабайт, что с избытком накрывает наши 4 ГБ.
-    // На Уровне 0 дескриптор ОБЯЗАН быть Table Pointer (VALID + PAGE)
-    uint64_t l1_table_phys = (uintptr_t)gpu_mmu_l1_block_table;
-    gpu_mmu_l0_strict_table [0] = l1_table_phys | MALI_PTE_VALID | MALI_PTE_PAGE;
-
-    // 3. Синхронизируем память через dcache_clean вашего проекта hftrx
-    dcache_clean((uintptr_t)gpu_mmu_l0_strict_table, sizeof(gpu_mmu_l0_strict_table));
-    dcache_clean((uintptr_t)gpu_mmu_l1_block_table, sizeof(gpu_mmu_l1_block_table));
-
-    __DSB();
-}
-
 
 // Команды для AS_COMMAND
 #define AS_COMMAND_NOP          0x00
@@ -825,7 +770,7 @@ void mali_bifrost_open_mmu_bus(void)
     __DSB();
 }
 
-void mali_g31_mmu_enable(uintptr_t table_phys_addr)
+void mali_g31_mmu_enable(void)
 {
     unsigned as = 0; // Шейдерный домен по умолчанию
 
@@ -834,7 +779,7 @@ void mali_g31_mmu_enable(uintptr_t table_phys_addr)
 	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0xff ;//0x000022AA;
 	__DSB();
 
-	table_phys_addr = 0;
+	uint64_t table_phys_addr = 0;
 	ASSERT((table_phys_addr & 0xFFF) == 0);
 
 	// 3. Загружаем физический адрес плоской таблицы
@@ -884,33 +829,6 @@ void mali_g31_mmu_enable(uintptr_t table_phys_addr)
 	TP();
 	printhex32((uintptr_t) & GPU_MMU->MMU_AS[as], & GPU_MMU->MMU_AS[as], sizeof GPU_MMU->MMU_AS[as]);
     PRINTF("Mali-G31: MMU Address Space 0 successfully enabled at offset 0x400!\n");
-}
-
-static void malimmu_initialize(void)
-{
-//    // 4. Проверяем! Теперь регистры MMU обязаны ожить
-//    volatile uint32_t *mmu_int_rawstat = (volatile uint32_t *)0x01802000;
-//    PRINTF("MMU Raw Interrupt Status: 0x%08X\n", (unsigned)*mmu_int_rawstat);
-//    // (Если мост открылся, здесь вместо 0x00000000 перестанет падать мертвый ноль шины,
-//    // и вы сможете писать в TRANSTAB и подавать команду UPDATE).
-//    PRINTF("GPU_CONTROL->GPU_STATUS=%08X\n", (unsigned) GPU_CONTROL->GPU_STATUS);
-
-//	gpu_as_command(0, AS_COMMAND_NOP);
-//	gpu_as_command(0, AS_COMMAND_UPDATE);
-//	gpu_as_command(0, AS_COMMAND_INVALIDATE);
-//	gpu_as_command(0, AS_COMMAND_FLUSH_PT);
-//	gpu_as_command(0, AS_COMMAND_FLUSH_MEM);
-
-    // 1. Создаем таблицы страниц в ОЗУ
-    gpu_mmu_build_4gb_l1_blocks();
-
-
-	//mali_g31_mmu_enable((uintptr_t) gpu_mmu_l0_strict_table);
-	mali_g31_mmu_enable((uintptr_t) hardware_get_g31_mmutable());
-
-	//mali_bifrost_l2_ready();
-
-    PRINTF("Mali-G31: MMU Coherency initialized successfully.\n");
 }
 
 //
@@ -1023,20 +941,7 @@ void board_gpu_initialize(void)
 	mali_bifrost_power_on();
 	mali_bifrost_open_mmu_bus();
 
-	malimmu_initialize();
-
-    // Тест чтения регистров возможностей
-    //gpu_test();
-
-#if 0
-	unsigned i;
-
-	memset32(GPU_MMU->MMU_AS, ~ UINT32_C(0), sizeof GPU_MMU->MMU_AS);
-	for (i = 0; i < ARRAY_SIZE(GPU_MMU->MMU_AS); ++ i)
-	{
-		printhex32((uintptr_t) & GPU_MMU->MMU_AS [i], & GPU_MMU->MMU_AS [i], sizeof GPU_MMU->MMU_AS [i]);
-	}
-#endif
+	mali_g31_mmu_enable();
 }
 
 #elif CPUSTYLE_STM32MP1

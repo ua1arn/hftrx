@@ -699,7 +699,6 @@ void gpu_test(void);
 
 void sysinit_mmu_tables(void);
 void sysinit_ttbr_initialize(void);	/* на каждом процессоре */
-uintptr_t hardware_get_g31_mmutable(void);
 
 void r7s721_sdhi0_dma_handler(void);
 
