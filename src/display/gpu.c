@@ -669,7 +669,7 @@ void mali_bifrost_open_mmu_bus(void)
     __asm__ volatile("dsb sy" : : : "memory");
 }
 
-void mali_g31_mmu_enable(uintptr_t l1_page_table_phys_addr)
+void mali_g31_mmu_enable(uintptr_t table_phys_addr)
 {
     unsigned as = 0; // Шейдерный домен по умолчанию
 
@@ -682,7 +682,7 @@ void mali_g31_mmu_enable(uintptr_t l1_page_table_phys_addr)
 
 	// 3. Загружаем физический адрес плоской таблицы
 	// Младшие биты 0x03 включают режим трансляции LPAE
-	uint64_t transtab_val = (uintptr_t)gpu_mmu_l0_strict_table | 0x03;
+	uint64_t transtab_val = table_phys_addr | 0x03;
 
     // 3. Записываем адрес в регистры AS0 (теперь они строго на 0x01802400)
     GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = (uint32_t)(transtab_val >> 32);
