@@ -76,7 +76,7 @@ void gpu_mmu_build_4gb_l1_blocks(void)
     dcache_clean((uintptr_t)gpu_mmu_l0_strict_table, sizeof(gpu_mmu_l0_strict_table));
     dcache_clean((uintptr_t)gpu_mmu_l1_block_table, sizeof(gpu_mmu_l1_block_table));
 
-    __asm__ volatile("dsb sy" : : : "memory");
+    __DSB();;
 }
 
 
@@ -146,7 +146,7 @@ static void gpu_command(unsigned cmd)
 //	unsigned v2 = GPU_CONTROL->GPU_STATUS;
 //	unsigned v3 = GPU_CONTROL->GPU_STATUS;
 //	PRINTF("cmd: %08X, Status: %08X, %08X, %08X\n", cmd, v1, v2, v3);
-	__asm__ volatile("dsb sy" : : : "memory");
+	__DSB();;
 }
 
 static void gpu_wait(unsigned mask)
@@ -365,7 +365,7 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
 
     // Команда START (обычно значение 0x01 в регистр JS_COMMAND)
     GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_COMMAND_NEXT = 0x01;
-    __asm__ volatile("dsb sy" : : : "memory");
+    __DSB();;
     TP();
 
     local_delay_ms(200);
@@ -546,15 +546,15 @@ void mali_bifrost_power_on(void)
 
     // 1. Снимаем программную защиту с контроллера питания
     *gpu_pwr_key = GPU_PWR_KEY_UNLOCK;
-    __asm__ volatile("dsb sy" : : : "memory");
+    __DSB();;
 
     // Фиксация стабильности шин питания
     *gpu_pwr_ovr1 = 0xFFF | (0x20 << 16);
-    __asm__ volatile("dsb sy" : : : "memory");
+    __DSB();;
 
     // 2. Включаем L2 Кэш (Бит 0 = Включить домен 0)
     *l2_pwron = 0x00000001;
-    __asm__ volatile("dsb sy" : : : "memory");
+    __DSB();;
 
     //TP();
    // Ожидаем готовность L2 на смещении 0x160
@@ -564,7 +564,7 @@ void mali_bifrost_power_on(void)
 
     // 3. Включаем блок геометрии (Tiler) через смещение 0x190
     *tiler_pwron = 0x00000001;
-    __asm__ volatile("dsb sy" : : : "memory");
+    __DSB();;
 
     //TP();
    // Ожидаем готовность тайлера на вашем смещении 0x150
@@ -581,7 +581,7 @@ void mali_bifrost_power_on(void)
 
 	PRINTF("Mali-G31: Powering up Shader Core Stack (0x1D0)...\n");
 	*stack_pwron = 0x00000001; // Включаем базовый стек
-	__asm__ volatile("dsb sy" : : : "memory");
+	__DSB();;
 	local_delay_ms(100);
 	PRINTF("*stack_ready=%08X\n", (unsigned) *stack_ready);
 	PRINTF("*tiler_ready=%08X\n", (unsigned) *tiler_ready);
@@ -596,7 +596,7 @@ void mali_bifrost_power_on(void)
     //TP();
 	// 4. Включаем 2 вычислительных ядра (Shader Cores) для MP2 (Маска 0x03) через 0x180
     *shader_pwron = 0x00000003;
-    __asm__ volatile("dsb sy" : : : "memory");
+    __DSB();;
 
 	local_delay_ms(100);
 	PRINTF("*shader_ready=%08X\n", (unsigned) *shader_ready);
@@ -666,7 +666,7 @@ void mali_bifrost_open_mmu_bus(void)
     // чтобы открыть внутренний интерконнект от процессоров к MMU и снять изоляцию.
     *l2_mmu_config = val | 0x00000003;
 
-    __asm__ volatile("dsb sy" : : : "memory");
+    __DSB();;
 }
 
 void mali_g31_mmu_enable(uintptr_t table_phys_addr)
@@ -678,7 +678,7 @@ void mali_g31_mmu_enable(uintptr_t table_phys_addr)
     // 2. Настраиваем каноничную маску атрибутов кэширования для Bifrost (Panfrost)
 	// Индекс 0 = 0xAA (Cacheable), Индекс 1 = 0x22 (Non-Cacheable)
 	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x000022AA;
-	__asm__ volatile("dsb sy" : : : "memory");
+	__DSB();;
 
 	// 3. Загружаем физический адрес плоской таблицы
 	// Младшие биты 0x03 включают режим трансляции LPAE
@@ -688,21 +688,63 @@ void mali_g31_mmu_enable(uintptr_t table_phys_addr)
     GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = (uint32_t)(transtab_val >> 32);
     GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = (uint32_t)(transtab_val & 0xFFFFFFFF);
 
-    __asm__ volatile("dsb sy" : : : "memory");
+    __DSB();;
 
     // 4. Ждем, пока MMU освободится
     while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
 
     // 5. Отправляем команду UPDATE для применения таблиц
     GPU_MMU->MMU_AS[as].AS_COMMAND = 0x01;
-    __asm__ volatile("dsb sy" : : : "memory");
+    __DSB();;
 
     // 6. Ожидаем окончания защелкивания таблиц аппаратурой Mali
     while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
 
+    // 4. Очищаем внутренний TLB кэш MMU от старых зависших ошибок 0xC8
+    GPU_MMU->MMU_AS[as].AS_COMMAND = 0x03; // AS_COMMAND_INVALIDATE
+    __DSB();;
+    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
+
+    // 5. Активируем таблицы командным словом UPDATE
+    GPU_MMU->MMU_AS[as].AS_COMMAND = 0x01; // AS_COMMAND_UPDATE
+    __DSB();;
+    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
+
+
+	gpu_as_command(as, AS_COMMAND_NOP);
+	gpu_as_command(as, AS_COMMAND_UPDATE);
+	gpu_as_command(as, AS_COMMAND_INVALIDATE);
+//	gpu_as_command(as, AS_COMMAND_FLUSH_PT);
+
     PRINTF("Mali-G31: MMU Address Space 0 successfully enabled at offset 0x400!\n");
 }
 
+static void malimmu_initialize(void)
+{
+    // 4. Проверяем! Теперь регистры MMU обязаны ожить
+    volatile uint32_t *mmu_int_rawstat = (volatile uint32_t *)0x01802000;
+    PRINTF("MMU Raw Interrupt Status: 0x%08X\n", (unsigned)*mmu_int_rawstat);
+    // (Если мост открылся, здесь вместо 0x00000000 перестанет падать мертвый ноль шины,
+    // и вы сможете писать в TRANSTAB и подавать команду UPDATE).
+    PRINTF("GPU_CONTROL->GPU_STATUS=%08X\n", (unsigned) GPU_CONTROL->GPU_STATUS);
+
+//	gpu_as_command(0, AS_COMMAND_NOP);
+//	gpu_as_command(0, AS_COMMAND_UPDATE);
+//	gpu_as_command(0, AS_COMMAND_INVALIDATE);
+//	gpu_as_command(0, AS_COMMAND_FLUSH_PT);
+//	gpu_as_command(0, AS_COMMAND_FLUSH_MEM);
+
+    // 1. Создаем таблицы страниц в ОЗУ
+    gpu_mmu_build_4gb_l1_blocks();
+
+	mali_bifrost_l2_ready();
+
+	mali_g31_mmu_enable((uintptr_t) gpu_mmu_l0_strict_table);
+
+    PRINTF("Mali-G31: MMU Coherency initialized successfully.\n");
+}
+
+//
 #define T507_SPC_BASE         0x03008000
 
 // Регистры конфигурации защиты периферии (Secure Peripherals Control)
@@ -722,10 +764,11 @@ void t507_spc_unlock_gpu(void)
     *spc_gpu_master = 0xFFFFFFFF;
     *spc_gpu_slave  = 0xFFFFFFFF;
 
-    __asm__ volatile("dsb sy" : : : "memory"); // Принудительно толкаем барьер в контроллер SPC
+    __DSB();; // Принудительно толкаем барьер в контроллер SPC
 
     PRINTF("T507 Platform: GPU registers bypass TrustZone protection now.\n");
 }
+
 // Graphic processor unit
 void board_gpu_initialize(void)
 {
@@ -811,57 +854,7 @@ void board_gpu_initialize(void)
 	mali_bifrost_power_on();
 	mali_bifrost_open_mmu_bus();
 
-
-    // 4. Проверяем! Теперь регистры MMU обязаны ожить
-    volatile uint32_t *mmu_int_rawstat = (volatile uint32_t *)0x01802000;
-    PRINTF("MMU Raw Interrupt Status: 0x%08X\n", (unsigned)*mmu_int_rawstat);
-    // (Если мост открылся, здесь вместо 0x00000000 перестанет падать мертвый ноль шины,
-    // и вы сможете писать в TRANSTAB и подавать команду UPDATE).
-    PRINTF("GPU_CONTROL->GPU_STATUS=%08X\n", (unsigned) GPU_CONTROL->GPU_STATUS);
-
-//	gpu_as_command(0, AS_COMMAND_NOP);
-//	gpu_as_command(0, AS_COMMAND_UPDATE);
-//	gpu_as_command(0, AS_COMMAND_INVALIDATE);
-//	gpu_as_command(0, AS_COMMAND_FLUSH_PT);
-//	gpu_as_command(0, AS_COMMAND_FLUSH_MEM);
-
-    // 1. Создаем таблицы страниц в ОЗУ
-    gpu_mmu_build_4gb_l1_blocks();
-
-	mali_bifrost_l2_ready();
-
-	mali_g31_mmu_enable((uintptr_t) gpu_mmu_l0_strict_table);
-    unsigned as = 0; // Наш Address Space 0 (смещение 0x400 от 0x01802000)
-
-    // 2. ИСПРАВЛЕНО: Задаем каноничную маску атрибутов памяти для Bifrost v6!
-    // Индекс 0 = 0xAA (Cacheable), Индекс 1 = 0x22 (Non-Cacheable)
-    GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x000022AA;
-    __asm__ volatile("dsb sy" : : : "memory");
-
-    // 3. Загружаем корень таблиц первого уровня
-    uint64_t transtab_val = (uintptr_t)gpu_mmu_l0_strict_table | 0x03; // LPAE + Enable
-    GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = (uint32_t)(transtab_val >> 32);
-    GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = (uint32_t)(transtab_val & 0xFFFFFFFF);
-    __asm__ volatile("dsb sy" : : : "memory");
-
-    // 4. Очищаем внутренний TLB кэш MMU от старых зависших ошибок 0xC8
-    GPU_MMU->MMU_AS[as].AS_COMMAND = 0x03; // AS_COMMAND_INVALIDATE
-    __asm__ volatile("dsb sy" : : : "memory");
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
-
-    // 5. Активируем таблицы командным словом UPDATE
-    GPU_MMU->MMU_AS[as].AS_COMMAND = 0x01; // AS_COMMAND_UPDATE
-    __asm__ volatile("dsb sy" : : : "memory");
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
-
-
-	gpu_as_command(as, AS_COMMAND_NOP);
-	gpu_as_command(as, AS_COMMAND_UPDATE);
-	gpu_as_command(as, AS_COMMAND_INVALIDATE);
-//	gpu_as_command(as, AS_COMMAND_FLUSH_PT);
-//	gpu_as_command(as, AS_COMMAND_FLUSH_MEM);
-
-    PRINTF("Mali-G31: MMU Coherency initialized successfully.\n");
+	malimmu_initialize();
 
     // Тест чтения регистров возможностей
     //gpu_test();
