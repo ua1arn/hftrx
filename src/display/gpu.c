@@ -330,9 +330,9 @@ void gpu_diagnose_fault(unsigned slot)
     // в старших битах регистра JS_STATUS или в регистре ошибок MMU, если это был Page Fault
     PRINTF("-> MALI FAULT DIAGNOSIS:\n");
     PRINTF("   GPU stopped at physical address: 0x%08X%08X\n", (unsigned)fault_addr_hi, (unsigned)fault_addr_lo);
-    PRINTF("   MMU Fault Status (0x01802420): 0x%08X\n", (unsigned)GPU_MMU->MMU_AS[0].AS_FAULTSTATUS);
+    PRINTF("   MMU Fault Status (0x01802420): 0x%08X\n", (unsigned)GPU_MMU->MMU_AS[slot].AS_FAULTSTATUS);
     PRINTF("   MMU Fault Address: 0x%08X%08X\n",
-           (unsigned)GPU_MMU->MMU_AS[0].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS[0].AS_FAULTADDRESS_LO);
+           (unsigned)GPU_MMU->MMU_AS[slot].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS[slot].AS_FAULTADDRESS_LO);
 }
 
 
@@ -421,7 +421,7 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
         // Если произошел сбой, сработает MMU или Job Fault прерывание
     }
     local_delay_ms(200);
-    //TP();
+    TP();
     GPU_JOB_CONTROL->JOB_IRQ_CLEAR = (1 << COMMAND_SLOT_VERTEX); // Сброс флага прерывания
 
     // 5. Запуск цепочки растеризации фрагментов в Slot 1
@@ -895,11 +895,11 @@ void board_gpu_initialize(void)
     // и вы сможете писать в TRANSTAB и подавать команду UPDATE).
     PRINTF("GPU_CONTROL->GPU_STATUS=%08X\n", (unsigned) GPU_CONTROL->GPU_STATUS);
 
-	gpu_as_command(0, AS_COMMAND_NOP);
-	gpu_as_command(0, AS_COMMAND_UPDATE);
-	gpu_as_command(0, AS_COMMAND_INVALIDATE);
-	gpu_as_command(0, AS_COMMAND_FLUSH_PT);
-	gpu_as_command(0, AS_COMMAND_FLUSH_MEM);
+//	gpu_as_command(0, AS_COMMAND_NOP);
+//	gpu_as_command(0, AS_COMMAND_UPDATE);
+//	gpu_as_command(0, AS_COMMAND_INVALIDATE);
+//	gpu_as_command(0, AS_COMMAND_FLUSH_PT);
+//	gpu_as_command(0, AS_COMMAND_FLUSH_MEM);
 
     // 1. Создаем таблицы страниц в ОЗУ
 	gpu_mmu_build_4gb_identity_table();
