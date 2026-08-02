@@ -313,6 +313,7 @@ GPU_ALIGN static mali_framebuffer_desc fb_desc;
 // Номера слотов задач (обычно слот 0 - Vertex/Compute, слот 1 - Fragment)
 #define COMMAND_SLOT_VERTEX   0
 #define COMMAND_SLOT_FRAGMENT 1
+#define MALI_FB_FORMAT_ARGB8888    0x18001000
 
 void gpu_diagnose_fault(unsigned slot)
 {
@@ -330,6 +331,15 @@ void gpu_diagnose_fault(unsigned slot)
            (unsigned)GPU_MMU->MMU_AS[slot].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS[slot].AS_FAULTADDRESS_LO);
 }
 
+/* --- МЛАДШИЕ 16 БИТ: Успешное завершение (Job Done) --- */
+#define JOB_INT_BIT_SLOT_0_DONE    (1 << 0)  /* Задача в Слоте 0 выполнена успешно (Vertex/Tiler) */
+#define JOB_INT_BIT_SLOT_1_DONE    (1 << 1)  /* Задача в Слоте 1 выполнена успешно (Fragment) */
+#define JOB_INT_BIT_SLOT_2_DONE    (1 << 2)  /* Задача в Слоте 2 выполнена успешно (Compute) */
+
+/* --- СТАРШИЕ 16 БИТ: Аппаратные сбои (Job Fault) --- */
+#define JOB_INT_BIT_SLOT_0_FAULT   (1 << 16) /* Критическая ошибка выполнения в Слоте 0 */
+#define JOB_INT_BIT_SLOT_1_FAULT   (1 << 17) /* Критическая ошибка выполнения в Слоте 1 */
+#define JOB_INT_BIT_SLOT_2_FAULT   (1 << 18) /* Критическая ошибка выполнения в Слоте 2 */
 
 // Регистры отправки команд в слот (сверьтесь со структурой GPU_JOB_CONTROL в panfrost_regs.h)
 // Обычные имена регистров в драйвере Panfrost: JS_COMMAND, JS_HEAD_NEXT
@@ -344,7 +354,7 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     fb_desc.width = width;
     fb_desc.height = height;
     fb_desc.stride = width * 4;
-    fb_desc.format = 0x18004000; // Простой формат записи RGBA8888 в Bifrost
+    fb_desc.format = MALI_FB_FORMAT_ARGB8888;//0x18004000; // Простой формат записи RGBA8888 в Bifrost
 
     // 2. Настройка первой задачи: Координаты и геометрия (Vertex / Tiler Job)
     v_job.header.job_type = JOB_TYPE_TILER;
@@ -359,8 +369,8 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
 
     // 3. Настройка второй задачи: Отрисовка пикселей (Fragment Job)
     f_job.header.job_type = JOB_TYPE_FRAGMENT;
-    f_job.header.job_index = 1;
-    f_job.header.job_descriptor_size = (sizeof(mali_fragment_job) + 7) / 8;
+    f_job.header.job_index = 0;
+    f_job.header.job_descriptor_size = (sizeof f_job + 7) / 8;
     f_job.header.next_job = 0; // Последняя задача
 
     f_job.framebuffer_pointer = (uintptr_t)&fb_desc;
@@ -392,6 +402,9 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     // Дополнительно для Bifrost рекомендуется сбросить расширенную конфигурацию слота
     GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_CONFIG_NEXT = 0x00000000;
 
+    PRINTF("0 GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
+    PRINTF("0 GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
+
     // Команда START (обычно значение 0x01 в регистр JS_COMMAND)
     GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_COMMAND_NEXT = 0x01;
     __DSB();
@@ -402,7 +415,6 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
 //    printhex32(GPU_MMU_BASE, GPU_MMU, 4096);
     PRINTF("v_job: %p (%u)\n", & v_job, (unsigned) sizeof v_job);
     PRINTF("f_job: %p(%u)\n", & f_job, (unsigned) sizeof f_job);
-   printhex32((uintptr_t) & v_job, & v_job, sizeof v_job);
     //memset32(GPU_JOB_CONTROL, ~0, 4096);
 //	PRINTF("GPU_JOB_CONTROL:\n");
 //	printhex32(GPU_JOB_CONTROL_BASE, GPU_JOB_CONTROL, 4096);
@@ -410,18 +422,21 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
 //    	;
 //	PRINTF("GPU_MMU:\n");
 //	printhex32(GPU_MMU_BASE, GPU_MMU, 4096);
-    PRINTF("GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
+   PRINTF("GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
+   PRINTF("GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
     gpu_diagnose_fault(COMMAND_SLOT_VERTEX);
     PRINTF("SLOT_STATUS: 0x%08X, RAW_STATUS: 0x%08X\n", (unsigned) GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_STATUS, (unsigned) GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_STATUS);
     // Ожидание завершения работы аппаратного тайлера геометрии
     // В hftrx прерывания выводят ASSERT(0), поэтому опрашиваем статус в цикле (polling)
-    while ((GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT & (1 << COMMAND_SLOT_VERTEX)) == 0) {
+    while ((GPU_JOB_CONTROL->JOB_INT_RAWSTAT & (1 << COMMAND_SLOT_VERTEX)) == 0) { //Was: JOB_IRQ_RAWSTAT
         // Если произошел сбой, сработает MMU или Job Fault прерывание
     }
     local_delay_ms(200);
     TP();
-    GPU_JOB_CONTROL->JOB_IRQ_CLEAR = (1 << COMMAND_SLOT_VERTEX); // Сброс флага прерывания
-#if 0
+    GPU_JOB_CONTROL->JOB_INT_CLEAR = (1 << COMMAND_SLOT_VERTEX); // Сброс флага прерывания
+    PRINTF("a GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
+    PRINTF("a GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
+
     // 5. Запуск цепочки растеризации фрагментов в Slot 1
     PRINTF("Submitting Fragment Job to Slot 1...\n");
 
@@ -439,15 +454,21 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_COMMAND_NEXT = 0x01;
 
     local_delay_ms(200);
-    PRINTF("GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
+    PRINTF("4 GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
+    PRINTF("4 GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
+    gpu_diagnose_fault(COMMAND_SLOT_FRAGMENT);
+    PRINTF("v_job:\n");
+    printhex32((uintptr_t) & v_job, & v_job, sizeof v_job);
+    PRINTF("f_job:\n");
+    printhex32((uintptr_t) & f_job, & f_job, sizeof f_job);
     // Ожидание завершения отрисовки пикселей в память кадра
     while ((GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT & (1 << COMMAND_SLOT_FRAGMENT)) == 0) {
         // Опрос статуса
     }
     local_delay_ms(200);
     TP();
-    GPU_JOB_CONTROL->JOB_IRQ_CLEAR = (1 << COMMAND_SLOT_FRAGMENT);
-#endif
+    GPU_JOB_CONTROL->JOB_INT_CLEAR = (1 << COMMAND_SLOT_FRAGMENT);
+
     PRINTF("Triangle rendering completed successfully!\n");
 }
 
@@ -676,6 +697,7 @@ void gpu_test(void)
 
 
     uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
+    memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * 4);
     gpu_draw_triangle(fbaddr, DIM_X, DIM_Y);
     colmain_nextfb();
 
