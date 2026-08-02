@@ -276,11 +276,16 @@ typedef struct __attribute__((packed)) {
 // Расширенный дескриптор для Fragment задач
 typedef struct __attribute__((packed)) {
     mali_job_header header;
-    uint64_t framebuffer_pointer; // Физический адрес структуры описания Framebuffer
-    uint64_t tile_render_list;    // Список тайлов, сгенерированный предыдущим Tiler Job
-    uint32_t width;               // Ширина зоны отрисовки
-    uint32_t height;              // Высота зоны отрисовки
-    uint32_t clear_color;         // Цвет очистки (RGBA)
+
+    __IO uint64_t framebuffer_desc;       /* +0x20: 64-бит физ. адрес дескриптора Framebuffer (fb_desc) */
+    __IO uint64_t tile_render_list;        /* +0x28: 64-бит физ. адрес списка тайлов дисплея (tiler_heap_mem) */
+
+    __IO uint32_t stride_and_format;      /* +0x30: Внутренние аппаратные флаги шага и формата тайлера */
+    __IO uint16_t width_minus_1;          /* +0x34: Ширина зоны рендеринга МИНУС 1 (например, 799 для 800) */
+    __IO uint16_t height_minus_1;         /* +0x36: Высота зоны рендеринга МИНУС 1 (например, 479 для 480) */
+
+    __IO uint32_t clear_color;            /* +0x38: Цвет очистки экрана в формате ARGB8888 (если включен флаг) */
+    __IO uint32_t fragment_flags;         /* +0x3C: Флаги фрагментного конвейера (биты очистки, глубина, трафарет) */
 } mali_fragment_job;
 
 // Выравнивание для кэш-линий GPU
@@ -373,10 +378,10 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     f_job.header.job_descriptor_size = (sizeof f_job + 7) / 8;
     f_job.header.next_job = 0; // Последняя задача
 
-    f_job.framebuffer_pointer = (uintptr_t)&fb_desc;
+    f_job.framebuffer_desc = (uintptr_t)&fb_desc;
     f_job.tile_render_list = (uintptr_t)tiler_heap_mem; // Читает геометрию из кучи тайлера
-    f_job.width = width;
-    f_job.height = height;
+    f_job.width_minus_1 = width - 1;
+    f_job.height_minus_1 = height - 1;
     f_job.clear_color = 0xFF0000FF; // Фоновый цвет очистки, если нужно (Красный)
 
     // КРИТИЧЕСКИ ВАЖНО: Выталкиваем структуры из кэша ядер процессора (CPU L1/L2) в ОЗУ,
