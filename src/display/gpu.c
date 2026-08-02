@@ -176,7 +176,10 @@ void GPU_IRQHandler(void)
 void GPU_JOB_IRQHandler(void)
 {
 	PRINTF("GPU_JOB_IRQHandler\n");
-	ASSERT(0);
+    PRINTF("h GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
+    PRINTF("h GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
+    GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
+    GPU_JOB_CONTROL->JOB_IRQ_CLEAR = ~ 0;
 }
 
 void GPU_MMU_IRQHandler(void)
@@ -406,6 +409,9 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
 
     // Дополнительно для Bifrost рекомендуется сбросить расширенную конфигурацию слота
     GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_CONFIG_NEXT = 0x00000000;
+
+    //GPU_JOB_CONTROL->JOB_INT_MASK = 0xFFFFFFFF;	// Это разрешает вызовы обработчика прерываний
+    GPU_JOB_CONTROL->JOB_IRQ_MASK = 0xFFFFFFFF;
 
     PRINTF("0 GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
     PRINTF("0 GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
