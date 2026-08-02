@@ -36,30 +36,88 @@
 #define MALI_PTE_ATTR_WRITE_ALLOC  (0ULL << 2) // Cacheable
 #define MALI_PTE_ATTR_UNCACHED     (1ULL << 2) // Non-cacheable (для Framebuffer/Commands)
 
-// Таблица первого уровня (Page Directory Level 1). Должна быть выровнена на 4096 байт!
-__attribute__((aligned(4096))) static uint64_t gpu_l1_page_table[512 * 4];
+#include <stdint.h>
 
-void gpu_mmu_setup_tables(void)
+// Корневая таблица 1-го уровня (Level 1 Page Directory). Покрывает до 512 ГБ.
+__attribute__((aligned(4096))) static uint64_t gpu_mmu_l1_table[512];
+
+// Четыре таблицы 2-го уровня (Level 2 Page Tables).
+// Каждая таблица содержит 512 блоков по 2 МБ, покрывая ровно 1 Гигабайт пространства.
+__attribute__((aligned(4096))) static uint64_t gpu_mmu_l2_table[4][512];
+
+#define MALI_PTE_AF   (1ULL << 10) // Access Flag - Бит 10 (Разрешает прямой доступ к странице без прерываний)
+
+#include <stdint.h>
+
+#define MALI_PTE_AF   (1ULL << 10) // Access Flag - Бит 10 (Устраняет ошибку 0xC8)
+#define MALI_PTE_VALID          (1ULL << 0)
+#define MALI_PTE_BLOCK          (0ULL << 1) // Блок (только для L1 и L2)
+#define MALI_PTE_PAGE           (1ULL << 1) // Страница/Таблица (для L1, L2 и L3)
+#define MALI_PTE_USER           (1ULL << 6)
+#define MALI_PTE_SHARE_INNER    (3ULL << 8)
+#define MALI_PTE_AF             (1ULL << 10) // Access Flag
+#define MALI_PTE_ATTR_UNCACHED  (1ULL << 2)  // Index 1 из MEMATTR
+#define MALI_PTE_VALID          (1ULL << 0)
+#define MALI_PTE_BLOCK          (0ULL << 1)
+#define MALI_PTE_PAGE           (1ULL << 1)
+#define MALI_PTE_USER           (1ULL << 6)
+
+// ИСПРАВЛЕНО: Для Bifrost в связке с Allwinner T507/H616 используется Outer Shareable (2ULL)
+// или Non-Shareable (0ULL), так как Inner Shareable без включенного TrustZone/ОС сбоит на шине AXI.
+#define MALI_PTE_SHARE_OUTER    (2ULL << 8)
+
+// ИСПРАВЛЕНО: Бит Access Flag (бит 10)
+#define MALI_PTE_AF             (1ULL << 10)
+
+// ИСПРАВЛЕНО: Индекс атрибута памяти (биты 4:2).
+// Значение 1 указывает на Индекс 1 в MEMATTR (который мы сделаем 0x22 - Non-Cacheable).
+#define MALI_PTE_ATTR_IDX_1     (1ULL << 2)
+
+__attribute__((aligned(4096))) static uint64_t gpu_mmu_l1_table[512];
+__attribute__((aligned(4096))) static uint64_t gpu_mmu_l2_flat_table[2048];
+
+void gpu_mmu_build_4gb_identity_table(void)
 {
-    // Отобразим первые 2 ГБ памяти "один к одному" блоками по 2 МБ
-    // Для Bifrost на Level 1 запись с битом MALI_PTE_PAGE (бит 1) работает как Block Descriptor
-    uint64_t phys_addr = 0*0x40000000; // Начало DRAM у Allwinner обычно здесь (проверьте hardware.h)
+    PRINTF("Mali-G31: Building 4GB Identity Mapping with Panfrost Coherency flags...\n");
 
-    for (int i = 0; i < ARRAY_SIZE(gpu_l1_page_table); i++) {
-        gpu_l1_page_table[i] = phys_addr |
-                               MALI_PTE_VALID |
-                               MALI_PTE_PAGE |
-                               MALI_PTE_USER |
-                               MALI_PTE_SHARE_INNER |
-                               MALI_PTE_ATTR_UNCACHED; // Для тестов лучше uncached, чтобы исключить проблемы с когерентностью
-        phys_addr += (2 * 1024 * 1024); // Инкремент 2 МБ
+    for (int i = 0; i < 512; i++)  gpu_mmu_l1_table[i] = 0;
+    for (int i = 0; i < 2048; i++) gpu_mmu_l2_flat_table[i] = 0;
+
+    uint64_t phys_addr = 0x00000000;
+
+    // Заполняем все 4 ГБ пространства (2048 блоков по 2 МБ)
+    for (int i = 0; i < 2048; i++) {
+        // Собираем дескриптор с флагами OUTER Shareable и жестким принудительным AF
+        gpu_mmu_l2_flat_table[i] = phys_addr |
+                                   MALI_PTE_VALID |
+                                   MALI_PTE_BLOCK |
+                                   MALI_PTE_USER |
+                                   MALI_PTE_SHARE_OUTER | /* Сменили на Outer */
+                                   MALI_PTE_AF |          /* Бит 10 взведен */
+                                   MALI_PTE_ATTR_IDX_1;   /* Ссылка на Non-Cacheable домен */
+
+        phys_addr += (2ULL * 1024ULL * 1024ULL);
     }
+
+    // Связываем L1 с L2 кусками
+    for (int gb = 0; gb < 4; gb++) {
+        uint64_t l2_chunk_phys = (uintptr_t)&gpu_mmu_l2_flat_table[gb * 512];
+        gpu_mmu_l1_table[gb] = l2_chunk_phys | MALI_PTE_VALID | MALI_PTE_PAGE;
+    }
+
+    // Синхронизируем через функцию вашего проекта hftrx
+    dcache_clean((uintptr_t)gpu_mmu_l1_table, sizeof(gpu_mmu_l1_table));
+    dcache_clean((uintptr_t)gpu_mmu_l2_flat_table, sizeof(gpu_mmu_l2_flat_table));
+
+    __asm__ volatile("dsb sy" : : : "memory");
 }
 
+
 // Команды для AS_COMMAND
-#define AS_COMMAND_NOP    0x00
-#define AS_COMMAND_UPDATE 0x01 // Обновить таблицы в MMU
-#define AS_COMMAND_LOCK   0x02
+#define AS_COMMAND_NOP          0x00
+#define AS_COMMAND_UPDATE       0x01
+#define AS_COMMAND_INVALIDATE   0x03 // Принудительный сброс TLB кэша MMU (Bifrost/Valhall)
+//#define AS_COMMAND_FLUSH_PT     0x05 // Полная очистка конвейера таблиц страниц
 
 static void gpu_as_command(unsigned as, unsigned cmd)
 {
@@ -89,6 +147,10 @@ static void gpu_as_command(unsigned as, unsigned cmd)
 #define GPU_COMMAND_CLEAN_INV_CACHES   0x08 /* Clean and invalidate all caches */
 #define GPU_COMMAND_SET_PROTECTED_MODE 0x09 /* Places the GPU in protected mode */
 
+//#define AS_COMMAND_NOP          0x00
+//#define AS_COMMAND_UPDATE       0x01
+//#define AS_COMMAND_INVALIDATE   0x03 // Принудительный сброс TLB кэша MMU (Bifrost/Valhall)
+//#define AS_COMMAND_FLUSH_PT     0x05 // Полная очистка конвейера таблиц страниц
 
 /* GPU_STATUS values */
 //#define GPU_STATUS_PRFCNT_ACTIVE            (1 << 2)    /* Set if the performance counters are active. */
@@ -117,6 +179,7 @@ static void gpu_command(unsigned cmd)
 //	unsigned v2 = GPU_CONTROL->GPU_STATUS;
 //	unsigned v3 = GPU_CONTROL->GPU_STATUS;
 //	PRINTF("cmd: %08X, Status: %08X, %08X, %08X\n", cmd, v1, v2, v3);
+	__asm__ volatile("dsb sy" : : : "memory");
 }
 
 static void gpu_wait(unsigned mask)
@@ -256,6 +319,23 @@ GPU_ALIGN static mali_framebuffer_desc fb_desc;
 #define COMMAND_SLOT_VERTEX   0
 #define COMMAND_SLOT_FRAGMENT 1
 
+void gpu_diagnose_fault(unsigned slot)
+{
+    // Читаем физический адрес дескриптора, на котором споткнулся DMA-движок GPU
+    uint32_t fault_addr_lo = GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_LO;
+    uint32_t fault_addr_hi = GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_HI;
+    uint64_t fault_phys_addr = ((uint64_t)fault_addr_hi << 32) | fault_addr_lo;
+
+    // В Bifrost код конкретного исключения (Exception Code) часто дублируется
+    // в старших битах регистра JS_STATUS или в регистре ошибок MMU, если это был Page Fault
+    PRINTF("-> MALI FAULT DIAGNOSIS:\n");
+    PRINTF("   GPU stopped at physical address: 0x%08X%08X\n", (unsigned)fault_addr_hi, (unsigned)fault_addr_lo);
+    PRINTF("   MMU Fault Status (0x01802420): 0x%08X\n", (unsigned)GPU_MMU->MMU_AS[0].AS_FAULTSTATUS);
+    PRINTF("   MMU Fault Address: 0x%08X%08X\n",
+           (unsigned)GPU_MMU->MMU_AS[0].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS[0].AS_FAULTADDRESS_LO);
+}
+
+
 // Регистры отправки команд в слот (сверьтесь со структурой GPU_JOB_CONTROL в panfrost_regs.h)
 // Обычные имена регистров в драйвере Panfrost: JS_COMMAND, JS_HEAD_NEXT
 
@@ -308,29 +388,40 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_HEAD_NEXT_HI = ptr_hi32((uintptr_t)&v_job);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
     GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_HEAD_NEXT_LO = ptr_lo32((uintptr_t)&v_job);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
 
+    // 2. ИНИЦИАЛИЗАЦИЯ JS_AFFINITY (Критично для Bifrost!)
+    // Говорим планировщику распределить потоки шейдеров на оба ядра Mali-G31 MP2
+    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_AFFINITY_NEXT_HI = ~0;//0x00000003;
+    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_AFFINITY_NEXT_LO = ~0;//0x00000003;
+
+    // Дополнительно для Bifrost рекомендуется сбросить расширенную конфигурацию слота
+    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_CONFIG_NEXT = 0x00000000;
+
     // Команда START (обычно значение 0x01 в регистр JS_COMMAND)
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_COMMAND = 0x01;
+    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_COMMAND_NEXT = 0x01;
     __asm__ volatile("dsb sy" : : : "memory");
     TP();
 
     local_delay_ms(200);
 //    PRINTF("GPU_MMU:\n");
 //    printhex32(GPU_MMU_BASE, GPU_MMU, 4096);
-//    memset32(GPU_JOB_CONTROL, ~0, 4096);
     PRINTF("f_job: %p\n", & f_job);
     PRINTF("v_job: %p\n", & v_job);
-    PRINTF("GPU_JOB_CONTROL:\n");
-    printhex32(GPU_JOB_CONTROL_BASE, GPU_JOB_CONTROL, 4096);
+    //memset32(GPU_JOB_CONTROL, ~0, 4096);
+//	PRINTF("GPU_JOB_CONTROL:\n");
+//	printhex32(GPU_JOB_CONTROL_BASE, GPU_JOB_CONTROL, 4096);
 //    for (;;)
 //    	;
+//	PRINTF("GPU_MMU:\n");
+//	printhex32(GPU_MMU_BASE, GPU_MMU, 4096);
     PRINTF("GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
+    gpu_diagnose_fault(COMMAND_SLOT_VERTEX);
     // Ожидание завершения работы аппаратного тайлера геометрии
     // В hftrx прерывания выводят ASSERT(0), поэтому опрашиваем статус в цикле (polling)
     while ((GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT & (1 << COMMAND_SLOT_VERTEX)) == 0) {
         // Если произошел сбой, сработает MMU или Job Fault прерывание
     }
     local_delay_ms(200);
-    TP();
+    //TP();
     GPU_JOB_CONTROL->JOB_IRQ_CLEAR = (1 << COMMAND_SLOT_VERTEX); // Сброс флага прерывания
 
     // 5. Запуск цепочки растеризации фрагментов в Slot 1
@@ -338,7 +429,16 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
 
     GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_HEAD_NEXT_HI = ptr_hi32((uintptr_t)&f_job);//(uint32_t)(((uintptr_t)&f_job >> 32) & 0xFFFFFFFF);
     GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_HEAD_NEXT_LO = ptr_lo32((uintptr_t)&f_job);//(uint32_t)((uintptr_t)&f_job & 0xFFFFFFFF);
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_COMMAND = 0x01;
+
+    // 2. ИНИЦИАЛИЗАЦИЯ JS_AFFINITY (Критично для Bifrost!)
+    // Говорим планировщику распределить потоки шейдеров на оба ядра Mali-G31 MP2
+    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_AFFINITY_NEXT_HI = ~0;//0x00000003;
+    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_AFFINITY_NEXT_LO = ~0;//0x00000003;
+
+    // Дополнительно для Bifrost рекомендуется сбросить расширенную конфигурацию слота
+    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_CONFIG_NEXT = 0x00000000;
+
+    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_COMMAND_NEXT = 0x01;
 
     local_delay_ms(200);
     PRINTF("GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
@@ -679,6 +779,29 @@ void mali_g31_mmu_enable(uintptr_t l1_page_table_phys_addr)
     PRINTF("Mali-G31: MMU Address Space 0 successfully enabled at offset 0x400!\n");
 }
 
+#define T507_SPC_BASE         0x03008000
+
+// Регистры конфигурации защиты периферии (Secure Peripherals Control)
+#define SPC_GPU_MAST_REG      (T507_SPC_BASE + 0x00A0) // Управление правами GPU как Master шины
+#define SPC_GPU_SLAV_REG      (T507_SPC_BASE + 0x00A4) // Управление правами доступа CPU к регистрам GPU
+
+void t507_spc_unlock_gpu(void)
+{
+    volatile uint32_t *spc_gpu_master = (volatile uint32_t *)SPC_GPU_MAST_REG;
+    volatile uint32_t *spc_gpu_slave  = (volatile uint32_t *)SPC_GPU_SLAV_REG;
+
+    PRINTF("T507 Platform: Unlocking GPU Secure Peripherals Controller (SPC)...\n");
+
+    // Запись маски 0xFFFFFFFF или 0x00000003 (в зависимости от разводки доменов)
+    // разрешает Non-Secure транзакции для графического процессора на системной интерконнект-шине.
+    // По спецификации Allwinner, запись всех единиц переводит устройство в полностью открытый Non-Secure режим.
+    *spc_gpu_master = 0xFFFFFFFF;
+    *spc_gpu_slave  = 0xFFFFFFFF;
+
+    __asm__ volatile("dsb sy" : : : "memory"); // Принудительно толкаем барьер в контроллер SPC
+
+    PRINTF("T507 Platform: GPU registers bypass TrustZone protection now.\n");
+}
 // Graphic processor unit
 void board_gpu_initialize(void)
 {
@@ -710,6 +833,8 @@ void board_gpu_initialize(void)
 		//PRINTF("2 CCU->PLL_GPU0_CTRL_REG = %08X\n", (unsigned) CCU->PLL_GPU0_CTRL_REG);
 
 	}
+
+	t507_spc_unlock_gpu();
 
 	CCU->GPU_CLK1_REG |= (UINT32_C(1) << 31);	// PLL_PERI_BAK_CLK_GATING
 	CCU->GPU_CLK0_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
@@ -749,6 +874,12 @@ void board_gpu_initialize(void)
 	gpu_wait(RESET_COMPLETED);
 	gpu_command(GPU_COMMAND_NOP);
 
+    PRINTF("GPU Reset released. Unlocking internal buses...\n");
+
+    // 2. СНИМАЕМ ИЗОЛЯЦИЮ ШИНЫ ЗАДАЧ (Решение причины №1)
+	gpu_command(GPU_COMMAND_CYCLE_COUNT_START);
+	local_delay_ms(100);
+
 	// https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/panfrost/panfrost_mmu.c
 
 	PRINTF("board_gpu_initialize done.\n");
@@ -764,15 +895,56 @@ void board_gpu_initialize(void)
     // и вы сможете писать в TRANSTAB и подавать команду UPDATE).
     PRINTF("GPU_CONTROL->GPU_STATUS=%08X\n", (unsigned) GPU_CONTROL->GPU_STATUS);
 
-    // 1. Создаем таблицы страниц в ОЗУ
-    gpu_mmu_setup_tables();
+	gpu_as_command(0, AS_COMMAND_NOP);
+	gpu_as_command(0, AS_COMMAND_UPDATE);
+	gpu_as_command(0, AS_COMMAND_INVALIDATE);
+	gpu_as_command(0, AS_COMMAND_FLUSH_PT);
+	gpu_as_command(0, AS_COMMAND_FLUSH_MEM);
 
-    dcache_clean((uintptr_t) gpu_l1_page_table, sizeof gpu_l1_page_table);
-    mali_g31_mmu_activate((uintptr_t) gpu_l1_page_table);
+    // 1. Создаем таблицы страниц в ОЗУ
+	gpu_mmu_build_4gb_identity_table();
+
+    mali_g31_mmu_activate((uintptr_t) gpu_mmu_l1_table);
 
 	mali_bifrost_l2_ready();
 
-	mali_g31_mmu_enable((uintptr_t) gpu_l1_page_table);
+	mali_g31_mmu_enable((uintptr_t) gpu_mmu_l1_table);
+
+    mali_g31_mmu_activate((uintptr_t) gpu_mmu_l1_table);
+
+	mali_bifrost_l2_ready();
+
+	mali_g31_mmu_enable((uintptr_t) gpu_mmu_l1_table);
+
+	gpu_as_command(0, AS_COMMAND_NOP);
+	gpu_as_command(0, AS_COMMAND_UPDATE);
+	gpu_as_command(0, AS_COMMAND_INVALIDATE);
+	gpu_as_command(0, AS_COMMAND_FLUSH_PT);
+	gpu_as_command(0, AS_COMMAND_FLUSH_MEM);
+    unsigned as = 0; // Наш Address Space 0 (смещение 0x400 от 0x01802000)
+
+    // 2. ИСПРАВЛЕНО: Задаем каноничную маску атрибутов памяти для Bifrost v6!
+    // Индекс 0 = 0xAA (Cacheable), Индекс 1 = 0x22 (Non-Cacheable)
+    GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x000022AA;
+    __asm__ volatile("dsb sy" : : : "memory");
+
+    // 3. Загружаем корень таблиц первого уровня
+    uint64_t transtab_val = (uintptr_t)gpu_mmu_l1_table | 0x03; // LPAE + Enable
+    GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = (uint32_t)(transtab_val >> 32);
+    GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = (uint32_t)(transtab_val & 0xFFFFFFFF);
+    __asm__ volatile("dsb sy" : : : "memory");
+
+    // 4. Очищаем внутренний TLB кэш MMU от старых зависших ошибок 0xC8
+    GPU_MMU->MMU_AS[as].AS_COMMAND = 0x03; // AS_COMMAND_INVALIDATE
+    __asm__ volatile("dsb sy" : : : "memory");
+    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
+
+    // 5. Активируем таблицы командным словом UPDATE
+    GPU_MMU->MMU_AS[as].AS_COMMAND = 0x01; // AS_COMMAND_UPDATE
+    __asm__ volatile("dsb sy" : : : "memory");
+    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
+
+    PRINTF("Mali-G31: MMU Coherency initialized successfully.\n");
 
     // Тест чтения регистров возможностей
     //gpu_test();
