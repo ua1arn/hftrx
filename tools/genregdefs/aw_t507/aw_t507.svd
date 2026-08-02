@@ -8436,94 +8436,13 @@
    </register>
    <cluster>
     <dim>3</dim>
-    <addressOffset>0x00000840</addressOffset>
+    <addressOffset>0x00000800</addressOffset>
     <registers>
-     <register>
-      <name>JS_HEAD_NEXT_LO</name>
-      <displayName>JS_HEAD_NEXT_LO</displayName>
-      <description></description>
-      <addressOffset>0x000</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>JS_HEAD_NEXT_HI</name>
-      <displayName>JS_HEAD_NEXT_HI</displayName>
-      <description></description>
-      <addressOffset>0x004</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>JS_TAIL_NEXT_LO</name>
-      <displayName>JS_TAIL_NEXT_LO</displayName>
-      <description></description>
-      <addressOffset>0x008</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>JS_TAIL_NEXT_HI</name>
-      <displayName>JS_TAIL_NEXT_HI</displayName>
-      <description></description>
-      <addressOffset>0x00C</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>JS_CONFIG</name>
-      <displayName>JS_CONFIG</displayName>
-      <description></description>
-      <addressOffset>0x010</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>JS_COMMAND</name>
-      <displayName>JS_COMMAND</displayName>
-      <description></description>
-      <addressOffset>0x014</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>JS_STATUS</name>
-      <displayName>JS_STATUS</displayName>
-      <description></description>
-      <addressOffset>0x018</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>JS_TAIL_LO</name>
-      <displayName>JS_TAIL_LO</displayName>
-      <description></description>
-      <addressOffset>0x01C</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
-     <register>
-      <name>JS_TAIL_HI</name>
-      <displayName>JS_TAIL_HI</displayName>
-      <description></description>
-      <addressOffset>0x020</addressOffset>
-      <size>0x20</size>
-      <access>read-write</access>
-      <resetValue>0x00000000</resetValue>
-     </register>
      <register>
       <name>JS_HEAD_LO</name>
       <displayName>JS_HEAD_LO</displayName>
       <description></description>
-      <addressOffset>0x024</addressOffset>
+      <addressOffset>0x000</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
       <resetValue>0x00000000</resetValue>
@@ -8532,31 +8451,148 @@
       <name>JS_HEAD_HI</name>
       <displayName>JS_HEAD_HI</displayName>
       <description></description>
-      <addressOffset>0x028</addressOffset>
+      <addressOffset>0x004</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>JS_AFFINITY</name>
-      <displayName>JS_AFFINITY</displayName>
+      <name>JS_TAIL_LO</name>
+      <displayName>JS_TAIL_LO</displayName>
       <description></description>
-      <addressOffset>0x02C</addressOffset>
+      <addressOffset>0x008</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>JS_X_CONFIG</name>
-      <displayName>JS_X_CONFIG</displayName>
+      <name>JS_TAIL_HI</name>
+      <displayName>JS_TAIL_HI</displayName>
       <description></description>
-      <addressOffset>0x030</addressOffset>
+      <addressOffset>0x00C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>JS_AFFINITY_LO</name>
+      <displayName>JS_AFFINITY_LO</displayName>
+      <description></description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>JS_AFFINITY_HI</name>
+      <displayName>JS_AFFINITY_HI</displayName>
+      <description></description>
+      <addressOffset>0x014</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>JS_CONFIG</name>
+      <displayName>JS_CONFIG</displayName>
+      <description></description>
+      <addressOffset>0x018</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>JS_XAFFINITY</name>
+      <displayName>JS_XAFFINITY</displayName>
+      <description></description>
+      <addressOffset>0x01C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>JS_COMMAND</name>
+      <displayName>JS_COMMAND</displayName>
+      <description></description>
+      <addressOffset>0x020</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>JS_STATUS</name>
+      <displayName>JS_STATUS</displayName>
+      <description></description>
+      <addressOffset>0x024</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>JS_HEAD_NEXT_LO</name>
+      <displayName>JS_HEAD_NEXT_LO</displayName>
+      <description></description>
+      <addressOffset>0x040</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>JS_HEAD_NEXT_HI</name>
+      <displayName>JS_HEAD_NEXT_HI</displayName>
+      <description></description>
+      <addressOffset>0x044</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>JS_AFFINITY_NEXT_LO</name>
+      <displayName>JS_AFFINITY_NEXT_LO</displayName>
+      <description></description>
+      <addressOffset>0x050</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>JS_AFFINITY_NEXT_HI</name>
+      <displayName>JS_AFFINITY_NEXT_HI</displayName>
+      <description></description>
+      <addressOffset>0x054</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>JS_CONFIG_NEXT</name>
+      <displayName>JS_CONFIG_NEXT</displayName>
+      <description></description>
+      <addressOffset>0x058</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>JS_COMMAND_NEXT</name>
+      <displayName>JS_COMMAND_NEXT</displayName>
+      <description></description>
+      <addressOffset>0x060</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>JS_FLUSH_ID_NEXT</name>
+      <displayName>JS_FLUSH_ID_NEXT</displayName>
+      <description></description>
+      <addressOffset>0x070</addressOffset>
       <size>0x20</size>
       <access>read-write</access>
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x0C0</dimIncrement>
+    <dimIncrement>0x180</dimIncrement>
    </cluster>
   </registers>
   </peripheral>

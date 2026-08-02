@@ -141,22 +141,28 @@
 #regdef; JOB_IRQ_MASK;       0x18  	; Interrupt mask register
 #regdef; JOB_IRQ_STATUS;     0x1C  	; Interrupt status register
 
-#aggreg; LOOP; 0x840 3; Bifrost: Slot 0 (0x80), Slot 1 (0xC0), Slot 2 (0x100)
-#regdef; JS_HEAD_NEXT_LO;	0x00;
-#regdef; JS_HEAD_NEXT_HI;	0x04;
-#regdef; JS_TAIL_NEXT_LO;	0x08;
-#regdef; JS_TAIL_NEXT_HI;	0x0C;
-#regdef; JS_CONFIG;      	0x10;
-#regdef; JS_COMMAND;     	0x14;
-#regdef; JS_STATUS;      	0x18;
-#regdef; JS_TAIL_LO;     	0x1C;
-#regdef; JS_TAIL_HI;     	0x20;
-#regdef; JS_HEAD_LO;     	0x24;
-#regdef; JS_HEAD_HI;     	0x28;
-#regdef; JS_AFFINITY;    	0x2C;
-#regdef; JS_X_CONFIG;    	0x30;
+#aggreg; LOOP; 0x800 3; Bifrost: Slot 0 (0x80), Slot 1 (0xC0), Slot 2 (0x100)
 
-#regdef; padding 0; 0x40; Placeholder for 0x40 alignment
+#regdefr; JS_HEAD_LO;         	0x00;
+#regdefr; JS_HEAD_HI;         	0x04;
+#regdefr; JS_TAIL_LO;         	0x08;
+#regdefr; JS_TAIL_HI;         	0x0C;
+#regdefr; JS_AFFINITY_LO;       0x10;
+#regdefr; JS_AFFINITY_HI;       0x14;
+#regdefr; JS_CONFIG;          	0x18;
+#regdefr; JS_XAFFINITY;       	0x1C;
+#regdef; JS_COMMAND;        	0x20;
+#regdefr; JS_STATUS;          	0x24;
+
+#regdefw; JS_HEAD_NEXT_LO;		0x40;
+#regdefw; JS_HEAD_NEXT_HI;    	0x44;
+#regdefw; JS_AFFINITY_NEXT_LO; 	0x50;
+#regdefw; JS_AFFINITY_NEXT_HI; 	0x54;
+#regdefw; JS_CONFIG_NEXT;     	0x58;
+#regdefw; JS_COMMAND_NEXT;    	0x60;
+#regdefw; JS_FLUSH_ID_NEXT;   	0x70;
+
+#regdef; padding 0; 0x80; Placeholder for 0x40 alignment
 #aggregend;
 
 #typeend;

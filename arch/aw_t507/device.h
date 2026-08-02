@@ -1671,25 +1671,33 @@ typedef struct GPU_JOB_CONTROL_Type
     __IOM uint32_t JOB_IRQ_CLEAR;                     /*!< Offset 0x014 Interrupt clear register */
     __IOM uint32_t JOB_IRQ_MASK;                      /*!< Offset 0x018 Interrupt mask register */
     __IOM uint32_t JOB_IRQ_STATUS;                    /*!< Offset 0x01C Interrupt status register */
-         RESERVED(0x020[0x0840 - 0x0020], uint8_t)
+         RESERVED(0x020[0x0800 - 0x0020], uint8_t)
     struct
     {
-        __IOM uint32_t JS_HEAD_NEXT_LO;               /*!< Offset 0x840  */
-        __IOM uint32_t JS_HEAD_NEXT_HI;               /*!< Offset 0x844  */
-        __IOM uint32_t JS_TAIL_NEXT_LO;               /*!< Offset 0x848  */
-        __IOM uint32_t JS_TAIL_NEXT_HI;               /*!< Offset 0x84C  */
-        __IOM uint32_t JS_CONFIG;                     /*!< Offset 0x850  */
-        __IOM uint32_t JS_COMMAND;                    /*!< Offset 0x854  */
-        __IOM uint32_t JS_STATUS;                     /*!< Offset 0x858  */
-        __IOM uint32_t JS_TAIL_LO;                    /*!< Offset 0x85C  */
-        __IOM uint32_t JS_TAIL_HI;                    /*!< Offset 0x860  */
-        __IOM uint32_t JS_HEAD_LO;                    /*!< Offset 0x864  */
-        __IOM uint32_t JS_HEAD_HI;                    /*!< Offset 0x868  */
-        __IOM uint32_t JS_AFFINITY;                   /*!< Offset 0x86C  */
-        __IOM uint32_t JS_X_CONFIG;                   /*!< Offset 0x870  */
-             RESERVED(0x034[0x0040 - 0x0034], uint8_t)
-    } LOOP [0x003];                                   /*!< Offset 0x840 Bifrost: Slot 0 (0x80), Slot 1 (0xC0), Slot 2 (0x100) */
-} GPU_JOB_CONTROL_TypeDef; /* size of structure = 0x900 */
+        __IM  uint32_t JS_HEAD_LO;                    /*!< Offset 0x800  */
+        __IM  uint32_t JS_HEAD_HI;                    /*!< Offset 0x804  */
+        __IM  uint32_t JS_TAIL_LO;                    /*!< Offset 0x808  */
+        __IM  uint32_t JS_TAIL_HI;                    /*!< Offset 0x80C  */
+        __IM  uint32_t JS_AFFINITY_LO;                /*!< Offset 0x810  */
+        __IM  uint32_t JS_AFFINITY_HI;                /*!< Offset 0x814  */
+        __IM  uint32_t JS_CONFIG;                     /*!< Offset 0x818  */
+        __IM  uint32_t JS_XAFFINITY;                  /*!< Offset 0x81C  */
+        __IOM uint32_t JS_COMMAND;                    /*!< Offset 0x820  */
+        __IM  uint32_t JS_STATUS;                     /*!< Offset 0x824  */
+             RESERVED(0x028[0x0040 - 0x0028], uint8_t)
+        __OM  uint32_t JS_HEAD_NEXT_LO;               /*!< Offset 0x840  */
+        __OM  uint32_t JS_HEAD_NEXT_HI;               /*!< Offset 0x844  */
+             RESERVED(0x048[0x0050 - 0x0048], uint8_t)
+        __OM  uint32_t JS_AFFINITY_NEXT_LO;           /*!< Offset 0x850  */
+        __OM  uint32_t JS_AFFINITY_NEXT_HI;           /*!< Offset 0x854  */
+        __OM  uint32_t JS_CONFIG_NEXT;                /*!< Offset 0x858  */
+             RESERVED(0x05C[0x0060 - 0x005C], uint8_t)
+        __OM  uint32_t JS_COMMAND_NEXT;               /*!< Offset 0x860  */
+             RESERVED(0x064[0x0070 - 0x0064], uint8_t)
+        __OM  uint32_t JS_FLUSH_ID_NEXT;              /*!< Offset 0x870  */
+             RESERVED(0x074[0x0080 - 0x0074], uint8_t)
+    } LOOP [0x003];                                   /*!< Offset 0x800 Bifrost: Slot 0 (0x80), Slot 1 (0xC0), Slot 2 (0x100) */
+} GPU_JOB_CONTROL_TypeDef; /* size of structure = 0x980 */
 /*
  * @brief GPU_MMU
  */
