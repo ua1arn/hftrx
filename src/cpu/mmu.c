@@ -1440,11 +1440,33 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	};
 	//static const int gpuglongdesc = 0;
 
+	#define MALI_PTE_VALID          (1ULL << 0)
+	#define MALI_PTE_BLOCK          (0ULL << 1) // Финальный блок (разрешен на L1 для 1GB и на L2 для 2MB)
+	#define MALI_PTE_PAGE           (1ULL << 1) // Указатель на следующую таблицу (на L0, L1, L2)
+	#define MALI_PTE_USER           (1ULL << 6)
+	#define MALI_PTE_SHARE_OUTER    (2ULL << 8)
+	#define MALI_PTE_AF             (1ULL << 10) // Access Flag
+	#define MALI_PTE_ATTR_IDX_1     (1ULL << 2)  // Non-Cacheable домен (0x22 из MEMATTR)
+
 	/* зависящая от процессора карта распределения memory regions */
 	static unsigned
-	gpu_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn)
+	gpu_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, uint8_t * b, uint_fast64_t phys_addr, int ro, int xn)
 	{
+        uint64_t desc = phys_addr |
+                                     MALI_PTE_VALID |
+                                     MALI_PTE_BLOCK |
+                                     MALI_PTE_USER |	// if commented - MMU Fault Status (0x01802420): 0x7C0002C8
+                                     MALI_PTE_SHARE_OUTER |
+                                     MALI_PTE_AF |          /* Бит 10 взведен */
+                                     MALI_PTE_ATTR_IDX_1 |
+									 0;
+        //return USBD_poke_u64(b, dsec);
 		return 4;
+	}
+
+	uintptr_t hardware_get_g31_mmutable(void)
+	{
+		return (uintptr_t) ttb0_base;//gpu_ttb0_base;
 	}
 
 #endif /* WITHGPUHW && (CPUSTYLE_T507) */
