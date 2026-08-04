@@ -188,13 +188,16 @@ void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
            (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_LO);
 }
 
-static int gpu_submit_job(unsigned slot, void * job)
+static int gpu_submit_job(unsigned slot, uintptr_t head, uintptr_t tail)
 {
-	PRINTF("gpu_submit_job: job=%p, slot=%u\n", job, slot);
-	printhex((uintptr_t) job, job, 64);
+	PRINTF("gpu_submit_job: head=%p, slot=%u\n", (void *) head, slot);
+//	printhex32((uintptr_t) job, job, 64);
     // Записываем физический адрес начала структуры v_job в регистр указателя слота 0
-    GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_HI = ptr_hi32((uintptr_t) job);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
-    GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_LO = ptr_lo32((uintptr_t) job);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
+    GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_HI = ptr_hi32(head);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
+    GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_LO = ptr_lo32(head);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
+
+//    GPU_JOB_CONTROL->LOOP[slot].JS_TAIL_NEXT_HI = ptr_hi32(tail);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
+//    GPU_JOB_CONTROL->LOOP[slot].JS_TAIL_NEXT_LO = ptr_lo32(tail);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
 
     // 2. ИНИЦИАЛИЗАЦИЯ JS_AFFINITY (Критично для Bifrost!)
     // Говорим планировщику распределить потоки шейдеров на оба ядра Mali-G31 MP2
@@ -217,18 +220,18 @@ static int gpu_submit_job(unsigned slot, void * job)
     // В hftrx прерывания выводят ASSERT(0), поэтому опрашиваем статус в цикле (polling)
     if (local_wait32mask(& GPU_JOB_CONTROL->JOB_INT_RAWSTAT, (UINT32_C(1) << slot), 1 * (UINT32_C(1) << slot), 100))//Was: JOB_IRQ_RAWSTAT
     {
-    	PRINTF("error job %p:\n", job);
-    	dcache_invalidate((uintptr_t) job, 64);
-    	printhex((uintptr_t) job, job, 64);
+    	PRINTF("error head %p:\n", (void *) head);
+    	dcache_invalidate((uintptr_t) head, 64);
+    	printhex32((uintptr_t) head, (void *) head, 64);
     	PRINTF("gpu timeout: GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
     	gpu_diagnose_slot_fault(slot, 0);
     	return 1;
     }
     else
     {
-    	PRINTF("okay job %p:\n", job);
-    	dcache_invalidate((uintptr_t) job, 64);
-    	printhex((uintptr_t) job, job, 64);
+    	PRINTF("okay head %p:\n", (void *) head);
+    	dcache_invalidate((uintptr_t) head, 64);
+    	printhex32((uintptr_t) head, (void *) head, 64);
         GPU_JOB_CONTROL->JOB_INT_CLEAR = (UINT32_C(1) << slot); // Сброс флага прерывания
         return 0;
     }
@@ -466,7 +469,7 @@ void run_write_value_test(void) {
     // Важно: Адреса job и gpu_test_target должны быть предварительно
     // промаплены в MMU вашего Mali-G31 с правами Read/Write!
 
-    if (gpu_submit_job(2, & job))
+    if (gpu_submit_job(2, (uintptr_t) & job, 0))
     	return;
       // Проверяем результат выполнения
     dcache_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
@@ -488,6 +491,8 @@ typedef struct __attribute__((packed)) {
     uint64_t polygon_list;           // 0x30: Физический адрес буфера для Polygon List (выделите 4КБ нулей)
     uint32_t reserved;               // 0x38: 0
     uint32_t flags;                  // 0x3C: 0
+
+    uint32_t padding_to_128[16];   // Еще 64 байта чистых нулей!
 } mali_tiler_job;
 
 typedef struct __attribute__((packed)) {
@@ -498,6 +503,8 @@ typedef struct __attribute__((packed)) {
      uint64_t renderer_state;         // 0x28: Физический адрес RSD (Render State Descriptor) для Vertex-стадии
      uint64_t attributes;             // 0x30: Физический адрес таблицы вершинных буферов (Attribute Table)
      uint64_t attribute_buffers;      // 0x38: Физический адрес описателей самих буферов (Attribute Buffer Table)
+
+     uint32_t padding_to_128[16];   // Еще 64 байта чистых нулей!
 } mali_vertex_job;
 
 // Расширенный дескриптор для Fragment задач
@@ -514,6 +521,7 @@ typedef struct __attribute__((packed)) {
     __IO uint32_t clear_color;            /* +0x38: Цвет очистки экрана в формате ARGB8888 (если включен флаг) */
     __IO uint32_t fragment_flags;         /* +0x3C: Флаги фрагментного конвейера (биты очистки, глубина, трафарет) */
     __IO uint32_t r1 [2];
+    uint32_t padding_to_128[16];   // !!!!! Еще 64 байта чистых нулей!
 } mali_fragment_job;
 
 
@@ -578,15 +586,13 @@ typedef struct __attribute__((packed)) {
 
 GPU_ALIGN static mali_framebuffer_desc fb_desc;
 
-/**
-  * @brief Дескриптор конфигурации одной стадии шейдера для Bifrost v6 (Mali-G31)
-  * Размер: ровно 16 байт. Обязательно packed.
-  */
 typedef struct __attribute__((packed)) {
-    __IO uint32_t properties;             /* +0x00: Аппаратные свойства: биты [3:0] — тип (0-Vert, 1-Frag), биты [15:4] — число регистров */
-    __IO uint16_t stack_size;             /* +0x04: Размер стека для потоков (ставим 0, если нет ветвлений) */
-    __IO uint16_t preload_regs;           /* +0x06: Флаги аппаратного предзагрузчика текстур/атрибутов (ставим 0) */
-    __IO uint64_t shader_code_ptr;        /* +0x08: СТРОГО ТУТ: 64-бит физический адрес бинарного кода шейдера (Bifrost ISA) */
+    uint32_t properties;             // +0x00: Тип стадии и количество регистров
+    uint16_t stack_size;             // +0x04: Размер стека для ветвлений (0)
+    uint16_t preload_regs;           // +0x06: Аппаратная предзагрузка (0)
+    uint64_t shader_code_ptr;        // +0x08: 64-битный физический адрес кода шейдера
+    uint64_t unk_bifrost_v6_ctrl1;   // +0x10: Скрытый системный контроль 1 (0)
+    uint64_t unk_bifrost_v6_ctrl2;   // +0x18: Скрытый системный контроль 2 (0)
 } mali_shader_stage_t;
 
 typedef struct __attribute__((packed)) {
@@ -684,57 +690,52 @@ GPU_ALIGN static float triangle_vertices[] = {
      0.5f, -0.5f, 0.0f  // Нижняя правая
 };
 
-void gpu_init_program_state(void)
+void gpu_init_program_state( void)
 {
-    // Полностью зануляем 128-байтную структуру программы (Renderer State)
-    uint8_t *p = (uint8_t *)&gpu_program_state;
-    for (int i = 0; i < 128; i++) p[i] = 0;
+    // ... [Полное зануление структуры gpu_program_state] ...
 
-    // 1. НАСТРОЙКА ДЕСКРИПТОРА АТРИБУТОВ ВЕРШИН (gpu_vertex_input_meta)
-    // Передаем прямой физический адрес массива координат triangle_vertices
+    // 1. Инициализация дескриптора атрибутов вершин (gpu_vertex_input_meta)
     gpu_vertex_input_meta.buffer_ptr = (uintptr_t)triangle_vertices;
+    gpu_vertex_input_meta.stride = 12; // 3 float * 4 байта = 12 байт
+    gpu_vertex_input_meta.size = sizeof(triangle_vertices);
+    gpu_vertex_input_meta.format = 0x0400030A; // Аппаратный код Vec3 Float32 для Bifrost v6
 
-    // Шаг (Stride) между вершинами: 3 флоата * 4 байта = 12 байт
-    gpu_vertex_input_meta.stride     = 12;
-
-    // Общий размер буфера: 3 вершины * 3 флоата * 4 байта = 36 байт
-    gpu_vertex_input_meta.size       = sizeof(triangle_vertices);
-
-    // ИСПРАВЛЕНО: Аппаратный код Bifrost v6 для Vec3 Float32
-    gpu_vertex_input_meta.format     = 0x0400030A;
-
-    // 2. Настраиваем Вершинную стадию (properties = 0x00004000)
-    gpu_program_state.vertex_stage.properties      = 0x00004000;
-    gpu_program_state.vertex_stage.stack_size      = 0;
-    gpu_program_state.vertex_stage.preload_regs    = 0;
+    // 2. Параметры стадий шейдеров (из вашего исходного кода)
+    gpu_program_state.vertex_stage.properties = 0x00004000;
     gpu_program_state.vertex_stage.shader_code_ptr = (uintptr_t)bifrost_vertex_shader_code;
 
-    // 3. Настраиваем Фрагментную стадию (properties = 0x00004001)
-    gpu_program_state.fragment_stage.properties      = 0x00004001;
-    gpu_program_state.fragment_stage.stack_size      = 0;
-    gpu_program_state.fragment_stage.preload_regs    = 0;
+    gpu_program_state.fragment_stage.properties = 0x00004001;
     gpu_program_state.fragment_stage.shader_code_ptr = (uintptr_t)bifrost_fragment_shader_code;
 
-    // 4. Формула блендинга (Opaque)
     gpu_program_state.blend_equation = 0x00001200;
 
-    // 5. Системные суффиксы (маски) Bifrost v6 для пробития шины атрибутов ОЗУ T507
-    // Направляем attribute_meta_ptr на нашу структуру gpu_vertex_input_meta с маской | 0x1
-    gpu_program_state.attribute_meta_ptr   = (uintptr_t)&gpu_vertex_input_meta | 0x0000000000000001ULL;
+    // 3. ПРИМЕНЕНИЕ СИСТЕМНЫХ МАСОК И СУФФИКСОВ ЧЕРЕЗ UINT64_C
+    // Направляем attribute_meta_ptr на нашу структуру gpu_vertex_input_meta с маской | 1
+    gpu_program_state.attribute_meta_ptr = (uintptr_t)&gpu_vertex_input_meta | UINT64_C(1);
 
-    // Направляем attribute_buffer_ptr на массив координат с маской | 0x3
-    gpu_program_state.attribute_buffer_ptr = (uintptr_t)triangle_vertices       | 0x0000000000000003ULL;
+    // Направляем attribute_buffer_ptr на массив координат с маской | 3
+    gpu_program_state.attribute_buffer_ptr = (uintptr_t)triangle_vertices | UINT64_C(3);
 
-    gpu_program_state.varyings_meta_ptr    = 0;
+    gpu_program_state.varyings_meta_ptr = 0;
 
-    // СИНХРОНИЗАЦИЯ: Применяем dcache_clean проекта hftrx для выталкивания всех измененных структур из кэша CPU
+    // СИНХРОНИЗАЦИЯ КЭША (Канонические вызовы проекта hftrx)
     dcache_clean((uintptr_t)&gpu_vertex_input_meta, sizeof(gpu_vertex_input_meta));
     dcache_clean((uintptr_t)&gpu_program_state, sizeof(gpu_program_state));
     dcache_clean((uintptr_t)bifrost_vertex_shader_code, sizeof(bifrost_vertex_shader_code));
     dcache_clean((uintptr_t)bifrost_fragment_shader_code, sizeof(bifrost_fragment_shader_code));
-
-    // Наш канонический CMSIS барьер памяти
     __DSB();
+
+    PRINTF("gpu_vertex_input_meta @%p:\n", &gpu_vertex_input_meta);
+    printhex32((uintptr_t) &gpu_vertex_input_meta, &gpu_vertex_input_meta, sizeof gpu_vertex_input_meta);
+
+    PRINTF("gpu_program_state @%p:\n", &gpu_program_state);
+    printhex32((uintptr_t) &gpu_program_state, &gpu_program_state, sizeof gpu_program_state);
+
+    PRINTF("bifrost_vertex_shader_code @%p:\n", &bifrost_vertex_shader_code);
+    printhex32((uintptr_t) &bifrost_vertex_shader_code, &bifrost_vertex_shader_code, sizeof bifrost_vertex_shader_code);
+
+    PRINTF("bifrost_fragment_shader_code @%p:\n", &bifrost_fragment_shader_code);
+    printhex32((uintptr_t) &bifrost_fragment_shader_code, &bifrost_fragment_shader_code, sizeof bifrost_fragment_shader_code);
 }
 
 // Номера слотов задач (обычно слот 0 - Vertex/Compute, слот 1 - Fragment)
@@ -870,69 +871,76 @@ void setup_attribute_table(void) {
 
     // Остальные элементы оставляем нулями (терминаторы)
     dcache_clean((uintptr_t)attr_table_words, sizeof(attr_table_words));
+
+    PRINTF("attr_table_words @%p:\n", &attr_table_words);
+    printhex32((uintptr_t) &attr_table_words, &attr_table_words, sizeof attr_table_words);
 }
 
-void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height)
+// Глобальные или статические буферы (выделенные в ОЗУ вашего проекта)
+GPU_ALIGN static mali_vertex_job v_job;
+GPU_ALIGN static mali_tiler_job  t_job; // Выделяем Tiler Job как честную переменную в ОЗУ
+
+// Буфер под итоговый Polygon List (выделите с запасом, например, 4 КБ)
+GPU_ALIGN static uint8_t polygon_list_mem[4096];
+
+void gpu_draw_triangle(void)
 {
-	enum {
-		COMMAND_SLOT_VERTEX = 0,
-		COMMAND_SLOT_FRAGMENT
-	};
-	gpu_init_program_state();
-	setup_attribute_table();
-//	gpu_draw_triangle2(framebuffer_phys_addr, width, height);
-    PRINTF("Assembling GPU Job Chain for Triangle...\n");
-    // https://android.googlesource.com/platform/external/mesa3d/+/e061bf004b5/src/panfrost/include/panfrost-job.h
+    enum {
+        COMMAND_SLOT_VERTEX = 0,
+        COMMAND_SLOT_FRAGMENT
+    };
+    gpu_init_program_state();
+    setup_attribute_table();
 
-	// Область памяти для кучи тайлера (Mali Tiler требует буфер для сортировки геометрии)
-	__attribute__((aligned(4096))) static uint8_t tiler_heap_mem[64 * 10 * 1024];
-	struct mali_bifrost_tiler_heap {
-	    uint64_t tiler_heap_free; // Сюда пишем физический адрес START
-	    uint64_t tiler_heap_end;  // Физический адрес: START + SIZE - CHUNK_SIZE
-	    uint32_t padding;         // 0x0
-	    uint32_t flags;           // 0x00000001 (Флаг активации кучи)
-	    uint64_t chunk_size;      // 0x00008000 (Задаем размер чанка 32 КБ)
-	    uint64_t pad[4];          // 0x20: Зануляем остаток до 64 байт
-	};
-	static GPU_ALIGN struct mali_bifrost_tiler_heap tiler_heap =
-	{
-			.tiler_heap_free = (uintptr_t) tiler_heap_mem,
-			.tiler_heap_end = (uintptr_t) tiler_heap_mem + 64 * 10 * 1024 - (32 * 1024),
-			.flags = 1,
-			.chunk_size = 32 * 1024
-	};
-	dcache_clean((uintptr_t)&tiler_heap, sizeof tiler_heap);
-	struct __attribute__((packed, aligned(64))) mali_bifrost_fb_desc {
-	    uint32_t width_minus_1;     // Ширина экрана - 1 (например, 15 для экрана шириной 16)
-	    uint32_t height_minus_1;    // Высота экрана - 1 (например, 15 для экрана высотой 16)
-	    uint32_t sample_mask;       // 0x0000FFFF (Плитки 16х16)
-	    uint32_t unk_flags;         // 0x00000002 (Минимальные флаги формата)
-	    uint64_t tiler_heap_ptr;    // Физический адрес структуры `mali_bifrost_tiler_heap` (из шага 1)
-	    uint8_t  reserved[40];      // Зануляем остаток до 64 байт
-	};
-	static GPU_ALIGN struct mali_bifrost_fb_desc fbd = {
-		.width_minus_1 = 15,
-		.height_minus_1 = 15,
-		.sample_mask = 0x0000FFFF,
-		.unk_flags = 0x02,
-		.tiler_heap_ptr = (uintptr_t) & tiler_heap,
-	};
-	dcache_clean((uintptr_t)&fbd, sizeof fbd);
-	struct __attribute__((packed, aligned(64))) mali_bifrost_tiler_payload {
-	    uint64_t fb_desc_ptr;       // Физический адрес структуры `mali_bifrost_fb_desc` (из шага 2)
-	    uint64_t polygon_list_ptr;  // Физический адрес пустого буфера в ОЗУ (выделите под него 4КБ)
-	    uint32_t total_polygons;    // 0 (У нас нет полигонов, сцена пустая!)
-	    uint32_t tiler_flags;       // 0x00000000
-	    uint8_t  reserved[40];      // Зануляем остаток до 64 байт
-	};
-	__attribute__((aligned(4096))) static uint8_t polygon_list_mem [ 4096];
-	static GPU_ALIGN struct mali_bifrost_tiler_payload tiler_payload = {
-		.fb_desc_ptr = (uintptr_t) & fbd,
-		.polygon_list_ptr = (uintptr_t) & polygon_list_mem,
-		.total_polygons = 0,
-		.tiler_flags = 0,
+    // Область памяти для кучи тайлера (Mali Tiler требует буфер для сортировки геометрии)
+    __attribute__((aligned(4096))) static uint8_t tiler_heap_mem[64 * 10 * 1024];
+    struct mali_bifrost_tiler_heap {
+        uint64_t tiler_heap_free; // Сюда пишем физический адрес START
+        uint64_t tiler_heap_end;  // Физический адрес: START + SIZE - CHUNK_SIZE
+        uint32_t padding;         // 0x0
+        uint32_t flags;           // 0x00000001 (Флаг активации кучи)
+        uint64_t chunk_size;      // 0x00008000 (Задаем размер чанка 32 КБ)
+        uint64_t pad[4];          // 0x20: Зануляем остаток до 64 байт
+    };
+    static GPU_ALIGN struct mali_bifrost_tiler_heap tiler_heap =
+    {
+            .tiler_heap_free = (uintptr_t) tiler_heap_mem,
+            .tiler_heap_end = (uintptr_t) tiler_heap_mem + 64 * 10 * 1024 - (32 * 1024),
+            .flags = 1,
+            .chunk_size = 32 * 1024
+    };
+    dcache_clean((uintptr_t)&tiler_heap, sizeof tiler_heap);
+    struct __attribute__((packed, aligned(64))) mali_bifrost_fb_desc {
+        uint32_t width_minus_1;     // Ширина экрана - 1 (например, 15 для экрана шириной 16)
+        uint32_t height_minus_1;    // Высота экрана - 1 (например, 15 для экрана высотой 16)
+        uint32_t sample_mask;       // 0x0000FFFF (Плитки 16х16)
+        uint32_t unk_flags;         // 0x00000002 (Минимальные флаги формата)
+        uint64_t tiler_heap_ptr;    // Физический адрес структуры `mali_bifrost_tiler_heap` (из шага 1)
+        uint8_t  reserved[40];      // Зануляем остаток до 64 байт
+    };
+    static GPU_ALIGN struct mali_bifrost_fb_desc fbd = {
+        .width_minus_1 = 15,
+        .height_minus_1 = 15,
+        .sample_mask = 0x0000FFFF,
+        .unk_flags = 0x02,
+        .tiler_heap_ptr = (uintptr_t) & tiler_heap,
+    };
+    dcache_clean((uintptr_t)&fbd, sizeof fbd);
+    struct __attribute__((packed, aligned(64))) mali_bifrost_tiler_payload {
+        uint64_t fb_desc_ptr;       // Физический адрес структуры `mali_bifrost_fb_desc` (из шага 2)
+        uint64_t polygon_list_ptr;  // Физический адрес пустого буфера в ОЗУ (выделите под него 4КБ)
+        uint32_t total_polygons;    // 0 (У нас нет полигонов, сцена пустая!)
+        uint32_t tiler_flags;       // 0x00000000
+        uint8_t  reserved[40];      // Зануляем остаток до 64 байт
+    };
+    __attribute__((aligned(4096))) static uint8_t polygon_list_mem [ 4096];
+    static GPU_ALIGN struct mali_bifrost_tiler_payload tiler_payload = {
+        .fb_desc_ptr = (uintptr_t) & fbd,
+        .polygon_list_ptr = (uintptr_t) & polygon_list_mem,
+        .total_polygons = 0,
+        .tiler_flags = 0,
 
-	};
+    };
     GPU_ALIGN static struct __attribute__((packed, aligned(64))) mali_bifrost_rsd {
         // Первое 32-битное слово содержит конфигурацию свойств шейдера
         uint32_t flags; // Запишем 0x00000002 (Минимальный флаг, указывающий на базовый тип шейдера)
@@ -942,145 +950,107 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     } rsd;
     rsd.flags = 2;
     rsd.unknown = 0x00000100;
-	dcache_clean((uintptr_t)&rsd, sizeof rsd);
-	dcache_clean((uintptr_t)&tiler_payload, sizeof tiler_payload);
-	GPU_ALIGN static mali_bifrost_thread_input v_thread_input;
+    dcache_clean((uintptr_t)&rsd, sizeof rsd);
+    dcache_clean((uintptr_t)&tiler_payload, sizeof tiler_payload);
+    GPU_ALIGN static mali_bifrost_thread_input v_thread_input;
 
-	// Сбрасываем старую память
-	__builtin_memset(&v_thread_input, 0, sizeof(v_thread_input));
+    // Сбрасываем старую память
+    __builtin_memset(&v_thread_input, 0, sizeof(v_thread_input));
 
-	// Инициализируем параметры под 3 вершины
-	v_thread_input.flags = 0x00000001;          // Включаем валидацию сетки
+    // Инициализируем параметры под 3 вершины
+    v_thread_input.flags = 0x00000001;          // Включаем валидацию сетки
 
-	v_thread_input.workgroup_size_x = 1;        // Потоки бьются на группы по 1 вершине
-	v_thread_input.workgroup_size_y = 1;
-	v_thread_input.workgroup_size_z = 1;
+    v_thread_input.workgroup_size_x = 1;        // Потоки бьются на группы по 1 вершине
+    v_thread_input.workgroup_size_y = 1;
+    v_thread_input.workgroup_size_z = 1;
 
-	v_thread_input.grid_size_x = 3;             // Генерируем ровно 3 потока (по 1 на вершину треугольника)
-	v_thread_input.grid_size_y = 1;
-	v_thread_input.grid_size_z = 1;
+    v_thread_input.grid_size_x = 3;             // Генерируем ровно 3 потока (по 1 на вершину треугольника)
+    v_thread_input.grid_size_y = 1;
+    v_thread_input.grid_size_z = 1;
 
-	v_thread_input.index_count = 3;             // 3 вершины в неиндексированном режиме
-	v_thread_input.index_buffer_ptr = 0;        // Буфер индексов отсутствует (рисуем последовательно)
-	dcache_clean((uintptr_t)&v_thread_input, sizeof v_thread_input);
+    v_thread_input.index_count = 3;             // 3 вершины в неиндексированном режиме
+    v_thread_input.index_buffer_ptr = 0;        // Буфер индексов отсутствует (рисуем последовательно)
+    dcache_clean((uintptr_t)&v_thread_input, sizeof v_thread_input);
 
-	// Выделяем память под таблицу описателей буферов (64 байта)
-	typedef struct __attribute__((packed, aligned(64))) {
-	    struct mali_bifrost_attr_buffer_desc buffer0; // 0x00: Описатель геометрии
-	    struct mali_bifrost_attr_buffer_desc buffer1; // 0x20: Пустой терминатор
-	} mali_attr_buf_table;
+    PRINTF("v_thread_input @%p:\n", &v_thread_input);
+    printhex32((uintptr_t) &v_thread_input, &v_thread_input, sizeof v_thread_input);
 
-	GPU_ALIGN static mali_attr_buf_table attr_buf_table;
+    // Полностью зануляем дескрипторы перед заполнением
+    __builtin_memset(&v_job, 0, sizeof(v_job));
+    __builtin_memset(&t_job, 0, sizeof(t_job));
+    __builtin_memset(polygon_list_mem, 0, sizeof(polygon_list_mem));
 
-	// Инициализация под массив triangle_vertices (36 байт по адресу 0x40135AC0)
-	__builtin_memset(&attr_buf_table, 0, sizeof(attr_buf_table));
+    // =========================================================================
+    // 1. СБОРКА VERTEX JOB (Первое звено цепи в Slot 0)
+    // =========================================================================
+    v_job.header.exception_status = 0;
+    v_job.header.first_incomplete_task = 0;
+    v_job.header.fault_pointer = 0;
 
-	attr_buf_table.buffer0.pointer = (uintptr_t) triangle_vertices;      // Физический адрес вершин
-	attr_buf_table.buffer0.size_minus_1 = 36 - 1;     // 35 (0x23)
-	attr_buf_table.buffer0.stride = 12;               // 12 байт шаг (3 float)
-	attr_buf_table.buffer0.flags = 0x00000001;        // Буфер активен
+    // (MALI_JOB_TYPE_VERTEX << 1) | MALI_JOB_64 -> (5 << 1) | 1 = 11 (0x0B)
+    v_job.header.job_type = 5;
+    v_job.header.job_descriptor_size = 1;
+    v_job.header.job_barrier = 0;          // Не блокируем конвейер, даем течь к тайлеру
+    v_job.header.job_index = 1;            // Уникальный ID задачи = 1
+    v_job.header.job_dependency_index_1 = 0; // Никого не ждем
 
-	dcache_clean((uintptr_t)&attr_buf_table, sizeof attr_buf_table);
+    // АВТОМАШТАБИРОВАНИЕ: next_job указывает строго на нашу структуру t_job в памяти
+    v_job.header.next_job = (uintptr_t)&t_job;
 
-	{
-		__attribute__((aligned(4096))) static uint8_t polygon_list_mem4 [ 4096];
+    // Полезная нагрузка (Payload) вершинной стадии
+    v_job.thread_input_record = (uintptr_t)&v_thread_input;
+    v_job.renderer_state      = (uintptr_t)&gpu_program_state; // RSD (40373180)
+    v_job.attributes          = 0; // Для Bifrost v6 эти поля строго зануляются
+    v_job.attribute_buffers   = 0; // так как данные считываются из RSD выше
 
-    	// Выделяем память под дескрипторы аппаратных задач в RAM
-    	GPU_ALIGN static mali_vertex_job    v_job;
+    // =========================================================================
+    // 2. СБОРКА TILER JOB (Второе звено цепи в Slot 0)
+    // =========================================================================
+    t_job.header.exception_status = 0;
+    t_job.header.first_incomplete_task = 0;
+    t_job.header.fault_pointer = 0;
 
-        // 2. Настройка первой задачи: Координаты и геометрия (Vertex / Tiler Job)
-        v_job.header.job_type = MALI_JOB_TYPE_VERTEX;
-        v_job.header.job_index = 1;
-        v_job.header.job_barrier = 1;
-        v_job.header.job_descriptor_size = 1;// 1 (64-битные указатели)
-        v_job.header.next_job = 0;//(uintptr_t) & f_job;//0; // Конец первой цепочки (или можно связать с f_job, если аппаратно поддерживается)
+    // (MALI_JOB_TYPE_TILER << 1) | MALI_JOB_64 -> (7 << 1) | 1 = 15 (0x0F)
+    t_job.header.job_type = 7;
+    t_job.header.job_descriptor_size = 1;
+    t_job.header.job_barrier = 1;          // Финальный аппаратный барьер в конце цепи
+    t_job.header.job_index = 2;            // Уникальный ID задачи = 2
 
-        v_job.thread_input_record = (uint64_t)&v_thread_input; // Сетка вершин (кол-во потоков = числу вершин)
-        v_job.renderer_state      = (uint64_t)&rsd;          // Параметры вершинного шейдера
-        v_job.attributes          = (uint64_t)&attr_table_words;     // Ссылка на геометрию (треугольник)
-        v_job.attribute_buffers   = (uint64_t)&attr_buf_table;
+    // КРИТИЧНО: Явно заставляем тайлер дождаться выполнения задачи ID = 1 (v_job)
+    t_job.header.job_dependency_index_1 = 1;
+    t_job.header.next_job = 0;             // Цепочка для Slot 0 на этом завершена
 
-        memset(& tiler_heap_mem, 0xE5, sizeof tiler_heap_mem);
-        dcache_clean_invalidate((uintptr_t) tiler_heap_mem, sizeof tiler_heap_mem);
-        PRINTF("tiler_heap:\n");
-        printhex32((uintptr_t) & tiler_heap, & tiler_heap, sizeof tiler_heap);
-        PRINTF("fbd:\n");
-        printhex32((uintptr_t) & fbd, & fbd, sizeof fbd);
+    // Полезная нагрузка (Payload) стадии тайлинга
+    t_job.tiler_heap_desc = (uintptr_t)&tiler_heap; // Ваша структура кучи
+    t_job.fb_desc         = (uintptr_t)&fbd;        // Ваша структура фреймбуфера кадра
+    t_job.polygon_list    = (uintptr_t)polygon_list_mem; // Динамический буфер вывода геометрии
 
+    // =========================================================================
+    // 3. СИНХРОНИЗАЦИЯ КЭША CPU (Очистка перед отправкой на шину)
+    // =========================================================================
+    dcache_clean((uintptr_t)&v_thread_input, sizeof(v_thread_input));
+    dcache_clean((uintptr_t)&gpu_program_state, sizeof(gpu_program_state));
+    dcache_clean((uintptr_t)&gpu_vertex_input_meta, sizeof(gpu_vertex_input_meta));
+    dcache_clean((uintptr_t)&tiler_heap, sizeof(tiler_heap));
+    dcache_clean((uintptr_t)&fbd, sizeof(fbd));
 
-		dcache_clean((uintptr_t)&tiler_heap, sizeof tiler_heap );
-        dcache_clean((uintptr_t)&v_job, sizeof v_job );
-        dcache_clean((uintptr_t)&polygon_list_mem4, sizeof polygon_list_mem4 );
-        //dcache_clean((uintptr_t)&gpu_program_state, sizeof(gpu_program_state));
-        dcache_clean((uintptr_t)triangle_vertices, sizeof(triangle_vertices));
-        PRINTF("v_job: %p (%u)\n", & v_job, (unsigned) sizeof v_job);
-        //PRINTF("gpu_program_state: %p (%u)\n", & gpu_program_state, (unsigned) sizeof gpu_program_state);
-        PRINTF("triangle_vertices: %p (%u)\n", & triangle_vertices, (unsigned) sizeof triangle_vertices);
+    // Выталкиваем из кэша сами дескрипторы задач и буфер вывода
+    dcache_clean_invalidate((uintptr_t)&v_job, sizeof(v_job));
+    dcache_clean_invalidate((uintptr_t)&t_job, sizeof(t_job));
+    dcache_clean_invalidate((uintptr_t)polygon_list_mem, sizeof(polygon_list_mem));
 
-       	printhex32(0, & tiler_heap, sizeof tiler_heap);
-        dcache_clean_invalidate((uintptr_t) & tiler_heap, sizeof tiler_heap);
+    __DSB(); // Жесткий системный барьер памяти процессора
 
-        // 4. Запуск цепочки геометрии в Slot 0
-        PRINTF("Submitting Vertex Job to Slot 0...\n");
-        if (gpu_submit_job(COMMAND_SLOT_VERTEX, &v_job))
-        {
-         	PRINTF("Fault Vertex Job on Slot 0...\n");
-         	return;
-        }
-        else
-        {
-        	//gpu_as_command(0, 0x05);
-         	PRINTF("Complete Vertex Job on Slot 0...\n");
-        }
-     }
-   	printhex32(0, & tiler_heap, sizeof tiler_heap);
-   	printhex32(0, tiler_heap_mem, 128);
+    PRINTF("v_job @%p:\n", &v_job);
+    printhex32((uintptr_t) &v_job, &v_job, sizeof v_job);
 
-    {
-    	GPU_ALIGN static mali_fragment_job f_job;
-        // 1. Инициализация описания целевого экрана (Framebuffer)
-        fb_desc.rt [0].base_address = framebuffer_phys_addr;
-        fb_desc.rt [0].stride = width * 4;
-        fb_desc.rt [0].format = MALI_FB_FORMAT_ARGB8888;//0x18004000; // Простой формат записи RGBA8888 в Bifrost
-        fb_desc.sample_count = 1;
-        fb_desc.rt_pointer = (uintptr_t) & fb_desc.rt [0] | 0x3;
+    PRINTF("t_job @%p:\n", &t_job);
+    printhex32((uintptr_t) &t_job, &t_job, sizeof t_job);
 
-        // 3. Настройка второй задачи: Отрисовка пикселей (Fragment Job)
-        f_job.header.job_type = MALI_JOB_TYPE_FRAGMENT;
-        f_job.header.job_index = 1;
-        f_job.header.job_barrier = 1;
-        f_job.header.job_descriptor_size = 1;// 1 (64-битные указатели)
-        f_job.header.next_job = 0; // Последняя задача
-
-        f_job.framebuffer_desc = (uintptr_t)&fb_desc;
-        f_job.tile_render_list = (uintptr_t)& tiler_heap; // Читает геометрию из кучи тайлера
-        f_job.width_minus_1 = width - 1;
-        f_job.height_minus_1 = height - 1;
-        // Формула расчета шага тайлов дисплея для Bifrost v6
-        uint32_t stride = (width + 15) / 16; // Округление ширины до сетки тайлов 16x16
-        f_job.stride_and_format = (stride & 0xFFFF);// | (1U << 16);
-        f_job.clear_color = 0xFF0000FF; // Фоновый цвет очистки, если нужно (Красный)
-        dcache_clean((uintptr_t)&f_job, sizeof(f_job));
-        dcache_clean((uintptr_t)&fb_desc, sizeof(fb_desc));
-        PRINTF("f_job: %p (%u)\n", & f_job, (unsigned) sizeof f_job);
-        PRINTF("fb_desc: %p (%u)\n", & fb_desc, (unsigned) sizeof fb_desc);
-
-
-		// 5. Запуск цепочки растеризации фрагментов в Slot 1
-		PRINTF("Submitting Fragment Job to Slot 1...\n");
-        if (gpu_submit_job(COMMAND_SLOT_FRAGMENT, &f_job))
-        {
-         	PRINTF("Fault Fragment Job on Slot 1...\n");
-         	return;
-        }
-        else
-        {
-        	//gpu_as_command(0, 0x05);
-         	PRINTF("Complete Fragment Job on Slot 1...\n");
-        }
-		}
-
-    PRINTF("Triangle rendering completed successfully!\n");
+    // =========================================================================
+    // 4.ОТПРАВКА ЦЕПОЧКИ В СЛОТ 0 GPU
+    // =========================================================================
+    gpu_submit_job(0, (uintptr_t) &v_job, 0);
 }
 
 #define GPU_ALIGN __attribute__((aligned(64)))
@@ -1272,7 +1242,7 @@ void gpu_test(void)
 #endif
     uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
     memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * 4);
-    gpu_draw_triangle(fbaddr, DIM_X, DIM_Y);
+    gpu_draw_triangle();
     colmain_nextfb();
 
     TP();
