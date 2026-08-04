@@ -383,26 +383,68 @@ typedef struct __attribute__((packed)) {
 
 //#define MALI_WRITE_VALUE_ZERO     3 // Специальный флаг для обнуления
 
-// Полезная нагрузка для записи значения
-struct __attribute__((packed)) mali_payload_write_value {
+// Полный монолитный дескриптор задачи
+// MGS! подтверждена работа заголовка
+// mali_payload_write_value
+// https://android.googlesource.com/platform/external/mesa3d/+/e061bf004b5/src/panfrost/include/panfrost-job.h
+// https://github.com/dlehman-work/mesa/blob/master/src/panfrost/include/panfrost-job.h#L45
+
+typedef struct __attribute__((packed, aligned(64))) {
+    // 1. Стандартный заголовок (mali_job_header) - 32 байта
+	mali_job_header header;
+    // 2. Специфичный Payload - 32 байта
 	uint64_t address;
 	uint32_t value_descriptor;
 	uint32_t reserved;
 	uint64_t immediate;
 	uint64_t pad;
-};
+} mali_write_value_job;
 
-// Полный монолитный дескриптор задачи
-// MGS! подтверждена работа заголовка
-// https://android.googlesource.com/platform/external/mesa3d/+/e061bf004b5/src/panfrost/include/panfrost-job.h
-// https://github.com/dlehman-work/mesa/blob/master/src/panfrost/include/panfrost-job.h#L45
-
-struct __attribute__((packed, aligned(64))) mali_write_value_job {
+// Расширенный дескриптор для Vertex/Tiler задач
+typedef struct __attribute__((packed)) {
     // 1. Стандартный заголовок (mali_job_header) - 32 байта
-	mali_job_header header;
-    // 2. Специфичный Payload - 32 байта
-    struct mali_payload_write_value payload;
-};
+    mali_job_header header;
+
+    /* --- Слот 0x20 - 0x3F: Payload задачи тайлинга --- */
+    uint64_t tiler_heap_desc;        // 0x20: Физический адрес структуры кучи (mali_bifrost_tiler_heap)
+    uint64_t fb_desc;                // 0x28: Физический адрес Framebuffer-дескриптора (MFBD)
+    uint64_t polygon_list;           // 0x30: Физический адрес буфера для Polygon List (выделите 4КБ нулей)
+    uint32_t reserved;               // 0x38: 0
+    uint32_t flags;                  // 0x3C: 0
+
+    uint32_t padding_to_128[16];   // Еще 64 байта чистых нулей!
+} mali_tiler_job;
+
+typedef struct __attribute__((packed)) {
+    // 1. Стандартный заголовок (mali_job_header) - 32 байта
+    mali_job_header header;
+
+    /* --- Смещение 0x20 - 0x3F: Payload задачи вершинного шейдера --- */
+     uint64_t thread_input_record;    // 0x20: Физический адрес структуры параметров сетки потоков
+     uint64_t renderer_state;         // 0x28: Физический адрес RSD (Render State Descriptor) для Vertex-стадии
+     uint64_t attributes;             // 0x30: Физический адрес таблицы вершинных буферов (Attribute Table)
+     uint64_t attribute_buffers;      // 0x38: Физический адрес описателей самих буферов (Attribute Buffer Table)
+
+     uint32_t padding_to_128[16];   // Еще 64 байта чистых нулей!
+} mali_vertex_job;
+
+// Расширенный дескриптор для Fragment задач
+typedef struct __attribute__((packed)) {
+    // 1. Стандартный заголовок (mali_job_header) - 32 байта
+    mali_job_header header;
+
+    __IO uint64_t framebuffer_desc;       /* +0x20: 64-бит физ. адрес дескриптора Framebuffer (fb_desc) */
+    __IO uint64_t tile_render_list;        /* +0x28: 64-бит физ. адрес списка тайлов дисплея (tiler_heap_mem) */
+
+    __IO uint32_t stride_and_format;      /* +0x30: Внутренние аппаратные флаги шага и формата тайлера */
+    __IO uint16_t width_minus_1;          /* +0x34: Ширина зоны рендеринга МИНУС 1 (например, 799 для 800) */
+    __IO uint16_t height_minus_1;         /* +0x36: Высота зоны рендеринга МИНУС 1 (например, 479 для 480) */
+
+    __IO uint32_t clear_color;            /* +0x38: Цвет очистки экрана в формате ARGB8888 (если включен флаг) */
+    __IO uint32_t fragment_flags;         /* +0x3C: Флаги фрагментного конвейера (биты очистки, глубина, трафарет) */
+    __IO uint32_t r1 [2];
+    uint32_t padding_to_128[16];   // !!!!! Еще 64 байта чистых нулей!
+} mali_fragment_job;
 
 // Переменная-цель, куда будет писать GPU.
 // Обязательно выравниваем по кэш-линии!
@@ -410,7 +452,7 @@ volatile uint64_t __attribute__((aligned(64))) gpu_test_target = 0x123456789abcd
 
 int run_write_value_test(unsigned v) {
     // Создаем структуру дескриптора в памяти
-	GPU_ALIGN static struct mali_write_value_job job;
+	GPU_ALIGN static mali_write_value_job job;
 
     // Сбрасываем старую память
     memset(&job, 0, sizeof(job));
@@ -435,9 +477,9 @@ int run_write_value_test(unsigned v) {
      * 7 - 64 bit
      */
     // Заполняем Payload записи
-    job.payload.address = (uintptr_t)&gpu_test_target; // Физический адрес цели
-    job.payload.value_descriptor = v;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
-    job.payload.immediate = 0xDEADBEEFABBA1980;               // Данные для записи
+    job.address = (uintptr_t)&gpu_test_target; // Физический адрес цели
+    job.value_descriptor = v;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
+    job.immediate = 0xDEADBEEFABBA1980;               // Данные для записи
 
     // КРИТИЧЕСКИ ВАЖНО ДЛЯ BARE METAL:
     // Очищаем кэш CPU, чтобы GPU читал структуру из физического ОЗУ,
@@ -463,49 +505,6 @@ int run_write_value_test(unsigned v) {
     }
     return 0;
 }
-
-// Расширенный дескриптор для Vertex/Tiler задач
-typedef struct __attribute__((packed)) {
-    mali_job_header header;
-
-    /* --- Слот 0x20 - 0x3F: Payload задачи тайлинга --- */
-    uint64_t tiler_heap_desc;        // 0x20: Физический адрес структуры кучи (mali_bifrost_tiler_heap)
-    uint64_t fb_desc;                // 0x28: Физический адрес Framebuffer-дескриптора (MFBD)
-    uint64_t polygon_list;           // 0x30: Физический адрес буфера для Polygon List (выделите 4КБ нулей)
-    uint32_t reserved;               // 0x38: 0
-    uint32_t flags;                  // 0x3C: 0
-
-    uint32_t padding_to_128[16];   // Еще 64 байта чистых нулей!
-} mali_tiler_job;
-
-typedef struct __attribute__((packed)) {
-    mali_job_header header;
-
-    /* --- Смещение 0x20 - 0x3F: Payload задачи вершинного шейдера --- */
-     uint64_t thread_input_record;    // 0x20: Физический адрес структуры параметров сетки потоков
-     uint64_t renderer_state;         // 0x28: Физический адрес RSD (Render State Descriptor) для Vertex-стадии
-     uint64_t attributes;             // 0x30: Физический адрес таблицы вершинных буферов (Attribute Table)
-     uint64_t attribute_buffers;      // 0x38: Физический адрес описателей самих буферов (Attribute Buffer Table)
-
-     uint32_t padding_to_128[16];   // Еще 64 байта чистых нулей!
-} mali_vertex_job;
-
-// Расширенный дескриптор для Fragment задач
-typedef struct __attribute__((packed)) {
-    mali_job_header header;
-
-    __IO uint64_t framebuffer_desc;       /* +0x20: 64-бит физ. адрес дескриптора Framebuffer (fb_desc) */
-    __IO uint64_t tile_render_list;        /* +0x28: 64-бит физ. адрес списка тайлов дисплея (tiler_heap_mem) */
-
-    __IO uint32_t stride_and_format;      /* +0x30: Внутренние аппаратные флаги шага и формата тайлера */
-    __IO uint16_t width_minus_1;          /* +0x34: Ширина зоны рендеринга МИНУС 1 (например, 799 для 800) */
-    __IO uint16_t height_minus_1;         /* +0x36: Высота зоны рендеринга МИНУС 1 (например, 479 для 480) */
-
-    __IO uint32_t clear_color;            /* +0x38: Цвет очистки экрана в формате ARGB8888 (если включен флаг) */
-    __IO uint32_t fragment_flags;         /* +0x3C: Флаги фрагментного конвейера (биты очистки, глубина, трафарет) */
-    __IO uint32_t r1 [2];
-    uint32_t padding_to_128[16];   // !!!!! Еще 64 байта чистых нулей!
-} mali_fragment_job;
 
 
 #include <stdint.h>
@@ -1217,13 +1216,15 @@ void gpu_test(void)
 	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
 #endif
 
-#if 0
-	unsigned v = 0;
-	while (run_write_value_test(v ++))
-		;
-    TP();
-    for (;;)
-    	;
+#if 1
+	run_write_value_test(0x07);
+	return;
+//	unsigned v = 0;
+//	while (run_write_value_test(v ++))
+//		;
+//    TP();
+//    for (;;)
+//    	;
 #endif
     uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
     memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * 4);
