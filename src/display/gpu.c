@@ -191,6 +191,7 @@ void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
 static int gpu_submit_job(unsigned slot, void * job)
 {
 	PRINTF("gpu_submit_job: job=%p, slot=%u\n", job, slot);
+	printhex64((uintptr_t) job, job, 64);
     // Записываем физический адрес начала структуры v_job в регистр указателя слота 0
     GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_HI = ptr_hi32((uintptr_t) job);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
     GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_LO = ptr_lo32((uintptr_t) job);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
@@ -216,12 +217,18 @@ static int gpu_submit_job(unsigned slot, void * job)
     // В hftrx прерывания выводят ASSERT(0), поэтому опрашиваем статус в цикле (polling)
     if (local_wait32mask(& GPU_JOB_CONTROL->JOB_INT_RAWSTAT, (UINT32_C(1) << slot), 1 * (UINT32_C(1) << slot), 100))//Was: JOB_IRQ_RAWSTAT
     {
+    	PRINTF("error job %p:\n", job);
+    	dcache_invalidate((uintptr_t) job, 64);
+    	printhex64((uintptr_t) job, job, 64);
     	PRINTF("gpu timeout: GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
     	gpu_diagnose_slot_fault(slot, 0);
     	return 1;
     }
     else
     {
+    	PRINTF("okay job %p:\n", job);
+    	dcache_invalidate((uintptr_t) job, 64);
+    	printhex64((uintptr_t) job, job, 64);
         GPU_JOB_CONTROL->JOB_INT_CLEAR = (UINT32_C(1) << slot); // Сброс флага прерывания
         return 0;
     }
@@ -260,6 +267,7 @@ enum mali_draw_mode {
         /* All other modes invalid */
 };
 // Структура заголовка задачи (Mali Job Header)
+// MGS! подтверждена работа заголовка
 typedef struct __attribute__((packed)) {
     uint32_t exception_status;       // 0x00: Сюда GPU запишет код ошибки при FAULT (изначально 0)
     uint32_t first_incomplete_task;  // 0x04: Служебный внутренний статус GPU
@@ -282,18 +290,19 @@ typedef struct __attribute__((packed)) {
 
 #include <stdint.h>
 
-#define MALI_JOB_TYPE_WRITE_VALUE 2
 #define MALI_WRITE_VALUE_ZERO     3 // Специальный флаг для обнуления
 
 // Полезная нагрузка для записи значения
 struct __attribute__((packed)) mali_payload_write_value {
-    uint64_t address;           // 0x20: Физический адрес памяти, КУДА пишем
-    uint32_t value_descriptor;  // 0x28: Флаги типа записи (0 - обычная запись immediate)
-    uint32_t reserved;          // 0x2C: Занулено
+    uint32_t value_descriptor;  // 0x20: Флаги типа записи (0 - обычная запись immediate)
+    uint32_t reserved_payload;  // 0x24 -> Пишем 0
+    uint64_t address;           // 0x28: Физический адрес памяти, КУДА пишем
     uint64_t immediate;         // 0x30: ЧТО именно записываем (64-битное число)
+    uint64_t pad2;                   // 0x38 -> Пишем 0
 };
 
 // Полный монолитный дескриптор задачи
+// MGS! подтверждена работа заголовка
 struct __attribute__((packed, aligned(64))) mali_write_value_job {
     // 1. Стандартный заголовок (mali_job_header) - 32 байта
     uint32_t exception_status;       // 0x00: Зануляем (Сюда GPU вернет статус)
@@ -325,20 +334,44 @@ void run_write_value_test(void) {
 	GPU_ALIGN static struct mali_write_value_job job;
 
     // Сбрасываем старую память
-    __builtin_memset(&job, 0, sizeof(job));
+    memset(&job, 0, sizeof(job));
     gpu_test_target = 0;
 
+    GPU_ALIGN static struct __attribute__((packed, aligned(64))) mali_bifrost_rsd {
+        // Первое 32-битное слово содержит конфигурацию свойств шейдера
+        uint32_t flags; // Запишем 0x00000002 (Минимальный флаг, указывающий на базовый тип шейдера)
+        uint32_t unknown;
+        uint64_t shader_code_ptr; // Указатель на код шейдера. Пока пишем 0x0 (пустой шейдер)
+        uint8_t  pad[48]; // Зануляем остаток
+    } rsd;
+    GPU_ALIGN static struct __attribute__((packed, aligned(64))) mali_bifrost_thread_input {
+        uint32_t flags;       // Пишем 0x00000001 (Флаг, что размеры групп валидны)
+        uint32_t workgroup_x; // 1 группа
+        uint32_t workgroup_y; // 1 группа
+        uint32_t workgroup_z; // 1 группа
+        uint8_t  pad[48];
+    } ti;
+
     // Заполняем заголовок
-    job.job_descriptor_size = !1; // Используем 64-битные указатели
-    job.job_type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
-    job.job_index = 1;           // Первая задача в Scoreboard
+    job.job_descriptor_size = 1; // Используем 64-битные указатели
+    job.job_type = JOB_TYPE_NULL;//MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
+    job.job_index = 0;           // Первая задача в Scoreboard
     job.next_job = 0;            // Цепочка заканчивается на ней
-
+    job.job_barrier = 1;
+#if 1
     // Заполняем Payload записи
-    job.payload.address = (uint64_t)&gpu_test_target; // Физический адрес цели
-    job.payload.value_descriptor = 0;                 // Обычный режим записи константы
+    job.payload.address = (uintptr_t)&gpu_test_target; // Физический адрес цели
+    job.payload.value_descriptor = 0x04;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
     job.payload.immediate = 0xDEADBEEF;               // Данные для записи
-
+#else
+    rsd.flags = 2;
+    rsd.unknown = 0x00000100;
+    ti.flags = 1;
+	job.payload.value_descriptor = (uint64_t)&ti;
+    job.payload.address = (uint64_t)&rsd;
+    dcache_clean((uintptr_t)&rsd, sizeof rsd);
+    dcache_clean((uintptr_t)&ti, sizeof ti);
+#endif
     // КРИТИЧЕСКИ ВАЖНО ДЛЯ BARE METAL:
     // Очищаем кэш CPU, чтобы GPU читал структуру из физического ОЗУ,
     // и инвалидируем регион gpu_test_target, чтобы CPU позже не прочитал старые данные из своего L1/L2.
@@ -348,10 +381,8 @@ void run_write_value_test(void) {
     // Важно: Адреса job и gpu_test_target должны быть предварительно
     // промаплены в MMU вашего Mali-G31 с правами Read/Write!
 
-    gpu_submit_job(0, & job);
-    PRINTF("job after exec:\n");
-    printhex32((uintptr_t)&job, &job, sizeof(job));
-    TP();
+    if (gpu_submit_job(2, & job))
+    	return;
       // Проверяем результат выполнения
     dcache_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
 
@@ -365,12 +396,13 @@ void run_write_value_test(void) {
 // Расширенный дескриптор для Vertex/Tiler задач
 typedef struct __attribute__((packed)) {
     mali_job_header header;
-    uint64_t tiler_heap;       // Адрес памяти кучи для тайлера
-    uint64_t vertex_buffer;    // Физический адрес массива координат вершин
-    uint32_t vertex_count;     // Количество вершин (для 1 треугольника = 3)
-    uint32_t attributes;       // Настройки формата вершин
-    uint64_t primitive_size;
-    uint64_t renderer_state;
+
+    /* --- Слот 0x20 - 0x3F: Payload задачи тайлинга --- */
+    uint64_t tiler_heap_desc;        // 0x20: Физический адрес структуры кучи (mali_bifrost_tiler_heap)
+    uint64_t fb_desc;                // 0x28: Физический адрес Framebuffer-дескриптора (MFBD)
+    uint64_t polygon_list;           // 0x30: Физический адрес буфера для Polygon List (выделите 4КБ нулей)
+    uint32_t reserved;               // 0x38: 0
+    uint32_t flags;                  // 0x3C: 0
 } mali_tiler_job;
 
 // Расширенный дескриптор для Fragment задач
@@ -699,17 +731,19 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
     	GPU_ALIGN static mali_tiler_job    v_job;
 
         // 2. Настройка первой задачи: Координаты и геометрия (Vertex / Tiler Job)
-        v_job.header.job_type = 1;//JOB_TYPE_TILER;
+        v_job.header.job_type = JOB_TYPE_TILER;
         v_job.header.job_index = 0;
-        v_job.header.job_descriptor_size = 1;//(sizeof v_job + 7) / 8;
+        v_job.header.job_barrier = 0;
+        v_job.header.job_descriptor_size = 1;// 1 (64-битные указатели)
         v_job.header.next_job = 0;//(uintptr_t) & f_job;//0; // Конец первой цепочки (или можно связать с f_job, если аппаратно поддерживается)
 
-        v_job.tiler_heap = (uintptr_t) & tiler_heap;
-        v_job.vertex_buffer = (uintptr_t)triangle_vertices;
-        v_job.vertex_count = 3; // 3 вершины формируют 1 треугольник
+        v_job.tiler_heap_desc = (uintptr_t) & tiler_heap;
+        v_job.fb_desc = (uintptr_t) & fbd;
+        v_job.polygon_list = (uintptr_t) & polygon_list_mem;
+        //v_job.vertex_count = 3; // 3 вершины формируют 1 треугольник
         //v_job.draw_flags = MALI_BIFROST_PRIM_TRIANGLES; // Флаг типа примитива: TRIANGLES
         // Формула Panfrost для привязки Renderer State в Bifrost v6
-        v_job.renderer_state = (uintptr_t)&gpu_program_state | 0x0000000000000007ULL;
+        //v_job.renderer_state = (uintptr_t)&gpu_program_state | 0x0000000000000007ULL;
 
         memset(& tiler_heap_mem, 0xE5, sizeof tiler_heap_mem);
         dcache_clean_invalidate((uintptr_t) tiler_heap_mem, sizeof tiler_heap_mem);
@@ -753,7 +787,7 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
         // 3. Настройка второй задачи: Отрисовка пикселей (Fragment Job)
         f_job.header.job_type = JOB_TYPE_FRAGMENT;
         f_job.header.job_index = 0;
-        f_job.header.job_descriptor_size = 1;//(sizeof f_job + 7) / 8;
+        f_job.header.job_descriptor_size = 1;// 1 (64-битные указатели)
         f_job.header.next_job = 0; // Последняя задача
 
         f_job.framebuffer_desc = (uintptr_t)&fb_desc;
@@ -968,12 +1002,12 @@ void gpu_test(void)
 	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
 #endif
 
-
+#if 1
 	run_write_value_test();
     TP();
     for (;;)
     	;
-
+#endif
     uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
     memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * 4);
     gpu_draw_triangle(fbaddr, DIM_X, DIM_Y);
