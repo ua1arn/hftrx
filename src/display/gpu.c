@@ -177,15 +177,19 @@ void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
     // Физический адрес, на котором споткнулся Fragment-парсер
     uint32_t fault_lo = GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_LO;
     uint32_t fault_hi = GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_HI;
+    // Физический адрес, на котором споткнулся Fragment-парсер
+    uint32_t tail_lo = GPU_JOB_CONTROL->LOOP[slot].JS_TAIL_LO;
+    uint32_t tail_hi = GPU_JOB_CONTROL->LOOP[slot].JS_TAIL_HI;
 
     PRINTF("\n-> FRAGMENT STAGE FAULT DIAGNOSIS:\n");
     PRINTF("   Slot %u JS_STATUS = 0x%08X\n", slot, (unsigned)slot1_status);
     PRINTF("   Slot %u Stopped at Address: 0x%08X%08X\n", slot, (unsigned)fault_hi, (unsigned)fault_lo);
+    PRINTF("   Slot %u Tail Address:       0x%08X%08X\n", slot, (unsigned)tail_hi, (unsigned)tail_lo);
 
     // Проверяем, не ругнулся ли при этом MMU (адресное пространство AS0 на 0x400)
-    PRINTF("   MMU Fault Status (as=%u) = 0x%08X\n", as, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTSTATUS);
-    PRINTF("   MMU Fault Address = 0x%08X%08X\n",
-           (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_LO);
+//    PRINTF("   MMU Fault Status (as=%u) = 0x%08X\n", as, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTSTATUS);
+//    PRINTF("   MMU Fault Address = 0x%08X%08X\n",
+//           (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_LO);
 }
 
 static int gpu_submit_job(unsigned slot, uintptr_t head)
@@ -222,7 +226,8 @@ static int gpu_submit_job(unsigned slot, uintptr_t head)
     	printhex32((uintptr_t) head, (void *) head, 128);
     	PRINTF("gpu timeout: GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
     	gpu_diagnose_slot_fault(slot, 0);
-    	return 1;
+        GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
+   	return 1;
     }
     else
     {
@@ -230,7 +235,8 @@ static int gpu_submit_job(unsigned slot, uintptr_t head)
     	dcache_invalidate((uintptr_t) head, 128);
     	printhex32((uintptr_t) head, (void *) head, 128);
         GPU_JOB_CONTROL->JOB_INT_CLEAR = (UINT32_C(1) << slot); // Сброс флага прерывания
-        return 0;
+        GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
+      return 0;
     }
 }
 #if 0
@@ -399,7 +405,7 @@ struct __attribute__((packed, aligned(64))) mali_write_value_job {
 // Обязательно выравниваем по кэш-линии!
 volatile uint64_t __attribute__((aligned(64))) gpu_test_target = 0;
 
-void run_write_value_test(void) {
+int run_write_value_test(unsigned v) {
     // Создаем структуру дескриптора в памяти
 	GPU_ALIGN static struct mali_write_value_job job;
 
@@ -407,8 +413,9 @@ void run_write_value_test(void) {
     memset(&job, 0, sizeof(job));
 
     // Заполняем заголовок
+    job.header.exception_status = 0;
     job.header.job_descriptor_size = 1; // Используем 64-битные указатели
-    job.header.job_type = MALI_JOB_TYPE_NULL;//MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
+    job.header.job_type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
     job.header.job_index = 1;           // Первая задача в Scoreboard
     job.header.next_job = 0;            // Цепочка заканчивается на ней
     job.header.job_barrier = 1;
@@ -428,7 +435,7 @@ void run_write_value_test(void) {
     // промаплены в MMU вашего Mali-G31 с правами Read/Write!
 
     if (gpu_submit_job(2, (uintptr_t) & job))
-    	return;
+    	return 1;	// err
       // Проверяем результат выполнения
     dcache_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
 
@@ -439,6 +446,7 @@ void run_write_value_test(void) {
         // ОШИБКА. Проверьте job.exception_status или глобальные регистры MMU FAULT.
     	PRINTF("No write value!\n");
     }
+    return 0;
 }
 
 // Расширенный дескриптор для Vertex/Tiler задач
@@ -1195,7 +1203,9 @@ void gpu_test(void)
 #endif
 
 #if 1
-	run_write_value_test();
+	unsigned v = 0;
+	while (run_write_value_test(v ++))
+		;
     TP();
     for (;;)
     	;
