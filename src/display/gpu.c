@@ -279,6 +279,7 @@ typedef enum {
      * Аппаратно записывает 32-битное или 64-битное число по указанному адресу в ОЗУ.
      * Поддерживает режимы прямой записи константы, инкремента и атомарного сложения.
      * Допустима строго для сервисного слота: SLOT 2.
+     * upd: проверено на T507-H: раьотает на всех трёх слотаж
      */
     MALI_JOB_TYPE_WRITE_VALUE   = 0x02,
 
@@ -369,7 +370,7 @@ typedef struct __attribute__((packed)) {
     uint8_t  job_type            : 7; // 0x10 (биты 1-7) - Тип задачи (TILER = 0x11, VERTEX = 0x12)
 
     // Битовые поля барьеров и флагов (занимают 1 байт):
-    uint8_t  job_barrier         : 1; // 0x11 (бит 0)  - Аппаратный барьер памяти
+    uint8_t  job_barrier         : 1; // 0x11 (бит 0)  - last job
     uint8_t  unknown_flags       : 7; // 0x11 (биты 1-7) - Служебные флаги (обычно 0)
 
     uint16_t job_index;               // 0x12: Уникальный ID этой задачи для скорборда (например, 1)
@@ -463,7 +464,7 @@ int run_write_value_test(unsigned v) {
     job.header.job_type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
     job.header.job_index = 1;           // Первая задача в Scoreboard
     job.header.next_job = 0;            // Цепочка заканчивается на ней
-    job.header.job_barrier = 1;
+    job.header.job_barrier = 1;			// last
 
     /**
      * value_descriptor:
@@ -746,7 +747,7 @@ mali_tiler_job  t_job;
 
 // 1. НАСТРОЙКА VERTEX JOB (Первое звено цепи)
 v_job.job_descriptor_size = 1;
-v_job.job_type = 5;                        // MALI_JOB_TYPE_VERTEX
+v_job.job_type = MALI_JOB_TYPE_VERTEX;                        // MALI_JOB_TYPE_VERTEX
 v_job.job_index = 1;                       // Задаем уникальный ID = 1
 v_job.job_dependency_index_1 = 0;          // Никого не ждет
 v_job.next_job = (uint64_t)&t_job;         // Указываем на следующий Tiler джоб
@@ -758,7 +759,7 @@ v_job.attribute_buffers   = (uint64_t)&attr_buf_table;
 
 // 2. НАСТРОЙКА TILER JOB (Второе звено цепи)
 t_job.header.job_descriptor_size = 1;
-t_job.header.job_type = 7;                 // MALI_JOB_TYPE_TILER (В байте 0x10 будет 0x0F)
+t_job.header.job_type = MALI_JOB_TYPE_TILER;                 // MALI_JOB_TYPE_TILER (В байте 0x10 будет 0x0F)
 t_job.header.job_barrier = 1;              // Финальный барьер
 t_job.header.job_index = 2;                // Задаем уникальный ID = 2
 t_job.header.job_dependency_index_1 = 1;   // КРИТИЧЕСКИ ВАЖНО: Ждет завершения задачи ID = 1 (v_job)
@@ -970,7 +971,7 @@ void gpu_draw_triangle(void)
     v_job.header.fault_pointer = 0;
 
     // (MALI_JOB_TYPE_VERTEX << 1) | MALI_JOB_64 -> (5 << 1) | 1 = 11 (0x0B)
-    v_job.header.job_type = 5;
+    v_job.header.job_type = MALI_JOB_TYPE_VERTEX;
     v_job.header.job_descriptor_size = 1;
     v_job.header.job_barrier = 0;          // Не блокируем конвейер, даем течь к тайлеру
     v_job.header.job_index = 1;            // Уникальный ID задачи = 1
@@ -993,7 +994,7 @@ void gpu_draw_triangle(void)
     t_job.header.fault_pointer = 0;
 
     // (MALI_JOB_TYPE_TILER << 1) | MALI_JOB_64 -> (7 << 1) | 1 = 15 (0x0F)
-    t_job.header.job_type = 7;
+    t_job.header.job_type = MALI_JOB_TYPE_TILER;
     t_job.header.job_descriptor_size = 1;
     t_job.header.job_barrier = 1;          // Финальный аппаратный барьер в конце цепи
     t_job.header.job_index = 2;            // Уникальный ID задачи = 2
