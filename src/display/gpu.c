@@ -191,7 +191,7 @@ void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
 static int gpu_submit_job(unsigned slot, void * job)
 {
 	PRINTF("gpu_submit_job: job=%p, slot=%u\n", job, slot);
-	printhex64((uintptr_t) job, job, 64);
+	printhex((uintptr_t) job, job, 64);
     // Записываем физический адрес начала структуры v_job в регистр указателя слота 0
     GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_HI = ptr_hi32((uintptr_t) job);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
     GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_LO = ptr_lo32((uintptr_t) job);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
@@ -219,7 +219,7 @@ static int gpu_submit_job(unsigned slot, void * job)
     {
     	PRINTF("error job %p:\n", job);
     	dcache_invalidate((uintptr_t) job, 64);
-    	printhex64((uintptr_t) job, job, 64);
+    	printhex((uintptr_t) job, job, 64);
     	PRINTF("gpu timeout: GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
     	gpu_diagnose_slot_fault(slot, 0);
     	return 1;
@@ -228,18 +228,12 @@ static int gpu_submit_job(unsigned slot, void * job)
     {
     	PRINTF("okay job %p:\n", job);
     	dcache_invalidate((uintptr_t) job, 64);
-    	printhex64((uintptr_t) job, job, 64);
+    	printhex((uintptr_t) job, job, 64);
         GPU_JOB_CONTROL->JOB_INT_CLEAR = (UINT32_C(1) << slot); // Сброс флага прерывания
         return 0;
     }
 }
-
-// Типы задач (Job Types) для Mali Bifrost
-//#define JOB_TYPE_NULL      0  /* Пустая задача (вызывается для тестов или очистки) */
-//#define JOB_TYPE_VERTEX    1  /* Только вершинный шейдер (редко используется в чистом виде) */
-//#define JOB_TYPE_TILER     2  /* Вершинный шейдер + расчет сетки тайлов экрана (Slot 0) */
-//#define JOB_TYPE_FRAGMENT  3  /* Пиксельный/Фрагментный шейдер и растеризац */
-
+#if 0
 enum mali_job_type {
         JOB_NOT_STARTED	= 0,
         JOB_TYPE_NULL = 1,
@@ -252,6 +246,97 @@ enum mali_job_type {
         JOB_TYPE_FUSED = 8,
         JOB_TYPE_FRAGMENT = 9,
 };
+#endif
+/**
+ * @brief Типы задач (Job Types) для аппаратного планировщика ARM Mali Bifrost.
+ *
+ * Значения этих констант записываются в битовое поле `job_type` (биты [7:1])
+ * байта по смещению 0x10 в заголовке дескриптора задачи.
+ *
+ * Формула для байта 0x10: (MALI_JOB_TYPE_XXX << 1) | JOB_DESCRIPTOR_SIZE
+ */
+typedef enum {
+    /* 0x00: Служебный маркер планировщика. Напрямую в слоты не отправляется */
+    MALI_JOB_TYPE_NOT_STARTED   = 0x00,
+
+    /**
+     * 0x01: Задача-заглушка (Null Job).
+     * Не выполняет никакой работы на GPU, завершается мгновенно.
+     * Используется для отладки прерываний, тестирования шины/MMU
+     * или в качестве барьера синхронизации между другими задачами.
+     * Разрешена для отправки в ЛЮБОЙ слот (Slot 0, 1, 2).
+     */
+    MALI_JOB_TYPE_NULL          = 0x01,
+
+    /**
+     * 0x02: Запись значения в память (Write Value Job).
+     * Аппаратно записывает 32-битное или 64-битное число по указанному адресу в ОЗУ.
+     * Поддерживает режимы прямой записи константы, инкремента и атомарного сложения.
+     * Допустима строго для сервисного слота: SLOT 2.
+     */
+    MALI_JOB_TYPE_WRITE_VALUE   = 0x02,
+
+    /**
+     * 0x03: Очистка кэша (Cache Flush Job).
+     * Принудительно заставляет GPU инвалидировать и сбросить свои внутренние
+     * кэши данных (L2 cache) в системное ОЗУ. Используется для обеспечения
+     * когерентности памяти между GPU и CPU перед чтением результатов.
+     * Допустима строго для сервисного слота: SLOT 2.
+     */
+    MALI_JOB_TYPE_CACHE_FLUSH   = 0x03,
+
+    /**
+     * 0x04: Вычислительный шейдер (Compute Job).
+     * Запускает одномерную, двумерную или трехмерную сетку вычислительных потоков
+     * (OpenCL, Vulkan Compute). Требует заполнения структуры Thread Input и RSD.
+     * Допустима строго для вычислительного слота: SLOT 0.
+     */
+    MALI_JOB_TYPE_COMPUTE       = 0x04,
+
+    /**
+     * 0x05: Вершинный шейдер (Vertex Job).
+     * Классическая обработка вершин геометрии (трансформация координат, освещение).
+     * Читает Vertex Buffers и выполняет Vertex Shader.
+     * Допустима строго для вершинного слота: SLOT 0.
+     */
+    MALI_JOB_TYPE_VERTEX        = 0x05,
+
+    /**
+     * 0x06: Геометрический шейдер (Geometry Job).
+     * Используется для шейдеров геометрии и тесселяции.
+     * В архитектурах Bifrost (Mali-G31) в чистом виде практически не применяется,
+     * так как эти этапы обычно объединяются с тайлингом.
+     * Направляется в SLOT 0.
+     */
+    MALI_JOB_TYPE_GEOMETRY      = 0x06,
+
+    /**
+     * 0x07: Задача тайлинга (Tiler Job).
+     * Принимает трансформированные вершины сцены, собирает их в примитивы (треугольники)
+     * и распределяет по экранным плиткам (тайлам 16х16). Результат пишет в Polygon List.
+     * Требует валидной структуры Tiler Heap и Framebuffer Descriptor (MFBD).
+     * Допустима строго для слота геометрии: SLOT 0.
+     */
+    MALI_JOB_TYPE_TILER         = 0x07,
+
+    /**
+     * 0x08: Слитая задача (Fused Vertex + Tiler Job).
+     * Оптимизированный аппаратный режим, выполняющий Vertex Shader и Tiler Job
+     * одновременно в рамках одной задачи для экономии пропускной способности памяти.
+     * Допустима строго для слота: SLOT 0.
+     */
+    MALI_JOB_TYPE_FUSED         = 0x08,
+
+    /**
+     * 0x09: Фрагментный шейдер (Fragment / Pixel Job).
+     * Финальная стадия графического конвейера. Выполняет растеризацию, пиксельные шейдеры,
+     * тесты глубины/трафарета и блендинг. Читает Polygon List и пишет в Framebuffer (картинка).
+     * Допустима строго для фрагментного слота: SLOT 1.
+     */
+    MALI_JOB_TYPE_FRAGMENT      = 0x09
+
+} mali_job_type;
+
 enum mali_draw_mode {
         MALI_DRAW_NONE      = 0x0,
         MALI_POINTS         = 0x1,
@@ -354,14 +439,14 @@ void run_write_value_test(void) {
 
     // Заполняем заголовок
     job.job_descriptor_size = 1; // Используем 64-битные указатели
-    job.job_type = JOB_TYPE_NULL;//MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
+    job.job_type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
     job.job_index = 0;           // Первая задача в Scoreboard
     job.next_job = 0;            // Цепочка заканчивается на ней
-    job.job_barrier = 1;
+    job.job_barrier = 0;
 #if 1
     // Заполняем Payload записи
     job.payload.address = (uintptr_t)&gpu_test_target; // Физический адрес цели
-    job.payload.value_descriptor = 0x04;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
+    job.payload.value_descriptor = 0;//0x04;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
     job.payload.immediate = 0xDEADBEEF;               // Данные для записи
 #else
     rsd.flags = 2;
@@ -404,6 +489,16 @@ typedef struct __attribute__((packed)) {
     uint32_t reserved;               // 0x38: 0
     uint32_t flags;                  // 0x3C: 0
 } mali_tiler_job;
+
+typedef struct __attribute__((packed)) {
+    mali_job_header header;
+
+    /* --- Смещение 0x20 - 0x3F: Payload задачи вершинного шейдера --- */
+     uint64_t thread_input_record;    // 0x20: Физический адрес структуры параметров сетки потоков
+     uint64_t renderer_state;         // 0x28: Физический адрес RSD (Render State Descriptor) для Vertex-стадии
+     uint64_t attributes;             // 0x30: Физический адрес таблицы вершинных буферов (Attribute Table)
+     uint64_t attribute_buffers;      // 0x38: Физический адрес описателей самих буферов (Attribute Buffer Table)
+} mali_vertex_job;
 
 // Расширенный дескриптор для Fragment задач
 typedef struct __attribute__((packed)) {
@@ -662,7 +757,104 @@ void gpu_init_program_state(void)
 #define MALI_BIFROST_PRIM_CULL_CCW           (0x1ULL << 8)   /* Отсекать Counter-Clockwise полигоны */
 #define MALI_BIFROST_PRIM_CULL_CW            (0x2ULL << 8)   /* Отсекать Clockwise полигоны */
 
+#if 0
+mali_vertex_job v_job;
+mali_tiler_job  t_job;
+
+// 1. НАСТРОЙКА VERTEX JOB (Первое звено цепи)
+v_job.job_descriptor_size = 1;
+v_job.job_type = 5;                        // MALI_JOB_TYPE_VERTEX
+v_job.job_index = 1;                       // Задаем уникальный ID = 1
+v_job.job_dependency_index_1 = 0;          // Никого не ждет
+v_job.next_job = (uint64_t)&t_job;         // Указываем на следующий Tiler джоб
+
+v_job.thread_input_record = (uint64_t)&v_thread_input; // Сетка вершин (кол-во потоков = числу вершин)
+v_job.renderer_state      = (uint64_t)&v_rsd;          // Параметры вершинного шейдера
+v_job.attributes          = (uint64_t)&attr_table;     // Ссылка на геометрию (треугольник)
+v_job.attribute_buffers   = (uint64_t)&attr_buf_table;
+
+// 2. НАСТРОЙКА TILER JOB (Второе звено цепи)
+t_job.header.job_descriptor_size = 1;
+t_job.header.job_type = 7;                 // MALI_JOB_TYPE_TILER (В байте 0x10 будет 0x0F)
+t_job.header.job_barrier = 1;              // Финальный барьер
+t_job.header.job_index = 2;                // Задаем уникальный ID = 2
+t_job.header.job_dependency_index_1 = 1;   // КРИТИЧЕСКИ ВАЖНО: Ждет завершения задачи ID = 1 (v_job)
+t_job.header.next_job = 0;                 // Цепочка закончена
+
+t_job.tiler_heap_desc = (uint64_t)&tiler_heap;
+t_job.fb_desc         = (uint64_t)&fbd;
+t_job.polygon_list    = (uint64_t)polygon_list_buffer;
+
+#endif
 //void gpu_draw_triangle2(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height);
+/**
+ * @brief Структура параметров сетки потоков (Thread Input Record) для Mali Bifrost.
+ * Размер: 64 байта. Выравнивание строго по 64 байтам.
+ */
+typedef struct __attribute__((packed, aligned(64))) {
+    /**
+     * 0x00: Флаги конфигурации сетки (Grid Control Flags).
+     * Бит 0: Активация кастомного размера рабочих групп (обычно 1).
+     * Бит 12: Формат индексов (0 - 16-бит, 1 - 32-бит, если используется Index Buffer).
+     * Для базового некогерентного Vertex Job без сложных индексов пишем: 0x00000001.
+     */
+    uint32_t flags;
+
+    /* --- Размеры рабочей группы (Workgroup Size) --- */
+    uint32_t workgroup_size_x;   // 0x04: Количество потоков в одной группе по X (обычно 1)
+    uint32_t workgroup_size_y;   // 0x08: Количество потоков по Y (всегда 1 для Vertex)
+    uint32_t workgroup_size_z;   // 0x0C: Количество потоков по Z (всегда 1 для Vertex)
+
+    /* --- Размеры глобальной сетки (Grid Size / Общее число вершин) --- */
+    uint32_t grid_size_x;        // 0x10: Общее количество обрабатываемых вершин (для треугольника = 3)
+    uint32_t grid_size_y;        // 0x14: Всегда 1 для Vertex
+    uint32_t grid_size_z;        // 0x18: Всегда 1 для Vertex
+
+    /* --- Специфичные для IDVS (Index-Driven Vertex Shading) параметры --- */
+    uint32_t index_count;        // 0x1C: Количество индексов в буфере (если рисуем без Index Buffer - дублируем grid_size_x, т.е. 3)
+    uint64_t index_buffer_ptr;   // 0x20: Физический адрес буфера индексов (0, если рисуем простым массивом без индексов)
+
+    uint64_t unknown_fields;   // 0x28: Зануляем
+    uint64_t padding[2];         // 0x30 - 0x3F: Зануляем остаток структуры до 64 байт
+} mali_bifrost_thread_input;
+/**
+ * @brief Описатель одного буфера атрибутов в Bifrost v6.
+ * Размер: 32 байта.
+ */
+struct __attribute__((packed)) mali_bifrost_attr_buffer_desc {
+    /**
+     * 0x00: Физический адрес начала буфера данных в системном ОЗУ.
+     * Сюда мы запишем адрес нашего массива вершин (например, 0x40135AC0).
+     */
+    uint64_t pointer;
+
+    /**
+     * 0x08: Размер буфера в байтах, уменьшенный на 1 (Size - 1).
+     * Защищает от выхода GPU за пределы памяти (Out-of-Bounds).
+     * Для 3 вершин по 3 float (X,Y,Z) размер = 3 * 3 * 4 = 36 байт.
+     * Значение: 36 - 1 = 35 (0x00000023).
+     */
+    uint32_t size_minus_1;
+
+    /**
+     * 0x0C: Шаг (Stride) между элементами в байтах.
+     * Задает расстояние от начала одной вершины до начала следующей.
+     * Если буфер содержит только плотные float3 координаты (X,Y,Z),
+     * то шаг равен: 3 * 4 байта = 12 байт (0x0000000C).
+     */
+    uint32_t stride;
+
+    /**
+     * 0x10: Флаги конфигурации буфера (Аппаратный тип).
+     * Бит 0: Признак валидности (1 = буфер активен).
+     * Биты [4:1]: Тип аллокации/доступа.
+     * Для стандартного плоского массива вершин на "голом железе" пишем: 0x00000001.
+     */
+    uint32_t flags;
+
+    uint32_t reserved1; // 0x14: Зануляем
+    uint64_t reserved2; // 0x18: Зануляем
+};
 
 void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height)
 {
@@ -683,12 +875,12 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
 	    uint32_t padding;         // 0x0
 	    uint32_t flags;           // 0x00000001 (Флаг активации кучи)
 	    uint64_t chunk_size;      // 0x00008000 (Задаем размер чанка 32 КБ)
-	    uint8_t  reserved[32];    // Зануляем остаток до 64 байт
+	    uint64_t pad[4];          // 0x20: Зануляем остаток до 64 байт
 	};
 	static GPU_ALIGN struct mali_bifrost_tiler_heap tiler_heap =
 	{
 			.tiler_heap_free = (uintptr_t) tiler_heap_mem,
-			.tiler_heap_end = (uintptr_t) tiler_heap_mem + 64 * 1024 * 9,
+			.tiler_heap_end = (uintptr_t) tiler_heap_mem + 64 * 10 * 1024 - (32 * 1024),
 			.flags = 1,
 			.chunk_size = 32 * 1024
 	};
@@ -724,32 +916,84 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
 		.tiler_flags = 0,
 
 	};
+    GPU_ALIGN static struct __attribute__((packed, aligned(64))) mali_bifrost_rsd {
+        // Первое 32-битное слово содержит конфигурацию свойств шейдера
+        uint32_t flags; // Запишем 0x00000002 (Минимальный флаг, указывающий на базовый тип шейдера)
+        uint32_t unknown;
+        uint64_t shader_code_ptr; // Указатель на код шейдера. Пока пишем 0x0 (пустой шейдер)
+        uint8_t  pad[48]; // Зануляем остаток
+    } rsd;
+    rsd.flags = 2;
+    rsd.unknown = 0x00000100;
+	dcache_clean((uintptr_t)&rsd, sizeof rsd);
 	dcache_clean((uintptr_t)&tiler_payload, sizeof tiler_payload);
+	GPU_ALIGN static mali_bifrost_thread_input v_thread_input;
+
+	// Сбрасываем старую память
+	__builtin_memset(&v_thread_input, 0, sizeof(v_thread_input));
+
+	// Инициализируем параметры под 3 вершины
+	v_thread_input.flags = 0x00000001;          // Включаем валидацию сетки
+
+	v_thread_input.workgroup_size_x = 1;        // Потоки бьются на группы по 1 вершине
+	v_thread_input.workgroup_size_y = 1;
+	v_thread_input.workgroup_size_z = 1;
+
+	v_thread_input.grid_size_x = 3;             // Генерируем ровно 3 потока (по 1 на вершину треугольника)
+	v_thread_input.grid_size_y = 1;
+	v_thread_input.grid_size_z = 1;
+
+	v_thread_input.index_count = 3;             // 3 вершины в неиндексированном режиме
+	v_thread_input.index_buffer_ptr = 0;        // Буфер индексов отсутствует (рисуем последовательно)
+	dcache_clean((uintptr_t)&v_thread_input, sizeof v_thread_input);
+
+	// Выделяем память под таблицу описателей буферов (64 байта)
+	typedef struct __attribute__((packed, aligned(64))) {
+	    struct mali_bifrost_attr_buffer_desc buffer0; // 0x00: Описатель геометрии
+	    struct mali_bifrost_attr_buffer_desc buffer1; // 0x20: Пустой терминатор
+	} mali_attr_buf_table;
+
+	GPU_ALIGN static mali_attr_buf_table attr_buf_table;
+
+	// Инициализация под массив triangle_vertices (36 байт по адресу 0x40135AC0)
+	__builtin_memset(&attr_buf_table, 0, sizeof(attr_buf_table));
+
+	attr_buf_table.buffer0.pointer = (uintptr_t) triangle_vertices;      // Физический адрес вершин
+	attr_buf_table.buffer0.size_minus_1 = 36 - 1;     // 35 (0x23)
+	attr_buf_table.buffer0.stride = 12;               // 12 байт шаг (3 float)
+	attr_buf_table.buffer0.flags = 0x00000001;        // Буфер активен
+
+	dcache_clean((uintptr_t)&attr_buf_table, sizeof attr_buf_table);
+
 	{
+		__attribute__((aligned(4096))) static uint8_t polygon_list_mem4 [ 4096];
 
     	// Выделяем память под дескрипторы аппаратных задач в RAM
-    	GPU_ALIGN static mali_tiler_job    v_job;
+    	GPU_ALIGN static mali_vertex_job    v_job;
 
         // 2. Настройка первой задачи: Координаты и геометрия (Vertex / Tiler Job)
-        v_job.header.job_type = JOB_TYPE_TILER;
+        v_job.header.job_type = MALI_JOB_TYPE_VERTEX;
         v_job.header.job_index = 0;
         v_job.header.job_barrier = 0;
         v_job.header.job_descriptor_size = 1;// 1 (64-битные указатели)
         v_job.header.next_job = 0;//(uintptr_t) & f_job;//0; // Конец первой цепочки (или можно связать с f_job, если аппаратно поддерживается)
 
-        v_job.tiler_heap_desc = (uintptr_t) & tiler_heap;
-        v_job.fb_desc = (uintptr_t) & fbd;
-        v_job.polygon_list = (uintptr_t) & polygon_list_mem;
-        //v_job.vertex_count = 3; // 3 вершины формируют 1 треугольник
-        //v_job.draw_flags = MALI_BIFROST_PRIM_TRIANGLES; // Флаг типа примитива: TRIANGLES
-        // Формула Panfrost для привязки Renderer State в Bifrost v6
-        //v_job.renderer_state = (uintptr_t)&gpu_program_state | 0x0000000000000007ULL;
+        v_job.thread_input_record = (uint64_t)&v_thread_input; // Сетка вершин (кол-во потоков = числу вершин)
+        v_job.renderer_state      = (uint64_t)&rsd;          // Параметры вершинного шейдера
+        v_job.attributes          = (uint64_t)&triangle_vertices;     // Ссылка на геометрию (треугольник)
+        v_job.attribute_buffers   = (uint64_t)&attr_buf_table;
 
         memset(& tiler_heap_mem, 0xE5, sizeof tiler_heap_mem);
         dcache_clean_invalidate((uintptr_t) tiler_heap_mem, sizeof tiler_heap_mem);
+        PRINTF("tiler_heap:\n");
+        printhex32((uintptr_t) & tiler_heap, & tiler_heap, sizeof tiler_heap);
+        PRINTF("fbd:\n");
+        printhex32((uintptr_t) & fbd, & fbd, sizeof fbd);
 
-		dcache_clean((uintptr_t)&tiler_heap, sizeof(tiler_heap));
-        dcache_clean((uintptr_t)&v_job, sizeof(v_job));
+
+		dcache_clean((uintptr_t)&tiler_heap, sizeof tiler_heap );
+        dcache_clean((uintptr_t)&v_job, sizeof v_job );
+        dcache_clean((uintptr_t)&polygon_list_mem4, sizeof polygon_list_mem4 );
         //dcache_clean((uintptr_t)&gpu_program_state, sizeof(gpu_program_state));
         dcache_clean((uintptr_t)triangle_vertices, sizeof(triangle_vertices));
         PRINTF("v_job: %p (%u)\n", & v_job, (unsigned) sizeof v_job);
@@ -785,7 +1029,7 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
         fb_desc.rt_pointer = (uintptr_t) & fb_desc.rt [0] | 0x3;
 
         // 3. Настройка второй задачи: Отрисовка пикселей (Fragment Job)
-        f_job.header.job_type = JOB_TYPE_FRAGMENT;
+        f_job.header.job_type = MALI_JOB_TYPE_FRAGMENT;
         f_job.header.job_index = 0;
         f_job.header.job_descriptor_size = 1;// 1 (64-битные указатели)
         f_job.header.next_job = 0; // Последняя задача
@@ -1002,7 +1246,7 @@ void gpu_test(void)
 	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
 #endif
 
-#if 1
+#if 0
 	run_write_value_test();
     TP();
     for (;;)
