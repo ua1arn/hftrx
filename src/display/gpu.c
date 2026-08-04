@@ -856,6 +856,22 @@ struct __attribute__((packed)) mali_bifrost_attr_buffer_desc {
     uint64_t reserved2; // 0x18: Зануляем
 };
 
+// Выделяем 64 байта в ОЗУ под таблицу связей атрибутов
+GPU_ALIGN static uint32_t attr_table_words[16] = {0};
+
+void setup_attribute_table(void) {
+    // Запись для Атрибута 0 (Координаты вершин):
+    // Бит [0:2]   - Индекс буфера из таблицы attr_buf_table (у нас это Буфер 0) -> 0
+    // Биты [11:3]  - Смещение внутри буфера в байтах (наш массив выровнен, смещение 0) -> 0
+    // Биты [31:12] - Аппаратный формат Bifrost (для Vec3 Float32 это код 0x04000)
+
+    // В ревизии Bifrost v6 (Mali-G31) точная маска для Vec3 Float32 из Буфера 0:
+    attr_table_words[0] = 0x0400030A; // Формат данных + привязка к Buffer 0
+
+    // Остальные элементы оставляем нулями (терминаторы)
+    dcache_clean((uintptr_t)attr_table_words, sizeof(attr_table_words));
+}
+
 void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height)
 {
 	enum {
@@ -863,6 +879,7 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
 		COMMAND_SLOT_FRAGMENT
 	};
 	gpu_init_program_state();
+	setup_attribute_table();
 //	gpu_draw_triangle2(framebuffer_phys_addr, width, height);
     PRINTF("Assembling GPU Job Chain for Triangle...\n");
     // https://android.googlesource.com/platform/external/mesa3d/+/e061bf004b5/src/panfrost/include/panfrost-job.h
@@ -973,14 +990,14 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
 
         // 2. Настройка первой задачи: Координаты и геометрия (Vertex / Tiler Job)
         v_job.header.job_type = MALI_JOB_TYPE_VERTEX;
-        v_job.header.job_index = 0;
-        v_job.header.job_barrier = 0;
+        v_job.header.job_index = 1;
+        v_job.header.job_barrier = 1;
         v_job.header.job_descriptor_size = 1;// 1 (64-битные указатели)
         v_job.header.next_job = 0;//(uintptr_t) & f_job;//0; // Конец первой цепочки (или можно связать с f_job, если аппаратно поддерживается)
 
         v_job.thread_input_record = (uint64_t)&v_thread_input; // Сетка вершин (кол-во потоков = числу вершин)
         v_job.renderer_state      = (uint64_t)&rsd;          // Параметры вершинного шейдера
-        v_job.attributes          = (uint64_t)&triangle_vertices;     // Ссылка на геометрию (треугольник)
+        v_job.attributes          = (uint64_t)&attr_table_words;     // Ссылка на геометрию (треугольник)
         v_job.attribute_buffers   = (uint64_t)&attr_buf_table;
 
         memset(& tiler_heap_mem, 0xE5, sizeof tiler_heap_mem);
@@ -1030,7 +1047,8 @@ void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t
 
         // 3. Настройка второй задачи: Отрисовка пикселей (Fragment Job)
         f_job.header.job_type = MALI_JOB_TYPE_FRAGMENT;
-        f_job.header.job_index = 0;
+        f_job.header.job_index = 1;
+        f_job.header.job_barrier = 1;
         f_job.header.job_descriptor_size = 1;// 1 (64-битные указатели)
         f_job.header.next_job = 0; // Последняя задача
 
