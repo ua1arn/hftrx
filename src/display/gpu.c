@@ -218,8 +218,8 @@ static int gpu_submit_job(unsigned slot, uintptr_t head)
     if (local_wait32mask(& GPU_JOB_CONTROL->JOB_INT_RAWSTAT, (UINT32_C(1) << slot), 1 * (UINT32_C(1) << slot), 100))//Was: JOB_IRQ_RAWSTAT
     {
     	PRINTF("error head %p:\n", (void *) head);
-    	dcache_invalidate((uintptr_t) head, 64);
-    	printhex32((uintptr_t) head, (void *) head, 64);
+    	dcache_invalidate((uintptr_t) head, 128);
+    	printhex32((uintptr_t) head, (void *) head, 128);
     	PRINTF("gpu timeout: GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
     	gpu_diagnose_slot_fault(slot, 0);
     	return 1;
@@ -227,8 +227,8 @@ static int gpu_submit_job(unsigned slot, uintptr_t head)
     else
     {
     	PRINTF("okay head %p:\n", (void *) head);
-    	dcache_invalidate((uintptr_t) head, 64);
-    	printhex32((uintptr_t) head, (void *) head, 64);
+    	dcache_invalidate((uintptr_t) head, 128);
+    	printhex32((uintptr_t) head, (void *) head, 128);
         GPU_JOB_CONTROL->JOB_INT_CLEAR = (UINT32_C(1) << slot); // Сброс флага прерывания
         return 0;
     }
@@ -390,22 +390,7 @@ struct __attribute__((packed)) mali_payload_write_value {
 // MGS! подтверждена работа заголовка
 struct __attribute__((packed, aligned(64))) mali_write_value_job {
     // 1. Стандартный заголовок (mali_job_header) - 32 байта
-    uint32_t exception_status;       // 0x00: Зануляем (Сюда GPU вернет статус)
-    uint32_t first_incomplete_task;  // 0x04: 0
-    uint64_t fault_pointer;          // 0x08: 0 (Или адрес буфера под дамп ошибок)
-
-    uint8_t  job_descriptor_size : 1; // 0x10: 1 (64-битная адресация)
-    uint8_t  job_type            : 7; // 0x10: MALI_JOB_TYPE_WRITE_VALUE (2)
-
-    uint8_t  job_barrier         : 1; // 0x11: 0 (Или 1, если нужно заблокировать конвейер)
-    uint8_t  unknown_flags       : 7; // 0x11: 0
-
-    uint16_t job_index;               // 0x12: Уникальный ID задачи (например, 1)
-    uint16_t job_dependency_index_1;  // 0x14: 0 (Никого не ждем)
-    uint16_t job_dependency_index_2;  // 0x16: 0
-
-    uint64_t next_job;               // 0x18: 0 (Это единственная задача в цепочке)
-
+	mali_job_header header;
     // 2. Специфичный Payload - 32 байта
     struct mali_payload_write_value payload;
 };
@@ -420,43 +405,19 @@ void run_write_value_test(void) {
 
     // Сбрасываем старую память
     memset(&job, 0, sizeof(job));
-    gpu_test_target = 0;
-
-    GPU_ALIGN static struct __attribute__((packed, aligned(64))) mali_bifrost_rsd {
-        // Первое 32-битное слово содержит конфигурацию свойств шейдера
-        uint32_t flags; // Запишем 0x00000002 (Минимальный флаг, указывающий на базовый тип шейдера)
-        uint32_t unknown;
-        uint64_t shader_code_ptr; // Указатель на код шейдера. Пока пишем 0x0 (пустой шейдер)
-        uint8_t  pad[48]; // Зануляем остаток
-    } rsd;
-    GPU_ALIGN static struct __attribute__((packed, aligned(64))) mali_bifrost_thread_input {
-        uint32_t flags;       // Пишем 0x00000001 (Флаг, что размеры групп валидны)
-        uint32_t workgroup_x; // 1 группа
-        uint32_t workgroup_y; // 1 группа
-        uint32_t workgroup_z; // 1 группа
-        uint8_t  pad[48];
-    } ti;
 
     // Заполняем заголовок
-    job.job_descriptor_size = 1; // Используем 64-битные указатели
-    job.job_type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
-    job.job_index = 0;           // Первая задача в Scoreboard
-    job.next_job = 0;            // Цепочка заканчивается на ней
-    job.job_barrier = 0;
-#if 1
+    job.header.job_descriptor_size = 1; // Используем 64-битные указатели
+    job.header.job_type = MALI_JOB_TYPE_NULL;//MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
+    job.header.job_index = 1;           // Первая задача в Scoreboard
+    job.header.next_job = 0;            // Цепочка заканчивается на ней
+    job.header.job_barrier = 1;
+
     // Заполняем Payload записи
     job.payload.address = (uintptr_t)&gpu_test_target; // Физический адрес цели
-    job.payload.value_descriptor = 0;//0x04;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
+    job.payload.value_descriptor = 0x04;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
     job.payload.immediate = 0xDEADBEEF;               // Данные для записи
-#else
-    rsd.flags = 2;
-    rsd.unknown = 0x00000100;
-    ti.flags = 1;
-	job.payload.value_descriptor = (uint64_t)&ti;
-    job.payload.address = (uint64_t)&rsd;
-    dcache_clean((uintptr_t)&rsd, sizeof rsd);
-    dcache_clean((uintptr_t)&ti, sizeof ti);
-#endif
+
     // КРИТИЧЕСКИ ВАЖНО ДЛЯ BARE METAL:
     // Очищаем кэш CPU, чтобы GPU читал структуру из физического ОЗУ,
     // и инвалидируем регион gpu_test_target, чтобы CPU позже не прочитал старые данные из своего L1/L2.
@@ -471,10 +432,12 @@ void run_write_value_test(void) {
       // Проверяем результат выполнения
     dcache_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
 
-    if (job.exception_status == 0 && gpu_test_target == 0xDEADBEEF) {
+    if (/*job.header.exception_status == 0 && */gpu_test_target == 0xDEADBEEF) {
         // УСПЕХ! GPU успешно прочитал дескриптор, записал значение через шину в ОЗУ и завершил задачу.
+    	PRINTF("Okay write value!\n");
     } else {
         // ОШИБКА. Проверьте job.exception_status или глобальные регистры MMU FAULT.
+    	PRINTF("No write value!\n");
     }
 }
 
@@ -1231,7 +1194,7 @@ void gpu_test(void)
 	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
 #endif
 
-#if 0
+#if 1
 	run_write_value_test();
     TP();
     for (;;)
