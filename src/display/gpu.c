@@ -381,7 +381,7 @@ typedef struct __attribute__((packed)) {
 
 #include <stdint.h>
 
-#define MALI_WRITE_VALUE_ZERO     3 // Специальный флаг для обнуления
+//#define MALI_WRITE_VALUE_ZERO     3 // Специальный флаг для обнуления
 
 // Полезная нагрузка для записи значения
 struct __attribute__((packed)) mali_payload_write_value {
@@ -395,6 +395,7 @@ struct __attribute__((packed)) mali_payload_write_value {
 // Полный монолитный дескриптор задачи
 // MGS! подтверждена работа заголовка
 // https://android.googlesource.com/platform/external/mesa3d/+/e061bf004b5/src/panfrost/include/panfrost-job.h
+// https://github.com/dlehman-work/mesa/blob/master/src/panfrost/include/panfrost-job.h#L45
 
 struct __attribute__((packed, aligned(64))) mali_write_value_job {
     // 1. Стандартный заголовок (mali_job_header) - 32 байта
@@ -424,9 +425,9 @@ int run_write_value_test(unsigned v) {
 
     /**
      * value_descriptor:
-     * 0 - timestamp?
+     * 0 - fault operation
      * 1 - timestamp?
-     * 2 - ???
+     * 2 - timestamp?
      * 3 - zero
      * 4 - 8 bit
      * 5 - 16 bit
@@ -451,7 +452,6 @@ int run_write_value_test(unsigned v) {
     if (gpu_submit_job(2, (uintptr_t) & job))
     	return 1;	// err
       // Проверяем результат выполнения
-    dcache_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
 
     if (/*job.header.exception_status == 0 && */gpu_test_target == 0xDEADBEEFABBA1980) {
         // УСПЕХ! GPU успешно прочитал дескриптор, записал значение через шину в ОЗУ и завершил задачу.
@@ -997,10 +997,10 @@ void gpu_draw_triangle(void)
     t_job.header.job_type = 7;
     t_job.header.job_descriptor_size = 1;
     t_job.header.job_barrier = 1;          // Финальный аппаратный барьер в конце цепи
-    t_job.header.job_index = 1;            // Уникальный ID задачи = 2
+    t_job.header.job_index = 2;            // Уникальный ID задачи = 2
 
     // КРИТИЧНО: Явно заставляем тайлер дождаться выполнения задачи ID = 1 (v_job)
-    t_job.header.job_dependency_index_1 = 0;//1;
+    t_job.header.job_dependency_index_1 = 1;
     t_job.header.next_job = 0;             // Цепочка для Slot 0 на этом завершена
 
     // Полезная нагрузка (Payload) стадии тайлинга
@@ -1217,7 +1217,7 @@ void gpu_test(void)
 	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
 #endif
 
-#if 1
+#if 0
 	unsigned v = 0;
 	while (run_write_value_test(v ++))
 		;
