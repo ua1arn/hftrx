@@ -385,15 +385,17 @@ typedef struct __attribute__((packed)) {
 
 // Полезная нагрузка для записи значения
 struct __attribute__((packed)) mali_payload_write_value {
-    uint32_t value_descriptor;  // 0x20: Флаги типа записи (0 - обычная запись immediate)
-    uint32_t reserved_payload;  // 0x24 -> Пишем 0
-    uint64_t address;           // 0x28: Физический адрес памяти, КУДА пишем
-    uint64_t immediate;         // 0x30: ЧТО именно записываем (64-битное число)
-    uint64_t pad2;                   // 0x38 -> Пишем 0
+	uint64_t address;
+	uint32_t value_descriptor;
+	uint32_t reserved;
+	uint64_t immediate;
+	uint64_t pad;
 };
 
 // Полный монолитный дескриптор задачи
 // MGS! подтверждена работа заголовка
+// https://android.googlesource.com/platform/external/mesa3d/+/e061bf004b5/src/panfrost/include/panfrost-job.h
+
 struct __attribute__((packed, aligned(64))) mali_write_value_job {
     // 1. Стандартный заголовок (mali_job_header) - 32 байта
 	mali_job_header header;
@@ -403,7 +405,7 @@ struct __attribute__((packed, aligned(64))) mali_write_value_job {
 
 // Переменная-цель, куда будет писать GPU.
 // Обязательно выравниваем по кэш-линии!
-volatile uint64_t __attribute__((aligned(64))) gpu_test_target = 0;
+volatile uint64_t __attribute__((aligned(64))) gpu_test_target = 0x123456789abcdef;
 
 int run_write_value_test(unsigned v) {
     // Создаем структуру дескриптора в памяти
@@ -420,16 +422,28 @@ int run_write_value_test(unsigned v) {
     job.header.next_job = 0;            // Цепочка заканчивается на ней
     job.header.job_barrier = 1;
 
+    /**
+     * value_descriptor:
+     * 0 - timestamp?
+     * 1 - timestamp?
+     * 2 - ???
+     * 3 - zero
+     * 4 - 8 bit
+     * 5 - 16 bit
+     * 6 - 32 bit
+     * 7 - 64 bit
+     */
     // Заполняем Payload записи
     job.payload.address = (uintptr_t)&gpu_test_target; // Физический адрес цели
-    job.payload.value_descriptor = 0x04;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
-    job.payload.immediate = 0xDEADBEEF;               // Данные для записи
+    job.payload.value_descriptor = v;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
+    job.payload.immediate = 0xDEADBEEFABBA1980;               // Данные для записи
 
     // КРИТИЧЕСКИ ВАЖНО ДЛЯ BARE METAL:
     // Очищаем кэш CPU, чтобы GPU читал структуру из физического ОЗУ,
     // и инвалидируем регион gpu_test_target, чтобы CPU позже не прочитал старые данные из своего L1/L2.
     dcache_clean_invalidate((uintptr_t)&job, sizeof(job));
-    dcache_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
+    gpu_test_target = 0x123456789abcdef;
+    dcache_clean_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
 
     // Важно: Адреса job и gpu_test_target должны быть предварительно
     // промаплены в MMU вашего Mali-G31 с правами Read/Write!
@@ -439,12 +453,13 @@ int run_write_value_test(unsigned v) {
       // Проверяем результат выполнения
     dcache_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
 
-    if (/*job.header.exception_status == 0 && */gpu_test_target == 0xDEADBEEF) {
+    if (/*job.header.exception_status == 0 && */gpu_test_target == 0xDEADBEEFABBA1980) {
         // УСПЕХ! GPU успешно прочитал дескриптор, записал значение через шину в ОЗУ и завершил задачу.
-    	PRINTF("Okay write value!\n");
+    	PRINTF("Okay write value! v=%02X gpu_test_target=%08X%08X\n", v, (unsigned) (gpu_test_target >> 32), (unsigned) gpu_test_target);
     } else {
         // ОШИБКА. Проверьте job.exception_status или глобальные регистры MMU FAULT.
-    	PRINTF("No write value!\n");
+    	PRINTF("No write value! v=%02X gpu_test_target=%08X%08X\n", v, (unsigned) (gpu_test_target >> 32), (unsigned) gpu_test_target);
+    	return 1;	// err
     }
     return 0;
 }
@@ -1253,7 +1268,7 @@ void mali_g31_mmu_enable(void)
      */
 	// Индекс 0 = 0xAA (Cacheable), Индекс 1 = 0x22 (Non-Cacheable)
 	GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0x00000000;
-	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x004488ff;
+	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = ~0;//0x004488ff;
 	__DSB();
 
 	uint64_t table_phys_addr = 0;
