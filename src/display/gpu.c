@@ -188,16 +188,13 @@ void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
            (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_LO);
 }
 
-static int gpu_submit_job(unsigned slot, uintptr_t head, uintptr_t tail)
+static int gpu_submit_job(unsigned slot, uintptr_t head)
 {
 	PRINTF("gpu_submit_job: head=%p, slot=%u\n", (void *) head, slot);
 //	printhex32((uintptr_t) job, job, 64);
     // Записываем физический адрес начала структуры v_job в регистр указателя слота 0
     GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_HI = ptr_hi32(head);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
     GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_LO = ptr_lo32(head);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
-
-//    GPU_JOB_CONTROL->LOOP[slot].JS_TAIL_NEXT_HI = ptr_hi32(tail);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
-//    GPU_JOB_CONTROL->LOOP[slot].JS_TAIL_NEXT_LO = ptr_lo32(tail);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
 
     // 2. ИНИЦИАЛИЗАЦИЯ JS_AFFINITY (Критично для Bifrost!)
     // Говорим планировщику распределить потоки шейдеров на оба ядра Mali-G31 MP2
@@ -469,7 +466,7 @@ void run_write_value_test(void) {
     // Важно: Адреса job и gpu_test_target должны быть предварительно
     // промаплены в MMU вашего Mali-G31 с правами Read/Write!
 
-    if (gpu_submit_job(2, (uintptr_t) & job, 0))
+    if (gpu_submit_job(2, (uintptr_t) & job))
     	return;
       // Проверяем результат выполнения
     dcache_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
@@ -1014,10 +1011,10 @@ void gpu_draw_triangle(void)
     t_job.header.job_type = 7;
     t_job.header.job_descriptor_size = 1;
     t_job.header.job_barrier = 1;          // Финальный аппаратный барьер в конце цепи
-    t_job.header.job_index = 2;            // Уникальный ID задачи = 2
+    t_job.header.job_index = 1;            // Уникальный ID задачи = 2
 
     // КРИТИЧНО: Явно заставляем тайлер дождаться выполнения задачи ID = 1 (v_job)
-    t_job.header.job_dependency_index_1 = 1;
+    t_job.header.job_dependency_index_1 = 0;//1;
     t_job.header.next_job = 0;             // Цепочка для Slot 0 на этом завершена
 
     // Полезная нагрузка (Payload) стадии тайлинга
@@ -1050,7 +1047,7 @@ void gpu_draw_triangle(void)
     // =========================================================================
     // 4.ОТПРАВКА ЦЕПОЧКИ В СЛОТ 0 GPU
     // =========================================================================
-    gpu_submit_job(0, (uintptr_t) &v_job, 0);
+    gpu_submit_job(0, (uintptr_t) &v_job);
 }
 
 #define GPU_ALIGN __attribute__((aligned(64)))
