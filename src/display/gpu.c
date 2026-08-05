@@ -400,7 +400,7 @@ typedef struct __attribute__((packed, aligned(64))) {
 	uint64_t immediate;
 	uint64_t pad;
 } mali_write_value_job;
-
+#if 0
 // Расширенный дескриптор для Vertex/Tiler задач
 typedef struct __attribute__((packed)) {
     // 1. Стандартный заголовок (mali_job_header) - 32 байта
@@ -460,12 +460,13 @@ typedef struct __attribute__((packed, aligned(64))) {
     /* --- Паддинг безопасности (Добивка до 128 байт) --- */
     uint32_t padding_to_128[16];            // 0x40 - 0x7F: Скрытая зона регистров отсечения (зануляем)
 } mali_vertex_job_bifrost;
-
+#endif
 // Переменная-цель, куда будет писать GPU.
 // Обязательно выравниваем по кэш-линии!
+#if 1
 static volatile uint64_t __attribute__((aligned(64))) gpu_test_target [2];
-
-int run_write_value_test(unsigned v) {
+int run_write_value_test(void) {
+	unsigned v = 0x07;
     // Создаем структуру дескриптора в памяти
 	GPU_ALIGN static mali_write_value_job job;
 	GPU_ALIGN static mali_write_value_job job2;
@@ -525,537 +526,376 @@ int run_write_value_test(unsigned v) {
     printhex64(0, gpu_test_target, sizeof gpu_test_target);
     return 0;
 }
+#endif
 
+#define GPU_ALIGN __attribute__((aligned(64)))
+
+//++++++++++++++++++
+#ifndef GPU_BIFROST_V6_H
+#define GPU_BIFROST_V6_H
 
 #include <stdint.h>
 
-/**
-  * @brief Дескриптор конкретной поверхности цвета (Render Target Descriptor)
-  * Размер: ровно 32 байта (0x20)
-  */
-typedef struct __attribute__((packed)) {
-    __IO uint64_t base_address;          /* +0x00: Физический адрес буфера экрана (из вашего Display Engine) */
-    __IO uint32_t stride;                /* +0x08: Шаг строки в байтах (width * 4 для 32-бит ARGB) */
-    __IO uint32_t format;                /* +0x0C: Формат пикселя (0x18001000 для ARGB8888, 0x18005000 для BGRA8888) */
-    __IO uint32_t flags;                 /* +0x10: Аппаратные флаги поверхности (Panfrost пишет 0x00000000 для линейного буфера) */
-    __IO uint32_t reserved_rt[3];        /* +0x14 - +0x1F: Паддинг */
-} mali_render_target_desc_t;
+/* =========================================================================
+ * 1. АППАРАТНЫЕ КОНСТАНТЫ И КОДЫ ТИПОВ ЗАДАЧ MALI BIFROST
+ * ========================================================================= */
+//#define MALI_JOB_TYPE_NULL          UINT8_C(1)
+//#define MALI_JOB_TYPE_WRITE_VALUE   UINT8_C(2)
+//#define MALI_JOB_TYPE_CACHE_FLUSH   UINT8_C(3)
+//#define MALI_JOB_TYPE_COMPUTE       UINT8_C(4)
+//#define MALI_JOB_TYPE_VERTEX        UINT8_C(5)
+//#define MALI_JOB_TYPE_TILER         UINT8_C(7)
+//#define MALI_JOB_TYPE_FUSED         UINT8_C(8)
+//#define MALI_JOB_TYPE_FRAGMENT      UINT8_C(9)
 
-/**
-  * @brief Главный глобальный дескриптор Framebuffer для Bifrost v6
-  * Размер: ровно 128 байт (0x80). Должен бытьpacked и выровнен по кэш-линии (64 байта).
-  */
-typedef struct __attribute__((packed)) {
-    /* --- Глобальные параметры окна (0x00 - 0x1F) --- */
-    __IO uint32_t width_minus_1;         /* +0x00: Ширина экрана минус 1 (например, 799 для 800) */
-    __IO uint32_t height_minus_1;        /* +0x04: Высота экрана минус 1 (например, 479 для 480) */
-    __IO uint32_t sample_count;          /* +0x08: Мультисэмплинг (MSAA). Пишем 0x00000001 (1 sample / без MSAA) */
-    __IO uint32_t msub_config;           /* +0x0C: Внутренняя конфигурация плиточного процессора (Panfrost пишет 0) */
-    __IO uint64_t rt_pointer;            /* +0x10: 64-бит физ. адрес, указывающий на массив поверхностей Render Targets (на смещение +0x40) */
-    __IO uint64_t reserved_hdr;          /* +0x18: Резерв */
+/* Флаги управления разрядностью и барьерами */
+#define MALI_JOB_64                 UINT8_C(1)  /* 1 = 64-битная адресация указателей */
+#define MALI_JOB_BARRIER            UINT8_C(1)  /* 1 = аппаратный барьер в слоте */
 
-    /* --- Параметры очистки и вспомогательных буферов (0x20 - 0x3F) --- */
-    __IO uint64_t zs_address;            /* +0x20: Физический адрес буфера глубины/трафарета (Depth/Stencil). 0, если выключен */
-    __IO uint32_t zs_stride;             /* +0x28: Шаг буфера глубины */
-    __IO uint32_t clear_flags;           /* +0x2C: Флаги очистки */
-    __IO uint32_t padding_hdr[4];        /* +0x30 - +0x3F: Паддинг до 64 байт */
+/* Аппаратные макросы выравнивания для шины Mali */
+#define GPU_ALIGN_64  __attribute__((aligned(64)))
+#define GPU_ALIGN_128 __attribute__((aligned(128)))
+#define GPU_PACKED    __attribute__((packed))
 
-    /* --- Массив описания поверхностей вывода (0x40 - 0x7F) --- */
-    /* Аппаратно заголовок и первая RT сгруппированы вместе. В `rt_pointer` мы передадим адрес этой ячейки. */
-    mali_render_target_desc_t rt[1];     /* +0x40: Описание Render Target 0 (Цветовой буфер экрана) */
+/* =========================================================================
+ * 2. УНИВЕРСАЛЬНЫЙ ЗАГОЛОВОК ЗАДАЧИ (32 БАЙТА)
+ * ========================================================================= */
+typedef struct GPU_PACKED {
+    uint32_t exception_status;       // 0x00: Сюда GPU пишет код ошибки при падении (0 = DONE)
+    uint32_t first_incomplete_task;  // 0x04: Служебный статус планировщика (0)
+    uint64_t fault_pointer;          // 0x08: Сюда GPU пишет адрес сбоя на шине или MMU
 
-} mali_framebuffer_desc_t;
+    // Смещение 0x10: Упаковывается компилятором как (type << 1) | descriptor_size
+    uint8_t  job_descriptor_size : 1; // Бит 0: Ставим 1 (MALI_JOB_64)
+    uint8_t  job_type            : 7; // Биты 1-7: Код типа задачи (VERTEX, TILER и т.д.)
 
-typedef struct __attribute__((packed)) {
-    /* --- Глобальные параметры окна (0x00 - 0x1F) --- */
-    __IO uint32_t width_minus_1;         /* +0x00: Ширина экрана минус 1 (например, 799 для 800) */
-    __IO uint32_t height_minus_1;        /* +0x04: Высота экрана минус 1 (например, 479 для 480) */
-    __IO uint32_t sample_count;          /* +0x08: Мультисэмплинг (MSAA). Пишем 0x00000001 (1 sample / без MSAA) */
-    __IO uint32_t msub_config;           /* +0x0C: Внутренняя конфигурация плиточного процессора (Panfrost пишет 0) */
-    __IO uint64_t rt_pointer;            /* +0x10: 64-бит физ. адрес, указывающий на массив поверхностей Render Targets (на смещение +0x40) */
-    __IO uint64_t reserved_hdr;          /* +0x18: Резерв */
+    uint8_t  job_barrier         : 1; // Бит 0 смещения 0x11: Включение барьера (MALI_JOB_BARRIER)
+    uint8_t  unknown_flags       : 7; // Биты 1-7 смещения 0x11: Системный резерв (0)
 
-    /* --- Параметры очистки и вспомогательных буферов (0x20 - 0x3F) --- */
-    __IO uint64_t zs_address;            /* +0x20: Физический адрес буфера глубины/трафарета (Depth/Stencil). 0, если выключен */
-    __IO uint32_t zs_stride;             /* +0x28: Шаг буфера глубины */
-    __IO uint32_t clear_flags;           /* +0x2C: Флаги очистки */
-    __IO uint32_t padding_hdr[4];        /* +0x30 - +0x3F: Паддинг до 64 байт */
+    uint16_t job_index;               // 0x12: ID задачи в окне планировщика (Scoreboard)
+    uint16_t job_dependency_index_1;  // 0x14: ID задачи, которую нужно дождаться
+    uint16_t job_dependency_index_2;  // 0x16: Второй ID зависимости
 
-    /* --- Массив описания поверхностей вывода (0x40 - 0x7F) --- */
-    /* Аппаратно заголовок и первая RT сгруппированы вместе. В `rt_pointer` мы передадим адрес этой ячейки. */
-    mali_render_target_desc_t rt[1];     /* +0x40: Описание Render Target 0 (Цветовой буфер экрана) */
-} mali_framebuffer_desc;
+    uint64_t next_job;               // 0x18: Физический адрес следующего 128-байтного джоба в цепи
+} mali_job_headeXr;
 
-GPU_ALIGN static mali_framebuffer_desc fb_desc;
+/* =========================================================================
+ * 3. ДЕСКРИПТОРЫ ОЧЕРЕДЕЙ ЗАДАЧ (ПО 128 БАЙТ ИЗ-ЗА BURST-ЧТЕНИЯ BIFROST)
+ * ========================================================================= */
 
-typedef struct __attribute__((packed)) {
-    uint32_t properties;             // +0x00: Тип стадии и количество регистров
-    uint16_t stack_size;             // +0x04: Размер стека для ветвлений (0)
-    uint16_t preload_regs;           // +0x06: Аппаратная предзагрузка (0)
-    uint64_t shader_code_ptr;        // +0x08: 64-битный физический адрес кода шейдера
-    uint64_t unk_bifrost_v6_ctrl1;   // +0x10: Скрытый системный контроль 1 (0)
-    uint64_t unk_bifrost_v6_ctrl2;   // +0x18: Скрытый системный контроль 2 (0)
+/* Задача вершинного шейдера (Vertex Job) — Slot 0 */
+typedef struct GPU_PACKED GPU_ALIGN_64 {
+    mali_job_header header;          // 0x00 - 0x1F: Базовый заголовок задачи (32 байта)
+
+    /* Специфичный Payload для Bifrost v6 (32 байта) */
+    uint64_t thread_input_record;   // 0x20: Физический адрес структуры mali_bifrost_thread_input
+    uint64_t renderer_state;        // 0x28: Физический адрес RSD (mali_renderer_state_bifrost_v6_t)
+    uint64_t attributes;            // 0x30: В Bifrost v6 СТРОГО 0 (Удалено из Midgard)
+    uint64_t attribute_buffers;     // 0x38: В Bifrost v6 СТРОГО 0 (Удалено из Midgard)
+
+    /* Паддинг безопасности (64 байта чистых нулей) */
+    uint8_t  padding_to_128[64];    // 0x40 - 0x7F: Сюда GPU burst-чтением мапит движок Clipping/Culling [0x1.1]
+} mali_vertex_job_bifrost;
+
+/* Задача тайлинга (Tiler Job) — Slot 0 */
+typedef struct GPU_PACKED GPU_ALIGN_64 {
+    mali_job_header header;          // 0x00 - 0x1F: Базовый заголовок задачи (32 байта)
+
+    /* Специфичный Payload для Bifrost v6 (32 байта) */
+    uint64_t tiler_heap_desc;       // 0x20: Физический адрес кучи (mali_bifrost_tiler_heap)
+    uint64_t fb_desc;               // 0x28: Физический адрес Framebuffer-дескриптора (mali_bifrost_fb_desc)
+    uint64_t polygon_list;          // 0x30: Физический адрес выходного буфера под Polygon List
+    uint64_t reserved_fields;       // 0x38: Системный резерв (зануляется)
+
+    /* Паддинг безопасности (64 байта чистых нулей) */
+    uint8_t  padding_to_128[64];    // 0x40 - 0x7F
+} mali_tiler_job_bifrost;
+
+/* Сервисная задача записи значения (Write Value Job) — Slot 2 */
+typedef struct GPU_PACKED GPU_ALIGN_64 {
+    mali_job_header header;          // 0x00 - 0x1F: Базовый заголовок задачи (32 байта)
+
+    /* Специфичный Payload из panfrost-job.h (32 байта) */
+    uint64_t address;               // 0x20: Физический адрес ОЗУ, КУДА пишем данные
+    uint32_t value_descriptor;      // 0x28: Режим записи (0 = безусловный immediate константный маркер)
+    uint32_t reserved_field;        // 0x2C: Выравнивающий резерв (0)
+    uint64_t immediate;             // 0x30: ЧТО именно пишем (например, 0xDEADBEEF)
+
+    /* Паддинг безопасности (64 байта чистых нулей) */
+    uint8_t  padding_to_128[64];    // 0x40 - 0x7F
+} mali_write_value_job_bifrost;
+
+/* =========================================================================
+ * 4. ВНУТРЕННИЕ СТРУКТУРЫ УПРАВЛЕНИЯ КОНВЕЙЕРОМ ГЕОМЕТРИИ (IDVS)
+ * ========================================================================= */
+
+/* Параметры сетки потоков вершин (64 байта) */
+typedef struct GPU_PACKED GPU_ALIGN_64 {
+    uint32_t flags;                  // 0x00: Режим сетки (Ставим 0x00000001 — активация параметров)
+    uint32_t workgroup_size_x;       // 0x04: Разбиение на группы по X (пишем 1)
+    uint32_t workgroup_size_y;       // 0x08: Всегда 1 для геометрии
+    uint32_t workgroup_size_z;       // 0x0C: Всегда 1 для геометрии
+    uint32_t grid_size_x;            // 0x10: Глобальное число вершин в сцене (треугольник = 3)
+    uint32_t grid_size_y;            // 0x14: Всегда 1
+    uint32_t grid_size_z;            // 0x18: Всегда 1
+    uint32_t index_count;            // 0x1C: Число индексов (в неиндексированном режиме дублируем = 3)
+    uint64_t index_buffer_ptr;       // 0x20: Физический адрес буфера индексов (0 = рисуем сырым массивом)
+    uint8_t  reserved[24];           // 0x28 - 0x3F: Зануленный хвост до 64 байт
+} mali_bifrost_thread_input;
+
+/* Метаданные формата и шага входного атрибута (32 байта) */
+typedef struct GPU_PACKED {
+    uint64_t buffer_ptr;             // 0x00: Физический адрес массива координат triangle_vertices в ОЗУ
+    uint32_t stride;                 // 0x08: Расстояние от начала одной вершины до следующей (3 float * 4 = 12 байт)
+    uint32_t size;                   // 0x0C: Общий размер буфера вершин в байтах (3 вершины * 12 = 36 байт)
+    uint32_t format;                 // 0x10: Аппаратная кодировка Bifrost v6 (0x0400030A = Vec3 Float32)
+    uint8_t  reserved[12];           // 0x14 - 0x1F: Зануленный остаток
+} mali_vertex_input_meta;
+
+/* Описание одной стадии выполнения шейдера (32 байта — Строгий стандарт Bifrost v6) */
+typedef struct GPU_PACKED {
+    uint32_t properties;             // 0x00: Тип стадии (0x4000 = Vertex/Compute, 0x4001 = Fragment)
+    uint16_t stack_size;             // 0x04: Размер аппаратного стека для ветвлений шейдера (0)
+    uint16_t preload_regs;           // 0x06: Маска предзагрузки атрибутов/текстур (0)
+    uint64_t shader_code_ptr;        // 0x08: Физический 64-битный адрес бинарного кода шейдера (Bifrost ISA) в ОЗУ
+    uint64_t unk_bifrost_v6_ctrl1;   // 0x10: Системное управление кэшем команд Bifrost v6 (0)
+    uint64_t unk_bifrost_v6_ctrl2;   // 0x18: Системный резерв управления ядрами (0)
 } mali_shader_stage_t;
 
-typedef struct __attribute__((packed)) {
-    mali_shader_stage_t vertex_stage;    /* +0x00 - +0x0F: 16 байт */
-    mali_shader_stage_t fragment_stage;  /* +0x10 - +0x1F: 16 байт */
+/* Состояние программы рендерера / Renderer State Descriptor (RSD — 128 байт) */
+typedef struct GPU_PACKED GPU_ALIGN_128 {
+    mali_shader_stage_t vertex_stage;   // 0x00 - 0x1F: Вершинная стадия (32 байта)
+    mali_shader_stage_t fragment_stage; // 0x20 - 0x3F: Фрагментная стадия (32 байта)
 
-    uint32_t blend_equation;             /* +0x20: 0x00001200 */
-    uint32_t blend_constant;             /* +0x24: 0x00000000 */
-    uint64_t reserved_blend_fields;      /* +0x28: 8 байт резерва под блендинг */
+    uint32_t blend_equation;            // 0x40: Маска блендинга (0x00001200 = Режим Opaque, перезапись пикселя)
+    uint32_t blend_constant;            // 0x44: Константный цвет смешивания (0)
+    uint64_t reserved_blend_fields;     // 0x48: Служебные поля блендинга Bifrost (0)
 
-    uint64_t attribute_meta_ptr;         /* +0x30: Физический адрес метаданных атрибутов | 0x1 */
-    uint64_t reserved_unk_bifrost;       /* +0x38: Скрытый указатель конфигурации (ставим 0) */
+    // Аппаратные поинтеры с обязательными флагами-суффиксами (модифицируются через | UINT64_C)
+    uint64_t attribute_meta_ptr;        // 0x50: Адрес структуры mali_vertex_input_meta | UINT64_C(1) [0x1.1]
+    uint64_t varyings_meta_ptr;         // 0x58: Адрес описания интерполяции (0 = транзитный проброс)
+    uint64_t attribute_buffer_ptr;      // 0x60: Прямой адрес начала triangle_vertices | UINT64_C(3) [0x1.1]
 
-    /* --- КРИТИЧНО ДЛЯ BIFROST V6: Расширение структуры до 128 байт --- */
-    uint64_t varyings_meta_ptr;          /* +0x40: Описание интерполяции (Varyings). Ставим 0 для заглушки */
-    uint64_t attribute_buffer_ptr;       /* +0x48: Прямой указатель на буфер (Panfrost использует | 0x3) */
-    uint8_t  padding_to_128[48];         /* +0x50 - +0x7F: Добиваем структуру нулями до 128 байт */
+    uint64_t padding_to_128;            // 0x68 - 0x7F: Хвост структуры зануляется
 } mali_renderer_state_bifrost_v6_t;
 
+/* Динамическая куча тайлера (64 байта) */
+typedef struct GPU_PACKED GPU_ALIGN_64 {
+    uint64_t tiler_heap_free;        // 0x00: Текущий адрес старта свободной памяти кучи (GPU инкрементирует сам)
+    uint64_t tiler_heap_end;         // 0x08: Физический адрес КОНЦА кучи МИНУС размер одного чанка (Start + Size - Chunk)
+    uint32_t unknown;                // 0x10: Системный резерв (0)
+    uint32_t flags;                  // 0x14: Ставим 0x00000001 (Аппаратный флаг активации кучи Bifrost)
+    uint64_t chunk_size;             // 0x18: Атомарный размер блока памяти под тайл (для теста выставим 0x00000200 = 512Б)
+    uint8_t  reserved[32];           // 0x20 - 0x3F: Занулено
+} mali_bifrost_tiler_heap;
+
+/* Дескриптор геометрии целевого экрана / Framebuffer Descriptor (MFBD — 64 байта) */
+typedef struct GPU_PACKED GPU_ALIGN_64 {
+    uint32_t width_minus_1;          // 0x00: Ширина экрана в пикселях - 1 (для микро-теста 16х16 пикселей = 15)
+    uint32_t height_minus_1;         // 0x04: Высота экрана в пикселях - 1 (для теста = 15)
+    uint32_t sample_mask;            // 0x08: Маска сглаживания и разметки (Ставим 0x0000FFFF — плитки 16х16)
+    uint32_t unk_flags;              // 0x0C: Системный флаг формата Bifrost (Ставим 0x00000002)
+    uint64_t tiler_heap_ptr;         // 0x10: Физический адрес структуры управления кучей mali_bifrost_tiler_heap
+    uint8_t  reserved[32];           // 0x18 - 0x3F: Занулено
+} mali_bifrost_fb_desc;
+#endif /* GPU_BIFROST_V6_H */
+
+#include <stdint.h>
+#include <string.h>
+
+/* Аппаратные коды типов задач */
+//#define MALI_JOB_TYPE_VERTEX 5
+//#define MALI_JOB_TYPE_TILER  7
+
+/* Внешние бинарные массивы с кодом шейдеров (из вашего проекта) */
+
+/* =========================================================================
+ * 2. ГЕОМЕТРИЯ И БИНАРНЫЙ КОД ШЕЙДЕРОВ BIFROST V6
+ * ========================================================================= */
+
+/* Массив координат 3 вершин треугольника (X, Y, Z, W) — строго выровнен по 64 байтам */
+GPU_ALIGN_64 const float triangle_vertices[] = {
+    -0.5f, -0.5f, 0.0f, 1.0f,  // Вершина 0
+     0.5f, -0.5f, 0.0f, 1.0f,  // Вершина 1
+     0.0f,  0.5f, 0.0f, 1.0f   // Вершина 2
+};
+
+/*
+ * Бинарный код Vertex-шейдера Bifrost (Identity/Transit Shader).
+ * Просто перекладывает входные атрибуты координат в аппаратный кэш tiler-а.
+ */
+GPU_ALIGN_64 const uint32_t bifrost_vertex_shader_code[] = {
+    0x00000000, 0x00000000, 0x7C002008, 0x00000000,
+    0x80004000, 0x00000000, 0x00100002, 0x5E000000,
+    0x00200002, 0x5E000000, 0x00300002, 0x5E000000,
+    0x00400002, 0x5E000000, 0x00000000, 0x000002FF
+};
+
+/*
+ * Бинарный код Fragment-шейдера Bifrost (Solid Fill Shader).
+ * Окрашивает треугольник в сплошной цвет (в данном случае Red/Белый в зависимости от маски).
+ */
+GPU_ALIGN_64 const uint32_t bifrost_fragment_shader_code[] = {
+    0x00000000, 0x00000000, 0x000000FF, 0x00000000,
+    0x000000FF, 0x00000000, 0x000000FF, 0x00000000,
+    0x000000FF, 0x00000000, 0x00001002, 0x7E000000,
+    0x00002002, 0x00001DFF, 0x00000000, 0x000002FF
+};
+
+/* Выделение памяти под управляющие дескрипторы задач (128 байт для безопасности шины Bifrost) */
+__attribute__((aligned(64))) static mali_vertex_job_bifrost v_job;
+__attribute__((aligned(64))) static mali_tiler_job_bifrost  t_job;
+
+/* Выделение памяти под внутренние структуры конвейера Bifrost v6 */
+__attribute__((aligned(64))) static mali_bifrost_thread_input      v_thread_input;
 __attribute__((aligned(128))) static mali_renderer_state_bifrost_v6_t gpu_program_state;
-#include <stdint.h>
+__attribute__((aligned(64))) static mali_bifrost_tiler_heap        tiler_heap;
+__attribute__((aligned(64))) static mali_bifrost_fb_desc           fbd;
+__attribute__((aligned(64))) static mali_vertex_input_meta         gpu_vertex_input_meta;
 
-/**
-  * @brief Минимально валидный вершинный шейдер для ARM Bifrost (Mali-G31)
-  * Выполняет Identity проброс координат Vec3 Float из Attribute 0 на выход конвейера Tiler.
-  * Выровнен строго по кэш-линии (64 байта).
-  */
-__attribute__((aligned(64))) static const uint32_t bifrost_vertex_shader_code[] = {
-    /* --- Clause 0: Предзагрузка и инициализация регистров потока --- */
-    0x00000000, 0x00000000, // Служебные метаданные компилятора Panfrost
-    0x7C002008, 0x00000000, // Считывание атрибута 0 (Координаты X, Y, Z вершины)
-    0x80004000, 0x00000000, // Выделение внутренних скалярных регистров R0, R1, R2
+/* Динамический буфер, куда тайлер запишет итоговую разметку полигонов (минимум 4КБ) */
+__attribute__((aligned(4096))) static uint8_t polygon_list_mem[4096];
 
-    /* --- Clause 1: Команда копирования и отправки позиции в геометрический движок (VARYING/POSITION) --- */
-    0x00100002, 0x5E000000, // Исполняемая инструкция Bifrost ISA: Маппинг R0 -> Out_X
-    0x00200002, 0x5E000000, // Исполняемая инструкция Bifrost ISA: Маппинг R1 -> Out_Y
-    0x00300002, 0x5E000000, // Исполняемая инструкция Bifrost ISA: Маппинг R2 -> Out_Z
-    0x00400002, 0x5E000000, // Запись константы 1.0f в координату W (Out_W = 1.0f для однородных координат)
-
-    /* --- Clause 2: Финальный маркер завершения шейдерного потока (End of Shader Clause) --- */
-    0x00000000, 0x000002FF, // Аппаратный код терминации нити (Bifrost Thread End execution opcode)
-    0x00000000, 0x00000000, // Паддинг до выравнивания
-    0x00000000, 0x00000000,
-    0x00000000, 0x00000000
-};
-
-#include <stdint.h>
-
-/**
-  * @brief Минимально валидный фрагментный (пиксельный) шейдер для ARM Bifrost (Mali-G31)
-  * Записывает жестко заданный зеленый цвет (ARGB: 0xFF00FF00) в Render Target 0 (наш Framebuffer).
-  * Выровнен строго по кэш-линии (64 байта).
-  */
-__attribute__((aligned(64))) static const uint32_t bifrost_fragment_shader_code[] = {
-    /* --- Clause 0: Загрузка констант цвета в скалярные регистры потока R0, R1, R2, R3 --- */
-    0x00000000, 0x00000000, // Служебные метаданные компилятора Panfrost
-    0x000000FF, 0x00000000, // R0 = 0x00 (Синий канал / Blue)
-    0x000000FF, 0x00000000, // R1 = 0xFF (Зеленый канал / Green)
-    0x000000FF, 0x00000000, // R2 = 0x00 (Красный канал / Red)
-    0x000000FF, 0x00000000, // R3 = 0xFF (Альфа канал / Alpha)
-
-    /* --- Clause 1: Аппаратная инструкция FB_WRITE (Запись цвета в Framebuffer дисплея) --- */
-    // Этот 128-битный блок содержит специфический для Bifrost v6 опкод blend/fb_write,
-    // который приказывает пиксельному ядру Mali-G31 отправить RGBA из регистров R2, R1, R0, R3
-    // в контроллер вывода цвета (Tile Buffer / Blend Unit)
-    0x00001002, 0x7E000000, // FB_WRITE инструкция (Прямой маппинг на Render Target 0)
-    0x00002002, 0x00001DFF, // Настройка параметров смешивания (Opaque)
-
-    /* --- Clause 2: Финальный маркер завершения фрагментного потока (Thread End Clause) --- */
-    0x00000000, 0x000002FF, // Аппаратный код терминации пиксельной нити (End of Shader)
-    0x00000000, 0x00000000, // Паддинг до размера кэш-линии
-    0x00000000, 0x00000000,
-    0x00000000, 0x00000000
-};
-
-#include <stdint.h>
-
-/**
-  * @brief Дескриптор формата входного атрибута (вершинного буфера) Bifrost v6
-  * Размер: ровно 16 байт. Обязательно packed.
-  */
-typedef struct __attribute__((packed)) {
-    __IO uint64_t buffer_ptr;             /* +0x00: СТРОГО ТУТ: 64-бит физ. адрес массива координат вершин triangle_vertices */
-    __IO uint16_t stride;                 /* +0x08: Шаг между вершинами в байтах (для vec3 float: sizeof(float)*3 = 12 байт) */
-    __IO uint16_t size;                   /* +0x0A: Общий размер буфера вершин в байтах (sizeof(triangle_vertices) = 36 байт) */
-    __IO uint32_t format;                 /* +0x0C: Аппаратный код формата Bifrost ISA (задает тип данных, размер вектора и swizzle) */
-} mali_attribute_meta_t;
-
-// Объявление экземпляра в gpu.c с выравниванием по кэш-линии
-__attribute__((aligned(64))) static mali_attribute_meta_t gpu_vertex_input_meta;
-// Координаты вершин треугольника: X, Y, Z (в нормализованных координатах от -1.0 до 1.0)
-GPU_ALIGN static float triangle_vertices[] = {
-     0.0f,  0.5f, 0.0f, // Верхняя точка
-    -0.5f, -0.5f, 0.0f, // Нижняя левая
-     0.5f, -0.5f, 0.0f  // Нижняя правая
-};
-
-void gpu_init_program_state( void)
+void gpu_run_geometric_pipeline_test(void)
 {
-    // ... [Полное зануление структуры gpu_program_state] ...
-
-    // 1. Инициализация дескриптора атрибутов вершин (gpu_vertex_input_meta)
-    gpu_vertex_input_meta.buffer_ptr = (uintptr_t)triangle_vertices;
-    gpu_vertex_input_meta.stride = 12; // 3 float * 4 байта = 12 байт
-    gpu_vertex_input_meta.size = sizeof(triangle_vertices);
-    gpu_vertex_input_meta.format = 0x0400030A; // Аппаратный код Vec3 Float32 для Bifrost v6
-
-    // 2. Параметры стадий шейдеров (из вашего исходного кода)
-    gpu_program_state.vertex_stage.properties = 0x00004000;
-    gpu_program_state.vertex_stage.shader_code_ptr = (uintptr_t)bifrost_vertex_shader_code;
-
-    gpu_program_state.fragment_stage.properties = 0x00004001;
-    gpu_program_state.fragment_stage.shader_code_ptr = (uintptr_t)bifrost_fragment_shader_code;
-
-    gpu_program_state.blend_equation = 0x00001200;
-
-    // 3. ПРИМЕНЕНИЕ СИСТЕМНЫХ МАСОК И СУФФИКСОВ ЧЕРЕЗ UINT64_C
-    // Направляем attribute_meta_ptr на нашу структуру gpu_vertex_input_meta с маской | 1
-    gpu_program_state.attribute_meta_ptr = (uintptr_t)&gpu_vertex_input_meta | UINT64_C(1);
-
-    // Направляем attribute_buffer_ptr на массив координат с маской | 3
-    gpu_program_state.attribute_buffer_ptr = (uintptr_t)triangle_vertices | UINT64_C(3);
-
-    gpu_program_state.varyings_meta_ptr = 0;
-
-    // СИНХРОНИЗАЦИЯ КЭША (Канонические вызовы проекта hftrx)
-    dcache_clean((uintptr_t)&gpu_vertex_input_meta, sizeof(gpu_vertex_input_meta));
-    dcache_clean((uintptr_t)&gpu_program_state, sizeof(gpu_program_state));
-    dcache_clean((uintptr_t)bifrost_vertex_shader_code, sizeof(bifrost_vertex_shader_code));
-    dcache_clean((uintptr_t)bifrost_fragment_shader_code, sizeof(bifrost_fragment_shader_code));
-    __DSB();
-
-    PRINTF("gpu_vertex_input_meta @%p:\n", &gpu_vertex_input_meta);
-    printhex32((uintptr_t) &gpu_vertex_input_meta, &gpu_vertex_input_meta, sizeof gpu_vertex_input_meta);
-
-    PRINTF("gpu_program_state @%p:\n", &gpu_program_state);
-    printhex32((uintptr_t) &gpu_program_state, &gpu_program_state, sizeof gpu_program_state);
-
-    PRINTF("bifrost_vertex_shader_code @%p:\n", &bifrost_vertex_shader_code);
-    printhex32((uintptr_t) &bifrost_vertex_shader_code, &bifrost_vertex_shader_code, sizeof bifrost_vertex_shader_code);
-
-    PRINTF("bifrost_fragment_shader_code @%p:\n", &bifrost_fragment_shader_code);
-    printhex32((uintptr_t) &bifrost_fragment_shader_code, &bifrost_fragment_shader_code, sizeof bifrost_fragment_shader_code);
-}
-
-// Номера слотов задач (обычно слот 0 - Vertex/Compute, слот 1 - Fragment)
-#define MALI_FB_FORMAT_ARGB8888    0x18001000
-
-/* --- МЛАДШИЕ 16 БИТ: Успешное завершение (Job Done) --- */
-#define JOB_INT_BIT_SLOT_0_DONE    (1 << 0)  /* Задача в Слоте 0 выполнена успешно (Vertex/Tiler) */
-#define JOB_INT_BIT_SLOT_1_DONE    (1 << 1)  /* Задача в Слоте 1 выполнена успешно (Fragment) */
-#define JOB_INT_BIT_SLOT_2_DONE    (1 << 2)  /* Задача в Слоте 2 выполнена успешно (Compute) */
-
-/* --- СТАРШИЕ 16 БИТ: Аппаратные сбои (Job Fault) --- */
-#define JOB_INT_BIT_SLOT_0_FAULT   (1 << 16) /* Критическая ошибка выполнения в Слоте 0 */
-#define JOB_INT_BIT_SLOT_1_FAULT   (1 << 17) /* Критическая ошибка выполнения в Слоте 1 */
-#define JOB_INT_BIT_SLOT_2_FAULT   (1 << 18) /* Критическая ошибка выполнения в Слоте 2 */
-
-#define MALI_BIFROST_PRIM_TRIANGLES          (0x4ULL << 0)   /* Тип примитива: GL_TRIANGLES */
-#define MALI_BIFROST_PRIM_INDEX_NONE         (0x0ULL << 4)   /* Без индексного буфера (Arrays Mode) */
-#define MALI_BIFROST_PRIM_INDEX_U16          (0x2ULL << 4)   /* Если бы использовался Index Buffer uint16_t */
-#define MALI_BIFROST_PRIM_CULL_NONE          (0x0ULL << 8)   /* Выключить отсечение нелицевых граней (No Culling) */
-#define MALI_BIFROST_PRIM_CULL_CCW           (0x1ULL << 8)   /* Отсекать Counter-Clockwise полигоны */
-#define MALI_BIFROST_PRIM_CULL_CW            (0x2ULL << 8)   /* Отсекать Clockwise полигоны */
-
-#if 0
-mali_vertex_job v_job;
-mali_tiler_job  t_job;
-
-// 1. НАСТРОЙКА VERTEX JOB (Первое звено цепи)
-v_job.job_descriptor_size = 1;
-v_job.job_type = MALI_JOB_TYPE_VERTEX;                        // MALI_JOB_TYPE_VERTEX
-v_job.job_index = 1;                       // Задаем уникальный ID = 1
-v_job.job_dependency_index_1 = 0;          // Никого не ждет
-v_job.next_job = (uint64_t)&t_job;         // Указываем на следующий Tiler джоб
-
-v_job.thread_input_record = (uint64_t)&v_thread_input; // Сетка вершин (кол-во потоков = числу вершин)
-v_job.renderer_state      = (uint64_t)&v_rsd;          // Параметры вершинного шейдера
-v_job.attributes          = (uint64_t)&attr_table;     // Ссылка на геометрию (треугольник)
-v_job.attribute_buffers   = (uint64_t)&attr_buf_table;
-
-// 2. НАСТРОЙКА TILER JOB (Второе звено цепи)
-t_job.header.job_descriptor_size = 1;
-t_job.header.job_type = MALI_JOB_TYPE_TILER;                 // MALI_JOB_TYPE_TILER (В байте 0x10 будет 0x0F)
-t_job.header.job_barrier = 1;              // Финальный барьер
-t_job.header.job_index = 2;                // Задаем уникальный ID = 2
-t_job.header.job_dependency_index_1 = 1;   // КРИТИЧЕСКИ ВАЖНО: Ждет завершения задачи ID = 1 (v_job)
-t_job.header.next_job = 0;                 // Цепочка закончена
-
-t_job.tiler_heap_desc = (uint64_t)&tiler_heap;
-t_job.fb_desc         = (uint64_t)&fbd;
-t_job.polygon_list    = (uint64_t)polygon_list_buffer;
-
-#endif
-//void gpu_draw_triangle2(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height);
-/**
- * @brief Структура параметров сетки потоков (Thread Input Record) для Mali Bifrost.
- * Размер: 64 байта. Выравнивание строго по 64 байтам.
- */
-typedef struct __attribute__((packed, aligned(64))) {
-    /**
-     * 0x00: Флаги конфигурации сетки (Grid Control Flags).
-     * Бит 0: Активация кастомного размера рабочих групп (обычно 1).
-     * Бит 12: Формат индексов (0 - 16-бит, 1 - 32-бит, если используется Index Buffer).
-     * Для базового некогерентного Vertex Job без сложных индексов пишем: 0x00000001.
-     */
-    uint32_t flags;
-
-    /* --- Размеры рабочей группы (Workgroup Size) --- */
-    uint32_t workgroup_size_x;   // 0x04: Количество потоков в одной группе по X (обычно 1)
-    uint32_t workgroup_size_y;   // 0x08: Количество потоков по Y (всегда 1 для Vertex)
-    uint32_t workgroup_size_z;   // 0x0C: Количество потоков по Z (всегда 1 для Vertex)
-
-    /* --- Размеры глобальной сетки (Grid Size / Общее число вершин) --- */
-    uint32_t grid_size_x;        // 0x10: Общее количество обрабатываемых вершин (для треугольника = 3)
-    uint32_t grid_size_y;        // 0x14: Всегда 1 для Vertex
-    uint32_t grid_size_z;        // 0x18: Всегда 1 для Vertex
-
-    /* --- Специфичные для IDVS (Index-Driven Vertex Shading) параметры --- */
-    uint32_t index_count;        // 0x1C: Количество индексов в буфере (если рисуем без Index Buffer - дублируем grid_size_x, т.е. 3)
-    uint64_t index_buffer_ptr;   // 0x20: Физический адрес буфера индексов (0, если рисуем простым массивом без индексов)
-
-    uint64_t unknown_fields;   // 0x28: Зануляем
-    uint64_t padding[2];         // 0x30 - 0x3F: Зануляем остаток структуры до 64 байт
-} mali_bifrost_thread_input;
-/**
- * @brief Описатель одного буфера атрибутов в Bifrost v6.
- * Размер: 32 байта.
- */
-struct __attribute__((packed)) mali_bifrost_attr_buffer_desc {
-    /**
-     * 0x00: Физический адрес начала буфера данных в системном ОЗУ.
-     * Сюда мы запишем адрес нашего массива вершин (например, 0x40135AC0).
-     */
-    uint64_t pointer;
-
-    /**
-     * 0x08: Размер буфера в байтах, уменьшенный на 1 (Size - 1).
-     * Защищает от выхода GPU за пределы памяти (Out-of-Bounds).
-     * Для 3 вершин по 3 float (X,Y,Z) размер = 3 * 3 * 4 = 36 байт.
-     * Значение: 36 - 1 = 35 (0x00000023).
-     */
-    uint32_t size_minus_1;
-
-    /**
-     * 0x0C: Шаг (Stride) между элементами в байтах.
-     * Задает расстояние от начала одной вершины до начала следующей.
-     * Если буфер содержит только плотные float3 координаты (X,Y,Z),
-     * то шаг равен: 3 * 4 байта = 12 байт (0x0000000C).
-     */
-    uint32_t stride;
-
-    /**
-     * 0x10: Флаги конфигурации буфера (Аппаратный тип).
-     * Бит 0: Признак валидности (1 = буфер активен).
-     * Биты [4:1]: Тип аллокации/доступа.
-     * Для стандартного плоского массива вершин на "голом железе" пишем: 0x00000001.
-     */
-    uint32_t flags;
-
-    uint32_t reserved1; // 0x14: Зануляем
-    uint64_t reserved2; // 0x18: Зануляем
-};
-
-// Выделяем 64 байта в ОЗУ под таблицу связей атрибутов
-GPU_ALIGN static uint32_t attr_table_words[16] = {0};
-
-void setup_attribute_table(void) {
-    // Запись для Атрибута 0 (Координаты вершин):
-    // Бит [0:2]   - Индекс буфера из таблицы attr_buf_table (у нас это Буфер 0) -> 0
-    // Биты [11:3]  - Смещение внутри буфера в байтах (наш массив выровнен, смещение 0) -> 0
-    // Биты [31:12] - Аппаратный формат Bifrost (для Vec3 Float32 это код 0x04000)
-
-    // В ревизии Bifrost v6 (Mali-G31) точная маска для Vec3 Float32 из Буфера 0:
-    attr_table_words[0] = 0x0400030A; // Формат данных + привязка к Buffer 0
-
-    // Остальные элементы оставляем нулями (терминаторы)
-    dcache_clean((uintptr_t)attr_table_words, sizeof(attr_table_words));
-
-    PRINTF("attr_table_words @%p:\n", &attr_table_words);
-    printhex32((uintptr_t) &attr_table_words, &attr_table_words, sizeof attr_table_words);
-}
-
-// Глобальные или статические буферы (выделенные в ОЗУ вашего проекта)
-GPU_ALIGN static mali_vertex_job v_job;
-GPU_ALIGN static mali_tiler_job  t_job; // Выделяем Tiler Job как честную переменную в ОЗУ
-
-// Буфер под итоговый Polygon List (выделите с запасом, например, 4 КБ)
-GPU_ALIGN static uint8_t polygon_list_mem[4096];
-
-void gpu_draw_triangle(void)
-{
-    enum {
-        COMMAND_SLOT_VERTEX = 0,
-        COMMAND_SLOT_FRAGMENT
-    };
-    gpu_init_program_state();
-    setup_attribute_table();
-
-    // Область памяти для кучи тайлера (Mali Tiler требует буфер для сортировки геометрии)
-    __attribute__((aligned(4096))) static uint8_t tiler_heap_mem[64 * 10 * 1024];
-    struct mali_bifrost_tiler_heap {
-        uint64_t tiler_heap_free; // Сюда пишем физический адрес START
-        uint64_t tiler_heap_end;  // Физический адрес: START + SIZE - CHUNK_SIZE
-        uint32_t padding;         // 0x0
-        uint32_t flags;           // 0x00000001 (Флаг активации кучи)
-        uint64_t chunk_size;      // 0x00008000 (Задаем размер чанка 32 КБ)
-        uint64_t pad[4];          // 0x20: Зануляем остаток до 64 байт
-    };
-    static GPU_ALIGN struct mali_bifrost_tiler_heap tiler_heap =
-    {
-            .tiler_heap_free = (uintptr_t) tiler_heap_mem,
-            .tiler_heap_end = (uintptr_t) tiler_heap_mem + 64 * 10 * 1024 - (32 * 1024),
-            .flags = 1,
-            .chunk_size = 32 * 1024
-    };
-    dcache_clean((uintptr_t)&tiler_heap, sizeof tiler_heap);
-    struct __attribute__((packed, aligned(64))) mali_bifrost_fb_desc {
-        uint32_t width_minus_1;     // Ширина экрана - 1 (например, 15 для экрана шириной 16)
-        uint32_t height_minus_1;    // Высота экрана - 1 (например, 15 для экрана высотой 16)
-        uint32_t sample_mask;       // 0x0000FFFF (Плитки 16х16)
-        uint32_t unk_flags;         // 0x00000002 (Минимальные флаги формата)
-        uint64_t tiler_heap_ptr;    // Физический адрес структуры `mali_bifrost_tiler_heap` (из шага 1)
-        uint8_t  reserved[40];      // Зануляем остаток до 64 байт
-    };
-    static GPU_ALIGN struct mali_bifrost_fb_desc fbd = {
-        .width_minus_1 = 15,
-        .height_minus_1 = 15,
-        .sample_mask = 0x0000FFFF,
-        .unk_flags = 0x02,
-        .tiler_heap_ptr = (uintptr_t) & tiler_heap,
-    };
-    dcache_clean((uintptr_t)&fbd, sizeof fbd);
-    struct __attribute__((packed, aligned(64))) mali_bifrost_tiler_payload {
-        uint64_t fb_desc_ptr;       // Физический адрес структуры `mali_bifrost_fb_desc` (из шага 2)
-        uint64_t polygon_list_ptr;  // Физический адрес пустого буфера в ОЗУ (выделите под него 4КБ)
-        uint32_t total_polygons;    // 0 (У нас нет полигонов, сцена пустая!)
-        uint32_t tiler_flags;       // 0x00000000
-        uint8_t  reserved[40];      // Зануляем остаток до 64 байт
-    };
-    __attribute__((aligned(4096))) static uint8_t polygon_list_mem [ 4096];
-    static GPU_ALIGN struct mali_bifrost_tiler_payload tiler_payload = {
-        .fb_desc_ptr = (uintptr_t) & fbd,
-        .polygon_list_ptr = (uintptr_t) & polygon_list_mem,
-        .total_polygons = 0,
-        .tiler_flags = 0,
-
-    };
-    GPU_ALIGN static struct __attribute__((packed, aligned(64))) mali_bifrost_rsd {
-        // Первое 32-битное слово содержит конфигурацию свойств шейдера
-        uint32_t flags; // Запишем 0x00000002 (Минимальный флаг, указывающий на базовый тип шейдера)
-        uint32_t unknown;
-        uint64_t shader_code_ptr; // Указатель на код шейдера. Пока пишем 0x0 (пустой шейдер)
-        uint8_t  pad[48]; // Зануляем остаток
-    } rsd;
-    rsd.flags = 2;
-    rsd.unknown = 0x00000100;
-    dcache_clean((uintptr_t)&rsd, sizeof rsd);
-    dcache_clean((uintptr_t)&tiler_payload, sizeof tiler_payload);
-    GPU_ALIGN static mali_bifrost_thread_input v_thread_input;
-
-    // Сбрасываем старую память
-    __builtin_memset(&v_thread_input, 0, sizeof(v_thread_input));
-
-    // Инициализируем параметры под 3 вершины
-    v_thread_input.flags = 0x00000001;          // Включаем валидацию сетки
-
-    v_thread_input.workgroup_size_x = 1;        // Потоки бьются на группы по 1 вершине
-    v_thread_input.workgroup_size_y = 1;
-    v_thread_input.workgroup_size_z = 1;
-
-    v_thread_input.grid_size_x = 3;             // Генерируем ровно 3 потока (по 1 на вершину треугольника)
-    v_thread_input.grid_size_y = 1;
-    v_thread_input.grid_size_z = 1;
-
-    v_thread_input.index_count = 3;             // 3 вершины в неиндексированном режиме
-    v_thread_input.index_buffer_ptr = 0;        // Буфер индексов отсутствует (рисуем последовательно)
-    dcache_clean((uintptr_t)&v_thread_input, sizeof v_thread_input);
-
-    PRINTF("v_thread_input @%p:\n", &v_thread_input);
-    printhex32((uintptr_t) &v_thread_input, &v_thread_input, sizeof v_thread_input);
-
-    // Полностью зануляем дескрипторы перед заполнением
+    /* 1. Полностью очищаем ОЗУ под все структуры перед заполнением */
     __builtin_memset(&v_job, 0, sizeof(v_job));
     __builtin_memset(&t_job, 0, sizeof(t_job));
+    __builtin_memset(&v_thread_input, 0, sizeof(v_thread_input));
+    __builtin_memset(&gpu_program_state, 0, sizeof(gpu_program_state));
+    __builtin_memset(&tiler_heap, 0, sizeof(tiler_heap));
+    __builtin_memset(&fbd, 0, sizeof(fbd));
+    __builtin_memset(&gpu_vertex_input_meta, 0, sizeof(gpu_vertex_input_meta));
     __builtin_memset(polygon_list_mem, 0, sizeof(polygon_list_mem));
 
     // =========================================================================
-    // 1. СБОРКА VERTEX JOB (Первое звено цепи в Slot 0)
+    // 2. ИНИЦИАЛИЗАЦИЯ ВНУТРЕННИХ СТРУКТУР И МЕТАДАННЫХ
     // =========================================================================
+
+    /* А. Параметры сетки потоков (v_thread_input) — под 3 вершины треугольника */
+    v_thread_input.flags = 0x00000001;          // Включаем валидацию сетки
+    v_thread_input.workgroup_size_x = 1;        // Потоки бьются по 1 вершине
+    v_thread_input.workgroup_size_y = 1;
+    v_thread_input.workgroup_size_z = 1;
+    v_thread_input.grid_size_x = 3;             // Ровно 3 потока выполнения
+    v_thread_input.grid_size_y = 1;
+    v_thread_input.grid_size_z = 1;
+    v_thread_input.index_count = 3;             // Без индексного буфера дублируем размер
+    v_thread_input.index_buffer_ptr = 0;
+
+    /* Б. Метаданные формата входных атрибутов (gpu_vertex_input_meta) */
+    gpu_vertex_input_meta.buffer_ptr = (uintptr_t)triangle_vertices;
+    gpu_vertex_input_meta.stride = 12;          // 3 float * 4 байта = 12 байт шаг
+    gpu_vertex_input_meta.size = 36;            // 3 вершины * 12 байт = 36 байт общий размер
+    gpu_vertex_input_meta.format = 0x0400030A;  // Аппаратный код Vec3 Float32 для Bifrost v6
+
+    /* В. Описание программы выполнения (gpu_program_state / RSD — 128 байт) */
+    // Вершинная стадия (32 байта)
+    gpu_program_state.vertex_stage.properties = 0x00004000; // Базовый тип + дефолтные регистры
+    gpu_program_state.vertex_stage.shader_code_ptr = (uintptr_t)bifrost_vertex_shader_code;
+
+    // Фрагментная стадия (32 байта)
+    gpu_program_state.fragment_stage.properties = 0x00004001;
+    gpu_program_state.fragment_stage.shader_code_ptr = (uintptr_t)bifrost_fragment_shader_code;
+
+    // Блендинг и интерполяция
+    gpu_program_state.blend_equation = 0x00001200; // Режим Opaque (запись поверх)
+
+    // Настраиваем внутренние указатели атрибутов RSD с обязательными суффиксами
+    gpu_program_state.attribute_meta_ptr = (uintptr_t)&gpu_vertex_input_meta | UINT64_C(1);
+    gpu_program_state.attribute_buffer_ptr = (uintptr_t)triangle_vertices | UINT64_C(3);
+    gpu_program_state.varyings_meta_ptr = 0;
+
+    /* Г. Управление кучей тайлера (tiler_heap) */
+    // Считаем кучу размером 1 МБ, выделенную в ОЗУ (например, ваш регион кучи)
+    // Пусть старт кучи будет равен адресу начала polygon_list_mem для изоляции тестов
+    uintptr_t heap_start = (uintptr_t)polygon_list_mem;
+    tiler_heap.tiler_heap_free = heap_start;
+    tiler_heap.tiler_heap_end  = heap_start + 4096 - 512; // Конец буфера минус чанк безопасности
+    tiler_heap.flags = 0x00000001;               // Активация кучи
+    tiler_heap.chunk_size = 0x00000200;          // Выделяем маленькие чанки для теста (512 байт)
+
+    /* Д. Описание параметров кадра экрана (fbd / Multi-Target Framebuffer Descriptor) */
+    fbd.width_minus_1 = 15;                     // Маленький тестовый экран 16х16 (1 тайл)
+    fbd.height_minus_1 = 15;
+    fbd.sample_mask = 0x0000FFFF;               // Разметка под тайлы 16х16
+    fbd.unk_flags = 0x00000002;                 // Минимальный флаг формата Bifrost
+    fbd.tiler_heap_ptr = (uintptr_t)&tiler_heap; // Связываем с дескриптором кучи
+
+    // =========================================================================
+    // 3. СБОРКА ЦЕПОЧКИ ЗАДАЧ В СЛОТ 0 (VERTEX -> TILER)
+    // =========================================================================
+
+    /* Конфигурация Vertex Job */
     v_job.header.exception_status = 0;
     v_job.header.first_incomplete_task = 0;
     v_job.header.fault_pointer = 0;
-
-    // (MALI_JOB_TYPE_VERTEX << 1) | MALI_JOB_64 -> (5 << 1) | 1 = 11 (0x0B)
     v_job.header.job_type = MALI_JOB_TYPE_VERTEX;
-    v_job.header.job_descriptor_size = 1;
-    v_job.header.job_barrier = 0;          // Не блокируем конвейер, даем течь к тайлеру
-    v_job.header.job_index = 1;            // Уникальный ID задачи = 1
-    v_job.header.job_dependency_index_1 = 0; // Никого не ждем
+    v_job.header.job_descriptor_size = 1;       // 64-битные указатели
+    v_job.header.job_barrier = 0;                // Барьер снят, конвейер течет дальше
+    v_job.header.job_index = 1;                  // Индекс скорборда = 1
+    v_job.header.job_dependency_index_1 = 0;
+    v_job.header.next_job = (uintptr_t)&t_job;  // КРИТИЧНО: Указываем на следующий Tiler Job
 
-    // АВТОМАШТАБИРОВАНИЕ: next_job указывает строго на нашу структуру t_job в памяти
-    v_job.header.next_job = (uintptr_t)&t_job;
-
-    // Полезная нагрузка (Payload) вершинной стадии
     v_job.thread_input_record = (uintptr_t)&v_thread_input;
-    v_job.renderer_state      = (uintptr_t)&gpu_program_state; // RSD (40373180)
-    v_job.attributes          = 0; // Для Bifrost v6 эти поля строго зануляются
-    v_job.attribute_buffers   = 0; // так как данные считываются из RSD выше
+    v_job.renderer_state      = (uintptr_t)&gpu_program_state;
+    v_job.attributes          = 0;               // Строго 0 для Bifrost v6
+    v_job.attribute_buffers   = 0;               // Строго 0 для Bifrost v6
 
-    // =========================================================================
-    // 2. СБОРКА TILER JOB (Второе звено цепи в Slot 0)
-    // =========================================================================
+    /* Конфигурация Tiler Job */
     t_job.header.exception_status = 0;
     t_job.header.first_incomplete_task = 0;
     t_job.header.fault_pointer = 0;
-
-    // (MALI_JOB_TYPE_TILER << 1) | MALI_JOB_64 -> (7 << 1) | 1 = 15 (0x0F)
     t_job.header.job_type = MALI_JOB_TYPE_TILER;
     t_job.header.job_descriptor_size = 1;
-    t_job.header.job_barrier = 1;          // Финальный аппаратный барьер в конце цепи
-    t_job.header.job_index = 2;            // Уникальный ID задачи = 2
+    t_job.header.job_barrier = 1;                // ФИНАЛЬНЫЙ барьер, закрывающий всю геометрию
+    t_job.header.job_index = 1;                  // Тот же индекс контекста скорборда
+    t_job.header.job_dependency_index_1 = 0;       // Зависимость 0, так как связь задана через next_job
+    t_job.header.next_job = 0;                   // Конец цепочки геометрической фазы
 
-    // КРИТИЧНО: Явно заставляем тайлер дождаться выполнения задачи ID = 1 (v_job)
-    t_job.header.job_dependency_index_1 = 1;
-    t_job.header.next_job = 0;             // Цепочка для Slot 0 на этом завершена
-
-    // Полезная нагрузка (Payload) стадии тайлинга
-    t_job.tiler_heap_desc = (uintptr_t)&tiler_heap; // Ваша структура кучи
-    t_job.fb_desc         = (uintptr_t)&fbd;        // Ваша структура фреймбуфера кадра
-    t_job.polygon_list    = (uintptr_t)polygon_list_mem; // Динамический буфер вывода геометрии
+    t_job.tiler_heap_desc = (uintptr_t)&tiler_heap;
+    t_job.fb_desc         = (uintptr_t)&fbd;
+    t_job.polygon_list    = (uintptr_t)polygon_list_mem;
 
     // =========================================================================
-    // 3. СИНХРОНИЗАЦИЯ КЭША CPU (Очистка перед отправкой на шину)
+    // 4. СИНХРОНИЗАЦИЯ КЭША CPU (Очистка перед отправкой на шину)
     // =========================================================================
+
+    /* Сбрасываем внутренние структуры из L1/L2 кэша процессора ARM в ОЗУ */
     dcache_clean((uintptr_t)&v_thread_input, sizeof(v_thread_input));
-    dcache_clean((uintptr_t)&gpu_program_state, sizeof(gpu_program_state));
     dcache_clean((uintptr_t)&gpu_vertex_input_meta, sizeof(gpu_vertex_input_meta));
+    dcache_clean((uintptr_t)&gpu_program_state, sizeof(gpu_program_state));
     dcache_clean((uintptr_t)&tiler_heap, sizeof(tiler_heap));
     dcache_clean((uintptr_t)&fbd, sizeof(fbd));
+    dcache_clean((uintptr_t)bifrost_vertex_shader_code, 64); // С запасом под код
+    dcache_clean((uintptr_t)triangle_vertices, 64);
 
-    // Выталкиваем из кэша сами дескрипторы задач и буфер вывода
-    dcache_clean_invalidate((uintptr_t)&v_job, sizeof(v_job));
-    dcache_clean_invalidate((uintptr_t)&t_job, sizeof(t_job));
+    /* Сбрасываем и инвалидируем сами 128-байтные управляющие джобы */
+    dcache_clean_invalidate((uintptr_t)&v_job, 128);
+    dcache_clean_invalidate((uintptr_t)&t_job, 128);
     dcache_clean_invalidate((uintptr_t)polygon_list_mem, sizeof(polygon_list_mem));
 
-    __DSB(); // Жесткий системный барьер памяти процессора
-
-    PRINTF("v_job @%p:\n", &v_job);
-    printhex32((uintptr_t) &v_job, &v_job, sizeof v_job);
-
-    PRINTF("t_job @%p:\n", &t_job);
-    printhex32((uintptr_t) &t_job, &t_job, sizeof t_job);
+    __DSB(); // Барьер системного интерконнекта ядра ARM
 
     // =========================================================================
-    // 4.ОТПРАВКА ЦЕПОЧКИ В СЛОТ 0 GPU
+    // 5. ОТПРАВКА СТРОГО ЧЕРЕЗ ВАШУ ФУНКЦИЮ В СЛОТ 0
     // =========================================================================
-    gpu_submit_job(0, (uintptr_t) &v_job);
+    /*
+     * Передаем адрес головы цепочки (v_job).
+     * Благодаря отсутствию абсолютных адресов компилятор соберет связи идеально,
+     * дедлок Scoreboard убран, а скрытые поля Clipping-движка занулены паддингом.
+     */
+    int result = gpu_submit_job(0, (uintptr_t)&v_job);
+
+    if (result == 0) {
+        // ПОЛНЫЙ УСПЕХ! Геометрия просчитана, тайлы размечены.
+        // Буфер polygon_list_mem теперь содержит списки примитивов треугольника.
+    } else {
+        // Ошибка. Анализируйте v_job.header.exception_status
+    }
 }
 
-#define GPU_ALIGN __attribute__((aligned(64)))
+//---------------------
 
 #if 0
 void gpu_draw_triangle2(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height)
@@ -1237,7 +1077,7 @@ void gpu_test(void)
 #endif
 
 #if 1
-	run_write_value_test(0x07);
+	run_write_value_test();
 	return;
 //	unsigned v = 0;
 //	while (run_write_value_test(v ++))
@@ -1248,7 +1088,7 @@ void gpu_test(void)
 #endif
     uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
     memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * 4);
-    gpu_draw_triangle();
+    gpu_run_geometric_pipeline_test();
     colmain_nextfb();
 
     TP();
