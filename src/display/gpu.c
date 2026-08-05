@@ -24,6 +24,125 @@
 
 //#include "panfrost_regs.h"
 
+#include "mali_bifrost_v6.h"
+
+/* Выравнивание по стандарту CMSIS/GCC для кэш-линий */
+__attribute__((aligned(64))) static MALI_FragmentJobPayload_TypeDef FragmentJobPayload;
+
+/**
+  * @brief  Initializes the Mali Bifrost Fragment Job Payload for a Clear Screen operation.
+  * @param  pPayload: Pointer to a MALI_FragmentJobPayload_TypeDef structure to be initialized.
+  * @param  fbd_address: GPU physical address of the Framebuffer Descriptor (fbd_frag).
+  * @param  tile_meta_address: GPU physical address of the Tiler Heap (gpu_fragment_tile_meta).
+  * @param  width: Screen width in pixels (e.g., 800).
+  * @param  height: Screen height in pixels (e.g., 480).
+  * @retval None
+  */
+void MALI_FragmentJobPayload_ClearInit(MALI_FragmentJobPayload_TypeDef *pPayload,
+                                       uint64_t fbd_address,
+                                       uint64_t tile_meta_address,
+                                       uint32_t width,
+                                       uint32_t height)
+{
+  /* 1. Настройка тегированного указателя на дескриптор кадрового буфера */
+  pPayload->FB_DESC = fbd_address | MALI_FBD_TYPE_MFBD;
+
+  /* 2. Привязка кучи выделения тайлов */
+  pPayload->TILE_ALLOC = tile_meta_address;
+
+  /* 3. Для операции Clear бэкенд фрагментов зануляется через 64-битную константу */
+  pPayload->FRAGMENT_BACKEND = UINT64_C(0x0000000000000000);
+
+  /* 4. Расчет и упаковка координат тайлов 16x16 */
+  uint32_t max_tile_x = (width / 16) - 1;
+  uint32_t max_tile_y = (height / 16) - 1;
+
+  pPayload->COORDS.MIN_TILE_COORD = MALI_PACK_TILE_COORD(0, 0);
+  pPayload->COORDS.MAX_TILE_COORD = MALI_PACK_TILE_COORD(max_tile_x, max_tile_y);
+
+  /* 5. Отключение потайлового отсечения */
+  pPayload->SCISSORED_TILE_BITMAP = UINT64_C(0x0000000000000000);
+
+  /* 6. Конфигурация планировщика задач фрагментного процессора */
+  pPayload->CTRL.TILES_IN_FLIGHT = MALI_TILES_IN_FLIGHT_DEFAULT;
+  pPayload->CTRL.CTRL_FLAGS      = 0x0000;
+  pPayload->CTRL.SHADING_RATE     = 0x00000000;
+
+  /* 7. Очистка полей выравнивания */
+  pPayload->RESERVED0 = UINT64_C(0x0000000000000000);
+  pPayload->RESERVED1 = UINT64_C(0x0000000000000000);
+}
+
+/**
+  * @brief  Initializes the Mali Bifrost Framebuffer Descriptor for a Clear Screen operation.
+  * @param  pFbd: Pointer to a MALI_FramebufferDescriptor_TypeDef structure to be initialized.
+  * @param  tile_meta_address: GPU physical address of the Tiler Heap (gpu_fragment_tile_meta).
+  * @param  rt_address: GPU physical address of the Render Target structure (render_target).
+  * @param  width: Screen width in pixels (e.g., 800).
+  * @param  height: Screen height in pixels (e.g., 480).
+  * @retval None
+  */
+void MALI_FramebufferDescriptor_ClearInit(MALI_FramebufferDescriptor_TypeDef *pFbd,
+                                          uint64_t tile_meta_address,
+                                          uint64_t rt_address,
+                                          uint32_t width,
+                                          uint32_t height)
+{
+  /* 1. Задаем физические размеры экрана за вычетом единицы */
+  pFbd->WIDTH_MINUS_1  = width - UINT32_C(1);
+  pFbd->HEIGHT_MINUS_1 = height - UINT32_C(1);
+
+  /* 2. Настраиваем маску сэмплинга для стандартного 1x MSAA */
+  pFbd->SAMPLE_MASK    = MALI_SAMPLE_MASK_1X;
+
+  /* 3. Указываем количество Render Target (1 RT) */
+  pFbd->RT_COUNT_AND_FLAGS = MALI_RT_COUNT_1;
+
+  /* 4. Прописываем 64-битный адрес кучи распределения памяти тайлов */
+  pFbd->TILER_HEAP_START   = tile_meta_address;
+
+  /* 5. Настраиваем тегированный указатель на первый дескриптор Render Target */
+  pFbd->RENDER_TARGET_LIST = rt_address | MALI_RT_TAG_MFBD;
+
+  /* 6. Полностью зануляем вторую половину структуры (смещение с 32 байта) */
+  /* Для bare-metal Clear-пассов здесь не должно быть флагов шейдеров и Z/Stencil */
+  pFbd->FRAGMENT_FRAME_SHADER = UINT64_C(0x0000000000000000);
+  pFbd->ZS_BLOCK              = UINT64_C(0x0000000000000000);
+  pFbd->RESERVED_1            = UINT64_C(0x0000000000000000);
+  pFbd->RESERVED_2            = UINT64_C(0x0000000000000000);
+}
+/**
+  * @brief  Initializes the Mali Bifrost Render Target Descriptor for a Clear Screen operation.
+  * @param  pRt: Pointer to a MALI_RenderTargetDescriptor_TypeDef structure to be initialized.
+  * @param  fb_pointer: GPU physical address of the raw target framebuffer in RAM.
+  * @param  width: Screen width in pixels (e.g., 800).
+  * @param  r: Red color component (0.0f to 1.0f).
+  * @param  g: Green color component (0.0f to 1.0f).
+  * @param  b: Blue color component (0.0f to 1.0f).
+  * @param  a: Alpha color component (0.0f to 1.0f).
+  * @retval None
+  */
+void MALI_RenderTargetDescriptor_ClearInit(MALI_RenderTargetDescriptor_TypeDef *pRt,
+                                           uint64_t fb_pointer,
+                                           uint32_t width,
+                                           float r, float g, float b, float a)
+{
+  /* 1. Задаем формат пикселя и аппаратные флаги очистки фона */
+  pRt->FORMAT_FLAGS = MALI_RT_FORMAT_RGBA8_UNORM;
+
+  /* 2. Рассчитываем шаг строки (stride) в байтах с явным приведением типов */
+  pRt->STRIDE = width * MALI_RT_BPP_RGBA8;
+
+  /* 3. Прописываем чистый 64-битный указатель на область памяти вывода пикселей */
+  pRt->FRAMEBUFFER_POINTER = fb_pointer;
+
+  /* 4. Записываем цвет очистки экрана покомпонентно в формате FP32 */
+  pRt->CLEAR_COLOR.RGBA.R = r;
+  pRt->CLEAR_COLOR.RGBA.G = g;
+  pRt->CLEAR_COLOR.RGBA.B = b;
+  pRt->CLEAR_COLOR.RGBA.A = a;
+}
+
 
 // Выравнивание для кэш-линий GPU
 #define GPU_ALIGN __attribute__((aligned(64)))
@@ -487,7 +606,7 @@ void printhex32_titled(uintptr_t voffs, const void * vbuff, size_t length, const
 #define MALI_TILE_LENGTH (1 << MALI_TILE_SHIFT)
 
 // https://android.googlesource.com/platform/external/mesa3d/+/e061bf004b5/src/panfrost/include/panfrost-job.h
-#define MALI_MAKE_TILE_COORDS(X, Y) ((X) | ((Y) << 16))
+#define MALI_MAKE_TILE_COORDS(X, Y) ((X) | ((Y) << 8))
 #define MALI_BOUND_TO_TILE(B, bias) ((B - bias) >> MALI_TILE_SHIFT)
 #define MALI_COORDINATE_TO_TILE(W, H, bias) MALI_MAKE_TILE_COORDS(MALI_BOUND_TO_TILE(W, bias), MALI_BOUND_TO_TILE(H, bias))
 #define MALI_COORDINATE_TO_TILE_MIN(W, H) MALI_COORDINATE_TO_TILE(W, H, 0)
@@ -500,7 +619,7 @@ void printhex32_titled(uintptr_t voffs, const void * vbuff, size_t length, const
 void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
 {
 	// Выделяем 64 байта под фиктивный контекст отсечения (Scissor/Tile Meta)
-	GPU_ALIGN static uint32_t gpu_fragment_tile_meta;
+	GPU_ALIGN static uint64_t gpu_fragment_tile_meta [16] = { 0x00000001, };
 	/* Структура описания одной поверхности вывода (Render Target Descriptor) */
 	typedef struct GPU_PACKED {
 	    uint32_t format_flags;            // Формат пикселя (RGBA8 + Clear флаги)
@@ -599,7 +718,7 @@ void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t 
 		mali_job_header header;          // 0x00 - 0x1F: Стандартный заголовок (32 байта)
 		uint64_t fb_desc;             	// FBD адрес с тегом | 0x1
 		uint64_t tile_alloc;              // Обязательный адрес Tiler Heap
-	    uint32_t fragment_backend;        // Обычно 0x0
+		uint64_t fragment_backend;        // Обычно 0x0
 	    uint32_t min_tile_coord;          // (min_y << 8) | min_x
 	    uint32_t max_tile_coord;          // (max_y << 8) | max_x
 	    uint64_t scissored_tile_bitmap;   // 0x0 (без отсечения)
@@ -615,7 +734,7 @@ void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t 
 	GPU_ALIGN_64  static uint8_t zzz [4096];
 
     /* Полностью очищаем память управляющих дескрипторов на CPU */
-    __builtin_memset(&gpu_fragment_tile_meta, 0, sizeof gpu_fragment_tile_meta);
+    //__builtin_memset(&gpu_fragment_tile_meta, 0, sizeof gpu_fragment_tile_meta);
     __builtin_memset(&f_job, 0, sizeof f_job);
     __builtin_memset(&fbd_frag, 0, sizeof fbd_frag);
     __builtin_memset(&render_target, 0, sizeof render_target);
@@ -641,15 +760,16 @@ void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t 
     fbd_frag.width_minus_1 = width - 1;
     fbd_frag.height_minus_1 = height - 1;
     fbd_frag.sample_mask = 0x0000FFFF;               // Разметка под стандартные тайлы
-    fbd_frag.rt_count_and_flags = 0x00000002;                 // Системный флаг Bifrost v6
-    fbd_frag.tiler_heap_ptr = (uintptr_t) & zzz;                     // Для Clear Pass геометрии нет, куча = 0
-
+    fbd_frag.rt_count_and_flags = 0;//0x00000002;                 // Системный флаг Bifrost v6
+    fbd_frag.tiler_heap_ptr = (uintptr_t) & gpu_fragment_tile_meta;                     // Для Clear Pass геометрии нет, куча = 0
+    fbd_frag.unk_bifrost_v6_zs_control = 0;
+    fbd_frag.unk_bifrost_v6_padding1 = 0;
     // Привязываем Render Target к MFBD с обязательным аппаратным суффиксом | 1
     fbd_frag.render_target_ptr = (uintptr_t)&render_target | UINT64_C(1);
 
 
     // Бит 12 (0x1000) сообщает фрагментному процессору: "Выполни аппаратный Clear цвета"
-    fbd_frag.clear_flags = 0x00000000 ;//0x00001000;
+    fbd_frag.clear_flags = 0x00001000;
 
     // =========================================================================
     // 3. СБОРКА FRAGMENT JOB (Для Slot 1)
@@ -666,6 +786,7 @@ void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t 
     f_job.header.next_job = 0;                   // Одиночный джоб
 
     f_job.fb_desc = (uintptr_t)&fbd_frag | UINT64_C(1);        // Ссылка на дескриптор кадра
+    f_job.tile_alloc = (uintptr_t) & gpu_fragment_tile_meta;
     f_job.min_tile_coord = MALI_COORDINATE_TO_TILE_MIN(0, 0);
     f_job.max_tile_coord = MALI_COORDINATE_TO_TILE_MAX(width, height);
 //    f_job.polygon_list = 0;                      // Геометрии нет, списки полигонов = 0
