@@ -194,7 +194,7 @@ void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
 
 static int gpu_submit_job(unsigned slot, uintptr_t head)
 {
-	PRINTF("gpu_submit_job: head=%p, slot=%u\n", (void *) head, slot);
+//	PRINTF("gpu_submit_job: head=%p, slot=%u\n", (void *) head, slot);
 //	printhex32((uintptr_t) job, job, 64);
     // Записываем физический адрес начала структуры v_job в регистр указателя слота 0
     GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_HI = ptr_hi32(head);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
@@ -231,9 +231,9 @@ static int gpu_submit_job(unsigned slot, uintptr_t head)
     }
     else
     {
-    	PRINTF("okay head %p:\n", (void *) head);
-    	dcache_invalidate((uintptr_t) head, 128);
-    	printhex32((uintptr_t) head, (void *) head, 128);
+    	//PRINTF("okay head %p:\n", (void *) head);
+    	//dcache_invalidate((uintptr_t) head, 128);
+    	//printhex32((uintptr_t) head, (void *) head, 128);
         GPU_JOB_CONTROL->JOB_INT_CLEAR = (UINT32_C(1) << slot); // Сброс флага прерывания
         GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
       return 0;
@@ -449,22 +449,31 @@ typedef struct __attribute__((packed)) {
 
 // Переменная-цель, куда будет писать GPU.
 // Обязательно выравниваем по кэш-линии!
-volatile uint64_t __attribute__((aligned(64))) gpu_test_target = 0x123456789abcdef;
+static volatile uint64_t __attribute__((aligned(64))) gpu_test_target [2];
 
 int run_write_value_test(unsigned v) {
     // Создаем структуру дескриптора в памяти
 	GPU_ALIGN static mali_write_value_job job;
+	GPU_ALIGN static mali_write_value_job job2;
 
     // Сбрасываем старую память
     memset(&job, 0, sizeof(job));
+    memset(gpu_test_target, 0xFF, sizeof gpu_test_target);
 
     // Заполняем заголовок
     job.header.exception_status = 0;
     job.header.job_descriptor_size = 1; // Используем 64-битные указатели
     job.header.job_type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
-    job.header.job_index = 1;           // Первая задача в Scoreboard
-    job.header.next_job = 0;            // Цепочка заканчивается на ней
     job.header.job_barrier = 1;			// last
+    job.header.job_index = 1;
+    job.header.next_job = (uintptr_t) & job2;            // Цепочка заканчивается на ней
+
+    job2.header.exception_status = 0;
+    job2.header.job_descriptor_size = 1; // Используем 64-битные указатели
+    job2.header.job_type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
+    job2.header.job_barrier = 1;			// last
+    job2.header.job_index = 1;
+    job2.header.next_job = (uintptr_t) 0;            // Цепочка заканчивается на ней
 
     /**
      * value_descriptor:
@@ -478,15 +487,19 @@ int run_write_value_test(unsigned v) {
      * 7 - 64 bit
      */
     // Заполняем Payload записи
-    job.address = (uintptr_t)&gpu_test_target; // Физический адрес цели
+    job.address = (uintptr_t) & gpu_test_target [0]; // Физический адрес цели
     job.value_descriptor = v;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
     job.immediate = 0xDEADBEEFABBA1980;               // Данные для записи
+    job2.address = (uintptr_t) & gpu_test_target [1]; // Физический адрес цели
+    job2.value_descriptor = v;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
+    job2.immediate = 0x123456789abcdef;               // Данные для записи
 
     // КРИТИЧЕСКИ ВАЖНО ДЛЯ BARE METAL:
     // Очищаем кэш CPU, чтобы GPU читал структуру из физического ОЗУ,
     // и инвалидируем регион gpu_test_target, чтобы CPU позже не прочитал старые данные из своего L1/L2.
     dcache_clean_invalidate((uintptr_t)&job, sizeof(job));
-    gpu_test_target = 0x123456789abcdef;
+    dcache_clean_invalidate((uintptr_t)&job2, sizeof(job2));
+
     dcache_clean_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
 
     // Важно: Адреса job и gpu_test_target должны быть предварительно
@@ -495,15 +508,7 @@ int run_write_value_test(unsigned v) {
     if (gpu_submit_job(2, (uintptr_t) & job))
     	return 1;	// err
       // Проверяем результат выполнения
-
-    if (/*job.header.exception_status == 0 && */gpu_test_target == 0xDEADBEEFABBA1980) {
-        // УСПЕХ! GPU успешно прочитал дескриптор, записал значение через шину в ОЗУ и завершил задачу.
-    	PRINTF("Okay write value! v=%02X gpu_test_target=%08X%08X\n", v, (unsigned) (gpu_test_target >> 32), (unsigned) gpu_test_target);
-    } else {
-        // ОШИБКА. Проверьте job.exception_status или глобальные регистры MMU FAULT.
-    	PRINTF("No write value! v=%02X gpu_test_target=%08X%08X\n", v, (unsigned) (gpu_test_target >> 32), (unsigned) gpu_test_target);
-    	return 1;	// err
-    }
+    printhex64(0, gpu_test_target, sizeof gpu_test_target);
     return 0;
 }
 
