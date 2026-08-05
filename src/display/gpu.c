@@ -1060,7 +1060,10 @@ void gpu_test(void)
 //    for (;;)
 //    	;
 #endif
-    uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
+    gpu_run_geometric_pipeline_test();
+	return;
+
+	uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
     memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * 4);
     gpu_run_geometric_pipeline_test();
     colmain_nextfb();
