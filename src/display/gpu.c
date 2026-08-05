@@ -463,7 +463,7 @@ typedef struct __attribute__((packed, aligned(64))) {
 #endif
 // Переменная-цель, куда будет писать GPU.
 // Обязательно выравниваем по кэш-линии!
-#if 1
+#if 0
 static volatile uint64_t __attribute__((aligned(64))) gpu_test_target [2];
 int run_write_value_test(void) {
 	unsigned v = 0x07;
@@ -759,14 +759,14 @@ __attribute__((aligned(4096))) static uint8_t polygon_list_mem[4096];
 void gpu_run_geometric_pipeline_test(void)
 {
     /* 1. Полностью очищаем ОЗУ под все структуры перед заполнением */
-    __builtin_memset(&v_job, 0, sizeof(v_job));
-    __builtin_memset(&t_job, 0, sizeof(t_job));
-    __builtin_memset(&v_thread_input, 0, sizeof(v_thread_input));
-    __builtin_memset(&gpu_program_state, 0, sizeof(gpu_program_state));
-    __builtin_memset(&tiler_heap, 0, sizeof(tiler_heap));
-    __builtin_memset(&fbd, 0, sizeof(fbd));
-    __builtin_memset(&gpu_vertex_input_meta, 0, sizeof(gpu_vertex_input_meta));
-    __builtin_memset(polygon_list_mem, 0, sizeof(polygon_list_mem));
+    memset(&v_job, 0, sizeof(v_job));
+    memset(&t_job, 0, sizeof(t_job));
+    memset(&v_thread_input, 0, sizeof(v_thread_input));
+    memset(&gpu_program_state, 0, sizeof(gpu_program_state));
+    memset(&tiler_heap, 0, sizeof(tiler_heap));
+    memset(&fbd, 0, sizeof(fbd));
+    memset(&gpu_vertex_input_meta, 0, sizeof(gpu_vertex_input_meta));
+    memset(polygon_list_mem, 0, sizeof(polygon_list_mem));
 
     // =========================================================================
     // 2. ИНИЦИАЛИЗАЦИЯ ВНУТРЕННИХ СТРУКТУР И МЕТАДАННЫХ
@@ -866,13 +866,13 @@ void gpu_run_geometric_pipeline_test(void)
     dcache_clean((uintptr_t)&gpu_vertex_input_meta, sizeof(gpu_vertex_input_meta));
     dcache_clean((uintptr_t)&gpu_program_state, sizeof(gpu_program_state));
     dcache_clean((uintptr_t)&tiler_heap, sizeof(tiler_heap));
-    dcache_clean((uintptr_t)&fbd, sizeof(fbd));
-    dcache_clean((uintptr_t)bifrost_vertex_shader_code, 64); // С запасом под код
-    dcache_clean((uintptr_t)triangle_vertices, 64);
+    dcache_clean((uintptr_t)&fbd, sizeof fbd);
+    dcache_clean((uintptr_t)bifrost_vertex_shader_code, sizeof bifrost_vertex_shader_code); // С запасом под код
+    dcache_clean((uintptr_t)triangle_vertices, sizeof triangle_vertices);
 
     /* Сбрасываем и инвалидируем сами 128-байтные управляющие джобы */
-    dcache_clean_invalidate((uintptr_t)&v_job, 128);
-    dcache_clean_invalidate((uintptr_t)&t_job, 128);
+    dcache_clean_invalidate((uintptr_t)&v_job, sizeof v_job);
+    dcache_clean_invalidate((uintptr_t)&t_job, sizeof t_job);
     dcache_clean_invalidate((uintptr_t)polygon_list_mem, sizeof(polygon_list_mem));
 
     __DSB(); // Барьер системного интерконнекта ядра ARM
@@ -1076,7 +1076,7 @@ void gpu_test(void)
 	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
 #endif
 
-#if 1
+#if 0
 	run_write_value_test();
 	return;
 //	unsigned v = 0;
