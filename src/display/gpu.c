@@ -466,6 +466,11 @@ int gpu_run_write_value_test(void) {
     return 0;
 }
 
+void printhex32_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title)
+{
+	PRINTF("%s @ %p:\n", title, vbuff);
+	printhex32(voffs, vbuff, length);
+}
 
 #define GPU_ALIGN __attribute__((aligned(64)))
 
@@ -484,7 +489,8 @@ int gpu_run_write_value_test(void) {
 
 void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
 {
-
+	// Выделяем 64 байта под фиктивный контекст отсечения (Scissor/Tile Meta)
+	GPU_ALIGN static uint32_t gpu_fragment_tile_meta;
 	/* Структура описания одной поверхности вывода (Render Target Descriptor) */
 	typedef struct GPU_PACKED {
 		uint32_t format;                 // 0x00: Формат пикселей (например, 0x14001000 для RGBA8888)
@@ -596,6 +602,7 @@ void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t 
 	GPU_ALIGN_64  static mali_bifrost_render_target  render_target;
 
     /* Полностью очищаем память управляющих дескрипторов на CPU */
+    __builtin_memset(&gpu_fragment_tile_meta, 0, sizeof gpu_fragment_tile_meta);
     __builtin_memset(&f_job, 0, sizeof f_job);
     __builtin_memset(&fbd_frag, 0, sizeof fbd_frag);
     __builtin_memset(&render_target, 0, sizeof render_target);
@@ -603,7 +610,7 @@ void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t 
     // =========================================================================
     // 1. ИНИЦИАЛИЗАЦИЯ RENDER TARGET (Куда и какой цвет лить)
     // =========================================================================
-    render_target.format = FORMAT_ARGB8888;
+    render_target.format = FORMAT_ARGB8888 | 0x00010000 ; // Add режим аппаратной очистки (Clear Pass)
     render_target.buffer_ptr = framebuffer_phys_addr; // Физический адрес памяти экрана
     render_target.stride = stride;                   // Шаг строки в байтах
 
@@ -624,7 +631,7 @@ void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t 
     fbd_frag.render_target_ptr = (uintptr_t)&render_target | UINT64_C(1);
 
     // Бит 12 (0x1000) сообщает фрагментному процессору: "Выполни аппаратный Clear цвета"
-    fbd_frag.clear_flags = 0x00001000;
+    fbd_frag.clear_flags = 0x00000000 ;//0x00001000;
 
     // =========================================================================
     // 3. СБОРКА FRAGMENT JOB (Для Slot 1)
@@ -642,16 +649,22 @@ void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t 
 
     f_job.fb_desc = (uintptr_t)&fbd_frag;        // Ссылка на дескриптор кадра
     f_job.polygon_list = 0;                      // Геометрии нет, списки полигонов = 0
-    f_job.unk_bifrost_v6_ptr = 0;
+    f_job.unk_bifrost_v6_ptr = (uintptr_t)&gpu_fragment_tile_meta | UINT64_C(1); // 0x30
 
     // =========================================================================
     // 4. СИНХРОНИЗАЦИЯ КЭША CPU
     // =========================================================================
     dcache_clean((uintptr_t)&render_target, sizeof render_target);
     dcache_clean((uintptr_t)&fbd_frag, sizeof fbd_frag);
+    dcache_clean((uintptr_t)&gpu_fragment_tile_meta, sizeof gpu_fragment_tile_meta);
 
     /* Сбрасываем и инвалидируем саму 128-байтную фрагментную задачу */
     dcache_clean_invalidate((uintptr_t)&f_job, sizeof f_job);
+
+    printhex32_titled((uintptr_t)&gpu_fragment_tile_meta, &gpu_fragment_tile_meta, sizeof gpu_fragment_tile_meta, "gpu_fragment_tile_meta");
+    printhex32_titled((uintptr_t)&render_target, &render_target, sizeof render_target, "render_target");
+    printhex32_titled((uintptr_t)&fbd_frag, &fbd_frag, sizeof fbd_frag, "fbd_frag");
+    printhex32_titled((uintptr_t)&f_job, &f_job, sizeof f_job, "f_job");
 
     __DSB();
     __ISB();
@@ -817,8 +830,8 @@ void gpu_test(void)
 		PRINTF("gpu_clear_screen test:\n");
 
 		uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
-	    memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * 4);
-	    gpu_clear_screen(fbaddr, DIM_X, DIM_Y, DIM_X * 4);
+	    memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * LCDMODE_PIXELSIZE);
+	    gpu_clear_screen(fbaddr, DIM_X, DIM_Y, DIM_X * LCDMODE_PIXELSIZE);
 	    colmain_nextfb();
 
 	    TP();
