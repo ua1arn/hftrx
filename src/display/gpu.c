@@ -638,6 +638,9 @@ typedef struct GPU_PACKED GPU_ALIGN_64 {
 } mali_bifrost_fb_desc;
 #endif /* GPU_BIFROST_V6_H */
 
+#define FORMAT_ARGB8888 0x15001000
+#define FORMAT_RGBA8888 0x14001000
+
 #define GPU_ALIGN_64  __attribute__((aligned(64)))
 #define GPU_ALIGN_128 __attribute__((aligned(128)))
 #define GPU_PACKED    __attribute__((packed))
@@ -693,8 +696,7 @@ void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t 
     // =========================================================================
     // 1. ИНИЦИАЛИЗАЦИЯ RENDER TARGET (Куда и какой цвет лить)
     // =========================================================================
-    // 0x14001000 = стандартный аппаратный код формата RGBA8888 в Bifrost v6
-    render_target.format = 0x14001000;
+    render_target.format = FORMAT_ARGB8888;
     render_target.buffer_ptr = framebuffer_phys_addr; // Физический адрес памяти экрана
     render_target.stride = stride;                   // Шаг строки в байтах
 
