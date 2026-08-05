@@ -380,8 +380,6 @@ typedef struct __attribute__((packed)) {
     uint64_t next_job;               // 0x18: Физический адрес следующего дескриптора в цепочке (0, если последний)
 } mali_job_header;
 
-#include <stdint.h>
-
 //#define MALI_WRITE_VALUE_ZERO     3 // Специальный флаг для обнуления
 
 // Полный монолитный дескриптор задачи
@@ -463,9 +461,9 @@ typedef struct __attribute__((packed, aligned(64))) {
 #endif
 // Переменная-цель, куда будет писать GPU.
 // Обязательно выравниваем по кэш-линии!
-#if 0
+
 static volatile uint64_t __attribute__((aligned(64))) gpu_test_target [2];
-int run_write_value_test(void) {
+int gpu_run_write_value_test(void) {
 	unsigned v = 0x07;
     // Создаем структуру дескриптора в памяти
 	GPU_ALIGN static mali_write_value_job job;
@@ -473,7 +471,7 @@ int run_write_value_test(void) {
 
     // Сбрасываем старую память
     memset(&job, 0, sizeof(job));
-    memset(gpu_test_target, 0xFF, sizeof gpu_test_target);
+    memset((void *) gpu_test_target, 0xFF, sizeof gpu_test_target);
 
     // Заполняем заголовок
     job.header.exception_status = 0;
@@ -523,10 +521,10 @@ int run_write_value_test(void) {
     if (gpu_submit_job(2, (uintptr_t) & job))
     	return 1;	// err
       // Проверяем результат выполнения
-    printhex64(0, gpu_test_target, sizeof gpu_test_target);
+    printhex64(0, (void *) gpu_test_target, sizeof gpu_test_target);
     return 0;
 }
-#endif
+
 
 #define GPU_ALIGN __attribute__((aligned(64)))
 
@@ -700,9 +698,6 @@ typedef struct GPU_PACKED GPU_ALIGN_64 {
 } mali_bifrost_fb_desc;
 #endif /* GPU_BIFROST_V6_H */
 
-#include <stdint.h>
-#include <string.h>
-
 /* Аппаратные коды типов задач */
 //#define MALI_JOB_TYPE_VERTEX 5
 //#define MALI_JOB_TYPE_TILER  7
@@ -741,8 +736,6 @@ GPU_ALIGN_64 const uint32_t bifrost_fragment_shader_code[] = {
     0x000000FF, 0x00000000, 0x00001002, 0x7E000000,
     0x00002002, 0x00001DFF, 0x00000000, 0x000002FF
 };
-#include <stdint.h>
-#include <string.h>
 
 #define MALI_JOB_TYPE_VERTEX        UINT8_C(5)
 #define MALI_JOB_TYPE_TILER         UINT8_C(7)
@@ -1043,7 +1036,7 @@ void mali_bifrost_l2_ready(void)
 
 void gpu_test(void)
 {
-#if 0
+#if 1
 	PRINTF("board_gpu_initialize: L2_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->L2_FEATURES);
 	PRINTF("board_gpu_initialize: CORE_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->CORE_FEATURES);
 	PRINTF("board_gpu_initialize: TILER_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->TILER_FEATURES);
@@ -1058,7 +1051,7 @@ void gpu_test(void)
 #endif
 
 #if 0
-	run_write_value_test();
+	gpu_run_write_value_test();
 	return;
 //	unsigned v = 0;
 //	while (run_write_value_test(v ++))
