@@ -447,6 +447,20 @@ typedef struct __attribute__((packed)) {
     uint32_t padding_to_128[16];   // !!!!! Еще 64 байта чистых нулей!
 } mali_fragment_job;
 
+// Дескриптор Vertex Job (128 байт под стандарты пакетного чтения Bifrost v6)
+typedef struct __attribute__((packed, aligned(64))) {
+    mali_job_header header;                 // 0x00 - 0x1F: Заголовок задачи (32 байта)
+
+    /* --- Специфичный Payload для Bifrost v6 (Строго 32 байта) --- */
+    uint64_t thread_input_record;           // 0x20: Физический адрес структуры v_thread_input
+    uint64_t renderer_state;                // 0x28: Физический адрес структуры gpu_program_state (RSD)
+    uint64_t attributes;                    // 0x30: В Bifrost v6 СТРОГО зануляется (0x0)
+    uint64_t attribute_buffers;             // 0x38: В Bifrost v6 СТРОГО зануляется (0x0)
+
+    /* --- Паддинг безопасности (Добивка до 128 байт) --- */
+    uint32_t padding_to_128[16];            // 0x40 - 0x7F: Скрытая зона регистров отсечения (зануляем)
+} mali_vertex_job_bifrost;
+
 // Переменная-цель, куда будет писать GPU.
 // Обязательно выравниваем по кэш-линии!
 static volatile uint64_t __attribute__((aligned(64))) gpu_test_target [2];
