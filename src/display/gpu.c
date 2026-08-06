@@ -35,7 +35,7 @@
   * @param  next_job_gpu_address: 64-bit physical GPU address of the next job descriptor (or 0 for tail).
   * @retval None
   */
-void MALI_JobHeader_WriteValue(MALI_JobHeader_TypeDef *pHeader,
+static void MALI_JobHeader_WriteValue(MALI_JobHeader_TypeDef *pHeader,
                                uint8_t job_type,
                                uint32_t use_barrier,
                                uint32_t job_index,
@@ -77,7 +77,7 @@ void MALI_JobHeader_WriteValue(MALI_JobHeader_TypeDef *pHeader,
   * @param  value_to_write: 64-bit (or 32-bit) immediate data to store.
   * @retval None
   */
-void MALI_WriteValueJobPayload_WriteValue(MALI_WriteValueJobPayload_TypeDef *pPayload,
+static void MALI_WriteValueJobPayload_WriteValue(MALI_WriteValueJobPayload_TypeDef *pPayload,
                                           uint64_t target_gpu_address,
                                           uint64_t value_to_write)
 {
@@ -106,7 +106,7 @@ __attribute__((aligned(64))) static MALI_FragmentJobPayload_TypeDef FragmentJobP
   * @param  height: Screen height in pixels (e.g., 480).
   * @retval None
   */
-void MALI_FragmentJobPayload_ClearInit(MALI_FragmentJobPayload_TypeDef *pPayload,
+static void MALI_FragmentJobPayload_ClearInit(MALI_FragmentJobPayload_TypeDef *pPayload,
                                        uint64_t fbd_address,
                                        uint64_t tile_meta_address,
                                        uint32_t width,
@@ -150,7 +150,7 @@ void MALI_FragmentJobPayload_ClearInit(MALI_FragmentJobPayload_TypeDef *pPayload
   * @param  height: Screen height in pixels (e.g., 480).
   * @retval None
   */
-void MALI_FramebufferDescriptor_ClearInit(MALI_FramebufferDescriptor_TypeDef *pFbd,
+static void MALI_FramebufferDescriptor_ClearInit(MALI_FramebufferDescriptor_TypeDef *pFbd,
                                           uint64_t tile_meta_address,
                                           uint64_t rt_address,
                                           uint32_t width,
@@ -190,7 +190,7 @@ void MALI_FramebufferDescriptor_ClearInit(MALI_FramebufferDescriptor_TypeDef *pF
   * @param  a: Alpha color component (0.0f to 1.0f).
   * @retval None
   */
-void MALI_RenderTargetDescriptor_ClearInit(MALI_RenderTargetDescriptor_TypeDef *pRt,
+static void MALI_RenderTargetDescriptor_ClearInit(MALI_RenderTargetDescriptor_TypeDef *pRt,
                                            uint64_t fb_pointer,
                                            uint32_t width,
                                            float r, float g, float b, float a)
@@ -356,7 +356,7 @@ void gpu_fillrect(
 
 // Регистры отправки команд в слот (сверьтесь со структурой GPU_JOB_CONTROL в panfrost_regs.h)
 // Обычные имена регистров в драйвере Panfrost: JS_COMMAND, JS_HEAD_NEXT
-void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
+static void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
 {
     // Читаем статус ошибки Слота 1 (смещение 0x24 от 0x1880 -> адрес 0x018018A4)
     uint32_t slot1_status = GPU_JOB_CONTROL->LOOP[slot].JS_STATUS;
@@ -496,10 +496,9 @@ typedef struct __attribute__((packed, aligned(64))) {
 	uint64_t pad;
 } mali_write_value_job;
 
-int gpu_run_write_value_test(void) {
+static int gpu_run_write_value_test(void) {
 	PRINTF("gpu_run_write_value_test:\n");
 	static volatile uint64_t __attribute__((aligned(64))) gpu_test_target [2];
-	unsigned v = 0x07;
 
 	GPU_ALIGN static struct
 	{
@@ -516,22 +515,22 @@ int gpu_run_write_value_test(void) {
 	dcache_clean((uintptr_t) & job, sizeof job);
 	dcache_clean((uintptr_t) & job2, sizeof job2);
 	dcache_clean_invalidate((uintptr_t) & gpu_test_target, sizeof gpu_test_target);
-	PRINTF("job For test:\n");
-	printhex32(0, & job, sizeof job);
-	PRINTF("job2 For test:\n");
-	printhex32(0, & job2, sizeof job2);
+//	PRINTF("job For test:\n");
+//	printhex32(0, & job, sizeof job);
+//	PRINTF("job2 For test:\n");
+//	printhex32(0, & job2, sizeof job2);
 	gpu_submit_job(2, (uintptr_t) & job);
 	printhex64(0, & gpu_test_target, sizeof gpu_test_target);
 }
 
 
-int gpu_run_write_value_test_old(void) {
+static int gpu_run_write_value_test_old(void) {
 	PRINTF("gpu_run_write_value_test_old:\n");
 
 	// Переменная-цель, куда будет писать GPU.
 	// Обязательно выравниваем по кэш-линии!
 	static volatile uint64_t __attribute__((aligned(64))) gpu_test_target [2];
-	unsigned v = 0x07;
+	unsigned v = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64;
     // Создаем структуру дескриптора в памяти
 	GPU_ALIGN static mali_write_value_job job;
 	GPU_ALIGN static mali_write_value_job job2;
@@ -572,7 +571,7 @@ int gpu_run_write_value_test_old(void) {
     job.immediate = 0xDEADBEEFABBA1980;               // Данные для записи
     job2.address = (uintptr_t) & gpu_test_target [1]; // Физический адрес цели
     job2.value_descriptor = v;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
-    job2.immediate = 0x123456789abcdef;               // Данные для записи
+    job2.immediate = 0x0123456789ABCDEF;               // Данные для записи
 
     // КРИТИЧЕСКИ ВАЖНО ДЛЯ BARE METAL:
     // Очищаем кэш CPU, чтобы GPU читал структуру из физического ОЗУ,
@@ -584,8 +583,10 @@ int gpu_run_write_value_test_old(void) {
 
     // Важно: Адреса job и gpu_test_target должны быть предварительно
     // промаплены в MMU вашего Mali-G31 с правами Read/Write!
-	PRINTF("job For test:\n");
-	printhex32(0, & job, sizeof job);
+    //	PRINTF("job For test:\n");
+    //	printhex32(0, & job, sizeof job);
+    //	PRINTF("job2 For test:\n");
+    //	printhex32(0, & job2, sizeof job2);
 
     if (gpu_submit_job(2, (uintptr_t) & job))
     	return 1;	// err
@@ -625,7 +626,7 @@ void printhex32_titled(uintptr_t voffs, const void * vbuff, size_t length, const
 #define GPU_ALIGN_128 __attribute__((aligned(128)))
 #define GPU_PACKED    __attribute__((packed))
 
-void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
+static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
 {
 	// Выделяем 64 байта под фиктивный контекст отсечения (Scissor/Tile Meta)
 	GPU_ALIGN static uint64_t gpu_fragment_tile_meta [16] = { 0x00000001, };
@@ -838,7 +839,7 @@ void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t 
     }
 }
 
-#define MALI_GPU_CONTROL_BASE  GPU_CONTROL_BASE
+//----------------------
 
 // Регистры разблокировки и оверрайдов (Блок управления питанием)
 #define GPU_PWR_KEY                     0x0050
@@ -855,28 +856,28 @@ void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t 
 #define REG_TILER_READY                 0x0150 // То самое смещение 0x150!
 #define REG_L2_READY                    0x0160
 
-void mali_bifrost_power_on(void)
+static void mali_bifrost_power_on(void)
 {
-    volatile uint32_t *gpu_pwr_key   = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + GPU_PWR_KEY);
-    volatile uint32_t *gpu_pwr_ovr1  = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + GPU_PWR_OVERRIDE1);
+    volatile uint32_t *gpu_pwr_key   = (volatile uint32_t *)(GPU_CONTROL_BASE + GPU_PWR_KEY);
+    volatile uint32_t *gpu_pwr_ovr1  = (volatile uint32_t *)(GPU_CONTROL_BASE + GPU_PWR_OVERRIDE1);
 
-    volatile uint32_t *l2_pwron      = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_L2_PWRON);
-    volatile uint32_t *l2_ready      = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_L2_READY);
+    volatile uint32_t *l2_pwron      = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_L2_PWRON);
+    volatile uint32_t *l2_ready      = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_L2_READY);
 
-    volatile uint32_t *tiler_pwron   = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_TILER_PWRON);
-    volatile uint32_t *tiler_ready   = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_TILER_READY);
+    volatile uint32_t *tiler_pwron   = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_TILER_PWRON);
+    volatile uint32_t *tiler_ready   = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_TILER_READY);
 
-    volatile uint32_t *shader_pwron  = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_SHADER_PWRON);
-    volatile uint32_t *shader_ready  = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_SHADER_READY);
+    volatile uint32_t *shader_pwron  = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_SHADER_PWRON);
+    volatile uint32_t *shader_ready  = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_SHADER_READY);
 
-    PRINTF("Mali-G31: Initializing power-up via Bifrost v6 Register Map...\n");
+//    PRINTF("Mali-G31: Initializing power-up via Bifrost v6 Register Map...\n");
 
     // 1. Снимаем программную защиту с контроллера питания
     *gpu_pwr_key = GPU_PWR_KEY_UNLOCK;
     __DSB();
 
     // Фиксация стабильности шин питания
-    *gpu_pwr_ovr1 = 0xFFF | (0x20 << 16);
+    *gpu_pwr_ovr1 = 0xFFF | (UINT32_C(0x20) << 16);
     __DSB();
 
     // 2. Включаем L2 Кэш (Бит 0 = Включить домен 0)
@@ -885,17 +886,17 @@ void mali_bifrost_power_on(void)
 
     //TP();
    // Ожидаем готовность L2 на смещении 0x160
-    while ((*l2_ready & 0x00000001) == 0) {
+    while ((*l2_ready & UINT32_C(1)) == 0) {
         // Опрос готовности L2-интерфейса
     }
 
     // 3. Включаем блок геометрии (Tiler) через смещение 0x190
-    *tiler_pwron = 0x00000001;
+    *tiler_pwron = UINT32_C(1);
     __DSB();
 
     //TP();
    // Ожидаем готовность тайлера на вашем смещении 0x150
-    while ((*tiler_ready & 0x00000001) == 0) {
+    while ((*tiler_ready & UINT32_C(1)) == 0) {
         // Если зависает здесь, значит на GPU не подана частота от CCU Allwinner
     }
     //TP();
@@ -903,52 +904,49 @@ void mali_bifrost_power_on(void)
 #define REG_STACK_READY   0xE10
 
 	// Добавьте этот кусок в mali_bifrost_power_on() СТРОГО ПЕРЕД включением шейдеров:
-	volatile uint32_t *stack_pwron = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_STACK_PWRON);
-	volatile uint32_t *stack_ready = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_STACK_READY);
+	volatile uint32_t *stack_pwron = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_STACK_PWRON);
+	volatile uint32_t *stack_ready = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_STACK_READY);
 
-	PRINTF("Mali-G31: Powering up Shader Core Stack (0x1D0)...\n");
-	*stack_pwron = 0x00000001; // Включаем базовый стек
+//	PRINTF("Mali-G31: Powering up Shader Core Stack (0x1D0)...\n");
+	*stack_pwron =  UINT32_C(1); // Включаем базовый стек
 	__DSB();
 	local_delay_ms(100);
-	PRINTF("*stack_ready=%08X\n", (unsigned) *stack_ready);
-	PRINTF("*tiler_ready=%08X\n", (unsigned) *tiler_ready);
+//	PRINTF("*stack_ready=%08X\n", (unsigned) *stack_ready);
+//	PRINTF("*tiler_ready=%08X\n", (unsigned) *tiler_ready);
 
-    //TP();
 //	while ((*stack_ready & 0x00000001) == 0) {
 //		// Ожидание готовности стека ядер на смещении 0xE10
 ////		PRINTF("*stack_ready=%08X\n", (unsigned) *stack_ready);
 ////		PRINTF("*tiler_ready=%08X\n", (unsigned) *tiler_ready);
 //	}
 	local_delay_ms(100);
-    //TP();
+
 	// 4. Включаем 2 вычислительных ядра (Shader Cores) для MP2 (Маска 0x03) через 0x180
-    *shader_pwron = 0x00000003;
+    *shader_pwron =  UINT32_C(0x03);
     __DSB();
 
 	local_delay_ms(100);
-	PRINTF("*shader_ready=%08X\n", (unsigned) *shader_ready);
+//	PRINTF("*shader_ready=%08X\n", (unsigned) *shader_ready);
    //TP();
    // Ожидаем готовность ядер на смещении 0x140
-    while ((*shader_ready & 0x00000003) != 0x00000001) {	// was: 0x00000003
+    while ((*shader_ready & 0x00000001) != 0x00000001) {	// was: 0x00000003
         // Ожидание готовности обоих шейдерных ядер
     	   // ТОЛЬКО ОДНО ЯДРО
     }
-    //TP();
-
-    PRINTF("Mali-G31: Success! L2, Tiler (0x150), and Shaders (0x140) are READY.\n");
+//    PRINTF("Mali-G31: Success! L2, Tiler (0x150), and Shaders (0x140) are READY.\n");
 }
 
 
 #define REG_L2_PWR_DOMAIN_COMMAND      0x0010
 #define REG_L2_PWR_DOMAIN_STATUS       0x0014
 
-void mali_bifrost_l2_ready(void)
+static void mali_bifrost_l2_ready(void)
 {
-    volatile uint32_t *l2_pwr_cmd  = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_L2_PWR_DOMAIN_COMMAND);
-    volatile uint32_t *l2_pwr_stat = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_L2_PWR_DOMAIN_STATUS);
+    volatile uint32_t *l2_pwr_cmd  = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_L2_PWR_DOMAIN_COMMAND);
+    volatile uint32_t *l2_pwr_stat = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_L2_PWR_DOMAIN_STATUS);
 
     // Принудительно включаем и запитываем L2 кэш GPU
-    *l2_pwr_cmd = 0xFFFFFFFF;
+    *l2_pwr_cmd = UINT32_C(0xFFFFFFFF);
     while ((*l2_pwr_stat & 0x1) == 0) {
         // Ожидание готовности кэш-памяти GPU
     }
@@ -997,7 +995,7 @@ void gpu_test(void)
 }
 #define GPU_L2_MMU_CONFIG  0x0008 // Смещение внутри блока GPU_CONTROL (0x01800008)
 
-void mali_bifrost_open_mmu_bus(void)
+static void mali_bifrost_open_mmu_bus(void)
 {
     volatile uint32_t *l2_mmu_config = (volatile uint32_t *)(GPU_BASE + GPU_L2_MMU_CONFIG);
 
@@ -1011,7 +1009,7 @@ void mali_bifrost_open_mmu_bus(void)
     __DSB();
 }
 
-void mali_g31_mmu_enable(void)
+static void mali_g31_mmu_enable(void)
 {
     unsigned as = 0; // Шейдерный домен по умолчанию
 
@@ -1053,49 +1051,32 @@ void mali_g31_mmu_enable(void)
 
     __DSB();
 
-    // 4. Ждем, пока MMU освободится
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
+//    gpu_as_command(as, 0x01);	// Отправляем команду UPDATE для применения таблиц
+//    gpu_as_command(as, 0x03);	// Очищаем внутренний TLB кэш MMU от старых зависших ошибок 0xC8 AS_COMMAND_INVALIDATE
 
-    // 5. Отправляем команду UPDATE для применения таблиц
-    GPU_MMU->MMU_AS[as].AS_COMMAND = 0x01;
-    __DSB();
-
-    // 6. Ожидаем окончания защелкивания таблиц аппаратурой Mali
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
-
-    // 4. Очищаем внутренний TLB кэш MMU от старых зависших ошибок 0xC8
-    GPU_MMU->MMU_AS[as].AS_COMMAND = 0x03; // AS_COMMAND_INVALIDATE
-    __DSB();
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
-
-    // 5. Активируем таблицы командным словом UPDATE
-    GPU_MMU->MMU_AS[as].AS_COMMAND = 0x01; // AS_COMMAND_UPDATE
-    __DSB();
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
-
-
-	//gpu_as_command(as, AS_COMMAND_NOP);
 	gpu_as_command(as, AS_COMMAND_UPDATE);
 	gpu_as_command(as, AS_COMMAND_INVALIDATE);
 //	gpu_as_command(as, AS_COMMAND_FLUSH_PT);
-	//TP();
-	printhex32((uintptr_t) & GPU_MMU->MMU_AS[as], & GPU_MMU->MMU_AS[as], sizeof GPU_MMU->MMU_AS[as]);
-    PRINTF("Mali-G31: MMU Address Space 0 successfully enabled at offset 0x400!\n");
+
+//	printhex32((uintptr_t) & GPU_MMU->MMU_AS[as], & GPU_MMU->MMU_AS[as], sizeof GPU_MMU->MMU_AS[as]);
+//    PRINTF("Mali-G31: MMU Address Space 0 successfully enabled at offset 0x400!\n");
 }
 
 //
-#define T507_SPC_BASE         0x03008000
+#define T507_SPC_BASE         SPC_BASE
 
 // Регистры конфигурации защиты периферии (Secure Peripherals Control)
 #define SPC_GPU_MAST_REG      (T507_SPC_BASE + 0x00A0) // Управление правами GPU как Master шины
 #define SPC_GPU_SLAV_REG      (T507_SPC_BASE + 0x00A4) // Управление правами доступа CPU к регистрам GPU
 
-void t507_spc_unlock_gpu(void)
+// бред от AI
+static void t507_spc_unlock_gpu(void)
 {
     volatile uint32_t *spc_gpu_master = (volatile uint32_t *)SPC_GPU_MAST_REG;
     volatile uint32_t *spc_gpu_slave  = (volatile uint32_t *)SPC_GPU_SLAV_REG;
 
     PRINTF("T507 Platform: Unlocking GPU Secure Peripherals Controller (SPC)...\n");
+    printhex32_titled(SPC_BASE, SPC, 1024, "SPC");
 
     // Запись маски 0xFFFFFFFF или 0x00000003 (в зависимости от разводки доменов)
     // разрешает Non-Secure транзакции для графического процессора на системной интерконнект-шине.
@@ -1106,6 +1087,7 @@ void t507_spc_unlock_gpu(void)
     __DSB(); // Принудительно толкаем барьер в контроллер SPC
 
     PRINTF("T507 Platform: GPU registers bypass TrustZone protection now.\n");
+    printhex32_titled(SPC_BASE, SPC, 1024, "SPC 2");
 }
 
 // Graphic processor unit
@@ -1140,7 +1122,7 @@ void board_gpu_initialize(void)
 
 	}
 
-	t507_spc_unlock_gpu();
+	//t507_spc_unlock_gpu();
 
 	CCU->GPU_CLK1_REG |= (UINT32_C(1) << 31);	// PLL_PERI_BAK_CLK_GATING
 	CCU->GPU_CLK0_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
@@ -1180,20 +1162,21 @@ void board_gpu_initialize(void)
 	gpu_wait(RESET_COMPLETED);
 	gpu_command(GPU_COMMAND_NOP);
 
-    PRINTF("GPU Reset released. Unlocking internal buses...\n");
+//    PRINTF("GPU Reset released. Unlocking internal buses...\n");
 
     // 2. СНИМАЕМ ИЗОЛЯЦИЮ ШИНЫ ЗАДАЧ (Решение причины №1)
-	gpu_command(GPU_COMMAND_CYCLE_COUNT_START);
-	local_delay_ms(100);
+//	gpu_command(GPU_COMMAND_CYCLE_COUNT_START);
+//	local_delay_ms(100);
 
 	// https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/panfrost/panfrost_mmu.c
 
-	PRINTF("board_gpu_initialize done.\n");
-
-	mali_bifrost_power_on();
-	mali_bifrost_open_mmu_bus();
+	mali_bifrost_power_on();	// бязательно нужно
+	mali_bifrost_open_mmu_bus();	// не требуется
+	mali_bifrost_l2_ready();	// не требуется
 
 	mali_g31_mmu_enable();
+
+	PRINTF("board_gpu_initialize done.\n");
 }
 
 #elif CPUSTYLE_STM32MP1

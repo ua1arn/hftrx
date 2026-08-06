@@ -113,9 +113,33 @@
  /** @defgroup MALI_WriteValue_Constants
    * @{
    */
- /* Константы для поля VALUE_DESCRIPTOR строго через макрос UINT32_C() */
- #define MALI_WRITE_VALUE_TYPE_IMMEDIATE_64    UINT32_C(0x00000007) /* Запись непосредственного значения 64 bit */
- #define MALI_WRITE_VALUE_TYPE_ZERO        		 UINT32_C(0x00000003) /* Специфичный аппаратный флаг записи нуля */
+
+ /**
+  * value_descriptor:
+  * 0 - fault operation
+  * 1 - timestamp?
+  * 2 - timestamp?
+  * 3 - zero
+  * 4 - 8 bit
+  * 5 - 16 bit
+  * 6 - 32 bit
+  * 7 - 64 bit
+  */
+ /* Константы для поля VALUE_DESCRIPTOR  */
+ /** @defgroup MALI_Bifrost_Write_Value_Types
+   * @{
+   */
+#define MALI_WRITE_VALUE_TYPE_CYCLECOUNTER   UINT32_C(1)
+#define MALI_WRITE_VALUE_TYPE_TIMESTAMP      UINT32_C(2)
+#define MALI_WRITE_VALUE_TYPE_ZERO64         UINT32_C(3)
+#define MALI_WRITE_VALUE_TYPE_IMMEDIATE_8    UINT32_C(4)
+#define MALI_WRITE_VALUE_TYPE_IMMEDIATE_16   UINT32_C(5)
+#define MALI_WRITE_VALUE_TYPE_IMMEDIATE_32   UINT32_C(6)
+#define MALI_WRITE_VALUE_TYPE_IMMEDIATE_64   UINT32_C(7)
+
+ /**
+   * @}
+   */
 
  /**
    * @}
