@@ -595,12 +595,6 @@ static int gpu_run_write_value_test_old(void) {
     return 0;
 }
 
-void printhex32_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title)
-{
-	PRINTF("%s @ %p:\n", title, vbuff);
-	printhex32(voffs, vbuff, length);
-}
-
 #define GPU_ALIGN __attribute__((aligned(64)))
 
 /**
