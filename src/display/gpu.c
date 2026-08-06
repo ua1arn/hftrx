@@ -26,6 +26,74 @@
 
 #include "mali_bifrost_v6.h"
 
+/**
+  * @brief  Writes values to the Common Job Header memory block for any Mali GPU job.
+  * @param  pHeader: Pointer to the MALI_JobHeader_TypeDef structure in RAM.
+  * @param  job_type: Type of the job (e.g. MALI_JOB_TYPE_FRAGMENT or MALI_JOB_TYPE_WRITE_VALUE).
+  * @param  use_barrier: Enable hardware execution barrier (blocking next slots until done).
+  * @param  job_index: Unique software identifier for tracking completion.
+  * @param  next_job_gpu_address: 64-bit physical GPU address of the next job descriptor (or 0 for tail).
+  * @retval None
+  */
+void MALI_JobHeader_WriteValue(MALI_JobHeader_TypeDef *pHeader,
+                               uint8_t job_type,
+                               uint32_t use_barrier,
+                               uint32_t job_index,
+                               uint64_t next_job_gpu_address)
+{
+  /* 1. Сброс аппаратных статусных полей и адресов ошибок (должны быть 0 при отправке) */
+  pHeader->STATUS.EXCEPTION_STATUS      = UINT32_C(0x00000000);
+  pHeader->STATUS.FIRST_INCOMPLETE_TASK = UINT32_C(0x00000000);
+  pHeader->FAULT_ADDRESS                = UINT64_C(0x0000000000000000);
+
+  /* 2. Побитовая сборка нижнего 32-битного слова конфигурации (CONFIG_FLAGS) */
+  uint32_t config = UINT32_C(0);
+
+  /* Записываем размер дескриптора */
+  config |= ((uint32_t)MALI_JOB_DESC_SIZE_BIFROST << MALI_JOB_CTRL_DESC_SIZE_POS) & MALI_JOB_CTRL_DESC_SIZE_MASK;
+
+  /* Записываем тип задания (например, 0x13 или 0x02 / 0x03) */
+  config |= ((uint32_t)job_type << MALI_JOB_CTRL_TYPE_POS) & MALI_JOB_CTRL_TYPE_MASK;
+
+  /* Если требуется аппаратный барьер — выставляем бит 16 */
+  if (use_barrier != UINT32_C(0))
+  {
+    config |= MALI_JOB_CTRL_BARRIER_MASK;
+  }
+
+  pHeader->CFG.CONFIG_FLAGS = config;
+
+  /* 3. Запись индекса задачи для внутреннего трекера */
+  pHeader->CFG.JOB_INDEX = job_index;
+
+  /* 4. Запись 64-битного указателя на следующее задание в цепочке команд */
+  pHeader->NEXT_JOB = next_job_gpu_address;
+}
+
+/**
+  * @brief  Writes values to the Write Value Job Payload memory block for Mali Bifrost v6.
+  * @param  pPayload: Pointer to the MALI_WriteValueJobPayload_TypeDef structure in RAM.
+  * @param  target_gpu_address: 64-bit GPU physical address where data must be written.
+  * @param  value_to_write: 64-bit (or 32-bit) immediate data to store.
+  * @retval None
+  */
+void MALI_WriteValueJobPayload_WriteValue(MALI_WriteValueJobPayload_TypeDef *pPayload,
+                                          uint64_t target_gpu_address,
+                                          uint64_t value_to_write)
+{
+  /* 1. Запись целевого 64-битного адреса памяти */
+  pPayload->ADDRESS = target_gpu_address;
+
+  /* 2. Запись флага типа операции (Immediate write) */
+  pPayload->CFG.VALUE_DESCRIPTOR = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64;
+
+  /* 3. Обязательное зануление аппаратного резерва */
+  pPayload->CFG.RESERVED_WORD1   = UINT32_C(0x00000000);
+
+  /* 4. Запись полезных данных */
+  pPayload->IMMEDIATE = value_to_write;
+}
+
 /* Выравнивание по стандарту CMSIS/GCC для кэш-линий */
 __attribute__((aligned(64))) static MALI_FragmentJobPayload_TypeDef FragmentJobPayload;
 
@@ -372,96 +440,6 @@ enum mali_job_type {
         JOB_TYPE_FRAGMENT = 9,
 };
 #endif
-/**
- * @brief Типы задач (Job Types) для аппаратного планировщика ARM Mali Bifrost.
- *
- * Значения этих констант записываются в битовое поле `job_type` (биты [7:1])
- * байта по смещению 0x10 в заголовке дескриптора задачи.
- *
- * Формула для байта 0x10: (MALI_JOB_TYPE_XXX << 1) | JOB_DESCRIPTOR_SIZE
- */
-typedef enum {
-    /* 0x00: Служебный маркер планировщика. Напрямую в слоты не отправляется */
-    MALI_JOB_TYPE_NOT_STARTED   = 0x00,
-
-    /**
-     * 0x01: Задача-заглушка (Null Job).
-     * Не выполняет никакой работы на GPU, завершается мгновенно.
-     * Используется для отладки прерываний, тестирования шины/MMU
-     * или в качестве барьера синхронизации между другими задачами.
-     * Разрешена для отправки в ЛЮБОЙ слот (Slot 0, 1, 2).
-     */
-    MALI_JOB_TYPE_NULL          = 0x01,
-
-    /**
-     * 0x02: Запись значения в память (Write Value Job).
-     * Аппаратно записывает 32-битное или 64-битное число по указанному адресу в ОЗУ.
-     * Поддерживает режимы прямой записи константы, инкремента и атомарного сложения.
-     * Допустима строго для сервисного слота: SLOT 2.
-     * upd: проверено на T507-H: раьотает на всех трёх слотаж
-     */
-    MALI_JOB_TYPE_WRITE_VALUE   = 0x02,
-
-    /**
-     * 0x03: Очистка кэша (Cache Flush Job).
-     * Принудительно заставляет GPU инвалидировать и сбросить свои внутренние
-     * кэши данных (L2 cache) в системное ОЗУ. Используется для обеспечения
-     * когерентности памяти между GPU и CPU перед чтением результатов.
-     * Допустима строго для сервисного слота: SLOT 2.
-     */
-    MALI_JOB_TYPE_CACHE_FLUSH   = 0x03,
-
-    /**
-     * 0x04: Вычислительный шейдер (Compute Job).
-     * Запускает одномерную, двумерную или трехмерную сетку вычислительных потоков
-     * (OpenCL, Vulkan Compute). Требует заполнения структуры Thread Input и RSD.
-     * Допустима строго для вычислительного слота: SLOT 0.
-     */
-    MALI_JOB_TYPE_COMPUTE       = 0x04,
-
-    /**
-     * 0x05: Вершинный шейдер (Vertex Job).
-     * Классическая обработка вершин геометрии (трансформация координат, освещение).
-     * Читает Vertex Buffers и выполняет Vertex Shader.
-     * Допустима строго для вершинного слота: SLOT 0.
-     */
-    MALI_JOB_TYPE_VERTEX        = 0x05,
-
-    /**
-     * 0x06: Геометрический шейдер (Geometry Job).
-     * Используется для шейдеров геометрии и тесселяции.
-     * В архитектурах Bifrost (Mali-G31) в чистом виде практически не применяется,
-     * так как эти этапы обычно объединяются с тайлингом.
-     * Направляется в SLOT 0.
-     */
-    MALI_JOB_TYPE_GEOMETRY      = 0x06,
-
-    /**
-     * 0x07: Задача тайлинга (Tiler Job).
-     * Принимает трансформированные вершины сцены, собирает их в примитивы (треугольники)
-     * и распределяет по экранным плиткам (тайлам 16х16). Результат пишет в Polygon List.
-     * Требует валидной структуры Tiler Heap и Framebuffer Descriptor (MFBD).
-     * Допустима строго для слота геометрии: SLOT 0.
-     */
-    MALI_JOB_TYPE_TILER         = 0x07,
-
-    /**
-     * 0x08: Слитая задача (Fused Vertex + Tiler Job).
-     * Оптимизированный аппаратный режим, выполняющий Vertex Shader и Tiler Job
-     * одновременно в рамках одной задачи для экономии пропускной способности памяти.
-     * Допустима строго для слота: SLOT 0.
-     */
-    MALI_JOB_TYPE_FUSED         = 0x08,
-
-    /**
-     * 0x09: Фрагментный шейдер (Fragment / Pixel Job).
-     * Финальная стадия графического конвейера. Выполняет растеризацию, пиксельные шейдеры,
-     * тесты глубины/трафарета и блендинг. Читает Polygon List и пишет в Framebuffer (картинка).
-     * Допустима строго для фрагментного слота: SLOT 1.
-     */
-    MALI_JOB_TYPE_FRAGMENT      = 0x09
-
-} mali_job_type;
 
 enum mali_draw_mode {
         MALI_DRAW_NONE      = 0x0,
@@ -520,6 +498,35 @@ typedef struct __attribute__((packed, aligned(64))) {
 
 int gpu_run_write_value_test(void) {
 	PRINTF("gpu_run_write_value_test:\n");
+	static volatile uint64_t __attribute__((aligned(64))) gpu_test_target [2];
+	unsigned v = 0x07;
+
+	GPU_ALIGN static struct
+	{
+		MALI_JobHeader_TypeDef header;
+		MALI_WriteValueJobPayload_TypeDef payload;
+	} job, job2;
+
+	MALI_JobHeader_WriteValue(& job2.header, MALI_JOB_TYPE_WRITE_VALUE, 1, 2, (uintptr_t) 0);
+	MALI_WriteValueJobPayload_WriteValue(& job2.payload, (uintptr_t) & gpu_test_target [0], 0xDEADBEEFABBA1980);
+
+	MALI_JobHeader_WriteValue(& job.header, MALI_JOB_TYPE_WRITE_VALUE, 0, 1, (uintptr_t) & job2);
+	MALI_WriteValueJobPayload_WriteValue(& job.payload, (uintptr_t) & gpu_test_target [1], 0x0123456789ABCDEF);
+
+	dcache_clean((uintptr_t) & job, sizeof job);
+	dcache_clean((uintptr_t) & job2, sizeof job2);
+	dcache_clean_invalidate((uintptr_t) & gpu_test_target, sizeof gpu_test_target);
+	PRINTF("job For test:\n");
+	printhex32(0, & job, sizeof job);
+	PRINTF("job2 For test:\n");
+	printhex32(0, & job2, sizeof job2);
+	gpu_submit_job(2, (uintptr_t) & job);
+	printhex64(0, & gpu_test_target, sizeof gpu_test_target);
+}
+
+
+int gpu_run_write_value_test_old(void) {
+	PRINTF("gpu_run_write_value_test_old:\n");
 
 	// Переменная-цель, куда будет писать GPU.
 	// Обязательно выравниваем по кэш-линии!
@@ -537,7 +544,7 @@ int gpu_run_write_value_test(void) {
     job.header.exception_status = 0;
     job.header.job_descriptor_size = 1; // Используем 64-битные указатели
     job.header.job_type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
-    job.header.job_barrier = 1;			// last
+    job.header.job_barrier = 0;			// last
     job.header.job_index = 1;
     job.header.next_job = (uintptr_t) & job2;            // Цепочка заканчивается на ней
 
@@ -545,7 +552,7 @@ int gpu_run_write_value_test(void) {
     job2.header.job_descriptor_size = 1; // Используем 64-битные указатели
     job2.header.job_type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
     job2.header.job_barrier = 1;			// last
-    job2.header.job_index = 1;
+    job2.header.job_index = 2;
     job2.header.next_job = (uintptr_t) 0;            // Цепочка заканчивается на ней
 
     /**
@@ -577,6 +584,8 @@ int gpu_run_write_value_test(void) {
 
     // Важно: Адреса job и gpu_test_target должны быть предварительно
     // промаплены в MMU вашего Mali-G31 с правами Read/Write!
+	PRINTF("job For test:\n");
+	printhex32(0, & job, sizeof job);
 
     if (gpu_submit_job(2, (uintptr_t) & job))
     	return 1;	// err
@@ -961,7 +970,8 @@ void gpu_test(void)
 	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
 #endif
 
-#if 0
+#if 1
+	gpu_run_write_value_test_old();
 	gpu_run_write_value_test();
 	return;
 //	unsigned v = 0;

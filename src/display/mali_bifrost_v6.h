@@ -7,6 +7,120 @@
  extern "C" {
 #endif
 
+ /** @addtogroup MALI_Bifrost_Peripheral_Structures
+   * @{
+   */
+
+ /**
+   * @brief  Mali Bifrost Common Job Header Structure definition
+   * @note   Direct translation of <struct name="Job Descriptor Header"> from bifrost.xml.
+   *         This header prefixes every Job type (Vertex, Fragment, Tiler, Write Value).
+   *         Must be aligned and takes exactly 32 bytes (4 words x 64-bit).
+   */
+ typedef struct
+ {
+   /* Word 0 (Bytes 0x00 - 0x07): <field name="Exception Status" start="0:0" end="0:31" type="uint"/>
+                                  <field name="First Incomplete Task" start="0:32" end="0:63" type="uint"/> */
+   union {
+     __IO uint64_t WORD0;
+     struct {
+       __IO uint32_t EXCEPTION_STATUS;     /*!< Hardware fault/exception status code (0 on submission) */
+       __IO uint32_t FIRST_INCOMPLETE_TASK;/*!< Index of the first incomplete task in multi-task jobs */
+     };
+   } STATUS;
+
+   /* Word 1 (Bytes 0x08 - 0x0F): <field name="Fault Address" start="1:0" end="1:63" type="address"/> */
+   __IO uint64_t FAULT_ADDRESS;            /*!< GPU MMU fault address populated by hardware on crash */
+
+   /* Word 2 (Bytes 0x10 - 0x17):
+      <field name="Job Descriptor Size" start="2:0" end="2:7" type="uint"/>
+      <field name="Job Type" start="2:8" end="2:15" type="uint"/>
+      <field name="Job Barrier" start="2:16" end="2:16" type="bool"/>
+      <field name="Reserved" start="2:17" end="2:31" type="uint"/>
+      <field name="Job Index" start="2:32" end="2:63" type="uint"/> */
+   union {
+     __IO uint64_t WORD2;
+     struct {
+       __IO uint32_t CONFIG_FLAGS;         /*!< Lower 32-bit: combined Size, Type, and Barrier flags */
+       __IO uint32_t JOB_INDEX;            /*!< Upper 32-bit: Unique tracking index of the job */
+     };
+   } CFG;
+
+   /* Word 3 (Bytes 0x18 - 0x1F): <field name="Next Job" start="3:0" end="3:63" type="address"/> */
+   __IO uint64_t NEXT_JOB;                 /*!< 64-bit GPU address of the next job in the hardware chain (0 if tail) */
+
+ } MALI_JobHeader_TypeDef;
+
+ /**
+   * @}
+   */
+
+ /** @defgroup MALI_JobHeader_Constants
+   * @{
+   */
+ /* Константы для поля CONFIG_FLAGS (Смещение битов внутри 32-битного слова конфигурации) */
+ #define MALI_JOB_CTRL_DESC_SIZE_POS        UINT32_C(0)
+ #define MALI_JOB_CTRL_DESC_SIZE_MASK        (UINT32_C(0x00000001) << MALI_JOB_CTRL_DESC_SIZE_POS)
+
+ #define MALI_JOB_CTRL_TYPE_POS             UINT32_C(1)
+ #define MALI_JOB_CTRL_TYPE_MASK             (UINT32_C(0x0000007F) << MALI_JOB_CTRL_TYPE_POS)
+
+ #define MALI_JOB_CTRL_BARRIER_POS          UINT32_C(16)
+ #define MALI_JOB_CTRL_BARRIER_MASK          (UINT32_C(0x00000001) << MALI_JOB_CTRL_BARRIER_POS)
+
+
+ /* Коды размеров дескрипторов (Job Descriptor Size) */
+ #define MALI_JOB_DESC_SIZE_BIFROST         UINT8_C(1)    /*!< Standard layout size for Bifrost hardware */
+ /**
+   * @}
+   */
+
+ /** @addtogroup MALI_Bifrost_Peripheral_Structures
+   * @{
+   */
+
+ /**
+   * @brief  Mali Bifrost Write Value Job Payload Structure definition
+   * @note   Direct translation of <struct name="Write Value Job Payload"> from XML.
+   *         Must be aligned according to Mali hardware requirements.
+   */
+ typedef struct
+ {
+   /* Word 0 (Bytes 0x00 - 0x07): <field name="Address" start="0:0" end="0:63" type="address"/> */
+   __IO uint64_t ADDRESS;              /*!< Target 64-bit physical/virtual GPU address to write the data into */
+
+   /* Word 1 (Bytes 0x08 - 0x0F):
+      <field name="Value Descriptor" start="1:0" end="1:31" type="uint"/>
+      <field name="Reserved" start="1:32" end="1:63" type="uint"/> */
+   union {
+     __IO uint64_t WORD1;
+     struct {
+       __IO uint32_t VALUE_DESCRIPTOR; /*!< Write mode configuration flags (e.g. 32-bit or 64-bit immediate write) */
+       __IO uint32_t RESERVED_WORD1;   /*!< Strict hardware padding, must be zero */
+     };
+   } CFG;
+
+   /* Word 2 (Bytes 0x10 - 0x17): <field name="Immediate" start="2:0" end="2:63" type="uint"/> */
+   __IO uint64_t IMMEDIATE;            /*!< The actual 64-bit value or 32-bit dword data to be written to ADDRESS */
+   uint64_t pad;
+
+ } MALI_WriteValueJobPayload_TypeDef;
+
+ /**
+   * @}
+   */
+
+ /** @defgroup MALI_WriteValue_Constants
+   * @{
+   */
+ /* Константы для поля VALUE_DESCRIPTOR строго через макрос UINT32_C() */
+ #define MALI_WRITE_VALUE_TYPE_IMMEDIATE_64    UINT32_C(0x00000007) /* Запись непосредственного значения 64 bit */
+ #define MALI_WRITE_VALUE_TYPE_ZERO        		 UINT32_C(0x00000003) /* Специфичный аппаратный флаг записи нуля */
+
+ /**
+   * @}
+   */
+
 /** @addtogroup Exported_types
   * @{
   */
@@ -137,6 +251,98 @@ typedef struct
 /**
   * @}
   */
+
+/**
+ * @brief Типы задач (Job Types) для аппаратного планировщика ARM Mali Bifrost.
+ *
+ * Значения этих констант записываются в битовое поле `job_type` (биты [7:1])
+ * байта по смещению 0x10 в заголовке дескриптора задачи.
+ *
+ * Формула для байта 0x10: (MALI_JOB_TYPE_XXX << 1) | JOB_DESCRIPTOR_SIZE
+ */
+typedef enum {
+    /* 0x00: Служебный маркер планировщика. Напрямую в слоты не отправляется */
+    MALI_JOB_TYPE_NOT_STARTED   = 0x00,
+
+    /**
+     * 0x01: Задача-заглушка (Null Job).
+     * Не выполняет никакой работы на GPU, завершается мгновенно.
+     * Используется для отладки прерываний, тестирования шины/MMU
+     * или в качестве барьера синхронизации между другими задачами.
+     * Разрешена для отправки в ЛЮБОЙ слот (Slot 0, 1, 2).
+     */
+    MALI_JOB_TYPE_NULL          = 0x01,
+
+    /**
+     * 0x02: Запись значения в память (Write Value Job).
+     * Аппаратно записывает 32-битное или 64-битное число по указанному адресу в ОЗУ.
+     * Поддерживает режимы прямой записи константы, инкремента и атомарного сложения.
+     * Допустима строго для сервисного слота: SLOT 2.
+     * upd: проверено на T507-H: раьотает на всех трёх слотаж
+     */
+    MALI_JOB_TYPE_WRITE_VALUE   = 0x02,
+
+    /**
+     * 0x03: Очистка кэша (Cache Flush Job).
+     * Принудительно заставляет GPU инвалидировать и сбросить свои внутренние
+     * кэши данных (L2 cache) в системное ОЗУ. Используется для обеспечения
+     * когерентности памяти между GPU и CPU перед чтением результатов.
+     * Допустима строго для сервисного слота: SLOT 2.
+     */
+    MALI_JOB_TYPE_CACHE_FLUSH   = 0x03,
+
+    /**
+     * 0x04: Вычислительный шейдер (Compute Job).
+     * Запускает одномерную, двумерную или трехмерную сетку вычислительных потоков
+     * (OpenCL, Vulkan Compute). Требует заполнения структуры Thread Input и RSD.
+     * Допустима строго для вычислительного слота: SLOT 0.
+     */
+    MALI_JOB_TYPE_COMPUTE       = 0x04,
+
+    /**
+     * 0x05: Вершинный шейдер (Vertex Job).
+     * Классическая обработка вершин геометрии (трансформация координат, освещение).
+     * Читает Vertex Buffers и выполняет Vertex Shader.
+     * Допустима строго для вершинного слота: SLOT 0.
+     */
+    MALI_JOB_TYPE_VERTEX        = 0x05,
+
+    /**
+     * 0x06: Геометрический шейдер (Geometry Job).
+     * Используется для шейдеров геометрии и тесселяции.
+     * В архитектурах Bifrost (Mali-G31) в чистом виде практически не применяется,
+     * так как эти этапы обычно объединяются с тайлингом.
+     * Направляется в SLOT 0.
+     */
+    MALI_JOB_TYPE_GEOMETRY      = 0x06,
+
+    /**
+     * 0x07: Задача тайлинга (Tiler Job).
+     * Принимает трансформированные вершины сцены, собирает их в примитивы (треугольники)
+     * и распределяет по экранным плиткам (тайлам 16х16). Результат пишет в Polygon List.
+     * Требует валидной структуры Tiler Heap и Framebuffer Descriptor (MFBD).
+     * Допустима строго для слота геометрии: SLOT 0.
+     */
+    MALI_JOB_TYPE_TILER         = 0x07,
+
+    /**
+     * 0x08: Слитая задача (Fused Vertex + Tiler Job).
+     * Оптимизированный аппаратный режим, выполняющий Vertex Shader и Tiler Job
+     * одновременно в рамках одной задачи для экономии пропускной способности памяти.
+     * Допустима строго для слота: SLOT 0.
+     */
+    MALI_JOB_TYPE_FUSED         = 0x08,
+
+    /**
+     * 0x09: Фрагментный шейдер (Fragment / Pixel Job).
+     * Финальная стадия графического конвейера. Выполняет растеризацию, пиксельные шейдеры,
+     * тесты глубины/трафарета и блендинг. Читает Polygon List и пишет в Framebuffer (картинка).
+     * Допустима строго для фрагментного слота: SLOT 1.
+     */
+    MALI_JOB_TYPE_FRAGMENT      = 0x09
+
+} mali_job_type;
+
 
 #ifdef __cplusplus
 }
