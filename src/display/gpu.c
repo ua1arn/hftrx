@@ -24,209 +24,8 @@
 #define __OPENCL_VERSION__
 //#include "panfrost_regs.h"
 
-#include "mali_bifrost_v6.h"
+//#include "mali_bifrost_v6.h"
 #include "bifrost_v7.h"
-
-/**
-  * @brief  Writes values to the Common Job Header memory block for any Mali GPU job.
-  * @param  pHeader: Pointer to the MALI_JobHeader_TypeDef structure in RAM.
-  * @param  job_type: Type of the job (e.g. MALI_JOB_TYPE_FRAGMENT or MALI_JOB_TYPE_WRITE_VALUE).
-  * @param  use_barrier: Enable hardware execution barrier (blocking next slots until done).
-  * @param  job_index: Unique software identifier for tracking completion.
-  * @param  next_job_gpu_address: 64-bit physical GPU address of the next job descriptor (or 0 for tail).
-  * @retval None
-  */
-static void MALI_JobHeader_WriteValue(MALI_JobHeader_TypeDef *pHeader,
-                               uint8_t job_type,
-                               uint32_t use_barrier,
-                               uint32_t job_index,
-                               uint64_t next_job_gpu_address)
-{
-  /* 1. Сброс аппаратных статусных полей и адресов ошибок (должны быть 0 при отправке) */
-  pHeader->STATUS.EXCEPTION_STATUS      = UINT32_C(0x00000000);
-  pHeader->STATUS.FIRST_INCOMPLETE_TASK = UINT32_C(0x00000000);
-  pHeader->FAULT_ADDRESS                = UINT64_C(0x0000000000000000);
-
-  /* 2. Побитовая сборка нижнего 32-битного слова конфигурации (CONFIG_FLAGS) */
-  uint32_t config = UINT32_C(0);
-
-  /* Записываем размер дескриптора */
-  config |= ((uint32_t)MALI_JOB_DESC_SIZE_BIFROST << MALI_JOB_CTRL_DESC_SIZE_POS) & MALI_JOB_CTRL_DESC_SIZE_MASK;
-
-  /* Записываем тип задания (например, 0x13 или 0x02 / 0x03) */
-  config |= ((uint32_t)job_type << MALI_JOB_CTRL_TYPE_POS) & MALI_JOB_CTRL_TYPE_MASK;
-
-  /* Если требуется аппаратный барьер — выставляем бит 16 */
-  if (use_barrier != UINT32_C(0))
-  {
-    config |= MALI_JOB_CTRL_BARRIER_MASK;
-  }
-
-  pHeader->CFG.CONFIG_FLAGS = config;
-
-  /* 3. Запись индекса задачи для внутреннего трекера */
-  pHeader->CFG.JOB_INDEX = job_index;
-
-  /* 4. Запись 64-битного указателя на следующее задание в цепочке команд */
-  pHeader->NEXT_JOB = next_job_gpu_address;
-}
-
-/**
-  * @brief  Writes values to the Write Value Job Payload memory block for Mali Bifrost v6.
-  * @param  pPayload: Pointer to the MALI_WriteValueJobPayload_TypeDef structure in RAM.
-  * @param  target_gpu_address: 64-bit GPU physical address where data must be written.
-  * @param  value_to_write: 64-bit (or 32-bit) immediate data to store.
-  * @retval None
-  */
-static void MALI_WriteValueJobPayload_WriteValue(MALI_WriteValueJobPayload_TypeDef *pPayload,
-                                          uint64_t target_gpu_address,
-                                          uint64_t value_to_write)
-{
-  /* 1. Запись целевого 64-битного адреса памяти */
-  pPayload->ADDRESS = target_gpu_address;
-
-  /* 2. Запись флага типа операции (Immediate write) */
-  pPayload->CFG.VALUE_DESCRIPTOR = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64;
-
-  /* 3. Обязательное зануление аппаратного резерва */
-  pPayload->CFG.RESERVED_WORD1   = UINT32_C(0x00000000);
-
-  /* 4. Запись полезных данных */
-  pPayload->IMMEDIATE = value_to_write;
-}
-
-/* Выравнивание по стандарту CMSIS/GCC для кэш-линий */
-__attribute__((aligned(64))) static MALI_FragmentJobPayload_TypeDef FragmentJobPayload;
-
-/**
-  * @brief  Initializes the Mali Bifrost Fragment Job Payload for a Clear Screen operation.
-  * @param  pPayload: Pointer to a MALI_FragmentJobPayload_TypeDef structure to be initialized.
-  * @param  fbd_address: GPU physical address of the Framebuffer Descriptor (fbd_frag).
-  * @param  tile_meta_address: GPU physical address of the Tiler Heap (gpu_fragment_tile_meta).
-  * @param  width: Screen width in pixels (e.g., 800).
-  * @param  height: Screen height in pixels (e.g., 480).
-  * @retval None
-  */
-static void MALI_FragmentJobPayload_ClearInit(MALI_FragmentJobPayload_TypeDef *pPayload,
-                                       uint64_t fbd_address,
-                                       uint64_t tile_meta_address,
-                                       uint32_t width,
-                                       uint32_t height)
-{
-  /* 1. Настройка тегированного указателя на дескриптор кадрового буфера */
-  pPayload->FB_DESC = fbd_address | MALI_FBD_TYPE_MFBD;
-
-  /* 2. Привязка кучи выделения тайлов */
-  pPayload->TILE_ALLOC = tile_meta_address;
-
-  /* 3. Для операции Clear бэкенд фрагментов зануляется через 64-битную константу */
-  pPayload->FRAGMENT_BACKEND = UINT64_C(0x0000000000000000);
-
-  /* 4. Расчет и упаковка координат тайлов 16x16 */
-  uint32_t max_tile_x = (width / 16) - 1;
-  uint32_t max_tile_y = (height / 16) - 1;
-
-  pPayload->COORDS.MIN_TILE_COORD = MALI_PACK_TILE_COORD(0, 0);
-  pPayload->COORDS.MAX_TILE_COORD = MALI_PACK_TILE_COORD(max_tile_x, max_tile_y);
-#if 0
-  /* 5. Отключение потайлового отсечения */
-  pPayload->SCISSORED_TILE_BITMAP = UINT64_C(0x0000000000000000);
-
-  /* 6. Конфигурация планировщика задач фрагментного процессора */
-  pPayload->CTRL.TILES_IN_FLIGHT = MALI_TILES_IN_FLIGHT_DEFAULT;
-  pPayload->CTRL.CTRL_FLAGS      = 0x0000;
-  pPayload->CTRL.SHADING_RATE     = 0x00000000;
-
-  /* 7. Очистка полей выравнивания */
-  pPayload->RESERVED0 = UINT64_C(0x0000000000000000);
-  pPayload->RESERVED1 = UINT64_C(0x0000000000000000);
-#endif
-}
-
-/**
-  * @brief  Initializes the Mali Bifrost Framebuffer Descriptor for a Clear Screen operation.
-  * @param  pFbd: Pointer to a MALI_FramebufferDescriptor_TypeDef structure to be initialized.
-  * @param  tile_meta_address: GPU physical address of the Tiler Heap (gpu_fragment_tile_meta).
-  * @param  rt_address: GPU physical address of the Render Target structure (render_target).
-  * @param  width: Screen width in pixels (e.g., 800).
-  * @param  height: Screen height in pixels (e.g., 480).
-  * @retval None
-  */
-static void MALI_FramebufferDescriptor_ClearInit(MALI_FramebufferDescriptor_TypeDef *pFbd,
-                                          uint64_t tile_meta_address,
-                                          uint64_t rt_address,
-                                          uint32_t width,
-                                          uint32_t height)
-{
-  /* 1. Задаем физические размеры экрана за вычетом единицы */
-  pFbd->WIDTH_MINUS_1  = width - UINT32_C(1);
-  pFbd->HEIGHT_MINUS_1 = height - UINT32_C(1);
-
-  /* 2. Настраиваем маску сэмплинга для стандартного 1x MSAA */
-  pFbd->SAMPLE_MASK    = 1;//MALI_SAMPLE_MASK_1X;
-
-  /* 3. Указываем количество Render Target (1 RT) */
-  pFbd->RT_COUNT_AND_FLAGS = 0* 0x00040002 ;//MALI_RT_COUNT_1;
-
-  /* 4. Прописываем 64-битный адрес кучи распределения памяти тайлов */
-  pFbd->TILER_HEAP_START   = tile_meta_address;
-
-  /* 5. Настраиваем тегированный указатель на первый дескриптор Render Target */
-  pFbd->RENDER_TARGET_LIST = rt_address | 0*MALI_RT_TAG_MFBD;
-
-  /* 6. Полностью зануляем вторую половину структуры (смещение с 32 байта) */
-  /* Для bare-metal Clear-пассов здесь не должно быть флагов шейдеров и Z/Stencil */
-  pFbd->FRAGMENT_FRAME_SHADER = UINT64_C(0x0000000000000000);
-  pFbd->ZS_BLOCK              = UINT64_C(0x0000000000000000);
-  pFbd->RESERVED_1            = UINT64_C(0x0000000000000000);
-  pFbd->RESERVED_2            = UINT64_C(0x0000000000000000);
-}
-/**
-  * @brief  Initializes the Mali Bifrost Render Target Descriptor for a Clear Screen operation.
-  * @param  pRt: Pointer to a MALI_RenderTargetDescriptor_TypeDef structure to be initialized.
-  * @param  fb_pointer: GPU physical address of the raw target framebuffer in RAM.
-  * @param  width: Screen width in pixels (e.g., 800).
-  * @param  r: Red color component (0.0f to 1.0f).
-  * @param  g: Green color component (0.0f to 1.0f).
-  * @param  b: Blue color component (0.0f to 1.0f).
-  * @param  a: Alpha color component (0.0f to 1.0f).
-  * @retval None
-  */
-static void MALI_RenderTargetDescriptor_ClearInit(MALI_RenderTargetDescriptor_TypeDef *pRt,
-                                           uint64_t fb_pointer,
-                                           uint32_t width,
-                                           float r, float g, float b, float a)
-{
-  /* 1. Задаем формат пикселя и аппаратные флаги очистки фона */
-  pRt->FORMAT_FLAGS = MALI_RT_FORMAT_RGBA8_UNORM;
-
-  /* 2. Рассчитываем шаг строки (stride) в байтах с явным приведением типов */
-  pRt->STRIDE = width * MALI_RT_BPP_RGBA8;
-
-  /* 3. Прописываем чистый 64-битный указатель на область памяти вывода пикселей */
-  pRt->FRAMEBUFFER_POINTER = fb_pointer;
-
-  /* 4. Записываем цвет очистки экрана покомпонентно в формате FP32 */
-//  pRt->CLEAR_COLOR.RGBA.R = r;
-//  pRt->CLEAR_COLOR.RGBA.G = g;
-//  pRt->CLEAR_COLOR.RGBA.B = b;
-//  pRt->CLEAR_COLOR.RGBA.A = a;
-}
-
-/* Пример статической инициализации для вашего экрана 800x480 */
-void MALI_FusedJobPayload_ClearInit(MALI_BifrostV6_FusedJobPayload_TypeDef *payload, uint64_t fbd_frag_phys_addr)
-{
-    payload->gl_enables = 0;
-    payload->tiler_meta = 0;
-    payload->min_tile_x = 0;
-    payload->min_tile_y = 0;
-    payload->max_tile_x = (DIM_X / 16) - 1;
-    payload->max_tile_y = (DIM_Y / 16) - 1;
-
-    // Привязываем FBD с флагом MFBD (0x1)
-    payload->fb_desc = fbd_frag_phys_addr | 0*0x1;
-}
-
 
 // Выравнивание для кэш-линий GPU
 #define GPU_ALIGN __attribute__((aligned(64)))
@@ -493,55 +292,6 @@ enum mali_job_type {
 //    uint64_t next_job;               // 0x18: Физический адрес следующего дескриптора в цепочке (0, если последний)
 //} mali_job_header;
 
-//#define MALI_WRITE_VALUE_ZERO     3 // Специальный флаг для обнуления
-
-// Полный монолитный дескриптор задачи
-// MGS! подтверждена работа заголовка
-// mali_payload_write_value
-// https://android.googlesource.com/platform/external/mesa3d/+/e061bf004b5/src/panfrost/include/panfrost-job.h
-// https://github.com/dlehman-work/mesa/blob/master/src/panfrost/include/panfrost-job.h#L45
-
-//typedef struct __attribute__((packed, aligned(64))) {
-//    // 1. Стандартный заголовок (mali_job_header) - 32 байта
-//	mali_job_header header;
-//    // 2. Специфичный Payload - 32 байта
-//	uint64_t address;
-//	uint32_t value_descriptor;
-//	uint32_t reserved;
-//	uint64_t immediate;
-//	uint64_t pad;
-//} mali_write_value_job;
-
-static int gpu_run_write_value_test(void) {
-	PRINTF("gpu_run_write_value_test:\n");
-	static volatile uint64_t __attribute__((aligned(64))) gpu_test_target [2];
-
-	GPU_ALIGN static struct
-	{
-		MALI_JobHeader_TypeDef header;
-		MALI_WriteValueJobPayload_TypeDef payload;
-	} job, job2;
-
-    memset((void *) gpu_test_target, 0xFF, sizeof gpu_test_target);
-
-	MALI_JobHeader_WriteValue(& job2.header, MALI_JOB_TYPE_WRITE_VALUE, 1, 2, (uintptr_t) 0);
-	MALI_WriteValueJobPayload_WriteValue(& job2.payload, (uintptr_t) & gpu_test_target [0], 0xDEADBEEFABBA1980);
-
-	MALI_JobHeader_WriteValue(& job.header, MALI_JOB_TYPE_WRITE_VALUE, 0, 1, (uintptr_t) & job2);
-	MALI_WriteValueJobPayload_WriteValue(& job.payload, (uintptr_t) & gpu_test_target [1], 0x0123456789ABCDEF);
-
-	dcache_clean((uintptr_t) & job, sizeof job);
-	dcache_clean((uintptr_t) & job2, sizeof job2);
-	dcache_clean_invalidate((uintptr_t) & gpu_test_target, sizeof gpu_test_target);
-//	PRINTF("job For test:\n");
-//	printhex32(0, & job, sizeof job);
-//	PRINTF("job2 For test:\n");
-//	printhex32(0, & job2, sizeof job2);
-	gpu_submit_job(2, (uintptr_t) & job);
-	printhex64(0, (void *) & gpu_test_target, sizeof gpu_test_target);
-	return 0;
-}
-
 
 static int gpu_run_write_value_test_mesa(void) {
 	PRINTF("gpu_run_write_value_test_mesa:\n");
@@ -603,9 +353,7 @@ static int gpu_run_write_value_test_mesa(void) {
     printhex64(0, (void *) gpu_test_target, sizeof gpu_test_target);
     return 0;
 }
-
-#define GPU_ALIGN __attribute__((aligned(64)))
-
+#if 0
 /**
  * [Биты 0-3]:   Swizzle (перестановка каналов). 0 = RGBA, 1 = BGRA/ARGB и т.д.
  * [Биты 4-11]:  Аппаратный формат (RGBA8888 = 0x14, RGB565 = 0x0C).
@@ -902,6 +650,7 @@ static void gpu_clear_screen_on_fragment(uintptr_t framebuffer_phys_addr, uint32
     gpu_submit_job(1, (uintptr_t)&f_job_monolithic);
 }
 
+#endif
 
 //----------------------
 
@@ -1034,21 +783,9 @@ void gpu_test(void)
 
 #if 1
 	gpu_run_write_value_test_mesa();
-	gpu_run_write_value_test();
-//	gpu_run_write_value_test_mesa();
-//	gpu_run_write_value_test();
-//	gpu_run_write_value_test_mesa();
-//	gpu_run_write_value_test();
-//	gpu_run_write_value_test_mesa();
-//	gpu_run_write_value_test();
 	return;
-//	unsigned v = 0;
-//	while (run_write_value_test(v ++))
-//		;
-//    TP();
-//    for (;;)
-//    	;
 #endif
+#if 0
 	{
 		PRINTF("gpu_clear_screen test:\n");
 		ASSERT(LCDMODE_PIXELSIZE == 4);
@@ -1061,7 +798,7 @@ void gpu_test(void)
 	    for (;;)
 	    	;
 	}
-
+#endif
 }
 #define GPU_L2_MMU_CONFIG  0x0008 // Смещение внутри блока GPU_CONTROL (0x01800008)
 
