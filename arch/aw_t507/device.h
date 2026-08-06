@@ -213,7 +213,7 @@ typedef enum IRQn
 #define G2D_BASE ((uintptr_t) 0x01480000)             /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
-#define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 (Bifrost) Base */
+#define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 (Bifrost v6) Base */
 #define GPU_CONTROL_BASE ((uintptr_t) 0x01800000)     /*!< GPU_CONTROL  Base */
 #define GPU_JOB_CONTROL_BASE ((uintptr_t) 0x01801000) /*!< GPU_JOB_CONTROL  Base */
 #define GPU_MMU_BASE ((uintptr_t) 0x01802000)         /*!< GPU_MMU  Base */
@@ -226,7 +226,7 @@ typedef enum IRQn
 #define HSTIMER_BASE ((uintptr_t) 0x03005000)         /*!< HSTIMER High Speed Timer (HSTimer) Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Security ID Base */
 #define SMC_BASE ((uintptr_t) 0x03007000)             /*!< SMC  Base */
-#define SPC_BASE ((uintptr_t) 0x03008000)             /*!< SPC  Base */
+#define SPC_BASE ((uintptr_t) 0x03008000)             /*!< SPC Secure Peripherals Control Base */
 #define TIMER_BASE ((uintptr_t) 0x03009000)           /*!< TIMER  Base */
 #define PWM_BASE ((uintptr_t) 0x0300A000)             /*!< PWM Pulse Width Modulation module Base */
 #define GPIOA_BASE ((uintptr_t) 0x0300B000)           /*!< GPIO Port Controller Base */
@@ -1644,11 +1644,11 @@ typedef struct GPU_CONTROL_Type
     __IM  uint32_t STACK_READY_LO;                    /*!< Offset 0xE10 (RO) Core stack ready bitmap, low word */
     __IM  uint32_t STACK_READY_HI;                    /*!< Offset 0xE14 (RO) Core stack ready bitmap, high word */
          RESERVED(0xE18[0x0E20 - 0x0E18], uint8_t)
-    __IM  uint32_t STACK_PWRON_LO;                    /*!< Offset 0xE20 (RO) Core stack power on bitmap, low word */
-    __IM  uint32_t STACK_PWRON_HI;                    /*!< Offset 0xE24 (RO) Core stack power on bitmap, high word */
+    __OM  uint32_t STACK_PWRON_LO;                    /*!< Offset 0xE20 (RO) Core stack power on bitmap, low word */
+    __OM  uint32_t STACK_PWRON_HI;                    /*!< Offset 0xE24 (RO) Core stack power on bitmap, high word */
          RESERVED(0xE28[0x0E30 - 0x0E28], uint8_t)
-    __IM  uint32_t STACK_PWROFF_LO;                   /*!< Offset 0xE30 (RO) Core stack power off bitmap, low word */
-    __IM  uint32_t STACK_PWROFF_HI;                   /*!< Offset 0xE34 (RO) Core stack power off bitmap, high word */
+    __OM  uint32_t STACK_PWROFF_LO;                   /*!< Offset 0xE30 (RO) Core stack power off bitmap, low word */
+    __OM  uint32_t STACK_PWROFF_HI;                   /*!< Offset 0xE34 (RO) Core stack power off bitmap, high word */
          RESERVED(0xE38[0x0E40 - 0x0E38], uint8_t)
     __IM  uint32_t STACK_PWRTRANS_LO;                 /*!< Offset 0xE40 (RO) Core stack power transition bitmap, low word */
     __IM  uint32_t STACK_PWRTRANS_HI;                 /*!< Offset 0xE44 (RO) Core stack power transition bitmap, high word */
@@ -2796,11 +2796,21 @@ typedef struct SMHC_Type
 /*
  * @brief SPC
  */
-/*!< SPC  */
+/*!< SPC Secure Peripherals Control */
 typedef struct SPC_Type
 {
-         RESERVED(0x000[0x1000 - 0x0000], uint8_t)
-} SPC_TypeDef; /* size of structure = 0x1000 */
+    __IOM uint32_t SPC_DECPORT0_CTRL_REG;             /*!< Offset 0x000 Decode Port 0 Security Control Register */
+    __IOM uint32_t SPC_DECPORT1_CTRL_REG;             /*!< Offset 0x004 Decode Port 1 Security Control Register */
+    __IOM uint32_t SPC_DECPORT2_CTRL_REG;             /*!< Offset 0x008 Decode Port 2 Security Control Register */
+    __IOM uint32_t SPC_DECPORT3_CTRL_REG;             /*!< Offset 0x00C Decode Port 3 Security Control Register */
+         RESERVED(0x010[0x0040 - 0x0010], uint8_t)
+    __IOM uint32_t SPC_INT_MCU_CTRL_REG;              /*!< Offset 0x040 Interrupt Master Security Control Register */
+    __IOM uint32_t SPC_ILG_RESP_CTRL_REG;             /*!< Offset 0x044 Illegal Access Response Control Register (Реакция на несанкционированный доступ) */
+         RESERVED(0x048[0x00A0 - 0x0048], uint8_t)
+    __IOM uint32_t SPC_GPU_MAST_REG;                  /*!< Offset 0x0A0 Управление правами GPU как Master шины (бред) */
+    __IOM uint32_t SPC_GPU_SLAV_REG;                  /*!< Offset 0x0A4 Управление правами доступа CPU к регистрам GPU (бред) */
+         RESERVED(0x0A8[0x0100 - 0x00A8], uint8_t)
+} SPC_TypeDef; /* size of structure = 0x100 */
 /*
  * @brief SPI
  */
@@ -3822,7 +3832,7 @@ typedef struct VE_Type
 #define HSTIMER ((HSTIMER_TypeDef *) HSTIMER_BASE)    /*!< HSTIMER High Speed Timer (HSTimer) register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define SMC ((SMC_TypeDef *) SMC_BASE)                /*!< SMC  register set access pointer */
-#define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC  register set access pointer */
+#define SPC ((SPC_TypeDef *) SPC_BASE)                /*!< SPC Secure Peripherals Control register set access pointer */
 #define TIMER ((TIMER_TypeDef *) TIMER_BASE)          /*!< TIMER  register set access pointer */
 #define PWM ((PWM_TypeDef *) PWM_BASE)                /*!< PWM Pulse Width Modulation module register set access pointer */
 #define GPIOA ((GPIO_TypeDef *) GPIOA_BASE)           /*!< GPIOA Port Controller register set access pointer */

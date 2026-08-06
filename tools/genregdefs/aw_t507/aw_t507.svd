@@ -16490,9 +16490,81 @@
   </peripheral>
   <peripheral>
   <name>SPC</name>
-  <description></description>
+  <description>Secure Peripherals Control</description>
   <baseAddress>0x03008000</baseAddress>
   <registers>
+   <register>
+    <name>SPC_DECPORT0_CTRL_REG</name>
+    <displayName>SPC_DECPORT0_CTRL_REG</displayName>
+    <description>Decode Port 0 Security Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPC_DECPORT1_CTRL_REG</name>
+    <displayName>SPC_DECPORT1_CTRL_REG</displayName>
+    <description>Decode Port 1 Security Control Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPC_DECPORT2_CTRL_REG</name>
+    <displayName>SPC_DECPORT2_CTRL_REG</displayName>
+    <description>Decode Port 2 Security Control Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPC_DECPORT3_CTRL_REG</name>
+    <displayName>SPC_DECPORT3_CTRL_REG</displayName>
+    <description>Decode Port 3 Security Control Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPC_INT_MCU_CTRL_REG</name>
+    <displayName>SPC_INT_MCU_CTRL_REG</displayName>
+    <description>Interrupt Master Security Control Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPC_ILG_RESP_CTRL_REG</name>
+    <displayName>SPC_ILG_RESP_CTRL_REG</displayName>
+    <description>Illegal Access Response Control Register (Реакция на несанкционированный доступ)</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPC_GPU_MAST_REG</name>
+    <displayName>SPC_GPU_MAST_REG</displayName>
+    <description>Управление правами GPU как Master шины (бред)</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SPC_GPU_SLAV_REG</name>
+    <displayName>SPC_GPU_SLAV_REG</displayName>
+    <description>Управление правами доступа CPU к регистрам GPU (бред)</description>
+    <addressOffset>0x0A4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral>

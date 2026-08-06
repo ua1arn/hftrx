@@ -1,5 +1,19 @@
-#type; SPC
+#type; SPC; Secure Peripherals Control
 #base; SPC 0x03008000
+# проверено - занимает 256 байт в адресном пространстве
 
-#regdef; padding 0; 0x1000; set size
+## from H6
+#regdef; SPC_DECPORT0_CTRL_REG; 0x0000; Decode Port 0 Security Control Register
+#regdef; SPC_DECPORT1_CTRL_REG; 0x0004; Decode Port 1 Security Control Register
+#regdef; SPC_DECPORT2_CTRL_REG; 0x0008; Decode Port 2 Security Control Register
+#regdef; SPC_DECPORT3_CTRL_REG; 0x000C; Decode Port 3 Security Control Register
+
+#regdef; SPC_INT_MCU_CTRL_REG; 0x0040; Interrupt Master Security Control Register
+#regdef; SPC_ILG_RESP_CTRL_REG; 0x0044; Illegal Access Response Control Register (Реакция на несанкционированный доступ)
+
+## from AI (бред)
+#regdef; SPC_GPU_MAST_REG;	0x00A0;	Управление правами GPU как Master шины (бред)
+#regdef; SPC_GPU_SLAV_REG;	0x00A4;	Управление правами доступа CPU к регистрам GPU (бред)
+
+#regdef; padding 0; 0x100; set size
 #typeend;
