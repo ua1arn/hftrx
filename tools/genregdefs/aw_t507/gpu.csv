@@ -1,4 +1,4 @@
-#type; GPU; Mali G31 MP2 (Bifrost v6)
+#type; GPU; Mali G31 MP2 (Bifrost v7 - Chip ID=0x70930000)
 #base; GPU 0x01800000
 
 #irq; GPU_EVENT 126; GPU_EVENT interrupt

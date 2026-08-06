@@ -213,7 +213,7 @@ typedef enum IRQn
 #define G2D_BASE ((uintptr_t) 0x01480000)             /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_TOP_BASE ((uintptr_t) 0x01480000)         /*!< G2D_TOP Graphic 2D top Base */
 #define G2D_ROT_BASE ((uintptr_t) 0x014A8000)         /*!< G2D_ROT Graphic 2D Rotate Base */
-#define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 (Bifrost v6) Base */
+#define GPU_BASE ((uintptr_t) 0x01800000)             /*!< GPU Mali G31 MP2 (Bifrost v7 - Chip ID=0x70930000) Base */
 #define GPU_CONTROL_BASE ((uintptr_t) 0x01800000)     /*!< GPU_CONTROL  Base */
 #define GPU_JOB_CONTROL_BASE ((uintptr_t) 0x01801000) /*!< GPU_JOB_CONTROL  Base */
 #define GPU_MMU_BASE ((uintptr_t) 0x01802000)         /*!< GPU_MMU  Base */

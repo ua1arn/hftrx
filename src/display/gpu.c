@@ -21,10 +21,11 @@
 #include <string.h>
 
 #if CPUSTYLE_T507
-
+#define __OPENCL_VERSION__
 //#include "panfrost_regs.h"
 
 #include "mali_bifrost_v6.h"
+#include "v7.h"
 
 /**
   * @brief  Writes values to the Common Job Header memory block for any Mali GPU job.
@@ -456,20 +457,20 @@ enum mali_job_type {
 };
 #endif
 
-enum mali_draw_mode {
-        MALI_DRAW_NONE      = 0x0,
-        MALI_POINTS         = 0x1,
-        MALI_LINES          = 0x2,
-        MALI_LINE_STRIP     = 0x4,
-        MALI_LINE_LOOP      = 0x6,
-        MALI_TRIANGLES      = 0x8,
-        MALI_TRIANGLE_STRIP = 0xA,
-        MALI_TRIANGLE_FAN   = 0xC,
-        MALI_POLYGON        = 0xD,
-        MALI_QUADS          = 0xE,
-        MALI_QUAD_STRIP     = 0xF,
-        /* All other modes invalid */
-};
+//enum mali_draw_mode {
+//        MALI_DRAW_NONE      = 0x0,
+//        MALI_POINTS         = 0x1,
+//        MALI_LINES          = 0x2,
+//        MALI_LINE_STRIP     = 0x4,
+//        MALI_LINE_LOOP      = 0x6,
+//        MALI_TRIANGLES      = 0x8,
+//        MALI_TRIANGLE_STRIP = 0xA,
+//        MALI_TRIANGLE_FAN   = 0xC,
+//        MALI_POLYGON        = 0xD,
+//        MALI_QUADS          = 0xE,
+//        MALI_QUAD_STRIP     = 0xF,
+//        /* All other modes invalid */
+//};
 // Структура заголовка задачи (Mali Job Header)
 // MGS! подтверждена работа заголовка
 typedef struct __attribute__((packed)) {
@@ -1041,7 +1042,7 @@ void gpu_test(void)
 	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
 #endif
 
-#if 0
+#if 1
 	gpu_run_write_value_test_old();
 	gpu_run_write_value_test();
 	gpu_run_write_value_test_old();
