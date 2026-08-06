@@ -543,54 +543,48 @@ static int gpu_run_write_value_test(void) {
 }
 
 
-static int gpu_run_write_value_test_old(void) {
-	PRINTF("gpu_run_write_value_test_old:\n");
+static int gpu_run_write_value_test_mesa(void) {
+	PRINTF("gpu_run_write_value_test_mesa:\n");
 
 	// Переменная-цель, куда будет писать GPU.
-	// Обязательно выравниваем по кэш-линии!
-	static volatile uint64_t __attribute__((aligned(64))) gpu_test_target [2];
-	unsigned v = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64;
-    // Создаем структуру дескриптора в памяти
-	MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_TYPE pjob = { MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_header };
-	MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_TYPE pjob2 = { MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_header };
+	static volatile uint64_t GPU_ALIGN gpu_test_target [2];
+
+	MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_TYPE pjob = {
+			MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_header,
+			.type = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64
+	};
+	MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_TYPE pjob2 = {
+			MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_header,
+			.type = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64
+	};
 
 	GPU_ALIGN static MALI_WRITE_VALUE_JOB_PACKED_T job_p;
 	GPU_ALIGN static MALI_WRITE_VALUE_JOB_PACKED_T job2_p;
 
-    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE jh = { MALI_WRITE_VALUE_JOB_SECTION_HEADER_header };
-    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE jh2 = { MALI_WRITE_VALUE_JOB_SECTION_HEADER_header };
+    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE jh = {
+    		MALI_WRITE_VALUE_JOB_SECTION_HEADER_header,
+			.type = MALI_JOB_TYPE_WRITE_VALUE
+    };
+    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE jh2 = {
+    		MALI_WRITE_VALUE_JOB_SECTION_HEADER_header,
+			.type = MALI_JOB_TYPE_WRITE_VALUE
+    };
     // Заполняем заголовок
     jh.exception_status = 0;
-    //jh.is_64b = 1; // Используем 64-битные указатели
-    jh.type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
     jh.barrier = 0;			// last
     jh.index = 1;
     jh.next = (uintptr_t) & job2_p;            // Цепочка заканчивается на ней
 
     jh2.exception_status = 0;
-    //jh2.is_64b = 1; // Используем 64-битные указатели
-    jh2.type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
     jh2.barrier = 1;			// last
     jh2.index = 2;
     jh2.next = (uintptr_t) 0;            // Цепочка заканчивается на ней
 
-    /**
-     * value_descriptor:
-     * 0 - fault operation
-     * 1 - timestamp?
-     * 2 - timestamp?
-     * 3 - zero
-     * 4 - 8 bit
-     * 5 - 16 bit
-     * 6 - 32 bit
-     * 7 - 64 bit
-     */
     // Заполняем Payload записи
     pjob.address = (uintptr_t) & gpu_test_target [0]; // Физический адрес цели
-    pjob.type = v;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
     pjob.immediate_value = 0xDEADBEEFABBA1980;               // Данные для записи
+
     pjob2.address = (uintptr_t) & gpu_test_target [1]; // Физический адрес цели
-    pjob2.type = v;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
     pjob2.immediate_value = 0x0123456789ABCDEF;               // Данные для записи
 
     MALI_JOB_HEADER_pack(& job_p.HEADER, & jh);
@@ -598,20 +592,10 @@ static int gpu_run_write_value_test_old(void) {
 	MALI_WRITE_VALUE_JOB_PAYLOAD_pack(& job_p.PAYLOAD, & pjob);
 	MALI_WRITE_VALUE_JOB_PAYLOAD_pack(& job2_p.PAYLOAD, & pjob2);
 
-    // КРИТИЧЕСКИ ВАЖНО ДЛЯ BARE METAL:
-    // Очищаем кэш CPU, чтобы GPU читал структуру из физического ОЗУ,
-    // и инвалидируем регион gpu_test_target, чтобы CPU позже не прочитал старые данные из своего L1/L2.
     dcache_clean_invalidate((uintptr_t)&job_p, sizeof(job_p));
     dcache_clean_invalidate((uintptr_t)&job2_p, sizeof(job2_p));
 
     dcache_clean_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
-
-    // Важно: Адреса job и gpu_test_target должны быть предварительно
-    // промаплены в MMU вашего Mali-G31 с правами Read/Write!
-    //	PRINTF("job For test:\n");
-    //	printhex32(0, & job, sizeof job);
-    //	PRINTF("job2 For test:\n");
-    //	printhex32(0, & job2, sizeof job2);
 
     if (gpu_submit_job(2, (uintptr_t) & job_p))
     	return 1;	// err
@@ -1049,13 +1033,13 @@ void gpu_test(void)
 #endif
 
 #if 1
-	gpu_run_write_value_test_old();
+	gpu_run_write_value_test_mesa();
+	gpu_run_write_value_test();
+//	gpu_run_write_value_test_mesa();
 //	gpu_run_write_value_test();
-//	gpu_run_write_value_test_old();
+//	gpu_run_write_value_test_mesa();
 //	gpu_run_write_value_test();
-//	gpu_run_write_value_test_old();
-//	gpu_run_write_value_test();
-//	gpu_run_write_value_test_old();
+//	gpu_run_write_value_test_mesa();
 //	gpu_run_write_value_test();
 	return;
 //	unsigned v = 0;
