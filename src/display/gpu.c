@@ -164,7 +164,7 @@ static void MALI_FramebufferDescriptor_ClearInit(MALI_FramebufferDescriptor_Type
   pFbd->SAMPLE_MASK    = 1;//MALI_SAMPLE_MASK_1X;
 
   /* 3. Указываем количество Render Target (1 RT) */
-  pFbd->RT_COUNT_AND_FLAGS = MALI_RT_COUNT_1;
+  pFbd->RT_COUNT_AND_FLAGS = 0x00040002 ;//MALI_RT_COUNT_1;
 
   /* 4. Прописываем 64-битный адрес кучи распределения памяти тайлов */
   pFbd->TILER_HEAP_START   = tile_meta_address;
@@ -625,11 +625,14 @@ static int gpu_run_write_value_test_old(void) {
 //    UINT32_C(0x00000000), UINT32_C(0x00000000), /* Системный префикс */
 //    UINT32_C(0x7C003C00), UINT32_C(0x00000000), /* Команда останова и blend-прохода */
 //};
+//__attribute__((aligned(64))) static const uint32_t bifrost_dummy_fs[] = {
+//    UINT32_C(0x00007800), UINT32_C(0x00000000), /* Первое 64-битное слово - зануленный заголовок */
+//    UINT32_C(0x00007800), UINT32_C(0x00000000)  /* Второе 64-битное слово - безусловный END/NOP для v6 */
+//};
 __attribute__((aligned(64))) static const uint32_t bifrost_dummy_fs[] = {
-    UINT32_C(0x00007800), UINT32_C(0x00000000), /* Первое 64-битное слово - зануленный заголовок */
-    UINT32_C(0x00007800), UINT32_C(0x00000000)  /* Второе 64-битное слово - безусловный END/NOP для v6 */
+    UINT32_C(0x00000000), UINT32_C(0x00000000), /* Системный заголовок / Клауза */
+    UINT32_C(0x00000004), UINT32_C(0x00001000)  /* Аппаратная v6 команда Blend Writeout RT0 + END */
 };
-
 
 /** @addtogroup MALI_Bifrost_Renderer_Structures
   * @{
