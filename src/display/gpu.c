@@ -161,7 +161,7 @@ static void MALI_FramebufferDescriptor_ClearInit(MALI_FramebufferDescriptor_Type
   pFbd->HEIGHT_MINUS_1 = height - UINT32_C(1);
 
   /* 2. Настраиваем маску сэмплинга для стандартного 1x MSAA */
-  pFbd->SAMPLE_MASK    = MALI_SAMPLE_MASK_1X;
+  pFbd->SAMPLE_MASK    = 1;//MALI_SAMPLE_MASK_1X;
 
   /* 3. Указываем количество Render Target (1 RT) */
   pFbd->RT_COUNT_AND_FLAGS = MALI_RT_COUNT_1;
@@ -520,7 +520,8 @@ static int gpu_run_write_value_test(void) {
 //	PRINTF("job2 For test:\n");
 //	printhex32(0, & job2, sizeof job2);
 	gpu_submit_job(2, (uintptr_t) & job);
-	printhex64(0, & gpu_test_target, sizeof gpu_test_target);
+	printhex64(0, (void *) & gpu_test_target, sizeof gpu_test_target);
+	return 0;
 }
 
 
@@ -619,219 +620,181 @@ static int gpu_run_write_value_test_old(void) {
 #define GPU_ALIGN_64  __attribute__((aligned(64)))
 #define GPU_ALIGN_128 __attribute__((aligned(128)))
 #define GPU_PACKED    __attribute__((packed))
+/* Бинарный код пустого фрагментного шейдера Bifrost v6 (Mali-G31) */
+//__attribute__((aligned(64))) static const uint32_t bifrost_dummy_fs[] = {
+//    UINT32_C(0x00000000), UINT32_C(0x00000000), /* Системный префикс */
+//    UINT32_C(0x7C003C00), UINT32_C(0x00000000), /* Команда останова и blend-прохода */
+//};
+__attribute__((aligned(64))) static const uint32_t bifrost_dummy_fs[] = {
+    UINT32_C(0x00007800), UINT32_C(0x00000000), /* Первое 64-битное слово - зануленный заголовок */
+    UINT32_C(0x00007800), UINT32_C(0x00000000)  /* Второе 64-битное слово - безусловный END/NOP для v6 */
+};
+
+
+/** @addtogroup MALI_Bifrost_Renderer_Structures
+  * @{
+  */
+
+/**
+  * @brief  Mali Bifrost Blend Descriptor Structure definition
+  * @note   Takes exactly 8 bytes per Render Target.
+  */
+typedef struct
+{
+  __IO uint32_t BLEND_FLAGS;          /*!< Blending equation and format configuration flags */
+  __IO uint32_t BLEND_CONSTANT;       /*!< Fixed blend color constant (if used) */
+} MALI_BlendDescriptor_TypeDef;
+
+/**
+  * @brief  Mali Bifrost Renderer State Descriptor Structure definition
+  * @note   Combined shader metadata layout according to bifrost.xml specification.
+  *         Must be 16-byte aligned in RAM. Total size with 1 RT = 24 bytes.
+  */
+typedef struct
+{
+  /* Word 0 (Bytes 0x00 - 0x07): <field name="Shader Code Ptr" start="0:0" end="0:63" type="address"/> */
+  __IO uint64_t SHADER_CODE_PTR;      /*!< 64-bit GPU virtual/physical pointer to raw shader binary program */
+
+  /* Word 1 (Bytes 0x08 - 0x0F): Аппаратные свойства и счетчики ресурсов */
+  union {
+    __IO uint64_t PROPERTIES;         /*!< Полный 64-битный регистр свойств для атомарной записи */
+    struct {
+      __IO uint16_t SAMPLER_COUNT;    /*!< Number of samplers used by shader (0 for clear) */
+      __IO uint16_t TEXTURE_COUNT;    /*!< Number of textures bound (0 for clear) */
+      __IO uint16_t ATTRIBUTE_COUNT;  /*!< Number of vertex attributes (0 for fragment shader) */
+      __IO uint16_t VARYING_COUNT;    /*!< Number of varying interpolators (0 for clear) */
+    };
+  } PROP;
+
+  /* Секция дескрипторов блендинга (Смещение 16 байт) */
+  MALI_BlendDescriptor_TypeDef BLEND[UINT32_C(1)]; /*!< Blend descriptor for Render Target 0 */
+
+} MALI_RendererState_TypeDef;
+
+/**
+  * @}
+  */
+
+/** @defgroup MALI_RendererState_Constants
+  * @{
+  */
+/* Тег для указателя на бинарный код шейдера в Bifrost (обычно 0) */
+#define MALI_SHADER_CODE_TAG               UINT64_C(0x0000000000000000)
+
+/**
+  * @brief  Аппаратные флаги блендинга для безусловной перезаписи (Replace mode).
+  * @note   Маска 0x00011E00 кодирует в Bifrost v6 отключение альфа-смешивания
+  *         и принудительный сброс сырых пикселей тайл-буфера в RAM (Raw write-out).
+  */
+#define MALI_BLEND_FLAGS_REPLACE_RAW8      UINT32_C(0x00011E00)
+/**
+  * @}
+*/
+
+/**
+  * @brief  Initializes the Renderer State and Blend metadata for a Clear Screen operation.
+  * @note   Configures the descriptor for a dummy fragment shader pass on Mali-G31.
+  * @param  pState: Pointer to a MALI_RendererState_TypeDef structure in RAM to be initialized.
+  * @param  shader_binary_gpu_address: Pure 64-bit physical/virtual GPU address of bifrost_dummy_fs.
+  * @retval None
+  */
+void MALI_RendererState_ClearInit(MALI_RendererState_TypeDef *pState, uint64_t shader_binary_gpu_address)
+{
+  /* 1. Записываем 64-битный адрес кода шейдера с аппаратным тегом вызова (0x4) */
+  pState->SHADER_CODE_PTR = shader_binary_gpu_address | MALI_SHADER_CODE_TAG_BIFROST_V6;
+
+  /* 2. Побитовая сборка 64-битного поля Properties через анонимное объединение */
+  uint64_t props = UINT64_C(0);
+
+  /* Для операции Clear Screen счётчики ресурсов шейдера равны нулю */
+  props |= (UINT64_C(0) << MALI_RENDER_PROP_SAMPLER_COUNT_POS);
+  props |= (UINT64_C(0) << MALI_RENDER_PROP_TEXTURE_COUNT_POS);
+  props |= (UINT64_C(0) << MALI_RENDER_PROP_ATTRIBUTE_COUNT_POS);
+  props |= (UINT64_C(0) << MALI_RENDER_PROP_VARYING_COUNT_POS);
+
+  /* Принудительно взводим аппаратный бит аллокации потоков (Thread/Register Pre-allocation) */
+  props |= MALI_RENDER_PROP_FRAG_THREAD_CONFIG; // Сгенерирует маску 0x0000200000000000
+
+  /* Записываем собранную маску в 64-битное поле объединения */
+  pState->PROP.PROPERTIES = props;
+
+  /* 3. Настраиваем дескриптор блендинга для Render Target 0 (Подавление смешивания, чистый Replace) */
+  pState->BLEND[UINT32_C(0)].BLEND_FLAGS    = MALI_BLEND_FLAGS_REPLACE_RAW32;
+  pState->BLEND[UINT32_C(0)].BLEND_CONSTANT = UINT32_C(0x00000000);
+}
+
+/* Выделение управляющих дескрипторов в системном ОЗУ с выравниванием по кэш-линиям */
+__attribute__((aligned(64))) static MALI_FramebufferDescriptor_TypeDef    fbd_frag;
+__attribute__((aligned(64))) static MALI_RenderTargetDescriptor_TypeDef   render_target;
+
+/* Фиктивная область метаданных тайлов */
+__attribute__((aligned(4096))) static uint8_t gpu_fragment_tile_meta_buff[64 * 1024];
+__attribute__((aligned(64))) static uint64_t gpu_fragment_tile_meta[16] =
+{
+	(uintptr_t) gpu_fragment_tile_meta_buff,
+	0xFFFF,
+};
+/* Метаданные фрагментного шейдера */
+__attribute__((aligned(16))) static MALI_RendererState_TypeDef            fragment_renderer_state;
 
 static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
 {
-	// Выделяем 64 байта под фиктивный контекст отсечения (Scissor/Tile Meta)
-	GPU_ALIGN static uint64_t gpu_fragment_tile_meta [16] = { 0x00000001, };
-	/* Структура описания одной поверхности вывода (Render Target Descriptor) */
-	typedef struct GPU_PACKED {
-	    uint32_t format_flags;            // Формат пикселя (RGBA8 + Clear флаги)
-	    uint32_t stride;                  // Шаг строки в байтах (width * 4)
-	    uint64_t framebuffer_pointer;     // Чистый 64-битный адрес сырого буфера в RAM
-	    float clear_color [4];             // Цвет очистки в формате RGBA (4 x FP32 для Bifrost)
-	} mali_bifrost_render_target;
+	/* Монолитная структура фрагментного задания для отправки в Job Slot 1 */
+	typedef struct __attribute__((packed, aligned(64))) {
+	    MALI_JobHeader_TypeDef           HEADER;   /*!< Общий аппаратный заголовок задания */
+	    MALI_FragmentJobPayload_TypeDef  PAYLOAD;  /*!< Полезная нагрузка фрагментного процессора Bifrost v6 */
+	} MALI_FragmentJob_TypeDef;
 
-	/**
-	 * @brief Фрагментный дескриптор кадра (MFBD Framebuffer Descriptor) для Mali Bifrost v6.
-	 * Точный размер: 64 байта. Выравнивание: строго 64 байта.
-	 */
-	typedef struct GPU_PACKED {
-		/**
-		 * Смещение 0x00 | Размер: 32 бита (4 байта)
-		 * Разрешение экрана: Ширина минус 1 (Width - 1).
-		 * Пример для разрешения 1024x768: 1024 - 1 = 1023 (0x000003FF).
-		 */
-		uint32_t width_minus_1;
+	__attribute__((aligned(64))) static GPU_ALIGN MALI_FragmentJob_TypeDef f_job_monolithic;
+    // ... [Инициализация памяти __builtin_memset] ...
 
-		/**
-		 * Смещение 0x04 | Размер: 32 бита (4 байта)
-		 * Разрешение экрана: Высота минус 1 (Height - 1).
-		 * Пример для разрешения 1024x768: 768 - 1 = 767 (0x000002FF).
-		 */
-		uint32_t height_minus_1;
+    // 1. ИНИЦИАЛИЗАЦИЯ МЕТАДАННЫХ ШЕЙДЕРА (Renderer State)
+	MALI_RendererState_ClearInit(& fragment_renderer_state, (uint64_t)&bifrost_dummy_fs);
 
-		/**
-		 * Смещение 0x08 | Размер: 32 бита (4 байта)
-		 * Маска сглаживания и выборки тайлов (Sample Mask).
-		 * Для стандартного рендеринга плитками 16х16 без MSAA выставляется: 0x0000FFFF.
-		 */
-		uint32_t sample_mask;
+    // 2. ИНИЦИАЛИЗАЦИЯ RENDER TARGET
+    MALI_RenderTargetDescriptor_ClearInit(& render_target, framebuffer_phys_addr, width, 1, 1, 1, 1);
+    render_target.FRAMEBUFFER_POINTER = framebuffer_phys_addr;
+    render_target.CLEAR_COLOR.RGBA.R = 1.0f; // Пурпурный цвет
+    // ... [Настройка формата и STRIDE] ...
+    render_target.FRAMEBUFFER_POINTER = framebuffer_phys_addr;
+    render_target.FORMAT_FLAGS = FORMAT_ARGB8888;
+    render_target.STRIDE = stride;
 
-		/**
-		 * Смещение 0x0C | Размер: 32 бита (4 байта)
-		 * Аппаратные свойства кадра (Framebuffer Properties).
-		 * [Биты 0-2]:   Размер тайла (0 = 16x16).
-		 * [Биты 3-7]:   Служебные конфигурации кэша плиток.
-		 * Для базового Clear Pass на "голом железе" пишем константу: 0x00000002.
-		 */
-		uint32_t rt_count_and_flags;
+    // 3. ИНИЦИАЛИЗАЦИЯ FRAMEBUFFER DESCRIPTOR (MFBD)
+	MALI_FramebufferDescriptor_ClearInit(& fbd_frag, (uintptr_t) gpu_fragment_tile_meta, (uintptr_t) & render_target, width, height);
+    fbd_frag.RENDER_TARGET_LIST = (uint64_t)&render_target | MALI_RT_TAG_MFBD;
+    fbd_frag.FRAGMENT_FRAME_SHADER = (uint64_t)&fragment_renderer_state;
+    // ... [Настройка размеров, TILER_HEAP_START и т.д.] ...
 
-		/**
-		 * Смещение 0x10 | Размер: 64 бита (8 байт)
-		 * Физический адрес структуры кучи тайлера (mali_bifrost_tiler_heap).
-		 * Для чистой заливки экрана (Clear Pass) геометрия отсутствует,
-		 * поэтому поле можно занулить: 0x0000000000000000.
-		 */
-		uint64_t tiler_heap_ptr;
+    // 4. СБОРКА МОНОЛИТНОГО FRAGMENT JOB (Заголовок + Полезная нагрузка)
+    MALI_JobHeader_WriteValue(&f_job_monolithic.HEADER, MALI_FRAGMENT_JOB_TYPE, 1, 1, 0);
+    MALI_FragmentJobPayload_ClearInit(& f_job_monolithic.PAYLOAD, (uint64_t)&fbd_frag, (uintptr_t) gpu_fragment_tile_meta /* ? */, width, height);
+    f_job_monolithic.PAYLOAD.FB_DESC = (uint64_t)&fbd_frag | MALI_FBD_TYPE_MFBD;
+    // ... [Расчет тайлов и заполнение остальных полей] ...
 
-		/**
-		 * Смещение 0x18 | Размер: 64 бита (8 байт)
-		 * Физический адрес структуры (или массива структур) поверхностей вывода.
-		 * Сюда передается адрес вашей 32-битной mali_bifrost_render_target.
-		 * КРИТИЧНО ДЛЯ ШИНЫ MALI: Адрес Обязан иметь суффикс валидности `| UINT64_C(1)`.
-		 */
-		uint64_t render_target_ptr;
+    // 5. ВЫТАЛКИВАНИЕ ДАННЫХ ИЗ КЭША В ОЗУ
+    // ... [dcache_clean для всех дескрипторов] ...
+    dcache_clean_invalidate((uintptr_t)&f_job_monolithic, sizeof f_job_monolithic );
 
-		/**
-		 * Смещение 0x20 | Размер: 32 бита (4 байта)
-		 * Блок аппаратного управления тайлами (Tile Clear/Reload Flags).
-		 * [Бит 12]:  Активирует быструю аппаратную очистку цвета (Fast Color Clear).
-		 * [Бит 13]:  Активирует очистку Z-буфера глубины.
-		 * [Бит 14]:  Активирует очистку буфера трафарета (Stencil).
-		 * Для чистой заливки цвета выставляется маска: 0x00001000.
-		 */
-		uint32_t clear_flags;
+    dcache_clean_invalidate((uintptr_t)&fbd_frag, sizeof fbd_frag );
+    dcache_clean_invalidate((uintptr_t)&render_target, sizeof render_target );
+    dcache_clean_invalidate((uintptr_t)&gpu_fragment_tile_meta_buff, sizeof gpu_fragment_tile_meta_buff );
+    dcache_clean_invalidate((uintptr_t)&gpu_fragment_tile_meta, sizeof gpu_fragment_tile_meta );
+    dcache_clean_invalidate((uintptr_t)&fragment_renderer_state, sizeof fragment_renderer_state );
 
-		/**
-		 * Смещение 0x24 | Размер: 32 бита (4 байта)
-		 * Количество активных поверхностей вывода (Render Target Count) минус 1.
-		 * Для отрисовки в один буфер экрана (MRT = 1) пишем: 1 - 1 = 0x00000000.
-		 */
-		uint32_t rt_count_minus_1;
+    PRINTHEX32(bifrost_dummy_fs);
+    PRINTHEX32(f_job_monolithic);
+    PRINTHEX32(fbd_frag);
+    PRINTHEX32(render_target);
+    PRINTHEX32(gpu_fragment_tile_meta);
+    PRINTHEX32(fragment_renderer_state);
 
-		/**
-		 * Смещение 0x28 | Размер: 128 бит (16 байт)
-		 * Скрытые системные параметры и маски кэша глубины/трафарета Bifrost v6.
-		 * На этапе bare-metal тестов и заливки цвета строго зануляются.
-		 */
-		uint64_t unk_bifrost_v6_zs_control;
-		uint64_t unk_bifrost_v6_padding1;
+    __DSB(); __ISB();
 
-		/**
-		 * Смещение 0x38 | Размер: 64 бита (8 байт)
-		 * Финальный паддинг структуры. Резерв планировщика для пакетного чтения.
-		 * Должен быть гарантированно очищен нулями.
-		 */
-		uint64_t unk_bifrost_v6_padding2;
-
-	} mali_bifrost_fb_desc_fragment;
-
-	/* Задача фрагментного шейдера (Fragment Job — 128 байт) */
-	typedef struct GPU_PACKED GPU_ALIGN_64 {
-		mali_job_header header;          // 0x00 - 0x1F: Стандартный заголовок (32 байта)
-		uint64_t fb_desc;             	// FBD адрес с тегом | 0x1
-		uint64_t tile_alloc;              // Обязательный адрес Tiler Heap
-		uint64_t fragment_backend;        // Обычно 0x0
-	    uint32_t min_tile_coord;          // (min_y << 8) | min_x
-	    uint32_t max_tile_coord;          // (max_y << 8) | max_x
-	    uint64_t scissored_tile_bitmap;   // 0x0 (без отсечения)
-	    uint16_t tiles_in_flight;         // Зависит от ядер, например 0x3F
-	    uint16_t reserved;
-	    uint32_t shading_rate;            // 0x0
-	   } mali_fragment_job_bifrost;
-
-	/* Выделение управляющих структур в системном ОЗУ */
-	GPU_ALIGN_64  static mali_fragment_job_bifrost   f_job;
-	GPU_ALIGN_128 static mali_bifrost_fb_desc_fragment fbd_frag;
-	GPU_ALIGN_64  static mali_bifrost_render_target  render_target;
-	GPU_ALIGN_64  static uint8_t zzz [4096];
-
-    /* Полностью очищаем память управляющих дескрипторов на CPU */
-    //__builtin_memset(&gpu_fragment_tile_meta, 0, sizeof gpu_fragment_tile_meta);
-    __builtin_memset(&f_job, 0, sizeof f_job);
-    __builtin_memset(&fbd_frag, 0, sizeof fbd_frag);
-    __builtin_memset(&render_target, 0, sizeof render_target);
-
-    // =========================================================================
-    // 1. ИНИЦИАЛИЗАЦИЯ RENDER TARGET (Куда и какой цвет лить)
-    // =========================================================================
-    render_target.format_flags = FORMAT_ARGB8888 | 0x00010000 ; // Add режим аппаратной очистки (Clear Pass)
-    render_target.framebuffer_pointer = framebuffer_phys_addr; // Физический адрес памяти экрана
-    render_target.stride = stride;                   // Шаг строки в байтах
-
-    // Задаем цвет сплошной заливки (Формат RGBA: R=00, G=FF, B=00, A=FF — Зеленый)
-//    render_target.clear_color_lo = 0;//COLORPIP_GREEN;
-//    render_target.clear_color_hi = 0x00000000;
-    render_target.clear_color[0] = 1.0f;     // R (Пурпурный)
-    render_target.clear_color[1] = 0.0f;     // G
-    render_target.clear_color[2] = 1.0f;     // B
-    render_target.clear_color[3] = 1.0f;     // A
-
-    // =========================================================================
-    // 2. ИНИЦИАЛИЗАЦИЯ FRAMEBUFFER DESCRIPTOR (MFBD)
-    // =========================================================================
-    fbd_frag.width_minus_1 = width - 1;
-    fbd_frag.height_minus_1 = height - 1;
-    fbd_frag.sample_mask = 0x0000FFFF;               // Разметка под стандартные тайлы
-    fbd_frag.rt_count_and_flags = 0;//0x00000002;                 // Системный флаг Bifrost v6
-    fbd_frag.tiler_heap_ptr = (uintptr_t) & gpu_fragment_tile_meta;                     // Для Clear Pass геометрии нет, куча = 0
-    fbd_frag.unk_bifrost_v6_zs_control = 0;
-    fbd_frag.unk_bifrost_v6_padding1 = 0;
-    // Привязываем Render Target к MFBD с обязательным аппаратным суффиксом | 1
-    fbd_frag.render_target_ptr = (uintptr_t)&render_target | UINT64_C(1);
-
-
-    // Бит 12 (0x1000) сообщает фрагментному процессору: "Выполни аппаратный Clear цвета"
-    fbd_frag.clear_flags = 0x00001000;
-
-    // =========================================================================
-    // 3. СБОРКА FRAGMENT JOB (Для Slot 1)
-    // =========================================================================
-    f_job.header.exception_status = 0;
-    f_job.header.first_incomplete_task = 0;
-    f_job.header.fault_pointer = 0;
-
-    // (MALI_JOB_TYPE_FRAGMENT << 1) | MALI_JOB_64 -> (9 << 1) | 1 = 19 (0x13)
-    f_job.header.job_type = MALI_JOB_TYPE_FRAGMENT;
-    f_job.header.job_descriptor_size = 1;
-    f_job.header.job_barrier = 1;                // Закрываем пасс барьером
-    f_job.header.job_index = 1;                  // ID задачи в скорборде = 1
-    f_job.header.next_job = 0;                   // Одиночный джоб
-
-    f_job.fb_desc = (uintptr_t)&fbd_frag | UINT64_C(1);        // Ссылка на дескриптор кадра
-    f_job.tile_alloc = (uintptr_t) & gpu_fragment_tile_meta;
-    f_job.min_tile_coord = MALI_COORDINATE_TO_TILE_MIN(0, 0);
-    f_job.max_tile_coord = MALI_COORDINATE_TO_TILE_MAX(width, height);
-//    f_job.polygon_list = 0;                      // Геометрии нет, списки полигонов = 0
-//    f_job.unk_bifrost_v6_ptr = (uintptr_t)&gpu_fragment_tile_meta | UINT64_C(1); // 0x30
-
-    f_job.scissored_tile_bitmap = 0;
-    f_job.tiles_in_flight = 0x003F;
-    f_job.shading_rate = 0;
-
-    // =========================================================================
-    // 4. СИНХРОНИЗАЦИЯ КЭША CPU
-    // =========================================================================
-    dcache_clean((uintptr_t)&render_target, sizeof render_target);
-    dcache_clean((uintptr_t)&fbd_frag, sizeof fbd_frag);
-    dcache_clean((uintptr_t)&gpu_fragment_tile_meta, sizeof gpu_fragment_tile_meta);
-
-    /* Сбрасываем и инвалидируем саму 128-байтную фрагментную задачу */
-    dcache_clean_invalidate((uintptr_t)&f_job, sizeof f_job);
-
-    printhex32_titled((uintptr_t)&gpu_fragment_tile_meta, &gpu_fragment_tile_meta, sizeof gpu_fragment_tile_meta, "gpu_fragment_tile_meta");
-    printhex32_titled((uintptr_t)&render_target, &render_target, sizeof render_target, "render_target");
-    printhex32_titled((uintptr_t)&fbd_frag, &fbd_frag, sizeof fbd_frag, "fbd_frag");
-    printhex32_titled((uintptr_t)&f_job, &f_job, sizeof f_job, "f_job");
-
-    __DSB();
-    __ISB();
-
-    // =========================================================================
-    // 5. ЗАПУСК ЧЕРЕЗ ВАШУ ФУНКЦИЮ В СЛОТ 1
-    // =========================================================================
-    /*
-     * ВНИМАНИЕ: Фрагментные задачи аппаратно завязаны на СЛОТ 1.
-     * Запускаем f_job в Slot 1. GPU раскидает операцию очистки по тайлам
-     * и мгновенно зальет весь прямоугольник зеленым цветом.
-     */
-    int result = gpu_submit_job(1, (uintptr_t)&f_job);
-
-    if (result == 0) {
-        // ПОЛНЫЙ УСПЕХ! Буфер framebuffer_phys_addr залит цветом 0x00FF00FF
-    }
+    // Запуск в аппаратный слот фрагментов (Слот 1)
+    gpu_submit_job(UINT32_C(1), (uintptr_t)&f_job_monolithic);
 }
+
 
 //----------------------
 
@@ -962,7 +925,7 @@ void gpu_test(void)
 	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
 #endif
 
-#if 1
+#if 0
 	gpu_run_write_value_test_old();
 	gpu_run_write_value_test();
 	return;

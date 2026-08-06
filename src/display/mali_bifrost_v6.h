@@ -261,7 +261,7 @@ typedef struct
       __IO float A;                   /*!< Alpha color component component (FP32) */
     } RGBA;
   } CLEAR_COLOR;                      /*!< Clear color values in FP32 format for Bifrost v6 hardware */
-
+  uint64_t pad [4];
 } MALI_RenderTargetDescriptor_TypeDef;
 
 /** @defgroup MALI_RenderTarget_Constants
@@ -366,6 +366,33 @@ typedef enum {
     MALI_JOB_TYPE_FRAGMENT      = 0x09
 
 } mali_job_type;
+
+/** @defgroup MALI_Bifrost_Renderer_Properties_Constants
+  * @{
+  */
+/* Позиция битовых полей в 64-битном слове Properties (Слово 1 структуры) */
+#define MALI_RENDER_PROP_SAMPLER_COUNT_POS   UINT64_C(0)
+#define MALI_RENDER_PROP_TEXTURE_COUNT_POS   UINT64_C(16)
+#define MALI_RENDER_PROP_ATTRIBUTE_COUNT_POS UINT64_C(32)
+#define MALI_RENDER_PROP_VARYING_COUNT_POS   UINT64_C(48)
+
+/* Системный флаг аппаратной пре-аллокации регистров / потоков для фрагментных задач.
+   Бит 45 в 64-битной сетке: (1ULL << 45) -> 0x0000200000000000 */
+#define MALI_RENDER_PROP_FRAG_THREAD_CONFIG  (UINT64_C(1) << UINT64_C(45))
+
+/**
+  * @brief  Аппаратные флаги блендинга для формата RAW32 (ARGB8888/RGBA8888).
+  * @note   Маска 0x00011200 кодирует в Bifrost v6 режим безусловной перезаписи (Replace)
+  *         без альфа-смешивания с принудительным включением 32-битного пиксельного бэкенда.
+  */
+#define MALI_BLEND_FLAGS_REPLACE_RAW32       UINT32_C(0x00011200)
+
+/* Аппаратный тег для указателя на бинарный код фрагментного шейдера.
+   В Bifrost v6 значение 0x4 активирует стек регистров для Execution Engine */
+#define MALI_SHADER_CODE_TAG_BIFROST_V6      UINT64_C(4)
+/**
+  * @}
+  */
 
 
 #ifdef __cplusplus
