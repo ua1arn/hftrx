@@ -127,7 +127,7 @@ static void MALI_FragmentJobPayload_ClearInit(MALI_FragmentJobPayload_TypeDef *p
 
   pPayload->COORDS.MIN_TILE_COORD = MALI_PACK_TILE_COORD(0, 0);
   pPayload->COORDS.MAX_TILE_COORD = MALI_PACK_TILE_COORD(max_tile_x, max_tile_y);
-
+#if 0
   /* 5. Отключение потайлового отсечения */
   pPayload->SCISSORED_TILE_BITMAP = UINT64_C(0x0000000000000000);
 
@@ -139,6 +139,7 @@ static void MALI_FragmentJobPayload_ClearInit(MALI_FragmentJobPayload_TypeDef *p
   /* 7. Очистка полей выравнивания */
   pPayload->RESERVED0 = UINT64_C(0x0000000000000000);
   pPayload->RESERVED1 = UINT64_C(0x0000000000000000);
+#endif
 }
 
 /**
@@ -164,13 +165,13 @@ static void MALI_FramebufferDescriptor_ClearInit(MALI_FramebufferDescriptor_Type
   pFbd->SAMPLE_MASK    = 1;//MALI_SAMPLE_MASK_1X;
 
   /* 3. Указываем количество Render Target (1 RT) */
-  pFbd->RT_COUNT_AND_FLAGS = 0x00040002 ;//MALI_RT_COUNT_1;
+  pFbd->RT_COUNT_AND_FLAGS = 0* 0x00040002 ;//MALI_RT_COUNT_1;
 
   /* 4. Прописываем 64-битный адрес кучи распределения памяти тайлов */
   pFbd->TILER_HEAP_START   = tile_meta_address;
 
   /* 5. Настраиваем тегированный указатель на первый дескриптор Render Target */
-  pFbd->RENDER_TARGET_LIST = rt_address | MALI_RT_TAG_MFBD;
+  pFbd->RENDER_TARGET_LIST = rt_address | 0*MALI_RT_TAG_MFBD;
 
   /* 6. Полностью зануляем вторую половину структуры (смещение с 32 байта) */
   /* Для bare-metal Clear-пассов здесь не должно быть флагов шейдеров и Z/Stencil */
@@ -205,10 +206,24 @@ static void MALI_RenderTargetDescriptor_ClearInit(MALI_RenderTargetDescriptor_Ty
   pRt->FRAMEBUFFER_POINTER = fb_pointer;
 
   /* 4. Записываем цвет очистки экрана покомпонентно в формате FP32 */
-  pRt->CLEAR_COLOR.RGBA.R = r;
-  pRt->CLEAR_COLOR.RGBA.G = g;
-  pRt->CLEAR_COLOR.RGBA.B = b;
-  pRt->CLEAR_COLOR.RGBA.A = a;
+//  pRt->CLEAR_COLOR.RGBA.R = r;
+//  pRt->CLEAR_COLOR.RGBA.G = g;
+//  pRt->CLEAR_COLOR.RGBA.B = b;
+//  pRt->CLEAR_COLOR.RGBA.A = a;
+}
+
+/* Пример статической инициализации для вашего экрана 800x480 */
+void MALI_FusedJobPayload_ClearInit(MALI_BifrostV6_FusedJobPayload_TypeDef *payload, uint64_t fbd_frag_phys_addr)
+{
+    payload->gl_enables = 0;
+    payload->tiler_meta = 0;
+    payload->min_tile_x = 0;
+    payload->min_tile_y = 0;
+    payload->max_tile_x = (DIM_X / 16) - 1;
+    payload->max_tile_y = (DIM_Y / 16) - 1;
+
+    // Привязываем FBD с флагом MFBD (0x1)
+    payload->fb_desc = fbd_frag_phys_addr | 0*0x1;
 }
 
 
@@ -506,6 +521,8 @@ static int gpu_run_write_value_test(void) {
 		MALI_WriteValueJobPayload_TypeDef payload;
 	} job, job2;
 
+    memset((void *) gpu_test_target, 0xFF, sizeof gpu_test_target);
+
 	MALI_JobHeader_WriteValue(& job2.header, MALI_JOB_TYPE_WRITE_VALUE, 1, 2, (uintptr_t) 0);
 	MALI_WriteValueJobPayload_WriteValue(& job2.payload, (uintptr_t) & gpu_test_target [0], 0xDEADBEEFABBA1980);
 
@@ -704,7 +721,7 @@ typedef struct
 void MALI_RendererState_ClearInit(MALI_RendererState_TypeDef *pState, uint64_t shader_binary_gpu_address)
 {
   /* 1. Записываем 64-битный адрес кода шейдера с аппаратным тегом вызова (0x4) */
-  pState->SHADER_CODE_PTR = shader_binary_gpu_address | MALI_SHADER_CODE_TAG_BIFROST_V6;
+  pState->SHADER_CODE_PTR = shader_binary_gpu_address | 0*MALI_SHADER_CODE_TAG_BIFROST_V6;
 
   /* 2. Побитовая сборка 64-битного поля Properties через анонимное объединение */
   uint64_t props = UINT64_C(0);
@@ -726,21 +743,111 @@ void MALI_RendererState_ClearInit(MALI_RendererState_TypeDef *pState, uint64_t s
   pState->BLEND[UINT32_C(0)].BLEND_CONSTANT = UINT32_C(0x00000000);
 }
 
+/**
+  * @brief  Writes values to the Tiler Heap descriptor for Mali-G31 (Bifrost v6).
+  * @param  pHeap: Pointer to the MALI_TilerHeapDescriptor_TypeDef structure in RAM.
+  * @param  heap_gpu_base_address: Physical 64-bit address where gpu_fragment_tile_meta is located.
+  * @retval None
+  */
+void MALI_TilerHeapDescriptor_WriteValue(MALI_TilerHeapDescriptor_TypeDef *pHeap,
+                                         uint64_t heap_gpu_base_address)
+{
+  /* 1. Создаем loopback-петлю: указываем аппаратной каретке свободных блоков
+        на адрес конца нашей собственной 64-байтной структуры метаданных */
+  pHeap->FREE_LIST_HEAD = heap_gpu_base_address + UINT64_C(64);
+
+  /* 2. Задаем валидный размер кучи, отличный от нуля */
+  pHeap->CFG.HEAP_SIZE  = MALI_TILER_HEAP_SIZE_64KB;
+  pHeap->CFG.FLAGS      = UINT32_C(0x00000000);
+
+  /* 3. Базовый адрес массива кучи указывает на начало нашей мета-области */
+  pHeap->BASE_ADDRESS   = heap_gpu_base_address;
+
+  /* 4. Безусловно зануляем весь аппаратный остаток 64-байтного дескриптора */
+  pHeap->HARDWARE_PADDING[UINT32_C(0)] = UINT64_C(0x0000000000000000);
+  pHeap->HARDWARE_PADDING[UINT32_C(1)] = UINT64_C(0x0000000000000000);
+  pHeap->HARDWARE_PADDING[UINT32_C(2)] = UINT64_C(0x0000000000000000);
+  pHeap->HARDWARE_PADDING[UINT32_C(3)] = UINT64_C(0x0000000000000000);
+  pHeap->HARDWARE_PADDING[UINT32_C(4)] = UINT64_C(0x0000000000000000);
+}
+
+
 /* Выделение управляющих дескрипторов в системном ОЗУ с выравниванием по кэш-линиям */
 __attribute__((aligned(64))) static MALI_FramebufferDescriptor_TypeDef    fbd_frag;
 __attribute__((aligned(64))) static MALI_RenderTargetDescriptor_TypeDef   render_target;
 
 /* Фиктивная область метаданных тайлов */
-__attribute__((aligned(4096))) static uint8_t gpu_fragment_tile_meta_buff[64 * 1024];
-__attribute__((aligned(64))) static uint64_t gpu_fragment_tile_meta[16] =
-{
-	(uintptr_t) gpu_fragment_tile_meta_buff,
-	0xFFFF,
-};
+//__attribute__((aligned(4096))) static uint8_t gpu_fragment_tile_meta_buff[MALI_TILER_HEAP_SIZE_64KB];
+//MALI_TilerHeapDescriptor_TypeDef gpu_fragment_heap;
 /* Метаданные фрагментного шейдера */
 __attribute__((aligned(16))) static MALI_RendererState_TypeDef            fragment_renderer_state;
 
 static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
+{
+	/* Монолитная структура фрагментного задания для отправки в Job Slot 1 */
+	typedef struct __attribute__((packed, aligned(64))) {
+	    MALI_JobHeader_TypeDef           HEADER;   /*!< Общий аппаратный заголовок задания */
+	    MALI_BifrostV6_FusedJobPayload_TypeDef  PAYLOAD;  /*!< Полезная нагрузка фрагментного процессора Bifrost v6 */
+	} MALI_FragmentJob_TypeDef;
+
+	__attribute__((aligned(64))) static GPU_ALIGN MALI_FragmentJob_TypeDef f_job_monolithic;
+    // ... [Инициализация памяти __builtin_memset] ...
+
+	//MALI_TilerHeapDescriptor_WriteValue(& gpu_fragment_heap, (uintptr_t) gpu_fragment_tile_meta_buff);
+    // 1. ИНИЦИАЛИЗАЦИЯ МЕТАДАННЫХ ШЕЙДЕРА (Renderer State)
+	MALI_RendererState_ClearInit(& fragment_renderer_state, (uint64_t)&bifrost_dummy_fs);
+
+    // 2. ИНИЦИАЛИЗАЦИЯ RENDER TARGET
+    MALI_RenderTargetDescriptor_ClearInit(& render_target, framebuffer_phys_addr, width, 1, 1, 1, 1);
+    render_target.FRAMEBUFFER_POINTER = framebuffer_phys_addr;
+    //render_target.CLEAR_COLOR.RGBA.R = 1.0f; // Пурпурный цвет
+    // ... [Настройка формата и STRIDE] ...
+    render_target.FRAMEBUFFER_POINTER = framebuffer_phys_addr;
+    render_target.FORMAT_FLAGS = FORMAT_ARGB8888;
+    render_target.STRIDE = stride;
+
+    // 3. ИНИЦИАЛИЗАЦИЯ FRAMEBUFFER DESCRIPTOR (MFBD)
+	MALI_FramebufferDescriptor_ClearInit(& fbd_frag,
+			0,//(uintptr_t) & gpu_fragment_heap,
+			(uintptr_t) & render_target, width, height);
+    fbd_frag.FRAGMENT_FRAME_SHADER = (uint64_t)&fragment_renderer_state;
+    // ... [Настройка размеров, TILER_HEAP_START и т.д.] ...
+
+    // 4. СБОРКА МОНОЛИТНОГО FRAGMENT JOB (Заголовок + Полезная нагрузка)
+    MALI_JobHeader_WriteValue(&f_job_monolithic.HEADER, MALI_JOB_TYPE_FUSED, 1, 1, 0);
+//    MALI_FragmentJobPayload_ClearInit(& f_job_monolithic.PAYLOAD,
+//    		(uint64_t)&fbd_frag,
+//			0,//(uintptr_t) & gpu_fragment_heap,
+//			width, height);
+    MALI_FusedJobPayload_ClearInit(& f_job_monolithic.PAYLOAD,
+    		(uint64_t)&fbd_frag);
+    //f_job_monolithic.PAYLOAD.FB_DESC = (uint64_t)&fbd_frag | MALI_FBD_TYPE_MFBD;
+    // ... [Расчет тайлов и заполнение остальных полей] ...
+
+    // 5. ВЫТАЛКИВАНИЕ ДАННЫХ ИЗ КЭША В ОЗУ
+    // ... [dcache_clean для всех дескрипторов] ...
+    dcache_clean_invalidate((uintptr_t)&f_job_monolithic, sizeof f_job_monolithic );
+
+    dcache_clean_invalidate((uintptr_t)&fbd_frag, sizeof fbd_frag );
+    dcache_clean_invalidate((uintptr_t)&render_target, sizeof render_target );
+//    dcache_clean_invalidate((uintptr_t)&gpu_fragment_tile_meta_buff, sizeof gpu_fragment_tile_meta_buff );
+//    dcache_clean_invalidate((uintptr_t)&gpu_fragment_heap, sizeof gpu_fragment_heap );
+    dcache_clean_invalidate((uintptr_t)&fragment_renderer_state, sizeof fragment_renderer_state );
+
+    PRINTHEX32(bifrost_dummy_fs);
+    PRINTHEX32(f_job_monolithic);
+    PRINTHEX32(fbd_frag);
+    PRINTHEX32(render_target);
+    //PRINTHEX32(gpu_fragment_heap);
+    PRINTHEX32(fragment_renderer_state);
+
+    __DSB(); __ISB();
+
+    gpu_submit_job(0, (uintptr_t)&f_job_monolithic);
+}
+
+
+static void gpu_clear_screen_on_fragment(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
 {
 	/* Монолитная структура фрагментного задания для отправки в Job Slot 1 */
 	typedef struct __attribute__((packed, aligned(64))) {
@@ -751,28 +858,34 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
 	__attribute__((aligned(64))) static GPU_ALIGN MALI_FragmentJob_TypeDef f_job_monolithic;
     // ... [Инициализация памяти __builtin_memset] ...
 
+	//MALI_TilerHeapDescriptor_WriteValue(& gpu_fragment_heap, (uintptr_t) gpu_fragment_tile_meta_buff);
     // 1. ИНИЦИАЛИЗАЦИЯ МЕТАДАННЫХ ШЕЙДЕРА (Renderer State)
 	MALI_RendererState_ClearInit(& fragment_renderer_state, (uint64_t)&bifrost_dummy_fs);
 
     // 2. ИНИЦИАЛИЗАЦИЯ RENDER TARGET
     MALI_RenderTargetDescriptor_ClearInit(& render_target, framebuffer_phys_addr, width, 1, 1, 1, 1);
     render_target.FRAMEBUFFER_POINTER = framebuffer_phys_addr;
-    render_target.CLEAR_COLOR.RGBA.R = 1.0f; // Пурпурный цвет
+    //render_target.CLEAR_COLOR.RGBA.R = 1.0f; // Пурпурный цвет
     // ... [Настройка формата и STRIDE] ...
     render_target.FRAMEBUFFER_POINTER = framebuffer_phys_addr;
     render_target.FORMAT_FLAGS = FORMAT_ARGB8888;
     render_target.STRIDE = stride;
 
     // 3. ИНИЦИАЛИЗАЦИЯ FRAMEBUFFER DESCRIPTOR (MFBD)
-	MALI_FramebufferDescriptor_ClearInit(& fbd_frag, (uintptr_t) gpu_fragment_tile_meta, (uintptr_t) & render_target, width, height);
+	MALI_FramebufferDescriptor_ClearInit(& fbd_frag,
+			0,//(uintptr_t) & gpu_fragment_heap,
+			(uintptr_t) & render_target, width, height);
     fbd_frag.RENDER_TARGET_LIST = (uint64_t)&render_target | MALI_RT_TAG_MFBD;
     fbd_frag.FRAGMENT_FRAME_SHADER = (uint64_t)&fragment_renderer_state;
     // ... [Настройка размеров, TILER_HEAP_START и т.д.] ...
 
     // 4. СБОРКА МОНОЛИТНОГО FRAGMENT JOB (Заголовок + Полезная нагрузка)
-    MALI_JobHeader_WriteValue(&f_job_monolithic.HEADER, MALI_FRAGMENT_JOB_TYPE, 1, 1, 0);
-    MALI_FragmentJobPayload_ClearInit(& f_job_monolithic.PAYLOAD, (uint64_t)&fbd_frag, (uintptr_t) gpu_fragment_tile_meta /* ? */, width, height);
-    f_job_monolithic.PAYLOAD.FB_DESC = (uint64_t)&fbd_frag | MALI_FBD_TYPE_MFBD;
+    MALI_JobHeader_WriteValue(&f_job_monolithic.HEADER, MALI_JOB_TYPE_FRAGMENT, 1, 1, 0);
+    MALI_FragmentJobPayload_ClearInit(& f_job_monolithic.PAYLOAD,
+    		(uint64_t)&fbd_frag,
+			0,//(uintptr_t) & gpu_fragment_heap,
+			width, height);
+    //f_job_monolithic.PAYLOAD.FB_DESC = (uint64_t)&fbd_frag | MALI_FBD_TYPE_MFBD;
     // ... [Расчет тайлов и заполнение остальных полей] ...
 
     // 5. ВЫТАЛКИВАНИЕ ДАННЫХ ИЗ КЭША В ОЗУ
@@ -781,21 +894,21 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
 
     dcache_clean_invalidate((uintptr_t)&fbd_frag, sizeof fbd_frag );
     dcache_clean_invalidate((uintptr_t)&render_target, sizeof render_target );
-    dcache_clean_invalidate((uintptr_t)&gpu_fragment_tile_meta_buff, sizeof gpu_fragment_tile_meta_buff );
-    dcache_clean_invalidate((uintptr_t)&gpu_fragment_tile_meta, sizeof gpu_fragment_tile_meta );
+//    dcache_clean_invalidate((uintptr_t)&gpu_fragment_tile_meta_buff, sizeof gpu_fragment_tile_meta_buff );
+//    dcache_clean_invalidate((uintptr_t)&gpu_fragment_heap, sizeof gpu_fragment_heap );
     dcache_clean_invalidate((uintptr_t)&fragment_renderer_state, sizeof fragment_renderer_state );
 
     PRINTHEX32(bifrost_dummy_fs);
     PRINTHEX32(f_job_monolithic);
     PRINTHEX32(fbd_frag);
     PRINTHEX32(render_target);
-    PRINTHEX32(gpu_fragment_tile_meta);
+    //PRINTHEX32(gpu_fragment_heap);
     PRINTHEX32(fragment_renderer_state);
 
     __DSB(); __ISB();
 
     // Запуск в аппаратный слот фрагментов (Слот 1)
-    gpu_submit_job(UINT32_C(1), (uintptr_t)&f_job_monolithic);
+    gpu_submit_job(1, (uintptr_t)&f_job_monolithic);
 }
 
 
@@ -931,6 +1044,12 @@ void gpu_test(void)
 #if 0
 	gpu_run_write_value_test_old();
 	gpu_run_write_value_test();
+	gpu_run_write_value_test_old();
+	gpu_run_write_value_test();
+	gpu_run_write_value_test_old();
+	gpu_run_write_value_test();
+	gpu_run_write_value_test_old();
+	gpu_run_write_value_test();
 	return;
 //	unsigned v = 0;
 //	while (run_write_value_test(v ++))
@@ -941,7 +1060,7 @@ void gpu_test(void)
 #endif
 	{
 		PRINTF("gpu_clear_screen test:\n");
-
+		ASSERT(LCDMODE_PIXELSIZE == 4);
 		uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
 	    memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * LCDMODE_PIXELSIZE);
 	    gpu_clear_screen(fbaddr, DIM_X, DIM_Y, DIM_X * LCDMODE_PIXELSIZE);

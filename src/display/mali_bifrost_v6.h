@@ -163,11 +163,11 @@ typedef struct
   union {
     __IO uint64_t WORD3;
     struct {
-      __IO uint32_t MIN_TILE_COORD;   /*!< Minimum Tile Coordinates. Format: (Y << 8) | X */
-      __IO uint32_t MAX_TILE_COORD;   /*!< Maximum Tile Coordinates. Format: (Y << 8) | X */
+      __IO uint16_t MIN_TILE_COORD;   /*!< Minimum Tile Coordinates. Format: (Y << 8) | X */
+      __IO uint16_t MAX_TILE_COORD;   /*!< Maximum Tile Coordinates. Format: (Y << 8) | X */
     };
   } COORDS;
-
+#if 0
   __IO uint64_t SCISSORED_TILE_BITMAP;/*!< Scissored Tile Bitmap Base Address (0 if disabled) */
 
   union {
@@ -181,7 +181,7 @@ typedef struct
 
   __IO uint64_t RESERVED0;            /*!< Reserved for hardware alignment padding */
   __IO uint64_t RESERVED1;            /*!< Reserved for hardware alignment padding */
-
+#endif
 } MALI_FragmentJobPayload_TypeDef;
 
 /**
@@ -193,7 +193,7 @@ typedef struct
   */
 /* Использование UINT64_C гарантирует правильное приведение констант на уровне препроцессора */
 #define MALI_FBD_TYPE_MFBD                 UINT64_C(0x0000000000000001)
-#define MALI_FRAGMENT_JOB_TYPE             ((uint8_t)0x13)
+//#define MALI_FRAGMENT_JOB_TYPE             ((uint8_t)0x13)
 
 /* Tiles In Flight configurations */
 #define MALI_TILES_IN_FLIGHT_DEFAULT       ((uint16_t)0x003F)
@@ -216,6 +216,10 @@ typedef struct
   __IO uint32_t HEIGHT_MINUS_1;       /*!< Screen Height minus 1 (e.g. 479) */
   __IO uint32_t SAMPLE_MASK;          /*!< MSAA sample mask. For 1x MSAA always 0x0000FFFF */
   __IO uint32_t RT_COUNT_AND_FLAGS;   /*!< Number of Render Targets and Tiler flags */
+  __IO float R;                   /*!< Red color component component (FP32) */
+  __IO float G;                   /*!< Green color component component (FP32) */
+  __IO float B;                   /*!< Blue color component component (FP32) */
+  __IO float A;                   /*!< Alpha color component component (FP32) */
 
   __IO uint64_t TILER_HEAP_START;     /*!< Pointer to the Tiler Heap (gpu_fragment_tile_meta) */
   __IO uint64_t RENDER_TARGET_LIST;   /*!< Pointer to the first Render Target descriptor. Tagged [1:0] = 0x1 */
@@ -252,16 +256,7 @@ typedef struct
   __IO uint32_t STRIDE;               /*!< Line stride in bytes for linear buffers (Width * BytesPerPixel) */
   __IO uint64_t FRAMEBUFFER_POINTER;  /*!< Pure 64-bit GPU physical/virtual address of raw VRAM buffer */
 
-  union {
-    __IO float COMPONENT[4];          /*!< Array access to RGBA components [0]=R, [1]=G, [2]=B, [3]=A */
-    struct {
-      __IO float R;                   /*!< Red color component component (FP32) */
-      __IO float G;                   /*!< Green color component component (FP32) */
-      __IO float B;                   /*!< Blue color component component (FP32) */
-      __IO float A;                   /*!< Alpha color component component (FP32) */
-    } RGBA;
-  } CLEAR_COLOR;                      /*!< Clear color values in FP32 format for Bifrost v6 hardware */
-  uint64_t pad [4];
+  uint64_t pad [13];
 } MALI_RenderTargetDescriptor_TypeDef;
 
 /** @defgroup MALI_RenderTarget_Constants
@@ -394,6 +389,136 @@ typedef enum {
   * @}
   */
 
+
+/** @addtogroup MALI_Bifrost_Peripheral_Structures
+  * @{
+  */
+
+/**
+  * @brief  Mali Bifrost v6 Tiler Heap Descriptor Structure definition
+  * @note   Direct translation of <struct name="Tiler Heap" size="64"> from bifrost.xml.
+  *         Must be strictly 64-byte aligned in RAM for L2 cache coherency.
+  */
+typedef struct
+{
+  /* Word 0 (Bytes 0x00 - 0x07): <field name="Free List Head" start="0:0" end="0:63" type="address"/> */
+  __IO uint64_t FREE_LIST_HEAD;       /*!< 64-bit GPU address pointing to the next free memory chunk/loopback */
+
+  /* Word 1 (Bytes 0x08 - 0x0F):
+     <field name="Heap Size" start="1:0" end="1:31" type="uint"/>
+     <field name="Flags" start="1:32" end="1:63" type="uint"/> */
+  union {
+    __IO uint64_t WORD1;
+    struct {
+      __IO uint32_t HEAP_SIZE;        /*!< Total allocation size of the tiler memory pool */
+      __IO uint32_t FLAGS;            /*!< Tiler Heap management flags (usually 0x0 for bare-metal clear) */
+    };
+  } CFG;
+
+  /* Word 2 (Bytes 0x10 - 0x17): <field name="Base Address" start="2:0" end="2:63" type="address"/> */
+  __IO uint64_t BASE_ADDRESS;         /*!< 64-bit base virtual/physical address of the tiler buffer array */
+
+  /* Words 3 to 7 (Bytes 0x18 - 0x3F): Hardware padding to reach size="64" in XML specification */
+  __IO uint64_t HARDWARE_PADDING[UINT32_C(5)]; /*!< Strict hardware alignment padding, must be initialized to 0 */
+
+} MALI_TilerHeapDescriptor_TypeDef;
+
+/**
+  * @}
+  */
+
+/** @defgroup MALI_TilerHeap_Constants
+  * @{
+  */
+/* Дефолтный размер кучи для стабильного прохождения проверок FFE (минимум 1 страница / 4 КБ) */
+#define MALI_TILER_HEAP_SIZE_4KB           UINT32_C(4096)
+#define MALI_TILER_HEAP_SIZE_64KB          UINT32_C(65536)
+/**
+  * @}
+  */
+
+/* Структура полезной нагрузки (Payload) для Fused Job (Vertex + Tiler)
+ * Общий размер структуры составляет строго 128 байт.
+ * Все неиспользуемые для Clear-пасса поля должны быть принудительно занулены. */
+typedef struct __attribute__((packed, aligned(32))) {
+
+    /* 0x00: Флаги растеризации OpenGL (Depth, Stencil, Alpha, Scissor)
+     * Для чистого 2D Clear-пасса записывается 0x0000000000000000 */
+    uint64_t gl_enables;
+
+    /* 0x08: Указатель на Framebuffer Descriptor (FBD)
+     * Физический адрес структуры fbd_frag, объединенный по ИЛИ с флагом MALI_FBD_TYPE_MFBD (0x1) */
+    uint64_t fb_desc;
+
+    /* 0x10 / Смещение +48 от начала задачи */
+    uint64_t tiler_meta;          /* Ссылка на аллокатор/структуры тайлинга геометрии.
+                                     В режиме чистого 2D Clear-пасса геометрия отсутствует, записывается 0 */
+
+    /* 0x18 / Смещение +56 от начала задачи */
+    uint32_t padding;             /* Выравнивание */
+
+    /* 0x1C / Смещение +60 от начала задачи */
+    uint32_t draw_flags;          /* Флаги отрисовки. Для перевода Fused-конвейера в режим аппаратного 2D-Clear
+                                     без валидации индексов геометрии сюда записывается константа 0x00010000 */
+
+    /* 0x20 / Смещение +64 от начала задачи */
+    uint64_t vertex_shell;        /* Физический адрес дескриптора выполнения вершинного шейдера (Vertex Execution State).
+                                     Для 2D заливки цветом шейдер не нужен, записывается 0 */
+
+    /* 0x28 / Смещение +72 от начала задачи */
+    uint64_t tiler_weights;       /* Веса и параметры иерархии тайлера для полигональной сетки. Зануляется для Clear */
+
+    /* 0x30 / Смещение +80 от начала задачи */
+    uint8_t min_tile_x;          /* Левая координата экрана в тайлах (обычно 0) */
+    uint8_t min_tile_y;          /* Верхняя координата экрана в тайлах (обычно 0) */
+
+    uint8_t max_tile_x;          /* Правая координата в тайлах: (Ширина / 16) - 1. Для 800px -> 49 (0x0031) */
+    uint8_t max_tile_y;          /* Нижняя координата в тайлах: (Высота / 16) - 1. Для 480px -> 29 (0x001D) */
+
+    /* 0x34 / Смещение +84 от начала задачи */
+    /* Оставшаяся область дескриптора (72 байта) до границы 128 байт.
+       В xml-спецификации содержит внутренние низкоуровневые регистры состояния итератора тайлов и зарезервированные поля.
+       При инициализации «голого железа» обязана быть полностью заполнена нулями. */
+    uint32_t reserved[19];
+} MALI_BifrostV6_FusedJobPayload_TypeDef;
+
+/**
+
+<struct name="Tiler_Job_Payload" size="128">
+  <field name="GL Enables" start="0:0" end="1:31" type="uint"/>
+  <field name="Framebuffer" start="2:0" end="3:31" type="address"/>
+  <field name="Tiler Metadata" start="4:0" end="5:31" type="address"/>
+  <field name="Draw Flags" start="6:0" end="6:31" type="uint"/>
+  <field name="Unknown 1" start="7:0" end="7:31" type="uint"/>
+  <field name="Vertex Shell" start="8:0" end="9:31" type="address"/>
+  <field name="Tiler Weights" start="10:0" end="11:31" type="uint"/>
+  <field name="Minimum Tile X" start="12:0" end="12:15" type="uint"/>
+  <field name="Minimum Tile Y" start="12:16" end="12:31" type="uint"/>
+  <field name="Maximum Tile X" start="13:0" end="13:15" type="uint"/>
+  <field name="Maximum Tile Y" start="13:16" end="13:31" type="uint"/>
+  <field name="Unknown 2" start="14:0" end="31:31" type="uint"/>
+</struct>
+
+<struct name="Compute_Job_Payload" size="64">
+  <field name="GL Enables" start="0:0" end="1:31" type="uint"/>
+  <field name="Job Parameter" start="2:0" end="3:31" type="address"/>
+  <field name="Workgroup Size" start="4:0" end="4:31" type="uint"/>
+  <field name="Unknown 1" start="5:0" end="5:31" type="uint"/>
+  <field name="Vertex Shell" start="6:0" end="7:31" type="address"/>
+  <field name="Unknown 2" start="8:0" end="15:31" type="uint"/>
+</struct>
+
+<struct name="Fragment_Job_Payload" size="32">
+  <field name="Framebuffer" start="0:0" end="7:31" type="address"/>
+  <field name="Tile Allocation" start="8:0" end="15:31" type="address"/>
+  <field name="Fragment Backend" start="16:0" end="23:31" type="address"/>
+  <field name="Minimum Tile X" start="24:0" end="24:15" type="uint"/>
+  <field name="Minimum Tile Y" start="24:16" end="25:31" type="uint"/>
+  <field name="Maximum Tile X" start="26:0" end="26:15" type="uint"/>
+  <field name="Maximum Tile Y" start="26:16" end="27:31" type="uint"/>
+  <field name="Tiles In Flight" start="28:0" end="28:15" type="uint"/>
+  <field name="Unknown 1" start="28:16" end="31:31" type="uint"/>
+</struct>
 
 #ifdef __cplusplus
 }
