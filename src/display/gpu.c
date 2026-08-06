@@ -25,7 +25,7 @@
 //#include "panfrost_regs.h"
 
 #include "mali_bifrost_v6.h"
-#include "v7.h"
+#include "bifrost_v7.h"
 
 /**
   * @brief  Writes values to the Common Job Header memory block for any Mali GPU job.
@@ -473,25 +473,25 @@ enum mali_job_type {
 //};
 // Структура заголовка задачи (Mali Job Header)
 // MGS! подтверждена работа заголовка
-typedef struct __attribute__((packed)) {
-    uint32_t exception_status;       // 0x00: Сюда GPU запишет код ошибки при FAULT (изначально 0)
-    uint32_t first_incomplete_task;  // 0x04: Служебный внутренний статус GPU
-    uint64_t fault_pointer;          // 0x08: Физический адрес буфера для дампа ошибок MMU/Bus
-
-    // Битовые поля управления типом и разрядами адреса (занимают 1 байт):
-    uint8_t  job_descriptor_size : 1; // 0x10 (бит 0)  - Выставляем 1 (64-битные указатели)
-    uint8_t  job_type            : 7; // 0x10 (биты 1-7) - Тип задачи (TILER = 0x11, VERTEX = 0x12)
-
-    // Битовые поля барьеров и флагов (занимают 1 байт):
-    uint8_t  job_barrier         : 1; // 0x11 (бит 0)  - last job
-    uint8_t  unknown_flags       : 7; // 0x11 (биты 1-7) - Служебные флаги (обычно 0)
-
-    uint16_t job_index;               // 0x12: Уникальный ID этой задачи для скорборда (например, 1)
-    uint16_t job_dependency_index_1;  // 0x14: ID задачи, которую нужно дождаться перед запуском (0, если нет)
-    uint16_t job_dependency_index_2;  // 0x16: ID второй зависимой задачи (0, если нет)
-
-    uint64_t next_job;               // 0x18: Физический адрес следующего дескриптора в цепочке (0, если последний)
-} mali_job_header;
+//typedef struct __attribute__((packed)) {
+//    uint32_t exception_status;       // 0x00: Сюда GPU запишет код ошибки при FAULT (изначально 0)
+//    uint32_t first_incomplete_task;  // 0x04: Служебный внутренний статус GPU
+//    uint64_t fault_pointer;          // 0x08: Физический адрес буфера для дампа ошибок MMU/Bus
+//
+//    // Битовые поля управления типом и разрядами адреса (занимают 1 байт):
+//    uint8_t  job_descriptor_size : 1; // 0x10 (бит 0)  - Выставляем 1 (64-битные указатели)
+//    uint8_t  job_type            : 7; // 0x10 (биты 1-7) - Тип задачи (TILER = 0x11, VERTEX = 0x12)
+//
+//    // Битовые поля барьеров и флагов (занимают 1 байт):
+//    uint8_t  job_barrier         : 1; // 0x11 (бит 0)  - last job
+//    uint8_t  unknown_flags       : 7; // 0x11 (биты 1-7) - Служебные флаги (обычно 0)
+//
+//    uint16_t job_index;               // 0x12: Уникальный ID этой задачи для скорборда (например, 1)
+//    uint16_t job_dependency_index_1;  // 0x14: ID задачи, которую нужно дождаться перед запуском (0, если нет)
+//    uint16_t job_dependency_index_2;  // 0x16: ID второй зависимой задачи (0, если нет)
+//
+//    uint64_t next_job;               // 0x18: Физический адрес следующего дескриптора в цепочке (0, если последний)
+//} mali_job_header;
 
 //#define MALI_WRITE_VALUE_ZERO     3 // Специальный флаг для обнуления
 
@@ -501,16 +501,16 @@ typedef struct __attribute__((packed)) {
 // https://android.googlesource.com/platform/external/mesa3d/+/e061bf004b5/src/panfrost/include/panfrost-job.h
 // https://github.com/dlehman-work/mesa/blob/master/src/panfrost/include/panfrost-job.h#L45
 
-typedef struct __attribute__((packed, aligned(64))) {
-    // 1. Стандартный заголовок (mali_job_header) - 32 байта
-	mali_job_header header;
-    // 2. Специфичный Payload - 32 байта
-	uint64_t address;
-	uint32_t value_descriptor;
-	uint32_t reserved;
-	uint64_t immediate;
-	uint64_t pad;
-} mali_write_value_job;
+//typedef struct __attribute__((packed, aligned(64))) {
+//    // 1. Стандартный заголовок (mali_job_header) - 32 байта
+//	mali_job_header header;
+//    // 2. Специфичный Payload - 32 байта
+//	uint64_t address;
+//	uint32_t value_descriptor;
+//	uint32_t reserved;
+//	uint64_t immediate;
+//	uint64_t pad;
+//} mali_write_value_job;
 
 static int gpu_run_write_value_test(void) {
 	PRINTF("gpu_run_write_value_test:\n");
@@ -551,27 +551,28 @@ static int gpu_run_write_value_test_old(void) {
 	static volatile uint64_t __attribute__((aligned(64))) gpu_test_target [2];
 	unsigned v = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64;
     // Создаем структуру дескриптора в памяти
-	GPU_ALIGN static mali_write_value_job job;
-	GPU_ALIGN static mali_write_value_job job2;
+	MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_TYPE pjob = { MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_header };
+	MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_TYPE pjob2 = { MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_header };
 
-    // Сбрасываем старую память
-    memset(&job, 0, sizeof(job));
-    memset((void *) gpu_test_target, 0xFF, sizeof gpu_test_target);
+	GPU_ALIGN static MALI_WRITE_VALUE_JOB_PACKED_T job_p;
+	GPU_ALIGN static MALI_WRITE_VALUE_JOB_PACKED_T job2_p;
 
+    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE jh = { MALI_WRITE_VALUE_JOB_SECTION_HEADER_header };
+    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE jh2 = { MALI_WRITE_VALUE_JOB_SECTION_HEADER_header };
     // Заполняем заголовок
-    job.header.exception_status = 0;
-    job.header.job_descriptor_size = 1; // Используем 64-битные указатели
-    job.header.job_type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
-    job.header.job_barrier = 0;			// last
-    job.header.job_index = 1;
-    job.header.next_job = (uintptr_t) & job2;            // Цепочка заканчивается на ней
+    jh.exception_status = 0;
+    //jh.is_64b = 1; // Используем 64-битные указатели
+    jh.type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
+    jh.barrier = 0;			// last
+    jh.index = 1;
+    jh.next = (uintptr_t) & job2_p;            // Цепочка заканчивается на ней
 
-    job2.header.exception_status = 0;
-    job2.header.job_descriptor_size = 1; // Используем 64-битные указатели
-    job2.header.job_type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
-    job2.header.job_barrier = 1;			// last
-    job2.header.job_index = 2;
-    job2.header.next_job = (uintptr_t) 0;            // Цепочка заканчивается на ней
+    jh2.exception_status = 0;
+    //jh2.is_64b = 1; // Используем 64-битные указатели
+    jh2.type = MALI_JOB_TYPE_WRITE_VALUE; // Тип задачи = 2
+    jh2.barrier = 1;			// last
+    jh2.index = 2;
+    jh2.next = (uintptr_t) 0;            // Цепочка заканчивается на ней
 
     /**
      * value_descriptor:
@@ -585,18 +586,23 @@ static int gpu_run_write_value_test_old(void) {
      * 7 - 64 bit
      */
     // Заполняем Payload записи
-    job.address = (uintptr_t) & gpu_test_target [0]; // Физический адрес цели
-    job.value_descriptor = v;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
-    job.immediate = 0xDEADBEEFABBA1980;               // Данные для записи
-    job2.address = (uintptr_t) & gpu_test_target [1]; // Физический адрес цели
-    job2.value_descriptor = v;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
-    job2.immediate = 0x0123456789ABCDEF;               // Данные для записи
+    pjob.address = (uintptr_t) & gpu_test_target [0]; // Физический адрес цели
+    pjob.type = v;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
+    pjob.immediate_value = 0xDEADBEEFABBA1980;               // Данные для записи
+    pjob2.address = (uintptr_t) & gpu_test_target [1]; // Физический адрес цели
+    pjob2.type = v;                 // Бит [2] (Width): Разрядность данных Биты [1:0] (Type): Тип операции записи
+    pjob2.immediate_value = 0x0123456789ABCDEF;               // Данные для записи
+
+    MALI_JOB_HEADER_pack(& job_p.HEADER, & jh);
+    MALI_JOB_HEADER_pack(& job2_p.HEADER, & jh2);
+	MALI_WRITE_VALUE_JOB_PAYLOAD_pack(& job_p.PAYLOAD, & pjob);
+	MALI_WRITE_VALUE_JOB_PAYLOAD_pack(& job2_p.PAYLOAD, & pjob2);
 
     // КРИТИЧЕСКИ ВАЖНО ДЛЯ BARE METAL:
     // Очищаем кэш CPU, чтобы GPU читал структуру из физического ОЗУ,
     // и инвалидируем регион gpu_test_target, чтобы CPU позже не прочитал старые данные из своего L1/L2.
-    dcache_clean_invalidate((uintptr_t)&job, sizeof(job));
-    dcache_clean_invalidate((uintptr_t)&job2, sizeof(job2));
+    dcache_clean_invalidate((uintptr_t)&job_p, sizeof(job_p));
+    dcache_clean_invalidate((uintptr_t)&job2_p, sizeof(job2_p));
 
     dcache_clean_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
 
@@ -607,7 +613,7 @@ static int gpu_run_write_value_test_old(void) {
     //	PRINTF("job2 For test:\n");
     //	printhex32(0, & job2, sizeof job2);
 
-    if (gpu_submit_job(2, (uintptr_t) & job))
+    if (gpu_submit_job(2, (uintptr_t) & job_p))
     	return 1;	// err
       // Проверяем результат выполнения
     printhex64(0, (void *) gpu_test_target, sizeof gpu_test_target);
@@ -796,7 +802,7 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
 
 	//MALI_TilerHeapDescriptor_WriteValue(& gpu_fragment_heap, (uintptr_t) gpu_fragment_tile_meta_buff);
     // 1. ИНИЦИАЛИЗАЦИЯ МЕТАДАННЫХ ШЕЙДЕРА (Renderer State)
-	MALI_RendererState_ClearInit(& fragment_renderer_state, (uint64_t)&bifrost_dummy_fs);
+	MALI_RendererState_ClearInit(& fragment_renderer_state, (uintptr_t)&bifrost_dummy_fs);
 
     // 2. ИНИЦИАЛИЗАЦИЯ RENDER TARGET
     MALI_RenderTargetDescriptor_ClearInit(& render_target, framebuffer_phys_addr, width, 1, 1, 1, 1);
@@ -811,18 +817,18 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
 	MALI_FramebufferDescriptor_ClearInit(& fbd_frag,
 			0,//(uintptr_t) & gpu_fragment_heap,
 			(uintptr_t) & render_target, width, height);
-    fbd_frag.FRAGMENT_FRAME_SHADER = (uint64_t)&fragment_renderer_state;
+    fbd_frag.FRAGMENT_FRAME_SHADER = (uintptr_t)&fragment_renderer_state;
     // ... [Настройка размеров, TILER_HEAP_START и т.д.] ...
 
     // 4. СБОРКА МОНОЛИТНОГО FRAGMENT JOB (Заголовок + Полезная нагрузка)
     MALI_JobHeader_WriteValue(&f_job_monolithic.HEADER, MALI_JOB_TYPE_FUSED, 1, 1, 0);
 //    MALI_FragmentJobPayload_ClearInit(& f_job_monolithic.PAYLOAD,
-//    		(uint64_t)&fbd_frag,
+//    		(uintptr_t)&fbd_frag,
 //			0,//(uintptr_t) & gpu_fragment_heap,
 //			width, height);
     MALI_FusedJobPayload_ClearInit(& f_job_monolithic.PAYLOAD,
-    		(uint64_t)&fbd_frag);
-    //f_job_monolithic.PAYLOAD.FB_DESC = (uint64_t)&fbd_frag | MALI_FBD_TYPE_MFBD;
+    		(uintptr_t)&fbd_frag);
+    //f_job_monolithic.PAYLOAD.FB_DESC = (uintptr_t)&fbd_frag | MALI_FBD_TYPE_MFBD;
     // ... [Расчет тайлов и заполнение остальных полей] ...
 
     // 5. ВЫТАЛКИВАНИЕ ДАННЫХ ИЗ КЭША В ОЗУ
@@ -861,7 +867,7 @@ static void gpu_clear_screen_on_fragment(uintptr_t framebuffer_phys_addr, uint32
 
 	//MALI_TilerHeapDescriptor_WriteValue(& gpu_fragment_heap, (uintptr_t) gpu_fragment_tile_meta_buff);
     // 1. ИНИЦИАЛИЗАЦИЯ МЕТАДАННЫХ ШЕЙДЕРА (Renderer State)
-	MALI_RendererState_ClearInit(& fragment_renderer_state, (uint64_t)&bifrost_dummy_fs);
+	MALI_RendererState_ClearInit(& fragment_renderer_state, (uintptr_t)&bifrost_dummy_fs);
 
     // 2. ИНИЦИАЛИЗАЦИЯ RENDER TARGET
     MALI_RenderTargetDescriptor_ClearInit(& render_target, framebuffer_phys_addr, width, 1, 1, 1, 1);
@@ -876,17 +882,17 @@ static void gpu_clear_screen_on_fragment(uintptr_t framebuffer_phys_addr, uint32
 	MALI_FramebufferDescriptor_ClearInit(& fbd_frag,
 			0,//(uintptr_t) & gpu_fragment_heap,
 			(uintptr_t) & render_target, width, height);
-    fbd_frag.RENDER_TARGET_LIST = (uint64_t)&render_target | MALI_RT_TAG_MFBD;
-    fbd_frag.FRAGMENT_FRAME_SHADER = (uint64_t)&fragment_renderer_state;
+    fbd_frag.RENDER_TARGET_LIST = (uintptr_t)&render_target | MALI_RT_TAG_MFBD;
+    fbd_frag.FRAGMENT_FRAME_SHADER = (uintptr_t)&fragment_renderer_state;
     // ... [Настройка размеров, TILER_HEAP_START и т.д.] ...
 
     // 4. СБОРКА МОНОЛИТНОГО FRAGMENT JOB (Заголовок + Полезная нагрузка)
     MALI_JobHeader_WriteValue(&f_job_monolithic.HEADER, MALI_JOB_TYPE_FRAGMENT, 1, 1, 0);
     MALI_FragmentJobPayload_ClearInit(& f_job_monolithic.PAYLOAD,
-    		(uint64_t)&fbd_frag,
+    		(uintptr_t)&fbd_frag,
 			0,//(uintptr_t) & gpu_fragment_heap,
 			width, height);
-    //f_job_monolithic.PAYLOAD.FB_DESC = (uint64_t)&fbd_frag | MALI_FBD_TYPE_MFBD;
+    //f_job_monolithic.PAYLOAD.FB_DESC = (uintptr_t)&fbd_frag | MALI_FBD_TYPE_MFBD;
     // ... [Расчет тайлов и заполнение остальных полей] ...
 
     // 5. ВЫТАЛКИВАНИЕ ДАННЫХ ИЗ КЭША В ОЗУ
@@ -1044,13 +1050,13 @@ void gpu_test(void)
 
 #if 1
 	gpu_run_write_value_test_old();
-	gpu_run_write_value_test();
-	gpu_run_write_value_test_old();
-	gpu_run_write_value_test();
-	gpu_run_write_value_test_old();
-	gpu_run_write_value_test();
-	gpu_run_write_value_test_old();
-	gpu_run_write_value_test();
+//	gpu_run_write_value_test();
+//	gpu_run_write_value_test_old();
+//	gpu_run_write_value_test();
+//	gpu_run_write_value_test_old();
+//	gpu_run_write_value_test();
+//	gpu_run_write_value_test_old();
+//	gpu_run_write_value_test();
 	return;
 //	unsigned v = 0;
 //	while (run_write_value_test(v ++))

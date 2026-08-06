@@ -7,7 +7,7 @@
 #ifndef PAN_PACK_H
 #define PAN_PACK_H
 
-//#include "genxml/pan_pack_helpers.h"
+#include "bitpack_helpers.h"
 
 
 #define mali_pixel_format_print(fp, format) \
