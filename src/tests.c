@@ -8101,7 +8101,7 @@ void hightests(void)
 
 	}
 #endif
-#if 0 && WITHGPUHW && LCDMODE_ARGB8888
+#if 0 && WITHGPUHW
 	{
 		gpu_test();
 	}

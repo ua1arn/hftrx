@@ -28,6 +28,13 @@ void printhex(uintptr_t offs, const void * buff, unsigned length);
 void printhex16(uintptr_t voffs, const void * vbuff, unsigned length);
 void printhex32(uintptr_t voffs, const void * vbuff, unsigned length);
 void printhex64(uintptr_t voffs, const void * vbuff, unsigned length);
+void printhex_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title);
+void printhex32_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title);
+void printhex64_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title);
+
+#define PRINTHEX(val) do { printhex_titled((uintptr_t) & (val), & (val), sizeof (val), # val); } while (0)
+#define PRINTHEX32(val) do { printhex32_titled((uintptr_t) & (val), & (val), sizeof (val), # val); } while (0)
+#define PRINTHEX64(val) do { printhex64_titled((uintptr_t) & (val), & (val), sizeof (val), # val); } while (0)
 void mem2hex(uintptr_t address, unsigned size);
 
 // spool-based functions for debug

@@ -21,64 +21,14 @@
 #include <string.h>
 
 #if CPUSTYLE_T507
+#define __OPENCL_VERSION__
+//#include "panfrost_regs.h"
 
-#include "panfrost_regs.h"
+//#include "mali_bifrost_v6.h"
+#include "bifrost_v7.h"
 
-#define MALI_PTE_VALID          (1ULL << 0)
-#define MALI_PTE_BLOCK          (0ULL << 1) // Финальный блок (разрешен на L1 для 1GB и на L2 для 2MB)
-#define MALI_PTE_PAGE           (1ULL << 1) // Указатель на следующую таблицу (на L0, L1, L2)
-#define MALI_PTE_USER           (1ULL << 6)
-#define MALI_PTE_SHARE_OUTER    (2ULL << 8)
-#define MALI_PTE_AF             (1ULL << 10) // Access Flag
-#define MALI_PTE_ATTR_IDX_1     (1ULL << 2)  // Non-Cacheable домен (0x22 из MEMATTR)
-
-// Корневая таблица Уровня 0 (Level 0)
-__attribute__((aligned(4096))) static uint64_t gpu_mmu_l0_strict_table [512];
-
-// Плоская таблица Уровня 1 (Level 1) на 4 гигабайтных блока
-__attribute__((aligned(4096))) static uint64_t gpu_mmu_l1_block_table [512];
-
-
-void gpu_mmu_build_4gb_l1_blocks(void)
-{
-    PRINTF("Mali-G31: Building 4GB Identity Mapping via L0->L1 block structure...\n");
-
-    // Полностью зануляем таблицы
-    for (int i = 0; i < 512; i++) {
-        gpu_mmu_l0_strict_table[i] = 0;
-        gpu_mmu_l1_block_table[i] = 0;
-    }
-
-    uint64_t phys_addr = 0x00000000;
-
-    // 1. Заполняем таблицу Уровня 1 (L1) четырьмя честными блоками по 1 Гигабайту
-    for (int gb = 0; gb < 4; gb++) {
-        // На Уровне 1 бит 1 равен 0 (BLOCK) — это легитимный конечный 1ГБ кусок памяти в LPAE
-        gpu_mmu_l1_block_table[gb] = phys_addr |
-                                     MALI_PTE_VALID |
-                                     MALI_PTE_BLOCK |
-                                     MALI_PTE_USER |	// if commented - MMU Fault Status (0x01802420): 0x7C0002C8
-                                     MALI_PTE_SHARE_OUTER |
-                                     MALI_PTE_AF |          /* Бит 10 взведен */
-                                     MALI_PTE_ATTR_IDX_1 |
-									 0;
-
-        phys_addr += (1ULL * 1024ULL * 1024ULL * 1024ULL); // Шаг 1 ГБ
-    }
-
-    // 2. Связываем корневую таблицу L0 с нашей L1 таблицей блоков
-    // Индекс 0 покрывает первые 512 Гигабайт, что с избытком накрывает наши 4 ГБ.
-    // На Уровне 0 дескриптор ОБЯЗАН быть Table Pointer (VALID + PAGE)
-    uint64_t l1_table_phys = (uintptr_t)gpu_mmu_l1_block_table;
-    gpu_mmu_l0_strict_table [0] = l1_table_phys | MALI_PTE_VALID | MALI_PTE_PAGE;
-
-    // 3. Синхронизируем память через dcache_clean вашего проекта hftrx
-    dcache_clean((uintptr_t)gpu_mmu_l0_strict_table, sizeof(gpu_mmu_l0_strict_table));
-    dcache_clean((uintptr_t)gpu_mmu_l1_block_table, sizeof(gpu_mmu_l1_block_table));
-
-    __DSB();;
-}
-
+// Выравнивание для кэш-линий GPU
+#define GPU_ALIGN __attribute__((aligned(64)))
 
 // Команды для AS_COMMAND
 #define AS_COMMAND_NOP          0x00
@@ -146,7 +96,7 @@ static void gpu_command(unsigned cmd)
 //	unsigned v2 = GPU_CONTROL->GPU_STATUS;
 //	unsigned v3 = GPU_CONTROL->GPU_STATUS;
 //	PRINTF("cmd: %08X, Status: %08X, %08X, %08X\n", cmd, v1, v2, v3);
-	__DSB();;
+	__DSB();
 }
 
 static void gpu_wait(unsigned mask)
@@ -176,7 +126,10 @@ void GPU_IRQHandler(void)
 void GPU_JOB_IRQHandler(void)
 {
 	PRINTF("GPU_JOB_IRQHandler\n");
-	ASSERT(0);
+    PRINTF("h GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
+    PRINTF("h GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
+    GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
+    GPU_JOB_CONTROL->JOB_IRQ_CLEAR = ~ 0;
 }
 
 void GPU_MMU_IRQHandler(void)
@@ -216,302 +169,490 @@ void gpu_fillrect(
 	int32_t triangle1 [3] [2] = { { w - 1, h - 1 }, { 0, h - 1}, { w - 1, 0 } };
 }
 
-// Типы задач (Job Types) для Mali Bifrost
-#define JOB_TYPE_NULL      0
-#define JOB_TYPE_VERTEX    1
-#define JOB_TYPE_TILER     2
-#define JOB_TYPE_FRAGMENT  3
-
-// Структура заголовка задачи (Mali Job Header)
-typedef struct __attribute__((packed)) {
-    uint32_t exception_status; // Статус ошибок выполнения
-    uint32_t first_incomplete_task;
-    uint64_t fault_pointer;
-    uint8_t  job_type;         // JOB_TYPE_VERTEX, TILER или FRAGMENT
-    uint8_t  job_index;        // Порядковый индекс в цепочке
-    uint16_t job_descriptor_size;
-    uint32_t unk1;
-    uint64_t next_job;         // Физический адрес СЛЕДУЮЩЕЙ задачи (цепочка)
-} mali_job_header;
-
-// Расширенный дескриптор для Vertex/Tiler задач
-typedef struct __attribute__((packed)) {
-    mali_job_header header;
-    uint64_t tiler_heap;       // Адрес памяти кучи для тайлера
-    uint64_t vertex_buffer;    // Физический адрес массива координат вершин
-    uint32_t vertex_count;     // Количество вершин (для 1 треугольника = 3)
-    uint32_t attributes;       // Настройки формата вершин
-    uint64_t primitive_size;
-    uint64_t draw_flags;
-} mali_tiler_job;
-
-// Расширенный дескриптор для Fragment задач
-typedef struct __attribute__((packed)) {
-    mali_job_header header;
-    uint64_t framebuffer_pointer; // Физический адрес структуры описания Framebuffer
-    uint64_t tile_render_list;    // Список тайлов, сгенерированный предыдущим Tiler Job
-    uint32_t width;               // Ширина зоны отрисовки
-    uint32_t height;              // Высота зоны отрисовки
-    uint32_t clear_color;         // Цвет очистки (RGBA)
-} mali_fragment_job;
-
-// Выравнивание для кэш-линий GPU
-#define GPU_ALIGN __attribute__((aligned(64)))
-
-// Координаты вершин треугольника: X, Y, Z (в нормализованных координатах от -1.0 до 1.0)
-GPU_ALIGN static float triangle_vertices[] = {
-     0.0f,  0.5f, 0.0f, // Верхняя точка
-    -0.5f, -0.5f, 0.0f, // Нижняя левая
-     0.5f, -0.5f, 0.0f  // Нижняя правая
-};
-
-// Выделяем память под дескрипторы аппаратных задач в RAM
-GPU_ALIGN static mali_tiler_job    v_job;
-GPU_ALIGN static mali_fragment_job f_job;
-
-// Область памяти для кучи тайлера (Mali Tiler требует буфер для сортировки геометрии)
-__attribute__((aligned(4096))) static uint8_t tiler_heap_mem[64 * 1024];
-
-typedef struct __attribute__((packed)) {
-    uint64_t base_address;  // Физический адрес экрана (из вашего Display Engine)
-    uint32_t width;
-    uint32_t height;
-    uint32_t stride;        // Шаг строки в байтах (width * 4 для 32-бит RGBA)
-    uint32_t format;        // Формат пикселя (например, 0x18004000 для RGBA8888)
-} mali_framebuffer_desc;
-
-GPU_ALIGN static mali_framebuffer_desc fb_desc;
-
-// Номера слотов задач (обычно слот 0 - Vertex/Compute, слот 1 - Fragment)
-#define COMMAND_SLOT_VERTEX   0
-#define COMMAND_SLOT_FRAGMENT 1
-
-void gpu_diagnose_fault(unsigned slot)
-{
-    // Читаем физический адрес дескриптора, на котором споткнулся DMA-движок GPU
-    uint32_t fault_addr_lo = GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_LO;
-    uint32_t fault_addr_hi = GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_HI;
-    uint64_t fault_phys_addr = ((uint64_t)fault_addr_hi << 32) | fault_addr_lo;
-
-    // В Bifrost код конкретного исключения (Exception Code) часто дублируется
-    // в старших битах регистра JS_STATUS или в регистре ошибок MMU, если это был Page Fault
-    PRINTF("-> MALI FAULT DIAGNOSIS:\n");
-    PRINTF("   GPU stopped at physical address: 0x%08X%08X\n", (unsigned)fault_addr_hi, (unsigned)fault_addr_lo);
-    PRINTF("   MMU Fault Status (0x01802420): 0x%08X\n", (unsigned)GPU_MMU->MMU_AS[slot].AS_FAULTSTATUS);
-    PRINTF("   MMU Fault Address: 0x%08X%08X\n",
-           (unsigned)GPU_MMU->MMU_AS[slot].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS[slot].AS_FAULTADDRESS_LO);
-}
-
-
 // Регистры отправки команд в слот (сверьтесь со структурой GPU_JOB_CONTROL в panfrost_regs.h)
 // Обычные имена регистров в драйвере Panfrost: JS_COMMAND, JS_HEAD_NEXT
-
-void gpu_draw_triangle(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height)
+static void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
 {
-    PRINTF("Assembling GPU Job Chain for Triangle...\n");
+    // Читаем статус ошибки Слота 1 (смещение 0x24 от 0x1880 -> адрес 0x018018A4)
+    uint32_t slot1_status = GPU_JOB_CONTROL->LOOP[slot].JS_STATUS;
 
-    // 1. Инициализация описания целевого экрана (Framebuffer)
-    fb_desc.base_address = framebuffer_phys_addr;
-    fb_desc.width = width;
-    fb_desc.height = height;
-    fb_desc.stride = width * 4;
-    fb_desc.format = 0x18004000; // Простой формат записи RGBA8888 в Bifrost
+    // Физический адрес, на котором споткнулся Fragment-парсер
+    uint32_t fault_lo = GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_LO;
+    uint32_t fault_hi = GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_HI;
+    // Физический адрес, на котором споткнулся Fragment-парсер
+    uint32_t tail_lo = GPU_JOB_CONTROL->LOOP[slot].JS_TAIL_LO;
+    uint32_t tail_hi = GPU_JOB_CONTROL->LOOP[slot].JS_TAIL_HI;
 
-    // 2. Настройка первой задачи: Координаты и геометрия (Vertex / Tiler Job)
-    v_job.header.job_type = JOB_TYPE_TILER;
-    v_job.header.job_index = 1;
-    v_job.header.job_descriptor_size = sizeof(mali_tiler_job);
-    v_job.header.next_job = 0; // Конец первой цепочки (или можно связать с f_job, если аппаратно поддерживается)
+    PRINTF("\n-> FRAGMENT STAGE FAULT DIAGNOSIS:\n");
+    PRINTF("   Slot %u JS_STATUS = 0x%08X\n", slot, (unsigned)slot1_status);
+    PRINTF("   Slot %u Stopped at Address: 0x%08X%08X\n", slot, (unsigned)fault_hi, (unsigned)fault_lo);
+    PRINTF("   Slot %u Tail Address:       0x%08X%08X\n", slot, (unsigned)tail_hi, (unsigned)tail_lo);
 
-    v_job.tiler_heap = (uintptr_t)tiler_heap_mem;
-    v_job.vertex_buffer = (uintptr_t)triangle_vertices;
-    v_job.vertex_count = 3; // 3 вершины формируют 1 треугольник
-    v_job.draw_flags = 0x00000004; // Флаг типа примитива: TRIANGLES
+    // Проверяем, не ругнулся ли при этом MMU (адресное пространство AS0 на 0x400)
+//    PRINTF("   MMU Fault Status (as=%u) = 0x%08X\n", as, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTSTATUS);
+//    PRINTF("   MMU Fault Address = 0x%08X%08X\n",
+//           (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_LO);
+}
 
-    // 3. Настройка второй задачи: Отрисовка пикселей (Fragment Job)
-    f_job.header.job_type = JOB_TYPE_FRAGMENT;
-    f_job.header.job_index = 2;
-    f_job.header.job_descriptor_size = sizeof(mali_fragment_job);
-    f_job.header.next_job = 0; // Последняя задача
-
-    f_job.framebuffer_pointer = (uintptr_t)&fb_desc;
-    f_job.tile_render_list = (uintptr_t)tiler_heap_mem; // Читает геометрию из кучи тайлера
-    f_job.width = width;
-    f_job.height = height;
-    f_job.clear_color = 0xFF0000FF; // Фоновый цвет очистки, если нужно (Красный)
-
-    // КРИТИЧЕСКИ ВАЖНО: Выталкиваем структуры из кэша ядер процессора (CPU L1/L2) в ОЗУ,
-    // чтобы GPU увидел актуальные данные через шину AXI.
-    // Если у вас в hftrx есть функции работы с кэшем, вызовите их:
-     dcache_clean((uintptr_t)&v_job, sizeof(v_job));
-     dcache_clean((uintptr_t)&f_job, sizeof(f_job));
-     dcache_clean((uintptr_t)&fb_desc, sizeof(fb_desc));
-     dcache_clean((uintptr_t)triangle_vertices, sizeof(triangle_vertices));
-
-    // 4. Запуск цепочки геометрии в Slot 0
-    PRINTF("Submitting Vertex Job to Slot 0...\n");
-
+static int gpu_submit_job(unsigned slot, uintptr_t head)
+{
+//	PRINTF("gpu_submit_job: head=%p, slot=%u\n", (void *) head, slot);
+//	printhex32((uintptr_t) job, job, 64);
     // Записываем физический адрес начала структуры v_job в регистр указателя слота 0
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_HEAD_NEXT_HI = ptr_hi32((uintptr_t)&v_job);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_HEAD_NEXT_LO = ptr_lo32((uintptr_t)&v_job);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
+    GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_HI = ptr_hi32(head);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
+    GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_LO = ptr_lo32(head);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
 
     // 2. ИНИЦИАЛИЗАЦИЯ JS_AFFINITY (Критично для Bifrost!)
     // Говорим планировщику распределить потоки шейдеров на оба ядра Mali-G31 MP2
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_AFFINITY_NEXT_HI = ~0;//0x00000003;
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_AFFINITY_NEXT_LO = ~0;//0x00000003;
+    GPU_JOB_CONTROL->LOOP[slot].JS_AFFINITY_NEXT_HI = ~0;//0x00000003;
+    GPU_JOB_CONTROL->LOOP[slot].JS_AFFINITY_NEXT_LO = ~0;//0x00000003;
 
     // Дополнительно для Bifrost рекомендуется сбросить расширенную конфигурацию слота
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_CONFIG_NEXT = 0x00000000;
+    GPU_JOB_CONTROL->LOOP[slot].JS_CONFIG_NEXT = 0x00000000;
+
+    //GPU_JOB_CONTROL->JOB_INT_MASK = 0xFFFFFFFF;	// Это разрешает вызовы обработчика прерываний
+    GPU_JOB_CONTROL->JOB_IRQ_MASK = 0xFFFFFFFF;
+
+//        PRINTF("0 GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
+//        PRINTF("0 GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
 
     // Команда START (обычно значение 0x01 в регистр JS_COMMAND)
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_VERTEX].JS_COMMAND_NEXT = 0x01;
-    __DSB();;
-    TP();
-
-    local_delay_ms(200);
-//    PRINTF("GPU_MMU:\n");
-//    printhex32(GPU_MMU_BASE, GPU_MMU, 4096);
-    PRINTF("f_job: %p\n", & f_job);
-    PRINTF("v_job: %p\n", & v_job);
-    //memset32(GPU_JOB_CONTROL, ~0, 4096);
-//	PRINTF("GPU_JOB_CONTROL:\n");
-//	printhex32(GPU_JOB_CONTROL_BASE, GPU_JOB_CONTROL, 4096);
-//    for (;;)
-//    	;
-//	PRINTF("GPU_MMU:\n");
-//	printhex32(GPU_MMU_BASE, GPU_MMU, 4096);
-    PRINTF("GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
-    gpu_diagnose_fault(COMMAND_SLOT_VERTEX);
+    GPU_JOB_CONTROL->LOOP[slot].JS_COMMAND_NEXT = 0x01;
+    __DSB();
     // Ожидание завершения работы аппаратного тайлера геометрии
     // В hftrx прерывания выводят ASSERT(0), поэтому опрашиваем статус в цикле (polling)
-    while ((GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT & (1 << COMMAND_SLOT_VERTEX)) == 0) {
-        // Если произошел сбой, сработает MMU или Job Fault прерывание
+    if (local_wait32mask(& GPU_JOB_CONTROL->JOB_INT_RAWSTAT, (UINT32_C(1) << slot), 1 * (UINT32_C(1) << slot), 100))//Was: JOB_IRQ_RAWSTAT
+    {
+    	PRINTF("error head %p:\n", (void *) head);
+    	dcache_invalidate((uintptr_t) head, 128);
+    	printhex32((uintptr_t) head, (void *) head, 128);
+    	PRINTF("gpu timeout: GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
+    	gpu_diagnose_slot_fault(slot, 0);
+        GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
+   	return 1;
     }
-    local_delay_ms(200);
-    TP();
-    GPU_JOB_CONTROL->JOB_IRQ_CLEAR = (1 << COMMAND_SLOT_VERTEX); // Сброс флага прерывания
-
-    // 5. Запуск цепочки растеризации фрагментов в Slot 1
-    PRINTF("Submitting Fragment Job to Slot 1...\n");
-
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_HEAD_NEXT_HI = ptr_hi32((uintptr_t)&f_job);//(uint32_t)(((uintptr_t)&f_job >> 32) & 0xFFFFFFFF);
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_HEAD_NEXT_LO = ptr_lo32((uintptr_t)&f_job);//(uint32_t)((uintptr_t)&f_job & 0xFFFFFFFF);
-
-    // 2. ИНИЦИАЛИЗАЦИЯ JS_AFFINITY (Критично для Bifrost!)
-    // Говорим планировщику распределить потоки шейдеров на оба ядра Mali-G31 MP2
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_AFFINITY_NEXT_HI = ~0;//0x00000003;
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_AFFINITY_NEXT_LO = ~0;//0x00000003;
-
-    // Дополнительно для Bifrost рекомендуется сбросить расширенную конфигурацию слота
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_CONFIG_NEXT = 0x00000000;
-
-    GPU_JOB_CONTROL->LOOP[COMMAND_SLOT_FRAGMENT].JS_COMMAND_NEXT = 0x01;
-
-    local_delay_ms(200);
-    PRINTF("GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
-    // Ожидание завершения отрисовки пикселей в память кадра
-    while ((GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT & (1 << COMMAND_SLOT_FRAGMENT)) == 0) {
-        // Опрос статуса
+    else
+    {
+    	//PRINTF("okay head %p:\n", (void *) head);
+    	//dcache_invalidate((uintptr_t) head, 128);
+    	//printhex32((uintptr_t) head, (void *) head, 128);
+        GPU_JOB_CONTROL->JOB_INT_CLEAR = (UINT32_C(1) << slot); // Сброс флага прерывания
+        GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
+      return 0;
     }
-    local_delay_ms(200);
-    TP();
-    GPU_JOB_CONTROL->JOB_IRQ_CLEAR = (1 << COMMAND_SLOT_FRAGMENT);
-
-    PRINTF("Triangle rendering completed successfully!\n");
 }
+#if 0
+enum mali_job_type {
+        JOB_NOT_STARTED	= 0,
+        JOB_TYPE_NULL = 1,
+        JOB_TYPE_WRITE_VALUE = 2,
+        JOB_TYPE_CACHE_FLUSH = 3,
+        JOB_TYPE_COMPUTE = 4,
+        JOB_TYPE_VERTEX = 5,
+        JOB_TYPE_GEOMETRY = 6,
+        JOB_TYPE_TILER = 7,
+        JOB_TYPE_FUSED = 8,
+        JOB_TYPE_FRAGMENT = 9,
+};
+#endif
 
-#define GPU_ALIGN __attribute__((aligned(64)))
+//enum mali_draw_mode {
+//        MALI_DRAW_NONE      = 0x0,
+//        MALI_POINTS         = 0x1,
+//        MALI_LINES          = 0x2,
+//        MALI_LINE_STRIP     = 0x4,
+//        MALI_LINE_LOOP      = 0x6,
+//        MALI_TRIANGLES      = 0x8,
+//        MALI_TRIANGLE_STRIP = 0xA,
+//        MALI_TRIANGLE_FAN   = 0xC,
+//        MALI_POLYGON        = 0xD,
+//        MALI_QUADS          = 0xE,
+//        MALI_QUAD_STRIP     = 0xF,
+//        /* All other modes invalid */
+//};
+// Структура заголовка задачи (Mali Job Header)
+// MGS! подтверждена работа заголовка
+//typedef struct __attribute__((packed)) {
+//    uint32_t exception_status;       // 0x00: Сюда GPU запишет код ошибки при FAULT (изначально 0)
+//    uint32_t first_incomplete_task;  // 0x04: Служебный внутренний статус GPU
+//    uint64_t fault_pointer;          // 0x08: Физический адрес буфера для дампа ошибок MMU/Bus
+//
+//    // Битовые поля управления типом и разрядами адреса (занимают 1 байт):
+//    uint8_t  job_descriptor_size : 1; // 0x10 (бит 0)  - Выставляем 1 (64-битные указатели)
+//    uint8_t  job_type            : 7; // 0x10 (биты 1-7) - Тип задачи (TILER = 0x11, VERTEX = 0x12)
+//
+//    // Битовые поля барьеров и флагов (занимают 1 байт):
+//    uint8_t  job_barrier         : 1; // 0x11 (бит 0)  - last job
+//    uint8_t  unknown_flags       : 7; // 0x11 (биты 1-7) - Служебные флаги (обычно 0)
+//
+//    uint16_t job_index;               // 0x12: Уникальный ID этой задачи для скорборда (например, 1)
+//    uint16_t job_dependency_index_1;  // 0x14: ID задачи, которую нужно дождаться перед запуском (0, если нет)
+//    uint16_t job_dependency_index_2;  // 0x16: ID второй зависимой задачи (0, если нет)
+//
+//    uint64_t next_job;               // 0x18: Физический адрес следующего дескриптора в цепочке (0, если последний)
+//} mali_job_header;
 
-// Минимальный вершинный шейдер (Vertex Shader) для Bifrost
-// Задача: Пропустить координаты вершин (X, Y, Z, W) без изменений на стадию растеризации
-RAMNC GPU_ALIGN static const uint32_t bifrost_vertex_shader_code[] = {
-    0x7C003C00, 0x00000000, 0x00000000, 0x00000000, // Инструкция прохода позиции (Pass-through)
-    0x00000000, 0x00000000, 0x00000000, 0x00000000  // Конец шейдера (Команда терминации потока)
+
+static int gpu_run_write_value_test_mesa(void) {
+	PRINTF("gpu_run_write_value_test_mesa:\n");
+
+	// Переменная-цель, куда будет писать GPU.
+	static volatile uint64_t GPU_ALIGN gpu_test_target [2];
+
+	MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_TYPE pjob = {
+			MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_header,
+			.type = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64
+	};
+	MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_TYPE pjob2 = {
+			MALI_WRITE_VALUE_JOB_SECTION_PAYLOAD_header,
+			.type = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64
+	};
+
+	GPU_ALIGN static MALI_WRITE_VALUE_JOB_PACKED_T job_p;
+	GPU_ALIGN static MALI_WRITE_VALUE_JOB_PACKED_T job2_p;
+
+    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE jh = {
+    		MALI_WRITE_VALUE_JOB_SECTION_HEADER_header,
+			.type = MALI_JOB_TYPE_WRITE_VALUE
+    };
+    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE jh2 = {
+    		MALI_WRITE_VALUE_JOB_SECTION_HEADER_header,
+			.type = MALI_JOB_TYPE_WRITE_VALUE
+    };
+    // Заполняем заголовок
+    jh.exception_status = 0;
+    jh.barrier = 0;			// last
+    jh.index = 1;
+    jh.next = (uintptr_t) & job2_p;            // Цепочка заканчивается на ней
+
+    jh2.exception_status = 0;
+    jh2.barrier = 1;			// last
+    jh2.index = 2;
+    jh2.next = (uintptr_t) 0;            // Цепочка заканчивается на ней
+
+    // Заполняем Payload записи
+    pjob.address = (uintptr_t) & gpu_test_target [0]; // Физический адрес цели
+    pjob.immediate_value = 0xDEADBEEFABBA1980;               // Данные для записи
+
+    pjob2.address = (uintptr_t) & gpu_test_target [1]; // Физический адрес цели
+    pjob2.immediate_value = 0x0123456789ABCDEF;               // Данные для записи
+
+    MALI_JOB_HEADER_pack(& job_p.HEADER, & jh);
+    MALI_JOB_HEADER_pack(& job2_p.HEADER, & jh2);
+	MALI_WRITE_VALUE_JOB_PAYLOAD_pack(& job_p.PAYLOAD, & pjob);
+	MALI_WRITE_VALUE_JOB_PAYLOAD_pack(& job2_p.PAYLOAD, & pjob2);
+
+    dcache_clean_invalidate((uintptr_t)&job_p, sizeof(job_p));
+    dcache_clean_invalidate((uintptr_t)&job2_p, sizeof(job2_p));
+
+    dcache_clean_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
+
+    if (gpu_submit_job(2, (uintptr_t) & job_p))
+    	return 1;	// err
+      // Проверяем результат выполнения
+    printhex64(0, (void *) gpu_test_target, sizeof gpu_test_target);
+    return 0;
+}
+#if 0
+/**
+ * [Биты 0-3]:   Swizzle (перестановка каналов). 0 = RGBA, 1 = BGRA/ARGB и т.д.
+ * [Биты 4-11]:  Аппаратный формат (RGBA8888 = 0x14, RGB565 = 0x0C).
+ * [Биты 12-31]: Управляющие флаги (тип памяти, линейная раскладка, write-enable).
+ */
+#define FORMAT_ARGB8888 0x15001000
+#define FORMAT_RGBA8888 0x14001000
+#define FORMAT_RGB565	0x0C001000
+
+#define MALI_TILE_SHIFT 4
+#define MALI_TILE_LENGTH (1 << MALI_TILE_SHIFT)
+
+// https://android.googlesource.com/platform/external/mesa3d/+/e061bf004b5/src/panfrost/include/panfrost-job.h
+#define MALI_MAKE_TILE_COORDS(X, Y) ((X) | ((Y) << 8))
+#define MALI_BOUND_TO_TILE(B, bias) ((B - bias) >> MALI_TILE_SHIFT)
+#define MALI_COORDINATE_TO_TILE(W, H, bias) MALI_MAKE_TILE_COORDS(MALI_BOUND_TO_TILE(W, bias), MALI_BOUND_TO_TILE(H, bias))
+#define MALI_COORDINATE_TO_TILE_MIN(W, H) MALI_COORDINATE_TO_TILE(W, H, 0)
+#define MALI_COORDINATE_TO_TILE_MAX(W, H) MALI_COORDINATE_TO_TILE(W, H, 1)
+
+#define GPU_ALIGN_64  __attribute__((aligned(64)))
+#define GPU_ALIGN_128 __attribute__((aligned(128)))
+#define GPU_PACKED    __attribute__((packed))
+/* Бинарный код пустого фрагментного шейдера Bifrost v6 (Mali-G31) */
+//__attribute__((aligned(64))) static const uint32_t bifrost_dummy_fs[] = {
+//    UINT32_C(0x00000000), UINT32_C(0x00000000), /* Системный префикс */
+//    UINT32_C(0x7C003C00), UINT32_C(0x00000000), /* Команда останова и blend-прохода */
+//};
+//__attribute__((aligned(64))) static const uint32_t bifrost_dummy_fs[] = {
+//    UINT32_C(0x00007800), UINT32_C(0x00000000), /* Первое 64-битное слово - зануленный заголовок */
+//    UINT32_C(0x00007800), UINT32_C(0x00000000)  /* Второе 64-битное слово - безусловный END/NOP для v6 */
+//};
+__attribute__((aligned(64))) static const uint32_t bifrost_dummy_fs[] = {
+    UINT32_C(0x00000000), UINT32_C(0x00000000), /* Системный заголовок / Клауза */
+    UINT32_C(0x00000004), UINT32_C(0x00001000)  /* Аппаратная v6 команда Blend Writeout RT0 + END */
 };
 
-// Минимальный фрагментный/пиксельный шейдер (Fragment Shader) для Bifrost
-// Задача: Записать фиксированный цвет RGBA (0.0, 1.0, 0.0, 1.0) - Чистый зеленый
-RAMNC GPU_ALIGN static const uint32_t bifrost_fragment_shader_code[] = {
-    0x9C003C00, 0x0000FFFF, 0x00000000, 0x3F800000, // Запись зеленого компонента в квад-вектор
-    0x00000000, 0x00000000, 0x00000000, 0x00000000  // Команда вывода в Render Target 0 и выход
-};
+/** @addtogroup MALI_Bifrost_Renderer_Structures
+  * @{
+  */
 
-// Структура описания шейдера для планировщика задач Bifrost
-typedef struct __attribute__((packed)) {
-    uint64_t shader_code_ptr;    // Физический адрес бинарного кода шейдера
-    uint32_t properties;         // Флаги: количество регистров, тип шейдера
-    uint16_t stack_size;         // Размер стека для потоков (0 для заглушки)
-    uint16_t reserved;
-    uint64_t preload_regs;       // Настройки предварительной загрузки регистров
-    uint64_t uniform_buffer_ptr; // Адрес констант (Uniforms), если есть
-} mali_shader_state;
-
-// Контекст состояния отрисовки (Renderer State)
-typedef struct __attribute__((packed)) {
-    mali_shader_state vertex_shader;
-    mali_shader_state fragment_shader;
-    uint32_t blend_equation;     // Формула смешивания цветов (Alpha blending)
-    uint32_t blend_constant;     // Константа прозрачности
-    uint64_t attribute_meta_ptr; // Описание формата входных вершин (X, Y, Z)
-} mali_renderer_state;
-
-GPU_ALIGN static mali_renderer_state gpu_program_state;
-
-typedef struct __attribute__((packed)) {
-    uint64_t buffer_ptr;  // Физический адрес массива координат triangle_vertices
-    uint32_t stride;      // Шаг между вершинами: sizeof(float) * 3 = 12 байт
-    uint32_t size;        // Общий размер буфера вершин в байтах
-    uint32_t format;      // Код формата Bifrost: 0x0400000A (3D Float вектор)
-} mali_attribute_meta;
-
-GPU_ALIGN static mali_attribute_meta gpu_vertex_input_meta;
-
-
-void gpu_draw_triangle2(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height)
+/**
+  * @brief  Mali Bifrost Blend Descriptor Structure definition
+  * @note   Takes exactly 8 bytes per Render Target.
+  */
+typedef struct
 {
-    // ... [Предыдущий код инициализации fb_desc] ...
+  __IO uint32_t BLEND_FLAGS;          /*!< Blending equation and format configuration flags */
+  __IO uint32_t BLEND_CONSTANT;       /*!< Fixed blend color constant (if used) */
+} MALI_BlendDescriptor_TypeDef;
 
-    // 1. Настройка метаданных входных вершин
-    gpu_vertex_input_meta.buffer_ptr = (uintptr_t)triangle_vertices;
-    gpu_vertex_input_meta.stride = sizeof(float) * 3;
-    gpu_vertex_input_meta.size = sizeof(triangle_vertices);
-    gpu_vertex_input_meta.format = 0x0400000A; // Таблица типов Bifrost: Vec3 Float
+/**
+  * @brief  Mali Bifrost Renderer State Descriptor Structure definition
+  * @note   Combined shader metadata layout according to bifrost.xml specification.
+  *         Must be 16-byte aligned in RAM. Total size with 1 RT = 24 bytes.
+  */
+typedef struct
+{
+  /* Word 0 (Bytes 0x00 - 0x07): <field name="Shader Code Ptr" start="0:0" end="0:63" type="address"/> */
+  __IO uint64_t SHADER_CODE_PTR;      /*!< 64-bit GPU virtual/physical pointer to raw shader binary program */
 
-    // 2. Настройка дескриптора Вершинного шейдера
-    gpu_program_state.vertex_shader.shader_code_ptr = (uintptr_t)bifrost_vertex_shader_code;
-    gpu_program_state.vertex_shader.properties = 0x00000004; // Режим: Vertex Stage, 4 рабочих регистра
-    gpu_program_state.vertex_shader.preload_regs = 0;
-    gpu_program_state.vertex_shader.uniform_buffer_ptr = 0;  // Константы не используем
+  /* Word 1 (Bytes 0x08 - 0x0F): Аппаратные свойства и счетчики ресурсов */
+  union {
+    __IO uint64_t PROPERTIES;         /*!< Полный 64-битный регистр свойств для атомарной записи */
+    struct {
+      __IO uint16_t SAMPLER_COUNT;    /*!< Number of samplers used by shader (0 for clear) */
+      __IO uint16_t TEXTURE_COUNT;    /*!< Number of textures bound (0 for clear) */
+      __IO uint16_t ATTRIBUTE_COUNT;  /*!< Number of vertex attributes (0 for fragment shader) */
+      __IO uint16_t VARYING_COUNT;    /*!< Number of varying interpolators (0 for clear) */
+    };
+  } PROP;
 
-    // 3. Настройка дескриптора Фрагментного (пиксельного) шейдера
-    gpu_program_state.fragment_shader.shader_code_ptr = (uintptr_t)bifrost_fragment_shader_code;
-    gpu_program_state.fragment_shader.properties = 0x00000008; // Режим: Fragment Stage, требуется Render Target
-    gpu_program_state.fragment_shader.preload_regs = 0;
-    gpu_program_state.fragment_shader.uniform_buffer_ptr = 0;
+  /* Секция дескрипторов блендинга (Смещение 16 байт) */
+  MALI_BlendDescriptor_TypeDef BLEND[UINT32_C(1)]; /*!< Blend descriptor for Render Target 0 */
 
-    // Настройка блендинга (простая перезапись пикселя без прозрачности)
-    gpu_program_state.blend_equation = 0x00001200; // Режим Opaque (Замещение)
-    gpu_program_state.attribute_meta_ptr = (uintptr_t)&gpu_vertex_input_meta;
+} MALI_RendererState_TypeDef;
 
-    // 4. Привязываем созданную программу к аппаратным задачам
-    // В Bifrost v6 адрес Renderer State передается в соответствующие поля дескрипторов задач
-    v_job.attributes = (uint32_t)((uintptr_t)&gpu_program_state & 0xFFFFFFFF); // Привязка шейдеров к Vertex Job
-    // Для некоторых ревизий Bifrost адрес передается через расширенное поле primitive_size
-    v_job.primitive_size = (uintptr_t)&gpu_program_state;
+/**
+  * @}
+  */
 
-    // Задаем цвет очистки экрана перед рисованием треугольника (сброс в темно-синий)
-    f_job.clear_color = 0x101030FF;
+/** @defgroup MALI_RendererState_Constants
+  * @{
+  */
+/* Тег для указателя на бинарный код шейдера в Bifrost (обычно 0) */
+#define MALI_SHADER_CODE_TAG               UINT64_C(0x0000000000000000)
 
-    // КРИТИЧЕСКИ ВАЖНО: Выталкиваем новые бинарники и структуры дескрипторов из кэша процессора
-     dcache_clean((uintptr_t)&gpu_program_state, sizeof(gpu_program_state));
-     dcache_clean((uintptr_t)&gpu_vertex_input_meta, sizeof(gpu_vertex_input_meta));
-     dcache_clean((uintptr_t)bifrost_vertex_shader_code, sizeof(bifrost_vertex_shader_code));
-     dcache_clean((uintptr_t)bifrost_fragment_shader_code, sizeof(bifrost_fragment_shader_code));
+/**
+  * @brief  Аппаратные флаги блендинга для безусловной перезаписи (Replace mode).
+  * @note   Маска 0x00011E00 кодирует в Bifrost v6 отключение альфа-смешивания
+  *         и принудительный сброс сырых пикселей тайл-буфера в RAM (Raw write-out).
+  */
+#define MALI_BLEND_FLAGS_REPLACE_RAW8      UINT32_C(0x00011E00)
+/**
+  * @}
+*/
 
-    // 5. Запуск цепочки через регистры планировщика (Слот 0 и Слот 1)
-    // ... [Код отправки в регистры JS_HEAD_NEXT и ожидания прерываний из предыдущего ответа] ...
+/**
+  * @brief  Initializes the Renderer State and Blend metadata for a Clear Screen operation.
+  * @note   Configures the descriptor for a dummy fragment shader pass on Mali-G31.
+  * @param  pState: Pointer to a MALI_RendererState_TypeDef structure in RAM to be initialized.
+  * @param  shader_binary_gpu_address: Pure 64-bit physical/virtual GPU address of bifrost_dummy_fs.
+  * @retval None
+  */
+void MALI_RendererState_ClearInit(MALI_RendererState_TypeDef *pState, uint64_t shader_binary_gpu_address)
+{
+  /* 1. Записываем 64-битный адрес кода шейдера с аппаратным тегом вызова (0x4) */
+  pState->SHADER_CODE_PTR = shader_binary_gpu_address | 0*MALI_SHADER_CODE_TAG_BIFROST_V6;
+
+  /* 2. Побитовая сборка 64-битного поля Properties через анонимное объединение */
+  uint64_t props = UINT64_C(0);
+
+  /* Для операции Clear Screen счётчики ресурсов шейдера равны нулю */
+  props |= (UINT64_C(0) << MALI_RENDER_PROP_SAMPLER_COUNT_POS);
+  props |= (UINT64_C(0) << MALI_RENDER_PROP_TEXTURE_COUNT_POS);
+  props |= (UINT64_C(0) << MALI_RENDER_PROP_ATTRIBUTE_COUNT_POS);
+  props |= (UINT64_C(0) << MALI_RENDER_PROP_VARYING_COUNT_POS);
+
+  /* Принудительно взводим аппаратный бит аллокации потоков (Thread/Register Pre-allocation) */
+  props |= MALI_RENDER_PROP_FRAG_THREAD_CONFIG; // Сгенерирует маску 0x0000200000000000
+
+  /* Записываем собранную маску в 64-битное поле объединения */
+  pState->PROP.PROPERTIES = props;
+
+  /* 3. Настраиваем дескриптор блендинга для Render Target 0 (Подавление смешивания, чистый Replace) */
+  pState->BLEND[UINT32_C(0)].BLEND_FLAGS    = MALI_BLEND_FLAGS_REPLACE_RAW32;
+  pState->BLEND[UINT32_C(0)].BLEND_CONSTANT = UINT32_C(0x00000000);
 }
-#define MALI_GPU_CONTROL_BASE  0x01800000
+
+/**
+  * @brief  Writes values to the Tiler Heap descriptor for Mali-G31 (Bifrost v6).
+  * @param  pHeap: Pointer to the MALI_TilerHeapDescriptor_TypeDef structure in RAM.
+  * @param  heap_gpu_base_address: Physical 64-bit address where gpu_fragment_tile_meta is located.
+  * @retval None
+  */
+void MALI_TilerHeapDescriptor_WriteValue(MALI_TilerHeapDescriptor_TypeDef *pHeap,
+                                         uint64_t heap_gpu_base_address)
+{
+  /* 1. Создаем loopback-петлю: указываем аппаратной каретке свободных блоков
+        на адрес конца нашей собственной 64-байтной структуры метаданных */
+  pHeap->FREE_LIST_HEAD = heap_gpu_base_address + UINT64_C(64);
+
+  /* 2. Задаем валидный размер кучи, отличный от нуля */
+  pHeap->CFG.HEAP_SIZE  = MALI_TILER_HEAP_SIZE_64KB;
+  pHeap->CFG.FLAGS      = UINT32_C(0x00000000);
+
+  /* 3. Базовый адрес массива кучи указывает на начало нашей мета-области */
+  pHeap->BASE_ADDRESS   = heap_gpu_base_address;
+
+  /* 4. Безусловно зануляем весь аппаратный остаток 64-байтного дескриптора */
+  pHeap->HARDWARE_PADDING[UINT32_C(0)] = UINT64_C(0x0000000000000000);
+  pHeap->HARDWARE_PADDING[UINT32_C(1)] = UINT64_C(0x0000000000000000);
+  pHeap->HARDWARE_PADDING[UINT32_C(2)] = UINT64_C(0x0000000000000000);
+  pHeap->HARDWARE_PADDING[UINT32_C(3)] = UINT64_C(0x0000000000000000);
+  pHeap->HARDWARE_PADDING[UINT32_C(4)] = UINT64_C(0x0000000000000000);
+}
+
+
+/* Выделение управляющих дескрипторов в системном ОЗУ с выравниванием по кэш-линиям */
+__attribute__((aligned(64))) static MALI_FramebufferDescriptor_TypeDef    fbd_frag;
+__attribute__((aligned(64))) static MALI_RenderTargetDescriptor_TypeDef   render_target;
+
+/* Фиктивная область метаданных тайлов */
+//__attribute__((aligned(4096))) static uint8_t gpu_fragment_tile_meta_buff[MALI_TILER_HEAP_SIZE_64KB];
+//MALI_TilerHeapDescriptor_TypeDef gpu_fragment_heap;
+/* Метаданные фрагментного шейдера */
+__attribute__((aligned(16))) static MALI_RendererState_TypeDef            fragment_renderer_state;
+
+static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
+{
+	/* Монолитная структура фрагментного задания для отправки в Job Slot 1 */
+	typedef struct __attribute__((packed, aligned(64))) {
+	    MALI_JobHeader_TypeDef           HEADER;   /*!< Общий аппаратный заголовок задания */
+	    MALI_BifrostV6_FusedJobPayload_TypeDef  PAYLOAD;  /*!< Полезная нагрузка фрагментного процессора Bifrost v6 */
+	} MALI_FragmentJob_TypeDef;
+
+	__attribute__((aligned(64))) static GPU_ALIGN MALI_FragmentJob_TypeDef f_job_monolithic;
+    // ... [Инициализация памяти __builtin_memset] ...
+
+	//MALI_TilerHeapDescriptor_WriteValue(& gpu_fragment_heap, (uintptr_t) gpu_fragment_tile_meta_buff);
+    // 1. ИНИЦИАЛИЗАЦИЯ МЕТАДАННЫХ ШЕЙДЕРА (Renderer State)
+	MALI_RendererState_ClearInit(& fragment_renderer_state, (uintptr_t)&bifrost_dummy_fs);
+
+    // 2. ИНИЦИАЛИЗАЦИЯ RENDER TARGET
+    MALI_RenderTargetDescriptor_ClearInit(& render_target, framebuffer_phys_addr, width, 1, 1, 1, 1);
+    render_target.FRAMEBUFFER_POINTER = framebuffer_phys_addr;
+    //render_target.CLEAR_COLOR.RGBA.R = 1.0f; // Пурпурный цвет
+    // ... [Настройка формата и STRIDE] ...
+    render_target.FRAMEBUFFER_POINTER = framebuffer_phys_addr;
+    render_target.FORMAT_FLAGS = FORMAT_ARGB8888;
+    render_target.STRIDE = stride;
+
+    // 3. ИНИЦИАЛИЗАЦИЯ FRAMEBUFFER DESCRIPTOR (MFBD)
+	MALI_FramebufferDescriptor_ClearInit(& fbd_frag,
+			0,//(uintptr_t) & gpu_fragment_heap,
+			(uintptr_t) & render_target, width, height);
+    fbd_frag.FRAGMENT_FRAME_SHADER = (uintptr_t)&fragment_renderer_state;
+    // ... [Настройка размеров, TILER_HEAP_START и т.д.] ...
+
+    // 4. СБОРКА МОНОЛИТНОГО FRAGMENT JOB (Заголовок + Полезная нагрузка)
+    MALI_JobHeader_WriteValue(&f_job_monolithic.HEADER, MALI_JOB_TYPE_FUSED, 1, 1, 0);
+//    MALI_FragmentJobPayload_ClearInit(& f_job_monolithic.PAYLOAD,
+//    		(uintptr_t)&fbd_frag,
+//			0,//(uintptr_t) & gpu_fragment_heap,
+//			width, height);
+    MALI_FusedJobPayload_ClearInit(& f_job_monolithic.PAYLOAD,
+    		(uintptr_t)&fbd_frag);
+    //f_job_monolithic.PAYLOAD.FB_DESC = (uintptr_t)&fbd_frag | MALI_FBD_TYPE_MFBD;
+    // ... [Расчет тайлов и заполнение остальных полей] ...
+
+    // 5. ВЫТАЛКИВАНИЕ ДАННЫХ ИЗ КЭША В ОЗУ
+    // ... [dcache_clean для всех дескрипторов] ...
+    dcache_clean_invalidate((uintptr_t)&f_job_monolithic, sizeof f_job_monolithic );
+
+    dcache_clean_invalidate((uintptr_t)&fbd_frag, sizeof fbd_frag );
+    dcache_clean_invalidate((uintptr_t)&render_target, sizeof render_target );
+//    dcache_clean_invalidate((uintptr_t)&gpu_fragment_tile_meta_buff, sizeof gpu_fragment_tile_meta_buff );
+//    dcache_clean_invalidate((uintptr_t)&gpu_fragment_heap, sizeof gpu_fragment_heap );
+    dcache_clean_invalidate((uintptr_t)&fragment_renderer_state, sizeof fragment_renderer_state );
+
+    PRINTHEX32(bifrost_dummy_fs);
+    PRINTHEX32(f_job_monolithic);
+    PRINTHEX32(fbd_frag);
+    PRINTHEX32(render_target);
+    //PRINTHEX32(gpu_fragment_heap);
+    PRINTHEX32(fragment_renderer_state);
+
+    __DSB(); __ISB();
+
+    gpu_submit_job(0, (uintptr_t)&f_job_monolithic);
+}
+
+
+static void gpu_clear_screen_on_fragment(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
+{
+	/* Монолитная структура фрагментного задания для отправки в Job Slot 1 */
+	typedef struct __attribute__((packed, aligned(64))) {
+	    MALI_JobHeader_TypeDef           HEADER;   /*!< Общий аппаратный заголовок задания */
+	    MALI_FragmentJobPayload_TypeDef  PAYLOAD;  /*!< Полезная нагрузка фрагментного процессора Bifrost v6 */
+	} MALI_FragmentJob_TypeDef;
+
+	__attribute__((aligned(64))) static GPU_ALIGN MALI_FragmentJob_TypeDef f_job_monolithic;
+    // ... [Инициализация памяти __builtin_memset] ...
+
+	//MALI_TilerHeapDescriptor_WriteValue(& gpu_fragment_heap, (uintptr_t) gpu_fragment_tile_meta_buff);
+    // 1. ИНИЦИАЛИЗАЦИЯ МЕТАДАННЫХ ШЕЙДЕРА (Renderer State)
+	MALI_RendererState_ClearInit(& fragment_renderer_state, (uintptr_t)&bifrost_dummy_fs);
+
+    // 2. ИНИЦИАЛИЗАЦИЯ RENDER TARGET
+    MALI_RenderTargetDescriptor_ClearInit(& render_target, framebuffer_phys_addr, width, 1, 1, 1, 1);
+    render_target.FRAMEBUFFER_POINTER = framebuffer_phys_addr;
+    //render_target.CLEAR_COLOR.RGBA.R = 1.0f; // Пурпурный цвет
+    // ... [Настройка формата и STRIDE] ...
+    render_target.FRAMEBUFFER_POINTER = framebuffer_phys_addr;
+    render_target.FORMAT_FLAGS = FORMAT_ARGB8888;
+    render_target.STRIDE = stride;
+
+    // 3. ИНИЦИАЛИЗАЦИЯ FRAMEBUFFER DESCRIPTOR (MFBD)
+	MALI_FramebufferDescriptor_ClearInit(& fbd_frag,
+			0,//(uintptr_t) & gpu_fragment_heap,
+			(uintptr_t) & render_target, width, height);
+    fbd_frag.RENDER_TARGET_LIST = (uintptr_t)&render_target | MALI_RT_TAG_MFBD;
+    fbd_frag.FRAGMENT_FRAME_SHADER = (uintptr_t)&fragment_renderer_state;
+    // ... [Настройка размеров, TILER_HEAP_START и т.д.] ...
+
+    // 4. СБОРКА МОНОЛИТНОГО FRAGMENT JOB (Заголовок + Полезная нагрузка)
+    MALI_JobHeader_WriteValue(&f_job_monolithic.HEADER, MALI_JOB_TYPE_FRAGMENT, 1, 1, 0);
+    MALI_FragmentJobPayload_ClearInit(& f_job_monolithic.PAYLOAD,
+    		(uintptr_t)&fbd_frag,
+			0,//(uintptr_t) & gpu_fragment_heap,
+			width, height);
+    //f_job_monolithic.PAYLOAD.FB_DESC = (uintptr_t)&fbd_frag | MALI_FBD_TYPE_MFBD;
+    // ... [Расчет тайлов и заполнение остальных полей] ...
+
+    // 5. ВЫТАЛКИВАНИЕ ДАННЫХ ИЗ КЭША В ОЗУ
+    // ... [dcache_clean для всех дескрипторов] ...
+    dcache_clean_invalidate((uintptr_t)&f_job_monolithic, sizeof f_job_monolithic );
+
+    dcache_clean_invalidate((uintptr_t)&fbd_frag, sizeof fbd_frag );
+    dcache_clean_invalidate((uintptr_t)&render_target, sizeof render_target );
+//    dcache_clean_invalidate((uintptr_t)&gpu_fragment_tile_meta_buff, sizeof gpu_fragment_tile_meta_buff );
+//    dcache_clean_invalidate((uintptr_t)&gpu_fragment_heap, sizeof gpu_fragment_heap );
+    dcache_clean_invalidate((uintptr_t)&fragment_renderer_state, sizeof fragment_renderer_state );
+
+    PRINTHEX32(bifrost_dummy_fs);
+    PRINTHEX32(f_job_monolithic);
+    PRINTHEX32(fbd_frag);
+    PRINTHEX32(render_target);
+    //PRINTHEX32(gpu_fragment_heap);
+    PRINTHEX32(fragment_renderer_state);
+
+    __DSB(); __ISB();
+
+    // Запуск в аппаратный слот фрагментов (Слот 1)
+    gpu_submit_job(1, (uintptr_t)&f_job_monolithic);
+}
+
+#endif
+
+//----------------------
 
 // Регистры разблокировки и оверрайдов (Блок управления питанием)
 #define GPU_PWR_KEY                     0x0050
@@ -528,47 +669,47 @@ void gpu_draw_triangle2(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_
 #define REG_TILER_READY                 0x0150 // То самое смещение 0x150!
 #define REG_L2_READY                    0x0160
 
-void mali_bifrost_power_on(void)
+static void mali_bifrost_power_on(void)
 {
-    volatile uint32_t *gpu_pwr_key   = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + GPU_PWR_KEY);
-    volatile uint32_t *gpu_pwr_ovr1  = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + GPU_PWR_OVERRIDE1);
+    volatile uint32_t *gpu_pwr_key   = (volatile uint32_t *)(GPU_CONTROL_BASE + GPU_PWR_KEY);
+    volatile uint32_t *gpu_pwr_ovr1  = (volatile uint32_t *)(GPU_CONTROL_BASE + GPU_PWR_OVERRIDE1);
 
-    volatile uint32_t *l2_pwron      = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_L2_PWRON);
-    volatile uint32_t *l2_ready      = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_L2_READY);
+    volatile uint32_t *l2_pwron      = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_L2_PWRON);
+    volatile uint32_t *l2_ready      = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_L2_READY);
 
-    volatile uint32_t *tiler_pwron   = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_TILER_PWRON);
-    volatile uint32_t *tiler_ready   = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_TILER_READY);
+    volatile uint32_t *tiler_pwron   = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_TILER_PWRON);
+    volatile uint32_t *tiler_ready   = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_TILER_READY);
 
-    volatile uint32_t *shader_pwron  = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_SHADER_PWRON);
-    volatile uint32_t *shader_ready  = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_SHADER_READY);
+    volatile uint32_t *shader_pwron  = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_SHADER_PWRON);
+    volatile uint32_t *shader_ready  = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_SHADER_READY);
 
-    PRINTF("Mali-G31: Initializing power-up via Bifrost v6 Register Map...\n");
+//    PRINTF("Mali-G31: Initializing power-up via Bifrost v6 Register Map...\n");
 
     // 1. Снимаем программную защиту с контроллера питания
     *gpu_pwr_key = GPU_PWR_KEY_UNLOCK;
-    __DSB();;
+    __DSB();
 
     // Фиксация стабильности шин питания
-    *gpu_pwr_ovr1 = 0xFFF | (0x20 << 16);
-    __DSB();;
+    *gpu_pwr_ovr1 = 0xFFF | (UINT32_C(0x20) << 16);
+    __DSB();
 
     // 2. Включаем L2 Кэш (Бит 0 = Включить домен 0)
     *l2_pwron = 0x00000001;
-    __DSB();;
+    __DSB();
 
     //TP();
    // Ожидаем готовность L2 на смещении 0x160
-    while ((*l2_ready & 0x00000001) == 0) {
+    while ((*l2_ready & UINT32_C(1)) == 0) {
         // Опрос готовности L2-интерфейса
     }
 
     // 3. Включаем блок геометрии (Tiler) через смещение 0x190
-    *tiler_pwron = 0x00000001;
-    __DSB();;
+    *tiler_pwron = UINT32_C(1);
+    __DSB();
 
     //TP();
    // Ожидаем готовность тайлера на вашем смещении 0x150
-    while ((*tiler_ready & 0x00000001) == 0) {
+    while ((*tiler_ready & UINT32_C(1)) == 0) {
         // Если зависает здесь, значит на GPU не подана частота от CCU Allwinner
     }
     //TP();
@@ -576,52 +717,49 @@ void mali_bifrost_power_on(void)
 #define REG_STACK_READY   0xE10
 
 	// Добавьте этот кусок в mali_bifrost_power_on() СТРОГО ПЕРЕД включением шейдеров:
-	volatile uint32_t *stack_pwron = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_STACK_PWRON);
-	volatile uint32_t *stack_ready = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_STACK_READY);
+	volatile uint32_t *stack_pwron = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_STACK_PWRON);
+	volatile uint32_t *stack_ready = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_STACK_READY);
 
-	PRINTF("Mali-G31: Powering up Shader Core Stack (0x1D0)...\n");
-	*stack_pwron = 0x00000001; // Включаем базовый стек
-	__DSB();;
+//	PRINTF("Mali-G31: Powering up Shader Core Stack (0x1D0)...\n");
+	*stack_pwron =  UINT32_C(1); // Включаем базовый стек
+	__DSB();
 	local_delay_ms(100);
-	PRINTF("*stack_ready=%08X\n", (unsigned) *stack_ready);
-	PRINTF("*tiler_ready=%08X\n", (unsigned) *tiler_ready);
+//	PRINTF("*stack_ready=%08X\n", (unsigned) *stack_ready);
+//	PRINTF("*tiler_ready=%08X\n", (unsigned) *tiler_ready);
 
-    //TP();
 //	while ((*stack_ready & 0x00000001) == 0) {
 //		// Ожидание готовности стека ядер на смещении 0xE10
 ////		PRINTF("*stack_ready=%08X\n", (unsigned) *stack_ready);
 ////		PRINTF("*tiler_ready=%08X\n", (unsigned) *tiler_ready);
 //	}
 	local_delay_ms(100);
-    //TP();
+
 	// 4. Включаем 2 вычислительных ядра (Shader Cores) для MP2 (Маска 0x03) через 0x180
-    *shader_pwron = 0x00000003;
-    __DSB();;
+    *shader_pwron =  UINT32_C(0x03);
+    __DSB();
 
 	local_delay_ms(100);
-	PRINTF("*shader_ready=%08X\n", (unsigned) *shader_ready);
+//	PRINTF("*shader_ready=%08X\n", (unsigned) *shader_ready);
    //TP();
    // Ожидаем готовность ядер на смещении 0x140
-    while ((*shader_ready & 0x00000003) != 0x00000001) {	// was: 0x00000003
+    while ((*shader_ready & 0x00000001) != 0x00000001) {	// was: 0x00000003
         // Ожидание готовности обоих шейдерных ядер
     	   // ТОЛЬКО ОДНО ЯДРО
     }
-    //TP();
-
-    PRINTF("Mali-G31: Success! L2, Tiler (0x150), and Shaders (0x140) are READY.\n");
+//    PRINTF("Mali-G31: Success! L2, Tiler (0x150), and Shaders (0x140) are READY.\n");
 }
 
 
 #define REG_L2_PWR_DOMAIN_COMMAND      0x0010
 #define REG_L2_PWR_DOMAIN_STATUS       0x0014
 
-void mali_bifrost_l2_ready(void)
+static void mali_bifrost_l2_ready(void)
 {
-    volatile uint32_t *l2_pwr_cmd  = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_L2_PWR_DOMAIN_COMMAND);
-    volatile uint32_t *l2_pwr_stat = (volatile uint32_t *)(MALI_GPU_CONTROL_BASE + REG_L2_PWR_DOMAIN_STATUS);
+    volatile uint32_t *l2_pwr_cmd  = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_L2_PWR_DOMAIN_COMMAND);
+    volatile uint32_t *l2_pwr_stat = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_L2_PWR_DOMAIN_STATUS);
 
     // Принудительно включаем и запитываем L2 кэш GPU
-    *l2_pwr_cmd = 0xFFFFFFFF;
+    *l2_pwr_cmd = UINT32_C(0xFFFFFFFF);
     while ((*l2_pwr_stat & 0x1) == 0) {
         // Ожидание готовности кэш-памяти GPU
     }
@@ -643,21 +781,30 @@ void gpu_test(void)
 	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
 #endif
 
+#if 1
+	gpu_run_write_value_test_mesa();
+	return;
+#endif
+#if 0
+	{
+		PRINTF("gpu_clear_screen test:\n");
+		ASSERT(LCDMODE_PIXELSIZE == 4);
+		uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
+	    memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * LCDMODE_PIXELSIZE);
+	    gpu_clear_screen(fbaddr, DIM_X, DIM_Y, DIM_X * LCDMODE_PIXELSIZE);
+	    colmain_nextfb();
 
-    uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
-    gpu_draw_triangle(fbaddr, DIM_X, DIM_Y);
-    colmain_nextfb();
-
-    TP();
-    for (;;)
-    	;
-
+	    TP();
+	    for (;;)
+	    	;
+	}
+#endif
 }
 #define GPU_L2_MMU_CONFIG  0x0008 // Смещение внутри блока GPU_CONTROL (0x01800008)
 
-void mali_bifrost_open_mmu_bus(void)
+static void mali_bifrost_open_mmu_bus(void)
 {
-    volatile uint32_t *l2_mmu_config = (volatile uint32_t *)(0x01800000 + GPU_L2_MMU_CONFIG);
+    volatile uint32_t *l2_mmu_config = (volatile uint32_t *)(GPU_BASE + GPU_L2_MMU_CONFIG);
 
     // Читаем текущие особенности чипа
     uint32_t val = *l2_mmu_config;
@@ -666,97 +813,77 @@ void mali_bifrost_open_mmu_bus(void)
     // чтобы открыть внутренний интерконнект от процессоров к MMU и снять изоляцию.
     *l2_mmu_config = val | 0x00000003;
 
-    __DSB();;
+    __DSB();
 }
 
-void mali_g31_mmu_enable(uintptr_t table_phys_addr)
+static void mali_g31_mmu_enable(void)
 {
     unsigned as = 0; // Шейдерный домен по умолчанию
 
-    // 1. Задаем свойства кэширования для дескрипторов таблиц страниц
-    GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x22AA;
-    // 2. Настраиваем каноничную маску атрибутов кэширования для Bifrost (Panfrost)
+    /*
+     *
+     * 2. Как расшифровывается эта маска по байтам (Индексы от 0 до 7)
+     * Mali считывает младшие 32 бита (LO) как 4 независимых правила кэширования:
+     * Байт 0 (Индекс 0) = 0xFF: Традиционная кэшируемая память (Write-Back, Read/Write-Allocate). Основной тип для кода, текстур и дескрипторов.
+     * Байт 1 (Индекс 1) = 0x88: Память с типом Write-Through (прямая запись, без аллокации кэша на запись).
+     * Байт 2 (Индекс 2) = 0x44: Non-Cacheable (некэшируемая память). Именно этот индекс критически важен, если вы хотите отключить кэширование GPU для буфера результатов (как в тесте WRITE_VALUE).
+     * Байт 3 (Индекс 3) = 0x00: Память типа Device (для регистров или специфического MMIO, если применимо).
+     * Байты 4–7 (Индекс 4-7) = 0x00: Зарезервированы / не используются для стандартных буферов.
+     *
+     */
 	// Индекс 0 = 0xAA (Cacheable), Индекс 1 = 0x22 (Non-Cacheable)
-	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x000022AA;
-	__DSB();;
+	GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0x00000000;
+	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = ~0;//0x004488ff;
+	__DSB();
+
+	uint64_t table_phys_addr = 0;
+	ASSERT((table_phys_addr & 0xFFF) == 0);
 
 	// 3. Загружаем физический адрес плоской таблицы
 	// Младшие биты 0x03 включают режим трансляции LPAE
-	uint64_t transtab_val = table_phys_addr | 0x03;
+	uint64_t transtab_val = table_phys_addr |
+//		1 * (UINT64_C(1) << 4) |	// SHARE_OUTER
+		1 * (UINT64_C(1) << 3) |	// SHARE_INNER
+		1 * (UINT64_C(1) << 2) |	// READ_INNER
+//		0x03 * (UINT64_C(1) << 0) |	// ADRMODE: TABLE (Включена трансляция по таблицам страниц LPAE).
+		0x01 * (UINT64_C(1) << 0) |	// ADRMODE: IDENTITY
+		0;
+
+	GPU_MMU->MMU_AS[as].AS_TRANSCFG_HI = 0x00;
+	GPU_MMU->MMU_AS[as].AS_TRANSCFG_LO = 0x02;	//  (Включает режим адресации ARM 64-bit LPAE с размером страницы 4 КБ).
 
     // 3. Записываем адрес в регистры AS0 (теперь они строго на 0x01802400)
-    GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = (uint32_t)(transtab_val >> 32);
-    GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = (uint32_t)(transtab_val & 0xFFFFFFFF);
+    GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = ptr_hi32(transtab_val); //(uint32_t)(transtab_val >> 32);
+    GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = ptr_lo32(transtab_val); //(uint32_t)(transtab_val & 0xFFFFFFFF);
 
-    __DSB();;
+    __DSB();
 
-    // 4. Ждем, пока MMU освободится
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
+//    gpu_as_command(as, 0x01);	// Отправляем команду UPDATE для применения таблиц
+//    gpu_as_command(as, 0x03);	// Очищаем внутренний TLB кэш MMU от старых зависших ошибок 0xC8 AS_COMMAND_INVALIDATE
 
-    // 5. Отправляем команду UPDATE для применения таблиц
-    GPU_MMU->MMU_AS[as].AS_COMMAND = 0x01;
-    __DSB();;
-
-    // 6. Ожидаем окончания защелкивания таблиц аппаратурой Mali
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
-
-    // 4. Очищаем внутренний TLB кэш MMU от старых зависших ошибок 0xC8
-    GPU_MMU->MMU_AS[as].AS_COMMAND = 0x03; // AS_COMMAND_INVALIDATE
-    __DSB();;
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
-
-    // 5. Активируем таблицы командным словом UPDATE
-    GPU_MMU->MMU_AS[as].AS_COMMAND = 0x01; // AS_COMMAND_UPDATE
-    __DSB();;
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1) {}
-
-
-	gpu_as_command(as, AS_COMMAND_NOP);
 	gpu_as_command(as, AS_COMMAND_UPDATE);
 	gpu_as_command(as, AS_COMMAND_INVALIDATE);
 //	gpu_as_command(as, AS_COMMAND_FLUSH_PT);
 
-    PRINTF("Mali-G31: MMU Address Space 0 successfully enabled at offset 0x400!\n");
-}
-
-static void malimmu_initialize(void)
-{
-    // 4. Проверяем! Теперь регистры MMU обязаны ожить
-    volatile uint32_t *mmu_int_rawstat = (volatile uint32_t *)0x01802000;
-    PRINTF("MMU Raw Interrupt Status: 0x%08X\n", (unsigned)*mmu_int_rawstat);
-    // (Если мост открылся, здесь вместо 0x00000000 перестанет падать мертвый ноль шины,
-    // и вы сможете писать в TRANSTAB и подавать команду UPDATE).
-    PRINTF("GPU_CONTROL->GPU_STATUS=%08X\n", (unsigned) GPU_CONTROL->GPU_STATUS);
-
-//	gpu_as_command(0, AS_COMMAND_NOP);
-//	gpu_as_command(0, AS_COMMAND_UPDATE);
-//	gpu_as_command(0, AS_COMMAND_INVALIDATE);
-//	gpu_as_command(0, AS_COMMAND_FLUSH_PT);
-//	gpu_as_command(0, AS_COMMAND_FLUSH_MEM);
-
-    // 1. Создаем таблицы страниц в ОЗУ
-    gpu_mmu_build_4gb_l1_blocks();
-
-	mali_bifrost_l2_ready();
-
-	mali_g31_mmu_enable((uintptr_t) gpu_mmu_l0_strict_table);
-
-    PRINTF("Mali-G31: MMU Coherency initialized successfully.\n");
+//	printhex32((uintptr_t) & GPU_MMU->MMU_AS[as], & GPU_MMU->MMU_AS[as], sizeof GPU_MMU->MMU_AS[as]);
+//    PRINTF("Mali-G31: MMU Address Space 0 successfully enabled at offset 0x400!\n");
 }
 
 //
-#define T507_SPC_BASE         0x03008000
+#define T507_SPC_BASE         SPC_BASE
 
 // Регистры конфигурации защиты периферии (Secure Peripherals Control)
 #define SPC_GPU_MAST_REG      (T507_SPC_BASE + 0x00A0) // Управление правами GPU как Master шины
 #define SPC_GPU_SLAV_REG      (T507_SPC_BASE + 0x00A4) // Управление правами доступа CPU к регистрам GPU
 
-void t507_spc_unlock_gpu(void)
+// бред от AI
+static void t507_spc_unlock_gpu(void)
 {
     volatile uint32_t *spc_gpu_master = (volatile uint32_t *)SPC_GPU_MAST_REG;
     volatile uint32_t *spc_gpu_slave  = (volatile uint32_t *)SPC_GPU_SLAV_REG;
 
     PRINTF("T507 Platform: Unlocking GPU Secure Peripherals Controller (SPC)...\n");
+    printhex32_titled(SPC_BASE, SPC, 1024, "SPC");
 
     // Запись маски 0xFFFFFFFF или 0x00000003 (в зависимости от разводки доменов)
     // разрешает Non-Secure транзакции для графического процессора на системной интерконнект-шине.
@@ -764,9 +891,10 @@ void t507_spc_unlock_gpu(void)
     *spc_gpu_master = 0xFFFFFFFF;
     *spc_gpu_slave  = 0xFFFFFFFF;
 
-    __DSB();; // Принудительно толкаем барьер в контроллер SPC
+    __DSB(); // Принудительно толкаем барьер в контроллер SPC
 
     PRINTF("T507 Platform: GPU registers bypass TrustZone protection now.\n");
+    printhex32_titled(SPC_BASE, SPC, 1024, "SPC 2");
 }
 
 // Graphic processor unit
@@ -801,7 +929,7 @@ void board_gpu_initialize(void)
 
 	}
 
-	t507_spc_unlock_gpu();
+	//t507_spc_unlock_gpu();
 
 	CCU->GPU_CLK1_REG |= (UINT32_C(1) << 31);	// PLL_PERI_BAK_CLK_GATING
 	CCU->GPU_CLK0_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
@@ -841,33 +969,21 @@ void board_gpu_initialize(void)
 	gpu_wait(RESET_COMPLETED);
 	gpu_command(GPU_COMMAND_NOP);
 
-    PRINTF("GPU Reset released. Unlocking internal buses...\n");
+//    PRINTF("GPU Reset released. Unlocking internal buses...\n");
 
     // 2. СНИМАЕМ ИЗОЛЯЦИЮ ШИНЫ ЗАДАЧ (Решение причины №1)
-	gpu_command(GPU_COMMAND_CYCLE_COUNT_START);
-	local_delay_ms(100);
+//	gpu_command(GPU_COMMAND_CYCLE_COUNT_START);
+//	local_delay_ms(100);
 
 	// https://elixir.bootlin.com/linux/latest/source/drivers/gpu/drm/panfrost/panfrost_mmu.c
 
+	mali_bifrost_power_on();	// бязательно нужно
+	mali_bifrost_open_mmu_bus();	// не требуется
+	mali_bifrost_l2_ready();	// не требуется
+
+	mali_g31_mmu_enable();
+
 	PRINTF("board_gpu_initialize done.\n");
-
-	mali_bifrost_power_on();
-	mali_bifrost_open_mmu_bus();
-
-	malimmu_initialize();
-
-    // Тест чтения регистров возможностей
-    //gpu_test();
-
-#if 0
-	unsigned i;
-
-	memset32(GPU_MMU->MMU_AS, ~ UINT32_C(0), sizeof GPU_MMU->MMU_AS);
-	for (i = 0; i < ARRAY_SIZE(GPU_MMU->MMU_AS); ++ i)
-	{
-		printhex32((uintptr_t) & GPU_MMU->MMU_AS [i], & GPU_MMU->MMU_AS [i], sizeof GPU_MMU->MMU_AS [i]);
-	}
-#endif
 }
 
 #elif CPUSTYLE_STM32MP1

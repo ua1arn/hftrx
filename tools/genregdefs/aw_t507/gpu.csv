@@ -1,4 +1,4 @@
-#type; GPU; Mali G31 MP2 (Bifrost)
+#type; GPU; Mali G31 MP2 (Bifrost v7 - Chip ID=0x70930000)
 #base; GPU 0x01800000
 
 #irq; GPU_EVENT 126; GPU_EVENT interrupt
@@ -114,11 +114,11 @@
 #regdefr; STACK_READY_LO         ; 0xE10   ; (RO) Core stack ready bitmap, low word
 #regdefr; STACK_READY_HI         ; 0xE14   ; (RO) Core stack ready bitmap, high word
 
-#regdefr; STACK_PWRON_LO         ; 0xE20   ; (RO) Core stack power on bitmap, low word
-#regdefr; STACK_PWRON_HI         ; 0xE24   ; (RO) Core stack power on bitmap, high word
+#regdefw; STACK_PWRON_LO         ; 0xE20   ; (RO) Core stack power on bitmap, low word
+#regdefw; STACK_PWRON_HI         ; 0xE24   ; (RO) Core stack power on bitmap, high word
 
-#regdefr; STACK_PWROFF_LO        ; 0xE30   ; (RO) Core stack power off bitmap, low word
-#regdefr; STACK_PWROFF_HI        ; 0xE34   ; (RO) Core stack power off bitmap, high word
+#regdefw; STACK_PWROFF_LO        ; 0xE30   ; (RO) Core stack power off bitmap, low word
+#regdefw; STACK_PWROFF_HI        ; 0xE34   ; (RO) Core stack power off bitmap, high word
 
 #regdefr; STACK_PWRTRANS_LO      ; 0xE40   ; (RO) Core stack power transition bitmap, low word
 #regdefr; STACK_PWRTRANS_HI      ; 0xE44   ; (RO) Core stack power transition bitmap, high word
