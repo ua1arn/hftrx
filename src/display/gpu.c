@@ -394,6 +394,7 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     PRINTHEX32(job_p);
     PRINTHEX32(fb_p);
     PRINTHEX32(rst_p);
+    PRINTHEX32(rt_p);
 
     /* 7. ОЧИСТКА КЭША ДАННЫХ ДЛЯ ВСЕХ УЧАСТНИКОВ DMA-ОБМЕНА */
     dcache_clean_invalidate((uintptr_t)&bifrost_v7_clear_shader, sizeof(bifrost_v7_clear_shader));
