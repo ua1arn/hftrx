@@ -194,13 +194,13 @@ static void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
 //           (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_LO);
 }
 
-static int gpu_submit_job(unsigned slot, uintptr_t head)
+static int gpu_submit_job(unsigned slot, uintptr_t job)
 {
 //	PRINTF("gpu_submit_job: head=%p, slot=%u\n", (void *) head, slot);
 //	printhex32((uintptr_t) job, job, 64);
     // Записываем физический адрес начала структуры v_job в регистр указателя слота 0
-    GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_HI = ptr_hi32(head);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
-    GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_LO = ptr_lo32(head);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
+    GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_HI = ptr_hi32(job);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
+    GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_LO = ptr_lo32(job);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
 
     // 2. ИНИЦИАЛИЗАЦИЯ JS_AFFINITY (Критично для Bifrost!)
     // Говорим планировщику распределить потоки шейдеров на оба ядра Mali-G31 MP2
@@ -223,75 +223,24 @@ static int gpu_submit_job(unsigned slot, uintptr_t head)
     // В hftrx прерывания выводят ASSERT(0), поэтому опрашиваем статус в цикле (polling)
     if (local_wait32mask(& GPU_JOB_CONTROL->JOB_INT_RAWSTAT, (UINT32_C(1) << slot), 1 * (UINT32_C(1) << slot), 100))//Was: JOB_IRQ_RAWSTAT
     {
-    	PRINTF("error head %p:\n", (void *) head);
-    	dcache_invalidate((uintptr_t) head, 128);
-    	printhex32((uintptr_t) head, (void *) head, 128);
+    	PRINTF("error job @%p:\n", (void *) job);
+    	dcache_invalidate((uintptr_t) job, 128);
+    	printhex32(job, (void *) job, 128);
     	PRINTF("gpu timeout: GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
     	gpu_diagnose_slot_fault(slot, 0);
         GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
-   	return 1;
+        return 1;
     }
     else
     {
-    	//PRINTF("okay head %p:\n", (void *) head);
-    	//dcache_invalidate((uintptr_t) head, 128);
-    	//printhex32((uintptr_t) head, (void *) head, 128);
+//    	PRINTF("Okay job @%p:\n", (void *) job);
+//    	dcache_invalidate((uintptr_t) job, 128);
+//    	printhex32(job, (void *) job, 128);
         GPU_JOB_CONTROL->JOB_INT_CLEAR = (UINT32_C(1) << slot); // Сброс флага прерывания
         GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
-      return 0;
+        return 0;
     }
 }
-#if 0
-enum mali_job_type {
-        JOB_NOT_STARTED	= 0,
-        JOB_TYPE_NULL = 1,
-        JOB_TYPE_WRITE_VALUE = 2,
-        JOB_TYPE_CACHE_FLUSH = 3,
-        JOB_TYPE_COMPUTE = 4,
-        JOB_TYPE_VERTEX = 5,
-        JOB_TYPE_GEOMETRY = 6,
-        JOB_TYPE_TILER = 7,
-        JOB_TYPE_FUSED = 8,
-        JOB_TYPE_FRAGMENT = 9,
-};
-#endif
-
-//enum mali_draw_mode {
-//        MALI_DRAW_NONE      = 0x0,
-//        MALI_POINTS         = 0x1,
-//        MALI_LINES          = 0x2,
-//        MALI_LINE_STRIP     = 0x4,
-//        MALI_LINE_LOOP      = 0x6,
-//        MALI_TRIANGLES      = 0x8,
-//        MALI_TRIANGLE_STRIP = 0xA,
-//        MALI_TRIANGLE_FAN   = 0xC,
-//        MALI_POLYGON        = 0xD,
-//        MALI_QUADS          = 0xE,
-//        MALI_QUAD_STRIP     = 0xF,
-//        /* All other modes invalid */
-//};
-// Структура заголовка задачи (Mali Job Header)
-// MGS! подтверждена работа заголовка
-//typedef struct __attribute__((packed)) {
-//    uint32_t exception_status;       // 0x00: Сюда GPU запишет код ошибки при FAULT (изначально 0)
-//    uint32_t first_incomplete_task;  // 0x04: Служебный внутренний статус GPU
-//    uint64_t fault_pointer;          // 0x08: Физический адрес буфера для дампа ошибок MMU/Bus
-//
-//    // Битовые поля управления типом и разрядами адреса (занимают 1 байт):
-//    uint8_t  job_descriptor_size : 1; // 0x10 (бит 0)  - Выставляем 1 (64-битные указатели)
-//    uint8_t  job_type            : 7; // 0x10 (биты 1-7) - Тип задачи (TILER = 0x11, VERTEX = 0x12)
-//
-//    // Битовые поля барьеров и флагов (занимают 1 байт):
-//    uint8_t  job_barrier         : 1; // 0x11 (бит 0)  - last job
-//    uint8_t  unknown_flags       : 7; // 0x11 (биты 1-7) - Служебные флаги (обычно 0)
-//
-//    uint16_t job_index;               // 0x12: Уникальный ID этой задачи для скорборда (например, 1)
-//    uint16_t job_dependency_index_1;  // 0x14: ID задачи, которую нужно дождаться перед запуском (0, если нет)
-//    uint16_t job_dependency_index_2;  // 0x16: ID второй зависимой задачи (0, если нет)
-//
-//    uint64_t next_job;               // 0x18: Физический адрес следующего дескриптора в цепочке (0, если последний)
-//} mali_job_header;
-
 
 static int gpu_run_write_value_test_mesa(void) {
 	PRINTF("gpu_run_write_value_test_mesa:\n");
@@ -324,23 +273,23 @@ static int gpu_run_write_value_test_mesa(void) {
     jh.barrier = 0;			// last
     jh.index = 1;
     jh.next = (uintptr_t) & job2_p;            // Цепочка заканчивается на ней
+    MALI_JOB_HEADER_pack(& job_p.HEADER, & jh);
 
     jh2.exception_status = 0;
     jh2.barrier = 1;			// last
     jh2.index = 2;
     jh2.next = (uintptr_t) 0;            // Цепочка заканчивается на ней
+    MALI_JOB_HEADER_pack(& job2_p.HEADER, & jh2);
 
     // Заполняем Payload записи
     pjob.address = (uintptr_t) & gpu_test_target [0]; // Физический адрес цели
     pjob.immediate_value = 0xDEADBEEFABBA1980;               // Данные для записи
+	MALI_WRITE_VALUE_JOB_PAYLOAD_pack(& job_p.PAYLOAD, & pjob);
 
     pjob2.address = (uintptr_t) & gpu_test_target [1]; // Физический адрес цели
     pjob2.immediate_value = 0x0123456789ABCDEF;               // Данные для записи
-
-    MALI_JOB_HEADER_pack(& job_p.HEADER, & jh);
-    MALI_JOB_HEADER_pack(& job2_p.HEADER, & jh2);
-	MALI_WRITE_VALUE_JOB_PAYLOAD_pack(& job_p.PAYLOAD, & pjob);
 	MALI_WRITE_VALUE_JOB_PAYLOAD_pack(& job2_p.PAYLOAD, & pjob2);
+
 
     dcache_clean_invalidate((uintptr_t)&job_p, sizeof(job_p));
     dcache_clean_invalidate((uintptr_t)&job2_p, sizeof(job2_p));
@@ -384,7 +333,7 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     struct MALI_RENDERER_STATE     rst  = { MALI_RENDERER_STATE_header };
 
     /* 1. НАСТРОЙКА TILER HEAP (Обход проверок распределения памяти FFE v7) */
-    th.bottom = (uintptr_t)&gpu_fragment_tile_meta_dummy + UINT32_C(64);
+    th.bottom = (uintptr_t)&gpu_fragment_tile_meta_dummy;// + UINT32_C(64);
     th.top = (uintptr_t)&gpu_fragment_tile_meta_dummy + UINT32_C(64);
     th.size      = UINT32_C(65536);
     th.base   = (uintptr_t)&gpu_fragment_tile_meta_dummy;
@@ -396,9 +345,9 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     rt.rgb.writeback_buffer.base = framebuffer_phys_addr;
 
     /* Запись цвета очистки в покомпонентном формате FP32 (Пурпурный / Magenta) */
-    rt.rgb.clear.color_0 = 0.0f;
-    rt.rgb.clear.color_1 = 1.0f;
-    rt.rgb.clear.color_2 = 1.0f;
+    rt.rgb.clear.color_0 = 0;//0.0f;
+    rt.rgb.clear.color_1 = 0;//1.0f;
+    rt.rgb.clear.color_2 = 0;//1.0f;
     MALI_RENDER_TARGET_pack(&rt_p, &rt);
 
     /* 3. НАСТРОЙКА RENDERER STATE (Привязка v7 Dummy-шейдера и флагов блендинга) */
@@ -441,6 +390,10 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     jh.index = 1;
     jh.next = UINT64_C(0);
     MALI_JOB_HEADER_pack(&job_p.HEADER, &jh);
+
+    PRINTHEX32(job_p);
+    PRINTHEX32(fb_p);
+    PRINTHEX32(rst_p);
 
     /* 7. ОЧИСТКА КЭША ДАННЫХ ДЛЯ ВСЕХ УЧАСТНИКОВ DMA-ОБМЕНА */
     dcache_clean_invalidate((uintptr_t)&bifrost_v7_clear_shader, sizeof(bifrost_v7_clear_shader));
