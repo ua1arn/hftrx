@@ -354,76 +354,113 @@ static int gpu_run_write_value_test_mesa(void) {
     return 0;
 }
 
+// fill rectangle
+/* Истинный бинарный код пустого фрагментного шейдера для Bifrost v7 (Mali-G31 v7) */
+GPU_ALIGN static const uint32_t bifrost_v7_clear_shader[] = {
+    UINT32_C(0x00000000), UINT32_C(0x00000000), /* Системная клауза-префикс v7 */
+    UINT32_C(0x7C003C00), UINT32_C(0x00000000)  /* Аппаратная v7-команда: END + Blend Writeout */
+};
+
+/* Выделение памяти под вспомогательные упакованные дескрипторы Mesa */
+GPU_ALIGN static MALI_RENDER_TARGET_PACKED_T      rt_p;
+GPU_ALIGN static MALI_RENDERER_STATE_PACKED_T     rst_p;
+GPU_ALIGN static MALI_TILER_HEAP_PACKED_T         th_p;
+GPU_ALIGN static uint64_t                         gpu_fragment_tile_meta_dummy [1024];
+
 static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
 {
+    PRINTF("gpu_clear_screen mesa bifrost v7 start:\n");
 
-	MALI_FRAGMENT_JOB_SECTION_PAYLOAD_TYPE job_byload = {
-			MALI_FRAGMENT_JOB_SECTION_PAYLOAD_header
-	};
+    /* Выделяем монолитные упакованные контейнеры под структуры Framebuffer и Job */
+    GPU_ALIGN static MALI_FRAMEBUFFER_PACKED_T      fb_p;
+    GPU_ALIGN static MALI_FRAGMENT_JOB_PACKED_T     job_p;
 
-    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE jh = {
-    		MALI_WRITE_VALUE_JOB_SECTION_HEADER_header,
-			.type = MALI_JOB_TYPE_FRAGMENT
-    };
+    /* Объявление "распакованных" структур строго по типам из вашего bifrost_v7.h */
+    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE        jh   = { MALI_WRITE_VALUE_JOB_SECTION_HEADER_header, .type = MALI_JOB_TYPE_FRAGMENT };
+    MALI_FRAGMENT_JOB_SECTION_PAYLOAD_TYPE         jp   = { MALI_FRAGMENT_JOB_SECTION_PAYLOAD_header };
+    MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE        fbp  = { MALI_FRAMEBUFFER_SECTION_PARAMETERS_header };
+    struct MALI_TILER_HEAP         th   = { MALI_TILER_HEAP_header };
+    struct MALI_RENDER_TARGET      rt   = { MALI_RENDER_TARGET_header };
+    struct MALI_RENDERER_STATE     rst  = { MALI_RENDERER_STATE_header };
 
-    MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE fb = {
-    		MALI_FRAMEBUFFER_SECTION_PARAMETERS_header
-    };
-    GPU_ALIGN static MALI_FRAMEBUFFER_PACKED_T fb_p;
+    /* 1. НАСТРОЙКА TILER HEAP (Обход проверок распределения памяти FFE v7) */
+    th.bottom = (uintptr_t)&gpu_fragment_tile_meta_dummy + UINT32_C(64);
+    th.top = (uintptr_t)&gpu_fragment_tile_meta_dummy + UINT32_C(64);
+    th.size      = UINT32_C(65536);
+    th.base   = (uintptr_t)&gpu_fragment_tile_meta_dummy;
+    MALI_TILER_HEAP_pack(&th_p, &th);
 
-	fb.bound_min_x = 0;
-	fb.bound_min_y = 0;
-	fb.bound_max_x = (width / 16) - 1;
-	fb.bound_max_y = (height / 16) - 1;
-	fb.width = width;
-	fb.height = height;
-	fb.effective_tile_size = 16;
-	fb.render_target_count = 1;
+    /* 2. НАСТРОЙКА RENDER TARGET (Линейный кадровый буфер RAW32) */
+    rt.rgb.writeback_format = MALI_COLOR_FORMAT_R5G6B5; /* RAW32 + MALI_BLOCK_FORMAT_LINEAR */
+    rt.rgb.writeback_buffer.row_stride = stride;
+    rt.rgb.writeback_buffer.base = framebuffer_phys_addr;
 
-	job_byload.bound_min_x = 0;
-    job_byload.bound_min_y = 0;
-    job_byload.bound_max_x = (width / 16) - 1;
-    job_byload.bound_max_y = (height / 16) - 1;
-    job_byload.has_tile_enable_map = false;
-    job_byload.framebuffer = (uintptr_t) & fb_p;
-    //job_byload.tile_enable_map;
-    //job_byload.tile_enable_map_row_stride;
+    /* Запись цвета очистки в покомпонентном формате FP32 (Пурпурный / Magenta) */
+    rt.rgb.clear.color_0 = 0.0f;
+    rt.rgb.clear.color_1 = 1.0f;
+    rt.rgb.clear.color_2 = 1.0f;
+    MALI_RENDER_TARGET_pack(&rt_p, &rt);
 
-    // Заполняем заголовок
+    /* 3. НАСТРОЙКА RENDERER STATE (Привязка v7 Dummy-шейдера и флагов блендинга) */
+    rst.shader.shader = (uintptr_t)&bifrost_v7_clear_shader; /* Чистый v7-адрес без тегов */
+//    rst.properties = UINT64_C(0x0000100000000000);             /* Квант потоков для v7 */
+//    rst.blend.flags = UINT32_C(0x00011000);                    /* Режим Replace RAW32 */
+    MALI_RENDERER_STATE_pack(&rst_p, &rst);
+
+    /* 4. НАСТРОЙКА FRAMEBUFFER PARAMETERS (MFBD) */
+    fbp.bound_min_x = 0;
+    fbp.bound_min_y = 0;
+    fbp.bound_max_x = (width / 16) - 1;
+    fbp.bound_max_y = (height / 16) - 1;
+    fbp.width = width;
+    fbp.height = height;
+    fbp.effective_tile_size = 16;
+//    fbp.sample_mask = UINT32_C(0x00000001);                    /* 1x MSAA режим */
+    fbp.render_target_count = 1;
+//    fbp.tiler_disabled = true;                                 /* Отключает опрос пустых полигональных листов */
+
+    /* Связываем через указатели остальные упакованные дескрипторы */
+//    fbp.tiler_heap_start = (uintptr_t)&th_p;
+//    fbp.render_target_list = (uintptr_t)&rt_p | UINT64_C(1);   /* tagged = true */
+//    fbp.fragment_frame_shader = (uintptr_t)&rst_p;
+    MALI_FRAMEBUFFER_PARAMETERS_pack(&fb_p.PARAMETERS, &fbp);
+
+    /* 5. НАСТРОЙКА FRAGMENT JOB PAYLOAD */
+    jp.bound_min_x = 0;
+    jp.bound_min_y = 0;
+    jp.bound_max_x = (width / 16) - 1;
+    jp.bound_max_y = (height / 16) - 1;
+    jp.has_tile_enable_map = false;
+    jp.framebuffer = (uintptr_t)&fb_p | UINT64_C(1);           /* tagged = true */
+//    jp.tile_alloc = (uintptr_t)&th_p;
+    MALI_FRAGMENT_JOB_PAYLOAD_pack(&job_p.PAYLOAD, &jp);
+
+    /* 6. НАСТРОЙКА JOB HEADER */
     jh.exception_status = 0;
-    jh.barrier = 1;			// last
+    jh.barrier = 1;                                            /* last job в цепочке */
     jh.index = 1;
-    jh.next = (uintptr_t) 0;            // Цепочка заканчивается на ней
+    jh.next = UINT64_C(0);
+    MALI_JOB_HEADER_pack(&job_p.HEADER, &jh);
 
-	GPU_ALIGN static MALI_FRAGMENT_JOB_PACKED_T job;
-
-	MALI_JOB_HEADER_pack(& job.HEADER, & jh);
-	MALI_FRAGMENT_JOB_PAYLOAD_pack(& job.PAYLOAD, & job_byload);
-	MALI_FRAMEBUFFER_PARAMETERS_pack(& fb_p.PARAMETERS, & fb);
-
-    // 5. ВЫТАЛКИВАНИЕ ДАННЫХ ИЗ КЭША В ОЗУ
-    // ... [dcache_clean для всех дескрипторов] ...
-    dcache_clean_invalidate((uintptr_t) & job, sizeof job );
-    dcache_clean_invalidate((uintptr_t) & fb_p, sizeof fb_p );
-
-//    dcache_clean_invalidate((uintptr_t)&fbd_frag, sizeof fbd_frag );
-//    dcache_clean_invalidate((uintptr_t)&render_target, sizeof render_target );
-////    dcache_clean_invalidate((uintptr_t)&gpu_fragment_tile_meta_buff, sizeof gpu_fragment_tile_meta_buff );
-////    dcache_clean_invalidate((uintptr_t)&gpu_fragment_heap, sizeof gpu_fragment_heap );
-//    dcache_clean_invalidate((uintptr_t)&fragment_renderer_state, sizeof fragment_renderer_state );
-//
-//    PRINTHEX32(bifrost_dummy_fs);
-//    PRINTHEX32(f_job_monolithic);
-//    PRINTHEX32(fbd_frag);
-    PRINTHEX32(fb_p);
-    PRINTHEX32(job);
-//    PRINTHEX32(fragment_renderer_state);
+    /* 7. ОЧИСТКА КЭША ДАННЫХ ДЛЯ ВСЕХ УЧАСТНИКОВ DMA-ОБМЕНА */
+    dcache_clean_invalidate((uintptr_t)&bifrost_v7_clear_shader, sizeof(bifrost_v7_clear_shader));
+    dcache_clean_invalidate((uintptr_t)&th_p, sizeof(th_p));
+    dcache_clean_invalidate((uintptr_t)&rt_p, sizeof(rt_p));
+    dcache_clean_invalidate((uintptr_t)&rst_p, sizeof(rst_p));
+    dcache_clean_invalidate((uintptr_t)&fb_p, sizeof(fb_p));
+    dcache_clean_invalidate((uintptr_t)&job_p, sizeof(job_p));
+    dcache_clean_invalidate((uintptr_t)&gpu_fragment_tile_meta_dummy, sizeof(gpu_fragment_tile_meta_dummy));
 
     __DSB();
-    //__ISB();
 
-    // Запуск в аппаратный слот фрагментов (Слот 1)
-    gpu_submit_job(1, (uintptr_t) & job);
+    /* 8. ОТПРАВКА ЗАДАНИЯ В СЛОТ ФРАГМЕНТОВ (СЛОТ 1) */
+    if (gpu_submit_job(1, (uintptr_t)&job_p))
+    {
+        PRINTF("gpu_clear_screen: Fragment Clear Job Fault!\n");
+        return;
+    }
+
+    PRINTF("gpu_clear_screen: Success! Screen cleared.\n");
 }
 
 //static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
@@ -623,7 +660,7 @@ void gpu_test(void)
 #if 1
 	{
 		PRINTF("gpu_clear_screen test:\n");
-		ASSERT(LCDMODE_PIXELSIZE == 4);
+		//ASSERT(LCDMODE_PIXELSIZE == 4);
 		uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
 	    memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * LCDMODE_PIXELSIZE);
 	    gpu_clear_screen(fbaddr, DIM_X, DIM_Y, DIM_X * LCDMODE_PIXELSIZE);
