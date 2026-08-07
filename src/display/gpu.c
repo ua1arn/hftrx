@@ -379,7 +379,8 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
 	fb.bound_max_y = (height / 16) - 1;
 	fb.width = width;
 	fb.height = height;
-	//fb.
+	fb.effective_tile_size = 16;
+	fb.render_target_count = 1;
 
 	pjob.bound_min_x = 0;
     pjob.bound_min_y = 0;
@@ -416,13 +417,14 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
 //    PRINTHEX32(bifrost_dummy_fs);
 //    PRINTHEX32(f_job_monolithic);
 //    PRINTHEX32(fbd_frag);
-//    PRINTHEX32(render_target);
-//    //PRINTHEX32(gpu_fragment_heap);
+    PRINTHEX32(fb_p);
+    PRINTHEX32(job_p);
 //    PRINTHEX32(fragment_renderer_state);
 
-    __DSB(); __ISB();
+    __DSB();
+    //__ISB();
 
-    gpu_submit_job(0, (uintptr_t)& job_p);
+    gpu_submit_job(1, (uintptr_t)& job_p);
 }
 
 #endif
