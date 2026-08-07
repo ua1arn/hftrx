@@ -354,12 +354,10 @@ static int gpu_run_write_value_test_mesa(void) {
     return 0;
 }
 
-#if 1
-
 static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
 {
 
-	MALI_FRAGMENT_JOB_SECTION_PAYLOAD_TYPE pjob = {
+	MALI_FRAGMENT_JOB_SECTION_PAYLOAD_TYPE job_byload = {
 			MALI_FRAGMENT_JOB_SECTION_PAYLOAD_header
 	};
 
@@ -371,7 +369,7 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE fb = {
     		MALI_FRAMEBUFFER_SECTION_PARAMETERS_header
     };
-    GPU_ALIGN static MALI_FRAMEBUFFER_SECTION_PARAMETERS_PACKED_TYPE fb_p;
+    GPU_ALIGN static MALI_FRAMEBUFFER_PACKED_T fb_p;
 
 	fb.bound_min_x = 0;
 	fb.bound_min_y = 0;
@@ -382,14 +380,14 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
 	fb.effective_tile_size = 16;
 	fb.render_target_count = 1;
 
-	pjob.bound_min_x = 0;
-    pjob.bound_min_y = 0;
-    pjob.bound_max_x = (width / 16) - 1;
-    pjob.bound_max_y = (height / 16) - 1;
-    pjob.has_tile_enable_map = false;
-    pjob.framebuffer = (uintptr_t) & fb_p;
-    pjob.tile_enable_map;
-    pjob.tile_enable_map_row_stride;
+	job_byload.bound_min_x = 0;
+    job_byload.bound_min_y = 0;
+    job_byload.bound_max_x = (width / 16) - 1;
+    job_byload.bound_max_y = (height / 16) - 1;
+    job_byload.has_tile_enable_map = false;
+    job_byload.framebuffer = (uintptr_t) & fb_p;
+    //job_byload.tile_enable_map;
+    //job_byload.tile_enable_map_row_stride;
 
     // Заполняем заголовок
     jh.exception_status = 0;
@@ -397,15 +395,15 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     jh.index = 1;
     jh.next = (uintptr_t) 0;            // Цепочка заканчивается на ней
 
-	GPU_ALIGN static MALI_FRAGMENT_JOB_PACKED_T job_p;
-	MALI_JOB_HEADER_pack(& job_p.HEADER, & jh);
-	MALI_FRAGMENT_JOB_PAYLOAD_pack(& job_p.PAYLOAD, & pjob);
+	GPU_ALIGN static MALI_FRAGMENT_JOB_PACKED_T job;
 
-	MALI_FRAMEBUFFER_SECTION_PARAMETERS_pack(& fb_p, & fb);
+	MALI_JOB_HEADER_pack(& job.HEADER, & jh);
+	MALI_FRAGMENT_JOB_PAYLOAD_pack(& job.PAYLOAD, & job_byload);
+	MALI_FRAMEBUFFER_PARAMETERS_pack(& fb_p.PARAMETERS, & fb);
 
     // 5. ВЫТАЛКИВАНИЕ ДАННЫХ ИЗ КЭША В ОЗУ
     // ... [dcache_clean для всех дескрипторов] ...
-    dcache_clean_invalidate((uintptr_t) & job_p, sizeof job_p );
+    dcache_clean_invalidate((uintptr_t) & job, sizeof job );
     dcache_clean_invalidate((uintptr_t) & fb_p, sizeof fb_p );
 
 //    dcache_clean_invalidate((uintptr_t)&fbd_frag, sizeof fbd_frag );
@@ -418,16 +416,74 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
 //    PRINTHEX32(f_job_monolithic);
 //    PRINTHEX32(fbd_frag);
     PRINTHEX32(fb_p);
-    PRINTHEX32(job_p);
+    PRINTHEX32(job);
 //    PRINTHEX32(fragment_renderer_state);
 
     __DSB();
     //__ISB();
 
-    gpu_submit_job(1, (uintptr_t)& job_p);
+    // Запуск в аппаратный слот фрагментов (Слот 1)
+    gpu_submit_job(1, (uintptr_t) & job);
 }
 
-#endif
+//static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
+//{
+//	/* Монолитная структура фрагментного задания для отправки в Job Slot 1 */
+//	typedef struct __attribute__((packed, aligned(64))) {
+//	    MALI_JobHeader_TypeDef           HEADER;   /*!< Общий аппаратный заголовок задания */
+//	    MALI_FragmentJobPayload_TypeDef  PAYLOAD;  /*!< Полезная нагрузка фрагментного процессора Bifrost v6 */
+//	} MALI_FragmentJob_TypeDef;
+//
+//	__attribute__((aligned(64))) static GPU_ALIGN MALI_FragmentJob_TypeDef f_job_monolithic;
+//    // ... [Инициализация памяти __builtin_memset] ...
+//
+//    // 1. ИНИЦИАЛИЗАЦИЯ МЕТАДАННЫХ ШЕЙДЕРА (Renderer State)
+//	MALI_RendererState_ClearInit(& fragment_renderer_state, (uint64_t)&bifrost_dummy_fs);
+//
+//    // 2. ИНИЦИАЛИЗАЦИЯ RENDER TARGET
+//    MALI_RenderTargetDescriptor_ClearInit(& render_target, framebuffer_phys_addr, width, 1, 1, 1, 1);
+//    render_target.FRAMEBUFFER_POINTER = framebuffer_phys_addr;
+//    render_target.CLEAR_COLOR.RGBA.R = 1.0f; // Пурпурный цвет
+//    // ... [Настройка формата и STRIDE] ...
+//    render_target.FRAMEBUFFER_POINTER = framebuffer_phys_addr;
+//    render_target.FORMAT_FLAGS = FORMAT_ARGB8888;
+//    render_target.STRIDE = stride;
+//
+//    // 3. ИНИЦИАЛИЗАЦИЯ FRAMEBUFFER DESCRIPTOR (MFBD)
+//	MALI_FramebufferDescriptor_ClearInit(& fbd_frag, (uintptr_t) gpu_fragment_tile_meta, (uintptr_t) & render_target, width, height);
+//    fbd_frag.RENDER_TARGET_LIST = (uint64_t)&render_target | MALI_RT_TAG_MFBD;
+//    fbd_frag.FRAGMENT_FRAME_SHADER = (uint64_t)&fragment_renderer_state;
+//    // ... [Настройка размеров, TILER_HEAP_START и т.д.] ...
+//
+//    // 4. СБОРКА МОНОЛИТНОГО FRAGMENT JOB (Заголовок + Полезная нагрузка)
+//    MALI_JobHeader_WriteValue(&f_job_monolithic.HEADER, MALI_FRAGMENT_JOB_TYPE, 1, 1, 0);
+//    MALI_FragmentJobPayload_ClearInit(& f_job_monolithic.PAYLOAD, (uint64_t)&fbd_frag, (uintptr_t) gpu_fragment_tile_meta /* ? */, width, height);
+//    f_job_monolithic.PAYLOAD.FB_DESC = (uint64_t)&fbd_frag | MALI_FBD_TYPE_MFBD;
+//    // ... [Расчет тайлов и заполнение остальных полей] ...
+//
+//    // 5. ВЫТАЛКИВАНИЕ ДАННЫХ ИЗ КЭША В ОЗУ
+//    // ... [dcache_clean для всех дескрипторов] ...
+//    dcache_clean_invalidate((uintptr_t)&f_job_monolithic, sizeof f_job_monolithic );
+//
+//    dcache_clean_invalidate((uintptr_t)&fbd_frag, sizeof fbd_frag );
+//    dcache_clean_invalidate((uintptr_t)&render_target, sizeof render_target );
+//    dcache_clean_invalidate((uintptr_t)&gpu_fragment_tile_meta_buff, sizeof gpu_fragment_tile_meta_buff );
+//    dcache_clean_invalidate((uintptr_t)&gpu_fragment_tile_meta, sizeof gpu_fragment_tile_meta );
+//    dcache_clean_invalidate((uintptr_t)&fragment_renderer_state, sizeof fragment_renderer_state );
+//
+//    PRINTHEX32(bifrost_dummy_fs);
+//    PRINTHEX32(f_job_monolithic);
+//    PRINTHEX32(fbd_frag);
+//    PRINTHEX32(render_target);
+//    PRINTHEX32(gpu_fragment_tile_meta);
+//    PRINTHEX32(fragment_renderer_state);
+//
+//    __DSB(); __ISB();
+//
+//    // Запуск в аппаратный слот фрагментов (Слот 1)
+//    gpu_submit_job(UINT32_C(1), (uintptr_t)&f_job_monolithic);
+//}
+
 
 //----------------------
 
