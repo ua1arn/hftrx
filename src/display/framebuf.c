@@ -1796,7 +1796,9 @@ void arm_hardware_awg2d_initialize(void)
 {
 
 }
-#endif
+#endif /* WITHAWG2DHW */
+
+#if WITHMDMAHW
 
 void arm_hardware_mdma_initialize(void)
 {
@@ -1969,6 +1971,8 @@ void arm_hardware_mdma_initialize(void)
 	 //mixer_set_reg_base(G2D_BASE);
 	//PRINTF("arm_hardware_mdma_initialize (G2D) done.\n");
 }
+
+#endif
 
 #if WITHLVGL
 
