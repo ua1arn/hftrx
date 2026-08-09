@@ -595,20 +595,6 @@ static void mali_bifrost_l2_ready(void)
 
 void gpu_test(void)
 {
-#if 0
-	PRINTF("board_gpu_initialize: L2_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->L2_FEATURES);
-	PRINTF("board_gpu_initialize: CORE_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->CORE_FEATURES);
-	PRINTF("board_gpu_initialize: TILER_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->TILER_FEATURES);
-	PRINTF("board_gpu_initialize: MEM_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->MEM_FEATURES);
-	PRINTF("board_gpu_initialize: MMU_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->MMU_FEATURES);
-	PRINTF("board_gpu_initialize: SHADER_PRESENT_LO=0x%08X\n", (unsigned) GPU_CONTROL->SHADER_PRESENT_LO);
-	PRINTF("board_gpu_initialize: SHADER_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->SHADER_PRESENT_HI);
-	PRINTF("board_gpu_initialize: TILER_PRESENT_LO=0x%08X\n", (unsigned) GPU_CONTROL->TILER_PRESENT_LO);
-	PRINTF("board_gpu_initialize: TILER_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->TILER_PRESENT_HI);
-	PRINTF("board_gpu_initialize: L2_PRESENT_LO=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_LO);
-	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
-#endif
-
 #if 1
 	gpu_run_write_value_test_mesa();
 	gpu_run_write_value_test_mesa();
@@ -674,8 +660,8 @@ static void mali_g31_mmu_enable(void)
     	// 3. Загружаем физический адрес плоской таблицы
     	// Младшие биты 0x03 включают режим трансляции LPAE
 	const uint64_t transtab_val = table_phys_addr |
-//		1 * (UINT64_C(1) << 4) |	// SHARE_OUTER
-		1 * (UINT64_C(1) << 3) |	// SHARE_INNER
+		1 * (UINT64_C(1) << 4) |	// SHARE_OUTER
+//		1 * (UINT64_C(1) << 3) |	// SHARE_INNER - не устанавливается
 		1 * (UINT64_C(1) << 2) |	// READ_INNER
 //   	0x03 * (UINT64_C(1) << 0) |	// ADRMODE: TABLE (Включена трансляция по таблицам страниц LPAE).
 		0x01 * (UINT64_C(1) << 0) |	// ADRMODE: IDENTITY
@@ -705,9 +691,9 @@ static void mali_g31_mmu_enable(void)
     		0;
 
     unsigned as = 0; // Шейдерный домен по умолчанию
-    for (as = 0; as < ARRAY_SIZE(GPU_MMU->MMU_AS); ++ as)
+    for (as = 0; as < ARRAY_SIZE(GPU_MMU->MMU_AS) && as < 8; ++ as)
     {
-    	GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0xFFFFFFFF & (memattrval >> 32);;
+    	GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0xFFFFFFFF & (memattrval >> 32);
     	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0xFFFFFFFF & (memattrval >> 0);
 
     	GPU_MMU->MMU_AS[as].AS_TRANSCFG_HI = 0xFFFFFFFF & (transflags_val >> 32);
@@ -717,6 +703,20 @@ static void mali_g31_mmu_enable(void)
         GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = 0xFFFFFFFF & (transtab_val >> 0);
 
         __DSB();
+
+//        PRINTF("mali_g31_mmu_enable: as=%u: transtab_val=%08X%08X\n", as, (unsigned) (0xFFFFFFFF & (transtab_val >> 32)), (unsigned) (0xFFFFFFFF & (transtab_val >> 0)));
+//        PRINTHEX32(GPU_MMU->MMU_AS[as].AS_MEMATTR_HI);
+//        PRINTHEX32(GPU_MMU->MMU_AS[as].AS_MEMATTR_LO);
+//        PRINTHEX32(GPU_MMU->MMU_AS[as].AS_TRANSCFG_HI);
+//        PRINTHEX32(GPU_MMU->MMU_AS[as].AS_TRANSCFG_LO);
+//        PRINTHEX32(GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI);
+//        PRINTHEX32(GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO);
+        ASSERT(GPU_MMU->MMU_AS[as].AS_MEMATTR_HI == (0xFFFFFFFF & (memattrval >> 32)));
+        ASSERT(GPU_MMU->MMU_AS[as].AS_MEMATTR_LO == (0xFFFFFFFF & (memattrval >> 0)));
+        ASSERT(GPU_MMU->MMU_AS[as].AS_TRANSCFG_HI == (0xFFFFFFFF & (transflags_val >> 32)));
+        ASSERT(GPU_MMU->MMU_AS[as].AS_TRANSCFG_LO == (0xFFFFFFFF & (transflags_val >> 0)));
+        ASSERT(GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI == (0xFFFFFFFF & (transtab_val >> 32)));
+        ASSERT(GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO == (0xFFFFFFFF & (transtab_val >> 0)));
 
     //    gpu_as_command(as, 0x01);	// Отправляем команду UPDATE для применения таблиц
     //    gpu_as_command(as, 0x03);	// Очищаем внутренний TLB кэш MMU от старых зависших ошибок 0xC8 AS_COMMAND_INVALIDATE
@@ -821,6 +821,19 @@ void board_gpu_initialize(void)
 	GPU_MMU->MMU_IRQ_MASK = 0xFFFFFFFF;
 //    PRINTF("1 GPU_MMU:\n");
 //    printhex32(GPU_MMU_BASE, GPU_MMU, 4096);
+#if 0
+	PRINTF("board_gpu_initialize: L2_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->L2_FEATURES);
+	PRINTF("board_gpu_initialize: CORE_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->CORE_FEATURES);
+	PRINTF("board_gpu_initialize: TILER_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->TILER_FEATURES);
+	PRINTF("board_gpu_initialize: MEM_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->MEM_FEATURES);
+	PRINTF("board_gpu_initialize: MMU_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->MMU_FEATURES);
+	PRINTF("board_gpu_initialize: SHADER_PRESENT_LO=0x%08X\n", (unsigned) GPU_CONTROL->SHADER_PRESENT_LO);
+	PRINTF("board_gpu_initialize: SHADER_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->SHADER_PRESENT_HI);
+	PRINTF("board_gpu_initialize: TILER_PRESENT_LO=0x%08X\n", (unsigned) GPU_CONTROL->TILER_PRESENT_LO);
+	PRINTF("board_gpu_initialize: TILER_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->TILER_PRESENT_HI);
+	PRINTF("board_gpu_initialize: L2_PRESENT_LO=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_LO);
+	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
+#endif
 
 	gpu_command(GPU_COMMAND_HARD_RESET);
 	gpu_wait(RESET_COMPLETED);
