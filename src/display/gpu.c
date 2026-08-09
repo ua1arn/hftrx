@@ -347,7 +347,7 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     GPU_ALIGN static MALI_FRAGMENT_JOB_PACKED_T     job_p;
 
     /* Объявление "распакованных" структур строго по типам из вашего bifrost_v7.h */
-    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE jh   = { MALI_WRITE_VALUE_JOB_SECTION_HEADER_header, .type = MALI_JOB_TYPE_FRAGMENT };
+    MALI_FRAGMENT_JOB_SECTION_HEADER_TYPE jh   = { MALI_FRAGMENT_JOB_SECTION_HEADER_header, .type = MALI_JOB_TYPE_FRAGMENT };
     MALI_FRAGMENT_JOB_SECTION_PAYLOAD_TYPE jp   = { MALI_FRAGMENT_JOB_SECTION_PAYLOAD_header };
     MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE fbp  = { MALI_FRAMEBUFFER_SECTION_PARAMETERS_header };
     struct MALI_TILER_HEAP         th   = { MALI_TILER_HEAP_header };
@@ -374,7 +374,7 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
 
     /* 3. НАСТРОЙКА RENDERER STATE (Привязка v7 Dummy-шейдера и флагов блендинга) */
     rst.shader.shader = (uintptr_t) & bifrost_v7_clear_shader; /* Чистый v7-адрес без тегов */
-    rst.shader.shader = (uintptr_t) & bifrost_v7_nop_shader; /* Чистый v7-адрес без тегов */
+    //rst.shader.shader = (uintptr_t) & bifrost_v7_nop_shader; /* Чистый v7-адрес без тегов */
 
 //    rst.properties = UINT64_C(0x0000100000000000);             /* Квант потоков для v7 */
 //    rst.blend.flags = UINT32_C(0x00011000);                    /* Режим Replace RAW32 */
@@ -383,8 +383,8 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     /* 4. НАСТРОЙКА FRAMEBUFFER PARAMETERS (MFBD) */
     fbp.bound_min_x = 0;
     fbp.bound_min_y = 0;
-    fbp.bound_max_x = (width / 16) - 1;
-    fbp.bound_max_y = (height / 16) - 1;
+    fbp.bound_max_x = (width + 15) / 16 - 1;
+    fbp.bound_max_y = (height + 15) / 16 - 1;
     fbp.width = width;
     fbp.height = height;
     fbp.effective_tile_size = 16;
