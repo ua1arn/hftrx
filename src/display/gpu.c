@@ -297,7 +297,7 @@ static int gpu_run_write_value_test_mesa(void) {
 
     dcache_clean_invalidate((uintptr_t)&job_p, sizeof(job_p));
     dcache_clean_invalidate((uintptr_t)&job2_p, sizeof(job2_p));
-
+    memset((void *) gpu_test_target, 0xE5, sizeof gpu_test_target);
     dcache_clean_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
 
     if (gpu_submit_job(2, (uintptr_t) & job_p))
