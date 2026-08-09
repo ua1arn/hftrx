@@ -308,22 +308,39 @@ static int gpu_run_write_value_test_mesa(void) {
     return 0;
 }
 
-// fill rectangle
-/* Истинный бинарный код пустого фрагментного шейдера для Bifrost v7 (Mali-G31 v7) */
-GPU_ALIGN static const uint32_t bifrost_v7_clear_shader[] = {
-    UINT32_C(0x00000000), UINT32_C(0x00000000), /* Системная клауза-префикс v7 */
-    UINT32_C(0x7C003C00), UINT32_C(0x00000000)  /* Аппаратная v7-команда: END + Blend Writeout */
-};
-
-/* Выделение памяти под вспомогательные упакованные дескрипторы Mesa */
-GPU_ALIGN static MALI_RENDER_TARGET_PACKED_T      rt_p;
-GPU_ALIGN static MALI_RENDERER_STATE_PACKED_T     rst_p;
-GPU_ALIGN static MALI_TILER_HEAP_PACKED_T         th_p;
-GPU_ALIGN static uint64_t                         gpu_fragment_tile_meta_dummy [1024];
-
 static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
 {
     PRINTF("gpu_clear_screen mesa bifrost v7 start:\n");
+
+    // fill rectangle
+    /* Истинный бинарный код пустого фрагментного шейдера для Bifrost v7 (Mali-G31 v7) */
+    GPU_ALIGN static const uint32_t bifrost_v7_clear_shader[] = {
+        UINT32_C(0x00000000), UINT32_C(0x00000000), /* Системная клауза-префикс v7 */
+        UINT32_C(0x7C003C00), UINT32_C(0x00000000)  /* Аппаратная v7-команда: END + Blend Writeout */
+    };
+
+	/* Минимальный пустой микро-шейдер (NOP + TERMINAL) для ARM Mali Bifrost v7.
+	 * Занимает ровно 24 байта (1 заголовок клаузы + 1 VLIW-инструкция).
+	 */
+	GPU_ALIGN static const uint32_t bifrost_v7_nop_shader[] = {
+		/* 1. Заголовок клаузы (Clause Header) — 8 байт
+		 * Указывает: 1 инструкция в блоке, тип — Terminal General-Purpose
+		 */
+		UINT32_C(0x00000001), UINT32_C(0x00050000),
+
+		/* 2. Тело VLIW-инструкции — 16 байт
+		 * Младшие 8 байт: Опкоды FMA/ADD обнулены (чистый ALU NOP, регистры на R63)
+		 * Старшие 8 байт: Байт Flow Control содержит маску 0xC (MALI_FLOW_TERMINAL)
+		 */
+		UINT32_C(0x00000000), UINT32_C(0x00000000),
+		UINT32_C(0x00000000), UINT32_C(0x20C00000)
+	};
+
+    /* Выделение памяти под вспомогательные упакованные дескрипторы Mesa */
+    GPU_ALIGN static MALI_RENDER_TARGET_PACKED_T      rt_p;
+    GPU_ALIGN static MALI_RENDERER_STATE_PACKED_T     rst_p;
+    GPU_ALIGN static MALI_TILER_HEAP_PACKED_T         th_p;
+    GPU_ALIGN static uint64_t                         gpu_fragment_tile_meta_dummy [1024];
 
     /* Выделяем монолитные упакованные контейнеры под структуры Framebuffer и Job */
     GPU_ALIGN static MALI_FRAMEBUFFER_PACKED_T      fb_p;
@@ -356,7 +373,9 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     MALI_RENDER_TARGET_pack(&rt_p, &rt);
 
     /* 3. НАСТРОЙКА RENDERER STATE (Привязка v7 Dummy-шейдера и флагов блендинга) */
-    rst.shader.shader = (uintptr_t)&bifrost_v7_clear_shader; /* Чистый v7-адрес без тегов */
+    rst.shader.shader = (uintptr_t) & bifrost_v7_clear_shader; /* Чистый v7-адрес без тегов */
+    rst.shader.shader = (uintptr_t) & bifrost_v7_nop_shader; /* Чистый v7-адрес без тегов */
+
 //    rst.properties = UINT64_C(0x0000100000000000);             /* Квант потоков для v7 */
 //    rst.blend.flags = UINT32_C(0x00011000);                    /* Режим Replace RAW32 */
     MALI_RENDERER_STATE_pack(&rst_p, &rst);
