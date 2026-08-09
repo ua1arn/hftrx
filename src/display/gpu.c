@@ -649,7 +649,9 @@ static void mali_bifrost_open_mmu_bus(void)
 static void mali_g31_mmu_enable(void)
 {
     unsigned as = 0; // Шейдерный домен по умолчанию
+	const uint64_t table_phys_addr = hardware_gpu_ttb();
 
+	ASSERT((table_phys_addr & 0xFFF) == 0);
     for (as = 0; as < ARRAY_SIZE(GPU_MMU->MMU_AS); ++ as)
     {
         /*
@@ -663,13 +665,18 @@ static void mali_g31_mmu_enable(void)
          * Байты 4–7 (Индекс 4-7) = 0x00: Зарезервированы / не используются для стандартных буферов.
          *
          */
-    	// Индекс 0 = 0xAA (Cacheable), Индекс 1 = 0x22 (Non-Cacheable)
+//    	enum aarch64_attrindex
+//    	{
+//    		AARCH64_ATTR_INDEX_CACHED = 0,
+//    		AARCH64_ATTR_INDEX_NCACHED,
+//    		AARCH64_ATTR_INDEX_DEVICE
+//
+//    	};
+   	// Индекс 0 = 0xAA (Cacheable), Индекс 1 = 0x22 (Non-Cacheable)
     	GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0x00000000;
-    	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = ~0;//0x004488ff;
+    	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x000044FF; //~0;//0x004488ff;
     	__DSB();
 
-    	uint64_t table_phys_addr = hardware_gpu_ttb();
-    	ASSERT((table_phys_addr & 0xFFF) == 0);
 
     	// 3. Загружаем физический адрес плоской таблицы
     	// Младшие биты 0x03 включают режим трансляции LPAE
