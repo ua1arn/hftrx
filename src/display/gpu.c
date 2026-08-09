@@ -362,8 +362,20 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     MALI_TILER_HEAP_pack(&th_p, &th);
 
     /* 2. НАСТРОЙКА RENDER TARGET (Линейный кадровый буфер RAW32) */
+    rt.rgb.write_enable = true;
+#if LCDMODE_ARGB8888
+    rt.rgb.writeback_format = MALI_COLOR_FORMAT_R8G8B8A8; /* RAW32 + MALI_BLOCK_FORMAT_LINEAR */
+    rt.rgb.writeback_block_format = MALI_BLOCK_FORMAT_LINEAR;
+    rt.rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_RAW16;
+#elif LCDMODE_RGB565
     rt.rgb.writeback_format = MALI_COLOR_FORMAT_R5G6B5; /* RAW32 + MALI_BLOCK_FORMAT_LINEAR */
+    rt.rgb.writeback_block_format = MALI_BLOCK_FORMAT_LINEAR;
+    rt.rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_RAW16;
+#else
+#endif
+
     rt.rgb.writeback_buffer.row_stride = stride;
+    rt.rgb.writeback_buffer.surface_stride = stride; //???
     rt.rgb.writeback_buffer.base = framebuffer_phys_addr;
 
     /* Запись цвета очистки в покомпонентном формате FP32 (Пурпурный / Magenta) */
