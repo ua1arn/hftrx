@@ -437,6 +437,17 @@ static const getmmudesc_t aarch64_table_2M =
 	.mtable = aarch64_2M_mtable
 };
 
+static const getmmudesc_t mali_g31_table_2M =
+{
+	.mcached = aarch64_2M_mcached,
+	.mncached = aarch64_2M_mncached,
+	.mdevice = aarch64_2M_mdevice,
+	.mnoaccess = aarch64_2M_mnoaccess,
+	.mtable = aarch64_2M_mtable
+};
+
+
+
 ///////////////
 ///
 static unsigned aarch32_v7_1M_mcached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
@@ -1384,6 +1395,46 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 
 #endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV */
 
+#if WITHGPUHW
+
+// pages of 2 MB
+#define MALI_G31_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB)
+#define MALI_G31_LEVEL1_SIZE (HARDWARE_ADDRSPACE_GB * 512)		// pages of 2 MB
+//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
+//	eight entries, it must be aligned on a 64 byte address boundary.
+static RAMFRAMEBUFF __ALIGNED(MALI_G31_LEVEL0_SIZE * sizeof (uint64_t)) uint8_t mali_ttb0_base [MALI_G31_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
+static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t mali_xxlevel1_pagetable_u64 [MALI_G31_LEVEL1_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
+
+static const mmulayout_t mali_mmuinfo [] =
+{
+	{
+		.arch = & mali_g31_table_2M,
+		.phyaddr = 0x00000000,	/* Начало физической памяти */
+		.phybytes = NULL,
+		.phypageszlog2 = 21,	// 2MB
+		.pagecount = MALI_G31_LEVEL1_SIZE,
+		.table = mali_xxlevel1_pagetable_u64,
+		.level = INT_MAX,	// memory pages with access bits
+		.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
+	},
+	{
+		.arch = & mali_g31_table_2M,
+		.phybytes = mali_xxlevel1_pagetable_u64,
+		.phypageszlog2 = 9 + 3,	// 512 elements by 8 bytes in each page of xxlevel1_pagetable_u64
+		.pagecount = MALI_G31_LEVEL0_SIZE,
+		.table = mali_ttb0_base,
+		.level = 0, // page table level (pass to mtable)
+		.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
+	},
+};
+
+uintptr_t hardware_gpu_ttb(void)
+{
+	return (uintptr_t) mali_ttb0_base;
+}
+
+#endif /* WITHGPUHW */
+
 /* Один раз - инициализация таблиц в памяти */
 void
 sysinit_mmu_tables(void)
@@ -1399,6 +1450,9 @@ sysinit_mmu_tables(void)
 
 #endif
 	//PRINTF("sysinit_mmu_tables done.\n");
+#if WITHGPUHW
+	fillmmu(mali_mmuinfo, ARRAY_SIZE(mali_mmuinfo), gpu_ttb_mempage_accessbits);
+#endif
 }
 
 #if (__CORTEX_A != 0)

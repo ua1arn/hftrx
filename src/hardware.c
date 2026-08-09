@@ -3122,4 +3122,32 @@ ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, ui
 
 #endif
 }
+/* зависящая от процессора карта распределения memory regions - GPU Mali */
+unsigned
+gpu_ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn)
+{
+	extern uint32_t __RAMNC_BASE;
+	extern uint32_t __RAMNC_TOP;
+	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+	if (phyaddr >= __ramnc_base && phyaddr < __ramnc_top)			// non-cached DRAM
+		return arch->mncached(b, phyaddr, ro, 1 || xn);
+
+#if CPUSTYLE_A64
+
+	// Все сравнения должны быть не точнее 2 (16) MB
+	if (phyaddr < 0x40000000)
+		return arch->mnoaccess(b, phyaddr);
+	return arch->mcached(b, phyaddr, ro, xn);
+
+#elif CPUSTYLE_T507
+
+	// Все сравнения должны быть не точнее 2 (16) MB
+	if (phyaddr < 0x40000000)
+		return arch->mnoaccess(b, phyaddr);
+	return arch->mcached(b, phyaddr, ro, xn);
+#else
+	return arch->mnoaccess(b, phyaddr);
+#endif
+}
 #endif

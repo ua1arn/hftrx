@@ -189,13 +189,14 @@ static void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
     PRINTF("   Slot %u Tail Address:       0x%08X%08X\n", slot, (unsigned)tail_hi, (unsigned)tail_lo);
 
     // Проверяем, не ругнулся ли при этом MMU (адресное пространство AS0 на 0x400)
-//    PRINTF("   MMU Fault Status (as=%u) = 0x%08X\n", as, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTSTATUS);
-//    PRINTF("   MMU Fault Address = 0x%08X%08X\n",
-//           (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_LO);
+    PRINTF("   MMU Fault Status (as=%u) = 0x%08X\n", as, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTSTATUS);
+    PRINTF("   MMU Fault Address = 0x%08X%08X\n",
+           (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_LO);
 }
 
 static int gpu_submit_job(unsigned slot, uintptr_t job)
 {
+	unsigned as = 0;
 //	PRINTF("gpu_submit_job: head=%p, slot=%u\n", (void *) head, slot);
 //	printhex32((uintptr_t) job, job, 64);
     // Записываем физический адрес начала структуры v_job в регистр указателя слота 0
@@ -227,7 +228,7 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
     	dcache_invalidate((uintptr_t) job, 128);
     	printhex32(job, (void *) job, 128);
     	PRINTF("gpu timeout: GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
-    	gpu_diagnose_slot_fault(slot, 0);
+    	gpu_diagnose_slot_fault(slot, as);
         GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
         return 1;
     }
@@ -244,6 +245,9 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
 
 static int gpu_run_write_value_test_mesa(void) {
 	PRINTF("gpu_run_write_value_test_mesa:\n");
+
+//	volatile uint32_t * const p = (volatile uint32_t *) 0x40;
+//	* p = 1234;
 
 	// Переменная-цель, куда будет писать GPU.
 	static volatile uint64_t GPU_ALIGN gpu_test_target [2];
@@ -646,53 +650,55 @@ static void mali_g31_mmu_enable(void)
 {
     unsigned as = 0; // Шейдерный домен по умолчанию
 
-    /*
-     *
-     * 2. Как расшифровывается эта маска по байтам (Индексы от 0 до 7)
-     * Mali считывает младшие 32 бита (LO) как 4 независимых правила кэширования:
-     * Байт 0 (Индекс 0) = 0xFF: Традиционная кэшируемая память (Write-Back, Read/Write-Allocate). Основной тип для кода, текстур и дескрипторов.
-     * Байт 1 (Индекс 1) = 0x88: Память с типом Write-Through (прямая запись, без аллокации кэша на запись).
-     * Байт 2 (Индекс 2) = 0x44: Non-Cacheable (некэшируемая память). Именно этот индекс критически важен, если вы хотите отключить кэширование GPU для буфера результатов (как в тесте WRITE_VALUE).
-     * Байт 3 (Индекс 3) = 0x00: Память типа Device (для регистров или специфического MMIO, если применимо).
-     * Байты 4–7 (Индекс 4-7) = 0x00: Зарезервированы / не используются для стандартных буферов.
-     *
-     */
-	// Индекс 0 = 0xAA (Cacheable), Индекс 1 = 0x22 (Non-Cacheable)
-	GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0x00000000;
-	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = ~0;//0x004488ff;
-	__DSB();
+    for (as = 0; as < ARRAY_SIZE(GPU_MMU->MMU_AS); ++ as)
+    {
+        /*
+         *
+         * 2. Как расшифровывается эта маска по байтам (Индексы от 0 до 7)
+         * Mali считывает младшие 32 бита (LO) как 4 независимых правила кэширования:
+         * Байт 0 (Индекс 0) = 0xFF: Традиционная кэшируемая память (Write-Back, Read/Write-Allocate). Основной тип для кода, текстур и дескрипторов.
+         * Байт 1 (Индекс 1) = 0x88: Память с типом Write-Through (прямая запись, без аллокации кэша на запись).
+         * Байт 2 (Индекс 2) = 0x44: Non-Cacheable (некэшируемая память). Именно этот индекс критически важен, если вы хотите отключить кэширование GPU для буфера результатов (как в тесте WRITE_VALUE).
+         * Байт 3 (Индекс 3) = 0x00: Память типа Device (для регистров или специфического MMIO, если применимо).
+         * Байты 4–7 (Индекс 4-7) = 0x00: Зарезервированы / не используются для стандартных буферов.
+         *
+         */
+    	// Индекс 0 = 0xAA (Cacheable), Индекс 1 = 0x22 (Non-Cacheable)
+    	GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0x00000000;
+    	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = ~0;//0x004488ff;
+    	__DSB();
 
-	uint64_t table_phys_addr = 0;
-	ASSERT((table_phys_addr & 0xFFF) == 0);
+    	uint64_t table_phys_addr = hardware_gpu_ttb();
+    	ASSERT((table_phys_addr & 0xFFF) == 0);
 
-	// 3. Загружаем физический адрес плоской таблицы
-	// Младшие биты 0x03 включают режим трансляции LPAE
-	uint64_t transtab_val = table_phys_addr |
-//		1 * (UINT64_C(1) << 4) |	// SHARE_OUTER
-		1 * (UINT64_C(1) << 3) |	// SHARE_INNER
-		1 * (UINT64_C(1) << 2) |	// READ_INNER
-//		0x03 * (UINT64_C(1) << 0) |	// ADRMODE: TABLE (Включена трансляция по таблицам страниц LPAE).
-		0x01 * (UINT64_C(1) << 0) |	// ADRMODE: IDENTITY
-		0;
+    	// 3. Загружаем физический адрес плоской таблицы
+    	// Младшие биты 0x03 включают режим трансляции LPAE
+    	uint64_t transtab_val = table_phys_addr |
+    //		1 * (UINT64_C(1) << 4) |	// SHARE_OUTER
+    		1 * (UINT64_C(1) << 3) |	// SHARE_INNER
+    		1 * (UINT64_C(1) << 2) |	// READ_INNER
+ //   		0x03 * (UINT64_C(1) << 0) |	// ADRMODE: TABLE (Включена трансляция по таблицам страниц LPAE).
+    		0x01 * (UINT64_C(1) << 0) |	// ADRMODE: IDENTITY
+    		0;
 
-	GPU_MMU->MMU_AS[as].AS_TRANSCFG_HI = 0x00;
-	GPU_MMU->MMU_AS[as].AS_TRANSCFG_LO = 0x02;	//  (Включает режим адресации ARM 64-bit LPAE с размером страницы 4 КБ).
+    	GPU_MMU->MMU_AS[as].AS_TRANSCFG_HI = 0x00;
+    	GPU_MMU->MMU_AS[as].AS_TRANSCFG_LO = 0x02;	//  (Включает режим адресации ARM 64-bit LPAE с размером страницы 4 КБ).
 
-    // 3. Записываем адрес в регистры AS0 (теперь они строго на 0x01802400)
-    GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = ptr_hi32(transtab_val); //(uint32_t)(transtab_val >> 32);
-    GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = ptr_lo32(transtab_val); //(uint32_t)(transtab_val & 0xFFFFFFFF);
+        GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = ptr_hi32(transtab_val);
+        GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = ptr_lo32(transtab_val);
 
-    __DSB();
+        __DSB();
 
-//    gpu_as_command(as, 0x01);	// Отправляем команду UPDATE для применения таблиц
-//    gpu_as_command(as, 0x03);	// Очищаем внутренний TLB кэш MMU от старых зависших ошибок 0xC8 AS_COMMAND_INVALIDATE
+    //    gpu_as_command(as, 0x01);	// Отправляем команду UPDATE для применения таблиц
+    //    gpu_as_command(as, 0x03);	// Очищаем внутренний TLB кэш MMU от старых зависших ошибок 0xC8 AS_COMMAND_INVALIDATE
 
-	gpu_as_command(as, AS_COMMAND_UPDATE);
-	gpu_as_command(as, AS_COMMAND_INVALIDATE);
-//	gpu_as_command(as, AS_COMMAND_FLUSH_PT);
+    	gpu_as_command(as, AS_COMMAND_UPDATE);
+    	gpu_as_command(as, AS_COMMAND_INVALIDATE);
+    //	gpu_as_command(as, AS_COMMAND_FLUSH_PT);
 
-//	printhex32((uintptr_t) & GPU_MMU->MMU_AS[as], & GPU_MMU->MMU_AS[as], sizeof GPU_MMU->MMU_AS[as]);
-//    PRINTF("Mali-G31: MMU Address Space 0 successfully enabled at offset 0x400!\n");
+    //	printhex32((uintptr_t) & GPU_MMU->MMU_AS[as], & GPU_MMU->MMU_AS[as], sizeof GPU_MMU->MMU_AS[as]);
+    //    PRINTF("Mali-G31: MMU Address Space 0 successfully enabled at offset 0x400!\n");
+    }
 }
 
 //
