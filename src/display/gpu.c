@@ -39,12 +39,13 @@
 static void gpu_as_command(unsigned as, unsigned cmd)
 {
     // Ожидание готовности MMU AS
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1)
-        ;
+	if (local_wait32mask(& GPU_MMU->MMU_AS[as].AS_STATUS, 0x1, 0 * 0x1, 100))
+		return;	// timeout
+
     GPU_MMU->MMU_AS[as].AS_COMMAND = cmd;
     // Ожидание завершения команды
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1)
-        ;
+	if (local_wait32mask(& GPU_MMU->MMU_AS[as].AS_STATUS, 0x1, 0 * 0x1, 100))
+		return;	// timeout
 }
 
 
@@ -101,9 +102,8 @@ static void gpu_command(unsigned cmd)
 
 static void gpu_wait(unsigned mask)
 {
-	while ((GPU_CONTROL->GPU_IRQ_RAWSTAT & mask) != mask)
-		;
-	GPU_CONTROL->GPU_IRQ_CLEAR = mask;
+	if (! local_wait32mask(& GPU_CONTROL->GPU_IRQ_RAWSTAT, mask, mask, 100))
+		GPU_CONTROL->GPU_IRQ_CLEAR = mask;
 }
 
 /* AS_COMMAND register commands */
@@ -224,6 +224,7 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
     // В hftrx прерывания выводят ASSERT(0), поэтому опрашиваем статус в цикле (polling)
     if (local_wait32mask(& GPU_JOB_CONTROL->JOB_INT_RAWSTAT, (UINT32_C(1) << slot), 1 * (UINT32_C(1) << slot), 100))//Was: JOB_IRQ_RAWSTAT
     {
+    	// timeout
     	PRINTF("error job @%p:\n", (void *) job);
     	dcache_invalidate((uintptr_t) job, 128);
     	printhex32(job, (void *) job, 128);
