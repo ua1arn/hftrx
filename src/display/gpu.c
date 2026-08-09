@@ -325,9 +325,9 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     GPU_ALIGN static MALI_FRAGMENT_JOB_PACKED_T     job_p;
 
     /* Объявление "распакованных" структур строго по типам из вашего bifrost_v7.h */
-    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE        jh   = { MALI_WRITE_VALUE_JOB_SECTION_HEADER_header, .type = MALI_JOB_TYPE_FRAGMENT };
-    MALI_FRAGMENT_JOB_SECTION_PAYLOAD_TYPE         jp   = { MALI_FRAGMENT_JOB_SECTION_PAYLOAD_header };
-    MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE        fbp  = { MALI_FRAMEBUFFER_SECTION_PARAMETERS_header };
+    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE jh   = { MALI_WRITE_VALUE_JOB_SECTION_HEADER_header, .type = MALI_JOB_TYPE_FRAGMENT };
+    MALI_FRAGMENT_JOB_SECTION_PAYLOAD_TYPE jp   = { MALI_FRAGMENT_JOB_SECTION_PAYLOAD_header };
+    MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE fbp  = { MALI_FRAMEBUFFER_SECTION_PARAMETERS_header };
     struct MALI_TILER_HEAP         th   = { MALI_TILER_HEAP_header };
     struct MALI_RENDER_TARGET      rt   = { MALI_RENDER_TARGET_header };
     struct MALI_RENDERER_STATE     rst  = { MALI_RENDERER_STATE_header };
@@ -377,8 +377,8 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     /* 5. НАСТРОЙКА FRAGMENT JOB PAYLOAD */
     jp.bound_min_x = 0;
     jp.bound_min_y = 0;
-    jp.bound_max_x = (width / 16) - 1;
-    jp.bound_max_y = (height / 16) - 1;
+    jp.bound_max_x = (width + 15) / 16 - 1;
+    jp.bound_max_y = (height + 15) / 16 - 1;
     jp.has_tile_enable_map = false;
     jp.framebuffer = (uintptr_t)&fb_p | UINT64_C(1);           /* tagged = true */
 //    jp.tile_alloc = (uintptr_t)&th_p;
@@ -576,7 +576,7 @@ static void mali_bifrost_power_on(void)
 
 #define REG_L2_PWR_DOMAIN_COMMAND      0x0010
 #define REG_L2_PWR_DOMAIN_STATUS       0x0014
-
+// не требуется
 static void mali_bifrost_l2_ready(void)
 {
     volatile uint32_t *l2_pwr_cmd  = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_L2_PWR_DOMAIN_COMMAND);
@@ -627,7 +627,7 @@ void gpu_test(void)
 #endif
 }
 #define GPU_L2_MMU_CONFIG  0x0008 // Смещение внутри блока GPU_CONTROL (0x01800008)
-
+// не требуется
 static void mali_bifrost_open_mmu_bus(void)
 {
     volatile uint32_t *l2_mmu_config = (volatile uint32_t *)(GPU_BASE + GPU_L2_MMU_CONFIG);
