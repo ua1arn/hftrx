@@ -648,12 +648,37 @@ static void mali_bifrost_open_mmu_bus(void)
 
 static void mali_g31_mmu_enable(void)
 {
-    unsigned as = 0; // Шейдерный домен по умолчанию
 	const uint64_t table_phys_addr = hardware_gpu_ttb();
 
 	ASSERT((table_phys_addr & 0xFFF) == 0);
-    for (as = 0; as < ARRAY_SIZE(GPU_MMU->MMU_AS); ++ as)
-    {
+
+	/**
+	 * БитыНазвание конфигурацииОписание и назначение
+	 * 0:1 Address Mode (ADRMODE) Задает базовый режим адресации:• 0x0 — Запрещено / Неактивно • 0x2 — Режим AArch64 (LPAE) с размером страницы 4 КБ • 0x3 — Режим AArch64 (LPAE) с размером страницы 64 КБ
+	 * 2:5 Input Address Size (IAS) Определяет ширину входного виртуального адреса (VA Bits). Задается в виде закодированного смещения (например, для 48-битного адресного пространства VA_BITS=48).
+	 * 6:9 Output Address Size (OAS) Определяет ширину выходного физического адреса (PA Bits) системы. На Bifrost v7 обычно аппаратно ограничена шиной SoC (например, 40 или 44 бита).
+	 * 10 Disable Translation (DT) Флаг отключения трансляции (Bypass MMU). Если выставлен в 1, запросы идут напрямую по физическим адресам без таблиц страниц (используется для отладки).
+	 * 11 Unprivileged Access Control Флаг, управляющий разделением прав доступа на уровне пользователя и суперпользователя (User/Privileged).
+	 * 12:15 Starting Level (SL) Задает начальный уровень обхода таблиц страниц (Level 0, Level 1 или Level 2) в зависимости от размера страницы и размера виртуального адреса.
+	 * 16:31 ReservedЗарезервировано под аппаратные нужды архитектуры (обычно заполняется нулями 0).
+	 *
+	 */
+    	const uint64_t transflags_val =
+//				0x01 * (UINT64_C(1) << 11) |
+//	    		0x01 * (UINT64_C(1) << 10) |	// DT
+				0x02 * (UINT64_C(1) << 0) |	//  (Включает режим адресации ARM 64-bit LPAE с размером страницы 4 КБ).
+				0;
+
+
+    	// 3. Загружаем физический адрес плоской таблицы
+    	// Младшие биты 0x03 включают режим трансляции LPAE
+    	const uint64_t transtab_val = table_phys_addr |
+    //		1 * (UINT64_C(1) << 4) |	// SHARE_OUTER
+    		1 * (UINT64_C(1) << 3) |	// SHARE_INNER
+    		1 * (UINT64_C(1) << 2) |	// READ_INNER
+ //   		0x03 * (UINT64_C(1) << 0) |	// ADRMODE: TABLE (Включена трансляция по таблицам страниц LPAE).
+    		0x01 * (UINT64_C(1) << 0) |	// ADRMODE: IDENTITY
+    		0;
         /*
          *
          * 2. Как расшифровывается эта маска по байтам (Индексы от 0 до 7)
@@ -673,26 +698,22 @@ static void mali_g31_mmu_enable(void)
 //
 //    	};
    	// Индекс 0 = 0xAA (Cacheable), Индекс 1 = 0x22 (Non-Cacheable)
-    	GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0x00000000;
-    	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0x000044FF; //~0;//0x004488ff;
-    	__DSB();
 
-
-    	// 3. Загружаем физический адрес плоской таблицы
-    	// Младшие биты 0x03 включают режим трансляции LPAE
-    	uint64_t transtab_val = table_phys_addr |
-    //		1 * (UINT64_C(1) << 4) |	// SHARE_OUTER
-    		1 * (UINT64_C(1) << 3) |	// SHARE_INNER
-    		1 * (UINT64_C(1) << 2) |	// READ_INNER
- //   		0x03 * (UINT64_C(1) << 0) |	// ADRMODE: TABLE (Включена трансляция по таблицам страниц LPAE).
-    		0x01 * (UINT64_C(1) << 0) |	// ADRMODE: IDENTITY
+    const uint64_t memattrval =
+    		0x000044FF |
     		0;
 
-    	GPU_MMU->MMU_AS[as].AS_TRANSCFG_HI = 0x00;
-    	GPU_MMU->MMU_AS[as].AS_TRANSCFG_LO = 0x02;	//  (Включает режим адресации ARM 64-bit LPAE с размером страницы 4 КБ).
+    unsigned as = 0; // Шейдерный домен по умолчанию
+    for (as = 0; as < ARRAY_SIZE(GPU_MMU->MMU_AS); ++ as)
+    {
+    	GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0xFFFFFFFF & (memattrval >> 32);;
+    	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0xFFFFFFFF & (memattrval >> 0);
 
-        GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = ptr_hi32(transtab_val);
-        GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = ptr_lo32(transtab_val);
+    	GPU_MMU->MMU_AS[as].AS_TRANSCFG_HI = 0xFFFFFFFF & (transflags_val >> 32);
+    	GPU_MMU->MMU_AS[as].AS_TRANSCFG_LO = 0xFFFFFFFF & (transflags_val >> 0);
+
+        GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = 0xFFFFFFFF & (transtab_val >> 32);
+        GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = 0xFFFFFFFF & (transtab_val >> 0);
 
         __DSB();
 
@@ -703,8 +724,6 @@ static void mali_g31_mmu_enable(void)
     	gpu_as_command(as, AS_COMMAND_INVALIDATE);
     //	gpu_as_command(as, AS_COMMAND_FLUSH_PT);
 
-    //	printhex32((uintptr_t) & GPU_MMU->MMU_AS[as], & GPU_MMU->MMU_AS[as], sizeof GPU_MMU->MMU_AS[as]);
-    //    PRINTF("Mali-G31: MMU Address Space 0 successfully enabled at offset 0x400!\n");
     }
 }
 
