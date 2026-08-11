@@ -1,17 +1,7 @@
-#type; GPU; Mali G31 MP2 (Bifrost v7 - Chip ID=0x70930000)
-#base; GPU 0x01800000
-
-#irq; GPU_EVENT 126; GPU_EVENT interrupt
-#irq; GPU_JOB 127; GPU_JOB interrupt
-#irq; GPU_MMU 128; GPU_MMU interrupt
-#irq; GPU 129; GPU interrupt
-
 # https://github.com/bakhi/GPUReplay/blob/master/Bifrost-kdriver/driver/product/kernel/drivers/gpu/arm/midgard/gpu/mali_kbase_gpu_regmap.h
 # https://elixir.bootlin.com/linux/v6.18.4/source/drivers/gpu/drm/panfrost/panfrost_regs.h
 
 #type; GPU_CONTROL
-#base; GPU_CONTROL 0x01800000
-
 
 #regdefr; ID                     ; 0x000   ; (RO) GPU and revision identifier
 #regdefr; L2_FEATURES            ; 0x004   ; (RO) Level 2 cache features
@@ -128,9 +118,7 @@
 #regdef; L2_MMU_CONFIG           ; 0xF0C   ; (RW) L2 cache and MMU configuration (implementation-specific)
 
 #typeend;
-
 #type; GPU_JOB_CONTROL
-#base; GPU_JOB_CONTROL 0x01801000
 
 #regdef; JOB_INT_RAWSTAT;    0x00	; Internal Interrupt Status
 #regdef; JOB_INT_CLEAR;      0x04	; 
@@ -168,14 +156,13 @@
 #typeend;
 
 #type; GPU_MMU
-#base; GPU_MMU 0x01802000
 
 #regdef; MMU_IRQ_RAWSTAT        ; 0x000   ; (RW) Raw interrupt status register
 #regdefw; MMU_IRQ_CLEAR         ; 0x004   ; (WO) Interrupt clear register
 #regdef; MMU_IRQ_MASK           ; 0x008   ; (RW) Interrupt mask register
 #regdefr; MMU_IRQ_STATUS        ; 0x00C   ; (RO) Interrupt status register
 
-#aggreg; MMU_AS; 0x400 16; Configuration registers for address space 0..15
+#aggreg; MMU_AS; 0x400 8; Configuration registers for address space 0..15 (0..7 - really existing)
 
 #regdef; AS_TRANSTAB_LO         ; 0x00	; (RW) Translation Table Base Address for address space n, low word
 #regdef; AS_TRANSTAB_HI         ; 0x04	; (RW) Translation Table Base Address for address space n, high word

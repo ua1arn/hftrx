@@ -117,8 +117,8 @@ typedef enum IRQn
     CE_S_IRQn = 124,                                  /*!< CE CE interrupt */
     VE_IRQn = 125,                                    /*!< VE Video Encoding */
     GPU_EVENT_IRQn = 126,                             /*!< GPU GPU_EVENT interrupt */
-    GPU_JOB_IRQn = 127,                               /*!< GPU GPU_JOB interrupt */
-    GPU_MMU_IRQn = 128,                               /*!< GPU GPU_MMU interrupt */
+    GPU_JOB_IRQn = 127,                               /*!< GPU_JOB_CONTROL GPU_JOB interrupt */
+    GPU_MMU_IRQn = 128,                               /*!< GPU_MMU GPU_MMU interrupt */
     GPU_IRQn = 129,                                   /*!< GPU GPU interrupt */
     NMI_IRQn = 135,                                   /*!< C0_CPUX_CFG NMI interrupt  */
     ALARM0_IRQn = 136,                                /*!< RTC Real Time Clock */
@@ -1727,8 +1727,8 @@ typedef struct GPU_MMU_Type
         __IOM uint32_t AS_TRANSCFG_HI;                /*!< Offset 0x434 (RW) Translation table configuration for address space n, high word */
         __IM  uint32_t AS_FAULTEXTRA_LO;              /*!< Offset 0x438 (RO) Secondary fault address for address space n, low word */
         __IM  uint32_t AS_FAULTEXTRA_HI;              /*!< Offset 0x43C (RO) Secondary fault address for address space n, high word */
-    } MMU_AS [0x010];                                 /*!< Offset 0x400 Configuration registers for address space 0..15 */
-} GPU_MMU_TypeDef; /* size of structure = 0x800 */
+    } MMU_AS [0x008];                                 /*!< Offset 0x400 Configuration registers for address space 0..15 (0..7 - really existing) */
+} GPU_MMU_TypeDef; /* size of structure = 0x600 */
 /*
  * @brief HDMI_TX
  */

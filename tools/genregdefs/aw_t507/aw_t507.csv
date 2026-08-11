@@ -398,3 +398,25 @@
 #irq; PSI 91; PSI interrupt
 #irq; BUS_TIMEOUT 92; BUS timeout interrupt
 #typeend;
+
+#type; GPU; Mali G31 MP2 (Bifrost v7 - Chip ID=0x70930000)
+#base; GPU 0x01800000
+#irq; GPU_EVENT 126; GPU_EVENT interrupt
+#irq; GPU 129; GPU interrupt
+#typeend;
+
+
+#type; GPU_CONTROL
+#base; GPU_CONTROL 0x01800000
+#typeend;
+
+#type; GPU_JOB_CONTROL
+#base; GPU_JOB_CONTROL 0x01801000
+#irq; GPU_JOB 127; GPU_JOB interrupt
+#typeend;
+
+#type; GPU_MMU
+#base; GPU_MMU 0x01802000
+#irq; GPU_MMU 128; GPU_MMU interrupt
+#typeend;
+

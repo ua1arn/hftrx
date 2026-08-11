@@ -8361,6 +8361,11 @@
   <name>GPU_JOB_CONTROL</name>
   <description></description>
   <baseAddress>0x01801000</baseAddress>
+  <interrupt>
+   <name>GPU_JOB</name>
+   <value>127</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>JOB_INT_RAWSTAT</name>
@@ -8600,6 +8605,11 @@
   <name>GPU_MMU</name>
   <description></description>
   <baseAddress>0x01802000</baseAddress>
+  <interrupt>
+   <name>GPU_MMU</name>
+   <value>128</value>
+   <description></description>
+  </interrupt>
   <registers>
    <register>
     <name>MMU_IRQ_RAWSTAT</name>
@@ -8638,7 +8648,7 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>16</dim>
+    <dim>8</dim>
     <addressOffset>0x00000400</addressOffset>
     <registers>
      <register>
@@ -8777,7 +8787,7 @@
       <resetValue>0x00000000</resetValue>
      </register>
     </registers>
-    <dimIncrement>0x400</dimIncrement>
+    <dimIncrement>0x200</dimIncrement>
    </cluster>
   </registers>
   </peripheral>

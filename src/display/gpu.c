@@ -723,7 +723,7 @@ static void mali_g31_mmu_enable(void)
     		0;
 
     unsigned as = 0; // Шейдерный домен по умолчанию
-    for (as = 0; as < ARRAY_SIZE(GPU_MMU->MMU_AS) && as < 8; ++ as)
+    for (as = 0; as < ARRAY_SIZE(GPU_MMU->MMU_AS); ++ as)
     {
     	GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0xFFFFFFFF & (memattrval >> 32);
     	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0xFFFFFFFF & (memattrval >> 0);
