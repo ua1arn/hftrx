@@ -98,7 +98,7 @@ void user_uart5_ontxchar(void * ctx);
 	#define BOARD_PMIC_SELECTOR(configtype) do { \
 		switch (configtype) { \
 		case 1: board_helperboard_t507_lpddr4_axp853_initialize(); break; /* HelperBoard v1.2 2021 - LPDDR4 32 bit */ \
-		case 555: board_helperboard_t507_lpddr3_axp853_initialize(); break; /* HelperBoard v1.1 2026 - LPDDR3 32 bit */ \
+		case 5: board_helperboard_t507_lpddr3_axp853_initialize(); break; /* HelperBoard v1.1 2026 - LPDDR3 32 bit */ \
 		default: break; \
 		} \
 	} while (0)
