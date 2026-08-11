@@ -890,7 +890,7 @@ static void mctl_phy_ca_bit_delay_compensation(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("1 This DRAM setup is currently not supported.\n");
 	};
 }
 
@@ -938,7 +938,7 @@ static bool mctl_phy_init(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("2 This DRAM setup is currently not supported.\n");
 	};
 
 	writel(val, SUNXI_DRAM_PHY0_BASE + 0x14);
@@ -975,7 +975,7 @@ static bool mctl_phy_init(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("3 This DRAM setup is currently not supported.\n");
 	};
 
 	writel(val, SUNXI_DRAM_PHY0_BASE + 0x3dc);
@@ -995,7 +995,7 @@ static bool mctl_phy_init(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("4 This DRAM setup is currently not supported.\n");
 	};
 	clrsetbits_le32(SUNXI_DRAM_PHY0_BASE + 4, 0x7, val);
 
@@ -1145,7 +1145,7 @@ static bool mctl_phy_init(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("5 This DRAM setup is currently not supported.\n");
 	};
 
 	writel(0, SUNXI_DRAM_PHY0_BASE + 0x54);
@@ -1236,7 +1236,7 @@ static bool mctl_ctrl_init(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("6 This DRAM setup is currently not supported.\n");
 	};
 	if (config->bus_full_width)
 		reg_val |= MSTR_BUSWIDTH_FULL;
@@ -1261,7 +1261,7 @@ static bool mctl_ctrl_init(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("7 This DRAM setup is currently not supported.\n");
 	};
 	writel(reg_val, &mctl_ctl->odtcfg);
 	writel(reg_val, &mctl_ctl->unk_0x2240);
@@ -1362,7 +1362,7 @@ static void mctl_auto_detect_rank_width(const struct dram_para *para,
 	if (mctl_core_init(para, config))
 		return;
 
-	panic("This DRAM setup is currently not supported.\n");
+	panic("8 This DRAM setup is currently not supported.\n");
 }
 
 static void mctl_auto_detect_dram_size(const struct dram_para *para,

@@ -155,11 +155,11 @@ int arm_hardware_sdram_initialize(int configtype)
 		memsizeMB = memsizeB / 1024 / 1024;
 		break;
 	case 5:	// HelperBoard v1.1 2026 - LPDDR3 32 bit
-//		memsizeB = sunxi_dram_init();
-//		memsizeMB = memsizeB / 1024 / 1024;
+		memsizeB = sunxi_dram_init();
+		memsizeMB = memsizeB / 1024 / 1024;
 		break;
 	default:
-		PRINTF("Not handled memory config value\n");
+		PRINTF("Not handled memory config value %d\n", configtype);
 		break;
 	}
 	//memsize =  dram_power_up_process(& lpddr4);
