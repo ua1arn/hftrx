@@ -13,7 +13,9 @@
  *
  */
 #include "dram_glue.h"
-#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H618_LPDDR4 || CONFIG_SUNXI_DRAM_H616_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR4)
+#warning h1
+
+#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H618_LPDDR4 || CONFIG_SUNXI_DRAM_H616_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR3)
 //#include <init.h>
 //#include <log.h>
 //#include <asm/io.h>
@@ -1415,6 +1417,8 @@ static const struct dram_para para = {
 #elif defined(CONFIG_SUNXI_DRAM_H616_DDR3_1333)
 	.type = SUNXI_DRAM_TYPE_DDR3,
 #elif defined(CONFIG_SUNXI_DRAM_H616_LPDDR3)
+	.type = SUNXI_DRAM_TYPE_LPDDR3,
+#elif defined(CONFIG_SUNXI_DRAM_T507_LPDDR3)
 	.type = SUNXI_DRAM_TYPE_LPDDR3,
 #elif defined(CONFIG_SUNXI_DRAM_H616_LPDDR4)
 	.type = SUNXI_DRAM_TYPE_LPDDR4,

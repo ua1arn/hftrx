@@ -83,6 +83,7 @@
 	//#define WITHSDHC1HW	1		/* SDIO */
 	//#define WITHSDHC2HW	1		/* EMMC */
 
+#if 1
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
 	#define CONFIG_DRAM_CLK 720
@@ -94,7 +95,20 @@
 		0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, \
 		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x01, \
 		0x18, 0x04, 0x1a
+#else
+	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR3
+	#define CONFIG_DRAM_CLK 792
+	#define CONFIG_SUNXI_DRAM_T507_LPDDR3 1
+	#define CONFIG_MACH_SUN50I_T507 1
+	// szbaijie HelperBoard 1.2 with LPDDR4
+	#define BOARD_DDR_PHY_INIT_DATA \
+		0x03, 0x00, 0x17, 0x05, 0x02, 0x19, 0x06, 0x07, \
+		0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, \
+		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x01, \
+		0x18, 0x04, 0x1a
 
+#endif
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit - Mali G31 MP2 (Panfrost) */
 

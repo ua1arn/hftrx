@@ -9,12 +9,12 @@
 
 #include "hardware.h"
 
-#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H618_LPDDR4 || CONFIG_SUNXI_DRAM_H616_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR4)
+#include "dram_glue.h"
+#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H618_LPDDR4 || CONFIG_SUNXI_DRAM_H616_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR3)
 
 #include "formats.h"
 #include "clocks.h"
 #include <string.h>
-#include "dram_glue.h"
 
 
 static int xdramc_simple_wr_test(unsigned int mem_mb, int len)
