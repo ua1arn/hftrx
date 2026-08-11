@@ -2588,6 +2588,14 @@ typedef struct PRCM_Type
     __IOM uint32_t PRCM_VERSION_REG;                  /*!< Offset 0x3F0 PRCM Version Register */
 } PRCM_TypeDef; /* size of structure = 0x3F4 */
 /*
+ * @brief PSI
+ */
+/*!< PSI  */
+typedef struct PSI_Type
+{
+         RESERVED(0x000[0x1000 - 0x0000], uint8_t)
+} PSI_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief PWM
  */
 /*!< PWM Pulse Width Modulation module */

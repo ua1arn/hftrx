@@ -378,9 +378,23 @@
 ##base; R_RSB	0x07083000
 ##irq; R_RSB 141
 
+##typeend;
+
+#type; MSI_CTRL;
+#irq; MSI 70; MSI interrupt 
+#base; MSI_CTRL 0x047FA000
 #typeend;
 
-#type; TWD; Trust Watchdog
-#irq; TWD 140; Trust Watchdog
+#type; DRAM_CTRL;
+#base; DRAM_CTRL 0x047FB000;
+#typeend;
 
+#type; DRAM_PHY; PHY_CTRL
+#irq; DRAM_PHY 72; DRAM_PHY interrupt 
+#base; DRAM_PHY 0x04800000;
+#typeend;
+
+#type; PSI;
+#irq; PSI 91; PSI interrupt
+#irq; BUS_TIMEOUT 92; BUS timeout interrupt
 #typeend;
