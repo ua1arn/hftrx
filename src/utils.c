@@ -104,6 +104,23 @@ uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 	return a > b ? a : b;
 }
 
+#ifndef   __UNALIGNED_UINT64_WRITE
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpacked"
+  #pragma GCC diagnostic ignored "-Wattributes"
+  __PACKED_STRUCT T_UINT64_WRITE { uint64_t v; };
+  #pragma GCC diagnostic pop
+  #define __UNALIGNED_UINT64_WRITE(addr, val)    (void)((((struct T_UINT64_WRITE *)(void *)(addr))->v) = (val))
+#endif
+#ifndef   __UNALIGNED_UINT64_READ
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpacked"
+  #pragma GCC diagnostic ignored "-Wattributes"
+  __PACKED_STRUCT T_UINT64_READ { uint64_t v; };
+  #pragma GCC diagnostic pop
+  #define __UNALIGNED_UINT64_READ(addr)          (((const struct T_UINT64_READ *)(const void *)(addr))->v)
+#endif
+
 /* получить 16-бит значение */
 /* Little endian memory layout */
 uint_fast16_t
@@ -176,6 +193,9 @@ unsigned USBD_poke_u32(uint8_t * __RESTRICT buff, uint_fast32_t v)
 /* Little endian memory layout */
 unsigned USBD_poke_u64(uint8_t * __RESTRICT buff, uint_fast64_t v)
 {
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
+	__UNALIGNED_UINT64_WRITE(buff, v);
+#else
 	buff [0] = (uint8_t) (v >> 0);
 	buff [1] = (uint8_t) (v >> 8);
 	buff [2] = (uint8_t) (v >> 16);
@@ -184,7 +204,31 @@ unsigned USBD_poke_u64(uint8_t * __RESTRICT buff, uint_fast64_t v)
 	buff [5] = (uint8_t) (v >> 40);
 	buff [6] = (uint8_t) (v >> 48);
 	buff [7] = (uint8_t) (v >> 56);
+#endif
+
 	return 8;
+}
+
+/* получить 64-бит значение */
+/* Little endian memory layout */
+uint_fast64_t
+USBD_peek_u64(
+	const uint8_t * __RESTRICT buff
+	)
+{
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
+	return __UNALIGNED_UINT64_READ(buff);
+#else
+	return
+		((uint_fast64_t) buff [3] << 56) +
+		((uint_fast64_t) buff [3] << 48) +
+		((uint_fast64_t) buff [3] << 40) +
+		((uint_fast64_t) buff [3] << 32) +
+		((uint_fast64_t) buff [3] << 24) +
+		((uint_fast64_t) buff [2] << 16) +
+		((uint_fast64_t) buff [1] << 8) +
+		((uint_fast64_t) buff [0] << 0);
+#endif
 }
 
 /* получить 32-бит значение */

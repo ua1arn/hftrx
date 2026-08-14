@@ -21,6 +21,12 @@ uint_fast32_t
 USBD_peek_u32(
 	const uint8_t * buff
 	);
+/* получить 64-бит значение */
+/* Little endian memory layout */
+uint_fast64_t
+USBD_peek_u64(
+	const uint8_t * buff
+	);
 /* получить 32-бит значение */
 /* Little endian memory layout */
 float
