@@ -670,10 +670,10 @@ void sysinit_cache_L2_initialize(void);	/* инициадизации кеш-п�
 
 typedef struct getmmudesc_tag
 {
-	unsigned (* mcached)(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
-	unsigned (* mncached)(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
-	unsigned (* mdevice)(uint8_t * b, uint_fast64_t phyaddr);
-	unsigned (* mnoaccess)(uint8_t * b, uint_fast64_t phyaddr);
+	unsigned (* mcached)(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);	// block item
+	unsigned (* mncached)(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);	// block item
+	unsigned (* mdevice)(uint8_t * b, uint_fast64_t phyaddr);	// block item
+	unsigned (* mnoaccess)(uint8_t * b, uint_fast64_t phyaddr);	// block item
 	unsigned (* mtable)(uint8_t * b, uint_fast64_t phyaddr, int level);	// next level table
 } getmmudesc_t;
 
