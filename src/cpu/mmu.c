@@ -1281,8 +1281,8 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		for (; pages --; phyaddr += pagesize)
 		{
 			tb += p->level != INT_MAX ?
-					p->arch->mtable(tb, phyaddr, p->level) :
-					accessbits(p, p->arch, tb, phyaddr, p->ro, p->xn);
+					p->arch->mtable(tb, phyaddr, p->level) :			// table item
+					accessbits(p, p->arch, tb, phyaddr, p->ro, p->xn);	// block item
 		}
 		const ptrdiff_t cachesize = tb - p->table;
 		dcache_clean_invalidate((uintptr_t) p->table, cachesize);
@@ -1359,7 +1359,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phybytes = NULL,
 			.phypageszlog2 = 21,	// 2MB
 			.pagecount = AARCH64_LEVEL1_SIZE,
-			.table = xxlevel1_pagetable_u64,
+			.table = xxlevel1_pagetable_u64,	// block items
 			.level = INT_MAX,	// memory pages with access bits
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1368,7 +1368,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phybytes = xxlevel1_pagetable_u64,
 			.phypageszlog2 = 9 + 3,	// 512 elements by 8 bytes in each page of xxlevel1_pagetable_u64
 			.pagecount = AARCH64_LEVEL0_SIZE,
-			.table = ttb0_base,
+			.table = ttb0_base,	// table items
 			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
