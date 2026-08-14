@@ -141,8 +141,9 @@
 	(SHattr) * (UINT64_C(1) << 8) |		/* SH[1:0] */ \
 	0x01 * (UINT64_C(1) << 6) |		/* AP[2:1] (AP = 0x02) */ \
 	0x00 * (UINT64_C(1) << 5) |		/* NS */ \
-	(AttrIndx & 0x07) * (UINT64_C(1) << 2) | /* AttrIndx[2:0] */ \
+	((AttrIndx) & 0x07) * (UINT64_C(1) << 2) | /* AttrIndx[2:0] */ \
 	0)
+// Upper attributes - bits 63..50
 #define AARCH64_UPPER_ATTR (UINT64_C(0))
 
 enum aarch64_attrindex
@@ -608,7 +609,7 @@ static const getmmudesc_t a9aarch32_table_1M =
 };
 #endif
 
-//	9aarch32_table_1M: mcached = 00005DE6
+//	a9aarch32_table_1M: mcached = 00005DE6
 //	a9aarch32_table_1M: mncached = 00000DF6
 //	a9aarch32_table_1M: mdevice = 00000DF6
 //	a9aarch32_table_1M: mnoaccess = 00000000
