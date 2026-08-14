@@ -4232,10 +4232,10 @@ static const struct paramdefdef xgnoisereductvl =
 
 static const struct paramdefdef xgnoisereduct =
 {
-	QLABEL3("NR", "NR", "NR"), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+	QLABEL3("NR", "NR", "NR"), 8, 3, RJ_ON,	ISTEP1,		/* включение NR */
 	ITEM_VALUE,
 	0, 1,
-	RMT_NR_BASE(0),							/* управление режимом NOTCH */
+	RMT_NR_BASE(0),							/* включение NR */
 	nvramoffs_selector, nvramoffs_mode, valueoffs_mode,
 	NULL,	// uint_fast16_t value pointer
 	& gnoisereducts [0],	// uint_fast8_t value pointer
