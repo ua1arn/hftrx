@@ -3534,7 +3534,7 @@ hwaccel_fillrect_mux(
 #elif LCDMODE_MAIN_L24
 	done = hwaccel_fillrect_u24(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
 
-#elif LCDMODE_ARGB8888
+#elif LCDMODE_ARGB8888 || LCDMODE_BGRA8888
 	done = hwaccel_fillrect_u32(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
 #else
 	done = 0;
