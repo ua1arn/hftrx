@@ -308,6 +308,90 @@ static int gpu_run_write_value_test_mesa(void) {
     return 0;
 }
 
+static void gpu_computejob(void)
+{
+	// Выровнять по границе 64 байт!
+	GPU_ALIGN static const uint8_t minimal_compute_shader_isa[] = {
+	    // Инструкция 1: Загрузка адреса буфера (ST_GBL / Стор в глобальную память)
+	    // Кодирует операцию записи значения 0xDEADBEEF по адресу в регистре
+	    0x00, 0x10, 0x80, 0x03, 0x00, 0x00, 0x00, 0x00,
+	    0xEF, 0xBE, 0xAD, 0xDE, 0x3C, 0x00, 0x00, 0x00,
+
+	    // Инструкция 2: Сигнал завершения потока выполнения (End of Shader / Триада)
+	    // Процессор Mali должен аппаратно понять, что выполнение этого вычислительного потока окончено
+	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x07
+	};
+
+    /* Выделяем монолитные упакованные контейнеры под структуры Framebuffer и Job */
+     GPU_ALIGN static MALI_COMPUTE_JOB_PACKED_T     job_p;
+
+    /* Объявление "распакованных" структур строго по типам из вашего bifrost_v7.h */
+    MALI_COMPUTE_JOB_SECTION_HEADER_TYPE jh   = { MALI_COMPUTE_JOB_SECTION_HEADER_header, .type = MALI_JOB_TYPE_COMPUTE };
+    MALI_COMPUTE_JOB_SECTION_INVOCATION_TYPE invocaton = { MALI_COMPUTE_JOB_SECTION_INVOCATION_header };
+    MALI_COMPUTE_JOB_SECTION_PARAMETERS_TYPE parameters = { MALI_COMPUTE_JOB_SECTION_PARAMETERS_header };
+    MALI_COMPUTE_JOB_SECTION_DRAW_TYPE draw = { MALI_COMPUTE_JOB_SECTION_DRAW_header };
+
+    MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE fbp  = { MALI_FRAMEBUFFER_PARAMETERS_header };
+    MALI_FRAMEBUFFER_SECTION_PARAMETERS_PACKED_TYPE fb_p;
+
+    /* 4. НАСТРОЙКА FRAMEBUFFER PARAMETERS (MFBD) */
+    fbp.bound_min_x = 0;
+    fbp.bound_min_y = 0;
+    fbp.bound_max_x = 1;//(width + 15) / 16 - 1;
+    fbp.bound_max_y = 1;//(height + 15) / 16 - 1;
+    fbp.width = 1;//width;
+    fbp.height = 1;//height;
+    fbp.effective_tile_size = 16;
+    fbp.sample_count = 1;//MALI_SAMPLE_COUNT_1;
+    //fbp.clean_pixel_backend = true;
+    fbp.z_internal_format = MALI_R16_SNORM;//MALI_Z_INTERNAL_FORMAT_R16F;
+//    fbp.sample_mask = UINT32_C(0x00000001);                    /* 1x MSAA режим */
+    fbp.render_target_count = 1;
+//    fbp.tiler_disabled = true;                                 /* Отключает опрос пустых полигональных листов */
+
+    /* Связываем через указатели остальные упакованные дескрипторы */
+//    fbp.tiler_heap_start = (uintptr_t)&th_p;
+//    fbp.render_target_list = (uintptr_t)&rt_p | UINT64_C(1);   /* tagged = true */
+//    fbp.fragment_frame_shader = (uintptr_t)&rst_p;
+    MALI_FRAMEBUFFER_PARAMETERS_pack(&fb_p, &fbp);
+
+
+    MALI_COMPUTE_JOB_SECTION_INVOCATION_pack(&job_p.INVOCATION, &invocaton);
+    MALI_COMPUTE_JOB_SECTION_PARAMETERS_pack(&job_p.PARAMETERS, &parameters);
+    MALI_COMPUTE_JOB_SECTION_DRAW_pack(&job_p.DRAW, &draw);
+
+    /* 6. НАСТРОЙКА JOB HEADER */
+    jh.exception_status = 0;
+    jh.barrier = 1;                                            /* last job в цепочке */
+    jh.index = 1;
+    jh.next = UINT64_C(0);
+    MALI_JOB_HEADER_pack(&job_p.HEADER, &jh);
+
+    PRINTHEX32(job_p);
+//    PRINTHEX32(fb_p);
+//    PRINTHEX32(rst_p);
+//    PRINTHEX32(rt_p);
+
+    /* 7. ОЧИСТКА КЭША ДАННЫХ ДЛЯ ВСЕХ УЧАСТНИКОВ DMA-ОБМЕНА */
+    dcache_clean_invalidate((uintptr_t)&minimal_compute_shader_isa, sizeof(minimal_compute_shader_isa));
+    dcache_clean_invalidate((uintptr_t)&job_p, sizeof(job_p));
+
+    __DSB();
+
+    /* 8. ОТПРАВКА ЗАДАНИЯ В СЛОТ ФРАГМЕНТОВ (СЛОТ 1) */
+    if (gpu_submit_job(1, (uintptr_t)&job_p))
+    {
+        PRINTF("gpu_computejob: Job Fault!\n");
+        return;
+    }
+    else
+    {
+        PRINTF("gpu_computejob: Job Okay!\n");
+        return;
+    }
+}
+
 static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
 {
     PRINTF("gpu_clear_screen mesa bifrost v7 start:\n");
@@ -399,11 +483,14 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     /* 4. НАСТРОЙКА FRAMEBUFFER PARAMETERS (MFBD) */
     fbp.bound_min_x = 0;
     fbp.bound_min_y = 0;
-    fbp.bound_max_x = (width + 15) / 16 - 1;
-    fbp.bound_max_y = (height + 15) / 16 - 1;
-    fbp.width = width;
-    fbp.height = height;
+    fbp.bound_max_x = 1;//(width + 15) / 16 - 1;
+    fbp.bound_max_y = 1;//(height + 15) / 16 - 1;
+    fbp.width = 1;//width;
+    fbp.height = 1;//height;
     fbp.effective_tile_size = 16;
+    fbp.sample_count = 1;//MALI_SAMPLE_COUNT_1;
+    //fbp.clean_pixel_backend = true;
+    fbp.z_internal_format = MALI_R16_SNORM;//MALI_Z_INTERNAL_FORMAT_R16F;
 //    fbp.sample_mask = UINT32_C(0x00000001);                    /* 1x MSAA режим */
     fbp.render_target_count = 1;
 //    fbp.tiler_disabled = true;                                 /* Отключает опрос пустых полигональных листов */
@@ -638,6 +725,10 @@ void gpu_test(void)
 	//return;
 #endif
 #if 1
+	gpu_computejob();
+	//return;
+#endif
+#if 1
 	{
 		PRINTF("gpu_clear_screen test:\n");
 		//ASSERT(LCDMODE_PIXELSIZE == 4);
@@ -645,10 +736,10 @@ void gpu_test(void)
 	    memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * LCDMODE_PIXELSIZE);
 	    gpu_clear_screen(fbaddr, DIM_X, DIM_Y, DIM_X * LCDMODE_PIXELSIZE);
 	    colmain_nextfb();
-
-	    TP();
-	    for (;;)
-	    	;
+//
+//	    TP();
+//	    for (;;)
+//	    	;
 	}
 #endif
 }

@@ -493,4 +493,22 @@ util_bitpack_ufixed_nonzero(float v, uint32_t start, uint32_t end,
    return util_bitpack_ufixed(v, start, end, fract_bits);
 }
 
+
+static inline uint32_t
+__gen_padded(uint32_t v, uint32_t start, uint32_t end)
+{
+   unsigned shift = __builtin_ctz(v);
+   unsigned odd = v >> (shift + 1);
+
+#ifndef NDEBUG
+   assert((v >> shift) & 1);
+   assert(shift <= 31);
+   assert(odd <= 7);
+   assert((end - start + 1) == 8);
+#endif
+
+   return util_bitpack_uint(shift | (odd << 5), start, end);
+}
+
+
 #endif /* UTIL_BITPACK_HELPERS_H */
