@@ -156,7 +156,7 @@ static void ufcached_prerender(const unifont_t * font, COLORPIP_T fg, COLORPIP_T
 	for (ci = 0; ci < cicount; ++ ci, xpix += cache->cellw)
 	{
 		const uint_fast16_t ypix = 0;
-		pf->font_drawci(& cache->dbv, xpix, 0, pf, ci, fg);
+		pf->font_drawci(& cache->dbv, xpix, ypix, pf, ci, fg);
 		display_do_AA(& cache->dbv, xpix, ypix, pf->font_drawwidthci(pf, ci), cache->cellh);
 	}
 	dcache_clean(cache->dbv.cachebase, cache->dbv.cachesize);

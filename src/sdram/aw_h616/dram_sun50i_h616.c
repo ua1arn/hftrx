@@ -13,7 +13,6 @@
  *
  */
 #include "dram_glue.h"
-#warning h1
 
 #if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H618_LPDDR4 || CONFIG_SUNXI_DRAM_H616_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR3)
 //#include <init.h>
