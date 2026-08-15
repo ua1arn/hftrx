@@ -123,14 +123,13 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		typedef uint32_t PACKEDCOLORPIP_T;
 
 		// AAAAAAAA.RRRRRRR.GGGGGGGG.BBBBBBBB
-		#define TFTRGB(red, green, blue) \
-			(  (uint_fast32_t) ( \
-					((uint_fast32_t) (255) << 24)  | /* Alpha channel value - opaque */ \
-					(((uint_fast32_t) (red) << 16) & 0xFF0000)  | \
-					(((uint_fast32_t) (green) << 8) & 0xFF00) | \
-					(((uint_fast32_t) (blue) << 0) &  0x00FF) \
-				) \
-			)
+		#define TFTRGB(red, green, blue) ( \
+			255 * (UINT32_C(1) << 24) | /* Alpha channel value - opaque */ \
+			(0xFF & (red)) * (UINT32_C(1) << 16) | \
+			(0xFF & (green)) * (UINT32_C(1) << 8) | \
+			(0xFF & (blue)) * (UINT32_C(1) << 0) \
+		)
+		// AAAAAAAA.RRRRRRR.GGGGGGGG.BBBBBBBB
 		#define TFTALPHA(alpha, color24) \
 			(  (uint_fast32_t) ( \
 					((uint_fast32_t) (alpha) << 24)  | /* Alpha value, 0: transparent, 255: opaque */ \
@@ -139,10 +138,39 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 			)
 
 		// Get color components from framebuffer value
+		// AAAAAAAA.RRRRRRR.GGGGGGGG.BBBBBBBB
 		#define COLORPIP_A(v) (((v) & 0xFF000000) >> 24)
 		#define COLORPIP_R(v) (((v) & 0xFF0000) >> 16)
 		#define COLORPIP_G(v) (((v) & 0xFF00) >> 8)
 		#define COLORPIP_B(v) (((v) & 0xFF) >> 0)
+
+
+	#elif LCDMODE_BGRA8888
+
+		typedef uint_fast32_t COLORPIP_T;
+		typedef uint32_t PACKEDCOLORPIP_T;
+
+		// BBBBBBBB.GGGGGGGG.RRRRRRR.AAAAAAAA
+		#define TFTRGB(red, green, blue) ( \
+			255 * (UINT32_C(1) << 0) | /* Alpha channel value - opaque */ \
+			(0xFF & (red)) * (UINT32_C(1) << 8) | \
+			(0xFF & (green)) * (UINT32_C(1) << 16) | \
+			(0xFF & (blue)) * (UINT32_C(1) << 24) \
+		)
+		// BBBBBBBB.GGGGGGGG.RRRRRRR.AAAAAAAA
+		#define TFTALPHA(alpha, color24) \
+			(  (uint_fast32_t) ( \
+					((uint_fast32_t) (alpha) << 0)  | /* Alpha value, 0: transparent, 255: opaque */ \
+					(((uint_fast32_t) (color24) << 8) & 0xFFFFFF00) \
+				) \
+			)
+
+		// BBBBBBBB.GGGGGGGG.RRRRRRR.AAAAAAAA
+		// Get color components from framebuffer value
+		#define COLORPIP_B(v) (((v) & 0xFF000000) >> 24)
+		#define COLORPIP_G(v) (((v) & 0xFF0000) >> 16)
+		#define COLORPIP_R(v) (((v) & 0xFF00) >> 8)
+		#define COLORPIP_A(v) (((v) & 0xFF) >> 0)
 
 	#elif LCDMODE_RGB565
 

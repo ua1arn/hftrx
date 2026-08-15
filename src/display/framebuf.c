@@ -113,7 +113,13 @@ static void softfill(
 		xG2D_MIXER_ALPHA,
 	} xg2d_alpha_mode_enh;
 
-#if LCDMODE_ARGB8888
+#if LCDMODE_BGRA8888
+	#define VI_ImageFormat 0x03	//G2D_FMT_ARGB_AYUV8888
+	#define ROT_ImageFormat 0x03	//G2D_FMT_ARGB_AYUV8888
+	#define UI_ImageFormat 0x03	//G2D_FMT_ARGB_AYUV8888
+	#define WB_ImageFormat 0x03	//G2D_FMT_ARGB_AYUV8888
+
+#elif LCDMODE_ARGB8888
 	#define VI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define ROT_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
 	#define UI_ImageFormat 0x00	//G2D_FMT_ARGB_AYUV8888
@@ -2847,7 +2853,9 @@ uint32_t display_get_lvformat(void)
 	#elif LCDMODE_PALETTE256
     	return LV_COLOR_FORMAT_L8;
 	#elif LCDMODE_ARGB8888
-    	return LV_COLOR_FORMAT_ARGB8888;
+		return LV_COLOR_FORMAT_ARGB8888;
+	#elif LCDMODE_ARGB8888
+		return LV_COLOR_FORMAT_ARGB8888;
 	#elif LCDMODE_RGB565
     	return LV_COLOR_FORMAT_RGB565;
 	#endif
@@ -3491,12 +3499,13 @@ colpip_set_hline(
 		colpip_point(db, col0 ++, row0, color);
 }
 
+// Можно ли применять флаг FILL_FLAG_MIXBG у colpip_rectangle
 uint_fast8_t colpip_hasalpha(void)
 {
 #if WITHMDMAHW && CPUSTYLE_ALLWINNER && defined (G2D_MIXER)
 	return 1;
 #else
-	return 0;
+	return 1;
 #endif
 }
 
@@ -4495,9 +4504,9 @@ color24_shaded(
 	//return dot;	// test
 	if (dot == 0)
 		return COLOR24(alpha >> 2, alpha >> 2, alpha >> 2);
-	const uint_fast8_t r = scalecolor((dot >> 16) & 0xFF, 255, alpha);
-	const uint_fast8_t g = scalecolor((dot >> 8) & 0xFF, 255, alpha);
-	const uint_fast8_t b = scalecolor((dot >> 0) & 0xFF, 255, alpha);
+	const uint_fast8_t r = scalecolor(COLOR24_R(dot), 255, alpha);
+	const uint_fast8_t g = scalecolor(COLOR24_G(dot), 255, alpha);
+	const uint_fast8_t b = scalecolor(COLOR24_B(dot), 255, alpha);
 	return COLOR24(r, g, b);
 }
 
@@ -4521,23 +4530,6 @@ COLORPIP_T getshadedcolor(
 
 	return dot |= COLORPIP_SHADED;
 
-#elif LCDMODE_RGB565
-
-	if (dot == COLORPIP_BLACK)
-	{
-		return TFTRGB(alpha, alpha, alpha); // back gray
-	}
-	else
-	{
-		// распаковка дисплейного представления
-		const uint_fast8_t r = ((dot >> 11) & 0x001f) * 8;	// result in 0..255
-		const uint_fast8_t g = ((dot >> 5) & 0x003f) * 4;	// result in 0..255
-		const uint_fast8_t b = ((dot >> 0) & 0x001f) * 8;	// result in 0..255
-
-		const COLOR24_T c = color24_shaded(COLOR24(r, g, b), alpha);
-		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
-	}
-
 #elif LCDMODE_ARGB8888 && CPUSTYLE_XC7Z && ! WITHTFT_OVER_LVDS
 
 	if (dot == COLORPIP_BLACK)
@@ -4556,7 +4548,7 @@ COLORPIP_T getshadedcolor(
 	}
 
 
-#elif LCDMODE_ARGB8888
+#elif LCDMODE_ARGB8888 || LCDMODE_BGRA8888 || LCDMODE_RGB565
 
 	if (dot == COLORPIP_BLACK)
 	{
@@ -4565,26 +4557,13 @@ COLORPIP_T getshadedcolor(
 	else
 	{
 		// распаковка дисплейного представления
-		const uint_fast8_t r = ((dot >> 16) & 0x00FF) * 1;	// result in 0..255
-		const uint_fast8_t g = ((dot >> 8) & 0x00FF) * 1;	// result in 0..255
-		const uint_fast8_t b = ((dot >> 0) & 0x00FF) * 1;	// result in 0..255
+		const uint_fast8_t r = COLORPIP_R(dot);	// result in 0..255
+		const uint_fast8_t g = COLORPIP_G(dot);	// result in 0..255
+		const uint_fast8_t b = COLORPIP_B(dot);	// result in 0..255
 
 		const COLOR24_T c = color24_shaded(COLOR24(r, g, b), alpha);
-		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
+		return TFTRGB(COLOR24_R(c), COLOR24_G(c), COLOR24_B(c));
 	}
-
-
-#elif LCDMODE_PIP_RGB24
-
-	if (dot == COLORPIP_BLACK)
-	{
-		return COLOR24(alpha, alpha, alpha); // back gray
-	}
-	else
-	{
-		return color24_shaded(dot, alpha);
-	}
-
 
 
 #else /*  */

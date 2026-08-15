@@ -1320,6 +1320,11 @@ void local_delay_initialize(void);	// setup parameters for loop-nased delays
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_PIXELSIZE 4
 
+#elif LCDMODE_BGRA8888
+	/* Экран 32 бит BGRA8888 */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	#define LCDMODE_PIXELSIZE 4
+
 #elif LCDMODE_DUMMY
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
@@ -1331,7 +1336,7 @@ void local_delay_initialize(void);	// setup parameters for loop-nased delays
 	#error WIHSPIDFSW and WIHSPIDFHW can not be used in same time
 #endif /* WIHSPIDFSW && WIHSPIDFHW */
 
-#define WITHPRERENDER (1 && WITHLTDCHW && (LCDMODE_RGB565 || LCDMODE_ARGB8888))		/* использование предварительно построенных изображений при отображении частоты */
+#define WITHPRERENDER (1 && WITHLTDCHW && (LCDMODE_RGB565 || LCDMODE_ARGB8888 || LCDMODE_BGRA8888))		/* использование предварительно построенных изображений при отображении частоты */
 
 #if WITHTOUCHGUI
 

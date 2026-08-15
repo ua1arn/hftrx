@@ -2429,6 +2429,8 @@ static DE_UIS_TypeDef * de3_getuis(int rtmixid, int id)
 #if LCDMODE_ARGB8888
 	static const uint32_t ui_format = 0x00;	//  0x00: ARGB_8888
 	//const uint32_t ui_format = 0x04;	// 0x04: XRGB_8888
+#elif LCDMODE_BGRA8888
+	static const uint32_t ui_format = 0x03;	//  0x03: BGRA_8888
 #elif LCDMODE_RGB565
 	static const uint32_t ui_format = 0x0A;	// 0x0A: RGB_565
 #else
