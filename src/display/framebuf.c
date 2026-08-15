@@ -2854,7 +2854,7 @@ uint32_t display_get_lvformat(void)
     	return LV_COLOR_FORMAT_L8;
 	#elif LCDMODE_ARGB8888
 		return LV_COLOR_FORMAT_ARGB8888;
-	#elif LCDMODE_ARGB8888
+	#elif LCDMODE_BGRA8888
 		return LV_COLOR_FORMAT_ARGB8888;
 	#elif LCDMODE_RGB565
     	return LV_COLOR_FORMAT_RGB565;
@@ -2878,7 +2878,7 @@ hwaccel_fillrect_u8(
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	uint_fast8_t color,	// цвет
+	COLORPIP_T color,	// цвет
 	unsigned fillmask,
 	unsigned alpha	// 0..255 for FILL_FLAG_MIXBG
 	)
@@ -2997,7 +2997,7 @@ hwaccel_fillrect_u16(
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	uint_fast8_t color,	// цвет
+	COLORPIP_T color,	// цвет
 	unsigned fillmask,
 	unsigned alpha	// 0..255 for FILL_FLAG_MIXBG
 	)
@@ -3139,7 +3139,7 @@ hwaccel_fillrect_u24(
 	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	uint_fast8_t color,	// цвет
+	COLORPIP_T color,	// цвет
 	unsigned fillmask,
 	unsigned alpha	// 0..255 for FILL_FLAG_MIXBG
 	)
