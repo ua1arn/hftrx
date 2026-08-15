@@ -1276,7 +1276,7 @@ aw_g2d_fillrect(
 //		const uint_fast32_t flag = (UINT32_C(1) << 8) | 0*(UINT32_C(1) << 1);
 //		hwaccel_rotcopy((uintptr_t) colorscreen, GXADJ(hf) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw, flag);
 //	}
-	else if (w > 1 && h > 1 && color == bgcolor)
+	else if (w > 1 && h > 1 && color == bgcolor && ! (fillmask & FILL_FLAG_MIXBG))
 	{
 		const uint_fast32_t ssizehw = tsizehw;
 		dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
