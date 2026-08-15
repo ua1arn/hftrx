@@ -360,8 +360,10 @@ static void gpu_computejob(void)
     MALI_FRAMEBUFFER_PARAMETERS_pack(&fb_p, &fbp);
 
     invocaton.invocations = 1;
+    MALI_COMPUTE_JOB_SECTION_INVOCATION_pack(&job_p.INVOCATION, &invocaton);
 
     parameters.job_task_split = 0;
+    MALI_COMPUTE_JOB_SECTION_PARAMETERS_pack(&job_p.PARAMETERS, &parameters);
 
     /* 3. НАСТРОЙКА RENDERER STATE (Привязка v7 Dummy-шейдера и флагов блендинга) */
     rst.shader.shader = (uintptr_t) & minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
@@ -370,11 +372,9 @@ static void gpu_computejob(void)
 //    rst.blend.flags = UINT32_C(0x00011000);                    /* Режим Replace RAW32 */
     MALI_RENDERER_STATE_pack(&rst_p, &rst);
 
-    draw.state = (uintptr_t) & rst_p;
-
-    MALI_COMPUTE_JOB_SECTION_INVOCATION_pack(&job_p.INVOCATION, &invocaton);
-    MALI_COMPUTE_JOB_SECTION_PARAMETERS_pack(&job_p.PARAMETERS, &parameters);
+    draw.state = (uintptr_t) & rst_p;	// err = 0x0000051, 0x0400B53C, без этой строки 0x0324D545
     MALI_COMPUTE_JOB_SECTION_DRAW_pack(&job_p.DRAW, &draw);
+
 
     /* 6. НАСТРОЙКА JOB HEADER */
     jh.exception_status = 0;
