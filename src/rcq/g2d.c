@@ -1,6 +1,6 @@
 #include "hardware.h"
 
-#if RTMIXIDLCD && LCDMODE_ARGB8888 && (1 && (CPUSTYLE_T113 || CPUSTYLE_F133))
+#if RTMIXIDLCD && (LCDMODE_ARGB8888 || LCDMODE_BGRA8888) && (1 && (CPUSTYLE_T113 || CPUSTYLE_F133))
 #include "g2d.h"
 #include "formats.h"
 

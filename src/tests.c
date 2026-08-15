@@ -8090,7 +8090,7 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 0 && LCDMODE_ARGB8888
+#if 0 && (LCDMODE_ARGB8888 || LCDMODE_BGRA8888)
 	{
 		void rcq_demo(void);
 
@@ -9113,7 +9113,7 @@ void hightests(void)
 		TP();
 	}
 #endif
-#if 0 && LCDMODE_LTDC && LCDMODE_ARGB8888
+#if 0 && LCDMODE_LTDC && (LCDMODE_ARGB8888 || LCDMODE_BGRA8888)
 	{
 		// DE overlays test
 		enum { picy = 110, picx = 150 };
@@ -9165,7 +9165,7 @@ void hightests(void)
 
 	}
 #endif
-#if 0 && LCDMODE_LTDC && LCDMODE_ARGB8888
+#if 0 && LCDMODE_LTDC && (LCDMODE_ARGB8888 || LCDMODE_BGRA8888)
 	{
 		enum { picy = 110, picx = 150 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
