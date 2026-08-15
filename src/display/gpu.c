@@ -324,16 +324,19 @@ static void gpu_computejob(void)
 	};
 
     /* Выделяем монолитные упакованные контейнеры под структуры Framebuffer и Job */
-     GPU_ALIGN static MALI_COMPUTE_JOB_PACKED_T     job_p;
+    GPU_ALIGN static MALI_COMPUTE_JOB_PACKED_T     job_p;
 
     /* Объявление "распакованных" структур строго по типам из вашего bifrost_v7.h */
     MALI_COMPUTE_JOB_SECTION_HEADER_TYPE jh   = { MALI_COMPUTE_JOB_SECTION_HEADER_header, .type = MALI_JOB_TYPE_COMPUTE };
     MALI_COMPUTE_JOB_SECTION_INVOCATION_TYPE invocaton = { MALI_COMPUTE_JOB_SECTION_INVOCATION_header };
     MALI_COMPUTE_JOB_SECTION_PARAMETERS_TYPE parameters = { MALI_COMPUTE_JOB_SECTION_PARAMETERS_header };
     MALI_COMPUTE_JOB_SECTION_DRAW_TYPE draw = { MALI_COMPUTE_JOB_SECTION_DRAW_header };
+    struct MALI_RENDERER_STATE     rst  = { MALI_RENDERER_STATE_header };
 
     MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE fbp  = { MALI_FRAMEBUFFER_PARAMETERS_header };
-    MALI_FRAMEBUFFER_SECTION_PARAMETERS_PACKED_TYPE fb_p;
+    GPU_ALIGN static MALI_FRAMEBUFFER_SECTION_PARAMETERS_PACKED_TYPE fb_p;
+
+    GPU_ALIGN static MALI_RENDERER_STATE_PACKED_T     rst_p;
 
     /* 4. НАСТРОЙКА FRAMEBUFFER PARAMETERS (MFBD) */
     fbp.bound_min_x = 0;
@@ -356,6 +359,18 @@ static void gpu_computejob(void)
 //    fbp.fragment_frame_shader = (uintptr_t)&rst_p;
     MALI_FRAMEBUFFER_PARAMETERS_pack(&fb_p, &fbp);
 
+    invocaton.invocations = 1;
+
+    parameters.job_task_split = 0;
+
+    /* 3. НАСТРОЙКА RENDERER STATE (Привязка v7 Dummy-шейдера и флагов блендинга) */
+    rst.shader.shader = (uintptr_t) & minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
+
+//    rst.properties = UINT64_C(0x0000100000000000);             /* Квант потоков для v7 */
+//    rst.blend.flags = UINT32_C(0x00011000);                    /* Режим Replace RAW32 */
+    MALI_RENDERER_STATE_pack(&rst_p, &rst);
+
+    draw.state = (uintptr_t) & rst_p;
 
     MALI_COMPUTE_JOB_SECTION_INVOCATION_pack(&job_p.INVOCATION, &invocaton);
     MALI_COMPUTE_JOB_SECTION_PARAMETERS_pack(&job_p.PARAMETERS, &parameters);
@@ -370,12 +385,13 @@ static void gpu_computejob(void)
 
     PRINTHEX32(job_p);
 //    PRINTHEX32(fb_p);
-//    PRINTHEX32(rst_p);
+    PRINTHEX32(rst_p);
 //    PRINTHEX32(rt_p);
 
     /* 7. ОЧИСТКА КЭША ДАННЫХ ДЛЯ ВСЕХ УЧАСТНИКОВ DMA-ОБМЕНА */
     dcache_clean_invalidate((uintptr_t)&minimal_compute_shader_isa, sizeof(minimal_compute_shader_isa));
     dcache_clean_invalidate((uintptr_t)&job_p, sizeof(job_p));
+    dcache_clean_invalidate((uintptr_t)&rst_p, sizeof(rst_p));
 
     __DSB();
 
@@ -726,7 +742,7 @@ void gpu_test(void)
 #endif
 #if 1
 	gpu_computejob();
-	//return;
+	return;
 #endif
 #if 1
 	{
