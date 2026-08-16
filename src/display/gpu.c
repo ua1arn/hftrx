@@ -322,6 +322,25 @@ static void gpu_computejob(void)
 	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x07
 	};
+    GPU_ALIGN static const uint32_t bifrost_v7_clear_shader[] = {
+        UINT32_C(0x00000000), UINT32_C(0x00000000), /* Системная клауза-префикс v7 */
+        UINT32_C(0x7C003C00), UINT32_C(0x00000000)  /* Аппаратная v7-команда: END + Blend Writeout */
+    };
+    // Минимальный No-Op фрагментный шейдер для Mali Bifrost v7 (32-bit dwords)
+    // Размер: 32 байта (8 элементов по 32 бита)
+    GPU_ALIGN static const const uint32_t bifrost_v7_noop_fs_u32[] = {
+        // === СЕКЦИЯ 1: Shader Program Descriptor (Дескриптор программы) ===
+//        0x00000000,   // Зануленные указатели ресурсов и текстурных сэмплеров
+//        0x00000000,   // Флаги интерполяции (отсутствуют)
+//        0x00000020,   // Конфигурация регистров (выделен минимум: 0-32 рабочих регистра)
+//        0x00000000,   // Флаги блендинга и вывода цвета (запись в RT0 отключена)
+
+        // === СЕКЦИЯ 2: Исполняемый код (Бинарный кортеж / Clause) ===
+        0x00701963,   // Команда NOP (BiGStream ISA: 0x701963)
+        0x00000000,   // Пустой операнд / резерв
+        0x00000000,   // Пустой операнд / резерв
+        0x0000007D    // Терминальный флаг (EXIT + Сброс Scoreboard зависимостей конвейера)
+    };
 
     /* Выделяем монолитные упакованные контейнеры под структуры Framebuffer и Job */
     GPU_ALIGN static MALI_COMPUTE_JOB_PACKED_T     job_p;
@@ -333,31 +352,31 @@ static void gpu_computejob(void)
     MALI_COMPUTE_JOB_SECTION_DRAW_TYPE draw = { MALI_COMPUTE_JOB_SECTION_DRAW_header };
     struct MALI_RENDERER_STATE     rst  = { MALI_RENDERER_STATE_header };
 
-    MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE fbp  = { MALI_FRAMEBUFFER_PARAMETERS_header };
-    GPU_ALIGN static MALI_FRAMEBUFFER_SECTION_PARAMETERS_PACKED_TYPE fb_p;
+//    MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE fbp  = { MALI_FRAMEBUFFER_PARAMETERS_header };
+//    GPU_ALIGN static MALI_FRAMEBUFFER_SECTION_PARAMETERS_PACKED_TYPE fb_p;
 
     GPU_ALIGN static MALI_RENDERER_STATE_PACKED_T     rst_p;
 
-    /* 4. НАСТРОЙКА FRAMEBUFFER PARAMETERS (MFBD) */
-    fbp.bound_min_x = 0;
-    fbp.bound_min_y = 0;
-    fbp.bound_max_x = 1;//(width + 15) / 16 - 1;
-    fbp.bound_max_y = 1;//(height + 15) / 16 - 1;
-    fbp.width = 1;//width;
-    fbp.height = 1;//height;
-    fbp.effective_tile_size = 16;
-    fbp.sample_count = 1;//MALI_SAMPLE_COUNT_1;
-    //fbp.clean_pixel_backend = true;
-    fbp.z_internal_format = MALI_R16_SNORM;//MALI_Z_INTERNAL_FORMAT_R16F;
-//    fbp.sample_mask = UINT32_C(0x00000001);                    /* 1x MSAA режим */
-    fbp.render_target_count = 1;
-//    fbp.tiler_disabled = true;                                 /* Отключает опрос пустых полигональных листов */
-
-    /* Связываем через указатели остальные упакованные дескрипторы */
-//    fbp.tiler_heap_start = (uintptr_t)&th_p;
-//    fbp.render_target_list = (uintptr_t)&rt_p | UINT64_C(1);   /* tagged = true */
-//    fbp.fragment_frame_shader = (uintptr_t)&rst_p;
-    MALI_FRAMEBUFFER_PARAMETERS_pack(&fb_p, &fbp);
+//    /* 4. НАСТРОЙКА FRAMEBUFFER PARAMETERS (MFBD) */
+//    fbp.bound_min_x = 0;
+//    fbp.bound_min_y = 0;
+//    fbp.bound_max_x = 1;//(width + 15) / 16 - 1;
+//    fbp.bound_max_y = 1;//(height + 15) / 16 - 1;
+//    fbp.width = 1;//width;
+//    fbp.height = 1;//height;
+//    fbp.effective_tile_size = 16;
+//    fbp.sample_count = 1;//MALI_SAMPLE_COUNT_1;
+//    //fbp.clean_pixel_backend = true;
+//    fbp.z_internal_format = MALI_R16_SNORM;//MALI_Z_INTERNAL_FORMAT_R16F;
+////    fbp.sample_mask = UINT32_C(0x00000001);                    /* 1x MSAA режим */
+//    fbp.render_target_count = 1;
+////    fbp.tiler_disabled = true;                                 /* Отключает опрос пустых полигональных листов */
+//
+//    /* Связываем через указатели остальные упакованные дескрипторы */
+////    fbp.tiler_heap_start = (uintptr_t)&th_p;
+////    fbp.render_target_list = (uintptr_t)&rt_p | UINT64_C(1);   /* tagged = true */
+////    fbp.fragment_frame_shader = (uintptr_t)&rst_p;
+//    MALI_FRAMEBUFFER_PARAMETERS_pack(&fb_p, &fbp);
 
     invocaton.invocations = 1;
     MALI_COMPUTE_JOB_SECTION_INVOCATION_pack(&job_p.INVOCATION, &invocaton);
@@ -366,7 +385,7 @@ static void gpu_computejob(void)
     MALI_COMPUTE_JOB_SECTION_PARAMETERS_pack(&job_p.PARAMETERS, &parameters);
 
     /* 3. НАСТРОЙКА RENDERER STATE (Привязка v7 Dummy-шейдера и флагов блендинга) */
-    rst.shader.shader = (uintptr_t) & minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
+    rst.shader.shader = (uintptr_t) & bifrost_v7_noop_fs_u32;//& bifrost_v7_clear_shader;//& minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
 
 //    rst.properties = UINT64_C(0x0000100000000000);             /* Квант потоков для v7 */
 //    rst.blend.flags = UINT32_C(0x00011000);                    /* Режим Replace RAW32 */
@@ -390,6 +409,8 @@ static void gpu_computejob(void)
 
     /* 7. ОЧИСТКА КЭША ДАННЫХ ДЛЯ ВСЕХ УЧАСТНИКОВ DMA-ОБМЕНА */
     dcache_clean_invalidate((uintptr_t)&minimal_compute_shader_isa, sizeof(minimal_compute_shader_isa));
+    dcache_clean_invalidate((uintptr_t)&bifrost_v7_clear_shader, sizeof(bifrost_v7_clear_shader));
+    dcache_clean_invalidate((uintptr_t)&bifrost_v7_noop_fs_u32, sizeof(bifrost_v7_noop_fs_u32));
     dcache_clean_invalidate((uintptr_t)&job_p, sizeof(job_p));
     dcache_clean_invalidate((uintptr_t)&rst_p, sizeof(rst_p));
 
