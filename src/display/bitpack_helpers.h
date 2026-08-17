@@ -509,6 +509,84 @@ __gen_padded(uint32_t v, uint32_t start, uint32_t end)
 
    return util_bitpack_uint(shift | (odd << 5), start, end);
 }
+#ifndef __OPENCL_VERSION__
+static inline const char *
+mali_component_swizzle(unsigned val)
+{
+   static const char swiz_name[] = "RGBA01??";
+   static char out_str[5], *outp;
+   outp = out_str;
+   for (int i = 0; i < 12; i += 3) {
+      *outp++ = swiz_name[(val >> i) & 7];
+   }
+   *outp = 0;
+   return out_str;
+}
+#endif
+
+
+union fi {
+   float f;
+   int32_t i;
+   uint32_t ui;
+};
+
+
+union di {
+   double d;
+   int64_t i;
+   uint64_t ui;
+};
+
+#ifndef __OPENCL_VERSION__
+/**
+ * Return float bits.
+ */
+static inline unsigned
+fui( float f )
+{
+   union fi fi;
+   fi.f = f;
+   return fi.ui;
+}
+
+static inline float
+uif(uint32_t ui)
+{
+   union fi fi;
+   fi.ui = ui;
+   return fi.f;
+}
+
+#else
+static inline uint32_t
+fui(float f)
+{
+   return as_uint(f);
+}
+
+static inline float
+uif(uint32_t ui)
+{
+   return as_float(ui);
+}
+#endif
+
+static inline uint64_t
+dui( double f )
+{
+   union di di;
+   di.d = f;
+   return di.ui;
+}
+
+static inline double
+uid(uint64_t ui)
+{
+   union di di;
+   di.ui = ui;
+   return di.d;
+}
 
 
 #endif /* UTIL_BITPACK_HELPERS_H */

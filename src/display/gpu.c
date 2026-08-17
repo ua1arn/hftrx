@@ -21,7 +21,7 @@
 #include <string.h>
 
 #if CPUSTYLE_T507
-#define __OPENCL_VERSION__
+//#define __OPENCL_VERSION__
 //#include "panfrost_regs.h"
 
 //#include "mali_bifrost_v6.h"
@@ -328,7 +328,7 @@ static void gpu_computejob(void)
     };
     // Минимальный No-Op фрагментный шейдер для Mali Bifrost v7 (32-bit dwords)
     // Размер: 32 байта (8 элементов по 32 бита)
-    GPU_ALIGN static const const uint32_t bifrost_v7_noop_fs_u32[] = {
+    GPU_ALIGN static const uint32_t bifrost_v7_noop_fs_u32[] = {
         // === СЕКЦИЯ 1: Shader Program Descriptor (Дескриптор программы) ===
 //        0x00000000,   // Зануленные указатели ресурсов и текстурных сэмплеров
 //        0x00000000,   // Флаги интерполяции (отсутствуют)
