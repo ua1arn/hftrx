@@ -344,41 +344,15 @@ static void gpu_computejob(void)
 
     GPU_ALIGN static MALI_RENDERER_STATE_PACKED_T     rst_p;
 
-//    /* 4. НАСТРОЙКА FRAMEBUFFER PARAMETERS (MFBD) */
-//    fbp.bound_min_x = 0;
-//    fbp.bound_min_y = 0;
-//    fbp.bound_max_x = 1;//(width + 15) / 16 - 1;
-//    fbp.bound_max_y = 1;//(height + 15) / 16 - 1;
-//    fbp.width = 1;//width;
-//    fbp.height = 1;//height;
-//    fbp.effective_tile_size = 16;
-//    fbp.sample_count = 1;//MALI_SAMPLE_COUNT_1;
-//    //fbp.clean_pixel_backend = true;
-//    fbp.z_internal_format = MALI_R16_SNORM;//MALI_Z_INTERNAL_FORMAT_R16F;
-////    fbp.sample_mask = UINT32_C(0x00000001);                    /* 1x MSAA режим */
-//    fbp.render_target_count = 1;
-////    fbp.tiler_disabled = true;                                 /* Отключает опрос пустых полигональных листов */
-//
-//    /* Связываем через указатели остальные упакованные дескрипторы */
-////    fbp.tiler_heap_start = (uintptr_t)&th_p;
-////    fbp.render_target_list = (uintptr_t)&rt_p | UINT64_C(1);   /* tagged = true */
-////    fbp.fragment_frame_shader = (uintptr_t)&rst_p;
-//    MALI_FRAMEBUFFER_PARAMETERS_pack(&fb_p, &fbp);
-
-    //    rst.properties = UINT64_C(0x0000100000000000);             /* Квант потоков для v7 */
-    //    rst.blend.flags = UINT32_C(0x00011000);                    /* Режим Replace RAW32 */
     // при 0-й ссылке на shader получаем успешно выполнившуюся compute job
 	rst.shader.shader = 0*(uintptr_t) & empty_compute_shader_isa;//& bifrost_v7_clear_shader;//& minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
 	MALI_RENDERER_STATE_pack(&rst_p, &rst);
 
-//    invocaton.invocations = 1;
-//    invocaton.thread_group_split = 2;
 	MALI_COMPUTE_JOB_SECTION_INVOCATION_pack(&job_p.INVOCATION, &invocaton);
 
-//    parameters.job_task_split = 2;
     MALI_COMPUTE_JOB_SECTION_PARAMETERS_pack(&job_p.PARAMETERS, &parameters);
 
-    draw.state = (uintptr_t) & rst_p; 	// err = 0x0000051, 0x0400B53C, без этой строки 0x0324D545
+    draw.state = (uintptr_t) & rst_p;
     MALI_COMPUTE_JOB_SECTION_DRAW_pack(&job_p.DRAW, &draw);
 
 
@@ -742,9 +716,12 @@ void gpu_test(void)
 {
 #if 1
 	gpu_run_write_value_test_mesa();
+	gpu_computejob();
 	gpu_run_write_value_test_mesa();
+	gpu_computejob();
 	gpu_run_write_value_test_mesa();
-	//return;
+	gpu_computejob();
+	return;
 #endif
 #if 1
 	gpu_computejob();
