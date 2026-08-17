@@ -330,10 +330,10 @@ static void gpu_computejob(void)
     // Размер: 32 байта (8 элементов по 32 бита)
     GPU_ALIGN static const uint32_t bifrost_v7_noop_fs_u32[] = {
         // === СЕКЦИЯ 1: Shader Program Descriptor (Дескриптор программы) ===
-//        0x00000000,   // Зануленные указатели ресурсов и текстурных сэмплеров
-//        0x00000000,   // Флаги интерполяции (отсутствуют)
-//        0x00000020,   // Конфигурация регистров (выделен минимум: 0-32 рабочих регистра)
-//        0x00000000,   // Флаги блендинга и вывода цвета (запись в RT0 отключена)
+        0x00000000,   // Зануленные указатели ресурсов и текстурных сэмплеров
+        0x00000000,   // Флаги интерполяции (отсутствуют)
+        0x00000020,   // Конфигурация регистров (выделен минимум: 0-32 рабочих регистра)
+        0x00000000,   // Флаги блендинга и вывода цвета (запись в RT0 отключена)
 
         // === СЕКЦИЯ 2: Исполняемый код (Бинарный кортеж / Clause) ===
         0x00701963,   // Команда NOP (BiGStream ISA: 0x701963)
@@ -378,20 +378,20 @@ static void gpu_computejob(void)
 ////    fbp.fragment_frame_shader = (uintptr_t)&rst_p;
 //    MALI_FRAMEBUFFER_PARAMETERS_pack(&fb_p, &fbp);
 
-    invocaton.invocations = 1;
-    MALI_COMPUTE_JOB_SECTION_INVOCATION_pack(&job_p.INVOCATION, &invocaton);
+    //    rst.properties = UINT64_C(0x0000100000000000);             /* Квант потоков для v7 */
+    //    rst.blend.flags = UINT32_C(0x00011000);                    /* Режим Replace RAW32 */
+    // при 0-й ссылке на shader получаем успешно выполнившуюся compute job
+	rst.shader.shader = 0*(uintptr_t) & bifrost_v7_noop_fs_u32;//& bifrost_v7_clear_shader;//& minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
+	MALI_RENDERER_STATE_pack(&rst_p, &rst);
 
-    parameters.job_task_split = 0;
+//    invocaton.invocations = 1;
+//    invocaton.thread_group_split = 2;
+	MALI_COMPUTE_JOB_SECTION_INVOCATION_pack(&job_p.INVOCATION, &invocaton);
+
+//    parameters.job_task_split = 2;
     MALI_COMPUTE_JOB_SECTION_PARAMETERS_pack(&job_p.PARAMETERS, &parameters);
 
-    /* 3. НАСТРОЙКА RENDERER STATE (Привязка v7 Dummy-шейдера и флагов блендинга) */
-    rst.shader.shader = (uintptr_t) & bifrost_v7_noop_fs_u32;//& bifrost_v7_clear_shader;//& minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
-
-//    rst.properties = UINT64_C(0x0000100000000000);             /* Квант потоков для v7 */
-//    rst.blend.flags = UINT32_C(0x00011000);                    /* Режим Replace RAW32 */
-    MALI_RENDERER_STATE_pack(&rst_p, &rst);
-
-    draw.state = (uintptr_t) & rst_p;	// err = 0x0000051, 0x0400B53C, без этой строки 0x0324D545
+    draw.state = (uintptr_t) & rst_p; 	// err = 0x0000051, 0x0400B53C, без этой строки 0x0324D545
     MALI_COMPUTE_JOB_SECTION_DRAW_pack(&job_p.DRAW, &draw);
 
 
