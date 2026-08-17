@@ -310,36 +310,23 @@ static int gpu_run_write_value_test_mesa(void) {
 
 static void gpu_computejob(void)
 {
-	// Выровнять по границе 64 байт!
-	GPU_ALIGN static const uint8_t minimal_compute_shader_isa[] = {
-	    // Инструкция 1: Загрузка адреса буфера (ST_GBL / Стор в глобальную память)
-	    // Кодирует операцию записи значения 0xDEADBEEF по адресу в регистре
-	    0x00, 0x10, 0x80, 0x03, 0x00, 0x00, 0x00, 0x00,
-	    0xEF, 0xBE, 0xAD, 0xDE, 0x3C, 0x00, 0x00, 0x00,
+    // Выравнивание по границе 64 байт для корректной работы MMU Mali
+    GPU_ALIGN static const uint8_t empty_compute_shader_isa[] = {
+    		// Строка 0 (0x00): Заголовок клаузы с флагом немедленного завершения программы
+    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F,
 
-	    // Инструкция 2: Сигнал завершения потока выполнения (End of Shader / Триада)
-	    // Процессор Mali должен аппаратно понять, что выполнение этого вычислительного потока окончено
-	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x07
-	};
-    GPU_ALIGN static const uint32_t bifrost_v7_clear_shader[] = {
-        UINT32_C(0x00000000), UINT32_C(0x00000000), /* Системная клауза-префикс v7 */
-        UINT32_C(0x7C003C00), UINT32_C(0x00000000)  /* Аппаратная v7-команда: END + Blend Writeout */
-    };
-    // Минимальный No-Op фрагментный шейдер для Mali Bifrost v7 (32-bit dwords)
-    // Размер: 32 байта (8 элементов по 32 бита)
-    GPU_ALIGN static const uint32_t bifrost_v7_noop_fs_u32[] = {
-        // === СЕКЦИЯ 1: Shader Program Descriptor (Дескриптор программы) ===
-        0x00000000,   // Зануленные указатели ресурсов и текстурных сэмплеров
-        0x00000000,   // Флаги интерполяции (отсутствуют)
-        0x00000020,   // Конфигурация регистров (выделен минимум: 0-32 рабочих регистра)
-        0x00000000,   // Флаги блендинга и вывода цвета (запись в RT0 отключена)
+    		// Строка 1 (0x10): Нулевое заполнение (зарезервировано / NOP кортеж)
+    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
-        // === СЕКЦИЯ 2: Исполняемый код (Бинарный кортеж / Clause) ===
-        0x00701963,   // Команда NOP (BiGStream ISA: 0x701963)
-        0x00000000,   // Пустой операнд / резерв
-        0x00000000,   // Пустой операнд / резерв
-        0x0000007D    // Терминальный флаг (EXIT + Сброс Scoreboard зависимостей конвейера)
+    		// Строка 2 (0x20): Нулевое заполнение
+    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+
+    		// Строка 3 (0x30): Нулевое заполнение (выравнивание до 64 байт)
+    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
 
     /* Выделяем монолитные упакованные контейнеры под структуры Framebuffer и Job */
@@ -381,7 +368,7 @@ static void gpu_computejob(void)
     //    rst.properties = UINT64_C(0x0000100000000000);             /* Квант потоков для v7 */
     //    rst.blend.flags = UINT32_C(0x00011000);                    /* Режим Replace RAW32 */
     // при 0-й ссылке на shader получаем успешно выполнившуюся compute job
-	rst.shader.shader = 0*(uintptr_t) & bifrost_v7_noop_fs_u32;//& bifrost_v7_clear_shader;//& minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
+	rst.shader.shader = 0*(uintptr_t) & empty_compute_shader_isa;//& bifrost_v7_clear_shader;//& minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
 	MALI_RENDERER_STATE_pack(&rst_p, &rst);
 
 //    invocaton.invocations = 1;
@@ -402,15 +389,13 @@ static void gpu_computejob(void)
     jh.next = UINT64_C(0);
     MALI_JOB_HEADER_pack(&job_p.HEADER, &jh);
 
-    PRINTHEX32(job_p);
-//    PRINTHEX32(fb_p);
-    PRINTHEX32(rst_p);
-//    PRINTHEX32(rt_p);
+//	PRINTHEX32(job_p);
+//	PRINTHEX32(fb_p);
+//	PRINTHEX32(rst_p);
+//	PRINTHEX32(rt_p);
 
     /* 7. ОЧИСТКА КЭША ДАННЫХ ДЛЯ ВСЕХ УЧАСТНИКОВ DMA-ОБМЕНА */
-    dcache_clean_invalidate((uintptr_t)&minimal_compute_shader_isa, sizeof(minimal_compute_shader_isa));
-    dcache_clean_invalidate((uintptr_t)&bifrost_v7_clear_shader, sizeof(bifrost_v7_clear_shader));
-    dcache_clean_invalidate((uintptr_t)&bifrost_v7_noop_fs_u32, sizeof(bifrost_v7_noop_fs_u32));
+    dcache_clean_invalidate((uintptr_t)&empty_compute_shader_isa, sizeof(empty_compute_shader_isa));
     dcache_clean_invalidate((uintptr_t)&job_p, sizeof(job_p));
     dcache_clean_invalidate((uintptr_t)&rst_p, sizeof(rst_p));
 
@@ -762,6 +747,8 @@ void gpu_test(void)
 	//return;
 #endif
 #if 1
+	gpu_computejob();
+	gpu_computejob();
 	gpu_computejob();
 	return;
 #endif
