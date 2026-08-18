@@ -8106,6 +8106,24 @@ void hightests(void)
 		gpu_test();
 	}
 #endif
+#if 0 && CPUSTYLE_T507
+	{
+		// timestamp tests
+		//TIMESTAMP_CTRL->CNT_FREQID_REG = 0x16E3600;	// 24000000
+		TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_t507_get_hosc_freq();	// 24000000
+		//TIMESTAMP_CTRL->TSTAMP_CTRL_REG &= ~ (UINT32_C(1) << 0);	// Stop timestamp counter
+		PRINTHEX32(* TIMESTAMP_STA);
+		PRINTHEX32(* TIMESTAMP_STA);
+		PRINTHEX32(* TIMESTAMP_STA);
+		PRINTHEX32(* TIMESTAMP_CTRL);
+		for (;;)
+		{
+			PRINTHEX64(* TIMESTAMP_STA);
+			PRINTHEX32(* TIMESTAMP_CTRL);
+			local_delay_ms(1000);
+		}
+	}
+#endif
 #if 0 && WITHLTDCHW && LCDMODE_LTDC
 	{
 		// Font test

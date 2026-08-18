@@ -2836,7 +2836,7 @@ typedef struct TIMESTAMP_CTRL_Type
     __IOM uint32_t CNT_CTRL_LOW_REG;                  /*!< Offset 0x008 Counter Low Register */
     __IOM uint32_t CNT_CTRL_HI_REG;                   /*!< Offset 0x00C Counter High Register */
          RESERVED(0x010[0x0020 - 0x0010], uint8_t)
-    __IOM uint32_t CNT_FREQID_REG;                    /*!< Offset 0x020 Counte rBase Frequency ID Register */
+    __IOM uint32_t CNT_FREQID_REG;                    /*!< Offset 0x020 Counter Base Frequency ID Register */
 } TIMESTAMP_CTRL_TypeDef; /* size of structure = 0x024 */
 /*
  * @brief TIMESTAMP_STA
@@ -2844,8 +2844,8 @@ typedef struct TIMESTAMP_CTRL_Type
 /*!< TIMESTAMP_STA  */
 typedef struct TIMESTAMP_STA_Type
 {
-    __IOM uint32_t CNT_LOW_REG;                       /*!< Offset 0x000 Counter Low Register */
-    __IOM uint32_t CNT_HI_REG;                        /*!< Offset 0x004 Counter High Register */
+    __IM  uint32_t CNT_LOW_REG;                       /*!< Offset 0x000 Counter Low Register */
+    __IM  uint32_t CNT_HI_REG;                        /*!< Offset 0x004 Counter High Register */
 } TIMESTAMP_STA_TypeDef; /* size of structure = 0x008 */
 /*
  * @brief TWI

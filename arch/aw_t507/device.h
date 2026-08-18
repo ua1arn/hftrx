@@ -334,6 +334,9 @@ typedef enum IRQn
 #define R_CAN0_BASE ((uintptr_t) 0x07082000)          /*!< R_CAN Car Area Network controller Base */
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL T507/H618 CPU Subsystem Control Register List Base */
 #define CPU_SUBSYS_CTRL_H616_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List Base */
+#define TIMESTAMP_STA_BASE ((uintptr_t) 0x08110000)   /*!< TIMESTAMP_STA  Base */
+#define TIMESTAMP_CTRL_BASE ((uintptr_t) 0x08120000)  /*!< TIMESTAMP_CTRL  Base */
+#define IDC_BASE ((uintptr_t) 0x08130000)             /*!< IDC  Base */
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG T507/H618 Cluster 0 Configuration Register List Base */
 #define C0_CPUX_CFG_H616_BASE ((uintptr_t) 0x09010000)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List Base */
 
@@ -3043,6 +3046,28 @@ typedef struct TIMER_Type
          RESERVED(0x0D0[0x0400 - 0x00D0], uint8_t)
 } TIMER_TypeDef; /* size of structure = 0x400 */
 /*
+ * @brief TIMESTAMP_CTRL
+ */
+/*!< TIMESTAMP_CTRL  */
+typedef struct TIMESTAMP_CTRL_Type
+{
+    __IOM uint32_t TSTAMP_CTRL_REG;                   /*!< Offset 0x000 Timestamp Control Register */
+         RESERVED(0x004[0x0008 - 0x0004], uint8_t)
+    __IOM uint32_t CNT_CTRL_LOW_REG;                  /*!< Offset 0x008 Counter Low Register */
+    __IOM uint32_t CNT_CTRL_HI_REG;                   /*!< Offset 0x00C Counter High Register */
+         RESERVED(0x010[0x0020 - 0x0010], uint8_t)
+    __IOM uint32_t CNT_FREQID_REG;                    /*!< Offset 0x020 Counter Base Frequency ID Register */
+} TIMESTAMP_CTRL_TypeDef; /* size of structure = 0x024 */
+/*
+ * @brief TIMESTAMP_STA
+ */
+/*!< TIMESTAMP_STA  */
+typedef struct TIMESTAMP_STA_Type
+{
+    __IM  uint32_t CNT_LOW_REG;                       /*!< Offset 0x000 Counter Low Register */
+    __IM  uint32_t CNT_HI_REG;                        /*!< Offset 0x004 Counter High Register */
+} TIMESTAMP_STA_TypeDef; /* size of structure = 0x008 */
+/*
  * @brief TSC
  */
 /*!< TSC Transport Stream Controller */
@@ -3944,6 +3969,8 @@ typedef struct VE_Type
 #define R_CAN0 ((R_CAN_TypeDef *) R_CAN0_BASE)        /*!< R_CAN0 Car Area Network controller register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL T507/H618 CPU Subsystem Control Register List register set access pointer */
 #define CPU_SUBSYS_CTRL_H616 ((CPU_SUBSYS_CTRL_H616_TypeDef *) CPU_SUBSYS_CTRL_H616_BASE)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List register set access pointer */
+#define TIMESTAMP_STA ((TIMESTAMP_STA_TypeDef *) TIMESTAMP_STA_BASE)/*!< TIMESTAMP_STA  register set access pointer */
+#define TIMESTAMP_CTRL ((TIMESTAMP_CTRL_TypeDef *) TIMESTAMP_CTRL_BASE)/*!< TIMESTAMP_CTRL  register set access pointer */
 #define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG T507/H618 Cluster 0 Configuration Register List register set access pointer */
 #define C0_CPUX_CFG_H616 ((C0_CPUX_CFG_H616_TypeDef *) C0_CPUX_CFG_H616_BASE)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List register set access pointer */
 
