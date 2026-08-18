@@ -285,7 +285,7 @@ static int gpu_run_write_value_test_mesa(void) {
     if (gpu_submit_job(2, (uintptr_t) & job_p))
     	return 1;	// err
       // Проверяем результат выполнения
-    PRINTHEX64(gpu_test_target);
+    printhex64((uintptr_t) gpu_test_target, (void *)gpu_test_target, sizeof gpu_test_target);
     return 0;
 }
 
@@ -350,7 +350,7 @@ static int gpu_run_write_value_test_mesa2(void) {
     if (gpu_submit_job(2, (uintptr_t) & job_p))
     	return 1;	// err
       // Проверяем результат выполнения
-    PRINTHEX64(gpu_test_target);
+    printhex64((uintptr_t) gpu_test_target, (void *)gpu_test_target, sizeof gpu_test_target);
     return 0;
 }
 
@@ -365,11 +365,11 @@ static void gpu_computejob(void)
     };
 
     GPU_ALIGN static MALI_COMPUTE_JOB_PACKED_T     job_p;
-    GPU_ALIGN static MALI_RENDERER_STATE_PACKED_T     rst_p;
+    GPU_ALIGN static MALI_RENDERER_STATE_PACKED_T     rsd_p;
 
-    pan_pack(& rst_p, RENDERER_STATE, rst) {
+    pan_pack(& rsd_p, RENDERER_STATE, rsd) {
         // при 0-й ссылке на shader получаем успешно выполнившуюся compute job
-    	rst.shader.shader = 0*(uintptr_t) & empty_compute_shader_isa;//& bifrost_v7_clear_shader;//& minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
+    	rsd.shader.shader = 0*(uintptr_t) & empty_compute_shader_isa;//& bifrost_v7_clear_shader;//& minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
     }
     pan_section_pack(& job_p, COMPUTE_JOB, HEADER, header) {
     	header.type = MALI_JOB_TYPE_COMPUTE;
@@ -381,7 +381,7 @@ static void gpu_computejob(void)
     pan_section_pack(& job_p, COMPUTE_JOB, PARAMETERS, parameters) {
     }
     pan_section_pack(& job_p, COMPUTE_JOB, DRAW, draw) {
-        draw.state = (uintptr_t) & rst_p;
+        draw.state = (uintptr_t) & rsd_p;
     }
 
 //	PRINTHEX32(job_p);
@@ -392,7 +392,7 @@ static void gpu_computejob(void)
     /* 7. ОЧИСТКА КЭША ДАННЫХ ДЛЯ ВСЕХ УЧАСТНИКОВ DMA-ОБМЕНА */
     dcache_clean_invalidate((uintptr_t)&empty_compute_shader_isa, sizeof empty_compute_shader_isa );
     dcache_clean_invalidate((uintptr_t)&job_p, sizeof job_p );
-    dcache_clean_invalidate((uintptr_t)&rst_p, sizeof rst_p );
+    dcache_clean_invalidate((uintptr_t)&rsd_p, sizeof rsd_p );
 
     __DSB();
 
