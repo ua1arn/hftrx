@@ -20,7 +20,7 @@ TRGT2 = arm-none-eabi
 #TRGT2 = riscv-none-elf
 TRGT = $(TRGT2)-
 
-#XFEL = ../../tools/xfel-windows-v1.3.5/xfel
+#XFEL = ../../tools/xfel-windows-v1.3.6/xfel
 XFEL = ./xfel_t153_fixed
 BUSYBOX = busybox
 
