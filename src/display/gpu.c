@@ -310,23 +310,12 @@ static int gpu_run_write_value_test_mesa(void) {
 
 static void gpu_computejob(void)
 {
+	PRINTF("gpu_computejob:\n");
     // Выравнивание по границе 64 байт для корректной работы MMU Mali
-    GPU_ALIGN static const uint8_t empty_compute_shader_isa[] = {
-    		// Строка 0 (0x00): Заголовок клаузы с флагом немедленного завершения программы
-    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F,
-
-    		// Строка 1 (0x10): Нулевое заполнение (зарезервировано / NOP кортеж)
-    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-
-    		// Строка 2 (0x20): Нулевое заполнение
-    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-
-    		// Строка 3 (0x30): Нулевое заполнение (выравнивание до 64 байт)
-    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    GPU_ALIGN static const uint64_t empty_compute_shader_isa [8] =
+    {
+		UINT64_C(0x0000000004000000), // Слово 1: Заголовок кластера (Clause Header)
+		UINT64_C(0x0000080000000000)  // Слово 2: Инструкция NOP с флагом завершения (.end)
     };
 
     /* Выделяем монолитные упакованные контейнеры под структуры Framebuffer и Job */
@@ -369,9 +358,9 @@ static void gpu_computejob(void)
 //	PRINTHEX32(rt_p);
 
     /* 7. ОЧИСТКА КЭША ДАННЫХ ДЛЯ ВСЕХ УЧАСТНИКОВ DMA-ОБМЕНА */
-    dcache_clean_invalidate((uintptr_t)&empty_compute_shader_isa, sizeof(empty_compute_shader_isa));
-    dcache_clean_invalidate((uintptr_t)&job_p, sizeof(job_p));
-    dcache_clean_invalidate((uintptr_t)&rst_p, sizeof(rst_p));
+    dcache_clean_invalidate((uintptr_t)&empty_compute_shader_isa, sizeof empty_compute_shader_isa );
+    dcache_clean_invalidate((uintptr_t)&job_p, sizeof job_p );
+    dcache_clean_invalidate((uintptr_t)&rst_p, sizeof rst_p );
 
     __DSB();
 
@@ -723,7 +712,7 @@ void gpu_test(void)
 	gpu_computejob();
 	return;
 #endif
-#if 1
+#if 0
 	gpu_computejob();
 	gpu_computejob();
 	gpu_computejob();
