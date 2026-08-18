@@ -275,8 +275,8 @@ static int gpu_run_write_value_test_mesa(void) {
 		payload.type = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64;
 		payload.immediate_value = 0x0123456789ABCDEF;
 	}
-    PRINTHEX32(job_p);
-    PRINTHEX32(job2_p);
+//    PRINTHEX32(job_p);
+//    PRINTHEX32(job2_p);
 
     dcache_clean_invalidate((uintptr_t) & job_p, sizeof job_p);
     dcache_clean_invalidate((uintptr_t) & job2_p, sizeof job2_p);
@@ -340,8 +340,8 @@ static int gpu_run_write_value_test_mesa2(void) {
     pjob2.immediate_value = 0x0123456789ABCDEF;               // Данные для записи
 	MALI_WRITE_VALUE_JOB_PAYLOAD_pack(& job2_p.PAYLOAD, & pjob2);
 
-    PRINTHEX32(job_p);
-    PRINTHEX32(job2_p);
+//    PRINTHEX32(job_p);
+//    PRINTHEX32(job2_p);
 
     dcache_clean_invalidate((uintptr_t) & job_p, sizeof job_p);
     dcache_clean_invalidate((uintptr_t) & job2_p, sizeof job2_p);
@@ -364,39 +364,25 @@ static void gpu_computejob(void)
 		UINT64_C(0x0000080000000000)  // Слово 2: Инструкция NOP с флагом завершения (.end)
     };
 
-    /* Выделяем монолитные упакованные контейнеры под структуры Framebuffer и Job */
     GPU_ALIGN static MALI_COMPUTE_JOB_PACKED_T     job_p;
-
-    /* Объявление "распакованных" структур строго по типам из вашего bifrost_v7.h */
-    MALI_COMPUTE_JOB_SECTION_HEADER_TYPE jh   = { MALI_COMPUTE_JOB_SECTION_HEADER_header, .type = MALI_JOB_TYPE_COMPUTE };
-    MALI_COMPUTE_JOB_SECTION_INVOCATION_TYPE invocaton = { MALI_COMPUTE_JOB_SECTION_INVOCATION_header };
-    MALI_COMPUTE_JOB_SECTION_PARAMETERS_TYPE parameters = { MALI_COMPUTE_JOB_SECTION_PARAMETERS_header };
-    MALI_COMPUTE_JOB_SECTION_DRAW_TYPE draw = { MALI_COMPUTE_JOB_SECTION_DRAW_header };
-    struct MALI_RENDERER_STATE     rst  = { MALI_RENDERER_STATE_header };
-
-//    MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE fbp  = { MALI_FRAMEBUFFER_PARAMETERS_header };
-//    GPU_ALIGN static MALI_FRAMEBUFFER_SECTION_PARAMETERS_PACKED_TYPE fb_p;
-
     GPU_ALIGN static MALI_RENDERER_STATE_PACKED_T     rst_p;
 
-    // при 0-й ссылке на shader получаем успешно выполнившуюся compute job
-	rst.shader.shader = 0*(uintptr_t) & empty_compute_shader_isa;//& bifrost_v7_clear_shader;//& minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
-	MALI_RENDERER_STATE_pack(&rst_p, &rst);
-
-	MALI_COMPUTE_JOB_SECTION_INVOCATION_pack(&job_p.INVOCATION, &invocaton);
-
-    MALI_COMPUTE_JOB_SECTION_PARAMETERS_pack(&job_p.PARAMETERS, &parameters);
-
-    draw.state = (uintptr_t) & rst_p;
-    MALI_COMPUTE_JOB_SECTION_DRAW_pack(&job_p.DRAW, &draw);
-
-
-    /* 6. НАСТРОЙКА JOB HEADER */
-    jh.exception_status = 0;
-    jh.barrier = 1;                                            /* last job в цепочке */
-    jh.index = 1;
-    jh.next = UINT64_C(0);
-    MALI_JOB_HEADER_pack(&job_p.HEADER, &jh);
+    pan_pack(& rst_p, RENDERER_STATE, rst) {
+        // при 0-й ссылке на shader получаем успешно выполнившуюся compute job
+    	rst.shader.shader = 0*(uintptr_t) & empty_compute_shader_isa;//& bifrost_v7_clear_shader;//& minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
+    }
+    pan_section_pack(& job_p, COMPUTE_JOB, HEADER, header) {
+    	header.type = MALI_JOB_TYPE_COMPUTE;
+    	header.index = 1;
+    	header.barrier = 1;
+    }
+    pan_section_pack(& job_p, COMPUTE_JOB, INVOCATION, invocaton) {
+    }
+    pan_section_pack(& job_p, COMPUTE_JOB, PARAMETERS, parameters) {
+    }
+    pan_section_pack(& job_p, COMPUTE_JOB, DRAW, draw) {
+        draw.state = (uintptr_t) & rst_p;
+    }
 
 //	PRINTHEX32(job_p);
 //	PRINTHEX32(fb_p);
@@ -751,11 +737,11 @@ void gpu_test(void)
 {
 #if 1
 	gpu_run_write_value_test_mesa();
-//	gpu_computejob();
+	gpu_computejob();
 	gpu_run_write_value_test_mesa2();
-//	gpu_computejob();
-//	gpu_run_write_value_test_mesa();
-//	gpu_computejob();
+	gpu_computejob();
+	gpu_run_write_value_test_mesa();
+	gpu_computejob();
 	return;
 #endif
 #if 0
