@@ -25,6 +25,7 @@
 //#include "panfrost_regs.h"
 
 //#include "mali_bifrost_v6.h"
+#include "pan_pack_helpers.h"
 #include "bifrost_v7.h"
 
 // Выравнивание для кэш-линий GPU

@@ -493,38 +493,6 @@ util_bitpack_ufixed_nonzero(float v, uint32_t start, uint32_t end,
    return util_bitpack_ufixed(v, start, end, fract_bits);
 }
 
-
-static inline uint32_t
-__gen_padded(uint32_t v, uint32_t start, uint32_t end)
-{
-   unsigned shift = __builtin_ctz(v);
-   unsigned odd = v >> (shift + 1);
-
-#ifndef NDEBUG
-   assert((v >> shift) & 1);
-   assert(shift <= 31);
-   assert(odd <= 7);
-   assert((end - start + 1) == 8);
-#endif
-
-   return util_bitpack_uint(shift | (odd << 5), start, end);
-}
-#ifndef __OPENCL_VERSION__
-static inline const char *
-mali_component_swizzle(unsigned val)
-{
-   static const char swiz_name[] = "RGBA01??";
-   static char out_str[5], *outp;
-   outp = out_str;
-   for (int i = 0; i < 12; i += 3) {
-      *outp++ = swiz_name[(val >> i) & 7];
-   }
-   *outp = 0;
-   return out_str;
-}
-#endif
-
-
 union fi {
    float f;
    int32_t i;
