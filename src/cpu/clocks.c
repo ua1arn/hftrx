@@ -2042,6 +2042,7 @@ void sysinit_boot_disconnect(void)
 // V3s
 void allwnr_v3s_pll_initialize(void)
 {
+	//TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_t113_get_hosc_freq();	// 24000000
 	clock_set_pll_cpu(50 * allwnr_v3s_get_hosc_freq());
 
 	/* pll video - 396MHZ */
@@ -2225,6 +2226,7 @@ void sysinit_boot_disconnect(void)
 // Allwinner H3
 void sysinit_pll_initialize(int forced)
 {
+	//TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_t113_get_hosc_freq();	// 24000000
 
 
 }
@@ -2971,6 +2973,7 @@ void sysinit_boot_disconnect(void)
 void
 sysinit_pll_initialize(int forced)
 {
+	//TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_t113_get_hosc_freq();	// 24000000
 
 
 	allwnr_a64_pll_initialize();
@@ -4190,6 +4193,7 @@ void sysinit_boot_disconnect(void)
 // Allwinner T507/H618/H616 PLL initialize
 void sysinit_pll_initialize(int forced)
 {
+	TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_t507_get_hosc_freq();	// 24000000
 	set_t507_axi_sel(0x00, 1, 1);	// OSC24 as source
 	CCU->PSI_AHB1_AHB2_CFG_REG = 0;	// OSC24M/1
 	CCU->APB2_CFG_REG = 0;	// OSC24M/1
@@ -5040,6 +5044,7 @@ static void a733_ccu_pll_enable(volatile uint32_t * reg)
 
 void sysinit_pll_initialize(int forced)
 {
+	//TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_t113_get_hosc_freq();	// 24000000
 	//fill32delay(CCU_BASE + 0x0a0, ccu_pattern, ARRAY_SIZE(ccu_pattern));
 //	CCU->CCMU_SEC_SWITCH_REG |= (UINT32_C(1) << 2);	// MBUS_SEC
 //	CCU->CCMU_SEC_SWITCH_REG |= (UINT32_C(1) << 1);	// BUS_SEC
@@ -5145,6 +5150,7 @@ void sysinit_boot_disconnect(void)
 void
 sysinit_pll_initialize(int forced)
 {
+	TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_a133_get_hosc_freq();	// 24000000
 	{
 		// Disable SD hosts
 
@@ -6461,6 +6467,7 @@ uint_fast32_t allwnr_t113_get_hdmi_freq(void)
 
 void allwnr_t113_pll_initialize(int N)
 {
+	TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_t113_get_hosc_freq();	// 24000000
 #if CPUSTYLE_T113
 	t113_set_axi(0x00, 1, 1);	// Switch CPU to OSC24
 #elif CPUSTYLE_F133
