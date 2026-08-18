@@ -247,6 +247,50 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
 
 static int gpu_run_write_value_test_mesa(void) {
 	PRINTF("gpu_run_write_value_test_mesa:\n");
+	// Переменная-цель, куда будет писать GPU.
+	GPU_ALIGN static volatile uint64_t gpu_test_target [2];
+
+	GPU_ALIGN static MALI_WRITE_VALUE_JOB_PACKED_T job_p;
+	GPU_ALIGN static MALI_WRITE_VALUE_JOB_PACKED_T job2_p;
+
+	pan_section_pack(& job_p, WRITE_VALUE_JOB, HEADER, header) {
+		header.type = MALI_JOB_TYPE_WRITE_VALUE;
+		header.index = 1;
+		header.next = (uintptr_t) & job2_p;
+	}
+	pan_section_pack(& job2_p, WRITE_VALUE_JOB, HEADER, header) {
+		header.type = MALI_JOB_TYPE_WRITE_VALUE;
+		header.index = 2;
+		header.barrier = 1;
+		header.next = (uintptr_t) 0;
+	}
+
+	pan_section_pack(& job_p, WRITE_VALUE_JOB, PAYLOAD, payload) {
+		payload.address = (uintptr_t) & gpu_test_target [0];
+		payload.type = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64;
+		payload.immediate_value = 0xDEADBEEFABBA1980;
+	}
+	pan_section_pack(& job2_p, WRITE_VALUE_JOB, PAYLOAD, payload) {
+		payload.address = (uintptr_t) & gpu_test_target [1];
+		payload.type = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64;
+		payload.immediate_value = 0x0123456789ABCDEF;
+	}
+    PRINTHEX32(job_p);
+    PRINTHEX32(job2_p);
+
+    dcache_clean_invalidate((uintptr_t) & job_p, sizeof job_p);
+    dcache_clean_invalidate((uintptr_t) & job2_p, sizeof job2_p);
+    memset((void *) gpu_test_target, 0xE5, sizeof gpu_test_target);
+    dcache_clean_invalidate((uintptr_t) & gpu_test_target, sizeof gpu_test_target);
+    if (gpu_submit_job(2, (uintptr_t) & job_p))
+    	return 1;	// err
+      // Проверяем результат выполнения
+    PRINTHEX64(gpu_test_target);
+    return 0;
+}
+
+static int gpu_run_write_value_test_mesa2(void) {
+	PRINTF("gpu_run_write_value_test_mesa2:\n");
 
 //	volatile uint32_t * const p = (volatile uint32_t *) 0x40;
 //	* p = 1234;
@@ -296,16 +340,17 @@ static int gpu_run_write_value_test_mesa(void) {
     pjob2.immediate_value = 0x0123456789ABCDEF;               // Данные для записи
 	MALI_WRITE_VALUE_JOB_PAYLOAD_pack(& job2_p.PAYLOAD, & pjob2);
 
+    PRINTHEX32(job_p);
+    PRINTHEX32(job2_p);
 
-    dcache_clean_invalidate((uintptr_t)&job_p, sizeof(job_p));
-    dcache_clean_invalidate((uintptr_t)&job2_p, sizeof(job2_p));
+    dcache_clean_invalidate((uintptr_t) & job_p, sizeof job_p);
+    dcache_clean_invalidate((uintptr_t) & job2_p, sizeof job2_p);
     memset((void *) gpu_test_target, 0xE5, sizeof gpu_test_target);
-    dcache_clean_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
-
+    dcache_clean_invalidate((uintptr_t) & gpu_test_target, sizeof gpu_test_target);
     if (gpu_submit_job(2, (uintptr_t) & job_p))
     	return 1;	// err
       // Проверяем результат выполнения
-    printhex64(0, (void *) gpu_test_target, sizeof gpu_test_target);
+    PRINTHEX64(gpu_test_target);
     return 0;
 }
 
@@ -706,11 +751,11 @@ void gpu_test(void)
 {
 #if 1
 	gpu_run_write_value_test_mesa();
-	gpu_computejob();
-	gpu_run_write_value_test_mesa();
-	gpu_computejob();
-	gpu_run_write_value_test_mesa();
-	gpu_computejob();
+//	gpu_computejob();
+	gpu_run_write_value_test_mesa2();
+//	gpu_computejob();
+//	gpu_run_write_value_test_mesa();
+//	gpu_computejob();
 	return;
 #endif
 #if 0
