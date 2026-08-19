@@ -1174,6 +1174,86 @@ __STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRDN_EL1(void)
 	return result;
 }
 
+// Counter-timer Frequency Register
+// high 32 bit are zeroes (reserved).
+__STATIC_FORCEINLINE void __set_CNTFRQ_EL0(uint32_t v)
+{
+	uint64_t value = v;
+	__set_RG32("CNTFRQ_EL0", value);
+}
+__STATIC_FORCEINLINE uint32_t __get_CNTFRQ_EL0(void)
+{
+	uint32_t result;
+	__get_RG32("CNTFRQ_EL0", result);
+	return result;
+}
+
+// Counter-timer Physical Timer Control Register
+__STATIC_FORCEINLINE void __set_CNTP_CTL_EL0(uint64_t value)
+{
+	__set_RG64("CNTP_CTL_EL0", value);
+}
+__STATIC_FORCEINLINE uint64_t __get_CNTP_CTL_EL0(void)
+{
+	uint64_t result;
+	__get_RG32("CNTP_CTL_EL0", result);
+	return result;
+}
+
+// Counter-timer Physical Timer CompareValue Register
+__STATIC_FORCEINLINE void __set_CNTP_CVAL_EL0(uint64_t value)
+{
+	__set_RG64("CNTP_CVAL_EL0", value);
+}
+__STATIC_FORCEINLINE uint64_t __get_CNTP_CVAL_EL0(void)
+{
+	uint64_t result;
+	__get_RG64("CNTP_CVAL_EL0", result);
+	return result;
+}
+
+// Counter-timer Physical Timer TimerValue Register
+__STATIC_FORCEINLINE void __set_CNTP_TVAL_EL0(uint64_t value)
+{
+	__set_RG64("CNTP_TVAL_EL0", value);
+}
+__STATIC_FORCEINLINE uint64_t __get_CNTP_TVAL_EL0(void)
+{
+	uint64_t result;
+	__get_RG64("CNTP_TVAL_EL0", result);
+	return result;
+}
+
+// Counter-timer Physical Count Register
+// Reads of CNTPCT_EL0 return the 64-bit physical count value minus a physical offset.
+
+__STATIC_FORCEINLINE uint64_t __get_CNTPCT_EL0(void)
+{
+	uint64_t result;
+	__get_RG64("CNTPCT_EL0", result);
+	return result;
+}
+
+// Counter-timer Self-Synchronized Physical Count Register
+__STATIC_FORCEINLINE uint64_t __get_CNTPCTSS_EL0(void)
+{
+	uint64_t result;
+	__get_RG64("CNTPCTSS_EL0", result);
+	return result;
+}
+
+// Counter-timer Physical Offset Register
+__STATIC_FORCEINLINE void __set_CNTPOFF_EL2(uint64_t value)
+{
+	__set_RG64("CNTPOFF_EL2", value);
+}
+__STATIC_FORCEINLINE uint64_t __get_CNTPOFF_EL2(void)
+{
+	uint64_t result;
+	__get_RG64("CNTPOFF_EL2", result);
+	return result;
+}
+
 
 /* ##########################  L2 Cache functions  ################################# */
 #if (defined(__L2C_PRESENT) && (__L2C_PRESENT == 1U)) || \

@@ -8106,23 +8106,29 @@ void hightests(void)
 		gpu_test();
 	}
 #endif
-#if 0 && CPUSTYLE_ALLWINNER && defined (TIMESTAMP_STA) && defined (TIMESTAMP_CTRL)
+#if 0
 	{
 		// timestamp tests
 		//TIMESTAMP_CTRL->CNT_FREQID_REG = 0x16E3600;	// 24000000
 		//TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_t507_get_hosc_freq();	// 24000000
 		//TIMESTAMP_CTRL->TSTAMP_CTRL_REG &= ~ (UINT32_C(1) << 0);	// Stop timestamp counter
-		PRINTHEX32(* TIMESTAMP_STA);
-		PRINTHEX32(* TIMESTAMP_STA);
-		PRINTHEX32(* TIMESTAMP_STA);
+//		PRINTHEX32(* TIMESTAMP_STA);
+//		PRINTHEX32(* TIMESTAMP_STA);
+//		PRINTHEX32(* TIMESTAMP_STA);
+
 		PRINTHEX32(* TIMESTAMP_CTRL);
+		PRINTF("freq=%08X\n", (unsigned) __get_CNTFRQ_EL0());
+		//TIMESTAMP_CTRL->CNT_FREQID_REG = 0x16E3600;//allwnr_a733_get_dcxo_freq();
+		//__set_CNTFRQ_EL0(0x16E3600);
+		//PRINTHEX32(* TIMESTAMP_CTRL);
+		PRINTF("freq=%08X\n", (unsigned) __get_CNTFRQ_EL0());
 		for (;;)
 		{
-			PRINTHEX64(* TIMESTAMP_STA);
-			PRINTHEX32(* TIMESTAMP_CTRL);
-			const uint64_t t0 = * (const volatile uint64_t *) & TIMESTAMP_STA->CNT_LOW_REG;
+//			PRINTHEX64(* TIMESTAMP_STA);
+//			PRINTHEX32(* TIMESTAMP_CTRL);
+			const uint64_t t0 = __get_CNTPCT_EL0();
 			local_delay_ms(1000);
-			const uint64_t t1 = * (const volatile uint64_t *) & TIMESTAMP_STA->CNT_LOW_REG;
+			const uint64_t t1 = __get_CNTPCT_EL0();
 			unsigned dt = t1 - t0;
 			PRINTF("dt=%u\n", dt);
 		}
