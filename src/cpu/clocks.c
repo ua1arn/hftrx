@@ -5044,7 +5044,7 @@ static void a733_ccu_pll_enable(volatile uint32_t * reg)
 
 void sysinit_pll_initialize(int forced)
 {
-	//TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_t113_get_hosc_freq();	// 24000000
+	TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_a733_get_dcxo_freq();	// 24000000
 	//fill32delay(CCU_BASE + 0x0a0, ccu_pattern, ARRAY_SIZE(ccu_pattern));
 //	CCU->CCMU_SEC_SWITCH_REG |= (UINT32_C(1) << 2);	// MBUS_SEC
 //	CCU->CCMU_SEC_SWITCH_REG |= (UINT32_C(1) << 1);	// BUS_SEC

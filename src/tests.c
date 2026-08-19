@@ -8120,7 +8120,11 @@ void hightests(void)
 		{
 			PRINTHEX64(* TIMESTAMP_STA);
 			PRINTHEX32(* TIMESTAMP_CTRL);
+			const uint64_t t0 = * (const volatile uint64_t *) & TIMESTAMP_STA->CNT_LOW_REG;
 			local_delay_ms(1000);
+			const uint64_t t1 = * (const volatile uint64_t *) & TIMESTAMP_STA->CNT_LOW_REG;
+			unsigned dt = t1 - t0;
+			PRINTF("dt=%u\n", dt);
 		}
 	}
 #endif
