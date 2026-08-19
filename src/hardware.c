@@ -1512,193 +1512,6 @@ sysinit_debug_initialize(void)
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
-// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
-// получение частоты, с которой инкрементируется счетчик
-dbgcountfast_t cpu_getdebugticksfreq(void)
-{
-	return SystemCoreClock;//CPU_FREQ;
-#if WITHISBOOTLOADER
-	return CPU_FREQ;	// пока ОЗУ не инициализированно
-#else /* WITHISBOOTLOADER */
-	return SystemCoreClock;//CPU_FREQ;
-#endif /* WITHISBOOTLOADER */
-}
-
-// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
-// получение из аппаратного счетчика монотонно увеличивающегося кода
-// see sysinit_perfmeter_initialize() in hardware.c
-// Счетчик увеличивается с частотой процессора
-
-dbgcountfast_t cpu_getdebugticks(void)
-{
-#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
-	return DWT->CYCCNT;	// use TIMESTAMP_GET();
-
-#elif defined(__aarch64__)
-	return __get_PMCCNTR_EL0();
-
-#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
-	if (0)
-	{
-		uint64_t result;
-		// MRRC{<c>}{<q>} <coproc>, {#}<opc1>, <Rt>, <Rt2>, <CRm>
-		// cp, op1, Rt, CRm
-		__get_CP64(15, 9, result, 0);
-		return result;
-	}
-	{
-		uint32_t result;
-		// Read CCNT Register
-		//	MRC p15, 0, <Rt>, c9, c13, 0 : Read PMCCNTR into Rt
-		//	MCR p15, 0, <Rt>, c9, c13, 0 : Write Rt to PMCCNTR
-		//asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));
-		__get_CP(15, 0, result, 9, 13, 0);
-		return result;
-	}
-
-#elif defined(__riscv)
-
-	return csr_read_mcycle();
-
-#else
-	#warning Wrong CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
-	return 0;
-
-#endif
-}
-
-// получение маски на разрядность аппаратного счётчика
-dbgcountfast_t cpu_getdebugticksmask(void)
-{
-#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
-	return UINT32_MAX;	// DWT->CYCCNT width is 32
-
-#elif defined(__aarch64__)
-	return UINT64_MAX;	// PMCCNTR width is 64
-
-#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
-	return UINT32_MAX;	// PMCCNTR width is 32
-
-#elif defined(__riscv)
-	return UINT64_MAX;	// mcycle width is 64
-
-#else
-	#warning Wrong CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
-	return UINT32_MAX;
-
-#endif
-}
-
-// получение из аппаратного счетчика монотонно увеличивающегося кода
-hwtimcountfast_t cpu_gethwtimticks(void)
-{
-	return cpu_getdebugticks();
-#if __aarch64__
-	return __get_CNTPCT_EL0();
-#elif (defined (__CORTEX_A))
-	return __get_CNTPCT();
-#else
-	return cpu_getdebugticks();
-#endif
-}
-
-// получение частоты, с которой инкрементируется счетчик
-hwtimcountfast_t cpu_gethwtimticksfreq(void)
-{
-	return cpu_getdebugticksfreq();
-#if __aarch64__
-	return __get_CNTFRQ_EL0();
-#elif (defined (__CORTEX_A))
-	return __get_CNTFRQ();
-#else
-	return cpu_getdebugticksfreq();
-#endif
-}
-
-// получение маски на разрядность аппаратного счётчика
-hwtimcountfast_t cpu_gethwtimticksmask(void)
-{
-	return cpu_getdebugticksmask();
-#if __aarch64__
-	return UINT64_C(0xFFFFFFFFFFFFFFFF);
-#elif (defined (__CORTEX_A))
-	return UINT64_C(0xFFFFFFFFFFFFFFFF);
-#else
-	return cpu_getdebugticksmask();
-#endif
-}
-
-// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
-static void
-sysinit_perfmeter_initialize(void)
-{
-#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
-
-	#if WITHDEBUG && __CORTEX_M == 7U
-		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
-		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-		DWT->LAR = 0x00000000;	// Key value for lock
-	#endif /* WITHDEBUG && __CORTEX_M == 7U */
-
-#elif defined(__aarch64__)
-		__set_PMCNTENSET_EL0(__get_PMCNTENSET_EL0() | (UINT32_C(1) << 31));
-		__set_PMCR_EL0(__get_PMCR_EL0() | (UINT32_C(1) << 0));
-
-#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
-
-//	{
-//		uint32_t value;
-//		__get_CP(15, 0, value, 9, 12, 0);	// Read PMNC
-//		PRINTF("PMNC=0x%" PRIX32 "\n", value);
-//		PRINTF("counters=%" PRIu32 "\n", (value >> 11) & 0x1F);
-//	}
-	{
-		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
-		    /* enable user-mode access to the performance counter*/
-		// User Enable Register (USEREN)
-		//asm ("MCR p15, 0, %0, C9, C14, 0\n\t" :: "r"(1));
-		__set_CP(15, 0, 0x00000001, 9, 14, 0);
-
-		/* disable counter overflow interrupts (just in case)*/
-		// Interrupt Enable Clear Register (INTENC)
-		//asm ("MCR p15, 0, %0, C9, C14, 2\n\t" :: "r"(0x8000000f));
-		__set_CP(15, 0, 0x80000000, 9, 14, 2);
-
-		enum { do_reset = 0, enable_divider = 0 };
-		// in general enable all counters (including cycle counter)
-		uint32_t value = (UINT32_C(1) << 0);	// ENABLE bit
-
-		// peform reset:
-		if (do_reset)
-		{
-			value |= (UINT32_C(1) << 1);     // reset all counters to zero.
-			value |= (UINT32_C(1) << 2);     // reset cycle counter to zero.
-		}
-
-		if (enable_divider)
-			value |= (UINT32_C(1) << 3);     // enable "by 64" divider for CCNT. Clock Divider, bit [3]
-
-		value |= (UINT32_C(1) << 4);		// Export Enable, bit [4]
-
-		// program the performance-counter control-register PMNC:
-		//asm volatile ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));
-		__set_CP(15, 0, value, 9, 12, 0);
-
-		// enable all counters: Count Enable Set Register (CNTENS)
-		//asm volatile ("MCR p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));
-		__set_CP(15, 0, 0x80000000, 9, 12, 1);
-
-		// clear overflows: Overflow Flag Status Register (FLAG)
-		//asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
-		__set_CP(15, 0, 0x80000000, 9, 12, 3);
-	}
-
-#elif defined(__riscv)
-
-#endif /* ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__)) */
-}
-
 static void
 sysinit_vbar_initialize(void)
 {
@@ -2051,6 +1864,7 @@ SystemInit(void)
 	stsinit_irql_initialize();	// GIC CPU Interface
 	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
+	sysinit_hwtimer_initialize();
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
@@ -2103,6 +1917,7 @@ void __attribute__((used)) SystemDRAMInit(void)
 	sysinit_fpu_initialize();	// FPU access enable, disable caches
 	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
+	sysinit_hwtimer_initialize();
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
 	const int configtype = sysinit_getconfigtype();
@@ -2693,6 +2508,7 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	stsinit_irql_initialize();	// GIC CPU Interface
 	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
+	sysinit_hwtimer_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_ttbr_initialize();		// Загрузка TTBR, инвалидация кеш памяти и включение MMU
 

@@ -1157,7 +1157,8 @@ static void awxx_g2d_rot_startandwait(void)
 	const uint_fast32_t INT_MASK = (UINT32_C(1) << 0);	/* FINISH_IRQ */
 	G2D_ROT->ROT_INT = INT_MASK;	// clear interrupt flag
 	G2D_ROT->ROT_CTL |= (UINT32_C(1) << 31);	// start module
-	local_wait32mask(& G2D_ROT->ROT_CTL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100);
+	if (local_wait32mask(& G2D_ROT->ROT_CTL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
+		TP();
 //	local_wait32mask(& G2D_ROT->ROT_CTL, INT_MASK, INT_MASK, 100);
 //	if (hwacc_rot_waitdone() == 0)
 //	{

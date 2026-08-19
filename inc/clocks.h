@@ -608,6 +608,8 @@ calcdividerselect(
 
 void sysinit_boot_disconnect(void);
 void sysinit_pll_initialize(int forced);	// PLL initialize
+void sysinit_perfmeter_initialize(void);	// на каждом CORE
+void sysinit_hwtimer_initialize(void);	// на каждом CORE
 
 #ifdef __cplusplus
 }

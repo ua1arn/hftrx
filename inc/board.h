@@ -337,7 +337,7 @@ void board_gpu_initialize(void);	// Graphic processor unit
 uint_fast8_t hardware_usbd_get_vbusnow(void);
 uint_fast8_t hardware_usbd_get_vbusbefore(void);
 
-uint_fast8_t board_get_adcinputs(void);	/* получить количество каналов АЦП, задействованных в устройстве */
+uint_fast8_t board_get_adcinputs(void);	/* получить количество каналов АЦП, задействованных в устройстве - без MRR (mirror, cache) */
 uint_fast8_t board_get_adcch(uint_fast8_t index);	/* получить канал АЦП но индексу в таблице */
 
 void board_adc_store_data(uint_fast8_t i, adcvalholder_t v);

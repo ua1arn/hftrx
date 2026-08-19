@@ -6777,10 +6777,10 @@ void board_adc_initialize(void)
 	{
 		uint_fast8_t i;
 		/* какие из каналов включать.. */
-		PRINTF(PSTR("ADCINPUTS_COUNT=%d: "), (int) board_get_adcinputs());
+		PRINTF("ADCINPUTS_COUNT=%d: ", (int) board_get_adcinputs());
 		for (i = 0; i < board_get_adcinputs(); ++ i)
 		{
-			PRINTF(PSTR("%d%c"), board_get_adcch(i), (i + 1) == board_get_adcinputs() ? '\n' : ',');
+			PRINTF("%d%c", board_get_adcch(i), (i + 1) == board_get_adcinputs() ? '\n' : ',');
 		}
 	}
 #endif /* WITHDEBUG */
