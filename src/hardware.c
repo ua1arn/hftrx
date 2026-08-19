@@ -1589,6 +1589,42 @@ dbgcountfast_t cpu_getdebugticksmask(void)
 #endif
 }
 
+// получение из аппаратного счетчика монотонно увеличивающегося кода
+hwtimcountfast_t cpu_gethwtimticks(void)
+{
+#if __aarch64__
+	return __get_CNTPCT_EL0();
+#elif (__CORTEX_A == 7U)
+	return __get_CNTPCT();
+#else
+	return cpu_getdebugticks();
+#endif
+}
+
+// получение частоты, с которой инкрементируется счетчик
+hwtimcountfast_t cpu_gethwtimticksfreq(void)
+{
+#if __aarch64__
+	return __get_CNTFRQ_EL0();
+#elif (__CORTEX_A == 7U)
+	return __get_CNTFRQ();
+#else
+	return cpu_getdebugticksfreq();
+#endif
+}
+
+// получение маски на разрядность аппаратного счётчика
+hwtimcountfast_t cpu_gethwtimticksmask(void)
+{
+#if __aarch64__
+	return UINT64_C(0xFFFFFFFFFFFFFFFF);
+#elif (__CORTEX_A == 7U)
+	return UINT64_C(0xFFFFFFFFFFFFFFFF);
+#else
+	return cpu_getdebugticksmask();
+#endif
+}
+
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 static void
 sysinit_perfmeter_initialize(void)

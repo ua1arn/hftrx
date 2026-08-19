@@ -386,17 +386,26 @@ void cpu_initialize(void);
 void arm_hardware_reset(void);
 void cpu_initdone(void);	// секция init больше не нужна
 
-#if defined(__aarch64__) || (defined(__riscv) && (__riscv_xlen == 64))
+#if defined(__aarch64__) || (defined (__CORTEX_A) && __CORTEX_A == 7) || (defined(__riscv) && (__riscv_xlen == 64))
 	typedef uint64_t dbgcount_t;
 	typedef uint_fast64_t dbgcountfast_t;
+	typedef uint64_t hwtimcount_t;
+	typedef uint_fast64_t hwtimcountfast_t;
 #else
 	typedef uint32_t dbgcount_t;
 	typedef uint_fast32_t dbgcountfast_t;
+	typedef uint64_t hwtimcount_t;
+	typedef uint_fast64_t hwtimcountfast_t;
 #endif
 
 dbgcountfast_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
 dbgcountfast_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
 dbgcountfast_t cpu_getdebugticksmask(void);	// получение маски на разрядность аппаратного счётчика
+
+hwtimcountfast_t cpu_gethwtimticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
+hwtimcountfast_t cpu_gethwtimticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
+hwtimcountfast_t cpu_gethwtimticksmask(void);	// получение маски на разрядность аппаратного счётчика
+
 
 void tickers_initialize(void);
 void tickers_deinitialize(void);
