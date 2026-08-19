@@ -8106,11 +8106,11 @@ void hightests(void)
 		gpu_test();
 	}
 #endif
-#if 0 && CPUSTYLE_T507
+#if 0 && CPUSTYLE_ALLWINNER && defined (TIMESTAMP_STA) && defined (TIMESTAMP_CTRL)
 	{
 		// timestamp tests
 		//TIMESTAMP_CTRL->CNT_FREQID_REG = 0x16E3600;	// 24000000
-		TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_t507_get_hosc_freq();	// 24000000
+		//TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_t507_get_hosc_freq();	// 24000000
 		//TIMESTAMP_CTRL->TSTAMP_CTRL_REG &= ~ (UINT32_C(1) << 0);	// Stop timestamp counter
 		PRINTHEX32(* TIMESTAMP_STA);
 		PRINTHEX32(* TIMESTAMP_STA);
@@ -9627,7 +9627,6 @@ void hightests(void)
 #if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		const COLORPIP_T bg = display2_getbgcolor();
-		PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
@@ -9640,12 +9639,18 @@ void hightests(void)
 //		for (;;)
 //			;
 
-		for (int pos = 0; pos < 24; ++ pos)
+		for (;;)
 		{
-			COLORPIP_T c = TFTALPHA(255, UINT32_C(1) << pos);
-			colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, c);
-			PRINTF("color=%08X pos=%d\n", (unsigned) c, pos);
-			local_delay_ms(2000);
+			for (int pos = 0; pos < (LCDMODE_PIXELSIZE * 8); ++ pos)
+			{
+				gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
+				gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+				COLORPIP_T c = TFTALPHA(255, UINT32_C(1) << pos);
+				colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, c);
+				colmain_nextfb();
+				PRINTF("color=%08X pos=%d\n", (unsigned) c, pos);
+				local_delay_ms(2000);
+			}
 		}
 		for (;;)
 			;
