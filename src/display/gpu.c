@@ -20,7 +20,7 @@
 #include "display2.h"
 #include <string.h>
 
-#if CPUSTYLE_T507
+#if WITHGPUHW && CPUSTYLE_T507
 //#define __OPENCL_VERSION__
 //#include "panfrost_regs.h"
 
@@ -1007,7 +1007,7 @@ void board_gpu_initialize(void)
 	PRINTF("board_gpu_initialize done.\n");
 }
 
-#elif CPUSTYLE_STM32MP1
+#elif  WITHGPUHW && CPUSTYLE_STM32MP1
 
 void GPU_IRQHandler(void)
 {
