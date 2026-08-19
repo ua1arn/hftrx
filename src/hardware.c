@@ -1592,6 +1592,7 @@ dbgcountfast_t cpu_getdebugticksmask(void)
 // получение из аппаратного счетчика монотонно увеличивающегося кода
 hwtimcountfast_t cpu_gethwtimticks(void)
 {
+	return cpu_getdebugticks();
 #if __aarch64__
 	return __get_CNTPCT_EL0();
 #elif (defined (__CORTEX_A))
@@ -1604,6 +1605,7 @@ hwtimcountfast_t cpu_gethwtimticks(void)
 // получение частоты, с которой инкрементируется счетчик
 hwtimcountfast_t cpu_gethwtimticksfreq(void)
 {
+	return cpu_getdebugticksfreq();
 #if __aarch64__
 	return __get_CNTFRQ_EL0();
 #elif (defined (__CORTEX_A))
@@ -1616,6 +1618,7 @@ hwtimcountfast_t cpu_gethwtimticksfreq(void)
 // получение маски на разрядность аппаратного счётчика
 hwtimcountfast_t cpu_gethwtimticksmask(void)
 {
+	return cpu_getdebugticksmask();
 #if __aarch64__
 	return UINT64_C(0xFFFFFFFFFFFFFFFF);
 #elif (defined (__CORTEX_A))
