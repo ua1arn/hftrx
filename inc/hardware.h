@@ -386,7 +386,7 @@ void cpu_initialize(void);
 void arm_hardware_reset(void);
 void cpu_initdone(void);	// секция init больше не нужна
 
-#if defined(__aarch64__) || (defined (__CORTEX_A) && __CORTEX_A == 7) || (defined(__riscv) && (__riscv_xlen == 64))
+#if defined(__aarch64__) || (defined (__CORTEX_A)) || (defined(__riscv) && (__riscv_xlen == 64))
 	typedef uint64_t dbgcount_t;
 	typedef uint_fast64_t dbgcountfast_t;
 	typedef uint64_t hwtimcount_t;
@@ -394,8 +394,8 @@ void cpu_initdone(void);	// секция init больше не нужна
 #else
 	typedef uint32_t dbgcount_t;
 	typedef uint_fast32_t dbgcountfast_t;
-	typedef uint64_t hwtimcount_t;
-	typedef uint_fast64_t hwtimcountfast_t;
+	typedef uint32_t hwtimcount_t;
+	typedef uint_fast32_t hwtimcountfast_t;
 #endif
 
 dbgcountfast_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода

@@ -1594,7 +1594,7 @@ hwtimcountfast_t cpu_gethwtimticks(void)
 {
 #if __aarch64__
 	return __get_CNTPCT_EL0();
-#elif (__CORTEX_A == 7U)
+#elif (defined (__CORTEX_A))
 	return __get_CNTPCT();
 #else
 	return cpu_getdebugticks();
@@ -1606,7 +1606,7 @@ hwtimcountfast_t cpu_gethwtimticksfreq(void)
 {
 #if __aarch64__
 	return __get_CNTFRQ_EL0();
-#elif (__CORTEX_A == 7U)
+#elif (defined (__CORTEX_A))
 	return __get_CNTFRQ();
 #else
 	return cpu_getdebugticksfreq();
@@ -1618,7 +1618,7 @@ hwtimcountfast_t cpu_gethwtimticksmask(void)
 {
 #if __aarch64__
 	return UINT64_C(0xFFFFFFFFFFFFFFFF);
-#elif (__CORTEX_A == 7U)
+#elif (defined (__CORTEX_A))
 	return UINT64_C(0xFFFFFFFFFFFFFFFF);
 #else
 	return cpu_getdebugticksmask();
