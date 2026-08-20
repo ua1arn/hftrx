@@ -7028,6 +7028,7 @@ void sysinit_boot_disconnect(void)
 {
 }
 
+// r7s721
 // на каждом CORE
 void sysinit_hwtimer_initialize(void)
 {
@@ -7605,22 +7606,6 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	arm_hardware_set_handler_system(TIM5_IRQn, TIM5_IRQHandler);
 
-	// Prepare funcionality: use CNTP
-	const uint_fast32_t gtimfreq = stm32mp1_get_hsi_freq();
-
-	PL1_SetCounterFrequency(gtimfreq);	// CNTFRQ
-
-	gtimloadvalue = calcdivround2(gtimfreq, ticksfreq) - 1;
-	// Private timer use
-	// Disable Private Timer and set load value
-	PL1_SetControl(0);	// CNTP_CTL
-	PL1_SetLoadValue(gtimloadvalue);	// CNTP_TVAL
-
-	//arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, SecurePhysicalTimer_IRQHandler);
-
-	// Enable timer control
-	PL1_SetControl(1);
-
 #elif CPUSTYLE_A733
 	// timebase timer
 	const unsigned ix = 1;
@@ -7754,11 +7739,6 @@ void stm32mp1_pll1_slow(uint_fast8_t slow)
 
 void stm32mp1_pll_initialize(int forced_unused)
 {
-	{
-//		const uint_fast32_t f = allwnr_a733_get_dcxo_freq();	// 24000000
-//		__set_CNTFRQ(f);
-	}
-
 	//return;
 	// PLL1 DIVN=0x1f. DIVM=0x4, DIVP=0x0
 	// HSI 64MHz/5*32 = 409.6 MHz
@@ -8448,7 +8428,9 @@ void sysinit_boot_disconnect(void)
 // на каждом CORE
 void sysinit_hwtimer_initialize(void)
 {
-
+	const uint_fast32_t f = HSI64FREQ;//stm32mp1_get_hsi_freq(); // 64 MHz
+	__set_CNTFRQ(f);
+	PL1_SetCounterFrequency(f);	// same as above
 }
 
 // STM32MP1 PLL initialize
