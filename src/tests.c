@@ -8106,7 +8106,7 @@ void hightests(void)
 		gpu_test();
 	}
 #endif
-#if 0
+#if 0 && ! WITHISBOOTLOADER
 	{
 		// timestamp tests
 		//TIMESTAMP_CTRL->CNT_FREQID_REG = 0x16E3600;	// 24000000
