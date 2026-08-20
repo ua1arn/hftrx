@@ -2004,6 +2004,7 @@ enum
 	TASKFN_WAIT32,
 	TASKFN_WAIT8,
 	TASKFN_WAITLIST,
+	TASKFN_SETAFFINITY,
 	//
 	TASKFN_count
 };
@@ -2040,6 +2041,13 @@ struct taskfnparam_waitlist
 	uint32_t t0;
 	uint32_t td;
 	volatile void * guard;
+};
+
+
+struct taskfnparam_setaffinity
+{
+	unsigned newaffinity;
+	unsigned oldaffinity;
 };
 
 static int task_idle(void * ctx)
@@ -2439,6 +2447,17 @@ static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * 
 		thread->check_ready_obj = arg1;
 		thread->check_ready = & readytag_waitlist;
 		return;
+
+	case TASKFN_SETAFFINITY:
+		{
+			volatile struct taskfnparam_setaffinity * const param = (volatile struct taskfnparam_setaffinity *) arg1;
+			ASSERT(threads_not_started == 0);
+			thread->check_ready_obj = NULL;
+			param->oldaffinity = thread->affinity;
+			thread->affinity = param->newaffinity;
+		}
+
+		return;
 	}
 }
 
@@ -2626,6 +2645,22 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 	}
 }
 
+// Set thread affinity - return old value
+unsigned task_set_affinity(unsigned affinity)
+{
+	if (threads_not_started || 1)
+	{
+		return 0;
+	}
+	else
+	{
+		volatile struct taskfnparam_setaffinity v;
+		v.newaffinity = affinity;
+		task_sysfn(TASKFN_SETAFFINITY, & v);
+		return v.oldaffinity;
+	}
+}
+
 #else
 
 // Non-linux, non-scheduler
@@ -2739,6 +2774,13 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 // хотим завершить выполнение кванта, не дожидаясь прерывания
 void task_yield(void)
 {
+}
+
+
+// Set thread affinity - return old value
+unsigned task_set_affinity(unsigned affinity)
+{
+	return 0;
 }
 
 #endif /* */
@@ -2878,11 +2920,12 @@ void local_delay_us(uint_fast32_t timeUS)
 {
 	if (timeUS == 0)
 		return;
-
+	const unsigned affinity = task_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
 	const hwtimcountfast_t t0 = cpu_gethwtimticks();	// Счетчик увеличивается с частотой процессора
 	const hwtimcountfast_t td = get_td_us(timeUS);
 	while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td)
 		;
+	task_set_affinity(affinity);
 }
 
 
