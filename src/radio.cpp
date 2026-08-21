@@ -1102,6 +1102,16 @@ static int_fast32_t getzerobase(void)
 	return 0;
 }
 
+#define	BOARD_AGCFENCE_BASE	(- 133)		/* код управления точки перегиба АРУ ВЧ тракта */
+#define	BOARD_AGCFENCE_MIN	(- 133)		/* код управления точки перегиба АРУ ВЧ тракта */
+#define	BOARD_AGCFENCE_MAX	(+ 62)		/* код управления точки перегиба АРУ ВЧ тракта */
+#define	BOARD_AGCFENCE_DEFAULT	(- 55)	/* код управления точки перегиба АРУ ВЧ тракта */
+
+static int_fast32_t getagcfencebase(void)
+{
+	return BOARD_AGCFENCE_BASE;
+}
+
 static const struct paramdefdef xgdummy =
 {
 	QLABEL(""), 7, 0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
@@ -3862,6 +3872,7 @@ struct nvmap
 	#endif /* ! WITHPOTAFGAIN */
 	#if ! WITHPOTIFGAIN
 		uint16_t rfgain1;	// Параметр для регулировки усиления по ПЧ
+		uint16_t agcfence1;	// Параметр для регулировки точки пергиба АРУ
 	#endif /* ! WITHPOTIFGAIN */
 	uint16_t glineamp;	// усиление с LINE IN
 	uint8_t gmikeboost20db;	// предусилитель микрофона
@@ -5187,6 +5198,7 @@ enum
 #endif /* WITHCAT */
 
 #if WITHIF4DSP
+
 #if defined WITHAFGAINDEFAULT
 	static dualctl16_t afgain1 = { WITHAFGAINDEFAULT, WITHAFGAINDEFAULT };
 #elif defined WITHPOTAFGAIN
@@ -5194,7 +5206,6 @@ enum
 #else
 	static dualctl16_t afgain1 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
 #endif /* defined WITHAFGAINDEFAULT */
-	static dualctl16_t rfgain1 = { BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX };	// Усиление ПЧ на максимуме
 	// Громкость в процентах
 	static const struct paramdefdef xafgain1 =
 	{
@@ -5212,6 +5223,8 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+
+	static dualctl16_t rfgain1 = { BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX };	// Усиление ПЧ на максимуме
 	// Усиление ПЧ/ВЧ в процентах
 	static const struct paramdefdef xrfgain1 =
 	{
@@ -5227,6 +5240,25 @@ enum
 		& rfgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
+	static dualctl16_t agcfence1 = { BOARD_AGCFENCE_DEFAULT - BOARD_AGCFENCE_BASE, BOARD_AGCFENCE_DEFAULT - BOARD_AGCFENCE_BASE };	// Усиление ПЧ на максимуме
+	// Точка перегиба характеристики АРУ
+	static const struct paramdefdef xagcfence1 =
+	{
+		QLABEL3("AGC FENCE", "AGC Fence", "AGC FENCE"), 7, 0, RJ_SIGNED, ISTEP3,
+		ITEM_VALUE,
+		BOARD_AGCFENCE_MIN - BOARD_AGCFENCE_BASE, BOARD_AGCFENCE_MAX - BOARD_AGCFENCE_BASE, 					// Усиление ПЧ/ВЧ в процентах
+#if WITHPOTIFGAIN
+		MENUNONVRAM,
+#else /* WITHPOTIFGAIN */
+		OFFSETOF(struct nvmap, agcfence1),
+#endif /* WITHPOTIFGAIN */
+		getselector0, nvramoffs0, valueoffs0,
+		& agcfence1.value,
+		NULL,
+		getagcfencebase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	static uint_fast16_t glineamp = WITHLINEINGAINMAX;	// усиление с LINE IN
@@ -7118,20 +7150,19 @@ static const struct paramdefdef xgkeybeep10 =
 static const uint_fast16_t actbring_time = 10;	// 1 second
 static const uint_fast16_t swrbring_time = BOARD_ERRBEEP_LENGTH / 100;	// 0.6 second
 
-static uint_fast16_t actbring_afvolume;
-// Начать отображение текущего положения регулировки AF
-static void bring_afvolume(void)
-{
-	actbring_afvolume = actbring_time;
-}
+//static uint_fast16_t actbring_afvolume;
+//// Начать отображение текущего положения регулировки AF
+//static void bring_afvolume(void)
+//{
+//	actbring_afvolume = actbring_time;
+//}
 
-static uint_fast16_t actbring_rfvolume;
-
-// Начать отображение текущего положения регулировки RF
-static void bring_rfvolume(void)
-{
-	actbring_rfvolume = actbring_time;
-}
+//static uint_fast16_t actbring_rfvolume;
+//// Начать отображение текущего положения регулировки RF
+//static void bring_rfvolume(void)
+//{
+//	actbring_rfvolume = actbring_time;
+//}
 
 static const char * bring_swr_text = "---";
 static uint_fast16_t actbring_swr;
@@ -7237,6 +7268,14 @@ static int getlabelRFGAIN(void * ctx, char * buff, size_t count)
 	return n;
 }
 
+static int getlabelAGCFENCE(void * ctx, char * buff, size_t count)
+{
+	const struct paramdefdef * const pd = & xagcfence1;
+	const int_fast32_t value = param_getvalue(pd);
+	return local_snprintf_P(buff, count, "AGC %+d", (int) value);
+}
+
+
 static int getlabelRFGAINsss(void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = & xrfgain1;
@@ -7263,6 +7302,7 @@ static const encfnitem_t enclabelsENC1FN [] =
 {
 	{ NULL, getlabelAFGAIN, },
 	{ NULL, getlabelRFGAIN, },
+	{ NULL, getlabelAGCFENCE, },
 };
 
 static const encfnitem_t enclabelsENC2FN [] =
@@ -7347,8 +7387,8 @@ uint_fast8_t hamradio_get_bringtuneB(void)
 
 static void bringtimers(void)
 {
-	actbring_afvolume = actbring_afvolume ? (actbring_afvolume - 1) : 0;
-	actbring_rfvolume = actbring_rfvolume ? (actbring_rfvolume - 1) : 0;
+//	actbring_afvolume = actbring_afvolume ? (actbring_afvolume - 1) : 0;
+//	actbring_rfvolume = actbring_rfvolume ? (actbring_rfvolume - 1) : 0;
 	actbring_tuneA = actbring_tuneA ? (actbring_tuneA - 1) : 0;
 	actbring_tuneB = actbring_tuneB ? (actbring_tuneB - 1) : 0;
 #if WITHTX
@@ -10033,6 +10073,7 @@ static const struct paramdefdef * enc2menus [] =
 #if ! WITHPOTIFGAIN
 	& xrfgain1,	// Усиление ПЧ/ВЧ в процентах
 #endif /* ! WITHPOTIFGAIN */
+	& xagcfence1,	// Точка перегиба характеристики АРУ
 	& xfltsofter_cwnarrow,	// CW filter edges for NARROW
 #endif /* WITHIF4DSP */
 #if WITHELKEY && ! WITHPOTWPM
@@ -13527,6 +13568,7 @@ updateboard_noui(
 	#if WITHIF4DSP
 		board_set_afgain(sleepflag == 0 ? param_getvalue(& xafgain1) : BOARD_AFGAIN_MIN);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 		board_set_ifgain(sleepflag == 0  ? param_getvalue(& xrfgain1) : BOARD_IFGAIN_MIN);	// Параметр для регулировки усиления ПЧ
+		board_set_agcfence(param_getvalue(& xagcfence1));
 
 		const uint_fast8_t txaprofile = gtxaprofiles [getmodetempl(txsubmode)->txaprofgp];	// значения 0..NMICPROFILES-1
 
@@ -15206,13 +15248,19 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 			/* установка громкости */
 			if (delta == 0)
 				break;
-			changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), bring_afvolume);
+			changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), NULL);
 			break;
 		case 1:
 			if (delta == 0)
 				break;
 			/* установка IF GAIN */
-			changed |= encoder_flagne(& xrfgain1, delta, CATINDEX(CAT_RG_INDEX), bring_rfvolume);
+			changed |= encoder_flagne(& xrfgain1, delta, CATINDEX(CAT_RG_INDEX), NULL);
+			break;
+		case 2:
+			if (delta == 0)
+				break;
+			/* установка AGC FENCE */
+			changed |= encoder_flagne(& xagcfence1, delta, CATINDEX(CAT_RG_INDEX), NULL);
 			break;
 		}
 	}
@@ -16836,7 +16884,7 @@ processcatmsg(
 	{
 		if (cathasparam != 0)
 		{
-			cat_answer_request(CAT_BADCOMMAND_INDEX);
+			cat_answer_request(CAT_BADCOMMAND_INDEX);	// сброс всех ранее запрошенных запросов на ответ
 		}
 		else
 		{
@@ -16847,7 +16895,7 @@ processcatmsg(
 	{
 		if (cathasparam != 0)
 		{
-			cat_answer_request(CAT_BADCOMMAND_INDEX);
+			cat_answer_request(CAT_BADCOMMAND_INDEX);	// сброс всех ранее запрошенных запросов на ответ
 		}
 		else
 		{

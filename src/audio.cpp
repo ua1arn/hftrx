@@ -95,6 +95,7 @@
 
 static uint_fast8_t		glob_trxpath = 0;			/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
 static uint_fast16_t 	glob_ifgain = BOARD_IFGAIN_MIN;
+static int_fast16_t 	glob_agcfence = - 73;
 static uint_fast8_t 	glob_dspmodes [2] = { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE, };
 
 static uint_fast8_t		glob_agcrate [2] = { 20, 20 }; //10	// 10 дБ изменение входного на 1 дБ выходного
@@ -3399,7 +3400,7 @@ int_fast16_t dsp_rssi10(int_fast16_t * tracemax, uint_fast8_t pathi)
 /* получить значение точки перегиба АРУ в 0.1 дБмВт */
 int_fast16_t dsp_agcfence10(void)
 {
-	return WITHMINFSPOWER * 10;
+	return glob_agcfence * 10;
 }
 
 static FLOAT_t mickecliplevelp [NPROF] = { + 1, + 1 };	/* positive limit */
@@ -5733,6 +5734,16 @@ board_set_ifgain(uint_fast16_t v)
 	if (glob_ifgain != v)
 	{
 		glob_ifgain = v;
+		board_dsp1regchanged();
+	}
+}
+
+void
+board_set_agcfence(int_fast16_t v)
+{
+	if (glob_agcfence != v)
+	{
+		glob_agcfence = v;
 		board_dsp1regchanged();
 	}
 }

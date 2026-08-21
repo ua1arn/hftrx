@@ -470,6 +470,8 @@ void board_set_aflowcuttx(int_fast16_t v);		/* Нижняя частота ср�
 void board_set_afhighcuttx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */
 void board_set_afgain(uint_fast16_t v);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 void board_set_ifgain(uint_fast16_t v);	// Параметр для регулировки усиления ПЧ/ВЧ
+void board_set_agcfence(int_fast16_t v);	// Точка пергиба характеристики АРУ
+
 void board_set_dspmode(uint_fast8_t v);	// Параметр для установки режима работы приёмника A/передатчика A
 void board_set_lineinput(uint_fast8_t n);	// Включение line input (rear panel mini-din 6 pin input) вместо микрофона
 void board_set_lineamp(uint_fast16_t v);	// Параметр для регулировки уровня на входе аудио-ЦАП при работе с LINE IN
