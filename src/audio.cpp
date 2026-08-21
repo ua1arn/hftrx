@@ -5739,7 +5739,7 @@ board_set_ifgain(uint_fast16_t v)
 }
 
 void
-board_set_agcfence(int_fast16_t v)
+board_set_agcfence(int_fast16_t v)	// Точка пергиба характеристики АРУ
 {
 	if (glob_agcfence != v)
 	{

@@ -3872,7 +3872,7 @@ struct nvmap
 	#endif /* ! WITHPOTAFGAIN */
 	#if ! WITHPOTIFGAIN
 		uint16_t rfgain1;	// Параметр для регулировки усиления по ПЧ
-		uint16_t agcfence1;	// Параметр для регулировки точки пергиба АРУ
+		uint16_t agcfence1;	// Параметр для регулировки точки перегиба АРУ
 	#endif /* ! WITHPOTIFGAIN */
 	uint16_t glineamp;	// усиление с LINE IN
 	uint8_t gmikeboost20db;	// предусилитель микрофона
