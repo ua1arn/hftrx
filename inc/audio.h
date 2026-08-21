@@ -392,7 +392,7 @@ typedef struct agcparams
 	unsigned hungticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
 
 	// Амплитудные параметры АРУ
-
+	FLOAT_t agcfence;	// с какого уровня сигнала наступает точка пергиба АРУ
 	FLOAT_t gainlimit_ratio;				// Максимальное усиление в разах по напряжению, допустимое для АРУ
 	FLOAT_t	mininput_ratio;
 	FLOAT_t levelfence_ratio;				// Максимальнное значение на выхоле АРУ

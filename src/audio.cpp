@@ -1311,6 +1311,7 @@ void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
 	agcp->mininput_ratio = db2ratio(WITHMINFSPOWER);
 	agcp->levelfence_ratio = 1;
 	agcp->agcfactor = agc_calcagcfactor(10);
+	agcp->agcfence = 1;
 
 	//PRINTF(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
@@ -1335,13 +1336,14 @@ void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t 
 	agcp->gainlimit_ratio = db2ratio(60);
 	agcp->levelfence_ratio = db2ratio(WITHMAXFSPOWER);
 	agcp->agcfactor = agc_calcagcfactor(10);
+	agcp->agcfence = 1;
 
 	//PRINTF(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
 // Установка параметров АРУ приёмника
 
-static void rxagc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit_ratio, uint_fast8_t pathi)
+static void rxagc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit_ratio, FLOAT_t agcfence, uint_fast8_t pathi)
 {
 	const uint_fast32_t sr = ARMSAIRATE;
 	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
@@ -1358,6 +1360,7 @@ static void rxagc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t g
 	agcp->gainlimit_ratio = gainlimit_ratio;
 	agcp->levelfence_ratio = (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;	/* Для эксперементов по улучшению приема АМ */
 	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
+	agcp->agcfence = agcfence;
 
 	//PRINTF(PSTR("rxagc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
@@ -1377,6 +1380,7 @@ static void smeter_parameters_update(volatile agcparams_t * const agcp)
 
 	agcp->gainlimit_ratio = db2ratio(60);
 	agcp->agcfactor = (FLOAT_t) -1;
+	agcp->agcfence = 1;	// Точка перегиба АРУ на максимальном сигнале
 
 	//PRINTF(PSTR("rxagc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
@@ -1400,6 +1404,7 @@ static void comp_parameters_initialize(volatile agcparams_t * agcp)
 	agcp->mininput_ratio = db2ratio(WITHMINFSPOWER);
 	agcp->levelfence_ratio = txlevelfenceSSB;
 	agcp->agcfactor = (FLOAT_t) - 1;
+	agcp->agcfence = 1;
 }
 
 // Установка параметров АРУ передатчика
@@ -3324,6 +3329,7 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	return r;
 }
 
+// Значение в dBm
 static int computeslevel_1(
 	FLOAT_t dbFS	// десятичный логарифм уровня сигнала от FS
 	)
@@ -3331,6 +3337,7 @@ static int computeslevel_1(
 	return (dbFS * 200 + (glob_fsadcpower10 + 5)) / 10;
 }
 
+// Значение в десятых долях dBm
 static int computeslevel_10(
 	FLOAT_t dbFS	// десятичный логарифм уровня сигнала от FS
 	)
@@ -5308,8 +5315,13 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 		const int gainmin = 0;	// Нижний предел регулировки усиления
 		const int gaindb = ((gainmax - gainmin) * (int) (glob_ifgain - BOARD_IFGAIN_MIN) / (int) (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN)) + gainmin;	// -20..+100 dB
 		const FLOAT_t manualrfgain = db2ratio(gaindb);
+		// glob_fsadcpower10
+		const FLOAT_t agcfence = db2ratio(computeslevel_1(ratio2db(0)) + glob_agcfence);	// из абсолютного уровня преобразовать в отношение к FS
 		
-		rxagc_parameters_update(& rxagcparams [profile] [pathi], manualrfgain, pathi);	// приёмник #0,#1
+		rxagc_parameters_update(& rxagcparams [profile] [pathi], manualrfgain, agcfence, pathi);	// приёмник #0,#1
+
+		//PRINTF("computeslevel_1(ratio2db(0))=%d, agcfence=%f\n", (int) computeslevel_1(ratio2db(0)), agcfence);
+
 	}
 
 	// Параметры S-метра приёмника
