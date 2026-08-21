@@ -16257,7 +16257,7 @@ scaletopointssmeter(void)
 {
 #if WITHBARS
 	int_fast16_t tracemaxi10;
-	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 	/* точки на шкале s-метра, к которым надо привязать измеренное значение */
 	static const int32_t smetervalues [] =
 	{
@@ -16388,7 +16388,7 @@ static void sm9answer(uint_fast8_t arg)
 		";";				// 1 char - line terminator
 
 	int_fast16_t tracemaxi10;
-	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt9_1,
@@ -23602,7 +23602,7 @@ int infocb_siglevel(char * b, size_t len, int * pstate)
 {
 #if WITHIF4DSP
 	int_fast16_t tracemaxi10;
-	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
 	return local_snprintf_P(b, len, PSTR("%-+4d" "dBm"), (int) (tracemaxi10 / 10));

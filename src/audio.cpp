@@ -3396,6 +3396,12 @@ int_fast16_t dsp_rssi10(int_fast16_t * tracemax, uint_fast8_t pathi)
 	return rssi10;
 }
 
+/* получить значение точки перегиба АРУ в 0.1 дБмВт */
+int_fast16_t dsp_agcfence10(void)
+{
+	return WITHMINFSPOWER * 10;
+}
+
 static FLOAT_t mickecliplevelp [NPROF] = { + 1, + 1 };	/* positive limit */
 static FLOAT_t mickeclipleveln [NPROF] = { - 1, - 1 };	/* negative limit */
 static FLOAT_t mickeclipscale [NPROF] = { 1, 1 };

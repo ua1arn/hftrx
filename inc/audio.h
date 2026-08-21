@@ -525,6 +525,7 @@ uint_fast8_t dsp_getvox(uint_fast8_t fullscale);	/* получить значе�
 uint_fast8_t dsp_getavox(uint_fast8_t fullscale);	/* получить значение от детектора Anti-VOX */
 uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi);	/* Получить значение отклонения частоты с точностью 0.1 герца */
 uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признака переполнения АЦП микрофонного тракта */
+int_fast16_t dsp_agcfence10(void);	/* получить значение точки перегиба АРУ в 0.1 дБмВт */
 
 void dsp_speed_diagnostics(void);	/* DSP speed test */
 void beginstamp(void);

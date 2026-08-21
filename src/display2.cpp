@@ -1772,8 +1772,8 @@ enum { SM_AF_H = GRID2Y(9) };	// высота, занятая индикатор
 enum { SM_AFSP_VOFFS0 = SM_BG_H - GRID2Y(1) };	// смещение линии нулевого уровня AF spectre - нижний край
 
 
-/* точки на шкале s-метра, к которым надо привязать измеренное значение */
-static const int32_t smeterpointsRX [] =
+/* точки на шкале s-метра, к которым надо привязать измеренное значение. Значения в 0.1 дБмВт*/
+static const int32_t smeterpointsRX10 [] =
 {
 	- 1270,	// S0 level -127.0 dBm
 	//- 1090,	// S3 level -109.0 dBm
@@ -1789,7 +1789,7 @@ typedef struct smeter_params_tag
 	int32_t gs;
 	int32_t gm;
 	int32_t ge;
-	int32_t smeterangles [ARRAY_SIZE(smeterpointsRX)];	// gs, gm, ge
+	int32_t smeterangles [ARRAY_SIZE(smeterpointsRX10)];	// gs, gm, ge
 	gxdrawb_t smbgdb;
 
 	int32_t r1;
@@ -1961,8 +1961,8 @@ static void sm_draw_dial_rx_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 
 	int_fast16_t tracemaxi10;
 	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
-	const int_fast32_t gv = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
-	//const int_fast32_t gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
+	const int_fast32_t gv = approximate(smeterpointsRX10, smeterangles, ARRAY_SIZE(smeterpointsRX10), rssi10);
+	//const int_fast32_t gv_trace = approximate(smeterpointsRX10, smeterangles, ARRAY_SIZE(smeterpointsRX10), tracemaxi10);
 
 	// RX state
 	colpip_bitblt(
@@ -2053,8 +2053,10 @@ static void sm_draw_dial_rx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 
 	int_fast16_t tracemaxi10;
 	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
-	const int_fast32_t gv = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
-	const int_fast32_t gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
+	const int_fast16_t agcfence10 = dsp_agcfence10();
+	const int_fast32_t gv = approximate(smeterpointsRX10, smeterangles, ARRAY_SIZE(smeterpointsRX10), rssi10);
+	const int_fast32_t gv_trace = approximate(smeterpointsRX10, smeterangles, ARRAY_SIZE(smeterpointsRX10), tracemaxi10);
+	const int_fast32_t gv_fence = approximate(smeterpointsRX10, smeterangles, ARRAY_SIZE(smeterpointsRX10), agcfence10);
 
 	// RX state
 	colpip_bitblt(
@@ -2065,6 +2067,14 @@ static void sm_draw_dial_rx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 			0, 0,	// координаты окна источника
 			SM_BG_W, SM_BG_H, // размер окна источника
 			BITBLT_FLAG_NONE, 0);
+	{
+		// Рисование AGC FENCE (риска)
+		const COLORPIP_T color = COLORPIP_RED;
+		colpip_radius(db, xc - 1, yc, gv_fence, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
+		colpip_radius(db, xc, yc, gv_fence, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
+		colpip_radius(db, xc + 1, yc, gv_fence, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
+	}
+
 	{
 		// Рисование peak value (риска)
 		const COLORPIP_T color = COLORPIP_YELLOW;
@@ -2335,8 +2345,10 @@ static void sm_draw_bars_rx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 
 	int_fast16_t tracemaxi10;
 	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
-	const int_fast32_t gv = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
-	const int_fast32_t gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
+	const int_fast16_t agcfence10 = dsp_agcfence10();
+	const int_fast32_t gv = approximate(smeterpointsRX10, smeterangles, ARRAY_SIZE(smeterpointsRX10), rssi10);
+	const int_fast32_t gv_trace = approximate(smeterpointsRX10, smeterangles, ARRAY_SIZE(smeterpointsRX10), tracemaxi10);
+	const int_fast32_t gv_fence = approximate(smeterpointsRX10, smeterangles, ARRAY_SIZE(smeterpointsRX10), agcfence10);
 
 	colpip_bitblt(
 			db->cachebase, db->cachesize,
@@ -2352,6 +2364,8 @@ static void sm_draw_bars_rx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	// Пиковый уровень сигнала
 	if (gv_trace > gv)
 		colpip_line(db, x0 + gv_trace, y0 + smpr->r1 + 5, x0 + gv_trace, y0 + smpr->r1 + 20, COLORPIP_YELLOW, 0);
+	// AGC FENCE
+	colpip_line(db, x0 + gv_fence, y0 + smpr->r1 + 5, x0 + gv_fence, y0 + smpr->r1 + 20, COLORPIP_RED, 0);
 }
 
 static void sm_draw_bars_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
@@ -4209,7 +4223,7 @@ static void display_siglevel7(const gxdrawb_t * db,
 {
 #if WITHIF4DSP
 	int_fast16_t tracemaxi10;
-	int_fast16_t rssi = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 
 	char buf2 [8];
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
@@ -4231,7 +4245,7 @@ static void display2_siglevel4(
 {
 #if WITHIF4DSP
 	int_fast16_t tracemaxi10;
-	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 
 	char buf2 [5];
 	// в формате при наличии знака числа ширина формата отностися ко всему полю вместе со знаком
@@ -4313,7 +4327,7 @@ static void display_smeter5(
 {
 #if WITHIF4DSP
 	int_fast16_t tracemaxi10;
-	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 
 	const int v = rssi10 / 10;
 	char buf2 [6];
@@ -8419,7 +8433,7 @@ static void smtr2_draw(lv_smtr2_t * smtr2, const lv_area_t * coords, lv_layer_t 
 	lv_area_t smeterbar;
 	lv_area_set(&smeterbar, coords->x1, coords->y1 + h / 3, coords->x2, coords->y1 + h * 2 / 3);
 	const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);
-	int32_t smeterangles [ARRAY_SIZE(smeterpointsRX)] =
+	int32_t smeterangles [ARRAY_SIZE(smeterpointsRX10)] =
 	{
 		0,
 		lv_area_get_width(&smeterbar) / 2,
@@ -8427,9 +8441,11 @@ static void smtr2_draw(lv_smtr2_t * smtr2, const lv_area_t * coords, lv_layer_t 
 	};
 	// без возможных тормозов на SPI при чтении
 	int_fast16_t tracemaxi10;
-	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
-	int_fast32_t gv_pos = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), rssi10);
-	int_fast32_t gv_trace = approximate(smeterpointsRX, smeterangles, ARRAY_SIZE(smeterpointsRX), tracemaxi10);
+	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	const int_fast16_t agcfence10 = dsp_agcfence10();
+	int_fast32_t gv_pos = approximate(smeterpointsRX10, smeterangles, ARRAY_SIZE(smeterpointsRX10), rssi10);
+	int_fast32_t gv_trace = approximate(smeterpointsRX10, smeterangles, ARRAY_SIZE(smeterpointsRX10), tracemaxi10);
+	int_fast32_t gv_fence = approximate(smeterpointsRX10, smeterangles, ARRAY_SIZE(smeterpointsRX10), agcfence10);
 	if (1)
 	{
 		lv_draw_rect_dsc_t rect;
@@ -10435,7 +10451,7 @@ display2_bars_rx(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast
 {
 #if WITHBARS
 	int_fast16_t tracemaxi10;
-	int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
+	const int_fast16_t rssi10 = dsp_rssi10(& tracemaxi10, 0);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 	display_smeter(db, x, y, rssi10, tracemaxi10, colspan, rowspan);
 #endif /* WITHBARS */
 }
