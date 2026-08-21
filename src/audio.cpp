@@ -5316,11 +5316,11 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 		const int gaindb = ((gainmax - gainmin) * (int) (glob_ifgain - BOARD_IFGAIN_MIN) / (int) (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN)) + gainmin;	// -20..+100 dB
 		const FLOAT_t manualrfgain = db2ratio(gaindb);
 		// glob_fsadcpower10
-		const FLOAT_t agcfence = db2ratio(computeslevel_1(ratio2db(0)) + glob_agcfence);	// из абсолютного уровня преобразовать в отношение к FS
+		const FLOAT_t agcfence = db2ratio(computeslevel_1(agc_calcstrengthlog10(1)) + glob_agcfence);	// из абсолютного уровня преобразовать в отношение к FS
 		
 		rxagc_parameters_update(& rxagcparams [profile] [pathi], manualrfgain, agcfence, pathi);	// приёмник #0,#1
 
-		//PRINTF("computeslevel_1(ratio2db(0))=%d, agcfence=%f\n", (int) computeslevel_1(ratio2db(0)), agcfence);
+		//PRINTF("glob_agcfence=%+d, glob_fsadcpower10=%d, computeslevel_1(ratio2db(0))=%+d, agcfence=%f\n", (int) glob_agcfence, (int) glob_fsadcpower10, (int) computeslevel_1(agc_calcstrengthlog10(1)), agcfence);
 
 	}
 
