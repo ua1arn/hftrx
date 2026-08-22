@@ -3190,7 +3190,7 @@ static FLOAT_t agccalcgain_log(const volatile agcparams_t * const agcp, FLOAT_t 
 	const FLOAT_t gain0 = POWF((FLOAT_t) M_E, streingth * agcp->agcfactor);
 	// реализация "спортивной" АРУ
 	// Увеличению сигнала на glob_agcrate децибел должно соответствовать
-	// увеличение выхода приёмника на 1 децтибел
+	// увеличение выхода приёмника на 1 децибел
 	const FLOAT_t gain = FMINF(agcp->gainlimit_ratio, gain0);
 	return gain;
 }
@@ -3200,6 +3200,11 @@ static FLOAT_t agccalcgain_log(const volatile agcparams_t * const agcp, FLOAT_t 
 static FLOAT_t agc_calcstrengthlog10(FLOAT_t streingth)
 {
 	return streingth / agclogof10;	// уже логарифмировано
+}
+
+static FLOAT_t agc_rcalcstrengthlog10(FLOAT_t v)
+{
+	return v * agclogof10;	// уже логарифмировано
 }
 
 static FLOAT_t agc_getsigpower(
@@ -3329,12 +3334,20 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	return r;
 }
 
-// Значение в dBm
+// return: Значение в dBm
 static int computeslevel_1(
 	FLOAT_t dbFS	// десятичный логарифм уровня сигнала от FS
 	)
 {
 	return (dbFS * 200 + (glob_fsadcpower10 + 5)) / 10;
+}
+
+// return: десятичный логарифм уровня сигнала от FS (dbFS)
+static FLOAT_t revcomputeslevel_1(
+	int power	// Значение в dBm
+	)
+{
+	return (FLOAT_t) (power - ((glob_fsadcpower10 + 5) / 10)) / 20;
 }
 
 // Значение в десятых долях dBm
@@ -3402,6 +3415,19 @@ int_fast16_t dsp_rssi10(int_fast16_t * tracemax, uint_fast8_t pathi)
 	tracemaxi10 = rssi10 > tracemaxi10 ? rssi10 : tracemaxi10;	// защита от рассогласования значений
 	* tracemax = tracemaxi10;
 	return rssi10;
+}
+
+// todo: fix this
+// получить значение, используемое в системе АРУ
+// по абсолютной мощности е единицах дБмВт
+
+static FLOAT_t agclevel_from_abspower(int_fast16_t abspower)
+{
+	// Обратное от computeslevel_1
+	FLOAT_t powerv = revcomputeslevel_1(abspower);	// десятичный логарифм уровня сигнала от FS (dbFS)
+	// Обратное от agc_calcstrengthlog10
+	FLOAT_t v = agc_rcalcstrengthlog10(powerv);
+	return v;
 }
 
 /* получить значение точки перегиба АРУ в 0.1 дБмВт */
@@ -5303,7 +5329,6 @@ dsp_get_samplerate100(void)
 	return ARMI2SRATE100;
 }
 
-
 // Передача параметров в DSP модуль
 // Обновление параметров приёмника (кроме фильтров).
 static void 
@@ -5316,11 +5341,11 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 		const int gaindb = ((gainmax - gainmin) * (int) (glob_ifgain - BOARD_IFGAIN_MIN) / (int) (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN)) + gainmin;	// -20..+100 dB
 		const FLOAT_t manualrfgain = db2ratio(gaindb);
 		// glob_fsadcpower10
-		const FLOAT_t agcfence = db2ratio(computeslevel_1(agc_calcstrengthlog10(1)) + glob_agcfence);	// из абсолютного уровня преобразовать в отношение к FS
+		const FLOAT_t agc_agcfence = agclevel_from_abspower(glob_agcfence);	// из абсолютного уровня преобразовать в отношение к FS
 		
-		rxagc_parameters_update(& rxagcparams [profile] [pathi], manualrfgain, agcfence, pathi);	// приёмник #0,#1
+		rxagc_parameters_update(& rxagcparams [profile] [pathi], manualrfgain, agc_agcfence, pathi);	// приёмник #0,#1
 
-		//PRINTF("glob_agcfence=%+d, glob_fsadcpower10=%d, computeslevel_1(ratio2db(0))=%+d, agcfence=%f\n", (int) glob_agcfence, (int) glob_fsadcpower10, (int) computeslevel_1(agc_calcstrengthlog10(1)), agcfence);
+		//PRINTF("glob_agcfence=%+d, glob_fsadcpower10=%d, agcfence=%f\n", (int) glob_agcfence, (int) glob_fsadcpower10, agc_agcfence);
 
 	}
 
