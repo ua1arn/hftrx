@@ -12954,6 +12954,36 @@ dbgcountfast_t cpu_getdebugticks(void)
 #endif
 }
 
+
+#if WITHONETIMESTAMP
+
+hwtimcountfast_t timestamp_getticks(void)
+{
+	uint_fast32_t high, high2;
+	uint_fast32_t low;
+	high = TIMESTAMP_STA->CNT_HI_REG;
+	do
+	{
+		high2 = high;
+		low = TIMESTAMP_STA->CNT_LOW_REG;
+		high = TIMESTAMP_STA->CNT_HI_REG;
+	} while (high != high2);
+
+	return ((uint_fast64_t) high << 32) | low;
+}
+
+hwtimcountfast_t timestamp_getmask(void)
+{
+	return UINT64_C(0xFFFFFFFFFFFFFFFF);	// mcycle width is 64
+}
+
+hwtimcountfast_t timestamp_getfreq(void)
+{
+	return TIMESTAMP_CTRL->CNT_FREQID_REG;
+}
+
+#endif /* WITHONETIMESTAMP */
+
 // получение маски на разрядность аппаратного счётчика
 dbgcountfast_t cpu_getdebugticksmask(void)
 {
@@ -12980,7 +13010,10 @@ dbgcountfast_t cpu_getdebugticksmask(void)
 hwtimcountfast_t cpu_gethwtimticks(void)
 {
 	//return cpu_getdebugticks();
-#if (defined (__CORTEX_A) && __CORTEX_A == 9)
+#if WITHONETIMESTAMP
+	return timestamp_getticks();
+
+#elif (defined (__CORTEX_A) && __CORTEX_A == 9)
 	return cpu_getdebugticks();
 
 #elif __aarch64__
@@ -12999,7 +13032,10 @@ hwtimcountfast_t cpu_gethwtimticks(void)
 hwtimcountfast_t cpu_gethwtimticksfreq(void)
 {
 	//return cpu_getdebugticksfreq();
-#if (defined (__CORTEX_A) && __CORTEX_A == 9)
+#if WITHONETIMESTAMP
+	return timestamp_getfreq();
+
+#elif (defined (__CORTEX_A) && __CORTEX_A == 9)
 	return cpu_getdebugticksfreq();
 
 #elif __aarch64__
@@ -13018,7 +13054,10 @@ hwtimcountfast_t cpu_gethwtimticksfreq(void)
 hwtimcountfast_t cpu_gethwtimticksmask(void)
 {
 	//return cpu_getdebugticksmask();
-#if (defined (__CORTEX_A) && __CORTEX_A == 9)
+#if WITHONETIMESTAMP
+	return timestamp_getmask();
+
+#elif (defined (__CORTEX_A) && __CORTEX_A == 9)
 	return cpu_getdebugticksmask();
 
 #elif __aarch64__

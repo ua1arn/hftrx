@@ -2920,12 +2920,16 @@ void local_delay_us(uint_fast32_t timeUS)
 {
 	if (timeUS == 0)
 		return;
+#if ! WITHONETIMESTAMP
 	const unsigned affinity = task_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
+#endif /* ! WITHONETIMESTAMP */
 	const hwtimcountfast_t t0 = cpu_gethwtimticks();	// Счетчик увеличивается с частотой процессора
 	const hwtimcountfast_t td = get_td_us(timeUS);
 	while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td)
 		;
+#if ! WITHONETIMESTAMP
 	task_set_affinity(affinity);
+#endif /* ! WITHONETIMESTAMP */
 }
 
 
