@@ -507,7 +507,7 @@ void spool_systimerbundle(void)
 	перечисленных в таблице adcinputs.
 */
 
-RAMFUNC void spool_adcdonebundle(void)
+void spool_adcdonebundle(void)
 {
 	adcdones_event(NULL);
 }

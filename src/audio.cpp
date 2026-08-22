@@ -446,7 +446,7 @@ static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 #define FAST_Q31_2_FLOAT(val) ((q31_t) (val) / (FLOAT_t) 2147483648)
 
 #if 0
-static RAMFUNC FLOAT_t peekvalf(uint32_t a)
+static FLOAT_t peekvalf(uint32_t a)
 {
 	const ncoftw_t mask = (1UL << (TABLELOG2 - 2)) - 1;
 	const ncoftw_t quoter = 1UL << (TABLELOG2 - 2);
@@ -521,7 +521,7 @@ static ncoftw_t anglestep_monofreq2 = FTWAF(5600);
 static ncoftw_t angle_monofreq2;
 
 // test IQ frequency
-static RAMFUNC FLOAT32P_t get_float_monofreq(void)
+static FLOAT32P_t get_float_monofreq(void)
 {
 	const FLOAT32P_t v = getsincosf(angle_monofreq);
 	angle_monofreq = FTWROUND(angle_monofreq + anglestep_monofreq);
@@ -627,7 +627,7 @@ static RAMDTCM ncoftw_t angle_af1;
 static RAMDTCM ncoftw_t angle_af2;
 
 // двухтональный генератор для настройки
-static RAMFUNC FLOAT_t get_dualtonefloat(void)
+static FLOAT_t get_dualtonefloat(void)
 {
 	// Формирование значения выборки
 	const FLOAT_t v1 = getcosf(angle_af1);
@@ -677,7 +677,7 @@ static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi, uint_fast8_t dspmode
 /* задержка установки нового значение частоты генератора
  * возврат 1 если закончилась отработка времени
  */
-static RAMFUNC int switchmode_delaytx(uint_fast8_t pathi)
+static int switchmode_delaytx(uint_fast8_t pathi)
 {
 	if (delayblanklo6tx [pathi])
 		delayblanklo6tx [pathi] -= 1;
@@ -685,7 +685,7 @@ static RAMFUNC int switchmode_delaytx(uint_fast8_t pathi)
 	return ! delayblanklo6tx [pathi];
 }
 
-static RAMFUNC int switchmode_delayrx(uint_fast8_t pathi)
+static int switchmode_delayrx(uint_fast8_t pathi)
 {
 	if (delayblanklo6rx [pathi])
 		delayblanklo6rx [pathi] -= 1;
@@ -695,7 +695,7 @@ static RAMFUNC int switchmode_delayrx(uint_fast8_t pathi)
 
 // Получение квадратурных значений для данной частоты со смещением фазы
 // Returned is a full scale value
-static RAMFUNC FLOAT32P_t get_float_aflotx_delta(int32_t deltaftw, uint_fast8_t pathi)
+static FLOAT32P_t get_float_aflotx_delta(int32_t deltaftw, uint_fast8_t pathi)
 {
 	const ncoftw_t angle = angle_aflotx [pathi];
 	const FLOAT32P_t v = getsincosf(angle);
@@ -705,7 +705,7 @@ static RAMFUNC FLOAT32P_t get_float_aflotx_delta(int32_t deltaftw, uint_fast8_t 
 
 // Получение квадратурных значений для данной частоты
 // Returned is a full scale value
-static RAMFUNC FLOAT32P_t get_float_aflorx_delta(uint_fast8_t pathi)
+static FLOAT32P_t get_float_aflorx_delta(uint_fast8_t pathi)
 {
 	const ncoftw_t angle = angle_aflorx [pathi];
 	const FLOAT32P_t v = getsincosf(angle);
@@ -2245,7 +2245,7 @@ static void writecoefs(const int_fast32_t * lCoeff, int iCoefNum)
 /*-----------------------------------*/
 
 // float32 * float32 -> float32
-static RAMFUNC FLOAT32P_t scalepair(FLOAT32P_t a, FLOAT_t b)
+static FLOAT32P_t scalepair(FLOAT32P_t a, FLOAT_t b)
 {
 	a.IV *= b;
 	a.QV *= b;
@@ -2255,7 +2255,7 @@ static RAMFUNC FLOAT32P_t scalepair(FLOAT32P_t a, FLOAT_t b)
 #if 0
 
 // int32 * int32 -> int32
-static RAMFUNC FLOAT32P_t scalepair_int32(INT32P_t a, int_fast32_t b)
+static FLOAT32P_t scalepair_int32(INT32P_t a, int_fast32_t b)
 {
 	FLOAT32P_t v;
 	const int_fast64_t bi = b;
@@ -2576,12 +2576,12 @@ static FLOAT_t tx_firEQcoeff [Ntap_tx_MIKE];
 static ARM_MORPH(arm_fir_instance) tx_fir_instance;
 static FLOAT_t tx_fir_state [tx_MIKE_blockSize - 1 + Ntap_tx_MIKE];
 
-static RAMFUNC uint_fast8_t isdspmoderx(uint_fast8_t dspmode)
+static uint_fast8_t isdspmoderx(uint_fast8_t dspmode)
 {
 	return dspmode > DSPCTL_MODE_RX_BASE && dspmode < DSPCTL_MODE_RX_TOP;
 }
 
-static RAMFUNC uint_fast8_t isdspmodetx(uint_fast8_t dspmode)
+static uint_fast8_t isdspmodetx(uint_fast8_t dspmode)
 {
 	return dspmode > DSPCTL_MODE_TX_BASE && dspmode < DSPCTL_MODE_TX_TOP;
 }
@@ -3172,7 +3172,7 @@ void agc_state_initialize2(agcstate_t * __restrict st, const agcparams_t * __res
 
 // Для работы функции agc_perform требуется siglevel, больше значения которого
 // соответствуют большим уровням сигнала. может быть отрицательным
-static RAMFUNC FLOAT_t agccalcstrength_log(const volatile agcparams_t * const agcp, FLOAT_t siglevel_ratio)
+static FLOAT_t agccalcstrength_log(const volatile agcparams_t * const agcp, FLOAT_t siglevel_ratio)
 {
 	const FLOAT_t f0_ratio = agcp->levelfence_ratio;
 	const FLOAT_t m0_ratio = agcp->mininput_ratio;
@@ -3185,7 +3185,7 @@ static RAMFUNC FLOAT_t agccalcstrength_log(const volatile agcparams_t * const ag
 
 // По отфильтрованому в соответствии с заданными временныме параметрами показатлю
 // силы сигнала получаем требуемое усиление (в разах отношения напряжений).
-static RAMFUNC FLOAT_t agccalcgain_log(const volatile agcparams_t * const agcp, FLOAT_t streingth)
+static FLOAT_t agccalcgain_log(const volatile agcparams_t * const agcp, FLOAT_t streingth)
 {
 	const FLOAT_t gain0 = POWF((FLOAT_t) M_E, streingth * agcp->agcfactor);
 	// реализация "спортивной" АРУ
@@ -3197,12 +3197,12 @@ static RAMFUNC FLOAT_t agccalcgain_log(const volatile agcparams_t * const agcp, 
 
 // По отфильтрованому в соответствии с заданными временныме параметрами показатлю
 // силы сигнала получаем относительный уровень (логарифмированный)
-static RAMFUNC FLOAT_t agc_calcstrengthlog10(FLOAT_t streingth)
+static FLOAT_t agc_calcstrengthlog10(FLOAT_t streingth)
 {
 	return streingth / agclogof10;	// уже логарифмировано
 }
 
-static RAMFUNC FLOAT_t agc_getsigpower(
+static FLOAT_t agc_getsigpower(
 	FLOAT32P_t sampleiq
 	)
 {
@@ -3261,7 +3261,7 @@ static void agc_initialize(void)
 
 // АРУ вперёд для floaing-point тракта
 // получение измеренного уровня сигнала
-static RAMFUNC FLOAT_t agc_measure_float(
+static FLOAT_t agc_measure_float(
 	const uint_fast8_t dspmode, 
 	FLOAT_t siglevel0,
 	uint_fast8_t pathi
@@ -3288,7 +3288,7 @@ static RAMFUNC FLOAT_t agc_measure_float(
 
 // АРУ вперёд для floaing-point тракта
 // получение усиления
-static RAMFUNC FLOAT_t agc_getgain_float(
+static FLOAT_t agc_getgain_float(
 	FLOAT_t fltstrengthslow,
 	uint_fast8_t pathi
 	)
@@ -3304,7 +3304,7 @@ static RAMFUNC FLOAT_t agc_getgain_float(
 
 static RAMDTCM FLOAT_t manualsquelch [NTRX];
 
-static RAMFUNC int agc_levelsquelchopen(
+static int agc_levelsquelchopen(
 	FLOAT_t fltstrengthslow,
 	uint_fast8_t pathi
 	)
@@ -3416,7 +3416,7 @@ static FLOAT_t mickeclipscale [NPROF] = { 1, 1 };
 
 // ару и компрессор микрофона
 // На входе уже нормированный к txlevelfenceSSB сигнал
-static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
+static FLOAT_t txmikeagc(FLOAT_t vi)
 {
 	agcparams_t * const agcp = & txagcparams [gwagcproftx];
 	if (agcp->agcoff == 0)
@@ -3431,7 +3431,7 @@ static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 	return vi;
 }
 
-static RAMFUNC FLOAT_t txmikeclip(FLOAT_t vi)
+static FLOAT_t txmikeclip(FLOAT_t vi)
 {
 	// Ограничитель
 	const FLOAT_t levelp = mickecliplevelp [gwagcproftx];
@@ -3480,7 +3480,7 @@ z = 0.639035 + j 0.302403
 z = 0.501849 + j -0.734622
 z = 0.501849 + j 0.734622
 ***************************************************************/
-static RAMFUNC float iir_nfmnbbpf(FLOAT_t NewSample) {
+static float iir_nfmnbbpf(FLOAT_t NewSample) {
 	enum { NCoef = 4 };
    static const FLOAT_t ACoef[NCoef+1] = {
         0.48404079901937469000,
@@ -3544,7 +3544,7 @@ static FLOAT_t sidetonevolume = 0; //(glob_sidetonelevel / (FLOAT_t) 100);
 static FLOAT_t subtonevolume = 0; //(glob_subtonelevel / (FLOAT_t) 100);
 
 // Здесь значение выборки в диапазоне, допустимом для кодека
-static RAMFUNC FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
+static FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 {
 	if (uacoutplayer || btaudioplayer)
 		return sdtn;
@@ -3562,7 +3562,7 @@ static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 }
 
 // Здесь значение выборки в диапазоне, допустимом для кодека
-static RAMFUNC FLOAT_t injectsubtone(FLOAT_t v, FLOAT_t ctcss)
+static FLOAT_t injectsubtone(FLOAT_t v, FLOAT_t ctcss)
 {
 	const FLOAT_t mainvolumetx = 1 - subtonevolume;
 	return v * mainvolumetx + ctcss * subtonevolume;
@@ -3583,7 +3583,7 @@ static uint_fast32_t local_random(uint_fast32_t num)
 }
 
 // генератор шума для настройки
-static RAMFUNC FLOAT_t get_noisefloat(void)
+static FLOAT_t get_noisefloat(void)
 {
 	const uint_fast32_t middle = UINT32_MAX / 2;
 	// Формирование значения выборки
@@ -3629,7 +3629,7 @@ static void voxmeasure(FLOAT32P_t v)
 }
 
 // return audio sample in range [- 1.. + 1]
-static RAMFUNC FLOAT_t mikeinmux(
+static FLOAT_t mikeinmux(
 	uint_fast8_t dspmode,
 	FLOAT32P_t * moni
 	)
@@ -3731,7 +3731,7 @@ static RAMFUNC FLOAT_t mikeinmux(
 }
 
 /* получить I/Q пару для передачи в up-converter */
-static RAMFUNC FLOAT32P_t baseband_modulator(
+static FLOAT32P_t baseband_modulator(
 	FLOAT_t vi,
 	uint_fast8_t dspmode,
 	int32_t * deltanfm
@@ -3821,7 +3821,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 // To make the code faster you can change the ATAN2F to the following:
 
 // Fast approximate arctan2 code posted by Jim Shima
-static RAMFUNC FLOAT_t arctan2(FLOAT_t y, FLOAT_t x)
+static FLOAT_t arctan2(FLOAT_t y, FLOAT_t x)
 {
 	FLOAT_t angle;
 	//const float abs_y = y >= 0 ? y : - y;
@@ -3846,7 +3846,7 @@ static RAMFUNC FLOAT_t arctan2(FLOAT_t y, FLOAT_t x)
 //////////////////////////
 
 // Демодуляция FM (без арктангенса).
-static RAMFUNC ncoftwi_t demodulator_FMnew(
+static ncoftwi_t demodulator_FMnew(
 	FLOAT32P_t vp1,
 	const uint_fast8_t pathi,				// 0/1: main_RX/sub_RX
 	FLOAT_t sigpower
@@ -3878,7 +3878,7 @@ static RAMFUNC ncoftwi_t demodulator_FMnew(
 }
 
 // Демодуляция FM
-static RAMFUNC ncoftwi_t demodulator_FM(
+static ncoftwi_t demodulator_FM(
 	FLOAT32P_t vp1,
 	const uint_fast8_t pathi,				// 0/1: main_RX/sub_RX
 	FLOAT_t sigpower
@@ -4048,7 +4048,7 @@ flush_amd(struct amdemod * a)
 #endif
 
 // Демодуляция SAM
-static RAMFUNC FLOAT_t 
+static FLOAT_t
 demodulator_SAM(
 	FLOAT32P_t vp1,
 	const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
@@ -4326,7 +4326,7 @@ static FLOAT32P_t processifadcsampleIQ_ISB(
 // Обрабатывается 32-х битная квадратура
 // Возвращается сэмпл - выход детектора
 // return audio sample in range [- 1 .. + 1]
-static RAMFUNC FLOAT_t processifadcsampleIQ(
+static FLOAT_t processifadcsampleIQ(
 	IFADCvalue_t iv0,	// Квадратурные значения выборки
 	IFADCvalue_t qv0,	// Квадратурные значения выборки
 	uint_fast8_t dspmode,
@@ -4367,7 +4367,7 @@ static RAMFUNC FLOAT_t processifadcsampleIQ(
 // Обрабатывается 24-х битное число.
 // Возвращается сэмпл - выход детектора
 // return audio sample in range [- 1 .. + 1]
-static RAMFUNC FLOAT_t processifadcsamplei(IFADCvalue_t v1, uint_fast8_t dspmode)
+static FLOAT_t processifadcsamplei(IFADCvalue_t v1, uint_fast8_t dspmode)
 {
 	const uint_fast8_t pathi = 0;
 
@@ -4390,7 +4390,7 @@ static RAMFUNC FLOAT_t processifadcsamplei(IFADCvalue_t v1, uint_fast8_t dspmode
 #endif /* WITHDSPEXTDDC */
 
 /* получить очередной оцифрованый сэмпл с микрофона. */
-static RAMFUNC FLOAT32P_t getsampmlemike2(void)
+static FLOAT32P_t getsampmlemike2(void)
 {
 	FLOAT32P_t v;
 #if WITHSENDWAV
@@ -4410,7 +4410,7 @@ static RAMFUNC FLOAT32P_t getsampmlemike2(void)
 }
 
 /* получить очередной оцифрованый сэмпл с USB AUDIO канала. */
-static RAMFUNC FLOAT32P_t getsampmleusb2(void)
+static FLOAT32P_t getsampmleusb2(void)
 {
 	FLOAT32P_t v;
 	if (getsampmleusb(& v) == 0)
@@ -4422,7 +4422,7 @@ static RAMFUNC FLOAT32P_t getsampmleusb2(void)
 }
 
 /* получить очередной оцифрованый сэмпл с USB AUDIO канала. */
-static RAMFUNC FLOAT32P_t getsampmlebt2(void)
+static FLOAT32P_t getsampmlebt2(void)
 {
 	FLOAT32P_t v;
 	if (getsampmlebt(& v) == 0)
@@ -4433,7 +4433,7 @@ static RAMFUNC FLOAT32P_t getsampmlebt2(void)
 	return v;
 }
 
-static RAMFUNC uint_fast8_t isneedfiltering(uint_fast8_t dspmode)
+static uint_fast8_t isneedfiltering(uint_fast8_t dspmode)
 {
 	switch (dspmode)
 	{
@@ -4462,7 +4462,7 @@ static RAMFUNC uint_fast8_t isneedfiltering(uint_fast8_t dspmode)
 	}
 }
 
-static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
+static uint_fast8_t isneedmute(uint_fast8_t dspmode)
 {
 	switch (dspmode)
 	{
@@ -4593,7 +4593,7 @@ void savedemod_to_AF_proc(FLOAT_t left, FLOAT_t right)
 #if WITHDSPEXTDDC && defined (DMABUF32RXWFM0Q)
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
-void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
+void dsp_extbuffer32wfm(const int32_t * buff)
 {
 	const uint_fast8_t pathi = 0;
 	ASSERT(buff != NULL);
@@ -4803,7 +4803,7 @@ void inject_testsignals(IFADCvalue_t * const dbuff)
 
 /* выборка nsamples tx_MIKE_blockSize семплов из источников звука и формирование потока на передатчик */
 /* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx - меняем tx_MIKE_blockSize */
-RAMFUNC void dsp_processtx(unsigned nsamples)
+void dsp_processtx(unsigned nsamples)
 {
 	ASSERT(tx_MIKE_blockSize >= nsamples);
 	unsigned i;
@@ -5137,7 +5137,7 @@ static volatile uint_fast8_t txgateInput = 0;
 static volatile uint_fast8_t rxgateflag = 0;
 
 // 0..1
-static RAMFUNC FLOAT_t peakshapef(unsigned shapePos)	/* shapePos: от 0 до enveloplen0 включительно. */
+static FLOAT_t peakshapef(unsigned shapePos)	/* shapePos: от 0 до enveloplen0 включительно. */
 {
 	const q31_t halfcircle = INT32_MAX / 2;
 	// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*PI).
@@ -5148,7 +5148,7 @@ static RAMFUNC FLOAT_t peakshapef(unsigned shapePos)	/* shapePos: от 0 до en
 
 // Формирование огибающей для самоконтрола
 // 0..1
-static RAMFUNC FLOAT_t shapeSidetoneStep(void)
+static FLOAT_t shapeSidetoneStep(void)
 {
 	const unsigned enveloplen = enveloplen0;
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
@@ -5166,7 +5166,7 @@ static RAMFUNC FLOAT_t shapeSidetoneStep(void)
 
 // Формирование огибающей для передачи
 // 0..1
-static RAMFUNC FLOAT_t shapeTXEnvelopStep(void)
+static FLOAT_t shapeTXEnvelopStep(void)
 {
 	const unsigned enveloplen = enveloplen0;
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
@@ -5183,7 +5183,7 @@ static RAMFUNC FLOAT_t shapeTXEnvelopStep(void)
 
 // Формирование огибающей для передачи
 // 0..1
-static RAMFUNC FLOAT_t shapeCWSSBEnvelopStep(void)
+static FLOAT_t shapeCWSSBEnvelopStep(void)
 {
 	const unsigned enveloplen = enveloplen0;
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
@@ -5199,7 +5199,7 @@ static RAMFUNC FLOAT_t shapeCWSSBEnvelopStep(void)
 }
 
 // Возврат признака того, что передавать модему ещё рано - не полностью завершено формирование огибающей
-static RAMFUNC uint_fast8_t getTxShapeNotComplete(void)
+static uint_fast8_t getTxShapeNotComplete(void)
 {
 	const unsigned enveloplen = enveloplen0;
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */

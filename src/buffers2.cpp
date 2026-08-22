@@ -1513,7 +1513,7 @@ void save_dmabuffer32tx(uintptr_t addr)
 #if WITHFPGAPIPE_CODEC1
 
 // копирование полей для кодека в передаваемый на FPGA буфер
-static uintptr_t RAMFUNC
+static uintptr_t
 pipe_dmabuffer32tx_codec1(uintptr_t addr32tx, uintptr_t addr16tx)
 {
 	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
@@ -2814,7 +2814,7 @@ void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
-RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
+uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 {
 	return elfetch_dmabuffer16rx(v->ivqv);
 }
@@ -2824,7 +2824,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
-RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
+uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 {
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 	return elfetch_dmabufferuacout48(v->ivqv);
@@ -2834,7 +2834,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
-RAMFUNC uint_fast8_t getsampmlebt(FLOAT32P_t * v)
+uint_fast8_t getsampmlebt(FLOAT32P_t * v)
 {
 #if WITHUSEUSBBT
 	return elfetch_dmabufferbtout48(v->ivqv);
@@ -3353,7 +3353,7 @@ static uint_fast8_t isrts192(void)
 #if WITHRTS192 && 0
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после оцифровки - отдельный канал спектроанализатора
-void RAMFUNC save_dmabuffer32rts192(uintptr_t addr)
+void save_dmabuffer32rts192(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
 	voice32rts192_t * const p = CONTAINING_RECORD(addr, voice32rts192_t, u.buff);
@@ -3373,7 +3373,7 @@ void RAMFUNC save_dmabuffer32rts192(uintptr_t addr)
 
 #if WITHDSPEXTDDC && WITHRTS96
 // использование данных о спектре, передаваемых в общем фрейме
-static void RAMFUNC
+static void
 saverts96pair(const IFADCvalue_t * buff)
 {
 	// формирование отображения спектра
@@ -3410,7 +3410,7 @@ saverts96pair(const IFADCvalue_t * buff)
 
 #if WITHDSPEXTDDC && WITHRTS192
 // использование данных о спектре, передаваемых в общем фрейме
-static void RAMFUNC
+static void
 saverts192quad(const IFADCvalue_t * buff)
 {
 	// формирование отображения спектра
