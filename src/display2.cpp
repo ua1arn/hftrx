@@ -1939,7 +1939,7 @@ static void sm_draw_dial_tx_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 			smbgdb->cachebase, 0*smbgdb->cachesize,
 			smbgdb,
 			0, 0,	// координаты окна источника
-			SM_BG_W, SM_BG_H, // размер окна источника
+			smbgdb->dx, smbgdb->dy, // размер окна источника
 			BITBLT_FLAG_NONE, 0);
 
 	smeter_arrow_rle(db, gp, x0, y0, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
@@ -1971,7 +1971,7 @@ static void sm_draw_dial_rx_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 			smbgdb->cachebase, 0*smbgdb->cachesize,
 			smbgdb,
 			0, 0,	// координаты окна источника
-			SM_BG_W, SM_BG_H, // размер окна источника
+			smbgdb->dx, smbgdb->dy, // размер окна источника
 			BITBLT_FLAG_NONE, 0);
 
 	smeter_arrow_rle(db, gv, x0, y0, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
@@ -2065,7 +2065,7 @@ static void sm_draw_dial_rx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 			smbgdb->cachebase, 0*smbgdb->cachesize,
 			smbgdb,
 			0, 0,	// координаты окна источника
-			SM_BG_W, SM_BG_H, // размер окна источника
+			smbgdb->dx, smbgdb->dy, // размер окна источника
 			BITBLT_FLAG_NONE, 0);
 	{
 		// Рисование AGC FENCE (риска)
@@ -2228,7 +2228,7 @@ static void sm_draw_dial_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 			smbgdb->cachebase, 0*smbgdb->cachesize,
 			smbgdb,
 			0, 0,	// координаты окна источника
-			SM_BG_W, SM_BG_H, // размер окна источника
+			smbgdb->dx, smbgdb->dy, // размер окна источника
 			BITBLT_FLAG_NONE, 0);
 
 	if (gswr > smpr->gs)
@@ -2356,7 +2356,7 @@ static void sm_draw_bars_rx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 			smbgdb->cachebase, 0*smbgdb->cachesize,
 			smbgdb,
 			0, 0,	// координаты окна источника
-			SM_BG_W, SM_BG_H,	// размер окна источника
+			smbgdb->dx, smbgdb->dy,	// размер окна источника
 			BITBLT_FLAG_NONE, 0
 			);
 	// Уровень сигнала
@@ -2406,7 +2406,7 @@ static void sm_draw_bars_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 			smbgdb->cachebase, 0*smbgdb->cachesize,
 			smbgdb,
 			0, 0,	// координаты окна источника
-			SM_BG_W, SM_BG_H, // размер окна источника
+			smbgdb->dx, smbgdb->dy, // размер окна источника
 			BITBLT_FLAG_NONE, 0);
 
 	if(gp > smpr->gs)
