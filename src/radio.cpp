@@ -6658,6 +6658,11 @@ static size_t getvaltextserialnum(char * buff, size_t count, int_fast32_t value)
 	return local_snprintf_P(buff, count, "%04X:%04X", (serialnr >> 16) & 0xFFFF, (serialnr >> 0) & 0xFFFF);
 }
 
+static size_t getvaltextfreqmhz(char * buff, size_t count, int_fast32_t value)
+{
+	return local_snprintf_P(buff, count, "%" PRIiFAST32 " MHz", value);
+}
+
 static size_t getvaltextcputype(char * buff, size_t count, int_fast32_t value)
 {
 	const char * msg;
@@ -6719,7 +6724,7 @@ static const struct paramdefdef xgserialnum =
 
 static const struct paramdefdef xgcpufreq =
 {
-	QLABEL("CPU FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота процессора
+	QLABEL("CPU FREQ"), 7, 0, RJ_CB, 	ISTEP_RO,	// частота процессора
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -6727,7 +6732,7 @@ static const struct paramdefdef xgcpufreq =
 	& gzero,
 	NULL,
 	getcpufreqbase,
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	getvaltextfreqmhz, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 static const struct paramdefdef xgcputype =
@@ -6761,7 +6766,7 @@ static int_fast32_t getaxissfreqbase(void)
 #if CPUSTYLE_STM32MP1
 static const struct paramdefdef xgddrfreq =
 {
-	QLABEL("DDR FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота памяти
+	QLABEL("DDR FREQ"), 7, 0, RJ_CB, 	ISTEP_RO,	// частота памяти
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -6769,11 +6774,11 @@ static const struct paramdefdef xgddrfreq =
 	& gzero,
 	NULL,
 	getddrfreqbase,
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	getvaltextfreqmhz, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgbusfreq =
 {
-	QLABEL("BUS FREQ"), 7, 0, 0, 	ISTEP_RO,	// частота шины
+	QLABEL("BUS FREQ"), 7, 0, RJ_CB, 	ISTEP_RO,	// частота шины
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -6781,7 +6786,7 @@ static const struct paramdefdef xgbusfreq =
 	& gzero,
 	NULL,
 	getaxissfreqbase,
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	getvaltextfreqmhz, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif
 //
