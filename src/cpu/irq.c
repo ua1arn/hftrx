@@ -2730,8 +2730,45 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 	const hwtimcountfast_t td = get_td_ms(timeMS);
 	do
 	{
-		if (((* flag & mask) == state))
+		const uint_fast8_t f = * flag & mask;
+		if (f == state)
 			return 0;
+	} while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td);
+	return 1;
+}
+
+
+// wait expected state of variable
+// return non-zero: timeout error
+int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast8_t errstate, uint_fast32_t timeMS)
+{
+	const hwtimcountfast_t t0 = cpu_gethwtimticks();
+	const hwtimcountfast_t td = get_td_ms(timeMS);
+	do
+	{
+		const uint_fast8_t f = * flag & mask;
+		if (f == state)
+			return 0;
+		if (f == errstate)
+			return 1;
+	} while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td);
+	return 1;
+}
+
+// wait expected state of variable
+// return non-zero: timeout error or errormask
+int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t errstate, uint_fast32_t timeMS)
+{
+	const hwtimcountfast_t t0 = cpu_gethwtimticks();
+	const hwtimcountfast_t td = get_td_ms(timeMS);
+	//PRINTF("local_wait32mask: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
+	do
+	{
+		const uint_fast32_t f = * flag & mask;
+		if (f == state)
+			return 0;
+		if (f == errstate)
+			return 1;
 	} while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td);
 	return 1;
 }
@@ -2745,11 +2782,13 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 	//PRINTF("local_wait32mask: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
 	{
-		if (((* flag & mask) == state))
+		const uint_fast32_t f = * flag & mask;
+		if (f == state)
 			return 0;
 	} while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td);
 	return 1;
 }
+
 // wait expected state of variable
 // return non-zero: timeout error
 int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS)

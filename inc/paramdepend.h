@@ -936,7 +936,9 @@ unsigned task_set_affinity(unsigned affinity);	// Set thread affinity - return o
 // return non-zero: timeout error
 // timeMS may be LOCAL_WAITINFINITY
 int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS);
+int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast8_t errstate, uint_fast32_t timeMS);
 int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS);
+int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t errstate, uint_fast32_t timeMS);
 
 // wait non-zero state of variable
 // return non-zero: timeout error

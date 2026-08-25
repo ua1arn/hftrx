@@ -104,7 +104,7 @@ static void gpu_command(unsigned cmd)
 static void gpu_wait(unsigned mask)
 {
 	if (! local_wait32mask(& GPU_CONTROL->GPU_IRQ_RAWSTAT, mask, mask, 100))
-		GPU_CONTROL->GPU_IRQ_CLEAR = mask;
+		GPU_CONTROL->GPU_IRQ_CLEAR = GPU_IRQ_REG_ALL;
 }
 
 /* AS_COMMAND register commands */
@@ -129,8 +129,8 @@ void GPU_JOB_IRQHandler(void)
 	PRINTF("GPU_JOB_IRQHandler\n");
     PRINTF("h GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
     PRINTF("h GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
-    GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
-    GPU_JOB_CONTROL->JOB_IRQ_CLEAR = ~ 0;
+    GPU_JOB_CONTROL->JOB_INT_CLEAR = 0xFFFFFFFF;
+    GPU_JOB_CONTROL->JOB_IRQ_CLEAR = 0xFFFFFFFF;
 }
 
 void GPU_MMU_IRQHandler(void)
@@ -223,7 +223,7 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
     __DSB();
     // Ожидание завершения работы аппаратного тайлера геометрии
     // В hftrx прерывания выводят ASSERT(0), поэтому опрашиваем статус в цикле (polling)
-    if (local_wait32mask(& GPU_JOB_CONTROL->JOB_INT_RAWSTAT, (UINT32_C(1) << slot), 1 * (UINT32_C(1) << slot), 100))//Was: JOB_IRQ_RAWSTAT
+    if (local_wait32mask2(& GPU_JOB_CONTROL->JOB_INT_RAWSTAT, (UINT32_C(0x10001) << slot), 1 * (UINT32_C(1) << slot), 1 * (UINT32_C(0x10000) << slot), 100))//Was: JOB_IRQ_RAWSTAT
     {
     	// timeout
     	PRINTF("error job @%p:\n", (void *) job);
@@ -231,7 +231,7 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
     	printhex32(job, (void *) job, 128);
     	PRINTF("gpu timeout: GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
     	gpu_diagnose_slot_fault(slot, as);
-        GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
+        GPU_JOB_CONTROL->JOB_INT_CLEAR = 0xFFFFFFFF;
         return 1;
     }
     else
@@ -240,7 +240,7 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
 //    	dcache_invalidate((uintptr_t) job, 128);
 //    	printhex32(job, (void *) job, 128);
         GPU_JOB_CONTROL->JOB_INT_CLEAR = (UINT32_C(1) << slot); // Сброс флага прерывания
-        GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
+        GPU_JOB_CONTROL->JOB_INT_CLEAR = 0xFFFFFFFF;
         return 0;
     }
 }
@@ -369,7 +369,7 @@ static void gpu_computejob(void)
 
     pan_pack(& rsd_p, RENDERER_STATE, rsd) {
         // при 0-й ссылке на shader получаем успешно выполнившуюся compute job
-    	rsd.shader.shader = 0*(uintptr_t) & empty_compute_shader_isa;//& bifrost_v7_clear_shader;//& minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
+    	rsd.shader.shader = 1*(uintptr_t) & empty_compute_shader_isa;//& bifrost_v7_clear_shader;//& minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
     }
     pan_section_pack(& job_p, COMPUTE_JOB, HEADER, header) {
     	header.type = MALI_JOB_TYPE_COMPUTE;
