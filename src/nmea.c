@@ -110,12 +110,12 @@ uint_fast8_t nmeaparser_onrxchar(struct nmeaparser * np, uint_fast8_t c)
 	return 0;
 }
 
-static uint_fast8_t npeaparser_calcxorv(
+static unsigned npeaparser_calcxorv(
 	const char * s,
 	size_t len
 	)
 {
-	unsigned char r = '*';
+	unsigned r = 0;
 	while (len --)
 		r ^= (unsigned char) * s ++;
 	return r & 0xff;
