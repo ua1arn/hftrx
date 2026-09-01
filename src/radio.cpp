@@ -13440,6 +13440,8 @@ updateboard_noui(
 				#if WITHSUBTONES
 					board_set_ctcssrx(pamodetempl->subtone && param_getvalue(& xgsubtoneirx) ? gsubtones [param_getvalue(& xgsubtoneirx)] : 0);	// частота subtone (до десятых долей герца).
 				#endif /* WITHSUBTONES */
+			#else /* WITHIF4DSP */
+					(void) pamodetempl;
 			#endif /* WITHIF4DSP */
 				board_set_nb_enable(pathi, 0);	/* Управлением включением RX Noise Blanker */
 			} /* tx == 0 */
