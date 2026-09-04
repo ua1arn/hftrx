@@ -7955,6 +7955,19 @@ void hightests(void)
 #endif
 #if 0
 	{
+		// Functional encoders test
+		for (;;)
+		{
+			const unsigned e1 = hardware_get_encoder3_bits();
+			const unsigned e2 = hardware_get_encoder4_bits();
+			const unsigned e3 = hardware_get_encoder5_bits();
+			const unsigned e4 = hardware_get_encoder6_bits();
+			PRINTF("e: %u %u %u %u\n", e1, e2, e3, e4);
+		}
+	}
+#endif
+#if 0
+	{
 		unsigned core;
 		const uint_fast16_t int_id = SGI15_IRQn;
 		PRINTF("IPC interrupte demo, GIC_GetARE()=%d\n", (int) GIC_GetARE());

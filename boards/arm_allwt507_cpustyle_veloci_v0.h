@@ -363,54 +363,67 @@
 	#define ENC3F_BITS_GET() 		((ENC3F_INPUT_PORT & BOARD_ENC3F_BITS) >> ENC3F_BITB_POS) //(((ENC3F_INPUT_PORT & ENC3F_BITA) != 0) * GETENCBIT_A + ((ENC3F_INPUT_PORT & ENC3F_BITB) != 0) * GETENCBIT_B)	// ENC3F
 	#define ENC4F_BITS_GET() 		((ENC4F_INPUT_PORT & BOARD_ENC4F_BITS) >> ENC4F_BITB_POS) //(((ENC4F_INPUT_PORT & ENC4F_BITA) != 0) * GETENCBIT_A + ((ENC4F_INPUT_PORT & ENC4F_BITB) != 0) * GETENCBIT_B)	// ENC4F
 
-	#define ENCODER_INITIALIZE() do { \
-		static einthandler_t eh1; \
-		static einthandler_t eh2; \
-		static einthandler_t enc1fh; \
-		static einthandler_t enc2fh; \
-		static einthandler_t enc3fh; \
-		static einthandler_t enc4fh; \
-		/* Разным валкодерам на одном GPIO нельзя назначать разные приоритеты */ \
-		/* */ \
-		/* Main tuning knob - прерывания на обе фазы */ \
-		arm_hardware_piod_altfn20(BOARD_ENCODER_BITS, GPIO_CFG_EINT); \
-		arm_hardware_piod_updown(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, 0); \
-		einthandler_initialize(& eh1, BOARD_ENCODER_BITS, spool_encinterrupts_ccw, & encoder1); \
-		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh1); \
-		/* */ \
-		/* Second tuning knob - прерывания на обе фазы */ \
-		arm_hardware_piod_altfn20(BOARD_ENCODER_SUB_BITS, GPIO_CFG_EINT); \
-		arm_hardware_piod_updown(BOARD_ENCODER_SUB_BITS, BOARD_ENCODER_SUB_BITS, 0); \
-		einthandler_initialize(& eh2, BOARD_ENCODER_SUB_BITS, spool_encinterrupts_ccw, & encoder_sub); \
-		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER_SUB_BITS, BOARD_ENCODER_SUB_BITS, BOARD_ENCODER_SUB_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh2); \
-		/* */ \
+	#define ENCODER_ENC1F_INITIALIZE() do { \
+		static einthandler_t eh; \
 		/* ENC1F - прерывания по заднему фронту на фазу B */ \
 		arm_hardware_piod_altfn20(ENC1F_BITB, GPIO_CFG_EINT); \
 		arm_hardware_piod_inputs(ENC1F_BITA); \
 		arm_hardware_piod_updown(BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, 0); \
-		einthandler_initialize(& enc1fh, ENC1F_BITB, spool_encinterrupts4_dirA_ccw, & encoder_ENC1F); \
-		arm_hardware_piod_onchangeinterrupt(ENC1F_BITB, 0 * ENC1F_BITB, 1 * ENC1F_BITB, ENCODER_PRIORITY, ENCODER_TARGETCPU, & enc1fh); \
-		/* */ \
+		einthandler_initialize(& eh, ENC1F_BITB, spool_encinterrupts4_dirA_ccw, & encoder_ENC1F); \
+		arm_hardware_piod_onchangeinterrupt(ENC1F_BITB, 0 * ENC1F_BITB, 1 * ENC1F_BITB, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
+	} while (0)
+	#define ENCODER_ENC2F_INITIALIZE() do { \
+		static einthandler_t eh; \
 		/* ENC2F - прерывания по заднему фронту на фазу B */ \
 		arm_hardware_piod_altfn20(ENC2F_BITB, GPIO_CFG_EINT); \
 		arm_hardware_piod_inputs(ENC2F_BITA); \
 		arm_hardware_piod_updown(BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, 0); \
-		einthandler_initialize(& enc2fh, ENC2F_BITB, spool_encinterrupts4_dirA_ccw, & encoder_ENC2F); \
-		arm_hardware_piod_onchangeinterrupt(ENC2F_BITB, 0 * ENC2F_BITB, 1 * ENC2F_BITB, ENCODER_PRIORITY, ENCODER_TARGETCPU, & enc2fh); \
-		/* */ \
+		einthandler_initialize(& eh, ENC2F_BITB, spool_encinterrupts4_dirA_ccw, & encoder_ENC2F); \
+		arm_hardware_piod_onchangeinterrupt(ENC2F_BITB, 0 * ENC2F_BITB, 1 * ENC2F_BITB, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
+	} while (0)
+	#define ENCODER_ENC3F_INITIALIZE() do { \
+		static einthandler_t eh; \
 		/* ENC3F - прерывания по заднему фронту на фазу B */ \
 		arm_hardware_piod_altfn20(ENC3F_BITB, GPIO_CFG_EINT); \
 		arm_hardware_piod_inputs(ENC3F_BITA); \
 		arm_hardware_piod_updown(BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, 0); \
-		einthandler_initialize(& enc3fh, ENC3F_BITB, spool_encinterrupts4_dirA_ccw, & encoder_ENC3F); \
-		arm_hardware_piod_onchangeinterrupt(ENC3F_BITB, 0 * ENC3F_BITB, 1 * ENC3F_BITB, ENCODER_PRIORITY, ENCODER_TARGETCPU, & enc3fh); \
-		/* */ \
+		einthandler_initialize(& eh, ENC3F_BITB, spool_encinterrupts4_dirA_ccw, & encoder_ENC3F); \
+		arm_hardware_piod_onchangeinterrupt(ENC3F_BITB, 0 * ENC3F_BITB, 1 * ENC3F_BITB, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
+	} while (0)
+	#define ENCODER_ENC4F_INITIALIZE() do { \
+		static einthandler_t eh; \
 		/* ENC4F - прерывания по заднему фронту на фазу B */ \
 		arm_hardware_piod_altfn20(ENC4F_BITB, GPIO_CFG_EINT); \
 		arm_hardware_piod_inputs(ENC4F_BITA); \
 		arm_hardware_piod_updown(BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, 0); \
-		einthandler_initialize(& enc4fh, ENC4F_BITB, spool_encinterrupts4_dirA_ccw, & encoder_ENC4F); \
-		arm_hardware_piod_onchangeinterrupt(ENC4F_BITB, 0 * ENC4F_BITB, 1 * ENC4F_BITB, ENCODER_PRIORITY, ENCODER_TARGETCPU, & enc4fh); \
+		einthandler_initialize(& eh, ENC4F_BITB, spool_encinterrupts4_dirA_ccw, & encoder_ENC4F); \
+		arm_hardware_piod_onchangeinterrupt(ENC4F_BITB, 0 * ENC4F_BITB, 1 * ENC4F_BITB, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
+	} while (0)
+	#define ENCODER_ENCMAIN_INITIALIZE() do { \
+		static einthandler_t eh; \
+		/* Main tuning knob - прерывания на обе фазы */ \
+		arm_hardware_piod_altfn20(BOARD_ENCODER_BITS, GPIO_CFG_EINT); \
+		arm_hardware_piod_updown(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, 0); \
+		einthandler_initialize(& eh, BOARD_ENCODER_BITS, spool_encinterrupts_ccw, & encoder1); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, BOARD_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
+	} while (0)
+	#define ENCODER_ENCSECOND_INITIALIZE() do { \
+		static einthandler_t eh; \
+		/* Second tuning knob - прерывания на обе фазы */ \
+		arm_hardware_piod_altfn20(BOARD_ENCODER_SUB_BITS, GPIO_CFG_EINT); \
+		arm_hardware_piod_updown(BOARD_ENCODER_SUB_BITS, BOARD_ENCODER_SUB_BITS, 0); \
+		einthandler_initialize(& eh, BOARD_ENCODER_SUB_BITS, spool_encinterrupts_ccw, & encoder_sub); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENCODER_SUB_BITS, BOARD_ENCODER_SUB_BITS, BOARD_ENCODER_SUB_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
+	} while (0)
+
+	#define ENCODER_INITIALIZE() do { \
+		/* Разным валкодерам на одном GPIO нельзя назначать разные приоритеты */ \
+		ENCODER_ENCMAIN_INITIALIZE(); \
+		ENCODER_ENCSECOND_INITIALIZE(); \
+		ENCODER_ENC1F_INITIALIZE(); \
+		ENCODER_ENC2F_INITIALIZE(); \
+		ENCODER_ENC3F_INITIALIZE(); \
+		ENCODER_ENC4F_INITIALIZE(); \
 	} while (0)
 
 #endif /* WITHENCODER */
