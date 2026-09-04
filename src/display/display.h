@@ -670,6 +670,7 @@ pix_display_value_big(
 
 void rendered_value_big_initialize(const gxstyle_t * gxstylep);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
 
+// Used in display2_freqX_b
 void
 pix_display_value_small(
 	const gxdrawb_t * db,
@@ -705,10 +706,6 @@ void display_do_AA(
 	uint_fast16_t width,
 	uint_fast16_t height
 	);
-
-#define WSIGNFLAG 0x80	// отображается плюс или минус в зависимости от знака значения
-#define WMINUSFLAG 0x40	// отображается пробел или минус в зависимости от знака значения
-#define WWIDTHFLAG 0x3F	// оставшиеся биты под ширину поля
 
 int display_vtty_putchar(char ch);
 void display_vtty_printf(const char * format, ...);

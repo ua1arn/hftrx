@@ -1114,7 +1114,7 @@ static int_fast32_t getagcfencebase(void)
 
 static const struct paramdefdef xgdummy =
 {
-	QLABEL(""), 7, 0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
+	QLABEL(""),  0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
 	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -4230,7 +4230,7 @@ static uint_fast8_t gnoisereducts [MODE_COUNT];	// noise reduction level
 static uint_fast8_t gnoisereductvl = 25;	// noise reduction
 static const struct paramdefdef xgnoisereductvl =
 {
-	QLABEL("NR LEVEL"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL("NR LEVEL"),  0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	0, NRLEVELMAX,
 	OFFSETOF(struct nvmap, gnoisereductvl),
@@ -4243,7 +4243,7 @@ static const struct paramdefdef xgnoisereductvl =
 
 static const struct paramdefdef xgnoisereduct =
 {
-	QLABEL3("NR", "NR", "NR"), 8, 3, RJ_ON,	ISTEP1,		/* включение NR */
+	QLABEL3("NR", "NR", "NR"), 0, RJ_ON,	ISTEP1,		/* включение NR */
 	ITEM_VALUE,
 	0, 1,
 	RMT_NR_BASE(0),							/* включение NR */
@@ -4266,7 +4266,7 @@ static size_t getvaltextmaisubrxmode(char * buff, size_t count, int_fast32_t val
 // Левый/правый, A - main RX, B - sub RX
 static const struct paramdefdef xmainsubrxmode =
 {
-	QLABEL3("DUAL", "Dual RX", "DUAL"), 7, 0, RJ_CB,	ISTEP1,
+	QLABEL3("DUAL", "Dual RX", "DUAL"), 0, RJ_CB,	ISTEP1,
 	ITEM_VALUE | ITEM_LISTSELECT,
 	0, MAINSUBRXMODE_COUNT - 1,
 	OFFSETOF(struct nvmap, mainsubrxmode),
@@ -4283,7 +4283,7 @@ static const struct paramdefdef xmainsubrxmode =
 static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
 static const struct paramdefdef xgsquelch =
 {
-	QLABEL3("SQUELCH", "Squelech", "SQUELCH"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* squelch level */
+	QLABEL3("SQUELCH", "Squelech", "SQUELCH"),  0, RJ_UNSIGNED, ISTEP1,		/* squelch level */
 	ITEM_VALUE,
 	0, SQUELCHMAX,
 	OFFSETOF(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
@@ -4297,7 +4297,7 @@ static const struct paramdefdef xgsquelch =
 static uint_fast8_t gsquelchNFM;	/* squelch level for NFM */
 static const struct paramdefdef xgsquelchNFM =
 {
-	QLABEL3("SQLC NFM", "Squelech NFM", "SQUELCHFM"), 0, 0, RJ_UNSIGNED, ISTEP1,		/* squelch level for NFM */
+	QLABEL3("SQLC NFM", "Squelech NFM", "SQUELCHFM"), 0, RJ_UNSIGNED, ISTEP1,		/* squelch level for NFM */
 	ITEM_VALUE,
 	0, SQUELCHMAX,
 	OFFSETOF(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
@@ -4311,7 +4311,7 @@ static const struct paramdefdef xgsquelchNFM =
 static uint_fast8_t ggainnfmrx10 = 30;	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 static const struct paramdefdef xggainnfmrx10 =
 {
-	QLABEL3("NFM GAIN", "NFM Gain", "NFM GAIN"), 7, 1, RJ_UNSIGNED, ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+	QLABEL3("NFM GAIN", "NFM Gain", "NFM GAIN"),  1, RJ_UNSIGNED, ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 	ITEM_VALUE,
 	10, 100,
 	OFFSETOF(struct nvmap, ggainnfmrx10),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
@@ -4335,7 +4335,7 @@ static const struct paramdefdef xggainnfmrx10 =
 
 static const struct paramdefdef xgcwpitch10 =
 {
-	QLABEL3("CW PITCH", "CW Pitch", "CW PITCH"), 7, 2, RJ_UNSIGNED, 	ISTEP1,
+	QLABEL3("CW PITCH", "CW Pitch", "CW PITCH"),  2, RJ_UNSIGNED, 	ISTEP1,
 	ITEM_VALUE,
 	CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 10 Hz steps */
 	OFFSETOF(struct nvmap, gcwpitch10),
@@ -4364,7 +4364,7 @@ static const struct paramdefdef xgcwpitch10 =
 #endif /* WITHOVFHIDE */
 	static const struct paramdefdef xgshowovf =
 	{
-		QLABEL2("SHOW OVF", "ADC OVF Show"), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL2("SHOW OVF", "ADC OVF Show"), 0, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* разрешение или запрет раскраски спектра */
 		OFFSETOF(struct nvmap, gshowovf),
@@ -4392,7 +4392,7 @@ static uint_fast8_t gusefast;
 	static uint_fast8_t gnotch;	// on/off
 	static const struct paramdefdef xgnotchtype =
 	{
-		QLABEL("NOTCH"), 8, 3, RJ_CB,	ISTEP1,		/* управление режимом NOTCH */
+		QLABEL("NOTCH"), 0, RJ_CB,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE | ITEM_LISTSELECT,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
@@ -4410,7 +4410,7 @@ static uint_fast8_t gusefast;
 
 	static const struct paramdefdef xgnotchtype =
 	{
-		QLABEL("NOTCH"), 8, 3, RJ_CB,	ISTEP1,		/* управление режимом NOTCH */
+		QLABEL("NOTCH"), 0, RJ_CB,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE | ITEM_LISTSELECT,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
@@ -4422,10 +4422,7 @@ static uint_fast8_t gusefast;
 	};
 	static const struct paramdefdef xgnotchfreq =
 	{
-		QLABEL3("NOTCH FRQ", "Notch FREQ", "NOTCH FRQ"),
-		0, 0,
-		RJ_UNSIGNED,		// rj
-		ISTEP50,
+		QLABEL3("NOTCH FRQ", "Notch FREQ", "NOTCH FRQ"),  0, RJ_UNSIGNED, ISTEP50,
 		ITEM_VALUE,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		OFFSETOF(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
@@ -4436,7 +4433,7 @@ static uint_fast8_t gusefast;
 	};
 	static const struct paramdefdef xgnotchwidth =
 	{
-		QLABEL3("NTCH WDT", "Notch WDT", "NOTCH WDT"), 7, 3, RJ_UNSIGNED, ISTEP50,		/* полоса режекции NOTCH. */
+		QLABEL3("NTCH WDT", "Notch WDT", "NOTCH WDT"),  3, RJ_UNSIGNED, ISTEP50,		/* полоса режекции NOTCH. */
 		ITEM_VALUE,
 		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
 		OFFSETOF(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
@@ -4452,7 +4449,7 @@ static uint_fast8_t gusefast;
 // включение
 static const struct paramdefdef xgnotch =
 {
-	QLABEL3("NOTCH", "Notch", "NOTCH"), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+	QLABEL3("NOTCH", "Notch", "NOTCH"), 0, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
 	ITEM_VALUE,
 	0, NOTCHMODE_COUNT - 1,
 	RMT_NOTCH_BASE,							/* управление режимом NOTCH */
@@ -4488,7 +4485,7 @@ static const struct paramdefdef xgnotch =
 static uint_fast8_t gbandsetbcast = 0;	/* Broadcast radio bands */
 static const struct paramdefdef xgbandsetbcast =
 {
-	QLABEL3("BAND BC", "Bands BC", "BANDS BC"), 7, 3, RJ_YES,	ISTEP1,
+	QLABEL3("BAND BC", "Bands BC", "BANDS BC"), 0, RJ_YES,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, gbandsetbcast),
@@ -4505,7 +4502,7 @@ enum { gbandsetbcast = 0 };
 static uint_fast8_t bandset11m;
 static const struct paramdefdef xgbandset11m =
 {
-	QLABEL3("BAND 27", "Band 27", "BAND 27"), 7, 3, RJ_YES,	ISTEP1,
+	QLABEL3("BAND 27", "Band 27", "BAND 27"), 0, RJ_YES,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, bandset11m),
@@ -4520,7 +4517,7 @@ static const struct paramdefdef xgbandset11m =
 static uint_fast8_t bandset6m = 1;	/* используется ли диапазон 6 метров */
 static const struct paramdefdef xgbandset6m =
 {
-	QLABEL3("BAND 50", "Band 50", "BAND 50"), 8, 3, RJ_ON,	ISTEP1,
+	QLABEL3("BAND 50", "Band 50", "BAND 50"), 0, RJ_ON,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, bandset6m),
@@ -4535,7 +4532,7 @@ static const struct paramdefdef xgbandset6m =
 static uint_fast8_t bandset4m = 0;	/* используется ли диапазон 4 метров */
 static const struct paramdefdef xgbandset4m =
 {
-	QLABEL3("BAND 70", "Band 70", "BAND 70"), 8, 3, RJ_ON,	ISTEP1,
+	QLABEL3("BAND 70", "Band 70", "BAND 70"), 0, RJ_ON,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, bandset4m),
@@ -4550,7 +4547,7 @@ static const struct paramdefdef xgbandset4m =
 static uint_fast8_t bandset2m = 1;	/* используется ли диапазон 2 метра */
 static const struct paramdefdef xgbandset2m =
 {
-	QLABEL3("BAND 144", "Band 144", "BAND 144"), 8, 3, RJ_ON,	ISTEP1,
+	QLABEL3("BAND 144", "Band 144", "BAND 144"), 0, RJ_ON,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, bandset2m),
@@ -4582,7 +4579,7 @@ static uint_fast8_t gforcexvrtr;	/* принудительно включить 
 	#endif /* defined (WITHBBOX) && defined (WITHBBOXREC) */
 	static const struct paramdefdef xgrecmode =
 	{
-		QLABEL("SD RECRD"), 8, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
+		QLABEL("SD RECRD"), 0, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, grecmode),
@@ -4600,7 +4597,7 @@ static uint_fast8_t ghdmiformat;
 /* Видеорежим внешнего HDMI монитора */
 static const struct paramdefdef xhdmiformat =
 {
-	QLABEL3("HDMI FMT", "HDMI Format", "HDMI FMT"), 7, 5, RJ_CB, ISTEP1,
+	QLABEL3("HDMI FMT", "HDMI Format", "HDMI FMT"), 0, RJ_CB, ISTEP1,
 	ITEM_VALUE | ITEM_LISTSELECT,
 	0, HDMIFORMATS_count - 1,
 	OFFSETOF(struct nvmap, ghdmiformat),
@@ -4618,7 +4615,7 @@ static uint_fast8_t gethaddr;
 /* Адрес сетевого интерфейса */
 static const struct paramdefdef xgethaddr =
 {
-	QLABEL3("IPADDR", "IP Address", "IP ADDR"), 7, 5, RJ_CB, ISTEP_RO,
+	QLABEL3("IPADDR", "IP Address", "IP ADDR"), 0, RJ_CB, ISTEP_RO,
 	ITEM_VALUE | ITEM_LISTSELECT,
 	0, HDMIFORMATS_count - 1,
 	OFFSETOF(struct nvmap, gethaddr),
@@ -4633,7 +4630,7 @@ static uint_fast8_t gethmask;
 /* Адрес сетевого интерфейса */
 static const struct paramdefdef xgethmask =
 {
-	QLABEL3("IPMASK", "IP Mask", "IP MASK"), 7, 5, RJ_CB, ISTEP_RO,
+	QLABEL3("IPMASK", "IP Mask", "IP MASK"), 0, RJ_CB, ISTEP_RO,
 	ITEM_VALUE | ITEM_LISTSELECT,
 	0, HDMIFORMATS_count - 1,
 	OFFSETOF(struct nvmap, gethmask),
@@ -4648,7 +4645,7 @@ static uint_fast8_t gethgateway;
 /* Адрес сетевого интерфейса */
 static const struct paramdefdef xgethgateway =
 {
-	QLABEL3("IP GW", "IP Gateway", "IP GW"), 7, 5, RJ_CB, ISTEP_RO,
+	QLABEL3("IP GW", "IP Gateway", "IP GW"), 0, RJ_CB, ISTEP_RO,
 	ITEM_VALUE | ITEM_LISTSELECT,
 	0, HDMIFORMATS_count - 1,
 	OFFSETOF(struct nvmap, gethgateway),
@@ -4671,7 +4668,7 @@ static const struct paramdefdef xgethgateway =
 #endif /* defined (WITHDISPLAY_FPS) */
 	static const struct paramdefdef xgdisplayfreqsfps =
 	{
-		QLABEL("FREQ FPS"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+		QLABEL("FREQ FPS"),  0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		4, 35,							/* частота обновления показаний частоты от 5 до 35 раз в секунду */
 		OFFSETOF(struct nvmap, gdisplayfreqsfps),
@@ -4689,7 +4686,7 @@ static const struct paramdefdef xgethgateway =
 #endif /* defined (WITHDISPLAYSWR_FPS) */
 	static const struct paramdefdef xglatchfps =
 	{
-		QLABEL("BARS FPS"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+		QLABEL("BARS FPS"),  0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
 		OFFSETOF(struct nvmap, glatchfps),
@@ -4713,7 +4710,7 @@ static const struct paramdefdef xgethgateway =
 #endif /* defined (WITHVIEW_3DSS_MARK) */
 	static const struct paramdefdef xgview3dss_mark =
 	{
-		QLABEL2("FREQ MRK", "Freq marker"), 7, 5, RJ_YES, ISTEP1,
+		QLABEL2("FREQ MRK", "Freq marker"), 0, RJ_YES, ISTEP1,
 		ITEM_VALUE,
 		0, 1,				/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 		OFFSETOF(struct nvmap, gview3dss_mark),
@@ -4743,7 +4740,7 @@ static const struct paramdefdef xgethgateway =
 
 	static const struct paramdefdef xgtxloopback =
 	{
-		QLABEL2("SPEC TX", "TX Spectrum"), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL2("SPEC TX", "TX Spectrum"), 0, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,							/* разрешение или запрет раскраски спектра */
 		OFFSETOF(struct nvmap, gtxloopback),
@@ -4755,7 +4752,7 @@ static const struct paramdefdef xgethgateway =
 	};
 	static const struct paramdefdef xglvlgridstep =
 	{
-		QLABEL("STEP DB"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+		QLABEL("STEP DB"),  0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		3, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
 		OFFSETOF(struct nvmap, glvlgridstep),
@@ -4767,7 +4764,7 @@ static const struct paramdefdef xgethgateway =
 	};
 	static const struct paramdefdef xgrxbwsatu =
 	{
-		QLABEL2("RXBW IND", "RX BW Indicator"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+		QLABEL2("RXBW IND", "RX BW Indicator"),  0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		0, 100,			/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 		OFFSETOF(struct nvmap, grxbwsatu),
@@ -4789,7 +4786,7 @@ static const struct paramdefdef xgethgateway =
 #endif /* defined (WITHWFLBETA_DEFAULT) */
 	static const struct paramdefdef xgspecbeta100 =
 	{
-		QLABEL("BETA PAN"), 7, 2, RJ_UNSIGNED,	ISTEP1,
+		QLABEL("BETA PAN"),  2, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		10, 100,							/* beta - парамеры видеофильтра спектра */
 		OFFSETOF(struct nvmap, gspecbeta100),
@@ -4801,7 +4798,7 @@ static const struct paramdefdef xgethgateway =
 	};
 	static const struct paramdefdef xgwflbeta100 =
 	{
-		QLABEL("BETA WFL"), 7, 2, RJ_UNSIGNED,	ISTEP1,
+		QLABEL("BETA WFL"),  2, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		10, 100,							/* beta - парамеры видеофильтра водопада */
 		OFFSETOF(struct nvmap, gwflbeta100),
@@ -4851,7 +4848,7 @@ static size_t getvaltextviewstyle(char * buff, size_t count, int_fast32_t value)
 /* стиль отображения спектра и панорамы */
 static const struct paramdefdef xgviewstyle =
 {
-	QLABEL3("VIEW STL", "View style", "VIEW STLE"), 7, 5, RJ_CB, ISTEP1,
+	QLABEL3("VIEW STL", "View style", "VIEW STLE"), 0, RJ_CB, ISTEP1,
 	ITEM_VALUE | ITEM_LISTSELECT,
 	0, VIEW_count - 1,
 	OFFSETOF(struct nvmap, gviewstyle),
@@ -4866,7 +4863,7 @@ static const struct paramdefdef xgviewstyle =
 static uint_fast8_t gspectrumpart = 75;	/* Часть отведенной под спектр высоты экрана 0..100 */
 static const struct paramdefdef xgspectrumpart =
 {
-	QLABEL3("SPEC PRT", "Spectrum part", "SPEC PRT"), 7, 0, RJ_UNSIGNED, ISTEP1,
+	QLABEL3("SPEC PRT", "Spectrum part", "SPEC PRT"),  0, RJ_UNSIGNED, ISTEP1,
 	ITEM_VALUE,
 	WITHSPPARTMIN, WITHSPPARTMAX,			/* Часть отведенной под спектр высоты экрана 0..100 */
 	OFFSETOF(struct nvmap, gspectrumpart),
@@ -4883,7 +4880,7 @@ static const struct paramdefdef xgspectrumpart =
 /* уменьшение отображаемого участка спектра */
 static const struct paramdefdef xgzoomxpow2 =
 {
-	QLABEL3("ZOOM PAN", "ZOOM PAN", "ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
+	QLABEL3("ZOOM PAN", "ZOOM PAN", "ZOOM PAN"), 0, RJ_POW2,	ISTEP1,
 	ITEM_VALUE,
 	0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
 	OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2),
@@ -4898,7 +4895,7 @@ static const struct paramdefdef xgzoomxpow2 =
 /* нижний предел FFT */
 static const struct paramdefdef xgtopdb =
 {
-	QLABEL3("TOP DB", "Top dB", "TOP DB"), 7, 0, RJ_SIGNED,	ISTEP1,
+	QLABEL3("TOP DB", "Top dB", "TOP DB"),  0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 	OFFSETOF(struct nvmap, bandgroups [0].gtopdb),
@@ -4911,7 +4908,7 @@ static const struct paramdefdef xgtopdb =
 /* верхний предел FFT */
 static const struct paramdefdef xgbottomdb =
 {
-	QLABEL3("BOTTM DB", "Bottom dB", "BOTTM DB"), 7, 0, RJ_SIGNED,	ISTEP1,
+	QLABEL3("BOTTM DB", "Bottom dB", "BOTTM DB"),  0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 	OFFSETOF(struct nvmap, bandgroups [0].gbottomdb),
@@ -4924,7 +4921,7 @@ static const struct paramdefdef xgbottomdb =
 /* нижний предел FFT для показа в режиме TX */
 static const struct paramdefdef xgtopdbtx =
 {
-	QLABEL3("TOP DB TX", "Top dB TX", "TOP DB TX"), 7, 0, RJ_SIGNED,	ISTEP_RO,
+	QLABEL3("TOP DB TX", "Top dB TX", "TOP DB TX"),  0, RJ_SIGNED,	ISTEP_RO,
 	ITEM_VALUE,
 	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 	MENUNONVRAM,
@@ -4937,7 +4934,7 @@ static const struct paramdefdef xgtopdbtx =
 /* верхний предел FFT для показа в режиме TX */
 static const struct paramdefdef xgbottomdbtx =
 {
-	QLABEL3("BOTTM DB TX", "BOTTOM DBTX", "BOTTM DB TX"), 7, 0, RJ_SIGNED,	ISTEP_RO,
+	QLABEL3("BOTTM DB TX", "BOTTOM DBTX", "BOTTM DB TX"),  0, RJ_SIGNED,	ISTEP_RO,
 	ITEM_VALUE,
 	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 	MENUNONVRAM,
@@ -4963,7 +4960,7 @@ static const struct paramdefdef xgbottomdbtx =
 
 	static const struct paramdefdef xgbglight =
 	{
-		QLABEL3("LCD LIGH", "TFT Backlight", "LCD LIGHT"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("LCD LIGH", "TFT Backlight", "LCD LIGHT"),  0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		WITHLCDBACKLIGHTMIN, WITHLCDBACKLIGHTMAX,
 		OFFSETOF(struct nvmap, gbglight),
@@ -4983,7 +4980,7 @@ static const struct paramdefdef xgbottomdbtx =
 
 	static const struct paramdefdef xgkblight =
 	{
-		QLABEL3("KBD LIGH", "KBD Backlight", "KBD LIGHT"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL3("KBD LIGH", "KBD Backlight", "KBD LIGHT"), 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gkblight),
@@ -5010,7 +5007,7 @@ static uint_fast8_t gpoweronhold = 1;	/* выдать "1" на выход уде
 static uint_fast8_t gshowdbm = 1;	// Отображение уровня сигнала в dBm или S-memter
 static const struct paramdefdef xgshowdbm =
 {
-	QLABEL3("SHOW dBm", "Show dBm", "SHOW DBM"), 8, 3, RJ_YES,	ISTEP1,
+	QLABEL3("SHOW dBm", "Show dBm", "SHOW DBM"), 0, RJ_YES,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, gshowdbm),
@@ -5067,7 +5064,7 @@ enum
 
 	static const struct paramdefdef xcatenable =
 	{
-		QLABEL3("CAT ENAB", "CAT Enable", "CAT ENABLE"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL3("CAT ENAB", "CAT Enable", "CAT ENABLE"), 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, catenable),
@@ -5110,7 +5107,7 @@ enum
 		static uint_fast8_t gcatmux;
 		static const struct paramdefdef xgcatmux =
 		{
-			QLABEL3("CAT SEL", "CAT Select", "CAT SEL"), 8, 3, RJ_CB,	ISTEP1,
+			QLABEL3("CAT SEL", "CAT Select", "CAT SEL"), 0, RJ_CB,	ISTEP1,
 			ITEM_VALUE | ITEM_LISTSELECT,
 			0, ARRAY_SIZE(catmuxmodes) - 1,
 			OFFSETOF(struct nvmap, gcatmux),
@@ -5122,7 +5119,7 @@ enum
 		};
 		static const struct paramdefdef xcatbaudrate =
 		{
-			QLABEL3("CAT SPD", "CAT Speed", "CAT SPD"), 7, 0, RJ_CB,	ISTEP1,
+			QLABEL3("CAT SPD", "CAT Speed", "CAT SPD"), 0, RJ_CB,	ISTEP1,
 			ITEM_VALUE | ITEM_LISTSELECT,
 			0, ARRAY_SIZE(catbr2int) - 1,
 			OFFSETOF(struct nvmap, catbaudrate),
@@ -5166,7 +5163,7 @@ enum
 	static uint_fast8_t catsigptt = nopttsig;	/* Выбраный сигнал для перехода на передачу по CAT */
 	static const struct paramdefdef xcatsigptt =
 	{
-		QLABEL("CAT PTT"), 8, 8, RJ_CB,	ISTEP1,
+		QLABEL("CAT PTT"), 0, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_LISTSELECT,
 		0, BOARD_CATSIG_count - 1,
 		OFFSETOF(struct nvmap, catsigptt),
@@ -5180,7 +5177,7 @@ enum
 	static uint_fast8_t catsigkey = nokeysig;	/* Выбраный сигнал для манипуляции по CAT */
 	static const struct paramdefdef xcatsigkey =
 	{
-		QLABEL("CAT KEY"), 8, 8, RJ_CB,	ISTEP1,
+		QLABEL("CAT KEY"), 0, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_LISTSELECT,
 		0, BOARD_CATSIG_count - 1,
 		OFFSETOF(struct nvmap, catsigkey),
@@ -5209,7 +5206,7 @@ enum
 	// Громкость в процентах
 	static const struct paramdefdef xafgain1 =
 	{
-		QLABEL3("AF Gain", "Volume", "VOLUME"), 7, 0, RJ_PERCENTS, ISTEP1,
+		QLABEL3("AF Gain", "Volume", "VOLUME"), 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 #if WITHPOTAFGAIN
@@ -5228,7 +5225,7 @@ enum
 	// Усиление ПЧ/ВЧ в процентах
 	static const struct paramdefdef xrfgain1 =
 	{
-		QLABEL3("RF GAIN", "RF Gain", "RF GAIN"), 7, 0, RJ_PERCENTS, ISTEP1,
+		QLABEL3("RF GAIN", "RF Gain", "RF GAIN"), 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 #if WITHPOTIFGAIN
@@ -5247,7 +5244,7 @@ enum
 	// Точка перегиба характеристики АРУ
 	static const struct paramdefdef xagcfence1 =
 	{
-		QLABEL3("AGC FENCE", "AGC Fence", "AGC FENCE"), 7, 0, RJ_SIGNED, ISTEP3,
+		QLABEL3("AGC FENCE", "AGC Fence", "AGC FENCE"),  0, RJ_SIGNED, ISTEP3,
 		ITEM_VALUE,
 		BOARD_AGCFENCE_MIN - BOARD_AGCFENCE_BASE, BOARD_AGCFENCE_MAX - BOARD_AGCFENCE_BASE, 					// Усиление ПЧ/ВЧ в процентах
 #if WITHPOTIFGAIN
@@ -5265,7 +5262,7 @@ enum
 	/* подстройка усиления с линейного входа через меню. */
 	static const struct paramdefdef xglineamp =
 	{
-		QLABEL3("LINE LVL", "LINE Level", "LINE LVL"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* подстройка усиления с линейного входа через меню. */
+		QLABEL3("LINE LVL", "LINE Level", "LINE LVL"),  0, RJ_UNSIGNED, ISTEP1,		/* подстройка усиления с линейного входа через меню. */
 		ITEM_VALUE,
 		WITHLINEINGAINMIN, WITHLINEINGAINMAX,
 		OFFSETOF(struct nvmap, glineamp),	/* усиление с линейного входа */
@@ -5278,7 +5275,7 @@ enum
 	static uint_fast8_t gmikeboost20db;	// предусилитель микрофона
 	static const struct paramdefdef xgmikeboost20db =
 	{
-		QLABEL2("MICBOOST", "Mike boost"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL2("MICBOOST", "Mike boost"), 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 					// предусилитель сигнала с микрофона
 		OFFSETOF(struct nvmap, gmikeboost20db),
@@ -5300,7 +5297,7 @@ enum
 	static uint_fast8_t gtxaudio [MODE_COUNT];
 	static const struct paramdefdef xgmike_ssb =
 	{
-		QLABEL3("MIC SSB", "Mike SSB", "MIC SSB"), 8, 5, RJ_CB,	ISTEP1,
+		QLABEL3("MIC SSB", "Mike SSB", "MIC SSB"), 0, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_SSB),
@@ -5312,7 +5309,7 @@ enum
 	};
 	static const struct paramdefdef xgmike_dig =
 	{
-		QLABEL3("MIC DIG", "Mike DIG", "MIC DIG"), 8, 5, RJ_CB,	ISTEP1,
+		QLABEL3("MIC DIG", "Mike DIG", "MIC DIG"), 0, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_DIGI),
@@ -5324,7 +5321,7 @@ enum
 	};
 	static const struct paramdefdef xgmike_am =
 	{
-		QLABEL3("MIC AM", "Mike FM", "MIC FM"), 8, 5, RJ_CB,	ISTEP1,
+		QLABEL3("MIC AM", "Mike FM", "MIC FM"), 0, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_AM),
@@ -5336,7 +5333,7 @@ enum
 	};
 	static const struct paramdefdef xgmike_fm =
 	{
-		QLABEL3("MIC FM", "Mike FM", "MIC FM"), 8, 5, RJ_CB,	ISTEP1,
+		QLABEL3("MIC FM", "Mike FM", "MIC FM"), 0, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_NFM),
@@ -5348,7 +5345,7 @@ enum
 	};
 	static const struct paramdefdef xgmikeagc =
 	{
-		QLABEL3("MIC AGC", "Mike AGC", "MIC AGC"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL3("MIC AGC", "Mike AGC", "MIC AGC"), 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 					/* Включение программной АРУ перед модулятором */
 		OFFSETOF(struct nvmap, gmikeagc),
@@ -5360,7 +5357,7 @@ enum
 	};
 	static const struct paramdefdef xgmikeagcgain =
 	{
-		QLABEL("MICAGCGN"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL("MICAGCGN"),  0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		WITHMIKEAGCMIN, WITHMIKEAGCMAX, 	/* максимальное усиление АРУ микрофона в дБ */
 		OFFSETOF(struct nvmap, gmikeagcgain),
@@ -5372,7 +5369,7 @@ enum
 	};
 	static const struct paramdefdef xgmikehclip =
 	{
-		QLABEL3("MIC CLIP", "Mike CLIP", "MIKE CLIP"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("MIC CLIP", "Mike CLIP", "MIKE CLIP"),  0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		0, 90, 					/* Ограничение */
 		OFFSETOF(struct nvmap, gmikehclip),
@@ -5391,7 +5388,7 @@ enum
 
 		static const struct paramdefdef xgcompressor_attack =
 		{
-			QLABEL("COMP ATK"), 7, 0, RJ_UNSIGNED, ISTEP5,
+			QLABEL("COMP ATK"),  0, RJ_UNSIGNED, ISTEP5,
 			ITEM_VALUE,
 			WITHCOMPATTACKMIN, WITHCOMPATTACKMAX,
 			OFFSETOF(struct nvmap, gcompressor_attack),
@@ -5403,7 +5400,7 @@ enum
 		};
 		static const struct paramdefdef xgcompressor_release =
 		{
-			QLABEL("COMP RLS"), 7, 0, RJ_UNSIGNED, ISTEP5,
+			QLABEL("COMP RLS"),  0, RJ_UNSIGNED, ISTEP5,
 			ITEM_VALUE,
 			WITHCOMPRELEASEMIN, WITHCOMPRELEASEMAX,
 			OFFSETOF(struct nvmap, gcompressor_release),
@@ -5415,7 +5412,7 @@ enum
 		};
 		static const struct paramdefdef xgcompressor_hold =
 		{
-			QLABEL("COMP HLD"), 7, 0, RJ_UNSIGNED, ISTEP5,
+			QLABEL("COMP HLD"),  0, RJ_UNSIGNED, ISTEP5,
 			ITEM_VALUE,
 			WITHCOMPHOLDMIN, WITHCOMPHOLDMAX,
 			OFFSETOF(struct nvmap, gcompressor_hold),
@@ -5427,7 +5424,7 @@ enum
 		};
 		static const struct paramdefdef xgcompressor_gain =
 		{
-			QLABEL("COMP GN"), 7, 0, RJ_UNSIGNED, ISTEP1,
+			QLABEL("COMP GN"),  0, RJ_UNSIGNED, ISTEP1,
 			ITEM_VALUE,
 			WITHCOMPGAINMIN, WITHCOMPGAINMAX,
 			OFFSETOF(struct nvmap, gcompressor_gain),
@@ -5439,7 +5436,7 @@ enum
 		};
 		static const struct paramdefdef xgcompressor_threshold =
 		{
-			QLABEL("COMP TH"), 7, 0, RJ_UNSIGNED, ISTEP1,
+			QLABEL("COMP TH"),  0, RJ_UNSIGNED, ISTEP1,
 			ITEM_VALUE,
 			WITHCOMPTHRESHOLDMIN, WITHCOMPTHRESHOLDMAX,
 			OFFSETOF(struct nvmap, gcompressor_threshold),
@@ -5457,7 +5454,7 @@ enum
 		static uint_fast8_t greverbloss = WITHREVERBLOSSMAX;		/* ревербератор - ослабление на возврате */
 		static const struct paramdefdef xgreverb =
 		{
-			QLABEL2("REVERB", "Reverberator"), 7, 0, RJ_ON,	ISTEP1,
+			QLABEL2("REVERB", "Reverberator"), 0, RJ_ON,	ISTEP1,
 			ITEM_VALUE,
 			0, 1, 					/* ревербератор */
 			OFFSETOF(struct nvmap, greverb),
@@ -5469,7 +5466,7 @@ enum
 		};
 		static const struct paramdefdef xgreverbdelay =
 		{
-			QLABEL2("RVB TIME", "Reverb Delay"), 7, 0, RJ_UNSIGNED, ISTEP1,
+			QLABEL2("RVB TIME", "Reverb Delay"),  0, RJ_UNSIGNED, ISTEP1,
 			ITEM_VALUE,
 			WITHREVERBDELAYMIN, WITHREVERBDELAYMAX, 					/* ревербератор - задержка */
 			OFFSETOF(struct nvmap, greverbdelay),
@@ -5481,7 +5478,7 @@ enum
 		};
 		static const struct paramdefdef xgreverbloss =
 		{
-			QLABEL2("RVB LOSS", "Reverb Loss"), 7, 0, RJ_UNSIGNED, ISTEP1,
+			QLABEL2("RVB LOSS", "Reverb Loss"),  0, RJ_UNSIGNED, ISTEP1,
 			ITEM_VALUE,
 			WITHREVERBLOSSMIN, WITHREVERBLOSSMAX, 					/* ревербератор - ослабление на возврате */
 			OFFSETOF(struct nvmap, greverbloss),
@@ -5498,7 +5495,7 @@ enum
 		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		static const struct paramdefdef xgdatamode =
 		{
-			QLABEL3("DATA MDE", "DATA MODE", "DATA MODE"), 8, 3, RJ_ON,	ISTEP1,
+			QLABEL3("DATA MDE", "DATA MODE", "DATA MODE"), 0, RJ_ON,	ISTEP1,
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gdatamode),
@@ -5513,7 +5510,7 @@ enum
 		static uint_fast8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 		static const struct paramdefdef xgusb_ft8cn =
 		{
-			QLABEL3("FT8CN", "FT8CN compat", "FT8CN"), 7, 3, RJ_YES,	ISTEP1,
+			QLABEL3("FT8CN", "FT8CN compat", "FT8CN"), 0, RJ_YES,	ISTEP1,
 			ITEM_VALUE,
 			0, 1, 					/* совместимость VID/PID для работы с программой FT8CN */
 			OFFSETOF(struct nvmap, gusb_ft8cn),
@@ -5528,7 +5525,7 @@ enum
 		static uint_fast8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		static const struct paramdefdef xgdatatx =
 		{
-			QLABEL3("USB DATA", "USB Data", "USB DATA"), 8, 3, RJ_ON,	ISTEP1,		/* автоматическое изменение источника при появлении звука со стороны компьютера */
+			QLABEL3("USB DATA", "USB Data", "USB DATA"), 0, RJ_ON,	ISTEP1,		/* автоматическое изменение источника при появлении звука со стороны компьютера */
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gdatatx),
@@ -5546,7 +5543,7 @@ enum
 		/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		static const struct paramdefdef xguacplayer =
 		{
-			QLABEL3("PLAY USB", "Play USB", "PLAY USB"), 7, 3, RJ_YES,	ISTEP1,
+			QLABEL3("PLAY USB", "Play USB", "PLAY USB"), 0, RJ_YES,	ISTEP1,
 			ITEM_VALUE,
 			0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			OFFSETOF(struct nvmap, guacplayer),
@@ -5560,7 +5557,7 @@ enum
 		static uint_fast8_t gbtaudioplayer = 0;
 		static const struct paramdefdef xgbtaudioplayer =
 		{
-			QLABEL3("PLAY BT", "Play BT", "PLAY BT"), 7, 3, RJ_YES,	ISTEP1,
+			QLABEL3("PLAY BT", "Play BT", "PLAY BT"), 0, RJ_YES,	ISTEP1,
 			ITEM_VALUE,
 			0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			OFFSETOF(struct nvmap, gbtaudioplayer),
@@ -5578,7 +5575,7 @@ enum
 #endif /* WITHUSBDEV_HSDESC */
 		static const struct paramdefdef xgusb_hs =
 		{
-			QLABEL("HS USB"), 7, 3, RJ_YES,	ISTEP1,
+			QLABEL("HS USB"), 0, RJ_YES,	ISTEP1,
 			ITEM_VALUE,
 			0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			OFFSETOF(struct nvmap, gusb_hs),
@@ -5593,7 +5590,7 @@ enum
 		static uint_fast8_t gswapiq;	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		static const struct paramdefdef xgswapiq =
 		{
-			QLABEL3("SWAP I/Q", "Swap I/Q", "SWAP I/Q"), 7, 3, RJ_YES,	ISTEP1,
+			QLABEL3("SWAP I/Q", "Swap I/Q", "SWAP I/Q"), 0, RJ_YES,	ISTEP1,
 			ITEM_VALUE,
 			0, 1, 					/* Поменять местами I и Q сэмплы в потоке RTS96 */
 			OFFSETOF(struct nvmap, gswapiq),
@@ -5620,7 +5617,7 @@ enum
 		// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 		static const struct paramdefdef xgmikeequalizer =
 		{
-			QLABEL("MIC EQUA"), 8, 3, RJ_ON,	ISTEP1,
+			QLABEL("MIC EQUA"), 0, RJ_ON,	ISTEP1,
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gmikeequalizer),
@@ -5638,7 +5635,7 @@ enum
 		// Эквалайзер 80Hz, 230 Hz, 650 Hz, 1.8 kHz, 5.3 kHz
 		static const struct paramdefdef xgmikeequalizer_param0 =
 		{
-			QLABEL("EQUA .08"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			QLABEL("EQUA .08"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,
 			OFFSETOF(struct nvmap, gmikeequalizerparams [0]),
@@ -5650,7 +5647,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param1 =
 		{
-			QLABEL("EQUA .23"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			QLABEL("EQUA .23"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,
 			OFFSETOF(struct nvmap, gmikeequalizerparams [1]),
@@ -5662,7 +5659,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param2 =
 		{
-			QLABEL("EQUA .65"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			QLABEL("EQUA .65"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,
 			OFFSETOF(struct nvmap, gmikeequalizerparams [2]),
@@ -5674,7 +5671,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param3 =
 		{
-			QLABEL("EQUA 1.8"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			QLABEL("EQUA 1.8"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,
 			OFFSETOF(struct nvmap, gmikeequalizerparams [3]),
@@ -5686,7 +5683,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param4 =
 		{
-			QLABEL("EQUA 5.3"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			QLABEL("EQUA 5.3"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,
 			OFFSETOF(struct nvmap, gmikeequalizerparams [4]),
@@ -5711,7 +5708,7 @@ enum
 
 		static const struct paramdefdef xgeqrx =
 		{
-			QLABEL2("RX EQ", "RX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
+			QLABEL2("RX EQ", "RX Equalizer"), 0, RJ_ON,	ISTEP1,
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, geqrx),
@@ -5723,7 +5720,7 @@ enum
 		};
 		static const struct paramdefdef xgeqrxparams_0 =
 		{
-			QLABEL2("RX 0.4k", "RX EQ 400 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			QLABEL2("RX 0.4k", "RX EQ 400 Hz"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, AF_EQUALIZER_BASE * 2,
 			OFFSETOF(struct nvmap, geqrxparams [0]),
@@ -5735,7 +5732,7 @@ enum
 		};
 		static const struct paramdefdef xgeqrxparams_1 =
 		{
-			QLABEL2("RX 1.5k", "RX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			QLABEL2("RX 1.5k", "RX EQ 1500 Hz"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, AF_EQUALIZER_BASE * 2,
 			OFFSETOF(struct nvmap, geqrxparams [1]),
@@ -5747,7 +5744,7 @@ enum
 		};
 		static const struct paramdefdef xgeqrxparams_2 =
 		{
-			QLABEL2("RX 2.7k", "RX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			QLABEL2("RX 2.7k", "RX EQ 2700 Hz"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, AF_EQUALIZER_BASE * 2,
 			OFFSETOF(struct nvmap, geqrxparams [2]),
@@ -5759,7 +5756,7 @@ enum
 		};
 		static const struct paramdefdef xgeqtx =
 		{
-			QLABEL2("TX EQ", "TX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
+			QLABEL2("TX EQ", "TX Equalizer"), 0, RJ_ON,	ISTEP1,
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, geqtx),
@@ -5771,7 +5768,7 @@ enum
 		};
 		static const struct paramdefdef xgeqtxparams_0 =
 		{
-			QLABEL2("TX 0.4k", "TX EQ 400 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			QLABEL2("TX 0.4k", "TX EQ 400 Hz"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, AF_EQUALIZER_BASE * 2,
 			OFFSETOF(struct nvmap, geqtxparams [0]),
@@ -5783,7 +5780,7 @@ enum
 		};
 		static const struct paramdefdef xgeqtxparams_1 =
 		{
-			QLABEL2("TX 1.5k", "TX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			QLABEL2("TX 1.5k", "TX EQ 1500 Hz"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, AF_EQUALIZER_BASE * 2,
 			OFFSETOF(struct nvmap, geqtxparams [1]),
@@ -5795,7 +5792,7 @@ enum
 		};
 		static const struct paramdefdef xgeqtxparams_2 =
 		{
-			QLABEL2("TX 2.7k", "TX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+			QLABEL2("TX 2.7k", "TX EQ 2700 Hz"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, AF_EQUALIZER_BASE * 2,
 			OFFSETOF(struct nvmap, geqtxparams [2]),
@@ -5948,7 +5945,7 @@ enum
 	//  Continuous Tone-Coded Squelch System or CTCSS freq
 	static const struct paramdefdef xgsubtoneitx =
 	{
-		QLABEL3("TCTCSS FQ", "T-CTCSS FREQ", "TCTCSS FQ"), 7, 1, RJ_CB,	ISTEP1,
+		QLABEL3("TCTCSS FQ", "T-CTCSS FREQ", "TCTCSS FQ"), 0, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_LISTSELECT,
 		0, CTCSS_NFREQUES - 1,
 		OFFSETOF(struct nvmap, gsubtoneitx),
@@ -5961,7 +5958,7 @@ enum
 	//  Continuous Tone-Coded Squelch System or CTCSS freq
 	static const struct paramdefdef xgsubtoneirx =
 	{
-		QLABEL3("RCTCSS FQ", "R-CTCSS FREQ", "RCTCSS FQ"), 7, 1, RJ_CB,	ISTEP1,
+		QLABEL3("RCTCSS FQ", "R-CTCSS FREQ", "RCTCSS FQ"), 0, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_LISTSELECT,
 		0, CTCSS_NFREQUES - 1,
 		OFFSETOF(struct nvmap, gsubtoneirx),
@@ -5976,7 +5973,7 @@ enum
 	/* Select the CTCSS transmit level. */
 	static const struct paramdefdef xgctsslevel =
 	{
-		QLABEL3("CTCSSLVL", "CTCSS LEVEL", "CTCSSLVL"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Select the CTCSS transmit level. */
+		QLABEL3("CTCSSLVL", "CTCSS LEVEL", "CTCSSLVL"),  0, RJ_UNSIGNED, ISTEP1,		/* Select the CTCSS transmit level. */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gsubtonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
@@ -6074,7 +6071,7 @@ enum
 			/* усилитель мощности поддерживает переключение в класс А */
 			static const struct paramdefdef xgclassamode =
 			{
-				QLABEL3("CLASSA", "Class A", "CLASSA"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
+				QLABEL3("CLASSA", "Class A", "CLASSA"), 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
 				ITEM_VALUE,
 				0, 1,
 				OFFSETOF(struct nvmap, gclassamode),
@@ -6118,7 +6115,7 @@ enum
 
 		static const struct paramdefdef xgvoxenable =
 		{
-			QLABEL3("VOX EN", "VOX Enable", "VOX Enable"), 8, 3, RJ_ON,	ISTEP1,
+			QLABEL3("VOX EN", "VOX Enable", "VOX Enable"), 0, RJ_ON,	ISTEP1,
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gvoxenable),
@@ -6130,7 +6127,7 @@ enum
 		};
 		static const struct paramdefdef xgvoxlevel =
 		{
-			QLABEL3("VOX LEVL", "VOX Level", "VOX LEVEL"), 7, 0, RJ_UNSIGNED, ISTEP1,
+			QLABEL3("VOX LEVL", "VOX Level", "VOX LEVEL"),  0, RJ_UNSIGNED, ISTEP1,
 			ITEM_VALUE,
 			WITHVOXLEVELMIN, WITHVOXLEVELMAX,
 			OFFSETOF(struct nvmap, gvoxlevel),
@@ -6142,7 +6139,7 @@ enum
 		};
 		static const struct paramdefdef xgavoxlevel =
 		{
-			QLABEL3("AVOX LEV", "Anti-VOX Level", "AVOX LEVEL"), 7, 0, RJ_UNSIGNED, ISTEP1,
+			QLABEL3("AVOX LEV", "Anti-VOX Level", "AVOX LEVEL"),  0, RJ_UNSIGNED, ISTEP1,
 			ITEM_VALUE,
 			WITHAVOXLEVELMIN, WITHAVOXLEVELMAX,
 			OFFSETOF(struct nvmap, gavoxlevel),
@@ -6154,7 +6151,7 @@ enum
 		};
 		static const struct paramdefdef xgvoxdelay =
 		{
-			QLABEL3("VOXDELAY", "VOX Delay", "VOXDELAY"), 7, 2, RJ_UNSIGNED, ISTEP5,	/* 50 mS step of changing value */
+			QLABEL3("VOXDELAY", "VOX Delay", "VOXDELAY"),  2, RJ_UNSIGNED, ISTEP5,	/* 50 mS step of changing value */
 			ITEM_VALUE,
 			WITHVOXDELAYMIN, WITHVOXDELAYMAX,						/* 0.1..2.5 seconds delay */
 			OFFSETOF(struct nvmap, voxdelay),
@@ -6228,7 +6225,7 @@ enum
 
 	static const struct paramdefdef xgelkeywpm =
 	{
-		QLABEL3("CW SPEED", "CW Speed", "CW SPEED"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("CW SPEED", "CW Speed", "CW SPEED"),  0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 #if WITHPOTWPM
@@ -6244,7 +6241,7 @@ enum
 	};
 	static const struct paramdefdef xgdashratio =
 	{
-		QLABEL("DASH LEN"), 7, 1, RJ_UNSIGNED, ISTEP1,
+		QLABEL("DASH LEN"),  1, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		23, 45,
 		OFFSETOF(struct nvmap, dashratio),
@@ -6256,7 +6253,7 @@ enum
 	};
 	static const struct paramdefdef xgspaceratio =
 	{
-		QLABEL("DOT LEN"), 7, 1, RJ_UNSIGNED, ISTEP1,
+		QLABEL("DOT LEN"),  1, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		7, 13,
 		OFFSETOF(struct nvmap, spaceratio),
@@ -6268,7 +6265,7 @@ enum
 	};
 	static const struct paramdefdef xgelkeyreverse =
 	{
-		QLABEL("KEY REV"), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("KEY REV"), 0, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,	/* режим электронного ключа - поменять местами точки с тире или нет. */
 		OFFSETOF(struct nvmap, elkeyreverse),
@@ -6286,7 +6283,7 @@ enum
 	}
 	static const struct paramdefdef xgelkeymode =
 	{
-		QLABEL("KEYER"), 6, 0, RJ_CB,	ISTEP1,
+		QLABEL("KEYER"), 0, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_LISTSELECT,
 		0, ARRAY_SIZE(elkeymodes) - 1,	/* режим электронного ключа */
 		OFFSETOF(struct nvmap, elkeymode),
@@ -6299,7 +6296,7 @@ enum
 #if WITHVIBROPLEX
 	static const struct paramdefdef xgelkeyslope =
 	{
-		QLABEL("VIBROPLX"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
+		QLABEL("VIBROPLX"),  0, RJ_UNSIGNED, ISTEP1,		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		ITEM_VALUE,
 		0, 5,		// minimal 0 - без эффекта Виброплекса
 		OFFSETOF(struct nvmap, elkeyslope),
@@ -6313,7 +6310,7 @@ enum
 #if WITHTX
 	static const struct paramdefdef xgbkinenable =
 	{
-		QLABEL("BREAK-IN"), 8, 3, RJ_ON,	ISTEP1,	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
+		QLABEL("BREAK-IN"), 0, RJ_ON,	ISTEP1,	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gbkinenable),
@@ -6325,7 +6322,7 @@ enum
 	};
 	static const struct paramdefdef xgbkindelay =
 	{
-		QLABEL("CW DELAY"), 7, 2, RJ_UNSIGNED, ISTEP1,	/* задержка в десятках ms */
+		QLABEL("CW DELAY"),  2, RJ_UNSIGNED, ISTEP1,	/* задержка в десятках ms */
 		ITEM_VALUE,
 		5, 160,						/* 0.05..1.6 секунды */
 		OFFSETOF(struct nvmap, bkindelay),
@@ -6340,7 +6337,7 @@ enum
 	static uint_fast8_t gcwedgetime = 5;	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static const struct paramdefdef xgcwedgetime =
 	{
-		QLABEL3("EDGE TIM", "EDGE TIME", "EDGE TIM"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
+		QLABEL3("EDGE TIM", "EDGE TIME", "EDGE TIM"),  0, RJ_UNSIGNED, ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
 		ITEM_VALUE,
 		2, 16,
 		OFFSETOF(struct nvmap, gcwedgetime),	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
@@ -6355,7 +6352,7 @@ enum
 	static uint_fast8_t gcwssbtx;			/* разрешение передачи телеграфа как тона в режиме SSB */
 	static const struct paramdefdef xgcwssbtx =
 	{
-		QLABEL("SSB TXCW"), 8, 3, RJ_ON, ISTEP1,		/*  */
+		QLABEL("SSB TXCW"), 0, RJ_ON, ISTEP1,		/*  */
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gcwssbtx),	/* разрешение передачи телеграфа как тона в режиме SSB */
@@ -6467,7 +6464,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	static uint_fast8_t gmutespkr;		/*  выключение динамика */
 	static const struct paramdefdef xgmutespkr =
 	{
-		QLABEL3("SPK MUTE", "SPK MUTE", "SPK MUTE"), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL3("SPK MUTE", "SPK MUTE", "SPK MUTE"), 0, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gmutespkr),
@@ -6499,7 +6496,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 
 	static const struct paramdefdef xgdownatcwtune =
 	{
-		QLABEL("TUNE LP"), 8, 3, RJ_ON,	ISTEP1,	/* снижаем мощность до "тюнерной" при нажатии TUNE */
+		QLABEL("TUNE LP"), 0, RJ_ON,	ISTEP1,	/* снижаем мощность до "тюнерной" при нажатии TUNE */
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gdownatcwtune),
@@ -6513,7 +6510,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	static const struct paramdefdef xgswrprot =
 	{
-		QLABEL3("SWR PROT", "SWR Protect", "SWR PROT"), 7, 0, RJ_ON,	ISTEP1,
+		QLABEL3("SWR PROT", "SWR Protect", "SWR PROT"), 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,						/* защита от превышения КСВ */
 		OFFSETOF(struct nvmap, gswrprot),
@@ -6525,7 +6522,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	};
 	static const struct paramdefdef xminforward =
 	{
-		QLABEL3("FWD LOWR", "FWD Lower", "FWD LOWR"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* нечувствительность SWR-метра */
+		QLABEL3("FWD LOWR", "FWD Lower", "FWD LOWR"),  0, RJ_UNSIGNED, ISTEP1,		/* нечувствительность SWR-метра */
 		ITEM_VALUE,
 		1, (1U << HARDWARE_ADCBITS) - 1,
 		OFFSETOF(struct nvmap, minforward),
@@ -6537,7 +6534,7 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	};
 	static const struct paramdefdef xmaxpwrcali =
 	{
-		QLABEL3("PWR CALI", "PWR CALI", "PWR CALI"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* калибровка PWR-метра */
+		QLABEL3("PWR CALI", "PWR CALI", "PWR CALI"),  0, RJ_UNSIGNED, ISTEP1,		/* калибровка PWR-метра */
 		ITEM_VALUE,
 		1, 255,
 		OFFSETOF(struct nvmap, maxpwrcali),
@@ -6573,7 +6570,7 @@ static size_t getvaltextsmetertype(char * buff, size_t count, int_fast32_t value
 
 static const struct paramdefdef xgsmetertype =
 {
-	QLABEL3("SMETER", "S-meter Type", "SMETER"), 7, 3, RJ_CB,	ISTEP1,
+	QLABEL3("SMETER", "S-meter Type", "SMETER"), 0, RJ_CB,	ISTEP1,
 	ITEM_VALUE | ITEM_LISTSELECT,
 	0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
 	OFFSETOF(struct nvmap, gsmetertype),
@@ -6699,7 +6696,7 @@ static size_t getvaltextcputype(char * buff, size_t count, int_fast32_t value)
 
 static const struct paramdefdef xgversion =
 {
-	QLABEL("VERSION"), 7, 0, RJ_CB, 	ISTEP_RO,	// тип процессора
+	QLABEL("VERSION"), 0, RJ_CB, 	ISTEP_RO,	// тип процессора
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -6711,7 +6708,7 @@ static const struct paramdefdef xgversion =
 };
 static const struct paramdefdef xgserialnum =
 {
-	QLABEL("S/N"), 7, 0, RJ_CB, 	ISTEP_RO,	// Индивидуальный номер изделия
+	QLABEL("S/N"), 0, RJ_CB, 	ISTEP_RO,	// Индивидуальный номер изделия
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -6724,7 +6721,7 @@ static const struct paramdefdef xgserialnum =
 
 static const struct paramdefdef xgcpufreq =
 {
-	QLABEL("CPU FREQ"), 7, 0, RJ_CB, 	ISTEP_RO,	// частота процессора
+	QLABEL("CPU FREQ"), 0, RJ_CB, 	ISTEP_RO,	// частота процессора
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -6737,7 +6734,7 @@ static const struct paramdefdef xgcpufreq =
 
 static const struct paramdefdef xgcputype =
 {
-	QLABEL("CPU TYPE"), 7, 0, RJ_CB, 	ISTEP_RO,	// тип процессора
+	QLABEL("CPU TYPE"), 0, RJ_CB, 	ISTEP_RO,	// тип процессора
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -6766,7 +6763,7 @@ static int_fast32_t getaxissfreqbase(void)
 #if CPUSTYLE_STM32MP1
 static const struct paramdefdef xgddrfreq =
 {
-	QLABEL("DDR FREQ"), 7, 0, RJ_CB, 	ISTEP_RO,	// частота памяти
+	QLABEL("DDR FREQ"), 0, RJ_CB, 	ISTEP_RO,	// частота памяти
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -6778,7 +6775,7 @@ static const struct paramdefdef xgddrfreq =
 };
 static const struct paramdefdef xgbusfreq =
 {
-	QLABEL("BUS FREQ"), 7, 0, RJ_CB, 	ISTEP_RO,	// частота шины
+	QLABEL("BUS FREQ"), 0, RJ_CB, 	ISTEP_RO,	// частота шины
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -6819,7 +6816,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 
 static const struct paramdefdef xgkeybeep10 =
 {
-	QLABEL2("KEY BEEP", "Keys Beep"), 6, 2, 0, 	ISTEP5,		/* регулировка тона озвучки клавиш */
+	QLABEL2("KEY BEEP", "Keys Beep"), 2, RJ_UNSIGNED, 	ISTEP5,		/* регулировка тона озвучки клавиш */
 	ITEM_VALUE,
 	80, 250,			/* 800 Hz..2500, Hz in 50 Hz steps */
 	OFFSETOF(struct nvmap, gkeybeep10),
@@ -6837,7 +6834,7 @@ static const struct paramdefdef xgkeybeep10 =
 	/* подстройка усиления микрофонного усилителя через меню. */
 	static const struct paramdefdef xgmik1level =
 	{
-		QLABEL3("MIC LEVL", "MIC Level", "MIKE LEVEL"), 7, 0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("MIC LEVL", "MIC Level", "MIKE LEVEL"),  0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
 		OFFSETOF(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
@@ -6861,7 +6858,7 @@ static const struct paramdefdef xgkeybeep10 =
 	static uint_fast16_t gdesignscale = 1000;		/* используется при калибровке параметров интерполятора */
 	#if WITHTXCPATHCALIBRATE
 	const struct paramdefdef xgdesignscale = {
-		QLABELENC2("TX CALIBR"), 0, 3, RJ_UNSIGNED, ISTEP1,
+		QLABELENC2("TX CALIBR"),  3, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		0, 2500,		/* используется при калибровке параметров интерполятора */
 		OFFSETOF(struct nvmap, gdesignscale),
@@ -6885,7 +6882,7 @@ static const struct paramdefdef xgkeybeep10 =
 	/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 	static const struct paramdefdef xggaindigitx =
 	{
-		QLABEL3("FT8BOOST", "FT8 Boost", "FT8BOOST"),	7, 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		QLABEL3("FT8BOOST", "FT8 Boost", "FT8BOOST"),	 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
 		90, 300,
 		OFFSETOF(struct nvmap, ggaindigitx),
@@ -6900,7 +6897,7 @@ static const struct paramdefdef xgkeybeep10 =
 	/* разрешённое время передачи */
 	static const struct paramdefdef xgtxtot =
 	{
-		QLABEL2("TX TOUT", "TX Timeout"), 7, 0, RJ_UNSIGNED, ISTEP5,		/* разрешённое время передачи */
+		QLABEL2("TX TOUT", "TX Timeout"),  0, RJ_UNSIGNED, ISTEP5,		/* разрешённое время передачи */
 		ITEM_VALUE,
 		0, 300,
 		OFFSETOF(struct nvmap, gtxtot),	/* разрешённое время передачи */
@@ -6913,7 +6910,7 @@ static const struct paramdefdef xgkeybeep10 =
 	/* Глубина модуляции в АМ - 0..100% */
 	static const struct paramdefdef xgamdepth =
 	{
-		QLABEL2("AM DEPTH", "AM Depth"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Подстройка глубины модуляции в АМ */
+		QLABEL2("AM DEPTH", "AM Depth"),  0, RJ_UNSIGNED, ISTEP1,		/* Подстройка глубины модуляции в АМ */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
@@ -6927,7 +6924,7 @@ static const struct paramdefdef xgkeybeep10 =
 	static uint_fast16_t gnfmdeviation = 3500;
 	static const struct paramdefdef xgnfmdeviation =
 	{
-		QLABEL2("NFM DEVI", "NFM Deviation"), 7, 0, RJ_UNSIGNED, ISTEP100,		/* Подстройка глубины модуляции в АМ */
+		QLABEL2("NFM DEVI", "NFM Deviation"),  0, RJ_UNSIGNED, ISTEP100,		/* Подстройка глубины модуляции в АМ */
 		ITEM_VALUE,
 		1000, 23000,
 		OFFSETOF(struct nvmap, gnfmdeviation),	/* Глубина модуляции в АМ - 0..100% */
@@ -6940,7 +6937,7 @@ static const struct paramdefdef xgkeybeep10 =
 	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	static const struct paramdefdef xggaincwtx =
 	{
-		QLABEL3("CW BOOST", "CW Boost", "CW BOOST"),	7, 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в CW режимах 30..150% */
+		QLABEL3("CW BOOST", "CW Boost", "CW BOOST"),	 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в CW режимах 30..150% */
 		ITEM_VALUE,
 		30, 150,
 		OFFSETOF(struct nvmap, ggaincwtx),
@@ -6985,7 +6982,7 @@ static const struct paramdefdef xgkeybeep10 =
 	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static const struct paramdefdef xgsidetonelevel =
 	{
-		QLABEL2("SDTN LVL", "SDTN Level"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
+		QLABEL2("SDTN LVL", "SDTN Level"),  0, RJ_UNSIGNED, ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
 		ITEM_VALUE,
 		0, 100,
 		OFFSETOF(struct nvmap, gsidetonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
@@ -6999,7 +6996,7 @@ static const struct paramdefdef xgkeybeep10 =
 	static uint_fast8_t gmoniflag;		/* разрешение самопрослушивания */
 	static const struct paramdefdef xgmoniflag =
 	{
-		QLABEL("MONI EN"), 8, 3, RJ_ON,	ISTEP1,		/* Select the monitoring sound output enable */
+		QLABEL("MONI EN"), 0, RJ_ON,	ISTEP1,		/* Select the monitoring sound output enable */
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gmoniflag),	/* разрешение самопрослушивания */
@@ -7031,7 +7028,7 @@ static const struct paramdefdef xgkeybeep10 =
 #endif /*  */
 	static const struct paramdefdef xgfsadcpower10 =
 	{
-		QLABEL("ADC FS"), 3 + WSIGNFLAG, 1, RJ_SIGNED,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */
+		QLABEL("ADC FS"),  1, RJ_SIGNED,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */
 		ITEM_VALUE,
 		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
 		OFFSETOF(struct nvmap, gfsadcpower10 [0]),
@@ -7043,7 +7040,7 @@ static const struct paramdefdef xgkeybeep10 =
 	};
 	static const struct paramdefdef xgfsadcpower10xv =
 	{
-			QLABEL("ADC FSXV"), 3 + WSIGNFLAG, 1, RJ_SIGNED,	ISTEP1,		/* с колнвертором Калиьровка S-метра - момент перегрузки */
+			QLABEL("ADC FSXV"),  1, RJ_SIGNED,	ISTEP1,		/* с колнвертором Калиьровка S-метра - момент перегрузки */
 			ITEM_VALUE,
 			0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
 			OFFSETOF(struct nvmap, gfsadcpower10 [1]),
@@ -7075,7 +7072,7 @@ static const struct paramdefdef xgkeybeep10 =
 		#endif /* WITHTXINHDISABLE */
 		static const struct paramdefdef xgdither =
 		{
-			QLABEL("ADC DITH"), 8, 3, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
+			QLABEL("ADC DITH"), 0, RJ_ON,	ISTEP1,	/* управление зашумлением в LTC2208 */
 			ITEM_VALUE,
 			0, 1,
 			OFFSETOF(struct nvmap, gdither),
@@ -7127,7 +7124,7 @@ static const struct paramdefdef xgkeybeep10 =
 
 	static const struct paramdefdef xgmodemmode =
 	{
-		QLABEL("DATA MOD"), 5, 0, RJ_MDMMODE, 	ISTEP1,
+		QLABEL("DATA MOD"), 0, RJ_MDMMODE, 	ISTEP1,
 		ITEM_VALUE,
 		0, 1,			/* 0: BPSK, 1: QPSK */
 		OFFSETOF(struct nvmap, gmodemmode),
@@ -7139,7 +7136,7 @@ static const struct paramdefdef xgkeybeep10 =
 	};
 	static const struct paramdefdef xgmodemspeed =
 	{
-		QLABEL("DATA SPD"), 7, 2, RJ_MDMSPEED, 	ISTEP1,
+		QLABEL("DATA SPD"), 2, RJ_MDMSPEED, 	ISTEP1,
 		ITEM_VALUE,
 		0, ARRAY_SIZE(modembr2int100) - 1,
 		OFFSETOF(struct nvmap, gmodemspeed),
@@ -8316,7 +8313,7 @@ static uint_fast8_t dimmflagch;	/* не-0: изменилось состояни
 
 static const struct paramdefdef xgdimmtime =
 {
-	QLABEL3("DIMM TIM", "Dimmer Time", "DIMM TIM"), 7, 0, RJ_UNSIGNED, ISTEP5,
+	QLABEL3("DIMM TIM", "Dimmer Time", "DIMM TIM"),  0, RJ_UNSIGNED, ISTEP5,
 	ITEM_VALUE,
 	0, 240,
 	OFFSETOF(struct nvmap, gdimmtime),
@@ -8356,7 +8353,7 @@ static uint_fast8_t sleepflagch;	/* не-0: изменилось состоян�
 
 static const struct paramdefdef xgsleeptime =
 {
-	QLABEL3("SLEEPTIM", "Sleep Time", "SLEEPTIM"), 7, 0, RJ_UNSIGNED, ISTEP5,
+	QLABEL3("SLEEPTIM", "Sleep Time", "SLEEPTIM"),  0, RJ_UNSIGNED, ISTEP5,
 	ITEM_VALUE,
 	0, 240,
 	OFFSETOF(struct nvmap, gsleeptime),
@@ -9624,7 +9621,7 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 #if WITHMGLOOP && WITHAUTOTUNER
 static const struct paramdefdef xmlaparamc =
 {
-	QLABEL("MLA C"), 7, 0, RJ_UNSIGNED,	ISTEPLARGE_1,
+	QLABEL("MLA C"),  0, RJ_UNSIGNED,	ISTEPLARGE_1,
 	ITEM_VALUE,
 	0, MLAPARAMC_MAX,
 	OFFSETOF(struct nvmap, bandgroups [0].otxants [0].mlaparamc),
@@ -9639,7 +9636,7 @@ static const struct paramdefdef xmlaparamc =
 #if WITHAUTOTUNER
 static const struct paramdefdef xtunerind =
 {
-	QLABEL("TUNER L"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL("TUNER L"),  0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	LMIN, LMAX,
 	OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunerind),
@@ -9651,7 +9648,7 @@ static const struct paramdefdef xtunerind =
 };
 static const struct paramdefdef xtunercap =
 {
-	QLABEL("TUNER C"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL("TUNER C"),  0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	CMIN, CMAX,
 	OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunercap),
@@ -9663,7 +9660,7 @@ static const struct paramdefdef xtunercap =
 };
 static const struct paramdefdef xtunertype =
 {
-	QLABEL("TUNER TY"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL("TUNER TY"),  0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	0, KSCH_COUNT - 1,
 	OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunertype),
@@ -9675,7 +9672,7 @@ static const struct paramdefdef xtunertype =
 };
 static const struct paramdefdef xgtunerdelay =
 {
-	QLABEL("TUNER WT"), 7, 0, RJ_UNSIGNED,	ISTEP5,	// задержка перед измерением после переключения реле
+	QLABEL("TUNER WT"),  0, RJ_UNSIGNED,	ISTEP5,	// задержка перед измерением после переключения реле
 	ITEM_VALUE,
 	10, 250,
 	OFFSETOF(struct nvmap, gtunerdelay),
@@ -9688,7 +9685,7 @@ static const struct paramdefdef xgtunerdelay =
 #if WITHAUTOTUNER_N7DDCALGO
 static const struct paramdefdef xgn7ddclinearC =
 {
-	QLABEL("C LINEAR"), 7, 0, RJ_YES,	ISTEP1,
+	QLABEL("C LINEAR"), 0, RJ_YES,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, gn7ddclinearC),
@@ -9700,7 +9697,7 @@ static const struct paramdefdef xgn7ddclinearC =
 };
 static const struct paramdefdef xgn7ddclinearL =
 {
-	QLABEL("L LINEAR"), 7, 0, RJ_YES,	ISTEP1,
+	QLABEL("L LINEAR"), 0, RJ_YES,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, gn7ddclinearL),
@@ -9721,7 +9718,7 @@ static const struct paramdefdef xgn7ddclinearL =
 #if WITHPOWERTRIM && ! WITHPOTPOWER
 static const struct paramdefdef xgnormalpower =
 {
-	QLABEL3("TX POWER", "TX Power", "TX POWER"), 7, 0, RJ_UNSIGNED, ISTEP1,		/* мощность при обычной работе на передачу */
+	QLABEL3("TX POWER", "TX Power", "TX POWER"),  0, RJ_UNSIGNED, ISTEP1,		/* мощность при обычной работе на передачу */
     ITEM_VALUE,
     WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
     OFFSETOF(struct nvmap, gnormalpower),
@@ -9736,7 +9733,7 @@ static const struct paramdefdef xgnormalpower =
 static uint_fast8_t gtxgate = 1;		/* разрешение драйвера и оконечного усилителя */
 static const struct paramdefdef xgtxgate =
 {
-	QLABEL3("TX GATE", "TX Gate", "TX GATE"), 8, 3, RJ_ON,	ISTEP1,
+	QLABEL3("TX GATE", "TX Gate", "TX GATE"), 0, RJ_ON,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	OFFSETOF(struct nvmap, gtxgate),
@@ -9754,7 +9751,7 @@ enum { gtxgate = 0 };
 // CW filter bandwidth for WIDE
 static const struct paramdefdef xfltbw_cwwide =
 {
-	QLABEL3("CW W WDT", "CW W WIDTH", "CW W WIDTH"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for WIDE
+	QLABEL3("CW W WDT", "CW W WIDTH", "CW W WIDTH"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for WIDE
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
@@ -9767,7 +9764,7 @@ static const struct paramdefdef xfltbw_cwwide =
 // CW filter edges for WIDE
 static const struct paramdefdef xfltsofter_cwwide =
 {
-	QLABEL3("CW W SFT", "CW W SOFT", "CW W SOFT"), 7, 0, 0, 	ISTEP1,	// CW filter edges for WIDE
+	QLABEL3("CW W SFT", "CW W SOFT", "CW W SOFT"), 0, RJ_UNSIGNED, 	ISTEP1,	// CW filter edges for WIDE
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
 	RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWWIDE),
@@ -9780,7 +9777,7 @@ static const struct paramdefdef xfltsofter_cwwide =
 // CW filter bandwidth for NARROW
 static const struct paramdefdef xfltbw_cwnarrow =
 {
-	QLABEL3("CW N WDT", "CW N WIDTH", "CW N WIDTH"), 7, 2, 0, 	ISTEP10,	// CW bandwidth for NARROW
+	QLABEL3("CW N WDT", "CW N WIDTH", "CW N WIDTH"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for NARROW
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
@@ -9793,10 +9790,7 @@ static const struct paramdefdef xfltbw_cwnarrow =
 // CW filter edges for NARROW
 static const struct paramdefdef xfltsofter_cwnarrow =
 {
-	QLABEL3("CW N SFT", "CW N SOFT", "CW N SOFT"),	// CW filter edges for NARROW
-	0, 0,
-	RJ_UNSIGNED,		// rj
-	ISTEP1,
+	QLABEL3("CW N SFT", "CW N SOFT", "CW N SOFT"),  0, RJ_UNSIGNED, ISTEP1,
 	ITEM_VALUE,
 	WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
 	RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
@@ -9807,7 +9801,7 @@ static const struct paramdefdef xfltsofter_cwnarrow =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbwide_high = {
-	QLABEL("SSB W HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
+	QLABEL("SSB W HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
@@ -9818,7 +9812,7 @@ static const struct paramdefdef xgssbwide_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbwide_low = {
-	QLABEL("SSB W LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
+	QLABEL("SSB W LO"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
@@ -9828,7 +9822,7 @@ static const struct paramdefdef xgssbwide_low = {
 	getzerobase, /* складывается со смещением и отображается */
 };
 static const struct paramdefdef xgssbwide_afr = {
-	QLABEL("SSBW AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	QLABEL("SSBW AFR"), 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBWIDE),
@@ -9839,7 +9833,7 @@ static const struct paramdefdef xgssbwide_afr = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbmedium_high = {
-	QLABEL("SSB M HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB MEDIUM */
+	QLABEL("SSB M HI"), 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB MEDIUM */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBMEDIUM),
@@ -9850,7 +9844,7 @@ static const struct paramdefdef xgssbmedium_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbmedium_low = {
-	QLABEL("SSB M LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB MEDIUM */
+	QLABEL("SSB M LO"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB MEDIUM */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBMEDIUM),
@@ -9861,7 +9855,7 @@ static const struct paramdefdef xgssbmedium_low = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbmedium_afr = {
-	QLABEL("SSBM AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	QLABEL("SSBM AFR"), 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBMEDIUM),
@@ -9872,7 +9866,7 @@ static const struct paramdefdef xgssbmedium_afr = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbnarrow_high = {
-	QLABEL("SSB N HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB NARROW */
+	QLABEL("SSB N HI"), 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB NARROW */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBNARROW),
@@ -9883,7 +9877,7 @@ static const struct paramdefdef xgssbnarrow_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbnarrow_low = {
-	QLABEL("SSB N LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB NARROW */
+	QLABEL("SSB N LO"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB NARROW */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBNARROW),
@@ -9894,7 +9888,7 @@ static const struct paramdefdef xgssbnarrow_low = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbnarrow_afr = {
-	QLABEL("SSBN AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	QLABEL("SSBN AFR"),  0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBNARROW),
@@ -9905,7 +9899,7 @@ static const struct paramdefdef xgssbnarrow_afr = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamwide_high = {
-	QLABEL("AM W HI"), 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
+	QLABEL("AM W HI"), 1, RJ_UNSIGNED,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE),
@@ -9916,7 +9910,7 @@ static const struct paramdefdef xgamwide_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamwide_low = {
-	QLABEL("AM W LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
+	QLABEL("AM W LO"), 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
@@ -9927,7 +9921,7 @@ static const struct paramdefdef xgamwide_low = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamwide_afr = {
-	QLABEL("AM W AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	QLABEL("AM W AFR"), 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMWIDE),
@@ -9938,7 +9932,7 @@ static const struct paramdefdef xgamwide_afr = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamnarrow_high = {
-	QLABEL("AM N HI"), 6, 1, 0,	ISTEP2,		/* Подстройка полосы пропускания - AM NARROW */
+	QLABEL("AM N HI"), 1, RJ_UNSIGNED,	ISTEP2,		/* Подстройка полосы пропускания - AM NARROW */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_AMNARROW),
@@ -9949,7 +9943,7 @@ static const struct paramdefdef xgamnarrow_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamnarrow_low = {
-	QLABEL("AM N LO"), 7, 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM NARROW */
+	QLABEL("AM N LO"),  2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM NARROW */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_AMNARROW),
@@ -9960,7 +9954,7 @@ static const struct paramdefdef xgamnarrow_low = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamnarrow_afr = {
-	QLABEL("AM N AFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	QLABEL("AM N AFR"),  0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMNARROW),
@@ -9971,7 +9965,7 @@ static const struct paramdefdef xgamnarrow_afr = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbtx_high = {
-	QLABEL("SSBTX HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
+	QLABEL("SSBTX HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBTX),
@@ -9982,7 +9976,7 @@ static const struct paramdefdef xgssbtx_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbtx_low = {
-	QLABEL("SSBTX LO"), 7, 2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
+	QLABEL("SSBTX LO"),  2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBTX),
@@ -9993,7 +9987,7 @@ static const struct paramdefdef xgssbtx_low = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbtx_afr = {
-	QLABEL("SSBTXAFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	QLABEL("SSBTXAFR"),  0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBTX),
@@ -10004,7 +9998,7 @@ static const struct paramdefdef xgssbtx_afr = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgnfmtx_high = {
-	QLABEL("NFM TX HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
+	QLABEL("NFM TX HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_NFMTX),
@@ -10015,7 +10009,7 @@ static const struct paramdefdef xgnfmtx_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgnfmtx_low = {
-	QLABEL("NFM TX LO"), 7, 2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
+	QLABEL("NFM TX LO"),  2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_NFMTX),
@@ -10026,7 +10020,7 @@ static const struct paramdefdef xgnfmtx_low = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgnfmtx_afr = {
-	QLABEL("NFM TXAFR"), 3 + WSIGNFLAG, 0, RJ_SIGNED,	ISTEP1,
+	QLABEL("NFM TXAFR"),  0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_NFMTX),
@@ -10037,7 +10031,7 @@ static const struct paramdefdef xgnfmtx_afr = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgdigiwide_high = {
-	QLABEL("DIGI HI"), 6, 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
+	QLABEL("DIGI HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_DIGIWIDE),
@@ -10048,7 +10042,7 @@ static const struct paramdefdef xgdigiwide_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgdigiwide_low = {
-	QLABEL("DIGI LO"), 7, 2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
+	QLABEL("DIGI LO"),  2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_DIGIWIDE),
@@ -10687,7 +10681,7 @@ static uint_fast8_t grtcstrobe;
 static uint_fast8_t grtcstrobe_shadow;
 
 static const struct paramdefdef xgrtcyear = {
-	QLABEL2("TM YEAR", "Year"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL2("TM YEAR", "Year"),  0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	2015, 2099,
 	MENUNONVRAM,
@@ -10697,7 +10691,7 @@ static const struct paramdefdef xgrtcyear = {
 	getzerobase, /* складывается со смещением и отображается */
 };
 static const struct paramdefdef xgrtcmonth = {
-	QLABEL2("TM MONTH", "Month"), 7, 3, RJ_CB,	ISTEP1,
+	QLABEL2("TM MONTH", "Month"), 0, RJ_CB,	ISTEP1,
 	ITEM_VALUE | ITEM_LISTSELECT,
 	1, 12,
 	MENUNONVRAM,
@@ -10708,7 +10702,7 @@ static const struct paramdefdef xgrtcmonth = {
 	getvaltextmonth, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgrtcday = {
-	QLABEL2("TM DAY", "Day"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL2("TM DAY", "Day"),  0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	1, 31,
 	MENUNONVRAM,
@@ -10718,7 +10712,7 @@ static const struct paramdefdef xgrtcday = {
 	getzerobase, /* складывается со смещением и отображается */
 };
 static const struct paramdefdef xgrtchour = {
-	QLABEL2("TM HOUR", "Hour"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL2("TM HOUR", "Hour"),  0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	0, 23,
 	MENUNONVRAM,
@@ -10729,7 +10723,7 @@ static const struct paramdefdef xgrtchour = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgrtcmin = {
-	QLABEL2("TM MIN", "Minute"), 7, 0, RJ_UNSIGNED,	ISTEP1,
+	QLABEL2("TM MIN", "Minute"),  0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	0, 59,
 	MENUNONVRAM,
@@ -10740,7 +10734,7 @@ static const struct paramdefdef xgrtcmin = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgrtcstrobe = {
-	QLABEL2("TM SET", "Set"), 7, 3, RJ_YES,	ISTEP1,
+	QLABEL2("TM SET", "Set"), 0, RJ_YES,	ISTEP1,
 	ITEM_VALUE,
 	0, 1,
 	MENUNONVRAM,
@@ -11346,7 +11340,7 @@ makebandf2adjust(
 #if WITHPOWERTRIM
 static const struct paramdefdef xgtunepower =
 {
-	QLABEL("ATU PWR"), 7, 0, RJ_UNSIGNED, ISTEP5,		/* мощность при работе автоматического согласующего устройства */
+	QLABEL("ATU PWR"),  0, RJ_UNSIGNED, ISTEP5,		/* мощность при работе автоматического согласующего устройства */
 	ITEM_VALUE,
 	WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 	OFFSETOF(struct nvmap, gtunepower),
@@ -11359,7 +11353,7 @@ static const struct paramdefdef xgtunepower =
 #elif WITHPOWERLPHP
 static const struct paramdefdef xgtunepowerlphp =
 {
-	QLABEL("ATU PWR"), 7, 0, RJ_CB,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+	QLABEL("ATU PWR"), 0, RJ_CB,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
 	ITEM_VALUE | ITEM_LISTSELECT,
 	0, PWRMODE_COUNT - 1,
 	OFFSETOF(struct nvmap, gtunepower),
@@ -12968,7 +12962,7 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 
 	static const struct paramdefdef xlfmmode =
 	{
-		QLABEL("LFM MODE"), 8, 3, RJ_ON, 	ISTEP1,
+		QLABEL("LFM MODE"), 0, RJ_ON, 	ISTEP1,
 		ITEM_VALUE,
 		0, 1,			/* LFM mode enable */
 		OFFSETOF(struct nvmap, lfmmode),
@@ -13042,7 +13036,7 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 	   };
 	static const struct paramdefdef xlfmfreqbias =
 	{
-        QLABEL("LFM SHFT"), 5 + WSIGNFLAG, 0, RJ_SIGNED,     ISTEP1,
+        QLABEL("LFM SHFT"),  0, RJ_SIGNED,     ISTEP1,
         ITEM_VALUE,
         0, 2 * LFMFREQBIAS,            /*  */
         OFFSETOF(struct nvmap, lfmfreqbias),
@@ -13483,8 +13477,8 @@ updateboard_noui(
 						param_getvalue(& xgctsslevel) : 0);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 			#endif /* WITHSUBTONES */
 			#if WITHVOX
-				seq_set_vox_time(voxdelay);		/* разрешение голосового управления переходом на передачу */
-				vox_set_levels(gvoxlevel, gavoxlevel);		/* установка параметров vox */
+				seq_set_vox_time(param_getvalue(& xgvoxdelay));		/* разрешение голосового управления переходом на передачу */
+				vox_set_levels(param_getvalue(& xgvoxlevel), param_getvalue(& xgavoxlevel));		/* установка параметров vox */
 			#endif /* WITHVOX */
 			board_set_mikemute(getactualtune() || getmodetempl(txsubmode)->mute);	/* отключить микрофонный усилитель */
 			seq_set_txgate(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
@@ -18784,12 +18778,11 @@ param_format(
 #if WITHMODEM
 
 	case RJ_MDMSPEED:
-		display_menu_digit(db, x, y, modembr2int100 [value], count, comma, 0);
-		break;
+		return local_snprintf_P(buff, count, "%u.%02u", (unsigned) modembr2int100 [value] / 100, (unsigned) modembr2int100 [value] % 100);
 
 	case RJ_MDMMODE:
 		{
-			static const char msg [] [5] =
+			static const char * msg [] =
 			{
  				"BPSK",
 				"QPSK",

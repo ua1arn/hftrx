@@ -484,6 +484,7 @@ static uint_fast16_t display_put_char(const gxdrawb_t * db, uint_fast16_t x, uin
 	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
 }
 
+// Used in display2_freqX_b
 void
 NOINLINEAT
 pix_display_value_small(
@@ -503,10 +504,11 @@ pix_display_value_small(
 	const unifont_t * const font = dbstylep->gfont;
 //	if (width > ARRAY_SIZE(vals10))
 //		width = ARRAY_SIZE(vals10);
-	const uint_fast8_t wsign = (width & WSIGNFLAG) != 0;
-	const uint_fast8_t wminus = (width & WMINUSFLAG) != 0;
+	const uint_fast8_t wsign = 0;//(width & WSIGNFLAG) != 0;
+	const uint_fast8_t wminus = 0;//(width & WMINUSFLAG) != 0;
 	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
-	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
+	//uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
+	uint_fast8_t i = j - width;	// Номер цифры по порядку
 	uint_fast8_t z = 1;	// если в позиции встретился '0' - не отоображать
 
 	if (dbstylep->bgradius)

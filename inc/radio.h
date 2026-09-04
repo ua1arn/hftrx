@@ -931,7 +931,7 @@ typedef struct paramdefdef
 	const char * label;			/* название пункта меню для широкого меню */
 	const char * enc2label;		/* название пункта меню для FUNC меню */
 
-	uint8_t qwidth_unused, qcomma, qrj;
+	uint8_t qcomma, qrj;
 	uint8_t qistep;
 	uint8_t qspecial;	/* признак к какому меню относится */
 
