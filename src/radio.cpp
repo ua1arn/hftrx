@@ -970,7 +970,7 @@ static int_fast32_t get_paramvalue_knob_hires(knobevent_t * e)
 /* модификация и сохранение параметра по валкодеру
  * - возврат не-0  в случае модификации */
 static uint_fast8_t
-param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e)
+param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e, void (* bring)(void))
 {
 	/* редактирование паратметра */
 	unsigned nvalues;
@@ -989,6 +989,8 @@ param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e)
 
 	if (nrotate == 0)
 		return 0;
+	if (bring)
+		bring();
 	if (nrotate < 0)
 	{
 		// negative change value
@@ -15278,25 +15280,25 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 		}
 	}
 #endif /* WITHENCODER_2F */
-#if WITHENCODER_3F
+#if WITHENCODER_4F
 	if (inmenu)
 	{
 		/* редактирование параметра в пункте меню */
-
 	}
 	else
 	{
 		/* редактирование параметра в middle bar */
-		unsigned nitems;
-		const unsigned apos = gmiddlepos [mode];
-		const struct paramdefdef * const pd = mdt [mode].middlemenu(& nitems) [gmiddlepos [mode]];
 
-		int_least32_t delta = event_getRotate(& ev->encF3);
-		changed |= param_rotate(pd, delta);	// модификация и сохранение параметра
+		const int_least32_t delta = event_getRotate(& ev->encF4);
 		if (delta)
 		{
-			bring_enc3f();
-//			switch (enc3f_sel)
+			bring_enc4f();
+			unsigned nitems;
+			const unsigned apos = gmiddlepos [mode];
+			const struct paramdefdef * const pd = mdt [mode].middlemenu(& nitems) [gmiddlepos [mode]];
+
+			changed |= param_rotate(pd, delta);	// модификация и сохранение параметра
+//			switch (enc4f_sel)
 //			{
 //			default:
 //				break;
@@ -15317,8 +15319,8 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 //			}
 		}
 	}
-#endif /* WITHENCODER_3F */
-#if WITHENCODER_4F
+#endif /* WITHENCODER_4F */
+#if WITHENCODER_3F
 	if (inmenu)
 	{
 		/* навигация по меню */
@@ -15327,10 +15329,10 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 	else
 	{
 		/* перемещение по middle bar */
-		const int_least32_t delta = event_getRotate(& ev->encF4);
+		const int_least32_t delta = event_getRotate(& ev->encF3);
 		if (delta)
 		{
-			bring_enc4f();
+			bring_enc3f();
 			unsigned middlerowsize;
 			mdt [mode].middlemenu(& middlerowsize);
 			gmiddlepos [mode] = calc_delta(gmiddlepos [mode], 0, middlerowsize - 1, delta);
@@ -15345,7 +15347,7 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 //			}
 		}
 	}
-#endif /* WITHENCODER_4F */
+#endif /* WITHENCODER_3F */
 
 	// --- конец получения состояния органов управления */
 	if (changed != 0)
@@ -18803,7 +18805,29 @@ static uint_fast16_t menulooklast(const struct menudesc * const pmd, uint_fast16
 	return menupos - 1;
 }
 
+// перемещение по меню с помощью энкодера
+static uint_fast8_t processknobmenunavigation(inputevent_t * ev, knobevent_t * knob, void (* bring)(void))
+{
+	const int_least32_t delta = event_getRotate(knob);
 
+	if (delta > 0)
+	{
+		if (bring)
+			bring();
+		ev->frontkeyevent.kbch = KBD_CODE_MENU_DOWN;
+		ev->frontkeyevent.kbready = 1;
+		return 1;
+	}
+	else if (delta < 0)
+	{
+		if (bring)
+			bring();
+		ev->frontkeyevent.kbch = KBD_CODE_MENU_UP;
+		ev->frontkeyevent.kbready = 1;
+		return 1;
+	}
+	return 0;
+}
 
 /* возврат ненуля - было какое-либо нажатие,
 	требуется обновление дисплея и состояния аппаратуры */
@@ -18834,43 +18858,31 @@ processmenukeyandencoder(inputevent_t * ev)
 //		return 0;
 //	}
 
-#if WITHENCODER_4F
+#if WITHENCODER_3F
 	if (! ev->frontkeyevent.kbready)
 	{
-		const int_least32_t delta = event_getRotate(& ev->encF4);  // перемещение по меню также с помощью 2го энкодера
-
-		if (delta > 0)
+		if (processknobmenunavigation(ev, & ev->encF3, bring_enc3f))	// перемещение по меню с помощью энкодера
 		{
-			ev->frontkeyevent.kbch = KBD_CODE_MENU_DOWN;
-			ev->frontkeyevent.kbready = 1;
-		}
-		else if (delta < 0)
-		{
-			ev->frontkeyevent.kbch = KBD_CODE_MENU_UP;
-			ev->frontkeyevent.kbready = 1;
+			/* обновление отображения пункта */
+			board_wakeup();
+			updateboard();
 		}
 	}
 #elif WITHENCODER2
 	if (! ev->frontkeyevent.kbready)
 	{
-		const int_least32_t delta = event_getRotate(& ev->encFN);  // перемещение по меню также с помощью 2го энкодера
-
-		if (delta > 0)
+		if (processknobmenunavigation(ev, & ev->encFN, NULL)) // перемещение по меню также с помощью 2го энкодера
 		{
-			ev->frontkeyevent.kbch = KBD_CODE_MENU_DOWN;
-			ev->frontkeyevent.kbready = 1;
-		}
-		else if (delta < 0)
-		{
-			ev->frontkeyevent.kbch = KBD_CODE_MENU_UP;
-			ev->frontkeyevent.kbready = 1;
+			/* обновление отображения пункта */
+			board_wakeup();
+			updateboard();
 		}
 	}
 #endif /* WITHENCODER2 */
 
 #if WITHENCODER
 	/* редактирование значения с помощью поворота валкодера. */
-	if (param_rotate_knob(mp->pd, & ev->encMAIN))	// модификация и сохранение параметра
+	if (param_rotate_knob(mp->pd, & ev->encMAIN, NULL))	// модификация и сохранение параметра
 	{
 		/* обновление отображения пункта */
 		board_wakeup();
@@ -18878,16 +18890,16 @@ processmenukeyandencoder(inputevent_t * ev)
 		return 1;
 	}
 #endif /* WITHENCODER */
-#if WITHENCODER_3F
+#if WITHENCODER_4F
 	/* редактирование значения с помощью поворота валкодера. */
-	if (param_rotate_knob(mp->pd, & ev->encF3))	// модификация и сохранение параметра
+	if (param_rotate_knob(mp->pd, & ev->encF4, bring_enc4f))	// модификация и сохранение параметра
 	{
 		/* обновление отображения пункта */
 		board_wakeup();
 		updateboard();
 		return 1;
 	}
-#endif /* WITHENCODER_3F */
+#endif /* WITHENCODER_4F */
 
 	if (! ev->frontkeyevent.kbready)
 		return 0;
