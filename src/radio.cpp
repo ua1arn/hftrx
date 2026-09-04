@@ -15240,29 +15240,25 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 	{
 		const int_least32_t delta = event_getRotate(& ev->encF1);
 		if (delta)
-			bring_enc1f();
-		switch (enc1f_sel)
 		{
-		default:
-			break;
-		case 0:
-			/* установка громкости */
-			if (delta == 0)
+			bring_enc1f();
+			switch (enc1f_sel)
+			{
+			default:
 				break;
-			changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), NULL);
-			break;
-		case 1:
-			if (delta == 0)
+			case 0:
+				/* установка громкости */
+				changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), NULL);
 				break;
-			/* установка IF GAIN */
-			changed |= encoder_flagne(& xrfgain1, delta, CATINDEX(CAT_RG_INDEX), NULL);
-			break;
-		case 2:
-			if (delta == 0)
+			case 1:
+				/* установка IF GAIN */
+				changed |= encoder_flagne(& xrfgain1, delta, CATINDEX(CAT_RG_INDEX), NULL);
 				break;
-			/* установка AGC FENCE */
-			changed |= encoder_flagne(& xagcfence1, delta, CATINDEX(CAT_RG_INDEX), NULL);
-			break;
+			case 2:
+				/* установка AGC FENCE */
+				changed |= encoder_flagne(& xagcfence1, delta, CATINDEX(CAT_RG_INDEX), NULL);
+				break;
+			}
 		}
 	}
 #endif /* WITHENCODER_1F */
@@ -15270,17 +15266,15 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 	{
 		const int_least32_t delta = event_getRotate(& ev->encF2);
 		if (delta)
-			bring_enc2f();
-		switch (enc2f_sel)
 		{
-		default:
-			if (delta == 0)
+			bring_enc2f();
+			switch (enc2f_sel)
+			{
+			default:
 				break;
-			break;
-		case 0:
-			if (delta == 0)
+			case 0:
 				break;
-			break;
+			}
 		}
 	}
 #endif /* WITHENCODER_2F */
@@ -15300,26 +15294,28 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 		int_least32_t delta = event_getRotate(& ev->encF3);
 		changed |= param_rotate(pd, delta);	// модификация и сохранение параметра
 		if (delta)
+		{
 			bring_enc3f();
-//		switch (enc3f_sel)
-//		{
-//		default:
-//			break;
-//		case 0:
-//			while (delta < 0)
+//			switch (enc3f_sel)
 //			{
-//				uif_key_click_banddown();
-//				++ delta;
-//				changed = 1;
+//			default:
+//				break;
+//			case 0:
+//				while (delta < 0)
+//				{
+//					uif_key_click_banddown();
+//					++ delta;
+//					changed = 1;
+//				}
+//				while (delta > 0)
+//				{
+//					uif_key_click_bandup();
+//					-- delta;
+//					changed = 1;
+//				}
+//				break;
 //			}
-//			while (delta > 0)
-//			{
-//				uif_key_click_bandup();
-//				-- delta;
-//				changed = 1;
-//			}
-//			break;
-//		}
+		}
 	}
 #endif /* WITHENCODER_3F */
 #if WITHENCODER_4F
@@ -15334,21 +15330,20 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 		const int_least32_t delta = event_getRotate(& ev->encF4);
 		if (delta)
 		{
+			bring_enc4f();
 			unsigned middlerowsize;
 			mdt [mode].middlemenu(& middlerowsize);
 			gmiddlepos [mode] = calc_delta(gmiddlepos [mode], 0, middlerowsize - 1, delta);
 			save_i8(RMT_MIDDLEMENUPOS_BASE(mode), gmiddlepos [mode]);
 			changed = 1;
+//			switch (enc4f_sel)
+//			{
+//			default:
+//				break;
+//			case 0:
+//				break;
+//			}
 		}
-		if (delta)
-			bring_enc4f();
-//		switch (enc4f_sel)
-//		{
-//		default:
-//			break;
-//		case 0:
-//			break;
-//		}
 	}
 #endif /* WITHENCODER_4F */
 
@@ -18858,14 +18853,14 @@ processmenukeyandencoder(inputevent_t * ev)
 #elif WITHENCODER2
 	if (! ev->frontkeyevent.kbready)
 	{
-		const int_least32_t nr2 = event_getRotate(& ev->encFN);  // перемещение по меню также с помощью 2го энкодера
+		const int_least32_t delta = event_getRotate(& ev->encFN);  // перемещение по меню также с помощью 2го энкодера
 
-		if (nr2 > 0)
+		if (delta > 0)
 		{
 			ev->frontkeyevent.kbch = KBD_CODE_MENU_DOWN;
 			ev->frontkeyevent.kbready = 1;
 		}
-		else if (nr2 < 0)
+		else if (delta < 0)
 		{
 			ev->frontkeyevent.kbch = KBD_CODE_MENU_UP;
 			ev->frontkeyevent.kbready = 1;
