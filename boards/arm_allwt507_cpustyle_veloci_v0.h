@@ -369,38 +369,34 @@
 	#define ENCODER_ENC1F_INITIALIZE() do { \
 		static einthandler_t eh; \
 		/* ENC1F - прерывания по заднему фронту на фазу A */ \
-		arm_hardware_piod_altfn20(ENC1F_BITA, GPIO_CFG_EINT); \
-		arm_hardware_piod_inputs(ENC1F_BITB); \
+		arm_hardware_piod_altfn20(BOARD_ENC1F_BITS, GPIO_CFG_EINT); \
 		arm_hardware_piod_updown(BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, 0); \
-		einthandler_initialize(& eh, ENC1F_BITA, spool_encinterrupts4_dirB_cw, & encoder_ENC1F); \
-		arm_hardware_piod_onchangeinterrupt(ENC1F_BITA, 0 * ENC1F_BITA, 1 * ENC1F_BITA, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
+		einthandler_initialize(& eh, BOARD_ENC1F_BITS, spool_encinterrupts4_dirB_cw, & encoder_ENC1F); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, BOARD_ENC1F_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
 	} while (0)
 	#define ENCODER_ENC2F_INITIALIZE() do { \
 		static einthandler_t eh; \
 		/* ENC2F - прерывания по заднему фронту на фазу A */ \
-		arm_hardware_piod_altfn20(ENC2F_BITA, GPIO_CFG_EINT); \
-		arm_hardware_piod_inputs(ENC2F_BITB); \
+		arm_hardware_piod_altfn20(BOARD_ENC2F_BITS, GPIO_CFG_EINT); \
 		arm_hardware_piod_updown(BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, 0); \
-		einthandler_initialize(& eh, ENC2F_BITA, spool_encinterrupts4_dirB_cw, & encoder_ENC2F); \
-		arm_hardware_piod_onchangeinterrupt(ENC2F_BITA, 0 * ENC2F_BITA, 1 * ENC2F_BITA, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
+		einthandler_initialize(& eh, BOARD_ENC2F_BITS, spool_encinterrupts4_dirB_cw, & encoder_ENC2F); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, BOARD_ENC2F_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
 	} while (0)
 	#define ENCODER_ENC3F_INITIALIZE() do { \
 		static einthandler_t eh; \
 		/* ENC3F - прерывания по заднему фронту на фазу A */ \
-		arm_hardware_piod_altfn20(ENC3F_BITA, GPIO_CFG_EINT); \
-		arm_hardware_piod_inputs(ENC3F_BITB); \
+		arm_hardware_piod_altfn20(BOARD_ENC3F_BITS, GPIO_CFG_EINT); \
 		arm_hardware_piod_updown(BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, 0); \
-		einthandler_initialize(& eh, ENC3F_BITA, spool_encinterrupts4_dirB_cw, & encoder_ENC3F); \
-		arm_hardware_piod_onchangeinterrupt(ENC3F_BITA, 0 * ENC3F_BITA, 1 * ENC3F_BITA, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
+		einthandler_initialize(& eh, BOARD_ENC3F_BITS, spool_encinterrupts4_dirB_cw, & encoder_ENC3F); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, BOARD_ENC3F_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
 	} while (0)
 	#define ENCODER_ENC4F_INITIALIZE() do { \
 		static einthandler_t eh; \
 		/* ENC4F - прерывания по заднему фронту на фазу A */ \
-		arm_hardware_piod_altfn20(ENC4F_BITA, GPIO_CFG_EINT); \
-		arm_hardware_piod_inputs(ENC4F_BITB); \
+		arm_hardware_piod_altfn20(BOARD_ENC4F_BITS, GPIO_CFG_EINT); \
 		arm_hardware_piod_updown(BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, 0); \
-		einthandler_initialize(& eh, ENC4F_BITA, spool_encinterrupts4_dirB_cw, & encoder_ENC4F); \
-		arm_hardware_piod_onchangeinterrupt(ENC4F_BITA, 0 * ENC4F_BITA, 1 * ENC4F_BITA, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
+		einthandler_initialize(& eh, BOARD_ENC4F_BITS, spool_encinterrupts4_dirB_cw, & encoder_ENC4F); \
+		arm_hardware_piod_onchangeinterrupt(BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, BOARD_ENC4F_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
 	} while (0)
 
 	#define ENCODER_ENCMAIN_INITIALIZE() do { \
