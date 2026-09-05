@@ -82,6 +82,7 @@ void hardware_encoders_initialize(void);
 
 #define GETENCBIT_A 0x02
 #define GETENCBIT_B 0x01
+#define GETENCBIT_AB (GETENCBIT_A | GETENCBIT_B)
 
 uint_fast8_t hardware_get_encoder_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 uint_fast8_t hardware_get_encoder_sub_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */

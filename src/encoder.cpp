@@ -77,32 +77,40 @@ static void encoder_clear(encoder_t * e)
 void spool_encinterrupts4_dirA_cw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
-	const int_fast8_t step = (e->getpins() & GETENCBIT_A) ? + 1 : - 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	const int_fast8_t step = (new_val & GETENCBIT_A) ? + 1 : - 1;
 	e->position += step;
+	e->old_val = new_val;
 }
 
 /* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
 void spool_encinterrupts4_dirA_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
-	const int_fast8_t step = (e->getpins() & GETENCBIT_A) ? - 1 : + 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	const int_fast8_t step = (new_val & GETENCBIT_A) ? - 1 : + 1;
 	e->position += step;
+	e->old_val = new_val;
 }
 
 /* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
 void spool_encinterrupts4_dirB_cw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
-	const int_fast8_t step = (e->getpins() & GETENCBIT_B) ? + 1 : - 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	const int_fast8_t step = (new_val & GETENCBIT_B) ? + 1 : - 1;
 	e->position += step;
+	e->old_val = new_val;
 }
 
 /* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
 void spool_encinterrupts4_dirB_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
-	const int_fast8_t step = (e->getpins() & GETENCBIT_B) ? - 1 : + 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	const int_fast8_t step = (new_val & GETENCBIT_B) ? - 1 : + 1;
 	e->position += step;
+	e->old_val = new_val;
 }
 
 static const int8_t graydecoder [4][4] =
