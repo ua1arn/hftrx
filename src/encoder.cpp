@@ -177,7 +177,7 @@ void spool_encinterrupts4_cw(void * ctx)
 	const int_fast8_t step = graydecoder4 [e->old_val] [new_val];
 	e->position += step * e->active4;
 	e->old_val = new_val;
-	e->active4 = e->active4 && ! step;
+	e->active4 = e->active4 && ! step;	// сброс после использования
 }
 
 /* механика - прерывание по изменению сигнала на входах от валкодера */
@@ -189,7 +189,7 @@ void spool_encinterrupts4_ccw(void * ctx)
 	const int_fast8_t step = - graydecoder4 [e->old_val] [new_val];
 	e->position += step * e->active4;
 	e->old_val = new_val;
-	e->active4 = e->active4 && ! step;
+	e->active4 = e->active4 && ! step;	// сброс после использования
 }
 
 static int safegetposition_kbd(void)
