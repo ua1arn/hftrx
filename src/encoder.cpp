@@ -40,6 +40,7 @@ struct encoder_tag
 	atomicpos_t account;	// обновляется по прерыванию
 	uint8_t old_val;
 	uint_fast8_t (* getpins)(void);
+	uint8_t active4;	// механический валкодер прошёл мёртвую зону (нестабильное положение)
 
 	/* перенесено из глобальной области видимости */
 	LCLSPINLOCK_t encspeedlock;
@@ -54,6 +55,7 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->getpins = agetpins;
 	e->position = 0;
 	e->account = 0;
+	e->active4 = 0;
 
 	e->tichist = 0;
 	e->enchistindex = 0;
@@ -73,46 +75,7 @@ static void encoder_clear(encoder_t * e)
 	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
 }
 
-/* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
-void spool_encinterrupts4_dirA_cw(void * ctx)
-{
-	encoder_t * const e = (encoder_t *) ctx;
-	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	const int_fast8_t step = (new_val & GETENCBIT_A) ? + 1 : - 1;
-	e->position += step;
-	e->old_val = new_val;
-}
-
-/* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
-void spool_encinterrupts4_dirA_ccw(void * ctx)
-{
-	encoder_t * const e = (encoder_t *) ctx;
-	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	const int_fast8_t step = (new_val & GETENCBIT_A) ? - 1 : + 1;
-	e->position += step;
-	e->old_val = new_val;
-}
-
-/* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
-void spool_encinterrupts4_dirB_cw(void * ctx)
-{
-	encoder_t * const e = (encoder_t *) ctx;
-	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	const int_fast8_t step = (new_val & GETENCBIT_B) ? + 1 : - 1;
-	e->position += step;
-	e->old_val = new_val;
-}
-
-/* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
-void spool_encinterrupts4_dirB_ccw(void * ctx)
-{
-	encoder_t * const e = (encoder_t *) ctx;
-	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	const int_fast8_t step = (new_val & GETENCBIT_B) ? - 1 : + 1;
-	e->position += step;
-	e->old_val = new_val;
-}
-
+// оптика
 static const int8_t graydecoder [4][4] =
 {
 	{
@@ -141,7 +104,44 @@ static const int8_t graydecoder [4][4] =
 	},
 };
 
-/* прерывание по любому перепаду сигнала на входах от валкодера */
+// механика (с "трещёткой" - Detent)
+// Вращение влево: 3-2-0-1-3 (3 - стабильное состояние, 0 - dead position)
+// Вращение вправо: 3-1-0-2-3 (3 - стабильное состояние, 0 - dead position)
+// модификация позиции происходит на последней фазе - перехода к стабильному состоянию.
+static const int8_t graydecoder4 [4][4] =
+{
+	{
+		+0,		/* 00 -> 00 stopped				*/
+		+0,		/* 00 -> 01 rotate left			*/
+		+0,		/* 00 -> 10 rotate right		*/
+		+0,		/* 00 -> 11 invalid combination */
+	},
+	{
+		+0,		/* 01 -> 00 rotate right		*/
+		+0,		/* 01 -> 01 stopped				*/
+		+0,		/* 01 -> 10 invalid combination */
+		-1,		/* 01 -> 11 rotate left			*/
+	},
+	{
+		+0,		/* 10 -> 00 rotate left			*/
+		+0,		/* 10 -> 01 invalid combination */
+		+0,		/* 10 -> 10 stopped				*/
+		+1,		/* 10 -> 11 rotate right		*/
+	},
+	{
+		+0,		/* 11 -> 00 invalid combination */
+		+0,		/* 11 -> 01 rotate right		*/
+		+0,		/* 11 -> 10 rotate left			*/
+		+0,		/* 11 -> 11 stopped				*/
+	},
+};
+
+static const int8_t deadstates4 [4] =
+{
+		1, 0, 0, 0
+};
+
+/* оптика - прерывание по любому перепаду сигнала на входах от валкодера */
 void spool_encinterrupts(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
@@ -149,13 +149,13 @@ void spool_encinterrupts(void * ctx)
 	// old_bits new_bits
 	// GETENCBIT_A, GETENCBIT_B
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	const int_fast8_t step = graydecoder [e->old_val][new_val];
+	const int_fast8_t step = graydecoder [e->old_val] [new_val];
 
 	e->position += step;
 	e->old_val = new_val;
 }
 
-/* прерывание по любому перепаду сигнала на входах от валкодера */
+/* оптика - прерывание по изменению сигнала на входах от валкодера */
 void spool_encinterrupts_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
@@ -163,9 +163,33 @@ void spool_encinterrupts_ccw(void * ctx)
 	// old_bits new_bits
 	// GETENCBIT_A, GETENCBIT_B
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	const int_fast8_t step = - graydecoder [e->old_val][new_val];
+	const int_fast8_t step = - graydecoder [e->old_val] [new_val];
 	e->position += step;
 	e->old_val = new_val;
+}
+
+/* механика - прерывание по изменению сигнала на входах от валкодера */
+void spool_encinterrupts4_cw(void * ctx)
+{
+	encoder_t * const e = (encoder_t *) ctx;
+	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	e->active4 = e->active4 || deadstates4 [new_val];
+	const int_fast8_t step = graydecoder4 [e->old_val] [new_val];
+	e->position += step * e->active4;
+	e->old_val = new_val;
+	e->active4 = e->active4 && ! step;	// сброс после использования
+}
+
+/* механика - прерывание по изменению сигнала на входах от валкодера */
+void spool_encinterrupts4_ccw(void * ctx)
+{
+	encoder_t * const e = (encoder_t *) ctx;
+	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	e->active4 = e->active4 || deadstates4 [new_val];
+	const int_fast8_t step = - graydecoder4 [e->old_val] [new_val];
+	e->position += step * e->active4;
+	e->old_val = new_val;
+	e->active4 = e->active4 && ! step;	// сброс после использования
 }
 
 static int safegetposition_kbd(void)

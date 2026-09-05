@@ -71,18 +71,16 @@ extern encoder_t encoder_ENC4F;
 extern encoder_t encoder_kbd;
 
 
-void spool_encinterrupts(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
-void spool_encinterrupts_ccw(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
-void spool_encinterrupts4_dirA_ccw(void * ctx);	/* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
-void spool_encinterrupts4_dirB_ccw(void * ctx);	/* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
-void spool_encinterrupts4_dirA_cw(void * ctx);	/* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
-void spool_encinterrupts4_dirB_cw(void * ctx);	/* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
+void spool_encinterrupts(void * ctx);	/* оптика - прерывание по изменению сигнала на входах от валкодера */
+void spool_encinterrupts_ccw(void * ctx);	/* оптика - прерывание по изменению сигнала на входах от валкодера */
+
+void spool_encinterrupts4_cw(void * ctx);	/* механика - прерывание по изменению сигнала на входах от валкодера */
+void spool_encinterrupts4_ccw(void * ctx);	/* механика - прерывание по изменению сигнала на входах от валкодера */
 
 void hardware_encoders_initialize(void);
 
 #define GETENCBIT_A 0x02
 #define GETENCBIT_B 0x01
-#define GETENCBIT_AB (GETENCBIT_A | GETENCBIT_B)
 
 uint_fast8_t hardware_get_encoder_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 uint_fast8_t hardware_get_encoder_sub_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */

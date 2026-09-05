@@ -281,18 +281,6 @@
 		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
 	} while (0)
 
-	// Эксперементальная - только прерывания
-	#define TARGET_FUNC_ENC_INITIALIZEx() do { \
-		/* FUNC encoder по прерываниям */ \
-		static einthandler_t eh; \
-		static ticker_t th; \
-		arm_hardware_pioe_altfn20(TARGET_ENCODER2_A, GPIO_CFG_EINT); \
-		arm_hardware_pioe_inputs(TARGET_ENCODER2_B); \
-		arm_hardware_pioe_updown(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, 0); \
-		einthandler_initialize(& eh, TARGET_ENCODER2_A, spool_encinterrupts4_dirB_ccw, & encoder2); \
-		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER2_A, 1 * TARGET_ENCODER2_A, 0 * TARGET_ENCODER2_A, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
-	} while (0)
-
 	#define TARGET_FUNC_ENC_INITIALIZE() do { \
 		/* FUNC encoder по опросу и прерываниям */ \
 		static einthandler_t eh; \
