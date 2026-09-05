@@ -104,7 +104,10 @@ static const int8_t graydecoder [4][4] =
 	},
 };
 
-// механика
+// механика (с "трещёткой" - Detent)
+// Вращение влево: 3-2-0-1-3 (3 - стабильное состояние, 0 - dead position)
+// Вращение вправо: 3-1-0-2-3 (3 - стабильное состояние, 0 - dead position)
+// модификация позиции происходит на последней фазе - перехода к стабильному состоянию.
 static const int8_t graydecoder4 [4][4] =
 {
 	{
@@ -114,16 +117,16 @@ static const int8_t graydecoder4 [4][4] =
 		+0,		/* 00 -> 11 invalid combination */
 	},
 	{
-		+1,		/* 01 -> 00 rotate right		*/
+		+0,		/* 01 -> 00 rotate right		*/
 		+0,		/* 01 -> 01 stopped				*/
 		+0,		/* 01 -> 10 invalid combination */
-		+0,		/* 01 -> 11 rotate left			*/
+		-1,		/* 01 -> 11 rotate left			*/
 	},
 	{
-		-1,		/* 10 -> 00 rotate left			*/
+		+0,		/* 10 -> 00 rotate left			*/
 		+0,		/* 10 -> 01 invalid combination */
 		+0,		/* 10 -> 10 stopped				*/
-		+0,		/* 10 -> 11 rotate right		*/
+		+1,		/* 10 -> 11 rotate right		*/
 	},
 	{
 		+0,		/* 11 -> 00 invalid combination */
@@ -135,7 +138,7 @@ static const int8_t graydecoder4 [4][4] =
 
 static const int8_t deadstates4 [4] =
 {
-		0, 0, 0, 1
+		1, 0, 0, 0
 };
 
 /* оптика - прерывание по любому перепаду сигнала на входах от валкодера */
