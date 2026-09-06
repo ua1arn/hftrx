@@ -1724,17 +1724,7 @@
 	& xggainnfmrx10,
 #endif /* WITHIF4DSP */
 #if WITHIF4DSP
-	(const struct paramdefdef [1]) {
-		QLABEL2("RGR BERP", "Roger Beep"), 0, RJ_ON,	ISTEP5,	/* разрешение (не-0) или запрещение (0) формирования roger beep */
-		ITEM_VALUE,
-		0, 1,						/* разрешение (не-0) или запрещение (0) формирования roger beep */
-		OFFSETOF(struct nvmap, grgbeep),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& grgbeep,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgrgbeep,	/* разрешение (не-0) или запрещение (0) формирования roger beep */
 #endif /* WITHIF4DSP */
 #if WITHRPTOFFSET
 	& xrptrhfenable,	// HF repeater offset enable
@@ -1758,17 +1748,7 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* defined (DAC1_TYPE) */
-	(const struct paramdefdef [1]) {
-		QLABEL("REF FREQ"),  3, RJ_UNSIGNED, ISTEPLARGE_1,		/* ввод реальной частоты опорного генератора через меню. */
-		ITEM_VALUE,
-		0, OSCSHIFT * 2 - 1, 
-		OFFSETOF(struct nvmap, refbias),
-		getselector0, nvramoffs0, valueoffs0,
-		& refbias,	/* подстройка частоты опорника */
-		NULL,
-		getrefbase, 	/* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xrefbias,		/* ввод реальной частоты опорного генератора через меню. */
 #endif	/* defined(REFERENCE_FREQ) */
 #if (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ	/* подстройка частоты гетеродина через меню. */
 	(const struct paramdefdef [1]) {
@@ -1809,42 +1789,12 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHONLYBANDS */
-	(const struct paramdefdef [1]) {
-		QLABEL("STAYFREQ"), 0, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, stayfreq),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& stayfreq,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xstayfreq,
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
-	(const struct paramdefdef [1]) {
-		QLABEL("BAT CALI"),  1, RJ_UNSIGNED, ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
-		ITEM_VALUE,
-		ADCVREF_CPU, 255,	// 3.3/5.0 .. 25.5 вольта
-		OFFSETOF(struct nvmap, voltcalibr100mV),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& voltcalibr100mV,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xvoltcalibr100mV,
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
 #if (WITHCURRLEVEL || WITHCURRLEVEL2)
-	(const struct paramdefdef [1]) {
-		QLABEL("IPA CALI"),  2, RJ_SIGNED,	ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
-		ITEM_VALUE,
-		0, IPACALI_RANGE,
-		OFFSETOF(struct nvmap, gipacali),
-		getselector0, nvramoffs0, valueoffs0,
-		& gipacali,
-		NULL,
-		getipacalibase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgipacali,	// Корректировка показаний измерителя тока оконечного каскада
 #endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
 #if WITHTX
 #if WITHSWRMTR && ! WITHSHOWSWRPWR

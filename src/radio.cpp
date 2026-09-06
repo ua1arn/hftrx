@@ -4980,8 +4980,6 @@ static const struct paramdefdef xgbottomdbtx =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
-#else /* WITHLCDBACKLIGHT */
-	enum { gbglight = 0 };
 #endif /* WITHLCDBACKLIGHT */
 
 #if WITHKBDBACKLIGHT
@@ -5000,8 +4998,6 @@ static const struct paramdefdef xgbottomdbtx =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
-#else /* WITHKBDBACKLIGHT */
-	enum { gkblight = 0 };
 #endif /* WITHKBDBACKLIGHT */
 
 static uint_fast8_t gpoweronhold = 1;	/* выдать "1" на выход удержания питания включенным */
@@ -6194,6 +6190,18 @@ enum
 #endif
 
 	static uint_fast8_t grgbeep;	/* разрешение (не-0) или запрещение (0) формирования roger beep */
+	static const struct paramdefdef xgrgbeep =
+	{
+		QLABEL2("RGR BERP", "Roger Beep"), 0, RJ_ON,	ISTEP5,	/* разрешение (не-0) или запрещение (0) формирования roger beep */
+		ITEM_VALUE,
+		0, 1,						/* разрешение (не-0) или запрещение (0) формирования roger beep */
+		OFFSETOF(struct nvmap, grgbeep),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& grgbeep,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 	#if (CTLREGMODE_STORCH_V4)
 		// modem
 		static uint_fast8_t rxtxdelay = 75;	/* в единицах mS. модифицируется через меню - задержка перехода прём-передача */
@@ -6382,6 +6390,18 @@ enum
 #endif /* WITHELKEY */
 
 static uint_fast8_t stayfreq;			/* при изменении режимов кнопками - не меняем частоту */
+static const struct paramdefdef xstayfreq =
+{
+	QLABEL("STAYFREQ"), 0, RJ_ON,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, stayfreq),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& stayfreq,
+	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 
 #if defined (DAC1_TYPE)
 	#if defined (WITHDAC1VALDEF)
@@ -6440,18 +6460,43 @@ static uint_fast8_t stayfreq;			/* при изменении режимов кн
 	// ADCVREF_CPU - в сотнях милливольт.
 
 	uint_fast8_t voltcalibr100mV = (ADCVREF_CPU * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
+	static const struct paramdefdef xvoltcalibr100mV =
+	{
+		QLABEL("BAT CALI"),  1, RJ_UNSIGNED, ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
+		ITEM_VALUE,
+		ADCVREF_CPU, 255,	// 3.3/5.0 .. 25.5 вольта
+		OFFSETOF(struct nvmap, voltcalibr100mV),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& voltcalibr100mV,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
 #if (WITHCURRLEVEL || WITHCURRLEVEL2)
 
-	// Корректировка показаний измерителя тока оконечного каскада
-	#define IPACALI_RANGE 500
-	#define IPACALI_BASE (IPACALI_RANGE / 2)
-	static int_fast32_t getipacalibase(void)
-	{
-		return - IPACALI_BASE;
-	}
-	static uint_fast16_t gipacali = IPACALI_BASE;
+// Корректировка показаний измерителя тока оконечного каскада
+#define IPACALI_RANGE 500
+#define IPACALI_BASE (IPACALI_RANGE / 2)
+static int_fast32_t getipacalibase(void)
+{
+	return - IPACALI_BASE;
+}
+static uint_fast16_t gipacali = IPACALI_BASE;
+static const struct paramdefdef xgipacali =
+{
+		QLABEL("IPA CALI"), 2, RJ_SIGNED,	ISTEP1,
+		ITEM_VALUE,
+		0, IPACALI_RANGE,
+		OFFSETOF(struct nvmap, gipacali),
+		getselector0, nvramoffs0, valueoffs0,
+		& gipacali,
+		NULL,
+		getipacalibase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
 #endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
 #if WITHDIRECTFREQENER
 	static uint_fast8_t editfreqmode;		/* Режим прямого ввода частоты */
@@ -6469,20 +6514,23 @@ static uint_fast8_t stayfreq;			/* при изменении режимов кн
 static uint_fast8_t gmoderows [2];		/* индексом используется результат функции getbankindex_xxx(tx) */
 										/* номер режима работы в маске (номер тройки бит) */
 static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
+
 #if WITHSPKMUTE
-	static uint_fast8_t gmutespkr;		/*  выключение динамика */
-	static const struct paramdefdef xgmutespkr =
-	{
-		QLABEL3("SPK MUTE", "SPK MUTE", "SPK MUTE"), 0, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gmutespkr),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gmutespkr,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	};
+
+static uint_fast8_t gmutespkr;		/*  выключение динамика */
+static const struct paramdefdef xgmutespkr =
+{
+	QLABEL3("SPK MUTE", "SPK MUTE", "SPK MUTE"), 0, RJ_YES,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, gmutespkr),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gmutespkr,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
 #endif /* WITHSPKMUTE */
 										/* маска режимов работы (тройки бит, указывают номер позиции в каждой строке) */
 #if WITHTX
@@ -6817,6 +6865,19 @@ static const struct paramdefdef xgbusfreq =
 	{
 		return refbase;
 	}
+	static const struct paramdefdef xrefbias =
+	{
+		QLABEL("REF FREQ"),  3, RJ_UNSIGNED, ISTEPLARGE_1,		/* ввод реальной частоты опорного генератора через меню. */
+		ITEM_VALUE,
+		0, OSCSHIFT * 2 - 1,
+		OFFSETOF(struct nvmap, refbias),
+		getselector0, nvramoffs0, valueoffs0,
+		& refbias,	/* подстройка частоты опорника */
+		NULL,
+		getrefbase, 	/* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
 #endif /* defined (REFERENCE_FREQ) */
 
 #if WITHINTEGRATEDDSP
@@ -13744,15 +13805,15 @@ updateboard_noui(
 		board_set_bldivider(bldividerout);
 	#endif /* WITHDCDCFREQCTL */
 	#if WITHLCDBACKLIGHT
-		board_set_bglight(dimmflag || sleepflag || dimmmode, gbglight);		/* подсветка дисплея  */
+		board_set_bglight(dimmflag || sleepflag || dimmmode, param_getvalue(& xgbglight));		/* подсветка дисплея  */
 	#endif /* WITHLCDBACKLIGHT */
 	#if WITHKBDBACKLIGHT
-		board_set_kblight((dimmflag || sleepflag || dimmmode) ? 0 : gkblight);			/* подсвтка клавиатуры */
+		board_set_kblight((dimmflag || sleepflag || dimmmode) ? 0 : param_getvalue(& xgkblight));			/* подсвтка клавиатуры */
 	#endif /* WITHKBDBACKLIGHT */
 		board_set_poweron(gpoweronhold);
 
 	#if WITHSPKMUTE
-		board_set_dsploudspeaker(gmutespkr); /*  выключение динамика (управление кодеком) */
+		board_set_dsploudspeaker(param_getvalue(& xgmutespkr)); /*  выключение динамика (управление кодеком) */
 	#endif /* WITHSPKMUTE */
 
 	#if WITHAUTOTUNER
