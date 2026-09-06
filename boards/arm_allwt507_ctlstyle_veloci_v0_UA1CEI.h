@@ -28,7 +28,7 @@
 	#define HARDWARE_ADDRSPACE_GB (8)	// Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
 
 	//  PLL_CPUX=24MHz*N/P
-#if 0
+#if 1
 	/* 1396 MHz */
 	#define PLL_CPU_N 	116
 	#define PLL_CPU_P_POW 1
