@@ -19578,7 +19578,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 
 #elif WITHANTSELECTRX
 		/* одна из двух антенн и приемная */
-	case KBD_CODE_ANTENNA_HOLDED:
+	case KBD_CODE_ANTNN_HOLDED:
 		/* Antenna switch */
 		uif_key_next_antenna();
 		return 1;	/* клавиша уже обработана */
@@ -19589,7 +19589,7 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 
 #elif WITHANTSELECT2
-	case KBD_CODE_ANTENNA_HOLDED:
+	case KBD_CODE_ANTNN_HOLDED:
 		/* ручной/автоматический выбор антенны */
 		uif_key_next_autoantmode();
 		return 1;	/* клавиша уже обработана */
@@ -20050,14 +20050,11 @@ processmainloopkeyboard(inputevent_t * ev)
 		return 0;	// не требуется обновление индикатора
 
 #if WITHMENU
-#if WITHIF4DSP
 	case KBD_CODE_MENU_CWSPEED:
 		uif_key_click_menubyname("CW SPEED", KBD_CODE_MENU_CWSPEED);
 		return 1;	/* клавиша уже обработана */
 
-	case KBD_CODE_IFSHIFT:
-		uif_key_click_menubyname("IF SHIFT", KBD_CODE_IFSHIFT);
-		return 1;	/* клавиша уже обработана */
+#if WITHIF4DSP
 
 #endif /* WITHIF4DSP */
 #endif /* WITHMENU */
