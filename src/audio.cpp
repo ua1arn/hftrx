@@ -1041,7 +1041,7 @@ int dsp_power2y(
 	)
 {
 	const int drange = topdb - bottomdb;
-	const int y = ((topdb - power) * ymax / drange);
+	const int y = ((int_fast32_t) (topdb - power) * ymax / drange);
 
 	if (y > ymax)
 		return ymax;
