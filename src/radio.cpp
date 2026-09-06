@@ -728,14 +728,14 @@ savemenuvalue(
 			return;
 		if (pv16 != NULL)
 		{
-			PRINTF("savemenuvalue %s: *pv16=%u\n", pd->qlabel, (unsigned) * pv16);
+			//PRINTF("savemenuvalue %s: *pv16=%u\n", pd->qlabel, (unsigned) * pv16);
 			ASSERT3(* pv16 <= pd->qupper, __FILE__, __LINE__, pd_getlonglabel(pd));
 			ASSERT3(* pv16 >= pd->qbottom, __FILE__, __LINE__, pd_getlonglabel(pd));
 			save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
 		}
 		else if (pv8 != NULL)
 		{
-			PRINTF("savemenuvalue %s: *pv8=%u\n", pd->qlabel, (unsigned) * pv8);
+			//PRINTF("savemenuvalue %s: *pv8=%u\n", pd->qlabel, (unsigned) * pv8);
 			ASSERT3(* pv8 <= pd->qupper, __FILE__, __LINE__, pd_getlonglabel(pd));
 			ASSERT3(* pv8 >= pd->qbottom, __FILE__, __LINE__, pd_getlonglabel(pd));
 			save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
@@ -18317,12 +18317,12 @@ loadsettings(void)
 				if (pv16 != NULL)
 				{
 					* pv16 = loadvfy16up(nvram, bottom, upper, * pv16);
-					PRINTF("loadsettings: %s: * pv16=%u\n", pd->qlabel, (unsigned) * pv16);
+					//PRINTF("loadsettings: %s: * pv16=%u\n", pd->qlabel, (unsigned) * pv16);
 				}
 				else if (pv8 != NULL)
 				{
 					* pv8 = loadvfy8up(nvram, bottom, upper, * pv8);
-					PRINTF("loadsettings: %s: * pv8=%u\n", pd->qlabel, (unsigned) * pv8);
+					//PRINTF("loadsettings: %s: * pv8=%u\n", pd->qlabel, (unsigned) * pv8);
 				}
 			}
 		}
