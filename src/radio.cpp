@@ -3905,6 +3905,11 @@ struct nvmap
 	#endif /* #if WITHAFEQUALIZER */
 	struct micproc gmicprocs [NMICPROFILES];
 	uint8_t txaprofile [TXAPROFIG_count];	/* параметры обработки звука перед модулятором */
+
+	uint8_t enc1f_sel;
+	uint8_t enc2f_sel;
+	uint8_t enc3f_sel;
+	uint8_t enc4f_sel;
 #endif /* WITHIF4DSP */
 
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
@@ -7466,6 +7471,55 @@ static uint_fast8_t enc2f_sel;
 static uint_fast8_t enc3f_sel;
 static uint_fast8_t enc4f_sel;
 
+static const struct paramdefdef xenc1f_sel =
+{
+	QLABEL("enc1f_sel"), 0, RJ_UNSIGNED,	ISTEP1,		/* управление режимом NOTCH */
+	ITEM_VALUE,
+	0, ARRAY_SIZE(enclabelsENC1FN) - 1,
+	OFFSETOF(struct nvmap, enc1f_sel),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,	// uint_fast16_t value pointer
+	& enc1f_sel,	// uint_fast8_t value pointer
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xenc2f_sel =
+{
+	QLABEL("enc2f_sel"), 0, RJ_UNSIGNED,	ISTEP1,		/* управление режимом NOTCH */
+	ITEM_VALUE,
+	0, ARRAY_SIZE(enclabelsENC2FN) - 1,
+	OFFSETOF(struct nvmap, enc2f_sel),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,	// uint_fast16_t value pointer
+	& enc2f_sel,	// uint_fast8_t value pointer
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xenc3f_sel =
+{
+	QLABEL("enc3f_sel"), 0, RJ_UNSIGNED,	ISTEP1,		/* управление режимом NOTCH */
+	ITEM_VALUE,
+	0, ARRAY_SIZE(enclabelsENC3FN) - 1,
+	OFFSETOF(struct nvmap, enc3f_sel),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,	// uint_fast16_t value pointer
+	& enc3f_sel,	// uint_fast8_t value pointer
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static const struct paramdefdef xenc4f_sel =
+{
+	QLABEL("enc4f_sel"), 0, RJ_UNSIGNED,	ISTEP1,		/* управление режимом NOTCH */
+	ITEM_VALUE,
+	0, ARRAY_SIZE(enclabelsENC4FN) - 1,
+	OFFSETOF(struct nvmap, enc4f_sel),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,	// uint_fast16_t value pointer
+	& enc4f_sel,	// uint_fast8_t value pointer
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
 /* получить надпись для отображения состояние ENC1F */
 int hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count)
 {
@@ -10426,7 +10480,10 @@ static const struct paramdefdef * nomenulist [] =
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	& xgnotch,
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
-
+	& xenc1f_sel,
+	& xenc2f_sel,
+	& xenc3f_sel,
+	& xenc4f_sel,
 #endif /* WITHIF4DSP */
 	& xgusefast,	/* управление режимом валкодера */
 };
@@ -19559,48 +19616,48 @@ process_key_menuset0(uint_fast8_t kbch)
 #if WITHENCODER_1F
 	case KBD_ENC1F_PRESS:
 		bring_enc1f();
-		enc1f_sel = calc_next(enc1f_sel, 0, ARRAY_SIZE(enclabelsENC1FN) - 1);
+		param_keyclick(& xenc1f_sel);
 		return 1;	// требуется обновление индикатора
 
 	case KBD_ENC1F_HOLD:
 		bring_enc1f();
-		//enc1f_sel = calc_next(enc1f_sel, 0, ARRAY_SIZE(enclabelsENC1FN) - 1);
+		//param_keyclick(& xenc1f_sel);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_1F */
 
 #if WITHENCODER_2F
 	case KBD_ENC2F_PRESS:
 		bring_enc2f();
-		enc2f_sel = calc_next(enc2f_sel, 0, ARRAY_SIZE(enclabelsENC2FN) - 1);
+		param_keyclick(& xenc2f_sel);
 		return 1;	// требуется обновление индикатора
 
 	case KBD_ENC2F_HOLD:
 		bring_enc2f();
-		//enc2f_sel = calc_next(enc2f_sel, 0, ARRAY_SIZE(enclabelsENC2FN) - 1);
+		//param_keyclick(& xenc2f_sel);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_2F */
 
 #if WITHENCODER_3F
 	case KBD_ENC3F_PRESS:
 		bring_enc3f();
-		enc3f_sel = calc_next(enc3f_sel, 0, ARRAY_SIZE(enclabelsENC3FN) - 1);
+		//param_keyclick(& xenc3f_sel);
 		return 1;	// требуется обновление индикатора
 
 	case KBD_ENC3F_HOLD:
 		bring_enc3f();
-		//enc3f_sel = calc_next(enc3f_sel, 0, ARRAY_SIZE(enclabelsENC3FN) - 1);
+		//param_keyclick(& xenc3f_sel);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_3F */
 
 #if WITHENCODER_4F
 	case KBD_ENC4F_PRESS:
 		bring_enc4f();
-		enc4f_sel = calc_next(enc4f_sel, 0, ARRAY_SIZE(enclabelsENC4FN) - 1);
+		param_keyclick(& xenc4f_sel);
 		return 1;	// требуется обновление индикатора
 
 	case KBD_ENC4F_HOLD:
 		bring_enc4f();
-		//enc4f_sel = calc_next(enc4f_sel, 0, ARRAY_SIZE(enclabelsENC4FN) - 1);
+		//param_keyclick(& xenc4f_sel);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_4F */
 
