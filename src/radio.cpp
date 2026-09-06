@@ -57,6 +57,31 @@ processcatmsg(uint_fast8_t catcommand1,
 	const uint8_t * catp	// массив символов
 	);
 
+static uint_fast16_t gzero;
+
+static ptrdiff_t valueoffs0(unsigned sel)
+{
+	(void) sel;
+	return 0;
+}
+
+static unsigned getselector0(unsigned * count)
+{
+	* count = 1;
+	return 0;
+}
+
+static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned sel)
+{
+	(void) sel;
+	return base;
+}
+
+static int_fast32_t getzerobase(void)
+{
+	return 0;
+}
+
 typedef struct keyevent_tag
 {
 	uint_fast8_t kbready;
@@ -125,6 +150,7 @@ typedef struct inputevent_tag
 	mouseevent_t mouse;
 } inputevent_t;
 
+
 #if WITHENCODER
 
 #if defined (ENCDIV_DEFAULT)
@@ -132,20 +158,12 @@ typedef struct inputevent_tag
 #else /* defined (ENCDIV_DEFAULT) */
 	static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
 #endif /* defined (ENCDIV_DEFAULT) */
-#if defined (ENCDYNAMIC_DEFAULT)
-	static uint_fast8_t genc1dynamic = ENCDYNAMIC_DEFAULT;
-#else /* defined (ENCDYNAMIC_DEFAULT) */
-	static uint_fast8_t genc1dynamic = 1;
-#endif /* defined (ENCDYNAMIC_DEFAULT) */
 
 #if defined (BOARD_ENCODER2_DIVIDE)
 	static uint_fast8_t genc2div = BOARD_ENCODER2_DIVIDE;
 #else /* defined (BOARD_ENCODER2_DIVIDE) */
 	static uint_fast8_t genc2div = 2;	/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 #endif /* defined (BOARD_ENCODER2_DIVIDE) */
-static uint_fast8_t genc2dynamic = 0;
-
-
 
 static int_least16_t event_getRotateAccelerated(knobevent_t * e, uint_fast8_t * jsize, int derate)
 {
@@ -1079,31 +1097,6 @@ param_rotate(const struct paramdefdef * pd, int_fast32_t nrotate)
 	}
 	savemenuvalue(pd);
 	return 1;
-}
-
-static uint_fast16_t gzero;
-
-static ptrdiff_t valueoffs0(unsigned sel)
-{
-	(void) sel;
-	return 0;
-}
-
-static unsigned getselector0(unsigned * count)
-{
-	* count = 1;
-	return 0;
-}
-
-static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned sel)
-{
-	(void) sel;
-	return base;
-}
-
-static int_fast32_t getzerobase(void)
-{
-	return 0;
 }
 
 static int_fast32_t getagcfencebase(void)
@@ -4158,6 +4151,57 @@ unsigned nvram_tlv_getparam(unsigned * base)
 #endif /* WITHUSEUSBBT */
 
 
+#if WITHENCODER
+
+	static const struct paramdefdef xgenc1div =
+	{
+		QLABEL("ENC1 DIV"),  0, RJ_UNSIGNED, ISTEP1,
+		ITEM_VALUE,
+		1, 128, 	/* /1 ... /128 */
+		OFFSETOF(struct nvmap, genc1div),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& genc1div,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
+#if WITHENCODER2
+	static const struct paramdefdef xgenc2div =
+	{
+		QLABEL("ENC2 DIV"),  0, RJ_UNSIGNED, ISTEP1,
+		ITEM_VALUE,
+		1, 8, 	/* /1 ... /8 */
+		OFFSETOF(struct nvmap, genc2div),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& genc2div,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+#endif /* WITHENCODER2 */
+
+#if defined (ENCDYNAMIC_DEFAULT)
+	static uint_fast8_t genc1dynamic = ENCDYNAMIC_DEFAULT;
+#else /* defined (ENCDYNAMIC_DEFAULT) */
+	static uint_fast8_t genc1dynamic = 1;
+#endif /* defined (ENCDYNAMIC_DEFAULT) */
+
+	static const struct paramdefdef xgenc1dynamic =
+	{
+		QLABEL("ENC1 DYN"), 0, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, genc1dynamic),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& genc1dynamic,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
+
+#endif /* WITHENCODER */
 
 /* переменные, вынесенные из главной функции - определяют текущий тежим рботы
    и частоту настройки
@@ -4344,7 +4388,32 @@ static const struct paramdefdef xgcwpitch10 =
 
 #if WITHENCODER
 	static uint_fast8_t gbigstep = (ENCRES_24 >= ENCRES_DEFAULT);	/* модифицируется через меню. */
+	static const struct paramdefdef xgbigstep =
+	{
+		QLABEL("BIG STEP"), 0, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gbigstep),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gbigstep,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
 	static uint_fast8_t genc1pulses = ENCRES_DEFAULT;		/* 5: 128 индекс в таблице разрешений валкодера */
+	static const struct paramdefdef xgenc1pulses =
+	{
+		QLABEL("ENC1 RES"), 0, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_LISTSELECT,
+		0, ARRAY_SIZE(encresols) - 1,
+		OFFSETOF(struct nvmap, genc1pulses),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& genc1pulses,
+		getzerobase, /* складывается со смещением и отображается */
+		getvaltextencres, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 
 #else
 	static const uint_fast8_t gbigstep = 0;
