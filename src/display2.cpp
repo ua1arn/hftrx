@@ -1620,6 +1620,7 @@ static COLORPIP_T colorcmarker = DSGN_GRIDCOLOR0;	// Цвет макркера �
 static COLORPIP_T colorgridlines = DSGN_GRIDCOLOR2;	// Цвет линий сетки
 static COLORPIP_T colorgridlines3dss = COLORPIP_GREEN;
 static COLORPIP_T colordigits = DSGN_GRIDDIGITS;	// Цвет текста частот сетки
+static COLORPIP_T colorgridfence = COLORPIP_RED;	// Цвет линии уровня срабатывания АРУ
 
 static COLORPIP_T smeterbgcolor = COLORPIP_BLACK;
 static COLORPIP_T smetercolor = COLORPIP_WHITE;
@@ -7077,7 +7078,15 @@ display_colorgrid_set(
 				colpip_set_hline(db, x, y + yval, w, colorgridlines);	// Level marker
 		}
 	}
+	if (0)
+	{
+		// линия уровня срабатывания АРУ
+		const int_fast16_t agcfence10 = dsp_agcfence10();
+		const int yval = dsp_mag2y(db2ratio(agcfence10 / 10), h - 1, glob_topdb, glob_bottomdb);
+		if (yval > 0 && yval < (int) h)
+			colpip_set_hline(db, x, y + yval, w, colorgridfence);	// Level marker
 
+	}
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
 		if (df > - halfbw)
