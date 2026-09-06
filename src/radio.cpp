@@ -18805,6 +18805,9 @@ static uint_fast16_t menulooklast(const struct menudesc * const pmd, uint_fast16
 	return menupos - 1;
 }
 
+
+#if WITHENCODER
+
 // перемещение по меню с помощью энкодера
 static uint_fast8_t processknobmenunavigation(inputevent_t * ev, knobevent_t * knob, void (* bring)(void))
 {
@@ -18829,6 +18832,8 @@ static uint_fast8_t processknobmenunavigation(inputevent_t * ev, knobevent_t * k
 	return 0;
 }
 
+#endif /* WITHENCODER */
+
 /* возврат ненуля - было какое-либо нажатие,
 	требуется обновление дисплея и состояния аппаратуры */
 static uint_fast8_t
@@ -18843,6 +18848,8 @@ processmenukeyandencoder(inputevent_t * ev)
 	const uint_fast8_t itemmask = gmenulevel ? ITEM_VALUE : ITEM_GROUP;
 
 	display2_getmultimenu(& window);
+
+#if WITHENCODER
 
 //	if (kbready && kbch == exitkey)
 //	{
@@ -18880,7 +18887,6 @@ processmenukeyandencoder(inputevent_t * ev)
 	}
 #endif /* WITHENCODER2 */
 
-#if WITHENCODER
 	/* редактирование значения с помощью поворота валкодера. */
 	if (param_rotate_knob(mp->pd, & ev->encMAIN, NULL))	// модификация и сохранение параметра
 	{
@@ -18889,7 +18895,7 @@ processmenukeyandencoder(inputevent_t * ev)
 		updateboard();
 		return 1;
 	}
-#endif /* WITHENCODER */
+
 #if WITHENCODER_4F
 	/* редактирование значения с помощью поворота валкодера. */
 	if (param_rotate_knob(mp->pd, & ev->encF4, bring_enc4f))	// модификация и сохранение параметра
@@ -18900,6 +18906,8 @@ processmenukeyandencoder(inputevent_t * ev)
 		return 1;
 	}
 #endif /* WITHENCODER_4F */
+
+#endif /* WITHENCODER */
 
 	if (! ev->frontkeyevent.kbready)
 		return 0;
