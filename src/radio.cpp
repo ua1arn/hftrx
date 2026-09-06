@@ -1104,14 +1104,9 @@ static int_fast32_t getzerobase(void)
 	return 0;
 }
 
-#define	BOARD_AGCFENCE_BASE	(- 133)		/* код управления точки перегиба АРУ ВЧ тракта */
-#define	BOARD_AGCFENCE_MIN	(- 133)		/* код управления точки перегиба АРУ ВЧ тракта */
-#define	BOARD_AGCFENCE_MAX	(+ 62)		/* код управления точки перегиба АРУ ВЧ тракта */
-#define	BOARD_AGCFENCE_DEFAULT	(- 55)	/* код управления точки перегиба АРУ ВЧ тракта */
-
 static int_fast32_t getagcfencebase(void)
 {
-	return BOARD_AGCFENCE_BASE;
+	return DBVALOFFSET_BASE;
 }
 
 static const struct paramdefdef xgdummy =
@@ -3874,7 +3869,7 @@ struct nvmap
 	#endif /* ! WITHPOTAFGAIN */
 	#if ! WITHPOTIFGAIN
 		uint16_t rfgain1;	// Параметр для регулировки усиления по ПЧ
-		uint16_t agcfence1;	// Параметр для регулировки точки перегиба АРУ
+		uint8_t agcfence1;	// Параметр для регулировки точки перегиба АРУ
 	#endif /* ! WITHPOTIFGAIN */
 	uint16_t glineamp;	// усиление с LINE IN
 	uint8_t gmikeboost20db;	// предусилитель микрофона
@@ -5217,7 +5212,7 @@ enum
 		OFFSETOF(struct nvmap, afgain1),
 #endif /* WITHPOTAFGAIN */
 		getselector0, nvramoffs0, valueoffs0,
-		& afgain1.value,
+		& afgain1.value,	/* переменная, которую подстраиваем  - если она 16 бит*/
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
@@ -5236,27 +5231,27 @@ enum
 		OFFSETOF(struct nvmap, rfgain1),
 #endif /* WITHPOTIFGAIN */
 		getselector0, nvramoffs0, valueoffs0,
-		& rfgain1.value,
+		& rfgain1.value,	/* переменная, которую подстраиваем  - если она 16 бит*/
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
-	static dualctl16_t agcfence1 = { BOARD_AGCFENCE_DEFAULT - BOARD_AGCFENCE_BASE, BOARD_AGCFENCE_DEFAULT - BOARD_AGCFENCE_BASE };	// Усиление ПЧ на максимуме
+	static dualctl8_t agcfence1 = { BOARD_AGCFENCE_DEFAULT, BOARD_AGCFENCE_DEFAULT };	// Усиление ПЧ на максимуме
 	// Точка перегиба характеристики АРУ
 	static const struct paramdefdef xagcfence1 =
 	{
 		QLABEL3("AGC FENCE", "AGC Fence", "AGC FENCE"),  0, RJ_SIGNED, ISTEP3,
 		ITEM_VALUE,
-		BOARD_AGCFENCE_MIN - BOARD_AGCFENCE_BASE, BOARD_AGCFENCE_MAX - BOARD_AGCFENCE_BASE, 					// Усиление ПЧ/ВЧ в процентах
+		BOARD_AGCFENCE_MIN, BOARD_AGCFENCE_MAX, 					// Усиление ПЧ/ВЧ в процентах
 #if WITHPOTIFGAIN
 		MENUNONVRAM,
 #else /* WITHPOTIFGAIN */
 		OFFSETOF(struct nvmap, agcfence1),
 #endif /* WITHPOTIFGAIN */
 		getselector0, nvramoffs0, valueoffs0,
-		& agcfence1.value,
 		NULL,
+		& agcfence1.value,	/* переменная, которую подстраиваем  - если она 8 бит*/
 		getagcfencebase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};

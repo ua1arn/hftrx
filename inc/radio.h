@@ -795,6 +795,11 @@ void updateboard(void);	/* полная перенастройка */
 #define WITHBOTTOMDBDEFAULT (- 130 - DBVALOFFSET_BASE)
 #define WITHBOTTOMDBDEFAULTTX (- 110 - DBVALOFFSET_BASE)
 
+/* Беззнаковые значения, хранимые в NVRAM */
+#define	BOARD_AGCFENCE_MIN	(- 133 - DBVALOFFSET_BASE)		/* код управления точки перегиба АРУ ВЧ тракта */
+#define	BOARD_AGCFENCE_MAX	(+ 62 - DBVALOFFSET_BASE)		/* код управления точки перегиба АРУ ВЧ тракта */
+#define	BOARD_AGCFENCE_DEFAULT	(- 55 - DBVALOFFSET_BASE)	/* код управления точки перегиба АРУ ВЧ тракта */
+
 /* выбор внешнего вида прибора - стрелочный или градусник */
 enum
 {
