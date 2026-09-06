@@ -29,7 +29,7 @@
 	#define HARDWARE_ADDRSPACE_GB (8)	// Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
 
 	//  PLL_CPUX=24MHz*N/P
-#if 0
+#if 1
 	/* 1396 MHz */
 	#define PLL_CPU_N 	116
 	#define PLL_CPU_P_POW 1
@@ -79,7 +79,6 @@
 
 	
 	
-	//#define WITHASYNCUI	1		// экспериментальный опции
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	//#define KEYB_VELOCI24_V0	1	/* 24 кнопки на 6 линий */
@@ -132,6 +131,7 @@
 
 	#define LCDMODE_RGB565 1	/* Экран 16 бит */
 	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
+	//#define LCDMODE_BGRA8888	1	/* Экран 32 бит BGRA8888 */
 
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
@@ -228,7 +228,10 @@
 
 #else /* WITHISBOOTLOADER */
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
-
+	#if 0
+		#define WITHMGLOOP 1
+		#define WITHMGLOOP_BAUDRATE 57600
+	#endif
 	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
 	
 	//#define FORMATFROMLIBRARY 	1
@@ -246,6 +249,7 @@
 	//#define COLORSTYLE_WHITE	1
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 	
+	#define WITHOVFHIDE 1	/* отключить показ индикатора перегрузки */
 
 	#define ENCRES_DEFAULT ENCRES_600
 	#define ENCRES_SUB_DEFAULT ENCRES_600
@@ -409,9 +413,8 @@
 
 	//#define WITHVITA49RX	1	/* VITA 49.0-2015 streaming source support */
 	
-	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
-	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
-	#define WITHOVFHIDE 1		/* скрыть показ OVF */
+//	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
+//	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
 
 	
 	
@@ -426,6 +429,7 @@
 		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		#define WITHSWRMTR	1		/* Измеритель КСВ */
 	#endif /* WITHTX */
+	
 	
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
