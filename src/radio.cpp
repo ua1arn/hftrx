@@ -3658,9 +3658,7 @@ struct nvmap
 	uint8_t enc2state;
 	uint8_t enc2pos;			// выбраный пунки меню (второй валкодер)
 #endif /* WITHENCODER2 */
-#if WITHUSEFAST
 	uint8_t gusefast;			/* переключение в режим крупного шага */
-#endif /* WITHUSEFAST */
 	uint8_t gmenuset;		/* набор функций кнопок и режим отображения на дисплее */
 
 	/* группы */
@@ -4388,7 +4386,7 @@ static const struct paramdefdef xgusefast =
 	QLABEL("FAST"), 0, RJ_YES,	ISTEP1,		/* управление режимом валкодера */
 	ITEM_VALUE,
 	0, 1,
-	OFFSETOF(struct nvmap, gnotchwidth),	/* управление режимом валкодера */
+	OFFSETOF(struct nvmap, gusefast),	/* управление режимом валкодера */
 	getselector0, nvramoffs0, valueoffs0,
 	NULL,
 	& gusefast,
@@ -8319,8 +8317,6 @@ static void cat_answer_forming(void);
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 
 static uint_fast8_t gdimmtime;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
-static uint_fast8_t dimmcount;
-static uint_fast8_t dimmflagch;	/* не-0: изменилось состояние dimmflag */
 
 static const struct paramdefdef xgdimmtime =
 {
@@ -8334,6 +8330,10 @@ static const struct paramdefdef xgdimmtime =
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
+
+static uint_fast8_t dimmcount;
+static uint_fast8_t dimmflagch;	/* не-0: изменилось состояние dimmflag */
+
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 
 #if WITHFANTIMER
