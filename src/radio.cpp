@@ -19458,6 +19458,17 @@ process_key_menuset0(uint_fast8_t kbch)
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_4F */
 
+	case KBD_CODE_MEMO:
+		{
+			const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+			const vindex_t vi = getvfoindex(bi);
+			uif_key_click_bandjump(gfreqs [bi]);
+		}
+		return 1;
+
+	case KBD_CODE_MEMO_HOLDED:
+		return 1;
+
 	case KBD_CODE_BAND_1M8:
 		uif_key_click_bandjump(1800000L);
 		return 1;	// требуется обновление индикатора
