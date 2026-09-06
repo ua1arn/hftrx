@@ -4097,7 +4097,6 @@ struct nvmap
 #define RMT_MENUSET_BASE OFFSETOF(struct nvmap, gmenuset)		/* набор функций кнопок и режим отображения на дисплее */
 #define RMT_SIGNATURE_BASE(i) OFFSETOF(struct nvmap, signature [(i)])			/* расположение сигнатуры */
 #define RMT_LOCKMODE_BASE(b) OFFSETOF(struct nvmap, bands [(b)].glock)		/* признак блокировки валкодера */
-#define RMT_USEFAST_BASE OFFSETOF(struct nvmap, gusefast)		/* переключение в режим крупного шага */
 
 #define RMT_SPLITMODE_BASE OFFSETOF(struct nvmap, splitmode)		/* (vfo/vfoa/vfob/mem) */
 #define RMT_VFOAB_BASE OFFSETOF(struct nvmap, vfoab)		/* (vfoa/vfob) */
@@ -4382,7 +4381,20 @@ static uint_fast8_t glocks [2];
 #else /* WITHLCDBACKLIGHTOFF */
 	enum { dimmmode = 0 };
 #endif /* WITHLCDBACKLIGHTOFF */
+
 static uint_fast8_t gusefast;
+static const struct paramdefdef xgusefast =
+{
+	QLABEL("FAST"), 0, RJ_YES,	ISTEP1,		/* управление режимом валкодера */
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, gnotchwidth),	/* управление режимом валкодера */
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gusefast,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 
 #if WITHIF4DSP
 
@@ -10281,27 +10293,24 @@ static const struct paramdefdef * nomenulist [] =
 #endif /* WITHSPKMUTE */
 #if WITHIF4DSP
 	& xagcfence1,
+#if WITHNOTCHONOFF || WITHNOTCHFREQ
+	& xgnotch,
+#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
+
 #endif /* WITHIF4DSP */
+	& xgusefast,	/* управление режимом валкодера */
 };
 
 // split, s-meter display
 static void
 loadsavedstate(void)
 {
-#if WITHUSEFAST
-	gusefast = loadvfy8up(RMT_USEFAST_BASE, 0, 1, gusefast);	/* переключение в режим крупного шага */
-#endif /* WITHUSEFAST */
 #if WITHUSEDUALWATCH
 	mainsubrxmode = loadvfy8up(RMT_MAINSUBRXMODE_BASE, 0, MAINSUBRXMODE_COUNT - 1, mainsubrxmode);	/* состояние dual watch */
 #endif /* WITHUSEDUALWATCH */
 #if WITHPOWERLPHP
 	gpwri = loadvfy8up(RMT_PWR_BASE, 0, PWRMODE_COUNT - 1, gpwri);
 #endif /* WITHPOWERLPHP */
-#if WITHNOTCHONOFF
-	gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, 1, gnotch);
-#elif WITHNOTCHFREQ
-	gnotch = loadvfy8up(RMT_NOTCH_BASE, 0, 1, gnotch);
-#endif /* WITHNOTCHONOFF */
 #if WITHENCODER2
 	enc2state = loadvfy8up(RMT_ENC2STATE_BASE, ENC2STATE_INITIALIZE, ENC2STATE_COUNT - 1, enc2state);	/* вытаскиваем режим режактирования паарметров вторым валкодером */
 	enc2pos = loadvfy8up(RMT_ENC2POS_BASE, 0, ENC2POS_COUNT - 1, enc2pos);	/* вытаскиваем номер параметра для редактирования вторым валкодером */
@@ -14547,33 +14556,26 @@ uint_fast8_t hamradio_get_genham_value(void)
 
 #endif /* WITHBCBANDS */
 
-#if WITHUSEFAST
 /* переключение в режим крупного шага */
 static void
 uif_key_usefast(void)
 {
-	gusefast = calc_next(gusefast, 0, 1);
-	save_i8(RMT_USEFAST_BASE, gusefast);
-	updateboard();
+	if (param_keyclick(& xgusefast))
+		updateboard();
 }
-#endif /* WITHUSEFAST */
-
-#if WITHSPKMUTE
 
 /* Включение-выключение динамика */
 static void
 uif_key_loudsp(void)
 {
-	param_keyclick(& xgmutespkr);
-	updateboard();
+	if (param_keyclick(& xgmutespkr))
+		updateboard();
 }
 
 uint_fast8_t hamradio_get_spkon_value(void)
 {
 	return ! param_getvalue(& xgmutespkr);
 }
-
-#endif /* WITHSPKMUTE */
 
 ///////////////////////////
 // обработчики кнопок клавиатуры
@@ -15094,8 +15096,8 @@ const char * hamradio_get_hplp_value_P(void)
 static void
 uif_key_mainsubrx(void)
 {
-	param_keyclick(& xmainsubrxmode);		// Левый/правый, A - main RX, B - sub RX
-	updateboard();
+	if (param_keyclick(& xmainsubrxmode))	// Левый/правый, A - main RX, B - sub RX
+		updateboard();
 }
 
 // текущее состояние DUAL WATCH
@@ -22530,9 +22532,7 @@ const char * hamradio_change_view_style(uint_fast8_t v)
 	if (v)
 	{
 		if (param_keyclick(& xgviewstyle))
-		{
 			updateboard();
-		}
 	}
 
 	return view_types [param_getvalue(& xgviewstyle)];
