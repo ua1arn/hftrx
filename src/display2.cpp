@@ -7070,23 +7070,26 @@ display_colorgrid_set(
 	// Маркеры уровней сигналов
 	if (glob_lvlgridstep != 0)
 	{
+		// сетка уровней
 		int lvl;
 		for (lvl = glob_topdb / glob_lvlgridstep * glob_lvlgridstep; lvl >= glob_bottomdb; lvl -= glob_lvlgridstep)
 		{
-			const int yval = dsp_mag2y(db2ratio(lvl), h - 1, glob_topdb, glob_bottomdb);
+			const int yval = dsp_power2y(lvl, h - 1, glob_topdb, glob_bottomdb);
 			if (yval > 0 && yval < (int) h)
 				colpip_set_hline(db, x, y + yval, w, colorgridlines);	// Level marker
 		}
 	}
-	if (0)
+	if (1)
 	{
 		// линия уровня срабатывания АРУ
 		const int_fast16_t agcfence10 = dsp_agcfence10();
-		const int yval = dsp_mag2y(db2ratio(agcfence10 / 10), h - 1, glob_topdb, glob_bottomdb);
+		const int yval = dsp_power2y(agcfence10 / 10, h - 1, glob_topdb, glob_bottomdb);
 		if (yval > 0 && yval < (int) h)
 			colpip_set_hline(db, x, y + yval, w, colorgridfence);	// Level marker
 
 	}
+
+	// Маркеры частоты
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
 		if (df > - halfbw)

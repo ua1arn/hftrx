@@ -1030,6 +1030,25 @@ FLOAT_t local_exp(FLOAT_t x)
 
 //////////////////////////////////////////
 
+// Нормирование уровня сигнала к шкале
+// возвращает значения от 0 до ymax включительно
+// 0 - минимальный сигнал, ymax - максимальный
+int dsp_power2y(
+	int_fast16_t power,		/* мощность для отображения */
+	int ymax,
+	int_fast16_t topdb,		/* мощность - верхний предел спектроанализатора */
+	int_fast16_t bottomdb		/* мощность - нижний предел спектроанализатора */
+	)
+{
+	const int drange = topdb - bottomdb;
+	const int y = ((topdb - power) * ymax / drange);
+
+	if (y > ymax)
+		return ymax;
+	if (y < 0)
+		return 0;
+	return y;
+}
 
 // Нормирование уровня сигнала к шкале
 // возвращает значения от 0 до ymax включительно

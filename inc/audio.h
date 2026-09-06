@@ -503,6 +503,7 @@ int ctcss_squelch(void);
 	// возвращает значения от 0 до ymax включительно
 	// 0 - минимальный сигнал, ymax - максимальный
 	int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb);
+	int dsp_power2y(int_fast16_t power, int ymax, int_fast16_t topdb, int_fast16_t bottomdb);
 	FLOAT_t ratio2db(FLOAT_t ratio);	// Преобразовать отношение напряжений выраженное в "разах" к децибелам.
 	FLOAT_t db2ratio(FLOAT_t valueDBb);	// Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
 
