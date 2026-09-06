@@ -728,12 +728,14 @@ savemenuvalue(
 			return;
 		if (pv16 != NULL)
 		{
+			PRINTF("savemenuvalue %s: *pv16=%u\n", pd->qlabel, (unsigned) * pv16);
 			ASSERT3(* pv16 <= pd->qupper, __FILE__, __LINE__, pd_getlonglabel(pd));
 			ASSERT3(* pv16 >= pd->qbottom, __FILE__, __LINE__, pd_getlonglabel(pd));
 			save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
 		}
 		else if (pv8 != NULL)
 		{
+			PRINTF("savemenuvalue %s: *pv8=%u\n", pd->qlabel, (unsigned) * pv8);
 			ASSERT3(* pv8 <= pd->qupper, __FILE__, __LINE__, pd_getlonglabel(pd));
 			ASSERT3(* pv8 >= pd->qbottom, __FILE__, __LINE__, pd_getlonglabel(pd));
 			save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
@@ -10271,6 +10273,17 @@ void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 
+// загрузка параметров, не представленных в списке пунктов меню
+static const struct paramdefdef * nomenulist [] =
+{
+#if WITHSPKMUTE
+	& xgmutespkr,	/*  выключение динамика */
+#endif /* WITHSPKMUTE */
+#if WITHIF4DSP
+	& xagcfence1,
+#endif /* WITHIF4DSP */
+};
+
 // split, s-meter display
 static void
 loadsavedstate(void)
@@ -10301,9 +10314,14 @@ loadsavedstate(void)
 	gsplitmode = loadvfy8up(RMT_SPLITMODE_BASE, 0, VFOMODES_COUNT - 1, gsplitmode); /* (vfo/vfoa/vfob/mem) */
 	gvfoab = loadvfy8up(RMT_VFOAB_BASE, 0, VFOS_COUNT - 1, gvfoab); /* (vfoa/vfob) */
 #endif /* WITHSPLIT */
-#if WITHSPKMUTE
-	param_load(& xgmutespkr);	/*  выключение динамика */
-#endif /* WITHSPKMUTE */
+	{
+		// загрузка параметров, не представленных в списке пунктов меню
+		unsigned i;
+		for (i = 0; i < ARRAY_SIZE(nomenulist); ++ i)
+		{
+			param_load(nomenulist [i]);
+		}
+	}
 	// тюнер запоминается подиапазонно
 //#if WITHAUTOTUNER
 //	tunerwork = loadvfy8up(OFFSETOF(struct nvmap, tunerwork), 0, 1, tunerwork);
@@ -18296,14 +18314,15 @@ loadsettings(void)
 				const ptrdiff_t offs = pd->valoffs(sel);
 				uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 				uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
-
 				if (pv16 != NULL)
 				{
 					* pv16 = loadvfy16up(nvram, bottom, upper, * pv16);
+					PRINTF("loadsettings: %s: * pv16=%u\n", pd->qlabel, (unsigned) * pv16);
 				}
 				else if (pv8 != NULL)
 				{
 					* pv8 = loadvfy8up(nvram, bottom, upper, * pv8);
+					PRINTF("loadsettings: %s: * pv8=%u\n", pd->qlabel, (unsigned) * pv8);
 				}
 			}
 		}
