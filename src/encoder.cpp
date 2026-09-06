@@ -173,8 +173,8 @@ void spool_encinterrupts4_cw(void * ctx)
 	encoder_t * const e = (encoder_t *) ctx;
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	const int_fast8_t step = graydecoder4 [e->old_val] [new_val];
-	const int_fast8_t active = e->active4 || deadstates4 [new_val];
-	e->position += step * (int) active;
+	const int active = e->active4 || deadstates4 [new_val];
+	e->position += step * active;
 	e->active4 = active && ! step;	// сброс после использования
 	e->old_val = new_val;
 }
@@ -185,8 +185,8 @@ void spool_encinterrupts4_ccw(void * ctx)
 	encoder_t * const e = (encoder_t *) ctx;
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 	const int_fast8_t step = graydecoder4 [e->old_val] [new_val];
-	const int_fast8_t active = e->active4 || deadstates4 [new_val];
-	e->position -= step * (int) active;
+	const int active = e->active4 || deadstates4 [new_val];
+	e->position -= step * active;
 	e->active4 = active && ! step;	// сброс после использования
 	e->old_val = new_val;
 }
