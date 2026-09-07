@@ -2835,8 +2835,8 @@ static void display2_freqchr_b(const gxdrawb_t * db,
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
-	uint_fast8_t state;
-	hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
+	uint_fast8_t state = 1;
+	//hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
 	const gxstyle_t * const dbstylep = & dbstylev_2rxB [state];
 	if (0)
 	{
@@ -2871,8 +2871,8 @@ static void display2_freqX_b(const gxdrawb_t * db,
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
-	uint_fast8_t state;
-	hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
+	uint_fast8_t state = 1;
+	//hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
 	const gxstyle_t * const dbstylep = & dbstylev_2rxB [state];
 
 	const uint_fast32_t freq = hamradio_get_freq_b();
@@ -7341,9 +7341,9 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 	if (! colpip_hasalpha())
 	{
 		// Изображение "шторки" под спектром.
-		uint_fast8_t splitflag;
+		uint_fast8_t splitflag = 1;
 		uint_fast8_t pathi;
-		hamradio_get_vfomode3_value(& splitflag);
+		//hamradio_get_vfomode3_value(& splitflag);
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 		{
 			const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
@@ -7400,9 +7400,9 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 	if (colpip_hasalpha())
 	{
 		// Изображение "шторки" на спектре.
-		uint_fast8_t splitflag;
+		uint_fast8_t splitflag = 1;
 		uint_fast8_t pathi;
-		hamradio_get_vfomode3_value(& splitflag);
+		//hamradio_get_vfomode3_value(& splitflag);
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 		{
 			uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
@@ -7757,11 +7757,11 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 				BITBLT_FLAG_NONE, 0);
 	}
 
-	if (hamradio_get_bringtuneA())
+	if (hamradio_get_bringtuneA() || hamradio_get_bringtuneB())
 	{
-		uint_fast8_t splitflag;
+		uint_fast8_t splitflag = 1;
 		uint_fast8_t pathi;
-		hamradio_get_vfomode3_value(& splitflag);
+		//hamradio_get_vfomode3_value(& splitflag);
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 		{
 			uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
@@ -8775,9 +8775,9 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     if (1)
     {
 		// Изображение "шторки" на спектре.
-		uint_fast8_t splitflag;
+		uint_fast8_t splitflag = 1;
 		uint_fast8_t pathi;
-		hamradio_get_vfomode3_value(& splitflag);
+		//hamradio_get_vfomode3_value(& splitflag);
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 		{
 			const lv_color_t lvrxbwcolor = display_lvlcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2);
@@ -9138,14 +9138,14 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 #endif /* ! WITHSPECTRUMWF */
 
 #if WITHSPECTRUMWF
-    if (hamradio_get_bringtuneA())
+    if (hamradio_get_bringtuneA() || hamradio_get_bringtuneB())
     {
     	// отладка. закрасить зону полосы пропускания
         lv_draw_rect_dsc_t rect;
         lv_draw_rect_dsc_init(& rect);
-		uint_fast8_t splitflag;
+		uint_fast8_t splitflag = 1;
 		uint_fast8_t pathi;
-		hamradio_get_vfomode3_value(& splitflag);
+		//hamradio_get_vfomode3_value(& splitflag);
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 		{
 			int_fast32_t xleft = dm->xleft [pathi];		// левый край шторки

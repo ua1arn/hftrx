@@ -1556,22 +1556,6 @@ static size_t getvaltextnotchmode(char * buff, size_t count, int_fast32_t value)
 
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 
-#if WITHUSEDUALWATCH
-
-static const struct {
-	uint8_t code;
-	const char * label;
-}  mainsubrxmodes [] =
-{
-	{ BOARD_RXMAINSUB_A_B, "A/B", },	// Левый/правый, A - main RX, B - sub RX
-	{ BOARD_RXMAINSUB_B_A, "B/A", },
-	{ BOARD_RXMAINSUB_B_B, "B/B", },
-	{ BOARD_RXMAINSUB_A_A, "A/A", },
-	{ BOARD_RXMAINSUB_TWO, "A&B", },	// в оба аудиоканала поступает сумма выходов приемников.
-};
-
-static uint_fast8_t mainsubrxmode;		// Левый/правый, A - main RX, B - sub RX
-#endif /* WITHUSEDUALWATCH */
 
 #if 1//WITHTX && WITHIF4DSP
 
@@ -4273,8 +4257,25 @@ static const struct paramdefdef xgnoisereduct =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif /* WITHIF4DSP */
+
+
+#if WITHIF4DSP
+
 #if WITHUSEDUALWATCH
 
+static const struct {
+	uint8_t code;
+	const char * label;
+}  mainsubrxmodes [] =
+{
+	{ BOARD_RXMAINSUB_A_A, "A/A", },
+	{ BOARD_RXMAINSUB_A_B, "A/B", },	// Левый/правый, A - main RX, B - sub RX
+	{ BOARD_RXMAINSUB_B_A, "B/A", },
+	{ BOARD_RXMAINSUB_B_B, "B/B", },
+	{ BOARD_RXMAINSUB_TWO, "A&B", },	// в оба аудиоканала поступает сумма выходов приемников.
+};
+
+static uint_fast8_t mainsubrxmode;		// Левый/правый, A - main RX, B - sub RX
 
 static size_t getvaltextmaisubrxmode(char * buff, size_t count, int_fast32_t value)
 {
@@ -4295,9 +4296,8 @@ static const struct paramdefdef xmainsubrxmode =
 	getzerobase, /* складывается со смещением и отображается */
 	getvaltextmaisubrxmode, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-#endif /* WITHUSEDUALWATCH */
 
-#if WITHIF4DSP
+#endif /* WITHUSEDUALWATCH */
 
 static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
 static const struct paramdefdef xgsquelch =
@@ -10196,20 +10196,20 @@ void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 
 
 enum {
-	VFOMODES_VFOINIT,
-	VFOMODES_VFOSPLIT,
+	SPLITMODES_OFF,
+	SPLITMODES_ON,
 	//
 	VFOMODES_COUNT
 };
 
-static uint_fast8_t gvfoab;	/* (vfoa/vfob) */
-static uint_fast8_t gsplitmode = VFOMODES_VFOINIT;	/* (vfo/vfoa/vfob/mem) */
+static uint_fast8_t gvfoab;	/* 0/1: какой bank index яаляется vfo a */
+static uint_fast8_t gsplitmode = SPLITMODES_OFF;	/* (vfo/vfoa/vfob/mem) */
 
 static uint_fast8_t
-getbankindex_raw(const uint_fast8_t n)
+getbankindex_raw(const uint_fast8_t ab)
 {
 	ASSERT(n < 2);
-	return (gvfoab + n) % 2;
+	return (gvfoab + ab) % 2;
 }
 
 // программирование трактов для двойного приема
@@ -10217,20 +10217,10 @@ static uint_fast8_t
 getbankindex_pathi(const uint_fast8_t pathi)
 {
 	ASSERT(pathi < 2);
-	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
-	{
-	case VFOMODES_VFOINIT:
-		return getbankindex_raw(0);
-
-	case VFOMODES_VFOSPLIT:
-		if (gtx == 0)
-			return getbankindex_raw(pathi);
-		else
-			return getbankindex_tx(1);
-	default:
-		ASSERT(0);
-		return 0;
-	}
+	if (gtx == 0)
+		return getbankindex_raw(pathi);
+	else
+		return getbankindex_tx(1);
 }
 
 static uint_fast8_t
@@ -10238,34 +10228,23 @@ getbankindex_ab(
 	const uint_fast8_t ab	// 0: A, 1: B
 	)
 {
-	ASSERT(ab < 2);
-	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
-	{
-	case VFOMODES_VFOINIT:
-		return getbankindex_raw(0);
-
-	case VFOMODES_VFOSPLIT:
-		return getbankindex_raw(ab);
-	default:
-		ASSERT(0);
-		return getbankindex_raw(0);
-	}
+	return getbankindex_raw(ab);
 }
 
 static uint_fast8_t
 getbankindex_tx(const uint_fast8_t tx)
 {
-	ASSERT(tx < 2);
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
-	case VFOMODES_VFOINIT:
-		return getbankindex_raw(0);
+	case SPLITMODES_OFF:
+		return getbankindex_raw(0);	// без split - передаем на VFO A
 
-	case VFOMODES_VFOSPLIT:
-		return getbankindex_raw(tx);
+	case SPLITMODES_ON:
+		return getbankindex_raw(tx);	// передача на vfo B
+
 	default:
 		ASSERT(0);
-		return getbankindex_raw(0);
+		return 0;
 	}
 }
 
@@ -10274,39 +10253,28 @@ static uint_fast8_t
 //NOINLINEAT
 getbankindex_ab_fordisplay(const uint_fast8_t ab)
 {
-	ASSERT(ab < 2);
-	return getbankindex_ab(gtx != ab);
+	return getbankindex_ab(ab);
 }
 
 static uint_fast8_t
 getbankindexmain(void)
 {
-    const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);        /* состояние выбора банков может измениться */
-    const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);        /* состояние выбора банков может измениться */
-	return bi_main;
+	return getbankindex_ab_fordisplay(0);
 }
 
 static uint_fast8_t
 getbankindexsub(void)
 {
-    const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);        /* состояние выбора банков может измениться */
-    const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);        /* состояние выбора банков может измениться */
-	return bi_sub;
+	return getbankindex_ab_fordisplay(1);
 }
 
 #if WITHUSEDUALWATCH
 
+// двойной приём не зависит от включения режима SPLIT
 static uint_fast8_t
 getactualmainsubrx(void)
 {
-	switch (gsplitmode)
-	{
-	default:
-		return BOARD_RXMAINSUB_A_A;
-
-	case VFOMODES_VFOSPLIT:
-		return mainsubrxmodes [mainsubrxmode].code;
-	}
+	return mainsubrxmodes [mainsubrxmode].code;
 }
 
 #endif /* WITHUSEDUALWATCH */
@@ -10321,10 +10289,10 @@ const char * hamradio_get_vfomode3_value(uint_fast8_t * flag)
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
 	default:
-	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
+	case SPLITMODES_OFF:	/* no SPLIT -  Обычная перестройка */
 		* flag = 0;
 		return sp3;
-	case VFOMODES_VFOSPLIT:
+	case SPLITMODES_ON:
 		* flag = 1;
 		return spl;
 		//return (gvfoab != tx) ? b : a;
@@ -10340,10 +10308,10 @@ const char * hamradio_get_vfomode5_value(uint_fast8_t * flag)
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
 	default:
-	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
+	case SPLITMODES_OFF:	/* no SPLIT -  Обычная перестройка */
 		* flag = 0;
 		return sp5;
-	case VFOMODES_VFOSPLIT:
+	case SPLITMODES_ON:
 		* flag = 1;
 		return spl;
 		//return (gvfoab != tx) ? b : a;
@@ -10390,11 +10358,11 @@ const char * hamradio_get_mode_b_value_P(uint_fast8_t * flag)
 {
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
-	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
+	case SPLITMODES_OFF:	/* no SPLIT -  Обычная перестройка */
 		* flag = 0;
 		break;
 	default:
-	case VFOMODES_VFOSPLIT:
+	case SPLITMODES_ON:
 		* flag = 1;
 		break;
 		//return (gvfoab != tx) ? b : a;
@@ -10714,7 +10682,7 @@ static void catchangesplit(
 	int_fast16_t delta
 	)
 {
-	gsplitmode = enable ? VFOMODES_VFOSPLIT : VFOMODES_VFOINIT;
+	gsplitmode = enable ? SPLITMODES_ON : SPLITMODES_OFF;
 }
 
 #endif /* WITHCAT */
@@ -14124,7 +14092,7 @@ uif_key_spliton(uint_fast8_t holded)
 	const vindex_t tgvi = getvfoindex(tgbi);
 
 	copybankstate(srbi, tgbi, holded == 0 ? 0 : getmodetempl(getsubmode(srbi))->autosplitK * 1000L);	/* копируем состояние текущего банка в противоположный */
-	gsplitmode = VFOMODES_VFOSPLIT;
+	gsplitmode = SPLITMODES_ON;
 
 	storebandstate(tgvi, tgbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
 	storebandfreq(tgvi, tgbi);
@@ -14146,13 +14114,14 @@ uif_key_click_b_from_a(void)
 	storebandstate(tgvi, tbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
 	storebandfreq(tgvi, tbi); // записать частоту в область данных VFO */
 	updateboard();
+	bring_tuneA();
 }
 
 // вылючение режима split
 static void
 uif_key_splitoff(void)
 {
-	gsplitmode = VFOMODES_VFOINIT;
+	gsplitmode = SPLITMODES_OFF;
 	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
 
 	updateboard();
@@ -14165,6 +14134,8 @@ uif_key_click_a_ex_b(void)
 	gvfoab = calc_next(gvfoab, 0, 1);	/* меняем текущий VFO на протвоположный */
 	save_i8(RMT_VFOAB_BASE, gvfoab);
 	updateboard();
+	bring_tuneB();
+	bring_tuneA();
 }
 
 ///////////////////////////
@@ -14338,6 +14309,7 @@ uif_key_click_bandup(void)
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
 	updateboard();
+	bring_tuneA();
 }
 ///////////////////////////
 // обработчики кнопок клавиатуры
@@ -14360,6 +14332,7 @@ uif_key_click_banddown(void)
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
 	updateboard();
+	bring_tuneA();
 }
 
 
@@ -14397,6 +14370,7 @@ uif_key_click_bandjump(uint_fast32_t f)
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
 	updateboard();
+	bring_tuneA();
 }
 
 /* переход на указанную частоту без задействования механизма bandgroup */
@@ -14418,6 +14392,7 @@ uif_key_click_bandjump2(uint_fast32_t f, uint_fast8_t bandset_no_check)
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
 	updateboard();
+	bring_tuneA();
 }
 
 static void uif_key_click_memo(void)
@@ -16123,7 +16098,7 @@ static void spanswer(uint_fast8_t arg)
 
 	// answer VFO B frequency
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) (gsplitmode != VFOMODES_VFOINIT)
+		(int) (gsplitmode != SPLITMODES_OFF)
 		);
 	cat_answer(len);
 }
@@ -16749,7 +16724,7 @@ static void ifanswer(uint_fast8_t arg)
 		(int) gtx,
 		(int) submodes [gsubmode].qcatmodecode,	// P9
 		(int) 0,	// P10: FR/FT state
-		(int) (gsplitmode == VFOMODES_VFOSPLIT) // P12
+		(int) (gsplitmode == SPLITMODES_ON) // P12
 		);
 	cat_answer(len);
 }
@@ -19479,14 +19454,14 @@ process_key_menuset0(uint_fast8_t kbch)
 	case KBD_CODE_SPLIT:
 		/* Переключение VFO
 			 - не вызывает сохранение состояния диапазона */
-		if (gsplitmode == VFOMODES_VFOINIT)
+		if (gsplitmode == SPLITMODES_OFF)
 			uif_key_spliton(0);
 		else
 			uif_key_splitoff();
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_SPLIT_HOLDED:
-		if (gsplitmode == VFOMODES_VFOINIT)
+		if (gsplitmode == SPLITMODES_OFF)
 			uif_key_spliton(1);
 		else
 			uif_key_splitoff();
@@ -22845,7 +22820,7 @@ uint32_t hamradio_get_gadcrand(void)
 #if WITHUSEDUALWATCH
 uint_fast8_t hamradio_split_toggle(void)
 {
-	if (gsplitmode == VFOMODES_VFOINIT)
+	if (gsplitmode == SPLITMODES_OFF)
 		uif_key_spliton(0);
 	else
 		uif_key_splitoff();
