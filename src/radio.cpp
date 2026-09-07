@@ -10275,7 +10275,8 @@ getbankindex_tx(const uint_fast8_t tx)
 	}
 }
 
-// получить bankindex для показа частоты или режима работы тракта на дисплее в полях A (0) и B (1)
+// получить bankindex для показа частоты или режима
+// работы тракта на дисплее в полях A (0) и B (1)
 static uint_fast8_t
 //NOINLINEAT
 getbankindex_ab_fordisplay(const uint_fast8_t ab)
@@ -10370,16 +10371,17 @@ const char * hamradio_get_mode_a_value_P(void)
 // * flag: split active
 const char * hamradio_get_mode_b_value_P(uint_fast8_t * flag)
 {
-	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
-	{
-	case SPLITMODES_OFF:	/* no SPLIT -  Обычная перестройка */
-		* flag = 0;
-		break;
-	default:
-	case SPLITMODES_ON:
-		* flag = 1;
-		break;
-	}
+//	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
+//	{
+//	case SPLITMODES_OFF:	/* no SPLIT -  Обычная перестройка */
+//		* flag = 0;
+//		break;
+//	default:
+//	case SPLITMODES_ON:
+//		* flag = 1;
+//		break;
+//	}
+	* flag = 1;
 	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;	/* VFO B modifications */
 }
 
@@ -11225,8 +11227,7 @@ getif6bw(
 int_fast16_t
 hamradio_getleft_bp(uint_fast8_t pathi)
 {
-	//const uint_fast8_t bi = getbankindex_pathi(pathi);
-	const uint_fast8_t bi = getbankindex_ab_fordisplay(pathi);
+	const uint_fast8_t bi = getbankindex_pathi(pathi);
 	const uint_fast32_t freq = gfreqs [bi];
 	const uint_fast8_t forcelsb = getforcelsb(freq);
 	const uint_fast8_t submode = getsubmode(bi);	// брать модуляцию нужного приемника
@@ -11254,8 +11255,7 @@ hamradio_getleft_bp(uint_fast8_t pathi)
 int_fast16_t
 hamradio_getright_bp(uint_fast8_t pathi)
 {
-	//const uint_fast8_t bi = getbankindex_pathi(pathi);
-	const uint_fast8_t bi = getbankindex_ab_fordisplay(pathi);
+	const uint_fast8_t bi = getbankindex_pathi(pathi);
 	const uint_fast32_t freq = gfreqs [bi];
 	const uint_fast8_t forcelsb = getforcelsb(freq);
 	const uint_fast8_t submode = getsubmode(bi);	// брать модуляцию нужного приемника
