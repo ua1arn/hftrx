@@ -3737,13 +3737,8 @@ struct nvmap
 #if WITHANTSELECT2
 	uint8_t gantmanual;		/* 0 - выбор антенны автоматический */
 #endif /* WITHANTSELECT2 */
-#if WITHSPLIT
 	uint8_t splitmode;		/* не-0, если работа с фиксированными ячейками (vfo/vfoa/vfob/mem) */
 	uint8_t vfoab;		/* 1, если работа с VFO B, 0 - с VFO A */
-#elif WITHSPLITEX
-	uint8_t splitmode;		/* не-0, если работа с фиксированными ячейками (vfo/vfoa/vfob/mem) */
-	uint8_t vfoab;		/* 1, если работа с VFO B, 0 - с VFO A */
-#endif /* WITHSPLIT */
 #if WITHRPTOFFSET
 	uint8_t rptrhfenable;		/* Repeater offset HF */
 	uint16_t rptroffshf1k;		/* Repeater offset HF */
@@ -10207,16 +10202,8 @@ enum {
 	VFOMODES_COUNT
 };
 
-#if WITHSPLIT
-	static uint_fast8_t gvfoab;	/* (vfoa/vfob) */
-	static uint_fast8_t gsplitmode = VFOMODES_VFOINIT;	/* (vfo/vfoa/vfob/mem) */
-#elif WITHSPLITEX
-	static uint_fast8_t gvfoab;	/* 1: vfoa/vfob swapped */
-	static uint_fast8_t gsplitmode = VFOMODES_VFOINIT;	/* (vfo/vfoa/vfob/mem) */
-#else /* WITHSPLIT */
-	static const uint_fast8_t gvfoab = 0;	/* (vfoa/vfob) */
-	static const uint_fast8_t gsplitmode = VFOMODES_VFOINIT;	/* (vfo/vfoa/vfob/mem) */
-#endif /* WITHSPLIT */
+static uint_fast8_t gvfoab;	/* (vfoa/vfob) */
+static uint_fast8_t gsplitmode = VFOMODES_VFOINIT;	/* (vfo/vfoa/vfob/mem) */
 
 static uint_fast8_t
 getbankindex_raw(const uint_fast8_t n)
@@ -10230,9 +10217,6 @@ static uint_fast8_t
 getbankindex_pathi(const uint_fast8_t pathi)
 {
 	ASSERT(pathi < 2);
-
-#if WITHSPLIT || WITHSPLITEX
-
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
 	case VFOMODES_VFOINIT:
@@ -10247,10 +10231,6 @@ getbankindex_pathi(const uint_fast8_t pathi)
 		ASSERT(0);
 		return 0;
 	}
-
-#else /* WITHSPLIT || WITHSPLITEX */
-	return getbankindex_raw(0);
-#endif /* WITHSPLIT || WITHSPLITEX */
 }
 
 static uint_fast8_t
@@ -10259,8 +10239,6 @@ getbankindex_ab(
 	)
 {
 	ASSERT(ab < 2);
-#if WITHSPLIT || WITHSPLITEX
-
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
 	case VFOMODES_VFOINIT:
@@ -10272,18 +10250,12 @@ getbankindex_ab(
 		ASSERT(0);
 		return getbankindex_raw(0);
 	}
-
-#else /* WITHSPLIT || WITHSPLITEX */
-	return getbankindex_raw(0);
-#endif /* WITHSPLIT || WITHSPLITEX */
 }
 
 static uint_fast8_t
 getbankindex_tx(const uint_fast8_t tx)
 {
 	ASSERT(tx < 2);
-#if WITHSPLIT || WITHSPLITEX
-
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
 	case VFOMODES_VFOINIT:
@@ -10295,10 +10267,6 @@ getbankindex_tx(const uint_fast8_t tx)
 		ASSERT(0);
 		return getbankindex_raw(0);
 	}
-
-#else /* WITHSPLIT || WITHSPLITEX */
-	return getbankindex_raw(0);
-#endif /* WITHSPLIT || WITHSPLITEX */
 }
 
 // получить bankindex для показа частоты или режима работы тракта на дисплее в полях A (0) и B (1)
@@ -10307,38 +10275,22 @@ static uint_fast8_t
 getbankindex_ab_fordisplay(const uint_fast8_t ab)
 {
 	ASSERT(ab < 2);
-#if WITHSPLIT
 	return getbankindex_ab(gtx != ab);
-#elif WITHSPLITEX
-	return getbankindex_raw(gtx != ab);
-#else /* WITHSPLIT */
-	return getbankindex_raw(0);
-#endif /* WITHSPLIT */
 }
 
 static uint_fast8_t
 getbankindexmain(void)
 {
-#if 1//WITHSPLIT
     const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);        /* состояние выбора банков может измениться */
     const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);        /* состояние выбора банков может измениться */
-#elif WITHSPLITEX
-    const uint_fast8_t bi_main = getbankindex_ab(0);        /* состояние выбора банков может измениться */
-    const uint_fast8_t bi_sub = getbankindex_ab(1);        /* состояние выбора банков может измениться */
-#endif /* WITHSPLIT, WITHSPLITEX */
 	return bi_main;
 }
 
 static uint_fast8_t
 getbankindexsub(void)
 {
-#if 1//WITHSPLIT
     const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);        /* состояние выбора банков может измениться */
     const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);        /* состояние выбора банков может измениться */
-#elif WITHSPLITEX
-    const uint_fast8_t bi_main = getbankindex_ab(0);        /* состояние выбора банков может измениться */
-    const uint_fast8_t bi_sub = getbankindex_ab(1);        /* состояние выбора банков может измениться */
-#endif /* WITHSPLIT, WITHSPLITEX */
 	return bi_sub;
 }
 
@@ -10347,8 +10299,6 @@ getbankindexsub(void)
 static uint_fast8_t
 getactualmainsubrx(void)
 {
-#if WITHSPLIT || WITHSPLITEX
-
 	switch (gsplitmode)
 	{
 	default:
@@ -10357,11 +10307,6 @@ getactualmainsubrx(void)
 	case VFOMODES_VFOSPLIT:
 		return mainsubrxmodes [mainsubrxmode].code;
 	}
-#else /* WITHSPLIT || WITHSPLITEX */
-
-	return BOARD_RXMAINSUB_A_A;
-
-#endif /* WITHSPLIT || WITHSPLITEX */
 }
 
 #endif /* WITHUSEDUALWATCH */
@@ -10515,13 +10460,10 @@ loadsavedstate(void)
 	enc2pos = loadvfy8up(RMT_ENC2POS_BASE, 0, ENC2POS_COUNT - 1, enc2pos);	/* вытаскиваем номер параметра для редактирования вторым валкодером */
 #endif /* WITHENCODER2 */
 	gmenuset = loadvfy8up(RMT_MENUSET_BASE, 0, display_getpagesmax(), gmenuset);		/* вытаскиваем номер субменю, с которым работаем сейчас */
-#if WITHSPLIT
+
 	gsplitmode = loadvfy8up(RMT_SPLITMODE_BASE, 0, VFOMODES_COUNT - 1, gsplitmode); /* (vfo/vfoa/vfob/mem) */
 	gvfoab = loadvfy8up(RMT_VFOAB_BASE, 0, VFOS_COUNT - 1, gvfoab); /* (vfoa/vfob) */
-#elif WITHSPLITEX
-	gsplitmode = loadvfy8up(RMT_SPLITMODE_BASE, 0, VFOMODES_COUNT - 1, gsplitmode); /* (vfo/vfoa/vfob/mem) */
-	gvfoab = loadvfy8up(RMT_VFOAB_BASE, 0, VFOS_COUNT - 1, gvfoab); /* (vfoa/vfob) */
-#endif /* WITHSPLIT */
+
 	{
 		// загрузка параметров, не представленных в списке пунктов меню
 		unsigned i;
@@ -14177,8 +14119,6 @@ const char * hamradio_get_ant5_value(void)
 static void
 uif_key_spliton(uint_fast8_t holded)
 {
-#if WITHSPLIT
-
 	const uint_fast8_t srbi = getbankindex_raw(0);
 	const uint_fast8_t tgbi = getbankindex_raw(1);
 	const vindex_t tgvi = getvfoindex(tgbi);
@@ -14191,79 +14131,40 @@ uif_key_spliton(uint_fast8_t holded)
 
 	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
 	updateboard();
-
-#elif WITHSPLITEX
-
-	if (holded != 0)
-	{
-		const uint_fast8_t srbi = getbankindex_raw(0);
-		const uint_fast8_t tgbi = getbankindex_raw(1);
-		const vindex_t tgvi = getvfoindex(tgbi);
-
-		copybankstate(srbi, tgbi, getmodetempl(getsubmode(srbi))->autosplitK * 1000L);	/* копируем состояние текущего банка в противоположный */
-
-		storebandstate(tgvi, tgbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
-		storebandfreq(tgvi, tgbi);
-	}
-	gsplitmode = VFOMODES_VFOSPLIT;
-
-	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
-	updateboard();
-
-#else
-
-#endif /* WITHSPLIT */
 }
 
 /* копирование в VFO B состояния VFO A */
 // Performs the VFO copy (A=B) function.
-// for WITHSPLITEX
 static void
 uif_key_click_b_from_a(void)
 {
-#if (WITHSPLIT || WITHSPLITEX)
+	const uint_fast8_t sbi = getbankindex_ab(0);	// bank index исходных данных
+	const uint_fast8_t tbi = getbankindex_ab(1);	// bank index куда копируются данные
+	const vindex_t tgvi = getvfoindex(tbi);		// vfo index куда копируются данные
 
-	if (gsplitmode == VFOMODES_VFOSPLIT)
-	{
-		const uint_fast8_t sbi = getbankindex_ab(0);	// bank index исходных данных
-		const uint_fast8_t tbi = getbankindex_ab(1);	// bank index куда копируются данные
-		const vindex_t tgvi = getvfoindex(tbi);		// vfo index куда копируются данные
-
-		copybankstate(sbi, tbi, 0);
-		storebandstate(tgvi, tbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
-		storebandfreq(tgvi, tbi); // записать частоту в область данных VFO */
-		updateboard();
-	}
-
-#endif /* (WITHSPLIT || WITHSPLITEX) */
+	copybankstate(sbi, tbi, 0);
+	storebandstate(tgvi, tbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
+	storebandfreq(tgvi, tbi); // записать частоту в область данных VFO */
+	updateboard();
 }
 
 // вылючение режима split
 static void
 uif_key_splitoff(void)
 {
-#if (WITHSPLIT || WITHSPLITEX)
-
 	gsplitmode = VFOMODES_VFOINIT;
 	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
 
 	updateboard();
-
-#endif /* (WITHSPLIT || WITHSPLITEX) */
 }
 
 /* обмен частотой между VFO */
-// for WITHSPLITEX
 static void
 uif_key_click_a_ex_b(void)
 {
-#if (WITHSPLIT || WITHSPLITEX)
-
-	gvfoab = ! gvfoab;	/* меняем текущий VFO на протвоположный */
+	gvfoab = calc_next(gvfoab, 0, 1);	/* меняем текущий VFO на протвоположный */
 	save_i8(RMT_VFOAB_BASE, gvfoab);
 	updateboard();
-
-#endif /* (WITHSPLIT || WITHSPLITEX) */
 }
 
 ///////////////////////////
@@ -17285,7 +17186,7 @@ processcatmsg(
 		}
 	}
 #endif /* WITHIF4DSP */
-#if WITHSPLITEX
+#if 0
 	else if (pcmd == packcmd2('V', 'V'))
 	{
 		if (cathasparam == 0)
@@ -17379,7 +17280,7 @@ processcatmsg(
 			cat_answer_request(CAT_FT_INDEX);
 		}
 	}
-#endif /* WITHSPLITEX */
+#endif /* */
 #if WITHIF4DSP
 	else if (pcmd == packcmd2('N', 'T'))
 	{
@@ -19575,29 +19476,6 @@ process_key_menuset0(uint_fast8_t kbch)
 {
 	switch (kbch)
 	{
-
-#if WITHSPLIT
-
-	case KBD_CODE_SPLIT:
-		/* Переключение VFO
-			 - не вызывает сохранение состояния диапазона */
-		if (gsplitmode == VFOMODES_VFOINIT)
-			uif_key_spliton(0);		// включение SPLIT без смещения
-		else
-			uif_key_click_a_ex_b();	// Обмен VFO
-		return 1;	// требуется обновление индикатора
-
-	case KBD_CODE_SPLIT_HOLDED:
-		/* Выход из режима переключение VFO - возврат к простой настройке
-			 - не вызывает сохранение состояния диапазона */
-		if (gsplitmode == VFOMODES_VFOINIT)
-			uif_key_spliton(1);
-		else
-			uif_key_splitoff();
-		return 1;	// требуется обновление индикатора
-
-#elif WITHSPLITEX
-
 	case KBD_CODE_SPLIT:
 		/* Переключение VFO
 			 - не вызывает сохранение состояния диапазона */
@@ -19608,12 +19486,11 @@ process_key_menuset0(uint_fast8_t kbch)
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_SPLIT_HOLDED:
-		/* Переключение VFO
-			 - не вызывает сохранение состояния диапазона */
-		uif_key_spliton(1);
+		if (gsplitmode == VFOMODES_VFOINIT)
+			uif_key_spliton(1);
+		else
+			uif_key_splitoff();
 		return 1;	// требуется обновление индикатора
-
-#endif /* WITHSPLIT */
 
 	case KBD_CODE_A_EX_B:
 		uif_key_click_a_ex_b();

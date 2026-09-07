@@ -125,8 +125,8 @@
 	//#define KEYBOARD_MATRIX_4x4	1
 
 	// --- Особые варианты расположения кнопок на клавиатуре
-	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
-	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
+	
+	
 
 #if WITHISBOOTLOADER
 	#define LCDMODE_DUMMY	1
