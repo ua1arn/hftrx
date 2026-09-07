@@ -10290,18 +10290,6 @@ getbankindex_ab_forcontrols(const uint_fast8_t ab)
 	return getbankindex_raw(0);
 }
 
-static uint_fast8_t
-getbankindexmain(void)
-{
-	return getbankindex_raw(0);
-}
-
-static uint_fast8_t
-getbankindexsub(void)
-{
-	return getbankindex_raw(1);
-}
-
 // VFO mode
 // Через flag возвращается признак активного SPLIT (0/1)
 const char * hamradio_get_vfomode3_value(uint_fast8_t * flag)
@@ -13784,7 +13772,7 @@ updateboard_noui(
 		board_set_moniflag(gmoniflag);	/* разрешение самопрослушивания */
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
-			const uint8_t bi_main = getbankindexmain();	/* VFO A modifications */
+			const uint8_t bi_main = getbankindex_ab_fordisplay(0);	/* Большие цифры */
 			if (param_getvalue(& xgtxloopback) && gtx)
 			{
 				board_set_topdb(param_getvalue(& xgtopdbtx));		/* верхний предел FFT */
@@ -14643,7 +14631,7 @@ static void
 uif_key_lockencoder(void)
 {
 	const uint_fast8_t bandset_no_check = 0;
-	const uint_fast8_t bi = getbankindexmain();
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);
 	const vindex_t vi = getvfoindex(bi);
 
 	glocks [bi] = calc_next(glocks [bi], 0, 1);
@@ -21355,8 +21343,8 @@ static uint_fast8_t
 processmainlooptuneknobs(inputevent_t * ev)
 {
 	uint_fast8_t freqchanged = 0;
-	const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
-	const uint_fast8_t bi_sub = getbankindexsub();		/* состояние выбора банков может измениться */
+	const uint_fast8_t bi_main = getbankindex_ab_forcontrols(0);		/* состояние выбора банков может измениться */
+	const uint_fast8_t bi_sub = getbankindex_ab_forcontrols(1);		/* состояние выбора банков может измениться */
 	uint_fast8_t jumpsize_main;
 	uint_fast8_t jumpsize_sub;
 
@@ -21463,8 +21451,8 @@ processmainlooptuneknobs(inputevent_t * ev)
 static STTE_t
 hamradio_main_step(void)
 {
-	const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
-	const uint_fast8_t bi_sub = getbankindexsub();		/* состояние выбора банков может измениться */
+	const uint_fast8_t bi_main = getbankindex_ab_forcontrols(0);		/* состояние выбора банков может измениться */
+	const uint_fast8_t bi_sub = getbankindex_ab_forcontrols(1);		/* состояние выбора банков может измениться */
 	const uint_fast8_t locked = glocks [bi_main];
 	inputevent_t event;
 	inputevent_initialize(& event);
@@ -21992,7 +21980,7 @@ uint_fast8_t hamradio_get_cw_wpm(void)
 
 void hamradio_set_lock(uint_fast8_t lock)
 {
-	const uint_fast8_t bi = getbankindexmain();
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);
 	const vindex_t vi = getvfoindex(bi);
 
 	glocks [bi] = lock != 0;
@@ -23472,7 +23460,7 @@ application_initialize(void)
 uint_fast8_t
 hamradio_get_lockvalue(void)
 {
-	const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
+	const uint_fast8_t bi_main = getbankindex_ab_forcontrols(0);		/* состояние выбора банков может измениться */
 	return glocks [bi_main];
 }
 
