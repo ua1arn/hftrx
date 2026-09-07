@@ -10281,13 +10281,25 @@ getbankindex_tx(const uint_fast8_t tx)
 static uint_fast8_t
 getbankindex_ab_fordisplay(const uint_fast8_t ab)
 {
-	return getbankindex_raw(ab);
+	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
+	{
+	case SPLITMODES_OFF:
+		return getbankindex_raw(ab);
+
+	case SPLITMODES_ON:
+		return getbankindex_raw(gtx ? ! ab : ab);
+
+	default:
+		ASSERT(0);
+		return 0;
+	}
 }
 
 static uint_fast8_t
 getbankindex_ab_forcontrols(const uint_fast8_t ab)
 {
-	return getbankindex_raw(0);
+	return getbankindex_ab_fordisplay(ab);
+	//return getbankindex_raw(0);
 }
 
 // VFO mode
