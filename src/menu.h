@@ -81,7 +81,7 @@
 //		& gbluebgnd,
 //		getzerobase, /* складывается со смещением и отображается */
 //	},
-#endif
+#endif /* LCDMODE_COLORED */
 #if WITHIF4DSP
 	& xagcfence1,
 #endif /* WITHIF4DSP */
