@@ -14114,16 +14114,26 @@ const char * hamradio_get_ant5_value(void)
 static void
 uif_key_spliton(uint_fast8_t holded)
 {
-	const uint_fast8_t srbi = getbankindex_raw(0);
-	const uint_fast8_t tgbi = getbankindex_raw(1);
-	const vindex_t tgvi = getvfoindex(tgbi);
-
-	copybankstate(srbi, tgbi, holded == 0 ? 0 : getmodetempl(getsubmode(srbi))->autosplitK * 1000L);	/* копируем состояние текущего банка в противоположный */
+	if (holded)
+	{
+		// Тогда копируем VFO A в VFO B со смещением частоты
+		const uint_fast8_t srbi = getbankindex_raw(0);
+		const uint_fast8_t tgbi = getbankindex_raw(1);
+		const vindex_t tgvi = getvfoindex(tgbi);
+		copybankstate(srbi, tgbi, holded == 0 ? 0 : getmodetempl(getsubmode(srbi))->autosplitK * 1000L);	/* копируем состояние текущего банка в противоположный */
+		storebandstate(tgvi, tgbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
+		storebandfreq(tgvi, tgbi);
+	}
 	gsplitmode = SPLITMODES_ON;
+	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
+	updateboard();
+}
 
-	storebandstate(tgvi, tgbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
-	storebandfreq(tgvi, tgbi);
-
+// выключение режима split
+static void
+uif_key_splitoff(void)
+{
+	gsplitmode = SPLITMODES_OFF;
 	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
 	updateboard();
 }
@@ -14142,16 +14152,6 @@ uif_key_click_b_from_a(void)
 	storebandfreq(tgvi, tbi); // записать частоту в область данных VFO */
 	updateboard();
 	bring_tuneB();
-}
-
-// вылючение режима split
-static void
-uif_key_splitoff(void)
-{
-	gsplitmode = SPLITMODES_OFF;
-	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
-
-	updateboard();
 }
 
 /* обмен частотой между VFO */
