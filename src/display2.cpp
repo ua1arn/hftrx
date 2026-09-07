@@ -3250,12 +3250,10 @@ static void display2_spk3(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-#if WITHSPKMUTE
 	static const char text_spk [] = "SPK";
 	const uint_fast8_t state = hamradio_get_spkon_value();	// не-0: динамик включен
 	display_2states(db, x, y, state, text_spk, text_spk, xspan, yspan);
 	(void) pctx;
-#endif /* WITHSPKMUTE */
 }
 
 static void display2_wpm5(const gxdrawb_t * db,

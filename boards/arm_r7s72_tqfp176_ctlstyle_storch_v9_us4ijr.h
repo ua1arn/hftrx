@@ -355,7 +355,7 @@
 	//#define WITHLFM		1	/* LFM MODE */
 	
 	
-	#define WITHSPKMUTE		1	/* управление выключением динамика */
+	
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */

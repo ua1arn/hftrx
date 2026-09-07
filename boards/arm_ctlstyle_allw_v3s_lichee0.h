@@ -251,7 +251,7 @@
 #else /* WITHISBOOTLOADER */
 
 	#define BOARD_AGCCODE_ON 1
-	#define BOARD_AGCCODE_OFF 0
+	#define BOARD_AGCCODE_OFF 1
 
 	
 	#define ENCRES_DEFAULT ENCRES_128
@@ -456,7 +456,7 @@
 	//#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
-	#define WITHSPKMUTE		1	/* управление выключением динамика */
+	
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */

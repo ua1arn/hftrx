@@ -368,7 +368,7 @@
 	//#define WITHLFM		1	/* LFM MODE */
 	
 	
-	#define WITHSPKMUTE		1	/* управление выключением динамика */
+	
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	//#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */

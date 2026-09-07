@@ -499,7 +499,7 @@
 	//#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
-	#define WITHSPKMUTE		1	/* управление выключением динамика */
+	
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 	// Есть ли регулировка параметров потенциометрами

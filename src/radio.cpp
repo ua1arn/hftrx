@@ -3791,6 +3791,7 @@ struct nvmap
 	#if ! WITHPOTIFGAIN
 		uint16_t rfgain1;	// Параметр для регулировки усиления по ПЧ
 		uint8_t agcfence1;	// Параметр для регулировки точки перегиба АРУ
+		uint8_t agcfenceenable;	// Параметр для регулировки точки перегиба АРУ
 	#endif /* ! WITHPOTIFGAIN */
 	uint16_t glineamp;	// усиление с LINE IN
 	uint8_t gmikeboost20db;	// предусилитель микрофона
@@ -3953,9 +3954,7 @@ struct nvmap
 	uint8_t gbigstep;		/* больщой шаг валкодера */
 	uint8_t genc1div;		/* во сколько раз уменьшаем разрешение валкодера. */
 	uint8_t genc2div;
-#if WITHSPKMUTE
 	uint8_t gmutespkr;		/* выключение динамика */
-#endif /* WITHSPKMUTE */
 
 #if LO1FDIV_ADJ
 	uint8_t lo1powrx;		/* на сколько раз по 2 делим выходную частоту синтезатора первого гетеродина */
@@ -5300,6 +5299,19 @@ enum
 		getagcfencebase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+	static uint_fast8_t agcfenceenable;
+	static const struct paramdefdef xagcfenceenable =
+	{
+		QLABEL3("AGC MARKER", "AGC marker", "AGC MARKER"), 0, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1, 					// отображение маркера уровня
+		OFFSETOF(struct nvmap, agcfenceenable),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& agcfenceenable,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 	static uint_fast16_t glineamp = WITHLINEINGAINMAX;	// усиление с LINE IN
 	/* подстройка усиления с линейного входа через меню. */
 	static const struct paramdefdef xglineamp =
@@ -6566,7 +6578,6 @@ static uint_fast8_t gmoderows [2];		/* индексом используется
 										/* номер режима работы в маске (номер тройки бит) */
 static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
 
-#if WITHSPKMUTE
 
 static uint_fast8_t gmutespkr;		/*  выключение динамика */
 static const struct paramdefdef xgmutespkr =
@@ -6581,8 +6592,6 @@ static const struct paramdefdef xgmutespkr =
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-
-#endif /* WITHSPKMUTE */
 										/* маска режимов работы (тройки бит, указывают номер позиции в каждой строке) */
 #if WITHTX
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
@@ -10399,9 +10408,7 @@ static const struct paramdefdef xgdummy =
 // загрузка параметров, не представленных в списке пунктов меню
 static const struct paramdefdef * nomenulist [] =
 {
-#if WITHSPKMUTE
 	& xgmutespkr,	/*  выключение динамика */
-#endif /* WITHSPKMUTE */
 #if WITHIF4DSP
 	& xagcfence1,
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
@@ -13573,7 +13580,7 @@ updateboard_noui(
 					board_set_ctcssrx(pamodetempl->subtone && param_getvalue(& xgsubtoneirx) ? gsubtones [param_getvalue(& xgsubtoneirx)] : 0);	// частота subtone (до десятых долей герца).
 				#endif /* WITHSUBTONES */
 			#else /* WITHIF4DSP */
-					(void) pamodetempl;
+					(void) Xpamodetempl;
 			#endif /* WITHIF4DSP */
 				board_set_nb_enable(pathi, 0);	/* Управлением включением RX Noise Blanker */
 			} /* tx == 0 */
@@ -13707,7 +13714,7 @@ updateboard_noui(
 	#if WITHIF4DSP
 		board_set_afgain(sleepflag == 0 ? param_getvalue(& xafgain1) : BOARD_AFGAIN_MIN);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 		board_set_ifgain(sleepflag == 0  ? param_getvalue(& xrfgain1) : BOARD_IFGAIN_MIN);	// Параметр для регулировки усиления ПЧ
-		board_set_agcfence(param_getvalue(& xagcfence1));
+		board_set_agcfence10(param_getvalue(& xagcfenceenable) ? param_getvalue(& xagcfence1) * 10 : INT16_MAX);
 
 		const uint_fast8_t txaprofile = gtxaprofiles [getmodetempl(txsubmode)->txaprofgp];	// значения 0..NMICPROFILES-1
 
@@ -13874,9 +13881,7 @@ updateboard_noui(
 	#endif /* WITHKBDBACKLIGHT */
 		board_set_poweron(gpoweronhold);
 
-	#if WITHSPKMUTE
 		board_set_dsploudspeaker(param_getvalue(& xgmutespkr)); /*  выключение динамика (управление кодеком) */
-	#endif /* WITHSPKMUTE */
 
 	#if WITHAUTOTUNER
 		board_set_tuner_group();
@@ -19100,13 +19105,11 @@ processmenukeyandencoder(inputevent_t * ev)
 		ev->frontkeyevent.kbready = 0;
 		return 0;
 
-#if WITHSPKMUTE
 	case KBD_CODE_LDSPTGL:
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		uif_key_loudsp();
 		ev->frontkeyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
-#endif /* WITHSPKMUTE */
 
 #if WITHTX
 	case KBD_CODE_MOX:
@@ -19809,11 +19812,9 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHAMHIGHKBDADJ */
 
-#if WITHSPKMUTE
 	case KBD_CODE_LDSPTGL:
 		uif_key_loudsp();
 		return 1;	/* клавиша уже обработана */
-#endif /* WITHSPKMUTE */
 
 	case KBD_CODE_ATT:
 		/* переключение режима аттенюатора  */
@@ -21589,7 +21590,6 @@ hamradio_main_step(void)
 	return STTE_OK;
 }
 
-#if WITHSPKMUTE
 uint_fast8_t hamradio_get_gmutespkr(void)
 {
 	return param_getvalue(& xgmutespkr);
@@ -21600,7 +21600,6 @@ void hamradio_set_gmutespkr(uint_fast8_t v)
 	param_setvalue(& xgmutespkr, v);
 	updateboard();
 }
-#endif /* WITHSPKMUTE */
 
 #if WITHIF4DSP
 

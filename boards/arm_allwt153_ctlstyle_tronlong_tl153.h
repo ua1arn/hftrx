@@ -274,7 +274,7 @@
 #else /* WITHISBOOTLOADER */
 
 
-	#define BOARD_AGCCODE_OFF 0
+	#define BOARD_AGCCODE_OFF 1
 	#define BOARD_AGCCODE_ON 0
 	
 	/* Board hardware configuration */

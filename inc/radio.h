@@ -120,12 +120,13 @@ extern "C" {
 	#define WITHDAC1VALMAX	255
 #endif /* defined (DAC1_TYPE) */
 
+#define	BOARD_AGCCODE_ON	0
+#define	BOARD_AGCCODE_OFF	1
+
 #if WITHIF4DSP
 
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
-	#define	BOARD_AGCCODE_ON	0
-	#define	BOARD_AGCCODE_OFF	1
 
 	#define BOARD_NOTCH_OFF		0
 	#define BOARD_NOTCH_MANUAL	1
