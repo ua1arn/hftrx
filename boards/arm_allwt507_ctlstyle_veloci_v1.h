@@ -410,8 +410,8 @@
 
 	//#define WITHVITA49RX	1	/* VITA 49.0-2015 streaming source support */
 	
-//	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
-//	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
+//	#define WITHSWRPROT 0			/* ОТЛАДКА - отключена защитa по КСВ */
+//	#define WITHHEATPROT 0			/* ОТЛАДКА - отключена защитa по перегреву */
 
 	
 	

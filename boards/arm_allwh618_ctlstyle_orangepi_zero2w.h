@@ -441,8 +441,8 @@
 	//#define WITHANTSELECT	1	/* Управление переключением антенн */
 
 	
-//	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
-//	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
+//	#define WITHSWRPROT 0			/* ОТЛАДКА - отключена защитa по КСВ */
+//	#define WITHHEATPROT 0			/* ОТЛАДКА - отключена защитa по перегреву */
 
 	
 	
