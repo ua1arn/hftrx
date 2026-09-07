@@ -708,7 +708,7 @@ savemenuvalue(
 	const struct paramdefdef * pd
 	)
 {
-	if (ismenukinddp(pd, ITEM_VALUE))
+	if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
 	{
 		unsigned nvalues;
 		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
@@ -766,7 +766,7 @@ param_setvalue(
 		{
 			* pv8 = v;
 		}
-		savemenuvalue(pd);
+		savemenuvalue(pd);	// ITEM_NOINITNVRAM validation here
 	}
 }
 
@@ -814,7 +814,7 @@ param_load(
 	const struct paramdefdef * pd
 	)
 {
-	if (ismenukinddp(pd, ITEM_VALUE))
+	if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
 	{
 		unsigned nvalues;
 		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
@@ -10467,6 +10467,19 @@ uint_fast32_t hamradio_get_freq_b(void)
 	return gfreqs [getbankindex_ab_fordisplay(1)];	/* VFO B modifications */
 }
 
+static const struct paramdefdef xgdummy =
+{
+	QLABEL("xgdummy"),  0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
+	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	0, 0,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	& gzero,
+	NULL,
+	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
 // загрузка параметров, не представленных в списке пунктов меню
 static const struct paramdefdef * nomenulist [] =
 {
@@ -10484,6 +10497,7 @@ static const struct paramdefdef * nomenulist [] =
 	& xenc4f_sel,
 #endif /* WITHIF4DSP */
 	& xgusefast,	/* управление режимом валкодера */
+	& xgdummy,		/* чтобы небыло массива с нулевым размером */
 };
 
 // split, s-meter display
@@ -18390,19 +18404,6 @@ const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * nitems)
 	return middlemenu;
 }
 
-static const struct paramdefdef xgdummy =
-{
-	QLABEL("xgdummy"),  0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
-	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-	0, 0,
-	MENUNONVRAM,
-	getselector0, nvramoffs0, valueoffs0,
-	& gzero,
-	NULL,
-	getzerobase,
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-};
-
 static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8_t * active)
 {
 	unsigned nitems;
@@ -18556,10 +18557,7 @@ defaultsettings(void)
 	for (i = 0; i < pmd->menusize; ++ i)
 	{
 		const struct menudef * const mp = & pmd->menutable [i];
-		if (! ismenukinddp(mp->pd, ITEM_NOINITNVRAM))
-		{
-			savemenuvalue(mp->pd);
-		}
+		savemenuvalue(mp->pd);
 	}
 
 #if WITHSPECTRUMWF
