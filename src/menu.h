@@ -82,6 +82,9 @@
 //		getzerobase, /* складывается со смещением и отображается */
 //	},
 #endif
+#if WITHIF4DSP
+	& xagcfence1,
+#endif /* WITHIF4DSP */
 	& xgshowdbm,
 	& xgdisplayfreqsfps,
 #if WITHBARS

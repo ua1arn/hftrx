@@ -1171,14 +1171,6 @@ cat_set_speed(uint_fast32_t baudrate)
 
 #endif /* WITHCAT */
 
-
-enum {
-	VFOMODES_VFOINIT,
-	VFOMODES_VFOSPLIT,
-	//
-	VFOMODES_COUNT
-};
-
 #if WITHNOATTNOPREAMP
 
 	/* строки, выводимые на индикатор для обозначения режимов.
@@ -4532,17 +4524,6 @@ static const struct paramdefdef xgnotch =
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 
 #endif /* WITHIF4DSP */
-
-#if WITHSPLIT
-	static uint_fast8_t gvfoab;	/* (vfoa/vfob) */
-	static uint_fast8_t gsplitmode = VFOMODES_VFOINIT;	/* (vfo/vfoa/vfob/mem) */
-#elif WITHSPLITEX
-	static uint_fast8_t gvfoab;	/* 1: vfoa/vfob swapped */
-	static uint_fast8_t gsplitmode = VFOMODES_VFOINIT;	/* (vfo/vfoa/vfob/mem) */
-#else /* WITHSPLIT */
-	static const uint_fast8_t gvfoab = 0;	/* (vfoa/vfob) */
-	static const uint_fast8_t gsplitmode = VFOMODES_VFOINIT;	/* (vfo/vfoa/vfob/mem) */
-#endif /* WITHSPLIT */
 
 #if WITHWARCBANDS
 	enum { bandsethamwarc = 1 };	/* WARC HAM radio bands */
@@ -9185,245 +9166,6 @@ getfreqbandgroup(const uint_fast32_t freq)
 	return bandgroup;
 }
 
-static uint_fast8_t
-getbankindex_raw(const uint_fast8_t n)
-{
-	ASSERT(n < 2);
-	return (gvfoab + n) % 2;
-}
-
-// программирование трактов для двойного приема
-static uint_fast8_t
-getbankindex_pathi(const uint_fast8_t pathi)
-{
-	ASSERT(pathi < 2);
-
-#if WITHSPLIT || WITHSPLITEX
-
-	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
-	{
-	case VFOMODES_VFOINIT:
-		return getbankindex_raw(0);
-
-	case VFOMODES_VFOSPLIT:
-		if (gtx == 0)
-			return getbankindex_raw(pathi);
-		else
-			return getbankindex_tx(1);
-	default:
-		ASSERT(0);
-		return 0;
-	}
-
-#else /* WITHSPLIT || WITHSPLITEX */
-	return getbankindex_raw(0);
-#endif /* WITHSPLIT || WITHSPLITEX */
-}
-
-static uint_fast8_t
-getbankindex_ab(
-	const uint_fast8_t ab	// 0: A, 1: B
-	)
-{
-	ASSERT(ab < 2);
-#if WITHSPLIT || WITHSPLITEX
-
-	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
-	{
-	case VFOMODES_VFOINIT:
-		return getbankindex_raw(0);
-
-	case VFOMODES_VFOSPLIT:
-		return getbankindex_raw(ab);
-	default:
-		ASSERT(0);
-		return getbankindex_raw(0);
-	}
-
-#else /* WITHSPLIT || WITHSPLITEX */
-	return getbankindex_raw(0);
-#endif /* WITHSPLIT || WITHSPLITEX */
-}
-
-static uint_fast8_t
-getbankindex_tx(const uint_fast8_t tx)
-{
-	ASSERT(tx < 2);
-#if WITHSPLIT || WITHSPLITEX
-
-	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
-	{
-	case VFOMODES_VFOINIT:
-		return getbankindex_raw(0);
-
-	case VFOMODES_VFOSPLIT:
-		return getbankindex_raw(tx);
-	default:
-		ASSERT(0);
-		return getbankindex_raw(0);
-	}
-
-#else /* WITHSPLIT || WITHSPLITEX */
-	return getbankindex_raw(0);
-#endif /* WITHSPLIT || WITHSPLITEX */
-}
-
-// получить bankindex для показа частоты или режима работы тракта на дисплее в полях A (0) и B (1)
-static uint_fast8_t
-//NOINLINEAT
-getbankindex_ab_fordisplay(const uint_fast8_t ab)
-{
-	ASSERT(ab < 2);
-#if WITHSPLIT
-	return getbankindex_ab(gtx != ab);
-#elif WITHSPLITEX
-	return getbankindex_raw(gtx != ab);
-#else /* WITHSPLIT */
-	return getbankindex_raw(0);
-#endif /* WITHSPLIT */
-}
-
-static uint_fast8_t
-getbankindexmain(void)
-{
-#if 1//WITHSPLIT
-    const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);        /* состояние выбора банков может измениться */
-    const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);        /* состояние выбора банков может измениться */
-#elif WITHSPLITEX
-    const uint_fast8_t bi_main = getbankindex_ab(0);        /* состояние выбора банков может измениться */
-    const uint_fast8_t bi_sub = getbankindex_ab(1);        /* состояние выбора банков может измениться */
-#endif /* WITHSPLIT, WITHSPLITEX */
-	return bi_main;
-}
-
-static uint_fast8_t
-getbankindexsub(void)
-{
-#if 1//WITHSPLIT
-    const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);        /* состояние выбора банков может измениться */
-    const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);        /* состояние выбора банков может измениться */
-#elif WITHSPLITEX
-    const uint_fast8_t bi_main = getbankindex_ab(0);        /* состояние выбора банков может измениться */
-    const uint_fast8_t bi_sub = getbankindex_ab(1);        /* состояние выбора банков может измениться */
-#endif /* WITHSPLIT, WITHSPLITEX */
-	return bi_sub;
-}
-
-#if WITHUSEDUALWATCH
-
-static uint_fast8_t
-getactualmainsubrx(void)
-{
-#if WITHSPLIT || WITHSPLITEX
-
-	switch (gsplitmode)
-	{
-	default:
-		return BOARD_RXMAINSUB_A_A;
-
-	case VFOMODES_VFOSPLIT:
-		return mainsubrxmodes [mainsubrxmode].code;
-	}
-#else /* WITHSPLIT || WITHSPLITEX */
-
-	return BOARD_RXMAINSUB_A_A;
-
-#endif /* WITHSPLIT || WITHSPLITEX */
-}
-
-#endif /* WITHUSEDUALWATCH */
-
-// VFO mode
-// Через flag возвращается признак активного SPLIT (0/1)
-const char * hamradio_get_vfomode3_value(uint_fast8_t * flag)
-{
-	static const char spl [] = "SPL";
-	static const char sp3 [] = "";
-
-	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
-	{
-	default:
-	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
-		* flag = 0;
-		return sp3;
-	case VFOMODES_VFOSPLIT:
-		* flag = 1;
-		return spl;
-		//return (gvfoab != tx) ? b : a;
-	}
-}
-
-// VFO mode
-const char * hamradio_get_vfomode5_value(uint_fast8_t * flag)
-{
-	static const char spl [] = "SPLIT";
-	static const char sp5 [] = "";
-
-	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
-	{
-	default:
-	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
-		* flag = 0;
-		return sp5;
-	case VFOMODES_VFOSPLIT:
-		* flag = 1;
-		return spl;
-		//return (gvfoab != tx) ? b : a;
-	}
-}
-
-// Частота VFO A для маркировки файлов
-uint_fast32_t hamradio_get_freq_rx(void)
-{
-#if WITHLFM
-	if (iflfmactive())
-		return getlfmfreq();
-#endif /* WITHLFM */
-	return gfreqs [getbankindex_tx(0)];
-}
-
-// Частота VFO A для отображения на дисплее
-uint_fast32_t hamradio_get_freq_a(void)
-{
-#if WITHLFM
-	if (iflfmactive())
-		return getlfmfreq();
-#endif /* WITHLFM */
-	return gfreqs [getbankindex_ab_fordisplay(0)];		/* VFO A modifications */
-}
-// Частота VFO A для отображения на дисплее
-uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi)
-{
-	return gfreqs [getbankindex_pathi(pathi)];
-}
-// SSB/CW/AM/FM/..
-const char * hamradio_get_mode_a_value_P(void)
-{
-	return submodes [getsubmode(getbankindex_ab_fordisplay(0))].qlabel;	/* VFO A modifications */
-}
-
-// SSB/CW/AM/FM/..
-const char * hamradio_get_mode_b_value_P(uint_fast8_t * flag)
-{
-	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
-	{
-	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
-		* flag = 0;
-		break;
-	default:
-	case VFOMODES_VFOSPLIT:
-		* flag = 1;
-		break;
-		//return (gvfoab != tx) ? b : a;
-	}
-	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;	/* VFO B modifications */
-}
-
-// Частота VFO B для отображения на дисплее
-uint_fast32_t hamradio_get_freq_b(void)
-{
-	return gfreqs [getbankindex_ab_fordisplay(1)];	/* VFO B modifications */
-}
 
 	enum { withonlybands = 0 };
 
@@ -10454,6 +10196,275 @@ void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 	display_2fmenuslines(db, x, y, xspan, yspan, 1, "FMENU9", "FVALUE9");
 
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
+}
+
+
+
+enum {
+	VFOMODES_VFOINIT,
+	VFOMODES_VFOSPLIT,
+	//
+	VFOMODES_COUNT
+};
+
+#if WITHSPLIT
+	static uint_fast8_t gvfoab;	/* (vfoa/vfob) */
+	static uint_fast8_t gsplitmode = VFOMODES_VFOINIT;	/* (vfo/vfoa/vfob/mem) */
+#elif WITHSPLITEX
+	static uint_fast8_t gvfoab;	/* 1: vfoa/vfob swapped */
+	static uint_fast8_t gsplitmode = VFOMODES_VFOINIT;	/* (vfo/vfoa/vfob/mem) */
+#else /* WITHSPLIT */
+	static const uint_fast8_t gvfoab = 0;	/* (vfoa/vfob) */
+	static const uint_fast8_t gsplitmode = VFOMODES_VFOINIT;	/* (vfo/vfoa/vfob/mem) */
+#endif /* WITHSPLIT */
+
+static uint_fast8_t
+getbankindex_raw(const uint_fast8_t n)
+{
+	ASSERT(n < 2);
+	return (gvfoab + n) % 2;
+}
+
+// программирование трактов для двойного приема
+static uint_fast8_t
+getbankindex_pathi(const uint_fast8_t pathi)
+{
+	ASSERT(pathi < 2);
+
+#if WITHSPLIT || WITHSPLITEX
+
+	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
+	{
+	case VFOMODES_VFOINIT:
+		return getbankindex_raw(0);
+
+	case VFOMODES_VFOSPLIT:
+		if (gtx == 0)
+			return getbankindex_raw(pathi);
+		else
+			return getbankindex_tx(1);
+	default:
+		ASSERT(0);
+		return 0;
+	}
+
+#else /* WITHSPLIT || WITHSPLITEX */
+	return getbankindex_raw(0);
+#endif /* WITHSPLIT || WITHSPLITEX */
+}
+
+static uint_fast8_t
+getbankindex_ab(
+	const uint_fast8_t ab	// 0: A, 1: B
+	)
+{
+	ASSERT(ab < 2);
+#if WITHSPLIT || WITHSPLITEX
+
+	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
+	{
+	case VFOMODES_VFOINIT:
+		return getbankindex_raw(0);
+
+	case VFOMODES_VFOSPLIT:
+		return getbankindex_raw(ab);
+	default:
+		ASSERT(0);
+		return getbankindex_raw(0);
+	}
+
+#else /* WITHSPLIT || WITHSPLITEX */
+	return getbankindex_raw(0);
+#endif /* WITHSPLIT || WITHSPLITEX */
+}
+
+static uint_fast8_t
+getbankindex_tx(const uint_fast8_t tx)
+{
+	ASSERT(tx < 2);
+#if WITHSPLIT || WITHSPLITEX
+
+	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
+	{
+	case VFOMODES_VFOINIT:
+		return getbankindex_raw(0);
+
+	case VFOMODES_VFOSPLIT:
+		return getbankindex_raw(tx);
+	default:
+		ASSERT(0);
+		return getbankindex_raw(0);
+	}
+
+#else /* WITHSPLIT || WITHSPLITEX */
+	return getbankindex_raw(0);
+#endif /* WITHSPLIT || WITHSPLITEX */
+}
+
+// получить bankindex для показа частоты или режима работы тракта на дисплее в полях A (0) и B (1)
+static uint_fast8_t
+//NOINLINEAT
+getbankindex_ab_fordisplay(const uint_fast8_t ab)
+{
+	ASSERT(ab < 2);
+#if WITHSPLIT
+	return getbankindex_ab(gtx != ab);
+#elif WITHSPLITEX
+	return getbankindex_raw(gtx != ab);
+#else /* WITHSPLIT */
+	return getbankindex_raw(0);
+#endif /* WITHSPLIT */
+}
+
+static uint_fast8_t
+getbankindexmain(void)
+{
+#if 1//WITHSPLIT
+    const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);        /* состояние выбора банков может измениться */
+    const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);        /* состояние выбора банков может измениться */
+#elif WITHSPLITEX
+    const uint_fast8_t bi_main = getbankindex_ab(0);        /* состояние выбора банков может измениться */
+    const uint_fast8_t bi_sub = getbankindex_ab(1);        /* состояние выбора банков может измениться */
+#endif /* WITHSPLIT, WITHSPLITEX */
+	return bi_main;
+}
+
+static uint_fast8_t
+getbankindexsub(void)
+{
+#if 1//WITHSPLIT
+    const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);        /* состояние выбора банков может измениться */
+    const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);        /* состояние выбора банков может измениться */
+#elif WITHSPLITEX
+    const uint_fast8_t bi_main = getbankindex_ab(0);        /* состояние выбора банков может измениться */
+    const uint_fast8_t bi_sub = getbankindex_ab(1);        /* состояние выбора банков может измениться */
+#endif /* WITHSPLIT, WITHSPLITEX */
+	return bi_sub;
+}
+
+#if WITHUSEDUALWATCH
+
+static uint_fast8_t
+getactualmainsubrx(void)
+{
+#if WITHSPLIT || WITHSPLITEX
+
+	switch (gsplitmode)
+	{
+	default:
+		return BOARD_RXMAINSUB_A_A;
+
+	case VFOMODES_VFOSPLIT:
+		return mainsubrxmodes [mainsubrxmode].code;
+	}
+#else /* WITHSPLIT || WITHSPLITEX */
+
+	return BOARD_RXMAINSUB_A_A;
+
+#endif /* WITHSPLIT || WITHSPLITEX */
+}
+
+#endif /* WITHUSEDUALWATCH */
+
+// VFO mode
+// Через flag возвращается признак активного SPLIT (0/1)
+const char * hamradio_get_vfomode3_value(uint_fast8_t * flag)
+{
+	static const char spl [] = "SPL";
+	static const char sp3 [] = "";
+
+	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
+	{
+	default:
+	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
+		* flag = 0;
+		return sp3;
+	case VFOMODES_VFOSPLIT:
+		* flag = 1;
+		return spl;
+		//return (gvfoab != tx) ? b : a;
+	}
+}
+
+// VFO mode
+const char * hamradio_get_vfomode5_value(uint_fast8_t * flag)
+{
+	static const char spl [] = "SPLIT";
+	static const char sp5 [] = "";
+
+	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
+	{
+	default:
+	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
+		* flag = 0;
+		return sp5;
+	case VFOMODES_VFOSPLIT:
+		* flag = 1;
+		return spl;
+		//return (gvfoab != tx) ? b : a;
+	}
+}
+
+// Частота VFO A для маркировки файлов
+uint_fast32_t hamradio_get_freq_rx(void)
+{
+#if WITHLFM
+	if (iflfmactive())
+		return getlfmfreq();
+#endif /* WITHLFM */
+	return gfreqs [getbankindex_tx(0)];
+}
+
+// Частота VFO A для отображения на дисплее
+uint_fast32_t hamradio_get_freq_a(void)
+{
+#if WITHLFM
+	if (iflfmactive())
+		return getlfmfreq();
+#endif /* WITHLFM */
+	return gfreqs [getbankindex_ab_fordisplay(0)];		/* VFO A modifications */
+}
+// Частота VFO A для отображения на дисплее
+uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi)
+{
+#if WITHLFM
+	if (iflfmactive())
+		return getlfmfreq();
+#endif /* WITHLFM */
+	return gfreqs [getbankindex_pathi(pathi)];
+}
+// SSB/CW/AM/FM/..
+const char * hamradio_get_mode_a_value_P(void)
+{
+	return submodes [getsubmode(getbankindex_ab_fordisplay(0))].qlabel;	/* VFO A modifications */
+}
+
+// SSB/CW/AM/FM/..
+// * flag: split active
+const char * hamradio_get_mode_b_value_P(uint_fast8_t * flag)
+{
+	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
+	{
+	case VFOMODES_VFOINIT:	/* no SPLIT -  Обычная перестройка */
+		* flag = 0;
+		break;
+	default:
+	case VFOMODES_VFOSPLIT:
+		* flag = 1;
+		break;
+		//return (gvfoab != tx) ? b : a;
+	}
+	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;	/* VFO B modifications */
+}
+
+// Частота VFO B для отображения на дисплее
+uint_fast32_t hamradio_get_freq_b(void)
+{
+#if WITHLFM
+	if (iflfmactive())
+		return getlfmfreq();
+#endif /* WITHLFM */
+	return gfreqs [getbankindex_ab_fordisplay(1)];	/* VFO B modifications */
 }
 
 // загрузка параметров, не представленных в списке пунктов меню
