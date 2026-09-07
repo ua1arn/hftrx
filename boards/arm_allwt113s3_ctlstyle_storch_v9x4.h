@@ -624,12 +624,23 @@
 	#else
 		// толькло основная плата - 5W усилитель
 
-		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
-		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
-		#if WITHCURRLEVEL
-			PASENSEIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 PA current sense - ACS712-05 chip
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада с помощью двух каналов ацп (средняя точка) */
+
+		#define WITHTHERMOLEVEL		1	/* отображение данных с датчика температуры */
+		#define WITHTHERMOLEVEL2	1	/* отображение данных с датчика температуры с помощью двух каналов ацп */
+
+		#if WITHCURRLEVEL && WITHCURRLEVEL2
+			// TI LM35
+			#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
+			#define THERMOSENSOR_LOWER		47	// 1 kOhm - нижний резистор
+			#define THERMOSENSOR_OFFSET 	(0)		// 0 volt = 0 Celsius, 10 mV/C
+			#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+
+			PASENSEIX2 = BOARD_ADCX1IN(6),		// MCP3208 CH6 PA current sense - ACS712ELCTR-05B-T chip
+			PAREFERIX2 = BOARD_ADCX2IN(3),		// reference (1/2 питания ACS712ELCTR-05B-T).
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
@@ -637,6 +648,7 @@
 
 		#if WITHTHERMOLEVEL
 			XTHERMOIX = BOARD_ADCX1IN(0),		// External thermo sensor ST LM235Z
+			XTHERMOREFIX = BOARD_ADCX1IN(2),		// MCP3208 DA6 External thermo sensor TI LM35 (reference)
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHSWRMTR
@@ -646,13 +658,14 @@
 	#endif
 
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
-		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
-		REFMRRIX = BOARD_ADCMRRIN(2),
-		FWDMRRIX = BOARD_ADCMRRIN(3),
-		PWRMRRIX = BOARD_ADCMRRIN(7),
-		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
-		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
-		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
+		XTHERMOREFMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(2),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(3),
+		FWDMRRIX = BOARD_ADCMRRIN(4),
+		PWRMRRIX = BOARD_ADCMRRIN(5),
+		VOLTMRRIX = BOARD_ADCMRRIN(6),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX2 = BOARD_ADCMRRIN(7),		// кеш - индекc не должен повторяться в конфигурации
+		PAREFERMRRIX2 = BOARD_ADCMRRIN(8),		// кеш - индекc не должен повторяться в конфигурации
 
 		KI0 = BOARD_ADCXKIN(3), 	// клавиатура на АЦП MCP3208
 		KI1 = BOARD_ADCXKIN(4),
