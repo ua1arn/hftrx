@@ -10237,7 +10237,7 @@ static uint_fast8_t gsplitmode = SPLITMODES_OFF;	/* (vfo/vfoa/vfob/mem) */
 static uint_fast8_t
 getbankindex_raw(const uint_fast8_t ab)
 {
-	ASSERT(n < VFOS_COUNT);
+	ASSERT(ab < VFOS_COUNT);
 	return (gvfoab + ab) % VFOS_COUNT;
 }
 
