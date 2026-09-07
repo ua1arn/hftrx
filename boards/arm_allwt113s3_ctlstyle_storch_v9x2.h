@@ -101,7 +101,7 @@
 	#define LCDMODE_DUMMY	1
 	#define BOARD_DSTYLE "g_dummy.h"
 
-#elif 0
+#elif 1
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
