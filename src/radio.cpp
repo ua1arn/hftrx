@@ -13771,13 +13771,22 @@ updateboard_noui(
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		#if (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 			const uint8_t bi_main = getbankindexmain();	/* VFO A modifications */
-			board_set_topdb(param_getvalue(gtxloopback && gtx ? & xgtopdbtx : & xgtopdb));		/* верхний предел FFT */
-			board_set_bottomdb(param_getvalue(gtxloopback && gtx ? & xgbottomdbtx : & xgbottomdb));		/* нижний предел FFT */
+			if (param_getvalue(& xgtxloopback) && gtx)
+			{
+				board_set_topdb(param_getvalue(& xgtopdbtx));		/* верхний предел FFT */
+				board_set_bottomdb(param_getvalue(& xgbottomdbtx));		/* нижний предел FFT */
+				board_set_tx_loopback(1);	/* включение спектроанализатора сигнала передачи */
+			}
+			else
+			{
+				board_set_topdb(param_getvalue(& xgtopdb));		/* верхний предел FFT */
+				board_set_bottomdb(param_getvalue(& xgbottomdb));		/* нижний предел FFT */
+				board_set_tx_loopback(0);	/* включение спектроанализатора сигнала передачи */
+			}
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			display2_set_lvlgridstep(glvlgridstep);	/* Шаг сетки уровней в децибелах */
 			board_set_view_style(param_getvalue(& xgviewstyle));			/* стиль отображения спектра и панорамы */
 			board_set_view3dss_mark(gview3dss_mark);	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
-			board_set_tx_loopback(gtxloopback && gtx);	/* включение спектроанализатора сигнала передачи */
 			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
 			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
 			display2_set_rxbwsatu(grxbwsatu);	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
@@ -21442,6 +21451,7 @@ static STTE_t
 hamradio_main_step(void)
 {
 	const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
+	const uint_fast8_t bi_sub = getbankindexsub();		/* состояние выбора банков может измениться */
 	const uint_fast8_t locked = glocks [bi_main];
 	inputevent_t event;
 	inputevent_initialize(& event);
@@ -21464,8 +21474,6 @@ hamradio_main_step(void)
 			/* валкодер перестал вращаться - если было изменение частоты - сохраняем конфигурацию */
 			if (refreshenabled_freqs())
 			{
-				//const uint_fast8_t bi_main = getbankindexmain();		/* состояние выбора банков может измениться */
-				const uint_fast8_t bi_sub = getbankindexsub();		/* состояние выбора банков может измениться */
 				/* в случае внутренней памяти микроконтроллера - частоту не запоминать (очень мал ресурс). */
 
 				storebandfreq(getvfoindex(bi_main), bi_main);		/* сохранение частоты в текущем VFO */
