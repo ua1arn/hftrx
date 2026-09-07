@@ -17,12 +17,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#if GUI_EXTERNAL_FONTS
-
-//typedef void /* struct gxdrawb_tag */ gxdrawb_t;
-typedef void /* struct unifont_tag */ unifont_t;
-
-#else /* GUI_EXTERNAL_FONTS */
 //--------------------------------------------------------------
 // Структура шрифта одного размера (не более 16 пикселей шириной)
 //--------------------------------------------------------------
@@ -207,10 +201,6 @@ extern const unifont_t unifont_msgothic_15x17_mono;
 #define SMALLCHARW 16 /* Font width */
 #define SMALLCHARH2 16 /* Font height */
 #define SMALLCHARW2 10 /* Font width */
-
-#endif /* GUI_EXTERNAL_FONTS */
-
-
 
 #ifdef __cplusplus
 }

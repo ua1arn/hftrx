@@ -176,7 +176,6 @@ void window_infobar_menu_process(void)
 			local_snprintf_P(btn_name, NAME_ARRAY_SIZE, "btn_%d", i);
 			gui_obj_create(btn_name, 86, 30, 0, 0, "");
 			gui_obj_set_prop(btn_name, GUI_OBJ_VISIBLE, 0);
-			gui_obj_set_prop(btn_name, GUI_OBJ_FONT, & msgothic_13x16_prop);
 		}
 
 		switch (infobar)
@@ -467,7 +466,7 @@ void gui_main_process(void)
 		update = 1;
 
 #if WITHGUIDEBUG
-		gui_obj_create("tf_debug", 70, 25, DOWN, & msgothic_11x13_mono);
+		gui_obj_create("tf_debug", 70, 25, DOWN, & LABELS_FONT_DEFAULT);
 		gui_obj_set_prop("tf_debug", GUI_OBJ_VISIBLE, 0);
 
 		uint16_t w = gui_obj_get_int_prop("tf_debug", GUI_OBJ_WIDTH);
@@ -494,7 +493,7 @@ void gui_main_process(void)
 			gui_obj_create(buf, i * infobar_label_width, infobar_1st_str_y, infobar_label_width, infobar_2nd_str_y, 0);
 		}
 
-		uint16_t p = infobar_2nd_str_y + get_strheight_prop(& INFOBAR_FONTP) + 5;
+		uint16_t p = infobar_2nd_str_y + get_strheight(& INFOBAR_FONTP) + 5;
 		gui_obj_create("ta_freq", 0, p, WITHGUIMAXX, WITHGUIMAXY - FOOTER_HEIGHT - p, 1);
 
 		char * btn0 = get_obj_name_by_idx(TYPE_BUTTON, 0);
@@ -789,11 +788,11 @@ void gui_main_process(void)
 				hamradio_get_vfomode3_value(& val);
 
 			local_snprintf_P(buf, buflen, "Dual RX");
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 			local_snprintf_P(buf, buflen, "VFO %s", hamradio_get_gvfoab() ? "2" : "1");
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 #endif /* WITHUSEDUALWATCH */
 		}
 			break;
@@ -806,14 +805,14 @@ void gui_main_process(void)
 			if (update) vol = hamradio_get_afgain();
 
 			local_snprintf_P(buf, buflen, "AF gain");
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 			if (hamradio_get_gmutespkr())
 				local_snprintf_P(buf, buflen, "muted");
 			else
 				local_snprintf_P(buf, buflen, "%d", vol);
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP , str_color);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP , str_color);
 		}
 			break;
 
@@ -830,11 +829,11 @@ void gui_main_process(void)
 			}
 
 			local_snprintf_P(buf, buflen, "TX %d\%%", (int) tx_pwr);
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 			local_snprintf_P(buf, buflen, "Tune %d\%%", (int) tune_pwr);
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 		#endif /* WITHTX */
 					}
 			break;
@@ -848,11 +847,11 @@ void gui_main_process(void)
 			if (update) state = hamradio_get_nrvalue(& grade);
 
 			local_snprintf_P(buf, buflen, "DNR");
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, state ? str_color : COLORPIP_GRAY);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, state ? str_color : COLORPIP_GRAY);
 			local_snprintf_P(buf, buflen, state ? "on" : "off");
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, state ? str_color : COLORPIP_GRAY);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, state ? str_color : COLORPIP_GRAY);
 		}
 
 			break;
@@ -873,12 +872,12 @@ void gui_main_process(void)
 			}
 
 			local_snprintf_P(buf, buflen, "AF");
-			gui_print_prop(xx, y_mid, buf, & INFOBAR_FONTP, str_color);
+			gui_print_text(xx, y_mid, buf, & INFOBAR_FONTP, str_color);
 			xx += 30;
 			local_snprintf_P(buf, buflen, bp_wide ? "L %u" : "W %u", bp_low);
-			gui_print_prop(xx, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
+			gui_print_text(xx, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 			local_snprintf_P(buf, buflen, bp_wide ? "H %u" : "P %u", bp_high);
-			gui_print_prop(xx, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
+			gui_print_text(xx, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 		}
 			break;
 
@@ -893,17 +892,17 @@ void gui_main_process(void)
 			if (if_shift)
 			{
 				local_snprintf_P(buf, buflen, "IF shift");
-				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-				gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
+				strl = get_strwidth(buf, & INFOBAR_FONTP);
+				gui_print_text(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 				local_snprintf_P(buf, buflen, if_shift == 0 ? "%d" : "%+d Hz", if_shift);
-				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
+				strl = get_strwidth(buf, & INFOBAR_FONTP);
+				gui_print_text(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 			}
 			else
 			{
 				local_snprintf_P(buf, buflen, "IF shift");
-				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-				gui_print_prop(xx - strl / 2, y_mid, buf, & INFOBAR_FONTP, COLORPIP_GRAY);
+				strl = get_strwidth(buf, & INFOBAR_FONTP);
+				gui_print_text(xx - strl / 2, y_mid, buf, & INFOBAR_FONTP, COLORPIP_GRAY);
 			}
 		}
 			break;
@@ -917,15 +916,15 @@ void gui_main_process(void)
 			if (update) atten  = hamradio_get_att_db();
 
 			local_snprintf_P(buf, buflen, "ATT");
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 			if (atten)
 				local_snprintf_P(buf, buflen, "%d db", atten);
 			else
 				local_snprintf_P(buf, buflen, "off");
 
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 		}
 			break;
 
@@ -939,11 +938,11 @@ void gui_main_process(void)
 			if (update) z = display2_zoomedbw() / 1000;
 
 			local_snprintf_P(buf, buflen, "SPAN");
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, str_color);
 			local_snprintf_P(buf, buflen, "%dk", z);
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 #endif /* WITHIF4DSP */
 		}
 			break;
@@ -964,8 +963,8 @@ void gui_main_process(void)
 #endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
 
 			local_snprintf_P(buf, buflen, "%d.%1dV", (int) v.quot, (int) v.rem);
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, yy, buf, & INFOBAR_FONTP, str_color);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, yy, buf, & INFOBAR_FONTP, str_color);
 #endif /* WITHVOLTLEVEL || WITHVOLTLEVEL_1117 */
 
 #if WITHCURRLEVEL || WITHCURRLEVEL2 || WITHCURRLEVEL_1117
@@ -988,8 +987,8 @@ void gui_main_process(void)
 
 #endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 
-				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
+				strl = get_strwidth(buf, & INFOBAR_FONTP);
+				gui_print_text(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, str_color);
 			}
 #endif /* WITHCURRLEVEL */
 		}
@@ -1005,11 +1004,11 @@ void gui_main_process(void)
 			if (update) cpu_temp = GET_CPU_TEMPERATURE();
 
 			local_snprintf_P(buf, buflen, "CPU temp");
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
 			local_snprintf_P(buf, buflen, "%2.1f", cpu_temp);
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, cpu_temp > 60.0 ? COLORPIP_RED : COLORPIP_WHITE);
 #endif /* defined (GET_CPU_TEMPERATURE) */
 		}
 			break;
@@ -1023,16 +1022,16 @@ void gui_main_process(void)
 			if (update) capacity = GET_BATTERY_CAPACITY();
 
 			local_snprintf_P(buf, buflen, "Battery");
-			strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-			gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
+			strl = get_strwidth(buf, & INFOBAR_FONTP);
+			gui_print_text(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
 			if (capacity >= 0)
 			{
 				local_snprintf_P(buf, buflen, "%d%%", capacity);
-				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, capacity < 30 ? COLORPIP_RED : COLORPIP_WHITE);
+				strl = get_strwidth(buf, & INFOBAR_FONTP);
+				gui_print_text(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, capacity < 30 ? COLORPIP_RED : COLORPIP_WHITE);
 			}
 			else
-				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, "error", & INFOBAR_FONTP, COLORPIP_RED);
+				gui_print_text(xx - strl / 2, infobar_2nd_str_y, "error", & INFOBAR_FONTP, COLORPIP_RED);
 #endif /* defined (GET_BATTERY_CAPACITY) */
 		}
 			break;
@@ -1047,24 +1046,24 @@ void gui_main_process(void)
 			{
 				local_snprintf_P(buf, buflen, "%s", gui_enc2_menu.param);
 				remove_end_line_spaces(buf);
-				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-				gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
+				strl = get_strwidth(buf, & INFOBAR_FONTP);
+				gui_print_text(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
 				local_snprintf_P(buf, buflen, "%s", gui_enc2_menu.val);
 				remove_end_line_spaces(buf);
-				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
+				strl = get_strwidth(buf, & INFOBAR_FONTP);
 				gui_color_t color_lbl = gui_enc2_menu.state == 2 ? COLORPIP_YELLOW : COLORPIP_WHITE;
-				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, color_lbl);
+				gui_print_text(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, color_lbl);
 			}
 			else
 			{
 #if defined (RTC1_TYPE)
 				// текущее время
 				local_snprintf_P(buf, buflen, "%02d.%02d", day, month);
-				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-				gui_print_prop(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
+				strl = get_strwidth(buf, & INFOBAR_FONTP);
+				gui_print_text(xx - strl / 2, infobar_1st_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
 				local_snprintf_P(buf, buflen, "%02d%c%02d", hour, ((seconds & 1) ? ' ' : ':'), minute);
-				strl = get_strwidth_prop(buf, & INFOBAR_FONTP);
-				gui_print_prop(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
+				strl = get_strwidth(buf, & INFOBAR_FONTP);
+				gui_print_text(xx - strl / 2, infobar_2nd_str_y, buf, & INFOBAR_FONTP, COLORPIP_WHITE);
 #endif 	/* defined (RTC1_TYPE) */
 			}
 		}
@@ -1151,7 +1150,6 @@ void window_memory_process(void)
 		gui_obj_create("lbl_note1", COLORPIP_WHITE, 54);
 		gui_obj_set_prop("lbl_note1", GUI_OBJ_TEXT, "Long press on empty cell - save,on saved cell - clean");
 		gui_obj_set_prop("lbl_note1", GUI_OBJ_POS_Y, common_btn_height * 5);
-		gui_obj_set_prop("lbl_note1", GUI_OBJ_FONT, & msgothic_11x13_mono);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
 	}
@@ -1669,7 +1667,7 @@ void window_swrscan_process(void)
 		uint8_t charw = msgothic_11x13_mono.width, charh = msgothic_11x13_mono.height;
 
 		local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
-		gui_print_mono(x0 - charw, y0 - charh / 2, buf, & msgothic_11x13_mono, COLORPIP_WHITE);
+		gui_print_text(x0 - charw, y0 - charh / 2, buf, & msgothic_11x13_mono, COLORPIP_WHITE);
 
 		for(int_fast16_t yy = y0 - row_step; yy > y1; yy -= row_step)
 		{
@@ -1678,7 +1676,7 @@ void window_swrscan_process(void)
 
 			gui_drawline(x0 + 1, yy, x1, yy, COLORPIP_DARKGREEN);
 			local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
-			gui_print_mono(x0 - charw, yy - charh / 2, buf, & msgothic_11x13_mono, COLORPIP_WHITE);
+			gui_print_text(x0 - charw, yy - charh / 2, buf, & msgothic_11x13_mono, COLORPIP_WHITE);
 		}
 
 		if (gui_obj_get_int_prop("lbl_swr_error", GUI_OBJ_VISIBLE))				// фон сообщения об ошибке
@@ -1995,9 +1993,6 @@ void window_af_eq_process(void)
 		gui_obj_create("lbl_eq400", COLORPIP_WHITE, 6);
 		gui_obj_create("lbl_eq1500", COLORPIP_WHITE, 7);
 		gui_obj_create("lbl_eq2700", COLORPIP_WHITE, 7);
-		gui_obj_set_prop("lbl_eq400", GUI_OBJ_FONT, & msgothic_11x13_mono);
-		gui_obj_set_prop("lbl_eq1500", GUI_OBJ_FONT, & msgothic_11x13_mono);
-		gui_obj_set_prop("lbl_eq2700", GUI_OBJ_FONT, & msgothic_11x13_mono);
 		gui_obj_create("btn_ok", SMALL_BUTTON_STYLE, 0, 0, "OK");
 		gui_obj_create("btn_en", SMALL_BUTTON_STYLE, 0, 0, "OK");
 
@@ -2063,16 +2058,16 @@ void window_af_eq_process(void)
 		uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
 		gui_drawline(30, mid_y + yy, ww, mid_y + yy, GUI_SLIDERLAYOUTCOLOR);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? "%d" : "-%d", i);
-		uint16_t w = get_strwidth_prop(buf, & msgothic_10x13_prop);
-		gui_print_prop(30 - w - 5, mid_y + yy - 8, buf, & msgothic_10x13_prop, COLORPIP_WHITE);
+		uint16_t w = get_strwidth(buf, & msgothic_10x13_prop);
+		gui_print_text(30 - w - 5, mid_y + yy - 8, buf, & msgothic_10x13_prop, COLORPIP_WHITE);
 
 		if (i == 0)
 			continue;
 
 		gui_drawline(30, mid_y - yy, ww, mid_y - yy, GUI_SLIDERLAYOUTCOLOR);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", i);
-		w = get_strwidth_prop(buf, & msgothic_10x13_prop);
-		gui_print_prop(30 - w - 5, mid_y - yy - 8, buf, & msgothic_10x13_prop, COLORPIP_WHITE);
+		w = get_strwidth(buf, & msgothic_10x13_prop);
+		gui_print_text(30 - w - 5, mid_y - yy - 8, buf, & msgothic_10x13_prop, COLORPIP_WHITE);
 	}
 #endif /* WITHAFEQUALIZER */
 }
@@ -3278,7 +3273,7 @@ void window_3d_process(void)
 
 	if (is_win_init())
 	{
-		gui_obj_create("tf_3d", 60, 22, UP, & msgothic_11x13_mono);
+		gui_obj_create("tf_3d", 60, 22, UP, & LABELS_FONT_DEFAULT);
 
 		calculate_window_position(WINDOW_POSITION_AUTO);
 		return;
@@ -3391,7 +3386,7 @@ void window_menu_params_process(void)
 			local_snprintf_P(btn_names[i], TEXT_ARRAY_SIZE, "btn_params_%02d", i);
 			remove_end_line_spaces(menup[i].name);
 
-			if (get_strwidth_prop(menup[i].name, & BUTTONS_FONTP_DEFAULT) > 110)   // переделать
+			if (get_strwidth(menup[i].name, & BUTTONS_FONTP_DEFAULT) > 110)   // переделать
 				split_string(menup[i].name, '|');
 
 			gui_obj_create(btn_names[i], 120, 40, 0, 0, menup[i].name);
@@ -3478,7 +3473,7 @@ void window_menu_process(void)
 			local_snprintf_P(btn_names[i], TEXT_ARRAY_SIZE, "btn_groups_%02d", i);
 			remove_end_line_spaces(menu[i].name);
 
-			if (get_strwidth_prop(menu[i].name, & BUTTONS_FONTP_DEFAULT) > 110)  // переделать
+			if (get_strwidth(menu[i].name, & BUTTONS_FONTP_DEFAULT) > 110)  // переделать
 				split_string(menu[i].name, '|');
 
 			gui_obj_create(btn_names[i], 120, 40, 0, 0, menu[i].name);

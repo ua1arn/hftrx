@@ -17,7 +17,6 @@
 #include "hardware.h"
 
 #if LCDMODE_LTDC || WITHTOUCHGUI
-#if ! GUI_EXTERNAL_FONTS
 
 #include "formats.h"
 #include "display.h"
@@ -351,7 +350,4 @@ const unifont_t unifont_big_raw =
 };
 
 #endif /* WITHALTERNATIVEFONTS */
-
-#endif /* ! GUI_EXTERNAL_FONTS */
-
 #endif	/* LCDMODE_LTDC || WITHTOUCHGUI */

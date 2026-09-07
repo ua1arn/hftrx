@@ -8,8 +8,6 @@
 
 #if LCDMODE_LTDC || WITHTOUCHGUI
 
-#if ! GUI_EXTERNAL_FONTS
-
 #include "formats.h"
 #include "display.h"
 #include "fontsys.h"
@@ -334,8 +332,4 @@ ubpfont_render_char32(
 	return ubxfont_put_char32(db, xpix, ypix, font, charraster, UINT32_C(1) << width2, width2, height2, 0 /* (unused) */, fg);
 }
 
-#endif /* ! GUI_EXTERNAL_FONTS */
-
-
 #endif /* LCDMODE_LTDC || WITHTOUCHGUI */
-
