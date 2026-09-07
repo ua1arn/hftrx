@@ -104,8 +104,8 @@
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	// --- Особые варианты расположения кнопок на клавиатуре
-	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
-	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
+	
+	
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #if WITHISBOOTLOADER
@@ -193,9 +193,9 @@
 #if WITHISBOOTLOADER
 
 	// +++ заглушки для плат с DSP обработкой
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
-	#define WITHAGCMODENONE 1
+	
+	
+	
 
 	#define BOARD_DETECTOR_AM 	0		// Заглушка
 	#define BOARD_DETECTOR_FM 	0		// Заглушка
@@ -411,8 +411,8 @@
 
 	//#define WITHVITA49RX	1	/* VITA 49.0-2015 streaming source support */
 	
-//	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
-//	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
+//	#define WITHSWRPROT 0			/* ОТЛАДКА - отключена защитa по КСВ */
+//	#define WITHHEATPROT 0			/* ОТЛАДКА - отключена защитa по перегреву */
 
 	
 	
@@ -432,7 +432,7 @@
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
-	#define WITHSPKMUTE		1	/* управление выключением динамика */
+	
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	//#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 	//#define WITHLOCKFULL	1	/* блокировка всего управления, а не только перестройки */

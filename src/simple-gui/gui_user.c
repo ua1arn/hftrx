@@ -316,7 +316,7 @@ void window_infobar_menu_process(void)
 					hamradio_split_vfo_swap();
 				else if (p == 3) // SPLIT mode
 				{
-					hamradio_split_mode_toggle();
+					hamradio_dwatch_toggle();
 					gui_obj_set_prop(name, GUI_OBJ_TEXT, hamradio_get_mainsubrxmode3_value_P());
 				}
 			}
@@ -564,13 +564,11 @@ void gui_main_process(void)
 				hamradio_set_gnotch(! hamradio_get_gnotch());
 				update = 1;
 			}
-#if WITHSPKMUTE
 			else if (gui_check_obj(name, "btn_main05"))
 			{
 				hamradio_set_gmutespkr(! hamradio_get_gmutespkr());
 				update = 1;
 			}
-#endif /* #if WITHSPKMUTE */
 			else if (gui_check_obj(name, "btn_main01"))
 			{
 				if (get_parent_window() != NO_PARENT_WINDOW)
@@ -714,13 +712,9 @@ void gui_main_process(void)
 		else if (notch_type == 2)
 			gui_obj_set_prop("btn_main04", GUI_OBJ_TEXT, "Notch|auto");
 
-#if WITHSPKMUTE
 		uint8_t s = hamradio_get_gmutespkr();
 		gui_obj_set_prop("btn_main05", GUI_OBJ_LOCK, s);
 		gui_obj_set_prop("btn_main05", GUI_OBJ_TEXT_FMT, "Speaker|%s", s ? "muted" : "on air");
-#else
-		gui_obj_set_prop("btn_main05", GUI_OBJ_STATE, DISABLED);
-#endif /* #if WITHSPKMUTE */
 
 #if WITHTX
 		uint8_t tune = hamradio_tunemode(0);

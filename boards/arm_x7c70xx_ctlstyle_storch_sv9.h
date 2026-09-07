@@ -130,8 +130,8 @@
 	//#define KEYBOARD_MATRIX_4x4	1
 
 	// --- Особые варианты расположения кнопок на клавиатуре
-	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
-	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
+	
+	
 
 #if WITHISBOOTLOADER
 	#define LCDMODE_DUMMY	1
@@ -203,8 +203,8 @@
 	//#define CTLREGMODE_NOCTLREG 1	/* Загрузчик не имеет доступа к управлению SPI. Однако, есть прямое управление выъодами GPIO */
 
 	// +++ заглушки для плат с DSP обработкой
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
+	
+	
 
 	#define BOARD_DETECTOR_AM 	0		// Заглушка
 	#define BOARD_DETECTOR_FM 	0		// Заглушка
@@ -439,7 +439,7 @@
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
-	#define WITHSPKMUTE		1	/* управление выключением динамика */
+	
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	//#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 	// Есть ли регулировка параметров потенциометрами

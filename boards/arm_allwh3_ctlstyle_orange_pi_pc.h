@@ -98,8 +98,8 @@
 	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
 	//#define KEYB_FPANEL20_V0A_RA1AGO	1	/* перевернутый */
 	// --- Особые варианты расположения кнопок на клавиатуре
-	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
-	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
+	
+	
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #if WITHISBOOTLOADER
@@ -239,9 +239,9 @@
 #if WITHISBOOTLOADER
 
 	// +++ заглушки для плат с DSP обработкой
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
-	#define WITHAGCMODENONE 1
+	
+	
+	
 
 	#define BOARD_DETECTOR_AM 	0		// Заглушка
 	#define BOARD_DETECTOR_FM 	0		// Заглушка
@@ -278,7 +278,7 @@
 	//#define WITHDIRECTFREQENER	1
 	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	
-	#define WITHAGCMODENONE 1
+	
 	//#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
@@ -480,7 +480,7 @@
 	//#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
-	#define WITHSPKMUTE		1	/* управление выключением динамика */
+	
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	//#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 	// Есть ли регулировка параметров потенциометрами
@@ -564,8 +564,8 @@
 
 	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
+	
+	
 
 #endif /* WITHISBOOTLOADER */
 

@@ -120,12 +120,13 @@ extern "C" {
 	#define WITHDAC1VALMAX	255
 #endif /* defined (DAC1_TYPE) */
 
+#define	BOARD_AGCCODE_ON	0
+#define	BOARD_AGCCODE_OFF	1
+
 #if WITHIF4DSP
 
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
 
 	#define BOARD_NOTCH_OFF		0
 	#define BOARD_NOTCH_MANUAL	1
@@ -138,7 +139,6 @@ extern "C" {
 	#define WITHMIC1LEVEL		1	/* установка усиления микрофона */
 
 	#define	SQUELCHMAX	255	/* Kenwood's value */
-	#define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
 #endif /* WITHIF4DSP */
 
 #define CWPITCHSCALE 	10
@@ -1050,7 +1050,7 @@ uint_fast8_t hamradio_get_gnotch(void);
 uint_fast8_t hamradio_get_gnotchtype(void);
 uint_fast8_t hamradio_get_greverb(void);
 uint_fast8_t hamradio_get_gsmetertype(void);
-uint_fast8_t hamradio_get_gvfoab(void);
+uint_fast8_t hamradio_get_gvfoab(void);	// кандидат на удаление (VFO A всегда на большом индикаторе)
 uint_fast8_t hamradio_get_gvoxenable(void);
 uint_fast8_t hamradio_get_gzoomxpow2(void);
 uint_fast8_t hamradio_get_high_bp(int_least16_t rotate);
@@ -1158,7 +1158,7 @@ void hamradio_set_vox_level(uint_fast8_t v);
 void hamradio_setautotune(void);
 void hamradio_setrx(void);
 void hamradio_settemp_viewstyle(uint_fast8_t v);
-void hamradio_split_mode_toggle(void);
+void hamradio_dwatch_toggle(void);
 void hamradio_split_vfo_swap(void);
 void hamradio_tick_sof(void);
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem));
