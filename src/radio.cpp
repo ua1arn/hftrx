@@ -51,8 +51,9 @@
 
 static uint_fast8_t board_wakeup(void);
 static uint_fast8_t
-processcatmsg(uint_fast8_t catcommand1,
-	uint_fast8_t catcommand2,
+processcatmsg(
+	char catcommand1,
+	char catcommand2,
 	uint_fast8_t cathasparam,
 	uint_fast8_t catpcount,	// количество символов за кодом команды
 	const uint8_t * catp	// массив символов
@@ -16989,7 +16990,7 @@ catscanint(
 	return v;
 }
 
-static unsigned packcmd2(uint_fast8_t c1, uint_fast8_t c2)
+static unsigned packcmd2(char c1, char c2)
 {
 	return 256 * (uint8_t) c1 + (uint8_t) c2;
 }
@@ -16998,8 +16999,8 @@ static unsigned packcmd2(uint_fast8_t c1, uint_fast8_t c2)
 	требуется обновление дисплея */
 static uint_fast8_t
 processcatmsg(
-	uint_fast8_t catcommand1,
-	uint_fast8_t catcommand2,
+	char catcommand1,
+	char catcommand2,
 	uint_fast8_t cathasparam,
 	uint_fast8_t catpcount,	// количество символов за кодом команды
 	const uint8_t * catp	// массив символов
