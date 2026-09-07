@@ -95,7 +95,7 @@
 
 static uint_fast8_t		glob_trxpath = 0;			/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
 static uint_fast16_t 	glob_ifgain = BOARD_IFGAIN_MIN;
-static int_fast16_t 	glob_agcfence = - 73;
+static int_fast16_t 	glob_agcfence10 = - 73 * 10;
 static uint_fast8_t 	glob_dspmodes [2] = { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE, };
 
 static uint_fast8_t		glob_agcrate [2] = { 20, 20 }; //10	// 10 дБ изменение входного на 1 дБ выходного
@@ -3362,11 +3362,11 @@ static int computeslevel_1(
 }
 
 // return: десятичный логарифм уровня сигнала от FS (dbFS)
-static FLOAT_t revcomputeslevel_1(
-	int power	// Значение в dBm
+static FLOAT_t revcomputeslevel_10(
+	int power	// Значение в 0.1 dBm
 	)
 {
-	return (FLOAT_t) (power - ((glob_fsadcpower10 + 5) / 10)) / 20;
+	return (FLOAT_t) (power - glob_fsadcpower10) / 200;
 }
 
 // Значение в десятых долях dBm
@@ -3440,19 +3440,19 @@ int_fast16_t dsp_rssi10(int_fast16_t * tracemax, uint_fast8_t pathi)
 // получить значение, используемое в системе АРУ
 // по абсолютной мощности е единицах дБмВт
 
-static FLOAT_t agclevel_from_abspower(int_fast16_t abspower)
+static FLOAT_t agclevel_from_abspower10(int_fast16_t abspower10)
 {
 	// Обратное от computeslevel_1
-	FLOAT_t powerv = revcomputeslevel_1(abspower);	// десятичный логарифм уровня сигнала от FS (dbFS)
+	FLOAT_t powerv = revcomputeslevel_10(abspower10);	// десятичный логарифм уровня сигнала от FS (dbFS)
 	// Обратное от agc_calcstrengthlog10
 	FLOAT_t v = agc_rcalcstrengthlog10(powerv);
 	return v;
 }
 
-/* получить значение точки перегиба АРУ в 0.1 дБмВт */
+/* получить значение точки перегиба АРУ в 0.1 дБмВт. INT16_MAX - отклбючено */
 int_fast16_t dsp_agcfence10(void)
 {
-	return glob_agcfence * 10;
+	return glob_agcfence10;
 }
 
 static FLOAT_t mickecliplevelp [NPROF] = { + 1, + 1 };	/* positive limit */
@@ -5360,9 +5360,9 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 		const int gaindb = ((gainmax - gainmin) * (int) (glob_ifgain - BOARD_IFGAIN_MIN) / (int) (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN)) + gainmin;	// -20..+100 dB
 		const FLOAT_t manualrfgain = db2ratio(gaindb);
 		// glob_fsadcpower10
-		const FLOAT_t agc_agcfence = agclevel_from_abspower(glob_agcfence);	// из абсолютного уровня преобразовать в отношение к FS
+		const FLOAT_t agc_agcfence = agclevel_from_abspower10(glob_agcfence10);	// из абсолютного уровня преобразовать в отношение к FS
 		
-		rxagc_parameters_update(& rxagcparams [profile] [pathi], manualrfgain, agc_agcfence, pathi);	// приёмник #0,#1
+		rxagc_parameters_update(& rxagcparams [profile] [pathi], manualrfgain, (FLOAT_t) agc_agcfence, pathi);	// приёмник #0,#1
 
 		//PRINTF("glob_agcfence=%+d, glob_fsadcpower10=%d, agcfence=%f\n", (int) glob_agcfence, (int) glob_fsadcpower10, agc_agcfence);
 
@@ -5795,11 +5795,11 @@ board_set_ifgain(uint_fast16_t v)
 }
 
 void
-board_set_agcfence(int_fast16_t v)	// Точка пергиба характеристики АРУ
+board_set_agcfence10(int_fast16_t v)	// Точка пергиба характеристики АРУ. INT16_MAX - отключено
 {
-	if (glob_agcfence != v)
+	if (glob_agcfence10 != v)
 	{
-		glob_agcfence = v;
+		glob_agcfence10 = v;
 		board_dsp1regchanged();
 	}
 }

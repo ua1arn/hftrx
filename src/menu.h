@@ -83,6 +83,7 @@
 //	},
 #endif /* LCDMODE_COLORED */
 #if WITHIF4DSP
+	& xagcfenceenable,
 	& xagcfence1,
 #endif /* WITHIF4DSP */
 	& xgshowdbm,

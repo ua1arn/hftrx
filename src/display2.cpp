@@ -2068,6 +2068,8 @@ static void sm_draw_dial_rx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 			0, 0,	// координаты окна источника
 			smbgdb->dx, smbgdb->dy, // размер окна источника
 			BITBLT_FLAG_NONE, 0);
+
+	if (agcfence10 != INT16_MAX)
 	{
 		// Рисование AGC FENCE (риска)
 		const COLORPIP_T color = COLORPIP_RED;
@@ -2365,8 +2367,11 @@ static void sm_draw_bars_rx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	// Пиковый уровень сигнала
 	if (gv_trace > gv)
 		colpip_line(db, x0 + gv_trace, y0 + smpr->r1 + 5, x0 + gv_trace, y0 + smpr->r1 + 20, COLORPIP_YELLOW, 0);
-	// AGC FENCE
-	colpip_line(db, x0 + gv_fence, y0 + smpr->r1 + 5, x0 + gv_fence, y0 + smpr->r1 + 20, COLORPIP_RED, 0);
+	if (agcfence10 != INT16_MAX)
+	{
+		// AGC FENCE
+		colpip_line(db, x0 + gv_fence, y0 + smpr->r1 + 5, x0 + gv_fence, y0 + smpr->r1 + 20, COLORPIP_RED, 0);
+	}
 }
 
 static void sm_draw_bars_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_t y0, uint_fast16_t width, uint_fast16_t height, uint_fast8_t pathi, struct smeter_params_tag * const smpr)
@@ -7066,6 +7071,7 @@ display_colorgrid_set(
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t halfbw = bw / 2;
 	int_fast32_t df;	// кратное сетке значение
+	const int_fast16_t agcfence10 = dsp_agcfence10();
 
 	// Маркеры уровней сигналов
 	if (glob_lvlgridstep != 0)
@@ -7079,10 +7085,9 @@ display_colorgrid_set(
 				colpip_set_hline(db, x, y + yval, w, colorgridlines);	// Level marker
 		}
 	}
-	if (1)
+	if (agcfence10 != INT16_MAX)
 	{
 		// линия уровня срабатывания АРУ
-		const int_fast16_t agcfence10 = dsp_agcfence10();
 		const int yval = dsp_power2y(agcfence10 / 10, h - 1, glob_topdb, glob_bottomdb);
 		if (yval > 0 && yval < (int) h)
 			colpip_set_hline(db, x, y + yval, w, colorgridfence);	// Level marker
@@ -8516,6 +8521,10 @@ static void smtr2_draw(lv_smtr2_t * smtr2, const lv_area_t * coords, lv_layer_t 
 		lv_point_precise_set(&dsc.p1, coords->x1 + gv_trace, coords->y1);
 		lv_point_precise_set(&dsc.p2, coords->x1 + gv_trace, coords->y2);
 		lv_draw_line(layer, &dsc);
+	}
+	if (agcfence10 != INT16_MAX)
+	{
+
 	}
 }
 
