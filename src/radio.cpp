@@ -1162,7 +1162,7 @@ static uint_fast32_t savedbaudrate;	// Скорость, на которую в 
 static void
 cat_set_speed(uint_fast32_t baudrate)
 {
-	/* На ATMega и ATXMega перепрограммирование вызывает сбой при приёме если идёт передача из контроллера. */
+	/* перепрограммирование вызывает сбой при приёме если идёт передача из контроллера. */
 	if (savedbaudrate == baudrate)
 		return;
 	savedbaudrate = baudrate;
