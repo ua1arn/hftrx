@@ -3722,10 +3722,8 @@ static void display2_mainsub3(const gxdrawb_t * db,
 		)
 {
 #if WITHUSEDUALWATCH
-	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
-	hamradio_get_vfomode5_value(& state);
-	const char * const label = hamradio_get_mainsubrxmode3_value_P();
-	display_2states(db, x, y, state, label, label, xspan, yspan);
+	const char * const labels [1] = { hamradio_get_mainsubrxmode3_value_P(), };
+	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
 #endif /* WITHUSEDUALWATCH */
 }
 
