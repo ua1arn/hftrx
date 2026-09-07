@@ -221,6 +221,10 @@ typedef enum IRQn
 #define R_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< R_PRCM  Base */
 #define CIR_RX_BASE ((uintptr_t) 0x07040000)          /*!< CIR_RX  Base */
 #define RTC_BASE ((uintptr_t) 0x07090000)             /*!< RTC Real Time Clock Base */
+#define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL  Base */
+#define TIMESTAMP_STA_BASE ((uintptr_t) 0x08110000)   /*!< TIMESTAMP_STA  Base */
+#define TIMESTAMP_CTRL_BASE ((uintptr_t) 0x08120000)  /*!< TIMESTAMP_CTRL  Base */
+#define IDC_BASE ((uintptr_t) 0x08130000)             /*!< IDC  Base */
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG  Base */
 #define C0_CPUX_MBIST_BASE ((uintptr_t) 0x09020000)   /*!< C0_CPUX_MBIST  Base */
 #define PLIC_BASE ((uintptr_t) 0x10000000)            /*!< PLIC Platform-Level Interrupt Controller (PLIC) Base */
@@ -715,6 +719,20 @@ typedef struct CLINT_Type
     __IOM uint32_t mtimelo;                           /*!< Offset 0xBFF8 Provides the current timer value. */
     __IOM uint32_t mtimehi;                           /*!< Offset 0xBFFC Provides the current timer value. */
 } CLINT_TypeDef; /* size of structure = 0xC000 */
+/*
+ * @brief CPU_SUBSYS_CTRL
+ */
+/*!< CPU_SUBSYS_CTRL  */
+typedef struct CPU_SUBSYS_CTRL_Type
+{
+    __IOM uint32_t GENER_CTRL_REG0;                   /*!< Offset 0x000 General Control Register0 */
+         RESERVED(0x004[0x000C - 0x0004], uint8_t)
+    __IOM uint32_t GIC_JTAG_RST_CTRL;                 /*!< Offset 0x00C GIC and JTAG Reset Control Register */
+    __IOM uint32_t C0_INT_EN;                         /*!< Offset 0x010 Cluster0 Interrupt Enable Control Register */
+    __IOM uint32_t RQ_FIQ_STATUS;                     /*!< Offset 0x014 IRQ/FIQ Status Register */
+    __IOM uint32_t GENER_CTRL_REG2;                   /*!< Offset 0x018 General Control Register2 */
+    __IOM uint32_t DBG_STATE;                         /*!< Offset 0x01C Debug State Register */
+} CPU_SUBSYS_CTRL_TypeDef; /* size of structure = 0x020 */
 /*
  * @brief CSIC_CCU
  */
@@ -3136,6 +3154,28 @@ typedef struct TIMER_Type
          RESERVED(0x0D0[0x0400 - 0x00D0], uint8_t)
 } TIMER_TypeDef; /* size of structure = 0x400 */
 /*
+ * @brief TIMESTAMP_CTRL
+ */
+/*!< TIMESTAMP_CTRL  */
+typedef struct TIMESTAMP_CTRL_Type
+{
+    __IOM uint32_t TSTAMP_CTRL_REG;                   /*!< Offset 0x000 Timestamp Control Register */
+         RESERVED(0x004[0x0008 - 0x0004], uint8_t)
+    __IOM uint32_t CNT_CTRL_LOW_REG;                  /*!< Offset 0x008 Counter Low Register */
+    __IOM uint32_t CNT_CTRL_HI_REG;                   /*!< Offset 0x00C Counter High Register */
+         RESERVED(0x010[0x0020 - 0x0010], uint8_t)
+    __IOM uint32_t CNT_FREQID_REG;                    /*!< Offset 0x020 Counter Base Frequency ID Register */
+} TIMESTAMP_CTRL_TypeDef; /* size of structure = 0x024 */
+/*
+ * @brief TIMESTAMP_STA
+ */
+/*!< TIMESTAMP_STA  */
+typedef struct TIMESTAMP_STA_Type
+{
+    __IM  uint32_t CNT_LOW_REG;                       /*!< Offset 0x000 Counter Low Register */
+    __IM  uint32_t CNT_HI_REG;                        /*!< Offset 0x004 Counter High Register */
+} TIMESTAMP_STA_TypeDef; /* size of structure = 0x008 */
+/*
  * @brief TPADC
  */
 /*!< TPADC  */
@@ -4027,6 +4067,9 @@ typedef struct VE_Type
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
 #define CIR_RX ((CIR_RX_TypeDef *) CIR_RX_BASE)       /*!< CIR_RX  register set access pointer */
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC Real Time Clock register set access pointer */
+#define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL  register set access pointer */
+#define TIMESTAMP_STA ((TIMESTAMP_STA_TypeDef *) TIMESTAMP_STA_BASE)/*!< TIMESTAMP_STA  register set access pointer */
+#define TIMESTAMP_CTRL ((TIMESTAMP_CTRL_TypeDef *) TIMESTAMP_CTRL_BASE)/*!< TIMESTAMP_CTRL  register set access pointer */
 #define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG  register set access pointer */
 #define PLIC ((PLIC_TypeDef *) PLIC_BASE)             /*!< PLIC Platform-Level Interrupt Controller (PLIC) register set access pointer */
 #define CLINT ((CLINT_TypeDef *) CLINT_BASE)          /*!< CLINT  register set access pointer */

@@ -2994,6 +2994,67 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>CPU_SUBSYS_CTRL</name>
+  <description></description>
+  <baseAddress>0x08100000</baseAddress>
+  <registers>
+   <register>
+    <name>GENER_CTRL_REG0</name>
+    <displayName>GENER_CTRL_REG0</displayName>
+    <description>General Control Register0</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GIC_JTAG_RST_CTRL</name>
+    <displayName>GIC_JTAG_RST_CTRL</displayName>
+    <description>GIC and JTAG Reset Control Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>C0_INT_EN</name>
+    <displayName>C0_INT_EN</displayName>
+    <description>Cluster0 Interrupt Enable Control Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>RQ_FIQ_STATUS</name>
+    <displayName>RQ_FIQ_STATUS</displayName>
+    <description>IRQ/FIQ Status Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>GENER_CTRL_REG2</name>
+    <displayName>GENER_CTRL_REG2</displayName>
+    <description>General Control Register2</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DBG_STATE</name>
+    <displayName>DBG_STATE</displayName>
+    <description>Debug State Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>CSIC_CCU</name>
   <description></description>
   <baseAddress>0x05800000</baseAddress>
@@ -19105,6 +19166,74 @@
     <displayName>AVS_CNT_DIV_REG</displayName>
     <description>AVS Divisor Register</description>
     <addressOffset>0x0CC</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>TIMESTAMP_CTRL</name>
+  <description></description>
+  <baseAddress>0x08120000</baseAddress>
+  <registers>
+   <register>
+    <name>TSTAMP_CTRL_REG</name>
+    <displayName>TSTAMP_CTRL_REG</displayName>
+    <description>Timestamp Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT_CTRL_LOW_REG</name>
+    <displayName>CNT_CTRL_LOW_REG</displayName>
+    <description>Counter Low Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT_CTRL_HI_REG</name>
+    <displayName>CNT_CTRL_HI_REG</displayName>
+    <description>Counter High Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT_FREQID_REG</name>
+    <displayName>CNT_FREQID_REG</displayName>
+    <description>Counter Base Frequency ID Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
+  <name>TIMESTAMP_STA</name>
+  <description></description>
+  <baseAddress>0x08110000</baseAddress>
+  <registers>
+   <register>
+    <name>CNT_LOW_REG</name>
+    <displayName>CNT_LOW_REG</displayName>
+    <description>Counter Low Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT_HI_REG</name>
+    <displayName>CNT_HI_REG</displayName>
+    <description>Counter High Register</description>
+    <addressOffset>0x004</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
