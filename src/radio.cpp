@@ -57,31 +57,6 @@ processcatmsg(uint_fast8_t catcommand1,
 	const uint8_t * catp	// массив символов
 	);
 
-static uint_fast16_t gzero;
-
-static ptrdiff_t valueoffs0(unsigned sel)
-{
-	(void) sel;
-	return 0;
-}
-
-static unsigned getselector0(unsigned * count)
-{
-	* count = 1;
-	return 0;
-}
-
-static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned sel)
-{
-	(void) sel;
-	return base;
-}
-
-static int_fast32_t getzerobase(void)
-{
-	return 0;
-}
-
 typedef struct keyevent_tag
 {
 	uint_fast8_t kbready;
@@ -1098,24 +1073,6 @@ param_rotate(const struct paramdefdef * pd, int_fast32_t nrotate)
 	savemenuvalue(pd);
 	return 1;
 }
-
-static int_fast32_t getagcfencebase(void)
-{
-	return DBVALOFFSET_BASE;
-}
-
-static const struct paramdefdef xgdummy =
-{
-	QLABEL(""),  0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
-	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-	0, 0,
-	MENUNONVRAM,
-	getselector0, nvramoffs0, valueoffs0,
-	& gzero,
-	NULL,
-	getzerobase,
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-};
 
 #if WITHIF4DSP
 struct rxaproc_tag;
@@ -4155,6 +4112,36 @@ unsigned nvram_tlv_getparam(unsigned * base)
 }
 #endif /* WITHUSEUSBBT */
 
+
+static uint_fast16_t gzero;
+
+static ptrdiff_t valueoffs0(unsigned sel)
+{
+	(void) sel;
+	return 0;
+}
+
+static unsigned getselector0(unsigned * count)
+{
+	* count = 1;
+	return 0;
+}
+
+static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned sel)
+{
+	(void) sel;
+	return base;
+}
+
+static int_fast32_t getzerobase(void)
+{
+	return 0;
+}
+
+static int_fast32_t getagcfencebase(void)
+{
+	return DBVALOFFSET_BASE;
+}
 
 #if WITHENCODER
 
@@ -14507,6 +14494,17 @@ uif_key_click_bandjump2(uint_fast32_t f, uint_fast8_t bandset_no_check)
 	updateboard();
 }
 
+static void uif_key_click_memo(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const vindex_t vi = getvfoindex(bi);
+	uif_key_click_bandjump(gfreqs [bi]);
+}
+
+static void uif_key_hold_memo(void)
+{
+}
+
 #if ! WITHAGCMODENONE
 /* AGC mode switch
 	 - вызывает сохранение состояния режима */
@@ -18381,6 +18379,19 @@ const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * nitems)
 	return middlemenu;
 }
 
+static const struct paramdefdef xgdummy =
+{
+	QLABEL("xgdummy"),  0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
+	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	0, 0,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	& gzero,
+	NULL,
+	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
 static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8_t * active)
 {
 	unsigned nitems;
@@ -19662,15 +19673,12 @@ process_key_menuset0(uint_fast8_t kbch)
 #endif /* WITHENCODER_4F */
 
 	case KBD_CODE_MEMO:
-		{
-			const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-			const vindex_t vi = getvfoindex(bi);
-			uif_key_click_bandjump(gfreqs [bi]);
-		}
-		return 1;
+		uif_key_click_memo();
+		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_MEMO_HOLDED:
-		return 1;
+		uif_key_hold_memo();
+		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_BAND_1M8:
 		uif_key_click_bandjump(1800000L);
