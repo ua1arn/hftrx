@@ -10198,6 +10198,9 @@ void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 enum {
 	SPLITMODES_OFF,
 	SPLITMODES_ON,
+//	SPLITMODES_RIT,
+//	SPLITMODES_XIT,
+//	SPLITMODES_FIXED,
 	//
 	VFOMODES_COUNT
 };
