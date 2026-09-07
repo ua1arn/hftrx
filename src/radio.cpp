@@ -594,7 +594,6 @@ static uint_fast8_t getbankindex_pathi(uint_fast8_t pathi);
 static uint_fast8_t getbankindex_tx(uint_fast8_t tx);
 static uint_fast8_t getbankindex_ab_fordisplay(uint_fast8_t ab);
 static uint_fast8_t getsubmode(uint_fast8_t bi);		/* bi: vfo bank index */
-static uint_fast8_t getactualmainsubrx(void);
 static uint_fast8_t getfreqbandgroup(const uint_fast32_t freq);
 
 
@@ -3607,7 +3606,7 @@ struct nvmap
 	uint8_t alignmode;			/* режимы для настройки аппаратной части (0-нормальная работа) */
 #endif /* LO1MODE_HYBRID */
 #if WITHUSEDUALWATCH
-	uint8_t mainsubrxmode;		// Левый/правый, A - main RX, B - sub RX
+	uint8_t dwatchmode;		// Левый/правый, A - main RX, B - sub RX
 #endif /* WITHUSEDUALWATCH */
 #if WITHENCODER
 	uint8_t genc1pulses;		/* индекс в таблице разрешений валкодера */
@@ -4027,7 +4026,7 @@ struct nvmap
 #define RMT_MBAND_BASE OFFSETOF(struct nvmap, gmband)		/* ячейка памяти фиксированных частот */
 #define RMT_ANTMANUAL_BASE OFFSETOF(struct nvmap, gantmanual)		/* 0 - выбор антенны автоматический */
 
-#define RMT_MAINSUBRXMODE_BASE	OFFSETOF(struct nvmap, mainsubrxmode)
+#define RMT_MAINSUBRXMODE_BASE	OFFSETOF(struct nvmap, dwatchmode)
 #define RMT_DATAMODE_BASE	OFFSETOF(struct nvmap, gdatamode)
 
 
@@ -4275,7 +4274,7 @@ static const struct {
 	{ BOARD_RXMAINSUB_TWO, "A&B", },	// в оба аудиоканала поступает сумма выходов приемников.
 };
 
-static uint_fast8_t mainsubrxmode;		// Левый/правый, A - main RX, B - sub RX
+static uint_fast8_t dwatchmode;		// Левый/правый, A - main RX, B - sub RX
 
 static size_t getvaltextmaisubrxmode(char * buff, size_t count, int_fast32_t value)
 {
@@ -4284,15 +4283,15 @@ static size_t getvaltextmaisubrxmode(char * buff, size_t count, int_fast32_t val
 }
 
 // Левый/правый, A - main RX, B - sub RX
-static const struct paramdefdef xmainsubrxmode =
+static const struct paramdefdef xdwatchmode =
 {
 	QLABEL3("DUAL", "Dual RX", "DUAL"), 0, RJ_CB,	ISTEP1,
 	ITEM_VALUE | ITEM_LISTSELECT,
 	0, MAINSUBRXMODE_COUNT - 1,
-	OFFSETOF(struct nvmap, mainsubrxmode),
+	OFFSETOF(struct nvmap, dwatchmode),
 	getselector0, nvramoffs0, valueoffs0,
 	NULL,	// uint_fast16_t value pointer
-	& mainsubrxmode,	// uint_fast8_t value pointer
+	& dwatchmode,	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	getvaltextmaisubrxmode, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -6132,7 +6131,21 @@ enum
 			enum { gtunepower = WITHPOWERTRIMMAX }; /* мощность при работе автоматического согласующего устройства */
 		#endif /* WITHLOWPOWEREXTTUNE */
 	#elif WITHPOWERLPHP
+
 		static uint_fast8_t gpwri = 1;	// индекс нормальной мощности
+		static const struct paramdefdef xgpwri =
+		{
+			QLABEL("TX POWER"), 0, RJ_CB,	ISTEP1,		/* мощность при обычной работе на передачу */
+			ITEM_VALUE | ITEM_LISTSELECT,
+			0, PWRMODE_COUNT - 1,
+			OFFSETOF(struct nvmap, gpwri),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gpwri,
+			getzerobase,
+			getvaltextpwrmode, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+
 		#if WITHLOWPOWEREXTTUNE
 			static uint_fast8_t gpwratunei = 0; // индекс мощность при работе автоматического согласующего устройства
 		#else /* WITHLOWPOWEREXTTUNE */
@@ -10256,31 +10269,20 @@ static uint_fast8_t
 //NOINLINEAT
 getbankindex_ab_fordisplay(const uint_fast8_t ab)
 {
-	return getbankindex_ab(ab);
+	return getbankindex_raw(ab);
 }
 
 static uint_fast8_t
 getbankindexmain(void)
 {
-	return getbankindex_ab_fordisplay(0);
+	return getbankindex_raw(0);
 }
 
 static uint_fast8_t
 getbankindexsub(void)
 {
-	return getbankindex_ab_fordisplay(1);
+	return getbankindex_raw(1);
 }
-
-#if WITHUSEDUALWATCH
-
-// двойной приём не зависит от включения режима SPLIT
-static uint_fast8_t
-getactualmainsubrx(void)
-{
-	return mainsubrxmodes [mainsubrxmode].code;
-}
-
-#endif /* WITHUSEDUALWATCH */
 
 // VFO mode
 // Через flag возвращается признак активного SPLIT (0/1)
@@ -10409,6 +10411,12 @@ static const struct paramdefdef * nomenulist [] =
 	& xenc3f_sel,
 	& xenc4f_sel,
 #endif /* WITHIF4DSP */
+#if WITHUSEDUALWATCH
+	& xdwatchmode,
+#endif /* WITHUSEDUALWATCH */
+#if WITHPOWERLPHP
+	& xgpwri,
+#endif /* WITHPOWERLPHP */
 	& xgusefast,	/* управление режимом валкодера */
 	& xgdummy,		/* чтобы небыло массива с нулевым размером */
 };
@@ -10417,9 +10425,6 @@ static const struct paramdefdef * nomenulist [] =
 static void
 loadsavedstate(void)
 {
-#if WITHUSEDUALWATCH
-	mainsubrxmode = loadvfy8up(RMT_MAINSUBRXMODE_BASE, 0, MAINSUBRXMODE_COUNT - 1, mainsubrxmode);	/* состояние dual watch */
-#endif /* WITHUSEDUALWATCH */
 #if WITHPOWERLPHP
 	gpwri = loadvfy8up(RMT_PWR_BASE, 0, PWRMODE_COUNT - 1, gpwri);
 #endif /* WITHPOWERLPHP */
@@ -13730,7 +13735,7 @@ updateboard_noui(
 				gerflossdb10(lo0side != LOCODE_INVALID, gatt, gpamp));
 		display2_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 		#if WITHUSEDUALWATCH
-			board_set_mainsubrxmode(getactualmainsubrx());		// Левый/правый, A - main RX, B - sub RX
+			board_set_mainsubrxmode( mainsubrxmodes [param_getvalue(& xdwatchmode)].code);		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
 		#if WITHUSBHW && WITHUSBUAC
 			board_set_btaudioplayer(param_getvalue(& xgbtaudioplayer));
@@ -15182,14 +15187,14 @@ const char * hamradio_get_hplp_value_P(void)
 static void
 uif_key_mainsubrx(void)
 {
-	if (param_keyclick(& xmainsubrxmode))	// Левый/правый, A - main RX, B - sub RX
+	if (param_keyclick(& xdwatchmode))	// Левый/правый, A - main RX, B - sub RX
 		updateboard();
 }
 
 // текущее состояние DUAL WATCH
 const char * hamradio_get_mainsubrxmode3_value_P(void)
 {
-	return mainsubrxmodes [param_getvalue(& xmainsubrxmode)].label;
+	return mainsubrxmodes [param_getvalue(& xdwatchmode)].label;
 }
 
 
@@ -18131,7 +18136,7 @@ const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 		& xgbkinenable,
 	#endif /* WITHTX && WITHELKEY */
 	#if WITHUSEDUALWATCH
-		& xmainsubrxmode,
+		& xdwatchmode,
 	#endif /* WITHUSEDUALWATCH */
 	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
 		& xgzoomxpow2,
@@ -18166,7 +18171,7 @@ const struct paramdefdef * const * getmiddlemenu_ssb(unsigned * size)
 		& xgnotch,
 	#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 	#if WITHUSEDUALWATCH
-		& xmainsubrxmode,
+		& xdwatchmode,
 	#endif /* WITHUSEDUALWATCH */
 	#if WITHTX && WITHPOWERTRIM
 		& xgnormalpower,
@@ -21625,14 +21630,13 @@ void hamradio_set_tx_tune_power(uint_fast8_t v)
 {
 	ASSERT(v >= WITHPOWERTRIMMIN);
 	ASSERT(v <= WITHPOWERTRIMMAX);
-	gtunepower = v;
-	save_i8(OFFSETOF(struct nvmap, gtunepower), gtunepower);
+	param_setvalue(& xgtunepower, v);
 	updateboard();
 }
 
 uint_fast8_t hamradio_get_tx_tune_power(void)
 {
-	return gtunepower;
+	return param_getvalue(& xgtunepower);
 }
 
 #endif /* WITHLOWPOWEREXTTUNE */
@@ -21641,14 +21645,13 @@ void hamradio_set_tx_power(uint_fast8_t v)
 {
 	ASSERT(v >= WITHPOWERTRIMMIN);
 	ASSERT(v <= WITHPOWERTRIMMAX);
-	gnormalpower.value = v;
-	save_i8(OFFSETOF(struct nvmap, gnormalpower), gnormalpower.value);
+	param_setvalue(& xgnormalpower, v);
 	updateboard();
 }
 
 uint_fast8_t hamradio_get_tx_power(void)
 {
-	return gnormalpower.value;
+	return param_getvalue(& xgnormalpower);
 }
 
 void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max)

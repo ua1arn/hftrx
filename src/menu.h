@@ -893,17 +893,7 @@
 	#endif /* WITHPACLASSA */
   #endif /* ! WITHPOTPOWER */
 #elif WITHPOWERLPHP
-	(const struct paramdefdef [1]) {
-		QLABEL("TX POWER"), 0, RJ_CB,	ISTEP1,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE | ITEM_LISTSELECT,
-		0, PWRMODE_COUNT - 1,
-		OFFSETOF(struct nvmap, gpwri),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gpwri,
-		getzerobase,
-		getvaltextpwrmode, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgpwri,
 #endif /* WITHPOWERTRIM */
 #if WITHIF4DSP
 
