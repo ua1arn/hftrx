@@ -317,7 +317,7 @@ void window_infobar_menu_process(void)
 					hamradio_split_vfo_swap();
 				else if (p == 3) // SPLIT mode
 				{
-					hamradio_split_mode_toggle();
+					hamradio_dwatch_toggle();
 					gui_obj_set_prop(name, GUI_OBJ_TEXT, hamradio_get_mainsubrxmode3_value_P());
 				}
 			}

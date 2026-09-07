@@ -3790,9 +3790,10 @@ struct nvmap
 	#endif /* ! WITHPOTAFGAIN */
 	#if ! WITHPOTIFGAIN
 		uint16_t rfgain1;	// Параметр для регулировки усиления по ПЧ
-		uint8_t agcfence1;	// Параметр для регулировки точки перегиба АРУ
-		uint8_t agcfenceenable;	// Параметр для регулировки точки перегиба АРУ
 	#endif /* ! WITHPOTIFGAIN */
+	uint8_t agcfence1;	// Параметр для регулировки точки перегиба АРУ
+	uint8_t agcfenceenable;	// Параметр для регулировки точки перегиба АРУ
+
 	uint16_t glineamp;	// усиление с LINE IN
 	uint8_t gmikeboost20db;	// предусилитель микрофона
 	uint8_t gmikeagc;	/* Включение программной АРУ перед модулятором */
@@ -15212,6 +15213,11 @@ const char * hamradio_get_mainsubrxmode3_value_P(void)
 }
 
 
+void hamradio_dwatch_toggle(void)
+{
+	uif_key_mainsubrx();
+}
+
 #endif /* WITHUSEDUALWATCH */
 
 ///////////////////////////
@@ -22835,11 +22841,6 @@ uint_fast8_t hamradio_split_toggle(void)
 		uif_key_splitoff();
 
 	return gsplitmode != SPLITMODES_OFF;
-}
-
-void hamradio_split_mode_toggle(void)
-{
-	uif_key_mainsubrx();
 }
 
 void hamradio_split_vfo_swap(void)

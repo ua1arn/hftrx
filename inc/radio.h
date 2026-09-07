@@ -1158,7 +1158,7 @@ void hamradio_set_vox_level(uint_fast8_t v);
 void hamradio_setautotune(void);
 void hamradio_setrx(void);
 void hamradio_settemp_viewstyle(uint_fast8_t v);
-void hamradio_split_mode_toggle(void);
+void hamradio_dwatch_toggle(void);
 void hamradio_split_vfo_swap(void);
 void hamradio_tick_sof(void);
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem));
