@@ -594,6 +594,7 @@ static uint_fast8_t getbankindex_ab(uint_fast8_t ab);
 static uint_fast8_t getbankindex_pathi(uint_fast8_t pathi);
 static uint_fast8_t getbankindex_tx(uint_fast8_t tx);
 static uint_fast8_t getbankindex_ab_fordisplay(uint_fast8_t ab);
+static uint_fast8_t getbankindex_ab_forcontrols(uint_fast8_t ab);
 static uint_fast8_t getsubmode(uint_fast8_t bi);		/* bi: vfo bank index */
 static uint_fast8_t getfreqbandgroup(const uint_fast32_t freq);
 
@@ -4857,7 +4858,7 @@ static const struct paramdefdef xgethgateway =
 
 static unsigned getselector_bandgroup(unsigned * count)
 {
-	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
 	* count = BANDGROUP_COUNT;
 
@@ -9551,7 +9552,7 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 
 	(void) sel;
 
-	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
     const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
     const uint_fast8_t rxant = geteffrxantenna(gfreqs [bi]);
@@ -10278,10 +10279,15 @@ getbankindex_tx(const uint_fast8_t tx)
 // получить bankindex для показа частоты или режима
 // работы тракта на дисплее в полях A (0) и B (1)
 static uint_fast8_t
-//NOINLINEAT
 getbankindex_ab_fordisplay(const uint_fast8_t ab)
 {
 	return getbankindex_raw(ab);
+}
+
+static uint_fast8_t
+getbankindex_ab_forcontrols(const uint_fast8_t ab)
+{
+	return getbankindex_raw(0);
 }
 
 static uint_fast8_t
@@ -22687,13 +22693,13 @@ const char * hamradio_get_preamp_value(void)
 
 uint_fast8_t hamradio_get_att_db(void)
 {
-	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 	return attmodes [gatt].atten10 / 10;
 }
 
 uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit)
 {
-	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* vfo A bank index */
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* vfo A bank index */
 	for (uint_fast8_t i = 0; i < ATTMODE_COUNT; i ++)
 	{
 		if ( i > limit)
@@ -22707,7 +22713,7 @@ uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit)
 
 void hamradio_set_att_db(uint_fast8_t db)
 {
-	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 	const vindex_t vi = getvfoindex(bi);
 
 	verifyband(vi);
