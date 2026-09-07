@@ -17191,103 +17191,6 @@ processcatmsg(
 			cat_answer_request(CAT_NR_INDEX);	// nranswer()
 		}
 	}
-#endif /* WITHIF4DSP */
-#if 0
-	else if (pcmd == packcmd2('V', 'V'))
-	{
-		if (cathasparam == 0)
-		{
-			// Performs the VFO copy (A=B) function.
-			uif_key_click_b_from_a();
-			rc = 1;
-		}
-		else
-		{
-			cat_answer_request(CAT_BADCOMMAND_INDEX);
-		}
-
-	}
-	else if (pcmd == packcmd2('S', 'P'))
-	{
-		if (cathasparam != 0)
-		{
-			if (catpcount == 1)
-			{
-				catchangesplit(catp [0] == '1', 0);
-			}
-			else if (catpcount == 3)
-			{
-				const int_fast8_t sign = 0 - (catp [1] == '1');	// P2: 0: plus direction
-				catchangesplit(catp [0] == '1', sign * (catp [2] - '0'));
-			}
-			else
-			{
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
-			}
-			rc = 1;
-		}
-		else
-		{
-			cat_answer_request(CAT_SP_INDEX);	// spanswer()
-		}
-	}
-	else if (pcmd == packcmd2('F', 'R'))
-	{
-		if (cathasparam != 0)
-		{
-			// gvfosplit: At index 0: RX VFO A or B, at index 1: TX VFO A or B
-			switch (catparam)
-			{
-			case 0:
-				// Set VFO A to simplex state
-				gvfosplit [0] = 0;
-				break;
-			case 1:
-				// Set VFO B to simplex state
-				gvfosplit [0] = 1;
-				break;
-			case 2:
-				// Set VFO B to Memory Channel
-				break;
-			default:
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
-				break;
-			}
-			rc = 1;
-		}
-		else
-		{
-			cat_answer_request(CAT_FR_INDEX);
-		}
-	}
-	else if (pcmd == packcmd2('F', 'T'))
-	{
-		if (cathasparam != 0)
-		{
-			// gvfosplit: At index 0: RX VFO A or B, at index 1: TX VFO A or B
-			switch (catparam)
-			{
-			case 0:
-				// Set VFO A to split state
-				gvfosplit [1] = 0;
-				break;
-			case 1:
-				// Set VFO B to split state
-				gvfosplit [1] = 1;
-				break;
-			default:
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
-				break;
-			}
-			rc = 1;
-		}
-		else
-		{
-			cat_answer_request(CAT_FT_INDEX);
-		}
-	}
-#endif /* */
-#if WITHIF4DSP
 	else if (pcmd == packcmd2('N', 'T'))
 	{
 		// Sets and reads the Notch Filter status.
@@ -17414,6 +17317,99 @@ processcatmsg(
 	}
 #endif /* WITHPOWERTRIM && WITHTX */
 #endif /* WITHIF4DSP */
+	else if (pcmd == packcmd2('V', 'V'))
+	{
+		if (cathasparam == 0)
+		{
+			// Performs the VFO copy (A=B) function.
+			uif_key_click_b_from_a();
+			rc = 1;
+		}
+		else
+		{
+			cat_answer_request(CAT_BADCOMMAND_INDEX);
+		}
+
+	}
+	else if (pcmd == packcmd2('S', 'P'))
+	{
+		if (cathasparam != 0)
+		{
+			if (catpcount == 1)
+			{
+				catchangesplit(catp [0] == '1', 0);
+			}
+			else if (catpcount == 3)
+			{
+				const int_fast8_t sign = 0 - (catp [1] == '1');	// P2: 0: plus direction
+				catchangesplit(catp [0] == '1', sign * (catp [2] - '0'));
+			}
+			else
+			{
+				cat_answer_request(CAT_BADCOMMAND_INDEX);
+			}
+			rc = 1;
+		}
+		else
+		{
+			cat_answer_request(CAT_SP_INDEX);	// spanswer()
+		}
+	}
+	else if (pcmd == packcmd2('F', 'R'))
+	{
+		if (cathasparam != 0)
+		{
+			// gvfosplit: At index 0: RX VFO A or B, at index 1: TX VFO A or B
+			switch (catparam)
+			{
+			case 0:
+				// Set VFO A to simplex state
+				gvfosplit [0] = 0;
+				break;
+			case 1:
+				// Set VFO B to simplex state
+				gvfosplit [0] = 1;
+				break;
+			case 2:
+				// Set VFO B to Memory Channel
+				break;
+			default:
+				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				break;
+			}
+			rc = 1;
+		}
+		else
+		{
+			cat_answer_request(CAT_FR_INDEX);
+		}
+	}
+	else if (pcmd == packcmd2('F', 'T'))
+	{
+		if (cathasparam != 0)
+		{
+			// gvfosplit: At index 0: RX VFO A or B, at index 1: TX VFO A or B
+			switch (catparam)
+			{
+			case 0:
+				// Set VFO A to split state
+				gvfosplit [1] = 0;
+				break;
+			case 1:
+				// Set VFO B to split state
+				gvfosplit [1] = 1;
+				break;
+			default:
+				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				break;
+			}
+			rc = 1;
+		}
+		else
+		{
+			cat_answer_request(CAT_FT_INDEX);
+		}
+	}
 	else if (pcmd == packcmd2('R', 'A'))
 	{
 		// Attenuator status set/query
