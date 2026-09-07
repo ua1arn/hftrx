@@ -10205,14 +10205,14 @@ enum {
 	VFOMODES_COUNT
 };
 
-static uint_fast8_t gvfoab;	/* 0/1: какой bank index яаляется vfo a */
+static uint_fast8_t gvfoab;	/* 0/1: какой bank index яаляется vfo a. Это не переключение между A и B */
 static uint_fast8_t gsplitmode = SPLITMODES_OFF;	/* (vfo/vfoa/vfob/mem) */
 
 static uint_fast8_t
 getbankindex_raw(const uint_fast8_t ab)
 {
-	ASSERT(n < 2);
-	return (gvfoab + ab) % 2;
+	ASSERT(n < VFOS_COUNT);
+	return (gvfoab + ab) % VFOS_COUNT;
 }
 
 // программирование трактов для двойного приема
@@ -10298,7 +10298,6 @@ const char * hamradio_get_vfomode3_value(uint_fast8_t * flag)
 	case SPLITMODES_ON:
 		* flag = 1;
 		return spl;
-		//return (gvfoab != tx) ? b : a;
 	}
 }
 
@@ -10317,7 +10316,6 @@ const char * hamradio_get_vfomode5_value(uint_fast8_t * flag)
 	case SPLITMODES_ON:
 		* flag = 1;
 		return spl;
-		//return (gvfoab != tx) ? b : a;
 	}
 }
 
@@ -10368,7 +10366,6 @@ const char * hamradio_get_mode_b_value_P(uint_fast8_t * flag)
 	case SPLITMODES_ON:
 		* flag = 1;
 		break;
-		//return (gvfoab != tx) ? b : a;
 	}
 	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;	/* VFO B modifications */
 }
@@ -14109,15 +14106,15 @@ uif_key_spliton(uint_fast8_t holded)
 static void
 uif_key_click_b_from_a(void)
 {
-	const uint_fast8_t sbi = getbankindex_ab(0);	// bank index исходных данных
-	const uint_fast8_t tbi = getbankindex_ab(1);	// bank index куда копируются данные
+	const uint_fast8_t sbi = getbankindex_ab(0);	// bank index A - исходных данных
+	const uint_fast8_t tbi = getbankindex_ab(1);	// bank index B - куда копируются данные
 	const vindex_t tgvi = getvfoindex(tbi);		// vfo index куда копируются данные
 
 	copybankstate(sbi, tbi, 0);
 	storebandstate(tgvi, tbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
 	storebandfreq(tgvi, tbi); // записать частоту в область данных VFO */
 	updateboard();
-	bring_tuneA();
+	bring_tuneB();
 }
 
 // вылючение режима split
@@ -14134,7 +14131,7 @@ uif_key_splitoff(void)
 static void
 uif_key_click_a_ex_b(void)
 {
-	gvfoab = calc_next(gvfoab, 0, 1);	/* меняем текущий VFO на протвоположный */
+	gvfoab = calc_next(gvfoab, 0, VFOS_COUNT - 1);	/* меняем текущий VFO на протвоположный */
 	save_i8(RMT_VFOAB_BASE, gvfoab);
 	updateboard();
 	bring_tuneB();
@@ -15337,7 +15334,7 @@ static uint_fast8_t processpots(void)
 
 static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * ev)
 {
-	const uint_fast8_t bi = getbankindex_ab(0);
+	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
 	const uint_fast8_t submode = getsubmode(bi);
 	const uint_fast8_t mode = submodes [submode].mode;
 	uint_fast8_t changed = 0;
@@ -18286,7 +18283,7 @@ const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * nitems)
 static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8_t * active)
 {
 	unsigned nitems;
-	const uint_fast8_t bi = getbankindex_ab(0);
+	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
 	const uint_fast8_t submode = getsubmode(bi);
 	const uint_fast8_t mode = submodes [submode].mode;
 	const struct paramdefdef * const * mpd = mdt [mode].middlemenu(& nitems);
