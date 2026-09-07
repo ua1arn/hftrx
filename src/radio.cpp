@@ -21352,8 +21352,9 @@ static uint_fast8_t
 processmainlooptuneknobs(inputevent_t * ev)
 {
 	uint_fast8_t freqchanged = 0;
-	const uint_fast8_t bi_main = getbankindex_ab_forcontrols(0);		/* состояние выбора банков может измениться */
-	const uint_fast8_t bi_sub = getbankindex_ab_forcontrols(1);		/* состояние выбора банков может измениться */
+	const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);		/* состояние выбора банков может измениться */
+	const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);		/* состояние выбора банков может измениться */
+	//const uint_fast8_t locked = glocks [getbankindex_ab_forcontrols(0)];
 	uint_fast8_t jumpsize_main;
 	uint_fast8_t jumpsize_sub;
 
@@ -21460,9 +21461,9 @@ processmainlooptuneknobs(inputevent_t * ev)
 static STTE_t
 hamradio_main_step(void)
 {
-	const uint_fast8_t bi_main = getbankindex_ab_forcontrols(0);		/* состояние выбора банков может измениться */
-	const uint_fast8_t bi_sub = getbankindex_ab_forcontrols(1);		/* состояние выбора банков может измениться */
-	const uint_fast8_t locked = glocks [bi_main];
+	const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);		/* состояние выбора банков может измениться */
+	const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);		/* состояние выбора банков может измениться */
+	const uint_fast8_t locked = glocks [getbankindex_ab_forcontrols(0)];
 	inputevent_t event;
 	inputevent_initialize(& event);
 	inputevent_fill(& event, locked);
