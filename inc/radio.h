@@ -1050,7 +1050,7 @@ uint_fast8_t hamradio_get_gnotch(void);
 uint_fast8_t hamradio_get_gnotchtype(void);
 uint_fast8_t hamradio_get_greverb(void);
 uint_fast8_t hamradio_get_gsmetertype(void);
-uint_fast8_t hamradio_get_gvfoab(void);
+uint_fast8_t hamradio_get_gvfoab(void);	// кандидат на удаление (VFO A всегда на большом индикаторе)
 uint_fast8_t hamradio_get_gvoxenable(void);
 uint_fast8_t hamradio_get_gzoomxpow2(void);
 uint_fast8_t hamradio_get_high_bp(int_least16_t rotate);

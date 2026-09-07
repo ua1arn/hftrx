@@ -22827,7 +22827,6 @@ uint32_t hamradio_get_gadcrand(void)
 
 #endif /* WITHDSPEXTDDC */
 
-#if WITHUSEDUALWATCH
 uint_fast8_t hamradio_split_toggle(void)
 {
 	if (gsplitmode == SPLITMODES_OFF)
@@ -22835,7 +22834,7 @@ uint_fast8_t hamradio_split_toggle(void)
 	else
 		uif_key_splitoff();
 
-	return gsplitmode != 0;
+	return gsplitmode != SPLITMODES_OFF;
 }
 
 void hamradio_split_mode_toggle(void)
@@ -22848,11 +22847,11 @@ void hamradio_split_vfo_swap(void)
 	uif_key_click_a_ex_b();
 }
 
+// кандидат на удаление (VFO A всегда на большом индикаторе)
 uint_fast8_t hamradio_get_gvfoab(void)
 {
 	return gvfoab;
 }
-#endif /* WITHUSEDUALWATCH */
 
 // основной цикл программы при работе в режиме любительского премника
 void
