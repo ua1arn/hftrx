@@ -81,8 +81,8 @@
 //	#define BOARD_DETECTOR_TUNE 	4		// Заглушка
 
 	// +++ заглушки для плат с DSP обработкой
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
+	
+	
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255

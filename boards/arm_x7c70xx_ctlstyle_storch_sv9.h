@@ -203,8 +203,8 @@
 	//#define CTLREGMODE_NOCTLREG 1	/* Загрузчик не имеет доступа к управлению SPI. Однако, есть прямое управление выъодами GPIO */
 
 	// +++ заглушки для плат с DSP обработкой
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
+	
+	
 
 	#define BOARD_DETECTOR_AM 	0		// Заглушка
 	#define BOARD_DETECTOR_FM 	0		// Заглушка

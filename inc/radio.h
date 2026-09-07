@@ -124,8 +124,8 @@ extern "C" {
 
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
+	#define	BOARD_AGCCODE_ON	0
+	#define	BOARD_AGCCODE_OFF	1
 
 	#define BOARD_NOTCH_OFF		0
 	#define BOARD_NOTCH_MANUAL	1
@@ -138,7 +138,6 @@ extern "C" {
 	#define WITHMIC1LEVEL		1	/* установка усиления микрофона */
 
 	#define	SQUELCHMAX	255	/* Kenwood's value */
-	#define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
 #endif /* WITHIF4DSP */
 
 #define CWPITCHSCALE 	10

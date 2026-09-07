@@ -26,6 +26,7 @@
 #include <atomic>
 
 //#define WITHRPTOFFSET 1
+#define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
 
 #define UI_TICKS_PERIOD 50	// ms
 #define UINTICKS(v) (((v) + (UI_TICKS_PERIOD - 1)) / UI_TICKS_PERIOD)
@@ -1411,7 +1412,7 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 	};
 
 #else
-	#define WITHAGCMODENONE 1
+	
 	/* перечисление всех возможных режимов АРУ
 	 */
 	enum {
@@ -13302,7 +13303,7 @@ updateboard_noui(
 	)
 {
 	/* параметры, вычисляемые по updateboard(full=1) */
-	static const struct modetempl * pamodetempl;	/* Режим, используемый при передаче */
+	static const struct modetempl * Xpamodetempl;	/* Режим, ранее установленный */
 
 	/* Параметры, которые могут измениться при перестройке частоты и вызвать необходимость full=1 */
 	static uint_fast8_t lo0side = LOCODE_INVALID;
@@ -13431,7 +13432,7 @@ updateboard_noui(
 		for (pathi = 0; pathi < pathn; ++ pathi)
 		{
 			const uint_fast8_t asubmode = getasubmode(pathi);	// SUBMODE_CWZ/SUBMODE_CWZSMART for tune
-			pamodetempl = getmodetempl(asubmode);
+			Xpamodetempl = getmodetempl(asubmode);
 			const uint_fast8_t amode = submodes [asubmode].mode;
 			const uint_fast8_t alsbmode = getsubmodelsb(asubmode, forcelsb [pathi]);	// Принимаемая модуляция на нижней боковой
 			//
@@ -13450,7 +13451,6 @@ updateboard_noui(
 			{
 				mixXlsbs [i] = getlsbloX(alsbmode, i, sides, sizeof sides / sizeof sides [0]);
 			}
-			ASSERT(pamodetempl != NULL);
 			// расчёт частот в тракте
 			//
 			enum { dc = 0 };
@@ -13559,7 +13559,7 @@ updateboard_noui(
 				board_set_notch_freq(gnotchfreq.value);	// TODO: при AUTONOTCH ставить INT16_MAX ?
 			#endif /* WITHNOTCHFREQ */
 			#if WITHIF4DSP
-				const uint_fast8_t agcseti = pamodetempl->agcseti;
+				const uint_fast8_t agcseti = Xpamodetempl->agcseti;
 				board_set_agcrate(gagc [agcseti].rate);			/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
 				board_set_agc_scale(gagc [agcseti].scale);		/* Для эксперементов по улучшению приема АМ */
 				board_set_agc_t0(gagc [agcseti].t0);
@@ -13567,7 +13567,7 @@ updateboard_noui(
 				board_set_agc_t2(gagc [agcseti].release10);		// время разряда медленной цепи АРУ
 				board_set_agc_t4(gagc [agcseti].t4);			// время разряда быстрой цепи АРУ
 				board_set_agc_thung(gagc [agcseti].thung10);	// hold time (hung time) in 0.1 sec
-				board_set_squelch_level(pamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(gsquelch.value, gsquelchNFM) : gsquelch.value);
+				board_set_squelch_level(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(gsquelch.value, gsquelchNFM) : gsquelch.value);
 				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 				#if WITHSUBTONES
 					board_set_ctcssrx(pamodetempl->subtone && param_getvalue(& xgsubtoneirx) ? gsubtones [param_getvalue(& xgsubtoneirx)] : 0);	// частота subtone (до десятых долей герца).
@@ -13593,19 +13593,19 @@ updateboard_noui(
 			board_set_lo6(freqlo6);	/* иначе, в случае WITHIF4DSP - управление знаком частоты */
 			board_set_fullbw6(getif6bw(amode, gtx, wide));	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
 			board_set_fltsofter(gtx ? WITHFILTSOFTMIN : bwseti_getfltsofter(bwseti));	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
-			board_set_dspmode(pamodetempl->dspmode [gtx]);
+			board_set_dspmode(Xpamodetempl->dspmode [gtx]);
 			#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 				board_set_dactest(gdactest);		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 				board_set_dacstraight(gdacstraight);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 				board_set_tx_inh_enable(gtxinhenable);				/* разрешение реакции на вход tx_inh */
-				board_set_tx_bpsk_enable(pamodetempl->dspmode [gtx] == DSPCTL_MODE_TX_BPSK);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
-				board_set_mode_wfm(pamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_WFM);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
+				board_set_tx_bpsk_enable(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_TX_BPSK);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
+				board_set_mode_wfm(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_WFM);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
 			#endif /* WITHDSPEXTDDC */
 		#endif /* WITHIF4DSP */
 
 		#if WITHTX
 			/* переносить эти параметры под условие перенастройки в режиме приёма не стал, так как меню может быть вызвано и при передаче */
-			board_set_txcw(pamodetempl->txcw);	// при передаче будет режим без SSB модулятора
+			board_set_txcw(Xpamodetempl->txcw);	// при передаче будет режим без SSB модулятора
 			board_set_vox(gvoxenable && getmodetempl(txsubmode)->vox);	// включение внешних схем VOX
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
@@ -13619,7 +13619,7 @@ updateboard_noui(
 				vox_set_levels(param_getvalue(& xgvoxlevel), param_getvalue(& xgavoxlevel));		/* установка параметров vox */
 			#endif /* WITHVOX */
 			board_set_mikemute(getactualtune() || getmodetempl(txsubmode)->mute);	/* отключить микрофонный усилитель */
-			seq_set_txgate(pamodetempl->txgfva, pamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
+			seq_set_txgate(Xpamodetempl->txgfva, Xpamodetempl->sdtnva);		/* как должен переключаться тракт на передачу */
 			board_set_txlevel(getactualtxboard());	/* BOARDPOWERMIN..BOARDPOWERMAX */
 
 		#endif /* WITHTX */
