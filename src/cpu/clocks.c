@@ -6614,8 +6614,10 @@ void sysinit_boot_disconnect(void)
 void sysinit_hwtimer_initialize(void)
 {
 	const uint_fast32_t f = allwnr_t113_get_hosc_freq();	// 24000000
-	__set_CNTFRQ(f);
 	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+#if __CORTEX_A
+	__set_CNTFRQ(f);
+#endif
 }
 
 // Allwinner T113/F133/D1s PLL initialize
