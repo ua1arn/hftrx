@@ -1409,6 +1409,81 @@ static unsigned long mctl_calc_size(const struct dram_config *config)
 	return (1ULL << (config->cols + config->rows + 3)) * width * config->ranks;
 }
 
+#if 0
+// [dram_para]
+static const struct dram_para para = {
+		.clk       = 792,
+		.type      = 8,
+		.dx_odt    = 0x08080808,
+		.dx_dri    = 0x0e0e0e0e,
+		.ca_dri    = 0x0e0e,
+		.odt_en    = 0x7887bbbb,
+		.para1     = 0x30fa,
+		.para2     = 0x0000,
+		.mr0       = 0x0,
+		.mr1       = 0x34,
+		.mr2       = 0x1b,
+		.mr3       = 0x33,
+		.mr4       = 0x3,
+		.mr5       = 0x0,
+		.mr6       = 0x0,
+		.mr11      = 0x4,
+		.mr12      = 0x72,
+		.mr13      = 0x0,
+		.mr14      = 0x9,
+		.mr16      = 0x0,
+		.mr17      = 0x0,
+		.mr22      = 0x24,
+		.tpr0      = 0x0,
+		.tpr1      = 0x0,
+		.tpr2      = 0x0,
+		.tpr3      = 0x0,
+		.tpr6      = 0x40808080,
+		.tpr10     = 0x402f6633,
+		.tpr11     = 0,
+		.tpr12     = 0,
+		.tpr13     = 0x2000c60,
+};
+#elif 0
+// со старой платой HelperBoardT507 LPDDR4 работает
+// configtype=1
+//[dram_para3]
+static const struct dram_para para = {
+	.clk       = 792,
+	.type      = 8,
+	.dx_odt    = 0x0c0c0c0c,
+	.dx_dri    = 0x0e0e0e0e,
+	.ca_dri    = 0x0e0e,
+	.odt_en    = 0x7887bbbb,
+	.para1     = 0x30FA,
+	.para2     = 0x0000,
+	.mr0       = 0x0,
+	.mr1       = 0x34,
+	.mr2       = 0x1b,
+	.mr3       = 0x33,
+	.mr4       = 0x3,
+	.mr5       = 0x0,
+	.mr6       = 0x0,
+	.mr11      = 0x4,
+	.mr12      = 0x72,
+	.mr13      = 0x0,
+	.mr14      = 0x9,
+	.mr16      = 0x0,
+	.mr17      = 0x0,
+	.mr22      = 0x24,
+	.tpr0      = 0x0,
+	.tpr1      = 0x0,
+	.tpr2      = 0x0,
+	.tpr3      = 0x0,
+	.tpr6      = 0x31808080,
+	.tpr10     = 0x402e0000,
+	.tpr11     = 0x22262622,
+	.tpr12     = 0x0b0c0d0b,
+	.tpr13     = 0x61,
+};
+
+#else
+
 static const struct dram_para para = {
 	.clk = CONFIG_DRAM_CLK,
 #ifdef BOARD_CONFIG_DRAM_TYPE
@@ -1437,6 +1512,44 @@ static const struct dram_para para = {
 	.tpr11 = CONFIG_DRAM_SUN50I_H616_TPR11,
 	.tpr12 = CONFIG_DRAM_SUN50I_H616_TPR12,
 };
+#endif
+
+void dram_para_print(const struct dram_para * p)
+{
+	PRINTF("clk=%08X\n", (unsigned) p->clk);
+	PRINTF("type=%08X\n", (unsigned) p->type);
+	PRINTF("dx_odt=%08X\n", (unsigned) p->dx_odt);
+	PRINTF("dx_dri=%08X\n", (unsigned) p->dx_dri);
+	PRINTF("ca_dri=%08X\n", (unsigned) p->ca_dri);
+	PRINTF("para0=%08X\n", (unsigned) p->para0);
+	PRINTF("para1=%08X\n", (unsigned) p->para1);
+	PRINTF("para2=%08X\n", (unsigned) p->para2);
+	PRINTF("mr0=%08X\n", (unsigned) p->mr0);
+	PRINTF("mr1=%08X\n", (unsigned) p->mr1);
+	PRINTF("mr2=%08X\n", (unsigned) p->mr2);
+	PRINTF("mr3=%08X\n", (unsigned) p->mr3);
+	PRINTF("mr4=%08X\n", (unsigned) p->mr4);
+	PRINTF("mr5=%08X\n", (unsigned) p->mr5);
+	PRINTF("mr6=%08X\n", (unsigned) p->mr6);
+	PRINTF("mr11=%08X\n", (unsigned) p->mr11);
+	PRINTF("mr12=%08X\n", (unsigned) p->mr12);
+	PRINTF("mr13=%08X\n", (unsigned) p->mr13);
+	PRINTF("mr14=%08X\n", (unsigned) p->mr14);
+	PRINTF("mr16=%08X\n", (unsigned) p->mr16);
+	PRINTF("mr17=%08X\n", (unsigned) p->mr17);
+	PRINTF("mr22=%08X\n", (unsigned) p->mr22);
+	PRINTF("tpr0=%08X\n", (unsigned) p->tpr0);
+	PRINTF("tpr1=%08X\n", (unsigned) p->tpr1);
+	PRINTF("tpr2=%08X\n", (unsigned) p->tpr2);
+	PRINTF("tpr3=%08X\n", (unsigned) p->tpr3);
+	PRINTF("tpr6=%08X\n", (unsigned) p->tpr6);
+	PRINTF("tpr10=%08X\n", (unsigned) p->tpr10);
+	PRINTF("tpr11=%08X\n", (unsigned) p->tpr11);
+	PRINTF("tpr12=%08X\n", (unsigned) p->tpr12);
+	PRINTF("tpr13=%08X\n", (unsigned) p->tpr13);
+	PRINTF("tpr14=%08X\n", (unsigned) p->tpr14);
+	PRINTF("odt_en=%08X\n", (unsigned) p->odt_en);
+}
 
 unsigned long sunxi_dram_init(void)
 {
@@ -1445,6 +1558,7 @@ unsigned long sunxi_dram_init(void)
 	struct dram_config config;
 	unsigned long size;
 
+	dram_para_print(& para);
 	setbits_le32(&prcm->res_cal_ctrl, BIT(8));
 	clrbits_le32(&prcm->ohms240, 0x3f);
 
