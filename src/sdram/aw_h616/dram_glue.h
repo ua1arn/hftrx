@@ -745,7 +745,7 @@ struct dram_config {
 	#define CONFIG_DRAM_SUN50I_H616_TPR12 0x0d0a0b0c
 	#define CONFIG_DRAM_SUN50I_H616_TPR13 0x000c60
 
-#elif CPUSTYLE_T507
+#elif CONFIG_SUNXI_DRAM_T507_LPDDR4
 	// LPDDR4 versions
 	#define CONFIG_DRAM_SUN50I_H616_TPR0 0x0
 	#define CONFIG_DRAM_SUN50I_H616_TPR2 0x0
@@ -771,7 +771,7 @@ struct dram_config {
 	#define CONFIG_DRAM_SUN50I_H616_TPR11 0x24242624
 	#define CONFIG_DRAM_SUN50I_H616_TPR12 0x0f0f100f
 
-#elif CPUSTYLE_A133
+#elif CONFIG_SUNXI_DRAM_A133_LPDDR4
 
 // https://github.com/u-boot/u-boot/blob/d33b21b7e261691e8d6613a24cc9b0ececba3b01/configs/liontron-h-a133l_defconfig#L1
 
