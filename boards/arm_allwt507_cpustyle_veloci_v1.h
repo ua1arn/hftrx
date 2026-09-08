@@ -111,10 +111,6 @@
 #endif
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit - Mali G31 MP2 (Panfrost) */
-
-	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
-	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
-
 	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	//#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/

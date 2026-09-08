@@ -156,9 +156,6 @@ void user_uart5_onoverflow(void);
 	#define WITHSDHC0HW	1		/* Hardware SD HOST #0 CONTROLLER */
 
 	////#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
-	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
-
 	////#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
