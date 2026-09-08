@@ -59,165 +59,6 @@ processcatmsg(
 	const uint8_t * catp	// массив символов
 	);
 
-typedef struct keyevent_tag
-{
-	uint_fast8_t kbready;
-	uint_fast16_t kbch;
-} keyevent_t;
-
-void keyevent_initialize(keyevent_t * e)
-{
-	e->kbready = 0;
-}
-
-typedef struct knobevent_tag
-{
-	encoder_t * enc;
-	int delta;
-	unsigned jumpsize;
-	uint8_t lowres;
-	int derate;
-} knobevent_t;
-
-void knobevent_initialize(knobevent_t * e, encoder_t * aenc, uint_fast8_t alowres, int aderate)
-{
-	e->delta = 0;
-	e->enc = aenc;
-	e->lowres = alowres;
-	e->derate = aderate;
-}
-
-typedef struct mouseevent_tag
-{
-	int8_t pressed;
-	uint16_t x;
-	uint16_t y;
-} mouseevent_t;
-
-void mouseevent_initialize(mouseevent_t * e)
-{
-	e->pressed = 0;
-}
-
-typedef struct inputevent_tag
-{
-	keyevent_t frontkeyevent;
-	keyevent_t dtmfkeyevent;
-#if WITHENCODER
-	knobevent_t encMAIN;
-#if WITHENCODER_SUB
-	knobevent_t encSUB;
-#endif /* WITHENCODER_SUB */
-#if WITHENCODER2
-	knobevent_t encFN;
-#endif /* WITHENCODER2 */
-#if WITHENCODER_1F
-	knobevent_t encF1;
-#endif /* WITHENCODER_1F */
-#if WITHENCODER_2F
-	knobevent_t encF2;
-#endif /* WITHENCODER_2F */
-#if WITHENCODER_3F
-	knobevent_t encF3;
-#endif /* WITHENCODER_3F */
-#if WITHENCODER_4F
-	knobevent_t encF4;
-#endif /* WITHENCODER_4F */
-#endif /* WITHENCODER */
-	mouseevent_t mouse;
-} inputevent_t;
-
-
-#if WITHENCODER
-
-#if defined (ENCDIV_DEFAULT)
-	static uint_fast8_t genc1div = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
-#else /* defined (ENCDIV_DEFAULT) */
-	static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
-#endif /* defined (ENCDIV_DEFAULT) */
-
-#if defined (BOARD_ENCODER2_DIVIDE)
-	static uint_fast8_t genc2div = BOARD_ENCODER2_DIVIDE;
-#else /* defined (BOARD_ENCODER2_DIVIDE) */
-	static uint_fast8_t genc2div = 2;	/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
-#endif /* defined (BOARD_ENCODER2_DIVIDE) */
-
-static int_least16_t event_getRotateAccelerated(knobevent_t * e, uint_fast8_t * jsize, int derate)
-{
-	ASSERT(derate);
-	const div_t d = div(e->delta, e->derate * derate);
-	encoder_pushback(e->enc, d.rem);
-	* jsize = e->jumpsize;
-	e->delta = 0;
-	return d.quot;
-}
-
-/* получение "редуцированного" количества прерываний от валкодера.
- * То что осталось после деления на scale, остается в накопителе
- */
-static int_fast32_t event_getRotate(knobevent_t * e)
-{
-	const div_t d = div(e->delta, e->derate);
-	encoder_pushback(e->enc, d.rem);
-	e->delta = 0;
-	return d.quot;
-}
-
-
-/* получение "редуцированного" количества прерываний от валкодера.
- * То что осталось после деления на scale, остается в накопителе
- */
-static int_fast32_t event_getRotateReduced(knobevent_t * e, int derate)
-{
-	ASSERT(derate);
-	const div_t d = div(e->delta, e->derate * derate);
-	encoder_pushback(e->enc, d.rem);
-	e->delta = 0;
-	return d.quot;
-}
-
-#else /* WITHENCODER */
-
-static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
-
-#endif /* WITHENCODER */
-
-
-// производится на каждом цикле получения состояния органов управления
-void inputevent_initialize(inputevent_t * e)
-{
-	keyevent_initialize(& e->frontkeyevent);
-	keyevent_initialize(& e->dtmfkeyevent);
-	mouseevent_initialize(& e->mouse);
-
-#if WITHENCODER
-	knobevent_initialize(& e->encMAIN, & encoder1, 0, genc1div);
-#if WITHENCODER_SUB
-	knobevent_initialize(& e->encSUB, & encoder_sub, 0, genc1div);
-#endif /* WITHENCODER_SUB */
-#if WITHENCODER2
-	knobevent_initialize(& e->encFN, & encoder2, 1, genc2div);
-#endif /* WITHENCODER2 */
-#if WITHENCODER_1F
-	knobevent_initialize(& e->encF1, & encoder_ENC1F, 1, BOARD_ENC1F_DIVIDE);
-#endif /* WITHENCODER_1F */
-#if WITHENCODER_2F
-	knobevent_initialize(& e->encF2, & encoder_ENC2F, 1, BOARD_ENC2F_DIVIDE);
-#endif /* WITHENCODER_2F */
-#if WITHENCODER_3F
-	knobevent_initialize(& e->encF3, & encoder_ENC3F, 1, BOARD_ENC3F_DIVIDE);
-#endif /* WITHENCODER_3F */
-#if WITHENCODER_4F
-	knobevent_initialize(& e->encF4, & encoder_ENC4F, 1, BOARD_ENC4F_DIVIDE);
-#endif /* WITHENCODER_4F */
-#endif /* WITHENCODER */
-}
-
-// Параметры ставяться в setgsubmode
-static uint_fast16_t gstep_ENC_MAIN;
-static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
-static uint_fast16_t gencderate = 1;
-
 
 /* система отказа от передачи при аварийных ситуациях */
 typedef struct edgepin_tag
@@ -335,60 +176,6 @@ processmessages(
 	releasemsgbuffer(buff);
 }
 
-void inputevent_fill(inputevent_t * e, uint_fast8_t locked)
-{
-	processmessages(& e->frontkeyevent.kbch, & e->frontkeyevent.kbready);
-	e->dtmfkeyevent.kbready = dtmf_scan(& e->dtmfkeyevent.kbch);
-	if (e->dtmfkeyevent.kbready)
-	{
-		PRINTF("dtmfkey=%02X\n", (unsigned char) e->dtmfkeyevent.kbch);
-	}
-
-#if WITHENCODER
-	// main encoder
-
-	e->encMAIN.delta = encoder_getrotatehires(e->encMAIN.enc, & e->encMAIN.jumpsize);
-#if WITHENCODER_SUB
-	e->encSUB.delta = encoder_getrotatehires(e->encSUB.enc, & e->encSUB.jumpsize);
-#endif /* WITHENCODER_SUB */
-#if WITHENCODER2
-	e->encFN.delta = encoder_get_delta(e->encFN.enc);
-	e->encFN.jumpsize = 1;
-#endif /* WITHENCODER2 */
-#if WITHENCODER_1F
-	e->encF1.delta = encoder_get_delta(e->encF1.enc);
-	e->encF1.jumpsize = 0;
-#endif /* WITHENCODER_1F */
-#if WITHENCODER_2F
-	e->encF2.delta = encoder_get_delta(e->encF2.enc);
-	e->encF2.jumpsize = 0;
-#endif /* WITHENCODER_2F */
-#if WITHENCODER_3F
-	e->encF3.delta = encoder_get_delta(e->encF3.enc);
-	e->encF3.jumpsize = 0;
-#endif /* WITHENCODER_3F */
-#if WITHENCODER_4F
-	e->encF4.delta = encoder_get_delta(e->encF4.enc);
-	e->encF4.jumpsize = 0;
-#endif /* WITHENCODER_4F */
-#endif /* WITHENCODER */
-	/* блокировка всего управления, а не только перестройки */
-#if WITHLOCKFULL
-	if (locked && e->frontkeyevent.kbready && e->frontkeyevent.kbch != KBD_CODE_LOCK)
-	{
-		e->frontkeyevent.kbready = 0;
-	}
-	if (locked)
-	{
-		e->encMAIN.delta = 0;
-		e->encSUB.delta = 0;
-		e->encF1.delta = 0;
-		e->encF2.delta = 0;
-		e->encF3.delta = 0;
-		e->encF4.delta = 0;
-	}
-#endif
-}
 
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
@@ -940,6 +727,172 @@ param_keyclick(const struct paramdefdef * pd)
 
 	savemenuvalue(pd);
 	return 1;
+}
+
+
+typedef struct keyevent_tag
+{
+	uint_fast8_t kbready;
+	uint_fast16_t kbch;
+} keyevent_t;
+
+void keyevent_initialize(keyevent_t * e)
+{
+	e->kbready = 0;
+}
+
+typedef struct knobevent_tag
+{
+	encoder_t * enc;
+	int delta;
+	unsigned jumpsize;
+	uint8_t lowres;
+	int derate;
+} knobevent_t;
+
+void knobevent_initialize(knobevent_t * e, encoder_t * aenc, uint_fast8_t alowres, int aderate)
+{
+	e->delta = 0;
+	e->enc = aenc;
+	e->lowres = alowres;
+	e->derate = aderate;
+}
+
+typedef struct mouseevent_tag
+{
+	int8_t pressed;
+	uint16_t x;
+	uint16_t y;
+} mouseevent_t;
+
+void mouseevent_initialize(mouseevent_t * e)
+{
+	e->pressed = 0;
+}
+
+typedef struct inputevent_tag
+{
+	keyevent_t frontkeyevent;
+	keyevent_t dtmfkeyevent;
+#if WITHENCODER
+	knobevent_t encMAIN;
+#if WITHENCODER_SUB
+	knobevent_t encSUB;
+#endif /* WITHENCODER_SUB */
+#if WITHENCODER2
+	knobevent_t encFN;
+#endif /* WITHENCODER2 */
+#if WITHENCODER_1F
+	knobevent_t encF1;
+#endif /* WITHENCODER_1F */
+#if WITHENCODER_2F
+	knobevent_t encF2;
+#endif /* WITHENCODER_2F */
+#if WITHENCODER_3F
+	knobevent_t encF3;
+#endif /* WITHENCODER_3F */
+#if WITHENCODER_4F
+	knobevent_t encF4;
+#endif /* WITHENCODER_4F */
+#endif /* WITHENCODER */
+	mouseevent_t mouse;
+} inputevent_t;
+
+#if WITHENCODER
+
+static int_least16_t event_getRotateAccelerated(knobevent_t * e, uint_fast8_t * jsize, int derate)
+{
+	ASSERT(derate);
+	const div_t d = div(e->delta, e->derate * derate);
+	encoder_pushback(e->enc, d.rem);
+	* jsize = e->jumpsize;
+	e->delta = 0;
+	return d.quot;
+}
+
+/* получение "редуцированного" количества прерываний от валкодера.
+ * То что осталось после деления на scale, остается в накопителе
+ */
+static int_fast32_t event_getRotate(knobevent_t * e)
+{
+	const div_t d = div(e->delta, e->derate);
+	encoder_pushback(e->enc, d.rem);
+	e->delta = 0;
+	return d.quot;
+}
+
+
+/* получение "редуцированного" количества прерываний от валкодера.
+ * То что осталось после деления на scale, остается в накопителе
+ */
+static int_fast32_t event_getRotateReduced(knobevent_t * e, int derate)
+{
+	ASSERT(derate);
+	const div_t d = div(e->delta, e->derate * derate);
+	encoder_pushback(e->enc, d.rem);
+	e->delta = 0;
+	return d.quot;
+}
+
+#else /* WITHENCODER */
+
+static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
+
+#endif /* WITHENCODER */
+
+void inputevent_fill(inputevent_t * e, uint_fast8_t locked)
+{
+	processmessages(& e->frontkeyevent.kbch, & e->frontkeyevent.kbready);
+	e->dtmfkeyevent.kbready = dtmf_scan(& e->dtmfkeyevent.kbch);
+	if (e->dtmfkeyevent.kbready)
+	{
+		PRINTF("dtmfkey=%02X\n", (unsigned char) e->dtmfkeyevent.kbch);
+	}
+
+#if WITHENCODER
+	// main encoder
+
+	e->encMAIN.delta = encoder_getrotatehires(e->encMAIN.enc, & e->encMAIN.jumpsize);
+#if WITHENCODER_SUB
+	e->encSUB.delta = encoder_getrotatehires(e->encSUB.enc, & e->encSUB.jumpsize);
+#endif /* WITHENCODER_SUB */
+#if WITHENCODER2
+	e->encFN.delta = encoder_get_delta(e->encFN.enc);
+	e->encFN.jumpsize = 1;
+#endif /* WITHENCODER2 */
+#if WITHENCODER_1F
+	e->encF1.delta = encoder_get_delta(e->encF1.enc);
+	e->encF1.jumpsize = 0;
+#endif /* WITHENCODER_1F */
+#if WITHENCODER_2F
+	e->encF2.delta = encoder_get_delta(e->encF2.enc);
+	e->encF2.jumpsize = 0;
+#endif /* WITHENCODER_2F */
+#if WITHENCODER_3F
+	e->encF3.delta = encoder_get_delta(e->encF3.enc);
+	e->encF3.jumpsize = 0;
+#endif /* WITHENCODER_3F */
+#if WITHENCODER_4F
+	e->encF4.delta = encoder_get_delta(e->encF4.enc);
+	e->encF4.jumpsize = 0;
+#endif /* WITHENCODER_4F */
+#endif /* WITHENCODER */
+	/* блокировка всего управления, а не только перестройки */
+#if WITHLOCKFULL
+	if (locked && e->frontkeyevent.kbready && e->frontkeyevent.kbch != KBD_CODE_LOCK)
+	{
+		e->frontkeyevent.kbready = 0;
+	}
+	if (locked)
+	{
+		e->encMAIN.delta = 0;
+		e->encSUB.delta = 0;
+		e->encF1.delta = 0;
+		e->encF2.delta = 0;
+		e->encF3.delta = 0;
+		e->encF4.delta = 0;
+	}
+#endif
 }
 
 #if WITHENCODER
@@ -4116,7 +4069,14 @@ static int_fast32_t getagcfencebase(void)
 	return DBVALOFFSET_BASE;
 }
 
+
 #if WITHENCODER
+
+	#if defined (ENCDIV_DEFAULT)
+		static uint_fast8_t genc1div = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
+	#else /* defined (ENCDIV_DEFAULT) */
+		static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
+	#endif /* defined (ENCDIV_DEFAULT) */
 
 	static const struct paramdefdef xgenc1div =
 	{
@@ -4132,6 +4092,12 @@ static int_fast32_t getagcfencebase(void)
 	};
 
 #if WITHENCODER2
+
+	#if defined (BOARD_ENCODER2_DIVIDE)
+		static uint_fast8_t genc2div = BOARD_ENCODER2_DIVIDE;
+	#else /* defined (BOARD_ENCODER2_DIVIDE) */
+		static uint_fast8_t genc2div = 2;	/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+	#endif /* defined (BOARD_ENCODER2_DIVIDE) */
 	static const struct paramdefdef xgenc2div =
 	{
 		QLABEL("ENC2 DIV"),  0, RJ_UNSIGNED, ISTEP1,
@@ -4193,13 +4159,20 @@ enum { grxantenna = 0 };
 enum { gantenna = 0 };
 enum { grxantenna = 0 };
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
+
 static uint_fast8_t gvfosplit [VFOS_COUNT];	// At index 0: RX VFO A or B, at index 1: TX VFO A or B
+
 // Параметры, выставляемые в update board
 // кэш установленных параметров.
 // На эти параметры ориентируемся при работе кнопками управления, переклбчения фильттров и так далее.
 static uint_fast8_t gsubmode;		/* код текущего режима */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
 static uint_fast8_t gfi;			/* номер фильтра (сквозной) для текущего режима */
+
+// Параметры ставяться в setgsubmode
+static uint_fast16_t gstep_ENC_MAIN;
+static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
+static uint_fast16_t gencderate = 1;
 
 static unsigned nvramoffs_selector(unsigned * count)
 {
@@ -10563,8 +10536,9 @@ getsubmode(
  * Устанавливает "кэшированные" состояния режима работы -
    gsubmode, gstep_ENC_MAIN, gagcmode, gfi, gmode.
 */
+
+
 static void
-//NOINLINEAT
 setgsubmode(
 	uint_fast8_t submode
    )
@@ -21457,6 +21431,38 @@ processmainlooptuneknobs(inputevent_t * ev)
 	}
 	return freqchanged;
 }
+
+
+// производится на каждом цикле получения состояния органов управления
+void inputevent_initialize(inputevent_t * e)
+{
+	keyevent_initialize(& e->frontkeyevent);
+	keyevent_initialize(& e->dtmfkeyevent);
+	mouseevent_initialize(& e->mouse);
+
+#if WITHENCODER
+	knobevent_initialize(& e->encMAIN, & encoder1, 0, genc1div);
+#if WITHENCODER_SUB
+	knobevent_initialize(& e->encSUB, & encoder_sub, 0, genc1div);
+#endif /* WITHENCODER_SUB */
+#if WITHENCODER2
+	knobevent_initialize(& e->encFN, & encoder2, 1, genc2div);
+#endif /* WITHENCODER2 */
+#if WITHENCODER_1F
+	knobevent_initialize(& e->encF1, & encoder_ENC1F, 1, BOARD_ENC1F_DIVIDE);
+#endif /* WITHENCODER_1F */
+#if WITHENCODER_2F
+	knobevent_initialize(& e->encF2, & encoder_ENC2F, 1, BOARD_ENC2F_DIVIDE);
+#endif /* WITHENCODER_2F */
+#if WITHENCODER_3F
+	knobevent_initialize(& e->encF3, & encoder_ENC3F, 1, BOARD_ENC3F_DIVIDE);
+#endif /* WITHENCODER_3F */
+#if WITHENCODER_4F
+	knobevent_initialize(& e->encF4, & encoder_ENC4F, 1, BOARD_ENC4F_DIVIDE);
+#endif /* WITHENCODER_4F */
+#endif /* WITHENCODER */
+}
+
 // работа в главной машине состояний
 static STTE_t
 hamradio_main_step(void)
