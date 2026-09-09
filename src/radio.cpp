@@ -10377,7 +10377,7 @@ uint_fast32_t hamradio_get_freq_b(void)
 
 static const struct paramdefdef xgdummy =
 {
-	QLABEL("xgdummy"),  0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
+	QLABEL(""),  0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
 	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
