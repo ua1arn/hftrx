@@ -12652,7 +12652,7 @@ void filters_update_rx(uint_fast8_t pathi)
 
 	// Получение параметров эквалайзера
 	FLOAT_t * const dCoefs = nrp->firEQcoeff;
-	dsp_recalceq_coeffs_rx_AUDIO(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate coefficients
+	dsp_recalceq_coeffs_rx_AUDIO(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate full array of coefficients
 }
 
 static void InitNoiseReduction(void)
@@ -13621,7 +13621,7 @@ updateboard_noui(
 			board_set_lo6(freqlo6);	/* иначе, в случае WITHIF4DSP - управление знаком частоты */
 			board_set_fullbw6(getif6bw(amode, gtx, wide));	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
 			board_set_fltsofter(gtx ? WITHFILTSOFTMIN : bwseti_getfltsofter(bwseti));	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
-			board_set_flttransition(param_getvalue(& xgtransition));
+			board_set_flttransition(gtx ? 0 : param_getvalue(& xgtransition));
 			board_set_dspmode(Xpamodetempl->dspmode [gtx]);
 			#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 				board_set_dactest(gdactest);		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */

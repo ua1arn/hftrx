@@ -114,7 +114,7 @@ static int_fast16_t 	glob_afhighcuttx = 3400;	// Частота высокоча
 
 static int_fast16_t		glob_fullbw6 [2] = { 1000, 1000 };		/* Частота среза фильтров ПЧ в алгоритме Уивера */
 static int_fast32_t		glob_lo6 [2] = { 0, 0 };
-static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; /* WITHFILTSOFTMIN..WITHFILTSOFTMAX Код управления сглаживанием скатов фильтра основной селекции на приёме */
+//static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; /* WITHFILTSOFTMIN..WITHFILTSOFTMAX Код управления сглаживанием скатов фильтра основной селекции на приёме */
 static uint_fast16_t 	glob_flttransition [2] = { 0, 0 };
 static int_fast16_t 	glob_gainnfmrx [2] = { 100, 100 };
 static uint_fast8_t 	glob_squelch_level;
@@ -906,7 +906,7 @@ static void calculate_variable_slope_fir(FLOAT_t *const h, FLOAT_t *const tmp_wi
  * @param  w_trans         Width of the transition band in Hz (Smaller value = Steeper filter slope).
  * @return None
  */
-static void calculate_variable_slope_lpf(FLOAT_t *const h, FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f_cutoff, const FLOAT_t w_trans) {
+static void calculate_variable_slope_lpf_half(FLOAT_t *const h, FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f_cutoff, const FLOAT_t w_trans) {
     const FLOAT_t alpha = (num_taps - 1) / 2;
     const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
@@ -947,7 +947,7 @@ static void calculate_variable_slope_lpf(FLOAT_t *const h, FLOAT_t *const tmp_wi
 
         /* Store raw coefficients symmetrically directly into the output buffer */
         h[n] = sum / num_taps;
-        h[num_taps - 1 - n] = h[n];
+        //h[num_taps - 1 - n] = h[n];
     }
 
     /* Step 2: Generate Blackman-Harris window weights into temporary buffer via CMSIS-DSP morph macro */
@@ -2783,12 +2783,14 @@ static int_fast16_t audio_validatebw6(int_fast16_t n)
 // Установка параметров тракта приёмника
 static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 {
+	const FLOAT_t fs = ARMI2SRATE;
 	static int32_t FIRCoef_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];	// Фильтр для загрузки в FPGA
 	static FLOAT_t dCoeff_trx_IQ [NtapCoeffs(Ntap_trxi_IQ)];	// рачитываем тут
 
 	const uint_fast8_t dspmode = glob_dspmodes [pathi];
 	const uint_fast16_t fullbw6 = audio_validatebw6(glob_fullbw6 [pathi]);
 	const adapter_t * const adptfir = & fpgafircoefsout;			/* к какому типу надо прербразовывать */
+	static FLOAT_t tmp_window_buf [Ntap_trxi_IQ];
 
 #if WITHDSPEXTDDC
 	const FLOAT_t rxfiltergain = 1;
@@ -2818,19 +2820,20 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	else
 	{
 		const int cutfreq = fullbw6 / 2;
-		const uint_fast8_t fltsofter = glob_fltsofter [pathi];
-		const int iCoefNumLimited = getCoefNumLtdValidated(Ntap_trxi_IQ, fltsofter);
+		const uint_fast16_t transition = glob_flttransition [pathi];
+		//const uint_fast8_t fltsofter = glob_fltsofter [pathi];
+		//const int iCoefNumLimited = getCoefNumLtdValidated(Ntap_trxi_IQ, fltsofter);
 
 #if WITHDSPEXTRXFIR || WITHDSPEXTTXFIR
 		// Фильтр для квадратурных каналов приёмника и передатчика в FPGA (целочисленный).
 		// Параметры для передачи в FPGA
-	#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
-		static double FIRCwndL_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// подготовленные значения функции окна
-		fir_design_windowbuffL_half(FIRCwndL_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited);
-	#else
-		static FLOAT_t FIRCwnd_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// подготовленные значения функции окна
-		fir_design_windowbuff_half(FIRCwnd_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited);
-	#endif
+//	#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
+//		static double FIRCwndL_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// подготовленные значения функции окна
+//		fir_design_windowbuffL_half(FIRCwndL_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited);
+//	#else
+//		static FLOAT_t FIRCwnd_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// подготовленные значения функции окна
+//		fir_design_windowbuff_half(FIRCwnd_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited);
+//	#endif
 #endif /* WITHDSPEXTRXFIR || WITHDSPEXTTXFIR */
 
 //	PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
@@ -2865,8 +2868,8 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 
 	#else /* WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08) */
 
-		fir_design_integer_lowpass_scaled(dCoeff_trx_IQ, FIRCoef_trxi_IQ, FIRCwnd_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited, cutfreq, 1, adptfir);
-
+		//fir_design_integer_lowpass_scaled(dCoeff_trx_IQ, FIRCoef_trxi_IQ, FIRCwnd_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited, cutfreq, 1, adptfir);
+		calculate_variable_slope_lpf_half(dCoeff_trx_IQ, tmp_window_buf, Ntap_trxi_IQ, fs, cutfreq, transition);
 	#endif /* WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08) */
 #endif /* WITHDSPEXTRXFIR || WITHDSPEXTTXFIR */
 	}
@@ -2986,14 +2989,15 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi, uint_fast8_
 #endif
 }
 
-// calculate 1/2 of coefficients
+// calculate full array of coefficients
 // Зависят от glob_dspmodes, glob_aflowcutrx, glob_afhighcutrx, glob_fltsofter, glob_afresponcerx
 static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
 {
 	const FLOAT_t fs = ARMI2SRATE;
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
-	const uint_fast8_t fltsofter = glob_fltsofter [pathi];
+	//const uint_fast8_t fltsofter = glob_fltsofter [pathi];
+	const uint_fast16_t transition = glob_flttransition [pathi];
 	const int_fast8_t targetdb = glob_afresponcesrx [pathi];
 	const int iCoefNum = Ntap_rx_AUDIO;
 	static FLOAT_t dWnd_rxAUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			/* подготовленные значения функции окна - с учетом симметрии (половина) */
@@ -3041,11 +3045,9 @@ static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
 
 	case DSPCTL_MODE_RX_NARROW:
 	case DSPCTL_MODE_TX_CW:
-		// audio - олосовой фильтп на теоеграфную полосу
-		fir_design_bandpass_freq(dCoeff, iCoefNum, getCoefNumLtdValidated(iCoefNum, fltsofter), cutfreqlow, cutfreqhigh);
-		fir_design_windowbuff_half(dWnd_rxAUDIO, iCoefNum, getCoefNumLtdValidated(iCoefNum, fltsofter));
-		//fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 1, GAIN_1, targetdb);	// Формирование наклона АЧХ
-		break;
+		// audio - полосовой фильтп на телеграфную полосу
+		calculate_variable_slope_fir(dCoeff, tmp_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, transition, transition);
+		return;
 
 	case DSPCTL_MODE_RX_FREEDV:
 		// audio
@@ -3078,7 +3080,7 @@ static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
 void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
 {
 	ASSERT(Ntap_rx_AUDIO == iCoefNum);	/* проверяем на несогласованность параметров */
-	dsp_rxaudio_recalceq_coeffs(pathi, dCoeff);	// calculate 1/2 of coefficients
+	dsp_rxaudio_recalceq_coeffs(pathi, dCoeff);	// calculate full array of coefficients
 }
 
 #if WITHMODEM
@@ -6434,11 +6436,11 @@ void board_set_fullbw6(int_fast16_t n)
 /* WITHFILTSOFTMIN..WITHFILTSOFTMAX */
 void board_set_fltsofter(uint_fast8_t n)
 {
-	if (glob_fltsofter [glob_trxpath] != n)
-	{
-		glob_fltsofter [glob_trxpath] = n;
-		board_flt1regchanged();	// параметры этой функции используются в audio_update();
-	}
+//	if (glob_fltsofter [glob_trxpath] != n)
+//	{
+//		glob_fltsofter [glob_trxpath] = n;
+//		board_flt1regchanged();	// параметры этой функции используются в audio_update();
+//	}
 }
 
 void board_set_flttransition(uint_fast16_t n)	/* Ширина переходной полосы */
