@@ -834,8 +834,8 @@ static void process_audio(FLOAT_t *pSrc, FLOAT_t *pDst, uint32_t blockSize) {
 #define BLOCK_SIZE     32
 
 /* Allocate two independent static coefficient buffers for ping-pong switching */
-static FLOAT_t coeffs_ping[Ntap_rx_AUDIO];
-static FLOAT_t coeffs_pong[Ntap_rx_AUDIO];
+static FLOAT_t coeffs_ping [Ntap_rx_AUDIO];
+static FLOAT_t coeffs_pong [Ntap_rx_AUDIO];
 
 /* Active pointer accessed by the DSP processing engine */
 static FLOAT_t *active_coeffs = coeffs_ping;
@@ -844,7 +844,7 @@ static FLOAT_t *active_coeffs = coeffs_ping;
 static ARM_MORPH(arm_fir_instance) fir_instance;
 
 /* State buffer required by the CMSIS-DSP FIR filter architecture */
-static FLOAT_t fir_state[Ntap_rx_AUDIO + BLOCK_SIZE - 1];
+static FLOAT_t fir_state [Ntap_rx_AUDIO + BLOCK_SIZE - 1];
 
 /**
  * Calculates a linear-phase FIR bandpass filter with a uniform amplitude slope.
@@ -859,32 +859,32 @@ static FLOAT_t fir_state[Ntap_rx_AUDIO + BLOCK_SIZE - 1];
  * @param a2          Target amplitude gain at f2 (e.g., 0.3)
  */
 static void runtime_calculate_sloped_fir(FLOAT_t *h, int numTaps, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2, FLOAT_t a1, FLOAT_t a2) {
-    FLOAT_t alpha = (numTaps - 1) / 2.0;
-    FLOAT_t delta_omega = (2.0 * (FLOAT_t)M_PI) / numTaps;
-    int halfTaps = (numTaps + 1) / 2; /* Calculate only up to the center tap due to symmetry */
+    FLOAT_t alpha = (numTaps - 1) / 2;
+    FLOAT_t delta_omega = (2 * (FLOAT_t) M_PI) / numTaps;
+    const int halfTaps = (numTaps + 1) / 2; /* Calculate only up to the center tap due to symmetry */
 
     /* Loop through the first half of the impulse response (including center) */
-    for (int n = 0; n < halfTaps; n++) {
-        FLOAT_t sum = 0.0;
+    for (int n = 0; n < halfTaps; n ++) {
+        FLOAT_t sum = 0;
         FLOAT_t n_minus_alpha = (FLOAT_t)n - alpha;
 
         /* Discrete frequency grid integration (Analytical IDFT method) */
-        for (int k = 0; k < numTaps; k++) {
-            FLOAT_t freq = (FLOAT_t)k * fs / (FLOAT_t)numTaps;
+        for (int k = 0; k < numTaps; k ++) {
+            FLOAT_t freq = (FLOAT_t) k * fs / (FLOAT_t) numTaps;
 
             /* Mirror spectrum above the Nyquist frequency */
-            if (freq > fs / 2.0) {
+            if (freq > fs / 2) {
                 freq = fs - freq;
             }
 
             /* Define target amplitude using a piecewise linear function within the passband */
-            FLOAT_t H_target = 0.0;
+            FLOAT_t H_target = 0;
             if (freq >= f1 && freq <= f2) {
                 H_target = a1 + (a2 - a1) * (freq - f1) / (f2 - f1);
             }
 
             /* Add harmonic component contribution using the COSF macro from dspdefines.h */
-            if (H_target > 0.0) {
+            if (H_target > 0) {
                 sum += H_target * COSF(delta_omega * (FLOAT_t)k * n_minus_alpha);
             }
         }
@@ -893,7 +893,7 @@ static void runtime_calculate_sloped_fir(FLOAT_t *h, int numTaps, FLOAT_t fs, FL
         FLOAT_t h_raw = sum / (FLOAT_t)numTaps;
 
         /* Apply Hamming window to mitigate Gibbs phenomenon and reduce side-lobe ripples */
-        FLOAT_t window = 0.54 - 0.46 * COSF((2.0 * (FLOAT_t)M_PI * n) / (numTaps - 1));
+        FLOAT_t window = 0.54 - 0.46 * COSF((2 * (FLOAT_t) M_PI * n) / (numTaps - 1));
 
         /* Store calculated value in the left half of the array */
         h[n] = h_raw * window;
@@ -912,13 +912,13 @@ static void update_dsp_filter(FLOAT_t new_f1, FLOAT_t new_f2, FLOAT_t new_a1, FL
     FLOAT_t sample_rate = (FLOAT_t)ARMSAIRATE;
 
     /* 1. Identify the background (shadow) buffer not currently in use by the DSP engine */
-    FLOAT_t *back_buffer = (active_coeffs == coeffs_ping) ? coeffs_pong : coeffs_ping;
+    FLOAT_t * back_buffer = (active_coeffs == coeffs_ping) ? coeffs_pong : coeffs_ping;
 
     /* 2. Compute new coefficients into the background buffer off-line */
     runtime_calculate_sloped_fir(back_buffer, Ntap_rx_AUDIO, sample_rate, new_f1, new_f2, new_a1, new_a2);
 
     /* 3. Critical section: atomic pointer swap and CMSIS-DSP re-initialization */
-    __disable_irq();
+    //__disable_irq();
 
     active_coeffs = back_buffer;
 
