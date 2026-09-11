@@ -700,13 +700,6 @@ static FLOAT32P_t get_float_aflorx_delta(uint_fast8_t pathi)
 /////
 
 // AI-generated code
-#include <math.h>
-#include "dspdefines.h"    /* Hardware floating point macros, FLOAT_t, and arm_math.h inclusions */
-
-/* Ensure M_PI is defined if the compiler does not strict-define it under certain standards */
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 /* --- Struct Defs for Single Band --- */
 typedef struct {
@@ -828,14 +821,6 @@ static void runtime_calculate_sloped_fir(FLOAT_t *const h, FLOAT_t *const tmp_wi
     /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
 }
-
-#include <math.h>
-#include "dspdefines.h"    /* Hardware floating point macros, FLOAT_t, and arm_math.h inclusions */
-
-/* Ensure M_PI is defined if the compiler does not strict-define it under certain standards */
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 /**
  * @brief  Generates a single-pass bandpass FIR filter with adjustable transition width (slope steepness)
