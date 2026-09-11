@@ -814,6 +814,147 @@ static void process_audio(FLOAT_t *pSrc, FLOAT_t *pDst, uint32_t blockSize) {
     }
 }
 
+#include "dspdefines.h"
+#include <math.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+/* Integer macro defining the system sample rate */
+#ifndef ARMSAIRATE
+#define ARMSAIRATE 16000
+#endif
+
+/* Integer macro defining the FIR filter length (MUST be an odd number) */
+#ifndef Ntap_rx_AUDIO
+#define Ntap_rx_AUDIO 65
+#endif
+
+#define BLOCK_SIZE     32
+
+/* Allocate two independent static coefficient buffers for ping-pong switching */
+static FLOAT_t coeffs_ping[Ntap_rx_AUDIO];
+static FLOAT_t coeffs_pong[Ntap_rx_AUDIO];
+
+/* Active pointer accessed by the DSP processing engine */
+static FLOAT_t *active_coeffs = coeffs_ping;
+
+/* CMSIS-DSP FIR instance morphed automatically to arm_fir_instance_f32 or _f64 */
+static ARM_MORPH(arm_fir_instance) fir_instance;
+
+/* State buffer required by the CMSIS-DSP FIR filter architecture */
+static FLOAT_t fir_state[Ntap_rx_AUDIO + BLOCK_SIZE - 1];
+
+/**
+ * Calculates a linear-phase FIR bandpass filter with a uniform amplitude slope.
+ * This implementation relies entirely on the abstractions provided in dspdefines.h.
+ *
+ * @param h           Pointer to the destination coefficient array (size: numTaps)
+ * @param numTaps     Filter length (MUST be equal to Ntap_rx_AUDIO and an odd number)
+ * @param fs          Current sampling rate in Hz
+ * @param f1          Lower cutoff frequency of the passband in Hz
+ * @param f2          Upper cutoff frequency of the passband in Hz
+ * @param a1          Target amplitude gain at f1 (e.g., 1.0)
+ * @param a2          Target amplitude gain at f2 (e.g., 0.3)
+ */
+static void runtime_calculate_sloped_fir(FLOAT_t *h, int numTaps, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2, FLOAT_t a1, FLOAT_t a2) {
+    FLOAT_t alpha = (numTaps - 1) / 2.0;
+    FLOAT_t delta_omega = (2.0 * (FLOAT_t)M_PI) / numTaps;
+    int halfTaps = (numTaps + 1) / 2; /* Calculate only up to the center tap due to symmetry */
+
+    /* Loop through the first half of the impulse response (including center) */
+    for (int n = 0; n < halfTaps; n++) {
+        FLOAT_t sum = 0.0;
+        FLOAT_t n_minus_alpha = (FLOAT_t)n - alpha;
+
+        /* Discrete frequency grid integration (Analytical IDFT method) */
+        for (int k = 0; k < numTaps; k++) {
+            FLOAT_t freq = (FLOAT_t)k * fs / (FLOAT_t)numTaps;
+
+            /* Mirror spectrum above the Nyquist frequency */
+            if (freq > fs / 2.0) {
+                freq = fs - freq;
+            }
+
+            /* Define target amplitude using a piecewise linear function within the passband */
+            FLOAT_t H_target = 0.0;
+            if (freq >= f1 && freq <= f2) {
+                H_target = a1 + (a2 - a1) * (freq - f1) / (f2 - f1);
+            }
+
+            /* Add harmonic component contribution using the COSF macro from dspdefines.h */
+            if (H_target > 0.0) {
+                sum += H_target * COSF(delta_omega * (FLOAT_t)k * n_minus_alpha);
+            }
+        }
+
+        /* Base raw FIR filter coefficient */
+        FLOAT_t h_raw = sum / (FLOAT_t)numTaps;
+
+        /* Apply Hamming window to mitigate Gibbs phenomenon and reduce side-lobe ripples */
+        FLOAT_t window = 0.54 - 0.46 * COSF((2.0 * (FLOAT_t)M_PI * n) / (numTaps - 1));
+
+        /* Store calculated value in the left half of the array */
+        h[n] = h_raw * window;
+
+        /* Linear phase compliance: mirror the coefficient to the right half of the array */
+        h[numTaps - 1 - n] = h[n];
+    }
+}
+
+/**
+ * Thread-safe runtime update of the DSP bandpass filter configuration.
+ * Switches coefficient buffers dynamically using a ping-pong approach to avoid audio glitches.
+ */
+static void update_dsp_filter(FLOAT_t new_f1, FLOAT_t new_f2, FLOAT_t new_a1, FLOAT_t new_a2) {
+    /* Convert integer samplerate macro to target FLOAT_t type */
+    FLOAT_t sample_rate = (FLOAT_t)ARMSAIRATE;
+
+    /* 1. Identify the background (shadow) buffer not currently in use by the DSP engine */
+    FLOAT_t *back_buffer = (active_coeffs == coeffs_ping) ? coeffs_pong : coeffs_ping;
+
+    /* 2. Compute new coefficients into the background buffer off-line */
+    runtime_calculate_sloped_fir(back_buffer, Ntap_rx_AUDIO, sample_rate, new_f1, new_f2, new_a1, new_a2);
+
+    /* 3. Critical section: atomic pointer swap and CMSIS-DSP re-initialization */
+    __disable_irq();
+
+    active_coeffs = back_buffer;
+
+    /* Re-initialize CMSIS-DSP instance structure using the ARM_MORPH macro.
+     * Note: the fir_state history buffer is NOT cleared to prevent audible pops/clicks. */
+    ARM_MORPH(arm_fir_init)(&fir_instance, Ntap_rx_AUDIO, active_coeffs, fir_state, BLOCK_SIZE);
+
+    __enable_irq();
+}
+
+/**
+ * Performs primary cold-start initialization of the FIR filter structure and memory buffers.
+ * This function must be called once during system boot before enabling audio processing interrupts.
+ */
+static void init_dsp_filter(void) {
+    /* Convert integer samplerate macro to target FLOAT_t type */
+    FLOAT_t default_fs = (FLOAT_t)ARMSAIRATE;
+    FLOAT_t default_f1 = 300.0;     /* Default lower cutoff frequency (e.g., SSB filter base) */
+    FLOAT_t default_f2 = 3000.0;    /* Default upper cutoff frequency */
+    FLOAT_t default_a1 = 1.0;       /* Flat response start gain */
+    FLOAT_t default_a2 = 1.0;       /* Flat response end gain */
+
+    /* 1. Clear the entire state history buffer to prevent processing uninitialized RAM garbage */
+    for (int i = 0; i < (int) (Ntap_rx_AUDIO + BLOCK_SIZE - 1); i++) {
+        fir_state[i] = 0.0;
+    }
+
+    /* 2. Enforce the default active buffer assignment on cold start */
+    active_coeffs = coeffs_ping;
+
+    /* 3. Calculate initial coefficients directly into the primary active buffer */
+    runtime_calculate_sloped_fir(active_coeffs, Ntap_rx_AUDIO, default_fs, default_f1, default_f2, default_a1, default_a2);
+
+    /* 4. Complete the primary initialization of the CMSIS-DSP structural instance */
+    ARM_MORPH(arm_fir_init)(&fir_instance, Ntap_rx_AUDIO, active_coeffs, fir_state, BLOCK_SIZE);
+}
 
 #endif
 
