@@ -700,64 +700,6 @@ static FLOAT32P_t get_float_aflorx_delta(uint_fast8_t pathi)
 /////
 
 // AI-generated code
-
-/**
- * Calculates a linear-phase FIR bandpass filter with a uniform amplitude slope.
- * This implementation relies entirely on the abstractions provided in dspdefines.h.
- *
- * @param h           Pointer to the destination coefficient array (size: numTaps)
- * @param numTaps     Filter length (MUST be equal to Ntap_rx_AUDIO and an odd number)
- * @param fs          Current sampling rate in Hz
- * @param f1          Lower cutoff frequency of the passband in Hz
- * @param f2          Upper cutoff frequency of the passband in Hz
- * @param a1          Target amplitude gain at f1 (e.g., 1.0)
- * @param a2          Target amplitude gain at f2 (e.g., 0.3)
- */
-static void runtime_calculate_sloped_fir(FLOAT_t *h, int numTaps, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2, FLOAT_t a1, FLOAT_t a2) {
-    FLOAT_t alpha = (numTaps - 1) / 2;
-    FLOAT_t delta_omega = (2 * (FLOAT_t) M_PI) / numTaps;
-    const int halfTaps = (numTaps + 1) / 2; /* Calculate only up to the center tap due to symmetry */
-
-    /* Loop through the first half of the impulse response (including center) */
-    for (int n = 0; n < halfTaps; n ++) {
-        FLOAT_t sum = 0;
-        FLOAT_t n_minus_alpha = (FLOAT_t)n - alpha;
-
-        /* Discrete frequency grid integration (Analytical IDFT method) */
-        for (int k = 0; k < numTaps; k ++) {
-            FLOAT_t freq = (FLOAT_t) k * fs / (FLOAT_t) numTaps;
-
-            /* Mirror spectrum above the Nyquist frequency */
-            if (freq > fs / 2) {
-                freq = fs - freq;
-            }
-
-            /* Define target amplitude using a piecewise linear function within the passband */
-            FLOAT_t H_target = 0;
-            if (freq >= f1 && freq <= f2) {
-                H_target = a1 + (a2 - a1) * (freq - f1) / (f2 - f1);
-            }
-
-            /* Add harmonic component contribution using the COSF macro from dspdefines.h */
-            if (H_target > 0) {
-                sum += H_target * COSF(delta_omega * (FLOAT_t)k * n_minus_alpha);
-            }
-        }
-
-        /* Base raw FIR filter coefficient */
-        FLOAT_t h_raw = sum / (FLOAT_t)numTaps;
-
-        /* Apply Hamming window to mitigate Gibbs phenomenon and reduce side-lobe ripples */
-        FLOAT_t window = 0.54 - 0.46 * COSF((2 * (FLOAT_t) M_PI * n) / (numTaps - 1));
-
-        /* Store calculated value in the left half of the array */
-        h[n] = h_raw * window;
-
-        /* Linear phase compliance: mirror the coefficient to the right half of the array */
-        h[numTaps - 1 - n] = h[n];
-    }
-}
-
 #include <math.h>
 #include "dspdefines.h"    /* Hardware floating point macros, FLOAT_t, and arm_math.h inclusions */
 
@@ -774,30 +716,156 @@ typedef struct {
 } eq_band_t;
 
 /**
- * @brief  Generates a single-pass parametric FIR filter combining multiple bands with dynamic tap length.
- *         Leverages dspdefines.h macro-extensions to automatically morph
- *         between F32/F64 processing based on hardware FP features.
+ * @brief  Generates a single-pass parametric FIR filter combining multiple bands using CMSIS-DSP window functions.
  *
- * @param  h_out       Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
- * @param  num_taps    Dynamic length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
- * @param  bands       Pointer to the array containing the current configuration of equalizer bands.
- * @param  num_bands   Total number of active bands to compress into the target filter response.
- * @param  fs          The operational audio sampling frequency in Hz.
+ * @param  h_out           Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
+ * @param  tmp_window_buf  Pointer to temporary workspace buffer (allocated size must be >= num_taps).
+ * @param  num_taps        Dynamic length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
+ * @param  bands           Pointer to the array containing the current configuration of equalizer bands.
+ * @param  num_bands       Total number of active bands to compress into the target filter response.
+ * @param  fs              The operational audio sampling frequency in Hz.
  * @return None
  */
-static void calculate_combined_eq_fir(FLOAT_t *const h_out, const int num_taps, const eq_band_t *const bands, const int num_bands, const FLOAT_t fs) {
+static void calculate_combined_eq_fir(FLOAT_t *const h_out, FLOAT_t *const tmp_window_buf, const int num_taps, const eq_band_t *const bands, const int num_bands, const FLOAT_t fs) {
     const FLOAT_t alpha = (num_taps - 1) / 2;
     const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
 
-    /* Loop through the first half of the impulse response to enforce symmetry (Type-1 FIR) */
+    /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients */
     for (int n = 0; n < half_taps; n++) {
         FLOAT_t sum = 0;
         const FLOAT_t n_minus_alpha = n - alpha;
 
-        /* Synthesize frequency response using Discrete Fourier Transform (DFT) bin mapping */
         for (int k = 0; k < num_taps; k++) {
-            /* Map the current bin index to its physical frequency representation */
+            FLOAT_t freq = k * fs / num_taps;
+
+            if (freq > fs / 2) {
+                freq = fs - freq;
+            }
+
+            FLOAT_t total_gain_linear = 1;
+
+            for (int b = 0; b < num_bands; b++) {
+                const FLOAT_t f_c = bands[b].f_center;
+                const FLOAT_t f_w = bands[b].bandwidth;
+
+                if (f_w > 0) {
+                    const FLOAT_t distance = (freq - f_c) / (f_w / 2);
+                    const FLOAT_t bell_shape = EXPF(-0.5 * distance * distance);
+                    const FLOAT_t band_gain_linear = POWF(10, bands[b].gain_db / 20) - 1;
+
+                    total_gain_linear += band_gain_linear * bell_shape;
+                }
+            }
+
+            if (total_gain_linear < 0) {
+                total_gain_linear = 0;
+            }
+
+            sum += total_gain_linear * COSF(delta_omega * k * n_minus_alpha);
+        }
+
+        /* Store raw coefficients symmetrically directly into the output buffer */
+        h_out[n] = sum / num_taps;
+        h_out[num_taps - 1 - n] = h_out[n];
+    }
+
+    /* Step 2: Generate Blackman-Harris window weights into temporary buffer via CMSIS-DSP morph macro */
+    ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
+
+    /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
+    ARM_MORPH(arm_mult)(h_out, tmp_window_buf, h_out, num_taps);
+}
+
+/**
+ * @brief  Generates a single-pass bandpass FIR filter with a linear magnitude slope using CMSIS-DSP window functions.
+ *
+ * @param  h               Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
+ * @param  tmp_window_buf  Pointer to temporary workspace buffer (allocated size must be >= num_taps).
+ * @param  num_taps        Dynamic length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
+ * @param  fs              The operational audio sampling frequency in Hz.
+ * @param  f1              Start frequency of the passband in Hz.
+ * @param  f2              End frequency of the passband in Hz.
+ * @param  a1              Target linear amplitude at f1 frequency point.
+ * @param  a2              Target linear amplitude at f2 frequency point.
+ * @return None
+ */
+static void runtime_calculate_sloped_fir(FLOAT_t *const h, FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t a1, const FLOAT_t a2) {
+    const FLOAT_t alpha = (num_taps - 1) / 2;
+    const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
+    const int half_taps = (num_taps + 1) / 2;
+
+    /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients */
+    for (int n = 0; n < half_taps; n++) {
+        FLOAT_t sum = 0;
+        const FLOAT_t n_minus_alpha = n - alpha;
+
+        for (int k = 0; k < num_taps; k++) {
+            FLOAT_t freq = k * fs / num_taps;
+
+            if (freq > fs / 2) {
+                freq = fs - freq;
+            }
+
+            FLOAT_t h_target = 0;
+            if (freq >= f1 && freq <= f2) {
+                h_target = a1 + (a2 - a1) * (freq - f1) / (f2 - f1);
+            }
+
+            if (h_target > 0) {
+                sum += h_target * COSF(delta_omega * k * n_minus_alpha);
+            }
+        }
+
+        /* Store raw coefficients symmetrically directly into the output buffer */
+        h[n] = sum / num_taps;
+        h[num_taps - 1 - n] = h[n];
+    }
+
+    /* Step 2: Generate Hamming window weights into temporary buffer via CMSIS-DSP morph macro */
+    ARM_MORPH(arm_hamming)(tmp_window_buf, num_taps);
+
+    /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
+    ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
+}
+
+#include <math.h>
+#include "dspdefines.h"    /* Hardware floating point macros, FLOAT_t, and arm_math.h inclusions */
+
+/* Ensure M_PI is defined if the compiler does not strict-define it under certain standards */
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+/**
+ * @brief  Generates a single-pass bandpass FIR filter with adjustable transition width (slope steepness)
+ *         for the left and right skirts independently, using a fixed number of taps.
+ *
+ * @param  h               Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
+ * @param  tmp_window_buf  Pointer to temporary workspace buffer (allocated size must be >= num_taps).
+ * @param  num_taps        Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
+ * @param  fs              The operational audio sampling frequency in Hz.
+ * @param  f1              Start frequency of the ideal passband in Hz.
+ * @param  f2              End frequency of the ideal passband in Hz.
+ * @param  w1_trans        Width of the left transition band in Hz (Smaller value = Steeper left slope).
+ * @param  w2_trans        Width of the right transition band in Hz (Smaller value = Steeper right slope).
+ * @return None
+ */
+static void calculate_variable_slope_fir(FLOAT_t *const h, FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t w1_trans, const FLOAT_t w2_trans) {
+    const FLOAT_t alpha = (num_taps - 1) / 2;
+    const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
+    const int half_taps = (num_taps + 1) / 2;
+
+    /* Absolute frequency boundaries for the transition bands */
+    const FLOAT_t stop1 = f1 - w1_trans;
+    const FLOAT_t stop2 = f2 + w2_trans;
+
+    /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients using frequency sampling */
+    for (int n = 0; n < half_taps; n++) {
+        FLOAT_t sum = 0;
+        const FLOAT_t n_minus_alpha = n - alpha;
+
+        for (int k = 0; k < num_taps; k++) {
             FLOAT_t freq = k * fs / num_taps;
 
             /* Mirror spectrum points located above the Nyquist threshold */
@@ -805,47 +873,39 @@ static void calculate_combined_eq_fir(FLOAT_t *const h_out, const int num_taps, 
                 freq = fs - freq;
             }
 
-            /* Initialize base linear gain at 1 (equivalent to 0 dB flat response) */
-            FLOAT_t total_gain_linear = 1;
+            /* Synthesize magnitude response with custom sloped transition edges */
+            FLOAT_t h_target = 0;
 
-            /* Aggregate the response curves of all individual equalizer bands */
-            for (int b = 0; b < num_bands; b++) {
-                const FLOAT_t f_c = bands[b].f_center;
-                const FLOAT_t f_w = bands[b].bandwidth;
-
-                if (f_w > 0) {
-                    /* Calculate standard bell-shape (Gaussian distribution) scaling metric */
-                    const FLOAT_t distance = (freq - f_c) / (f_w / 2);
-                    const FLOAT_t bell_shape = EXPF(-0.5 * distance * distance);
-
-                    /* Convert the current band's gain value from logarithmic dB to linear scaling factor */
-                    const FLOAT_t band_gain_linear = POWF(10, bands[b].gain_db / 20) - 1;
-
-                    /* Superimpose the linear delta scaled by the curve shape into total response */
-                    total_gain_linear += band_gain_linear * bell_shape;
-                }
+            if (freq >= f1 && freq <= f2) {
+                /* Pure passband area */
+                h_target = 1;
             }
-
-            /* Clip illegal negative values to guarantee stable filter constraints */
-            if (total_gain_linear < 0) {
-                total_gain_linear = 0;
+            else if (freq >= stop1 && freq < f1 && w1_trans > 0) {
+                /* Left transition band (Linear interpolation to control slope steepness) */
+                h_target = (freq - stop1) / w1_trans;
+            }
+            else if (freq > f2 && freq <= stop2 && w2_trans > 0) {
+                /* Right transition band (Linear interpolation to control slope steepness) */
+                h_target = (stop2 - freq) / w2_trans;
             }
 
             /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
-            sum += total_gain_linear * COSF(delta_omega * k * n_minus_alpha);
+            if (h_target > 0) {
+                sum += h_target * COSF(delta_omega * k * n_minus_alpha);
+            }
         }
 
-        /* Derive crude un-windowed FIR impulse coefficient step value */
-        const FLOAT_t h_raw = sum / num_taps;
-
-        /* Calculate Blackman window properties to aggressively suppress Gibbs phenomenon ripples */
-        const FLOAT_t window = 0.42 - 0.5 * COSF((2 * M_PI * n) / (num_taps - 1))
-                                    + 0.08 * COSF((4 * M_PI * n) / (num_taps - 1));
-
-        /* Inject finalized mirrored coefficients into symmetric array addresses */
-        h_out[n] = h_raw * window;
-        h_out[num_taps - 1 - n] = h_out[n];
+        /* Store raw coefficients symmetrically directly into the output buffer */
+        h[n] = sum / num_taps;
+        h[num_taps - 1 - n] = h[n];
     }
+
+    /* Step 2: Generate Kaiser or Blackman window weights into temporary buffer via CMSIS-DSP morph macro */
+    /* Blackman window is selected here for robust sidelobe suppression across variable configurations */
+    ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
+
+    /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
+    ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
 }
 
 //////////////////////////////////////////
@@ -2744,6 +2804,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	FLOAT_t * const dCoeff = FIRCoef_tx_MIKE [spf];
 	const FLOAT_t * const dWindow = FIRCwnd_tx_MIKE;
 	enum { iCoefNum = Ntap_tx_MIKE };
+	FLOAT_t tmp_window_buf [iCoefNum];
 
 	switch (glob_dspmodes [0])	// 0 - для передатчика
 	{
@@ -2766,7 +2827,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
-		runtime_calculate_sloped_fir(tx_firEQcoeff, iCoefNum, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
+		runtime_calculate_sloped_fir(tx_firEQcoeff, tmp_window_buf, iCoefNum, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
 		return;
 
 	// в режиме приема или в режимах передачи без микрофона - ничего не делаем
@@ -2814,16 +2875,17 @@ static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
 	const int_fast8_t targetdb = glob_afresponcesrx [pathi];
 	const int iCoefNum = Ntap_rx_AUDIO;
 	static FLOAT_t dWnd_rxAUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			/* подготовленные значения функции окна - с учетом симметрии (половина) */
+	FLOAT_t tmp_window_buf [iCoefNum];
 
 	ASSERT((iCoefNum % 2) == 1);
 	switch (glob_dspmodes [pathi])
 	{
 	case DSPCTL_MODE_RX_DSB:
-		runtime_calculate_sloped_fir(dCoeff, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
+		runtime_calculate_sloped_fir(dCoeff, tmp_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
 		return;
 
 	case DSPCTL_MODE_RX_SAM:
-		runtime_calculate_sloped_fir(dCoeff, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
+		runtime_calculate_sloped_fir(dCoeff, tmp_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
 		return;
 
 	case DSPCTL_MODE_RX_WFM:
@@ -2850,7 +2912,7 @@ static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
 		}
 		else
 		{
-			runtime_calculate_sloped_fir(dCoeff, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
+			runtime_calculate_sloped_fir(dCoeff, tmp_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
 			return;
 		}
 		break;
@@ -2865,7 +2927,7 @@ static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
 
 	case DSPCTL_MODE_RX_FREEDV:
 		// audio
-		runtime_calculate_sloped_fir(dCoeff, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
+		runtime_calculate_sloped_fir(dCoeff, tmp_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
 		return;
 
 	case DSPCTL_MODE_RX_DRM:
@@ -2877,7 +2939,7 @@ static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
 
 	case DSPCTL_MODE_RX_NFM:
 		// audio
-		runtime_calculate_sloped_fir(dCoeff, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
+		runtime_calculate_sloped_fir(dCoeff, tmp_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
 		return;
 
 	// в режиме передачи
