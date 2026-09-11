@@ -383,22 +383,6 @@ void endstamp3(void)
 static RAMBIGDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
 static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
 
-
-// Используется при формировании корректированной АЧХ звука. Должно быть размером достаточным, чтобы влезли используемые фильтры
-#define FFTSizeFilters 1024
-
-struct ComplexHFTRX
-{
-	FLOAT_t real;
-	FLOAT_t imag;
-};
-
-/* этот массив используется при перерасчете АЧЪ фильтров НЧ - не real time задача */
-static RAM_D2 struct ComplexHFTRX Sig0 [FFTSizeFilters];
-
-#define fftixreal(i) ((i * 2) + 0)
-#define fftiximag(i) ((i * 2) + 1)
-
 static FLOAT_t txlevelfenceAM = (FLOAT_t) 1 / 2;
 
 static FLOAT_t txlevelfenceSSB = (FLOAT_t) 1 / 2;
@@ -1221,19 +1205,6 @@ int dsp_mag2y(
 	return y;
 }
 
-
-/* получение пикового значения АЧХ */
-static FLOAT_t getmaxresponce(const struct ComplexHFTRX * s)
-{
-	FLOAT_t r = (FLOAT_t) 1 / 16384;
-	int i;
-	for (i = 0; i < FFTSizeFilters / 2; ++ i)
-	{
-		r = FMAXF(r, SQRTF(s [i].real * s [i].real + s [i].imag * s [i].imag));
-	}
-	return r;
-}
-
 void dsp_cfft(const ARM_MORPH(arm_cfft_instance) * S, FLOAT_t * p, uint_fast8_t ifftFlag)
 {
 #if ARM_MATH_NEON
@@ -1245,166 +1216,8 @@ void dsp_cfft(const ARM_MORPH(arm_cfft_instance) * S, FLOAT_t * p, uint_fast8_t 
 #endif /* ARM_MATH_NEON */
 }
 
-//====================================================
-//  calculate impulse response of FIR filter
-//====================================================
-
-// Получение АЧХ из коэффициентов симмметричного FIR
-static void imp_response(struct ComplexHFTRX * s, const FLOAT_t *dCoeff, int iCoefNum)
-{
-	ARM_MORPH(arm_cfft_instance) fftinstance;
-	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_cfft_init)(& fftinstance, FFTSizeFilters));
-	const int iHalfLen = (iCoefNum - 1) / 2;
-	int i;
-
-	//---------------------------
-	// copy coefficients to Sig
-	//---------------------------
-	s [iHalfLen].real = dCoeff [iHalfLen];
-	s [iHalfLen].imag = 0;
-	for (i = 1; i <= iHalfLen; ++ i) 
-	{
-		const FLOAT_t k = dCoeff [iHalfLen - i];
-		s [iHalfLen - i].real = k;
-		s [iHalfLen + i].real = k;
-		s [iHalfLen - i].imag = 0;
-		s [iHalfLen + i].imag = 0;
-	} 	
-
-	//---------------------------
-	// append zeros
-	//---------------------------
-//	for (i = iCoefNum; i < FFTSizeFilters; ++ i) {
-//		s [i].real = 0;
-//		s [i].imag = 0;
-//	}
-	ARM_MORPH(arm_fill)(0, (FLOAT_t *) & s [iCoefNum], (FFTSizeFilters - iCoefNum) * 2);
-	//---------------------------
-	// Do FFT
-	//---------------------------
-
-
-	/* Process the data through the CFFT/CIFFT module */
-	dsp_cfft(& fftinstance, (FLOAT_t *) s, 0);
-
-	//ARM_MORPH(arm_cmplx_mag_squared)(sg, MagArr, MagLen);
-
-}
-
-static void sigtocoeffs(struct ComplexHFTRX * s, FLOAT_t *dCoeff, int iCoefNum)
-{
-	const int j = NtapCoeffs(iCoefNum);
-	int i;
-	//---------------------------
-	// Magnitude in dB
-	//---------------------------
-	for (i = 0; i < j && i < FFTSizeFilters; ++ i) {
-		dCoeff [i] = s [i].real;
-	}
-
-}
-
-static void scalecoeffs(FLOAT_t *dCoeff, int iCoefNum, FLOAT_t scale)
-{
-	const int j = NtapCoeffs(iCoefNum);
-	ARM_MORPH(arm_scale)(dCoeff, scale, dCoeff, j);
-}
-
-
 static void fir_design_applaywindow(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum);
 static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int iCoefNum);
-
-// slope: изменение тембра звука - на Samplerate/2 АЧХ становится на столько децибел
-// scale: общий масштаб изменения АЧХ
-static void correctspectrumcomplex(struct ComplexHFTRX * s, int_fast8_t targetdb)
-{
-	ARM_MORPH(arm_cfft_instance) fftinstance;
-
-	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_cfft_init)(& fftinstance, FFTSizeFilters));
-#if 1
-	const FLOAT_t slope = db2ratio(targetdb);
-	// Центр симметрии s - ячейка с индексом FFTSizeFilters / 2
-	FLOAT_t scale = 1;
-	const FLOAT_t step = POWF(slope, (FLOAT_t) 1 / (FFTSizeFilters / 2 - 1));
-	const int n = FFTSizeFilters / 2;
-	int i;
-	for (i = 1; i < n; ++ i, scale *= step)
-	{
-		s [i].real *= scale;
-		s [i].imag *= scale;
-		s [FFTSizeFilters - i].real = s [i].real;
-		s [FFTSizeFilters - i].imag = - s [i].imag;
-	}
-	/* корректируем центральный элемент массива */
-	s [FFTSizeFilters / 2].real *= scale;
-	s [FFTSizeFilters / 2].imag *= scale;
-	/* лишний? */
-	//s [0].real = 0;
-	//s [0].imag = 0;
-#else
-
-	// https://ru.wikipedia.org/wiki/%D0%A6%D0%B2%D0%B5%D1%82%D0%B0_%D1%88%D1%83%D0%BC%D0%B0
-	// Броуновский (красный, "коричневый") шум
-	// Энергия шума падает на 6 децибел на октаву
-	const FLOAT_t ratio = db2ratio(targetdb);
-	const FLOAT_t slope = LOG10F(ratio) / (FLOAT_t) M_LOG2E;
-	const int n = FFTSizeFilters / 2;
-	//y = exp(log(100) - log(x)), x: 1..100
-	const FLOAT_t delta = 1 / EXPF(slope * LOGF((FLOAT_t) 1 / n));
-	int i;
-	for (i = 1; i < n; ++ i)
-	{
-		const FLOAT_t scale = EXPF(slope * LOGF((FLOAT_t) i / n)) * delta;
-		s [i].real *= scale;
-		s [i].imag *= scale;
-		s [FFTSizeFilters - i].real = s [i].real;
-		s [FFTSizeFilters - i].imag = - s [i].imag;
-	}
-	/* корректируем центральный элемент массива */
-	s [FFTSizeFilters / 2].real *= ratio;
-	s [FFTSizeFilters / 2].imag *= ratio;
-#endif
-
-	// Construct FIR coefficients from frequency response
-	/* Process the data through the CFFT/CIFFT module */
-	dsp_cfft(& fftinstance, (FLOAT_t *) s, !0);	// inverse FFT
-
-	//arm_cmplx_mag_squared_f32(sg, MagArr, MagLen);
-}
-
-#define GAIN_1 1
-// Формирование наклона АЧХ звукового тракта приёмника
-static void fir_design_adjust_rx_unused(FLOAT_t * dCoeff, const FLOAT_t * dWindow, int iCoefNum, uint_fast8_t usewindow, FLOAT_t gain, int_fast8_t targetdb)
-{
-	if (targetdb != 0)
-	{
-		imp_response(Sig0, dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-		correctspectrumcomplex(Sig0, targetdb);
-		sigtocoeffs(Sig0, dCoeff, iCoefNum);
-	}
-
-	if (usewindow != 0)
-		fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
-
-	imp_response(Sig0, dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
-	const FLOAT_t resp = getmaxresponce(Sig0);
-	scalecoeffs(dCoeff, iCoefNum, gain / resp);	// нормализация коэффициентоа передачи к заданному значению (1)
-}
-
-// Формирование наклона АЧХ звукового тракта передатчика
-static void fir_design_adjust_tx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum, int_fast8_t targetdb)
-{
-	if (targetdb != 0)
-	{
-		imp_response(Sig0, dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-		correctspectrumcomplex(Sig0, targetdb);
-		sigtocoeffs(Sig0, dCoeff, iCoefNum);
-	}
-	fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
-	imp_response(Sig0, dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
-	const FLOAT_t resp = getmaxresponce(Sig0);
-	scalecoeffs(dCoeff, iCoefNum, 1 / resp);	// нормализация к. передаци к заданному значению (1)
-}
 
 // Расчёт коэффициента для работы в дискретном времени системы АРУ.
 // вызывается на каждый сэмпл с АЦП - частота ARMSAIRATE в герцах.
@@ -3033,7 +2846,7 @@ static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
 //			fir_design_bandstop(dCoeff, iCoefNum, iCoefNum, fir_design_normfreq(fcutL), fir_design_normfreq(fcutH));
 //			fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));	// Масштабирование для несимметричного фильтра
 //			fir_design_windowbuff_half(dWnd_rxAUDIO, iCoefNum, iCoefNum);
-//			fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 0, GAIN_1, targetdb);	// Формирование наклона АЧХ, без применения оконной функции
+//			fir_design_adjust_rx_unused(dCoeff, dWnd_rxAUDIO, iCoefNum, 0, GAIN_1, targetdb);	// Формирование наклона АЧХ, без применения оконной функции
 		}
 		else
 		{
