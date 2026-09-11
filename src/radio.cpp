@@ -1806,9 +1806,9 @@ enum
 	BWPROPI_count
 };
 
-#define AFRESPONCEDEFAULT (- 72)	// наклон АЧХ для голосовых режимов
-#define AFRESPONCEWFM (+ 18)	// наклон АЧХ для WFM
-#define AFRESPONCETXNFM (+ 36)	// наклон АЧХ для NFM
+#define AFRESPONCEDEFAULT (- 12)	// наклон АЧХ для голосовых режимов
+#define AFRESPONCEWFM (+ 12)	// наклон АЧХ для WFM
+#define AFRESPONCETXNFM (+ 12)	// наклон АЧХ для NFM
 #define AFRESPONCEFLAT (0)
 
 // Частоты границ полосы пропускания
