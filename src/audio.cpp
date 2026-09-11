@@ -394,7 +394,7 @@ struct ComplexHFTRX
 };
 
 /* этот массив используется при перерасчете АЧЪ фильтров НЧ - не real time задача */
-static RAM_D2 struct ComplexHFTRX Sig [FFTSizeFilters];
+static RAM_D2 struct ComplexHFTRX Sig0 [FFTSizeFilters];
 
 #define fftixreal(i) ((i * 2) + 0)
 #define fftiximag(i) ((i * 2) + 1)
@@ -720,110 +720,6 @@ static FLOAT32P_t get_float_aflorx_delta(uint_fast8_t pathi)
 #if 1
 // AI-generated code
 
-#define BLOCK_SIZE 17
-#define NUM_BANDS   5         // Number of equalizer bands
-
-// CMSIS-DSP filter instances wrapped via ARM_MORPH macro
-static ARM_MORPH(arm_fir_instance) eq_bands[NUM_BANDS];
-
-// Coefficient and state buffers
-static FLOAT_t coeffs_buffer[NUM_BANDS][Ntap_rx_AUDIO];
-static FLOAT_t state_buffer[NUM_BANDS][Ntap_rx_AUDIO + BLOCK_SIZE - 1];
-
-// Equalizer configuration settings
-static FLOAT_t fs = ARMSAIRATE;//48000.0;
-static FLOAT_t centers[NUM_BANDS]   = { 80.0,  250.0, 1000.0, 4000.0, 12000.0 };
-static FLOAT_t bandwidths[NUM_BANDS] = { 40.0,  120.0,  500.0, 2000.0,  6000.0 };
-static FLOAT_t gains[NUM_BANDS]      = {  6.0,   -3.0,    0.0,    4.0,   -2.0 };
-
-// Generates symmetric BPF coefficients using window method
-static void generate_bandpass_fir(FLOAT_t *coeffs, int32_t numTaps, FLOAT_t f_low, FLOAT_t f_high, FLOAT_t fs_val) {
-    // Convert frequencies to normalized radians
-    FLOAT_t w_low = 2 * M_PI * f_low / fs_val;
-    FLOAT_t w_high = 2 * M_PI * f_high / fs_val;
-    int32_t M = numTaps - 1;
-
-    for (int32_t n = 0; n < numTaps; n++) {
-        FLOAT_t arg = (FLOAT_t)n - (M / 2.0);
-        FLOAT_t c;
-
-        if (FABSF(arg) < 1e-5) {
-            // Avoid division by zero at the center tap (sinc(0) = 1)
-            c = (w_high - w_low) / M_PI;
-        } else {
-            c = (SINF(w_high * arg) - SINF(w_low * arg)) / (M_PI * arg);
-        }
-
-        // Apply Hamming window using the project's macro
-        FLOAT_t window = 0.54 - 0.46 * COSF(2.0 * M_PI * n / M);
-        coeffs[n] = c * window;
-    }
-}
-
-// Generates coefficients for a single parametric equalizer band
-static void generate_parametric_eq_band(FLOAT_t *coeffs, int32_t numTaps, FLOAT_t f_center, FLOAT_t bandwidth, FLOAT_t gain_db, FLOAT_t fs_val) {
-    FLOAT_t f_low = f_center - (bandwidth / 2);
-    FLOAT_t f_high = f_center + (bandwidth / 2);
-
-    // Guard rails against exceeding the Nyquist frequency boundary
-    if (f_low < 0.0) f_low = 1;
-    if (f_high >= fs_val / 2) f_high = (fs_val / 2) - 1;
-
-    // 1. Calculate the foundational bandpass response into the coefficient buffer
-    generate_bandpass_fir(coeffs, numTaps, f_low, f_high, fs_val);
-
-    // 2. Convert dB gain to linear scale factor
-    FLOAT_t linear_gain = POWF(10, gain_db / 20);
-    FLOAT_t boost_cut_factor = linear_gain - 1;
-    int32_t M = numTaps - 1;
-
-    // 3. Construct the EQ response: H_eq(z) = I(z) + (Gain - 1) * H_bpf(z)
-    for (int32_t n = 0; n < numTaps; n++) {
-        coeffs[n] = coeffs[n] * boost_cut_factor;
-
-        // Add the delta impulse function strictly to the center symmetry point (Allpass path)
-        if (n == M / 2) {
-            coeffs[n] += 1;
-        }
-    }
-}
-
-// Initializes the 5-band cascade filter configuration
-static void init_5band_equalizer(void) {
-    for (int i = 0; i < NUM_BANDS; i++) {
-        // Calculate coefficients for the current band
-        generate_parametric_eq_band(coeffs_buffer[i], Ntap_rx_AUDIO, centers[i], bandwidths[i], gains[i], fs);
-
-        // Initialize CMSIS-DSP filter instance using the morph macro
-        ARM_MORPH(arm_fir_init)(&eq_bands[i], Ntap_rx_AUDIO, coeffs_buffer[i], state_buffer[i], BLOCK_SIZE);
-    }
-}
-
-// Cascaded real-time audio block processing method
-static void process_audio(FLOAT_t *pSrc, FLOAT_t *pDst, uint32_t blockSize) {
-    FLOAT_t *pIn = pSrc;
-    FLOAT_t *pOut = pDst;
-
-    // Stream the data block sequentially through all 5 bands
-    for (int i = 0; i < NUM_BANDS; i++) {
-        ARM_MORPH(arm_fir)(& eq_bands [i], pIn, pOut, blockSize);
-        pIn = pOut; // The output of the current band becomes the input for the next one
-    }
-}
-
-/* Allocate two independent static coefficient buffers for ping-pong switching */
-static FLOAT_t coeffs_ping [Ntap_rx_AUDIO];
-static FLOAT_t coeffs_pong [Ntap_rx_AUDIO];
-
-/* Active pointer accessed by the DSP processing engine */
-static FLOAT_t *active_coeffs = coeffs_ping;
-
-/* CMSIS-DSP FIR instance morphed automatically to arm_fir_instance_f32 or _f64 */
-static ARM_MORPH(arm_fir_instance) fir_instance;
-
-/* State buffer required by the CMSIS-DSP FIR filter architecture */
-static FLOAT_t fir_state [Ntap_rx_AUDIO + BLOCK_SIZE - 1];
-
 /**
  * Calculates a linear-phase FIR bandpass filter with a uniform amplitude slope.
  * This implementation relies entirely on the abstractions provided in dspdefines.h.
@@ -881,57 +777,89 @@ static void runtime_calculate_sloped_fir(FLOAT_t *h, int numTaps, FLOAT_t fs, FL
     }
 }
 
-/**
- * Thread-safe runtime update of the DSP bandpass filter configuration.
- * Switches coefficient buffers dynamically using a ping-pong approach to avoid audio glitches.
- */
-static void update_dsp_filter(FLOAT_t new_f1, FLOAT_t new_f2, FLOAT_t new_a1, FLOAT_t new_a2) {
-    /* Convert integer samplerate macro to target FLOAT_t type */
-    FLOAT_t sample_rate = (FLOAT_t)ARMSAIRATE;
+/* --- Equalizer Architecture Definitions --- */
+#define EQ_NUM_BANDS       5        /* Number of parametric bands */
 
-    /* 1. Identify the background (shadow) buffer not currently in use by the DSP engine */
-    FLOAT_t * back_buffer = (active_coeffs == coeffs_ping) ? coeffs_pong : coeffs_ping;
-
-    /* 2. Compute new coefficients into the background buffer off-line */
-    runtime_calculate_sloped_fir(back_buffer, Ntap_rx_AUDIO, sample_rate, new_f1, new_f2, new_a1, new_a2);
-
-    /* 3. Critical section: atomic pointer swap and CMSIS-DSP re-initialization */
-    //__disable_irq();
-
-    active_coeffs = back_buffer;
-
-    /* Re-initialize CMSIS-DSP instance structure using the ARM_MORPH macro.
-     * Note: the fir_state history buffer is NOT cleared to prevent audible pops/clicks. */
-    ARM_MORPH(arm_fir_init)(&fir_instance, Ntap_rx_AUDIO, active_coeffs, fir_state, BLOCK_SIZE);
-
-    __enable_irq();
-}
+/* --- Struct Defs for Single Band --- */
+typedef struct {
+    FLOAT_t f_center;   /* Center frequency of the band in Hz */
+    FLOAT_t bandwidth;  /* Bandwidth width in Hz */
+    FLOAT_t gain_db;    /* Gain/attenuation value in decibels (e.g., +5.0, -3.0) */
+} eq_band_t;
 
 /**
- * Performs primary cold-start initialization of the FIR filter structure and memory buffers.
- * This function must be called once during system boot before enabling audio processing interrupts.
+ * @brief  Generates a single-pass parametric FIR filter combining multiple bands with dynamic tap length.
+ *         Leverages dspdefines.h macro-extensions to automatically morph
+ *         between F32/F64 processing based on hardware FP features.
+ *
+ * @param  h_out       Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
+ * @param  num_taps    Dynamic length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
+ * @param  bands       Pointer to the array containing the current configuration of equalizer bands.
+ * @param  num_bands   Total number of active bands to compress into the target filter response.
+ * @param  fs          The operational audio sampling frequency in Hz.
+ * @return None
  */
-static void init_dsp_filter(void) {
-    /* Convert integer samplerate macro to target FLOAT_t type */
-    FLOAT_t default_fs = (FLOAT_t)ARMSAIRATE;
-    FLOAT_t default_f1 = 300.0;     /* Default lower cutoff frequency (e.g., SSB filter base) */
-    FLOAT_t default_f2 = 3000.0;    /* Default upper cutoff frequency */
-    FLOAT_t default_a1 = 1.0;       /* Flat response start gain */
-    FLOAT_t default_a2 = 1.0;       /* Flat response end gain */
+void calculate_combined_eq_fir(FLOAT_t *h_out, int num_taps, const eq_band_t *bands, int num_bands, FLOAT_t fs) {
+    const FLOAT_t alpha = (FLOAT_t)(num_taps - 1) / 2.0f;
+    const FLOAT_t delta_omega = (2.0f * (FLOAT_t)M_PI) / (FLOAT_t)num_taps;
+    const int half_taps = (num_taps + 1) / 2;
 
-    /* 1. Clear the entire state history buffer to prevent processing uninitialized RAM garbage */
-    for (int i = 0; i < (int) (Ntap_rx_AUDIO + BLOCK_SIZE - 1); i++) {
-        fir_state[i] = 0.0;
+    /* Loop through the first half of the impulse response to enforce symmetry (Type-1 FIR) */
+    for (int n = 0; n < half_taps; n++) {
+        FLOAT_t sum = 0.0f;
+        FLOAT_t n_minus_alpha = (FLOAT_t) n - alpha;
+
+        /* Synthesize frequency response using Discrete Fourier Transform (DFT) bin mapping */
+        for (int k = 0; k < num_taps; k++) {
+            /* Map the current bin index to its physical frequency representation */
+            FLOAT_t freq = (FLOAT_t)k * fs / (FLOAT_t)num_taps;
+
+            /* Mirror spectrum points located above the Nyquist threshold */
+            if (freq > fs / 2.0f) {
+                freq = fs - freq;
+            }
+
+            /* Initialize base linear gain at 1.0 (equivalent to 0 dB flat response) */
+            FLOAT_t total_gain_linear = 1;
+
+            /* Aggregate the response curves of all individual equalizer bands */
+            for (int b = 0; b < num_bands; b++) {
+                FLOAT_t f_c = bands[b].f_center;
+                FLOAT_t f_w = bands[b].bandwidth;
+
+                if (f_w > 0.0f) {
+                    /* Calculate standard bell-shape (Gaussian distribution) scaling metric */
+                    FLOAT_t distance = (freq - f_c) / (f_w / 2);
+                    FLOAT_t bell_shape = EXPF(-0.5f * distance * distance);
+
+                    /* Convert the current band's gain value from logarithmic dB to linear scaling factor */
+                    FLOAT_t band_gain_linear = POWF(10.0f, bands[b].gain_db / 20.0f) - 1.0f;
+
+                    /* Superimpose the linear delta scaled by the curve shape into total response */
+                    total_gain_linear += band_gain_linear * bell_shape;
+                }
+            }
+
+            /* Clip illegal negative values to guarantee stable filter constraints */
+            if (total_gain_linear < 0) {
+                total_gain_linear = 0;
+            }
+
+            /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
+            sum += total_gain_linear * COSF(delta_omega * (FLOAT_t)k * n_minus_alpha);
+        }
+
+        /* Derive crude un-windowed FIR impulse coefficient step value */
+        FLOAT_t h_raw = sum / (FLOAT_t)num_taps;
+
+        /* Calculate Blackman window properties to aggressively suppress Gibbs phenomenon ripples */
+        FLOAT_t window = 0.42f - 0.5f * COSF((2 * (FLOAT_t)M_PI * n) / (num_taps - 1))
+                               + 0.08f * COSF((4 * (FLOAT_t)M_PI * n) / (num_taps - 1));
+
+        /* Inject finalized mirrored coefficients into symmetric array addresses */
+        h_out[n] = h_raw * window;
+        h_out[num_taps - 1 - n] = h_out[n];
     }
-
-    /* 2. Enforce the default active buffer assignment on cold start */
-    active_coeffs = coeffs_ping;
-
-    /* 3. Calculate initial coefficients directly into the primary active buffer */
-    runtime_calculate_sloped_fir(active_coeffs, Ntap_rx_AUDIO, default_fs, default_f1, default_f2, default_a1, default_a2);
-
-    /* 4. Complete the primary initialization of the CMSIS-DSP structural instance */
-    ARM_MORPH(arm_fir_init)(&fir_instance, Ntap_rx_AUDIO, active_coeffs, fir_state, BLOCK_SIZE);
 }
 
 #endif
@@ -1295,13 +1223,13 @@ int dsp_mag2y(
 
 
 /* получение пикового значения АЧХ */
-static FLOAT_t getmaxresponce(const struct ComplexHFTRX * Sig)
+static FLOAT_t getmaxresponce(const struct ComplexHFTRX * s)
 {
 	FLOAT_t r = (FLOAT_t) 1 / 16384;
 	int i;
 	for (i = 0; i < FFTSizeFilters / 2; ++ i)
 	{
-		r = FMAXF(r, SQRTF(Sig [i].real * Sig [i].real + Sig [i].imag * Sig [i].imag));
+		r = FMAXF(r, SQRTF(s [i].real * s [i].real + s [i].imag * s [i].imag));
 	}
 	return r;
 }
@@ -1322,7 +1250,7 @@ void dsp_cfft(const ARM_MORPH(arm_cfft_instance) * S, FLOAT_t * p, uint_fast8_t 
 //====================================================
 
 // Получение АЧХ из коэффициентов симмметричного FIR
-static void imp_response(struct ComplexHFTRX * Sig, const FLOAT_t *dCoeff, int iCoefNum)
+static void imp_response(struct ComplexHFTRX * s, const FLOAT_t *dCoeff, int iCoefNum)
 {
 	ARM_MORPH(arm_cfft_instance) fftinstance;
 	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_cfft_init)(& fftinstance, FFTSizeFilters));
@@ -1332,38 +1260,38 @@ static void imp_response(struct ComplexHFTRX * Sig, const FLOAT_t *dCoeff, int i
 	//---------------------------
 	// copy coefficients to Sig
 	//---------------------------
-	Sig [iHalfLen].real = dCoeff [iHalfLen];
-	Sig [iHalfLen].imag = 0;
+	s [iHalfLen].real = dCoeff [iHalfLen];
+	s [iHalfLen].imag = 0;
 	for (i = 1; i <= iHalfLen; ++ i) 
 	{
 		const FLOAT_t k = dCoeff [iHalfLen - i];
-		Sig [iHalfLen - i].real = k;
-		Sig [iHalfLen + i].real = k;
-		Sig [iHalfLen - i].imag = 0;
-		Sig [iHalfLen + i].imag = 0;
+		s [iHalfLen - i].real = k;
+		s [iHalfLen + i].real = k;
+		s [iHalfLen - i].imag = 0;
+		s [iHalfLen + i].imag = 0;
 	} 	
 
 	//---------------------------
 	// append zeros
 	//---------------------------
 //	for (i = iCoefNum; i < FFTSizeFilters; ++ i) {
-//		Sig [i].real = 0;
-//		Sig [i].imag = 0;
+//		s [i].real = 0;
+//		s [i].imag = 0;
 //	}
-	ARM_MORPH(arm_fill)(0, (FLOAT_t *) & Sig [iCoefNum], (FFTSizeFilters - iCoefNum) * 2);
+	ARM_MORPH(arm_fill)(0, (FLOAT_t *) & s [iCoefNum], (FFTSizeFilters - iCoefNum) * 2);
 	//---------------------------
 	// Do FFT
 	//---------------------------
 
 
 	/* Process the data through the CFFT/CIFFT module */
-	dsp_cfft(& fftinstance, (FLOAT_t *) Sig, 0);
+	dsp_cfft(& fftinstance, (FLOAT_t *) s, 0);
 
 	//ARM_MORPH(arm_cmplx_mag_squared)(sg, MagArr, MagLen);
 
 }
 
-static void sigtocoeffs(FLOAT_t *dCoeff, int iCoefNum)
+static void sigtocoeffs(struct ComplexHFTRX * s, FLOAT_t *dCoeff, int iCoefNum)
 {
 	const int j = NtapCoeffs(iCoefNum);
 	int i;
@@ -1371,7 +1299,7 @@ static void sigtocoeffs(FLOAT_t *dCoeff, int iCoefNum)
 	// Magnitude in dB
 	//---------------------------
 	for (i = 0; i < j && i < FFTSizeFilters; ++ i) {
-		dCoeff [i] = Sig [i].real;
+		dCoeff [i] = s [i].real;
 	}
 
 }
@@ -1388,31 +1316,31 @@ static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int 
 
 // slope: изменение тембра звука - на Samplerate/2 АЧХ становится на столько децибел
 // scale: общий масштаб изменения АЧХ
-static void correctspectrumcomplex(int_fast8_t targetdb)
+static void correctspectrumcomplex(struct ComplexHFTRX * s, int_fast8_t targetdb)
 {
 	ARM_MORPH(arm_cfft_instance) fftinstance;
 
 	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_cfft_init)(& fftinstance, FFTSizeFilters));
 #if 1
 	const FLOAT_t slope = db2ratio(targetdb);
-	// Центр симметрии Sig - ячейка с индексом FFTSizeFilters / 2
+	// Центр симметрии s - ячейка с индексом FFTSizeFilters / 2
 	FLOAT_t scale = 1;
 	const FLOAT_t step = POWF(slope, (FLOAT_t) 1 / (FFTSizeFilters / 2 - 1));
 	const int n = FFTSizeFilters / 2;
 	int i;
 	for (i = 1; i < n; ++ i, scale *= step)
 	{
-		Sig [i].real *= scale;
-		Sig [i].imag *= scale;
-		Sig [FFTSizeFilters - i].real = Sig [i].real;
-		Sig [FFTSizeFilters - i].imag = - Sig [i].imag;
+		s [i].real *= scale;
+		s [i].imag *= scale;
+		s [FFTSizeFilters - i].real = s [i].real;
+		s [FFTSizeFilters - i].imag = - s [i].imag;
 	}
 	/* корректируем центральный элемент массива */
-	Sig [FFTSizeFilters / 2].real *= scale;
-	Sig [FFTSizeFilters / 2].imag *= scale;
+	s [FFTSizeFilters / 2].real *= scale;
+	s [FFTSizeFilters / 2].imag *= scale;
 	/* лишний? */
-	//Sig [0].real = 0;
-	//Sig [0].imag = 0;
+	//s [0].real = 0;
+	//s [0].imag = 0;
 #else
 
 	// https://ru.wikipedia.org/wiki/%D0%A6%D0%B2%D0%B5%D1%82%D0%B0_%D1%88%D1%83%D0%BC%D0%B0
@@ -1427,19 +1355,19 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 	for (i = 1; i < n; ++ i)
 	{
 		const FLOAT_t scale = EXPF(slope * LOGF((FLOAT_t) i / n)) * delta;
-		Sig [i].real *= scale;
-		Sig [i].imag *= scale;
-		Sig [FFTSizeFilters - i].real = Sig [i].real;
-		Sig [FFTSizeFilters - i].imag = - Sig [i].imag;
+		s [i].real *= scale;
+		s [i].imag *= scale;
+		s [FFTSizeFilters - i].real = s [i].real;
+		s [FFTSizeFilters - i].imag = - s [i].imag;
 	}
 	/* корректируем центральный элемент массива */
-	Sig [FFTSizeFilters / 2].real *= ratio;
-	Sig [FFTSizeFilters / 2].imag *= ratio;
+	s [FFTSizeFilters / 2].real *= ratio;
+	s [FFTSizeFilters / 2].imag *= ratio;
 #endif
 
 	// Construct FIR coefficients from frequency response
 	/* Process the data through the CFFT/CIFFT module */
-	dsp_cfft(& fftinstance, (FLOAT_t *) Sig, !0);	// inverse FFT
+	dsp_cfft(& fftinstance, (FLOAT_t *) s, !0);	// inverse FFT
 
 	//arm_cmplx_mag_squared_f32(sg, MagArr, MagLen);
 }
@@ -1450,16 +1378,16 @@ static void fir_design_adjust_rx_unused(FLOAT_t * dCoeff, const FLOAT_t * dWindo
 {
 	if (targetdb != 0)
 	{
-		imp_response(Sig, dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-		correctspectrumcomplex(targetdb);
-		sigtocoeffs(dCoeff, iCoefNum);
+		imp_response(Sig0, dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+		correctspectrumcomplex(Sig0, targetdb);
+		sigtocoeffs(Sig0, dCoeff, iCoefNum);
 	}
 
 	if (usewindow != 0)
 		fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
 
-	imp_response(Sig, dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
-	const FLOAT_t resp = getmaxresponce(Sig);
+	imp_response(Sig0, dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
+	const FLOAT_t resp = getmaxresponce(Sig0);
 	scalecoeffs(dCoeff, iCoefNum, gain / resp);	// нормализация коэффициентоа передачи к заданному значению (1)
 }
 
@@ -1468,13 +1396,13 @@ static void fir_design_adjust_tx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iC
 {
 	if (targetdb != 0)
 	{
-		imp_response(Sig, dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-		correctspectrumcomplex(targetdb);
-		sigtocoeffs(dCoeff, iCoefNum);
+		imp_response(Sig0, dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
+		correctspectrumcomplex(Sig0, targetdb);
+		sigtocoeffs(Sig0, dCoeff, iCoefNum);
 	}
 	fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
-	imp_response(Sig, dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
-	const FLOAT_t resp = getmaxresponce(Sig);
+	imp_response(Sig0, dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR для последующего масштабирования коэффициентов
+	const FLOAT_t resp = getmaxresponce(Sig0);
 	scalecoeffs(dCoeff, iCoefNum, 1 / resp);	// нормализация к. передаци к заданному значению (1)
 }
 
@@ -2999,6 +2927,7 @@ static void fir_expand_symmetric2(FLOAT_t * dCoeff, const FLOAT_t * dCoeffSrc, i
 // Установка параметров тракта передатчика
 static void audio_setup_mike(const uint_fast8_t spf)
 {
+	const FLOAT_t fs = ARMI2SRATE;
 	FLOAT_t * const dCoeff = FIRCoef_tx_MIKE [spf];
 	const FLOAT_t * const dWindow = FIRCwnd_tx_MIKE;
 	enum { iCoefNum = Ntap_tx_MIKE };
@@ -3010,7 +2939,10 @@ static void audio_setup_mike(const uint_fast8_t spf)
 		fir_design_lowpass_freq(dCoeff, iCoefNum, iCoefNum, 15);
 		fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));	// Масштабирование для несимметричного фильтра
 		fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
-		break;
+		/* подготовка для CMSIS FIR фильтра передатчика */
+		ASSERT(Ntap_tx_MIKE == iCoefNum);
+		fir_expand_symmetric2(tx_firEQcoeff, dCoeff, iCoefNum);	// Duplicate symmetrical part of coeffs.
+		return;
 
 	// Голосовые режимиы
 	case DSPCTL_MODE_TX_ISB:
@@ -3030,9 +2962,6 @@ static void audio_setup_mike(const uint_fast8_t spf)
 		return;
 	}
 
-	/* подготовка для CMSIS FIR фильтра передатчика */
-	ASSERT(Ntap_tx_MIKE == iCoefNum);
-	fir_expand_symmetric2(tx_firEQcoeff, dCoeff, iCoefNum);	// Duplicate symmetrical part of coeffs.
 }
 
 // установить частоты среза тракта ПЧ
@@ -3065,6 +2994,7 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi, uint_fast8_
 // Зависят от glob_dspmodes, glob_aflowcutrx, glob_afhighcutrx, glob_fltsofter, glob_afresponcerx
 static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
 {
+	const FLOAT_t fs = ARMI2SRATE;
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
 	const uint_fast8_t fltsofter = glob_fltsofter [pathi];
