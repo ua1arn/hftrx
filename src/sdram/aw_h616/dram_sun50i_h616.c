@@ -1445,7 +1445,7 @@ static const struct dram_para para = {
 		.tpr13     = 0x2000c60,
 };
 #elif 0
-// со старой платой HelperBoardT507 LPDDR4 работает
+// со старой платой HelperBoardT507 LPDDR4 работает - Но не на всех экземплярах
 // configtype=1
 //[dram_para3]
 static const struct dram_para para = {
@@ -1480,6 +1480,41 @@ static const struct dram_para para = {
 	.tpr11     = 0x22262622,
 	.tpr12     = 0x0b0c0d0b,
 	.tpr13     = 0x61,
+};
+#elif 0
+//[dram_para4]
+static const struct dram_para para = {
+		.clk = 792,
+		.type = 7,
+		.dx_odt = 0x06060606,
+		.dx_dri = 0x0d0d0d0d,
+		.ca_dri = 0x0d0d,
+		.odt_en = 0x9988ffff,
+		.para1 = 0x30fa,
+		.para2 = 0x1000,
+		.mr0 = 0x0,
+		.mr1 = 0xc3,
+		.mr2 = 0x6,
+		.mr3 = 0x1,
+		.mr4 = 0x0,
+		.mr5 = 0x0,
+		.mr6 = 0x0,
+		.mr11 = 0x0,
+		.mr12 = 0x0,
+		.mr13 = 0x0,
+		.mr14 = 0x0,
+		.mr16 = 0x0,
+		.mr17 = 0x0,
+		.mr22 = 0x0,
+		.tpr0 = 0x0,
+		.tpr1 = 0x0,
+		.tpr2 = 0x1,
+		.tpr3 = 0x0,
+		.tpr6 = 0x35bd8080,
+		.tpr10 = 0x402f4469,
+		.tpr11 = 0x0c0c080c,
+		.tpr12 = 0x0d0a0b0c,
+		.tpr13 = 0x000c60,
 };
 
 #else
@@ -1516,39 +1551,39 @@ static const struct dram_para para = {
 
 void dram_para_print(const struct dram_para * p)
 {
-	PRINTF("clk=%08X\n", (unsigned) p->clk);
-	PRINTF("type=%08X\n", (unsigned) p->type);
-	PRINTF("dx_odt=%08X\n", (unsigned) p->dx_odt);
-	PRINTF("dx_dri=%08X\n", (unsigned) p->dx_dri);
-	PRINTF("ca_dri=%08X\n", (unsigned) p->ca_dri);
-	PRINTF("para0=%08X\n", (unsigned) p->para0);
-	PRINTF("para1=%08X\n", (unsigned) p->para1);
-	PRINTF("para2=%08X\n", (unsigned) p->para2);
-	PRINTF("mr0=%08X\n", (unsigned) p->mr0);
-	PRINTF("mr1=%08X\n", (unsigned) p->mr1);
-	PRINTF("mr2=%08X\n", (unsigned) p->mr2);
-	PRINTF("mr3=%08X\n", (unsigned) p->mr3);
-	PRINTF("mr4=%08X\n", (unsigned) p->mr4);
-	PRINTF("mr5=%08X\n", (unsigned) p->mr5);
-	PRINTF("mr6=%08X\n", (unsigned) p->mr6);
-	PRINTF("mr11=%08X\n", (unsigned) p->mr11);
-	PRINTF("mr12=%08X\n", (unsigned) p->mr12);
-	PRINTF("mr13=%08X\n", (unsigned) p->mr13);
-	PRINTF("mr14=%08X\n", (unsigned) p->mr14);
-	PRINTF("mr16=%08X\n", (unsigned) p->mr16);
-	PRINTF("mr17=%08X\n", (unsigned) p->mr17);
-	PRINTF("mr22=%08X\n", (unsigned) p->mr22);
-	PRINTF("tpr0=%08X\n", (unsigned) p->tpr0);
-	PRINTF("tpr1=%08X\n", (unsigned) p->tpr1);
-	PRINTF("tpr2=%08X\n", (unsigned) p->tpr2);
-	PRINTF("tpr3=%08X\n", (unsigned) p->tpr3);
-	PRINTF("tpr6=%08X\n", (unsigned) p->tpr6);
-	PRINTF("tpr10=%08X\n", (unsigned) p->tpr10);
-	PRINTF("tpr11=%08X\n", (unsigned) p->tpr11);
-	PRINTF("tpr12=%08X\n", (unsigned) p->tpr12);
-	PRINTF("tpr13=%08X\n", (unsigned) p->tpr13);
-	PRINTF("tpr14=%08X\n", (unsigned) p->tpr14);
-	PRINTF("odt_en=%08X\n", (unsigned) p->odt_en);
+	PRINTF("clk=0x%08X (%u)\n", (unsigned) p->clk, (unsigned) p->clk);
+	PRINTF("type=0x%08X\n", (unsigned) p->type);
+	PRINTF("dx_odt=0x%08X\n", (unsigned) p->dx_odt);
+	PRINTF("dx_dri=0x%08X\n", (unsigned) p->dx_dri);
+	PRINTF("ca_dri=0x%08X\n", (unsigned) p->ca_dri);
+	PRINTF("para0=0x%08X\n", (unsigned) p->para0);
+	PRINTF("para1=0x%08X\n", (unsigned) p->para1);
+	PRINTF("para2=0x%08X\n", (unsigned) p->para2);
+	PRINTF("mr0=0x%08X\n", (unsigned) p->mr0);
+	PRINTF("mr1=0x%08X\n", (unsigned) p->mr1);
+	PRINTF("mr2=0x%08X\n", (unsigned) p->mr2);
+	PRINTF("mr3=0x%08X\n", (unsigned) p->mr3);
+	PRINTF("mr4=0x%08X\n", (unsigned) p->mr4);
+	PRINTF("mr5=0x%08X\n", (unsigned) p->mr5);
+	PRINTF("mr6=0x%08X\n", (unsigned) p->mr6);
+	PRINTF("mr11=0x%08X\n", (unsigned) p->mr11);
+	PRINTF("mr12=0x%08X\n", (unsigned) p->mr12);
+	PRINTF("mr13=0x%08X\n", (unsigned) p->mr13);
+	PRINTF("mr14=0x%08X\n", (unsigned) p->mr14);
+	PRINTF("mr16=0x%08X\n", (unsigned) p->mr16);
+	PRINTF("mr17=0x%08X\n", (unsigned) p->mr17);
+	PRINTF("mr22=0x%08X\n", (unsigned) p->mr22);
+	PRINTF("tpr0=0x%08X\n", (unsigned) p->tpr0);
+	PRINTF("tpr1=0x%08X\n", (unsigned) p->tpr1);
+	PRINTF("tpr2=0x%08X\n", (unsigned) p->tpr2);
+	PRINTF("tpr3=0x%08X\n", (unsigned) p->tpr3);
+	PRINTF("tpr6=0x%08X\n", (unsigned) p->tpr6);
+	PRINTF("tpr10=0x%08X\n", (unsigned) p->tpr10);
+	PRINTF("tpr11=0x%08X\n", (unsigned) p->tpr11);
+	PRINTF("tpr12=0x%08X\n", (unsigned) p->tpr12);
+	PRINTF("tpr13=0x%08X\n", (unsigned) p->tpr13);
+	PRINTF("tpr14=0x%08X\n", (unsigned) p->tpr14);
+	PRINTF("odt_en=0x%08X\n", (unsigned) p->odt_en);
 }
 
 unsigned long sunxi_dram_init(void)
