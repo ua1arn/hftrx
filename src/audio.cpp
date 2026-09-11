@@ -698,10 +698,7 @@ static FLOAT32P_t get_float_aflorx_delta(uint_fast8_t pathi)
 }
 
 /////
-///
-///
 
-#if 1
 // AI-generated code
 
 /**
@@ -761,8 +758,13 @@ static void runtime_calculate_sloped_fir(FLOAT_t *h, int numTaps, FLOAT_t fs, FL
     }
 }
 
-/* --- Equalizer Architecture Definitions --- */
-#define EQ_NUM_BANDS       5        /* Number of parametric bands */
+#include <math.h>
+#include "dspdefines.h"    /* Hardware floating point macros, FLOAT_t, and arm_math.h inclusions */
+
+/* Ensure M_PI is defined if the compiler does not strict-define it under certain standards */
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 /* --- Struct Defs for Single Band --- */
 typedef struct {
@@ -783,15 +785,15 @@ typedef struct {
  * @param  fs          The operational audio sampling frequency in Hz.
  * @return None
  */
-void calculate_combined_eq_fir(FLOAT_t *h_out, int num_taps, const eq_band_t *bands, int num_bands, FLOAT_t fs) {
-    const FLOAT_t alpha = (FLOAT_t) (num_taps - 1) / 2;
-    const FLOAT_t delta_omega = (2 * (FLOAT_t)M_PI) / num_taps;
+static void calculate_combined_eq_fir(FLOAT_t *const h_out, const int num_taps, const eq_band_t *const bands, const int num_bands, const FLOAT_t fs) {
+    const FLOAT_t alpha = (num_taps - 1) / 2;
+    const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
 
     /* Loop through the first half of the impulse response to enforce symmetry (Type-1 FIR) */
     for (int n = 0; n < half_taps; n++) {
         FLOAT_t sum = 0;
-        FLOAT_t n_minus_alpha = n - alpha;
+        const FLOAT_t n_minus_alpha = n - alpha;
 
         /* Synthesize frequency response using Discrete Fourier Transform (DFT) bin mapping */
         for (int k = 0; k < num_taps; k++) {
@@ -803,21 +805,21 @@ void calculate_combined_eq_fir(FLOAT_t *h_out, int num_taps, const eq_band_t *ba
                 freq = fs - freq;
             }
 
-            /* Initialize base linear gain at 1.0 (equivalent to 0 dB flat response) */
+            /* Initialize base linear gain at 1 (equivalent to 0 dB flat response) */
             FLOAT_t total_gain_linear = 1;
 
             /* Aggregate the response curves of all individual equalizer bands */
             for (int b = 0; b < num_bands; b++) {
-                FLOAT_t f_c = bands[b].f_center;
-                FLOAT_t f_w = bands[b].bandwidth;
+                const FLOAT_t f_c = bands[b].f_center;
+                const FLOAT_t f_w = bands[b].bandwidth;
 
                 if (f_w > 0) {
                     /* Calculate standard bell-shape (Gaussian distribution) scaling metric */
-                    FLOAT_t distance = (freq - f_c) / (f_w / 2);
-                    FLOAT_t bell_shape = EXPF((FLOAT_t) - 0.5 * distance * distance);
+                    const FLOAT_t distance = (freq - f_c) / (f_w / 2);
+                    const FLOAT_t bell_shape = EXPF(-0.5 * distance * distance);
 
                     /* Convert the current band's gain value from logarithmic dB to linear scaling factor */
-                    FLOAT_t band_gain_linear = POWF(10, bands[b].gain_db / 20) - 1;
+                    const FLOAT_t band_gain_linear = POWF(10, bands[b].gain_db / 20) - 1;
 
                     /* Superimpose the linear delta scaled by the curve shape into total response */
                     total_gain_linear += band_gain_linear * bell_shape;
@@ -830,23 +832,21 @@ void calculate_combined_eq_fir(FLOAT_t *h_out, int num_taps, const eq_band_t *ba
             }
 
             /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
-            sum += total_gain_linear * COSF(delta_omega * (FLOAT_t) k * n_minus_alpha);
+            sum += total_gain_linear * COSF(delta_omega * k * n_minus_alpha);
         }
 
         /* Derive crude un-windowed FIR impulse coefficient step value */
-        FLOAT_t h_raw = sum / (FLOAT_t) num_taps;
+        const FLOAT_t h_raw = sum / num_taps;
 
         /* Calculate Blackman window properties to aggressively suppress Gibbs phenomenon ripples */
-        FLOAT_t window = 0.42f - 0.5f * COSF((2 * (FLOAT_t)M_PI * n) / (num_taps - 1))
-                               + 0.08f * COSF((4 * (FLOAT_t)M_PI * n) / (num_taps - 1));
+        const FLOAT_t window = 0.42 - 0.5 * COSF((2 * M_PI * n) / (num_taps - 1))
+                                    + 0.08 * COSF((4 * M_PI * n) / (num_taps - 1));
 
         /* Inject finalized mirrored coefficients into symmetric array addresses */
-        h_out [n] = h_raw * window;
-        h_out [num_taps - 1 - n] = h_out [n];
+        h_out[n] = h_raw * window;
+        h_out[num_taps - 1 - n] = h_out[n];
     }
 }
-
-#endif
 
 //////////////////////////////////////////
 
