@@ -956,6 +956,78 @@ static void calculate_variable_slope_lpf(FLOAT_t *const h, FLOAT_t *const tmp_wi
     ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
 }
 
+/**
+ * @brief  Generates a single-pass Notch FIR filter with adjustable transition width (slope steepness)
+ *         for the left and right slopes independently, using a fixed number of taps.
+ *
+ * @param  h               Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
+ * @param  tmp_window_buf  Pointer to temporary workspace buffer (allocated size must be >= num_taps).
+ * @param  num_taps        Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
+ * @param  fs              The operational audio sampling frequency in Hz.
+ * @param  f_notch         Center frequency of the notch filter in Hz.
+ * @param  w_notch         Width of the ideal maximum suppression band in Hz.
+ * @param  w1_trans        Width of the left transition band in Hz (Smaller value = Steeper left slope).
+ * @param  w2_trans        Width of the right transition band in Hz (Smaller value = Steeper right slope).
+ * @return None
+ */
+static void calculate_variable_slope_notch(FLOAT_t *const h, FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f_notch, const FLOAT_t w_notch, const FLOAT_t w1_trans, const FLOAT_t w2_trans) {
+    const FLOAT_t alpha = (num_taps - 1) / 2;
+    const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
+    const int half_taps = (num_taps + 1) / 2;
+
+    /* Define absolute frequency boundaries for suppression and transition areas */
+    const FLOAT_t notch_start = f_notch - w_notch / 2;
+    const FLOAT_t notch_end = f_notch + w_notch / 2;
+    const FLOAT_t stop1 = notch_start - w1_trans;
+    const FLOAT_t stop2 = notch_end + w2_trans;
+
+    /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients using frequency sampling */
+    for (int n = 0; n < half_taps; n++) {
+        FLOAT_t sum = 0;
+        const FLOAT_t n_minus_alpha = n - alpha;
+
+        for (int k = 0; k < num_taps; k++) {
+            FLOAT_t freq = k * fs / num_taps;
+
+            /* Mirror spectrum points located above the Nyquist threshold */
+            if (freq > fs / 2) {
+                freq = fs - freq;
+            }
+
+            /* Synthesize inverse magnitude response for the notch band */
+            FLOAT_t h_target = 1;
+
+            if (freq >= notch_start && freq <= notch_end) {
+                /* Pure suppression (stopband) area */
+                h_target = 0;
+            }
+            else if (freq >= stop1 && freq < notch_start && w1_trans > 0) {
+                /* Left transition band (Linear interpolation to control slope steepness) */
+                h_target = (notch_start - freq) / w1_trans;
+            }
+            else if (freq > notch_end && freq <= stop2 && w2_trans > 0) {
+                /* Right transition band (Linear interpolation to control slope steepness) */
+                h_target = (freq - notch_end) / w2_trans;
+            }
+
+            /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
+            if (h_target > 0) {
+                sum += h_target * COSF(delta_omega * k * n_minus_alpha);
+            }
+        }
+
+        /* Store raw coefficients symmetrically directly into the output buffer */
+        h[n] = sum / num_taps;
+        h[num_taps - 1 - n] = h[n];
+    }
+
+    /* Step 2: Generate Blackman-Harris window weights into temporary buffer via CMSIS-DSP morph macro */
+    ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
+
+    /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
+    ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
+}
+
 
 //////////////////////////////////////////
 
