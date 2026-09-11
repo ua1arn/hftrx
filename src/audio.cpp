@@ -118,6 +118,9 @@ static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; 
 static int_fast16_t 	glob_gainnfmrx [2] = { 100, 100 };
 static uint_fast8_t 	glob_squelch_level;
 
+static int_fast8_t		glob_afresponcesrx [2];	// изменение тембра звука в канале приёмника - на Samplerate/2 АЧХ становится на столько децибел
+static int_fast8_t		glob_afresponcetx;	// изменение тембра звука в канале передатчика - на Samplerate/2 АЧХ становится на столько децибел
+
 static uint_fast8_t 	glob_wnb;	// Noise blanker enable (NB)
 static int_fast16_t 	glob_wnbfence10;	// 0.1 dB step noise blanker fence (dbFS)
 
@@ -183,9 +186,6 @@ static int_fast16_t		glob_fsadcpower10 = 0;	// мощность, соответ�
 
 static uint_fast8_t		glob_modem_mode;		// применяемая модуляция
 static uint_fast32_t	glob_modem_speed100 = 3125;	// скорость передачи с точностью 1/100 бод
-
-static int_fast8_t		glob_afresponcerx;	// изменение тембра звука в канале приёмника - на Samplerate/2 АЧХ становится на столько децибел
-static int_fast8_t		glob_afresponcetx;	// изменение тембра звука в канале передатчика - на Samplerate/2 АЧХ становится на столько децибел
 
 static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, A - main RX, B - sub RX
 
@@ -1223,12 +1223,12 @@ static void correctspectrumcomplex(int_fast8_t targetdb)
 
 #define GAIN_1 1
 // Формирование наклона АЧХ звукового тракта приёмника
-static void fir_design_adjust_rx(FLOAT_t * dCoeff, const FLOAT_t * dWindow, int iCoefNum, uint_fast8_t usewindow, FLOAT_t gain)
+static void fir_design_adjust_rx(FLOAT_t * dCoeff, const FLOAT_t * dWindow, int iCoefNum, uint_fast8_t usewindow, FLOAT_t gain, int_fast8_t targetdb)
 {
-	if (glob_afresponcerx != 0)
+	if (targetdb != 0)
 	{
 		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-		correctspectrumcomplex(glob_afresponcerx);
+		correctspectrumcomplex(targetdb);
 		sigtocoeffs(dCoeff, iCoefNum);
 	}
 
@@ -1241,12 +1241,12 @@ static void fir_design_adjust_rx(FLOAT_t * dCoeff, const FLOAT_t * dWindow, int 
 }
 
 // Формирование наклона АЧХ звукового тракта передатчика
-static void fir_design_adjust_tx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum)
+static void fir_design_adjust_tx(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum, int_fast8_t targetdb)
 {
-	if (glob_afresponcetx != 0)
+	if (targetdb != 0)
 	{
 		imp_response(dCoeff, iCoefNum);	// Получение АЧХ из коэффициентов симмметричного FIR
-		correctspectrumcomplex(glob_afresponcetx);
+		correctspectrumcomplex(targetdb);
 		sigtocoeffs(dCoeff, iCoefNum);
 	}
 	fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
@@ -2785,7 +2785,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
 		fir_design_bandpass_freq(dCoeff, iCoefNum, iCoefNum, glob_aflowcuttx, glob_afhighcuttx);
-		fir_design_adjust_tx(dCoeff, dWindow, iCoefNum);	// Применение эквалайзера к микрофону
+		fir_design_adjust_tx(dCoeff, dWindow, iCoefNum, glob_afresponcetx);	// Применение параметров эквалайзера к микрофону
 		break;
 
 	// в режиме приема или в режимах передачи без микрофона - ничего не делаем
@@ -2832,6 +2832,7 @@ static void dsp_rxaudio_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoef
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
 	const uint_fast8_t fltsofter = glob_fltsofter [pathi];
+	const int8_t targetdb = glob_afresponcesrx [pathi];
 	const int iCoefNum = Ntap_rx_AUDIO;
 	static FLOAT_t dWnd_rxAUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			/* подготовленные значения функции окна - с учетом симметрии (половина) */
 
@@ -2842,7 +2843,7 @@ static void dsp_rxaudio_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoef
 		// ФНЧ
 		fir_design_lowpass_freq(dCoeff, iCoefNum, iCoefNum, cutfreqhigh);
 		fir_design_windowbuff_half(dWnd_rxAUDIO, iCoefNum, iCoefNum);
-		fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 1, GAIN_1);	// Формирование наклона АЧХ
+		fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 1, GAIN_1, targetdb);	// Формирование наклона АЧХ
 		break;
 
 	case DSPCTL_MODE_RX_SAM:
@@ -2850,7 +2851,7 @@ static void dsp_rxaudio_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoef
 		//fir_design_lowpass_freq(dCoeff, iCoefNum, cutfreqhigh);
 		fir_design_bandpass_freq(dCoeff, iCoefNum, iCoefNum, cutfreqlow, cutfreqhigh);
 		fir_design_windowbuff_half(dWnd_rxAUDIO, iCoefNum, iCoefNum);
-		fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 1, GAIN_1);	// Формирование наклона АЧХ
+		fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 1, GAIN_1, targetdb);	// Формирование наклона АЧХ
 		break;
 
 	case DSPCTL_MODE_RX_WFM:
@@ -2875,7 +2876,7 @@ static void dsp_rxaudio_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoef
 				fir_design_bandstop(dCoeff, iCoefNum, iCoefNum, fir_design_normfreq(fcutL), fir_design_normfreq(fcutH));
 				fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));	// Масштабирование для несимметричного фильтра
 				fir_design_windowbuff_half(dWnd_rxAUDIO, iCoefNum, iCoefNum);
-				fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 0, GAIN_1);	// Формирование наклона АЧХ, без применения оконной функции
+				fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 0, GAIN_1, targetdb);	// Формирование наклона АЧХ, без применения оконной функции
 			}
 			else
 			{
@@ -2888,14 +2889,14 @@ static void dsp_rxaudio_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoef
 				for (i = 0; i < NtapCoeffs(iCoefNum); ++ i)
 					dCoeff [i] += dC2 [i];
 				fir_design_windowbuff_half(dWnd_rxAUDIO, iCoefNum, iCoefNum);
-				fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 0, GAIN_1);	// Формирование наклона АЧХ, без применения оконной функции
+				fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 0, GAIN_1, targetdb);	// Формирование наклона АЧХ, без применения оконной функции
 			}
 		}
 		else
 		{
 			fir_design_bandpass_freq(dCoeff, iCoefNum, iCoefNum, cutfreqlow, cutfreqhigh);
 			fir_design_windowbuff_half(dWnd_rxAUDIO, iCoefNum, iCoefNum);
-			fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 1, GAIN_1);	// Формирование наклона АЧХ
+			fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 1, GAIN_1, targetdb);	// Формирование наклона АЧХ
 		}
 		break;
 
@@ -2904,14 +2905,14 @@ static void dsp_rxaudio_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoef
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, getCoefNumLtdValidated(iCoefNum, fltsofter), cutfreqlow, cutfreqhigh);
 		fir_design_windowbuff_half(dWnd_rxAUDIO, iCoefNum, getCoefNumLtdValidated(iCoefNum, fltsofter));
-		fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 1, GAIN_1);	// Формирование наклона АЧХ
+		fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 1, GAIN_1, targetdb);	// Формирование наклона АЧХ
 		break;
 
 	case DSPCTL_MODE_RX_FREEDV:
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, iCoefNum, cutfreqlow, cutfreqhigh);
 		fir_design_windowbuff_half(dWnd_rxAUDIO, iCoefNum, iCoefNum);
-		fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 1, GAIN_1);	// Формирование наклона АЧХ
+		fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 1, GAIN_1, targetdb);	// Формирование наклона АЧХ
 		break;
 
 	case DSPCTL_MODE_RX_DRM:
@@ -2925,7 +2926,7 @@ static void dsp_rxaudio_recalceq_coeffs_half(uint_fast8_t pathi, FLOAT_t * dCoef
 		// audio
 		fir_design_bandpass_freq(dCoeff, iCoefNum, iCoefNum, cutfreqlow, cutfreqhigh);
 		fir_design_windowbuff_half(dWnd_rxAUDIO, iCoefNum, iCoefNum);
-		fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 1, (int) glob_gainnfmrx [pathi] / (FLOAT_t) 100);	// Формирование наклона АЧХ
+		fir_design_adjust_rx(dCoeff, dWnd_rxAUDIO, iCoefNum, 1, (int) glob_gainnfmrx [pathi] / (FLOAT_t) 100, targetdb);	// Формирование наклона АЧХ
 		break;
 
 	// в режиме передачи
@@ -6183,9 +6184,9 @@ board_set_reverb(uint_fast8_t reverb, uint_fast8_t reverbdelay, uint_fast8_t rev
 void
 board_set_afresponcerx(int_fast8_t v)
 {
-	if (glob_afresponcerx != v)
+	if (glob_afresponcesrx [glob_trxpath] != v)
 	{
-		glob_afresponcerx = v;
+		glob_afresponcesrx [glob_trxpath] = v;
 		board_flt1regchanged();
 	}
 }
