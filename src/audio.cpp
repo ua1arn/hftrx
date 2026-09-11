@@ -784,22 +784,22 @@ typedef struct {
  * @return None
  */
 void calculate_combined_eq_fir(FLOAT_t *h_out, int num_taps, const eq_band_t *bands, int num_bands, FLOAT_t fs) {
-    const FLOAT_t alpha = (FLOAT_t)(num_taps - 1) / 2.0f;
-    const FLOAT_t delta_omega = (2.0f * (FLOAT_t)M_PI) / (FLOAT_t)num_taps;
+    const FLOAT_t alpha = (FLOAT_t) (num_taps - 1) / 2;
+    const FLOAT_t delta_omega = (2 * (FLOAT_t)M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
 
     /* Loop through the first half of the impulse response to enforce symmetry (Type-1 FIR) */
     for (int n = 0; n < half_taps; n++) {
-        FLOAT_t sum = 0.0f;
-        FLOAT_t n_minus_alpha = (FLOAT_t) n - alpha;
+        FLOAT_t sum = 0;
+        FLOAT_t n_minus_alpha = n - alpha;
 
         /* Synthesize frequency response using Discrete Fourier Transform (DFT) bin mapping */
         for (int k = 0; k < num_taps; k++) {
             /* Map the current bin index to its physical frequency representation */
-            FLOAT_t freq = (FLOAT_t)k * fs / (FLOAT_t)num_taps;
+            FLOAT_t freq = k * fs / num_taps;
 
             /* Mirror spectrum points located above the Nyquist threshold */
-            if (freq > fs / 2.0f) {
+            if (freq > fs / 2) {
                 freq = fs - freq;
             }
 
@@ -811,13 +811,13 @@ void calculate_combined_eq_fir(FLOAT_t *h_out, int num_taps, const eq_band_t *ba
                 FLOAT_t f_c = bands[b].f_center;
                 FLOAT_t f_w = bands[b].bandwidth;
 
-                if (f_w > 0.0f) {
+                if (f_w > 0) {
                     /* Calculate standard bell-shape (Gaussian distribution) scaling metric */
                     FLOAT_t distance = (freq - f_c) / (f_w / 2);
-                    FLOAT_t bell_shape = EXPF(-0.5f * distance * distance);
+                    FLOAT_t bell_shape = EXPF((FLOAT_t) - 0.5 * distance * distance);
 
                     /* Convert the current band's gain value from logarithmic dB to linear scaling factor */
-                    FLOAT_t band_gain_linear = POWF(10.0f, bands[b].gain_db / 20.0f) - 1.0f;
+                    FLOAT_t band_gain_linear = POWF(10, bands[b].gain_db / 20) - 1;
 
                     /* Superimpose the linear delta scaled by the curve shape into total response */
                     total_gain_linear += band_gain_linear * bell_shape;
@@ -830,19 +830,19 @@ void calculate_combined_eq_fir(FLOAT_t *h_out, int num_taps, const eq_band_t *ba
             }
 
             /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
-            sum += total_gain_linear * COSF(delta_omega * (FLOAT_t)k * n_minus_alpha);
+            sum += total_gain_linear * COSF(delta_omega * (FLOAT_t) k * n_minus_alpha);
         }
 
         /* Derive crude un-windowed FIR impulse coefficient step value */
-        FLOAT_t h_raw = sum / (FLOAT_t)num_taps;
+        FLOAT_t h_raw = sum / (FLOAT_t) num_taps;
 
         /* Calculate Blackman window properties to aggressively suppress Gibbs phenomenon ripples */
         FLOAT_t window = 0.42f - 0.5f * COSF((2 * (FLOAT_t)M_PI * n) / (num_taps - 1))
                                + 0.08f * COSF((4 * (FLOAT_t)M_PI * n) / (num_taps - 1));
 
         /* Inject finalized mirrored coefficients into symmetric array addresses */
-        h_out[n] = h_raw * window;
-        h_out[num_taps - 1 - n] = h_out[n];
+        h_out [n] = h_raw * window;
+        h_out [num_taps - 1 - n] = h_out [n];
     }
 }
 
