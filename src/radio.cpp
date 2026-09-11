@@ -4233,46 +4233,7 @@ static const struct paramdefdef xgnoisereduct =
 };
 #endif /* WITHIF4DSP */
 
-
 #if WITHIF4DSP
-
-#if WITHUSEDUALWATCH
-
-static const struct {
-	uint8_t code;
-	const char * label;
-}  mainsubrxmodes [] =
-{
-	{ BOARD_RXMAINSUB_A_A, "A/A", },
-	{ BOARD_RXMAINSUB_A_B, "A/B", },	// Левый/правый, A - main RX, B - sub RX
-	{ BOARD_RXMAINSUB_B_A, "B/A", },
-	{ BOARD_RXMAINSUB_B_B, "B/B", },
-	{ BOARD_RXMAINSUB_TWO, "A&B", },	// в оба аудиоканала поступает сумма выходов приемников.
-};
-
-static uint_fast8_t dwatchmode;		// Левый/правый, A - main RX, B - sub RX
-
-static size_t getvaltextmaisubrxmode(char * buff, size_t count, int_fast32_t value)
-{
-	ASSERT(value >= 0 && value < (int) MAINSUBRXMODE_COUNT);
-	return local_snprintf_P(buff, count, "%s", mainsubrxmodes [value].label);
-}
-
-// Левый/правый, A - main RX, B - sub RX
-static const struct paramdefdef xdwatchmode =
-{
-	QLABEL3("DUAL", "Dual RX", "DUAL"), 0, RJ_CB,	ISTEP1,
-	ITEM_VALUE | ITEM_LISTSELECT,
-	0, MAINSUBRXMODE_COUNT - 1,
-	OFFSETOF(struct nvmap, dwatchmode),
-	getselector0, nvramoffs0, valueoffs0,
-	NULL,	// uint_fast16_t value pointer
-	& dwatchmode,	// uint_fast8_t value pointer
-	getzerobase, /* складывается со смещением и отображается */
-	getvaltextmaisubrxmode, /* getvaltext получить текст значения параметра - see RJ_CB */
-};
-
-#endif /* WITHUSEDUALWATCH */
 
 static dualctl8_t gsquelch = { 0, 0 };	/* squelch level */
 static const struct paramdefdef xgsquelch =
@@ -10388,6 +10349,66 @@ static const struct paramdefdef xgdummy =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
+#if WITHIF4DSP
+
+#if WITHUSEDUALWATCH
+
+static const struct {
+	uint8_t code;
+	const char * label;
+}  mainsubrxmodes [] =
+{
+	{ BOARD_RXMAINSUB_A_A, "A/A", },
+	{ BOARD_RXMAINSUB_A_B, "A/B", },	// Левый/правый, A - main RX, B - sub RX
+	{ BOARD_RXMAINSUB_B_A, "B/A", },
+	{ BOARD_RXMAINSUB_B_B, "B/B", },
+	{ BOARD_RXMAINSUB_TWO, "A&B", },	// в оба аудиоканала поступает сумма выходов приемников.
+};
+
+static uint_fast8_t dwatchmode;		// Левый/правый, A - main RX, B - sub RX
+
+static size_t getvaltextmaisubrxmode(char * buff, size_t count, int_fast32_t value)
+{
+	ASSERT(value >= 0 && value < (int) MAINSUBRXMODE_COUNT);
+	return local_snprintf_P(buff, count, "%s", mainsubrxmodes [value].label);
+}
+
+// Левый/правый, A - main RX, B - sub RX
+static const struct paramdefdef xdwatchmode =
+{
+	QLABEL3("DUAL", "Dual RX", "DUAL"), 0, RJ_CB,	ISTEP1,
+	ITEM_VALUE | ITEM_LISTSELECT,
+	0, MAINSUBRXMODE_COUNT - 1,
+	OFFSETOF(struct nvmap, dwatchmode),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,	// uint_fast16_t value pointer
+	& dwatchmode,	// uint_fast8_t value pointer
+	getzerobase, /* складывается со смещением и отображается */
+	getvaltextmaisubrxmode, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
+// Показ маркера полосы пропускания второго VFO
+uint_fast8_t hamradio_get_shofvfobmarker(void)
+{
+	switch (mainsubrxmodes [param_getvalue(& xdwatchmode)].code)
+	{
+	case BOARD_RXMAINSUB_A_A:
+		return gsplitmode == SPLITMODES_ON;
+	default:
+		return 1;
+	}
+}
+
+#else /* WITHUSEDUALWATCH */
+
+// Показ маркера полосы пропускания второго VFO
+uint_fast8_t hamradio_get_shofvfobmarker(void)
+{
+	return 0;
+}
+#endif /* WITHUSEDUALWATCH */
+#endif /* WITHIF4DSP */
+
 // загрузка параметров, не представленных в списке пунктов меню
 static const struct paramdefdef * nomenulist [] =
 {
@@ -13724,7 +13745,7 @@ updateboard_noui(
 				gerflossdb10(lo0side != LOCODE_INVALID, gatt, gpamp));
 		display2_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 		#if WITHUSEDUALWATCH
-			board_set_mainsubrxmode( mainsubrxmodes [param_getvalue(& xdwatchmode)].code);		// Левый/правый, A - main RX, B - sub RX
+			board_set_mainsubrxmode(mainsubrxmodes [param_getvalue(& xdwatchmode)].code);		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
 		#if WITHUSBHW && WITHUSBUAC
 			board_set_btaudioplayer(param_getvalue(& xgbtaudioplayer));

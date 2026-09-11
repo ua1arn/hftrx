@@ -7406,6 +7406,8 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 		//hamradio_get_vfomode3_value(& splitflag);
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 		{
+			if (pathi == 1 && ! hamradio_get_shofvfobmarker())
+				break;
 			uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
 			uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
 			if (xleft == UINT16_MAX || xright == UINT16_MAX)
@@ -7767,6 +7769,8 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 		{
 			uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
 			uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
+			if (pathi == 1 && ! hamradio_get_shofvfobmarker())
+				break;
 
 			if (xleft != UINT16_MAX && xright != UINT16_MAX)
 			{

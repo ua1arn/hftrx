@@ -966,6 +966,7 @@ const char * hamradio_get_ant5_value(void);	// antenna
 const char * hamradio_get_att_value_P(void);	// RX attenuator
 const char * hamradio_get_hplp_value_P(void);	// HP/LP
 const char * hamradio_get_mainsubrxmode3_value_P(void);	// текущее состояние DUAL WATCH
+uint_fast8_t hamradio_get_shofvfobmarker(void);	// Показ маркера полосы пропускания второго VFO
 const char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
 const char * hamradio_get_mode_b_value_P(uint_fast8_t * flag);	// SSB/CW/AM/FM/..
 const char * hamradio_get_notchtype5_P(void);	// FREQ/ANOTCH
