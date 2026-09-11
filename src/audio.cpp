@@ -115,6 +115,7 @@ static int_fast16_t 	glob_afhighcuttx = 3400;	// Частота высокоча
 static int_fast16_t		glob_fullbw6 [2] = { 1000, 1000 };		/* Частота среза фильтров ПЧ в алгоритме Уивера */
 static int_fast32_t		glob_lo6 [2] = { 0, 0 };
 static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; /* WITHFILTSOFTMIN..WITHFILTSOFTMAX Код управления сглаживанием скатов фильтра основной селекции на приёме */
+static uint_fast16_t 	glob_flttransition [2] = { 0, 0 };
 static int_fast16_t 	glob_gainnfmrx [2] = { 100, 100 };
 static uint_fast8_t 	glob_squelch_level;
 
@@ -6436,6 +6437,15 @@ void board_set_fltsofter(uint_fast8_t n)
 	if (glob_fltsofter [glob_trxpath] != n)
 	{
 		glob_fltsofter [glob_trxpath] = n;
+		board_flt1regchanged();	// параметры этой функции используются в audio_update();
+	}
+}
+
+void board_set_flttransition(uint_fast16_t n)	/* Ширина переходной полосы */
+{
+	if (glob_flttransition [glob_trxpath] != n)
+	{
+		glob_flttransition [glob_trxpath] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }

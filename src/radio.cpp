@@ -3711,6 +3711,8 @@ struct nvmap
 
 	struct agcseti_tag afsets [AGCSETI_COUNT];	/* режимы приема */
 
+	uint16_t gtransition;	// Ширина переходной полосы фильтра
+
 #if WITHLWIP
 	uint8_t gethaddr;
 	uint8_t gethmask;
@@ -9627,6 +9629,22 @@ enum { gtxgate = 0 };
 #endif /* WITHTX */
 
 #if WITHIF4DSP && WITHMENU
+
+static uint_fast16_t gtransition = 0;
+// Ширина переходной полосы фильтра
+static const struct paramdefdef xgtransition =
+{
+	QLABEL3("Transition", "TRANS", "Transition"), 0, RJ_UNSIGNED, 	ISTEP10,	// Transition band width
+	ITEM_VALUE,
+	0, 500,			/* 0..500 */
+	OFFSETOF(struct nvmap, gtransition),
+	getselector0, nvramoffs0, valueoffs0,
+	& gtransition,	// 16 bit variable
+	NULL,
+	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
 // CW filter bandwidth for WIDE
 static const struct paramdefdef xfltbw_cwwide =
 {
@@ -10430,7 +10448,7 @@ static const struct paramdefdef * nomenulist [] =
 	& xgpwri,
 #endif /* WITHPOWERLPHP */
 	& xgusefast,	/* управление режимом валкодера */
-	& xgdummy,		/* чтобы небыло массива с нулевым размером */
+	//& xgdummy,		/* чтобы небыло массива с нулевым размером */
 };
 
 // split, s-meter display
@@ -13603,6 +13621,7 @@ updateboard_noui(
 			board_set_lo6(freqlo6);	/* иначе, в случае WITHIF4DSP - управление знаком частоты */
 			board_set_fullbw6(getif6bw(amode, gtx, wide));	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
 			board_set_fltsofter(gtx ? WITHFILTSOFTMIN : bwseti_getfltsofter(bwseti));	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
+			board_set_flttransition(param_getvalue(& xgtransition));
 			board_set_dspmode(Xpamodetempl->dspmode [gtx]);
 			#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 				board_set_dactest(gdactest);		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
@@ -18147,7 +18166,8 @@ const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 	#endif /* WITHELKEY */
 	#if WITHIF4DSP
 		& xfltbw_cwnarrow,
-		& xfltsofter_cwnarrow,
+		& xgtransition,
+		//& xfltsofter_cwnarrow,
 	#endif /* WITHIF4DSP */
 		& xgcwpitch10,
 	#if WITHTX && WITHELKEY
