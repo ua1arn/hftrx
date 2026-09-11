@@ -114,7 +114,6 @@ static int_fast16_t 	glob_afhighcuttx = 3400;	// Частота высокоча
 
 static int_fast16_t		glob_fullbw6 [2] = { 1000, 1000 };		/* Частота среза фильтров ПЧ в алгоритме Уивера */
 static int_fast32_t		glob_lo6 [2] = { 0, 0 };
-//static uint_fast8_t		glob_fltsofter [2] = { WITHFILTSOFTMIN, WITHFILTSOFTMIN }; /* WITHFILTSOFTMIN..WITHFILTSOFTMAX Код управления сглаживанием скатов фильтра основной селекции на приёме */
 static uint_fast16_t 	glob_flttransition [2] = { 0, 0 };
 static int_fast16_t 	glob_gainnfmrx [2] = { 100, 100 };
 static uint_fast8_t 	glob_squelch_level;
@@ -2278,15 +2277,6 @@ static void fir_design_scaleL(float64_t * dCoeff, int iCoefNum, float64_t dScale
 	arm_scale_f64(dCoeff, dScale, dCoeff, NtapCoeffs(iCoefNum));
 }
 
-/* получение ограничнного размера фильтра */
-// fltsofter: glob_fltsofter [pathi]
-static int getCoefNumLtdValidated(int iCoefNum, int fltsofter)
-{
-	enum { WITHFILTSOFTDENOM = 10, WITHFILTSOFTSCALE = 8 };	// Количество коэффициентов уменьшается до 0.2 от исходного значения
-	const int iCoefNumLtd = iCoefNum * WITHFILTSOFTSCALE * (fltsofter - WITHFILTSOFTMIN) / (WITHFILTSOFTDENOM * (WITHFILTSOFTMAX - WITHFILTSOFTMIN));
-	return NtapValidate(iCoefNum - iCoefNumLtd);
-}
-
 /* расчёт паарметров - частота для функций постоения фильтров */
 #define GETNORMFREQ(freq)	((freq) * 2 / (FLOAT_t) ARMSAIRATE)
 #define GETNORMFREQAUDIO(freq)	((freq) * 2 / (FLOAT_t) ARMI2SRATE)
@@ -2821,8 +2811,6 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	{
 		const int cutfreq = fullbw6 / 2;
 		const uint_fast16_t transition = glob_flttransition [pathi];
-		//const uint_fast8_t fltsofter = glob_fltsofter [pathi];
-		//const int iCoefNumLimited = getCoefNumLtdValidated(Ntap_trxi_IQ, fltsofter);
 
 #if WITHDSPEXTRXFIR || WITHDSPEXTTXFIR
 		// Фильтр для квадратурных каналов приёмника и передатчика в FPGA (целочисленный).
@@ -2996,7 +2984,6 @@ static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
 	const FLOAT_t fs = ARMI2SRATE;
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
-	//const uint_fast8_t fltsofter = glob_fltsofter [pathi];
 	const uint_fast16_t transition = glob_flttransition [pathi];
 	const int_fast8_t targetdb = glob_afresponcesrx [pathi];
 	const int iCoefNum = Ntap_rx_AUDIO;
@@ -3076,7 +3063,7 @@ static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
 
 
 // calculate full array of coefficients
-// Зависят от glob_dspmodes, glob_aflowcutrx, glob_afhighcutrx, glob_fltsofter, glob_afresponcerx
+// Зависят от glob_dspmodes, glob_aflowcutrx, glob_afhighcutrx, glob_afresponcesrx
 void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
 {
 	ASSERT(Ntap_rx_AUDIO == iCoefNum);	/* проверяем на несогласованность параметров */
@@ -6430,17 +6417,6 @@ void board_set_fullbw6(int_fast16_t n)
 		glob_fullbw6 [glob_trxpath] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
-}
-
-/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
-/* WITHFILTSOFTMIN..WITHFILTSOFTMAX */
-void board_set_fltsofter(uint_fast8_t n)
-{
-//	if (glob_fltsofter [glob_trxpath] != n)
-//	{
-//		glob_fltsofter [glob_trxpath] = n;
-//		board_flt1regchanged();	// параметры этой функции используются в audio_update();
-//	}
 }
 
 void board_set_flttransition(uint_fast16_t n)	/* Ширина переходной полосы */

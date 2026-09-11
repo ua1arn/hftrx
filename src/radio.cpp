@@ -1746,7 +1746,7 @@ typedef struct
 	/* параметры, изменяемые через меню */
 	uint_fast8_t left10_width10, right100;	/* left выполняет роль width для телеграфных (BWSET_SINGLE) фильтров */
 	uint_fast8_t afresponce;	/* наклон АЧХ - на Samplerate/2 АЧХ становится на столько децибел  */
-	uint_fast8_t fltsofter;	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
+	uint_fast8_t transition10;	/* ширина переходной полосы на приёме */
 	uint8_t rxbw100;	/* полоса пропускания радиотракта (или 0 если вычисляется) в сотнях герц */
 	uint8_t txbw100;	/* полоса пропускания радиотракта (или 0 если вычисляется), удвоенная девиация для NFM в сотнях герц*/
 } bwprop_t;
@@ -1811,21 +1811,24 @@ enum
 #define AFRESPONCETXNFM (+ 12)	// наклон АЧХ для NFM
 #define AFRESPONCEFLAT (0)
 
+#define WITHTRANSITIONMIN 0
+#define WITHTRANSITIONMAX 50
+
 // Частоты границ полосы пропускания
 // эти значения могут модифицироваться через меню
-static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWPROPI_CWNARROW, BWSET_SINGLE, 200 / BWGRANLOW, 0, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
-static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWPROPI_CWWIDE, BWSET_SINGLE, 500 / BWGRANLOW, 0, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
-static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
-static bwprop_t bwprop_ssbmedium = { & bwlimits_ssb, BWPROPI_SSBMEDIUM, BWSET_PAIR, 300 / BWGRANLOW, 2700 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
-static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_PAIR, 300 / BWGRANLOW, 2200 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
-static bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
-static bwprop_t bwprop_nfmtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCETXNFM + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
-static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_PAIR, 100 / BWGRANLOW, 9000 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
-static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_PAIR, 100 / BWGRANLOW, 4500 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
-static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_PAIR, 50 / BWGRANLOW, 5500 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
-static bwprop_t bwprop_nfmnarrow = { & bwlimits_nfm, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, NBFMWIDTHRX / BWGRANHIGH, NBFMWIDTHTX / BWGRANHIGH, };
-static bwprop_t bwprop_nfmwide = { & bwlimits_nfm, BWPROPI_NFMWIDE, BWSET_PAIR, 300 / BWGRANLOW, 4000 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHFILTSOFTMIN, WBFMWIDTHRX / BWGRANHIGH, WBFMWIDTHTX / BWGRANHIGH, };
-static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_PAIR, 100 / BWGRANLOW, 12000 / BWGRANHIGH, AFRESPONCEWFM + AFRESPONCESHIFT, WITHFILTSOFTMIN, 0, 0, };
+static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWPROPI_CWNARROW, BWSET_SINGLE, 200 / BWGRANLOW, 0, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
+static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWPROPI_CWWIDE, BWSET_SINGLE, 500 / BWGRANLOW, 0, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
+static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
+static bwprop_t bwprop_ssbmedium = { & bwlimits_ssb, BWPROPI_SSBMEDIUM, BWSET_PAIR, 300 / BWGRANLOW, 2700 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
+static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_PAIR, 300 / BWGRANLOW, 2200 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
+static bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
+static bwprop_t bwprop_nfmtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCETXNFM + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
+static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_PAIR, 100 / BWGRANLOW, 9000 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
+static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_PAIR, 100 / BWGRANLOW, 4500 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
+static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_PAIR, 50 / BWGRANLOW, 5500 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
+static bwprop_t bwprop_nfmnarrow = { & bwlimits_nfm, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, NBFMWIDTHRX / BWGRANHIGH, NBFMWIDTHTX / BWGRANHIGH, };
+static bwprop_t bwprop_nfmwide = { & bwlimits_nfm, BWPROPI_NFMWIDE, BWSET_PAIR, 300 / BWGRANLOW, 4000 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, WBFMWIDTHRX / BWGRANHIGH, WBFMWIDTHTX / BWGRANHIGH, };
+static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_PAIR, 100 / BWGRANLOW, 12000 / BWGRANHIGH, AFRESPONCEWFM + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
 
 // Способ представления частот и количество профилей полосы пропускания,
 // а так же названия полос пропускания для отображения
@@ -1986,14 +1989,14 @@ bwseti_gethigh(
 }
 
 // получить код управления сглаживанием скатов фильтра
-static int_fast8_t
-bwseti_getfltsofter(
+static int_fast16_t
+bwseti_gettransition(
 	uint_fast8_t bwseti
 	)
 {
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	const bwprop_t * const p = bwsetsc [bwseti].prop [pos];
-	return p->fltsofter;
+	return p->transition10 * 10;
 }
 
 // индекс набора параметров слухового приема
@@ -3706,7 +3709,7 @@ struct nvmap
 
 	uint8_t bwpropsleft [BWPROPI_count];	/* значения границ полосы пропускания */
 	uint8_t bwpropsright [BWPROPI_count];	/* значения границ полосы пропускания */
-	uint8_t bwpropsfltsofter [BWPROPI_count];	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
+	uint8_t bwpropstransition10 [BWPROPI_count];	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 	uint8_t bwpropsafresponce [BWPROPI_count];	/* Наклон АЧХ */
 
 	struct agcseti_tag afsets [AGCSETI_COUNT];	/* режимы приема */
@@ -4017,7 +4020,7 @@ struct nvmap
 
 #define RMT_BWPROPSLEFT_BASE(i) OFFSETOF(struct nvmap, bwpropsleft [(i)])
 #define RMT_BWPROPSRIGHT_BASE(i) OFFSETOF(struct nvmap, bwpropsright [(i)])
-#define RMT_BWPROPSFLTSOFTER_BASE(i) OFFSETOF(struct nvmap, bwpropsfltsofter [(i)])
+#define RMT_BWPROPSTRANSITION10_BASE(i) OFFSETOF(struct nvmap, bwpropstransition10 [(i)])
 #define RMT_BWPROPSAFRESPONCE_BASE(i) OFFSETOF(struct nvmap, bwpropsafresponce [(i)])
 
 #define RMT_MICLEVEL_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].level)
@@ -9384,7 +9387,7 @@ bwseti_load(void)
 		bwprop_t * const p = bwprops [bwprop];
 
 		p->afresponce = loadvfy8up(RMT_BWPROPSAFRESPONCE_BASE(bwprop), AFRESPONCEMIN, AFRESPONCEMAX, p->afresponce);
-		p->fltsofter = loadvfy8up(RMT_BWPROPSFLTSOFTER_BASE(bwprop), WITHFILTSOFTMIN, WITHFILTSOFTMAX, p->fltsofter);
+		p->transition10 = loadvfy8up(RMT_BWPROPSTRANSITION10_BASE(bwprop), WITHTRANSITIONMIN, WITHTRANSITIONMAX, p->transition10);
 		switch (p->type)
 		{
 		case BWSET_SINGLE:
@@ -9636,7 +9639,7 @@ static const struct paramdefdef xgtransition =
 {
 	QLABEL3("Transition", "TRANS", "Transition"), 0, RJ_UNSIGNED, 	ISTEP10,	// Transition band width
 	ITEM_VALUE,
-	0, 500,			/* 0..500 */
+	0, WITHTRANSITIONMAX * 10,			/* 0..500 */
 	OFFSETOF(struct nvmap, gtransition),
 	getselector0, nvramoffs0, valueoffs0,
 	& gtransition,	// 16 bit variable
@@ -9658,19 +9661,6 @@ static const struct paramdefdef xfltbw_cwwide =
 	getzerobase,
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-// CW filter edges for WIDE
-static const struct paramdefdef xfltsofter_cwwide =
-{
-	QLABEL3("CW W SFT", "CW W SOFT", "CW W SOFT"), 0, RJ_UNSIGNED, 	ISTEP1,	// CW filter edges for WIDE
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-	WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
-	RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWWIDE),
-	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& bwprop_cwwide.fltsofter,
-	getzerobase,
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-};
 // CW filter bandwidth for NARROW
 static const struct paramdefdef xfltbw_cwnarrow =
 {
@@ -9682,19 +9672,6 @@ static const struct paramdefdef xfltbw_cwnarrow =
 	NULL,
 	& bwprop_cwnarrow.left10_width10,
 	getzerobase,
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-};
-// CW filter edges for NARROW
-static const struct paramdefdef xfltsofter_cwnarrow =
-{
-	QLABEL3("CW N SFT", "CW N SOFT", "CW N SOFT"),  0, RJ_UNSIGNED, ISTEP1,
-	ITEM_VALUE,
-	WITHFILTSOFTMIN, WITHFILTSOFTMAX,			/* 0..100 */
-	RMT_BWPROPSFLTSOFTER_BASE(BWPROPI_CWNARROW),
-	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& bwprop_cwnarrow.fltsofter,
-	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbwide_high = {
@@ -13620,7 +13597,7 @@ updateboard_noui(
 
 			board_set_lo6(freqlo6);	/* иначе, в случае WITHIF4DSP - управление знаком частоты */
 			board_set_fullbw6(getif6bw(amode, gtx, wide));	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
-			board_set_fltsofter(gtx ? WITHFILTSOFTMIN : bwseti_getfltsofter(bwseti));	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
+			//board_set_flttransition(gtx ? WITHTRANSITIONMIN : bwseti_gettransition(bwseti));	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 			board_set_flttransition(gtx ? 0 : param_getvalue(& xgtransition));
 			board_set_dspmode(Xpamodetempl->dspmode [gtx]);
 			#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */

@@ -156,9 +156,7 @@
 #endif /* WITHIF4DSP */
 #if WITHIF4DSP
 	& xfltbw_cwwide,
-	& xfltsofter_cwwide,
 	& xfltbw_cwnarrow,
-	& xfltsofter_cwnarrow,
 	// телефонные режими
 	& xgssbwide_high,
 	& xgssbwide_low,
