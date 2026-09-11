@@ -441,7 +441,7 @@ static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
 // The Q31 input value is in the range [-1 0.999999] and is mapped to a degree value in the range [-180 179].
 #define FTW2_SINCOS_Q31(angle) ((ncoftwi_t) (angle))
 // Convert ncoftw_t to q31 argument for arm_sin_q31
-// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*PI).
+// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*M_PI).
 #define FTW2_COS_Q31(angle) ((q31_t) ((((ncoftw_t) (angle)) + 0x80000000) / 2))
 #define FAST_Q31_2_FLOAT(val) ((q31_t) (val) / (FLOAT_t) 2147483648)
 
@@ -712,6 +712,110 @@ static FLOAT32P_t get_float_aflorx_delta(uint_fast8_t pathi)
 	angle_aflorx [pathi] = FTWROUND(angle + anglestep_aflorx [pathi]);
 	return v;
 }
+
+/////
+///
+///
+
+#if 1
+// AI-generated code
+//#include "arm_math.h"
+//#include "dspdefines.h"
+
+//#define NUM_TAPS    101       // Filter length (must be an ODD number for Type I linear phase)
+#define BLOCK_SIZE  32        // Processing block size
+#define NUM_BANDS   5         // Number of equalizer bands
+
+// CMSIS-DSP filter instances wrapped via ARM_MORPH macro
+static ARM_MORPH(arm_fir_instance) eq_bands[NUM_BANDS];
+
+// Coefficient and state buffers
+static FLOAT_t coeffs_buffer[NUM_BANDS][Ntap_rx_AUDIO];
+static FLOAT_t state_buffer[NUM_BANDS][Ntap_rx_AUDIO + BLOCK_SIZE - 1];
+
+// Equalizer configuration settings
+static FLOAT_t fs = ARMSAIRATE;//48000.0;
+static FLOAT_t centers[NUM_BANDS]   = { 80.0,  250.0, 1000.0, 4000.0, 12000.0 };
+static FLOAT_t bandwidths[NUM_BANDS] = { 40.0,  120.0,  500.0, 2000.0,  6000.0 };
+static FLOAT_t gains[NUM_BANDS]      = {  6.0,   -3.0,    0.0,    4.0,   -2.0 };
+
+// Generates symmetric BPF coefficients using window method
+static void generate_bandpass_fir(FLOAT_t *coeffs, int32_t numTaps, FLOAT_t f_low, FLOAT_t f_high, FLOAT_t fs_val) {
+    // Convert frequencies to normalized radians
+    FLOAT_t w_low = 2 * M_PI * f_low / fs_val;
+    FLOAT_t w_high = 2 * M_PI * f_high / fs_val;
+    int32_t M = numTaps - 1;
+
+    for (int32_t n = 0; n < numTaps; n++) {
+        FLOAT_t arg = (FLOAT_t)n - (M / 2.0);
+        FLOAT_t c;
+
+        if (FABSF(arg) < 1e-5) {
+            // Avoid division by zero at the center tap (sinc(0) = 1)
+            c = (w_high - w_low) / M_PI;
+        } else {
+            c = (SINF(w_high * arg) - SINF(w_low * arg)) / (M_PI * arg);
+        }
+
+        // Apply Hamming window using the project's macro
+        FLOAT_t window = 0.54 - 0.46 * COSF(2.0 * M_PI * n / M);
+        coeffs[n] = c * window;
+    }
+}
+
+// Generates coefficients for a single parametric equalizer band
+static void generate_parametric_eq_band(FLOAT_t *coeffs, int32_t numTaps, FLOAT_t f_center, FLOAT_t bandwidth, FLOAT_t gain_db, FLOAT_t fs_val) {
+    FLOAT_t f_low = f_center - (bandwidth / 2);
+    FLOAT_t f_high = f_center + (bandwidth / 2);
+
+    // Guard rails against exceeding the Nyquist frequency boundary
+    if (f_low < 0.0) f_low = 1.0;
+    if (f_high >= fs_val / 2.0) f_high = (fs_val / 2) - 1;
+
+    // 1. Calculate the foundational bandpass response into the coefficient buffer
+    generate_bandpass_fir(coeffs, numTaps, f_low, f_high, fs_val);
+
+    // 2. Convert dB gain to linear scale factor
+    FLOAT_t linear_gain = POWF(10, gain_db / 20);
+    FLOAT_t boost_cut_factor = linear_gain - 1;
+    int32_t M = numTaps - 1;
+
+    // 3. Construct the EQ response: H_eq(z) = I(z) + (Gain - 1) * H_bpf(z)
+    for (int32_t n = 0; n < numTaps; n++) {
+        coeffs[n] = coeffs[n] * boost_cut_factor;
+
+        // Add the delta impulse function strictly to the center symmetry point (Allpass path)
+        if (n == M / 2) {
+            coeffs[n] += 1;
+        }
+    }
+}
+
+// Initializes the 5-band cascade filter configuration
+static void init_5band_equalizer(void) {
+    for (int i = 0; i < NUM_BANDS; i++) {
+        // Calculate coefficients for the current band
+        generate_parametric_eq_band(coeffs_buffer[i], Ntap_rx_AUDIO, centers[i], bandwidths[i], gains[i], fs);
+
+        // Initialize CMSIS-DSP filter instance using the morph macro
+        ARM_MORPH(arm_fir_init)(&eq_bands[i], Ntap_rx_AUDIO, coeffs_buffer[i], state_buffer[i], BLOCK_SIZE);
+    }
+}
+
+// Cascaded real-time audio block processing method
+static void process_audio(FLOAT_t *pSrc, FLOAT_t *pDst, uint32_t blockSize) {
+    FLOAT_t *pIn = pSrc;
+    FLOAT_t *pOut = pDst;
+
+    // Stream the data block sequentially through all 5 bands
+    for (int i = 0; i < NUM_BANDS; i++) {
+        ARM_MORPH(arm_fir)(&eq_bands[i], pIn, pOut, blockSize);
+        pIn = pOut; // The output of the current band becomes the input for the next one
+    }
+}
+
+
+#endif
 
 //////////////////////////////////////////
 
@@ -2962,7 +3066,7 @@ static int bpsk31_phase_tick(void)
 	return ((bps31_tx_bitrateNCO += g_TxBitFreqFTW) < old);
 }
 
-// return 0/1 for 0/PI
+// return 0/1 for 0/M_PI
 static 
 uint_fast8_t 
 pbsk_get_phase(
@@ -5060,7 +5164,7 @@ static void calcBiquad(uint32_t Fc, uint32_t Fs, FLOAT_t Q, FLOAT_t peakGain, FL
 	FLOAT_t a0, a1, a2, b1, b2, norm;
 
 	FLOAT_t V = POWF(10.0f, FABSF(peakGain) / 20);
-	FLOAT_t K = TANF(PI * Fc / Fs);
+	FLOAT_t K = TANF(M_PI * Fc / Fs);
     if (peakGain >= 0)
     {
         norm = 1.0f / (1.0f + 1.0f / Q * K + K * K);
@@ -5186,7 +5290,7 @@ static volatile uint_fast8_t rxgateflag = 0;
 static FLOAT_t peakshapef(unsigned shapePos)	/* shapePos: от 0 до enveloplen0 включительно. */
 {
 	const q31_t halfcircle = INT32_MAX / 2;
-	// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*PI).
+	// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*M_PI).
 	const q31_t cosv = arm_cos_q31((int_fast64_t) shapePos * halfcircle / enveloplen0);
 	const FLOAT_t v = ((FLOAT_t) 1 - FAST_Q31_2_FLOAT(cosv)) * (FLOAT_t) 0.5;	// todo: use arm_q31_to_float
 	return v;
