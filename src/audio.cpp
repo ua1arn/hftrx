@@ -893,6 +893,70 @@ static void calculate_variable_slope_fir(FLOAT_t *const h, FLOAT_t *const tmp_wi
     ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
 }
 
+/**
+ * @brief  Generates a single-pass Low-Pass FIR filter with adjustable transition width (slope steepness)
+ *         using a fixed number of taps and CMSIS-DSP window functions.
+ *
+ * @param  h               Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
+ * @param  tmp_window_buf  Pointer to temporary workspace buffer (allocated size must be >= num_taps).
+ * @param  num_taps        Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
+ * @param  fs              The operational audio sampling frequency in Hz.
+ * @param  f_cutoff        Cutoff frequency of the ideal passband in Hz.
+ * @param  w_trans         Width of the transition band in Hz (Smaller value = Steeper filter slope).
+ * @return None
+ */
+static void calculate_variable_slope_lpf(FLOAT_t *const h, FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f_cutoff, const FLOAT_t w_trans) {
+    const FLOAT_t alpha = (num_taps - 1) / 2;
+    const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
+    const int half_taps = (num_taps + 1) / 2;
+
+    /* Absolute frequency boundary for the stopband */
+    const FLOAT_t f_stop = f_cutoff + w_trans;
+
+    /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients using frequency sampling */
+    for (int n = 0; n < half_taps; n++) {
+        FLOAT_t sum = 0;
+        const FLOAT_t n_minus_alpha = n - alpha;
+
+        for (int k = 0; k < num_taps; k++) {
+            FLOAT_t freq = k * fs / num_taps;
+
+            /* Mirror spectrum points located above the Nyquist threshold */
+            if (freq > fs / 2) {
+                freq = fs - freq;
+            }
+
+            /* Synthesize magnitude response with custom sloped transition edge */
+            FLOAT_t h_target = 0;
+
+            if (freq <= f_cutoff) {
+                /* Pure passband area */
+                h_target = 1;
+            }
+            else if (freq > f_cutoff && freq <= f_stop && w_trans > 0) {
+                /* Transition band (Linear interpolation to control slope steepness) */
+                h_target = (f_stop - freq) / w_trans;
+            }
+
+            /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
+            if (h_target > 0) {
+                sum += h_target * COSF(delta_omega * k * n_minus_alpha);
+            }
+        }
+
+        /* Store raw coefficients symmetrically directly into the output buffer */
+        h[n] = sum / num_taps;
+        h[num_taps - 1 - n] = h[n];
+    }
+
+    /* Step 2: Generate Blackman-Harris window weights into temporary buffer via CMSIS-DSP morph macro */
+    ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
+
+    /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
+    ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
+}
+
+
 //////////////////////////////////////////
 
 #if ! WITHDSPEXTDDC
