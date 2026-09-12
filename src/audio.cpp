@@ -4900,30 +4900,30 @@ void dsp_fillphones(unsigned nsamples)
 			break;
 		case BOARD_RXMAINSUB_A_A:
 			// left:A/right:A
-			b.ivqv [L] = (injectsidetone(left, moniL));
-			b.ivqv [R] = (injectsidetone(right, moniR));
+			b.ivqv [L] = injectsidetone(left, moniL);
+			b.ivqv [R] = injectsidetone(right, moniR);
 			break;
 		case BOARD_RXMAINSUB_A_B:
 			// left:A/right:B
-			b.ivqv [L] = (injectsidetone(left, moniL));
-			b.ivqv [R] = (injectsidetone(right, moniR));
+			b.ivqv [L] = injectsidetone(left, moniL);
+			b.ivqv [R] = injectsidetone(right, moniR);
 			break;
 		case BOARD_RXMAINSUB_B_A:
 			// left:B/right:A
-			b.ivqv [L] = (injectsidetone(right, moniL));
-			b.ivqv [R] = (injectsidetone(left, moniR));
+			b.ivqv [L] = injectsidetone(right, moniL);
+			b.ivqv [R] = injectsidetone(left, moniR);
 			break;
 		case BOARD_RXMAINSUB_B_B:
 			// left:B/right:B
-			b.ivqv [L] = (injectsidetone(left, moniL));
-			b.ivqv [R] = (injectsidetone(right, moniR));
+			b.ivqv [L] = injectsidetone(left, moniL);
+			b.ivqv [R] = injectsidetone(right, moniR);
 			break;
 		case BOARD_RXMAINSUB_TWO:
 			// left, right:A+B
 			{
 				const FLOAT_t sumv = ((FLOAT_t) left + right) / 2;
-				b.ivqv [L] = (injectsidetone(sumv, moniL));
-				b.ivqv [R] = (injectsidetone(sumv, moniR));
+				b.ivqv [L] = injectsidetone(sumv, moniL);
+				b.ivqv [R] = injectsidetone(sumv, moniR);
 			}
 			break;
 		}
