@@ -1658,10 +1658,11 @@ void window_swrscan_process(void)
 
 		char buf[5];
 		uint_fast8_t l = 1, row_step = roundf((y0 - y1) / 3);
-		uint8_t charw = msgothic_11x13_mono.width, charh = msgothic_11x13_mono.height;
+		const int textlen = local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
+	    uint_fast16_t charh;
+	    uint_fast16_t textw = unifont_textsize(& unifont_gothic_11x13, buf, textlen, & charh);
 
-		local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
-		gui_print_text(x0 - charw, y0 - charh / 2, buf, & msgothic_11x13_mono, COLORPIP_WHITE);
+	    gui_print_text(x0 - textw / 2, y0 - charh / 2, buf, & unifont_gothic_11x13, COLORPIP_WHITE);
 
 		for(int_fast16_t yy = y0 - row_step; yy > y1; yy -= row_step)
 		{
@@ -1669,8 +1670,10 @@ void window_swrscan_process(void)
 				break;
 
 			gui_drawline(x0 + 1, yy, x1, yy, COLORPIP_DARKGREEN);
-			local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
-			gui_print_text(x0 - charw, yy - charh / 2, buf, & msgothic_11x13_mono, COLORPIP_WHITE);
+			const int textlen = local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", l ++);
+		    uint_fast16_t charh;
+		    uint_fast16_t textw = unifont_textsize(& unifont_gothic_11x13, buf, textlen, & charh);
+			gui_print_text(x0 - textw / 2, yy - charh / 2, buf, & unifont_gothic_11x13, COLORPIP_WHITE);
 		}
 
 		if (gui_obj_get_int_prop("lbl_swr_error", GUI_OBJ_VISIBLE))				// фон сообщения об ошибке

@@ -9947,7 +9947,6 @@ static const struct paramdefdef * enc2menus [] =
 	& xrfgain1,	// Усиление ПЧ/ВЧ в процентах
 #endif /* ! WITHPOTIFGAIN */
 	& xagcfence1,	// Точка перегиба характеристики АРУ
-	& xfltsofter_cwnarrow,	// CW filter edges for NARROW
 #endif /* WITHIF4DSP */
 #if WITHELKEY && ! WITHPOTWPM
 	& xgelkeywpm,
