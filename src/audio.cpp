@@ -2738,8 +2738,6 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(FLOAT32P_t NewSample)
 
 
 enum { tx_MIKE_blockSize = DMABUFFSIZE32RX / DMABUFFSTEP32RX };	/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx */
-//enum { tx_MIKE_blockSize = DMABUFFSIZE32TX / DMABUFFSTEP32TX };	/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx */
-//enum { tx_MIKE_blockSize = DMABUFFSIZE16RX / DMABUFFSTEP16RX };	/* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx */
 
 static FLOAT_t tx_firEQcoeff [Ntap_tx_MIKE];
 static ARM_MORPH(arm_fir_instance) tx_fir_instance;
@@ -2774,13 +2772,15 @@ static int_fast16_t audio_validatebw6(int_fast16_t n)
 static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 {
 	const FLOAT_t fs = ARMI2SRATE;
-	static int32_t FIRCoef_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];	// Фильтр для загрузки в FPGA
-	static FLOAT_t dCoeff_trx_IQ [NtapCoeffs(Ntap_trxi_IQ)];	// рачитываем тут
+	int32_t FIRCoef_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];	// Фильтр для загрузки в FPGA
+
+	FLOAT_t dCoeff_trx_IQ [NtapCoeffs(Ntap_trxi_IQ)];	// расчитываем тут
+	FLOAT_t tmp_window_buf [Ntap_trxi_IQ];
 
 	const uint_fast8_t dspmode = glob_dspmodes [pathi];
 	const uint_fast16_t fullbw6 = audio_validatebw6(glob_fullbw6 [pathi]);
 	const adapter_t * const adptfir = & fpgafircoefsout;			/* к какому типу надо прербразовывать */
-	static FLOAT_t tmp_window_buf [Ntap_trxi_IQ];
+	const uint_fast16_t transition = glob_flttransition [pathi];	/* переходная полоса фильтра */
 
 #if WITHDSPEXTDDC
 	const FLOAT_t rxfiltergain = 1;
@@ -2810,7 +2810,6 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	else
 	{
 		const int cutfreq = fullbw6 / 2;
-		const uint_fast16_t transition = glob_flttransition [pathi];
 
 #if WITHDSPEXTRXFIR || WITHDSPEXTTXFIR
 		// Фильтр для квадратурных каналов приёмника и передатчика в FPGA (целочисленный).
@@ -2987,7 +2986,7 @@ static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
 	const uint_fast16_t transition = glob_flttransition [pathi];
 	const int_fast8_t targetdb = glob_afresponcesrx [pathi];
 	const int iCoefNum = Ntap_rx_AUDIO;
-	static FLOAT_t dWnd_rxAUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			/* подготовленные значения функции окна - с учетом симметрии (половина) */
+	FLOAT_t dWnd_rxAUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			/* подготовленные значения функции окна - с учетом симметрии (половина) */
 	FLOAT_t tmp_window_buf [iCoefNum];
 
 	ASSERT((iCoefNum % 2) == 1);
@@ -4973,26 +4972,26 @@ void inject_testsignals(IFADCvalue_t * const dbuff)
 
 /* выборка nsamples tx_MIKE_blockSize семплов из источников звука и формирование потока на передатчик */
 /* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx - меняем tx_MIKE_blockSize */
-void dsp_processtx(unsigned nsamples)
+void dsp_processtx(unsigned nsamples0)
 {
-	ASSERT(tx_MIKE_blockSize >= nsamples);
+	ASSERT(tx_MIKE_blockSize == nsamples0);
 	unsigned i;
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
 	/* обработка передачи */
-	static FLOAT_t txfirbuff [tx_MIKE_blockSize];
-	static FLOAT32P_t monitorbuff [tx_MIKE_blockSize];
+	FLOAT_t txfirbuff [tx_MIKE_blockSize];
+	FLOAT32P_t monitorbuff [tx_MIKE_blockSize];
 	/* заполнение буфера сэмплами от микрофона или USB */
-	for (i = 0; i < nsamples; ++ i)
+	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{
 		monitorbuff [i].IV = 0;
 		monitorbuff [i].QV = 0;
 		txfirbuff [i] = mikeinmux(dspmodeA, & monitorbuff [i]);
 	}
 	/* формирование АЧХ перед модулятором */
-	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, nsamples);
+	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_blockSize);
 
 	/* Передача */
-	for (i = 0; i < nsamples; ++ i)
+	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{
 		const FLOAT_t shapecwssb = shapeCWSSBEnvelopStep();
 		const FLOAT_t cwssbtone = get_float_sidetonetxssb() * txlevelfenceSSB;
