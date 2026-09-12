@@ -953,7 +953,7 @@ static void calculate_variable_slope_lpf_half(FLOAT_t *const h, FLOAT_t *const t
     ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
 
     /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
-    ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
+    ARM_MORPH(arm_mult)(h, tmp_window_buf, h, half_taps + 1);
 }
 
 /**
