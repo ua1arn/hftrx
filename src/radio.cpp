@@ -7043,7 +7043,6 @@ static const struct paramdefdef xgskipfilteraf =
 	void playhandler(uint8_t code);
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 
-#if WITHIF4DSP
 	static uint_fast8_t gsidetonelevel = 15;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	static const struct paramdefdef xgsidetonelevel =
 	{
@@ -7071,7 +7070,6 @@ static const struct paramdefdef xgskipfilteraf =
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-#endif /* WITHIF4DSP */
 
 #if  defined (ADC1_TYPE) && (ADC1_TYPE == ADC_TYPE_AD9246)
 	// 14 bit AD9246 + LTC6401-20
@@ -7091,6 +7089,30 @@ static const struct paramdefdef xgskipfilteraf =
 	};
 
 #endif /*  */
+	static const struct paramdefdef xgagcoff =
+	{
+		QLABEL("AGC OFF"), 0, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1, 					// предусилитель сигнала с микрофона
+		OFFSETOF(struct nvmap, gagcoff),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gagcoff,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgdigigainmax =
+	{
+		QLABEL("IFGN MAX"),  0, RJ_SIGNED, ISTEP1,		/* диапазон ручной (или автоматической) регулировки цифрового усиления - максимальное значение */
+		ITEM_VALUE,
+		40, 120, 		// 40..120 dB
+		OFFSETOF(struct nvmap, gdigigainmax),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gdigigainmax,	// 8 bit
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 	static const struct paramdefdef xgfsadcpower10 =
 	{
 		QLABEL("ADC FS"),  1, RJ_SIGNED,	ISTEP1,		/* Калиьровка S-метра - момент перегрузки */

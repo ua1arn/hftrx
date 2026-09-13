@@ -596,28 +596,8 @@
 /* group name --- */
 	& xgfsadcpower10,
 	& xgfsadcpower10xv,
-	(const struct paramdefdef [1]) {
-		QLABEL("AGC OFF"), 0, RJ_YES,	ISTEP1,
-		ITEM_VALUE,	
-		0, 1, 					// предусилитель сигнала с микрофона
-		OFFSETOF(struct nvmap, gagcoff),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gagcoff,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("IFGN MAX"),  0, RJ_UNSIGNED, ISTEP1,		/* диапазон ручной (или автоматической) регулировки цифрового усиления - максимальное значение */
-		ITEM_VALUE,
-		40, 120, 		// 40..120 dB
-		OFFSETOF(struct nvmap, gdigigainmax),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gdigigainmax,	// 8 bit
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgagcoff,
+	& xgdigigainmax,
 /* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC SSB"), 0, 0, 0,
