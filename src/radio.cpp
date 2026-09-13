@@ -20088,6 +20088,11 @@ processmainloopkeyboard(inputevent_t * ev)
 		break;
 
 	case KBD_CODE_DISPMODE:
+//		if (param_keyclick(& xgskipfilteraf))
+//			updateboard();
+//		PRINTF("xgskipfilteraf=%d\n", (int) param_getvalue(& xgskipfilteraf));
+//		return 0;	// не требуется обновление индикатора
+
 #if ! WITHTOUCHGUI
 		if (display_getpagesmax() != 0)
 		{
