@@ -466,6 +466,7 @@ void board_set_fullbw6(int_fast16_t f);	/* Установка частоты с�
 void board_set_flttransition(uint_fast16_t n);	/* Ширина переходной полосы */
 void board_set_aflowcutrx(int_fast16_t v);		/* Нижняя частота среза фильтра НЧ */
 void board_set_afhighcutrx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */
+void board_set_afwide(uint_fast8_t n);		/* Обработка использует фильтр с центральной частотой и полосой (0) или пвры частот */
 void board_set_aflowcuttx(int_fast16_t v);		/* Нижняя частота среза фильтра НЧ */
 void board_set_afhighcuttx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */
 void board_set_afgain(uint_fast16_t v);	// Параметр для регулировки уровня на выходе аудио-ЦАП

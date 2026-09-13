@@ -1035,9 +1035,7 @@ static void processcat_enable(uint_fast8_t catenable);
 static void NOINLINEAT cat_answer_request(uint_fast8_t catindex);	// call from user-mode
 
 static uint_fast8_t aistate;		/* autoinformation state flag */
-#if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 static uint_fast8_t rmstate;		/* RM answer state type (1..3) */
-#endif /* WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 // add/remove codes: modify also catanswers table.
 enum
@@ -1816,7 +1814,7 @@ static bwprop_t bwprop_nfmtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 
 static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_PAIR, 100 / BWGRANLOW, 9000 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
 static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_PAIR, 100 / BWGRANLOW, 4500 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
 static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_PAIR, 50 / BWGRANLOW, 5500 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
-static bwprop_t bwprop_nfmnarrow = { & bwlimits_nfm, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, NBFMWIDTHRX / BWGRANHIGH, NBFMWIDTHTX / BWGRANHIGH, };
+static bwprop_t bwprop_nfmnarrow = { & bwlimits_nfm, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, NBFMWIDTHRX / BWGRANHIGH, NBFMWIDTHTX / BWGRANHIGH, };
 static bwprop_t bwprop_nfmwide = { & bwlimits_nfm, BWPROPI_NFMWIDE, BWSET_PAIR, 300 / BWGRANLOW, 4000 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, WBFMWIDTHRX / BWGRANHIGH, WBFMWIDTHTX / BWGRANHIGH, };
 static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_PAIR, 100 / BWGRANLOW, 12000 / BWGRANHIGH, AFRESPONCEWFM + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
 
@@ -2291,7 +2289,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ 0, 0, 0, 1 },	// признаки включения самоконтроля для CW
 #endif /* WITHTX */
 #if WITHIF4DSP
-		{ DSPCTL_MODE_RX_NARROW, DSPCTL_MODE_TX_CW, },	// Управление для DSP в режиме приёма и передачи - режим узкого фильтра
+		{ DSPCTL_MODE_RX_SSB, DSPCTL_MODE_TX_CW, },	// Управление для DSP в режиме приёма и передачи - режим узкого фильтра
 		{ BWSETI_CW, BWSETI_CW },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
@@ -2325,7 +2323,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ 0, 0, 0, 0 },	// признаки включения самоконтроля для SSB
 #endif /* WITHTX */
 #if WITHIF4DSP
-		{ DSPCTL_MODE_RX_WIDE, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
+		{ DSPCTL_MODE_RX_SSB, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_SSB, BWSETI_SSBTX, },				// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
@@ -2568,7 +2566,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ 0, 0, 0, 0 },	// признаки включения самоконтроля для SSB
 #endif /* WITHTX */
 #if WITHIF4DSP
-		{ DSPCTL_MODE_RX_WIDE, DSPCTL_MODE_TX_DIGI, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
+		{ DSPCTL_MODE_RX_SSB, DSPCTL_MODE_TX_DIGI, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_DIGI, BWSETI_DIGI, },				// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 	#if WITHUSBHW && WITHUSBUACOUT
@@ -2606,7 +2604,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ 0, 0, 0, 0 },	// признаки включения самоконтроля для DIGI
 #endif /* WITHTX */
 #if WITHIF4DSP
-		{ DSPCTL_MODE_RX_WIDE, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
+		{ DSPCTL_MODE_RX_SSB, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_DIGI, BWSETI_DIGI, },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 	#if WITHUSBHW && WITHUSBUACOUT
@@ -13528,6 +13526,7 @@ updateboard_noui(
 			#if WITHTX && WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
 			#endif /* WITHTX && WITHSUBTONES */
+			board_set_afwide(bwseti_getwide(bwseti));		/* Обработка использует фильтр с центральной частотой и полосой (0) или пвры частот */
 			board_set_aflowcutrx(bwseti_getlow(bwseti));	/* Нижняя частота среза фильтра НЧ по приему */
 			board_set_afhighcutrx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по приему */
 			board_set_afresponcerx(bwseti_getafresponce(bwseti));	/* изменение тембра звука в приемнике - на Samplerate/2 АЧХ становится на столько децибел  */

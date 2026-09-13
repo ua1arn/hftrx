@@ -158,8 +158,7 @@ enum
 
 	DSPCTL_MODE_RX_BPSK,
 	DSPCTL_MODE_RX_FREEDV,
-	DSPCTL_MODE_RX_WIDE, 	/* Приём с заданием полосы значениями верхнего и нижнего среза АЧХ */
-	DSPCTL_MODE_RX_NARROW, 	/* Приём с заданием полосы значением центральной частоты и полосы пропускания */
+	DSPCTL_MODE_RX_SSB,
 	DSPCTL_MODE_RX_AM,
 	DSPCTL_MODE_RX_SAM,
 	DSPCTL_MODE_RX_NFM,

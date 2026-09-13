@@ -108,6 +108,7 @@ static uint_fast8_t 	glob_agc_t4 [2] = { 120, 120 }; // dischargespeedfast в м
 
 static int_fast16_t 	glob_aflowcutrx [2] = { 300, 300 } ;		// Частота низкочастотного среза полосы пропускания (в 10 Гц дискретах)
 static int_fast16_t 	glob_afhighcutrx [2] = { 3400, 3400 };	// Частота высокочастотного среза полосы пропускания (в 100 Гц дискретах)
+static uint_fast8_t 	glob_afwiderx [2];
 
 static int_fast16_t 	glob_aflowcuttx = 300 ;		// Частота низкочастотного среза полосы пропускания (в 10 Гц дискретах)
 static int_fast16_t 	glob_afhighcuttx = 3400;	// Частота высокочастотного среза полосы пропускания (в 100 Гц дискретах)
@@ -2935,7 +2936,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	// Голосовые режимиы
 	case DSPCTL_MODE_TX_ISB:
 	case DSPCTL_MODE_RX_ISB:
-	case DSPCTL_MODE_RX_WIDE:
+	case DSPCTL_MODE_RX_SSB:
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_TX_SSB:
@@ -2992,66 +2993,36 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 
 	ASSERT(Ntap_rx_AUDIO == iCoefNum);	/* проверяем на несогласованность параметров */
 	ASSERT((iCoefNum % 2) == 1);
-	//PRINTF("pathi=%d, targetdb=%d\n", pathi, targetdb);
 	switch (glob_dspmodes [pathi])
 	{
 	case DSPCTL_MODE_RX_DSB:
-		runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
-		break;
-
 	case DSPCTL_MODE_RX_SAM:
-		runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
-		break;
-
 	case DSPCTL_MODE_RX_WFM:
 	case DSPCTL_MODE_RX_AM:
-	case DSPCTL_MODE_RX_WIDE:
+	case DSPCTL_MODE_RX_SSB:
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_RX_ISB:
-		// audio
-		if (0 && glob_notch_mode == BOARD_NOTCH_MANUAL)
+	case DSPCTL_MODE_RX_FREEDV:
+	case DSPCTL_MODE_RX_NFM:
+		if (glob_afwiderx [pathi])
 		{
-			// частоты SSB фильтра
-			//const int fssbL = cutfreqlow;
-			//const int fssbH = cutfreqhigh;
-
-			// Частоты NOTCH фильтра
-			const int fNotch = inside(cutfreqlow + glob_notch_width / 2, glob_notch_freq, cutfreqhigh - glob_notch_width / 2);
-			const int fcutL = fNotch - glob_notch_width / 2;
-			const int fcutH = fNotch + glob_notch_width / 2;
-			// Расчитывается Notch
-//			fir_design_bandstop(dCoeff, iCoefNum, iCoefNum, fir_design_normfreq(fcutL), fir_design_normfreq(fcutH));
-//			fir_design_scale(dCoeff, iCoefNum, 1 / testgain_float_DC(dCoeff, iCoefNum));	// Масштабирование для несимметричного фильтра
-//			fir_design_windowbuff_half(dWnd_rxAUDIO, iCoefNum, iCoefNum);
-//			fir_design_adjust_rx_unused(dCoeff, dWnd_rxAUDIO, iCoefNum, 0, GAIN_1, targetdb);	// Формирование наклона АЧХ, без применения оконной функции
-			fir_expand_symmetric(dCoeff, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
+			// audio
+			runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
 		}
 		else
 		{
-			runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
+			// audio - полосовой фильтр на телеграфную полосу
+			calculate_variable_slope_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, transition, transition);
 		}
 		break;
 
-	case DSPCTL_MODE_RX_NARROW:
 	case DSPCTL_MODE_TX_CW:
-		// audio - полосовой фильтп на телеграфную полосу
-		calculate_variable_slope_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, transition, transition);
-		break;
-
-	case DSPCTL_MODE_RX_FREEDV:
-		// audio
-		runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
 		break;
 
 	case DSPCTL_MODE_RX_DRM:
 		// audio
 		// В этом режиме фильтр не используется
 		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
-		break;
-
-	case DSPCTL_MODE_RX_NFM:
-		// audio
-		runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
 		break;
 
 	// в режиме передачи
@@ -4371,8 +4342,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 		break;
 
 	case DSPCTL_MODE_RX_DSB:
-	case DSPCTL_MODE_RX_WIDE:
-	case DSPCTL_MODE_RX_NARROW:
+	case DSPCTL_MODE_RX_SSB:
 	case DSPCTL_MODE_RX_DRM:
 	case DSPCTL_MODE_RX_FREEDV:
 		{
@@ -4599,8 +4569,7 @@ static uint_fast8_t isneedfiltering(uint_fast8_t dspmode)
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_RX_DSB:
-	case DSPCTL_MODE_RX_WIDE:
-	case DSPCTL_MODE_RX_NARROW:
+	case DSPCTL_MODE_RX_SSB:
 	case DSPCTL_MODE_RX_FREEDV:
 	case DSPCTL_MODE_RX_NFM:
 	case DSPCTL_MODE_RX_AM:
@@ -4627,8 +4596,7 @@ static uint_fast8_t isneedmute(uint_fast8_t dspmode)
 {
 	switch (dspmode)
 	{
-	case DSPCTL_MODE_RX_WIDE:
-	case DSPCTL_MODE_RX_NARROW:
+	case DSPCTL_MODE_RX_SSB:
 	case DSPCTL_MODE_RX_FREEDV:
 	case DSPCTL_MODE_RX_NFM:
 	case DSPCTL_MODE_RX_AM:
@@ -6435,6 +6403,17 @@ board_set_afhighcutrx(int_fast16_t n)	/* Верхняя частота срез�
 	if (glob_afhighcutrx [glob_trxpath] != n)
 	{
 		glob_afhighcutrx [glob_trxpath] = n;
+		board_flt1regchanged();	// параметры этой функции используются в audio_update();
+	}
+}
+
+/* Обработка использует фильтр с центральной частотой и полосой (0) или пвры частот */
+void board_set_afwide(uint_fast8_t n)
+{
+	const uint_fast8_t v = n != 0;
+	if (glob_afwiderx [glob_trxpath] != n)
+	{
+		glob_afwiderx [glob_trxpath] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
