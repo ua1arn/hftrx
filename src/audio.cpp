@@ -960,29 +960,27 @@ static void calculate_variable_slope_lpf_half(FLOAT_t *const h, FLOAT_t *const t
 }
 
 /**
- * @brief  Generates a single-pass Notch FIR filter with adjustable transition width (slope steepness)
- *         for the left and right slopes independently, using a fixed number of taps.
+ * @brief  Generates a single-pass Bandpass FIR filter with a fixed brick-wall main passband
+ *         and an integrated dynamically adjustable brick-wall Notch filter.
  *
  * @param  h               Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
  * @param  tmp_window_buf  Pointer to temporary workspace buffer (allocated size must be >= num_taps).
  * @param  num_taps        Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
  * @param  fs              The operational audio sampling frequency in Hz.
- * @param  f_notch         Center frequency of the notch filter in Hz.
- * @param  w_notch         Width of the ideal maximum suppression band in Hz.
- * @param  w1_trans        Width of the left transition band in Hz (Smaller value = Steeper left slope).
- * @param  w2_trans        Width of the right transition band in Hz (Smaller value = Steeper right slope).
+ * @param  f1              Start frequency of the fixed main passband in Hz.
+ * @param  f2              End frequency of the fixed main passband in Hz.
+ * @param  f_notch         Center frequency of the integrated notch filter in Hz.
+ * @param  w_notch         Width of the adjustable brick-wall notch suppression band in Hz.
  * @return None
  */
-static void calculate_variable_slope_notch(FLOAT_t *const h, FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f_notch, const FLOAT_t w_notch, const FLOAT_t w1_trans, const FLOAT_t w2_trans) {
+static void calculate_fixed_bpf_with_adjustable_notch(FLOAT_t *const h, FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t f_notch, const FLOAT_t w_notch) {
     const FLOAT_t alpha = (num_taps - 1) / 2;
     const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
 
-    /* Define absolute frequency boundaries for suppression and transition areas */
+    /* Absolute frequency boundaries for the integrated Notch suppression */
     const FLOAT_t notch_start = f_notch - w_notch / 2;
     const FLOAT_t notch_end = f_notch + w_notch / 2;
-    const FLOAT_t stop1 = notch_start - w1_trans;
-    const FLOAT_t stop2 = notch_end + w2_trans;
 
     /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients using frequency sampling */
     for (int n = 0; n < half_taps; n++) {
@@ -997,20 +995,12 @@ static void calculate_variable_slope_notch(FLOAT_t *const h, FLOAT_t *const tmp_
                 freq = fs - freq;
             }
 
-            /* Synthesize inverse magnitude response for the notch band */
-            FLOAT_t h_target = 1;
-
-            if (freq >= notch_start && freq <= notch_end) {
-                /* Pure suppression (stopband) area */
-                h_target = 0;
-            }
-            else if (freq >= stop1 && freq < notch_start && w1_trans > 0) {
-                /* Left transition band (Linear interpolation to control slope steepness) */
-                h_target = (notch_start - freq) / w1_trans;
-            }
-            else if (freq > notch_end && freq <= stop2 && w2_trans > 0) {
-                /* Right transition band (Linear interpolation to control slope steepness) */
-                h_target = (freq - notch_end) / w2_trans;
+            /* Check if the frequency falls within the main passband but outside the notch вырез */
+            FLOAT_t h_target = 0;
+            if (freq >= f1 && freq <= f2) {
+                if (freq < notch_start || freq > notch_end) {
+                    h_target = 1;
+                }
             }
 
             /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
@@ -3004,15 +2994,20 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 	case DSPCTL_MODE_RX_ISB:
 	case DSPCTL_MODE_RX_FREEDV:
 	case DSPCTL_MODE_RX_NFM:
-		if (glob_afwiderx [pathi])
-		{
-			// audio
-			runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
-		}
-		else
+		if (! glob_afwiderx [pathi])
 		{
 			// audio - полосовой фильтр на телеграфную полосу
 			calculate_variable_slope_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, transition, transition);
+		}
+		else if (glob_notch_mode == BOARD_NOTCH_MANUAL)
+		{
+			// audio with notch
+			calculate_fixed_bpf_with_adjustable_notch(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, glob_notch_freq, glob_notch_width);
+		}
+		else
+		{
+			// audio
+			runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
 		}
 		break;
 
