@@ -922,14 +922,15 @@ static void calculate_variable_slope_fir(FLOAT_t *const h, const FLOAT_t *const 
 
 /**
  * @brief  Generates a single-pass Low-Pass FIR filter with adjustable transition width (slope steepness)
- *         using a fixed number of taps and a pre-calculated window buffer.
+ *         using a pre-calculated window buffer, fully normalized to unity gain (0 dB at DC).
+ *         Uses arm_accumulate for maximum compatibility across older CMSIS-DSP versions.
  *
  * @param  h                 Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
  * @param  preformed_window  Pointer to the pre-calculated window coefficients (size must be >= num_taps).
  * @param  num_taps          Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
  * @param  fs                The operational audio sampling frequency in Hz.
- * @param  f_cutoff        Cutoff frequency of the ideal passband in Hz.
- * @param  w_trans         Width of the transition band in Hz (Smaller value = Steeper filter slope).
+ * @param  f_cutoff          Cutoff frequency of the ideal passband in Hz.
+ * @param  w_trans           Width of the transition band in Hz (Smaller value = Steeper filter slope).
  * @return None
  */
 static void calculate_variable_slope_lpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f_cutoff, const FLOAT_t w_trans) {
@@ -978,67 +979,21 @@ static void calculate_variable_slope_lpf(FLOAT_t *const h, const FLOAT_t *const 
 
     /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
-}
 
-/**
- * @brief  Generates a single-pass Low-Pass FIR filter with adjustable transition width (slope steepness)
- *         using a fixed number of taps and a pre-calculated window buffer.
- *
- * @param  h                 Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
- * @param  preformed_window  Pointer to the pre-calculated window coefficients (size must be >= num_taps).
- * @param  num_taps          Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
- * @param  fs                The operational audio sampling frequency in Hz.
- * @param  f_cutoff        Cutoff frequency of the ideal passband in Hz.
- * @param  w_trans         Width of the transition band in Hz (Smaller value = Steeper filter slope).
- * @return None
- */
-static void calculate_variable_slope_lpf_half(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f_cutoff, const FLOAT_t w_trans) {
-    const FLOAT_t alpha = (num_taps - 1) / 2;
-    const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
-    const int half_taps = (num_taps + 1) / 2;
+    /* Step 3: Normalize the final coefficients to ensure unity gain (0 dB at DC) */
+    FLOAT_t dc_gain_sum = 0;
 
-    /* Absolute frequency boundary for the stopband */
-    const FLOAT_t f_stop = f_cutoff + w_trans;
+    /* Use arm_accumulate from CMSIS-DSP as a universal function to compute vector elements sum */
+    ARM_MORPH(arm_accumulate)(h, num_taps, &dc_gain_sum);
 
-    /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients using frequency sampling */
-    for (int n = 0; n < half_taps; n++) {
-        FLOAT_t sum = 0;
-        const FLOAT_t n_minus_alpha = n - alpha;
-
-        for (int k = 0; k < num_taps; k++) {
-            FLOAT_t freq = k * fs / num_taps;
-
-            /* Mirror spectrum points located above the Nyquist threshold */
-            if (freq > fs / 2) {
-                freq = fs - freq;
-            }
-
-            /* Synthesize magnitude response with custom sloped transition edge */
-            FLOAT_t h_target = 0;
-
-            if (freq <= f_cutoff) {
-                /* Pure passband area */
-                h_target = 1;
-            }
-            else if (freq > f_cutoff && freq <= f_stop && w_trans > 0) {
-                /* Transition band (Linear interpolation to control slope steepness) */
-                h_target = (f_stop - freq) / w_trans;
-            }
-
-            /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
-            if (h_target > 0) {
-                sum += h_target * COSF(delta_omega * k * n_minus_alpha);
-            }
-        }
-
-        /* Store raw coefficients symmetrically directly into the output buffer */
-        h[n] = sum / num_taps;
-        //h[num_taps - 1 - n] = h[n];
+    /* Prevent division by zero if the filter is completely muted */
+    if (dc_gain_sum > 0) {
+        /* Scale all coefficients by 1 / dc_gain_sum using optimized CMSIS-DSP vector scaling */
+        const FLOAT_t scale_factor = 1 / dc_gain_sum;
+        ARM_MORPH(arm_scale)(h, scale_factor, h, num_taps);
     }
-
-    /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
-    ARM_MORPH(arm_mult)(h, preformed_window, h, half_taps);
 }
+
 /**
  * @brief  Generates a single-pass Bandpass FIR filter with a fixed brick-wall main passband
  *         and an integrated dynamically adjustable brick-wall Notch filter.
@@ -1155,16 +1110,7 @@ static FLOAT32P_t get_float4_iflo(void)
 
 //////////////////////////////////////////
 
-static adapter_t fpgafircoefsout;
 static adapter_t nfmdemod;		/* Преобразование выхода demodulator_FM() */
-
-static void adapterst_initialize(void)
-{
-	/* FPGA FIR коэффициенты */
-	adpt_initialize(& fpgafircoefsout, HARDWARE_COEFWIDTH, 0, "fpgafircoefsout");
-	/* Преобразование выхода demodulator_FM() */
-	adpt_initialize(& nfmdemod, 32, 0, "nfmdemod");
-}
 
 //////////////////////////////////////////
 
@@ -2875,13 +2821,11 @@ static int_fast16_t audio_validatebw6(int_fast16_t n)
 static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 {
 	const FLOAT_t fs = ARMI2SRATE;
-	int32_t FIRCoef_trxi_IQ [NtapHalf(Ntap_trxi_IQ)];	// Фильтр для загрузки в FPGA
 
-	FLOAT_t dCoeff_trx_IQ [NtapHalf(Ntap_trxi_IQ)];	// расчитываем тут
+	FLOAT_t dCoeff_trx_IQ [Ntap_trxi_IQ];	// расчитываем тут
 
 	const uint_fast8_t dspmode = glob_dspmodes [pathi];
 	const uint_fast16_t fullbw6 = audio_validatebw6(glob_fullbw6 [pathi]);
-	const adapter_t * const adptfir = & fpgafircoefsout;			/* к какому типу надо прербразовывать */
 	const uint_fast16_t transition = glob_flttransition [pathi];	/* переходная полоса фильтра */
 
 #if WITHDSPEXTDDC
@@ -2906,7 +2850,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 #endif /* WITHDSPLOCALTXFIR */
 #if WITHDSPEXTDDC
 	// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
-	fir_design_integers_passtrough(dCoeff_trx_IQ, FIRCoef_trxi_IQ, Ntap_trxi_IQ, 1, adptfir);
+	calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
 #endif /* WITHDSPEXTDDC */
 	}
 	else
@@ -2914,15 +2858,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		const int cutfreq = fullbw6 / 2;
 
 #if WITHDSPEXTRXFIR || WITHDSPEXTTXFIR
-		// Фильтр для квадратурных каналов приёмника и передатчика в FPGA (целочисленный).
-		// Параметры для передачи в FPGA
-//	#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
-//		static double FIRCwndL_trxi_IQ [NtapHalf(Ntap_trxi_IQ)];			// подготовленные значения функции окна
-//		fir_design_windowbuffL_half(FIRCwndL_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited);
-//	#else
-//		static FLOAT_t FIRCwnd_trxi_IQ [NtapHalf(Ntap_trxi_IQ)];			// подготовленные значения функции окна
-//		fir_design_windowbuff_half(FIRCwnd_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited);
-//	#endif
+		calculate_variable_slope_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq, transition);
 #endif /* WITHDSPEXTRXFIR || WITHDSPEXTTXFIR */
 
 //	PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
@@ -2950,9 +2886,6 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	}
 #endif /* WITHDSPLOCALTXFIR */
 
-#if WITHDSPEXTRXFIR || WITHDSPEXTTXFIR
-	calculate_variable_slope_lpf_half(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq, transition);
-#endif /* WITHDSPEXTRXFIR || WITHDSPEXTTXFIR */
 	}
 
 	// Диагностика
@@ -2973,7 +2906,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	// загрузка коэффициентов фильтра в FPGA (если апаратура требует только LOCAL обработки, сделать заглушку).
 	// Загрузка pass trough в фильтр требуется если тестируется локальная обработка
 	//writecoefs(FIRCoef_trxi_IQ, Ntap_trxi_IQ);	/* печать коэффициентов фильтра */
-	board_reload_fir(pathi, FIRCoef_trxi_IQ, dCoeff_trx_IQ, Ntap_trxi_IQ, HARDWARE_COEFWIDTH);
+	board_reload_fir(pathi, dCoeff_trx_IQ, Ntap_trxi_IQ, HARDWARE_COEFWIDTH);
 #endif /* WITHDSPEXTDDC */
 }
 
@@ -5651,7 +5584,8 @@ void dsp_initialize(void)
 
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);
 
-	adapterst_initialize();
+	/* Преобразование выхода demodulator_FM() */
+	adpt_initialize(& nfmdemod, 32, 0, "nfmdemod");
 
 	// Разрядность поступающего с микрофона сигнала
 

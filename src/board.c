@@ -4393,7 +4393,7 @@ void board_fpga_fir_initialize(void)
 }
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	const int iHalfLen = (Ntap - 1) / 2;
 	int i = 0, m = 0, bits = 0;
@@ -4450,7 +4450,7 @@ void board_fpga_fir_initialize(void)
 }
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	const int iHalfLen = (Ntap - 1) / 2;
 	int i = 0, m = 0, bits = 0;
@@ -4772,15 +4772,8 @@ static int_fast64_t expandsign(int_fast32_t v, unsigned CWidth)
 #endif /* WITHDEBUG */
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
-#if 0 && WITHDEBUG
-	int_fast64_t sum = 0;
-	unsigned i;
-	for (i = 0; i < Ntap; ++ i)
-		sum += expandsign(k [i], CWidth);
-	PRINTF(PSTR("board_reload_fir: ifir=%u, Ntap=%u, sum=%08lX%08lX, CWidth=%u\n"), ifir, Ntap, (unsigned long) (sum >> 32), (unsigned long) (sum >> 0), CWidth);
-#endif /* WITHDEBUG */
 	board_fpga_fir_send(ifir, kf, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
 	boart_tgl_firprofile(ifir);
 }
@@ -4794,7 +4787,7 @@ void board_fpga_fir_initialize(void)
 }
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 
 }
@@ -4810,7 +4803,7 @@ void board_fpga_fir_initialize(void)
 }
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 
 }
