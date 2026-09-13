@@ -841,8 +841,8 @@ static void calculate_sloped_bpf(FLOAT_t *const h, const FLOAT_t *const preforme
 
 /**
  * @brief  Generates a single-pass bandpass FIR filter with adjustable transition width (slope steepness)
- *         for the left and right skirts independently, using a fixed number of taps, a pre-calculated window
- *         buffer, and fully normalized to ensure unity peak/integral gain inside the passband.
+ *         for the left and right skirts independently, using a fixed number of taps and a pre-calculated window buffer.
+ *         Operates without any output normalization block.
  *
  * @param  h               Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
  * @param  preformed_window  Pointer to the pre-calculated window coefficients (size must be >= num_taps).
@@ -863,10 +863,6 @@ static void calculate_variable_slope_bpf(FLOAT_t *const h, const FLOAT_t *const 
     const FLOAT_t stop1 = f1 - w1_trans;
     const FLOAT_t stop2 = f2 + w2_trans;
 
-    /* Track total integrated target response energy inside the active spectrum to calculate the normalization factor */
-    FLOAT_t passband_energy_sum = 0;
-    int passband_bins_count = 0;
-
     /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients using frequency sampling */
     for (int n = 0; n < half_taps; n++) {
         FLOAT_t sum = 0;
@@ -886,30 +882,14 @@ static void calculate_variable_slope_bpf(FLOAT_t *const h, const FLOAT_t *const 
             if (freq >= f1 && freq <= f2) {
                 /* Pure passband area */
                 h_target = 1;
-
-                /* Calculate energy profile metrics for normalization during the first tap iteration */
-                if (n == 0) {
-                    passband_energy_sum += h_target;
-                    passband_bins_count += 1;
-                }
             }
             else if (freq >= stop1 && freq < f1 && w1_trans > 0) {
                 /* Left transition band (Linear interpolation to control slope steepness) */
                 h_target = (freq - stop1) / w1_trans;
-
-                if (n == 0) {
-                    passband_energy_sum += h_target;
-                    passband_bins_count += 1;
-                }
             }
             else if (freq > f2 && freq <= stop2 && w2_trans > 0) {
                 /* Right transition band (Linear interpolation to control slope steepness) */
                 h_target = (stop2 - freq) / w2_trans;
-
-                if (n == 0) {
-                    passband_energy_sum += h_target;
-                    passband_bins_count += 1;
-                }
             }
 
             /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
@@ -925,30 +905,8 @@ static void calculate_variable_slope_bpf(FLOAT_t *const h, const FLOAT_t *const 
 
     /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
-#if 0
-    /* Step 3: Precise normalization relative to the synthesized grid passband response */
-    if (passband_bins_count > 0 && passband_energy_sum > 0) {
-        /* Calculate empirical window loss factor based on the average spectrum energy density */
-        FLOAT_t total_window_gain_sum = 0;
-
-        /* Compute the total energy sum of the windowed FIR coefficients using arm_accumulate */
-        ARM_MORPH(arm_accumulate)(h, num_taps, &total_window_gain_sum);
-
-        /* Apply absolute value macro from dspdefines.h to safeguard against phase inversion */
-       total_window_gain_sum = FABSF(total_window_gain_sum);
-        /* Derive reference ideal gain density from the sampled spectrum layout */
-        const FLOAT_t ideal_gain_density = passband_energy_sum / num_taps;
-
-        if (total_window_gain_sum > 0 && ideal_gain_density > 0) {
-            /* Compute scale factor to align real filter gain with 0 dB reference level */
-            const FLOAT_t scale_factor = ideal_gain_density / total_window_gain_sum;
-
-            /* Apply optimized scaling via CMSIS-DSP architecture vector scaling */
-            ARM_MORPH(arm_scale)(h, scale_factor, h, num_taps);
-        }
-    }
-#endif
 }
+
 /**
  * @brief  Generates a single-pass Low-Pass FIR filter with adjustable transition width (slope steepness)
  *         using a pre-calculated window buffer, fully normalized to unity gain (0 dB at DC).
