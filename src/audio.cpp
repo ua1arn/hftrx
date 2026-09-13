@@ -97,7 +97,7 @@ static uint_fast8_t		glob_trxpath = 0;			/* Тракт, к которому от
 static uint_fast16_t 	glob_ifgain = BOARD_IFGAIN_MIN;
 static int_fast16_t 	glob_agcfence10 = - 73 * 10;
 static uint_fast8_t 	glob_dspmodes [2] = { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE, };
-
+static uint_fast8_t		glob_skipfilteraf;
 static uint_fast8_t		glob_agcrate [2] = { 20, 20 }; //10	// 10 дБ изменение входного на 1 дБ выходного
 static uint_fast8_t 	glob_agc_scale [2] = { 100, 100 }; // scale в процентах - Для эксперементов по улучшению приема АМ
 static uint_fast8_t 	glob_agc_t0 [2] = { 0, 0 }; // chargespeedfast в милисекундах
@@ -3063,6 +3063,11 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 	//PRINTF("dsp_recalceq_coeffs_rx_AUDIO: pathi=%d: transition1=%d, low=%d, high=%d, transition2=%d\n", pathi, transition1, cutfreqlow, cutfreqhigh, transition2);
 	ASSERT(Ntap_rx_AUDIO == iCoefNum);	/* проверяем на несогласованность параметров */
 	ASSERT((iCoefNum % 2) == 1);
+	if (glob_skipfilteraf)
+	{
+		calculate_passthrough_fir(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO);
+		return;
+	}
 	switch (glob_dspmodes [pathi])
 	{
 	case DSPCTL_MODE_RX_DSB:
@@ -6310,6 +6315,17 @@ board_set_mikehclip(uint_fast8_t v)
 	if (glob_mikehclip != v)
 	{
 		glob_mikehclip = v;
+		board_dsp1regchanged();
+	}
+}
+
+
+void
+board_set_skipfilteraf(uint_fast8_t v)
+{
+	if (glob_skipfilteraf != v)
+	{
+		glob_skipfilteraf = v;
 		board_dsp1regchanged();
 	}
 }
