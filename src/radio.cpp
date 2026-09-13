@@ -6876,6 +6876,24 @@ static const struct paramdefdef xgkeybeep10 =
 
 #endif /* WITHINTEGRATEDDSP */
 
+#if WITHINTEGRATEDDSP
+
+static uint_fast8_t gskipfilteraf;
+static const struct paramdefdef xgskipfilteraf =
+{
+	QLABEL("FLT BYPASS"), 0, RJ_ON,	ISTEP1,		/* Select the monitoring sound output enable */
+	ITEM_VALUE | ITEM_NOINITNVRAM,
+	0, 1,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gskipfilteraf,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
+#endif /* WITHINTEGRATEDDSP */
+
 #if WITHMIC1LEVEL
 	static uint_fast16_t gmik1level = (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) / 4 + WITHMIKEINGAINMIN;
 	/* подстройка усиления микрофонного усилителя через меню. */
@@ -13621,6 +13639,7 @@ updateboard_noui(
 			board_set_dspagc(gagcoff ? BOARD_AGCCODE_OFF : agcmodes [gagcmode].code);
 		#else /* ! WITHAGCMODENONE */
 			board_set_dspagc(gagcoff ? BOARD_AGCCODE_OFF : BOARD_AGCCODE_ON);
+			board_set_skipfilteraf(param_getvalue(& xgskipfilteraf));
 		#endif /* ! WITHAGCMODENONE */
 		#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 			board_set_dither(gdither);	/* управление зашумлением в LTC2208 */
