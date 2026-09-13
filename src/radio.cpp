@@ -9626,7 +9626,7 @@ static const struct paramdefdef xgsquareness10 =
 // squareness ratio to transition band
 static int sq2transition(int_fast8_t sq10, int_fast16_t bw)
 {
-	const int_fast32_t downbw = (int_fast32_t) bw * sq10 / WITHSQUARENESSMIN;
+	const int_fast32_t downbw = (int_fast32_t) bw * (sq10 - WITHSQUARENESSMIN) / WITHSQUARENESSMIN;
 	return downbw / 2;
 }
 
@@ -13540,8 +13540,8 @@ updateboard_noui(
 			board_set_aflowcutrx(bwseti_getlow(bwseti));	/* Нижняя частота среза фильтра НЧ по приему */
 			board_set_afhighcutrx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по приему */
 			board_set_afresponcerx(bwseti_getafresponce(bwseti));	/* изменение тембра звука в приемнике - на Samplerate/2 АЧХ становится на столько децибел  */
-			//board_set_flttransition(sq2transition(bwseti_getsquareness10(bwseti, bwseti_getwidth(bwseti)));
-			board_set_flttransition(sq2transition(param_getvalue(& xgsquareness10), bwseti_getwidth(bwseti)));
+			//board_set_flttransition((bwseti_getwide(bwseti) ? 0 : sq2transition(bwseti_getsquareness10(bwseti, bwseti_getwidth(bwseti)));
+			board_set_flttransition(bwseti_getwide(bwseti) ? 0 : sq2transition(param_getvalue(& xgsquareness10), bwseti_getwidth(bwseti)));
 
 			board_set_lo6(freqlo6);	/* иначе, в случае WITHIF4DSP - управление знаком частоты */
 			board_set_fullbw6(getif6bw(amode, gtx, wide));	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
