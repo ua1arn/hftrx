@@ -838,9 +838,11 @@ static void calculate_sloped_bpf(FLOAT_t *const h, const FLOAT_t *const preforme
     /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
 }
+
 /**
  * @brief  Generates a single-pass Bandpass FIR filter with a linear magnitude slope,
- *         fully normalized to match the exact gain of the passthrough channel (0 dB at center frequency).
+ *         perfectly normalized to match the exact gain of the passthrough channel (0 dB at center frequency)
+ *         even under steep dynamic variations of the a2 slope constraint.
  *
  * @param  h                 Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
  * @param  preformed_window  Pointer to the pre-calculated window coefficients (size must be >= num_taps).
@@ -905,8 +907,8 @@ static void norm_calculate_sloped_bpf(FLOAT_t *const h, const FLOAT_t *const pre
     /* Safeguard using FABSF to extract the absolute transfer scale factor */
     const FLOAT_t actual_passband_gain = FABSF(real_part);
 
-    /* Target baseline gain definition evaluated at the exact center of our slope profile */
-    const FLOAT_t target_center_gain = (a1 + a2) / 2;
+    /* Target baseline gain evaluated precisely matching the targeted sloped interpolation function */
+    const FLOAT_t target_center_gain = a1 + (a2 - a1) * (f_center - f1) / (f2 - f1);
 
     /* Normalize the filter only if a valid non-zero gain response is present */
     if (actual_passband_gain > 0 && target_center_gain > 0) {
