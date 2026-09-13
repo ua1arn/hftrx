@@ -1032,7 +1032,7 @@ static void calculate_variable_slope_lpf(FLOAT_t *const h, const FLOAT_t *const 
  *         and an integrated dynamically adjustable brick-wall Notch filter.
  *
  * @param  h               Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
- * @param  tmp_window_buf  Pointer to temporary workspace buffer (allocated size must be >= num_taps).
+ * @param  preformed_window Pointer to temporary workspace buffer (allocated size must be >= num_taps).
  * @param  num_taps        Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
  * @param  fs              The operational audio sampling frequency in Hz.
  * @param  f1              Start frequency of the fixed main passband in Hz.
@@ -1041,7 +1041,7 @@ static void calculate_variable_slope_lpf(FLOAT_t *const h, const FLOAT_t *const 
  * @param  w_notch         Width of the adjustable brick-wall notch suppression band in Hz.
  * @return None
  */
-static void calculate_fixed_bpf_with_adjustable_notch(FLOAT_t *const h, const FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t f_notch, const FLOAT_t w_notch) {
+static void calculate_fixed_bpf_with_adjustable_notch(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t f_notch, const FLOAT_t w_notch) {
     const FLOAT_t alpha = (num_taps - 1) / 2;
     const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
@@ -1082,11 +1082,8 @@ static void calculate_fixed_bpf_with_adjustable_notch(FLOAT_t *const h, const FL
         h[num_taps - 1 - n] = h[n];
     }
 
-    /* Step 2: Generate Blackman-Harris window weights into temporary buffer via CMSIS-DSP morph macro */
-    //ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
-
-    /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
-    ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
+    /* Step 2: Apply windowing via optimized vector multiplication from CMSIS-DSP */
+    ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
 }
 
 /**
