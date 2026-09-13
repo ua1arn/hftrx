@@ -719,15 +719,6 @@ static FLOAT32P_t get_float_aflorx_delta(uint_fast8_t pathi)
 
 // AI-generated code
 
-#include <math.h>
-#include "dspdefines.h"    /* Hardware floating point macros, FLOAT_t, and arm_math.h inclusions */
-
-/* Ensure M_PI is defined if the compiler does not strict-define it under certain standards */
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-
 /**
  * @brief  Core mathematical routine to synthesize BPF coefficients with dynamic slope and variable EQ bands.
  */
@@ -863,7 +854,7 @@ static void calculate_sloped_bpf(FLOAT_t *const h, const FLOAT_t *const preforme
  * @param  w2_trans        Width of the right transition band in Hz (Smaller value = Steeper right slope).
  * @return None
  */
-static void calculate_variable_slope_fir(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t w1_trans, const FLOAT_t w2_trans) {
+static void calculate_variable_slope_bpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t w1_trans, const FLOAT_t w2_trans) {
     const FLOAT_t alpha = (num_taps - 1) / 2;
     const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
@@ -934,7 +925,7 @@ static void calculate_variable_slope_fir(FLOAT_t *const h, const FLOAT_t *const 
 
     /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
-
+#if 0
     /* Step 3: Precise normalization relative to the synthesized grid passband response */
     if (passband_bins_count > 0 && passband_energy_sum > 0) {
         /* Calculate empirical window loss factor based on the average spectrum energy density */
@@ -943,6 +934,8 @@ static void calculate_variable_slope_fir(FLOAT_t *const h, const FLOAT_t *const 
         /* Compute the total energy sum of the windowed FIR coefficients using arm_accumulate */
         ARM_MORPH(arm_accumulate)(h, num_taps, &total_window_gain_sum);
 
+        /* Apply absolute value macro from dspdefines.h to safeguard against phase inversion */
+       total_window_gain_sum = FABSF(total_window_gain_sum);
         /* Derive reference ideal gain density from the sampled spectrum layout */
         const FLOAT_t ideal_gain_density = passband_energy_sum / num_taps;
 
@@ -954,6 +947,7 @@ static void calculate_variable_slope_fir(FLOAT_t *const h, const FLOAT_t *const 
             ARM_MORPH(arm_scale)(h, scale_factor, h, num_taps);
         }
     }
+#endif
 }
 /**
  * @brief  Generates a single-pass Low-Pass FIR filter with adjustable transition width (slope steepness)
@@ -1014,12 +1008,15 @@ static void calculate_variable_slope_lpf(FLOAT_t *const h, const FLOAT_t *const 
 
     /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
-
+#if 0
     /* Step 3: Normalize the final coefficients to ensure unity gain (0 dB at DC) */
     FLOAT_t dc_gain_sum = 0;
 
     /* Use arm_accumulate from CMSIS-DSP as a universal function to compute vector elements sum */
     ARM_MORPH(arm_accumulate)(h, num_taps, &dc_gain_sum);
+
+    /* Apply absolute value macro from dspdefines.h to safeguard against phase inversion */
+    dc_gain_sum = FABSF(dc_gain_sum);
 
     /* Prevent division by zero if the filter is completely muted */
     if (dc_gain_sum > 0) {
@@ -1027,6 +1024,7 @@ static void calculate_variable_slope_lpf(FLOAT_t *const h, const FLOAT_t *const 
         const FLOAT_t scale_factor = 1 / dc_gain_sum;
         ARM_MORPH(arm_scale)(h, scale_factor, h, num_taps);
     }
+#endif
 }
 
 /**
@@ -2937,7 +2935,21 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	}
 #endif
 
+	// test
+	//calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
+
 #if WITHDSPEXTDDC
+	if (1)
+	{
+		// Предотвращение выхода значений коэффициентов за пределы [-1..+1]
+		FLOAT_t minv, maxv;
+		ARM_MORPH(arm_min_no_idx)(dCoeff_trx_IQ, Ntap_trxi_IQ, & minv);
+		ARM_MORPH(arm_max_no_idx)(dCoeff_trx_IQ, Ntap_trxi_IQ, & maxv);
+		const FLOAT_t lim = FMAXF(FABSF(minv), FABSF(maxv));
+		if (lim > 1)
+			ARM_MORPH(arm_scale)(dCoeff_trx_IQ, 1 / lim, dCoeff_trx_IQ, Ntap_trxi_IQ);
+	}
+
 	// загрузка коэффициентов фильтра в FPGA (если апаратура требует только LOCAL обработки, сделать заглушку).
 	// Загрузка pass trough в фильтр требуется если тестируется локальная обработка
 	//writecoefs(FIRCoef_trxi_IQ, Ntap_trxi_IQ);	/* печать коэффициентов фильтра */
@@ -3029,18 +3041,18 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 		if (! glob_afwiderx [pathi])
 		{
 			// audio - полосовой фильтр на телеграфную полосу
-			calculate_variable_slope_fir(dCoeff, rx_audio_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, transition, transition);
+			calculate_variable_slope_bpf(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, transition, transition);
 		}
 		else if (glob_notch_mode == BOARD_NOTCH_MANUAL)
 		{
 			// audio with notch
-			calculate_fixed_bpf_with_adjustable_notch(dCoeff, rx_audio_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, glob_notch_freq, glob_notch_width);
+			calculate_fixed_bpf_with_adjustable_notch(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, glob_notch_freq, glob_notch_width);
 		}
 		else
 		{
 			// audio
-			calculate_sloped_bpf(dCoeff, rx_audio_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
-			//calculate_bpf_with_sloped_eq(dCoeff, rx_audio_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb), rx_eq, ARRAY_SIZE(rx_eq));
+			calculate_sloped_bpf(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
+			//calculate_bpf_with_sloped_eq(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb), rx_eq, ARRAY_SIZE(rx_eq));
 		}
 		break;
 
@@ -3050,12 +3062,12 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 	case DSPCTL_MODE_RX_DRM:
 		// audio
 		// В этом режиме фильтр не используется
-		calculate_passthrough_fir(dCoeff, rx_audio_window_buf, iCoefNum);		// сигнал через НЧ фильтр не проходит
+		calculate_passthrough_fir(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO);		// сигнал через НЧ фильтр не проходит
 		break;
 
 	// в режиме передачи
 	default:
-		calculate_passthrough_fir(dCoeff, rx_audio_window_buf, iCoefNum);		// сигнал через НЧ фильтр не проходит
+		calculate_passthrough_fir(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO);		// сигнал через НЧ фильтр не проходит
 		break;
 	}
 }
