@@ -908,31 +908,24 @@ static void calculate_variable_slope_bpf(FLOAT_t *const h, const FLOAT_t *const 
 }
 
 /**
- * @brief  Generates a single-pass bandpass FIR filter with adjustable transition width (slope steepness)
- *         for the left and right skirts independently, using a fixed number of taps, a pre-calculated window
- *         buffer, fully normalized via FABSF to ensure unity integrated gain inside the passband.
+ * @brief  Generates a single-pass Bandpass FIR filter with a linear magnitude slope and linear phase,
+ *         using a fixed number of taps, a pre-calculated window buffer, and mathematically normalized
+ *         to align its maximum transfer factor exactly with the peak input gain constraint.
  *
- * @param  h               Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
+ * @param  h                 Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
  * @param  preformed_window  Pointer to the pre-calculated window coefficients (size must be >= num_taps).
- * @param  num_taps        Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
- * @param  fs              The operational audio sampling frequency in Hz.
- * @param  f1              Start frequency of the ideal passband in Hz.
- * @param  f2              End frequency of the ideal passband in Hz.
- * @param  w1_trans        Width of the left transition band in Hz (Smaller value = Steeper left slope).
- * @param  w2_trans        Width of the right transition band in Hz (Smaller value = Steeper right slope).
+ * @param  num_taps          Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
+ * @param  fs                The operational audio sampling frequency in Hz.
+ * @param  f1                Start frequency of the passband in Hz.
+ * @param  f2                End frequency of the passband in Hz.
+ * @param  a1                Target linear amplitude at f1 frequency point.
+ * @param  a2                Target linear amplitude at f2 frequency point.
  * @return None
  */
-static void norm_calculate_variable_slope_bpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t w1_trans, const FLOAT_t w2_trans) {
+static void norm_calculate_variable_slope_bpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t a1, const FLOAT_t a2) {
     const FLOAT_t alpha = (num_taps - 1) / 2;
     const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
-
-    /* Absolute frequency boundaries for the transition bands */
-    const FLOAT_t stop1 = f1 - w1_trans;
-    const FLOAT_t stop2 = f2 + w2_trans;
-
-    /* Track total integrated target response energy inside the active spectrum to calculate the normalization factor */
-    FLOAT_t passband_energy_sum = 0;
 
     /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients using frequency sampling */
     for (int n = 0; n < half_taps; n++) {
@@ -947,33 +940,10 @@ static void norm_calculate_variable_slope_bpf(FLOAT_t *const h, const FLOAT_t *c
                 freq = fs - freq;
             }
 
-            /* Synthesize magnitude response with custom sloped transition edges */
+            /* Define target amplitude using piecewise-linear function (slope in passband) */
             FLOAT_t h_target = 0;
-
             if (freq >= f1 && freq <= f2) {
-                /* Pure passband area */
-                h_target = 1;
-
-                /* Calculate energy profile metrics for normalization during the first tap iteration */
-                if (n == 0) {
-                    passband_energy_sum += h_target;
-                }
-            }
-            else if (freq >= stop1 && freq < f1 && w1_trans > 0) {
-                /* Left transition band (Linear interpolation to control slope steepness) */
-                h_target = (freq - stop1) / w1_trans;
-
-                if (n == 0) {
-                    passband_energy_sum += h_target;
-                }
-            }
-            else if (freq > f2 && freq <= stop2 && w2_trans > 0) {
-                /* Right transition band (Linear interpolation to control slope steepness) */
-                h_target = (stop2 - freq) / w2_trans;
-
-                if (n == 0) {
-                    passband_energy_sum += h_target;
-                }
+                h_target = a1 + (a2 - a1) * (freq - f1) / (f2 - f1);
             }
 
             /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
@@ -990,25 +960,35 @@ static void norm_calculate_variable_slope_bpf(FLOAT_t *const h, const FLOAT_t *c
     /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
 
-    /* Step 3: Precise normalization relative to the synthesized grid passband response */
-    if (passband_energy_sum > 0) {
-        FLOAT_t total_window_gain_sum = 0;
+    /* Step 3: Find the peak target gain specified by user to use as a baseline scaling destination */
+    FLOAT_t target_peak_gain = a1;
+    if (a2 > a1) {
+        target_peak_gain = a2;
+    }
 
-        /* Compute the total energy sum of the windowed FIR coefficients using arm_accumulate */
-        ARM_MORPH(arm_accumulate)(h, num_taps, &total_window_gain_sum);
+    /* Step 4: Correct window attenuation using peak-to-peak coefficient matching (Anti-clipping & Normalization) */
+    FLOAT_t current_max_coeff = 0;
+    uint32_t max_idx = 0;
 
-        /* Apply absolute value macro FABSF to safeguard against phase inversion */
-        total_window_gain_sum = FABSF(total_window_gain_sum);
+    /* Find the absolute peak of the windowed impulse response vector */
+    ARM_MORPH(arm_max)(h, num_taps, &current_max_coeff, &max_idx);
+    current_max_coeff = FABSF(current_max_coeff);
 
-        /* Derive reference ideal gain density from the sampled spectrum layout */
-        const FLOAT_t ideal_gain_density = passband_energy_sum / num_taps;
+    if (current_max_coeff > 0 && target_peak_gain > 0) {
+        /* Approximate the window loss recovery scaled directly to the intended peak spectrum level */
+        /* For a standard flat window, the center tap equals the integration of the passband area divided by num_taps */
+        const FLOAT_t filter_scale_factor = (target_peak_gain * (f2 - f1) / (fs / 2)) / current_max_coeff;
 
-        if (total_window_gain_sum > 0 && ideal_gain_density > 0) {
-            /* Compute scale factor to align real filter gain with 0 dB reference level */
-            const FLOAT_t scale_factor = ideal_gain_density / total_window_gain_sum;
+        /* Apply dynamic scale factor to restore intended audio level */
+        ARM_MORPH(arm_scale)(h, filter_scale_factor, h, num_taps);
 
-            /* Apply optimized scaling via CMSIS-DSP architecture vector scaling */
-            ARM_MORPH(arm_scale)(h, scale_factor, h, num_taps);
+        /* Secondary final check: verify that no single coefficient breaks the hardware rails (> 1.0) */
+        ARM_MORPH(arm_max)(h, num_taps, &current_max_coeff, &max_idx);
+        current_max_coeff = FABSF(current_max_coeff);
+
+        if (current_max_coeff > 1) {
+            const FLOAT_t safety_clip_scale = 1 / current_max_coeff;
+            ARM_MORPH(arm_scale)(h, safety_clip_scale, h, num_taps);
         }
     }
 }
