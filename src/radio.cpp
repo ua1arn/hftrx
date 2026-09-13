@@ -1734,7 +1734,7 @@ typedef struct
 	/* параметры, изменяемые через меню */
 	uint_fast8_t left10_width10, right100;	/* left выполняет роль width для телеграфных (BWSET_SINGLE) фильтров */
 	uint_fast8_t afresponce;	/* наклон АЧХ - на Samplerate/2 АЧХ становится на столько децибел  */
-	uint_fast8_t transition10;	/* ширина переходной полосы на приёме */
+	uint_fast8_t squareness10;	/* Коэффициент прямоугольности */
 	uint8_t rxbw100;	/* полоса пропускания радиотракта (или 0 если вычисляется) в сотнях герц */
 	uint8_t txbw100;	/* полоса пропускания радиотракта (или 0 если вычисляется), удвоенная девиация для NFM в сотнях герц*/
 } bwprop_t;
@@ -1799,24 +1799,25 @@ enum
 #define AFRESPONCETXNFM (+ 12)	// наклон АЧХ для NFM
 #define AFRESPONCEFLAT (0)
 
-#define WITHTRANSITIONMIN 0
-#define WITHTRANSITIONMAX 50
+// Коэффициент прямоугольности фильтра в десятых долях
+#define WITHSQUARENESSMIN 10
+#define WITHSQUARENESSMAX 60
 
 // Частоты границ полосы пропускания
 // эти значения могут модифицироваться через меню
-static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWPROPI_CWNARROW, BWSET_SINGLE, 200 / BWGRANLOW, 0, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
-static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWPROPI_CWWIDE, BWSET_SINGLE, 500 / BWGRANLOW, 0, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
-static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
-static bwprop_t bwprop_ssbmedium = { & bwlimits_ssb, BWPROPI_SSBMEDIUM, BWSET_PAIR, 300 / BWGRANLOW, 2700 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
-static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_PAIR, 300 / BWGRANLOW, 2200 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
-static bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
-static bwprop_t bwprop_nfmtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCETXNFM + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
-static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_PAIR, 100 / BWGRANLOW, 9000 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
-static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_PAIR, 100 / BWGRANLOW, 4500 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
-static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_PAIR, 50 / BWGRANLOW, 5500 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
-static bwprop_t bwprop_nfmnarrow = { & bwlimits_nfm, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHTRANSITIONMIN, NBFMWIDTHRX / BWGRANHIGH, NBFMWIDTHTX / BWGRANHIGH, };
-static bwprop_t bwprop_nfmwide = { & bwlimits_nfm, BWPROPI_NFMWIDE, BWSET_PAIR, 300 / BWGRANLOW, 4000 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHTRANSITIONMIN, WBFMWIDTHRX / BWGRANHIGH, WBFMWIDTHTX / BWGRANHIGH, };
-static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_PAIR, 100 / BWGRANLOW, 12000 / BWGRANHIGH, AFRESPONCEWFM + AFRESPONCESHIFT, WITHTRANSITIONMIN, 0, 0, };
+static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWPROPI_CWNARROW, BWSET_SINGLE, 200 / BWGRANLOW, 0, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHSQUARENESSMIN, 0, 0, };
+static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWPROPI_CWWIDE, BWSET_SINGLE, 500 / BWGRANLOW, 0, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHSQUARENESSMIN, 0, 0, };
+static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHSQUARENESSMIN, 0, 0, };
+static bwprop_t bwprop_ssbmedium = { & bwlimits_ssb, BWPROPI_SSBMEDIUM, BWSET_PAIR, 300 / BWGRANLOW, 2700 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHSQUARENESSMIN, 0, 0, };
+static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_PAIR, 300 / BWGRANLOW, 2200 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHSQUARENESSMIN, 0, 0, };
+static bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHSQUARENESSMIN, 0, 0, };
+static bwprop_t bwprop_nfmtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCETXNFM + AFRESPONCESHIFT, WITHSQUARENESSMIN, 0, 0, };
+static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_PAIR, 100 / BWGRANLOW, 9000 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHSQUARENESSMIN, 0, 0, };
+static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_PAIR, 100 / BWGRANLOW, 4500 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHSQUARENESSMIN, 0, 0, };
+static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_PAIR, 50 / BWGRANLOW, 5500 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHSQUARENESSMIN, 0, 0, };
+static bwprop_t bwprop_nfmnarrow = { & bwlimits_nfm, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, AFRESPONCEDEFAULT + AFRESPONCESHIFT, WITHSQUARENESSMIN, NBFMWIDTHRX / BWGRANHIGH, NBFMWIDTHTX / BWGRANHIGH, };
+static bwprop_t bwprop_nfmwide = { & bwlimits_nfm, BWPROPI_NFMWIDE, BWSET_PAIR, 300 / BWGRANLOW, 4000 / BWGRANHIGH, AFRESPONCEFLAT + AFRESPONCESHIFT, WITHSQUARENESSMIN, WBFMWIDTHRX / BWGRANHIGH, WBFMWIDTHTX / BWGRANHIGH, };
+static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_PAIR, 100 / BWGRANLOW, 12000 / BWGRANHIGH, AFRESPONCEWFM + AFRESPONCESHIFT, WITHSQUARENESSMIN, 0, 0, };
 
 // Способ представления частот и количество профилей полосы пропускания,
 // а так же названия полос пропускания для отображения
@@ -1978,13 +1979,13 @@ bwseti_gethigh(
 
 // получить код управления сглаживанием скатов фильтра
 static int_fast16_t
-bwseti_gettransition(
+bwseti_getsquareness10(
 	uint_fast8_t bwseti
 	)
 {
 	const uint_fast8_t pos = bwsetpos [bwseti];
 	const bwprop_t * const p = bwsetsc [bwseti].prop [pos];
-	return p->transition10 * 10;
+	return p->squareness10;
 }
 
 // индекс набора параметров слухового приема
@@ -3683,12 +3684,12 @@ struct nvmap
 
 	uint8_t bwpropsleft [BWPROPI_count];	/* значения границ полосы пропускания */
 	uint8_t bwpropsright [BWPROPI_count];	/* значения границ полосы пропускания */
-	uint8_t bwpropstransition10 [BWPROPI_count];	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
+	uint8_t bwpropssquareness10 [BWPROPI_count];	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 	uint8_t bwpropsafresponce [BWPROPI_count];	/* Наклон АЧХ */
 
 	struct agcseti_tag afsets [AGCSETI_COUNT];	/* режимы приема */
 
-	uint16_t gtransition;	// Ширина переходной полосы фильтра
+	uint8_t gsquareness10;	// Коэффициент прямоугольности фильтра в десятых долях
 
 #if WITHLWIP
 	uint8_t gethaddr;
@@ -3994,7 +3995,7 @@ struct nvmap
 
 #define RMT_BWPROPSLEFT_BASE(i) OFFSETOF(struct nvmap, bwpropsleft [(i)])
 #define RMT_BWPROPSRIGHT_BASE(i) OFFSETOF(struct nvmap, bwpropsright [(i)])
-#define RMT_BWPROPSTRANSITION10_BASE(i) OFFSETOF(struct nvmap, bwpropstransition10 [(i)])
+#define RMT_BWPROPSTRANSITION10_BASE(i) OFFSETOF(struct nvmap, bwpropssquareness10 [(i)])
 #define RMT_BWPROPSAFRESPONCE_BASE(i) OFFSETOF(struct nvmap, bwpropsafresponce [(i)])
 
 #define RMT_MICLEVEL_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].level)
@@ -9361,7 +9362,7 @@ bwseti_load(void)
 		bwprop_t * const p = bwprops [bwprop];
 
 		p->afresponce = loadvfy8up(RMT_BWPROPSAFRESPONCE_BASE(bwprop), AFRESPONCEMIN, AFRESPONCEMAX, p->afresponce);
-		p->transition10 = loadvfy8up(RMT_BWPROPSTRANSITION10_BASE(bwprop), WITHTRANSITIONMIN, WITHTRANSITIONMAX, p->transition10);
+		p->squareness10 = loadvfy8up(RMT_BWPROPSTRANSITION10_BASE(bwprop), WITHSQUARENESSMIN, WITHSQUARENESSMAX, p->squareness10);
 		switch (p->type)
 		{
 		case BWSET_SINGLE:
@@ -9607,17 +9608,17 @@ enum { gtxgate = 0 };
 
 #if WITHIF4DSP && WITHMENU
 
-static uint_fast16_t gtransition = 0;
-// Ширина переходной полосы фильтра
-static const struct paramdefdef xgtransition =
+static uint_fast8_t gsquareness10 = WITHSQUARENESSMIN;
+// Коэффициент прямоугольности фильтра в десятых долях
+static const struct paramdefdef xgsquareness10 =
 {
-	QLABEL3("Transition", "TRANS", "Transition"), 0, RJ_UNSIGNED, 	ISTEP10,	// Transition band width
+	QLABEL3("Squareness", "SQRNR", "Squareness"), 1, RJ_UNSIGNED, 	ISTEP1,	// squareness ratio
 	ITEM_VALUE,
-	0, WITHTRANSITIONMAX * 10,			/* 0..500 */
-	OFFSETOF(struct nvmap, gtransition),
+	WITHSQUARENESSMIN, WITHSQUARENESSMAX,			/* 10..40 */
+	OFFSETOF(struct nvmap, gsquareness10),
 	getselector0, nvramoffs0, valueoffs0,
-	& gtransition,	// 16 bit variable
 	NULL,
+	& gsquareness10,	// 8 bit variable
 	getzerobase,
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -10398,6 +10399,7 @@ static const struct paramdefdef * nomenulist [] =
 	& xgpwri,
 #endif /* WITHPOWERLPHP */
 	& xgusefast,	/* управление режимом валкодера */
+	& xgsquareness10,	/* Коэффициент прямоугольности фильтра в десятых долях */
 	//& xgdummy,		/* чтобы небыло массива с нулевым размером */
 };
 
@@ -13232,6 +13234,13 @@ encoder_flagne(const struct paramdefdef * pd, int_least16_t delta, uint_fast8_t 
 	return 0;
 }
 
+// squareness ratio to transition band
+static int sq2transition(int_fast8_t sq10, int_fast16_t bw)
+{
+	const int_fast32_t downbw = (int_fast32_t) bw * sq10 / WITHSQUARENESSMIN;
+	return downbw / 2;
+}
+
 /*
  параметры:
  tx - не-0: переключение аппаратуры в режим передачи
@@ -13530,11 +13539,11 @@ updateboard_noui(
 			board_set_aflowcutrx(bwseti_getlow(bwseti));	/* Нижняя частота среза фильтра НЧ по приему */
 			board_set_afhighcutrx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по приему */
 			board_set_afresponcerx(bwseti_getafresponce(bwseti));	/* изменение тембра звука в приемнике - на Samplerate/2 АЧХ становится на столько децибел  */
+			//board_set_flttransition(sq2transition(bwseti_getsquareness10(bwseti, bwseti_getwidth(bwseti)));
+			board_set_flttransition(sq2transition(param_getvalue(& xgsquareness10), bwseti_getwidth(bwseti)));
 
 			board_set_lo6(freqlo6);	/* иначе, в случае WITHIF4DSP - управление знаком частоты */
 			board_set_fullbw6(getif6bw(amode, gtx, wide));	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
-			//board_set_flttransition(gtx ? WITHTRANSITIONMIN : bwseti_gettransition(bwseti));	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
-			board_set_flttransition(gtx ? 0 : param_getvalue(& xgtransition));
 			board_set_dspmode(Xpamodetempl->dspmode [gtx]);
 			#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 				board_set_dactest(gdactest);		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
@@ -18079,7 +18088,7 @@ const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 	#endif /* WITHELKEY */
 	#if WITHIF4DSP
 		& xfltbw_cwnarrow,
-		& xgtransition,
+		& xgsquareness10,
 		//& xfltsofter_cwnarrow,
 	#endif /* WITHIF4DSP */
 		& xgcwpitch10,
