@@ -1008,7 +1008,7 @@ static void calculate_variable_slope_lpf(FLOAT_t *const h, const FLOAT_t *const 
 
     /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
-#if 0
+
     /* Step 3: Normalize the final coefficients to ensure unity gain (0 dB at DC) */
     FLOAT_t dc_gain_sum = 0;
 
@@ -1024,7 +1024,7 @@ static void calculate_variable_slope_lpf(FLOAT_t *const h, const FLOAT_t *const 
         const FLOAT_t scale_factor = 1 / dc_gain_sum;
         ARM_MORPH(arm_scale)(h, scale_factor, h, num_taps);
     }
-#endif
+
 }
 
 /**
