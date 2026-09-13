@@ -9623,6 +9623,13 @@ static const struct paramdefdef xgsquareness10 =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
+// squareness ratio to transition band
+static int sq2transition(int_fast8_t sq10, int_fast16_t bw)
+{
+	const int_fast32_t downbw = (int_fast32_t) bw * sq10 / WITHSQUARENESSMIN;
+	return downbw / 2;
+}
+
 // CW filter bandwidth for WIDE
 static const struct paramdefdef xfltbw_cwwide =
 {
@@ -10383,6 +10390,7 @@ static const struct paramdefdef * nomenulist [] =
 {
 	& xgmutespkr,	/*  выключение динамика */
 #if WITHIF4DSP
+	& xgsquareness10,	/* Коэффициент прямоугольности фильтра в десятых долях */
 	& xagcfence1,
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	& xgnotch,
@@ -10399,7 +10407,6 @@ static const struct paramdefdef * nomenulist [] =
 	& xgpwri,
 #endif /* WITHPOWERLPHP */
 	& xgusefast,	/* управление режимом валкодера */
-	& xgsquareness10,	/* Коэффициент прямоугольности фильтра в десятых долях */
 	//& xgdummy,		/* чтобы небыло массива с нулевым размером */
 };
 
@@ -13232,13 +13239,6 @@ encoder_flagne(const struct paramdefdef * pd, int_least16_t delta, uint_fast8_t 
 		return 1;
 	}
 	return 0;
-}
-
-// squareness ratio to transition band
-static int sq2transition(int_fast8_t sq10, int_fast16_t bw)
-{
-	const int_fast32_t downbw = (int_fast32_t) bw * sq10 / WITHSQUARENESSMIN;
-	return downbw / 2;
 }
 
 /*
