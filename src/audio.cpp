@@ -785,7 +785,7 @@ static void calculate_combined_eq_fir(FLOAT_t *const h_out, FLOAT_t *const tmp_w
  * @return None
  */
 // audio
-static void runtime_calculate_sloped_fir(FLOAT_t *const h, FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t a1, const FLOAT_t a2) {
+static void runtime_calculate_sloped_fir(FLOAT_t *const h, const FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t a1, const FLOAT_t a2) {
     const FLOAT_t alpha = (num_taps - 1) / 2;
     const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
@@ -818,7 +818,7 @@ static void runtime_calculate_sloped_fir(FLOAT_t *const h, FLOAT_t *const tmp_wi
     }
 
     /* Step 2: Generate Hamming window weights into temporary buffer via CMSIS-DSP morph macro */
-    ARM_MORPH(arm_hamming)(tmp_window_buf, num_taps);
+    //ARM_MORPH(arm_hamming)(tmp_window_buf, num_taps);
 
     /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
@@ -839,7 +839,7 @@ static void runtime_calculate_sloped_fir(FLOAT_t *const h, FLOAT_t *const tmp_wi
  * @return None
  */
 // audio - полосовой фильтп на телеграфную полосу
-static void calculate_variable_slope_fir(FLOAT_t *const h, FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t w1_trans, const FLOAT_t w2_trans) {
+static void calculate_variable_slope_fir(FLOAT_t *const h, const FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t w1_trans, const FLOAT_t w2_trans) {
     const FLOAT_t alpha = (num_taps - 1) / 2;
     const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
@@ -890,7 +890,7 @@ static void calculate_variable_slope_fir(FLOAT_t *const h, FLOAT_t *const tmp_wi
 
     /* Step 2: Generate Kaiser or Blackman window weights into temporary buffer via CMSIS-DSP morph macro */
     /* Blackman window is selected here for robust sidelobe suppression across variable configurations */
-    ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
+    //ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
 
     /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
@@ -908,7 +908,7 @@ static void calculate_variable_slope_fir(FLOAT_t *const h, FLOAT_t *const tmp_wi
  * @param  w_trans         Width of the transition band in Hz (Smaller value = Steeper filter slope).
  * @return None
  */
-static void calculate_variable_slope_lpf_half(FLOAT_t *const h, FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f_cutoff, const FLOAT_t w_trans) {
+static void calculate_variable_slope_lpf_half(FLOAT_t *const h, const FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f_cutoff, const FLOAT_t w_trans) {
     const FLOAT_t alpha = (num_taps - 1) / 2;
     const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
@@ -953,7 +953,7 @@ static void calculate_variable_slope_lpf_half(FLOAT_t *const h, FLOAT_t *const t
     }
 
     /* Step 2: Generate Blackman-Harris window weights into temporary buffer via CMSIS-DSP morph macro */
-    ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
+    //ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
 
     /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, tmp_window_buf, h, half_taps + 1);
@@ -973,7 +973,7 @@ static void calculate_variable_slope_lpf_half(FLOAT_t *const h, FLOAT_t *const t
  * @param  w_notch         Width of the adjustable brick-wall notch suppression band in Hz.
  * @return None
  */
-static void calculate_fixed_bpf_with_adjustable_notch(FLOAT_t *const h, FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t f_notch, const FLOAT_t w_notch) {
+static void calculate_fixed_bpf_with_adjustable_notch(FLOAT_t *const h, const FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t f_notch, const FLOAT_t w_notch) {
     const FLOAT_t alpha = (num_taps - 1) / 2;
     const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
@@ -1015,7 +1015,7 @@ static void calculate_fixed_bpf_with_adjustable_notch(FLOAT_t *const h, FLOAT_t 
     }
 
     /* Step 2: Generate Blackman-Harris window weights into temporary buffer via CMSIS-DSP morph macro */
-    ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
+    //ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
 
     /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
@@ -2768,7 +2768,8 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	int32_t FIRCoef_trxi_IQ [NtapHalf(Ntap_trxi_IQ)];	// Фильтр для загрузки в FPGA
 
 	FLOAT_t dCoeff_trx_IQ [NtapHalf(Ntap_trxi_IQ)];	// расчитываем тут
-	FLOAT_t harris_window_buf [Ntap_trxi_IQ];
+	FLOAT_t wiver_window_buf [Ntap_trxi_IQ];
+    ARM_MORPH(arm_blackman_harris_92db)(wiver_window_buf, Ntap_trxi_IQ);
 
 	const uint_fast8_t dspmode = glob_dspmodes [pathi];
 	const uint_fast16_t fullbw6 = audio_validatebw6(glob_fullbw6 [pathi]);
@@ -2849,7 +2850,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	#else /* WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08) */
 
 		//fir_design_integer_lowpass_scaled(dCoeff_trx_IQ, FIRCoef_trxi_IQ, FIRCwnd_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited, cutfreq, 1, adptfir);
-		calculate_variable_slope_lpf_half(dCoeff_trx_IQ, harris_window_buf, Ntap_trxi_IQ, fs, cutfreq, transition);
+		calculate_variable_slope_lpf_half(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq, transition);
 	#endif /* WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08) */
 #endif /* WITHDSPEXTRXFIR || WITHDSPEXTTXFIR */
 	}
@@ -2909,7 +2910,8 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	FLOAT_t * const dCoeff = FIRCoef_tx_MIKE [spf];
 	const FLOAT_t * const dWindow = FIRCwnd_tx_MIKE;
 	enum { iCoefNum = Ntap_tx_MIKE };
-	FLOAT_t hamming_window_buf [iCoefNum];
+	FLOAT_t tx_mike_window_buf [Ntap_tx_MIKE];
+    ARM_MORPH(arm_hamming)(tx_mike_window_buf, Ntap_tx_MIKE);
 
 	switch (glob_dspmodes [0])	// 0 - для передатчика
 	{
@@ -2932,7 +2934,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
-		runtime_calculate_sloped_fir(tx_firEQcoeff, hamming_window_buf, iCoefNum, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
+		runtime_calculate_sloped_fir(tx_firEQcoeff, tx_mike_window_buf, iCoefNum, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
 		break;
 
 	// в режиме приема или в режимах передачи без микрофона - ничего не делаем
@@ -2979,7 +2981,8 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 	const uint_fast16_t transition = glob_flttransition [pathi];
 	const int_fast8_t targetdb = glob_afresponcesrx [pathi];
 	FLOAT_t dWnd_rxAUDIO [NtapHalf(Ntap_rx_AUDIO)];			/* подготовленные значения функции окна - с учетом симметрии (половина) */
-	FLOAT_t rx_audio_hamming_window_buf [iCoefNum];
+	FLOAT_t rx_audio_window_buf [iCoefNum];
+    ARM_MORPH(arm_blackman_harris_92db)(rx_audio_window_buf, iCoefNum);
 
 	ASSERT(Ntap_rx_AUDIO == iCoefNum);	/* проверяем на несогласованность параметров */
 	ASSERT((iCoefNum % 2) == 1);
@@ -2997,17 +3000,17 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 		if (! glob_afwiderx [pathi])
 		{
 			// audio - полосовой фильтр на телеграфную полосу
-			calculate_variable_slope_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, transition, transition);
+			calculate_variable_slope_fir(dCoeff, rx_audio_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, transition, transition);
 		}
 		else if (glob_notch_mode == BOARD_NOTCH_MANUAL)
 		{
 			// audio with notch
-			calculate_fixed_bpf_with_adjustable_notch(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, glob_notch_freq, glob_notch_width);
+			calculate_fixed_bpf_with_adjustable_notch(dCoeff, rx_audio_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, glob_notch_freq, glob_notch_width);
 		}
 		else
 		{
 			// audio
-			runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
+			runtime_calculate_sloped_fir(dCoeff, rx_audio_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
 		}
 		break;
 
