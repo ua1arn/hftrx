@@ -3060,8 +3060,7 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 	const int transition2 = glob_flttransition [pathi];
 	const int transition1 = (transition2 > cutfreqlow) ? cutfreqlow : transition2;
 	const int_fast8_t targetdb = glob_afresponcesrx [pathi];
-	PRINTF("dsp_recalceq_coeffs_rx_AUDIO: pathi=%d: transition1=%d, low=%d, high=%d, transition2=%d\n", pathi, transition1, cutfreqlow, cutfreqhigh, transition2);
-
+	//PRINTF("dsp_recalceq_coeffs_rx_AUDIO: pathi=%d: transition1=%d, low=%d, high=%d, transition2=%d\n", pathi, transition1, cutfreqlow, cutfreqhigh, transition2);
 	ASSERT(Ntap_rx_AUDIO == iCoefNum);	/* проверяем на несогласованность параметров */
 	ASSERT((iCoefNum % 2) == 1);
 	switch (glob_dspmodes [pathi])
