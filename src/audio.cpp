@@ -382,7 +382,12 @@ void endstamp3(void)
 // Фильтр для передатчика (floating point)
 // Обрабатывается как несимметричный
 static RAMBIGDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapHalf(Ntap_tx_MIKE)];
+
 static FLOAT_t FIRCwnd_tx_MIKE [NtapHalf(Ntap_tx_MIKE)];			// подготовленные значения функции окна
+
+static FLOAT_t wiver_window_buf [Ntap_trxi_IQ];
+static FLOAT_t rx_audio_window_buf [Ntap_rx_AUDIO];
+static FLOAT_t tx_mike_window_buf [Ntap_tx_MIKE];
 
 static FLOAT_t txlevelfenceAM = (FLOAT_t) 1 / 2;
 
@@ -956,7 +961,7 @@ static void calculate_variable_slope_lpf_half(FLOAT_t *const h, const FLOAT_t *c
     //ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
 
     /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
-    ARM_MORPH(arm_mult)(h, tmp_window_buf, h, half_taps + 1);
+    ARM_MORPH(arm_mult)(h, tmp_window_buf, h, half_taps);
 }
 
 /**
@@ -2761,13 +2766,11 @@ static int_fast16_t audio_validatebw6(int_fast16_t n)
 	return (n == INT16_MAX || n < bw6limit) ? n : INT16_MAX;
 }
 
-
 // Установка параметров тракта приёмника
 static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 {
 	const FLOAT_t fs = ARMI2SRATE;
 	int32_t FIRCoef_trxi_IQ [NtapHalf(Ntap_trxi_IQ)];	// Фильтр для загрузки в FPGA
-	FLOAT_t wiver_window_buf [Ntap_trxi_IQ];
 
 	FLOAT_t dCoeff_trx_IQ [NtapHalf(Ntap_trxi_IQ)];	// расчитываем тут
 
@@ -2775,7 +2778,6 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	const uint_fast16_t fullbw6 = audio_validatebw6(glob_fullbw6 [pathi]);
 	const adapter_t * const adptfir = & fpgafircoefsout;			/* к какому типу надо прербразовывать */
 	const uint_fast16_t transition = glob_flttransition [pathi];	/* переходная полоса фильтра */
-    ARM_MORPH(arm_blackman_harris_92db)(wiver_window_buf, Ntap_trxi_IQ);
 
 #if WITHDSPEXTDDC
 	const FLOAT_t rxfiltergain = 1;
@@ -2904,9 +2906,6 @@ static void fir_expand_symmetric2(FLOAT_t * dCoeff, const FLOAT_t * dCoeffSrc, i
 	dCoeff [half] = dCoeffSrc [half];
 }
 
-static FLOAT_t rx_audio_window_buf [Ntap_rx_AUDIO];
-static FLOAT_t tx_mike_window_buf [Ntap_tx_MIKE];
-
 // Установка параметров тракта передатчика
 static void audio_setup_mike(const uint_fast8_t spf)
 {
@@ -2982,7 +2981,6 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
 	const uint_fast16_t transition = glob_flttransition [pathi];
 	const int_fast8_t targetdb = glob_afresponcesrx [pathi];
-	FLOAT_t dWnd_rxAUDIO [NtapHalf(Ntap_rx_AUDIO)];			/* подготовленные значения функции окна - с учетом симметрии (половина) */
 
 	ASSERT(Ntap_rx_AUDIO == iCoefNum);	/* проверяем на несогласованность параметров */
 	ASSERT((iCoefNum % 2) == 1);
@@ -5575,8 +5573,6 @@ void dsp_initialize(void)
 
 	fir_design_windowbuff_half(FIRCwnd_tx_MIKE, Ntap_tx_MIKE, Ntap_tx_MIKE);
 	//fft_lookup = spx_fft_init(2*SPEEXNN);
-    ARM_MORPH(arm_hamming)(tx_mike_window_buf, Ntap_tx_MIKE);
-    ARM_MORPH(arm_blackman_harris_92db)(rx_audio_window_buf, Ntap_rx_AUDIO);
 
 #if WITHDSPLOCALTXFIR
 	fir_design_windowbuff_half(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, Ntap_tx_SSB_IQ);
@@ -5584,6 +5580,10 @@ void dsp_initialize(void)
 #if WITHDSPLOCALRXFIR
 	fir_design_windowbuff_half(FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, Ntap_rx_SSB_IQ);
 #endif /* WITHDSPLOCALRXFIR */
+
+    ARM_MORPH(arm_hamming)(tx_mike_window_buf, Ntap_tx_MIKE);
+    ARM_MORPH(arm_blackman_harris_92db)(rx_audio_window_buf, Ntap_rx_AUDIO);
+    ARM_MORPH(arm_blackman_harris_92db)(wiver_window_buf, Ntap_trxi_IQ);
 
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);
 
