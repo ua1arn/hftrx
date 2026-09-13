@@ -497,7 +497,7 @@ savemenuvalue(
 	const struct paramdefdef * pd
 	)
 {
-	if (ismenukinddp(pd, ITEM_VALUE))
+	if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
 	{
 		unsigned nvalues;
 		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
@@ -6881,13 +6881,13 @@ static const struct paramdefdef xgkeybeep10 =
 static uint_fast8_t gskipfilteraf;
 static const struct paramdefdef xgskipfilteraf =
 {
-	QLABEL("FLT BYPASS"), 0, RJ_ON,	ISTEP1,		/* Select the monitoring sound output enable */
-	ITEM_VALUE | ITEM_NOINITNVRAM,
+	QLABEL("FLT BYPASS"), 0, RJ_YES,	ISTEP1,
+	ITEM_VALUE,
 	0, 1,
 	MENUNONVRAM,
 	getselector0, nvramoffs0, valueoffs0,
 	NULL,
-	& gskipfilteraf,
+	& gskipfilteraf,	/* переменная, которую подстраиваем  - 8 бит*/
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
