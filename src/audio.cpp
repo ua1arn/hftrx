@@ -796,25 +796,25 @@ static void calculate_bpf_with_sloped_eq(FLOAT_t *const h, const FLOAT_t *const 
 }
 
 /**
- * @brief  Generates a single-pass bandpass FIR filter with a linear magnitude slope using CMSIS-DSP window functions.
+ * @brief  Generates a single-pass Bandpass FIR filter with a linear magnitude slope and linear phase,
+ *         using a fixed number of taps and a pre-calculated window buffer.
  *
- * @param  h               Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
- * @param  tmp_window_buf  Pointer to temporary workspace buffer (allocated size must be >= num_taps).
- * @param  num_taps        Dynamic length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
- * @param  fs              The operational audio sampling frequency in Hz.
- * @param  f1              Start frequency of the passband in Hz.
- * @param  f2              End frequency of the passband in Hz.
- * @param  a1              Target linear amplitude at f1 frequency point.
- * @param  a2              Target linear amplitude at f2 frequency point.
+ * @param  h                 Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
+ * @param  preformed_window  Pointer to the pre-calculated window coefficients (size must be >= num_taps).
+ * @param  num_taps          Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
+ * @param  fs                The operational audio sampling frequency in Hz.
+ * @param  f1                Start frequency of the passband in Hz.
+ * @param  f2                End frequency of the passband in Hz.
+ * @param  a1                Target linear amplitude at f1 frequency point.
+ * @param  a2                Target linear amplitude at f2 frequency point.
  * @return None
  */
-// audio
-static void calculate_sloped_bpf(FLOAT_t *const h, const FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t a1, const FLOAT_t a2) {
+static void calculate_sloped_bpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t a1, const FLOAT_t a2) {
     const FLOAT_t alpha = (num_taps - 1) / 2;
     const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
 
-    /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients */
+    /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients using frequency sampling */
     for (int n = 0; n < half_taps; n++) {
         FLOAT_t sum = 0;
         const FLOAT_t n_minus_alpha = n - alpha;
@@ -822,15 +822,18 @@ static void calculate_sloped_bpf(FLOAT_t *const h, const FLOAT_t *const tmp_wind
         for (int k = 0; k < num_taps; k++) {
             FLOAT_t freq = k * fs / num_taps;
 
+            /* Mirror spectrum points located above the Nyquist threshold */
             if (freq > fs / 2) {
                 freq = fs - freq;
             }
 
+            /* Define target amplitude using piecewise-linear function (slope in passband) */
             FLOAT_t h_target = 0;
             if (freq >= f1 && freq <= f2) {
                 h_target = a1 + (a2 - a1) * (freq - f1) / (f2 - f1);
             }
 
+            /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
             if (h_target > 0) {
                 sum += h_target * COSF(delta_omega * k * n_minus_alpha);
             }
@@ -841,19 +844,17 @@ static void calculate_sloped_bpf(FLOAT_t *const h, const FLOAT_t *const tmp_wind
         h[num_taps - 1 - n] = h[n];
     }
 
-    /* Step 2: Generate Hamming window weights into temporary buffer via CMSIS-DSP morph macro */
-    //ARM_MORPH(arm_hamming)(tmp_window_buf, num_taps);
-
-    /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
-    ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
+    /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
+    ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
 }
 
 /**
  * @brief  Generates a single-pass bandpass FIR filter with adjustable transition width (slope steepness)
- *         for the left and right skirts independently, using a fixed number of taps.
+ *         for the left and right skirts independently, using a fixed number of taps, a pre-calculated window
+ *         buffer, and fully normalized to ensure unity peak/integral gain inside the passband.
  *
  * @param  h               Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
- * @param  tmp_window_buf  Pointer to temporary workspace buffer (allocated size must be >= num_taps).
+ * @param  preformed_window  Pointer to the pre-calculated window coefficients (size must be >= num_taps).
  * @param  num_taps        Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
  * @param  fs              The operational audio sampling frequency in Hz.
  * @param  f1              Start frequency of the ideal passband in Hz.
@@ -862,8 +863,7 @@ static void calculate_sloped_bpf(FLOAT_t *const h, const FLOAT_t *const tmp_wind
  * @param  w2_trans        Width of the right transition band in Hz (Smaller value = Steeper right slope).
  * @return None
  */
-// audio - полосовой фильтп на телеграфную полосу
-static void calculate_variable_slope_fir(FLOAT_t *const h, const FLOAT_t *const tmp_window_buf, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t w1_trans, const FLOAT_t w2_trans) {
+static void calculate_variable_slope_fir(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t w1_trans, const FLOAT_t w2_trans) {
     const FLOAT_t alpha = (num_taps - 1) / 2;
     const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
     const int half_taps = (num_taps + 1) / 2;
@@ -871,6 +871,10 @@ static void calculate_variable_slope_fir(FLOAT_t *const h, const FLOAT_t *const 
     /* Absolute frequency boundaries for the transition bands */
     const FLOAT_t stop1 = f1 - w1_trans;
     const FLOAT_t stop2 = f2 + w2_trans;
+
+    /* Track total integrated target response energy inside the active spectrum to calculate the normalization factor */
+    FLOAT_t passband_energy_sum = 0;
+    int passband_bins_count = 0;
 
     /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients using frequency sampling */
     for (int n = 0; n < half_taps; n++) {
@@ -891,14 +895,30 @@ static void calculate_variable_slope_fir(FLOAT_t *const h, const FLOAT_t *const 
             if (freq >= f1 && freq <= f2) {
                 /* Pure passband area */
                 h_target = 1;
+
+                /* Calculate energy profile metrics for normalization during the first tap iteration */
+                if (n == 0) {
+                    passband_energy_sum += h_target;
+                    passband_bins_count += 1;
+                }
             }
             else if (freq >= stop1 && freq < f1 && w1_trans > 0) {
                 /* Left transition band (Linear interpolation to control slope steepness) */
                 h_target = (freq - stop1) / w1_trans;
+
+                if (n == 0) {
+                    passband_energy_sum += h_target;
+                    passband_bins_count += 1;
+                }
             }
             else if (freq > f2 && freq <= stop2 && w2_trans > 0) {
                 /* Right transition band (Linear interpolation to control slope steepness) */
                 h_target = (stop2 - freq) / w2_trans;
+
+                if (n == 0) {
+                    passband_energy_sum += h_target;
+                    passband_bins_count += 1;
+                }
             }
 
             /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
@@ -912,14 +932,29 @@ static void calculate_variable_slope_fir(FLOAT_t *const h, const FLOAT_t *const 
         h[num_taps - 1 - n] = h[n];
     }
 
-    /* Step 2: Generate Kaiser or Blackman window weights into temporary buffer via CMSIS-DSP morph macro */
-    /* Blackman window is selected here for robust sidelobe suppression across variable configurations */
-    //ARM_MORPH(arm_blackman_harris_92db)(tmp_window_buf, num_taps);
+    /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
+    ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
 
-    /* Step 3: Apply windowing via optimized vector multiplication from CMSIS-DSP */
-    ARM_MORPH(arm_mult)(h, tmp_window_buf, h, num_taps);
+    /* Step 3: Precise normalization relative to the synthesized grid passband response */
+    if (passband_bins_count > 0 && passband_energy_sum > 0) {
+        /* Calculate empirical window loss factor based on the average spectrum energy density */
+        FLOAT_t total_window_gain_sum = 0;
+
+        /* Compute the total energy sum of the windowed FIR coefficients using arm_accumulate */
+        ARM_MORPH(arm_accumulate)(h, num_taps, &total_window_gain_sum);
+
+        /* Derive reference ideal gain density from the sampled spectrum layout */
+        const FLOAT_t ideal_gain_density = passband_energy_sum / num_taps;
+
+        if (total_window_gain_sum > 0 && ideal_gain_density > 0) {
+            /* Compute scale factor to align real filter gain with 0 dB reference level */
+            const FLOAT_t scale_factor = ideal_gain_density / total_window_gain_sum;
+
+            /* Apply optimized scaling via CMSIS-DSP architecture vector scaling */
+            ARM_MORPH(arm_scale)(h, scale_factor, h, num_taps);
+        }
+    }
 }
-
 /**
  * @brief  Generates a single-pass Low-Pass FIR filter with adjustable transition width (slope steepness)
  *         using a pre-calculated window buffer, fully normalized to unity gain (0 dB at DC).
@@ -3015,12 +3050,12 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 	case DSPCTL_MODE_RX_DRM:
 		// audio
 		// В этом режиме фильтр не используется
-		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
+		calculate_passthrough_fir(dCoeff, rx_audio_window_buf, iCoefNum);		// сигнал через НЧ фильтр не проходит
 		break;
 
 	// в режиме передачи
 	default:
-		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
+		calculate_passthrough_fir(dCoeff, rx_audio_window_buf, iCoefNum);		// сигнал через НЧ фильтр не проходит
 		break;
 	}
 }
