@@ -9922,6 +9922,7 @@ static uint_fast8_t encoder2_redirect = 0;
 static const struct paramdefdef * enc2menus [] =
 {
 #if WITHIF4DSP
+	& xgsquareness10,	/* Коэффициент прямоугольности фильтра в десятых долях */
 #if ! WITHPOTAFGAIN
 	& xafgain1,	// Громкость в процентах
 #endif /* ! WITHPOTAFGAIN */
