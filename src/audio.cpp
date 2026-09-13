@@ -6319,7 +6319,6 @@ board_set_mikehclip(uint_fast8_t v)
 	}
 }
 
-
 void
 board_set_skipfilteraf(uint_fast8_t v)
 {
@@ -6327,6 +6326,7 @@ board_set_skipfilteraf(uint_fast8_t v)
 	{
 		glob_skipfilteraf = v;
 		board_dsp1regchanged();
+		board_flt1regchanged();
 	}
 }
 
