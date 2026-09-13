@@ -497,7 +497,7 @@ savemenuvalue(
 	const struct paramdefdef * pd
 	)
 {
-	if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
+	if (ismenukinddp(pd, ITEM_VALUE))
 	{
 		unsigned nvalues;
 		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
