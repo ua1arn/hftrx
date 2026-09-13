@@ -838,6 +838,84 @@ static void calculate_sloped_bpf(FLOAT_t *const h, const FLOAT_t *const preforme
     /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
 }
+/**
+ * @brief  Generates a single-pass Bandpass FIR filter with a linear magnitude slope,
+ *         fully normalized to match the exact gain of the passthrough channel (0 dB at center frequency).
+ *
+ * @param  h                 Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
+ * @param  preformed_window  Pointer to the pre-calculated window coefficients (size must be >= num_taps).
+ * @param  num_taps          Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
+ * @param  fs                The operational audio sampling frequency in Hz.
+ * @param  f1                Start frequency of the passband in Hz.
+ * @param  f2                End frequency of the passband in Hz.
+ * @param  a1                Target linear amplitude at f1 frequency point.
+ * @param  a2                Target linear amplitude at f2 frequency point.
+ * @return None
+ */
+static void norm_calculate_sloped_bpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t a1, const FLOAT_t a2) {
+    const FLOAT_t alpha = (num_taps - 1) / 2;
+    const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
+    const int half_taps = (num_taps + 1) / 2;
+
+    /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients using frequency sampling */
+    for (int n = 0; n < half_taps; n++) {
+        FLOAT_t sum = 0;
+        const FLOAT_t n_minus_alpha = n - alpha;
+
+        for (int k = 0; k < num_taps; k++) {
+            FLOAT_t freq = k * fs / num_taps;
+
+            /* Mirror spectrum points located above the Nyquist threshold */
+            if (freq > fs / 2) {
+                freq = fs - freq;
+            }
+
+            /* Define target amplitude using piecewise-linear function (slope in passband) */
+            FLOAT_t h_target = 0;
+            if (freq >= f1 && freq <= f2) {
+                h_target = a1 + (a2 - a1) * (freq - f1) / (f2 - f1);
+            }
+
+            /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
+            if (h_target > 0) {
+                sum += h_target * COSF(delta_omega * k * n_minus_alpha);
+            }
+        }
+
+        /* Store raw coefficients symmetrically directly into the output buffer */
+        h[n] = sum / num_taps;
+        h[num_taps - 1 - n] = h[n];
+    }
+
+    /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
+    ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
+
+    /* Step 3: Analytical Passband Normalization at the physical center frequency */
+    const FLOAT_t f_center = (f1 + f2) / 2;
+    const FLOAT_t omega_center = (2 * M_PI * f_center) / fs;
+
+    FLOAT_t real_part = 0;
+
+    /* Calculate the exact discrete frequency response magnitude at f_center (Fourier transform step) */
+    for (int n = 0; n < num_taps; n++) {
+        /* Since h[n] is perfectly symmetric, the imaginary part cancels out. We only compute the real projection */
+        real_part += h[n] * COSF(omega_center * (n - alpha));
+    }
+
+    /* Safeguard using FABSF to extract the absolute transfer scale factor */
+    const FLOAT_t actual_passband_gain = FABSF(real_part);
+
+    /* Target baseline gain definition evaluated at the exact center of our slope profile */
+    const FLOAT_t target_center_gain = (a1 + a2) / 2;
+
+    /* Normalize the filter only if a valid non-zero gain response is present */
+    if (actual_passband_gain > 0 && target_center_gain > 0) {
+        const FLOAT_t scale_factor = target_center_gain / actual_passband_gain;
+
+        /* Apply dynamic scale factor using optimized CMSIS-DSP architecture vector scaling */
+        ARM_MORPH(arm_scale)(h, scale_factor, h, num_taps);
+    }
+}
 
 /**
  * @brief  Generates a single-pass bandpass FIR filter with adjustable transition width (slope steepness)
@@ -905,92 +983,6 @@ static void calculate_variable_slope_bpf(FLOAT_t *const h, const FLOAT_t *const 
 
     /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
-}
-
-/**
- * @brief  Generates a single-pass Bandpass FIR filter with a linear magnitude slope and linear phase,
- *         using a fixed number of taps, a pre-calculated window buffer, and mathematically normalized
- *         to align its maximum transfer factor exactly with the peak input gain constraint.
- *
- * @param  h                 Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
- * @param  preformed_window  Pointer to the pre-calculated window coefficients (size must be >= num_taps).
- * @param  num_taps          Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
- * @param  fs                The operational audio sampling frequency in Hz.
- * @param  f1                Start frequency of the passband in Hz.
- * @param  f2                End frequency of the passband in Hz.
- * @param  a1                Target linear amplitude at f1 frequency point.
- * @param  a2                Target linear amplitude at f2 frequency point.
- * @return None
- */
-static void norm_calculate_variable_slope_bpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t a1, const FLOAT_t a2) {
-    const FLOAT_t alpha = (num_taps - 1) / 2;
-    const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
-    const int half_taps = (num_taps + 1) / 2;
-
-    /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients using frequency sampling */
-    for (int n = 0; n < half_taps; n++) {
-        FLOAT_t sum = 0;
-        const FLOAT_t n_minus_alpha = n - alpha;
-
-        for (int k = 0; k < num_taps; k++) {
-            FLOAT_t freq = k * fs / num_taps;
-
-            /* Mirror spectrum points located above the Nyquist threshold */
-            if (freq > fs / 2) {
-                freq = fs - freq;
-            }
-
-            /* Define target amplitude using piecewise-linear function (slope in passband) */
-            FLOAT_t h_target = 0;
-            if (freq >= f1 && freq <= f2) {
-                h_target = a1 + (a2 - a1) * (freq - f1) / (f2 - f1);
-            }
-
-            /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
-            if (h_target > 0) {
-                sum += h_target * COSF(delta_omega * k * n_minus_alpha);
-            }
-        }
-
-        /* Store raw coefficients symmetrically directly into the output buffer */
-        h[n] = sum / num_taps;
-        h[num_taps - 1 - n] = h[n];
-    }
-
-    /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
-    ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
-
-    /* Step 3: Find the peak target gain specified by user to use as a baseline scaling destination */
-    FLOAT_t target_peak_gain = a1;
-    if (a2 > a1) {
-        target_peak_gain = a2;
-    }
-
-    /* Step 4: Correct window attenuation using peak-to-peak coefficient matching (Anti-clipping & Normalization) */
-    FLOAT_t current_max_coeff = 0;
-    uint32_t max_idx = 0;
-
-    /* Find the absolute peak of the windowed impulse response vector */
-    ARM_MORPH(arm_max)(h, num_taps, &current_max_coeff, &max_idx);
-    current_max_coeff = FABSF(current_max_coeff);
-
-    if (current_max_coeff > 0 && target_peak_gain > 0) {
-        /* Approximate the window loss recovery scaled directly to the intended peak spectrum level */
-        /* For a standard flat window, the center tap equals the integration of the passband area divided by num_taps */
-        const FLOAT_t filter_scale_factor = (target_peak_gain * (f2 - f1) / (fs / 2)) / current_max_coeff;
-
-        /* Apply dynamic scale factor to restore intended audio level */
-        ARM_MORPH(arm_scale)(h, filter_scale_factor, h, num_taps);
-
-        /* Secondary final check: verify that no single coefficient breaks the hardware rails (> 1.0) */
-        ARM_MORPH(arm_max)(h, num_taps, &current_max_coeff, &max_idx);
-        current_max_coeff = FABSF(current_max_coeff);
-
-        if (current_max_coeff > 1) {
-            const FLOAT_t safety_clip_scale = 1 / current_max_coeff;
-            ARM_MORPH(arm_scale)(h, safety_clip_scale, h, num_taps);
-        }
-    }
 }
 
 /**
@@ -3018,7 +3010,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
-		calculate_sloped_bpf(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
+		norm_calculate_sloped_bpf(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
 		//calculate_bpf_with_sloped_eq(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx), tx_eq, ARRAY_SIZE(tx_eq));
 		break;
 
@@ -3084,7 +3076,6 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 		if (! glob_afwiderx [pathi])
 		{
 			// audio - полосовой фильтр на телеграфную полосу
-			//norm_calculate_variable_slope_bpf(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, transition1, transition2);
 			calculate_variable_slope_bpf(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, transition1, transition2);
 		}
 		else if (glob_notch_mode == BOARD_NOTCH_MANUAL)
@@ -3095,7 +3086,7 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 		else
 		{
 			// audio
-			calculate_sloped_bpf(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
+			norm_calculate_sloped_bpf(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
 			//calculate_bpf_with_sloped_eq(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb), rx_eq, ARRAY_SIZE(rx_eq));
 		}
 		break;
