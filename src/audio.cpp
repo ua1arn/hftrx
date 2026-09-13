@@ -363,25 +363,25 @@ void endstamp3(void)
 #if WITHDSPLOCALRXFIR
 
 	// Фильтр для квадратурных каналов приёмника (floating point).
-	static RAMDTCM FLOAT_t FIRCoef_rx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_rx_SSB_IQ)];
+	static RAMDTCM FLOAT_t FIRCoef_rx_SSB_IQ [NPROF] [NtapHalf(Ntap_rx_SSB_IQ)];
 	// подготовленные значения функции окна
-	static RAMDTCM FLOAT_t FIRCwnd_rx_SSB_IQ [NtapCoeffs(Ntap_tx_SSB_IQ)];
+	static RAMDTCM FLOAT_t FIRCwnd_rx_SSB_IQ [NtapHalf(Ntap_tx_SSB_IQ)];
 
 #endif /* WITHDSPLOCALRXFIR */
 
 #if WITHDSPLOCALTXFIR
 
 	// Фильтр для квадратурных каналов передатчика (floating point).
-	static RAMDTCM FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_tx_SSB_IQ)];
+	static RAMDTCM FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [NtapHalf(Ntap_tx_SSB_IQ)];
 	// подготовленные значения функции окна
-	static RAMDTCM FLOAT_t FIRCwnd_tx_SSB_IQ [NtapCoeffs(Ntap_tx_SSB_IQ)];
+	static RAMDTCM FLOAT_t FIRCwnd_tx_SSB_IQ [NtapHalf(Ntap_tx_SSB_IQ)];
 
 #endif /* WITHDSPLOCALTXFIR */
 
 // Фильтр для передатчика (floating point)
 // Обрабатывается как несимметричный
-static RAMBIGDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
-static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
+static RAMBIGDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapHalf(Ntap_tx_MIKE)];
+static FLOAT_t FIRCwnd_tx_MIKE [NtapHalf(Ntap_tx_MIKE)];			// подготовленные значения функции окна
 
 static FLOAT_t txlevelfenceAM = (FLOAT_t) 1 / 2;
 
@@ -2210,21 +2210,21 @@ static void fir_design_bandpass(FLOAT_t * dCoeff, int iCoefNum, int iCoefNumLimi
 // Наложение оконной функции
 static void fir_design_applaywindow(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum)
 {
-	ARM_MORPH(arm_mult)(dCoeff, dWindow, dCoeff, NtapCoeffs(iCoefNum));	// arm_mult_f32/arm_mult_f64
+	ARM_MORPH(arm_mult)(dCoeff, dWindow, dCoeff, NtapHalf(iCoefNum));	// arm_mult_f32/arm_mult_f64
 }
 
 // Наложение оконной функции
 static void fir_design_applaywindowL(float64_t *dCoeff, const float64_t *dWindow, int iCoefNum)
 {
-	arm_mult_f64(dCoeff, dWindow, dCoeff, NtapCoeffs(iCoefNum));
+	arm_mult_f64(dCoeff, dWindow, dCoeff, NtapHalf(iCoefNum));
 }
 
 // подготовка буфера с оконной функцией
 // Учитываем симметрию.
 static void fir_design_windowbuff_half(FLOAT_t *dWindow, int iCoefNum, int iCoefNumLimited)
 {
-	const int j = NtapCoeffs(iCoefNum);
-	const int k = NtapCoeffs(iCoefNumLimited);
+	const int j = NtapHalf(iCoefNum);
+	const int k = NtapHalf(iCoefNumLimited);
 	const int offs = j - k;
 	int iCnt;
 
@@ -2245,8 +2245,8 @@ static void fir_design_windowbuff_half(FLOAT_t *dWindow, int iCoefNum, int iCoef
 // Учитываем симметрию.
 static void fir_design_windowbuffL_half(float64_t *dWindow, int iCoefNum, int iCoefNumLimited)
 {
-	const int j = NtapCoeffs(iCoefNum);
-	const int k = NtapCoeffs(iCoefNumLimited);
+	const int j = NtapHalf(iCoefNum);
+	const int k = NtapHalf(iCoefNumLimited);
 	const int offs = j - k;
 	int iCnt;
 
@@ -2268,7 +2268,7 @@ static void fir_design_scale(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t dScale)
 {
 	if (dScale == 1)
 		return;
-	ARM_MORPH(arm_scale)(dCoeff, dScale, dCoeff, NtapCoeffs(iCoefNum));	// arm_scale_f32/arm_scale_f64
+	ARM_MORPH(arm_scale)(dCoeff, dScale, dCoeff, NtapHalf(iCoefNum));	// arm_scale_f32/arm_scale_f64
 }
 
 // Масштабирование для симметричного фильтра
@@ -2276,7 +2276,7 @@ static void fir_design_scaleL(float64_t * dCoeff, int iCoefNum, float64_t dScale
 {
 	if (dScale == 1)
 		return;
-	arm_scale_f64(dCoeff, dScale, dCoeff, NtapCoeffs(iCoefNum));
+	arm_scale_f64(dCoeff, dScale, dCoeff, NtapHalf(iCoefNum));
 }
 
 /* расчёт паарметров - частота для функций постоения фильтров */
@@ -2301,7 +2301,7 @@ static void fir_design_lowpass_freq(FLOAT_t * dCoeff, int iCoefNum, int iCoefNum
 
 static void printdcoefs(const FLOAT_t * dCoeff, int iCoefNum, int line, const char * file)
 {
-	const int j = NtapCoeffs(iCoefNum);
+	const int j = NtapHalf(iCoefNum);
 	int iCnt;
 	PRINTF("printdcoefs at %s/%d:\n", file, line);
 	for (iCnt = 0; iCnt < j; iCnt ++)
@@ -2348,7 +2348,7 @@ static void fir_design_copy_integers(int32_t * lCoeff, const FLOAT_t * dCoeff, i
 {
 	//const FLOAT_t scaleout = POWF(2, HARDWARE_COEFWIDTH - 1);
 	int iCnt;
-	const int j = NtapCoeffs(iCoefNum);
+	const int j = NtapHalf(iCoefNum);
 	// копируем результат.
 	for (iCnt = 0; iCnt < j; iCnt ++)
 	{
@@ -2375,7 +2375,7 @@ static void fir_design_copy_integersL(int_fast32_t * lCoeff, const double * dCoe
 {
 	//const double scaleout = pow(2, HARDWARE_COEFWIDTH - 1);
 	int iCnt;
-	const int j = NtapCoeffs(iCoefNum);
+	const int j = NtapHalf(iCoefNum);
 	// копируем результат.
 	for (iCnt = 0; iCnt < j; iCnt ++)
 	{
@@ -2774,9 +2774,9 @@ static int_fast16_t audio_validatebw6(int_fast16_t n)
 static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 {
 	const FLOAT_t fs = ARMI2SRATE;
-	int32_t FIRCoef_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];	// Фильтр для загрузки в FPGA
+	int32_t FIRCoef_trxi_IQ [NtapHalf(Ntap_trxi_IQ)];	// Фильтр для загрузки в FPGA
 
-	FLOAT_t dCoeff_trx_IQ [NtapCoeffs(Ntap_trxi_IQ)];	// расчитываем тут
+	FLOAT_t dCoeff_trx_IQ [NtapHalf(Ntap_trxi_IQ)];	// расчитываем тут
 	FLOAT_t harris_window_buf [Ntap_trxi_IQ];
 
 	const uint_fast8_t dspmode = glob_dspmodes [pathi];
@@ -2817,10 +2817,10 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		// Фильтр для квадратурных каналов приёмника и передатчика в FPGA (целочисленный).
 		// Параметры для передачи в FPGA
 //	#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
-//		static double FIRCwndL_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// подготовленные значения функции окна
+//		static double FIRCwndL_trxi_IQ [NtapHalf(Ntap_trxi_IQ)];			// подготовленные значения функции окна
 //		fir_design_windowbuffL_half(FIRCwndL_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited);
 //	#else
-//		static FLOAT_t FIRCwnd_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// подготовленные значения функции окна
+//		static FLOAT_t FIRCwnd_trxi_IQ [NtapHalf(Ntap_trxi_IQ)];			// подготовленные значения функции окна
 //		fir_design_windowbuff_half(FIRCwnd_trxi_IQ, Ntap_trxi_IQ, iCoefNumLimited);
 //	#endif
 #endif /* WITHDSPEXTRXFIR || WITHDSPEXTTXFIR */
@@ -2930,7 +2930,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 		/* подготовка для CMSIS FIR фильтра передатчика */
 		ASSERT(Ntap_tx_MIKE == iCoefNum);
 		fir_expand_symmetric2(tx_firEQcoeff, dCoeff, iCoefNum);	// Duplicate symmetrical part of coeffs.
-		return;
+		break;
 
 	// Голосовые режимиы
 	case DSPCTL_MODE_TX_ISB:
@@ -2942,12 +2942,12 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
 		runtime_calculate_sloped_fir(tx_firEQcoeff, hamming_window_buf, iCoefNum, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
-		return;
+		break;
 
 	// в режиме приема или в режимах передачи без микрофона - ничего не делаем
 	default:
 		fir_design_passtrough(tx_firEQcoeff, iCoefNum, 1);
-		return;
+		break;
 	}
 
 }
@@ -2979,28 +2979,29 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi, uint_fast8_
 }
 
 // calculate full array of coefficients
-// Зависят от glob_dspmodes, glob_aflowcutrx, glob_afhighcutrx, glob_fltsofter, glob_afresponcerx
-static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
+// Зависят от glob_dspmodes, glob_aflowcutrx, glob_afhighcutrx, glob_afresponcesrx
+void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
 {
 	const FLOAT_t fs = ARMI2SRATE;
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
 	const uint_fast16_t transition = glob_flttransition [pathi];
 	const int_fast8_t targetdb = glob_afresponcesrx [pathi];
-	const int iCoefNum = Ntap_rx_AUDIO;
-	FLOAT_t dWnd_rxAUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			/* подготовленные значения функции окна - с учетом симметрии (половина) */
-	FLOAT_t hamming_window_buf [iCoefNum];
+	FLOAT_t dWnd_rxAUDIO [NtapHalf(Ntap_rx_AUDIO)];			/* подготовленные значения функции окна - с учетом симметрии (половина) */
+	FLOAT_t rx_audio_hamming_window_buf [iCoefNum];
 
+	ASSERT(Ntap_rx_AUDIO == iCoefNum);	/* проверяем на несогласованность параметров */
 	ASSERT((iCoefNum % 2) == 1);
+	//PRINTF("pathi=%d, targetdb=%d\n", pathi, targetdb);
 	switch (glob_dspmodes [pathi])
 	{
 	case DSPCTL_MODE_RX_DSB:
-		runtime_calculate_sloped_fir(dCoeff, hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
-		return;
+		runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
+		break;
 
 	case DSPCTL_MODE_RX_SAM:
-		runtime_calculate_sloped_fir(dCoeff, hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
-		return;
+		runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
+		break;
 
 	case DSPCTL_MODE_RX_WFM:
 	case DSPCTL_MODE_RX_AM:
@@ -3024,51 +3025,40 @@ static void dsp_rxaudio_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff)
 //			fir_design_windowbuff_half(dWnd_rxAUDIO, iCoefNum, iCoefNum);
 //			fir_design_adjust_rx_unused(dCoeff, dWnd_rxAUDIO, iCoefNum, 0, GAIN_1, targetdb);	// Формирование наклона АЧХ, без применения оконной функции
 			fir_expand_symmetric(dCoeff, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
-			return;
 		}
 		else
 		{
-			runtime_calculate_sloped_fir(dCoeff, hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
-			return;
+			runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
 		}
+		break;
 
 	case DSPCTL_MODE_RX_NARROW:
 	case DSPCTL_MODE_TX_CW:
 		// audio - полосовой фильтп на телеграфную полосу
-		calculate_variable_slope_fir(dCoeff, hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, transition, transition);
-		return;
+		calculate_variable_slope_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, transition, transition);
+		break;
 
 	case DSPCTL_MODE_RX_FREEDV:
 		// audio
-		runtime_calculate_sloped_fir(dCoeff, hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
-		return;
+		runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
+		break;
 
 	case DSPCTL_MODE_RX_DRM:
 		// audio
 		// В этом режиме фильтр не используется
 		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
-		return;
-
+		break;
 
 	case DSPCTL_MODE_RX_NFM:
 		// audio
-		runtime_calculate_sloped_fir(dCoeff, hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
-		return;
+		runtime_calculate_sloped_fir(dCoeff, rx_audio_hamming_window_buf, iCoefNum, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
+		break;
 
 	// в режиме передачи
 	default:
 		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
-		return;
+		break;
 	}
-}
-
-
-// calculate full array of coefficients
-// Зависят от glob_dspmodes, glob_aflowcutrx, glob_afhighcutrx, glob_afresponcesrx
-void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
-{
-	ASSERT(Ntap_rx_AUDIO == iCoefNum);	/* проверяем на несогласованность параметров */
-	dsp_rxaudio_recalceq_coeffs(pathi, dCoeff);	// calculate full array of coefficients
 }
 
 #if WITHMODEM

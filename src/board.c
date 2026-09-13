@@ -4728,8 +4728,8 @@ board_fpga_fir_send(
 	board_fpga_fir_coef_p1(spi, 0x00000000);	// 1-st dummy
 	board_fpga_fir_coef_p2(spi, 0x00000000);	// 2-nd dummy
 
-	//single_rate_out_write_ser(kf, Ntap / 2 + 1); // NtapCoeffs(Ntap);
-	single_rate_out_write_mcv(spi, kf, Ntap, CWidth); // NtapCoeffs(Ntap);
+	//single_rate_out_write_ser(kf, Ntap / 2 + 1); // NtapHalf(Ntap);
+	single_rate_out_write_mcv(spi, kf, Ntap, CWidth); // NtapHalf(Ntap);
 	//sendbatch();
 
 	board_fpga_fir_complete(spi);

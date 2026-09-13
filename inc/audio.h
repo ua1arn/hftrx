@@ -48,7 +48,7 @@ enum
 // Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
 
 #define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)	/* Гарантируется пригодность для симметричного фильтра */
-#define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
+#define NtapHalf(n)	((unsigned) (n) / 2 + 1)
 
 #if WITHDSPLOCALRXFIR || WITHDSPLOCALTXFIR
 
