@@ -352,25 +352,20 @@ void qpsk_carrier_recovery_process(
 
 /**
  * @brief Внутренний кубический интерполятор Фэрроу для interleaved IQ потока
- * @param base_ptr Указатель на начало массива FLOAT_t (указывает на I-компоненту)
- * @param base_idx Индекс текущего комплексного сэмпла (k)
- * @param mu Дробный интервал [0.0 ... 1.0) между сэмплами k и k+1
- * @param offset 0 для канала I, 1 для канала Q (так как данные interleaved: I0, Q0, I1, Q1...)
  */
 static inline FLOAT_t farrow_interpolate_iq(const FLOAT_t* base_ptr, int base_idx, FLOAT_t mu, int offset)
 {
-    // Шаг (stride) равен 2, так как I и Q чередуются
-    // Извлекаем 4 комплексные точки вокруг расчетного места: (base_idx - 1), base_idx, (base_idx + 1), (base_idx + 2)
+    // Извлекаем 4 комплексные точки вокруг расчетного места (шаг stride = 2 для interleaved I/Q)
     FLOAT_t v0 = base_ptr[((base_idx - 1) * 2) + offset];
     FLOAT_t v1 = base_ptr[((base_idx)     * 2) + offset];
     FLOAT_t v2 = base_ptr[((base_idx + 1) * 2) + offset];
     FLOAT_t v3 = base_ptr[((base_idx + 2) * 2) + offset];
 
-    // Вычисление полиномиальных коэффициентов Фэрроу (схема Лагранжа)
+    // Вычисление полиномиальных коэффициентов по схеме Лагранжа
     FLOAT_t c0 = v1;
-    FLOAT_t c1 = -0.5f * v0 + 0.5f * v2;
-    FLOAT_t c2 = v0 - 2.5f * v1 + 2.0f * v2 - 0.5f * v3;
-    FLOAT_t c3 = -0.5f * v0 + 1.5f * v1 - 1.5f * v2 + 0.5f * v3;
+    FLOAT_t c1 = -0.5 * v0 + 0.5 * v2;
+    FLOAT_t c2 = v0 - 2.5 * v1 + 2.0 * v2 - 0.5 * v3;
+    FLOAT_t c3 = -0.5 * v0 + 1.5 * v1 - 1.5 * v2 + 0.5 * v3;
 
     // Вычисление значения по схеме Горнера: ((c3 * mu + c2) * mu + c1) * mu + c0
     return ((c3 * mu + c2) * mu + c1) * mu + c0;

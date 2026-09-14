@@ -132,6 +132,10 @@ typedef struct
 	int_fast32_t ivqv [2];
 } INT32P_t;
 
+typedef struct
+{
+	FLOAT_t i, q;
+} COMPLEX_t;
 
 #ifdef __cplusplus
 }
