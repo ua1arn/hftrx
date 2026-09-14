@@ -278,8 +278,6 @@ typedef struct {
 } qpsk_rx_carrier_recovery_t;
 
 
-static qpsk_rx_carrier_recovery_t carrier_loop;
-static qpsk_rx_timing_recovery_t timing_loop;
 
 /**
  * @brief  Resets and prepares the Gardner tracking loop state instance.
@@ -316,7 +314,7 @@ void qpsk_carrier_recovery_process(
     // (Для оптимизации на ARM Cortex-M4/M7 лучше использовать arm_sin_f32 / arm_cos_f32)
 	FLOAT_t sin_p = arm_sin_f32(loop->phase);
 	FLOAT_t cos_p = arm_cos_f32(loop->phase);
-
+	//arm_sin_cos_f32(loop->phase, & sin_p, & cos_p);
     // 2. Поворот созвездия (Демодуляция / Умножение на опорный сигнал)
     // Корректируем фазу входного сэмпла
     FLOAT_t i_rot =  strobe_i * cos_p + strobe_q * sin_p;
@@ -402,6 +400,7 @@ static int      rx_payload_byte_idx = 0;   // Индекс текущего ба
 /* Derived size for upsampled transmission workspace (32 bytes * 4 symbols/byte * 8 sps * 2 elements[I,Q]) */
 #define TX_UPSAMPLE_BUF_SIZE    (APP_MAX_DATA_BYTES * 4 * 8 * 2)
 
+
 /* --- Static Memory Allocation Pools (Internal Linkage via static) --- */
 static FLOAT_t preformed_window_mem[MODEM_RRC_TAPS];
 
@@ -465,6 +464,11 @@ void app_modem_push_bits_to_payload(uint8_t bit_i, uint8_t bit_q)
         tx_rx_bit_count = 0;
     }
 }
+
+// Внешние буферы и структуры состояния из вашего проекта
+static FLOAT_t rx_upsample_workspace[MODEM_RX_BLOCK_SAMPLES * 2];
+static qpsk_rx_timing_recovery_t timing_loop;
+static qpsk_rx_carrier_recovery_t carrier_loop;
 
 /**
  * @brief Петля синхронизации символов для некратных скоростей (Gardner TED + Farrow Interpolator)
@@ -739,10 +743,6 @@ static int qpsk_modem_transmit(qpsk_modem_t *const mod, const uint8_t *const dat
     return processed_samples;
 }
 
-// Внешние буферы и структуры состояния из вашего проекта
-static FLOAT_t rx_upsample_workspace[MODEM_RX_BLOCK_SAMPLES * 2];
-static qpsk_rx_timing_recovery_t timing_loop;
-
 /**
  * @brief Главная функция приёма и демодуляции QPSK блока для некратных скоростей
  * @param rx_dma_buffer Входной interleaved буфер от АЦП/DMA [I0, Q0, I1, Q1 ...] (размер: MODEM_RX_BLOCK_SAMPLES * 2)
@@ -763,14 +763,14 @@ int qpsk_modem_receive(const FLOAT_t* rx_dma_buffer, uint8_t* rx_decoded_bytes)
     // Входной interleaved-поток пропускается через фильтр для подавления межсимвольной интерференции (ISI).
     // Длина массива составляет MODEM_RX_BLOCK_SAMPLES комплексных сэмплов (умножаем на 2 для FLOAT_t)
 
-#if defined(ARM_MATH_CM4) || defined(ARM_MATH_CM7) || defined(ARM_MATH_H7)
-    // Аппаратное ускорение на микроконтроллерах STM32/ARM через CMSIS-DSP
-    arm_fir_f32(&rx_filter_instance, (float32_t*)rx_dma_buffer, (float32_t*)rx_upsample_workspace, MODEM_RX_BLOCK_SAMPLES * 2);
-#else
-    // Вариант для автономных тестов на ПК (где CMSIS-DSP может быть недоступен).
-    // Выполняем прямую программную свертку или копирование:
-    memcpy(rx_upsample_workspace, rx_dma_buffer, MODEM_RX_BLOCK_SAMPLES * 2 * sizeof(FLOAT_t));
-#endif
+//#if 1
+//    // Аппаратное ускорение на микроконтроллерах STM32/ARM через CMSIS-DSP
+//    ARM_MORPH(arm_fir)(&rx_filter_instance, (float32_t*)rx_dma_buffer, (float32_t*)rx_upsample_workspace, MODEM_RX_BLOCK_SAMPLES * 2);
+//#else
+//    // Вариант для автономных тестов на ПК (где CMSIS-DSP может быть недоступен).
+//    // Выполняем прямую программную свертку или копирование:
+//    memcpy(rx_upsample_workspace, rx_dma_buffer, MODEM_RX_BLOCK_SAMPLES * 2 * sizeof(FLOAT_t));
+//#endif
 
     // 3. Запуск конвейера синхронизации символов Фэрроу-Гарднера
     // Эта функция посэмпльно шагает по rx_upsample_workspace и внутри себя:
@@ -779,7 +779,7 @@ int qpsk_modem_receive(const FLOAT_t* rx_dma_buffer, uint8_t* rx_decoded_bytes)
     //   в) Корректирует уход частоты кварца через детектор Гарднера (Timing Recovery).
     //   г) Вызывает qpsk_carrier_recovery_process (Костас) для компенсации фазы несущей.
     //   д) Вызывает app_modem_push_bits_to_payload для упаковки бит в байты.
-    qpsk_rx_timing_process(&timing_loop, rx_upsample_workspace, MODEM_RX_BLOCK_SAMPLES);
+    qpsk_rx_timing_process(&timing_loop, rx_dma_buffer, MODEM_RX_BLOCK_SAMPLES);
 
     // 4. Возвращаем итоговое количество записанных байт
     // Переменная rx_payload_byte_idx инкрементируется внутри app_modem_push_bits_to_payload на каждый 8-й бит
