@@ -364,18 +364,18 @@ void endstamp3(void)
 #if WITHDSPLOCALRXFIR
 
 	// Фильтр для квадратурных каналов приёмника (floating point).
-	static RAMDTCM FLOAT_t FIRCoef_rx_SSB_IQ [NPROF] [NtapHalf(Ntap_rx_SSB_IQ)];
+	static RAMDTCM FLOAT_t FIRCoef_rx_SSB_IQ [NPROF] [Ntap_rx_SSB_IQ];
 	// подготовленные значения функции окна
-	static RAMDTCM FLOAT_t FIRCwnd_rx_SSB_IQ [NtapHalf(Ntap_tx_SSB_IQ)];
+	static RAMDTCM FLOAT_t FIRCwnd_rx_SSB_IQ [Ntap_tx_SSB_IQ];
 
 #endif /* WITHDSPLOCALRXFIR */
 
 #if WITHDSPLOCALTXFIR
 
 	// Фильтр для квадратурных каналов передатчика (floating point).
-	static RAMDTCM FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [NtapHalf(Ntap_tx_SSB_IQ)];
+	static RAMDTCM FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [Ntap_tx_SSB_IQ];
 	// подготовленные значения функции окна
-	static RAMDTCM FLOAT_t FIRCwnd_tx_SSB_IQ [NtapHalf(Ntap_tx_SSB_IQ)];
+	static RAMDTCM FLOAT_t FIRCwnd_tx_SSB_IQ [Ntap_tx_SSB_IQ];
 
 #endif /* WITHDSPLOCALTXFIR */
 
@@ -2906,51 +2906,51 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	if (fullbw6 == INT16_MAX || dspmode == DSPCTL_MODE_TX_NFM)
 	{
 		// make bypass filter
-#if WITHDSPLOCALRXFIR
-		if (isdspmoderx(dspmode))
-			fir_design_passtrough_half(FIRCoef_rx_SSB_IQ [spf], Ntap_rx_SSB_IQ, rxfiltergain);
-#endif /* WITHDSPLOCALRXFIR */
-#if WITHDSPLOCALTXFIR
-		if (isdspmodetx(dspmode))
-			fir_design_passtrough_half(FIRCoef_tx_SSB_IQ [spf], Ntap_tx_SSB_IQ, txfiltergain);
-#endif /* WITHDSPLOCALTXFIR */
-#if WITHDSPEXTDDC
-	// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
-	calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
-#endif /* WITHDSPEXTDDC */
+	#if WITHDSPLOCALRXFIR
+			if (isdspmoderx(dspmode))
+				fir_design_passtrough_half(FIRCoef_rx_SSB_IQ [spf], Ntap_rx_SSB_IQ, rxfiltergain);
+	#endif /* WITHDSPLOCALRXFIR */
+	#if WITHDSPLOCALTXFIR
+			if (isdspmodetx(dspmode))
+				fir_design_passtrough_half(FIRCoef_tx_SSB_IQ [spf], Ntap_tx_SSB_IQ, txfiltergain);
+	#endif /* WITHDSPLOCALTXFIR */
+	#if WITHDSPEXTDDC
+		// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
+		calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
+	#endif /* WITHDSPEXTDDC */
 	}
 	else
 	{
 		const int cutfreq = fullbw6 / 2;
 
-#if WITHDSPEXTRXFIR || WITHDSPEXTTXFIR
-		calculate_variable_slope_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq, transition);
-#endif /* WITHDSPEXTRXFIR || WITHDSPEXTTXFIR */
+	#if WITHDSPEXTRXFIR || WITHDSPEXTTXFIR
+			calculate_variable_slope_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq, transition);
+	#endif /* WITHDSPEXTRXFIR || WITHDSPEXTTXFIR */
 
-//	PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
+	//	PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
 
-#if WITHDSPLOCALRXFIR
-	if (isdspmoderx(dspmode))
-	{
-		fir_design_windowbuff_half(FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, getCoefNumLtdValidated(Ntap_rx_SSB_IQ, fltsofter));
-		fir_design_lowpass_freq_scaled(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, Ntap_rx_SSB_IQ, cutfreq, rxfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
-	#if WITHDSPEXTDDC
-		// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
-		fir_design_integers_passtrough(dCoeff_trx_IQ, FIRCoef_trxi_IQ, Ntap_trxi_IQ, 1, adptfir);
-	#endif /* WITHDSPEXTDDC */
-	}
-#endif /* WITHDSPLOCALRXFIR */
-#if WITHDSPLOCALTXFIR
-	if (isdspmodetx(dspmode))
-	{
-		// FIRCwnd_tx_SSB_IQ заполнен в dsp_initialze
-		fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, txfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
-	#if WITHDSPEXTDDC
-		// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
-		fir_design_integers_passtrough(dCoeff_trx_IQ, FIRCoef_trxi_IQ, Ntap_trxi_IQ, 1, adptfir);
-	#endif /* WITHDSPEXTDDC */
-	}
-#endif /* WITHDSPLOCALTXFIR */
+	#if WITHDSPLOCALRXFIR
+		if (isdspmoderx(dspmode))
+		{
+			fir_design_windowbuff_half(FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, getCoefNumLtdValidated(Ntap_rx_SSB_IQ, fltsofter));
+			fir_design_lowpass_freq_scaled(FIRCoef_rx_SSB_IQ [spf], FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ, Ntap_rx_SSB_IQ, cutfreq, rxfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+		#if WITHDSPEXTDDC
+			// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
+			fir_design_integers_passtrough(dCoeff_trx_IQ, FIRCoef_trxi_IQ, Ntap_trxi_IQ, 1, adptfir);
+		#endif /* WITHDSPEXTDDC */
+		}
+	#endif /* WITHDSPLOCALRXFIR */
+	#if WITHDSPLOCALTXFIR
+		if (isdspmodetx(dspmode))
+		{
+			// FIRCwnd_tx_SSB_IQ заполнен в dsp_initialze
+			fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, txfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+		#if WITHDSPEXTDDC
+			// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
+			fir_design_integers_passtrough(dCoeff_trx_IQ, FIRCoef_trxi_IQ, Ntap_trxi_IQ, 1, adptfir);
+		#endif /* WITHDSPEXTDDC */
+		}
+	#endif /* WITHDSPLOCALTXFIR */
 
 	}
 
