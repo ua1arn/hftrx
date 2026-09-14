@@ -5,6 +5,8 @@
 
 #if WITHMODEM
 
+#define CTLREGMODE_STORCH_V4 1
+
 #include "audio.h"
 #include "board.h"
 #include "display/display.h"
