@@ -2,6 +2,7 @@
 
 #if WITHIF4DSP
 #include "dspdefines.h"
+#include "formats.h"
 
 /* Standard QPSK Constellation point scaling: 1 / sqrt(2) ≈ 0.7071067811865475 */
 #define QPSK_VAL   0.7071067811865475
@@ -591,11 +592,11 @@ static int qpsk_modem_receive(qpsk_modem_t *const mod, const FLOAT_t *const iq_i
 /* ========================================================================= */
 
 #define MODEM_RRC_TAPS          49   /* RRC filter length (typically 6 symbols * 8 sps + 1) */
-#define MODEM_TX_BLOCK_SAMPLES  64   /* Number of complex I/Q samples processed per TX FIR iteration */
-#define MODEM_RX_BLOCK_SAMPLES  128  /* Number of complex I/Q samples processed per RX DMA hardware interrupt */
+#define MODEM_TX_BLOCK_SAMPLES  4096//64   /* Number of complex I/Q samples processed per TX FIR iteration */
+#define MODEM_RX_BLOCK_SAMPLES  4096//128  /* Number of complex I/Q samples processed per RX DMA hardware interrupt */
 
 /* Maximum application data capacity for a single transmission burst transaction */
-#define APP_MAX_DATA_BYTES      32
+#define APP_MAX_DATA_BYTES      4096//32
 
 /* Derived memory requirements for internal state buffers (CMSIS-DSP layout criteria) */
 #define TX_STATE_SIZE  (2 * MODEM_RRC_TAPS + 2 * MODEM_TX_BLOCK_SAMPLES - 2)
@@ -707,10 +708,11 @@ static void app_modem_rx_dma_callback_isr(const FLOAT_t *const raw_dma_iq_input)
 
     /* If bytes were successfully decoded from current frame, route them to application dispatcher */
     if (recovered_bytes_count > 0) {
+    	printhex_titled(0, rx_decoded_data_payload, recovered_bytes_count, "rx_decoded_data_payload");
         for (int i = 0; i < recovered_bytes_count; i++) {
             const uint8_t data_byte = rx_decoded_data_payload[i];
             /* Execute packet assembly, CRC check, or pass to the terminal console handler */
-            (void)data_byte;
+             (void)data_byte;
         }
     }
 }
@@ -731,6 +733,19 @@ static void app_modem_init_window(FLOAT_t *const window_mem, const int num_taps)
      * or 'arm_blackman_harris_92db_f64' based on current project compiler settings.
      */
     ARM_MORPH(arm_blackman_harris_92db)(window_mem, num_taps);
+}
+
+
+void modem_test(void)
+{
+	TP();
+	app_modem_init_window(preformed_window_mem, MODEM_RRC_TAPS);
+	app_modem_system_setup();
+	static const uint8_t txarray [] = { 0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01,  0x01, };
+	int n = app_modem_execute_transmission(txarray, ARRAY_SIZE(txarray));
+	PRINTF("n=%d\n", n);
+	TP();
+	app_modem_rx_dma_callback_isr(tx_hardware_output_io);
 }
 
 #endif /* WITHIF4DSP */

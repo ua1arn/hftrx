@@ -818,6 +818,7 @@ typedef void (*nic_rxproc_t)(const uint8_t *data, int size);
 void network_initialize(void);
 
 void cpptest(void);
+void modem_test(void);
 
 //#define UNUSED(x) ((void)(x))
 

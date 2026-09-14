@@ -7955,6 +7955,12 @@ void hightests(void)
 #endif
 #if 0
 	{
+		modem_test();
+
+	}
+#endif
+#if 0
+	{
 		// Functional encoders test
 		for (;;)
 		{
