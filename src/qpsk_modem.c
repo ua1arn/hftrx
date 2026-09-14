@@ -2,10 +2,11 @@
 
 #if WITHIF4DSP
 #include "dspdefines.h"
+#include "audio.h"
 #include "formats.h"
 
 /* Standard QPSK Constellation point scaling: 1 / sqrt(2) ≈ 0.7071067811865475 */
-#define QPSK_VAL   0.7071067811865475
+#define QPSK_VAL   M_SQRT1_2 // 0.7071067811865475
 
 /**
  * @brief  Modulates a byte stream into an interleaved I/Q sample stream using QPSK with Gray coding.
@@ -387,12 +388,12 @@ static int      rx_payload_byte_idx = 0;   // Индекс текущего ба
 /* CONFIGURATION METRICS AND MEMORY POOL CALCULATIONS                        */
 /* ========================================================================= */
 
-#define MODEM_RRC_TAPS          49   /* RRC filter length (typically 6 symbols * 8 sps + 1) */
-#define MODEM_TX_BLOCK_SAMPLES  4096//64   /* Number of complex I/Q samples processed per TX FIR iteration */
-#define MODEM_RX_BLOCK_SAMPLES  4096//128  /* Number of complex I/Q samples processed per RX DMA hardware interrupt */
+#define MODEM_RRC_TAPS          511//49   /* RRC filter length (typically 6 symbols * 8 sps + 1) */
+#define MODEM_TX_BLOCK_SAMPLES  40960//64   /* Number of complex I/Q samples processed per TX FIR iteration */
+#define MODEM_RX_BLOCK_SAMPLES  40960//128  /* Number of complex I/Q samples processed per RX DMA hardware interrupt */
 
 /* Maximum application data capacity for a single transmission burst transaction */
-#define APP_MAX_DATA_BYTES      4096//32
+#define APP_MAX_DATA_BYTES      40960//32
 
 /* Derived memory requirements for internal state buffers (CMSIS-DSP layout criteria) */
 #define TX_STATE_SIZE  (2 * MODEM_RRC_TAPS + 2 * MODEM_TX_BLOCK_SAMPLES - 2)
@@ -830,8 +831,8 @@ static void app_modem_system_setup(void) {
     ARM_MORPH(arm_blackman_harris_92db)(preformed_window_mem, MODEM_RRC_TAPS);
 
 	// 1. Задаем базовые физические частоты тракта
-	const FLOAT_t sample_rate = 48000.0f; // Частота дискретизации кодека/ЦАП/АЦП
-	const FLOAT_t symbol_rate = 7200.0f;  // Некратная скорость символов (7200 Бод)
+	const FLOAT_t sample_rate = ARMI2SRATE; // Частота дискретизации кодека/ЦАП/АЦП
+	const FLOAT_t symbol_rate = 600;//7200.0f;  // Некратная скорость символов (7200 Бод)
 
 	// 2. Инициализация ПЕРЕДАТЧИКА (TX) через NCO
 	app_modem_tx_system_setup(&tx_nco, sample_rate, symbol_rate);
