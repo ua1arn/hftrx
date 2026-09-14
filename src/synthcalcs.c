@@ -21,9 +21,6 @@
 // LO1MODE_FIXSCALE 
 // - ФАПЧ с фиксированным умножением опоры от DDS
 //
-// LO1MODE_MAXLAB, 
-// возможно с MAXLAB_DACARRAY - Управляющие напряжения для варикапа расчитываются заранее - хранятся в массиве
-// - ФАПЧ с опорой от кварцевого генератора с уводом частоты варикапами от ЦАП
 
 // статические переменные, не присваиваемые нигде - интерперетируются как константы
 //#if defined(DDS1_TYPE) || defined(PLL1_TYPE)
@@ -58,12 +55,6 @@
 	static uint_fast64_t ph1_min; // = freq2ftw(ddsosc, cf - df / 2);	/* приращение фазы, соответствующее минимальной частоте на выходе DDS */
 #endif /* LO1MODE_HYBRID */
 
-
-#if LO1MODE_MAXLAB
-	//static uint_fast64_t ref1_min; // частота опорника (минимальная частота)
-	static uint_fast64_t ref1_min_scaled; // частота опорника (минимальная частота) * MAXLAB_LINEARDACRANGE
-	static uint_fast32_t df_maxlab;			// максимальный диапазон перестройки опорника на один шаг умножителя
-#endif /* LO1MODE_MAXLAB */
 
 #ifdef FTW_RESOLUTION
 /* функция преобразования требуемой частоты в FTW при заданной тактовой частоте DDS */
@@ -303,86 +294,6 @@ static void synth_scale1_setfreq(
 	board_pll1_set_vcodivider(hint);
 }
 
-#elif LO1MODE_MAXLAB
-
-#if MAXLAB_DACARRAY
-
-static uint_fast16_t dacvalues [MAXLAB_LINEARDACRANGE];
-
-#endif /* MAXLAB_DACARRAY */
-
-static uint_fast16_t ui16max(uint_fast16_t a, uint_fast16_t b)
-{
-	return a > b ? a : b;
-}
-
-static uint_fast16_t ui16min(uint_fast16_t a, uint_fast16_t b)
-{
-	return a < b ? a : b;
-}
-
-
-static uint_fast16_t
-daci2dacval(
-	uint_fast16_t i		// DAC value index 0 .. MAXLAB_LINEARDACRANGE-1
-	)
-{
-	// заполнение массива значений для работы ЦАП
-	// Аппроксимация по максимальной крутизне пересечением двух прямых
-	// если наклон прямой #1 больше, чем у прямой #2
-	// Аппроксимация по мтнимальной крутизне пересечением двух прямых
-	// если наклон прямой #1 меньше, чем у прямой #2
-
-	uint_fast16_t dac_min1 = 100;	// U в начале прямой #1
-	uint_fast16_t dac_max1 = 500;	// U в конце прямой #1
-	uint_fast16_t dac_min2 = 5;	// U в начале прямой #2
-	uint_fast16_t dac_max2 = 1000;	// U в конце прямой #2
-
-	const uint_fast16_t delta1 = (dac_max1 - dac_min1);
-	const uint_fast16_t delta2 = (dac_max2 - dac_min2);
-
-	const uint_fast16_t v1 = (uint_fast32_t) delta1 * i / MAXLAB_LINEARDACRANGE + dac_min1;
-	const uint_fast16_t v2 = (uint_fast32_t) delta2 * i / MAXLAB_LINEARDACRANGE + dac_min2;
-	if (delta1 > delta2)
-		return ui16max(v1, v2);
-	else
-		return ui16min(v1, v2);
-}
-
-
-static void
-synth_maxlabloop1_setfreq(
-	uint_fast32_t f,		/* частота, которую хотим получить на выходе кольца ФАПЧ */
-	uint_fast8_t om		/* умножитель перед подачей на смеситель (1, 2, 4, 8...) */
-	)
-{
-	// MAXLAB_LINEARDACRANGE: до аппроксимации значения от 0 до 1023
-
-	const pllhint_t hint = board_pll1_get_hint(f / om);	/* выбор требуемой конфигурации ГУН и делителя для данной частоты */
-	// расчет параметров для указанной частоты
-	const uint_fast64_t fscaled = f * r1_ph * MAXLAB_LINEARDACRANGE / om;   /* преобразование требуемой частоты в воображаемую (как при REF DIVIDER = 1) */
-	const uint_fast64_t n1 = fscaled / ref1_min_scaled;	/* на сколько делится частота гетеродина в PLL */
-	const uint_fast64_t fref_scaled = fscaled / n1;
-	const uint_fast16_t dacindex = (fref_scaled - ref1_min_scaled) / df_maxlab;
-
-#if MAXLAB_DACARRAY
-	const uint_fast16_t dacvalue = dacvalues [dacindex < MAXLAB_LINEARDACRANGE ? dacindex : (MAXLAB_LINEARDACRANGE - 1)];	// работа на частотах ниже заявленной приводит к обращению за пределы таблицы
-#else
-	const uint_fast16_t dacvalue = daci2dacval(dacindex < MAXLAB_LINEARDACRANGE ? dacindex : (MAXLAB_LINEARDACRANGE - 1));	// работа на частотах ниже заявленной приводит к обращению за пределы таблицы
-#endif
-	// установка рассчитанных значений
-	board_pll1_set_vco(hint);
-	const uint_fast8_t fchange = board_pll1_set_n(& n1, hint, 1);
-	board_set_maxlabdac(dacvalue);
-	if (fchange != 0)	// производилось перепрограммирование - разрешить работу PLL1
-		board_pll1_set_n(& n1, hint, 0);
-	board_pll1_set_vcodivider(hint);
-
-#if WITHDEBUG
-	const long fref2 = fref_scaled * 100 / MAXLAB_LINEARDACRANGE;
-	debug_printf_P(PSTR("LM7001: fout=%ld.%03ld n1=%d DACi=%-4u DAC=%-4u (ref=%ld.%05ld)\n"), f / 1000, f % 1000, (int) n1, dacindex, dacvalue, fref2 / 100000, fref2 % 100000); 
-#endif /* WITHDEBUG */
-}
 
 #elif LO1MODE_DIRECT
 
@@ -498,8 +409,6 @@ void synth_lo1_setfrequ(
 	synth_direct1_setfreq(pathi, f, od, om);
 #elif LO1MODE_HYBRID
 	synth_loop1_setfreq(pathi, f * od, om);
-#elif LO1MODE_MAXLAB
-	synth_maxlabloop1_setfreq(pathi, f * od, om);
 #elif LO1MODE_FIXSCALE
 	synth_scale1_setfreq(pathi, f * od, om);
 #else
@@ -622,35 +531,6 @@ synth_lo1_setreference(
     const int_fast64_t df =   (ftw_t) (((ftw_t) cf * cf) / (freqlow * r1_ph));   /* требуемая полоса пропускания фильтра после DDS */
     ph1_min = freq2ftw(cf - df / 2, dds1refdiv, dds1ref);	/* фаза, соответствующая минимальной частоте на выходе DDS */
 
-#elif LO1MODE_MAXLAB
-
-	// расчет параметров для заданной опорной частоты (минимальная частота подстраиваемого кварцевого генератора).
-	// делается один раз при инициализации или подстройке частоты из меню.
-	const long freqlow = SYNTHLOWFREQ;	/* минимальная выходная частота синтезатора */
-
-	uint_fast64_t ref1_min = refclock;	 // частота опорника
-	ref1_min_scaled = (uint_fast64_t) refclock * MAXLAB_LINEARDACRANGE;
-    df_maxlab = ((uint_fast64_t) ref1_min * ref1_min) / (freqlow * r1_ph);   /* требуемая полоса пропускания фильтра после DDS */
-#if WITHDEBUG
-	const long df2 = df_maxlab * 100;
-	debug_printf_P(PSTR("LM7001: df=%ld.%05ld\n"), df2 / 100000, df2 % 100000); 
-#endif /* WITHDEBUG */
-
-	// заполнение массива значений для работы ЦАП
-	// Аппроксимация по максимальной крутизне пересечением двух прямых
-	// если наклон прямой #1 больше, чем у прямой #2
-	// Аппроксимация по мтнимальной крутизне пересечением двух прямых
-	// если наклон прямой #1 меньше, чем у прямой #2
-#if MAXLAB_DACARRAY
-
-	uint_fast16_t i;
-	for (i = 0; i < MAXLAB_LINEARDACRANGE; ++ i)
-	{
-		dacvalues [i] = daci2dacval(i);
-	}
-
-#endif
-
 #elif LO1MODE_FIXSCALE
 
 	// do nothing
@@ -689,7 +569,6 @@ void synthcalc_init(void)
 #endif /* WITHSI5351AREPLACE */
 #if LO1MODE_DIRECT && ! defined(DDS1_TYPE)
 #elif LO1MODE_HYBRID
-#elif LO1MODE_MAXLAB
 #elif LO1MODE_FIXSCALE
 #elif LO1MODE_DIRECT
 #endif
