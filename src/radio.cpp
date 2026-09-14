@@ -6288,7 +6288,7 @@ enum
 		NULL,
 		& elkeymode,
 		getzerobase,
-		getelkeymodetext
+		getelkeymodetext,
 	};
 #if WITHVIBROPLEX
 	static const struct paramdefdef xgelkeyslope =
@@ -6334,7 +6334,7 @@ enum
 	static uint_fast8_t gcwedgetime = 5;	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static const struct paramdefdef xgcwedgetime =
 	{
-		QLABEL3("EDGE TIM", "EDGE TIME", "EDGE TIM"),  0, RJ_UNSIGNED, ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
+		QLABEL3("EDGE TIM", "EDGE TIME", "EDGE TIM"),  3, RJ_UNSIGNED, ISTEP1,		/* Set the rise time of the transmitted CW envelope. */
 		ITEM_VALUE,
 		2, 16,
 		OFFSETOF(struct nvmap, gcwedgetime),	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
