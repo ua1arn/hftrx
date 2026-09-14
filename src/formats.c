@@ -514,7 +514,7 @@ printhex64(uintptr_t voffs, const void * vbuff, unsigned length)
 void printhex_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title)
 {
 	PRINTF("%s @ %p:\n", title, vbuff);
-	printhex32(voffs, vbuff, length);
+	printhex(voffs, vbuff, length);
 }
 
 void printhex32_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title)
