@@ -6850,6 +6850,34 @@ static const struct paramdefdef xgbusfreq =
 	};
 
 #endif /* defined (REFERENCE_FREQ) */
+#if defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)
+static int_fast32_t si570_xtall_base;
+uint_fast16_t si570_xtall_offset = OSCSHIFT;
+
+int_fast32_t si570_get_xtall_base(void)
+{
+	return si570_xtall_base;
+}
+
+static const struct paramdefdef xsi570_xtall_offset =
+{
+	QLABEL("REFSI570"),  3, RJ_UNSIGNED, ISTEP1,
+	ITEM_VALUE,
+	0, OSCSHIFT * 2,
+	OFFSETOF(struct nvmap, si570_xtall_offset),
+	getselector0, nvramoffs0, valueoffs0,
+	& si570_xtall_offset,	/* подстройка опорника */
+	NULL,
+	si570_get_xtall_base, 	/* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
+void hamradio_set_si570reference(int_fast32_t f)
+{
+	param_setvalue(& xsi570_xtall_offset);
+}
+
+#endif /* defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570) */
 
 #if WITHINTEGRATEDDSP
 

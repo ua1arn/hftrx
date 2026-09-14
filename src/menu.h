@@ -1701,17 +1701,7 @@
 	},
 #endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
 #if defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)
-	(const struct paramdefdef [1]) {
-		QLABEL("REFSI570"),  3, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,
-		0, OSCSHIFT * 2,
-		OFFSETOF(struct nvmap, si570_xtall_offset),
-		getselector0, nvramoffs0, valueoffs0,
-		& si570_xtall_offset,	/* подстройка опорника */
-		NULL,
-		si570_get_xtall_base, 	/* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xsi570_xtall_offset,
 #endif /* defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570) */
 #if WITHONLYBANDS
 	(const struct paramdefdef [1]) {

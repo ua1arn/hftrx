@@ -58,8 +58,6 @@ uint_fast16_t board_pll1_get_divider(pllhint_t hint);	/* получение зн
 void board_pll1_set_vco(pllhint_t hint);		/* установка конфигурации ГУН на основании hint */
 void board_pll1_set_vcodivider(pllhint_t hint);	/* установка выходного делителя ГУН на основании hint */
 
-extern int_fast32_t si570_get_xtall_base(void); 
-extern uint_fast16_t si570_xtall_offset; 
 #define OSCSHIFT 15000UL	/* половина диапазона перестройки частоты опорного генератора (в герцах). */
 
 void prog_pll2_n(const phase_t * value);

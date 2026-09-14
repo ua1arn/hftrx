@@ -1159,6 +1159,7 @@ void hamradio_dwatch_toggle(void);
 void hamradio_split_vfo_swap(void);
 void hamradio_tick_sof(void);
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem));
+void hamradio_set_si570reference(int_fast32_t f);
 
 // LVGL interface functions
 int infocb_modea(char * b, size_t len, int * pstate);
