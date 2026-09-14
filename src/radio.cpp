@@ -3794,13 +3794,14 @@ struct nvmap
 	uint8_t lo1level;	/* уровень (амплитуда) LO1 в процентах */
 #endif /* WITHLO1LEVELADJ */
 
+	uint16_t	ggrpfilterscw; // последний посещённый пункт группы
 	uint16_t	ggrpfilters; // последний посещённый пункт группы
 
 #if defined(REFERENCE_FREQ)
 #if defined (DAC1_TYPE)
 	uint8_t dac1level;	/* напряжение на управлении опорным генератором */
 #endif /* defined (DAC1_TYPE) */
-	uint16_t refbias;	/* подстройка опорника */
+	uint16_t greffrquency;	/* подстройка опорника */
 
 #endif /* defined(REFERENCE_FREQ) */
 #if defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)
@@ -3821,7 +3822,8 @@ struct nvmap
 #endif /* WITHCAT */
 
 #if WITHAUTOTUNER
-	uint16_t	ggrptuner; // последний посещённый пункт группы
+	uint16_t 	ggrptuner; // последний посещённый пункт группы
+
 	uint8_t gtunerdelay;
 #if WITHAUTOTUNER_N7DDCALGO
 	uint8_t gn7ddclinearC;
@@ -6824,26 +6826,24 @@ static const struct paramdefdef xgbusfreq =
 
 #if defined (REFERENCE_FREQ)
 
-	static const int_fast32_t refbase = REFERENCE_FREQ - OSCSHIFT;
-
-#if defined (REALREFERENCE_FREQ)
-	static uint_fast16_t refbias = OSCSHIFT - (REFERENCE_FREQ - REALREFERENCE_FREQ);
-#else /* defined (REALREFERENCE_FREQ) */
-	static uint_fast16_t refbias = OSCSHIFT;
-#endif /* defined (REALREFERENCE_FREQ) */
+	#if defined (REALREFERENCE_FREQ)
+		static uint_fast16_t greffrquency = OSCSHIFT - (REFERENCE_FREQ - REALREFERENCE_FREQ);
+	#else /* defined (REALREFERENCE_FREQ) */
+		static uint_fast16_t greffrquency = OSCSHIFT;
+	#endif /* defined (REALREFERENCE_FREQ) */
 
 	int_fast32_t getrefbase(void)
 	{
-		return refbase;
+		return REFERENCE_FREQ - OSCSHIFT;
 	}
-	static const struct paramdefdef xrefbias =
+	static const struct paramdefdef xgreffrquency =
 	{
 		QLABEL("REF FREQ"),  3, RJ_UNSIGNED, ISTEPLARGE_1,		/* ввод реальной частоты опорного генератора через меню. */
 		ITEM_VALUE,
-		0, OSCSHIFT * 2 - 1,
-		OFFSETOF(struct nvmap, refbias),
+		0, OSCSHIFT * 2,
+		OFFSETOF(struct nvmap, greffrquency),
 		getselector0, nvramoffs0, valueoffs0,
-		& refbias,	/* подстройка частоты опорника */
+		& greffrquency,	/* подстройка частоты опорника */
 		NULL,
 		getrefbase, 	/* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
@@ -9646,7 +9646,7 @@ static uint_fast8_t gsquareness10 = WITHSQUARENESSMIN;
 // Коэффициент прямоугольности фильтра в десятых долях
 static const struct paramdefdef xgsquareness10 =
 {
-	QLABEL3("Squareness", "SQRNR", "Squareness"), 1, RJ_UNSIGNED, 	ISTEP1,	// squareness ratio
+	QLABEL3("SQRNR", "Squareness", "SQRNR"), 1, RJ_UNSIGNED, 	ISTEP1,	// squareness ratio
 	ITEM_VALUE,
 	WITHSQUARENESSMIN, WITHSQUARENESSMAX,			/* 10..40 */
 	OFFSETOF(struct nvmap, gsquareness10),
@@ -10948,7 +10948,7 @@ getsynthref(
 {
 #if defined(REFERENCE_FREQ)
 	(void) mode;
-	return refbase + refbias;
+	return param_getvalue(& xgreffrquency);
 #else
 	(void) mode;
 	return 0;

@@ -140,9 +140,28 @@
 #endif /* defined (RTC1_TYPE) */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL2("Filters", "Filters"), 0, 0, 0,
+		QLABEL2("Filters CW", "Filters CW"), 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
+		OFFSETOF(struct nvmap, ggrpfilterscw),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		NULL,
+		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+/* group name --- */
+#if WITHIF4DSP
+	// телеграфные режимы
+	& xgsquareness10,
+	& xfltbw_cwwide,
+	& xfltbw_cwnarrow,
+#endif /* WITHIF4DSP */
+/* group name +++ */
+	(const struct paramdefdef [1]) {
+		QLABEL2("Filters", "Filters"), 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
 		OFFSETOF(struct nvmap, ggrpfilters),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
@@ -153,11 +172,7 @@
 /* group name --- */
 #if WITHIF4DSP
 	& xgnoisereductvl,
-#endif /* WITHIF4DSP */
-#if WITHIF4DSP
-	& xfltbw_cwwide,
-	& xfltbw_cwnarrow,
-	// телефонные режими
+	// телефонные режимы
 	& xgssbwide_high,
 	& xgssbwide_low,
 	& xgssbwide_afr,
@@ -1670,7 +1685,7 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* defined (DAC1_TYPE) */
-	& xrefbias,		/* ввод реальной частоты опорного генератора через меню. */
+	& xgreffrquency,		/* ввод реальной частоты опорного генератора через меню. */
 #endif	/* defined(REFERENCE_FREQ) */
 #if (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ	/* подстройка частоты гетеродина через меню. */
 	(const struct paramdefdef [1]) {
@@ -1689,7 +1704,7 @@
 	(const struct paramdefdef [1]) {
 		QLABEL("REFSI570"),  3, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
-		0, OSCSHIFT * 2 - 1, 
+		0, OSCSHIFT * 2,
 		OFFSETOF(struct nvmap, si570_xtall_offset),
 		getselector0, nvramoffs0, valueoffs0,
 		& si570_xtall_offset,	/* подстройка опорника */
