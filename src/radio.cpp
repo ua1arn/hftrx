@@ -6870,8 +6870,8 @@ static const struct paramdefdef xgkeybeep10 =
 
 #endif /* WITHINTEGRATEDDSP */
 
-#if WITHINTEGRATEDDSP
-
+#if WITHINTEGRATEDDSP || 1
+/* параметр для отладки */
 static uint_fast8_t gskipfilteraf;
 static const struct paramdefdef xgskipfilteraf =
 {
