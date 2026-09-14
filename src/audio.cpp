@@ -786,9 +786,11 @@ static void calculate_bpf_with_sloped_eq(FLOAT_t *const h, const FLOAT_t *const 
     ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
 }
 
+
 /**
  * @brief  Generates a single-pass Bandpass FIR filter with a linear magnitude slope and linear phase,
- *         using a fixed number of taps and a pre-calculated window buffer.
+ *         perfectly normalized to strict unity gain (0 dB inside the core passband) relative to
+ *         the baseline channel level, avoiding any gain shifts during dynamic slope adjustments.
  *
  * @param  h                 Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
  * @param  preformed_window  Pointer to the pre-calculated window coefficients (size must be >= num_taps).
@@ -837,84 +839,31 @@ static void calculate_sloped_bpf(FLOAT_t *const h, const FLOAT_t *const preforme
 
     /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
     ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
-}
 
-/**
- * @brief  Generates a single-pass Bandpass FIR filter with a linear magnitude slope,
- *         perfectly normalized to match the exact gain of the passthrough channel (0 dB at center frequency)
- *         even under steep dynamic variations of the a2 slope constraint.
- *
- * @param  h                 Pointer to target array for calculated coefficients (allocated size must be >= num_taps).
- * @param  preformed_window  Pointer to the pre-calculated window coefficients (size must be >= num_taps).
- * @param  num_taps          Fixed length of the FIR filter (Must be an ODD number for Type 1 Linear Phase).
- * @param  fs                The operational audio sampling frequency in Hz.
- * @param  f1                Start frequency of the passband in Hz.
- * @param  f2                End frequency of the passband in Hz.
- * @param  a1                Target linear amplitude at f1 frequency point.
- * @param  a2                Target linear amplitude at f2 frequency point.
- * @return None
- */
-static void norm_calculate_sloped_bpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f1, const FLOAT_t f2, const FLOAT_t a1, const FLOAT_t a2) {
-    const FLOAT_t alpha = (num_taps - 1) / 2;
-    const FLOAT_t delta_omega = (2 * M_PI) / num_taps;
-    const int half_taps = (num_taps + 1) / 2;
+    /* Step 3: Precise Unity-Gain Normalization at the physical mid-band grid node */
+    const FLOAT_t f_mid = (f1 + f2) / 2;
 
-    /* Step 1: Synthesize un-windowed (raw) symmetric FIR coefficients using frequency sampling */
-    for (int n = 0; n < half_taps; n++) {
-        FLOAT_t sum = 0;
-        const FLOAT_t n_minus_alpha = n - alpha;
-
-        for (int k = 0; k < num_taps; k++) {
-            FLOAT_t freq = k * fs / num_taps;
-
-            /* Mirror spectrum points located above the Nyquist threshold */
-            if (freq > fs / 2) {
-                freq = fs - freq;
-            }
-
-            /* Define target amplitude using piecewise-linear function (slope in passband) */
-            FLOAT_t h_target = 0;
-            if (freq >= f1 && freq <= f2) {
-                h_target = a1 + (a2 - a1) * (freq - f1) / (f2 - f1);
-            }
-
-            /* Accumulate harmonic weight via IDFT containing pure linear phase orientation */
-            if (h_target > 0) {
-                sum += h_target * COSF(delta_omega * k * n_minus_alpha);
-            }
-        }
-
-        /* Store raw coefficients symmetrically directly into the output buffer */
-        h[n] = sum / num_taps;
-        h[num_taps - 1 - n] = h[n];
-    }
-
-    /* Step 2: Apply the preformed window via optimized vector multiplication from CMSIS-DSP */
-    ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
-
-    /* Step 3: Analytical Passband Normalization at the physical center frequency */
-    const FLOAT_t f_center = (f1 + f2) / 2;
-    const FLOAT_t omega_center = (2 * M_PI * f_center) / fs;
+    /* Lock onto the closest stable integer DFT bin index near the center of the passband */
+    const int k_mid = (int)(f_mid * num_taps / fs + 0.5);
+    const FLOAT_t omega_grid_mid = delta_omega * k_mid;
 
     FLOAT_t real_part = 0;
 
-    /* Calculate the exact discrete frequency response magnitude at f_center (Fourier transform step) */
+    /* Evaluate the absolute system transmission factor precisely at this stable grid node */
     for (int n = 0; n < num_taps; n++) {
-        /* Since h[n] is perfectly symmetric, the imaginary part cancels out. We only compute the real projection */
-        real_part += h[n] * COSF(omega_center * (n - alpha));
+        real_part += h[n] * COSF(omega_grid_mid * (n - alpha));
     }
 
-    /* Safeguard using FABSF to extract the absolute transfer scale factor */
     const FLOAT_t actual_passband_gain = FABSF(real_part);
 
-    /* Target baseline gain evaluated precisely matching the targeted sloped interpolation function */
-    const FLOAT_t target_center_gain = a1 + (a2 - a1) * (f_center - f1) / (f2 - f1);
+    /* Enforce strict unity reference target (1.0 equals 0 dB standard transmission) */
+    const FLOAT_t reference_unity_gain = 1;
 
-    /* Normalize the filter only if a valid non-zero gain response is present */
-    if (actual_passband_gain > 0 && target_center_gain > 0) {
-        const FLOAT_t scale_factor = target_center_gain / actual_passband_gain;
+    /* Compensate gain losses only if a valid active spectrum area is captured */
+    if (actual_passband_gain > 0) {
+        const FLOAT_t scale_factor = reference_unity_gain / actual_passband_gain;
 
-        /* Apply dynamic scale factor using optimized CMSIS-DSP architecture vector scaling */
+        /* Re-scale the entire FIR impulse map using optimized hardware vectors */
         ARM_MORPH(arm_scale)(h, scale_factor, h, num_taps);
     }
 }
