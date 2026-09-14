@@ -231,9 +231,11 @@ static void qpsk_rx_matched_filter_process(qpsk_rx_matched_filter_t *const rx_fi
     /* Process the interleaved payload as two independent interleaved streams (Real/Imaginary paths) */
     ARM_MORPH(arm_fir)(&(rx_filter->fir_instance), (FLOAT_t *)pSrc, pDst, rx_filter->block_size_samples * 2);
 }
+
 /* Loop Filter Proportional (Kp) and Integral (Ki) gains for timing recovery loop tracking */
-#define TIMING_LOOP_KP    0.01
-#define TIMING_LOOP_KI    0.0001
+// Макросы для подстройки петли (подберите под вашу скорость)
+#define TIMING_LOOP_KP   0.005f
+#define TIMING_LOOP_KI   0.00005f
 
 /* Interleaved IQ complex access macros */
 #define I_SAMPLE(ptr, idx) ((ptr)[(idx) * 2])
@@ -250,7 +252,33 @@ typedef struct {
     FLOAT_t prev_strobe_q;
     FLOAT_t prev_midpoint_i;
     FLOAT_t prev_midpoint_q;
+    FLOAT_t nominal_step;         // Базовый шаг (Symbol Rate / Sample Rate)
+
 } qpsk_rx_timing_recovery_t;
+
+
+/* Loop Filter Proportional (Kp) and Integral (Ki) gains for carrier recovery tracking */
+#define CARRIER_LOOP_KP   0.05
+#define CARRIER_LOOP_KI   0.0005
+
+/* Unified Structure containing the entire state of the QPSK Costas Loop */
+typedef struct {
+	FLOAT_t frequency;
+    FLOAT_t phase;          // Текущая фаза опорного генератора (в радианах, от -PI до +PI)
+    FLOAT_t freq_error;     // Накопленная ошибка частоты (интегральный накопитель петли)
+
+    // Коэффициенты пропорционально-интегрального (PI) фильтра петли Костаса
+    FLOAT_t kp;             // Пропорциональный коэффициент (боевое значение ~0.02f ... 0.05f)
+    FLOAT_t ki;             // Интегральный коэффициент (боевое значение ~0.0002f ... 0.0005f)
+
+    // Поля для отладки и мониторинга созвездия (опционально, но крайне полезно)
+    FLOAT_t last_phase_error; // Последняя вычисленная ошибка фазы детектором Костаса
+    uint32_t lock_counter;    // Счетчик захвата (для определения, синхронизирован ли приёмник)
+} qpsk_rx_carrier_recovery_t;
+
+
+static qpsk_rx_carrier_recovery_t carrier_loop;
+static qpsk_rx_timing_recovery_t timing_loop;
 
 /**
  * @brief  Resets and prepares the Gardner tracking loop state instance.
@@ -269,92 +297,253 @@ static void qpsk_rx_timing_init(qpsk_rx_timing_recovery_t *const loop) {
 }
 
 /**
- * @brief  Executes Gardner Timing Error Detection and decimates incoming 8-sps samples
- *         down to exactly 1-sps optimal strobes for subsequent phase demodulation.
- *
- * @param  loop             Pointer to the active timing tracking instance structure.
- * @param  iq_in            Pointer to the source filtered incoming interleaved I/Q stream (8 samples per symbol).
- * @param  in_samples_count Total size of the input buffer measured in complex samples (pairs).
- * @param  iq_out           Pointer to the destination array where optimal 1-sps strobes will be stored.
- *                          The allocation size must be sufficient to hold up to (in_samples_count / 8 + 2) pairs.
- * @return int              Total number of synchronized 1-sps symbols extracted into the destination buffer.
+ * @brief Петля Костаса (Carrier Recovery) для компенсации сдвига частоты и фазы
+ * @param loop Указатель на структуру состояния петли
+ * @param strobe_i Входной синфазный отсчет от интерполятора Фэрроу
+ * @param strobe_q Входной квадратурный отсчет от интерполятора Фэрроу
+ * @param out_i Указатель для записи скорректированного значения I
+ * @param out_q Указатель для записи скорректированного значения Q
  */
-static int qpsk_rx_timing_process(qpsk_rx_timing_recovery_t *const loop, const FLOAT_t *const iq_in, const int in_samples_count, FLOAT_t *const iq_out) {
-    int symbols_extracted = 0;
+void qpsk_carrier_recovery_process(
+    qpsk_rx_carrier_recovery_t* loop,
+    FLOAT_t strobe_i,
+    FLOAT_t strobe_q,
+    FLOAT_t* out_i,
+    FLOAT_t* out_q)
+{
+    // 1. Вычисляем синус и косинус текущей фазы опорного генератора
+    // (Для оптимизации на ARM Cortex-M4/M7 лучше использовать arm_sin_f32 / arm_cos_f32)
+	FLOAT_t sin_p = arm_sin_f32(loop->phase);
+	FLOAT_t cos_p = arm_cos_f32(loop->phase);
 
-    for (int k = 0; k < in_samples_count; k++) {
-        /* Increment internal pointer by base step modified by the loop filter accumulator output */
-        /* Base step is 1.0, meaning we naturally advance 1 sample per hardware loop iteration */
-        loop->fractional_symbol_idx += 1 + loop->loop_integrator;
+    // 2. Поворот созвездия (Демодуляция / Умножение на опорный сигнал)
+    // Корректируем фазу входного сэмпла
+    FLOAT_t i_rot =  strobe_i * cos_p + strobe_q * sin_p;
+    FLOAT_t q_rot = -strobe_i * sin_p + strobe_q * cos_p;
 
-        /* A symbol boundary occurs roughly every 8 samples */
-        if (loop->fractional_symbol_idx >= 8) {
-            /* Wrap the accumulator pointer back within the 8-sample modulo boundary */
-            loop->fractional_symbol_idx -= 8;
+    *out_i = i_rot;
+    *out_q = q_rot;
 
-            /* Identify indices for current strobe and midpoint samples (located 4 samples backwards) */
-            const int current_strobe_k = k;
-            const int current_midpoint_k = k - 4;
+    // 3. Жесткое решение (Hard Decision) для вычисления знака
+    FLOAT_t sign_i = (i_rot >= 0.0f) ? 1.0f : -1.0f;
+    FLOAT_t sign_q = (q_rot >= 0.0f) ? 1.0f : -1.0f;
 
-            FLOAT_t strobe_i = 0;
-            FLOAT_t strobe_q = 0;
-            FLOAT_t midpoint_i = 0;
-            FLOAT_t midpoint_q = 0;
+    // 4. Детектор фазовой ошибки Костаса (Costas Phase Error Detector для QPSK)
+    // Формула: Error = sign(I) * Q - sign(Q) * I
+    FLOAT_t phase_error = sign_i * q_rot - sign_q * i_rot;
 
-            /* Extract current strobe values from input stream or fall back to previous state history */
-            if (current_strobe_k >= 0) {
-                strobe_i = I_SAMPLE(iq_in, current_strobe_k);
-                strobe_q = Q_SAMPLE(iq_in, current_strobe_k);
-            } else {
-                strobe_i = loop->prev_strobe_i;
-                strobe_q = loop->prev_strobe_q;
+    // 5. Фильтр петли (PI-регулятор)
+    // Интегральная часть (коррекция частоты)
+    loop->freq_error += loop->ki * phase_error;
+
+    // Ограничение ухода частоты (Anti-windup), чтобы петля не улетала при долгом отсутствии сигнала
+    if (loop->freq_error > 0.1f)  loop->freq_error = 0.1f;
+    if (loop->freq_error < -0.1f) loop->freq_error = -0.1f;
+
+    // Пропорционально-интегральное обновление фазы опорного генератора
+    loop->phase += (loop->kp * phase_error) + loop->freq_error;
+
+    // Приведение фазы к диапазону [-PI, +PI] или [0, 2*PI]
+    if (loop->phase > (FLOAT_t)M_PI) {
+        loop->phase -= 2.0f * (FLOAT_t)M_PI;
+    } else if (loop->phase < -(FLOAT_t)M_PI) {
+        loop->phase += 2.0f * (FLOAT_t)M_PI;
+    }
+}
+
+/**
+ * @brief Внутренний кубический интерполятор Фэрроу для interleaved IQ потока
+ * @param base_ptr Указатель на начало массива FLOAT_t (указывает на I-компоненту)
+ * @param base_idx Индекс текущего комплексного сэмпла (k)
+ * @param mu Дробный интервал [0.0 ... 1.0) между сэмплами k и k+1
+ * @param offset 0 для канала I, 1 для канала Q (так как данные interleaved: I0, Q0, I1, Q1...)
+ */
+static inline FLOAT_t farrow_interpolate_iq(const FLOAT_t* base_ptr, int base_idx, FLOAT_t mu, int offset)
+{
+    // Шаг (stride) равен 2, так как I и Q чередуются
+    // Извлекаем 4 комплексные точки вокруг расчетного места: (base_idx - 1), base_idx, (base_idx + 1), (base_idx + 2)
+    FLOAT_t v0 = base_ptr[((base_idx - 1) * 2) + offset];
+    FLOAT_t v1 = base_ptr[((base_idx)     * 2) + offset];
+    FLOAT_t v2 = base_ptr[((base_idx + 1) * 2) + offset];
+    FLOAT_t v3 = base_ptr[((base_idx + 2) * 2) + offset];
+
+    // Вычисление полиномиальных коэффициентов Фэрроу (схема Лагранжа)
+    FLOAT_t c0 = v1;
+    FLOAT_t c1 = -0.5f * v0 + 0.5f * v2;
+    FLOAT_t c2 = v0 - 2.5f * v1 + 2.0f * v2 - 0.5f * v3;
+    FLOAT_t c3 = -0.5f * v0 + 1.5f * v1 - 1.5f * v2 + 0.5f * v3;
+
+    // Вычисление значения по схеме Горнера: ((c3 * mu + c2) * mu + c1) * mu + c0
+    return ((c3 * mu + c2) * mu + c1) * mu + c0;
+}
+
+// Состояние упаковщика бит (сбрасывать в ноль перед началом приёма блока)
+static uint8_t  tx_rx_bit_accumulator = 0; // Накопитель текущего байта
+static int      tx_rx_bit_count = 0;       // Сколько бит уже упаковано в текущий байт (0..7)
+static int      rx_payload_byte_idx = 0;   // Индекс текущего байта в выходном массиве
+
+
+/* ========================================================================= */
+/* CONFIGURATION METRICS AND MEMORY POOL CALCULATIONS                        */
+/* ========================================================================= */
+
+#define MODEM_RRC_TAPS          49   /* RRC filter length (typically 6 symbols * 8 sps + 1) */
+#define MODEM_TX_BLOCK_SAMPLES  4096//64   /* Number of complex I/Q samples processed per TX FIR iteration */
+#define MODEM_RX_BLOCK_SAMPLES  4096//128  /* Number of complex I/Q samples processed per RX DMA hardware interrupt */
+
+/* Maximum application data capacity for a single transmission burst transaction */
+#define APP_MAX_DATA_BYTES      4096//32
+
+/* Derived memory requirements for internal state buffers (CMSIS-DSP layout criteria) */
+#define TX_STATE_SIZE  (2 * MODEM_RRC_TAPS + 2 * MODEM_TX_BLOCK_SAMPLES - 2)
+#define RX_STATE_SIZE  (2 * MODEM_RRC_TAPS + 2 * MODEM_RX_BLOCK_SAMPLES - 2)
+
+/* Derived size for upsampled transmission workspace (32 bytes * 4 symbols/byte * 8 sps * 2 elements[I,Q]) */
+#define TX_UPSAMPLE_BUF_SIZE    (APP_MAX_DATA_BYTES * 4 * 8 * 2)
+
+/* --- Static Memory Allocation Pools (Internal Linkage via static) --- */
+static FLOAT_t preformed_window_mem[MODEM_RRC_TAPS];
+
+/* Modulator (TX) dedicated memory assets */
+static FLOAT_t tx_coeffs_pool[MODEM_RRC_TAPS];
+static FLOAT_t tx_state_pool[TX_STATE_SIZE];
+static FLOAT_t tx_upsample_workspace[TX_UPSAMPLE_BUF_SIZE];
+static FLOAT_t tx_hardware_output_io[TX_UPSAMPLE_BUF_SIZE]; /* Shaped I/Q payload ready for DAC/DMA */
+
+/* Demodulator (RX) dedicated memory assets */
+static FLOAT_t rx_coeffs_pool[MODEM_RRC_TAPS];
+static FLOAT_t rx_state_pool[RX_STATE_SIZE];
+static FLOAT_t rx_matched_workspace[MODEM_RX_BLOCK_SAMPLES * 2];
+static FLOAT_t rx_strobe_workspace[(MODEM_RX_BLOCK_SAMPLES / 4) * 2]; /* Holds 1-sps strobes, 2 floats per pair */
+static uint8_t rx_decoded_data_payload[MODEM_RX_BLOCK_SAMPLES / 32];  /* Extracted data payload output */
+
+/**
+ * @brief Упаковка принятых бит I и Q каналов в байты (MSB-first, Gray coded)
+ * @param bit_i Бит из синфазного канала (0 или 1)
+ * @param bit_q Бит из квадратурного канала (0 или 1)
+ */
+void app_modem_push_bits_to_payload(uint8_t bit_i, uint8_t bit_q)
+{
+    // Защита от выхода за границы буфера полезной нагрузки
+    // Максимальный размер буфера в байтах равен: MODEM_RX_BLOCK_SAMPLES / 32
+    // (Поскольку на 1 символ приходится 2 бита, а при SPS=8 на байт уходит 32 сэмпла)
+    if (rx_payload_byte_idx >= (MODEM_RX_BLOCK_SAMPLES / 32)) {
+        return;
+    }
+
+    // --- Обработка бита канала I (Старший бит дибита) ---
+    tx_rx_bit_accumulator <<= 1;
+    if (bit_i) {
+        tx_rx_bit_accumulator |= 0x01;
+    }
+    tx_rx_bit_count++;
+
+    // Если накопили полный байт (8 бит), сбрасываем его в буфер payload
+    if (tx_rx_bit_count >= 8) {
+        rx_decoded_data_payload[rx_payload_byte_idx++] = tx_rx_bit_accumulator;
+        tx_rx_bit_accumulator = 0;
+        tx_rx_bit_count = 0;
+    }
+
+    // Защитная проверка перед обработкой второго бита
+    if (rx_payload_byte_idx >= (MODEM_RX_BLOCK_SAMPLES / 32)) {
+        return;
+    }
+
+    // --- Обработка бита канала Q (Младший бит дибита) ---
+    tx_rx_bit_accumulator <<= 1;
+    if (bit_q) {
+        tx_rx_bit_accumulator |= 0x01;
+    }
+    tx_rx_bit_count++;
+
+    // Если накопили полный байт, сбрасываем его в буфер payload
+    if (tx_rx_bit_count >= 8) {
+        rx_decoded_data_payload[rx_payload_byte_idx++] = tx_rx_bit_accumulator;
+        tx_rx_bit_accumulator = 0;
+        tx_rx_bit_count = 0;
+    }
+}
+
+/**
+ * @brief Петля синхронизации символов для некратных скоростей (Gardner TED + Farrow Interpolator)
+ * @param loop Указатель на структуру состояния тайминга
+ * @param rx_data Входной interleaved массив комплексных сэмплов [I0, Q0, I1, Q1...] после RRC-фильтра
+ * @param num_samples Количество комплексных сэмплов в блоке (MODEM_RX_BLOCK_SAMPLES)
+ */
+void qpsk_rx_timing_process(qpsk_rx_timing_recovery_t* loop, const FLOAT_t* rx_data, int num_samples)
+{
+    // Цикл идет строго с шагом 1 по физическим отсчетам ЦАП/АЦП.
+    // Оставляем запас с краев (от 1 до num_samples - 2) для корректной работы 4-точечного интерполятора.
+    for (int k = 1; k < (num_samples - 2); k++)
+    {
+        // 1. Накапливаем плавающую фазу.
+        // К номинальному шагу (например, 7200/48000 = 0.15) прибавляется интегральная поправка частоты кварца.
+        FLOAT_t current_step = loop->nominal_step + loop->loop_integrator;
+        loop->fractional_symbol_idx += current_step;
+
+        // 2. Условие пересечения границы символа (Strobe Point)
+        if (loop->fractional_symbol_idx >= 1.0f)
+        {
+            loop->fractional_symbol_idx -= 1.0f;
+
+            // Вычисляем mu: точное положение пика символа в подпространстве между отсчетами k и k+1
+            FLOAT_t mu = loop->fractional_symbol_idx / current_step;
+
+            // 3. Интерполируем СТРОБ-ОТСЧЕТ (Центр «глазка» диаграммы) для I и Q каналов
+            FLOAT_t strobe_i = farrow_interpolate_iq(rx_data, k, mu, 0); // offset = 0 для I
+            FLOAT_t strobe_q = farrow_interpolate_iq(rx_data, k, mu, 1); // offset = 1 для Q
+
+            // 4. Интерполируем СРЕДНЮЮ ТОЧКУ (Midpoint) для детектора Гарднера.
+            // Она должна отставать ровно на половину длительности символа (сдвиг по фазе на -0.5).
+            FLOAT_t mu_mid = mu - 0.5f;
+            int k_mid = k;
+
+            // Если mu_mid ушел в отрицательную зону, сдвигаем базовый индекс k на 1 отсчет назад
+            if (mu_mid < 0.0f) {
+                mu_mid += 1.0f;
+                k_mid -= 1;
             }
+            FLOAT_t midpoint_i = farrow_interpolate_iq(rx_data, k_mid, mu_mid, 0);
+            FLOAT_t midpoint_q = farrow_interpolate_iq(rx_data, k_mid, mu_mid, 1);
 
-            /* Extract current midpoint values from input stream or fall back to previous state history */
-            if (current_midpoint_k >= 0) {
-                midpoint_i = I_SAMPLE(iq_in, current_midpoint_k);
-                midpoint_q = Q_SAMPLE(iq_in, current_midpoint_k);
-            } else {
-                midpoint_i = loop->prev_midpoint_i;
-                midpoint_q = loop->prev_midpoint_q;
-            }
-
-            /* Calculate Gardner Timing Error metric using complex signal transitions */
+            // 5. Детектор временной ошибки Гарднера (Gardner Timing Error Detector)
+            // Измеряет разность амплитуд между текущим и прошлым стробом, взвешенную по средней точке
             const FLOAT_t timing_error = midpoint_i * (strobe_i - loop->prev_strobe_i) +
                                          midpoint_q * (strobe_q - loop->prev_strobe_q);
 
-            /* Pass the error value through Proportional-Integral (PI) loop filter architecture */
-            loop->loop_integrator += timing_error * TIMING_LOOP_KI;
-            const FLOAT_t step_adjustment = timing_error * TIMING_LOOP_KP + loop->loop_integrator;
+            // 6. Пропорционально-Интегральный (PI) фильтр петли синхронизации
+            // Интегральная часть корректирует частоту (убирает статическую ошибку)
+            loop->loop_integrator += (TIMING_LOOP_KI * timing_error);
 
-            /* Enforce proportional loop tuning constraints to maintain loop stability boundaries */
-            if (loop->loop_integrator > 0.1)  loop->loop_integrator = 0.1;
-            if (loop->loop_integrator < -0.1) loop->loop_integrator = -0.1;
+            // Защита от разноса частоты (Anti-windup): ограничиваем уход в пределах +/- 2% от номинала
+            FLOAT_t max_freq_deviation = loop->nominal_step * 0.02f;
+            if (loop->loop_integrator > max_freq_deviation)  loop->loop_integrator = max_freq_deviation;
+            if (loop->loop_integrator < -max_freq_deviation) loop->loop_integrator = -max_freq_deviation;
 
-            /* Output the synchronized 1-sps optimal complex sample pair */
-            I_SAMPLE(iq_out, symbols_extracted) = strobe_i;
-            Q_SAMPLE(iq_out, symbols_extracted) = strobe_q;
-            symbols_extracted += 1;
+            // Пропорциональный сдвиг фазы применяется напрямую к накопителю для мгновенной подстройки
+            loop->fractional_symbol_idx += (TIMING_LOOP_KP * timing_error);
 
-            /* Update state histories for the subsequent iteration evaluation */
+            // Сохраняем текущие значения стробов для следующего шага детектора
             loop->prev_strobe_i = strobe_i;
             loop->prev_strobe_q = strobe_q;
-            loop->prev_midpoint_i = midpoint_i;
-            loop->prev_midpoint_q = midpoint_q;
+
+            // 7. Передаем интерполированные стробы на компенсацию несущей (Петлю Костаса)
+            FLOAT_t dynamic_i = 0.0f;
+            FLOAT_t dynamic_q = 0.0f;
+
+            // Вызываем вашу обновленную qpsk_carrier_recovery_process
+            qpsk_carrier_recovery_process(&carrier_loop, strobe_i, strobe_q, &dynamic_i, &dynamic_q);
+
+            // 8. Жесткое решение и упаковка бит (демодуляция данных)
+            uint8_t bit_i = (dynamic_i >= 0.0f) ? 1 : 0;
+            uint8_t bit_q = (dynamic_q >= 0.0f) ? 1 : 0;
+
+            // Функция, которая складывает биты в байты внутри rx_decoded_data_payload
+            app_modem_push_bits_to_payload(bit_i, bit_q);
         }
     }
-
-    return symbols_extracted;
 }
-/* Loop Filter Proportional (Kp) and Integral (Ki) gains for carrier recovery tracking */
-#define CARRIER_LOOP_KP   0.05
-#define CARRIER_LOOP_KI   0.0005
-
-/* Unified Structure containing the entire state of the QPSK Costas Loop */
-typedef struct {
-    FLOAT_t phase;              /* Current estimated carrier phase error in radians */
-    FLOAT_t frequency;          /* Current estimated frequency offset in radians/sample */
-} qpsk_rx_carrier_recovery_t;
 
 /**
  * @brief  Resets and prepares the Costas Loop tracking state instance.
@@ -549,84 +738,80 @@ static int qpsk_modem_transmit(qpsk_modem_t *const mod, const uint8_t *const dat
     return processed_samples;
 }
 
+// Внешние буферы и структуры состояния из вашего проекта
+static FLOAT_t rx_upsample_workspace[MODEM_RX_BLOCK_SAMPLES * 2];
+static qpsk_rx_timing_recovery_t timing_loop;
+
 /**
- * @brief  Top-level Receiver API function. Processes an incoming chunk of raw interleaved
- *         complex hardware I/Q samples through the entire demodulation stack to recover data bytes.
- *
- * @param  mod               Pointer to the active top-level modem context structure.
- * @param  iq_in             Pointer to the source incoming interleaved raw 8-sps I/Q sample stream.
- * @param  iq_matched_out    Pointer to an internal temporary storage buffer for matched filtering output.
- *                           Size must be >= (mod->rx_block_samples * 2) FLOAT_t elements.
- * @param  iq_strobe_buf     Pointer to an internal temporary storage buffer for timing loop outputs.
- *                           Size must be >= (mod->rx_block_samples / 4) FLOAT_t elements.
- * @param  data_out          Pointer to the target destination buffer for extracted data bytes.
- *                           Size must be >= (mod->rx_block_samples / 32) bytes.
- * @return int               Total number of fully reconstructed data bytes successfully decoded.
+ * @brief Главная функция приёма и демодуляции QPSK блока для некратных скоростей
+ * @param rx_dma_buffer Входной interleaved буфер от АЦП/DMA [I0, Q0, I1, Q1 ...] (размер: MODEM_RX_BLOCK_SAMPLES * 2)
+ * @param rx_decoded_bytes Выходной буфер для демодулированных байт (rx_decoded_data_payload)
+ * @return int Количество успешно декодированных БАЙТ в текущем блоке DMA
  */
-static int qpsk_modem_receive(qpsk_modem_t *const mod, const FLOAT_t *const iq_in, FLOAT_t *const iq_matched_out, FLOAT_t *const iq_strobe_buf, uint8_t *const data_out) {
-    /* 1. Execute input matched RRC filtration to maximize SNR and reject adjacent channel noise */
-    qpsk_rx_matched_filter_process(&(mod->rx_filter), iq_in, iq_matched_out);
+int qpsk_modem_receive(const FLOAT_t* rx_dma_buffer, uint8_t* rx_decoded_bytes)
+{
+    // 1. Очистка состояния потокового упаковщика бит перед каждым новым кадром DMA
+    tx_rx_bit_accumulator = 0;
+    tx_rx_bit_count = 0;
+    rx_payload_byte_idx = 0;
 
-    /* 2. Execute Gardner Timing Tracking to extract 1-sps synchronous strobes from 8-sps data stream */
-    const int extracted_symbols = qpsk_rx_timing_process(&(mod->rx_timing), iq_matched_out, mod->rx_block_samples, iq_strobe_buf);
+    // Безопасно зануляем выходной буфер, чтобы в логах не оставалось старых данных
+    memset(rx_decoded_bytes, 0, MODEM_RX_BLOCK_SAMPLES / 32);
 
-    /* If no full symbol boundaries were tracked during this block period, exit early */
-    if (extracted_symbols <= 0) {
-        return 0;
-    }
+    // 2. RRC Согласованная фильтрация (Matched Filtering) Найквиста
+    // Входной interleaved-поток пропускается через фильтр для подавления межсимвольной интерференции (ISI).
+    // Длина массива составляет MODEM_RX_BLOCK_SAMPLES комплексных сэмплов (умножаем на 2 для FLOAT_t)
 
-    /* 3. Execute 4th-order Costas Loop to track carrier offset and lock constellation orientation axes */
-    /* Processing can be safely executed in-place inside the strobe workspace buffer to save RAM footprint */
-    qpsk_rx_carrier_process(&(mod->rx_carrier), iq_strobe_buf, extracted_symbols, iq_strobe_buf);
+#if defined(ARM_MATH_CM4) || defined(ARM_MATH_CM7) || defined(ARM_MATH_H7)
+    // Аппаратное ускорение на микроконтроллерах STM32/ARM через CMSIS-DSP
+    arm_fir_f32(&rx_filter_instance, (float32_t*)rx_dma_buffer, (float32_t*)rx_upsample_workspace, MODEM_RX_BLOCK_SAMPLES * 2);
+#else
+    // Вариант для автономных тестов на ПК (где CMSIS-DSP может быть недоступен).
+    // Выполняем прямую программную свертку или копирование:
+    memcpy(rx_upsample_workspace, rx_dma_buffer, MODEM_RX_BLOCK_SAMPLES * 2 * sizeof(FLOAT_t));
+#endif
 
-    /* 4. Perform hard decision quadrant slicing and unpack Gray symbols back into binary data bytes */
-    const int decoded_bytes = qpsk_demodulate_bytes(data_out, iq_strobe_buf, extracted_symbols);
+    // 3. Запуск конвейера синхронизации символов Фэрроу-Гарднера
+    // Эта функция посэмпльно шагает по rx_upsample_workspace и внутри себя:
+    //   а) Вычисляет mu (дробный сдвиг фазы) для интерполятора Фэрроу.
+    //   б) Восстанавливает истинные отсчеты I/Q (Strobe) между сэмплами АЦП.
+    //   в) Корректирует уход частоты кварца через детектор Гарднера (Timing Recovery).
+    //   г) Вызывает qpsk_carrier_recovery_process (Костас) для компенсации фазы несущей.
+    //   д) Вызывает app_modem_push_bits_to_payload для упаковки бит в байты.
+    qpsk_rx_timing_process(&timing_loop, rx_upsample_workspace, MODEM_RX_BLOCK_SAMPLES);
 
-    return decoded_bytes;
+    // 4. Возвращаем итоговое количество записанных байт
+    // Переменная rx_payload_byte_idx инкрементируется внутри app_modem_push_bits_to_payload на каждый 8-й бит
+    return rx_payload_byte_idx;
 }
-#include <stdint.h>
-#include "dspdefines.h"    /* Hardware floating point macros, FLOAT_t, and arm_math.h inclusions */
 
-/* ========================================================================= */
-/* CONFIGURATION METRICS AND MEMORY POOL CALCULATIONS                        */
-/* ========================================================================= */
+typedef struct {
+    FLOAT_t tx_step;                // Шаг фазы (Symbol Rate / Sample Rate)
+    FLOAT_t tx_phase;               // Текущая накопленная фаза символа (0.0 ... 1.0)
+    int current_symbol_output_idx;  // Индекс текущего символа в буфере передачи
+} qpsk_tx_nco_t;
 
-#define MODEM_RRC_TAPS          49   /* RRC filter length (typically 6 symbols * 8 sps + 1) */
-#define MODEM_TX_BLOCK_SAMPLES  4096//64   /* Number of complex I/Q samples processed per TX FIR iteration */
-#define MODEM_RX_BLOCK_SAMPLES  4096//128  /* Number of complex I/Q samples processed per RX DMA hardware interrupt */
+// Инициализация в app_modem_system_setup()
+void app_modem_tx_system_setup(qpsk_tx_nco_t* tx, FLOAT_t sample_rate, FLOAT_t symbol_rate)
+{
+    tx->tx_step = symbol_rate / sample_rate; // Например: 7200.0 / 48000.0 = 0.15
+    tx->tx_phase = 0.0f;
+    tx->current_symbol_output_idx = 0;
+}
 
-/* Maximum application data capacity for a single transmission burst transaction */
-#define APP_MAX_DATA_BYTES      4096//32
+// Внешняя структура состояния NCO передатчика (объявлена в qpsk_modem.c)
+static qpsk_tx_nco_t tx_nco;
 
-/* Derived memory requirements for internal state buffers (CMSIS-DSP layout criteria) */
-#define TX_STATE_SIZE  (2 * MODEM_RRC_TAPS + 2 * MODEM_TX_BLOCK_SAMPLES - 2)
-#define RX_STATE_SIZE  (2 * MODEM_RRC_TAPS + 2 * MODEM_RX_BLOCK_SAMPLES - 2)
-
-/* Derived size for upsampled transmission workspace (32 bytes * 4 symbols/byte * 8 sps * 2 elements[I,Q]) */
-#define TX_UPSAMPLE_BUF_SIZE    (APP_MAX_DATA_BYTES * 4 * 8 * 2)
-
-/* --- Static Memory Allocation Pools (Internal Linkage via static) --- */
-static FLOAT_t preformed_window_mem[MODEM_RRC_TAPS];
-
-/* Modulator (TX) dedicated memory assets */
-static FLOAT_t tx_coeffs_pool[MODEM_RRC_TAPS];
-static FLOAT_t tx_state_pool[TX_STATE_SIZE];
-static FLOAT_t tx_upsample_workspace[TX_UPSAMPLE_BUF_SIZE];
-static FLOAT_t tx_hardware_output_io[TX_UPSAMPLE_BUF_SIZE]; /* Shaped I/Q payload ready for DAC/DMA */
-
-/* Demodulator (RX) dedicated memory assets */
-static FLOAT_t rx_coeffs_pool[MODEM_RRC_TAPS];
-static FLOAT_t rx_state_pool[RX_STATE_SIZE];
-static FLOAT_t rx_matched_workspace[MODEM_RX_BLOCK_SAMPLES * 2];
-static FLOAT_t rx_strobe_workspace[(MODEM_RX_BLOCK_SAMPLES / 4) * 2]; /* Holds 1-sps strobes, 2 floats per pair */
-static uint8_t rx_decoded_data_payload[MODEM_RX_BLOCK_SAMPLES / 32];  /* Extracted data payload output */
-
-/* Global static driver context instance */
-static qpsk_modem_t hf_digital_modem;
+// Внешние буферы из вашего проекта
+extern FLOAT_t tx_hardware_output_io[TX_UPSAMPLE_BUF_SIZE];
+extern FLOAT_t tx_upsample_workspace[TX_UPSAMPLE_BUF_SIZE];
 
 /* ========================================================================= */
 /* APPLICATION LAYER CONTROL IMPLEMENTATION                                  */
 /* ========================================================================= */
+
+/* Global static driver context instance */
+static qpsk_modem_t hf_digital_modem;
 
 /**
  * @brief  System hardware boot-strapping layer. Prepares allocation links
@@ -641,6 +826,31 @@ static void app_modem_system_setup(void) {
      * the chosen length 'MODEM_RRC_TAPS'. This can be done via a startup helper
      * or standard memory mapping initialization hooks.
      */
+    // ... Инициализация окон и буферов
+    ARM_MORPH(arm_blackman_harris_92db)(preformed_window_mem, MODEM_RRC_TAPS);
+
+	// 1. Задаем базовые физические частоты тракта
+	const FLOAT_t sample_rate = 48000.0f; // Частота дискретизации кодека/ЦАП/АЦП
+	const FLOAT_t symbol_rate = 7200.0f;  // Некратная скорость символов (7200 Бод)
+
+	// 2. Инициализация ПЕРЕДАТЧИКА (TX) через NCO
+	app_modem_tx_system_setup(&tx_nco, sample_rate, symbol_rate);
+
+    // Номинальный шаг фазы на один входной сэмпл Fs
+    timing_loop.nominal_step = symbol_rate / sample_rate;
+    timing_loop.fractional_symbol_idx = 0.0f;
+    timing_loop.loop_integrator = 0.0f;
+
+	carrier_loop.phase = 0.0f;       // Стартуем с нулевой фазы
+	carrier_loop.freq_error = 0.0f;  // Стартуем с нулевого ухода частоты
+
+	// Для некратных скоростей (например, 7200 Бод при 48кГц)
+	// оптимально подходят следующие базовые значения:
+	carrier_loop.kp = 0.025f;        // Чувствительность к мгновенному сдвигу фазы
+	carrier_loop.ki = 0.00025f;      // Скорость подстройки под постоянный уход частоты (кварца)
+
+	carrier_loop.last_phase_error = 0.0f;
+	carrier_loop.lock_counter = 0;
 
     /* Initialize the integrated top-level modem object, linking all static memory blocks */
     qpsk_modem_init(
@@ -657,89 +867,169 @@ static void app_modem_system_setup(void) {
 }
 
 /**
- * @brief  Example application trigger function. Invoked when data needs to be pushed
- *         to the physical transmission medium (RF power amplifier path via DAC).
- *
- * @param  payload_data  Pointer to the source binary array containing data bytes to transfer.
- * @param  length_bytes  Total number of active payload bytes to modulate (must be <= APP_MAX_DATA_BYTES).
- * @return int           Total number of generated FLOAT_t elements inside 'tx_hardware_output_io'.
+ * @brief Функция интерполяции тапов RRC-фильтра (для передатчика)
+ * Находит точное значение импульсной характеристики Найквиста в промежутке между тапами
+ * @param rrc_taps Указатель на массив коэффициентов фильтра (preformed_window_mem)
+ * @param num_taps Количество коэффициентов (MODEM_RRC_TAPS, например, 49 или 65)
+ * @param mu Дробное смещение фазы от 0.0 до 1.0
+ * @param tap_idx Базовый индекс целого тапа
  */
-static int app_modem_execute_transmission(const uint8_t *const payload_data, const int length_bytes) {
-    int generated_floats = 0;
-
-    if (length_bytes > 0 && length_bytes <= APP_MAX_DATA_BYTES) {
-        /* Run high-level modulation pipeline to convert bytes into ready-to-transmit shaped I/Q samples */
-        const int generated_complex_samples = qpsk_modem_transmit(
-            &hf_digital_modem,
-            payload_data,
-            length_bytes,
-            tx_hardware_output_io,
-            tx_upsample_workspace
-        );
-
-        /* Calculate total float values count (each complex sample = I + Q = 2 floats) */
-        generated_floats = generated_complex_samples * 2;
+static inline FLOAT_t farrow_interpolate_rrc(const FLOAT_t* rrc_taps, int num_taps, int tap_idx, FLOAT_t mu)
+{
+    // Защита от выхода за границы массива коэффициентов RRC
+    if (tap_idx < 1 || tap_idx >= (num_taps - 2)) {
+        return rrc_taps[tap_idx >= 0 && tap_idx < num_taps ? tap_idx : 0];
     }
 
-    /* Returns count of valid data elements inside 'tx_hardware_output_io' to be routed to DAC DMA */
-    return generated_floats;
+    // 4 точки вокруг расчетного места в фильтре Найквиста
+    FLOAT_t v0 = rrc_taps[tap_idx - 1];
+    FLOAT_t v1 = rrc_taps[tap_idx];
+    FLOAT_t v2 = rrc_taps[tap_idx + 1];
+    FLOAT_t v3 = rrc_taps[tap_idx + 2];
+
+    // Полином Фэрроу (кубический Лагранж)
+    FLOAT_t c0 = v1;
+    FLOAT_t c1 = -0.5f * v0 + 0.5f * v2;
+    FLOAT_t c2 = v0 - 2.5f * v1 + 2.0f * v2 - 0.5f * v3;
+    FLOAT_t c3 = -0.5f * v0 + 1.5f * v1 - 1.5f * v2 + 0.5f * v3;
+
+    return ((c3 * mu + c2) * mu + c1) * mu + c0;
 }
 
 /**
- * @brief  Example interrupt service vector routine (ISR). Triggered when the input
- *         ADC/SDR hardware pipeline finishes gathering a frame of complex I/Q stream.
- *
- * @param  raw_dma_iq_input  Pointer to the active raw hardware input buffer [I0, Q0, I1, Q1, ...].
- *                           Size must match (MODEM_RX_BLOCK_SAMPLES * 2) elements.
- * @return None
+ * @brief Формирование (модуляция) QPSK сигнала для некратных скоростей методом NCO+Farrow
+ * @param txarray Массив исходных байт для передачи
+ * @param size Количество байт в массиве txarray
+ * @return int Количество сгенерированных элементов FLOAT_t в tx_hardware_output_io (в 2 раза больше комплексных сэмплов)
  */
-static void app_modem_rx_dma_callback_isr(const FLOAT_t *const raw_dma_iq_input) {
-    /*
-     * Process incoming raw hardware block through the complete receiver demodulation pipeline.
-     * Uses preallocated static workspaces to avoid frame processing latency.
-     */
-    const int recovered_bytes_count = qpsk_modem_receive(
-        &hf_digital_modem,
-        raw_dma_iq_input,
-        rx_matched_workspace,
-        rx_strobe_workspace,
-        rx_decoded_data_payload
-    );
+int app_modem_execute_transmission(const uint8_t * txarray, unsigned int size)
+{
+    // 1. Сброс состояния NCO перед началом новой передачи
+    // Значение tx_nco.tx_step должно быть рассчитано в app_modem_system_setup как (Symbol_Rate / Sample_Rate)
+    tx_nco.tx_phase = 0.0f;
+    tx_nco.current_symbol_output_idx = 0;
 
-    /* If bytes were successfully decoded from current frame, route them to application dispatcher */
-    if (recovered_bytes_count > 0) {
-    	printhex_titled(0, rx_decoded_data_payload, recovered_bytes_count, "rx_decoded_data_payload");
-        for (int i = 0; i < recovered_bytes_count; i++) {
-            const uint8_t data_byte = rx_decoded_data_payload[i];
-            /* Execute packet assembly, CRC check, or pass to the terminal console handler */
-             (void)data_byte;
+    int total_symbols_to_send = size * 4; // 4 символа QPSK в одном байте (по 2 бита на символ)
+    int out_float_idx = 0;
+
+    // Очищаем выходной буфер перед формированием сигнала
+    memset(tx_hardware_output_io, 0, sizeof(tx_hardware_output_io));
+
+    // 2. Генерация потока отсчетов на частоте дискретизации ЦАП (Fs)
+    // Ограничиваем цикл размером аппаратного TX-буфера
+    while (out_float_idx < (TX_UPSAMPLE_BUF_SIZE - 2))
+    {
+        // Накапливаем фазу символа в NCO
+        tx_nco.tx_phase += tx_nco.tx_step;
+
+        // Если фаза пересекает единицу — переключаемся на следующий QPSK символ
+        if (tx_nco.tx_phase >= 1.0f)
+        {
+            tx_nco.tx_phase -= 1.0f;
+            tx_nco.current_symbol_output_idx++;
         }
+
+        // Если все символы кончились, даем хвосту фильтра затухнуть (Flush delay line)
+        // Групповая задержка RRC составляет MODEM_RRC_TAPS символов.
+        if (tx_nco.current_symbol_output_idx >= (total_symbols_to_send + (MODEM_RRC_TAPS / 8)))
+        {
+            break;
+        }
+
+        // 3. Вычисление значащей амплитуды текущего символа с учетом истории (Свертка)
+        FLOAT_t accumulated_i = 0.0f;
+        FLOAT_t accumulated_q = 0.0f;
+
+        // Символьный шаг оверсемплинга в вещественном выражении (дробный SPS)
+        FLOAT_t f_sps = 1.0f / tx_nco.tx_step;
+
+        // Выполняем свертку: смотрим, какие символы из прошлого и будущего влияют на текущий сэмпл ЦАП
+        // Окно свертки ограничено длиной RRC фильтра (MODEM_RRC_TAPS)
+        int max_lookback_symbols = (int)(MODEM_RRC_TAPS / f_sps) + 1;
+
+        for (int m = -max_lookback_symbols; m <= 0; m++)
+        {
+            int target_sym_idx = tx_nco.current_symbol_output_idx + m;
+
+            // Если символ находится внутри границ нашего пакета данных
+            if (target_sym_idx >= 0 && target_sym_idx < total_symbols_to_send)
+            {
+                // Извлекаем дибит из байтового массива txarray
+                int byte_pos = target_sym_idx / 4;
+                int sym_pos = target_sym_idx % 4;
+                uint8_t current_byte = txarray[byte_pos];
+                uint8_t dibit = (current_byte >> (6 - (sym_pos * 2))) & 0x03;
+
+                // Отображение на QPSK созвездие (Грей-код)
+                FLOAT_t symbol_i = (dibit & 0x02) ? 1.0f : -1.0f;
+                FLOAT_t symbol_q = (dibit & 0x01) ? 1.0f : -1.0f;
+
+                // Вычисляем, в какую точку RRC фильтра попадает этот символ
+                // Дробная часть mu обеспечивает идеальную плавность переходов без джиттера
+                FLOAT_t exact_tap_pos = ((FLOAT_t)(-m) + tx_nco.tx_phase) * f_sps;
+                int base_tap_idx = (int)exact_tap_pos;
+                FLOAT_t mu = exact_tap_pos - (FLOAT_t)base_tap_idx;
+
+                // Дробно интерполируем значение RRC импульса Найквиста
+                FLOAT_t rrc_weight = farrow_interpolate_rrc(preformed_window_mem, MODEM_RRC_TAPS, base_tap_idx, mu);
+
+                // Накапливаем вклад символа в текущую точку времени
+                accumulated_i += symbol_i * rrc_weight;
+                accumulated_q += symbol_q * rrc_weight;
+            }
+        }
+
+        // 4. Запись interleaved отсчетов в массив для выдачи в DMA/ЦАП
+        tx_hardware_output_io[out_float_idx++] = accumulated_i; // Канал I
+        tx_hardware_output_io[out_float_idx++] = accumulated_q; // Канал Q
     }
-}
-/**
- * @brief  Pre-calculates window coefficients into the application memory pool
- *         using optimized CMSIS-DSP window generation functions.
- *         Must be executed once during hardware boot-strapping before initializing the modem.
- *
- * @param  window_mem   Pointer to the target destination window array in memory.
- *                      Allocation size must be exactly equal to num_taps.
- * @param  num_taps     Length of the window to generate (typically MODEM_RRC_TAPS = 49).
- * @return None
- */
-static void app_modem_init_window(FLOAT_t *const window_mem, const int num_taps) {
-    /*
-     * Synthesize Blackman-Harris (92 dB) window weights into the provided buffer.
-     * The ARM_MORPH macro resolves to either 'arm_blackman_harris_92db_f32'
-     * or 'arm_blackman_harris_92db_f64' based on current project compiler settings.
-     */
-    ARM_MORPH(arm_blackman_harris_92db)(window_mem, num_taps);
+
+    // Возвращаем общее число сгенерированных float-элементов
+    return out_float_idx;
 }
 
+
+/**
+ * @brief Обработчик прерывания / Callback DMA для приёма данных модема
+ * @param data_out Указатель на interleaved комплексный буфер [I0, Q0, I1, Q1 ...] от АЦП/DMA
+ */
+static void app_modem_rx_dma_callback_isr(const FLOAT_t * data_out)
+{
+    // 1. Точка контроля времени (если используется в вашем проекте для замера джиттера/профилирования)
+    //TP();
+
+    // 2. Вызов сквозного конвейера приема:
+    // Внутри qpsk_modem_receive последовательно выполняются:
+    //   - RRC фильтрация Найквиста (арпаратный/программный FIR)
+    //   - Интерполяция Фэрроу и петля Гарднера (Timing Recovery)
+    //   - Петля Костаса (Carrier Recovery)
+    //   - Сборка и упаковка бит в байты (Gray Code, MSB-first)
+    const int recovered_bytes_count = qpsk_modem_receive(data_out, rx_decoded_data_payload);
+
+    // 3. Анализ и обработка результатов демодуляции
+    if (recovered_bytes_count > 0)
+    {
+        // Для отладки на ПК или вывода в консоль
+        //PRINTF("[DMA ISR] recovered_bytes_count: %d\n", recovered_bytes_count);
+        printhex_titled(0, rx_decoded_data_payload, recovered_bytes_count, "rx_decoded_data_payload");
+
+        // Здесь в боевом коде обычно вызывается верхнеуровневый разборщик пакетов,
+        // например, поиск синхрослова, проверка CRC или передача в стек AX.25 / HDLC:
+        // app_modem_parse_protocol_packet(rx_decoded_data_payload, recovered_bytes_count);
+    }
+    else
+    {
+        // Сигнал не обнаружен или петли синхронизации еще не захватили поток (идет шум)
+        // В боевом коде здесь можно инкрементировать счетчик ошибок или пропуска кадров
+    }
+
+    // 4. Финальная точка контроля времени
+    TP();
+}
 
 void modem_test(void)
 {
 	TP();
-	app_modem_init_window(preformed_window_mem, MODEM_RRC_TAPS);
 	app_modem_system_setup();
 	static const uint8_t txarray [] =
 	{
