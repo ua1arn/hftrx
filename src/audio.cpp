@@ -3565,7 +3565,7 @@ static void nfm_deemph_init(nfm_deemph_t *filter, FLOAT_t sample_rate) {
     filter->x1 = 0;
     filter->y1 = 0;
 
-    FLOAT_t tau = (FLOAT_t)750 / 1000000;
+    FLOAT_t tau = (FLOAT_t)750 / 1000000;	// 750 uS
     FLOAT_t alpha = 2 * tau * sample_rate;
     FLOAT_t denom = 1 + alpha;
 
@@ -3654,6 +3654,10 @@ static void ctcss_detector_reset(hfrxpath_t *path) {
 
     path->ctcss_squelch_open = 0;
     path->dcs_squelch_open = 0;
+
+    /* FIX: Clear de-emphasis delay lines to instantly recover from any NaN state */
+    path->audio_filter.x1 = 0;
+    path->audio_filter.y1 = 0;
 }
 
 /**
