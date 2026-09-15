@@ -223,6 +223,7 @@ typedef struct {
     FLOAT_t a1;          /* Filter coefficient a1 */
     FLOAT_t x1;          /* Delay element for input state x[n-1] */
     FLOAT_t y1;          /* Delay element for output state y[n-1] */
+    FLOAT_t denom;
 } nfm_deemph_t;
 
 /* CIC Decimator state structure (2nd order, optimized for M=45) */
@@ -335,6 +336,7 @@ typedef struct {
 
     amdemod_t amd;	/* AM demodulator */
 
+    volatile int32_t saved_delta_fi;
 
     agcparams_t rxsmeterparams;
     agcstate_t rxsmeterstate;	// На каждый приёмник
@@ -3572,6 +3574,7 @@ static void nfm_deemph_init(nfm_deemph_t *filter, FLOAT_t sample_rate) {
     filter->b0 = 1 / denom;
     filter->b1 = 1 / denom;
     filter->a1 = (1 - alpha) / denom;
+    filter->denom = denom;
 }
 
 /**
@@ -3581,7 +3584,7 @@ static FLOAT_t nfm_deemph_process_sample(nfm_deemph_t *filter, FLOAT_t in) {
     FLOAT_t out = filter->b0 * in + filter->b1 * filter->x1 - filter->a1 * filter->y1;
     filter->x1 = in;
     filter->y1 = out;
-    return out;
+    return out * filter->denom;
 }
 
 /**
@@ -3790,7 +3793,7 @@ static FLOAT_t hftrx_nfm_rx_process_sample(hfrxpath_t * const path, FLOAT_t samp
 
     /* 3. Apply standard de-emphasis response curve mapping */
     FLOAT_t voice_audio = nfm_deemph_process_sample(&path->audio_filter, raw_audio);
-    voice_audio = raw_audio;	// TODO: fix nfm_deemph_process_sample
+
     /* 4. Output normalized to 1.5x matching deviation criteria levels */
     return (voice_audio * 3) / 2;
 }
@@ -3905,14 +3908,13 @@ uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi)
 	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_SAM;
 }
 
-static RAMDTCM volatile int32_t saved_delta_fi [NTRX];	// force CCM allocation
-
 /* Получить значение отклонения частоты с точностью 0.1 герца для отображения на дисплее */
 uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi)
 {
+    hfrxpath_t * const path = & rx_paths [pathi];
 	const int_fast32_t sample_rate10 = ARMSAIRATE * 10;
 
-	* p = ((int_fast64_t) saved_delta_fi [pathi] * sample_rate10) >> 32;
+	* p = ((int_fast64_t) path->saved_delta_fi * sample_rate10) >> 32;
 	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_NFM;
 }
 
@@ -4194,15 +4196,15 @@ static FLOAT_t baseband_demodulator(
 			const FLOAT_t sigpower = agc_getsigpower(vp0f);
 			const FLOAT_t fltstrengthslow = agc_measure_float(path, dspmode, SQRTF(sigpower));
 
-#if 1
+#if 0
 			r = hftrx_nfm_rx_process_sample(path, vp0f.IV, vp0f.QV);
 #else
 			//const FLOAT_t gain = agc_getgain_float(path, fltstrengthslow);
-			saved_delta_fi [pathi] = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
+			path->saved_delta_fi = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
 			//const int fdelta10 = ((int64_t) saved_delta_fi [pathi] * ARMSAIRATE * 10) >> 32;	// Отклнение частоты в 0.1 герц единицах
 			// значение для прослушивания
 			// 0.707 == M_SQRT1_2
-			const FLOAT_t sample = adpt_input(& nfmdemod, saved_delta_fi [pathi]);
+			const FLOAT_t sample = adpt_input(& nfmdemod, path->saved_delta_fi);
 			r = sample * (ctcss_squelch() && agc_levelsquelchopen(path, fltstrengthslow));
 #endif
 		}
