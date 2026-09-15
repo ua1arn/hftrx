@@ -3595,6 +3595,7 @@ typedef struct {
 
 /* Static instance of the CTCSS decimator state */
 static ctcss_cic_t ctcss_decimator;
+static uint8_t ctcss_squelch_open = 0;
 
 /**
  * CTCSS Decimator Initialization
@@ -3609,40 +3610,76 @@ static void ctcss_decimator_init(ctcss_cic_t *dec) {
     dec->decimation_counter = 0;
 }
 
+/* CTCSS Goertzel detector state structure */
+typedef struct {
+    FLOAT_t coeff;       /* Feedback coefficient */
+    FLOAT_t q0;          /* State variable q[n] */
+    FLOAT_t q1;          /* State variable q[n-1] */
+    FLOAT_t q2;          /* State variable q[n-2] */
+    uint32_t count;      /* Current sample index in the block */
+    uint32_t block_size; /* Block size N (defines integration window, e.g., 150) */
+} ctcss_goertzel_t;
+
+/* DCS Detector configuration constants */
+#define DCS_BITS_COUNT        23
+#define DCS_CLOCK_OVERSAMPLE  8
+
+/* DCS Detector state structure */
+typedef struct {
+    FLOAT_t dcs_integrator;    /* Integrate samples for bit slicing */
+    uint32_t sample_counter;   /* Sub-bit oversampling tick counter */
+    uint32_t bit_buffer;       /* Shift register for 23 received bits */
+    uint8_t clock_phase;       /* Estimated optimal sampling phase */
+    FLOAT_t prev_sample;       /* Last sample for edge detection */
+} dcs_detector_t;
+
+/* Static instance of the DCS detector state */
+static dcs_detector_t dcs_det;
+static uint8_t dcs_squelch_open = 0;
+static uint16_t dcs_target_code = 23; /* Target 3-digit octal DCS code, e.g., 023 */
+
+/* Static instance of the Goertzel detector state */
+static ctcss_goertzel_t ctcss_detector;
+static void process_dcs_sample(FLOAT_t sample);
+static void process_ctcss_detector_sample(FLOAT_t sample);
+
 /**
- * Pushes a single 48 kHz audio sample into the CTCSS decimation chain
+ * Pushes a single 48 kHz audio sample into the CTCSS/DCS decimation chain
  * @param raw_audio - Demodulated sample from the PLL (radians per sample)
  */
 static void push_to_ctcss_decimator(FLOAT_t raw_audio) {
-    /* 1. Integrator stages (running at full 48 kHz rate) */
+    /* Integrator stages (running at full 48 kHz rate) */
     ctcss_decimator.integrator1 = ctcss_decimator.integrator1 + raw_audio;
     ctcss_decimator.integrator2 = ctcss_decimator.integrator2 + ctcss_decimator.integrator1;
 
-    /* 2. Decimation (Downsampling by a factor of 48: 48000 Hz -> 1000 Hz) */
     ctcss_decimator.decimation_counter = ctcss_decimator.decimation_counter + 1;
-    if (ctcss_decimator.decimation_counter >= 48) {
+
+    /* Decimation factor modified to M = 45 for DCS compatibility (~1066 Hz rate) */
+    if (ctcss_decimator.decimation_counter >= 45) {
         ctcss_decimator.decimation_counter = 0;
 
-        /* 3. Comb stages (running at decimated 1000 Hz rate) */
-        /* First comb stage: Y1[n] = X[n] - X[n-1] */
+        /* Comb stages (running at decimated sub-rate) */
         FLOAT_t comb1_out = ctcss_decimator.integrator2 - ctcss_decimator.comb1_delay;
         ctcss_decimator.comb1_delay = ctcss_decimator.integrator2;
 
-        /* Second comb stage: Y2[n] = Y1[n] - Y1[n-1] */
         FLOAT_t comb2_out = comb1_out - ctcss_decimator.comb2_delay;
         ctcss_decimator.comb2_delay = comb1_out;
 
-        /* 4. Gain correction */
-        /* DC Gain of a 2nd order CIC with M=48 is M^2 = 48 * 48 = 2304 */
-        FLOAT_t decimated_sample = comb2_out / 2304;
+        /* Gain correction for M=45: M^2 = 45 * 45 = 2025 */
+        FLOAT_t decimated_sample = comb2_out / 2025;
 
-        /* 5. Forward the 1000 Hz sample to the tone detector */
-        /* process_ctcss_detector_sample(decimated_sample); */
+        /*
+         * Parallel execution:
+         * Pass the same low-pass filtered sample to both detectors
+         */
+        process_ctcss_detector_sample(decimated_sample);
+        process_dcs_sample(decimated_sample);
     }
 }
+
+
 /**
- * Forcibly resets the internal states of the CTCSS decimator and Goertzel detector.
- * Call this immediately when the PLL loses carrier lock to prevent false squelch triggers.
+ * Forcibly resets the internal states of the CTCSS/DCS paths.
  */
 static void ctcss_detector_reset(void) {
     /* Reset CIC Decimator registers */
@@ -3659,23 +3696,17 @@ static void ctcss_detector_reset(void) {
     ctcss_detector.q2 = 0;
     ctcss_detector.count = 0;
 
-    /* Force close the final CTCSS squelch gate */
+    /* Reset DCS Detector buffers */
+    dcs_det.dcs_integrator = 0;
+    dcs_det.sample_counter = 0;
+    dcs_det.bit_buffer = 0;
+    dcs_det.clock_phase = 0;
+    dcs_det.prev_sample = 0;
+
+    /* Force close squelch gates */
     ctcss_squelch_open = 0;
+    dcs_squelch_open = 0;
 }
-
-/* CTCSS Goertzel detector state structure */
-typedef struct {
-    FLOAT_t coeff;       /* Feedback coefficient */
-    FLOAT_t q0;          /* State variable q[n] */
-    FLOAT_t q1;          /* State variable q[n-1] */
-    FLOAT_t q2;          /* State variable q[n-2] */
-    uint32_t count;      /* Current sample index in the block */
-    uint32_t block_size; /* Block size N (defines integration window, e.g., 150) */
-} ctcss_goertzel_t;
-
-/* Static instance of the Goertzel detector state */
-static ctcss_goertzel_t ctcss_detector;
-static uint8_t ctcss_squelch_open = 0;
 
 /**
  * CTCSS Goertzel Detector Initialization
@@ -3771,6 +3802,104 @@ void hftrx_nfm_rx_sample_callback(FLOAT_t sample_i, FLOAT_t sample_q) {
 
     /* ... write final_dac_sample to audio buffer ... */
 }
+
+//////////////
+/// DCS
+///
+
+/**
+ * Standard 23-bit Golay (23,12) cyclic redundancy check for DCS
+ * Validates the DCS word structure according to the polynomial: X^11 + X^10 + X^6 + X^5 + X^4 + X^2 + 1
+ */
+static uint8_t dcs_validate_golay(uint32_t word) {
+    uint32_t c = word & 0x7FFFFF; /* Keep 23 bits */
+    for (uint8_t i = 0; i < 12; i++) {
+        if (c & 0x400000) { /* If MSB of the cyclic window is set */
+            c = c ^ 0xC65;  /* XOR with inverted Golay polynomial coefficients */
+        }
+        c = c << 1;
+    }
+    /* If the remainder of cyclic division is zero, the code matrix is valid */
+    return (c == 0);
+}
+
+/**
+ * Extracts the 9-bit actual octal code from the verified 23-bit DCS word
+ */
+static uint16_t dcs_extract_code(uint32_t word) {
+    /* DCS data format: 3 bits documentation/flags, 9 bits octal code, 11 bits parity */
+    uint16_t raw_bits = (uint16_t)((word >> 11) & 0x1FF);
+
+    /* Convert inverted bits to standard octal notation format */
+    uint16_t octal = 0;
+    octal = octal + ((raw_bits >> 0) & 7);
+    octal = octal + (((raw_bits >> 3) & 7) * 10);
+    octal = octal + (((raw_bits >> 6) & 7) * 100);
+    return octal;
+}
+
+/**
+ * DCS Detector Initialization
+ */
+static void dcs_detector_init(void) {
+    dcs_det.dcs_integrator = 0;
+    dcs_det.sample_counter = 0;
+    dcs_det.bit_buffer = 0;
+    dcs_det.clock_phase = 0;
+    dcs_det.prev_sample = 0;
+    dcs_squelch_open = 0;
+}
+
+/**
+ * Processes a single decimated sample at the oversampled rate (~1066 Hz)
+ * Implements a digital PLL clock recovery loop and sliding correlation window.
+ * @param sample - Low-pass filtered sample from the discriminator output
+ */
+static void process_dcs_sample(FLOAT_t sample) {
+    /* 1. Software Clock Recovery via zero-crossing edge synchronization */
+    if ((sample > 0 && dcs_det.prev_sample <= 0) || (sample <= 0 && dcs_det.prev_sample > 0)) {
+        /* Edge detected! Align the clock phase marker halfway through the oversampled cycle */
+        dcs_det.sample_counter = DCS_CLOCK_OVERSAMPLE / 2;
+    }
+    dcs_det.prev_sample = sample;
+
+    /* Accumulate energy during the safe mid-bit window area */
+    dcs_det.dcs_integrator = dcs_det.dcs_integrator + sample;
+
+    /* 2. Execute bit slicing at the exact sampling phase trigger point */
+    dcs_det.sample_counter = dcs_det.sample_counter + 1;
+    if (dcs_det.sample_counter >= DCS_CLOCK_OVERSAMPLE) {
+        dcs_det.sample_counter = 0;
+
+        uint8_t current_bit = 0;
+        if (dcs_det.dcs_integrator > 0) {
+            current_bit = 1;
+        }
+        dcs_det.dcs_integrator = 0; /* Reset integrator for the next bit period */
+
+        /* Push sliced bit into the 23-bit rolling memory window */
+        dcs_det.bit_buffer = ((dcs_det.bit_buffer << 1) | current_bit) & 0x7FFFFF;
+
+        /* 3. Rolling Frame Search and circular permutation checking */
+        /* Since DCS runs continuously without explicit sync frames, test all 23 bit-shifts */
+        uint32_t test_word = dcs_det.bit_buffer;
+        for (uint8_t shift = 0; shift < DCS_BITS_COUNT; shift++) {
+            /* Check if current cyclic permutation satisfies Golay constraints */
+            if (dcs_validate_golay(test_word)) {
+                uint16_t detected_code = dcs_extract_code(test_word);
+
+                if (detected_code == dcs_target_code) {
+                    dcs_squelch_open = 1; /* Match found -> Valid burst, open gate */
+                    return;
+                }
+            }
+            /* Rotate word circularly to check alternative phase frames */
+            uint32_t bit22 = (test_word >> 22) & 1;
+            test_word = ((test_word << 1) | bit22) & 0x7FFFFF;
+        }
+    }
+}
+
 
 //////////////////////////
 
