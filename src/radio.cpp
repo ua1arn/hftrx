@@ -12744,14 +12744,14 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 	if (denoise)
 	{
 		// Filtering and denoise.
-		ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);		/* фильтр выхода детектора */
 		processNoiseReduction(nrp, nrp->wire1, p);	// result copy back
 		return p;
 	}
 	else
 	{
 		// Filtering only.
-		ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);		/* фильтр выхода детектора */
 		return nrp->wire1;
 	}
 #else /* WITHNOSPEEX */

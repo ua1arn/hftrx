@@ -3383,13 +3383,12 @@ static FLOAT_t mikeinmux(
 
 /* получить I/Q пару для передачи в up-converter */
 static FLOAT32P_t baseband_modulator(
+	hfrxpath_t * const path,
 	FLOAT_t vi,
 	uint_fast8_t dspmode,
 	int32_t * deltanfm
 	)
 {
-	const uint_fast8_t pathi = 0;	// тракт, испольуемый при передаче
-    hfrxpath_t * const path = &rx_paths[pathi];
 	const FLOAT_t shape = switchmode_delaytx(path) * shapeTXEnvelopStep() * scaleDAC;	// 0..1 - огибающая
 	switch (dspmode)
 	{
@@ -3773,9 +3772,7 @@ static void push_to_ctcss_decimator(hfrxpath_t *path, FLOAT_t raw_audio) {
  * Main object-oriented entrance point for NFM RX stream execution
  * @param pathi Context index: 0 for Main RX track, 1 for Sub RX track
  */
-static FLOAT_t hftrx_nfm_rx_process_sample(uint8_t pathi, FLOAT_t sample_i, FLOAT_t sample_q) {
-    /* Safe extraction of the targeted track context object pointer */
-    hfrxpath_t * const path = &rx_paths[pathi];
+static FLOAT_t hftrx_nfm_rx_process_sample(hfrxpath_t * const path, FLOAT_t sample_i, FLOAT_t sample_q) {
 
     /* 1. Demodulate complex IQ into frequency deviation */
     FLOAT_t raw_audio = nfm_pll_process_sample(&path->demodulator, sample_i, sample_q);
@@ -4126,8 +4123,7 @@ static void setNBfence(int dB)
 static FLOAT_t baseband_demodulator(
 	hfrxpath_t * const path,
 	FLOAT32P_t vp0f,					// Квадратурные значения выборки
-	const uint_fast8_t dspmode, 
-	const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
+	const uint_fast8_t dspmode
 	)
 {
 	if (glob_wnb)
@@ -4195,7 +4191,7 @@ static FLOAT_t baseband_demodulator(
 			const FLOAT_t fltstrengthslow = agc_measure_float(path, dspmode, SQRTF(sigpower));
 
 #if 1
-			r = hftrx_nfm_rx_process_sample(pathi, vp0f.IV, vp0f.QV);
+			r = hftrx_nfm_rx_process_sample(path, vp0f.IV, vp0f.QV);
 #else
 			//const FLOAT_t gain = agc_getgain_float(path, fltstrengthslow);
 			saved_delta_fi [pathi] = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
@@ -4255,8 +4251,7 @@ static FLOAT_t baseband_demodulator(
 static FLOAT32P_t processifadcsampleIQ_ISB(
 	hfrxpath_t * const path,
 	IFADCvalue_t iv0,	// Квадратурные значения выборки
-	IFADCvalue_t qv0,	// Квадратурные значения выборки
-	uint_fast8_t pathi				// 0/1: main_RX/sub_RX
+	IFADCvalue_t qv0	// Квадратурные значения выборки
 	)
 {
 	FLOAT32P_t rv = { 0 };
@@ -4272,8 +4267,7 @@ static FLOAT_t processifadcsampleIQ(
 	hfrxpath_t * const path,
 	IFADCvalue_t iv0,	// Квадратурные значения выборки
 	IFADCvalue_t qv0,	// Квадратурные значения выборки
-	uint_fast8_t dspmode,
-	uint_fast8_t pathi				// 0/1: main_RX/sub_RX
+	uint_fast8_t dspmode
 	)
 {
 #if WITHDSPLOCALRXFIR
@@ -4292,7 +4286,7 @@ static FLOAT_t processifadcsampleIQ(
 #endif /* WITHUSEDUALWATCH */
 
 		//END_STAMP();
-		return baseband_demodulator(path, vp0, dspmode, pathi);
+		return baseband_demodulator(path, vp0, dspmode);
 	}
 	else
 	{
@@ -4300,7 +4294,7 @@ static FLOAT_t processifadcsampleIQ(
 	}
 #else /* WITHDSPLOCALRXFIR */
 	FLOAT32P_t vp0 = { { adpt_input(& ifcodecrx, iv0), adpt_input(& ifcodecrx, qv0) } };
-	return baseband_demodulator(path, vp0, dspmode, pathi);
+	return baseband_demodulator(path, vp0, dspmode);
 #endif /* WITHDSPLOCALRXFIR */
 }
 
@@ -4311,9 +4305,10 @@ static FLOAT_t processifadcsampleIQ(
 // Возвращается сэмпл - выход детектора
 // return audio sample in range [- 1 .. + 1]
 static FLOAT_t processifadcsamplei(
-		hfrxpath_t * const path,
-		IFADCvalue_t v1,
-		uint_fast8_t dspmode)
+	hfrxpath_t * const path,
+	IFADCvalue_t v1,
+	uint_fast8_t dspmode
+	)
 {
 	const uint_fast8_t pathi = 0;
 
@@ -4324,7 +4319,7 @@ static FLOAT_t processifadcsamplei(
 		BEGIN_STAMP();
 		const FLOAT32P_t vp0 = filter_fir4_rx_SSB_IQ(scalepair(if_lo, adpt_input(& ifcodecrx, v1)), if_lo.IV != 0); // частота 12 кГц - 1/4 частоты выборок АЦП - можно воспользоваться целыми значениями.
 		END_STAMP();
-		return baseband_demodulator(path, vp0, dspmode, pathi);
+		return baseband_demodulator(path, vp0, dspmode);
 	}
 	else
 	{
@@ -4749,9 +4744,12 @@ void inject_testsignals(IFADCvalue_t * const dbuff)
 /* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx - меняем tx_MIKE_blockSize */
 void dsp_processtx(unsigned nsamples0)
 {
+	const uint_fast8_t pathi = 0;
+    hfrxpath_t * const path = & rx_paths [pathi];
 	ASSERT(tx_MIKE_blockSize == nsamples0);
 	unsigned i;
-	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
+
+	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [pathi];
 	/* обработка передачи */
 	FLOAT_t txfirbuff [tx_MIKE_blockSize];
 	FLOAT32P_t monitorbuff [tx_MIKE_blockSize];
@@ -4779,7 +4777,7 @@ void dsp_processtx(unsigned nsamples0)
 			v = v * (1 - shapecwssb) + (cwssbtone * shapecwssb);	/* Заменяем передаваемый сигнал на тон пропорционально огибающей. */
 		}
 		int32_t deltanfm;
-		FLOAT32P_t vfb = baseband_modulator(injectsubtone(v, ctcss), dspmodeA, & deltanfm);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		FLOAT32P_t vfb = baseband_modulator(path, injectsubtone(v, ctcss), dspmodeA, & deltanfm);	// Передатчик - формирование одного сэмпла (пары I/Q).
 
 #if WITHDSPLOCALTXFIR
 		/* работа без FIR фильтра в FPGA */
@@ -4808,6 +4806,7 @@ void dsp_processtx(unsigned nsamples0)
 FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 {
     hfrxpath_t * const path = & rx_paths [pathi];
+
 	ASSERT(gwprof < NPROF);
 	const uint_fast8_t tx = isdspmodetx(globDSPMode [gwprof] [0]);
 	const uint_fast8_t dspmode = tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [pathi];
@@ -4820,12 +4819,12 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 		{
 			/* прием независимых боковых полос */
 			// Обработка буфера с парами значений
-			//const FLOAT32P_t rv = processifadcsampleIQ_ISB(path, iv, qv, pathi);
+			//const FLOAT32P_t rv = processifadcsampleIQ_ISB(path, iv, qv);
 			return 0;
 		}
 		else
 		{
-			return processifadcsampleIQ(path, iv, qv, rxgate ? dspmode : DSPCTL_MODE_IDLE, pathi);
+			return processifadcsampleIQ(path, iv, qv, rxgate ? dspmode : DSPCTL_MODE_IDLE);
 		}
 
 #else /* WITHDSPEXTDDC */
