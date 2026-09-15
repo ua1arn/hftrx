@@ -3709,22 +3709,29 @@ static void ctcss_detector_reset(void) {
 }
 
 /**
- * CTCSS Goertzel Detector Initialization
- * @param det         - Pointer to the detector state structure
- * @param target_freq - Target CTCSS sub-tone frequency (e.g., 88.5)
- * @param sample_rate - Decimated sample rate (1000)
- * @param block_size  - Window size N (e.g., 150 for 150ms response time)
+ * CTCSS Goertzel Detector Initialization for Decimation M=45
+ * @param det              - Pointer to the detector state structure
+ * @param target_freq_x10  - Target CTCSS frequency multiplied by 10 (e.g., 885 for 88.5 Hz)
+ * @param block_size       - Window size N (e.g., 150)
  */
-static void ctcss_detector_init(ctcss_goertzel_t *det, FLOAT_t target_freq, FLOAT_t sample_rate, uint32_t block_size) {
+static void ctcss_detector_init(ctcss_goertzel_t *det, uint32_t target_freq_x10, uint32_t block_size) {
+	const int_fast32_t fs = ARMI2SMCLK;
     det->q0 = 0;
     det->q1 = 0;
     det->q2 = 0;
     det->count = 0;
     det->block_size = block_size;
 
-    /* Standard Goertzel coefficient calculation using COSF macro from dspdefines.h */
-    FLOAT_t k = (FLOAT_t)(0.5) + (block_size * target_freq) / sample_rate;
+    /*
+     * Exact k calculation without using the rounded sample_rate literal.
+     * k = 0.5 + (N * f_target * 45) / 48000
+     * Multiplied by 10 inside the fraction denominator to account for target_freq_x10.
+     * 48000 * 10 = 480000.
+     */
+    FLOAT_t k = (FLOAT_t)(1) / 2 + (FLOAT_t)((block_size * target_freq_x10 * 45) / fs);
     FLOAT_t omega = (2 * M_PI * k) / block_size;
+
+    /* COSF macro from dspdefines.h automatically matches FLOAT_t precision */
     det->coeff = 2 * COSF(omega);
 }
 
@@ -3900,6 +3907,24 @@ static void process_dcs_sample(FLOAT_t sample) {
     }
 }
 
+/* Example of integration inside the global init block */
+static void hftrx_nfm_submode_init(void) {
+	const int_fast32_t fs = ARMI2SMCLK;
+    /* Initialize NFM PLL Demodulator with a 4 kHz bandwidth */
+    nfm_pll_init(&nfm_demodulator, fs, 4000);
+
+    /* Initialize Audio De-emphasis filter for 48 kHz sampling rate */
+    nfm_deemph_init(&nfm_audio_filter, fs);
+
+    /* Initialize the low-pass shared CIC decimator for CTCSS/DCS */
+    ctcss_decimator_init(&ctcss_decimator);
+
+    /* Initialize target tone detector for 88.5 Hz CTCSS with a 150ms window */
+    ctcss_detector_init(&ctcss_detector, 885, 150);
+
+    /* Initialize the digital DCS stream detector registers */
+    dcs_detector_init();
+}
 
 //////////////////////////
 
