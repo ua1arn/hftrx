@@ -334,7 +334,7 @@ typedef struct {
     ncoftw_t angle_aflotx;
     ncoftw_t angle_aflorx;
 
-    amdemod_t amd;	/* AM demodulator */
+    amdemod_t samdetector;	/* AM demodulator */
 
     volatile int32_t saved_delta_fi;
 
@@ -3903,7 +3903,7 @@ uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi)
     hfrxpath_t * const path = & rx_paths [pathi];
 	const uint_fast32_t sample_rate10 = ARMSAIRATE * 10;
 
-	* p = ((int_fast64_t) path->amd.omegai * sample_rate10) >> 32;
+	* p = ((int_fast64_t) path->samdetector.omegai * sample_rate10) >> 32;
 	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_SAM;
 }
 
@@ -3917,7 +3917,7 @@ uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi)
 	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_NFM;
 }
 
-static void amd_init(amdemod_t * a)
+static void samdetector_init(amdemod_t * a)
 {
 	a->phsi = 0;
 	a->fil_outi = 0;
@@ -3947,7 +3947,7 @@ static void amd_init(amdemod_t * a)
 
 
 static void 
-create_amd(
+samdetector_create(
 	amdemod_t * a,
 	//int run,
 	//int mode,
@@ -3984,7 +3984,7 @@ create_amd(
 	a->mtauI = EXPF(- 1 / (sample_rate * tauI));
 	a->onem_mtauI = 1 - a->mtauI;
 
-	amd_init(a);
+	samdetector_init(a);
 }
 
 #if 0
@@ -3999,12 +3999,12 @@ flush_amd(amdemod_t * a)
 // Демодуляция SAM
 static FLOAT_t
 demodulator_SAM(
-	hfrxpath_t * const path,
+	amdemod_t * const a,
 	FLOAT32P_t vp1
 	)
 {
 	// taken from Warren PrattВґs WDSP, 2016
-	// http://svn.tapr.org/repos_sdr_hpsdr/trunk/W5WC/PowerSDR_HPSDR_mRX_PS/Source/wdsp/amd.c
+	// http://svn.tapr.org/repos_sdr_hpsdr/trunk/W5WC/PowerSDR_HPSDR_mRX_PS/Source/wdsp/samdetector.c
 
 	FLOAT_t audio;	// выходной сэмпл (ненормированное значение).
 	FLOAT_t corr [2];
@@ -4012,8 +4012,6 @@ demodulator_SAM(
 	ncoftwi_t del_outi;
 	FLOAT_t ai, bi, aq, bq;
 	FLOAT_t ai_ps, bi_ps, aq_ps, bq_ps;
-
-	amdemod_t * const a = & path->amd;
 
 	const FLOAT32P_t vco0 = getsincosf(a->phsi);
 	ai = vp1.IV * vco0.QV;
@@ -4239,7 +4237,7 @@ static FLOAT_t baseband_demodulator(
 			//const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV) * (FLOAT_t) 0.5; //M_SQRT1_2;
 			//saved_delta_fi [pathi] = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
 			// Демодуляция SАМ
-			const FLOAT_t sample = demodulator_SAM(path, vp1);
+			const FLOAT_t sample = demodulator_SAM(& path->samdetector, vp1);
 			r = sample * agc_levelsquelchopen(path, fltstrengthslow);
 		}
 		break;
@@ -5288,7 +5286,7 @@ rxparam_update(hfrxpath_t * const path, uint_fast8_t profile,
 		const FLOAT_t omegaN = 200; // PLL bandwidth 50.0 - 1000.0
 		const FLOAT_t tauR = (FLOAT_t) 0.02; // original 0.02;
 		const FLOAT_t tauI = (FLOAT_t) 1.4; // original 1.4;  
-		create_amd(& path->amd, 0, - pll, + pll, zeta, omegaN, tauR, tauI);
+		samdetector_create(& path->samdetector, 0, - pll, + pll, zeta, omegaN, tauR, tauI);
 	}
 
 	hftrx_nfm_path_update_from_global(path);
