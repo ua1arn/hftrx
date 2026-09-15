@@ -3787,7 +3787,7 @@ static FLOAT_t hftrx_nfm_rx_process_sample(uint8_t pathi, FLOAT_t sample_i, FLOA
 
     /* 3. Apply standard de-emphasis response curve mapping */
     FLOAT_t voice_audio = nfm_deemph_process_sample(&path->audio_filter, raw_audio);
-
+    voice_audio = raw_audio;	// TODO: fix nfm_deemph_process_sample
     /* 4. Output normalized to 1.5x matching deviation criteria levels */
     return (voice_audio * 3) / 2;
 }
