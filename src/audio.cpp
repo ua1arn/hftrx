@@ -198,6 +198,106 @@ static volatile uint_fast8_t datavox;	/* автоматическое измен
 
 #if WITHINTEGRATEDDSP
 
+
+/*
+ * Object-oriented NFM Signaling Module for hftrx
+ *
+ * Target path structure encapsulation using hfrxpath_t object abstraction.
+ * Pure C numeric conversions without double promotion.
+ * Localization via static bindings.
+ */
+
+/* NFM PLL demodulator state structure */
+typedef struct {
+    FLOAT_t phase;       /* Phase of the numeric controlled oscillator (NCO) */
+    FLOAT_t freq;        /* Integral component of the loop filter */
+    FLOAT_t kp;          /* Proportional gain of the PLL loop */
+    FLOAT_t ki;          /* Integral gain of the PLL loop */
+    FLOAT_t lock_avg;    /* Smoothed loop lock indicator (Lock Detector) */
+} nfm_pll_t;
+
+/* NFM De-emphasis filter state structure (1st order IIR) */
+typedef struct {
+    FLOAT_t b0;          /* Filter coefficient b0 */
+    FLOAT_t b1;          /* Filter coefficient b1 */
+    FLOAT_t a1;          /* Filter coefficient a1 */
+    FLOAT_t x1;          /* Delay element for input state x[n-1] */
+    FLOAT_t y1;          /* Delay element for output state y[n-1] */
+} nfm_deemph_t;
+
+/* CIC Decimator state structure (2nd order, optimized for M=45) */
+typedef struct {
+    FLOAT_t integrator1;         /* First integrator stage running at 48 kHz */
+    FLOAT_t integrator2;         /* Second integrator stage running at 48 kHz */
+    FLOAT_t comb1_delay;         /* First comb stage delay element running at 1066 Hz */
+    FLOAT_t comb2_delay;         /* Second comb stage delay element running at 1066 Hz */
+    uint32_t decimation_counter; /* Downsampling rate counter (0 to 44) */
+} ctcss_cic_t;
+
+/* CTCSS Goertzel detector state structure */
+typedef struct {
+    FLOAT_t coeff;       /* Feedback coefficient */
+    FLOAT_t q0;          /* State variable q[n] */
+    FLOAT_t q1;          /* State variable q[n-1] */
+    FLOAT_t q2;          /* State variable q[n-2] */
+    uint32_t count;      /* Current sample index in the block */
+    uint32_t block_size; /* Block size N (defines integration window, e.g., 160) */
+} ctcss_goertzel_t;
+
+/* DCS Detector state structure */
+typedef struct {
+    FLOAT_t dcs_integrator;    /* Integrate samples for bit slicing */
+    int32_t phase_accumulator; /* Precise NCO phase for clock recovery */
+    uint32_t bit_buffer;       /* Shift register for 23 received bits */
+    FLOAT_t prev_sample;       /* Last sample for edge detection */
+} dcs_detector_t;
+
+
+typedef uint32_t ncoftw_t;
+typedef int32_t ncoftwi_t;
+#define NCOFTWBITS 32	// количество битов в ncoftw_t
+#define FTWROUND(ftw) ((uint32_t) (ftw))
+#define FTWAF001(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE100))
+#define FTWAF(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / (int_fast64_t) ARMI2SRATE))
+static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
+#define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
+
+// Convert ncoftw_t to q31 argument for arm_sin_cos_q31
+// The Q31 input value is in the range [-1 0.999999] and is mapped to a degree value in the range [-180 179].
+#define FTW2_SINCOS_Q31(angle) ((ncoftwi_t) (angle))
+// Convert ncoftw_t to q31 argument for arm_sin_q31
+// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*M_PI).
+#define FTW2_COS_Q31(angle) ((q31_t) ((((ncoftw_t) (angle)) + 0x80000000) / 2))
+#define FAST_Q31_2_FLOAT(val) ((q31_t) (val) / (FLOAT_t) 2147483648)
+
+/* Complete Signal Path Object Model for hftrx */
+typedef struct {
+    nfm_pll_t demodulator;
+    nfm_deemph_t audio_filter;
+    ctcss_cic_t cic_decimator;
+    ctcss_goertzel_t ctcss_det;
+    dcs_detector_t dcs_det;
+
+    uint8_t ctcss_squelch_open;
+    uint8_t dcs_squelch_open;
+    uint16_t dcs_target_code;
+
+    unsigned delayblanklo6tx;
+    unsigned delayblanklo6rx;
+    uint8_t delaylo6lastmode;
+
+    ncoftw_t anglestep_aflotx;
+    ncoftw_t anglestep_aflorx;
+    ncoftw_t angle_aflotx;
+    ncoftw_t angle_aflorx;
+} hfrxpath_t;
+
+/* Static allocation for dual-receive independent tracks */
+static hfrxpath_t rx_paths[2];
+
+
+
+
 static uint_fast8_t istxreplacedusbactive(void)
 {
 #if WITHUSBHW && WITHUSBUACOUT
@@ -428,23 +528,6 @@ static FLOAT32P_t getsampmlebt2(void);
 
 static int getRxGate(void);	/* разрешение работы тракта в режиме приёма */
 
-typedef uint32_t ncoftw_t;
-typedef int32_t ncoftwi_t;
-#define NCOFTWBITS 32	// количество битов в ncoftw_t
-#define FTWROUND(ftw) ((uint32_t) (ftw))
-#define FTWAF001(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE100))
-#define FTWAF(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / (int_fast64_t) ARMI2SRATE))
-static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
-#define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
-
-// Convert ncoftw_t to q31 argument for arm_sin_cos_q31
-// The Q31 input value is in the range [-1 0.999999] and is mapped to a degree value in the range [-180 179].
-#define FTW2_SINCOS_Q31(angle) ((ncoftwi_t) (angle))
-// Convert ncoftw_t to q31 argument for arm_sin_q31
-// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*M_PI).
-#define FTW2_COS_Q31(angle) ((q31_t) ((((ncoftw_t) (angle)) + 0x80000000) / 2))
-#define FAST_Q31_2_FLOAT(val) ((q31_t) (val) / (FLOAT_t) 2147483648)
-
 #if 0
 static FLOAT_t peekvalf(uint32_t a)
 {
@@ -637,20 +720,12 @@ static FLOAT_t get_dualtonefloat(void)
 	return (v1 + v2) / 2;
 }
 
-static unsigned delayblanklo6tx [NTRX];	// приглушить тракт
-
-static unsigned delayblanklo6rx [NTRX];	// приглушить тракт
-static uint8_t delaylo6lastmode [NTRX];
-
-static ncoftw_t anglestep_aflotx [NTRX];
-static ncoftw_t anglestep_aflorx [NTRX];
-static ncoftw_t angle_aflotx [NTRX];
-static ncoftw_t angle_aflorx [NTRX];
 static ncoftw_t gnfmdeviationftw = FTWAF(7500);	// 7.5 kHz (-7.5..+7.5) deviation
 
 // установить частоту, закрыть тракт на время прохождения сигнала через фильтр
 static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi, uint_fast8_t dspmode)
 {
+    hfrxpath_t * const path = &rx_paths[pathi & 1];
 #if WITHDSPEXTRXFIR
 	const unsigned txfirdelay = 2 * Ntap_trxi_IQ / 2;
 #elif WITHDSPLOCALTXFIR
@@ -662,15 +737,15 @@ static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi, uint_fast8_t dspmode
 	const unsigned rxfirdelay = 2 * Ntap_rx_SSB_IQ / 2;
 #endif
 	// Установка звдержки открывания тракта по смене режима
-	if (delaylo6lastmode [pathi] != dspmode)
+	if (path->delaylo6lastmode != dspmode)
 	{
-		delaylo6lastmode [pathi] = dspmode;
-		delayblanklo6tx [pathi] = txfirdelay;
-		delayblanklo6rx [pathi] = rxfirdelay;
+		path->delaylo6lastmode = dspmode;
+		path->delayblanklo6tx = txfirdelay;
+		path->delayblanklo6rx = rxfirdelay;
 	}
 	// частота устанавливается сразу
-	anglestep_aflotx [pathi] = ftw;
-	anglestep_aflorx [pathi] = ftw;
+	path->anglestep_aflotx = ftw;
+	path->anglestep_aflorx = ftw;
 }
 
 /* задержка установки нового значение частоты генератора
@@ -678,27 +753,30 @@ static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi, uint_fast8_t dspmode
  */
 static int switchmode_delaytx(uint_fast8_t pathi)
 {
-	if (delayblanklo6tx [pathi])
-		delayblanklo6tx [pathi] -= 1;
+    hfrxpath_t * const path = &rx_paths[pathi & 1];
+	if (path->delayblanklo6tx)
+		path->delayblanklo6tx -= 1;
 
-	return ! delayblanklo6tx [pathi];
+	return ! path->delayblanklo6tx;
 }
 
 static int switchmode_delayrx(uint_fast8_t pathi)
 {
-	if (delayblanklo6rx [pathi])
-		delayblanklo6rx [pathi] -= 1;
+    hfrxpath_t * const path = &rx_paths[pathi & 1];
+	if (path->delayblanklo6rx)
+		path->delayblanklo6rx -= 1;
 
-	return ! delayblanklo6rx [pathi];
+	return ! path->delayblanklo6rx;
 }
 
 // Получение квадратурных значений для данной частоты со смещением фазы
 // Returned is a full scale value
 static FLOAT32P_t get_float_aflotx_delta(int32_t deltaftw, uint_fast8_t pathi)
 {
-	const ncoftw_t angle = angle_aflotx [pathi];
+    hfrxpath_t * const path = &rx_paths[pathi & 1];
+	const ncoftw_t angle = path->angle_aflotx;
 	const FLOAT32P_t v = getsincosf(angle);
-	angle_aflotx [pathi] = FTWROUND(angle + anglestep_aflotx [pathi] + deltaftw);
+	path->angle_aflotx = FTWROUND(angle + path->anglestep_aflotx + deltaftw);
 	return v;
 }
 
@@ -706,9 +784,10 @@ static FLOAT32P_t get_float_aflotx_delta(int32_t deltaftw, uint_fast8_t pathi)
 // Returned is a full scale value
 static FLOAT32P_t get_float_aflorx_delta(uint_fast8_t pathi)
 {
-	const ncoftw_t angle = angle_aflorx [pathi];
+    hfrxpath_t * const path = &rx_paths[pathi & 1];
+	const ncoftw_t angle = path->angle_aflorx;
 	const FLOAT32P_t v = getsincosf(angle);
-	angle_aflorx [pathi] = FTWROUND(angle + anglestep_aflorx [pathi]);
+	path->angle_aflorx = FTWROUND(angle + path->anglestep_aflorx);
 	return v;
 }
 
@@ -3412,84 +3491,6 @@ static FLOAT_t arctan2(FLOAT_t y, FLOAT_t x)
 ///////////////////
 /// AI-generated
 
-/*
- * Object-oriented NFM Signaling Module for hftrx
- *
- * Target path structure encapsulation using hfrxpath_t object abstraction.
- * Pure C numeric conversions without double promotion.
- * Localization via static bindings.
- */
-
-/* NFM PLL demodulator state structure */
-typedef struct {
-    FLOAT_t phase;       /* Phase of the numeric controlled oscillator (NCO) */
-    FLOAT_t freq;        /* Integral component of the loop filter */
-    FLOAT_t kp;          /* Proportional gain of the PLL loop */
-    FLOAT_t ki;          /* Integral gain of the PLL loop */
-    FLOAT_t lock_avg;    /* Smoothed loop lock indicator (Lock Detector) */
-} nfm_pll_t;
-
-/* NFM De-emphasis filter state structure (1st order IIR) */
-typedef struct {
-    FLOAT_t b0;          /* Filter coefficient b0 */
-    FLOAT_t b1;          /* Filter coefficient b1 */
-    FLOAT_t a1;          /* Filter coefficient a1 */
-    FLOAT_t x1;          /* Delay element for input state x[n-1] */
-    FLOAT_t y1;          /* Delay element for output state y[n-1] */
-} nfm_deemph_t;
-
-/* CIC Decimator state structure (2nd order, optimized for M=45) */
-typedef struct {
-    FLOAT_t integrator1;         /* First integrator stage running at 48 kHz */
-    FLOAT_t integrator2;         /* Second integrator stage running at 48 kHz */
-    FLOAT_t comb1_delay;         /* First comb stage delay element running at 1066 Hz */
-    FLOAT_t comb2_delay;         /* Second comb stage delay element running at 1066 Hz */
-    uint32_t decimation_counter; /* Downsampling rate counter (0 to 44) */
-} ctcss_cic_t;
-
-/* CTCSS Goertzel detector state structure */
-typedef struct {
-    FLOAT_t coeff;       /* Feedback coefficient */
-    FLOAT_t q0;          /* State variable q[n] */
-    FLOAT_t q1;          /* State variable q[n-1] */
-    FLOAT_t q2;          /* State variable q[n-2] */
-    uint32_t count;      /* Current sample index in the block */
-    uint32_t block_size; /* Block size N (defines integration window, e.g., 160) */
-} ctcss_goertzel_t;
-
-/* DCS Detector state structure */
-typedef struct {
-    FLOAT_t dcs_integrator;    /* Integrate samples for bit slicing */
-    int32_t phase_accumulator; /* Precise NCO phase for clock recovery */
-    uint32_t bit_buffer;       /* Shift register for 23 received bits */
-    FLOAT_t prev_sample;       /* Last sample for edge detection */
-} dcs_detector_t;
-
-/* Complete Signal Path Object Model for hftrx */
-typedef struct {
-    nfm_pll_t demodulator;
-    nfm_deemph_t audio_filter;
-    ctcss_cic_t cic_decimator;
-    ctcss_goertzel_t ctcss_det;
-    dcs_detector_t dcs_det;
-
-    uint8_t ctcss_squelch_open;
-    uint8_t dcs_squelch_open;
-    uint16_t dcs_target_code;
-
-    unsigned delayblanklo6tx;
-    unsigned delayblanklo6rx;
-    uint8_t delaylo6lastmode;
-
-    ncoftw_t anglestep_aflotx;
-    ncoftw_t anglestep_aflorx;
-    ncoftw_t angle_aflotx;
-    ncoftw_t angle_aflorx;
-} hfrxpath_t;
-
-/* Static allocation for dual-receive independent tracks */
-static hfrxpath_t rx_paths[2];
-
 /* Squelch threshold configuration constants */
 #define SQUELCH_OPEN_NUM      45
 #define SQUELCH_CLOSE_NUM     30
@@ -3769,7 +3770,7 @@ static void push_to_ctcss_decimator(hfrxpath_t *path, FLOAT_t raw_audio) {
  */
 static FLOAT_t hftrx_nfm_rx_process_sample(uint8_t pathi, FLOAT_t sample_i, FLOAT_t sample_q) {
     /* Safe extraction of the targeted track context object pointer */
-    hfrxpath_t *path = &rx_paths[pathi & 1];
+    hfrxpath_t * const path = &rx_paths[pathi & 1];
 
     /* 1. Demodulate complex IQ into frequency deviation */
     FLOAT_t raw_audio = nfm_pll_process_sample(&path->demodulator, sample_i, sample_q);
@@ -3794,7 +3795,7 @@ static FLOAT_t hftrx_nfm_rx_process_sample(uint8_t pathi, FLOAT_t sample_i, FLOA
  * Performs state clearing and loads calibrated constants into structural fields.
  */
 static void hftrx_nfm_path_init(uint8_t pathi, FLOAT_t sample_rate, FLOAT_t bandwidth, uint32_t target_ctcss_x10, uint16_t target_dcs) {
-    hfrxpath_t *path = &rx_paths[pathi & 1];
+    hfrxpath_t * const path = &rx_paths[pathi & 1];
 
     /* Clear and prepare tracking oscillators and filters */
     nfm_pll_init(&path->demodulator, sample_rate, bandwidth);
