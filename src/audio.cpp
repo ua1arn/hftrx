@@ -3410,7 +3410,367 @@ static FLOAT_t arctan2(FLOAT_t y, FLOAT_t x)
 }
 #endif
 
+///////////////////
+///
 
+/* NFM PLL demodulator state structure */
+typedef struct {
+    FLOAT_t phase;       /* Phase of the numeric controlled oscillator (NCO) */
+    FLOAT_t freq;        /* Integral component of the loop filter */
+    FLOAT_t kp;          /* Proportional gain of the PLL loop */
+    FLOAT_t ki;          /* Integral gain of the PLL loop */
+    FLOAT_t lock_avg;    /* Smoothed loop lock indicator (Lock Detector) */
+} nfm_pll_t;
+
+/* NFM De-emphasis filter state structure (1st order IIR) */
+typedef struct {
+    FLOAT_t b0;          /* Filter coefficient b0 */
+    FLOAT_t b1;          /* Filter coefficient b1 */
+    FLOAT_t a1;          /* Filter coefficient a1 */
+    FLOAT_t x1;          /* Delay element for input state x[n-1] */
+    FLOAT_t y1;          /* Delay element for output state y[n-1] */
+} nfm_deemph_t;
+
+/* Static instances of the NFM processing structures */
+static nfm_pll_t nfm_demodulator;
+static nfm_deemph_t nfm_audio_filter;
+
+/**
+ * PLL Initialization
+ * @param bandwidth - Loop bandwidth (typically 4000 to 5000 for NFM)
+ * @param sample_rate - Base audio sample rate (48000)
+ */
+static void nfm_pll_init(nfm_pll_t *pll, FLOAT_t sample_rate, FLOAT_t bandwidth) {
+    pll->phase = 0;
+    pll->freq = 0;
+    pll->lock_avg = 0;
+
+    /* Loop parameters calculation utilizing M_PI and M_SQRT1_2 constants */
+    FLOAT_t omega = (2 * M_PI * bandwidth) / sample_rate;
+    FLOAT_t zeta = M_SQRT1_2;
+
+    FLOAT_t d = 1 + 2 * zeta * omega + omega * omega;
+    pll->kp = (2 * zeta * omega) / d;
+    pll->ki = (omega * omega) / d;
+}
+
+/**
+ * Single sample processing of IQ quadrature and PLL NFM demodulation
+ * @param pll - Pointer to the PLL state structure
+ * @param I   - Current In-phase input sample
+ * @param Q   - Current Quadrature input sample
+ * @return    - Demodulated audio sample value (radians per sample)
+ */
+static FLOAT_t nfm_pll_process_sample(nfm_pll_t *pll, FLOAT_t I, FLOAT_t Q) {
+    /* 1. Vector amplitude normalization */
+    FLOAT_t mag;
+
+    /* Using SQRTF macro from dspdefines.h */
+    mag = SQRTF(I * I + Q * Q);
+
+    /* Threshold check using integer division expression */
+    if (mag < 1 / 1000000) {
+        /* Smoothly decay the lock indicator during signal dropouts */
+        pll->lock_avg = (pll->lock_avg * 99) / 100;
+        return 0;
+    }
+
+    I = I / mag;
+    Q = Q / mag;
+
+    /* 2. Numeric controlled oscillator (NCO) reference signals generation */
+    FLOAT_t sin_nco;
+    FLOAT_t cos_nco;
+
+    /* Using math macros from dspdefines.h to match FLOAT_t precision */
+    sin_nco = SINF(pll->phase);
+    cos_nco = COSF(pll->phase);
+
+    /* 3. Complex phase detector */
+    /* Imaginary part: phase_error = sin(phase_in - phase_nco) */
+    FLOAT_t phase_error = Q * cos_nco - I * sin_nco;
+
+    /* Real part: lock_indicator = cos(phase_in - phase_nco) */
+    FLOAT_t lock_indicator = I * cos_nco + Q * sin_nco;
+
+    /* 4. Second-order loop filter (PI controller) */
+    pll->freq = pll->freq + pll->ki * phase_error;
+    FLOAT_t frequency_deviation = pll->freq + pll->kp * phase_error;
+
+    /* 5. Phase integration for the next iteration step */
+    pll->phase = pll->phase + frequency_deviation;
+
+    /* Phase unwrapping within [-PI, PI] limits */
+    if (pll->phase > M_PI) {
+        pll->phase = pll->phase - 2 * M_PI;
+    } else if (pll->phase < -M_PI) {
+        pll->phase = pll->phase + 2 * M_PI;
+    }
+
+    /* 6. Exponential smoothing filter for the lock detector */
+    pll->lock_avg = (pll->lock_avg * 995) / 1000 + (lock_indicator * 5) / 1000;
+
+    /* 7. Return single demodulated audio sample */
+    return frequency_deviation;
+}
+
+/**
+ * De-emphasis Filter Initialization
+ * @param filter      - Pointer to the filter state structure
+ * @param sample_rate - Base audio sample rate (48000)
+ */
+static void nfm_deemph_init(nfm_deemph_t *filter, FLOAT_t sample_rate) {
+    filter->x1 = 0;
+    filter->y1 = 0;
+
+    /*
+     * Tau constant for standard NFM de-emphasis is 750 microseconds.
+     * Expressed as 750 / 1000000 to keep literals integer-based.
+     */
+    FLOAT_t tau = (FLOAT_t)750 / 1000000;
+
+    /* Bilinear transform mapping from s-domain to z-domain */
+    FLOAT_t alpha = 2 * tau * sample_rate;
+    FLOAT_t denom = 1 + alpha;
+
+    filter->b0 = 1 / denom;
+    filter->b1 = 1 / denom;
+    filter->a1 = (1 - alpha) / denom;
+}
+
+/**
+ * Single sample processing through De-emphasis filter
+ * @param filter - Pointer to the filter state structure
+ * @param in     - Demodulated sample from the PLL output (radians per sample)
+ * @return       - Filtered audio sample
+ */
+static FLOAT_t nfm_deemph_process_sample(nfm_deemph_t *filter, FLOAT_t in) {
+    /* Standard Direct Form I IIR difference equation */
+    FLOAT_t out = filter->b0 * in + filter->b1 * filter->x1 - filter->a1 * filter->y1;
+
+    /* Update state variables for the next sample iteration */
+    filter->x1 = in;
+    filter->y1 = out;
+
+    return out;
+}
+/* Threshold constants for the lock detector hysteresis */
+#define SQUELCH_OPEN_NUM   45
+#define SQUELCH_CLOSE_NUM  30
+#define SQUELCH_DENOM      100
+
+/**
+ * Checks if the NFM carrier is captured by the PLL loop using hysteresis
+ * @param pll                  - Pointer to the PLL state structure
+ * @param current_squelch_open - Current state of the squelch (1 if open, 0 if closed)
+ * @return                     - 1 if carrier is present, 0 if it is absent (noise)
+ */
+static uint8_t is_nfm_carrier_present(const nfm_pll_t *pll, uint8_t current_squelch_open) {
+    FLOAT_t threshold;
+
+    /* Select threshold based on current squelch state to implement hysteresis */
+    if (current_squelch_open) {
+        threshold = (FLOAT_t)SQUELCH_CLOSE_NUM / SQUELCH_DENOM;
+        if (pll->lock_avg > threshold) {
+            return 1;
+        }
+    } else {
+        threshold = (FLOAT_t)SQUELCH_OPEN_NUM / SQUELCH_DENOM;
+        if (pll->lock_avg > threshold) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+/* CIC Decimator state structure (2nd order) */
+typedef struct {
+    FLOAT_t integrator1; /* First integrator stage */
+    FLOAT_t integrator2; /* Second integrator stage */
+    FLOAT_t comb1_delay; /* First comb stage delay element */
+    FLOAT_t comb2_delay; /* Second comb stage delay element */
+    FLOAT_t comb1_state; /* First comb stage intermediate state */
+    uint32_t decimation_counter; /* Downsampling rate counter */
+} ctcss_cic_t;
+
+/* Static instance of the CTCSS decimator state */
+static ctcss_cic_t ctcss_decimator;
+
+/**
+ * CTCSS Decimator Initialization
+ * Sets up a 2nd order CIC filter for decimation factor M = 48
+ */
+static void ctcss_decimator_init(ctcss_cic_t *dec) {
+    dec->integrator1 = 0;
+    dec->integrator2 = 0;
+    dec->comb1_delay = 0;
+    dec->comb2_delay = 0;
+    dec->comb1_state = 0;
+    dec->decimation_counter = 0;
+}
+
+/**
+ * Pushes a single 48 kHz audio sample into the CTCSS decimation chain
+ * @param raw_audio - Demodulated sample from the PLL (radians per sample)
+ */
+static void push_to_ctcss_decimator(FLOAT_t raw_audio) {
+    /* 1. Integrator stages (running at full 48 kHz rate) */
+    ctcss_decimator.integrator1 = ctcss_decimator.integrator1 + raw_audio;
+    ctcss_decimator.integrator2 = ctcss_decimator.integrator2 + ctcss_decimator.integrator1;
+
+    /* 2. Decimation (Downsampling by a factor of 48: 48000 Hz -> 1000 Hz) */
+    ctcss_decimator.decimation_counter = ctcss_decimator.decimation_counter + 1;
+    if (ctcss_decimator.decimation_counter >= 48) {
+        ctcss_decimator.decimation_counter = 0;
+
+        /* 3. Comb stages (running at decimated 1000 Hz rate) */
+        /* First comb stage: Y1[n] = X[n] - X[n-1] */
+        FLOAT_t comb1_out = ctcss_decimator.integrator2 - ctcss_decimator.comb1_delay;
+        ctcss_decimator.comb1_delay = ctcss_decimator.integrator2;
+
+        /* Second comb stage: Y2[n] = Y1[n] - Y1[n-1] */
+        FLOAT_t comb2_out = comb1_out - ctcss_decimator.comb2_delay;
+        ctcss_decimator.comb2_delay = comb1_out;
+
+        /* 4. Gain correction */
+        /* DC Gain of a 2nd order CIC with M=48 is M^2 = 48 * 48 = 2304 */
+        FLOAT_t decimated_sample = comb2_out / 2304;
+
+        /* 5. Forward the 1000 Hz sample to the tone detector */
+        /* process_ctcss_detector_sample(decimated_sample); */
+    }
+}
+/**
+ * Forcibly resets the internal states of the CTCSS decimator and Goertzel detector.
+ * Call this immediately when the PLL loses carrier lock to prevent false squelch triggers.
+ */
+static void ctcss_detector_reset(void) {
+    /* Reset CIC Decimator registers */
+    ctcss_decimator.integrator1 = 0;
+    ctcss_decimator.integrator2 = 0;
+    ctcss_decimator.comb1_delay = 0;
+    ctcss_decimator.comb2_delay = 0;
+    ctcss_decimator.comb1_state = 0;
+    ctcss_decimator.decimation_counter = 0;
+
+    /* Reset Goertzel Detector state variables */
+    ctcss_detector.q0 = 0;
+    ctcss_detector.q1 = 0;
+    ctcss_detector.q2 = 0;
+    ctcss_detector.count = 0;
+
+    /* Force close the final CTCSS squelch gate */
+    ctcss_squelch_open = 0;
+}
+
+/* CTCSS Goertzel detector state structure */
+typedef struct {
+    FLOAT_t coeff;       /* Feedback coefficient */
+    FLOAT_t q0;          /* State variable q[n] */
+    FLOAT_t q1;          /* State variable q[n-1] */
+    FLOAT_t q2;          /* State variable q[n-2] */
+    uint32_t count;      /* Current sample index in the block */
+    uint32_t block_size; /* Block size N (defines integration window, e.g., 150) */
+} ctcss_goertzel_t;
+
+/* Static instance of the Goertzel detector state */
+static ctcss_goertzel_t ctcss_detector;
+static uint8_t ctcss_squelch_open = 0;
+
+/**
+ * CTCSS Goertzel Detector Initialization
+ * @param det         - Pointer to the detector state structure
+ * @param target_freq - Target CTCSS sub-tone frequency (e.g., 88.5)
+ * @param sample_rate - Decimated sample rate (1000)
+ * @param block_size  - Window size N (e.g., 150 for 150ms response time)
+ */
+static void ctcss_detector_init(ctcss_goertzel_t *det, FLOAT_t target_freq, FLOAT_t sample_rate, uint32_t block_size) {
+    det->q0 = 0;
+    det->q1 = 0;
+    det->q2 = 0;
+    det->count = 0;
+    det->block_size = block_size;
+
+    /* Standard Goertzel coefficient calculation using COSF macro from dspdefines.h */
+    FLOAT_t k = (FLOAT_t)(0.5) + (block_size * target_freq) / sample_rate;
+    FLOAT_t omega = (2 * M_PI * k) / block_size;
+    det->coeff = 2 * COSF(omega);
+}
+
+/**
+ * Processes a single 1000 Hz sample through the Goertzel algorithm
+ * @param sample - Decimated audio sample from CIC filter
+ */
+static void process_ctcss_detector_sample(FLOAT_t sample) {
+    /* Goertzel IIR feedback loop */
+    ctcss_detector.q0 = ctcss_detector.coeff * ctcss_detector.q1 - ctcss_detector.q2 + sample;
+    ctcss_detector.q2 = ctcss_detector.q1;
+    ctcss_detector.q1 = ctcss_detector.q0;
+
+    ctcss_detector.count = ctcss_detector.count + 1;
+
+    /* Check if the block size N is reached (end of the integration window) */
+    if (ctcss_detector.count >= ctcss_detector.block_size) {
+        ctcss_detector.count = 0;
+
+        /* Calculate magnitude squared at the target frequency */
+        FLOAT_t magnitude_sq = ctcss_detector.q1 * ctcss_detector.q1 +
+                               ctcss_detector.q2 * ctcss_detector.q2 -
+                               ctcss_detector.coeff * ctcss_detector.q1 * ctcss_detector.q2;
+
+        /*
+         * Signal threshold check.
+         * Threshold value should be tuned based on your receiver path scaling.
+         * Using integer fraction representation for the threshold.
+         */
+        FLOAT_t threshold = (FLOAT_t)5 / 10000; /* Example threshold: 0.0005 */
+
+        if (magnitude_sq > threshold) {
+            ctcss_squelch_open = 1; /* Tone detected -> open squelch */
+        } else {
+            ctcss_squelch_open = 0; /* Tone absent -> close squelch */
+        }
+
+        /* Reset state variables for the next integration block */
+        ctcss_detector.q0 = 0;
+        ctcss_detector.q1 = 0;
+        ctcss_detector.q2 = 0;
+    }
+}
+
+static FLOAT_t AUDIO_GAIN_MULTIPLICATOR = 1.5;
+
+int current_squelch_state;
+
+/* Inside your sample-by-sample RX loop: */
+void hftrx_nfm_rx_sample_callback(FLOAT_t sample_i, FLOAT_t sample_q) {
+
+    /* 1. Demodulate complex IQ into frequency deviation (radians) */
+    FLOAT_t raw_audio = nfm_pll_process_sample(&nfm_demodulator, sample_i, sample_q);
+
+    /*
+     * 2. BRANCH A: Feed raw_audio into CTCSS decimation chain and detector.
+     * CTCSS analysis MUST be done before high frequencies are flattened.
+     */
+    current_squelch_state = is_nfm_carrier_present(&nfm_demodulator, current_squelch_state);
+    if (current_squelch_state) {
+        push_to_ctcss_decimator(raw_audio);
+    } else {
+        /* Carrier lost into white noise - reset processing path instantly */
+        ctcss_detector_reset();
+    }
+
+    /*
+     * 3. BRANCH B: Apply De-emphasis filter to recover original voice spectrum.
+     * This output goes directly to the volume control and audio DAC output.
+     */
+    FLOAT_t voice_audio = nfm_deemph_process_sample(&nfm_audio_filter, raw_audio);
+
+    /* 4. Apply output scaling/gain for the audio codec */
+    FLOAT_t final_dac_sample = voice_audio * AUDIO_GAIN_MULTIPLICATOR;
+
+    /* ... write final_dac_sample to audio buffer ... */
+}
 
 //////////////////////////
 
