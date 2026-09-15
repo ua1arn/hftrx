@@ -3620,16 +3620,16 @@ typedef struct {
     uint32_t block_size; /* Block size N (defines integration window, e.g., 150) */
 } ctcss_goertzel_t;
 
-/* DCS Detector configuration constants */
-#define DCS_BITS_COUNT        23
-#define DCS_CLOCK_OVERSAMPLE  8
+/* DCS Detector configuration constants for strict M=45 alignment */
+#define DCS_PHASE_MAX         1000  /* Represents 360 degrees of one bit period */
+#define DCS_PHASE_STEP         126  /* Phase increment per input sample (134.4 * 45 * 1000 / 48000) */
+#define DCS_BITS_COUNT          23
 
 /* DCS Detector state structure */
 typedef struct {
     FLOAT_t dcs_integrator;    /* Integrate samples for bit slicing */
-    uint32_t sample_counter;   /* Sub-bit oversampling tick counter */
+    int32_t phase_accumulator; /* Precise NCO phase for clock recovery */
     uint32_t bit_buffer;       /* Shift register for 23 received bits */
-    uint8_t clock_phase;       /* Estimated optimal sampling phase */
     FLOAT_t prev_sample;       /* Last sample for edge detection */
 } dcs_detector_t;
 
@@ -3637,6 +3637,99 @@ typedef struct {
 static dcs_detector_t dcs_det;
 static uint8_t dcs_squelch_open = 0;
 static uint16_t dcs_target_code = 23; /* Target 3-digit octal DCS code, e.g., 023 */
+
+/**
+ * DCS Detector Initialization
+ */
+static void dcs_detector_init(void) {
+    dcs_det.dcs_integrator = 0;
+    dcs_det.phase_accumulator = 0;
+    dcs_det.bit_buffer = 0;
+    dcs_det.prev_sample = 0;
+    dcs_squelch_open = 0;
+}
+
+/**
+ * Standard 23-bit Golay (23,12) cyclic redundancy check for DCS
+ * Validates the DCS word structure according to the polynomial: X^11 + X^10 + X^6 + X^5 + X^4 + X^2 + 1
+ */
+static uint8_t dcs_validate_golay(uint32_t word) {
+    uint32_t c = word & 0x7FFFFF; /* Keep 23 bits */
+    for (uint8_t i = 0; i < 12; i++) {
+        if (c & 0x400000) { /* If MSB of the cyclic window is set */
+            c = c ^ 0xC65;  /* XOR with inverted Golay polynomial coefficients */
+        }
+        c = c << 1;
+    }
+    /* If the remainder of cyclic division is zero, the code matrix is valid */
+    return (c == 0);
+}
+
+/**
+ * Extracts the 9-bit actual octal code from the verified 23-bit DCS word
+ */
+static uint16_t dcs_extract_code(uint32_t word) {
+    /* DCS data format: 3 bits documentation/flags, 9 bits octal code, 11 bits parity */
+    uint16_t raw_bits = (uint16_t)((word >> 11) & 0x1FF);
+
+    /* Convert inverted bits to standard octal notation format */
+    uint16_t octal = 0;
+    octal = octal + ((raw_bits >> 0) & 7);
+    octal = octal + (((raw_bits >> 3) & 7) * 10);
+    octal = octal + (((raw_bits >> 6) & 7) * 100);
+    return octal;
+}
+/**
+ * Processes a single decimated sample at the M=45 rate (~1066.67 Hz)
+ * Implements a flawless integer-based NCO clock recovery loop.
+ * @param sample - Low-pass filtered sample from the discriminator output
+ */
+static void process_dcs_sample(FLOAT_t sample) {
+    /* 1. Software Clock Recovery via zero-crossing edge synchronization */
+    if ((sample > 0 && dcs_det.prev_sample <= 0) || (sample <= 0 && dcs_det.prev_sample > 0)) {
+        /* Edge detected! Force NCO phase to the bit boundary (0 degrees) */
+        dcs_det.phase_accumulator = 0;
+    }
+    dcs_det.prev_sample = sample;
+
+    /* Accumulate signal energy during the entire bit duration */
+    dcs_det.dcs_integrator = dcs_det.dcs_integrator + sample;
+
+    /* 2. Advance the integer NCO clock phase */
+    dcs_det.phase_accumulator = dcs_det.phase_accumulator + DCS_PHASE_STEP;
+
+    /* Check if NCO reached or passed the center of the bit window (180 degrees / halfway) */
+    /* We sample the accumulated energy exactly when phase crosses DCS_PHASE_MAX */
+    if (dcs_det.phase_accumulator >= DCS_PHASE_MAX) {
+        /* Wrap the accumulator while preserving sub-sample phase remnants */
+        dcs_det.phase_accumulator = dcs_det.phase_accumulator - DCS_PHASE_MAX;
+
+        uint8_t current_bit = 0;
+        if (dcs_det.dcs_integrator > 0) {
+            current_bit = 1;
+        }
+        dcs_det.dcs_integrator = 0; /* Reset integrator for the next bit period */
+
+        /* Push sliced bit into the 23-bit rolling memory window */
+        dcs_det.bit_buffer = ((dcs_det.bit_buffer << 1) | current_bit) & 0x7FFFFF;
+
+        /* 3. Rolling Frame Search and circular permutation checking */
+        uint32_t test_word = dcs_det.bit_buffer;
+        for (uint8_t shift = 0; shift < DCS_BITS_COUNT; shift++) {
+            if (dcs_validate_golay(test_word)) {
+                uint16_t detected_code = dcs_extract_code(test_word);
+
+                if (detected_code == dcs_target_code) {
+                    dcs_squelch_open = 1; /* Match found -> Open squelch gate */
+                    return;
+                }
+            }
+            /* Rotate word circularly to check alternative phase frames */
+            uint32_t bit22 = (test_word >> 22) & 1;
+            test_word = ((test_word << 1) | bit22) & 0x7FFFFF;
+        }
+    }
+}
 
 /* Static instance of the Goertzel detector state */
 static ctcss_goertzel_t ctcss_detector;
@@ -3676,34 +3769,31 @@ static void push_to_ctcss_decimator(FLOAT_t raw_audio) {
         process_dcs_sample(decimated_sample);
     }
 }
-
-
 /**
- * Forcibly resets the internal states of the CTCSS/DCS paths.
+ * Forcibly resets the internal states of the CTCSS/DCS processing paths.
+ * Call this immediately when the PLL loses carrier lock to prevent false squelch triggers.
  */
 static void ctcss_detector_reset(void) {
-    /* Reset CIC Decimator registers */
+    /* Reset shared CIC Decimator registers (M = 45) */
     ctcss_decimator.integrator1 = 0;
     ctcss_decimator.integrator2 = 0;
     ctcss_decimator.comb1_delay = 0;
     ctcss_decimator.comb2_delay = 0;
-    ctcss_decimator.comb1_state = 0;
     ctcss_decimator.decimation_counter = 0;
 
-    /* Reset Goertzel Detector state variables */
+    /* Reset Goertzel CTCSS Detector state variables */
     ctcss_detector.q0 = 0;
     ctcss_detector.q1 = 0;
     ctcss_detector.q2 = 0;
     ctcss_detector.count = 0;
 
-    /* Reset DCS Detector buffers */
+    /* Reset precise integer NCO DCS Detector buffers */
     dcs_det.dcs_integrator = 0;
-    dcs_det.sample_counter = 0;
+    dcs_det.phase_accumulator = 0;
     dcs_det.bit_buffer = 0;
-    dcs_det.clock_phase = 0;
     dcs_det.prev_sample = 0;
 
-    /* Force close squelch gates */
+    /* Force close both squelch gates instantly */
     ctcss_squelch_open = 0;
     dcs_squelch_open = 0;
 }
@@ -3810,102 +3900,7 @@ void hftrx_nfm_rx_sample_callback(FLOAT_t sample_i, FLOAT_t sample_q) {
     /* ... write final_dac_sample to audio buffer ... */
 }
 
-//////////////
-/// DCS
-///
 
-/**
- * Standard 23-bit Golay (23,12) cyclic redundancy check for DCS
- * Validates the DCS word structure according to the polynomial: X^11 + X^10 + X^6 + X^5 + X^4 + X^2 + 1
- */
-static uint8_t dcs_validate_golay(uint32_t word) {
-    uint32_t c = word & 0x7FFFFF; /* Keep 23 bits */
-    for (uint8_t i = 0; i < 12; i++) {
-        if (c & 0x400000) { /* If MSB of the cyclic window is set */
-            c = c ^ 0xC65;  /* XOR with inverted Golay polynomial coefficients */
-        }
-        c = c << 1;
-    }
-    /* If the remainder of cyclic division is zero, the code matrix is valid */
-    return (c == 0);
-}
-
-/**
- * Extracts the 9-bit actual octal code from the verified 23-bit DCS word
- */
-static uint16_t dcs_extract_code(uint32_t word) {
-    /* DCS data format: 3 bits documentation/flags, 9 bits octal code, 11 bits parity */
-    uint16_t raw_bits = (uint16_t)((word >> 11) & 0x1FF);
-
-    /* Convert inverted bits to standard octal notation format */
-    uint16_t octal = 0;
-    octal = octal + ((raw_bits >> 0) & 7);
-    octal = octal + (((raw_bits >> 3) & 7) * 10);
-    octal = octal + (((raw_bits >> 6) & 7) * 100);
-    return octal;
-}
-
-/**
- * DCS Detector Initialization
- */
-static void dcs_detector_init(void) {
-    dcs_det.dcs_integrator = 0;
-    dcs_det.sample_counter = 0;
-    dcs_det.bit_buffer = 0;
-    dcs_det.clock_phase = 0;
-    dcs_det.prev_sample = 0;
-    dcs_squelch_open = 0;
-}
-
-/**
- * Processes a single decimated sample at the oversampled rate (~1066 Hz)
- * Implements a digital PLL clock recovery loop and sliding correlation window.
- * @param sample - Low-pass filtered sample from the discriminator output
- */
-static void process_dcs_sample(FLOAT_t sample) {
-    /* 1. Software Clock Recovery via zero-crossing edge synchronization */
-    if ((sample > 0 && dcs_det.prev_sample <= 0) || (sample <= 0 && dcs_det.prev_sample > 0)) {
-        /* Edge detected! Align the clock phase marker halfway through the oversampled cycle */
-        dcs_det.sample_counter = DCS_CLOCK_OVERSAMPLE / 2;
-    }
-    dcs_det.prev_sample = sample;
-
-    /* Accumulate energy during the safe mid-bit window area */
-    dcs_det.dcs_integrator = dcs_det.dcs_integrator + sample;
-
-    /* 2. Execute bit slicing at the exact sampling phase trigger point */
-    dcs_det.sample_counter = dcs_det.sample_counter + 1;
-    if (dcs_det.sample_counter >= DCS_CLOCK_OVERSAMPLE) {
-        dcs_det.sample_counter = 0;
-
-        uint8_t current_bit = 0;
-        if (dcs_det.dcs_integrator > 0) {
-            current_bit = 1;
-        }
-        dcs_det.dcs_integrator = 0; /* Reset integrator for the next bit period */
-
-        /* Push sliced bit into the 23-bit rolling memory window */
-        dcs_det.bit_buffer = ((dcs_det.bit_buffer << 1) | current_bit) & 0x7FFFFF;
-
-        /* 3. Rolling Frame Search and circular permutation checking */
-        /* Since DCS runs continuously without explicit sync frames, test all 23 bit-shifts */
-        uint32_t test_word = dcs_det.bit_buffer;
-        for (uint8_t shift = 0; shift < DCS_BITS_COUNT; shift++) {
-            /* Check if current cyclic permutation satisfies Golay constraints */
-            if (dcs_validate_golay(test_word)) {
-                uint16_t detected_code = dcs_extract_code(test_word);
-
-                if (detected_code == dcs_target_code) {
-                    dcs_squelch_open = 1; /* Match found -> Valid burst, open gate */
-                    return;
-                }
-            }
-            /* Rotate word circularly to check alternative phase frames */
-            uint32_t bit22 = (test_word >> 22) & 1;
-            test_word = ((test_word << 1) | bit22) & 0x7FFFFF;
-        }
-    }
-}
 
 /* Example of integration inside the global init block */
 static void hftrx_nfm_submode_init(void) {
