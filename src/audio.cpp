@@ -751,18 +751,16 @@ static void nco_setlo_ftw(ncoftw_t ftw, uint_fast8_t pathi, uint_fast8_t dspmode
 /* задержка установки нового значение частоты генератора
  * возврат 1 если закончилась отработка времени
  */
-static int switchmode_delaytx(uint_fast8_t pathi)
+static int switchmode_delaytx(hfrxpath_t * const path)
 {
-    hfrxpath_t * const path = &rx_paths[pathi & 1];
 	if (path->delayblanklo6tx)
 		path->delayblanklo6tx -= 1;
 
 	return ! path->delayblanklo6tx;
 }
 
-static int switchmode_delayrx(uint_fast8_t pathi)
+static int switchmode_delayrx(hfrxpath_t * const path)
 {
-    hfrxpath_t * const path = &rx_paths[pathi & 1];
 	if (path->delayblanklo6rx)
 		path->delayblanklo6rx -= 1;
 
@@ -771,9 +769,8 @@ static int switchmode_delayrx(uint_fast8_t pathi)
 
 // Получение квадратурных значений для данной частоты со смещением фазы
 // Returned is a full scale value
-static FLOAT32P_t get_float_aflotx_delta(int32_t deltaftw, uint_fast8_t pathi)
+static FLOAT32P_t get_float_aflotx_delta(hfrxpath_t * const path, int32_t deltaftw)
 {
-    hfrxpath_t * const path = &rx_paths[pathi & 1];
 	const ncoftw_t angle = path->angle_aflotx;
 	const FLOAT32P_t v = getsincosf(angle);
 	path->angle_aflotx = FTWROUND(angle + path->anglestep_aflotx + deltaftw);
@@ -782,9 +779,8 @@ static FLOAT32P_t get_float_aflotx_delta(int32_t deltaftw, uint_fast8_t pathi)
 
 // Получение квадратурных значений для данной частоты
 // Returned is a full scale value
-static FLOAT32P_t get_float_aflorx_delta(uint_fast8_t pathi)
+static FLOAT32P_t get_float_aflorx_delta(hfrxpath_t * const path)
 {
-    hfrxpath_t * const path = &rx_paths[pathi & 1];
 	const ncoftw_t angle = path->angle_aflorx;
 	const FLOAT32P_t v = getsincosf(angle);
 	path->angle_aflorx = FTWROUND(angle + path->anglestep_aflorx);
@@ -3379,13 +3375,13 @@ static FLOAT_t mikeinmux(
 
 /* получить I/Q пару для передачи в up-converter */
 static FLOAT32P_t baseband_modulator(
+	hfrxpath_t * const path,
 	FLOAT_t vi,
 	uint_fast8_t dspmode,
 	int32_t * deltanfm
 	)
 {
-	const uint_fast8_t pathi = 0;	// тракт, испольуемый при передаче
-	const FLOAT_t shape = switchmode_delaytx(pathi) * shapeTXEnvelopStep() * scaleDAC;	// 0..1 - огибающая
+	const FLOAT_t shape = switchmode_delaytx(path) * shapeTXEnvelopStep() * scaleDAC;	// 0..1 - огибающая
 	switch (dspmode)
 	{
 	default:
@@ -3429,7 +3425,7 @@ static FLOAT32P_t baseband_modulator(
 		{
 			* deltanfm = 0;
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(0, pathi), vi * shape);
+			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(path, 0), vi * shape);
 			return vfb;
 		}
 	
@@ -3439,7 +3435,7 @@ static FLOAT32P_t baseband_modulator(
 			// vi - audio sample in range [- txlevelfenceSSB.. + txlevelfenceSSB]
 			// input range: of vi: (- IFDACMAXVAL) .. (+ IFDACMAXVAL)
 			const FLOAT_t peak = amcarrierHALF + vi * amshapesignalHALF;
-			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(0, pathi), peak * shape);
+			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(path, 0), peak * shape);
 			return vfb;
 		}
 
@@ -3453,7 +3449,7 @@ static FLOAT32P_t baseband_modulator(
 			* deltanfm = glob_fmdeviation * 100 * vi;
 			const int32_t deltaftw = 0;//(int64_t) (int32_t) gnfmdeviationftw * vi / txlevelfenceSSB;	// Учитывается нормирование источника звука
 #endif
-			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(deltaftw, pathi), txlevelfenceNFM * shape);
+			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(path, deltaftw), txlevelfenceNFM * shape);
 			return vfb;
 		}
 	}
@@ -4197,6 +4193,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 	)
 {
 	//enum { DUALRXFLT = 1 };
+    hfrxpath_t * const path = &rx_paths[pathi];
 
 	if (glob_wnb)
 	{
@@ -4233,7 +4230,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			const FLOAT_t fltstrengthslow = agc_measure_float(dspmode, SQRTF(sigpower), pathi);
 			const FLOAT_t gain = agc_getgain_float(fltstrengthslow, pathi);
 			const FLOAT32P_t vp1 = scalepair(vp0f, gain);
-			const FLOAT32P_t af = get_float_aflorx_delta(pathi);	// средняя частота выходного спектра
+			const FLOAT32P_t af = get_float_aflorx_delta(path);	// средняя частота выходного спектра
 			r = (vp1.QV * af.QV + vp1.IV * af.IV); // переносим на выходную частоту ("+" - без инверсии).
 			//r = (pathi != 0 ? get_rout() : get_lout()) * (FLOAT_t) 0.9;
 			//r = af.IV * 0.9f;
@@ -4351,6 +4348,7 @@ static FLOAT_t processifadcsampleIQ(
 	uint_fast8_t pathi				// 0/1: main_RX/sub_RX
 	)
 {
+    hfrxpath_t * const path = &rx_paths[pathi];
 #if WITHDSPLOCALRXFIR
 	if (isdspmoderx(dspmode))
 	{
@@ -4821,9 +4819,11 @@ void inject_testsignals(IFADCvalue_t * const dbuff)
 /* В заваисимости от того, из обработчика какого прерывания вызывается dsp_processtx - меняем tx_MIKE_blockSize */
 void dsp_processtx(unsigned nsamples0)
 {
+	const uint_fast8_t pathi = 0;
+    hfrxpath_t * const path = &rx_paths[pathi];
 	ASSERT(tx_MIKE_blockSize == nsamples0);
 	unsigned i;
-	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
+	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [pathi];
 	/* обработка передачи */
 	FLOAT_t txfirbuff [tx_MIKE_blockSize];
 	FLOAT32P_t monitorbuff [tx_MIKE_blockSize];
@@ -4851,7 +4851,7 @@ void dsp_processtx(unsigned nsamples0)
 			v = v * (1 - shapecwssb) + (cwssbtone * shapecwssb);	/* Заменяем передаваемый сигнал на тон пропорционально огибающей. */
 		}
 		int32_t deltanfm;
-		FLOAT32P_t vfb = baseband_modulator(injectsubtone(v, ctcss), dspmodeA, & deltanfm);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		FLOAT32P_t vfb = baseband_modulator(path, injectsubtone(v, ctcss), dspmodeA, & deltanfm);	// Передатчик - формирование одного сэмпла (пары I/Q).
 
 #if WITHDSPLOCALTXFIR
 		/* работа без FIR фильтра в FPGA */
@@ -4880,10 +4880,11 @@ void dsp_processtx(unsigned nsamples0)
 FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 {
 	ASSERT(gwprof < NPROF);
+    hfrxpath_t * const path = &rx_paths[pathi];
 	const uint_fast8_t tx = isdspmodetx(globDSPMode [gwprof] [0]);
 	const uint_fast8_t dspmode = tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [pathi];
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
-	const int rxgate = ! tx * getRxGate() * switchmode_delayrx(pathi);
+	const int rxgate = ! tx * getRxGate() * switchmode_delayrx(path);
 
 #if WITHDSPEXTDDC
 
