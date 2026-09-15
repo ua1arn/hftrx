@@ -639,7 +639,6 @@ static FLOAT_t get_dualtonefloat(void)
 
 static unsigned delayblanklo6tx [NTRX];	// приглушить тракт
 
-static unsigned delayftwlo6rx [NTRX];	// задержка переключения частоты lo6 на время прохода сигнала через FPGA FIR
 static unsigned delayblanklo6rx [NTRX];	// приглушить тракт
 static uint8_t delaylo6lastmode [NTRX];
 
