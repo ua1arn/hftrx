@@ -1745,9 +1745,8 @@ void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t 
 
 // Установка параметров АРУ приёмника
 
-static void rxagc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit_ratio, FLOAT_t agcfence, uint_fast8_t pathi)
+static void rxagc_parameters_update(hfrxpath_t * const path, volatile agcparams_t * const agcp, FLOAT_t gainlimit_ratio, FLOAT_t agcfence, uint_fast8_t pathi)
 {
-    hfrxpath_t * const path = &rx_paths[pathi];
 	const uint_fast32_t sr = ARMSAIRATE;
 	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
 
@@ -2320,7 +2319,7 @@ static int_fast16_t audio_validatebw6(int_fast16_t n)
 static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 {
     hfrxpath_t * const path = &rx_paths[pathi];
-	const FLOAT_t fs = ARMI2SRATE;
+	const FLOAT_t fs = ARMSAIRATE;
 
 	FLOAT_t dCoeff_trx_IQ [Ntap_trxi_IQ];	// расчитываем тут
 	const adapter_t * const adptfir = & localfircoefs;			/* Адаптер для локальных целочисленных FIR */
@@ -3601,14 +3600,14 @@ static void ctcss_decimator_init(ctcss_cic_t *dec) {
 /**
  * CTCSS Goertzel Detector Initialization for Decimation M=45
  */
-static void ctcss_detector_init(ctcss_goertzel_t *det, uint32_t target_freq_x10, uint32_t block_size, FLOAT_t fs) {
+static void ctcss_detector_init(ctcss_goertzel_t *det, uint32_t target_freq_x10, uint32_t block_size, FLOAT_t sample_rate) {
     det->q0 = 0;
     det->q1 = 0;
     det->q2 = 0;
     det->count = 0;
     det->block_size = block_size;
 
-    FLOAT_t k = (FLOAT_t)(1) / 2 + (FLOAT_t)((block_size * target_freq_x10 * 45) / (fs * 10));
+    FLOAT_t k = (FLOAT_t)(1) / 2 + (FLOAT_t)((block_size * target_freq_x10 * 45) / (sample_rate * 10));
     FLOAT_t omega = (2 * M_PI * k) / block_size;
     det->coeff = 2 * COSF(omega);
 }
@@ -3836,7 +3835,7 @@ static void hftrx_nfm_path_update_from_global(hfrxpath_t * const path) {
      * Base sample rate for internal NFM demodulator processing.
      * Fixed at 48000 Hz according to transceiver hardware configuration criteria.
      */
-    FLOAT_t base_sample_rate = ARMI2SRATE;
+    FLOAT_t base_sample_rate = ARMSAIRATE;
 
     /*
      * Target IF/Audio bandwidth for Narrowband FM.
@@ -5269,7 +5268,7 @@ rxparam_update(hfrxpath_t * const path, uint_fast8_t profile,
 		// glob_fsadcpower10
 		const FLOAT_t agc_agcfence = agclevel_from_abspower10(glob_agcfence10);	// из абсолютного уровня преобразовать в отношение к FS
 		
-		rxagc_parameters_update(& path->rxagcparams [profile], manualrfgain, (FLOAT_t) agc_agcfence, pathi);	// приёмник #0,#1
+		rxagc_parameters_update(path, & path->rxagcparams [profile], manualrfgain, (FLOAT_t) agc_agcfence, pathi);	// приёмник #0,#1
 
 		//PRINTF("glob_agcfence=%+d, glob_fsadcpower10=%d, agcfence=%f\n", (int) glob_agcfence, (int) glob_fsadcpower10, agc_agcfence);
 
