@@ -342,6 +342,8 @@ typedef struct {
     agcparams_t rxagcparams [NPROF];
 
     FLOAT_t manualsquelch;
+	ncoftwi_t prev_fi;
+
 } hfrxpath_t;
 
 /* Static allocation for dual-receive independent tracks */
@@ -3597,14 +3599,14 @@ static void ctcss_decimator_init(ctcss_cic_t *dec) {
 /**
  * CTCSS Goertzel Detector Initialization for Decimation M=45
  */
-static void ctcss_detector_init(ctcss_goertzel_t *det, uint32_t target_freq_x10, uint32_t block_size) {
+static void ctcss_detector_init(ctcss_goertzel_t *det, uint32_t target_freq_x10, uint32_t block_size, FLOAT_t fs) {
     det->q0 = 0;
     det->q1 = 0;
     det->q2 = 0;
     det->count = 0;
     det->block_size = block_size;
 
-    FLOAT_t k = (FLOAT_t)(1) / 2 + (FLOAT_t)((block_size * target_freq_x10 * 45) / 480000);
+    FLOAT_t k = (FLOAT_t)(1) / 2 + (FLOAT_t)((block_size * target_freq_x10 * 45) / fs);
     FLOAT_t omega = (2 * M_PI * k) / block_size;
     det->coeff = 2 * COSF(omega);
 }
@@ -3805,7 +3807,7 @@ static void hftrx_nfm_path_init(hfrxpath_t * const path, FLOAT_t sample_rate, FL
     ctcss_decimator_init(&path->cic_decimator);
 
     /* Pre-calculate Goertzel coefficients matching strict M=45 sampling constraints */
-    ctcss_detector_init(&path->ctcss_det, target_ctcss_x10, 160);
+    ctcss_detector_init(&path->ctcss_det, target_ctcss_x10, 160, sample_rate);
 
     /* Map digital DCS configuration values */
     path->dcs_target_code = target_dcs;
@@ -3863,8 +3865,8 @@ static void hftrx_nfm_path_update_from_global(hfrxpath_t * const path) {
 
 // Демодуляция FM
 static ncoftwi_t demodulator_FM(
+	hfrxpath_t * const path,
 	FLOAT32P_t vp1,
-	const uint_fast8_t pathi,				// 0/1: main_RX/sub_RX
 	FLOAT_t sigpower
 	)
 {
@@ -3873,7 +3875,6 @@ static ncoftwi_t demodulator_FM(
 	// tnx Vladimir Vassilevsky
 	// http://www.dsprelated.com/showmessage/71491/2.php
 	//
-	static RAMDTCM ncoftwi_t prev_fi [NTRX];
 
 	if (vp1.IV == 0 && vp1.QV == 0)
 		vp1.QV = 1;
@@ -3885,8 +3886,8 @@ static ncoftwi_t demodulator_FM(
 #else
 	const ncoftwi_t fi = OMEGA2FTWI(ATAN2F(vp1.QV, vp1.IV));	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
 #endif
-	const ncoftwi_t d_fi = (ncoftwi_t) (fi - prev_fi [pathi]);
-	prev_fi [pathi] = fi;
+	const ncoftwi_t d_fi = (ncoftwi_t) (fi - path->prev_fi);
+	path->prev_fi = fi;
 
 	return d_fi;
 }
@@ -3914,7 +3915,7 @@ uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi)
 	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_NFM;
 }
 
-static void init_amd(amdemod_t * a)
+static void amd_init(amdemod_t * a)
 {
 	a->phsi = 0;
 	a->fil_outi = 0;
@@ -3981,7 +3982,7 @@ create_amd(
 	a->mtauI = EXPF(- 1 / (sample_rate * tauI));
 	a->onem_mtauI = 1 - a->mtauI;
 
-	init_amd(a);
+	amd_init(a);
 }
 
 #if 0
@@ -4180,7 +4181,7 @@ static FLOAT_t baseband_demodulator(
 			/*const FLOAT_t fltstrengthslow = */ agc_measure_float(path, dspmode, SQRTF(sigpower));
 			//const FLOAT_t gain = agc_getgain_float(path, fltstrengthslow);
 			//INT32P_t vp0i32;
-			//saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
+			//saved_delta_fi [pathi] = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
 			modem_demod_iq(vp0f);
 		}
 		r = 0;
@@ -4197,7 +4198,7 @@ static FLOAT_t baseband_demodulator(
 			r = hftrx_nfm_rx_process_sample(pathi, vp0f.IV, vp0f.QV);
 #else
 			//const FLOAT_t gain = agc_getgain_float(path, fltstrengthslow);
-			saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
+			saved_delta_fi [pathi] = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
 			//const int fdelta10 = ((int64_t) saved_delta_fi [pathi] * ARMSAIRATE * 10) >> 32;	// Отклнение частоты в 0.1 герц единицах
 			// значение для прослушивания
 			// 0.707 == M_SQRT1_2
@@ -4217,7 +4218,7 @@ static FLOAT_t baseband_demodulator(
 			const FLOAT32P_t vp1 = scalepair(vp0f, gain);
 			// Демодуляция АМ
 			const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV);// * (FLOAT_t) 0.5; //M_SQRT1_2;
-			//saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
+			//saved_delta_fi [pathi] = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
 			r = sample * agc_levelsquelchopen(path, fltstrengthslow);
 		}
 		break;
@@ -4235,7 +4236,7 @@ static FLOAT_t baseband_demodulator(
 			const FLOAT_t gain = agc_getgain_float(path, fltstrengthslow);
 			const FLOAT32P_t vp1 = scalepair(vp0f, gain);
 			//const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV) * (FLOAT_t) 0.5; //M_SQRT1_2;
-			//saved_delta_fi [pathi] = demodulator_FM(vp0f, pathi, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
+			//saved_delta_fi [pathi] = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
 			// Демодуляция SАМ
 			const FLOAT_t sample = demodulator_SAM(path, vp1);
 			r = sample * agc_levelsquelchopen(path, fltstrengthslow);
