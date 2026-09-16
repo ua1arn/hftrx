@@ -107,6 +107,7 @@ uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b);
 uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b);
 uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b);
 uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b);
+int_fast32_t slabs32(int_fast32_t a);
 unsigned long ulmin(unsigned long a, unsigned long b);
 unsigned long ulmax(unsigned long a, unsigned long b);
 signed long slmin(signed long a, signed long b);

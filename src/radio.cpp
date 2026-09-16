@@ -11297,7 +11297,7 @@ getif6bw(
 
 	case MODE_RTTY:
 		{
-			return param_getvalue(& xgrttyshift) + 2 * param_getvalue(& xgrttybaudrate10) / 10;
+			return slabs32(param_getvalue(& xgrttyshift)) + 2 * param_getvalue(& xgrttybaudrate10) / 10;
 		}
 
 	// большинство режимов по констатне из тассива mdt [mode].

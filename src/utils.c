@@ -99,6 +99,11 @@ uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
 	return a < b ? a : b;
 }
 
+int_fast32_t slabs32(int_fast32_t a)
+{
+	return a > 0 ? a : - a;
+}
+
 uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 {
 	return a > b ? a : b;
