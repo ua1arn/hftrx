@@ -12031,18 +12031,21 @@ void RTTYDecoder_Init(rttydecoder_t * rtty)
 	biquad_create(& f0, RTTY_LPF_STAGES);
 	biquad_init_lowpass(& f0, TRX_SAMPLERATE, RTTY_Speed * 2);
 	fill_biquad_coeffs(& f0, rtty->RTTY_LPF_Filter_Coeffs);
+	ARM_MORPH(arm_fill)(0, rtty->RTTY_LPF_Filter_State, ARRAY_SIZE(rtty->RTTY_LPF_Filter_State));
 	ARM_MORPH(arm_biquad_cascade_df2T_init)(&rtty->RTTY_LPF_Filter, RTTY_LPF_STAGES, rtty->RTTY_LPF_Filter_Coeffs, rtty->RTTY_LPF_Filter_State);
 
 	//RTTY mark filter
 	biquad_create(& f0, RTTY_BPF_STAGES);
 	biquad_init_bandpass(& f0, TRX_SAMPLERATE, RTTY_FreqMark - RTTY_BPF_WIDTH / 2, RTTY_FreqMark + RTTY_BPF_WIDTH / 2);
 	fill_biquad_coeffs(& f0, rtty->RTTY_Mark_Filter_Coeffs);
+	ARM_MORPH(arm_fill)(0, rtty->RTTY_LPF_Filter_State, ARRAY_SIZE(rtty->RTTY_Mark_Filter_State));
 	ARM_MORPH(arm_biquad_cascade_df2T_init)(&rtty->RTTY_Mark_Filter, RTTY_BPF_STAGES, rtty->RTTY_Mark_Filter_Coeffs, rtty->RTTY_Mark_Filter_State);
 
 	//RTTY space filter
 	biquad_create(& f0, RTTY_BPF_STAGES);
 	biquad_init_bandpass(& f0, TRX_SAMPLERATE, RTTY_FreqSpace - RTTY_BPF_WIDTH / 2, RTTY_FreqSpace + RTTY_BPF_WIDTH / 2);
 	fill_biquad_coeffs(& f0, rtty->RTTY_Space_Filter_Coeffs);
+	ARM_MORPH(arm_fill)(0, rtty->RTTY_LPF_Filter_State, ARRAY_SIZE(rtty->RTTY_Space_Filter_State));
 	ARM_MORPH(arm_biquad_cascade_df2T_init)(&rtty->RTTY_Space_Filter, RTTY_BPF_STAGES, rtty->RTTY_Space_Filter_Coeffs, rtty->RTTY_Space_Filter_State);
 
 	rtty->RTTY_State = RTTY_STATE_WAIT_START;
