@@ -1935,6 +1935,23 @@
 #if TUNE_2MBAND
 	& xgbandset2m,
 #endif /* TUNE_2MBAND */
+#if WITHRTTY
+/* group name +++ */
+	(const struct paramdefdef [1]) {
+		QLABEL2("RTTY", "RTTY"), 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		OFFSETOF(struct nvmap, ggrprtty),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		NULL,
+		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+	& xgrttybaudrate10,
+	& xgrttyshift,
+/* group name --- */
+#endif /* WITHRTTY */
 
 /* group name +++ */
 	(const struct paramdefdef [1]) {

@@ -2607,7 +2607,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_SSB, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_DIGI, BWSETI_DIGI, },				// индекс банка полос пропускания для данного режима
-		{ 1700 /*was: 0 */, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
+		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 	#if WITHUSBHW && WITHUSBUACOUT
 		BOARD_TXAUDIO_USB,		// источник звукового сигнала для данного режима
 	#else /* WITHUSBHW && WITHUSBUACOUT */
@@ -3534,6 +3534,11 @@ struct nvmap
 #if defined (RTC1_TYPE)
 	uint16_t	ggrpclock; // последний посещённый пункт группы
 #endif /* defined (RTC1_TYPE) */
+#if WITHRTTY
+	uint16_t ggrprtty;		// последний посещённый пункт группы
+	uint16_t grttybaudrate10;
+	uint16_t grttyshift;
+#endif /* WITHRTTY */
 	uint16_t	ggrpabout;		// последний посещённый пункт группы
 
 #if LO1MODE_HYBRID
@@ -8393,6 +8398,42 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 #endif /* WITHMODESETSMART */
 };
 
+#if WITHRTTY
+
+static uint_fast16_t grttybaudrate10 = 500;	// rtty baudrate в десятых долях
+static const struct paramdefdef xgrttybaudrate10 = {
+	QLABEL("BAUD"),  1, RJ_UNSIGNED, ISTEPLARGE_1,
+	ITEM_VALUE,
+	100, 24000,						/* 10..2400 baud */
+	OFFSETOF(struct nvmap, grttybaudrate10),
+	getselector0, nvramoffs0, valueoffs0,
+	& grttybaudrate10,
+	NULL,
+	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
+#define WITHRTTYSHIFTDELTA 1000
+static int_fast32_t getrttyshiftbase(void)
+{
+	return - WITHRTTYSHIFTDELTA;
+}
+
+static uint_fast16_t grttyshift = 450 + WITHRTTYSHIFTDELTA;	// Default RTTY frequency shift
+
+static const struct paramdefdef xgrttyshift = {
+	QLABEL("SHIFT"),  0, RJ_SIGNED, ISTEPLARGE_1,
+	ITEM_VALUE,
+	0, 2 * WITHRTTYSHIFTDELTA,						/* 5..100 ms delay */
+	OFFSETOF(struct nvmap, grttyshift),
+	getselector0, nvramoffs0, valueoffs0,
+	& grttyshift,
+	NULL,
+	getrttyshiftbase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+#endif /* WITHRTTY */
+
 // Возвращает признак работы в LSB данного режима.
 static uint_fast8_t
 getsubmodelsb(
@@ -11236,7 +11277,6 @@ getif6bw(
 #endif /* WITHFREEDV */
 	case MODE_CW:
 	case MODE_SSB:
-	case MODE_RTTY:
 	case MODE_DIGI:
 		if (! wide)
 		{
@@ -11253,6 +11293,11 @@ getif6bw(
 		{
 			const int_fast16_t highcut = bwseti_gethigh(bwseti);
 			return 2 * highcut;
+		}
+
+	case MODE_RTTY:
+		{
+			return param_getvalue(& xgrttyshift) + 2 * param_getvalue(& xgrttybaudrate10) / 10;
 		}
 
 	// большинство режимов по констатне из тассива mdt [mode].
@@ -11862,7 +11907,6 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
 
 #if WITHRTTY
 
-#define TRX_SAMPLERATE ARMI2SRATE
 
 #define BIQUAD_COEFF_IN_STAGE 5													  // coefficients in manual Notch filter order
 
@@ -11899,8 +11943,8 @@ typedef enum {
 //extern char RTTY_Decoder_Text[RTTY_DECODER_STRLEN + 1];
 
 // Public methods
-extern void RTTYDecoder_Init(void);                   // initialize the CW decoder
-extern void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len); // start CW decoder for the data block
+extern void RTTYDecoder_Init(void);                   // initialize the RTTY decoder
+extern void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len); // start RTTY decoder for the data block
 
 
 //Ported from https://github.com/df8oe/UHSDR/blob/active-devel/mchf-eclipse/drivers/audio/rtty.c
@@ -11959,18 +12003,25 @@ static FLOAT_t RTTYDecoder_decayavg(FLOAT_t average, FLOAT_t input, int weight);
 // peaks: 10101.025 10100.575
 //
 //
-static FLOAT_t RTTY_Speed = 50; //45.45;
-#define	RTTY_Shift 455 //170;
-// The standard mark and space tones are 2125 hz and 2295 hz respectively
-#define RTTY_FreqMark DEFAULT_RTTY_PITCH		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
-#define	RTTY_FreqSpace (DEFAULT_RTTY_PITCH + RTTY_Shift)
+//static FLOAT_t RTTY_Speed = 50; //45.45;
+//#define	RTTY_Shift 455 //170;
+//// The standard mark and space tones are 2125 hz and 2295 hz respectively
+//#define RTTY_FreqMark DEFAULT_RTTY_PITCH		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
+//#define	RTTY_FreqSpace (DEFAULT_RTTY_PITCH + RTTY_Shift)
 static int RTTY_StopBits = RTTY_STOP_1;
 
 void RTTYDecoder_Init(void)
 {
+	const int_fast32_t TRX_SAMPLERATE = ARMI2SRATE;
+	const int_fast32_t RTTY_Speed = param_getvalue(& xgrttybaudrate10);//50; //45.45;
+	const int_fast32_t RTTY_Shift = param_getvalue(& xgrttyshift); //455 //170;
+	// The standard mark and space tones are 2125 hz and 2295 hz respectively
+	const int_fast32_t RTTY_FreqMark = (DEFAULT_RTTY_PITCH - RTTY_Shift / 2);		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
+	const int_fast32_t RTTY_FreqSpace = (DEFAULT_RTTY_PITCH + RTTY_Shift / 2);
+
 	iir_filter_t f0;
 	//speed
-	RTTY_oneBitSampleCount = (uint16_t)ROUNDF((FLOAT_t)TRX_SAMPLERATE / RTTY_Speed);
+	RTTY_oneBitSampleCount = (uint16_t)ROUNDF((FLOAT_t)TRX_SAMPLERATE * 10 / RTTY_Speed);
 
 	//RTTY LPF Filter
 	biquad_create(& f0, RTTY_LPF_STAGES);
@@ -13709,6 +13760,9 @@ updateboard_noui(
 	#if WITHIF4DSP
 		speex_update_rx();
 	#endif /* WITHIF4DSP */
+	#if WITHRTTY
+		RTTYDecoder_Init();
+	#endif /* WITHRTTY */
 
 	#if defined (RTC1_TYPE)
 		board_setrtcstrobe(grtcstrobe);
