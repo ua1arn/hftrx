@@ -51,13 +51,21 @@ enum
 enum
 {
 	DPAGE0,					// Страница, в которой отображаются основные (или все)
+#if WITHRTTY
+	DPAGE1,					// Страница, в которой отображаются основные (или все)
+#endif /* WITHRTTY */
 	DISPLC_MODCOUNT
 };
 
 enum
 {
 	PG0 = REDRSUBSET(DPAGE0),
-	PGALL = PG0 | REDRSUBSET_MENU,
+#if WITHRTTY
+	PG1 = REDRSUBSET(DPAGE1),
+#else /* WITHRTTY */
+	PG1 = 0,
+#endif /* WITHRTTY */
+	PGALL = PG0 | PG1 | REDRSUBSET_MENU,
 	PGWFL = PG0,	// страница отображения водопада
 	PGSPE = PG0,	// страница отображения панорамы
 	PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
@@ -166,6 +174,11 @@ static const dzone_t dzones [] =
 	// Middle bar
 	{	0, MIDMENU,	BDTH_ALLRX,	8,	display2_midbar,  	& dzi_compat, PG0, },
 #endif /* WITHMENU */
+
+#if WITHRTTY
+	{	0, DLES, 	BDTH_ALLRX, DLEB - DLES - 1, 	display2_vtty_init,	& dzi_compat,	PGINI, },	// Подготовка видеобуфера окна протокола
+	{	0, DLES, 	BDTH_ALLRX, DLEB - DLES - 1, 	display2_vtty,	& dzi_compat, PG1, },		// Вывод текущего состояния протокола
+#endif /* WITHRTTY */
 
 	// sleep mode display
 	{	5,	25,	13,	4,	display2_datetime12,		& dzi_datetime12, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40

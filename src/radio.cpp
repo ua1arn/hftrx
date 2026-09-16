@@ -12120,6 +12120,8 @@ void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len)
 					//RESULT !!!!
 					//print(charResult);
 					PRINTF("%c", charResult);
+					//display_vtty_printf("%c", charResult);
+					display_vtty_putchar(charResult);
 //					char str[2] = {0};
 //					str[0] = charResult;
 //					if (strlen(RTTY_Decoder_Text) >= RTTY_DECODER_STRLEN)
