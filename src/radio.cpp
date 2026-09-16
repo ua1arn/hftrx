@@ -2607,7 +2607,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 #if WITHIF4DSP
 		{ DSPCTL_MODE_RX_SSB, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_DIGI, BWSETI_DIGI, },				// индекс банка полос пропускания для данного режима
-		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
+		{ 2200 /*was: 0 */, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 	#if WITHUSBHW && WITHUSBUACOUT
 		BOARD_TXAUDIO_USB,		// источник звукового сигнала для данного режима
 	#else /* WITHUSBHW && WITHUSBUACOUT */
@@ -11950,6 +11950,12 @@ static FLOAT_t RTTYDecoder_decayavg(FLOAT_t average, FLOAT_t input, int weight);
 // FSK shift: 170 200 425 850
 // FSK tone freq 1275 2125
 
+// The standard mark and space tones are 2125 hz and 2295 hz respectively
+//#define	DEFAULT_RTTY_PITCH	1275	/* mark тон DIGI modes - 2.125 кГц (1275 2125) */
+
+// TTY: 10100.550
+// TTY: 10100.600
+// сами о себе пишут 10100.8 KHZ
 static FLOAT_t RTTY_Speed = 50; //45.45;
 #define	RTTY_Shift 455 //170;
 // The standard mark and space tones are 2125 hz and 2295 hz respectively
