@@ -11295,10 +11295,12 @@ getif6bw(
 			return 2 * highcut;
 		}
 
+#if WITHRTTY
 	case MODE_RTTY:
 		{
 			return slabs32(param_getvalue(& xgrttyshift)) + 2 * param_getvalue(& xgrttybaudrate10) / 10;
 		}
+#endif /* WITHRTTY */
 
 	// большинство режимов по констатне из тассива mdt [mode].
 	default:
@@ -11910,12 +11912,18 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
 
 #define BIQUAD_COEFF_IN_STAGE 5													  // coefficients in manual Notch filter order
 
+#if (defined(LAY_800x480))
+#define RTTY_DECODER_STRLEN 66 // length of decoded string
+#else
+#define RTTY_DECODER_STRLEN 30 // length of decoded string
+#endif
+
 #define RTTY_LPF_STAGES 2
 #define RTTY_BPF_STAGES 2
 #define RTTY_BPF_WIDTH (RTTY_Shift / 4)
 
-#define RTTY_SYMBOL_CODE 0x1B 	//(0b11011)
-#define RTTY_LETTER_CODE 0x1F	//(0b11111)
+#define RTTY_SYMBOL_CODE (0b11011)
+#define RTTY_LETTER_CODE (0b11111)
 
 typedef enum {
 	RTTY_STATE_WAIT_START,
@@ -11934,51 +11942,41 @@ typedef enum {
 } rtty_stopbits_t;
 
 // Public variables
+//extern char RTTY_Decoder_Text[RTTY_DECODER_STRLEN + 1];
 
 // Public methods
+extern void RTTYDecoder_Init(void);                   // initialize the RTTY decoder
+extern void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len); // start RTTY decoder for the data block
 
 
-//Ported from UHSDR
-// https://github.com/df8oe/UHSDR/blob/active-devel/mchf-eclipse/drivers/audio/rtty.c
+//Ported from https://github.com/df8oe/UHSDR/blob/active-devel/mchf-eclipse/drivers/audio/rtty.c
 
-typedef struct
-{
+//char RTTY_Decoder_Text[RTTY_DECODER_STRLEN + 1] = {0}; // decoded string
 
-	//lpf
-	FLOAT_t RTTY_LPF_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_LPF_STAGES] = {0};
-	FLOAT_t RTTY_LPF_Filter_State[2 * RTTY_LPF_STAGES];
-	ARM_MORPH(arm_biquad_cascade_df2T_instance) RTTY_LPF_Filter;
+static rtty_state_t RTTY_State = RTTY_STATE_WAIT_START;
+static rtty_charSetMode_t RTTY_charSetMode = RTTY_MODE_LETTERS;
+static uint16_t RTTY_oneBitSampleCount = 0;
+static uint8_t RTTY_byteResult = 0;
+static uint16_t RTTY_byteResult_bnum = 0;
+static int32_t RTTY_DPLLBitPhase;
+static int32_t RTTY_DPLLOldVal;
 
-	//mark
-	FLOAT_t RTTY_Mark_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
-	FLOAT_t RTTY_Mark_Filter_State[2 * RTTY_BPF_STAGES];
-	ARM_MORPH(arm_biquad_cascade_df2T_instance) RTTY_Mark_Filter;
+//lpf
+static FLOAT_t RTTY_LPF_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_LPF_STAGES] = {0};
+static FLOAT_t RTTY_LPF_Filter_State[2 * RTTY_LPF_STAGES];
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) RTTY_LPF_Filter;
 
-	//space
-	FLOAT_t RTTY_Space_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
-	FLOAT_t RTTY_Space_Filter_State[2 * RTTY_BPF_STAGES];
-	ARM_MORPH(arm_biquad_cascade_df2T_instance) RTTY_Space_Filter;
+//mark
+static FLOAT_t RTTY_Mark_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
+static FLOAT_t RTTY_Mark_Filter_State[2 * RTTY_BPF_STAGES];
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) RTTY_Mark_Filter;
 
+//space
+static FLOAT_t RTTY_Space_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
+static FLOAT_t RTTY_Space_Filter_State[2 * RTTY_BPF_STAGES];
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) RTTY_Space_Filter;
 
-	rtty_state_t RTTY_State;// = RTTY_STATE_WAIT_START;
-	rtty_charSetMode_t RTTY_charSetMode;// = RTTY_MODE_LETTERS;
-	uint16_t RTTY_oneBitSampleCount;// = 0;
-	uint8_t RTTY_byteResult;// = 0;
-	uint16_t RTTY_byteResult_bnum;// = 0;
-	int RTTY_StopBits;// = RTTY_STOP_1;
-
-	int32_t RTTY_DPLLBitPhase;
-	int32_t RTTY_DPLLOldVal;
-
-} rttydecoder_t;
-
-extern void RTTYDecoder_Init(rttydecoder_t * rtty);                   // initialize the RTTY decoder
-extern void RTTYDecoder_Process(rttydecoder_t * rtty, const FLOAT_t *bufferIn, unsigned len); // start RTTY decoder for the data block
-
-
-static rttydecoder_t rtty0;
-
-static const char RTTY_Letters[32] = {
+static const char RTTY_Letters[] = {
 	'\0', 'E', '\n', 'A', ' ', 'S', 'I', 'U',
 	'\r', 'D', 'R', 'J', 'N', 'F', 'C', 'K',
 	'T', 'Z', 'L', 'W', 'H', 'Y', 'P', 'Q',
@@ -11990,10 +11988,10 @@ static const char RTTY_Symbols[32] = {
 	'5', '"', ')', '2', '#', '6', '0', '1',
 	'9', '?', '&', ' ', '.', '/', ';', ' '};
 
-static int RTTYDecoder_waitForStartBit(rttydecoder_t * rtty, FLOAT_t sample);
-static int RTTYDecoder_getBitDPLL(rttydecoder_t * rtty, FLOAT_t sample, int *val_p);
-static int RTTYDecoder_demodulator(rttydecoder_t * rtty, FLOAT_t sample);
-static FLOAT_t RTTYDecoder_decayavg(rttydecoder_t * rtty, FLOAT_t average, FLOAT_t input, int weight);
+static int RTTYDecoder_waitForStartBit(FLOAT_t sample);
+static int RTTYDecoder_getBitDPLL(FLOAT_t sample, int *val_p);
+static int RTTYDecoder_demodulator(FLOAT_t sample);
+static FLOAT_t RTTYDecoder_decayavg(FLOAT_t average, FLOAT_t input, int weight);
 
 // FSK shift: 170 200 425 850
 // FSK tone freq 1275 2125
@@ -12012,119 +12010,113 @@ static FLOAT_t RTTYDecoder_decayavg(rttydecoder_t * rtty, FLOAT_t average, FLOAT
 //// The standard mark and space tones are 2125 hz and 2295 hz respectively
 //#define RTTY_FreqMark DEFAULT_RTTY_PITCH		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
 //#define	RTTY_FreqSpace (DEFAULT_RTTY_PITCH + RTTY_Shift)
+static int RTTY_StopBits = RTTY_STOP_1;
 
-void RTTYDecoder_Init(rttydecoder_t * rtty)
+void RTTYDecoder_Init(void)
 {
 	const int_fast32_t TRX_SAMPLERATE = ARMI2SRATE;
-	FLOAT_t RTTY_Speed = param_getvalue(& xgrttybaudrate10) / (FLOAT_t) 10;//50; //45.45;
-	FLOAT_t RTTY_Shift = param_getvalue(& xgrttyshift); //455 //170;
+	const int_fast32_t RTTY_Speed = param_getvalue(& xgrttybaudrate10);//50; //45.45;
+	const int_fast32_t RTTY_Shift = param_getvalue(& xgrttyshift); //455 //170;
 	// The standard mark and space tones are 2125 hz and 2295 hz respectively
-	FLOAT_t RTTY_FreqMark = (DEFAULT_RTTY_PITCH - RTTY_Shift / 2);		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
-	FLOAT_t RTTY_FreqSpace = (DEFAULT_RTTY_PITCH + RTTY_Shift / 2);
-	rtty->RTTY_StopBits = RTTY_STOP_1;
+	const int_fast32_t RTTY_FreqMark = (DEFAULT_RTTY_PITCH - RTTY_Shift / 2);		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
+	const int_fast32_t RTTY_FreqSpace = (DEFAULT_RTTY_PITCH + RTTY_Shift / 2);
 
 	iir_filter_t f0;
 	//speed
-	rtty->RTTY_oneBitSampleCount = (uint16_t)ROUNDF((FLOAT_t)TRX_SAMPLERATE / RTTY_Speed);
+	RTTY_oneBitSampleCount = (uint16_t)ROUNDF((FLOAT_t)TRX_SAMPLERATE * 10 / RTTY_Speed);
 
 	//RTTY LPF Filter
 	biquad_create(& f0, RTTY_LPF_STAGES);
-	biquad_init_lowpass(& f0, TRX_SAMPLERATE, RTTY_Speed * 2);
-	fill_biquad_coeffs(& f0, rtty->RTTY_LPF_Filter_Coeffs);
-	ARM_MORPH(arm_fill)(0, rtty->RTTY_LPF_Filter_State, ARRAY_SIZE(rtty->RTTY_LPF_Filter_State));
-	ARM_MORPH(arm_biquad_cascade_df2T_init)(&rtty->RTTY_LPF_Filter, RTTY_LPF_STAGES, rtty->RTTY_LPF_Filter_Coeffs, rtty->RTTY_LPF_Filter_State);
+	biquad_init_lowpass(& f0, TRX_SAMPLERATE, RTTY_Speed * 2 / 10);
+	fill_biquad_coeffs(& f0, RTTY_LPF_Filter_Coeffs);
+	ARM_MORPH(arm_biquad_cascade_df2T_init)(&RTTY_LPF_Filter, RTTY_LPF_STAGES, RTTY_LPF_Filter_Coeffs, RTTY_LPF_Filter_State);
 
 	//RTTY mark filter
 	biquad_create(& f0, RTTY_BPF_STAGES);
 	biquad_init_bandpass(& f0, TRX_SAMPLERATE, RTTY_FreqMark - RTTY_BPF_WIDTH / 2, RTTY_FreqMark + RTTY_BPF_WIDTH / 2);
-	fill_biquad_coeffs(& f0, rtty->RTTY_Mark_Filter_Coeffs);
-	ARM_MORPH(arm_fill)(0, rtty->RTTY_LPF_Filter_State, ARRAY_SIZE(rtty->RTTY_Mark_Filter_State));
-	ARM_MORPH(arm_biquad_cascade_df2T_init)(&rtty->RTTY_Mark_Filter, RTTY_BPF_STAGES, rtty->RTTY_Mark_Filter_Coeffs, rtty->RTTY_Mark_Filter_State);
+	fill_biquad_coeffs(& f0, RTTY_Mark_Filter_Coeffs);
+	ARM_MORPH(arm_biquad_cascade_df2T_init)(&RTTY_Mark_Filter, RTTY_BPF_STAGES, RTTY_Mark_Filter_Coeffs, RTTY_Mark_Filter_State);
 
 	//RTTY space filter
 	biquad_create(& f0, RTTY_BPF_STAGES);
 	biquad_init_bandpass(& f0, TRX_SAMPLERATE, RTTY_FreqSpace - RTTY_BPF_WIDTH / 2, RTTY_FreqSpace + RTTY_BPF_WIDTH / 2);
-	fill_biquad_coeffs(& f0, rtty->RTTY_Space_Filter_Coeffs);
-	ARM_MORPH(arm_fill)(0, rtty->RTTY_LPF_Filter_State, ARRAY_SIZE(rtty->RTTY_Space_Filter_State));
-	ARM_MORPH(arm_biquad_cascade_df2T_init)(&rtty->RTTY_Space_Filter, RTTY_BPF_STAGES, rtty->RTTY_Space_Filter_Coeffs, rtty->RTTY_Space_Filter_State);
+	fill_biquad_coeffs(& f0, RTTY_Space_Filter_Coeffs);
+	ARM_MORPH(arm_biquad_cascade_df2T_init)(&RTTY_Space_Filter, RTTY_BPF_STAGES, RTTY_Space_Filter_Coeffs, RTTY_Space_Filter_State);
 
-	rtty->RTTY_State = RTTY_STATE_WAIT_START;
-	rtty->RTTY_charSetMode = RTTY_MODE_LETTERS;
-	rtty->RTTY_oneBitSampleCount = 0;
-	rtty->RTTY_byteResult = 0;
-	rtty->RTTY_byteResult_bnum = 0;
-	rtty->RTTY_DPLLBitPhase = 0;
-	rtty->RTTY_DPLLOldVal = 0;
+	//text
+//	sprintf(RTTY_Decoder_Text, " RTTY: -");
+//	addSymbols(RTTY_Decoder_Text, RTTY_Decoder_Text, RTTY_DECODER_STRLEN, " ", 1);
+//	LCD_UpdateQuery.TextBar = 1;
 }
 
-void RTTYDecoder_Process(rttydecoder_t * rtty, const FLOAT_t *bufferIn, unsigned len)
+void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len)
 {
 	for (uint32_t buf_pos = 0; buf_pos < len; buf_pos++)
 	{
-		switch (rtty->RTTY_State)
+		switch (RTTY_State)
 		{
 		case RTTY_STATE_WAIT_START: // not synchronized, need to wait for start bit
-			if (RTTYDecoder_waitForStartBit(rtty, bufferIn[buf_pos]))
+			if (RTTYDecoder_waitForStartBit(bufferIn[buf_pos]))
 			{
-				rtty->RTTY_State = RTTY_STATE_BIT;
-				rtty->RTTY_byteResult_bnum = 1;
-				rtty->RTTY_byteResult = 0;
+				RTTY_State = RTTY_STATE_BIT;
+				RTTY_byteResult_bnum = 1;
+				RTTY_byteResult = 0;
 			}
 			break;
 		case RTTY_STATE_BIT:
 			// reading 7 more bits
-			if (rtty->RTTY_byteResult_bnum < 8)
+			if (RTTY_byteResult_bnum < 8)
 			{
 				int bitResult = 0;
-				if (RTTYDecoder_getBitDPLL(rtty, bufferIn[buf_pos], &bitResult))
+				if (RTTYDecoder_getBitDPLL(bufferIn[buf_pos], &bitResult))
 				{
-					switch (rtty->RTTY_byteResult_bnum)
+					switch (RTTY_byteResult_bnum)
 					{
 					case 6: // stop bit 1
 					case 7: // stop bit 2
 						if (bitResult == 0)
 						{
 							// not in sync
-							rtty->RTTY_State = RTTY_STATE_WAIT_START;
+							RTTY_State = RTTY_STATE_WAIT_START;
 						}
-						if (rtty->RTTY_StopBits != RTTY_STOP_2 && rtty->RTTY_byteResult_bnum == 6)
+						if (RTTY_StopBits != RTTY_STOP_2 && RTTY_byteResult_bnum == 6)
 						{
 							// we pretend to be at the 7th bit after receiving the first stop bit if we have less than 2 stop bits
 							// this omits check for 1.5 bit condition but we should be more or less safe here, may cause
 							// a little more unaligned receive but without that shortcut we simply cannot receive these configurations
 							// so it is worth it
-							rtty->RTTY_byteResult_bnum = 7;
+							RTTY_byteResult_bnum = 7;
 						}
 						break;
 					default:
-						rtty->RTTY_byteResult |= (bitResult ? 1 : 0) << (rtty->RTTY_byteResult_bnum - 1);
+						RTTY_byteResult |= (bitResult ? 1 : 0) << (RTTY_byteResult_bnum - 1);
 					}
-					rtty->RTTY_byteResult_bnum++;
+					RTTY_byteResult_bnum++;
 				}
 			}
-			if (rtty->RTTY_byteResult_bnum == 8 && rtty->RTTY_State == RTTY_STATE_BIT)
+			if (RTTY_byteResult_bnum == 8 && RTTY_State == RTTY_STATE_BIT)
 			{
 				char charResult;
 
-				switch (rtty->RTTY_byteResult)
+				switch (RTTY_byteResult)
 				{
 				case RTTY_LETTER_CODE:
-					rtty->RTTY_charSetMode = RTTY_MODE_LETTERS;
+					RTTY_charSetMode = RTTY_MODE_LETTERS;
 					// println(" ^L^");
 					break;
 				case RTTY_SYMBOL_CODE:
-					rtty->RTTY_charSetMode = RTTY_MODE_SYMBOLS;
+					RTTY_charSetMode = RTTY_MODE_SYMBOLS;
 					// println(" ^F^");
 					break;
 				default:
-					switch (rtty->RTTY_charSetMode)
+					switch (RTTY_charSetMode)
 					{
 					case RTTY_MODE_SYMBOLS:
-						charResult = RTTY_Symbols[rtty->RTTY_byteResult];
+						charResult = RTTY_Symbols[RTTY_byteResult];
 						break;
 					case RTTY_MODE_LETTERS:
 					default:
-						charResult = RTTY_Letters[rtty->RTTY_byteResult];
+						charResult = RTTY_Letters[RTTY_byteResult];
 						break;
 					}
 					//RESULT !!!!
@@ -12132,23 +12124,29 @@ void RTTYDecoder_Process(rttydecoder_t * rtty, const FLOAT_t *bufferIn, unsigned
 					PRINTF("%c", charResult);
 					//display_vtty_printf("%c", charResult);
 					display_vtty_putchar(charResult);
+//					char str[2] = {0};
+//					str[0] = charResult;
+//					if (strlen(RTTY_Decoder_Text) >= RTTY_DECODER_STRLEN)
+//						shiftTextLeft(RTTY_Decoder_Text, 1);
+//					strcat(RTTY_Decoder_Text, str);
+//					LCD_UpdateQuery.TextBar = 1;
 					break;
 				}
-				rtty->RTTY_State = RTTY_STATE_WAIT_START;
+				RTTY_State = RTTY_STATE_WAIT_START;
 			}
 		}
 	}
 }
 
 // this function returns only 1 when the start bit is successfully received
-static int RTTYDecoder_waitForStartBit(rttydecoder_t * rtty, FLOAT_t sample)
+static int RTTYDecoder_waitForStartBit(FLOAT_t sample)
 {
 	int retval = 0;
 	int bitResult;
 	static int16_t wait_for_start_state = 0;
 	static int16_t wait_for_half = 0;
 
-	bitResult = RTTYDecoder_demodulator(rtty, sample);
+	bitResult = RTTYDecoder_demodulator(sample);
 
 	switch (wait_for_start_state)
 	{
@@ -12166,7 +12164,7 @@ static int RTTYDecoder_waitForStartBit(rttydecoder_t * rtty, FLOAT_t sample)
 		}
 		break;
 	case 2:
-		wait_for_half = rtty->RTTY_oneBitSampleCount / 2;
+		wait_for_half = RTTY_oneBitSampleCount / 2;
 		wait_for_start_state++;
 		/* no break */
 	case 3:
@@ -12182,34 +12180,34 @@ static int RTTYDecoder_waitForStartBit(rttydecoder_t * rtty, FLOAT_t sample)
 }
 
 // this function returns 1 once at the half of a bit with the bit's value
-static int RTTYDecoder_getBitDPLL(rttydecoder_t * rtty, FLOAT_t sample, int *val_p)
+static int RTTYDecoder_getBitDPLL(FLOAT_t sample, int *val_p)
 {
 	static int phaseChanged = 0;
 	int retval = 0;
 
-	if (rtty->RTTY_DPLLBitPhase < rtty->RTTY_oneBitSampleCount)
+	if (RTTY_DPLLBitPhase < RTTY_oneBitSampleCount)
 	{
-		*val_p = RTTYDecoder_demodulator(rtty, sample);
+		*val_p = RTTYDecoder_demodulator(sample);
 
-		if (!phaseChanged && *val_p != rtty->RTTY_DPLLOldVal)
+		if (!phaseChanged && *val_p != RTTY_DPLLOldVal)
 		{
-			if (rtty->RTTY_DPLLBitPhase < rtty->RTTY_oneBitSampleCount / 2)
+			if (RTTY_DPLLBitPhase < RTTY_oneBitSampleCount / 2)
 			{
-				rtty->RTTY_DPLLBitPhase += rtty->RTTY_oneBitSampleCount / 32; // early
+				RTTY_DPLLBitPhase += RTTY_oneBitSampleCount / 32; // early
 			}
 			else
 			{
-				rtty->RTTY_DPLLBitPhase -= rtty->RTTY_oneBitSampleCount / 32; // late
+				RTTY_DPLLBitPhase -= RTTY_oneBitSampleCount / 32; // late
 			}
 			phaseChanged = 1;
 		}
-		rtty->RTTY_DPLLOldVal = *val_p;
-		rtty->RTTY_DPLLBitPhase++;
+		RTTY_DPLLOldVal = *val_p;
+		RTTY_DPLLBitPhase++;
 	}
 
-	if (rtty->RTTY_DPLLBitPhase >= rtty->RTTY_oneBitSampleCount)
+	if (RTTY_DPLLBitPhase >= RTTY_oneBitSampleCount)
 	{
-		rtty->RTTY_DPLLBitPhase -= rtty->RTTY_oneBitSampleCount;
+		RTTY_DPLLBitPhase -= RTTY_oneBitSampleCount;
 		retval = 1;
 	}
 
@@ -12217,7 +12215,7 @@ static int RTTYDecoder_getBitDPLL(rttydecoder_t * rtty, FLOAT_t sample, int *val
 }
 
 // adapted from https://github.com/ukhas/dl-fldigi/blob/master/src/include/misc.h
-static FLOAT_t RTTYDecoder_decayavg(rttydecoder_t * rtty, FLOAT_t average, FLOAT_t input, int weight)
+static FLOAT_t RTTYDecoder_decayavg(FLOAT_t average, FLOAT_t input, int weight)
 {
 	FLOAT_t retval;
 	if (weight <= 1)
@@ -12232,12 +12230,12 @@ static FLOAT_t RTTYDecoder_decayavg(rttydecoder_t * rtty, FLOAT_t average, FLOAT
 }
 
 // this function returns the bit value of the current sample
-static int RTTYDecoder_demodulator(rttydecoder_t * rtty, FLOAT_t sample)
+static int RTTYDecoder_demodulator(FLOAT_t sample)
 {
 	FLOAT_t space_mag = 0;
 	FLOAT_t mark_mag = 0;
-	ARM_MORPH(arm_biquad_cascade_df2T)(&rtty->RTTY_Space_Filter, &sample, &space_mag, 1);
-	ARM_MORPH(arm_biquad_cascade_df2T)(&rtty->RTTY_Mark_Filter, &sample, &mark_mag, 1);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&RTTY_Space_Filter, &sample, &space_mag, 1);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&RTTY_Mark_Filter, &sample, &mark_mag, 1);
 
 	FLOAT_t v1 = 0;
 	// calculating the RMS of the two lines (squaring them)
@@ -12257,11 +12255,11 @@ static int RTTYDecoder_demodulator(rttydecoder_t * rtty, FLOAT_t sample)
 	// https://github.com/ukhas/dl-fldigi/blob/master/src/cw_rtty/rtty.cxx
 	// calculate envelope of the mark and space signals
 	// uses fast attack and slow decay
-	mark_env = RTTYDecoder_decayavg(rtty, mark_env, mark_mag, (mark_mag > mark_env) ? rtty->RTTY_oneBitSampleCount / 4 : rtty->RTTY_oneBitSampleCount * 16);
-	space_env = RTTYDecoder_decayavg(rtty, space_env, space_mag, (space_mag > space_env) ? rtty->RTTY_oneBitSampleCount / 4 : rtty->RTTY_oneBitSampleCount * 16);
+	mark_env = RTTYDecoder_decayavg(mark_env, mark_mag, (mark_mag > mark_env) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 16);
+	space_env = RTTYDecoder_decayavg(space_env, space_mag, (space_mag > space_env) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 16);
 	// calculate the noise on the mark and space signals
-	mark_noise = RTTYDecoder_decayavg(rtty, mark_noise, mark_mag, (mark_mag < mark_noise) ? rtty->RTTY_oneBitSampleCount / 4 : rtty->RTTY_oneBitSampleCount * 48);
-	space_noise = RTTYDecoder_decayavg(rtty, space_noise, space_mag, (space_mag < space_noise) ? rtty->RTTY_oneBitSampleCount / 4 : rtty->RTTY_oneBitSampleCount * 48);
+	mark_noise = RTTYDecoder_decayavg(mark_noise, mark_mag, (mark_mag < mark_noise) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 48);
+	space_noise = RTTYDecoder_decayavg(space_noise, space_mag, (space_mag < space_noise) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 48);
 	// the noise floor is the lower signal of space and mark noise
 	FLOAT_t noise_floor = (space_noise < mark_noise) ? space_noise : mark_noise;
 
@@ -12283,7 +12281,7 @@ static int RTTYDecoder_demodulator(rttydecoder_t * rtty, FLOAT_t sample)
 
 	// Optimal ATC (Section 6 of of www.w7ay.net/site/Technical/ATC)
 	v1 = (mclipped - noise_floor) * (mark_env - noise_floor) - (sclipped - noise_floor) * (space_env - noise_floor) - 0.25 * ((mark_env - noise_floor) * (mark_env - noise_floor) - (space_env - noise_floor) * (space_env - noise_floor));
-	ARM_MORPH(arm_biquad_cascade_df2T)(&rtty->RTTY_LPF_Filter, &v1, &v1, 1);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&RTTY_LPF_Filter, &v1, &v1, 1);
 
 	// RTTY without ATC, which works very well too!
 	// inverting line 1
@@ -12839,7 +12837,7 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 #if WITHRTTY
 	if (pathi == 0)
 	{
-		RTTYDecoder_Process(& rtty0, nrp->wire1, FIRBUFSIZE);
+		RTTYDecoder_Process(nrp->wire1, FIRBUFSIZE);
 	}
 #endif /* WITHRTTY */
 
@@ -13767,7 +13765,7 @@ updateboard_noui(
 		speex_update_rx();
 	#endif /* WITHIF4DSP */
 	#if WITHRTTY
-		RTTYDecoder_Init(& rtty0);
+		RTTYDecoder_Init();
 	#endif /* WITHRTTY */
 
 	#if defined (RTC1_TYPE)
@@ -23528,7 +23526,7 @@ application_initialize(void)
 	dsp_initialize();		// цифровая обработка подготавливается
 	InitNoiseReduction();
 #if WITHRTTY
-	RTTYDecoder_Init(& rtty0);
+	RTTYDecoder_Init();
 #endif /* WITHRTTY */
 
 #if WITHSUBTONES && 1
