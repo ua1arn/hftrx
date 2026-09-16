@@ -40,6 +40,7 @@ extern "C" {
 	#define FMINF	fmin
 	#define LDEXPF	ldexp
 	#define FREXPF	frexp
+	#define ROUNDF	round
 
 	#if defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMA)
 		#define FMAF	fma
@@ -72,6 +73,7 @@ extern "C" {
 	#define FMINF	fminf
 	#define LDEXPF	ldexpf
 	#define FREXPF	frexpf
+	#define ROUNDF	roundf
 
 	#if defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMAF)
 		#define FMAF	fmaf

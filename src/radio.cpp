@@ -8389,7 +8389,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"TTY",
 	},
-#endif /* WITHFREEDV */
+#endif /* WITHRTTY */
 #endif /* WITHMODESETSMART */
 };
 
@@ -11900,7 +11900,7 @@ typedef enum {
 
 // Public methods
 extern void RTTYDecoder_Init(void);                   // initialize the CW decoder
-extern void RTTYDecoder_Process(const float32_t *bufferIn, unsigned len); // start CW decoder for the data block
+extern void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len); // start CW decoder for the data block
 
 
 //Ported from https://github.com/df8oe/UHSDR/blob/active-devel/mchf-eclipse/drivers/audio/rtty.c
@@ -11916,19 +11916,19 @@ static int32_t RTTY_DPLLBitPhase;
 static int32_t RTTY_DPLLOldVal;
 
 //lpf
-static float32_t RTTY_LPF_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_LPF_STAGES] = {0};
-static float32_t RTTY_LPF_Filter_State[2 * RTTY_LPF_STAGES];
-static arm_biquad_cascade_df2T_instance_f32 RTTY_LPF_Filter;
+static FLOAT_t RTTY_LPF_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_LPF_STAGES] = {0};
+static FLOAT_t RTTY_LPF_Filter_State[2 * RTTY_LPF_STAGES];
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) RTTY_LPF_Filter;
 
 //mark
-static float32_t RTTY_Mark_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
-static float32_t RTTY_Mark_Filter_State[2 * RTTY_BPF_STAGES];
-static arm_biquad_cascade_df2T_instance_f32 RTTY_Mark_Filter;
+static FLOAT_t RTTY_Mark_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
+static FLOAT_t RTTY_Mark_Filter_State[2 * RTTY_BPF_STAGES];
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) RTTY_Mark_Filter;
 
 //space
-static float32_t RTTY_Space_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
-static float32_t RTTY_Space_Filter_State[2 * RTTY_BPF_STAGES];
-static arm_biquad_cascade_df2T_instance_f32 RTTY_Space_Filter;
+static FLOAT_t RTTY_Space_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
+static FLOAT_t RTTY_Space_Filter_State[2 * RTTY_BPF_STAGES];
+static ARM_MORPH(arm_biquad_cascade_df2T_instance) RTTY_Space_Filter;
 
 static const char RTTY_Letters[] = {
 	'\0', 'E', '\n', 'A', ' ', 'S', 'I', 'U',
@@ -11942,15 +11942,15 @@ static const char RTTY_Symbols[32] = {
 	'5', '"', ')', '2', '#', '6', '0', '1',
 	'9', '?', '&', ' ', '.', '/', ';', ' '};
 
-static int RTTYDecoder_waitForStartBit(float32_t sample);
-static int RTTYDecoder_getBitDPLL(float32_t sample, int *val_p);
-static int RTTYDecoder_demodulator(float32_t sample);
-static float32_t RTTYDecoder_decayavg(float32_t average, float32_t input, int weight);
+static int RTTYDecoder_waitForStartBit(FLOAT_t sample);
+static int RTTYDecoder_getBitDPLL(FLOAT_t sample, int *val_p);
+static int RTTYDecoder_demodulator(FLOAT_t sample);
+static FLOAT_t RTTYDecoder_decayavg(FLOAT_t average, FLOAT_t input, int weight);
 
 // FSK shift: 170 200 425 850
 // FSK tone freq 1275 2125
 
-static float RTTY_Speed = 50; //45.45;
+static FLOAT_t RTTY_Speed = 50; //45.45;
 #define	RTTY_Shift 455 //170;
 // The standard mark and space tones are 2125 hz and 2295 hz respectively
 #define RTTY_FreqMark DEFAULT_RTTY_PITCH		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
@@ -11961,25 +11961,25 @@ void RTTYDecoder_Init(void)
 {
 	iir_filter_t f0;
 	//speed
-	RTTY_oneBitSampleCount = (uint16_t)roundf((float32_t)TRX_SAMPLERATE / RTTY_Speed);
+	RTTY_oneBitSampleCount = (uint16_t)ROUNDF((FLOAT_t)TRX_SAMPLERATE / RTTY_Speed);
 
 	//RTTY LPF Filter
 	biquad_create(& f0, RTTY_LPF_STAGES);
 	biquad_init_lowpass(& f0, TRX_SAMPLERATE, RTTY_Speed * 2);
 	fill_biquad_coeffs(& f0, RTTY_LPF_Filter_Coeffs);
-	arm_biquad_cascade_df2T_init_f32(&RTTY_LPF_Filter, RTTY_LPF_STAGES, RTTY_LPF_Filter_Coeffs, RTTY_LPF_Filter_State);
+	ARM_MORPH(arm_biquad_cascade_df2T_init)(&RTTY_LPF_Filter, RTTY_LPF_STAGES, RTTY_LPF_Filter_Coeffs, RTTY_LPF_Filter_State);
 
 	//RTTY mark filter
 	biquad_create(& f0, RTTY_BPF_STAGES);
 	biquad_init_bandpass(& f0, TRX_SAMPLERATE, RTTY_FreqMark - RTTY_BPF_WIDTH / 2, RTTY_FreqMark + RTTY_BPF_WIDTH / 2);
 	fill_biquad_coeffs(& f0, RTTY_Mark_Filter_Coeffs);
-	arm_biquad_cascade_df2T_init_f32(&RTTY_Mark_Filter, RTTY_BPF_STAGES, RTTY_Mark_Filter_Coeffs, RTTY_Mark_Filter_State);
+	ARM_MORPH(arm_biquad_cascade_df2T_init)(&RTTY_Mark_Filter, RTTY_BPF_STAGES, RTTY_Mark_Filter_Coeffs, RTTY_Mark_Filter_State);
 
 	//RTTY space filter
 	biquad_create(& f0, RTTY_BPF_STAGES);
 	biquad_init_bandpass(& f0, TRX_SAMPLERATE, RTTY_FreqSpace - RTTY_BPF_WIDTH / 2, RTTY_FreqSpace + RTTY_BPF_WIDTH / 2);
 	fill_biquad_coeffs(& f0, RTTY_Space_Filter_Coeffs);
-	arm_biquad_cascade_df2T_init_f32(&RTTY_Space_Filter, RTTY_BPF_STAGES, RTTY_Space_Filter_Coeffs, RTTY_Space_Filter_State);
+	ARM_MORPH(arm_biquad_cascade_df2T_init)(&RTTY_Space_Filter, RTTY_BPF_STAGES, RTTY_Space_Filter_Coeffs, RTTY_Space_Filter_State);
 
 	//text
 //	sprintf(RTTY_Decoder_Text, " RTTY: -");
@@ -11987,7 +11987,7 @@ void RTTYDecoder_Init(void)
 //	LCD_UpdateQuery.TextBar = 1;
 }
 
-void RTTYDecoder_Process(const float32_t *bufferIn, unsigned len)
+void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len)
 {
 	for (uint32_t buf_pos = 0; buf_pos < len; buf_pos++)
 	{
@@ -12075,7 +12075,7 @@ void RTTYDecoder_Process(const float32_t *bufferIn, unsigned len)
 }
 
 // this function returns only 1 when the start bit is successfully received
-static int RTTYDecoder_waitForStartBit(float32_t sample)
+static int RTTYDecoder_waitForStartBit(FLOAT_t sample)
 {
 	int retval = 0;
 	int bitResult;
@@ -12116,7 +12116,7 @@ static int RTTYDecoder_waitForStartBit(float32_t sample)
 }
 
 // this function returns 1 once at the half of a bit with the bit's value
-static int RTTYDecoder_getBitDPLL(float32_t sample, int *val_p)
+static int RTTYDecoder_getBitDPLL(FLOAT_t sample, int *val_p)
 {
 	static int phaseChanged = 0;
 	int retval = 0;
@@ -12151,41 +12151,41 @@ static int RTTYDecoder_getBitDPLL(float32_t sample, int *val_p)
 }
 
 // adapted from https://github.com/ukhas/dl-fldigi/blob/master/src/include/misc.h
-static float32_t RTTYDecoder_decayavg(float32_t average, float32_t input, int weight)
+static FLOAT_t RTTYDecoder_decayavg(FLOAT_t average, FLOAT_t input, int weight)
 {
-	float32_t retval;
+	FLOAT_t retval;
 	if (weight <= 1)
 	{
 		retval = input;
 	}
 	else
 	{
-		retval = ((input - average) / (float32_t)weight) + average;
+		retval = ((input - average) / (FLOAT_t)weight) + average;
 	}
 	return retval;
 }
 
 // this function returns the bit value of the current sample
-static int RTTYDecoder_demodulator(float32_t sample)
+static int RTTYDecoder_demodulator(FLOAT_t sample)
 {
-	float32_t space_mag = 0;
-	float32_t mark_mag = 0;
-	arm_biquad_cascade_df2T_f32(&RTTY_Space_Filter, &sample, &space_mag, 1);
-	arm_biquad_cascade_df2T_f32(&RTTY_Mark_Filter, &sample, &mark_mag, 1);
+	FLOAT_t space_mag = 0;
+	FLOAT_t mark_mag = 0;
+	ARM_MORPH(arm_biquad_cascade_df2T)(&RTTY_Space_Filter, &sample, &space_mag, 1);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&RTTY_Mark_Filter, &sample, &mark_mag, 1);
 
-	float32_t v1 = 0.0;
+	FLOAT_t v1 = 0;
 	// calculating the RMS of the two lines (squaring them)
 	space_mag *= space_mag;
 	mark_mag *= mark_mag;
 
 	// RTTY decoding with ATC = automatic threshold correction
-	float32_t helper = space_mag;
+	FLOAT_t helper = space_mag;
 	space_mag = mark_mag;
 	mark_mag = helper;
-	static float32_t mark_env = 0.0;
-	static float32_t space_env = 0.0;
-	static float32_t mark_noise = 0.0;
-	static float32_t space_noise = 0.0;
+	static FLOAT_t mark_env = 0.0;
+	static FLOAT_t space_env = 0.0;
+	static FLOAT_t mark_noise = 0.0;
+	static FLOAT_t space_noise = 0.0;
 	// experiment to implement an ATC (Automatic threshold correction), DD4WH, 2017_08_24
 	// everything taken from FlDigi, licensed by GNU GPLv2 or later
 	// https://github.com/ukhas/dl-fldigi/blob/master/src/cw_rtty/rtty.cxx
@@ -12197,13 +12197,13 @@ static int RTTYDecoder_demodulator(float32_t sample)
 	mark_noise = RTTYDecoder_decayavg(mark_noise, mark_mag, (mark_mag < mark_noise) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 48);
 	space_noise = RTTYDecoder_decayavg(space_noise, space_mag, (space_mag < space_noise) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 48);
 	// the noise floor is the lower signal of space and mark noise
-	float32_t noise_floor = (space_noise < mark_noise) ? space_noise : mark_noise;
+	FLOAT_t noise_floor = (space_noise < mark_noise) ? space_noise : mark_noise;
 
 	// Linear ATC, section 3 of www.w7ay.net/site/Technical/ATC
 	// v1 = space_mag - mark_mag - 0.5 * (space_env - mark_env);
 
 	// Compensating for the noise floor by using clipping
-	float32_t mclipped = 0.0, sclipped = 0.0;
+	FLOAT_t mclipped = 0, sclipped = 0;
 	mclipped = mark_mag > mark_env ? mark_env : mark_mag;
 	sclipped = space_mag > space_env ? space_env : space_mag;
 	if (mclipped < noise_floor)
@@ -12217,7 +12217,7 @@ static int RTTYDecoder_demodulator(float32_t sample)
 
 	// Optimal ATC (Section 6 of of www.w7ay.net/site/Technical/ATC)
 	v1 = (mclipped - noise_floor) * (mark_env - noise_floor) - (sclipped - noise_floor) * (space_env - noise_floor) - 0.25 * ((mark_env - noise_floor) * (mark_env - noise_floor) - (space_env - noise_floor) * (space_env - noise_floor));
-	arm_biquad_cascade_df2T_f32(&RTTY_LPF_Filter, &v1, &v1, 1);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&RTTY_LPF_Filter, &v1, &v1, 1);
 
 	// RTTY without ATC, which works very well too!
 	// inverting line 1
@@ -12770,6 +12770,12 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 		hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
 	}
 
+#if WITHRTTY
+	if (pathi == 0)
+	{
+		RTTYDecoder_Process(nrp->wire1, FIRBUFSIZE);
+	}
+#endif /* WITHRTTY */
 
 #if WITHLEAKYLMSANR
 	if (pathi == 0)
