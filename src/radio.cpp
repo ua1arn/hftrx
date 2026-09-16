@@ -12001,12 +12001,10 @@ static FLOAT_t RTTYDecoder_decayavg(FLOAT_t average, FLOAT_t input, int weight);
 
 // TTY: 10100.550
 // TTY: 10100.600
-// сами о себе пишут 10100.8 KHZ - Центральная частота (между пиками)
+// сами о себе пишут 10100.8 KHZ - Центральная частота (между пиками), 480 Hz shift, 50 baud
 // peaks: 10101.025 10100.575
 //
 //
-//static FLOAT_t RTTY_Speed = 50; //45.45;
-//#define	RTTY_Shift 455 //170;
 //// The standard mark and space tones are 2125 hz and 2295 hz respectively
 //#define RTTY_FreqMark DEFAULT_RTTY_PITCH		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
 //#define	RTTY_FreqSpace (DEFAULT_RTTY_PITCH + RTTY_Shift)
@@ -12015,7 +12013,7 @@ static int RTTY_StopBits = RTTY_STOP_1;
 void RTTYDecoder_Init(void)
 {
 	const int_fast32_t TRX_SAMPLERATE = ARMI2SRATE;
-	const int_fast32_t RTTY_Speed = param_getvalue(& xgrttybaudrate10);//50; //45.45;
+	const int_fast32_t RTTY_Speed10 = param_getvalue(& xgrttybaudrate10);//50; //45.45;
 	const int_fast32_t RTTY_Shift = param_getvalue(& xgrttyshift); //455 //170;
 	// The standard mark and space tones are 2125 hz and 2295 hz respectively
 	const int_fast32_t RTTY_FreqMark = (DEFAULT_RTTY_PITCH - RTTY_Shift / 2);		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
@@ -12023,24 +12021,27 @@ void RTTYDecoder_Init(void)
 
 	iir_filter_t f0;
 	//speed
-	RTTY_oneBitSampleCount = (uint16_t)ROUNDF((FLOAT_t)TRX_SAMPLERATE * 10 / RTTY_Speed);
+	RTTY_oneBitSampleCount = (uint16_t)ROUNDF((FLOAT_t)TRX_SAMPLERATE * 10 / RTTY_Speed10);
 
 	//RTTY LPF Filter
 	biquad_create(& f0, RTTY_LPF_STAGES);
-	biquad_init_lowpass(& f0, TRX_SAMPLERATE, RTTY_Speed * 2 / 10);
+	biquad_init_lowpass(& f0, TRX_SAMPLERATE, RTTY_Speed10 * 2 / 10);
 	fill_biquad_coeffs(& f0, RTTY_LPF_Filter_Coeffs);
-	ARM_MORPH(arm_biquad_cascade_df2T_init)(&RTTY_LPF_Filter, RTTY_LPF_STAGES, RTTY_LPF_Filter_Coeffs, RTTY_LPF_Filter_State);
+    ARM_MORPH(arm_fill)(0, RTTY_LPF_Filter_State, ARRAY_SIZE(RTTY_LPF_Filter_State));
+    ARM_MORPH(arm_biquad_cascade_df2T_init)(&RTTY_LPF_Filter, RTTY_LPF_STAGES, RTTY_LPF_Filter_Coeffs, RTTY_LPF_Filter_State);
 
 	//RTTY mark filter
 	biquad_create(& f0, RTTY_BPF_STAGES);
 	biquad_init_bandpass(& f0, TRX_SAMPLERATE, RTTY_FreqMark - RTTY_BPF_WIDTH / 2, RTTY_FreqMark + RTTY_BPF_WIDTH / 2);
 	fill_biquad_coeffs(& f0, RTTY_Mark_Filter_Coeffs);
+    ARM_MORPH(arm_fill)(0, RTTY_Mark_Filter_State, ARRAY_SIZE(RTTY_Mark_Filter_State));
 	ARM_MORPH(arm_biquad_cascade_df2T_init)(&RTTY_Mark_Filter, RTTY_BPF_STAGES, RTTY_Mark_Filter_Coeffs, RTTY_Mark_Filter_State);
 
 	//RTTY space filter
 	biquad_create(& f0, RTTY_BPF_STAGES);
 	biquad_init_bandpass(& f0, TRX_SAMPLERATE, RTTY_FreqSpace - RTTY_BPF_WIDTH / 2, RTTY_FreqSpace + RTTY_BPF_WIDTH / 2);
 	fill_biquad_coeffs(& f0, RTTY_Space_Filter_Coeffs);
+    ARM_MORPH(arm_fill)(0, RTTY_Space_Filter_State, ARRAY_SIZE(RTTY_Space_Filter_State));
 	ARM_MORPH(arm_biquad_cascade_df2T_init)(&RTTY_Space_Filter, RTTY_BPF_STAGES, RTTY_Space_Filter_Coeffs, RTTY_Space_Filter_State);
 
 	//text
