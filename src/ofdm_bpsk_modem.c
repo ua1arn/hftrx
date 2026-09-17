@@ -475,9 +475,9 @@ static ofdm_modem_tx_t tx;
 static ofdm_modem_tx_t tx_fill;
 static ofdm_modem_rx_t rx;
 
-void modem_fill(IFADCvalue_t * buff, adapter_t * ap)
+void modem_fill(IFADCvalue_t * buff)
 {
-	//adapter_t * const ap = & ifcodecrx;
+	adapter_t * const ap = & ifcodecrx;
 	FLOAT_t i, q;
 	ofdm_modem_tx_block(& tx_fill, test_ofdm_get_bits_flip, & i, & q, 1);
 	FLOAT_t scale = 0.1;
