@@ -5,52 +5,53 @@
 #include "dspdefines.h"
 
 /* AI-generated */
-
-#include "arm_math.h"
-#include "dspdefines.h"
-
+/* Include structures and definitions from earlier steps */
 #define RX_NUM_TAPS 31
+#define TX_NUM_TAPS 31
 
-/* BPSK Demodulator State Structure with Costas, Gardner Loops and Lock Detectors */
 typedef struct {
     ARM_MORPH(arm_fir_instance) matched_filter_i;
     ARM_MORPH(arm_fir_instance) matched_filter_q;
-
-    /* Internalized filter buffers */
     FLOAT_t filter_coeffs[RX_NUM_TAPS];
     FLOAT_t state_buffer_i[RX_NUM_TAPS + 4 - 1];
     FLOAT_t state_buffer_q[RX_NUM_TAPS + 4 - 1];
-
-    /* Carrier recovery (Costas Loop) variables */
-    FLOAT_t phase_nco;           /* Carrier phase accumulator */
-    FLOAT_t phase_step_nco;      /* Adjusted carrier frequency */
-    FLOAT_t costas_kp;           /* Proportional gain for Costas */
-    FLOAT_t costas_ki;           /* Integral gain for Costas */
-    FLOAT_t costas_integrator;   /* Integrator memory for Costas */
-
-    /* Symbol timing recovery (Gardner Loop) variables */
-    FLOAT_t timing_nco;          /* Fractional timing accumulator */
-    FLOAT_t timing_step;         /* Base step (2 * Symbol Rate / Sample Rate) */
-    FLOAT_t gardner_kp;          /* Proportional gain for Gardner */
-    FLOAT_t gardner_ki;          /* Integral gain for Gardner */
-    FLOAT_t gardner_integrator;  /* Integrator memory for Gardner */
-
-    /* Buffer for Gardner TED (3 consecutive half-symbol samples required) */
-    FLOAT_t history_i[3];        /* [0]=n-1 (strobe), [1]=n-1/2 (midpoint), [2]=n (strobe) */
+    FLOAT_t phase_nco;
+    FLOAT_t phase_step_nco;
+    FLOAT_t costas_kp;
+    FLOAT_t costas_ki;
+    FLOAT_t costas_integrator;
+    FLOAT_t timing_nco;
+    FLOAT_t timing_step;
+    FLOAT_t gardner_kp;
+    FLOAT_t gardner_ki;
+    FLOAT_t gardner_integrator;
+    FLOAT_t history_i[3];
     FLOAT_t history_q[3];
-    uint32_t sample_idx;         /* Toggles between 0 (midpoint) and 1 (strobe) */
-
-    FLOAT_t last_filt_i;         /* Interpolator history */
+    uint32_t sample_idx;
+    FLOAT_t last_filt_i;
     FLOAT_t last_filt_q;
-
-    /* Lock Detectors metrics (EMA / Low Pass Filtered states) */
-    FLOAT_t timing_lock_metric;  /* Value near 1.0 indicates stable symbol sync */
-    FLOAT_t phase_lock_metric;   /* Value near 1.0 indicates stable phase lock */
-    FLOAT_t alpha_lock;          /* Smoothing factor for lock metrics (e.g., 0.01) */
-
-    uint32_t is_timing_locked;   /* Boolean status flag */
-    uint32_t is_phase_locked;    /* Boolean status flag */
+    FLOAT_t timing_lock_metric;
+    FLOAT_t phase_lock_metric;
+    FLOAT_t alpha_lock;
+    uint32_t is_timing_locked;
+    uint32_t is_phase_locked;
 } bpsk_demod_t;
+
+typedef struct {
+    ARM_MORPH(arm_fir_instance) rrc_filter_i;
+    ARM_MORPH(arm_fir_instance) rrc_filter_q;
+    FLOAT_t filter_coeffs[TX_NUM_TAPS];
+    FLOAT_t state_buffer_i[TX_NUM_TAPS + 4 - 1];
+    FLOAT_t state_buffer_q[TX_NUM_TAPS + 4 - 1];
+    FLOAT_t timing_nco;
+    FLOAT_t timing_step;
+    FLOAT_t carrier_phase;
+    FLOAT_t carrier_step;
+    FLOAT_t last_tx_i;
+    FLOAT_t last_tx_q;
+    FLOAT_t current_symbol_i;
+    FLOAT_t current_symbol_q;
+} bpsk_mod_t;
 
 /**
  * @brief Computes Root-Raised Cosine (RRC) filter coefficients at runtime based on dynamic oversampling.
@@ -306,32 +307,6 @@ static void bpsk_demod_reset(bpsk_demod_t * ctx)
     }
 }
 
-
-#define TX_NUM_TAPS 31
-
-/* BPSK Modulator State Structure */
-typedef struct {
-    ARM_MORPH(arm_fir_instance) rrc_filter_i;
-    ARM_MORPH(arm_fir_instance) rrc_filter_q;
-
-    /* Internalized filter buffers */
-    FLOAT_t filter_coeffs[TX_NUM_TAPS];
-    FLOAT_t state_buffer_i[TX_NUM_TAPS + 4 - 1];
-    FLOAT_t state_buffer_q[TX_NUM_TAPS + 4 - 1];
-
-    FLOAT_t timing_nco;       /* Timing accumulator for DAC step */
-    FLOAT_t timing_step;      /* Dynamic symbol_rate / sample_rate ratio */
-
-    FLOAT_t carrier_phase;    /* IF Carrier phase accumulator */
-    FLOAT_t carrier_step;     /* IF Carrier frequency step */
-
-    FLOAT_t last_tx_i;        /* History for fractional interpolation to DAC rate */
-    FLOAT_t last_tx_q;
-
-    FLOAT_t current_symbol_i; /* Current symbol mapping (+1.0 or -1.0) */
-    FLOAT_t current_symbol_q;
-} bpsk_mod_t;
-
 /**
  * @brief Initializes the BPSK modulator context.
  * @param ctx Pointer to the modulator context structure.
@@ -460,6 +435,127 @@ static void bpsk_mod_reset(bpsk_mod_t * ctx)
         ctx->state_buffer_i[i] = 0;
         ctx->state_buffer_q[i] = 0;
     }
+}
+
+/* Transceiver states enum */
+typedef enum {
+    BPSK_STATE_IDLE = 0,
+    BPSK_STATE_RX,
+    BPSK_STATE_TX
+} bpsk_state_t;
+
+/* Top-level Transceiver Structure */
+typedef struct {
+    bpsk_demod_t demod;
+    bpsk_mod_t mod;
+    bpsk_state_t state;
+    FLOAT_t sample_rate;
+    FLOAT_t symbol_rate;
+    FLOAT_t tx_carrier_freq;
+} bpsk_transceiver_t;
+
+/* Forward declarations of static functions from previous components */
+static void bpsk_demod_init(bpsk_demod_t * ctx, FLOAT_t sample_rate, FLOAT_t symbol_rate);
+static void bpsk_demod_reset(bpsk_demod_t * ctx);
+static void bpsk_mod_init(bpsk_mod_t * ctx, FLOAT_t sample_rate, FLOAT_t symbol_rate, FLOAT_t carrier_freq);
+static void bpsk_mod_reset(bpsk_mod_t * ctx);
+
+/**
+ * @brief Top-level initialization of the BPSK transceiver.
+ * @param trx Pointer to the transceiver instance.
+ * @param sample_rate Codec/ADC/DAC sample rate in Hz.
+ * @param symbol_rate Desired over-the-air Baud rate.
+ * @param tx_carrier_freq Transmit IF carrier frequency in Hz (0 for baseband IQ).
+ */
+static void bpsk_trx_init(bpsk_transceiver_t * trx, FLOAT_t sample_rate, FLOAT_t symbol_rate, FLOAT_t tx_carrier_freq)
+{
+    trx->sample_rate = sample_rate;
+    trx->symbol_rate = symbol_rate;
+    trx->tx_carrier_freq = tx_carrier_freq;
+    trx->state = BPSK_STATE_IDLE;
+
+    /* Initialize inner blocks */
+    bpsk_demod_init(&trx->demod, sample_rate, symbol_rate);
+    bpsk_mod_init(&trx->mod, sample_rate, symbol_rate, tx_carrier_freq);
+}
+
+/**
+ * @brief Sets the functional state of the transceiver machine.
+ * @param trx Pointer to the transceiver instance.
+ * @param target_state Desired state (IDLE, RX, TX).
+ */
+static void bpsk_trx_set_state(bpsk_transceiver_t * trx, bpsk_state_t target_state)
+{
+    if (trx->state == target_state)
+    {
+        return;
+    }
+
+    /* Transition logic execution */
+    switch (target_state)
+    {
+        case BPSK_STATE_IDLE:
+            bpsk_demod_reset(&trx->demod);
+            bpsk_mod_reset(&trx->mod);
+            break;
+
+        case BPSK_STATE_RX:
+            /* Clear transmitter data and prepare receiver tracking loops */
+            bpsk_mod_reset(&trx->mod);
+            bpsk_demod_reset(&trx->demod);
+            break;
+
+        case BPSK_STATE_TX:
+            /* Stop listening, isolate receiver buffers, reset mod clock alignment */
+            bpsk_demod_reset(&trx->demod);
+            bpsk_mod_reset(&trx->mod);
+            break;
+
+        default:
+            break;
+    }
+
+    trx->state = target_state;
+}
+
+/**
+ * @brief Unified interface handler to execute processing tasks based on the active state.
+ * @param trx Pointer to the transceiver instance.
+ * @param in_i Input raw I sample (from ADC).
+ * @param in_q Input raw Q sample (from ADC).
+ * @param out_o_i Output routed I sample (to DAC or demodulated symbols).
+ * @param out_o_q Output routed Q sample (to DAC or demodulated symbols).
+ * @param get_bit_cb Callback function to request data bits when transmitting.
+ * @return uint32_t Metadata flags (e.g., number of symbols decoded during RX, or status).
+ */
+static uint32_t bpsk_trx_process(bpsk_transceiver_t * trx,
+                                 FLOAT_t in_i, FLOAT_t in_q,
+                                 FLOAT_t * out_o_i, FLOAT_t * out_o_q,
+                                 uint32_t (*get_bit_cb)(void))
+{
+    uint32_t result_status = 0;
+
+    switch (trx->state)
+    {
+        case BPSK_STATE_RX:
+            /* Pass hardware ADC samples straight into the demodulator core */
+            result_status = bpsk_demod_process_sample(&trx->demod, in_i, in_q, out_o_i, out_o_q);
+            break;
+
+        case BPSK_STATE_TX:
+            /* Execute modulation path and route generated symbols to DAC output arguments */
+            bpsk_mod_process_sample(&trx->mod, get_bit_cb, out_o_i, out_o_q);
+            result_status = 1; /* Signals DAC output payload ready */
+            break;
+
+        case BPSK_STATE_IDLE:
+        default:
+            *out_o_i = 0;
+            *out_o_q = 0;
+            break;
+    }
+
+    return result_status;
 }
 
 #endif /* WITHINTEGRATEDDSP */
