@@ -21,7 +21,7 @@
 	//#include "BayesFunctions/BayesFunctions.c"
 	#include "CommonTables/CommonTables.c"
 	#include "ComplexMathFunctions/ComplexMathFunctions.c"
-	//#include "ControllerFunctions/ControllerFunctions.c"
+	#include "ControllerFunctions/ControllerFunctions.c"
 
 	//#include "DistanceFunctions/DistanceFunctions.c"
 	#include "FastMathFunctions/FastMathFunctions.c"

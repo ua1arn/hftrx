@@ -64,6 +64,10 @@ typedef struct {
     FLOAT_t window_fall_complex[RX_W_LEN * 2];
 } ofdm_modem_rx_t;
 
+/**
+ * @brief Runtime initialization of the standalone OFDM transmitter context.
+ *        Generates complex window LUT weights using arm_sin_cos_f32.
+ */
 static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
 {
     ARM_MORPH(arm_cfft_init)(&self->cfft_inst, FFT_LEN);
@@ -71,11 +75,18 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
     ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
     ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
 
-    /* Generate complex window LUT weights */
+    /* Generate complex window LUT weights using arm_sin_cos_f32 */
     for (uint32_t i = 0; i < W_LEN; i++)
     {
-        FLOAT_t w_rise = 0.5 * (1.0 - COSF(M_PI * i / W_LEN));
-        FLOAT_t w_fall = 0.5 * (1.0 + COSF(M_PI * i / W_LEN));
+        float32_t sin_val, cos_val;
+        /* Convert radians to degrees for CMSIS-DSP */
+        float32_t phase_degrees = (float32_t)(M_PI * i / W_LEN) * (180.0f / (float32_t)M_PI);
+
+        /* Calculate sine and cosine simultaneously */
+        arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
+
+        FLOAT_t w_rise = 0.5 * (1.0 - (FLOAT_t)cos_val);
+        FLOAT_t w_fall = 0.5 * (1.0 + (FLOAT_t)cos_val);
 
         /* Duplicate weight for both Real and Imaginary components of the sample */
         self->window_rise_complex[i * 2]     = w_rise;
@@ -85,7 +96,6 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
         self->window_fall_complex[i * 2 + 1] = w_fall;
     }
 }
-
 /**
  * @brief Block-based transmitter modulation processing with native floating-point IFFT layout.
  *        Fully vectorized CP generation and Raised Cosine Windowing using CMSIS-DSP.
@@ -155,6 +165,7 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
     }
 }
 
+
 /**
  * @brief Resets transient caches and trackers inside the transmitter instance.
  * @param self Pointer to the active transmitter context.
@@ -173,7 +184,6 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
     ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
     ARM_MORPH(arm_fill)(0, self->rx_time_buffer, OFDM_SYMBOL_LEN * 2);
 
-    /* Setup independent Costas tracking parameters for each discrete channel */
     for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
     {
         ofdm_subcarrier_bpsk_t *sub = &self->rx_subcarriers[ch];
@@ -186,11 +196,16 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
         sub->is_phase_locked = 0;
     }
 
-    /* PRE-CALCULATE RX COMPLEX WINDOW LUT ONCE */
+    /* PRE-CALCULATE RX COMPLEX WINDOW LUT USING arm_sin_cos_f32 */
     for (uint32_t i = 0; i < RX_W_LEN; i++)
     {
-        FLOAT_t w_rise = 0.5 * (1.0 - COSF(M_PI * i / RX_W_LEN));
-        FLOAT_t w_fall = 0.5 * (1.0 + COSF(M_PI * i / RX_W_LEN));
+        float32_t sin_val, cos_val;
+        float32_t phase_degrees = (float32_t)(M_PI * i / RX_W_LEN) * (180.0f / (float32_t)M_PI);
+
+        arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
+
+        FLOAT_t w_rise = 0.5 * (1.0 - (FLOAT_t)cos_val);
+        FLOAT_t w_fall = 0.5 * (1.0 + (FLOAT_t)cos_val);
 
         self->window_rise_complex[i * 2]     = w_rise;
         self->window_rise_complex[i * 2 + 1] = w_rise;
@@ -222,7 +237,7 @@ static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
 
 /**
  * @brief Block-based receiver demodulation processing with RX Time-Domain Windowing.
- *        Fully vectorized using CMSIS-DSP arm_copy and arm_mult operations.
+ *        Trigonometry optimized via direct arm_sin_cos_f32 execution.
  */
 static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(const uint8_t *bits))
 {
@@ -243,21 +258,17 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
                                 self->fft_buffer,
                                 FFT_LEN * 2);
 
-            /* --- VECTOR OPTIMIZATION: WINDOWING VIA CMSIS-DSP MULT --- */
-            /* Smooth the beginning of the useful FFT window (Rising edge) */
-            /* Arguments: pSrcA, pSrcB, pDst, blockSize */
+            /* VECTOR OPTIMIZATION: WINDOWING VIA CMSIS-DSP MULT */
             ARM_MORPH(arm_mult)(self->fft_buffer,
                                 self->window_rise_complex,
                                 self->fft_buffer,
                                 RX_W_LEN * 2);
 
-            /* Smooth the end of the useful FFT window (Falling edge) */
             uint32_t fft_end_offset = (FFT_LEN - RX_W_LEN) * 2;
             ARM_MORPH(arm_mult)(&self->fft_buffer[fft_end_offset],
                                 self->window_fall_complex,
                                 &self->fft_buffer[fft_end_offset],
                                 RX_W_LEN * 2);
-            /* ------------------------------------------------------------- */
 
             /* Forward Complex FFT conversion: isInverseFFT = 0, bitReverseFlag = 1 */
             ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 0, 1);
@@ -273,9 +284,21 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
                 FLOAT_t raw_i = self->fft_buffer[bin_idx * 2];
                 FLOAT_t raw_q = self->fft_buffer[bin_idx * 2 + 1];
 
-                /* Vector phase calculations driven by hftrx dspdefines.h macro calls */
-                FLOAT_t cos_p = COSF(sub->phase_nco);
-                FLOAT_t sin_p = SINF(sub->phase_nco);
+                /* Declare strict float32_t targets required by direct CMSIS-DSP API */
+                float32_t sin_val, cos_val;
+
+                /* Convert phase from radians [0..2*PI] to degrees [-180..180] for arm_sin_cos_f32 */
+                float32_t phase_degrees = (float32_t)sub->phase_nco * (180.0f / (float32_t)M_PI);
+                if (phase_degrees > 180.0f) {
+                    phase_degrees -= 360.0f;
+                }
+
+                /* Call native float32 CMSIS function directly to compute sin/cos simultaneously */
+                arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
+
+                /* Cast output back to polymorphic FLOAT_t wrapper for processing loop */
+                FLOAT_t sin_p = (FLOAT_t)sin_val;
+                FLOAT_t cos_p = (FLOAT_t)cos_val;
 
                 /* Complex phase de-rotation multiplication */
                 FLOAT_t derot_i = raw_i * cos_p + raw_q * sin_p;
