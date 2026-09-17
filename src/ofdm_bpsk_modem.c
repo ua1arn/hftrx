@@ -698,26 +698,146 @@ static void ofdm_packer_process_bits_callback(ofdm_packer_rx_t *self, const uint
 
 #endif /* WITHINTEGRATEDDSP */
 
-static ofdm_modem_tx_t my_ofdm_tx;
-static ofdm_packer_tx_t my_packer_tx;
 
-static ofdm_modem_rx_t my_ofdm_rx;
-static ofdm_packer_rx_t my_packer_rx;
+/* Independent Physical Layer Contexts */
+static ofdm_modem_tx_t  ofdm_phy_tx;
+static ofdm_modem_rx_t  ofdm_phy_rx;
+
+/* Independent Service/Interleaver Layer Contexts */
+static ofdm_packer_tx_t ofdm_srv_tx;
+static ofdm_packer_rx_t ofdm_srv_rx;
 
 /* Прослойка для TX */
 static void dsp_tx_bits_bridge(uint8_t *bits) {
-    ofdm_packer_get_bits_callback(&my_packer_tx, bits);
+    ofdm_packer_get_bits_callback(&ofdm_srv_tx, bits);
 }
 
 /* Прослойка для RX */
 static void dsp_rx_bits_bridge(const uint8_t *bits) {
-    ofdm_packer_process_bits_callback(&my_packer_rx, bits);
+    ofdm_packer_process_bits_callback(&ofdm_srv_rx, bits);
 }
 
 // ... и затем в основном цикле DUC/DDC трансивера:
-//ofdm_modem_tx_block(&my_ofdm_tx, dsp_tx_bits_bridge, tx_buffer_i, tx_buffer_q, block_size);
-//ofdm_modem_rx_block(&my_ofdm_rx, rx_buffer_i, rx_buffer_q, block_size, dsp_rx_bits_bridge);
+//ofdm_modem_tx_block(&ofdm_srv_tx, dsp_tx_bits_bridge, tx_buffer_i, tx_buffer_q, block_size);
+//ofdm_modem_rx_block(&ofdm_srv_rx, rx_buffer_i, rx_buffer_q, block_size, dsp_rx_bits_bridge);
 
+/*
+ * OFDM Modem Integration Bridge for hftrx transceiver core
+ * Integrates independent PHY and Service layer contexts into the DMA audio pipeline.
+ */
+
+#include "hardware.h"
+
+#if WITHINTEGRATEDDSP
+
+/* Include our newly created modem modules */
+//#include "ofdm_bpsk_modem.h"
+//#include "ofdm_bit_packer.h"
+
+/* ========================================================================== */
+/*                          STATIC CONTEXT ALLOCATION                         */
+/* ========================================================================== */
+
+/* ========================================================================== */
+/*                         STATIC CALLBACK BRIDGES                            */
+/* ========================================================================== */
+
+/**
+ * @brief Bridge function connecting the physical modulator with the context-driven bit packer.
+ * @param bits Array destination where 8 parallel bits will be written by the interleaver layer.
+ */
+static void dsp_ofdm_tx_bits_bridge(uint8_t *bits)
+{
+    ofdm_packer_get_bits_callback(&ofdm_srv_tx, bits);
+}
+
+/**
+ * @brief Bridge function connecting the physical demodulator with the context-driven deinterleaver.
+ * @param bits Input array containing 8 parsed bits received from the physical OFDM subcarriers.
+ */
+static void dsp_ofdm_rx_bits_bridge(const uint8_t *bits)
+{
+    ofdm_packer_process_bits_callback(&ofdm_srv_rx, bits);
+}
+
+/* ========================================================================== */
+/*                             PUBLIC CORE API                                */
+/* ========================================================================== */
+
+/**
+ * @brief Global initialization hook to be called during hftrx DSP boot sequence (e.g., inside dsp_init()).
+ */
+void dsp_ofdm_modem_init(void)
+{
+    /* Initialize physical layer hardware state engines */
+    ofdm_modem_tx_init(&ofdm_phy_tx);
+    ofdm_modem_rx_init(&ofdm_phy_rx);
+
+    /* Initialize upper service data buffers and interleavers */
+    ofdm_packer_tx_init(&ofdm_srv_tx);
+    ofdm_packer_rx_init(&ofdm_srv_rx);
+}
+
+/**
+ * @brief Hard reset hook to clear active transmission states when switching modes or flushing.
+ */
+void dsp_ofdm_modem_reset(void)
+{
+    ofdm_modem_tx_reset(&ofdm_phy_tx);
+    ofdm_modem_rx_reset(&ofdm_phy_rx);
+    ofdm_packer_tx_reset(&ofdm_srv_tx);
+    ofdm_packer_rx_reset(&ofdm_srv_rx);
+}
+
+/**
+ * @brief External interface for the USB CDC UART layer to inject text characters for transmission.
+ * @param c Incoming ASCII character from Virtual COM port terminal.
+ */
+void dsp_ofdm_push_char_to_tx(uint8_t c)
+{
+    ofdm_packer_put_tx_byte(&ofdm_srv_tx, c);
+}
+
+/**
+ * @brief External interface for the USB CDC UART layer to poll for decoded text characters.
+ * @param c Pointer to storage where the extracted ASCII character will be copied.
+ * @return uint32_t Returns 1 if a character was successfully retrieved, 0 if queue is empty.
+ */
+uint32_t dsp_ofdm_pop_char_from_rx(uint8_t *c)
+{
+    return ofdm_packer_get_rx_byte(&ofdm_srv_rx, c);
+}
+
+/* ========================================================================== */
+/*                          DMA CODEC STREAM HOOKS                            */
+/* ========================================================================== */
+
+/**
+ * @brief Hook to be inserted directly into the hftrx Receiver (RX) DMA processor loop.
+ * @param buffer_i Pointer to the incoming DDC Real (I) floating-point data stream block.
+ * @param buffer_q Pointer to the incoming DDC Imaginary (Q) floating-point data stream block.
+ * @param size Processing frame length of the active audio/IQ codec block.
+ */
+void dsp_ofdm_process_rx_block(const FLOAT_t *buffer_i, const FLOAT_t *buffer_q, uint32_t size)
+{
+    /* Stream the raw DDC blocks directly into the independent physical demodulator instance */
+    ofdm_modem_rx_block(&ofdm_phy_rx, buffer_i, buffer_q, size, dsp_ofdm_rx_bits_bridge);
+}
+
+/**
+ * @brief Hook to be inserted directly into the hftrx Transmitter (TX) DMA processor loop.
+ *        Overwrites or fills the DUC modulator target queues when PTT text mode is active.
+ * @param buffer_i Pointer to the destination DUC Real (I) floating-point buffer block.
+ * @param buffer_q Pointer to the destination DUC Imaginary (Q) floating-point buffer block.
+ * @param size Processing frame length of the active audio/IQ codec block.
+ */
+void dsp_ofdm_process_tx_block(FLOAT_t *buffer_i, FLOAT_t *buffer_q, uint32_t size)
+{
+    /* Generate orthogonal complex wave vectors directly into the DUC hardware queues */
+    ofdm_modem_tx_block(&ofdm_phy_tx, dsp_ofdm_tx_bits_bridge, buffer_i, buffer_q, size);
+}
+
+#endif /* WITHINTEGRATEDDSP */
 
 //////////////////
 /// test
@@ -939,6 +1059,7 @@ void modem_init(void)
 	ofdm_modem_tx_init(& tx_fill);
 	ofdm_modem_rx_init(& rx);
 
+	dsp_ofdm_modem_init();
 	return;
 }
 
