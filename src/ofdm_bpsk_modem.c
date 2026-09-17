@@ -99,18 +99,11 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
 }
 
 /**
- * @brief Block-based transmitter modulation processing with native floating-point IFFT layout.
- *        Fully vectorized using CMSIS-DSP arm_copy, arm_fill, and arm_mult operations.
- *        Generates a true complex analytical signal for quadrature DUC Up-Converter.
- * @param self Pointer to the isolated transmitter configuration block.
- * @param get_bits_cb External callback supplying 8 parallel bits (one per channel).
- * @param out_buffer_i Output array destination for modulated Real (I) components.
- * @param out_buffer_q Output array destination for modulated Imaginary (Q) components.
- * @param block_size Size of the transceiver processing hardware block frame.
+ * @brief Block-based transmitter modulation processing with mathematically pure IFFT layout.
+ *        Ensures strict subcarrier orthogonality and ideal single-sideband IQ generation.
  */
 static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
 {
-	const FLOAT_t range = 0.7 * 16;
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
         /* Regenerate symbol payload if the active time domain vector cache is exhausted */
@@ -124,24 +117,18 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
             uint8_t tx_bits[OFDM_NUM_CHANNELS] = {0};
             get_bits_cb(tx_bits);
 
-            /* DETERMINISTIC LOOP MAPPING: Correct analytical complex mapping for DUC Up-Converter */
+            /* MATHEMATICALLY CORRECT BPSK-OFDM MAPPING: */
+            /* Imaginary part MUST be 0.0 to preserve native CFFT subcarrier orthogonality. */
+            /* Single-sideband IQ signal is achieved by filling ONLY bins 1..8 and keeping bins 120..127 at 0. */
             for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
             {
                 uint32_t bin_idx = subcarrier_map[ch];
 
-                /* Project BPSK bits onto BOTH Real and Imaginary axes to ensure 90-degree phase shift */
-                /* This forms a true single-sideband complex analytical signal for the quadrature mixer */
-                if (tx_bits[ch] != 0) {
-                    self->fft_buffer[bin_idx * 2]     = range;  /* Real (I) component */
-                    self->fft_buffer[bin_idx * 2 + 1] = range;  /* Imaginary (Q) component */
-                } else {
-                    self->fft_buffer[bin_idx * 2]     = -range; /* Real (I) component */
-                    self->fft_buffer[bin_idx * 2 + 1] = -range; /* Imaginary (Q) component */
-                }
+                self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? 16.0 : -16.0; /* Real (I) component */
+                self->fft_buffer[bin_idx * 2 + 1] = 0.0;                        /* Imaginary (Q) component strictly ZERO */
             }
 
             /* Inverse Complex FFT execution: isInverseFFT = 1, bitReverseFlag = 1 */
-            /* Native CMSIS-DSP floating-point CFFT preserves mathematical scaling automatically */
             ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
 
             /* Construct the Cyclic Prefix window using fast block memory transport */
@@ -159,7 +146,6 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
 
             /* --- VECTOR OPTIMIZATION: TRANSITION WINDOWING VIA CMSIS-DSP MULT --- */
             /* Smooth the absolute beginning of the symbol (Rising edge) */
-            /* Arguments: pSrcA, pSrcB, pDst, blockSize */
             ARM_MORPH(arm_mult)(self->tx_time_buffer,
                                 self->window_rise_complex,
                                 self->tx_time_buffer,
@@ -180,7 +166,6 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
         self->tx_sample_idx++;
     }
 }
-
 
 /**
  * @brief Resets transient caches and trackers inside the transmitter instance.
