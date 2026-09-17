@@ -674,6 +674,9 @@ void hamradio_set_geqrx(uint_fast8_t v);
 
 void audio_rx_equalizer(FLOAT_t *buffer, uint_fast16_t size);
 
+void modem_test(void);
+void modem_fill(IFADCvalue_t * buff, adapter_t * ap);
+
 //////////////////////////
 /// IIR
 
