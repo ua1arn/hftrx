@@ -89,9 +89,7 @@ static void ofdm_modem_tx_reset(ofdm_modem_tx_t *self)
  */
 static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
 {
-    /* Calculate exact scaling factor for 128-point IFFT normalization */
-    FLOAT_t scale_factor = 1.0 / FFT_LEN;
-
+	const FLOAT_t value = 8;
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
         /* Regenerate symbol payload if the active time domain vector cache is exhausted */
@@ -106,21 +104,17 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
             get_bits_cb(tx_bits);
 
             /* High-speed manual loop unrolling mapping inputs directly into spectral bins */
-            self->fft_buffer[subcarrier_map[0] * 2] = tx_bits[0] ? 1 : -1;
-            self->fft_buffer[subcarrier_map[1] * 2] = tx_bits[1] ? 1 : -1;
-            self->fft_buffer[subcarrier_map[2] * 2] = tx_bits[2] ? 1 : -1;
-            self->fft_buffer[subcarrier_map[3] * 2] = tx_bits[3] ? 1 : -1;
-            self->fft_buffer[subcarrier_map[4] * 2] = tx_bits[4] ? 1 : -1;
-            self->fft_buffer[subcarrier_map[5] * 2] = tx_bits[5] ? 1 : -1;
-            self->fft_buffer[subcarrier_map[6] * 2] = tx_bits[6] ? 1 : -1;
-            self->fft_buffer[subcarrier_map[7] * 2] = tx_bits[7] ? 1 : -1;
+            self->fft_buffer[subcarrier_map[0] * 2] = tx_bits[0] ? value : -value;
+            self->fft_buffer[subcarrier_map[1] * 2] = tx_bits[1] ? value : -value;
+            self->fft_buffer[subcarrier_map[2] * 2] = tx_bits[2] ? value : -value;
+            self->fft_buffer[subcarrier_map[3] * 2] = tx_bits[3] ? value : -value;
+            self->fft_buffer[subcarrier_map[4] * 2] = tx_bits[4] ? value : -value;
+            self->fft_buffer[subcarrier_map[5] * 2] = tx_bits[5] ? value : -value;
+            self->fft_buffer[subcarrier_map[6] * 2] = tx_bits[6] ? value : -value;
+            self->fft_buffer[subcarrier_map[7] * 2] = tx_bits[7] ? value : -value;
 
             /* Inverse Complex FFT operation: isInverseFFT = 1, bitReverseFlag = 1 */
             ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
-
-            /* VECTOR OPTIMIZATION: Scale the time-domain buffer to maintain the [-1.0 .. +1.0] range */
-            /* Correct CMSIS-DSP argument order: pSrc, scale, pDst, blockSize */
-            ARM_MORPH(arm_scale)(self->fft_buffer, scale_factor, self->fft_buffer, FFT_LEN * 2);
 
             /* Structural mapping of the Cyclic Prefix guard interval using arm_copy */
             uint32_t cp_src_offset = (FFT_LEN - CYCLIC_PREFIX_LEN) * 2;
@@ -280,6 +274,7 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
 
 static const uint8_t testarray [] =
 {
+//		0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
 	'D', 'E', 'A', 'D', 'B', 'E', 'E', 'F',
 	'A', 'B', 'B', 'A', '1', '9', '8', '0',
 #if 0
@@ -334,13 +329,17 @@ static const uint8_t testarray [] =
 	 0x41, 0x04, 0x12, 0x45, 0x21, 0x41, 0x9C, 0x20,
 	 0x28, 0x00, 0x41, 0x01, 0x10, 0x08, 0x40, 0x14,
 #endif
+		'D', 'E', 'A', 'D', 'B', 'E', 'E', 'F',
+		'A', 'B', 'B', 'A', '1', '9', '8', '0',
 };
 
 static int testindex;
 
 static void test_ofdm_get_preamble_bits(uint8_t *bits)
 {
-	memset(bits, 0xFF, 8);
+	static int phase;
+	memset(bits, phase ? 0x55 : 0xAA, 8);
+	phase = ! phase;
 }
 
 static void test_ofdm_get_bits(uint8_t *bits)
@@ -383,12 +382,33 @@ static ofdm_modem_rx_t rx;
 
 void modem_fill(IFADCvalue_t * buff, adapter_t * ap)
 {
+	//adapter_t * const ap = & ifcodecrx;
 	FLOAT_t i, q;
 	const FLOAT_t denom = 1;//1. / 16;
 	ofdm_modem_tx_block(& tx, test_ofdm_get_bits, & i, & q, 1);
 
 	buff [DMABUF32RX0I] = adpt_output(ap, i * denom);
 	buff [DMABUF32RX0I] = adpt_output(ap, q * denom);
+}
+
+static FLOAT_t vming, vmaxg;
+
+static void pathclipping(FLOAT_t * buff, unsigned len)
+{
+	FLOAT_t vmin, vmax;
+
+	ARM_MORPH(arm_min_no_idx)(buff, len, & vmin);
+	ARM_MORPH(arm_max_no_idx)(buff, len, & vmax);
+	vming = FMINF(vming, vmin);
+	vmaxg = FMAXF(vmaxg, vmax);
+	//return;
+
+	adapter_t * const ap = & ifcodecrx;
+	while (len --)
+	{
+		int_fast32_t v = adpt_output(ap, * buff);
+		* buff ++ = adpt_input(ap, v);
+	}
 }
 
 
@@ -404,15 +424,22 @@ void modem_test(void)
 	FLOAT_t buffer_q [BUFFLEN];
 
 	ofdm_modem_tx_block(& tx, test_ofdm_get_preamble_bits, buffer_i, buffer_q, BUFFLEN);
+	pathclipping(buffer_i, BUFFLEN);
+	pathclipping(buffer_q, BUFFLEN);
 	ofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_null_bits);
 	unsigned i;
-	for (i = 0; i < 1000; ++ i)
+	for (i = 0; i < 100; ++ i)
 	{
 
 		ofdm_modem_tx_block(& tx, test_ofdm_get_bits, buffer_i, buffer_q, BUFFLEN);
+		pathclipping(buffer_i, BUFFLEN);
+		pathclipping(buffer_q, BUFFLEN);
 		ofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_bits);
 	}
 	PRINTF("\n");
+	PRINTF("OFDM_SYMBOL_LEN=%d\n", (int) OFDM_SYMBOL_LEN);
+	PRINTF("Ranges: vming=%d, vmaxg=%d\n", (int) vming, (int) vmaxg);
+	printf("Ranges: vming=%f, vmaxg=%f\n", vming, vmaxg);
 	TP();
 }
 
