@@ -9,11 +9,11 @@
 
 #define OFDM_NUM_CHANNELS   8
 #define FFT_LEN             128
-#define CYCLIC_PREFIX_LEN   0//32    /* Increased from 16 to 32 for phase alignment */
+#define CYCLIC_PREFIX_LEN   32    /* Increased from 16 to 32 for phase alignment */
 #define OFDM_SYMBOL_LEN     (FFT_LEN + CYCLIC_PREFIX_LEN) /* 160 samples */
 
-#define TX_W_LEN   2//4
-#define RX_W_LEN 2//4
+#define TX_W_LEN   	4
+#define RX_W_LEN 	4
 /*
  * Symmetric Subcarrier Map for Quadrature Up-Converter:
  * Bins 1..4   -> Positive frequencies (USB): +375, +750, +1125, +1500 Hz
