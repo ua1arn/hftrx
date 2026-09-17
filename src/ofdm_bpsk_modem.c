@@ -16,6 +16,9 @@
 /* Bins 1 to 8 correspond to frequencies: 375, 750, 1125, 1500, 1875, 2250, 2625, 3000 Hz */
 static const uint8_t subcarrier_map[OFDM_NUM_CHANNELS] = {1, 2, 3, 4, 5, 6, 7, 8};
 
+/* Shift all 8 operational channels by +2 bins away from DC to increase isolation */
+//static const uint8_t subcarrier_map[OFDM_NUM_CHANNELS] = {3, 4, 5, 6, 7, 8, 9, 10};
+
 /* ========================================================================== */
 /*                             STRUCTURES & CONTEXTS                          */
 /* ========================================================================== */
@@ -32,10 +35,8 @@ typedef struct {
     uint32_t is_phase_locked;    /* Boolean lock status flag */
 } ofdm_subcarrier_bpsk_t;
 
-#define W_LEN   2
-#define RX_W_LEN 2
-
-#define W_LEN   2
+#define W_LEN   4
+#define RX_W_LEN 4
 
 typedef struct {
     ARM_MORPH(arm_cfft_instance) cfft_inst;
@@ -96,12 +97,20 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
         self->window_fall_complex[i * 2 + 1] = w_fall;
     }
 }
+
 /**
  * @brief Block-based transmitter modulation processing with native floating-point IFFT layout.
- *        Fully vectorized CP generation and Raised Cosine Windowing using CMSIS-DSP.
+ *        Fully vectorized using CMSIS-DSP arm_copy, arm_fill, and arm_mult operations.
+ *        Generates a true complex analytical signal for quadrature DUC Up-Converter.
+ * @param self Pointer to the isolated transmitter configuration block.
+ * @param get_bits_cb External callback supplying 8 parallel bits (one per channel).
+ * @param out_buffer_i Output array destination for modulated Real (I) components.
+ * @param out_buffer_q Output array destination for modulated Imaginary (Q) components.
+ * @param block_size Size of the transceiver processing hardware block frame.
  */
 static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
 {
+	const FLOAT_t range = 0.7 * 16;
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
         /* Regenerate symbol payload if the active time domain vector cache is exhausted */
@@ -115,23 +124,30 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
             uint8_t tx_bits[OFDM_NUM_CHANNELS] = {0};
             get_bits_cb(tx_bits);
 
-            /* DETERMINISTIC LOOP MAPPING */
+            /* DETERMINISTIC LOOP MAPPING: Correct analytical complex mapping for DUC Up-Converter */
             for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
             {
                 uint32_t bin_idx = subcarrier_map[ch];
+
+                /* Project BPSK bits onto BOTH Real and Imaginary axes to ensure 90-degree phase shift */
+                /* This forms a true single-sideband complex analytical signal for the quadrature mixer */
                 if (tx_bits[ch] != 0) {
-                    self->fft_buffer[bin_idx * 2] = 16.0;
+                    self->fft_buffer[bin_idx * 2]     = range;  /* Real (I) component */
+                    self->fft_buffer[bin_idx * 2 + 1] = range;  /* Imaginary (Q) component */
                 } else {
-                    self->fft_buffer[bin_idx * 2] = -16.0;
+                    self->fft_buffer[bin_idx * 2]     = -range; /* Real (I) component */
+                    self->fft_buffer[bin_idx * 2 + 1] = -range; /* Imaginary (Q) component */
                 }
-                self->fft_buffer[bin_idx * 2 + 1] = 0.0;
             }
 
             /* Inverse Complex FFT execution: isInverseFFT = 1, bitReverseFlag = 1 */
+            /* Native CMSIS-DSP floating-point CFFT preserves mathematical scaling automatically */
             ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
 
-            /* Construct the Cyclic Prefix window using arm_copy */
+            /* Construct the Cyclic Prefix window using fast block memory transport */
             uint32_t cp_start = (FFT_LEN - CYCLIC_PREFIX_LEN) * 2;
+
+            /* Copy the tail part of the IFFT output to the beginning of the transmission frame */
             ARM_MORPH(arm_copy)(&self->fft_buffer[cp_start],
                                 self->tx_time_buffer,
                                 CYCLIC_PREFIX_LEN * 2);
@@ -141,7 +157,7 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
                                 &self->tx_time_buffer[CYCLIC_PREFIX_LEN * 2],
                                 FFT_LEN * 2);
 
-            /* --- VECTOR OPTIMIZATION: WINDOWING VIA CMSIS-DSP MULT --- */
+            /* --- VECTOR OPTIMIZATION: TRANSITION WINDOWING VIA CMSIS-DSP MULT --- */
             /* Smooth the absolute beginning of the symbol (Rising edge) */
             /* Arguments: pSrcA, pSrcB, pDst, blockSize */
             ARM_MORPH(arm_mult)(self->tx_time_buffer,
@@ -346,7 +362,6 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
 
 static const uint8_t testarray [] =
 {
-//		0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
 	'D', 'E', 'A', 'D', 'B', 'E', 'E', 'F',
 	'A', 'B', 'B', 'A', '1', '9', '8', '0',
 #if 0
@@ -401,11 +416,7 @@ static const uint8_t testarray [] =
 	 0x41, 0x04, 0x12, 0x45, 0x21, 0x41, 0x9C, 0x20,
 	 0x28, 0x00, 0x41, 0x01, 0x10, 0x08, 0x40, 0x14,
 #endif
-		'D', 'E', 'A', 'D', 'B', 'E', 'E', 'F',
-		'A', 'B', 'B', 'A', '1', '9', '8', '0',
 };
-
-static int testindex;
 
 static void test_ofdm_get_preamble_bits(uint8_t *bits)
 {
@@ -416,6 +427,7 @@ static void test_ofdm_get_preamble_bits(uint8_t *bits)
 
 static void test_ofdm_get_bits(uint8_t *bits)
 {
+	static int testindex;
 	const uint8_t data = testarray [testindex];
 
 	bits [0] = !! (data & (UINT8_C(1) << 7));
@@ -430,9 +442,34 @@ static void test_ofdm_get_bits(uint8_t *bits)
 	testindex = (testindex + 1) % (sizeof testarray / sizeof testarray [0]);
 }
 
+static void test_ofdm_get_bits_fill(uint8_t *bits)
+{
+	static int testindex;
+	const uint8_t data = testarray [testindex];
+
+	bits [0] = !! (data & (UINT8_C(1) << 7));
+	bits [1] = !! (data & (UINT8_C(1) << 6));
+	bits [2] = !! (data & (UINT8_C(1) << 5));
+	bits [3] = !! (data & (UINT8_C(1) << 4));
+	bits [4] = !! (data & (UINT8_C(1) << 3));
+	bits [5] = !! (data & (UINT8_C(1) << 2));
+	bits [6] = !! (data & (UINT8_C(1) << 1));
+	bits [7] = !! (data & (UINT8_C(1) << 0));
+
+	testindex = (testindex + 1) % (sizeof testarray / sizeof testarray [0]);
+}
+
+static void test_ofdm_get_bits_flip(uint8_t *bits)
+{
+	static int testindex;
+	bits [0] = testindex ? 0xAA : 0x55;
+	testindex = ! testindex;
+}
+
 static void test_ofdm_process_null_bits(const uint8_t *bits)
 {
 }
+
 static void test_ofdm_process_bits(const uint8_t *bits)
 {
 	unsigned v = 0;
@@ -450,17 +487,18 @@ static void test_ofdm_process_bits(const uint8_t *bits)
 }
 
 static ofdm_modem_tx_t tx;
+static ofdm_modem_tx_t tx_fill;
 static ofdm_modem_rx_t rx;
 
 void modem_fill(IFADCvalue_t * buff, adapter_t * ap)
 {
 	//adapter_t * const ap = & ifcodecrx;
 	FLOAT_t i, q;
-	const FLOAT_t denom = 1;//1. / 16;
-	ofdm_modem_tx_block(& tx, test_ofdm_get_bits, & i, & q, 1);
+	ofdm_modem_tx_block(& tx_fill, test_ofdm_get_bits_flip, & i, & q, 1);
+	FLOAT_t scale = 0.1;
 
-	buff [DMABUF32RX0I] = adpt_output(ap, i * denom);
-	buff [DMABUF32RX0I] = adpt_output(ap, q * denom);
+	buff [DMABUF32RX0I] = adpt_output(ap, i * scale);
+	buff [DMABUF32RX0Q] = adpt_output(ap, q * scale);
 }
 
 static FLOAT_t vming, vmaxg;
@@ -489,6 +527,7 @@ void modem_test(void)
 	TP();
 
 	ofdm_modem_tx_init(& tx);
+	ofdm_modem_tx_init(& tx_fill);
 	ofdm_modem_rx_init(& rx);
 
 	enum { BUFFLEN = 256 };
