@@ -6,9 +6,6 @@
 
 /* AI-generated */
 
-#include "arm_math.h"
-#include "dspdefines.h"
-
 #define RX_NUM_TAPS 31
 
 /* BPSK Demodulator State Structure with Costas and Gardner Loops */
@@ -44,15 +41,13 @@ typedef struct {
     FLOAT_t last_filt_q;
 } bpsk_demod_t;
 
-#include "arm_math.h"
-#include "dspdefines.h"
 
 /**
- * @brief Computes Root-Raised Cosine (RRC) filter coefficients at runtime.
+ * @brief Computes Root-Raised Cosine (RRC) filter coefficients at runtime based on dynamic oversampling.
  * @param coeffs Pointer to the destination array of size num_taps.
  * @param num_taps Number of filter coefficients (must be odd for linear phase).
  * @param alpha Roll-off factor (typically between 0.2 and 0.5).
- * @param samples_per_symbol Number of samples per symbol clock grid.
+ * @param samples_per_symbol Dynamic calculated ratio of sample_rate / symbol_rate.
  */
 static void calc_rrc_coeffs(FLOAT_t * coeffs, uint32_t num_taps, FLOAT_t alpha, FLOAT_t samples_per_symbol)
 {
@@ -88,9 +83,8 @@ static void calc_rrc_coeffs(FLOAT_t * coeffs, uint32_t num_taps, FLOAT_t alpha, 
         energy_sum += coeffs[i] * coeffs[i];
     }
 
-    /* Compute normalization factor using CMSIS-DSP sqrt via ARM_MORPH */
+    /* Compute normalization factor using SQRTF macro from dspdefines.h */
     FLOAT_t norm_factor = SQRTF(energy_sum);
-    //ARM_MORPH(arm_sqrt)(energy_sum, &norm_factor);
 
     /* Normalize the filter coefficients to maintain unity energy gain */
     if (norm_factor > 0)
@@ -253,7 +247,7 @@ typedef struct {
     FLOAT_t state_buffer_q[TX_NUM_TAPS + 4 - 1];
 
     FLOAT_t timing_nco;       /* Timing accumulator for DAC step */
-    FLOAT_t timing_step;      /* symbol_rate / sample_rate ratio */
+    FLOAT_t timing_step;      /* Dynamic symbol_rate / sample_rate ratio */
 
     FLOAT_t carrier_phase;    /* IF Carrier phase accumulator */
     FLOAT_t carrier_step;     /* IF Carrier frequency step */
@@ -274,8 +268,9 @@ typedef struct {
  */
 static void bpsk_mod_init(bpsk_mod_t * ctx, FLOAT_t sample_rate, FLOAT_t symbol_rate, FLOAT_t carrier_freq)
 {
+    /* Calculate precise fractional step for the DAC grid */
     ctx->timing_step = symbol_rate / sample_rate;
-    ctx->timing_nco = 1;
+    ctx->timing_nco = 1; /* Force immediate symbol fetch on first sample */
 
     ctx->carrier_phase = 0;
     ctx->carrier_step = (2 * M_PI * carrier_freq) / sample_rate;
@@ -285,11 +280,10 @@ static void bpsk_mod_init(bpsk_mod_t * ctx, FLOAT_t sample_rate, FLOAT_t symbol_
     ctx->current_symbol_i = 0;
     ctx->current_symbol_q = 0;
 
-    for (uint32_t i = 0; i < TX_NUM_TAPS; i++) {
-        ctx->filter_coeffs[i] = 0; /* Coefficients should be initialized dynamically later */
-    }
-
+    /* Dynamic calculation of oversampling ratio (Samples Per Symbol) */
     FLOAT_t samples_per_symbol = sample_rate / symbol_rate;
+
+    /* Calculate RRC coefficients on the fly based on the calculated oversampling */
     calc_rrc_coeffs(ctx->filter_coeffs, TX_NUM_TAPS, 0.35, samples_per_symbol);
 
     ARM_MORPH(arm_fir_init)(&ctx->rrc_filter_i, TX_NUM_TAPS, ctx->filter_coeffs, ctx->state_buffer_i, 1);
@@ -310,41 +304,52 @@ static void bpsk_mod_process_sample(bpsk_mod_t * ctx, uint32_t (*get_next_bit_ca
     FLOAT_t raw_upsample_i = 0;
     FLOAT_t raw_upsample_q = 0;
 
+    /* Advance symbol timing NCO based on DAC sample clock */
     ctx->timing_nco += ctx->timing_step;
 
+    /* Check if it is time to map a new symbol */
     if (ctx->timing_nco >= 1)
     {
         ctx->timing_nco -= 1;
 
+        /* Fetch new data bit via callback */
         uint32_t bit = get_next_bit_callback();
 
+        /* BPSK Mapping: 1 -> +1.0, 0 -> -1.0 using Type Promotion rules */
         ctx->current_symbol_i = bit ? 1 : -1;
         ctx->current_symbol_q = 0;
 
+        /* Impulse excitation for the shaping filter */
         raw_upsample_i = ctx->current_symbol_i;
         raw_upsample_q = ctx->current_symbol_q;
     }
     else
     {
+        /* Stuffing zeros between symbols (classic upsampling processing) */
         raw_upsample_i = 0;
         raw_upsample_q = 0;
     }
 
+    /* Pulse shaping via CMSIS-DSP FIR instance */
     ARM_MORPH(arm_fir)(&ctx->rrc_filter_i, &raw_upsample_i, &rrc_out_i, 1);
     ARM_MORPH(arm_fir)(&ctx->rrc_filter_q, &raw_upsample_q, &rrc_out_q, 1);
 
+    /* Fractional interpolation for precise positioning between symbol intervals */
     FLOAT_t mu = ctx->timing_nco;
     FLOAT_t interp_i = ctx->last_tx_i + mu * (rrc_out_i - ctx->last_tx_i);
     FLOAT_t interp_q = ctx->last_tx_q + mu * (rrc_out_q - ctx->last_tx_q);
 
+    /* Store current shaping outputs for the next interpolation step */
     ctx->last_tx_i = rrc_out_i;
     ctx->last_tx_q = rrc_out_q;
 
+    /* Digital Upconversion (DUC) if carrier frequency is non-zero */
     if (ctx->carrier_step > 0)
     {
         FLOAT_t cos_c = COSF(ctx->carrier_phase);
         FLOAT_t sin_c = SINF(ctx->carrier_phase);
 
+        /* Complex mixing to IF target */
         *out_dac_i = interp_i * cos_c - interp_q * sin_c;
         *out_dac_q = interp_i * sin_c + interp_q * cos_c;
 
@@ -356,6 +361,7 @@ static void bpsk_mod_process_sample(bpsk_mod_t * ctx, uint32_t (*get_next_bit_ca
     }
     else
     {
+        /* Direct Baseband IQ Output */
         *out_dac_i = interp_i;
         *out_dac_q = interp_q;
     }
