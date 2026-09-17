@@ -319,12 +319,13 @@ void modem_test(void)
 	ofdm_modem_tx_init(& tx);
 	ofdm_modem_rx_init(& rx);
 
+	enum { BUFFLEN = 256 };
+	FLOAT_t buffer_i [BUFFLEN];
+	FLOAT_t buffer_q [BUFFLEN];
+
 	unsigned i;
 	for (i = 0; i < 100; ++ i)
 	{
-		enum { BUFFLEN = 1000 };
-		FLOAT_t buffer_i [BUFFLEN];
-		FLOAT_t buffer_q [BUFFLEN];
 
 		ofdm_modem_tx_block(& tx, test_get_bits, buffer_i, buffer_q, BUFFLEN);
 		ofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_process_bits);
