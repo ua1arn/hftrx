@@ -12,12 +12,19 @@
 #define CYCLIC_PREFIX_LEN   16    /* Proportional guard interval (1/8 of FFT) */
 #define OFDM_SYMBOL_LEN     (FFT_LEN + CYCLIC_PREFIX_LEN) /* 144 samples */
 
-/* New subcarrier map: places 8 active channels in the middle of the audio passband */
-/* Bins 1 to 8 correspond to frequencies: 375, 750, 1125, 1500, 1875, 2250, 2625, 3000 Hz */
-static const uint8_t subcarrier_map[OFDM_NUM_CHANNELS] = {1, 2, 3, 4, 5, 6, 7, 8};
+/*
+ * Symmetric Subcarrier Map for Quadrature Up-Converter:
+ * Bins 1..4   -> Positive frequencies (USB): +375, +750, +1125, +1500 Hz
+ * Bins 124..127 -> Negative frequencies (LSB): -1500, -1125, -750, -375 Hz
+ */
+static const uint8_t subcarrier_map[OFDM_NUM_CHANNELS] = {
+    1, 2, 3, 4,         /* Positive bins (Channels 0, 1, 2, 3) */
+	FFT_LEN - 4, FFT_LEN - 3, FFT_LEN - 2, FFT_LEN - 1  /* Negative bins (Channels 4, 5, 6, 7) */
+};
 
-/* Shift all 8 operational channels by +2 bins away from DC to increase isolation */
-//static const uint8_t subcarrier_map[OFDM_NUM_CHANNELS] = {3, 4, 5, 6, 7, 8, 9, 10};
+static const uint8_t Xsubcarrier_map[OFDM_NUM_CHANNELS] = {
+	1, 2, 3, 4, 5, 6, 7, 8
+};
 
 /* ========================================================================== */
 /*                             STRUCTURES & CONTEXTS                          */
@@ -429,6 +436,7 @@ static void test_ofdm_get_bits(uint8_t *bits)
 
 static void test_ofdm_get_bits_fill(uint8_t *bits)
 {
+	return;
 	static int testindex;
 	const uint8_t data = testarray [testindex];
 
@@ -448,6 +456,13 @@ static void test_ofdm_get_bits_flip(uint8_t *bits)
 {
 	static int testindex;
 	bits [0] = testindex ? 0xAA : 0x55;
+	bits [1] = testindex ? 0xAA : 0x55;
+	bits [2] = testindex ? 0xAA : 0x55;
+	bits [3] = testindex ? 0xAA : 0x55;
+	bits [4] = testindex ? 0xAA : 0x55;
+	bits [5] = testindex ? 0xAA : 0x55;
+	bits [6] = testindex ? 0xAA : 0x55;
+	bits [7] = testindex ? 0xAA : 0x55;
 	testindex = ! testindex;
 }
 
@@ -479,7 +494,7 @@ void modem_fill(IFADCvalue_t * buff)
 {
 	adapter_t * const ap = & ifcodecrx;
 	FLOAT_t i, q;
-	ofdm_modem_tx_block(& tx_fill, test_ofdm_get_bits_flip, & i, & q, 1);
+	ofdm_modem_tx_block(& tx_fill, test_ofdm_get_bits_fill, & i, & q, 1);
 	FLOAT_t scale = 0.1;
 
 	buff [DMABUF32RX0I] = adpt_output(ap, i * scale);
@@ -506,6 +521,27 @@ static void pathclipping(FLOAT_t * buff, unsigned len)
 	}
 }
 
+static void nullmodem(FLOAT_t * buff_i, FLOAT_t * buff_q, unsigned len)
+{
+	while (len --)
+	{
+		const FLOAT_t i = * buff_i;
+		const FLOAT_t q = * buff_q;
+
+		const FLOAT32P_t pair = xget_float_monofreq();
+
+		const FLOAT_t absv = i * pair.IV + q * pair.QV;
+
+		const FLOAT_t i2 = absv * pair.IV;
+		const FLOAT_t q2 = absv * pair.QV;
+
+		* buff_i = i2;
+		* buff_q = q2;
+		//
+		++ buff_i;
+		++ buff_q;
+	}
+}
 
 void modem_test(void)
 {
@@ -522,6 +558,7 @@ void modem_test(void)
 	ofdm_modem_tx_block(& tx, test_ofdm_get_preamble_bits, buffer_i, buffer_q, BUFFLEN);
 	pathclipping(buffer_i, BUFFLEN);
 	pathclipping(buffer_q, BUFFLEN);
+	nullmodem(buffer_i, buffer_q, BUFFLEN);
 	ofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_null_bits);
 	unsigned i;
 	for (i = 0; i < 100; ++ i)
@@ -530,6 +567,7 @@ void modem_test(void)
 		ofdm_modem_tx_block(& tx, test_ofdm_get_bits, buffer_i, buffer_q, BUFFLEN);
 		pathclipping(buffer_i, BUFFLEN);
 		pathclipping(buffer_q, BUFFLEN);
+		nullmodem(buffer_i, buffer_q, BUFFLEN);
 		ofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_bits);
 	}
 	PRINTF("\n");
