@@ -1,6 +1,7 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
-#if WITHIF4DSP
+#if WITHIF4DSP && 0
+
 #include "dspdefines.h"
 #include "audio.h"
 #include "formats.h"
