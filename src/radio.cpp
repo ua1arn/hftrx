@@ -114,7 +114,9 @@ static txreq_t txreqst0;
 
 static uint_fast8_t gtx;	/* текущее состояние прием или передача */
 
-/* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
+/* обработка сообщений от уровня обработчиков прерываний к user-level функциям.
+ * Получение нажатий на клавиатуре
+ * */
 void
 processmessages(
 	uint_fast16_t * kbch,
@@ -139,13 +141,7 @@ processmessages(
 
 #else /* WITHLVGL && WITHLVGLINDEV */
 
-	if ((* kbready = kbd_scan(kbch)) != 0)
-	{
-		if (board_wakeup() && * kbch != KBD_CODE_POWEROFF)
-			* kbch = KBD_CODE_MAX;	// первое нажатие в спящем режиме игнорируеся и используется только для пробуждения
-	}
-	else
-		* kbch = KBD_CODE_MAX;
+	* kbready = kbd_scan(kbch);
 
 #endif /* WITHLVGL && WITHLVGLINDEV */
 
@@ -156,7 +152,7 @@ processmessages(
 		return;
 
 	case MSGT_CAT:
-		board_wakeup();
+		//board_wakeup();
 #if WITHCAT
 		{
 			// check MSGBUFFERSIZE8 valie
@@ -760,6 +756,7 @@ void knobevent_initialize(knobevent_t * e, encoder_t * aenc, uint_fast8_t alowre
 
 typedef struct mouseevent_tag
 {
+	int8_t moving;
 	int8_t pressed;
 	uint16_t x;
 	uint16_t y;
@@ -767,6 +764,7 @@ typedef struct mouseevent_tag
 
 void mouseevent_initialize(mouseevent_t * e)
 {
+	e->moving = 0;
 	e->pressed = 0;
 }
 
@@ -798,6 +796,32 @@ typedef struct inputevent_tag
 	mouseevent_t mouse;
 } inputevent_t;
 
+
+static void wakeup_on_keyevent(keyevent_t * ke)
+{
+	if (ke->kbready)
+	{
+		if (board_wakeup() && ke->kbch != KBD_CODE_POWEROFF)
+			ke->kbch = KBD_CODE_MAX;	// первое нажатие в спящем режиме игнорируеся и используется только для пробуждения
+	}
+	else
+	{
+		ke->kbch = KBD_CODE_MAX;
+	}
+}
+
+static void wakeup_on_mouse(mouseevent_t * me)
+{
+	if (me->moving)
+	{
+		board_wakeup();
+	}
+	if (me->pressed && board_wakeup())
+	{
+		me->pressed = 0;	// первое нажатие в спящем режиме игнорируеся и используется только для пробуждения
+	}
+}
+
 #if WITHENCODER
 
 static int_least16_t event_getRotateAccelerated(knobevent_t * e, uint_fast8_t * jsize, int derate)
@@ -807,6 +831,10 @@ static int_least16_t event_getRotateAccelerated(knobevent_t * e, uint_fast8_t * 
 	encoder_pushback(e->enc, d.rem);
 	* jsize = e->jumpsize;
 	e->delta = 0;
+	if (d.quot)
+	{
+		board_wakeup();
+	}
 	return d.quot;
 }
 
@@ -818,6 +846,10 @@ static int_fast32_t event_getRotate(knobevent_t * e)
 	const div_t d = div(e->delta, e->derate);
 	encoder_pushback(e->enc, d.rem);
 	e->delta = 0;
+	if (d.quot)
+	{
+		board_wakeup();
+	}
 	return d.quot;
 }
 
@@ -831,6 +863,10 @@ static int_fast32_t event_getRotateReduced(knobevent_t * e, int derate)
 	const div_t d = div(e->delta, e->derate * derate);
 	encoder_pushback(e->enc, d.rem);
 	e->delta = 0;
+	if (d.quot)
+	{
+		board_wakeup();
+	}
 	return d.quot;
 }
 
@@ -840,10 +876,14 @@ static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшае
 
 #endif /* WITHENCODER */
 
-void inputevent_fill(inputevent_t * e, uint_fast8_t locked)
+static void inputevent_fill(inputevent_t * e, uint_fast8_t locked)
 {
 	processmessages(& e->frontkeyevent.kbch, & e->frontkeyevent.kbready);
+	wakeup_on_keyevent(& e->frontkeyevent);
+
 	e->dtmfkeyevent.kbready = dtmf_scan(& e->dtmfkeyevent.kbch);
+	wakeup_on_keyevent(& e->frontkeyevent);
+
 	if (e->dtmfkeyevent.kbready)
 	{
 		PRINTF("dtmfkey=%02X\n", (unsigned char) e->dtmfkeyevent.kbch);
@@ -877,6 +917,7 @@ void inputevent_fill(inputevent_t * e, uint_fast8_t locked)
 	e->encF4.jumpsize = 0;
 #endif /* WITHENCODER_4F */
 #endif /* WITHENCODER */
+
 	/* блокировка всего управления, а не только перестройки */
 #if WITHLOCKFULL
 	if (locked && e->frontkeyevent.kbready && e->frontkeyevent.kbch != KBD_CODE_LOCK)
@@ -19073,7 +19114,6 @@ processmenukeyandencoder(inputevent_t * ev)
 		if (processknobmenunavigation(ev, & ev->encF3, bring_enc3f))	// перемещение по меню с помощью энкодера
 		{
 			/* обновление отображения пункта */
-			board_wakeup();
 			updateboard();
 		}
 	}
@@ -19083,7 +19123,6 @@ processmenukeyandencoder(inputevent_t * ev)
 		if (processknobmenunavigation(ev, & ev->encFN, NULL)) // перемещение по меню также с помощью 2го энкодера
 		{
 			/* обновление отображения пункта */
-			board_wakeup();
 			updateboard();
 		}
 	}
@@ -19093,7 +19132,6 @@ processmenukeyandencoder(inputevent_t * ev)
 	if (param_rotate_knob(mp->pd, & ev->encMAIN, NULL))	// модификация и сохранение параметра
 	{
 		/* обновление отображения пункта */
-		board_wakeup();
 		updateboard();
 		return 1;
 	}
@@ -19103,7 +19141,6 @@ processmenukeyandencoder(inputevent_t * ev)
 	if (param_rotate_knob(mp->pd, & ev->encF4, bring_enc4f))	// модификация и сохранение параметра
 	{
 		/* обновление отображения пункта */
-		board_wakeup();
 		updateboard();
 		return 1;
 	}
@@ -21540,7 +21577,7 @@ processmainlooptuneknobs(inputevent_t * ev)
 
 
 // производится на каждом цикле получения состояния органов управления
-void inputevent_initialize(inputevent_t * e)
+static void inputevent_init(inputevent_t * e)
 {
 	keyevent_initialize(& e->frontkeyevent);
 	keyevent_initialize(& e->dtmfkeyevent);
@@ -21577,7 +21614,7 @@ hamradio_main_step(void)
 	const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);		/* состояние выбора банков может измениться */
 	const uint_fast8_t locked = glocks [getbankindex_ab_forcontrols(0)];
 	inputevent_t event;
-	inputevent_initialize(& event);
+	inputevent_init(& event);
 	inputevent_fill(& event, locked);
 
 	txreq_process();	/* обработка запросов */
@@ -21602,8 +21639,6 @@ hamradio_main_step(void)
 				storebandfreq(getvfoindex(bi_main), bi_main);		/* сохранение частоты в текущем VFO */
 				storebandfreq(getvfoindex(bi_sub), bi_sub);		/* сохранение частоты в текущем VFO */
 				sthrl = STHRL_RXTX;
-
-				board_wakeup();
 			}
 			else
 			{
