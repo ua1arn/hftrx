@@ -8547,7 +8547,9 @@ static void cat_answer_forming(void);
 
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 
-static uint_fast8_t gdimmtime;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
+#define WITHDIMMTIMEMAX 240
+
+static uint_fast8_t gdimmtime = 240;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
 
 static const struct paramdefdef xgdimmtime =
 {
