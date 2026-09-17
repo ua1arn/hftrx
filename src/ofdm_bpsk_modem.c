@@ -8,22 +8,20 @@
 #include "formats.h"
 
 #define OFDM_NUM_CHANNELS   8
-#define FFT_LEN             128   /* Increased from 16 to fit 3 kHz bandwidth */
-#define CYCLIC_PREFIX_LEN   16    /* Proportional guard interval (1/8 of FFT) */
-#define OFDM_SYMBOL_LEN     (FFT_LEN + CYCLIC_PREFIX_LEN) /* 144 samples */
+#define FFT_LEN             128
+#define CYCLIC_PREFIX_LEN   0//32    /* Increased from 16 to 32 for phase alignment */
+#define OFDM_SYMBOL_LEN     (FFT_LEN + CYCLIC_PREFIX_LEN) /* 160 samples */
 
+#define TX_W_LEN   2//4
+#define RX_W_LEN 2//4
 /*
  * Symmetric Subcarrier Map for Quadrature Up-Converter:
  * Bins 1..4   -> Positive frequencies (USB): +375, +750, +1125, +1500 Hz
  * Bins 124..127 -> Negative frequencies (LSB): -1500, -1125, -750, -375 Hz
  */
 static const uint8_t subcarrier_map[OFDM_NUM_CHANNELS] = {
-    0, 1, 2, 3,         /* Positive bins (Channels 0, 1, 2, 3) */
-	FFT_LEN - 4, FFT_LEN - 3, FFT_LEN - 2, FFT_LEN - 1  /* Negative bins (Channels 4, 5, 6, 7) */
-};
-
-static const uint8_t Xsubcarrier_map[OFDM_NUM_CHANNELS] = {
-	1, 2, 3, 4, 5, 6, 7, 8
+    0, 1, 2, 3, 4,        /* Positive bins (Channels 0, 1, 2, 3) */
+	FFT_LEN - 3, FFT_LEN - 2, FFT_LEN - 1  /* Negative bins (Channels 4, 5, 6, 7) */
 };
 
 /* ========================================================================== */
@@ -41,9 +39,6 @@ typedef struct {
     FLOAT_t phase_lock_metric;   /* Exponential moving average lock indicator */
     uint32_t is_phase_locked;    /* Boolean lock status flag */
 } ofdm_subcarrier_bpsk_t;
-
-#define TX_W_LEN   2//4
-#define RX_W_LEN 2//4
 
 typedef struct {
     ARM_MORPH(arm_cfft_instance) cfft_inst;
@@ -84,7 +79,7 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
     ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
 
     /* Generate complex window LUT weights using arm_sin_cos_f32 */
-    for (uint32_t i = 0; i < TX_W_LEN; i++)
+    for (int i = 0; i < TX_W_LEN; i++)
     {
         float32_t sin_val, cos_val;
         /* Convert radians to degrees for CMSIS-DSP */
@@ -136,10 +131,11 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
             }
 
             /* Inverse Complex FFT execution: isInverseFFT = 1, bitReverseFlag = 1 */
-            ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
+            //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
+            dsp_cfft(&self->cfft_inst, self->fft_buffer, 1);
 
             /* Construct the Cyclic Prefix window using fast block memory transport */
-            uint32_t cp_start = (FFT_LEN - CYCLIC_PREFIX_LEN) * 2;
+            uint32_t cp_start = (FFT_LEN - CYCLIC_PREFIX_LEN) * 2; // (128 - 32) * 2 = 192
 
             /* Copy the tail part of the IFFT output to the beginning of the transmission frame */
             ARM_MORPH(arm_copy)(&self->fft_buffer[cp_start],
@@ -164,7 +160,7 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
                                 self->window_fall_complex,
                                 &self->tx_time_buffer[sym_end_offset],
 								TX_W_LEN * 2);
-        }
+       }
 
         /* Stream serialized data samples into active processing streams for hftrx path */
         out_buffer_i[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2];
@@ -205,7 +201,7 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
     }
 
     /* PRE-CALCULATE RX COMPLEX WINDOW LUT USING arm_sin_cos_f32 */
-    for (uint32_t i = 0; i < RX_W_LEN; i++)
+    for (int i = 0; i < RX_W_LEN; i++)
     {
         float32_t sin_val, cos_val;
         float32_t phase_degrees = (float32_t)(M_PI * i / RX_W_LEN) * (180.0f / (float32_t)M_PI);
@@ -279,8 +275,9 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
                                 RX_W_LEN * 2);
 
             /* Forward Complex FFT conversion: isInverseFFT = 0, bitReverseFlag = 1 */
-            ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 0, 1);
-            
+            //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 0, 1);
+            dsp_cfft(&self->cfft_inst, self->fft_buffer, 0);
+
             uint8_t rx_bits[OFDM_NUM_CHANNELS] = {0};
             
             /* De-rotate phase offsets and track multi-frequency channel state variations */
@@ -436,7 +433,6 @@ static void test_ofdm_get_bits(uint8_t *bits)
 
 static void test_ofdm_get_bits_fill(uint8_t *bits)
 {
-	return;
 	static int testindex;
 	const uint8_t data = testarray [testindex];
 
