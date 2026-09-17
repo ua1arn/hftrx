@@ -5,20 +5,14 @@
 #include "dspdefines.h"
 #include "audio.h"
 #include "formats.h"
-/*
- * OFDM 8-Channel BPSK Modem Transceiver
- * Fully decoupled and independent TX/RX context structures ensuring reentrancy.
- * Implements block-based processing using CMSIS-DSP vector operations.
- * Uses ARM_MORPH macro for CMSIS-DSP data types and generic functions.
- * Uses dspdefines.h for optimized trigonometric and square root macros.
- */
 
 #define OFDM_NUM_CHANNELS   8
-#define FFT_LEN             16
-#define CYCLIC_PREFIX_LEN   4
-#define OFDM_SYMBOL_LEN     (FFT_LEN + CYCLIC_PREFIX_LEN)
+#define FFT_LEN             128   /* Increased from 16 to fit 3 kHz bandwidth */
+#define CYCLIC_PREFIX_LEN   16    /* Proportional guard interval (1/8 of FFT) */
+#define OFDM_SYMBOL_LEN     (FFT_LEN + CYCLIC_PREFIX_LEN) /* 144 samples */
 
-/* Map 8 operational channels to specific orthogonal subcarrier bins, avoiding DC */
+/* New subcarrier map: places 8 active channels in the middle of the audio passband */
+/* Bins 1 to 8 correspond to frequencies: 375, 750, 1125, 1500, 1875, 2250, 2625, 3000 Hz */
 static const uint8_t subcarrier_map[OFDM_NUM_CHANNELS] = {1, 2, 3, 4, 5, 6, 7, 8};
 
 /* ========================================================================== */
@@ -220,7 +214,7 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
             /* Forward Complex FFT conversion: isInverseFFT = 0, bitReverseFlag = 1 */
             ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 0, 1);
             
-            uint8_t rx_bits[OFDM_NUM_CHANNELS] = {0};
+            uint8_t rx_bits[OFDM_NUM_CHANNELS];// = {0};
             
             /* De-rotate phase offsets and track multi-frequency channel state variations */
             for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
