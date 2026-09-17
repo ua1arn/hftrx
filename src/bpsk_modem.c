@@ -13,9 +13,6 @@
  * Highly encapsulated, static linkage, completely reentrant context model.
  */
 
-#include "arm_math.h"
-#include "dspdefines.h"
-
 #define RX_NUM_TAPS 31
 #define TX_NUM_TAPS 31
 
