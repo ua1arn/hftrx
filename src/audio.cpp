@@ -694,6 +694,19 @@ FLOAT_t get_modulation(void)
 	return v;
 }
 
+
+// test IQ frequency
+static ncoftw_t xanglestep_monofreq = FTWAF(12000);
+static ncoftw_t xangle_monofreq;
+
+// modem test LO quadratures
+FLOAT32P_t xget_float_monofreq(void)
+{
+	const FLOAT32P_t v = getsincosf(xangle_monofreq);
+	xangle_monofreq = FTWROUND(xangle_monofreq + xanglestep_monofreq);
+	return v;
+}
+
 //////////////////////////////////////////
 /// получение тона для самоконтроля телеграфа (или озвучки клавиш)
 static ncoftw_t anglestep_sidetone;
