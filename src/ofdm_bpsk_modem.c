@@ -8,20 +8,20 @@
 #include "formats.h"
 
 #define OFDM_NUM_CHANNELS   8
-#define FFT_LEN             128
+#define FFT_LEN             256
 #define CYCLIC_PREFIX_LEN   32    /* Increased from 16 to 32 for phase alignment */
 #define OFDM_SYMBOL_LEN     (FFT_LEN + CYCLIC_PREFIX_LEN) /* 160 samples */
 
-#define TX_W_LEN   	4
-#define RX_W_LEN 	4
+#define TX_W_LEN   	8
+#define RX_W_LEN 	8
 /*
  * Symmetric Subcarrier Map for Quadrature Up-Converter:
  * Bins 1..4   -> Positive frequencies (USB): +375, +750, +1125, +1500 Hz
  * Bins 124..127 -> Negative frequencies (LSB): -1500, -1125, -750, -375 Hz
  */
-static const uint8_t subcarrier_map[OFDM_NUM_CHANNELS] = {
-    0, 1, 2, 3, 4,        /* Positive bins (Channels 0, 1, 2, 3) */
-	FFT_LEN - 3, FFT_LEN - 2, FFT_LEN - 1  /* Negative bins (Channels 4, 5, 6, 7) */
+static const uint16_t subcarrier_map[OFDM_NUM_CHANNELS] = {
+    1, 3, 5, 7,        /* Positive bins (Channels 0, 1, 2, 3) */
+	FFT_LEN - 7, FFT_LEN - 5, FFT_LEN - 3, FFT_LEN - 1  /* Negative bins (Channels 4, 5, 6, 7) */
 };
 
 /* ========================================================================== */
@@ -106,6 +106,7 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
  */
 static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
 {
+	const FLOAT_t magnitude = 32;
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
         /* Regenerate symbol payload if the active time domain vector cache is exhausted */
@@ -126,7 +127,7 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
             {
                 uint32_t bin_idx = subcarrier_map[ch];
 
-                self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? 16.0 : -16.0; /* Real (I) component */
+                self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? magnitude : -magnitude; /* Real (I) component */
                 self->fft_buffer[bin_idx * 2 + 1] = 0.0;                        /* Imaginary (Q) component strictly ZERO */
             }
 
@@ -353,7 +354,7 @@ static const uint8_t testarray [] =
 {
 	'D', 'E', 'A', 'D', 'B', 'E', 'E', 'F',
 	'A', 'B', 'B', 'A', '1', '9', '8', '0',
-#if 0
+#if 1
 	 0x48, 0x21, 0x18, 0x0C, 0x82, 0x03, 0x82, 0x00,
 	 0x00, 0x34, 0x84, 0x20, 0x94, 0x20, 0x84, 0x00,
 	 0x00, 0x18, 0x01, 0x10, 0x00, 0x18, 0x00, 0x0C,
