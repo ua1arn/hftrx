@@ -18,7 +18,7 @@
  * Bins 124..127 -> Negative frequencies (LSB): -1500, -1125, -750, -375 Hz
  */
 static const uint8_t subcarrier_map[OFDM_NUM_CHANNELS] = {
-    1, 2, 3, 4,         /* Positive bins (Channels 0, 1, 2, 3) */
+    0, 1, 2, 3,         /* Positive bins (Channels 0, 1, 2, 3) */
 	FFT_LEN - 4, FFT_LEN - 3, FFT_LEN - 2, FFT_LEN - 1  /* Negative bins (Channels 4, 5, 6, 7) */
 };
 
@@ -42,8 +42,8 @@ typedef struct {
     uint32_t is_phase_locked;    /* Boolean lock status flag */
 } ofdm_subcarrier_bpsk_t;
 
-#define W_LEN   4
-#define RX_W_LEN 4
+#define TX_W_LEN   2//4
+#define RX_W_LEN 2//4
 
 typedef struct {
     ARM_MORPH(arm_cfft_instance) cfft_inst;
@@ -53,8 +53,8 @@ typedef struct {
     uint32_t tx_sample_idx;
 
     /* Expanded window LUTs to hold duplicated weights for [Re, Im] pairs */
-    FLOAT_t window_rise_complex[W_LEN * 2];
-    FLOAT_t window_fall_complex[W_LEN * 2];
+    FLOAT_t window_rise_complex[TX_W_LEN * 2];
+    FLOAT_t window_fall_complex[TX_W_LEN * 2];
 } ofdm_modem_tx_t;
 
 typedef struct {
@@ -84,11 +84,11 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
     ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
 
     /* Generate complex window LUT weights using arm_sin_cos_f32 */
-    for (uint32_t i = 0; i < W_LEN; i++)
+    for (uint32_t i = 0; i < TX_W_LEN; i++)
     {
         float32_t sin_val, cos_val;
         /* Convert radians to degrees for CMSIS-DSP */
-        float32_t phase_degrees = (float32_t)(M_PI * i / W_LEN) * (180.0f / (float32_t)M_PI);
+        float32_t phase_degrees = (float32_t)(M_PI * i / TX_W_LEN) * (180.0f / (float32_t)M_PI);
 
         /* Calculate sine and cosine simultaneously */
         arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
@@ -156,14 +156,14 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
             ARM_MORPH(arm_mult)(self->tx_time_buffer,
                                 self->window_rise_complex,
                                 self->tx_time_buffer,
-                                W_LEN * 2);
+								TX_W_LEN * 2);
 
             /* Smooth the absolute end of the symbol (Falling edge) */
-            uint32_t sym_end_offset = (OFDM_SYMBOL_LEN - W_LEN) * 2;
+            uint32_t sym_end_offset = (OFDM_SYMBOL_LEN - TX_W_LEN) * 2;
             ARM_MORPH(arm_mult)(&self->tx_time_buffer[sym_end_offset],
                                 self->window_fall_complex,
                                 &self->tx_time_buffer[sym_end_offset],
-                                W_LEN * 2);
+								TX_W_LEN * 2);
         }
 
         /* Stream serialized data samples into active processing streams for hftrx path */
