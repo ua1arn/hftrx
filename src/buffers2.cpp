@@ -3701,7 +3701,8 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 	}
 #endif
 #if 0
-		modem_fill((IFADCvalue_t *) b);
+	modem_fill((IFADCvalue_t *) b);
+	modem_parse(b);
 #endif
 #if 0
 		// Тестирование - заменить приянтые квадратуры синтезированными

@@ -88,8 +88,8 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
         /* Calculate sine and cosine simultaneously */
         arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
-        FLOAT_t w_rise = 0.5 * (1.0 - (FLOAT_t)cos_val);
-        FLOAT_t w_fall = 0.5 * (1.0 + (FLOAT_t)cos_val);
+        FLOAT_t w_rise = (1 - (FLOAT_t)cos_val) / 2;
+        FLOAT_t w_fall = (1 + (FLOAT_t)cos_val) / 2;
 
         /* Duplicate weight for both Real and Imaginary components of the sample */
         self->window_rise_complex[i * 2]     = w_rise;
@@ -209,8 +209,8 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
 
         arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
-        FLOAT_t w_rise = 0.5 * (1.0 - (FLOAT_t)cos_val);
-        FLOAT_t w_fall = 0.5 * (1.0 + (FLOAT_t)cos_val);
+        FLOAT_t w_rise = (1 - (FLOAT_t)cos_val) / 2;
+        FLOAT_t w_fall = (1 + (FLOAT_t)cos_val) / 2;
 
         self->window_rise_complex[i * 2]     = w_rise;
         self->window_rise_complex[i * 2 + 1] = w_rise;
@@ -354,7 +354,7 @@ static const uint8_t testarray [] =
 {
 	'D', 'E', 'A', 'D', 'B', 'E', 'E', 'F',
 	'A', 'B', 'B', 'A', '1', '9', '8', '0',
-#if 1
+#if 0
 	 0x48, 0x21, 0x18, 0x0C, 0x82, 0x03, 0x82, 0x00,
 	 0x00, 0x34, 0x84, 0x20, 0x94, 0x20, 0x84, 0x00,
 	 0x00, 0x18, 0x01, 0x10, 0x00, 0x18, 0x00, 0x0C,
@@ -469,6 +469,8 @@ static void test_ofdm_process_null_bits(const uint8_t *bits)
 
 static void test_ofdm_process_bits(const uint8_t *bits)
 {
+	static char conbuff [128];
+	static int conbufidx;
 	unsigned v = 0;
 
 	v |= (UINT8_C(1) << 7) * !! bits [0];
@@ -480,7 +482,14 @@ static void test_ofdm_process_bits(const uint8_t *bits)
 	v |= (UINT8_C(1) << 1) * !! bits [6];
 	v |= (UINT8_C(1) << 0) * !! bits [7];
 	//PRINTF("0x%02X, ", v);
-	PRINTF("%c", v);
+	//PRINTF("%c", v);
+	conbuff [conbufidx] = v;
+	if (++ conbufidx >= ARRAY_SIZE(conbuff))
+	{
+		PRINTF("%*.*s\n", conbufidx, conbufidx, conbuff);
+		for (;;)
+			;
+	}
 }
 
 static ofdm_modem_tx_t tx;
@@ -489,13 +498,21 @@ static ofdm_modem_rx_t rx;
 
 void modem_fill(IFADCvalue_t * buff)
 {
-	adapter_t * const ap = & ifcodecrx;
+	const adapter_t * const ap = & ifcodecrx;
 	FLOAT_t i, q;
 	ofdm_modem_tx_block(& tx_fill, test_ofdm_get_bits_fill, & i, & q, 1);
 	FLOAT_t scale = 0.1;
 
 	buff [DMABUF32RX0I] = adpt_output(ap, i * scale);
 	buff [DMABUF32RX0Q] = adpt_output(ap, q * scale);
+}
+
+void modem_parse(const IFADCvalue_t * buff)
+{
+	const adapter_t * const ap = & ifcodecrx;
+	const FLOAT_t i = adpt_input(ap, buff [DMABUF32RX0I]);
+	const FLOAT_t q = adpt_input(ap, buff [DMABUF32RX0Q]);
+	ofdm_modem_rx_block(& rx, & i, & q, 1, test_ofdm_process_bits);
 }
 
 static FLOAT_t vming, vmaxg;
@@ -540,13 +557,25 @@ static void nullmodem(FLOAT_t * buff_i, FLOAT_t * buff_q, unsigned len)
 	}
 }
 
-void modem_test(void)
+
+void modem_init(void)
 {
 	TP();
 
 	ofdm_modem_tx_init(& tx);
 	ofdm_modem_tx_init(& tx_fill);
 	ofdm_modem_rx_init(& rx);
+
+	return;
+}
+
+void modem_test(void)
+{
+	TP();
+
+//	ofdm_modem_tx_init(& tx);
+//	ofdm_modem_tx_init(& tx_fill);
+//	ofdm_modem_rx_init(& rx);
 
 	enum { BUFFLEN = 256 };
 	FLOAT_t buffer_i [BUFFLEN];

@@ -23580,7 +23580,7 @@ application_initialize(void)
 	dtmf_initialize();
 	ctcss_initialize();
 #endif /* WITHSUBTONES */
-
+	modem_init();	// ofdm/qpsk/bpsk
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHUSBHW
