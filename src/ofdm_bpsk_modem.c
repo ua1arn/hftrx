@@ -80,16 +80,14 @@ static void ofdm_modem_tx_reset(ofdm_modem_tx_t *self)
 }
 
 /**
- * @brief Block-based transmitter modulation processing with peak normalization.
- * @param self Pointer to the unique transmitter configuration block.
- * @param get_bits_cb External callback supplying 8 parallel bits (one per channel).
- * @param out_buffer_i Output array destination for modulated Real components.
- * @param out_buffer_q Output array destination for modulated Imaginary components.
- * @param block_size Size of the transceiver processing hardware block frame.
+ * @brief Block-based transmitter modulation processing with Time-Domain Raised-Cosine Windowing.
  */
 static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
 {
-	const FLOAT_t value = 8;
+    /* Window overlap length in samples to smooth out Gibbs effect transitions */
+    #define W_LEN  2
+	const FLOAT_t range = 16;
+
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
         /* Regenerate symbol payload if the active time domain vector cache is exhausted */
@@ -97,38 +95,60 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
         {
             self->tx_sample_idx = 0;
 
-            /* Vectorized memory initialization utilizing abstract CMSIS SIMD features */
+            /* Clear the entire FFT complex plane using CMSIS-DSP vector fill */
             ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
 
             uint8_t tx_bits[OFDM_NUM_CHANNELS] = {0};
             get_bits_cb(tx_bits);
 
-            /* High-speed manual loop unrolling mapping inputs directly into spectral bins */
-            self->fft_buffer[subcarrier_map[0] * 2] = tx_bits[0] ? value : -value;
-            self->fft_buffer[subcarrier_map[1] * 2] = tx_bits[1] ? value : -value;
-            self->fft_buffer[subcarrier_map[2] * 2] = tx_bits[2] ? value : -value;
-            self->fft_buffer[subcarrier_map[3] * 2] = tx_bits[3] ? value : -value;
-            self->fft_buffer[subcarrier_map[4] * 2] = tx_bits[4] ? value : -value;
-            self->fft_buffer[subcarrier_map[5] * 2] = tx_bits[5] ? value : -value;
-            self->fft_buffer[subcarrier_map[6] * 2] = tx_bits[6] ? value : -value;
-            self->fft_buffer[subcarrier_map[7] * 2] = tx_bits[7] ? value : -value;
+            /* DETERMINISTIC LOOP MAPPING: Multiplied by 8.0 for stable operational range [-0.5..+0.5] */
+            for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
+            {
+                uint32_t bin_idx = subcarrier_map[ch];
+                self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? range : -range;
+                self->fft_buffer[bin_idx * 2 + 1] = 0.0;
+            }
 
-            /* Inverse Complex FFT operation: isInverseFFT = 1, bitReverseFlag = 1 */
+            /* Inverse Complex FFT execution */
             ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
 
-            /* Structural mapping of the Cyclic Prefix guard interval using arm_copy */
-            uint32_t cp_src_offset = (FFT_LEN - CYCLIC_PREFIX_LEN) * 2;
-            ARM_MORPH(arm_copy)(&self->fft_buffer[cp_src_offset],
-                                self->tx_time_buffer,
-                                CYCLIC_PREFIX_LEN * 2);
+            /* Construct the Cyclic Prefix window via explicit manual indexing loops */
+            uint32_t cp_start = FFT_LEN - CYCLIC_PREFIX_LEN;
+            for (uint32_t i = 0; i < CYCLIC_PREFIX_LEN; i++)
+            {
+                self->tx_time_buffer[i * 2]     = self->fft_buffer[(cp_start + i) * 2];
+                self->tx_time_buffer[i * 2 + 1] = self->fft_buffer[(cp_start + i) * 2 + 1];
+            }
 
-            /* Structural mapping of the core information payload directly after the prefix */
-            ARM_MORPH(arm_copy)(self->fft_buffer,
-                                &self->tx_time_buffer[CYCLIC_PREFIX_LEN * 2],
-                                FFT_LEN * 2);
+            /* Fill the core payload structure directly following the guard prefix interval */
+            for (uint32_t i = 0; i < FFT_LEN; i++)
+            {
+                self->tx_time_buffer[(CYCLIC_PREFIX_LEN + i) * 2]     = self->fft_buffer[i * 2];
+                self->tx_time_buffer[(CYCLIC_PREFIX_LEN + i) * 2 + 1] = self->fft_buffer[i * 2 + 1];
+            }
+
+            /* --- TIME-DOMAIN WINDOWING APPLICATION --- */
+            /* Smooth the absolute beginning of the symbol (Rising edge) */
+            for (uint32_t i = 0; i < W_LEN; i++)
+            {
+                /* Raised cosine shaping formula using hftrx COSF macro and implicit type promotion */
+                FLOAT_t w = 0.5 * (1.0 - COSF(M_PI * i / W_LEN));
+                self->tx_time_buffer[i * 2]     *= w;
+                self->tx_time_buffer[i * 2 + 1] *= w;
+            }
+
+            /* Smooth the absolute end of the symbol (Falling edge) */
+            uint32_t sym_end_idx = OFDM_SYMBOL_LEN - W_LEN;
+            for (uint32_t i = 0; i < W_LEN; i++)
+            {
+                FLOAT_t w = 0.5 * (1.0 + COSF(M_PI * i / W_LEN));
+                uint32_t idx = sym_end_idx + i;
+                self->tx_time_buffer[idx * 2]     *= w;
+                self->tx_time_buffer[idx * 2 + 1] *= w;
+            }
         }
 
-        /* Serialize data elements into separate processing branches for hftrx DAC path */
+        /* Stream serialized data samples into active processing streams for hftrx path */
         out_buffer_i[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2];
         out_buffer_q[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2 + 1];
 
@@ -187,15 +207,13 @@ static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
 }
 
 /**
- * @brief Block-based receiver demodulation processing driven by isolated context.
- * @param self Pointer to the unique receiver configuration block.
- * @param in_buffer_i Input array containing hardware ADC DDC Real data stream.
- * @param in_buffer_q Input array containing hardware ADC DDC Imaginary data stream.
- * @param block_size Size of the transceiver processing hardware block frame.
- * @param process_bits_cb Callback function executed immediately when a symbol frame decode completes.
+ * @brief Block-based receiver demodulation processing with RX Time-Domain Windowing.
  */
 static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(const uint8_t *bits))
 {
+    /* Window overlap length in samples - must match the transmitter configuration exactly */
+    #define RX_W_LEN  2
+
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
         /* Gather raw input pairs sequentially inside the time frame sliding window */
@@ -213,10 +231,31 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
                                 self->fft_buffer,
                                 FFT_LEN * 2);
 
+            /* --- RX TIME-DOMAIN WINDOWING APPLICATION --- */
+            /* Smooth the beginning of the useful FFT window (Rising edge) */
+            for (uint32_t i = 0; i < RX_W_LEN; i++)
+            {
+                /* Smooth transition profile compliant with hftrx code guidelines */
+                FLOAT_t w = 0.5 * (1.0 - COSF(M_PI * i / RX_W_LEN));
+                self->fft_buffer[i * 2]     *= w;
+                self->fft_buffer[i * 2 + 1] *= w;
+            }
+
+            /* Smooth the end of the useful FFT window (Falling edge) */
+            uint32_t fft_end_idx = FFT_LEN - RX_W_LEN;
+            for (uint32_t i = 0; i < RX_W_LEN; i++)
+            {
+                FLOAT_t w = 0.5 * (1.0 + COSF(M_PI * i / RX_W_LEN));
+                uint32_t idx = fft_end_idx + i;
+                self->fft_buffer[idx * 2]     *= w;
+                self->fft_buffer[idx * 2 + 1] *= w;
+            }
+            /* ------------------------------------------------------------- */
+
             /* Forward Complex FFT conversion: isInverseFFT = 0, bitReverseFlag = 1 */
             ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 0, 1);
             
-            uint8_t rx_bits[OFDM_NUM_CHANNELS];// = {0};
+            uint8_t rx_bits[OFDM_NUM_CHANNELS] = {0};
             
             /* De-rotate phase offsets and track multi-frequency channel state variations */
             for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
@@ -235,6 +274,15 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
                 FLOAT_t derot_i = raw_i * cos_p + raw_q * sin_p;
                 FLOAT_t derot_q = raw_q * cos_p - raw_i * sin_p;
 
+                /* Bounded Amplitude Normalization for Costas Loop stability */
+                FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
+                if (mag2 > 1e-6)
+                {
+                    FLOAT_t mag = SQRTF(mag2);
+                    derot_i /= mag;
+                    derot_q /= mag;
+                }
+
                 /* Costas BPSK Phase Error Detector metric: e = I * Q */
                 FLOAT_t error_c = derot_i * derot_q;
 
@@ -242,14 +290,8 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
                 sub->costas_integrator += error_c * sub->costas_ki;
                 sub->phase_step_nco = error_c * sub->costas_kp + sub->costas_integrator;
 
-                /* Quality monitoring assessment metric calculations using implicit type promotion */
-                FLOAT_t i2 = derot_i * derot_i;
-                FLOAT_t q2 = derot_q * derot_q;
-                FLOAT_t instant_metric = 0;
-
-                if (i2 + q2 > 0) {
-                    instant_metric = (i2 - q2) / (i2 + q2);
-                }
+                /* Quality monitoring assessment metric calculations */
+                FLOAT_t instant_metric = (derot_i * derot_i) - (derot_q * derot_q);
                 sub->phase_lock_metric += self->alpha_lock * (instant_metric - sub->phase_lock_metric);
                 sub->is_phase_locked = (sub->phase_lock_metric > 0.55) ? 1 : 0;
 
@@ -406,7 +448,7 @@ static void pathclipping(FLOAT_t * buff, unsigned len)
 	adapter_t * const ap = & ifcodecrx;
 	while (len --)
 	{
-		int_fast32_t v = adpt_output(ap, * buff);
+		int_fast32_t v = adpt_outputexact(ap, * buff);
 		* buff ++ = adpt_input(ap, v);
 	}
 }
