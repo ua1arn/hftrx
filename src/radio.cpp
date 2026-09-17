@@ -486,6 +486,12 @@ ismenufilterlsb(
 	return ismenukinddp(pd, ITEM_FILTERL);
 }
 
+static uint_fast16_t valcondition(uint_fast16_t v, uint_fast16_t lower, uint_fast16_t upper)
+{
+	if (v >= lower && v <= upper)
+		return v;
+	return lower;
+}
 
 /* Сохранить параметр после редактирования */
 static void
@@ -493,7 +499,7 @@ savemenuvalue(
 	const struct paramdefdef * pd
 	)
 {
-	if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
+	if (ismenukinddp(pd, ITEM_VALUE))
 	{
 		unsigned nvalues;
 		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
@@ -506,17 +512,20 @@ savemenuvalue(
 			return;
 		if (pv16 != NULL)
 		{
+			const uint_fast16_t v = valcondition(* pv16, pd->qbottom, pd->qupper);
+
 			//PRINTF("savemenuvalue %s: *pv16=%u\n", pd->qlabel, (unsigned) * pv16);
-			ASSERT3(* pv16 <= pd->qupper, __FILE__, __LINE__, pd_getlonglabel(pd));
-			ASSERT3(* pv16 >= pd->qbottom, __FILE__, __LINE__, pd_getlonglabel(pd));
-			save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
+//			ASSERT3(* pv16 <= pd->qupper, __FILE__, __LINE__, pd_getlonglabel(pd));
+//			ASSERT3(* pv16 >= pd->qbottom, __FILE__, __LINE__, pd_getlonglabel(pd));
+			save_i16(nvram, v);		/* сохраняем отредактированное значение */
 		}
 		else if (pv8 != NULL)
 		{
+			const uint_fast16_t v = valcondition(* pv8, pd->qbottom, pd->qupper);
 			//PRINTF("savemenuvalue %s: *pv8=%u\n", pd->qlabel, (unsigned) * pv8);
-			ASSERT3(* pv8 <= pd->qupper, __FILE__, __LINE__, pd_getlonglabel(pd));
-			ASSERT3(* pv8 >= pd->qbottom, __FILE__, __LINE__, pd_getlonglabel(pd));
-			save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
+//			ASSERT3(* pv8 <= pd->qupper, __FILE__, __LINE__, pd_getlonglabel(pd));
+//			ASSERT3(* pv8 >= pd->qbottom, __FILE__, __LINE__, pd_getlonglabel(pd));
+			save_i8(nvram, v);		/* сохраняем отредактированное значение */
 		}
 	}
 }
