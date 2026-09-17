@@ -6,9 +6,12 @@
 
 /* AI-generated */
 
+#include "arm_math.h"
+#include "dspdefines.h"
+
 #define RX_NUM_TAPS 31
 
-/* BPSK Demodulator State Structure with Costas and Gardner Loops */
+/* BPSK Demodulator State Structure with Costas, Gardner Loops and Lock Detectors */
 typedef struct {
     ARM_MORPH(arm_fir_instance) matched_filter_i;
     ARM_MORPH(arm_fir_instance) matched_filter_q;
@@ -39,8 +42,15 @@ typedef struct {
 
     FLOAT_t last_filt_i;         /* Interpolator history */
     FLOAT_t last_filt_q;
-} bpsk_demod_t;
 
+    /* Lock Detectors metrics (EMA / Low Pass Filtered states) */
+    FLOAT_t timing_lock_metric;  /* Value near 1.0 indicates stable symbol sync */
+    FLOAT_t phase_lock_metric;   /* Value near 1.0 indicates stable phase lock */
+    FLOAT_t alpha_lock;          /* Smoothing factor for lock metrics (e.g., 0.01) */
+
+    uint32_t is_timing_locked;   /* Boolean status flag */
+    uint32_t is_phase_locked;    /* Boolean status flag */
+} bpsk_demod_t;
 
 /**
  * @brief Computes Root-Raised Cosine (RRC) filter coefficients at runtime based on dynamic oversampling.
@@ -96,15 +106,15 @@ static void calc_rrc_coeffs(FLOAT_t * coeffs, uint32_t num_taps, FLOAT_t alpha, 
     }
 }
 
+
 /**
- * @brief Initializes modem including Costas and Gardner loop parameters.
+ * @brief Initializes modem including Costas, Gardner loop, and Lock Detectors.
  * @param ctx Pointer to the demodulator context structure.
  * @param sample_rate Input ADC rate in Hz.
  * @param symbol_rate Target Baud rate.
  */
 static void bpsk_demod_init(bpsk_demod_t * ctx, FLOAT_t sample_rate, FLOAT_t symbol_rate)
 {
-    /* Gardner requires 2 samples per symbol */
     ctx->timing_step = (2 * symbol_rate) / sample_rate;
     ctx->timing_nco = 0;
     ctx->sample_idx = 0;
@@ -112,7 +122,6 @@ static void bpsk_demod_init(bpsk_demod_t * ctx, FLOAT_t sample_rate, FLOAT_t sym
     ctx->phase_nco = 0;
     ctx->phase_step_nco = 0;
 
-    /* Loop coefficients - adjusted via Type Promotion rules */
     ctx->costas_kp = 0.05;
     ctx->costas_ki = 0.001;
     ctx->costas_integrator = 0;
@@ -124,8 +133,15 @@ static void bpsk_demod_init(bpsk_demod_t * ctx, FLOAT_t sample_rate, FLOAT_t sym
     ctx->last_filt_i = 0;
     ctx->last_filt_q = 0;
 
+    /* Initialize Lock Detectors parameters */
+    ctx->timing_lock_metric = 0;
+    ctx->phase_lock_metric = 0;
+    ctx->alpha_lock = 0.01;      /* Slow time-constant for averaging over ~100 symbols */
+    ctx->is_timing_locked = 0;
+    ctx->is_phase_locked = 0;
+
     for (uint32_t i = 0; i < RX_NUM_TAPS; i++) {
-        ctx->filter_coeffs[i] = 0; /* Coefficients should be initialized dynamically later */
+        ctx->filter_coeffs[i] = 0;
     }
 
     for (uint32_t i = 0; i < 3; i++) {
@@ -141,7 +157,7 @@ static void bpsk_demod_init(bpsk_demod_t * ctx, FLOAT_t sample_rate, FLOAT_t sym
 }
 
 /**
- * @brief Process single incoming ADC baseband IQ sample.
+ * @brief Process single incoming ADC baseband IQ sample with lock estimation.
  * @param ctx Pointer to the demodulator context structure.
  * @param in_i Input I
  * @param in_q Input Q
@@ -158,27 +174,23 @@ static uint32_t bpsk_demod_process_sample(bpsk_demod_t * ctx, FLOAT_t in_i, FLOA
     ARM_MORPH(arm_fir)(&ctx->matched_filter_i, &in_i, &filtered_i, 1);
     ARM_MORPH(arm_fir)(&ctx->matched_filter_q, &in_q, &filtered_q, 1);
 
-    /* Update timing NCO with current loop adjusted step */
     ctx->timing_nco += (ctx->timing_step + ctx->gardner_integrator);
 
     if (ctx->timing_nco >= 1)
     {
         ctx->timing_nco -= 1;
 
-        /* Linear interpolation weight calculation */
         FLOAT_t mu = ctx->timing_nco / (ctx->timing_step + ctx->gardner_integrator);
 
         FLOAT_t interp_i = ctx->last_filt_i + mu * (filtered_i - ctx->last_filt_i);
         FLOAT_t interp_q = ctx->last_filt_q + mu * (filtered_q - ctx->last_filt_q);
 
-        /* Apply Carrier Phase Correction via COSF/SINF macros from dspdefines.h */
         FLOAT_t cos_p = COSF(ctx->phase_nco);
         FLOAT_t sin_p = SINF(ctx->phase_nco);
 
         FLOAT_t derot_i = interp_i * cos_p + interp_q * sin_p;
         FLOAT_t derot_q = interp_q * cos_p - interp_i * sin_p;
 
-        /* Update history shift registers for the Gardner TED */
         ctx->history_i[0] = ctx->history_i[1];
         ctx->history_i[1] = ctx->history_i[2];
         ctx->history_i[2] = derot_i;
@@ -187,25 +199,49 @@ static uint32_t bpsk_demod_process_sample(bpsk_demod_t * ctx, FLOAT_t in_i, FLOA
         ctx->history_q[1] = ctx->history_q[2];
         ctx->history_q[2] = derot_q;
 
-        /* Alternating between midpoint sample and strobe sample */
         if (ctx->sample_idx == 1)
         {
-            /* 1. Gardner Timing Error Detector computation */
-            /* error = I(n-1/2) * (I(n) - I(n-1)) + Q(n-1/2) * (Q(n) - Q(n-1)) */
+            /* 1. Gardner Timing Error Detector & Lock Estimation */
             FLOAT_t error_g = ctx->history_i[1] * (ctx->history_i[2] - ctx->history_i[0]) +
                               ctx->history_q[1] * (ctx->history_q[2] - ctx->history_q[0]);
 
-            /* PI Filter for Gardner Loop */
             ctx->gardner_integrator += error_g * ctx->gardner_ki;
 
-            /* 2. Costas Loop Phase Error Detector (for BPSK: error = I * Q) */
+            /* Timing Lock Metric: Evaluate power ratio between Strobe and Midpoint samples */
+            FLOAT_t power_strobe = ctx->history_i[2] * ctx->history_i[2] + ctx->history_q[2] * ctx->history_q[2];
+            FLOAT_t power_midpoint = ctx->history_i[1] * ctx->history_i[1] + ctx->history_q[1] * ctx->history_q[1];
+
+            /* Guard against division by zero */
+            FLOAT_t instant_t_metric = 0;
+            if (power_strobe + power_midpoint > 0)
+            {
+                /* When locked, power_strobe >> power_midpoint, metric approaches 1.0 */
+                instant_t_metric = (power_strobe - power_midpoint) / (power_strobe + power_midpoint);
+            }
+
+            ctx->timing_lock_metric += ctx->alpha_lock * (instant_t_metric - ctx->timing_lock_metric);
+            ctx->is_timing_locked = (ctx->timing_lock_metric > 0.5) ? 1 : 0;
+
+            /* 2. Costas Loop Phase Error Detector & Lock Estimation */
             FLOAT_t error_c = derot_i * derot_q;
 
-            /* PI Filter for Costas Loop */
             ctx->costas_integrator += error_c * ctx->costas_ki;
             ctx->phase_step_nco = error_c * ctx->costas_kp + ctx->costas_integrator;
 
-            /* Return verified symbol sample */
+            /* Phase Lock Metric for BPSK: cos(2*theta) = (I^2 - Q^2) / (I^2 + Q^2) */
+            FLOAT_t i2 = derot_i * derot_i;
+            FLOAT_t q2 = derot_q * derot_q;
+
+            FLOAT_t instant_p_metric = 0;
+            if (i2 + q2 > 0)
+            {
+                /* Perfectly phased BPSK puts all energy in I channel, making metric near 1.0 */
+                instant_p_metric = (i2 - q2) / (i2 + q2);
+            }
+
+            ctx->phase_lock_metric += ctx->alpha_lock * (instant_p_metric - ctx->phase_lock_metric);
+            ctx->is_phase_locked = (ctx->phase_lock_metric > 0.6 && ctx->is_timing_locked) ? 1 : 0;
+
             *out_sym_i = derot_i;
             *out_sym_q = derot_q;
             symbols_produced = 1;
@@ -218,10 +254,8 @@ static uint32_t bpsk_demod_process_sample(bpsk_demod_t * ctx, FLOAT_t in_i, FLOA
         }
     }
 
-    /* Advance Carrier NCO phase tracking */
     ctx->phase_nco += ctx->phase_step_nco;
 
-    /* Wrap-around phase normalization inside [0, 2*PI] */
     if (ctx->phase_nco >= 2 * M_PI) {
         ctx->phase_nco -= 2 * M_PI;
     } else if (ctx->phase_nco < 0) {
@@ -233,6 +267,45 @@ static uint32_t bpsk_demod_process_sample(bpsk_demod_t * ctx, FLOAT_t in_i, FLOA
 
     return symbols_produced;
 }
+
+/**
+ * @brief Resets the demodulator loops, integrators, and internal filter states.
+ * @param ctx Pointer to the demodulator context structure.
+ */
+static void bpsk_demod_reset(bpsk_demod_t * ctx)
+{
+    /* Reset NCO and loop integrators */
+    ctx->phase_nco = 0;
+    ctx->phase_step_nco = 0;
+    ctx->costas_integrator = 0;
+
+    ctx->timing_nco = 0;
+    ctx->gardner_integrator = 0;
+    ctx->sample_idx = 0;
+
+    /* Reset interpolation history */
+    ctx->last_filt_i = 0;
+    ctx->last_filt_q = 0;
+
+    /* Clear Gardner shift registers */
+    for (uint32_t i = 0; i < 3; i++) {
+        ctx->history_i[i] = 0;
+        ctx->history_q[i] = 0;
+    }
+
+    /* Reset lock detectors state */
+    ctx->timing_lock_metric = 0;
+    ctx->phase_lock_metric = 0;
+    ctx->is_timing_locked = 0;
+    ctx->is_phase_locked = 0;
+
+    /* Clear CMSIS-DSP FIR state buffers to remove remaining signal tails */
+    for (uint32_t i = 0; i < (RX_NUM_TAPS + 4 - 1); i++) {
+        ctx->state_buffer_i[i] = 0;
+        ctx->state_buffer_q[i] = 0;
+    }
+}
+
 
 #define TX_NUM_TAPS 31
 
@@ -364,6 +437,28 @@ static void bpsk_mod_process_sample(bpsk_mod_t * ctx, uint32_t (*get_next_bit_ca
         /* Direct Baseband IQ Output */
         *out_dac_i = interp_i;
         *out_dac_q = interp_q;
+    }
+}
+/**
+ * @brief Resets the modulator timing, carrier phase, and filter state buffers.
+ * @param ctx Pointer to the modulator context structure.
+ */
+static void bpsk_mod_reset(bpsk_mod_t * ctx)
+{
+    /* Reset timing and carrier NCOs */
+    ctx->timing_nco = 1; /* Force immediate symbol fetch upon restart */
+    ctx->carrier_phase = 0;
+
+    /* Clear interpolation history */
+    ctx->last_tx_i = 0;
+    ctx->last_tx_q = 0;
+    ctx->current_symbol_i = 0;
+    ctx->current_symbol_q = 0;
+
+    /* Clear CMSIS-DSP FIR state buffers to remove transients */
+    for (uint32_t i = 0; i < (TX_NUM_TAPS + 4 - 1); i++) {
+        ctx->state_buffer_i[i] = 0;
+        ctx->state_buffer_q[i] = 0;
     }
 }
 
