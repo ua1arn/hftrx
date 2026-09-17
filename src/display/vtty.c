@@ -146,6 +146,22 @@ static void display_vtty_show(const gxdrawb_t * tdb,
 				vt->VTTY_DX, tgh2,	// размеры окна источника
 				BITBLT_FLAG_NONE, 0);
 	}
+	if (hamradio_get_blinkphase())
+	{
+		// курсор
+#if 1
+		colpip_fillrect(tdb, x + vt->col * vt->VTTY_CHARPIX, y + vt->row * vt->VTTY_ROWSPIX, vt->VTTY_CHARPIX, vt->VTTY_ROWSPIX, vt->fg);
+#else
+		const unifont_t * const font = vt->font;
+		font->font_drawci(
+			tdb,
+			x + vt->col * vt->VTTY_CHARPIX,
+			y + vt->row * vt->VTTY_ROWSPIX,
+			font,
+			font->decode(font, '_'),
+			vt->fg);
+#endif
+	}
 }
 
 void display2_vtty(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_t y0, uint_fast8_t colspan, uint_fast8_t rowspan, dctx_t * pctx)
@@ -203,9 +219,12 @@ void display2_vtty_init(
 	vt->row = 0;
 	vt->col = 0;
 
-	PRINTF("display_vtty_initialize: rows=%u, cols=%u\n", vt->VTTY_ROWS, vt->VTTY_COLS);
 	vtty_inited = 1;
+
+#if WITHDEBUG
+	PRINTF("display_vtty_initialize: rows=%u, cols=%u\n", vt->VTTY_ROWS, vt->VTTY_COLS);
 	display_vtty_printf("display_vtty_initialize: rows=%u, cols=%u\n", vt->VTTY_ROWS, vt->VTTY_COLS);
+#endif /* WITHDEBUG */
 }
 
 static void display_vtty_scrollup(
