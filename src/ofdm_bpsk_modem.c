@@ -32,16 +32,23 @@ typedef struct {
     uint32_t is_phase_locked;    /* Boolean lock status flag */
 } ofdm_subcarrier_bpsk_t;
 
-/* Independent Transmitter Context Configuration */
+#define W_LEN   2
+#define RX_W_LEN 2
+
+#define W_LEN   2
+
 typedef struct {
     ARM_MORPH(arm_cfft_instance) cfft_inst;
 
     FLOAT_t fft_buffer[FFT_LEN * 2];
     FLOAT_t tx_time_buffer[OFDM_SYMBOL_LEN * 2];
     uint32_t tx_sample_idx;
+
+    /* Expanded window LUTs to hold duplicated weights for [Re, Im] pairs */
+    FLOAT_t window_rise_complex[W_LEN * 2];
+    FLOAT_t window_fall_complex[W_LEN * 2];
 } ofdm_modem_tx_t;
 
-/* Independent Receiver Context Configuration */
 typedef struct {
     ofdm_subcarrier_bpsk_t rx_subcarriers[OFDM_NUM_CHANNELS];
     ARM_MORPH(arm_cfft_instance) cfft_inst;
@@ -50,44 +57,41 @@ typedef struct {
     FLOAT_t rx_time_buffer[OFDM_SYMBOL_LEN * 2];
     uint32_t rx_sample_idx;
 
-    FLOAT_t alpha_lock;          /* Low-pass smoothing factor for metrics */
+    FLOAT_t alpha_lock;
+
+    /* Pre-calculated window LUTs to hold duplicated weights for [Re, Im] pairs */
+    FLOAT_t window_rise_complex[RX_W_LEN * 2];
+    FLOAT_t window_fall_complex[RX_W_LEN * 2];
 } ofdm_modem_rx_t;
 
-/* ========================================================================== */
-/*                          TRANSMITTER (TX) IMPLEMENTATION                   */
-/* ========================================================================== */
-
-/**
- * @brief Runtime initialization of the standalone OFDM transmitter context.
- * @param self Pointer to the uninitialized transmitter structure footprint.
- */
 static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
 {
     ARM_MORPH(arm_cfft_init)(&self->cfft_inst, FFT_LEN);
     self->tx_sample_idx = 0;
     ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
     ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
+
+    /* Generate complex window LUT weights */
+    for (uint32_t i = 0; i < W_LEN; i++)
+    {
+        FLOAT_t w_rise = 0.5 * (1.0 - COSF(M_PI * i / W_LEN));
+        FLOAT_t w_fall = 0.5 * (1.0 + COSF(M_PI * i / W_LEN));
+
+        /* Duplicate weight for both Real and Imaginary components of the sample */
+        self->window_rise_complex[i * 2]     = w_rise;
+        self->window_rise_complex[i * 2 + 1] = w_rise;
+
+        self->window_fall_complex[i * 2]     = w_fall;
+        self->window_fall_complex[i * 2 + 1] = w_fall;
+    }
 }
 
 /**
- * @brief Resets transient caches and trackers inside the transmitter instance.
- * @param self Pointer to the active transmitter context.
- */
-static void ofdm_modem_tx_reset(ofdm_modem_tx_t *self)
-{
-    self->tx_sample_idx = 0;
-    ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
-}
-
-/**
- * @brief Block-based transmitter modulation processing with Time-Domain Raised-Cosine Windowing.
+ * @brief Block-based transmitter modulation processing with native floating-point IFFT layout.
+ *        Fully vectorized CP generation and Raised Cosine Windowing using CMSIS-DSP.
  */
 static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
 {
-    /* Window overlap length in samples to smooth out Gibbs effect transitions */
-    #define W_LEN  2
-	const FLOAT_t range = 16;
-
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
         /* Regenerate symbol payload if the active time domain vector cache is exhausted */
@@ -101,51 +105,46 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
             uint8_t tx_bits[OFDM_NUM_CHANNELS] = {0};
             get_bits_cb(tx_bits);
 
-            /* DETERMINISTIC LOOP MAPPING: Multiplied by 8.0 for stable operational range [-0.5..+0.5] */
+            /* DETERMINISTIC LOOP MAPPING */
             for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
             {
                 uint32_t bin_idx = subcarrier_map[ch];
-                self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? range : -range;
+                if (tx_bits[ch] != 0) {
+                    self->fft_buffer[bin_idx * 2] = 16.0;
+                } else {
+                    self->fft_buffer[bin_idx * 2] = -16.0;
+                }
                 self->fft_buffer[bin_idx * 2 + 1] = 0.0;
             }
 
-            /* Inverse Complex FFT execution */
+            /* Inverse Complex FFT execution: isInverseFFT = 1, bitReverseFlag = 1 */
             ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
 
-            /* Construct the Cyclic Prefix window via explicit manual indexing loops */
-            uint32_t cp_start = FFT_LEN - CYCLIC_PREFIX_LEN;
-            for (uint32_t i = 0; i < CYCLIC_PREFIX_LEN; i++)
-            {
-                self->tx_time_buffer[i * 2]     = self->fft_buffer[(cp_start + i) * 2];
-                self->tx_time_buffer[i * 2 + 1] = self->fft_buffer[(cp_start + i) * 2 + 1];
-            }
+            /* Construct the Cyclic Prefix window using arm_copy */
+            uint32_t cp_start = (FFT_LEN - CYCLIC_PREFIX_LEN) * 2;
+            ARM_MORPH(arm_copy)(&self->fft_buffer[cp_start],
+                                self->tx_time_buffer,
+                                CYCLIC_PREFIX_LEN * 2);
 
-            /* Fill the core payload structure directly following the guard prefix interval */
-            for (uint32_t i = 0; i < FFT_LEN; i++)
-            {
-                self->tx_time_buffer[(CYCLIC_PREFIX_LEN + i) * 2]     = self->fft_buffer[i * 2];
-                self->tx_time_buffer[(CYCLIC_PREFIX_LEN + i) * 2 + 1] = self->fft_buffer[i * 2 + 1];
-            }
+            /* Copy the entire useful IFFT payload directly following the guard prefix interval */
+            ARM_MORPH(arm_copy)(self->fft_buffer,
+                                &self->tx_time_buffer[CYCLIC_PREFIX_LEN * 2],
+                                FFT_LEN * 2);
 
-            /* --- TIME-DOMAIN WINDOWING APPLICATION --- */
+            /* --- VECTOR OPTIMIZATION: WINDOWING VIA CMSIS-DSP MULT --- */
             /* Smooth the absolute beginning of the symbol (Rising edge) */
-            for (uint32_t i = 0; i < W_LEN; i++)
-            {
-                /* Raised cosine shaping formula using hftrx COSF macro and implicit type promotion */
-                FLOAT_t w = 0.5 * (1.0 - COSF(M_PI * i / W_LEN));
-                self->tx_time_buffer[i * 2]     *= w;
-                self->tx_time_buffer[i * 2 + 1] *= w;
-            }
+            /* Arguments: pSrcA, pSrcB, pDst, blockSize */
+            ARM_MORPH(arm_mult)(self->tx_time_buffer,
+                                self->window_rise_complex,
+                                self->tx_time_buffer,
+                                W_LEN * 2);
 
             /* Smooth the absolute end of the symbol (Falling edge) */
-            uint32_t sym_end_idx = OFDM_SYMBOL_LEN - W_LEN;
-            for (uint32_t i = 0; i < W_LEN; i++)
-            {
-                FLOAT_t w = 0.5 * (1.0 + COSF(M_PI * i / W_LEN));
-                uint32_t idx = sym_end_idx + i;
-                self->tx_time_buffer[idx * 2]     *= w;
-                self->tx_time_buffer[idx * 2 + 1] *= w;
-            }
+            uint32_t sym_end_offset = (OFDM_SYMBOL_LEN - W_LEN) * 2;
+            ARM_MORPH(arm_mult)(&self->tx_time_buffer[sym_end_offset],
+                                self->window_fall_complex,
+                                &self->tx_time_buffer[sym_end_offset],
+                                W_LEN * 2);
         }
 
         /* Stream serialized data samples into active processing streams for hftrx path */
@@ -156,14 +155,16 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
     }
 }
 
-/* ========================================================================== */
-/*                           RECEIVER (RX) IMPLEMENTATION                     */
-/* ========================================================================== */
-
 /**
- * @brief Runtime initialization of the standalone OFDM receiver context.
- * @param self Pointer to the uninitialized receiver structure footprint.
+ * @brief Resets transient caches and trackers inside the transmitter instance.
+ * @param self Pointer to the active transmitter context.
  */
+static void ofdm_modem_tx_reset(ofdm_modem_tx_t *self)
+{
+    self->tx_sample_idx = 0;
+    ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
+}
+
 static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
 {
     ARM_MORPH(arm_cfft_init)(&self->cfft_inst, FFT_LEN);
@@ -183,6 +184,19 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
         sub->costas_integrator = 0;
         sub->phase_lock_metric = 0;
         sub->is_phase_locked = 0;
+    }
+
+    /* PRE-CALCULATE RX COMPLEX WINDOW LUT ONCE */
+    for (uint32_t i = 0; i < RX_W_LEN; i++)
+    {
+        FLOAT_t w_rise = 0.5 * (1.0 - COSF(M_PI * i / RX_W_LEN));
+        FLOAT_t w_fall = 0.5 * (1.0 + COSF(M_PI * i / RX_W_LEN));
+
+        self->window_rise_complex[i * 2]     = w_rise;
+        self->window_rise_complex[i * 2 + 1] = w_rise;
+
+        self->window_fall_complex[i * 2]     = w_fall;
+        self->window_fall_complex[i * 2 + 1] = w_fall;
     }
 }
 
@@ -208,12 +222,10 @@ static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
 
 /**
  * @brief Block-based receiver demodulation processing with RX Time-Domain Windowing.
+ *        Fully vectorized using CMSIS-DSP arm_copy and arm_mult operations.
  */
 static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(const uint8_t *bits))
 {
-    /* Window overlap length in samples - must match the transmitter configuration exactly */
-    #define RX_W_LEN  2
-
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
         /* Gather raw input pairs sequentially inside the time frame sliding window */
@@ -231,25 +243,20 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
                                 self->fft_buffer,
                                 FFT_LEN * 2);
 
-            /* --- RX TIME-DOMAIN WINDOWING APPLICATION --- */
+            /* --- VECTOR OPTIMIZATION: WINDOWING VIA CMSIS-DSP MULT --- */
             /* Smooth the beginning of the useful FFT window (Rising edge) */
-            for (uint32_t i = 0; i < RX_W_LEN; i++)
-            {
-                /* Smooth transition profile compliant with hftrx code guidelines */
-                FLOAT_t w = 0.5 * (1.0 - COSF(M_PI * i / RX_W_LEN));
-                self->fft_buffer[i * 2]     *= w;
-                self->fft_buffer[i * 2 + 1] *= w;
-            }
+            /* Arguments: pSrcA, pSrcB, pDst, blockSize */
+            ARM_MORPH(arm_mult)(self->fft_buffer,
+                                self->window_rise_complex,
+                                self->fft_buffer,
+                                RX_W_LEN * 2);
 
             /* Smooth the end of the useful FFT window (Falling edge) */
-            uint32_t fft_end_idx = FFT_LEN - RX_W_LEN;
-            for (uint32_t i = 0; i < RX_W_LEN; i++)
-            {
-                FLOAT_t w = 0.5 * (1.0 + COSF(M_PI * i / RX_W_LEN));
-                uint32_t idx = fft_end_idx + i;
-                self->fft_buffer[idx * 2]     *= w;
-                self->fft_buffer[idx * 2 + 1] *= w;
-            }
+            uint32_t fft_end_offset = (FFT_LEN - RX_W_LEN) * 2;
+            ARM_MORPH(arm_mult)(&self->fft_buffer[fft_end_offset],
+                                self->window_fall_complex,
+                                &self->fft_buffer[fft_end_offset],
+                                RX_W_LEN * 2);
             /* ------------------------------------------------------------- */
 
             /* Forward Complex FFT conversion: isInverseFFT = 0, bitReverseFlag = 1 */
