@@ -312,6 +312,8 @@ static void test_process_bits(const uint8_t *bits)
 	v |= (UINT8_C(1) << 2) * !! bits [5];
 	v |= (UINT8_C(1) << 1) * !! bits [6];
 	v |= (UINT8_C(1) << 0) * !! bits [7];
+	//PRINTF("0x%02X, ", v);
+	PRINTF("%c", v);
 }
 
 void modem_test(void)
@@ -333,6 +335,8 @@ void modem_test(void)
 		ofdm_modem_tx_block(& tx, test_get_bits, buffer_i, buffer_q, BUFFLEN);
 		ofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_process_bits);
 	}
+	PRINTF("\n");
+	TP();
 }
 
 #endif /* WITHINTEGRATEDDSP */
