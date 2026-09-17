@@ -104,7 +104,7 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
  * @brief Block-based transmitter modulation processing with mathematically pure IFFT layout.
  *        Ensures strict subcarrier orthogonality and ideal single-sideband IQ generation.
  */
-static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
+static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_modem_tx_t *self, uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
 {
 	const FLOAT_t magnitude = 32;
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
@@ -118,7 +118,7 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
             ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
 
             uint8_t tx_bits[OFDM_NUM_CHANNELS] = {0};
-            get_bits_cb(tx_bits);
+            get_bits_cb(self, tx_bits);
 
             /* MATHEMATICALLY CORRECT BPSK-OFDM MAPPING: */
             /* Imaginary part MUST be 0.0 to preserve native CFFT subcarrier orthogonality. */
@@ -244,7 +244,7 @@ static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
  * @brief Block-based receiver demodulation processing with RX Time-Domain Windowing.
  *        Trigonometry optimized via direct arm_sin_cos_f32 execution.
  */
-static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(const uint8_t *bits))
+static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits))
 {
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
@@ -341,7 +341,7 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
             }
             
             /* Direct processing of extracted frame data stream */
-            process_bits_cb(rx_bits);
+            process_bits_cb(self, rx_bits);
         }
     }
 }
@@ -746,7 +746,7 @@ static void dsp_rx_bits_bridge(const uint8_t *bits) {
  * @brief Bridge function connecting the physical modulator with the context-driven bit packer.
  * @param bits Array destination where 8 parallel bits will be written by the interleaver layer.
  */
-static void dsp_ofdm_tx_bits_bridge(uint8_t *bits)
+static void dsp_ofdm_tx_bits_bridge(ofdm_modem_tx_t *self, uint8_t *bits)
 {
     ofdm_packer_get_bits_callback(&ofdm_srv_tx, bits);
 }
@@ -755,7 +755,7 @@ static void dsp_ofdm_tx_bits_bridge(uint8_t *bits)
  * @brief Bridge function connecting the physical demodulator with the context-driven deinterleaver.
  * @param bits Input array containing 8 parsed bits received from the physical OFDM subcarriers.
  */
-static void dsp_ofdm_rx_bits_bridge(const uint8_t *bits)
+static void dsp_ofdm_rx_bits_bridge(ofdm_modem_rx_t *self, const uint8_t *bits)
 {
     ofdm_packer_process_bits_callback(&ofdm_srv_rx, bits);
 }
@@ -901,14 +901,14 @@ static const uint8_t testarray [] =
 #endif
 };
 
-static void test_ofdm_get_preamble_bits(uint8_t *bits)
+static void test_ofdm_get_preamble_bits(ofdm_modem_tx_t *self, uint8_t *bits)
 {
 	static int phase;
 	memset(bits, phase ? 0x55 : 0xAA, 8);
 	phase = ! phase;
 }
 
-static void test_ofdm_get_bits(uint8_t *bits)
+static void test_ofdm_get_bits(ofdm_modem_tx_t *self, uint8_t *bits)
 {
 	static int testindex;
 	const uint8_t data = testarray [testindex];
@@ -925,7 +925,7 @@ static void test_ofdm_get_bits(uint8_t *bits)
 	testindex = (testindex + 1) % (sizeof testarray / sizeof testarray [0]);
 }
 
-static void test_ofdm_get_bits_fill(uint8_t *bits)
+static void test_ofdm_get_bits_fill(ofdm_modem_tx_t *self, uint8_t *bits)
 {
 	static int testindex;
 	const uint8_t data = testarray [testindex];
@@ -942,7 +942,7 @@ static void test_ofdm_get_bits_fill(uint8_t *bits)
 	testindex = (testindex + 1) % (sizeof testarray / sizeof testarray [0]);
 }
 
-static void test_ofdm_get_bits_flip(uint8_t *bits)
+static void test_ofdm_get_bits_flip(ofdm_modem_tx_t *self, uint8_t *bits)
 {
 	static int testindex;
 	bits [0] = testindex ? 0xAA : 0x55;
@@ -956,11 +956,11 @@ static void test_ofdm_get_bits_flip(uint8_t *bits)
 	testindex = ! testindex;
 }
 
-static void test_ofdm_process_null_bits(const uint8_t *bits)
+static void test_ofdm_process_null_bits(ofdm_modem_rx_t *self, const uint8_t *bits)
 {
 }
 
-static void test_ofdm_process_bits(const uint8_t *bits)
+static void test_ofdm_process_bits(ofdm_modem_rx_t *self, const uint8_t *bits)
 {
 	static char conbuff [128];
 	static int conbufidx;
