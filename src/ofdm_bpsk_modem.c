@@ -345,6 +345,379 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
         }
     }
 }
+//////////////////
+/// interleaver
+
+/*
+ * OFDM Bit Packer / Unpacker with Matrix Interleaver and FEC (7, 4) Hamming Code
+ * PART 1 OF 3: Headers, Isolated Context Structures and Ring Buffer FIFO Queues.
+ * Fully decoupled structures ensuring reentrancy compliant with hftrx architecture.
+ */
+
+#include "hardware.h"
+
+#if WITHINTEGRATEDDSP
+
+#include "dspdefines.h"
+
+#define MODEM_FIFO_SIZE     256
+#define INTERLEAVE_ROWS     8   /* Matches OFDM_NUM_CHANNELS */
+#define INTERLEAVE_COLS     8   /* Depth of time interleaving */
+#define INTERLEAVE_SIZE     (INTERLEAVE_ROWS * INTERLEAVE_COLS) /* 64 bits = 8 bytes */
+
+/* Simple FIFO/Ring Buffer structure for USB stream interfacing */
+typedef struct {
+    uint8_t storage[MODEM_FIFO_SIZE];
+    uint32_t head;
+    uint32_t tail;
+    uint32_t count;
+} modem_fifo_t;
+
+/* Independent Transmitter Packer/Interleaver/FEC Context */
+typedef struct {
+    modem_fifo_t tx_fifo;
+    uint8_t tx_matrix[INTERLEAVE_ROWS][INTERLEAVE_COLS];
+    uint32_t tx_col_idx;
+} ofdm_packer_tx_t;
+
+/* Independent Receiver Unpacker/Deinterleaver/FEC Context */
+typedef struct {
+    modem_fifo_t rx_fifo;
+    uint8_t rx_matrix[INTERLEAVE_ROWS][INTERLEAVE_COLS];
+    uint32_t rx_col_idx;
+} ofdm_packer_rx_t;
+
+/* ========================================================================== */
+/*                             INTERNAL FIFO HELPERS                          */
+/* ========================================================================== */
+
+static void fifo_init(modem_fifo_t *fifo)
+{
+    fifo->head = 0;
+    fifo->tail = 0;
+    fifo->count = 0;
+}
+
+static uint32_t fifo_push(modem_fifo_t *fifo, uint8_t data)
+{
+    if (fifo->count >= MODEM_FIFO_SIZE) {
+        return 0; /* FIFO Full allocation error */
+    }
+    fifo->storage[fifo->head] = data;
+    fifo->head = (fifo->head + 1) % MODEM_FIFO_SIZE;
+    fifo->count++;
+    return 1;
+}
+
+static uint32_t fifo_pop(modem_fifo_t *fifo, uint8_t *data)
+{
+    if (fifo->count == 0) {
+        return 0; /* FIFO Empty condition */
+    }
+    *data = fifo->storage[fifo->tail];
+    fifo->tail = (fifo->tail + 1) % MODEM_FIFO_SIZE;
+    fifo->count--;
+    return 1;
+}
+/*
+ * OFDM Bit Packer / Unpacker with Matrix Interleaver and FEC (7, 4) Hamming Code
+ * PART 2 OF 3: Hamming (7, 4) FEC Engine and Transmitter (TX) API.
+ * Uses strict bitwise operations and loop mappings into the interleaver grid.
+ */
+
+/* ========================================================================== */
+/*                         HAMMING (7, 4) FEC CORE ENGINE                     */
+/* ========================================================================== */
+
+/**
+ * @brief Encodes 4 bits of data into a 7-bit Hamming codeword.
+ *        Data bits mapped to positions: 3, 5, 6, 7. Parity bits: 1, 2, 4.
+ * @param nibble Input 4-bit data (lower nibble).
+ * @return uint8_t Encoded 7-bit codeword.
+ */
+static uint8_t hamming_74_encode(uint8_t nibble)
+{
+    uint8_t d1 = (nibble >> 0) & 1;
+    uint8_t d2 = (nibble >> 1) & 1;
+    uint8_t d3 = (nibble >> 2) & 1;
+    uint8_t d4 = (nibble >> 3) & 1;
+
+    /* Calculate parity bits using XOR */
+    uint8_t p1 = d1 ^ d2       ^ d4;
+    uint8_t p2 = d1      ^ d3  ^ d4;
+    uint8_t p3 =      d2 ^ d3  ^ d4;
+
+    /* Construct 7-bit codeword: [p1 p2 d1 p3 d2 d3 d4] */
+    return (p1 << 6) | (p2 << 5) | (d1 << 4) | (p3 << 3) | (d2 << 2) | (d3 << 1) | d4;
+}
+
+/**
+ * @brief Decodes a 7-bit Hamming codeword and fixes single-bit errors.
+ * @param codeword Input received 7-bit codeword.
+ * @return uint8_t Decoded and corrected 4-bit data payload.
+ */
+static uint8_t hamming_74_decode(uint8_t codeword)
+{
+    uint8_t p1 = (codeword >> 6) & 1;
+    uint8_t p2 = (codeword >> 5) & 1;
+    uint8_t d1 = (codeword >> 4) & 1;
+    uint8_t p3 = (codeword >> 3) & 1;
+    uint8_t d2 = (codeword >> 2) & 1;
+    uint8_t d3 = (codeword >> 1) & 1;
+    uint8_t d4 = (codeword >> 0) & 1;
+
+    /* Compute syndrome vector bits */
+    uint8_t s1 = p1 ^ d1 ^ d2      ^ d4;
+    uint8_t s2 = p2 ^ d1      ^ d3 ^ d4;
+    uint8_t s3 = p3      ^ d2 ^ d3 ^ d4;
+
+    uint8_t syndrome = (s1 << 2) | (s2 << 1) | s3;
+
+    /* Error correction lookup based on syndrome value */
+    if (syndrome != 0)
+    {
+        /* Invert the corrupted bit matching the specific error syndrome position */
+        switch (syndrome) {
+            case 7: d4 ^= 1; break; /* Error in d4 */
+            case 6: d1 ^= 1; break; /* Error in d1 */
+            case 5: d2 ^= 1; break; /* Error in d2 */
+            case 3: d3 ^= 1; break; /* Error in d3 */
+            default: break;         /* Parity bit errors can be ignored for data extraction */
+        }
+    }
+
+    /* Return reconstructed corrected 4-bit data */
+    return (d4 << 3) | (d3 << 2) | (d2 << 1) | d1;
+}
+
+/* ========================================================================== */
+/*                          TRANSMITTER (TX) API                              */
+/* ========================================================================== */
+
+/**
+ * @brief Runtime initialization of the standalone OFDM transmitter packer context.
+ */
+static void ofdm_packer_tx_init(ofdm_packer_tx_t *self)
+{
+    fifo_init(&self->tx_fifo);
+    self->tx_col_idx = 0;
+    for (uint32_t r = 0; r < INTERLEAVE_ROWS; r++) {
+        for (uint32_t c = 0; c < INTERLEAVE_COLS; c++) {
+            self->tx_matrix[r][c] = 0;
+        }
+    }
+}
+
+/**
+ * @brief Forces a hard reset and flushes internal transmitter queues and matrices.
+ */
+static void ofdm_packer_tx_reset(ofdm_packer_tx_t *self)
+{
+    fifo_init(&self->tx_fifo);
+    self->tx_col_idx = 0;
+}
+
+/**
+ * @brief Injects a raw text byte received from USB CDC into the isolated transmitter queue.
+ */
+static void ofdm_packer_put_tx_byte(ofdm_packer_tx_t *self, uint8_t byte)
+{
+    fifo_push(&self->tx_fifo, byte);
+}
+
+/**
+ * @brief TX Callback: Encodes stream with Hamming FEC and fills Interleaver Matrix.
+ *        Loads data horizontally, reads matrix column vertically for the physical modulator.
+ */
+static void ofdm_packer_get_bits_callback(ofdm_packer_tx_t *self, uint8_t *bits)
+{
+    if (self->tx_col_idx == 0)
+    {
+        /* Array to collect 36 bits of raw data (4.5 bytes) to match 9 Hamming blocks */
+        uint8_t raw_bits[36] = {0};
+        uint32_t bit_ptr = 0;
+
+        /* Pop bytes from FIFO and stream them into the bit buffer */
+        for (uint32_t i = 0; i < 5; i++)
+        {
+            uint8_t byte = 0;
+            uint32_t bits_to_read = (i == 4) ? 4 : 8; /* Read only half byte for the 5th character */
+
+            if (fifo_pop(&self->tx_fifo, &byte)) {
+                for (uint32_t b = 0; b < bits_to_read; b++) {
+                    raw_bits[bit_ptr++] = (byte >> b) & 1;
+                }
+            } else {
+                bit_ptr += bits_to_read; /* Padding zeros if FIFO is empty */
+            }
+        }
+
+        /* Encode 9 blocks of 4-bit nibbles into 9 blocks of 7-bit Hamming codewords */
+        uint8_t encoded_stream[63] = {0};
+        uint32_t enc_ptr = 0;
+
+        for (uint32_t i = 0; i < 9; i++)
+        {
+            uint8_t nibble = (raw_bits[i*4+3] << 3) | (raw_bits[i*4+2] << 2) | (raw_bits[i*4+1] << 1) | raw_bits[i*4];
+            uint8_t codeword = hamming_74_encode(nibble);
+
+            for (uint32_t b = 0; b < 7; b++) {
+                encoded_stream[enc_ptr++] = (codeword >> (6 - b)) & 1;
+            }
+        }
+
+        /* Pack the 63 encoded bits into the 8x8 matrix (leave last bit 64 empty) */
+        uint32_t matrix_ptr = 0;
+        for (uint32_t row = 0; row < INTERLEAVE_ROWS; row++) {
+            for (uint32_t col = 0; col < INTERLEAVE_COLS; col++) {
+                if (matrix_ptr < 63) {
+                    self->tx_matrix[row][col] = encoded_stream[matrix_ptr++];
+                } else {
+                    self->tx_matrix[row][col] = 0; /* Last spare bit padding */
+                }
+            }
+        }
+    }
+
+    /* Read matrix column vertically for the physical modulator */
+    for (uint32_t row = 0; row < INTERLEAVE_ROWS; row++) {
+        bits[row] = self->tx_matrix[row][self->tx_col_idx];
+    }
+
+    self->tx_col_idx = (self->tx_col_idx + 1) % INTERLEAVE_COLS;
+}
+/*
+ * OFDM Bit Packer / Unpacker with Matrix Interleaver and FEC (7, 4) Hamming Code
+ * PART 3 OF 3: Receiver (RX) API and Deinterleaver Engine.
+ * Fills Deinterleaver Matrix vertically and decodes Hamming FEC horizontally.
+ */
+
+/* ========================================================================== */
+/*                            RECEIVER (RX) API                               */
+/* ========================================================================== */
+
+/**
+ * @brief Runtime initialization of the standalone OFDM receiver unpacker context.
+ */
+static void ofdm_packer_rx_init(ofdm_packer_rx_t *self)
+{
+    fifo_init(&self->rx_fifo);
+    self->rx_col_idx = 0;
+    for (uint32_t r = 0; r < INTERLEAVE_ROWS; r++) {
+        for (uint32_t c = 0; c < INTERLEAVE_COLS; c++) {
+            self->rx_matrix[r][c] = 0;
+        }
+    }
+}
+
+/**
+ * @brief Forces a hard reset and flushes internal receiver tracking queues and deinterleavers.
+ */
+static void ofdm_packer_rx_reset(ofdm_packer_rx_t *self)
+{
+    fifo_init(&self->rx_fifo);
+    self->rx_col_idx = 0;
+}
+
+/**
+ * @brief Extracts a successfully decoded text byte from the receiver queue to send to USB.
+ * @return uint32_t Returns 1 if a byte is available, 0 if queue is empty.
+ */
+static uint32_t ofdm_packer_get_rx_byte(ofdm_packer_rx_t *self, uint8_t *output_byte)
+{
+    return fifo_pop(&self->rx_fifo, output_byte);
+}
+
+/**
+ * @brief RX Callback: Fills Deinterleaver Matrix vertically and decodes Hamming FEC.
+ *        Once the 8x8 block is fully assembled, corrects single-bit errors and pops text.
+ */
+static void ofdm_packer_process_bits_callback(ofdm_packer_rx_t *self, const uint8_t *bits)
+{
+    /* Load 8 bits vertically into the current matrix column from the demodulator layer */
+    for (uint32_t row = 0; row < INTERLEAVE_ROWS; row++) {
+        self->rx_matrix[row][self->rx_col_idx] = bits[row];
+    }
+
+    self->rx_col_idx++;
+
+    /* Once the 8x8 block is fully assembled with 8 consecutive OFDM symbols */
+    if (self->rx_col_idx >= INTERLEAVE_COLS)
+    {
+        self->rx_col_idx = 0;
+
+        /* Extract 63 encoded bits from the matrix grid flat array */
+        uint8_t encoded_stream[64] = {0};
+        uint32_t matrix_ptr = 0;
+
+        for (uint32_t row = 0; row < INTERLEAVE_ROWS; row++) {
+            for (uint32_t col = 0; col < INTERLEAVE_COLS; col++) {
+                if (matrix_ptr < 63) {
+                    encoded_stream[matrix_ptr++] = self->rx_matrix[row][col];
+                }
+            }
+        }
+
+        /* Decode 9 Hamming blocks and execute single-bit error corrections */
+        uint8_t decoded_bits[36] = {0};
+        uint32_t dec_ptr = 0;
+
+        for (uint32_t i = 0; i < 9; i++)
+        {
+            uint8_t codeword = 0;
+            for (uint32_t b = 0; b < 7; b++) {
+                codeword |= (encoded_stream[i * 7 + b] & 1) << (6 - b);
+            }
+
+            uint8_t corrected_nibble = hamming_74_decode(codeword);
+
+            for (uint32_t b = 0; b < 4; b++) {
+                decoded_bits[dec_ptr++] = (corrected_nibble >> b) & 1;
+            }
+        }
+
+        /* Reconstruct 4.5 text bytes from the corrected bit payload stream */
+        uint32_t bit_read_ptr = 0;
+        for (uint32_t i = 0; i < 5; i++)
+        {
+            uint8_t rx_byte = 0;
+            uint32_t bits_to_assemble = (i == 4) ? 4 : 8;
+
+            for (uint32_t b = 0; b < bits_to_assemble; b++) {
+                rx_byte |= (decoded_bits[bit_read_ptr++] & 1) << b;
+            }
+
+            /* Push the reconstructed text byte into the RX FIFO queue for USB retrieval */
+            /* Ignore pure zero-padding bytes to avoid spitting trailing garbage to terminal */
+            if (rx_byte != 0) {
+                fifo_push(&self->rx_fifo, rx_byte);
+            }
+        }
+    }
+}
+
+#endif /* WITHINTEGRATEDDSP */
+
+static ofdm_modem_tx_t my_ofdm_tx;
+static ofdm_packer_tx_t my_packer_tx;
+
+static ofdm_modem_rx_t my_ofdm_rx;
+static ofdm_packer_rx_t my_packer_rx;
+
+/* Прослойка для TX */
+static void dsp_tx_bits_bridge(uint8_t *bits) {
+    ofdm_packer_get_bits_callback(&my_packer_tx, bits);
+}
+
+/* Прослойка для RX */
+static void dsp_rx_bits_bridge(const uint8_t *bits) {
+    ofdm_packer_process_bits_callback(&my_packer_rx, bits);
+}
+
+// ... и затем в основном цикле DUC/DDC трансивера:
+//ofdm_modem_tx_block(&my_ofdm_tx, dsp_tx_bits_bridge, tx_buffer_i, tx_buffer_q, block_size);
+//ofdm_modem_rx_block(&my_ofdm_rx, rx_buffer_i, rx_buffer_q, block_size, dsp_rx_bits_bridge);
+
 
 //////////////////
 /// test
