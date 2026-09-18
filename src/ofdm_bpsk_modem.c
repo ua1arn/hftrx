@@ -470,7 +470,79 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
  * @brief Block-based transmitter modulation processing with mathematically pure IFFT layout.
  *        Ensures strict subcarrier orthogonality and ideal single-sideband IQ generation.
  */
-static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_modem_tx_t *self, uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
+static void NEWofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_modem_tx_t *self, uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
+{
+	const FLOAT_t magnitude = 32;
+    for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
+    {
+        /* Regenerate symbol payload if the active time domain vector cache is exhausted */
+        if (self->tx_sample_idx >= OFDM_SYMBOL_LEN)
+        {
+            self->tx_sample_idx = 0;
+
+            /* Clear the entire FFT complex plane using CMSIS-DSP vector fill */
+            ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
+
+            uint8_t tx_bits[OFDM_NUM_CHANNELS] = {0};
+            get_bits_cb(self, tx_bits);
+
+            /* MATHEMATICALLY CORRECT BPSK-OFDM MAPPING: */
+            /* Imaginary part MUST be 0.0 to preserve native CFFT subcarrier orthogonality. */
+            /* Single-sideband IQ signal is achieved by filling ONLY bins 1..8 and keeping bins 120..127 at 0. */
+            for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
+            {
+                uint32_t bin_idx = subcarrier_map[ch];
+
+                self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? magnitude : -magnitude; /* Real (I) component */
+                self->fft_buffer[bin_idx * 2 + 1] = 0.0;                        /* Imaginary (Q) component strictly ZERO */
+            }
+
+            /* Inverse Complex FFT execution: isInverseFFT = 1, bitReverseFlag = 1 */
+            //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
+            dsp_cfft(&self->cfft_inst, self->fft_buffer, 1);
+
+            /* Construct the Cyclic Prefix window using fast block memory transport */
+            uint32_t cp_start = (FFT_LEN - CYCLIC_PREFIX_LEN) * 2; // (128 - 32) * 2 = 192
+
+            /* Copy the tail part of the IFFT output to the beginning of the transmission frame */
+            ARM_MORPH(arm_copy)(&self->fft_buffer[cp_start],
+                                self->tx_time_buffer,
+                                CYCLIC_PREFIX_LEN * 2);
+
+            /* Copy the entire useful IFFT payload directly following the guard prefix interval */
+            ARM_MORPH(arm_copy)(self->fft_buffer,
+                                &self->tx_time_buffer[CYCLIC_PREFIX_LEN * 2],
+                                FFT_LEN * 2);
+
+            /* --- VECTOR OPTIMIZATION: TRANSITION WINDOWING VIA CMSIS-DSP MULT --- */
+            /* Smooth the absolute beginning of the symbol (Rising edge) */
+            ARM_MORPH(arm_mult)(self->tx_time_buffer,
+                                self->window_rise_complex,
+                                self->tx_time_buffer,
+								TX_W_LEN * 2);
+
+            /* Smooth the absolute end of the symbol (Falling edge) */
+            uint32_t sym_end_offset = (OFDM_SYMBOL_LEN - TX_W_LEN) * 2;
+            ARM_MORPH(arm_mult)(&self->tx_time_buffer[sym_end_offset],
+                                self->window_fall_complex,
+                                &self->tx_time_buffer[sym_end_offset],
+								TX_W_LEN * 2);
+       }
+
+        /* Stream serialized data samples into active processing streams for hftrx path */
+        out_buffer_i[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2];
+        out_buffer_q[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2 + 1];
+
+        self->tx_sample_idx++;
+    }
+}
+
+
+/**
+ * @brief Block-based transmitter modulation processing with mathematically pure IFFT layout.
+ *        Ensures strict subcarrier orthogonality and ideal single-sideband IQ generation.
+ */
+static void OLDofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_modem_tx_t *self, uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
 {
 	const FLOAT_t magnitude = 32;
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
