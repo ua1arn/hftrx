@@ -2,22 +2,456 @@
 
 #if WITHINTEGRATEDDSP && 1
 
+//////////////////
+/// interleaver
+
+/*
+ * OFDM Bit Packer / Unpacker with Matrix Interleaver and FEC (7, 4) Hamming Code
+ * PART 1 OF 3: Headers, Isolated Context Structures and Ring Buffer FIFO Queues.
+ * Fully decoupled structures ensuring reentrancy compliant with hftrx architecture.
+ */
+
+#include "hardware.h"
+
+#if WITHINTEGRATEDDSP
+
+#include "dspdefines.h"
+
+#define MODEM_FIFO_SIZE     256
+#define INTERLEAVE_ROWS     8   /* Matches OFDM_NUM_CHANNELS */
+#define INTERLEAVE_COLS     8   /* Depth of time interleaving */
+#define INTERLEAVE_SIZE     (INTERLEAVE_ROWS * INTERLEAVE_COLS) /* 64 bits = 8 bytes */
+
+/* Simple FIFO/Ring Buffer structure for USB stream interfacing */
+typedef struct {
+    uint8_t storage[MODEM_FIFO_SIZE];
+    uint32_t head;
+    uint32_t tail;
+    uint32_t count;
+} modem_fifo_t;
+
+/* Independent Transmitter Packer/Interleaver/FEC Context */
+typedef struct {
+    modem_fifo_t tx_fifo;
+    uint8_t tx_matrix[INTERLEAVE_ROWS][INTERLEAVE_COLS];
+    uint32_t tx_col_idx;
+} ofdm_packer_tx_t;
+
+/* Independent Receiver Unpacker/Deinterleaver/FEC Context */
+typedef struct {
+    modem_fifo_t rx_fifo;
+    uint8_t rx_matrix[INTERLEAVE_ROWS][INTERLEAVE_COLS];
+    uint32_t rx_col_idx;
+} ofdm_packer_rx_t;
+
+/* ========================================================================== */
+/*                             INTERNAL FIFO HELPERS                          */
+/* ========================================================================== */
+
+static void fifo_init(modem_fifo_t *fifo)
+{
+    fifo->head = 0;
+    fifo->tail = 0;
+    fifo->count = 0;
+}
+
+static uint32_t fifo_push(modem_fifo_t *fifo, uint8_t data)
+{
+    if (fifo->count >= MODEM_FIFO_SIZE) {
+        return 0; /* FIFO Full allocation error */
+    }
+    fifo->storage[fifo->head] = data;
+    fifo->head = (fifo->head + 1) % MODEM_FIFO_SIZE;
+    fifo->count++;
+    return 1;
+}
+
+static uint32_t fifo_pop(modem_fifo_t *fifo, uint8_t *data)
+{
+    if (fifo->count == 0) {
+        return 0; /* FIFO Empty condition */
+    }
+    *data = fifo->storage[fifo->tail];
+    fifo->tail = (fifo->tail + 1) % MODEM_FIFO_SIZE;
+    fifo->count--;
+    return 1;
+}
+/*
+ * OFDM Bit Packer / Unpacker with Matrix Interleaver and FEC (7, 4) Hamming Code
+ * PART 2 OF 3: Hamming (7, 4) FEC Engine and Transmitter (TX) API.
+ * Uses strict bitwise operations and loop mappings into the interleaver grid.
+ */
+
+/* ========================================================================== */
+/*                         HAMMING (7, 4) FEC CORE ENGINE                     */
+/* ========================================================================== */
+
+/**
+ * @brief Encodes 4 bits of data into a 7-bit Hamming codeword.
+ *        Data bits mapped to positions: 3, 5, 6, 7. Parity bits: 1, 2, 4.
+ * @param nibble Input 4-bit data (lower nibble).
+ * @return uint8_t Encoded 7-bit codeword.
+ */
+static uint8_t hamming_74_encode(uint8_t nibble)
+{
+    uint8_t d1 = (nibble >> 0) & 1;
+    uint8_t d2 = (nibble >> 1) & 1;
+    uint8_t d3 = (nibble >> 2) & 1;
+    uint8_t d4 = (nibble >> 3) & 1;
+
+    /* Calculate parity bits using XOR */
+    uint8_t p1 = d1 ^ d2       ^ d4;
+    uint8_t p2 = d1      ^ d3  ^ d4;
+    uint8_t p3 =      d2 ^ d3  ^ d4;
+
+    /* Construct 7-bit codeword: [p1 p2 d1 p3 d2 d3 d4] */
+    return (p1 << 6) | (p2 << 5) | (d1 << 4) | (p3 << 3) | (d2 << 2) | (d3 << 1) | d4;
+}
+
+/**
+ * @brief Decodes a 7-bit Hamming codeword and fixes single-bit errors.
+ * @param codeword Input received 7-bit codeword.
+ * @return uint8_t Decoded and corrected 4-bit data payload.
+ */
+static uint8_t hamming_74_decode(uint8_t codeword)
+{
+    uint8_t p1 = (codeword >> 6) & 1;
+    uint8_t p2 = (codeword >> 5) & 1;
+    uint8_t d1 = (codeword >> 4) & 1;
+    uint8_t p3 = (codeword >> 3) & 1;
+    uint8_t d2 = (codeword >> 2) & 1;
+    uint8_t d3 = (codeword >> 1) & 1;
+    uint8_t d4 = (codeword >> 0) & 1;
+
+    /* Compute syndrome vector bits */
+    uint8_t s1 = p1 ^ d1 ^ d2      ^ d4;
+    uint8_t s2 = p2 ^ d1      ^ d3 ^ d4;
+    uint8_t s3 = p3      ^ d2 ^ d3 ^ d4;
+
+    uint8_t syndrome = (s1 << 2) | (s2 << 1) | s3;
+
+    /* Error correction lookup based on syndrome value */
+    if (syndrome != 0)
+    {
+        /* Invert the corrupted bit matching the specific error syndrome position */
+        switch (syndrome) {
+            case 7: d4 ^= 1; break; /* Error in d4 */
+            case 6: d1 ^= 1; break; /* Error in d1 */
+            case 5: d2 ^= 1; break; /* Error in d2 */
+            case 3: d3 ^= 1; break; /* Error in d3 */
+            default: break;         /* Parity bit errors can be ignored for data extraction */
+        }
+    }
+
+    /* Return reconstructed corrected 4-bit data */
+    return (d4 << 3) | (d3 << 2) | (d2 << 1) | d1;
+}
+
+/* ========================================================================== */
+/*                          TRANSMITTER (TX) API                              */
+/* ========================================================================== */
+
+/**
+ * @brief Runtime initialization of the standalone OFDM transmitter packer context.
+ */
+static void ofdm_packer_tx_init(ofdm_packer_tx_t *self)
+{
+    fifo_init(&self->tx_fifo);
+    self->tx_col_idx = 0;
+    for (uint32_t r = 0; r < INTERLEAVE_ROWS; r++) {
+        for (uint32_t c = 0; c < INTERLEAVE_COLS; c++) {
+            self->tx_matrix[r][c] = 0;
+        }
+    }
+}
+
+/**
+ * @brief Forces a hard reset and flushes internal transmitter queues and matrices.
+ */
+static void ofdm_packer_tx_reset(ofdm_packer_tx_t *self)
+{
+    fifo_init(&self->tx_fifo);
+    self->tx_col_idx = 0;
+}
+
+/**
+ * @brief Injects a raw text byte received from USB CDC into the isolated transmitter queue.
+ */
+static void ofdm_packer_put_tx_byte(ofdm_packer_tx_t *self, uint8_t byte)
+{
+    fifo_push(&self->tx_fifo, byte);
+}
+
+/**
+ * @brief TX Callback: Encodes stream with Hamming FEC and fills Interleaver Matrix.
+ *        Loads data horizontally, reads matrix column vertically for the physical modulator.
+ */
+static void ofdm_packer_get_bits_callback(ofdm_packer_tx_t *self, uint8_t *bits)
+{
+    if (self->tx_col_idx == 0)
+    {
+        /* Array to collect 36 bits of raw data (4.5 bytes) to match 9 Hamming blocks */
+        uint8_t raw_bits[36] = {0};
+        uint32_t bit_ptr = 0;
+
+        /* Pop bytes from FIFO and stream them into the bit buffer */
+        for (uint32_t i = 0; i < 5; i++)
+        {
+            uint8_t byte = 0;
+            uint32_t bits_to_read = (i == 4) ? 4 : 8; /* Read only half byte for the 5th character */
+
+            if (fifo_pop(&self->tx_fifo, &byte)) {
+                for (uint32_t b = 0; b < bits_to_read; b++) {
+                    raw_bits[bit_ptr++] = (byte >> b) & 1;
+                }
+            } else {
+                bit_ptr += bits_to_read; /* Padding zeros if FIFO is empty */
+            }
+        }
+
+        /* Encode 9 blocks of 4-bit nibbles into 9 blocks of 7-bit Hamming codewords */
+        uint8_t encoded_stream[63] = {0};
+        uint32_t enc_ptr = 0;
+
+        for (uint32_t i = 0; i < 9; i++)
+        {
+            uint8_t nibble = (raw_bits[i*4+3] << 3) | (raw_bits[i*4+2] << 2) | (raw_bits[i*4+1] << 1) | raw_bits[i*4];
+            uint8_t codeword = hamming_74_encode(nibble);
+
+            for (uint32_t b = 0; b < 7; b++) {
+                encoded_stream[enc_ptr++] = (codeword >> (6 - b)) & 1;
+            }
+        }
+
+        /* Pack the 63 encoded bits into the 8x8 matrix (leave last bit 64 empty) */
+        uint32_t matrix_ptr = 0;
+        for (uint32_t row = 0; row < INTERLEAVE_ROWS; row++) {
+            for (uint32_t col = 0; col < INTERLEAVE_COLS; col++) {
+                if (matrix_ptr < 63) {
+                    self->tx_matrix[row][col] = encoded_stream[matrix_ptr++];
+                } else {
+                    self->tx_matrix[row][col] = 0; /* Last spare bit padding */
+                }
+            }
+        }
+    }
+
+    /* Read matrix column vertically for the physical modulator */
+    for (uint32_t row = 0; row < INTERLEAVE_ROWS; row++) {
+        bits[row] = self->tx_matrix[row][self->tx_col_idx];
+    }
+
+    self->tx_col_idx = (self->tx_col_idx + 1) % INTERLEAVE_COLS;
+}
+/*
+ * OFDM Bit Packer / Unpacker with Matrix Interleaver and FEC (7, 4) Hamming Code
+ * PART 3 OF 3: Receiver (RX) API and Deinterleaver Engine.
+ * Fills Deinterleaver Matrix vertically and decodes Hamming FEC horizontally.
+ */
+
+/* ========================================================================== */
+/*                            RECEIVER (RX) API                               */
+/* ========================================================================== */
+
+/**
+ * @brief Runtime initialization of the standalone OFDM receiver unpacker context.
+ */
+static void ofdm_packer_rx_init(ofdm_packer_rx_t *self)
+{
+    fifo_init(&self->rx_fifo);
+    self->rx_col_idx = 0;
+    for (uint32_t r = 0; r < INTERLEAVE_ROWS; r++) {
+        for (uint32_t c = 0; c < INTERLEAVE_COLS; c++) {
+            self->rx_matrix[r][c] = 0;
+        }
+    }
+}
+
+/**
+ * @brief Forces a hard reset and flushes internal receiver tracking queues and deinterleavers.
+ */
+static void ofdm_packer_rx_reset(ofdm_packer_rx_t *self)
+{
+    fifo_init(&self->rx_fifo);
+    self->rx_col_idx = 0;
+}
+
+/**
+ * @brief Extracts a successfully decoded text byte from the receiver queue to send to USB.
+ * @return uint32_t Returns 1 if a byte is available, 0 if queue is empty.
+ */
+static uint32_t ofdm_packer_get_rx_byte(ofdm_packer_rx_t *self, uint8_t *output_byte)
+{
+    return fifo_pop(&self->rx_fifo, output_byte);
+}
+
+/**
+ * @brief RX Callback: Fills Deinterleaver Matrix vertically and decodes Hamming FEC.
+ *        Once the 8x8 block is fully assembled, corrects single-bit errors and pops text.
+ */
+static void ofdm_packer_process_bits_callback(ofdm_packer_rx_t *self, const uint8_t *bits)
+{
+    /* Load 8 bits vertically into the current matrix column from the demodulator layer */
+    for (uint32_t row = 0; row < INTERLEAVE_ROWS; row++) {
+        self->rx_matrix[row][self->rx_col_idx] = bits[row];
+    }
+
+    self->rx_col_idx++;
+
+    /* Once the 8x8 block is fully assembled with 8 consecutive OFDM symbols */
+    if (self->rx_col_idx >= INTERLEAVE_COLS)
+    {
+        self->rx_col_idx = 0;
+
+        /* Extract 63 encoded bits from the matrix grid flat array */
+        uint8_t encoded_stream[64] = {0};
+        uint32_t matrix_ptr = 0;
+
+        for (uint32_t row = 0; row < INTERLEAVE_ROWS; row++) {
+            for (uint32_t col = 0; col < INTERLEAVE_COLS; col++) {
+                if (matrix_ptr < 63) {
+                    encoded_stream[matrix_ptr++] = self->rx_matrix[row][col];
+                }
+            }
+        }
+
+        /* Decode 9 Hamming blocks and execute single-bit error corrections */
+        uint8_t decoded_bits[36] = {0};
+        uint32_t dec_ptr = 0;
+
+        for (uint32_t i = 0; i < 9; i++)
+        {
+            uint8_t codeword = 0;
+            for (uint32_t b = 0; b < 7; b++) {
+                codeword |= (encoded_stream[i * 7 + b] & 1) << (6 - b);
+            }
+
+            uint8_t corrected_nibble = hamming_74_decode(codeword);
+
+            for (uint32_t b = 0; b < 4; b++) {
+                decoded_bits[dec_ptr++] = (corrected_nibble >> b) & 1;
+            }
+        }
+
+        /* Reconstruct 4.5 text bytes from the corrected bit payload stream */
+        uint32_t bit_read_ptr = 0;
+        for (uint32_t i = 0; i < 5; i++)
+        {
+            uint8_t rx_byte = 0;
+            uint32_t bits_to_assemble = (i == 4) ? 4 : 8;
+
+            for (uint32_t b = 0; b < bits_to_assemble; b++) {
+                rx_byte |= (decoded_bits[bit_read_ptr++] & 1) << b;
+            }
+
+            /* Push the reconstructed text byte into the RX FIFO queue for USB retrieval */
+            /* Ignore pure zero-padding bytes to avoid spitting trailing garbage to terminal */
+            if (rx_byte != 0) {
+                fifo_push(&self->rx_fifo, rx_byte);
+            }
+        }
+    }
+}
+
+#endif /* WITHINTEGRATEDDSP */
+
+///* Прослойка для TX */
+//static void dsp_tx_bits_bridge(uint8_t *bits) {
+//    ofdm_packer_get_bits_callback(&ofdm_srv_tx, bits);
+//}
+//
+///* Прослойка для RX */
+//static void dsp_rx_bits_bridge(const uint8_t *bits) {
+//    ofdm_packer_process_bits_callback(&ofdm_srv_rx, bits);
+//}
+
+// ... и затем в основном цикле DUC/DDC трансивера:
+//ofdm_modem_tx_block(&ofdm_srv_tx, dsp_tx_bits_bridge, tx_buffer_i, tx_buffer_q, block_size);
+//ofdm_modem_rx_block(&ofdm_srv_rx, rx_buffer_i, rx_buffer_q, block_size, dsp_rx_bits_bridge);
+
+/*
+ * OFDM Modem Integration Bridge for hftrx transceiver core
+ * Integrates independent PHY and Service layer contexts into the DMA audio pipeline.
+ */
+
+#include "hardware.h"
+
+#if WITHINTEGRATEDDSP
+
+/* Include our newly created modem modules */
+//#include "ofdm_bpsk_modem.h"
+//#include "ofdm_bit_packer.h"
+
+/* ========================================================================== */
+/*                          STATIC CONTEXT ALLOCATION                         */
+/* ========================================================================== */
+
+/* ========================================================================== */
+/*                         STATIC CALLBACK BRIDGES                            */
+/* ========================================================================== */
+
+/**
+ * @brief Bridge function connecting the physical modulator with the context-driven bit packer.
+ * @param bits Array destination where 8 parallel bits will be written by the interleaver layer.
+ */
+//static void dsp_ofdm_tx_bits_bridge(ofdm_modem_tx_t *self, uint8_t *bits)
+//{
+//    ofdm_packer_get_bits_callback(&ofdm_srv_tx, bits);
+//}
+
+/**
+ * @brief Bridge function connecting the physical demodulator with the context-driven deinterleaver.
+ * @param bits Input array containing 8 parsed bits received from the physical OFDM subcarriers.
+ */
+//static void dsp_ofdm_rx_bits_bridge(ofdm_modem_rx_t *self, const uint8_t *bits)
+//{
+//    ofdm_packer_process_bits_callback(&ofdm_srv_rx, bits);
+//}
+
+
+/**
+ * @brief External interface for the USB CDC UART layer to inject text characters for transmission.
+ * @param c Incoming ASCII character from Virtual COM port terminal.
+ */
+//void dsp_ofdm_push_char_to_tx(uint8_t c)
+//{
+//    ofdm_packer_put_tx_byte(&ofdm_srv_tx, c);
+//}
+
+/**
+ * @brief External interface for the USB CDC UART layer to poll for decoded text characters.
+ * @param c Pointer to storage where the extracted ASCII character will be copied.
+ * @return uint32_t Returns 1 if a character was successfully retrieved, 0 if queue is empty.
+ */
+//uint32_t dsp_ofdm_pop_char_from_rx(uint8_t *c)
+//{
+//    return ofdm_packer_get_rx_byte(&ofdm_srv_rx, c);
+//}
+
+
+#endif /* WITHINTEGRATEDDSP */
+
 #include "dspdefines.h"
 #include "audio.h"
 #include "buffers.h"
 #include "formats.h"
 
 #define OFDM_NUM_CHANNELS   8
-#define FFT_LEN             128   /* Increased from 16 to fit 3 kHz bandwidth */
-#define CYCLIC_PREFIX_LEN   16    /* Proportional guard interval (1/8 of FFT) */
-#define OFDM_SYMBOL_LEN     (FFT_LEN + CYCLIC_PREFIX_LEN) /* 144 samples */
+#define FFT_LEN             256
+#define CYCLIC_PREFIX_LEN   32    /* Increased from 16 to 32 for phase alignment */
+#define OFDM_SYMBOL_LEN     (FFT_LEN + CYCLIC_PREFIX_LEN) /* 160 samples */
 
-/* New subcarrier map: places 8 active channels in the middle of the audio passband */
-/* Bins 1 to 8 correspond to frequencies: 375, 750, 1125, 1500, 1875, 2250, 2625, 3000 Hz */
-static const uint8_t subcarrier_map[OFDM_NUM_CHANNELS] = {1, 2, 3, 4, 5, 6, 7, 8};
-
-/* Shift all 8 operational channels by +2 bins away from DC to increase isolation */
-//static const uint8_t subcarrier_map[OFDM_NUM_CHANNELS] = {3, 4, 5, 6, 7, 8, 9, 10};
+#define TX_W_LEN   	8
+#define RX_W_LEN 	8
+/*
+ * Symmetric Subcarrier Map for Quadrature Up-Converter:
+ * Bins 1..4   -> Positive frequencies (USB): +375, +750, +1125, +1500 Hz
+ * Bins 124..127 -> Negative frequencies (LSB): -1500, -1125, -750, -375 Hz
+ */
+static const uint16_t subcarrier_map[OFDM_NUM_CHANNELS] = {
+    1, 3, 5, 7,        /* Positive bins (Channels 0, 1, 2, 3) */
+	FFT_LEN - 7, FFT_LEN - 5, FFT_LEN - 3, FFT_LEN - 1  /* Negative bins (Channels 4, 5, 6, 7) */
+};
 
 /* ========================================================================== */
 /*                             STRUCTURES & CONTEXTS                          */
@@ -35,9 +469,6 @@ typedef struct {
     uint32_t is_phase_locked;    /* Boolean lock status flag */
 } ofdm_subcarrier_bpsk_t;
 
-#define W_LEN   4
-#define RX_W_LEN 4
-
 typedef struct {
     ARM_MORPH(arm_cfft_instance) cfft_inst;
 
@@ -46,8 +477,10 @@ typedef struct {
     uint32_t tx_sample_idx;
 
     /* Expanded window LUTs to hold duplicated weights for [Re, Im] pairs */
-    FLOAT_t window_rise_complex[W_LEN * 2];
-    FLOAT_t window_fall_complex[W_LEN * 2];
+    FLOAT_t window_rise_complex[TX_W_LEN * 2];
+    FLOAT_t window_fall_complex[TX_W_LEN * 2];
+
+    ofdm_packer_tx_t ofdm_srv_tx;
 } ofdm_modem_tx_t;
 
 typedef struct {
@@ -63,6 +496,8 @@ typedef struct {
     /* Pre-calculated window LUTs to hold duplicated weights for [Re, Im] pairs */
     FLOAT_t window_rise_complex[RX_W_LEN * 2];
     FLOAT_t window_fall_complex[RX_W_LEN * 2];
+
+    ofdm_packer_rx_t ofdm_srv_rx;
 } ofdm_modem_rx_t;
 
 /**
@@ -77,17 +512,17 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
     ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
 
     /* Generate complex window LUT weights using arm_sin_cos_f32 */
-    for (uint32_t i = 0; i < W_LEN; i++)
+    for (int i = 0; i < TX_W_LEN; i++)
     {
         float32_t sin_val, cos_val;
         /* Convert radians to degrees for CMSIS-DSP */
-        float32_t phase_degrees = (float32_t)(M_PI * i / W_LEN) * (180.0f / (float32_t)M_PI);
+        float32_t phase_degrees = (float32_t)(M_PI * i / TX_W_LEN) * (180.0f / (float32_t)M_PI);
 
         /* Calculate sine and cosine simultaneously */
         arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
-        FLOAT_t w_rise = 0.5 * (1.0 - (FLOAT_t)cos_val);
-        FLOAT_t w_fall = 0.5 * (1.0 + (FLOAT_t)cos_val);
+        FLOAT_t w_rise = (1 - (FLOAT_t)cos_val) / 2;
+        FLOAT_t w_fall = (1 + (FLOAT_t)cos_val) / 2;
 
         /* Duplicate weight for both Real and Imaginary components of the sample */
         self->window_rise_complex[i * 2]     = w_rise;
@@ -96,14 +531,17 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
         self->window_fall_complex[i * 2]     = w_fall;
         self->window_fall_complex[i * 2 + 1] = w_fall;
     }
+    /* Initialize upper service data buffers and interleavers */
+    ofdm_packer_tx_init(&self->ofdm_srv_tx);
 }
 
 /**
  * @brief Block-based transmitter modulation processing with mathematically pure IFFT layout.
  *        Ensures strict subcarrier orthogonality and ideal single-sideband IQ generation.
  */
-static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
+static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_modem_tx_t *self, uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
 {
+	const FLOAT_t magnitude = 32;
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
         /* Regenerate symbol payload if the active time domain vector cache is exhausted */
@@ -115,7 +553,7 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
             ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
 
             uint8_t tx_bits[OFDM_NUM_CHANNELS] = {0};
-            get_bits_cb(tx_bits);
+            get_bits_cb(self, tx_bits);
 
             /* MATHEMATICALLY CORRECT BPSK-OFDM MAPPING: */
             /* Imaginary part MUST be 0.0 to preserve native CFFT subcarrier orthogonality. */
@@ -124,15 +562,16 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
             {
                 uint32_t bin_idx = subcarrier_map[ch];
 
-                self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? 16.0 : -16.0; /* Real (I) component */
+                self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? magnitude : -magnitude; /* Real (I) component */
                 self->fft_buffer[bin_idx * 2 + 1] = 0.0;                        /* Imaginary (Q) component strictly ZERO */
             }
 
             /* Inverse Complex FFT execution: isInverseFFT = 1, bitReverseFlag = 1 */
-            ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
+            //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
+            dsp_cfft(&self->cfft_inst, self->fft_buffer, 1);
 
             /* Construct the Cyclic Prefix window using fast block memory transport */
-            uint32_t cp_start = (FFT_LEN - CYCLIC_PREFIX_LEN) * 2;
+            uint32_t cp_start = (FFT_LEN - CYCLIC_PREFIX_LEN) * 2; // (128 - 32) * 2 = 192
 
             /* Copy the tail part of the IFFT output to the beginning of the transmission frame */
             ARM_MORPH(arm_copy)(&self->fft_buffer[cp_start],
@@ -149,15 +588,15 @@ static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(uint8
             ARM_MORPH(arm_mult)(self->tx_time_buffer,
                                 self->window_rise_complex,
                                 self->tx_time_buffer,
-                                W_LEN * 2);
+								TX_W_LEN * 2);
 
             /* Smooth the absolute end of the symbol (Falling edge) */
-            uint32_t sym_end_offset = (OFDM_SYMBOL_LEN - W_LEN) * 2;
+            uint32_t sym_end_offset = (OFDM_SYMBOL_LEN - TX_W_LEN) * 2;
             ARM_MORPH(arm_mult)(&self->tx_time_buffer[sym_end_offset],
                                 self->window_fall_complex,
                                 &self->tx_time_buffer[sym_end_offset],
-                                W_LEN * 2);
-        }
+								TX_W_LEN * 2);
+       }
 
         /* Stream serialized data samples into active processing streams for hftrx path */
         out_buffer_i[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2];
@@ -175,6 +614,7 @@ static void ofdm_modem_tx_reset(ofdm_modem_tx_t *self)
 {
     self->tx_sample_idx = 0;
     ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
+    ofdm_packer_tx_reset(&self->ofdm_srv_tx);
 }
 
 static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
@@ -198,15 +638,15 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
     }
 
     /* PRE-CALCULATE RX COMPLEX WINDOW LUT USING arm_sin_cos_f32 */
-    for (uint32_t i = 0; i < RX_W_LEN; i++)
+    for (int i = 0; i < RX_W_LEN; i++)
     {
         float32_t sin_val, cos_val;
         float32_t phase_degrees = (float32_t)(M_PI * i / RX_W_LEN) * (180.0f / (float32_t)M_PI);
 
         arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
-        FLOAT_t w_rise = 0.5 * (1.0 - (FLOAT_t)cos_val);
-        FLOAT_t w_fall = 0.5 * (1.0 + (FLOAT_t)cos_val);
+        FLOAT_t w_rise = (1 - (FLOAT_t)cos_val) / 2;
+        FLOAT_t w_fall = (1 + (FLOAT_t)cos_val) / 2;
 
         self->window_rise_complex[i * 2]     = w_rise;
         self->window_rise_complex[i * 2 + 1] = w_rise;
@@ -214,6 +654,7 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
         self->window_fall_complex[i * 2]     = w_fall;
         self->window_fall_complex[i * 2 + 1] = w_fall;
     }
+    ofdm_packer_rx_init(&self->ofdm_srv_rx);
 }
 
 /**
@@ -234,13 +675,14 @@ static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
         sub->phase_lock_metric = 0;
         sub->is_phase_locked = 0;
     }
+    ofdm_packer_rx_reset(& self->ofdm_srv_rx);
 }
 
 /**
  * @brief Block-based receiver demodulation processing with RX Time-Domain Windowing.
  *        Trigonometry optimized via direct arm_sin_cos_f32 execution.
  */
-static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(const uint8_t *bits))
+static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits))
 {
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
@@ -248,7 +690,7 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
         self->rx_time_buffer[self->rx_sample_idx * 2]     = in_buffer_i[sample_idx];
         self->rx_time_buffer[self->rx_sample_idx * 2 + 1] = in_buffer_q[sample_idx];
         self->rx_sample_idx++;
-        
+
         /* Process when a full symbol payload boundaries are successfully accumulated */
         if (self->rx_sample_idx >= OFDM_SYMBOL_LEN)
         {
@@ -272,10 +714,11 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
                                 RX_W_LEN * 2);
 
             /* Forward Complex FFT conversion: isInverseFFT = 0, bitReverseFlag = 1 */
-            ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 0, 1);
-            
+            //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 0, 1);
+            dsp_cfft(&self->cfft_inst, self->fft_buffer, 0);
+
             uint8_t rx_bits[OFDM_NUM_CHANNELS] = {0};
-            
+
             /* De-rotate phase offsets and track multi-frequency channel state variations */
             for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
             {
@@ -334,9 +777,9 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
                 if (sub->phase_nco >= 2 * M_PI) sub->phase_nco -= 2 * M_PI;
                 if (sub->phase_nco < 0) sub->phase_nco += 2 * M_PI;
             }
-            
+
             /* Direct processing of extracted frame data stream */
-            process_bits_cb(rx_bits);
+            process_bits_cb(self, rx_bits);
         }
     }
 }
@@ -403,14 +846,14 @@ static const uint8_t testarray [] =
 #endif
 };
 
-static void test_ofdm_get_preamble_bits(uint8_t *bits)
+static void test_ofdm_get_preamble_bits(ofdm_modem_tx_t *self, uint8_t *bits)
 {
 	static int phase;
 	memset(bits, phase ? 0x55 : 0xAA, 8);
 	phase = ! phase;
 }
 
-static void test_ofdm_get_bits(uint8_t *bits)
+static void test_ofdm_get_bits(ofdm_modem_tx_t *self, uint8_t *bits)
 {
 	static int testindex;
 	const uint8_t data = testarray [testindex];
@@ -427,7 +870,7 @@ static void test_ofdm_get_bits(uint8_t *bits)
 	testindex = (testindex + 1) % (sizeof testarray / sizeof testarray [0]);
 }
 
-static void test_ofdm_get_bits_fill(uint8_t *bits)
+static void test_ofdm_get_bits_fill(ofdm_modem_tx_t *self, uint8_t *bits)
 {
 	static int testindex;
 	const uint8_t data = testarray [testindex];
@@ -444,19 +887,28 @@ static void test_ofdm_get_bits_fill(uint8_t *bits)
 	testindex = (testindex + 1) % (sizeof testarray / sizeof testarray [0]);
 }
 
-static void test_ofdm_get_bits_flip(uint8_t *bits)
+static void test_ofdm_get_bits_flip(ofdm_modem_tx_t *self, uint8_t *bits)
 {
 	static int testindex;
 	bits [0] = testindex ? 0xAA : 0x55;
+	bits [1] = testindex ? 0xAA : 0x55;
+	bits [2] = testindex ? 0xAA : 0x55;
+	bits [3] = testindex ? 0xAA : 0x55;
+	bits [4] = testindex ? 0xAA : 0x55;
+	bits [5] = testindex ? 0xAA : 0x55;
+	bits [6] = testindex ? 0xAA : 0x55;
+	bits [7] = testindex ? 0xAA : 0x55;
 	testindex = ! testindex;
 }
 
-static void test_ofdm_process_null_bits(const uint8_t *bits)
+static void test_ofdm_process_null_bits(ofdm_modem_rx_t *self, const uint8_t *bits)
 {
 }
 
-static void test_ofdm_process_bits(const uint8_t *bits)
+static void test_ofdm_process_bits(ofdm_modem_rx_t *self, const uint8_t *bits)
 {
+	static char conbuff [128];
+	static int conbufidx;
 	unsigned v = 0;
 
 	v |= (UINT8_C(1) << 7) * !! bits [0];
@@ -468,22 +920,37 @@ static void test_ofdm_process_bits(const uint8_t *bits)
 	v |= (UINT8_C(1) << 1) * !! bits [6];
 	v |= (UINT8_C(1) << 0) * !! bits [7];
 	//PRINTF("0x%02X, ", v);
-	PRINTF("%c", v);
+	//PRINTF("%c", v);
+	conbuff [conbufidx] = v;
+	if (++ conbufidx >= ARRAY_SIZE(conbuff))
+	{
+		PRINTF("%*.*s\n", conbufidx, conbufidx, conbuff);
+		for (;;)
+			;
+	}
 }
 
 static ofdm_modem_tx_t tx;
 static ofdm_modem_tx_t tx_fill;
 static ofdm_modem_rx_t rx;
 
-void modem_fill(IFADCvalue_t * buff, adapter_t * ap)
+void modem_fill(IFADCvalue_t * buff)
 {
-	//adapter_t * const ap = & ifcodecrx;
+	const adapter_t * const ap = & ifcodecrx;
 	FLOAT_t i, q;
-	ofdm_modem_tx_block(& tx_fill, test_ofdm_get_bits_flip, & i, & q, 1);
+	ofdm_modem_tx_block(& tx_fill, test_ofdm_get_bits_fill, & i, & q, 1);
 	FLOAT_t scale = 0.1;
 
 	buff [DMABUF32RX0I] = adpt_output(ap, i * scale);
 	buff [DMABUF32RX0Q] = adpt_output(ap, q * scale);
+}
+
+void modem_parse(const IFADCvalue_t * buff)
+{
+	const adapter_t * const ap = & ifcodecrx;
+	const FLOAT_t i = adpt_input(ap, buff [DMABUF32RX0I]);
+	const FLOAT_t q = adpt_input(ap, buff [DMABUF32RX0Q]);
+	ofdm_modem_rx_block(& rx, & i, & q, 1, test_ofdm_process_bits);
 }
 
 static FLOAT_t vming, vmaxg;
@@ -506,14 +973,47 @@ static void pathclipping(FLOAT_t * buff, unsigned len)
 	}
 }
 
+static void nullmodem(FLOAT_t * buff_i, FLOAT_t * buff_q, unsigned len)
+{
+	while (len --)
+	{
+		const FLOAT_t i = * buff_i;
+		const FLOAT_t q = * buff_q;
 
-void modem_test(void)
+		const FLOAT32P_t pair = xget_float_monofreq();
+
+		const FLOAT_t absv = i * pair.IV + q * pair.QV;
+
+		const FLOAT_t i2 = absv * pair.IV;
+		const FLOAT_t q2 = absv * pair.QV;
+
+		* buff_i = i2;
+		* buff_q = q2;
+		//
+		++ buff_i;
+		++ buff_q;
+	}
+}
+
+
+void modem_init(void)
 {
 	TP();
 
 	ofdm_modem_tx_init(& tx);
 	ofdm_modem_tx_init(& tx_fill);
 	ofdm_modem_rx_init(& rx);
+
+	return;
+}
+
+void modem_test(void)
+{
+	TP();
+
+//	ofdm_modem_tx_init(& tx);
+//	ofdm_modem_tx_init(& tx_fill);
+//	ofdm_modem_rx_init(& rx);
 
 	enum { BUFFLEN = 256 };
 	FLOAT_t buffer_i [BUFFLEN];
@@ -522,6 +1022,7 @@ void modem_test(void)
 	ofdm_modem_tx_block(& tx, test_ofdm_get_preamble_bits, buffer_i, buffer_q, BUFFLEN);
 	pathclipping(buffer_i, BUFFLEN);
 	pathclipping(buffer_q, BUFFLEN);
+	nullmodem(buffer_i, buffer_q, BUFFLEN);
 	ofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_null_bits);
 	unsigned i;
 	for (i = 0; i < 100; ++ i)
@@ -530,6 +1031,7 @@ void modem_test(void)
 		ofdm_modem_tx_block(& tx, test_ofdm_get_bits, buffer_i, buffer_q, BUFFLEN);
 		pathclipping(buffer_i, BUFFLEN);
 		pathclipping(buffer_q, BUFFLEN);
+		nullmodem(buffer_i, buffer_q, BUFFLEN);
 		ofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_bits);
 	}
 	PRINTF("\n");

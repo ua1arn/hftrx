@@ -3701,11 +3701,12 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 	}
 #endif
 #if 0
-		modem_fill((IFADCvalue_t *) b, & ifcodecrx);
+	modem_fill((IFADCvalue_t *) b);
+	modem_parse(b);
 #endif
 #if 0
 		// Тестирование - заменить приянтые квадратуры синтезированными
-		inject_testsignals(b);
+		inject_testsignals((IFADCvalue_t *) b);
 #endif
 #if WITHRTS96
 		saverts96pair(b);	// использование данных о спектре, передаваемых в общем фрейме
