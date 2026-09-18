@@ -422,6 +422,13 @@ typedef struct {
     FLOAT_t window_fall_complex[RX_W_LEN * 2];
 
     ofdm_packer_rx_t ofdm_srv_rx;
+
+    /* --- DIGITAL AGC STATE VARIABLES --- */
+    FLOAT_t agc_gain;            /* Current multiplier for incoming samples */
+    FLOAT_t agc_env;             /* Smoothed signal energy envelope */
+    FLOAT_t agc_target;          /* Desired RMS target for the FFT block */
+    FLOAT_t agc_attack;          /* Fast tracking coefficient */
+    FLOAT_t agc_decay;           /* Slow release coefficient */
 } ofdm_modem_rx_t;
 
 /**
@@ -579,6 +586,15 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
         self->window_fall_complex[i * 2 + 1] = w_fall;
     }
     ofdm_packer_rx_init(&self->ofdm_srv_rx);
+
+    /* Initialize AGC parameters with implicit type promotion */
+    self->agc_gain = 1.0;
+    self->agc_env = 0.01;
+    self->agc_target = 1.0;
+
+    /* Time constants tailored for 256-point symbol rate tracking on HF */
+    self->agc_attack = 0.1;      /* Fast attack to handle sudden ionospheric bursts */
+    self->agc_decay = 0.01;      /* Slow decay to prevent breathing on data changes */
 }
 
 /**
@@ -625,18 +641,36 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
                                 self->fft_buffer,
                                 FFT_LEN * 2);
 
-            /* VECTOR OPTIMIZATION: WINDOWING VIA CMSIS-DSP MULT */
-            ARM_MORPH(arm_mult)(self->fft_buffer,
-                                self->window_rise_complex,
-                                self->fft_buffer,
-                                RX_W_LEN * 2);
+            /* --- HIGH SPEED DIGITAL AGC ENGINE --- */
+            /* Compute the total energy of the 256-point complex time-domain block */
+            FLOAT_t power_sum = 0;
+            ARM_MORPH(arm_power)(self->fft_buffer, FFT_LEN * 2, &power_sum);
 
+            /* Calculate exact RMS using SQRTF macro from dspdefines.h */
+            FLOAT_t current_rms = SQRTF(power_sum / (FLOAT_t)FFT_LEN);
+
+            /* Dynamic envelope tracking (Attack / Decay leaky integrator) */
+            if (current_rms > self->agc_env) {
+                self->agc_env += self->agc_attack * (current_rms - self->agc_env);
+            } else {
+                self->agc_env += self->agc_decay * (current_rms - self->agc_env);
+            }
+
+            /* Guard against division by zero */
+            if (self->agc_env > 1e-5) {
+                self->agc_gain = self->agc_target / self->agc_env;
+            }
+
+            /* Vectorized Scaling: Perfectly normalize the block amplitude before FFT stage */
+            ARM_MORPH(arm_scale)(self->fft_buffer, self->agc_gain, self->fft_buffer, FFT_LEN * 2);
+            /* ------------------------------------- */
+
+            /* --- VECTOR OPTIMIZATION: WINDOWING VIA CMSIS-DSP MULT --- */
+            ARM_MORPH(arm_mult)(self->fft_buffer, self->window_rise_complex, self->fft_buffer, RX_W_LEN * 2);
             uint32_t fft_end_offset = (FFT_LEN - RX_W_LEN) * 2;
-            ARM_MORPH(arm_mult)(&self->fft_buffer[fft_end_offset],
-                                self->window_fall_complex,
-                                &self->fft_buffer[fft_end_offset],
-                                RX_W_LEN * 2);
+            ARM_MORPH(arm_mult)(&self->fft_buffer[fft_end_offset], self->window_fall_complex, &self->fft_buffer[fft_end_offset], RX_W_LEN * 2);
 
+            /* ... (дальнейший ваш цикл деротации поднесущих через arm_sin_cos_f32) ... */
             /* Forward Complex FFT conversion: isInverseFFT = 0, bitReverseFlag = 1 */
             //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 0, 1);
             dsp_cfft(&self->cfft_inst, self->fft_buffer, 0);
@@ -901,7 +935,9 @@ static void test_ofdm_process_bits(ofdm_modem_rx_t *self, const uint8_t *bits)
 	v |= (UINT8_C(1) << 1) * !! bits [6];
 	v |= (UINT8_C(1) << 0) * !! bits [7];
 	//PRINTF("0x%02X, ", v);
-	//PRINTF("%c", v);
+#if 1
+	PRINTF("%c", v);
+#else
 	conbuff [conbufidx] = v;
 	if (++ conbufidx >= ARRAY_SIZE(conbuff))
 	{
@@ -909,11 +945,13 @@ static void test_ofdm_process_bits(ofdm_modem_rx_t *self, const uint8_t *bits)
 		for (;;)
 			;
 	}
+#endif
 }
 
 static ofdm_modem_tx_t tx;
 static ofdm_modem_tx_t tx_fill;
 static ofdm_modem_rx_t rx;
+static ofdm_modem_rx_t rx_stream;
 
 void modem_fill(IFADCvalue_t * buff)
 {
@@ -984,6 +1022,7 @@ void modem_init(void)
 	ofdm_modem_tx_init(& tx);
 	ofdm_modem_tx_init(& tx_fill);
 	ofdm_modem_rx_init(& rx);
+	ofdm_modem_rx_init(& rx_stream);
 
 	return;
 }
