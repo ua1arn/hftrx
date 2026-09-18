@@ -12062,7 +12062,7 @@ static void RTTYDecoder_Init(rtty_rx_t * self)
 
 	iir_filter_t f0;
 	//speed
-	self->oneBitSampleCount = (uint16_t)ROUNDF((FLOAT_t)sample_rate * 10 / RTTY_Speed10);
+	self->oneBitSampleCount = ROUNDF((FLOAT_t) sample_rate * 10 / RTTY_Speed10);
 
 	//RTTY LPF Filter
 	biquad_create(& f0, RTTY_LPF_STAGES);
