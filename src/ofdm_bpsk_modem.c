@@ -1274,6 +1274,7 @@ void modem_test(void)
 	ofdm_modem_tx_init(& tx);
 	ofdm_modem_rx_init(& rx);
 
+	rx.sync_state = STATE_PROCESSING_DATA;
 
 	NEWofdm_modem_tx_block(& tx, test_ofdm_get_preamble_bits, buffer_i, buffer_q, BUFFLEN);
 
@@ -1281,7 +1282,6 @@ void modem_test(void)
 	pathclipping(buffer_q, BUFFLEN);
 	nullmodem(buffer_i, buffer_q, BUFFLEN);
 
-	rx.sync_state = STATE_PROCESSING_DATA;
 	OLDofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_null_bits);
 
 	unsigned i;
@@ -1294,7 +1294,6 @@ void modem_test(void)
 		pathclipping(buffer_q, BUFFLEN);
 		nullmodem(buffer_i, buffer_q, BUFFLEN);
 
-		rx.sync_state = STATE_PROCESSING_DATA;
 		OLDofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_bits);
 	}
 	PRINTF("\n");
