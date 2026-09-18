@@ -718,7 +718,7 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
             /* Автомат сброса: если все каналы потеряли захват фазы — уходим в поиск */
             if (any_channel_locked == 0) {
                 self->sync_state = STATE_SEARCHING_PREAMBLE;
-                self->rx_sample_idx = 0;
+                //self->rx_sample_idx = 0;
             } else {
                 /* Direct processing of extracted frame data stream */
                 process_bits_cb(self, rx_bits);
@@ -740,7 +740,7 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
     {
         const FLOAT_t curr_i = in_buffer_i[sample_idx];
         const FLOAT_t curr_q = in_buffer_q[sample_idx];
-    if (0)	// открываем это условие - инвертируются данные на выходе
+
 	{
 
 		/* Извлекаем задержанный на половину БПФ (128 сэмплов) сигнал */
@@ -776,11 +776,11 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
 			{
 				/* Преамбула найдена: сбрасываем индекс под полезное тело БПФ */
 				self->sync_state = STATE_PROCESSING_DATA;
-				self->rx_sample_idx = 0;
+//				self->rx_sample_idx = OFDM_SYMBOL_LEN / 2;
 			}
 			else
 			{
-				continue; /* Продолжаем скользящий поиск в эфире */
+//				continue; /* Продолжаем скользящий поиск в эфире */
 			}
 		}
 	}
@@ -903,8 +903,8 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
             /* Автомат сброса: если все каналы потеряли захват фазы — уходим в поиск */
             if (any_channel_locked == 0) {
                 self->sync_state = STATE_SEARCHING_PREAMBLE;
-                self->rx_sample_idx = 0;
-            } else {
+                //self->rx_sample_idx = 0;
+            } else //if (self->sync_state == STATE_PROCESSING_DATA) {
                 /* Direct processing of extracted frame data stream */
                process_bits_cb(self, rx_bits);
             }
@@ -1312,6 +1312,7 @@ void modem_test(void)
 	rxfn = ! 1 ?
 			OLDofdm_modem_rx_block :
 			NEWofdm_modem_rx_block;
+	rxfn = NEWofdm_modem_rx_block;
 
 	rx.sync_state = STATE_PROCESSING_DATA;
 
