@@ -1276,8 +1276,9 @@ void modem_test(void)
 
 	void (* rxfn)(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits));
 
-	rxfn = OLDofdm_modem_rx_block;
-	//rxfn = NEWofdm_modem_rx_block;
+	rxfn = 1 ?
+			OLDofdm_modem_rx_block :
+			NEWofdm_modem_rx_block;
 
 	rx.sync_state = STATE_PROCESSING_DATA;
 
