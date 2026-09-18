@@ -406,77 +406,6 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
 }
 
 /**
- * @brief Block-based transmitter modulation processing with mathematically pure IFFT layout.
- *        Ensures strict subcarrier orthogonality and ideal single-sideband IQ generation.
- */
-static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_modem_tx_t *self, uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
-{
-	const FLOAT_t magnitude = 32;
-    for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
-    {
-        /* Regenerate symbol payload if the active time domain vector cache is exhausted */
-        if (self->tx_sample_idx >= OFDM_SYMBOL_LEN)
-        {
-            self->tx_sample_idx = 0;
-
-            /* Clear the entire FFT complex plane using CMSIS-DSP vector fill */
-            ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
-
-            uint8_t tx_bits[OFDM_NUM_CHANNELS] = {0};
-            get_bits_cb(self, tx_bits);
-
-            /* MATHEMATICALLY CORRECT BPSK-OFDM MAPPING: */
-            /* Imaginary part MUST be 0.0 to preserve native CFFT subcarrier orthogonality. */
-            /* Single-sideband IQ signal is achieved by filling ONLY bins 1..8 and keeping bins 120..127 at 0. */
-            for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
-            {
-                uint32_t bin_idx = subcarrier_map[ch];
-
-                self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? magnitude : -magnitude; /* Real (I) component */
-                self->fft_buffer[bin_idx * 2 + 1] = 0.0;                        /* Imaginary (Q) component strictly ZERO */
-            }
-
-            /* Inverse Complex FFT execution: isInverseFFT = 1, bitReverseFlag = 1 */
-            //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
-            dsp_cfft(&self->cfft_inst, self->fft_buffer, 1);
-
-            /* Construct the Cyclic Prefix window using fast block memory transport */
-            uint32_t cp_start = (FFT_LEN - CYCLIC_PREFIX_LEN) * 2; // (128 - 32) * 2 = 192
-
-            /* Copy the tail part of the IFFT output to the beginning of the transmission frame */
-            ARM_MORPH(arm_copy)(&self->fft_buffer[cp_start],
-                                self->tx_time_buffer,
-                                CYCLIC_PREFIX_LEN * 2);
-
-            /* Copy the entire useful IFFT payload directly following the guard prefix interval */
-            ARM_MORPH(arm_copy)(self->fft_buffer,
-                                &self->tx_time_buffer[CYCLIC_PREFIX_LEN * 2],
-                                FFT_LEN * 2);
-
-            /* --- VECTOR OPTIMIZATION: TRANSITION WINDOWING VIA CMSIS-DSP MULT --- */
-            /* Smooth the absolute beginning of the symbol (Rising edge) */
-            ARM_MORPH(arm_mult)(self->tx_time_buffer,
-                                self->window_rise_complex,
-                                self->tx_time_buffer,
-								TX_W_LEN * 2);
-
-            /* Smooth the absolute end of the symbol (Falling edge) */
-            uint32_t sym_end_offset = (OFDM_SYMBOL_LEN - TX_W_LEN) * 2;
-            ARM_MORPH(arm_mult)(&self->tx_time_buffer[sym_end_offset],
-                                self->window_fall_complex,
-                                &self->tx_time_buffer[sym_end_offset],
-								TX_W_LEN * 2);
-       }
-
-        /* Stream serialized data samples into active processing streams for hftrx path */
-        out_buffer_i[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2];
-        out_buffer_q[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2 + 1];
-
-        self->tx_sample_idx++;
-    }
-}
-
-/**
  * @brief Resets transient caches and trackers inside the transmitter instance.
  * @param self Pointer to the active transmitter context.
  */
@@ -590,7 +519,7 @@ static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
  * @brief Block-based receiver demodulation processing with RX Time-Domain Windowing.
  *        Trigonometry optimized via direct arm_sin_cos_f32 execution.
  */
-static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits))
+static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits))
 {
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
@@ -709,6 +638,250 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
         }
     }
 }
+
+void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits))
+{
+    const FLOAT_t sync_threshold = 0.55;
+    const FLOAT_t alpha_sync = 0.05;
+
+    for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
+    {
+        FLOAT_t curr_i = in_buffer_i[sample_idx];
+        FLOAT_t curr_q = in_buffer_q[sample_idx];
+
+        /* Извлекаем задержанный на половину БПФ (128 сэмплов) сигнал */
+        FLOAT_t del_i = self->delay_buffer_i[self->delay_ptr];
+        FLOAT_t del_q = self->delay_buffer_q[self->delay_ptr];
+
+        /* Обновляем скользящую линию задержки */
+        self->delay_buffer_i[self->delay_ptr] = curr_i;
+        self->delay_buffer_q[self->delay_ptr] = curr_q;
+        self->delay_ptr = (self->delay_ptr + 1) % SYNC_HALF_LEN;
+
+        /* Мгновенная взаимная корреляция текущего и задержанного отсчетов */
+        FLOAT_t cross_i = curr_i * del_i + curr_q * del_q;
+        FLOAT_t cross_q = curr_q * del_i - curr_i * del_q;
+
+        /* Мгновенная энергия половины символа */
+        FLOAT_t curr_energy = curr_i * curr_i + curr_q * curr_q;
+
+        /* Скользящее интегрирование (экспоненциальный фильтр) */
+        self->R_i += alpha_sync * (cross_i - self->R_i);
+        self->R_q += alpha_sync * (cross_q - self->R_q);
+        self->E   += alpha_sync * (curr_energy - self->E);
+
+        /* Расчет квадрата модуля метрики Шмидля-Кокса */
+        FLOAT_t mag_R2 = self->R_i * self->R_i + self->R_q * self->R_q;
+        FLOAT_t E2 = self->E * self->E;
+        FLOAT_t metric = mag_R2 / (E2 + 1e-6f);
+
+        /* Конечно-автоматный триггер захвата кадра (FSM) */
+        if (self->sync_state == STATE_SEARCHING_PREAMBLE)
+        {
+            if (metric > sync_threshold)
+            {
+                /* Преамбула найдена: сбрасываем индекс под полезное тело БПФ */
+                self->sync_state = STATE_PROCESSING_DATA;
+                self->rx_sample_idx = 0;
+            }
+            else
+            {
+                continue; /* Продолжаем скользящий поиск в эфире */
+            }
+        }
+
+        /* Накопление комплексного кадра во временной буфер */
+        self->rx_time_buffer[self->rx_sample_idx * 2] = curr_i;
+        self->rx_time_buffer[self->rx_sample_idx * 2 + 1] = curr_q;
+        self->rx_sample_idx++;
+
+        /* Если накопили полный OFDM символ (включая полезное тело сигнала) */
+        if (self->rx_sample_idx >= OFDM_SYMBOL_LEN)
+        {
+            self->rx_sample_idx = 0;
+
+            /* 1. Извлекаем тело сигнала, отрезая циклический префикс */
+            ARM_MORPH(arm_copy)(&self->rx_time_buffer[CYCLIC_PREFIX_LEN * 2], self->fft_buffer, FFT_LEN * 2);
+
+            /* 2. Блочная цифровая АРУ по RMS мощности */
+            FLOAT_t power_sum;
+            ARM_MORPH(arm_power)(self->fft_buffer, FFT_LEN * 2, &power_sum);
+            FLOAT_t current_rms = SQRTF(power_sum / (FLOAT_t)FFT_LEN);
+
+            if (current_rms > self->agc_env) {
+                self->agc_env += self->agc_attack * (current_rms - self->agc_env);
+            } else {
+                self->agc_env += self->agc_decay * (current_rms - self->agc_env);
+            }
+
+            if (self->agc_env > 1e-5f) {
+                self->agc_gain = self->agc_target / self->agc_env;
+            }
+            ARM_MORPH(arm_scale)(self->fft_buffer, self->agc_gain, self->fft_buffer, FFT_LEN * 2);
+
+            /* 3. Векторное оконное сглаживание краев перед БПФ */
+            ARM_MORPH(arm_mult)(self->fft_buffer, self->window_rise_complex, self->fft_buffer, RX_W_LEN * 2);
+            uint32_t fft_end_offset = (FFT_LEN - RX_W_LEN) * 2;
+            ARM_MORPH(arm_mult)(&self->fft_buffer[fft_end_offset], self->window_fall_complex, &self->fft_buffer[fft_end_offset], RX_W_LEN * 2);
+
+            /* 4. Прямое комплексное преобразование Фурье */
+            dsp_cfft(&self->cfft_inst, self->fft_buffer, 0);
+
+            uint8_t rx_bits[OFDM_NUM_CHANNELS] = {0};
+            uint32_t all_channel_locked = 1;
+
+            /* 5. Цикл демодуляции и петель Костаса по всем 8 поднесущим */
+            for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
+            {
+                uint32_t bin_idx = subcarrier_map[ch];
+                ofdm_subcarrier_bpsk_t *sub = &self->rx_subcarriers[ch];
+
+                FLOAT_t raw_i = self->fft_buffer[bin_idx * 2];
+                FLOAT_t raw_q = self->fft_buffer[bin_idx * 2 + 1];
+
+                /* Одновременный быстрый расчет синуса и косинуса */
+                float32_t sin_val, cos_val;
+                float32_t phase_degrees = (float32_t)sub->phase_nco * (180.0f / (float32_t)M_PI);
+                if (phase_degrees > 180.0f) {
+                    phase_degrees -= 360.0f;
+                }
+                arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
+
+                FLOAT_t sin_p = (FLOAT_t)sin_val;
+                FLOAT_t cos_p = (FLOAT_t)cos_val;
+
+                /* Деротация (поворот) фазы */
+                FLOAT_t derot_i = raw_i * cos_p + raw_q * sin_p;
+                FLOAT_t derot_q = raw_q * cos_p - raw_i * sin_p;
+
+                /* Амплитудная нормировка созвездия */
+                FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
+                if (mag2 > 1e-6) {
+                    FLOAT_t mag = SQRTF(mag2);
+                    derot_i /= mag;
+                    derot_q /= mag;
+                }
+
+                /* Расчет фазовой ошибки дискриминатора Костаса для BPSK */
+                FLOAT_t error_c = derot_i * derot_q;
+                sub->costas_integrator += error_c * sub->costas_ki;
+                sub->phase_step_nco = error_c * sub->costas_kp + sub->costas_integrator;
+
+                /* Оценка качества удержания захвата фазы (Lock Detector) */
+                FLOAT_t instant_metric = (derot_i * derot_i) - (derot_q * derot_q);
+                sub->phase_lock_metric += self->alpha_lock * (instant_metric - sub->phase_lock_metric);
+                sub->is_phase_locked = (sub->phase_lock_metric > 0.55) ? 1 : 0;
+
+                if (! sub->is_phase_locked) {
+                    all_channel_locked = 0;
+                }
+
+                /* Жесткое решение демодулятора (Slicer) */
+                rx_bits[ch] = ! (derot_i >= 0) ? 1 : 0;		// ТУТ ФИКС БАГА
+
+                /* Шаг аккумулятора фазы NCO */
+                sub->phase_nco += sub->phase_step_nco;
+                if (sub->phase_nco >= 2 * M_PI) sub->phase_nco -= 2 * M_PI;
+                if (sub->phase_nco < 0) sub->phase_nco += 2 * M_PI;
+            }
+
+            /* Автомат сброса: если все каналы потеряли захват фазы — уходим в поиск */
+            if (all_channel_locked == 0) {
+                self->sync_state = STATE_SEARCHING_PREAMBLE;
+                self->rx_sample_idx = 0;
+            } else {
+                process_bits_cb(self, rx_bits);
+            }
+        }
+    }
+}
+
+void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_modem_tx_t *self, uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
+{
+    for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
+    {
+        /* Если кеш временных сэмплов текущего OFDM-символа исчерпан */
+        if (self->tx_sample_idx >= OFDM_SYMBOL_LEN)
+        {
+            self->tx_sample_idx = 0;
+
+            /* Полностью очищаем комплексную плоскость БПФ */
+            ARM_MORPH(arm_fill)(0.0f, self->fft_buffer, FFT_LEN * 2);
+
+            /* АВТОМАТ КАНАЛЬНОЙ СИНХРОНИЗАЦИИ: ГЕНЕРАЦИЯ ПРЕАМБУЛЫ ШМИДЛЯ-КОКСА */
+            if (self->tx_preamble_required)
+            {
+                /* Сбрасываем триггер: преамбула передается ровно один раз перед пакетом данных */
+                self->tx_preamble_required = 0;
+
+                /* Маппинг преамбулы Шмидля-Кокса: пишем ТОЛЬКО в четные частотные бины */
+                /* Это математически создает две идентичные половины во временной области */
+                /* Используем знаки фиксированной PN-последовательности для надежного захвата */
+                self->fft_buffer[2 * 2]  =  16.0f;  /* Bin 2 */
+                self->fft_buffer[4 * 2]  = -16.0f;  /* Bin 4 */
+                self->fft_buffer[6 * 2]  =  16.0f;  /* Bin 6 */
+                self->fft_buffer[8 * 2]  =  16.0f;  /* Bin 8 */
+                self->fft_buffer[10 * 2] = -16.0f;  /* Bin 10 */
+                self->fft_buffer[12 * 2] =  16.0f;  /* Bin 12 */
+                self->fft_buffer[14 * 2] = -16.0f;  /* Bin 14 */
+                self->fft_buffer[16 * 2] = -16.0f;  /* Bin 16 */
+            }
+            else
+            {
+                /* РЕЖИМ ПЕРЕДАЧИ ПОЛЕЗНЫХ ДАННЫХ */
+                uint8_t tx_bits[OFDM_NUM_CHANNELS] = {0};
+                get_bits_cb(self, tx_bits);
+
+                /* Математически чистый BPSK-маппинг: мнимые части строго нулевые */
+                for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
+                {
+                    uint32_t bin_idx = subcarrier_map[ch];
+                    self->fft_buffer[bin_idx * 2] = tx_bits[ch] ? 16.0f : -16.0f;
+                    self->fft_buffer[bin_idx * 2 + 1] = 0.0f;
+                }
+            }
+
+            /* Принудительное подавление центральной DC-поднесущей в нулевом бине */
+            self->fft_buffer[0] = 0.0f;
+            self->fft_buffer[1] = 0.0f;
+
+            /* Обратное БПФ: переводим частотную сетку во временной комплексный сигнал */
+            /* isInverseFFT = 1, bitReverseFlag = 1 */
+            ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
+
+            /* СБОРКА OFDM-КАДРА: ГЕНЕРАЦИЯ ЦИКЛИЧЕСКОГО ПРЕФИКСА (CP) */
+            /* Копируем последние 16 комплексных отсчетов (хвост) ОБПФ в начало префикса */
+            uint32_t cp_source_start = FFT_LEN - CYCLIC_PREFIX_LEN;
+            for (uint32_t i = 0; i < CYCLIC_PREFIX_LEN; i++)
+            {
+                uint32_t src_idx = (cp_source_start + i) * 2;
+                uint32_t dst_idx = i * 2;
+                self->tx_time_buffer[dst_idx]     = self->fft_buffer[src_idx];
+                self->tx_time_buffer[dst_idx + 1] = self->fft_buffer[src_idx + 1];
+            }
+
+            /* Копируем основное полезное тело ОБПФ (256 точек) сразу за префиксом */
+            for (uint32_t i = 0; i < FFT_LEN; i++)
+            {
+                uint32_t src_idx = i * 2;
+                uint32_t dst_idx = (CYCLIC_PREFIX_LEN + i) * 2;
+                self->tx_time_buffer[dst_idx]     = self->fft_buffer[src_idx];
+                self->tx_time_buffer[dst_idx + 1] = self->fft_buffer[src_idx + 1];
+            }
+
+            /* ВЕКТОРНОЕ ОКОННОЕ СГЛАЖИВАНИЕ СТЫКОВ СИМВОЛА (RAISED COSINE MULT) */
+            ARM_MORPH(arm_mult)(self->tx_time_buffer, self->window_rise_complex, self->tx_time_buffer, TX_W_LEN * 2);
+            uint32_t sym_end_offset = (OFDM_SYMBOL_LEN - TX_W_LEN) * 2;
+            ARM_MORPH(arm_mult)(&self->tx_time_buffer[sym_end_offset], self->window_fall_complex, &self->tx_time_buffer[sym_end_offset], TX_W_LEN * 2);
+        }
+
+        /* Потоковый вывод комплексных квадратур наружу для up-converter трансивера */
+        out_buffer_i[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2];
+        out_buffer_q[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2 + 1];
+        self->tx_sample_idx++;
+    }
+}
+
 
 /* ========================================================================== */
 /*                          STATIC CALLBACK BRIDGES                           */
@@ -923,7 +1096,7 @@ void modem_parse(const IFADCvalue_t * buff)
 	const adapter_t * const ap = & ifcodecrx;
 	const FLOAT_t i = adpt_input(ap, buff [DMABUF32RX0I]);
 	const FLOAT_t q = adpt_input(ap, buff [DMABUF32RX0Q]);
-	ofdm_modem_rx_block(& rx_stream, & i, & q, 1, dsp_ofdm_rx_bits_bridge);
+	NEWofdm_modem_rx_block(& rx_stream, & i, & q, 1, dsp_ofdm_rx_bits_bridge);
 }
 
 
@@ -939,8 +1112,14 @@ void modem_spool(void * ctx)
 
 void modem_send(uint_fast8_t c)
 {
-	if (c == 'e')
+	if (c == 0x1B)
+	{
+		PRINTF("OFDM modem reset\n");
+		ofdm_modem_rx_reset(& rx_stream);
+		local_delay_ms(200);
 		tx_stream.tx_preamble_required = 1;
+		PRINTF("OFDM modem reset done\n");
+	}
 
 	dsp_ofdm_push_char_to_tx(& tx_stream, c);
 }
@@ -1004,7 +1183,7 @@ void modem_test(void)
 	ofdm_modem_tx_t tx;
 	ofdm_modem_rx_t rx;
 
-	enum { BUFFLEN = 256 };
+	enum { BUFFLEN = 2560 };
 	FLOAT_t buffer_i [BUFFLEN];
 	FLOAT_t buffer_q [BUFFLEN];
 
@@ -1013,11 +1192,12 @@ void modem_test(void)
 	ofdm_modem_rx_init(& rx);
 
 	rx.sync_state = STATE_PROCESSING_DATA;
+
 	ofdm_modem_tx_block(& tx, test_ofdm_get_preamble_bits, buffer_i, buffer_q, BUFFLEN);
 	pathclipping(buffer_i, BUFFLEN);
 	pathclipping(buffer_q, BUFFLEN);
 	nullmodem(buffer_i, buffer_q, BUFFLEN);
-	ofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_null_bits);
+	NEWofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_null_bits);
 	unsigned i;
 	for (i = 0; i < 100; ++ i)
 	{
@@ -1026,7 +1206,7 @@ void modem_test(void)
 		pathclipping(buffer_i, BUFFLEN);
 		pathclipping(buffer_q, BUFFLEN);
 		nullmodem(buffer_i, buffer_q, BUFFLEN);
-		ofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_bits);
+		NEWofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_bits);
 	}
 	PRINTF("\n");
 	PRINTF("OFDM_SYMBOL_LEN=%d\n", (int) OFDM_SYMBOL_LEN);
