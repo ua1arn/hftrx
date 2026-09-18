@@ -11954,20 +11954,14 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
 #if WITHRTTY
 
 
-#define BIQUAD_COEFF_IN_STAGE 5													  // coefficients in manual Notch filter order
-
-#if (defined(LAY_800x480))
-#define RTTY_DECODER_STRLEN 66 // length of decoded string
-#else
-#define RTTY_DECODER_STRLEN 30 // length of decoded string
-#endif
+#define BIQUAD_COEFF_IN_STAGE 5													  // coefficients space, mark and LPF filters
 
 #define RTTY_LPF_STAGES 2
 #define RTTY_BPF_STAGES 2
-#define RTTY_BPF_WIDTH (RTTY_Shift / 4)
+#define RTTY_BPF_WIDTH (RTTY_Shift / 4)	// мне кажется это должна быть функция от скорости передачи
 
-#define RTTY_SYMBOL_CODE (0b11011)
-#define RTTY_LETTER_CODE (0b11111)
+#define RTTY_SYMBOL_CODE 0x1B	//(0b11011)
+#define RTTY_LETTER_CODE 0x1F	//(0b11111)
 
 typedef enum {
 	RTTY_STATE_WAIT_START,
@@ -12021,10 +12015,6 @@ static int RTTYDecoder_demodulator(rtty_rx_t * self, FLOAT_t sample);
 
 //Ported from https://github.com/df8oe/UHSDR/blob/active-devel/mchf-eclipse/drivers/audio/rtty.c
 
-//char RTTY_Decoder_Text[RTTY_DECODER_STRLEN + 1] = {0}; // decoded string
-
-
-
 static const char RTTY_Letters[32] = {
 	'\0', 'E', '\n', 'A', ' ', 'S', 'I', 'U',
 	'\r', 'D', 'R', 'J', 'N', 'F', 'C', 'K',
@@ -12051,10 +12041,9 @@ static const char RTTY_Symbols[32] = {
 // DDK2 DDK7 DDK9 10100.8 KHZ - Центральная частота (между пиками), 450 Hz shift, 50 baud
 // peaks: mark: 10101.025, space: 10100.575
 //
-//
-//// The standard mark and space tones are 2125 hz and 2295 hz respectively
+// Kenwood:
+// The standard mark and space tones are 2125 hz and 2295 hz respectively
 //#define RTTY_FreqMark DEFAULT_RTTY_PITCH		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
-//#define	RTTY_FreqSpace (DEFAULT_RTTY_PITCH + RTTY_Shift)
 
 static rtty_rx_t rtty0;
 
