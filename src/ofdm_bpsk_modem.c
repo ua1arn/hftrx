@@ -540,10 +540,10 @@ static void OLDofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(of
             /* Single-sideband IQ signal is achieved by filling ONLY bins 1..8 and keeping bins 120..127 at 0. */
             for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
             {
-                uint32_t bin_idx = subcarrier_map[ch];
+                const uint32_t bin_idx = subcarrier_map[ch];
 
                 self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? magnitude : -magnitude; /* Real (I) component */
-                self->fft_buffer[bin_idx * 2 + 1] = 0.0;                        /* Imaginary (Q) component strictly ZERO */
+                //self->fft_buffer[bin_idx * 2 + 1] = 0.0;                        /* Imaginary (Q) component strictly ZERO */
             }
 
             /* Inverse Complex FFT execution: isInverseFFT = 1, bitReverseFlag = 1 */
@@ -644,11 +644,12 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
             dsp_cfft(&self->cfft_inst, self->fft_buffer, 0);
 
             uint8_t rx_bits[OFDM_NUM_CHANNELS] = {0};
+            uint32_t all_channel_locked = 1;
 
             /* De-rotate phase offsets and track multi-frequency channel state variations */
             for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
             {
-                uint32_t bin_idx = subcarrier_map[ch];
+                const uint32_t bin_idx = subcarrier_map[ch];
                 ofdm_subcarrier_bpsk_t *sub = &self->rx_subcarriers[ch];
 
                 FLOAT_t raw_i = self->fft_buffer[bin_idx * 2];
@@ -695,6 +696,10 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
                 sub->phase_lock_metric += self->alpha_lock * (instant_metric - sub->phase_lock_metric);
                 sub->is_phase_locked = (sub->phase_lock_metric > 0.55) ? 1 : 0;
 
+                if (! sub->is_phase_locked) {
+                    all_channel_locked = 0;
+                }
+
                 /* Slicer decision boundary output evaluation */
                 rx_bits[ch] = (derot_i >= 0) ? 1 : 0;
 
@@ -704,8 +709,14 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
                 if (sub->phase_nco < 0) sub->phase_nco += 2 * M_PI;
             }
 
-            /* Direct processing of extracted frame data stream */
-            process_bits_cb(self, rx_bits);
+            /* Автомат сброса: если все каналы потеряли захват фазы — уходим в поиск */
+            if (all_channel_locked == 0) {
+                self->sync_state = STATE_SEARCHING_PREAMBLE;
+                self->rx_sample_idx = 0;
+            } else {
+                /* Direct processing of extracted frame data stream */
+                process_bits_cb(self, rx_bits);
+            }
         }
     }
 }
@@ -804,7 +815,7 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
             /* 5. Цикл демодуляции и петель Костаса по всем 8 поднесущим */
             for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
             {
-                uint32_t bin_idx = subcarrier_map[ch];
+                const uint32_t bin_idx = subcarrier_map[ch];
                 ofdm_subcarrier_bpsk_t *sub = &self->rx_subcarriers[ch];
 
                 FLOAT_t raw_i = self->fft_buffer[bin_idx * 2];
@@ -861,7 +872,8 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
                 self->sync_state = STATE_SEARCHING_PREAMBLE;
                 self->rx_sample_idx = 0;
             } else {
-                process_bits_cb(self, rx_bits);
+                /* Direct processing of extracted frame data stream */
+               process_bits_cb(self, rx_bits);
             }
         }
     }
@@ -869,6 +881,7 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
 
 void NEWofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_modem_tx_t *self, uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
 {
+	const FLOAT_t magnitude = 32;
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
         /* Если кеш временных сэмплов текущего OFDM-символа исчерпан */
@@ -888,14 +901,14 @@ void NEWofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_mode
                 /* Маппинг преамбулы Шмидля-Кокса: пишем ТОЛЬКО в четные частотные бины */
                 /* Это математически создает две идентичные половины во временной области */
                 /* Используем знаки фиксированной PN-последовательности для надежного захвата */
-                self->fft_buffer[2 * 2]  =  16.0f;  /* Bin 2 */
-                self->fft_buffer[4 * 2]  = -16.0f;  /* Bin 4 */
-                self->fft_buffer[6 * 2]  =  16.0f;  /* Bin 6 */
-                self->fft_buffer[8 * 2]  =  16.0f;  /* Bin 8 */
-                self->fft_buffer[10 * 2] = -16.0f;  /* Bin 10 */
-                self->fft_buffer[12 * 2] =  16.0f;  /* Bin 12 */
-                self->fft_buffer[14 * 2] = -16.0f;  /* Bin 14 */
-                self->fft_buffer[16 * 2] = -16.0f;  /* Bin 16 */
+                self->fft_buffer[2 * 2]  =  magnitude;  /* Bin 2 */
+                self->fft_buffer[4 * 2]  = -magnitude;  /* Bin 4 */
+                self->fft_buffer[6 * 2]  =  magnitude;  /* Bin 6 */
+                self->fft_buffer[8 * 2]  =  magnitude;  /* Bin 8 */
+                self->fft_buffer[10 * 2] = -magnitude;  /* Bin 10 */
+                self->fft_buffer[12 * 2] =  magnitude;  /* Bin 12 */
+                self->fft_buffer[14 * 2] = -magnitude;  /* Bin 14 */
+                self->fft_buffer[16 * 2] = -magnitude;  /* Bin 16 */
             }
             else
             {
@@ -903,18 +916,17 @@ void NEWofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_mode
                 uint8_t tx_bits[OFDM_NUM_CHANNELS] = {0};
                 get_bits_cb(self, tx_bits);
 
-                /* Математически чистый BPSK-маппинг: мнимые части строго нулевые */
+                /* MATHEMATICALLY CORRECT BPSK-OFDM MAPPING: */
+                /* Imaginary part MUST be 0.0 to preserve native CFFT subcarrier orthogonality. */
+                /* Single-sideband IQ signal is achieved by filling ONLY bins 1..8 and keeping bins 120..127 at 0. */
                 for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
                 {
-                    uint32_t bin_idx = subcarrier_map[ch];
-                    self->fft_buffer[bin_idx * 2] = tx_bits[ch] ? 16.0f : -16.0f;
-                    self->fft_buffer[bin_idx * 2 + 1] = 0.0f;
+                    const uint32_t bin_idx = subcarrier_map[ch];
+
+                    self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? magnitude : -magnitude; /* Real (I) component */
+                    //self->fft_buffer[bin_idx * 2 + 1] = 0.0;                        /* Imaginary (Q) component strictly ZERO */
                 }
             }
-
-            /* Принудительное подавление центральной DC-поднесущей в нулевом бине */
-            self->fft_buffer[0] = 0.0f;
-            self->fft_buffer[1] = 0.0f;
 
             /* Обратное БПФ: переводим частотную сетку во временной комплексный сигнал */
             /* isInverseFFT = 1, bitReverseFlag = 1 */
@@ -1155,7 +1167,7 @@ void modem_fill(IFADCvalue_t * buff)
 {
 	const adapter_t * const ap = & ifcodecrx;
 	FLOAT_t i, q;
-	OLDofdm_modem_tx_block(& tx_stream, dsp_ofdm_tx_bits_bridge, & i, & q, 1);
+	NEWofdm_modem_tx_block(& tx_stream, dsp_ofdm_tx_bits_bridge, & i, & q, 1);
 	FLOAT_t scale = 0.1;
 
 	buff [DMABUF32RX0I] = adpt_output(ap, i * scale);
@@ -1167,7 +1179,7 @@ void modem_parse(const IFADCvalue_t * buff)
 	const adapter_t * const ap = & ifcodecrx;
 	const FLOAT_t i = adpt_input(ap, buff [DMABUF32RX0I]);
 	const FLOAT_t q = adpt_input(ap, buff [DMABUF32RX0Q]);
-	OLDofdm_modem_rx_block(& rx_stream, & i, & q, 1, dsp_ofdm_rx_bits_bridge);
+	NEWofdm_modem_rx_block(& rx_stream, & i, & q, 1, dsp_ofdm_rx_bits_bridge);
 }
 
 
@@ -1211,7 +1223,7 @@ static void pathclipping(FLOAT_t * buff, unsigned len)
 	adapter_t * const ap = & ifcodecrx;
 	while (len --)
 	{
-		int_fast32_t v = adpt_outputexact(ap, * buff);
+		int_fast32_t v = adpt_output(ap, * buff);
 		* buff ++ = adpt_input(ap, v);
 	}
 }
@@ -1262,26 +1274,27 @@ void modem_test(void)
 	ofdm_modem_tx_init(& tx);
 	ofdm_modem_rx_init(& rx);
 
-	rx.sync_state = STATE_PROCESSING_DATA;
 
-	OLDofdm_modem_tx_block(& tx, test_ofdm_get_preamble_bits, buffer_i, buffer_q, BUFFLEN);
+	NEWofdm_modem_tx_block(& tx, test_ofdm_get_preamble_bits, buffer_i, buffer_q, BUFFLEN);
 
 	pathclipping(buffer_i, BUFFLEN);
 	pathclipping(buffer_q, BUFFLEN);
 	nullmodem(buffer_i, buffer_q, BUFFLEN);
 
+	rx.sync_state = STATE_PROCESSING_DATA;
 	OLDofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_null_bits);
 
 	unsigned i;
 	for (i = 0; i < 100; ++ i)
 	{
 
-		OLDofdm_modem_tx_block(& tx, test_ofdm_get_bits, buffer_i, buffer_q, BUFFLEN);
+		NEWofdm_modem_tx_block(& tx, test_ofdm_get_bits, buffer_i, buffer_q, BUFFLEN);
 
 		pathclipping(buffer_i, BUFFLEN);
 		pathclipping(buffer_q, BUFFLEN);
 		nullmodem(buffer_i, buffer_q, BUFFLEN);
 
+		rx.sync_state = STATE_PROCESSING_DATA;
 		OLDofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_bits);
 	}
 	PRINTF("\n");
