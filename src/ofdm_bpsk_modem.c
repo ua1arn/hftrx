@@ -644,7 +644,7 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
             dsp_cfft(&self->cfft_inst, self->fft_buffer, 0);
 
             uint8_t rx_bits[OFDM_NUM_CHANNELS] = {0};
-            uint32_t all_channel_locked = 1;
+            uint32_t any_channel_locked = 0;
 
             /* De-rotate phase offsets and track multi-frequency channel state variations */
             for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
@@ -696,8 +696,8 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
                 sub->phase_lock_metric += self->alpha_lock * (instant_metric - sub->phase_lock_metric);
                 sub->is_phase_locked = (sub->phase_lock_metric > 0.55) ? 1 : 0;
 
-                if (! sub->is_phase_locked) {
-                    all_channel_locked = 0;
+                if (sub->is_phase_locked) {
+                    any_channel_locked = 1;
                 }
 
                 /* Slicer decision boundary output evaluation */
@@ -710,7 +710,7 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
             }
 
             /* Автомат сброса: если все каналы потеряли захват фазы — уходим в поиск */
-            if (all_channel_locked == 0) {
+            if (any_channel_locked == 0) {
                 self->sync_state = STATE_SEARCHING_PREAMBLE;
                 self->rx_sample_idx = 0;
             } else {
@@ -810,7 +810,7 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
             dsp_cfft(&self->cfft_inst, self->fft_buffer, 0);
 
             uint8_t rx_bits[OFDM_NUM_CHANNELS] = {0};
-            uint32_t all_channel_locked = 1;
+            uint32_t any_channel_locked = 0;
 
             /* 5. Цикл демодуляции и петель Костаса по всем 8 поднесущим */
             for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
@@ -854,8 +854,8 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
                 sub->phase_lock_metric += self->alpha_lock * (instant_metric - sub->phase_lock_metric);
                 sub->is_phase_locked = (sub->phase_lock_metric > 0.55) ? 1 : 0;
 
-                if (! sub->is_phase_locked) {
-                    all_channel_locked = 0;
+                if (sub->is_phase_locked) {
+                    any_channel_locked = 1;
                 }
 
                 /* Жесткое решение демодулятора (Slicer) */
@@ -868,7 +868,7 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
             }
 
             /* Автомат сброса: если все каналы потеряли захват фазы — уходим в поиск */
-            if (all_channel_locked == 0) {
+            if (any_channel_locked == 0) {
                 self->sync_state = STATE_SEARCHING_PREAMBLE;
                 self->rx_sample_idx = 0;
             } else {
@@ -1274,6 +1274,11 @@ void modem_test(void)
 	ofdm_modem_tx_init(& tx);
 	ofdm_modem_rx_init(& rx);
 
+	void (* rxfn)(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits));
+
+	rxfn = OLDofdm_modem_rx_block;
+	//rxfn = NEWofdm_modem_rx_block;
+
 	rx.sync_state = STATE_PROCESSING_DATA;
 
 	NEWofdm_modem_tx_block(& tx, test_ofdm_get_preamble_bits, buffer_i, buffer_q, BUFFLEN);
@@ -1282,7 +1287,7 @@ void modem_test(void)
 	pathclipping(buffer_q, BUFFLEN);
 	nullmodem(buffer_i, buffer_q, BUFFLEN);
 
-	OLDofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_null_bits);
+	rxfn(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_null_bits);
 
 	unsigned i;
 	for (i = 0; i < 100; ++ i)
@@ -1294,7 +1299,7 @@ void modem_test(void)
 		pathclipping(buffer_q, BUFFLEN);
 		nullmodem(buffer_i, buffer_q, BUFFLEN);
 
-		OLDofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_bits);
+		rxfn(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_bits);
 	}
 	PRINTF("\n");
 	PRINTF("OFDM_SYMBOL_LEN=%d\n", (int) OFDM_SYMBOL_LEN);
