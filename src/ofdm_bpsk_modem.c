@@ -355,82 +355,6 @@ static void ofdm_packer_process_bits_callback(ofdm_packer_rx_t *self, const uint
 
 #endif /* WITHINTEGRATEDDSP */
 
-///* Прослойка для TX */
-//static void dsp_tx_bits_bridge(uint8_t *bits) {
-//    ofdm_packer_get_bits_callback(&ofdm_srv_tx, bits);
-//}
-//
-///* Прослойка для RX */
-//static void dsp_rx_bits_bridge(const uint8_t *bits) {
-//    ofdm_packer_process_bits_callback(&ofdm_srv_rx, bits);
-//}
-
-// ... и затем в основном цикле DUC/DDC трансивера:
-//ofdm_modem_tx_block(&ofdm_srv_tx, dsp_tx_bits_bridge, tx_buffer_i, tx_buffer_q, block_size);
-//ofdm_modem_rx_block(&ofdm_srv_rx, rx_buffer_i, rx_buffer_q, block_size, dsp_rx_bits_bridge);
-
-/*
- * OFDM Modem Integration Bridge for hftrx transceiver core
- * Integrates independent PHY and Service layer contexts into the DMA audio pipeline.
- */
-
-#include "hardware.h"
-
-#if WITHINTEGRATEDDSP
-
-/* Include our newly created modem modules */
-//#include "ofdm_bpsk_modem.h"
-//#include "ofdm_bit_packer.h"
-
-/* ========================================================================== */
-/*                          STATIC CONTEXT ALLOCATION                         */
-/* ========================================================================== */
-
-/* ========================================================================== */
-/*                         STATIC CALLBACK BRIDGES                            */
-/* ========================================================================== */
-
-/**
- * @brief Bridge function connecting the physical modulator with the context-driven bit packer.
- * @param bits Array destination where 8 parallel bits will be written by the interleaver layer.
- */
-//static void dsp_ofdm_tx_bits_bridge(ofdm_modem_tx_t *self, uint8_t *bits)
-//{
-//    ofdm_packer_get_bits_callback(&ofdm_srv_tx, bits);
-//}
-
-/**
- * @brief Bridge function connecting the physical demodulator with the context-driven deinterleaver.
- * @param bits Input array containing 8 parsed bits received from the physical OFDM subcarriers.
- */
-//static void dsp_ofdm_rx_bits_bridge(ofdm_modem_rx_t *self, const uint8_t *bits)
-//{
-//    ofdm_packer_process_bits_callback(&ofdm_srv_rx, bits);
-//}
-
-
-/**
- * @brief External interface for the USB CDC UART layer to inject text characters for transmission.
- * @param c Incoming ASCII character from Virtual COM port terminal.
- */
-//void dsp_ofdm_push_char_to_tx(uint8_t c)
-//{
-//    ofdm_packer_put_tx_byte(&ofdm_srv_tx, c);
-//}
-
-/**
- * @brief External interface for the USB CDC UART layer to poll for decoded text characters.
- * @param c Pointer to storage where the extracted ASCII character will be copied.
- * @return uint32_t Returns 1 if a character was successfully retrieved, 0 if queue is empty.
- */
-//uint32_t dsp_ofdm_pop_char_from_rx(uint8_t *c)
-//{
-//    return ofdm_packer_get_rx_byte(&ofdm_srv_rx, c);
-//}
-
-
-#endif /* WITHINTEGRATEDDSP */
-
 #include "dspdefines.h"
 #include "audio.h"
 #include "buffers.h"
@@ -783,6 +707,63 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
         }
     }
 }
+
+// ... и затем в основном цикле DUC/DDC трансивера:
+//ofdm_modem_tx_block(&ofdm_srv_tx, dsp_tx_bits_bridge, tx_buffer_i, tx_buffer_q, block_size);
+//ofdm_modem_rx_block(&ofdm_srv_rx, rx_buffer_i, rx_buffer_q, block_size, dsp_rx_bits_bridge);
+
+/*
+ * OFDM Modem Integration Bridge for hftrx transceiver core
+ * Integrates independent PHY and Service layer contexts into the DMA audio pipeline.
+ */
+
+/* Include our newly created modem modules */
+//#include "ofdm_bpsk_modem.h"
+//#include "ofdm_bit_packer.h"
+
+/* ========================================================================== */
+/*                          STATIC CALLBACK BRIDGES                           */
+/* ========================================================================== */
+
+/**
+ * @brief Bridge function connecting the physical modulator with the internal bit packer.
+ */
+static void dsp_ofdm_tx_bits_bridge(ofdm_modem_tx_t *self, uint8_t *bits)
+{
+    /* FIXED: Extract the integrated service context directly from the active PHY block */
+    ofdm_packer_get_bits_callback(&self->ofdm_srv_tx, bits);
+}
+
+/**
+ * @brief Bridge function connecting the physical demodulator with the internal deinterleaver.
+ */
+static void dsp_ofdm_rx_bits_bridge(ofdm_modem_rx_t *self, const uint8_t *bits)
+{
+    /* FIXED: Extract the integrated service context directly from the active PHY block */
+    ofdm_packer_process_bits_callback(&self->ofdm_srv_rx, bits);
+}
+
+/* ========================================================================== */
+/*                         PUBLIC CORE TRANSCEIVER API                        */
+/* ========================================================================== */
+
+/**
+ * @brief External interface for the hftrx USB CDC UART layer to inject text characters for transmission.
+ *        Must be called from main.c / usb_cdc.c passing the active transmitter object instance.
+ */
+void dsp_ofdm_push_char_to_tx(ofdm_modem_tx_t *self, uint8_t c)
+{
+    ofdm_packer_put_tx_byte(&self->ofdm_srv_tx, c);
+}
+
+/**
+ * @brief External interface for the hftrx USB CDC UART layer to poll for decoded text characters.
+ */
+uint32_t dsp_ofdm_pop_char_from_rx(ofdm_modem_rx_t *self, uint8_t *c)
+{
+    return ofdm_packer_get_rx_byte(&self->ofdm_srv_rx, c);
+}
+
 
 //////////////////
 /// test
