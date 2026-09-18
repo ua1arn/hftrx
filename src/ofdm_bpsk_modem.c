@@ -682,16 +682,16 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
                 FLOAT_t derot_q = raw_q * cos_p - raw_i * sin_p;
 
                 /* Bounded Amplitude Normalization for Costas Loop stability */
-                FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
+                const FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
                 if (mag2 > 1e-6)
                 {
-                    FLOAT_t mag = SQRTF(mag2);
-                    derot_i /= mag;
-                    derot_q /= mag;
+                	const FLOAT_t mag = 1 / SQRTF(mag2);
+                    derot_i *= mag;
+                    derot_q *= mag;
                 }
 
                 /* Costas BPSK Phase Error Detector metric: e = I * Q */
-                FLOAT_t error_c = derot_i * derot_q;
+                const FLOAT_t error_c = derot_i * derot_q;
 
                 /* Closed-loop frequency and tracking updates */
                 sub->costas_integrator += error_c * sub->costas_ki;
@@ -740,6 +740,7 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
     {
         const FLOAT_t curr_i = in_buffer_i[sample_idx];
         const FLOAT_t curr_q = in_buffer_q[sample_idx];
+    if (0)	// открываем это условие - инвертируются данные на выходе
 	{
 
 		/* Извлекаем задержанный на половину БПФ (128 сэмплов) сигнал */
@@ -866,16 +867,16 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
                 FLOAT_t derot_q = raw_q * cos_p - raw_i * sin_p;
 
                 /* Bounded Amplitude Normalization for Costas Loop stability */
-                FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
+                const FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
                 if (mag2 > 1e-6)
                 {
-                    FLOAT_t mag = SQRTF(mag2);
-                    derot_i /= mag;
-                    derot_q /= mag;
+                	const FLOAT_t mag = 1 / SQRTF(mag2);
+                    derot_i *= mag;
+                    derot_q *= mag;
                 }
 
                 /* Costas BPSK Phase Error Detector metric: e = I * Q */
-                FLOAT_t error_c = derot_i * derot_q;
+                const FLOAT_t error_c = derot_i * derot_q;
 
                 /* Closed-loop frequency and tracking updates */
                 sub->costas_integrator += error_c * sub->costas_ki;
@@ -891,7 +892,7 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
                 }
 
                 /* Slicer decision boundary output evaluation */
-                rx_bits[ch] = ! (derot_i >= 0) ? 1 : 0;
+                rx_bits[ch] = (derot_i >= 0) ? 1 : 0;
 
                 /* Update step bounded modulo 2*pi execution */
                 sub->phase_nco += sub->phase_step_nco;
@@ -1308,7 +1309,7 @@ void modem_test(void)
 
 	void (* rxfn)(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits));
 
-	rxfn = !1 ?
+	rxfn = ! 1 ?
 			OLDofdm_modem_rx_block :
 			NEWofdm_modem_rx_block;
 
