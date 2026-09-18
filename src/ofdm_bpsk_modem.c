@@ -719,9 +719,9 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
             if (any_channel_locked == 0) {
                 self->sync_state = STATE_SEARCHING_PREAMBLE;
                 //self->rx_sample_idx = 0;
-            } else {
+            } else if (self->sync_state == STATE_PROCESSING_DATA) {
                 /* Direct processing of extracted frame data stream */
-                process_bits_cb(self, rx_bits);
+               process_bits_cb(self, rx_bits);
             }
         }
     }
@@ -904,7 +904,7 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
             if (any_channel_locked == 0) {
                 self->sync_state = STATE_SEARCHING_PREAMBLE;
                 //self->rx_sample_idx = 0;
-            } else //if (self->sync_state == STATE_PROCESSING_DATA) {
+            } else if (self->sync_state == STATE_PROCESSING_DATA) {
                 /* Direct processing of extracted frame data stream */
                process_bits_cb(self, rx_bits);
             }
