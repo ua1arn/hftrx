@@ -2,349 +2,6 @@
 
 #if WITHINTEGRATEDDSP && 1
 
-#include "dspdefines.h"
-#include "audio.h"
-#include "buffers.h"
-#include "formats.h"
-
-#define OFDM_NUM_CHANNELS   8
-#define FFT_LEN             256
-#define CYCLIC_PREFIX_LEN   32    /* Increased from 16 to 32 for phase alignment */
-#define OFDM_SYMBOL_LEN     (FFT_LEN + CYCLIC_PREFIX_LEN) /* 160 samples */
-
-#define TX_W_LEN   	8
-#define RX_W_LEN 	8
-/*
- * Symmetric Subcarrier Map for Quadrature Up-Converter:
- * Bins 1..4   -> Positive frequencies (USB): +375, +750, +1125, +1500 Hz
- * Bins 124..127 -> Negative frequencies (LSB): -1500, -1125, -750, -375 Hz
- */
-static const uint16_t subcarrier_map[OFDM_NUM_CHANNELS] = {
-    1, 3, 5, 7,        /* Positive bins (Channels 0, 1, 2, 3) */
-	FFT_LEN - 7, FFT_LEN - 5, FFT_LEN - 3, FFT_LEN - 1  /* Negative bins (Channels 4, 5, 6, 7) */
-};
-
-/* ========================================================================== */
-/*                             STRUCTURES & CONTEXTS                          */
-/* ========================================================================== */
-
-/* Context structure for an individual subcarrier channel tracking */
-typedef struct {
-    FLOAT_t phase_nco;           /* Costas loop NCO phase accumulator */
-    FLOAT_t phase_step_nco;      /* Dynamic phase step adjusted by loop filter */
-    FLOAT_t costas_kp;           /* Proportional loop gain */
-    FLOAT_t costas_ki;           /* Integral loop gain */
-    FLOAT_t costas_integrator;   /* Integral loop accumulator memory */
-
-    FLOAT_t phase_lock_metric;   /* Exponential moving average lock indicator */
-    uint32_t is_phase_locked;    /* Boolean lock status flag */
-} ofdm_subcarrier_bpsk_t;
-
-typedef struct {
-    ARM_MORPH(arm_cfft_instance) cfft_inst;
-
-    FLOAT_t fft_buffer[FFT_LEN * 2];
-    FLOAT_t tx_time_buffer[OFDM_SYMBOL_LEN * 2];
-    uint32_t tx_sample_idx;
-
-    /* Expanded window LUTs to hold duplicated weights for [Re, Im] pairs */
-    FLOAT_t window_rise_complex[TX_W_LEN * 2];
-    FLOAT_t window_fall_complex[TX_W_LEN * 2];
-} ofdm_modem_tx_t;
-
-typedef struct {
-    ofdm_subcarrier_bpsk_t rx_subcarriers[OFDM_NUM_CHANNELS];
-    ARM_MORPH(arm_cfft_instance) cfft_inst;
-
-    FLOAT_t fft_buffer[FFT_LEN * 2];
-    FLOAT_t rx_time_buffer[OFDM_SYMBOL_LEN * 2];
-    uint32_t rx_sample_idx;
-
-    FLOAT_t alpha_lock;
-
-    /* Pre-calculated window LUTs to hold duplicated weights for [Re, Im] pairs */
-    FLOAT_t window_rise_complex[RX_W_LEN * 2];
-    FLOAT_t window_fall_complex[RX_W_LEN * 2];
-} ofdm_modem_rx_t;
-
-/**
- * @brief Runtime initialization of the standalone OFDM transmitter context.
- *        Generates complex window LUT weights using arm_sin_cos_f32.
- */
-static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
-{
-    ARM_MORPH(arm_cfft_init)(&self->cfft_inst, FFT_LEN);
-    self->tx_sample_idx = 0;
-    ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
-    ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
-
-    /* Generate complex window LUT weights using arm_sin_cos_f32 */
-    for (int i = 0; i < TX_W_LEN; i++)
-    {
-        float32_t sin_val, cos_val;
-        /* Convert radians to degrees for CMSIS-DSP */
-        float32_t phase_degrees = (float32_t)(M_PI * i / TX_W_LEN) * (180.0f / (float32_t)M_PI);
-
-        /* Calculate sine and cosine simultaneously */
-        arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
-
-        FLOAT_t w_rise = (1 - (FLOAT_t)cos_val) / 2;
-        FLOAT_t w_fall = (1 + (FLOAT_t)cos_val) / 2;
-
-        /* Duplicate weight for both Real and Imaginary components of the sample */
-        self->window_rise_complex[i * 2]     = w_rise;
-        self->window_rise_complex[i * 2 + 1] = w_rise;
-
-        self->window_fall_complex[i * 2]     = w_fall;
-        self->window_fall_complex[i * 2 + 1] = w_fall;
-    }
-}
-
-/**
- * @brief Block-based transmitter modulation processing with mathematically pure IFFT layout.
- *        Ensures strict subcarrier orthogonality and ideal single-sideband IQ generation.
- */
-static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_modem_tx_t *self, uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
-{
-	const FLOAT_t magnitude = 32;
-    for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
-    {
-        /* Regenerate symbol payload if the active time domain vector cache is exhausted */
-        if (self->tx_sample_idx >= OFDM_SYMBOL_LEN)
-        {
-            self->tx_sample_idx = 0;
-
-            /* Clear the entire FFT complex plane using CMSIS-DSP vector fill */
-            ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
-
-            uint8_t tx_bits[OFDM_NUM_CHANNELS] = {0};
-            get_bits_cb(self, tx_bits);
-
-            /* MATHEMATICALLY CORRECT BPSK-OFDM MAPPING: */
-            /* Imaginary part MUST be 0.0 to preserve native CFFT subcarrier orthogonality. */
-            /* Single-sideband IQ signal is achieved by filling ONLY bins 1..8 and keeping bins 120..127 at 0. */
-            for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
-            {
-                uint32_t bin_idx = subcarrier_map[ch];
-
-                self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? magnitude : -magnitude; /* Real (I) component */
-                self->fft_buffer[bin_idx * 2 + 1] = 0.0;                        /* Imaginary (Q) component strictly ZERO */
-            }
-
-            /* Inverse Complex FFT execution: isInverseFFT = 1, bitReverseFlag = 1 */
-            //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
-            dsp_cfft(&self->cfft_inst, self->fft_buffer, 1);
-
-            /* Construct the Cyclic Prefix window using fast block memory transport */
-            uint32_t cp_start = (FFT_LEN - CYCLIC_PREFIX_LEN) * 2; // (128 - 32) * 2 = 192
-
-            /* Copy the tail part of the IFFT output to the beginning of the transmission frame */
-            ARM_MORPH(arm_copy)(&self->fft_buffer[cp_start],
-                                self->tx_time_buffer,
-                                CYCLIC_PREFIX_LEN * 2);
-
-            /* Copy the entire useful IFFT payload directly following the guard prefix interval */
-            ARM_MORPH(arm_copy)(self->fft_buffer,
-                                &self->tx_time_buffer[CYCLIC_PREFIX_LEN * 2],
-                                FFT_LEN * 2);
-
-            /* --- VECTOR OPTIMIZATION: TRANSITION WINDOWING VIA CMSIS-DSP MULT --- */
-            /* Smooth the absolute beginning of the symbol (Rising edge) */
-            ARM_MORPH(arm_mult)(self->tx_time_buffer,
-                                self->window_rise_complex,
-                                self->tx_time_buffer,
-								TX_W_LEN * 2);
-
-            /* Smooth the absolute end of the symbol (Falling edge) */
-            uint32_t sym_end_offset = (OFDM_SYMBOL_LEN - TX_W_LEN) * 2;
-            ARM_MORPH(arm_mult)(&self->tx_time_buffer[sym_end_offset],
-                                self->window_fall_complex,
-                                &self->tx_time_buffer[sym_end_offset],
-								TX_W_LEN * 2);
-       }
-
-        /* Stream serialized data samples into active processing streams for hftrx path */
-        out_buffer_i[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2];
-        out_buffer_q[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2 + 1];
-
-        self->tx_sample_idx++;
-    }
-}
-
-/**
- * @brief Resets transient caches and trackers inside the transmitter instance.
- * @param self Pointer to the active transmitter context.
- */
-static void ofdm_modem_tx_reset(ofdm_modem_tx_t *self)
-{
-    self->tx_sample_idx = 0;
-    ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
-}
-
-static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
-{
-    ARM_MORPH(arm_cfft_init)(&self->cfft_inst, FFT_LEN);
-    self->rx_sample_idx = 0;
-    self->alpha_lock = 0.02;
-    ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
-    ARM_MORPH(arm_fill)(0, self->rx_time_buffer, OFDM_SYMBOL_LEN * 2);
-
-    for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
-    {
-        ofdm_subcarrier_bpsk_t *sub = &self->rx_subcarriers[ch];
-        sub->phase_nco = 0;
-        sub->phase_step_nco = 0;
-        sub->costas_kp = 0.04;
-        sub->costas_ki = 0.0008;
-        sub->costas_integrator = 0;
-        sub->phase_lock_metric = 0;
-        sub->is_phase_locked = 0;
-    }
-
-    /* PRE-CALCULATE RX COMPLEX WINDOW LUT USING arm_sin_cos_f32 */
-    for (int i = 0; i < RX_W_LEN; i++)
-    {
-        float32_t sin_val, cos_val;
-        float32_t phase_degrees = (float32_t)(M_PI * i / RX_W_LEN) * (180.0f / (float32_t)M_PI);
-
-        arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
-
-        FLOAT_t w_rise = (1 - (FLOAT_t)cos_val) / 2;
-        FLOAT_t w_fall = (1 + (FLOAT_t)cos_val) / 2;
-
-        self->window_rise_complex[i * 2]     = w_rise;
-        self->window_rise_complex[i * 2 + 1] = w_rise;
-
-        self->window_fall_complex[i * 2]     = w_fall;
-        self->window_fall_complex[i * 2 + 1] = w_fall;
-    }
-}
-
-/**
- * @brief Forces a hard reset of operational internal receiver tracking loops.
- * @param self Pointer to the active receiver context.
- */
-static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
-{
-    self->rx_sample_idx = 0;
-    ARM_MORPH(arm_fill)(0, self->rx_time_buffer, OFDM_SYMBOL_LEN * 2);
-
-    for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
-    {
-        ofdm_subcarrier_bpsk_t *sub = &self->rx_subcarriers[ch];
-        sub->phase_nco = 0;
-        sub->phase_step_nco = 0;
-        sub->costas_integrator = 0;
-        sub->phase_lock_metric = 0;
-        sub->is_phase_locked = 0;
-    }
-}
-
-/**
- * @brief Block-based receiver demodulation processing with RX Time-Domain Windowing.
- *        Trigonometry optimized via direct arm_sin_cos_f32 execution.
- */
-static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits))
-{
-    for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
-    {
-        /* Gather raw input pairs sequentially inside the time frame sliding window */
-        self->rx_time_buffer[self->rx_sample_idx * 2]     = in_buffer_i[sample_idx];
-        self->rx_time_buffer[self->rx_sample_idx * 2 + 1] = in_buffer_q[sample_idx];
-        self->rx_sample_idx++;
-        
-        /* Process when a full symbol payload boundaries are successfully accumulated */
-        if (self->rx_sample_idx >= OFDM_SYMBOL_LEN)
-        {
-            self->rx_sample_idx = 0;
-
-            /* Slice out the cyclic prefix guard band via high speed memory transport */
-            ARM_MORPH(arm_copy)(&self->rx_time_buffer[CYCLIC_PREFIX_LEN * 2],
-                                self->fft_buffer,
-                                FFT_LEN * 2);
-
-            /* VECTOR OPTIMIZATION: WINDOWING VIA CMSIS-DSP MULT */
-            ARM_MORPH(arm_mult)(self->fft_buffer,
-                                self->window_rise_complex,
-                                self->fft_buffer,
-                                RX_W_LEN * 2);
-
-            uint32_t fft_end_offset = (FFT_LEN - RX_W_LEN) * 2;
-            ARM_MORPH(arm_mult)(&self->fft_buffer[fft_end_offset],
-                                self->window_fall_complex,
-                                &self->fft_buffer[fft_end_offset],
-                                RX_W_LEN * 2);
-
-            /* Forward Complex FFT conversion: isInverseFFT = 0, bitReverseFlag = 1 */
-            //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 0, 1);
-            dsp_cfft(&self->cfft_inst, self->fft_buffer, 0);
-
-            uint8_t rx_bits[OFDM_NUM_CHANNELS] = {0};
-            
-            /* De-rotate phase offsets and track multi-frequency channel state variations */
-            for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
-            {
-                uint32_t bin_idx = subcarrier_map[ch];
-                ofdm_subcarrier_bpsk_t *sub = &self->rx_subcarriers[ch];
-
-                FLOAT_t raw_i = self->fft_buffer[bin_idx * 2];
-                FLOAT_t raw_q = self->fft_buffer[bin_idx * 2 + 1];
-
-                /* Declare strict float32_t targets required by direct CMSIS-DSP API */
-                float32_t sin_val, cos_val;
-
-                /* Convert phase from radians [0..2*PI] to degrees [-180..180] for arm_sin_cos_f32 */
-                float32_t phase_degrees = (float32_t)sub->phase_nco * (180.0f / (float32_t)M_PI);
-                if (phase_degrees > 180.0f) {
-                    phase_degrees -= 360.0f;
-                }
-
-                /* Call native float32 CMSIS function directly to compute sin/cos simultaneously */
-                arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
-
-                /* Cast output back to polymorphic FLOAT_t wrapper for processing loop */
-                FLOAT_t sin_p = (FLOAT_t)sin_val;
-                FLOAT_t cos_p = (FLOAT_t)cos_val;
-
-                /* Complex phase de-rotation multiplication */
-                FLOAT_t derot_i = raw_i * cos_p + raw_q * sin_p;
-                FLOAT_t derot_q = raw_q * cos_p - raw_i * sin_p;
-
-                /* Bounded Amplitude Normalization for Costas Loop stability */
-                FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
-                if (mag2 > 1e-6)
-                {
-                    FLOAT_t mag = SQRTF(mag2);
-                    derot_i /= mag;
-                    derot_q /= mag;
-                }
-
-                /* Costas BPSK Phase Error Detector metric: e = I * Q */
-                FLOAT_t error_c = derot_i * derot_q;
-
-                /* Closed-loop frequency and tracking updates */
-                sub->costas_integrator += error_c * sub->costas_ki;
-                sub->phase_step_nco = error_c * sub->costas_kp + sub->costas_integrator;
-
-                /* Quality monitoring assessment metric calculations */
-                FLOAT_t instant_metric = (derot_i * derot_i) - (derot_q * derot_q);
-                sub->phase_lock_metric += self->alpha_lock * (instant_metric - sub->phase_lock_metric);
-                sub->is_phase_locked = (sub->phase_lock_metric > 0.55) ? 1 : 0;
-
-                /* Slicer decision boundary output evaluation */
-                rx_bits[ch] = (derot_i >= 0) ? 1 : 0;
-
-                /* Update step bounded modulo 2*pi execution */
-                sub->phase_nco += sub->phase_step_nco;
-                if (sub->phase_nco >= 2 * M_PI) sub->phase_nco -= 2 * M_PI;
-                if (sub->phase_nco < 0) sub->phase_nco += 2 * M_PI;
-            }
-            
-            /* Direct processing of extracted frame data stream */
-            process_bits_cb(self, rx_bits);
-        }
-    }
-}
 //////////////////
 /// interleaver
 
@@ -698,24 +355,15 @@ static void ofdm_packer_process_bits_callback(ofdm_packer_rx_t *self, const uint
 
 #endif /* WITHINTEGRATEDDSP */
 
-
-/* Independent Physical Layer Contexts */
-static ofdm_modem_tx_t  ofdm_phy_tx;
-static ofdm_modem_rx_t  ofdm_phy_rx;
-
-/* Independent Service/Interleaver Layer Contexts */
-static ofdm_packer_tx_t ofdm_srv_tx;
-static ofdm_packer_rx_t ofdm_srv_rx;
-
-/* Прослойка для TX */
-static void dsp_tx_bits_bridge(uint8_t *bits) {
-    ofdm_packer_get_bits_callback(&ofdm_srv_tx, bits);
-}
-
-/* Прослойка для RX */
-static void dsp_rx_bits_bridge(const uint8_t *bits) {
-    ofdm_packer_process_bits_callback(&ofdm_srv_rx, bits);
-}
+///* Прослойка для TX */
+//static void dsp_tx_bits_bridge(uint8_t *bits) {
+//    ofdm_packer_get_bits_callback(&ofdm_srv_tx, bits);
+//}
+//
+///* Прослойка для RX */
+//static void dsp_rx_bits_bridge(const uint8_t *bits) {
+//    ofdm_packer_process_bits_callback(&ofdm_srv_rx, bits);
+//}
 
 // ... и затем в основном цикле DUC/DDC трансивера:
 //ofdm_modem_tx_block(&ofdm_srv_tx, dsp_tx_bits_bridge, tx_buffer_i, tx_buffer_q, block_size);
@@ -746,98 +394,395 @@ static void dsp_rx_bits_bridge(const uint8_t *bits) {
  * @brief Bridge function connecting the physical modulator with the context-driven bit packer.
  * @param bits Array destination where 8 parallel bits will be written by the interleaver layer.
  */
-static void dsp_ofdm_tx_bits_bridge(ofdm_modem_tx_t *self, uint8_t *bits)
-{
-    ofdm_packer_get_bits_callback(&ofdm_srv_tx, bits);
-}
+//static void dsp_ofdm_tx_bits_bridge(ofdm_modem_tx_t *self, uint8_t *bits)
+//{
+//    ofdm_packer_get_bits_callback(&ofdm_srv_tx, bits);
+//}
 
 /**
  * @brief Bridge function connecting the physical demodulator with the context-driven deinterleaver.
  * @param bits Input array containing 8 parsed bits received from the physical OFDM subcarriers.
  */
-static void dsp_ofdm_rx_bits_bridge(ofdm_modem_rx_t *self, const uint8_t *bits)
-{
-    ofdm_packer_process_bits_callback(&ofdm_srv_rx, bits);
-}
+//static void dsp_ofdm_rx_bits_bridge(ofdm_modem_rx_t *self, const uint8_t *bits)
+//{
+//    ofdm_packer_process_bits_callback(&ofdm_srv_rx, bits);
+//}
 
-/* ========================================================================== */
-/*                             PUBLIC CORE API                                */
-/* ========================================================================== */
-
-/**
- * @brief Global initialization hook to be called during hftrx DSP boot sequence (e.g., inside dsp_init()).
- */
-void dsp_ofdm_modem_init(void)
-{
-    /* Initialize physical layer hardware state engines */
-    ofdm_modem_tx_init(&ofdm_phy_tx);
-    ofdm_modem_rx_init(&ofdm_phy_rx);
-
-    /* Initialize upper service data buffers and interleavers */
-    ofdm_packer_tx_init(&ofdm_srv_tx);
-    ofdm_packer_rx_init(&ofdm_srv_rx);
-}
-
-/**
- * @brief Hard reset hook to clear active transmission states when switching modes or flushing.
- */
-void dsp_ofdm_modem_reset(void)
-{
-    ofdm_modem_tx_reset(&ofdm_phy_tx);
-    ofdm_modem_rx_reset(&ofdm_phy_rx);
-    ofdm_packer_tx_reset(&ofdm_srv_tx);
-    ofdm_packer_rx_reset(&ofdm_srv_rx);
-}
 
 /**
  * @brief External interface for the USB CDC UART layer to inject text characters for transmission.
  * @param c Incoming ASCII character from Virtual COM port terminal.
  */
-void dsp_ofdm_push_char_to_tx(uint8_t c)
-{
-    ofdm_packer_put_tx_byte(&ofdm_srv_tx, c);
-}
+//void dsp_ofdm_push_char_to_tx(uint8_t c)
+//{
+//    ofdm_packer_put_tx_byte(&ofdm_srv_tx, c);
+//}
 
 /**
  * @brief External interface for the USB CDC UART layer to poll for decoded text characters.
  * @param c Pointer to storage where the extracted ASCII character will be copied.
  * @return uint32_t Returns 1 if a character was successfully retrieved, 0 if queue is empty.
  */
-uint32_t dsp_ofdm_pop_char_from_rx(uint8_t *c)
-{
-    return ofdm_packer_get_rx_byte(&ofdm_srv_rx, c);
-}
+//uint32_t dsp_ofdm_pop_char_from_rx(uint8_t *c)
+//{
+//    return ofdm_packer_get_rx_byte(&ofdm_srv_rx, c);
+//}
 
-/* ========================================================================== */
-/*                          DMA CODEC STREAM HOOKS                            */
-/* ========================================================================== */
-
-/**
- * @brief Hook to be inserted directly into the hftrx Receiver (RX) DMA processor loop.
- * @param buffer_i Pointer to the incoming DDC Real (I) floating-point data stream block.
- * @param buffer_q Pointer to the incoming DDC Imaginary (Q) floating-point data stream block.
- * @param size Processing frame length of the active audio/IQ codec block.
- */
-void dsp_ofdm_process_rx_block(const FLOAT_t *buffer_i, const FLOAT_t *buffer_q, uint32_t size)
-{
-    /* Stream the raw DDC blocks directly into the independent physical demodulator instance */
-    ofdm_modem_rx_block(&ofdm_phy_rx, buffer_i, buffer_q, size, dsp_ofdm_rx_bits_bridge);
-}
-
-/**
- * @brief Hook to be inserted directly into the hftrx Transmitter (TX) DMA processor loop.
- *        Overwrites or fills the DUC modulator target queues when PTT text mode is active.
- * @param buffer_i Pointer to the destination DUC Real (I) floating-point buffer block.
- * @param buffer_q Pointer to the destination DUC Imaginary (Q) floating-point buffer block.
- * @param size Processing frame length of the active audio/IQ codec block.
- */
-void dsp_ofdm_process_tx_block(FLOAT_t *buffer_i, FLOAT_t *buffer_q, uint32_t size)
-{
-    /* Generate orthogonal complex wave vectors directly into the DUC hardware queues */
-    ofdm_modem_tx_block(&ofdm_phy_tx, dsp_ofdm_tx_bits_bridge, buffer_i, buffer_q, size);
-}
 
 #endif /* WITHINTEGRATEDDSP */
+
+#include "dspdefines.h"
+#include "audio.h"
+#include "buffers.h"
+#include "formats.h"
+
+#define OFDM_NUM_CHANNELS   8
+#define FFT_LEN             256
+#define CYCLIC_PREFIX_LEN   32    /* Increased from 16 to 32 for phase alignment */
+#define OFDM_SYMBOL_LEN     (FFT_LEN + CYCLIC_PREFIX_LEN) /* 160 samples */
+
+#define TX_W_LEN   	8
+#define RX_W_LEN 	8
+/*
+ * Symmetric Subcarrier Map for Quadrature Up-Converter:
+ * Bins 1..4   -> Positive frequencies (USB): +375, +750, +1125, +1500 Hz
+ * Bins 124..127 -> Negative frequencies (LSB): -1500, -1125, -750, -375 Hz
+ */
+static const uint16_t subcarrier_map[OFDM_NUM_CHANNELS] = {
+    1, 3, 5, 7,        /* Positive bins (Channels 0, 1, 2, 3) */
+	FFT_LEN - 7, FFT_LEN - 5, FFT_LEN - 3, FFT_LEN - 1  /* Negative bins (Channels 4, 5, 6, 7) */
+};
+
+/* ========================================================================== */
+/*                             STRUCTURES & CONTEXTS                          */
+/* ========================================================================== */
+
+/* Context structure for an individual subcarrier channel tracking */
+typedef struct {
+    FLOAT_t phase_nco;           /* Costas loop NCO phase accumulator */
+    FLOAT_t phase_step_nco;      /* Dynamic phase step adjusted by loop filter */
+    FLOAT_t costas_kp;           /* Proportional loop gain */
+    FLOAT_t costas_ki;           /* Integral loop gain */
+    FLOAT_t costas_integrator;   /* Integral loop accumulator memory */
+
+    FLOAT_t phase_lock_metric;   /* Exponential moving average lock indicator */
+    uint32_t is_phase_locked;    /* Boolean lock status flag */
+} ofdm_subcarrier_bpsk_t;
+
+typedef struct {
+    ARM_MORPH(arm_cfft_instance) cfft_inst;
+
+    FLOAT_t fft_buffer[FFT_LEN * 2];
+    FLOAT_t tx_time_buffer[OFDM_SYMBOL_LEN * 2];
+    uint32_t tx_sample_idx;
+
+    /* Expanded window LUTs to hold duplicated weights for [Re, Im] pairs */
+    FLOAT_t window_rise_complex[TX_W_LEN * 2];
+    FLOAT_t window_fall_complex[TX_W_LEN * 2];
+
+    ofdm_packer_tx_t ofdm_srv_tx;
+} ofdm_modem_tx_t;
+
+typedef struct {
+    ofdm_subcarrier_bpsk_t rx_subcarriers[OFDM_NUM_CHANNELS];
+    ARM_MORPH(arm_cfft_instance) cfft_inst;
+
+    FLOAT_t fft_buffer[FFT_LEN * 2];
+    FLOAT_t rx_time_buffer[OFDM_SYMBOL_LEN * 2];
+    uint32_t rx_sample_idx;
+
+    FLOAT_t alpha_lock;
+
+    /* Pre-calculated window LUTs to hold duplicated weights for [Re, Im] pairs */
+    FLOAT_t window_rise_complex[RX_W_LEN * 2];
+    FLOAT_t window_fall_complex[RX_W_LEN * 2];
+
+    ofdm_packer_rx_t ofdm_srv_rx;
+} ofdm_modem_rx_t;
+
+/**
+ * @brief Runtime initialization of the standalone OFDM transmitter context.
+ *        Generates complex window LUT weights using arm_sin_cos_f32.
+ */
+static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
+{
+    ARM_MORPH(arm_cfft_init)(&self->cfft_inst, FFT_LEN);
+    self->tx_sample_idx = 0;
+    ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
+    ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
+
+    /* Generate complex window LUT weights using arm_sin_cos_f32 */
+    for (int i = 0; i < TX_W_LEN; i++)
+    {
+        float32_t sin_val, cos_val;
+        /* Convert radians to degrees for CMSIS-DSP */
+        float32_t phase_degrees = (float32_t)(M_PI * i / TX_W_LEN) * (180.0f / (float32_t)M_PI);
+
+        /* Calculate sine and cosine simultaneously */
+        arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
+
+        FLOAT_t w_rise = (1 - (FLOAT_t)cos_val) / 2;
+        FLOAT_t w_fall = (1 + (FLOAT_t)cos_val) / 2;
+
+        /* Duplicate weight for both Real and Imaginary components of the sample */
+        self->window_rise_complex[i * 2]     = w_rise;
+        self->window_rise_complex[i * 2 + 1] = w_rise;
+
+        self->window_fall_complex[i * 2]     = w_fall;
+        self->window_fall_complex[i * 2 + 1] = w_fall;
+    }
+    /* Initialize upper service data buffers and interleavers */
+    ofdm_packer_tx_init(&self->ofdm_srv_tx);
+}
+
+/**
+ * @brief Block-based transmitter modulation processing with mathematically pure IFFT layout.
+ *        Ensures strict subcarrier orthogonality and ideal single-sideband IQ generation.
+ */
+static void ofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_modem_tx_t *self, uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
+{
+	const FLOAT_t magnitude = 32;
+    for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
+    {
+        /* Regenerate symbol payload if the active time domain vector cache is exhausted */
+        if (self->tx_sample_idx >= OFDM_SYMBOL_LEN)
+        {
+            self->tx_sample_idx = 0;
+
+            /* Clear the entire FFT complex plane using CMSIS-DSP vector fill */
+            ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
+
+            uint8_t tx_bits[OFDM_NUM_CHANNELS] = {0};
+            get_bits_cb(self, tx_bits);
+
+            /* MATHEMATICALLY CORRECT BPSK-OFDM MAPPING: */
+            /* Imaginary part MUST be 0.0 to preserve native CFFT subcarrier orthogonality. */
+            /* Single-sideband IQ signal is achieved by filling ONLY bins 1..8 and keeping bins 120..127 at 0. */
+            for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
+            {
+                uint32_t bin_idx = subcarrier_map[ch];
+
+                self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? magnitude : -magnitude; /* Real (I) component */
+                self->fft_buffer[bin_idx * 2 + 1] = 0.0;                        /* Imaginary (Q) component strictly ZERO */
+            }
+
+            /* Inverse Complex FFT execution: isInverseFFT = 1, bitReverseFlag = 1 */
+            //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
+            dsp_cfft(&self->cfft_inst, self->fft_buffer, 1);
+
+            /* Construct the Cyclic Prefix window using fast block memory transport */
+            uint32_t cp_start = (FFT_LEN - CYCLIC_PREFIX_LEN) * 2; // (128 - 32) * 2 = 192
+
+            /* Copy the tail part of the IFFT output to the beginning of the transmission frame */
+            ARM_MORPH(arm_copy)(&self->fft_buffer[cp_start],
+                                self->tx_time_buffer,
+                                CYCLIC_PREFIX_LEN * 2);
+
+            /* Copy the entire useful IFFT payload directly following the guard prefix interval */
+            ARM_MORPH(arm_copy)(self->fft_buffer,
+                                &self->tx_time_buffer[CYCLIC_PREFIX_LEN * 2],
+                                FFT_LEN * 2);
+
+            /* --- VECTOR OPTIMIZATION: TRANSITION WINDOWING VIA CMSIS-DSP MULT --- */
+            /* Smooth the absolute beginning of the symbol (Rising edge) */
+            ARM_MORPH(arm_mult)(self->tx_time_buffer,
+                                self->window_rise_complex,
+                                self->tx_time_buffer,
+								TX_W_LEN * 2);
+
+            /* Smooth the absolute end of the symbol (Falling edge) */
+            uint32_t sym_end_offset = (OFDM_SYMBOL_LEN - TX_W_LEN) * 2;
+            ARM_MORPH(arm_mult)(&self->tx_time_buffer[sym_end_offset],
+                                self->window_fall_complex,
+                                &self->tx_time_buffer[sym_end_offset],
+								TX_W_LEN * 2);
+       }
+
+        /* Stream serialized data samples into active processing streams for hftrx path */
+        out_buffer_i[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2];
+        out_buffer_q[sample_idx] = self->tx_time_buffer[self->tx_sample_idx * 2 + 1];
+
+        self->tx_sample_idx++;
+    }
+}
+
+/**
+ * @brief Resets transient caches and trackers inside the transmitter instance.
+ * @param self Pointer to the active transmitter context.
+ */
+static void ofdm_modem_tx_reset(ofdm_modem_tx_t *self)
+{
+    self->tx_sample_idx = 0;
+    ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
+    ofdm_packer_tx_reset(&self->ofdm_srv_tx);
+}
+
+static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
+{
+    ARM_MORPH(arm_cfft_init)(&self->cfft_inst, FFT_LEN);
+    self->rx_sample_idx = 0;
+    self->alpha_lock = 0.02;
+    ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
+    ARM_MORPH(arm_fill)(0, self->rx_time_buffer, OFDM_SYMBOL_LEN * 2);
+
+    for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
+    {
+        ofdm_subcarrier_bpsk_t *sub = &self->rx_subcarriers[ch];
+        sub->phase_nco = 0;
+        sub->phase_step_nco = 0;
+        sub->costas_kp = 0.04;
+        sub->costas_ki = 0.0008;
+        sub->costas_integrator = 0;
+        sub->phase_lock_metric = 0;
+        sub->is_phase_locked = 0;
+    }
+
+    /* PRE-CALCULATE RX COMPLEX WINDOW LUT USING arm_sin_cos_f32 */
+    for (int i = 0; i < RX_W_LEN; i++)
+    {
+        float32_t sin_val, cos_val;
+        float32_t phase_degrees = (float32_t)(M_PI * i / RX_W_LEN) * (180.0f / (float32_t)M_PI);
+
+        arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
+
+        FLOAT_t w_rise = (1 - (FLOAT_t)cos_val) / 2;
+        FLOAT_t w_fall = (1 + (FLOAT_t)cos_val) / 2;
+
+        self->window_rise_complex[i * 2]     = w_rise;
+        self->window_rise_complex[i * 2 + 1] = w_rise;
+
+        self->window_fall_complex[i * 2]     = w_fall;
+        self->window_fall_complex[i * 2 + 1] = w_fall;
+    }
+    ofdm_packer_rx_init(&self->ofdm_srv_rx);
+}
+
+/**
+ * @brief Forces a hard reset of operational internal receiver tracking loops.
+ * @param self Pointer to the active receiver context.
+ */
+static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
+{
+    self->rx_sample_idx = 0;
+    ARM_MORPH(arm_fill)(0, self->rx_time_buffer, OFDM_SYMBOL_LEN * 2);
+
+    for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
+    {
+        ofdm_subcarrier_bpsk_t *sub = &self->rx_subcarriers[ch];
+        sub->phase_nco = 0;
+        sub->phase_step_nco = 0;
+        sub->costas_integrator = 0;
+        sub->phase_lock_metric = 0;
+        sub->is_phase_locked = 0;
+    }
+    ofdm_packer_rx_reset(& self->ofdm_srv_rx);
+}
+
+/**
+ * @brief Block-based receiver demodulation processing with RX Time-Domain Windowing.
+ *        Trigonometry optimized via direct arm_sin_cos_f32 execution.
+ */
+static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits))
+{
+    for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
+    {
+        /* Gather raw input pairs sequentially inside the time frame sliding window */
+        self->rx_time_buffer[self->rx_sample_idx * 2]     = in_buffer_i[sample_idx];
+        self->rx_time_buffer[self->rx_sample_idx * 2 + 1] = in_buffer_q[sample_idx];
+        self->rx_sample_idx++;
+
+        /* Process when a full symbol payload boundaries are successfully accumulated */
+        if (self->rx_sample_idx >= OFDM_SYMBOL_LEN)
+        {
+            self->rx_sample_idx = 0;
+
+            /* Slice out the cyclic prefix guard band via high speed memory transport */
+            ARM_MORPH(arm_copy)(&self->rx_time_buffer[CYCLIC_PREFIX_LEN * 2],
+                                self->fft_buffer,
+                                FFT_LEN * 2);
+
+            /* VECTOR OPTIMIZATION: WINDOWING VIA CMSIS-DSP MULT */
+            ARM_MORPH(arm_mult)(self->fft_buffer,
+                                self->window_rise_complex,
+                                self->fft_buffer,
+                                RX_W_LEN * 2);
+
+            uint32_t fft_end_offset = (FFT_LEN - RX_W_LEN) * 2;
+            ARM_MORPH(arm_mult)(&self->fft_buffer[fft_end_offset],
+                                self->window_fall_complex,
+                                &self->fft_buffer[fft_end_offset],
+                                RX_W_LEN * 2);
+
+            /* Forward Complex FFT conversion: isInverseFFT = 0, bitReverseFlag = 1 */
+            //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 0, 1);
+            dsp_cfft(&self->cfft_inst, self->fft_buffer, 0);
+
+            uint8_t rx_bits[OFDM_NUM_CHANNELS] = {0};
+
+            /* De-rotate phase offsets and track multi-frequency channel state variations */
+            for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
+            {
+                uint32_t bin_idx = subcarrier_map[ch];
+                ofdm_subcarrier_bpsk_t *sub = &self->rx_subcarriers[ch];
+
+                FLOAT_t raw_i = self->fft_buffer[bin_idx * 2];
+                FLOAT_t raw_q = self->fft_buffer[bin_idx * 2 + 1];
+
+                /* Declare strict float32_t targets required by direct CMSIS-DSP API */
+                float32_t sin_val, cos_val;
+
+                /* Convert phase from radians [0..2*PI] to degrees [-180..180] for arm_sin_cos_f32 */
+                float32_t phase_degrees = (float32_t)sub->phase_nco * (180.0f / (float32_t)M_PI);
+                if (phase_degrees > 180.0f) {
+                    phase_degrees -= 360.0f;
+                }
+
+                /* Call native float32 CMSIS function directly to compute sin/cos simultaneously */
+                arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
+
+                /* Cast output back to polymorphic FLOAT_t wrapper for processing loop */
+                FLOAT_t sin_p = (FLOAT_t)sin_val;
+                FLOAT_t cos_p = (FLOAT_t)cos_val;
+
+                /* Complex phase de-rotation multiplication */
+                FLOAT_t derot_i = raw_i * cos_p + raw_q * sin_p;
+                FLOAT_t derot_q = raw_q * cos_p - raw_i * sin_p;
+
+                /* Bounded Amplitude Normalization for Costas Loop stability */
+                FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
+                if (mag2 > 1e-6)
+                {
+                    FLOAT_t mag = SQRTF(mag2);
+                    derot_i /= mag;
+                    derot_q /= mag;
+                }
+
+                /* Costas BPSK Phase Error Detector metric: e = I * Q */
+                FLOAT_t error_c = derot_i * derot_q;
+
+                /* Closed-loop frequency and tracking updates */
+                sub->costas_integrator += error_c * sub->costas_ki;
+                sub->phase_step_nco = error_c * sub->costas_kp + sub->costas_integrator;
+
+                /* Quality monitoring assessment metric calculations */
+                FLOAT_t instant_metric = (derot_i * derot_i) - (derot_q * derot_q);
+                sub->phase_lock_metric += self->alpha_lock * (instant_metric - sub->phase_lock_metric);
+                sub->is_phase_locked = (sub->phase_lock_metric > 0.55) ? 1 : 0;
+
+                /* Slicer decision boundary output evaluation */
+                rx_bits[ch] = (derot_i >= 0) ? 1 : 0;
+
+                /* Update step bounded modulo 2*pi execution */
+                sub->phase_nco += sub->phase_step_nco;
+                if (sub->phase_nco >= 2 * M_PI) sub->phase_nco -= 2 * M_PI;
+                if (sub->phase_nco < 0) sub->phase_nco += 2 * M_PI;
+            }
+
+            /* Direct processing of extracted frame data stream */
+            process_bits_cb(self, rx_bits);
+        }
+    }
+}
 
 //////////////////
 /// test
@@ -1059,7 +1004,6 @@ void modem_init(void)
 	ofdm_modem_tx_init(& tx_fill);
 	ofdm_modem_rx_init(& rx);
 
-	dsp_ofdm_modem_init();
 	return;
 }
 
