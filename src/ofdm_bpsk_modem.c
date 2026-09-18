@@ -456,9 +456,9 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
     ofdm_packer_rx_init(&self->ofdm_srv_rx);
 
     /* Initialize AGC parameters with implicit type promotion */
-    self->agc_gain = 1.0;
+    self->agc_gain = 1;
     self->agc_env = 0.01;
-    self->agc_target = 1.0;
+    self->agc_target = 1;
 
     /* Time constants tailored for 256-point symbol rate tracking on HF */
     self->agc_attack = 0.1;      /* Fast attack to handle sudden ionospheric bursts */
@@ -467,9 +467,9 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
     /* Сброс автокоррелятора */
     self->sync_state = STATE_SEARCHING_PREAMBLE;
     self->delay_ptr = 0;
-    self->R_i = 0.0f;
-    self->R_q = 0.0f;
-    self->E = 0.001f; /* Защита от деления на ноль */
+    self->R_i = 0;
+    self->R_q = 0;
+    self->E = 0.001; /* Защита от деления на ноль */
 
     ARM_MORPH(arm_fill)(0, self->delay_buffer_i, SYNC_HALF_LEN);
     ARM_MORPH(arm_fill)(0, self->delay_buffer_q, SYNC_HALF_LEN);
@@ -496,9 +496,9 @@ static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
     ofdm_packer_rx_reset(& self->ofdm_srv_rx);
 
     /* Initialize AGC parameters with implicit type promotion */
-    self->agc_gain = 1.0;
+    self->agc_gain = 1;
     self->agc_env = 0.01;
-    self->agc_target = 1.0;
+    self->agc_target = 1;
 
     /* Time constants tailored for 256-point symbol rate tracking on HF */
     self->agc_attack = 0.1;      /* Fast attack to handle sudden ionospheric bursts */
@@ -507,9 +507,9 @@ static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
     /* Сброс автокоррелятора */
     self->sync_state = STATE_SEARCHING_PREAMBLE;
     self->delay_ptr = 0;
-    self->R_i = 0.0f;
-    self->R_q = 0.0f;
-    self->E = 0.001f; /* Защита от деления на ноль */
+    self->R_i = 0;
+    self->R_q = 0;
+    self->E = 0.001; /* Защита от деления на ноль */
 
     ARM_MORPH(arm_fill)(0, self->delay_buffer_i, SYNC_HALF_LEN);
     ARM_MORPH(arm_fill)(0, self->delay_buffer_q, SYNC_HALF_LEN);
@@ -540,11 +540,11 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
 
             /* --- HIGH SPEED DIGITAL AGC ENGINE --- */
             /* Compute the total energy of the 256-point complex time-domain block */
-            FLOAT_t power_sum = 0;
+            FLOAT_t power_sum;
             ARM_MORPH(arm_power)(self->fft_buffer, FFT_LEN * 2, &power_sum);
 
             /* Calculate exact RMS using SQRTF macro from dspdefines.h */
-            FLOAT_t current_rms = SQRTF(power_sum / (FLOAT_t)FFT_LEN);
+            const FLOAT_t current_rms = SQRTF(power_sum / (FLOAT_t)FFT_LEN);
 
             /* Dynamic envelope tracking (Attack / Decay leaky integrator) */
             if (current_rms > self->agc_env) {
@@ -564,7 +564,7 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
 
             /* --- VECTOR OPTIMIZATION: WINDOWING VIA CMSIS-DSP MULT --- */
             ARM_MORPH(arm_mult)(self->fft_buffer, self->window_rise_complex, self->fft_buffer, RX_W_LEN * 2);
-            uint32_t fft_end_offset = (FFT_LEN - RX_W_LEN) * 2;
+            const uint32_t fft_end_offset = (FFT_LEN - RX_W_LEN) * 2;
             ARM_MORPH(arm_mult)(&self->fft_buffer[fft_end_offset], self->window_fall_complex, &self->fft_buffer[fft_end_offset], RX_W_LEN * 2);
 
             /* ... (дальнейший ваш цикл деротации поднесущих через arm_sin_cos_f32) ... */
@@ -577,11 +577,11 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
             /* De-rotate phase offsets and track multi-frequency channel state variations */
             for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
             {
-                uint32_t bin_idx = subcarrier_map[ch];
+            	const uint32_t bin_idx = subcarrier_map[ch];
                 ofdm_subcarrier_bpsk_t *sub = &self->rx_subcarriers[ch];
 
-                FLOAT_t raw_i = self->fft_buffer[bin_idx * 2];
-                FLOAT_t raw_q = self->fft_buffer[bin_idx * 2 + 1];
+                const FLOAT_t raw_i = self->fft_buffer[bin_idx * 2];
+                const FLOAT_t raw_q = self->fft_buffer[bin_idx * 2 + 1];
 
                 /* Declare strict float32_t targets required by direct CMSIS-DSP API */
                 float32_t sin_val, cos_val;
@@ -596,20 +596,19 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
                 arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
                 /* Cast output back to polymorphic FLOAT_t wrapper for processing loop */
-                FLOAT_t sin_p = (FLOAT_t)sin_val;
-                FLOAT_t cos_p = (FLOAT_t)cos_val;
+                const FLOAT_t sin_p = (FLOAT_t)sin_val;
+                const FLOAT_t cos_p = (FLOAT_t)cos_val;
 
                 /* Complex phase de-rotation multiplication */
                 FLOAT_t derot_i = raw_i * cos_p + raw_q * sin_p;
                 FLOAT_t derot_q = raw_q * cos_p - raw_i * sin_p;
 
                 /* Bounded Amplitude Normalization for Costas Loop stability */
-                FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
-                if (mag2 > 1e-6)
-                {
-                    FLOAT_t mag = SQRTF(mag2);
-                    derot_i /= mag;
-                    derot_q /= mag;
+                const FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
+                if (mag2 > 1e-6) {
+                	const FLOAT_t mag = 1 / SQRTF(mag2);
+                    derot_i *= mag;
+                    derot_q *= mag;
                 }
 
                 /* Costas BPSK Phase Error Detector metric: e = I * Q */
@@ -639,19 +638,19 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
     }
 }
 
-void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits))
+void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits))
 {
     const FLOAT_t sync_threshold = 0.55;
     const FLOAT_t alpha_sync = 0.05;
 
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
-        FLOAT_t curr_i = in_buffer_i[sample_idx];
-        FLOAT_t curr_q = in_buffer_q[sample_idx];
+        const FLOAT_t curr_i = in_buffer_i[sample_idx];
+        const FLOAT_t curr_q = in_buffer_q[sample_idx];
 
         /* Извлекаем задержанный на половину БПФ (128 сэмплов) сигнал */
-        FLOAT_t del_i = self->delay_buffer_i[self->delay_ptr];
-        FLOAT_t del_q = self->delay_buffer_q[self->delay_ptr];
+        const FLOAT_t del_i = self->delay_buffer_i[self->delay_ptr];
+        const FLOAT_t del_q = self->delay_buffer_q[self->delay_ptr];
 
         /* Обновляем скользящую линию задержки */
         self->delay_buffer_i[self->delay_ptr] = curr_i;
@@ -659,8 +658,8 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
         self->delay_ptr = (self->delay_ptr + 1) % SYNC_HALF_LEN;
 
         /* Мгновенная взаимная корреляция текущего и задержанного отсчетов */
-        FLOAT_t cross_i = curr_i * del_i + curr_q * del_q;
-        FLOAT_t cross_q = curr_q * del_i - curr_i * del_q;
+        const FLOAT_t cross_i = curr_i * del_i + curr_q * del_q;
+        const FLOAT_t cross_q = curr_q * del_i - curr_i * del_q;
 
         /* Мгновенная энергия половины символа */
         FLOAT_t curr_energy = curr_i * curr_i + curr_q * curr_q;
@@ -671,9 +670,9 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
         self->E   += alpha_sync * (curr_energy - self->E);
 
         /* Расчет квадрата модуля метрики Шмидля-Кокса */
-        FLOAT_t mag_R2 = self->R_i * self->R_i + self->R_q * self->R_q;
-        FLOAT_t E2 = self->E * self->E;
-        FLOAT_t metric = mag_R2 / (E2 + 1e-6f);
+        const FLOAT_t mag_R2 = self->R_i * self->R_i + self->R_q * self->R_q;
+        const FLOAT_t E2 = self->E * self->E;
+        const FLOAT_t metric = mag_R2 / (E2 + 1e-6f);
 
         /* Конечно-автоматный триггер захвата кадра (FSM) */
         if (self->sync_state == STATE_SEARCHING_PREAMBLE)
@@ -747,19 +746,19 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
                 }
                 arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
-                FLOAT_t sin_p = (FLOAT_t)sin_val;
-                FLOAT_t cos_p = (FLOAT_t)cos_val;
+                const FLOAT_t sin_p = (FLOAT_t)sin_val;
+                const FLOAT_t cos_p = (FLOAT_t)cos_val;
 
                 /* Деротация (поворот) фазы */
                 FLOAT_t derot_i = raw_i * cos_p + raw_q * sin_p;
                 FLOAT_t derot_q = raw_q * cos_p - raw_i * sin_p;
 
                 /* Амплитудная нормировка созвездия */
-                FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
+                const FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
                 if (mag2 > 1e-6) {
-                    FLOAT_t mag = SQRTF(mag2);
-                    derot_i /= mag;
-                    derot_q /= mag;
+                	const FLOAT_t mag = 1 / SQRTF(mag2);
+                    derot_i *= mag;
+                    derot_q *= mag;
                 }
 
                 /* Расчет фазовой ошибки дискриминатора Костаса для BPSK */
@@ -1096,7 +1095,7 @@ void modem_parse(const IFADCvalue_t * buff)
 	const adapter_t * const ap = & ifcodecrx;
 	const FLOAT_t i = adpt_input(ap, buff [DMABUF32RX0I]);
 	const FLOAT_t q = adpt_input(ap, buff [DMABUF32RX0Q]);
-	NEWofdm_modem_rx_block(& rx_stream, & i, & q, 1, dsp_ofdm_rx_bits_bridge);
+	ofdm_modem_rx_block(& rx_stream, & i, & q, 1, dsp_ofdm_rx_bits_bridge);
 }
 
 
@@ -1197,7 +1196,8 @@ void modem_test(void)
 	pathclipping(buffer_i, BUFFLEN);
 	pathclipping(buffer_q, BUFFLEN);
 	nullmodem(buffer_i, buffer_q, BUFFLEN);
-	NEWofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_null_bits);
+	ofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_null_bits);
+
 	unsigned i;
 	for (i = 0; i < 100; ++ i)
 	{
@@ -1206,7 +1206,7 @@ void modem_test(void)
 		pathclipping(buffer_i, BUFFLEN);
 		pathclipping(buffer_q, BUFFLEN);
 		nullmodem(buffer_i, buffer_q, BUFFLEN);
-		NEWofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_bits);
+		OLDofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_bits);
 	}
 	PRINTF("\n");
 	PRINTF("OFDM_SYMBOL_LEN=%d\n", (int) OFDM_SYMBOL_LEN);
