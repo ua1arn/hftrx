@@ -521,7 +521,7 @@ static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
  */
 static void OLDofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_modem_tx_t *self, uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
 {
-	const FLOAT_t magnitude = 32;
+	const FLOAT_t magnitude = 32 / 2;
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
         /* Regenerate symbol payload if the active time domain vector cache is exhausted */
@@ -592,11 +592,17 @@ static void OLDofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(of
  */
 static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits))
 {
+    const FLOAT_t sync_threshold = 0.55;
+    const FLOAT_t alpha_sync = 0.05;
+
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
+        const FLOAT_t curr_i = in_buffer_i[sample_idx];
+        const FLOAT_t curr_q = in_buffer_q[sample_idx];
+
         /* Gather raw input pairs sequentially inside the time frame sliding window */
-        self->rx_time_buffer[self->rx_sample_idx * 2]     = in_buffer_i[sample_idx];
-        self->rx_time_buffer[self->rx_sample_idx * 2 + 1] = in_buffer_q[sample_idx];
+        self->rx_time_buffer[self->rx_sample_idx * 2]     = curr_i;
+        self->rx_time_buffer[self->rx_sample_idx * 2 + 1] = curr_q;
         self->rx_sample_idx++;
 
         /* Process when a full symbol payload boundaries are successfully accumulated */
@@ -611,7 +617,7 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
 
             /* --- HIGH SPEED DIGITAL AGC ENGINE --- */
             /* Compute the total energy of the 256-point complex time-domain block */
-            FLOAT_t power_sum = 0;
+            FLOAT_t power_sum;
             ARM_MORPH(arm_power)(self->fft_buffer, FFT_LEN * 2, &power_sum);
 
             /* Calculate exact RMS using SQRTF macro from dspdefines.h */
@@ -721,6 +727,10 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
     }
 }
 
+/**
+ * @brief Block-based receiver demodulation processing with RX Time-Domain Windowing.
+ *        Trigonometry optimized via direct arm_sin_cos_f32 execution.
+ */
 void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits))
 {
     const FLOAT_t sync_threshold = 0.55;
@@ -730,89 +740,103 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
     {
         const FLOAT_t curr_i = in_buffer_i[sample_idx];
         const FLOAT_t curr_q = in_buffer_q[sample_idx];
+	{
 
-        /* Извлекаем задержанный на половину БПФ (128 сэмплов) сигнал */
-        const FLOAT_t del_i = self->delay_buffer_i[self->delay_ptr];
-        const FLOAT_t del_q = self->delay_buffer_q[self->delay_ptr];
+		/* Извлекаем задержанный на половину БПФ (128 сэмплов) сигнал */
+		const FLOAT_t del_i = self->delay_buffer_i[self->delay_ptr];
+		const FLOAT_t del_q = self->delay_buffer_q[self->delay_ptr];
 
-        /* Обновляем скользящую линию задержки */
-        self->delay_buffer_i[self->delay_ptr] = curr_i;
-        self->delay_buffer_q[self->delay_ptr] = curr_q;
-        self->delay_ptr = (self->delay_ptr + 1) % SYNC_HALF_LEN;
+		/* Обновляем скользящую линию задержки */
+		self->delay_buffer_i[self->delay_ptr] = curr_i;
+		self->delay_buffer_q[self->delay_ptr] = curr_q;
+		self->delay_ptr = (self->delay_ptr + 1) % SYNC_HALF_LEN;
 
-        /* Мгновенная взаимная корреляция текущего и задержанного отсчетов */
-        const FLOAT_t cross_i = curr_i * del_i + curr_q * del_q;
-        const FLOAT_t cross_q = curr_q * del_i - curr_i * del_q;
+		/* Мгновенная взаимная корреляция текущего и задержанного отсчетов */
+		const FLOAT_t cross_i = curr_i * del_i + curr_q * del_q;
+		const FLOAT_t cross_q = curr_q * del_i - curr_i * del_q;
 
-        /* Мгновенная энергия половины символа */
-        FLOAT_t curr_energy = curr_i * curr_i + curr_q * curr_q;
+		/* Мгновенная энергия половины символа */
+		FLOAT_t curr_energy = curr_i * curr_i + curr_q * curr_q;
 
-        /* Скользящее интегрирование (экспоненциальный фильтр) */
-        self->R_i += alpha_sync * (cross_i - self->R_i);
-        self->R_q += alpha_sync * (cross_q - self->R_q);
-        self->E   += alpha_sync * (curr_energy - self->E);
+		/* Скользящее интегрирование (экспоненциальный фильтр) */
+		self->R_i += alpha_sync * (cross_i - self->R_i);
+		self->R_q += alpha_sync * (cross_q - self->R_q);
+		self->E   += alpha_sync * (curr_energy - self->E);
 
-        /* Расчет квадрата модуля метрики Шмидля-Кокса */
-        const FLOAT_t mag_R2 = self->R_i * self->R_i + self->R_q * self->R_q;
-        const FLOAT_t E2 = self->E * self->E;
-        const FLOAT_t metric = mag_R2 / (E2 + 1e-6f);
+		/* Расчет квадрата модуля метрики Шмидля-Кокса */
+		const FLOAT_t mag_R2 = self->R_i * self->R_i + self->R_q * self->R_q;
+		const FLOAT_t E2 = self->E * self->E;
+		const FLOAT_t metric = mag_R2 / (E2 + 1e-6f);
 
-        /* Конечно-автоматный триггер захвата кадра (FSM) */
-        if (self->sync_state == STATE_SEARCHING_PREAMBLE)
-        {
-            if (metric > sync_threshold)
-            {
-                /* Преамбула найдена: сбрасываем индекс под полезное тело БПФ */
-                self->sync_state = STATE_PROCESSING_DATA;
-                self->rx_sample_idx = 0;
-            }
-            else
-            {
-                continue; /* Продолжаем скользящий поиск в эфире */
-            }
-        }
+		/* Конечно-автоматный триггер захвата кадра (FSM) */
+		if (self->sync_state == STATE_SEARCHING_PREAMBLE)
+		{
+			if (metric > sync_threshold)
+			{
+				/* Преамбула найдена: сбрасываем индекс под полезное тело БПФ */
+				self->sync_state = STATE_PROCESSING_DATA;
+				self->rx_sample_idx = 0;
+			}
+			else
+			{
+				continue; /* Продолжаем скользящий поиск в эфире */
+			}
+		}
+	}
 
         /* Накопление комплексного кадра во временной буфер */
         self->rx_time_buffer[self->rx_sample_idx * 2] = curr_i;
         self->rx_time_buffer[self->rx_sample_idx * 2 + 1] = curr_q;
         self->rx_sample_idx++;
 
-        /* Если накопили полный OFDM символ (включая полезное тело сигнала) */
+        /* Process when a full symbol payload boundaries are successfully accumulated */
         if (self->rx_sample_idx >= OFDM_SYMBOL_LEN)
         {
             self->rx_sample_idx = 0;
 
-            /* 1. Извлекаем тело сигнала, отрезая циклический префикс */
-            ARM_MORPH(arm_copy)(&self->rx_time_buffer[CYCLIC_PREFIX_LEN * 2], self->fft_buffer, FFT_LEN * 2);
+            /* Slice out the cyclic prefix guard band via high speed memory transport */
+            ARM_MORPH(arm_copy)(&self->rx_time_buffer[CYCLIC_PREFIX_LEN * 2],
+                                self->fft_buffer,
+                                FFT_LEN * 2);
 
-            /* 2. Блочная цифровая АРУ по RMS мощности */
+            /* --- HIGH SPEED DIGITAL AGC ENGINE --- */
+            /* Compute the total energy of the 256-point complex time-domain block */
             FLOAT_t power_sum;
             ARM_MORPH(arm_power)(self->fft_buffer, FFT_LEN * 2, &power_sum);
+
+            /* Calculate exact RMS using SQRTF macro from dspdefines.h */
             FLOAT_t current_rms = SQRTF(power_sum / (FLOAT_t)FFT_LEN);
 
+            /* Dynamic envelope tracking (Attack / Decay leaky integrator) */
             if (current_rms > self->agc_env) {
                 self->agc_env += self->agc_attack * (current_rms - self->agc_env);
             } else {
                 self->agc_env += self->agc_decay * (current_rms - self->agc_env);
             }
 
-            if (self->agc_env > 1e-5f) {
+            /* Guard against division by zero */
+            if (self->agc_env > 1e-5) {
                 self->agc_gain = self->agc_target / self->agc_env;
             }
-            ARM_MORPH(arm_scale)(self->fft_buffer, self->agc_gain, self->fft_buffer, FFT_LEN * 2);
 
-            /* 3. Векторное оконное сглаживание краев перед БПФ */
+            /* Vectorized Scaling: Perfectly normalize the block amplitude before FFT stage */
+            ARM_MORPH(arm_scale)(self->fft_buffer, self->agc_gain, self->fft_buffer, FFT_LEN * 2);
+            /* ------------------------------------- */
+
+            /* --- VECTOR OPTIMIZATION: WINDOWING VIA CMSIS-DSP MULT --- */
             ARM_MORPH(arm_mult)(self->fft_buffer, self->window_rise_complex, self->fft_buffer, RX_W_LEN * 2);
             uint32_t fft_end_offset = (FFT_LEN - RX_W_LEN) * 2;
             ARM_MORPH(arm_mult)(&self->fft_buffer[fft_end_offset], self->window_fall_complex, &self->fft_buffer[fft_end_offset], RX_W_LEN * 2);
 
-            /* 4. Прямое комплексное преобразование Фурье */
+            /* ... (дальнейший ваш цикл деротации поднесущих через arm_sin_cos_f32) ... */
+            /* Forward Complex FFT conversion: isInverseFFT = 0, bitReverseFlag = 1 */
+            //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 0, 1);
             dsp_cfft(&self->cfft_inst, self->fft_buffer, 0);
 
             uint8_t rx_bits[OFDM_NUM_CHANNELS] = {0};
             uint32_t any_channel_locked = 0;
 
-            /* 5. Цикл демодуляции и петель Костаса по всем 8 поднесущим */
+            /* De-rotate phase offsets and track multi-frequency channel state variations */
             for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
             {
                 const uint32_t bin_idx = subcarrier_map[ch];
@@ -821,35 +845,43 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
                 FLOAT_t raw_i = self->fft_buffer[bin_idx * 2];
                 FLOAT_t raw_q = self->fft_buffer[bin_idx * 2 + 1];
 
-                /* Одновременный быстрый расчет синуса и косинуса */
+                /* Declare strict float32_t targets required by direct CMSIS-DSP API */
                 float32_t sin_val, cos_val;
+
+                /* Convert phase from radians [0..2*PI] to degrees [-180..180] for arm_sin_cos_f32 */
                 float32_t phase_degrees = (float32_t)sub->phase_nco * (180.0f / (float32_t)M_PI);
                 if (phase_degrees > 180.0f) {
                     phase_degrees -= 360.0f;
                 }
+
+                /* Call native float32 CMSIS function directly to compute sin/cos simultaneously */
                 arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
-                const FLOAT_t sin_p = (FLOAT_t)sin_val;
-                const FLOAT_t cos_p = (FLOAT_t)cos_val;
+                /* Cast output back to polymorphic FLOAT_t wrapper for processing loop */
+                FLOAT_t sin_p = (FLOAT_t)sin_val;
+                FLOAT_t cos_p = (FLOAT_t)cos_val;
 
-                /* Деротация (поворот) фазы */
+                /* Complex phase de-rotation multiplication */
                 FLOAT_t derot_i = raw_i * cos_p + raw_q * sin_p;
                 FLOAT_t derot_q = raw_q * cos_p - raw_i * sin_p;
 
-                /* Амплитудная нормировка созвездия */
-                const FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
-                if (mag2 > 1e-6) {
-                	const FLOAT_t mag = 1 / SQRTF(mag2);
-                    derot_i *= mag;
-                    derot_q *= mag;
+                /* Bounded Amplitude Normalization for Costas Loop stability */
+                FLOAT_t mag2 = derot_i * derot_i + derot_q * derot_q;
+                if (mag2 > 1e-6)
+                {
+                    FLOAT_t mag = SQRTF(mag2);
+                    derot_i /= mag;
+                    derot_q /= mag;
                 }
 
-                /* Расчет фазовой ошибки дискриминатора Костаса для BPSK */
+                /* Costas BPSK Phase Error Detector metric: e = I * Q */
                 FLOAT_t error_c = derot_i * derot_q;
+
+                /* Closed-loop frequency and tracking updates */
                 sub->costas_integrator += error_c * sub->costas_ki;
                 sub->phase_step_nco = error_c * sub->costas_kp + sub->costas_integrator;
 
-                /* Оценка качества удержания захвата фазы (Lock Detector) */
+                /* Quality monitoring assessment metric calculations */
                 FLOAT_t instant_metric = (derot_i * derot_i) - (derot_q * derot_q);
                 sub->phase_lock_metric += self->alpha_lock * (instant_metric - sub->phase_lock_metric);
                 sub->is_phase_locked = (sub->phase_lock_metric > 0.55) ? 1 : 0;
@@ -858,10 +890,10 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
                     any_channel_locked = 1;
                 }
 
-                /* Жесткое решение демодулятора (Slicer) */
-                rx_bits[ch] = ! (derot_i >= 0) ? 1 : 0;		// ТУТ ФИКС БАГА
+                /* Slicer decision boundary output evaluation */
+                rx_bits[ch] = ! (derot_i >= 0) ? 1 : 0;
 
-                /* Шаг аккумулятора фазы NCO */
+                /* Update step bounded modulo 2*pi execution */
                 sub->phase_nco += sub->phase_step_nco;
                 if (sub->phase_nco >= 2 * M_PI) sub->phase_nco -= 2 * M_PI;
                 if (sub->phase_nco < 0) sub->phase_nco += 2 * M_PI;
@@ -881,7 +913,7 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
 
 void NEWofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_modem_tx_t *self, uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
 {
-	const FLOAT_t magnitude = 32;
+	const FLOAT_t magnitude = 32 / 2;
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
         /* Если кеш временных сэмплов текущего OFDM-символа исчерпан */
@@ -1276,7 +1308,7 @@ void modem_test(void)
 
 	void (* rxfn)(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits));
 
-	rxfn = 1 ?
+	rxfn = !1 ?
 			OLDofdm_modem_rx_block :
 			NEWofdm_modem_rx_block;
 
