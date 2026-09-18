@@ -677,10 +677,15 @@ void audio_rx_equalizer(FLOAT_t *buffer, uint_fast16_t size);
 #if WITHIF4DSP
 
 void modem_init(void);
-void modem_test(void);
+
+void modem_spool(void * ctx);
+void modem_send(uint_fast8_t c);
 void modem_fill(IFADCvalue_t * buff);
 void modem_parse(const IFADCvalue_t * buff);
+
+void modem_test(void);
 FLOAT32P_t xget_float_monofreq(void);	// modem test LO quadratures
+
 #endif /* WITHIF4DSP */
 
 //////////////////////////

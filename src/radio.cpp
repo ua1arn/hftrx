@@ -21158,9 +21158,18 @@ static STTE_t hamradio_tune_step(void)
 }
 
 #if WITHDEBUG
+
+
+__WEAK void modem_spool(void * ctx) { }
+__WEAK void modem_send(uint_fast8_t c) {}
+
 static void keyspoolprocess(void * ctx)
 {
+	(void) ctx;	// unused parameter
 #if ! defined (HAVE_BTSTACK_STDIN)
+
+	modem_spool(NULL);
+
 #if 0
 	uint_fast16_t dtmfch;
 	if (dtmf_scan((& dtmfch)))
@@ -21172,6 +21181,7 @@ static void keyspoolprocess(void * ctx)
 	char c;
 	if (dbg_getchar(& c))
 	{
+		modem_send(c);
 		switch (c)
 		{
 		case 0x00:

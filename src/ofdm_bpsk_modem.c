@@ -25,9 +25,9 @@
 /* Simple FIFO/Ring Buffer structure for USB stream interfacing */
 typedef struct {
     uint8_t storage[MODEM_FIFO_SIZE];
-    uint32_t head;
-    uint32_t tail;
-    uint32_t count;
+    volatile uint32_t head;
+    volatile uint32_t tail;
+    volatile uint32_t count;
 } modem_fifo_t;
 
 /* Independent Transmitter Packer/Interleaver/FEC Context */
@@ -948,16 +948,14 @@ static void test_ofdm_process_bits(ofdm_modem_rx_t *self, const uint8_t *bits)
 #endif
 }
 
-static ofdm_modem_tx_t tx;
-static ofdm_modem_tx_t tx_fill;
-static ofdm_modem_rx_t rx;
+static ofdm_modem_tx_t tx_stream;
 static ofdm_modem_rx_t rx_stream;
 
 void modem_fill(IFADCvalue_t * buff)
 {
 	const adapter_t * const ap = & ifcodecrx;
 	FLOAT_t i, q;
-	ofdm_modem_tx_block(& tx_fill, test_ofdm_get_bits_fill, & i, & q, 1);
+	ofdm_modem_tx_block(& tx_stream, dsp_ofdm_tx_bits_bridge, & i, & q, 1);
 	FLOAT_t scale = 0.1;
 
 	buff [DMABUF32RX0I] = adpt_output(ap, i * scale);
@@ -969,9 +967,26 @@ void modem_parse(const IFADCvalue_t * buff)
 	const adapter_t * const ap = & ifcodecrx;
 	const FLOAT_t i = adpt_input(ap, buff [DMABUF32RX0I]);
 	const FLOAT_t q = adpt_input(ap, buff [DMABUF32RX0Q]);
-	ofdm_modem_rx_block(& rx, & i, & q, 1, test_ofdm_process_bits);
+	ofdm_modem_rx_block(& rx_stream, & i, & q, 1, dsp_ofdm_rx_bits_bridge);
 }
 
+
+void modem_spool(void * ctx)
+{
+	uint8_t c;
+	if (dsp_ofdm_pop_char_from_rx(& rx_stream, & c))
+	{
+		PRINTF("ofdm rx: %02X\n", c);
+	}
+
+}
+
+void modem_send(uint_fast8_t c)
+{
+	dsp_ofdm_push_char_to_tx(& tx_stream, c);
+}
+
+///////////////////////////////////////////
 static FLOAT_t vming, vmaxg;
 
 static void pathclipping(FLOAT_t * buff, unsigned len)
@@ -1017,11 +1032,7 @@ static void nullmodem(FLOAT_t * buff_i, FLOAT_t * buff_q, unsigned len)
 
 void modem_init(void)
 {
-	TP();
-
-	ofdm_modem_tx_init(& tx);
-	ofdm_modem_tx_init(& tx_fill);
-	ofdm_modem_rx_init(& rx);
+	ofdm_modem_tx_init(& tx_stream);
 	ofdm_modem_rx_init(& rx_stream);
 
 	return;
@@ -1031,13 +1042,16 @@ void modem_test(void)
 {
 	TP();
 
-//	ofdm_modem_tx_init(& tx);
-//	ofdm_modem_tx_init(& tx_fill);
-//	ofdm_modem_rx_init(& rx);
+	ofdm_modem_tx_t tx;
+	ofdm_modem_rx_t rx;
 
 	enum { BUFFLEN = 256 };
 	FLOAT_t buffer_i [BUFFLEN];
 	FLOAT_t buffer_q [BUFFLEN];
+
+
+	ofdm_modem_tx_init(& tx);
+	ofdm_modem_rx_init(& rx);
 
 	ofdm_modem_tx_block(& tx, test_ofdm_get_preamble_bits, buffer_i, buffer_q, BUFFLEN);
 	pathclipping(buffer_i, BUFFLEN);
