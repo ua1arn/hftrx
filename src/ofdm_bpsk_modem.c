@@ -281,6 +281,14 @@ static void ofdm_packer_process_bits_callback(ofdm_packer_rx_t * self, const uin
 
 #define TX_W_LEN   	8
 #define RX_W_LEN 	8
+
+#define SYNC_HALF_LEN   128  /* FFT_LEN / 2 */
+
+typedef enum {
+    STATE_SEARCHING_PREAMBLE = 0,
+    STATE_PROCESSING_DATA
+} sync_state_t;
+
 /*
  * Symmetric Subcarrier Map for Quadrature Up-Converter:
  * Bins 1..4   -> Positive frequencies (USB): +375, +750, +1125, +1500 Hz
@@ -319,6 +327,9 @@ typedef struct {
     FLOAT_t window_fall_complex[TX_W_LEN * 2];
 
     ofdm_packer_tx_t ofdm_srv_tx;
+
+    uint8_t tx_preamble_required;
+
 } ofdm_modem_tx_t;
 
 typedef struct {
@@ -343,7 +354,20 @@ typedef struct {
     FLOAT_t agc_target;          /* Desired RMS target for the FFT block */
     FLOAT_t agc_attack;          /* Fast tracking coefficient */
     FLOAT_t agc_decay;           /* Slow release coefficient */
+
+    sync_state_t sync_state;
+
+    /* Скользящие линии задержки для комплексного сигнала */
+    FLOAT_t delay_buffer_i[SYNC_HALF_LEN];
+    FLOAT_t delay_buffer_q[SYNC_HALF_LEN];
+    uint32_t delay_ptr;
+
+    /* Метрики автокоррелятора Шмидля-Кокса */
+    FLOAT_t R_i;  /* Вещественная часть окна корреляции */
+    FLOAT_t R_q;  /* Мнимая часть окна корреляции */
+    FLOAT_t E;    /* Мгновенная энергия половины символа */
 } ofdm_modem_rx_t;
+
 
 /**
  * @brief Runtime initialization of the standalone OFDM transmitter context.
@@ -378,6 +402,7 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
     }
     /* Initialize upper service data buffers and interleavers */
     ofdm_packer_tx_init(&self->ofdm_srv_tx);
+    self->tx_preamble_required = 0;
 }
 
 /**
@@ -509,6 +534,16 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
     /* Time constants tailored for 256-point symbol rate tracking on HF */
     self->agc_attack = 0.1;      /* Fast attack to handle sudden ionospheric bursts */
     self->agc_decay = 0.01;      /* Slow decay to prevent breathing on data changes */
+
+    /* Сброс автокоррелятора */
+    self->sync_state = STATE_SEARCHING_PREAMBLE;
+    self->delay_ptr = 0;
+    self->R_i = 0.0f;
+    self->R_q = 0.0f;
+    self->E = 0.001f; /* Защита от деления на ноль */
+
+    ARM_MORPH(arm_fill)(0, self->delay_buffer_i, SYNC_HALF_LEN);
+    ARM_MORPH(arm_fill)(0, self->delay_buffer_q, SYNC_HALF_LEN);
 }
 
 /**
@@ -530,6 +565,25 @@ static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
         sub->is_phase_locked = 0;
     }
     ofdm_packer_rx_reset(& self->ofdm_srv_rx);
+
+    /* Initialize AGC parameters with implicit type promotion */
+    self->agc_gain = 1.0;
+    self->agc_env = 0.01;
+    self->agc_target = 1.0;
+
+    /* Time constants tailored for 256-point symbol rate tracking on HF */
+    self->agc_attack = 0.1;      /* Fast attack to handle sudden ionospheric bursts */
+    self->agc_decay = 0.01;      /* Slow decay to prevent breathing on data changes */
+
+    /* Сброс автокоррелятора */
+    self->sync_state = STATE_SEARCHING_PREAMBLE;
+    self->delay_ptr = 0;
+    self->R_i = 0.0f;
+    self->R_q = 0.0f;
+    self->E = 0.001f; /* Защита от деления на ноль */
+
+    ARM_MORPH(arm_fill)(0, self->delay_buffer_i, SYNC_HALF_LEN);
+    ARM_MORPH(arm_fill)(0, self->delay_buffer_q, SYNC_HALF_LEN);
 }
 
 /**
@@ -655,19 +709,6 @@ static void ofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_
         }
     }
 }
-
-// ... и затем в основном цикле DUC/DDC трансивера:
-//ofdm_modem_tx_block(&ofdm_srv_tx, dsp_tx_bits_bridge, tx_buffer_i, tx_buffer_q, block_size);
-//ofdm_modem_rx_block(&ofdm_srv_rx, rx_buffer_i, rx_buffer_q, block_size, dsp_rx_bits_bridge);
-
-/*
- * OFDM Modem Integration Bridge for hftrx transceiver core
- * Integrates independent PHY and Service layer contexts into the DMA audio pipeline.
- */
-
-/* Include our newly created modem modules */
-//#include "ofdm_bpsk_modem.h"
-//#include "ofdm_bit_packer.h"
 
 /* ========================================================================== */
 /*                          STATIC CALLBACK BRIDGES                           */
@@ -848,8 +889,9 @@ static void test_ofdm_process_bits(ofdm_modem_rx_t *self, const uint8_t *bits)
 	v |= (UINT8_C(1) << 2) * !! bits [5];
 	v |= (UINT8_C(1) << 1) * !! bits [6];
 	v |= (UINT8_C(1) << 0) * !! bits [7];
-	//PRINTF("0x%02X, ", v);
+
 #if 1
+	//PRINTF("0x%02X, ", v);
 	PRINTF("%c", v);
 #else
 	conbuff [conbufidx] = v;
@@ -888,7 +930,7 @@ void modem_parse(const IFADCvalue_t * buff)
 void modem_spool(void * ctx)
 {
 	uint8_t c;
-	if (dsp_ofdm_pop_char_from_rx(& rx_stream, & c) && c != 0)
+	if (dsp_ofdm_pop_char_from_rx(& rx_stream, & c) && c != 0 && c != 0xFF)
 	{
 		PRINTF("ofdm rx: %02X\n", c);
 	}
@@ -897,6 +939,9 @@ void modem_spool(void * ctx)
 
 void modem_send(uint_fast8_t c)
 {
+	if (c == 'e')
+		tx_stream.tx_preamble_required = 1;
+
 	dsp_ofdm_push_char_to_tx(& tx_stream, c);
 }
 
@@ -967,6 +1012,7 @@ void modem_test(void)
 	ofdm_modem_tx_init(& tx);
 	ofdm_modem_rx_init(& rx);
 
+	rx.sync_state = STATE_PROCESSING_DATA;
 	ofdm_modem_tx_block(& tx, test_ofdm_get_preamble_bits, buffer_i, buffer_q, BUFFLEN);
 	pathclipping(buffer_i, BUFFLEN);
 	pathclipping(buffer_q, BUFFLEN);
