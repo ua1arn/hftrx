@@ -36,6 +36,8 @@
 #define FFTWRAP_H
 
 #include "arch.h"
+#include "hardware.h"
+#include "dspdefines.h"
 
 /** Compute tables for an FFT */
 void *spx_fft_init(int size);
@@ -50,9 +52,9 @@ void spx_fft(void *table, const spx_word16_t *in, spx_word16_t *out);
 void spx_ifft(void *table, const spx_word16_t *in, spx_word16_t *out);
 
 /** Forward (real to half-complex) transform of float data */
-void spx_fft_float(void *table, float *in, float *out);
+void spx_fft_float(void *table, FLOAT_t *in, FLOAT_t *out);
 
 /** Backward (half-complex to real) transform of float data */
-void spx_ifft_float(void *table, float *in, float *out);
+void spx_ifft_float(void *table, FLOAT_t *in, FLOAT_t *out);
 
 #endif

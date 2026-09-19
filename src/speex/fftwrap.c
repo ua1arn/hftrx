@@ -81,7 +81,90 @@ static void renorm_range(spx_word16_t *in, spx_word16_t *out, int shift, int len
 }
 #endif
 
-#ifdef USE_SMALLFT
+#if 1
+/* ========================================================================== */
+/*   DYNAMIC CMSIS-DSP NEON ACCELERATION FOR SPEEX FLOATING-POINT FFT        */
+/*   Tailored for Baremetal Allwinner T507-H (Cortex-A53) with USE_SMALLFT   */
+/* ========================================================================== */
+
+/* Dynamic container layout for CMSIS-DSP Real FFT state structures */
+typedef struct {
+	ARM_MORPH(arm_rfft_fast_instance) cmsis_inst;
+    int fft_size;
+} spx_cmsis_fft_t;
+
+/**
+ * @brief Dynamic allocation and initialization of the CMSIS Real FFT tables.
+ */
+void *spx_fft_init(int size)
+{
+    /* Allocate the state context container using native Speex heap manager */
+    spx_cmsis_fft_t *table = (spx_cmsis_fft_t *)speex_alloc(sizeof(spx_cmsis_fft_t));
+    if (table == NULL) {
+        return NULL;
+    }
+
+    table->fft_size = size;
+
+    /* Initialize the fast Real FFT engine inside the CMSIS-DSP framework */
+    if (ARM_MORPH(arm_rfft_fast_init)(&table->cmsis_inst, size) == ARM_MATH_SUCCESS) {
+        return (void *)table;
+    }
+
+    /* Release allocated memory if the requested size is not supported by CMSIS */
+    speex_free(table);
+    return NULL;
+}
+
+/**
+ * @brief Safe destruction and deallocation of the FFT state memory block.
+ */
+void spx_fft_destroy(void *table)
+{
+    if (table != NULL) {
+        speex_free(table);
+    }
+}
+
+/**
+ * @brief Vector-accelerated FORWARD Real FFT using arm_copy_f32.
+ */
+void spx_fft(void *table, const FLOAT_t *in, FLOAT_t *out)
+{
+    spx_cmsis_fft_t *t = (spx_cmsis_fft_t *)table;
+    if (t == NULL) return;
+
+    int size = t->fft_size;
+
+    /* Use high-speed CMSIS-DSP vector transport instead of manual loop */
+    ARM_MORPH(arm_copy)(in, out, size);
+
+    if (size > 0) {
+        /* Execute clean, unmanipulated CMSIS-DSP Forward Real FFT: isInverseFFT = 0 */
+    	ARM_MORPH(arm_rfft_fast)(&t->cmsis_inst, out, out, 0);
+    }
+}
+
+/**
+ * @brief Vector-accelerated INVERSE Real FFT using arm_copy_f32.
+ */
+void spx_ifft(void *table, const FLOAT_t *in, FLOAT_t *out)
+{
+    spx_cmsis_fft_t *t = (spx_cmsis_fft_t *)table;
+    if (t == NULL) return;
+
+    int size = t->fft_size;
+
+    /* Copy the raw frequency spectrum array into the output buffer for in-place execution */
+    ARM_MORPH(arm_copy)(in, out, size);
+
+    if (size > 0) {
+        /* Execute clean, unmanipulated CMSIS-DSP Inverse Real FFT: isInverseFFT = 1 */
+    	ARM_MORPH(arm_rfft_fast)(&t->cmsis_inst, out, out, 1);
+    }
+}
+
+#elif defined USE_SMALLFT
 
 #include "smallft.h"
 #include <math.h>
@@ -437,6 +520,17 @@ void spx_ifft_float(void *table, float *in, float *out)
       spx_drft_clear(&t);
    }
 #endif
+}
+
+#elif 1
+
+void spx_fft_float(void *table, FLOAT_t *in, FLOAT_t *out)
+{
+   spx_fft(table, in, out);
+}
+void spx_ifft_float(void *table, FLOAT_t *in, FLOAT_t *out)
+{
+   spx_ifft(table, in, out);
 }
 
 #else
