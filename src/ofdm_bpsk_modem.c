@@ -621,7 +621,7 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
             ARM_MORPH(arm_power)(self->fft_buffer, FFT_LEN * 2, &power_sum);
 
             /* Calculate exact RMS using SQRTF macro from dspdefines.h */
-            FLOAT_t current_rms = SQRTF(power_sum / (FLOAT_t)FFT_LEN);
+            const FLOAT_t current_rms = SQRTF(power_sum / (FLOAT_t)FFT_LEN);
 
             /* Dynamic envelope tracking (Attack / Decay leaky integrator) */
             if (current_rms > self->agc_env) {
@@ -641,7 +641,7 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
 
             /* --- VECTOR OPTIMIZATION: WINDOWING VIA CMSIS-DSP MULT --- */
             ARM_MORPH(arm_mult)(self->fft_buffer, self->window_rise_complex, self->fft_buffer, RX_W_LEN * 2);
-            uint32_t fft_end_offset = (FFT_LEN - RX_W_LEN) * 2;
+            const uint32_t fft_end_offset = (FFT_LEN - RX_W_LEN) * 2;
             ARM_MORPH(arm_mult)(&self->fft_buffer[fft_end_offset], self->window_fall_complex, &self->fft_buffer[fft_end_offset], RX_W_LEN * 2);
 
             /* ... (дальнейший ваш цикл деротации поднесущих через arm_sin_cos_f32) ... */
@@ -649,7 +649,7 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
             //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 0, 1);
             dsp_cfft(&self->cfft_inst, self->fft_buffer, 0);
 
-            uint8_t rx_bits[OFDM_NUM_CHANNELS] = {0};
+            uint8_t rx_bits[OFDM_NUM_CHANNELS];// = {0};
             uint32_t any_channel_locked = 0;
 
             /* De-rotate phase offsets and track multi-frequency channel state variations */
@@ -658,8 +658,8 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
                 const uint32_t bin_idx = subcarrier_map[ch];
                 ofdm_subcarrier_bpsk_t *sub = &self->rx_subcarriers[ch];
 
-                FLOAT_t raw_i = self->fft_buffer[bin_idx * 2];
-                FLOAT_t raw_q = self->fft_buffer[bin_idx * 2 + 1];
+                const FLOAT_t raw_i = self->fft_buffer[bin_idx * 2];
+                const FLOAT_t raw_q = self->fft_buffer[bin_idx * 2 + 1];
 
                 /* Declare strict float32_t targets required by direct CMSIS-DSP API */
                 float32_t sin_val, cos_val;
@@ -674,8 +674,8 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
                 arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
                 /* Cast output back to polymorphic FLOAT_t wrapper for processing loop */
-                FLOAT_t sin_p = (FLOAT_t)sin_val;
-                FLOAT_t cos_p = (FLOAT_t)cos_val;
+                const FLOAT_t sin_p = (FLOAT_t)sin_val;
+                const FLOAT_t cos_p = (FLOAT_t)cos_val;
 
                 /* Complex phase de-rotation multiplication */
                 FLOAT_t derot_i = raw_i * cos_p + raw_q * sin_p;
@@ -806,7 +806,7 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
             ARM_MORPH(arm_power)(self->fft_buffer, FFT_LEN * 2, &power_sum);
 
             /* Calculate exact RMS using SQRTF macro from dspdefines.h */
-            FLOAT_t current_rms = SQRTF(power_sum / (FLOAT_t)FFT_LEN);
+            const FLOAT_t current_rms = SQRTF(power_sum / (FLOAT_t)FFT_LEN);
 
             /* Dynamic envelope tracking (Attack / Decay leaky integrator) */
             if (current_rms > self->agc_env) {
@@ -826,7 +826,7 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
 
             /* --- VECTOR OPTIMIZATION: WINDOWING VIA CMSIS-DSP MULT --- */
             ARM_MORPH(arm_mult)(self->fft_buffer, self->window_rise_complex, self->fft_buffer, RX_W_LEN * 2);
-            uint32_t fft_end_offset = (FFT_LEN - RX_W_LEN) * 2;
+            const uint32_t fft_end_offset = (FFT_LEN - RX_W_LEN) * 2;
             ARM_MORPH(arm_mult)(&self->fft_buffer[fft_end_offset], self->window_fall_complex, &self->fft_buffer[fft_end_offset], RX_W_LEN * 2);
 
             /* ... (дальнейший ваш цикл деротации поднесущих через arm_sin_cos_f32) ... */
@@ -834,7 +834,7 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
             //ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 0, 1);
             dsp_cfft(&self->cfft_inst, self->fft_buffer, 0);
 
-            uint8_t rx_bits[OFDM_NUM_CHANNELS] = {0};
+            uint8_t rx_bits[OFDM_NUM_CHANNELS];// = {0};
             uint32_t any_channel_locked = 0;
 
             /* De-rotate phase offsets and track multi-frequency channel state variations */
@@ -843,8 +843,8 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
                 const uint32_t bin_idx = subcarrier_map[ch];
                 ofdm_subcarrier_bpsk_t *sub = &self->rx_subcarriers[ch];
 
-                FLOAT_t raw_i = self->fft_buffer[bin_idx * 2];
-                FLOAT_t raw_q = self->fft_buffer[bin_idx * 2 + 1];
+                const FLOAT_t raw_i = self->fft_buffer[bin_idx * 2];
+                const FLOAT_t raw_q = self->fft_buffer[bin_idx * 2 + 1];
 
                 /* Declare strict float32_t targets required by direct CMSIS-DSP API */
                 float32_t sin_val, cos_val;
@@ -859,8 +859,8 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
                 arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
                 /* Cast output back to polymorphic FLOAT_t wrapper for processing loop */
-                FLOAT_t sin_p = (FLOAT_t)sin_val;
-                FLOAT_t cos_p = (FLOAT_t)cos_val;
+                const FLOAT_t sin_p = (FLOAT_t)sin_val;
+                const FLOAT_t cos_p = (FLOAT_t)cos_val;
 
                 /* Complex phase de-rotation multiplication */
                 FLOAT_t derot_i = raw_i * cos_p + raw_q * sin_p;
