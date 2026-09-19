@@ -366,6 +366,8 @@ typedef struct {
     FLOAT_t R_i;  /* Вещественная часть окна корреляции */
     FLOAT_t R_q;  /* Мнимая часть окна корреляции */
     FLOAT_t E;    /* Мгновенная энергия половины символа */
+
+    int32_t rx_phase_sign;
 } ofdm_modem_rx_t;
 
 
@@ -473,6 +475,8 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
 
     ARM_MORPH(arm_fill)(0, self->delay_buffer_i, SYNC_HALF_LEN);
     ARM_MORPH(arm_fill)(0, self->delay_buffer_q, SYNC_HALF_LEN);
+
+    self->rx_phase_sign = 0;
 }
 
 /**
@@ -513,6 +517,8 @@ static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
 
     ARM_MORPH(arm_fill)(0, self->delay_buffer_i, SYNC_HALF_LEN);
     ARM_MORPH(arm_fill)(0, self->delay_buffer_q, SYNC_HALF_LEN);
+
+    self->rx_phase_sign = 0;
 }
 
 /**
@@ -728,72 +734,88 @@ static void OLDofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buff
 }
 
 /**
- * @brief Block-based receiver demodulation processing with RX Time-Domain Windowing.
- *        Trigonometry optimized via direct arm_sin_cos_f32 execution.
+ * @brief Block-based receiver demodulation processing with Frame Sync Trigger.
  */
-void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits))
+void NEWofdm_modem_rx_block(
+    ofdm_modem_rx_t * const self,
+    const FLOAT_t * const in_buffer_i,
+    const FLOAT_t * const in_buffer_q,
+    const uint32_t block_size,
+    void (* const process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits))
 {
-    const FLOAT_t sync_threshold = 0.55;
-    const FLOAT_t alpha_sync = 0.05;
+    /* Const dynamic configuration parameters */
+    const FLOAT_t sync_threshold = 0.55f;
+    const FLOAT_t alpha_sync = 0.05f;
 
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
+        /* Read current inputs as constants */
         const FLOAT_t curr_i = in_buffer_i[sample_idx];
         const FLOAT_t curr_q = in_buffer_q[sample_idx];
 
-	{
+        /* Extract delayed samples from the circular line buffer */
+        const FLOAT_t del_i = self->delay_buffer_i[self->delay_ptr];
+        const FLOAT_t del_q = self->delay_buffer_q[self->delay_ptr];
 
-		/* Извлекаем задержанный на половину БПФ (128 сэмплов) сигнал */
-		const FLOAT_t del_i = self->delay_buffer_i[self->delay_ptr];
-		const FLOAT_t del_q = self->delay_buffer_q[self->delay_ptr];
+        /* Update the sliding delay line history */
+        self->delay_buffer_i[self->delay_ptr] = curr_i;
+        self->delay_buffer_q[self->delay_ptr] = curr_q;
+        self->delay_ptr = (self->delay_ptr + 1) % SYNC_HALF_LEN;
 
-		/* Обновляем скользящую линию задержки */
-		self->delay_buffer_i[self->delay_ptr] = curr_i;
-		self->delay_buffer_q[self->delay_ptr] = curr_q;
-		self->delay_ptr = (self->delay_ptr + 1) % SYNC_HALF_LEN;
+        /* Compute instantaneous cross-correlation values */
+        const FLOAT_t cross_i = curr_i * del_i + curr_q * del_q;
+        const FLOAT_t cross_q = curr_q * del_i - curr_i * del_q;
 
-		/* Мгновенная взаимная корреляция текущего и задержанного отсчетов */
-		const FLOAT_t cross_i = curr_i * del_i + curr_q * del_q;
-		const FLOAT_t cross_q = curr_q * del_i - curr_i * del_q;
+        /* Compute instantaneous half-symbol energy */
+        const FLOAT_t curr_energy = curr_i * curr_i + curr_q * curr_q;
 
-		/* Мгновенная энергия половины символа */
-		FLOAT_t curr_energy = curr_i * curr_i + curr_q * curr_q;
+        /* Exponential moving average integration (leaky integrator) */
+        self->R_i += alpha_sync * (cross_i - self->R_i);
+        self->R_q += alpha_sync * (cross_q - self->R_q);
+        self->E   += alpha_sync * (curr_energy - self->E);
 
-		/* Скользящее интегрирование (экспоненциальный фильтр) */
-		self->R_i += alpha_sync * (cross_i - self->R_i);
-		self->R_q += alpha_sync * (cross_q - self->R_q);
-		self->E   += alpha_sync * (curr_energy - self->E);
+        /* Calculate Schmidl & Cox synchronization metric */
+        const FLOAT_t mag_R2 = self->R_i * self->R_i + self->R_q * self->R_q;
+        const FLOAT_t E2 = self->E * self->E;
+        const FLOAT_t metric = mag_R2 / (E2 + 1e-6f);
 
-		/* Расчет квадрата модуля метрики Шмидля-Кокса */
-		const FLOAT_t mag_R2 = self->R_i * self->R_i + self->R_q * self->R_q;
-		const FLOAT_t E2 = self->E * self->E;
-		const FLOAT_t metric = mag_R2 / (E2 + 1e-6f);
+        /* FINITE STATE MACHINE (FSM) FRAME SYNCHRONIZATION TRIGGER */
+        if (self->sync_state == STATE_SEARCHING_PREAMBLE)
+        {
+            if (metric > sync_threshold)
+            {
+                /* TRIGGER FIRED: Precise packet start boundary detected! */
+                self->sync_state = STATE_PROCESSING_DATA;
 
-		/* Конечно-автоматный триггер захвата кадра (FSM) */
-		if (self->sync_state == STATE_SEARCHING_PREAMBLE)
-		{
-			if (metric > sync_threshold)
-			{
-				/* Преамбула найдена: сбрасываем индекс под полезное тело БПФ */
-				self->sync_state = STATE_PROCESSING_DATA;
-//				self->rx_sample_idx = OFDM_SYMBOL_LEN / 2;
-			}
-			else
-			{
-//				continue; /* Продолжаем скользящий поиск в эфире */
-			}
-		}
-	}
+                /* Resolve the BPSK 180-degree phase ambiguity immediately at the peak */
+                /* If R_i is negative, it means the whole frame arrived inverted in phase */
+                self->rx_phase_sign = (self->R_i >= 0.0f) ? 1 : -1;
 
-        /* Накопление комплексного кадра во временной буфер */
+                /* Store current triggering sample precisely at the zero cell */
+                self->rx_time_buffer[0] = curr_i;
+                self->rx_time_buffer[1] = curr_q;
+                self->rx_sample_idx = 1; /* Move to gather next samples */
+
+                continue;
+            }
+            else
+            {
+                /* Hold the index at zero to suppress noise accumulation */
+                self->rx_sample_idx = 0;
+                continue;
+            }
+        }
+
+        /* STATE_PROCESSING_DATA Mode: Linear consecutive symbol buffering */
         self->rx_time_buffer[self->rx_sample_idx * 2] = curr_i;
         self->rx_time_buffer[self->rx_sample_idx * 2 + 1] = curr_q;
         self->rx_sample_idx++;
 
-        /* Process when a full symbol payload boundaries are successfully accumulated */
+        /* If a complete standalone OFDM symbol block has been successfully aggregated */
         if (self->rx_sample_idx >= OFDM_SYMBOL_LEN)
         {
             self->rx_sample_idx = 0;
+            /* Next stage execution: Block AGC, FFT, and Costas Subcarriers Loops */
 
             /* Slice out the cyclic prefix guard band via high speed memory transport */
             ARM_MORPH(arm_copy)(&self->rx_time_buffer[CYCLIC_PREFIX_LEN * 2],
@@ -891,8 +913,9 @@ void NEWofdm_modem_rx_block(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, c
                     any_channel_locked = 1;
                 }
 
-                /* Slicer decision boundary output evaluation */
-                rx_bits[ch] = (derot_i >= 0) ? 1 : 0;
+                /* Hard decision slicer with integrated phase ambiguity correction */
+                const FLOAT_t corrected_i = derot_i * (FLOAT_t)self->rx_phase_sign;
+                rx_bits[ch] = (corrected_i >= 0.0f) ? 1 : 0;
 
                 /* Update step bounded modulo 2*pi execution */
                 sub->phase_nco += sub->phase_step_nco;
@@ -1180,8 +1203,8 @@ static void test_ofdm_process_bits(ofdm_modem_rx_t *self, const uint8_t *bits)
 	v |= (UINT8_C(1) << 0) * !! bits [7];
 
 #if 1
-	//PRINTF("0x%02X, ", v);
-	PRINTF("%c", v);
+	PRINTF("0x%02X, ", v);
+	//PRINTF("%c", v);
 #else
 	conbuff [conbufidx] = v;
 	if (++ conbufidx >= ARRAY_SIZE(conbuff))
