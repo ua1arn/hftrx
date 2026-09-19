@@ -391,7 +391,7 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
     ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
 
     /* Generate complex RX window LUT weights with strict edge normalization */
-    for (uint32_t i = 0; i < TX_W_LEN; i++)
+    for (int i = 0; i < TX_W_LEN; i++)
     {
         float32_t sin_val, cos_val;
 
@@ -452,7 +452,7 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
     }
 
     /* Generate complex RX window LUT weights with strict edge normalization */
-    for (uint32_t i = 0; i < RX_W_LEN; i++)
+    for (int i = 0; i < RX_W_LEN; i++)
     {
         float32_t sin_val, cos_val;
 
@@ -535,6 +535,26 @@ static void ofdm_modem_rx_reset(ofdm_modem_rx_t *self)
     ARM_MORPH(arm_fill)(0, self->delay_buffer_q, SYNC_HALF_LEN);
 
     self->rx_phase_sign = 0;
+}
+
+/**
+ * @brief Resets the Schmidl-Cox FSM and completely flushes all sliding integrators.
+ * @param self Pointer to the active receiver context structure.
+ */
+static void ofdm_modem_rx_initiate_search(ofdm_modem_rx_t * const self)
+{
+    /* Force state machine back to the initial preamble scanning mode */
+    self->sync_state = STATE_SEARCHING_PREAMBLE;
+    self->rx_sample_idx = 0;
+
+    /* Completely flush historical energy and correlation integrators to eliminate drift */
+    self->R_i = 0.0;
+    self->R_q = 0.0;
+    self->E   = 0.0;
+
+    /* Clear physical circular delay line buffers to guarantee no residual carrier samples remain */
+    ARM_MORPH(arm_fill)(0.0, self->delay_buffer_i, SYNC_HALF_LEN);
+    ARM_MORPH(arm_fill)(0.0, self->delay_buffer_q, SYNC_HALF_LEN);
 }
 
 /**
@@ -953,7 +973,7 @@ void NEWofdm_modem_rx_block(
 
 void NEWofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_modem_tx_t *self, uint8_t *bits), FLOAT_t *out_buffer_i, FLOAT_t *out_buffer_q, uint32_t block_size)
 {
-	const FLOAT_t magnitude = 32 / 2;
+	const FLOAT_t magnitude = 32 / 1;
     for (uint32_t sample_idx = 0; sample_idx < block_size; sample_idx++)
     {
         /* Если кеш временных сэмплов текущего OFDM-символа исчерпан */
@@ -1003,7 +1023,7 @@ void NEWofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_mode
                 {
                     const uint32_t bin_idx = subcarrier_map[ch];
                     self->fft_buffer[bin_idx * 2] = tx_bits[ch] ? magnitude : -magnitude;
-                    self->fft_buffer[bin_idx * 2 + 1] = 0.0f;
+                    //self->fft_buffer[bin_idx * 2 + 1] = 0.0f;
                 }
             }
 
@@ -1038,6 +1058,22 @@ void NEWofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_mode
     }
 }
 
+/**
+ * @brief Forces the transmitter FSM into carrier tone generation mode.
+ * @param self Pointer to the active transmitter context structure.
+ * @param duration_symbols Number of consecutive OFDM symbols to transmit the carrier tone.
+ */
+static void ofdm_modem_tx_initiate_carrier(ofdm_modem_tx_t * const self, const uint32_t duration_symbols)
+{
+    /* Force state machine into unmodulated carrier pre-keying mode */
+    self->tx_sync_state = TX_STATE_CARRIER;
+
+    /* Set the exact length of the carrier tone sequence measured in standalone symbols */
+    self->tx_carrier_count = duration_symbols;
+
+    /* Reset the sample index to align execution precisely with the next hardware block boundary */
+    self->tx_sample_idx = 0;
+}
 
 /* ========================================================================== */
 /*                          STATIC CALLBACK BRIDGES                           */
@@ -1233,6 +1269,7 @@ static void test_ofdm_process_bits(ofdm_modem_rx_t *self, const uint8_t *bits)
 #endif
 }
 
+#if 0
 static ofdm_modem_tx_t tx_stream;
 static ofdm_modem_rx_t rx_stream;
 
@@ -1271,16 +1308,39 @@ void modem_send(uint_fast8_t c)
 	if (c == 0x1B)
 	{
 		PRINTF("OFDM modem reset\n");
-		ofdm_modem_rx_reset(& rx_stream);
-		local_delay_ms(200);
+		ofdm_modem_rx_initiate_search(& rx_stream);
+		//local_delay_ms(200);
+
 		tx_stream.tx_carrier_count = 2; /* Прогреваем тракт ровно 2 OFDM-символа (~11 мс) */
-		tx_stream.tx_carrier_count = 50; /* Прогреваем тракт ровно 2 OFDM-символа (~11 мс) */
 		tx_stream.tx_sync_state = TX_STATE_CARRIER;
+		dsp_ofdm_push_char_to_tx(& tx_stream, 'H');
+		dsp_ofdm_push_char_to_tx(& tx_stream, 'e');
+		dsp_ofdm_push_char_to_tx(& tx_stream, 'l');
+		dsp_ofdm_push_char_to_tx(& tx_stream, 'l');
+		dsp_ofdm_push_char_to_tx(& tx_stream, 'o');
+		dsp_ofdm_push_char_to_tx(& tx_stream, '!');
 		PRINTF("OFDM modem reset done\n");
 	}
+	else
+	{
+		dsp_ofdm_push_char_to_tx(& tx_stream, c);
 
-	dsp_ofdm_push_char_to_tx(& tx_stream, c);
+	}
+
+	//PRINTF("tx fifo count=%u\n", (unsigned) tx_stream.ofdm_srv_tx.tx_fifo.count);
 }
+
+void modem_init(void)
+{
+	ofdm_modem_tx_init(& tx_stream);
+	ofdm_modem_rx_init(& rx_stream);
+}
+#else
+void modem_init(void)
+{
+}
+
+#endif
 
 ///////////////////////////////////////////
 static FLOAT_t vming, vmaxg;
@@ -1293,7 +1353,7 @@ static void pathclipping(FLOAT_t * buff, unsigned len)
 	ARM_MORPH(arm_max_no_idx)(buff, len, & vmax);
 	vming = FMINF(vming, vmin);
 	vmaxg = FMAXF(vmaxg, vmax);
-	//return;
+	return;
 
 	adapter_t * const ap = & ifcodecrx;
 	while (len --)
@@ -1305,6 +1365,7 @@ static void pathclipping(FLOAT_t * buff, unsigned len)
 
 static void nullmodem(FLOAT_t * buff_i, FLOAT_t * buff_q, unsigned len)
 {
+	return;
 	while (len --)
 	{
 		const FLOAT_t i = * buff_i;
@@ -1326,22 +1387,15 @@ static void nullmodem(FLOAT_t * buff_i, FLOAT_t * buff_q, unsigned len)
 }
 
 
-void modem_init(void)
-{
-	ofdm_modem_tx_init(& tx_stream);
-	ofdm_modem_rx_init(& rx_stream);
-
-	return;
-}
-
 void modem_test(void)
 {
 	TP();
 
+	unsigned i;
 	ofdm_modem_tx_t tx;
 	ofdm_modem_rx_t rx;
 
-	enum { BUFFLEN = 256 * 4 };
+	enum { BUFFLEN = 1024 };
 	FLOAT_t buffer_i [BUFFLEN];
 	FLOAT_t buffer_q [BUFFLEN];
 
@@ -1349,40 +1403,51 @@ void modem_test(void)
 	ofdm_modem_tx_init(& tx);
 	ofdm_modem_rx_init(& rx);
 
-	void (* rxfn)(ofdm_modem_rx_t *self, const FLOAT_t *in_buffer_i, const FLOAT_t *in_buffer_q, uint32_t block_size, void (*process_bits_cb)(ofdm_modem_rx_t *self, const uint8_t *bits));
+	ofdm_modem_rx_initiate_search(& rx);
 
-	rxfn = ! 1 ?
-			OLDofdm_modem_rx_block :
-			NEWofdm_modem_rx_block;
-	rxfn = NEWofdm_modem_rx_block;
+	ofdm_modem_tx_initiate_carrier(& tx, 2);
 
-	rx.sync_state = STATE_PROCESSING_DATA;
-
-	NEWofdm_modem_tx_block(& tx, test_ofdm_get_preamble_bits, buffer_i, buffer_q, BUFFLEN);
-
-	pathclipping(buffer_i, BUFFLEN);
-	pathclipping(buffer_q, BUFFLEN);
-	nullmodem(buffer_i, buffer_q, BUFFLEN);
-
-	rxfn(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_null_bits);
-
-	unsigned i;
-	for (i = 0; i < 100; ++ i)
+	dsp_ofdm_push_char_to_tx(& tx, 'H');
+	dsp_ofdm_push_char_to_tx(& tx, 'e');
+	dsp_ofdm_push_char_to_tx(& tx, 'l');
+	dsp_ofdm_push_char_to_tx(& tx, 'l');
+	dsp_ofdm_push_char_to_tx(& tx, 'o');
+	dsp_ofdm_push_char_to_tx(& tx, '!');
+	uint8_t rxarray [256];
+	unsigned rxcnt = 0;
+	unsigned n = 10000;
+	for (i = 0; i < n; ++ i)
 	{
 
-		NEWofdm_modem_tx_block(& tx, test_ofdm_get_bits, buffer_i, buffer_q, BUFFLEN);
+		NEWofdm_modem_tx_block(& tx, dsp_ofdm_tx_bits_bridge, buffer_i, buffer_q, BUFFLEN);
 
 		pathclipping(buffer_i, BUFFLEN);
 		pathclipping(buffer_q, BUFFLEN);
 		nullmodem(buffer_i, buffer_q, BUFFLEN);
 
-		rxfn(& rx, buffer_i, buffer_q, BUFFLEN, test_ofdm_process_bits);
+		NEWofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, dsp_ofdm_rx_bits_bridge);
+		{
+			if (rxcnt < ARRAY_SIZE(rxarray) && dsp_ofdm_pop_char_from_rx(& rx, & rxarray [rxcnt]))
+			{
+				++ rxcnt;
+			}
+
+		}
+		if (i == (n / 2))
+		{
+			dsp_ofdm_push_char_to_tx(& tx, '1');
+			dsp_ofdm_push_char_to_tx(& tx, '2');
+			dsp_ofdm_push_char_to_tx(& tx, '3');
+			dsp_ofdm_push_char_to_tx(& tx, '4');
+			dsp_ofdm_push_char_to_tx(& tx, '5');
+			dsp_ofdm_push_char_to_tx(& tx, '6');
+
+		}
 	}
-	PRINTF("\n");
+	printhex(0, rxarray, rxcnt);
 	PRINTF("OFDM_SYMBOL_LEN=%d\n", (int) OFDM_SYMBOL_LEN);
 	PRINTF("Ranges: vming=%d, vmaxg=%d\n", (int) vming, (int) vmaxg);
 	printf("Ranges: vming=%f, vmaxg=%f\n", vming, vmaxg);
-	TP();
 }
 
 #endif /* WITHINTEGRATEDDSP */
