@@ -289,6 +289,13 @@ typedef enum {
     STATE_PROCESSING_DATA
 } sync_state_t;
 
+typedef enum {
+    TX_STATE_CARRIER = 0,       /* Излучение стабильного тона для прогрева АРУ */
+    TX_STATE_PREAMBLE,          /* Излучение синхросимвола Шмидля-Кокса */
+    TX_STATE_DATA               /* Передача полезной нагрузки из FIFO */
+} tx_sync_state_t;
+
+
 /*
  * Symmetric Subcarrier Map for Quadrature Up-Converter:
  * Bins 1..4   -> Positive frequencies (USB): +375, +750, +1125, +1500 Hz
@@ -328,7 +335,8 @@ typedef struct {
 
     ofdm_packer_tx_t ofdm_srv_tx;
 
-    uint8_t tx_preamble_required;
+    tx_sync_state_t tx_sync_state;
+    uint32_t tx_carrier_count;      /* Счетчик длительности прогревочного тона */
 
 } ofdm_modem_tx_t;
 
@@ -404,7 +412,9 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
     }
     /* Initialize upper service data buffers and interleavers */
     ofdm_packer_tx_init(&self->ofdm_srv_tx);
-    self->tx_preamble_required = 0;
+
+    self->tx_sync_state = TX_STATE_DATA;
+    self->tx_carrier_count = 0;
 }
 
 /**
@@ -416,6 +426,9 @@ static void ofdm_modem_tx_reset(ofdm_modem_tx_t *self)
     self->tx_sample_idx = 0;
     ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
     ofdm_packer_tx_reset(&self->ofdm_srv_tx);
+
+    self->tx_sync_state = TX_STATE_DATA;
+    self->tx_carrier_count = 0;
 }
 
 static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
@@ -948,39 +961,46 @@ void NEWofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_mode
             /* Полностью очищаем комплексную плоскость БПФ */
             ARM_MORPH(arm_fill)(0.0f, self->fft_buffer, FFT_LEN * 2);
 
-            /* АВТОМАТ КАНАЛЬНОЙ СИНХРОНИЗАЦИИ: ГЕНЕРАЦИЯ ПРЕАМБУЛЫ ШМИДЛЯ-КОКСА */
-            if (self->tx_preamble_required)
+            /* AUTOMATIC TRANSMITTER FSM: CARRIER -> PREAMBLE -> DATA */
+            if (self->tx_sync_state == TX_STATE_CARRIER)
             {
-                /* Сбрасываем триггер: преамбула передается ровно один раз перед пакетом данных */
-                self->tx_preamble_required = 0;
+                /* 1. RE-KEY CARRIER MODE: Fill only ONE tone for analog AGC tuning */
+                /* Map a single unmodulated subcarrier (e.g., Bin 4) to generate a pure sine wave */
+                self->fft_buffer[0] = magnitude;
 
-                /* Маппинг преамбулы Шмидля-Кокса: пишем ТОЛЬКО в четные частотные бины */
-                /* Это математически создает две идентичные половины во временной области */
-                /* Используем знаки фиксированной PN-последовательности для надежного захвата */
-                self->fft_buffer[2 * 2]  =  magnitude;  /* Bin 2 */
-                self->fft_buffer[4 * 2]  = -magnitude;  /* Bin 4 */
-                self->fft_buffer[6 * 2]  =  magnitude;  /* Bin 6 */
-                self->fft_buffer[8 * 2]  =  magnitude;  /* Bin 8 */
-                self->fft_buffer[10 * 2] = -magnitude;  /* Bin 10 */
-                self->fft_buffer[12 * 2] =  magnitude;  /* Bin 12 */
-                self->fft_buffer[14 * 2] = -magnitude;  /* Bin 14 */
-                self->fft_buffer[16 * 2] = -magnitude;  /* Bin 16 */
+                self->tx_carrier_count--;
+                if (self->tx_carrier_count == 0)
+                {
+                    /* Carrier duration elapsed, switch to Schmidl-Cox frame sync pulse */
+                    self->tx_sync_state = TX_STATE_PREAMBLE;
+                }
+            }
+            else if (self->tx_sync_state == TX_STATE_PREAMBLE)
+            {
+                /* 2. SCHMIDL-COX SYNC MODE: Output the split-spectrum preamble pulse */
+                self->tx_sync_state = TX_STATE_DATA; /* Next symbols will be payload text */
+
+                /* Write strictly into even frequency bins to synthesize two identical halves in time */
+                self->fft_buffer[2 * 2]  =  magnitude;
+                self->fft_buffer[4 * 2]  = -magnitude;
+                self->fft_buffer[6 * 2]  =  magnitude;
+                self->fft_buffer[8 * 2]  =  magnitude;
+                self->fft_buffer[10 * 2] = -magnitude;
+                self->fft_buffer[12 * 2] =  magnitude;
+                self->fft_buffer[14 * 2] = -magnitude;
+                self->fft_buffer[16 * 2] = -magnitude;
             }
             else
             {
-                /* РЕЖИМ ПЕРЕДАЧИ ПОЛЕЗНЫХ ДАННЫХ */
+                /* 3. STANDARD DATA PAYLOAD MODE: Map incoming bits from USB FIFO */
                 uint8_t tx_bits[OFDM_NUM_CHANNELS] = {0};
                 get_bits_cb(self, tx_bits);
 
-                /* MATHEMATICALLY CORRECT BPSK-OFDM MAPPING: */
-                /* Imaginary part MUST be 0.0 to preserve native CFFT subcarrier orthogonality. */
-                /* Single-sideband IQ signal is achieved by filling ONLY bins 1..8 and keeping bins 120..127 at 0. */
                 for (uint32_t ch = 0; ch < OFDM_NUM_CHANNELS; ch++)
                 {
                     const uint32_t bin_idx = subcarrier_map[ch];
-
-                    self->fft_buffer[bin_idx * 2]     = tx_bits[ch] ? magnitude : -magnitude; /* Real (I) component */
-                    //self->fft_buffer[bin_idx * 2 + 1] = 0.0;                        /* Imaginary (Q) component strictly ZERO */
+                    self->fft_buffer[bin_idx * 2] = tx_bits[ch] ? magnitude : -magnitude;
+                    self->fft_buffer[bin_idx * 2 + 1] = 0.0f;
                 }
             }
 
@@ -1256,7 +1276,9 @@ void modem_send(uint_fast8_t c)
 		PRINTF("OFDM modem reset\n");
 		ofdm_modem_rx_reset(& rx_stream);
 		local_delay_ms(200);
-		tx_stream.tx_preamble_required = 1;
+		tx_stream.tx_carrier_count = 2; /* Прогреваем тракт ровно 2 OFDM-символа (~11 мс) */
+		tx_stream.tx_carrier_count = 50; /* Прогреваем тракт ровно 2 OFDM-символа (~11 мс) */
+		tx_stream.tx_sync_state = TX_STATE_CARRIER;
 		PRINTF("OFDM modem reset done\n");
 	}
 
