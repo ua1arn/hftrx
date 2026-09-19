@@ -12240,7 +12240,7 @@ static void RTTYDecoder_Process(rtty_rx_t * self, const FLOAT_t *bufferIn, unsig
 					}
 					//RESULT !!!!
 					//print(charResult);
-					PRINTF("%c", charResult);
+					//PRINTF("%c", charResult);
 					//display_vtty_printf("%c", charResult);
 					display_vtty_putchar(charResult);
 //					char str[2] = {0};
