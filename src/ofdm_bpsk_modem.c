@@ -390,23 +390,23 @@ static void ofdm_modem_tx_init(ofdm_modem_tx_t *self)
     ARM_MORPH(arm_fill)(0, self->fft_buffer, FFT_LEN * 2);
     ARM_MORPH(arm_fill)(0, self->tx_time_buffer, OFDM_SYMBOL_LEN * 2);
 
-    /* Generate complex window LUT weights using arm_sin_cos_f32 */
-    for (int i = 0; i < TX_W_LEN; i++)
+    /* Generate complex RX window LUT weights with strict edge normalization */
+    for (uint32_t i = 0; i < TX_W_LEN; i++)
     {
         float32_t sin_val, cos_val;
-        /* Convert radians to degrees for CMSIS-DSP */
-        float32_t phase_degrees = (float32_t)(M_PI * i / TX_W_LEN) * (180.0f / (float32_t)M_PI);
 
-        /* Calculate sine and cosine simultaneously */
+        /* Divisor is adjusted to (RX_W_LEN - 1) to ensure strict compliance with TX window edges */
+        const float32_t phase_degrees = (float32_t)(M_PI * i / (TX_W_LEN - 1)) * (180.0f / (float32_t)M_PI);
+
+        /* Compute sine and cosine values via CMSIS-DSP trigonometry core */
         arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
-        FLOAT_t w_rise = (1 - (FLOAT_t)cos_val) / 2;
-        FLOAT_t w_fall = (1 + (FLOAT_t)cos_val) / 2;
+        const FLOAT_t w_rise = (1.0f - (FLOAT_t)cos_val) / 2.0f;
+        const FLOAT_t w_fall = (1.0f + (FLOAT_t)cos_val) / 2.0f;
 
-        /* Duplicate weight for both Real and Imaginary components of the sample */
+        /* Duplicate aligned weights for both Real and Imaginary components */
         self->window_rise_complex[i * 2]     = w_rise;
         self->window_rise_complex[i * 2 + 1] = w_rise;
-
         self->window_fall_complex[i * 2]     = w_fall;
         self->window_fall_complex[i * 2 + 1] = w_fall;
     }
@@ -451,20 +451,23 @@ static void ofdm_modem_rx_init(ofdm_modem_rx_t *self)
         sub->is_phase_locked = 0;
     }
 
-    /* PRE-CALCULATE RX COMPLEX WINDOW LUT USING arm_sin_cos_f32 */
-    for (int i = 0; i < RX_W_LEN; i++)
+    /* Generate complex RX window LUT weights with strict edge normalization */
+    for (uint32_t i = 0; i < RX_W_LEN; i++)
     {
         float32_t sin_val, cos_val;
-        float32_t phase_degrees = (float32_t)(M_PI * i / RX_W_LEN) * (180.0f / (float32_t)M_PI);
 
+        /* Divisor is adjusted to (RX_W_LEN - 1) to ensure strict compliance with TX window edges */
+        const float32_t phase_degrees = (float32_t)(M_PI * i / (RX_W_LEN - 1)) * (180.0f / (float32_t)M_PI);
+
+        /* Compute sine and cosine values via CMSIS-DSP trigonometry core */
         arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
-        FLOAT_t w_rise = (1 - (FLOAT_t)cos_val) / 2;
-        FLOAT_t w_fall = (1 + (FLOAT_t)cos_val) / 2;
+        const FLOAT_t w_rise = (1.0f - (FLOAT_t)cos_val) / 2.0f;
+        const FLOAT_t w_fall = (1.0f + (FLOAT_t)cos_val) / 2.0f;
 
+        /* Duplicate aligned weights for both Real and Imaginary components */
         self->window_rise_complex[i * 2]     = w_rise;
         self->window_rise_complex[i * 2 + 1] = w_rise;
-
         self->window_fall_complex[i * 2]     = w_fall;
         self->window_fall_complex[i * 2 + 1] = w_fall;
     }
@@ -1008,25 +1011,19 @@ void NEWofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_mode
             /* isInverseFFT = 1, bitReverseFlag = 1 */
             ARM_MORPH(arm_cfft)(&self->cfft_inst, self->fft_buffer, 1, 1);
 
-            /* СБОРКА OFDM-КАДРА: ГЕНЕРАЦИЯ ЦИКЛИЧЕСКОГО ПРЕФИКСА (CP) */
-            /* Копируем последние 16 комплексных отсчетов (хвост) ОБПФ в начало префикса */
-            uint32_t cp_source_start = FFT_LEN - CYCLIC_PREFIX_LEN;
-            for (uint32_t i = 0; i < CYCLIC_PREFIX_LEN; i++)
-            {
-                uint32_t src_idx = (cp_source_start + i) * 2;
-                uint32_t dst_idx = i * 2;
-                self->tx_time_buffer[dst_idx]     = self->fft_buffer[src_idx];
-                self->tx_time_buffer[dst_idx + 1] = self->fft_buffer[src_idx + 1];
-            }
+            /* --- SPEED OPTIMIZATION: CYCLIC PREFIX (CP) GUARD BAND GENERATION --- */
+            /* Copy the tail end (last 16 complex samples = 32 FLOAT_t) of the IFFT to the front CP slot */
+            const uint32_t cp_source_offset = (FFT_LEN - CYCLIC_PREFIX_LEN) * 2;
+            ARM_MORPH(arm_copy)(&self->fft_buffer[cp_source_offset],
+                                self->tx_time_buffer,
+                                CYCLIC_PREFIX_LEN * 2);
 
-            /* Копируем основное полезное тело ОБПФ (256 точек) сразу за префиксом */
-            for (uint32_t i = 0; i < FFT_LEN; i++)
-            {
-                uint32_t src_idx = i * 2;
-                uint32_t dst_idx = (CYCLIC_PREFIX_LEN + i) * 2;
-                self->tx_time_buffer[dst_idx]     = self->fft_buffer[src_idx];
-                self->tx_time_buffer[dst_idx + 1] = self->fft_buffer[src_idx + 1];
-            }
+            /* --- SPEED OPTIMIZATION: MAIN OFDM SYMBOL BODY GENERATION --- */
+            /* Copy the main useful IFFT block (256 complex samples = 512 FLOAT_t) immediately following the CP */
+            const uint32_t body_dest_offset = CYCLIC_PREFIX_LEN * 2;
+            ARM_MORPH(arm_copy)(self->fft_buffer,
+                                &self->tx_time_buffer[body_dest_offset],
+                                FFT_LEN * 2);
 
             /* ВЕКТОРНОЕ ОКОННОЕ СГЛАЖИВАНИЕ СТЫКОВ СИМВОЛА (RAISED COSINE MULT) */
             ARM_MORPH(arm_mult)(self->tx_time_buffer, self->window_rise_complex, self->tx_time_buffer, TX_W_LEN * 2);
