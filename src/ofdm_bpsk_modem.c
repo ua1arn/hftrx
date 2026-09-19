@@ -545,6 +545,7 @@ static void ofdm_modem_rx_initiate_search(ofdm_modem_rx_t * const self)
 {
     /* Force state machine back to the initial preamble scanning mode */
     self->sync_state = STATE_SEARCHING_PREAMBLE;
+    self->sync_state = STATE_PROCESSING_DATA;
     self->rx_sample_idx = 0;
 
     /* Completely flush historical energy and correlation integrators to eliminate drift */
@@ -1067,6 +1068,7 @@ static void ofdm_modem_tx_initiate_carrier(ofdm_modem_tx_t * const self, const u
 {
     /* Force state machine into unmodulated carrier pre-keying mode */
     self->tx_sync_state = TX_STATE_CARRIER;
+    self->tx_sync_state = TX_STATE_DATA;
 
     /* Set the exact length of the carrier tone sequence measured in standalone symbols */
     self->tx_carrier_count = duration_symbols;
@@ -1407,6 +1409,11 @@ void modem_test(void)
 
 	ofdm_modem_tx_initiate_carrier(& tx, 2);
 
+	dsp_ofdm_push_char_to_tx(& tx, 0);
+	dsp_ofdm_push_char_to_tx(& tx, 0);
+	dsp_ofdm_push_char_to_tx(& tx, 0);
+	dsp_ofdm_push_char_to_tx(& tx, 0);
+	dsp_ofdm_push_char_to_tx(& tx, 0);
 	dsp_ofdm_push_char_to_tx(& tx, 'H');
 	dsp_ofdm_push_char_to_tx(& tx, 'e');
 	dsp_ofdm_push_char_to_tx(& tx, 'l');
@@ -1425,11 +1432,15 @@ void modem_test(void)
 		pathclipping(buffer_q, BUFFLEN);
 		nullmodem(buffer_i, buffer_q, BUFFLEN);
 
-		NEWofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, dsp_ofdm_rx_bits_bridge);
+		OLDofdm_modem_rx_block(& rx, buffer_i, buffer_q, BUFFLEN, dsp_ofdm_rx_bits_bridge);
 		{
 			if (rxcnt < ARRAY_SIZE(rxarray) && dsp_ofdm_pop_char_from_rx(& rx, & rxarray [rxcnt]))
 			{
 				++ rxcnt;
+			}
+			else
+			{
+				break;
 			}
 
 		}
@@ -1445,8 +1456,7 @@ void modem_test(void)
 		}
 	}
 	printhex(0, rxarray, rxcnt);
-	PRINTF("OFDM_SYMBOL_LEN=%d\n", (int) OFDM_SYMBOL_LEN);
-	PRINTF("Ranges: vming=%d, vmaxg=%d\n", (int) vming, (int) vmaxg);
+//	PRINTF("OFDM_SYMBOL_LEN=%d\n", (int) OFDM_SYMBOL_LEN);
 	printf("Ranges: vming=%f, vmaxg=%f\n", vming, vmaxg);
 }
 
