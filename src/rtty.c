@@ -45,7 +45,8 @@ typedef struct {
     FLOAT_t pll_integrator;      /* Integral loop filter memory accumulator */
 
     FLOAT_t lpf_state;           /* Leaky integrator filter memory envelope */
-    FLOAT_t lpf_alpha;           /* Smoothing ratio optimized for baud carrier */
+    FLOAT_t lpf_alphaOLD;           /* Smoothing ratio optimized for baud carrier */
+    FLOAT_t lpf_alphaNEW;           /* Smoothing ratio optimized for baud carrier */
     int invert_output;           /* Boolean flag to invert the discriminator bit output (0 or 1) */
 } rtty_freq_detector_t;
 
@@ -410,10 +411,10 @@ static void dsp_rtty_sub_init_detector(
     self->pll_ki = 0.0015;
 
     const FLOAT_t samples_per_bit = (FLOAT_t)sample_rate / baud_rate;
-    self->lpf_alpha = 4.0 / samples_per_bit;
-
+    self->lpf_alphaNEW = 4.0 / samples_per_bit;
     // old version (differential frequency detector)
-    self->lpf_alpha = 8.0 / samples_per_bit;
+    self->lpf_alphaOLD = 8.0 / samples_per_bit;
+
 }
 
 /**
@@ -468,7 +469,7 @@ static uint32_t dsp_rtty_sub_execute_discriminatorOLD(
     self->prev_in_q = in_q;
 
     /* Low-pass envelope integration */
-    self->lpf_state += self->lpf_alpha * (phase_error - self->lpf_state);
+    self->lpf_state += self->lpf_alphaOLD * (phase_error - self->lpf_state);
 
     /* Slicing boundary execution */
     const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
@@ -511,7 +512,7 @@ static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
     if (self->phase_nco < 0.0)           self->phase_nco += (2.0 * M_PI);
 
     /* Smooth the stable loop integrator output (frequency deviation) to get clean bit envelope */
-    self->lpf_state += self->lpf_alpha * (self->pll_integrator - self->lpf_state);
+    self->lpf_state += self->lpf_alphaNEW * (self->pll_integrator - self->lpf_state);
 
     /* Slicing boundary: Positive tracked frequency vs Negative tracked frequency */
     const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
