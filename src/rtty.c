@@ -551,7 +551,7 @@ static void dsp_rtty_sub_execute_fsm(
             if (raw_bit == 0)
             {
                 self->fsm_state = RTTY_STATE_START_BIT;
-                self->nco_accumulator = 0x90000000;
+                self->nco_accumulator = 0x80000000;
             }
             break;
 
@@ -626,8 +626,12 @@ static void dsp_rtty_sub_execute_fsm(
             break;
 
         case RTTY_STATE_STOP_BIT:
-            self->nco_accumulator = 0;
-            self->fsm_state = RTTY_STATE_IDLE;
+            self->nco_accumulator += self->nco_step;
+
+            if (self->nco_accumulator < self->nco_step)
+            {
+                self->fsm_state = RTTY_STATE_IDLE;
+            }
             break;
 
         default:
