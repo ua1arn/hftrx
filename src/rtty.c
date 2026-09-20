@@ -93,29 +93,6 @@ static void dsp_rtty_rx_init(
 }
 
 /**
- * @brief Executes fast differential cross-product frequency discrimination.
- * @return uint32_t Returns 1 for MARK (positive frequency), 0 for SPACE (negative frequency).
- */
-static uint32_t dsp_rtty_detector_process(
-    rtty_freq_detector_t * const self,
-    const FLOAT_t in_i,
-    const FLOAT_t in_q)
-{
-    /* Complex conjugate vector product to calculate instantaneous frequency deviation */
-    const FLOAT_t phase_error = in_q * self->prev_in_i - in_i * self->prev_in_q;
-
-    /* Update historical sample memory blocks */
-    self->prev_in_i = in_i;
-    self->prev_in_q = in_q;
-
-    /* Smooth the fast error discriminator output to strip off-band noise spikes */
-    self->lpf_state += self->lpf_alpha * (phase_error - self->lpf_state);
-
-    /* Hard slicing boundary decision */
-    return (self->lpf_state >= 0.0) ? 1 : 0;
-}
-
-/**
  * @brief SUB-FUNCTION 1: Differential cross-product frequency discriminator.
  * @return uint32_t Returns 1 for MARK (positive frequency), 0 for SPACE (negative frequency).
  */
@@ -403,7 +380,7 @@ static void dsp_rtty_rx_process_sample(
     void (* const put_char_cb)(const uint8_t character))
 {
     /* Step 1: Call the frequency discriminator sub-layer to extract the current sliced bit value */
-    const uint32_t raw_bit = ! dsp_rtty_sub_execute_discriminator(&self->detector, in_i, in_q);
+    const uint32_t raw_bit = dsp_rtty_sub_execute_discriminator(&self->detector, in_i, in_q);
 
     /* Step 2: Immediately pipe the extracted bit into the integer NCO asynchronous framing receiver */
     dsp_rtty_sub_execute_fsm(&self->fsm, raw_bit, put_char_cb);
