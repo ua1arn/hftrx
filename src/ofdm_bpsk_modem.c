@@ -22,12 +22,12 @@
 #define INTERLEAVE_COLS     8   /* Depth of time interleaving */
 #define INTERLEAVE_SIZE     (INTERLEAVE_ROWS * INTERLEAVE_COLS) /* 64 bits = 8 bytes */
 
-/* Simple FIFO/Ring Buffer structure for USB stream interfacing */
+/* Unified and fully lock-free single-producer single-consumer circular queue */
 typedef struct {
     uint8_t storage[MODEM_FIFO_SIZE];
     volatile uint32_t head;
     volatile uint32_t tail;
-    volatile uint32_t count;
+    /* Field volatile uint32_t count is completely removed to secure atomicity */
 } modem_fifo_t;
 
 /* Independent Transmitter Packer/Interleaver/FEC Context */
@@ -48,34 +48,68 @@ typedef struct {
 /*                             INTERNAL FIFO HELPERS                          */
 /* ========================================================================== */
 
-static void fifo_init(modem_fifo_t *fifo)
+/**
+ * @brief Thread-safe lock-free buffer initialization.
+ */
+static void fifo_init(modem_fifo_t * const fifo)
 {
     fifo->head = 0;
     fifo->tail = 0;
-    fifo->count = 0;
 }
 
-static uint32_t fifo_push(modem_fifo_t *fifo, uint8_t data)
+/**
+ * @brief Thread-safe lock-free byte injection (Called strictly by ONE producer thread/interrupt).
+ * @return uint32_t Returns 1 on success, 0 if the buffer is mathematically full.
+ */
+static uint32_t fifo_push(modem_fifo_t * const fifo, const uint8_t data)
 {
-    if (fifo->count >= MODEM_FIFO_SIZE) {
-        return 0; /* FIFO Full allocation error */
+    const uint32_t next_head = (fifo->head + 1) % MODEM_FIFO_SIZE;
+
+    /* Check if the next step hits the tail pointer boundary (Buffer Full) */
+    if (next_head == fifo->tail) {
+        return 0;
     }
+
     fifo->storage[fifo->head] = data;
-    fifo->head = (fifo->head + 1) % MODEM_FIFO_SIZE;
-    fifo->count++;
+
+    /* Atomic write of the head index closes the transaction. Interrupt safe. */
+    fifo->head = next_head;
     return 1;
 }
 
-static uint32_t fifo_pop(modem_fifo_t *fifo, uint8_t *data)
+/**
+ * @brief Thread-safe lock-free byte extraction (Called strictly by ONE consumer thread/interrupt).
+ * @return uint32_t Returns 1 on success, 0 if the buffer is empty.
+ */
+static uint32_t fifo_pop(modem_fifo_t * const fifo, uint8_t * const data)
 {
-    if (fifo->count == 0) {
-        return 0; /* FIFO Empty condition */
+    /* If head and tail pointers are equal, the ring is mathematically empty */
+    if (fifo->tail == fifo->head) {
+        return 0;
     }
+
     *data = fifo->storage[fifo->tail];
+
+    /* Atomic write of the tail index closes the transaction. Interrupt safe. */
     fifo->tail = (fifo->tail + 1) % MODEM_FIFO_SIZE;
-    fifo->count--;
     return 1;
 }
+
+/**
+ * @brief Supplementary helper to safely extract current elements count at runtime.
+ */
+static uint32_t fifo_get_count(const modem_fifo_t * const fifo)
+{
+    const uint32_t snapshot_head = fifo->head;
+    const uint32_t snapshot_tail = fifo->tail;
+
+    if (snapshot_head >= snapshot_tail) {
+        return snapshot_head - snapshot_tail;
+    }
+
+    return (MODEM_FIFO_SIZE - snapshot_tail) + snapshot_head;
+}
+
 /*
  * OFDM Bit Packer / Unpacker with Matrix Interleaver and FEC (7, 4) Hamming Code
  * PART 2 OF 3: Hamming (7, 4) FEC Engine and Transmitter (TX) API.

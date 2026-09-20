@@ -26,12 +26,12 @@ typedef enum {
     RTTY_TX_STATE_STOP_BIT
 } rtty_tx_fsm_state_t;
 
-/* Simple FIFO/Ring Buffer structure for USB stream interfacing */
+/* Unified and fully lock-free single-producer single-consumer circular queue */
 typedef struct {
     uint8_t storage[MODEM_FIFO_SIZE];
     volatile uint32_t head;
     volatile uint32_t tail;
-    volatile uint32_t count;
+    /* Field volatile uint32_t count is completely removed to secure atomicity */
 } modem_fifo_t;
 
 /* Frequency Detector (Discriminator) sub-layer state memory structure */
@@ -90,33 +90,66 @@ typedef struct {
 /*                             INTERNAL FIFO HELPERS                          */
 /* ========================================================================== */
 
-static void fifo_init(modem_fifo_t *fifo)
+/**
+ * @brief Thread-safe lock-free buffer initialization.
+ */
+static void fifo_init(modem_fifo_t * const fifo)
 {
     fifo->head = 0;
     fifo->tail = 0;
-    fifo->count = 0;
 }
 
-static uint32_t fifo_push(modem_fifo_t *fifo, uint8_t data)
+/**
+ * @brief Thread-safe lock-free byte injection (Called strictly by ONE producer thread/interrupt).
+ * @return uint32_t Returns 1 on success, 0 if the buffer is mathematically full.
+ */
+static uint32_t fifo_push(modem_fifo_t * const fifo, const uint8_t data)
 {
-    if (fifo->count >= MODEM_FIFO_SIZE) {
-        return 0; /* FIFO Full allocation error */
+    const uint32_t next_head = (fifo->head + 1) % MODEM_FIFO_SIZE;
+
+    /* Check if the next step hits the tail pointer boundary (Buffer Full) */
+    if (next_head == fifo->tail) {
+        return 0;
     }
+
     fifo->storage[fifo->head] = data;
-    fifo->head = (fifo->head + 1) % MODEM_FIFO_SIZE;
-    fifo->count++;
+
+    /* Atomic write of the head index closes the transaction. Interrupt safe. */
+    fifo->head = next_head;
     return 1;
 }
 
-static uint32_t fifo_pop(modem_fifo_t *fifo, uint8_t *data)
+/**
+ * @brief Thread-safe lock-free byte extraction (Called strictly by ONE consumer thread/interrupt).
+ * @return uint32_t Returns 1 on success, 0 if the buffer is empty.
+ */
+static uint32_t fifo_pop(modem_fifo_t * const fifo, uint8_t * const data)
 {
-    if (fifo->count == 0) {
-        return 0; /* FIFO Empty condition */
+    /* If head and tail pointers are equal, the ring is mathematically empty */
+    if (fifo->tail == fifo->head) {
+        return 0;
     }
+
     *data = fifo->storage[fifo->tail];
+
+    /* Atomic write of the tail index closes the transaction. Interrupt safe. */
     fifo->tail = (fifo->tail + 1) % MODEM_FIFO_SIZE;
-    fifo->count--;
     return 1;
+}
+
+/**
+ * @brief Supplementary helper to safely extract current elements count at runtime.
+ */
+static uint32_t fifo_get_count(const modem_fifo_t * const fifo)
+{
+    const uint32_t snapshot_head = fifo->head;
+    const uint32_t snapshot_tail = fifo->tail;
+
+    if (snapshot_head >= snapshot_tail) {
+        return snapshot_head - snapshot_tail;
+    }
+
+    return (MODEM_FIFO_SIZE - snapshot_tail) + snapshot_head;
 }
 
 
@@ -249,7 +282,7 @@ static uint32_t dsp_rtty_sub_execute_tx_fsm(rtty_transmitter_t * const self)
         /* Idle mode tracking: scan dedicated FIFO container speed-throttled to sample steps */
         if (self->nco_baud_accumulator == 0)
         {
-            if (self->tx_fifo.count > 0)
+            if (fifo_get_count(&self->tx_fifo))
             {
                 self->tx_active = 1;
                 self->tx_fsm_state = RTTY_TX_STATE_IDLE;
@@ -559,20 +592,6 @@ static void rxcharacter(rtty_baudot_fsm_t * self, const uint8_t c)
 static rtty_receiver_t rx_stream;
 static rtty_transmitter_t tx_stream;
 
-//void modem_parse(const IFADCvalue_t * buff)
-//{
-//	const adapter_t * const ap = & ifcodecrx;
-//	const FLOAT_t i = adpt_input(ap, buff [DMABUF32RX0I]);
-//	const FLOAT_t q = adpt_input(ap, buff [DMABUF32RX0Q]);
-//	dsp_rtty_rx_process_sample(& rx_stream, i, q, rxcharacter);
-//}
-//
-//void modem_init(void)
-//{
-//	dsp_rtty_rx_init(& rx_stream, ARMSAIRATE, 50);
-//	dsp_rtty_rx_set_reverse(& rx_stream, 1);
-//}
-
 static void rtty_spool(void * ctx)
 {
 	(void) ctx;
@@ -585,7 +604,7 @@ static void rtty_spool(void * ctx)
 	}
 }
 
-void RTTYDecoder_SetParam(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift, int invert_output)
+void RTTYModem_SetParam(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift, int invert_output)
 {
 	dsp_rtty_rx_init(& rx_stream, ARMSAIRATE, RTTY_Speed10 / (FLOAT_t) 10);
 	dsp_rtty_rx_set_reverse(& rx_stream, invert_output);
@@ -611,7 +630,7 @@ void RTTY_TX(uint8_t c)
 	fifo_push(& tx_stream.tx_fifo, c);
 }
 
-void RTTYDecoder_Init(void)
+void RTTYModem_Init(void)
 {
 	static dpcobj_t dpcobj;
 
@@ -705,7 +724,7 @@ typedef struct
 
 static rtty_rx_t rtty0;
 
-void RTTYDecoder_SetParam(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift, int invert_output)
+void RTTYModem_SetParam(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift, int invert_output)
 {
 	rtty_rx_t * const self = & rtty0;
 	const int_fast32_t sample_rate = ARMI2SRATE;

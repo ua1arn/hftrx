@@ -12367,7 +12367,7 @@ void RTTYDecoder_Setup(void)
 	const int_fast32_t RTTY_Speed10 = param_getvalue(& xgrttybaudrate10);//50; //45.45;
 	const int_fast32_t RTTY_Shift = param_getvalue(& xgrttyshift); //455 //170;
 	const int inverted = param_getvalue(& xgrttyinverted);
-	RTTYDecoder_SetParam(DEFAULT_RTTY_PITCH, RTTY_Speed10, RTTY_Shift, inverted);
+	RTTYModem_SetParam(DEFAULT_RTTY_PITCH, RTTY_Speed10, RTTY_Shift, inverted);
 }
 
 #endif /* WITHRTTY */
@@ -23201,7 +23201,7 @@ application_initialize(void)
 	dsp_initialize();		// цифровая обработка подготавливается
 	InitNoiseReduction();
 #if WITHRTTY
-	RTTYDecoder_Init();
+	RTTYModem_Init();
 #endif /* WITHRTTY */
 
 #if WITHSUBTONES && 1
