@@ -88,18 +88,19 @@ static uint32_t fifo_pop(modem_fifo_t *fifo, uint8_t *data)
 
 
 /* Strictly bounded element-by-element configuration of ITA2 Baudot character matrices */
-static const uint8_t rtty_ita2_letters[32] = {
-    ' ', ' ', 'E', '\n', 'A', ' ', 'S', 'I',
-    'U', '\r', 'D', 'R',  'J', 'N', 'F', 'C',
-    'K', 'T', 'Z', 'L',  'W', 'H', 'Y', 'P',
-    'Q', 'O', 'B', 'G',  ' ', 'M', 'X', 'V'
+
+static const char rtty_ita2_letters [32] = {
+    '\0', 'E', '\n', 'A', ' ', 'S', 'I', 'U',
+    '\r', 'D', 'R', 'J', 'N', 'F', 'C', 'K',
+    'T', 'Z', 'L', 'W', 'H', 'Y', 'P', 'Q',
+    'O', 'B', 'G', ' ', 'M', 'X', 'V', ' ',
 };
 
-static const uint8_t rtty_ita2_figures[32] = {
-    ' ', ' ', '3', '\n', '-', ' ', '8', '7',
-    '\'', '7', '4', ' ', '4', '5', ',', ':',
-    '!', '?', ' ', '"',  '9', '0', '+', '1',
-    '5', '6', '1', ' ',  '1', '2', ' ', ' '
+static const char rtty_ita2_figures [32] = {
+    '\0', '3', '\n', '-', ' ', '\a', '8', '7',
+    '\r', '$', '4', '\'', ',', '!', ':', '(',
+    '5', '"', ')', '2', '#', '6', '0', '1',
+    '9', '?', '&', ' ', '.', '/', ';', ' ',
 };
 
 /**
@@ -241,7 +242,12 @@ static void dsp_rtty_sub_execute_fsm(
                     self->nco_accumulator = 0;
 
                     const uint32_t raw_code = self->bit_shifter & 0x1F;
-
+#if 0
+                    static const char hex [] = "0123456789ABCDEF";
+                    put_char_cb(self, hex [(raw_code >> 4) & 0x0F]);
+                    put_char_cb(self, hex [(raw_code >> 0) & 0x0F]);
+                    put_char_cb(self, ' ');
+#else
                     if (raw_code == 0x1F)
                     {
                         self->is_figures_case = 0; /* LETTERS shift escape received */
@@ -253,14 +259,13 @@ static void dsp_rtty_sub_execute_fsm(
                     else if (raw_code > 0x00)
                     {
                         const uint8_t ascii_char = self->is_figures_case ?
-                                                    rtty_ita2_figures[raw_code] :
+                                                    rtty_ita2_figures[raw_code ] :
                                                     rtty_ita2_letters[raw_code];
 
-                        if (ascii_char != ' ')
-                        {
-                            put_char_cb(self, ascii_char);
-                        }
+                       if (ascii_char)
+                    	   put_char_cb(self, ascii_char);
                     }
+#endif
                 }
             }
             break;
@@ -310,37 +315,59 @@ static void rxcharacter(rtty_baudot_fsm_t * self, const uint8_t c)
 
 static rtty_receiver_t rx_stream;
 
+//void modem_parse(const IFADCvalue_t * buff)
+//{
+//	const adapter_t * const ap = & ifcodecrx;
+//	const FLOAT_t i = adpt_input(ap, buff [DMABUF32RX0I]);
+//	const FLOAT_t q = adpt_input(ap, buff [DMABUF32RX0Q]);
+//	dsp_rtty_rx_process_sample(& rx_stream, i, q, rxcharacter);
+//}
+//
+//void modem_init(void)
+//{
+//	dsp_rtty_rx_init(& rx_stream, ARMSAIRATE, 50);
+//	dsp_rtty_rx_set_reverse(& rx_stream, 1);
+//}
 
-void modem_parse(const IFADCvalue_t * buff)
-{
-	const adapter_t * const ap = & ifcodecrx;
-	const FLOAT_t i = adpt_input(ap, buff [DMABUF32RX0I]);
-	const FLOAT_t q = adpt_input(ap, buff [DMABUF32RX0Q]);
-	dsp_rtty_rx_process_sample(& rx_stream, i, q, rxcharacter);
-}
-
-void modem_spool(void * ctx)
+static void rtty_spool(void * ctx)
 {
 	(void) ctx;
 
 	uint8_t c;
 	if (rtty_rx_byte(& rx_stream, & c))
 	{
-		dbg_putchar(c);
+		display_vtty_putchar(c);
+		//dbg_putchar(c);
 	}
 }
 
-void modem_init(void)
+void RTTYDecoder_SetParam(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift, int invert_output)
 {
-	dsp_rtty_rx_init(& rx_stream, ARMSAIRATE, 50);
-	dsp_rtty_rx_set_reverse(& rx_stream, 1);
+	dsp_rtty_rx_init(& rx_stream, ARMSAIRATE, RTTY_Speed10 / (FLOAT_t) 10);
+	dsp_rtty_rx_set_reverse(& rx_stream, invert_output);
 }
 
+void RTTY_Sample(uint_fast8_t pathi, FLOAT_t i, FLOAT_t q)
+{
+	if (pathi == 0)
+		dsp_rtty_rx_process_sample(& rx_stream, i, q, rxcharacter);
+}
+
+void RTTYDecoder_Init(void)
+{
+	static dpcobj_t dpcobj;
+
+	dsp_rtty_rx_init(& rx_stream, ARMSAIRATE, 50);
+	dsp_rtty_rx_set_reverse(& rx_stream, 1);
+
+	dpcobj_initialize(& dpcobj, rtty_spool, NULL);
+	board_dpc_addentry(& dpcobj, board_dpc_coreid());
+}
 
 #endif /* WITHINTEGRATEDDSP */
 
 
-#if WITHRTTY && WITHIF4DSP
+#if WITHRTTY && WITHIF4DSP && 0
 
 
 #define BIQUAD_COEFF_IN_STAGE 5													  // coefficients space, mark and LPF filters
@@ -392,6 +419,7 @@ typedef struct
 	FLOAT_t space_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
 	FLOAT_t space_Filter_State[2 * RTTY_BPF_STAGES];
 	ARM_MORPH(arm_biquad_cascade_df2T_instance) space_Filter;
+    int invert_output;           /* Boolean flag to invert the discriminator bit output (0 or 1) */
 
     rtty_baudot_fsm_t    fsm;      /* Embedded integer NCO asynchronous framing engine */
 
@@ -419,7 +447,7 @@ typedef struct
 
 static rtty_rx_t rtty0;
 
-void RTTYDecoder_Init2(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift)
+void RTTYDecoder_SetParam(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift, int invert_output)
 {
 	rtty_rx_t * const self = & rtty0;
 	const int_fast32_t sample_rate = ARMI2SRATE;
@@ -460,6 +488,8 @@ void RTTYDecoder_Init2(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_f
 	self->byteResult = 0;
 	self->byteResult_bnum = 0;
 	self->stopBits = RTTY_STOP_1;
+
+	self->invert_output = invert_output;
 
     /* Initialize asynchronous integer NCO bit framing receiver sub-layer pointer */
 	int_fast32_t baud_rate = RTTY_Speed10 / 10;
@@ -537,15 +567,17 @@ static int RTTYDecoder_demodulator(rtty_rx_t * self, FLOAT_t sample)
 
 	// RTTY without ATC, which works very well too!
 	// inverting line 1
-	/*mark_mag *= -1;
+	/*
+	 mark_mag *= -1;
 
 	// summing the two lines
 	v1 = mark_mag + space_mag;
 
 	// lowpass filtering the summed line
-	arm_biquad_cascade_df2T_f32(&RTTY_LPF_Filter, &v1, &v1, 1);*/
+	arm_biquad_cascade_df2T_f32(&RTTY_LPF_Filter, &v1, &v1, 1);
+	*/
 
-	return (v1 > 0) ? 0 : 1;
+	return (v1 > 0) ? ! self->invert_output : self->invert_output;
 }
 
 // this function returns only 1 when the start bit is successfully received
@@ -696,11 +728,11 @@ static void RTTYDecoder_Process2(
 						switch (self->charSetMode)
 						{
 						case RTTY_MODE_SYMBOLS:
-							charResult = rtty_ita2_figures [self->byteResult + 1];
+							charResult = rtty_ita2_figures [self->byteResult];
 							break;
 						case RTTY_MODE_LETTERS:
 						default:
-							charResult = rtty_ita2_letters [self->byteResult + 1];
+							charResult = rtty_ita2_letters [self->byteResult];
 							break;
 						}
 						//RESULT !!!!
@@ -716,6 +748,10 @@ static void RTTYDecoder_Process2(
 
 ////////////////////////
 ///
+
+static void put_char_null(const uint8_t character)
+{
+}
 
 static void put_char_vtty(const uint8_t character)
 {
@@ -734,7 +770,7 @@ static void put_char_vtty(const uint8_t character)
 void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len) // start RTTY decoder for the data block
 {
 	rtty_rx_t * const self = & rtty0;
-	RTTYDecoder_Process2(self, bufferIn, len, put_char_vtty);
+	RTTYDecoder_Process2(self, bufferIn, len, put_char_null);
 }
 
 #endif /* WITHRTTY */
