@@ -85,6 +85,7 @@ typedef struct {
     uint32_t bits_count;         /* Number of successfully accumulated data bits */
     int is_figures_case;         /* Boolean flag for Baudot ITA2 case shifting (0 or 1) */
     modem_fifo_t rx_fifo;
+    modem_fifo_t rx_fifo_debug;
 } rtty_baudot_fsm_t;
 
 /* Main unified RTTY receiver containing isolated processing sub-layers as fields */
@@ -431,6 +432,7 @@ static void dsp_rtty_sub_init_fsm(
     const FLOAT_t baud_rate)
 {
     fifo_init(&self->rx_fifo);
+    fifo_init(&self->rx_fifo_debug);
     self->fsm_state = RTTY_STATE_IDLE;
     self->nco_accumulator = 0;
     self->bit_shifter = 0;
@@ -549,7 +551,7 @@ static void dsp_rtty_sub_execute_fsm(
             if (raw_bit == 0)
             {
                 self->fsm_state = RTTY_STATE_START_BIT;
-                self->nco_accumulator = 0x80000000;
+                self->nco_accumulator = 0xA0000000;
             }
             break;
 
@@ -591,12 +593,16 @@ static void dsp_rtty_sub_execute_fsm(
                     self->nco_accumulator = 0;
 
                     const uint32_t raw_code = self->bit_shifter & 0x1F;
-#if 0
+//#if 1
                     static const char hex [] = "0123456789ABCDEF";
-                    put_char_cb(self, hex [(raw_code >> 4) & 0x0F]);
-                    put_char_cb(self, hex [(raw_code >> 0) & 0x0F]);
-                    put_char_cb(self, ' ');
-#else
+
+                    fifo_push(&self->rx_fifo_debug, '0');
+                    fifo_push(&self->rx_fifo_debug, 'x');
+                    fifo_push(&self->rx_fifo_debug, hex [(raw_code >> 4) & 0x0F]);
+                    fifo_push(&self->rx_fifo_debug, hex [(raw_code >> 0) & 0x0F]);
+                    fifo_push(&self->rx_fifo_debug, ',');
+
+//#else
                     if (raw_code == 0x1F)
                     {
                         self->is_figures_case = 0; /* LETTERS shift escape received */
@@ -614,7 +620,7 @@ static void dsp_rtty_sub_execute_fsm(
                        if (ascii_char)
                     	   put_char_cb(self, ascii_char);
                     }
-#endif
+//#endif
                 }
             }
             break;
@@ -657,6 +663,11 @@ static uint32_t rtty_rx_byte(rtty_receiver_t * const self, uint8_t *output_byte)
     return fifo_pop(&self->fsm.rx_fifo, output_byte);
 }
 
+static uint32_t rtty_rx_byte_debug(rtty_receiver_t * const self, uint8_t *output_byte)
+{
+    return fifo_pop(&self->fsm.rx_fifo_debug, output_byte);
+}
+
 static void rxcharacter(rtty_baudot_fsm_t * self, const uint8_t c)
 {
 	fifo_push(&self->rx_fifo, c);
@@ -673,9 +684,12 @@ static void rtty_spool(void * ctx)
 	if (rtty_rx_byte(& rx_stream, & c))
 	{
 		display_vtty_putchar(c);
-		//dbg_putchar(c);
 	}
-	printf("integrator=%f, dc_bias=%f\n", rx_stream.detector.pll_integrator, rx_stream.detector.dc_bias);
+	if (rtty_rx_byte_debug(& rx_stream, & c))
+	{
+		dbg_putchar(c);
+	}
+	//printf("integrator=%f, dc_bias=%f\n", rx_stream.detector.pll_integrator, rx_stream.detector.dc_bias);
 }
 
 void RTTYModem_SetParam(int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift, int invert_output)
