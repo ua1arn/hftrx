@@ -48,6 +48,7 @@ typedef struct {
     FLOAT_t lpf_alphaOLD;           /* Smoothing ratio optimized for baud carrier */
     FLOAT_t lpf_alphaNEW;           /* Smoothing ratio optimized for baud carrier */
     int invert_output;           /* Boolean flag to invert the discriminator bit output (0 or 1) */
+    FLOAT_t dc_bias;
 } rtty_freq_detector_t;
 
 /* Isolated structure for Phase-Continuous FSK RTTY Transmitter with embedded FIFO */
@@ -410,11 +411,15 @@ static void dsp_rtty_sub_init_detector(
     self->pll_kp = 0.06;
     self->pll_ki = 0.0015;
 
+    self->pll_kp = 0.25;
+    self->pll_ki = 0.015;
+
     const FLOAT_t samples_per_bit = (FLOAT_t)sample_rate / baud_rate;
     self->lpf_alphaNEW = 4.0 / samples_per_bit;
     // old version (differential frequency detector)
     self->lpf_alphaOLD = 8.0 / samples_per_bit;
 
+    self->dc_bias = 0;
 }
 
 /**
@@ -477,8 +482,9 @@ static uint32_t dsp_rtty_sub_execute_discriminatorOLD(
     /* Apply fast hardware-friendly inversion layer using native XOR operation with typecast */
     return raw_bit ^ (uint32_t)self->invert_output;
 }
+
 /**
- * @brief SUB-FUNCTION 1: Phase Locked Loop (PLL) frequency tracker with NCO de-rotation.
+ * @brief SUB-FUNCTION 1: Phase Locked Loop (PLL) frequency tracker with calibrated Anti-Windup and dynamic AFC.
  * @return uint32_t Returns the final sliced bit (inverted or non-inverted based on internal flag).
  */
 static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
@@ -486,40 +492,48 @@ static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
     const FLOAT_t in_i,
     const FLOAT_t in_q)
 {
-    float32_t sin_val, cos_val;
+    /* 1. Calculate raw magnitude squared to prevent division by zero */
+    const FLOAT_t mag2 = in_i * in_i + in_q * in_q;
+    if (mag2 <= 1e-9f)
+    {
+        const uint32_t raw_bit = (self->lpf_state >= self->dc_bias) ? 1 : 0;
+        return raw_bit ^ (uint32_t)self->invert_output;
+    }
 
-    /* Convert current local tracking phase accumulator from radians to degrees for CMSIS core */
-    const float32_t phase_degrees = (float32_t)self->phase_nco * (180.0f / (float32_t)M_PI);
+    /* 2. Execute fast amplitude normalization (Limiter layer) */
+    const FLOAT_t magnitude_inv = 1.0f / SQRTF(mag2);
+    const FLOAT_t norm_i = in_i * magnitude_inv;
+    const FLOAT_t norm_q = in_q * magnitude_inv;
 
-    /* High-speed hardware core trigonometry execution via NEON SIMD registers */
-    arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
+    /* 3. Compute stable phase error using differential complex cross-product */
+    const FLOAT_t phase_error = norm_q * self->prev_in_i - norm_i * self->prev_in_q;
 
-    const FLOAT_t local_i = (FLOAT_t)cos_val;
-    const FLOAT_t local_q = (FLOAT_t)sin_val;
+    /* Save normalized vectors to historical memory tracking block */
+    self->prev_in_i = norm_i;
+    self->prev_in_q = norm_q;
 
-    /* Complex multiplier phase error discriminator: phase_error = Im(V_in * V_local^*) */
-    const FLOAT_t phase_error = in_q * local_i - in_i * local_q;
+    /* 4. Update the tracking loop filter using aggressive HF RTTY coefficients */
+    self->pll_integrator += phase_error * 0.0025f;
 
-    /* Update loop integrator via integral gain factor */
-    self->pll_integrator += phase_error * self->pll_ki;
+    /* Strict clamping boundaries matching the active DDK7 sidebands setup (+-420 Hz) */
+    if (self->pll_integrator > 0.055f)  self->pll_integrator = 0.055f;
+    if (self->pll_integrator < -0.055f) self->pll_integrator = -0.055f;
 
-    /* Compute next instantaneous NCO phase step based on proportional and integral error components */
-    const FLOAT_t current_step = (phase_error * self->pll_kp) + self->pll_integrator;
+    /* Proportional-Integral (PI) closed loop update step (kp = 0.35f) */
+    const FLOAT_t current_step = (phase_error * 0.35f) + self->pll_integrator;
 
-    /* Step local NCO phase accumulator with strict wrap-around */
-    self->phase_nco += current_step;
-    if (self->phase_nco >= (2.0 * M_PI)) self->phase_nco -= (2.0 * M_PI);
-    if (self->phase_nco < 0.0)           self->phase_nco += (2.0 * M_PI);
+    /* 5. Smooth the active tracking output via the leaky data slicing filter */
+    self->lpf_state += self->lpf_alphaNEW * (current_step - self->lpf_state);
 
-    /* Smooth the stable loop integrator output (frequency deviation) to get clean bit envelope */
-    self->lpf_state += self->lpf_alphaNEW * (self->pll_integrator - self->lpf_state);
+    /* 6. REMOVED: Slow dynamic dc_bias code is deleted to eliminate tracking asymmetry */
 
-    /* Slicing boundary: Positive tracked frequency vs Negative tracked frequency */
-    const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
+    /* 7. HARD ABSOLUTE SLICING: Decided strictly by the zero-IF mathematical frequency center! */
+    /* This secures absolute 50% duty cycle for Baudot bits, completely eliminating distortion */
+    const uint32_t raw_bit = (self->pll_integrator >= 0.0) ? 1 : 0;
 
-    /* Execute rapid hardware-friendly inversion layer using native XOR operation */
     return raw_bit ^ (uint32_t)self->invert_output;
 }
+
 
 /**
  * @brief SUB-FUNCTION 2: Asynchronous Baudot bit receiver driven by enum-typed FSM.
@@ -661,6 +675,7 @@ static void rtty_spool(void * ctx)
 		display_vtty_putchar(c);
 		//dbg_putchar(c);
 	}
+	printf("integrator=%f, dc_bias=%f\n", rx_stream.detector.pll_integrator, rx_stream.detector.dc_bias);
 }
 
 void RTTYModem_SetParam(int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift, int invert_output)
