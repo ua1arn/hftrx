@@ -2646,7 +2646,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ 0, 0, 0, 0 },	// признаки включения самоконтроля для DIGI
 #endif /* WITHTX */
 #if WITHIF4DSP
-		{ DSPCTL_MODE_RX_SSB, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
+		{ DSPCTL_MODE_RX_RTTY, DSPCTL_MODE_TX_RTTY, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_DIGI, BWSETI_DIGI, },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
 	#if WITHUSBHW && WITHUSBUACOUT
@@ -3578,8 +3578,10 @@ struct nvmap
 #endif /* defined (RTC1_TYPE) */
 #if WITHRTTY
 	uint16_t ggrprtty;		// последний посещённый пункт группы
-	uint16_t grttybaudrate10;
-	uint16_t grttyshift;
+
+	uint16_t 	grttybaudrate10;
+	uint16_t 	grttyshift;
+	uint8_t 	grttyinverted;
 #endif /* WITHRTTY */
 	uint16_t	ggrpabout;		// последний посещённый пункт группы
 
@@ -8455,23 +8457,31 @@ static const struct paramdefdef xgrttybaudrate10 = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
-#define WITHRTTYSHIFTDELTA 1000
-static int_fast32_t getrttyshiftbase(void)
-{
-	return - WITHRTTYSHIFTDELTA;
-}
 
-static uint_fast16_t grttyshift = 450 + WITHRTTYSHIFTDELTA;	// Default RTTY frequency shift
+static uint_fast16_t grttyshift = 450;	// Default RTTY frequency shift
 
 static const struct paramdefdef xgrttyshift = {
-	QLABEL("SHIFT"),  0, RJ_SIGNED, ISTEP5,
+	QLABEL("SHIFT"),  0, RJ_UNSIGNED, ISTEP5,
 	ITEM_VALUE,
-	0, 2 * WITHRTTYSHIFTDELTA,
+	50, 1500,
 	OFFSETOF(struct nvmap, grttyshift),
 	getselector0, nvramoffs0, valueoffs0,
 	& grttyshift,
 	NULL,
-	getrttyshiftbase,
+	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static uint_fast8_t grttyinverted = 1;	// Default RTTY frequency shift is negative
+
+static const struct paramdefdef xgrttyinverted = {
+	QLABEL("INVERTED"),  0, RJ_YES, ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, grttyinverted),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& grttyinverted,
+	getzerobase,
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif /* WITHRTTY */
@@ -11342,7 +11352,7 @@ getif6bw(
 #if WITHRTTY
 	case MODE_RTTY:
 		{
-			return slabs32(param_getvalue(& xgrttyshift)) + 2 * param_getvalue(& xgrttybaudrate10) / 10;
+			return param_getvalue(& xgrttyshift) + 2 * param_getvalue(& xgrttybaudrate10) / 10;
 		}
 #endif /* WITHRTTY */
 
@@ -12350,13 +12360,14 @@ static RAM_D1 rxaproc_t rxaprocs [NTRX];
 
 #if WITHRTTY
 
-void RTTYDecoder_Init(void)
+void RTTYDecoder_Setup(void)
 {
 	const int_fast32_t centerFreq = DEFAULT_RTTY_PITCH;
 	const int_fast32_t sample_rate = ARMI2SRATE;
 	const int_fast32_t RTTY_Speed10 = param_getvalue(& xgrttybaudrate10);//50; //45.45;
 	const int_fast32_t RTTY_Shift = param_getvalue(& xgrttyshift); //455 //170;
-	RTTYDecoder_Init2(DEFAULT_RTTY_PITCH, RTTY_Speed10, RTTY_Shift);
+	const int inverted = param_getvalue(& xgrttyinverted);
+	RTTYDecoder_SetParam(DEFAULT_RTTY_PITCH, RTTY_Speed10, RTTY_Shift, inverted);
 }
 
 #endif /* WITHRTTY */
@@ -12499,13 +12510,6 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 	{
 		hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
 	}
-
-#if WITHRTTY
-	if (pathi == 0)
-	{
-		RTTYDecoder_Process(nrp->wire1, FIRBUFSIZE);
-	}
-#endif /* WITHRTTY */
 
 #if WITHLEAKYLMSANR
 	if (pathi == 0)
@@ -13430,12 +13434,9 @@ updateboard_noui(
 	#if WITHIF4DSP
 		speex_update_rx();
 	#endif /* WITHIF4DSP */
-	#if WITHRTTY
-		if (pathi == 0)
-		{
-			RTTYDecoder_Init();
-		}
-	#endif /* WITHRTTY */
+	#if WITHRTTY && WITHIF4DSP
+		RTTYDecoder_Setup();
+	#endif /* WITHRTTY && WITHIF4DSP */
 
 	#if defined (RTC1_TYPE)
 		board_setrtcstrobe(grtcstrobe);
@@ -23138,6 +23139,7 @@ int ctcss_squelch(void)
 
 #endif /* WITHSUBTONES */
 
+__WEAK void modem_init(void) { }
 
 /* вызывается при разрешённых прерываниях. */
 void

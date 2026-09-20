@@ -166,6 +166,7 @@ enum
 	DSPCTL_MODE_RX_DRM,		/* принятиый сигнал транслируется на выход на частоте 12 кГц */
 	DSPCTL_MODE_RX_ISB,		/* прием двух независимых боковых полос */
 	DSPCTL_MODE_RX_WFM,		/* прием WFM (демодуляция в FPGA, только без WITHUSEDUALWATCH)	*/
+	DSPCTL_MODE_RX_RTTY,
 
 	DSPCTL_MODE_RX_TOP,
 
@@ -179,6 +180,7 @@ enum
 	DSPCTL_MODE_TX_ISB,		/* передача двух независимых боковых полос */
 	DSPCTL_MODE_TX_BPSK,
 	DSPCTL_MODE_TX_FREEDV,
+	DSPCTL_MODE_TX_RTTY,
 
 	DSPCTL_MODE_TX_TOP,
 	//

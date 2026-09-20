@@ -2466,6 +2466,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
+	case DSPCTL_MODE_RX_RTTY:
 		calculate_sloped_bpf(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
 		//calculate_bpf_with_variable_eq(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx), tx_eq, ARRAY_SIZE(tx_eq));
 		break;
@@ -2535,6 +2536,7 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 	case DSPCTL_MODE_RX_ISB:
 	case DSPCTL_MODE_RX_FREEDV:
 	case DSPCTL_MODE_RX_NFM:
+	case DSPCTL_MODE_RX_RTTY:
 		if (! glob_afwiderx [pathi])
 		{
 			// audio - полосовой фильтр на телеграфную полосу
@@ -4167,6 +4169,8 @@ static FLOAT_t baseband_demodulator(
 		}
 		break;
 
+	case DSPCTL_MODE_RX_RTTY:
+		RTTY_Sample(path - rx_paths, vp0f.IV, vp0f.QV);
 	case DSPCTL_MODE_RX_DSB:
 	case DSPCTL_MODE_RX_SSB:
 	case DSPCTL_MODE_RX_DRM:
