@@ -689,6 +689,7 @@ FLOAT32P_t xget_float_monofreq(void);	// modem test LO quadratures
 
 void RTTY_SampleRX(uint_fast8_t pathi, FLOAT_t i, FLOAT_t q);
 void RTTY_SampleTX(FLOAT_t * i, FLOAT_t * q);
+void RTTY_TX(uint8_t c);
 
 void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len); // start RTTY decoder for the data block
 void RTTYDecoder_SetParam(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift, int invert_output);

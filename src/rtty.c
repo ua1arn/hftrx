@@ -605,6 +605,12 @@ void RTTY_SampleTX(FLOAT_t * i, FLOAT_t * q)
 	dsp_rtty_tx_process_sample(& tx_stream, i, q);
 }
 
+// Передача символа
+void RTTY_TX(uint8_t c)
+{
+	fifo_push(& tx_stream.tx_fifo, c);
+}
+
 void RTTYDecoder_Init(void)
 {
 	static dpcobj_t dpcobj;
