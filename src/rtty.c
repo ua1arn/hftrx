@@ -478,15 +478,6 @@ typedef struct
 // Public variables
 //extern char RTTY_Decoder_Text[RTTY_DECODER_STRLEN + 1];
 
-// Public methods
-static int RTTYDecoder_demodulator(rtty_rx_t * self, FLOAT_t sample);
-static void RTTYDecoder_Process2(
-		rtty_rx_t * self,
-		const FLOAT_t *bufferIn,
-		unsigned len,
-	    void (* const put_char_cb)(const uint8_t character)
-		);
-
 //Ported from https://github.com/df8oe/UHSDR/blob/active-devel/mchf-eclipse/drivers/audio/rtty.c
 
 static const char RTTY_Letters[32] = {
@@ -562,6 +553,88 @@ void RTTYDecoder_Init2(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_f
 	self->byteResult = 0;
 	self->byteResult_bnum = 0;
 	self->stopBits = RTTY_STOP_1;
+}
+
+// adapted from https://github.com/ukhas/dl-fldigi/blob/master/src/include/misc.h
+static FLOAT_t RTTYDecoder_decayavg(rtty_rx_t * self, FLOAT_t average, FLOAT_t input, int weight)
+{
+	FLOAT_t retval;
+	if (weight <= 1)
+	{
+		retval = input;
+	}
+	else
+	{
+		retval = ((input - average) / (FLOAT_t)weight) + average;
+	}
+	return retval;
+}
+
+// this function returns the bit value of the current sample
+static int RTTYDecoder_demodulator(rtty_rx_t * self, FLOAT_t sample)
+{
+	FLOAT_t space_mag = 0;
+	FLOAT_t mark_mag = 0;
+	ARM_MORPH(arm_biquad_cascade_df2T)(&self->space_Filter, &sample, &space_mag, 1);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&self->mark_Filter, &sample, &mark_mag, 1);
+
+	FLOAT_t v1 = 0;
+	// calculating the RMS of the two lines (squaring them)
+	space_mag *= space_mag;
+	mark_mag *= mark_mag;
+
+	// RTTY decoding with ATC = automatic threshold correction
+	FLOAT_t helper = space_mag;
+	space_mag = mark_mag;
+	mark_mag = helper;
+	static FLOAT_t mark_env = 0.0;
+	static FLOAT_t space_env = 0.0;
+	static FLOAT_t mark_noise = 0.0;
+	static FLOAT_t space_noise = 0.0;
+	// experiment to implement an ATC (Automatic threshold correction), DD4WH, 2017_08_24
+	// everything taken from FlDigi, licensed by GNU GPLv2 or later
+	// https://github.com/ukhas/dl-fldigi/blob/master/src/cw_rtty/rtty.cxx
+	// calculate envelope of the mark and space signals
+	// uses fast attack and slow decay
+	mark_env = RTTYDecoder_decayavg(self, mark_env, mark_mag, (mark_mag > mark_env) ? self->oneBitSampleCount / 4 : self->oneBitSampleCount * 16);
+	space_env = RTTYDecoder_decayavg(self, space_env, space_mag, (space_mag > space_env) ? self->oneBitSampleCount / 4 : self->oneBitSampleCount * 16);
+	// calculate the noise on the mark and space signals
+	mark_noise = RTTYDecoder_decayavg(self, mark_noise, mark_mag, (mark_mag < mark_noise) ? self->oneBitSampleCount / 4 : self->oneBitSampleCount * 48);
+	space_noise = RTTYDecoder_decayavg(self, space_noise, space_mag, (space_mag < space_noise) ? self->oneBitSampleCount / 4 : self->oneBitSampleCount * 48);
+	// the noise floor is the lower signal of space and mark noise
+	FLOAT_t noise_floor = (space_noise < mark_noise) ? space_noise : mark_noise;
+
+	// Linear ATC, section 3 of www.w7ay.net/site/Technical/ATC
+	// v1 = space_mag - mark_mag - 0.5 * (space_env - mark_env);
+
+	// Compensating for the noise floor by using clipping
+	FLOAT_t mclipped = 0, sclipped = 0;
+	mclipped = mark_mag > mark_env ? mark_env : mark_mag;
+	sclipped = space_mag > space_env ? space_env : space_mag;
+	if (mclipped < noise_floor)
+	{
+		mclipped = noise_floor;
+	}
+	if (sclipped < noise_floor)
+	{
+		sclipped = noise_floor;
+	}
+
+	// Optimal ATC (Section 6 of of www.w7ay.net/site/Technical/ATC)
+	v1 = (mclipped - noise_floor) * (mark_env - noise_floor) - (sclipped - noise_floor) * (space_env - noise_floor) - 0.25 * ((mark_env - noise_floor) * (mark_env - noise_floor) - (space_env - noise_floor) * (space_env - noise_floor));
+	ARM_MORPH(arm_biquad_cascade_df2T)(&self->RTTY_LPF_Filter, &v1, &v1, 1);
+
+	// RTTY without ATC, which works very well too!
+	// inverting line 1
+	/*mark_mag *= -1;
+
+	// summing the two lines
+	v1 = mark_mag + space_mag;
+
+	// lowpass filtering the summed line
+	arm_biquad_cascade_df2T_f32(&RTTY_LPF_Filter, &v1, &v1, 1);*/
+
+	return (v1 > 0) ? 0 : 1;
 }
 
 // this function returns only 1 when the start bit is successfully received
@@ -723,88 +796,6 @@ static void RTTYDecoder_Process2(
 			}
 		}
 	}
-}
-
-// adapted from https://github.com/ukhas/dl-fldigi/blob/master/src/include/misc.h
-static FLOAT_t RTTYDecoder_decayavg(rtty_rx_t * self, FLOAT_t average, FLOAT_t input, int weight)
-{
-	FLOAT_t retval;
-	if (weight <= 1)
-	{
-		retval = input;
-	}
-	else
-	{
-		retval = ((input - average) / (FLOAT_t)weight) + average;
-	}
-	return retval;
-}
-
-// this function returns the bit value of the current sample
-static int RTTYDecoder_demodulator(rtty_rx_t * self, FLOAT_t sample)
-{
-	FLOAT_t space_mag = 0;
-	FLOAT_t mark_mag = 0;
-	ARM_MORPH(arm_biquad_cascade_df2T)(&self->space_Filter, &sample, &space_mag, 1);
-	ARM_MORPH(arm_biquad_cascade_df2T)(&self->mark_Filter, &sample, &mark_mag, 1);
-
-	FLOAT_t v1 = 0;
-	// calculating the RMS of the two lines (squaring them)
-	space_mag *= space_mag;
-	mark_mag *= mark_mag;
-
-	// RTTY decoding with ATC = automatic threshold correction
-	FLOAT_t helper = space_mag;
-	space_mag = mark_mag;
-	mark_mag = helper;
-	static FLOAT_t mark_env = 0.0;
-	static FLOAT_t space_env = 0.0;
-	static FLOAT_t mark_noise = 0.0;
-	static FLOAT_t space_noise = 0.0;
-	// experiment to implement an ATC (Automatic threshold correction), DD4WH, 2017_08_24
-	// everything taken from FlDigi, licensed by GNU GPLv2 or later
-	// https://github.com/ukhas/dl-fldigi/blob/master/src/cw_rtty/rtty.cxx
-	// calculate envelope of the mark and space signals
-	// uses fast attack and slow decay
-	mark_env = RTTYDecoder_decayavg(self, mark_env, mark_mag, (mark_mag > mark_env) ? self->oneBitSampleCount / 4 : self->oneBitSampleCount * 16);
-	space_env = RTTYDecoder_decayavg(self, space_env, space_mag, (space_mag > space_env) ? self->oneBitSampleCount / 4 : self->oneBitSampleCount * 16);
-	// calculate the noise on the mark and space signals
-	mark_noise = RTTYDecoder_decayavg(self, mark_noise, mark_mag, (mark_mag < mark_noise) ? self->oneBitSampleCount / 4 : self->oneBitSampleCount * 48);
-	space_noise = RTTYDecoder_decayavg(self, space_noise, space_mag, (space_mag < space_noise) ? self->oneBitSampleCount / 4 : self->oneBitSampleCount * 48);
-	// the noise floor is the lower signal of space and mark noise
-	FLOAT_t noise_floor = (space_noise < mark_noise) ? space_noise : mark_noise;
-
-	// Linear ATC, section 3 of www.w7ay.net/site/Technical/ATC
-	// v1 = space_mag - mark_mag - 0.5 * (space_env - mark_env);
-
-	// Compensating for the noise floor by using clipping
-	FLOAT_t mclipped = 0, sclipped = 0;
-	mclipped = mark_mag > mark_env ? mark_env : mark_mag;
-	sclipped = space_mag > space_env ? space_env : space_mag;
-	if (mclipped < noise_floor)
-	{
-		mclipped = noise_floor;
-	}
-	if (sclipped < noise_floor)
-	{
-		sclipped = noise_floor;
-	}
-
-	// Optimal ATC (Section 6 of of www.w7ay.net/site/Technical/ATC)
-	v1 = (mclipped - noise_floor) * (mark_env - noise_floor) - (sclipped - noise_floor) * (space_env - noise_floor) - 0.25 * ((mark_env - noise_floor) * (mark_env - noise_floor) - (space_env - noise_floor) * (space_env - noise_floor));
-	ARM_MORPH(arm_biquad_cascade_df2T)(&self->RTTY_LPF_Filter, &v1, &v1, 1);
-
-	// RTTY without ATC, which works very well too!
-	// inverting line 1
-	/*mark_mag *= -1;
-
-	// summing the two lines
-	v1 = mark_mag + space_mag;
-
-	// lowpass filtering the summed line
-	arm_biquad_cascade_df2T_f32(&RTTY_LPF_Filter, &v1, &v1, 1);*/
-
-	return (v1 > 0) ? 0 : 1;
 }
 
 ////////////////////////
