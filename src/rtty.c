@@ -115,6 +115,29 @@ static uint32_t dsp_rtty_detector_process(
     return (self->lpf_state >= 0.0) ? 1 : 0;
 }
 
+/**
+ * @brief SUB-FUNCTION 1: Differential cross-product frequency discriminator.
+ * @return uint32_t Returns 1 for MARK (positive frequency), 0 for SPACE (negative frequency).
+ */
+static uint32_t dsp_rtty_sub_execute_discriminator(
+	rtty_freq_detector_t * const self,
+    const FLOAT_t in_i,
+    const FLOAT_t in_q)
+{
+    /* Instantaneous frequency tracking via complex conjugate vector multiplication */
+    const FLOAT_t phase_error = in_q * self->prev_in_i - in_i * self->prev_in_q;
+
+    /* Save active samples to history buffers */
+    self->prev_in_i = in_i;
+    self->prev_in_q = in_q;
+
+    /* Smooth error discriminator output to clear off-band noise spikes */
+    self->lpf_state += self->lpf_alpha * (phase_error - self->lpf_state);
+
+    /* Hard slicing decision boundary (MARK frequency vs SPACE frequency) */
+    return (self->lpf_state >= 0.0) ? 1 : 0;
+}
+
 /* Strictly bounded element-by-element configuration of ITA2 Baudot matrices */
 static const uint8_t rtty_ita2_letters [32] = {
     ' ', ' ', 'E', '\n', 'A', ' ', 'S', 'I',
@@ -249,29 +272,6 @@ static void dsp_rtty_fsm_process_sample(
             self->fsm_state = RTTY_STATE_IDLE;
             break;
     }
-}
-
-/**
- * @brief SUB-FUNCTION 1: Differential cross-product frequency discriminator.
- * @return uint32_t Returns 1 for MARK (positive frequency), 0 for SPACE (negative frequency).
- */
-static uint32_t dsp_rtty_sub_execute_discriminator(
-	rtty_freq_detector_t * const self,
-    const FLOAT_t in_i,
-    const FLOAT_t in_q)
-{
-    /* Instantaneous frequency tracking via complex conjugate vector multiplication */
-    const FLOAT_t phase_error = in_q * self->prev_in_i - in_i * self->prev_in_q;
-
-    /* Save active samples to history buffers */
-    self->prev_in_i = in_i;
-    self->prev_in_q = in_q;
-
-    /* Smooth error discriminator output to clear off-band noise spikes */
-    self->lpf_state += self->lpf_alpha * (phase_error - self->lpf_state);
-
-    /* Hard slicing decision boundary (MARK frequency vs SPACE frequency) */
-    return (self->lpf_state >= 0.0) ? 1 : 0;
 }
 
 /**
@@ -480,7 +480,12 @@ typedef struct
 
 // Public methods
 static int RTTYDecoder_demodulator(rtty_rx_t * self, FLOAT_t sample);
-static void RTTYDecoder_Process2(rtty_rx_t * self, const FLOAT_t *bufferIn, unsigned len); // start RTTY decoder for the data block
+static void RTTYDecoder_Process2(
+		rtty_rx_t * self,
+		const FLOAT_t *bufferIn,
+		unsigned len,
+	    void (* const put_char_cb)(const uint8_t character)
+		);
 
 //Ported from https://github.com/df8oe/UHSDR/blob/active-devel/mchf-eclipse/drivers/audio/rtty.c
 
@@ -635,7 +640,12 @@ static int RTTYDecoder_getBitDPLL(rtty_rx_t * self, FLOAT_t sample, int *val_p)
 	return retval;
 }
 
-static void RTTYDecoder_Process2(rtty_rx_t * self, const FLOAT_t *bufferIn, unsigned len)
+static void RTTYDecoder_Process2(
+		rtty_rx_t * self,
+		const FLOAT_t *bufferIn,
+		unsigned len,
+	    void (* const put_char_cb)(const uint8_t character)
+		)
 {
 	for (uint32_t buf_pos = 0; buf_pos < len; buf_pos++)
 	{
@@ -706,16 +716,7 @@ static void RTTYDecoder_Process2(rtty_rx_t * self, const FLOAT_t *bufferIn, unsi
 						break;
 					}
 					//RESULT !!!!
-					//print(charResult);
-					//PRINTF("%c", charResult);
-					//display_vtty_printf("%c", charResult);
-					display_vtty_putchar(charResult);
-//					char str[2] = {0};
-//					str[0] = charResult;
-//					if (strlen(RTTY_Decoder_Text) >= RTTY_DECODER_STRLEN)
-//						shiftTextLeft(RTTY_Decoder_Text, 1);
-//					strcat(RTTY_Decoder_Text, str);
-//					LCD_UpdateQuery.TextBar = 1;
+					put_char_cb(charResult);
 					break;
 				}
 				self->state = RTTY_STATE_WAIT_START;
@@ -809,10 +810,24 @@ static int RTTYDecoder_demodulator(rtty_rx_t * self, FLOAT_t sample)
 ////////////////////////
 ///
 
+static void put_char_vtty(const uint8_t character)
+{
+	//print(character);
+	//PRINTF("%c", charResult);
+	//display_vtty_printf("%c", charResult);
+	display_vtty_putchar(character);
+//					char str[2] = {0};
+//					str[0] = character;
+//					if (strlen(RTTY_Decoder_Text) >= RTTY_DECODER_STRLEN)
+//						shiftTextLeft(RTTY_Decoder_Text, 1);
+//					strcat(RTTY_Decoder_Text, str);
+//					LCD_UpdateQuery.TextBar = 1;
+}
+
 void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len) // start RTTY decoder for the data block
 {
 	rtty_rx_t * const self = & rtty0;
-	RTTYDecoder_Process2(self, bufferIn, len);
+	RTTYDecoder_Process2(self, bufferIn, len, put_char_vtty);
 }
 
 #endif /* WITHRTTY */
