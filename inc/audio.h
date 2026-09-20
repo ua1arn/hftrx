@@ -686,6 +686,10 @@ void modem_parse(const IFADCvalue_t * buff);
 void modem_test(void);
 FLOAT32P_t xget_float_monofreq(void);	// modem test LO quadratures
 
+
+void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len); // start RTTY decoder for the data block
+void RTTYDecoder_Init2(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift);
+
 #endif /* WITHIF4DSP */
 
 //////////////////////////
