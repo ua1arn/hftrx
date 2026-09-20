@@ -34,10 +34,16 @@ typedef struct {
     /* Field volatile uint32_t count is completely removed to secure atomicity */
 } modem_fifo_t;
 
-/* Frequency Detector (Discriminator) sub-layer state memory structure */
+/* Frequency Detector sub-layer state memory structure optimized for Zero-IF PLL/NCO */
 typedef struct {
     FLOAT_t prev_in_i;           /* Historical real memory from previous sample */
     FLOAT_t prev_in_q;           /* Historical imaginary memory from previous sample */
+
+    FLOAT_t phase_nco;           /* Phase accumulator for local tracking oscillator */
+    FLOAT_t pll_kp;              /* Proportional loop gain tracking coefficient */
+    FLOAT_t pll_ki;              /* Integral loop gain tracking coefficient */
+    FLOAT_t pll_integrator;      /* Integral loop filter memory accumulator */
+
     FLOAT_t lpf_state;           /* Leaky integrator filter memory envelope */
     FLOAT_t lpf_alpha;           /* Smoothing ratio optimized for baud carrier */
     int invert_output;           /* Boolean flag to invert the discriminator bit output (0 or 1) */
@@ -384,6 +390,7 @@ static const char rtty_ita2_figures [32] = {
 
 /**
  * @brief SUB-INIT 1: Initializes the differential frequency detector sub-layer with optimized speed.
+ * @brief SUB-INIT 1: Initializes the PLL/NCO frequency tracking detector sub-layer.
  */
 static void dsp_rtty_sub_init_detector(
     rtty_freq_detector_t * const self,
@@ -392,12 +399,20 @@ static void dsp_rtty_sub_init_detector(
 {
     self->prev_in_i = 0.0;
     self->prev_in_q = 0.0;
+
+    self->phase_nco = 0.0;
+    self->pll_integrator = 0.0;
     self->lpf_state = 0.0;
-    self->invert_output = 0; /* Keep strictly 0, do not invert framing bits! */
+    self->invert_output = 0; /* Default configuration is non-inverted (USB style) */
+
+    /* Loop coefficients optimized for tight tracking of standard FSK shifts around Zero-IF */
+    self->pll_kp = 0.06;
+    self->pll_ki = 0.0015;
 
     const FLOAT_t samples_per_bit = (FLOAT_t)sample_rate / baud_rate;
+    self->lpf_alpha = 4.0 / samples_per_bit;
 
-    /* INCREASE CUTOFF: Changed from 2.0 to 8.0 to eliminate group delay and bit-slip */
+    // old version (differential frequency detector)
     self->lpf_alpha = 8.0 / samples_per_bit;
 }
 
@@ -438,27 +453,68 @@ static void dsp_rtty_rx_init(rtty_receiver_t * const self, const uint32_t sample
 }
 
 /**
- * @brief SUB-FUNCTION 1: Differential cross-product frequency discriminator with native invert layer.
+ * @brief SUB-FUNCTION 1: Differential cross-product frequency discriminator.
+ * @return uint32_t Returns 1 for MARK (positive frequency), 0 for SPACE (negative frequency).
+ */
+static uint32_t dsp_rtty_sub_execute_discriminatorOLD(
+	rtty_freq_detector_t * const self,
+    const FLOAT_t in_i,
+    const FLOAT_t in_q)
+{
+    /* Instantaneous frequency tracking via complex conjugate vector multiplication */
+    const FLOAT_t phase_error = in_q * self->prev_in_i - in_i * self->prev_in_q;
+
+    /* Save active samples to history buffers */
+    self->prev_in_i = in_i;
+    self->prev_in_q = in_q;
+
+    /* Smooth error discriminator output to clear off-band noise spikes */
+    self->lpf_state += self->lpf_alpha * (phase_error - self->lpf_state);
+
+    /* Hard slicing decision boundary (MARK frequency vs SPACE frequency) */
+    return (self->lpf_state >= 0.0) ? 1 : 0;
+}
+/**
+ * @brief SUB-FUNCTION 1: Phase Locked Loop (PLL) frequency tracker with NCO de-rotation.
  * @return uint32_t Returns the final sliced bit (inverted or non-inverted based on internal flag).
  */
-static uint32_t dsp_rtty_sub_execute_discriminator(
+static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
     rtty_freq_detector_t * const self,
     const FLOAT_t in_i,
     const FLOAT_t in_q)
 {
-    /* Calculate instantaneous phase error cross-product */
-    const FLOAT_t phase_error = in_q * self->prev_in_i - in_i * self->prev_in_q;
+    float32_t sin_val, cos_val;
 
-    self->prev_in_i = in_i;
-    self->prev_in_q = in_q;
+    /* Convert current local tracking phase accumulator from radians to degrees for CMSIS core */
+    const float32_t phase_degrees = (float32_t)self->phase_nco * (180.0f / (float32_t)M_PI);
 
-    /* Low-pass envelope integration */
-    self->lpf_state += self->lpf_alpha * (phase_error - self->lpf_state);
+    /* High-speed hardware core trigonometry execution via NEON SIMD registers */
+    arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
-    /* Slicing boundary execution */
+    const FLOAT_t local_i = (FLOAT_t)cos_val;
+    const FLOAT_t local_q = (FLOAT_t)sin_val;
+
+    /* Complex multiplier phase error discriminator: phase_error = Im(V_in * V_local^*) */
+    const FLOAT_t phase_error = in_q * local_i - in_i * local_q;
+
+    /* Update loop integrator via integral gain factor */
+    self->pll_integrator += phase_error * self->pll_ki;
+
+    /* Compute next instantaneous NCO phase step based on proportional and integral error components */
+    const FLOAT_t current_step = (phase_error * self->pll_kp) + self->pll_integrator;
+
+    /* Step local NCO phase accumulator with strict wrap-around */
+    self->phase_nco += current_step;
+    if (self->phase_nco >= (2.0 * M_PI)) self->phase_nco -= (2.0 * M_PI);
+    if (self->phase_nco < 0.0)           self->phase_nco += (2.0 * M_PI);
+
+    /* Smooth the stable loop integrator output (frequency deviation) to get clean bit envelope */
+    self->lpf_state += self->lpf_alpha * (self->pll_integrator - self->lpf_state);
+
+    /* Slicing boundary: Positive tracked frequency vs Negative tracked frequency */
     const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
 
-    /* Apply fast hardware-friendly inversion layer using native XOR operation with typecast */
+    /* Execute rapid hardware-friendly inversion layer using native XOR operation */
     return raw_bit ^ (uint32_t)self->invert_output;
 }
 
@@ -570,7 +626,7 @@ static void dsp_rtty_rx_process_sample(
     const FLOAT_t in_q,
     void (* const put_char_cb)(rtty_baudot_fsm_t * self, const uint8_t character))
 {
-    const uint32_t raw_bit = dsp_rtty_sub_execute_discriminator(&self->detector, in_i, in_q);
+    const uint32_t raw_bit = dsp_rtty_sub_execute_discriminatorOLD(&self->detector, in_i, in_q);
     dsp_rtty_sub_execute_fsm(&self->fsm, raw_bit, put_char_cb);
 }
 
