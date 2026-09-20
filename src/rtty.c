@@ -9,7 +9,7 @@
 #include "formats.h"
 #include "display/display.h"
 
-#define MODEM_FIFO_SIZE          32
+#define MODEM_FIFO_SIZE         256
 
 /* Strictly bounded enum definitions for the asynchronous Baudot FSM states */
 typedef enum {
@@ -18,6 +18,13 @@ typedef enum {
     RTTY_STATE_DATA_BITS,
     RTTY_STATE_STOP_BIT
 } rtty_fsm_state_t;
+
+typedef enum {
+    RTTY_TX_STATE_IDLE = 0,
+    RTTY_TX_STATE_START_BIT,
+    RTTY_TX_STATE_DATA_BITS,
+    RTTY_TX_STATE_STOP_BIT
+} rtty_tx_fsm_state_t;
 
 /* Simple FIFO/Ring Buffer structure for USB stream interfacing */
 typedef struct {
@@ -36,6 +43,31 @@ typedef struct {
     int invert_output;           /* Boolean flag to invert the discriminator bit output (0 or 1) */
 } rtty_freq_detector_t;
 
+/* Isolated structure for Phase-Continuous FSK RTTY Transmitter with embedded FIFO */
+typedef struct {
+    /* Baudot Serializer Asynchronous FSM Layer */
+    rtty_tx_fsm_state_t tx_fsm_state; /* Active serialization framing mode */
+    uint32_t nco_baud_accumulator;    /* 32-bit fixed-point baud clock accumulator (Q32) */
+    uint32_t nco_baud_step;           /* 32-bit baud phase increment per sample tick */
+    uint32_t bit_shifter;            /* Shift register holding currently transmitted frame */
+    uint32_t bits_count;             /* Counter for transmitted data bits */
+    int is_figures_case;             /* Boolean flag tracking the active TX case matrix (0 or 1) */
+    int tx_active;                   /* Flag indicating active transmission session (0 or 1) */
+
+    /* Phase-Continuous FSK Modulator Layer */
+    FLOAT_t phase_carrier;           /* Phase continuous carrier accumulator in radians */
+    FLOAT_t freq_shift_half_nco;     /* Target half-shift speed step in radians per sample */
+    FLOAT_t magnitude;               /* Output IQ vector amplitude scale */
+
+    /* Case Switching Request Latches */
+    int request_letters;             /* Pending latch to inject LTRS escape code (0 or 1) */
+    int request_figures;             /* Pending latch to inject FIGS escape code (0 or 1) */
+    int invert_output;               /* Boolean flag to invert the frequency shift direction (0 or 1) */
+
+    /* EMBEDDED TRANSMIT QUEUE FIELD */
+    modem_fifo_t tx_fifo;            /* Dedicated standalone volatile atomic FIFO ring */
+} rtty_transmitter_t;
+
 /* Baudot Asynchronous FSM sub-layer state machine driven by Integer NCO */
 typedef struct {
     rtty_fsm_state_t fsm_state;  /* Enum tracking active UART/Baudot framing state */
@@ -47,11 +79,12 @@ typedef struct {
     modem_fifo_t rx_fifo;
 } rtty_baudot_fsm_t;
 
-/* Main unified RTTY receiver context structure containing processing fields */
+/* Main unified RTTY receiver containing isolated processing sub-layers as fields */
 typedef struct {
     rtty_freq_detector_t detector; /* Embedded frequency discriminator core */
     rtty_baudot_fsm_t    fsm;      /* Embedded integer NCO asynchronous framing engine */
 } rtty_receiver_t;
+
 
 /* ========================================================================== */
 /*                             INTERNAL FIFO HELPERS                          */
@@ -86,6 +119,219 @@ static uint32_t fifo_pop(modem_fifo_t *fifo, uint8_t *data)
     return 1;
 }
 
+
+/////////////////////////////////
+/// TX
+
+/**
+ * @brief SUB-FUNCTION: Asynchronous Baudot serialization machine execution loop step.
+ * @param self Pointer to the active isolated transmitter context.
+ * @return uint32_t Returns the current targeted FSK bit polarity (1 for MARK, 0 for SPACE).
+ */
+static uint32_t dsp_rtty_sub_execute_tx_fsm(rtty_transmitter_t * const self)
+{
+
+	/* Index corresponds directly to ASCII value minus 32 (space offset control boundary) */
+	static const uint8_t rtty_encode_letters [] = {
+	    0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00,
+	    0x00, 0x03, 0x19, 0x0E, 0x09, 0x01, 0x0D, 0x1A, 0x14, 0x06, 0x0B, 0x0F, 0x12, 0x1C, 0x0C, 0x18,
+	    0x16, 0x17, 0x0A, 0x05, 0x10, 0x07, 0x1E, 0x13, 0x1D, 0x15, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00
+	};
+
+	static const uint8_t rtty_encode_figures [] = {
+	    0x04, 0x00, 0x13, 0x00, 0x12, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00, 0x16, 0x0E, 0x01, 0x0C, 0x1A,
+	    0x16, 0x17, 0x13, 0x01, 0x0A, 0x10, 0x15, 0x07, 0x06, 0x18, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x11,
+	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+	};
+
+    uint32_t active_fsk_bit = 1;
+
+    if (self->tx_active)
+    {
+        const uint32_t prev_acc = self->nco_baud_accumulator;
+        self->nco_baud_accumulator += self->nco_baud_step;
+
+        /* Check for integer NCO clock overflow condition (bit boundary window reached) */
+        const int bit_tick_edge = (self->nco_baud_accumulator < prev_acc) ? 1 : 0;
+
+        switch (self->tx_fsm_state)
+        {
+            case RTTY_TX_STATE_IDLE:
+                uint8_t tx_char;
+                /* Extract data character directly from the integrated tx_fifo field */
+                if (fifo_pop(&self->tx_fifo, &tx_char))
+                {
+                    if (tx_char >= 32 && tx_char < 127)
+                    {
+                        const uint32_t lut_idx = tx_char - 32;
+                        const uint32_t code_ltrs = rtty_encode_letters[lut_idx];
+                        const uint32_t code_figs = rtty_encode_figures[lut_idx];
+
+                        /* Case shifting management checks */
+                        if (code_ltrs == 0x00 && code_figs > 0x00 && !self->is_figures_case)
+                        {
+                            self->bit_shifter = 0x1B; /* Force FIGS escape symbol */
+                            self->request_figures = 1;
+                            self->is_figures_case = 1;
+                        }
+                        else if (code_ltrs > 0x00 && code_figs == 0x00 && self->is_figures_case)
+                        {
+                            self->bit_shifter = 0x1F; /* Force LTRS escape symbol */
+                            self->request_letters = 1;
+                            self->is_figures_case = 0;
+                        }
+                        else
+                        {
+                            self->bit_shifter = self->is_figures_case ? code_figs : code_ltrs;
+                        }
+
+                        self->tx_fsm_state = RTTY_TX_STATE_START_BIT;
+                        self->nco_baud_accumulator = 0;
+                    }
+                }
+                else
+                {
+                    self->tx_active = 0; /* Queue empty, drop active transmission flag */
+                }
+                break;
+
+            case RTTY_TX_STATE_START_BIT:
+                active_fsk_bit = 0; /* START bit is strictly SPACE (0) */
+                if (bit_tick_edge)
+                {
+                    self->tx_fsm_state = RTTY_TX_STATE_DATA_BITS;
+                    self->bits_count = 0;
+                }
+                break;
+
+            case RTTY_TX_STATE_DATA_BITS:
+                /* Extract active serial bit stream starting from LSB position */
+                active_fsk_bit = (self->bit_shifter >> self->bits_count) & 0x01;
+                if (bit_tick_edge)
+                {
+                    self->bits_count++;
+                    if (self->bits_count >= 5)
+                    {
+                        self->tx_fsm_state = RTTY_TX_STATE_STOP_BIT;
+                    }
+                }
+                break;
+
+            case RTTY_TX_STATE_STOP_BIT:
+                active_fsk_bit = 1; /* STOP bit is strictly MARK (1) */
+                if (bit_tick_edge)
+                {
+                    /* Frame serialization loop fulfilled, check if escape codes pending latch reset */
+                    if (self->request_letters || self->request_figures)
+                    {
+                        /* Immediately reload the actual alphanumeric char that triggered escape */
+                        self->request_letters = 0;
+                        self->request_figures = 0;
+                        self->tx_fsm_state = RTTY_TX_STATE_IDLE;
+                        self->nco_baud_accumulator = 0xFFFFFFFF; /* Force evaluation on next sample tick */
+                    }
+                    else
+                    {
+                        self->tx_fsm_state = RTTY_TX_STATE_IDLE;
+                    }
+                }
+                break;
+
+            default:
+                self->tx_fsm_state = RTTY_TX_STATE_IDLE;
+                break;
+        }
+    }
+    else
+    {
+        /* Idle mode tracking: scan dedicated FIFO container speed-throttled to sample steps */
+        if (self->nco_baud_accumulator == 0)
+        {
+            if (self->tx_fifo.count > 0)
+            {
+                self->tx_active = 1;
+                self->tx_fsm_state = RTTY_TX_STATE_IDLE;
+            }
+        }
+        self->nco_baud_accumulator++;
+        if (self->nco_baud_accumulator >= self->nco_baud_step)
+        {
+            self->nco_baud_accumulator = 0;
+        }
+    }
+
+    return active_fsk_bit;
+}
+
+/**
+ * @brief MAIN UNIFIED TRANSMITTER FUNCTION: Processes FSM bit tracking and modulates analytical IQ signals.
+ */
+static void dsp_rtty_tx_process_sample(
+    rtty_transmitter_t * const self,
+    FLOAT_t * const out_i,
+    FLOAT_t * const out_q)
+{
+    /* Step 1: Run asynchronous framing serializer loop layer using the dedicated FIFO context */
+    const uint32_t active_fsk_bit = dsp_rtty_sub_execute_tx_fsm(self);
+
+    /* Step 2: Phase-continuous frequency shifting based on serial bit state polarity */
+    const FLOAT_t instant_frequency_step = active_fsk_bit ? self->freq_shift_half_nco : -self->freq_shift_half_nco;
+
+    self->phase_carrier += instant_frequency_step;
+    if (self->phase_carrier >= (2.0 * M_PI)) self->phase_carrier -= (2.0 * M_PI);
+    if (self->phase_carrier < 0.0)           self->phase_carrier += (2.0 * M_PI);
+
+    /* Step 3: Fast complex IQ projections generation via hardware NEON SIMD registers */
+    float32_t sin_val, cos_val;
+    const float32_t phase_degrees = (float32_t)self->phase_carrier * (180.0f / (float32_t)M_PI);
+
+    arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
+
+    *out_i = (FLOAT_t)cos_val * self->magnitude;
+    *out_q = (FLOAT_t)sin_val * self->magnitude;
+}
+
+
+/**
+ * @brief GLOBAL TX INITIALIZER: Prepares the transmitter context and flushes its integrated tx_fifo.
+ */
+static void dsp_rtty_tx_init(
+    rtty_transmitter_t * const self,
+    const uint32_t sample_rate,
+    const FLOAT_t shift_hz,
+    const FLOAT_t baud_rate,
+    const FLOAT_t output_magnitude)
+{
+    self->tx_fsm_state = RTTY_TX_STATE_IDLE;
+    self->nco_baud_accumulator = 0;
+    self->bit_shifter = 0;
+    self->bits_count = 0;
+    self->is_figures_case = 0;
+    self->tx_active = 0;
+    self->phase_carrier = 0.0;
+    self->magnitude = output_magnitude;
+    self->request_letters = 0;
+    self->request_figures = 0;
+    self->invert_output = 0;
+    self->freq_shift_half_nco = (2.0 * M_PI * (shift_hz / 2.0)) / (FLOAT_t)sample_rate;
+    const FLOAT_t ratio = baud_rate / (FLOAT_t)sample_rate;
+    self->nco_baud_step = (uint32_t)(ratio * 4294967296.0);
+
+    /* Call your native firmware ring buffer initializer helper on the embedded field */
+    fifo_init(&self->tx_fifo);
+}
+
+static void dsp_rtty_tx_set_reverse(
+	rtty_transmitter_t * const self,
+	const int invert)
+{
+    self->invert_output = invert ? 1 : 0;
+}
+
+//////////////
+/// RX
 
 /* Strictly bounded element-by-element configuration of ITA2 Baudot character matrices */
 
@@ -142,23 +388,20 @@ static void dsp_rtty_sub_init_fsm(
 }
 
 /**
- * @brief MAIN UNIFIED INITIALIZER: Sequentially calls independent sub-layer init functions.
- */
-static void dsp_rtty_rx_init(
-    rtty_receiver_t * const self,
-    const uint32_t sample_rate,
-    const FLOAT_t baud_rate)
-{
-    dsp_rtty_sub_init_detector(&self->detector, sample_rate, baud_rate);
-    dsp_rtty_sub_init_fsm(&self->fsm, sample_rate, baud_rate);
-}
-
-/**
  * @brief EXPORT EXTERNAL LAYER: Dynamically toggles RTTY spectrum inversion mode at runtime.
  */
 static void dsp_rtty_rx_set_reverse(rtty_receiver_t * const self, const int invert)
 {
     self->detector.invert_output = invert ? 1 : 0;
+}
+
+/**
+ * @brief GLOBAL RX INITIALIZER: Prepares the RTTY processing core context.
+ */
+static void dsp_rtty_rx_init(rtty_receiver_t * const self, const uint32_t sample_rate, const FLOAT_t baud_rate)
+{
+    dsp_rtty_sub_init_detector(&self->detector, sample_rate, baud_rate);
+    dsp_rtty_sub_init_fsm(&self->fsm, sample_rate, baud_rate);
 }
 
 /**
@@ -314,6 +557,7 @@ static void rxcharacter(rtty_baudot_fsm_t * self, const uint8_t c)
 }
 
 static rtty_receiver_t rx_stream;
+static rtty_transmitter_t tx_stream;
 
 //void modem_parse(const IFADCvalue_t * buff)
 //{
@@ -345,12 +589,20 @@ void RTTYDecoder_SetParam(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, in
 {
 	dsp_rtty_rx_init(& rx_stream, ARMSAIRATE, RTTY_Speed10 / (FLOAT_t) 10);
 	dsp_rtty_rx_set_reverse(& rx_stream, invert_output);
+
+	dsp_rtty_tx_init(& tx_stream, ARMSAIRATE, RTTY_Shift, RTTY_Speed10 / (FLOAT_t) 10, 1);
+	dsp_rtty_tx_set_reverse(& tx_stream, invert_output);
 }
 
-void RTTY_Sample(uint_fast8_t pathi, FLOAT_t i, FLOAT_t q)
+void RTTY_SampleRX(uint_fast8_t pathi, FLOAT_t i, FLOAT_t q)
 {
 	if (pathi == 0)
 		dsp_rtty_rx_process_sample(& rx_stream, i, q, rxcharacter);
+}
+
+void RTTY_SampleTX(FLOAT_t * i, FLOAT_t * q)
+{
+	dsp_rtty_tx_process_sample(& tx_stream, i, q);
 }
 
 void RTTYDecoder_Init(void)
