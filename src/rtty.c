@@ -153,6 +153,20 @@ static const uint8_t rtty_ita2_figures [32] = {
     '5', '6', '1', ' ',  '1', '2', ' ', ' '
 };
 
+static const char RTTY_Letters[32] = {
+	'\0', 'E', '\n', 'A', ' ', 'S', 'I', 'U',
+	'\r', 'D', 'R', 'J', 'N', 'F', 'C', 'K',
+	'T', 'Z', 'L', 'W', 'H', 'Y', 'P', 'Q',
+	'O', 'B', 'G', ' ', 'M', 'X', 'V', ' ',
+};
+
+static const char RTTY_Symbols[32] = {
+	'\0', '3', '\n', '-', ' ', '\a', '8', '7',
+	'\r', '$', '4', '\'', ',', '!', ':', '(',
+	'5', '"', ')', '2', '#', '6', '0', '1',
+	'9', '?', '&', ' ', '.', '/', ';', ' ',
+};
+
 /**
  * @brief Initializes the Baudot FSM deserializer and computes integer NCO phase step.
  */
@@ -480,20 +494,6 @@ typedef struct
 
 //Ported from https://github.com/df8oe/UHSDR/blob/active-devel/mchf-eclipse/drivers/audio/rtty.c
 
-static const char RTTY_Letters[32] = {
-	'\0', 'E', '\n', 'A', ' ', 'S', 'I', 'U',
-	'\r', 'D', 'R', 'J', 'N', 'F', 'C', 'K',
-	'T', 'Z', 'L', 'W', 'H', 'Y', 'P', 'Q',
-	'O', 'B', 'G', ' ', 'M', 'X', 'V', ' ',
-};
-
-static const char RTTY_Symbols[32] = {
-	'\0', '3', '\n', '-', ' ', '\a', '8', '7',
-	'\r', '$', '4', '\'', ',', '!', ':', '(',
-	'5', '"', ')', '2', '#', '6', '0', '1',
-	'9', '?', '&', ' ', '.', '/', ';', ' ',
-};
-
 
 // FSK shift: 170 200 425 850
 // FSK tone freq 1275 2125
@@ -781,11 +781,11 @@ static void RTTYDecoder_Process2(
 					switch (self->charSetMode)
 					{
 					case RTTY_MODE_SYMBOLS:
-						charResult = RTTY_Symbols[self->byteResult];
+						charResult = rtty_ita2_figures [self->byteResult + 1];
 						break;
 					case RTTY_MODE_LETTERS:
 					default:
-						charResult = RTTY_Letters[self->byteResult];
+						charResult = rtty_ita2_letters [self->byteResult + 1];
 						break;
 					}
 					//RESULT !!!!
