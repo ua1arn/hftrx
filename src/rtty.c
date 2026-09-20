@@ -461,18 +461,20 @@ static uint32_t dsp_rtty_sub_execute_discriminatorOLD(
     const FLOAT_t in_i,
     const FLOAT_t in_q)
 {
-    /* Instantaneous frequency tracking via complex conjugate vector multiplication */
+    /* Calculate instantaneous phase error cross-product */
     const FLOAT_t phase_error = in_q * self->prev_in_i - in_i * self->prev_in_q;
 
-    /* Save active samples to history buffers */
     self->prev_in_i = in_i;
     self->prev_in_q = in_q;
 
-    /* Smooth error discriminator output to clear off-band noise spikes */
+    /* Low-pass envelope integration */
     self->lpf_state += self->lpf_alpha * (phase_error - self->lpf_state);
 
-    /* Hard slicing decision boundary (MARK frequency vs SPACE frequency) */
-    return (self->lpf_state >= 0.0) ? 1 : 0;
+    /* Slicing boundary execution */
+    const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
+
+    /* Apply fast hardware-friendly inversion layer using native XOR operation with typecast */
+    return raw_bit ^ (uint32_t)self->invert_output;
 }
 /**
  * @brief SUB-FUNCTION 1: Phase Locked Loop (PLL) frequency tracker with NCO de-rotation.
