@@ -486,7 +486,7 @@ static uint32_t dsp_rtty_sub_execute_discriminatorOLD(
 }
 
 /**
- * @brief SUB-FUNCTION 1: Phase Locked Loop (PLL) frequency tracker with calibrated Anti-Windup and dynamic AFC.
+ * @brief SUB-FUNCTION 1: Phase Locked Loop (PLL) frequency tracker with strict FMINF/FMAXF boundaries.
  * @return uint32_t Returns the final sliced bit (inverted or non-inverted based on internal flag).
  */
 static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
@@ -498,7 +498,7 @@ static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
     const FLOAT_t mag2 = in_i * in_i + in_q * in_q;
     if (mag2 <= 1e-9f)
     {
-        const uint32_t raw_bit = (self->lpf_state >= self->dc_bias) ? 1 : 0;
+        const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
         return raw_bit ^ (uint32_t)self->invert_output;
     }
 
@@ -507,32 +507,47 @@ static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
     const FLOAT_t norm_i = in_i * magnitude_inv;
     const FLOAT_t norm_q = in_q * magnitude_inv;
 
-    /* 3. Compute stable phase error using differential complex cross-product */
-    const FLOAT_t phase_error = norm_q * self->prev_in_i - norm_i * self->prev_in_q;
+    float32_t sin_val, cos_val;
 
-    /* Save normalized vectors to historical memory tracking block */
-    self->prev_in_i = norm_i;
-    self->prev_in_q = norm_q;
+    /* Convert phase accumulator from radians directly to degrees for CMSIS core */
+    FLOAT_t phase_degrees = (FLOAT_t)self->phase_nco * (180.0f / (FLOAT_t)M_PI);
 
-    /* 4. Update the tracking loop filter using aggressive HF RTTY coefficients */
+    /* --- STRICT CMSIS-DSP CALIBRATION LAYER VIA FMINF/FMAXF --- */
+    /* Force angle calculation strictly bounded inside [0.0 ... 360.0] grid to prevent table overflow */
+    phase_degrees = FMAXF(0.0f, FMINF(phase_degrees, 360.0f));
+
+    /* Direct hardware accelerated CMSIS-DSP sine/cosine core execution */
+    arm_sin_cos_f32((float32_t)phase_degrees, &sin_val, &cos_val);
+
+    const FLOAT_t local_i = (FLOAT_t)cos_val;
+    const FLOAT_t local_q = (FLOAT_t)sin_val;
+
+    /* Complex multiplier phase error discriminator: phase_error = Im(V_in * V_local^*) */
+    const FLOAT_t phase_error = norm_q * local_i - norm_i * local_q;
+
+    /* Update loop filter integrator using stabilized soft tracking coefficients */
     self->pll_integrator += phase_error * 0.0025f;
 
-    /* Strict clamping boundaries matching the active DDK7 sidebands setup (+-420 Hz) */
-    if (self->pll_integrator > 0.055f)  self->pll_integrator = 0.055f;
-    if (self->pll_integrator < -0.055f) self->pll_integrator = -0.055f;
+    /* CALIBRATED INTEGRATOR ANTI-WINDUP VIA FMINF/FMAXF (+-225 Hz target offset boundary) */
+    /* 2 * PI * 225 / 48000 = 0.029452431f radians per sample */
+    self->pll_integrator = FMAXF(-0.02945f, FMINF(self->pll_integrator, 0.02945f));
 
-    /* Proportional-Integral (PI) closed loop update step (kp = 0.35f) */
-    const FLOAT_t current_step = (phase_error * 0.35f) + self->pll_integrator;
+    /* Compute next instantaneous NCO phase step (kp = 0.15f) */
+    FLOAT_t current_step = (phase_error * 0.15f) + self->pll_integrator;
 
-    /* 5. Smooth the active tracking output via the leaky data slicing filter */
-    self->lpf_state += self->lpf_alphaNEW * (current_step - self->lpf_state);
+    /* HARD BANDWIDTH CLAMPING VIA FMINF/FMAXF: Lock the tracking step inside the physical FSK grid */
+    current_step = FMAXF(-0.02945f, FMINF(current_step, 0.02945f));
 
-    /* 6. REMOVED: Slow dynamic dc_bias code is deleted to eliminate tracking asymmetry */
+    /* Advance local NCO phase accumulator with strict wrap-around rules */
+    self->phase_nco += current_step;
+    if (self->phase_nco >= (2.0 * M_PI)) self->phase_nco -= (2.0 * M_PI);
+    if (self->phase_nco < 0.0)           self->phase_nco += (2.0 * M_PI);
 
-    /* 7. HARD ABSOLUTE SLICING: Decided strictly by the zero-IF mathematical frequency center! */
-    /* This secures absolute 50% duty cycle for Baudot bits, completely eliminating distortion */
-    const uint32_t raw_bit = (self->pll_integrator >= 0.0) ? 1 : 0;
+    /* --- ZERO GROUP-DELAY SLICING ALIGNED TO OLD TIMING GRID --- */
+    self->lpf_state += self->lpf_alphaOLD * (current_step - self->lpf_state);
+    const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
 
+    /* Apply fast hardware-friendly inversion layer using native XOR operation */
     return raw_bit ^ (uint32_t)self->invert_output;
 }
 
@@ -593,7 +608,7 @@ static void dsp_rtty_sub_execute_fsm(
                     self->nco_accumulator = 0;
 
                     const uint32_t raw_code = self->bit_shifter & 0x1F;
-//#if 1
+#if 0
                     static const char hex [] = "0123456789ABCDEF";
 
                     fifo_push(&self->rx_fifo_debug, '0');
@@ -602,7 +617,7 @@ static void dsp_rtty_sub_execute_fsm(
                     fifo_push(&self->rx_fifo_debug, hex [(raw_code >> 0) & 0x0F]);
                     fifo_push(&self->rx_fifo_debug, ',');
 
-//#else
+#endif
                     if (raw_code == 0x1F)
                     {
                         self->is_figures_case = 0; /* LETTERS shift escape received */
@@ -620,7 +635,6 @@ static void dsp_rtty_sub_execute_fsm(
                        if (ascii_char)
                     	   put_char_cb(self, ascii_char);
                     }
-//#endif
                 }
             }
             break;
@@ -649,7 +663,7 @@ static void dsp_rtty_rx_process_sample(
     const FLOAT_t in_q,
     void (* const put_char_cb)(rtty_baudot_fsm_t * self, const uint8_t character))
 {
-    const uint32_t raw_bit = dsp_rtty_sub_execute_discriminatorOLD(&self->detector, in_i, in_q);
+    const uint32_t raw_bit = dsp_rtty_sub_execute_discriminatorNEW(&self->detector, in_i, in_q);
     dsp_rtty_sub_execute_fsm(&self->fsm, raw_bit, put_char_cb);
 }
 
