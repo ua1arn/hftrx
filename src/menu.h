@@ -1950,6 +1950,7 @@
 	},
 	& xgrttybaudrate10,
 	& xgrttyshift,
+	& xgrttyinverted,
 /* group name --- */
 #endif /* WITHRTTY */
 
