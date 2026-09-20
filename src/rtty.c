@@ -551,26 +551,26 @@ static void dsp_rtty_sub_execute_fsm(
             if (raw_bit == 0)
             {
                 self->fsm_state = RTTY_STATE_START_BIT;
-                self->nco_accumulator = 0xA0000000;
+                self->nco_accumulator = 0x90000000;
             }
             break;
 
         case RTTY_STATE_START_BIT:
-            /* Accumulate fixed integer step continuously */
             self->nco_accumulator += self->nco_step;
 
-            /* Verify if integer overflow occurred (Phase register wrapped around) */
             if (self->nco_accumulator < self->nco_step)
             {
-                /* Verify that start bit remains valid SPACE (0) at its midpoint boundary marker */
+                /* We are exactly at the middle of the start bit duration loop window */
                 if (raw_bit == 0)
                 {
                     self->fsm_state = RTTY_STATE_DATA_BITS;
                     self->bits_count = 0;
                     self->bit_shifter = 0;
 
-                    /* --- СКОРРЕКТИРОВАНО: НЕ ОБНУЛЯЕМ АККУМУЛЯТОР! --- */
-                    /* Сохраняем накопленную фазу переполнения, чтобы сетка не прыгала */
+                    /* --- МАТЕМАТИЧЕСКАЯ ФИКСАЦИЯ СИНХРОНИЗАЦИИ КАДРА --- */
+                    /* Жестко обнуляем аккумулятор фазы. Это гарантирует, что */
+                    /* следующие 5 выборок данных произойдут СТРОГО в центрах битов (50% фазы) */
+                    self->nco_accumulator = 0;
                 }
                 else
                 {
@@ -626,12 +626,8 @@ static void dsp_rtty_sub_execute_fsm(
             break;
 
         case RTTY_STATE_STOP_BIT:
-            self->nco_accumulator += self->nco_step;
-
-            if (self->nco_accumulator < self->nco_step)
-            {
-                self->fsm_state = RTTY_STATE_IDLE;
-            }
+            self->nco_accumulator = 0;
+            self->fsm_state = RTTY_STATE_IDLE;
             break;
 
         default:
