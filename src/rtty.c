@@ -544,7 +544,7 @@ static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
     if (self->phase_nco < 0.0)           self->phase_nco += (2.0 * M_PI);
 
     /* --- ZERO GROUP-DELAY SLICING ALIGNED TO OLD TIMING GRID --- */
-    self->lpf_state += self->lpf_alphaOLD * (current_step - self->lpf_state);
+    self->lpf_state += self->lpf_alphaNEW * (current_step - self->lpf_state);
     const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
 
     /* Apply fast hardware-friendly inversion layer using native XOR operation */
