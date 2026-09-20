@@ -9,10 +9,23 @@
 #include "formats.h"
 #include "display/display.h"
 
-#define RTTY_STATE_IDLE         0
-#define RTTY_STATE_START_BIT    1
-#define RTTY_STATE_DATA_BITS    2
-#define RTTY_STATE_STOP_BIT     3
+#define MODEM_FIFO_SIZE          32
+
+/* Strictly bounded enum definitions for the asynchronous Baudot FSM states */
+typedef enum {
+    RTTY_STATE_IDLE = 0,
+    RTTY_STATE_START_BIT,
+    RTTY_STATE_DATA_BITS,
+    RTTY_STATE_STOP_BIT
+} rtty_fsm_state_t;
+
+/* Simple FIFO/Ring Buffer structure for USB stream interfacing */
+typedef struct {
+    uint8_t storage[MODEM_FIFO_SIZE];
+    volatile uint32_t head;
+    volatile uint32_t tail;
+    volatile uint32_t count;
+} modem_fifo_t;
 
 /* Frequency Detector (Discriminator) sub-layer state memory structure */
 typedef struct {
@@ -20,26 +33,77 @@ typedef struct {
     FLOAT_t prev_in_q;           /* Historical imaginary memory from previous sample */
     FLOAT_t lpf_state;           /* Leaky integrator filter memory envelope */
     FLOAT_t lpf_alpha;           /* Smoothing ratio optimized for baud carrier */
+    int invert_output;           /* Boolean flag to invert the discriminator bit output (0 or 1) */
 } rtty_freq_detector_t;
 
 /* Baudot Asynchronous FSM sub-layer state machine driven by Integer NCO */
 typedef struct {
-    uint32_t fsm_state;          /* Active UART/Baudot framing state tracking mode */
+    rtty_fsm_state_t fsm_state;  /* Enum tracking active UART/Baudot framing state */
     uint32_t nco_accumulator;    /* 32-bit fixed-point integer phase accumulator (Q32) */
     uint32_t nco_step;           /* 32-bit phase step matching the exact baud rate */
     uint32_t bit_shifter;        /* Shift register collecting raw payload streams */
     uint32_t bits_count;         /* Number of successfully accumulated data bits */
-    uint32_t is_figures_case;    /* Case shifting matrix tracking configuration flag */
+    int is_figures_case;         /* Boolean flag for Baudot ITA2 case shifting (0 or 1) */
+    modem_fifo_t rx_fifo;
 } rtty_baudot_fsm_t;
 
-/* Main unified RTTY receiver containing isolated processing sub-layers as fields */
+/* Main unified RTTY receiver context structure containing processing fields */
 typedef struct {
     rtty_freq_detector_t detector; /* Embedded frequency discriminator core */
     rtty_baudot_fsm_t    fsm;      /* Embedded integer NCO asynchronous framing engine */
 } rtty_receiver_t;
 
+/* ========================================================================== */
+/*                             INTERNAL FIFO HELPERS                          */
+/* ========================================================================== */
+
+static void fifo_init(modem_fifo_t *fifo)
+{
+    fifo->head = 0;
+    fifo->tail = 0;
+    fifo->count = 0;
+}
+
+static uint32_t fifo_push(modem_fifo_t *fifo, uint8_t data)
+{
+    if (fifo->count >= MODEM_FIFO_SIZE) {
+        return 0; /* FIFO Full allocation error */
+    }
+    fifo->storage[fifo->head] = data;
+    fifo->head = (fifo->head + 1) % MODEM_FIFO_SIZE;
+    fifo->count++;
+    return 1;
+}
+
+static uint32_t fifo_pop(modem_fifo_t *fifo, uint8_t *data)
+{
+    if (fifo->count == 0) {
+        return 0; /* FIFO Empty condition */
+    }
+    *data = fifo->storage[fifo->tail];
+    fifo->tail = (fifo->tail + 1) % MODEM_FIFO_SIZE;
+    fifo->count--;
+    return 1;
+}
+
+
+/* Strictly bounded element-by-element configuration of ITA2 Baudot character matrices */
+static const uint8_t rtty_ita2_letters[32] = {
+    ' ', ' ', 'E', '\n', 'A', ' ', 'S', 'I',
+    'U', '\r', 'D', 'R',  'J', 'N', 'F', 'C',
+    'K', 'T', 'Z', 'L',  'W', 'H', 'Y', 'P',
+    'Q', 'O', 'B', 'G',  ' ', 'M', 'X', 'V'
+};
+
+static const uint8_t rtty_ita2_figures[32] = {
+    ' ', ' ', '3', '\n', '-', ' ', '8', '7',
+    '\'', '7', '4', ' ', '4', '5', ',', ':',
+    '!', '?', ' ', '"',  '9', '0', '+', '1',
+    '5', '6', '1', ' ',  '1', '2', ' ', ' '
+};
+
 /**
- * @brief SUB-INIT 1: Initializes the differential frequency detector sub-layer.
+ * @brief SUB-INIT 1: Initializes the differential frequency detector sub-layer with optimized speed.
  */
 static void dsp_rtty_sub_init_detector(
     rtty_freq_detector_t * const self,
@@ -49,10 +113,12 @@ static void dsp_rtty_sub_init_detector(
     self->prev_in_i = 0.0;
     self->prev_in_q = 0.0;
     self->lpf_state = 0.0;
+    self->invert_output = 0; /* Keep strictly 0, do not invert framing bits! */
 
-    /* Calculate low-pass envelope cutoff matching expected symbol width */
     const FLOAT_t samples_per_bit = (FLOAT_t)sample_rate / baud_rate;
-    self->lpf_alpha = 2.0 / samples_per_bit;
+
+    /* INCREASE CUTOFF: Changed from 2.0 to 8.0 to eliminate group delay and bit-slip */
+    self->lpf_alpha = 8.0 / samples_per_bit;
 }
 
 /**
@@ -63,226 +129,77 @@ static void dsp_rtty_sub_init_fsm(
     const uint32_t sample_rate,
     const FLOAT_t baud_rate)
 {
+    fifo_init(&self->rx_fifo);
     self->fsm_state = RTTY_STATE_IDLE;
     self->nco_accumulator = 0;
     self->bit_shifter = 0;
     self->bits_count = 0;
     self->is_figures_case = 0;
 
-    /* Compute precise 32-bit integer NCO step per single hardware sample tick (Q32) */
     const FLOAT_t ratio = baud_rate / (FLOAT_t)sample_rate;
     self->nco_step = (uint32_t)(ratio * 4294967296.0);
 }
 
 /**
  * @brief MAIN UNIFIED INITIALIZER: Sequentially calls independent sub-layer init functions.
- * @param self Pointer to the active unified hierarchical receiver context.
- * @param sample_rate Input hardware sample clock (typically 48000).
- * @param baud_rate Modulation speed (typically 45.45, 50, or 75 Baud).
  */
 static void dsp_rtty_rx_init(
     rtty_receiver_t * const self,
     const uint32_t sample_rate,
     const FLOAT_t baud_rate)
 {
-    /* Initialize frequency discriminator sub-layer using nested detector object pointer */
     dsp_rtty_sub_init_detector(&self->detector, sample_rate, baud_rate);
-
-    /* Initialize asynchronous integer NCO bit framing receiver sub-layer pointer */
     dsp_rtty_sub_init_fsm(&self->fsm, sample_rate, baud_rate);
 }
 
 /**
- * @brief SUB-FUNCTION 1: Differential cross-product frequency discriminator.
- * @return uint32_t Returns 1 for MARK (positive frequency), 0 for SPACE (negative frequency).
+ * @brief EXPORT EXTERNAL LAYER: Dynamically toggles RTTY spectrum inversion mode at runtime.
+ */
+static void dsp_rtty_rx_set_reverse(rtty_receiver_t * const self, const int invert)
+{
+    self->detector.invert_output = invert ? 1 : 0;
+}
+
+/**
+ * @brief SUB-FUNCTION 1: Differential cross-product frequency discriminator with native invert layer.
+ * @return uint32_t Returns the final sliced bit (inverted or non-inverted based on internal flag).
  */
 static uint32_t dsp_rtty_sub_execute_discriminator(
-	rtty_freq_detector_t * const self,
+    rtty_freq_detector_t * const self,
     const FLOAT_t in_i,
     const FLOAT_t in_q)
 {
-    /* Instantaneous frequency tracking via complex conjugate vector multiplication */
+    /* Calculate instantaneous phase error cross-product */
     const FLOAT_t phase_error = in_q * self->prev_in_i - in_i * self->prev_in_q;
 
-    /* Save active samples to history buffers */
     self->prev_in_i = in_i;
     self->prev_in_q = in_q;
 
-    /* Smooth error discriminator output to clear off-band noise spikes */
+    /* Low-pass envelope integration */
     self->lpf_state += self->lpf_alpha * (phase_error - self->lpf_state);
 
-    /* Hard slicing decision boundary (MARK frequency vs SPACE frequency) */
-    return (self->lpf_state >= 0.0) ? 1 : 0;
-}
+    /* Slicing boundary execution */
+    const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
 
-/* Strictly bounded element-by-element configuration of ITA2 Baudot matrices */
-static const uint8_t rtty_ita2_letters [32] = {
-    ' ', ' ', 'E', '\n', 'A', ' ', 'S', 'I',
-    'U', '\r', 'D', 'R',  'J', 'N', 'F', 'C',
-    'K', 'T', 'Z', 'L',  'W', 'H', 'Y', 'P',
-    'Q', 'O', 'B', 'G',  ' ', 'M', 'X', 'V'
-};
-
-static const uint8_t rtty_ita2_figures [32] = {
-    ' ', ' ', '3', '\n', '-', ' ', '8', '7',
-    '\'', '7', '4', ' ', '4', '5', ',', ':',
-    '!', '?', ' ', '"',  '9', '0', '+', '1',
-    '5', '6', '1', ' ',  '1', '2', ' ', ' '
-};
-
-static const char RTTY_Letters[32] = {
-	'\0', 'E', '\n', 'A', ' ', 'S', 'I', 'U',
-	'\r', 'D', 'R', 'J', 'N', 'F', 'C', 'K',
-	'T', 'Z', 'L', 'W', 'H', 'Y', 'P', 'Q',
-	'O', 'B', 'G', ' ', 'M', 'X', 'V', ' ',
-};
-
-static const char RTTY_Symbols[32] = {
-	'\0', '3', '\n', '-', ' ', '\a', '8', '7',
-	'\r', '$', '4', '\'', ',', '!', ':', '(',
-	'5', '"', ')', '2', '#', '6', '0', '1',
-	'9', '?', '&', ' ', '.', '/', ';', ' ',
-};
-
-/**
- * @brief Initializes the Baudot FSM deserializer and computes integer NCO phase step.
- */
-static void dsp_rtty_fsm_init(
-    rtty_baudot_fsm_t * const self,
-    const uint32_t sample_rate,
-    const FLOAT_t baud_rate)
-{
-    self->fsm_state = RTTY_STATE_IDLE;
-    self->nco_accumulator = 0;
-    self->bit_shifter = 0;
-    self->bits_count = 0;
-    self->is_figures_case = 0;
-
-    /* Compute precise integer NCO step per single hardware sample tick (Q32) */
-    /* step = (baud_rate / sample_rate) * 4294967296.0 */
-    const FLOAT_t ratio = baud_rate / (FLOAT_t)sample_rate;
-    self->nco_step = (uint32_t)(ratio * 4294967296.0);
+    /* Apply fast hardware-friendly inversion layer using native XOR operation with typecast */
+    return raw_bit ^ (uint32_t)self->invert_output;
 }
 
 /**
- * @brief Asynchronous Baudot FSM driven by an integer NCO phase accumulator.
- * @param raw_bit Sliced polar bit input (1 or 0) arriving from the frequency detector.
- */
-static void dsp_rtty_fsm_process_sample(
-    rtty_baudot_fsm_t * const self,
-    const uint32_t raw_bit,
-    void (* const put_char_cb)(const uint8_t character))
-{
-    switch (self->fsm_state)
-    {
-        case RTTY_STATE_IDLE:
-            /* RTTY idle state is MARK (1). Transition to SPACE (0) triggers START bit execution */
-            if (raw_bit == 0)
-            {
-                self->fsm_state = RTTY_STATE_START_BIT;
-                /* Align integer NCO to sample exactly at the mid-point of the start bit pulse */
-                self->nco_accumulator = 0x80000000; /* Pre-bias phase to 50% window */
-            }
-            break;
-
-        case RTTY_STATE_START_BIT:
-            /* Accumulate phase step continuously */
-            self->nco_accumulator += self->nco_step;
-
-            /* Check if integer overflow occurred (Phase accumulator wrapped around = bit boundary) */
-            if (self->nco_accumulator < self->nco_step)
-            {
-                /* Verify that start bit remains valid SPACE (0) at its midpoint boundary */
-                if (raw_bit == 0)
-                {
-                    self->fsm_state = RTTY_STATE_DATA_BITS;
-                    self->bits_count = 0;
-                    self->bit_shifter = 0;
-                    self->nco_accumulator = 0; /* Reset phase grid for next data bits */
-                }
-                else
-                {
-                    self->fsm_state = RTTY_STATE_IDLE; /* Spurious start trigger reset */
-                }
-            }
-            break;
-
-        case RTTY_STATE_DATA_BITS:
-            self->nco_accumulator += self->nco_step;
-
-            if (self->nco_accumulator < self->nco_step)
-            {
-                /* Sample and shift incoming payload bit into the shift register (LSB first) */
-                self->bit_shifter |= (raw_bit << self->bits_count);
-                self->bits_count++;
-
-                /* Process frame compilation if all 5 standalone ITA2 data bits are aggregated */
-                if (self->bits_count >= 5)
-                {
-                    self->fsm_state = RTTY_STATE_STOP_BIT;
-                    self->nco_accumulator = 0;
-
-                    /* --- CONDITIONAL BAUDOT ITA2 ALPHABET TRANSULATION LAYER --- */
-                    const uint32_t raw_code = self->bit_shifter & 0x1F;
-
-                    if (raw_code == 0x1F)
-                    {
-                        self->is_figures_case = 0; /* LETTERS escape code vector reached */
-                    }
-                    else if (raw_code == 0x1B)
-                    {
-                        self->is_figures_case = 1; /* FIGURES escape code vector reached */
-                    }
-                    else if (raw_code > 0x00)
-                    {
-                        /* Extract ASCII value using active case matrix selection pointer */
-                        const uint8_t ascii_char = self->is_figures_case ?
-                                                    rtty_ita2_figures[raw_code] :
-                                                    rtty_ita2_letters[raw_code];
-
-                        if (ascii_char != ' ')
-                        {
-                            put_char_cb(ascii_char);
-                        }
-                    }
-                }
-            }
-            break;
-
-        case RTTY_STATE_STOP_BIT:
-            self->nco_accumulator += self->nco_step;
-
-            if (self->nco_accumulator < self->nco_step)
-            {
-                /* Stop bit period successfully executed, return to scanning mode */
-                self->fsm_state = RTTY_STATE_IDLE;
-            }
-            break;
-
-        default:
-            self->fsm_state = RTTY_STATE_IDLE;
-            break;
-    }
-}
-
-/**
- * @brief SUB-FUNCTION 2: Asynchronous Baudot bit receiver driven by integer NCO phase accumulator.
- * @param raw_bit Sliced polar bit input (1 or 0) arriving from the discriminator stage.
+ * @brief SUB-FUNCTION 2: Asynchronous Baudot bit receiver driven by enum-typed FSM.
  */
 static void dsp_rtty_sub_execute_fsm(
-	rtty_baudot_fsm_t * const self,
+    rtty_baudot_fsm_t * const self,
     const uint32_t raw_bit,
-    void (* const put_char_cb)(const uint8_t character))
+    void (* const put_char_cb)(rtty_baudot_fsm_t * self, const uint8_t character))
 {
     switch (self->fsm_state)
     {
         case RTTY_STATE_IDLE:
-            /* RTTY idle state is MARK (1). Transition to SPACE (0) triggers START bit execution */
             if (raw_bit == 0)
             {
                 self->fsm_state = RTTY_STATE_START_BIT;
-                /* Align 32-bit integer NCO to sample exactly at the mid-point of the start pulse width */
-                self->nco_accumulator = 0x80000000; /* Pre-bias phase register to 50% grid window */
+                self->nco_accumulator = 0x80000000;
             }
             break;
 
@@ -290,7 +207,7 @@ static void dsp_rtty_sub_execute_fsm(
             /* Accumulate fixed integer step continuously */
             self->nco_accumulator += self->nco_step;
 
-            /* Verify if integer overflow occurred (Phase register wrapped around = bit boundary reached) */
+            /* Verify if integer overflow occurred (Phase register wrapped around) */
             if (self->nco_accumulator < self->nco_step)
             {
                 /* Verify that start bit remains valid SPACE (0) at its midpoint boundary marker */
@@ -299,11 +216,13 @@ static void dsp_rtty_sub_execute_fsm(
                     self->fsm_state = RTTY_STATE_DATA_BITS;
                     self->bits_count = 0;
                     self->bit_shifter = 0;
-                    self->nco_accumulator = 0; /* Reset phase grid loop for next data bits stream */
+
+                    /* --- СКОРРЕКТИРОВАНО: НЕ ОБНУЛЯЕМ АККУМУЛЯТОР! --- */
+                    /* Сохраняем накопленную фазу переполнения, чтобы сетка не прыгала */
                 }
                 else
                 {
-                    self->fsm_state = RTTY_STATE_IDLE; /* Spurious start noise trigger correction */
+                    self->fsm_state = RTTY_STATE_IDLE;
                 }
             }
             break;
@@ -313,17 +232,14 @@ static void dsp_rtty_sub_execute_fsm(
 
             if (self->nco_accumulator < self->nco_step)
             {
-                /* Sample and shift incoming payload bit into the shift register (LSB first) */
                 self->bit_shifter |= (raw_bit << self->bits_count);
                 self->bits_count++;
 
-                /* Process frame compilation if all 5 standalone ITA2 data bits are aggregated */
                 if (self->bits_count >= 5)
                 {
                     self->fsm_state = RTTY_STATE_STOP_BIT;
                     self->nco_accumulator = 0;
 
-                    /* --- CONDITIONAL BAUDOT ITA2 ALPHABET TRANSLATION LAYER --- */
                     const uint32_t raw_code = self->bit_shifter & 0x1F;
 
                     if (raw_code == 0x1F)
@@ -336,14 +252,13 @@ static void dsp_rtty_sub_execute_fsm(
                     }
                     else if (raw_code > 0x00)
                     {
-                        /* Extract valid ASCII code via selection of the active tracking case matrix */
                         const uint8_t ascii_char = self->is_figures_case ?
                                                     rtty_ita2_figures[raw_code] :
                                                     rtty_ita2_letters[raw_code];
 
                         if (ascii_char != ' ')
                         {
-                            put_char_cb(ascii_char);
+                            put_char_cb(self, ascii_char);
                         }
                     }
                 }
@@ -355,7 +270,6 @@ static void dsp_rtty_sub_execute_fsm(
 
             if (self->nco_accumulator < self->nco_step)
             {
-                /* Stop bit period successfully executed, safely return to scanning mode */
                 self->fsm_state = RTTY_STATE_IDLE;
             }
             break;
@@ -367,30 +281,31 @@ static void dsp_rtty_sub_execute_fsm(
 }
 
 /**
- * @brief MAIN UNIFIED WRAPPER FUNCTION: Sequentially executes discriminator and pipes the result into the bit FSM.
- * @param self Pointer to the active unified receiver context.
- * @param in_i Incoming real analytical I quadrature from Zero-IF mixer.
- * @param in_q Incoming imaginary analytical Q quadrature from Zero-IF mixer.
- * @param put_char_cb User hot-path callback to output completed text characters.
+ * @brief MAIN UNIFIED WRAPPER FUNCTION: Pipe execution loop core.
  */
 static void dsp_rtty_rx_process_sample(
     rtty_receiver_t * const self,
     const FLOAT_t in_i,
     const FLOAT_t in_q,
-    void (* const put_char_cb)(const uint8_t character))
+    void (* const put_char_cb)(rtty_baudot_fsm_t * self, const uint8_t character))
 {
-    /* Step 1: Call the frequency discriminator sub-layer to extract the current sliced bit value */
     const uint32_t raw_bit = dsp_rtty_sub_execute_discriminator(&self->detector, in_i, in_q);
-
-    /* Step 2: Immediately pipe the extracted bit into the integer NCO asynchronous framing receiver */
     dsp_rtty_sub_execute_fsm(&self->fsm, raw_bit, put_char_cb);
 }
 
 //////////////
-
-static void rxcharacter(const uint8_t c)
+/**
+ * @brief Extracts a successfully decoded text byte from the receiver queue to send to USB.
+ * @return uint32_t Returns 1 if a byte is available, 0 if queue is empty.
+ */
+static uint32_t rtty_rx_byte(rtty_receiver_t * const self, uint8_t *output_byte)
 {
-	HARDWARE_DEBUG_PUTCHAR(c);
+    return fifo_pop(&self->fsm.rx_fifo, output_byte);
+}
+
+static void rxcharacter(rtty_baudot_fsm_t * self, const uint8_t c)
+{
+	fifo_push(&self->rx_fifo, c);
 }
 
 static rtty_receiver_t rx_stream;
@@ -404,9 +319,21 @@ void modem_parse(const IFADCvalue_t * buff)
 	dsp_rtty_rx_process_sample(& rx_stream, i, q, rxcharacter);
 }
 
+void modem_spool(void * ctx)
+{
+	(void) ctx;
+
+	uint8_t c;
+	if (rtty_rx_byte(& rx_stream, & c))
+	{
+		dbg_putchar(c);
+	}
+}
+
 void modem_init(void)
 {
 	dsp_rtty_rx_init(& rx_stream, ARMSAIRATE, 50);
+	dsp_rtty_rx_set_reverse(& rx_stream, 1);
 }
 
 
@@ -465,6 +392,9 @@ typedef struct
 	FLOAT_t space_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
 	FLOAT_t space_Filter_State[2 * RTTY_BPF_STAGES];
 	ARM_MORPH(arm_biquad_cascade_df2T_instance) space_Filter;
+
+    rtty_baudot_fsm_t    fsm;      /* Embedded integer NCO asynchronous framing engine */
+
 } rtty_rx_t;
 // Public variables
 //extern char RTTY_Decoder_Text[RTTY_DECODER_STRLEN + 1];
@@ -530,6 +460,10 @@ void RTTYDecoder_Init2(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_f
 	self->byteResult = 0;
 	self->byteResult_bnum = 0;
 	self->stopBits = RTTY_STOP_1;
+
+    /* Initialize asynchronous integer NCO bit framing receiver sub-layer pointer */
+	int_fast32_t baud_rate = RTTY_Speed10 / 10;
+    dsp_rtty_sub_init_fsm(&self->fsm, sample_rate, baud_rate);
 }
 
 // adapted from https://github.com/ukhas/dl-fldigi/blob/master/src/include/misc.h
@@ -735,14 +669,13 @@ static void RTTYDecoder_Process2(
 						}
 						break;
 					default:
-						self->byteResult |= (bitResult ? 1 : 0) << (self->byteResult_bnum - 1);
+						self->byteResult |= !! bitResult << (self->byteResult_bnum - 1);
 					}
 					self->byteResult_bnum++;
 				}
 			}
 			if (self->byteResult_bnum == 8 && self->state == RTTY_STATE_BIT)
 			{
-				char charResult;
 
 				switch (self->byteResult)
 				{
@@ -754,19 +687,25 @@ static void RTTYDecoder_Process2(
 					self->charSetMode = RTTY_MODE_SYMBOLS;
 					// println(" ^F^");
 					break;
+				case 0x00:
+					break;
 				default:
-					switch (self->charSetMode)
+					if (self->byteResult < 0x1F)
 					{
-					case RTTY_MODE_SYMBOLS:
-						charResult = rtty_ita2_figures [self->byteResult + 1];
-						break;
-					case RTTY_MODE_LETTERS:
-					default:
-						charResult = rtty_ita2_letters [self->byteResult + 1];
-						break;
+						char charResult;
+						switch (self->charSetMode)
+						{
+						case RTTY_MODE_SYMBOLS:
+							charResult = rtty_ita2_figures [self->byteResult + 1];
+							break;
+						case RTTY_MODE_LETTERS:
+						default:
+							charResult = rtty_ita2_letters [self->byteResult + 1];
+							break;
+						}
+						//RESULT !!!!
+						put_char_cb(charResult);
 					}
-					//RESULT !!!!
-					put_char_cb(charResult);
 					break;
 				}
 				self->state = RTTY_STATE_WAIT_START;
