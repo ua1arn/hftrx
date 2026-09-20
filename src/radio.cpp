@@ -12367,7 +12367,7 @@ void RTTYDecoder_Setup(void)
 	const int_fast32_t RTTY_Speed10 = param_getvalue(& xgrttybaudrate10);//50; //45.45;
 	const int_fast32_t RTTY_Shift = param_getvalue(& xgrttyshift); //455 //170;
 	const int inverted = param_getvalue(& xgrttyinverted);
-	RTTYModem_SetParam(DEFAULT_RTTY_PITCH, RTTY_Speed10, RTTY_Shift, inverted);
+	RTTYModem_SetParam(RTTY_Speed10, RTTY_Shift, inverted);
 }
 
 #endif /* WITHRTTY */

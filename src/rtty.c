@@ -604,7 +604,7 @@ static void rtty_spool(void * ctx)
 	}
 }
 
-void RTTYModem_SetParam(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift, int invert_output)
+void RTTYModem_SetParam(int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift, int invert_output)
 {
 	dsp_rtty_rx_init(& rx_stream, ARMSAIRATE, RTTY_Speed10 / (FLOAT_t) 10);
 	dsp_rtty_rx_set_reverse(& rx_stream, invert_output);
