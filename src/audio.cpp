@@ -3529,8 +3529,8 @@ static const char rtty_ita2_figures [32] = {
 
 /**
  * @brief SUB-INIT 1: Calibrates and initializes the PLL frequency detector based on runtime parameters.
- * @param sample_rate Input hardware hardware sample clock (typically 48000).
- * @param shift_hz Total frequency shift delta (e.g., 450.0f for DDK7, 170.0f for standard amateur RTTY).
+ * @param sample_rate Input hardware sample clock (typically 48000).
+ * @param shift_hz Total frequency shift delta (typically 450.0f for DDK7).
  * @param baud_rate Modulation speed (typically 45.45f or 50.0f).
  */
 static void dsp_rtty_sub_init_detector(
@@ -3548,23 +3548,23 @@ static void dsp_rtty_sub_init_detector(
 
     const FLOAT_t samples_per_bit = (FLOAT_t)sample_rate / baud_rate;
 
-    /* 1. DYNAMIC CALIBRATION OF ANTI-WINDUP AND BANDWIDTH CLAMPING BOUNDARIES */
-    /* Calculate precise half-shift frequency radian increment step matching the exact FSK tones */
-    /* limit = 2 * PI * (shift_hz / 2) / sample_rate */
+    /* 1. DYNAMIC CALIBRATION OF THE PHYSICAL INTEGRATOR ANTI-WINDUP */
+    /* Exact frequency boundary in radians/sample matching the FSK shift half-deviation */
+    /* For DDK7 (450Hz shift at 48kHz) this equals strictly 0.02945243f radians */
     self->pll_limit = (2.0 * M_PI * (shift_hz / 2.0)) / (FLOAT_t)sample_rate;
 
-    /* 2. PROPORTIONAL-INTEGRAL LOOP GAINS ADAPTIVE TUNING */
-    /* Scale loop bandwidth coefficients dynamically to stay locked strictly inside the baud timing window */
-    /* These factors are mathematically optimized to secure critical damping without overshoot */
-    self->pll_kp = 20.0 / samples_per_bit;  /* Scales to ~0.019f for 45.45 Baud at 48kHz */
-    self->pll_ki = 0.25 / samples_per_bit;  /* Scales to ~0.00024f for stable accumulation */
+    /* 2. MATHEMATICALLY SCALED LOOP FILTER GAINS MATRIX */
+    /* Proportional gain must track the relative speed ratio directly without being crushed */
+    /* Formula: (Baud / SampleRate) * Multiplier. For 50 Baud at 48kHz gives exactly 0.15f */
+    self->pll_kp = (baud_rate / (FLOAT_t)sample_rate) * 144.0;
 
-    /* Overrides with your verified high-performance experimental HF coefficients optimized for DDK7 */
-    self->pll_kp = 0.15;
-    self->pll_ki = 0.0025;
+    /* Integral gain updates step-by-step per sample, scaling with the squared time window */
+    /* Formula: (Baud / SampleRate)^2 * Multiplier. For 50 Baud at 48kHz gives exactly 0.0025f */
+    const FLOAT_t ratio = baud_rate / (FLOAT_t)sample_rate;
+    self->pll_ki = ratio * ratio * 2304.0;
 
     /* 3. INDIVIDUAL DATA SLICING FILTERS SEPARATION RULES */
-    /* Configure isolated alpha filter to match the verified experimental layout */
+    /* Re-establish the precise crisp edge tracking alpha from your successful run */
     self->lpf_alpha = 4.0 / samples_per_bit;
 }
 
@@ -3687,8 +3687,8 @@ static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
 
     /* 4. ADVANCE PHASE ACCUMULATOR AND WRAP RADIANS TRUCK */
     self->phase_nco += current_step;
-    if (self->phase_nco >= (2.0 * M_PI)) self->phase_nco -= (2.0 * M_PI);
-    if (self->phase_nco < 0.0)           self->phase_nco += (2.0 * M_PI);
+    if (self->phase_nco >= (2 * M_PI)) self->phase_nco -= (2 * M_PI);
+    if (self->phase_nco < 0)           self->phase_nco += (2 * M_PI);
 
     /* 5. DATA SLICING AND OUTPUT GENERATION */
     /* Smooth the active tracking output via your verified individual lpf_alphaNEW ratio field */
@@ -3814,8 +3814,8 @@ static void dsp_rtty_rx_process_sample(
     const FLOAT_t in_q,
     void (* const put_char_cb)(rtty_baudot_fsm_t * self, const uint8_t character))
 {
-    //const uint32_t raw_bit = dsp_rtty_sub_execute_discriminatorNEW(&self->detector, in_i, in_q);
-    const uint32_t raw_bit = dsp_rtty_sub_execute_discriminatorOLD(&self->detector, in_i, in_q);
+    const uint32_t raw_bit = dsp_rtty_sub_execute_discriminatorNEW(&self->detector, in_i, in_q);
+    //const uint32_t raw_bit = dsp_rtty_sub_execute_discriminatorOLD(&self->detector, in_i, in_q);
     dsp_rtty_sub_execute_fsm(&self->fsm, raw_bit, put_char_cb);
 }
 
