@@ -830,9 +830,47 @@ typedef struct
 	//int levelfade;					// Fade Leveler switch
 } amdemod_t;
 
-////////////////////////////////////////
-// RTTY
+#define MODEM_FIFO_SIZE         256
+
+/**
+ * @brief Fully thread-safe lock-free circular queue structure (Single-Producer Single-Consumer).
+ * The shared mutable variable 'count' is completely omitted to protect against race conditions.
+ */
+typedef struct {
+    uint8_t storage[MODEM_FIFO_SIZE];
+    volatile uint32_t head;
+    volatile uint32_t tail;
+} modem_fifo_t;
+
+
+/**
+ * @brief SERVICE LAYER: Thread-safe lock-free buffer initialization.
+ */
+void fifo_init(modem_fifo_t * const fifo);
+
+/**
+ * @brief SERVICE LAYER: Thread-safe lock-free byte injection (Single-Producer).
+ * @return uint32_t Returns 1 on success, 0 if the buffer is mathematically full.
+ */
+uint32_t fifo_push(modem_fifo_t * const fifo, const uint8_t data);
+
+/**
+ * @brief SERVICE LAYER: Thread-safe lock-free byte extraction (Single-Consumer).
+ * @return uint32_t Returns 1 on success, 0 if the buffer is mathematically empty.
+ */
+uint32_t fifo_pop(modem_fifo_t * const fifo, uint8_t * const data);
+
+uint32_t fifo_get_count(const modem_fifo_t * const fifo);
+
+/**
+ * @brief EXPORT EXTERNAL LAYER: Thread-safe runtime check to extract the exact number of currently aggregated elements.
+ */
+uint32_t dsp_rtty_fifo_get_count(const modem_fifo_t * const fifo);
+
+
+
 #include "rtty.h"
+#include "ofdm_bpsk.h"
 
 typedef struct {
     nfm_pll_t demodulator;
@@ -877,6 +915,9 @@ typedef struct {
 	rtty_receiver_t rtty_rx;
 	dpcobj_t rttydpcobj;
 	rtty_transmitter_t rtty_tx;
+
+	ofdm_modem_tx_t ofdm_tx;
+	ofdm_modem_rx_t ofdm_rx;
 } hfrxpath_t;
 
 #endif /* WITHINTEGRATEDDSP */

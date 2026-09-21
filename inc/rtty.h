@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#define MODEM_FIFO_SIZE         256
-
 /* ========================================================================== */
 /* RTTY TRANSCEIVER ENUMS AND CORES STRUCTURES DEFINITIONS                    */
 /* ========================================================================== */
@@ -28,16 +26,6 @@ typedef enum {
     RTTY_TX_STATE_DATA_BITS,
     RTTY_TX_STATE_STOP_BIT
 } rtty_tx_fsm_state_t;
-
-/**
- * @brief Fully thread-safe lock-free circular queue structure (Single-Producer Single-Consumer).
- * The shared mutable variable 'count' is completely omitted to protect against race conditions.
- */
-typedef struct {
-    uint8_t storage[MODEM_FIFO_SIZE];
-    volatile uint32_t head;
-    volatile uint32_t tail;
-} modem_fifo_t;
 
 /**
  * @brief Frequency Detector sub-layer state memory structure optimized for Zero-IF PLL.
@@ -154,12 +142,6 @@ uint32_t dsp_rtty_tx_push_char(rtty_transmitter_t * const self, const uint8_t ch
  * @return uint32_t Returns 1 if valid text byte was extracted, 0 if queue is currently empty.
  */
 uint32_t dsp_rtty_rx_pop_char(rtty_receiver_t * const self, uint8_t * const output_byte);
-
-/**
- * @brief EXPORT EXTERNAL LAYER: Thread-safe runtime check to extract the exact number of currently aggregated elements.
- * @return uint32_t Returns the current number of valid bytes stored inside the circular queue.
- */
-uint32_t dsp_rtty_fifo_get_count(const modem_fifo_t * const fifo);
 
 /**
  * @brief EXPORT LAYER: Main RTTY processing function for streaming input IQ samples.

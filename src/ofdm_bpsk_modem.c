@@ -1,6 +1,6 @@
 #include "hardware.h"
 
-#if WITHINTEGRATEDDSP && 0
+#if WITHINTEGRATEDDSP
 
 //////////////////
 /// interleaver
@@ -16,19 +16,11 @@
 #if WITHINTEGRATEDDSP
 
 #include "dspdefines.h"
+#include "audio.h"
 
-#define MODEM_FIFO_SIZE     256
 #define INTERLEAVE_ROWS     8   /* Matches OFDM_NUM_CHANNELS */
 #define INTERLEAVE_COLS     8   /* Depth of time interleaving */
 #define INTERLEAVE_SIZE     (INTERLEAVE_ROWS * INTERLEAVE_COLS) /* 64 bits = 8 bytes */
-
-/* Unified and fully lock-free single-producer single-consumer circular queue */
-typedef struct {
-    uint8_t storage[MODEM_FIFO_SIZE];
-    volatile uint32_t head;
-    volatile uint32_t tail;
-    /* Field volatile uint32_t count is completely removed to secure atomicity */
-} modem_fifo_t;
 
 /* Independent Transmitter Packer/Interleaver/FEC Context */
 typedef struct {
@@ -43,72 +35,6 @@ typedef struct {
     uint8_t rx_matrix[INTERLEAVE_ROWS][INTERLEAVE_COLS];
     uint32_t rx_col_idx;
 } ofdm_packer_rx_t;
-
-/* ========================================================================== */
-/*                             INTERNAL FIFO HELPERS                          */
-/* ========================================================================== */
-
-/**
- * @brief Thread-safe lock-free buffer initialization.
- */
-static void fifo_init(modem_fifo_t * const fifo)
-{
-    fifo->head = 0;
-    fifo->tail = 0;
-}
-
-/**
- * @brief Thread-safe lock-free byte injection (Called strictly by ONE producer thread/interrupt).
- * @return uint32_t Returns 1 on success, 0 if the buffer is mathematically full.
- */
-static uint32_t fifo_push(modem_fifo_t * const fifo, const uint8_t data)
-{
-    const uint32_t next_head = (fifo->head + 1) % MODEM_FIFO_SIZE;
-
-    /* Check if the next step hits the tail pointer boundary (Buffer Full) */
-    if (next_head == fifo->tail) {
-        return 0;
-    }
-
-    fifo->storage[fifo->head] = data;
-
-    /* Atomic write of the head index closes the transaction. Interrupt safe. */
-    fifo->head = next_head;
-    return 1;
-}
-
-/**
- * @brief Thread-safe lock-free byte extraction (Called strictly by ONE consumer thread/interrupt).
- * @return uint32_t Returns 1 on success, 0 if the buffer is empty.
- */
-static uint32_t fifo_pop(modem_fifo_t * const fifo, uint8_t * const data)
-{
-    /* If head and tail pointers are equal, the ring is mathematically empty */
-    if (fifo->tail == fifo->head) {
-        return 0;
-    }
-
-    *data = fifo->storage[fifo->tail];
-
-    /* Atomic write of the tail index closes the transaction. Interrupt safe. */
-    fifo->tail = (fifo->tail + 1) % MODEM_FIFO_SIZE;
-    return 1;
-}
-
-/**
- * @brief Supplementary helper to safely extract current elements count at runtime.
- */
-static uint32_t fifo_get_count(const modem_fifo_t * const fifo)
-{
-    const uint32_t snapshot_head = fifo->head;
-    const uint32_t snapshot_tail = fifo->tail;
-
-    if (snapshot_head >= snapshot_tail) {
-        return snapshot_head - snapshot_tail;
-    }
-
-    return (MODEM_FIFO_SIZE - snapshot_tail) + snapshot_head;
-}
 
 /*
  * OFDM Bit Packer / Unpacker with Matrix Interleaver and FEC (7, 4) Hamming Code
@@ -339,7 +265,7 @@ static const uint16_t subcarrier_map[OFDM_NUM_CHANNELS] = {
     1, 3, 5, 7,        /* Positive bins (Channels 0, 1, 2, 3) */
 	FFT_LEN - 7, FFT_LEN - 5, FFT_LEN - 3, FFT_LEN - 1  /* Negative bins (Channels 4, 5, 6, 7) */
 };
-
+#if 0
 /* ========================================================================== */
 /*                             STRUCTURES & CONTEXTS                          */
 /* ========================================================================== */
@@ -354,7 +280,7 @@ typedef struct {
 
     FLOAT_t phase_lock_metric;   /* Exponential moving average lock indicator */
     uint32_t is_phase_locked;    /* Boolean lock status flag */
-} ofdm_subcarrier_bpsk_t;
+} XXofdm_subcarrier_bpsk_t;
 
 typedef struct {
     ARM_MORPH(arm_cfft_instance) cfft_inst;
@@ -372,7 +298,9 @@ typedef struct {
     tx_sync_state_t tx_sync_state;
     uint32_t tx_carrier_count;      /* Счетчик длительности прогревочного тона */
 
-} ofdm_modem_tx_t;
+    uint32_t symbol_sample_idx;
+
+} XXofdm_modem_tx_t;
 
 typedef struct {
     ofdm_subcarrier_bpsk_t rx_subcarriers[OFDM_NUM_CHANNELS];
@@ -410,9 +338,11 @@ typedef struct {
     FLOAT_t E;    /* Мгновенная энергия половины символа */
 
     int32_t rx_phase_sign;
-} ofdm_modem_rx_t;
+} XXofdm_modem_rx_t;
 
+#endif
 
+#if 0
 /**
  * @brief Runtime initialization of the standalone OFDM transmitter context.
  *        Generates complex window LUT weights using arm_sin_cos_f32.
@@ -1101,37 +1031,35 @@ void NEWofdm_modem_tx_block(ofdm_modem_tx_t *self, void (*get_bits_cb)(ofdm_mode
 static void ofdm_modem_tx_initiate_carrier(ofdm_modem_tx_t * const self, const uint32_t duration_symbols)
 {
     /* Force state machine into unmodulated carrier pre-keying mode */
-    self->tx_sync_state = TX_STATE_CARRIER;
-    self->tx_sync_state = TX_STATE_DATA;
+//    self->tx_sync_state = TX_STATE_CARRIER;
+//    self->tx_sync_state = TX_STATE_DATA;
 
     /* Set the exact length of the carrier tone sequence measured in standalone symbols */
     self->tx_carrier_count = duration_symbols;
-
-    /* Reset the sample index to align execution precisely with the next hardware block boundary */
-    self->tx_sample_idx = 0;
 }
+#endif
 
 /* ========================================================================== */
 /*                          STATIC CALLBACK BRIDGES                           */
 /* ========================================================================== */
 
-/**
- * @brief Bridge function connecting the physical modulator with the internal bit packer.
- */
-static void dsp_ofdm_tx_bits_bridge(ofdm_modem_tx_t *self, uint8_t *bits)
-{
-    /* FIXED: Extract the integrated service context directly from the active PHY block */
-    ofdm_packer_get_bits_callback(&self->ofdm_srv_tx, bits);
-}
-
-/**
- * @brief Bridge function connecting the physical demodulator with the internal deinterleaver.
- */
-static void dsp_ofdm_rx_bits_bridge(ofdm_modem_rx_t *self, const uint8_t *bits)
-{
-    /* FIXED: Extract the integrated service context directly from the active PHY block */
-    ofdm_packer_process_bits_callback(&self->ofdm_srv_rx, bits);
-}
+///**
+// * @brief Bridge function connecting the physical modulator with the internal bit packer.
+// */
+//static void dsp_ofdm_tx_bits_bridge(ofdm_modem_tx_t *self, uint8_t *bits)
+//{
+//    /* FIXED: Extract the integrated service context directly from the active PHY block */
+//    ofdm_packer_get_bits_callback(&self->ofdm_srv_tx, bits);
+//}
+//
+///**
+// * @brief Bridge function connecting the physical demodulator with the internal deinterleaver.
+// */
+//static void dsp_ofdm_rx_bits_bridge(ofdm_modem_rx_t *self, const uint8_t *bits)
+//{
+//    /* FIXED: Extract the integrated service context directly from the active PHY block */
+//    ofdm_packer_process_bits_callback(&self->ofdm_srv_rx, bits);
+//}
 
 /* ========================================================================== */
 /*                         PUBLIC CORE TRANSCEIVER API                        */
@@ -1141,18 +1069,18 @@ static void dsp_ofdm_rx_bits_bridge(ofdm_modem_rx_t *self, const uint8_t *bits)
  * @brief External interface for the hftrx USB CDC UART layer to inject text characters for transmission.
  *        Must be called from main.c / usb_cdc.c passing the active transmitter object instance.
  */
-void dsp_ofdm_push_char_to_tx(ofdm_modem_tx_t *self, uint8_t c)
-{
-    ofdm_packer_put_tx_byte(&self->ofdm_srv_tx, c);
-}
+//void dsp_ofdm_push_char_to_tx(ofdm_modem_tx_t *self, uint8_t c)
+//{
+//    ofdm_packer_put_tx_byte(&self->ofdm_srv_tx, c);
+//}
 
 /**
  * @brief External interface for the hftrx USB CDC UART layer to poll for decoded text characters.
  */
-uint32_t dsp_ofdm_pop_char_from_rx(ofdm_modem_rx_t *self, uint8_t *c)
-{
-    return ofdm_packer_get_rx_byte(&self->ofdm_srv_rx, c);
-}
+//uint32_t dsp_ofdm_pop_char_from_rx(ofdm_modem_rx_t *self, uint8_t *c)
+//{
+//    return ofdm_packer_get_rx_byte(&self->ofdm_srv_rx, c);
+//}
 
 
 //////////////////
@@ -1378,6 +1306,7 @@ void modem_init(void)
 
 #endif
 
+#if 0
 ///////////////////////////////////////////
 static FLOAT_t vming, vmaxg;
 
@@ -1492,6 +1421,378 @@ void modem_test(void)
 	printhex(0, rxarray, rxcnt);
 //	PRINTF("OFDM_SYMBOL_LEN=%d\n", (int) OFDM_SYMBOL_LEN);
 	printf("Ranges: vming=%f, vmaxg=%f\n", vming, vmaxg);
+}
+
+#endif
+
+
+
+///////////
+///
+///
+void dsp_ofdm_tx_init(
+    ofdm_modem_tx_t * const self,
+    const uint32_t sample_rate,
+    const uint32_t fft_len,
+    const uint32_t cp_len,
+    const uint32_t tx_w_len,
+    const FLOAT_t base_freq_hz,
+    const FLOAT_t tone_spacing_hz,
+    const FLOAT_t output_magnitude)
+{
+    self->tx_fsm_state = OFDM_TX_STATE_IDLE;
+    self->nco_baud_accumulator = 0;
+    self->bit_shifter = 0;
+    self->bits_count = 0;
+    self->tx_active = 0;
+    self->symbol_sample_idx = 0;
+    self->magnitude = output_magnitude;
+    self->active_tones_count = OFDM_MAX_SUBCARRIERS;
+
+    self->cp_len = cp_len;
+    /* Guard safety boundary check to prevent out-of-bound arrays corruption */
+    self->window_len = (tx_w_len > OFDM_MAX_WIN_LEN) ? OFDM_MAX_WIN_LEN : tx_w_len;
+    self->total_symbol_len = fft_len + cp_len;
+
+    /* 1. Настройка сетки частот поднесущих */
+    for (uint32_t i = 0; i < self->active_tones_count; i++)
+    {
+        self->subcarrier_phases[i] = 0.0;
+        const FLOAT_t tone_freq = base_freq_hz + ((FLOAT_t)i * tone_spacing_hz);
+        self->subcarrier_steps[i] = (2.0 * M_PI * tone_freq) / (FLOAT_t)sample_rate;
+        self->prev_subcarrier_bits[i] = 0;
+    }
+
+    /* 2. Расчёт шага NCO сетки символов */
+    const FLOAT_t symbol_rate = (FLOAT_t)sample_rate / (FLOAT_t)self->total_symbol_len;
+    const FLOAT_t ratio = symbol_rate / (FLOAT_t)sample_rate;
+    self->nco_baud_step = (uint32_t)(ratio * 4294967296.0);
+
+    /* 3. ПРЕДВАРИТЕЛЬНЫЙ РАСЧЁТ КОЭФФИЦИЕНТОВ ОКНА ПРИПОДНЯТОГО КОСИНУСА */
+    for (uint32_t idx = 0; idx < self->window_len; idx++)
+    {
+        float32_t w_sin, w_cos;
+        /* Вычисляем фазовый угол от 0 до 90 градусов для косинусной огибающей */
+        const float32_t angle_deg = ((float32_t)idx * 90.0f) / (float32_t)self->window_len;
+
+        arm_sin_cos_f32(angle_deg, &w_sin, &w_cos);
+
+        /* Запись весов в Look-Up таблицы с жестким ограничением амплитуды Найквиста */
+        self->window_fade_in[idx]  = FMAXF(0.0f, FMINF((FLOAT_t)w_sin, 1.0f));
+        self->window_fade_out[idx] = FMAXF(0.0f, FMINF((FLOAT_t)w_cos, 1.0f));
+    }
+
+    fifo_init(&self->tx_fifo);
+}
+
+static uint32_t dsp_ofdm_sub_execute_tx_fsm(ofdm_modem_tx_t * const self)
+{
+    static uint32_t parallel_dbpsk_states = 0x0000; /* Stores current continuous loop state */
+
+    if (self->tx_active)
+    {
+        const uint32_t prev_acc = self->nco_baud_accumulator;
+        self->nco_baud_accumulator += self->nco_baud_step;
+
+        if (self->nco_baud_accumulator < prev_acc)
+        {
+            self->symbol_sample_idx = 0;
+            uint8_t tx_char;
+
+            switch (self->tx_fsm_state)
+            {
+                case OFDM_TX_STATE_IDLE:
+                    if (fifo_pop(&self->tx_fifo, &tx_char))
+                    {
+                        self->bit_shifter = tx_char;
+                        self->tx_fsm_state = OFDM_TX_STATE_DATA_BITS;
+
+                        /* DIFFERENTIAL ENCODER: next_state = prev_state ^ data_bit */
+                        parallel_dbpsk_states = 0;
+                        for (uint32_t t = 0; t < self->active_tones_count; t++)
+                        {
+                            const uint32_t data_bit = (tx_char >> (t % 8)) & 0x01;
+                            self->prev_subcarrier_bits[t] ^= data_bit; /* Accumulate difference */
+                            parallel_dbpsk_states |= (self->prev_subcarrier_bits[t] << t);
+                        }
+                    }
+                    else
+                    {
+                        self->tx_active = 0;
+                        parallel_dbpsk_states = 0x0000;
+                    }
+                    break;
+
+                case OFDM_TX_STATE_DATA_BITS:
+                    if (fifo_pop(&self->tx_fifo, &tx_char))
+                    {
+                        self->bit_shifter = tx_char;
+                        parallel_dbpsk_states = 0;
+                        for (uint32_t t = 0; t < self->active_tones_count; t++)
+                        {
+                            const uint32_t data_bit = (tx_char >> (t % 8)) & 0x01;
+                            self->prev_subcarrier_bits[t] ^= data_bit;
+                            parallel_dbpsk_states |= (self->prev_subcarrier_bits[t] << t);
+                        }
+                    }
+                    else
+                    {
+                        self->tx_fsm_state = OFDM_TX_STATE_IDLE;
+                    }
+                    break;
+
+                default:
+                    self->tx_fsm_state = OFDM_TX_STATE_IDLE;
+                    break;
+            }
+        }
+    }
+    else
+    {
+        if (self->nco_baud_accumulator == 0)
+        {
+            if (self->tx_fifo.head != self->tx_fifo.tail)
+            {
+                self->tx_active = 1;
+                self->tx_fsm_state = OFDM_TX_STATE_IDLE;
+                self->nco_baud_accumulator = 0xFFFFFFFF;
+            }
+        }
+        self->nco_baud_accumulator += self->nco_baud_step;
+        if (self->nco_baud_accumulator < self->nco_baud_step) {
+            self->nco_baud_accumulator = 0;
+        }
+        self->symbol_sample_idx = 0;
+    }
+
+    return parallel_dbpsk_states;
+}
+
+/**
+ * @brief Interface function to safely push a character directly into the OFDM transmitter's embedded queue.
+ */
+uint32_t dsp_ofdm_tx_push_char(ofdm_modem_tx_t * const self, const uint8_t character)
+{
+    return fifo_push(&self->tx_fifo, character);
+}
+
+void dsp_ofdm_tx_process_sample(
+    ofdm_modem_tx_t * const self,
+    FLOAT_t * const out_i,
+    FLOAT_t * const out_q)
+{
+    /* 1. Вызов сериализатора для получения текущего параллельного DBPSK-вектора */
+    const uint32_t bpsk_vector = dsp_ofdm_sub_execute_tx_fsm(self);
+
+    FLOAT_t sum_i = 0.0;
+    FLOAT_t sum_q = 0.0;
+
+    /* 2. Синтез поднесущих на лету */
+    for (uint32_t t = 0; t < self->active_tones_count; t++)
+    {
+        self->subcarrier_phases[t] += self->subcarrier_steps[t];
+        if (self->subcarrier_phases[t] >= (2.0 * M_PI)) self->subcarrier_phases[t] -= (2.0 * M_PI);
+        if (self->subcarrier_phases[t] < 0.0)           self->subcarrier_phases[t] += (2.0 * M_PI);
+
+        float32_t sin_val, cos_val;
+        const float32_t phase_degrees = (float32_t)self->subcarrier_phases[t] * (180.0f / (float32_t)M_PI);
+
+        arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
+
+        const int current_bit = (bpsk_vector >> t) & 0x01;
+        const FLOAT_t bpsk_sign = current_bit ? 1.0 : -1.0;
+
+        sum_i += (FLOAT_t)cos_val * bpsk_sign;
+        sum_q += (FLOAT_t)sin_val * bpsk_sign;
+    }
+
+    sum_i /= (FLOAT_t)self->active_tones_count;
+    sum_q /= (FLOAT_t)self->active_tones_count;
+
+    /* 3. МГНОВЕННОЕ СГЛАЖИВАНИЕ ПО ПРЕДРАССЧИТАННЫМ ТАБЛИЦАМ ВЕСОВ (Zero CPU Overhead) */
+    FLOAT_t window_weight = 1.0;
+    const uint32_t current_idx = self->symbol_sample_idx;
+
+    /* Левый край символа: Извлекаем веса плавного нарастания (Fade-In) */
+    if (current_idx < self->window_len)
+    {
+        window_weight = self->window_fade_in[current_idx];
+    }
+    /* Правый край символа: Извлекаем веса плавного затухания (Fade-Out) */
+    else if (current_idx >= (self->total_symbol_len - self->window_len))
+    {
+        const uint32_t decay_idx = self->total_symbol_len - 1 - current_idx;
+        /* Защита от выхода за границы массива при округлении индексов Найквиста */
+        const uint32_t safe_decay_idx = (decay_idx >= self->window_len) ? (self->window_len - 1) : decay_idx;
+        window_weight = self->window_fade_out[safe_decay_idx];
+    }
+
+    /* 4. Выдача комплексного отсчета в DMA аудиоканал */
+    *out_i = sum_i * self->magnitude * window_weight;
+    *out_q = sum_q * self->magnitude * window_weight;
+
+    /* Инкремент временной сетки символа */
+    self->symbol_sample_idx++;
+    if (self->symbol_sample_idx >= self->total_symbol_len)
+    {
+        self->symbol_sample_idx = 0;
+    }
+}
+
+void dsp_ofdm_rx_init(
+    ofdm_modem_rx_t * const self,
+    const uint32_t sample_rate,
+    const uint32_t fft_len,
+    const uint32_t cp_len,
+    const FLOAT_t base_freq_hz,
+    const FLOAT_t tone_spacing_hz)
+{
+    self->rx_fsm_state = OFDM_RX_STATE_IDLE;
+    self->symbol_sample_idx = 0;
+    self->cp_len = cp_len;
+    /* Strict check to protect static matrix memory from boundaries violation */
+    self->fft_len = (fft_len > OFDM_FFT_LUT_SIZE) ? OFDM_FFT_LUT_SIZE : fft_len;
+    self->total_symbol_len = self->fft_len + cp_len;
+    self->rx_active = 0;
+    self->active_tones_count = OFDM_MAX_SUBCARRIERS;
+    self->bit_shifter = 0;
+    self->bits_count = 0;
+
+    /* ПРЕДВАРИТЕЛЬНЫЙ РАСЧЁТ ТРИГОНОМЕТРИЧЕСКИХ МАТРИЦ ДЛЯ ДЕРОТАЦИИ */
+    for (uint32_t t = 0; t < self->active_tones_count; t++)
+    {
+        self->integrator_i[t] = 0.0;
+        self->integrator_q[t] = 0.0;
+        self->prev_integrator_i[t] = 0.0;
+        self->prev_integrator_q[t] = 0.0;
+
+        /* Вычисляем шаг частоты конкретной поднесущей в радианах */
+        const FLOAT_t tone_freq = base_freq_hz + ((FLOAT_t)t * tone_spacing_hz);
+        const FLOAT_t omega_step = (2.0 * M_PI * tone_freq) / (FLOAT_t)sample_rate;
+
+        /* Заполняем индивидуальную строку таблицы для всего окна FFT */
+        for (uint32_t sample_idx = 0; sample_idx < self->fft_len; sample_idx++)
+        {
+            float32_t sin_val, cos_val;
+            /* Фаза нарастает линейно: угол = sample_idx * omega_step */
+            const FLOAT_t phase_rad = (FLOAT_t)sample_idx * omega_step;
+            const float32_t phase_degrees = (float32_t)phase_rad * (180.0f / (float32_t)M_PI);
+
+            arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
+
+            /* Сохраняем веса деротации в LUT */
+            self->rx_lut_cos[t][sample_idx] = (FLOAT_t)cos_val;
+            self->rx_lut_sin[t][sample_idx] = (FLOAT_t)sin_val;
+        }
+    }
+
+    fifo_init(&self->rx_fifo);
+}
+
+uint32_t dsp_ofdm_rx_pop_char(ofdm_modem_rx_t * const self, uint8_t * const output_byte)
+{
+    return fifo_pop(&self->rx_fifo, output_byte);
+}
+
+void dsp_ofdm_rx_process_sample(
+    ofdm_modem_rx_t * const self,
+    const FLOAT_t in_i,
+    const FLOAT_t in_q)
+{
+    /* Логика триггера захвата пакета (энергетический порог) */
+    if (!self->rx_active)
+    {
+        const FLOAT_t power = in_i * in_i + in_q * in_q;
+        if (power > 0.001f)
+        {
+            self->rx_active = 1;
+            self->rx_fsm_state = OFDM_RX_STATE_SYNC;
+            self->symbol_sample_idx = 0;
+
+            for (uint32_t t = 0; t < self->active_tones_count; t++)
+            {
+                self->integrator_i[t] = 0.0;
+                self->integrator_q[t] = 0.0;
+            }
+        }
+        return;
+    }
+
+    const uint32_t current_idx = self->symbol_sample_idx;
+
+    /* МГНОВЕННОЕ КОГЕРЕНТНОЕ НАКОПЛЕНИЕ ДПФ ПО ТАБЛИЦАМ LUT (Zero CPU Trig Overhead) */
+    if (current_idx >= self->cp_len && current_idx < self->total_symbol_len)
+    {
+        /* Вычисляем текущую координату (индекс сэмпла) строго внутри полезного окна FFT */
+        const uint32_t fft_idx = current_idx - self->cp_len;
+
+        for (uint32_t t = 0; t < self->active_tones_count; t++)
+        {
+            /* Прямое скоростное чтение весов деротации из Look-Up кэша памяти */
+            const FLOAT_t local_cos = self->rx_lut_cos[t][fft_idx];
+            const FLOAT_t local_sin = self->rx_lut_sin[t][fft_idx];
+
+            /* Комплексный коррелятор на лету: V_in * V_local^* */
+            self->integrator_i[t] += in_i * local_cos + in_q * local_sin;
+            self->integrator_q[t] += in_q * local_cos - in_i * local_sin;
+        }
+    }
+
+    /* Шаг по временной шкале фрейма */
+    self->symbol_sample_idx++;
+
+    /* Граница OFDM-символа достигнута — дифференциальное DBPSK перемножение векторов */
+    if (self->symbol_sample_idx >= self->total_symbol_len)
+    {
+        self->symbol_sample_idx = 0;
+        uint32_t parallel_bits_vector = 0;
+
+        for (uint32_t t = 0; t < self->active_tones_count; t++)
+        {
+            /* Дифференциальный DBPSK перемножитель: Скалярное произведение векторов Now и Prev */
+            const FLOAT_t dot_product = (self->integrator_i[t] * self->prev_integrator_i[t]) +
+                                        (self->integrator_q[t] * self->prev_integrator_q[t]);
+
+            /* Жёсткий слайсинг знака разности фаз */
+            const uint32_t decoded_bit = (dot_product >= 0.0) ? 1 : 0;
+            parallel_bits_vector |= (decoded_bit << t);
+
+            /* Ротация исторической памяти векторов */
+            self->prev_integrator_i[t] = self->integrator_i[t];
+            self->prev_integrator_q[t] = self->integrator_q[t];
+
+            /* Очистка контура под следующий OFDM-символ */
+            self->integrator_i[t] = 0.0;
+            self->integrator_q[t] = 0.0;
+        }
+
+        /* Десериализация и отправка байт в lock-free FIFO приёмника */
+        if (self->rx_fsm_state == OFDM_RX_STATE_DATA_BITS || self->rx_fsm_state == OFDM_RX_STATE_SYNC)
+        {
+            for (uint32_t b = 0; b < 2; b++)
+            {
+                const uint8_t decoded_char = (uint8_t)((parallel_bits_vector >> (b * 8)) & 0xFF);
+
+                if (self->rx_fsm_state == OFDM_RX_STATE_DATA_BITS)
+                {
+                    fifo_push(&self->rx_fifo, decoded_char);
+                }
+            }
+
+            if (self->rx_fsm_state == OFDM_RX_STATE_SYNC)
+            {
+                self->rx_fsm_state = OFDM_RX_STATE_DATA_BITS;
+            }
+        }
+
+        /* Проверка сброса захвата при замираниях */
+        const FLOAT_t end_power = in_i * in_i + in_q * in_q;
+        if (end_power < 0.0001f)
+        {
+            self->rx_active = 0;
+            self->rx_fsm_state = OFDM_RX_STATE_IDLE;
+        }
+    }
 }
 
 #endif /* WITHINTEGRATEDDSP */

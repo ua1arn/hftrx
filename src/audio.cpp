@@ -1749,7 +1749,6 @@ FLOAT_t agc_result_fast(agcstate_t * st)
 	return v;
 }
 
-
 ///////////////////////////
 
 static RAMDTCM FLOAT_t mikeinlevel;
@@ -3524,6 +3523,14 @@ static FLOAT32P_t baseband_modulator(
 			return vfb;
 		}
 
+	case DSPCTL_MODE_TX_BPSK:
+	{
+		* deltanfm = 0;
+		FLOAT32P_t vfb;
+		dsp_ofdm_tx_process_sample(& path->ofdm_tx, & vfb.IV, & vfb.QV);
+		return vfb;
+	}
+
 	#if WITHMODEM
 		case DSPCTL_MODE_TX_BPSK:
 		{
@@ -4063,6 +4070,11 @@ static FLOAT_t baseband_demodulator(
 			//r = af.IV * 0.9f;
 			r *= agc_levelsquelchopen(path, fltstrengthslow);
 		}
+		break;
+
+	case DSPCTL_MODE_RX_BPSK:
+		dsp_ofdm_rx_process_sample(& path->ofdm_rx, vp0f.IV, vp0f.QV);
+		r = 0;
 		break;
 
 #if WITHMODEM
@@ -5159,28 +5171,90 @@ void rtty_spool(void * ctx)
 //	}
 	//printf("integrator=%f, dc_bias=%f\n", rx_stream.detector.pll_integrator, rx_stream.detector.dc_bias);
 }
+#include "ofdm_bpsk.h"
+
+/* Выделение статической памяти под изолированные контексты OFDM модема */
+static ofdm_modem_tx_t ofdm_tx_ctx;
+static ofdm_modem_rx_t ofdm_rx_ctx;
+
+/**
+ * @brief Инициализация OFDM подсистемы трансивера для канала 3.1 кГц.
+ * Настраивает тракт на максимальную скорость 125 Бод в полосе 300..3112 Гц.
+ */
+void radio_ofdm_modem_configure(hfrxpath_t * const self)
+{
+    const uint32_t sample_rate      = ARMI2SRATE;    /* Частота дискретизации аудиокодека */
+    const uint32_t fft_length       = 256;      /* Размер полезного окна интегрирования */
+    const uint32_t cp_length        = 128;      /* Защитный интервал (2.66 мс против многолучевости) */
+    const uint32_t tx_window_length = 32;       /* Длина окна приподнятого косинуса (TX_W_LEN) */
+
+    const FLOAT_t base_freq_hz      = 300.0f;   /* Стартовая поднесущая на нижней границе канала */
+    const FLOAT_t tone_spacing_hz   = 187.5f;   /* Шаг поднесущих для обеспечения ортогональности */
+    const FLOAT_t output_magnitude  = 0.75f;    /* Амплитудный масштаб выходного IQ-вектора */
+
+    /* 1. Инициализация передающего тракта (модулятора) */
+    /* Автоматически сбросит фазы поднесущих и очистит внутреннюю tx_fifo */
+    dsp_ofdm_tx_init(
+        & self->ofdm_tx,
+        sample_rate,
+        fft_length,
+        cp_length,
+        tx_window_length,
+        base_freq_hz,
+        tone_spacing_hz,
+        output_magnitude
+    );
+
+    /* 2. Инициализация приёмного тракта (демодулятора) */
+    /* Настраивает следящую сетку и очищает встроенную rx_fifo внутри fsm */
+    dsp_ofdm_rx_init(
+		& self->ofdm_rx,
+        sample_rate,
+        fft_length,
+        cp_length,
+        base_freq_hz,
+        tone_spacing_hz
+    );
+
+    /* Модем аппаратно готов к потоковой обработке отсчётов в DMA прерываниях */
+}
 
 static void
 hfrxpath_init(hfrxpath_t * const self)
 {
-	dsp_rtty_rx_init(& self->rtty_rx, ARMSAIRATE, 400, 50);
-	dsp_rtty_rx_set_reverse(& self->rtty_rx, 1);
-	dsp_rtty_tx_init(& self->rtty_tx, ARMSAIRATE, 400, 50, 1);
-	dsp_rtty_tx_set_reverse(& self->rtty_tx, 1);
+    const uint32_t sample_rate = ARMI2SRATE;
+	{
+		// RTTY
+		dsp_rtty_rx_init(& self->rtty_rx, sample_rate, 400, 50);
+		dsp_rtty_rx_set_reverse(& self->rtty_rx, 1);
+		dsp_rtty_tx_init(& self->rtty_tx, sample_rate, 400, 50, 1);
+		dsp_rtty_tx_set_reverse(& self->rtty_tx, 1);
 
+		dpcobj_initialize(& self->rttydpcobj, rtty_spool, self);
+		board_dpc_addentry(& self->rttydpcobj, board_dpc_coreid());
+	}
+	{
+		// OFDM BPSK
+	    const uint32_t fft_len = 256;
+	    const uint32_t cp_len = 0;
+	    const uint32_t tx_w_len = 100;
+	    const FLOAT_t base_freq_hz = 340;
+	    const FLOAT_t tone_spacing_hz = 130;
+	    const FLOAT_t output_magnitude = 1;
 
-
-	dpcobj_initialize(& self->rttydpcobj, rtty_spool, self);
-	board_dpc_addentry(& self->rttydpcobj, board_dpc_coreid());
+		dsp_ofdm_tx_init(& self->ofdm_tx, sample_rate, fft_len, cp_len, tx_w_len, base_freq_hz, tone_spacing_hz, 1);
+		dsp_ofdm_rx_init(& self->ofdm_rx, sample_rate, fft_len, cp_len, base_freq_hz, tone_spacing_hz);
+		radio_ofdm_modem_configure(self);
+	}
 }
 
 // Передача параметров в DSP модуль
 // Обновление параметров приёмника (кроме фильтров).
 static void 
 hfrxpath_update(
-		hfrxpath_t * const path,
+		hfrxpath_t * const self,
 		uint_fast8_t profile,
-		const uint_fast8_t pathi)				// 0/1: main_RX/sub_RX
+		const uint_fast8_t selfi)				// 0/1: main_RX/sub_RX
 {
 	// Параметры АРУ приёмника
 	{
@@ -5191,7 +5265,7 @@ hfrxpath_update(
 		// glob_fsadcpower10
 		const FLOAT_t agc_agcfence = agclevel_from_abspower10(glob_agcfence10);	// из абсолютного уровня преобразовать в отношение к FS
 		
-		rxagc_parameters_update(path, & path->rxagcparams [profile], manualrfgain, (FLOAT_t) agc_agcfence, pathi);	// приёмник #0,#1
+		rxagc_parameters_update(self, & self->rxagcparams [profile], manualrfgain, (FLOAT_t) agc_agcfence, selfi);	// приёмник #0,#1
 
 		//PRINTF("glob_agcfence=%+d, glob_fsadcpower10=%d, agcfence=%f\n", (int) glob_agcfence, (int) glob_fsadcpower10, agc_agcfence);
 
@@ -5199,14 +5273,14 @@ hfrxpath_update(
 
 	// Параметры S-метра приёмника
 	{
-		smeter_parameters_update(& path->rxsmeterparams);
+		smeter_parameters_update(& self->rxsmeterparams);
 	}
 
 	// NFM
 	{
-		hftrx_nfm_path_update_from_global(& path->nfm_rx);
-		path->saved_delta_fi = 0;
-		path->prev_fi = 0;
+        hftrx_nfm_path_update_from_global(& self->nfm_rx);
+		self->saved_delta_fi = 0;
+		self->prev_fi = 0;
 	}
 
 	// Параметры SAM приёмника
@@ -5217,27 +5291,43 @@ hfrxpath_update(
 		const FLOAT_t omegaN = 200; // PLL bandwidth 50.0 - 1000.0
 		const FLOAT_t tauR = (FLOAT_t) 0.02; // original 0.02;
 		const FLOAT_t tauI = (FLOAT_t) 1.4; // original 1.4;  
-		samdetector_create(& path->samdetector, 0, - pll, + pll, zeta, omegaN, tauR, tauI);
+		samdetector_create(& self->samdetector, 0, - pll, + pll, zeta, omegaN, tauR, tauI);
 	}
 
-	hftrx_nfm_path_update_from_global(& path->nfm_rx);
+	hftrx_nfm_path_update_from_global(& self->nfm_rx);
 
 	// Пороговый шумодав (Squelch)
 	{
-		const volatile agcparams_t * const agcp = & path->rxsmeterparams;
+		const volatile agcparams_t * const agcp = & self->rxsmeterparams;
 
 		const FLOAT_t upper_log = agccalcstrength_log(agcp, agcp->levelfence_ratio);
 		const FLOAT_t lower_log = agccalcstrength_log(agcp, agcp->mininput_ratio);
-		path->manualsquelch = (int) glob_squelch_level * (upper_log - lower_log) / SQUELCHMAX + lower_log;
+		self->manualsquelch = (int) glob_squelch_level * (upper_log - lower_log) / SQUELCHMAX + lower_log;
 	}
 
 	{
 		// RTTY
-		dsp_rtty_rx_init(& path->rtty_rx, ARMSAIRATE, glob_rtty_shift, glob_rtty_baudrate10 / (FLOAT_t) 10);
-		dsp_rtty_rx_set_reverse(& path->rtty_rx, glob_rtty_inverted);
+		dsp_rtty_rx_init(& self->rtty_rx, ARMSAIRATE, glob_rtty_shift, glob_rtty_baudrate10 / (FLOAT_t) 10);
+		dsp_rtty_rx_set_reverse(& self->rtty_rx, glob_rtty_inverted);
 
-		dsp_rtty_tx_init(& path->rtty_tx, ARMSAIRATE, glob_rtty_shift, glob_rtty_baudrate10 / (FLOAT_t) 10, 1);
-		dsp_rtty_tx_set_reverse(& path->rtty_tx, glob_rtty_inverted);
+		dsp_rtty_tx_init(& self->rtty_tx, ARMSAIRATE, glob_rtty_shift, glob_rtty_baudrate10 / (FLOAT_t) 10, 1);
+		dsp_rtty_tx_set_reverse(& self->rtty_tx, glob_rtty_inverted);
+	}
+
+	{
+		// OFDM BPSK
+
+	    const uint32_t sample_rate = ARMI2SRATE;
+	    const uint32_t fft_len = 256;
+	    const uint32_t cp_len = 0;
+	    const uint32_t tx_w_len = 100;
+	    const FLOAT_t base_freq_hz = 340;
+	    const FLOAT_t tone_spacing_hz = 130;
+	    const FLOAT_t output_magnitude = 1;
+
+		dsp_ofdm_tx_init(& self->ofdm_tx, sample_rate, fft_len, cp_len, tx_w_len, base_freq_hz, tone_spacing_hz, 1);
+		dsp_ofdm_rx_init(& self->ofdm_rx, sample_rate, fft_len, cp_len, base_freq_hz, tone_spacing_hz);
+		radio_ofdm_modem_configure(self);
 	}
 	// Noise Blanker (NB)
 	setNBfence(glob_wnbfence10);
@@ -6318,4 +6408,70 @@ void audio_diagnostics(void)
 #if 0 && WITHDEBUG
 	PRINTF("Mic level x 1k: %f %f (ovf=%d)\n", txagcstate.agcslowcap, txagcstate.agcfastcap, dsp_getmikeadcoverflow());
 #endif
+}
+
+/* ========================================================================== */
+/*                             INTERNAL FIFO HELPERS                          */
+/* ========================================================================== */
+
+/**
+ * @brief Thread-safe lock-free buffer initialization.
+ */
+void fifo_init(modem_fifo_t * const fifo)
+{
+    fifo->head = 0;
+    fifo->tail = 0;
+}
+
+/**
+ * @brief Thread-safe lock-free byte injection (Called strictly by ONE producer thread/interrupt).
+ * @return uint32_t Returns 1 on success, 0 if the buffer is mathematically full.
+ */
+uint32_t fifo_push(modem_fifo_t * const fifo, const uint8_t data)
+{
+    const uint32_t next_head = (fifo->head + 1) % MODEM_FIFO_SIZE;
+
+    /* Check if the next step hits the tail pointer boundary (Buffer Full) */
+    if (next_head == fifo->tail) {
+        return 0;
+    }
+
+    fifo->storage[fifo->head] = data;
+
+    /* Atomic write of the head index closes the transaction. Interrupt safe. */
+    fifo->head = next_head;
+    return 1;
+}
+
+/**
+ * @brief Thread-safe lock-free byte extraction (Called strictly by ONE consumer thread/interrupt).
+ * @return uint32_t Returns 1 on success, 0 if the buffer is empty.
+ */
+uint32_t fifo_pop(modem_fifo_t * const fifo, uint8_t * const data)
+{
+    /* If head and tail pointers are equal, the ring is mathematically empty */
+    if (fifo->tail == fifo->head) {
+        return 0;
+    }
+
+    *data = fifo->storage[fifo->tail];
+
+    /* Atomic write of the tail index closes the transaction. Interrupt safe. */
+    fifo->tail = (fifo->tail + 1) % MODEM_FIFO_SIZE;
+    return 1;
+}
+
+/**
+ * @brief Supplementary helper to safely extract current elements count at runtime.
+ */
+uint32_t fifo_get_count(const modem_fifo_t * const fifo)
+{
+    const uint32_t snapshot_head = fifo->head;
+    const uint32_t snapshot_tail = fifo->tail;
+
+    if (snapshot_head >= snapshot_tail) {
+        return snapshot_head - snapshot_tail;
+    }
+
+    return (MODEM_FIFO_SIZE - snapshot_tail) + snapshot_head;
 }
