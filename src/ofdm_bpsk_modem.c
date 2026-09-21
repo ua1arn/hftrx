@@ -1436,8 +1436,6 @@ void dsp_ofdm_tx_init(
     const uint32_t fft_len,
     const uint32_t cp_len,
     const uint32_t tx_w_len,
-    const FLOAT_t base_freq_hz,
-    const FLOAT_t tone_spacing_hz,
     const FLOAT_t output_magnitude)
 {
     self->tx_fsm_state = OFDM_TX_STATE_IDLE;
@@ -1450,37 +1448,51 @@ void dsp_ofdm_tx_init(
     self->active_tones_count = OFDM_MAX_SUBCARRIERS;
 
     self->cp_len = cp_len;
-    /* Guard safety boundary check to prevent out-of-bound arrays corruption */
     self->window_len = (tx_w_len > OFDM_MAX_WIN_LEN) ? OFDM_MAX_WIN_LEN : tx_w_len;
     self->total_symbol_len = fft_len + cp_len;
 
-    /* 1. Настройка сетки частот поднесущих */
-    for (uint32_t i = 0; i < self->active_tones_count; i++)
+    /* Вычисление шага ортогональности на основе размера FFT */
+    const FLOAT_t delta_f = (FLOAT_t)sample_rate / (FLOAT_t)fft_len; /* 48000 / 256 = 187.5 Гц */
+
+    /* МАТЕМАТИЧЕСКИЙ РАСЧЁТ СИММЕТРИЧНОЙ СЕТКИ ПОДНЕСУЩИХ ОТНОСИТЕЛЬНО НУЛЯ ПЧ */
+    for (uint32_t t = 0; t < self->active_tones_count; t++)
     {
-        self->subcarrier_phases[i] = 0.0;
-        const FLOAT_t tone_freq = base_freq_hz + ((FLOAT_t)i * tone_spacing_hz);
-        self->subcarrier_steps[i] = (2.0 * M_PI * tone_freq) / (FLOAT_t)sample_rate;
-        self->prev_subcarrier_bits[i] = 0;
+        self->subcarrier_phases[t] = 0.0;
+        self->prev_subcarrier_bits[t] = 0;
+
+        FLOAT_t tone_freq;
+        if (t < 8)
+        {
+            /* Отрицательное полушарие: инвертируем знак Q-компоненты (вращение влево) */
+            self->subcarrier_sign_q[t] = -1.0f;
+            /* Вычисляем строго положительную физическую частоту тона */
+            tone_freq = ((8.0f - 1.0f) - (FLOAT_t)t) * delta_f + (delta_f / 2.0f);
+        }
+        else
+        {
+            /* Положительное полушарие: стандартный знак Q-компоненты (вращение вправо) */
+            self->subcarrier_sign_q[t] = 1.0f;
+            tone_freq = ((FLOAT_t)t - 8.0f) * delta_f + (delta_f / 2.0f);
+        }
+
+        /* Шаг фазы теперь ВСЕГДА строго положительный. CMSIS-DSP защищена от сбоя! */
+        self->subcarrier_steps[t] = (2.0 * M_PI * tone_freq) / (FLOAT_t)sample_rate;
     }
 
-    /* 2. Расчёт шага NCO сетки символов */
-    const FLOAT_t symbol_rate = (FLOAT_t)sample_rate / (FLOAT_t)self->total_symbol_len;
-    const FLOAT_t ratio = symbol_rate / (FLOAT_t)sample_rate;
-    self->nco_baud_step = (uint32_t)(ratio * 4294967296.0);
-
-    /* 3. ПРЕДВАРИТЕЛЬНЫЙ РАСЧЁТ КОЭФФИЦИЕНТОВ ОКНА ПРИПОДНЯТОГО КОСИНУСА */
+    /* Расчёт таблиц окна Raised Cosine */
     for (uint32_t idx = 0; idx < self->window_len; idx++)
     {
         float32_t w_sin, w_cos;
-        /* Вычисляем фазовый угол от 0 до 90 градусов для косинусной огибающей */
         const float32_t angle_deg = ((float32_t)idx * 90.0f) / (float32_t)self->window_len;
-
         arm_sin_cos_f32(angle_deg, &w_sin, &w_cos);
 
-        /* Запись весов в Look-Up таблицы с жестким ограничением амплитуды Найквиста */
         self->window_fade_in[idx]  = FMAXF(0.0f, FMINF((FLOAT_t)w_sin, 1.0f));
         self->window_fade_out[idx] = FMAXF(0.0f, FMINF((FLOAT_t)w_cos, 1.0f));
     }
+
+    const FLOAT_t symbol_rate = (FLOAT_t)sample_rate / (FLOAT_t)self->total_symbol_len;
+    const FLOAT_t ratio = symbol_rate / (FLOAT_t)sample_rate;
+    self->nco_baud_step = (uint32_t)(ratio * 4294967296.0);
 
     fifo_init(&self->tx_fifo);
 }
@@ -1582,28 +1594,41 @@ void dsp_ofdm_tx_process_sample(
     FLOAT_t * const out_q)
 {
     /* 1. Вызов сериализатора для получения текущего параллельного DBPSK-вектора */
-    const uint32_t bpsk_vector = dsp_ofdm_sub_execute_tx_fsm(self);
+    const uint32_t bpsk_vector = ~0;//~0u; //dsp_ofdm_sub_execute_tx_fsm(self);
 
     FLOAT_t sum_i = 0.0;
     FLOAT_t sum_q = 0.0;
 
-    /* 2. Синтез поднесущих на лету */
+    /* 2. LIVE SAMPLE-BY-SAMPLE SYNTHESIS AND MULTI-CARRIER EXPONENT GENERATION */
     for (uint32_t t = 0; t < self->active_tones_count; t++)
     {
+        /* Нарастание фазы всегда идёт вперёд в положительную область */
         self->subcarrier_phases[t] += self->subcarrier_steps[t];
         if (self->subcarrier_phases[t] >= (2.0 * M_PI)) self->subcarrier_phases[t] -= (2.0 * M_PI);
-        if (self->subcarrier_phases[t] < 0.0)           self->subcarrier_phases[t] += (2.0 * M_PI);
 
         float32_t sin_val, cos_val;
         const float32_t phase_degrees = (float32_t)self->subcarrier_phases[t] * (180.0f / (float32_t)M_PI);
 
         arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
-        const int current_bit = (bpsk_vector >> t) & 0x01;
-        const FLOAT_t bpsk_sign = current_bit ? 1.0 : -1.0;
+        /* Направление вращения IQ: для отрицательных частот зеркалируем синус */
+        const FLOAT_t local_i = (FLOAT_t)cos_val;
+        const FLOAT_t local_q = (FLOAT_t)sin_val * self->subcarrier_sign_q[t];
 
-        sum_i += (FLOAT_t)cos_val * bpsk_sign;
-        sum_q += (FLOAT_t)sin_val * bpsk_sign;
+        /* Извлекаем информационный бит DBPSK */
+        const int current_bit = (bpsk_vector >> t) & 0x01;
+        FLOAT_t bpsk_sign = current_bit ? 1.0f : -1.0f;
+
+        /* --- ВЫРАВНИВАНИЕ ПИК-ФАКТОРА (PAPR KILLER) --- */
+        /* Разворачиваем фазу каждой нечётной поднесущей на 180 градусов. */
+        /* Это мгновенно уничтожит игольчатые всплески при передаче констант. */
+        if (t & 0x01)
+        {
+            bpsk_sign = -bpsk_sign;
+        }
+
+        sum_i += local_i * bpsk_sign;
+        sum_q += local_q * bpsk_sign;
     }
 
     sum_i /= (FLOAT_t)self->active_tones_count;
@@ -1611,20 +1636,27 @@ void dsp_ofdm_tx_process_sample(
 
     /* 3. МГНОВЕННОЕ СГЛАЖИВАНИЕ ПО ПРЕДРАССЧИТАННЫМ ТАБЛИЦАМ ВЕСОВ (Zero CPU Overhead) */
     FLOAT_t window_weight = 1.0;
-    const uint32_t current_idx = self->symbol_sample_idx;
 
-    /* Левый край символа: Извлекаем веса плавного нарастания (Fade-In) */
-    if (current_idx < self->window_len)
+    if (1)
     {
-        window_weight = self->window_fade_in[current_idx];
+        const uint32_t current_idx = self->symbol_sample_idx;
+       /* Левый край символа: Извлекаем веса плавного нарастания (Fade-In) */
+        if (current_idx < self->window_len)
+        {
+            window_weight = self->window_fade_in[current_idx];
+        }
+        /* Правый край символа: Извлекаем веса плавного затухания (Fade-Out) */
+        else if (current_idx >= (self->total_symbol_len - self->window_len))
+        {
+            const uint32_t decay_idx = self->total_symbol_len - 1 - current_idx;
+            /* Защита от выхода за границы массива при округлении индексов Найквиста */
+            const uint32_t safe_decay_idx = (decay_idx >= self->window_len) ? (self->window_len - 1) : decay_idx;
+            window_weight = self->window_fade_out[safe_decay_idx];
+        }
     }
-    /* Правый край символа: Извлекаем веса плавного затухания (Fade-Out) */
-    else if (current_idx >= (self->total_symbol_len - self->window_len))
+    else
     {
-        const uint32_t decay_idx = self->total_symbol_len - 1 - current_idx;
-        /* Защита от выхода за границы массива при округлении индексов Найквиста */
-        const uint32_t safe_decay_idx = (decay_idx >= self->window_len) ? (self->window_len - 1) : decay_idx;
-        window_weight = self->window_fade_out[safe_decay_idx];
+
     }
 
     /* 4. Выдача комплексного отсчета в DMA аудиоканал */
@@ -1643,14 +1675,11 @@ void dsp_ofdm_rx_init(
     ofdm_modem_rx_t * const self,
     const uint32_t sample_rate,
     const uint32_t fft_len,
-    const uint32_t cp_len,
-    const FLOAT_t base_freq_hz,
-    const FLOAT_t tone_spacing_hz)
+    const uint32_t cp_len)
 {
     self->rx_fsm_state = OFDM_RX_STATE_IDLE;
     self->symbol_sample_idx = 0;
     self->cp_len = cp_len;
-    /* Strict check to protect static matrix memory from boundaries violation */
     self->fft_len = (fft_len > OFDM_FFT_LUT_SIZE) ? OFDM_FFT_LUT_SIZE : fft_len;
     self->total_symbol_len = self->fft_len + cp_len;
     self->rx_active = 0;
@@ -1658,7 +1687,9 @@ void dsp_ofdm_rx_init(
     self->bit_shifter = 0;
     self->bits_count = 0;
 
-    /* ПРЕДВАРИТЕЛЬНЫЙ РАСЧЁТ ТРИГОНОМЕТРИЧЕСКИХ МАТРИЦ ДЛЯ ДЕРОТАЦИИ */
+    const FLOAT_t delta_f = (FLOAT_t)sample_rate / (FLOAT_t)self->fft_len;
+
+    /* ГЕНЕРАЦИЯ СИММЕТРИЧНЫХ ТРИГОНОМЕТРИЧЕСКИХ МАТРИЦ LUT */
     for (uint32_t t = 0; t < self->active_tones_count; t++)
     {
         self->integrator_i[t] = 0.0;
@@ -1666,21 +1697,26 @@ void dsp_ofdm_rx_init(
         self->prev_integrator_i[t] = 0.0;
         self->prev_integrator_q[t] = 0.0;
 
-        /* Вычисляем шаг частоты конкретной поднесущей в радианах */
-        const FLOAT_t tone_freq = base_freq_hz + ((FLOAT_t)t * tone_spacing_hz);
+        FLOAT_t tone_freq;
+        if (t < 8)
+        {
+            tone_freq = ((FLOAT_t)t - 8.0f) * delta_f + (delta_f / 2.0f);
+        }
+        else
+        {
+            tone_freq = ((FLOAT_t)t - 8.0f) * delta_f + (delta_f / 2.0f);
+        }
+
         const FLOAT_t omega_step = (2.0 * M_PI * tone_freq) / (FLOAT_t)sample_rate;
 
-        /* Заполняем индивидуальную строку таблицы для всего окна FFT */
         for (uint32_t sample_idx = 0; sample_idx < self->fft_len; sample_idx++)
         {
             float32_t sin_val, cos_val;
-            /* Фаза нарастает линейно: угол = sample_idx * omega_step */
             const FLOAT_t phase_rad = (FLOAT_t)sample_idx * omega_step;
             const float32_t phase_degrees = (float32_t)phase_rad * (180.0f / (float32_t)M_PI);
 
             arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
 
-            /* Сохраняем веса деротации в LUT */
             self->rx_lut_cos[t][sample_idx] = (FLOAT_t)cos_val;
             self->rx_lut_sin[t][sample_idx] = (FLOAT_t)sin_val;
         }
@@ -1798,13 +1834,13 @@ void dsp_ofdm_rx_process_sample(
 
 void modem_fill(hfrxpath_t * path, IFADCvalue_t * buff)
 {
+	ASSERT(path->sign1 == path && path->sign2 == path);
 	const adapter_t * const ap = & ifcodecrx;
 	FLOAT_t i, q;
 	dsp_ofdm_tx_process_sample(& path->ofdm_tx, & i, & q);
-	FLOAT_t scale = 0.1;
 
-	buff [DMABUF32RX0I] = adpt_output(ap, i * scale);
-	buff [DMABUF32RX0Q] = adpt_output(ap, q * scale);
+	buff [DMABUF32RX0I] = adpt_output(ap, i);
+	buff [DMABUF32RX0Q] = adpt_output(ap, q);
 }
 
 

@@ -39,6 +39,7 @@ typedef struct {
     /* Multicarrier Phase Accumulators Arrays */
     FLOAT_t subcarrier_phases[OFDM_MAX_SUBCARRIERS];
     FLOAT_t subcarrier_steps[OFDM_MAX_SUBCARRIERS];
+    FLOAT_t subcarrier_sign_q[OFDM_MAX_SUBCARRIERS];
     FLOAT_t magnitude;
     uint32_t active_tones_count;
 
@@ -60,7 +61,6 @@ typedef struct {
 } ofdm_modem_tx_t;
 
 
-#define OFDM_MAX_SUBCARRIERS    16
 #define OFDM_MAX_WIN_LEN        128
 #define OFDM_FFT_LUT_SIZE       256  /* Exact static size matching our high-speed 125 Baud FFT window */
 
@@ -109,14 +109,12 @@ extern "C" {
 #endif
 
 void dsp_ofdm_tx_init(
-    ofdm_modem_tx_t * const self,
-    const uint32_t sample_rate,
-    const uint32_t fft_len,
-    const uint32_t cp_len,
-    const uint32_t tx_w_len,
-    const FLOAT_t base_freq_hz,
-    const FLOAT_t tone_spacing_hz,
-    const FLOAT_t output_magnitude);
+	    ofdm_modem_tx_t * const self,
+	    const uint32_t sample_rate,
+	    const uint32_t fft_len,
+	    const uint32_t cp_len,
+	    const uint32_t tx_w_len,
+	    const FLOAT_t output_magnitude);
 
 uint32_t dsp_ofdm_tx_push_char(ofdm_modem_tx_t * const self, const uint8_t character);
 
@@ -126,12 +124,10 @@ void dsp_ofdm_tx_process_sample(
     FLOAT_t * const out_q);
 
 void dsp_ofdm_rx_init(
-    ofdm_modem_rx_t * const self,
-    const uint32_t sample_rate,
-    const uint32_t fft_len,
-    const uint32_t cp_len,
-    const FLOAT_t base_freq_hz,
-    const FLOAT_t tone_spacing_hz);
+	    ofdm_modem_rx_t * const self,
+	    const uint32_t sample_rate,
+	    const uint32_t fft_len,
+	    const uint32_t cp_len);
 
 uint32_t dsp_ofdm_rx_pop_char(ofdm_modem_rx_t * const self, uint8_t * const output_byte);
 

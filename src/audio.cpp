@@ -4287,65 +4287,6 @@ static FLOAT32P_t getsampmlebt2(void)
 	return v;
 }
 
-static uint_fast8_t isneedfiltering(uint_fast8_t dspmode)
-{
-	switch (dspmode)
-	{
-	case DSPCTL_MODE_RX_DSB:
-	case DSPCTL_MODE_RX_SSB:
-	case DSPCTL_MODE_RX_FREEDV:
-	case DSPCTL_MODE_RX_NFM:
-	case DSPCTL_MODE_RX_AM:
-	case DSPCTL_MODE_RX_SAM:
-	case DSPCTL_MODE_RX_ISB:
-	case DSPCTL_MODE_RX_WFM:
-		return 1;
-
-#if WITHUSBUAC
-	case DSPCTL_MODE_RX_DRM:	// в этом режиме не проходит в наушники
-		return 0;
-#else /* WITHUSBUAC */
-	case DSPCTL_MODE_RX_DRM:	// в этом режиме не проходит в наушники
-		return 0;
-#endif /* WITHUSBUAC */
-
-	default:
-		// in transmit modes
-		return 0;
-	}
-}
-
-static uint_fast8_t isneedmute(uint_fast8_t dspmode)
-{
-	switch (dspmode)
-	{
-	case DSPCTL_MODE_RX_SSB:
-	case DSPCTL_MODE_RX_FREEDV:
-	case DSPCTL_MODE_RX_NFM:
-	case DSPCTL_MODE_RX_AM:
-	case DSPCTL_MODE_RX_SAM:
-	case DSPCTL_MODE_RX_ISB:
-	case DSPCTL_MODE_RX_DSB:
-	case DSPCTL_MODE_RX_WFM:
-		return 0;
-
-	case DSPCTL_MODE_RX_BPSK:
-		return 1;
-
-#if WITHUSBUAC
-	case DSPCTL_MODE_RX_DRM:	// в этом режиме не проходит в наушники
-		return 1;
-#else /* WITHUSBUAC */
-	case DSPCTL_MODE_RX_DRM:	// в этом режиме проходит в наушники
-		return 0;
-#endif /* WITHUSBUAC */
-
-	default:
-		// in transmit modes
-		return 1;
-	}
-}
-
 // Taken from https://stackoverflow.com/questions/11930594/calculate-atan2-without-std-functions-or-c99
 
 // Approximates atan(x) normalized to the [-1,1] range
@@ -5193,8 +5134,6 @@ void radio_ofdm_modem_configure(hfrxpath_t * const self)
     const uint32_t cp_length        = 128;      /* Защитный интервал (2.66 мс против многолучевости) */
     const uint32_t tx_window_length = 32;       /* Длина окна приподнятого косинуса (TX_W_LEN) */
 
-    const FLOAT_t base_freq_hz      = 300.0f;   /* Стартовая поднесущая на нижней границе канала */
-    const FLOAT_t tone_spacing_hz   = 187.5f;   /* Шаг поднесущих для обеспечения ортогональности */
     const FLOAT_t output_magnitude  = 0.75f;    /* Амплитудный масштаб выходного IQ-вектора */
 
     /* 1. Инициализация передающего тракта (модулятора) */
@@ -5205,8 +5144,6 @@ void radio_ofdm_modem_configure(hfrxpath_t * const self)
         fft_length,
         cp_length,
         tx_window_length,
-        base_freq_hz,
-        tone_spacing_hz,
         output_magnitude
     );
 
@@ -5216,9 +5153,7 @@ void radio_ofdm_modem_configure(hfrxpath_t * const self)
 		& self->ofdm_rx,
         sample_rate,
         fft_length,
-        cp_length,
-        base_freq_hz,
-        tone_spacing_hz
+        cp_length
     );
 
     /* Модем аппаратно готов к потоковой обработке отсчётов в DMA прерываниях */
@@ -5227,6 +5162,8 @@ void radio_ofdm_modem_configure(hfrxpath_t * const self)
 static void
 hfrxpath_init(hfrxpath_t * const self)
 {
+	self->sign1 = self;
+	self->sign2 = self;
     const uint32_t sample_rate = ARMI2SRATE;
 	{
 		// RTTY
@@ -5240,15 +5177,6 @@ hfrxpath_init(hfrxpath_t * const self)
 	}
 	{
 		// OFDM BPSK
-	    const uint32_t fft_len = 256;
-	    const uint32_t cp_len = 0;
-	    const uint32_t tx_w_len = 100;
-	    const FLOAT_t base_freq_hz = 340;
-	    const FLOAT_t tone_spacing_hz = 130;
-	    const FLOAT_t output_magnitude = 1;
-
-		dsp_ofdm_tx_init(& self->ofdm_tx, sample_rate, fft_len, cp_len, tx_w_len, base_freq_hz, tone_spacing_hz, 1);
-		dsp_ofdm_rx_init(& self->ofdm_rx, sample_rate, fft_len, cp_len, base_freq_hz, tone_spacing_hz);
 		radio_ofdm_modem_configure(self);
 	}
 }
@@ -5321,17 +5249,6 @@ hfrxpath_update(
 
 	{
 		// OFDM BPSK
-
-	    const uint32_t sample_rate = ARMI2SRATE;
-	    const uint32_t fft_len = 256;
-	    const uint32_t cp_len = 0;
-	    const uint32_t tx_w_len = 100;
-	    const FLOAT_t base_freq_hz = 340;
-	    const FLOAT_t tone_spacing_hz = 130;
-	    const FLOAT_t output_magnitude = 1;
-
-		dsp_ofdm_tx_init(& self->ofdm_tx, sample_rate, fft_len, cp_len, tx_w_len, base_freq_hz, tone_spacing_hz, 1);
-		dsp_ofdm_rx_init(& self->ofdm_rx, sample_rate, fft_len, cp_len, base_freq_hz, tone_spacing_hz);
 		radio_ofdm_modem_configure(self);
 	}
 	// Noise Blanker (NB)
