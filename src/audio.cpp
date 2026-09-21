@@ -3565,7 +3565,7 @@ static void dsp_rtty_sub_init_detector(
 
     /* 3. INDIVIDUAL DATA SLICING FILTERS SEPARATION RULES */
     /* Configure isolated alpha filter to match the verified experimental layout */
-    self->lpf_alphaNEW = 4.0 / samples_per_bit;
+    self->lpf_alpha = 4.0 / samples_per_bit;
 }
 
 /**
@@ -3607,7 +3607,6 @@ static void dsp_rtty_rx_init(
     dsp_rtty_sub_init_fsm(&self->fsm, sample_rate, baud_rate);
 }
 
-#if 0
 /**
  * @brief SUB-FUNCTION 1: Differential cross-product frequency discriminator.
  * @return uint32_t Returns 1 for MARK (positive frequency), 0 for SPACE (negative frequency).
@@ -3624,7 +3623,7 @@ static uint32_t dsp_rtty_sub_execute_discriminatorOLD(
     self->prev_in_q = in_q;
 
     /* Low-pass envelope integration */
-    self->lpf_state += self->lpf_alphaOLD * (phase_error - self->lpf_state);
+    self->lpf_state += self->lpf_alpha * (phase_error - self->lpf_state);
 
     /* Slicing boundary execution */
     const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
@@ -3632,7 +3631,7 @@ static uint32_t dsp_rtty_sub_execute_discriminatorOLD(
     /* Apply fast hardware-friendly inversion layer using native XOR operation with typecast */
     return raw_bit ^ (uint32_t)self->invert_output;
 }
-#endif
+
 /**
  * @brief SUB-FUNCTION 1: Phase Locked Loop (PLL) frequency tracker driven entirely by dynamic context fields.
  * @return uint32_t Returns the final sliced bit (inverted or non-inverted based on internal flag).
@@ -3693,7 +3692,7 @@ static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
 
     /* 5. DATA SLICING AND OUTPUT GENERATION */
     /* Smooth the active tracking output via your verified individual lpf_alphaNEW ratio field */
-    self->lpf_state += self->lpf_alphaNEW * (current_step - self->lpf_state);
+    self->lpf_state += self->lpf_alpha * (current_step - self->lpf_state);
 
     /* Hard decision slicer boundary */
     const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
@@ -3815,7 +3814,8 @@ static void dsp_rtty_rx_process_sample(
     const FLOAT_t in_q,
     void (* const put_char_cb)(rtty_baudot_fsm_t * self, const uint8_t character))
 {
-    const uint32_t raw_bit = dsp_rtty_sub_execute_discriminatorNEW(&self->detector, in_i, in_q);
+    //const uint32_t raw_bit = dsp_rtty_sub_execute_discriminatorNEW(&self->detector, in_i, in_q);
+    const uint32_t raw_bit = dsp_rtty_sub_execute_discriminatorOLD(&self->detector, in_i, in_q);
     dsp_rtty_sub_execute_fsm(&self->fsm, raw_bit, put_char_cb);
 }
 

@@ -869,7 +869,7 @@ typedef struct {
     FLOAT_t pll_kp;              /* Proportional loop gain tracking coefficient */
     FLOAT_t pll_ki;              /* Integral loop gain tracking coefficient */
     FLOAT_t pll_limit;           /* Strict physical boundary for targeted FSK shift (radians/sample) */
-    FLOAT_t lpf_alphaNEW;        /* Individual payload data slicing filter smoothing ratio */
+    FLOAT_t lpf_alpha;        	 /* Individual payload data slicing filter smoothing ratio */
 
     int invert_output;           /* Boolean flag to invert the discriminator bit output (0 or 1) */
     FLOAT_t prev_in_i;           /* Historical real memory from previous sample */
