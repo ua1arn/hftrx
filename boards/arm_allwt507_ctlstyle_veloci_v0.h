@@ -347,8 +347,6 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
 
-	
-	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 //	#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 //	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 //	#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
@@ -436,6 +434,8 @@
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	//#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 	//#define WITHLOCKFULL	1	/* блокировка всего управления, а не только перестройки */
+	#define WITHMODESETFULLNFM 1
+	#define WITHRTTY 1			/* подержка работы RTTY */
 
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
@@ -532,8 +532,6 @@
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 #endif /* WITHISBOOTLOADER */
-
-	#define WITHMODESETFULLNFM 1
 
 	/* все возможные в данной конфигурации фильтры */
 	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)

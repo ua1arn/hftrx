@@ -436,8 +436,6 @@
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
-//	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
-//	#define WITHLOCKFULL	1	/* блокировка всего управления, а не только перестройки */
 
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
@@ -536,6 +534,9 @@
 #endif /* WITHISBOOTLOADER */
 
 	#define WITHMODESETFULLNFM 1
+//	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
+//	#define WITHLOCKFULL	1	/* блокировка всего управления, а не только перестройки */
+	#define WITHRTTY 1			/* подержка работы RTTY */
 
 	/* все возможные в данной конфигурации фильтры */
 	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
