@@ -1795,4 +1795,17 @@ void dsp_ofdm_rx_process_sample(
     }
 }
 
+
+void modem_fill(hfrxpath_t * path, IFADCvalue_t * buff)
+{
+	const adapter_t * const ap = & ifcodecrx;
+	FLOAT_t i, q;
+	dsp_ofdm_tx_process_sample(& path->ofdm_tx, & i, & q);
+	FLOAT_t scale = 0.1;
+
+	buff [DMABUF32RX0I] = adpt_output(ap, i * scale);
+	buff [DMABUF32RX0Q] = adpt_output(ap, q * scale);
+}
+
+
 #endif /* WITHINTEGRATEDDSP */

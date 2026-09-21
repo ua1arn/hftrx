@@ -650,7 +650,6 @@ void dsp_extbuffer32wfm(const IFADCvalue_t * buff);	// RX
 void inject_testsignals(IFADCvalue_t * dbuff);
 void savedemod_to_AF_proc(FLOAT_t left, FLOAT_t right);	// Сохранение сэмплов с выхода демодулятора
 FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv);
-void process_dmabuffer32rx(const IFADCvalue_t * buff);
 
 enum {
 	AF_EQUALIZER_BANDS = 3,		// число полос
@@ -672,20 +671,6 @@ uint_fast8_t hamradio_get_geqrx(void);
 void hamradio_set_geqrx(uint_fast8_t v);
 
 void audio_rx_equalizer(FLOAT_t *buffer, uint_fast16_t size);
-
-#if WITHIF4DSP
-
-void modem_init(void);
-
-void modem_spool(void * ctx);
-void modem_send(uint_fast8_t c);
-void modem_fill(IFADCvalue_t * buff);
-void modem_parse(const IFADCvalue_t * buff);
-
-void modem_test(void);
-FLOAT32P_t xget_float_monofreq(void);	// modem test LO quadratures
-
-#endif /* WITHIF4DSP */
 
 #if WITHINTEGRATEDDSP
 
@@ -919,6 +904,21 @@ typedef struct {
 	ofdm_modem_tx_t ofdm_tx;
 	ofdm_modem_rx_t ofdm_rx;
 } hfrxpath_t;
+
+
+void modem_init(void);
+
+void modem_spool(void * ctx);
+void modem_send(uint_fast8_t c);
+void modem_fill(hfrxpath_t * path, IFADCvalue_t * buff);
+void modem_parse(hfrxpath_t * path, const IFADCvalue_t * buff);
+
+void modem_test(void);
+FLOAT32P_t xget_float_monofreq(void);	// modem test LO quadratures
+
+void process_dmabuffer32rx(hfrxpath_t * path, const IFADCvalue_t * buff);
+
+hfrxpath_t * hftrx_rxgetpathA(void);
 
 #endif /* WITHINTEGRATEDDSP */
 

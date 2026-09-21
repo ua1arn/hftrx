@@ -1640,10 +1640,10 @@ uintptr_t getfilled_dmabuffer32rx(void)
 static void dsphftrxproc_spool_user(void * ctx)
 {
 	voice32rx_t * dest;
-	(void) ctx;
+
 	while (voice32rx.get_readybuffer(& dest))
 	{
-		process_dmabuffer32rx(dest->buff);
+		process_dmabuffer32rx((hfrxpath_t *) ctx, dest->buff);
 		voice32rx.release_buffer(dest);
 		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 	}
@@ -1652,12 +1652,11 @@ static void dsphftrxproc_spool_user(void * ctx)
 static int dsphftrxproc_spool_user_thread(void * ctx)
 {
 	voice32rx_t * dest;
-	(void) ctx;
 	for (;;)
 	{
 		if (voice32rx.get_readybuffer(& dest, LOCAL_WAITINFINITY) == false)
 			continue;
-		process_dmabuffer32rx(dest->buff);
+		process_dmabuffer32rx((hfrxpath_t *) ctx, dest->buff);
 		voice32rx.release_buffer(dest);
 		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 	}
@@ -1671,7 +1670,7 @@ void save_dmabuffer32rx(uintptr_t addr)
 	// dsphftrxproc_spool_user on other CPUs
 #if TXSPOOLCOND
 	#warning rx process in interrupt
-	dsphftrxproc_spool_user(NULL);
+	dsphftrxproc_spool_user(hftrx_rxgetpathA());
 #endif /* TXSPOOLCOND */
 }
 
@@ -3671,7 +3670,7 @@ static void savetestadc(IFADCvalue_t v0, IFADCvalue_t v1)
 }
 #endif /* WITHDEBUG && WITHFPGAPIPE_CODEC1 */
 
-void process_dmabuffer32rx(const IFADCvalue_t * buff)
+void process_dmabuffer32rx(hfrxpath_t * path, const IFADCvalue_t * buff)
 {
 	unsigned i;
 #if WITHFPGAPIPE_FPGASTATUS
@@ -3701,8 +3700,8 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 	}
 #endif
 #if 0
-	modem_fill((IFADCvalue_t *) b);
-	modem_parse(b);
+	//modem_fill(path, (IFADCvalue_t *) b);
+	//modem_parse((path, b);
 #endif
 #if 0
 		// Тестирование - заменить приянтые квадратуры синтезированными
@@ -4568,10 +4567,10 @@ void buffers_start(void)
 
 	#warning rx process in spool
 	// работа на всех ядрах, кроме нулевого
-	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, dsphftrxproc_spool_user_thread, NULL, 1 * 1024 * 1024, "dsphftrxproc_spool_user_thread") == NULL)
+	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, dsphftrxproc_spool_user_thread, hftrx_rxgetpathA(), 1 * 1024 * 1024, "dsphftrxproc_spool_user_thread") == NULL)
 	{
 		static dpcobj_t dsphftrxproc_spool_dpc;
-		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, NULL);
+		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, hftrx_rxgetpathA());
 		board_dpc_addentry(& dsphftrxproc_spool_dpc, TXSPOOLCORE);
 	}
 

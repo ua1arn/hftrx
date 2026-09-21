@@ -206,6 +206,11 @@ static volatile uint_fast8_t datavox;	/* автоматическое измен
 /* Static allocation for dual-receive independent tracks */
 static hfrxpath_t rx_paths [2];
 
+hfrxpath_t * hftrx_rxgetpathA(void)
+{
+	return & rx_paths [0];
+}
+
 static uint_fast8_t istxreplacedusbactive(void)
 {
 #if WITHUSBHW && WITHUSBUACOUT
