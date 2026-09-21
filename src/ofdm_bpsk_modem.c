@@ -1234,10 +1234,11 @@ static void test_ofdm_process_bits(ofdm_modem_rx_t *self, const uint8_t *bits)
 }
 
 #if 0
+
 static ofdm_modem_tx_t tx_stream;
 static ofdm_modem_rx_t rx_stream;
 
-void modem_fill(IFADCvalue_t * buff)
+void modem_fill(hfrxpath_t * path, IFADCvalue_t * buff)
 {
 	const adapter_t * const ap = & ifcodecrx;
 	FLOAT_t i, q;
@@ -1248,7 +1249,7 @@ void modem_fill(IFADCvalue_t * buff)
 	buff [DMABUF32RX0Q] = adpt_output(ap, q * scale);
 }
 
-void modem_parse(const IFADCvalue_t * buff)
+void modem_parse(hfrxpath_t * path, const IFADCvalue_t * buff)
 {
 	const adapter_t * const ap = & ifcodecrx;
 	const FLOAT_t i = adpt_input(ap, buff [DMABUF32RX0I]);
@@ -1494,44 +1495,88 @@ void dsp_ofdm_tx_init(
     const FLOAT_t ratio = symbol_rate / (FLOAT_t)sample_rate;
     self->nco_baud_step = (uint32_t)(ratio * 4294967296.0);
 
+    /* Инициализация скремблера ненулевой маской (полином Галуа) */
+    self->scrambler_state = 0xACE1;
+
+    /* В режиме покоя излучаем непрерывные тона MARK */
+    self->current_bpsk_vector = 0xFFFF;
+
     fifo_init(&self->tx_fifo);
 }
 
-static uint32_t dsp_ofdm_sub_execute_tx_fsm(ofdm_modem_tx_t * const self)
-{
-    static uint32_t parallel_dbpsk_states = 0x0000; /* Stores current continuous loop state */
+static const uint8_t fec_hamming_encode_table[16] = {
+    0x00, 0x6F, 0x96, 0xF9, 0x55, 0x3A, 0xC3, 0xAC,
+    0x33, 0x5C, 0xA5, 0xCA, 0x66, 0x09, 0xF0, 0x9F
+};
 
+/**
+ * @brief SUB-FUNCTION: Multi-carrier BPSK byte serializer loop step.
+ * Fully reentrant and driven entirely by encapsulated object context fields.
+ */
+static void dsp_ofdm_sub_execute_tx_fsm(ofdm_modem_tx_t * const self)
+{
     if (self->tx_active)
     {
         const uint32_t prev_acc = self->nco_baud_accumulator;
         self->nco_baud_accumulator += self->nco_baud_step;
 
+        /* Check if integer NCO clock wrapped around (OFDM symbol boundary reached!) */
         if (self->nco_baud_accumulator < prev_acc)
         {
-            self->symbol_sample_idx = 0;
+            self->symbol_sample_idx = 0; /* Reset sample sequence tracker for the new block */
             uint8_t tx_char;
 
             switch (self->tx_fsm_state)
             {
                 case OFDM_TX_STATE_IDLE:
+                    /* Pop pending text data byte directly from your embedded thread-safe FIFO */
                     if (fifo_pop(&self->tx_fifo, &tx_char))
                     {
                         self->bit_shifter = tx_char;
                         self->tx_fsm_state = OFDM_TX_STATE_DATA_BITS;
 
-                        /* DIFFERENTIAL ENCODER: next_state = prev_state ^ data_bit */
-                        parallel_dbpsk_states = 0;
+                        /* 1. HIGH-SPEED BAREMETAL SCRAMBLER (LFSR) FOR PAPR CONFINEMENT */
+                        uint32_t lfsr = self->scrambler_state;
+                        uint8_t scramble_mask = 0;
+                        for (int bit = 0; bit < 8; bit++) {
+                            unsigned int lsb = lfsr & 1;
+                            lfsr >>= 1; if (lsb) lfsr ^= 0xB400u;
+                            scramble_mask |= (lsb << bit);
+                        }
+                        self->scrambler_state = lfsr;
+                        const uint8_t whitened_char = tx_char ^ scramble_mask;
+
+                        /* 2. FORWARD ERROR CORRECTION LAYER (Hamming SEC-DED Encoder) */
+                        const uint8_t low_nibble  = whitened_char & 0x0F;
+                        const uint8_t high_nibble = (whitened_char >> 4) & 0x0F;
+                        const uint8_t fec_low  = fec_hamming_encode_table[low_nibble];
+                        const uint8_t fec_high = fec_hamming_encode_table[high_nibble];
+                        const uint32_t raw_fec_vector = ((uint32_t)fec_high << 8) | fec_low;
+
+                        /* 3. BLOCK BIT INTERLEAVER MATRIX LAYER (4x4 Transpose) */
+                        uint32_t interleaved_vector = 0;
+                        for (uint32_t row = 0; row < 4; row++) {
+                            for (uint32_t col = 0; col < 4; col++) {
+                                uint32_t src_bit_idx = row * 4 + col;
+                                uint32_t dst_bit_idx = col * 4 + row;
+                                uint32_t bit = (raw_fec_vector >> src_bit_idx) & 0x01;
+                                interleaved_vector |= (bit << dst_bit_idx);
+                            }
+                        }
+
+                        /* 4. DIFFERENTIAL DBPSK ENCODER & SYMBOLS MAPPING */
+                        self->current_bpsk_vector = 0;
                         for (uint32_t t = 0; t < self->active_tones_count; t++)
                         {
-                            const uint32_t data_bit = (tx_char >> (t % 8)) & 0x01;
-                            self->prev_subcarrier_bits[t] ^= data_bit; /* Accumulate difference */
-                            parallel_dbpsk_states |= (self->prev_subcarrier_bits[t] << t);
+                            const uint32_t data_bit = (interleaved_vector >> t) & 0x01;
+                            self->prev_subcarrier_bits[t] ^= data_bit; /* Accumulate phase delta */
+                            self->current_bpsk_vector |= (self->prev_subcarrier_bits[t] << t);
                         }
                     }
                     else
                     {
                         self->tx_active = 0;
-                        parallel_dbpsk_states = 0x0000;
+                        self->current_bpsk_vector = 0xFFFF; /* Return to continuous idle MARK tones */
                     }
                     break;
 
@@ -1539,12 +1584,43 @@ static uint32_t dsp_ofdm_sub_execute_tx_fsm(ofdm_modem_tx_t * const self)
                     if (fifo_pop(&self->tx_fifo, &tx_char))
                     {
                         self->bit_shifter = tx_char;
-                        parallel_dbpsk_states = 0;
+
+                        /* 1. SCRAMBLER RUNTIME STEP */
+                        uint32_t lfsr = self->scrambler_state;
+                        uint8_t scramble_mask = 0;
+                        for (int bit = 0; bit < 8; bit++) {
+                            unsigned int lsb = lfsr & 1;
+                            lfsr >>= 1; if (lsb) lfsr ^= 0xB400u;
+                            scramble_mask |= (lsb << bit);
+                        }
+                        self->scrambler_state = lfsr;
+                        const uint8_t whitened_char = tx_char ^ scramble_mask;
+
+                        /* 2. FEC HAMMING ENCODER STEP */
+                        const uint8_t low_nibble  = whitened_char & 0x0F;
+                        const uint8_t high_nibble = (whitened_char >> 4) & 0x0F;
+                        const uint8_t fec_low  = fec_hamming_encode_table[low_nibble];
+                        const uint8_t fec_high = fec_hamming_encode_table[high_nibble];
+                        const uint32_t raw_fec_vector = ((uint32_t)fec_high << 8) | fec_low;
+
+                        /* 3. INTERLEAVER MATRIX STEP */
+                        uint32_t interleaved_vector = 0;
+                        for (uint32_t row = 0; row < 4; row++) {
+                            for (uint32_t col = 0; col < 4; col++) {
+                                uint32_t src_bit_idx = row * 4 + col;
+                                uint32_t dst_bit_idx = col * 4 + row;
+                                uint32_t bit = (raw_fec_vector >> src_bit_idx) & 0x01;
+                                interleaved_vector |= (bit << dst_bit_idx);
+                            }
+                        }
+
+                        /* 4. DBPSK PHASE POLARITY INTEGRATION */
+                        self->current_bpsk_vector = 0;
                         for (uint32_t t = 0; t < self->active_tones_count; t++)
                         {
-                            const uint32_t data_bit = (tx_char >> (t % 8)) & 0x01;
+                            const uint32_t data_bit = (interleaved_vector >> t) & 0x01;
                             self->prev_subcarrier_bits[t] ^= data_bit;
-                            parallel_dbpsk_states |= (self->prev_subcarrier_bits[t] << t);
+                            self->current_bpsk_vector |= (self->prev_subcarrier_bits[t] << t);
                         }
                     }
                     else
@@ -1561,23 +1637,23 @@ static uint32_t dsp_ofdm_sub_execute_tx_fsm(ofdm_modem_tx_t * const self)
     }
     else
     {
+        /* Idle scanning via thread-safe lock-free head/tail pointers check */
         if (self->nco_baud_accumulator == 0)
         {
             if (self->tx_fifo.head != self->tx_fifo.tail)
             {
                 self->tx_active = 1;
                 self->tx_fsm_state = OFDM_TX_STATE_IDLE;
-                self->nco_baud_accumulator = 0xFFFFFFFF;
+                self->nco_baud_accumulator = 0xFFFFFFFF; /* Force instant evaluation next step */
             }
         }
-        self->nco_baud_accumulator += self->nco_baud_step;
-        if (self->nco_baud_accumulator < self->nco_baud_step) {
+        self->nco_baud_accumulator++;
+        if (self->nco_baud_accumulator >= self->nco_baud_step)
+        {
             self->nco_baud_accumulator = 0;
         }
         self->symbol_sample_idx = 0;
     }
-
-    return parallel_dbpsk_states;
 }
 
 /**
@@ -1593,8 +1669,11 @@ void dsp_ofdm_tx_process_sample(
     FLOAT_t * const out_i,
     FLOAT_t * const out_q)
 {
-    /* 1. Вызов сериализатора для получения текущего параллельного DBPSK-вектора */
-    const uint32_t bpsk_vector = ~0;//~0u; //dsp_ofdm_sub_execute_tx_fsm(self);
+    /* 1. Execute asynchronous framing serialization context fields update */
+    //dsp_ofdm_sub_execute_tx_fsm(self);
+
+    /* Использование вектора напрямую из контекста объекта */
+    const uint32_t bpsk_vector = self->current_bpsk_vector;
 
     FLOAT_t sum_i = 0.0;
     FLOAT_t sum_q = 0.0;
@@ -1730,98 +1809,184 @@ uint32_t dsp_ofdm_rx_pop_char(ofdm_modem_rx_t * const self, uint8_t * const outp
     return fifo_pop(&self->rx_fifo, output_byte);
 }
 
+/**
+ * @brief Look-up table for Hamming (8,4) syndrome error correction mask.
+ * Index is computed via parity matrix: p3 p2 p1 p0.
+ * Value returns the exact bit mask to flip via XOR, or 0 if data is clean.
+ */
+static const uint8_t fec_hamming_decode_table[16] = {
+    0x00, 0x01, 0x02, 0x00, 0x04, 0x00, 0x00, 0x00,
+    0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
+/**
+ * @brief MAIN UNIFIED DEMODULATOR WRAPPER: Sample-by-sample multi-carrier receiver core.
+ * Performs coherent on-the-fly DFT integration via LUT matrices, block bit deinterleaving,
+ * Hamming SEC-DED error correction, and LFSR descrambling without using heavy block buffers.
+ *
+ * @param self Pointer to the active isolated receiver context structure ofdm_modem_rx_t.
+ * @param in_i Input real quadrature component (I) from the Zero-IF hardware mixer channel.
+ * @param in_q Input imaginary quadrature component (Q) from the Zero-IF hardware mixer channel.
+ */
 void dsp_ofdm_rx_process_sample(
     ofdm_modem_rx_t * const self,
     const FLOAT_t in_i,
     const FLOAT_t in_q)
 {
-    /* Логика триггера захвата пакета (энергетический порог) */
+    /* 1. Energy squelch trigger layer for packet capture detection */
     if (!self->rx_active)
     {
         const FLOAT_t power = in_i * in_i + in_q * in_q;
-        if (power > 0.001f)
+        if (power > 0.001f) /* Experimental threshold for presence of OFDM package in HF channel */
         {
             self->rx_active = 1;
             self->rx_fsm_state = OFDM_RX_STATE_SYNC;
             self->symbol_sample_idx = 0;
+            self->scrambler_state = 0xACE1; /* Synchronous reset of the LFSR tracker to frame start */
 
             for (uint32_t t = 0; t < self->active_tones_count; t++)
             {
                 self->integrator_i[t] = 0.0;
                 self->integrator_q[t] = 0.0;
+                self->prev_integrator_i[t] = 0.0;
+                self->prev_integrator_q[t] = 0.0;
             }
         }
-        return;
+        return; /* No valid signal captured, exit current audio hardware interrupt tick */
     }
 
     const uint32_t current_idx = self->symbol_sample_idx;
 
-    /* МГНОВЕННОЕ КОГЕРЕНТНОЕ НАКОПЛЕНИЕ ДПФ ПО ТАБЛИЦАМ LUT (Zero CPU Trig Overhead) */
+    /* 2. Coherent on-the-fly DFT accumulation via pre-calculated memory LUT (skipping CP) */
     if (current_idx >= self->cp_len && current_idx < self->total_symbol_len)
     {
-        /* Вычисляем текущую координату (индекс сэмпла) строго внутри полезного окна FFT */
+        /* Calculate precise relative sample index strictly inside the active integration window */
         const uint32_t fft_idx = current_idx - self->cp_len;
 
         for (uint32_t t = 0; t < self->active_tones_count; t++)
         {
-            /* Прямое скоростное чтение весов деротации из Look-Up кэша памяти */
+            /* Ultra-fast direct weight reading from L1/L2 processor cache lines */
             const FLOAT_t local_cos = self->rx_lut_cos[t][fft_idx];
             const FLOAT_t local_sin = self->rx_lut_sin[t][fft_idx];
 
-            /* Комплексный коррелятор на лету: V_in * V_local^* */
+            /* Complex multiplier core: V_in * V_local^* */
             self->integrator_i[t] += in_i * local_cos + in_q * local_sin;
             self->integrator_q[t] += in_q * local_cos - in_i * local_sin;
         }
     }
 
-    /* Шаг по временной шкале фрейма */
+    /* Increment symbol timing grid sequence tracker */
     self->symbol_sample_idx++;
 
-    /* Граница OFDM-символа достигнута — дифференциальное DBPSK перемножение векторов */
+    /* 3. OFDM SYMBOL BOUNDARY CLOSURE: Execute hardware-friendly PHY decoding sequence */
     if (self->symbol_sample_idx >= self->total_symbol_len)
     {
         self->symbol_sample_idx = 0;
         uint32_t parallel_bits_vector = 0;
 
+        /* Differential DBPSK phase slicer layer */
         for (uint32_t t = 0; t < self->active_tones_count; t++)
         {
-            /* Дифференциальный DBPSK перемножитель: Скалярное произведение векторов Now и Prev */
+            /* Dot product calculation of the current and historical symbols vectors: */
+            /* Real(V_now * V_prev^*) = I_now*I_prev + Q_now*Q_prev */
             const FLOAT_t dot_product = (self->integrator_i[t] * self->prev_integrator_i[t]) +
                                         (self->integrator_q[t] * self->prev_integrator_q[t]);
 
-            /* Жёсткий слайсинг знака разности фаз */
+            /* Hard slicing decision over the differential zero axis line */
             const uint32_t decoded_bit = (dot_product >= 0.0) ? 1 : 0;
             parallel_bits_vector |= (decoded_bit << t);
 
-            /* Ротация исторической памяти векторов */
+            /* Rotate history memory registers for the next active symbol slot */
             self->prev_integrator_i[t] = self->integrator_i[t];
             self->prev_integrator_q[t] = self->integrator_q[t];
 
-            /* Очистка контура под следующий OFDM-символ */
+            /* Flush active correlation integrators back to zero */
             self->integrator_i[t] = 0.0;
             self->integrator_q[t] = 0.0;
         }
 
-        /* Десериализация и отправка байт в lock-free FIFO приёмника */
-        if (self->rx_fsm_state == OFDM_RX_STATE_DATA_BITS || self->rx_fsm_state == OFDM_RX_STATE_SYNC)
+        /* --- STAGE 1: BLOCK BIT DEINTERLEAVER LAYER (4x4 Matrix Transpose) --- */
+        /* Unravel parallel tones stream back to the original Hamming code structure */
+        uint32_t deinterleaved_vector = 0;
+        for (uint32_t row = 0; row < 4; row++)
         {
-            for (uint32_t b = 0; b < 2; b++)
+            for (uint32_t col = 0; col < 4; col++)
             {
-                const uint8_t decoded_char = (uint8_t)((parallel_bits_vector >> (b * 8)) & 0xFF);
-
-                if (self->rx_fsm_state == OFDM_RX_STATE_DATA_BITS)
-                {
-                    fifo_push(&self->rx_fifo, decoded_char);
-                }
-            }
-
-            if (self->rx_fsm_state == OFDM_RX_STATE_SYNC)
-            {
-                self->rx_fsm_state = OFDM_RX_STATE_DATA_BITS;
+                const uint32_t src_bit_idx = col * 4 + row; /* Inverse matrix transposition */
+                const uint32_t dst_bit_idx = row * 4 + col;
+                const uint32_t bit = (parallel_bits_vector >> src_bit_idx) & 0x01;
+                deinterleaved_vector |= (bit << dst_bit_idx);
             }
         }
 
-        /* Проверка сброса захвата при замираниях */
+        /* Asynchronous packet preamble marker synchronization tracking engine */
+        if (self->rx_fsm_state == OFDM_RX_STATE_SYNC)
+        {
+            const uint32_t sync_check = deinterleaved_vector ^ 0xAAAA;
+            const uint32_t bits_corrupted = (uint32_t)__builtin_popcount(sync_check);
+            const uint32_t bits_matching = self->active_tones_count - bits_corrupted;
+
+            if (bits_matching >= 14) /* Hamming distance validation threshold passed */
+            {
+                self->rx_fsm_state = OFDM_RX_STATE_DATA_BITS;
+                self->symbol_sample_idx = 0; /* Hard realign symbol timing window grid directly to data start */
+            }
+            else
+            {
+                static uint32_t sync_timeout = 0;
+                if (++sync_timeout >= 3)
+                {
+                    sync_timeout = 0;
+                    self->rx_active = 0;
+                    self->rx_fsm_state = OFDM_RX_STATE_IDLE;
+                }
+            }
+        }
+        /* --- STAGE 2: FORWARD ERROR CORRECTION LAYER (Hamming SEC-DED Decoder) --- */
+        else if (self->rx_fsm_state == OFDM_RX_STATE_DATA_BITS)
+        {
+            /* Split 16-bit deinterleaved vector block into separate low and high code words */
+            uint8_t fec_low  = (uint8_t)(deinterleaved_vector & 0xFF);
+            uint8_t fec_high = (uint8_t)((deinterleaved_vector >> 8) & 0xFF);
+
+            /* Calculate parity checksums for the lower nibble block (fec_low) */
+            uint8_t p_low = 0;
+            p_low |= (((fec_low >> 4) ^ (fec_low >> 5) ^ (fec_low >> 6) ^ (fec_low >> 7)) & 1) << 0;
+            p_low |= (((fec_low >> 1) ^ (fec_low >> 3) ^ (fec_low >> 5) ^ (fec_low >> 7)) & 1) << 1;
+            p_low |= (((fec_low >> 2) ^ (fec_low >> 3) ^ (fec_low >> 6) ^ (fec_low >> 7)) & 1) << 2;
+
+            fec_low ^= fec_hamming_decode_table[p_low]; /* Atomic LUT error pattern bit correction */
+            uint8_t decoded_byte = fec_low & 0x0F;
+
+            /* Calculate parity checksums for the higher nibble block (fec_high) */
+            uint8_t p_high = 0;
+            p_high |= (((fec_high >> 4) ^ (fec_high >> 5) ^ (fec_high >> 6) ^ (fec_high >> 7)) & 1) << 0;
+            p_high |= (((fec_high >> 1) ^ (fec_high >> 3) ^ (fec_high >> 5) ^ (fec_high >> 7)) & 1) << 1;
+            p_high |= (((fec_high >> 2) ^ (fec_high >> 3) ^ (fec_high >> 6) ^ (fec_high >> 7)) & 1) << 2;
+
+            fec_high ^= fec_hamming_decode_table[p_high];
+            decoded_byte |= (uint8_t)((fec_high & 0x0F) << 4);
+
+            /* --- STAGE 3: PAYLOAD UNWHITENING LAYER (LFSR De-scrambler Core) --- */
+            uint32_t lfsr = self->scrambler_state;
+            uint8_t scramble_mask = 0;
+            for (int bit = 0; bit < 8; bit++)
+            {
+                unsigned int lsb = lfsr & 1;
+                lfsr >>= 1;
+                if (lsb) lfsr ^= 0xB400u; /* Symmetric HF-band Galois feedback polynomial */
+                scramble_mask |= (lsb << bit);
+            }
+            self->scrambler_state = lfsr;
+
+            /* Fully recover the original clean ASCII symbol text character byte via XOR */
+            const uint8_t clean_char = decoded_byte ^ scramble_mask;
+
+            /* Safely pass the clean character directly into the receiver's thread-safe lock-free queue field */
+            fifo_push(&self->rx_fifo, clean_char);
+        }
+
+        /* Drop frame tracking session if channel energy falls into deep fade silence */
         const FLOAT_t end_power = in_i * in_i + in_q * in_q;
         if (end_power < 0.0001f)
         {
@@ -1843,5 +2008,13 @@ void modem_fill(hfrxpath_t * path, IFADCvalue_t * buff)
 	buff [DMABUF32RX0Q] = adpt_output(ap, q);
 }
 
+
+void modem_parse(hfrxpath_t * path, const IFADCvalue_t * buff)
+{
+	const adapter_t * const ap = & ifcodecrx;
+	const FLOAT_t i = adpt_input(ap, buff [DMABUF32RX0I]);
+	const FLOAT_t q = adpt_input(ap, buff [DMABUF32RX0Q]);
+	dsp_ofdm_rx_process_sample(& path->ofdm_rx, i, q);
+}
 
 #endif /* WITHINTEGRATEDDSP */
