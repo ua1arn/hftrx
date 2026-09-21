@@ -4807,41 +4807,41 @@ static uint16_t dcs_extract_code(uint32_t word) {
 }
 
 /**
- * Forcibly resets the internal states of the specified context path
+ * Forcibly resets the internal states of the specified context self
  */
-static void ctcss_detector_reset(hfrxpath_t *path) {
-    ctcss_decimator_init(&path->cic_decimator);
+static void ctcss_detector_reset(nfm_rx_t *self) {
+    ctcss_decimator_init(&self->cic_decimator);
 
-    path->ctcss_det.q0 = 0;
-    path->ctcss_det.q1 = 0;
-    path->ctcss_det.q2 = 0;
-    path->ctcss_det.count = 0;
+    self->ctcss_det.q0 = 0;
+    self->ctcss_det.q1 = 0;
+    self->ctcss_det.q2 = 0;
+    self->ctcss_det.count = 0;
 
-    path->dcs_det.dcs_integrator = 0;
-    path->dcs_det.phase_accumulator = 0;
-    path->dcs_det.bit_buffer = 0;
-    path->dcs_det.prev_sample = 0;
+    self->dcs_det.dcs_integrator = 0;
+    self->dcs_det.phase_accumulator = 0;
+    self->dcs_det.bit_buffer = 0;
+    self->dcs_det.prev_sample = 0;
 
-    path->ctcss_squelch_open = 0;
-    path->dcs_squelch_open = 0;
+    self->ctcss_squelch_open = 0;
+    self->dcs_squelch_open = 0;
 
     /* FIX: Clear de-emphasis delay lines to instantly recover from any NaN state */
-    path->audio_filter.x1 = 0;
-    path->audio_filter.y1 = 0;
+    self->audio_filter.x1 = 0;
+    self->audio_filter.y1 = 0;
 }
 
 /**
  * Checks if the NFM carrier is captured by the PLL loop using hysteresis
  */
-static uint8_t is_nfm_carrier_present(hfrxpath_t *path) {
+static uint8_t is_nfm_carrier_present(nfm_rx_t *self) {
     FLOAT_t threshold;
 
-    if (path->ctcss_squelch_open || path->dcs_squelch_open) {
+    if (self->ctcss_squelch_open || self->dcs_squelch_open) {
         threshold = (FLOAT_t)SQUELCH_CLOSE_NUM / SQUELCH_DENOM;
-        if (path->demodulator.lock_avg > threshold) return 1;
+        if (self->demodulator.lock_avg > threshold) return 1;
     } else {
         threshold = (FLOAT_t)SQUELCH_OPEN_NUM / SQUELCH_DENOM;
-        if (path->demodulator.lock_avg > threshold) return 1;
+        if (self->demodulator.lock_avg > threshold) return 1;
     }
 
     return 0;
@@ -4850,64 +4850,64 @@ static uint8_t is_nfm_carrier_present(hfrxpath_t *path) {
 /**
  * Processes a single 1000 Hz sample through the Goertzel algorithm
  */
-static void process_ctcss_detector_sample(hfrxpath_t *path, FLOAT_t sample) {
-    path->ctcss_det.q0 = path->ctcss_det.coeff * path->ctcss_det.q1 - path->ctcss_det.q2 + sample;
-    path->ctcss_det.q2 = path->ctcss_det.q1;
-    path->ctcss_det.q1 = path->ctcss_det.q0;
+static void process_ctcss_detector_sample(nfm_rx_t *self, FLOAT_t sample) {
+    self->ctcss_det.q0 = self->ctcss_det.coeff * self->ctcss_det.q1 - self->ctcss_det.q2 + sample;
+    self->ctcss_det.q2 = self->ctcss_det.q1;
+    self->ctcss_det.q1 = self->ctcss_det.q0;
 
-    path->ctcss_det.count = path->ctcss_det.count + 1;
+    self->ctcss_det.count = self->ctcss_det.count + 1;
 
-    if (path->ctcss_det.count >= path->ctcss_det.block_size) {
-        path->ctcss_det.count = 0;
+    if (self->ctcss_det.count >= self->ctcss_det.block_size) {
+        self->ctcss_det.count = 0;
 
-        FLOAT_t magnitude_sq = path->ctcss_det.q1 * path->ctcss_det.q1 +
-                               path->ctcss_det.q2 * path->ctcss_det.q2 -
-                               path->ctcss_det.coeff * path->ctcss_det.q1 * path->ctcss_det.q2;
+        FLOAT_t magnitude_sq = self->ctcss_det.q1 * self->ctcss_det.q1 +
+                               self->ctcss_det.q2 * self->ctcss_det.q2 -
+                               self->ctcss_det.coeff * self->ctcss_det.q1 * self->ctcss_det.q2;
 
         FLOAT_t threshold = (FLOAT_t)5 / 10000;
 
         if (magnitude_sq > threshold) {
-            path->ctcss_squelch_open = 1;
+            self->ctcss_squelch_open = 1;
         } else {
-            path->ctcss_squelch_open = 0;
+            self->ctcss_squelch_open = 0;
         }
 
-        path->ctcss_det.q0 = 0;
-        path->ctcss_det.q1 = 0;
-        path->ctcss_det.q2 = 0;
+        self->ctcss_det.q0 = 0;
+        self->ctcss_det.q1 = 0;
+        self->ctcss_det.q2 = 0;
     }
 }
 
 /**
  * Processes a single decimated sample through the internal NCO DCS loop
  */
-static void process_dcs_sample(hfrxpath_t *path, FLOAT_t sample) {
-    if ((sample > 0 && path->dcs_det.prev_sample <= 0) || (sample <= 0 && path->dcs_det.prev_sample > 0)) {
-        path->dcs_det.phase_accumulator = 0;
+static void process_dcs_sample(nfm_rx_t *self, FLOAT_t sample) {
+    if ((sample > 0 && self->dcs_det.prev_sample <= 0) || (sample <= 0 && self->dcs_det.prev_sample > 0)) {
+        self->dcs_det.phase_accumulator = 0;
     }
-    path->dcs_det.prev_sample = sample;
+    self->dcs_det.prev_sample = sample;
 
-    path->dcs_det.dcs_integrator = path->dcs_det.dcs_integrator + sample;
-    path->dcs_det.phase_accumulator = path->dcs_det.phase_accumulator + DCS_PHASE_STEP;
+    self->dcs_det.dcs_integrator = self->dcs_det.dcs_integrator + sample;
+    self->dcs_det.phase_accumulator = self->dcs_det.phase_accumulator + DCS_PHASE_STEP;
 
-    if (path->dcs_det.phase_accumulator >= DCS_PHASE_MAX) {
-        path->dcs_det.phase_accumulator = path->dcs_det.phase_accumulator - DCS_PHASE_MAX;
+    if (self->dcs_det.phase_accumulator >= DCS_PHASE_MAX) {
+        self->dcs_det.phase_accumulator = self->dcs_det.phase_accumulator - DCS_PHASE_MAX;
 
         uint8_t current_bit = 0;
-        if (path->dcs_det.dcs_integrator > 0) {
+        if (self->dcs_det.dcs_integrator > 0) {
             current_bit = 1;
         }
-        path->dcs_det.dcs_integrator = 0;
+        self->dcs_det.dcs_integrator = 0;
 
-        path->dcs_det.bit_buffer = ((path->dcs_det.bit_buffer << 1) | current_bit) & 0x7FFFFF;
+        self->dcs_det.bit_buffer = ((self->dcs_det.bit_buffer << 1) | current_bit) & 0x7FFFFF;
 
-        uint32_t test_word = path->dcs_det.bit_buffer;
+        uint32_t test_word = self->dcs_det.bit_buffer;
         for (uint8_t shift = 0; shift < DCS_BITS_COUNT; shift++) {
             if (dcs_validate_golay(test_word)) {
                 uint16_t detected_code = dcs_extract_code(test_word);
 
-                if (detected_code == path->dcs_target_code) {
-                    path->dcs_squelch_open = 1;
+                if (detected_code == self->dcs_target_code) {
+                    self->dcs_squelch_open = 1;
                     return;
                 }
             }
@@ -4918,27 +4918,27 @@ static void process_dcs_sample(hfrxpath_t *path, FLOAT_t sample) {
 }
 
 /**
- * Pushes a single 48 kHz audio sample into the path-specific decimation chain
+ * Pushes a single 48 kHz audio sample into the self-specific decimation chain
  */
-static void push_to_ctcss_decimator(hfrxpath_t *path, FLOAT_t raw_audio) {
-    path->cic_decimator.integrator1 = path->cic_decimator.integrator1 + raw_audio;
-    path->cic_decimator.integrator2 = path->cic_decimator.integrator2 + path->cic_decimator.integrator1;
+static void push_to_ctcss_decimator(nfm_rx_t *self, FLOAT_t raw_audio) {
+    self->cic_decimator.integrator1 = self->cic_decimator.integrator1 + raw_audio;
+    self->cic_decimator.integrator2 = self->cic_decimator.integrator2 + self->cic_decimator.integrator1;
 
-    path->cic_decimator.decimation_counter = path->cic_decimator.decimation_counter + 1;
+    self->cic_decimator.decimation_counter = self->cic_decimator.decimation_counter + 1;
 
-    if (path->cic_decimator.decimation_counter >= 45) {
-        path->cic_decimator.decimation_counter = 0;
+    if (self->cic_decimator.decimation_counter >= 45) {
+        self->cic_decimator.decimation_counter = 0;
 
-        FLOAT_t comb1_out = path->cic_decimator.integrator2 - path->cic_decimator.comb1_delay;
-        path->cic_decimator.comb1_delay = path->cic_decimator.integrator2;
+        FLOAT_t comb1_out = self->cic_decimator.integrator2 - self->cic_decimator.comb1_delay;
+        self->cic_decimator.comb1_delay = self->cic_decimator.integrator2;
 
-        FLOAT_t comb2_out = comb1_out - path->cic_decimator.comb2_delay;
-        path->cic_decimator.comb2_delay = comb1_out;
+        FLOAT_t comb2_out = comb1_out - self->cic_decimator.comb2_delay;
+        self->cic_decimator.comb2_delay = comb1_out;
 
         FLOAT_t decimated_sample = comb2_out / 2025;
 
-        process_ctcss_detector_sample(path, decimated_sample);
-        process_dcs_sample(path, decimated_sample);
+        process_ctcss_detector_sample(self, decimated_sample);
+        process_dcs_sample(self, decimated_sample);
     }
 }
 
@@ -4946,20 +4946,20 @@ static void push_to_ctcss_decimator(hfrxpath_t *path, FLOAT_t raw_audio) {
  * Main object-oriented entrance point for NFM RX stream execution
  * @param pathi Context index: 0 for Main RX track, 1 for Sub RX track
  */
-static FLOAT_t hftrx_nfm_rx_process_sample(hfrxpath_t * const path, FLOAT_t sample_i, FLOAT_t sample_q) {
+static FLOAT_t hftrx_nfm_rx_process_sample(nfm_rx_t * const self, FLOAT_t sample_i, FLOAT_t sample_q) {
 
     /* 1. Demodulate complex IQ into frequency deviation */
-    FLOAT_t raw_audio = nfm_pll_process_sample(&path->demodulator, sample_i, sample_q);
+    FLOAT_t raw_audio = nfm_pll_process_sample(&self->demodulator, sample_i, sample_q);
 
     /* 2. Process carrier gating and low frequency signaling tracking paths */
-    if (is_nfm_carrier_present(path)) {
-        push_to_ctcss_decimator(path, raw_audio);
+    if (is_nfm_carrier_present(self)) {
+        push_to_ctcss_decimator(self, raw_audio);
     } else {
-        ctcss_detector_reset(path);
+        ctcss_detector_reset(self);
     }
 
     /* 3. Apply standard de-emphasis response curve mapping */
-    FLOAT_t voice_audio = nfm_deemph_process_sample(&path->audio_filter, raw_audio);
+    FLOAT_t voice_audio = nfm_deemph_process_sample(&self->audio_filter, raw_audio);
     return raw_audio;
     /* 4. Output normalized to 1.5x matching deviation criteria levels */
     return (voice_audio * 3) / 2;
@@ -4970,35 +4970,35 @@ static FLOAT_t hftrx_nfm_rx_process_sample(hfrxpath_t * const path, FLOAT_t samp
  * Path-specific object parameter dynamic initialization
  * Performs state clearing and loads calibrated constants into structural fields.
  */
-static void hftrx_nfm_path_init(hfrxpath_t * const path, FLOAT_t sample_rate, FLOAT_t bandwidth, uint32_t target_ctcss_x10, uint16_t target_dcs) {
+static void hftrx_nfm_path_init(nfm_rx_t * const self, FLOAT_t sample_rate, FLOAT_t bandwidth, uint32_t target_ctcss_x10, uint16_t target_dcs) {
 
     /* Clear and prepare tracking oscillators and filters */
-    nfm_pll_init(&path->demodulator, sample_rate, bandwidth);
-    nfm_deemph_init(&path->audio_filter, sample_rate);
-    ctcss_decimator_init(&path->cic_decimator);
+    nfm_pll_init(&self->demodulator, sample_rate, bandwidth);
+    nfm_deemph_init(&self->audio_filter, sample_rate);
+    ctcss_decimator_init(&self->cic_decimator);
 
     /* Pre-calculate Goertzel coefficients matching strict M=45 sampling constraints */
-    ctcss_detector_init(&path->ctcss_det, target_ctcss_x10, 160, sample_rate);
+    ctcss_detector_init(&self->ctcss_det, target_ctcss_x10, 160, sample_rate);
 
     /* Map digital DCS configuration values */
-    path->dcs_target_code = target_dcs;
-    path->dcs_det.dcs_integrator = 0;
-    path->dcs_det.phase_accumulator = 0;
-    path->dcs_det.bit_buffer = 0;
-    path->dcs_det.prev_sample = 0;
+    self->dcs_target_code = target_dcs;
+    self->dcs_det.dcs_integrator = 0;
+    self->dcs_det.phase_accumulator = 0;
+    self->dcs_det.bit_buffer = 0;
+    self->dcs_det.prev_sample = 0;
 
     /* Enforce safe start gate positions */
-    path->ctcss_squelch_open = 0;
-    path->dcs_squelch_open = 0;
+    self->ctcss_squelch_open = 0;
+    self->dcs_squelch_open = 0;
 }
 
 /**
- * Global path settings integration bridge
+ * Global self settings integration bridge
  * Fetches the current hardware configuration for the specified track index
  * and maps system parameters directly into the object-oriented NFM workspace.
  * @param pathi Context index: 0 for Main RX track, 1 for Sub RX track
  */
-static void hftrx_nfm_path_update_from_global(hfrxpath_t * const path) {
+static void hftrx_nfm_path_update_from_global(nfm_rx_t * const self) {
     /*
      * Base sample rate for internal NFM demodulator processing.
      * Fixed at 48000 Hz according to transceiver hardware configuration criteria.
@@ -5029,7 +5029,7 @@ static void hftrx_nfm_path_update_from_global(hfrxpath_t * const path) {
      */
 
     /* Trigger object-oriented track engine workspace reinitialization */
-    hftrx_nfm_path_init(path, base_sample_rate, target_bandwidth, current_ctcss_x10, current_dcs_code);
+    hftrx_nfm_path_init(self, base_sample_rate, target_bandwidth, current_ctcss_x10, current_dcs_code);
 }
 
 ////////////
@@ -5130,7 +5130,7 @@ static FLOAT_t baseband_demodulator(
 			const FLOAT_t fltstrengthslow = agc_measure_float(path, dspmode, SQRTF(sigpower));
 
 #if 1
-			const FLOAT_t sample = hftrx_nfm_rx_process_sample(path, vp0f.IV, vp0f.QV);
+			const FLOAT_t sample = hftrx_nfm_rx_process_sample(& path->nfm_rx, vp0f.IV, vp0f.QV);
 #else
 			//const FLOAT_t gain = agc_getgain_float(path, fltstrengthslow);
 			path->saved_delta_fi = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
@@ -6228,7 +6228,9 @@ hfrxpath_update(
 
 	// NFM
 	{
-		hftrx_nfm_path_update_from_global(path);
+		hftrx_nfm_path_update_from_global(& path->nfm_rx);
+		path->saved_delta_fi = 0;
+		path->prev_fi = 0;
 	}
 
 	// Параметры SAM приёмника
@@ -6242,7 +6244,7 @@ hfrxpath_update(
 		samdetector_create(& path->samdetector, 0, - pll, + pll, zeta, omegaN, tauR, tauI);
 	}
 
-	hftrx_nfm_path_update_from_global(path);
+	hftrx_nfm_path_update_from_global(& path->nfm_rx);
 
 	// Пороговый шумодав (Squelch)
 	{

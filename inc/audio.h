@@ -919,17 +919,9 @@ typedef struct {
     rtty_baudot_fsm_t    fsm;      /* Embedded integer NCO asynchronous framing engine */
 } rtty_receiver_t;
 
-
-
-/* Complete Signal Path Object Model for hftrx */
 typedef struct {
-	// NFM
     nfm_pll_t demodulator;
     nfm_deemph_t audio_filter;
-
-    FLOAT_t manualsquelch;
-	ncoftwi_t prev_fi;
-	volatile int32_t saved_delta_fi;
 
     ctcss_cic_t cic_decimator;
     ctcss_goertzel_t ctcss_det;
@@ -938,6 +930,17 @@ typedef struct {
 	uint8_t ctcss_squelch_open;
     uint8_t dcs_squelch_open;
     uint16_t dcs_target_code;
+} nfm_rx_t;
+
+
+/* Complete Signal Path Object Model for hftrx */
+typedef struct {
+	// NFM
+	nfm_rx_t nfm_rx;
+    FLOAT_t manualsquelch;
+
+	ncoftwi_t prev_fi;
+	volatile int32_t saved_delta_fi;
 
     unsigned delayblanklo6tx;
     unsigned delayblanklo6rx;
