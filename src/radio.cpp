@@ -11352,7 +11352,7 @@ getif6bw(
 #if WITHRTTY
 	case MODE_RTTY:
 		{
-			return param_getvalue(& xgrttyshift) + 2 * param_getvalue(& xgrttybaudrate10) / 10;
+			return param_getvalue(& xgrttyshift) + 4 * param_getvalue(& xgrttybaudrate10) / 10;
 		}
 #endif /* WITHRTTY */
 
