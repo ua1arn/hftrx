@@ -489,7 +489,7 @@ void board_set_datatx(uint_fast8_t v);	/* автоматическое изме�
 void board_set_usb_ft8cn(uint_fast8_t v);	/* совместимость VID/PID для работы с программой FT8CN */
 void board_set_usb_hs(uint_fast8_t v);	/* Использование USB HS dvtcn USB FS */
 
-void dsp_initialize(void);
+void hftrx_init(void);
 int ctcss_squelch(void);
 
 #if WITHINTEGRATEDDSP
@@ -521,7 +521,6 @@ uint_fast16_t dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uin
 int_fast16_t dsp_rssi10(int_fast16_t * tracemax, uint_fast8_t pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale);	/* получить значение от детектора VOX */
 uint_fast8_t dsp_getavox(uint_fast8_t fullscale);	/* получить значение от детектора Anti-VOX */
-uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi);	/* Получить значение отклонения частоты с точностью 0.1 герца */
 uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признака переполнения АЦП микрофонного тракта */
 int_fast16_t dsp_agcfence10(void);	/* получить значение точки перегиба АРУ в 0.1 дБмВт */
 
@@ -686,16 +685,86 @@ void modem_parse(const IFADCvalue_t * buff);
 void modem_test(void);
 FLOAT32P_t xget_float_monofreq(void);	// modem test LO quadratures
 
-
-void RTTY_SampleRX(uint_fast8_t pathi, FLOAT_t i, FLOAT_t q);
-void RTTY_SampleTX(FLOAT_t * i, FLOAT_t * q);
-void RTTY_TX(uint8_t c);
-
-void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len); // start RTTY decoder for the data block
-void RTTYModem_SetParam(int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift, int invert_output);
-void RTTYModem_Init(void);
-
 #endif /* WITHIF4DSP */
+
+#if WITHINTEGRATEDDSP
+
+#define NPROF 2	/* количество профилей параметров DSP фильтров. */
+
+
+/*
+ * Object-oriented NFM Signaling Module for hftrx
+ *
+ * Target path structure encapsulation using hfrxpath_t object abstraction.
+ * Pure C numeric conversions without double promotion.
+ * Localization via static bindings.
+ */
+
+/* NFM PLL demodulator state structure */
+typedef struct {
+    FLOAT_t phase;       /* Phase of the numeric controlled oscillator (NCO) */
+    FLOAT_t freq;        /* Integral component of the loop filter */
+    FLOAT_t kp;          /* Proportional gain of the PLL loop */
+    FLOAT_t ki;          /* Integral gain of the PLL loop */
+    FLOAT_t lock_avg;    /* Smoothed loop lock indicator (Lock Detector) */
+} nfm_pll_t;
+
+/* NFM De-emphasis filter state structure (1st order IIR) */
+typedef struct {
+    FLOAT_t b0;          /* Filter coefficient b0 */
+    FLOAT_t b1;          /* Filter coefficient b1 */
+    FLOAT_t a1;          /* Filter coefficient a1 */
+    FLOAT_t x1;          /* Delay element for input state x[n-1] */
+    FLOAT_t y1;          /* Delay element for output state y[n-1] */
+    FLOAT_t denom;
+} nfm_deemph_t;
+
+/* CIC Decimator state structure (2nd order, optimized for M=45) */
+typedef struct {
+    FLOAT_t integrator1;         /* First integrator stage running at 48 kHz */
+    FLOAT_t integrator2;         /* Second integrator stage running at 48 kHz */
+    FLOAT_t comb1_delay;         /* First comb stage delay element running at 1066 Hz */
+    FLOAT_t comb2_delay;         /* Second comb stage delay element running at 1066 Hz */
+    uint32_t decimation_counter; /* Downsampling rate counter (0 to 44) */
+} ctcss_cic_t;
+
+/* CTCSS Goertzel detector state structure */
+typedef struct {
+    FLOAT_t coeff;       /* Feedback coefficient */
+    FLOAT_t q0;          /* State variable q[n] */
+    FLOAT_t q1;          /* State variable q[n-1] */
+    FLOAT_t q2;          /* State variable q[n-2] */
+    uint32_t count;      /* Current sample index in the block */
+    uint32_t block_size; /* Block size N (defines integration window, e.g., 160) */
+} ctcss_goertzel_t;
+
+/* DCS Detector state structure */
+typedef struct {
+    FLOAT_t dcs_integrator;    /* Integrate samples for bit slicing */
+    int32_t phase_accumulator; /* Precise NCO phase for clock recovery */
+    uint32_t bit_buffer;       /* Shift register for 23 received bits */
+    FLOAT_t prev_sample;       /* Last sample for edge detection */
+} dcs_detector_t;
+
+typedef uint32_t ncoftw_t;
+typedef int32_t ncoftwi_t;
+
+#define NCOFTWBITS 32	// количество битов в ncoftw_t
+#define FTWROUND(ftw) ((uint32_t) (ftw))
+#define FTWAF001(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE100))
+#define FTWAF(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / (int_fast64_t) ARMI2SRATE))
+static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
+#define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
+
+// Convert ncoftw_t to q31 argument for arm_sin_cos_q31
+// The Q31 input value is in the range [-1 0.999999] and is mapped to a degree value in the range [-180 179].
+#define FTW2_SINCOS_Q31(angle) ((ncoftwi_t) (angle))
+// Convert ncoftw_t to q31 argument for arm_sin_q31
+// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*M_PI).
+#define FTW2_COS_Q31(angle) ((q31_t) ((((ncoftw_t) (angle)) + 0x80000000) / 2))
+#define FAST_Q31_2_FLOAT(val) ((q31_t) (val) / (FLOAT_t) 2147483648)
+
+
 
 //////////////////////////
 /// IIR
@@ -723,6 +792,176 @@ void biquad_init_bandpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t 
 void biquad_init_bandstop(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2);
 void biquad_init_highpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f);
 void iir_freq_resp(iir_filter_t *filter, FLOAT_t *hcomplex, FLOAT_t fs, FLOAT_t f);
+
+enum { AMDSTAGES = 7, AMDOUT_IDX = (3 * AMDSTAGES) };
+
+
+typedef struct
+{
+	//int run;
+	//int buff_size;					// buffer size
+	//FLOAT_t *in_buff;					// pointer to input buffer
+	//FLOAT_t *out_buff;				// pointer to output buffer
+	//int mode;							// demodulation mode
+	//FLOAT_t sample_rate;				// sample rate
+	FLOAT_t dc;							// dc component in demodulated output
+	ncoftwi_t omegai_min;					// pll - minimum lock check parameter
+	ncoftwi_t omegai_max;					// pll - maximum lock check parameter
+	ncoftwi_t phsi;						// pll - phase accumulator
+	ncoftwi_t omegai;						// pll - locked pll frequency
+	ncoftwi_t fil_outi;					// pll - filter output
+	int64_t g1i, g2i;					// pll - filter gain parameters
+
+	FLOAT_t mtauR;						// carrier removal multiplier
+	FLOAT_t onem_mtauR;					// 1.0 - carrier_removal_multiplier
+	FLOAT_t mtauI;						// carrier insertion multiplier
+	FLOAT_t onem_mtauI;					// 1.0 - carrier_insertion_multiplier
+
+	FLOAT_t a [3 * AMDSTAGES + 3];		// Filter a variables
+	FLOAT_t b [3 * AMDSTAGES + 3];		// Filter b variables
+	FLOAT_t c [3 * AMDSTAGES + 3];		// Filter c variables
+	FLOAT_t d [3 * AMDSTAGES + 3];		// Filter d variables
+	FLOAT_t c0 [AMDSTAGES];				// Filter coefficients - path 0
+	FLOAT_t c1 [AMDSTAGES];				// Filter coefficients - path 1
+	FLOAT_t dsI;						// delayed sample, I path
+	FLOAT_t dsQ;						// delayed sample, Q path
+	FLOAT_t dc_insert;					// dc component to insert in output
+	int sbmode;						// sideband mode
+	//int levelfade;					// Fade Leveler switch
+} amdemod_t;
+
+////////////////////////////////////////
+// RTTY
+
+#define MODEM_FIFO_SIZE         256
+
+/* Strictly bounded enum definitions for the asynchronous Baudot FSM states */
+typedef enum {
+    RTTY_STATE_IDLE = 0,
+    RTTY_STATE_START_BIT,
+    RTTY_STATE_DATA_BITS,
+    RTTY_STATE_STOP_BIT
+} rtty_fsm_state_t;
+
+typedef enum {
+    RTTY_TX_STATE_IDLE = 0,
+    RTTY_TX_STATE_START_BIT,
+    RTTY_TX_STATE_DATA_BITS,
+    RTTY_TX_STATE_STOP_BIT
+} rtty_tx_fsm_state_t;
+
+/* Unified and fully lock-free single-producer single-consumer circular queue */
+typedef struct {
+    uint8_t storage[MODEM_FIFO_SIZE];
+    volatile uint32_t head;
+    volatile uint32_t tail;
+    /* Field volatile uint32_t count is completely removed to secure atomicity */
+} modem_fifo_t;
+
+/* Frequency Detector sub-layer state memory structure optimized for dynamic Zero-IF PLL */
+typedef struct {
+    FLOAT_t phase_nco;           /* Phase accumulator for local tracking oscillator */
+    FLOAT_t pll_integrator;      /* Integral loop filter memory accumulator */
+    FLOAT_t lpf_state;           /* Leaky integrator filter memory envelope */
+
+    /* Dynamic Runtime Loop Coefficients */
+    /* All fields are explicitly declared as FLOAT_t variables initialized once at runtime */
+    FLOAT_t pll_kp;              /* Proportional loop gain tracking coefficient */
+    FLOAT_t pll_ki;              /* Integral loop gain tracking coefficient */
+    FLOAT_t pll_limit;           /* Strict physical boundary for targeted FSK shift (radians/sample) */
+    FLOAT_t lpf_alphaNEW;        /* Individual payload data slicing filter smoothing ratio */
+
+    int invert_output;           /* Boolean flag to invert the discriminator bit output (0 or 1) */
+    FLOAT_t prev_in_i;           /* Historical real memory from previous sample */
+    FLOAT_t prev_in_q;           /* Historical imaginary memory from previous sample */
+} rtty_freq_detector_t;
+
+/* Isolated structure for Phase-Continuous FSK RTTY Transmitter with embedded FIFO */
+typedef struct {
+    /* Baudot Serializer Asynchronous FSM Layer */
+    rtty_tx_fsm_state_t tx_fsm_state; /* Active serialization framing mode */
+    uint32_t nco_baud_accumulator;    /* 32-bit fixed-point baud clock accumulator (Q32) */
+    uint32_t nco_baud_step;           /* 32-bit baud phase increment per sample tick */
+    uint32_t bit_shifter;            /* Shift register holding currently transmitted frame */
+    uint32_t bits_count;             /* Counter for transmitted data bits */
+    int is_figures_case;             /* Boolean flag tracking the active TX case matrix (0 or 1) */
+    int tx_active;                   /* Flag indicating active transmission session (0 or 1) */
+
+    /* Phase-Continuous FSK Modulator Layer */
+    FLOAT_t phase_carrier;           /* Phase continuous carrier accumulator in radians */
+    FLOAT_t freq_shift_half_nco;     /* Target half-shift speed step in radians per sample */
+    FLOAT_t magnitude;               /* Output IQ vector amplitude scale */
+
+    /* Case Switching Request Latches */
+    int request_letters;             /* Pending latch to inject LTRS escape code (0 or 1) */
+    int request_figures;             /* Pending latch to inject FIGS escape code (0 or 1) */
+    int invert_output;               /* Boolean flag to invert the frequency shift direction (0 or 1) */
+
+    /* EMBEDDED TRANSMIT QUEUE FIELD */
+    modem_fifo_t tx_fifo;            /* Dedicated standalone volatile atomic FIFO ring */
+} rtty_transmitter_t;
+
+/* Baudot Asynchronous FSM sub-layer state machine driven by Integer NCO */
+typedef struct {
+    rtty_fsm_state_t fsm_state;  /* Enum tracking active UART/Baudot framing state */
+    uint32_t nco_accumulator;    /* 32-bit fixed-point integer phase accumulator (Q32) */
+    uint32_t nco_step;           /* 32-bit phase step matching the exact baud rate */
+    uint32_t bit_shifter;        /* Shift register collecting raw payload streams */
+    uint32_t bits_count;         /* Number of successfully accumulated data bits */
+    int is_figures_case;         /* Boolean flag for Baudot ITA2 case shifting (0 or 1) */
+    modem_fifo_t rx_fifo;
+    modem_fifo_t rx_fifo_debug;
+} rtty_baudot_fsm_t;
+
+/* Main unified RTTY receiver containing isolated processing sub-layers as fields */
+typedef struct {
+    rtty_freq_detector_t detector; /* Embedded frequency discriminator core */
+    rtty_baudot_fsm_t    fsm;      /* Embedded integer NCO asynchronous framing engine */
+} rtty_receiver_t;
+
+
+
+/* Complete Signal Path Object Model for hftrx */
+typedef struct {
+	// NFM
+    nfm_pll_t demodulator;
+    nfm_deemph_t audio_filter;
+
+    FLOAT_t manualsquelch;
+	ncoftwi_t prev_fi;
+	volatile int32_t saved_delta_fi;
+
+    ctcss_cic_t cic_decimator;
+    ctcss_goertzel_t ctcss_det;
+    dcs_detector_t dcs_det;
+
+	uint8_t ctcss_squelch_open;
+    uint8_t dcs_squelch_open;
+    uint16_t dcs_target_code;
+
+    unsigned delayblanklo6tx;
+    unsigned delayblanklo6rx;
+    uint8_t delaylo6lastmode;
+
+    ncoftw_t anglestep_aflotx;
+    ncoftw_t anglestep_aflorx;
+    ncoftw_t angle_aflotx;
+    ncoftw_t angle_aflorx;
+
+    amdemod_t samdetector;	/* AM demodulator */
+
+
+    agcparams_t rxsmeterparams;
+    agcstate_t rxsmeterstate;	// На каждый приёмник
+    agcstate_t rxagcstate;	// На каждый приёмник
+    agcparams_t rxagcparams [NPROF];
+
+	rtty_receiver_t rtty_rx;
+	rtty_transmitter_t rtty_tx;
+	dpcobj_t rttydpcobj;
+} hfrxpath_t;
+
+#endif /* WITHINTEGRATEDDSP */
 
 #if __STDC__
 

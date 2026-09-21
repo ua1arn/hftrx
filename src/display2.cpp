@@ -4400,6 +4400,8 @@ static void display2_smeors5(const gxdrawb_t * db,
 	}
 }
 
+#if 0
+
 static void display2_freqdelta8(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
@@ -4450,6 +4452,7 @@ static void display_samfreqdelta8(const gxdrawb_t * db,
 	}
 #endif /* WITHINTEGRATEDDSP */
 }
+#endif
 
 // d.d - 3 places
 // текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ

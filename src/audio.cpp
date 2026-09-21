@@ -12,6 +12,7 @@
 #include "buffers.h"
 #include "audio_reverb.h"
 #include "audio_compressor.h"
+#include "display/display.h"
 
 #include "codecs.h"
 #include "keyboard.h"	// dtmf
@@ -188,6 +189,10 @@ static int_fast16_t		glob_fsadcpower10 = 0;	// мощность, соответ�
 static uint_fast8_t		glob_modem_mode;		// применяемая модуляция
 static uint_fast32_t	glob_modem_speed100 = 3125;	// скорость передачи с точностью 1/100 бод
 
+static int_fast32_t 	glob_rtty_baudrate10 = 500;	// 50.0
+static int_fast32_t 	glob_rtty_shift = 450;	// 450 Hz
+static uint_fast8_t 	glob_rtty_inverted = 1;
+
 static uint_fast8_t		glob_mainsubrxmode = BOARD_RXMAINSUB_A_A;	// Левый/правый, A - main RX, B - sub RX
 
 static uint_fast8_t		glob_dsploudspeaker_off;
@@ -197,156 +202,6 @@ static volatile uint_fast8_t btaudioplayer;	/* режим прослушиван
 static volatile uint_fast8_t datavox;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 
 #if WITHINTEGRATEDDSP
-
-
-/*
- * Object-oriented NFM Signaling Module for hftrx
- *
- * Target path structure encapsulation using hfrxpath_t object abstraction.
- * Pure C numeric conversions without double promotion.
- * Localization via static bindings.
- */
-
-/* NFM PLL demodulator state structure */
-typedef struct {
-    FLOAT_t phase;       /* Phase of the numeric controlled oscillator (NCO) */
-    FLOAT_t freq;        /* Integral component of the loop filter */
-    FLOAT_t kp;          /* Proportional gain of the PLL loop */
-    FLOAT_t ki;          /* Integral gain of the PLL loop */
-    FLOAT_t lock_avg;    /* Smoothed loop lock indicator (Lock Detector) */
-} nfm_pll_t;
-
-/* NFM De-emphasis filter state structure (1st order IIR) */
-typedef struct {
-    FLOAT_t b0;          /* Filter coefficient b0 */
-    FLOAT_t b1;          /* Filter coefficient b1 */
-    FLOAT_t a1;          /* Filter coefficient a1 */
-    FLOAT_t x1;          /* Delay element for input state x[n-1] */
-    FLOAT_t y1;          /* Delay element for output state y[n-1] */
-    FLOAT_t denom;
-} nfm_deemph_t;
-
-/* CIC Decimator state structure (2nd order, optimized for M=45) */
-typedef struct {
-    FLOAT_t integrator1;         /* First integrator stage running at 48 kHz */
-    FLOAT_t integrator2;         /* Second integrator stage running at 48 kHz */
-    FLOAT_t comb1_delay;         /* First comb stage delay element running at 1066 Hz */
-    FLOAT_t comb2_delay;         /* Second comb stage delay element running at 1066 Hz */
-    uint32_t decimation_counter; /* Downsampling rate counter (0 to 44) */
-} ctcss_cic_t;
-
-/* CTCSS Goertzel detector state structure */
-typedef struct {
-    FLOAT_t coeff;       /* Feedback coefficient */
-    FLOAT_t q0;          /* State variable q[n] */
-    FLOAT_t q1;          /* State variable q[n-1] */
-    FLOAT_t q2;          /* State variable q[n-2] */
-    uint32_t count;      /* Current sample index in the block */
-    uint32_t block_size; /* Block size N (defines integration window, e.g., 160) */
-} ctcss_goertzel_t;
-
-/* DCS Detector state structure */
-typedef struct {
-    FLOAT_t dcs_integrator;    /* Integrate samples for bit slicing */
-    int32_t phase_accumulator; /* Precise NCO phase for clock recovery */
-    uint32_t bit_buffer;       /* Shift register for 23 received bits */
-    FLOAT_t prev_sample;       /* Last sample for edge detection */
-} dcs_detector_t;
-
-typedef uint32_t ncoftw_t;
-typedef int32_t ncoftwi_t;
-
-#define NCOFTWBITS 32	// количество битов в ncoftw_t
-#define FTWROUND(ftw) ((uint32_t) (ftw))
-#define FTWAF001(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE100))
-#define FTWAF(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / (int_fast64_t) ARMI2SRATE))
-static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
-#define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
-
-// Convert ncoftw_t to q31 argument for arm_sin_cos_q31
-// The Q31 input value is in the range [-1 0.999999] and is mapped to a degree value in the range [-180 179].
-#define FTW2_SINCOS_Q31(angle) ((ncoftwi_t) (angle))
-// Convert ncoftw_t to q31 argument for arm_sin_q31
-// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*M_PI).
-#define FTW2_COS_Q31(angle) ((q31_t) ((((ncoftw_t) (angle)) + 0x80000000) / 2))
-#define FAST_Q31_2_FLOAT(val) ((q31_t) (val) / (FLOAT_t) 2147483648)
-
-
-
-enum { AMDSTAGES = 7, AMDOUT_IDX = (3 * AMDSTAGES) };
-
-
-typedef struct
-{
-	//int run;
-	//int buff_size;					// buffer size
-	//FLOAT_t *in_buff;					// pointer to input buffer
-	//FLOAT_t *out_buff;				// pointer to output buffer
-	//int mode;							// demodulation mode
-	//FLOAT_t sample_rate;				// sample rate
-	FLOAT_t dc;							// dc component in demodulated output
-	ncoftwi_t omegai_min;					// pll - minimum lock check parameter
-	ncoftwi_t omegai_max;					// pll - maximum lock check parameter
-	ncoftwi_t phsi;						// pll - phase accumulator
-	ncoftwi_t omegai;						// pll - locked pll frequency
-	ncoftwi_t fil_outi;					// pll - filter output
-	int64_t g1i, g2i;					// pll - filter gain parameters
-
-	FLOAT_t mtauR;						// carrier removal multiplier
-	FLOAT_t onem_mtauR;					// 1.0 - carrier_removal_multiplier
-	FLOAT_t mtauI;						// carrier insertion multiplier
-	FLOAT_t onem_mtauI;					// 1.0 - carrier_insertion_multiplier
-
-	FLOAT_t a [3 * AMDSTAGES + 3];		// Filter a variables
-	FLOAT_t b [3 * AMDSTAGES + 3];		// Filter b variables
-	FLOAT_t c [3 * AMDSTAGES + 3];		// Filter c variables
-	FLOAT_t d [3 * AMDSTAGES + 3];		// Filter d variables
-	FLOAT_t c0 [AMDSTAGES];				// Filter coefficients - path 0
-	FLOAT_t c1 [AMDSTAGES];				// Filter coefficients - path 1
-	FLOAT_t dsI;						// delayed sample, I path
-	FLOAT_t dsQ;						// delayed sample, Q path
-	FLOAT_t dc_insert;					// dc component to insert in output
-	int sbmode;						// sideband mode
-	//int levelfade;					// Fade Leveler switch
-} amdemod_t;
-
-
-#define NPROF 2	/* количество профилей параметров DSP фильтров. */
-
-/* Complete Signal Path Object Model for hftrx */
-typedef struct {
-    nfm_pll_t demodulator;
-    nfm_deemph_t audio_filter;
-    ctcss_cic_t cic_decimator;
-    ctcss_goertzel_t ctcss_det;
-    dcs_detector_t dcs_det;
-
-    uint8_t ctcss_squelch_open;
-    uint8_t dcs_squelch_open;
-    uint16_t dcs_target_code;
-
-    unsigned delayblanklo6tx;
-    unsigned delayblanklo6rx;
-    uint8_t delaylo6lastmode;
-
-    ncoftw_t anglestep_aflotx;
-    ncoftw_t anglestep_aflorx;
-    ncoftw_t angle_aflotx;
-    ncoftw_t angle_aflorx;
-
-    amdemod_t samdetector;	/* AM demodulator */
-
-    volatile int32_t saved_delta_fi;
-
-    agcparams_t rxsmeterparams;
-    agcstate_t rxsmeterstate;	// На каждый приёмник
-    agcstate_t rxagcstate;	// На каждый приёмник
-    agcparams_t rxagcparams [NPROF];
-
-    FLOAT_t manualsquelch;
-	ncoftwi_t prev_fi;
-
-} hfrxpath_t;
 
 /* Static allocation for dual-receive independent tracks */
 static hfrxpath_t rx_paths [2];
@@ -3124,6 +2979,1293 @@ uint_fast8_t dsp_getmikeadcoverflow(void)
 
 // agc ---
 
+
+
+//////////////////////////
+#if 1
+// Демодуляция FM
+static ncoftwi_t demodulator_FM(
+	hfrxpath_t * const path,
+	FLOAT32P_t vp1,
+	FLOAT_t sigpower
+	)
+{
+	// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляцию
+	//
+	// tnx Vladimir Vassilevsky
+	// http://www.dsprelated.com/showmessage/71491/2.php
+	//
+
+	if (vp1.IV == 0 && vp1.QV == 0)
+		vp1.QV = 1;
+
+#if 1
+	float32_t result;
+	VERIFY(arm_atan2_f32(vp1.QV, vp1.IV, & result) == ARM_MATH_SUCCESS);
+	const ncoftwi_t fi = OMEGA2FTWI(result);	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
+#else
+	const ncoftwi_t fi = OMEGA2FTWI(ATAN2F(vp1.QV, vp1.IV));	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
+#endif
+	const ncoftwi_t d_fi = (ncoftwi_t) (fi - path->prev_fi);
+	path->prev_fi = fi;
+
+	return d_fi;
+}
+
+/* Получить информацию об ошибке настройки в режиме SAM */
+/* Получить значение отклонения частоты с точностью 0.1 герца */
+uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi)
+{
+    hfrxpath_t * const path = & rx_paths [pathi];
+	const uint_fast32_t sample_rate10 = ARMSAIRATE * 10;
+
+	* p = ((int_fast64_t) path->samdetector.omegai * sample_rate10) >> 32;
+	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_SAM;
+}
+
+/* Получить значение отклонения частоты с точностью 0.1 герца для отображения на дисплее */
+uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi)
+{
+    hfrxpath_t * const path = & rx_paths [pathi];
+	const int_fast32_t sample_rate10 = ARMSAIRATE * 10;
+
+	* p = ((int_fast64_t) path->saved_delta_fi * sample_rate10) >> 32;
+	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_NFM;
+}
+
+#endif
+
+static void samdetector_init(amdemod_t * a)
+{
+	a->phsi = 0;
+	a->fil_outi = 0;
+	a->omegai = 0;
+
+	//fade leveler
+	a->dc = 0;
+	a->dc_insert = 0;
+
+	//sideband separation
+	a->c0 [0] = (FLOAT_t) -0.328201924180698;
+	a->c0 [1] = (FLOAT_t) -0.744171491539427;
+    a->c0 [2] = (FLOAT_t) -0.923022915444215;
+    a->c0 [3] = (FLOAT_t) -0.978490468768238;
+    a->c0 [4] = (FLOAT_t) -0.994128272402075;
+    a->c0 [5] = (FLOAT_t) -0.998458978159551;
+    a->c0 [6] = (FLOAT_t) -0.999790306259206;
+
+    a->c1 [0] = (FLOAT_t) -0.0991227952747244;
+    a->c1 [1] = (FLOAT_t) -0.565619728761389;
+    a->c1 [2] = (FLOAT_t) -0.857467122550052;
+    a->c1 [3] = (FLOAT_t) -0.959123933111275;
+    a->c1 [4] = (FLOAT_t) -0.988739372718090;
+    a->c1 [5] = (FLOAT_t) -0.996959189310611;
+    a->c1 [6] = (FLOAT_t) -0.999282492800792;
+}
+
+
+static void
+samdetector_create(
+	amdemod_t * a,
+	//int run,
+	//int mode,
+	//int levelfade,
+	int sbmode,
+	//int sample_rate,
+	int fmin,
+	int fmax,
+	FLOAT_t zeta,		// pll - damping factor; as coded, must be <=1.0
+	FLOAT_t omegaN,		// pll - natural frequency
+	FLOAT_t tauR,		// carrier removal time constant
+	FLOAT_t tauI		// carrier insertion time constant
+	)
+{
+	FLOAT_t g1, g2;						// pll - filter gain parameters
+	FLOAT_t knorm = POWF(2, NCOFTWBITS);
+	const FLOAT_t sample_rate = (FLOAT_t) ARMSAIRATE;
+	//a->run = run;
+	//a->mode = mode;
+	//a->levelfade = levelfade;
+	a->sbmode = sbmode;
+
+	a->omegai_min = FTWAF(fmin);
+	a->omegai_max = FTWAF(fmax);
+	g1 = 1 - EXPF(- 2 * omegaN * zeta / sample_rate);
+	g2 = - g1 + 2 * (1 - EXPF(- omegaN * zeta / sample_rate) * COSF(omegaN / sample_rate * SQRTF(1 - zeta * zeta)));
+
+	a->g1i = g1 * knorm;	// 2^32
+	a->g2i = g2 * knorm;	// 2^32
+
+	// carrier removal
+	a->mtauR = EXPF(- 1 / (sample_rate * tauR));
+	a->onem_mtauR = 1 - a->mtauR;
+	a->mtauI = EXPF(- 1 / (sample_rate * tauI));
+	a->onem_mtauI = 1 - a->mtauI;
+
+	samdetector_init(a);
+}
+
+#if 0
+static void
+flush_amd(amdemod_t * a)
+{
+	a->dc = 0;
+	a->dc_insert = 0;
+}
+#endif
+
+// Демодуляция SAM
+static FLOAT_t
+demodulator_SAM(
+	amdemod_t * const a,
+	FLOAT32P_t vp1
+	)
+{
+	// taken from Warren PrattВґs WDSP, 2016
+	// http://svn.tapr.org/repos_sdr_hpsdr/trunk/W5WC/PowerSDR_HPSDR_mRX_PS/Source/wdsp/samdetector.c
+
+	FLOAT_t audio;	// выходной сэмпл (ненормированное значение).
+	FLOAT_t corr [2];
+	ncoftwi_t deti;
+	ncoftwi_t del_outi;
+	FLOAT_t ai, bi, aq, bq;
+	FLOAT_t ai_ps, bi_ps, aq_ps, bq_ps;
+
+	const FLOAT32P_t vco0 = getsincosf(a->phsi);
+	ai = vp1.IV * vco0.QV;
+	bi = vp1.IV * vco0.IV;
+	aq = vp1.QV * vco0.QV;
+	bq = vp1.QV * vco0.IV;
+
+	if (a->sbmode != 0)
+	{
+		int j;
+
+		a->a [0] = a->dsI;
+		a->b [0] = bi;
+		a->c [0] = a->dsQ;
+		a->d [0] = aq;
+		a->dsI = ai;
+		a->dsQ = bq;
+
+		for (j = 0; j < AMDSTAGES; ++ j)
+		{
+			const int k = 3 * j;
+			a->a [k + 3] = a->c0 [j] * (a->a [k] - a->a [k + 5]) + a->a [k + 2];
+			a->b [k + 3] = a->c1 [j] * (a->b [k] - a->b [k + 5]) + a->b [k + 2];
+			a->c [k + 3] = a->c0 [j] * (a->c [k] - a->c [k + 5]) + a->c [k + 2];
+			a->d [k + 3] = a->c1 [j] * (a->d [k] - a->d [k + 5]) + a->d [k + 2];
+		}
+		ai_ps = a->a [AMDOUT_IDX];
+		bi_ps = a->b [AMDOUT_IDX];
+		bq_ps = a->c [AMDOUT_IDX];
+		aq_ps = a->d [AMDOUT_IDX];
+
+		for (j = AMDOUT_IDX + 2; j > 0; j--)
+		{
+			a->a [j] = a->a [j - 1];
+			a->b [j] = a->b [j - 1];
+			a->c [j] = a->c [j - 1];
+			a->d [j] = a->d [j - 1];
+		}
+	}
+	else
+	{
+		ai_ps = 0;
+		bi_ps = 0;
+		bq_ps = 0;
+		aq_ps = 0;
+
+	}
+
+	corr [0] = + ai + bq;
+	corr [1] = - bi + aq;
+
+	switch (a->sbmode)
+	{
+	default:
+	case 0:	//both sidebands
+		{
+			audio = corr [0];
+			break;
+		}
+	case 1:	//LSB
+		{
+			audio = (ai_ps - bi_ps) + (aq_ps + bq_ps);
+			break;
+		}
+	case 2:	//USB
+		{
+			audio = (ai_ps + bi_ps) - (aq_ps - bq_ps);
+			break;
+		}
+	}
+
+	if (0/*a->levelfade*/)
+	{
+		a->dc = a->mtauR * a->dc + a->onem_mtauR * audio;
+		a->dc_insert = a->mtauI * a->dc_insert + a->onem_mtauI * corr[0];
+		audio += a->dc_insert - a->dc;
+	}
+
+	if ((corr [0] == 0) && (corr [1] == 0))
+		corr [0] = 1;
+
+	deti = OMEGA2FTWI(ATAN2F(corr [1], corr [0]));	// - M_PI .. + M_PI
+	a->omegai += (a->g2i * deti) >> 32;
+	if (a->omegai < a->omegai_min)
+		a->omegai = a->omegai_min;
+	else if (a->omegai > a->omegai_max)
+		a->omegai = a->omegai_max;
+
+	del_outi = a->fil_outi;
+	a->fil_outi = (int32_t) ((a->g1i * deti) >> 32) + a->omegai;
+	a->phsi += del_outi;	/* "заворот" по модулю M_TWOPI автоматически обеспечивается целочисленным переполнением */
+
+	return audio;
+}
+
+
+
+/////////////
+/// RTTY
+///
+
+/* ========================================================================== */
+/*                             INTERNAL FIFO HELPERS                          */
+/* ========================================================================== */
+
+/**
+ * @brief Thread-safe lock-free buffer initialization.
+ */
+static void fifo_init(modem_fifo_t * const fifo)
+{
+    fifo->head = 0;
+    fifo->tail = 0;
+}
+
+/**
+ * @brief Thread-safe lock-free byte injection (Called strictly by ONE producer thread/interrupt).
+ * @return uint32_t Returns 1 on success, 0 if the buffer is mathematically full.
+ */
+static uint32_t fifo_push(modem_fifo_t * const fifo, const uint8_t data)
+{
+    const uint32_t next_head = (fifo->head + 1) % MODEM_FIFO_SIZE;
+
+    /* Check if the next step hits the tail pointer boundary (Buffer Full) */
+    if (next_head == fifo->tail) {
+        return 0;
+    }
+
+    fifo->storage[fifo->head] = data;
+
+    /* Atomic write of the head index closes the transaction. Interrupt safe. */
+    fifo->head = next_head;
+    return 1;
+}
+
+/**
+ * @brief Thread-safe lock-free byte extraction (Called strictly by ONE consumer thread/interrupt).
+ * @return uint32_t Returns 1 on success, 0 if the buffer is empty.
+ */
+static uint32_t fifo_pop(modem_fifo_t * const fifo, uint8_t * const data)
+{
+    /* If head and tail pointers are equal, the ring is mathematically empty */
+    if (fifo->tail == fifo->head) {
+        return 0;
+    }
+
+    *data = fifo->storage[fifo->tail];
+
+    /* Atomic write of the tail index closes the transaction. Interrupt safe. */
+    fifo->tail = (fifo->tail + 1) % MODEM_FIFO_SIZE;
+    return 1;
+}
+
+/**
+ * @brief Supplementary helper to safely extract current elements count at runtime.
+ */
+static uint32_t fifo_get_count(const modem_fifo_t * const fifo)
+{
+    const uint32_t snapshot_head = fifo->head;
+    const uint32_t snapshot_tail = fifo->tail;
+
+    if (snapshot_head >= snapshot_tail) {
+        return snapshot_head - snapshot_tail;
+    }
+
+    return (MODEM_FIFO_SIZE - snapshot_tail) + snapshot_head;
+}
+
+
+/////////////////////////////////
+/// TX
+
+/**
+ * @brief SUB-FUNCTION: Asynchronous Baudot serialization machine execution loop step.
+ * @param self Pointer to the active isolated transmitter context.
+ * @return uint32_t Returns the current targeted FSK bit polarity (1 for MARK, 0 for SPACE).
+ */
+static uint32_t dsp_rtty_sub_execute_tx_fsm(rtty_transmitter_t * const self)
+{
+
+	/* Index corresponds directly to ASCII value minus 32 (space offset control boundary) */
+	static const uint8_t rtty_encode_letters [] = {
+	    0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00,
+	    0x00, 0x03, 0x19, 0x0E, 0x09, 0x01, 0x0D, 0x1A, 0x14, 0x06, 0x0B, 0x0F, 0x12, 0x1C, 0x0C, 0x18,
+	    0x16, 0x17, 0x0A, 0x05, 0x10, 0x07, 0x1E, 0x13, 0x1D, 0x15, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00
+	};
+
+	static const uint8_t rtty_encode_figures [] = {
+	    0x04, 0x00, 0x13, 0x00, 0x12, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00, 0x16, 0x0E, 0x01, 0x0C, 0x1A,
+	    0x16, 0x17, 0x13, 0x01, 0x0A, 0x10, 0x15, 0x07, 0x06, 0x18, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x11,
+	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+	};
+
+    uint32_t active_fsk_bit = 1;
+
+    if (self->tx_active)
+    {
+        const uint32_t prev_acc = self->nco_baud_accumulator;
+        self->nco_baud_accumulator += self->nco_baud_step;
+
+        /* Check for integer NCO clock overflow condition (bit boundary window reached) */
+        const int bit_tick_edge = (self->nco_baud_accumulator < prev_acc) ? 1 : 0;
+
+        switch (self->tx_fsm_state)
+        {
+            case RTTY_TX_STATE_IDLE:
+                uint8_t tx_char;
+                /* Extract data character directly from the integrated tx_fifo field */
+                if (fifo_pop(&self->tx_fifo, &tx_char))
+                {
+                    if (tx_char >= 32 && tx_char < 127)
+                    {
+                        const uint32_t lut_idx = tx_char - 32;
+                        const uint32_t code_ltrs = rtty_encode_letters[lut_idx];
+                        const uint32_t code_figs = rtty_encode_figures[lut_idx];
+
+                        /* Case shifting management checks */
+                        if (code_ltrs == 0x00 && code_figs > 0x00 && !self->is_figures_case)
+                        {
+                            self->bit_shifter = 0x1B; /* Force FIGS escape symbol */
+                            self->request_figures = 1;
+                            self->is_figures_case = 1;
+                        }
+                        else if (code_ltrs > 0x00 && code_figs == 0x00 && self->is_figures_case)
+                        {
+                            self->bit_shifter = 0x1F; /* Force LTRS escape symbol */
+                            self->request_letters = 1;
+                            self->is_figures_case = 0;
+                        }
+                        else
+                        {
+                            self->bit_shifter = self->is_figures_case ? code_figs : code_ltrs;
+                        }
+
+                        self->tx_fsm_state = RTTY_TX_STATE_START_BIT;
+                        self->nco_baud_accumulator = 0;
+                    }
+                }
+                else
+                {
+                    self->tx_active = 0; /* Queue empty, drop active transmission flag */
+                }
+                break;
+
+            case RTTY_TX_STATE_START_BIT:
+                active_fsk_bit = 0; /* START bit is strictly SPACE (0) */
+                if (bit_tick_edge)
+                {
+                    self->tx_fsm_state = RTTY_TX_STATE_DATA_BITS;
+                    self->bits_count = 0;
+                }
+                break;
+
+            case RTTY_TX_STATE_DATA_BITS:
+                /* Extract active serial bit stream starting from LSB position */
+                active_fsk_bit = (self->bit_shifter >> self->bits_count) & 0x01;
+                if (bit_tick_edge)
+                {
+                    self->bits_count++;
+                    if (self->bits_count >= 5)
+                    {
+                        self->tx_fsm_state = RTTY_TX_STATE_STOP_BIT;
+                    }
+                }
+                break;
+
+            case RTTY_TX_STATE_STOP_BIT:
+                active_fsk_bit = 1; /* STOP bit is strictly MARK (1) */
+                if (bit_tick_edge)
+                {
+                    /* Frame serialization loop fulfilled, check if escape codes pending latch reset */
+                    if (self->request_letters || self->request_figures)
+                    {
+                        /* Immediately reload the actual alphanumeric char that triggered escape */
+                        self->request_letters = 0;
+                        self->request_figures = 0;
+                        self->tx_fsm_state = RTTY_TX_STATE_IDLE;
+                        self->nco_baud_accumulator = 0xFFFFFFFF; /* Force evaluation on next sample tick */
+                    }
+                    else
+                    {
+                        self->tx_fsm_state = RTTY_TX_STATE_IDLE;
+                    }
+                }
+                break;
+
+            default:
+                self->tx_fsm_state = RTTY_TX_STATE_IDLE;
+                break;
+        }
+    }
+    else
+    {
+        /* Idle mode tracking: scan dedicated FIFO container speed-throttled to sample steps */
+        if (self->nco_baud_accumulator == 0)
+        {
+            if (fifo_get_count(&self->tx_fifo))
+            {
+                self->tx_active = 1;
+                self->tx_fsm_state = RTTY_TX_STATE_IDLE;
+            }
+        }
+        self->nco_baud_accumulator++;
+        if (self->nco_baud_accumulator >= self->nco_baud_step)
+        {
+            self->nco_baud_accumulator = 0;
+        }
+    }
+
+    return active_fsk_bit;
+}
+
+/**
+ * @brief MAIN UNIFIED TRANSMITTER FUNCTION: Processes FSM bit tracking and modulates analytical IQ signals.
+ */
+static void dsp_rtty_tx_process_sample(
+    rtty_transmitter_t * const self,
+    FLOAT_t * const out_i,
+    FLOAT_t * const out_q)
+{
+    /* Step 1: Run asynchronous framing serializer loop layer using the dedicated FIFO context */
+    const uint32_t active_fsk_bit = dsp_rtty_sub_execute_tx_fsm(self);
+
+    /* Step 2: Phase-continuous frequency shifting based on serial bit state polarity */
+    const FLOAT_t instant_frequency_step = active_fsk_bit ? self->freq_shift_half_nco : -self->freq_shift_half_nco;
+
+    self->phase_carrier += instant_frequency_step;
+    if (self->phase_carrier >= (2.0 * M_PI)) self->phase_carrier -= (2.0 * M_PI);
+    if (self->phase_carrier < 0.0)           self->phase_carrier += (2.0 * M_PI);
+
+    /* Step 3: Fast complex IQ projections generation via hardware NEON SIMD registers */
+    float32_t sin_val, cos_val;
+    const float32_t phase_degrees = (float32_t)self->phase_carrier * (180.0f / (float32_t)M_PI);
+
+    arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
+
+    *out_i = (FLOAT_t)cos_val * self->magnitude;
+    *out_q = (FLOAT_t)sin_val * self->magnitude;
+}
+
+
+/**
+ * @brief GLOBAL TX INITIALIZER: Prepares the transmitter context and flushes its integrated tx_fifo.
+ */
+static void dsp_rtty_tx_init(
+    rtty_transmitter_t * const self,
+    const uint32_t sample_rate,
+    const FLOAT_t shift_hz,
+    const FLOAT_t baud_rate,
+    const FLOAT_t output_magnitude)
+{
+    self->tx_fsm_state = RTTY_TX_STATE_IDLE;
+    self->nco_baud_accumulator = 0;
+    self->bit_shifter = 0;
+    self->bits_count = 0;
+    self->is_figures_case = 0;
+    self->tx_active = 0;
+    self->phase_carrier = 0.0;
+    self->magnitude = output_magnitude;
+    self->request_letters = 0;
+    self->request_figures = 0;
+    self->invert_output = 0;
+    self->freq_shift_half_nco = (2.0 * M_PI * (shift_hz / 2.0)) / (FLOAT_t)sample_rate;
+    const FLOAT_t ratio = baud_rate / (FLOAT_t)sample_rate;
+    self->nco_baud_step = (uint32_t)(ratio * 4294967296.0);
+
+    /* Call your native firmware ring buffer initializer helper on the embedded field */
+    fifo_init(&self->tx_fifo);
+}
+
+static void dsp_rtty_tx_set_reverse(
+	rtty_transmitter_t * const self,
+	const int invert)
+{
+    self->invert_output = invert ? 1 : 0;
+}
+
+//////////////
+/// RX
+
+/* Strictly bounded element-by-element configuration of ITA2 Baudot character matrices */
+
+static const char rtty_ita2_letters [32] = {
+    '\0', 'E', '\n', 'A', ' ', 'S', 'I', 'U',
+    '\r', 'D', 'R', 'J', 'N', 'F', 'C', 'K',
+    'T', 'Z', 'L', 'W', 'H', 'Y', 'P', 'Q',
+    'O', 'B', 'G', ' ', 'M', 'X', 'V', ' ',
+};
+
+static const char rtty_ita2_figures [32] = {
+    '\0', '3', '\n', '-', ' ', '\a', '8', '7',
+    '\r', '$', '4', '\'', ',', '!', ':', '(',
+    '5', '"', ')', '2', '#', '6', '0', '1',
+    '9', '?', '&', ' ', '.', '/', ';', ' ',
+};
+
+/**
+ * @brief SUB-INIT 1: Calibrates and initializes the PLL frequency detector based on runtime parameters.
+ * @param sample_rate Input hardware hardware sample clock (typically 48000).
+ * @param shift_hz Total frequency shift delta (e.g., 450.0f for DDK7, 170.0f for standard amateur RTTY).
+ * @param baud_rate Modulation speed (typically 45.45f or 50.0f).
+ */
+static void dsp_rtty_sub_init_detector(
+    rtty_freq_detector_t * const self,
+    const uint32_t sample_rate,
+    const FLOAT_t shift_hz,
+    const FLOAT_t baud_rate)
+{
+    self->phase_nco = 0.0;
+    self->pll_integrator = 0.0;
+    self->lpf_state = 0.0;
+    self->invert_output = 0;
+    self->prev_in_i = 0.0;
+    self->prev_in_q = 0.0;
+
+    const FLOAT_t samples_per_bit = (FLOAT_t)sample_rate / baud_rate;
+
+    /* 1. DYNAMIC CALIBRATION OF ANTI-WINDUP AND BANDWIDTH CLAMPING BOUNDARIES */
+    /* Calculate precise half-shift frequency radian increment step matching the exact FSK tones */
+    /* limit = 2 * PI * (shift_hz / 2) / sample_rate */
+    self->pll_limit = (2.0 * M_PI * (shift_hz / 2.0)) / (FLOAT_t)sample_rate;
+
+    /* 2. PROPORTIONAL-INTEGRAL LOOP GAINS ADAPTIVE TUNING */
+    /* Scale loop bandwidth coefficients dynamically to stay locked strictly inside the baud timing window */
+    /* These factors are mathematically optimized to secure critical damping without overshoot */
+    self->pll_kp = 20.0 / samples_per_bit;  /* Scales to ~0.019f for 45.45 Baud at 48kHz */
+    self->pll_ki = 0.25 / samples_per_bit;  /* Scales to ~0.00024f for stable accumulation */
+
+    /* Overrides with your verified high-performance experimental HF coefficients optimized for DDK7 */
+    self->pll_kp = 0.15;
+    self->pll_ki = 0.0025;
+
+    /* 3. INDIVIDUAL DATA SLICING FILTERS SEPARATION RULES */
+    /* Configure isolated alpha filter to match the verified experimental layout */
+    self->lpf_alphaNEW = 4.0 / samples_per_bit;
+}
+
+/**
+ * @brief SUB-INIT 2: Initializes the Baudot bit receiver FSM sub-layer.
+ */
+static void dsp_rtty_sub_init_fsm(
+    rtty_baudot_fsm_t * const self,
+    const uint32_t sample_rate,
+    const FLOAT_t baud_rate)
+{
+    fifo_init(&self->rx_fifo);
+    fifo_init(&self->rx_fifo_debug);
+    self->fsm_state = RTTY_STATE_IDLE;
+    self->nco_accumulator = 0;
+    self->bit_shifter = 0;
+    self->bits_count = 0;
+    self->is_figures_case = 0;
+
+    const FLOAT_t ratio = baud_rate / (FLOAT_t)sample_rate;
+    self->nco_step = (uint32_t)(ratio * 4294967296.0);
+}
+
+/**
+ * @brief EXPORT EXTERNAL LAYER: Dynamically toggles RTTY spectrum inversion mode at runtime.
+ */
+static void dsp_rtty_rx_set_reverse(rtty_receiver_t * const self, const int invert)
+{
+    self->detector.invert_output = invert ? 1 : 0;
+}
+
+static void dsp_rtty_rx_init(
+    rtty_receiver_t * const self,
+    const uint32_t sample_rate,
+    const FLOAT_t shift_hz,
+    const FLOAT_t baud_rate)
+{
+    /* Pass all runtime parameters down into the dedicated detector sub-layer */
+    dsp_rtty_sub_init_detector(&self->detector, sample_rate, shift_hz, baud_rate);
+    dsp_rtty_sub_init_fsm(&self->fsm, sample_rate, baud_rate);
+}
+
+#if 0
+/**
+ * @brief SUB-FUNCTION 1: Differential cross-product frequency discriminator.
+ * @return uint32_t Returns 1 for MARK (positive frequency), 0 for SPACE (negative frequency).
+ */
+static uint32_t dsp_rtty_sub_execute_discriminatorOLD(
+	rtty_freq_detector_t * const self,
+    const FLOAT_t in_i,
+    const FLOAT_t in_q)
+{
+    /* Calculate instantaneous phase error cross-product */
+    const FLOAT_t phase_error = in_q * self->prev_in_i - in_i * self->prev_in_q;
+
+    self->prev_in_i = in_i;
+    self->prev_in_q = in_q;
+
+    /* Low-pass envelope integration */
+    self->lpf_state += self->lpf_alphaOLD * (phase_error - self->lpf_state);
+
+    /* Slicing boundary execution */
+    const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
+
+    /* Apply fast hardware-friendly inversion layer using native XOR operation with typecast */
+    return raw_bit ^ (uint32_t)self->invert_output;
+}
+#endif
+/**
+ * @brief SUB-FUNCTION 1: Phase Locked Loop (PLL) frequency tracker driven entirely by dynamic context fields.
+ * @return uint32_t Returns the final sliced bit (inverted or non-inverted based on internal flag).
+ */
+static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
+    rtty_freq_detector_t * const self,
+    const FLOAT_t in_i,
+    const FLOAT_t in_q)
+{
+    /* 1. Calculate raw magnitude squared to prevent division by zero inside the limiter */
+    const FLOAT_t mag2 = in_i * in_i + in_q * in_q;
+    if (mag2 <= 1e-9f)
+    {
+        const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
+        return raw_bit ^ (uint32_t)self->invert_output;
+    }
+
+    /* 2. Execute fast amplitude normalization (Limiter layer) */
+    const FLOAT_t magnitude_inv = 1.0f / SQRTF(mag2);
+    const FLOAT_t norm_i = in_i * magnitude_inv;
+    const FLOAT_t norm_q = in_q * magnitude_inv;
+
+    float32_t sin_val, cos_val;
+
+    /* Convert phase accumulator from radians directly to degrees for native CMSIS-DSP core */
+    FLOAT_t phase_degrees = (FLOAT_t)self->phase_nco * (180.0f / (FLOAT_t)M_PI);
+
+    /* --- STRICT CMSIS-DSP ANGLE CALIBRATION CORE --- */
+    /* Force angle calculation strictly bounded inside [0.0 ... 360.0] grid to prevent table overflow */
+    phase_degrees = FMAXF(0.0f, FMINF(phase_degrees, 360.0f));
+
+    /* Direct hardware accelerated CMSIS-DSP sine/cosine execution via ARM NEON vector registers */
+    arm_sin_cos_f32((float32_t)phase_degrees, &sin_val, &cos_val);
+
+    const FLOAT_t local_i = (FLOAT_t)cos_val;
+    const FLOAT_t local_q = (FLOAT_t)sin_val;
+
+    /* Complex multiplier phase error discriminator: phase_error = Im(V_in * V_local^*) */
+    const FLOAT_t phase_error = norm_q * local_i - norm_i * local_q;
+
+    /* 3. TRACKING LOOP FILTER CORE UPDATE VIA FIELDS */
+    /* Update loop filter integrator using runtime configured integral gain factor */
+    self->pll_integrator += phase_error * self->pll_ki;
+
+    /* DYNAMIC INTEGRATOR ANTI-WINDUP LAYER VIA FINITE REGISTERS FIELDS */
+    self->pll_integrator = FMAXF(-self->pll_limit, FMINF(self->pll_integrator, self->pll_limit));
+
+    /* Compute next instantaneous NCO phase step via runtime configured proportional gain factor */
+    FLOAT_t current_step = (phase_error * self->pll_kp) + self->pll_integrator;
+
+    /* DYNAMIC BANDWIDTH CLAMPING LAYER VIA FINITE REGISTERS FIELDS */
+    current_step = FMAXF(-self->pll_limit, FMINF(current_step, self->pll_limit));
+
+    /* 4. ADVANCE PHASE ACCUMULATOR AND WRAP RADIANS TRUCK */
+    self->phase_nco += current_step;
+    if (self->phase_nco >= (2.0 * M_PI)) self->phase_nco -= (2.0 * M_PI);
+    if (self->phase_nco < 0.0)           self->phase_nco += (2.0 * M_PI);
+
+    /* 5. DATA SLICING AND OUTPUT GENERATION */
+    /* Smooth the active tracking output via your verified individual lpf_alphaNEW ratio field */
+    self->lpf_state += self->lpf_alphaNEW * (current_step - self->lpf_state);
+
+    /* Hard decision slicer boundary */
+    const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
+
+    /* Apply fast hardware-friendly inversion layer using native XOR operation */
+    return raw_bit ^ (uint32_t)self->invert_output;
+}
+
+
+/**
+ * @brief SUB-FUNCTION 2: Asynchronous Baudot bit receiver driven by enum-typed FSM.
+ */
+static void dsp_rtty_sub_execute_fsm(
+    rtty_baudot_fsm_t * const self,
+    const uint32_t raw_bit,
+    void (* const put_char_cb)(rtty_baudot_fsm_t * self, const uint8_t character))
+{
+    switch (self->fsm_state)
+    {
+        case RTTY_STATE_IDLE:
+            if (raw_bit == 0)
+            {
+                self->fsm_state = RTTY_STATE_START_BIT;
+                self->nco_accumulator = UINT32_MAX / 2;
+            }
+            break;
+
+        case RTTY_STATE_START_BIT:
+            self->nco_accumulator += self->nco_step;
+
+            if (self->nco_accumulator < self->nco_step)
+            {
+                /* We are exactly at the middle of the start bit duration loop window */
+                if (raw_bit == 0)
+                {
+                    self->fsm_state = RTTY_STATE_DATA_BITS;
+                    self->bits_count = 0;
+                    self->bit_shifter = 0;
+
+                    /* --- МАТЕМАТИЧЕСКАЯ ФИКСАЦИЯ СИНХРОНИЗАЦИИ КАДРА --- */
+                    /* Жестко обнуляем аккумулятор фазы. Это гарантирует, что */
+                    /* следующие 5 выборок данных произойдут СТРОГО в центрах битов (50% фазы) */
+                    self->nco_accumulator = 0;
+                }
+                else
+                {
+                    self->fsm_state = RTTY_STATE_IDLE;
+                }
+            }
+            break;
+
+        case RTTY_STATE_DATA_BITS:
+            self->nco_accumulator += self->nco_step;
+
+            if (self->nco_accumulator < self->nco_step)
+            {
+                self->bit_shifter |= (raw_bit << self->bits_count);
+                self->bits_count++;
+
+                if (self->bits_count >= 5)
+                {
+                    self->fsm_state = RTTY_STATE_STOP_BIT;
+                    self->nco_accumulator = 0;
+
+                    const uint32_t raw_code = self->bit_shifter & 0x1F;
+#if 0
+                    static const char hex [] = "0123456789ABCDEF";
+
+                    fifo_push(&self->rx_fifo_debug, '0');
+                    fifo_push(&self->rx_fifo_debug, 'x');
+                    fifo_push(&self->rx_fifo_debug, hex [(raw_code >> 4) & 0x0F]);
+                    fifo_push(&self->rx_fifo_debug, hex [(raw_code >> 0) & 0x0F]);
+                    fifo_push(&self->rx_fifo_debug, ',');
+
+#endif
+                    if (raw_code == 0x1F)
+                    {
+                        self->is_figures_case = 0; /* LETTERS shift escape received */
+                    }
+                    else if (raw_code == 0x1B)
+                    {
+                        self->is_figures_case = 1; /* FIGURES shift escape received */
+                    }
+                    else if (raw_code > 0x00)
+                    {
+                        const uint8_t ascii_char = self->is_figures_case ?
+                                                    rtty_ita2_figures[raw_code] :
+                                                    rtty_ita2_letters[raw_code];
+                       if (ascii_char)
+                       {
+                    	   put_char_cb(self, ascii_char);
+                       }
+                    }
+                }
+            }
+            break;
+
+        case RTTY_STATE_STOP_BIT:
+            self->nco_accumulator += self->nco_step;
+
+            if (self->nco_accumulator < self->nco_step)
+            {
+                self->fsm_state = RTTY_STATE_IDLE;
+            }
+            break;
+
+        default:
+            self->fsm_state = RTTY_STATE_IDLE;
+            break;
+    }
+}
+
+/**
+ * @brief MAIN UNIFIED WRAPPER FUNCTION: Pipe execution loop core.
+ */
+static void dsp_rtty_rx_process_sample(
+    rtty_receiver_t * const self,
+    const FLOAT_t in_i,
+    const FLOAT_t in_q,
+    void (* const put_char_cb)(rtty_baudot_fsm_t * self, const uint8_t character))
+{
+    const uint32_t raw_bit = dsp_rtty_sub_execute_discriminatorNEW(&self->detector, in_i, in_q);
+    dsp_rtty_sub_execute_fsm(&self->fsm, raw_bit, put_char_cb);
+}
+
+//////////////
+/**
+ * @brief Extracts a successfully decoded text byte from the receiver queue to send to USB.
+ * @return uint32_t Returns 1 if a byte is available, 0 if queue is empty.
+ */
+static uint32_t rtty_rx_byte(rtty_receiver_t * const self, uint8_t *output_byte)
+{
+    return fifo_pop(&self->fsm.rx_fifo, output_byte);
+}
+
+static uint32_t rtty_rx_byte_debug(rtty_receiver_t * const self, uint8_t *output_byte)
+{
+    return fifo_pop(&self->fsm.rx_fifo_debug, output_byte);
+}
+
+static void rxcharacter(rtty_baudot_fsm_t * self, const uint8_t c)
+{
+	fifo_push(&self->rx_fifo, c);
+}
+
+static void rtty_spool(void * ctx)
+{
+	hfrxpath_t * const path = (hfrxpath_t *) ctx;
+
+	uint8_t c;
+	if (rtty_rx_byte(& path->rtty_rx, & c))
+	{
+		display_vtty_putchar(c);
+	}
+	if (rtty_rx_byte_debug(& path->rtty_rx, & c))
+	{
+		dbg_putchar(c);
+	}
+	//printf("integrator=%f, dc_bias=%f\n", rx_stream.detector.pll_integrator, rx_stream.detector.dc_bias);
+}
+
+
+#if 0
+
+
+#define BIQUAD_COEFF_IN_STAGE 5													  // coefficients space, mark and LPF filters
+
+#define RTTY_LPF_STAGES 2
+#define RTTY_BPF_STAGES 2
+#define RTTY_BPF_WIDTH (RTTY_Shift / 4)	// мне кажется это должна быть функция от скорости передачи
+
+#define RTTY_SYMBOL_CODE 0x1B	//(0b11011)
+#define RTTY_LETTER_CODE 0x1F	//(0b11111)
+
+typedef enum {
+	RTTY_STATE_WAIT_START,
+	RTTY_STATE_BIT,
+} rtty_state_t;
+
+typedef enum {
+	RTTY_MODE_LETTERS,
+	RTTY_MODE_SYMBOLS
+} rtty_charSetMode_t;
+
+typedef enum {
+    RTTY_STOP_1,
+    RTTY_STOP_1_5,
+    RTTY_STOP_2
+} rtty_stopbits_t;
+
+typedef struct
+{
+	uint16_t oneBitSampleCount;
+	int32_t DPLLBitPhase;
+	int32_t DPLLOldVal;
+	rtty_state_t state;// = RTTY_STATE_WAIT_START;
+	rtty_charSetMode_t charSetMode;// = RTTY_MODE_LETTERS;
+	uint8_t byteResult;// = 0;
+	uint16_t byteResult_bnum;// = 0;
+	int stopBits;// = RTTY_STOP_1;
+	//lpf
+	FLOAT_t LPF_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_LPF_STAGES];
+	FLOAT_t LPF_Filter_State[2 * RTTY_LPF_STAGES];
+	ARM_MORPH(arm_biquad_cascade_df2T_instance) RTTY_LPF_Filter;
+
+	//mark
+	FLOAT_t mark_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
+	FLOAT_t mark_Filter_State[2 * RTTY_BPF_STAGES];
+	ARM_MORPH(arm_biquad_cascade_df2T_instance) mark_Filter;
+
+	//space
+	FLOAT_t space_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
+	FLOAT_t space_Filter_State[2 * RTTY_BPF_STAGES];
+	ARM_MORPH(arm_biquad_cascade_df2T_instance) space_Filter;
+    int invert_output;           /* Boolean flag to invert the discriminator bit output (0 or 1) */
+
+    rtty_baudot_fsm_t    fsm;      /* Embedded integer NCO asynchronous framing engine */
+
+} rtty_rx_t;
+// Public variables
+//extern char RTTY_Decoder_Text[RTTY_DECODER_STRLEN + 1];
+
+//Ported from https://github.com/df8oe/UHSDR/blob/active-devel/mchf-eclipse/drivers/audio/rtty.c
+
+
+// FSK shift: 170 200 425 850
+// FSK tone freq 1275 2125
+
+// The standard mark and space tones are 2125 hz and 2295 hz respectively
+//#define	DEFAULT_RTTY_PITCH	1275	/* mark тон DIGI modes - 2.125 кГц (1275 2125) */
+
+// TTY: 10100.550
+// TTY: 10100.600
+// DDK2 DDK7 DDK9 10100.8 KHZ - Центральная частота (между пиками), 450 Hz shift, 50 baud
+// peaks: mark: 10101.025, space: 10100.575
+//
+// Kenwood:
+// The standard mark and space tones are 2125 hz and 2295 hz respectively
+//#define RTTY_FreqMark DEFAULT_RTTY_PITCH		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
+
+static rtty_rx_t rtty0;
+
+void RTTYModem_SetParam(int_fast32_t centerFreq, int_fast32_t RTTY_Speed10, int_fast32_t RTTY_Shift, int invert_output)
+{
+	rtty_rx_t * const self = & rtty0;
+	const int_fast32_t sample_rate = ARMI2SRATE;
+	// The standard mark and space tones are 2125 hz and 2295 hz respectively
+	const int_fast32_t RTTY_FreqMark = (centerFreq - RTTY_Shift / 2);		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
+	const int_fast32_t RTTY_FreqSpace = (centerFreq + RTTY_Shift / 2);
+
+	self->DPLLBitPhase = 0;
+	self->DPLLOldVal = 0;
+
+	iir_filter_t f0;
+	//speed
+	self->oneBitSampleCount = ROUNDF((FLOAT_t) sample_rate * 10 / RTTY_Speed10);
+
+	//RTTY LPF Filter
+	biquad_create(& f0, RTTY_LPF_STAGES);
+	biquad_init_lowpass(& f0, sample_rate, RTTY_Speed10 * 2 / 10);
+	fill_biquad_coeffs(& f0, self->LPF_Filter_Coeffs);
+    ARM_MORPH(arm_fill)(0, self->LPF_Filter_State, ARRAY_SIZE(self->LPF_Filter_State));
+    ARM_MORPH(arm_biquad_cascade_df2T_init)(&self->RTTY_LPF_Filter, RTTY_LPF_STAGES, self->LPF_Filter_Coeffs, self->LPF_Filter_State);
+
+	//RTTY mark filter
+	biquad_create(& f0, RTTY_BPF_STAGES);
+	biquad_init_bandpass(& f0, sample_rate, RTTY_FreqMark - RTTY_BPF_WIDTH / 2, RTTY_FreqMark + RTTY_BPF_WIDTH / 2);
+	fill_biquad_coeffs(& f0, self->mark_Filter_Coeffs);
+    ARM_MORPH(arm_fill)(0, self->mark_Filter_State, ARRAY_SIZE(self->mark_Filter_State));
+	ARM_MORPH(arm_biquad_cascade_df2T_init)(&self->mark_Filter, RTTY_BPF_STAGES, self->mark_Filter_Coeffs, self->mark_Filter_State);
+
+	//RTTY space filter
+	biquad_create(& f0, RTTY_BPF_STAGES);
+	biquad_init_bandpass(& f0, sample_rate, RTTY_FreqSpace - RTTY_BPF_WIDTH / 2, RTTY_FreqSpace + RTTY_BPF_WIDTH / 2);
+	fill_biquad_coeffs(& f0, self->space_Filter_Coeffs);
+    ARM_MORPH(arm_fill)(0, self->space_Filter_State, ARRAY_SIZE(self->space_Filter_State));
+	ARM_MORPH(arm_biquad_cascade_df2T_init)(&self->space_Filter, RTTY_BPF_STAGES, self->space_Filter_Coeffs, self->space_Filter_State);
+
+	self->state = RTTY_STATE_WAIT_START;
+	self->charSetMode = RTTY_MODE_LETTERS;
+	self->byteResult = 0;
+	self->byteResult_bnum = 0;
+	self->stopBits = RTTY_STOP_1;
+
+	self->invert_output = invert_output;
+
+    /* Initialize asynchronous integer NCO bit framing receiver sub-layer pointer */
+	int_fast32_t baud_rate = RTTY_Speed10 / 10;
+    dsp_rtty_sub_init_fsm(&self->fsm, sample_rate, baud_rate);
+}
+
+// adapted from https://github.com/ukhas/dl-fldigi/blob/master/src/include/misc.h
+static FLOAT_t RTTYDecoder_decayavg(rtty_rx_t * self, FLOAT_t average, FLOAT_t input, int weight)
+{
+	FLOAT_t retval;
+	if (weight <= 1)
+	{
+		retval = input;
+	}
+	else
+	{
+		retval = ((input - average) / (FLOAT_t)weight) + average;
+	}
+	return retval;
+}
+
+// this function returns the bit value of the current sample
+static int RTTYDecoder_demodulator(rtty_rx_t * self, FLOAT_t sample)
+{
+	FLOAT_t space_mag = 0;
+	FLOAT_t mark_mag = 0;
+	ARM_MORPH(arm_biquad_cascade_df2T)(&self->space_Filter, &sample, &space_mag, 1);
+	ARM_MORPH(arm_biquad_cascade_df2T)(&self->mark_Filter, &sample, &mark_mag, 1);
+
+	FLOAT_t v1 = 0;
+	// calculating the RMS of the two lines (squaring them)
+	space_mag *= space_mag;
+	mark_mag *= mark_mag;
+
+	// RTTY decoding with ATC = automatic threshold correction
+	FLOAT_t helper = space_mag;
+	space_mag = mark_mag;
+	mark_mag = helper;
+	static FLOAT_t mark_env = 0.0;
+	static FLOAT_t space_env = 0.0;
+	static FLOAT_t mark_noise = 0.0;
+	static FLOAT_t space_noise = 0.0;
+	// experiment to implement an ATC (Automatic threshold correction), DD4WH, 2017_08_24
+	// everything taken from FlDigi, licensed by GNU GPLv2 or later
+	// https://github.com/ukhas/dl-fldigi/blob/master/src/cw_rtty/rtty.cxx
+	// calculate envelope of the mark and space signals
+	// uses fast attack and slow decay
+	mark_env = RTTYDecoder_decayavg(self, mark_env, mark_mag, (mark_mag > mark_env) ? self->oneBitSampleCount / 4 : self->oneBitSampleCount * 16);
+	space_env = RTTYDecoder_decayavg(self, space_env, space_mag, (space_mag > space_env) ? self->oneBitSampleCount / 4 : self->oneBitSampleCount * 16);
+	// calculate the noise on the mark and space signals
+	mark_noise = RTTYDecoder_decayavg(self, mark_noise, mark_mag, (mark_mag < mark_noise) ? self->oneBitSampleCount / 4 : self->oneBitSampleCount * 48);
+	space_noise = RTTYDecoder_decayavg(self, space_noise, space_mag, (space_mag < space_noise) ? self->oneBitSampleCount / 4 : self->oneBitSampleCount * 48);
+	// the noise floor is the lower signal of space and mark noise
+	FLOAT_t noise_floor = (space_noise < mark_noise) ? space_noise : mark_noise;
+
+	// Linear ATC, section 3 of www.w7ay.net/site/Technical/ATC
+	// v1 = space_mag - mark_mag - 0.5 * (space_env - mark_env);
+
+	// Compensating for the noise floor by using clipping
+	FLOAT_t mclipped = 0, sclipped = 0;
+	mclipped = mark_mag > mark_env ? mark_env : mark_mag;
+	sclipped = space_mag > space_env ? space_env : space_mag;
+	if (mclipped < noise_floor)
+	{
+		mclipped = noise_floor;
+	}
+	if (sclipped < noise_floor)
+	{
+		sclipped = noise_floor;
+	}
+
+	// Optimal ATC (Section 6 of of www.w7ay.net/site/Technical/ATC)
+	v1 = (mclipped - noise_floor) * (mark_env - noise_floor) - (sclipped - noise_floor) * (space_env - noise_floor) - 0.25 * ((mark_env - noise_floor) * (mark_env - noise_floor) - (space_env - noise_floor) * (space_env - noise_floor));
+	ARM_MORPH(arm_biquad_cascade_df2T)(&self->RTTY_LPF_Filter, &v1, &v1, 1);
+
+	// RTTY without ATC, which works very well too!
+	// inverting line 1
+	/*
+	 mark_mag *= -1;
+
+	// summing the two lines
+	v1 = mark_mag + space_mag;
+
+	// lowpass filtering the summed line
+	arm_biquad_cascade_df2T_f32(&RTTY_LPF_Filter, &v1, &v1, 1);
+	*/
+
+	return (v1 > 0) ? ! self->invert_output : self->invert_output;
+}
+
+// this function returns only 1 when the start bit is successfully received
+static int RTTYDecoder_waitForStartBit(rtty_rx_t * self, FLOAT_t sample)
+{
+	int retval = 0;
+	int bitResult;
+	static int16_t wait_for_start_state = 0;
+	static int16_t wait_for_half = 0;
+
+	bitResult = RTTYDecoder_demodulator(self, sample);
+
+	switch (wait_for_start_state)
+	{
+	case 0:
+		// waiting for a falling edge
+		if (bitResult != 0)
+		{
+			wait_for_start_state++;
+		}
+		break;
+	case 1:
+		if (bitResult != 1)
+		{
+			wait_for_start_state++;
+		}
+		break;
+	case 2:
+		wait_for_half = self->oneBitSampleCount / 2;
+		wait_for_start_state++;
+		/* no break */
+	case 3:
+		wait_for_half--;
+		if (wait_for_half == 0)
+		{
+			retval = (bitResult == 0);
+			wait_for_start_state = 0;
+		}
+		break;
+	}
+	return retval;
+}
+
+// this function returns 1 once at the half of a bit with the bit's value
+static int RTTYDecoder_getBitDPLL(rtty_rx_t * self, FLOAT_t sample, int *val_p)
+{
+	static int phaseChanged = 0;
+	int retval = 0;
+
+	if (self->DPLLBitPhase < self->oneBitSampleCount)
+	{
+		*val_p = RTTYDecoder_demodulator(self, sample);
+
+		if (!phaseChanged && *val_p != self->DPLLOldVal)
+		{
+			if (self->DPLLBitPhase < self->oneBitSampleCount / 2)
+			{
+				self->DPLLBitPhase += self->oneBitSampleCount / 32; // early
+			}
+			else
+			{
+				self->DPLLBitPhase -= self->oneBitSampleCount / 32; // late
+			}
+			phaseChanged = 1;
+		}
+		self->DPLLOldVal = *val_p;
+		self->DPLLBitPhase++;
+	}
+
+	if (self->DPLLBitPhase >= self->oneBitSampleCount)
+	{
+		self->DPLLBitPhase -= self->oneBitSampleCount;
+		retval = 1;
+	}
+
+	return retval;
+}
+
+static void RTTYDecoder_Process2(
+		rtty_rx_t * self,
+		const FLOAT_t *bufferIn,
+		unsigned len,
+	    void (* const put_char_cb)(const uint8_t character)
+		)
+{
+	for (uint32_t buf_pos = 0; buf_pos < len; buf_pos++)
+	{
+		switch (self->state)
+		{
+		case RTTY_STATE_WAIT_START: // not synchronized, need to wait for start bit
+			if (RTTYDecoder_waitForStartBit(self, bufferIn[buf_pos]))
+			{
+				self->state = RTTY_STATE_BIT;
+				self->byteResult_bnum = 1;
+				self->byteResult = 0;
+			}
+			break;
+		case RTTY_STATE_BIT:
+			// reading 7 more bits
+			if (self->byteResult_bnum < 8)
+			{
+				int bitResult = 0;
+				if (RTTYDecoder_getBitDPLL(self, bufferIn[buf_pos], &bitResult))
+				{
+					switch (self->byteResult_bnum)
+					{
+					case 6: // stop bit 1
+					case 7: // stop bit 2
+						if (bitResult == 0)
+						{
+							// not in sync
+							self->state = RTTY_STATE_WAIT_START;
+						}
+						if (self->stopBits != RTTY_STOP_2 && self->byteResult_bnum == 6)
+						{
+							// we pretend to be at the 7th bit after receiving the first stop bit if we have less than 2 stop bits
+							// this omits check for 1.5 bit condition but we should be more or less safe here, may cause
+							// a little more unaligned receive but without that shortcut we simply cannot receive these configurations
+							// so it is worth it
+							self->byteResult_bnum = 7;
+						}
+						break;
+					default:
+						self->byteResult |= !! bitResult << (self->byteResult_bnum - 1);
+					}
+					self->byteResult_bnum++;
+				}
+			}
+			if (self->byteResult_bnum == 8 && self->state == RTTY_STATE_BIT)
+			{
+
+				switch (self->byteResult)
+				{
+				case RTTY_LETTER_CODE:
+					self->charSetMode = RTTY_MODE_LETTERS;
+					// println(" ^L^");
+					break;
+				case RTTY_SYMBOL_CODE:
+					self->charSetMode = RTTY_MODE_SYMBOLS;
+					// println(" ^F^");
+					break;
+				case 0x00:
+					break;
+				default:
+					if (self->byteResult < 0x1F)
+					{
+						char charResult;
+						switch (self->charSetMode)
+						{
+						case RTTY_MODE_SYMBOLS:
+							charResult = rtty_ita2_figures [self->byteResult];
+							break;
+						case RTTY_MODE_LETTERS:
+						default:
+							charResult = rtty_ita2_letters [self->byteResult];
+							break;
+						}
+						//RESULT !!!!
+						put_char_cb(charResult);
+					}
+					break;
+				}
+				self->state = RTTY_STATE_WAIT_START;
+			}
+		}
+	}
+}
+
+////////////////////////
+///
+
+static void put_char_null(const uint8_t character)
+{
+}
+
+static void put_char_vtty(const uint8_t character)
+{
+	//print(character);
+	//PRINTF("%c", charResult);
+	//display_vtty_printf("%c", charResult);
+	display_vtty_putchar(character);
+//					char str[2] = {0};
+//					str[0] = character;
+//					if (strlen(RTTY_Decoder_Text) >= RTTY_DECODER_STRLEN)
+//						shiftTextLeft(RTTY_Decoder_Text, 1);
+//					strcat(RTTY_Decoder_Text, str);
+//					LCD_UpdateQuery.TextBar = 1;
+}
+
+void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len) // start RTTY decoder for the data block
+{
+	rtty_rx_t * const self = & rtty0;
+	RTTYDecoder_Process2(self, bufferIn, len, put_char_null);
+}
+
+#endif
+
+
+
 /**************************************************************
 WinFilter version 0.8
 http://www.winfilter.20m.com
@@ -3461,7 +4603,7 @@ static FLOAT32P_t baseband_modulator(
 		{
 			* deltanfm = 0;
 			FLOAT32P_t vfb;
-			RTTY_SampleTX(& vfb.IV, & vfb.QV);
+			dsp_rtty_tx_process_sample(& path->rtty_tx, & vfb.IV, & vfb.QV);
 			return vfb;
 		}
 	case DSPCTL_MODE_TX_AM:
@@ -3818,7 +4960,7 @@ static FLOAT_t hftrx_nfm_rx_process_sample(hfrxpath_t * const path, FLOAT_t samp
 
     /* 3. Apply standard de-emphasis response curve mapping */
     FLOAT_t voice_audio = nfm_deemph_process_sample(&path->audio_filter, raw_audio);
-
+    return raw_audio;
     /* 4. Output normalized to 1.5x matching deviation criteria levels */
     return (voice_audio * 3) / 2;
 }
@@ -3890,249 +5032,9 @@ static void hftrx_nfm_path_update_from_global(hfrxpath_t * const path) {
     hftrx_nfm_path_init(path, base_sample_rate, target_bandwidth, current_ctcss_x10, current_dcs_code);
 }
 
-//////////////////////////
-
-// Демодуляция FM
-static ncoftwi_t demodulator_FM(
-	hfrxpath_t * const path,
-	FLOAT32P_t vp1,
-	FLOAT_t sigpower
-	)
-{
-	// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляцию
-	//
-	// tnx Vladimir Vassilevsky
-	// http://www.dsprelated.com/showmessage/71491/2.php
-	//
-
-	if (vp1.IV == 0 && vp1.QV == 0)
-		vp1.QV = 1;
-
-#if 1
-	float32_t result;
-	VERIFY(arm_atan2_f32(vp1.QV, vp1.IV, & result) == ARM_MATH_SUCCESS);
-	const ncoftwi_t fi = OMEGA2FTWI(result);	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
-#else
-	const ncoftwi_t fi = OMEGA2FTWI(ATAN2F(vp1.QV, vp1.IV));	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
-#endif
-	const ncoftwi_t d_fi = (ncoftwi_t) (fi - path->prev_fi);
-	path->prev_fi = fi;
-
-	return d_fi;
-}
-
-
-/* Получить информацию об ошибке настройки в режиме SAM */
-/* Получить значение отклонения частоты с точностью 0.1 герца */
-uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi)
-{
-    hfrxpath_t * const path = & rx_paths [pathi];
-	const uint_fast32_t sample_rate10 = ARMSAIRATE * 10;
-
-	* p = ((int_fast64_t) path->samdetector.omegai * sample_rate10) >> 32;
-	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_SAM;
-}
-
-/* Получить значение отклонения частоты с точностью 0.1 герца для отображения на дисплее */
-uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi)
-{
-    hfrxpath_t * const path = & rx_paths [pathi];
-	const int_fast32_t sample_rate10 = ARMSAIRATE * 10;
-
-	* p = ((int_fast64_t) path->saved_delta_fi * sample_rate10) >> 32;
-	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_NFM;
-}
-
-static void samdetector_init(amdemod_t * a)
-{
-	a->phsi = 0;
-	a->fil_outi = 0;
-	a->omegai = 0;
-
-	//fade leveler
-	a->dc = 0;
-	a->dc_insert = 0;
-
-	//sideband separation
-	a->c0 [0] = (FLOAT_t) -0.328201924180698;
-	a->c0 [1] = (FLOAT_t) -0.744171491539427;
-    a->c0 [2] = (FLOAT_t) -0.923022915444215;
-    a->c0 [3] = (FLOAT_t) -0.978490468768238;
-    a->c0 [4] = (FLOAT_t) -0.994128272402075;
-    a->c0 [5] = (FLOAT_t) -0.998458978159551;
-    a->c0 [6] = (FLOAT_t) -0.999790306259206;
-   
-    a->c1 [0] = (FLOAT_t) -0.0991227952747244;
-    a->c1 [1] = (FLOAT_t) -0.565619728761389;
-    a->c1 [2] = (FLOAT_t) -0.857467122550052;
-    a->c1 [3] = (FLOAT_t) -0.959123933111275;
-    a->c1 [4] = (FLOAT_t) -0.988739372718090;
-    a->c1 [5] = (FLOAT_t) -0.996959189310611;
-    a->c1 [6] = (FLOAT_t) -0.999282492800792;
-}
-
-
-static void 
-samdetector_create(
-	amdemod_t * a,
-	//int run,
-	//int mode,
-	//int levelfade,
-	int sbmode,
-	//int sample_rate,
-	int fmin,
-	int fmax,
-	FLOAT_t zeta,		// pll - damping factor; as coded, must be <=1.0
-	FLOAT_t omegaN,		// pll - natural frequency
-	FLOAT_t tauR,		// carrier removal time constant
-	FLOAT_t tauI		// carrier insertion time constant
-	)
-{
-	FLOAT_t g1, g2;						// pll - filter gain parameters
-	FLOAT_t knorm = POWF(2, NCOFTWBITS);
-	const FLOAT_t sample_rate = (FLOAT_t) ARMSAIRATE;
-	//a->run = run;
-	//a->mode = mode;
-	//a->levelfade = levelfade;
-	a->sbmode = sbmode;
-
-	a->omegai_min = FTWAF(fmin);
-	a->omegai_max = FTWAF(fmax);
-	g1 = 1 - EXPF(- 2 * omegaN * zeta / sample_rate);
-	g2 = - g1 + 2 * (1 - EXPF(- omegaN * zeta / sample_rate) * COSF(omegaN / sample_rate * SQRTF(1 - zeta * zeta)));
-
-	a->g1i = g1 * knorm;	// 2^32
-	a->g2i = g2 * knorm;	// 2^32
-
-	// carrier removal
-	a->mtauR = EXPF(- 1 / (sample_rate * tauR));
-	a->onem_mtauR = 1 - a->mtauR;
-	a->mtauI = EXPF(- 1 / (sample_rate * tauI));
-	a->onem_mtauI = 1 - a->mtauI;
-
-	samdetector_init(a);
-}
-
-#if 0
-static void 
-flush_amd(amdemod_t * a)
-{
-	a->dc = 0;
-	a->dc_insert = 0;
-}
-#endif
-
-// Демодуляция SAM
-static FLOAT_t
-demodulator_SAM(
-	amdemod_t * const a,
-	FLOAT32P_t vp1
-	)
-{
-	// taken from Warren PrattВґs WDSP, 2016
-	// http://svn.tapr.org/repos_sdr_hpsdr/trunk/W5WC/PowerSDR_HPSDR_mRX_PS/Source/wdsp/samdetector.c
-
-	FLOAT_t audio;	// выходной сэмпл (ненормированное значение).
-	FLOAT_t corr [2];
-	ncoftwi_t deti;
-	ncoftwi_t del_outi;
-	FLOAT_t ai, bi, aq, bq;
-	FLOAT_t ai_ps, bi_ps, aq_ps, bq_ps;
-
-	const FLOAT32P_t vco0 = getsincosf(a->phsi);
-	ai = vp1.IV * vco0.QV;
-	bi = vp1.IV * vco0.IV;
-	aq = vp1.QV * vco0.QV;
-	bq = vp1.QV * vco0.IV;
-
-	if (a->sbmode != 0)
-	{
-		int j;
-
-		a->a [0] = a->dsI;
-		a->b [0] = bi;
-		a->c [0] = a->dsQ;
-		a->d [0] = aq;
-		a->dsI = ai;
-		a->dsQ = bq;
-
-		for (j = 0; j < AMDSTAGES; ++ j)
-		{
-			const int k = 3 * j;
-			a->a [k + 3] = a->c0 [j] * (a->a [k] - a->a [k + 5]) + a->a [k + 2];
-			a->b [k + 3] = a->c1 [j] * (a->b [k] - a->b [k + 5]) + a->b [k + 2];
-			a->c [k + 3] = a->c0 [j] * (a->c [k] - a->c [k + 5]) + a->c [k + 2];
-			a->d [k + 3] = a->c1 [j] * (a->d [k] - a->d [k + 5]) + a->d [k + 2];
-		}
-		ai_ps = a->a [AMDOUT_IDX];
-		bi_ps = a->b [AMDOUT_IDX];
-		bq_ps = a->c [AMDOUT_IDX];
-		aq_ps = a->d [AMDOUT_IDX];
-
-		for (j = AMDOUT_IDX + 2; j > 0; j--)
-		{
-			a->a [j] = a->a [j - 1];
-			a->b [j] = a->b [j - 1];
-			a->c [j] = a->c [j - 1];
-			a->d [j] = a->d [j - 1];
-		}
-	}
-	else
-	{
-		ai_ps = 0;
-		bi_ps = 0;
-		bq_ps = 0;
-		aq_ps = 0;
-
-	}
-
-	corr [0] = + ai + bq;
-	corr [1] = - bi + aq;
-
-	switch (a->sbmode)
-	{
-	default:
-	case 0:	//both sidebands
-		{
-			audio = corr [0];
-			break;
-		}
-	case 1:	//LSB
-		{
-			audio = (ai_ps - bi_ps) + (aq_ps + bq_ps);
-			break;
-		}
-	case 2:	//USB
-		{
-			audio = (ai_ps + bi_ps) - (aq_ps - bq_ps);
-			break;
-		}
-	}
-
-	if (0/*a->levelfade*/)
-	{
-		a->dc = a->mtauR * a->dc + a->onem_mtauR * audio;
-		a->dc_insert = a->mtauI * a->dc_insert + a->onem_mtauI * corr[0];
-		audio += a->dc_insert - a->dc;
-	}
-
-	if ((corr [0] == 0) && (corr [1] == 0)) 
-		corr [0] = 1;
-
-	deti = OMEGA2FTWI(ATAN2F(corr [1], corr [0]));	// - M_PI .. + M_PI
-	a->omegai += (a->g2i * deti) >> 32;
-	if (a->omegai < a->omegai_min) 
-		a->omegai = a->omegai_min;
-	else if (a->omegai > a->omegai_max) 
-		a->omegai = a->omegai_max;
-
-	del_outi = a->fil_outi;
-	a->fil_outi = (int32_t) ((a->g1i * deti) >> 32) + a->omegai;
-	a->phsi += del_outi;	/* "заворот" по модулю M_TWOPI автоматически обеспечивается целочисленным переполнением */
-
-	return audio;
-}
-
+////////////
+/// WNB
+///
 
 static FLOAT_t wnb_maxv = 1;
 static FLOAT_t wnb_minv = - 1;
@@ -4142,6 +5044,11 @@ static void setNBfence(int dB)
 	const FLOAT_t fence = db2ratio(dB);
 	wnb_maxv = fence;
 	wnb_minv = - fence;
+}
+
+static void rttyrxcharacter(rtty_baudot_fsm_t * self, const uint8_t c)
+{
+	fifo_push(&self->rx_fifo, c);
 }
 
 // ПРИЁМ
@@ -4181,7 +5088,8 @@ static FLOAT_t baseband_demodulator(
 		break;
 
 	case DSPCTL_MODE_RX_RTTY:
-		RTTY_SampleRX(path - rx_paths, vp0f.IV, vp0f.QV);
+		dsp_rtty_rx_process_sample(& path->rtty_rx, vp0f.IV, vp0f.QV, rttyrxcharacter);
+		/* audio output */
 	case DSPCTL_MODE_RX_DSB:
 	case DSPCTL_MODE_RX_SSB:
 	case DSPCTL_MODE_RX_DRM:
@@ -4208,7 +5116,7 @@ static FLOAT_t baseband_demodulator(
 			/*const FLOAT_t fltstrengthslow = */ agc_measure_float(path, dspmode, SQRTF(sigpower));
 			//const FLOAT_t gain = agc_getgain_float(path, fltstrengthslow);
 			//INT32P_t vp0i32;
-			//saved_delta_fi [pathi] = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
+			//path->saved_delta_fi = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
 			modem_demod_iq(vp0f);
 		}
 		r = 0;
@@ -4221,8 +5129,8 @@ static FLOAT_t baseband_demodulator(
 			const FLOAT_t sigpower = agc_getsigpower(vp0f);
 			const FLOAT_t fltstrengthslow = agc_measure_float(path, dspmode, SQRTF(sigpower));
 
-#if 0
-			r = hftrx_nfm_rx_process_sample(path, vp0f.IV, vp0f.QV);
+#if 1
+			const FLOAT_t sample = hftrx_nfm_rx_process_sample(path, vp0f.IV, vp0f.QV);
 #else
 			//const FLOAT_t gain = agc_getgain_float(path, fltstrengthslow);
 			path->saved_delta_fi = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
@@ -4230,8 +5138,8 @@ static FLOAT_t baseband_demodulator(
 			// значение для прослушивания
 			// 0.707 == M_SQRT1_2
 			const FLOAT_t sample = adpt_input(& nfmdemod, path->saved_delta_fi);
-			r = sample * (ctcss_squelch() && agc_levelsquelchopen(path, fltstrengthslow));
 #endif
+			r = sample * (ctcss_squelch() && agc_levelsquelchopen(path, fltstrengthslow));
 		}
 		break;
 
@@ -4245,7 +5153,7 @@ static FLOAT_t baseband_demodulator(
 			const FLOAT32P_t vp1 = scalepair(vp0f, gain);
 			// Демодуляция АМ
 			const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV);// * (FLOAT_t) 0.5; //M_SQRT1_2;
-			//saved_delta_fi [pathi] = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
+			path->saved_delta_fi = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
 			r = sample * agc_levelsquelchopen(path, fltstrengthslow);
 		}
 		break;
@@ -4263,7 +5171,7 @@ static FLOAT_t baseband_demodulator(
 			const FLOAT_t gain = agc_getgain_float(path, fltstrengthslow);
 			const FLOAT32P_t vp1 = scalepair(vp0f, gain);
 			//const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV) * (FLOAT_t) 0.5; //M_SQRT1_2;
-			//saved_delta_fi [pathi] = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
+			//path->saved_delta_fi = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
 			// Демодуляция SАМ
 			const FLOAT_t sample = demodulator_SAM(& path->samdetector, vp1);
 			r = sample * agc_levelsquelchopen(path, fltstrengthslow);
@@ -5278,12 +6186,25 @@ dsp_get_samplerate100(void)
 	return ARMI2SRATE100;
 }
 
+static void
+hfrxpath_init(hfrxpath_t * const path)
+{
+	dsp_rtty_rx_init(& path->rtty_rx, ARMSAIRATE, 400, 50);
+	dsp_rtty_rx_set_reverse(& path->rtty_rx, 1);
+	dsp_rtty_tx_init(& path->rtty_tx, ARMSAIRATE, 400, 50, 1);
+	dsp_rtty_tx_set_reverse(& path->rtty_tx, 1);
+
+	dpcobj_initialize(& path->rttydpcobj, rtty_spool, path);
+	board_dpc_addentry(& path->rttydpcobj, board_dpc_coreid());
+}
+
 // Передача параметров в DSP модуль
 // Обновление параметров приёмника (кроме фильтров).
 static void 
-rxparam_update(hfrxpath_t * const path, uint_fast8_t profile,
-		const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
-	)
+hfrxpath_update(
+		hfrxpath_t * const path,
+		uint_fast8_t profile,
+		const uint_fast8_t pathi)				// 0/1: main_RX/sub_RX
 {
 	// Параметры АРУ приёмника
 	{
@@ -5305,6 +6226,10 @@ rxparam_update(hfrxpath_t * const path, uint_fast8_t profile,
 		smeter_parameters_update(& path->rxsmeterparams);
 	}
 
+	// NFM
+	{
+		hftrx_nfm_path_update_from_global(path);
+	}
 
 	// Параметры SAM приёмника
 	{
@@ -5328,6 +6253,14 @@ rxparam_update(hfrxpath_t * const path, uint_fast8_t profile,
 		path->manualsquelch = (int) glob_squelch_level * (upper_log - lower_log) / SQUELCHMAX + lower_log;
 	}
 
+	{
+		// RTTY
+		dsp_rtty_rx_init(& path->rtty_rx, ARMSAIRATE, glob_rtty_shift, glob_rtty_baudrate10 / (FLOAT_t) 10);
+		dsp_rtty_rx_set_reverse(& path->rtty_rx, glob_rtty_inverted);
+
+		dsp_rtty_tx_init(& path->rtty_tx, ARMSAIRATE, glob_rtty_shift, glob_rtty_baudrate10 / (FLOAT_t) 10, 1);
+		dsp_rtty_tx_set_reverse(& path->rtty_tx, glob_rtty_inverted);
+	}
 	// Noise Blanker (NB)
 	setNBfence(glob_wnbfence10);
 
@@ -5420,9 +6353,9 @@ trxparam_update(void)
 }
 
 /* вызывается при разрешённых прерываниях. */
-void dsp_initialize(void)
+void hftrx_init(void)
 {
-	PRINTF("dsp_initialize: ARMI2SRATE=%lu, ARMI2SRATE100=%lu.%02lu\n", (unsigned long) ARMI2SRATE, (unsigned long) (ARMI2SRATE100 / 100), (unsigned long) (ARMI2SRATE100 % 100));
+	PRINTF("hftrx_init: ARMI2SRATE=%lu, ARMI2SRATE100=%lu.%02lu\n", (unsigned long) ARMI2SRATE, (unsigned long) (ARMI2SRATE100 / 100), (unsigned long) (ARMI2SRATE100 % 100));
 	//PRINTF("DMABUFFSIZE32RX=%d, DMABUFFSTEP32RX=%d\n", (int) DMABUFFSIZE32RX, (int) DMABUFFSTEP32RX);
 
 	//fft_lookup = spx_fft_init(2*SPEEXNN);
@@ -5455,7 +6388,8 @@ void dsp_initialize(void)
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
 		    hfrxpath_t * const path = & rx_paths [pathi];
-			rxparam_update(path, rprofile, pathi);
+		    hfrxpath_init(path);
+			hfrxpath_update(path, rprofile, pathi);
 		}
 		gwagcprofrx = rprofile;
 	}
@@ -5515,7 +6449,7 @@ prog_dsplreg(void)
 	for (pathi = 0; pathi < pathn; ++ pathi)
 	{
 	    hfrxpath_t * const path = & rx_paths [pathi];
-		rxparam_update(path, rprofile, pathi);
+		hfrxpath_update(path, rprofile, pathi);
 	}
 	gwagcprofrx = rprofile;
 
@@ -6348,6 +7282,22 @@ board_set_modem_mode(uint_fast8_t v)
 	if (glob_modem_mode != v)
 	{
 		glob_modem_mode = v;
+		board_flt1regchanged();
+	}
+}
+
+void board_set_rtty_parametrs(int_fast32_t baudrate10, int_fast32_t shift, uint_fast8_t inverted)
+{
+	if (
+			glob_rtty_baudrate10 != baudrate10 ||
+			glob_rtty_shift != shift ||
+			glob_rtty_inverted != inverted ||
+			0)
+	{
+		glob_rtty_baudrate10 = baudrate10;
+		glob_rtty_shift = shift;
+		glob_rtty_inverted = inverted;
+
 		board_flt1regchanged();
 	}
 }

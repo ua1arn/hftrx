@@ -160,6 +160,8 @@ void board_set_modem_mode(uint_fast8_t v);	// применяемая модул�
 void board_set_nb_enable(uint_fast8_t pathi, uint_fast8_t v);	/* Управлением включением RX Noise Blanker */
 void board_set_displayfps(uint_fast8_t v);
 
+void board_set_rtty_parametrs(int_fast32_t baudrate10, int_fast32_t shift, uint_fast8_t inverted);
+
 enum
 {
 	BOARD_CATMUX_USBCDC,

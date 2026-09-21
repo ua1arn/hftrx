@@ -12358,20 +12358,6 @@ static RAM_D1 rxaproc_t rxaprocs [NTRX];
 
 #endif /* ! WITHSKIPUSERMODE */
 
-#if WITHRTTY
-
-void RTTYDecoder_Setup(void)
-{
-	const int_fast32_t centerFreq = DEFAULT_RTTY_PITCH;
-	const int_fast32_t sample_rate = ARMI2SRATE;
-	const int_fast32_t RTTY_Speed10 = param_getvalue(& xgrttybaudrate10);//50; //45.45;
-	const int_fast32_t RTTY_Shift = param_getvalue(& xgrttyshift); //455 //170;
-	const int inverted = param_getvalue(& xgrttyinverted);
-	RTTYModem_SetParam(RTTY_Speed10, RTTY_Shift, inverted);
-}
-
-#endif /* WITHRTTY */
-
 /* на слабых процессорах второй приемник без NR и автонотч */
 static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 {
@@ -13435,7 +13421,7 @@ updateboard_noui(
 		speex_update_rx();
 	#endif /* WITHIF4DSP */
 	#if WITHRTTY && WITHIF4DSP
-		RTTYDecoder_Setup();
+		board_set_rtty_parametrs(param_getvalue(& xgrttybaudrate10), param_getvalue(& xgrttyshift), param_getvalue(& xgrttyinverted));
 	#endif /* WITHRTTY && WITHIF4DSP */
 
 	#if defined (RTC1_TYPE)
@@ -23198,11 +23184,8 @@ application_initialize(void)
 #endif /* WITHMODEM */
 
 #if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
-	dsp_initialize();		// цифровая обработка подготавливается
+	hftrx_init();		// цифровая обработка подготавливается
 	InitNoiseReduction();
-#if WITHRTTY
-	RTTYModem_Init();
-#endif /* WITHRTTY */
 
 #if WITHSUBTONES && 1
 	dtmf_initialize();

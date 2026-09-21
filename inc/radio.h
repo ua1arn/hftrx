@@ -1062,7 +1062,8 @@ uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
 uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
 uint_fast8_t hamradio_get_reverb_delay(void);
 uint_fast8_t hamradio_get_reverb_loss(void);
-uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
+//uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
+//uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi);	/* Получить значение отклонения частоты с точностью 0.1 герца */
 uint_fast8_t hamradio_get_spkon_value(void);	// не-0: динамик включен
 uint_fast8_t hamradio_get_submode(void);
 uint_fast8_t hamradio_get_tunemodevalue(void);	// текущее состояние TUNE
