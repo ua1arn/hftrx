@@ -4679,8 +4679,64 @@ void dsp_processtx(unsigned nsamples0)
 
 //#include "isb.h"
 
-/* Extern declaration of the CMSIS-DSP trigonometry core architecture */
-//extern void arm_sin_cos_f32(float32_t theta, float32_t * pSinVal, float32_t * pCosVal);
+
+/**
+ * @brief SUB-FUNCTION: Computes the zeroth-order modified Bessel function of the first kind I0(x).
+ * Uses a fast converging power series expansion optimized for baremetal systems.
+ *
+ * @param x Input variable of the Bessel function expansion.
+ * @return FLOAT_t Returns the computed I0(x) value.
+ */
+static FLOAT_t dsp_isb_sub_bessel_i0(const FLOAT_t x)
+{
+    FLOAT_t sum = 1.0;
+    FLOAT_t ds = 1.0;
+    FLOAT_t d = 0.0;
+
+    /* Power series iteration up to 25 terms secures absolute phase convergence limits */
+    for (uint32_t i = 1; i <= 25; i++)
+    {
+        d += 2.0;
+        ds *= (x * x) / (d * d);
+        sum += ds;
+
+        /* Stop processing once the delta increment drops below the noise floor */
+        if (ds < (sum * 1e-7))
+        {
+            break;
+        }
+    }
+    return sum;
+}
+
+/**
+ * @brief SUB-FUNCTION: Generates a high-rejection Kaiser window vector layout on-the-fly.
+ * Bounds the output coefficients within strict Nyquist ranges via FMAXF and FMINF functions.
+ *
+ * @param p_dst Destination reference pointer to store computed window weights.
+ * @param num_samples Total length of the window array (typically ISB_FIR_TAPS).
+ * @param beta Sharpness shape factor parameter (beta = 7.865 targets more than -80 dB attenuation).
+ */
+static void dsp_isb_sub_generate_kaiser(
+    FLOAT_t * const p_dst,
+    const uint32_t num_samples,
+    const FLOAT_t beta)
+{
+    const FLOAT_t i0_beta = dsp_isb_sub_bessel_i0(beta);
+    const FLOAT_t inv_num_samples_minus_1 = 1.0 / (FLOAT_t)(num_samples - 1);
+
+    for (uint32_t n = 0; n < num_samples; n++)
+    {
+        /* Calculate precise relative displacement index centered around the midpoint axis */
+        const FLOAT_t term = 2.0 * (FLOAT_t)n * inv_num_samples_minus_1 - 1.0;
+        const FLOAT_t argument = beta * SQRTF(FMAXF(0.0, 1.0 - term * term));
+
+        const FLOAT_t raw_weight = dsp_isb_sub_bessel_i0(argument) / i0_beta;
+
+        /* Enforce strict amplitude protection boundaries via finite math helper macros */
+        p_dst[n] = FMAXF(0.0, FMINF(raw_weight, 1.0));
+    }
+}
 
 /**
  * @brief GLOBAL ISB INITIALIZER: Generates windowed Hilbert coefficients via CMSIS-DSP vectors.
@@ -4694,8 +4750,8 @@ void dsp_isb_rx_init(isb_demodulator_t * const self)
     self->wr_idx_i = 0;
 
     /* 1. Clear memory history registers tracking buffers */
-    for (uint32_t idx = 0; idx < ISB_FIR_TAPS; idx++)  self->buffer_q[idx] = 0.0f;
-    for (uint32_t idx = 0; idx < ISB_DELAY_LEN; idx++) self->buffer_i[idx] = 0.0f;
+	ARM_MORPH(arm_fill)(0.0, self->buffer_q, ISB_FIR_TAPS);
+	ARM_MORPH(arm_fill)(0.0, self->buffer_i, ISB_DELAY_LEN);
 
     const int32_t mid = (ISB_FIR_TAPS - 1) / 2; /* Midpoint index = 64 */
 
@@ -4703,27 +4759,9 @@ void dsp_isb_rx_init(isb_demodulator_t * const self)
     FLOAT_t window_weights[ISB_FIR_TAPS];
 
     /* 2. PRE-CALCULATE THE SMOOTHING WINDOW ARRAY VIA CMSIS-DSP NEON CORE */
-    for (int32_t n = 0; n < ISB_FIR_TAPS; n++)
-    {
-        const int32_t k = n - mid;
-        float32_t sin_val, cos_val;
-
-        /* Calculate precise radians angle mapping: angle = (2 * PI * k) / ISB_FIR_TAPS */
-        const FLOAT_t phase_rad = (2.0f * M_PI * (FLOAT_t)k) / (FLOAT_t)ISB_FIR_TAPS;
-
-        /* Convert phase radians directly to degrees for native CMSIS-DSP hardware function */
-        float32_t phase_degrees = (float32_t)phase_rad * (180.0f / 3.14159265358979323846f);
-
-        /* Force strict angle wrapping into safe [0.0 ... 360.0] grid to protect table lookup */
-        if (phase_degrees >= 360.0f) phase_degrees -= 360.0f;
-        if (phase_degrees < 0.0f)    phase_degrees += 360.0f;
-
-        /* High-speed hardware core trigonometry execution via NEON registers */
-        arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
-
-        /* Apply standard Hamming window equation: w(n) = 0.54 + 0.46 * cos(theta) */
-        window_weights[n] = 0.54f + 0.46f * (FLOAT_t)cos_val;
-    }
+    ARM_MORPH(arm_hamming)(window_weights, ISB_FIR_TAPS);
+    ARM_MORPH(arm_hanning)(window_weights, ISB_FIR_TAPS);
+    dsp_isb_sub_generate_kaiser(window_weights, ISB_FIR_TAPS, 9.0);
 
     /* 3. GENERATE THE CRrisp 90-DEGREE HILBERT PHASE SHIFTER IMPULSE RESPONSE */
     for (int32_t n = 0; n < ISB_FIR_TAPS; n++)
