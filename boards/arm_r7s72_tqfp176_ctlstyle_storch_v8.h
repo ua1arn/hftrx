@@ -473,26 +473,6 @@
 		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE	// 2: 2tone, 1: noise 
 	#endif
 
-#endif /* WITHISBOOTLOADER */
-
-	
-	
-	
-
-	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
-
-	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
-
-	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
-
-	//#define WITHWFM	1			/* используется WFM */
-	/* все возможные в данной конфигурации фильтры */
-	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
-	/* все возможные в данной конфигурации фильтры для передачи */
-	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
-	/* фильтры, для которых стоит признак HAVE */
-	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
-
 	//#define WITHALTERNATIVEFONTS    1
 
 	// Назначения входов АЦП процессора.
@@ -573,6 +553,26 @@
 	#endif
 
 	};
+
+#endif /* WITHISBOOTLOADER */
+
+
+
+
+
+	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
+
+	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
+
+	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
+
+	//#define WITHWFM	1			/* используется WFM */
+	/* все возможные в данной конфигурации фильтры */
+	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+	/* все возможные в данной конфигурации фильтры для передачи */
+	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
+	/* фильтры, для которых стоит признак HAVE */
+	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
 	/* кеширование днных */
 	enum
