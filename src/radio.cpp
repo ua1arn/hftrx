@@ -3341,16 +3341,16 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 			{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },	// ROW 3
 		};
 	#elif WITHMODEM
-		static const uint_fast8_t modes [][5] =
+		static const uint_fast8_t modes [][6] =
 		{
 			{ 1, SUBMODE_BPSK, },
 		};
 	#elif WITHSAM
-	static const uint_fast8_t modes [][5] =
+	static const uint_fast8_t modes [][6] =
 		{
 			{ 2, SUBMODE_LSB, SUBMODE_USB, },
 			{ 2, SUBMODE_CWR, SUBMODE_CW, },
-			{ 4, SUBMODE_AM, SUBMODE_SAM, SUBMODE_CWZ, SUBMODE_DRM, },
+			{ 5, SUBMODE_AM, SUBMODE_SAM, SUBMODE_CWZ, SUBMODE_DRM, SUBMODE_ISB, },
 		#if WITHRTTY
 			{ 4, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, SUBMODE_RTTY, },
 		#else /* WITHRTTY */

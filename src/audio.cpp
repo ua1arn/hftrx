@@ -4170,26 +4170,26 @@ static FLOAT_t baseband_demodulator(
 			r = sample * agc_levelsquelchopen(path, fltstrengthslow);
 		}
 		break;
+
+	case DSPCTL_MODE_RX_ISB:
+		{
+			// пока тестирую - но доджно вернуть два канала звука
+			// use floating point
+			const FLOAT_t sigpower = agc_getsigpower(vp0f);
+			const FLOAT_t fltstrengthslow = agc_measure_float(path, dspmode, SQRTF(sigpower));
+			const FLOAT_t gain = agc_getgain_float(path, fltstrengthslow);
+			const FLOAT32P_t vp1 = scalepair(vp0f, gain);
+			FLOAT_t usb, lsb;
+			/* прием независимых боковых полос */
+			dsp_isb_rx_process_sample(& path->isb_rx, vp1.IV, vp1.QV, & usb, & lsb);
+			//r = usb;
+			r = lsb;
+		}
 	}
 	return r;
 }
 
 #if WITHDSPEXTDDC
-
-// ПРИЁМ ISB
-// Обрабатывается 32-х битная квадратура
-// Возвращается сэмпл - выход детектора
-// return pair of audio samples in range [- 1 .. + 1]
-static FLOAT32P_t processifadcsampleIQ_ISB(
-	hfrxpath_t * const path,
-	IFADCvalue_t iv0,	// Квадратурные значения выборки
-	IFADCvalue_t qv0	// Квадратурные значения выборки
-	)
-{
-	FLOAT32P_t rv = { 0 };
-
-	return rv;
-}
 
 // ПРИЁМ остальных режимов
 // Обрабатывается 32-х битная квадратура
@@ -4677,7 +4677,124 @@ void dsp_processtx(unsigned nsamples0)
 	}
 }
 
+//#include "isb.h"
 
+/* Extern declaration of the CMSIS-DSP trigonometry core architecture */
+//extern void arm_sin_cos_f32(float32_t theta, float32_t * pSinVal, float32_t * pCosVal);
+
+/**
+ * @brief GLOBAL ISB INITIALIZER: Generates windowed Hilbert coefficients via CMSIS-DSP vectors.
+ * Calculates static 129-tap FIR table once at boot time with no runtime math overhead.
+ *
+ * @param self Pointer to the active isolated ISB demodulator context.
+ */
+void dsp_isb_rx_init(isb_demodulator_t * const self)
+{
+    self->wr_idx_q = 0;
+    self->wr_idx_i = 0;
+
+    /* 1. Clear memory history registers tracking buffers */
+    for (uint32_t idx = 0; idx < ISB_FIR_TAPS; idx++)  self->buffer_q[idx] = 0.0f;
+    for (uint32_t idx = 0; idx < ISB_DELAY_LEN; idx++) self->buffer_i[idx] = 0.0f;
+
+    const int32_t mid = (ISB_FIR_TAPS - 1) / 2; /* Midpoint index = 64 */
+
+    /* Dedicated temporary buffer to pre-calculate the complete window function array */
+    FLOAT_t window_weights[ISB_FIR_TAPS];
+
+    /* 2. PRE-CALCULATE THE SMOOTHING WINDOW ARRAY VIA CMSIS-DSP NEON CORE */
+    for (int32_t n = 0; n < ISB_FIR_TAPS; n++)
+    {
+        const int32_t k = n - mid;
+        float32_t sin_val, cos_val;
+
+        /* Calculate precise radians angle mapping: angle = (2 * PI * k) / ISB_FIR_TAPS */
+        const FLOAT_t phase_rad = (2.0f * M_PI * (FLOAT_t)k) / (FLOAT_t)ISB_FIR_TAPS;
+
+        /* Convert phase radians directly to degrees for native CMSIS-DSP hardware function */
+        float32_t phase_degrees = (float32_t)phase_rad * (180.0f / 3.14159265358979323846f);
+
+        /* Force strict angle wrapping into safe [0.0 ... 360.0] grid to protect table lookup */
+        if (phase_degrees >= 360.0f) phase_degrees -= 360.0f;
+        if (phase_degrees < 0.0f)    phase_degrees += 360.0f;
+
+        /* High-speed hardware core trigonometry execution via NEON registers */
+        arm_sin_cos_f32(phase_degrees, &sin_val, &cos_val);
+
+        /* Apply standard Hamming window equation: w(n) = 0.54 + 0.46 * cos(theta) */
+        window_weights[n] = 0.54f + 0.46f * (FLOAT_t)cos_val;
+    }
+
+    /* 3. GENERATE THE CRrisp 90-DEGREE HILBERT PHASE SHIFTER IMPULSE RESPONSE */
+    for (int32_t n = 0; n < ISB_FIR_TAPS; n++)
+    {
+        const int32_t k = n - mid;
+
+        if (k == 0)
+        {
+            self->hilbert_taps[n] = 0.0f;
+        }
+        else if ((k % 2) == 0)
+        {
+            /* All even coefficients of the ideal Hilbert transform are mathematically zero */
+            self->hilbert_taps[n] = 0.0f;
+        }
+        else
+        {
+            /* Ideal mathematical infinite impulse response step */
+            const FLOAT_t ideal_h = 2.0f / (3.14159265358979323846f * (FLOAT_t)k);
+
+            /* Modulate ideal step response with the pre-calculated CMSIS-DSP window weight */
+            self->hilbert_taps[n] = ideal_h * window_weights[n];
+        }
+    }
+}
+
+/**
+ * @brief MAIN EXPORT LAYER: High-speed sample-by-sample phase-splitting convolution engine.
+ */
+void dsp_isb_rx_process_sample(
+    isb_demodulator_t * const self,
+    const FLOAT_t in_i,
+    const FLOAT_t in_q,
+    FLOAT_t * const out_usb,
+    FLOAT_t * const out_lsb)
+{
+    /* 1. Push incoming IQ coordinates straight into the circular registers ring */
+    self->buffer_q[self->wr_idx_q] = in_q;
+
+    /* Fetch historical delayed real sample to preserve absolute phase alignment */
+    const FLOAT_t delayed_i = self->buffer_i[self->wr_idx_i];
+    self->buffer_i[self->wr_idx_i] = in_i;
+
+    /* 2. Execute convolution with the half-taps skipping optimization */
+    FLOAT_t q_90 = 0.0f;
+    const uint32_t curr_idx = self->wr_idx_q;
+
+    /* Iterate only odd coefficients because even taps are mathematically zero */
+    for (uint32_t n = 1; n < ISB_FIR_TAPS; n += 2)
+    {
+        /* Map linear filter index straight to internal circular ring tracking memory pointer */
+        const uint32_t ring_ptr = (curr_idx + n) >= ISB_FIR_TAPS ? (curr_idx + n) - ISB_FIR_TAPS : (curr_idx + n);
+
+        q_90 += self->buffer_q[ring_ptr] * self->hilbert_taps[n];
+    }
+
+    /* 3. Combine phase aligned component channels via Weaver/Williams method */
+    /* USB = Delayed_I(t) + Q_90(t) */
+    /* LSB = Delayed_I(t) - Q_90(t) */
+    *out_usb = delayed_i + q_90;
+    *out_lsb = delayed_i - q_90;
+
+    /* 4. Step ring buffers indices safely with boundary reset wrap rules */
+    self->wr_idx_q++;
+    if (self->wr_idx_q >= ISB_FIR_TAPS) self->wr_idx_q = 0;
+
+    self->wr_idx_i++;
+    if (self->wr_idx_i >= ISB_DELAY_LEN) self->wr_idx_i = 0;
+}
+
+// Приём одного радиоприёмника. ISB создаёт два независимых канала - надо что-то придумать.
 FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 {
     hfrxpath_t * const path = & rx_paths [pathi];
@@ -4690,17 +4807,7 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 
 #if WITHDSPEXTDDC
 
-		if (rxgate && dspmode == DSPCTL_MODE_RX_ISB)
-		{
-			/* прием независимых боковых полос */
-			// Обработка буфера с парами значений
-			//const FLOAT32P_t rv = processifadcsampleIQ_ISB(path, iv, qv);
-			return 0;
-		}
-		else
-		{
-			return processifadcsampleIQ(path, iv, qv, rxgate ? dspmode : DSPCTL_MODE_IDLE);
-		}
+	return processifadcsampleIQ(path, iv, qv, rxgate ? dspmode : DSPCTL_MODE_IDLE);
 
 #else /* WITHDSPEXTDDC */
 
@@ -5239,6 +5346,7 @@ hfrxpath_init(hfrxpath_t * const self)
 		// OFDM BPSK
 		radio_ofdm_modem_configure(self);
 	}
+	dsp_isb_rx_init(& self->isb_rx);
 	self->angle_aflorx = 0;
 	self->delayblanklo6rx = 0;
 	self->manualsquelch = 0;
@@ -5311,6 +5419,7 @@ hfrxpath_update(
 		// OFDM BPSK
 		radio_ofdm_modem_configure(self);
 	}
+	dsp_isb_rx_init(& self->isb_rx);
 	// Noise Blanker (NB)
 	setNBfence(glob_wnbfence10);
 

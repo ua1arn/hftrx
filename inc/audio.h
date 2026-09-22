@@ -815,6 +815,66 @@ typedef struct
 	//int levelfade;					// Fade Leveler switch
 } amdemod_t;
 
+#ifndef _ISB_H_
+#define _ISB_H_
+
+#include <stdint.h>
+
+#define ISB_FIR_TAPS            129
+#define ISB_DELAY_LEN           64  /* Bounded strictly to (ISB_FIR_TAPS - 1) / 2 */
+
+/**
+ * @brief Isolated structure for sample-by-sample Independent Sideband (ISB) Demodulator.
+ * Contains internal lookup matrices and historical delay lines for 90-degree phase splitting.
+ */
+typedef struct {
+    /* Circular history registers buffers for real-time streaming convolution */
+    FLOAT_t buffer_q[ISB_FIR_TAPS];  /* History buffer for the imaginary Q-channel */
+    FLOAT_t buffer_i[ISB_DELAY_LEN]; /* Line delay buffer to sync the real I-channel phase */
+
+    uint32_t wr_idx_q;               /* Write pointer index for Q-channel history buffer */
+    uint32_t wr_idx_i;               /* Write pointer index for I-channel delay buffer */
+
+    /* Pre-calculated static FIR coefficients for the 90-degree Hilbert transformer */
+    FLOAT_t hilbert_taps[ISB_FIR_TAPS];
+} isb_demodulator_t;
+
+/* ========================================================================== */
+/* ISB DEMODULATOR INTERFACE EXPORTED API PROTOTYPES                          */
+/* ========================================================================== */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief GLOBAL ISB INITIALIZER: Clears buffers and pre-calculates Hilbert FIR filter coefficients.
+ * @param self Pointer to the active isolated ISB demodulator context.
+ */
+void dsp_isb_rx_init(isb_demodulator_t * const self);
+
+/**
+ * @brief MAIN EXPORT LAYER: Processes one complex IQ sample and extracts independent LSB/USB audio outputs.
+ * Executed sample-by-sample inside the hot path sound card DMA interrupt handler.
+ *
+ * @param self Pointer to the active isolated ISB demodulator context.
+ * @param in_i Input real quadrature component (I) from the LPF filtered down-converter.
+ * @param in_q Input imaginary quadrature component (Q) from the LPF filtered down-converter.
+ * @param out_usb Output pointer to return extracted Upper Sideband (USB) voice sample.
+ * @param out_lsb Output pointer to return extracted Lower Sideband (LSB) voice sample.
+ */
+void dsp_isb_rx_process_sample(
+    isb_demodulator_t * const self,
+    const FLOAT_t in_i,
+    const FLOAT_t in_q,
+    FLOAT_t * const out_usb,
+    FLOAT_t * const out_lsb);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _ISB_H_ */
 
 #include "rtty.h"
 #include "ofdm_bpsk.h"
@@ -857,6 +917,7 @@ typedef struct {
     agcstate_t rxagcstate;	// На каждый приёмник
     agcparams_t rxagcparams [NPROF];
 
+    isb_demodulator_t isb_rx;
 	rtty_receiver_t rtty_rx;
 	ofdm_modem_rx_t ofdm_rx;
 
