@@ -6175,7 +6175,7 @@ enum
 		};
 		static const struct paramdefdef xgavoxlevel =
 		{
-			QLABEL3("AVOX LEV", "Anti-VOX Level", "AVOX LEVEL"),  0, RJ_UNSIGNED, ISTEP1,
+			QLABEL3("AVOX LEV", "A-VOX Level", "AVOX LEVEL"),  0, RJ_UNSIGNED, ISTEP1,
 			ITEM_VALUE,
 			WITHAVOXLEVELMIN, WITHAVOXLEVELMAX,
 			OFFSETOF(struct nvmap, gavoxlevel),
@@ -9835,7 +9835,7 @@ static const struct paramdefdef xgssbwide_low = {
 	getzerobase, /* складывается со смещением и отображается */
 };
 static const struct paramdefdef xgssbwide_afr = {
-	QLABEL("SSBW AFR"), 0, RJ_SIGNED,	ISTEP1,
+	QLABEL3("SSBW SLOPE", "SSB W SLOPE", "SSBW SLOPE"), 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBWIDE),
@@ -9868,7 +9868,7 @@ static const struct paramdefdef xgssbmedium_low = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbmedium_afr = {
-	QLABEL("SSBM AFR"), 0, RJ_SIGNED,	ISTEP1,
+	QLABEL3("SSBM SLOPE", "SSB M SLOPE", "SSBM SLOPE"), 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBMEDIUM),
@@ -9901,7 +9901,7 @@ static const struct paramdefdef xgssbnarrow_low = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbnarrow_afr = {
-	QLABEL("SSBN AFR"),  0, RJ_SIGNED,	ISTEP1,
+	QLABEL3("SSBN SLOPE", "SSBN SLOPE", "SSBN SLOPE"),  0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBNARROW),
@@ -9934,7 +9934,7 @@ static const struct paramdefdef xgamwide_low = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamwide_afr = {
-	QLABEL("AM W AFR"), 0, RJ_SIGNED,	ISTEP1,
+	QLABEL3("AM W SLOPE", "AM W SLOPE", "AM W SLOPE"), 0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMWIDE),
@@ -9967,7 +9967,7 @@ static const struct paramdefdef xgamnarrow_low = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamnarrow_afr = {
-	QLABEL("AM N AFR"),  0, RJ_SIGNED,	ISTEP1,
+	QLABEL3("AM N SLOPE", "AM N SLOPE", "AM N SLOPE"),  0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMNARROW),
