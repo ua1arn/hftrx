@@ -4759,9 +4759,11 @@ void dsp_isb_rx_init(isb_demodulator_t * const self)
     FLOAT_t window_weights[ISB_FIR_TAPS];
 
     /* 2. PRE-CALCULATE THE SMOOTHING WINDOW ARRAY VIA CMSIS-DSP NEON CORE */
-    ARM_MORPH(arm_hamming)(window_weights, ISB_FIR_TAPS);
-    ARM_MORPH(arm_hanning)(window_weights, ISB_FIR_TAPS);
-    dsp_isb_sub_generate_kaiser(window_weights, ISB_FIR_TAPS, 9.0);
+//    ARM_MORPH(arm_hamming)(window_weights, ISB_FIR_TAPS);
+//    ARM_MORPH(arm_hanning)(window_weights, ISB_FIR_TAPS);
+//    dsp_isb_sub_generate_kaiser(window_weights, ISB_FIR_TAPS, 9.0);
+//    dsp_isb_sub_generate_blackman_harris(window_weights, ISB_FIR_TAPS);
+    ARM_MORPH(arm_blackman_harris_92db)(window_weights, ISB_FIR_TAPS);
 
     /* 3. GENERATE THE CRrisp 90-DEGREE HILBERT PHASE SHIFTER IMPULSE RESPONSE */
     for (int32_t n = 0; n < ISB_FIR_TAPS; n++)

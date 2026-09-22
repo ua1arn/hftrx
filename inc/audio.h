@@ -820,8 +820,8 @@ typedef struct
 
 #include <stdint.h>
 
-#define ISB_FIR_TAPS            129
-#define ISB_DELAY_LEN           64  /* Bounded strictly to (ISB_FIR_TAPS - 1) / 2 */
+#define ISB_FIR_TAPS            257
+#define ISB_DELAY_LEN           128  /* Bounded strictly to (ISB_FIR_TAPS - 1) / 2 */
 
 /**
  * @brief Isolated structure for sample-by-sample Independent Sideband (ISB) Demodulator.
