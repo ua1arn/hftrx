@@ -123,6 +123,7 @@ processmessages(
 	uint_fast8_t * kbready
 	)
 {
+#if ! WITHISBOOTLOADER
 	if (hardware_getshutdown())	// признак провала питания
 	{
 		display_uninitialize();	// выключаем дисплей
@@ -130,6 +131,7 @@ processmessages(
 		for (;;)				// вешаемся...
 			;
 	}
+#endif /* ! WITHISBOOTLOADER */
 
 	board_dpc_processing();		// обработка отложенного вызова user mode функций
 	watchdog_ping();
@@ -3256,6 +3258,8 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 	return bandsmap [b].label;
 }
 
+#if ! WITHISBOOTLOADER
+
 /* "карта" режимов,
  * Переход по строкам идет по короткому нажатию кнопки "режим",
  * переход в пределах сроки идет по длинному нажатию кнопки "режим".
@@ -3442,6 +3446,9 @@ validatesubmode(
 	return 0;
 }
 #endif
+#endif /* ! WITHISBOOTLOADER */
+
+#if ! WITHISBOOTLOADER
 
 /* текст (любой), используемый как сигнатура содержимого NVRAM */
 /* последний байт этого массива в NVRAM не запоминается и не сравнивается. */
@@ -3625,9 +3632,6 @@ struct nvmap
 #if WITHSLEEPTIMER
 	uint8_t gsleeptime;
 #endif /* WITHSLEEPTIMER */
-#if LCDMODE_COLORED
-	//uint8_t gbluebgnd;
-#endif /* LCDMODE_COLORED */
 
 #if WITHMIC1LEVEL
 	uint16_t gmik1level;
@@ -4074,6 +4078,14 @@ unsigned nvram_tlv_getparam(unsigned * base)
 #endif /* WITHUSEUSBBT */
 
 
+static int_fast32_t getagcfencebase(void)
+{
+	return DBVALOFFSET_BASE;
+}
+
+#endif /* ! WITHISBOOTLOADER */
+
+
 static uint_fast16_t gzero;
 
 static ptrdiff_t valueoffs0(unsigned sel)
@@ -4098,12 +4110,6 @@ static int_fast32_t getzerobase(void)
 {
 	return 0;
 }
-
-static int_fast32_t getagcfencebase(void)
-{
-	return DBVALOFFSET_BASE;
-}
-
 
 #if WITHENCODER
 
@@ -4168,6 +4174,8 @@ static int_fast32_t getagcfencebase(void)
 
 
 #endif /* WITHENCODER */
+
+#if WITHMENU
 
 /* переменные, вынесенные из главной функции - определяют текущий тежим рботы
    и частоту настройки
@@ -5010,13 +5018,6 @@ static const struct paramdefdef xgbottomdbtx =
 
 static uint_fast8_t gpoweronhold = 1;	/* выдать "1" на выход удержания питания включенным */
 
-#if LCDMODE_COLORED
-	//static uint_fast8_t gbluebgnd;
-	enum { gbluebgnd = 0 };
-#else
-	enum { gbluebgnd = 0 };
-#endif /* LCDMODE_COLORED */
-
 static uint_fast8_t gshowdbm = 1;	// Отображение уровня сигнала в dBm или S-memter
 static const struct paramdefdef xgshowdbm =
 {
@@ -5030,6 +5031,8 @@ static const struct paramdefdef xgshowdbm =
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
+
+#endif /* WITHMENU */
 
 #if WITHAUTOTUNER
 
@@ -5885,7 +5888,8 @@ enum
 	static uint_fast8_t gn7ddclinearC = 1;
 	static uint_fast8_t gn7ddclinearL;
 #endif /* WITHAUTOTUNER_N7DDCALGO */
-
+#else /* WITHAUTOTUNER */
+	enum { tunerwork = 0 };
 #endif /* WITHAUTOTUNER */
 
 #if WITHSUBTONES && WITHIF4DSP
@@ -6246,6 +6250,7 @@ enum
 	static const uint_fast8_t bkindelay = 80;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
 #endif /* WITHTX */
 
+#if WITHMENU
 #if WITHELKEY
 
 	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
@@ -6432,6 +6437,8 @@ static const struct paramdefdef xstayfreq =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
+#endif /* WITHMENU */
+
 #if defined (DAC1_TYPE)
 	#if defined (WITHDAC1VALDEF)
 		static uint_fast8_t dac1level = WITHDAC1VALDEF;
@@ -6482,6 +6489,7 @@ static const struct paramdefdef xstayfreq =
 	uint_fast8_t swrmode = 0;
 #endif /* WITHBARS */
 
+#if WITHMENU
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
 
 	// Напряжение fullscale = VREF * 5.3 = 3.3 * 5.3 = 17.5 вольта: сверху 4.3 килоом, синзу 1.0 килоом
@@ -7310,6 +7318,8 @@ static const struct paramdefdef xgskipfilteraf =
 	};
 
 #endif /* WITHMODEM */
+
+#endif /* WITHMENU */
 
 static const uint_fast16_t actbring_time = 10;	// 1 second
 static const uint_fast16_t swrbring_time = BOARD_ERRBEEP_LENGTH / 100;	// 0.6 second
@@ -8685,15 +8695,6 @@ getifshift(
 	return 0;
 }
 
-static uint_fast32_t
-loadvfy32freq(
-	vindex_t b		// band
-	)
-{
-	const vindex_t b0 = (b >= MBANDS_BASE) ? VFOS_BASE : b;
-	return loadvfy32(RMT_BFREQ_BASE(b), get_band_bottom(b0), get_band_top(b0), get_band_init(b0));
-}
-
 #if 0
 static const uint_fast8_t ssb_steps10 [] =
 {
@@ -8803,6 +8804,8 @@ uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag)
 	}
 }
 #endif /* WITHAMHIGHKBDADJ */
+
+#if ! WITHISBOOTLOADER
 
 static void
 uif_pwbutton_press(void)
@@ -9017,6 +9020,15 @@ getprevhband(const uint_fast32_t freq)
 	return i;
 }
 
+
+static uint_fast32_t
+loadvfy32freq(
+	vindex_t b		// band
+	)
+{
+	const vindex_t b0 = (b >= MBANDS_BASE) ? VFOS_BASE : b;
+	return loadvfy32(RMT_BFREQ_BASE(b), get_band_bottom(b0), get_band_top(b0), get_band_init(b0));
+}
 
 static vindex_t
 getnext_ham_band(
@@ -9322,6 +9334,7 @@ storebandfreq(const vindex_t b, const uint_fast8_t bi)
 
 	save_i32(RMT_BFREQ_BASE(b), gfreqs [bi]);	/* сохранить в области диапазона частоту */
 }
+
 
 #if WITHSPECTRUMWF
 
@@ -10071,6 +10084,9 @@ static const struct paramdefdef xgdigiwide_low = {
 };
 #endif /* WITHMENU && WITHIF4DSP */
 
+
+#endif /*! WITHISBOOTLOADER */
+
 #if WITHTOUCHGUI
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
 static enc2_menu_t enc2_menu;
@@ -10298,6 +10314,22 @@ static uint_fast8_t getmemindex(uint_fast8_t bg)
 	return 0;
 }
 
+
+static const struct paramdefdef xgdummy =
+{
+	QLABEL(""),  0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
+	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	0, 0,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	& gzero,
+	NULL,
+	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
+#if ! WITHISBOOTLOADER
+
 enum {
 	SPLITMODES_OFF,
 	SPLITMODES_ON,
@@ -10478,19 +10510,6 @@ uint_fast32_t hamradio_get_freq_b(void)
 #endif /* WITHLFM */
 	return gfreqs [getbankindex_ab_fordisplay(1)];	/* VFO B modifications */
 }
-
-static const struct paramdefdef xgdummy =
-{
-	QLABEL(""),  0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
-	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
-	0, 0,
-	MENUNONVRAM,
-	getselector0, nvramoffs0, valueoffs0,
-	& gzero,
-	NULL,
-	getzerobase,
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-};
 
 #if WITHIF4DSP
 
@@ -10965,7 +10984,6 @@ gsubmodechange(
 	}
 }
 
-
 #if defined (RTC1_TYPE)
 
 static uint_fast16_t grtcyear;
@@ -11058,6 +11076,7 @@ static void board_setrtcstrobe(uint_fast8_t val)
 
 #endif /* defined (RTC1_TYPE) */
 
+#endif /* ! WITHISBOOTLOADER */
 
 
 static uint_fast8_t findcatbaudrate(uint_fast8_t old, uint_fast32_t baudrate)
@@ -11071,6 +11090,8 @@ static uint_fast8_t findcatbaudrate(uint_fast8_t old, uint_fast32_t baudrate)
 	}
 	return old;
 }
+
+#if ! WITHISBOOTLOADER
 
 static int_fast32_t
 //NOINLINEAT
@@ -11587,6 +11608,12 @@ getactualtune(void)
 	return txreq_gettxtone(txreqp) || txreq_getreqautotune(txreqp);
 }
 
+// текущее состояние TUNE
+uint_fast8_t hamradio_get_tunemodevalue(void)
+{
+	return getactualtune();
+}
+
 // вызывается из user mode
 // Возвращает поизнак необходимости сбросить мощность сейчас (например, запрос от автотюнера)
 uint_fast8_t
@@ -11734,6 +11761,7 @@ getamode(uint_fast8_t pathi)
 	return gdatamode && getactualtune() == 0 ? MODE_DIGI :  submodes [asubmode].mode;
 }
 
+#endif /* ! WITHISBOOTLOADER */
 
 /*
  * Установка параметров, влияющих на работу валкодера, цветовой схемой дисплея.
@@ -11745,7 +11773,7 @@ updateboard2(void)
 #if WITHENCODER
 	encoder1_set_resolution(encresols [genc1pulses], genc1dynamic);
 #endif /* WITHENCODER */
-	display2_setbgcolor(gbluebgnd ? COLORPIP_BLUE : COLORPIP_BLACK);
+	display2_setbgcolor(COLORPIP_BLACK);
 }
 
 
@@ -13039,6 +13067,7 @@ encoder_flagne(const struct paramdefdef * pd, int_least16_t delta, uint_fast8_t 
 	return 0;
 }
 
+#if ! WITHISBOOTLOADER
 /*
  параметры:
  tx - не-0: переключение аппаратуры в режим передачи
@@ -13728,7 +13757,9 @@ static void updateboard_freq(void)
 #endif /* WITHTOUCHGUI */
 }
 
+#endif /* ! WITHISBOOTLOADER */
 
+#if WITHKEYBOARD
 ///////////////////////////
 // обработчики кнопок клавиатуры
 
@@ -13771,6 +13802,8 @@ uint_fast8_t hamradio_get_bkin_value(void)
 
 #endif /* WITHELKEY */
 
+#if ! WITHISBOOTLOADER
+
 #if WITHVOX && WITHTX
 
 static void
@@ -13796,6 +13829,7 @@ uint_fast8_t hamradio_get_voxvalue(void)
 
 #endif /* WITHVOX && WITHTX */
 
+#endif /* WITHKEYBOARD */
 
 #if WITHANTSELECT1RX
 
@@ -13848,6 +13882,7 @@ const char * hamradio_get_ant5_value(void)
 }
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 
+#if WITHKEYBOARD
 // включение режима split (возможо, с расстройко от текущей частоты)
 static void
 uif_key_spliton(uint_fast8_t holded)
@@ -14446,6 +14481,7 @@ uint_fast8_t hamradio_get_spkon_value(void)
 	return ! param_getvalue(& xgmutespkr);
 }
 
+
 ///////////////////////////
 // обработчики кнопок клавиатуры
 //////////////////////////
@@ -14501,6 +14537,7 @@ uif_key_changefilter(void)
 }
 
 #endif /* WITHIF4DSP */
+
 ///////////////////////////
 // обработчики кнопок клавиатуры
 //////////////////////////
@@ -14528,9 +14565,6 @@ uif_key_tune(void)
 }
 
 #endif /* WITHTX */
-
-#if WITHKEYBOARD
-#endif /* WITHKEYBOARD */
 
 
 #if WITHAUTOTUNER
@@ -14580,6 +14614,9 @@ uif_key_atunerstart(void)
 	updateboard();
 }
 
+
+#endif /* WITHKEYBOARD */
+
 uint_fast8_t
 hamradio_get_bypvalue(void)
 {
@@ -14592,6 +14629,8 @@ hamradio_get_atuvalue(void)
 	return txreq_getreqautotune(& txreqst0);
 }
 #endif /* WITHAUTOTUNER */
+#endif /* ! WITHISBOOTLOADER */
+
 
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 
@@ -14621,12 +14660,6 @@ uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p)
 	return gnoisereducts [gmode] != 0;
 }
 #endif /* WITHINTEGRATEDDSP */
-
-// текущее состояние TUNE
-uint_fast8_t hamradio_get_tunemodevalue(void)
-{
-	return getactualtune();
-}
 
 #if WITHVOLTLEVEL
 
@@ -14846,6 +14879,8 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 
 #endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
 
+#if ! WITHISBOOTLOADER
+
 uint_fast8_t hamradio_get_tx(void)
 {
 	return gtx;
@@ -14955,7 +14990,6 @@ const char * hamradio_get_hplp_value_P(void)
 }
 #endif /* WITHPOWERLPHP */
 
-
 ///////////////////////////
 // обработчики кнопок клавиатуры
 //////////////////////////
@@ -14982,6 +15016,8 @@ void hamradio_dwatch_toggle(void)
 }
 
 #endif /* WITHUSEDUALWATCH */
+
+#endif /* ! WITHISBOOTLOADER */
 
 ///////////////////////////
 // обработчики кнопок клавиатуры
@@ -15010,6 +15046,7 @@ uif_key_click_xxxx(void)
 // были обработчики кнопок клавиатуры
 ///////////////////////////
 
+#if ! WITHISBOOTLOADER
 // S-METER, SWR-METER, POWER-METER
 /* отображение S-метра или SWR-метра на приёме или передаче */
 // Функция вызывается из display2.c
@@ -15323,6 +15360,7 @@ static void doadcmirror(void)
 	#endif /* WITHVOLTLEVEL */
 	/* --- переписываем значения из возможно внешних АЦП в кеш значений */
 }
+
 // обновимть изображение частоты на дисплее
 static void
 //NOINLINEAT
@@ -15336,6 +15374,7 @@ display_redrawfreqstimed(
 		refreshperformed_freqs();
 	}
 }
+#endif /* ! WITHISBOOTLOADER  */
 
 // *************************
 // CAT sequence parser
@@ -17700,6 +17739,7 @@ uint_fast8_t elkey_getnextcw(void)
 
 #endif /* WITHELKEY */
 
+#if ! WITHISBOOTLOADER
 // User-mode function.
 // Called every secound
 static void dpc_1s_timer_fn(void * arg)
@@ -17888,6 +17928,8 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 	return 0;
 }
 #endif /* WITHTX */
+
+#endif /* ! WITHISBOOTLOADER */
 
 static uint_fast32_t ipow10(uint_fast8_t v)
 {
@@ -19969,6 +20011,18 @@ processmainloopkeyboard(inputevent_t * ev)
 
 #endif /* WITHKEYBOARD */
 
+#if WITHISBOOTLOADER
+
+void txreq_initialize(txreq_t * txreqp)
+{
+}
+
+void
+txreq_process(void)
+{
+}
+
+#else /* WITHISBOOTLOADER */
 
 // Зависящий от режима запрос на передачу
 // break-in, vox
@@ -20252,6 +20306,8 @@ static void dpc_0p1_s_timer_fn(void * ctx)
 	main_speed_diagnostics();
 	looptests();		// Периодически вызывается в главном цикле - тесты
 }
+
+#endif /* ! WITHISBOOTLOADER */
 
 /* вызывается при запрещённых прерываниях. */
 void
@@ -20871,7 +20927,7 @@ static void keyspoolprocess(void * ctx)
 }
 #endif /* WITHDEBUG */
 
-
+#if ! WITHISBOOTLOADER
 
 // User-mode function. Вызывается для выполнения latch спектра и панорамы
 static void
@@ -22664,6 +22720,8 @@ application_mainloop(void)
 	}
 }
 
+#endif /* ! WITHISBOOTLOADER */
+
 #if 0
 
 static volatile uint16_t f255, f255cnt, f255period;
@@ -23149,6 +23207,15 @@ int ctcss_squelch(void)
 
 #endif /* WITHSUBTONES */
 
+#if WITHISBOOTLOADER
+
+void
+application_initialize(void)
+{
+}
+
+#else /* WITHISBOOTLOADER */
+
 __WEAK void modem_init(void) { }
 
 /* вызывается при разрешённых прерываниях. */
@@ -23268,6 +23335,8 @@ application_initialize(void)
 #endif /* WITHUSEUSBBT */
 
 }
+
+
 // текущее состояние LOCK
 uint_fast8_t
 hamradio_get_lockvalue(void)
@@ -23623,3 +23692,6 @@ int infocb_thermo(char * b, size_t len, int * pstate)
 	return 0;
 #endif
 }
+
+#endif /* ! WITHISBOOTLOADER */
+

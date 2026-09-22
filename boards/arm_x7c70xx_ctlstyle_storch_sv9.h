@@ -529,21 +529,6 @@
 	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
 	#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
-#endif /* WITHISBOOTLOADER */
-
-	#if XC7Z020
-		#define BOARD_BITIMAGE_NAME "build/xc7Z020/bitstream_myir7020.h"
-	#elif XC7Z010
-		#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_myir7010.h"
-	#endif
-
-	#define WITHMODESETFULLNFM 1
-	/* все возможные в данной конфигурации фильтры */
-	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
-	/* все возможные в данной конфигурации фильтры для передачи */
-	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
-	/* фильтры, для которых стоит признак HAVE */
-	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
@@ -635,7 +620,26 @@
 	#if WITHTHERMOLEVEL
 		XTHERMOIX = BOARD_ADCX1IN(6),		// External thermo sensor ST LM235Z
 	#endif /* WITHTHERMOLEVEL */
+	};
 
+#endif /* WITHISBOOTLOADER */
+
+	#if XC7Z020
+		#define BOARD_BITIMAGE_NAME "build/xc7Z020/bitstream_myir7020.h"
+	#elif XC7Z010
+		#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_myir7010.h"
+	#endif
+
+	#define WITHMODESETFULLNFM 1
+	/* все возможные в данной конфигурации фильтры */
+	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+	/* все возможные в данной конфигурации фильтры для передачи */
+	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
+	/* фильтры, для которых стоит признак HAVE */
+	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+
+	enum
+	{
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		REFMRRIX = BOARD_ADCMRRIN(2),
