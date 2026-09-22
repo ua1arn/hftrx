@@ -6385,7 +6385,7 @@ void audio_diagnostics(void)
 /* ========================================================================== */
 /*                             INTERNAL FIFO HELPERS                          */
 /* ========================================================================== */
-
+#include "rtty.h"
 /**
  * @brief Thread-safe lock-free buffer initialization.
  */
