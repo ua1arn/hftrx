@@ -13,14 +13,23 @@
 #include "dspdefines.h"
 #include "audio.h"
 
-/////////////
-/// RTTY
-///
+/**
+ * @brief EXPORT EXTERNAL LAYER: Interface function to safely push a character directly into the transmitter's embedded queue.
+ * @return uint32_t Returns 1 on successful placement, 0 if internal storage queue is full.
+ */
+uint32_t dsp_rtty_tx_push_char(rtty_transmitter_t * const self, const uint8_t character)
+{
+	return fifo_push(& self->tx_fifo, character);
+}
 
-
-
-/////////////////////////////////
-/// TX
+/**
+ * @brief EXPORT EXTERNAL LAYER: Interface function to safely pop a decoded character directly from the receiver's embedded FSM queue.
+ * @return uint32_t Returns 1 if valid text byte was extracted, 0 if queue is currently empty.
+ */
+uint32_t dsp_rtty_rx_pop_char(rtty_receiver_t * const self, uint8_t * const output_byte)
+{
+	return fifo_pop(& self->fsm.rx_fifo, output_byte);
+}
 
 /**
  * @brief SUB-FUNCTION: Asynchronous Baudot serialization machine execution loop step.

@@ -358,6 +358,147 @@ static inline bool find_key_in_report(hid_keyboard_report_t const *report, uint8
 }
 
 
+/*
+ * USB HID Keyboard Usage ID to ASCII Mapping Table
+ *
+ * Array dimensions: [256][2]
+ * Row index: USB HID Usage ID (0x00 to 0xFF)
+ * Column 0: Normal keypress (No modifiers)
+ * Column 1: Shift key pressed
+ * Unmapped keys are automatically initialized to 0.
+ */
+const uint8_t hid_to_ascii[256][2] = {
+	/* [HID_KEY]      = {Normal, Shift} */
+	[0x00] = {0,    0},    /* No Event */
+	[0x01] = {0,    0},    /* ErrorRollOver */
+	[0x02] = {0,    0},    /* POSTFail */
+	[0x03] = {0,    0},    /* ErrorUndefined */
+
+	/* Alphabetic keys (A-Z) */
+	[0x04] = {'a',  'A'},  /* Usage 0x04: A */
+	[0x05] = {'b',  'B'},  /* Usage 0x05: B */
+	[0x06] = {'c',  'C'},  /* Usage 0x06: C */
+	[0x07] = {'d',  'D'},  /* Usage 0x07: D */
+	[0x08] = {'e',  'E'},  /* Usage 0x08: E */
+	[0x09] = {'f',  'F'},  /* Usage 0x09: F */
+	[0x0A] = {'g',  'G'},  /* Usage 0x0A: G */
+	[0x0B] = {'h',  'H'},  /* Usage 0x0B: H */
+	[0x0C] = {'i',  'I'},  /* Usage 0x0C: I */
+	[0x0D] = {'j',  'J'},  /* Usage 0x0D: J */
+	[0x0E] = {'k',  'K'},  /* Usage 0x0E: K */
+	[0x0F] = {'l',  'L'},  /* Usage 0x0F: L */
+	[0x10] = {'m',  'M'},  /* Usage 0x10: M */
+	[0x11] = {'n',  'N'},  /* Usage 0x11: N */
+	[0x12] = {'o',  'O'},  /* Usage 0x12: O */
+	[0x13] = {'p',  'P'},  /* Usage 0x13: P */
+	[0x14] = {'q',  'Q'},  /* Usage 0x14: Q */
+	[0x15] = {'r',  'R'},  /* Usage 0x15: R */
+	[0x16] = {'s',  'S'},  /* Usage 0x16: S */
+	[0x17] = {'t',  'T'},  /* Usage 0x17: T */
+	[0x18] = {'u',  'U'},  /* Usage 0x18: U */
+	[0x19] = {'v',  'V'},  /* Usage 0x19: V */
+	[0x1A] = {'w',  'W'},  /* Usage 0x1A: W */
+	[0x1B] = {'x',  'X'},  /* Usage 0x1B: X */
+	[0x1C] = {'y',  'Y'},  /* Usage 0x1C: Y */
+	[0x1D] = {'z',  'Z'},  /* Usage 0x1D: Z */
+
+	/* Numeric keys (1-0) and symbols */
+	[0x1E] = {'1',  '!'},  /* Usage 0x1E: 1 and Exclamation */
+	[0x1F] = {'2',  '@'},  /* Usage 0x1F: 2 and At */
+	[0x20] = {'3',  '#'},  /* Usage 0x20: 3 and Hash */
+	[0x21] = {'4',  '$'},  /* Usage 0x21: 4 and Dollar */
+	[0x22] = {'5',  '%'},  /* Usage 0x22: 5 and Percent */
+	[0x23] = {'6',  '^'},  /* Usage 0x23: 6 and Caret */
+	[0x24] = {'7',  '&'},  /* Usage 0x24: 7 and Ampersand */
+	[0x25] = {'8',  '*'},  /* Usage 0x25: 8 and Asterisk */
+	[0x26] = {'9',  '('},  /* Usage 0x26: 9 and Left Parenthesis */
+	[0x27] = {'0',  ')'},  /* Usage 0x27: 0 and Right Parenthesis */
+
+	/* Control and Punctuation keys */
+	[0x28] = {'\n', '\n'}, /* Return (Enter) */
+	[0x29] = {27,   27},   /* Escape (ASCII ESC = 27) */
+	[0x2A] = {'\b', '\b'}, /* Delete (Backspace) */
+	[0x2B] = {'\t', '\t'}, /* Tab */
+	[0x2C] = {' ',  ' '},  /* Spacebar */
+	[0x2D] = {'-',  '_'},  /* Minus and Underscore */
+	[0x2E] = {'=',  '+'},  /* Equal and Plus */
+	[0x2F] = {'[',  '{'},  /* Left Bracket */
+	[0x30] = {']',  '}'},  /* Right Bracket */
+	[0x31] = {'\\', '|'},  /* Backslash and Pipe */
+	[0x32] = {'#',  '~'},  /* Non-US # and ~ */
+	[0x33] = {';',  ':'},  /* Semicolon and Colon */
+	[0x34] = {'\'', '"'},  /* Single/Double Quote */
+	[0x35] = {'`',  '~'},  /* Grave Accent and Tilde */
+	[0x36] = {',',  '<'},  /* Comma and Less Than */
+	[0x37] = {'.',  '>'},  /* Period and Greater Than */
+	[0x38] = {'/',  '?'},  /* Slash and Question Mark */
+
+	/* Keypad keys (NumLock assumed ON) */
+	[0x54] = {'/',  '/'},  /* Keypad Slash */
+	[0x55] = {'*',  '*'},  /* Keypad Asterisk */
+	[0x56] = {'-',  '-'},  /* Keypad Minus */
+	[0x57] = {'+',  '+'},  /* Keypad Plus */
+	[0x58] = {'\n', '\n'}, /* Keypad Enter */
+	[0x59] = {'1',  '1'},  /* Keypad 1 and End */
+	[0x5A] = {'2',  '2'},  /* Keypad 2 and Down Arrow */
+	[0x5B] = {'3',  '3'},  /* Keypad 3 and PageDown */
+	[0x5C] = {'4',  '4'},  /* Keypad 4 and Left Arrow */
+	[0x5D] = {'5',  '5'},  /* Keypad 5 */
+	[0x5E] = {'6',  '6'},  /* Keypad 6 and Right Arrow */
+	[0x5F] = {'7',  '7'},  /* Keypad 7 and Home */
+	[0x60] = {'8',  '8'},  /* Keypad 8 and Up Arrow */
+	[0x61] = {'9',  '9'},  /* Keypad 9 and PageUp */
+	[0x62] = {'0',  '0'},  /* Keypad 0 and Insert */
+	[0x63] = {'.',  '.'},  /* Keypad . and Delete */
+};
+
+/*
+ * Converts a USB HID Keyboard Usage ID to its corresponding ASCII character.
+ *
+ * Parameters:
+ *   hid_code:  The raw USB HID keycode (Usage ID) from the boot report.
+ *   modifier:  The modifier byte (e.g., Left/Right Shift state).
+ *   caps_lock: The current toggle state of the Caps Lock LED (true = ON).
+ *
+ * Returns:
+ *   The mapped ASCII character, or 0 if the key has no ASCII representation.
+ */
+static char hid_to_ascii_convert(uint8_t hid_code, uint8_t modifier, int caps_lock) {
+    /*
+     * Extract Shift modifier state:
+     * Left Shift is bit 1 (0x02), Right Shift is bit 5 (0x20)
+     */
+    bool is_shift_pressed = (modifier & 0x02) || (modifier & 0x20);
+
+    /* Fetch the base characters from our mapping table */
+    char normal_char = hid_to_ascii[hid_code][0];
+    char shift_char  = hid_to_ascii[hid_code][1];
+
+    /* If the key code is out of bounds or not mapped, return 0 */
+    if (normal_char == 0) {
+        return 0;
+    }
+
+    /*
+     * Determine if the key is alphabetic (a-z).
+     * USB HID Usage IDs for 'A' through 'Z' are sequentially 0x04 to 0x1D.
+     */
+    bool is_alpha = (hid_code >= 0x04 && hid_code <= 0x1D);
+
+    if (is_alpha) {
+        /*
+         * Caps Lock and Shift cancel each other out for letters.
+         * If both are active, it results in lowercase.
+         */
+        bool upper_case = caps_lock ^ is_shift_pressed;
+        return upper_case ? shift_char : normal_char;
+    } else {
+        /* For numbers and symbols, only the Shift key changes the output */
+        return is_shift_pressed ? shift_char : normal_char;
+    }
+}
+
+
 // convert hid keycode to ascii and print via usb device CDC (ignore non-printable)
 static void process_kbd_report(uint8_t dev_addr, hid_keyboard_report_t const *report)
 {
@@ -376,14 +517,20 @@ static void process_kbd_report(uint8_t dev_addr, hid_keyboard_report_t const *re
       }else
       {
         // not existed in previous report means the current key is pressed
+    	  static int caps_lock = 0;
+    	  caps_lock = (keycode == 0x39) ? ! caps_lock : caps_lock;	// CAPS LOCK keycode check
 
         // remap the key code for Colemak layout
         #ifdef KEYBOARD_COLEMAK
         uint8_t colemak_key_code = colemak[keycode];
         if (colemak_key_code != 0) keycode = colemak_key_code;
         #endif
-        PRINTF("[%u] keycode=0x%02X\n", dev_addr, keycode);
-
+        char c = hid_to_ascii_convert(keycode, report->modifier, caps_lock);
+        PRINTF("[%u] keycode=0x%02X (ascii=0x%02X)\n", dev_addr, keycode, (unsigned char) c);
+        if (c)
+        {
+        	appsendchar(c);
+        }
 //        bool const is_shift = report->modifier & (KEYBOARD_MODIFIER_LEFTSHIFT | KEYBOARD_MODIFIER_RIGHTSHIFT);
 //        uint8_t ch = keycode2ascii[keycode][is_shift ? 1 : 0];
 //

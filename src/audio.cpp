@@ -5115,25 +5115,37 @@ dsp_get_samplerate100(void)
 	return ARMI2SRATE100;
 }
 
-
-void rtty_spool(void * ctx)
+// Печать принятых через любой модем символов
+static void modems_spool(void * ctx)
 {
 	(void) ctx;
 
 	uint8_t c;
-	if (rtty_rx_byte(& rx_paths [0].rtty_rx.fsm, & c))
+	const int flag =
+			dsp_rtty_rx_pop_char(& rx_paths [0].rtty_rx, & c) ||
+			dsp_rtty_rx_pop_char(& rx_paths [1].rtty_rx, & c) ||
+			dsp_ofdm_rx_pop_char(& rx_paths [0].ofdm_rx, & c) ||
+			dsp_ofdm_rx_pop_char(& rx_paths [1].ofdm_rx, & c) ||
+			0;
+
+	if (flag)
 	{
+		dbg_putchar(c);
+		//PRINTF("0x%02X ", (uint8_t) c);
 		display_vtty_putchar(c);
-	}
-	if (rtty_rx_byte(& rx_paths [1].rtty_rx.fsm, & c))
-	{
-		display_vtty_putchar(c);
+
 	}
 //	if (rtty_rx_byte_debug(self, & c))
 //	{
 //		dbg_putchar(c);
 //	}
 	//printf("integrator=%f, dc_bias=%f\n", rx_stream.detector.pll_integrator, rx_stream.detector.dc_bias);
+}
+
+void appsendchar(char c)
+{
+	dsp_rtty_tx_push_char(& hftrx_txgetpath()->rtty_tx, c);
+	display_vtty_putchar(c);
 }
 
 /**
@@ -5463,7 +5475,7 @@ void hftrx_init(void)
 
 	static dpcobj_t rttydpcobj;
 
-	dpcobj_initialize(& rttydpcobj, rtty_spool, NULL);
+	dpcobj_initialize(& rttydpcobj, modems_spool, NULL);
 	board_dpc_addentry(& rttydpcobj, board_dpc_coreid());
 
 	modem_update();

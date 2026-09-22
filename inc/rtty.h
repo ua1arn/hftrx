@@ -200,7 +200,6 @@ void dsp_rtty_tx_process_sample(
 
 
 void dsp_rttyrxcharacter(rtty_baudot_fsm_t * self, const uint8_t c);
-uint32_t rtty_rx_byte(rtty_baudot_fsm_t * const self, uint8_t *output_byte);
 
 #ifdef __cplusplus
 }
