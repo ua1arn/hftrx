@@ -20332,10 +20332,11 @@ keyboard_test(void)
 	}
 	return 0;
 }
+
 #define MSGYCELLS 5
 /* вызывается при разрешённых прерываниях. */
 // не-0: требуется сбросить NVRAM
-uint_fast8_t initialize2(void)
+static uint_fast8_t initialize2(void)
 {
 	uint_fast8_t resetconfig = 0;
 #if ! LCDMODE_DUMMY
@@ -20547,9 +20548,6 @@ uint_fast8_t initialize2(void)
 			}
 		}
 		resetconfig = 1;
-#if WITHMENU
-		defaultsettings();		/* загрузка в nvram установок по умолчанию */
-#endif //WITHMENU
 		initnvramsignature();
 		//extmenu = 1;	/* сразу включаем инженерный режим - без перезагрузки доступны все пункты */
 	}
@@ -20633,10 +20631,6 @@ uint_fast8_t initialize2(void)
 		}
 
 		resetconfig = 1;
-#if WITHMENU
-		defaultsettings();		/* загрузка в nvram установок по умолчанию */
-#endif //WITHMENU
-
 		//PRINTF(PSTR("initialize2: NVRAM initialization: write NVRAM signature.\n"));
 		initnvramsignature();
 		//extmenu = 1;	/* сразу включаем инженерный режим - без перезагрузки доступны все пункты */
@@ -20660,8 +20654,6 @@ uint_fast8_t initialize2(void)
 		ticker_add(& ticker_blinks);
 	}
 #endif /* defined (BOARD_BLINK_SETSTATE) */
-
-	buffers_start();
 
 #if WITHDEBUG
 	PRINTF("initialize2: finished.\n");
@@ -22636,12 +22628,8 @@ uint_fast8_t hamradio_get_gvfoab(void)
 
 // основной цикл программы при работе в режиме любительского премника
 void
-application_mainloop(uint_fast8_t resetconfig)
+application_mainloop(void)
 {
-	if (resetconfig)
-	{
-		defaultsettings();		/* загрузка в nvram установок по умолчанию */
-	}
 	hamradio_main_initialize();
 	for (;;)
 	{
@@ -23140,11 +23128,18 @@ __WEAK void modem_init(void) { }
 void
 application_initialize(void)
 {
-	/* NVRAM уже можно пользоваться */
-#if WITHMENU && ! HARDWARE_IGNORENONVRAM
+	const uint_fast8_t resetconfig = initialize2();	/* вызывается при разрешённых прерываниях. */
+#if WITHMENU
+	if (resetconfig)
+	{
+		defaultsettings();		/* загрузка в nvram установок по умолчанию */
+	}
+#if ! HARDWARE_IGNORENONVRAM
 	loadsettings();		/* загрузка всех установок из nvram. */
-#endif /* WITHMENU && ! HARDWARE_IGNORENONVRAM */
-	//extmenu = extmenu || alignmode;
+#endif /* ! HARDWARE_IGNORENONVRAM */
+#endif /* WITHMENU */
+	/* NVRAM уже можно пользоваться */
+
 	loadsavedstate();	// split, s-meter display, see also loadsettings().
 	loadnewband(getvfoindex(1), 1);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
 	loadnewband(getvfoindex(0), 0);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
@@ -23160,7 +23155,8 @@ application_initialize(void)
 #if XVTR_R820T2
 	//board_set_bandfxvrtr(bandf_calc(R820T_IFFREQ))	// Этот диапазон подставляется как ПЧ для трансвертора
 #endif /* XVTR_R820T2 */
-	board_init_chips();	// программирование всех микросхем синтезатора.
+
+	board_init_chips();	// программирование всех микросхем на плате - синтезатора, кодеков
 
 #if WITHUSESDCARD
 	sdcardhw_initialize();
@@ -23193,6 +23189,7 @@ application_initialize(void)
 #endif /* WITHMODEM */
 
 #if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
+	buffers_start();	// DSP processing process
 	hftrx_init();		// цифровая обработка подготавливается
 	InitNoiseReduction();
 

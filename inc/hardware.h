@@ -892,8 +892,7 @@ size_t getRamDiskSize(void);
 
 void lowinitialize(void);
 void applowinitialize(void);
-uint_fast8_t initialize2(void);	// не-0: требуется сбросить NVRAM
-void application_mainloop(uint_fast8_t resetconfig);
+void application_mainloop(void);
 void application_initialize(void);
 
 void ohciehci_clk_init(void);
