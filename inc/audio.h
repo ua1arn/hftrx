@@ -833,7 +833,7 @@ typedef struct {
 } nfm_rx_t;
 
 
-/* Complete Signal Path Object Model for hftrx */
+/* Complete RX Signal Path Object Model for hftrx */
 typedef struct {
 	const void * sign1;
 	// NFM
@@ -843,13 +843,10 @@ typedef struct {
 	ncoftwi_t prev_fi;
 	volatile int32_t saved_delta_fi;
 
-    unsigned delayblanklo6tx;
     unsigned delayblanklo6rx;
-    uint8_t delaylo6lastmode;
+    uint8_t delaylo6lastmoderx;
 
-    ncoftw_t anglestep_aflotx;
     ncoftw_t anglestep_aflorx;
-    ncoftw_t angle_aflotx;
     ncoftw_t angle_aflorx;
 
     amdemod_t samdetector;	/* AM demodulator */
@@ -861,14 +858,40 @@ typedef struct {
     agcparams_t rxagcparams [NPROF];
 
 	rtty_receiver_t rtty_rx;
-	dpcobj_t rttydpcobj;
-	rtty_transmitter_t rtty_tx;
-
-	ofdm_modem_tx_t ofdm_tx;
 	ofdm_modem_rx_t ofdm_rx;
+
 	const void * sign2;
 } hfrxpath_t;
 
+/* Complete TX Signal Path Object Model for hftrx */
+typedef struct {
+	const void * sign1;
+
+	unsigned shapeSidetonePos;// = 0;
+	volatile uint_fast8_t shapeSidetoneInpit;// = 0;
+	volatile uint_fast8_t shapeCWSSBSidetoneInpit;// = 0;
+
+	unsigned shapeTXEnvelopPos;// = 0;
+	unsigned shapeCWSSBEnvelopPos;// = 0;
+
+	volatile unsigned enveloplen0;// = NSAITICKS(5) + 1;	/* Изменяется через меню. */
+
+    unsigned delayblanklo6tx;
+    uint8_t delaylo6lastmodetx;
+    ncoftw_t anglestep_aflotx;
+    ncoftw_t angle_aflotx;
+
+	ncoftw_t gnfmdeviationftw;// = FTWAF(7500);	// 7.5 kHz (-7.5..+7.5) deviation
+
+	rtty_transmitter_t rtty_tx;
+	ofdm_modem_tx_t ofdm_tx;
+
+	const void * sign2;
+} hftxpath_t;
+
+
+hfrxpath_t * hftrx_rxgetpathA(void);
+hftxpath_t * hftrx_txgetpath(void);
 
 void modem_init(void);
 
@@ -881,8 +904,6 @@ void modem_test(void);
 FLOAT32P_t xget_float_monofreq(void);	// modem test LO quadratures
 
 void process_dmabuffer32rx(hfrxpath_t * path, const IFADCvalue_t * buff);
-
-hfrxpath_t * hftrx_rxgetpathA(void);
 
 #endif /* WITHINTEGRATEDDSP */
 

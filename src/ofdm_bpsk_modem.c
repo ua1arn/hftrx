@@ -2002,7 +2002,7 @@ void modem_fill(hfrxpath_t * path, IFADCvalue_t * buff)
 	ASSERT(path->sign1 == path && path->sign2 == path);
 	const adapter_t * const ap = & ifcodecrx;
 	FLOAT_t i, q;
-	dsp_ofdm_tx_process_sample(& path->ofdm_tx, & i, & q);
+	dsp_ofdm_tx_process_sample(& hftrx_txgetpath()->ofdm_tx, & i, & q);
 
 	buff [DMABUF32RX0I] = adpt_output(ap, i);
 	buff [DMABUF32RX0Q] = adpt_output(ap, q);

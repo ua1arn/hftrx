@@ -205,10 +205,16 @@ static volatile uint_fast8_t datavox;	/* автоматическое измен
 
 /* Static allocation for dual-receive independent tracks */
 static hfrxpath_t rx_paths [2];
+static hftxpath_t tx_path;
 
 hfrxpath_t * hftrx_rxgetpathA(void)
 {
 	return & rx_paths [0];
+}
+
+hftxpath_t * hftrx_txgetpath(void)
+{
+	return & tx_path;
 }
 
 static uint_fast8_t istxreplacedusbactive(void)
@@ -428,10 +434,10 @@ static volatile FLOAT_t amshapesignalHALF;
 static volatile FLOAT_t amcarrierHALF;
 static volatile FLOAT_t scaleDAC = 1;
 
-static FLOAT_t shapeSidetoneStep(void);		// 0..1
-static FLOAT_t shapeTXEnvelopStep(void);	// 0..1
-static FLOAT_t shapeCWSSBEnvelopStep(void);	// 0..1
-static uint_fast8_t getTxShapeNotComplete(void);
+static FLOAT_t shapeSidetoneStep(hftxpath_t * const txpath);		// 0..1
+static FLOAT_t shapeTXEnvelopStep(hftxpath_t * const txpath);	// 0..1
+static FLOAT_t shapeCWSSBEnvelopStep(hftxpath_t * const txpath);	// 0..1
+static uint_fast8_t getTxShapeNotComplete(hftxpath_t * const txpath);
 
 static FLOAT32P_t getsampmlemike2(void);
 static FLOAT32P_t getsampmleusb2(void);
@@ -586,7 +592,7 @@ static FLOAT_t get_float_sidetone(void)
 static ncoftw_t anglestep_sidetonetxssb;
 static ncoftw_t angle_sidetonetxssb;
 
-static FLOAT_t get_float_sidetonetxssb(void)
+static FLOAT_t get_float_sidetonetxssb(hftxpath_t * const txpath)
 {
 	const FLOAT_t v = getcosf(angle_sidetonetxssb);
 	angle_sidetonetxssb = FTWROUND(angle_sidetonetxssb + anglestep_sidetonetxssb);
@@ -598,7 +604,7 @@ static FLOAT_t get_float_sidetonetxssb(void)
 static ncoftw_t anglestep_subtone;
 static ncoftw_t angle_subtone;
 
-static FLOAT_t get_float_subtone(void)
+static FLOAT_t get_float_subtone(hftxpath_t * const txpath)
 {
 	const FLOAT_t v = getcosf(angle_subtone);
 	angle_subtone = FTWROUND(angle_subtone + anglestep_subtone);
@@ -644,37 +650,36 @@ static FLOAT_t get_dualtonefloat(void)
 	return (v1 + v2) / 2;
 }
 
-static ncoftw_t gnfmdeviationftw = FTWAF(7500);	// 7.5 kHz (-7.5..+7.5) deviation
-
 // установить частоту, закрыть тракт на время прохождения сигнала через фильтр
-static void nco_setlo_ftw(hfrxpath_t * const path, ncoftw_t ftw, uint_fast8_t dspmode)
+static void nco_setlo6rx_ftw(hfrxpath_t * const path, ncoftw_t ftw, uint_fast8_t dspmode, unsigned rxfirdelay)
 {
-#if WITHDSPEXTRXFIR
-	const unsigned txfirdelay = 2 * Ntap_trxi_IQ / 2;
-#elif WITHDSPLOCALTXFIR
-	const unsigned txfirdelay = 2 * Ntap_tx_SSB_IQ / 2;
-#endif
-#if WITHDSPEXTRXFIR
-	const unsigned rxfirdelay = 2 * Ntap_trxi_IQ / 2;
-#elif WITHDSPLOCALTXFIR
-	const unsigned rxfirdelay = 2 * Ntap_rx_SSB_IQ / 2;
-#endif
 	// Установка звдержки открывания тракта по смене режима
-	if (path->delaylo6lastmode != dspmode)
+	if (path->delaylo6lastmoderx != dspmode)
 	{
-		path->delaylo6lastmode = dspmode;
-		path->delayblanklo6tx = txfirdelay;
+		path->delaylo6lastmoderx = dspmode;
 		path->delayblanklo6rx = rxfirdelay;
 	}
 	// частота устанавливается сразу
-	path->anglestep_aflotx = ftw;
 	path->anglestep_aflorx = ftw;
+}
+
+// установить частоту, закрыть тракт на время прохождения сигнала через фильтр
+static void nco_setlo6tx_ftw(hftxpath_t * const path, ncoftw_t ftw, uint_fast8_t dspmode, unsigned txfirdelay)
+{
+	// Установка звдержки открывания тракта по смене режима
+	if (path->delaylo6lastmodetx != dspmode)
+	{
+		path->delaylo6lastmodetx = dspmode;
+		path->delayblanklo6tx = txfirdelay;
+	}
+	// частота устанавливается сразу
+	path->anglestep_aflotx = ftw;
 }
 
 /* задержка установки нового значение частоты генератора
  * возврат 1 если закончилась отработка времени
  */
-static int switchmode_delaytx(hfrxpath_t * const path)
+static int switchmode_delaytx(hftxpath_t * const path)
 {
 	if (path->delayblanklo6tx)
 		path->delayblanklo6tx -= 1;
@@ -692,7 +697,7 @@ static int switchmode_delayrx(hfrxpath_t * const path)
 
 // Получение квадратурных значений для данной частоты со смещением фазы
 // Returned is a full scale value
-static FLOAT32P_t get_float_aflotx_delta(hfrxpath_t * const path, int32_t deltaftw)
+static FLOAT32P_t get_float_aflotx_delta(hftxpath_t * const path, int32_t deltaftw)
 {
 	const ncoftw_t angle = path->angle_aflotx;
 	const FLOAT32P_t v = getsincosf(angle);
@@ -702,7 +707,7 @@ static FLOAT32P_t get_float_aflotx_delta(hfrxpath_t * const path, int32_t deltaf
 
 // Получение квадратурных значений для данной частоты
 // Returned is a full scale value
-static FLOAT32P_t get_float_aflorx_delta(hfrxpath_t * const path)
+static FLOAT32P_t get_float_aflorx(hfrxpath_t * const path)
 {
 	const ncoftw_t angle = path->angle_aflorx;
 	const FLOAT32P_t v = getsincosf(angle);
@@ -2344,13 +2349,28 @@ static void audio_setup_mike(const uint_fast8_t spf)
 static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi, uint_fast8_t tx)
 {
     hfrxpath_t * const path = &rx_paths[pathi];
+    hftxpath_t * const txpath = &tx_path;
     globDSPMode  [spf] [pathi] = glob_dspmodes [pathi];
 
 	// второй фильтр грузится только в режиме приёма (обеспечиватся внешним циклом).
 	audio_setup_wiver(spf, pathi);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
 
-	const ncoftw_t lo6_ftw = FTWAF(- glob_lo6 [pathi]);
-	nco_setlo_ftw(path, lo6_ftw, globDSPMode  [spf] [pathi]);
+	{
+		const ncoftw_t lo6_ftw = FTWAF(- glob_lo6 [pathi]);
+	#if WITHDSPEXTRXFIR
+		const unsigned txfirdelay = 2 * Ntap_trxi_IQ / 2;
+	#elif WITHDSPLOCALTXFIR
+		const unsigned txfirdelay = 2 * Ntap_tx_SSB_IQ / 2;
+	#endif
+	#if WITHDSPEXTRXFIR
+		const unsigned rxfirdelay = 2 * Ntap_trxi_IQ / 2;
+	#elif WITHDSPLOCALTXFIR
+		const unsigned rxfirdelay = 2 * Ntap_rx_SSB_IQ / 2;
+	#endif
+		nco_setlo6rx_ftw(path, lo6_ftw, globDSPMode  [spf] [pathi], rxfirdelay);
+		nco_setlo6tx_ftw(txpath, lo6_ftw, globDSPMode  [spf] [0], txfirdelay);
+	}
+
 	debug_cleardtmax();		// сброс максимального значения в тесте производительности DSP
 
 #if 0
@@ -3511,13 +3531,13 @@ static FLOAT_t mikeinmux(
 
 /* получить I/Q пару для передачи в up-converter */
 static FLOAT32P_t baseband_modulator(
-	hfrxpath_t * const path,
+	hftxpath_t * const txpath,
 	FLOAT_t vi,
 	uint_fast8_t dspmode,
 	int32_t * deltanfm
 	)
 {
-	const FLOAT_t shape = switchmode_delaytx(path) * shapeTXEnvelopStep() * scaleDAC;	// 0..1 - огибающая
+	const FLOAT_t shape = switchmode_delaytx(txpath) * shapeTXEnvelopStep(txpath) * scaleDAC;	// 0..1 - огибающая
 	switch (dspmode)
 	{
 	default:
@@ -3532,7 +3552,7 @@ static FLOAT32P_t baseband_modulator(
 	{
 		* deltanfm = 0;
 		FLOAT32P_t vfb;
-		dsp_ofdm_tx_process_sample(& path->ofdm_tx, & vfb.IV, & vfb.QV);
+		dsp_ofdm_tx_process_sample(& txpath->ofdm_tx, & vfb.IV, & vfb.QV);
 		return vfb;
 	}
 
@@ -3569,14 +3589,14 @@ static FLOAT32P_t baseband_modulator(
 		{
 			* deltanfm = 0;
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
-			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(path, 0), vi * shape);
+			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(txpath, 0), vi * shape);
 			return vfb;
 		}
 	case DSPCTL_MODE_TX_RTTY:
 		{
 			* deltanfm = 0;
 			FLOAT32P_t vfb;
-			dsp_rtty_tx_process_sample(& path->rtty_tx, & vfb.IV, & vfb.QV);
+			dsp_rtty_tx_process_sample(& txpath->rtty_tx, & vfb.IV, & vfb.QV);
 			return vfb;
 		}
 	case DSPCTL_MODE_TX_AM:
@@ -3585,7 +3605,7 @@ static FLOAT32P_t baseband_modulator(
 			// vi - audio sample in range [- txlevelfenceSSB.. + txlevelfenceSSB]
 			// input range: of vi: (- IFDACMAXVAL) .. (+ IFDACMAXVAL)
 			const FLOAT_t peak = amcarrierHALF + vi * amshapesignalHALF;
-			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(path, 0), peak * shape);
+			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(txpath, 0), peak * shape);
 			return vfb;
 		}
 
@@ -3594,12 +3614,12 @@ static FLOAT32P_t baseband_modulator(
 			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 #if 1
 			* deltanfm = 0;//nfmftw(glob_fmdeviation * vi / txlevelfenceSSB);
-			const int32_t deltaftw = (int64_t) (int32_t) gnfmdeviationftw * vi / txlevelfenceSSB;	// Учитывается нормирование источника звука
+			const int32_t deltaftw = (int64_t) (int32_t) txpath->gnfmdeviationftw * vi / txlevelfenceSSB;	// Учитывается нормирование источника звука
 #else
 			* deltanfm = glob_fmdeviation * 100 * vi;
 			const int32_t deltaftw = 0;//(int64_t) (int32_t) gnfmdeviationftw * vi / txlevelfenceSSB;	// Учитывается нормирование источника звука
 #endif
-			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(path, deltaftw), txlevelfenceNFM * shape);
+			const FLOAT32P_t vfb = scalepair(get_float_aflotx_delta(txpath, deltaftw), txlevelfenceNFM * shape);
 			return vfb;
 		}
 	}
@@ -4069,7 +4089,7 @@ static FLOAT_t baseband_demodulator(
 			const FLOAT_t fltstrengthslow = agc_measure_float(path, dspmode, SQRTF(sigpower));
 			const FLOAT_t gain = agc_getgain_float(path, fltstrengthslow);
 			const FLOAT32P_t vp1 = scalepair(vp0f, gain);
-			const FLOAT32P_t af = get_float_aflorx_delta(path);	// средняя частота выходного спектра
+			const FLOAT32P_t af = get_float_aflorx(path);	// средняя частота выходного спектра
 			r = (vp1.QV * af.QV + vp1.IV * af.IV); // переносим на выходную частоту ("+" - без инверсии).
 			//r = (pathi != 0 ? get_rout() : get_lout()) * (FLOAT_t) 0.9;
 			//r = af.IV * 0.9f;
@@ -4434,6 +4454,7 @@ void dsp_fillphones(unsigned nsamples)
 {
 	enum { L = 0, R = 1 };
 	ASSERT(gwprof < NPROF);
+    hftxpath_t * const txpath = & tx_path;
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
 	const uint_fast8_t tx = isdspmodetx(dspmodeA);
 	unsigned i;
@@ -4442,7 +4463,7 @@ void dsp_fillphones(unsigned nsamples)
 		FLOAT32P_t b;
 		FLOAT32P_t voice;
 		FLOAT32P_t moni;
-		const FLOAT_t sdtnenvelop = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
+		const FLOAT_t sdtnenvelop = shapeSidetoneStep(txpath);	// 0..1: 0 - monitor, 1 - sidetone
 		const FLOAT_t sdtnv = get_float_sidetone();
 		ASSERT(sdtnenvelop >= 0 && sdtnenvelop <= 1);
 		ASSERT(sdtnv >= - 1 && sdtnv <= + 1);
@@ -4600,6 +4621,7 @@ void dsp_processtx(unsigned nsamples0)
 {
 	const uint_fast8_t pathi = 0;
     hfrxpath_t * const path = & rx_paths [pathi];
+    hftxpath_t * const txpath = & tx_path;
 	ASSERT(tx_MIKE_blockSize == nsamples0);
 	unsigned i;
 
@@ -4620,9 +4642,9 @@ void dsp_processtx(unsigned nsamples0)
 	/* Передача */
 	for (i = 0; i < tx_MIKE_blockSize; ++ i)
 	{
-		const FLOAT_t shapecwssb = shapeCWSSBEnvelopStep();
-		const FLOAT_t cwssbtone = get_float_sidetonetxssb() * txlevelfenceSSB;
-		const FLOAT_t ctcss = get_float_subtone() * txlevelfenceSSB;
+		const FLOAT_t shapecwssb = shapeCWSSBEnvelopStep(txpath);
+		const FLOAT_t cwssbtone = get_float_sidetonetxssb(txpath) * txlevelfenceSSB;
+		const FLOAT_t ctcss = get_float_subtone(txpath) * txlevelfenceSSB;
 		monimux(dspmodeA, & monitorbuff [i], & txfirbuff [i]);	/* При необходимости добавить в самопрослушивание самоконтроль ключа и пердаваемый SSB сигнал */
 		savemonistereo(monitorbuff [i].IV, monitorbuff [i].QV);	/* Самопрослушивание (сигнал SSB берется после фильтра) */
 		FLOAT_t v = txfirbuff [i];
@@ -4631,7 +4653,7 @@ void dsp_processtx(unsigned nsamples0)
 			v = v * (1 - shapecwssb) + (cwssbtone * shapecwssb);	/* Заменяем передаваемый сигнал на тон пропорционально огибающей. */
 		}
 		int32_t deltanfm;
-		FLOAT32P_t vfb = baseband_modulator(path, injectsubtone(v, ctcss), dspmodeA, & deltanfm);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		FLOAT32P_t vfb = baseband_modulator(txpath, injectsubtone(v, ctcss), dspmodeA, & deltanfm);	// Передатчик - формирование одного сэмпла (пары I/Q).
 
 #if WITHDSPLOCALTXFIR
 		/* работа без FIR фильтра в FPGA */
@@ -4924,86 +4946,79 @@ void board_set_equalizer_tx_gains(const uint_fast8_t * p)
 //////////////////////////////////////////
 // glob_cwedgetime - длительность нарастания/спада огибающей CW (и сигнала самоконтроля) в единицах милисекунд
 
-static volatile unsigned enveloplen0 = NSAITICKS(5) + 1;	/* Изменяется через меню. */
-static unsigned shapeSidetonePos = 0;
-static volatile uint_fast8_t shapeSidetoneInpit = 0;
-static volatile uint_fast8_t shapeCWSSBSidetoneInpit = 0;
-
-static unsigned shapeTXEnvelopPos = 0;
-static unsigned shapeCWSSBEnvelopPos = 0;
 static volatile uint_fast8_t txgateInput = 0;
 static volatile uint_fast8_t rxgateflag = 0;
 
 // 0..1
-static FLOAT_t peakshapef(unsigned shapePos)	/* shapePos: от 0 до enveloplen0 включительно. */
+static FLOAT_t peakshapef(hftxpath_t * const txpath, unsigned shapePos)	/* shapePos: от 0 до enveloplen0 включительно. */
 {
 	const q31_t halfcircle = INT32_MAX / 2;
 	// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*M_PI).
-	const q31_t cosv = arm_cos_q31((int_fast64_t) shapePos * halfcircle / enveloplen0);
+	const q31_t cosv = arm_cos_q31((int_fast64_t) shapePos * halfcircle / txpath->enveloplen0);
 	const FLOAT_t v = ((FLOAT_t) 1 - FAST_Q31_2_FLOAT(cosv)) * (FLOAT_t) 0.5;	// todo: use arm_q31_to_float
 	return v;
 }
 
 // Формирование огибающей для самоконтрола
 // 0..1
-static FLOAT_t shapeSidetoneStep(void)
+static FLOAT_t shapeSidetoneStep(hftxpath_t * const txpath)
 {
-	const unsigned enveloplen = enveloplen0;
+	const unsigned enveloplen = txpath->enveloplen0;
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
-	if (shapeSidetonePos >= enveloplen)
-		shapeSidetonePos = enveloplen;
+	if (txpath->shapeSidetonePos >= enveloplen)
+		txpath->shapeSidetonePos = enveloplen;
 
-	const FLOAT_t v = peakshapef(shapeSidetonePos);
+	const FLOAT_t v = peakshapef(txpath, txpath->shapeSidetonePos);
 	
-	if (shapeSidetoneInpit != 0)
-		shapeSidetonePos = shapeSidetonePos >= enveloplen ? enveloplen : (shapeSidetonePos + 1);
+	if (txpath->shapeSidetoneInpit != 0)
+		txpath->shapeSidetonePos = txpath->shapeSidetonePos >= enveloplen ? enveloplen : (txpath->shapeSidetonePos + 1);
 	else
-		shapeSidetonePos = shapeSidetonePos == 0 ? 0 : (shapeSidetonePos - 1);
+		txpath->shapeSidetonePos = txpath->shapeSidetonePos == 0 ? 0 : (txpath->shapeSidetonePos - 1);
 	return v;
 }
 
 // Формирование огибающей для передачи
 // 0..1
-static FLOAT_t shapeTXEnvelopStep(void)
+static FLOAT_t shapeTXEnvelopStep(hftxpath_t * const txpath)
 {
-	const unsigned enveloplen = enveloplen0;
+	const unsigned enveloplen = txpath->enveloplen0;
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
-	if (shapeTXEnvelopPos >= enveloplen)
-		shapeTXEnvelopPos = enveloplen;
-	const FLOAT_t v = peakshapef(shapeTXEnvelopPos);
+	if (txpath->shapeTXEnvelopPos >= enveloplen)
+		txpath->shapeTXEnvelopPos = enveloplen;
+	const FLOAT_t v = peakshapef(txpath, txpath->shapeTXEnvelopPos);
 
 	if (txgateInput != 0)
-		shapeTXEnvelopPos = shapeTXEnvelopPos >= enveloplen ? enveloplen : (shapeTXEnvelopPos + 1);
+		txpath->shapeTXEnvelopPos = txpath->shapeTXEnvelopPos >= enveloplen ? enveloplen : (txpath->shapeTXEnvelopPos + 1);
 	else
-		shapeTXEnvelopPos = shapeTXEnvelopPos == 0 ? 0 : (shapeTXEnvelopPos - 1);
+		txpath->shapeTXEnvelopPos = txpath->shapeTXEnvelopPos == 0 ? 0 : (txpath->shapeTXEnvelopPos - 1);
 	return v;
 }
 
 // Формирование огибающей для передачи
 // 0..1
-static FLOAT_t shapeCWSSBEnvelopStep(void)
+static FLOAT_t shapeCWSSBEnvelopStep(hftxpath_t * const txpath)
 {
-	const unsigned enveloplen = enveloplen0;
+	const unsigned enveloplen = txpath->enveloplen0;
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
-	if (shapeCWSSBEnvelopPos >= enveloplen)
-		shapeCWSSBEnvelopPos = enveloplen;
-	const FLOAT_t v = peakshapef(shapeCWSSBEnvelopPos);
+	if (txpath->shapeCWSSBEnvelopPos >= enveloplen)
+		txpath->shapeCWSSBEnvelopPos = enveloplen;
+	const FLOAT_t v = peakshapef(txpath, txpath->shapeCWSSBEnvelopPos);
 
-	if (shapeCWSSBSidetoneInpit != 0)
-		shapeCWSSBEnvelopPos = shapeCWSSBEnvelopPos >= enveloplen ? enveloplen : (shapeCWSSBEnvelopPos + 1);
+	if (txpath->shapeCWSSBSidetoneInpit != 0)
+		txpath->shapeCWSSBEnvelopPos = txpath->shapeCWSSBEnvelopPos >= enveloplen ? enveloplen : (txpath->shapeCWSSBEnvelopPos + 1);
 	else
-		shapeCWSSBEnvelopPos = shapeCWSSBEnvelopPos == 0 ? 0 : (shapeCWSSBEnvelopPos - 1);
+		txpath->shapeCWSSBEnvelopPos = txpath->shapeCWSSBEnvelopPos == 0 ? 0 : (txpath->shapeCWSSBEnvelopPos - 1);
 	return v;
 }
 
 // Возврат признака того, что передавать модему ещё рано - не полностью завершено формирование огибающей
-static uint_fast8_t getTxShapeNotComplete(void)
+static uint_fast8_t getTxShapeNotComplete(hftxpath_t * const txpath)
 {
-	const unsigned enveloplen = enveloplen0;
+	const unsigned enveloplen = txpath->enveloplen0;
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
-	if (shapeTXEnvelopPos >= enveloplen)
-		shapeTXEnvelopPos = enveloplen;
-	return shapeTXEnvelopPos != enveloplen;
+	if (txpath->shapeTXEnvelopPos >= enveloplen)
+		txpath->shapeTXEnvelopPos = enveloplen;
+	return txpath->shapeTXEnvelopPos != enveloplen;
 }
 
 /* разрешение работы тракта в режиме приёма */
@@ -5020,7 +5035,7 @@ void dsp_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
 #if WITHINTEGRATEDDSP
 	txgateInput = (txpathstate & (TXGFV_TX_CW | TXGFV_TX_SSB | TXGFV_TX_AM | TXGFV_TX_NFM)) != 0;
 	rxgateflag = (txpathstate & (TXGFV_RX)) != 0;
-	shapeCWSSBSidetoneInpit = keydown;
+	hftrx_txgetpath()->shapeCWSSBSidetoneInpit = keydown;
 #endif /* WITHINTEGRATEDDSP */
 //	PRINTF("%u", shapeCWSSBSidetoneInpit);
 }
@@ -5031,7 +5046,7 @@ void dsp_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
 void hardware_sounds_disable(void)
 {
 	//anglestep_sidetone = 0;
-	shapeSidetoneInpit = 0;
+	hftrx_txgetpath()->shapeSidetoneInpit = 0;
 }
 
 // called from interrupt or with disabled interrupts
@@ -5042,7 +5057,7 @@ void hardware_sounds_setfreq(
 	)
 {
 	anglestep_sidetone = value;
-	shapeSidetoneInpit = 1;
+	hftrx_txgetpath()->shapeSidetoneInpit = 1;
 
 }
 
@@ -5104,10 +5119,14 @@ dsp_get_samplerate100(void)
 
 void rtty_spool(void * ctx)
 {
-	hfrxpath_t * const self = (hfrxpath_t *) ctx;
+	(void) ctx;
 
 	uint8_t c;
-	if (rtty_rx_byte(& self->rtty_rx.fsm, & c))
+	if (rtty_rx_byte(& rx_paths [0].rtty_rx.fsm, & c))
+	{
+		display_vtty_putchar(c);
+	}
+	if (rtty_rx_byte(& rx_paths [1].rtty_rx.fsm, & c))
 	{
 		display_vtty_putchar(c);
 	}
@@ -5117,11 +5136,6 @@ void rtty_spool(void * ctx)
 //	}
 	//printf("integrator=%f, dc_bias=%f\n", rx_stream.detector.pll_integrator, rx_stream.detector.dc_bias);
 }
-#include "ofdm_bpsk.h"
-
-/* Выделение статической памяти под изолированные контексты OFDM модема */
-static ofdm_modem_tx_t ofdm_tx_ctx;
-static ofdm_modem_rx_t ofdm_rx_ctx;
 
 /**
  * @brief Инициализация OFDM подсистемы трансивера для канала 3.1 кГц.
@@ -5129,6 +5143,7 @@ static ofdm_modem_rx_t ofdm_rx_ctx;
  */
 void radio_ofdm_modem_configure(hfrxpath_t * const self)
 {
+    hftxpath_t * const txpath = hftrx_txgetpath();
     const uint32_t sample_rate      = ARMI2SRATE;    /* Частота дискретизации аудиокодека */
     const uint32_t fft_length       = 256;      /* Размер полезного окна интегрирования */
     const uint32_t cp_length        = 128;      /* Защитный интервал (2.66 мс против многолучевости) */
@@ -5139,7 +5154,7 @@ void radio_ofdm_modem_configure(hfrxpath_t * const self)
     /* 1. Инициализация передающего тракта (модулятора) */
     /* Автоматически сбросит фазы поднесущих и очистит внутреннюю tx_fifo */
     dsp_ofdm_tx_init(
-        & self->ofdm_tx,
+        & txpath->ofdm_tx,
         sample_rate,
         fft_length,
         cp_length,
@@ -5160,25 +5175,51 @@ void radio_ofdm_modem_configure(hfrxpath_t * const self)
 }
 
 static void
-hfrxpath_init(hfrxpath_t * const self)
+hftxpath_init(hftxpath_t * const self)
 {
+    const uint32_t sample_rate = ARMI2SRATE;
 	self->sign1 = self;
 	self->sign2 = self;
+
+
+	self->shapeSidetonePos = 0;
+	self->shapeSidetoneInpit = 0;
+	self->shapeCWSSBSidetoneInpit = 0;
+
+	self->shapeTXEnvelopPos = 0;
+	self->shapeCWSSBEnvelopPos = 0;
+
+	self->angle_aflotx = 0;
+	self->delayblanklo6tx = 0;
+
+	self->gnfmdeviationftw = FTWAF(7500);	// 7.5 kHz (-7.5..+7.5) deviation
+	self->enveloplen0 = NSAITICKS(5) + 1;	/* Изменяется через меню. */
+	{
+		// RTTY
+		dsp_rtty_tx_init(& self->rtty_tx, sample_rate, 400, 50, 1);
+		dsp_rtty_tx_set_reverse(& self->rtty_tx, 1);
+	}
+}
+
+static void
+hfrxpath_init(hfrxpath_t * const self)
+{
     const uint32_t sample_rate = ARMI2SRATE;
+	self->sign1 = self;
+	self->sign2 = self;
 	{
 		// RTTY
 		dsp_rtty_rx_init(& self->rtty_rx, sample_rate, 400, 50);
 		dsp_rtty_rx_set_reverse(& self->rtty_rx, 1);
-		dsp_rtty_tx_init(& self->rtty_tx, sample_rate, 400, 50, 1);
-		dsp_rtty_tx_set_reverse(& self->rtty_tx, 1);
 
-		dpcobj_initialize(& self->rttydpcobj, rtty_spool, self);
-		board_dpc_addentry(& self->rttydpcobj, board_dpc_coreid());
 	}
 	{
 		// OFDM BPSK
 		radio_ofdm_modem_configure(self);
 	}
+	self->angle_aflorx = 0;
+	self->delayblanklo6rx = 0;
+	self->manualsquelch = 0;
 }
 
 // Передача параметров в DSP модуль
@@ -5242,9 +5283,6 @@ hfrxpath_update(
 		// RTTY
 		dsp_rtty_rx_init(& self->rtty_rx, ARMSAIRATE, glob_rtty_shift, glob_rtty_baudrate10 / (FLOAT_t) 10);
 		dsp_rtty_rx_set_reverse(& self->rtty_rx, glob_rtty_inverted);
-
-		dsp_rtty_tx_init(& self->rtty_tx, ARMSAIRATE, glob_rtty_shift, glob_rtty_baudrate10 / (FLOAT_t) 10, 1);
-		dsp_rtty_tx_set_reverse(& self->rtty_tx, glob_rtty_inverted);
 	}
 
 	{
@@ -5268,6 +5306,7 @@ hfrxpath_update(
 static void 
 txparam_update(uint_fast8_t profile)
 {
+    hftxpath_t * const txpath = hftrx_txgetpath();
 	const FLOAT_t txlevelfence = 1;	// контролировать по отсутствию индикации переполнения DUC при передаче
 
 	#if WITHTXCPATHCALIBRATE
@@ -5322,6 +5361,12 @@ txparam_update(uint_fast8_t profile)
 		amshapesignalHALF = amshapesignal / 2;
 		amcarrierHALF = txlevelfenceAM - txlevelfenceAM * amshapesignal;
 	}
+	{
+		// RTTY
+
+		dsp_rtty_tx_init(& txpath->rtty_tx, ARMSAIRATE, glob_rtty_shift, glob_rtty_baudrate10 / (FLOAT_t) 10, 1);
+		dsp_rtty_tx_set_reverse(& txpath->rtty_tx, glob_rtty_inverted);
+	}
 
 	scaleDAC = (FLOAT_t) (int) glob_dacscale / BOARDDACSCALEMAX;
 
@@ -5329,15 +5374,15 @@ txparam_update(uint_fast8_t profile)
 
 	// Девиация в NFM
 	//gnfmdeviationftw = FTWAF(glob_fullbw6 [glob_trxpath] / 2);
-	gnfmdeviationftw = FTWAF(glob_fmdeviation);
+	txpath->gnfmdeviationftw = FTWAF(glob_fmdeviation);
+	// CW & sidetone edge
+	txpath->enveloplen0 = NSAITICKS(glob_cwedgetime) + 1;		/* количество сэмплов, за которое меняется огибающая */
 }
 
 // Передача параметров в DSP модуль
 static void 
 trxparam_update(void)
 {
-	// CW & sidetone edge
-	enveloplen0 = NSAITICKS(glob_cwedgetime) + 1;		/* количество сэмплов, за которое меняется огибающая */
 	// 0.707 == M_SQRT1_2
 	/* http://gregstoll.dyndns.org/~gregstoll/floattohex/ use for tests */
 }
@@ -5368,6 +5413,7 @@ void hftrx_init(void)
 	/* Адаптер для локальных целочисленных FIR */
 	adpt_initialize(& localfircoefs, 32, 0, "localfircoefs");
 
+	hftxpath_init(& tx_path);
 	// Разрядность поступающего с микрофона сигнала
 	agc_initialize();
 	voxmeter_initialize();
@@ -5415,6 +5461,11 @@ void hftrx_init(void)
 		board_dpc_addentry(& user_audioproc_dpc, 2);
 	#endif /* WITHINTEGRATEDDSP */
 	}
+
+	static dpcobj_t rttydpcobj;
+
+	dpcobj_initialize(& rttydpcobj, rtty_spool, NULL);
+	board_dpc_addentry(& rttydpcobj, board_dpc_coreid());
 
 	modem_update();
 
