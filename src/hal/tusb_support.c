@@ -452,25 +452,28 @@ const uint8_t hid_to_ascii[256][2] = {
 	[0x63] = {'.',  '.'},  /* Keypad . and Delete */
 };
 
+#include <stdint.h>
+
 /*
- * Converts a USB HID Keyboard Usage ID to its corresponding ASCII character.
+ * Converts a USB HID Keyboard Usage ID to its corresponding ASCII character,
+ * with full support for Shift, Caps Lock, and Ctrl combinations.
  *
  * Parameters:
  *   hid_code:  The raw USB HID keycode (Usage ID) from the boot report.
- *   modifier:  The modifier byte (e.g., Left/Right Shift state).
- *   caps_lock: The current toggle state of the Caps Lock LED (true = ON).
+ *   modifier:  The modifier byte containing Shift and Ctrl states.
+ *   caps_lock: The current toggle state of the Caps Lock LED (1 = ON, 0 = OFF).
  *
  * Returns:
  *   The mapped ASCII character, or 0 if the key has no ASCII representation.
  */
-static char hid_to_ascii_convert(uint8_t hid_code, uint8_t modifier, int caps_lock) {
-    /*
-     * Extract Shift modifier state:
-     * Left Shift is bit 1 (0x02), Right Shift is bit 5 (0x20)
-     */
-    bool is_shift_pressed = (modifier & 0x02) || (modifier & 0x20);
+char hid_to_ascii_convert(uint8_t hid_code, uint8_t modifier, int caps_lock) {
+    /* Extract Shift modifier state: Left Shift (0x02), Right Shift (0x20) */
+    int is_shift_pressed = ((modifier & 0x02) || (modifier & 0x20)) ? 1 : 0;
 
-    /* Fetch the base characters from our mapping table */
+    /* Extract Ctrl modifier state: Left Ctrl (0x01), Right Ctrl (0x10) */
+    int is_ctrl_pressed = ((modifier & 0x01) || (modifier & 0x10)) ? 1 : 0;
+
+    /* Fetch the base characters from the mapping table */
     char normal_char = hid_to_ascii[hid_code][0];
     char shift_char  = hid_to_ascii[hid_code][1];
 
@@ -480,17 +483,35 @@ static char hid_to_ascii_convert(uint8_t hid_code, uint8_t modifier, int caps_lo
     }
 
     /*
-     * Determine if the key is alphabetic (a-z).
      * USB HID Usage IDs for 'A' through 'Z' are sequentially 0x04 to 0x1D.
      */
-    bool is_alpha = (hid_code >= 0x04 && hid_code <= 0x1D);
+    int is_alpha = (hid_code >= 0x04 && hid_code <= 0x1D) ? 1 : 0;
 
+    /* 1. Handle Ctrl combinations first */
+    if (is_ctrl_pressed) {
+        if (is_alpha) {
+            /*
+             * For Ctrl+A through Ctrl+Z, ASCII characters map to 0x01 through 0x1A.
+             * Formula: hid_code - 0x04 + 1 -> hid_code - 3
+             */
+            return (char)(hid_code - 3);
+        }
+
+        /* Handle standard Ctrl shortcuts for non-alphabetic keys */
+        switch (hid_code) {
+            case 0x24: return 0x1E; /* Ctrl + 7 -> Record Separator (RS) */
+            case 0x2D: return 0x1F; /* Ctrl + - -> Unit Separator (US) */
+            case 0x2F: return 0x1B; /* Ctrl + [ -> Escape (ESC) */
+            case 0x30: return 0x1D; /* Ctrl + ] -> Group Separator (GS) */
+            case 0x31: return 0x1C; /* Ctrl + \ -> File Separator (FS) */
+            default:   return 0;    /* Other Ctrl combinations don't map to standard ASCII */
+        }
+    }
+
+    /* 2. Handle standard typing (No Ctrl) */
     if (is_alpha) {
-        /*
-         * Caps Lock and Shift cancel each other out for letters.
-         * If both are active, it results in lowercase.
-         */
-        bool upper_case = caps_lock ^ is_shift_pressed;
+        /* Caps Lock and Shift cancel each other out for letters */
+        int upper_case = caps_lock ^ is_shift_pressed;
         return upper_case ? shift_char : normal_char;
     } else {
         /* For numbers and symbols, only the Shift key changes the output */
@@ -526,7 +547,7 @@ static void process_kbd_report(uint8_t dev_addr, hid_keyboard_report_t const *re
         if (colemak_key_code != 0) keycode = colemak_key_code;
         #endif
         char c = hid_to_ascii_convert(keycode, report->modifier, caps_lock);
-        PRINTF("[%u] keycode=0x%02X (ascii=0x%02X)\n", dev_addr, keycode, (unsigned char) c);
+        //PRINTF("[%u] keycode=0x%02X (ascii=0x%02X)\n", dev_addr, keycode, (unsigned char) c);
         if (c)
         {
         	appsendchar(c);
