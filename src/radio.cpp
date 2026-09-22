@@ -12501,7 +12501,7 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 	if (pathi == 0)
 		AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
 #else /* WITHLEAKYLMSANR */
-	if (ispathprocessing(pathi))
+	if (denoise && ispathprocessing(pathi))
 	{
 		//ARM_MORPH(arm_fill)(0, nrp->wire1, FIRBUFSIZE);
 		// FIXME: speex внутри использует целочисленные вычисления
