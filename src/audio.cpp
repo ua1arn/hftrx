@@ -432,7 +432,6 @@ static eq_band_t rx_eq [] =
 /* Параметры АМ модулятора */
 static volatile FLOAT_t amshapesignalHALF;
 static volatile FLOAT_t amcarrierHALF;
-static volatile FLOAT_t scaleDAC = 1;
 
 static FLOAT_t shapeSidetoneStep(hftxpath_t * const txpath);		// 0..1
 static FLOAT_t shapeTXEnvelopStep(hftxpath_t * const txpath);	// 0..1
@@ -2348,8 +2347,8 @@ static void audio_setup_mike(const uint_fast8_t spf)
 // Вызывается из пользовательской программы, но может быть вызвана и до инициализации DSP - вызывается из updateboard.
 static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi, uint_fast8_t tx)
 {
-    hfrxpath_t * const path = &rx_paths[pathi];
-    hftxpath_t * const txpath = &tx_path;
+    hfrxpath_t * const path = & rx_paths[pathi];
+    hftxpath_t * const txpath = & tx_path;
     globDSPMode  [spf] [pathi] = glob_dspmodes [pathi];
 
 	// второй фильтр грузится только в режиме приёма (обеспечиватся внешним циклом).
@@ -3537,7 +3536,7 @@ static FLOAT32P_t baseband_modulator(
 	int32_t * deltanfm
 	)
 {
-	const FLOAT_t shape = switchmode_delaytx(txpath) * shapeTXEnvelopStep(txpath) * scaleDAC;	// 0..1 - огибающая
+	const FLOAT_t shape = switchmode_delaytx(txpath) * shapeTXEnvelopStep(txpath) * txpath->scaleDAC;	// 0..1 - огибающая
 	switch (dspmode)
 	{
 	default:
@@ -4440,7 +4439,7 @@ void dsp_extbuffer32wfm(const int32_t * buff)
 			const FLOAT32P_t p3 = { { buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q] } };
 			const FLOAT_t l3 = SQRTF(agc_getsigpower(p3));
 
-			agc_measure_float(path, DSPCTL_MODE_RX_WFM, FMAXF(FMAXF(l0, l1), FMAXF(l2, l3)) / 2);
+			agc_measure_float(& rx_paths [pathi], DSPCTL_MODE_RX_WFM, FMAXF(FMAXF(l0, l1), FMAXF(l2, l3)) / 2);
 		}
 	}
 }
@@ -5204,7 +5203,7 @@ hftxpath_init(hftxpath_t * const self)
 	self->sign1 = self;
 	self->sign2 = self;
 
-
+	self->scaleDAC = 1;
 	self->shapeSidetonePos = 0;
 	self->shapeSidetoneInpit = 0;
 	self->shapeCWSSBSidetoneInpit = 0;
@@ -5391,7 +5390,7 @@ txparam_update(uint_fast8_t profile)
 		dsp_rtty_tx_set_reverse(& txpath->rtty_tx, glob_rtty_inverted);
 	}
 
-	scaleDAC = (FLOAT_t) (int) glob_dacscale / BOARDDACSCALEMAX;
+	txpath->scaleDAC = (FLOAT_t) (int) glob_dacscale / BOARDDACSCALEMAX;
 
 	subtonevolume = (glob_subtonelevel / (FLOAT_t) 100);
 

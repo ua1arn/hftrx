@@ -867,6 +867,7 @@ typedef struct {
 typedef struct {
 	const void * sign1;
 
+	volatile FLOAT_t scaleDAC;// = 1;
 	unsigned shapeSidetonePos;// = 0;
 	volatile uint_fast8_t shapeSidetoneInpit;// = 0;
 	volatile uint_fast8_t shapeCWSSBSidetoneInpit;// = 0;
