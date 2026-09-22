@@ -3715,9 +3715,18 @@ void process_dmabuffer32rx(hfrxpath_t * path, const IFADCvalue_t * buff)
 
 #if WITHDSPEXTDDC
 #if WITHUSEDUALWATCH
-		FLOAT_t left = rxdmaproc(0, b [DMABUF32RX0I], b [DMABUF32RX0Q]);
-		FLOAT_t right = rxdmaproc(1, b [DMABUF32RX1I], b [DMABUF32RX1Q]);
-		savedemod_to_AF_proc(left, right);
+		if (isISBMode(0))
+		{
+			FLOAT_t left, right;
+			rxdmaprocISB(0, b [DMABUF32RX0I], b [DMABUF32RX0Q], & left, & right);
+			savedemod_to_AF_proc(left, right);
+		}
+		else
+		{
+			FLOAT_t left = rxdmaproc(0, b [DMABUF32RX0I], b [DMABUF32RX0Q]);
+			FLOAT_t right = rxdmaproc(1, b [DMABUF32RX1I], b [DMABUF32RX1Q]);
+			savedemod_to_AF_proc(left, right);
+		}
 #else /* WITHUSEDUALWATCH */
 		FLOAT_t left = rxdmaproc(0, b [DMABUF32RX0I], b [DMABUF32RX0Q]);
 		savedemod_to_AF_proc(left, left);

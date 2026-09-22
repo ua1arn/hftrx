@@ -2790,7 +2790,7 @@ static void agc_initialize(void)
 // получение измеренного уровня сигнала
 static FLOAT_t agc_measure_float(
 	hfrxpath_t * const path,
-	const uint_fast8_t dspmode, 
+	const uint_fast8_t dspmode_UNUSED,
 	FLOAT_t siglevel0
 	)
 {
@@ -4068,7 +4068,7 @@ static FLOAT_t baseband_demodulator(
 	switch (dspmode)
 	{
 	default:
-		// режим передачи
+		// режим передачи, в RX_ISB сюда не попадаем
 		{
 			r = 0;	
 			//r = (pathi != 0 ? get_rout() : get_lout()) * (FLOAT_t) 0.9;
@@ -4170,26 +4170,32 @@ static FLOAT_t baseband_demodulator(
 			r = sample * agc_levelsquelchopen(path, fltstrengthslow);
 		}
 		break;
-
-	case DSPCTL_MODE_RX_ISB:
-		{
-			// пока тестирую - но доджно вернуть два канала звука
-			// use floating point
-			const FLOAT_t sigpower = agc_getsigpower(vp0f);
-			const FLOAT_t fltstrengthslow = agc_measure_float(path, dspmode, SQRTF(sigpower));
-			const FLOAT_t gain = agc_getgain_float(path, fltstrengthslow);
-			const FLOAT32P_t vp1 = scalepair(vp0f, gain);
-			FLOAT_t usb, lsb;
-			/* прием независимых боковых полос */
-			dsp_isb_rx_process_sample(& path->isb_rx, vp1.IV, vp1.QV, & usb, & lsb);
-			//r = usb;
-			r = lsb;
-		}
 	}
 	return r;
 }
 
 #if WITHDSPEXTDDC
+
+int isISBMode(uint_fast8_t pathi)
+{
+	return globDSPMode [gwprof] [pathi] == DSPCTL_MODE_RX_ISB;
+}
+
+// ПРИЁМ ISB
+void rxdmaprocISB(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv, FLOAT_t * usb, FLOAT_t * lsb)
+{
+    hfrxpath_t * const path = & rx_paths [pathi];
+
+	FLOAT32P_t vp0f = { { adpt_input(& ifcodecrx, iv), adpt_input(& ifcodecrx, qv) } };
+	// use floating point
+	const FLOAT_t sigpower = agc_getsigpower(vp0f);
+	const FLOAT_t fltstrengthslow = agc_measure_float(path, DSPCTL_MODE_RX_ISB, SQRTF(sigpower));
+	const FLOAT_t gain = agc_getgain_float(path, fltstrengthslow);
+	const FLOAT32P_t vp1 = scalepair(vp0f, gain);
+
+	/* прием независимых боковых полос */
+	dsp_isb_rx_process_sample(& path->isb_rx, vp1.IV, vp1.QV, usb, lsb);
+}
 
 // ПРИЁМ остальных режимов
 // Обрабатывается 32-х битная квадратура
