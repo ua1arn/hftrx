@@ -5045,8 +5045,7 @@ void dsp_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
 /* после изменения набора формируемых звуков - обновление программирования таймера. */
 void hardware_sounds_disable(void)
 {
-	//anglestep_sidetone = 0;
-	hftrx_txgetpath()->shapeSidetoneInpit = 0;
+	hftrx_txgetpath()->shapeSidetoneInpit = 0;	// Для отработки shape
 }
 
 // called from interrupt or with disabled interrupts
@@ -5057,7 +5056,7 @@ void hardware_sounds_setfreq(
 	)
 {
 	anglestep_sidetone = value;
-	hftrx_txgetpath()->shapeSidetoneInpit = 1;
+	hftrx_txgetpath()->shapeSidetoneInpit = 1;	// Для отработки shape
 
 }
 
