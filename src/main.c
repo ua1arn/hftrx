@@ -65,7 +65,7 @@ main(void)
 	global_enableIRQ();
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
 	midtests();
-	initialize2();	/* вызывается при разрешённых прерываниях. */
+	const uint_fast8_t resetconfig = initialize2();	/* вызывается при разрешённых прерываниях. */
 	application_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 
@@ -80,7 +80,7 @@ main(void)
 #elif 0
 	hamradio_mainloop_beacon();
 #else
-	application_mainloop();
+	application_mainloop(resetconfig);
 #endif
 	return 0;
 }

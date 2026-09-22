@@ -20334,8 +20334,10 @@ keyboard_test(void)
 }
 #define MSGYCELLS 5
 /* вызывается при разрешённых прерываниях. */
-void initialize2(void)
+// не-0: требуется сбросить NVRAM
+uint_fast8_t initialize2(void)
 {
+	uint_fast8_t resetconfig = 0;
 #if ! LCDMODE_DUMMY
 	gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
 	gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
@@ -20544,6 +20546,7 @@ void initialize2(void)
 				watchdog_ping();
 			}
 		}
+		resetconfig = 1;
 #if WITHMENU
 		defaultsettings();		/* загрузка в nvram установок по умолчанию */
 #endif //WITHMENU
@@ -20629,6 +20632,7 @@ void initialize2(void)
 				;
 		}
 
+		resetconfig = 1;
 #if WITHMENU
 		defaultsettings();		/* загрузка в nvram установок по умолчанию */
 #endif //WITHMENU
@@ -20662,6 +20666,7 @@ void initialize2(void)
 #if WITHDEBUG
 	PRINTF("initialize2: finished.\n");
 #endif
+	return resetconfig;
 }
 
 #if WITHAUTOTUNER
@@ -22631,8 +22636,12 @@ uint_fast8_t hamradio_get_gvfoab(void)
 
 // основной цикл программы при работе в режиме любительского премника
 void
-application_mainloop(void)
+application_mainloop(uint_fast8_t resetconfig)
 {
+	if (resetconfig)
+	{
+		defaultsettings();		/* загрузка в nvram установок по умолчанию */
+	}
 	hamradio_main_initialize();
 	for (;;)
 	{
