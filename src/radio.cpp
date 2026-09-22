@@ -10564,7 +10564,7 @@ uint_fast8_t hamradio_get_shofvfobmarker(void)
 	case BOARD_RXMAINSUB_A_A:
 		return gsplitmode == SPLITMODES_ON;
 	default:
-		return 1;
+		return gsubmode != SUBMODE_ISB;
 	}
 }
 

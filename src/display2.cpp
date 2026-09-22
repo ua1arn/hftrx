@@ -7413,7 +7413,11 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 				break;
 			uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
 			uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
-			if (xleft == UINT16_MAX || xright == UINT16_MAX)
+			if (xleft == UINT16_MAX && xright != UINT16_MAX)
+				xleft = 0;
+			else if (xleft != UINT16_MAX && xright == UINT16_MAX)
+				xright = alldx - 1;
+			else if (xleft == UINT16_MAX || xright == UINT16_MAX)
 				continue;
 			if (xleft > xright)
 				xleft = 0;
@@ -7775,36 +7779,33 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 			if (pathi == 1 && ! hamradio_get_shofvfobmarker())
 				break;
 
-			if (xleft != UINT16_MAX && xright != UINT16_MAX)
+			if (xleft == UINT16_MAX && xright == UINT16_MAX)
+				continue;
+			if (xleft == UINT16_MAX)
+				xleft = 0;
+			if (xright == UINT16_MAX)
+				xright = wfdx - 1;
+
+			if (colpip_hasalpha())
 			{
-				if (colpip_hasalpha())
-				{
-					if (xleft > xright)
-						xleft = 0;
-					if (xright == xleft)
-						xright = xleft + 1;
-					if (xright >= wfdx)
-						xright = wfdx - 1;
+				const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
+				/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
+				colpip_rectangle(
+						db,
+						xleft, y0pix,
+						xrightv - xleft, wfdy, // размер окна источника
+						pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2,
+						FILL_FLAG_MIXBG, gbwalpha
+					);
 
-					const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
-					/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
-					colpip_rectangle(
-							db,
-							xleft, y0pix,
-							xrightv - xleft, wfdy, // размер окна источника
-							pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2,
-							FILL_FLAG_MIXBG, gbwalpha
-						);
-
-				}
-				else
-				{
-					const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
-					// Изображение двух вертикальных линий по краям "шторки".
-					colpip_set_vline(db, xleft, y0pix, wfdy, rxbwcolor);
-					colpip_set_vline(db, xright, y0pix, wfdy, rxbwcolor);
-					//colpip_fillrect(db, xleft, y0pix, xrightv - xleft, wfdy, COLORPIP_WHITE);
-				}
+			}
+			else
+			{
+				const COLORPIP_T rxbwcolor = display2_rxbwcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2, DSGN_SPECTRUMBG);
+				// Изображение двух вертикальных линий по краям "шторки".
+				colpip_set_vline(db, xleft, y0pix, wfdy, rxbwcolor);
+				colpip_set_vline(db, xright, y0pix, wfdy, rxbwcolor);
+				//colpip_fillrect(db, xleft, y0pix, xrightv - xleft, wfdy, COLORPIP_WHITE);
 			}
 		}
 	}
