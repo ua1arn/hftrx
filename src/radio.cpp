@@ -728,6 +728,13 @@ param_keyclick(const struct paramdefdef * pd)
 }
 
 
+void appsendchar(char c)
+{
+	if (board_wakeup())
+		return;
+	modemsendchar(c);
+}
+
 typedef struct keyevent_tag
 {
 	uint_fast8_t kbready;
@@ -15376,6 +15383,13 @@ display_redrawfreqstimed(
 }
 #endif /* ! WITHISBOOTLOADER  */
 
+
+static uint_fast8_t
+ascii_toupper(uint_fast8_t c)
+{
+	return toupper((unsigned char) c);
+}
+
 // *************************
 // CAT sequence parser
 
@@ -15604,13 +15618,6 @@ morseswitchnext(void)
 }
 
 #endif /* WITHELKEY */
-
-static uint_fast8_t
-//NOINLINEAT
-ascii_toupper(uint_fast8_t c)
-{
-	return toupper((unsigned char) c);
-}
 
 #if WITHELKEY
 

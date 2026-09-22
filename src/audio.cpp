@@ -5141,10 +5141,12 @@ static void modems_spool(void * ctx)
 //	}
 	//printf("integrator=%f, dc_bias=%f\n", rx_stream.detector.pll_integrator, rx_stream.detector.dc_bias);
 }
+
 #include <ctype.h>
-void appsendchar(char c)
+
+void modemsendchar(char c)
 {
-	const char uc = toupper((unsigned char) c);
+	const int uc = toupper((unsigned char) c);
 	dsp_rtty_tx_push_char(& hftrx_txgetpath()->rtty_tx, (unsigned char) uc);
 	display_vtty_putchar(c);
 }

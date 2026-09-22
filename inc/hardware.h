@@ -895,6 +895,7 @@ void applowinitialize(void);
 void application_mainloop(void);
 void application_initialize(void);
 void appsendchar(char c);
+void modemsendchar(char c);
 
 void ohciehci_clk_init(void);
 void usbdevice_clk_init(void);
