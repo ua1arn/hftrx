@@ -535,6 +535,7 @@
 //	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 //	#define WITHLOCKFULL	1	/* блокировка всего управления, а не только перестройки */
 	#define WITHRTTY 1			/* подержка работы RTTY */
+	//#define	WITHBANDMEMCOUNT 4	/* до 4-х ячеек памяти на диапазон */
 
 	/* все возможные в данной конфигурации фильтры */
 	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)

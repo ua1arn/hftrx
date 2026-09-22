@@ -347,7 +347,6 @@
 	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
 
 	
-	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 //	#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 //	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 //	#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
@@ -431,8 +430,6 @@
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	
-	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
-//	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 //	#define WITHLOCKFULL	1	/* блокировка всего управления, а не только перестройки */
 
 	// Есть ли регулировка параметров потенциометрами
@@ -532,6 +529,10 @@
 #endif /* WITHISBOOTLOADER */
 
 	#define WITHMODESETFULLNFM 1
+	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
+//	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
+	#define WITHRTTY 1	/* подержка демодулятора RTTY */
+	//#define	WITHBANDMEMCOUNT 4	/* до 4-х ячеек памяти на диапазон */
 
 	/* все возможные в данной конфигурации фильтры */
 	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)

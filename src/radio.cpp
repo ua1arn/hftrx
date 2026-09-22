@@ -3525,6 +3525,9 @@ struct onetxant_tag {
 
 struct bandgroup_tag {
 	uint8_t	band;		/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
+#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
+	uint8_t mi;		// memindex
+#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 	uint8_t rxant;		/* признак включения приемной антенны */
 	uint8_t ant;		/* код выбора антенны (0/1) */
@@ -4031,6 +4034,7 @@ struct nvmap
 #define RMT_BFREQ_BASE(b) OFFSETOF(struct nvmap, bands [(b)].freq)			/* последняя частота, на которую настроились (4 байта) */
 
 #define RMT_BANDPOS(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
+#define RMT_MIPOS(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].mi)	/* последняя ячейка в группе, куда переходили */
 #define RMT_PAMPBG3_BASE(bg, ant, rxant) OFFSETOF(struct nvmap, bandgroups [(bg)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].pamp)	/* признак включения аттенюатора (1 байт) */
 #define RMT_ATTBG3_BASE(bg, ant, rxant) OFFSETOF(struct nvmap, bandgroups [(bg)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].att)		/* признак включения аттенюатора (1 байт) */
 #define RMT_RXANTENNABG_BASE(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].rxant)			/* код включённой антенны (1 байт) */
@@ -10287,7 +10291,12 @@ void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
 }
 
-
+// mi - memory index - хранение настроек режима работы в нескольких ячейках памяти,
+// ассоциированных с диапазоном
+static uint_fast8_t getmemindex(uint_fast8_t bg)
+{
+	return 0;
+}
 
 enum {
 	SPLITMODES_OFF,
@@ -14055,6 +14064,8 @@ uif_key_click_bandup(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
+	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t mi = getmemindex(bg);
 	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 	verifyband(b);
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
@@ -14078,6 +14089,8 @@ uif_key_click_banddown(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
+	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t mi = getmemindex(bg);
 	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 	verifyband(b);
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
@@ -14151,15 +14164,29 @@ uif_key_click_bandjump2(uint_fast32_t f, uint_fast8_t bandset_no_check)
 	bring_tuneA();
 }
 
+/* переход на следующую частоту, запомненную в диапазоне */
 static void uif_key_click_memo(void)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
+#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
+	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t mi = getmemindex(bg);
+#else /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 	uif_key_click_bandjump(gfreqs [bi]);
+#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 }
 
+/* запомнить частоту в диапазоне */
 static void uif_key_hold_memo(void)
 {
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const vindex_t vi = getvfoindex(bi);
+#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
+	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t mi = getmemindex(bg);
+
+#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 }
 
 #if ! WITHAGCMODENONE
