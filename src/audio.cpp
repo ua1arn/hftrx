@@ -5146,9 +5146,18 @@ static void modems_spool(void * ctx)
 
 void modemsendchar(char c)
 {
-	const int uc = toupper((unsigned char) c);
-	dsp_rtty_tx_push_char(& hftrx_txgetpath()->rtty_tx, (unsigned char) uc);
+	hftxpath_t * const txpath = & tx_path;
+	const int uc = (unsigned char) toupper((unsigned char) c);
 	display_vtty_putchar(c);
+	switch (globDSPMode [gwprof] [0])
+	{
+	case DSPCTL_MODE_TX_RTTY:
+		dsp_rtty_tx_push_char(& txpath->rtty_tx, uc);
+		break;
+	case DSPCTL_MODE_TX_BPSK:
+		dsp_ofdm_tx_push_char(& txpath->ofdm_tx, uc);
+		break;
+	}
 }
 
 /**
