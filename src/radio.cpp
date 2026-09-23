@@ -1673,11 +1673,9 @@ struct micprof_cell
 	uint_fast8_t clip;
 	uint_fast8_t agc;
 	uint_fast8_t agcgain;
-#if WITHAFCODEC1HAVEPROC
 	uint_fast8_t mikeboost20db;
 	uint_fast8_t eq_enable;
-	uint8_t eq_params [HARDWARE_CODEC1_NPROCPARAMS];
-#endif /* WITHAFCODEC1HAVEPROC */
+	uint8_t eq_params [BOARD_AFPROC_BANDS];
 	uint_fast8_t cell_saved;
 };
 
@@ -3587,6 +3585,7 @@ struct nvmap
 	uint16_t	ggrpsecial;		// последний посещённый пункт группы
 	uint16_t	ggrpaudio;		// последний посещённый пункт группы
 	uint16_t	ggrpmike;		// последний посещённый пункт группы
+	uint16_t 	ggrpmikeeq;		// последний посещённый пункт группы
 #if WITHSUBTONES
 	uint16_t ggrpctcss;		// последний посещённый пункт группы
 #endif /* WITHSUBTONES */
@@ -3820,10 +3819,8 @@ struct nvmap
 		#endif /* WITHRTS96 || WITHRTS192 */
 		uint8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 	#endif /* WITHUSBHW && WITHUSBUAC */
-	#if WITHAFCODEC1HAVEPROC
 		uint8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-		uint8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-	#endif /* WITHAFCODEC1HAVEPROC */
+		uint8_t gmikeequalizerparams [BOARD_AFPROC_BANDS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 	#if WITHAFEQUALIZER
 		uint16_t	ggrpafeq;	// последний посещённый пункт группы
 		uint8_t geqtx;	// эквалайзер в режиме передачи
@@ -4068,11 +4065,9 @@ struct nvmap
 #define RMT_MICCLIP_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].clip)
 #define RMT_MICAGC_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].agc)
 #define RMT_MICAGCGAIN_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].agcgain)
-#if WITHAFCODEC1HAVEPROC
-	#define RMT_MICBOOST_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].mikeboost20db)
-	#define RMT_MICEQ_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].eq_enable)
-	#define RMT_MICEQPARAMS_BASE(c, j) OFFSETOF(struct nvmap, micprof_cells [(c)].eq_params[(j)])
-#endif /* WITHAFCODEC1HAVEPROC */
+#define RMT_MICBOOST_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].mikeboost20db)
+#define RMT_MICEQ_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].eq_enable)
+#define RMT_MICEQPARAMS_BASE(c, j) OFFSETOF(struct nvmap, micprof_cells [(c)].eq_params[(j)])
 #define RMT_MICPSAVE_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].cell_saved)
 
 #if WITHUSEUSBBT
@@ -5644,7 +5639,7 @@ enum
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 		uint_fast8_t hamradio_get_ft8cn(void) { return 0; }
 	#endif /* WITHUSBHW && WITHUSBUAC */
-	#if WITHAFCODEC1HAVEPROC
+	#if 1 || WITHAFCODEC1HAVEPROC
 		static int_fast32_t getequalizerbase(void)
 		{
 			return - EQUALIZERBASE;
@@ -5663,15 +5658,20 @@ enum
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-		static uint_fast8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS] =
+		//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+		//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+		//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
+		static uint_fast8_t gmikeequalizerparams [BOARD_AFPROC_BANDS] =
 		{
-			// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE
+			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE,
+			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE,
 		};
-		// Эквалайзер 80Hz, 230 Hz, 650 Hz, 1.8 kHz, 5.3 kHz
+		//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+		//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+		//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
 		static const struct paramdefdef xgmikeequalizer_param0 =
 		{
-			QLABEL("EQUA .08"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL("EQUA .10"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,
 			OFFSETOF(struct nvmap, gmikeequalizerparams [0]),
@@ -5683,7 +5683,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param1 =
 		{
-			QLABEL("EQUA .23"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL("EQUA .20"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,
 			OFFSETOF(struct nvmap, gmikeequalizerparams [1]),
@@ -5695,7 +5695,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param2 =
 		{
-			QLABEL("EQUA .65"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL("EQUA .30"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,
 			OFFSETOF(struct nvmap, gmikeequalizerparams [2]),
@@ -5707,7 +5707,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param3 =
 		{
-			QLABEL("EQUA 1.8"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL("EQUA .60"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,
 			OFFSETOF(struct nvmap, gmikeequalizerparams [3]),
@@ -5719,13 +5719,73 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param4 =
 		{
-			QLABEL("EQUA 5.3"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL("EQUA 1.0"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,
 			OFFSETOF(struct nvmap, gmikeequalizerparams [4]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& gmikeequalizerparams [4],
+			getequalizerbase, /* складывается с -12 и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgmikeequalizer_param5 =
+		{
+			QLABEL("EQUA 1.4"),  0, RJ_SIGNED,	ISTEP1,
+			ITEM_VALUE,
+			0, EQUALIZERBASE * 2,
+			OFFSETOF(struct nvmap, gmikeequalizerparams [5]),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gmikeequalizerparams [5],
+			getequalizerbase, /* складывается с -12 и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgmikeequalizer_param6 =
+		{
+			QLABEL("EQUA 1.9"),  0, RJ_SIGNED,	ISTEP1,
+			ITEM_VALUE,
+			0, EQUALIZERBASE * 2,
+			OFFSETOF(struct nvmap, gmikeequalizerparams [6]),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gmikeequalizerparams [6],
+			getequalizerbase, /* складывается с -12 и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgmikeequalizer_param7 =
+		{
+			QLABEL("EQUA 2.4"),  0, RJ_SIGNED,	ISTEP1,
+			ITEM_VALUE,
+			0, EQUALIZERBASE * 2,
+			OFFSETOF(struct nvmap, gmikeequalizerparams [7]),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gmikeequalizerparams [7],
+			getequalizerbase, /* складывается с -12 и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgmikeequalizer_param8 =
+		{
+			QLABEL("EQUA 2.9"),  0, RJ_SIGNED,	ISTEP1,
+			ITEM_VALUE,
+			0, EQUALIZERBASE * 2,
+			OFFSETOF(struct nvmap, gmikeequalizerparams [8]),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gmikeequalizerparams [8],
+			getequalizerbase, /* складывается с -12 и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		static const struct paramdefdef xgmikeequalizer_param9 =
+		{
+			QLABEL("EQUA 3.4"),  0, RJ_SIGNED,	ISTEP1,
+			ITEM_VALUE,
+			0, EQUALIZERBASE * 2,
+			OFFSETOF(struct nvmap, gmikeequalizerparams [9]),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gmikeequalizerparams [9],
 			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
@@ -9615,12 +9675,10 @@ static void micproc_load(void)
 		mp->agcgain = loadvfy8up(RMT_MICAGCGAIN_BASE(i), WITHMIKEAGCMIN, WITHMIKEAGCMAX, 30);
 		mp->clip = loadvfy8up(RMT_MICCLIP_BASE(i), WITHMIKECLIPMIN, WITHMIKECLIPMAX, 0);
 		mp->level = loadvfy8up(RMT_MICLEVEL_BASE(i), WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, WITHMIKEINGAINMAX);
-#if WITHAFCODEC1HAVEPROC
 		mp->mikeboost20db = loadvfy8up(RMT_MICBOOST_BASE(i), 0, 1, 0);
 		mp->eq_enable = loadvfy8up(RMT_MICEQ_BASE(i), 0, 1, 0);
-		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
+		for(uint_fast8_t j = 0; j < BOARD_AFPROC_BANDS; j ++)
 			mp->eq_params[j] = loadvfy8up(RMT_MICEQPARAMS_BASE(i, j), 0, EQUALIZERBASE * 2, EQUALIZERBASE);
-#endif /* WITHAFCODEC1HAVEPROC */
 	}
 #endif /* WITHTOUCHGUI */
 }
@@ -13597,10 +13655,8 @@ updateboard_noui(
 	#endif /* WITHAFEQUALIZER */
 
 	#if WITHTX
-		#if defined (CODEC1_TYPE) && WITHAFCODEC1HAVEPROC
-			board_set_mikeequal(param_getvalue(& xgmikeequalizer));	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-			board_set_mikeequalparams(gmikeequalizerparams);	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-		#endif /* defined (CODEC1_TYPE) && WITHAFCODEC1HAVEPROC */
+		board_set_mikeequal(param_getvalue(& xgmikeequalizer));	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
+		board_set_mikeequalparams(gmikeequalizerparams, ARRAY_SIZE(gmikeequalizerparams));	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 		#if WITHIF4DSP
 		{
 			const uint_fast8_t asubmode = getasubmode(0);	// SUBMODE_CWZ/SUBMODE_CWZSMART for tune
@@ -21787,7 +21843,7 @@ void hamradio_set_gmikeagcgain(uint_fast8_t v)
 
 #endif /* WITHIF4DSP */
 
-#if WITHAFCODEC1HAVEPROC
+#if 1//WITHAFCODEC1HAVEPROC
 
 uint_fast8_t hamradio_get_gmikeboost20db(void)
 {
@@ -21814,13 +21870,13 @@ void hamradio_set_gmikeequalizer(uint_fast8_t v)
 
 uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i)
 {
-	ASSERT(i < HARDWARE_CODEC1_NPROCPARAMS);
+	ASSERT(i < BOARD_AFPROC_BANDS);
 	return gmikeequalizerparams [i];
 }
 
 void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v)
 {
-	ASSERT(i < HARDWARE_CODEC1_NPROCPARAMS);
+	ASSERT(i < BOARD_AFPROC_BANDS);
 	ASSERT(v <= EQUALIZERBASE * 2);
 	gmikeequalizerparams [i] = v;
 	//save_i8(OFFSETOF(struct nvmap, gmoniflagxxx), gmoniflagxxx);
@@ -22124,7 +22180,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 	mp->mikeboost20db = gmikeboost20db;
 	mp->eq_enable = gmikeequalizer;
 
-	for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
+	for(uint_fast8_t j = 0; j < BOARD_AFPROC_BANDS; j ++)
 	{
 		mp->eq_params [j] = gmikeequalizerparams [j];
 		save_i8(RMT_MICEQPARAMS_BASE(cell, j), mp->eq_params [j]);
@@ -22148,13 +22204,11 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 
 	if (mp->cell_saved && set)
 	{
-#if WITHAFCODEC1HAVEPROC
 		gmikeboost20db = mp->mikeboost20db;
 		gmikeequalizer = mp->eq_enable;
 
-		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
+		for(uint_fast8_t j = 0; j < BOARD_AFPROC_BANDS; j ++)
 			gmikeequalizerparams [j] = mp->eq_params [j];
-#endif /* WITHAFCODEC1HAVEPROC */
 		gmik1level = mp->level;
 		gmikeagc = mp->agc;
 		gmikeagcgain = mp->agcgain;

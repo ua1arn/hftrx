@@ -474,7 +474,7 @@ void board_set_txaudio(uint_fast8_t v);	// Альтернативные исто
 void board_set_mikeboost20db(uint_fast8_t n);	// Включение предусилителя за микрофоном
 void board_set_afmute(uint_fast8_t n);	// Отключение звука
 void board_set_mikeequal(uint_fast8_t n);	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-void board_set_mikeequalparams(const uint_fast8_t * p);	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
+void board_set_mikeequalparams(const uint_fast8_t * p, unsigned nbands);	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 void board_set_mikeagc(uint_fast8_t n);		/* Включение программной АРУ перед модулятором */
 void board_set_mikeagcgain(uint_fast8_t v);	/* Максимальное усидение АРУ микрофона */
 void board_set_afresponcerx(int_fast8_t v);	/* изменение тембра звука в канале приемника */
@@ -1016,6 +1016,14 @@ extern volatile phase_t mirror_ncorts;
 
 void user_audioproc(void * ctx);	// user-mode processing - NR, эквалайзер приёмника
 int user_audioproc_thread(void * ctx);	// user-mode processing - NR, эквалайзер приёмника
+
+// Эквалайзер НЧ тракта передатчика
+//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
+
+#define BOARD_AFPROC_BANDS 	10
+#define EQUALIZERBASE 12	// -12..+12
 
 #ifdef __cplusplus
 }

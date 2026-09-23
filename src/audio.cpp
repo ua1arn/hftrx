@@ -134,10 +134,8 @@ static uint_fast8_t 	glob_mikeboost20db;	/* Включение усилител�
 static uint_fast8_t		glob_mikeagc = 1;	/* Включение программной АРУ перед модулятором */
 static uint_fast8_t		glob_mikeagcgain = 40;	/* предел усиления в АРУ */
 static uint_fast8_t		glob_mikehclip;			/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
-#if defined(CODEC1_TYPE) && defined (HARDWARE_CODEC1_NPROCPARAMS)
 static uint_fast8_t 	glob_mikeequal;	// Включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-static uint_fast8_t		glob_codec1_gains [HARDWARE_CODEC1_NPROCPARAMS]; // = { -2, -1, -3, +6, +9 };	// параметры эквалайзера
-#endif /* defined(CODEC1_TYPE) && defined (HARDWARE_CODEC1_NPROCPARAMS) */
+static uint_fast8_t		glob_codec1_gains [BOARD_AFPROC_BANDS]; // = { -2, -1, -3, +6, +9 };	// параметры эквалайзера
 
 #if WITHAFEQUALIZER
 static uint_fast8_t 	glob_equalizer_rx;
@@ -418,10 +416,24 @@ typedef struct {
     FLOAT_t gain_db;    /* Gain/attenuation value in decibels (e.g., +6.0, -4.5) */
 } eq_band_t;
 
+// NAU8822 parameters:
+// Эквалайзер 80 Hz, 230 Hz, 650 Hz, 1.8 kHz, 5.3 kHz
 // Эквалайзер НЧ тракта передатчика
+//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
 static eq_band_t tx_eq [] =
 {
-		{	.f_center = 1000, .bandwidth = 500, .gain_db = -3,	},
+		{	.f_center = 100, .bandwidth = 100, .gain_db = 0,	},
+		{	.f_center = 200, .bandwidth = 140, .gain_db = 0,	},
+		{	.f_center = 300, .bandwidth = 200, .gain_db = 0,	},
+		{	.f_center = 600, .bandwidth = 210, .gain_db = 0,	},
+		{	.f_center = 1000, .bandwidth = 420, .gain_db = 0,	},
+		{	.f_center = 1400, .bandwidth = 700, .gain_db = 0,	},
+		{	.f_center = 1900, .bandwidth = 980, .gain_db = 0,	},
+		{	.f_center = 2400, .bandwidth = 1340, .gain_db = 0,	},
+		{	.f_center = 2900, .bandwidth = 2050, .gain_db = 0,	},
+		{	.f_center = 3400, .bandwidth = 2400 , .gain_db = 0,	},
 };
 // Эквалайзер НЧ тракта приёмника
 static eq_band_t rx_eq [] =
@@ -4877,7 +4889,7 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 #endif /* WITHDSPEXTDDC */
 }
 
-#if 1
+#if 0
 
 ///--------------------https://analogtrx.com/SMF/index.php?topic=475.0
 
@@ -5809,9 +5821,9 @@ prog_codec1reg(void)
 	// also use glob_mik1level
 	ifc1->setvolume(gainL, gainR, glob_afmute, glob_dsploudspeaker_off);
 	ifc1->setlineinput(glob_lineinput, glob_mikeboost20db, glob_mik1level, glob_lineamp);
-#if defined (HARDWARE_CODEC1_NPROCPARAMS)
+#if defined (BOARD_AFPROC_BANDS) && 0
 	ifc1->setprocparams(glob_mikeequal, glob_codec1_gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
-#endif /* defined (HARDWARE_CODEC1_NPROCPARAMS) */
+#endif /* defined (BOARD_AFPROC_BANDS) */
 #endif /* defined(CODEC1_TYPE) */
 }
 
@@ -6346,7 +6358,6 @@ void board_set_datatx(uint_fast8_t v)
 #endif /* WITHUSBUAC && WITHTX */
 }
 
-#if defined(CODEC1_TYPE) && WITHAFCODEC1HAVEPROC
 // включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 void
 board_set_mikeequal(uint_fast8_t n)
@@ -6360,18 +6371,18 @@ board_set_mikeequal(uint_fast8_t n)
 }
 
 // Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-void board_set_mikeequalparams(const uint_fast8_t * p)
+void board_set_mikeequalparams(const uint_fast8_t * p, unsigned nbands)
 {
+	ASSERT((+ p * nbands) == sizeif glob_codec1_gains);
 	// 
 	if (memcmp(glob_codec1_gains, p, sizeof glob_codec1_gains) != 0)
 	{
 		memcpy(glob_codec1_gains, p, sizeof glob_codec1_gains);
 		board_codec1regchanged();
+		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 
 }
-
-#endif /* defined(CODEC1_TYPE) && WITHAFCODEC1HAVEPROC */
 
 /* отключить звук в наушниках и динамиках */
 void
@@ -6382,6 +6393,7 @@ board_set_afmute(uint_fast8_t n)
 	{
 		glob_afmute = v;
 		board_codec1regchanged();
+		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
 

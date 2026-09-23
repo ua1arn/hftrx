@@ -464,15 +464,33 @@
 	& xgreverbloss,
 #endif /* WITHREVERB */
 	& xgmikeboost20db,
-#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
+/* group name +++ */
+	(const struct paramdefdef [1]) {
+		QLABEL("Mike EQ"), 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		OFFSETOF(struct nvmap, ggrpmikeeq),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		NULL,
+		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+/* group name --- */
 	& xgmikeequalizer,	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-	// Эквалайзер 80 Hz, 230 Hz, 650 Hz, 1.8 kHz, 5.3 kHz
+	//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+	//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+	//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
 	& xgmikeequalizer_param0,
 	& xgmikeequalizer_param1,
 	& xgmikeequalizer_param2,
 	& xgmikeequalizer_param3,
 	& xgmikeequalizer_param4,
-#endif /* WITHAFCODEC1HAVEPROC */
+	& xgmikeequalizer_param5,
+	& xgmikeequalizer_param6,
+	& xgmikeequalizer_param7,
+	& xgmikeequalizer_param8,
+	& xgmikeequalizer_param9,
 #if WITHAFEQUALIZER
 	& xgeqrx,
 	& xgeqrxparams_0,
