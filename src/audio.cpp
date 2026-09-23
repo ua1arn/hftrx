@@ -4509,14 +4509,21 @@ void dsp_fillphones(unsigned nsamples)
 #elif WITHLFM
 		// Обеспечиваем прослушивание стерео
 #else /*  */
-		switch (glob_mainsubrxmode)
+		if (dspmodeA == DSPCTL_MODE_RX_ISB)
 		{
-		case BOARD_RXMAINSUB_A_A:
-			right = left;		// Для предотвращения посылки по USB данных от неинициализированного тракта приёмника B
-			break;
-		case BOARD_RXMAINSUB_B_B:
-			left = right;
-			break;
+
+		}
+		else
+		{
+			switch (glob_mainsubrxmode)
+			{
+			case BOARD_RXMAINSUB_A_A:
+				right = left;		// Для предотвращения посылки по USB данных от неинициализированного тракта приёмника B
+				break;
+			case BOARD_RXMAINSUB_B_B:
+				left = right;
+				break;
+			}
 		}
 #endif /*  */
 		if (tx)
@@ -4541,47 +4548,55 @@ void dsp_fillphones(unsigned nsamples)
 		b.ivqv [L] = left;
 		b.ivqv [R] = right;
 #else /* */
-		switch (glob_mainsubrxmode)
+		if (dspmodeA == DSPCTL_MODE_RX_ISB)
 		{
-		default:
-			// for debug
-			b.ivqv [L] = left;
-			b.ivqv [R] = right;
-			break;
-		case BOARD_RXMAINSUB_A_A:
-			// left:A/right:A
-			b.ivqv [L] = injectsidetone(left, moniL);
-			b.ivqv [R] = injectsidetone(right, moniR);
-			break;
-		case BOARD_RXMAINSUB_A_B:
-			// left:A/right:B
-			b.ivqv [L] = injectsidetone(left, moniL);
-			b.ivqv [R] = injectsidetone(right, moniR);
-			break;
-		case BOARD_RXMAINSUB_B_A:
-			// left:B/right:A
-			b.ivqv [L] = injectsidetone(right, moniL);
-			b.ivqv [R] = injectsidetone(left, moniR);
-			break;
-		case BOARD_RXMAINSUB_B_B:
-			// left:B/right:B
-			b.ivqv [L] = injectsidetone(left, moniL);
-			b.ivqv [R] = injectsidetone(right, moniR);
-			break;
-		case BOARD_RXMAINSUB_TWO:
-			// left, right:A+B
-			{
-				const FLOAT_t sumv = ((FLOAT_t) left + right) / 2;
-				b.ivqv [L] = injectsidetone(sumv, moniL);
-				b.ivqv [R] = injectsidetone(sumv, moniR);
-			}
-			break;
+			b.ivqv [L] = left;	// USB
+			b.ivqv [R] = right;	// LSB
 		}
-#endif /*  */
-#if 0
-		b.IV = get_lout();
-		b.QV = get_rout();
-#endif
+		else
+		{
+			switch (glob_mainsubrxmode)
+			{
+			default:
+				// for debug
+				b.ivqv [L] = left;
+				b.ivqv [R] = right;
+				break;
+			case BOARD_RXMAINSUB_A_A:
+				// left:A/right:A
+				b.ivqv [L] = injectsidetone(left, moniL);
+				b.ivqv [R] = injectsidetone(right, moniR);
+				break;
+			case BOARD_RXMAINSUB_A_B:
+				// left:A/right:B
+				b.ivqv [L] = injectsidetone(left, moniL);
+				b.ivqv [R] = injectsidetone(right, moniR);
+				break;
+			case BOARD_RXMAINSUB_B_A:
+				// left:B/right:A
+				b.ivqv [L] = injectsidetone(right, moniL);
+				b.ivqv [R] = injectsidetone(left, moniR);
+				break;
+			case BOARD_RXMAINSUB_B_B:
+				// left:B/right:B
+				b.ivqv [L] = injectsidetone(left, moniL);
+				b.ivqv [R] = injectsidetone(right, moniR);
+				break;
+			case BOARD_RXMAINSUB_TWO:
+				// left, right:A+B
+				{
+					const FLOAT_t sumv = ((FLOAT_t) left + right) / 2;
+					b.ivqv [L] = injectsidetone(sumv, moniL);
+					b.ivqv [R] = injectsidetone(sumv, moniR);
+				}
+				break;
+			}
+	#endif /*  */
+	#if 0
+			b.IV = get_lout();
+			b.QV = get_rout();
+	#endif
+		}
 		elfill_dmabuffer16tx(b.IV, b.QV);
 #if WITHHDMITVHW
 		elfill_dmabufferhdmi48tx(b.IV, b.QV);
