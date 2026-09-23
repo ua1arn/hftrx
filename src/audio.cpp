@@ -407,8 +407,6 @@ typedef struct {
     int32_t gain_db;    /* Gain/attenuation value in decibels (e.g., +6.0, -4.5) */
 } eq_band_t;
 
-// NAU8822 parameters:
-// Эквалайзер 80 Hz, 230 Hz, 650 Hz, 1.8 kHz, 5.3 kHz
 // Эквалайзер НЧ тракта передатчика
 //	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
 //	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
@@ -6219,8 +6217,11 @@ board_set_mikeequal(uint_fast8_t n)
 		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
-
-// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
+#if WITHINTEGRATEDDSP
+// Эквалайзер НЧ тракта передатчика
+//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
 void board_set_mikeequalparams(const uint_fast8_t * p, unsigned nbands)
 {
 	ASSERT(BOARD_AFPROC_BANDS == nbands);
@@ -6377,6 +6378,7 @@ board_set_modem_speed100(uint_fast32_t v)
 		board_flt1regchanged();
 	}
 }
+#endif
 
 // применяемая модуляция
 void

@@ -13451,13 +13451,15 @@ updateboard_noui(
 			board_set_txaudio(txaudiocode);	// Альтернативные источники сигнала при передаче
 			board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
 			board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
-			board_set_mikehclip(gmikehclip);	/* Ограничитель */
+			board_set_mikehclip(! txreq_gettxdata(& txreqst0) && gmikehclip);	/* Ограничитель */
 			#if WITHCOMPRESSOR
 				board_set_compressor(gcompressor_attack, gcompressor_release, gcompressor_hold, gcompressor_gain, gcompressor_threshold);
 			#endif /* WITHCOMPRESSOR */
 			#if WITHREVERB
-				board_set_reverb(greverb, greverbdelay, greverbloss);	/* ревербератор */
+				board_set_reverb(! txreq_gettxdata(& txreqst0) && greverb, greverbdelay, greverbloss);	/* ревербератор */
 			#endif /* WITHREVERB */
+				board_set_mikeequal(! txreq_gettxdata(& txreqst0) && param_getvalue(& xgmikeequalizer));	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
+				board_set_mikeequalparams(gmikeequalizerparams, ARRAY_SIZE(gmikeequalizerparams));	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 			#if WITHELKEY
 				board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 				board_set_cwssbtx(gcwssbtx);	/* разрешение передачи телеграфа как тона в режиме SSB */
@@ -13504,8 +13506,6 @@ updateboard_noui(
 	#endif /* WITHAFEQUALIZER */
 
 	#if WITHTX
-		board_set_mikeequal(param_getvalue(& xgmikeequalizer));	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-		board_set_mikeequalparams(gmikeequalizerparams, ARRAY_SIZE(gmikeequalizerparams));	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 		#if WITHIF4DSP
 		{
 			const uint_fast8_t asubmode = getasubmode(0);	// SUBMODE_CWZ/SUBMODE_CWZSMART for tune
