@@ -269,33 +269,33 @@ static void dsp_rtty_sub_init_detector(
     const FLOAT_t shift_hz,
     const FLOAT_t baud_rate)
 {
-    self->phase_nco = 0.0;
-    self->pll_integrator = 0.0;
-    self->lpf_state = 0.0;
+    self->phase_nco = 0;
+    self->pll_integrator = 0;
+    self->lpf_state = 0;
     self->invert_output = 0;
-    self->prev_in_i = 0.0;
-    self->prev_in_q = 0.0;
+    self->prev_in_i = 0;
+    self->prev_in_q = 0;
 
     const FLOAT_t samples_per_bit = (FLOAT_t)sample_rate / baud_rate;
 
     /* 1. DYNAMIC CALIBRATION OF THE PHYSICAL INTEGRATOR ANTI-WINDUP */
     /* Exact frequency boundary in radians/sample matching the FSK shift half-deviation */
     /* For DDK7 (450Hz shift at 48kHz) this equals strictly 0.02945243f radians */
-    self->pll_limit = (2.0 * M_PI * (shift_hz / 2.0)) / (FLOAT_t)sample_rate;
+    self->pll_limit = (2 * M_PI * (shift_hz / 2)) / (FLOAT_t)sample_rate;
 
     /* 2. MATHEMATICALLY SCALED LOOP FILTER GAINS MATRIX */
     /* Proportional gain must track the relative speed ratio directly without being crushed */
     /* Formula: (Baud / SampleRate) * Multiplier. For 50 Baud at 48kHz gives exactly 0.15f */
-    self->pll_kp = (baud_rate / (FLOAT_t)sample_rate) * 144.0;
+    self->pll_kp = (baud_rate / (FLOAT_t)sample_rate) * 144;
 
     /* Integral gain updates step-by-step per sample, scaling with the squared time window */
     /* Formula: (Baud / SampleRate)^2 * Multiplier. For 50 Baud at 48kHz gives exactly 0.0025f */
-    const FLOAT_t ratio = baud_rate / (FLOAT_t)sample_rate;
-    self->pll_ki = ratio * ratio * 2304.0;
+    const FLOAT_t ratio = baud_rate / (FLOAT_t) sample_rate;
+    self->pll_ki = ratio * ratio * 2304;
 
     /* 3. INDIVIDUAL DATA SLICING FILTERS SEPARATION RULES */
     /* Re-establish the precise crisp edge tracking alpha from your successful run */
-    self->lpf_alpha = 4.0 / samples_per_bit;
+    self->lpf_alpha = 4 / samples_per_bit;
 }
 
 /**
@@ -376,23 +376,23 @@ static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
     const FLOAT_t mag2 = in_i * in_i + in_q * in_q;
     if (mag2 <= 1e-9f)
     {
-        const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
-        return raw_bit ^ (uint32_t)self->invert_output;
+        const uint32_t raw_bit = (self->lpf_state >= 0.0);
+        return raw_bit ^ (uint32_t) self->invert_output;
     }
 
     /* 2. Execute fast amplitude normalization (Limiter layer) */
-    const FLOAT_t magnitude_inv = 1.0f / SQRTF(mag2);
+    const FLOAT_t magnitude_inv = 1 / SQRTF(mag2);
     const FLOAT_t norm_i = in_i * magnitude_inv;
     const FLOAT_t norm_q = in_q * magnitude_inv;
 
     float32_t sin_val, cos_val;
 
     /* Convert phase accumulator from radians directly to degrees for native CMSIS-DSP core */
-    FLOAT_t phase_degrees = (FLOAT_t)self->phase_nco * (180.0f / (FLOAT_t)M_PI);
+    FLOAT_t phase_degrees = (FLOAT_t) self->phase_nco * (180 / (FLOAT_t) M_PI);
 
     /* --- STRICT CMSIS-DSP ANGLE CALIBRATION CORE --- */
     /* Force angle calculation strictly bounded inside [0.0 ... 360.0] grid to prevent table overflow */
-    phase_degrees = FMAXF(0.0f, FMINF(phase_degrees, 360.0f));
+    phase_degrees = FMAXF(0.0f, FMINF(phase_degrees, 360));
 
     /* Direct hardware accelerated CMSIS-DSP sine/cosine execution via ARM NEON vector registers */
     arm_sin_cos_f32((float32_t)phase_degrees, &sin_val, &cos_val);
@@ -426,10 +426,10 @@ static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
     self->lpf_state += self->lpf_alpha * (current_step - self->lpf_state);
 
     /* Hard decision slicer boundary */
-    const uint32_t raw_bit = (self->lpf_state >= 0.0) ? 1 : 0;
+    const uint32_t raw_bit = (self->lpf_state >= 0);
 
     /* Apply fast hardware-friendly inversion layer using native XOR operation */
-    return raw_bit ^ (uint32_t)self->invert_output;
+    return raw_bit ^ (uint32_t) self->invert_output;
 }
 
 
