@@ -135,7 +135,6 @@ static uint_fast8_t		glob_mikeagc = 1;	/* Включение программн�
 static uint_fast8_t		glob_mikeagcgain = 40;	/* предел усиления в АРУ */
 static uint_fast8_t		glob_mikehclip;			/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
 static uint_fast8_t 	glob_mikeequal;	// Включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-static uint_fast8_t		glob_codec1_gains [BOARD_AFPROC_BANDS]; // = { -2, -1, -3, +6, +9 };	// параметры эквалайзера
 static uint_fast8_t		glob_compattack;
 static uint_fast8_t		glob_comprelease;
 static uint_fast8_t		glob_comphold;
@@ -403,9 +402,9 @@ static uint_fast8_t globDSPMode [NPROF] [2] = { { DSPCTL_MODE_IDLE, DSPCTL_MODE_
 
 /* --- Struct Defs for Single EQ Band --- */
 typedef struct {
-    FLOAT_t f_center;   /* Center frequency of the band in Hz */
-    FLOAT_t bandwidth;  /* Bandwidth width in Hz */
-    FLOAT_t gain_db;    /* Gain/attenuation value in decibels (e.g., +6.0, -4.5) */
+    int32_t f_center;   /* Center frequency of the band in Hz */
+    int32_t bandwidth;  /* Bandwidth width in Hz */
+    int32_t gain_db;    /* Gain/attenuation value in decibels (e.g., +6.0, -4.5) */
 } eq_band_t;
 
 // NAU8822 parameters:
@@ -426,11 +425,6 @@ static eq_band_t tx_eq [] =
 		{	.f_center = 2400, .bandwidth = 1340, .gain_db = 0,	},
 		{	.f_center = 2900, .bandwidth = 2050, .gain_db = 0,	},
 		{	.f_center = 3400, .bandwidth = 2400 , .gain_db = 0,	},
-};
-// Эквалайзер НЧ тракта приёмника
-static eq_band_t rx_eq [] =
-{
-		{	.f_center = 2000, .bandwidth = 500, .gain_db = -12,	},
 };
 
 /* Параметры АМ модулятора */
@@ -773,7 +767,8 @@ static void calculate_bpf_with_variable_eq(FLOAT_t *const h, const FLOAT_t *cons
                         const FLOAT_t bell_shape = EXPF(-0.5 * distance * distance);
 
                         /* Convert the current band's gain value from logarithmic dB to linear scaling factor */
-                        const FLOAT_t band_gain_linear = POWF(10, eq_bands[b].gain_db / 20) - 1;
+                        // db2ratio(gainDb) - 1
+                        const FLOAT_t band_gain_linear = POWF(10, (FLOAT_t) eq_bands[b].gain_db / 20) - 1;
 
                         /* Superimpose the linear delta scaled by the curve shape into total response */
                         total_gain_linear += band_gain_linear * bell_shape;
@@ -2335,8 +2330,10 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_FREEDV:
 	case DSPCTL_MODE_RX_RTTY:
 	case DSPCTL_MODE_TX_RTTY:
-		calculate_sloped_bpf(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
-		//calculate_bpf_with_variable_eq(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx), tx_eq, ARRAY_SIZE(tx_eq));
+		if (glob_mikeequal)
+			calculate_bpf_with_variable_eq(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, tx_eq, ARRAY_SIZE(tx_eq));
+		else
+			calculate_sloped_bpf(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
 		break;
 
 	// в режиме приема или в режимах передачи без микрофона - ничего не делаем
@@ -2435,7 +2432,8 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 		{
 			// audio
 			calculate_sloped_bpf(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
-			//calculate_bpf_with_variable_eq(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb), rx_eq, ARRAY_SIZE(rx_eq));
+			// TEST
+			calculate_bpf_with_variable_eq(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, tx_eq, ARRAY_SIZE(tx_eq));
 		}
 		break;
 
@@ -5674,7 +5672,7 @@ prog_codec1reg(void)
 	ifc1->setvolume(gainL, gainR, glob_afmute, glob_dsploudspeaker_off);
 	ifc1->setlineinput(glob_lineinput, glob_mikeboost20db, glob_mik1level, glob_lineamp);
 #if defined (BOARD_AFPROC_BANDS) && 0
-	ifc1->setprocparams(glob_mikeequal, glob_codec1_gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
+	//ifc1->setprocparams(glob_mikeequal, glob_codec1_gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
 #endif /* defined (BOARD_AFPROC_BANDS) */
 #endif /* defined(CODEC1_TYPE) */
 }
@@ -6225,14 +6223,23 @@ board_set_mikeequal(uint_fast8_t n)
 // Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 void board_set_mikeequalparams(const uint_fast8_t * p, unsigned nbands)
 {
-	ASSERT((+ p * nbands) == sizeif glob_codec1_gains);
+	ASSERT(BOARD_AFPROC_BANDS == nbands);
 	// 
-	if (memcmp(glob_codec1_gains, p, sizeof glob_codec1_gains) != 0)
+	unsigned i;
+	int changed = 0;
+	for (i = 0; i < nbands; ++ i)
 	{
-		memcpy(glob_codec1_gains, p, sizeof glob_codec1_gains);
+		const int_fast32_t gain = (int_fast32_t) p [i] - EQUALIZERBASE;
+		if (tx_eq [i].gain_db != gain)
+		{
+			changed = 1;
+			tx_eq [i].gain_db = gain;
+		}
+	}
+	if (changed)
+	{
 		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
-
 }
 
 /* отключить звук в наушниках и динамиках */
