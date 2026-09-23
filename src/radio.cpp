@@ -3643,6 +3643,7 @@ struct nvmap
 	uint16_t gmik1level;
 #endif /* WITHMIC1LEVEL */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+	uint16_t 	ggrpcodecparams;		// последний посещённый пункт группы
 	uint8_t ALCNEN;// = 0;	// ALC noise gate function control bit
 	uint8_t ALCNTH;// = 0;	// ALC noise gate threshold level
 	uint8_t ALCEN;// = 1;	// only left channel ALC enabled
@@ -5309,13 +5310,6 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
-	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
-#if WITHNOAUDIPROC
-	static uint_fast8_t gmikehclip = 0;		/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
-#else /* WITHNOAUDIPROC */
-	static uint_fast8_t gmikehclip = 25;		/* Ограничитель */
-#endif /* WITHNOAUDIPROC */
 
 
 	static uint_fast8_t gtxaudio [MODE_COUNT];
@@ -5367,6 +5361,8 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+
+	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
 	static const struct paramdefdef xgmikeagc =
 	{
 		QLABEL3("MIC AGC", "Mike AGC", "MIC AGC"), 0, RJ_ON,	ISTEP1,
@@ -5379,6 +5375,7 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
 	static const struct paramdefdef xgmikeagcgain =
 	{
 		QLABEL("MICAGCGN"),  0, RJ_UNSIGNED, ISTEP1,
@@ -5391,6 +5388,11 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+#if WITHNOAUDIPROC
+	static uint_fast8_t gmikehclip = 0;		/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
+#else /* WITHNOAUDIPROC */
+	static uint_fast8_t gmikehclip = 25;		/* Ограничитель */
+#endif /* WITHNOAUDIPROC */
 	static const struct paramdefdef xgmikehclip =
 	{
 		QLABEL3("MIC CLIP", "Mike CLIP", "MIKE CLIP"),  0, RJ_UNSIGNED, ISTEP1,
@@ -5655,15 +5657,15 @@ enum
 		//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
 		static uint_fast8_t gmikeequalizerparams [BOARD_AFPROC_BANDS] =
 		{
-			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE,
-			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE,
+			- 12 + EQUALIZERBASE, - 12 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE,
+			+ 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE,
 		};
 		//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
 		//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
 		//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
 		static const struct paramdefdef xgmikeequalizer_param0 =
 		{
-			QLABEL("EQUA .10"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND .10", "Band .10", "BAND .10"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [0]),
@@ -5675,7 +5677,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param1 =
 		{
-			QLABEL("EQUA .20"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND .20", "Band .20", "BAND .20"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [1]),
@@ -5687,7 +5689,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param2 =
 		{
-			QLABEL("EQUA .30"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND .30", "Band .30", "BAND .30"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [2]),
@@ -5699,7 +5701,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param3 =
 		{
-			QLABEL("EQUA .60"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND .60", "Band .60", "BAND .60"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [3]),
@@ -5711,7 +5713,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param4 =
 		{
-			QLABEL("EQUA 1.0"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND 1.0", "Band 1.0", "BAND 1.0"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [4]),
@@ -5723,7 +5725,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param5 =
 		{
-			QLABEL("EQUA 1.4"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND 1.4", "Band 1.4", "BAND 1.4"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [5]),
@@ -5735,7 +5737,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param6 =
 		{
-			QLABEL("EQUA 1.9"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND 1.9", "Band 1.9", "BAND 1.9"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [6]),
@@ -5747,7 +5749,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param7 =
 		{
-			QLABEL("EQUA 2.4"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND 2.4", "Band 2.4", "BAND 2.4"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [7]),
@@ -5759,7 +5761,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param8 =
 		{
-			QLABEL("EQUA 2.9"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND 2.9", "Band 2.9", "BAND 2.9"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [8]),
@@ -5771,7 +5773,7 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param9 =
 		{
-			QLABEL("EQUA 3.4"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND 3.4", "Band 3.4", "BAND 3.4"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
 			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [9]),

@@ -438,12 +438,6 @@
 	},
 /* group name --- */
 #if WITHTX && WITHIF4DSP
-#if WITHMIC1LEVEL
-	& xgmik1level,
-#endif /* ITHMIC1LEVEL */
-	#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
-	& xglineamp,	/* подстройка усиления с линейного входа через меню. */
-	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 	& xgmike_ssb,
 	& xgmike_dig,
 	& xgmike_am,
@@ -463,10 +457,9 @@
 	& xgreverbdelay,
 	& xgreverbloss,
 #endif /* WITHREVERB */
-	& xgmikeboost20db,
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL("Mike EQ"), 0, 0, 0,
+		QLABEL3("MIKE EQ", "Mike EQ", "MIKE EQ"), 0, 0, 0,
 		ITEM_GROUP,
 		0, 0,
 		OFFSETOF(struct nvmap, ggrpmikeeq),
@@ -493,6 +486,26 @@
 	& xgmikeequalizer_param9,
 #endif /* WITHTX && WITHIF4DSP */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+/* group name +++ */
+	(const struct paramdefdef [1]) {
+		QLABEL("CODEC"), 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		OFFSETOF(struct nvmap, ggrpcodecparams),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		NULL,
+		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+/* group name --- */
+	& xgmikeboost20db,
+#if WITHMIC1LEVEL
+	& xgmik1level,
+#endif /* ITHMIC1LEVEL */
+#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
+	& xglineamp,	/* подстройка усиления с линейного входа через меню. */
+#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 //	unsigned ALCNEN = 0;	// ALC noise gate function control bit
 //	unsigned ALCNTH = 0;	// ALC noise gate threshold level
 //	unsigned ALCEN = 1;	// only left channel ALC enabled
