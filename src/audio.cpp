@@ -4778,17 +4778,17 @@ void dsp_isb_rx_init(isb_demodulator_t * const self)
 
         if (k == 0)
         {
-            self->hilbert_taps[n] = 0.0f;
+            self->hilbert_taps[n] = 0;
         }
         else if ((k % 2) == 0)
         {
             /* All even coefficients of the ideal Hilbert transform are mathematically zero */
-            self->hilbert_taps[n] = 0.0f;
+            self->hilbert_taps[n] = 0;
         }
         else
         {
             /* Ideal mathematical infinite impulse response step */
-            const FLOAT_t ideal_h = 2.0f / (3.14159265358979323846f * (FLOAT_t)k);
+            const FLOAT_t ideal_h = 2 / (M_PI * (FLOAT_t)k);
 
             /* Modulate ideal step response with the pre-calculated CMSIS-DSP window weight */
             self->hilbert_taps[n] = ideal_h * window_weights[n];
@@ -4814,7 +4814,7 @@ void dsp_isb_rx_process_sample(
     self->buffer_i[self->wr_idx_i] = in_i;
 
     /* 2. Execute convolution with the half-taps skipping optimization */
-    FLOAT_t q_90 = 0.0f;
+    FLOAT_t q_90 = 0;
     const uint32_t curr_idx = self->wr_idx_q;
 
     /* Iterate only odd coefficients because even taps are mathematically zero */
