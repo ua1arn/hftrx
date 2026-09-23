@@ -2322,17 +2322,20 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_RX_ISB:
 	case DSPCTL_MODE_RX_SSB:
 	case DSPCTL_MODE_TX_NFM:
-	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
-	case DSPCTL_MODE_RX_RTTY:
-	case DSPCTL_MODE_TX_RTTY:
 		if (glob_mikeequal)
 			calculate_bpf_with_variable_eq(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, tx_eq, ARRAY_SIZE(tx_eq));
 		else
 			calculate_sloped_bpf(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
 		break;
+
+	case DSPCTL_MODE_TX_DIGI:
+	case DSPCTL_MODE_RX_RTTY:
+	case DSPCTL_MODE_TX_RTTY:
+		calculate_sloped_bpf(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
+	break;
 
 	// в режиме приема или в режимах передачи без микрофона - ничего не делаем
 	default:
