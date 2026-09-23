@@ -136,14 +136,6 @@ static uint_fast8_t		glob_mikeagcgain = 40;	/* предел усиления в 
 static uint_fast8_t		glob_mikehclip;			/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
 static uint_fast8_t 	glob_mikeequal;	// Включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 static uint_fast8_t		glob_codec1_gains [BOARD_AFPROC_BANDS]; // = { -2, -1, -3, +6, +9 };	// параметры эквалайзера
-
-#if WITHAFEQUALIZER
-static uint_fast8_t 	glob_equalizer_rx;
-static uint_fast8_t 	glob_equalizer_tx;
-static uint_fast8_t		glob_equalizer_rx_gains [AF_EQUALIZER_BANDS];
-static uint_fast8_t		glob_equalizer_tx_gains [AF_EQUALIZER_BANDS];
-#endif /* WITHAFEQUALIZER */
-
 static uint_fast8_t		glob_compattack;
 static uint_fast8_t		glob_comprelease;
 static uint_fast8_t		glob_comphold;
@@ -4982,146 +4974,6 @@ void rxEqIni(void)
  ///      doRX_EQ((float32_t *) pOutLms, FRAME_SIZE);
 #endif
 
-#if WITHAFEQUALIZER
-
-#define EQ_STAGES				1
-
-static FLOAT_t EQ_RX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_LOW_FILTER = { EQ_STAGES, EQ_RX_LOW_FILTER_State, EQ_RX_LOW_FILTER_Coeffs };
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_FILTER = { EQ_STAGES, EQ_RX_MID_FILTER_State, EQ_RX_MID_FILTER_Coeffs };
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_HIGH_FILTER = { EQ_STAGES, EQ_RX_HIGH_FILTER_State, EQ_RX_HIGH_FILTER_Coeffs };
-
-static FLOAT_t EQ_TX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_LOW_FILTER = { EQ_STAGES, EQ_TX_LOW_FILTER_State, EQ_TX_LOW_FILTER_Coeffs };
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_MID_FILTER = { EQ_STAGES, EQ_TX_MID_FILTER_State, EQ_TX_MID_FILTER_Coeffs };
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_HIGH_FILTER = { EQ_STAGES, EQ_TX_HIGH_FILTER_State, EQ_TX_HIGH_FILTER_Coeffs };
-
-static void calcBiquad(uint32_t Fc, uint32_t Fs, FLOAT_t Q, FLOAT_t peakGain, FLOAT_t * outCoeffs)
-{
-	FLOAT_t a0, a1, a2, b1, b2, norm;
-
-	FLOAT_t V = POWF(10.0f, FABSF(peakGain) / 20);
-	FLOAT_t K = TANF(M_PI * Fc / Fs);
-    if (peakGain >= 0)
-    {
-        norm = 1.0f / (1.0f + 1.0f / Q * K + K * K);
-        a0 = (1.0f + V / Q * K + K * K) * norm;
-        a1 = 2.0f * (K * K - 1.0f) * norm;
-        a2 = (1.0f - V / Q * K + K * K) * norm;
-        b1 = a1;
-        b2 = (1.0f - 1.0f / Q * K + K * K) * norm;
-    }
-    else
-    {
-        norm = 1.0f / (1.0f + V / Q * K + K * K);
-        a0 = (1.0f + 1.0f / Q * K + K * K) * norm;
-        a1 = 2.0f * (K * K - 1.0f) * norm;
-        a2 = (1.0f - 1.0f / Q * K + K * K) * norm;
-        b1 = a1;
-        b2 = (1.0f - V / Q * K + K * K) * norm;
-    }
-
-    //save coefficients
-    outCoeffs[0] = a0;
-    outCoeffs[1] = a1;
-    outCoeffs[2] = a2;
-    outCoeffs[3] = - b1;
-    outCoeffs[4] = - b2;
-}
-
-void audio_rx_equalizer_init(void)
-{
-	FLOAT_t base = hamradio_get_af_equalizer_base();
-	FLOAT_t max_coeff = 0;
-
-	for (uint_fast8_t i = 0; i < 3; i ++)
-		max_coeff = max_coeff < glob_equalizer_rx_gains [i] ? glob_equalizer_rx_gains [i] : max_coeff;
-
-	max_coeff += base;
-
-    calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1, glob_equalizer_rx_gains [0] + base - max_coeff, EQ_RX_LOW_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1, glob_equalizer_rx_gains [1] + base - max_coeff, EQ_RX_MID_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1, glob_equalizer_rx_gains [2] + base - max_coeff, EQ_RX_HIGH_FILTER_Coeffs);
-}
-
-void audio_tx_equalizer_init(void)
-{
-	FLOAT_t base = hamradio_get_af_equalizer_base();
-	FLOAT_t max_coeff = 0;
-
-	for (uint_fast8_t i = 0; i < 3; i ++)
-		max_coeff = max_coeff < glob_equalizer_tx_gains [i] ? glob_equalizer_tx_gains [i] : max_coeff;
-
-	max_coeff += base;
-
-    calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1, glob_equalizer_tx_gains [0] + base - max_coeff, EQ_TX_LOW_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1, glob_equalizer_tx_gains [1] + base - max_coeff, EQ_TX_MID_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1, glob_equalizer_tx_gains [2] + base - max_coeff, EQ_TX_HIGH_FILTER_Coeffs);
-}
-
-void audio_rx_equalizer(FLOAT_t * buffer, uint_fast16_t size)
-{
-	if (glob_equalizer_rx)
-	{
-		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_LOW_FILTER, buffer, buffer, size);
-		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_MID_FILTER, buffer, buffer, size);
-		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_HIGH_FILTER, buffer, buffer, size);
-	}
-}
-
-void
-board_set_equalizer_rx(uint_fast8_t n)
-{
-	const uint_fast8_t v = n != 0;
-	if (glob_equalizer_rx != v)
-	{
-		glob_equalizer_rx = v;
-	}
-}
-
-void
-board_set_equalizer_tx(uint_fast8_t n)
-{
-	const uint_fast8_t v = n != 0;
-	if (glob_equalizer_tx != v)
-	{
-		glob_equalizer_tx = v;
-	}
-}
-
-void board_set_equalizer_rx_gains(const uint_fast8_t * p)
-{
-	if (memcmp(glob_equalizer_rx_gains, p, sizeof glob_equalizer_rx_gains) != 0)
-	{
-		memcpy(glob_equalizer_rx_gains, p, sizeof glob_equalizer_rx_gains);
-		audio_rx_equalizer_init();
-	}
-}
-
-void board_set_equalizer_tx_gains(const uint_fast8_t * p)
-{
-	if (memcmp(glob_equalizer_tx_gains, p, sizeof glob_equalizer_tx_gains) != 0)
-	{
-		memcpy(glob_equalizer_tx_gains, p, sizeof glob_equalizer_tx_gains);
-		audio_tx_equalizer_init();
-	}
-}
-
-#endif /* WITHAFEQUALIZER */
-
-
 //////////////////////////////////////////
 // glob_cwedgetime - длительность нарастания/спада огибающей CW (и сигнала самоконтроля) в единицах милисекунд
 
@@ -6366,7 +6218,7 @@ board_set_mikeequal(uint_fast8_t n)
 	if (glob_mikeequal != v)
 	{
 		glob_mikeequal = v;
-		board_codec1regchanged();
+		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
 
@@ -6378,7 +6230,6 @@ void board_set_mikeequalparams(const uint_fast8_t * p, unsigned nbands)
 	if (memcmp(glob_codec1_gains, p, sizeof glob_codec1_gains) != 0)
 	{
 		memcpy(glob_codec1_gains, p, sizeof glob_codec1_gains);
-		board_codec1regchanged();
 		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 

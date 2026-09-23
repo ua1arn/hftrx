@@ -3821,13 +3821,6 @@ struct nvmap
 	#endif /* WITHUSBHW && WITHUSBUAC */
 		uint8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 		uint8_t gmikeequalizerparams [BOARD_AFPROC_BANDS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-	#if WITHAFEQUALIZER
-		uint16_t	ggrpafeq;	// последний посещённый пункт группы
-		uint8_t geqtx;	// эквалайзер в режиме передачи
-		uint8_t geqrx;	// эквалайзер в режиме приема
-		uint8_t geqtxparams [AF_EQUALIZER_BANDS];
-		uint8_t geqrxparams [AF_EQUALIZER_BANDS];
-	#endif /* #if WITHAFEQUALIZER */
 	struct micproc gmicprocs [NMICPROFILES];
 	uint8_t txaprofile [TXAPROFIG_count];	/* параметры обработки звука перед модулятором */
 
@@ -5639,7 +5632,6 @@ enum
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 		uint_fast8_t hamradio_get_ft8cn(void) { return 0; }
 	#endif /* WITHUSBHW && WITHUSBUAC */
-	#if 1 || WITHAFCODEC1HAVEPROC
 		static int_fast32_t getequalizerbase(void)
 		{
 			return - EQUALIZERBASE;
@@ -5673,7 +5665,7 @@ enum
 		{
 			QLABEL("EQUA .10"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [0]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5685,7 +5677,7 @@ enum
 		{
 			QLABEL("EQUA .20"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [1]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5697,7 +5689,7 @@ enum
 		{
 			QLABEL("EQUA .30"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [2]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5709,7 +5701,7 @@ enum
 		{
 			QLABEL("EQUA .60"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [3]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5721,7 +5713,7 @@ enum
 		{
 			QLABEL("EQUA 1.0"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [4]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5733,7 +5725,7 @@ enum
 		{
 			QLABEL("EQUA 1.4"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [5]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5745,7 +5737,7 @@ enum
 		{
 			QLABEL("EQUA 1.9"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [6]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5757,7 +5749,7 @@ enum
 		{
 			QLABEL("EQUA 2.4"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [7]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5769,7 +5761,7 @@ enum
 		{
 			QLABEL("EQUA 2.9"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [8]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5781,7 +5773,7 @@ enum
 		{
 			QLABEL("EQUA 3.4"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [9]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5789,154 +5781,9 @@ enum
 			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-	#endif /* WITHAFCODEC1HAVEPROC */
-#if WITHAFEQUALIZER
-		static uint_fast8_t geqtx;
-		static uint_fast8_t geqrx;
-		static uint_fast8_t geqtxparams [AF_EQUALIZER_BANDS] =
-		{
-			AF_EQUALIZER_BASE, AF_EQUALIZER_BASE, AF_EQUALIZER_BASE
-		};
-		static uint_fast8_t geqrxparams [AF_EQUALIZER_BANDS] =
-		{
-			AF_EQUALIZER_BASE, AF_EQUALIZER_BASE, AF_EQUALIZER_BASE
-		};
 
-		static const struct paramdefdef xgeqrx =
-		{
-			QLABEL2("RX EQ", "RX Equalizer"), 0, RJ_ON,	ISTEP1,
-			ITEM_VALUE,
-			0, 1,
-			OFFSETOF(struct nvmap, geqrx),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& geqrx,
-			getzerobase, /* складывается со смещением и отображается */
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		static const struct paramdefdef xgeqrxparams_0 =
-		{
-			QLABEL2("RX 0.4k", "RX EQ 400 Hz"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
-			0, AF_EQUALIZER_BASE * 2,
-			OFFSETOF(struct nvmap, geqrxparams [0]),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& geqrxparams [0],
-			hamradio_get_af_equalizer_base,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		static const struct paramdefdef xgeqrxparams_1 =
-		{
-			QLABEL2("RX 1.5k", "RX EQ 1500 Hz"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
-			0, AF_EQUALIZER_BASE * 2,
-			OFFSETOF(struct nvmap, geqrxparams [1]),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& geqrxparams [1],
-			hamradio_get_af_equalizer_base,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		static const struct paramdefdef xgeqrxparams_2 =
-		{
-			QLABEL2("RX 2.7k", "RX EQ 2700 Hz"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
-			0, AF_EQUALIZER_BASE * 2,
-			OFFSETOF(struct nvmap, geqrxparams [2]),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& geqrxparams [2],
-			hamradio_get_af_equalizer_base,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		static const struct paramdefdef xgeqtx =
-		{
-			QLABEL2("TX EQ", "TX Equalizer"), 0, RJ_ON,	ISTEP1,
-			ITEM_VALUE,
-			0, 1,
-			OFFSETOF(struct nvmap, geqtx),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& geqtx,
-			getzerobase, /* складывается со смещением и отображается */
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		static const struct paramdefdef xgeqtxparams_0 =
-		{
-			QLABEL2("TX 0.4k", "TX EQ 400 Hz"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
-			0, AF_EQUALIZER_BASE * 2,
-			OFFSETOF(struct nvmap, geqtxparams [0]),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& geqtxparams [0],
-			hamradio_get_af_equalizer_base,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		static const struct paramdefdef xgeqtxparams_1 =
-		{
-			QLABEL2("TX 1.5k", "TX EQ 1500 Hz"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
-			0, AF_EQUALIZER_BASE * 2,
-			OFFSETOF(struct nvmap, geqtxparams [1]),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& geqtxparams [1],
-			hamradio_get_af_equalizer_base,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		static const struct paramdefdef xgeqtxparams_2 =
-		{
-			QLABEL2("TX 2.7k", "TX EQ 2700 Hz"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
-			0, AF_EQUALIZER_BASE * 2,
-			OFFSETOF(struct nvmap, geqtxparams [2]),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& geqtxparams [2],
-			hamradio_get_af_equalizer_base,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-
-
-		int_fast32_t hamradio_get_af_equalizer_base(void)
-		{
-			ASSERT(3 == AF_EQUALIZER_BANDS);	// вылетит если увеличат количество полос (инициализаторы добавить!)
-			return - AF_EQUALIZER_BASE;
-		}
-
-		int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v)
-		{
-			ASSERT(3 == AF_EQUALIZER_BANDS);	// вылетит если увеличат количество полос (инициализаторы добавить!)
-			ASSERT(v < AF_EQUALIZER_BANDS);
-			return geqrxparams [v];
-		}
-
-		void hamradio_set_af_equalizer_gain_rx(uint_fast8_t index, uint_fast8_t gain)
-		{
-			ASSERT(3 == AF_EQUALIZER_BANDS);	// вылетит если увеличат количество полос (инициализаторы добавить!)
-			ASSERT(index < AF_EQUALIZER_BANDS);
-			ASSERT(gain <= AF_EQUALIZER_BASE * 2);
-			geqrxparams [index] = gain;
-			save_i8(OFFSETOF(struct nvmap, geqrxparams [index]), geqrxparams [index]);
-			updateboard();
-		}
-
-		uint_fast8_t hamradio_get_geqrx(void)
-		{
-			return geqrx;
-		}
-
-		void hamradio_set_geqrx(uint_fast8_t v)
-		{
-			geqrx = v != 0;
-			save_i8(OFFSETOF(struct nvmap, geqrx), geqrx);
-			updateboard();
-		}
-
-	#endif /* WITHAFEQUALIZER */
 	static uint_fast8_t gagcoff;
+
 #else /* WITHIF4DSP */
 	static const uint_fast8_t gagcoff = 0;
 	static const uint_fast8_t gdatamode = 0;	/* передача звука с USB вместо обычного источника */
@@ -21843,8 +21690,6 @@ void hamradio_set_gmikeagcgain(uint_fast8_t v)
 
 #endif /* WITHIF4DSP */
 
-#if 1//WITHAFCODEC1HAVEPROC
-
 uint_fast8_t hamradio_get_gmikeboost20db(void)
 {
 	return gmikeboost20db;
@@ -21887,7 +21732,6 @@ int_fast32_t hamradio_getequalizerbase(void)
 {
 	return getequalizerbase();
 }
-#endif /* WITHAFCODEC1HAVEPROC */
 
 int_fast16_t hamradio_if_shift(int_fast8_t step)
 {
@@ -22151,10 +21995,8 @@ void hamradio_clean_mic_profile(uint_fast8_t cell)
 
 	micprof_t * mp = & micprof_cells [cell];
 
-#if WITHAFCODEC1HAVEPROC
 	mp->mikeboost20db = 0;
 	mp->eq_enable = 0;
-#endif /* WITHAFCODEC1HAVEPROC */
 	mp->level = 0;
 	mp->agc = 0;
 	mp->agcgain = 0;
@@ -22176,7 +22018,6 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 	mp->agcgain = gmikeagcgain;
 	mp->clip = gmikehclip;
 
-#if WITHAFCODEC1HAVEPROC
 	mp->mikeboost20db = gmikeboost20db;
 	mp->eq_enable = gmikeequalizer;
 
@@ -22188,7 +22029,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 
 	save_i8(RMT_MICEQ_BASE(cell), mp->eq_enable);
 	save_i8(RMT_MICBOOST_BASE(cell), mp->mikeboost20db);
-#endif /* WITHAFCODEC1HAVEPROC */
+
 	save_i8(RMT_MICLEVEL_BASE(cell), mp->level);
 	save_i8(RMT_MICAGC_BASE(cell), mp->agc);
 	save_i8(RMT_MICAGCGAIN_BASE(cell), mp->agcgain);

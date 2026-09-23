@@ -491,16 +491,6 @@
 	& xgmikeequalizer_param7,
 	& xgmikeequalizer_param8,
 	& xgmikeequalizer_param9,
-#if WITHAFEQUALIZER
-	& xgeqrx,
-	& xgeqrxparams_0,
-	& xgeqrxparams_1,
-	& xgeqrxparams_2,
-	& xgeqtx,
-	& xgeqtxparams_0,
-	& xgeqtxparams_1,
-	& xgeqtxparams_2,
-#endif /* WITHAFEQUALIZER */
 #endif /* WITHTX && WITHIF4DSP */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 //	unsigned ALCNEN = 0;	// ALC noise gate function control bit
