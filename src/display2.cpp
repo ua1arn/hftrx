@@ -7014,7 +7014,6 @@ display2_wfl_init(
 		for (i = 0; i < PALETTESIZE; ++ i)
 		{
 			const COLOR24_T c = colorgradient(i, PALETTESIZE - 1);
-			//const COLOR24_T c = GetSignalColor(i, PALETTESIZE - 1);
 			wfpalette [i] = TFTRGB(COLOR24_R(c), COLOR24_G(c), COLOR24_B(c));
 		}
 	}
