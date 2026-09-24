@@ -6852,6 +6852,7 @@ static const struct paramdefdef xsi570_xtall_offset =
 void hamradio_set_si570reference(int_fast32_t f)
 {
 	param_setvalue(& xsi570_xtall_offset);
+	updateboard();
 }
 
 #endif /* defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570) */
