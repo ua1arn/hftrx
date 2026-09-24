@@ -565,12 +565,6 @@ uint32_t rtty_rx_byte(rtty_baudot_fsm_t * const self, uint8_t *output_byte)
 //    return fifo_pop(&self->fsm.rx_fifo_debug, output_byte);
 //}
 
-static void rxcharacter(rtty_baudot_fsm_t * self, const uint8_t c)
-{
-	fifo_push(&self->rx_fifo, c);
-}
-
-
 void dsp_rttyrxcharacter(rtty_baudot_fsm_t * self, const uint8_t c)
 {
 	fifo_push(&self->rx_fifo, c);
