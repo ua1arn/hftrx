@@ -94,11 +94,12 @@
 ///////////////////////////////////////
 //
 
-static uint_fast8_t		glob_trxpath = 0;			/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
 static uint_fast16_t 	glob_ifgain = BOARD_IFGAIN_MIN;
 static int_fast16_t 	glob_agcfence10 = - 73 * 10;
-static uint_fast8_t 	glob_dspmodes [2] = { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE, };
 static uint_fast8_t		glob_skipfilteraf;
+
+static uint_fast8_t 	glob_dspmodes [2] = { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE, };
+
 static uint_fast8_t		glob_agcrate [2] = { 20, 20 }; //10	// 10 дБ изменение входного на 1 дБ выходного
 static uint_fast8_t 	glob_agc_scale [2] = { 100, 100 }; // scale в процентах - Для эксперементов по улучшению приема АМ
 static uint_fast8_t 	glob_agc_t0 [2] = { 0, 0 }; // chargespeedfast в милисекундах
@@ -110,17 +111,16 @@ static uint_fast8_t 	glob_agc_t4 [2] = { 120, 120 }; // dischargespeedfast в м
 static int_fast16_t 	glob_aflowcutrx [2] = { 300, 300 } ;		// Частота низкочастотного среза полосы пропускания (в 10 Гц дискретах)
 static int_fast16_t 	glob_afhighcutrx [2] = { 3400, 3400 };	// Частота высокочастотного среза полосы пропускания (в 100 Гц дискретах)
 static uint_fast8_t 	glob_afwiderx [2];
-
-static int_fast16_t 	glob_aflowcuttx = 300 ;		// Частота низкочастотного среза полосы пропускания (в 10 Гц дискретах)
-static int_fast16_t 	glob_afhighcuttx = 3400;	// Частота высокочастотного среза полосы пропускания (в 100 Гц дискретах)
-
 static int_fast16_t		glob_fullbw6 [2] = { 1000, 1000 };		/* Частота среза фильтров ПЧ в алгоритме Уивера */
 static int_fast32_t		glob_lo6 [2] = { 0, 0 };
 static uint_fast16_t 	glob_flttransition [2] = { 0, 0 };
 static int_fast16_t 	glob_gainnfmrx [2] = { 100, 100 };
+static int_fast8_t		glob_afresponcesrx [2];	// изменение тембра звука в канале приёмника - на Samplerate/2 АЧХ становится на столько децибел
+
 static uint_fast8_t 	glob_squelch_level;
 
-static int_fast8_t		glob_afresponcesrx [2];	// изменение тембра звука в канале приёмника - на Samplerate/2 АЧХ становится на столько децибел
+static int_fast16_t 	glob_aflowcuttx = 300 ;		// Частота низкочастотного среза полосы пропускания (в 10 Гц дискретах)
+static int_fast16_t 	glob_afhighcuttx = 3400;	// Частота высокочастотного среза полосы пропускания (в 100 Гц дискретах)
 static int_fast8_t		glob_afresponcetx;	// изменение тембра звука в канале передатчика - на Samplerate/2 АЧХ становится на столько децибел
 
 static uint_fast8_t 	glob_wnb;	// Noise blanker enable (NB)
@@ -5427,7 +5427,7 @@ hftxpath_update(hftxpath_t * const txpath, uint_fast8_t profile)
 	subtonevolume = (glob_subtonelevel / (FLOAT_t) 100);
 
 	// Девиация в NFM
-	//gnfmdeviationftw = FTWAF(glob_fullbw6 [glob_trxpath] / 2);
+	//gnfmdeviationftw = FTWAF(glob_fullbw6 [target_pathi] / 2);
 	txpath->gnfmdeviationftw = FTWAF(glob_fmdeviation);
 	// CW & sidetone edge
 	txpath->enveloplen0 = NSAITICKS(glob_cwedgetime) + 1;		/* количество сэмплов, за которое меняется огибающая */
@@ -5728,11 +5728,12 @@ board_codec1regchanged(void)
 
 ////////////////////////////////
 
+static uint_fast8_t		target_pathi = 0;			/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
 
 /* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
 void board_set_trxpath(uint_fast8_t v)
 {
-	glob_trxpath = v;
+	target_pathi = v;
 }
 
 
@@ -5770,9 +5771,9 @@ board_set_agcfence10(int_fast16_t v)	// Точка пергиба характе
 void
 board_set_agcrate(uint_fast8_t n)	/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
 {
-	if (glob_agcrate [glob_trxpath] != n)
+	if (glob_agcrate [target_pathi] != n)
 	{
-		glob_agcrate [glob_trxpath] = n;
+		glob_agcrate [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -5782,9 +5783,9 @@ board_set_agcrate(uint_fast8_t n)	/* на n децибел изменения в
 void
 board_set_agc_scale(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
-	if (glob_agc_scale [glob_trxpath] != n)
+	if (glob_agc_scale [target_pathi] != n)
 	{
-		glob_agc_scale [glob_trxpath] = n;
+		glob_agc_scale [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -5793,9 +5794,9 @@ board_set_agc_scale(uint_fast8_t n)	/* подстройка параметра �
 void
 board_set_agc_t0(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
-	if (glob_agc_t0 [glob_trxpath] != n)
+	if (glob_agc_t0 [target_pathi] != n)
 	{
-		glob_agc_t0 [glob_trxpath] = n;
+		glob_agc_t0 [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -5804,9 +5805,9 @@ board_set_agc_t0(uint_fast8_t n)	/* подстройка параметра АР
 void
 board_set_agc_t1(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
-	if (glob_agc_t1 [glob_trxpath] != n)
+	if (glob_agc_t1 [target_pathi] != n)
 	{
-		glob_agc_t1 [glob_trxpath] = n;
+		glob_agc_t1 [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -5815,9 +5816,9 @@ board_set_agc_t1(uint_fast8_t n)	/* подстройка параметра АР
 void
 board_set_agc_t2(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
-	if (glob_agc_t2 [glob_trxpath] != n)
+	if (glob_agc_t2 [target_pathi] != n)
 	{
-		glob_agc_t2 [glob_trxpath] = n;
+		glob_agc_t2 [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -5826,9 +5827,9 @@ board_set_agc_t2(uint_fast8_t n)	/* подстройка параметра АР
 void
 board_set_agc_t4(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
-	if (glob_agc_t4 [glob_trxpath] != n)
+	if (glob_agc_t4 [target_pathi] != n)
 	{
-		glob_agc_t4 [glob_trxpath] = n;
+		glob_agc_t4 [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -5836,9 +5837,9 @@ board_set_agc_t4(uint_fast8_t n)	/* подстройка параметра АР
 void
 board_set_agc_thung(uint_fast8_t n)	/* подстройка параметра АРУ HUNG TIME */
 {
-	if (glob_agc_thung [glob_trxpath] != n)
+	if (glob_agc_thung [target_pathi] != n)
 	{
-		glob_agc_thung [glob_trxpath] = n;
+		glob_agc_thung [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -6157,9 +6158,9 @@ board_set_reverb(uint_fast8_t reverb, uint_fast8_t reverbdelay, uint_fast8_t rev
 void
 board_set_afresponcerx(int_fast8_t v)
 {
-	if (glob_afresponcesrx [glob_trxpath] != v)
+	if (glob_afresponcesrx [target_pathi] != v)
 	{
-		glob_afresponcesrx [glob_trxpath] = v;
+		glob_afresponcesrx [target_pathi] = v;
 		board_flt1regchanged();
 	}
 }
@@ -6252,18 +6253,18 @@ board_set_afmute(uint_fast8_t n)
 void
 board_set_dspmode(uint_fast8_t v)
 {
-	if (glob_dspmodes [glob_trxpath] != v)
+	if (glob_dspmodes [target_pathi] != v)
 	{
-		glob_dspmodes [glob_trxpath] = v;
+		glob_dspmodes [target_pathi] = v;
 		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
 
 void board_set_lo6(int_fast32_t f)
 {
-	if (glob_lo6 [glob_trxpath] != f)
+	if (glob_lo6 [target_pathi] != f)
 	{
-		glob_lo6 [glob_trxpath] = f;
+		glob_lo6 [target_pathi] = f;
 		board_flt1regchanged();
 	}
 }
@@ -6272,18 +6273,18 @@ void board_set_lo6(int_fast32_t f)
 /* Установка девиации в NFM */
 void board_set_fullbw6(int_fast16_t n)
 {
-	if (glob_fullbw6 [glob_trxpath] != n)
+	if (glob_fullbw6 [target_pathi] != n)
 	{
-		glob_fullbw6 [glob_trxpath] = n;
+		glob_fullbw6 [target_pathi] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
 
 void board_set_flttransition(uint_fast16_t n)	/* Ширина переходной полосы */
 {
-	if (glob_flttransition [glob_trxpath] != n)
+	if (glob_flttransition [target_pathi] != n)
 	{
-		glob_flttransition [glob_trxpath] = n;
+		glob_flttransition [target_pathi] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
@@ -6291,9 +6292,9 @@ void board_set_flttransition(uint_fast16_t n)	/* Ширина переходно
 void 
 board_set_aflowcutrx(int_fast16_t n)	/* Нижняя частота среза фильтра НЧ по приему */
 {
-	if (glob_aflowcutrx [glob_trxpath] != n)
+	if (glob_aflowcutrx [target_pathi] != n)
 	{
-		glob_aflowcutrx [glob_trxpath] = n;
+		glob_aflowcutrx [target_pathi] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
@@ -6301,9 +6302,9 @@ board_set_aflowcutrx(int_fast16_t n)	/* Нижняя частота среза �
 void 
 board_set_afhighcutrx(int_fast16_t n)	/* Верхняя частота среза фильтра НЧ по приему */
 {
-	if (glob_afhighcutrx [glob_trxpath] != n)
+	if (glob_afhighcutrx [target_pathi] != n)
 	{
-		glob_afhighcutrx [glob_trxpath] = n;
+		glob_afhighcutrx [target_pathi] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
@@ -6312,9 +6313,9 @@ board_set_afhighcutrx(int_fast16_t n)	/* Верхняя частота срез�
 void board_set_afwide(uint_fast8_t n)
 {
 	const uint_fast8_t v = n != 0;
-	if (glob_afwiderx [glob_trxpath] != n)
+	if (glob_afwiderx [target_pathi] != n)
 	{
-		glob_afwiderx [glob_trxpath] = n;
+		glob_afwiderx [target_pathi] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
@@ -6353,9 +6354,9 @@ board_set_digigainmax(uint_fast8_t v)
 void
 board_set_gainnfmrx(int_fast16_t n)	/* дополнительное усиление по НЧ в режиме приёма NFM */
 {
-	if (glob_gainnfmrx [glob_trxpath] != n)
+	if (glob_gainnfmrx [target_pathi] != n)
 	{
-		glob_gainnfmrx [glob_trxpath] = n;
+		glob_gainnfmrx [target_pathi] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
