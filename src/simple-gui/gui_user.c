@@ -1983,21 +1983,23 @@ void window_af_eq_process(void)
 	{
 		BANDIX_100, BANDIX_200, BANDIX_300,
 		BANDIX_600, BANDIX_1000, BANDIX_1400,
-		BANDIX_1900, BANDIX_2400, BANDIX_2900, BANDIX_3400
+		BANDIX_1900, BANDIX_2400, BANDIX_2900, BANDIX_3400,
+		//
+		BANDIX_count
 	};
-	static const char * const lbl_labels [] =
+	static const char * const lbl_labels [BANDIX_count] =
 	{
 			"lbl_eq100", "lbl_eq200", "lbl_eq300",
 			"lbl_eq600", "lbl_eq1000", "lbl_eq1400",
 			"lbl_eq1900", "lbl_eq2400", "lbl_eq2900", "lbl_eq3400",
 	};
-	static const char * const sl_labels [] =
+	static const char * const sl_labels [BANDIX_count] =
 	{
 			"sl_eq100", "sl_eq200", "sl_eq300",
 			"sl_eq600", "sl_eq1000", "sl_eq1400",
 			"sl_eq1900", "sl_eq2400", "sl_eq2900", "sl_eq3400",
 	};
-	static const char * const value_labels [] =
+	static const char * const value_labels [BANDIX_count] =
 	{
 			"100 Hz", "200 Hz", "300 Hz",
 			"600 Hz", "1 kHz", "1.4 kHz",
