@@ -374,9 +374,9 @@ static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
 {
     /* 1. Calculate raw magnitude squared to prevent division by zero inside the limiter */
     const FLOAT_t mag2 = in_i * in_i + in_q * in_q;
-    if (mag2 <= 1e-9f)
+    if (mag2 <= (FLOAT_MIN * FLOAT_MIN))
     {
-        const uint32_t raw_bit = (self->lpf_state >= 0.0);
+        const uint32_t raw_bit = (self->lpf_state >= 0);
         return raw_bit ^ (uint32_t) self->invert_output;
     }
 
@@ -392,7 +392,7 @@ static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
 
     /* --- STRICT CMSIS-DSP ANGLE CALIBRATION CORE --- */
     /* Force angle calculation strictly bounded inside [0.0 ... 360.0] grid to prevent table overflow */
-    phase_degrees = FMAXF(0.0f, FMINF(phase_degrees, 360));
+    phase_degrees = FMAXF(0, FMINF(phase_degrees, 360));
 
     /* Direct hardware accelerated CMSIS-DSP sine/cosine execution via ARM NEON vector registers */
     arm_sin_cos_f32((float32_t)phase_degrees, &sin_val, &cos_val);

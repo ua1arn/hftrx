@@ -41,6 +41,7 @@ extern "C" {
 	#define LDEXPF	ldexp
 	#define FREXPF	frexp
 	#define ROUNDF	round
+	#define FLOAT_MIN DBL_MIN
 
 	#if defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMA)
 		#define FMAF	fma
@@ -74,6 +75,7 @@ extern "C" {
 	#define LDEXPF	ldexpf
 	#define FREXPF	frexpf
 	#define ROUNDF	roundf
+	#define FLOAT_MIN FLT_MIN
 
 	#if defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMAF)
 		#define FMAF	fmaf
