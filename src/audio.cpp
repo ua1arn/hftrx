@@ -426,8 +426,8 @@ static eq_band_t tx_eq [] =
 };
 
 /* Параметры АМ модулятора */
-static volatile FLOAT_t amshapesignalHALF;
-static volatile FLOAT_t amcarrierHALF;
+static FLOAT_t amshapesignalHALF;
+static FLOAT_t amcarrierHALF;
 
 static FLOAT_t shapeSidetoneStep(hftxpath_t * const txpath);		// 0..1
 static FLOAT_t shapeTXEnvelopStep(hftxpath_t * const txpath);	// 0..1
@@ -1553,7 +1553,7 @@ static FLOAT_t MAKETAU0(void)
 // chargespeed 0: никогда, 1: мгновенно
 // Большим значениям сигнала соответствуют более положительные значения.
 
-static void charge2(volatile FLOAT_t * vcap, FLOAT_t vinput, FLOAT_t chargespeed)
+static void charge2(FLOAT_t * vcap, FLOAT_t vinput, FLOAT_t chargespeed)
 {
 	* vcap += (vinput - * vcap) * chargespeed;
 }
@@ -1569,7 +1569,7 @@ static FLOAT_t agc_calcagcfactor(uint_fast8_t rate)
 
 // Начальная установка  параметров АРУ приёмника
 
-void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
+void agc_parameters_initialize(agcparams_t * agcp, uint_fast32_t sr)
 {
 	agcp->agcoff = 0;
 	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 0.1, sr);
@@ -1593,7 +1593,7 @@ void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
 }
 
 // Отображение пиков и линии спектра
-void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
+void agc_parameters_peaks_initialize(agcparams_t * agcp, uint_fast32_t sr)
 {
 	agcp->agcoff = 1;
 	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 0.1, sr);
@@ -1619,7 +1619,7 @@ void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t 
 
 // Установка параметров АРУ приёмника
 
-static void rxagc_parameters_update(hfrxpath_t * const path, volatile agcparams_t * const agcp, FLOAT_t gainlimit_ratio, FLOAT_t agcfence, uint_fast8_t pathi)
+static void rxagc_parameters_update(hfrxpath_t * const path, agcparams_t * const agcp, FLOAT_t gainlimit_ratio, FLOAT_t agcfence, uint_fast8_t pathi)
 {
 	const uint_fast32_t sr = ARMSAIRATE;
 	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
@@ -1643,7 +1643,7 @@ static void rxagc_parameters_update(hfrxpath_t * const path, volatile agcparams_
 
 // Установка параметров S-метра приёмника
 
-static void smeter_parameters_update(volatile agcparams_t * const agcp)
+static void smeter_parameters_update(agcparams_t * const agcp)
 {
 	const uint_fast32_t sr = ARMSAIRATE;
 	agcp->agcoff = 0;
@@ -1663,7 +1663,7 @@ static void smeter_parameters_update(volatile agcparams_t * const agcp)
 
 // Начальная установка параметров АРУ микрофонного тракта передатчика
 
-static void comp_parameters_initialize(volatile agcparams_t * agcp)
+static void comp_parameters_initialize(agcparams_t * agcp)
 {
 	const uint_fast32_t sr = ARMI2SRATE;
 	agcp->agcoff = 0;
@@ -1685,7 +1685,7 @@ static void comp_parameters_initialize(volatile agcparams_t * agcp)
 
 // Установка параметров АРУ передатчика
 
-static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit_ratio)
+static void comp_parameters_update(agcparams_t * const agcp, FLOAT_t gainlimit_ratio)
 {
 	const uint_fast32_t sr = ARMI2SRATE;
 	agcp->agcoff = glob_mikeagc == 0;
@@ -2486,8 +2486,8 @@ pbsk_get_phase(
 	return phase;
 }
 
-static volatile uint_fast8_t	glob_modemmode;		// применяемая модуляция (bpsk/qpsk)
-static volatile uint_fast32_t	glob_modemspeed100;	// скорость передачи с точностью 1/100 бод
+static uint_fast8_t	glob_modemmode;		// применяемая модуляция (bpsk/qpsk)
+static uint_fast32_t	glob_modemspeed100;	// скорость передачи с точностью 1/100 бод
 
 static uint16_t m_RxBitPhase;
 static uint16_t g_RxBitFreqFTW;
@@ -2700,7 +2700,7 @@ void agc_state_initialize2(agcstate_t * __restrict st, const agcparams_t * __res
 
 // Для работы функции agc_perform требуется siglevel, больше значения которого
 // соответствуют большим уровням сигнала. может быть отрицательным
-static FLOAT_t agccalcstrength_log(const volatile agcparams_t * const agcp, FLOAT_t siglevel_ratio)
+static FLOAT_t agccalcstrength_log(const agcparams_t * const agcp, FLOAT_t siglevel_ratio)
 {
 	const FLOAT_t f0_ratio = agcp->levelfence_ratio;
 	const FLOAT_t m0_ratio = agcp->mininput_ratio;
@@ -2713,7 +2713,7 @@ static FLOAT_t agccalcstrength_log(const volatile agcparams_t * const agcp, FLOA
 
 // По отфильтрованому в соответствии с заданными временныме параметрами показатлю
 // силы сигнала получаем требуемое усиление (в разах отношения напряжений).
-static FLOAT_t agccalcgain_log(const volatile agcparams_t * const agcp, FLOAT_t streingth)
+static FLOAT_t agccalcgain_log(const agcparams_t * const agcp, FLOAT_t streingth)
 {
 	const FLOAT_t gain0 = POWF((FLOAT_t) M_E, streingth * agcp->agcfactor);
 	// реализация "спортивной" АРУ
@@ -2746,12 +2746,12 @@ static FLOAT_t agc_getsigpower(
 //
 // постоянные времени системы АРУ
 
-static RAMDTCM agcstate_t txagcstate;
+static agcstate_t txagcstate;
 
-static RAMDTCM agcparams_t txagcparams [NPROF];
+static agcparams_t txagcparams [NPROF];
 
-static RAMDTCM volatile uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
-static RAMDTCM volatile uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+static uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+static uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 
 static void agc_initialize(void)
 {
@@ -2823,7 +2823,7 @@ static FLOAT_t agc_getgain_float(
 	FLOAT_t fltstrengthslow
 	)
 {
-	const volatile agcparams_t * const agcp = & path->rxagcparams [gwagcprofrx];
+	const agcparams_t * const agcp = & path->rxagcparams [gwagcprofrx];
 
 	//BEGIN_STAMP();
 	const FLOAT_t gain = agccalcgain_log(agcp, fltstrengthslow);
@@ -2998,7 +2998,7 @@ static FLOAT_t txmikeclip(FLOAT_t vi)
 /* получения признака переполнения АЦП микрофонного тракта - вызывается из user mode */
 uint_fast8_t dsp_getmikeadcoverflow(void)
 {
-	volatile agcstate_t * const st = & txagcstate;
+	agcstate_t * const st = & txagcstate;
 	const FLOAT_t FS = txagcparams [gwagcproftx].levelfence_ratio;	// txlevelfenceSSB
 	return st->agcslowcap >= FS * db2ratio((FLOAT_t) - 1);
 }
@@ -4434,7 +4434,7 @@ void dsp_extbuffer32wfm(const int32_t * buff)
 			const FLOAT_t a2 = demod_WFM(buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q]);
 			const FLOAT_t a3 = demod_WFM(buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q]);
 
-			//volatile const FLOAT_t left = get_lout();
+			//const FLOAT_t left = get_lout();
 			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4;
 			savedemod_to_AF_proc(left, left);
 
@@ -4976,8 +4976,8 @@ void rxEqIni(void)
 //////////////////////////////////////////
 // glob_cwedgetime - длительность нарастания/спада огибающей CW (и сигнала самоконтроля) в единицах милисекунд
 
-static volatile uint_fast8_t txgateInput = 0;
-static volatile uint_fast8_t rxgateflag = 0;
+static uint_fast8_t txgateInput = 0;
+static uint_fast8_t rxgateflag = 0;
 
 // 0..1
 static FLOAT_t peakshapef(hftxpath_t * const txpath, unsigned shapePos)	/* shapePos: от 0 до enveloplen0 включительно. */
@@ -5281,7 +5281,7 @@ hfrxpath_init(hfrxpath_t * const self)
 static void 
 hfrxpath_update(
 		hfrxpath_t * const self,
-		uint_fast8_t profile,
+		uint_fast8_t profile,		// профиль для текущего обновления
 		const uint_fast8_t selfi)				// 0/1: main_RX/sub_RX
 {
 	// Параметры АРУ приёмника
@@ -5326,7 +5326,7 @@ hfrxpath_update(
 
 	// Пороговый шумодав (Squelch)
 	{
-		const volatile agcparams_t * const agcp = & self->rxsmeterparams;
+		const agcparams_t * const agcp = & self->rxsmeterparams;
 
 		const FLOAT_t upper_log = agccalcstrength_log(agcp, agcp->levelfence_ratio);
 		const FLOAT_t lower_log = agccalcstrength_log(agcp, agcp->mininput_ratio);
