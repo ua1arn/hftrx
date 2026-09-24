@@ -662,18 +662,6 @@ enum {
 };
 #endif /* WITHIF4DSP */
 
-int_fast32_t hamradio_get_af_equalizer_base(void);
-int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v);
-void hamradio_set_af_equalizer_gain_rx(uint_fast8_t index, uint_fast8_t gain);
-void board_set_equalizer_rx(uint_fast8_t n);
-void board_set_equalizer_tx(uint_fast8_t n);
-void board_set_equalizer_rx_gains(const uint_fast8_t * p);
-void board_set_equalizer_tx_gains(const uint_fast8_t * p);
-uint_fast8_t hamradio_get_geqrx(void);
-void hamradio_set_geqrx(uint_fast8_t v);
-
-void audio_rx_equalizer(FLOAT_t *buffer, uint_fast16_t size);
-
 #if WITHINTEGRATEDDSP
 
 #define NPROF 2	/* количество профилей параметров DSP фильтров. */

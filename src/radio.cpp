@@ -12407,6 +12407,7 @@ static void processNoiseReduction(rxaproc_t * nrp, const FLOAT_t * bufferIn, FLO
 
 #endif /* WITHNOSPEEX */
 
+// Обработки звука в приёмном тракте
 static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 {
 	const uint_fast8_t amode = getamode(pathi);
@@ -12503,9 +12504,6 @@ user_audioproc(void * ctx)
 			// nrp->outsp указывает на результат обработки
 			//outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
 			outsp [pathi] = afpcw(pathi, nrp, p + pathi * FIRBUFSIZE);
-		#if WITHAFEQUALIZER
-			audio_rx_equalizer(outsp [pathi], FIRBUFSIZE);
-		#endif /* WITHAFEQUALIZER */
 		}
 		//////////////////////////////////////////////
 		// Save results
@@ -12561,9 +12559,6 @@ int user_audioproc_thread(void * ctx)	// user-mode processing - NR, эквала
 				// nrp->outsp указывает на результат обработки
 				//outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
 				outsp [pathi] = afpcw(pathi, nrp, p + pathi * FIRBUFSIZE);
-			#if WITHAFEQUALIZER
-				audio_rx_equalizer(outsp [pathi], FIRBUFSIZE);
-			#endif /* WITHAFEQUALIZER */
 			}
 			//////////////////////////////////////////////
 			// Save results
@@ -13497,13 +13492,6 @@ updateboard_noui(
 	#if WITHHDMITVHW
 		board_set_tvoutformat(param_getvalue(& xhdmiformat));	// Установить режим отображения на выдеовыходе
 	#endif /* WITHHDMITVHW */
-
-	#if WITHAFEQUALIZER
-		board_set_equalizer_rx(geqrx);
-		board_set_equalizer_tx(geqtx);
-		board_set_equalizer_rx_gains(geqrxparams);
-		board_set_equalizer_tx_gains(geqtxparams);
-	#endif /* WITHAFEQUALIZER */
 
 	#if WITHTX
 		#if WITHIF4DSP
