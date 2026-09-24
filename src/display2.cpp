@@ -1585,17 +1585,17 @@ COLOR24_T colorgradientOLD(unsigned pos, unsigned maxpos)
  * @param max_val Максимальное возможное значение сигнала.
  * @return        Цвет типа COLOR24_T.
  */
-COLOR24_T colorgradient2(uint32_t val, uint32_t max_val) {
+COLOR24_T colorgradient2(unsigned val, unsigned max_val) {
     // Защита от деления на ноль, если max_val передан некорректно
     if (max_val == 0) return COLOR24(0, 0, 0);
     if (val > max_val) val = max_val;
 
     // Нормализуем значение в диапазон от 0 до 1023 для плавности переходов (4 участка по 256 значений)
-    uint32_t normalized = (val * 1023) / max_val;
+    unsigned normalized = (val * 1023) / max_val;
 
     uint8_t r = 0, g = 0, b = 0;
-    uint32_t region = normalized / 256; // Определяем, в какой четверти спектра мы находимся
-    uint32_t step = normalized % 256;   // Позиция внутри текущей четверти (0-255)
+    unsigned region = normalized / 256; // Определяем, в какой четверти спектра мы находимся
+    unsigned step = normalized % 256;   // Позиция внутри текущей четверти (0-255)
 
     switch (region) {
         case 0: // Синий -> Голубой (R:0, G:0->255, B:255)
@@ -1629,15 +1629,15 @@ COLOR24_T colorgradient2(uint32_t val, uint32_t max_val) {
  * Входное значение автоматически нормализуется.
  * GetSignalColorTurbo
  */
-COLOR24_T colorgradient(uint32_t val, uint32_t max_val) {
+COLOR24_T colorgradient(unsigned val, unsigned max_val) {
     if (max_val == 0) return COLOR24(0, 0, 0);
     if (val > max_val) val = max_val;
 
     // Нормализуем значение в диапазон 0..255
-    uint32_t x = (val * 255) / max_val;
+    unsigned x = (val * 255) / max_val;
 
     // Коэффициенты для целочисленной аппроксимации кривых Google Turbo
-    int32_t r, g, b;
+    int r, g, b;
 
     // Канал Red
     if (x < 35)       r = 30;
