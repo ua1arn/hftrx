@@ -1430,7 +1430,7 @@ static void display2_af_spectre15(const gxdrawb_t * db, uint_fast8_t xgrid, uint
 
 // get color from signal strength
 // Get FFT color warmth (blue to red)
-COLOR24_T colorgradient(unsigned pos, unsigned maxpos)
+COLOR24_T colorgradientOLD(unsigned pos, unsigned maxpos)
 {
 	// построение цветных градиентов от UA3REO
 	uint_fast8_t red = 0;
@@ -1574,6 +1574,97 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos)
 	//unknown
 	return COLOR24(255, 255, 255);
 }
+
+
+//	В программном обеспечении для работы со звуком и радиочастотами
+//	эта палитра известна как Jet, Rainbow (Радуга) или Classic Heatmap.
+
+/**
+ * Генерирует цвет градиента для спектроанализатора.
+ * @param val     Текущее значение силы сигнала (мощность/амплитуда).
+ * @param max_val Максимальное возможное значение сигнала.
+ * @return        Цвет типа COLOR24_T.
+ */
+COLOR24_T colorgradient2(uint32_t val, uint32_t max_val) {
+    // Защита от деления на ноль, если max_val передан некорректно
+    if (max_val == 0) return COLOR24(0, 0, 0);
+    if (val > max_val) val = max_val;
+
+    // Нормализуем значение в диапазон от 0 до 1023 для плавности переходов (4 участка по 256 значений)
+    uint32_t normalized = (val * 1023) / max_val;
+
+    uint8_t r = 0, g = 0, b = 0;
+    uint32_t region = normalized / 256; // Определяем, в какой четверти спектра мы находимся
+    uint32_t step = normalized % 256;   // Позиция внутри текущей четверти (0-255)
+
+    switch (region) {
+        case 0: // Синий -> Голубой (R:0, G:0->255, B:255)
+            r = 0;
+            g = (uint8_t)step;
+            b = 255;
+            break;
+        case 1: // Голубой -> Зеленый (R:0, G:255, B:255->0)
+            r = 0;
+            g = 255;
+            b = (uint8_t)(255 - step);
+            break;
+        case 2: // Зеленый -> Желтый (R:0->255, G:255, B:0)
+            r = (uint8_t)step;
+            g = 255;
+            b = 0;
+            break;
+        case 3: // Желтый -> Красный (R:255, G:255->0, B:0)
+        default:
+            r = 255;
+            g = (uint8_t)(255 - step);
+            b = 0;
+            break;
+    }
+
+    return COLOR24(r, g, b);
+}
+
+/**
+ * Ультра-плавная палитра Google Turbo для спектроанализаторов.
+ * Входное значение автоматически нормализуется.
+ * GetSignalColorTurbo
+ */
+COLOR24_T colorgradient(uint32_t val, uint32_t max_val) {
+    if (max_val == 0) return COLOR24(0, 0, 0);
+    if (val > max_val) val = max_val;
+
+    // Нормализуем значение в диапазон 0..255
+    uint32_t x = (val * 255) / max_val;
+
+    // Коэффициенты для целочисленной аппроксимации кривых Google Turbo
+    int32_t r, g, b;
+
+    // Канал Red
+    if (x < 35)       r = 30;
+    else if (x < 130) r = 30 + ((x - 35) * 5) / 2; // Плавный подъем
+    else if (x < 195) r = 255;                     // Полка максимума
+    else              r = 255 - ((x - 195) * 3);   // Легкий спад на самом пике до бордового
+
+    // Канал Green
+    if (x < 35)       g = (x * 4);
+    else if (x < 110) g = 140 + ((x - 35) * 3) / 2;
+    else if (x < 195) g = 255 - ((x - 110) * 5) / 2;
+    else              g = 42 - ((x - 195) * 2) / 9;
+
+    // Канал Blue
+    if (x < 35)       b = 110 + (x * 4);
+    else if (x < 110) b = 250 - ((x - 35) * 3);
+    else if (x < 160) b = 25 - ((x - 110) * 1) / 2;
+    else              b = 0;
+
+    // Ограничиваем значения в рамки стандартных 0..255
+    if (r < 0) r = 0; else if (r > 255) r = 255;
+    if (g < 0) g = 0; else if (g > 255) g = 255;
+    if (b < 0) b = 0; else if (b > 255) b = 255;
+
+    return COLOR24((uint8_t)r, (uint8_t)g, (uint8_t)b);
+}
+
 #else /* WITHSPECTRUMWF */
 COLOR24_T colorgradient(unsigned pos, unsigned maxpos)
 {
@@ -6923,6 +7014,7 @@ display2_wfl_init(
 		for (i = 0; i < PALETTESIZE; ++ i)
 		{
 			const COLOR24_T c = colorgradient(i, PALETTESIZE - 1);
+			//const COLOR24_T c = GetSignalColor(i, PALETTESIZE - 1);
 			wfpalette [i] = TFTRGB(COLOR24_R(c), COLOR24_G(c), COLOR24_B(c));
 		}
 	}
