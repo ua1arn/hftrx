@@ -5784,6 +5784,30 @@ enum
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 
+		int hamradio_get_af_equalizer_gain_tx(int band)
+		{
+			if (band < BOARD_AFPROC_BANDS)
+				return gmikeequalizerparams [band];
+			return 0;
+		}
+		void hamradio_set_af_equalizer_gain_tx(int band, int v)
+		{
+			if (band < BOARD_AFPROC_BANDS)
+				gmikeequalizerparams [band] = v;
+		}
+		int hamradio_get_af_equalizer_base(void)
+		{
+			return EQUALIZERBASE;
+		}
+		int hamradio_get_eqalizer_tx(void)
+		{
+			return param_getvalue(& xgmikeequalizer);
+		}
+		void hamradio_set_eqalizer_tx(int state)
+		{
+			param_setvalue(& xgmikeequalizer, state);
+			updateboard();
+		}
 	static uint_fast8_t gagcoff;
 
 #else /* WITHIF4DSP */

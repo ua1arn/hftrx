@@ -220,21 +220,23 @@ void window_infobar_menu_process(void)
 			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, -1);
 			gui_obj_set_prop(btn_name, GUI_OBJ_TEXT, "-");
 #endif /* ! WITHPOTAFGAIN */
+
+			// SPK mute
 			local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), "btn_%d", i ++);
 			gui_obj_set_prop(btn_name, GUI_OBJ_VISIBLE, 1);
 			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, 10);
 			gui_obj_set_prop(btn_name, GUI_OBJ_TEXT, "mute");
 			gui_obj_set_prop(btn_name, GUI_OBJ_LOCK, hamradio_get_gmutespkr());
-#if WITHAFEQUALIZER
+
+			// AF equalizer
 			local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), "btn_%d", i ++);
 			gui_obj_set_prop(btn_name, GUI_OBJ_VISIBLE, 1);
 			gui_obj_set_prop(btn_name, GUI_OBJ_PAYLOAD, 20);
 			gui_obj_set_prop(btn_name, GUI_OBJ_TEXT, "EQ");
-#endif /* WITHAFEQUALIZER */
 
 			gui_arrange_objects_from("btn_0", i, 1, 6);
 		}
-			break;
+		break;
 
 		case INFOBAR_ATT:
 		{
@@ -1970,10 +1972,37 @@ void window_ap_reverb_process(void)
 }
 
 // *********************************************************************************************************************************************************************
+// Эквалайзер НЧ тракта передатчика
+//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
 
 void window_af_eq_process(void)
 {
-#if WITHAFEQUALIZER
+	enum
+	{
+		BANDIX_100, BANDIX_200, BANDIX_300,
+		BANDIX_600, BANDIX_1000, BANDIX_1400,
+		BANDIX_1900, BANDIX_2400, BANDIX_2900, BANDIX_3400
+	};
+	static const char * const lbl_labels [] =
+	{
+			"lbl_eq100", "lbl_eq200", "lbl_eq300",
+			"lbl_eq600", "lbl_eq1000", "lbl_eq1400",
+			"lbl_eq1900", "lbl_eq2400", "lbl_eq2900", "lbl_eq3400",
+	};
+	static const char * const sl_labels [] =
+	{
+			"sl_eq100", "sl_eq200", "sl_eq300",
+			"sl_eq600", "sl_eq1000", "sl_eq1400",
+			"sl_eq1900", "sl_eq2400", "sl_eq2900", "sl_eq3400",
+	};
+	static const char * const value_labels [] =
+	{
+			"100 Hz", "200 Hz", "300 Hz",
+			"600 Hz", "1 kHz", "1.4 kHz",
+			"1.9 kHz", "2,4 kHz", "2.9 kHz", "3.4 kHz",
+	};
 	static uint32_t eq_w, eq_limit, eq_base = 0;
 	static int16_t mid_y = 0;
 
@@ -1982,33 +2011,39 @@ void window_af_eq_process(void)
 
 		eq_base = hamradio_get_af_equalizer_base();
 		eq_limit = abs(eq_base) * 2;
-		uint8_t v = hamradio_get_geqrx();
+		uint8_t eq_enabled = hamradio_get_eqalizer_tx();
 
-		gui_obj_create("sl_eq400", ORIENTATION_VERTICAL, 200, 2);
-		gui_obj_create("sl_eq1500", ORIENTATION_VERTICAL, 200, 2);
-		gui_obj_create("sl_eq2700", ORIENTATION_VERTICAL, 200, 2);
-		gui_obj_create("lbl_eq400", COLORPIP_WHITE, 6);
-		gui_obj_create("lbl_eq1500", COLORPIP_WHITE, 7);
-		gui_obj_create("lbl_eq2700", COLORPIP_WHITE, 7);
+		// Use eq_labels, sl_labels
+		gui_obj_create(sl_labels [BANDIX_100], ORIENTATION_VERTICAL, 200, 2);
+		gui_obj_create(sl_labels [BANDIX_200], ORIENTATION_VERTICAL, 200, 2);
+		gui_obj_create(sl_labels [BANDIX_300], ORIENTATION_VERTICAL, 200, 2);
+		gui_obj_create(lbl_labels [BANDIX_100], COLORPIP_WHITE, 6);
+		gui_obj_create(lbl_labels [BANDIX_200], COLORPIP_WHITE, 7);
+		gui_obj_create(lbl_labels [BANDIX_300], COLORPIP_WHITE, 7);
+
 		gui_obj_create("btn_ok", SMALL_BUTTON_STYLE, 0, 0, "OK");
 		gui_obj_create("btn_en", SMALL_BUTTON_STYLE, 0, 0, "OK");
 
-		gui_obj_set_prop("sl_eq400", GUI_OBJ_POS, 50, 10);
-		gui_arrange_objects_from("sl_eq400", 3, 3, 70);
-		gui_obj_align_to("lbl_eq400", "sl_eq400", ALIGN_DOWN_MID, 20);
+		gui_obj_set_prop(sl_labels [BANDIX_100], GUI_OBJ_POS, 50, 10);
+		gui_arrange_objects_from(sl_labels [BANDIX_100], 3, 3, 70);
+		gui_obj_align_to(lbl_labels [BANDIX_100], sl_labels [0], ALIGN_DOWN_MID, 20);
+
 		gui_obj_align_to("lbl_eq1500", "sl_eq1500", ALIGN_DOWN_MID, 20);
 		gui_obj_align_to("lbl_eq2700", "sl_eq2700", ALIGN_DOWN_MID, 20);
+
 		gui_obj_align_to("btn_en", "sl_eq2700", ALIGN_RIGHT_UP, 20);
 		gui_obj_align_to("btn_ok", "btn_en", ALIGN_DOWN_LEFT, 20);
 
-		gui_obj_set_prop("sl_eq400", GUI_OBJ_PAYLOAD, normalize(hamradio_get_af_equalizer_gain_rx(0), eq_limit, 0, 100));
-		gui_obj_set_prop("sl_eq1500", GUI_OBJ_PAYLOAD, normalize(hamradio_get_af_equalizer_gain_rx(1), eq_limit, 0, 100));
-		gui_obj_set_prop("sl_eq2700", GUI_OBJ_PAYLOAD, normalize(hamradio_get_af_equalizer_gain_rx(2), eq_limit, 0, 100));
-		gui_obj_set_prop("lbl_eq400", GUI_OBJ_TEXT, "400 Hz");
+		// Use eq_labels, sl_labels
+		gui_obj_set_prop(sl_labels [BANDIX_100], GUI_OBJ_PAYLOAD, normalize(hamradio_get_af_equalizer_gain_tx(0), eq_limit, 0, 100));
+		gui_obj_set_prop("sl_eq1500", GUI_OBJ_PAYLOAD, normalize(hamradio_get_af_equalizer_gain_tx(1), eq_limit, 0, 100));
+		gui_obj_set_prop("sl_eq2700", GUI_OBJ_PAYLOAD, normalize(hamradio_get_af_equalizer_gain_tx(2), eq_limit, 0, 100));
+		gui_obj_set_prop(lbl_labels [BANDIX_100], GUI_OBJ_TEXT, value_labels [0]);
 		gui_obj_set_prop("lbl_eq1500", GUI_OBJ_TEXT, "1500 Hz");
 		gui_obj_set_prop("lbl_eq2700", GUI_OBJ_TEXT, "2700 Hz");
-		gui_obj_set_prop("btn_en", GUI_OBJ_LOCK, v);
-		gui_obj_set_prop("btn_en", GUI_OBJ_TEXT, v ? "En" : "Dis");
+
+		gui_obj_set_prop("btn_en", GUI_OBJ_LOCK, eq_enabled);
+		gui_obj_set_prop("btn_en", GUI_OBJ_TEXT, eq_enabled ? "En" : "Dis");
 
 		mid_y = gui_obj_get_int_prop("sl_eq400", GUI_OBJ_POS_Y) + gui_obj_get_int_prop("sl_eq400", GUI_OBJ_SIZE) / 2;
 
@@ -2027,8 +2062,8 @@ void window_af_eq_process(void)
 			}
 			else if (gui_check_obj(name, "btn_en"))
 			{
-				hamradio_set_geqrx(! hamradio_get_geqrx());
-				uint8_t v = hamradio_get_geqrx();
+				hamradio_set_eqalizer_tx(! hamradio_get_eqalizer_tx());
+				uint8_t v = hamradio_get_eqalizer_tx();
 				gui_obj_set_prop("btn_en", GUI_OBJ_LOCK, v);
 				gui_obj_set_prop("btn_en", GUI_OBJ_TEXT, v ? "En" : "Dis");
 			}
@@ -2038,7 +2073,7 @@ void window_af_eq_process(void)
 		{
 			uint8_t id = gui_obj_get_int_prop(name, GUI_OBJ_INDEX);
 			uint16_t val = gui_obj_get_int_prop(name, GUI_OBJ_PAYLOAD);
-			hamradio_set_af_equalizer_gain_rx(id, normalize(val, 100, 0, eq_limit));
+			hamradio_set_af_equalizer_gain_tx(id, normalize(val, 100, 0, eq_limit));
 		}
 		break;
 
@@ -2055,18 +2090,17 @@ void window_af_eq_process(void)
 		uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
 		gui_drawline(30, mid_y + yy, ww, mid_y + yy, GUI_SLIDERLAYOUTCOLOR);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? "%d" : "-%d", i);
-		uint16_t w = get_strwidth(buf, & msgothic_10x13_prop);
-		gui_print_text(30 - w - 5, mid_y + yy - 8, buf, & msgothic_10x13_prop, COLORPIP_WHITE);
+		uint16_t w = get_strwidth(buf, & unifont_gothic_11x13);
+		gui_print_text(30 - w - 5, mid_y + yy - 8, buf, & unifont_gothic_11x13, COLORPIP_WHITE);
 
 		if (i == 0)
 			continue;
 
 		gui_drawline(30, mid_y - yy, ww, mid_y - yy, GUI_SLIDERLAYOUTCOLOR);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), "%d", i);
-		w = get_strwidth(buf, & msgothic_10x13_prop);
-		gui_print_text(30 - w - 5, mid_y - yy - 8, buf, & msgothic_10x13_prop, COLORPIP_WHITE);
+		w = get_strwidth(buf, & unifont_gothic_11x13);
+		gui_print_text(30 - w - 5, mid_y - yy - 8, buf, & unifont_gothic_11x13, COLORPIP_WHITE);
 	}
-#endif /* WITHAFEQUALIZER */
 }
 
 // *********************************************************************************************************************************************************************
