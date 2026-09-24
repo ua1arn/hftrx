@@ -5359,9 +5359,8 @@ hfrxpath_update(
 // Передача параметров в DSP модуль
 // Обновление параметров передатчика (кроме фильтров).
 static void 
-txparam_update(uint_fast8_t profile)
+hftxpath_update(hftxpath_t * const txpath, uint_fast8_t profile)
 {
-    hftxpath_t * const txpath = hftrx_txgetpath();
 	const FLOAT_t txlevelfence = 1;	// контролировать по отсутствию индикации переполнения DUC при передаче
 
 	#if WITHTXCPATHCALIBRATE
@@ -5434,14 +5433,6 @@ txparam_update(uint_fast8_t profile)
 	txpath->enveloplen0 = NSAITICKS(glob_cwedgetime) + 1;		/* количество сэмплов, за которое меняется огибающая */
 }
 
-// Передача параметров в DSP модуль
-static void 
-trxparam_update(void)
-{
-	// 0.707 == M_SQRT1_2
-	/* http://gregstoll.dyndns.org/~gregstoll/floattohex/ use for tests */
-}
-
 /* вызывается при разрешённых прерываниях. */
 void hftrx_init(void)
 {
@@ -5472,7 +5463,6 @@ void hftrx_init(void)
 	// Разрядность поступающего с микрофона сигнала
 	agc_initialize();
 	voxmeter_initialize();
-	trxparam_update();
 	{
 		const uint_fast8_t rprofile = ! gwagcprofrx;	// индекс профиля, который станет рабочим
 		uint_fast8_t pathi;
@@ -5488,7 +5478,7 @@ void hftrx_init(void)
 	ARM_MORPH(arm_fir_init)(& tx_fir_instance, Ntap_tx_MIKE, tx_firEQcoeff, tx_fir_state, tx_MIKE_blockSize);
 
 	const uint_fast8_t tprofile = ! gwagcproftx;	// индекс профиля, который станет рабочим
-	txparam_update(tprofile);
+	hftxpath_update(& tx_path, tprofile);
 	gwagcproftx = tprofile;
 
 	{
@@ -5539,7 +5529,6 @@ void
 prog_dsplreg(void)
 {
 	const uint_fast8_t pathn = isdspmodetx(glob_dspmodes [0]) ? 1 : NTRX;	// при передаче только тракт с идексом 0
-	trxparam_update();
 	const uint_fast8_t rprofile = ! gwagcprofrx;	// индекс профиля, который станет рабочим
 	uint_fast8_t pathi;
 	for (pathi = 0; pathi < pathn; ++ pathi)
@@ -5550,7 +5539,7 @@ prog_dsplreg(void)
 	gwagcprofrx = rprofile;
 
 	const uint_fast8_t tprofile = ! gwagcproftx;	// индекс профиля, который станет рабочим
-	txparam_update(tprofile);
+	hftxpath_update(& tx_path, tprofile);
 	gwagcproftx = tprofile;
 }
 
