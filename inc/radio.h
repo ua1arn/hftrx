@@ -1164,6 +1164,12 @@ void hamradio_tick_sof(void);
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem));
 void hamradio_set_si570reference(int_fast32_t f);
 
+int hamradio_get_af_equalizer_gain_tx(int band);
+void hamradio_set_af_equalizer_gain_tx(int band, int v);
+int hamradio_get_af_equalizer_base(void);
+int hamradio_get_eqalizer_tx(void);
+void hamradio_set_eqalizer_tx(int v);
+
 // LVGL interface functions
 int infocb_modea(char * b, size_t len, int * pstate);
 int infocb_modeb(char * b, size_t len, int * pstate);

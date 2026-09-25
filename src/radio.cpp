@@ -1673,11 +1673,9 @@ struct micprof_cell
 	uint_fast8_t clip;
 	uint_fast8_t agc;
 	uint_fast8_t agcgain;
-#if WITHAFCODEC1HAVEPROC
 	uint_fast8_t mikeboost20db;
 	uint_fast8_t eq_enable;
-	uint8_t eq_params [HARDWARE_CODEC1_NPROCPARAMS];
-#endif /* WITHAFCODEC1HAVEPROC */
+	uint8_t eq_params [BOARD_AFPROC_BANDS];
 	uint_fast8_t cell_saved;
 };
 
@@ -3587,6 +3585,7 @@ struct nvmap
 	uint16_t	ggrpsecial;		// последний посещённый пункт группы
 	uint16_t	ggrpaudio;		// последний посещённый пункт группы
 	uint16_t	ggrpmike;		// последний посещённый пункт группы
+	uint16_t 	ggrpmikeeq;		// последний посещённый пункт группы
 #if WITHSUBTONES
 	uint16_t ggrpctcss;		// последний посещённый пункт группы
 #endif /* WITHSUBTONES */
@@ -3623,7 +3622,7 @@ struct nvmap
 	uint8_t gkblight;
 #endif /* WITHKBDBACKLIGHT */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-	uint8_t gdimmtime;
+	uint16_t gdimmtime;
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 #if WITHFANTIMER
 	uint8_t gfanpatime;
@@ -3644,6 +3643,7 @@ struct nvmap
 	uint16_t gmik1level;
 #endif /* WITHMIC1LEVEL */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+	uint16_t 	ggrpcodecparams;		// последний посещённый пункт группы
 	uint8_t ALCNEN;// = 0;	// ALC noise gate function control bit
 	uint8_t ALCNTH;// = 0;	// ALC noise gate threshold level
 	uint8_t ALCEN;// = 1;	// only left channel ALC enabled
@@ -3820,17 +3820,8 @@ struct nvmap
 		#endif /* WITHRTS96 || WITHRTS192 */
 		uint8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 	#endif /* WITHUSBHW && WITHUSBUAC */
-	#if WITHAFCODEC1HAVEPROC
 		uint8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-		uint8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-	#endif /* WITHAFCODEC1HAVEPROC */
-	#if WITHAFEQUALIZER
-		uint16_t	ggrpafeq;	// последний посещённый пункт группы
-		uint8_t geqtx;	// эквалайзер в режиме передачи
-		uint8_t geqrx;	// эквалайзер в режиме приема
-		uint8_t geqtxparams [AF_EQUALIZER_BANDS];
-		uint8_t geqrxparams [AF_EQUALIZER_BANDS];
-	#endif /* #if WITHAFEQUALIZER */
+		uint8_t gmikeequalizerparams [BOARD_AFPROC_BANDS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 	struct micproc gmicprocs [NMICPROFILES];
 	uint8_t txaprofile [TXAPROFIG_count];	/* параметры обработки звука перед модулятором */
 
@@ -4068,11 +4059,9 @@ struct nvmap
 #define RMT_MICCLIP_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].clip)
 #define RMT_MICAGC_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].agc)
 #define RMT_MICAGCGAIN_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].agcgain)
-#if WITHAFCODEC1HAVEPROC
-	#define RMT_MICBOOST_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].mikeboost20db)
-	#define RMT_MICEQ_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].eq_enable)
-	#define RMT_MICEQPARAMS_BASE(c, j) OFFSETOF(struct nvmap, micprof_cells [(c)].eq_params[(j)])
-#endif /* WITHAFCODEC1HAVEPROC */
+#define RMT_MICBOOST_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].mikeboost20db)
+#define RMT_MICEQ_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].eq_enable)
+#define RMT_MICEQPARAMS_BASE(c, j) OFFSETOF(struct nvmap, micprof_cells [(c)].eq_params[(j)])
 #define RMT_MICPSAVE_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].cell_saved)
 
 #if WITHUSEUSBBT
@@ -4648,7 +4637,7 @@ static uint_fast8_t gethaddr;
 static const struct paramdefdef xgethaddr =
 {
 	QLABEL3("IPADDR", "IP Address", "IP ADDR"), 0, RJ_CB, ISTEP_RO,
-	ITEM_VALUE | ITEM_LISTSELECT,
+	ITEM_VALUE,
 	0, HDMIFORMATS_count - 1,
 	OFFSETOF(struct nvmap, gethaddr),
 	getselector0, nvramoffs0, valueoffs0,
@@ -4663,7 +4652,7 @@ static uint_fast8_t gethmask;
 static const struct paramdefdef xgethmask =
 {
 	QLABEL3("IPMASK", "IP Mask", "IP MASK"), 0, RJ_CB, ISTEP_RO,
-	ITEM_VALUE | ITEM_LISTSELECT,
+	ITEM_VALUE,
 	0, HDMIFORMATS_count - 1,
 	OFFSETOF(struct nvmap, gethmask),
 	getselector0, nvramoffs0, valueoffs0,
@@ -4678,7 +4667,7 @@ static uint_fast8_t gethgateway;
 static const struct paramdefdef xgethgateway =
 {
 	QLABEL3("IP GW", "IP Gateway", "IP GW"), 0, RJ_CB, ISTEP_RO,
-	ITEM_VALUE | ITEM_LISTSELECT,
+	ITEM_VALUE,
 	0, HDMIFORMATS_count - 1,
 	OFFSETOF(struct nvmap, gethgateway),
 	getselector0, nvramoffs0, valueoffs0,
@@ -5321,20 +5310,13 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
-	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
-#if WITHNOAUDIPROC
-	static uint_fast8_t gmikehclip = 0;		/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
-#else /* WITHNOAUDIPROC */
-	static uint_fast8_t gmikehclip = 25;		/* Ограничитель */
-#endif /* WITHNOAUDIPROC */
 
 
 	static uint_fast8_t gtxaudio [MODE_COUNT];
 	static const struct paramdefdef xgmike_ssb =
 	{
 		QLABEL3("MIC SSB", "Mike SSB", "MIC SSB"), 0, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_SSB),
 		getselector0, nvramoffs0, valueoffs0,
@@ -5346,7 +5328,7 @@ enum
 	static const struct paramdefdef xgmike_dig =
 	{
 		QLABEL3("MIC DIG", "Mike DIG", "MIC DIG"), 0, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_DIGI),
 		getselector0, nvramoffs0, valueoffs0,
@@ -5357,8 +5339,8 @@ enum
 	};
 	static const struct paramdefdef xgmike_am =
 	{
-		QLABEL3("MIC AM", "Mike FM", "MIC FM"), 0, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		QLABEL3("MIC AM", "Mike AM", "MIC AM"), 0, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_AM),
 		getselector0, nvramoffs0, valueoffs0,
@@ -5370,7 +5352,7 @@ enum
 	static const struct paramdefdef xgmike_fm =
 	{
 		QLABEL3("MIC FM", "Mike FM", "MIC FM"), 0, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_NFM),
 		getselector0, nvramoffs0, valueoffs0,
@@ -5379,6 +5361,8 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+
+	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
 	static const struct paramdefdef xgmikeagc =
 	{
 		QLABEL3("MIC AGC", "Mike AGC", "MIC AGC"), 0, RJ_ON,	ISTEP1,
@@ -5391,6 +5375,7 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
 	static const struct paramdefdef xgmikeagcgain =
 	{
 		QLABEL("MICAGCGN"),  0, RJ_UNSIGNED, ISTEP1,
@@ -5403,6 +5388,11 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+#if WITHNOAUDIPROC
+	static uint_fast8_t gmikehclip = 0;		/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
+#else /* WITHNOAUDIPROC */
+	static uint_fast8_t gmikehclip = 25;		/* Ограничитель */
+#endif /* WITHNOAUDIPROC */
 	static const struct paramdefdef xgmikehclip =
 	{
 		QLABEL3("MIC CLIP", "Mike CLIP", "MIKE CLIP"),  0, RJ_UNSIGNED, ISTEP1,
@@ -5644,7 +5634,6 @@ enum
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 		uint_fast8_t hamradio_get_ft8cn(void) { return 0; }
 	#endif /* WITHUSBHW && WITHUSBUAC */
-	#if WITHAFCODEC1HAVEPROC
 		static int_fast32_t getequalizerbase(void)
 		{
 			return - EQUALIZERBASE;
@@ -5663,17 +5652,22 @@ enum
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-		static uint_fast8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS] =
+		//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+		//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+		//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
+		static uint_fast8_t gmikeequalizerparams [BOARD_AFPROC_BANDS] =
 		{
-			// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE
+			- 12 + EQUALIZERBASE, - 12 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE,
+			+ 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE,
 		};
-		// Эквалайзер 80Hz, 230 Hz, 650 Hz, 1.8 kHz, 5.3 kHz
+		//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+		//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+		//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
 		static const struct paramdefdef xgmikeequalizer_param0 =
 		{
-			QLABEL("EQUA .08"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND .10", "Band .10", "BAND .10"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [0]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5683,9 +5677,9 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param1 =
 		{
-			QLABEL("EQUA .23"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND .20", "Band .20", "BAND .20"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [1]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5695,9 +5689,9 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param2 =
 		{
-			QLABEL("EQUA .65"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND .30", "Band .30", "BAND .30"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [2]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5707,9 +5701,9 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param3 =
 		{
-			QLABEL("EQUA 1.8"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND .60", "Band .60", "BAND .60"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [3]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5719,9 +5713,9 @@ enum
 		};
 		static const struct paramdefdef xgmikeequalizer_param4 =
 		{
-			QLABEL("EQUA 5.3"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND 1.0", "Band 1.0", "BAND 1.0"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, EQUALIZERBASE * 2,
+			0, EQUALIZERBASE * 2,	// -12..+12
 			OFFSETOF(struct nvmap, gmikeequalizerparams [4]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
@@ -5729,154 +5723,93 @@ enum
 			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-	#endif /* WITHAFCODEC1HAVEPROC */
-#if WITHAFEQUALIZER
-		static uint_fast8_t geqtx;
-		static uint_fast8_t geqrx;
-		static uint_fast8_t geqtxparams [AF_EQUALIZER_BANDS] =
+		static const struct paramdefdef xgmikeequalizer_param5 =
 		{
-			AF_EQUALIZER_BASE, AF_EQUALIZER_BASE, AF_EQUALIZER_BASE
-		};
-		static uint_fast8_t geqrxparams [AF_EQUALIZER_BANDS] =
-		{
-			AF_EQUALIZER_BASE, AF_EQUALIZER_BASE, AF_EQUALIZER_BASE
-		};
-
-		static const struct paramdefdef xgeqrx =
-		{
-			QLABEL2("RX EQ", "RX Equalizer"), 0, RJ_ON,	ISTEP1,
+			QLABEL3("BAND 1.4", "Band 1.4", "BAND 1.4"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, 1,
-			OFFSETOF(struct nvmap, geqrx),
+			0, EQUALIZERBASE * 2,	// -12..+12
+			OFFSETOF(struct nvmap, gmikeequalizerparams [5]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
-			& geqrx,
-			getzerobase, /* складывается со смещением и отображается */
+			& gmikeequalizerparams [5],
+			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-		static const struct paramdefdef xgeqrxparams_0 =
+		static const struct paramdefdef xgmikeequalizer_param6 =
 		{
-			QLABEL2("RX 0.4k", "RX EQ 400 Hz"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND 1.9", "Band 1.9", "BAND 1.9"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, AF_EQUALIZER_BASE * 2,
-			OFFSETOF(struct nvmap, geqrxparams [0]),
+			0, EQUALIZERBASE * 2,	// -12..+12
+			OFFSETOF(struct nvmap, gmikeequalizerparams [6]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
-			& geqrxparams [0],
-			hamradio_get_af_equalizer_base,
+			& gmikeequalizerparams [6],
+			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-		static const struct paramdefdef xgeqrxparams_1 =
+		static const struct paramdefdef xgmikeequalizer_param7 =
 		{
-			QLABEL2("RX 1.5k", "RX EQ 1500 Hz"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND 2.4", "Band 2.4", "BAND 2.4"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, AF_EQUALIZER_BASE * 2,
-			OFFSETOF(struct nvmap, geqrxparams [1]),
+			0, EQUALIZERBASE * 2,	// -12..+12
+			OFFSETOF(struct nvmap, gmikeequalizerparams [7]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
-			& geqrxparams [1],
-			hamradio_get_af_equalizer_base,
+			& gmikeequalizerparams [7],
+			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-		static const struct paramdefdef xgeqrxparams_2 =
+		static const struct paramdefdef xgmikeequalizer_param8 =
 		{
-			QLABEL2("RX 2.7k", "RX EQ 2700 Hz"),  0, RJ_SIGNED,	ISTEP1,
+			QLABEL3("BAND 2.9", "Band 2.9", "BAND 2.9"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, AF_EQUALIZER_BASE * 2,
-			OFFSETOF(struct nvmap, geqrxparams [2]),
+			0, EQUALIZERBASE * 2,	// -12..+12
+			OFFSETOF(struct nvmap, gmikeequalizerparams [8]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
-			& geqrxparams [2],
-			hamradio_get_af_equalizer_base,
+			& gmikeequalizerparams [8],
+			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-		static const struct paramdefdef xgeqtx =
+		static const struct paramdefdef xgmikeequalizer_param9 =
 		{
-			QLABEL2("TX EQ", "TX Equalizer"), 0, RJ_ON,	ISTEP1,
+			QLABEL3("BAND 3.4", "Band 3.4", "BAND 3.4"),  0, RJ_SIGNED,	ISTEP1,
 			ITEM_VALUE,
-			0, 1,
-			OFFSETOF(struct nvmap, geqtx),
+			0, EQUALIZERBASE * 2,	// -12..+12
+			OFFSETOF(struct nvmap, gmikeequalizerparams [9]),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
-			& geqtx,
-			getzerobase, /* складывается со смещением и отображается */
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		static const struct paramdefdef xgeqtxparams_0 =
-		{
-			QLABEL2("TX 0.4k", "TX EQ 400 Hz"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
-			0, AF_EQUALIZER_BASE * 2,
-			OFFSETOF(struct nvmap, geqtxparams [0]),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& geqtxparams [0],
-			hamradio_get_af_equalizer_base,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		static const struct paramdefdef xgeqtxparams_1 =
-		{
-			QLABEL2("TX 1.5k", "TX EQ 1500 Hz"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
-			0, AF_EQUALIZER_BASE * 2,
-			OFFSETOF(struct nvmap, geqtxparams [1]),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& geqtxparams [1],
-			hamradio_get_af_equalizer_base,
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		static const struct paramdefdef xgeqtxparams_2 =
-		{
-			QLABEL2("TX 2.7k", "TX EQ 2700 Hz"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
-			0, AF_EQUALIZER_BASE * 2,
-			OFFSETOF(struct nvmap, geqtxparams [2]),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& geqtxparams [2],
-			hamradio_get_af_equalizer_base,
+			& gmikeequalizerparams [9],
+			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 
-
-		int_fast32_t hamradio_get_af_equalizer_base(void)
+		int hamradio_get_af_equalizer_gain_tx(int band)
 		{
-			ASSERT(3 == AF_EQUALIZER_BANDS);	// вылетит если увеличат количество полос (инициализаторы добавить!)
-			return - AF_EQUALIZER_BASE;
+			if (band < BOARD_AFPROC_BANDS)
+				return gmikeequalizerparams [band];
+			return 0;
 		}
-
-		int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v)
+		void hamradio_set_af_equalizer_gain_tx(int band, int v)
 		{
-			ASSERT(3 == AF_EQUALIZER_BANDS);	// вылетит если увеличат количество полос (инициализаторы добавить!)
-			ASSERT(v < AF_EQUALIZER_BANDS);
-			return geqrxparams [v];
+			if (band < BOARD_AFPROC_BANDS)
+				gmikeequalizerparams [band] = v;
 		}
-
-		void hamradio_set_af_equalizer_gain_rx(uint_fast8_t index, uint_fast8_t gain)
+		int hamradio_get_af_equalizer_base(void)
 		{
-			ASSERT(3 == AF_EQUALIZER_BANDS);	// вылетит если увеличат количество полос (инициализаторы добавить!)
-			ASSERT(index < AF_EQUALIZER_BANDS);
-			ASSERT(gain <= AF_EQUALIZER_BASE * 2);
-			geqrxparams [index] = gain;
-			save_i8(OFFSETOF(struct nvmap, geqrxparams [index]), geqrxparams [index]);
+			return EQUALIZERBASE;
+		}
+		int hamradio_get_eqalizer_tx(void)
+		{
+			return param_getvalue(& xgmikeequalizer);
+		}
+		void hamradio_set_eqalizer_tx(int state)
+		{
+			param_setvalue(& xgmikeequalizer, state);
 			updateboard();
 		}
-
-		uint_fast8_t hamradio_get_geqrx(void)
-		{
-			return geqrx;
-		}
-
-		void hamradio_set_geqrx(uint_fast8_t v)
-		{
-			geqrx = v != 0;
-			save_i8(OFFSETOF(struct nvmap, geqrx), geqrx);
-			updateboard();
-		}
-
-	#endif /* WITHAFEQUALIZER */
 	static uint_fast8_t gagcoff;
+
 #else /* WITHIF4DSP */
 	static const uint_fast8_t gagcoff = 0;
 	static const uint_fast8_t gdatamode = 0;	/* передача звука с USB вместо обычного источника */
@@ -6943,6 +6876,7 @@ static const struct paramdefdef xsi570_xtall_offset =
 void hamradio_set_si570reference(int_fast32_t f)
 {
 	param_setvalue(& xsi570_xtall_offset);
+	updateboard();
 }
 
 #endif /* defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570) */
@@ -8579,24 +8513,24 @@ static void cat_answer_forming(void);
 
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 
-#define WITHDIMMTIMEMAX 240
+#define WITHDIMMTIMEMAX 480
 
-static uint_fast8_t gdimmtime = 240;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
+static uint_fast16_t gdimmtime = WITHDIMMTIMEMAX;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
 
 static const struct paramdefdef xgdimmtime =
 {
 	QLABEL3("DIMM TIM", "Dimmer Time", "DIMM TIM"),  0, RJ_UNSIGNED, ISTEP5,
 	ITEM_VALUE,
-	0, 240,
+	0, WITHDIMMTIMEMAX,
 	OFFSETOF(struct nvmap, gdimmtime),
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,
 	& gdimmtime,
+	NULL,
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
-static uint_fast8_t dimmcount;
+static uint_fast16_t dimmcount;
 static uint_fast8_t dimmflagch;	/* не-0: изменилось состояние dimmflag */
 
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
@@ -9615,12 +9549,10 @@ static void micproc_load(void)
 		mp->agcgain = loadvfy8up(RMT_MICAGCGAIN_BASE(i), WITHMIKEAGCMIN, WITHMIKEAGCMAX, 30);
 		mp->clip = loadvfy8up(RMT_MICCLIP_BASE(i), WITHMIKECLIPMIN, WITHMIKECLIPMAX, 0);
 		mp->level = loadvfy8up(RMT_MICLEVEL_BASE(i), WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, WITHMIKEINGAINMAX);
-#if WITHAFCODEC1HAVEPROC
 		mp->mikeboost20db = loadvfy8up(RMT_MICBOOST_BASE(i), 0, 1, 0);
 		mp->eq_enable = loadvfy8up(RMT_MICEQ_BASE(i), 0, 1, 0);
-		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
+		for(uint_fast8_t j = 0; j < BOARD_AFPROC_BANDS; j ++)
 			mp->eq_params[j] = loadvfy8up(RMT_MICEQPARAMS_BASE(i, j), 0, EQUALIZERBASE * 2, EQUALIZERBASE);
-#endif /* WITHAFCODEC1HAVEPROC */
 	}
 #endif /* WITHTOUCHGUI */
 }
@@ -9815,7 +9747,7 @@ static int sq2transition(int_fast8_t sq10, int_fast16_t bw)
 static const struct paramdefdef xfltbw_cwwide =
 {
 	QLABEL3("CW W WDT", "CW W WIDTH", "CW W WIDTH"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for WIDE
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9828,7 +9760,7 @@ static const struct paramdefdef xfltbw_cwwide =
 static const struct paramdefdef xfltbw_cwnarrow =
 {
 	QLABEL3("CW N WDT", "CW N WIDTH", "CW N WIDTH"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for NARROW
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9839,7 +9771,7 @@ static const struct paramdefdef xfltbw_cwnarrow =
 };
 static const struct paramdefdef xgssbwide_high = {
 	QLABEL("SSB W HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9850,7 +9782,7 @@ static const struct paramdefdef xgssbwide_high = {
 };
 static const struct paramdefdef xgssbwide_low = {
 	QLABEL("SSB W LO"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9860,7 +9792,7 @@ static const struct paramdefdef xgssbwide_low = {
 };
 static const struct paramdefdef xgssbwide_afr = {
 	QLABEL3("SSBW SLOPE", "SSB W SLOPE", "SSBW SLOPE"), 0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9871,7 +9803,7 @@ static const struct paramdefdef xgssbwide_afr = {
 };
 static const struct paramdefdef xgssbmedium_high = {
 	QLABEL("SSB M HI"), 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB MEDIUM */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBMEDIUM),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9882,7 +9814,7 @@ static const struct paramdefdef xgssbmedium_high = {
 };
 static const struct paramdefdef xgssbmedium_low = {
 	QLABEL("SSB M LO"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB MEDIUM */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBMEDIUM),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9893,7 +9825,7 @@ static const struct paramdefdef xgssbmedium_low = {
 };
 static const struct paramdefdef xgssbmedium_afr = {
 	QLABEL3("SSBM SLOPE", "SSB M SLOPE", "SSBM SLOPE"), 0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBMEDIUM),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9904,7 +9836,7 @@ static const struct paramdefdef xgssbmedium_afr = {
 };
 static const struct paramdefdef xgssbnarrow_high = {
 	QLABEL("SSB N HI"), 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB NARROW */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9915,7 +9847,7 @@ static const struct paramdefdef xgssbnarrow_high = {
 };
 static const struct paramdefdef xgssbnarrow_low = {
 	QLABEL("SSB N LO"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB NARROW */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9926,7 +9858,7 @@ static const struct paramdefdef xgssbnarrow_low = {
 };
 static const struct paramdefdef xgssbnarrow_afr = {
 	QLABEL3("SSBN SLOPE", "SSBN SLOPE", "SSBN SLOPE"),  0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9937,7 +9869,7 @@ static const struct paramdefdef xgssbnarrow_afr = {
 };
 static const struct paramdefdef xgamwide_high = {
 	QLABEL("AM W HI"), 1, RJ_UNSIGNED,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9948,7 +9880,7 @@ static const struct paramdefdef xgamwide_high = {
 };
 static const struct paramdefdef xgamwide_low = {
 	QLABEL("AM W LO"), 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9959,7 +9891,7 @@ static const struct paramdefdef xgamwide_low = {
 };
 static const struct paramdefdef xgamwide_afr = {
 	QLABEL3("AM W SLOPE", "AM W SLOPE", "AM W SLOPE"), 0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9970,7 +9902,7 @@ static const struct paramdefdef xgamwide_afr = {
 };
 static const struct paramdefdef xgamnarrow_high = {
 	QLABEL("AM N HI"), 1, RJ_UNSIGNED,	ISTEP2,		/* Подстройка полосы пропускания - AM NARROW */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_AMNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9981,7 +9913,7 @@ static const struct paramdefdef xgamnarrow_high = {
 };
 static const struct paramdefdef xgamnarrow_low = {
 	QLABEL("AM N LO"),  2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM NARROW */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_AMNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9992,7 +9924,7 @@ static const struct paramdefdef xgamnarrow_low = {
 };
 static const struct paramdefdef xgamnarrow_afr = {
 	QLABEL3("AM N SLOPE", "AM N SLOPE", "AM N SLOPE"),  0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -10003,7 +9935,7 @@ static const struct paramdefdef xgamnarrow_afr = {
 };
 static const struct paramdefdef xgssbtx_high = {
 	QLABEL("SSBTX HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBTX),
 	getselector0, nvramoffs0, valueoffs0,
@@ -10014,7 +9946,7 @@ static const struct paramdefdef xgssbtx_high = {
 };
 static const struct paramdefdef xgssbtx_low = {
 	QLABEL("SSBTX LO"),  2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBTX),
 	getselector0, nvramoffs0, valueoffs0,
@@ -10025,7 +9957,7 @@ static const struct paramdefdef xgssbtx_low = {
 };
 static const struct paramdefdef xgssbtx_afr = {
 	QLABEL("SSBTXAFR"),  0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBTX),
 	getselector0, nvramoffs0, valueoffs0,
@@ -10036,7 +9968,7 @@ static const struct paramdefdef xgssbtx_afr = {
 };
 static const struct paramdefdef xgnfmtx_high = {
 	QLABEL("NFM TX HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_NFMTX),
 	getselector0, nvramoffs0, valueoffs0,
@@ -10047,7 +9979,7 @@ static const struct paramdefdef xgnfmtx_high = {
 };
 static const struct paramdefdef xgnfmtx_low = {
 	QLABEL("NFM TX LO"),  2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_NFMTX),
 	getselector0, nvramoffs0, valueoffs0,
@@ -10058,7 +9990,7 @@ static const struct paramdefdef xgnfmtx_low = {
 };
 static const struct paramdefdef xgnfmtx_afr = {
 	QLABEL("NFM TXAFR"),  0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_NFMTX),
 	getselector0, nvramoffs0, valueoffs0,
@@ -10069,7 +10001,7 @@ static const struct paramdefdef xgnfmtx_afr = {
 };
 static const struct paramdefdef xgdigiwide_high = {
 	QLABEL("DIGI HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_DIGIWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -10080,7 +10012,7 @@ static const struct paramdefdef xgdigiwide_high = {
 };
 static const struct paramdefdef xgdigiwide_low = {
 	QLABEL("DIGI LO"),  2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_DIGIWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -10325,7 +10257,7 @@ static uint_fast8_t getmemindex(uint_fast8_t bg)
 static const struct paramdefdef xgdummy =
 {
 	QLABEL(""),  0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
-	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
 	getselector0, nvramoffs0, valueoffs0,
@@ -12500,6 +12432,7 @@ static void processNoiseReduction(rxaproc_t * nrp, const FLOAT_t * bufferIn, FLO
 
 #endif /* WITHNOSPEEX */
 
+// Обработки звука в приёмном тракте
 static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 {
 	const uint_fast8_t amode = getamode(pathi);
@@ -12596,9 +12529,6 @@ user_audioproc(void * ctx)
 			// nrp->outsp указывает на результат обработки
 			//outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
 			outsp [pathi] = afpcw(pathi, nrp, p + pathi * FIRBUFSIZE);
-		#if WITHAFEQUALIZER
-			audio_rx_equalizer(outsp [pathi], FIRBUFSIZE);
-		#endif /* WITHAFEQUALIZER */
 		}
 		//////////////////////////////////////////////
 		// Save results
@@ -12654,9 +12584,6 @@ int user_audioproc_thread(void * ctx)	// user-mode processing - NR, эквала
 				// nrp->outsp указывает на результат обработки
 				//outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
 				outsp [pathi] = afpcw(pathi, nrp, p + pathi * FIRBUFSIZE);
-			#if WITHAFEQUALIZER
-				audio_rx_equalizer(outsp [pathi], FIRBUFSIZE);
-			#endif /* WITHAFEQUALIZER */
 			}
 			//////////////////////////////////////////////
 			// Save results
@@ -13544,13 +13471,15 @@ updateboard_noui(
 			board_set_txaudio(txaudiocode);	// Альтернативные источники сигнала при передаче
 			board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
 			board_set_mikeagcgain(gmikeagcgain);	/* Максимальное усидение АРУ микрофона */
-			board_set_mikehclip(gmikehclip);	/* Ограничитель */
+			board_set_mikehclip(! txreq_gettxdata(& txreqst0) && gmikehclip);	/* Ограничитель */
 			#if WITHCOMPRESSOR
 				board_set_compressor(gcompressor_attack, gcompressor_release, gcompressor_hold, gcompressor_gain, gcompressor_threshold);
 			#endif /* WITHCOMPRESSOR */
 			#if WITHREVERB
-				board_set_reverb(greverb, greverbdelay, greverbloss);	/* ревербератор */
+				board_set_reverb(! txreq_gettxdata(& txreqst0) && greverb, greverbdelay, greverbloss);	/* ревербератор */
 			#endif /* WITHREVERB */
+				board_set_mikeequal(! txreq_gettxdata(& txreqst0) && param_getvalue(& xgmikeequalizer));	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
+				board_set_mikeequalparams(gmikeequalizerparams, ARRAY_SIZE(gmikeequalizerparams));	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 			#if WITHELKEY
 				board_set_cwedgetime(gcwedgetime);	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 				board_set_cwssbtx(gcwssbtx);	/* разрешение передачи телеграфа как тона в режиме SSB */
@@ -13589,18 +13518,7 @@ updateboard_noui(
 		board_set_tvoutformat(param_getvalue(& xhdmiformat));	// Установить режим отображения на выдеовыходе
 	#endif /* WITHHDMITVHW */
 
-	#if WITHAFEQUALIZER
-		board_set_equalizer_rx(geqrx);
-		board_set_equalizer_tx(geqtx);
-		board_set_equalizer_rx_gains(geqrxparams);
-		board_set_equalizer_tx_gains(geqtxparams);
-	#endif /* WITHAFEQUALIZER */
-
 	#if WITHTX
-		#if defined (CODEC1_TYPE) && WITHAFCODEC1HAVEPROC
-			board_set_mikeequal(param_getvalue(& xgmikeequalizer));	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-			board_set_mikeequalparams(gmikeequalizerparams);	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-		#endif /* defined (CODEC1_TYPE) && WITHAFCODEC1HAVEPROC */
 		#if WITHIF4DSP
 		{
 			const uint_fast8_t asubmode = getasubmode(0);	// SUBMODE_CWZ/SUBMODE_CWZSMART for tune
@@ -18260,15 +18178,6 @@ loadsettings(void)
 static void
 defaultsettings(void)
 {
-	const struct menudesc * const pmd = & mdsc0;
-	uint_fast16_t i;
-	PRINTF("Loading NVRAM default settings\n");
-
-	for (i = 0; i < pmd->menusize; ++ i)
-	{
-		const struct menudef * const mp = & pmd->menutable [i];
-		savemenuvalue(mp->pd);
-	}
 
 #if WITHSPECTRUMWF
 	const uint_fast8_t bi = 0;
@@ -18278,6 +18187,20 @@ defaultsettings(void)
 		storezoom(bg);
 	}
 #endif /* WITHSPECTRUMWF */
+#if WITHTX
+	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
+	bandf2adjust_initialize();
+#endif /* WITHTX */
+
+	const struct menudesc * const pmd = & mdsc0;
+	uint_fast16_t i;
+	PRINTF("Loading NVRAM default settings\n");
+
+	for (i = 0; i < pmd->menusize; ++ i)
+	{
+		const struct menudef * const mp = & pmd->menutable [i];
+		savemenuvalue(mp->pd);
+	}
 }
 
 #if WITHMENU
@@ -20426,7 +20349,7 @@ keyboard_test(void)
 #define MSGYCELLS 5
 /* вызывается при разрешённых прерываниях. */
 // не-0: требуется сбросить NVRAM
-static uint_fast8_t initialize2(void)
+static uint_fast8_t nvramdiags(void)
 {
 	uint_fast8_t resetconfig = 0;
 #if ! LCDMODE_DUMMY
@@ -20441,19 +20364,7 @@ static uint_fast8_t initialize2(void)
 
 	//hardware_cw_diagnostics(0, 1, 0);	// 'D'
 
-	PRINTF(PSTR("initialize2() started.\n"));
-	// Инициализируем то что не получается иниитить в описании перменных.
-#if WITHTX
-	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
-	bandf2adjust_initialize();
-#endif /* WITHTX */
-#if WITHCAT
-#ifdef WITHCATSPEED
-	catbaudrate = findcatbaudrate(catbaudrate, WITHCATSPEED);
-#else
-	catbaudrate = findcatbaudrate(catbaudrate, 9600);
-#endif
-#endif /* WITHCAT */
+	PRINTF(PSTR("nvramdiags() started.\n"));
 
 	display_gpu_initialize();	// mdma/g2d/dma2d/gpu init
 
@@ -20487,7 +20398,7 @@ static uint_fast8_t initialize2(void)
 
 #if defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
 
-	//PRINTF(PSTR("initialize2: NVRAM initialization started.\n"));
+	//PRINTF(PSTR("nvramdiags: NVRAM initialization started.\n"));
 
 	mclearnvram = kbd_get_ishold(KIF_ERASE) != 0;
 	//extmenu = kbd_get_ishold(KIF_EXTMENU);
@@ -20542,13 +20453,13 @@ static uint_fast8_t initialize2(void)
 
 #endif /* defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
 
-	//PRINTF(PSTR("initialize2: NVRAM initialization passed.\n"));
+	//PRINTF(PSTR("nvramdiags: NVRAM initialization passed.\n"));
 
 #if HARDWARE_IGNORENONVRAM
 
 #elif NVRAM_TYPE == NVRAM_TYPE_FM25XXXX
 
-	//PRINTF(PSTR("initialize2: NVRAM autodetection start.\n"));
+	//PRINTF(PSTR("nvramdiags: NVRAM autodetection start.\n"));
 
 	const uint_fast16_t erasekey = geterasekey();
 	uint_fast8_t ab = 0;
@@ -20615,7 +20526,7 @@ static uint_fast8_t initialize2(void)
 		if (ab >= ABMAX)
 		{
 			// в случае неправильно работающего NVRAM зависаем
-			PRINTF(PSTR("initialize2: NVRAM initialization: wrong NVRAM pattern in any address sizes.\n"));
+			PRINTF(PSTR("nvramdiags: NVRAM initialization: wrong NVRAM pattern in any address sizes.\n"));
 
 #if WITHLCDBACKLIGHT
 			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -20644,13 +20555,13 @@ static uint_fast8_t initialize2(void)
 
 #else /* NVRAM_TYPE == NVRAM_TYPE_FM25XXXX */
 
-	//PRINTF(PSTR("initialize2: NVRAM(BKPSRAM/CPU EEPROM/SPI MEMORY) initialization: verify NVRAM signature.\n"));
+	//PRINTF(PSTR("nvramdiags: NVRAM(BKPSRAM/CPU EEPROM/SPI MEMORY) initialization: verify NVRAM signature.\n"));
 
 	const uint_fast16_t erasekey = geterasekey();
 	if (verifynvramsignature())
 		mclearnvram = 2;
 
-	//PRINTF(PSTR("initialize2: NVRAM initialization: work on NVRAM signature, mclearnvram=%d\n"), mclearnvram);
+	//PRINTF(PSTR("nvramdiags: NVRAM initialization: work on NVRAM signature, mclearnvram=%d\n"), mclearnvram);
 
 	if (mclearnvram != 0)
 	{
@@ -20685,19 +20596,19 @@ static uint_fast8_t initialize2(void)
 			//display2_needupdate();
 		}
 
-		//PRINTF(PSTR("initialize2: NVRAM initialization: erase NVRAM.\n"));
+		//PRINTF(PSTR("nvramdiags: NVRAM initialization: erase NVRAM.\n"));
 		/* стирание всей памяти */
 		uint_least16_t i;
 		for (i = 0; i < sizeof (struct nvmap); ++ i)
 			save_i8(i, 0xFF);
 
-		//PRINTF(PSTR("initialize2: NVRAM initialization: write NVRAM pattern.\n"));
+		//PRINTF(PSTR("nvramdiags: NVRAM initialization: write NVRAM pattern.\n"));
 		initnvrampattern();
-		//PRINTF(PSTR("initialize2: NVRAM initialization: verify NVRAM pattern.\n"));
+		//PRINTF(PSTR("nvramdiags: NVRAM initialization: verify NVRAM pattern.\n"));
 
 		if (verifynvrampattern())
 		{
-			PRINTF(PSTR("initialize2: NVRAM initialization: wrong NVRAM pattern.\n"));
+			PRINTF(PSTR("nvramdiags: NVRAM initialization: wrong NVRAM pattern.\n"));
 			// проверяем только что записанную сигнатуру
 			// в случае неправильно работающего NVRAM зависаем
 
@@ -20721,7 +20632,7 @@ static uint_fast8_t initialize2(void)
 		}
 
 		resetconfig = 1;
-		//PRINTF(PSTR("initialize2: NVRAM initialization: write NVRAM signature.\n"));
+		//PRINTF(PSTR("nvramdiags: NVRAM initialization: write NVRAM signature.\n"));
 		initnvramsignature();
 		//extmenu = 1;	/* сразу включаем инженерный режим - без перезагрузки доступны все пункты */
 	}
@@ -20730,23 +20641,8 @@ static uint_fast8_t initialize2(void)
 
 	(void) mclearnvram;
 
-#if defined (BOARD_BLINK_SETSTATE)
-	// работа на всех ядрах, кроме нулевого
-	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, blinktest2, NULL, 48 * 1024, "blinktest2") == NULL)
-	{
-#if WITHISBOOTLOADER
-	const unsigned thalf = 100;	// Toggle every 100 ms
-#else /* WITHISBOOTLOADER */
-	const unsigned thalf = 500;	// Toggle every 500 ms
-#endif /* WITHISBOOTLOADER */
-		static ticker_t ticker_blinks;
-		ticker_initialize(& ticker_blinks, NTICKS(thalf), blinktest, NULL);
-		ticker_add(& ticker_blinks);
-	}
-#endif /* defined (BOARD_BLINK_SETSTATE) */
-
 #if WITHDEBUG
-	PRINTF("initialize2: finished.\n");
+	PRINTF("nvramdiags: finished.\n");
 #endif
 	return resetconfig;
 }
@@ -21787,8 +21683,6 @@ void hamradio_set_gmikeagcgain(uint_fast8_t v)
 
 #endif /* WITHIF4DSP */
 
-#if WITHAFCODEC1HAVEPROC
-
 uint_fast8_t hamradio_get_gmikeboost20db(void)
 {
 	return gmikeboost20db;
@@ -21814,13 +21708,13 @@ void hamradio_set_gmikeequalizer(uint_fast8_t v)
 
 uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i)
 {
-	ASSERT(i < HARDWARE_CODEC1_NPROCPARAMS);
+	ASSERT(i < BOARD_AFPROC_BANDS);
 	return gmikeequalizerparams [i];
 }
 
 void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v)
 {
-	ASSERT(i < HARDWARE_CODEC1_NPROCPARAMS);
+	ASSERT(i < BOARD_AFPROC_BANDS);
 	ASSERT(v <= EQUALIZERBASE * 2);
 	gmikeequalizerparams [i] = v;
 	//save_i8(OFFSETOF(struct nvmap, gmoniflagxxx), gmoniflagxxx);
@@ -21831,7 +21725,6 @@ int_fast32_t hamradio_getequalizerbase(void)
 {
 	return getequalizerbase();
 }
-#endif /* WITHAFCODEC1HAVEPROC */
 
 int_fast16_t hamradio_if_shift(int_fast8_t step)
 {
@@ -22095,10 +21988,8 @@ void hamradio_clean_mic_profile(uint_fast8_t cell)
 
 	micprof_t * mp = & micprof_cells [cell];
 
-#if WITHAFCODEC1HAVEPROC
 	mp->mikeboost20db = 0;
 	mp->eq_enable = 0;
-#endif /* WITHAFCODEC1HAVEPROC */
 	mp->level = 0;
 	mp->agc = 0;
 	mp->agcgain = 0;
@@ -22120,11 +22011,10 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 	mp->agcgain = gmikeagcgain;
 	mp->clip = gmikehclip;
 
-#if WITHAFCODEC1HAVEPROC
 	mp->mikeboost20db = gmikeboost20db;
 	mp->eq_enable = gmikeequalizer;
 
-	for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
+	for(uint_fast8_t j = 0; j < BOARD_AFPROC_BANDS; j ++)
 	{
 		mp->eq_params [j] = gmikeequalizerparams [j];
 		save_i8(RMT_MICEQPARAMS_BASE(cell, j), mp->eq_params [j]);
@@ -22132,7 +22022,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 
 	save_i8(RMT_MICEQ_BASE(cell), mp->eq_enable);
 	save_i8(RMT_MICBOOST_BASE(cell), mp->mikeboost20db);
-#endif /* WITHAFCODEC1HAVEPROC */
+
 	save_i8(RMT_MICLEVEL_BASE(cell), mp->level);
 	save_i8(RMT_MICAGC_BASE(cell), mp->agc);
 	save_i8(RMT_MICAGCGAIN_BASE(cell), mp->agcgain);
@@ -22148,13 +22038,11 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 
 	if (mp->cell_saved && set)
 	{
-#if WITHAFCODEC1HAVEPROC
 		gmikeboost20db = mp->mikeboost20db;
 		gmikeequalizer = mp->eq_enable;
 
-		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
+		for(uint_fast8_t j = 0; j < BOARD_AFPROC_BANDS; j ++)
 			gmikeequalizerparams [j] = mp->eq_params [j];
-#endif /* WITHAFCODEC1HAVEPROC */
 		gmik1level = mp->level;
 		gmikeagc = mp->agc;
 		gmikeagcgain = mp->agcgain;
@@ -23229,21 +23117,44 @@ __WEAK void modem_init(void) { }
 void
 application_initialize(void)
 {
-	const uint_fast8_t resetconfig = initialize2();	/* вызывается при разрешённых прерываниях. */
+	const uint_fast8_t resetconfig = nvramdiags();	/* вызывается при разрешённых прерываниях. */
 #if WITHMENU
 	if (resetconfig)
 	{
 		defaultsettings();		/* загрузка в nvram установок по умолчанию */
 	}
+	loadsavedstate();	// split, s-meter display, see also loadsettings().
+	// Инициализируем то что не получается иниитить в описании перменных.
+#if WITHCAT
+#ifdef WITHCATSPEED
+	catbaudrate = findcatbaudrate(catbaudrate, WITHCATSPEED);
+#else
+	catbaudrate = findcatbaudrate(catbaudrate, 9600);
+#endif
+#endif /* WITHCAT */
 #if ! HARDWARE_IGNORENONVRAM
 	loadsettings();		/* загрузка всех установок из nvram. */
 #endif /* ! HARDWARE_IGNORENONVRAM */
 #endif /* WITHMENU */
 	/* NVRAM уже можно пользоваться */
 
-	loadsavedstate();	// split, s-meter display, see also loadsettings().
 	loadnewband(getvfoindex(1), 1);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
 	loadnewband(getvfoindex(0), 0);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
+
+#if defined (BOARD_BLINK_SETSTATE)
+	// работа на всех ядрах, кроме нулевого
+	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, blinktest2, NULL, 48 * 1024, "blinktest2") == NULL)
+	{
+#if WITHISBOOTLOADER
+	const unsigned thalf = 100;	// Toggle every 100 ms
+#else /* WITHISBOOTLOADER */
+	const unsigned thalf = 500;	// Toggle every 500 ms
+#endif /* WITHISBOOTLOADER */
+		static ticker_t ticker_blinks;
+		ticker_initialize(& ticker_blinks, NTICKS(thalf), blinktest, NULL);
+		ticker_add(& ticker_blinks);
+	}
+#endif /* defined (BOARD_BLINK_SETSTATE) */
 
 #if WITHLWIP
 	network_initialize();

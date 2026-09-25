@@ -94,11 +94,12 @@
 ///////////////////////////////////////
 //
 
-static uint_fast8_t		glob_trxpath = 0;			/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
 static uint_fast16_t 	glob_ifgain = BOARD_IFGAIN_MIN;
 static int_fast16_t 	glob_agcfence10 = - 73 * 10;
-static uint_fast8_t 	glob_dspmodes [2] = { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE, };
 static uint_fast8_t		glob_skipfilteraf;
+
+static uint_fast8_t 	glob_dspmodes [2] = { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE, };
+
 static uint_fast8_t		glob_agcrate [2] = { 20, 20 }; //10	// 10 дБ изменение входного на 1 дБ выходного
 static uint_fast8_t 	glob_agc_scale [2] = { 100, 100 }; // scale в процентах - Для эксперементов по улучшению приема АМ
 static uint_fast8_t 	glob_agc_t0 [2] = { 0, 0 }; // chargespeedfast в милисекундах
@@ -110,17 +111,16 @@ static uint_fast8_t 	glob_agc_t4 [2] = { 120, 120 }; // dischargespeedfast в м
 static int_fast16_t 	glob_aflowcutrx [2] = { 300, 300 } ;		// Частота низкочастотного среза полосы пропускания (в 10 Гц дискретах)
 static int_fast16_t 	glob_afhighcutrx [2] = { 3400, 3400 };	// Частота высокочастотного среза полосы пропускания (в 100 Гц дискретах)
 static uint_fast8_t 	glob_afwiderx [2];
-
-static int_fast16_t 	glob_aflowcuttx = 300 ;		// Частота низкочастотного среза полосы пропускания (в 10 Гц дискретах)
-static int_fast16_t 	glob_afhighcuttx = 3400;	// Частота высокочастотного среза полосы пропускания (в 100 Гц дискретах)
-
 static int_fast16_t		glob_fullbw6 [2] = { 1000, 1000 };		/* Частота среза фильтров ПЧ в алгоритме Уивера */
 static int_fast32_t		glob_lo6 [2] = { 0, 0 };
 static uint_fast16_t 	glob_flttransition [2] = { 0, 0 };
 static int_fast16_t 	glob_gainnfmrx [2] = { 100, 100 };
+static int_fast8_t		glob_afresponcesrx [2];	// изменение тембра звука в канале приёмника - на Samplerate/2 АЧХ становится на столько децибел
+
 static uint_fast8_t 	glob_squelch_level;
 
-static int_fast8_t		glob_afresponcesrx [2];	// изменение тембра звука в канале приёмника - на Samplerate/2 АЧХ становится на столько децибел
+static int_fast16_t 	glob_aflowcuttx = 300 ;		// Частота низкочастотного среза полосы пропускания (в 10 Гц дискретах)
+static int_fast16_t 	glob_afhighcuttx = 3400;	// Частота высокочастотного среза полосы пропускания (в 100 Гц дискретах)
 static int_fast8_t		glob_afresponcetx;	// изменение тембра звука в канале передатчика - на Samplerate/2 АЧХ становится на столько децибел
 
 static uint_fast8_t 	glob_wnb;	// Noise blanker enable (NB)
@@ -134,18 +134,7 @@ static uint_fast8_t 	glob_mikeboost20db;	/* Включение усилител�
 static uint_fast8_t		glob_mikeagc = 1;	/* Включение программной АРУ перед модулятором */
 static uint_fast8_t		glob_mikeagcgain = 40;	/* предел усиления в АРУ */
 static uint_fast8_t		glob_mikehclip;			/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
-#if defined(CODEC1_TYPE) && defined (HARDWARE_CODEC1_NPROCPARAMS)
 static uint_fast8_t 	glob_mikeequal;	// Включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-static uint_fast8_t		glob_codec1_gains [HARDWARE_CODEC1_NPROCPARAMS]; // = { -2, -1, -3, +6, +9 };	// параметры эквалайзера
-#endif /* defined(CODEC1_TYPE) && defined (HARDWARE_CODEC1_NPROCPARAMS) */
-
-#if WITHAFEQUALIZER
-static uint_fast8_t 	glob_equalizer_rx;
-static uint_fast8_t 	glob_equalizer_tx;
-static uint_fast8_t		glob_equalizer_rx_gains [AF_EQUALIZER_BANDS];
-static uint_fast8_t		glob_equalizer_tx_gains [AF_EQUALIZER_BANDS];
-#endif /* WITHAFEQUALIZER */
-
 static uint_fast8_t		glob_compattack;
 static uint_fast8_t		glob_comprelease;
 static uint_fast8_t		glob_comphold;
@@ -413,25 +402,32 @@ static uint_fast8_t globDSPMode [NPROF] [2] = { { DSPCTL_MODE_IDLE, DSPCTL_MODE_
 
 /* --- Struct Defs for Single EQ Band --- */
 typedef struct {
-    FLOAT_t f_center;   /* Center frequency of the band in Hz */
-    FLOAT_t bandwidth;  /* Bandwidth width in Hz */
-    FLOAT_t gain_db;    /* Gain/attenuation value in decibels (e.g., +6.0, -4.5) */
+    int32_t f_center;   /* Center frequency of the band in Hz */
+    int32_t bandwidth;  /* Bandwidth width in Hz */
+    int32_t gain_db;    /* Gain/attenuation value in decibels (e.g., +6.0, -4.5) */
 } eq_band_t;
 
 // Эквалайзер НЧ тракта передатчика
+//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
 static eq_band_t tx_eq [] =
 {
-		{	.f_center = 1000, .bandwidth = 500, .gain_db = -3,	},
-};
-// Эквалайзер НЧ тракта приёмника
-static eq_band_t rx_eq [] =
-{
-		{	.f_center = 2000, .bandwidth = 500, .gain_db = -12,	},
+		{	.f_center = 100, .bandwidth = 100, .gain_db = 0,	},
+		{	.f_center = 200, .bandwidth = 140, .gain_db = 0,	},
+		{	.f_center = 300, .bandwidth = 200, .gain_db = 0,	},
+		{	.f_center = 600, .bandwidth = 210, .gain_db = 0,	},
+		{	.f_center = 1000, .bandwidth = 420, .gain_db = 0,	},
+		{	.f_center = 1400, .bandwidth = 700, .gain_db = 0,	},
+		{	.f_center = 1900, .bandwidth = 980, .gain_db = 0,	},
+		{	.f_center = 2400, .bandwidth = 1340, .gain_db = 0,	},
+		{	.f_center = 2900, .bandwidth = 2050, .gain_db = 0,	},
+		{	.f_center = 3400, .bandwidth = 2400 , .gain_db = 0,	},
 };
 
 /* Параметры АМ модулятора */
-static volatile FLOAT_t amshapesignalHALF;
-static volatile FLOAT_t amcarrierHALF;
+static FLOAT_t amshapesignalHALF;
+static FLOAT_t amcarrierHALF;
 
 static FLOAT_t shapeSidetoneStep(hftxpath_t * const txpath);		// 0..1
 static FLOAT_t shapeTXEnvelopStep(hftxpath_t * const txpath);	// 0..1
@@ -769,7 +765,8 @@ static void calculate_bpf_with_variable_eq(FLOAT_t *const h, const FLOAT_t *cons
                         const FLOAT_t bell_shape = EXPF(-0.5 * distance * distance);
 
                         /* Convert the current band's gain value from logarithmic dB to linear scaling factor */
-                        const FLOAT_t band_gain_linear = POWF(10, eq_bands[b].gain_db / 20) - 1;
+                        // db2ratio(gainDb) - 1
+                        const FLOAT_t band_gain_linear = POWF(10, (FLOAT_t) eq_bands[b].gain_db / 20) - 1;
 
                         /* Superimpose the linear delta scaled by the curve shape into total response */
                         total_gain_linear += band_gain_linear * bell_shape;
@@ -1556,7 +1553,7 @@ static FLOAT_t MAKETAU0(void)
 // chargespeed 0: никогда, 1: мгновенно
 // Большим значениям сигнала соответствуют более положительные значения.
 
-static void charge2(volatile FLOAT_t * vcap, FLOAT_t vinput, FLOAT_t chargespeed)
+static void charge2(FLOAT_t * vcap, FLOAT_t vinput, FLOAT_t chargespeed)
 {
 	* vcap += (vinput - * vcap) * chargespeed;
 }
@@ -1572,7 +1569,7 @@ static FLOAT_t agc_calcagcfactor(uint_fast8_t rate)
 
 // Начальная установка  параметров АРУ приёмника
 
-void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
+void agc_parameters_initialize(agcparams_t * agcp, uint_fast32_t sr)
 {
 	agcp->agcoff = 0;
 	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 0.1, sr);
@@ -1596,7 +1593,7 @@ void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
 }
 
 // Отображение пиков и линии спектра
-void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t sr)
+void agc_parameters_peaks_initialize(agcparams_t * agcp, uint_fast32_t sr)
 {
 	agcp->agcoff = 1;
 	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 0.1, sr);
@@ -1622,7 +1619,7 @@ void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t 
 
 // Установка параметров АРУ приёмника
 
-static void rxagc_parameters_update(hfrxpath_t * const path, volatile agcparams_t * const agcp, FLOAT_t gainlimit_ratio, FLOAT_t agcfence, uint_fast8_t pathi)
+static void rxagc_parameters_update(hfrxpath_t * const path, agcparams_t * const agcp, FLOAT_t gainlimit_ratio, FLOAT_t agcfence, uint_fast8_t pathi)
 {
 	const uint_fast32_t sr = ARMSAIRATE;
 	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
@@ -1646,7 +1643,7 @@ static void rxagc_parameters_update(hfrxpath_t * const path, volatile agcparams_
 
 // Установка параметров S-метра приёмника
 
-static void smeter_parameters_update(volatile agcparams_t * const agcp)
+static void smeter_parameters_update(agcparams_t * const agcp)
 {
 	const uint_fast32_t sr = ARMSAIRATE;
 	agcp->agcoff = 0;
@@ -1666,7 +1663,7 @@ static void smeter_parameters_update(volatile agcparams_t * const agcp)
 
 // Начальная установка параметров АРУ микрофонного тракта передатчика
 
-static void comp_parameters_initialize(volatile agcparams_t * agcp)
+static void comp_parameters_initialize(agcparams_t * agcp)
 {
 	const uint_fast32_t sr = ARMI2SRATE;
 	agcp->agcoff = 0;
@@ -1688,7 +1685,7 @@ static void comp_parameters_initialize(volatile agcparams_t * agcp)
 
 // Установка параметров АРУ передатчика
 
-static void comp_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gainlimit_ratio)
+static void comp_parameters_update(agcparams_t * const agcp, FLOAT_t gainlimit_ratio)
 {
 	const uint_fast32_t sr = ARMI2SRATE;
 	agcp->agcoff = glob_mikeagc == 0;
@@ -2325,15 +2322,20 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_RX_ISB:
 	case DSPCTL_MODE_RX_SSB:
 	case DSPCTL_MODE_TX_NFM:
-	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
+		if (glob_mikeequal)
+			calculate_bpf_with_variable_eq(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, tx_eq, ARRAY_SIZE(tx_eq));
+		else
+			calculate_sloped_bpf(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
+		break;
+
+	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_RX_RTTY:
 	case DSPCTL_MODE_TX_RTTY:
 		calculate_sloped_bpf(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
-		//calculate_bpf_with_variable_eq(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx), tx_eq, ARRAY_SIZE(tx_eq));
-		break;
+	break;
 
 	// в режиме приема или в режимах передачи без микрофона - ничего не делаем
 	default:
@@ -2431,7 +2433,8 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 		{
 			// audio
 			calculate_sloped_bpf(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
-			//calculate_bpf_with_variable_eq(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb), rx_eq, ARRAY_SIZE(rx_eq));
+			// EQUALIZER TEST
+			//calculate_bpf_with_variable_eq(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, tx_eq, ARRAY_SIZE(tx_eq));
 		}
 		break;
 
@@ -2483,8 +2486,8 @@ pbsk_get_phase(
 	return phase;
 }
 
-static volatile uint_fast8_t	glob_modemmode;		// применяемая модуляция (bpsk/qpsk)
-static volatile uint_fast32_t	glob_modemspeed100;	// скорость передачи с точностью 1/100 бод
+static uint_fast8_t	glob_modemmode;		// применяемая модуляция (bpsk/qpsk)
+static uint_fast32_t	glob_modemspeed100;	// скорость передачи с точностью 1/100 бод
 
 static uint16_t m_RxBitPhase;
 static uint16_t g_RxBitFreqFTW;
@@ -2697,7 +2700,7 @@ void agc_state_initialize2(agcstate_t * __restrict st, const agcparams_t * __res
 
 // Для работы функции agc_perform требуется siglevel, больше значения которого
 // соответствуют большим уровням сигнала. может быть отрицательным
-static FLOAT_t agccalcstrength_log(const volatile agcparams_t * const agcp, FLOAT_t siglevel_ratio)
+static FLOAT_t agccalcstrength_log(const agcparams_t * const agcp, FLOAT_t siglevel_ratio)
 {
 	const FLOAT_t f0_ratio = agcp->levelfence_ratio;
 	const FLOAT_t m0_ratio = agcp->mininput_ratio;
@@ -2710,7 +2713,7 @@ static FLOAT_t agccalcstrength_log(const volatile agcparams_t * const agcp, FLOA
 
 // По отфильтрованому в соответствии с заданными временныме параметрами показатлю
 // силы сигнала получаем требуемое усиление (в разах отношения напряжений).
-static FLOAT_t agccalcgain_log(const volatile agcparams_t * const agcp, FLOAT_t streingth)
+static FLOAT_t agccalcgain_log(const agcparams_t * const agcp, FLOAT_t streingth)
 {
 	const FLOAT_t gain0 = POWF((FLOAT_t) M_E, streingth * agcp->agcfactor);
 	// реализация "спортивной" АРУ
@@ -2743,12 +2746,12 @@ static FLOAT_t agc_getsigpower(
 //
 // постоянные времени системы АРУ
 
-static RAMDTCM agcstate_t txagcstate;
+static agcstate_t txagcstate;
 
-static RAMDTCM agcparams_t txagcparams [NPROF];
+static agcparams_t txagcparams [NPROF];
 
-static RAMDTCM volatile uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
-static RAMDTCM volatile uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+static uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+static uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 
 static void agc_initialize(void)
 {
@@ -2820,7 +2823,7 @@ static FLOAT_t agc_getgain_float(
 	FLOAT_t fltstrengthslow
 	)
 {
-	const volatile agcparams_t * const agcp = & path->rxagcparams [gwagcprofrx];
+	const agcparams_t * const agcp = & path->rxagcparams [gwagcprofrx];
 
 	//BEGIN_STAMP();
 	const FLOAT_t gain = agccalcgain_log(agcp, fltstrengthslow);
@@ -2995,7 +2998,7 @@ static FLOAT_t txmikeclip(FLOAT_t vi)
 /* получения признака переполнения АЦП микрофонного тракта - вызывается из user mode */
 uint_fast8_t dsp_getmikeadcoverflow(void)
 {
-	volatile agcstate_t * const st = & txagcstate;
+	agcstate_t * const st = & txagcstate;
 	const FLOAT_t FS = txagcparams [gwagcproftx].levelfence_ratio;	// txlevelfenceSSB
 	return st->agcslowcap >= FS * db2ratio((FLOAT_t) - 1);
 }
@@ -4431,7 +4434,7 @@ void dsp_extbuffer32wfm(const int32_t * buff)
 			const FLOAT_t a2 = demod_WFM(buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q]);
 			const FLOAT_t a3 = demod_WFM(buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q]);
 
-			//volatile const FLOAT_t left = get_lout();
+			//const FLOAT_t left = get_lout();
 			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4;
 			savedemod_to_AF_proc(left, left);
 
@@ -4877,7 +4880,7 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 #endif /* WITHDSPEXTDDC */
 }
 
-#if 1
+#if 0
 
 ///--------------------https://analogtrx.com/SMF/index.php?topic=475.0
 
@@ -4970,151 +4973,11 @@ void rxEqIni(void)
  ///      doRX_EQ((float32_t *) pOutLms, FRAME_SIZE);
 #endif
 
-#if WITHAFEQUALIZER
-
-#define EQ_STAGES				1
-
-static FLOAT_t EQ_RX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_RX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_LOW_FILTER = { EQ_STAGES, EQ_RX_LOW_FILTER_State, EQ_RX_LOW_FILTER_Coeffs };
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_MID_FILTER = { EQ_STAGES, EQ_RX_MID_FILTER_State, EQ_RX_MID_FILTER_Coeffs };
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_RX_HIGH_FILTER = { EQ_STAGES, EQ_RX_HIGH_FILTER_State, EQ_RX_HIGH_FILTER_Coeffs };
-
-static FLOAT_t EQ_TX_LOW_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_MID_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_HIGH_FILTER_State [2 * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_LOW_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_MID_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-static FLOAT_t EQ_TX_HIGH_FILTER_Coeffs [BIQUAD_COEFF_IN_STAGE * EQ_STAGES] = { 0 };
-
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_LOW_FILTER = { EQ_STAGES, EQ_TX_LOW_FILTER_State, EQ_TX_LOW_FILTER_Coeffs };
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_MID_FILTER = { EQ_STAGES, EQ_TX_MID_FILTER_State, EQ_TX_MID_FILTER_Coeffs };
-static ARM_MORPH(arm_biquad_cascade_df2T_instance) EQ_TX_HIGH_FILTER = { EQ_STAGES, EQ_TX_HIGH_FILTER_State, EQ_TX_HIGH_FILTER_Coeffs };
-
-static void calcBiquad(uint32_t Fc, uint32_t Fs, FLOAT_t Q, FLOAT_t peakGain, FLOAT_t * outCoeffs)
-{
-	FLOAT_t a0, a1, a2, b1, b2, norm;
-
-	FLOAT_t V = POWF(10.0f, FABSF(peakGain) / 20);
-	FLOAT_t K = TANF(M_PI * Fc / Fs);
-    if (peakGain >= 0)
-    {
-        norm = 1.0f / (1.0f + 1.0f / Q * K + K * K);
-        a0 = (1.0f + V / Q * K + K * K) * norm;
-        a1 = 2.0f * (K * K - 1.0f) * norm;
-        a2 = (1.0f - V / Q * K + K * K) * norm;
-        b1 = a1;
-        b2 = (1.0f - 1.0f / Q * K + K * K) * norm;
-    }
-    else
-    {
-        norm = 1.0f / (1.0f + V / Q * K + K * K);
-        a0 = (1.0f + 1.0f / Q * K + K * K) * norm;
-        a1 = 2.0f * (K * K - 1.0f) * norm;
-        a2 = (1.0f - 1.0f / Q * K + K * K) * norm;
-        b1 = a1;
-        b2 = (1.0f - V / Q * K + K * K) * norm;
-    }
-
-    //save coefficients
-    outCoeffs[0] = a0;
-    outCoeffs[1] = a1;
-    outCoeffs[2] = a2;
-    outCoeffs[3] = - b1;
-    outCoeffs[4] = - b2;
-}
-
-void audio_rx_equalizer_init(void)
-{
-	FLOAT_t base = hamradio_get_af_equalizer_base();
-	FLOAT_t max_coeff = 0;
-
-	for (uint_fast8_t i = 0; i < 3; i ++)
-		max_coeff = max_coeff < glob_equalizer_rx_gains [i] ? glob_equalizer_rx_gains [i] : max_coeff;
-
-	max_coeff += base;
-
-    calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1, glob_equalizer_rx_gains [0] + base - max_coeff, EQ_RX_LOW_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1, glob_equalizer_rx_gains [1] + base - max_coeff, EQ_RX_MID_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1, glob_equalizer_rx_gains [2] + base - max_coeff, EQ_RX_HIGH_FILTER_Coeffs);
-}
-
-void audio_tx_equalizer_init(void)
-{
-	FLOAT_t base = hamradio_get_af_equalizer_base();
-	FLOAT_t max_coeff = 0;
-
-	for (uint_fast8_t i = 0; i < 3; i ++)
-		max_coeff = max_coeff < glob_equalizer_tx_gains [i] ? glob_equalizer_tx_gains [i] : max_coeff;
-
-	max_coeff += base;
-
-    calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1, glob_equalizer_tx_gains [0] + base - max_coeff, EQ_TX_LOW_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1, glob_equalizer_tx_gains [1] + base - max_coeff, EQ_TX_MID_FILTER_Coeffs);
-    calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1, glob_equalizer_tx_gains [2] + base - max_coeff, EQ_TX_HIGH_FILTER_Coeffs);
-}
-
-void audio_rx_equalizer(FLOAT_t * buffer, uint_fast16_t size)
-{
-	if (glob_equalizer_rx)
-	{
-		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_LOW_FILTER, buffer, buffer, size);
-		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_MID_FILTER, buffer, buffer, size);
-		ARM_MORPH(arm_biquad_cascade_df2T)(& EQ_RX_HIGH_FILTER, buffer, buffer, size);
-	}
-}
-
-void
-board_set_equalizer_rx(uint_fast8_t n)
-{
-	const uint_fast8_t v = n != 0;
-	if (glob_equalizer_rx != v)
-	{
-		glob_equalizer_rx = v;
-	}
-}
-
-void
-board_set_equalizer_tx(uint_fast8_t n)
-{
-	const uint_fast8_t v = n != 0;
-	if (glob_equalizer_tx != v)
-	{
-		glob_equalizer_tx = v;
-	}
-}
-
-void board_set_equalizer_rx_gains(const uint_fast8_t * p)
-{
-	if (memcmp(glob_equalizer_rx_gains, p, sizeof glob_equalizer_rx_gains) != 0)
-	{
-		memcpy(glob_equalizer_rx_gains, p, sizeof glob_equalizer_rx_gains);
-		audio_rx_equalizer_init();
-	}
-}
-
-void board_set_equalizer_tx_gains(const uint_fast8_t * p)
-{
-	if (memcmp(glob_equalizer_tx_gains, p, sizeof glob_equalizer_tx_gains) != 0)
-	{
-		memcpy(glob_equalizer_tx_gains, p, sizeof glob_equalizer_tx_gains);
-		audio_tx_equalizer_init();
-	}
-}
-
-#endif /* WITHAFEQUALIZER */
-
-
 //////////////////////////////////////////
 // glob_cwedgetime - длительность нарастания/спада огибающей CW (и сигнала самоконтроля) в единицах милисекунд
 
-static volatile uint_fast8_t txgateInput = 0;
-static volatile uint_fast8_t rxgateflag = 0;
+static uint_fast8_t txgateInput = 0;
+static uint_fast8_t rxgateflag = 0;
 
 // 0..1
 static FLOAT_t peakshapef(hftxpath_t * const txpath, unsigned shapePos)	/* shapePos: от 0 до enveloplen0 включительно. */
@@ -5418,7 +5281,7 @@ hfrxpath_init(hfrxpath_t * const self)
 static void 
 hfrxpath_update(
 		hfrxpath_t * const self,
-		uint_fast8_t profile,
+		uint_fast8_t profile,		// профиль для текущего обновления
 		const uint_fast8_t selfi)				// 0/1: main_RX/sub_RX
 {
 	// Параметры АРУ приёмника
@@ -5463,7 +5326,7 @@ hfrxpath_update(
 
 	// Пороговый шумодав (Squelch)
 	{
-		const volatile agcparams_t * const agcp = & self->rxsmeterparams;
+		const agcparams_t * const agcp = & self->rxsmeterparams;
 
 		const FLOAT_t upper_log = agccalcstrength_log(agcp, agcp->levelfence_ratio);
 		const FLOAT_t lower_log = agccalcstrength_log(agcp, agcp->mininput_ratio);
@@ -5496,9 +5359,8 @@ hfrxpath_update(
 // Передача параметров в DSP модуль
 // Обновление параметров передатчика (кроме фильтров).
 static void 
-txparam_update(uint_fast8_t profile)
+hftxpath_update(hftxpath_t * const txpath, uint_fast8_t profile)
 {
-    hftxpath_t * const txpath = hftrx_txgetpath();
 	const FLOAT_t txlevelfence = 1;	// контролировать по отсутствию индикации переполнения DUC при передаче
 
 	#if WITHTXCPATHCALIBRATE
@@ -5565,18 +5427,10 @@ txparam_update(uint_fast8_t profile)
 	subtonevolume = (glob_subtonelevel / (FLOAT_t) 100);
 
 	// Девиация в NFM
-	//gnfmdeviationftw = FTWAF(glob_fullbw6 [glob_trxpath] / 2);
+	//gnfmdeviationftw = FTWAF(glob_fullbw6 [target_pathi] / 2);
 	txpath->gnfmdeviationftw = FTWAF(glob_fmdeviation);
 	// CW & sidetone edge
 	txpath->enveloplen0 = NSAITICKS(glob_cwedgetime) + 1;		/* количество сэмплов, за которое меняется огибающая */
-}
-
-// Передача параметров в DSP модуль
-static void 
-trxparam_update(void)
-{
-	// 0.707 == M_SQRT1_2
-	/* http://gregstoll.dyndns.org/~gregstoll/floattohex/ use for tests */
 }
 
 /* вызывается при разрешённых прерываниях. */
@@ -5609,7 +5463,6 @@ void hftrx_init(void)
 	// Разрядность поступающего с микрофона сигнала
 	agc_initialize();
 	voxmeter_initialize();
-	trxparam_update();
 	{
 		const uint_fast8_t rprofile = ! gwagcprofrx;	// индекс профиля, который станет рабочим
 		uint_fast8_t pathi;
@@ -5625,7 +5478,7 @@ void hftrx_init(void)
 	ARM_MORPH(arm_fir_init)(& tx_fir_instance, Ntap_tx_MIKE, tx_firEQcoeff, tx_fir_state, tx_MIKE_blockSize);
 
 	const uint_fast8_t tprofile = ! gwagcproftx;	// индекс профиля, который станет рабочим
-	txparam_update(tprofile);
+	hftxpath_update(& tx_path, tprofile);
 	gwagcproftx = tprofile;
 
 	{
@@ -5676,7 +5529,6 @@ void
 prog_dsplreg(void)
 {
 	const uint_fast8_t pathn = isdspmodetx(glob_dspmodes [0]) ? 1 : NTRX;	// при передаче только тракт с идексом 0
-	trxparam_update();
 	const uint_fast8_t rprofile = ! gwagcprofrx;	// индекс профиля, который станет рабочим
 	uint_fast8_t pathi;
 	for (pathi = 0; pathi < pathn; ++ pathi)
@@ -5687,7 +5539,7 @@ prog_dsplreg(void)
 	gwagcprofrx = rprofile;
 
 	const uint_fast8_t tprofile = ! gwagcproftx;	// индекс профиля, который станет рабочим
-	txparam_update(tprofile);
+	hftxpath_update(& tx_path, tprofile);
 	gwagcproftx = tprofile;
 }
 
@@ -5809,9 +5661,9 @@ prog_codec1reg(void)
 	// also use glob_mik1level
 	ifc1->setvolume(gainL, gainR, glob_afmute, glob_dsploudspeaker_off);
 	ifc1->setlineinput(glob_lineinput, glob_mikeboost20db, glob_mik1level, glob_lineamp);
-#if defined (HARDWARE_CODEC1_NPROCPARAMS)
-	ifc1->setprocparams(glob_mikeequal, glob_codec1_gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
-#endif /* defined (HARDWARE_CODEC1_NPROCPARAMS) */
+#if defined (BOARD_AFPROC_BANDS) && 0
+	//ifc1->setprocparams(glob_mikeequal, glob_codec1_gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
+#endif /* defined (BOARD_AFPROC_BANDS) */
 #endif /* defined(CODEC1_TYPE) */
 }
 
@@ -5876,11 +5728,12 @@ board_codec1regchanged(void)
 
 ////////////////////////////////
 
+static uint_fast8_t		target_pathi = 0;			/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
 
 /* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
 void board_set_trxpath(uint_fast8_t v)
 {
-	glob_trxpath = v;
+	target_pathi = v;
 }
 
 
@@ -5918,9 +5771,9 @@ board_set_agcfence10(int_fast16_t v)	// Точка пергиба характе
 void
 board_set_agcrate(uint_fast8_t n)	/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
 {
-	if (glob_agcrate [glob_trxpath] != n)
+	if (glob_agcrate [target_pathi] != n)
 	{
-		glob_agcrate [glob_trxpath] = n;
+		glob_agcrate [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -5930,9 +5783,9 @@ board_set_agcrate(uint_fast8_t n)	/* на n децибел изменения в
 void
 board_set_agc_scale(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
-	if (glob_agc_scale [glob_trxpath] != n)
+	if (glob_agc_scale [target_pathi] != n)
 	{
-		glob_agc_scale [glob_trxpath] = n;
+		glob_agc_scale [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -5941,9 +5794,9 @@ board_set_agc_scale(uint_fast8_t n)	/* подстройка параметра �
 void
 board_set_agc_t0(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
-	if (glob_agc_t0 [glob_trxpath] != n)
+	if (glob_agc_t0 [target_pathi] != n)
 	{
-		glob_agc_t0 [glob_trxpath] = n;
+		glob_agc_t0 [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -5952,9 +5805,9 @@ board_set_agc_t0(uint_fast8_t n)	/* подстройка параметра АР
 void
 board_set_agc_t1(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
-	if (glob_agc_t1 [glob_trxpath] != n)
+	if (glob_agc_t1 [target_pathi] != n)
 	{
-		glob_agc_t1 [glob_trxpath] = n;
+		glob_agc_t1 [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -5963,9 +5816,9 @@ board_set_agc_t1(uint_fast8_t n)	/* подстройка параметра АР
 void
 board_set_agc_t2(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
-	if (glob_agc_t2 [glob_trxpath] != n)
+	if (glob_agc_t2 [target_pathi] != n)
 	{
-		glob_agc_t2 [glob_trxpath] = n;
+		glob_agc_t2 [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -5974,9 +5827,9 @@ board_set_agc_t2(uint_fast8_t n)	/* подстройка параметра АР
 void
 board_set_agc_t4(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
-	if (glob_agc_t4 [glob_trxpath] != n)
+	if (glob_agc_t4 [target_pathi] != n)
 	{
-		glob_agc_t4 [glob_trxpath] = n;
+		glob_agc_t4 [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -5984,9 +5837,9 @@ board_set_agc_t4(uint_fast8_t n)	/* подстройка параметра АР
 void
 board_set_agc_thung(uint_fast8_t n)	/* подстройка параметра АРУ HUNG TIME */
 {
-	if (glob_agc_thung [glob_trxpath] != n)
+	if (glob_agc_thung [target_pathi] != n)
 	{
-		glob_agc_thung [glob_trxpath] = n;
+		glob_agc_thung [target_pathi] = n;
 		board_dsp1regchanged();
 	}
 }
@@ -6305,9 +6158,9 @@ board_set_reverb(uint_fast8_t reverb, uint_fast8_t reverbdelay, uint_fast8_t rev
 void
 board_set_afresponcerx(int_fast8_t v)
 {
-	if (glob_afresponcesrx [glob_trxpath] != v)
+	if (glob_afresponcesrx [target_pathi] != v)
 	{
-		glob_afresponcesrx [glob_trxpath] = v;
+		glob_afresponcesrx [target_pathi] = v;
 		board_flt1regchanged();
 	}
 }
@@ -6346,7 +6199,6 @@ void board_set_datatx(uint_fast8_t v)
 #endif /* WITHUSBUAC && WITHTX */
 }
 
-#if defined(CODEC1_TYPE) && WITHAFCODEC1HAVEPROC
 // включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 void
 board_set_mikeequal(uint_fast8_t n)
@@ -6355,23 +6207,34 @@ board_set_mikeequal(uint_fast8_t n)
 	if (glob_mikeequal != v)
 	{
 		glob_mikeequal = v;
-		board_codec1regchanged();
+		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
-
-// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-void board_set_mikeequalparams(const uint_fast8_t * p)
+#if WITHINTEGRATEDDSP
+// Эквалайзер НЧ тракта передатчика
+//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
+void board_set_mikeequalparams(const uint_fast8_t * p, unsigned nbands)
 {
+	ASSERT(BOARD_AFPROC_BANDS == nbands);
 	// 
-	if (memcmp(glob_codec1_gains, p, sizeof glob_codec1_gains) != 0)
+	unsigned i;
+	int changed = 0;
+	for (i = 0; i < nbands; ++ i)
 	{
-		memcpy(glob_codec1_gains, p, sizeof glob_codec1_gains);
-		board_codec1regchanged();
+		const int_fast32_t gain = (int_fast32_t) p [i] - EQUALIZERBASE;
+		if (tx_eq [i].gain_db != gain)
+		{
+			changed = 1;
+			tx_eq [i].gain_db = gain;
+		}
 	}
-
+	if (changed)
+	{
+		board_flt1regchanged();		// параметры этой функции используются в audio_update();
+	}
 }
-
-#endif /* defined(CODEC1_TYPE) && WITHAFCODEC1HAVEPROC */
 
 /* отключить звук в наушниках и динамиках */
 void
@@ -6382,6 +6245,7 @@ board_set_afmute(uint_fast8_t n)
 	{
 		glob_afmute = v;
 		board_codec1regchanged();
+		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
 
@@ -6389,18 +6253,18 @@ board_set_afmute(uint_fast8_t n)
 void
 board_set_dspmode(uint_fast8_t v)
 {
-	if (glob_dspmodes [glob_trxpath] != v)
+	if (glob_dspmodes [target_pathi] != v)
 	{
-		glob_dspmodes [glob_trxpath] = v;
+		glob_dspmodes [target_pathi] = v;
 		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
 
 void board_set_lo6(int_fast32_t f)
 {
-	if (glob_lo6 [glob_trxpath] != f)
+	if (glob_lo6 [target_pathi] != f)
 	{
-		glob_lo6 [glob_trxpath] = f;
+		glob_lo6 [target_pathi] = f;
 		board_flt1regchanged();
 	}
 }
@@ -6409,18 +6273,18 @@ void board_set_lo6(int_fast32_t f)
 /* Установка девиации в NFM */
 void board_set_fullbw6(int_fast16_t n)
 {
-	if (glob_fullbw6 [glob_trxpath] != n)
+	if (glob_fullbw6 [target_pathi] != n)
 	{
-		glob_fullbw6 [glob_trxpath] = n;
+		glob_fullbw6 [target_pathi] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
 
 void board_set_flttransition(uint_fast16_t n)	/* Ширина переходной полосы */
 {
-	if (glob_flttransition [glob_trxpath] != n)
+	if (glob_flttransition [target_pathi] != n)
 	{
-		glob_flttransition [glob_trxpath] = n;
+		glob_flttransition [target_pathi] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
@@ -6428,9 +6292,9 @@ void board_set_flttransition(uint_fast16_t n)	/* Ширина переходно
 void 
 board_set_aflowcutrx(int_fast16_t n)	/* Нижняя частота среза фильтра НЧ по приему */
 {
-	if (glob_aflowcutrx [glob_trxpath] != n)
+	if (glob_aflowcutrx [target_pathi] != n)
 	{
-		glob_aflowcutrx [glob_trxpath] = n;
+		glob_aflowcutrx [target_pathi] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
@@ -6438,9 +6302,9 @@ board_set_aflowcutrx(int_fast16_t n)	/* Нижняя частота среза �
 void 
 board_set_afhighcutrx(int_fast16_t n)	/* Верхняя частота среза фильтра НЧ по приему */
 {
-	if (glob_afhighcutrx [glob_trxpath] != n)
+	if (glob_afhighcutrx [target_pathi] != n)
 	{
-		glob_afhighcutrx [glob_trxpath] = n;
+		glob_afhighcutrx [target_pathi] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
@@ -6449,9 +6313,9 @@ board_set_afhighcutrx(int_fast16_t n)	/* Верхняя частота срез�
 void board_set_afwide(uint_fast8_t n)
 {
 	const uint_fast8_t v = n != 0;
-	if (glob_afwiderx [glob_trxpath] != n)
+	if (glob_afwiderx [target_pathi] != n)
 	{
-		glob_afwiderx [glob_trxpath] = n;
+		glob_afwiderx [target_pathi] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
@@ -6490,9 +6354,9 @@ board_set_digigainmax(uint_fast8_t v)
 void
 board_set_gainnfmrx(int_fast16_t n)	/* дополнительное усиление по НЧ в режиме приёма NFM */
 {
-	if (glob_gainnfmrx [glob_trxpath] != n)
+	if (glob_gainnfmrx [target_pathi] != n)
 	{
-		glob_gainnfmrx [glob_trxpath] = n;
+		glob_gainnfmrx [target_pathi] = n;
 		board_flt1regchanged();	// параметры этой функции используются в audio_update();
 	}
 }
@@ -6507,6 +6371,7 @@ board_set_modem_speed100(uint_fast32_t v)
 		board_flt1regchanged();
 	}
 }
+#endif
 
 // применяемая модуляция
 void
@@ -6575,68 +6440,3 @@ void audio_diagnostics(void)
 #endif
 }
 
-/* ========================================================================== */
-/*                             INTERNAL FIFO HELPERS                          */
-/* ========================================================================== */
-#include "rtty.h"
-/**
- * @brief Thread-safe lock-free buffer initialization.
- */
-void fifo_init(modem_fifo_t * const fifo)
-{
-    fifo->head = 0;
-    fifo->tail = 0;
-}
-
-/**
- * @brief Thread-safe lock-free byte injection (Called strictly by ONE producer thread/interrupt).
- * @return uint32_t Returns 1 on success, 0 if the buffer is mathematically full.
- */
-uint32_t fifo_push(modem_fifo_t * const fifo, const uint8_t data)
-{
-    const uint32_t next_head = (fifo->head + 1) % MODEM_FIFO_SIZE;
-
-    /* Check if the next step hits the tail pointer boundary (Buffer Full) */
-    if (next_head == fifo->tail) {
-        return 0;
-    }
-
-    fifo->storage[fifo->head] = data;
-
-    /* Atomic write of the head index closes the transaction. Interrupt safe. */
-    fifo->head = next_head;
-    return 1;
-}
-
-/**
- * @brief Thread-safe lock-free byte extraction (Called strictly by ONE consumer thread/interrupt).
- * @return uint32_t Returns 1 on success, 0 if the buffer is empty.
- */
-uint32_t fifo_pop(modem_fifo_t * const fifo, uint8_t * const data)
-{
-    /* If head and tail pointers are equal, the ring is mathematically empty */
-    if (fifo->tail == fifo->head) {
-        return 0;
-    }
-
-    *data = fifo->storage[fifo->tail];
-
-    /* Atomic write of the tail index closes the transaction. Interrupt safe. */
-    fifo->tail = (fifo->tail + 1) % MODEM_FIFO_SIZE;
-    return 1;
-}
-
-/**
- * @brief Supplementary helper to safely extract current elements count at runtime.
- */
-uint32_t fifo_get_count(const modem_fifo_t * const fifo)
-{
-    const uint32_t snapshot_head = fifo->head;
-    const uint32_t snapshot_tail = fifo->tail;
-
-    if (snapshot_head >= snapshot_tail) {
-        return snapshot_head - snapshot_tail;
-    }
-
-    return (MODEM_FIFO_SIZE - snapshot_tail) + snapshot_head;
-}

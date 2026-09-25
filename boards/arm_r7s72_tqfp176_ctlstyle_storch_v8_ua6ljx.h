@@ -346,7 +346,7 @@
 
 	#define WITHAFSPECTRE		1
 
-//	#define WITHAFEQUALIZER		1
+//	
 
 //	#define DEFAULTDIALFREQ		3708000L
 

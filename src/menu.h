@@ -438,12 +438,6 @@
 	},
 /* group name --- */
 #if WITHTX && WITHIF4DSP
-#if WITHMIC1LEVEL
-	& xgmik1level,
-#endif /* ITHMIC1LEVEL */
-	#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
-	& xglineamp,	/* подстройка усиления с линейного входа через меню. */
-	#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 	& xgmike_ssb,
 	& xgmike_dig,
 	& xgmike_am,
@@ -463,28 +457,55 @@
 	& xgreverbdelay,
 	& xgreverbloss,
 #endif /* WITHREVERB */
-	& xgmikeboost20db,
-#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
+/* group name +++ */
+	(const struct paramdefdef [1]) {
+		QLABEL3("MIKE EQ", "Mike EQ", "MIKE EQ"), 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		OFFSETOF(struct nvmap, ggrpmikeeq),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		NULL,
+		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+/* group name --- */
 	& xgmikeequalizer,	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-	// Эквалайзер 80 Hz, 230 Hz, 650 Hz, 1.8 kHz, 5.3 kHz
+	//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+	//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+	//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
 	& xgmikeequalizer_param0,
 	& xgmikeequalizer_param1,
 	& xgmikeequalizer_param2,
 	& xgmikeequalizer_param3,
 	& xgmikeequalizer_param4,
-#endif /* WITHAFCODEC1HAVEPROC */
-#if WITHAFEQUALIZER
-	& xgeqrx,
-	& xgeqrxparams_0,
-	& xgeqrxparams_1,
-	& xgeqrxparams_2,
-	& xgeqtx,
-	& xgeqtxparams_0,
-	& xgeqtxparams_1,
-	& xgeqtxparams_2,
-#endif /* WITHAFEQUALIZER */
+	& xgmikeequalizer_param5,
+	& xgmikeequalizer_param6,
+	& xgmikeequalizer_param7,
+	& xgmikeequalizer_param8,
+	& xgmikeequalizer_param9,
 #endif /* WITHTX && WITHIF4DSP */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+/* group name +++ */
+	(const struct paramdefdef [1]) {
+		QLABEL("CODEC"), 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		OFFSETOF(struct nvmap, ggrpcodecparams),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		NULL,
+		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+/* group name --- */
+	& xgmikeboost20db,
+#if WITHMIC1LEVEL
+	& xgmik1level,
+#endif /* ITHMIC1LEVEL */
+#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
+	& xglineamp,	/* подстройка усиления с линейного входа через меню. */
+#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 //	unsigned ALCNEN = 0;	// ALC noise gate function control bit
 //	unsigned ALCNTH = 0;	// ALC noise gate threshold level
 //	unsigned ALCEN = 1;	// only left channel ALC enabled
@@ -628,7 +649,7 @@
 /* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC RATE"),  0, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		1, AGC_RATE_FLAT,
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
 		getselector0, nvramoffs0, valueoffs0,
@@ -639,7 +660,7 @@
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC HUNG"),  1, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		0, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].thung10),	/* время удержания медленной цепи АРУ */
 		getselector0, nvramoffs0, valueoffs0,
@@ -650,7 +671,7 @@
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T1"),  3, RJ_UNSIGNED, ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].t1),	/* время срабатывания медленной цепи АРУ */
 		getselector0, nvramoffs0, valueoffs0,
@@ -661,7 +682,7 @@
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T2"),  1, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		1, 100, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].release10),	/* время разряда медленной цепи АРУ */
 		getselector0, nvramoffs0, valueoffs0,
@@ -672,7 +693,7 @@
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T4"),  3, RJ_UNSIGNED, ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_SSB].t4),	/* время разряда быстрой цепи АРУ */
 		getselector0, nvramoffs0, valueoffs0,
@@ -696,7 +717,7 @@
 /* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC RATE"),  0, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		1, AGC_RATE_FLAT,
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
 		getselector0, nvramoffs0, valueoffs0,
@@ -707,7 +728,7 @@
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC HUNG"),  1, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		0, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].thung10),	/* время удержания медленной цепи АРУ */
 		getselector0, nvramoffs0, valueoffs0,
@@ -718,7 +739,7 @@
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T1"),  3, RJ_UNSIGNED, ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].t1),	/* время срабатывания медленной цепи АРУ */
 		getselector0, nvramoffs0, valueoffs0,
@@ -729,7 +750,7 @@
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T2"),  1, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		1, 100, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].release10),	/* время разряда медленной цепи АРУ */
 		getselector0, nvramoffs0, valueoffs0,
@@ -740,7 +761,7 @@
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T4"),  3, RJ_UNSIGNED, ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_CW].t4),	/* время разряда быстрой цепи АРУ */
 		getselector0, nvramoffs0, valueoffs0,
@@ -764,7 +785,7 @@
 /* group name --- */
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC RATE"),  0, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		1, AGC_RATE_FLAT,
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
 		getselector0, nvramoffs0, valueoffs0,
@@ -775,7 +796,7 @@
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC HUNG"),  1, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ (время удержания медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		0, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].thung10),	/* время удержания медленной цепи АРУ */
 		getselector0, nvramoffs0, valueoffs0,
@@ -786,7 +807,7 @@
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T1"),  3, RJ_UNSIGNED, ISTEP10,		/* подстройка параметра АРУ (время срабатывания медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].t1),	/* время срабатывания медленной цепи АРУ */
 		getselector0, nvramoffs0, valueoffs0,
@@ -797,7 +818,7 @@
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T2"),  1, RJ_UNSIGNED, ISTEP1,		/* подстройка параметра АРУ (время разряда медленной цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		1, 100, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].release10),	/* время разряда медленной цепи АРУ */
 		getselector0, nvramoffs0, valueoffs0,
@@ -808,7 +829,7 @@
 	},
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC T4"),  3, RJ_UNSIGNED, ISTEP10,		/* подстройка параметра АРУ (время разряда быстрой цепи) через меню. */
-		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE,
 		10, 250, 
 		OFFSETOF(struct nvmap, afsets [AGCSETI_DIGI].t4),	/* время разряда быстрой цепи АРУ */
 		getselector0, nvramoffs0, valueoffs0,

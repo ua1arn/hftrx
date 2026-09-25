@@ -374,9 +374,9 @@ static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
 {
     /* 1. Calculate raw magnitude squared to prevent division by zero inside the limiter */
     const FLOAT_t mag2 = in_i * in_i + in_q * in_q;
-    if (mag2 <= 1e-9f)
+    if (mag2 <= (FLOAT_MIN * FLOAT_MIN))
     {
-        const uint32_t raw_bit = (self->lpf_state >= 0.0);
+        const uint32_t raw_bit = (self->lpf_state >= 0);
         return raw_bit ^ (uint32_t) self->invert_output;
     }
 
@@ -392,7 +392,7 @@ static uint32_t dsp_rtty_sub_execute_discriminatorNEW(
 
     /* --- STRICT CMSIS-DSP ANGLE CALIBRATION CORE --- */
     /* Force angle calculation strictly bounded inside [0.0 ... 360.0] grid to prevent table overflow */
-    phase_degrees = FMAXF(0.0f, FMINF(phase_degrees, 360));
+    phase_degrees = FMAXF(0, FMINF(phase_degrees, 360));
 
     /* Direct hardware accelerated CMSIS-DSP sine/cosine execution via ARM NEON vector registers */
     arm_sin_cos_f32((float32_t)phase_degrees, &sin_val, &cos_val);
@@ -564,12 +564,6 @@ uint32_t rtty_rx_byte(rtty_baudot_fsm_t * const self, uint8_t *output_byte)
 //{
 //    return fifo_pop(&self->fsm.rx_fifo_debug, output_byte);
 //}
-
-static void rxcharacter(rtty_baudot_fsm_t * self, const uint8_t c)
-{
-	fifo_push(&self->rx_fifo, c);
-}
-
 
 void dsp_rttyrxcharacter(rtty_baudot_fsm_t * self, const uint8_t c)
 {
@@ -983,5 +977,71 @@ void RTTYDecoder_Process(const FLOAT_t *bufferIn, unsigned len) // start RTTY de
 }
 
 #endif
+
+/* ========================================================================== */
+/*                             INTERNAL FIFO HELPERS                          */
+/* ========================================================================== */
+#include "rtty.h"
+/**
+ * @brief Thread-safe lock-free buffer initialization.
+ */
+void fifo_init(modem_fifo_t * const fifo)
+{
+    fifo->head = 0;
+    fifo->tail = 0;
+}
+
+/**
+ * @brief Thread-safe lock-free byte injection (Called strictly by ONE producer thread/interrupt).
+ * @return uint32_t Returns 1 on success, 0 if the buffer is mathematically full.
+ */
+uint32_t fifo_push(modem_fifo_t * const fifo, const uint8_t data)
+{
+    const uint32_t next_head = (fifo->head + 1) % MODEM_FIFO_SIZE;
+
+    /* Check if the next step hits the tail pointer boundary (Buffer Full) */
+    if (next_head == fifo->tail) {
+        return 0;
+    }
+
+    fifo->storage[fifo->head] = data;
+
+    /* Atomic write of the head index closes the transaction. Interrupt safe. */
+    fifo->head = next_head;
+    return 1;
+}
+
+/**
+ * @brief Thread-safe lock-free byte extraction (Called strictly by ONE consumer thread/interrupt).
+ * @return uint32_t Returns 1 on success, 0 if the buffer is empty.
+ */
+uint32_t fifo_pop(modem_fifo_t * const fifo, uint8_t * const data)
+{
+    /* If head and tail pointers are equal, the ring is mathematically empty */
+    if (fifo->tail == fifo->head) {
+        return 0;
+    }
+
+    *data = fifo->storage[fifo->tail];
+
+    /* Atomic write of the tail index closes the transaction. Interrupt safe. */
+    fifo->tail = (fifo->tail + 1) % MODEM_FIFO_SIZE;
+    return 1;
+}
+
+/**
+ * @brief Supplementary helper to safely extract current elements count at runtime.
+ */
+uint32_t fifo_get_count(const modem_fifo_t * const fifo)
+{
+    const uint32_t snapshot_head = fifo->head;
+    const uint32_t snapshot_tail = fifo->tail;
+
+    if (snapshot_head >= snapshot_tail) {
+        return snapshot_head - snapshot_tail;
+    }
+
+    return (MODEM_FIFO_SIZE - snapshot_tail) + snapshot_head;
+}
 
 #endif /* WITHINTEGRATEDDSP */

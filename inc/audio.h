@@ -394,8 +394,8 @@ typedef struct agcparams
 
 void agc_state_initialize(agcstate_t * __restrict st, const agcparams_t * __restrict agcp);
 void agc_state_initialize2(agcstate_t * __restrict st, const agcparams_t * __restrict agcp);	// hack for peaks display
-void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr);
-void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t sr);
+void agc_parameters_initialize(agcparams_t * agcp, uint_fast32_t sr);
+void agc_parameters_peaks_initialize(agcparams_t * agcp, uint_fast32_t sr);
 FLOAT_t MAKETAUIF2(FLOAT_t t, uint_fast32_t sr);
 void agc_perform(const agcparams_t * agcp, agcstate_t * st, FLOAT_t sample);
 FLOAT_t agc_result_fast(agcstate_t * st);
@@ -474,7 +474,7 @@ void board_set_txaudio(uint_fast8_t v);	// Альтернативные исто
 void board_set_mikeboost20db(uint_fast8_t n);	// Включение предусилителя за микрофоном
 void board_set_afmute(uint_fast8_t n);	// Отключение звука
 void board_set_mikeequal(uint_fast8_t n);	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-void board_set_mikeequalparams(const uint_fast8_t * p);	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
+void board_set_mikeequalparams(const uint_fast8_t * p, unsigned nbands);	// Эквалайзер НЧ тракта передатчика
 void board_set_mikeagc(uint_fast8_t n);		/* Включение программной АРУ перед модулятором */
 void board_set_mikeagcgain(uint_fast8_t v);	/* Максимальное усидение АРУ микрофона */
 void board_set_afresponcerx(int_fast8_t v);	/* изменение тембра звука в канале приемника */
@@ -661,18 +661,6 @@ enum {
 	AF_EQUALIZER_HIGH = 2700	// частота верхней полосы
 };
 #endif /* WITHIF4DSP */
-
-int_fast32_t hamradio_get_af_equalizer_base(void);
-int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v);
-void hamradio_set_af_equalizer_gain_rx(uint_fast8_t index, uint_fast8_t gain);
-void board_set_equalizer_rx(uint_fast8_t n);
-void board_set_equalizer_tx(uint_fast8_t n);
-void board_set_equalizer_rx_gains(const uint_fast8_t * p);
-void board_set_equalizer_tx_gains(const uint_fast8_t * p);
-uint_fast8_t hamradio_get_geqrx(void);
-void hamradio_set_geqrx(uint_fast8_t v);
-
-void audio_rx_equalizer(FLOAT_t *buffer, uint_fast16_t size);
 
 #if WITHINTEGRATEDDSP
 
@@ -1016,6 +1004,14 @@ extern volatile phase_t mirror_ncorts;
 
 void user_audioproc(void * ctx);	// user-mode processing - NR, эквалайзер приёмника
 int user_audioproc_thread(void * ctx);	// user-mode processing - NR, эквалайзер приёмника
+
+// Эквалайзер НЧ тракта передатчика
+//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
+
+#define BOARD_AFPROC_BANDS 	10
+#define EQUALIZERBASE 12	// -12..+12
 
 #ifdef __cplusplus
 }
