@@ -3622,7 +3622,7 @@ struct nvmap
 	uint8_t gkblight;
 #endif /* WITHKBDBACKLIGHT */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-	uint8_t gdimmtime;
+	uint16_t gdimmtime;
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 #if WITHFANTIMER
 	uint8_t gfanpatime;
@@ -8513,24 +8513,24 @@ static void cat_answer_forming(void);
 
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 
-#define WITHDIMMTIMEMAX 240
+#define WITHDIMMTIMEMAX 480
 
-static uint_fast8_t gdimmtime = 240;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
+static uint_fast16_t gdimmtime = WITHDIMMTIMEMAX;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
 
 static const struct paramdefdef xgdimmtime =
 {
 	QLABEL3("DIMM TIM", "Dimmer Time", "DIMM TIM"),  0, RJ_UNSIGNED, ISTEP5,
 	ITEM_VALUE,
-	0, 240,
+	0, WITHDIMMTIMEMAX,
 	OFFSETOF(struct nvmap, gdimmtime),
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,
 	& gdimmtime,
+	NULL,
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
-static uint_fast8_t dimmcount;
+static uint_fast16_t dimmcount;
 static uint_fast8_t dimmflagch;	/* не-0: изменилось состояние dimmflag */
 
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
