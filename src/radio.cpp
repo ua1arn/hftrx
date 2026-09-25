@@ -4637,7 +4637,7 @@ static uint_fast8_t gethaddr;
 static const struct paramdefdef xgethaddr =
 {
 	QLABEL3("IPADDR", "IP Address", "IP ADDR"), 0, RJ_CB, ISTEP_RO,
-	ITEM_VALUE | ITEM_LISTSELECT,
+	ITEM_VALUE,
 	0, HDMIFORMATS_count - 1,
 	OFFSETOF(struct nvmap, gethaddr),
 	getselector0, nvramoffs0, valueoffs0,
@@ -4652,7 +4652,7 @@ static uint_fast8_t gethmask;
 static const struct paramdefdef xgethmask =
 {
 	QLABEL3("IPMASK", "IP Mask", "IP MASK"), 0, RJ_CB, ISTEP_RO,
-	ITEM_VALUE | ITEM_LISTSELECT,
+	ITEM_VALUE,
 	0, HDMIFORMATS_count - 1,
 	OFFSETOF(struct nvmap, gethmask),
 	getselector0, nvramoffs0, valueoffs0,
@@ -4667,7 +4667,7 @@ static uint_fast8_t gethgateway;
 static const struct paramdefdef xgethgateway =
 {
 	QLABEL3("IP GW", "IP Gateway", "IP GW"), 0, RJ_CB, ISTEP_RO,
-	ITEM_VALUE | ITEM_LISTSELECT,
+	ITEM_VALUE,
 	0, HDMIFORMATS_count - 1,
 	OFFSETOF(struct nvmap, gethgateway),
 	getselector0, nvramoffs0, valueoffs0,
@@ -5316,7 +5316,7 @@ enum
 	static const struct paramdefdef xgmike_ssb =
 	{
 		QLABEL3("MIC SSB", "Mike SSB", "MIC SSB"), 0, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_SSB),
 		getselector0, nvramoffs0, valueoffs0,
@@ -5328,7 +5328,7 @@ enum
 	static const struct paramdefdef xgmike_dig =
 	{
 		QLABEL3("MIC DIG", "Mike DIG", "MIC DIG"), 0, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_DIGI),
 		getselector0, nvramoffs0, valueoffs0,
@@ -5339,8 +5339,8 @@ enum
 	};
 	static const struct paramdefdef xgmike_am =
 	{
-		QLABEL3("MIC AM", "Mike FM", "MIC FM"), 0, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		QLABEL3("MIC AM", "Mike AM", "MIC AM"), 0, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_AM),
 		getselector0, nvramoffs0, valueoffs0,
@@ -5352,7 +5352,7 @@ enum
 	static const struct paramdefdef xgmike_fm =
 	{
 		QLABEL3("MIC FM", "Mike FM", "MIC FM"), 0, RJ_CB,	ISTEP1,
-		ITEM_VALUE | ITEM_NOINITNVRAM | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+		ITEM_VALUE | ITEM_LISTSELECT,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, TXAUDIOSRC_COUNT - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIOINDEX_BASE(MODE_NFM),
 		getselector0, nvramoffs0, valueoffs0,
@@ -9747,7 +9747,7 @@ static int sq2transition(int_fast8_t sq10, int_fast16_t bw)
 static const struct paramdefdef xfltbw_cwwide =
 {
 	QLABEL3("CW W WDT", "CW W WIDTH", "CW W WIDTH"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for WIDE
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9760,7 +9760,7 @@ static const struct paramdefdef xfltbw_cwwide =
 static const struct paramdefdef xfltbw_cwnarrow =
 {
 	QLABEL3("CW N WDT", "CW N WIDTH", "CW N WIDTH"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for NARROW
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9771,7 +9771,7 @@ static const struct paramdefdef xfltbw_cwnarrow =
 };
 static const struct paramdefdef xgssbwide_high = {
 	QLABEL("SSB W HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9782,7 +9782,7 @@ static const struct paramdefdef xgssbwide_high = {
 };
 static const struct paramdefdef xgssbwide_low = {
 	QLABEL("SSB W LO"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9792,7 +9792,7 @@ static const struct paramdefdef xgssbwide_low = {
 };
 static const struct paramdefdef xgssbwide_afr = {
 	QLABEL3("SSBW SLOPE", "SSB W SLOPE", "SSBW SLOPE"), 0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9803,7 +9803,7 @@ static const struct paramdefdef xgssbwide_afr = {
 };
 static const struct paramdefdef xgssbmedium_high = {
 	QLABEL("SSB M HI"), 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB MEDIUM */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBMEDIUM),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9814,7 +9814,7 @@ static const struct paramdefdef xgssbmedium_high = {
 };
 static const struct paramdefdef xgssbmedium_low = {
 	QLABEL("SSB M LO"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB MEDIUM */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBMEDIUM),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9825,7 +9825,7 @@ static const struct paramdefdef xgssbmedium_low = {
 };
 static const struct paramdefdef xgssbmedium_afr = {
 	QLABEL3("SSBM SLOPE", "SSB M SLOPE", "SSBM SLOPE"), 0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBMEDIUM),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9836,7 +9836,7 @@ static const struct paramdefdef xgssbmedium_afr = {
 };
 static const struct paramdefdef xgssbnarrow_high = {
 	QLABEL("SSB N HI"), 1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB NARROW */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9847,7 +9847,7 @@ static const struct paramdefdef xgssbnarrow_high = {
 };
 static const struct paramdefdef xgssbnarrow_low = {
 	QLABEL("SSB N LO"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB NARROW */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9858,7 +9858,7 @@ static const struct paramdefdef xgssbnarrow_low = {
 };
 static const struct paramdefdef xgssbnarrow_afr = {
 	QLABEL3("SSBN SLOPE", "SSBN SLOPE", "SSBN SLOPE"),  0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9869,7 +9869,7 @@ static const struct paramdefdef xgssbnarrow_afr = {
 };
 static const struct paramdefdef xgamwide_high = {
 	QLABEL("AM W HI"), 1, RJ_UNSIGNED,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9880,7 +9880,7 @@ static const struct paramdefdef xgamwide_high = {
 };
 static const struct paramdefdef xgamwide_low = {
 	QLABEL("AM W LO"), 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9891,7 +9891,7 @@ static const struct paramdefdef xgamwide_low = {
 };
 static const struct paramdefdef xgamwide_afr = {
 	QLABEL3("AM W SLOPE", "AM W SLOPE", "AM W SLOPE"), 0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9902,7 +9902,7 @@ static const struct paramdefdef xgamwide_afr = {
 };
 static const struct paramdefdef xgamnarrow_high = {
 	QLABEL("AM N HI"), 1, RJ_UNSIGNED,	ISTEP2,		/* Подстройка полосы пропускания - AM NARROW */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_AMNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9913,7 +9913,7 @@ static const struct paramdefdef xgamnarrow_high = {
 };
 static const struct paramdefdef xgamnarrow_low = {
 	QLABEL("AM N LO"),  2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM NARROW */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_AMNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9924,7 +9924,7 @@ static const struct paramdefdef xgamnarrow_low = {
 };
 static const struct paramdefdef xgamnarrow_afr = {
 	QLABEL3("AM N SLOPE", "AM N SLOPE", "AM N SLOPE"),  0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMNARROW),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9935,7 +9935,7 @@ static const struct paramdefdef xgamnarrow_afr = {
 };
 static const struct paramdefdef xgssbtx_high = {
 	QLABEL("SSBTX HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBTX),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9946,7 +9946,7 @@ static const struct paramdefdef xgssbtx_high = {
 };
 static const struct paramdefdef xgssbtx_low = {
 	QLABEL("SSBTX LO"),  2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBTX),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9957,7 +9957,7 @@ static const struct paramdefdef xgssbtx_low = {
 };
 static const struct paramdefdef xgssbtx_afr = {
 	QLABEL("SSBTXAFR"),  0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBTX),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9968,7 +9968,7 @@ static const struct paramdefdef xgssbtx_afr = {
 };
 static const struct paramdefdef xgnfmtx_high = {
 	QLABEL("NFM TX HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_NFMTX),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9979,7 +9979,7 @@ static const struct paramdefdef xgnfmtx_high = {
 };
 static const struct paramdefdef xgnfmtx_low = {
 	QLABEL("NFM TX LO"),  2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_NFMTX),
 	getselector0, nvramoffs0, valueoffs0,
@@ -9990,7 +9990,7 @@ static const struct paramdefdef xgnfmtx_low = {
 };
 static const struct paramdefdef xgnfmtx_afr = {
 	QLABEL("NFM TXAFR"),  0, RJ_SIGNED,	ISTEP1,
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 	RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_NFMTX),
 	getselector0, nvramoffs0, valueoffs0,
@@ -10001,7 +10001,7 @@ static const struct paramdefdef xgnfmtx_afr = {
 };
 static const struct paramdefdef xgdigiwide_high = {
 	QLABEL("DIGI HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - TX SSB */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_DIGIWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -10012,7 +10012,7 @@ static const struct paramdefdef xgdigiwide_high = {
 };
 static const struct paramdefdef xgdigiwide_low = {
 	QLABEL("DIGI LO"),  2, RJ_UNSIGNED, ISTEP1,		/* подстройка полосы пропускания - TX SSB */
-	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_DIGIWIDE),
 	getselector0, nvramoffs0, valueoffs0,
@@ -10257,7 +10257,7 @@ static uint_fast8_t getmemindex(uint_fast8_t bg)
 static const struct paramdefdef xgdummy =
 {
 	QLABEL(""),  0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
-	ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
 	getselector0, nvramoffs0, valueoffs0,
@@ -18178,15 +18178,6 @@ loadsettings(void)
 static void
 defaultsettings(void)
 {
-	const struct menudesc * const pmd = & mdsc0;
-	uint_fast16_t i;
-	PRINTF("Loading NVRAM default settings\n");
-
-	for (i = 0; i < pmd->menusize; ++ i)
-	{
-		const struct menudef * const mp = & pmd->menutable [i];
-		savemenuvalue(mp->pd);
-	}
 
 #if WITHSPECTRUMWF
 	const uint_fast8_t bi = 0;
@@ -18196,6 +18187,20 @@ defaultsettings(void)
 		storezoom(bg);
 	}
 #endif /* WITHSPECTRUMWF */
+#if WITHTX
+	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
+	bandf2adjust_initialize();
+#endif /* WITHTX */
+
+	const struct menudesc * const pmd = & mdsc0;
+	uint_fast16_t i;
+	PRINTF("Loading NVRAM default settings\n");
+
+	for (i = 0; i < pmd->menusize; ++ i)
+	{
+		const struct menudef * const mp = & pmd->menutable [i];
+		savemenuvalue(mp->pd);
+	}
 }
 
 #if WITHMENU
@@ -20344,7 +20349,7 @@ keyboard_test(void)
 #define MSGYCELLS 5
 /* вызывается при разрешённых прерываниях. */
 // не-0: требуется сбросить NVRAM
-static uint_fast8_t initialize2(void)
+static uint_fast8_t nvramdiags(void)
 {
 	uint_fast8_t resetconfig = 0;
 #if ! LCDMODE_DUMMY
@@ -20359,19 +20364,7 @@ static uint_fast8_t initialize2(void)
 
 	//hardware_cw_diagnostics(0, 1, 0);	// 'D'
 
-	PRINTF(PSTR("initialize2() started.\n"));
-	// Инициализируем то что не получается иниитить в описании перменных.
-#if WITHTX
-	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
-	bandf2adjust_initialize();
-#endif /* WITHTX */
-#if WITHCAT
-#ifdef WITHCATSPEED
-	catbaudrate = findcatbaudrate(catbaudrate, WITHCATSPEED);
-#else
-	catbaudrate = findcatbaudrate(catbaudrate, 9600);
-#endif
-#endif /* WITHCAT */
+	PRINTF(PSTR("nvramdiags() started.\n"));
 
 	display_gpu_initialize();	// mdma/g2d/dma2d/gpu init
 
@@ -20405,7 +20398,7 @@ static uint_fast8_t initialize2(void)
 
 #if defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
 
-	//PRINTF(PSTR("initialize2: NVRAM initialization started.\n"));
+	//PRINTF(PSTR("nvramdiags: NVRAM initialization started.\n"));
 
 	mclearnvram = kbd_get_ishold(KIF_ERASE) != 0;
 	//extmenu = kbd_get_ishold(KIF_EXTMENU);
@@ -20460,13 +20453,13 @@ static uint_fast8_t initialize2(void)
 
 #endif /* defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
 
-	//PRINTF(PSTR("initialize2: NVRAM initialization passed.\n"));
+	//PRINTF(PSTR("nvramdiags: NVRAM initialization passed.\n"));
 
 #if HARDWARE_IGNORENONVRAM
 
 #elif NVRAM_TYPE == NVRAM_TYPE_FM25XXXX
 
-	//PRINTF(PSTR("initialize2: NVRAM autodetection start.\n"));
+	//PRINTF(PSTR("nvramdiags: NVRAM autodetection start.\n"));
 
 	const uint_fast16_t erasekey = geterasekey();
 	uint_fast8_t ab = 0;
@@ -20533,7 +20526,7 @@ static uint_fast8_t initialize2(void)
 		if (ab >= ABMAX)
 		{
 			// в случае неправильно работающего NVRAM зависаем
-			PRINTF(PSTR("initialize2: NVRAM initialization: wrong NVRAM pattern in any address sizes.\n"));
+			PRINTF(PSTR("nvramdiags: NVRAM initialization: wrong NVRAM pattern in any address sizes.\n"));
 
 #if WITHLCDBACKLIGHT
 			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -20562,13 +20555,13 @@ static uint_fast8_t initialize2(void)
 
 #else /* NVRAM_TYPE == NVRAM_TYPE_FM25XXXX */
 
-	//PRINTF(PSTR("initialize2: NVRAM(BKPSRAM/CPU EEPROM/SPI MEMORY) initialization: verify NVRAM signature.\n"));
+	//PRINTF(PSTR("nvramdiags: NVRAM(BKPSRAM/CPU EEPROM/SPI MEMORY) initialization: verify NVRAM signature.\n"));
 
 	const uint_fast16_t erasekey = geterasekey();
 	if (verifynvramsignature())
 		mclearnvram = 2;
 
-	//PRINTF(PSTR("initialize2: NVRAM initialization: work on NVRAM signature, mclearnvram=%d\n"), mclearnvram);
+	//PRINTF(PSTR("nvramdiags: NVRAM initialization: work on NVRAM signature, mclearnvram=%d\n"), mclearnvram);
 
 	if (mclearnvram != 0)
 	{
@@ -20603,19 +20596,19 @@ static uint_fast8_t initialize2(void)
 			//display2_needupdate();
 		}
 
-		//PRINTF(PSTR("initialize2: NVRAM initialization: erase NVRAM.\n"));
+		//PRINTF(PSTR("nvramdiags: NVRAM initialization: erase NVRAM.\n"));
 		/* стирание всей памяти */
 		uint_least16_t i;
 		for (i = 0; i < sizeof (struct nvmap); ++ i)
 			save_i8(i, 0xFF);
 
-		//PRINTF(PSTR("initialize2: NVRAM initialization: write NVRAM pattern.\n"));
+		//PRINTF(PSTR("nvramdiags: NVRAM initialization: write NVRAM pattern.\n"));
 		initnvrampattern();
-		//PRINTF(PSTR("initialize2: NVRAM initialization: verify NVRAM pattern.\n"));
+		//PRINTF(PSTR("nvramdiags: NVRAM initialization: verify NVRAM pattern.\n"));
 
 		if (verifynvrampattern())
 		{
-			PRINTF(PSTR("initialize2: NVRAM initialization: wrong NVRAM pattern.\n"));
+			PRINTF(PSTR("nvramdiags: NVRAM initialization: wrong NVRAM pattern.\n"));
 			// проверяем только что записанную сигнатуру
 			// в случае неправильно работающего NVRAM зависаем
 
@@ -20639,7 +20632,7 @@ static uint_fast8_t initialize2(void)
 		}
 
 		resetconfig = 1;
-		//PRINTF(PSTR("initialize2: NVRAM initialization: write NVRAM signature.\n"));
+		//PRINTF(PSTR("nvramdiags: NVRAM initialization: write NVRAM signature.\n"));
 		initnvramsignature();
 		//extmenu = 1;	/* сразу включаем инженерный режим - без перезагрузки доступны все пункты */
 	}
@@ -20648,23 +20641,8 @@ static uint_fast8_t initialize2(void)
 
 	(void) mclearnvram;
 
-#if defined (BOARD_BLINK_SETSTATE)
-	// работа на всех ядрах, кроме нулевого
-	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, blinktest2, NULL, 48 * 1024, "blinktest2") == NULL)
-	{
-#if WITHISBOOTLOADER
-	const unsigned thalf = 100;	// Toggle every 100 ms
-#else /* WITHISBOOTLOADER */
-	const unsigned thalf = 500;	// Toggle every 500 ms
-#endif /* WITHISBOOTLOADER */
-		static ticker_t ticker_blinks;
-		ticker_initialize(& ticker_blinks, NTICKS(thalf), blinktest, NULL);
-		ticker_add(& ticker_blinks);
-	}
-#endif /* defined (BOARD_BLINK_SETSTATE) */
-
 #if WITHDEBUG
-	PRINTF("initialize2: finished.\n");
+	PRINTF("nvramdiags: finished.\n");
 #endif
 	return resetconfig;
 }
@@ -23139,21 +23117,44 @@ __WEAK void modem_init(void) { }
 void
 application_initialize(void)
 {
-	const uint_fast8_t resetconfig = initialize2();	/* вызывается при разрешённых прерываниях. */
+	const uint_fast8_t resetconfig = nvramdiags();	/* вызывается при разрешённых прерываниях. */
 #if WITHMENU
 	if (resetconfig)
 	{
 		defaultsettings();		/* загрузка в nvram установок по умолчанию */
 	}
+	loadsavedstate();	// split, s-meter display, see also loadsettings().
+	// Инициализируем то что не получается иниитить в описании перменных.
+#if WITHCAT
+#ifdef WITHCATSPEED
+	catbaudrate = findcatbaudrate(catbaudrate, WITHCATSPEED);
+#else
+	catbaudrate = findcatbaudrate(catbaudrate, 9600);
+#endif
+#endif /* WITHCAT */
 #if ! HARDWARE_IGNORENONVRAM
 	loadsettings();		/* загрузка всех установок из nvram. */
 #endif /* ! HARDWARE_IGNORENONVRAM */
 #endif /* WITHMENU */
 	/* NVRAM уже можно пользоваться */
 
-	loadsavedstate();	// split, s-meter display, see also loadsettings().
 	loadnewband(getvfoindex(1), 1);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
 	loadnewband(getvfoindex(0), 0);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
+
+#if defined (BOARD_BLINK_SETSTATE)
+	// работа на всех ядрах, кроме нулевого
+	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, blinktest2, NULL, 48 * 1024, "blinktest2") == NULL)
+	{
+#if WITHISBOOTLOADER
+	const unsigned thalf = 100;	// Toggle every 100 ms
+#else /* WITHISBOOTLOADER */
+	const unsigned thalf = 500;	// Toggle every 500 ms
+#endif /* WITHISBOOTLOADER */
+		static ticker_t ticker_blinks;
+		ticker_initialize(& ticker_blinks, NTICKS(thalf), blinktest, NULL);
+		ticker_add(& ticker_blinks);
+	}
+#endif /* defined (BOARD_BLINK_SETSTATE) */
 
 #if WITHLWIP
 	network_initialize();
