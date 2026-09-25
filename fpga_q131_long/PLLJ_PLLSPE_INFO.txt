@@ -1,0 +1,5 @@
+PLL_Name	pll_reconstruct12288:inst8|altpll:altpll_component|pll_reconstruct12288_altpll:auto_generated|pll1
+PLLJITTER	28
+PLLSPEmax	84
+PLLSPEmin	-53
+
