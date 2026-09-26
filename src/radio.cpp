@@ -3780,8 +3780,8 @@ struct nvmap
 	uint8_t gloopmsg, gloopsec;
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 	uint8_t gdigigainmax;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
-	uint8_t gsquelch;		/* уровень открытия шумоподавителя */
-	uint8_t gsquelchNFM;	/* sуровень открытия шумоподавителя для NFM */
+	uint16_t gsquelch;		/* уровень открытия шумоподавителя */
+	uint16_t gsquelchNFM;	/* sуровень открытия шумоподавителя для NFM */
 	uint16_t gfsadcpower10 [2];	/*	Мощность, соответствующая full scale от IF ADC (с тояностью 0.1 дБмВт */
 	#if ! WITHPOTAFGAIN
 		uint16_t afgain1;	// Параметр для регулировки уровня на выходе аудио-ЦАП
@@ -4019,9 +4019,6 @@ struct nvmap
 #define RMT_ANTMANUAL_BASE OFFSETOF(struct nvmap, gantmanual)		/* 0 - выбор антенны автоматический */
 
 #define RMT_MAINSUBRXMODE_BASE	OFFSETOF(struct nvmap, dwatchmode)
-#define RMT_DATAMODE_BASE	OFFSETOF(struct nvmap, gdatamode)
-
-
 #define RMT_NR_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].noisereduct)
 #define RMT_AGC_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].agc)
 #define RMT_FILTER_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].filter)
@@ -4282,8 +4279,8 @@ static const struct paramdefdef xgsquelch =
 	0, SQUELCHMAX,
 	OFFSETOF(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,	// uint_fast16_t value pointer
 	& gsquelch.value,	// uint_fast8_t value pointer
+	NULL,	// uint_fast16_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -4296,8 +4293,8 @@ static const struct paramdefdef xgsquelchNFM =
 	0, SQUELCHMAX,
 	OFFSETOF(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
 	getselector0, nvramoffs0, valueoffs0,
-	NULL,	// uint_fast16_t value pointer
 	& gsquelchNFM,	// uint_fast8_t value pointer
+	NULL,	// uint_fast16_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -5784,16 +5781,29 @@ enum
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 
+		static const struct paramdefdef * const xgtxeqs [BOARD_AFPROC_BANDS] =
+		{
+				& xgmikeequalizer_param0, & xgmikeequalizer_param1, & xgmikeequalizer_param2,
+				& xgmikeequalizer_param3, & xgmikeequalizer_param4, & xgmikeequalizer_param5,
+				& xgmikeequalizer_param6, & xgmikeequalizer_param7, & xgmikeequalizer_param8,
+				& xgmikeequalizer_param9,
+		};
+
+		// поскольку в GUI используются "сырые" значения - смещение на EQUALIZERBASE
 		int hamradio_get_af_equalizer_gain_tx(int band)
 		{
 			if (band < BOARD_AFPROC_BANDS)
-				return gmikeequalizerparams [band];
+				return param_getvalue(xgtxeqs [band]) + EQUALIZERBASE;
 			return 0;
 		}
+		// поскольку в GUI используются "сырые" значения - смещение на EQUALIZERBASE
 		void hamradio_set_af_equalizer_gain_tx(int band, int v)
 		{
 			if (band < BOARD_AFPROC_BANDS)
-				gmikeequalizerparams [band] = v;
+			{
+				param_setvalue(xgtxeqs [band], v - EQUALIZERBASE);
+				updateboard();
+			}
 		}
 		int hamradio_get_af_equalizer_base(void)
 		{
@@ -5808,13 +5818,8 @@ enum
 			param_setvalue(& xgmikeequalizer, state);
 			updateboard();
 		}
-	static uint_fast8_t gagcoff;
-
-#else /* WITHIF4DSP */
-	static const uint_fast8_t gagcoff = 0;
-	static const uint_fast8_t gdatamode = 0;	/* передача звука с USB вместо обычного источника */
-	uint_fast8_t hamradio_get_ft8cn(void) { return 0; }
 #endif /* WITHIF4DSP */
+
 
 
 #if WITHAUTOTUNER
@@ -7113,6 +7118,7 @@ static const struct paramdefdef xgskipfilteraf =
 	};
 
 #endif /*  */
+	static uint_fast8_t gagcoff;
 	static const struct paramdefdef xgagcoff =
 	{
 		QLABEL("AGC OFF"), 0, RJ_YES,	ISTEP1,
@@ -10509,94 +10515,6 @@ uint_fast8_t hamradio_get_shofvfobmarker(void)
 }
 #endif /* WITHUSEDUALWATCH */
 #endif /* WITHIF4DSP */
-
-// загрузка параметров, не представленных в списке пунктов меню
-static const struct paramdefdef * nomenulist [] =
-{
-	& xgmutespkr,	/*  выключение динамика */
-#if WITHIF4DSP
-	& xgsquareness10,	/* Коэффициент прямоугольности фильтра в десятых долях */
-	& xagcfence1,
-#if WITHNOTCHONOFF || WITHNOTCHFREQ
-	& xgnotch,
-#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
-	& xenc1f_sel,
-	& xenc2f_sel,
-	& xenc3f_sel,
-	& xenc4f_sel,
-#endif /* WITHIF4DSP */
-#if WITHUSEDUALWATCH
-	& xdwatchmode,
-#endif /* WITHUSEDUALWATCH */
-#if WITHPOWERLPHP
-	& xgpwri,
-#endif /* WITHPOWERLPHP */
-	& xgusefast,	/* управление режимом валкодера */
-	//& xgdummy,		/* чтобы небыло массива с нулевым размером */
-};
-
-// split, s-meter display
-static void
-loadsavedstate(void)
-{
-#if WITHPOWERLPHP
-	gpwri = loadvfy8up(RMT_PWR_BASE, 0, PWRMODE_COUNT - 1, gpwri);
-#endif /* WITHPOWERLPHP */
-#if WITHENCODER2
-	enc2state = loadvfy8up(RMT_ENC2STATE_BASE, ENC2STATE_INITIALIZE, ENC2STATE_COUNT - 1, enc2state);	/* вытаскиваем режим режактирования паарметров вторым валкодером */
-	enc2pos = loadvfy8up(RMT_ENC2POS_BASE, 0, ENC2POS_COUNT - 1, enc2pos);	/* вытаскиваем номер параметра для редактирования вторым валкодером */
-#endif /* WITHENCODER2 */
-	gmenuset = loadvfy8up(RMT_MENUSET_BASE, 0, display_getpagesmax(), gmenuset);		/* вытаскиваем номер субменю, с которым работаем сейчас */
-
-	gsplitmode = loadvfy8up(RMT_SPLITMODE_BASE, 0, VFOMODES_COUNT - 1, gsplitmode); /* (vfo/vfoa/vfob/mem) */
-	gvfoab = loadvfy8up(RMT_VFOAB_BASE, 0, VFOS_COUNT - 1, gvfoab); /* (vfoa/vfob) */
-
-	{
-		// загрузка параметров, не представленных в списке пунктов меню
-		unsigned i;
-		for (i = 0; i < ARRAY_SIZE(nomenulist); ++ i)
-		{
-			param_load(nomenulist [i]);
-		}
-	}
-	// тюнер запоминается подиапазонно
-//#if WITHAUTOTUNER
-//	tunerwork = loadvfy8up(OFFSETOF(struct nvmap, tunerwork), 0, 1, tunerwork);
-//#endif /* WITHAUTOTUNER */
-#if WITHANTSELECT2
-	gantmanual = loadvfy8up(RMT_ANTMANUAL_BASE, 0, 1, gantmanual);
-#endif /* WITHANTSELECT2 */
-
-#if WITHIF4DSP
-	#if WITHUSBHW && WITHUSBUAC
-		gdatamode = loadvfy8up(RMT_DATAMODE_BASE, 0, 1, gdatamode);
-	#endif /* WITHUSBHW && WITHUSBUAC */
-	// Загрузка позиции выбора полосы пропускания и значений границ для всех режимов работы
-	// Сохранение происходит при модификации в обработчика нажатия клавиши BW
-	bwseti_load();
-
-	agcseti_load();	/* загрузка параметров слухового приема */
-	micproc_load();	/* чтение из NVRAM параметров профилей обработки сигнала перед модулятором */
-
-#endif /* WITHIF4DSP */
-
-	/* загрузка параметров, зависящих от режима */
-	uint_fast8_t mode;
-	for (mode = 0; mode < MODE_COUNT; ++ mode)
-	{
-		unsigned middlerowsize;
-		mdt [mode].middlemenu(& middlerowsize);
-		gmiddlepos [mode] = loadvfy8up(RMT_MIDDLEMENUPOS_BASE(mode), 0, middlerowsize - 1, gmiddlepos [mode]);
-	#if WITHIF4DSP && WITHTX
-		// источник звука
-		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIOINDEX_BASE(mode), 0, TXAUDIOSRC_COUNT - 1, findtxaudioindex(mdt [mode].txaudiocode));
-	#endif /* WITHIF4DSP && WITHTX */
-		/* включение NR */
-	#if WITHIF4DSP
-		gnoisereducts [mode] = loadvfy8up(RMT_NR_BASE(mode), 0, 1, gnoisereducts [mode]);
-	#endif /* WITHIF4DSP */
-	}
-}
 
 /* по диапазону вытащить все параметры (и частоту) нового диапазона */
 static void
@@ -14442,8 +14360,7 @@ uif_key_changenr(void)
 static void
 uif_key_click_datamode(void)
 {
-	gdatamode = calc_next(gdatamode, 0, 1);
-	save_i8(RMT_DATAMODE_BASE, gdatamode);
+	param_keyclick(& xgdatamode);
 	updateboard();
 }
 
@@ -23113,6 +23030,105 @@ application_initialize(void)
 
 __WEAK void modem_init(void) { }
 
+
+// загрузка параметров, не представленных в списке пунктов меню
+static const struct paramdefdef * nomenulist [] =
+{
+	& xgmutespkr,	/*  выключение динамика */
+#if WITHIF4DSP
+	& xgdatamode,
+	& xgsquareness10,	/* Коэффициент прямоугольности фильтра в десятых долях */
+	& xagcfence1,
+#if WITHNOTCHONOFF || WITHNOTCHFREQ
+	& xgnotch,
+#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
+	& xenc1f_sel,
+	& xenc2f_sel,
+	& xenc3f_sel,
+	& xenc4f_sel,
+#endif /* WITHIF4DSP */
+#if WITHUSEDUALWATCH
+	& xdwatchmode,
+#endif /* WITHUSEDUALWATCH */
+#if WITHPOWERLPHP
+	& xgpwri,
+#endif /* WITHPOWERLPHP */
+	& xgusefast,	/* управление режимом валкодера */
+	//& xgdummy,		/* чтобы небыло массива с нулевым размером */
+};
+
+// split, s-meter display
+static void
+loadsavedstate(void)
+{
+#if WITHPOWERLPHP
+	gpwri = loadvfy8up(RMT_PWR_BASE, 0, PWRMODE_COUNT - 1, gpwri);
+#endif /* WITHPOWERLPHP */
+#if WITHENCODER2
+	enc2state = loadvfy8up(RMT_ENC2STATE_BASE, ENC2STATE_INITIALIZE, ENC2STATE_COUNT - 1, enc2state);	/* вытаскиваем режим режактирования паарметров вторым валкодером */
+	enc2pos = loadvfy8up(RMT_ENC2POS_BASE, 0, ENC2POS_COUNT - 1, enc2pos);	/* вытаскиваем номер параметра для редактирования вторым валкодером */
+#endif /* WITHENCODER2 */
+	gmenuset = loadvfy8up(RMT_MENUSET_BASE, 0, display_getpagesmax(), gmenuset);		/* вытаскиваем номер субменю, с которым работаем сейчас */
+
+	gsplitmode = loadvfy8up(RMT_SPLITMODE_BASE, 0, VFOMODES_COUNT - 1, gsplitmode); /* (vfo/vfoa/vfob/mem) */
+	gvfoab = loadvfy8up(RMT_VFOAB_BASE, 0, VFOS_COUNT - 1, gvfoab); /* (vfoa/vfob) */
+
+	// тюнер запоминается подиапазонно
+//#if WITHAUTOTUNER
+//	tunerwork = loadvfy8up(OFFSETOF(struct nvmap, tunerwork), 0, 1, tunerwork);
+//#endif /* WITHAUTOTUNER */
+#if WITHANTSELECT2
+	gantmanual = loadvfy8up(RMT_ANTMANUAL_BASE, 0, 1, gantmanual);
+#endif /* WITHANTSELECT2 */
+
+#if WITHIF4DSP
+	// Загрузка позиции выбора полосы пропускания и значений границ для всех режимов работы
+	// Сохранение происходит при модификации в обработчика нажатия клавиши BW
+	bwseti_load();
+
+	agcseti_load();	/* загрузка параметров слухового приема */
+	micproc_load();	/* чтение из NVRAM параметров профилей обработки сигнала перед модулятором */
+
+#endif /* WITHIF4DSP */
+
+	/* загрузка параметров, зависящих от режима */
+	uint_fast8_t mode;
+	for (mode = 0; mode < MODE_COUNT; ++ mode)
+	{
+		unsigned middlerowsize;
+		mdt [mode].middlemenu(& middlerowsize);
+		gmiddlepos [mode] = loadvfy8up(RMT_MIDDLEMENUPOS_BASE(mode), 0, middlerowsize - 1, gmiddlepos [mode]);
+	#if WITHIF4DSP && WITHTX
+		// источник звука
+		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIOINDEX_BASE(mode), 0, TXAUDIOSRC_COUNT - 1, findtxaudioindex(mdt [mode].txaudiocode));
+	#endif /* WITHIF4DSP && WITHTX */
+		/* включение NR */
+	#if WITHIF4DSP
+		gnoisereducts [mode] = loadvfy8up(RMT_NR_BASE(mode), 0, 1, gnoisereducts [mode]);
+	#endif /* WITHIF4DSP */
+	}
+	{
+		// загрузка параметров, не представленных в списке пунктов меню
+		unsigned i;
+		for (i = 0; i < ARRAY_SIZE(nomenulist); ++ i)
+		{
+			param_load(nomenulist [i]);
+		}
+	}
+	{
+		const struct menudesc * const pmd = & mdsc0;
+		uint_fast16_t i;
+		PRINTF("Loading NVRAM default settings\n");
+
+		for (i = 0; i < pmd->menusize; ++ i)
+		{
+			const struct menudef * const mp = & pmd->menutable [i];
+			param_load(mp->pd);
+		}
+
+	}
+}
+
 /* вызывается при разрешённых прерываниях. */
 void
 application_initialize(void)
@@ -23121,7 +23137,7 @@ application_initialize(void)
 #if WITHMENU
 	if (resetconfig)
 	{
-		defaultsettings();		/* загрузка в nvram установок по умолчанию */
+		//defaultsettings();		/* загрузка в nvram установок по умолчанию */
 	}
 	loadsavedstate();	// split, s-meter display, see also loadsettings().
 	// Инициализируем то что не получается иниитить в описании перменных.
