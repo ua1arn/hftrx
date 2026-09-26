@@ -14087,11 +14087,21 @@ uif_key_click_bandjump2(uint_fast32_t f, uint_fast8_t bandset_no_check)
 /* переход на следующую частоту, запомненную в диапазоне */
 static void uif_key_click_memo(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 #if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
 	const uint_fast8_t mi = getmemindex(bg);
+	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+
+	// сохранить текушее состояние
+	verifyband(b);
+	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
+	storebandfreq(b, bi);
+
+	uif_key_click_bandjump(gfreqs [bi]);	// stub
+
 #else /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 	uif_key_click_bandjump(gfreqs [bi]);
 #endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
@@ -14100,11 +14110,18 @@ static void uif_key_click_memo(void)
 /* запомнить частоту в диапазоне */
 static void uif_key_hold_memo(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 #if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
 	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
 	const uint_fast8_t mi = getmemindex(bg);
+	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+
+	// сохранить текушее состояние
+	verifyband(b);
+	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
+	storebandfreq(b, bi);
 
 #endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 }
