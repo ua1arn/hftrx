@@ -14,14 +14,10 @@ enum {
 };
 
 /* параметры спектра/водопада */
-enum
-{
-	BDTH_ALLRX = (50), 		// ширина зоны для отображение графического окна на индикаторе
-	BDCV_ALLRX = (DLEB - DLES) - 1,	// количество cells, отведенное под панораму и волопад.
-	//
-	BDTH_ALL = 50, 		// ширина индикатора
-	B_unused
-};
+#define BDTH_ALLRX 50 					// ширина зоны для отображение графического окна на индикаторе
+#define BDCV_ALLRX ((DLEB - DLES) - 1)	// количество cells, отведенное под панораму и волопад.
+#define BDTH_ALL 50 					// ширина индикатора
+#define RTTYSPEC 20						// высота, занятая показом спектра при RTTY
 
 /* параметры S-метра */
 enum
@@ -65,7 +61,8 @@ enum
 #else /* WITHRTTY */
 	PG1 = 0,
 #endif /* WITHRTTY */
-	PGALL = PG0 | PG1 | REDRSUBSET_MENU,
+	PG1_1 = PG0 | PG1,
+	PGALL = PG1_1 | REDRSUBSET_MENU,
 	PGWFL = PG0,	// страница отображения водопада
 	PGSPE = PG0,	// страница отображения панорамы
 	PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
@@ -81,9 +78,6 @@ enum
 
 // 480/5 = 96, 800/16=50
 // 272/5 = 54, 480/16=30 (old)
-
-
-
 
 static const dzone_t dzones [] =
 {
@@ -159,11 +153,11 @@ static const dzone_t dzones [] =
 #if WITHMGLOOP
 	{	13,	DLEB, 	10, 5, display2_mla9,		& dzi_compat, PGALL, },
 #endif /* WITHMGLOOP */
-	{	23, DLEB,	6,	5,	display2_thermo,		& dzi_thermo, PG0, },	// thermo sensor
-	{	29, DLEB,	4,	5,	display2_usbsts3,		& dzi_usbact, PG0, },	// USB host status
-	{	33, DLEB,	3,	5,	display2_btsts2,		& dzi_btact, PG0, },	// USB host status
-	{	36, DLEB,	8,	5,	display2_classa7,		& dzi_classa, PG0, },	// Class-A power amplifier
-	{	44, DLEB, 	6,  5, 	display2_rxctcss5, 		& dzi_compat, PG0, },
+	{	23, DLEB,	6,	5,	display2_thermo,		& dzi_thermo, PG1_1, },	// thermo sensor
+	{	29, DLEB,	4,	5,	display2_usbsts3,		& dzi_usbact, PG1_1, },	// USB host status
+	{	33, DLEB,	3,	5,	display2_btsts2,		& dzi_btact, PG1_1, },	// USB host status
+	{	36, DLEB,	8,	5,	display2_classa7,		& dzi_classa, PG1_1, },	// Class-A power amplifier
+	{	44, DLEB, 	6,  5, 	display2_rxctcss5, 		& dzi_compat, PG1_1, },
 	//{	28, DLEB,	10,	5,	display2_freqmeter10, 	& dzi_default, PGALL, },	// измеренная частота опоры
 
 #if WITHMENU
@@ -176,8 +170,10 @@ static const dzone_t dzones [] =
 #endif /* WITHMENU */
 
 #if WITHRTTY
-	{	0, DLES, 	BDTH_ALLRX, DLEB - DLES - 1, 	display2_vtty_init,	& dzi_compat,	PGINI, },	// Подготовка видеобуфера окна протокола
-	{	0, DLES, 	BDTH_ALLRX, DLEB - DLES - 1, 	display2_vtty,	& dzi_compat, PG1, },		// Вывод текущего состояния протокола
+
+	{	0, MIDMENU + 0, 		BDTH_ALLRX, 	RTTYSPEC, 						display2_spectrum,	& dzi_compat, PG1, },	// Вывод спектроанализатора
+	{	0, MIDMENU + RTTYSPEC, 	BDTH_ALLRX, 	DLEB - MIDMENU - 1 - RTTYSPEC, 	display2_vtty,		& dzi_compat, PG1, },	// Вывод текущего состояния протокола
+	{	0, MIDMENU + RTTYSPEC,	 BDTH_ALLRX, 	DLEB - MIDMENU - 1 - RTTYSPEC, 	display2_vtty_init,	& dzi_compat, PGINI, },	// Подготовка видеобуфера окна протокола
 #endif /* WITHRTTY */
 
 	// sleep mode display
