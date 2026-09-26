@@ -20389,6 +20389,9 @@ static uint_fast8_t nvramdiags(void)
 				PRINTF("wkbch=0x%02X (%u)\n", (unsigned) kbch, (unsigned) kbch);
 				if (kbch == erasekey)
 					break;
+				if (kbch == KBD_CODE_SPLIT_HOLDED)
+					continue;
+				return 0;
 			}
 			//display2_needupdate();
 		}
@@ -20473,6 +20476,9 @@ static uint_fast8_t nvramdiags(void)
 				PRINTF("kbch=0x%02X (%u)\n", (unsigned) kbch, (unsigned) kbch);
 				if (kbch == erasekey)
 					break;
+				if (kbch == KBD_CODE_SPLIT_HOLDED)
+					continue;
+				return 0;
 			}
 			//display2_needupdate();
 		}
