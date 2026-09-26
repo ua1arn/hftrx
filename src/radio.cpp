@@ -20409,6 +20409,7 @@ static uint_fast8_t nvramdiags(void)
 		{
 			nvram_set_abytes(ab);
 			/* стирание всей памяти */
+			PRINTF("nvramdiags: NVRAM initialization: erase NVRAM - %u bytes.\n", (unsigned) sizeof (struct nvmap));
 			uint_least16_t i;
 			for (i = 0; i < sizeof (struct nvmap); ++ i)
 				save_i8(i, 0xFF);
@@ -20492,7 +20493,7 @@ static uint_fast8_t nvramdiags(void)
 			//display2_needupdate();
 		}
 
-		//PRINTF(PSTR("nvramdiags: NVRAM initialization: erase NVRAM.\n"));
+		PRINTF("nvramdiags: NVRAM initialization: erase NVRAM - %u bytes.\n", (unsigned) sizeof (struct nvmap));
 		/* стирание всей памяти */
 		uint_least16_t i;
 		for (i = 0; i < sizeof (struct nvmap); ++ i)
