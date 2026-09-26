@@ -9413,18 +9413,36 @@ static void loadbandgroup(uint_fast8_t bg, uint_fast8_t ant, uint_fast8_t rxant)
 #endif /* WITHSPECTRUMWF */
 }
 
+// mi - memory index - хранение настроек режима работы в нескольких ячейках памяти,
+// ассоциированных с диапазоном
+static uint_fast8_t getmemindex(uint_fast8_t bg)
+{
+#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
+	return loadvfy8(OFFSETOF(struct nvmap, bandgroups [bg].mi), 0, WITHBANDMEMCOUNT - 1, 0);
+#else /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
+	return 0;
+#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
+}
+
+static void savememindex(uint_fast8_t bg, uint_fast8_t miv)
+{
+#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
+	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].mi), miv);
+#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
+}
+
 /* сохранить все параметры настройки (кроме частоты) в соответствующий диапазон, ячейку памяти или VFO. */
 static void
 //NOINLINEAT
 storebandstate(const vindex_t b, const uint_fast8_t bi)
 {
-	const uint_fast8_t mi = 0;
 	//PRINTF(PSTR("storebandstate: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
 	verifyband(b);
 	const uint_fast32_t freq = gfreqs [bi];
 	const uint_fast8_t bg = getfreqbandgroup(freq);
 	const uint_fast8_t ant = geteffantenna(freq);
 	const uint_fast8_t rxant = geteffrxantenna(freq);
+	const uint_fast8_t mi = getmemindex(bg);
 
 	save_i8(RMT_MODEROW_BASE(b, mi), gmoderows [bi]);
 	save_i8(RMT_LOCKMODE_BASE(b, mi), glocks [bi]);
@@ -10280,24 +10298,6 @@ void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 	display_2fmenuslines(db, x, y, xspan, yspan, 1, "FMENU9", "FVALUE9");
 
 #endif /* WITHENCODER2 && ! WITHTOUCHGUI */
-}
-
-// mi - memory index - хранение настроек режима работы в нескольких ячейках памяти,
-// ассоциированных с диапазоном
-static uint_fast8_t getmemindex(uint_fast8_t bg)
-{
-#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
-	return loadvfy8(OFFSETOF(struct nvmap, bandgroups [bg].mi), 0, WITHBANDMEMCOUNT - 1, 0);
-#else /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
-	return 0;
-#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
-}
-
-static void savememindex(uint_fast8_t bg, uint_fast8_t miv)
-{
-#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].mi), miv);
-#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 }
 
 
@@ -14322,7 +14322,8 @@ uif_key_lockencoder(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t mi = 0;
+	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t mi = getmemindex(bg);
 
 	glocks [bi] = calc_next(glocks [bi], 0, 1);
 	save_i8(RMT_LOCKMODE_BASE(vi, mi), glocks [bi]);
@@ -21674,7 +21675,8 @@ void hamradio_set_lock(uint_fast8_t lock)
 {
 	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t mi = 0;
+	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t mi = getmemindex(bg);
 
 	glocks [bi] = lock != 0;
 	save_i8(RMT_LOCKMODE_BASE(vi, mi), glocks [bi]);
