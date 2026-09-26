@@ -180,7 +180,6 @@ enum
 void  kbd_initialize(void);
 
 uint_fast8_t kbd_is_tready(void);
-void kbd_pass(void);
 /* получение скан-кода клавиши, возврат 0 в случае отсутствия.
  */
 uint_fast8_t kbd_scan(uint_fast16_t * key);

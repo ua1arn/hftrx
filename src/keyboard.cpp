@@ -387,16 +387,6 @@ static uint_fast16_t kbdx_scan(kbdst_t * kbdp, uint_fast16_t * v)
 	return f;
 }
 
-void kbdx_pass(kbdst_t * kbdp)
-{
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
-
-	kbd_spool(kbdp);
-
-	IRQLSPIN_UNLOCK(& irqllock, oldIrql);
-}
-
 uint_fast8_t kbd_scan(uint_fast16_t * v)
 {
 	return kbdx_scan(& kbd0, v);
@@ -409,11 +399,6 @@ uint_fast8_t dtmf_scan(uint_fast16_t * v)
 #else /* WITHSUBTONES */
 	return 0;
 #endif /* WITHSUBTONES */
-}
-
-void kbd_pass(void)
-{
-	kbdx_pass(& kbd0);
 }
 
 uint_fast8_t kbd_get_ishold(uint_fast8_t flag)
@@ -478,10 +463,6 @@ uint_fast8_t kbd_scan(uint_fast16_t * v)
 uint_fast8_t dtmf_scan(uint_fast16_t * v)
 {
 	return 0;
-}
-
-void kbd_pass(void)
-{
 }
 
 #endif /* WITHKEYBOARD */

@@ -18047,7 +18047,7 @@ static uint_fast8_t getinmenu(const struct menudef * * mp)
    */
 static void
 //NOINLINEAT
-loadsettings(void)
+param_loadarrays(void)
 {
 	const struct menudesc * const pmd = & mdsc0;
 	uint_fast16_t i;
@@ -18074,12 +18074,12 @@ loadsettings(void)
 				if (pv16 != NULL)
 				{
 					* pv16 = loadvfy16up(nvram, bottom, upper, * pv16);
-					//PRINTF("loadsettings: %s: * pv16=%u\n", pd->qlabel, (unsigned) * pv16);
+					//PRINTF("param_loadarrays: %s: * pv16=%u\n", pd->qlabel, (unsigned) * pv16);
 				}
 				else if (pv8 != NULL)
 				{
 					* pv8 = loadvfy8up(nvram, bottom, upper, * pv8);
-					//PRINTF("loadsettings: %s: * pv8=%u\n", pd->qlabel, (unsigned) * pv8);
+					//PRINTF("param_loadarrays: %s: * pv8=%u\n", pd->qlabel, (unsigned) * pv8);
 				}
 			}
 		}
@@ -18087,38 +18087,6 @@ loadsettings(void)
 }
 
 
-
-/* Загрузка в NVRAM значениями по умолчанию.
-   Значением по умолчанию является то, на которое
-   переменная инициализированна при запуске программы.
-   */
-static void
-defaultsettings(void)
-{
-
-#if WITHSPECTRUMWF
-	const uint_fast8_t bi = 0;
-	uint_fast8_t bg;
-	for (bg = 0; bg < BANDGROUP_COUNT; ++ bg)
-	{
-		storezoom(bg);
-	}
-#endif /* WITHSPECTRUMWF */
-#if WITHTX
-	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
-	bandf2adjust_initialize();
-#endif /* WITHTX */
-
-	const struct menudesc * const pmd = & mdsc0;
-	uint_fast16_t i;
-	PRINTF("Loading NVRAM default settings\n");
-
-	for (i = 0; i < pmd->menusize; ++ i)
-	{
-		const struct menudef * const mp = & pmd->menutable [i];
-		savemenuvalue(mp->pd);
-	}
-}
 
 #if WITHMENU
 //+++ menu support
@@ -20417,8 +20385,6 @@ static uint_fast8_t nvramdiags(void)
 				while (kbd_scan(& kbch) == 0)
 				{
 					watchdog_ping();
-					kbd_pass();
-					local_delay_ms(KBD_TICKS_PERIOD * 1000 / TICKS_FREQUENCY);
 				}
 				PRINTF("wkbch=0x%02X (%u)\n", (unsigned) kbch, (unsigned) kbch);
 				if (kbch == erasekey)
@@ -20503,8 +20469,6 @@ static uint_fast8_t nvramdiags(void)
 				while (kbd_scan(& kbch) == 0)
 				{
 					watchdog_ping();
-					kbd_pass();
-					local_delay_ms(KBD_TICKS_PERIOD * 1000 / TICKS_FREQUENCY);
 				}
 				PRINTF("kbch=0x%02X (%u)\n", (unsigned) kbch, (unsigned) kbch);
 				if (kbch == erasekey)
@@ -23137,9 +23101,8 @@ application_initialize(void)
 #if WITHMENU
 	if (resetconfig)
 	{
-		//defaultsettings();		/* загрузка в nvram установок по умолчанию */
+		/* загрузка в nvram установок по умолчанию - FRAM очищениа 0xFF */
 	}
-	loadsavedstate();	// split, s-meter display, see also loadsettings().
 	// Инициализируем то что не получается иниитить в описании перменных.
 #if WITHCAT
 #ifdef WITHCATSPEED
@@ -23149,7 +23112,12 @@ application_initialize(void)
 #endif
 #endif /* WITHCAT */
 #if ! HARDWARE_IGNORENONVRAM
-	loadsettings();		/* загрузка всех установок из nvram. */
+#if WITHTX
+	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
+	bandf2adjust_initialize();
+#endif /* WITHTX */
+	loadsavedstate();	// split, s-meter display, see also param_loadarrays().
+	param_loadarrays();		/* arrays, загрузка всех установок из nvram. */
 #endif /* ! HARDWARE_IGNORENONVRAM */
 #endif /* WITHMENU */
 	/* NVRAM уже можно пользоваться */
