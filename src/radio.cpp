@@ -1614,7 +1614,6 @@ static size_t getvaltexttxaudio(char * buff, size_t count, int_fast32_t value)
 
 // проверка и приведение в допустимый диапазон значений, считанных из eeprom или принятых по CAT. Или при autosplit
 static uint_fast32_t
-//NOINLINEAT
 vfy32up(
 	uint_fast32_t v,
 	uint_fast32_t bottom, uint_fast32_t upper, uint_fast32_t def)
@@ -1628,7 +1627,6 @@ vfy32up(
 }
 
 static uint_fast32_t
-//NOINLINEAT
 loadvfy32(
 	nvramaddress_t place,
 	uint_fast32_t bottom, uint_fast32_t top, uint_fast32_t def)
@@ -1648,6 +1646,31 @@ loadvfy32(
 	if (v >= top || v < bottom)
 	{
 		save_i32(place, def);
+		return def;
+	}
+	return v;
+}
+
+static uint_fast8_t
+loadvfy8(
+	nvramaddress_t place,
+	uint_fast8_t bottom, uint_fast8_t top, uint_fast8_t def)
+{
+#if HARDWARE_IGNORENONVRAM
+	return def;
+#endif /* HARDWARE_IGNORENONVRAM */
+
+	if (place == MENUNONVRAM)
+		return def;
+
+	const uint_fast8_t v = restore_i8(place);
+
+	if (def >= top || def < bottom)
+		def = bottom;
+
+	if (v >= top || v < bottom)
+	{
+		save_i8(place, def);
 		return def;
 	}
 	return v;
@@ -10263,7 +10286,18 @@ void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 // ассоциированных с диапазоном
 static uint_fast8_t getmemindex(uint_fast8_t bg)
 {
+#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
+	return loadvfy8(OFFSETOF(struct nvmap, bandgroups [bg].mi), 0, WITHBANDMEMCOUNT - 1, 0);
+#else /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 	return 0;
+#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
+}
+
+static void savememindex(uint_fast8_t bg, uint_fast8_t miv)
+{
+#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
+	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].mi), miv);
+#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 }
 
 

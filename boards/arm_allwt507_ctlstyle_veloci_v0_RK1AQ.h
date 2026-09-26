@@ -535,7 +535,7 @@
 //	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 //	#define WITHLOCKFULL	1	/* блокировка всего управления, а не только перестройки */
 	#define WITHRTTY 1			/* подержка работы RTTY */
-	//#define	WITHBANDMEMCOUNT 4	/* до 4-х ячеек памяти на диапазон */
+	#define	WITHBANDMEMCOUNT 4	/* до 4-х ячеек памяти на диапазон */
 
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */

@@ -531,7 +531,7 @@
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 //	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 	#define WITHRTTY 1	/* подержка демодулятора RTTY */
-	//#define	WITHBANDMEMCOUNT 4	/* до 4-х ячеек памяти на диапазон */
+	#define	WITHBANDMEMCOUNT 4	/* до 4-х ячеек памяти на диапазон */
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения

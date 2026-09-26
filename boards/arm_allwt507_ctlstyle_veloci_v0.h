@@ -436,7 +436,7 @@
 	//#define WITHLOCKFULL	1	/* блокировка всего управления, а не только перестройки */
 	#define WITHMODESETFULLNFM 1
 	#define WITHRTTY 1			/* подержка работы RTTY */
-	//#define	WITHBANDMEMCOUNT 4	/* до 4-х ячеек памяти на диапазон */
+	#define	WITHBANDMEMCOUNT 4	/* до 4-х ячеек памяти на диапазон */
 
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
