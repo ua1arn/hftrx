@@ -27,6 +27,9 @@
 
 //#define WITHRPTOFFSET 1
 #define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
+#ifndef WITHBANDMEMCOUNT
+#define WITHBANDMEMCOUNT 1
+#endif /* WITHBANDMEMCOUNT */
 
 #define UI_TICKS_PERIOD 50	// ms
 #define UINTICKS(v) (((v) + (UI_TICKS_PERIOD - 1)) / UI_TICKS_PERIOD)
@@ -3988,7 +3991,7 @@ struct nvmap
 
 	struct modeprops modes [MODE_COUNT];
 
-	struct bandinfo bands [HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT];
+	struct bandinfo bands [HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT] [WITHBANDMEMCOUNT];
 	struct bandgroup_tag bandgroups [BANDGROUP_COUNT + 1];	/* один элемент для не относящихся к группам диапазонов */
 
 #if WITHANTSELECT2
@@ -4011,7 +4014,6 @@ struct nvmap
 
 #define RMT_MENUSET_BASE OFFSETOF(struct nvmap, gmenuset)		/* набор функций кнопок и режим отображения на дисплее */
 #define RMT_SIGNATURE_BASE(i) OFFSETOF(struct nvmap, signature [(i)])			/* расположение сигнатуры */
-#define RMT_LOCKMODE_BASE(b) OFFSETOF(struct nvmap, bands [(b)].glock)		/* признак блокировки валкодера */
 
 #define RMT_SPLITMODE_BASE OFFSETOF(struct nvmap, splitmode)		/* (vfo/vfoa/vfob/mem) */
 #define RMT_VFOAB_BASE OFFSETOF(struct nvmap, vfoab)		/* (vfoa/vfob) */
@@ -4030,7 +4032,10 @@ struct nvmap
 #define RMT_MIDDLEMENUPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].gmidmenupos)
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
 
-#define RMT_BFREQ_BASE(b) OFFSETOF(struct nvmap, bands [(b)].freq)			/* последняя частота, на которую настроились (4 байта) */
+#define RMT_LOCKMODE_BASE(b, m) OFFSETOF(struct nvmap, bands [(b)][(m)].glock)		/* признак блокировки валкодера */
+#define RMT_BFREQ_BASE(b, m) OFFSETOF(struct nvmap, bands [(b)][(m)].freq)			/* последняя частота, на которую настроились (4 байта) */
+#define RMT_MODEROW_BASE(b, m)	OFFSETOF(struct nvmap, bands [(b)][(m)].moderow)			/* номер строки в массиве режимов. */
+#define RMT_MODECOLS_BASE(b, m, j)	OFFSETOF(struct nvmap, bands [(b)][(m)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
 
 #define RMT_BANDPOS(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #define RMT_MIPOS(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].mi)	/* последняя ячейка в группе, куда переходили */
@@ -4038,8 +4043,6 @@ struct nvmap
 #define RMT_ATTBG3_BASE(bg, ant, rxant) OFFSETOF(struct nvmap, bandgroups [(bg)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].att)		/* признак включения аттенюатора (1 байт) */
 #define RMT_RXANTENNABG_BASE(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].rxant)			/* код включённой антенны (1 байт) */
 #define RMT_ANTENNABG_BASE(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].ant)			/* код включённой антенны (1 байт) */
-#define RMT_MODEROW_BASE(b)	OFFSETOF(struct nvmap, bands [(b)].moderow)			/* номер строки в массиве режимов. */
-#define RMT_MODECOLS_BASE(b, j)	OFFSETOF(struct nvmap, bands [(b)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
 #define RMT_PWR_BASE OFFSETOF(struct nvmap, gpwri)								/* большая мощность sw2012sf */
 #define RMT_NOTCH_BASE OFFSETOF(struct nvmap, gnotch)							/* NOTCH on/off */
 #define RMT_NOTCHTYPE_BASE OFFSETOF(struct nvmap, gnotchtype)					/* NOTCH filter type */
@@ -8970,11 +8973,12 @@ getprevhband(const uint_fast32_t freq)
 
 static uint_fast32_t
 loadvfy32freq(
-	vindex_t b		// band
+	vindex_t b,		// band
+	int_fast8_t mi
 	)
 {
 	const vindex_t b0 = (b >= MBANDS_BASE) ? VFOS_BASE : b;
-	return loadvfy32(RMT_BFREQ_BASE(b), get_band_bottom(b0), get_band_top(b0), get_band_init(b0));
+	return loadvfy32(RMT_BFREQ_BASE(b, mi), get_band_bottom(b0), get_band_top(b0), get_band_init(b0));
 }
 
 static vindex_t
@@ -8983,6 +8987,7 @@ getnext_ham_band(
 	const uint_fast32_t freq
 	)
 {
+	const uint_fast8_t mi = 0;
 	const uint_fast8_t bandset_no_check = 0;
 	uint_fast8_t xi;
 	vindex_t xsel [XBANDS_COUNT];
@@ -8991,7 +8996,7 @@ getnext_ham_band(
 
 	for (xi = 0; xi < XBANDS_COUNT; ++ xi)
 	{
-		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + xi);	// частота в обзорном диапазоне
+		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + xi, mi);	// частота в обзорном диапазоне
 		xsel [xi] = getfreqband(f, bandset_no_check);			// не принадлежит ли частота какому-то диапазону
 		xnext [xi] = getnexthband(f);		// получить номер диапазона с большей частотой
 		xprev [xi] = getprevhband(f);		// получить номер диапазона с меньшей частотой
@@ -9100,6 +9105,7 @@ getprev_ham_band(
 	const uint_fast32_t freq
 	)
 {
+	const uint_fast8_t mi = 0;
 	const uint_fast8_t bandset_no_check = 0;
 	uint_fast8_t xi;
 	vindex_t xsel [XBANDS_COUNT];
@@ -9108,7 +9114,7 @@ getprev_ham_band(
 
 	for (xi = 0; xi < XBANDS_COUNT; ++ xi)
 	{
-		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + xi);	// частота в обзорном диапазоне
+		const uint_fast32_t f = loadvfy32freq(XBANDS_BASE0 + xi, mi);	// частота в обзорном диапазоне
 		xsel [xi] = getfreqband(f, bandset_no_check);			// не принадлежит ли частота какому-то диапазону
 		xnext [xi] = getnexthband(f);		// получить номер диапазона с большей частотой
 		xprev [xi] = getprevhband(f);		// получить номер диапазона с меньшей частотой
@@ -9279,7 +9285,7 @@ storebandfreq(const vindex_t b, const uint_fast8_t bi)
 	//PRINTF(PSTR("storebandfreq: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
 	verifyband(b);
 
-	save_i32(RMT_BFREQ_BASE(b), gfreqs [bi]);	/* сохранить в области диапазона частоту */
+	save_i32(RMT_BFREQ_BASE(b, 0), gfreqs [bi]);	/* сохранить в области диапазона частоту */
 }
 
 
@@ -9389,6 +9395,7 @@ static void
 //NOINLINEAT
 storebandstate(const vindex_t b, const uint_fast8_t bi)
 {
+	const uint_fast8_t mi = 0;
 	//PRINTF(PSTR("storebandstate: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
 	verifyband(b);
 	const uint_fast32_t freq = gfreqs [bi];
@@ -9396,12 +9403,12 @@ storebandstate(const vindex_t b, const uint_fast8_t bi)
 	const uint_fast8_t ant = geteffantenna(freq);
 	const uint_fast8_t rxant = geteffrxantenna(freq);
 
-	save_i8(RMT_MODEROW_BASE(b), gmoderows [bi]);
-	save_i8(RMT_LOCKMODE_BASE(b), glocks [bi]);
+	save_i8(RMT_MODEROW_BASE(b, mi), gmoderows [bi]);
+	save_i8(RMT_LOCKMODE_BASE(b, mi), glocks [bi]);
 
 	uint_fast8_t i;
 	for (i = 0; i < MODEROW_COUNT; ++ i)
-		save_i8(RMT_MODECOLS_BASE(b, i), gmodecolmaps [bi] [i]);
+		save_i8(RMT_MODECOLS_BASE(b, mi, i), gmodecolmaps [bi] [i]);
 
 	storebandgroup(bg, ant, rxant);
 }
@@ -10524,11 +10531,12 @@ loadnewband(
 	uint_fast8_t bi
 	)
 {
+	const uint_fast8_t mi = 0;
 	ASSERT(bi < 2);
 	//PRINTF(PSTR("loadnewband: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
 
-	gfreqs [bi] = loadvfy32freq(b);		/* восстанавливаем частоту */
-	glocks [bi] = loadvfy8up(RMT_LOCKMODE_BASE(b), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
+	gfreqs [bi] = loadvfy32freq(b, mi);		/* восстанавливаем частоту */
+	glocks [bi] = loadvfy8up(RMT_LOCKMODE_BASE(b, mi), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
 	const uint_fast32_t freq = gfreqs [bi];
 	const uint_fast8_t bg = getfreqbandgroup(freq);
 	const uint_fast8_t ant = geteffantenna(freq);
@@ -10545,14 +10553,14 @@ loadnewband(
 	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
 
 	// прописываем режим работы по умолчанию для данного диапазона
-	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MODECOLS_BASE(b, defrow), 0, modes [defrow][0] - 1, defcol);
+	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MODECOLS_BASE(b, mi, defrow), 0, modes [defrow][0] - 1, defcol);
 
-	gmoderows [bi] = loadvfy8up(RMT_MODEROW_BASE(b), 0, MODEROW_COUNT - 1, defrow);
+	gmoderows [bi] = loadvfy8up(RMT_MODEROW_BASE(b, mi), 0, MODEROW_COUNT - 1, defrow);
 
 	uint_fast8_t i;
 	for (i = 0; i < MODEROW_COUNT; ++ i)
 	{
-		gmodecolmaps [bi] [i] = loadvfy8up(RMT_MODECOLS_BASE(b, i), 0, 255, 255);	// везде прописывается 255 - потом ещё уточним.
+		gmodecolmaps [bi] [i] = loadvfy8up(RMT_MODECOLS_BASE(b, mi, i), 0, 255, 255);	// везде прописывается 255 - потом ещё уточним.
 	}
 
 	loadantenna(bi, bg);
@@ -14280,9 +14288,10 @@ uif_key_lockencoder(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);
 	const vindex_t vi = getvfoindex(bi);
+	const uint_fast8_t mi = 0;
 
 	glocks [bi] = calc_next(glocks [bi], 0, 1);
-	save_i8(RMT_LOCKMODE_BASE(vi), glocks [bi]);
+	save_i8(RMT_LOCKMODE_BASE(vi, mi), glocks [bi]);
 	updateboard();
 }
 
@@ -21630,9 +21639,10 @@ void hamradio_set_lock(uint_fast8_t lock)
 {
 	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);
 	const vindex_t vi = getvfoindex(bi);
+	const uint_fast8_t mi = 0;
 
 	glocks [bi] = lock != 0;
-	save_i8(RMT_LOCKMODE_BASE(vi), glocks [bi]);
+	save_i8(RMT_LOCKMODE_BASE(vi, mi), glocks [bi]);
 	updateboard();
 }
 
