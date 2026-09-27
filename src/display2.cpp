@@ -1840,10 +1840,6 @@ int_fast32_t approximate(
 	return angles [n - 1];	// при выходе за максимальное значение - уприраемся в правое значение
 }
 
-static uint_fast8_t first_tx = 0;
-static int_fast32_t gp_smooth, gswr_smooth;/* фильтрация - (в градусах) */
-enum { gx_hyst = 3 };		// гистерезис в градусах
-
 #if LCDMODE_LTDC && WITHBARS
 
 enum {
@@ -1999,6 +1995,7 @@ static void sm_draw_dial_tx_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 	const uint_fast16_t xc = x0 + smpr->xcneddle;
 	const uint_fast16_t yc = y0 + smpr->ycneddle;
 	int_fast32_t gp = smpr->gs;
+	int_fast32_t gptrace = smpr->gs;
 	int_fast32_t gswr = smpr->gs;
 
 	/* фильтрация - (в градусах) */
@@ -2006,6 +2003,7 @@ static void sm_draw_dial_tx_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 	adcvalholder_t powerTraceV;
 	const adcvalholder_t powerV = board_getadc_filtered_truevalue2(PWRMRRIX, & powerTraceV);	// без возможных тормозов на SPI при чтении
 	gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
+	gptrace = smpr->gs + normalize(powerTraceV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
 
 	// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
 	// Для тюнера и измерений не годится, для показа - без торомозов.
@@ -2295,26 +2293,13 @@ static void sm_draw_dial_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	adcvalholder_t powerTraceV;
 	const adcvalholder_t powerV = board_getadc_filtered_truevalue2(PWRMRRIX, & powerTraceV);	// без возможных тормозов на SPI при чтении
 	int_fast32_t gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
+	int_fast32_t gptrace = smpr->gs + normalize(powerTraceV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
 
 	// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
 	// Для тюнера и измерений не годится, для показа - без торомозов.
 	const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
 	const uint_fast16_t swrV = get_swr(swr_fullscale);
 	int_fast32_t gswr = smpr->gs + normalize(swrV, 0, swr_fullscale, smpr->ge - smpr->gs);
-
-	/* фильтрация - (в градусах) */
-	if (gp > smpr->gs)
-		gp_smooth = gp;
-
-	if (gp == smpr->gs && gp_smooth > smpr->gs)
-		gp = (gp_smooth -= gx_hyst) > smpr->gs ? gp_smooth : smpr->gs;
-
-	if (gswr > smpr->gs)
-		gswr_smooth = gswr;
-
-	if (gswr == smpr->gs && gswr_smooth > smpr->gs && gswr_smooth >= gx_hyst)
-		gswr = (gswr_smooth -= gx_hyst) > smpr->gs ? gswr_smooth : smpr->gs;
-
 
 	// TX state
 	colpip_bitblt(
@@ -2339,10 +2324,17 @@ static void sm_draw_dial_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 		display_floodfill(db, xx, yy, color, bgcolor);
 	}
 
-	const COLORPIP_T color = COLORPIP_GREEN;
-	colpip_radius(db, xc - 1, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
-	colpip_radius(db, xc, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
-	colpip_radius(db, xc + 1, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
+	// Стрелка в три точки - пиковое значение мощности
+	const COLORPIP_T color2 = COLORPIP_DARKGREEN;
+	colpip_radius(db, xc - 1, 	yc, gptrace, smpr->rv1, smpr->rv2, color2, 0, 1);
+	colpip_radius(db, xc, 		yc, gptrace, smpr->rv1, smpr->rv2, color2, 0, 1);
+	colpip_radius(db, xc + 1, 	yc, gptrace, smpr->rv1, smpr->rv2, color2, 0, 1);
+
+	// Стрелка в три точки - мощность
+	const COLORPIP_T color1 = COLORPIP_GREEN;
+	colpip_radius(db, xc - 1, 	yc, gp, smpr->rv1, smpr->rv2, color1, 0, 1);
+	colpip_radius(db, xc, 		yc, gp, smpr->rv1, smpr->rv2, color1, 0, 1);
+	colpip_radius(db, xc + 1, 	yc, gp, smpr->rv1, smpr->rv2, color1, 0, 1);
 
 #if WITHAA
 	display_do_AA(db, x0, y0, SM_BG_W, SM_BG_H);
@@ -2479,25 +2471,13 @@ static void sm_draw_bars_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	adcvalholder_t powerTraceV;
 	const adcvalholder_t powerV = board_getadc_filtered_truevalue2(PWRMRRIX, & powerTraceV);	// без возможных тормозов на SPI при чтении
 	int_fast32_t gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
+	int_fast32_t gptrace = smpr->gs + normalize(powerTraceV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
 
 	// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
 	// Для тюнера и измерений не годится, для показа - без торомозов.
 	const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
 	const uint_fast16_t swrV = get_swr(swr_fullscale);
 	int_fast32_t gswr = smpr->gs + normalize(swrV, 0, swr_fullscale, smpr->ge - smpr->gs);
-
-	if (gp > smpr->gs)
-		gp_smooth = gp;
-
-	if (gp == smpr->gs && gp_smooth > smpr->gs)
-		gp = (gp_smooth -= gx_hyst) > smpr->gs ? gp_smooth : smpr->gs;
-
-	if (gswr > smpr->gs)
-		gswr_smooth = gswr;
-
-	if (gswr == smpr->gs && gswr_smooth > smpr->gs && gswr_smooth >= gx_hyst)
-		gswr = (gswr_smooth -= gx_hyst) > smpr->gs ? gswr_smooth : smpr->gs;
-
 
 	colpip_bitblt(
 			db->cachebase, db->cachesize,
@@ -2508,6 +2488,8 @@ static void sm_draw_bars_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 			smbgdb->dx, smbgdb->dy, // размер окна источника
 			BITBLT_FLAG_NONE, 0);
 
+	if(gptrace > gp)
+		colpip_rect(db, x0 + gp, y0 + smpr->r1 + 5, x0 + gptrace, y0 + smpr->r1 + 20, COLORPIP_DARKGREEN, 1);
 	if(gp > smpr->gs)
 		colpip_rect(db, x0 + smpr->gs, y0 + smpr->r1 + 5, x0 + gp, y0 + smpr->r1 + 20, COLORPIP_GREEN, 1);
 
@@ -2744,17 +2726,6 @@ pix_display2_smeter15(const gxdrawb_t * db,
 	const uint_fast8_t is_tx = hamradio_get_tx();
 	smeter_params_t * const smpr = & smprms [glob_smetertype] [is_tx ? SM_STATE_TX : SM_STATE_RX];
 
-	if (first_tx)				// сброс при переходе на передачу
-	{
-		first_tx = 0;
-		gp_smooth = smpr->gs;
-		gswr_smooth = smpr->gs;
-	}
-	else
-	{
-		first_tx = 1;
-
-	}
 	smpr->draw(db, x0, y0, width, width, pathi, smpr);
 }
 
@@ -10704,7 +10675,6 @@ void display2_set_smetertype(uint_fast8_t v)
 	if (glob_smetertype != v)
 	{
 		glob_smetertype = v;
-		first_tx = 1;
 	}
 }
 
