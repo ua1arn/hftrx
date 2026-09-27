@@ -3560,15 +3560,15 @@ static FLOAT32P_t baseband_modulator(
 		}
 
 	case DSPCTL_MODE_TX_BPSK:
-	{
-		* deltanfm = 0;
-		FLOAT32P_t vfb;
-		dsp_ofdm_tx_process_sample(& txpath->ofdm_tx, & vfb.IV, & vfb.QV);
-		return vfb;
-	}
+		{
+			* deltanfm = 0;
+			FLOAT32P_t vfb;
+			dsp_ofdm_tx_process_sample(& txpath->ofdm_tx, & vfb.IV, & vfb.QV);
+			return vfb;
+		}
 
 	#if WITHMODEM
-		case DSPCTL_MODE_TX_BPSK:
+	case DSPCTL_MODE_TX_BPSK:
 		{
 			* deltanfm = 0;
 				// высокоскоростной модем. Фильтр baseband на выходе не нужен
