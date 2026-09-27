@@ -1617,6 +1617,31 @@ void agc_parameters_peaks_initialize(agcparams_t * agcp, uint_fast32_t sr)
 	//PRINTF(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
 
+// Отображение индикатора мощности
+void agc_parameters_pwrpeaks_initialize(agcparams_t * agcp, uint_fast32_t sr)
+{
+	agcp->agcoff = 1;
+	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 1 / 10, sr);
+	const FLOAT_t tauZERO = MAKETAU0();
+
+	agcp->chargespeedfast = tauFAST;
+	agcp->dischargespeedfast = tauFAST;
+
+	agcp->chargespeedslow = tauFAST;
+	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 1, sr);
+
+	agcp->hungticks = NSAITICKS2(1000, sr);			// 1 second
+	agcp->mininput_ratio = db2ratio(WITHMINFSPOWER);
+
+	// параметры используются при работе АРУ
+	agcp->gainlimit_ratio = db2ratio(60);
+	agcp->levelfence_ratio = db2ratio(WITHMAXFSPOWER);
+	agcp->agcfactor = agc_calcagcfactor(10);
+	agcp->agcfence = 1;
+
+	//PRINTF(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
+}
+
 // Установка параметров АРУ приёмника
 
 static void rxagc_parameters_update(hfrxpath_t * const path, agcparams_t * const agcp, FLOAT_t gainlimit_ratio, FLOAT_t agcfence, uint_fast8_t pathi)

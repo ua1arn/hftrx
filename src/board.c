@@ -6123,7 +6123,6 @@ uint_fast8_t board_get_adcch(uint_fast8_t i)
 enum
 {
 	BOARD_ADCFILTER_DIRECT,		/* фильтрация не применяется (значение для всех каналов по умолчанию) */
-	BOARD_ADCFILTER_TRACETOP3S,	/* Отслеживание максимума с постоянной времени 3 секунды */
 	BOARD_ADCFILTER_LPF,			/* ФНЧ, параметр задается в виде числа с фиксированной точкой */
 	BOARD_ADCFILTER_PEAKS,
 	//
@@ -6141,9 +6140,8 @@ typedef struct lpfdata_tag
 
 typedef struct peaksdata_tag
 {
-	sadcvalholder_t queue [ADC_LPF_WND];
-	size_t qpos;	/* индекс в очереди куда будем сейчас писать */
-	int32_t summ;	/* сумма всех элементов очереди */
+	agcstate_t state;
+	const agcparams_t * agcp;
 } peaksdata_t;
 
 typedef struct boardadc_tag
@@ -6186,8 +6184,7 @@ adcvalholder_t board_getadc_filtered_truevalue2(uint_fast8_t adci, adcvalholder_
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
 	* peakv = padcs->peak_data_filtered;
-	* peakv = padcs->adc_data_raw;
-	return padcs->adc_filter == BOARD_ADCFILTER_DIRECT ? padcs->adc_data_raw : padcs->adc_data_filtered;
+	return padcs->adc_data_filtered;
 }
 
 /* получить значение от АЦП */
@@ -6359,41 +6356,32 @@ static void lpf_initialize(lpfdata_t * lpfdata)
 	lpfdata->summ = 0;
 }
 
-static void peaks_initialize(peaksdata_t * peaksdata)
+static void peaks_initialize(peaksdata_t * peaksdata, const agcparams_t * agcp)
 {
-	memset(& peaksdata->queue, 0, sizeof peaksdata->queue);
-	peaksdata->qpos = 0;
-	peaksdata->summ = 0;
+	agc_state_initialize(& peaksdata->state, agcp);
+	peaksdata->agcp = agcp;
 }
 
 
 
-static adcvalholder_t
-lpf_filter(lpfdata_t * lpfdata, adcvalholder_t raw)
+static void
+lpf_filter(boardadc_t * const padcs, adcvalholder_t raw)
 {
+	lpfdata_t * const lpfdata = padcs->lpf;
 	lpfdata->summ += (sadcvalholder_t) raw;	// добавить входящее
 	lpfdata->summ -= lpfdata->queue [lpfdata->qpos];	// вычесть выходящее
 	lpfdata->queue [lpfdata->qpos] = raw;
 	lpfdata->qpos = (lpfdata->qpos + 1) % ADC_LPF_WND;
-	return lpfdata->summ / ADC_LPF_WND;
+	padcs->adc_data_filtered = lpfdata->summ / ADC_LPF_WND;
 }
 
-static adcvalholder_t
-peaks_filter(peaksdata_t * peaksdata, adcvalholder_t raw, adcvalholder_t * peaks)
+static void
+peaks_filter(boardadc_t * const padcs, adcvalholder_t raw)
 {
-	peaksdata->summ += (sadcvalholder_t) raw;	// добавить входящее
-	peaksdata->summ -= peaksdata->queue [peaksdata->qpos];	// вычесть выходящее
-	peaksdata->queue [peaksdata->qpos] = raw;
-	peaksdata->qpos = (peaksdata->qpos + 1) % ADC_LPF_WND;
-	* peaks = 0;
-	return peaksdata->summ / ADC_LPF_WND;
-}
-
-static adcvalholder_t
-tracetop3s_filter(adcvalholder_t raw, adcvalholder_t v0)
-{
-	enum { DELAY3SNUM = 993, DELAY3SDENOM = 1000 };	// todo: сделать расчет в зависимости от частоты системного таймера
-	return v0 < raw ? raw : v0 * (uint_fast32_t) DELAY3SNUM / DELAY3SDENOM;
+	peaksdata_t * const peaksdata = padcs->peaks;
+	agc_perform(& peaksdata->state, peaksdata->agcp, raw);
+	padcs->adc_data_filtered = agc_result_fast(& peaksdata->state);
+	padcs->peak_data_filtered = agc_result_slow(& peaksdata->state);
 }
 
 /* Установить способ фильтрации данных LPF и частоту среза - параметр 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
@@ -6409,13 +6397,13 @@ hardware_set_adc_filterLPF(uint_fast8_t adci, lpfdata_t * lpfdata)
 
 /* Установить способ фильтрации данных LPF и частоту среза - параметр 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
 static void
-hardware_set_adc_filterPEAKS(uint_fast8_t adci, peaksdata_t * peaksdata)
+hardware_set_adc_filterPEAKS(uint_fast8_t adci, peaksdata_t * peaksdata, const agcparams_t * agcp)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
 	padcs->adc_filter = BOARD_ADCFILTER_PEAKS;
 	padcs->peaks = peaksdata;
-	peaks_initialize(peaksdata);
+	peaks_initialize(peaksdata, agcp);
 }
 
 // Функция вызывается из обработчика прерывания завершения преобразования
@@ -6501,17 +6489,12 @@ static void board_adc_filtering(void * ctx)
 			padcs->adc_data_filtered = raw;
 			break;
 
-		case BOARD_ADCFILTER_TRACETOP3S:
-			// Отслеживание максимума с постоянной времени 3 секунды
-			padcs->adc_data_filtered = tracetop3s_filter(raw, padcs->adc_data_filtered);
-			break;
-
 		case BOARD_ADCFILTER_LPF:
-			padcs->adc_data_filtered = lpf_filter(padcs->lpf, raw);
+			lpf_filter(padcs, raw);
 			break;
 
 		case BOARD_ADCFILTER_PEAKS:
-			padcs->adc_data_filtered = peaks_filter(padcs->peaks, raw, & padcs->peak_data_filtered);
+			peaks_filter(padcs, raw);
 			break;
 
 		default:
@@ -6529,14 +6512,13 @@ static void
 adcfilters_initialize(void)
 {
 	static adcdone_t adcevent;
+	static agcparams_t pwrmeterparams;
+
+	agc_parameters_pwrpeaks_initialize(& pwrmeterparams, 1000 / KBD_TICKS_PERIOD);
 
 	// вызов board_adc_filtering() по заверщению цикла АЦП
 	adcdone_initialize(& adcevent, board_adc_filtering, NULL);
 	adcdone_add(& adcevent);
-
-	#if WITHBARS && ! WITHINTEGRATEDDSP
-		hardware_set_adc_filter(SMETERIX, BOARD_ADCFILTER_TRACETOP3S);
-	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */
 
 	#if WITHTX && (WITHSWRMTR)
 		{
@@ -6544,8 +6526,8 @@ adcfilters_initialize(void)
 			static peaksdata_t pwr2;
 
 			//hardware_set_adc_filterLPF(PWRMRRIX, & pwr);	// Включить фильтр
-			//hardware_set_adc_filterPEAKS(PWRMRRIX, & pwr2);	// Включить фильтр
-			hardware_set_adc_filter(PWRMRRIX, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
+			hardware_set_adc_filterPEAKS(PWRMRRIX, & pwr2, & pwrmeterparams);	// Включить фильтр
+			//hardware_set_adc_filter(PWRMRRIX, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
 		}
 	#endif /* WITHTX && (WITHSWRMTR) */
 
