@@ -1847,12 +1847,21 @@ static void writecoefs(const int_fast32_t * lCoeff, int iCoefNum)
 /*-----------------------------------*/
 
 // float32 * float32 -> float32
+#if 1
 static FLOAT32P_t scalepair(FLOAT32P_t a, FLOAT_t b)
 {
-	a.IV *= b;
-	a.QV *= b;
-	return a;
+	FLOAT32P_t r;
+	ARM_MORPH(arm_scale)(a.ivqv, b, r.ivqv, 2);
+	return r;
 }
+#else
+static FLOAT32P_t scalepair(FLOAT32P_t a, FLOAT_t b)
+{
+    a.IV *= b;
+    a.QV *= b;
+    return a;
+}
+#endif
 
 #if WITHDSPEXTDDC
 
