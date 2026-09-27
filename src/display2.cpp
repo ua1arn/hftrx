@@ -7071,51 +7071,6 @@ isvisibletext(
 
 // отрисовка маркеров частот
 static void
-display_colorgrid_xor(
-	const gxdrawb_t * db,
-	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
-	uint_fast16_t h,	// высота
-	int_fast32_t f0,	// center frequency
-	int_fast32_t bw		// span
-	)
-{
-	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
-	const int MARKERH = 10;
-
-	//
-	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
-	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
-	const int_fast32_t halfbw = bw / 2;
-	int_fast32_t df;	// кратное сетке значение
-	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
-	{
-		if (df > - halfbw)
-		{
-			uint_fast16_t xmarker;
-			// Маркер частоты кратной glob_gridstep - XOR линию
-			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
-			if (xmarker != UINT16_MAX)
-			{
-				char buf2 [16];
-				const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
-				uint_fast16_t sh3;
-				const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
-				uint_fast16_t xtext = xmarker >= (sw3 + 1) / 2 ? xmarker - (sw3 + 1) / 2 : UINT16_MAX;
-				if (isvisibletext(DIM_X, xtext, sw3))
-				{
-					unifont_text(db, xtext, row0, font, buf2, slen3, colordigits);
-					colpip_xor_vline(db, xmarker, row0 + MARKERH, h - MARKERH, colorgridlines);
-				}
-				else
-					colpip_xor_vline(db, xmarker, row0, h, colorgridlines);
-			}
-		}
-	}
-	colpip_xor_vline(db, ALLDX / 2, row0, h, colorcmarker);	// center frequency marker
-}
-
-// отрисовка маркеров частот
-static void
 display_colorgrid_set(
 	const gxdrawb_t * db,
 	uint_fast16_t x,
@@ -7237,7 +7192,7 @@ static void display2_latchcombo(
 	const uint_fast16_t alldx = GRID2X(xspan);
 
 	// Сдвиг изображения при необходимости (перестройка/переклбчение диапащонов или масштаба).
-	const uint_fast8_t pathi = 0;	// RX A
+	//const uint_fast8_t pathi = 0;	// RX A
 	display2_getdispmap(& latched_dm);
 
 	int_fast16_t hscroll = 0;
@@ -7380,7 +7335,7 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 	// Спектр на цветных дисплеях, не поддерживающих ускоренного
 	// построения изображения по bitmap с раскрашиванием
 
-	uint_fast8_t pathi = 0;	// RX A
+	//uint_fast8_t pathi = 0;	// RX A
 
 	if (yspan == 0)
 		return;

@@ -3453,21 +3453,6 @@ colpip_const_mem_at_debug(
 	return & db->buffer [y * GXADJ(db->dx) + x];
 }
 
-
-// Нарисовать вертикальную цветную полосу
-void
-colpip_xor_vline(
-	const gxdrawb_t * db,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row0,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	uint_fast16_t h,	// высота
-	COLORPIP_T color
-	)
-{
-	while (h --)
-		colpip_point_xor(db, col, row0 ++, color);
-}
-
 // Нарисовать вертикальную цветную полосу
 void
 colpip_set_vline(
@@ -3811,17 +3796,6 @@ void (colpip_point_debug)(
 	)
 {
 	* colpip_mem_at_debug(db, col, row, file, line) = color;
-}
-
-// поставить цветную точку (модификация с сохранением старого изоьражения).
-void colpip_point_xor(
-	const gxdrawb_t * db,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T color
-	)
-{
-	* colpip_mem_at(db, col, row) ^= color;
 }
 
 // копирование в большее или равное окно

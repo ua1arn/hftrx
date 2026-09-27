@@ -340,14 +340,6 @@ void (colpip_point_debug)(
 // Поставить цветную точку.
 #define colpip_point(db, col, row, color) do { colpip_point_debug((db), (col), (row), (color), __FILE__, __LINE__); } while (0)
 
-// поставить цветную точку (модификация с сохранением старого изоьражения).
-void colpip_point_xor(
-	const gxdrawb_t * db,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T color
-	);
-
 void display_bar(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,
@@ -501,16 +493,6 @@ colpip_segm(
 	COLORPIP_T color,
 	int antialiasing,
 	int style);			// не-0: x2 растягивание по горизонтали
-
-// Нарисовать вертикальную цветную полосу
-void
-colpip_xor_vline(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	uint_fast16_t h,	// высота
-	COLORPIP_T color
-	);
 
 // Нарисовать вертикальную цветную полосу
 void
