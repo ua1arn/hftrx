@@ -1572,14 +1572,14 @@ static FLOAT_t agc_calcagcfactor(uint_fast8_t rate)
 void agc_parameters_initialize(agcparams_t * agcp, uint_fast32_t sr)
 {
 	agcp->agcoff = 0;
-	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 0.1, sr);
+	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 1 / 10, sr);
 	const FLOAT_t tauZERO = MAKETAU0();
 
 	agcp->chargespeedfast = tauZERO;
 	agcp->dischargespeedfast = tauFAST;
 
 	agcp->chargespeedslow = tauFAST;
-	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 0.2, sr);
+	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 2 / 10, sr);
 
 	agcp->hungticks = NSAITICKS2(300, sr);			// 0.3 seconds
 
@@ -1596,14 +1596,14 @@ void agc_parameters_initialize(agcparams_t * agcp, uint_fast32_t sr)
 void agc_parameters_peaks_initialize(agcparams_t * agcp, uint_fast32_t sr)
 {
 	agcp->agcoff = 1;
-	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 0.1, sr);
+	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 1 / 10, sr);
 	const FLOAT_t tauZERO = MAKETAU0();
 
 	agcp->chargespeedfast = tauFAST;
 	agcp->dischargespeedfast = tauFAST;
 
 	agcp->chargespeedslow = tauFAST;
-	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 1.0, sr);
+	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 1, sr);
 
 	agcp->hungticks = NSAITICKS2(1000, sr);			// 1 second
 	agcp->mininput_ratio = db2ratio(WITHMINFSPOWER);
