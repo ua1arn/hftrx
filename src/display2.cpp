@@ -5381,7 +5381,6 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 	FLOAT_t m_yold3dss [w * 1];	// h == 1
 
 public:
-	agctime_t peakparams;
 	uint_fast16_t getwfrow() const { return centery; }
 	scrollb<PACKEDCOLORPIP_T, w>  scrollcolor;	// Водопад (можно использовать как источник данных для 3DSS)
 	scrollb<int16_t, w>  scrollpwr;				// мощности для 3DSS
@@ -5390,6 +5389,8 @@ public:
 	scrollb1h<FLOAT_t, w>  yoldwfl;		// фильтр водопада
 	scrollb1h<FLOAT_t, w>  yoldspe;		// фильтр спектра
 #if WITHSECTRUMPEAKS
+	agctime_t peakparams;
+	agcstate_t m_agc0;		// состояние без сигнала
 	scrollb1h<agcstate_t, w>  ypeakspe;		// пиковые значения спектра
 #endif /* WITHSECTRUMPEAKS */
 	scrollb1h<FLOAT_t, w>  yold3dss;	// фильтр 3DSS
@@ -5408,15 +5409,16 @@ public:
 #endif /* WITHSECTRUMPEAKS */
 		yold3dss(centerx, centeryzero, m_yold3dss)
 	{
+#if WITHSECTRUMPEAKS
+		agc_state_initialize0(& m_agc0, db2ratio(WITHMINFSPOWER));
 		agc_parameters_peaks_init(& peakparams, glob_displayfps);	// частота latch
+#endif /* WITHSECTRUMPEAKS */
 	}
 	/* + стереть содержимое */
 	void setupnew()
 	{
 #if WITHSECTRUMPEAKS
-		agcstate_t agc0;
-		agc_state_initialize0(& agc0, 0);
-		ypeakspe.setupnew(w, agc0);
+		ypeakspe.setupnew(w, m_agc0);
 #endif /* WITHSECTRUMPEAKS */
 		scrollcolor.setupnew(w, display2_bgcolorwfl());
 		scrollpwr.setupnew(w, m_level0);
@@ -5440,9 +5442,7 @@ public:
 		{
 			//centerx = (centerx + w + pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
 #if WITHSECTRUMPEAKS
-			agcstate_t agc0;
-			agc_state_initialize0(& agc0, 0);
-			ypeakspe.shiftleft(w, pixels, agc0);
+			ypeakspe.shiftleft(w, pixels, m_agc0);
 #endif /* WITHSECTRUMPEAKS */
 			scrollcolor.shiftleft(w, pixels, display2_bgcolorwfl());
 			scrollpwr.shiftleft(w, pixels, m_level0);
@@ -5462,9 +5462,7 @@ public:
 		{
 			//centerx = (centerx + w - pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
 #if WITHSECTRUMPEAKS
-			agcstate_t agc0;
-			agc_state_initialize0(& agc0, 0);
-			ypeakspe.shiftright(w, pixels, agc0);
+			ypeakspe.shiftright(w, pixels, m_agc0);
 #endif /* WITHSECTRUMPEAKS */
 			scrollcolor.shiftright(w, pixels, display2_bgcolorwfl());
 			scrollpwr.shiftright(w, pixels, m_level0);

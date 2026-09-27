@@ -406,7 +406,6 @@ typedef struct agcparams
 FLOAT_t ratio2db(FLOAT_t ratio);
 FLOAT_t db2ratio(FLOAT_t valueDBb);
 
-void agc_state_initialize2(agcstate_t * __restrict st, const agcparams_t * __restrict agcp);	// hack for peaks display
 void agc_state_initialize(agcstate_t * __restrict st, const agclevel_t * __restrict agcp);
 void agc_state_initialize0(agcstate_t * __restrict st, FLOAT_t level);
 void agc_parameters_init(agcparams_t * agcp, uint_fast32_t sr);

@@ -1696,10 +1696,8 @@ void agc_parameters_pwrpeaks_init(agctime_t * agcp, uint_fast32_t sr)
 
 	agcp->chargespeedfast = tauFAST;
 	agcp->dischargespeedfast = tauFAST;
-
 	agcp->chargespeedslow = tauFAST;
 	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 1, sr);
-
 	agcp->hungticks = NSAITICKS2(1000, sr);			// 1 second
 
 	//PRINTF(PSTR("agc_parameters_init: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
@@ -1716,18 +1714,15 @@ static void rxagc_parameters_update(hfrxpath_t * const path, agcparams_t * const
 	const uint_fast32_t sr = ARMSAIRATE;
 	agclevel_t * const p = & agcp->levels;
 	agctime_t * const t = & agcp->times;
-
 	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
 
-	p->agcoff = (glob_dspagc == BOARD_AGCCODE_OFF);
-
-	t->dischargespeedfast = MAKETAUIF2((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
-
 	t->chargespeedfast = MAKETAUIF2((int) glob_agc_t0 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
+	t->dischargespeedfast = MAKETAUIF2((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
 	t->chargespeedslow = MAKETAUIF2((int) glob_agc_t1 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
 	t->dischargespeedslow = MAKETAUIF2((int) glob_agc_t2 [pathi] * (FLOAT_t) 0.1, sr);	// в сотнях милисекунд (0.1 секунды)
 	t->hungticks = NSAITICKS2(glob_agc_thung [pathi] * 100, sr);			// в сотнях милисекунд (0.1 секунды)
 
+	p->agcoff = (glob_dspagc == BOARD_AGCCODE_OFF);
 	p->gainlimit_ratio = gainlimit_ratio;
 	p->levelfence_ratio = (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;	/* Для эксперементов по улучшению приема АМ */
 	p->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
@@ -1743,7 +1738,6 @@ static void smeter_parameters_update(agcparams_t * const agcp, const uint_fast32
 {
 	agclevel_t * const p = & agcp->levels;
 	agctime_t * const t = & agcp->times;
-	p->agcoff = 0;
 
 	t->chargespeedfast = MAKETAUIF2((FLOAT_t) 0.1, sr);	// 100 mS
 	t->dischargespeedfast = MAKETAUIF2((FLOAT_t) 0.1, sr);	// 100 mS
@@ -1751,6 +1745,7 @@ static void smeter_parameters_update(agcparams_t * const agcp, const uint_fast32
 	t->dischargespeedslow = MAKETAUIF2((FLOAT_t) 0.4, sr);	// 400 mS
 	t->hungticks = NSAITICKS2(1000, sr);			// в сотнях милисекунд (1 секунда)
 
+	p->agcoff = 0;
 	p->gainlimit_ratio = db2ratio(60);
 	p->agcfactor = (FLOAT_t) -1;
 	p->agcfence = 1;	// Точка перегиба АРУ на максимальном сигнале
@@ -1767,16 +1762,14 @@ static void comp_parameters_initialize(agcparams_t * agcp)
 	agc_times_init(& agcp->times, sr);
 	agclevel_t * const p = & agcp->levels;
 	agctime_t * const t = & agcp->times;
-	p->agcoff = 0;
 
 	t->chargespeedfast = MAKETAU0();
 	t->dischargespeedfast = MAKETAUIF2((FLOAT_t) 0.100, sr);
-
 	t->chargespeedslow = MAKETAUIF2((FLOAT_t) 0.200, sr);
 	t->dischargespeedslow = MAKETAUIF2((FLOAT_t) 0.200, sr);
-
 	t->hungticks = NSAITICKS2(300, sr);			// 0.3 seconds
 
+	p->agcoff = 0;
 	p->gainlimit_ratio = db2ratio(60);
 	p->mininput_ratio = db2ratio(WITHMINFSPOWER);
 	p->levelfence_ratio = txlevelfenceSSB;
@@ -1788,14 +1781,9 @@ static void comp_parameters_initialize(agcparams_t * agcp)
 
 static void comp_parameters_update(agcparams_t * const agcp, FLOAT_t gainlimit_ratio)
 {
-	const uint_fast32_t sr = ARMI2SRATE;
-	agc_levels_init(& agcp->levels);
-	//agc_times_init(& agcp->times, sr);
 	agclevel_t * const p = & agcp->levels;
-	//agctime_t * const t = & agcp->times;
 
 	p->agcoff = glob_mikeagc == 0;
-
 	p->gainlimit_ratio = gainlimit_ratio;
 	p->levelfence_ratio = txlevelfenceSSB;
 }
@@ -2747,15 +2735,6 @@ void agc_state_initialize(agcstate_t * __restrict st, const agclevel_t * __restr
 	const FLOAT_t streingth_log = LOGF(ratio);
 
 	agc_state_initialize0(st, streingth_log);
-}
-
-// hack for peaks display
-void agc_state_initialize2(agcstate_t * __restrict st, const agcparams_t * __restrict agcp)
-{
-	//agc_state_initialize0(st, agcp);
-
-	st->agcfastcap = db2ratio(WITHMINFSPOWER);
-	st->agcslowcap = db2ratio(WITHMINFSPOWER);
 }
 
 // TODO: eliminate LOGF
