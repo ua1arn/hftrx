@@ -7419,8 +7419,6 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 				continue;
 			if (xleft > xright)
 				xleft = 0;
-			if (xright == xleft)
-				xright = xleft + 1;
 			if (xright >= alldx)
 				xright = alldx - 1;
 
@@ -7466,13 +7464,11 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 	if (colpip_hasalpha())
 	{
 		// Изображение "шторки" на спектре.
-		uint_fast8_t splitflag = 1;
+		const uint_fast8_t splitflag = hamradio_get_shofvfobmarker();
 		uint_fast8_t pathi;
 		//hamradio_get_vfomode3_value(& splitflag);
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 		{
-			if (pathi == 1 && ! hamradio_get_shofvfobmarker())
-				break;
 			uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
 			uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
 			if (xleft == UINT16_MAX && xright != UINT16_MAX)
@@ -7483,8 +7479,6 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 				continue;
 			if (xleft > xright)
 				xleft = 0;
-			if (xright == xleft)
-				xright = xleft + 1;
 			if (xright >= alldx)
 				xright = alldx - 1;
 			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
@@ -7670,8 +7664,6 @@ static void display2_3dss(const gxdrawb_t * db0, uint_fast8_t x0, uint_fast8_t y
 		return;
 	if (xleft > xright)
 		xleft = 0;
-	if (xright == xleft)
-		xright = xleft + 1;
 	if (xright >= alldx)
 		xright = alldx - 1;
 
@@ -7831,16 +7823,13 @@ static void display2_waterfall(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8
 
 	if (hamradio_get_bringtuneA() || hamradio_get_bringtuneB())
 	{
-		uint_fast8_t splitflag = 1;
+		const uint_fast8_t splitflag = hamradio_get_shofvfobmarker();
 		uint_fast8_t pathi;
 		//hamradio_get_vfomode3_value(& splitflag);
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 		{
 			uint_fast16_t xleft = latched_dm.xleft [pathi];		// левый край шторки
 			uint_fast16_t xright = latched_dm.xright [pathi];	// правый край шторки
-			if (pathi == 1 && ! hamradio_get_shofvfobmarker())
-				break;
-
 			if (xleft == UINT16_MAX && xright == UINT16_MAX)
 				continue;
 			if (xleft == UINT16_MAX)
@@ -8851,7 +8840,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     if (1)
     {
 		// Изображение "шторки" на спектре.
-		uint_fast8_t splitflag = 1;
+		const uint_fast8_t splitflag = hamradio_get_shofvfobmarker();
 		uint_fast8_t pathi;
 		//hamradio_get_vfomode3_value(& splitflag);
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
@@ -8859,9 +8848,12 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
 			const lv_color_t lvrxbwcolor = display_lvlcolor(pathi ? DSGN_SPECTRUMBG2RX2 : DSGN_SPECTRUMBG2);
 			int32_t xleft = dm->xleft [pathi];		// левый край шторки
 			int32_t xright = dm->xright [pathi];	// правый край шторки
-			if (xleft == UINT16_MAX || xright == UINT16_MAX)
+			if (xleft == UINT16_MAX && xright != UINT16_MAX)
+				xleft = 0;
+			else if (xleft != UINT16_MAX && xright == UINT16_MAX)
+				xright = alldx - 1;
+			else if (xleft == UINT16_MAX || xright == UINT16_MAX)
 				continue;
-			// рисуем от xleft до xright включительно
 			if (xleft > xright)
 				xleft = 0;
 			if (xright >= alldx)
@@ -9219,24 +9211,27 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
     	// отладка. закрасить зону полосы пропускания
         lv_draw_rect_dsc_t rect;
         lv_draw_rect_dsc_init(& rect);
-		uint_fast8_t splitflag = 1;
+		const uint_fast8_t splitflag = hamradio_get_shofvfobmarker();
 		uint_fast8_t pathi;
 		//hamradio_get_vfomode3_value(& splitflag);
 		for (pathi = 0; pathi < (splitflag ? 2 : 1); ++ pathi)
 		{
 			int_fast32_t xleft = dm->xleft [pathi];		// левый край шторки
 			int_fast32_t xright = dm->xright [pathi];	// правый край шторки
+			if (xleft == UINT16_MAX && xright != UINT16_MAX)
+				xleft = 0;
+			else if (xleft != UINT16_MAX && xright == UINT16_MAX)
+				xright = alldx - 1;
+			else if (xleft == UINT16_MAX || xright == UINT16_MAX)
+				continue;
+			if (xleft > xright)
+				xleft = 0;
+			if (xright >= alldx)
+				xright = alldx - 1;
 
 			if (xleft != UINT16_MAX && xright != UINT16_MAX)
 			{
 		    	lv_area_t bwcoords;
-
-				if (xleft > xright)
-					xleft = 0;
-				if (xright == xleft)
-					xright = xleft + 1;
-				if (xright >= alldx)
-					xright = alldx - 1;
 
 				/* Отрисовка прямоугольникв ("шторки") полосы пропускания на водопаде. */
 		        bwcoords.y1 = coords->y1;
