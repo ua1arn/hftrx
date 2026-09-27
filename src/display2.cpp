@@ -5410,7 +5410,7 @@ public:
 		yold3dss(centerx, centeryzero, m_yold3dss)
 	{
 #if WITHSECTRUMPEAKS
-		agc_state_initialize0(& m_agc0, db2ratio(WITHMINFSPOWER));
+		agc_state_initialize0(& m_agc0, m_level0);
 		agc_parameters_peaks_init(& peakparams, glob_displayfps);	// частота latch
 #endif /* WITHSECTRUMPEAKS */
 	}
