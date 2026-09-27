@@ -118,7 +118,7 @@ __STATIC_INLINE void __set_ICC_CTLR_EL1(uint32_t value)
 
 #endif /* (__ARM_ARCH == 8) && ! defined(__aarch64__) */
 
-#if (__CORTEX_A == 55U) && ! __aarch64__
+#if (__CORTEX_A == 55U) && ! defined(__aarch64__)
 // AArch32 (CLUSTERCFR) and AArch64 (CLUSTERCFR_EL1)
 // MRS <Xt>, S3_0_C15_C3_0; Read CLUSTERCFR_EL1 into Xt
 // MRC p15, 0, <Rt>, c15, c3, 0; Read CLUSTERCFR into Rt

@@ -8066,7 +8066,7 @@ void hightests(void)
 #endif
 #if 0 && ! WITHISBOOTLOADER
 	{
-	#if __aarch64__
+	#if defined(__aarch64__)
 		asm volatile (
 				"ldr x0,  =0x1234123412341234\n"
 				"ldr x1,  =0x2121212121212121\n"

@@ -2241,7 +2241,7 @@ void sysinit_boot_disconnect(void)
 void sysinit_hwtimer_initialize(void)
 {
 	const uint_fast32_t f = allwnr_h3_get_hosc_freq();	// 24000000
-#if __aarch64__
+#if defined(__aarch64__)
 	__set_CNTFRQ_EL0(f);
 #else
 	__set_CNTFRQ(f);
@@ -2996,7 +2996,7 @@ void sysinit_boot_disconnect(void)
 void sysinit_hwtimer_initialize(void)
 {
 	const uint_fast32_t f = allwnr_a64_get_hosc_freq();	// 24000000
-#if __aarch64__
+#if defined(__aarch64__)
 	__set_CNTFRQ_EL0(f);
 #else
 	__set_CNTFRQ(f);
@@ -4226,7 +4226,7 @@ void sysinit_boot_disconnect(void)
 void sysinit_hwtimer_initialize(void)
 {
 	const uint_fast32_t f = allwnr_t507_get_hosc_freq();	// 24000000
-#if __aarch64__
+#if defined(__aarch64__)
 	__set_CNTFRQ_EL0(f);
 #else
 	__set_CNTFRQ(f);
@@ -5089,7 +5089,7 @@ static void a733_ccu_pll_enable(volatile uint32_t * reg)
 void sysinit_hwtimer_initialize(void)
 {
 	const uint_fast32_t f = allwnr_a733_get_dcxo_freq();	// 24000000
-#if __aarch64__
+#if defined(__aarch64__)
 	__set_CNTFRQ_EL0(f);
 #else
 	__set_CNTFRQ(f);
@@ -5205,7 +5205,7 @@ void sysinit_boot_disconnect(void)
 void sysinit_hwtimer_initialize(void)
 {
 	const uint_fast32_t f = allwnr_a133_get_hosc_freq();	// 24000000
-#if __aarch64__
+#if defined(__aarch64__)
 	__set_CNTFRQ_EL0(f);
 #else
 	__set_CNTFRQ(f);
@@ -13018,7 +13018,7 @@ hwtimcountfast_t cpu_gethwtimticks(void)
 #elif (defined (__CORTEX_A) && __CORTEX_A == 9)
 	return cpu_getdebugticks();
 
-#elif __aarch64__
+#elif defined(__aarch64__)
 	return __get_CNTPCT_EL0();
 
 #elif (defined (__CORTEX_A))
@@ -13040,7 +13040,7 @@ hwtimcountfast_t cpu_gethwtimticksfreq(void)
 #elif (defined (__CORTEX_A) && __CORTEX_A == 9)
 	return cpu_getdebugticksfreq();
 
-#elif __aarch64__
+#elif defined(__aarch64__)
 	return __get_CNTFRQ_EL0();
 
 #elif (defined (__CORTEX_A))
@@ -13062,7 +13062,7 @@ hwtimcountfast_t cpu_gethwtimticksmask(void)
 #elif (defined (__CORTEX_A) && __CORTEX_A == 9)
 	return cpu_getdebugticksmask();
 
-#elif __aarch64__
+#elif defined(__aarch64__)
 	return UINT64_C(0xFFFFFFFFFFFFFFFF);
 
 #elif (defined (__CORTEX_A))

@@ -3617,9 +3617,9 @@ void InitializeIrql(IRQL_t newIRQL)
 
 uint_fast8_t arm_hardware_clustersize(void)
 {
-#if (__CORTEX_A == 55U) && __aarch64__
+#if (__CORTEX_A == 55U) && defined(__aarch64__)
 	return (__get_CLUSTERCFR_EL1() & 0x07) + 1;
-#elif (__CORTEX_A == 55U) && ! __aarch64__
+#elif (__CORTEX_A == 55U) && ! defined(__aarch64__)
 	return (__get_CLUSTERCFR() & 0x07) + 1;
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// Cortex-A computers
