@@ -6470,9 +6470,9 @@ static const struct paramdefdef xstayfreq =
 	uint_fast8_t voltcalibr100mV = (ADCVREF_CPU * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
 	static const struct paramdefdef xvoltcalibr100mV =
 	{
-		QLABEL("BAT CALI"),  1, RJ_UNSIGNED, ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
+		QLABEL3("BAT CALI", "Volts Cali", "BAT CALI"),  1, RJ_UNSIGNED, ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
 		ITEM_VALUE,
-		ADCVREF_CPU, 255,	// 3.3/5.0 .. 25.5 вольта
+		ADCVREF_CPU, 254,	// 3.3/5.0 .. 25.4 вольта
 		OFFSETOF(struct nvmap, voltcalibr100mV),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
@@ -14604,8 +14604,7 @@ uint_fast8_t hamradio_get_volt_value(void)
 
 #else /* WITHREFSENSOR */
 
-	// TODO: разобраться почему это не работает на SW20xx
-	//PRINTF(PSTR("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr100mV=%u\n"), board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr100mV);
+	//PRINTF("hamradio_get_volt_value: VOLTMRRIX=%u, voltcalibr100mV=%u\n", board_getadc_unfiltered_truevalue(VOLTMRRIX), voltcalibr100mV);
 	return board_getadc_filtered_u8(VOLTMRRIX, 0, voltcalibr100mV);
 
 #endif /* WITHREFSENSOR */
