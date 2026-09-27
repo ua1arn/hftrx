@@ -6141,7 +6141,7 @@ typedef struct lpfdata_tag
 typedef struct peaksdata_tag
 {
 	agcstate_t state;
-	const agcparams_t * agcp;
+	const agctime_t * times;	// Параметры временных характеристик заряда-разряда
 } peaksdata_t;
 
 typedef struct boardadc_tag
@@ -6356,10 +6356,10 @@ static void lpf_initialize(lpfdata_t * lpfdata)
 	lpfdata->summ = 0;
 }
 
-static void peaks_initialize(peaksdata_t * peaksdata, const agcparams_t * agcp)
+static void peaks_initialize(peaksdata_t * peaksdata, const agctime_t * times)
 {
-	agc_state_initialize(& peaksdata->state, agcp);
-	peaksdata->agcp = agcp;
+	agc_state_initialize0(& peaksdata->state, 0);
+	peaksdata->times = times;
 }
 
 
@@ -6379,7 +6379,7 @@ static void
 peaks_filter(boardadc_t * const padcs, adcvalholder_t raw)
 {
 	peaksdata_t * const peaksdata = padcs->peaks;
-	agc_perform(& peaksdata->state, peaksdata->agcp, raw);
+	agc_perform(& peaksdata->state, peaksdata->times, raw);
 	padcs->adc_data_filtered = agc_result_fast(& peaksdata->state);
 	padcs->peak_data_filtered = agc_result_slow(& peaksdata->state);
 }
@@ -6397,7 +6397,7 @@ hardware_set_adc_filterLPF(uint_fast8_t adci, lpfdata_t * lpfdata)
 
 /* Установить способ фильтрации данных LPF и частоту среза - параметр 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
 static void
-hardware_set_adc_filterPEAKS(uint_fast8_t adci, peaksdata_t * peaksdata, const agcparams_t * agcp)
+hardware_set_adc_filterPEAKS(uint_fast8_t adci, peaksdata_t * peaksdata, const agctime_t * agcp)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
@@ -6512,9 +6512,6 @@ static void
 adcfilters_initialize(void)
 {
 	static adcdone_t adcevent;
-	static agcparams_t pwrmeterparams;
-
-	agc_parameters_pwrpeaks_initialize(& pwrmeterparams, 1000 / KBD_TICKS_PERIOD);
 
 	// вызов board_adc_filtering() по заверщению цикла АЦП
 	adcdone_initialize(& adcevent, board_adc_filtering, NULL);
@@ -6524,6 +6521,9 @@ adcfilters_initialize(void)
 		{
 			static lpfdata_t pwr;
 			static peaksdata_t pwr2;
+			static agctime_t pwrmeterparams;
+
+			agc_parameters_pwrpeaks_init(& pwrmeterparams, 1000 / KBD_TICKS_PERIOD);
 
 			//hardware_set_adc_filterLPF(PWRMRRIX, & pwr);	// Включить фильтр
 			hardware_set_adc_filterPEAKS(PWRMRRIX, & pwr2, & pwrmeterparams);	// Включить фильтр

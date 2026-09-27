@@ -5381,7 +5381,7 @@ template<uint_fast16_t w, uint_fast16_t h> class scrollbf
 	FLOAT_t m_yold3dss [w * 1];	// h == 1
 
 public:
-	agcparams_t peakparams;
+	agctime_t peakparams;
 	uint_fast16_t getwfrow() const { return centery; }
 	scrollb<PACKEDCOLORPIP_T, w>  scrollcolor;	// Водопад (можно использовать как источник данных для 3DSS)
 	scrollb<int16_t, w>  scrollpwr;				// мощности для 3DSS
@@ -5408,14 +5408,14 @@ public:
 #endif /* WITHSECTRUMPEAKS */
 		yold3dss(centerx, centeryzero, m_yold3dss)
 	{
-		agc_parameters_peaks_initialize(& peakparams, glob_displayfps);	// частота latch
+		agc_parameters_peaks_init(& peakparams, glob_displayfps);	// частота latch
 	}
 	/* + стереть содержимое */
 	void setupnew()
 	{
 #if WITHSECTRUMPEAKS
 		agcstate_t agc0;
-		agc_state_initialize2(& agc0, & peakparams);
+		agc_state_initialize0(& agc0, 0);
 		ypeakspe.setupnew(w, agc0);
 #endif /* WITHSECTRUMPEAKS */
 		scrollcolor.setupnew(w, display2_bgcolorwfl());
@@ -5441,7 +5441,7 @@ public:
 			//centerx = (centerx + w + pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
 #if WITHSECTRUMPEAKS
 			agcstate_t agc0;
-			agc_state_initialize2(& agc0, & peakparams);
+			agc_state_initialize0(& agc0, 0);
 			ypeakspe.shiftleft(w, pixels, agc0);
 #endif /* WITHSECTRUMPEAKS */
 			scrollcolor.shiftleft(w, pixels, display2_bgcolorwfl());
@@ -5463,7 +5463,7 @@ public:
 			//centerx = (centerx + w - pixels) % w;	// корректировка горизонтальной позиции воображаемого левого края
 #if WITHSECTRUMPEAKS
 			agcstate_t agc0;
-			agc_state_initialize2(& agc0, & peakparams);
+			agc_state_initialize0(& agc0, 0);
 			ypeakspe.shiftright(w, pixels, agc0);
 #endif /* WITHSECTRUMPEAKS */
 			scrollcolor.shiftright(w, pixels, display2_bgcolorwfl());
@@ -10628,7 +10628,7 @@ void board_set_displayfps(uint_fast8_t v)
 	if (glob_displayfps != v && v != 0)
 	{
 		glob_displayfps = v;
-		agc_parameters_peaks_initialize(& scbf.peakparams, glob_displayfps);	// частота latch
+		agc_parameters_peaks_init(& scbf.peakparams, glob_displayfps);	// частота latch
 	}
 #endif /* WITHSPECTRUMWF */
 }

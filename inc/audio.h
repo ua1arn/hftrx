@@ -369,10 +369,9 @@ typedef struct agcstate
 	unsigned agchangticks;	// сколько сэмплов надо сохранять agcslowcap неизменным.
 } agcstate_t;
 
-typedef struct agcparams
+// Параметры временных характеристик АРУ
+typedef struct agctime_tag
 {
-	uint8_t agcoff;	// признак отключения АРУ
-
 	// Временные парметры АРУ
 
 	// постоянные времени цепи АРУ для реакции на импульсные помехи (быстрая АРУ).
@@ -383,22 +382,38 @@ typedef struct agcparams
 	FLOAT_t chargespeedslow;		//0.05f;	// 1 - мгновенно, 0 - никогда
 	FLOAT_t dischargespeedslow;	// 1 - мгновенно, 0 - никогда
 	unsigned hungticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
+} agctime_t;
 
+// Параметры амплитудных характеристик АРУ
+typedef struct agclevel_tag
+{
+	uint8_t agcoff;	// признак отключения АРУ
 	// Амплитудные параметры АРУ
 	FLOAT_t agcfence;	// с какого уровня сигнала наступает точка пергиба АРУ
 	FLOAT_t gainlimit_ratio;				// Максимальное усиление в разах по напряжению, допустимое для АРУ
 	FLOAT_t	mininput_ratio;
 	FLOAT_t levelfence_ratio;				// Максимальнное значение на выхоле АРУ
 	FLOAT_t agcfactor;				// Параметр при вычислении "спортивной" АРУ
+} agclevel_t;
+
+
+typedef struct agcparams
+{
+	agctime_t times;	// Параметры временных характеристик АРУ
+	agclevel_t levels;	// Параметры амплитудных характеристик АРУ
 } agcparams_t;
 
-void agc_state_initialize(agcstate_t * __restrict st, const agcparams_t * __restrict agcp);
+FLOAT_t ratio2db(FLOAT_t ratio);
+FLOAT_t db2ratio(FLOAT_t valueDBb);
+
 void agc_state_initialize2(agcstate_t * __restrict st, const agcparams_t * __restrict agcp);	// hack for peaks display
-void agc_parameters_initialize(agcparams_t * agcp, uint_fast32_t sr);
-void agc_parameters_pwrpeaks_initialize(agcparams_t * agcp, uint_fast32_t sr);
-void agc_parameters_peaks_initialize(agcparams_t * agcp, uint_fast32_t sr);
+void agc_state_initialize(agcstate_t * __restrict st, const agclevel_t * __restrict agcp);
+void agc_state_initialize0(agcstate_t * __restrict st, FLOAT_t level);
+void agc_parameters_init(agcparams_t * agcp, uint_fast32_t sr);
+void agc_parameters_pwrpeaks_init(agctime_t * agcp, uint_fast32_t sr);
+void agc_parameters_peaks_init(agctime_t * agcp, uint_fast32_t sr);
 FLOAT_t MAKETAUIF2(FLOAT_t t, uint_fast32_t sr);
-void agc_perform(agcstate_t * st, const agcparams_t * agcp, FLOAT_t sample);
+void agc_perform(agcstate_t * st, const agctime_t * agcp, FLOAT_t sample);
 FLOAT_t agc_result_fast(agcstate_t * st);
 FLOAT_t agc_result_slow(agcstate_t * st);
 

@@ -4430,21 +4430,6 @@ void buffers_diagnostics(void)
 
 #endif /* WITHBUFFERSDEBUG */
 
-//////////////////////////////////////////
-
-// Преобразовать отношение напряжений выраженное в "разах" к децибелам.
-
-FLOAT_t ratio2db(FLOAT_t ratio)
-{
-	return LOG10F(ratio) * 20;
-}
-
-// Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
-
-FLOAT_t db2ratio(FLOAT_t valueDBb)
-{
-	return POWF(10, (valueDBb) / 20);
-}
 
 //////////////////////////////////////////
 
