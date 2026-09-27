@@ -7124,7 +7124,7 @@ display_colorgrid_set(
 				uint_fast16_t sh3;
 				const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
 				uint_fast16_t xtext = xmarker >= (sw3 + 1) / 2 ? xmarker - (sw3 + 1) / 2 : UINT16_MAX;
-				if (isvisibletext(DIM_X, xtext, sw3))
+				if (isvisibletext(w, xtext, sw3))
 				{
 					unifont_text(db, xtext, y, font, buf2, slen3, colordigits);
 					colpip_set_vline(db, xmarker, y + sh3, h - sh3, colorgridlines);
@@ -7146,6 +7146,7 @@ void
 display_colorgrid_3dss(
 	const gxdrawb_t * db,
 	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
+	uint_fast16_t w,	// ширина
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
 	int_fast32_t bw		// span
@@ -7171,7 +7172,7 @@ display_colorgrid_3dss(
 				uint_fast16_t sh3;
 				const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
 				uint_fast16_t xtext = xmarker >= (sw3 + 1) / 2 ? xmarker - (sw3 + 1) / 2 : UINT16_MAX;
-				if (isvisibletext(DIM_X, xtext, sw3))
+				if (isvisibletext(w, xtext, sw3))
 					unifont_text(db, xtext, row, font, buf2, slen3, colordigits);
 
 				colpip_set_vline(db, xmarker, row0, h, colorgridlines3dss);
@@ -7715,7 +7716,7 @@ static void display2_3dss(const gxdrawb_t * db0, uint_fast8_t x0, uint_fast8_t y
 		ylast_sp = y1;
 	}
 
-	display_colorgrid_3dss(& dbv, SPY - SPY_3DSS_H + 3, SPY_3DSS_H, f0, bw);
+	display_colorgrid_3dss(& dbv, SPY - SPY_3DSS_H + 3, alldx, SPY_3DSS_H, f0, bw);
 	(void) pctx;
 
 #if WITHVIEW_3DSS
