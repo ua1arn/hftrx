@@ -25,6 +25,7 @@
 #include "dspdefines.h"
 #include <atomic>
 
+#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 //#define WITHRPTOFFSET 1
 #define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
 #ifndef WITHBANDMEMCOUNT
