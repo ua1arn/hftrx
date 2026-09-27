@@ -1698,7 +1698,7 @@ static void comp_parameters_update(agcparams_t * const agcp, FLOAT_t gainlimit_r
 // со всеми положенными задержками на срабатывание/отпускание
 
 void
-agc_perform(const agcparams_t * agcp, agcstate_t * st, FLOAT_t sample)
+agc_perform(agcstate_t * st, const agcparams_t * agcp, FLOAT_t sample)
 {
 	if (st->agcfastcap < sample)
 	{
@@ -2815,10 +2815,10 @@ static FLOAT_t agc_measure_float(
 	END_STAMP();
 
 	// показ S-метра
-	agc_perform(& path->rxsmeterparams, & path->rxsmeterstate, strength_log);	// измеритель уровня сигнала
+	agc_perform(& path->rxsmeterstate, & path->rxsmeterparams, strength_log);	// измеритель уровня сигнала
 
 	//BEGIN_STAMP();
-	agc_perform(agcp, st, strength_log);	// измеритель уровня сигнала
+	agc_perform(st, agcp, strength_log);	// измеритель уровня сигнала
 	//END_STAMP();
 
 	//END_STAMP3();
@@ -2983,7 +2983,7 @@ static FLOAT_t txmikeagc(FLOAT_t vi)
 		const FLOAT_t siglevel0 = FABSF(vi);
 		agcstate_t * const st = & txagcstate;
 
-		agc_perform(agcp, st, agccalcstrength_log(agcp, siglevel0));	// измеритель уровня сигнала
+		agc_perform(st, agcp, agccalcstrength_log(agcp, siglevel0));	// измеритель уровня сигнала
 		const FLOAT_t gain = agccalcgain_log(agcp, agc_result_slow(st));
 		vi *= gain;
 	}

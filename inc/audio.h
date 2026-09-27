@@ -397,7 +397,7 @@ void agc_state_initialize2(agcstate_t * __restrict st, const agcparams_t * __res
 void agc_parameters_initialize(agcparams_t * agcp, uint_fast32_t sr);
 void agc_parameters_peaks_initialize(agcparams_t * agcp, uint_fast32_t sr);
 FLOAT_t MAKETAUIF2(FLOAT_t t, uint_fast32_t sr);
-void agc_perform(const agcparams_t * agcp, agcstate_t * st, FLOAT_t sample);
+void agc_perform(agcstate_t * st, const agcparams_t * agcp, FLOAT_t sample);
 FLOAT_t agc_result_fast(agcstate_t * st);
 FLOAT_t agc_result_slow(agcstate_t * st);
 

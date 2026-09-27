@@ -5529,7 +5529,7 @@ private:
 		//const FLOAT_t val = Y;//spavgarray.peek(x, 0);	// массив входных данных
 		// Работа с пиковым детектором
 		agcstate_t * const st = ypeakspe.bufferat(ALLDX, x, 0);
-		agc_perform(& peakparams, st, val);
+		agc_perform(st, & peakparams, val);
 #endif /* WITHSECTRUMPEAKS */
 	}
 
