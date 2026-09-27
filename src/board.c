@@ -6125,6 +6125,7 @@ enum
 	BOARD_ADCFILTER_DIRECT,		/* фильтрация не применяется (значение для всех каналов по умолчанию) */
 	BOARD_ADCFILTER_TRACETOP3S,	/* Отслеживание максимума с постоянной времени 3 секунды */
 	BOARD_ADCFILTER_LPF,			/* ФНЧ, параметр задается в виде числа с фиксированной точкой */
+	BOARD_ADCFILTER_PEAKS,
 	//
 	BOARD_ADCFILTER_TYPECOUNT
 };
@@ -6138,14 +6139,23 @@ typedef struct lpfdata_tag
 	int32_t summ;	/* сумма всех элементов очереди */
 } lpfdata_t;
 
+typedef struct peaksdata_tag
+{
+	sadcvalholder_t queue [ADC_LPF_WND];
+	size_t qpos;	/* индекс в очереди куда будем сейчас писать */
+	int32_t summ;	/* сумма всех элементов очереди */
+} peaksdata_t;
+
 typedef struct boardadc_tag
 {
 
 	volatile adcvalholder_t adc_data_raw;	// входные данные для фильтра
+	adcvalholder_t peak_data_filtered;		// выход фильтра
 	adcvalholder_t adc_data_filtered;		// выход фильтра
 	//uint8_t adc_data_smoothed_u8;		// выход фильтра
 	uint8_t adc_filter;			/* методы фильтрации данных */
 	lpfdata_t * lpf;
+	peaksdata_t * peaks;
 } boardadc_t;
 
 static boardadc_t badcst [HARDWARE_ADCINPUTS];
@@ -6167,6 +6177,16 @@ adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t adci)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
+	return padcs->adc_filter == BOARD_ADCFILTER_DIRECT ? padcs->adc_data_raw : padcs->adc_data_filtered;
+}
+
+/* получить пару значений от фильтра АЦП */
+adcvalholder_t board_getadc_filtered_truevalue2(uint_fast8_t adci, adcvalholder_t * peakv)
+{
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	boardadc_t * const padcs = & badcst [adci];
+	* peakv = padcs->peak_data_filtered;
+	* peakv = padcs->adc_data_raw;
 	return padcs->adc_filter == BOARD_ADCFILTER_DIRECT ? padcs->adc_data_raw : padcs->adc_data_filtered;
 }
 
@@ -6339,6 +6359,15 @@ static void lpf_initialize(lpfdata_t * lpfdata)
 	lpfdata->summ = 0;
 }
 
+static void peaks_initialize(peaksdata_t * peaksdata)
+{
+	memset(& peaksdata->queue, 0, sizeof peaksdata->queue);
+	peaksdata->qpos = 0;
+	peaksdata->summ = 0;
+}
+
+
+
 static adcvalholder_t
 lpf_filter(lpfdata_t * lpfdata, adcvalholder_t raw)
 {
@@ -6347,6 +6376,17 @@ lpf_filter(lpfdata_t * lpfdata, adcvalholder_t raw)
 	lpfdata->queue [lpfdata->qpos] = raw;
 	lpfdata->qpos = (lpfdata->qpos + 1) % ADC_LPF_WND;
 	return lpfdata->summ / ADC_LPF_WND;
+}
+
+static adcvalholder_t
+peaks_filter(peaksdata_t * peaksdata, adcvalholder_t raw, adcvalholder_t * peaks)
+{
+	peaksdata->summ += (sadcvalholder_t) raw;	// добавить входящее
+	peaksdata->summ -= peaksdata->queue [peaksdata->qpos];	// вычесть выходящее
+	peaksdata->queue [peaksdata->qpos] = raw;
+	peaksdata->qpos = (peaksdata->qpos + 1) % ADC_LPF_WND;
+	* peaks = 0;
+	return peaksdata->summ / ADC_LPF_WND;
 }
 
 static adcvalholder_t
@@ -6365,6 +6405,17 @@ hardware_set_adc_filterLPF(uint_fast8_t adci, lpfdata_t * lpfdata)
 	padcs->adc_filter = BOARD_ADCFILTER_LPF;
 	padcs->lpf = lpfdata;
 	lpf_initialize(lpfdata);
+}
+
+/* Установить способ фильтрации данных LPF и частоту среза - параметр 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
+static void
+hardware_set_adc_filterPEAKS(uint_fast8_t adci, peaksdata_t * peaksdata)
+{
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	boardadc_t * const padcs = & badcst [adci];
+	padcs->adc_filter = BOARD_ADCFILTER_PEAKS;
+	padcs->peaks = peaksdata;
+	peaks_initialize(peaksdata);
 }
 
 // Функция вызывается из обработчика прерывания завершения преобразования
@@ -6459,6 +6510,10 @@ static void board_adc_filtering(void * ctx)
 			padcs->adc_data_filtered = lpf_filter(padcs->lpf, raw);
 			break;
 
+		case BOARD_ADCFILTER_PEAKS:
+			padcs->adc_data_filtered = peaks_filter(padcs->peaks, raw, & padcs->peak_data_filtered);
+			break;
+
 		default:
 			padcs->adc_data_filtered = raw;
 			break;
@@ -6486,9 +6541,11 @@ adcfilters_initialize(void)
 	#if WITHTX && (WITHSWRMTR)
 		{
 			static lpfdata_t pwr;
+			static peaksdata_t pwr2;
 
-			hardware_set_adc_filterLPF(PWRMRRIX, & pwr);	// Включить фильтр
-			//hardware_set_adc_filter(PWRMRRIX, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
+			//hardware_set_adc_filterLPF(PWRMRRIX, & pwr);	// Включить фильтр
+			//hardware_set_adc_filterPEAKS(PWRMRRIX, & pwr2);	// Включить фильтр
+			hardware_set_adc_filter(PWRMRRIX, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
 		}
 	#endif /* WITHTX && (WITHSWRMTR) */
 

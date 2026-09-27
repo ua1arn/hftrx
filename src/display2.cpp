@@ -2003,7 +2003,8 @@ static void sm_draw_dial_tx_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 
 	/* фильтрация - (в градусах) */
 
-	const adcvalholder_t powerV = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
+	adcvalholder_t powerTraceV;
+	const adcvalholder_t powerV = board_getadc_filtered_truevalue2(PWRMRRIX, & powerTraceV);	// без возможных тормозов на SPI при чтении
 	gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
 
 	// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
@@ -2291,8 +2292,8 @@ static void sm_draw_dial_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	const uint_fast16_t xc = x0 + smpr->xcneddle;
 	const uint_fast16_t yc = y0 + smpr->ycneddle;
 
-
-	const adcvalholder_t powerV = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
+	adcvalholder_t powerTraceV;
+	const adcvalholder_t powerV = board_getadc_filtered_truevalue2(PWRMRRIX, & powerTraceV);	// без возможных тормозов на SPI при чтении
 	int_fast32_t gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
 
 	// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
@@ -2475,7 +2476,8 @@ static void sm_draw_bars_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	const uint_fast16_t xc = x0 + smpr->xcneddle;
 	const uint_fast16_t yc = y0 + smpr->ycneddle;
 
-	const adcvalholder_t powerV = board_getadc_unfiltered_truevalue(PWRMRRIX);	// без возможных тормозов на SPI при чтении
+	adcvalholder_t powerTraceV;
+	const adcvalholder_t powerV = board_getadc_filtered_truevalue2(PWRMRRIX, & powerTraceV);	// без возможных тормозов на SPI при чтении
 	int_fast32_t gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
 
 	// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
@@ -8544,7 +8546,8 @@ static void smtr2_draw(lv_smtr2_t * smtr2, const lv_area_t * coords, lv_layer_t 
 	// Прямоугольник для рисования полосы s-meter
 	lv_area_t smeterbar;
 	lv_area_set(&smeterbar, coords->x1, coords->y1 + h / 3, coords->x2, coords->y1 + h * 2 / 3);
-	const adcvalholder_t power = board_getadc_unfiltered_truevalue(PWRMRRIX);
+	adcvalholder_t powerTraceV;
+	const adcvalholder_t powerV = board_getadc_filtered_truevalue2(PWRMRRIX, & powerTraceV);	// без возможных тормозов на SPI при чтении
 	int32_t smeterangles [ARRAY_SIZE(smeterpointsRX10)] =
 	{
 		0,

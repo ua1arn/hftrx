@@ -372,6 +372,7 @@ uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t i, uint_fast8_t lower, uint
 uint_fast16_t board_getadc_unfiltered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast32_t board_getadc_unfiltered_u32(uint_fast8_t i, uint_fast32_t lower, uint_fast32_t upper);	/* получить значение от АЦП в диапазоне 0..255 */
 adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t i);	/* получить значение от АЦП */
+adcvalholder_t board_getadc_filtered_truevalue2(uint_fast8_t adci, adcvalholder_t * peakv); /* получить пару значений от фильтра АЦП */
 adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t i);	/* получить значение от АЦП */
 adcvalholder_t board_getadc_fsval(uint_fast8_t i);	/* получить максимальное возможное значение от АЦП */
 
