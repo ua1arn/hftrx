@@ -2192,7 +2192,7 @@ static void sm_draw_dial_rx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 static void
 display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 {
-	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
+	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
 	display2_smeter15_layout_dial(smpr);
 	const int32_t markers [] =
 	{
@@ -2344,7 +2344,7 @@ static void sm_draw_dial_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 static void
 display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 {
-	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
+	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
 	display2_smeter15_layout_dial(smpr);
 	const int32_t markersTX_pwr [] =
 	{
@@ -2513,7 +2513,7 @@ display2_smeter15_layout_bars(smeter_params_t * smpr)
 static void
 display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 {
-	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
+	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
 	display2_smeter15_layout_bars(smpr);
 	const int32_t markersTX_pwr [] =
 	{
@@ -2594,7 +2594,7 @@ display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 static void
 display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 {
-	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
+	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
 	const unifont_t * const fontsm2 = & unifont_small2;	// SMALL2
 	display2_smeter15_layout_bars(smpr);
 	const int32_t markers [] =
@@ -7082,7 +7082,7 @@ display_colorgrid_set(
 	const struct dispmap * dm
 	)
 {
-	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
+	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t halfbw = bw / 2;
@@ -7152,8 +7152,8 @@ display_colorgrid_3dss(
 	int_fast32_t bw		// span
 	)
 {
-	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
 	const uint_fast16_t row = row0 + h + 3;
+	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t halfbw = bw / 2;

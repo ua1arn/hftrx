@@ -8168,7 +8168,7 @@ void hightests(void)
 		{
 			& unifont_small,
 			& unifont_small2,
-			& unifont_small3,	// шрифт, используемый при отриосовке надписей на шкале
+			& unifont_small3,	// шрифт, используемый при отрисовке надписей на шкале
 			//& unifont_small_x2,	// vtty_x2.c
 			//& unifont_Tahoma_Regular_88x77,	// CP Font Generator support
 //			& unifont_roboto32,	// aptech
@@ -10921,7 +10921,7 @@ void hightests(void)
 #if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		// test: вывод палитры на экран
-		const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
+		const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
 		display2_fillbg(db);
 		PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 		int sepx = 3, sepy = 3;
