@@ -7158,11 +7158,10 @@ display_colorgrid_3dss(
 	int_fast32_t df;	// кратное сетке значение
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
-		uint_fast16_t xmarker;
 		if (df > - halfbw)
 		{
 			// Маркер частоты кратной glob_gridstep - XOR линию
-			xmarker = deltafreq2x_abs(dm->f0, df, dm->bw, w);
+			const uint_fast16_t xmarker = deltafreq2x_abs(dm->f0, df, dm->bw, w);
 			if (xmarker != UINT16_MAX)
 			{
 				char buf2 [16];
