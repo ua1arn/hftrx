@@ -7077,15 +7077,13 @@ display_colorgrid(
 	uint_fast16_t y,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t w,	// ширина
 	uint_fast16_t h,	// высота
-	int_fast32_t f0,	// center frequency
-	int_fast32_t bw,		// span
 	const struct dispmap * dm
 	)
 {
 	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
-	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
+	const int_fast32_t go = dm->f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
-	const int_fast32_t halfbw = bw / 2;
+	const int_fast32_t halfbw = dm->bw / 2;
 	int_fast32_t df;	// кратное сетке значение
 	const int_fast16_t agcfence10 = dsp_agcfence10();
 
@@ -7116,11 +7114,11 @@ display_colorgrid(
 		if (df > - halfbw)
 		{
 			// Маркер частоты кратной glob_gridstep - XOR линию
-			const uint_fast16_t xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
+			const uint_fast16_t xmarker = deltafreq2x_abs(dm->f0, df, dm->bw, ALLDX);
 			if (xmarker != UINT16_MAX)
 			{
 				char buf2 [16];
-				const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
+				const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((dm->f0 + df) / glob_griddigit % glob_gridmod));
 				uint_fast16_t sh3;
 				const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
 				uint_fast16_t xtext = xmarker >= (sw3 + 1) / 2 ? xmarker - (sw3 + 1) / 2 : UINT16_MAX;
@@ -7149,16 +7147,14 @@ display_colorgrid_3dss(
 	uint_fast16_t y,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t w,	// ширина
 	uint_fast16_t h,	// высота
-	int_fast32_t f0,	// center frequency
-	int_fast32_t bw,		// span
 	const struct dispmap * dm
 	)
 {
 	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
 	const uint_fast16_t ytext = h + 3;
-	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
+	const int_fast32_t go = dm->f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
-	const int_fast32_t halfbw = bw / 2;
+	const int_fast32_t halfbw = dm->bw / 2;
 	int_fast32_t df;	// кратное сетке значение
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
@@ -7166,11 +7162,11 @@ display_colorgrid_3dss(
 		if (df > - halfbw)
 		{
 			// Маркер частоты кратной glob_gridstep - XOR линию
-			xmarker = deltafreq2x_abs(f0, df, bw, w);
+			xmarker = deltafreq2x_abs(dm->f0, df, dm->bw, w);
 			if (xmarker != UINT16_MAX)
 			{
 				char buf2 [16];
-				const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
+				const size_t slen3 = local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((dm->f0 + df) / glob_griddigit % glob_gridmod));
 				uint_fast16_t sh3;
 				const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
 				uint_fast16_t xtext = xmarker >= (sw3 + 1) / 2 ? xmarker - (sw3 + 1) / 2 : UINT16_MAX;
@@ -7390,7 +7386,7 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 		}
 	}
 
-	display_colorgrid(db, x0pix, y0pix, alldx, alldy, f0, bw, & latched_dm);	// отрисовка маркеров частот
+	display_colorgrid(db, x0pix, y0pix, alldx, alldy, & latched_dm);	// отрисовка маркеров частот
 
 	if (1)
 	{
@@ -7719,7 +7715,7 @@ static void display2_3dss(const gxdrawb_t * db0, uint_fast8_t x0, uint_fast8_t y
 		ylast_sp = y1;
 	}
 
-	display_colorgrid_3dss(& dbv, x0, SPY - SPY_3DSS_H + 3, alldx, SPY_3DSS_H, f0, bw, & latched_dm);
+	display_colorgrid_3dss(& dbv, x0, SPY - SPY_3DSS_H + 3, alldx, SPY_3DSS_H, & latched_dm);
 	(void) pctx;
 
 #if WITHVIEW_3DSS
