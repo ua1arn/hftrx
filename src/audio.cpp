@@ -1172,7 +1172,6 @@ static FLOAT32P_t get_float4_iflo(void)
 
 //////////////////////////////////////////
 
-static adapter_t nfmdemod;		/* Преобразование выхода demodulator_FM() */
 static adapter_t localfircoefs;	/* Адаптер для локальных целочисленных FIR */
 
 //////////////////////////////////////////
@@ -1572,14 +1571,14 @@ agc_perform(agcstate_t * st, const agctime_t * agcp, FLOAT_t sample)
 	}
 }
 
-FLOAT_t agc_result_slow(agcstate_t * st)
+FLOAT_t agc_result_slow(const agcstate_t * st)
 {
 	const FLOAT_t v = FMAXF(st->agcfastcap, st->agcslowcap);	// разница после ИЛИ
 
 	return v;
 }
 
-FLOAT_t agc_result_fast(agcstate_t * st)
+FLOAT_t agc_result_fast(const agcstate_t * st)
 {
 	const FLOAT_t v = st->agcfastcap;
 
@@ -1607,7 +1606,7 @@ FLOAT_t db2ratio(FLOAT_t valueDBb)
 // Аргумент: постоянная времени цепи в секундах
 // Результат: 1 - мгновенно, 0 - никогда
 
-FLOAT_t MAKETAUIF2(FLOAT_t t, uint_fast32_t sr)
+static FLOAT_t MAKETAU(FLOAT_t t, uint_fast32_t sr)
 {
 	if (t == 0)
 		return 1;
@@ -1649,14 +1648,14 @@ void agc_levels_init(agclevel_t * self)
 
 void agc_times_init(agctime_t * self, uint_fast32_t sr)
 {
-	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 1 / 10, sr);
+	const FLOAT_t tauFAST = MAKETAU((FLOAT_t) 1 / 10, sr);
 	const FLOAT_t tauZERO = MAKETAU0();
 
 	self->chargespeedfast = tauZERO;
 	self->dischargespeedfast = tauFAST;
 
 	self->chargespeedslow = tauFAST;
-	self->dischargespeedslow = MAKETAUIF2((FLOAT_t) 2 / 10, sr);
+	self->dischargespeedslow = MAKETAU((FLOAT_t) 2 / 10, sr);
 
 	self->hungticks = NSAITICKS2(300, sr);			// 0.3 seconds
 }
@@ -1673,14 +1672,14 @@ void agc_parameters_init(agcparams_t * agcp, uint_fast32_t sr)
 void agc_parameters_peaks_init(agctime_t * agcp, uint_fast32_t sr)
 {
 	agc_times_init(agcp, sr);
-	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 1 / 10, sr);
+	const FLOAT_t tauFAST = MAKETAU((FLOAT_t) 1 / 10, sr);
 	const FLOAT_t tauZERO = MAKETAU0();
 
 	agcp->chargespeedfast = tauFAST;
 	agcp->dischargespeedfast = tauFAST;
 
 	agcp->chargespeedslow = tauFAST;
-	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 1, sr);
+	agcp->dischargespeedslow = MAKETAU((FLOAT_t) 1, sr);
 
 	agcp->hungticks = NSAITICKS2(1000, sr);			// 1 second
 
@@ -1691,13 +1690,13 @@ void agc_parameters_peaks_init(agctime_t * agcp, uint_fast32_t sr)
 void agc_parameters_pwrpeaks_init(agctime_t * agcp, uint_fast32_t sr)
 {
 	agc_times_init(agcp, sr);
-	const FLOAT_t tauFAST = MAKETAUIF2((FLOAT_t) 1 / 10, sr);
+	const FLOAT_t tauFAST = MAKETAU((FLOAT_t) 1 / 10, sr);
 	const FLOAT_t tauZERO = MAKETAU0();
 
 	agcp->chargespeedfast = tauFAST;
 	agcp->dischargespeedfast = tauFAST;
 	agcp->chargespeedslow = tauFAST;
-	agcp->dischargespeedslow = MAKETAUIF2((FLOAT_t) 1, sr);
+	agcp->dischargespeedslow = MAKETAU((FLOAT_t) 1, sr);
 	agcp->hungticks = NSAITICKS2(1000, sr);			// 1 second
 
 	//PRINTF(PSTR("agc_parameters_init: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
@@ -1716,10 +1715,10 @@ static void rxagc_parameters_update(hfrxpath_t * const path, agcparams_t * const
 	agctime_t * const t = & agcp->times;
 	const uint_fast8_t flatgain = glob_agcrate [pathi] == UINT8_MAX;
 
-	t->chargespeedfast = MAKETAUIF2((int) glob_agc_t0 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
-	t->dischargespeedfast = MAKETAUIF2((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
-	t->chargespeedslow = MAKETAUIF2((int) glob_agc_t1 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
-	t->dischargespeedslow = MAKETAUIF2((int) glob_agc_t2 [pathi] * (FLOAT_t) 0.1, sr);	// в сотнях милисекунд (0.1 секунды)
+	t->chargespeedfast = MAKETAU((int) glob_agc_t0 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
+	t->dischargespeedfast = MAKETAU((int) glob_agc_t4 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
+	t->chargespeedslow = MAKETAU((int) glob_agc_t1 [pathi] * (FLOAT_t) 0.001, sr);	// в милисекундах
+	t->dischargespeedslow = MAKETAU((int) glob_agc_t2 [pathi] * (FLOAT_t) 0.1, sr);	// в сотнях милисекунд (0.1 секунды)
 	t->hungticks = NSAITICKS2(glob_agc_thung [pathi] * 100, sr);			// в сотнях милисекунд (0.1 секунды)
 
 	p->agcoff = (glob_dspagc == BOARD_AGCCODE_OFF);
@@ -1739,10 +1738,10 @@ static void smeter_parameters_update(agcparams_t * const agcp, const uint_fast32
 	agclevel_t * const p = & agcp->levels;
 	agctime_t * const t = & agcp->times;
 
-	t->chargespeedfast = MAKETAUIF2((FLOAT_t) 0.1, sr);	// 100 mS
-	t->dischargespeedfast = MAKETAUIF2((FLOAT_t) 0.1, sr);	// 100 mS
-	t->chargespeedslow = MAKETAUIF2((FLOAT_t) 0.1, sr);	// 100 mS
-	t->dischargespeedslow = MAKETAUIF2((FLOAT_t) 0.4, sr);	// 400 mS
+	t->chargespeedfast = MAKETAU((FLOAT_t) 0.1, sr);	// 100 mS
+	t->dischargespeedfast = MAKETAU((FLOAT_t) 0.1, sr);	// 100 mS
+	t->chargespeedslow = MAKETAU((FLOAT_t) 0.1, sr);	// 100 mS
+	t->dischargespeedslow = MAKETAU((FLOAT_t) 0.4, sr);	// 400 mS
 	t->hungticks = NSAITICKS2(1000, sr);			// в сотнях милисекунд (1 секунда)
 
 	p->agcoff = 0;
@@ -1755,18 +1754,18 @@ static void smeter_parameters_update(agcparams_t * const agcp, const uint_fast32
 
 // Начальная установка параметров АРУ микрофонного тракта передатчика
 
-static void comp_parameters_initialize(agcparams_t * agcp)
+static void comp_parameters_init(agcparams_t * agcp)
 {
 	const uint_fast32_t sr = ARMI2SRATE;
-	agc_levels_init(& agcp->levels);
-	agc_times_init(& agcp->times, sr);
 	agclevel_t * const p = & agcp->levels;
 	agctime_t * const t = & agcp->times;
+	agc_levels_init(p);
+	agc_times_init(t, sr);
 
 	t->chargespeedfast = MAKETAU0();
-	t->dischargespeedfast = MAKETAUIF2((FLOAT_t) 0.100, sr);
-	t->chargespeedslow = MAKETAUIF2((FLOAT_t) 0.200, sr);
-	t->dischargespeedslow = MAKETAUIF2((FLOAT_t) 0.200, sr);
+	t->dischargespeedfast = MAKETAU((FLOAT_t) 0.100, sr);
+	t->chargespeedslow = MAKETAU((FLOAT_t) 0.200, sr);
+	t->dischargespeedslow = MAKETAU((FLOAT_t) 0.200, sr);
 	t->hungticks = NSAITICKS2(300, sr);			// 0.3 seconds
 
 	p->agcoff = 0;
@@ -1795,13 +1794,13 @@ static void comp_parameters_update(agcparams_t * const agcp, FLOAT_t gainlimit_r
 
 ///////////////////////////
 
-static RAMDTCM FLOAT_t mikeinlevel;
-static RAMDTCM FLOAT_t VOXDISCHARGE;
-static RAMDTCM FLOAT_t VOXCHARGE = 0;
+static FLOAT_t mikeinlevel;
+static FLOAT_t VOXDISCHARGE;
+static FLOAT_t VOXCHARGE = 0;
 
-static RAMDTCM FLOAT_t dvoxlevel;
-static RAMDTCM FLOAT_t DVOXDISCHARGE;
-static RAMDTCM FLOAT_t DVOXCHARGE = 0;
+static FLOAT_t dvoxlevel;
+static FLOAT_t DVOXDISCHARGE;
+static FLOAT_t DVOXCHARGE = 0;
 
 // Возвращает значения 0..255
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale)
@@ -1820,10 +1819,10 @@ static void voxmeter_initialize(void)
 {
 	const uint_fast32_t sr = ARMI2SRATE;
 	VOXCHARGE = MAKETAU0();	// Пиковый детектор со временем заряда 0
-	VOXDISCHARGE = MAKETAUIF2((FLOAT_t) 0.02, sr);	// Пиковый детектор со временем разряда 0.02 секунды
+	VOXDISCHARGE = MAKETAU((FLOAT_t) 0.02, sr);	// Пиковый детектор со временем разряда 0.02 секунды
 
 	DVOXCHARGE = MAKETAU0();	// Пиковый детектор со временем заряда 0
-	DVOXDISCHARGE = MAKETAUIF2((FLOAT_t) 0.02, sr);	// Пиковый детектор со временем разряда 0.02 секунды
+	DVOXDISCHARGE = MAKETAU((FLOAT_t) 0.02, sr);	// Пиковый детектор со временем разряда 0.02 секунды
 }
 
 /////////////////////////////
@@ -2724,7 +2723,7 @@ void agc_state_initialize0(agcstate_t * __restrict st, FLOAT_t level)
 	st->agchangticks = 0;
 }
 
-void agc_state_initialize(agcstate_t * __restrict st, const agclevel_t * __restrict agcp)
+void agc_state_init(agcstate_t * __restrict st, const agclevel_t * __restrict agcp)
 {
 	const FLOAT_t f0_ratio = agcp->levelfence_ratio;
 	const FLOAT_t m0_ratio = agcp->mininput_ratio;
@@ -2814,15 +2813,15 @@ static void agc_initialize(void)
 		    hfrxpath_t * const path = &rx_paths[pathi];
 
 			agc_parameters_init(& path->rxagcparams [profile], ARMSAIRATE);
-			agc_state_initialize(& path->rxagcstate, & path->rxagcparams [profile].levels);
+			agc_state_init(& path->rxagcstate, & path->rxagcparams [profile].levels);
 			// s-meter
 			agc_parameters_init(& path->rxsmeterparams, ARMSAIRATE);
-			agc_state_initialize(& path->rxsmeterstate, & path->rxsmeterparams.levels);
+			agc_state_init(& path->rxsmeterstate, & path->rxsmeterparams.levels);
 		}
 
 		// Микрофон всегда с flatgain=1
-		comp_parameters_initialize(& txagcparams [profile]);
-		agc_state_initialize(& txagcstate, & txagcparams [profile].levels);
+		comp_parameters_init(& txagcparams [profile]);
+		agc_state_init(& txagcstate, & txagcparams [profile].levels);
 	}
 
 #if WITHDSPEXTDDC
@@ -4176,7 +4175,7 @@ static FLOAT_t baseband_demodulator(
 			//const int fdelta10 = ((int64_t) saved_delta_fi [pathi] * ARMSAIRATE * 10) >> 32;	// Отклнение частоты в 0.1 герц единицах
 			// значение для прослушивания
 			// 0.707 == M_SQRT1_2
-			const FLOAT_t sample = adpt_input(& nfmdemod, path->saved_delta_fi);
+			const FLOAT_t sample = adpt_input(& path->nfmdemod, path->saved_delta_fi);
 #endif
 			r = sample * (ctcss_squelch() && agc_levelsquelchopen(path, fltstrengthslow));
 		}
@@ -5317,6 +5316,8 @@ hfrxpath_init(hfrxpath_t * const self)
 	self->angle_aflorx = 0;
 	self->delayblanklo6rx = 0;
 	self->manualsquelch = 0;
+	/* Преобразование выхода demodulator_FM() */
+	adpt_initialize(& self->nfmdemod, 32, 0, "nfmdemod");
 }
 
 // Передача параметров в DSP модуль
@@ -5497,8 +5498,6 @@ void hftrx_init(void)
 
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);
 
-	/* Преобразование выхода demodulator_FM() */
-	adpt_initialize(& nfmdemod, 32, 0, "nfmdemod");
 	/* Адаптер для локальных целочисленных FIR */
 	adpt_initialize(& localfircoefs, 32, 0, "localfircoefs");
 

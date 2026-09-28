@@ -406,15 +406,14 @@ typedef struct agcparams
 FLOAT_t ratio2db(FLOAT_t ratio);
 FLOAT_t db2ratio(FLOAT_t valueDBb);
 
-void agc_state_initialize(agcstate_t * __restrict st, const agclevel_t * __restrict agcp);
+void agc_state_init(agcstate_t * __restrict st, const agclevel_t * __restrict agcp);
 void agc_state_initialize0(agcstate_t * __restrict st, FLOAT_t level);
 void agc_parameters_init(agcparams_t * agcp, uint_fast32_t sr);
 void agc_parameters_pwrpeaks_init(agctime_t * agcp, uint_fast32_t sr);
 void agc_parameters_peaks_init(agctime_t * agcp, uint_fast32_t sr);
-FLOAT_t MAKETAUIF2(FLOAT_t t, uint_fast32_t sr);
 void agc_perform(agcstate_t * st, const agctime_t * agcp, FLOAT_t sample);
-FLOAT_t agc_result_fast(agcstate_t * st);
-FLOAT_t agc_result_slow(agcstate_t * st);
+FLOAT_t agc_result_fast(const agcstate_t * st);
+FLOAT_t agc_result_slow(const agcstate_t * st);
 
 unsigned audiorec_getwidth(void);
 
@@ -925,6 +924,8 @@ typedef struct {
     isb_demodulator_t isb_rx;
 	rtty_receiver_t rtty_rx;
 	ofdm_modem_rx_t ofdm_rx;
+
+	adapter_t nfmdemod;		/* Преобразование выхода demodulator_FM() */
 
 	const void * sign2;
 } hfrxpath_t;
