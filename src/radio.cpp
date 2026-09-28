@@ -4071,10 +4071,10 @@ struct nvmap
 //#define RMT_MODEROW_BASE(b)				(RMT_BAND((b)) + OFFSETOF(struct bandinfo, moderow))			/* номер строки в массиве режимов. */
 //#define RMT_MODECOLS_BASE(b, j)			(RMT_BAND((b)) + OFFSETOF(struct bandinfo, modecols [(j)]))		/* выбранный столбец в каждой строке режимов. */
 
-#define xRMT_MILOCKMODE_BASE(bg, mi) 	(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, glock))		/* признак блокировки валкодера */
-#define xRMT_MIBFREQ_BASE(bg, mi) 		(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, freq))		/* последняя частота, на которую настроились (4 байта) */
-#define xRMT_MIMODEROW_BASE(bg, mi)		(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, moderow))	/* номер строки в массиве режимов. */
-#define xRMT_MIMODECOLS_BASE(bg, mi, j)	(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, modecols [(j)]))/* выбранный столбец в каждой строке режимов. */
+#define RMT_MILOCKMODE_BASE(bg, mi) 	(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, glock))		/* признак блокировки валкодера */
+#define RMT_MIBFREQ_BASE(bg, mi) 		(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, freq))		/* последняя частота, на которую настроились (4 байта) */
+#define RMT_MIMODEROW_BASE(bg, mi)		(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, moderow))	/* номер строки в массиве режимов. */
+#define RMT_MIMODECOLS_BASE(bg, mi, j)	(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, modecols [(j)]))/* выбранный столбец в каждой строке режимов. */
 
 #define RMT_BANDPOS(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 
@@ -10592,7 +10592,6 @@ loadnewband(
 
 	// прописываем режим работы по умолчанию для данного диапазона
 	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MODECOLS_BASE(b, defrow), 0, modes [defrow][0] - 1, defcol);
-
 	gmoderows [bi] = loadvfy8up(RMT_MODEROW_BASE(b), 0, MODEROW_COUNT - 1, defrow);
 
 	uint_fast8_t i;
@@ -14106,10 +14105,34 @@ static void uif_key_click_memo(void)
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	storebandfreq(b, bi);
 
-	const uint_fast32_t f2 = loadvfy32(OFFSETOF(struct nvmap, bandgroups [(bg)].mibands [(mi)].freq), get_band_bottom(b), get_band_top(b), get_band_init(b));
+	gfreqs [bi] = loadvfy32(RMT_MIBFREQ_BASE(bg, mi), get_band_bottom(b), get_band_top(b), get_band_init(b));
+	glocks [bi] = loadvfy8up(RMT_MILOCKMODE_BASE(bg, mi), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
+
+#if WITHONLYBANDS
+	const vindex_t hb = getfreqband(gfreqs [bi], bandset_no_check);
+	tune_bottom_active [bi] = get_band_bottom(hb);
+	tune_top_active [bi] = get_band_top(hb);
+#endif
+
+	const uint_fast8_t defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
+	uint_fast8_t defrow;
+	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
+
+	// прописываем режим работы по умолчанию для данного диапазона
+	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MIMODECOLS_BASE(bg, mi, defrow), 0, modes [defrow][0] - 1, defcol);
+	gmoderows [bi] = loadvfy8up(RMT_MIMODEROW_BASE(bg, mi), 0, MODEROW_COUNT - 1, defrow);
+
+	uint_fast8_t i;
+	for (i = 0; i < MODEROW_COUNT; ++ i)
+	{
+		gmodecolmaps [bi] [i] = loadvfy8up(RMT_MIMODECOLS_BASE(bg, mi, i), 0, 254, 254);	// везде прописывается 0 - потом ещё уточним.
+	}
 	//
 
-	uif_key_click_bandjump(gfreqs [bi]);	// stub
+	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
+	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
+	updateboard();
+	bring_tuneA();
 
 #else /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 	uif_key_click_bandjump(gfreqs [bi]);
@@ -14132,9 +14155,17 @@ static void uif_key_hold_memo(void)
 	storebandfreq(b, bi);
 
 	// Выбрать следующую ячейку
+	const nvramaddress_t miload = OFFSETOF(struct nvmap, bandgroups [bg].miload);
 	const nvramaddress_t mistore = OFFSETOF(struct nvmap, bandgroups [bg].mistore);
 	const uint_fast8_t mi = calc_next(loadvfy8(mistore, 0, WITHBANDMEMCOUNT - 1, 0), 0, WITHBANDMEMCOUNT - 1);
 	save_i8(mistore, mi);
+	save_i8(miload, mi);
+
+	save_i32(RMT_MIBFREQ_BASE(bg, mi), gfreqs [bi]);
+	save_i8(RMT_MILOCKMODE_BASE(bg, mi), glocks [bi]);	/* признак блокировки валкодера */
+	const uint_fast8_t row = gmoderows [bi];
+	save_i8(RMT_MIMODEROW_BASE(bg, mi), row);
+	save_i8(RMT_MIMODECOLS_BASE(bg, mi, row), gmodecolmaps [bi][row]);
 
 #endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 }
