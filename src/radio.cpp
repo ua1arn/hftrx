@@ -410,7 +410,6 @@ static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8
 
 // Интерфейсные функции доступа к NVRAM
 static uint_fast8_t
-//NOINLINEAT
 loadvfy8up(
 	nvramaddress_t place,
 	uint_fast8_t bottom, uint_fast8_t upper, uint_fast8_t def)	// upper - inclusive limit
@@ -1647,31 +1646,6 @@ loadvfy32(
 	if (v >= top || v < bottom)
 	{
 		save_i32(place, def);
-		return def;
-	}
-	return v;
-}
-
-static uint_fast8_t
-loadvfy8(
-	nvramaddress_t place,
-	uint_fast8_t bottom, uint_fast8_t top, uint_fast8_t def)
-{
-#if HARDWARE_IGNORENONVRAM
-	return def;
-#endif /* HARDWARE_IGNORENONVRAM */
-
-	if (place == MENUNONVRAM)
-		return def;
-
-	const uint_fast8_t v = restore_i8(place);
-
-	if (def >= top || def < bottom)
-		def = bottom;
-
-	if (v >= top || v < bottom)
-	{
-		save_i8(place, def);
 		return def;
 	}
 	return v;
@@ -3093,8 +3067,7 @@ static struct bandrange  const bandsmap [] =
 	{ BMF(11500000), 			BMF(12160000), 				BMF(11500000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "25m", },		/*  */
 	{ BMF(13570000), 			BMF(13870000), 				BMF(13570000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "22m", },		/*  */
 
-	{ BMF(14000000 - BANDPAD), 	BMF(14105000), 			BMF(14000000), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_14MHz, "14M CW", },	/*  */
-	{ BMF(14105000),			BMF(14350000 + BANDPAD),	BMF(14130000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_14MHz, "14M SSB", },	/*  */
+	{ BMF(14000000 - BANDPAD),	BMF(14350000 + BANDPAD),	BMF(14000000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_14MHz, "14M SSB", },	/*  */
 
 	{ BMF(15030000), 			BMF(15800000), 				BMF(15030000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "19m", },		/*  */
 	{ BMF(17480000), 			BMF(17900000), 				BMF(17480000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "16m", },		/*  */
@@ -3102,8 +3075,7 @@ static struct bandrange  const bandsmap [] =
 	{ BMF(18900000), 			BMF(19020000), 				BMF(18900000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "15m", },		/*  */
 #endif
 #if (TUNE_TOP) >= (21450000 + BANDPAD)
-	{ BMF(21000000 - BANDPAD), 	BMF(21155000), 			BMF(21000000), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_21MHz, "21M CW", },		/*  */
-	{ BMF(21155000), 			BMF(21450000 + BANDPAD), 	BMF(21160000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_21MHz, "21M SSB", },		/*  */
+	{ BMF(21000000 - BANDPAD), 	BMF(21450000 + BANDPAD), 	BMF(21000000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_21MHz, "21M SSB", },		/*  */
 #endif
 #if (TUNE_TOP) >= (21850000)
 	{ BMF(21450000), 			BMF(21850000), 				BMF(21450000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "13m", },		/*  */
@@ -3114,10 +3086,7 @@ static struct bandrange  const bandsmap [] =
 	{ BMF(25670000), 			BMF(26100000), 				BMF(25670000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "11m", },		/*  */
 	{ BMF(26965000 - BANDPAD), 	BMF(27405000 + BANDPAD), 	BMF(27120000), 	BANDMAPSUBMODE_USB | BANDSETF_CB, 		BANDGROUP_CB, "CB", },		/* Citizens Band 26.9650 MHz to 27.4050 MHz (40 channels) */
 
-	/* next three sections - one band - "ten". */
-	{ BMF(28000000 - BANDPAD), 	BMF(28320000), 			BMF(28000000), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_28MHz, "28M CW", },	/* CW */
-	{ BMF(28320000), 			BMF(29200000), 			BMF(28500000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHz, "28M SSB", },	/* SSB */
-	{ BMF(29200000), 			BMF(29700000 + BANDPAD),	BMF(29600000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHz, "28M FM", },	/* FM */
+	{ BMF(28000000 - BANDPAD), 	BMF(29700000 + BANDPAD), 	BMF(28000000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHz, "28M", },	/* CW */
 #endif
 
 #if WITHBANDR1BBU
@@ -3575,9 +3544,9 @@ struct onetxant_tag {
 struct bandgroup_tag {
 	uint8_t	band;		/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
-	uint8_t miload;			// memindex - последний индекс, из которого выбиралась ячейка памяти.
-	uint8_t mistore;		// memindex - последний индекс, в который запоминалась ячейка памяти.
-	struct bandinfo mibands [WITHBANDMEMCOUNT];
+	uint8_t miload [2];			// memindex - последний индекс, из которого выбиралась ячейка памяти.
+	uint8_t mistore [2];		// memindex - последний индекс, в который запоминалась ячейка памяти.
+	struct bandinfo mibands [2] [WITHBANDMEMCOUNT];
 #endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 	uint8_t rxant;		/* признак включения приемной антенны */
@@ -4067,17 +4036,17 @@ struct nvmap
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
 
 #define RMT_BAND(b) OFFSETOF(struct nvmap, bands [(b)])		// хранимые диапазоны
-#define RMT_MIBAND(bg, mi) OFFSETOF(struct nvmap, bandgroups [(bg)].mibands [(mi)])
+#define RMT_MIBAND(bg, bi, mi) OFFSETOF(struct nvmap, bandgroups [(bg)].mibands [(bi)] [(mi)])
 
 #define RMT_LOCKMODE_BASE(b) 			(RMT_BAND((b)) + OFFSETOF(struct bandinfo, glock))				/* признак блокировки валкодера */
 #define RMT_BFREQ_BASE(b) 				(RMT_BAND((b)) + OFFSETOF(struct bandinfo, freq))				/* последняя частота, на которую настроились (4 байта) */
 #define RMT_MODEROW_BASE(b)				(RMT_BAND((b)) + OFFSETOF(struct bandinfo, moderow))			/* номер строки в массиве режимов. */
 #define RMT_MODECOLS_BASE(b, j)			(RMT_BAND((b)) + OFFSETOF(struct bandinfo, modecols [(j)]))		/* выбранный столбец в каждой строке режимов. */
 
-#define RMT_MILOCKMODE_BASE(bg, mi) 	(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, glock))		/* признак блокировки валкодера */
-#define RMT_MIBFREQ_BASE(bg, mi) 		(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, freq))		/* последняя частота, на которую настроились (4 байта) */
-#define RMT_MIMODEROW_BASE(bg, mi)		(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, moderow))	/* номер строки в массиве режимов. */
-#define RMT_MIMODECOLS_BASE(bg, mi, j)	(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, modecols [(j)]))/* выбранный столбец в каждой строке режимов. */
+#define RMT_MILOCKMODE_BASE(bg, bi, mi) 	(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo, glock))		/* признак блокировки валкодера */
+#define RMT_MIBFREQ_BASE(bg, bi, mi) 		(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo, freq))		/* последняя частота, на которую настроились (4 байта) */
+#define RMT_MIMODEROW_BASE(bg, bi, mi)		(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo, moderow))	/* номер строки в массиве режимов. */
+#define RMT_MIMODECOLS_BASE(bg, bi, mi, j)	(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo, modecols [(j)]))/* выбранный столбец в каждой строке режимов. */
 
 #define RMT_BANDPOS(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 
@@ -14094,13 +14063,14 @@ static void uif_key_click_memo(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
+
 #if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
 	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 	const uint_fast8_t bg = getbandgroup(b);
 
 	// Выбрать следующую ячейку
-	const nvramaddress_t miload = OFFSETOF(struct nvmap, bandgroups [bg].miload);
-	const uint_fast8_t mi = calc_next(loadvfy8(miload, 0, WITHBANDMEMCOUNT - 1, 0), 0, WITHBANDMEMCOUNT - 1);
+	const nvramaddress_t miload = OFFSETOF(struct nvmap, bandgroups [bg].miload [bi]);
+	const uint_fast8_t mi = calc_next(loadvfy8up(miload, 0, WITHBANDMEMCOUNT - 1, 0), 0, WITHBANDMEMCOUNT - 1);
 	save_i8(miload, mi);
 
 	// сохранить текушее состояние
@@ -14108,8 +14078,8 @@ static void uif_key_click_memo(void)
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	storebandfreq(b, bi);
 
-	gfreqs [bi] = loadvfy32(RMT_MIBFREQ_BASE(bg, mi), get_band_bottom(b), get_band_top(b), get_band_init(b));
-	glocks [bi] = loadvfy8up(RMT_MILOCKMODE_BASE(bg, mi), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
+	gfreqs [bi] = loadvfy32(RMT_MIBFREQ_BASE(bg, bi, mi), get_band_bottom(b), get_band_top(b), get_band_init(b));
+	glocks [bi] = loadvfy8up(RMT_MILOCKMODE_BASE(bg, bi, mi), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
 
 #if WITHONLYBANDS
 	const vindex_t hb = getfreqband(gfreqs [bi], bandset_no_check);
@@ -14122,15 +14092,16 @@ static void uif_key_click_memo(void)
 	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
 
 	// прописываем режим работы по умолчанию для данного диапазона
-	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MIMODECOLS_BASE(bg, mi, defrow), 0, modes [defrow] [0] - 1, defcol);
-	gmoderows [bi] = loadvfy8up(RMT_MIMODEROW_BASE(bg, mi), 0, MODEROW_COUNT - 1, defrow);
+	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MIMODECOLS_BASE(bg, bi, mi, defrow), 0, modes [defrow] [0] - 1, defcol);
+	gmoderows [bi] = loadvfy8up(RMT_MIMODEROW_BASE(bg, bi, mi), 0, MODEROW_COUNT - 1, defrow);
 
 	uint_fast8_t i;
 	for (i = 0; i < MODEROW_COUNT; ++ i)
 	{
-		gmodecolmaps [bi] [i] = loadvfy8up(RMT_MIMODECOLS_BASE(bg, mi, i), 0, 254, 254);	// везде прописывается 0 - потом ещё уточним.
+		gmodecolmaps [bi] [i] = loadvfy8up(RMT_MIMODECOLS_BASE(bg, bi, mi, i), 0, 254, 254);	// везде прописывается 0 - потом ещё уточним.
 	}
 	//
+	PRINTF("%s: bg=%u, bi=%u, mi=%u, freq=%u\n", __func__, (unsigned) bg, (unsigned) bi, (unsigned) mi, (unsigned) gfreqs [bi]);
 
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
@@ -14158,17 +14129,19 @@ static void uif_key_hold_memo(void)
 	storebandfreq(b, bi);
 
 	// Выбрать следующую ячейку
-	const nvramaddress_t miload = OFFSETOF(struct nvmap, bandgroups [bg].miload);
-	const nvramaddress_t mistore = OFFSETOF(struct nvmap, bandgroups [bg].mistore);
-	const uint_fast8_t mi = calc_next(loadvfy8(mistore, 0, WITHBANDMEMCOUNT - 1, 0), 0, WITHBANDMEMCOUNT - 1);
+	const nvramaddress_t miload = OFFSETOF(struct nvmap, bandgroups [bg].miload [bi]);
+	const nvramaddress_t mistore = OFFSETOF(struct nvmap, bandgroups [bg].mistore [bi]);
+	const uint_fast8_t mi = calc_next(loadvfy8up(mistore, 0, WITHBANDMEMCOUNT - 1, 0), 0, WITHBANDMEMCOUNT - 1);
 	save_i8(mistore, mi);
 	save_i8(miload, mi);
 
-	save_i32(RMT_MIBFREQ_BASE(bg, mi), gfreqs [bi]);
-	save_i8(RMT_MILOCKMODE_BASE(bg, mi), glocks [bi]);	/* признак блокировки валкодера */
+	save_i32(RMT_MIBFREQ_BASE(bg, bi, mi), gfreqs [bi]);
+	save_i8(RMT_MILOCKMODE_BASE(bg, bi, mi), glocks [bi]);	/* признак блокировки валкодера */
 	const uint_fast8_t row = gmoderows [bi];
-	save_i8(RMT_MIMODEROW_BASE(bg, mi), row);
-	save_i8(RMT_MIMODECOLS_BASE(bg, mi, row), gmodecolmaps [bi] [row]);
+	save_i8(RMT_MIMODEROW_BASE(bg, bi, mi), row);
+	save_i8(RMT_MIMODECOLS_BASE(bg, bi, mi, row), gmodecolmaps [bi] [row]);
+
+	PRINTF("%s: bg=%u, bi=%u, mi=%u, freq=%u\n", __func__, (unsigned) bg, (unsigned) bi, (unsigned) mi, (unsigned) gfreqs [bi]);
 
 #endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 }
