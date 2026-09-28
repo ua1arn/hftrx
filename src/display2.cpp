@@ -7066,12 +7066,12 @@ isvisibletext(
 	size_t w	// ширина строки со значением частоты
 	)
 {
-	return (x + w) <= dx;
+	return x == UINT16_MAX ? 0 : (x + w) <= dx;
 }
 
 // отрисовка маркеров частот
 static void
-display_colorgrid_set(
+display_colorgrid(
 	const gxdrawb_t * db,
 	uint_fast16_t x,
 	uint_fast16_t y,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
@@ -7145,15 +7145,17 @@ static
 void
 display_colorgrid_3dss(
 	const gxdrawb_t * db,
-	uint_fast16_t row0,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
+	uint_fast16_t x,
+	uint_fast16_t y,	// вертикальная координата начала занимаемой области (0..dy-1) сверху вниз
 	uint_fast16_t w,	// ширина
 	uint_fast16_t h,	// высота
 	int_fast32_t f0,	// center frequency
-	int_fast32_t bw		// span
+	int_fast32_t bw,		// span
+	const struct dispmap * dm
 	)
 {
-	const uint_fast16_t row = row0 + h + 3;
 	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
+	const uint_fast16_t ytext = h + 3;
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t halfbw = bw / 2;
@@ -7164,7 +7166,7 @@ display_colorgrid_3dss(
 		if (df > - halfbw)
 		{
 			// Маркер частоты кратной glob_gridstep - XOR линию
-			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
+			xmarker = deltafreq2x_abs(f0, df, bw, w);
 			if (xmarker != UINT16_MAX)
 			{
 				char buf2 [16];
@@ -7173,13 +7175,14 @@ display_colorgrid_3dss(
 				const uint_fast16_t sw3 = unifont_textsize(font, buf2, slen3, & sh3);
 				uint_fast16_t xtext = xmarker >= (sw3 + 1) / 2 ? xmarker - (sw3 + 1) / 2 : UINT16_MAX;
 				if (isvisibletext(w, xtext, sw3))
-					unifont_text(db, xtext, row, font, buf2, slen3, colordigits);
+					unifont_text(db, x + xtext, y + ytext, font, buf2, slen3, colordigits);
 
-				colpip_set_vline(db, xmarker, row0, h, colorgridlines3dss);
+				colpip_set_vline(db, x + xmarker, y, h, colorgridlines3dss);
 			}
 		}
 	}
-	colpip_set_vline(db, ALLDX / 2, row0, h, colorcmarker);	// center frequency marker
+	if (dm->xcenter != UINT16_MAX)
+		colpip_set_vline(db, x + dm->xcenter, y, h, colorcmarker);	// center frequency marker
 }
 
 
@@ -7387,7 +7390,7 @@ static void display2_spectrum(const gxdrawb_t * db, uint_fast8_t x0, uint_fast8_
 		}
 	}
 
-	display_colorgrid_set(db, x0pix, y0pix, alldx, alldy, f0, bw, & latched_dm);	// отрисовка маркеров частот
+	display_colorgrid(db, x0pix, y0pix, alldx, alldy, f0, bw, & latched_dm);	// отрисовка маркеров частот
 
 	if (1)
 	{
@@ -7716,7 +7719,7 @@ static void display2_3dss(const gxdrawb_t * db0, uint_fast8_t x0, uint_fast8_t y
 		ylast_sp = y1;
 	}
 
-	display_colorgrid_3dss(& dbv, SPY - SPY_3DSS_H + 3, alldx, SPY_3DSS_H, f0, bw);
+	display_colorgrid_3dss(& dbv, x0, SPY - SPY_3DSS_H + 3, alldx, SPY_3DSS_H, f0, bw, & latched_dm);
 	(void) pctx;
 
 #if WITHVIEW_3DSS
