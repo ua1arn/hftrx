@@ -4058,17 +4058,23 @@ struct nvmap
 #define RMT_MIDDLEMENUPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].gmidmenupos)
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
 
-#define RMT_LOCKMODE_BASE(b) OFFSETOF(struct nvmap, bands [(b)].glock)		/* признак блокировки валкодера */
-#define RMT_BFREQ_BASE(b) OFFSETOF(struct nvmap, bands [(b)].freq)			/* последняя частота, на которую настроились (4 байта) */
-
 #define RMT_BAND(b) OFFSETOF(struct nvmap, bands [(b)])		// хранимые диапазоны
 #define RMT_MIBAND(bg, mi) OFFSETOF(struct nvmap, bandgroups [(bg)].mibands [(mi)])
 
+#define RMT_LOCKMODE_BASE(b) OFFSETOF(struct nvmap, bands [(b)].glock)		/* признак блокировки валкодера */
+#define RMT_BFREQ_BASE(b) OFFSETOF(struct nvmap, bands [(b)].freq)			/* последняя частота, на которую настроились (4 байта) */
 #define RMT_MODEROW_BASE(b)	OFFSETOF(struct nvmap, bands [(b)].moderow)			/* номер строки в массиве режимов. */
 #define RMT_MODECOLS_BASE(b, j)	OFFSETOF(struct nvmap, bands [(b)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
 
-#define xRMT_MODEROW_BASE(b)	(RMT_BAND((b)) + OFFSETOF(struct bandinfo, moderow))	/* номер строки в массиве режимов. */
-#define xRMT_MODECOLS_BASE(b, j)	(RMT_BAND((b)) + OFFSETOF(struct bandinfo, modecols [(j)]))/* выбранный столбец в каждой строке режимов. */
+//#define RMT_LOCKMODE_BASE(b) 			(RMT_BAND((b)) + OFFSETOF(struct bandinfo, glock))				/* признак блокировки валкодера */
+//#define RMT_BFREQ_BASE(b) 				(RMT_BAND((b)) + OFFSETOF(struct bandinfo, freq))				/* последняя частота, на которую настроились (4 байта) */
+//#define RMT_MODEROW_BASE(b)				(RMT_BAND((b)) + OFFSETOF(struct bandinfo, moderow))			/* номер строки в массиве режимов. */
+//#define RMT_MODECOLS_BASE(b, j)			(RMT_BAND((b)) + OFFSETOF(struct bandinfo, modecols [(j)]))		/* выбранный столбец в каждой строке режимов. */
+
+#define xRMT_MILOCKMODE_BASE(bg, mi) 	(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, glock))		/* признак блокировки валкодера */
+#define xRMT_MIBFREQ_BASE(bg, mi) 		(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, freq))		/* последняя частота, на которую настроились (4 байта) */
+#define xRMT_MIMODEROW_BASE(bg, mi)		(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, moderow))	/* номер строки в массиве режимов. */
+#define xRMT_MIMODECOLS_BASE(bg, mi, j)	(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, modecols [(j)]))/* выбранный столбец в каждой строке режимов. */
 
 #define RMT_BANDPOS(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 
