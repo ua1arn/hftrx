@@ -2908,7 +2908,6 @@ enum
 	BANDGROUP_COUNT			// Значение, используемое как признак отсутствия группировки диапазонов
 };
 
-
 static const char * const bandlabels [BANDGROUP_COUNT] =
 {
 	"LW",
@@ -3121,13 +3120,15 @@ static struct bandrange  const bandsmap [] =
 #endif /* FQMODEL_FMRADIO */
 };
 
-#define VFOS_COUNT 2	/* два VFO - A и B */
+#define VFOS_COUNT 2	/* два VFO - A и B = BANKINDEX_COUNT */
 #define XBANDS_COUNT 2	/* два обзорных диапазона */
 #define HBANDS_COUNT ((sizeof bandsmap / sizeof bandsmap [0]) - XBANDS_COUNT - VFOS_COUNT)
 #define VFOS_BASE ((sizeof bandsmap / sizeof bandsmap [0]) - VFOS_COUNT)
 #define XBANDS_BASE0	(HBANDS_COUNT + 0)	/* первая из двух ячеек с обзорными диапазонами */
 #define XBANDS_BASE1	(HBANDS_COUNT + 1)	/* вторая из двух ячеек с обзорными диапазонами */
 #define MBANDS_BASE (HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT)	/* первая ячейка с фиксированными настройками */
+
+enum { BANKINDEX_COUNT = VFOS_COUNT };
 
 static void bandsmap_verify(void)
 {
@@ -3542,9 +3543,9 @@ struct onetxant_tag {
 struct bandgroup_tag {
 	uint8_t	band;		/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
-	uint8_t miload [2];			// последний индекс, из которого выбиралась ячейка памяти.
-	uint8_t mistore [2];		// последний индекс, в который запоминалась ячейка памяти.
-	struct bandinfo mibands [2] [WITHBANDMEMCOUNT];
+	uint8_t miload [BANKINDEX_COUNT];			// последний индекс, из которого выбиралась ячейка памяти.
+	uint8_t mistore [BANKINDEX_COUNT];		// последний индекс, в который запоминалась ячейка памяти.
+	struct bandinfo mibands [BANKINDEX_COUNT] [WITHBANDMEMCOUNT];
 #else /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 #endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 #if WITHANTSELECTRX || WITHANTSELECT1RX
@@ -6507,9 +6508,9 @@ static const struct paramdefdef xgipacali =
 	enum { userfsg = 0 };
 #endif /* WITHRFSG */
 
-static uint_fast8_t gmoderows [2];		/* индексом используется результат функции getbankindex_xxx(tx) */
+static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом используется результат функции getbankindex_xxx(tx) */
 										/* номер режима работы в маске (номер тройки бит) */
-static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
+static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
 
 
 static uint_fast8_t gmutespkr;		/*  выключение динамика */
@@ -9233,6 +9234,7 @@ getfreqbandgroup(const uint_fast32_t freq)
 {
 	const uint_fast8_t bandset_no_check = 0;
 	const vindex_t b = getfreqband(freq, bandset_no_check);
+	return getbandgroup(b);
 }
 
 	enum { withonlybands = 0 };
