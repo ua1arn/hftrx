@@ -900,7 +900,7 @@ static bool mctl_phy_init(const struct dram_para *para,
 			(struct sunxi_mctl_com_reg *)SUNXI_DRAM_COM_BASE;
 	struct sunxi_mctl_ctl_reg * const mctl_ctl =
 			(struct sunxi_mctl_ctl_reg *)SUNXI_DRAM_CTL0_BASE;
-	u32 val, val2, *ptr, mr0, mr2;
+	u32 val, val2 = 6, *ptr, mr0, mr2;
 	int i;
 
 	if (para->type == SUNXI_DRAM_TYPE_LPDDR4)
@@ -1586,6 +1586,44 @@ void dram_para_print(const struct dram_para * p)
 	PRINTF("odt_en=0x%08X\n", (unsigned) p->odt_en);
 }
 
+static void fillpara(struct dram_para * p)
+{
+	volatile uint32_t * const para = (volatile uint32_t *) p;
+
+	para[0] = 0x318;
+	para[1] = 0x7;
+	para[2] = 0x6060606;
+	para[3] = 0xd0d0d0d;
+	para[4] = 0xd0d;
+	para[5] = 0x9988ffff;
+	para[6] = 0x30ea;
+	para[7] = 0x4001000;
+	para[8] = 0x0;
+	para[9] = 0x83;
+	para[10] = 0x1c;
+	para[11] = 0x1;
+	para[12] = 0x0;
+	para[13] = 0x0;
+	para[14] = 0;
+	para[15] = 0;
+	para[16] = 0;
+	para[17] = 0;
+	para[18] = 0;
+	para[19] = 0;
+	para[20] = 0;
+	para[21] = 0;
+	para[22] = 0;
+	para[23] = 0x80000000;
+	para[24] = 0x1;
+	para[25] = 0x0;
+	para[26] = 0x35bd8080;
+	para[27] = 0x402f4469;
+	para[28] = 0xc0c0b0b;
+	para[29] = 0x10120f10;
+	para[30] = 0x6c61;
+	para[31] = 0x0;
+}
+
 unsigned long sunxi_dram_init(void)
 {
 	struct sunxi_prcm_reg *const prcm =
@@ -1593,6 +1631,7 @@ unsigned long sunxi_dram_init(void)
 	struct dram_config config;
 	unsigned long size;
 
+	//fillpara(& para);
 	dram_para_print(& para);
 	setbits_le32(&prcm->res_cal_ctrl, BIT(8));
 	clrbits_le32(&prcm->ohms240, 0x3f);

@@ -107,7 +107,7 @@ typedef struct dram_para
 	uint32_t para0;
 	uint32_t para1;
 	uint32_t para2;
-	uint32_t mr0;
+	uint32_t mr0;	// 8
 	uint32_t mr1;
 	uint32_t mr2;
 	uint32_t mr3;
@@ -115,7 +115,7 @@ typedef struct dram_para
 	uint32_t mr5;
 	uint32_t mr6;
 	uint32_t mr11;
-	uint32_t mr12;
+	uint32_t mr12;	// 0x10
 	uint32_t mr13;
 	uint32_t mr14;
 	uint32_t mr16;
@@ -123,7 +123,7 @@ typedef struct dram_para
 	uint32_t mr22;
 	uint32_t tpr0;
 	uint32_t tpr1;
-	uint32_t tpr2;
+	uint32_t tpr2;	// 0x18
 	uint32_t tpr3;
 	uint32_t tpr6;
 	uint32_t tpr10;
@@ -132,7 +132,7 @@ typedef struct dram_para
 	uint32_t tpr13;
 	uint32_t tpr14;
 
-	uint32_t odt_en;
+	uint32_t odt_en;	// 0x20
 } dram_para_t;
 
 // CONFIG_DRAM_SUN50I_H616_UNKNOWN_FEATURE
@@ -711,7 +711,7 @@ struct dram_config {
 
 
 #if CONFIG_SUNXI_DRAM_T507_LPDDR3
-	#warning LPDDR3
+	//#warning LPDDR3
 
 	//dram_clk = 792
 	//dram_type = 7
