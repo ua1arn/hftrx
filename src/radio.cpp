@@ -9457,6 +9457,8 @@ storebandstate(const vindex_t b, const uint_fast8_t bi)
 	storebandgroup(bg, ant, rxant);
 }
 
+#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
+
 static void loadbandmemortstate(uint_fast8_t b, uint_fast8_t bg, uint_fast8_t bi, uint_fast8_t mi)
 {
 	gfreqs [bi] = loadvfy32(RMT_MIBFREQ_BASE(bg, bi, mi), get_band_bottom(b), get_band_top(b), get_band_init(b));
@@ -9492,6 +9494,7 @@ static void savebandmemortstate(uint_fast8_t bg, uint_fast8_t bi, uint_fast8_t m
 	save_i8(RMT_MIMODEROW_BASE(bg, bi, mi), row);
 	save_i8(RMT_MIMODECOLS_BASE(bg, bi, mi, row), gmodecolmaps [bi] [row]);
 }
+#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 
 /* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
 static uint_fast8_t
