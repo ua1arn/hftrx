@@ -3297,37 +3297,37 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
  * переход в пределах сроки идет по длинному нажатию кнопки "режим".
  */
 #if WITHBBOX && defined (WITHBBOXSUBMODE)
-	static const uint_fast8_t modes [][2] =
+	static const uint_fast8_t modes [] [2] =
 	{
 		{ 1, WITHBBOXSUBMODE, },
 	};
 #elif WITHMODESETSMART
-	static const uint_fast8_t modes [][2] =
+	static const uint_fast8_t modes [] [2] =
 	{
 		{ 1, SUBMODE_SSBSMART, },
 		{ 1, SUBMODE_CWSMART, },
 		{ 1, SUBMODE_DIGISMART, },
 	};
 #elif WITHMODESETMIXONLY	// Use only product detector
-	static const uint_fast8_t modes [][3] =
+	static const uint_fast8_t modes [] [3] =
 	{
 		{ 2, SUBMODE_LSB, SUBMODE_USB, },
 		{ 2, SUBMODE_CWR, SUBMODE_CW, },
 	};
 #elif WITHMODESETMIXONLY3
-	static const uint_fast8_t modes [][4] =
+	static const uint_fast8_t modes [] [4] =
 	{
 		{ 2, SUBMODE_LSB, SUBMODE_USB, },
 		{ 2, SUBMODE_CWR, SUBMODE_CW, },
 		{ 3, SUBMODE_DGU, SUBMODE_DGL, SUBMODE_CWZ, },
 	};
 #elif WITHMODESAMONLY
-	static const uint_fast8_t modes [][2] =
+	static const uint_fast8_t modes [] [2] =
 	{
 		{ 1, SUBMODE_AM, },
 	};
 #elif WITHMODESETMIXONLY3AM
-	static const uint_fast8_t modes [][4] =
+	static const uint_fast8_t modes [] [4] =
 	{
 		{ 2, SUBMODE_LSB, SUBMODE_USB, },
 		{ 2, SUBMODE_CWR, SUBMODE_CW, },
@@ -3335,7 +3335,7 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 		{ 2, SUBMODE_DGU, SUBMODE_DGL, },
 	};
 #elif WITHMODESETMIXONLY3NFM // SW2014FM modes set
-	static const uint_fast8_t modes [][3] =
+	static const uint_fast8_t modes [] [3] =
 	{
 		{ 2, SUBMODE_LSB, SUBMODE_USB, },
 		{ 2, SUBMODE_CWR, SUBMODE_CW, },
@@ -3343,13 +3343,13 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 		{ 2, SUBMODE_DGU, SUBMODE_DGL, },
 	};
 #elif WITHMODESETMIXONLY2
-	static const uint_fast8_t modes [][4] =
+	static const uint_fast8_t modes [] [4] =
 	{
 		{ 2, SUBMODE_LSB, SUBMODE_USB, },
 		{ 3, SUBMODE_CWR, SUBMODE_CW, SUBMODE_CWZ },
 	};
 #elif (WITHMODESETFULLNFM && WITHWFM)
-	static const uint_fast8_t modes [][5] =
+	static const uint_fast8_t modes [] [5] =
 	{
 		{ 2, SUBMODE_LSB, SUBMODE_USB, },
 		{ 2, SUBMODE_CWR, SUBMODE_CW, },
@@ -3358,7 +3358,7 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 	};
 #elif WITHMODESETFULLNFM
 	#if KEYB_FPANEL30_V3
-	static const uint_fast8_t modes [][4] =
+	static const uint_fast8_t modes [] [4] =
 		{
 			{ 2, SUBMODE_LSB, SUBMODE_USB, },				// ROW 0
 			{ 2, SUBMODE_CWR, SUBMODE_CW, },				// ROW 1
@@ -3366,12 +3366,12 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 			{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },	// ROW 3
 		};
 	#elif WITHMODEM
-		static const uint_fast8_t modes [][6] =
+		static const uint_fast8_t modes [] [6] =
 		{
 			{ 1, SUBMODE_BPSK, },
 		};
 	#elif WITHSAM
-	static const uint_fast8_t modes [][6] =
+	static const uint_fast8_t modes [] [6] =
 		{
 			{ 2, SUBMODE_LSB, SUBMODE_USB, },
 			{ 2, SUBMODE_CWR, SUBMODE_CW, },
@@ -3383,7 +3383,7 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 		#endif /* WITHRTTY */
 		};
 	#else /* WITHMODEM */
-	static const uint_fast8_t modes [][4] =
+	static const uint_fast8_t modes [] [4] =
 		{
 			{ 2, SUBMODE_LSB, SUBMODE_USB, },
 			{ 2, SUBMODE_CWR, SUBMODE_CW, },
@@ -3392,7 +3392,7 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 		};
 	#endif /* WITHMODEM */
 #elif WITHMODESETFULLNFMWFM
-	static const uint_fast8_t modes [][5] =
+	static const uint_fast8_t modes [] [5] =
 		{
 			{ 2, SUBMODE_LSB, SUBMODE_USB, },
 			{ 2, SUBMODE_CWR, SUBMODE_CW, },
@@ -3400,7 +3400,7 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 			{ 4, SUBMODE_NFM, SUBMODE_WFM, SUBMODE_DGU, SUBMODE_DGL, },
 		};
 #elif WITHMODESETFULL
-	static const uint_fast8_t modes [][4] =
+	static const uint_fast8_t modes [] [4] =
 	{
 		{ 2, SUBMODE_LSB, SUBMODE_USB, },
 		{ 2, SUBMODE_CWR, SUBMODE_CW, },
@@ -3408,7 +3408,7 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 		{ 2, SUBMODE_DGU, SUBMODE_DGL, },
 	};
 #elif WITHMODESET_IGOR
-	static const uint_fast8_t modes [][4] =
+	static const uint_fast8_t modes [] [4] =
 	{
 		{ 2, SUBMODE_LSB, SUBMODE_USB, },
 	};
@@ -3438,9 +3438,9 @@ locatesubmode(
 		const uint_fast8_t n = modes [row] [0];
 		uint_fast8_t col;
 
-		for (col = 0; col < n && col < (sizeof modes [row] / sizeof modes [row][0] - 1); ++ col)
+		for (col = 0; col < n && col < (sizeof modes [row] / sizeof modes [row] [0] - 1); ++ col)
 		{
-			if (modes [row][col + 1] == submode)
+			if (modes [row] [col + 1] == submode)
 			{
 				* xrow = row;
 				return col;
@@ -3467,9 +3467,9 @@ validatesubmode(
 		const uint_fast8_t n = modes [row] [0];
 		uint_fast8_t col;
 
-		for (col = 0; col < n && col < (sizeof modes [row] / sizeof modes [row][0] - 1); ++ col)
+		for (col = 0; col < n && col < (sizeof modes [row] / sizeof modes [row] [0] - 1); ++ col)
 		{
-			if (modes [row][col + 1] == submode)
+			if (modes [row] [col + 1] == submode)
 			{
 				return 1;
 			}
@@ -10591,7 +10591,7 @@ loadnewband(
 	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
 
 	// прописываем режим работы по умолчанию для данного диапазона
-	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MODECOLS_BASE(b, defrow), 0, modes [defrow][0] - 1, defcol);
+	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MODECOLS_BASE(b, defrow), 0, modes [defrow] [0] - 1, defcol);
 	gmoderows [bi] = loadvfy8up(RMT_MODEROW_BASE(b), 0, MODEROW_COUNT - 1, defrow);
 
 	uint_fast8_t i;
@@ -10614,8 +10614,8 @@ getsubmode(
 {
 	ASSERT(bi < 2);
 	const uint_fast8_t moderow = gmoderows [bi];
-	const uint_fast8_t modecol = getmodecol(moderow, modes [moderow][0] - 1, 0, bi);	/* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
-	return modes [moderow][modecol + 1];	/* выборка из битовой маски */
+	const uint_fast8_t modecol = getmodecol(moderow, modes [moderow] [0] - 1, 0, bi);	/* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
+	return modes [moderow] [modecol + 1];	/* выборка из битовой маски */
 }
 
 /* функция вызывается из updateboard при измененияя параметров приёма
@@ -13852,8 +13852,8 @@ uif_key_hold_modecol(void)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const uint_fast8_t moderow = gmoderows [bi];	/* строка таблицы запомненных режимов */
 
-	uint_fast8_t modecol = getmodecol(moderow, modes [moderow][0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
-	modecol = calc_next(modecol, 0, modes [moderow][0] - 1);
+	uint_fast8_t modecol = getmodecol(moderow, modes [moderow] [0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
+	modecol = calc_next(modecol, 0, modes [moderow] [0] - 1);
 	putmodecol(moderow, modecol, bi);	/* внести новое значение в битовую маску */
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
@@ -13872,7 +13872,7 @@ uif_key_click_moderow(void)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	uint_fast8_t defrow = gmoderows [bi];		/* строка таблицы режимов, которую покидаем */
-	uint_fast8_t defcol = getmodecol(defrow, modes [defrow][0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
+	uint_fast8_t defcol = getmodecol(defrow, modes [defrow] [0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
 	const uint_fast8_t forcelsb = getforcelsb(gfreqs [bi]);
 
 	gmoderows [bi] = calc_next(gmoderows [bi], 0, MODEROW_COUNT - 1);		/* идём на следующую строку таблицы запомненых режимов */
@@ -13899,7 +13899,7 @@ uif_key_click_moderow(void)
 	if (defrow != gmoderows [bi])
 		defcol = 0;	/* default value (other cases, then switch from usb to cw, from lsb to cwr) */
 	/* пытаемся обратиться за битами - они, взоможно, заменяться значением defcol */
-	(void) getmodecol(gmoderows [bi], modes [gmoderows [bi]][0] - 1, defcol, bi); /* Возможно, значение modecolmap бует откорректировано. */
+	(void) getmodecol(gmoderows [bi], modes [gmoderows [bi]] [0] - 1, defcol, bi); /* Возможно, значение modecolmap бует откорректировано. */
 
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
@@ -13918,7 +13918,7 @@ uif_key_click_moderows(uint_fast8_t moderow)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const uint_fast8_t rowchanged = (gmoderows [bi] != moderow);
 	uint_fast8_t defrow = gmoderows [bi] = moderow;		/* строка таблицы режимов, которую покидаем */
-	uint_fast8_t defcol = getmodecol(defrow, modes [defrow][0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
+	uint_fast8_t defcol = getmodecol(defrow, modes [defrow] [0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
 	const uint_fast8_t forcelsb = getforcelsb(gfreqs [bi]);
 
 #if WITHMODESETSMART
@@ -13943,7 +13943,7 @@ uif_key_click_moderows(uint_fast8_t moderow)
 	if (defrow != gmoderows [bi])
 		defcol = 0;	/* default value (other cases, then switch from usb to cw, from lsb to cwr) */
 	/* пытаемся обратиться за битами - они, взоможно, заменяться значением defcol */
-	(void) getmodecol(gmoderows [bi], modes [gmoderows [bi]][0] - 1, defcol, bi); /* Возможно, значение modecolmap бует откорректировано. */
+	(void) getmodecol(gmoderows [bi], modes [gmoderows [bi]] [0] - 1, defcol, bi); /* Возможно, значение modecolmap бует откорректировано. */
 
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
@@ -13966,8 +13966,8 @@ uif_key_hold_modecols(uint_fast8_t moderow)
 		return;
 	}
 
-	uint_fast8_t modecol = getmodecol(moderow, modes [moderow][0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
-	modecol = calc_next(modecol, 0, modes [moderow][0] - 1);
+	uint_fast8_t modecol = getmodecol(moderow, modes [moderow] [0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
+	modecol = calc_next(modecol, 0, modes [moderow] [0] - 1);
 	putmodecol(moderow, modecol, bi);	/* внести новое значение в битовую маску */
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
@@ -14119,7 +14119,7 @@ static void uif_key_click_memo(void)
 	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
 
 	// прописываем режим работы по умолчанию для данного диапазона
-	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MIMODECOLS_BASE(bg, mi, defrow), 0, modes [defrow][0] - 1, defcol);
+	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MIMODECOLS_BASE(bg, mi, defrow), 0, modes [defrow] [0] - 1, defcol);
 	gmoderows [bi] = loadvfy8up(RMT_MIMODEROW_BASE(bg, mi), 0, MODEROW_COUNT - 1, defrow);
 
 	uint_fast8_t i;
@@ -14165,7 +14165,7 @@ static void uif_key_hold_memo(void)
 	save_i8(RMT_MILOCKMODE_BASE(bg, mi), glocks [bi]);	/* признак блокировки валкодера */
 	const uint_fast8_t row = gmoderows [bi];
 	save_i8(RMT_MIMODEROW_BASE(bg, mi), row);
-	save_i8(RMT_MIMODECOLS_BASE(bg, mi, row), gmodecolmaps [bi][row]);
+	save_i8(RMT_MIMODECOLS_BASE(bg, mi, row), gmodecolmaps [bi] [row]);
 
 #endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 }
@@ -15340,7 +15340,7 @@ static uint_fast8_t sendmorsepos [2];
 #if WITHELKEY
 	static void cat_set_kyanswer(uint_fast8_t force);
 	static uint_fast8_t cathasparamerror;
-	static unsigned char morsestring [2][25];
+	static unsigned char morsestring [2] [25];
 #endif /* WITHELKEY */
 
 static uint_fast8_t catstatein = CATSTATE_HALTED;
@@ -15721,7 +15721,7 @@ void cat2_parsechar(uint_fast8_t c)
 				// Данные ещё не переданы - не портим буфер. Будет передана ошибка.
 				cathasparamerror = 1;
 			}
-			else if (catpcount < (sizeof morsestring [morsefill] / sizeof morsestring [morsefill][0]))
+			else if (catpcount < (sizeof morsestring [morsefill] / sizeof morsestring [morsefill] [0]))
 			{
 				/* запоминаем очередной символ для передачи */
 				morsestring [morsefill] [catpcount ++] = ascii_toupper(c);
@@ -22950,7 +22950,7 @@ static const char sym [16] =
 };
 
 // DTMF decoding matrix
-static const int symmtx[4][4] =
+static const int symmtx [4] [4] =
 {
 	{ 0, 4, 8, 12 },
 	{ 1, 5, 9, 13 },
