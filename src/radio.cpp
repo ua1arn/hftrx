@@ -3485,7 +3485,7 @@ static const char nvrampattern [sizeof nvramsign / sizeof nvramsign [0]] =
 	 переменных в конфигурационной памяти.
  	параметры "семейства" режимов - CW&CWR, LSB&USB.
 	*/
-struct modeprops
+struct modeprops_tag
 {
 #if ! WITHAGCMODENONE
 	uint8_t agc;	/* режим АРУ для данного семейства режимов */
@@ -3504,7 +3504,7 @@ struct modeprops
 	 переменных в конфигурационном ОЗУ.
 	Информация, сохраняемая для каждого диапазона */
 
-struct bandinfo
+struct bandinfo_tag
 {
 	uint32_t freq;		/* рабочая частота */
 	uint8_t modecols [MODEROW_COUNT];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
@@ -3545,7 +3545,7 @@ struct bandgroup_tag {
 #if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
 	uint8_t miload [BANKINDEX_COUNT];			// последний индекс, из которого выбиралась ячейка памяти.
 	uint8_t mistore [BANKINDEX_COUNT];		// последний индекс, в который запоминалась ячейка памяти.
-	struct bandinfo mibands [BANKINDEX_COUNT] [WITHBANDMEMCOUNT];
+	struct bandinfo_tag mibands [BANKINDEX_COUNT] [WITHBANDMEMCOUNT];
 #else /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 #endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 #if WITHANTSELECTRX || WITHANTSELECT1RX
@@ -3993,9 +3993,8 @@ struct nvmap {
 	uint16_t lo3offset;
 #endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
 
-	struct modeprops modes [MODE_COUNT];
-
-	struct bandinfo bands [HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT];
+	struct modeprops_tag modes [MODE_COUNT];
+	struct bandinfo_tag bands [HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT];
 	struct bandgroup_tag bandgroups [BANDGROUP_COUNT + 1];	/* один элемент для не относящихся к группам диапазонов */
 	//struct bandgroup_tag bandgroups [HBANDS_COUNT + XBANDS_COUNT];	/* доп параметры по диапазонам */
 
@@ -4038,15 +4037,15 @@ struct nvmap {
 #define RMT_BAND(b) OFFSETOF(struct nvmap, bands [(b)])		// хранимые диапазоны
 #define RMT_MIBAND(bg, bi, mi) OFFSETOF(struct nvmap, bandgroups [(bg)].mibands [(bi)] [(mi)])
 
-#define RMT_LOCKMODE_BASE(b) 			(RMT_BAND((b)) + OFFSETOF(struct bandinfo, glock))				/* признак блокировки валкодера */
-#define RMT_BFREQ_BASE(b) 				(RMT_BAND((b)) + OFFSETOF(struct bandinfo, freq))				/* последняя частота, на которую настроились (4 байта) */
-#define RMT_MODEROW_BASE(b)				(RMT_BAND((b)) + OFFSETOF(struct bandinfo, moderow))			/* номер строки в массиве режимов. */
-#define RMT_MODECOLS_BASE(b, j)			(RMT_BAND((b)) + OFFSETOF(struct bandinfo, modecols [(j)]))		/* выбранный столбец в каждой строке режимов. */
+#define RMT_LOCKMODE_BASE(b) 			(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, glock))				/* признак блокировки валкодера */
+#define RMT_BFREQ_BASE(b) 				(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, freq))				/* последняя частота, на которую настроились (4 байта) */
+#define RMT_MODEROW_BASE(b)				(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, moderow))			/* номер строки в массиве режимов. */
+#define RMT_MODECOLS_BASE(b, j)			(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, modecols [(j)]))		/* выбранный столбец в каждой строке режимов. */
 
-#define RMT_MILOCKMODE_BASE(bg, bi, mi) 	(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo, glock))		/* признак блокировки валкодера */
-#define RMT_MIBFREQ_BASE(bg, bi, mi) 		(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo, freq))		/* последняя частота, на которую настроились (4 байта) */
-#define RMT_MIMODEROW_BASE(bg, bi, mi)		(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo, moderow))	/* номер строки в массиве режимов. */
-#define RMT_MIMODECOLS_BASE(bg, bi, mi, j)	(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo, modecols [(j)]))/* выбранный столбец в каждой строке режимов. */
+#define RMT_MILOCKMODE_BASE(bg, bi, mi) 	(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, glock))		/* признак блокировки валкодера */
+#define RMT_MIBFREQ_BASE(bg, bi, mi) 		(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, freq))		/* последняя частота, на которую настроились (4 байта) */
+#define RMT_MIMODEROW_BASE(bg, bi, mi)		(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, moderow))	/* номер строки в массиве режимов. */
+#define RMT_MIMODECOLS_BASE(bg, bi, mi, j)	(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, modecols [(j)]))/* выбранный столбец в каждой строке режимов. */
 
 #define RMT_BANDPOS(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 
