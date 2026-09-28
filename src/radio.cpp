@@ -3542,9 +3542,10 @@ struct onetxant_tag {
 struct bandgroup_tag {
 	uint8_t	band;		/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
-	uint8_t miload [2];			// memindex - последний индекс, из которого выбиралась ячейка памяти.
-	uint8_t mistore [2];		// memindex - последний индекс, в который запоминалась ячейка памяти.
+	uint8_t miload [2];			// последний индекс, из которого выбиралась ячейка памяти.
+	uint8_t mistore [2];		// последний индекс, в который запоминалась ячейка памяти.
 	struct bandinfo mibands [2] [WITHBANDMEMCOUNT];
+#else /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 #endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 	uint8_t rxant;		/* признак включения приемной антенны */
@@ -3571,8 +3572,7 @@ struct bandgroup_tag {
    bitfields нельзя использовать, так как всё это - только обозначения смещений
 	 переменных в конфигурационном ОЗУ.
 */
-struct nvmap
-{
+struct nvmap {
 #if WITHUSEUSBBT
 	uint8_t tlvbt [TLVBT_SIZE];
 #endif /* WITHUSEUSBBT */
@@ -9216,17 +9216,6 @@ getprev_ham_band(
 	return b;
 }
 
-/* определяем по частоте, в какой группе диапазонов находимся */
-static uint_fast8_t
-getfreqbandgroup(const uint_fast32_t freq)
-{
-	const uint_fast8_t bandset_no_check = 0;
-	const vindex_t b = getfreqband(freq, bandset_no_check);
-	ASSERT(b != ((vindex_t) - 1));
-	const uint_fast8_t bandgroup = bandsmap [b].bandgroup;
-	return bandgroup;
-}
-
 
 /* по получить номер диапазона  */
 static uint_fast8_t
@@ -9237,6 +9226,14 @@ getbandgroup(vindex_t b)
 	return bandgroup;
 }
 
+
+/* определяем по частоте, в какой группе диапазонов находимся */
+static uint_fast8_t
+getfreqbandgroup(const uint_fast32_t freq)
+{
+	const uint_fast8_t bandset_no_check = 0;
+	const vindex_t b = getfreqband(freq, bandset_no_check);
+}
 
 	enum { withonlybands = 0 };
 
