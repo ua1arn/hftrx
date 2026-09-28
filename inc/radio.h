@@ -339,33 +339,28 @@ uint_fast16_t calc_next(uint_fast16_t v, uint_fast16_t low, uint_fast16_t high);
 uint_fast8_t getgfasize(void);
 
 const filter_t * 
-NOINLINEAT
 getrxfilter(
 	uint_fast8_t submode,
 	uint_fast8_t ix		/* текущий номер фильтра  */
 	);
 
 const filter_t * 
-NOINLINEAT
 gettxfilter(
 	uint_fast8_t submode,
 	uint_fast8_t ix		/* текущий номер фильтра  */
 	);
 
 uint_fast8_t 
-//NOINLINEAT
 getdefflt(
 	uint_fast8_t mode,
 	uint_fast8_t ix		/* текущий номер фильтра - возвращается если не нашли допустимых */
 	);
 uint_fast8_t 
-//NOINLINEAT
 getsuitablerx(
 	uint_fast8_t mode,
 	uint_fast8_t ix		/* текущий номер фильтра - возвращается если не нашли допустимых */
 	);
 uint_fast8_t 
-//NOINLINEAT
 getsuitabletx(
 	uint_fast8_t mode,
 	uint_fast8_t ix		/* текущий номер фильтра - возвращается если не нашли допустимых */

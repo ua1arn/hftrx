@@ -19,7 +19,7 @@ extern const phase_t phase_0;
 /* programming AD9951/AD9954 */
 /* set frequency tuning word1 to DDS */
 static void 
-//NOINLINEAT
+
 prog_ad9951_freq0(
 	spitarget_t target,		/* addressing to chip */
 	const phase_t * val
@@ -47,7 +47,7 @@ prog_ad9951_freq0(
 
 /* set control word CFR1 */
 static void 
-//NOINLINEAT
+
 prog_ad9951_cfr1(
 	spitarget_t target,		/* addressing to chip */
 	const phase_t * val
@@ -70,7 +70,7 @@ prog_ad9951_cfr1(
 
 /* set control word CFR2 */
 static void 
-//NOINLINEAT
+
 prog_ad9951_cfr2(
 	spitarget_t target,		/* addressing to chip */
 	const phase_t * val
@@ -95,7 +95,7 @@ prog_ad9951_cfr2(
 /* set control word ASF - Amplitude Scale Factor */
 /* 12 bit of value has meaning	*/
 static void 
-//NOINLINEAT
+
 prog_ad9951_asf(
 	spitarget_t target,		/* addressing to chip */
 	const phase_t * val
@@ -118,7 +118,7 @@ prog_ad9951_asf(
 
 
 static void 
-//NOINLINEAT
+
 prog_ad9951_init(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast8_t fqscale,

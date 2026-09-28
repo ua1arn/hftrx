@@ -315,7 +315,6 @@ void seq_set_txgate(
    Вызывается из seq_spool_ticks().
 */
 static uint_fast8_t 
-//NOINLINEAT
 seqhastxrequest(void)
 {
 	return !! ptt;

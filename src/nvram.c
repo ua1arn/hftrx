@@ -81,7 +81,7 @@
 #define EEPROMPAGEMASK	0x0f	// Page size = 16
 
 static uint_fast8_t 
-//NOINLINEAT
+
 eeprom_read_status(
 	spitarget_t target	/* addressing to chip */
 	)
@@ -93,7 +93,7 @@ eeprom_read_status(
 }
 
 static void 
-//NOINLINEAT
+
 eeprom_writeenable(
 	spitarget_t target	/* addressing to chip */
 	)
@@ -108,7 +108,7 @@ eeprom_writeenable(
 
 /* one byte + one bit address 512-byte chips */
 static void 
-//NOINLINEAT
+
 eeprom_a1_write(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast16_t addr, 	/* начальное смещение памяти для обмена */
@@ -132,7 +132,7 @@ eeprom_a1_write(
 
 /* one byte + one bit address 512-byte chips */
 static void 
-//NOINLINEAT
+
 eeprom_a1_read(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast16_t addr, 
@@ -169,7 +169,7 @@ eeprom_a2_write(
 
 /* two bytes address 2K-byte chips */
 static void 
-//NOINLINEAT
+
 eeprom_a2_read(
 	spitarget_t target,	/* addressing to chip */
 	uint_fast16_t addr, 
@@ -237,7 +237,7 @@ eeprom_wait_until_ready(
 }
 
 static void 
-//NOINLINEAT
+
 eeprom_initialize(
 	spitarget_t target	/* addressing to chip */
 	)
@@ -266,7 +266,7 @@ eeprom_initialize(
 
 
 static void  
-//NOINLINEAT
+
 nvram_write_withinpage(uint_least16_t addr, const uint8_t * data, unsigned len)
 {
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
@@ -565,7 +565,7 @@ void nvram_close(void)
 
 /* выборка по указанному индексу из FRAM одного байта */
 uint_fast8_t 
-//NOINLINEAT
+
 restore_i8(nvramaddress_t addr)
 {
 	uint8_t vbr [1];
@@ -576,7 +576,7 @@ restore_i8(nvramaddress_t addr)
 
 /* сохранение по указанному индексу в FRAM одного байта */
 void 
-//NOINLINEAT
+
 save_i8(nvramaddress_t addr, uint_fast8_t v)
 {
 	uint8_t vbw [1];
@@ -587,7 +587,7 @@ save_i8(nvramaddress_t addr, uint_fast8_t v)
 
 /* выборка по указанному индексу из FRAM одного 16-битного слова */
 uint_fast16_t 
-//NOINLINEAT
+
 restore_i16(nvramaddress_t addr)
 {
 	uint8_t vbr [2];
@@ -599,7 +599,7 @@ restore_i16(nvramaddress_t addr)
 
 /* сохранение по указанному индексу в FRAM одного 16-битного слова */
 void 
-//NOINLINEAT
+
 save_i16(nvramaddress_t addr, uint_fast16_t v)
 {
 	uint8_t vbw [2];
@@ -611,7 +611,7 @@ save_i16(nvramaddress_t addr, uint_fast16_t v)
 
 /* выборка по указанному индексу из FRAM одного 24-битного слова */
 uint_fast32_t
-//NOINLINEAT
+
 restore_i24(nvramaddress_t addr)
 {
 	uint8_t vbr [3];
@@ -623,7 +623,7 @@ restore_i24(nvramaddress_t addr)
 
 /* сохранение по указанному индексу в FRAM одного 24-битного слова */
 void
-//NOINLINEAT
+
 save_i24(nvramaddress_t addr, uint_fast32_t v)
 {
 	uint8_t vbw [3];
@@ -635,7 +635,7 @@ save_i24(nvramaddress_t addr, uint_fast32_t v)
 
 /* выборка по указанному индексу из FRAM одного 32-битного слова */
 uint_fast32_t 
-//NOINLINEAT
+
 restore_i32(nvramaddress_t addr)
 {
 	uint8_t vbr [4];
@@ -647,7 +647,7 @@ restore_i32(nvramaddress_t addr)
 
 /* сохранение по указанному индексу в FRAM одного 32-битного слова */
 void 
-//NOINLINEAT
+
 save_i32(nvramaddress_t addr, uint_fast32_t v)
 {
 	uint8_t vbw [4];
@@ -668,7 +668,7 @@ save_i32(nvramaddress_t addr, uint_fast32_t v)
 #if 1
 /* выборка по указанному индексу из FRAM одного байта */
 uint_fast8_t 
-//NOINLINEAT
+
 restore_i8(nvramaddress_t addr)
 {
 	return 0xFF;
@@ -676,14 +676,14 @@ restore_i8(nvramaddress_t addr)
 
 /* сохранение по указанному индексу в FRAM одного байта */
 void 
-//NOINLINEAT
+
 save_i8(nvramaddress_t addr, uint_fast8_t v)
 {
 }
 
 /* выборка по указанному индексу из FRAM одного 16-битного слова */
 uint_fast16_t 
-//NOINLINEAT
+
 restore_i16(nvramaddress_t addr)
 {
 	return 0xFFFF;
@@ -691,14 +691,14 @@ restore_i16(nvramaddress_t addr)
 
 /* сохранение по указанному индексу в FRAM одного 16-битного слова */
 void 
-//NOINLINEAT
+
 save_i16(nvramaddress_t addr, uint_fast16_t v)
 {
 }
 
 /* выборка по указанному индексу из FRAM одного 24-битного слова */
 uint_fast32_t
-//NOINLINEAT
+
 restore_i24(nvramaddress_t addr)
 {
 	return 0x00FFFFFF;
@@ -706,14 +706,14 @@ restore_i24(nvramaddress_t addr)
 
 /* сохранение по указанному индексу в FRAM одного 32-битного слова */
 void
-//NOINLINEAT
+
 save_i24(nvramaddress_t addr, uint_fast32_t v)
 {
 }
 
 /* выборка по указанному индексу из FRAM одного 32-битного слова */
 uint_fast32_t
-//NOINLINEAT
+
 restore_i32(nvramaddress_t addr)
 {
 	return 0xFFFFFFFF;
@@ -721,7 +721,7 @@ restore_i32(nvramaddress_t addr)
 
 /* сохранение по указанному индексу в FRAM одного 32-битного слова */
 void
-//NOINLINEAT
+
 save_i32(nvramaddress_t addr, uint_fast32_t v)
 {
 }

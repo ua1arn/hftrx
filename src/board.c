@@ -957,7 +957,7 @@ pll1_getoutdivider(
 
 // "Storch" с USB, DSP и FPGA, SD-CARD
 static void 
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1044,7 +1044,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 // "Storch" с USB, DSP и FPGA, SD-CARD, TFT 4.3"
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1179,7 +1179,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 // "Storch" с USB, DSP и FPGA, SD-CARD, TFT 4.3"
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1313,7 +1313,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1427,7 +1427,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1621,7 +1621,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1719,7 +1719,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1875,7 +1875,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -2010,7 +2010,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 // "Storch" с USB, DSP и FPGA, SD-CARD
 static void 
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -2058,7 +2058,7 @@ prog_ctrlreg(uint_fast8_t plane)
 const uint_fast8_t bpf_xlat [6] = { 1, 3, 0, 2, 1, 3 };
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	enum
@@ -2116,7 +2116,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 #if WITHEXTRFBOARDTEST				// UA3REO RF-UNIT rev.2 test
@@ -2152,7 +2152,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	enum
@@ -2222,7 +2222,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	{
@@ -2249,7 +2249,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -2403,7 +2403,7 @@ static void prog_ctrlreg(uint_fast8_t plane)
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 	static void 
-	//NOINLINEAT
+	
 	prog_ctrlreg(uint_fast8_t plane)
 	{
 		//const spitarget_t target = targetctl1;
@@ -2479,7 +2479,7 @@ board_update_spi2(void)
 
 // Выдача в регистры текущего состояния теневых переменных.
 void 
-//NOINLINEAT
+
 board_update(void)
 {
 	//PRINTF(PSTR("board_update start.\n"));

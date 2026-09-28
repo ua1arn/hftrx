@@ -192,7 +192,7 @@ enum
  при наполнении таблицы использовалась статья http://en.wikipedia.org/wiki/Morse_code
  */
 static uint_fast16_t
-//NOINLINEAT
+
 get_morse(
 	uint_fast8_t c		// символ для передачи (только верхний регистр).
 	)
@@ -500,7 +500,7 @@ get_morse(
 // на нажатость точек
 // в автоматическом режиме
 static uint_fast8_t 
-//NOINLINEAT
+
 dit_auto(
 	elkey_t * const elkey,
 	uint_fast8_t pl /* hardware paddle value */
@@ -517,7 +517,7 @@ dit_auto(
 // на нажатость тире
 // в автоматическом режиме
 static uint_fast8_t 
-//NOINLINEAT
+
 dash_auto(
 	elkey_t * const elkey,
 	uint_fast8_t pl /* hardware paddle value */
@@ -536,7 +536,7 @@ dash_auto(
 // на нажатость точек
 // в ручном режиме
 static uint_fast8_t 
-//NOINLINEAT
+
 dit_manual(
 	uint_fast8_t pl /* hardware paddle value */
 	)
@@ -550,7 +550,7 @@ dit_manual(
 // на нажатость тире
 // в ручном режиме
 static uint_fast8_t 
-//NOINLINEAT
+
 dash_manual(
 	uint_fast8_t pl /* hardware paddle value */
 	)
@@ -573,7 +573,6 @@ elkey_manual(void)
 
 // перейти к состоянию и установить таймер. Сбросить текущий таймер.
 static void 
-NOINLINEAT
 setnextstate(
 	elkey_t * const elkey,
 	uint_fast8_t state,
@@ -589,7 +588,6 @@ setnextstate(
 // служба времени обработчика электронного телеграфного ключа
 // вызывается с периодом 1/ELKEY_DISCRETE от длительности точки.
 static uint_fast8_t 
-//NOINLINEAT
 getovf(elkey_t * const elkey)
 {
 	return (elkey->ticks >= elkey->maxticks) || (++ elkey->ticks >= elkey->maxticks);

@@ -148,7 +148,7 @@ static void prog_ad9852_Q_DAC_register(
 
 
 static void 
-//NOINLINEAT
+
 prog_ad9852_init(
 	spitarget_t target,		/* addressing to chip */
 	unsigned char powerdown,

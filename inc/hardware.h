@@ -440,7 +440,6 @@ void blinkloop(void);
 	typedef uint_fast32_t portholder_t;		
 
 	#define FLASHMEM //__flash
-	#define NOINLINEAT // __attribute__((noinline))
 
 	#define ATTRWEAK __WEAK
 	// Use __attribute__ ((weak, alias("Default_Handler")))
@@ -456,7 +455,6 @@ void blinkloop(void);
 	typedef uint_fast32_t portholder_t;
 
 	#define FLASHMEM //__flash
-	#define NOINLINEAT // __attribute__((noinline))
 
 	#define ATTRWEAK __WEAK
 	// Use __attribute__ ((weak, alias("Default_Handler")))

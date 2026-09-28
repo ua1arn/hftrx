@@ -88,7 +88,7 @@ prog_ad9851_freq(
 
 
 static void 
-//NOINLINEAT
+
 prog_ad9851_init(
 	spitarget_t target,		/* addressing to chip */
 	unsigned ddsmult

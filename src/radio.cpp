@@ -438,7 +438,7 @@ loadvfy8up(
 // Интерфейсные функции доступа к NVRAM
 
 static uint_fast16_t
-//NOINLINEAT
+
 loadvfy16up(
 	nvramaddress_t place,
 	uint_fast16_t bottom, uint_fast16_t upper, uint_fast16_t def)	// upper - inclusive limit
@@ -1085,7 +1085,7 @@ param_rotate(const struct paramdefdef * pd, int_fast32_t nrotate)
 #if WITHCAT
 
 static void processcat_enable(uint_fast8_t catenable);
-static void NOINLINEAT cat_answer_request(uint_fast8_t catindex);	// call from user-mode
+static void cat_answer_request(uint_fast8_t catindex);	// call from user-mode
 
 static uint_fast8_t aistate;		/* autoinformation state flag */
 static uint_fast8_t rmstate;		/* RM answer state type (1..3) */
@@ -3213,7 +3213,7 @@ get_band_label3(unsigned b)	/* b: диапазон в таблице bandsmap */
 
 /* интерфейсная функция доступа к параметра диапазона */
 static uint_fast32_t
-//NOINLINEAT
+
 get_band_bottom(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
 	ASSERT(b != ((vindex_t) - 1));
@@ -3221,7 +3221,7 @@ get_band_bottom(vindex_t b)	/* b: диапазон в таблице bandsmap */
 }
 /* интерфейсная функция доступа к параметра диапазона */
 static uint_fast32_t
-//NOINLINEAT
+
 get_band_top(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
 	ASSERT(b != ((vindex_t) - 1));
@@ -3229,7 +3229,7 @@ get_band_top(vindex_t b)	/* b: диапазон в таблице bandsmap */
 }
 /* интерфейсная функция доступа к параметра диапазона */
 static uint_fast32_t
-//NOINLINEAT
+
 get_band_init(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
 	ASSERT(b != ((vindex_t) - 1));
@@ -3237,7 +3237,7 @@ get_band_init(vindex_t b)	/* b: диапазон в таблице bandsmap */
 }
 /* интерфейсная функция доступа к параметра диапазона */
 static uint_fast8_t
-//NOINLINEAT
+
 get_band_defsubmode(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
 	ASSERT(b != ((vindex_t) - 1));
@@ -3246,7 +3246,7 @@ get_band_defsubmode(vindex_t b)	/* b: диапазон в таблице bandsma
 
 /* интерфейсная функция доступа к параметра диапазона */
 static uint_fast8_t
-//NOINLINEAT
+
 get_band_bandset(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
 	ASSERT(b != ((vindex_t) - 1));
@@ -3404,7 +3404,7 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
    TODO: при попытке поиска режима FM, если его нет в списке, ставится LSB (0-й режим в 0-й строке. Не очень красиво.
 */
 static uint_fast8_t
-//NOINLINEAT
+
 locatesubmode(
 	const uint_fast8_t submode,		/* код режима */
 	uint_fast8_t * const xrow		/* найденные координаты */
@@ -8121,7 +8121,7 @@ static void fillrelaxedsign(uint8_t * tsign)
 	 не-0 - отличается
 	 */
 static uint_fast8_t
-//NOINLINEAT
+
 verifynvramsignature(void)
 {
 #if WITHKEEPNVRAM
@@ -8158,7 +8158,7 @@ verifynvramsignature(void)
 }
 
 static void
-//NOINLINEAT
+
 initnvramsignature(void)
 {
 #if WITHKEEPNVRAM
@@ -8187,7 +8187,7 @@ initnvramsignature(void)
 	 не-0 - отличается
 	 */
 static uint_fast8_t
-//NOINLINEAT
+
 verifynvrampattern(void)
 {
 	//const uint_fast32_t c32a = restore_i32(RMT_SIGNATURE_BASE(0));
@@ -8207,7 +8207,7 @@ verifynvrampattern(void)
 }
 
 static void
-//NOINLINEAT
+
 initnvrampattern(void)
 {
 	uint_fast8_t i;
@@ -8677,7 +8677,6 @@ static const uint_fast8_t am_steps10 [] =
 
 /* функция работает с кэшем параметров режима работы */
 static const struct modetempl *
-NOINLINEAT
 getmodetempl(uint_fast8_t submode)
 {
 	return & mdt [submodes [submode].mode];
@@ -8781,7 +8780,7 @@ uif_pwbutton_press(void)
 // проверка, используется ли описатель диапазона с данным кодом в текущей конфигурации.
 // Возврат 0 - не используется
 static uint_fast8_t
-//NOINLINEAT
+
 existingband(
 	uint_fast8_t b,	// код диапазона
 	uint_fast8_t bandsetbcast,
@@ -8831,7 +8830,7 @@ existingband(
 }
 
 static uint_fast8_t
-//NOINLINEAT
+
 existingbandsingle(
 	uint_fast8_t b,	// код диапазона
 	uint_fast8_t bandsetbcast
@@ -8844,7 +8843,7 @@ existingbandsingle(
 }
 
 static void
-//NOINLINEAT
+
 verifyband(const vindex_t b)
 {
 #if DEBUGEXT
@@ -9298,7 +9297,7 @@ copybankstate(
 
 /* сохранить все частоту настройки в соответствующий диапазон, ячейку памяти или VFO. */
 static void
-//NOINLINEAT
+
 storebandfreq(const vindex_t b, const uint_fast8_t bi)
 {
 	//PRINTF(PSTR("storebandfreq: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
@@ -9498,7 +9497,6 @@ static void savebandmemortstate(uint_fast8_t bg, uint_fast8_t bi, uint_fast8_t m
 
 /* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
 static uint_fast8_t
-NOINLINEAT
 getmodecol(
 	uint_fast8_t index,
 	uint_fast8_t upper, // moderow
@@ -9516,7 +9514,7 @@ getmodecol(
 
 /* внести новое значение в битовую маску */
 static void
-//NOINLINEAT
+
 putmodecol(
 	const uint_fast8_t index, 	// moderow
 	const uint_fast8_t v,
@@ -10572,7 +10570,7 @@ uint_fast8_t hamradio_get_shofvfobmarker(void)
 
 /* по диапазону вытащить все параметры (и частоту) нового диапазона */
 static void
-//NOINLINEAT
+
 loadnewband(
 	vindex_t b,
 	uint_fast8_t bi
@@ -10615,7 +10613,7 @@ loadnewband(
 /* Получить текущий submode для указанного банка
 */
 static uint_fast8_t
-//NOINLINEAT
+
 getsubmode(
 	uint_fast8_t bi		/* vfo bank index */
    )
@@ -10805,7 +10803,7 @@ static int_fast16_t UPPERTOSIGN16(
  * Для телеграфа отображается частота сигнала при частоте cwpitch, при SSB - при нулевых биениях
  */
 static int_least16_t
-//NOINLINEAT
+
 gettone_bymode(
 	uint_fast8_t mode		/* код режима работы */
 	)
@@ -10821,7 +10819,7 @@ gettone_bymode(
  * Для телеграфа отображается частота сигнала при частоте cwpitch, при SSB - при нулевых биениях
  */
 static int_least16_t
-//NOINLINEAT
+
 gettone_bysubmode(
 	uint_fast8_t submode,		/* код режима работы */
 	uint_fast8_t forcelsb		/* когда режим работы smart, требуется этот параметр */
@@ -11004,7 +11002,7 @@ static uint_fast8_t findcatbaudrate(uint_fast8_t old, uint_fast32_t baudrate)
 #if ! WITHISBOOTLOADER
 
 static int_fast32_t
-//NOINLINEAT
+
 getsynthref(
 	uint_fast8_t mode		/* код семейства режимов работы */
 	)
@@ -11144,7 +11142,7 @@ getlo2(
 
 /* получаем LO3 для текущего режима работы */
 static int_fast32_t
-//NOINLINEAT
+
 getlo3(
 	uint_fast8_t mode,		/* код семейства режимов работы */
 	uint_fast8_t mix3lsb,		/* формируем гетеродин для указанной боковой полосы */
@@ -11159,7 +11157,7 @@ getlo3(
 
 /* перенастройка формирования гетеродина для указанного режима. */
 static void
-//NOINLINEAT
+
 update_lo0(
 	uint_fast32_t lo0hint,		/* код частоты ковертора (не всегда совпадает с частотой) */
 	uint_fast8_t lo0side
@@ -11179,7 +11177,7 @@ update_lo0(
 
 /* перенастройка формирования гетеродина для указанного режима. */
 static void
-//NOINLINEAT
+
 update_lo2(
 	uint_fast8_t pathi,		// номер тракта - 0/1: main/sub
 	const filter_t * workfilter,
@@ -11203,7 +11201,7 @@ update_lo2(
 
 /* перенастройка формирования гетеродина для указанного режима. */
 static void
-//NOINLINEAT
+
 update_lo3(
 	uint_fast8_t pathi,		// номер тракта - 0/1: main/sub
 	uint_fast8_t mode,		/* код семейства режимов работы */
@@ -11677,7 +11675,7 @@ getamode(uint_fast8_t pathi)
  * Установка параметров, влияющих на работу валкодера, цветовой схемой дисплея.
  */
 static void
-//NOINLINEAT
+
 updateboard2(void)
 {
 #if WITHENCODER
@@ -11688,7 +11686,7 @@ updateboard2(void)
 
 
 static uint_fast8_t
-//NOINLINEAT
+
 getlsbfull(
 	uint_fast8_t lsb,
 	const uint_fast8_t * sides,
@@ -11702,7 +11700,7 @@ getlsbfull(
 
 /* Получение признака LSB для LO0..LO6 */
 static uint_fast8_t
-//NOINLINEAT
+
 getlsbloX(
 	uint_fast8_t lsb,
 	uint_fast8_t keyindex,	// 0..6 - номер LOx
@@ -15287,7 +15285,7 @@ static void doadcmirror(void)
 
 // обновимть изображение частоты на дисплее
 static void
-//NOINLINEAT
+
 display_redrawfreqstimed(
 	uint_fast8_t immed	// Безусловная перерисовка изображения
 	)
@@ -15508,7 +15506,7 @@ cat_answervariable(const char * p, uint_fast8_t len)
 static char cat_ask_buffer [CAT_ASKBUFF_SIZE];
 
 static void
-//NOINLINEAT
+
 cat_answer(uint_fast8_t len)
 {
 	cat_answervariable(cat_ask_buffer, len);
@@ -15540,7 +15538,7 @@ morseswitchnext(void)
 
 /* todo: переделать на обновление параметра KY в ответе, если KY запрошен. */
 static void
-//NOINLINEAT
+
 cat_set_kyanswer(uint_fast8_t force)
 {
 	// проверка что все буферы заполнены
@@ -16549,9 +16547,7 @@ uint_fast8_t cat_get_keydown(void)
 
 }
 
-
 static void
-NOINLINEAT
 cat_answer_request(uint_fast8_t catindex)
 {
 	if (CAT_MAX_INDEX <= catindex)
@@ -18128,7 +18124,6 @@ static uint_fast8_t getinmenu(const struct menudef * * mp)
    see also loadsavedstate().
    */
 static void
-//NOINLINEAT
 param_loadarrays(void)
 {
 	const struct menudesc * const pmd = & mdsc0;

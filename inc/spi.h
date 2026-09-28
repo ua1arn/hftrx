@@ -120,11 +120,11 @@ void spi_initialize(void);	// отдельно инициализация SPI
 		uint_fast8_t value,
 		uint_fast8_t n				/* number of bits to send */
 		);
-	void NOINLINEAT prog_bit_impl(
+	void prog_bit_impl(
 		spitarget_t target,	/* addressing to chip */
 		uint_fast8_t value
 		);
-	void NOINLINEAT prog_val8_impl(
+	void prog_val8_impl(
 		spitarget_t target,	/* addressing to chip */
 		uint_fast8_t value
 		);

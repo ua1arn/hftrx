@@ -255,7 +255,6 @@ uintptr_t stm32_dmaswap(volatile uint32_t * reg, uintptr_t newaddr)
 //
 #if WITHI2SCLOCKFROMPIN
 	static uint_fast32_t 
-	NOINLINEAT
 	calcdivround_exti2s(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
@@ -264,7 +263,6 @@ uintptr_t stm32_dmaswap(volatile uint32_t * reg, uintptr_t newaddr)
 	}
 #else /* WITHI2SCLOCKFROMPIN */
 	static uint_fast32_t 
-	NOINLINEAT
 	calcdivround_plli2s(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
@@ -1160,7 +1158,6 @@ static const codechw_t audiocodechw_i2s3_rx_slave =
 
 	#if WITHSAICLOCKFROMPIN
 		static uint_fast32_t 
-		NOINLINEAT
 		calcdivround_extsai(
 			uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 			)
@@ -1171,7 +1168,6 @@ static const codechw_t audiocodechw_i2s3_rx_slave =
 
 	#else
 		static uint_fast32_t 
-		NOINLINEAT
 		calcdivround_pllsai(
 			uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 			)

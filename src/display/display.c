@@ -486,7 +486,6 @@ static uint_fast16_t display_put_char(const gxdrawb_t * db, uint_fast16_t x, uin
 
 // Used in display2_freqX_b
 void
-NOINLINEAT
 pix_display_value_small(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения

@@ -41,7 +41,6 @@ extern "C" {
 /* internal function */
 /* this function is'not control chip select/fsync line */
 static void 
-//NOINLINEAT
 prog_ad9834_control(
 	spitarget_t target,		/* addressing to chip */
 	uint_fast8_t reset,	/* 0/1 */
@@ -72,7 +71,6 @@ prog_ad9834_control(
 
 /* set frequency tuning word1 to DDS */
 static void 
-//NOINLINEAT
 prog_ad9834_freq(
 	spitarget_t target,		/* addressing to chip */
 	const phase_t * val,
@@ -111,7 +109,6 @@ prog_ad9834_freq(
 }
 
 static void 
-//NOINLINEAT
 prog_ad9834_init(
 	spitarget_t target,		/* addressing to chip */
 	uint_fast8_t * profile,	/* место для хранения информации о последнем использованном профиле */
