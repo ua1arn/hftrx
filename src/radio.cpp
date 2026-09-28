@@ -377,8 +377,6 @@ static uint_fast8_t gcwpitch10 = 700 / CWPITCHSCALE;	/* тон при прием
 
 #endif /* WITHDSPEXTDDC */
 
-//#define DEBUGEXT 1
-
 static uint_fast8_t getbankindex_raw(uint_fast8_t pathi);
 static uint_fast8_t getbankindex_ab(uint_fast8_t ab);
 static uint_fast8_t getbankindex_pathi(uint_fast8_t pathi);
@@ -3998,6 +3996,7 @@ struct nvmap
 
 	struct bandinfo bands [HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT];
 	struct bandgroup_tag bandgroups [BANDGROUP_COUNT + 1];	/* один элемент для не относящихся к группам диапазонов */
+	//struct bandgroup_tag bandgroups [HBANDS_COUNT + XBANDS_COUNT];	/* доп параметры по диапазонам */
 
 #if WITHANTSELECT2
 	uint8_t hffreqswitch; /* выше этой частоты (МГц) выбирается вторая (ВЧ) антенна */
@@ -8846,14 +8845,7 @@ static void
 
 verifyband(const vindex_t b)
 {
-#if DEBUGEXT
-	if (b == ((uint_fast8_t) - 1))
-	{
-		ASSERT(0);
-		for (;;)
-			;
-	}
-#endif /* DEBUGEXT */
+	ASSERT(b != ((vindex_t) - 1));
 }
 
 
@@ -9485,7 +9477,7 @@ static void loadbandmemortstate(uint_fast8_t b, uint_fast8_t bg, uint_fast8_t bi
 	//
 }
 
-static void savebandmemortstate(uint_fast8_t bg, uint_fast8_t bi, uint_fast8_t mi)
+static void savebandmemortstate(uint_fast8_t b, uint_fast8_t bg, uint_fast8_t bi, uint_fast8_t mi)
 {
 	save_i32(RMT_MIBFREQ_BASE(bg, bi, mi), gfreqs [bi]);
 	save_i8(RMT_MILOCKMODE_BASE(bg, bi, mi), glocks [bi]);	/* признак блокировки валкодера */
@@ -14145,7 +14137,7 @@ static void uif_key_hold_memo(void)
 	const uint_fast8_t mi = calc_next(loadvfy8up(mistore, 0, WITHBANDMEMCOUNT - 1, 0), 0, WITHBANDMEMCOUNT - 1);
 	save_i8(mistore, mi);
 	save_i8(miload, mi);
-	savebandmemortstate(bg, bi, mi);
+	savebandmemortstate(b, bg, bi, mi);
 
 	PRINTF("%s: bg=%u, bi=%u, mi=%u, freq=%u\n", __func__, (unsigned) bg, (unsigned) bi, (unsigned) mi, (unsigned) gfreqs [bi]);
 
