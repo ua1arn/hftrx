@@ -3301,6 +3301,7 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 	{
 		{ 1, WITHBBOXSUBMODE, },
 	};
+
 #elif WITHMODESETSMART
 	static const uint_fast8_t modes [] [2] =
 	{
@@ -3308,12 +3309,14 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 		{ 1, SUBMODE_CWSMART, },
 		{ 1, SUBMODE_DIGISMART, },
 	};
+
 #elif WITHMODESETMIXONLY	// Use only product detector
 	static const uint_fast8_t modes [] [3] =
 	{
 		{ 2, SUBMODE_LSB, SUBMODE_USB, },
 		{ 2, SUBMODE_CWR, SUBMODE_CW, },
 	};
+
 #elif WITHMODESETMIXONLY3
 	static const uint_fast8_t modes [] [4] =
 	{
@@ -3321,11 +3324,13 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 		{ 2, SUBMODE_CWR, SUBMODE_CW, },
 		{ 3, SUBMODE_DGU, SUBMODE_DGL, SUBMODE_CWZ, },
 	};
+
 #elif WITHMODESAMONLY
 	static const uint_fast8_t modes [] [2] =
 	{
 		{ 1, SUBMODE_AM, },
 	};
+
 #elif WITHMODESETMIXONLY3AM
 	static const uint_fast8_t modes [] [4] =
 	{
@@ -3334,6 +3339,7 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 		{ 2, SUBMODE_AM, SUBMODE_CWZ, },
 		{ 2, SUBMODE_DGU, SUBMODE_DGL, },
 	};
+
 #elif WITHMODESETMIXONLY3NFM // SW2014FM modes set
 	static const uint_fast8_t modes [] [3] =
 	{
@@ -3342,12 +3348,14 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 		{ 2, SUBMODE_NFM, SUBMODE_CWZ, },
 		{ 2, SUBMODE_DGU, SUBMODE_DGL, },
 	};
+
 #elif WITHMODESETMIXONLY2
 	static const uint_fast8_t modes [] [4] =
 	{
 		{ 2, SUBMODE_LSB, SUBMODE_USB, },
 		{ 3, SUBMODE_CWR, SUBMODE_CW, SUBMODE_CWZ },
 	};
+
 #elif (WITHMODESETFULLNFM && WITHWFM)
 	static const uint_fast8_t modes [] [5] =
 	{
@@ -3356,20 +3364,14 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 		{ 3, SUBMODE_AM, SUBMODE_CWZ, SUBMODE_DRM, },
 		{ 4, SUBMODE_NFM, SUBMODE_WFM, SUBMODE_DGU, SUBMODE_DGL, },
 	};
+
 #elif WITHMODESETFULLNFM
-	#if KEYB_FPANEL30_V3
-	static const uint_fast8_t modes [] [4] =
-		{
-			{ 2, SUBMODE_LSB, SUBMODE_USB, },				// ROW 0
-			{ 2, SUBMODE_CWR, SUBMODE_CW, },				// ROW 1
-			{ 3, SUBMODE_AM, SUBMODE_CWZ, SUBMODE_DRM, },	// ROW 2
-			{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },	// ROW 3
-		};
-	#elif WITHMODEM
+	#if WITHMODEM
 		static const uint_fast8_t modes [] [6] =
 		{
 			{ 1, SUBMODE_BPSK, },
 		};
+
 	#elif WITHSAM
 	static const uint_fast8_t modes [] [6] =
 		{
@@ -3382,38 +3384,46 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 			{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },
 		#endif /* WITHRTTY */
 		};
+
 	#else /* WITHMODEM */
-	static const uint_fast8_t modes [] [4] =
+	static const uint_fast8_t modes [] [6] =
 		{
 			{ 2, SUBMODE_LSB, SUBMODE_USB, },
 			{ 2, SUBMODE_CWR, SUBMODE_CW, },
 			{ 3, SUBMODE_AM, SUBMODE_CWZ, SUBMODE_DRM, },
 			{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },
 		};
+
 	#endif /* WITHMODEM */
+
 #elif WITHMODESETFULLNFMWFM
-	static const uint_fast8_t modes [] [5] =
+	static const uint_fast8_t modes [] [6] =
 		{
 			{ 2, SUBMODE_LSB, SUBMODE_USB, },
 			{ 2, SUBMODE_CWR, SUBMODE_CW, },
 			{ 4, SUBMODE_AM, SUBMODE_SAM, SUBMODE_CWZ, SUBMODE_DRM, },
 			{ 4, SUBMODE_NFM, SUBMODE_WFM, SUBMODE_DGU, SUBMODE_DGL, },
 		};
+
 #elif WITHMODESETFULL
-	static const uint_fast8_t modes [] [4] =
+	static const uint_fast8_t modes [] [6] =
 	{
 		{ 2, SUBMODE_LSB, SUBMODE_USB, },
 		{ 2, SUBMODE_CWR, SUBMODE_CW, },
 		{ 3, SUBMODE_AM, SUBMODE_CWZ, SUBMODE_DRM, },
 		{ 2, SUBMODE_DGU, SUBMODE_DGL, },
 	};
-#elif WITHMODESET_IGOR
-	static const uint_fast8_t modes [] [4] =
+
+#else
+	#warning WITHMODESETxxx not defined
+	static const uint_fast8_t modes [] [6] =
 	{
 		{ 2, SUBMODE_LSB, SUBMODE_USB, },
+		{ 2, SUBMODE_CWR, SUBMODE_CW, },
+		{ 3, SUBMODE_AM, SUBMODE_CWZ, SUBMODE_DRM, },
+		{ 2, SUBMODE_DGU, SUBMODE_DGL, },
 	};
-#else
-	#error WITHMODESETxxx not defined
+
 #endif /*  */
 
 
@@ -4052,8 +4062,6 @@ struct nvmap
 #define RMT_FILTER_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].filter)
 #define RMT_STEP_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].step)
 
-//#define RMT_TXPOWER_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txpower)
-//#define RMT_TXCOMPR_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txcompr)
 #define RMT_TXAUDIOINDEX_BASE(i) OFFSETOF(struct nvmap, modes [(i)].txaudioindex)
 #define RMT_MIDDLEMENUPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].gmidmenupos)
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
@@ -4061,15 +4069,10 @@ struct nvmap
 #define RMT_BAND(b) OFFSETOF(struct nvmap, bands [(b)])		// хранимые диапазоны
 #define RMT_MIBAND(bg, mi) OFFSETOF(struct nvmap, bandgroups [(bg)].mibands [(mi)])
 
-#define RMT_LOCKMODE_BASE(b) OFFSETOF(struct nvmap, bands [(b)].glock)		/* признак блокировки валкодера */
-#define RMT_BFREQ_BASE(b) OFFSETOF(struct nvmap, bands [(b)].freq)			/* последняя частота, на которую настроились (4 байта) */
-#define RMT_MODEROW_BASE(b)	OFFSETOF(struct nvmap, bands [(b)].moderow)			/* номер строки в массиве режимов. */
-#define RMT_MODECOLS_BASE(b, j)	OFFSETOF(struct nvmap, bands [(b)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
-
-//#define RMT_LOCKMODE_BASE(b) 			(RMT_BAND((b)) + OFFSETOF(struct bandinfo, glock))				/* признак блокировки валкодера */
-//#define RMT_BFREQ_BASE(b) 				(RMT_BAND((b)) + OFFSETOF(struct bandinfo, freq))				/* последняя частота, на которую настроились (4 байта) */
-//#define RMT_MODEROW_BASE(b)				(RMT_BAND((b)) + OFFSETOF(struct bandinfo, moderow))			/* номер строки в массиве режимов. */
-//#define RMT_MODECOLS_BASE(b, j)			(RMT_BAND((b)) + OFFSETOF(struct bandinfo, modecols [(j)]))		/* выбранный столбец в каждой строке режимов. */
+#define RMT_LOCKMODE_BASE(b) 			(RMT_BAND((b)) + OFFSETOF(struct bandinfo, glock))				/* признак блокировки валкодера */
+#define RMT_BFREQ_BASE(b) 				(RMT_BAND((b)) + OFFSETOF(struct bandinfo, freq))				/* последняя частота, на которую настроились (4 байта) */
+#define RMT_MODEROW_BASE(b)				(RMT_BAND((b)) + OFFSETOF(struct bandinfo, moderow))			/* номер строки в массиве режимов. */
+#define RMT_MODECOLS_BASE(b, j)			(RMT_BAND((b)) + OFFSETOF(struct bandinfo, modecols [(j)]))		/* выбранный столбец в каждой строке режимов. */
 
 #define RMT_MILOCKMODE_BASE(bg, mi) 	(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, glock))		/* признак блокировки валкодера */
 #define RMT_MIBFREQ_BASE(bg, mi) 		(RMT_MIBAND((bg), (mi)) + OFFSETOF(struct bandinfo, freq))		/* последняя частота, на которую настроились (4 байта) */

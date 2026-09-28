@@ -727,62 +727,6 @@ uint_fast16_t geterasekey(void)
 	return KBD_CODE_SPLIT;
 }
 
-#elif KEYB_FPANEL30_V3
-
-/* 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
-static const struct qmkey qmdefs [NQMKEYS] =
-{
-	/* RRR справа от индикатора, крайний правый (дальний от инлдикатора) - снизу вверх */
-	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
-	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
-	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED, 	'#', },		// SPLIT/SPLIT OFF
-	{ KIF_NONE,		KBD_CODE_BAND_24M9,		KBD_CODE_MENU_CWSPEED, 	'9', },		// CW SPEED
-	{ KIF_NONE,		KBD_CODE_BAND_14M0,		KBD_CODE_1,				'6', },		//
-	{ KIF_NONE,		KBD_CODE_BAND_5M3,		KBD_CODE_A_EX_B,		'3', },		// A/B
-
-	/* LLL Cлева от индикатора - ряд 1 по счету слева - снизу вверх */
-	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
-	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// TUNER BYP/ATU START
-	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC/SD FORMAT
-	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
-	{ KIF_NONE,		KBD_CODE_PAMP,			KBD_CODE_5, 			' ', },		// PRE
-	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_6,				' ', },		// ATT
-
-	/* RRR справа от индикатора, второй от края - снизу вверх */
-	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
-	{ KIF_NONE,		KBD_CODE_ENTERFREQ,		KBD_CODE_ENTERFREQDONE,	' ', },		// enter frequency
-	{ KIF_NONE,		KBD_CODE_BAND_50M0,		KBD_CODE_BKIN,			'0', },		// BREAK-IN
-	{ KIF_NONE,		KBD_CODE_BAND_21M0,		KBD_CODE_LDSPTGL,		'8', },		// Seaker on/off
-	{ KIF_NONE,		KBD_CODE_BAND_10M1,		KBD_CODE_BAND_10M1,		'5', },		// 11
-	{ KIF_NONE,		KBD_CODE_BAND_3M5,		KBD_CODE_A_EQ_B,		'2', },		// A=B
-
-	/* RRR справа от индикатора, ближний к индикатиору - снизу вверх */
-	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU,			' ', },		// MENU
-	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_10, 			' ', },		// A/B
-	{ KIF_NONE,		KBD_CODE_BAND_28M0,		KBD_CODE_VOXTOGGLE,		'.', },		// VOX
-	{ KIF_NONE,		KBD_CODE_BAND_18M0,		KBD_CODE_DATATOGGLE,	'7', },		// DATA MODE
-	{ KIF_NONE,		KBD_CODE_BAND_7M0,		KBD_CODE_ANTENNA,		'4', },		// ANTENNA
-	{ KIF_NONE,		KBD_CODE_BAND_1M8,		KBD_CODE_11,			'1', },		//
-
-	/* LLL Cлева от индикатора - ряд 2 по счету слева - снизу вверх */
-	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_NR, 			' ', },		// BW/NR
-	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	' ', },		// BW/NR
-	{ KIF_NONE,		KBD_CODE_MODE_3,		KBD_CODE_MODEMOD_3, 	' ', },		// MODE/SUBMODE
-	{ KIF_NONE,		KBD_CODE_MODE_2,		KBD_CODE_MODEMOD_2, 	' ', },		// MODE/SUBMODE
-	{ KIF_NONE,		KBD_CODE_MODE_1,		KBD_CODE_MODEMOD_1, 	' ', },		// MODE/SUBMODE
-	{ KIF_NONE,		KBD_CODE_MODE_0,		KBD_CODE_MODEMOD_0, 	' ', },		// MODE/SUBMODE
-
-	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
-	/* кнопка выключения питания (включение аппаратно) */
-	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
-};
-
-uint_fast16_t geterasekey(void)
-{
-	return KBD_CODE_SPLIT;
-}
-
 #elif KEYB_FPANEL20_V0A_RA1AGO
 
 /* 20 кнопок на 5 линий - перевернутые */
