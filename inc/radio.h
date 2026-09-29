@@ -1089,7 +1089,7 @@ void hamradio_disable_encoder2_redirect (void);
 void hamradio_disable_keyboard_redirect(void);
 void hamradio_enable_encoder2_redirect (void);
 void hamradio_enable_keyboard_redirect(void);
-void hamradio_get_antivox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_get_antivox_level_limits(uint_fast8_t * min, uint_fast8_t * max);
 int hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC1F */
 int hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояняя ENC2F */
 int hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC3F */
@@ -1232,6 +1232,13 @@ param_getvalue(
 void
 param_load(
 	const struct paramdefdef * pd
+	);
+// Минимальное и максимальное значение, которое можно передать в param_setvalue
+void
+param_getminmax(
+	const struct paramdefdef * pd,
+	int_fast32_t * pmin,
+	int_fast32_t * pmax
 	);
 
 

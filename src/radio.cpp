@@ -557,6 +557,27 @@ param_setvalue(
 	}
 }
 
+// Минимальное и максимальное значение, которое можно передать в param_setvalue
+void
+param_getminmax(
+	const struct paramdefdef * pd,
+	int_fast32_t * pmin,
+	int_fast32_t * pmax
+	)
+{
+	if (ismenukinddp(pd, ITEM_VALUE))
+	{
+		* pmin = pd->qbottom + pd->funcoffs();
+		* pmax = pd->qupper + pd->funcoffs();
+	}
+	else
+	{
+		ASSERT(0);
+		* pmin = 0;
+		* pmax = 1;
+	}
+}
+
 int_fast32_t
 param_getvalue(
 	const struct paramdefdef * pd
@@ -590,7 +611,7 @@ param_getvalue(
 		{
 			return (int_fast32_t) * pv8 + pd->funcoffs();
 		}
-		return pd->qbottom;
+		return pd->qbottom + pd->funcoffs();
 	}
 	return 0;
 }
@@ -3561,11 +3582,11 @@ struct nvmap {
 	uint8_t gsleeptime;
 #endif /* WITHSLEEPTIMER */
 
+#if defined(CODEC1_TYPE)
+	uint16_t 	ggrpcodecparams;		// последний посещённый пункт группы
 #if WITHMIC1LEVEL
 	uint16_t gmik1level;
 #endif /* WITHMIC1LEVEL */
-#if defined(CODEC1_TYPE)
-	uint16_t 	ggrpcodecparams;		// последний посещённый пункт группы
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 	uint8_t ALCNEN;// = 0;	// ALC noise gate function control bit
 	uint8_t ALCNTH;// = 0;	// ALC noise gate threshold level
@@ -19781,9 +19802,9 @@ static uint_fast8_t modetxrequest(void)
 	const uint_fast8_t bi = getbankindex_tx(1);		// TX bankindex
 	const uint_fast8_t submode = getsubmode(bi);	// какая модуляция в режиме передачи
 	const struct modetempl * const pmodet = getmodetempl(submode);
-	if (gbkinenable && pmodet->txcw && (pmodet->wbkin || (pmodet->abkin && gcwssbtx)) && vox_getbkin())
+	if (param_getvalue(& xgbkinenable) && pmodet->txcw && (pmodet->wbkin || (pmodet->abkin && gcwssbtx)) && vox_getbkin())
 		return 1;
-	if (gvoxenable && pmodet->vox && vox_getptt())
+	if (param_getvalue(& xgvoxenable) && pmodet->vox && vox_getptt())
 		return 1;
 
 	return 0;
@@ -21289,73 +21310,69 @@ uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bott
 
 void hamradio_set_gvoxenable(uint_fast8_t v)
 {
-	gvoxenable = v != 0;
-	save_i8(OFFSETOF(struct nvmap, gvoxenable), gvoxenable);
+	param_setvalue(& xgvoxenable, !! v);
 	updateboard();
 }
 
 uint_fast8_t hamradio_get_gvoxenable(void)
 {
-	return gvoxenable;
+	return param_getvalue(& xgvoxenable);
 }
 
 void hamradio_get_vox_delay_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
-	* min = WITHVOXDELAYMIN;
-	* max = WITHVOXDELAYMAX;
+	int_fast32_t vmin, vmax;
+	param_getminmax(& xgvoxdelay, & vmin, & vmax);
+	* min = vmin;
+	* max = vmax;
 }
 
 uint_fast8_t hamradio_get_vox_delay(void)
 {
-	return voxdelay;
+	return param_getvalue(& xgvoxdelay);
 }
 
 void hamradio_set_vox_delay(uint_fast8_t v)
 {
-	ASSERT(v >= WITHVOXDELAYMIN);
-	ASSERT(v <= WITHVOXDELAYMAX);
-	voxdelay = v;
-	save_i8(OFFSETOF(struct nvmap, voxdelay), voxdelay);
+	param_setvalue(& xgvoxdelay, v);
 	updateboard();
 }
 
 void hamradio_get_vox_level_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
-	* min = WITHVOXLEVELMIN;
-	* max = WITHVOXLEVELMAX;
+	int_fast32_t vmin, vmax;
+	param_getminmax(& xgvoxlevel, & vmin, & vmax);
+	* min = vmin;
+	* max = vmax;
 }
 
 uint_fast8_t hamradio_get_vox_level(void)
 {
-	return gvoxlevel;
+	return param_getvalue(& xgvoxlevel);
 }
 
 void hamradio_set_vox_level(uint_fast8_t v)
 {
-	ASSERT(v >= WITHVOXLEVELMIN);
-	ASSERT(v <= WITHVOXLEVELMAX);
-	gvoxlevel = v;
-	save_i8(OFFSETOF(struct nvmap, gvoxlevel), gvoxlevel);
+	param_setvalue(& xgvoxlevel, v);
 	updateboard();
 }
 
-void hamradio_get_antivox_delay_limits(uint_fast8_t * min, uint_fast8_t * max)
+void hamradio_get_antivox_level_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
-	* min = WITHAVOXLEVELMIN;
-	* max = WITHAVOXLEVELMAX;
+	int_fast32_t vmin, vmax;
+	param_getminmax(& xgavoxlevel, & vmin, & vmax);
+	* min = vmin;
+	* max = vmax;
 }
 
 uint_fast8_t hamradio_get_antivox_level(void)
 {
-	return gavoxlevel;
+	return param_getvalue(& xgavoxlevel);
 }
 
 void hamradio_set_antivox_level(uint_fast8_t v)
 {
-	ASSERT(v >= WITHAVOXLEVELMIN);
-	ASSERT(v <= WITHAVOXLEVELMAX);
-	gavoxlevel = v;
-	save_i8(OFFSETOF(struct nvmap, gavoxlevel), gavoxlevel);
+	param_setvalue(& xgavoxlevel, v);
 	updateboard();
 }
 
@@ -21367,41 +21384,39 @@ void hamradio_set_antivox_level(uint_fast8_t v)
 
 void hamradio_get_reverb_delay_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
-	* min = WITHREVERBDELAYMIN;
-	* max = WITHREVERBDELAYMAX;
+	int_fast32_t vmin, vmax;
+	param_getminmax(& xgreverbdelay, & vmin, & vmax);
+	* min = vmin;
+	* max = vmax;
 }
 
 void hamradio_get_reverb_loss_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
-	* min = WITHREVERBLOSSMIN;
-	* max = WITHREVERBLOSSMAX;
+	int_fast32_t vmin, vmax;
+	param_getminmax(& xgreverbloss, & vmin, & vmax);
+	* min = vmin;
+	* max = vmax;
 }
 
 uint_fast8_t hamradio_get_reverb_delay(void)
 {
-	return greverbdelay;
+	return param_getvalue(& xgreverbdelay);
 }
 
 uint_fast8_t hamradio_get_reverb_loss(void)
 {
-	return greverbloss;
+	return param_getvalue(& xgreverbloss);
 }
 
 void hamradio_set_reverb_delay(uint_fast8_t v)
 {
-	ASSERT(v >= WITHREVERBDELAYMIN);
-	ASSERT(v <= WITHREVERBDELAYMAX);
-	greverbdelay = v;
-	save_i8(OFFSETOF(struct nvmap, greverbdelay), greverbdelay);
+	param_setvalue(& xgreverbdelay, v);
 	updateboard();
 }
 
 void hamradio_set_reverb_loss(uint_fast8_t v)
 {
-	ASSERT(v >= WITHREVERBLOSSMIN);
-	ASSERT(v <= WITHREVERBLOSSMAX);
-	greverbloss = v;
-	save_i8(OFFSETOF(struct nvmap, greverbloss), greverbloss);
+	param_setvalue(& xgreverbloss, v);
 	updateboard();
 }
 
