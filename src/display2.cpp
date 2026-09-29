@@ -2011,18 +2011,6 @@ static void sm_draw_dial_tx_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 	const uint_fast16_t swrV = get_swr(swr_fullscale);
 	gswr = smpr->gs + normalize(swrV, 0, swr_fullscale, smpr->ge - smpr->gs);
 
-	if (gp > smpr->gs)
-		gp_smooth = gp;
-
-	if (gp == smpr->gs && gp_smooth > smpr->gs)
-		gp = (gp_smooth -= gx_hyst) > smpr->gs ? gp_smooth : smpr->gs;
-
-	if (gswr > smpr->gs)
-		gswr_smooth = gswr;
-
-	if (gswr == smpr->gs && gswr_smooth > smpr->gs && gswr_smooth >= gx_hyst)
-		gswr = (gswr_smooth -= gx_hyst) > smpr->gs ? gswr_smooth : smpr->gs;
-
 	// TX state
 	colpip_bitblt(
 			db->cachebase, db->cachesize,
@@ -2034,6 +2022,7 @@ static void sm_draw_dial_tx_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 			BITBLT_FLAG_NONE, 0);
 
 	smeter_arrow_rle(db, gp, x0, y0, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
+	smeter_arrow_rle(db, gptrace, x0, y0, smeter_bg_new.width, smeter_bg_new.height, COLOR_DARKGRAY);
 #if WITHAA
 	display_do_AA(db, x0, y0, SM_BG_W, SM_BG_H);
 #endif /* WITHAA */
