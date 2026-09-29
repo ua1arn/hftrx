@@ -3649,14 +3649,16 @@ struct nvmap {
 #if WITHMIC1LEVEL
 	uint16_t gmik1level;
 #endif /* WITHMIC1LEVEL */
-#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+#if defined(CODEC1_TYPE)
 	uint16_t 	ggrpcodecparams;		// последний посещённый пункт группы
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 	uint8_t ALCNEN;// = 0;	// ALC noise gate function control bit
 	uint8_t ALCNTH;// = 0;	// ALC noise gate threshold level
 	uint8_t ALCEN;// = 1;	// only left channel ALC enabled
 	uint8_t ALCMXGAIN;// = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
 	uint8_t ALCMNGAIN;// = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
+#endif /* defined(CODEC1_TYPE)  */
 #if WITHTX
 	uint16_t	ggrptxparams; // последний посещённый пункт группы
 	//uint8_t gfitx;		/* номер используемого фильтра на передачу */

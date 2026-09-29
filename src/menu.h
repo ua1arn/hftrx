@@ -485,7 +485,7 @@
 	& xgmikeequalizer_param8,
 	& xgmikeequalizer_param9,
 #endif /* WITHTX && WITHIF4DSP */
-#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+#if defined(CODEC1_TYPE)
 /* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("CODEC"), 0, 0, 0,
@@ -506,6 +506,7 @@
 #if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	& xglineamp,	/* подстройка усиления с линейного входа через меню. */
 #endif /* WITHAFCODEC1HAVELINEINLEVEL */
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 //	unsigned ALCNEN = 0;	// ALC noise gate function control bit
 //	unsigned ALCNTH = 0;	// ALC noise gate threshold level
 //	unsigned ALCEN = 1;	// only left channel ALC enabled
@@ -567,6 +568,7 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
+#endif /* defined(CODEC1_TYPE) */
 #if WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN || WITHUSEUSBBT)
 /* group name +++ */
 	(const struct paramdefdef [1]) {
