@@ -3482,8 +3482,8 @@ struct bandprops_tag {
 	struct onetxant_tag otxants [ANTMODE_COUNT];	// Параметры, связанные с антенами, которые могут использоваться на передачу (параметры тюнера)
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
-#define BANDS_COUNT (HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT)
-#define BANDPROPS_COUNT (HBANDS_COUNT + XBANDS_COUNT)
+enum { BANDS_COUNT = HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT };
+enum { BANDPROPS_COUNT = HBANDS_COUNT + XBANDS_COUNT };
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
 	 переменных в конфигурационном ОЗУ.
