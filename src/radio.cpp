@@ -3476,12 +3476,9 @@ struct onetxant_tag {
  	 Информация, сохраняемая для группы диапазонов */
 
 struct bandprops_tag {
-#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
 	uint8_t miload [BANKINDEX_COUNT];			// последний индекс, из которого выбиралась ячейка памяти.
 	uint8_t mistore [BANKINDEX_COUNT];		// последний индекс, в который запоминалась ячейка памяти.
 	struct bandinfo_tag mibands [BANKINDEX_COUNT] [WITHBANDMEMCOUNT];
-#else /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
-#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 	uint8_t rxant;		/* признак включения приемной антенны */
 	uint8_t ant;		/* код выбора антенны (0/1) */
@@ -9344,8 +9341,6 @@ storebandstate(const vindex_t vi, const uint_fast8_t bi)
 	storebandprops(bp, ant, rxant);
 }
 
-#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
-
 static void loadbandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t mi)
 {
 	ASSERT(bp < BANDPROPS_COUNT);
@@ -9382,7 +9377,6 @@ static void savebandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t m
 	save_i8(RMT_MIMODEROW_BASE(bp, bi, mi), row);
 	save_i8(RMT_MIMODECOLS_BASE(bp, bi, mi, row), gmodecolmaps [bi] [row]);
 }
-#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 
 /* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
 static uint_fast8_t
@@ -13973,7 +13967,6 @@ static void uif_key_click_memo(void)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 
-#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
 	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 
 	// Выбрать следующую ячейку
@@ -13993,10 +13986,6 @@ static void uif_key_click_memo(void)
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
 	updateboard();
 	bring_tuneA();
-
-#else /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
-	uif_key_click_bandjump(gfreqs [bi]);
-#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 }
 
 /* запомнить частоту в диапазоне */
@@ -14005,13 +13994,14 @@ static void uif_key_hold_memo(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
+
 	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 
 	// сохранить текушее состояние
 	verifyband(b);
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	storebandfreq(b, bi);
+
 	// Выбрать следующую ячейку
 	const nvramaddress_t miload = OFFSETOF(struct nvmap, bandprops [b].miload [bi]);
 	const nvramaddress_t mistore = OFFSETOF(struct nvmap, bandprops [b].mistore [bi]);
@@ -14022,7 +14012,6 @@ static void uif_key_hold_memo(void)
 
 	PRINTF("%s: b=%u, bi=%u, mi=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) mi, (unsigned) gfreqs [bi]);
 
-#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 }
 
 #if ! WITHAGCMODENONE
