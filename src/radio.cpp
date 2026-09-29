@@ -29,7 +29,7 @@
 //#define WITHRPTOFFSET 1
 #define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
 #ifndef WITHBANDMEMCOUNT
-#define WITHBANDMEMCOUNT 2
+#define WITHBANDMEMCOUNT 1
 #endif /* WITHBANDMEMCOUNT */
 
 #define UI_TICKS_PERIOD 50	// ms
