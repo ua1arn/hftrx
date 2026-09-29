@@ -21905,7 +21905,7 @@ uint_fast8_t hamradio_get_submode(void)
 void hamradio_clean_memory_cells(uint_fast8_t i)
 {
 	ASSERT(i < MBANDS_COUNT);
-	save_i32(RMT_BFREQ_BASE(MBANDS_BASE + i));
+	save_i32(RMT_BFREQ_BASE(MBANDS_BASE + i), 0);
 }
 
 void hamradio_save_memory_cells(uint_fast8_t i)
@@ -23076,7 +23076,9 @@ static const struct paramdefdef * nomenulist [] =
 {
 	& xgmutespkr,	/*  выключение динамика */
 #if WITHIF4DSP
+#if WITHUSBHW && WITHUSBUAC
 	& xgdatamode,
+#endif /* WITHUSBHW && WITHUSBUAC */
 	& xgsquareness10,	/* Коэффициент прямоугольности фильтра в десятых долях */
 	& xagcfence1,
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
