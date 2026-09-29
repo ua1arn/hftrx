@@ -7907,11 +7907,12 @@ static void auto_tune0_init(void)
 // 1 - aborted
 static enum phases auto_tune0(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	unsigned ndummies;
 	const uint_fast8_t tx = 1;
 	const uint_fast8_t bi = getbankindex_tx(tx);
 	const uint_fast32_t freq = gfreqs [bi];
-	tuner_bp = getfreqband(freq);
+	tuner_bp = getfreqband(freq, bandset_no_check);
 	tuner_ant = geteffantenna(freq);
 
 	PRINTF(PSTR("auto_tune start\n"));
@@ -14097,9 +14098,10 @@ static uint_fast8_t geteffrxantenna(uint_fast32_t f)
 static void
 uif_key_next_antenna(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t b = getfreqband(gfreqs [bi]);
+	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
 
 	gantennabym = calc_next(gantennabym, 0, ANTMODE_COUNT - 1);
 	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
@@ -14113,10 +14115,11 @@ uif_key_next_antenna(void)
 static void
 uif_key_next_autoantmode(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	gantmanual = calc_next(gantmanual, 0, 1);
 	save_i8(RMT_ANTMANUAL_BASE, gantmanual);
-	const uint_fast8_t b = getfreqband(gfreqs [bi]);
+	const uint_fast8_t bg = getfreqband(gfreqs [bi], bandset_no_check);
 	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
 	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
 	loadbandprops(bg, effantenna, effrxantenna);
@@ -14141,9 +14144,10 @@ static uint_fast8_t geteffrxantenna(uint_fast32_t f)
 static void
 uif_key_next_antenna(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t b = getfreqband(gfreqs [bi]);
+	const uint_fast8_t bg = getfreqband(gfreqs [bi], bandset_no_check);
 
 	gantenna = calc_next(gantenna, 0, ANTMODE_COUNT - 1);
 	loadbandprops(bg, gantenna, grxantenna);
