@@ -2772,20 +2772,26 @@ static const struct modetempl mdt [MODE_COUNT] =
 };
 
 
-#define ENCRES_24	0	/* значение по умолчанию для индекса при использовании енкодера на 24 позиции */
-#define ENCRES_32	1	/* значение по умолчанию для индекса при использовании енкодера на 64 позиций */
-#define ENCRES_64	2	/* значение по умолчанию для индекса при использовании енкодера на 64 позиций */
-#define ENCRES_100	4	/* значение по умолчанию для индекса при использовании енкодера на 100 позиций */
-#define ENCRES_128	5	/* значение по умолчанию для индекса при использовании енкодера на 128 позиций */
-#define ENCRES_256	7	/* значение по умолчанию для индекса при использовании енкодера на 256 позиций */
-#define ENCRES_360	9	/* значение по умолчанию для индекса при использовании енкодера на 360 позиций */
-#define ENCRES_400	10	/* значение по умолчанию для индекса при использовании енкодера на 400 позиций */
-#define ENCRES_600	11	/* значение по умолчанию для индекса при использовании енкодера на 600 позиций */
 
-/* скорость 115200 не добавлена из соображений невозможностти точного формирования на atmega
-   при частоте генератора 8 МГц
-   */
-static const uint_fast8_t encresols [] =
+enum
+{
+	ENCRES_24,
+	ENCRES_32,
+	ENCRES_64,
+	ENCRES_96,
+	ENCRES_100,
+	ENCRES_128,
+	ENCRES_144,
+	ENCRES_256,
+	ENCRES_300,
+	ENCRES_360,
+	ENCRES_400,
+	ENCRES_600,
+	//
+	ENCRES_count
+};
+
+static const uint_fast8_t encresols [ENCRES_count] =
 {
 	24 / ENCRESSCALE,	// 0
 	32 / ENCRESSCALE,	// 1
@@ -2810,37 +2816,37 @@ static size_t getvaltextencres(char * buff, size_t count, int_fast32_t value)
 #if WITHTOUCHGUI
 	#define BANDPAD	0
 #else
-	#define BANDPAD 15000UL	/* 15 kHz - запас по сторонам от любительского диапазона */
+	#define BANDPAD 15000	/* 15 kHz - запас по сторонам от любительского диапазона */
 #endif
 
 #if (FIXSCALE_48M0_X1_DIV256 || (defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570))) && WITHMODESETSMART
-	#define BANDFUSBFREQ	13800000L	/* Выше этой частоты по умолчанию используется USB */
+	#define BANDFUSBFREQ	13800000	/* Выше этой частоты по умолчанию используется USB */
 #else
-	#define BANDFUSBFREQ	9000000L	/* Выше этой частоты по умолчанию используется USB */
+	#define BANDFUSBFREQ	9000000	/* Выше этой частоты по умолчанию используется USB */
 #endif
 /* BANDMIDDLE - граница, по которой происходит разделение двух обзорных диапазонов */
 #if defined (BANDMIDDLE)
 
-#elif TUNE_TOP >= 54000000L
+#elif TUNE_TOP >= 54000000
 
-	#define BANDMIDDLE  32000000L //(29700000 + BANDPAD)
-	#define UPPER_DEF	40000000L
+	#define BANDMIDDLE  32000000 //(29700000 + BANDPAD)
+	#define UPPER_DEF	40000000
 
 #elif TUNE_TOP >= 30000000L
 
-	#define BANDMIDDLE	20000000L
-	#define UPPER_DEF	24000000L
+	#define BANDMIDDLE	20000000
+	#define UPPER_DEF	24000000
 
 #elif TUNE_TOP >= 16000000L
 
 	// Р-143 "Багульник"
-	#define BANDMIDDLE	15000000L
-	#define UPPER_DEF	17000000L
+	#define BANDMIDDLE	15000000
+	#define UPPER_DEF	17000000
 
 #else
 	// Р-143 "Багульник"
-	#define BANDMIDDLE	12000000L
-	#define UPPER_DEF	13000000L
+	#define BANDMIDDLE	12000000
+	#define UPPER_DEF	13000000
 
 #endif
 
@@ -6301,24 +6307,6 @@ static const struct paramdefdef xstayfreq =
 		static uint_fast8_t dac1level = (WITHDAC1VALMAX + 1 - WITHDAC1VALMIN) / 2 + WITHDAC1VALMIN;	/* модифицируется через меню. */
 	#endif /* defined (WITHDAC1VALDEF) */
 #endif /* defined (DAC1_TYPE) */
-
-
-#if LO1FDIV_ADJ
-	static uint_fast8_t lo1powmap [2] = { LO1_POWER2, LO1_POWER2 };		/* на сколько делим выходную частоту синтезатора первого гетеродина */
-#endif
-#if LO2FDIV_ADJ
-	static uint_fast8_t lo2powmap [2] = { LO2_POWER2, LO2_POWER2 };		/* на сколько делим выходную частоту синтезатора 2-го гетеродина */
-#endif
-#if LO3FDIV_ADJ
-	static uint_fast8_t lo3powmap [2] = { LO3_POWER2, LO3_POWER2 };		/* на сколько делим выходную частоту синтезатора 3-го гетеродина */
-#endif
-#if LO4FDIV_ADJ
-	static uint_fast8_t lo4powmap [2] = { LO4_POWER2, LO4_POWER2 };		/* на сколько делим выходную частоту синтезатора 4-го гетеродина */
-#endif
-
-#if LO1PHASES
-	static uint_fast16_t phasesmap [2]; /* приемник [0] и передатчик [1] - коррекция фазы - в nvram phaserx и phasetx */
-#endif /* LO1PHASES */
 
 #if 1//WITHBARS
 
@@ -10619,7 +10607,6 @@ static int_fast16_t UPPERTOSIGN16(
  * Для телеграфа отображается частота сигнала при частоте cwpitch, при SSB - при нулевых биениях
  */
 static int_least16_t
-
 gettone_bymode(
 	uint_fast8_t mode		/* код режима работы */
 	)
@@ -10635,7 +10622,6 @@ gettone_bymode(
  * Для телеграфа отображается частота сигнала при частоте cwpitch, при SSB - при нулевых биениях
  */
 static int_least16_t
-
 gettone_bysubmode(
 	uint_fast8_t submode,		/* код режима работы */
 	uint_fast8_t forcelsb		/* когда режим работы smart, требуется этот параметр */
@@ -11260,7 +11246,7 @@ getactualdownpower(txreq_t * txreqp)
 {
 	return
 	#if WITHTX
-		(gdownatcwtune && txreq_gettxtone(txreqp)) ||	/* снижаем мощность до "тюнерной" при нажатии TUNE */
+		(param_getvalue(& xgdownatcwtune) && txreq_gettxtone(txreqp)) ||	/* снижаем мощность до "тюнерной" при нажатии TUNE */
 		txreq_getreqautotune(txreqp) || hardware_get_tune() ||
 	#endif /* WITHTX */
 		0;
@@ -11406,18 +11392,15 @@ getamode(uint_fast8_t pathi)
  * Установка параметров, влияющих на работу валкодера, цветовой схемой дисплея.
  */
 static void
-
 updateboard2(void)
 {
 #if WITHENCODER
-	encoder1_set_resolution(encresols [genc1pulses], genc1dynamic);
+	encoder1_set_resolution(encresols [param_getvalue(& xgenc1pulses)], genc1dynamic);
 #endif /* WITHENCODER */
 	display2_setbgcolor(COLORPIP_BLACK);
 }
 
-
 static uint_fast8_t
-
 getlsbfull(
 	uint_fast8_t lsb,
 	const uint_fast8_t * sides,
@@ -11431,7 +11414,6 @@ getlsbfull(
 
 /* Получение признака LSB для LO0..LO6 */
 static uint_fast8_t
-
 getlsbloX(
 	uint_fast8_t lsb,
 	uint_fast8_t keyindex,	// 0..6 - номер LOx
@@ -11451,60 +11433,18 @@ static uint_fast8_t getlo1div(
 	)
 {
 #if LO1FDIV_ADJ
-	return 1U << lo1powmap [tx];
+	return UINT8_C(1) << lo1powmap [tx];
 #elif defined (LO1_POWER2)
-	return 1U << LO1_POWER2;
+	return UINT8_C(1) << LO1_POWER2;
 #else
-	return 1U;
+	return UINT8_C(1);
 #endif
 }
 
-/* получение значение делителя в тракте lo2 перед подачей на смеситель */
-static uint_fast8_t getlo2div(
-	uint_fast8_t tx
-	)
-{
-#if LO2FDIV_ADJ
-	return 1U << lo2powmap [tx];
-#elif defined (LO2_POWER2)
-	return 1U << LO2_POWER2;
-#else
-	return 1U;
-#endif
-}
-
-/* получение значение делителя в тракте lo3 перед подачей на смеситель */
-static uint_fast8_t getlo3div(
-	uint_fast8_t tx
-	)
-{
-#if LO3FDIV_ADJ
-	return 1U << lo3powmap [tx];
-#elif defined (LO3_POWER2)
-	return 1U << LO3_POWER2;
-#else
-	return 1U;
-#endif
-}
-
-/* получение значение делителя в тракте lo4 перед подачей на смеситель */
-static uint_fast8_t getlo4div(
-	uint_fast8_t tx
-	)
-{
-#if LO4FDIV_ADJ
-	return 1U << lo4powmap [tx];
-#elif defined (LO4_POWER2)
-	return 1U << LO4_POWER2;
-#else
-	return 1U;
-#endif
-}
 
 // speex
 
 #if WITHINTEGRATEDDSP
-
 
 #ifdef WITHLEAKYLMSANR
 
