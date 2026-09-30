@@ -3307,7 +3307,7 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 #endif /*  */
 
 
-#define MODEROW_COUNT (sizeof modes / sizeof modes [0])
+enum { MODEROW_COUNT = (sizeof modes / sizeof modes [0]) };
 
 /* поиск координаты режима в карте режимов.
    код возврвта функции - колонка
@@ -3315,7 +3315,6 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
    TODO: при попытке поиска режима FM, если его нет в списке, ставится LSB (0-й режим в 0-й строке. Не очень красиво.
 */
 static uint_fast8_t
-
 locatesubmode(
 	const uint_fast8_t submode,		/* код режима */
 	uint_fast8_t * const xrow		/* найденные координаты */
@@ -3368,6 +3367,7 @@ validatesubmode(
 	return 0;
 }
 #endif
+
 #endif /* ! WITHISBOOTLOADER */
 
 #if ! WITHISBOOTLOADER
@@ -6394,6 +6394,7 @@ static const struct paramdefdef xgipacali =
 static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом используется результат функции getbankindex_xxx(tx) */
 										/* номер режима работы в маске (номер тройки бит) */
 static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
+
 
 
 static uint_fast8_t gmutespkr;		/*  выключение динамика */
