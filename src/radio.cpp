@@ -12940,8 +12940,8 @@ updateboard_noui(
 				board_set_dactest(gdactest);		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 				board_set_dacstraight(gdacstraight);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 				board_set_tx_inh_enable(gtxinhenable);				/* разрешение реакции на вход tx_inh */
-				board_set_tx_bpsk_enable(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_TX_BPSK);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
-				board_set_mode_wfm(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_WFM);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
+				//board_set_tx_bpsk_enable(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_TX_BPSK);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
+				//board_set_mode_wfm(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_WFM);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
 			#endif /* WITHDSPEXTDDC */
 		#endif /* WITHIF4DSP */
 

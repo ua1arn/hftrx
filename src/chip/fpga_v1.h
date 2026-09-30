@@ -150,8 +150,8 @@ prog_fpga_ctrlreg(
 	RBBIT(26, ! glob_sleep && glob_tx);		/* b26: txdac_en - включение ЦАП */
 	RBBIT(25, glob_tx_loopback);			/* b25: tx_loopback - включение спектроанализатора сигнала передачи */
 //	RBVAL(16, glob_adcoffset, 9);			/* b24..b16: adcoffset - смещение для выходного сигнала с АЦП */
-	RBBIT(15, glob_mode_wfm);				/* b15: mode_wfm - разрешение передачи в DSP квадратур 192 кГц */
-	RBBIT(14, glob_tx_bpsk_enable);			/* b14: tx_bpsk_enable - разрешение прямого формирования модуляции в FPGA */
+//	RBBIT(15, glob_mode_wfm);				/* b15: mode_wfm - разрешение передачи в DSP квадратур 192 кГц */
+//	RBBIT(14, glob_tx_bpsk_enable);			/* b14: tx_bpsk_enable - разрешение прямого формирования модуляции в FPGA */
 	RBBIT(13, glob_tx_inh_enable);			/* b13: tx_inh_enable - разрешение реакции на вход tx_inh */
 	RBBIT(12, glob_dactest);				/* b12: dactest */
 	RBBIT(11, ! glob_sleep && glob_xvrtr);	/* b11: xvrtr_enable */

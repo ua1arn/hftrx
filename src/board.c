@@ -105,9 +105,9 @@ static uint_fast8_t 	glob_classamode;	/* использование режима
 static uint_fast8_t		glob_flt_reset_n;	// сброс фильтров в FPGA DSP
 static uint_fast8_t		glob_dactest;		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 static uint_fast8_t		glob_tx_inh_enable;	/* разрешение реакции FPGA на вход tx_inh */
-static uint_fast8_t		glob_tx_bpsk_enable;	/* разрешение прямого формирования модуляции в FPGA */
-static uint_fast8_t		glob_seqphase = SEQPHASE_INIT;		/* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
-static uint_fast8_t		glob_mode_wfm;
+//static uint_fast8_t		glob_tx_bpsk_enable;	/* разрешение прямого формирования модуляции в FPGA */
+//static uint_fast8_t		glob_seqphase = SEQPHASE_INIT;		/* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
+//static uint_fast8_t		glob_mode_wfm;
 static uint_fast8_t		glob_xvrtr;
 static uint_fast8_t		glob_dacstraight;	// Требуется формирование кода для ЦАП в режиме беззнакового кода
 static uint_fast8_t		glob_dither;		/* управление зашумлением в LTC2208 */
@@ -2880,38 +2880,38 @@ board_set_tx_inh_enable(uint_fast8_t v)
 }
 
 /* разрешение прямого формирования модуляции в FPGA */
-void
-board_set_tx_bpsk_enable(uint_fast8_t v)
-{
-	uint_fast8_t n = v != 0;
-	if (glob_tx_bpsk_enable != n)
-	{
-		glob_tx_bpsk_enable = n;
-		board_ctlreg1changed();
-	}
-}
+//void
+//board_set_tx_bpsk_enable(uint_fast8_t v)
+//{
+//	uint_fast8_t n = v != 0;
+//	if (glob_tx_bpsk_enable != n)
+//	{
+//		glob_tx_bpsk_enable = n;
+//		board_ctlreg1changed();
+//	}
+//}
 
 /* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
-void
-board_set_seqphase(uint_fast8_t n)
-{
-	if (glob_seqphase != n)
-	{
-		glob_seqphase = n;
-		board_ctlreg1changed();
-	}
-}
+//void
+//board_set_seqphase(uint_fast8_t n)
+//{
+//	if (glob_seqphase != n)
+//	{
+//		glob_seqphase = n;
+//		board_ctlreg1changed();
+//	}
+//}
 
-void
-board_set_mode_wfm(uint_fast8_t v)
-{
-	uint_fast8_t n = v != 0;
-	if (glob_mode_wfm != n)
-	{
-		glob_mode_wfm = n;
-		board_ctlreg1changed();
-	}
-}
+//void
+//board_set_mode_wfm(uint_fast8_t v)
+//{
+//	uint_fast8_t n = v != 0;
+//	if (glob_mode_wfm != n)
+//	{
+//		glob_mode_wfm = n;
+//		board_ctlreg1changed();
+//	}
+//}
 
 void
 board_set_xvrtr(uint_fast8_t v)

@@ -101,9 +101,8 @@ void board_set_xvrtr(uint_fast8_t v);	/* Разрешить работу кон�
 void board_set_dacstraight(uint_fast8_t v);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 void board_set_dactest(uint_fast8_t v);	/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 void board_set_tx_inh_enable(uint_fast8_t v);	/* разрешение реакции на вход tx_inh */
-void board_set_tx_bpsk_enable(uint_fast8_t v);	/* разрешение прямого формирования модуляции в FPGA */
-void board_set_seqphase(uint_fast8_t v);	// состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
-void board_set_mode_wfm(uint_fast8_t v);
+//void board_set_tx_bpsk_enable(uint_fast8_t v);	/* разрешение прямого формирования модуляции в FPGA */
+//void board_set_mode_wfm(uint_fast8_t v);
 void board_set_dither(uint_fast8_t v);	/* управление зашумлением в LTC2208 */
 void board_set_adcrand(uint_fast8_t v);	/* управление интерфейсом в LTC2208 */
 void board_set_dacscale(uint_fast16_t n);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100.00% */
@@ -161,6 +160,18 @@ void board_set_nb_enable(uint_fast8_t pathi, uint_fast8_t v);	/* Управле�
 void board_set_displayfps(uint_fast8_t v);
 
 void board_set_rtty_parametrs(int_fast32_t baudrate10, int_fast32_t shift, uint_fast8_t inverted);
+
+
+/* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
+// Параметр функции board_set_seqphase()
+//enum
+//{
+//	SEQPHASE_INIT,	// RX
+//	SEQPHASE_FULLTX,	// TX
+//	//
+//	SEQPHASE_count
+//};
+//void board_set_seqphase(uint_fast8_t v);	// состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
 
 enum
 {
