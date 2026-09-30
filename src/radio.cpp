@@ -3309,6 +3309,11 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 enum { MODEROW_COUNT = (sizeof modes / sizeof modes [0]) };
 
 
+static uint_fast8_t
+getdefaultbandsubmode(
+	uint_fast32_t freq	/* частота (изображение на дисплее) */
+	);
+
 /* поиск координаты режима в карте режимов.
    код возврвта функции - колонка
    Если не найден - возврат 0 и строки 0.
@@ -3371,6 +3376,19 @@ static void moderowinfo(void)
 	PRINTF("totalbits=%u, totalbytes=%u\n", totalbits, totalbytes);
 }
 
+static uint_fast8_t
+getmodecol(uint_fast8_t index, uint_fast8_t bi)		/* bank index */
+{
+	uint_fast8_t v = gmodecolmaps [bi] [index];
+//	if (v > upper)
+//	{
+//		gmodecolmaps [bi] [index] = def;
+//		return def;
+//	}
+	return v;
+}
+
+#if 1
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
 	 переменных в конфигурационном ОЗУ.
@@ -3394,11 +3412,6 @@ static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
 		save_i8(place + OFFSETOF(modeinfo_t, modecols [i]), gmodecolmaps [bi] [i]);
 }
 
-static uint_fast8_t
-getdefaultbandsubmode(
-	uint_fast32_t freq	/* частота (изображение на дисплее) */
-	);
-
 static void loadmodeinfo(nvramaddress_t place, uint_fast8_t bi, uint_fast32_t freq)
 {
 	const uint_fast8_t defsubmode = getdefaultbandsubmode(freq);		/* режим по-умолчанию для частоты - USB или LSB */
@@ -3406,16 +3419,19 @@ static void loadmodeinfo(nvramaddress_t place, uint_fast8_t bi, uint_fast32_t fr
 	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
 
 	// прописываем режим работы по умолчанию для данного диапазона
-	gmodecolmaps [bi] [defrow] = loadvfy8up(place + OFFSETOF(modeinfo_t, modecols [defrow]), 0, modes [defrow] [0] - 1, defcol);
 	gmoderows [bi] = loadvfy8up(place +  OFFSETOF(modeinfo_t, moderow), 0, MODEROW_COUNT - 1, defrow);
-
-	uint_fast8_t i;
-	for (i = 0; i < MODEROW_COUNT; ++ i)
+	uint_fast8_t row;
+	for (row = 0; row < MODEROW_COUNT; ++ row)
 	{
-		gmodecolmaps [bi] [i] = loadvfy8up(place + OFFSETOF(modeinfo_t, modecols [i]), 0, 254, 254);	// везде прописывается 0 - потом ещё уточним.
+		gmodecolmaps [bi] [row] = loadvfy8up(
+				place + OFFSETOF(modeinfo_t, modecols [row]),
+				0, modes [row] [0] - 1,
+				defrow == row ? defcol : 0);	// 0 по умолчанию для всех не предустановленных
 	}
 	glocks [bi] = loadvfy8up(place + OFFSETOF(modeinfo_t, lock), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
 }
+#else
+#endif
 
 #if 0
 /* проверка наличия режима в карте режимов.
@@ -3517,7 +3533,7 @@ struct onetxant_tag {
 struct bandprops_tag {
 	uint8_t miload [BANKINDEX_COUNT];			// последний индекс, из которого выбиралась ячейка памяти.
 	uint8_t mistore [BANKINDEX_COUNT];		// последний индекс, в который запоминалась ячейка памяти.
-	struct modeinfo_tag mibands [BANKINDEX_COUNT] [WITHBANDMEMCOUNT];
+	modeinfo_t mibands [BANKINDEX_COUNT] [WITHBANDMEMCOUNT];	// частота, lock, mode
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 	uint8_t rxant;		/* признак включения приемной антенны */
 	uint8_t ant;		/* код выбора антенны (0/1) */
@@ -3968,7 +3984,7 @@ struct nvmap {
 #endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
 
 	struct modeprops_tag modes [MODE_COUNT];
-	struct modeinfo_tag bands [BANDS_COUNT];
+	modeinfo_t bands [BANDS_COUNT];		// частота, lock, mode
 	struct bandprops_tag bandprops [BANDPROPS_COUNT];	/* доп параметры по диапазонам */
 
 #if WITHANTSELECT2
@@ -9328,23 +9344,6 @@ static void savebandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t m
 	savemodeinfo(RMT_MIBAND(bp, bi, mi), bi);
 }
 
-/* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
-static uint_fast8_t
-getmodecol(
-	uint_fast8_t index,
-	uint_fast8_t upper, // moderow
-	uint_fast8_t def,
-	uint_fast8_t bi)		/* bank index */
-{
-	uint_fast8_t v = gmodecolmaps [bi] [index];
-	if (v > upper)
-	{
-		gmodecolmaps [bi] [index] = def;
-		return def;
-	}
-	return v;
-}
-
 /* внести новое значение в битовую маску */
 static void
 
@@ -10440,7 +10439,7 @@ getsubmode(
 {
 	ASSERT(bi < 2);
 	const uint_fast8_t moderow = gmoderows [bi];
-	const uint_fast8_t modecol = getmodecol(moderow, modes [moderow] [0] - 1, 0, bi);	/* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
+	const uint_fast8_t modecol = getmodecol(moderow, bi);	/* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
 	return modes [moderow] [modecol + 1];	/* выборка из битовой маски */
 }
 
@@ -13527,7 +13526,7 @@ uif_key_hold_modecol(void)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const uint_fast8_t moderow = gmoderows [bi];	/* строка таблицы запомненных режимов */
 
-	uint_fast8_t modecol = getmodecol(moderow, modes [moderow] [0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
+	uint_fast8_t modecol = getmodecol(moderow, bi);
 	modecol = calc_next(modecol, 0, modes [moderow] [0] - 1);
 	putmodecol(moderow, modecol, bi);	/* внести новое значение в битовую маску */
 	/* переустановка частот всех гетеродинов после смены режимов */
@@ -13547,7 +13546,7 @@ uif_key_click_moderow(void)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	uint_fast8_t defrow = gmoderows [bi];		/* строка таблицы режимов, которую покидаем */
-	uint_fast8_t defcol = getmodecol(defrow, modes [defrow] [0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
+	uint_fast8_t defcol = getmodecol(defrow, bi);
 	const uint_fast8_t forcelsb = getforcelsb(gfreqs [bi]);
 
 	gmoderows [bi] = calc_next(gmoderows [bi], 0, MODEROW_COUNT - 1);		/* идём на следующую строку таблицы запомненых режимов */
@@ -13574,7 +13573,7 @@ uif_key_click_moderow(void)
 	if (defrow != gmoderows [bi])
 		defcol = 0;	/* default value (other cases, then switch from usb to cw, from lsb to cwr) */
 	/* пытаемся обратиться за битами - они, взоможно, заменяться значением defcol */
-	(void) getmodecol(gmoderows [bi], modes [gmoderows [bi]] [0] - 1, defcol, bi); /* Возможно, значение modecolmap бует откорректировано. */
+	(void) getmodecol(gmoderows [bi], bi); /* Возможно, значение modecolmap бует откорректировано. */
 
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
@@ -13593,7 +13592,7 @@ uif_key_click_moderows(uint_fast8_t moderow)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const uint_fast8_t rowchanged = (gmoderows [bi] != moderow);
 	uint_fast8_t defrow = gmoderows [bi] = moderow;		/* строка таблицы режимов, которую покидаем */
-	uint_fast8_t defcol = getmodecol(defrow, modes [defrow] [0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
+	uint_fast8_t defcol = getmodecol(defrow, bi);
 	const uint_fast8_t forcelsb = getforcelsb(gfreqs [bi]);
 
 #if WITHMODESETSMART
@@ -13618,7 +13617,7 @@ uif_key_click_moderows(uint_fast8_t moderow)
 	if (defrow != gmoderows [bi])
 		defcol = 0;	/* default value (other cases, then switch from usb to cw, from lsb to cwr) */
 	/* пытаемся обратиться за битами - они, взоможно, заменяться значением defcol */
-	(void) getmodecol(gmoderows [bi], modes [gmoderows [bi]] [0] - 1, defcol, bi); /* Возможно, значение modecolmap бует откорректировано. */
+	(void) getmodecol(gmoderows [bi], bi); /* Возможно, значение modecolmap бует откорректировано. */
 
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
@@ -13641,7 +13640,7 @@ uif_key_hold_modecols(uint_fast8_t moderow)
 		return;
 	}
 
-	uint_fast8_t modecol = getmodecol(moderow, modes [moderow] [0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
+	uint_fast8_t modecol = getmodecol(moderow, bi);
 	modecol = calc_next(modecol, 0, modes [moderow] [0] - 1);
 	putmodecol(moderow, modecol, bi);	/* внести новое значение в битовую маску */
 	/* переустановка частот всех гетеродинов после смены режимов */
