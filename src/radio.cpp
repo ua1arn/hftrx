@@ -3480,7 +3480,9 @@ static void loadmodeinfo0(nvramaddress_t place, uint_fast8_t bi, uint_fast8_t de
 			offset += width;
 		}
 	}
+	ASSERT(ARRAY_SIZE(b) <= (offset + 7) / 8);
 }
+
 static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
 {
 	uint8_t b [MODEINFO_BUNDLESIZE] = { 0 };
@@ -3512,7 +3514,7 @@ static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
 			offset += width;
 		}
 	}
-
+	ASSERT(ARRAY_SIZE(b) <= (offset + 7) / 8);
 	nvram_write(place + OFFSETOF(modeinfo_t, bundle), b, ARRAY_SIZE(b));
 }
 
