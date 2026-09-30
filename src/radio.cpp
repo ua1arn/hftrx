@@ -3308,20 +3308,29 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 
 enum { MODEROW_COUNT = (sizeof modes / sizeof modes [0]) };
 
+static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом используется результат функции getbankindex_xxx(tx) */
+										/* номер режима работы в маске (номер тройки бит) */
+static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
+
 static void moderowinfo(void)
 {
 	const unsigned dim1 = ARRAY_SIZE(modes);
 	const unsigned dim2 = ARRAY_SIZE(modes [0]);
 	unsigned bits0 = __log2_up(dim1);
-	PRINTF("modes: %u rows (bits0=%u):\n", dim1, bits0);
+	const unsigned upvalrow = dim1 - 1;
+	unsigned upvalcols [dim1];
+	PRINTF("modes: %u rows (bits0=%u, upvalidate=%u):\n", dim1, bits0, upvalrow);
+	ASSERT(bits0 != 0);
 	unsigned totalbits = bits0;
 	unsigned row;
 	for (row = 0; row < dim1; ++ row)
 	{
 		unsigned countvalaues = modes [row] [0];
 		unsigned bits = __log2_up(countvalaues);
+		upvalcols [row] = countvalaues;
 		PRINTF("row [%u]: up to: %u, bits=%u\n", row, countvalaues, bits);
 		totalbits += bits;
+		ASSERT(bits != 0);
 	}
 	const unsigned totalbytes = (totalbits + 7) / 8;
 	PRINTF("totalbits=%u, totalbytes=%u\n", totalbits, totalbytes);
@@ -6408,12 +6417,6 @@ static const struct paramdefdef xgipacali =
 #else /* WITHRFSG */
 	enum { userfsg = 0 };
 #endif /* WITHRFSG */
-
-static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом используется результат функции getbankindex_xxx(tx) */
-										/* номер режима работы в маске (номер тройки бит) */
-static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
-
-
 
 static uint_fast8_t gmutespkr;		/*  выключение динамика */
 static const struct paramdefdef xgmutespkr =
