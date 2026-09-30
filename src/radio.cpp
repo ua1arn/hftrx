@@ -3352,6 +3352,104 @@ static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом испол
 										/* номер режима работы в маске (номер тройки бит) */
 static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
 
+#if 1
+/* структура - расположение байтов в конфигурационном ОЗУ.
+   bitfields нельзя использовать, так как всё это - только обозначения смещений
+	 переменных в конфигурационном ОЗУ.
+	Информация, сохраняемая для каждого диапазона */
+
+typedef struct modeinfo_tag
+{
+	uint32_t freq;		/* рабочая частота */
+	uint8_t moderow;					/* номер режима работы в маске (номер тройки бит) */
+	uint8_t modecols [MODEROW_COUNT];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
+	uint8_t lock;						/* блокировка валкодера */
+} ATTRPACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+
+// Save lock, morerow, modecol
+static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
+{
+	save_i8(place + OFFSETOF(modeinfo_t, lock), glocks [bi]);
+
+	save_i8(place + OFFSETOF(modeinfo_t, moderow), gmoderows [bi]);
+	uint_fast8_t i;
+	for (i = 0; i < MODEROW_COUNT; ++ i)
+		save_i8(place + OFFSETOF(modeinfo_t, modecols [i]), gmodecolmaps [bi] [i]);
+}
+
+// Load lock, morerow, modecol
+static void loadmodeinfo0(nvramaddress_t place, uint_fast8_t bi, uint_fast8_t defrow, uint_fast8_t defcol)
+{
+	// прописываем режим работы по умолчанию для данного диапазона
+	gmoderows [bi] = loadvfy8up(place +  OFFSETOF(modeinfo_t, moderow), 0, MODEROW_COUNT - 1, defrow);
+	uint_fast8_t row;
+	for (row = 0; row < MODEROW_COUNT; ++ row)
+	{
+		const uint_fast8_t maxvalue = modes [row] [0] - 1;
+		const uint_fast8_t defvalue = defrow == row ? defcol : 0;
+
+		gmodecolmaps [bi] [row] = loadvfy8up(
+				place + OFFSETOF(modeinfo_t, modecols [row]),
+				0, maxvalue,
+				defvalue);	// 0 по умолчанию для всех не предустановленных
+	}
+	glocks [bi] = loadvfy8up(place + OFFSETOF(modeinfo_t, lock), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
+}
+#else
+
+/* структура - расположение байтов в конфигурационном ОЗУ.
+   bitfields нельзя использовать, так как всё это - только обозначения смещений
+	 переменных в конфигурационном ОЗУ.
+	Информация, сохраняемая для каждого диапазона */
+enum { MODEINFO_BUNDLESIZE = 2 };
+typedef struct modeinfo_tag
+{
+	uint32_t freq;		/* рабочая частота */
+	uint8_t bundle [MODEINFO_BUNDLESIZE];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
+} ATTRPACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+
+
+static unsigned getbit(const uint8_t * b, unsigned pos)
+{
+	const unsigned mask = 1U << pos % 8;
+	const unsigned offset = pos / 8;
+	return !! (b [offset] & mask);
+}
+
+static void putbit(uint8_t * b, unsigned pos, unsigned value)
+{
+	const unsigned mask = 1U << pos % 8;
+	const unsigned offset = pos / 8;
+	b [offset] = (b [offset] & ~ mask) | mask * !! value;
+}
+
+static void putbits(uint8_t * b, unsigned offset, unsigned width, unsigned value)
+{
+	while (width --)
+	{
+		putbit(b, offset ++, (value >> width) & 0x01);
+	}
+}
+
+static unsigned getbits(const uint8_t * b, unsigned offset, unsigned width, unsigned value, unsigned minv, unsigned maxv, unsigned defv)
+{
+	unsigned v;
+	while (width --)
+	{
+		v = v * 2 + getbit(b, offset ++);
+	}
+	return v;
+}
+
+static void loadmodeinfo0(nvramaddress_t place, uint_fast8_t bi, uint_fast8_t defrow, uint_fast8_t defcol)
+{
+}
+static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
+{
+}
+
+#endif
+
 static void moderowinfo(void)
 {
 	const unsigned dim1 = ARRAY_SIZE(modes);
@@ -3379,62 +3477,10 @@ static void moderowinfo(void)
 }
 
 static uint_fast8_t
-getmodecol(uint_fast8_t index, uint_fast8_t bi)		/* bank index */
+getmodecol(uint_fast8_t row, uint_fast8_t bi)		/* bank index */
 {
-	uint_fast8_t v = gmodecolmaps [bi] [index];
-//	if (v > upper)
-//	{
-//		gmodecolmaps [bi] [index] = def;
-//		return def;
-//	}
-	return v;
+	return gmodecolmaps [bi] [row];
 }
-
-#if 1
-/* структура - расположение байтов в конфигурационном ОЗУ.
-   bitfields нельзя использовать, так как всё это - только обозначения смещений
-	 переменных в конфигурационном ОЗУ.
-	Информация, сохраняемая для каждого диапазона */
-
-typedef struct modeinfo_tag
-{
-	uint32_t freq;		/* рабочая частота */
-	uint8_t moderow;					/* номер режима работы в маске (номер тройки бит) */
-	uint8_t modecols [MODEROW_COUNT];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
-	uint8_t lock;						/* блокировка валкодера */
-} ATTRPACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
-
-static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
-{
-	save_i8(place + OFFSETOF(modeinfo_t, lock), glocks [bi]);
-
-	save_i8(place + OFFSETOF(modeinfo_t, moderow), gmoderows [bi]);
-	uint_fast8_t i;
-	for (i = 0; i < MODEROW_COUNT; ++ i)
-		save_i8(place + OFFSETOF(modeinfo_t, modecols [i]), gmodecolmaps [bi] [i]);
-}
-
-static void loadmodeinfo0(nvramaddress_t place, uint_fast8_t bi, uint_fast8_t defrow, uint_fast8_t defcol)
-{
-	// прописываем режим работы по умолчанию для данного диапазона
-	gmoderows [bi] = loadvfy8up(place +  OFFSETOF(modeinfo_t, moderow), 0, MODEROW_COUNT - 1, defrow);
-	uint_fast8_t row;
-	for (row = 0; row < MODEROW_COUNT; ++ row)
-	{
-		const uint_fast8_t maxvalue = modes [row] [0] - 1;
-		const uint_fast8_t defvalue = defrow == row ? defcol : 0;
-
-		gmodecolmaps [bi] [row] = loadvfy8up(
-				place + OFFSETOF(modeinfo_t, modecols [row]),
-				0, maxvalue,
-				defvalue);	// 0 по умолчанию для всех не предустановленных
-	}
-	glocks [bi] = loadvfy8up(place + OFFSETOF(modeinfo_t, lock), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
-}
-#else
-
-
-#endif
 
 static void loadmodeinfo(nvramaddress_t place, uint_fast8_t bi, uint_fast32_t freq)
 {
