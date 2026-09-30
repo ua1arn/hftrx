@@ -3308,33 +3308,6 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 
 enum { MODEROW_COUNT = (sizeof modes / sizeof modes [0]) };
 
-static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом используется результат функции getbankindex_xxx(tx) */
-										/* номер режима работы в маске (номер тройки бит) */
-static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
-
-static void moderowinfo(void)
-{
-	const unsigned dim1 = ARRAY_SIZE(modes);
-	const unsigned dim2 = ARRAY_SIZE(modes [0]);
-	unsigned bits0 = __log2_up(dim1);
-	const unsigned upvalrow = dim1 - 1;
-	unsigned upvalcols [dim1];
-	PRINTF("modes: %u rows (bits0=%u, upvalidate=%u):\n", dim1, bits0, upvalrow);
-	ASSERT(bits0 != 0);
-	unsigned totalbits = bits0;
-	unsigned row;
-	for (row = 0; row < dim1; ++ row)
-	{
-		unsigned countvalaues = modes [row] [0];
-		unsigned bits = __log2_up(countvalaues);
-		upvalcols [row] = countvalaues;
-		PRINTF("row [%u]: up to: %u, bits=%u\n", row, countvalaues, bits);
-		totalbits += bits;
-		ASSERT(bits != 0);
-	}
-	const unsigned totalbytes = (totalbits + 7) / 8;
-	PRINTF("totalbits=%u, totalbytes=%u\n", totalbits, totalbytes);
-}
 
 /* поиск координаты режима в карте режимов.
    код возврвта функции - колонка
@@ -3365,6 +3338,76 @@ locatesubmode(
 	}
 	* xrow = 0;
 	return 0;
+}
+
+static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом используется результат функции getbankindex_xxx(tx) */
+										/* номер режима работы в маске (номер тройки бит) */
+static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
+static uint_fast8_t glocks [BANKINDEX_COUNT];
+
+static void moderowinfo(void)
+{
+	const unsigned dim1 = ARRAY_SIZE(modes);
+	const unsigned dim2 = ARRAY_SIZE(modes [0]);
+	unsigned bits0 = __log2_up(dim1);
+	const unsigned upvalrow = dim1 - 1;
+	unsigned upvalcols [dim1];
+	PRINTF("modes: %u rows (bits0=%u, upvalidate=%u):\n", dim1, bits0, upvalrow);
+	ASSERT(bits0 != 0);
+	unsigned totalbits = bits0;
+	unsigned row;
+	for (row = 0; row < dim1; ++ row)
+	{
+		unsigned countvalaues = modes [row] [0];
+		unsigned bits = __log2_up(countvalaues);
+		upvalcols [row] = countvalaues;
+		PRINTF("row [%u]: up to: %u, bits=%u\n", row, countvalaues, bits);
+		totalbits += bits;
+		ASSERT(bits != 0);
+	}
+	const unsigned totalbytes = (totalbits + 7) / 8;
+	PRINTF("totalbits=%u, totalbytes=%u\n", totalbits, totalbytes);
+}
+
+/* Хранение в NVRAM информации об выбраном режиме */
+typedef struct modeinfo_tag
+{
+	uint8_t moderow;					/* номер режима работы в маске (номер тройки бит) */
+	uint8_t modecols [MODEROW_COUNT];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
+	uint8_t lock;						/* блокировка валкодера */
+} ATTRPACKED modeinfo_t;
+
+static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
+{
+	save_i8(place + OFFSETOF(modeinfo_t, lock), glocks [bi]);
+
+	save_i8(place + OFFSETOF(modeinfo_t, moderow), gmoderows [bi]);
+	uint_fast8_t i;
+	for (i = 0; i < MODEROW_COUNT; ++ i)
+		save_i8(place + OFFSETOF(modeinfo_t, modecols [i]), gmodecolmaps [bi] [i]);
+}
+
+static uint_fast8_t
+getdefaultbandsubmode(
+	uint_fast32_t freq	/* частота (изображение на дисплее) */
+	);
+
+static void loadmodeinfo(nvramaddress_t place, uint_fast8_t bi, uint_fast32_t freq)
+{
+	const uint_fast8_t defsubmode = getdefaultbandsubmode(freq);		/* режим по-умолчанию для частоты - USB или LSB */
+	uint_fast8_t defrow;
+	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
+
+	// прописываем режим работы по умолчанию для данного диапазона
+	gmodecolmaps [bi] [defrow] = loadvfy8up(place + OFFSETOF(modeinfo_t, modecols [defrow]), 0, modes [defrow] [0] - 1, defcol);
+	gmoderows [bi] = loadvfy8up(place +  OFFSETOF(modeinfo_t, moderow), 0, MODEROW_COUNT - 1, defrow);
+
+	uint_fast8_t i;
+	for (i = 0; i < MODEROW_COUNT; ++ i)
+	{
+		gmodecolmaps [bi] [i] = loadvfy8up(place + OFFSETOF(modeinfo_t, modecols [i]), 0, 254, 254);	// везде прописывается 0 - потом ещё уточним.
+	}
+	glocks [bi] = loadvfy8up(place + OFFSETOF(modeinfo_t, lock), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
 }
 
 #if 0
@@ -3444,9 +3487,7 @@ struct modeprops_tag
 struct bandinfo_tag
 {
 	uint32_t freq;		/* рабочая частота */
-	uint8_t modecols [MODEROW_COUNT];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
-	uint8_t moderow;		/* номер режима работы в маске (номер тройки бит) */
-	uint8_t glock;			/* блокировка валкодера */
+	modeinfo_t modeinfo;	/* массив режимов работы */
 } ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* структура - расположение байтов в конфигурационном ОЗУ.
@@ -3972,16 +4013,11 @@ struct nvmap {
 #define RMT_BAND(b) 			(OFFSETOF(struct nvmap, bands [(b)]))		// хранимые диапазоны
 #define RMT_MIBAND(bp, bi, mi) 	(OFFSETOF(struct nvmap, bandprops [(bp)].mibands [(bi)] [(mi)]))
 
-#define RMT_LOCKMODE_BASE(b) 			(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, glock))				/* признак блокировки валкодера */
 #define RMT_BFREQ_BASE(b) 				(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, freq))				/* последняя частота, на которую настроились (4 байта) */
-#define RMT_MODEROW_BASE(b)				(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, moderow))			/* номер строки в массиве режимов. */
-#define RMT_MODECOLS_BASE(b, j)			(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, modecols [(j)]))		/* выбранный столбец в каждой строке режимов. */
+#define RMT_MODEINFO_BASE(b)			(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, modeinfo))			/* массив режимов работы */
 
-#define RMT_MILOCKMODE_BASE(bp, bi, mi) 	(RMT_MIBAND((bp), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, glock))		/* признак блокировки валкодера */
 #define RMT_MIBFREQ_BASE(bp, bi, mi) 		(RMT_MIBAND((bp), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, freq))		/* последняя частота, на которую настроились (4 байта) */
-#define RMT_MIMODEROW_BASE(bp, bi, mi)		(RMT_MIBAND((bp), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, moderow))	/* номер строки в массиве режимов. */
-#define RMT_MIMODECOLS_BASE(bp, bi, mi, j)	(RMT_MIBAND((bp), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, modecols [(j)]))/* выбранный столбец в каждой строке режимов. */
-
+#define RMT_MIMODEINFO_BASE(bp, bi, mi)		(RMT_MIBAND((bp), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, modeinfo))	/* массив режимов работы */
 
 #define RMT_PAMPBG3_BASE(bp, ant, rxant) (OFFSETOF(struct nvmap, bandprops [(bp)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].pamp))	/* признак включения аттенюатора (1 байт) */
 #define RMT_ATTBG3_BASE(bp, ant, rxant) (OFFSETOF(struct nvmap, bandprops [(bp)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].att))		/* признак включения аттенюатора (1 байт) */
@@ -4339,7 +4375,6 @@ static const struct paramdefdef xgcwpitch10 =
 	};
 #endif /* WITHDSPEXTDDC */
 
-static uint_fast8_t glocks [2];
 #if WITHLCDBACKLIGHTOFF
 	// Имеется управление включением/выключением подсветки дисплея
 	static uint_fast8_t dimmmode;
@@ -9274,12 +9309,7 @@ storebandstate(const vindex_t vi, const uint_fast8_t bi)
 	const uint_fast8_t ant = geteffantenna(freq);
 	const uint_fast8_t rxant = geteffrxantenna(freq);
 
-	save_i8(RMT_MODEROW_BASE(vi), gmoderows [bi]);
-	save_i8(RMT_LOCKMODE_BASE(vi), glocks [bi]);
-
-	uint_fast8_t i;
-	for (i = 0; i < MODEROW_COUNT; ++ i)
-		save_i8(RMT_MODECOLS_BASE(vi, i), gmodecolmaps [bi] [i]);
+	savemodeinfo(RMT_MODEINFO_BASE(vi), bi);
 
 	storebandprops(bp, ant, rxant);
 }
@@ -9288,7 +9318,6 @@ static void loadbandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t m
 {
 	ASSERT(bp < BANDPROPS_COUNT);
 	gfreqs [bi] = loadvfy32(RMT_MIBFREQ_BASE(bp, bi, mi), get_band_bottom(bp), get_band_top(bp), get_band_init(bp));
-	glocks [bi] = loadvfy8up(RMT_MILOCKMODE_BASE(bp, bi, mi), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
 
 #if WITHONLYBANDS
 	const vindex_t hb = getfreqband(gfreqs [bi], bandset_no_check);
@@ -9296,30 +9325,14 @@ static void loadbandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t m
 	tune_top_active [bi] = get_band_top(hb);
 #endif
 
-	const uint_fast8_t defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
-	uint_fast8_t defrow;
-	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
-
-	// прописываем режим работы по умолчанию для данного диапазона
-	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MIMODECOLS_BASE(bp, bi, mi, defrow), 0, modes [defrow] [0] - 1, defcol);
-	gmoderows [bi] = loadvfy8up(RMT_MIMODEROW_BASE(bp, bi, mi), 0, MODEROW_COUNT - 1, defrow);
-
-	uint_fast8_t i;
-	for (i = 0; i < MODEROW_COUNT; ++ i)
-	{
-		gmodecolmaps [bi] [i] = loadvfy8up(RMT_MIMODECOLS_BASE(bp, bi, mi, i), 0, 254, 254);	// везде прописывается 0 - потом ещё уточним.
-	}
+	loadmodeinfo(RMT_MIMODEINFO_BASE(bp, bi, mi), bi, gfreqs [bi]);
 	//
 }
 
 static void savebandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t mi)
 {
 	save_i32(RMT_MIBFREQ_BASE(bp, bi, mi), gfreqs [bi]);
-	save_i8(RMT_MILOCKMODE_BASE(bp, bi, mi), glocks [bi]);	/* признак блокировки валкодера */
-	const uint_fast8_t row = gmoderows [bi];
-	const uint_fast8_t col = gmodecolmaps [bi] [row];
-	save_i8(RMT_MIMODEROW_BASE(bp, bi, mi), row);
-	save_i8(RMT_MIMODECOLS_BASE(bp, bi, mi, row), col);
+	savemodeinfo(RMT_MIMODEINFO_BASE(bp, bi, mi), bi);
 }
 
 /* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
@@ -10408,7 +10421,6 @@ loadnewband(
 	//PRINTF(PSTR("loadnewband: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
 
 	gfreqs [bi] = loadvfy32freq(b);		/* восстанавливаем частоту */
-	glocks [bi] = loadvfy8up(RMT_LOCKMODE_BASE(b), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
 	const uint_fast32_t freq = gfreqs [bi];
 	const uint_fast8_t bp = getfreqband(freq, bandset_no_check);
 	const uint_fast8_t ant = geteffantenna(freq);
@@ -10420,20 +10432,7 @@ loadnewband(
 	tune_top_active [bi] = get_band_top(hb);
 #endif
 
-	const uint_fast8_t defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
-	uint_fast8_t defrow;
-	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
-
-	// прописываем режим работы по умолчанию для данного диапазона
-	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MODECOLS_BASE(b, defrow), 0, modes [defrow] [0] - 1, defcol);
-	gmoderows [bi] = loadvfy8up(RMT_MODEROW_BASE(b), 0, MODEROW_COUNT - 1, defrow);
-
-	uint_fast8_t i;
-	for (i = 0; i < MODEROW_COUNT; ++ i)
-	{
-		gmodecolmaps [bi] [i] = loadvfy8up(RMT_MODECOLS_BASE(b, i), 0, 254, 254);	// везде прописывается 0 - потом ещё уточним.
-	}
-
+	loadmodeinfo(RMT_MODEINFO_BASE(b), bi, gfreqs [bi]);
 	loadantenna(bp);
 	loadbandprops(bp, ant, rxant);
 }
@@ -14024,7 +14023,7 @@ uif_key_lockencoder(void)
 	const vindex_t vi = getvfoindex(bi);
 
 	glocks [bi] = calc_next(glocks [bi], 0, 1);
-	save_i8(RMT_LOCKMODE_BASE(vi), glocks [bi]);
+	savemodeinfo(RMT_MODEINFO_BASE(vi), bi);
 	updateboard();
 }
 
@@ -21367,7 +21366,7 @@ void hamradio_set_lock(uint_fast8_t lock)
 	const vindex_t vi = getvfoindex(bi);
 
 	glocks [bi] = lock != 0;
-	save_i8(RMT_LOCKMODE_BASE(vi), glocks [bi]);
+	savemodeinfo(RMT_MODEINFO_BASE(vi), bi);
 	updateboard();
 }
 
