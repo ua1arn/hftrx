@@ -3257,7 +3257,7 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 		{
 			{ 2, SUBMODE_LSB, SUBMODE_USB, },
 			{ 2, SUBMODE_CWR, SUBMODE_CW, },
-		//	{ 5, SUBMODE_AM, SUBMODE_SAM, SUBMODE_CWZ, SUBMODE_DRM, SUBMODE_ISB, },
+			{ 5, SUBMODE_AM, SUBMODE_SAM, SUBMODE_CWZ, SUBMODE_DRM, SUBMODE_ISB, },
 		#if WITHRTTY
 			{ 4, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, SUBMODE_RTTY, },
 		#else /* WITHRTTY */
@@ -3306,8 +3306,26 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 
 #endif /*  */
 
-
 enum { MODEROW_COUNT = (sizeof modes / sizeof modes [0]) };
+
+static void moderowinfo(void)
+{
+	const unsigned dim1 = ARRAY_SIZE(modes);
+	const unsigned dim2 = ARRAY_SIZE(modes [0]);
+	unsigned bits0 = __log2_up(dim1);
+	PRINTF("modes: %u rows (bits0=%u):\n", dim1, bits0);
+	unsigned totalbits = bits0;
+	unsigned row;
+	for (row = 0; row < dim1; ++ row)
+	{
+		unsigned countvalaues = modes [row] [0];
+		unsigned bits = __log2_up(countvalaues);
+		PRINTF("row [%u]: up to: %u, bits=%u\n", row, countvalaues, bits);
+		totalbits += bits;
+	}
+	const unsigned totalbytes = (totalbits + 7) / 8;
+	PRINTF("totalbits=%u, totalbytes=%u\n", totalbits, totalbytes);
+}
 
 /* поиск координаты режима в карте режимов.
    код возврвта функции - колонка
@@ -20629,6 +20647,7 @@ static void hamradio_main_initialize(void)
 	}
 	// начальная инициализация
 	bandsmap_verify();
+	moderowinfo();
 	seq_purge();
 
 #if FQMODEL_GEN500
