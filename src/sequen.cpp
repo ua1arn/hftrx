@@ -590,8 +590,8 @@ void seq_ask_txstate(
 }
 
 // состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
-uint_fast8_t seq_get_phase(void)
-{
-	return SEQPHASE_INIT;
-}
+//uint_fast8_t seq_get_phase(void)
+//{
+//	return SEQPHASE_INIT;
+//}
 

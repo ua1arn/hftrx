@@ -1994,22 +1994,19 @@ static void sm_draw_dial_tx_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 	// координаты оси стрелки
 	const uint_fast16_t xc = x0 + smpr->xcneddle;
 	const uint_fast16_t yc = y0 + smpr->ycneddle;
-	int_fast32_t gp = smpr->gs;
-	int_fast32_t gptrace = smpr->gs;
-	int_fast32_t gswr = smpr->gs;
 
 	/* фильтрация - (в градусах) */
 
 	adcvalholder_t powerTraceV;
 	const adcvalholder_t powerV = board_getadc_filtered_truevalue2(PWRMRRIX, & powerTraceV);	// без возможных тормозов на SPI при чтении
-	gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
-	gptrace = smpr->gs + normalize(powerTraceV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
+	const int_fast32_t gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
+	const int_fast32_t gptrace = smpr->gs + normalize(powerTraceV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
 
 	// todo: get_swr(swr_fullscale) - использщовать MRRxxx.
 	// Для тюнера и измерений не годится, для показа - без торомозов.
 	const uint_fast16_t swr_fullscale = (SWRMIN * 40 / 10) - SWRMIN;	// количество рисок в шкале ииндикатора
 	const uint_fast16_t swrV = get_swr(swr_fullscale);
-	gswr = smpr->gs + normalize(swrV, 0, swr_fullscale, smpr->ge - smpr->gs);
+	const int_fast32_t gswr = smpr->gs + normalize(swrV, 0, swr_fullscale, smpr->ge - smpr->gs);
 
 	// TX state
 	colpip_bitblt(

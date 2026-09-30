@@ -428,29 +428,6 @@ void synth_lo1_setfreq(
 	synth_lo1_setfrequ(pathi, f, od);
 }
 
-void synth_lo4_setfreq(
-	uint_fast8_t pathi,		/* номер тракта - 0/1: main/sub */
-	int_fast32_t f,			/* частота, которую хотим получить на выходе DDS */
-	uint_fast8_t od,		/* делитель перед подачей на смеситель (1, 2, 4, 8...) */
-	int_fast8_t enable
-	)
-{
-	if (enable == 0)
-		f = 0;
-	else if (f < 0)
-		f = - f;
-
-#if WITHSI5351AREPLACE
-	si5351aSetFrequencyB(f);
-	return;
-#endif /* WITHSI5351AREPLACE */
-
-#if defined(DDS2_TYPE)
-	ftw_t ph = freq2ftw(f, dds2refdiv * od, dds2ref);    /* преобразование требуемой частоты в фазу */
-	prog_dds2_ftw(& ph);
-#endif
-}
-
 
 // Установка частоты второго гетеродина в случае использования DDS3 ad9951
 void synth_lo2_setfreq(

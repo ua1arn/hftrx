@@ -5963,11 +5963,6 @@ applicable agreement for further details.
 	(pt -3176 1440)
 )
 (connector
-	(text "mode_wfm" (rect -3230 1456 -3176 1468)(font "Arial" ))
-	(pt -3256 1472)
-	(pt -3176 1472)
-)
-(connector
 	(text "adcoffset[15..0]" (rect -3198 1472 -3118 1484)(font "Arial" ))
 	(pt -3128 1488)
 	(pt -3256 1488)
@@ -6210,11 +6205,6 @@ applicable agreement for further details.
 	(pt -2952 -384)
 	(pt -2920 -384)
 	(bus)
-)
-(connector
-	(text "tx_bpsk_enable" (rect -3254 1440 -3178 1452)(font "Arial" ))
-	(pt -3256 1456)
-	(pt -3176 1456)
 )
 (connector
 	(text "txiq[63]" (rect -1262 -368 -1226 -356)(font "Arial" ))

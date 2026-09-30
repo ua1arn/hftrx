@@ -29,7 +29,7 @@
 //#define WITHRPTOFFSET 1
 #define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
 #ifndef WITHBANDMEMCOUNT
-#define WITHBANDMEMCOUNT 1
+#define WITHBANDMEMCOUNT 2
 #endif /* WITHBANDMEMCOUNT */
 
 #define UI_TICKS_PERIOD 50	// ms
@@ -384,7 +384,6 @@ static uint_fast8_t getbankindex_tx(uint_fast8_t tx);
 static uint_fast8_t getbankindex_ab_fordisplay(uint_fast8_t ab);
 static uint_fast8_t getbankindex_ab_forcontrols(uint_fast8_t ab);
 static uint_fast8_t getsubmode(uint_fast8_t bi);		/* bi: vfo bank index */
-static uint_fast8_t getfreqbandgroup(const uint_fast32_t freq);
 
 
 static const char * pd_getlonglabel(const struct paramdefdef * pd)
@@ -471,25 +470,6 @@ ismenukinddp(
 	return (pd->qspecial & itemmask) != 0;
 }
 
-/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
-static uint_fast8_t
-ismenufilterusb(
-	const struct paramdefdef * pd
-	)
-{
-	return ismenukinddp(pd, ITEM_FILTERU);
-}
-
-/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
-static uint_fast8_t
-ismenufilterlsb(
-	const struct paramdefdef * pd
-	)
-{
-	return ismenukinddp(pd, ITEM_FILTERL);
-}
-
-
 /* Сохранить параметр после редактирования */
 static void
 savemenuvalue(
@@ -558,6 +538,27 @@ param_setvalue(
 	}
 }
 
+// Минимальное и максимальное значение, которое можно передать в param_setvalue
+void
+param_getminmax(
+	const struct paramdefdef * pd,
+	int_fast32_t * pmin,
+	int_fast32_t * pmax
+	)
+{
+	if (ismenukinddp(pd, ITEM_VALUE))
+	{
+		* pmin = pd->qbottom + pd->funcoffs();
+		* pmax = pd->qupper + pd->funcoffs();
+	}
+	else
+	{
+		ASSERT(0);
+		* pmin = 0;
+		* pmax = 1;
+	}
+}
+
 int_fast32_t
 param_getvalue(
 	const struct paramdefdef * pd
@@ -573,16 +574,6 @@ param_getvalue(
 		const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 
 		// получение значения для отображения
-		if (ismenufilterlsb(pd))
-		{
-			const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, low_or_center);
-			return getlo4baseflt(filter) + * pv16;
-		}
-		if (ismenufilterusb(pd))
-		{
-			const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, high);
-			return getlo4baseflt(filter) + * pv16;
-		}
 		if (pv16 != NULL)
 		{
 			return (int_fast32_t) * pv16 + pd->funcoffs();
@@ -591,7 +582,7 @@ param_getvalue(
 		{
 			return (int_fast32_t) * pv8 + pd->funcoffs();
 		}
-		return pd->qbottom;
+		return pd->qbottom + pd->funcoffs();
 	}
 	return 0;
 }
@@ -662,7 +653,7 @@ prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 
 /* получение следующего числа в диапазоне low..high с "заворотом" */
 /* используется при переборе режимов кнопками */
-uint_fast16_t
+static uint_fast16_t
 calc_next(uint_fast16_t v, uint_fast16_t low, uint_fast16_t high)
 {
 	return (v < low || v >= high) ? low : (v + 1);
@@ -2781,20 +2772,26 @@ static const struct modetempl mdt [MODE_COUNT] =
 };
 
 
-#define ENCRES_24	0	/* значение по умолчанию для индекса при использовании енкодера на 24 позиции */
-#define ENCRES_32	1	/* значение по умолчанию для индекса при использовании енкодера на 64 позиций */
-#define ENCRES_64	2	/* значение по умолчанию для индекса при использовании енкодера на 64 позиций */
-#define ENCRES_100	4	/* значение по умолчанию для индекса при использовании енкодера на 100 позиций */
-#define ENCRES_128	5	/* значение по умолчанию для индекса при использовании енкодера на 128 позиций */
-#define ENCRES_256	7	/* значение по умолчанию для индекса при использовании енкодера на 256 позиций */
-#define ENCRES_360	9	/* значение по умолчанию для индекса при использовании енкодера на 360 позиций */
-#define ENCRES_400	10	/* значение по умолчанию для индекса при использовании енкодера на 400 позиций */
-#define ENCRES_600	11	/* значение по умолчанию для индекса при использовании енкодера на 600 позиций */
 
-/* скорость 115200 не добавлена из соображений невозможностти точного формирования на atmega
-   при частоте генератора 8 МГц
-   */
-static const uint_fast8_t encresols [] =
+enum
+{
+	ENCRES_24,
+	ENCRES_32,
+	ENCRES_64,
+	ENCRES_96,
+	ENCRES_100,
+	ENCRES_128,
+	ENCRES_144,
+	ENCRES_256,
+	ENCRES_300,
+	ENCRES_360,
+	ENCRES_400,
+	ENCRES_600,
+	//
+	ENCRES_count
+};
+
+static const uint_fast8_t encresols [ENCRES_count] =
 {
 	24 / ENCRESSCALE,	// 0
 	32 / ENCRESSCALE,	// 1
@@ -2819,37 +2816,37 @@ static size_t getvaltextencres(char * buff, size_t count, int_fast32_t value)
 #if WITHTOUCHGUI
 	#define BANDPAD	0
 #else
-	#define BANDPAD 15000UL	/* 15 kHz - запас по сторонам от любительского диапазона */
+	#define BANDPAD 15000	/* 15 kHz - запас по сторонам от любительского диапазона */
 #endif
 
 #if (FIXSCALE_48M0_X1_DIV256 || (defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570))) && WITHMODESETSMART
-	#define BANDFUSBFREQ	13800000L	/* Выше этой частоты по умолчанию используется USB */
+	#define BANDFUSBFREQ	13800000	/* Выше этой частоты по умолчанию используется USB */
 #else
-	#define BANDFUSBFREQ	9000000L	/* Выше этой частоты по умолчанию используется USB */
+	#define BANDFUSBFREQ	9000000	/* Выше этой частоты по умолчанию используется USB */
 #endif
 /* BANDMIDDLE - граница, по которой происходит разделение двух обзорных диапазонов */
 #if defined (BANDMIDDLE)
 
-#elif TUNE_TOP >= 54000000L
+#elif TUNE_TOP >= 54000000
 
-	#define BANDMIDDLE  32000000L //(29700000 + BANDPAD)
-	#define UPPER_DEF	40000000L
+	#define BANDMIDDLE  32000000 //(29700000 + BANDPAD)
+	#define UPPER_DEF	40000000
 
 #elif TUNE_TOP >= 30000000L
 
-	#define BANDMIDDLE	20000000L
-	#define UPPER_DEF	24000000L
+	#define BANDMIDDLE	20000000
+	#define UPPER_DEF	24000000
 
 #elif TUNE_TOP >= 16000000L
 
 	// Р-143 "Багульник"
-	#define BANDMIDDLE	15000000L
-	#define UPPER_DEF	17000000L
+	#define BANDMIDDLE	15000000
+	#define UPPER_DEF	17000000
 
 #else
 	// Р-143 "Багульник"
-	#define BANDMIDDLE	12000000L
-	#define UPPER_DEF	13000000L
+	#define BANDMIDDLE	12000000
+	#define UPPER_DEF	13000000
 
 #endif
 
@@ -2874,99 +2871,20 @@ enum
 	BANDSET_SUBMODE = 0x0f
 };
 
-enum
-{
-	BANDGROUP_LW,
-	BANDGROUP_MW,
-	BANDGROUP_SWLOW,
-	BANDGROUP_SWHIGH,
-	BANDGROUP_1p8MHz,
-	BANDGROUP_3p5MHz,
-	BANDGROUP_5p35MHz,
-	BANDGROUP_7MHz,
-	BANDGROUP_10p1MHz,
-	BANDGROUP_14MHz,
-	BANDGROUP_18MHz,
-	BANDGROUP_21MHz,
-	BANDGROUP_24p8MHz,
-	BANDGROUP_CB,
-	BANDGROUP_28MHz,
-	BANDGROUP_45MHz,
-	BANDGROUP_50MHz,
-	BANDGROUP_70MHz,
-	BANDGROUP_144MHz,
-	BANDGROUP_430MHz,
-	BANDGROUP_LO,
-	BANDGROUP_HI,
-#if WITHBANDR1BBU
-	BANDGROUP_2793000kHz, BANDGROUP_3195000kHz, BANDGROUP_3394000kHz,
-	BANDGROUP_4105000kHz, BANDGROUP_4865000kHz, BANDGROUP_5090000kHz,
-	BANDGROUP_5415000kHz, BANDGROUP_5855000kHz, BANDGROUP_6855000kHz,
-	BANDGROUP_7745000kHz,
-#endif /* WITHBANDR1BBU */
-	//
-	BANDGROUP_COUNT			// Значение, используемое как признак отсутствия группировки диапазонов
-};
-
-static const char * const bandlabels [BANDGROUP_COUNT] =
-{
-	"LW",
-	"MW",
-	"SW1",
-	"SW2",
-	"1.8",
-	"3.5",
-	"5.3",
-	"7",
-	"10",
-	"14",
-	"18",
-	"21",
-	"24",
-	"CB",
-	"28",
-	"45",
-	"50",
-	"70",
-	"144",
-	"430",
-	"lo",
-	"hi",
-};
-
 #if (FLASHEND > 0x7FFF)
 #else
 #endif
 
-#if (FLASHEND > 0x3FFF)	|| CPUSTYLE_ARM || CPUSTYLE_RISCV || (TUNE_TOP >= 65535000L)
+/* частоты хранятся с точностью до герца в 32-х битных переменных */
+struct bandrange {
+	uint32_t bottom, top;
+	uint32_t init;
+	uint8_t defsubmode_bandset;
+	const char * label;
+};
 
-	/* частоты хранятся с точностью до герца в 32-х битных переменных */
-	struct bandrange {
-		uint32_t bottom, top;
-		uint32_t init;
-		uint8_t defsubmode_bandset;
-		uint8_t bandgroup;
-		const char * label;
-	};
-
-	#define BMF(a) (a)		/* получение инициализационного элемента */
-	#define PEEK_BMF(v) (v)	/* выборка значения для использования */
-
-#else
-	/* иначе, частоты хранятся с точностью до килогерца в 16-ти битных переменных */
-	struct bandrange {
-		uint16_t bottom, top;
-		uint16_t init;
-		uint8_t defsubmode_bandset;
-		uint8_t	bandgroup;
-		char label[9];
-	};
-
-	#define BMF_SCALE	1000UL
-	#define BMF(a) ((a) / BMF_SCALE )	/* получение инициализационного элемента */
-	#define PEEK_BMF(v) ((v) * BMF_SCALE)	/* выборка значения для использования */
-
-#endif
+#define BMF(a) (a)		/* получение инициализационного элемента */
+#define PEEK_BMF(v) (v)	/* выборка значения для использования */
 
 #if WITHMODESETSMART
 	#define BANDMAPSUBMODE_LSB	SUBMODE_SSBSMART
@@ -2996,42 +2914,42 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 static struct bandrange  const bandsmap [] =
 {
 #if FQMODEL_FMRADIO	// 87..108.5 MHz
-	{ BMF(89000000), 			BMF(89500000), 			BMF(79000000), 	BANDMAPSUBMODE_WFM | BANDSETF_ALL, BANDGROUP_COUNT, "", },				/*  */
-	{ BMF(90000000), 			BMF(90500000), 			BMF(90000000), 	BANDMAPSUBMODE_WFM | BANDSETF_ALL, BANDGROUP_COUNT, "", },				/*  */
-	{ BMF(102000000), 			BMF(102500000), 			BMF(102000000), 	BANDMAPSUBMODE_WFM | BANDSETF_ALL, BANDGROUP_COUNT, "", },				/*  */
+	{ BMF(89000000), 			BMF(89500000), 			BMF(79000000), 	BANDMAPSUBMODE_WFM | BANDSETF_ALL, "", },				/*  */
+	{ BMF(90000000), 			BMF(90500000), 			BMF(90000000), 	BANDMAPSUBMODE_WFM | BANDSETF_ALL, "", },				/*  */
+	{ BMF(102000000), 			BMF(102500000), 			BMF(102000000), 	BANDMAPSUBMODE_WFM | BANDSETF_ALL, "", },				/*  */
 	/* Далее никаких диапазонов добавлять нельзя - это служебные элементы и их порядок зависит от других частей пронграммы (band_up и band_down). */
-	{ BMF(TUNE_BOTTOM), 		BMF(90000000), 			BMF(TUNE_BOTTOM),	BANDMAPSUBMODE_USB | BANDSETF_ALL, BANDGROUP_COUNT, "", },				/* обзорный диапазон - HBANDS_COUNT should equal to this index */
-	{ BMF(90000000), 			BMF(TUNE_TOP), 				BMF(101400000), 	BANDMAPSUBMODE_USB | BANDSETF_ALL, BANDGROUP_COUNT, },					/* обзорный диапазон */
+	{ BMF(TUNE_BOTTOM), 		BMF(90000000), 			BMF(TUNE_BOTTOM),	BANDMAPSUBMODE_USB | BANDSETF_ALL, "", },				/* обзорный диапазон - HBANDS_COUNT should equal to this index */
+	{ BMF(90000000), 			BMF(TUNE_TOP), 				BMF(101400000), 	BANDMAPSUBMODE_USB | BANDSETF_ALL, },					/* обзорный диапазон */
 	/* VFOS */
-	{ BMF(TUNE_BOTTOM), 		BMF(TUNE_TOP), 				BMF(101400000), 	BANDMAPSUBMODE_USB | BANDSETF_ALL, BANDGROUP_COUNT, "", },				/* VFO A - VFOS_BASE should equal to this index */
-	{ BMF(TUNE_BOTTOM), 		BMF(TUNE_TOP), 				BMF(101400000), 	BANDMAPSUBMODE_USB | BANDSETF_ALL, BANDGROUP_COUNT, "", },				/* VFO B */
+	{ BMF(TUNE_BOTTOM), 		BMF(TUNE_TOP), 				BMF(101400000), 	BANDMAPSUBMODE_USB | BANDSETF_ALL, "", },				/* VFO A - VFOS_BASE should equal to this index */
+	{ BMF(TUNE_BOTTOM), 		BMF(TUNE_TOP), 				BMF(101400000), 	BANDMAPSUBMODE_USB | BANDSETF_ALL, "", },				/* VFO B */
 #else /* FQMODEL_FMRADIO */
 //	{ BMF(135000 - 0), 			BMF(138000 + 0), 			BMF(136000), 		SUBMODE_USB, 						BANDGROUP_COUNT, "", },				/* 135),7-137),8 кГц */
 	#if TUNE_BOTTOM <= (153000 - BANDPAD)
-	{ BMF(153000 - BANDPAD), 	BMF(279000 + BANDPAD), 	BMF(225000), 		BANDMAPSUBMODE_AM | BANDSETF_ALL, BANDGROUP_LW, "LW", },				/*  */
-	{ BMF(530000 - BANDPAD), 	BMF(1611000 + BANDPAD), 	BMF(1440000), 		BANDMAPSUBMODE_AM | BANDSETF_ALL, BANDGROUP_MW, "MW", },				/*  */
+	{ BMF(153000 - BANDPAD), 	BMF(279000 + BANDPAD), 	BMF(225000), 		BANDMAPSUBMODE_AM | BANDSETF_ALL, "LW", },				/*  */
+	{ BMF(530000 - BANDPAD), 	BMF(1611000 + BANDPAD), 	BMF(1440000), 		BANDMAPSUBMODE_AM | BANDSETF_ALL, "MW", },				/*  */
 	#endif
-	{ BMF(1810000 - BANDPAD), 	BMF(2000000 + BANDPAD), 	BMF(1810000), 		BANDMAPSUBMODE_LSB | BANDSETF_HAM, BANDGROUP_1p8MHz, "1.8M"},			/* Ukrainian band from freq 1715 kHz */
+	{ BMF(1810000 - BANDPAD), 	BMF(2000000 + BANDPAD), 	BMF(1810000), 		BANDMAPSUBMODE_LSB | BANDSETF_HAM, "1.8M"},			/* Ukrainian band from freq 1715 kHz */
 #if WITHBANDR1BBU
-	{ BMF(2793000 - BANDPAD), 	BMF(2793000 + BANDPAD), 	BMF(2793000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_2793000kHz, "4.4M"},
+	{ BMF(2793000 - BANDPAD), 	BMF(2793000 + BANDPAD), 	BMF(2793000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, "4.4M"},
 #endif /* WITHBANDR1BBU */
 #if WITHBANDR1BBU
-	{ BMF(3195000 - BANDPAD), 	BMF(3195000 + BANDPAD), 	BMF(3195000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_3195000kHz, "4.4M"},
+	{ BMF(3195000 - BANDPAD), 	BMF(3195000 + BANDPAD), 	BMF(3195000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, "4.4M"},
 #endif /* WITHBANDR1BBU */
 #if WITHBANDR1BBU
-	{ BMF(3394000 - BANDPAD), 	BMF(3394000 + BANDPAD), 	BMF(3394000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_3394000kHz, "4.4M"},
+	{ BMF(3394000 - BANDPAD), 	BMF(3394000 + BANDPAD), 	BMF(3394000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, "4.4M"},
 #endif /* WITHBANDR1BBU */
-	{ BMF(3500000 - BANDPAD), 	BMF(3800000 + BANDPAD), 	BMF(3500000),		BANDMAPSUBMODE_LSB | BANDSETF_HAM, BANDGROUP_3p5MHz, "3.5M", },			/*  */
-	{ BMF(3900000), 			BMF(4000000), 				BMF(3900000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_SWLOW, "75m", },			/*  */
+	{ BMF(3500000 - BANDPAD), 	BMF(3800000 + BANDPAD), 	BMF(3500000),		BANDMAPSUBMODE_LSB | BANDSETF_HAM, "3.5M", },			/*  */
+	{ BMF(3900000), 			BMF(4000000), 				BMF(3900000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, "75m", },			/*  */
 #if WITHBANDR1BBU
-	{ BMF(4105000 - BANDPAD), 	BMF(4105000 + BANDPAD), 	BMF(4105000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_4105000kHz, "4.4M"},
+	{ BMF(4105000 - BANDPAD), 	BMF(4105000 + BANDPAD), 	BMF(4105000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM,  "4.4M"},
 #endif /* WITHBANDR1BBU */
-	//{ BMF(4750000), 			BMF(5060000), 				BMF(4750000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_SWLOW, "", },				/*  */
+	//{ BMF(4750000), 			BMF(5060000), 				BMF(4750000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, "", },				/*  */
 #if WITHBANDR1BBU
-	{ BMF(4865000 - BANDPAD), 	BMF(4865000 + BANDPAD), 	BMF(4865000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_4865000kHz, "4.4M"},
+	{ BMF(4865000 - BANDPAD), 	BMF(4865000 + BANDPAD), 	BMF(4865000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, "4.4M"},
 #endif /* WITHBANDR1BBU */
 #if WITHBANDR1BBU
-	{ BMF(5090000 - BANDPAD), 	BMF(5090000 + BANDPAD), 	BMF(5090000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_5090000kHz, "4.4M"},
+	{ BMF(5090000 - BANDPAD), 	BMF(5090000 + BANDPAD), 	BMF(5090000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, "4.4M"},
 #endif /* WITHBANDR1BBU */
 	/*
 		Частотный план диапазона 5 MHz ( 60m )
@@ -3041,82 +2959,77 @@ static struct bandrange  const bandsmap [] =
 		3. 5366.0 - weak signal полоса 20 hz.
 		На самом деле "цифра" около 5,357,0, CW 5.351.5 и выше SSB около 5.360.0
 	*/
-	{ BMF(5351500 - BANDPAD), 	BMF(5366500 + BANDPAD), 	BMF(5351500), 		BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, 	BANDGROUP_5p35MHz, "", },		/* 60-meters band */
+	{ BMF(5351500 - BANDPAD), 	BMF(5366500 + BANDPAD), 	BMF(5351500), 		BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, 	"", },		/* 60-meters band */
 #if WITHBANDR1BBU
-	{ BMF(5415000 - BANDPAD), 	BMF(5415000 + BANDPAD), 	BMF(5415000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_5415000kHz, "4.4M"},
+	{ BMF(5415000 - BANDPAD), 	BMF(5415000 + BANDPAD), 	BMF(5415000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, "4.4M"},
 #endif /* WITHBANDR1BBU */
-	//{ BMF(5730000), 			BMF(6295000), 				BMF(5730000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, 	BANDGROUP_SWLOW, "49m", },		/*  */
+	//{ BMF(5730000), 			BMF(6295000), 				BMF(5730000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST,  "49m", },		/*  */
 #if WITHBANDR1BBU
-	{ BMF(5855000 - BANDPAD), 	BMF(5855000 + BANDPAD), 	BMF(5855000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_5855000kHz, "4.4M"},
+	{ BMF(5855000 - BANDPAD), 	BMF(5855000 + BANDPAD), 	BMF(5855000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, "4.4M"},
 #endif /* WITHBANDR1BBU */
 #if WITHBANDR1BBU
-	{ BMF(6855000 - BANDPAD), 	BMF(6855000 + BANDPAD), 	BMF(6855000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_6855000kHz, "4.4M"},
+	{ BMF(6855000 - BANDPAD), 	BMF(6855000 + BANDPAD), 	BMF(6855000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, "4.4M"},
 #endif /* WITHBANDR1BBU */
-	//{ BMF(6890000), 			BMF(6990000), 				BMF(6890000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "", },			/*  */
-	{ BMF(7000000 - BANDPAD), 	BMF(7200000 + BANDPAD), 	BMF(7000000), 		BANDMAPSUBMODE_LSB | BANDSETF_HAM, 		BANDGROUP_7MHz, "7M", },		/* top freq - 7300 in region-2 */
-	{ BMF(7200000), 			BMF(7600000), 				BMF(7200000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST,		BANDGROUP_SWLOW, "41m", },		/*  */
+	//{ BMF(6890000), 			BMF(6990000), 				BMF(6890000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	"", },			/*  */
+	{ BMF(7000000 - BANDPAD), 	BMF(7200000 + BANDPAD), 	BMF(7000000), 		BANDMAPSUBMODE_LSB | BANDSETF_HAM, 		"7M", },		/* top freq - 7300 in region-2 */
+	{ BMF(7200000), 			BMF(7600000), 				BMF(7200000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST,		"41m", },		/*  */
 #if WITHBANDR1BBU
-	{ BMF(7745000 - BANDPAD), 	BMF(7745000 + BANDPAD), 	BMF(7745000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_7745000kHz, "4.4M"},
+	{ BMF(7745000 - BANDPAD), 	BMF(7745000 + BANDPAD), 	BMF(7745000), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, "4.4M"},
 #endif /* WITHBANDR1BBU */
-	{ BMF(9250000), 			BMF(9900000), 				BMF(9250000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, 	BANDGROUP_SWHIGH, "31m", },		/*  */
-	{ BMF(10100000 - BANDPAD), 	BMF(10150000 + BANDPAD), 	BMF(10100000), 	BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, 	BANDGROUP_10p1MHz, "10.1M", },			/*  */
+	{ BMF(9250000), 			BMF(9900000), 				BMF(9250000), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, 	"31m", },		/*  */
+	{ BMF(10100000 - BANDPAD), 	BMF(10150000 + BANDPAD), 	BMF(10100000), 	BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, 	"10.1M", },			/*  */
 #if (TUNE_TOP) >= (19020000)
-	{ BMF(11500000), 			BMF(12160000), 				BMF(11500000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "25m", },		/*  */
-	{ BMF(13570000), 			BMF(13870000), 				BMF(13570000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "22m", },		/*  */
+	{ BMF(11500000), 			BMF(12160000), 				BMF(11500000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	"25m", },		/*  */
+	{ BMF(13570000), 			BMF(13870000), 				BMF(13570000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	"22m", },		/*  */
 
-	{ BMF(14000000 - BANDPAD),	BMF(14350000 + BANDPAD),	BMF(14000000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_14MHz, "14M SSB", },	/*  */
+	{ BMF(14000000 - BANDPAD),	BMF(14350000 + BANDPAD),	BMF(14000000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		"14M", },	/*  */
 
-	{ BMF(15030000), 			BMF(15800000), 				BMF(15030000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "19m", },		/*  */
-	{ BMF(17480000), 			BMF(17900000), 				BMF(17480000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "16m", },		/*  */
-	{ BMF(18068000 - BANDPAD), 	BMF(18168000 + BANDPAD), 	BMF(18068000), 	BANDMAPSUBMODE_USB | BANDSETF_HAMWARC, 	BANDGROUP_18MHz, "18M", },			/*  */
-	{ BMF(18900000), 			BMF(19020000), 				BMF(18900000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "15m", },		/*  */
+	{ BMF(15030000), 			BMF(15800000), 				BMF(15030000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	"19m", },		/*  */
+	{ BMF(17480000), 			BMF(17900000), 				BMF(17480000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	"16m", },		/*  */
+	{ BMF(18068000 - BANDPAD), 	BMF(18168000 + BANDPAD), 	BMF(18068000), 	BANDMAPSUBMODE_USB | BANDSETF_HAMWARC, 	"18M", },			/*  */
+	{ BMF(18900000), 			BMF(19020000), 				BMF(18900000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	"15m", },		/*  */
 #endif
 #if (TUNE_TOP) >= (21450000 + BANDPAD)
-	{ BMF(21000000 - BANDPAD), 	BMF(21450000 + BANDPAD), 	BMF(21000000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_21MHz, "21M SSB", },		/*  */
+	{ BMF(21000000 - BANDPAD), 	BMF(21450000 + BANDPAD), 	BMF(21000000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		"21M", },		/*  */
 #endif
 #if (TUNE_TOP) >= (21850000)
-	{ BMF(21450000), 			BMF(21850000), 				BMF(21450000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "13m", },		/*  */
+	{ BMF(21450000), 			BMF(21850000), 				BMF(21450000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	"13m", },		/*  */
 #endif /* (TUNE_TOP) >= (21850000) */
 
 #if (TUNE_TOP) >= (29700000 + BANDPAD)
-	{ BMF(24890000 - BANDPAD), 	BMF(24990000 + BANDPAD), 	BMF(24890000), 	BANDMAPSUBMODE_USB | BANDSETF_HAMWARC, 	BANDGROUP_24p8MHz, "24M", },			/*  */
-	{ BMF(25670000), 			BMF(26100000), 				BMF(25670000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_SWHIGH, "11m", },		/*  */
-	{ BMF(26965000 - BANDPAD), 	BMF(27405000 + BANDPAD), 	BMF(27120000), 	BANDMAPSUBMODE_USB | BANDSETF_CB, 		BANDGROUP_CB, "CB", },		/* Citizens Band 26.9650 MHz to 27.4050 MHz (40 channels) */
+	{ BMF(24890000 - BANDPAD), 	BMF(24990000 + BANDPAD), 	BMF(24890000), 	BANDMAPSUBMODE_USB | BANDSETF_HAMWARC, 	"24M", },			/*  */
+	{ BMF(25670000), 			BMF(26100000), 				BMF(25670000), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	"11m", },		/*  */
+	{ BMF(26965000 - BANDPAD), 	BMF(27405000 + BANDPAD), 	BMF(27120000), 	BANDMAPSUBMODE_USB | BANDSETF_CB, 		"CB", },		/* Citizens Band 26.9650 MHz to 27.4050 MHz (40 channels) */
 
-	{ BMF(28000000 - BANDPAD), 	BMF(29700000 + BANDPAD), 	BMF(28000000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHz, "28M", },	/* CW */
+	{ BMF(28000000 - BANDPAD), 	BMF(29700000 + BANDPAD), 	BMF(28000000), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		"28M", },	/* CW */
 #endif
 
 #if WITHBANDR1BBU
-	{ BMF(41000000 - BANDPAD), 	BMF(49000000 + BANDPAD), 	BMF(44900000), 		BANDMAPSUBMODE_NFM | BANDSETF_HAM, BANDGROUP_45MHz, "LowBand"},
+	{ BMF(41000000 - BANDPAD), 	BMF(49000000 + BANDPAD), 	BMF(44900000), 	BANDMAPSUBMODE_NFM | BANDSETF_HAM, "LowBand"},
 #endif /* WITHBANDR1BBU */
 #if TUNE_6MBAND
-	{ BMF(50000000 - BANDPAD), 	BMF(54000000 + BANDPAD), 	BMF(50100000), 	BANDMAPSUBMODE_USB | BANDSETF_6M, 		BANDGROUP_50MHz, "50M SSB", },			/* 6 meters HAM band */
+	{ BMF(50000000 - BANDPAD), 	BMF(54000000 + BANDPAD), 	BMF(50100000), 	BANDMAPSUBMODE_USB | BANDSETF_6M, 		"50M SSB", },			/* 6 meters HAM band */
 #endif /* TUNE_6MBAND */
 
 #if TUNE_4MBAND
-	{ BMF(70000000 - BANDPAD),	BMF(70050000), 			BMF(70000000), 	BANDMAPSUBMODE_CW | BANDSETF_4M, 		BANDGROUP_70MHz, "70M CW", },			/* CW */
-	{ BMF(70050000), 			BMF(70300000), 			BMF(70050000), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHz, "70M SSB", },			/* SSB */
-	{ BMF(70300000), 			BMF(70500000 + BANDPAD),	BMF(70300000), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHz, "70M FM", },			/* FM */
+	{ BMF(70000000 - BANDPAD),	BMF(70500000 + BANDPAD), 			BMF(70000000), 	BANDMAPSUBMODE_USB | BANDSETF_4M, "70M CW", },			/* CW */
 #endif /* TUNE_4MBAND */
 
 #if TUNE_2MBAND
 	/* next three sections - one band - "2 meter". */
-	{ BMF(144000000 - BANDPAD),BMF(144200000), 			BMF(144050000), 	BANDMAPSUBMODE_CW | BANDSETF_2M, 		BANDGROUP_144MHz, "144M CW", },		/* CW */
-	{ BMF(144200000), 			BMF(145000000), 			BMF(144300000), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHz, "144M SSB", },		/* SSB */
-	{ BMF(144500000), 			BMF(146000000 + BANDPAD),	BMF(145500000), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHz, "144M FM", },		/* FM */
+	{ BMF(144000000 - BANDPAD),BMF(146000000 + BANDPAD), 			BMF(144050000), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHz, "144M CW", },		/* CW */
 #endif /* TUNE_2MBAND */
 
 #if TUNE_07MBAND
 	/* next three sections - one band - "0.7 meter". */
-	{ BMF(430000000 - BANDPAD),	BMF(432100000), 			BMF(430050000), 	BANDMAPSUBMODE_CW | BANDSETF_07M, 		BANDGROUP_430MHz, "", },		/* CW */
-	{ BMF(432100000),			BMF(440000000 + BANDPAD), 	BMF(432500000), 	BANDMAPSUBMODE_USB | BANDSETF_07M, 		BANDGROUP_430MHz, "", },		/* CW */
+	{ BMF(430000000 - BANDPAD),	BMF(440000000 + BANDPAD), 			BMF(430050000), 	BANDMAPSUBMODE_USB | BANDSETF_07M, 		BANDGROUP_430MHz, "", },		/* CW */
 #endif /* TUNE_2MBAND */
 	/* далее никаких диапазонов добавлять нельзя - это служебные элементы и их порядок зависит от других частей пронграммы (band_up и band_down). */
-	{ BMF(TUNE_BOTTOM), 		BMF(BANDMIDDLE), 			BMF(9995000), 		BANDMAPSUBMODE_USB | BANDSETF_ALL, 		BANDGROUP_LO, "", },			/* обзорный диапазон - HBANDS_COUNT should equal to this index */
-	{ BMF(BANDMIDDLE), 			BMF(TUNE_TOP), 				BMF(UPPER_DEF), 	BANDMAPSUBMODE_USB | BANDSETF_ALL, 		BANDGROUP_HI, "", },			/* обзорный диапазон */
+	{ BMF(TUNE_BOTTOM), 		BMF(BANDMIDDLE), 			BMF(9995000), 		BANDMAPSUBMODE_USB | BANDSETF_ALL, 		"", },			/* обзорный диапазон - HBANDS_COUNT should equal to this index */
+	{ BMF(BANDMIDDLE), 			BMF(TUNE_TOP), 				BMF(UPPER_DEF), 	BANDMAPSUBMODE_USB | BANDSETF_ALL, 		"", },			/* обзорный диапазон */
 	/* VFOS */
-	{ BMF(TUNE_BOTTOM), 		BMF(TUNE_TOP), 				BMF(DEFAULTDIALFREQ), BANDMAPSUBMODE_USB | BANDSETF_ALL, 	BANDGROUP_COUNT, "", },			/* VFO A - VFOS_BASE should equal to this index */
-	{ BMF(TUNE_BOTTOM), 		BMF(TUNE_TOP), 				BMF(DEFAULTDIALFREQ), BANDMAPSUBMODE_USB | BANDSETF_ALL, 	BANDGROUP_COUNT, "", },			/* VFO B */
+	{ BMF(TUNE_BOTTOM), 		BMF(TUNE_TOP), 				BMF(DEFAULTDIALFREQ), BANDMAPSUBMODE_USB | BANDSETF_ALL, 	"", },			/* VFO A - VFOS_BASE should equal to this index */
+	{ BMF(TUNE_BOTTOM), 		BMF(TUNE_TOP), 				BMF(DEFAULTDIALFREQ), BANDMAPSUBMODE_USB | BANDSETF_ALL, 	"", },			/* VFO B */
 #endif /* FQMODEL_FMRADIO */
 };
 
@@ -3202,36 +3115,34 @@ const char *
 get_band_label3(unsigned b)	/* b: диапазон в таблице bandsmap */
 {
 	ASSERT(b != ((vindex_t) - 1));
-	const uint_fast8_t bandgroup = bandsmap [b].bandgroup;
-	if (bandgroup >= ARRAY_SIZE(bandlabels))
-		return "ERR";
-	if (bandlabels [bandgroup] == NULL)
-		return "NUL";	// недостаточно правильно заполненная таблица
-	return bandlabels [bandgroup];
+	ASSERT(b < ARRAY_SIZE(bandsmap));
+	return bandsmap [b].label;
 }
 
 /* интерфейсная функция доступа к параметра диапазона */
 static uint_fast32_t
-
 get_band_bottom(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
 	ASSERT(b != ((vindex_t) - 1));
+	ASSERT(b < ARRAY_SIZE(bandsmap));
 	return PEEK_BMF(bandsmap [b].bottom);
 }
+
 /* интерфейсная функция доступа к параметра диапазона */
 static uint_fast32_t
-
 get_band_top(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
 	ASSERT(b != ((vindex_t) - 1));
+	ASSERT(b < ARRAY_SIZE(bandsmap));
 	return PEEK_BMF(bandsmap [b].top);
 }
+
 /* интерфейсная функция доступа к параметра диапазона */
 static uint_fast32_t
-
 get_band_init(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
 	ASSERT(b != ((vindex_t) - 1));
+	ASSERT(b < ARRAY_SIZE(bandsmap));
 	return PEEK_BMF(bandsmap [b].init);
 }
 /* интерфейсная функция доступа к параметра диапазона */
@@ -3240,15 +3151,16 @@ static uint_fast8_t
 get_band_defsubmode(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
 	ASSERT(b != ((vindex_t) - 1));
+	ASSERT(b < ARRAY_SIZE(bandsmap));
 	return bandsmap [b].defsubmode_bandset & BANDSET_SUBMODE;
 }
 
 /* интерфейсная функция доступа к параметра диапазона */
 static uint_fast8_t
-
 get_band_bandset(vindex_t b)	/* b: диапазон в таблице bandsmap */
 {
 	ASSERT(b != ((vindex_t) - 1));
+	ASSERT(b < ARRAY_SIZE(bandsmap));
 	return bandsmap [b].defsubmode_bandset & BANDSET_MASK;
 }
 
@@ -3349,7 +3261,7 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 		#if WITHRTTY
 			{ 4, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, SUBMODE_RTTY, },
 		#else /* WITHRTTY */
-			{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },
+		//	{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },
 		#endif /* WITHRTTY */
 		};
 
@@ -3394,8 +3306,13 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 
 #endif /*  */
 
+enum { MODEROW_COUNT = (sizeof modes / sizeof modes [0]) };
 
-#define MODEROW_COUNT (sizeof modes / sizeof modes [0])
+
+static uint_fast8_t
+getdefaultbandsubmode(
+	uint_fast32_t freq	/* частота (изображение на дисплее) */
+	);
 
 /* поиск координаты режима в карте режимов.
    код возврвта функции - колонка
@@ -3403,7 +3320,6 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
    TODO: при попытке поиска режима FM, если его нет в списке, ставится LSB (0-й режим в 0-й строке. Не очень красиво.
 */
 static uint_fast8_t
-
 locatesubmode(
 	const uint_fast8_t submode,		/* код режима */
 	uint_fast8_t * const xrow		/* найденные координаты */
@@ -3427,6 +3343,227 @@ locatesubmode(
 	}
 	* xrow = 0;
 	return 0;
+}
+
+static uint_fast32_t gfreqs [BANKINDEX_COUNT] = { DEFAULTDIALFREQ, DEFAULTDIALFREQ };		/* отображаемая на дисплее частота работы */
+static uint_fast8_t glocks [BANKINDEX_COUNT];
+
+static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом используется результат функции getbankindex_xxx(tx) */
+										/* номер режима работы в маске (номер тройки бит) */
+static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
+
+static unsigned needbits(unsigned maxvalue)
+{
+	const unsigned bits = __log2_up(maxvalue + 1);
+	if (maxvalue == (1U << bits) - 1)
+		return bits + 1;	// максимальное значение занимает все биты - с запасом - для обработки начальной установки
+	return bits;	// Не надо расширять поле
+}
+
+#if 0
+/* структура - расположение байтов в конфигурационном ОЗУ.
+   bitfields нельзя использовать, так как всё это - только обозначения смещений
+	 переменных в конфигурационном ОЗУ.
+	Информация, сохраняемая для каждого диапазона */
+
+typedef struct modeinfo_tag
+{
+	uint32_t freq;		/* рабочая частота */
+	uint8_t moderow;					/* номер режима работы в маске (номер тройки бит) */
+	uint8_t modecols [MODEROW_COUNT];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
+	uint8_t lock;						/* блокировка валкодера */
+} ATTRPACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+
+// Save lock, morerow, modecol
+static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
+{
+	save_i8(place + OFFSETOF(modeinfo_t, lock), glocks [bi]);
+
+	save_i8(place + OFFSETOF(modeinfo_t, moderow), gmoderows [bi]);
+	uint_fast8_t i;
+	for (i = 0; i < MODEROW_COUNT; ++ i)
+		save_i8(place + OFFSETOF(modeinfo_t, modecols [i]), gmodecolmaps [bi] [i]);
+}
+
+// Load lock, morerow, modecol
+static void loadmodeinfo0(nvramaddress_t place, uint_fast8_t bi, uint_fast8_t defrow, uint_fast8_t defcol)
+{
+	// прописываем режим работы по умолчанию для данного диапазона
+	gmoderows [bi] = loadvfy8up(place +  OFFSETOF(modeinfo_t, moderow), 0, MODEROW_COUNT - 1, defrow);
+	uint_fast8_t row;
+	for (row = 0; row < MODEROW_COUNT; ++ row)
+	{
+		const uint_fast8_t maxvalue = modes [row] [0] - 1;
+		const uint_fast8_t defvalue = defrow == row ? defcol : 0;
+
+		gmodecolmaps [bi] [row] = loadvfy8up(
+				place + OFFSETOF(modeinfo_t, modecols [row]),
+				0, maxvalue,
+				defvalue);	// 0 по умолчанию для всех не предустановленных
+	}
+	glocks [bi] = loadvfy8up(place + OFFSETOF(modeinfo_t, lock), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
+}
+#else
+
+/* структура - расположение байтов в конфигурационном ОЗУ.
+   bitfields нельзя использовать, так как всё это - только обозначения смещений
+	 переменных в конфигурационном ОЗУ.
+	Информация, сохраняемая для каждого диапазона */
+enum { MODEINFO_BUNDLESIZE = 2 };
+typedef struct modeinfo_tag
+{
+	uint32_t freq;		/* рабочая частота */
+	uint8_t bundle [MODEINFO_BUNDLESIZE];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
+} ATTRPACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+
+
+static unsigned getbit(const uint8_t * b, unsigned pos)
+{
+	const unsigned mask = 1U << pos % 8;
+	const unsigned offset = pos / 8;
+	return !! (b [offset] & mask);
+}
+
+static void putbit(uint8_t * b, unsigned pos, unsigned value)
+{
+	const unsigned mask = 1U << pos % 8;
+	const unsigned offset = pos / 8;
+	b [offset] = (b [offset] & ~ mask) | mask * !! value;
+}
+
+static void putbits(uint8_t * b, unsigned offset, unsigned width, unsigned value)
+{
+	while (width --)
+	{
+		putbit(b, offset ++, (value >> width) & 0x01);
+	}
+}
+
+static unsigned getbits(const uint8_t * b, unsigned offset, unsigned width, unsigned minv, unsigned maxv, unsigned defv)
+{
+	unsigned v = 0;
+	while (width --)
+	{
+		v = v * 2 + getbit(b, offset ++);
+	}
+	if (v > maxv || v > maxv)
+		v = defv;
+	return v;
+}
+
+static void loadmodeinfo0(nvramaddress_t place, uint_fast8_t bi, uint_fast8_t defrow, uint_fast8_t defcol)
+{
+	uint8_t b [MODEINFO_BUNDLESIZE];
+	unsigned offset = 0;
+	nvram_read(place + OFFSETOF(modeinfo_t, bundle), b, ARRAY_SIZE(b));
+
+	{
+		// lock
+		const unsigned width = needbits(1);
+		glocks [bi] = getbits(b, offset, width, 0, 1, 0);
+		offset += width;
+	}
+	{
+		// moderow
+		const unsigned width = needbits(MODEROW_COUNT - 1);
+		gmoderows [bi] = getbits(b, offset, width, 0, MODEROW_COUNT - 1, defrow);
+		offset += width;
+	}
+	{
+		// modecols
+		const unsigned dim1 = ARRAY_SIZE(modes);
+		//const unsigned dim2 = ARRAY_SIZE(modes [0]);
+		unsigned row;
+		for (row = 0; row < dim1; ++ row)
+		{
+			const uint_fast8_t maxvalue = modes [row] [0] - 1;
+			const uint_fast8_t defvalue = defrow == row ? defcol : 0;
+			const unsigned width = needbits(maxvalue);
+
+			gmodecolmaps [bi] [row] = getbits(b, offset, width,
+					0, maxvalue,
+					defvalue);	// 0 по умолчанию для всех не предустановленных
+			offset += width;
+		}
+	}
+	ASSERT(ARRAY_SIZE(b) <= (offset + 7) / 8);
+}
+
+static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
+{
+	uint8_t b [MODEINFO_BUNDLESIZE] = { 0 };
+	unsigned offset = 0;
+	{
+		// lock
+		const unsigned width = needbits(1);
+		putbits(b, offset, width, glocks [bi]);
+		offset += width;
+	}
+	{
+		// moderow
+		const unsigned width = needbits(MODEROW_COUNT - 1);
+		putbits(b, offset, width, gmoderows [bi]);
+		offset += width;
+	}
+	{
+		// modecols
+		const unsigned dim1 = ARRAY_SIZE(modes);
+		//const unsigned dim2 = ARRAY_SIZE(modes [0]);
+		unsigned row;
+		for (row = 0; row < dim1; ++ row)
+		{
+			const uint_fast8_t maxvalue = modes [row] [0] - 1;
+			const unsigned width = needbits(maxvalue);
+
+			putbits(b, offset, width, gmodecolmaps [bi] [row]);
+			offset += width;
+		}
+	}
+	ASSERT(ARRAY_SIZE(b) <= (offset + 7) / 8);
+	nvram_write(place + OFFSETOF(modeinfo_t, bundle), b, ARRAY_SIZE(b));
+}
+
+#endif
+
+static void moderowinfo(void)
+{
+	const unsigned dim1 = ARRAY_SIZE(modes);
+	const unsigned dim2 = ARRAY_SIZE(modes [0]);
+	unsigned bits0 = needbits(dim1 - 1);
+	const unsigned upvalrow = dim1 - 1;
+	unsigned upvalcols [dim1];
+	PRINTF("modes: %u rows (bits0=%u, upvalidate=%u):\n", dim1, bits0, upvalrow);
+	ASSERT(bits0 != 0);
+	unsigned totalbits = 0;
+	totalbits += needbits(1);	// lock
+	totalbits += bits0;
+	unsigned row;
+	for (row = 0; row < dim1; ++ row)
+	{
+		unsigned countvalaues = modes [row] [0];
+		unsigned bits = needbits(countvalaues - 1);
+		upvalcols [row] = countvalaues;
+		PRINTF("row [%u]: up to: %u, bits=%u\n", row, countvalaues, bits);
+		totalbits += bits;
+		ASSERT(bits != 0);
+	}
+	const unsigned totalbytes = (totalbits + 7) / 8;
+	PRINTF("totalbits=%u, totalbytes=%u\n", totalbits, totalbytes);
+	(void) upvalcols;
+}
+
+static uint_fast8_t
+getmodecol(uint_fast8_t row, uint_fast8_t bi)		/* bank index */
+{
+	return gmodecolmaps [bi] [row];
+}
+
+static void loadmodeinfo(nvramaddress_t place, uint_fast8_t bi, uint_fast32_t freq)
+{
+	const uint_fast8_t defsubmode = getdefaultbandsubmode(freq);		/* режим по-умолчанию для частоты - USB или LSB */
+	uint_fast8_t defrow;
+	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
+	loadmodeinfo0(place, bi, defrow, defcol);
 }
 
 #if 0
@@ -3456,6 +3593,7 @@ validatesubmode(
 	return 0;
 }
 #endif
+
 #endif /* ! WITHISBOOTLOADER */
 
 #if ! WITHISBOOTLOADER
@@ -3490,26 +3628,11 @@ struct modeprops_tag
 #if ! WITHAGCMODENONE
 	uint8_t agc;	/* режим АРУ для данного семейства режимов */
 #endif /* ! WITHAGCMODENONE */
-	uint8_t filter;	/* индекс фильтра в общей таблице фильтров */
-	//uint16_t step;	/* шаг валкодера в данном режиме */
 
 	uint8_t noisereduct;	/* включение NR для данного режима */
 	uint8_t txaudioindex;	/* источник звука для передачи (индекс) */
 	uint8_t	gmidmenupos;	/* активный пункт в middlemenu */
 
-} ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
-
-/* структура - расположение байтов в конфигурационном ОЗУ.
-   bitfields нельзя использовать, так как всё это - только обозначения смещений
-	 переменных в конфигурационном ОЗУ.
-	Информация, сохраняемая для каждого диапазона */
-
-struct bandinfo_tag
-{
-	uint32_t freq;		/* рабочая частота */
-	uint8_t modecols [MODEROW_COUNT];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
-	uint8_t moderow;		/* номер режима работы в маске (номер тройки бит) */
-	uint8_t glock;			/* блокировка валкодера */
 } ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* структура - расположение байтов в конфигурационном ОЗУ.
@@ -3540,14 +3663,10 @@ struct onetxant_tag {
 	 переменных в конфигурационном ОЗУ.
  	 Информация, сохраняемая для группы диапазонов */
 
-struct bandgroup_tag {
-	uint8_t	band;		/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
-#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
+struct bandprops_tag {
 	uint8_t miload [BANKINDEX_COUNT];			// последний индекс, из которого выбиралась ячейка памяти.
 	uint8_t mistore [BANKINDEX_COUNT];		// последний индекс, в который запоминалась ячейка памяти.
-	struct bandinfo_tag mibands [BANKINDEX_COUNT] [WITHBANDMEMCOUNT];
-#else /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
-#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
+	modeinfo_t mibands [BANKINDEX_COUNT] [WITHBANDMEMCOUNT];	// частота, lock, mode
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 	uint8_t rxant;		/* признак включения приемной антенны */
 	uint8_t ant;		/* код выбора антенны (0/1) */
@@ -3569,6 +3688,8 @@ struct bandgroup_tag {
 	struct onetxant_tag otxants [ANTMODE_COUNT];	// Параметры, связанные с антенами, которые могут использоваться на передачу (параметры тюнера)
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
+enum { BANDS_COUNT = HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT };
+enum { BANDPROPS_COUNT = HBANDS_COUNT + XBANDS_COUNT };
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
 	 переменных в конфигурационном ОЗУ.
@@ -3646,18 +3767,18 @@ struct nvmap {
 	uint8_t gsleeptime;
 #endif /* WITHSLEEPTIMER */
 
-#if WITHMIC1LEVEL
-	uint16_t gmik1level;
-#endif /* WITHMIC1LEVEL */
 #if defined(CODEC1_TYPE)
 	uint16_t 	ggrpcodecparams;		// последний посещённый пункт группы
-#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
-	uint8_t ALCNEN;// = 0;	// ALC noise gate function control bit
-	uint8_t ALCNTH;// = 0;	// ALC noise gate threshold level
-	uint8_t ALCEN;// = 1;	// only left channel ALC enabled
-	uint8_t ALCMXGAIN;// = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
-	uint8_t ALCMNGAIN;// = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
-#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
+	#if WITHMIC1LEVEL
+		uint16_t gmik1level;
+	#endif /* WITHMIC1LEVEL */
+	#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+		uint8_t ALCNEN;// = 0;	// ALC noise gate function control bit
+		uint8_t ALCNTH;// = 0;	// ALC noise gate threshold level
+		uint8_t ALCEN;// = 1;	// only left channel ALC enabled
+		uint8_t ALCMXGAIN;// = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
+		uint8_t ALCMNGAIN;// = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
+	#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #endif /* defined(CODEC1_TYPE)  */
 #if WITHTX
 	uint16_t	ggrptxparams; // последний посещённый пункт группы
@@ -3903,12 +4024,12 @@ struct nvmap {
 		uint8_t voxdelay;	/* задержка отпускания VOX */
 	#endif /* WITHVOX */
 
-	#if WITHELKEY
+	#if WITHTX
 		uint8_t gbkinenable;	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
-	#endif /* WITHELKEY */
+		uint8_t bkindelay;	/* задержка отпускания BREAK-IN */
+	#endif /* WITHTX */
 
 	uint8_t gtxgate;	/* разрешение предусилителя */
-	uint8_t bkindelay;	/* задержка отпускания BREAK-IN */
 	uint8_t grgbeep;	/* разрешение (не-0) или запрещение (0) формирования roger beep */
 	uint8_t rxtxdelay;	/* приём-передача */
 
@@ -3996,9 +4117,8 @@ struct nvmap {
 #endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
 
 	struct modeprops_tag modes [MODE_COUNT];
-	struct bandinfo_tag bands [HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT];
-	struct bandgroup_tag bandgroups [BANDGROUP_COUNT + 1];	/* один элемент для не относящихся к группам диапазонов */
-	//struct bandgroup_tag bandgroups [HBANDS_COUNT + XBANDS_COUNT];	/* доп параметры по диапазонам */
+	modeinfo_t bands [BANDS_COUNT];		// частота, lock, mode
+	struct bandprops_tag bandprops [BANDPROPS_COUNT];	/* доп параметры по диапазонам */
 
 #if WITHANTSELECT2
 	uint8_t hffreqswitch; /* выше этой частоты (МГц) выбирается вторая (ВЧ) антенна */
@@ -4029,32 +4149,23 @@ struct nvmap {
 #define RMT_MAINSUBRXMODE_BASE	OFFSETOF(struct nvmap, dwatchmode)
 #define RMT_NR_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].noisereduct)
 #define RMT_AGC_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].agc)
-#define RMT_FILTER_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].filter)
-#define RMT_STEP_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].step)
+#define RMT_TXAUDIO_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txaudioindex)
 
 #define RMT_TXAUDIOINDEX_BASE(i) OFFSETOF(struct nvmap, modes [(i)].txaudioindex)
 #define RMT_MIDDLEMENUPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].gmidmenupos)
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
 
-#define RMT_BAND(b) OFFSETOF(struct nvmap, bands [(b)])		// хранимые диапазоны
-#define RMT_MIBAND(bg, bi, mi) OFFSETOF(struct nvmap, bandgroups [(bg)].mibands [(bi)] [(mi)])
+#define RMT_BAND(b) 			(OFFSETOF(struct nvmap, bands [(b)]))		// хранимые диапазоны
+#define RMT_MIBAND(bp, bi, mi) 	(OFFSETOF(struct nvmap, bandprops [(bp)].mibands [(bi)] [(mi)]))
 
-#define RMT_LOCKMODE_BASE(b) 			(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, glock))				/* признак блокировки валкодера */
-#define RMT_BFREQ_BASE(b) 				(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, freq))				/* последняя частота, на которую настроились (4 байта) */
-#define RMT_MODEROW_BASE(b)				(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, moderow))			/* номер строки в массиве режимов. */
-#define RMT_MODECOLS_BASE(b, j)			(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, modecols [(j)]))		/* выбранный столбец в каждой строке режимов. */
+#define RMT_BFREQ_BASE(b) 				(RMT_BAND((b)) + OFFSETOF(struct modeinfo_tag, freq))				/* последняя частота, на которую настроились (4 байта) */
 
-#define RMT_MILOCKMODE_BASE(bg, bi, mi) 	(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, glock))		/* признак блокировки валкодера */
-#define RMT_MIBFREQ_BASE(bg, bi, mi) 		(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, freq))		/* последняя частота, на которую настроились (4 байта) */
-#define RMT_MIMODEROW_BASE(bg, bi, mi)		(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, moderow))	/* номер строки в массиве режимов. */
-#define RMT_MIMODECOLS_BASE(bg, bi, mi, j)	(RMT_MIBAND((bg), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, modecols [(j)]))/* выбранный столбец в каждой строке режимов. */
+#define RMT_MIBFREQ_BASE(bp, bi, mi) 		(RMT_MIBAND((bp), (bi), (mi)) + OFFSETOF(struct modeinfo_tag, freq))		/* последняя частота, на которую настроились (4 байта) */
 
-#define RMT_BANDPOS(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
-
-#define RMT_PAMPBG3_BASE(bg, ant, rxant) OFFSETOF(struct nvmap, bandgroups [(bg)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].pamp)	/* признак включения аттенюатора (1 байт) */
-#define RMT_ATTBG3_BASE(bg, ant, rxant) OFFSETOF(struct nvmap, bandgroups [(bg)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].att)		/* признак включения аттенюатора (1 байт) */
-#define RMT_RXANTENNABG_BASE(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].rxant)			/* код включённой антенны (1 байт) */
-#define RMT_ANTENNABG_BASE(bg) OFFSETOF(struct nvmap, bandgroups [(bg)].ant)			/* код включённой антенны (1 байт) */
+#define RMT_PAMPBG3_BASE(bp, ant, rxant) (OFFSETOF(struct nvmap, bandprops [(bp)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].pamp))	/* признак включения аттенюатора (1 байт) */
+#define RMT_ATTBG3_BASE(bp, ant, rxant) (OFFSETOF(struct nvmap, bandprops [(bp)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].att))		/* признак включения аттенюатора (1 байт) */
+#define RMT_RXANTENNABG_BASE(bp) (OFFSETOF(struct nvmap, bandprops [(bp)].rxant))			/* код включённой антенны (1 байт) */
+#define RMT_ANTENNABG_BASE(bp) (OFFSETOF(struct nvmap, bandprops [(bp)].ant))			/* код включённой антенны (1 байт) */
 
 #define RMT_PWR_BASE OFFSETOF(struct nvmap, gpwri)								/* большая мощность sw2012sf */
 #define RMT_NOTCH_BASE OFFSETOF(struct nvmap, gnotch)							/* NOTCH on/off */
@@ -4191,7 +4302,6 @@ static int_fast32_t getzerobase(void)
    */
 
 /* параметры диапазона, переключаемые при смене VFO */
-static uint_fast32_t gfreqs [VFOS_COUNT] = { DEFAULTDIALFREQ, DEFAULTDIALFREQ };		/* отображаемая на дисплее частота работы */
 #if ! WITHONEATTONEAMP
 static uint_fast8_t gpamp;
 #endif /* ! WITHONEATTONEAMP */
@@ -4219,7 +4329,6 @@ static uint_fast8_t gvfosplit [VFOS_COUNT];	// At index 0: RX VFO A or B, at ind
 // На эти параметры ориентируемся при работе кнопками управления, переклбчения фильттров и так далее.
 static uint_fast8_t gsubmode;		/* код текущего режима */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
-static uint_fast8_t gfi;			/* номер фильтра (сквозной) для текущего режима */
 
 // Параметры ставяться в setgsubmode
 static uint_fast16_t gstep_ENC_MAIN;
@@ -4242,7 +4351,7 @@ static nvramaddress_t nvramoffs_mode(nvramaddress_t base, unsigned mode)
 
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
-	return base + RMT_FILTER_BASE(mode) - RMT_FILTER_BASE(mode);
+	return base + RMT_TXAUDIO_BASE(mode) - RMT_TXAUDIO_BASE(mode);
 }
 
 static ptrdiff_t valueoffs_mode(unsigned mode)
@@ -4408,7 +4517,6 @@ static const struct paramdefdef xgcwpitch10 =
 	};
 #endif /* WITHDSPEXTDDC */
 
-static uint_fast8_t glocks [2];
 #if WITHLCDBACKLIGHTOFF
 	// Имеется управление включением/выключением подсветки дисплея
 	static uint_fast8_t dimmmode;
@@ -4843,24 +4951,26 @@ static const struct paramdefdef xgethgateway =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
-static unsigned getselector_bandgroup(unsigned * count)
+static unsigned getselector_bandprops(unsigned * count)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
-	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
-	* count = BANDGROUP_COUNT;
-
-	return bg;
+	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
+	* count = HBANDS_COUNT + XBANDS_COUNT;
+	return b;
 }
 
-static nvramaddress_t nvramoffs_bandgroup(nvramaddress_t base, unsigned bg)
+static nvramaddress_t nvramoffs_bandprops(nvramaddress_t base, unsigned bp)
 {
 	ASSERT(base != MENUNONVRAM);
 
 	if (base == MENUNONVRAM)
 		return MENUNONVRAM;
+	ASSERT(bp < BANDPROPS_COUNT);
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
-	return base + RMT_BANDPOS(bg) - RMT_BANDPOS(0);
+	#define RMT_BANDPOS(bp) (OFFSETOF(struct nvmap, bandprops [(bp)].otxants))	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
+	return base + RMT_BANDPOS(bp) - RMT_BANDPOS(0);
 }
 
 
@@ -4917,8 +5027,8 @@ static const struct paramdefdef xgzoomxpow2 =
 	QLABEL3("ZOOM PAN", "ZOOM PAN", "ZOOM PAN"), 0, RJ_POW2,	ISTEP1,
 	ITEM_VALUE,
 	0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
-	OFFSETOF(struct nvmap, bandgroups [0].gzoomxpow2),
-	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
+	OFFSETOF(struct nvmap, bandprops [0].gzoomxpow2),
+	getselector_bandprops, nvramoffs_bandprops, valueoffs0,
 	NULL,
 	& gzoomxpow2,
 	getzerobase, /* складывается со смещением и отображается */
@@ -4932,8 +5042,8 @@ static const struct paramdefdef xgtopdb =
 	QLABEL3("TOP DB", "Top dB", "TOP DB"),  0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-	OFFSETOF(struct nvmap, bandgroups [0].gtopdb),
-	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
+	OFFSETOF(struct nvmap, bandprops [0].gtopdb),
+	getselector_bandprops, nvramoffs_bandprops, valueoffs0,
 	NULL,
 	& gtopdb,
 	getrfdbbase, /* складывается со смещением и отображается */
@@ -4945,8 +5055,8 @@ static const struct paramdefdef xgbottomdb =
 	QLABEL3("BOTTM DB", "Bottom dB", "BOTTM DB"),  0, RJ_SIGNED,	ISTEP1,
 	ITEM_VALUE,
 	WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-	OFFSETOF(struct nvmap, bandgroups [0].gbottomdb),
-	getselector_bandgroup, nvramoffs_bandgroup, valueoffs0,
+	OFFSETOF(struct nvmap, bandprops [0].gbottomdb),
+	getselector_bandprops, nvramoffs_bandprops, valueoffs0,
 	NULL,
 	& gbottomdb,
 	getrfdbbase, /* складывается со смещением и отображается */
@@ -6176,13 +6286,6 @@ enum
 		enum { gclassamode = 0 };	/* использование режима клвсс А при передаче */
 	#endif /* WITHPACLASSA */
 
-	#if WITHELKEY
-		static uint_fast8_t gbkinenable = 1;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
-		static uint_fast8_t bkindelay = 20;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
-	#else /* WITHELKEY */
-		enum { gbkinenable = 0 };
-	#endif /* WITHELKEY */
-
 #if TXPATH_BIT_GATE_RX && CTLSTYLE_SW2011ALL
 	enum { pretxdelay = 1 };	/* признак того, что требуется снятие питания со второго смесителя */
 #else
@@ -6206,12 +6309,39 @@ enum
 	static uint_fast8_t txrxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
 
 #else /* WITHTX */
-	static const uint_fast8_t gbkinenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
 	static const uint_fast8_t gvoxenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
-	static const uint_fast8_t bkindelay = 80;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
 #endif /* WITHTX */
 
 #if WITHMENU
+#if WITHTX
+	static uint_fast8_t gbkinenable = 1;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
+	static const struct paramdefdef xgbkinenable =
+	{
+		QLABEL("BREAK-IN"), 0, RJ_ON,	ISTEP1,	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gbkinenable),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gbkinenable,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static uint_fast8_t bkindelay = 20;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
+	static const struct paramdefdef xgbkindelay =
+	{
+		QLABEL("CW DELAY"),  2, RJ_UNSIGNED, ISTEP1,	/* задержка в десятках ms */
+		ITEM_VALUE,
+		5, 160,						/* 0.05..1.6 секунды */
+		OFFSETOF(struct nvmap, bkindelay),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& bkindelay,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+#else /* WITHTX */
+#endif /* WITHTX */
 #if WITHELKEY
 
 	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
@@ -6319,32 +6449,6 @@ enum
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 #endif /* WITHVIBROPLEX */
-#if WITHTX
-	static const struct paramdefdef xgbkinenable =
-	{
-		QLABEL("BREAK-IN"), 0, RJ_ON,	ISTEP1,	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gbkinenable),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gbkinenable,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	};
-	static const struct paramdefdef xgbkindelay =
-	{
-		QLABEL("CW DELAY"),  2, RJ_UNSIGNED, ISTEP1,	/* задержка в десятках ms */
-		ITEM_VALUE,
-		5, 160,						/* 0.05..1.6 секунды */
-		OFFSETOF(struct nvmap, bkindelay),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& bkindelay,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	};
-#endif /* WITHTX */
 #if WITHIF4DSP
 	static uint_fast8_t gcwedgetime = 5;	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static const struct paramdefdef xgcwedgetime =
@@ -6407,24 +6511,6 @@ static const struct paramdefdef xstayfreq =
 		static uint_fast8_t dac1level = (WITHDAC1VALMAX + 1 - WITHDAC1VALMIN) / 2 + WITHDAC1VALMIN;	/* модифицируется через меню. */
 	#endif /* defined (WITHDAC1VALDEF) */
 #endif /* defined (DAC1_TYPE) */
-
-
-#if LO1FDIV_ADJ
-	static uint_fast8_t lo1powmap [2] = { LO1_POWER2, LO1_POWER2 };		/* на сколько делим выходную частоту синтезатора первого гетеродина */
-#endif
-#if LO2FDIV_ADJ
-	static uint_fast8_t lo2powmap [2] = { LO2_POWER2, LO2_POWER2 };		/* на сколько делим выходную частоту синтезатора 2-го гетеродина */
-#endif
-#if LO3FDIV_ADJ
-	static uint_fast8_t lo3powmap [2] = { LO3_POWER2, LO3_POWER2 };		/* на сколько делим выходную частоту синтезатора 3-го гетеродина */
-#endif
-#if LO4FDIV_ADJ
-	static uint_fast8_t lo4powmap [2] = { LO4_POWER2, LO4_POWER2 };		/* на сколько делим выходную частоту синтезатора 4-го гетеродина */
-#endif
-
-#if LO1PHASES
-	static uint_fast16_t phasesmap [2]; /* приемник [0] и передатчик [1] - коррекция фазы - в nvram phaserx и phasetx */
-#endif /* LO1PHASES */
 
 #if 1//WITHBARS
 
@@ -6508,11 +6594,6 @@ static const struct paramdefdef xgipacali =
 #else /* WITHRFSG */
 	enum { userfsg = 0 };
 #endif /* WITHRFSG */
-
-static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом используется результат функции getbankindex_xxx(tx) */
-										/* номер режима работы в маске (номер тройки бит) */
-static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
-
 
 static uint_fast8_t gmutespkr;		/*  выключение динамика */
 static const struct paramdefdef xgmutespkr =
@@ -7659,7 +7740,7 @@ enum phases
 	PHASE_CONTINUE
 };
 
-static uint_fast8_t tuner_bg;
+static uint_fast8_t tuner_bp;
 static uint_fast8_t tuner_ant;
 
 static void board_set_tuner_group(void)
@@ -7765,23 +7846,25 @@ static uint_fast8_t tuneabort(void)
 	return 0;
 }
 
-static void storetuner(uint_fast8_t bg, uint_fast8_t ant)
+static void storetuner(uint_fast8_t bp, uint_fast8_t ant)
 {
+	ASSERT(bp < BANDPROPS_COUNT);
 	PRINTF("storetuner: L=%u,C=%u,T=%u\n", tunerind, tunercap, tunertype);
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunercap), tunercap);
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerind), tunerind);
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunertype), tunertype);
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerwork), tunerwork);
-	save_i16(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].mlaparamc), mlaparamc);
+	save_i8(OFFSETOF(struct nvmap, bandprops [bp].otxants [ant].tunercap), tunercap);
+	save_i8(OFFSETOF(struct nvmap, bandprops [bp].otxants [ant].tunerind), tunerind);
+	save_i8(OFFSETOF(struct nvmap, bandprops [bp].otxants [ant].tunertype), tunertype);
+	save_i8(OFFSETOF(struct nvmap, bandprops [bp].otxants [ant].tunerwork), tunerwork);
+	save_i16(OFFSETOF(struct nvmap, bandprops [bp].otxants [ant].mlaparamc), mlaparamc);
 }
 
-static void loadtuner(uint_fast8_t bg, uint_fast8_t ant)
+static void loadtuner(uint_fast8_t bp, uint_fast8_t ant)
 {
-	tunercap = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunercap), CMIN, CMAX, tunercap);
-	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerind), LMIN, LMAX, tunerind);
-	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
-	tunerwork = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerwork), 0, 1, 0);	// в новых диапазонах - тоюнер не включаем по умолчанию
-	mlaparamc = loadvfy16up(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].mlaparamc), 0, MLAPARAMC_MAX, 0);	// в новых диапазонах - тоюнер не включаем по умолчанию
+	ASSERT(bp < BANDPROPS_COUNT);
+	tunercap = loadvfy8up(OFFSETOF(struct nvmap, bandprops [bp].otxants [ant].tunercap), CMIN, CMAX, tunercap);
+	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandprops [bp].otxants [ant].tunerind), LMIN, LMAX, tunerind);
+	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandprops [bp].otxants [ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
+	tunerwork = loadvfy8up(OFFSETOF(struct nvmap, bandprops [bp].otxants [ant].tunerwork), 0, 1, 0);	// в новых диапазонах - тоюнер не включаем по умолчанию
+	mlaparamc = loadvfy16up(OFFSETOF(struct nvmap, bandprops [bp].otxants [ant].mlaparamc), 0, MLAPARAMC_MAX, 0);	// в новых диапазонах - тоюнер не включаем по умолчанию
 }
 
 // ожидание требуемого времени после выдачи параметров на тюнер.
@@ -7806,10 +7889,11 @@ void n7ddc_settuner(unsigned inductors, unsigned capcitors, unsigned type)
 
 static void auto_tune0_init(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t tx = 1;
 	const uint_fast8_t bi = getbankindex_tx(tx);
 	const uint_fast32_t freq = gfreqs [bi];
-	tuner_bg = getfreqbandgroup(freq);
+	tuner_bp = getfreqband(freq, bandset_no_check);
 	tuner_ant = geteffantenna(freq);
 }
 
@@ -7857,7 +7941,7 @@ static void auto_tune2_init(void)
 // save to nvram
 static void auto_tune2(void)
 {
-	storetuner(tuner_bg, tuner_ant);
+	storetuner(tuner_bp, tuner_ant);
 }
 
 #else /* WITHAUTOTUNER_N7DDCALGO */
@@ -7971,11 +8055,12 @@ static void auto_tune0_init(void)
 // 1 - aborted
 static enum phases auto_tune0(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	unsigned ndummies;
 	const uint_fast8_t tx = 1;
 	const uint_fast8_t bi = getbankindex_tx(tx);
 	const uint_fast32_t freq = gfreqs [bi];
-	tuner_bg = getfreqbandgroup(freq);
+	tuner_bp = getfreqband(freq, bandset_no_check);
 	tuner_ant = geteffantenna(freq);
 
 	PRINTF(PSTR("auto_tune start\n"));
@@ -8066,7 +8151,7 @@ static void auto_tune2(void)
 	updateboard_tuner();
 	PRINTF(PSTR("auto_tune stop\n"));
 ////NoMoreTune:
-	storetuner(tuner_bg, tuner_ant);
+	storetuner(tuner_bp, tuner_ant);
 }
 
 #endif /* WITHAUTOTUNER_N7DDCALGO */
@@ -8075,9 +8160,9 @@ static void auto_tune2(void)
 static void auto_tune3(void)
 {
 	tunerwork = 1;	// всегда единица (сохранилось в начале настройки)
-	tunercap = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [tuner_bg].otxants [tuner_ant].tunercap), CMIN, CMAX, tunercap);
-	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [tuner_bg].otxants [tuner_ant].tunerind), LMIN, LMAX, tunerind);
-	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [tuner_bg].otxants [tuner_ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
+	tunercap = loadvfy8up(OFFSETOF(struct nvmap, bandprops [tuner_bp].otxants [tuner_ant].tunercap), CMIN, CMAX, tunercap);
+	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandprops [tuner_bp].otxants [tuner_ant].tunerind), LMIN, LMAX, tunerind);
+	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandprops [tuner_bp].otxants [tuner_ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
 	updateboard_tuner();
 }
 
@@ -8629,35 +8714,6 @@ board_wakeup(void)
 	return r;
 }
 
-/* получаем PBT offset для текущего режима работы */
-/* TODO: сделать зависимым от текущего фильтра */
-static int_fast16_t
-getpbt(
-	const filter_t * workfilter,
-	uint_fast8_t mode,		/* код режима работы */
-	uint_fast8_t tx				/* признак передачи */
-	)
-{
-	(void) mode;
-	(void) tx;
-	return 0;
-}
-/* получаем IF SHIFT offset для текущего режима работы */
-/* TODO: сделать зависимым от текущего фильтра */
-// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
-static int_fast16_t
-getifshift(
-	const filter_t * workfilter,
-	uint_fast8_t mode,		/* код режима работы */
-	uint_fast8_t tx				/* признак передачи */
-	)
-{
-	(void) workfilter;
-	(void) mode;
-	(void) tx;
-	return 0;
-}
-
 #if 0
 static const uint_fast8_t ssb_steps10 [] =
 {
@@ -8929,27 +8985,6 @@ getnexthband(const uint_fast32_t freq)
 	return LOW;
 }
 
-/* получить номер любительского диспазона, следующего в группе. Если в группе больше нет ни одного диапазона,
- вернуть номер текущего.
- */
-static vindex_t
-getnextbandingroup(const vindex_t b, const uint_fast8_t bandgroup)
-{
-	const uint_fast8_t bandset_no_check = 0;
-	enum { LOW = 0, HIGH = HBANDS_COUNT - 1 };
-
-	vindex_t i = b;		// начальный диапазон
-	do
-	{
-		i = i == HIGH ? LOW : (i + 1);	// переход к следующему диапазону
-		if (! existingband(i, gbandsetbcast, bandset_no_check))	// диапазон в данной конфигурации не используется
-			continue;
-		if (bandsmap [i].bandgroup == bandgroup)
-			break;			// диапазон той же группы
-	} while (i != b);
-	return i;
-}
-
 /* получить номер диапазона с меньшей частотой, на который переходить.
   Если нет подходящих, возврат high */
 static vindex_t
@@ -9218,26 +9253,6 @@ getprev_ham_band(
 	return b;
 }
 
-
-/* по получить номер диапазона  */
-static uint_fast8_t
-getbandgroup(vindex_t b)
-{
-	ASSERT(b != ((vindex_t) - 1));
-	const uint_fast8_t bandgroup = bandsmap [b].bandgroup;
-	return bandgroup;
-}
-
-
-/* определяем по частоте, в какой группе диапазонов находимся */
-static uint_fast8_t
-getfreqbandgroup(const uint_fast32_t freq)
-{
-	const uint_fast8_t bandset_no_check = 0;
-	const vindex_t b = getfreqband(freq, bandset_no_check);
-	return getbandgroup(b);
-}
-
 	enum { withonlybands = 0 };
 
 #if WITHONLYBANDS
@@ -9289,7 +9304,6 @@ copybankstate(
 
 /* сохранить все частоту настройки в соответствующий диапазон, ячейку памяти или VFO. */
 static void
-
 storebandfreq(const vindex_t b, const uint_fast8_t bi)
 {
 	//PRINTF(PSTR("storebandfreq: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
@@ -9302,85 +9316,82 @@ storebandfreq(const vindex_t b, const uint_fast8_t bi)
 #if WITHSPECTRUMWF
 
 /* сохранение параметров отображения спектра и водопада */
-static void storezoom(uint_fast8_t bg)
+static void storezoom(uint_fast8_t bp)
 {
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].gzoomxpow2), gzoomxpow2);	/* уменьшение отображаемого участка спектра */
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].gtopdb), gtopdb);	/* нижний предел FFT */
-	save_i8(OFFSETOF(struct nvmap, bandgroups [bg].gbottomdb), gbottomdb);	/* верхний предел FFT */
+	ASSERT(bp < BANDPROPS_COUNT);
+	save_i8(OFFSETOF(struct nvmap, bandprops [bp].gzoomxpow2), gzoomxpow2);	/* уменьшение отображаемого участка спектра */
+	save_i8(OFFSETOF(struct nvmap, bandprops [bp].gtopdb), gtopdb);	/* нижний предел FFT */
+	save_i8(OFFSETOF(struct nvmap, bandprops [bp].gbottomdb), gbottomdb);	/* верхний предел FFT */
 }
 
 /* восстановление параметров отображения спектра и водопада */
-static void loadzoom(uint_fast8_t bg)
+static void loadzoom(uint_fast8_t bp)
 {
-	gzoomxpow2 = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
-	gtopdb = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].gtopdb), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
-	gbottomdb = loadvfy8up(OFFSETOF(struct nvmap, bandgroups [bg].gbottomdb), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
+	ASSERT(bp < BANDPROPS_COUNT);
+	gzoomxpow2 = loadvfy8up(OFFSETOF(struct nvmap, bandprops [bp].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
+	gtopdb = loadvfy8up(OFFSETOF(struct nvmap, bandprops [bp].gtopdb), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
+	gbottomdb = loadvfy8up(OFFSETOF(struct nvmap, bandprops [bp].gbottomdb), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
 }
 
 #endif /* WITHSPECTRUMWF */
 
-static void storebandpos(uint_fast8_t b)
+static void storebandprops(uint_fast8_t bp, uint_fast8_t ant, uint_fast8_t rxant)
 {
-	const uint_fast8_t bandgroup = bandsmap [b].bandgroup;
-	if (bandgroup != BANDGROUP_COUNT)
-		save_i8(RMT_BANDPOS(bandgroup), b);
-}
-
-static void storebandgroup(uint_fast8_t bg, uint_fast8_t ant, uint_fast8_t rxant)
-{
+	ASSERT(bp < BANDPROPS_COUNT);
 
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 
 	#if ! WITHONEATTONEAMP
-		save_i8(RMT_PAMPBG3_BASE(bg, gantenna, grxantenna), gpamp);
+		save_i8(RMT_PAMPBG3_BASE(bp, gantenna, grxantenna), gpamp);
 	#endif /* ! WITHONEATTONEAMP */
-	save_i8(RMT_RXANTENNABG_BASE(bg), grxantenna);
-	save_i8(RMT_ANTENNABG_BASE(bg), gantenna);
-	save_i8(RMT_ATTBG3_BASE(bg, gantenna, grxantenna), gatt);
+	save_i8(RMT_RXANTENNABG_BASE(bp), grxantenna);
+	save_i8(RMT_ANTENNABG_BASE(bp), gantenna);
+	save_i8(RMT_ATTBG3_BASE(bp, gantenna, grxantenna), gatt);
 
 #elif WITHANTSELECT
 
 	#if ! WITHONEATTONEAMP
-		save_i8(RMT_PAMPBG3_BASE(bg, gantenna, grxantenna), gpamp);
+		save_i8(RMT_PAMPBG3_BASE(bp, gantenna, grxantenna), gpamp);
 	#endif /* ! WITHONEATTONEAMP */
-	save_i8(RMT_ANTENNABG_BASE(bg), gantenna);
-	save_i8(RMT_ATTBG3_BASE(bg, gantenna, grxantenna), gatt);
+	save_i8(RMT_ANTENNABG_BASE(bp), gantenna);
+	save_i8(RMT_ATTBG3_BASE(bp, gantenna, grxantenna), gatt);
 
 #elif WITHANTSELECT2
 
 	#if ! WITHONEATTONEAMP
-		save_i8(RMT_PAMPBG3_BASE(bg, gantennabym, grxantenna), gpamp);
+		save_i8(RMT_PAMPBG3_BASE(bp, gantennabym, grxantenna), gpamp);
 	#endif /* ! WITHONEATTONEAMP */
-	save_i8(RMT_ATTBG3_BASE(bg, gantennabym, grxantenna), gatt);
-	save_i8(RMT_ANTENNABG_BASE(bg), gantennabym);
+	save_i8(RMT_ATTBG3_BASE(bp, gantennabym, grxantenna), gatt);
+	save_i8(RMT_ANTENNABG_BASE(bp), gantennabym);
 
 #else
 
 	#if ! WITHONEATTONEAMP
-		save_i8(RMT_PAMPBG3_BASE(bg, gantenna, grxantenna), gpamp);
+		save_i8(RMT_PAMPBG3_BASE(bp, gantenna, grxantenna), gpamp);
 	#endif /* ! WITHONEATTONEAMP */
-	save_i8(RMT_ATTBG3_BASE(bg, gantenna, grxantenna), gatt);
+	save_i8(RMT_ATTBG3_BASE(bp, gantenna, grxantenna), gatt);
 
 #endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
 
 
 #if WITHAUTOTUNER
-	storetuner(bg, ant);
+	storetuner(bp, ant);
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
-	storezoom(bg);
+	storezoom(bp);
 #endif /* WITHSPECTRUMWF */
 }
 
-static void loadantenna(uint_fast8_t bi, uint_fast8_t bg)
+static void loadantenna(uint_fast8_t bp)
 {
+	ASSERT(bp < BANDPROPS_COUNT);
 #if WITHANTSELECTRX || WITHANTSELECT1RX
-	grxantenna = loadvfy8up(RMT_RXANTENNABG_BASE(bg), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
-	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bg), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+	grxantenna = loadvfy8up(RMT_RXANTENNABG_BASE(bp), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bp), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 #elif WITHANTSELECT2
-	gantennabym = loadvfy8up(RMT_ANTENNABG_BASE(bg), 0, ANTMODE_COUNT - 1, getdefantenna(gfreqs [bi]));	/* вытаскиваем номер включённой антенны */
+	gantennabym = loadvfy8up(RMT_ANTENNABG_BASE(bp), 0, ANTMODE_COUNT - 1, getdefantenna(gfreqs [bi]));	/* вытаскиваем номер включённой антенны */
 #elif WITHANTSELECT
-	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bg), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bp), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 #endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
 }
 
@@ -9411,49 +9422,44 @@ getdefaultbandsubmode(
 	return getdefaultsubmode(freq);
 }
 
-static void loadbandgroup(uint_fast8_t bg, uint_fast8_t ant, uint_fast8_t rxant)
+static void loadbandprops(uint_fast8_t bp, uint_fast8_t ant, uint_fast8_t rxant)
 {
+	ASSERT(bp < BANDPROPS_COUNT);
 
 #if ! WITHONEATTONEAMP
-	gpamp = loadvfy8up(RMT_PAMPBG3_BASE(bg, ant, rxant), 0, PAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
+	gpamp = loadvfy8up(RMT_PAMPBG3_BASE(bp, ant, rxant), 0, PAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
 #endif /* ! WITHONEATTONEAMP */
-	gatt = loadvfy8up(RMT_ATTBG3_BASE(bg, ant, rxant), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
+	gatt = loadvfy8up(RMT_ATTBG3_BASE(bp, ant, rxant), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
 
 #if WITHAUTOTUNER
-	loadtuner(bg, ant);
+	loadtuner(bp, ant);
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
-	loadzoom(bg);
+	loadzoom(bp);
 #endif /* WITHSPECTRUMWF */
 }
 
 /* сохранить все параметры настройки (кроме частоты) в соответствующий диапазон, ячейку памяти или VFO. */
 static void
-storebandstate(const vindex_t b, const uint_fast8_t bi)
+storebandstate(const vindex_t vi, const uint_fast8_t bi)
 {
-	//PRINTF(PSTR("storebandstate: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
-	verifyband(b);
+	const uint_fast8_t bandset_no_check = 0;
+	//PRINTF(PSTR("storebandstate: vi=%d, bi=%d, freq=%ld\n"), vi, bi, (unsigned long) gfreqs [bi]);
+	verifyband(vi);
 	const uint_fast32_t freq = gfreqs [bi];
-	const uint_fast8_t bg = getfreqbandgroup(freq);
+	const uint_fast8_t bp = getfreqband(freq, bandset_no_check);
 	const uint_fast8_t ant = geteffantenna(freq);
 	const uint_fast8_t rxant = geteffrxantenna(freq);
 
-	save_i8(RMT_MODEROW_BASE(b), gmoderows [bi]);
-	save_i8(RMT_LOCKMODE_BASE(b), glocks [bi]);
+	savemodeinfo(RMT_BAND(vi), bi);
 
-	uint_fast8_t i;
-	for (i = 0; i < MODEROW_COUNT; ++ i)
-		save_i8(RMT_MODECOLS_BASE(b, i), gmodecolmaps [bi] [i]);
-
-	storebandgroup(bg, ant, rxant);
+	storebandprops(bp, ant, rxant);
 }
 
-#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
-
-static void loadbandmemortstate(uint_fast8_t b, uint_fast8_t bg, uint_fast8_t bi, uint_fast8_t mi)
+static void loadbandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t mi)
 {
-	gfreqs [bi] = loadvfy32(RMT_MIBFREQ_BASE(bg, bi, mi), get_band_bottom(b), get_band_top(b), get_band_init(b));
-	glocks [bi] = loadvfy8up(RMT_MILOCKMODE_BASE(bg, bi, mi), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
+	ASSERT(bp < BANDPROPS_COUNT);
+	gfreqs [bi] = loadvfy32(RMT_MIBFREQ_BASE(bp, bi, mi), get_band_bottom(bp), get_band_top(bp), get_band_init(bp));
 
 #if WITHONLYBANDS
 	const vindex_t hb = getfreqband(gfreqs [bi], bandset_no_check);
@@ -9461,47 +9467,14 @@ static void loadbandmemortstate(uint_fast8_t b, uint_fast8_t bg, uint_fast8_t bi
 	tune_top_active [bi] = get_band_top(hb);
 #endif
 
-	const uint_fast8_t defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
-	uint_fast8_t defrow;
-	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
-
-	// прописываем режим работы по умолчанию для данного диапазона
-	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MIMODECOLS_BASE(bg, bi, mi, defrow), 0, modes [defrow] [0] - 1, defcol);
-	gmoderows [bi] = loadvfy8up(RMT_MIMODEROW_BASE(bg, bi, mi), 0, MODEROW_COUNT - 1, defrow);
-
-	uint_fast8_t i;
-	for (i = 0; i < MODEROW_COUNT; ++ i)
-	{
-		gmodecolmaps [bi] [i] = loadvfy8up(RMT_MIMODECOLS_BASE(bg, bi, mi, i), 0, 254, 254);	// везде прописывается 0 - потом ещё уточним.
-	}
+	loadmodeinfo(RMT_MIBAND(bp, bi, mi), bi, gfreqs [bi]);
 	//
 }
 
-static void savebandmemortstate(uint_fast8_t b, uint_fast8_t bg, uint_fast8_t bi, uint_fast8_t mi)
+static void savebandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t mi)
 {
-	save_i32(RMT_MIBFREQ_BASE(bg, bi, mi), gfreqs [bi]);
-	save_i8(RMT_MILOCKMODE_BASE(bg, bi, mi), glocks [bi]);	/* признак блокировки валкодера */
-	const uint_fast8_t row = gmoderows [bi];
-	save_i8(RMT_MIMODEROW_BASE(bg, bi, mi), row);
-	save_i8(RMT_MIMODECOLS_BASE(bg, bi, mi, row), gmodecolmaps [bi] [row]);
-}
-#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
-
-/* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
-static uint_fast8_t
-getmodecol(
-	uint_fast8_t index,
-	uint_fast8_t upper, // moderow
-	uint_fast8_t def,
-	uint_fast8_t bi)		/* bank index */
-{
-	uint_fast8_t v = gmodecolmaps [bi] [index];
-	if (v > upper)
-	{
-		gmodecolmaps [bi] [index] = def;
-		return def;
-	}
-	return v;
+	save_i32(RMT_MIBFREQ_BASE(bp, bi, mi), gfreqs [bi]);
+	savemodeinfo(RMT_MIBAND(bp, bi, mi), bi);
 }
 
 /* внести новое значение в битовую маску */
@@ -9629,7 +9602,7 @@ static unsigned getselector_bandgroupant(unsigned * count)
 
 static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 {
-
+	const uint_fast8_t bandset_no_check = 0;
 	ASSERT(base != MENUNONVRAM);
 
 	if (base == MENUNONVRAM)
@@ -9638,13 +9611,13 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 	(void) sel;
 
 	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
-	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
     const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
     const uint_fast8_t rxant = geteffrxantenna(gfreqs [bi]);
 
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
-	return base + RMT_PAMPBG3_BASE(bg, ant, rxant) - RMT_PAMPBG3_BASE(0, 0, 0);
+	return base + RMT_PAMPBG3_BASE(b, ant, rxant) - RMT_PAMPBG3_BASE(0, 0, 0);
 }
 
 #if WITHMGLOOP && WITHAUTOTUNER
@@ -9653,7 +9626,7 @@ static const struct paramdefdef xmlaparamc =
 	QLABEL("MLA C"),  0, RJ_UNSIGNED,	ISTEPLARGE_1,
 	ITEM_VALUE,
 	0, MLAPARAMC_MAX,
-	OFFSETOF(struct nvmap, bandgroups [0].otxants [0].mlaparamc),
+	OFFSETOF(struct nvmap, bandprops [0].otxants [0].mlaparamc),
 	getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
 	& mlaparamc,
 	NULL,
@@ -9668,7 +9641,7 @@ static const struct paramdefdef xtunerind =
 	QLABEL("TUNER L"),  0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	LMIN, LMAX,
-	OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunerind),
+	OFFSETOF(struct nvmap, bandprops [0].otxants [0].tunerind),
 	getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
 	& tunerind,
 	NULL,
@@ -9680,7 +9653,7 @@ static const struct paramdefdef xtunercap =
 	QLABEL("TUNER C"),  0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	CMIN, CMAX,
-	OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunercap),
+	OFFSETOF(struct nvmap, bandprops [0].otxants [0].tunercap),
 	getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
 	& tunercap,
 	NULL,
@@ -9692,7 +9665,7 @@ static const struct paramdefdef xtunertype =
 	QLABEL("TUNER TY"),  0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	0, KSCH_COUNT - 1,
-	OFFSETOF(struct nvmap, bandgroups [0].otxants [0].tunertype),
+	OFFSETOF(struct nvmap, bandprops [0].otxants [0].tunertype),
 	getselector_bandgroupant, nvramoffs_bandgroupant, valueoffs0,
 	NULL,
 	& tunertype,
@@ -10568,13 +10541,13 @@ loadnewband(
 	uint_fast8_t bi
 	)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	ASSERT(bi < 2);
 	//PRINTF(PSTR("loadnewband: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
 
 	gfreqs [bi] = loadvfy32freq(b);		/* восстанавливаем частоту */
-	glocks [bi] = loadvfy8up(RMT_LOCKMODE_BASE(b), 0, 1, 0);	/* вытаскиваем признак блокировки валкодера */
 	const uint_fast32_t freq = gfreqs [bi];
-	const uint_fast8_t bg = getfreqbandgroup(freq);
+	const uint_fast8_t bp = getfreqband(freq, bandset_no_check);
 	const uint_fast8_t ant = geteffantenna(freq);
 	const uint_fast8_t rxant = geteffrxantenna(freq);
 
@@ -10584,22 +10557,9 @@ loadnewband(
 	tune_top_active [bi] = get_band_top(hb);
 #endif
 
-	const uint_fast8_t defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
-	uint_fast8_t defrow;
-	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
-
-	// прописываем режим работы по умолчанию для данного диапазона
-	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MODECOLS_BASE(b, defrow), 0, modes [defrow] [0] - 1, defcol);
-	gmoderows [bi] = loadvfy8up(RMT_MODEROW_BASE(b), 0, MODEROW_COUNT - 1, defrow);
-
-	uint_fast8_t i;
-	for (i = 0; i < MODEROW_COUNT; ++ i)
-	{
-		gmodecolmaps [bi] [i] = loadvfy8up(RMT_MODECOLS_BASE(b, i), 0, 254, 254);	// везде прописывается 0 - потом ещё уточним.
-	}
-
-	loadantenna(bi, bg);
-	loadbandgroup(bg, ant, rxant);
+	loadmodeinfo(RMT_BAND(b), bi, gfreqs [bi]);
+	loadantenna(bp);
+	loadbandprops(bp, ant, rxant);
 }
 
 /* Получить текущий submode для указанного банка
@@ -10612,7 +10572,7 @@ getsubmode(
 {
 	ASSERT(bi < 2);
 	const uint_fast8_t moderow = gmoderows [bi];
-	const uint_fast8_t modecol = getmodecol(moderow, modes [moderow] [0] - 1, 0, bi);	/* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
+	const uint_fast8_t modecol = getmodecol(moderow, bi);	/* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
 	return modes [moderow] [modecol + 1];	/* выборка из битовой маски */
 }
 
@@ -10631,11 +10591,10 @@ setgsubmode(
 	/* выбор фильтра */
 	const struct modetempl * const pmodet = getmodetempl(submode);
 	const uint_fast8_t mode = submodes [submode].mode;
-	const uint_fast8_t deffilter = getdefflt(mode, 0);	/* получить индекс фильтра "по умолчанию" для режима */
 
 	gsubmode = submode;
 	gmode = mode;
-	gfi = getsuitablerx(mode, loadvfy8up(RMT_FILTER_BASE(mode), 0, getgfasize() - 1, deffilter));	/* фильтр для режима приёма */
+
 #if ! WITHAGCMODENONE
 	gagcmode = loadvfy8up(RMT_AGC_BASE(mode), 0, AGCMODE_COUNT - 1, pmodet->defagcmode);
 #endif /* ! WITHAGCMODENONE */
@@ -10732,7 +10691,6 @@ catchangefreq(
 {
 	const uint_fast8_t bandset_no_check = 0;
 	const vindex_t b = getfreqband(f, bandset_no_check);	/* определяем по частоте, в какоq диапазон переходим */
-	const uint_fast8_t bg = bandsmap [b].bandgroup;
 
 	gfreqs [bi] = f;
 #if WITHONLYBANDS
@@ -10749,13 +10707,13 @@ catchangefreq(
 	}
 #if WITHKEYBOARD || WITHTOUCHGUI
 	// не должно быть при удаленном управлении
-	loadantenna(bi, bg);
+	loadantenna(b);
 #else
 	//#warning No automatic antenna select - manual only
 #endif /* WITHKEYBOARD || WITHTOUCHGUI */
 //	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
 //	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
-//	loadbandgroup(bg, effantenna, effrxantenna);
+//	loadbandprops(bg, effantenna, effrxantenna);
 }
 
 static void catchangesplit(
@@ -10795,7 +10753,6 @@ static int_fast16_t UPPERTOSIGN16(
  * Для телеграфа отображается частота сигнала при частоте cwpitch, при SSB - при нулевых биениях
  */
 static int_least16_t
-
 gettone_bymode(
 	uint_fast8_t mode		/* код режима работы */
 	)
@@ -10811,7 +10768,6 @@ gettone_bymode(
  * Для телеграфа отображается частота сигнала при частоте cwpitch, при SSB - при нулевых биениях
  */
 static int_least16_t
-
 gettone_bysubmode(
 	uint_fast8_t submode,		/* код режима работы */
 	uint_fast8_t forcelsb		/* когда режим работы smart, требуется этот параметр */
@@ -10856,9 +10812,9 @@ gsubmodechange(
 		gfreqs [bi] = freq;
 
 		{
-			const vindex_t v = getvfoindex(bi);
-			storebandstate(v, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
-			storebandfreq(v, bi);	/* сохранение частоты в текущем VFO */
+			const vindex_t vi = getvfoindex(bi);
+			storebandstate(vi, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
+			storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 		}
 	}
 	else if (delta > 0)
@@ -10870,16 +10826,16 @@ gsubmodechange(
 		gfreqs [bi] = freq;
 
 		{
-			const vindex_t v = getvfoindex(bi);
-			storebandstate(v, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
-			storebandfreq(v, bi);	/* сохранение частоты в текущем VFO */
+			const vindex_t vi = getvfoindex(bi);
+			storebandstate(vi, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
+			storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 		}
 	}
 	else
 	{
 		{
-			const vindex_t v = getvfoindex(bi);
-			storebandstate(v, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
+			const vindex_t vi = getvfoindex(bi);
+			storebandstate(vi, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 		}
 	}
 }
@@ -11116,37 +11072,6 @@ gethintlo2(
 	return 0;
 }
 
-/* получаем частоту LO2 для текущего режима работы */
-static int_fast32_t
-getlo2(
-	const filter_t * workfilter,
-	uint_fast8_t mode,		/* код семейства режимов работы */
-	uint_fast8_t mix2lsb,	/* формируем гетеродин для указанной боковой полосы */
-	uint_fast8_t tx,		/* признак работы в режиме передачи */
-	uint_fast8_t hintlo2	/* код пятиисотых килогерц приходит в зависимости от частоты настройки в режиме интерполятора */
-	)
-{
-	// LO2 отсутствует
-	(void) mode;
-	(void) tx;
-	return 0;
-}
-
-/* получаем LO3 для текущего режима работы */
-static int_fast32_t
-
-getlo3(
-	uint_fast8_t mode,		/* код семейства режимов работы */
-	uint_fast8_t mix3lsb,		/* формируем гетеродин для указанной боковой полосы */
-	uint_fast8_t tx		/* признак работы в режиме передачи */
-	)
-{
-	/* смесителя #2A вообще нет в тракте */
-	(void) mode;
-	(void) mix3lsb;
-	return 0;
-}
-
 /* перенастройка формирования гетеродина для указанного режима. */
 static void
 
@@ -11167,47 +11092,6 @@ update_lo0(
 #endif /* WITHIF4DSP */
 }
 
-/* перенастройка формирования гетеродина для указанного режима. */
-static void
-
-update_lo2(
-	uint_fast8_t pathi,		// номер тракта - 0/1: main/sub
-	const filter_t * workfilter,
-	uint_fast8_t mode,		/* код семейства режимов работы */
-	uint_fast8_t lsb,		/* формируем гетеродин для указанной боковой полосы */
-	int_fast32_t f,			/* частота, которую хотим получить на выходе DDS */
-	uint_fast8_t od,		/* делитель перед подачей на смеситель (1, 2, 4, 8...) */
-	uint_fast8_t tx,		/* признак работы в режиме передачи */
-	uint_fast8_t hint		/* код пятиисотых килогерц приходит в зависимости от частоты настройки в режиме интерполятора */
-	)
-{
-	/* смесителя #2 вообще нет в тракте */
-	(void) mode;
-	(void) hint;
-	(void) lsb;
-	(void) f;
-	(void) od;
-	(void) tx;
-}
-
-
-/* перенастройка формирования гетеродина для указанного режима. */
-static void
-
-update_lo3(
-	uint_fast8_t pathi,		// номер тракта - 0/1: main/sub
-	uint_fast8_t mode,		/* код семейства режимов работы */
-	uint_fast8_t lsb,		/* формируем гетеродин для указанной боковой полосы */
-	int_fast32_t f,			/* частота, которую хотим получить на выходе DDS */
-	uint_fast8_t od,		/* делитель перед подачей на смеситель (1, 2, 4, 8...) */
-	uint_fast8_t tx			/* признак работы в режиме передачи */
-	)
-{
-	(void) mode;
-	(void) lsb;
-	(void) tx;
-	synth_lo3_setfreq(pathi, f, od);
-}
 
 // return value: LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 static uint_fast8_t
@@ -11486,19 +11370,6 @@ getlo4enable(
 #endif
 }
 
-
-static int_fast32_t
-getlo4ref(
-	const filter_t * workfilter,
-	uint_fast8_t mode,			/* код семейства режима работы */
-	uint_fast8_t mix4lsb,		/* формируем гетеродин для указанной боковой полосы */
-	uint_fast8_t tx				/* для режима передачи - врежиме CW - смещения частоты не требуется. */
-	)
-{
-	// Выравнивание IF с привязкой к центру фильтра основной селекции
-	return getif3filtercenter(workfilter);
-}
-
 // вызывается из user mode
 static uint_fast8_t
 getactualtune(void)
@@ -11521,7 +11392,7 @@ getactualdownpower(txreq_t * txreqp)
 {
 	return
 	#if WITHTX
-		(gdownatcwtune && txreq_gettxtone(txreqp)) ||	/* снижаем мощность до "тюнерной" при нажатии TUNE */
+		(param_getvalue(& xgdownatcwtune) && txreq_gettxtone(txreqp)) ||	/* снижаем мощность до "тюнерной" при нажатии TUNE */
 		txreq_getreqautotune(txreqp) || hardware_get_tune() ||
 	#endif /* WITHTX */
 		0;
@@ -11667,18 +11538,15 @@ getamode(uint_fast8_t pathi)
  * Установка параметров, влияющих на работу валкодера, цветовой схемой дисплея.
  */
 static void
-
 updateboard2(void)
 {
 #if WITHENCODER
-	encoder1_set_resolution(encresols [genc1pulses], genc1dynamic);
+	encoder1_set_resolution(encresols [param_getvalue(& xgenc1pulses)], genc1dynamic);
 #endif /* WITHENCODER */
 	display2_setbgcolor(COLORPIP_BLACK);
 }
 
-
 static uint_fast8_t
-
 getlsbfull(
 	uint_fast8_t lsb,
 	const uint_fast8_t * sides,
@@ -11692,7 +11560,6 @@ getlsbfull(
 
 /* Получение признака LSB для LO0..LO6 */
 static uint_fast8_t
-
 getlsbloX(
 	uint_fast8_t lsb,
 	uint_fast8_t keyindex,	// 0..6 - номер LOx
@@ -11712,60 +11579,18 @@ static uint_fast8_t getlo1div(
 	)
 {
 #if LO1FDIV_ADJ
-	return 1U << lo1powmap [tx];
+	return UINT8_C(1) << lo1powmap [tx];
 #elif defined (LO1_POWER2)
-	return 1U << LO1_POWER2;
+	return UINT8_C(1) << LO1_POWER2;
 #else
-	return 1U;
+	return UINT8_C(1);
 #endif
 }
 
-/* получение значение делителя в тракте lo2 перед подачей на смеситель */
-static uint_fast8_t getlo2div(
-	uint_fast8_t tx
-	)
-{
-#if LO2FDIV_ADJ
-	return 1U << lo2powmap [tx];
-#elif defined (LO2_POWER2)
-	return 1U << LO2_POWER2;
-#else
-	return 1U;
-#endif
-}
-
-/* получение значение делителя в тракте lo3 перед подачей на смеситель */
-static uint_fast8_t getlo3div(
-	uint_fast8_t tx
-	)
-{
-#if LO3FDIV_ADJ
-	return 1U << lo3powmap [tx];
-#elif defined (LO3_POWER2)
-	return 1U << LO3_POWER2;
-#else
-	return 1U;
-#endif
-}
-
-/* получение значение делителя в тракте lo4 перед подачей на смеситель */
-static uint_fast8_t getlo4div(
-	uint_fast8_t tx
-	)
-{
-#if LO4FDIV_ADJ
-	return 1U << lo4powmap [tx];
-#elif defined (LO4_POWER2)
-	return 1U << LO4_POWER2;
-#else
-	return 1U;
-#endif
-}
 
 // speex
 
 #if WITHINTEGRATEDDSP
-
 
 #ifdef WITHLEAKYLMSANR
 
@@ -13126,16 +12951,6 @@ updateboard_noui(
 			//
 			enum { dc = 0 };
 
-			const filter_t * workfilter;
-			if (gtx != 0)
-			{
-				workfilter = gettxfilter(asubmode, getsuitabletx(amode, 0));	/* получаем по gfi/gfitx, хранится фильтр, включенный для данного режима */
-			}
-			else
-			{
-				workfilter = getrxfilter(asubmode, gfi);	/* получаем по gfi/gfitx, хранится фильтр, включенный для данного режима */
-			}
-			ASSERT(workfilter != NULL);
 	#if WITHIF4DSP
 			// Так же, здесь можно решать, какой фильтр ПЧ требуется для данного фильтра dsp.
 			// В случае DUC/DDC, используется "заглушка" - IF3_TYPE_BYPASS.
@@ -13145,15 +12960,15 @@ updateboard_noui(
 			const uint_fast8_t wide = workfilter->widefilter;
 	#endif /* WITHIF4DSP */
 			//
-			const int_fast16_t pbt = getpbt(workfilter, amode, gtx);
-			const int_fast16_t ifshift = getifshift(workfilter, amode, gtx);	/* положительные значения - повышение тембра (фильтр сдвигается "выше"). */
+			const int_fast16_t pbt = 0;
+			const int_fast16_t ifshift = 0;	/* положительные значения - повышение тембра (фильтр сдвигается "выше"). */
 
 			const int_fast32_t freqif6 = getif6(amode, gtx, wide); // Positive number: ssb:0, cw=700, drm=12k
 			const int_fast32_t freqlo6 = UPPERTOSIGN(! mixXlsbs [6], getlo6(amode, gtx, wide, ifshift));
 			const int_fast32_t freqif5 = freqlo6 + UPPERTOSIGN(mixXlsbs [6], freqif6); 	// в режиме CW должно быть 0 для DDC/DUC
 			const int_fast32_t freqlo5 = UPPERTOSIGN(mixXlsbs [5], getlo5(amode, gtx));	// 0 or DSP IF freq (12 kHz)
 			const int_fast32_t freqif4 = freqlo5 + UPPERTOSIGN(mixXlsbs [5], freqif5);
-			const int_fast32_t freqlo4ref = getlo4ref(workfilter, amode, mixXlsbs [4], gtx);
+			const int_fast32_t freqlo4ref = 0;
 
 			// Возможно две стратегии переноса частоты - с согласованием частот среза
 			// и с согласованием центральных частот полос пропускания.
@@ -13171,9 +12986,9 @@ updateboard_noui(
 	#endif
 
 			// Взаимным смещением LO1 и LO2 производится "подрезание" полосы пропускания - PBTs
-			const int_fast32_t freqlo3 = getlo3(amode, mixXlsbs [3], gtx) + UPPERTOSIGN16(mixXlsbs [3], pbt);	/* частота для гетеродина, осуществляющего passband tuning = PBT */
+			const int_fast32_t freqlo3 = 0;	/* частота для гетеродина, осуществляющего passband tuning = PBT */
 			const int_fast32_t freqif2 = freqlo3 + UPPERTOSIGN(mixXlsbs [3], freqif3);
-			const int_fast32_t freqlo2 = getlo2(workfilter, amode, mixXlsbs [2], gtx, lo2hint [pathi]);
+			const int_fast32_t freqlo2 = 0;
 			const int_fast32_t freqif1 = freqlo2 + UPPERTOSIGN(mixXlsbs [2], freqif2);
 			const int_fast32_t freqlo0 = getlo0(lo0hint);
 			synth_if1 [pathi] = UPPERTOSIGN(mixXlsbs [1], freqif1) - UPPERTOSIGN(mixXlsbs [0], freqlo0);	// Запоминается для последующего преобразования рабочей частоты к частоте гетеродина.
@@ -13271,8 +13086,8 @@ updateboard_noui(
 				board_set_dactest(gdactest);		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 				board_set_dacstraight(gdacstraight);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 				board_set_tx_inh_enable(gtxinhenable);				/* разрешение реакции на вход tx_inh */
-				board_set_tx_bpsk_enable(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_TX_BPSK);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
-				board_set_mode_wfm(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_WFM);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
+				//board_set_tx_bpsk_enable(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_TX_BPSK);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
+				//board_set_mode_wfm(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_WFM);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
 			#endif /* WITHDSPEXTDDC */
 		#endif /* WITHIF4DSP */
 
@@ -13304,12 +13119,6 @@ updateboard_noui(
 			synth_lo1_setreference(getsynthref(amode));	// расчет коэфф. для работы синтезаторв
 		#endif
 			synth_setreference(getsynthref(amode));	// расчет коэфф. для работы синтезаторв
-
-		/* А теперь настраиваем частоты. */
-			update_lo2(pathi, workfilter, amode, mixXlsbs [2], freqlo2, getlo2div(gtx), gtx, lo2hint [pathi]);
-			update_lo3(pathi, amode, mixXlsbs [3], freqlo3, getlo3div(gtx), gtx);
-
-			synth_lo4_setfreq(pathi, freqlo4, getlo4div(gtx), getlo4enable(amode, gtx));	/* утстановка третьего гетеродина */
 
 		} // pathi
 
@@ -13850,7 +13659,7 @@ uif_key_hold_modecol(void)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const uint_fast8_t moderow = gmoderows [bi];	/* строка таблицы запомненных режимов */
 
-	uint_fast8_t modecol = getmodecol(moderow, modes [moderow] [0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
+	uint_fast8_t modecol = getmodecol(moderow, bi);
 	modecol = calc_next(modecol, 0, modes [moderow] [0] - 1);
 	putmodecol(moderow, modecol, bi);	/* внести новое значение в битовую маску */
 	/* переустановка частот всех гетеродинов после смены режимов */
@@ -13870,7 +13679,7 @@ uif_key_click_moderow(void)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	uint_fast8_t defrow = gmoderows [bi];		/* строка таблицы режимов, которую покидаем */
-	uint_fast8_t defcol = getmodecol(defrow, modes [defrow] [0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
+	uint_fast8_t defcol = getmodecol(defrow, bi);
 	const uint_fast8_t forcelsb = getforcelsb(gfreqs [bi]);
 
 	gmoderows [bi] = calc_next(gmoderows [bi], 0, MODEROW_COUNT - 1);		/* идём на следующую строку таблицы запомненых режимов */
@@ -13897,76 +13706,8 @@ uif_key_click_moderow(void)
 	if (defrow != gmoderows [bi])
 		defcol = 0;	/* default value (other cases, then switch from usb to cw, from lsb to cwr) */
 	/* пытаемся обратиться за битами - они, взоможно, заменяться значением defcol */
-	(void) getmodecol(gmoderows [bi], modes [gmoderows [bi]] [0] - 1, defcol, bi); /* Возможно, значение modecolmap бует откорректировано. */
+	(void) getmodecol(gmoderows [bi], bi);
 
-	/* переустановка частот всех гетеродинов после смены режимов */
-	/* gband должен быть уже известен */
-	gsubmodechange(getsubmode(bi), bi); /* если надо - сохранение частоты в текущем VFO */
-	updateboard();
-}
-
-///////////////////////////
-// обработчики кнопок клавиатуры
-//////////////////////////
-/* переход по "столбцу" режимов - быстрое нажатие */
-/* switch to next moderow */
-static void
-uif_key_click_moderows(uint_fast8_t moderow)
-{
-	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-	const uint_fast8_t rowchanged = (gmoderows [bi] != moderow);
-	uint_fast8_t defrow = gmoderows [bi] = moderow;		/* строка таблицы режимов, которую покидаем */
-	uint_fast8_t defcol = getmodecol(defrow, modes [defrow] [0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
-	const uint_fast8_t forcelsb = getforcelsb(gfreqs [bi]);
-
-#if WITHMODESETSMART
-	defcol = locatesubmode(SUBMODE_SSBSMART, & defrow);
-#else /* WITHMODESETSMART */
-	if (gsubmode == SUBMODE_USB)		// если текущий режим USB - ищемм CW
-		defcol = locatesubmode(SUBMODE_CW, & defrow);
-	else if (gsubmode == SUBMODE_LSB)	// если текущий режим LSB - ищемм CWR
-		defcol = locatesubmode(SUBMODE_CWR, & defrow);
-	else if (gsubmode == SUBMODE_DGU)	// если текущий режим LSB - ищемм CWR
-		defcol = locatesubmode(SUBMODE_USB, & defrow);
-	else if (gsubmode == SUBMODE_DGL)	// если текущий режим LSB - ищемм CWR
-		defcol = locatesubmode(SUBMODE_LSB, & defrow);
-	#if WITHMODESETFULLNFM
-	else if (gsubmode == SUBMODE_AM)	// если текущий режим AM - ищемм FM
-		defcol = locatesubmode(SUBMODE_NFM, & defrow);
-	#endif
-	else								// в остальных случаях ищем режим по умолчанию для данного диапазона частот
-		defcol = locatesubmode(forcelsb ? SUBMODE_LSB : SUBMODE_USB, & defrow);
-#endif /* WITHMODESETSMART */
-	/* если переходим не на строку с найденными режимаим */
-	if (defrow != gmoderows [bi])
-		defcol = 0;	/* default value (other cases, then switch from usb to cw, from lsb to cwr) */
-	/* пытаемся обратиться за битами - они, взоможно, заменяться значением defcol */
-	(void) getmodecol(gmoderows [bi], modes [gmoderows [bi]] [0] - 1, defcol, bi); /* Возможно, значение modecolmap бует откорректировано. */
-
-	/* переустановка частот всех гетеродинов после смены режимов */
-	/* gband должен быть уже известен */
-	gsubmodechange(getsubmode(bi), bi); /* если надо - сохранение частоты в текущем VFO */
-	updateboard();
-}
-
-///////////////////////////
-// обработчики кнопок клавиатуры
-//////////////////////////
-/* переход по "строке" режимов - удержанное нажатие */
-// step to next modecol
-static void
-uif_key_hold_modecols(uint_fast8_t moderow)
-{
-	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-	if (gmoderows [bi] != moderow)	/* строка таблицы запомненных режимов */
-	{
-		uif_key_click_moderows(moderow);
-		return;
-	}
-
-	uint_fast8_t modecol = getmodecol(moderow, modes [moderow] [0] - 1, 0, bi);	/* выборка из битовой маски. Возможно, значение modecolmap бует откорректировано.  */
-	modecol = calc_next(modecol, 0, modes [moderow] [0] - 1);
-	putmodecol(moderow, modecol, bi);	/* внести новое значение в битовую маску */
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
 	gsubmodechange(getsubmode(bi), bi); /* если надо - сохранение частоты в текущем VFO */
@@ -13986,13 +13727,12 @@ uif_key_click_bandup(void)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
-	//const uint_fast8_t bg = getbandgroup(b);
+	////const uint_fast8_t bg = getbandgroup(b);
 	verifyband(b);
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	storebandfreq(b, bi);
 	const vindex_t bn = getnext_ham_band(b, gfreqs [bi]);
 	loadnewband(bn, bi);	/* загрузка всех параметров (и частоты) нового режима */
-	storebandpos(bn);
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
 	updateboard();
@@ -14010,13 +13750,13 @@ uif_key_click_banddown(void)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
-	//const uint_fast8_t bg = getbandgroup(b);
+	////const uint_fast8_t bg = getbandgroup(b);
 	verifyband(b);
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	storebandfreq(b, bi);
 	const uint_fast8_t bn = getprev_ham_band(b, gfreqs [bi]);
+
 	loadnewband(bn, bi);	/* загрузка всех параметров (и частоты) нового режима */
-	storebandpos(bn);
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
 	updateboard();
@@ -14031,29 +13771,16 @@ uif_key_click_bandjump(uint_fast32_t f)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t bo = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 	vindex_t bn = getfreqband(f, bandset_no_check);
 
-	const uint_fast8_t bandgroup = bandsmap [bn].bandgroup;
-	verifyband(b);
+	verifyband(bo);
 	verifyband(bn);
-	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
-	storebandfreq(b, bi);
+	storebandstate(bo, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
+	storebandfreq(bo, bi);
 	//
 	//
-	if (bandgroup != BANDGROUP_COUNT)
-	{
-		// новый поддиапазон является частью группы
-		bn = loadvfy8up(RMT_BANDPOS(bandgroup), 0, HBANDS_COUNT - 1, bn);
-		verifyband(bn);
-		if (bandgroup == bandsmap [b].bandgroup)
-		{
-			// переключение в диапазон той же группы - переход в пределах группы
-			bn = getnextbandingroup(bn, bandgroup);
-			verifyband(bn);
-			save_i8(RMT_BANDPOS(bandgroup), bn);
-		}
-	}
+
 	loadnewband(bn, bi);	/* загрузка всех параметров (и частоты) нового режима */
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
@@ -14067,14 +13794,14 @@ uif_key_click_bandjump2(uint_fast32_t f, uint_fast8_t bandset_no_check)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
-	vindex_t bn = getfreqband(f, bandset_no_check);
+	const vindex_t bo = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t bn = getfreqband(f, bandset_no_check);
 
-	verifyband(b);
+	verifyband(bo);
 	verifyband(bn);
 
-	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
-	storebandfreq(b, bi);
+	storebandstate(bo, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
+	storebandfreq(bo, bi);
 
 	loadnewband(bn, bi);	/* загрузка всех параметров (и частоты) нового режима */
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
@@ -14090,12 +13817,10 @@ static void uif_key_click_memo(void)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 
-#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
 	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
-	const uint_fast8_t bg = getbandgroup(b);
 
 	// Выбрать следующую ячейку
-	const nvramaddress_t miload = OFFSETOF(struct nvmap, bandgroups [bg].miload [bi]);
+	const nvramaddress_t miload = OFFSETOF(struct nvmap, bandprops [b].miload [bi]);
 	const uint_fast8_t mi = calc_next(loadvfy8up(miload, 0, WITHBANDMEMCOUNT - 1, 0), 0, WITHBANDMEMCOUNT - 1);
 	save_i8(miload, mi);
 
@@ -14104,17 +13829,13 @@ static void uif_key_click_memo(void)
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	storebandfreq(b, bi);
 
-	loadbandmemortstate(b, bg, bi, mi);
-	PRINTF("%s: bg=%u, bi=%u, mi=%u, freq=%u\n", __func__, (unsigned) bg, (unsigned) bi, (unsigned) mi, (unsigned) gfreqs [bi]);
+	loadbandmemortstate(b, bi, mi);
+	PRINTF("%s: b=%u, bi=%u, mi=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) mi, (unsigned) gfreqs [bi]);
 
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
 	updateboard();
 	bring_tuneA();
-
-#else /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
-	uif_key_click_bandjump(gfreqs [bi]);
-#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 }
 
 /* запомнить частоту в диапазоне */
@@ -14123,25 +13844,24 @@ static void uif_key_hold_memo(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-#if defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1
+
 	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
-	const uint_fast8_t bg = getbandgroup(b);
 
 	// сохранить текушее состояние
 	verifyband(b);
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	storebandfreq(b, bi);
+
 	// Выбрать следующую ячейку
-	const nvramaddress_t miload = OFFSETOF(struct nvmap, bandgroups [bg].miload [bi]);
-	const nvramaddress_t mistore = OFFSETOF(struct nvmap, bandgroups [bg].mistore [bi]);
+	const nvramaddress_t miload = OFFSETOF(struct nvmap, bandprops [b].miload [bi]);
+	const nvramaddress_t mistore = OFFSETOF(struct nvmap, bandprops [b].mistore [bi]);
 	const uint_fast8_t mi = calc_next(loadvfy8up(mistore, 0, WITHBANDMEMCOUNT - 1, 0), 0, WITHBANDMEMCOUNT - 1);
 	save_i8(mistore, mi);
 	save_i8(miload, mi);
-	savebandmemortstate(b, bg, bi, mi);
+	savebandmemortstate(b, bi, mi);
 
-	PRINTF("%s: bg=%u, bi=%u, mi=%u, freq=%u\n", __func__, (unsigned) bg, (unsigned) bi, (unsigned) mi, (unsigned) gfreqs [bi]);
+	PRINTF("%s: b=%u, bi=%u, mi=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) mi, (unsigned) gfreqs [bi]);
 
-#endif /* defined WITHBANDMEMCOUNT && WITHBANDMEMCOUNT > 1 */
 }
 
 #if ! WITHAGCMODENONE
@@ -14174,12 +13894,13 @@ static uint_fast8_t geteffrxantenna(uint_fast32_t f)
 static void
 uif_key_next_antenna(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
 
 	gantenna = calc_next(gantenna, 0, ANTMODE_COUNT - 1);
-	loadbandgroup(bg, gantenna, grxantenna);
+	loadbandprops(b, gantenna, grxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard();
 }
@@ -14189,12 +13910,13 @@ uif_key_next_antenna(void)
 static void
 uif_key_next_rxantenna(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
 
 	grxantenna = calc_next(grxantenna, 0, RXANTMODE_COUNT - 1);
-	loadbandgroup(bg, gantenna, grxantenna);
+	loadbandprops(b, gantenna, grxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard();
 }
@@ -14225,14 +13947,15 @@ static uint_fast8_t geteffrxantenna(uint_fast32_t f)
 static void
 uif_key_next_antenna(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
 
 	gantennabym = calc_next(gantennabym, 0, ANTMODE_COUNT - 1);
 	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
 	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
-	loadbandgroup(bg, effantenna, effrxantenna);
+	loadbandprops(bg, effantenna, effrxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard();
 }
@@ -14241,13 +13964,14 @@ uif_key_next_antenna(void)
 static void
 uif_key_next_autoantmode(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	gantmanual = calc_next(gantmanual, 0, 1);
 	save_i8(RMT_ANTMANUAL_BASE, gantmanual);
-	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t bg = getfreqband(gfreqs [bi], bandset_no_check);
 	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
 	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
-	loadbandgroup(bg, effantenna, effrxantenna);
+	loadbandprops(bg, effantenna, effrxantenna);
 	updateboard();
 }
 
@@ -14269,12 +13993,13 @@ static uint_fast8_t geteffrxantenna(uint_fast32_t f)
 static void
 uif_key_next_antenna(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t bg = getfreqband(gfreqs [bi], bandset_no_check);
 
 	gantenna = calc_next(gantenna, 0, ANTMODE_COUNT - 1);
-	loadbandgroup(bg, gantenna, grxantenna);
+	loadbandprops(bg, gantenna, grxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard();
 }
@@ -14355,7 +14080,7 @@ uif_key_lockencoder(void)
 	const vindex_t vi = getvfoindex(bi);
 
 	glocks [bi] = calc_next(glocks [bi], 0, 1);
-	save_i8(RMT_LOCKMODE_BASE(vi), glocks [bi]);
+	savemodeinfo(RMT_BAND(vi), bi);
 	updateboard();
 }
 
@@ -14446,9 +14171,6 @@ uif_key_click_datamode(void)
 static void
 uif_key_changefilter(void)
 {
-	gfi = getsuitablerx(gmode, calc_next(gfi, 0, getgfasize() - 1));
-	save_i8(RMT_FILTER_BASE(gmode), gfi);	/* только здесь сохраняем новый фильтр для режима */
-	updateboard();
 }
 
 #endif /* WITHIF4DSP */
@@ -14487,14 +14209,15 @@ uif_key_tune(void)
 static void
 uif_key_bypasstoggle(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t tx = 1;
 	const uint_fast8_t bi = getbankindex_tx(tx);
-	const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
     const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
 
 	tunerwork = calc_next(tunerwork, 0, 1);	// переключаем в противоположное состояние
 
-	storetuner(bg, ant);
+	storetuner(b, ant);
 	updateboard_tuner();
 
 	if (tunerwork == 0)
@@ -14506,11 +14229,12 @@ uif_key_bypasstoggle(void)
 static void
 uif_key_atunerstart(void)
 {
+	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t tx = 1;
 	const uint_fast8_t bi = getbankindex_tx(tx);
 	const vindex_t b = getvfoindex(bi);
 	const uint_fast32_t freq = gfreqs [bi];
-	const uint_fast8_t bg = getfreqbandgroup(freq);
+	const uint_fast8_t bp = getfreqband(freq, bandset_no_check);
 	const uint_fast8_t ant = geteffantenna(freq);
 
 	const uint_fast8_t oldtunerwork = tunerwork;
@@ -14519,7 +14243,7 @@ uif_key_atunerstart(void)
 	if (txreq_getreqautotune(& txreqst0))
 	{
 		tunerwork = 1;
-		save_i8(OFFSETOF(struct nvmap, bandgroups [bg].otxants [ant].tunerwork), tunerwork);
+		save_i8(OFFSETOF(struct nvmap, bandprops [bp].otxants [ant].tunerwork), tunerwork);
 	}
 	else
 	{
@@ -15900,7 +15624,7 @@ static void fwanswer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) getkenwoodfw(gsubmode, gfi) // полоса пропускания в герцах или код полосы пропускания
+		(int) getkenwoodfw(gsubmode, 0) // полоса пропускания в герцах или код полосы пропускания
 		);
 	cat_answer(len);
 }
@@ -17184,12 +16908,13 @@ processcatmsg(
 
 				}
 				{
+					const uint_fast8_t bandset_no_check = 0;
 					const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
 					const uint_fast32_t freq = gfreqs [bi];
-					const uint_fast8_t bg = getfreqbandgroup(freq);
+					const uint_fast8_t b = getfreqband(freq, bandset_no_check);
 					const uint_fast8_t ant = geteffantenna(freq);
 				#if WITHAUTOTUNER
-					loadtuner(bg, ant);
+					loadtuner(b, ant);
 				#endif /* WITHAUTOTUNER */
 					updateboard();	/* полная перенастройка (как после смены режима) */
 
@@ -17378,16 +17103,17 @@ processcatmsg(
 //				catautotuner_p2 = p2;
 //				catautotuner_p3 = p3;
 
+				const uint_fast8_t bandset_no_check = 0;
 				const uint_fast8_t tx = 1;
 				const uint_fast8_t bi = getbankindex_tx(tx);
-				const uint_fast8_t bg = getfreqbandgroup(gfreqs [bi]);
+				const uint_fast8_t bp = getfreqband(gfreqs [bi], bandset_no_check);
 			    const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
 
 				tunerwork = p1 || p2;
 
 				txreq_reqautotune(& txreqst0, !! p3);
 
-				storetuner(bg, ant);
+				storetuner(bp, ant);
 				updateboard();	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 				cat_answer_request(CAT_AC_INDEX);
@@ -17411,8 +17137,8 @@ processcatmsg(
 		{
 			// Ширина полосы пропускания фильтра на приёме в герцах
 			const uint_fast32_t width = vfy32up(catparam, 0, 9999, 3100);
-			const uint_fast8_t i = findfilter(gmode, gfi, width);	/* поиск фильтра, допустимого для данного режима */
-			gfi = getsuitablerx(gmode, i); /* при переключении через CAT сохранения в NVRAM не производится */
+//			const uint_fast8_t i = findfilter(gmode, gfi, width);	/* поиск фильтра, допустимого для данного режима */
+//			gfi = getsuitablerx(gmode, i); /* при переключении через CAT сохранения в NVRAM не производится */
 			updateboard();	/* полная перенастройка (как после смены режима) */
 		}
 		else
@@ -19314,7 +19040,7 @@ static uint_fast8_t
 process_key_menuset_common(uint_fast8_t kbch)
 {
 #if WITHAUTOTUNER
-	//const vindex_t b = getvfoindex(bi);
+	//const vindex_t v = getvfoindex(bi);
 #endif /* WITHAUTOTUNER */
 	switch (kbch)
 	{
@@ -19528,54 +19254,6 @@ process_key_menuset_common(uint_fast8_t kbch)
 		uif_key_hold_modecol();
 		return 1;	/* клавиша уже обработана */
 
-	case KBD_CODE_MODE_0:
-		/* переход по "столбцу" режимов - быстрое нажатие */
-		/* switch to next moderow */
-		uif_key_click_moderows(0);
-		return 1;	/* клавиша уже обработана */
-
-	case KBD_CODE_MODE_1:
-		/* переход по "столбцу" режимов - быстрое нажатие */
-		/* switch to next moderow */
-		uif_key_click_moderows(1);
-		return 1;	/* клавиша уже обработана */
-
-	case KBD_CODE_MODE_2:
-		/* переход по "столбцу" режимов - быстрое нажатие */
-		/* switch to next moderow */
-		uif_key_click_moderows(2);
-		return 1;	/* клавиша уже обработана */
-
-	case KBD_CODE_MODE_3:
-		/* переход по "столбцу" режимов - быстрое нажатие */
-		/* switch to next moderow */
-		uif_key_click_moderows(3);
-		return 1;	/* клавиша уже обработана */
-
-	case KBD_CODE_MODEMOD_0:
-		/* переход по "строке" режимов - удержанное нажатие */
-		// step to next modecol
-		uif_key_hold_modecols(0);
-		return 1;	/* клавиша уже обработана */
-
-	case KBD_CODE_MODEMOD_1:
-		/* переход по "строке" режимов - удержанное нажатие */
-		// step to next modecol
-		uif_key_hold_modecols(1);
-		return 1;	/* клавиша уже обработана */
-
-	case KBD_CODE_MODEMOD_2:
-		/* переход по "строке" режимов - удержанное нажатие */
-		// step to next modecol
-		uif_key_hold_modecols(2);
-		return 1;	/* клавиша уже обработана */
-
-	case KBD_CODE_MODEMOD_3:
-		/* переход по "строке" режимов - удержанное нажатие */
-		// step to next modecol
-		uif_key_hold_modecols(3);
-		return 1;	/* клавиша уже обработана */
-
 	case KBD_CODE_LOCK:
 		/* блокировка валкодера
 			 - не вызывает сохранение состояния диапазона */
@@ -19642,35 +19320,35 @@ process_key_menuset_common(uint_fast8_t kbch)
 #if WITHAUTOTUNER && KEYB_UA3DKC
 	case KBD_CODE_TUNERTYPE:	// переключение типа согласующего устройства
 		tunertype = calc_next(tunertype, 0, KSCH_COUNT - 1);
-		save_i8(OFFSETOF(struct nvmap, bandgroups [bg].tunertype), tunertype);
+		save_i8(OFFSETOF(struct nvmap, bandprops [bg].tunertype), tunertype);
 		updateboard_tuner();
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_CAP_UP:	// увеличение емкости
 		// todo: добавить учет включенной антенны
 		tunercap = calc_next(tunercap, CMIN, CMAX);
-		save_i8(OFFSETOF(struct nvmap, bandgroups [bg].tunercap), tunercap);
+		save_i8(OFFSETOF(struct nvmap, bandprops [bg].tunercap), tunercap);
 		updateboard_tuner();
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_CAP_DOWN:	// уменьшение емкости
 		// todo: добавить учет включенной антенны
 		tunercap = calc_prev(tunercap, CMIN, CMAX);
-		save_i8(OFFSETOF(struct nvmap, bandgroups [bg].tunercap), tunercap);
+		save_i8(OFFSETOF(struct nvmap, bandprops [bg].tunercap), tunercap);
 		updateboard_tuner();
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_IND_UP:	// увеличение индуктивности
 		// todo: добавить учет включенной антенны
 		tunerind = calc_next(tunerind, LMIN, LMAX);
-		save_i8(OFFSETOF(struct nvmap, bandgroups [bg].tunerind), tunerind);
+		save_i8(OFFSETOF(struct nvmap, bandprops [bg].tunerind), tunerind);
 		updateboard_tuner();
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_IND_DOWN:	// уменьшение индуктивности
 		// todo: добавить учет включенной антенны
 		tunerind = calc_prev(tunerind, LMIN, LMAX);
-		save_i8(OFFSETOF(struct nvmap, bandgroups [bg].tunerind), tunerind);
+		save_i8(OFFSETOF(struct nvmap, bandprops [bg].tunerind), tunerind);
 		updateboard_tuner();
 		return 1;	// требуется обновление индикатора
 #endif /* WITHAUTOTUNER && KEYB_UA3DKC */
@@ -19915,9 +19593,9 @@ static uint_fast8_t modetxrequest(void)
 	const uint_fast8_t bi = getbankindex_tx(1);		// TX bankindex
 	const uint_fast8_t submode = getsubmode(bi);	// какая модуляция в режиме передачи
 	const struct modetempl * const pmodet = getmodetempl(submode);
-	if (gbkinenable && pmodet->txcw && (pmodet->wbkin || (pmodet->abkin && gcwssbtx)) && vox_getbkin())
+	if (param_getvalue(& xgbkinenable) && pmodet->txcw && (pmodet->wbkin || (pmodet->abkin && gcwssbtx)) && vox_getbkin())
 		return 1;
-	if (gvoxenable && pmodet->vox && vox_getptt())
+	if (param_getvalue(& xgvoxenable) && pmodet->vox && vox_getptt())
 		return 1;
 
 	return 0;
@@ -20980,6 +20658,7 @@ static void hamradio_main_initialize(void)
 	}
 	// начальная инициализация
 	bandsmap_verify();
+	moderowinfo();
 	seq_purge();
 
 #if FQMODEL_GEN500
@@ -21423,73 +21102,69 @@ uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bott
 
 void hamradio_set_gvoxenable(uint_fast8_t v)
 {
-	gvoxenable = v != 0;
-	save_i8(OFFSETOF(struct nvmap, gvoxenable), gvoxenable);
+	param_setvalue(& xgvoxenable, !! v);
 	updateboard();
 }
 
 uint_fast8_t hamradio_get_gvoxenable(void)
 {
-	return gvoxenable;
+	return param_getvalue(& xgvoxenable);
 }
 
 void hamradio_get_vox_delay_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
-	* min = WITHVOXDELAYMIN;
-	* max = WITHVOXDELAYMAX;
+	int_fast32_t vmin, vmax;
+	param_getminmax(& xgvoxdelay, & vmin, & vmax);
+	* min = vmin;
+	* max = vmax;
 }
 
 uint_fast8_t hamradio_get_vox_delay(void)
 {
-	return voxdelay;
+	return param_getvalue(& xgvoxdelay);
 }
 
 void hamradio_set_vox_delay(uint_fast8_t v)
 {
-	ASSERT(v >= WITHVOXDELAYMIN);
-	ASSERT(v <= WITHVOXDELAYMAX);
-	voxdelay = v;
-	save_i8(OFFSETOF(struct nvmap, voxdelay), voxdelay);
+	param_setvalue(& xgvoxdelay, v);
 	updateboard();
 }
 
 void hamradio_get_vox_level_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
-	* min = WITHVOXLEVELMIN;
-	* max = WITHVOXLEVELMAX;
+	int_fast32_t vmin, vmax;
+	param_getminmax(& xgvoxlevel, & vmin, & vmax);
+	* min = vmin;
+	* max = vmax;
 }
 
 uint_fast8_t hamradio_get_vox_level(void)
 {
-	return gvoxlevel;
+	return param_getvalue(& xgvoxlevel);
 }
 
 void hamradio_set_vox_level(uint_fast8_t v)
 {
-	ASSERT(v >= WITHVOXLEVELMIN);
-	ASSERT(v <= WITHVOXLEVELMAX);
-	gvoxlevel = v;
-	save_i8(OFFSETOF(struct nvmap, gvoxlevel), gvoxlevel);
+	param_setvalue(& xgvoxlevel, v);
 	updateboard();
 }
 
-void hamradio_get_antivox_delay_limits(uint_fast8_t * min, uint_fast8_t * max)
+void hamradio_get_antivox_level_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
-	* min = WITHAVOXLEVELMIN;
-	* max = WITHAVOXLEVELMAX;
+	int_fast32_t vmin, vmax;
+	param_getminmax(& xgavoxlevel, & vmin, & vmax);
+	* min = vmin;
+	* max = vmax;
 }
 
 uint_fast8_t hamradio_get_antivox_level(void)
 {
-	return gavoxlevel;
+	return param_getvalue(& xgavoxlevel);
 }
 
 void hamradio_set_antivox_level(uint_fast8_t v)
 {
-	ASSERT(v >= WITHAVOXLEVELMIN);
-	ASSERT(v <= WITHAVOXLEVELMAX);
-	gavoxlevel = v;
-	save_i8(OFFSETOF(struct nvmap, gavoxlevel), gavoxlevel);
+	param_setvalue(& xgavoxlevel, v);
 	updateboard();
 }
 
@@ -21501,41 +21176,39 @@ void hamradio_set_antivox_level(uint_fast8_t v)
 
 void hamradio_get_reverb_delay_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
-	* min = WITHREVERBDELAYMIN;
-	* max = WITHREVERBDELAYMAX;
+	int_fast32_t vmin, vmax;
+	param_getminmax(& xgreverbdelay, & vmin, & vmax);
+	* min = vmin;
+	* max = vmax;
 }
 
 void hamradio_get_reverb_loss_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
-	* min = WITHREVERBLOSSMIN;
-	* max = WITHREVERBLOSSMAX;
+	int_fast32_t vmin, vmax;
+	param_getminmax(& xgreverbloss, & vmin, & vmax);
+	* min = vmin;
+	* max = vmax;
 }
 
 uint_fast8_t hamradio_get_reverb_delay(void)
 {
-	return greverbdelay;
+	return param_getvalue(& xgreverbdelay);
 }
 
 uint_fast8_t hamradio_get_reverb_loss(void)
 {
-	return greverbloss;
+	return param_getvalue(& xgreverbloss);
 }
 
 void hamradio_set_reverb_delay(uint_fast8_t v)
 {
-	ASSERT(v >= WITHREVERBDELAYMIN);
-	ASSERT(v <= WITHREVERBDELAYMAX);
-	greverbdelay = v;
-	save_i8(OFFSETOF(struct nvmap, greverbdelay), greverbdelay);
+	param_setvalue(& xgreverbdelay, v);
 	updateboard();
 }
 
 void hamradio_set_reverb_loss(uint_fast8_t v)
 {
-	ASSERT(v >= WITHREVERBLOSSMIN);
-	ASSERT(v <= WITHREVERBLOSSMAX);
-	greverbloss = v;
-	save_i8(OFFSETOF(struct nvmap, greverbloss), greverbloss);
+	param_setvalue(& xgreverbloss, v);
 	updateboard();
 }
 
@@ -21702,7 +21375,7 @@ void hamradio_set_lock(uint_fast8_t lock)
 	const vindex_t vi = getvfoindex(bi);
 
 	glocks [bi] = lock != 0;
-	save_i8(RMT_LOCKMODE_BASE(vi), glocks [bi]);
+	savemodeinfo(RMT_BAND(vi), bi);
 	updateboard();
 }
 
@@ -22074,7 +21747,7 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, u
 void hamradio_goto_band_by_freq(uint_fast32_t f)
 {
 	if (freqvalid(f, 0))
-		uif_key_click_bandjump2(f, 1);
+		uif_key_click_bandjump2(f, 1);	/* переход на указанную частоту без задействования механизма bandgroup */
 }
 
 uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band)
