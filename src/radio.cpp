@@ -3371,13 +3371,18 @@ static void moderowinfo(void)
 	PRINTF("totalbits=%u, totalbytes=%u\n", totalbits, totalbytes);
 }
 
-/* Хранение в NVRAM информации об выбраном режиме */
+/* структура - расположение байтов в конфигурационном ОЗУ.
+   bitfields нельзя использовать, так как всё это - только обозначения смещений
+	 переменных в конфигурационном ОЗУ.
+	Информация, сохраняемая для каждого диапазона */
+
 typedef struct modeinfo_tag
 {
+	uint32_t freq;		/* рабочая частота */
 	uint8_t moderow;					/* номер режима работы в маске (номер тройки бит) */
 	uint8_t modecols [MODEROW_COUNT];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
 	uint8_t lock;						/* блокировка валкодера */
-} ATTRPACKED modeinfo_t;
+} ATTRPACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
 {
@@ -3484,17 +3489,6 @@ struct modeprops_tag
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
 	 переменных в конфигурационном ОЗУ.
-	Информация, сохраняемая для каждого диапазона */
-
-struct bandinfo_tag
-{
-	uint32_t freq;		/* рабочая частота */
-	modeinfo_t modeinfo;	/* массив режимов работы */
-} ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
-
-/* структура - расположение байтов в конфигурационном ОЗУ.
-   bitfields нельзя использовать, так как всё это - только обозначения смещений
-	 переменных в конфигурационном ОЗУ.
  	 Информация, сохраняемая для каждой антенны */
 
 struct onerxant_tag {
@@ -3523,7 +3517,7 @@ struct onetxant_tag {
 struct bandprops_tag {
 	uint8_t miload [BANKINDEX_COUNT];			// последний индекс, из которого выбиралась ячейка памяти.
 	uint8_t mistore [BANKINDEX_COUNT];		// последний индекс, в который запоминалась ячейка памяти.
-	struct bandinfo_tag mibands [BANKINDEX_COUNT] [WITHBANDMEMCOUNT];
+	struct modeinfo_tag mibands [BANKINDEX_COUNT] [WITHBANDMEMCOUNT];
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 	uint8_t rxant;		/* признак включения приемной антенны */
 	uint8_t ant;		/* код выбора антенны (0/1) */
@@ -3974,7 +3968,7 @@ struct nvmap {
 #endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
 
 	struct modeprops_tag modes [MODE_COUNT];
-	struct bandinfo_tag bands [BANDS_COUNT];
+	struct modeinfo_tag bands [BANDS_COUNT];
 	struct bandprops_tag bandprops [BANDPROPS_COUNT];	/* доп параметры по диапазонам */
 
 #if WITHANTSELECT2
@@ -4015,11 +4009,9 @@ struct nvmap {
 #define RMT_BAND(b) 			(OFFSETOF(struct nvmap, bands [(b)]))		// хранимые диапазоны
 #define RMT_MIBAND(bp, bi, mi) 	(OFFSETOF(struct nvmap, bandprops [(bp)].mibands [(bi)] [(mi)]))
 
-#define RMT_BFREQ_BASE(b) 				(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, freq))				/* последняя частота, на которую настроились (4 байта) */
-#define RMT_MODEINFO_BASE(b)			(RMT_BAND((b)) + OFFSETOF(struct bandinfo_tag, modeinfo))			/* массив режимов работы */
+#define RMT_BFREQ_BASE(b) 				(RMT_BAND((b)) + OFFSETOF(struct modeinfo_tag, freq))				/* последняя частота, на которую настроились (4 байта) */
 
-#define RMT_MIBFREQ_BASE(bp, bi, mi) 		(RMT_MIBAND((bp), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, freq))		/* последняя частота, на которую настроились (4 байта) */
-#define RMT_MIMODEINFO_BASE(bp, bi, mi)		(RMT_MIBAND((bp), (bi), (mi)) + OFFSETOF(struct bandinfo_tag, modeinfo))	/* массив режимов работы */
+#define RMT_MIBFREQ_BASE(bp, bi, mi) 		(RMT_MIBAND((bp), (bi), (mi)) + OFFSETOF(struct modeinfo_tag, freq))		/* последняя частота, на которую настроились (4 байта) */
 
 #define RMT_PAMPBG3_BASE(bp, ant, rxant) (OFFSETOF(struct nvmap, bandprops [(bp)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].pamp))	/* признак включения аттенюатора (1 байт) */
 #define RMT_ATTBG3_BASE(bp, ant, rxant) (OFFSETOF(struct nvmap, bandprops [(bp)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].att))		/* признак включения аттенюатора (1 байт) */
@@ -9310,7 +9302,7 @@ storebandstate(const vindex_t vi, const uint_fast8_t bi)
 	const uint_fast8_t ant = geteffantenna(freq);
 	const uint_fast8_t rxant = geteffrxantenna(freq);
 
-	savemodeinfo(RMT_MODEINFO_BASE(vi), bi);
+	savemodeinfo(RMT_BAND(vi), bi);
 
 	storebandprops(bp, ant, rxant);
 }
@@ -9326,14 +9318,14 @@ static void loadbandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t m
 	tune_top_active [bi] = get_band_top(hb);
 #endif
 
-	loadmodeinfo(RMT_MIMODEINFO_BASE(bp, bi, mi), bi, gfreqs [bi]);
+	loadmodeinfo(RMT_MIBAND(bp, bi, mi), bi, gfreqs [bi]);
 	//
 }
 
 static void savebandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t mi)
 {
 	save_i32(RMT_MIBFREQ_BASE(bp, bi, mi), gfreqs [bi]);
-	savemodeinfo(RMT_MIMODEINFO_BASE(bp, bi, mi), bi);
+	savemodeinfo(RMT_MIBAND(bp, bi, mi), bi);
 }
 
 /* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
@@ -10433,7 +10425,7 @@ loadnewband(
 	tune_top_active [bi] = get_band_top(hb);
 #endif
 
-	loadmodeinfo(RMT_MODEINFO_BASE(b), bi, gfreqs [bi]);
+	loadmodeinfo(RMT_BAND(b), bi, gfreqs [bi]);
 	loadantenna(bp);
 	loadbandprops(bp, ant, rxant);
 }
@@ -14024,7 +14016,7 @@ uif_key_lockencoder(void)
 	const vindex_t vi = getvfoindex(bi);
 
 	glocks [bi] = calc_next(glocks [bi], 0, 1);
-	savemodeinfo(RMT_MODEINFO_BASE(vi), bi);
+	savemodeinfo(RMT_BAND(vi), bi);
 	updateboard();
 }
 
@@ -21367,7 +21359,7 @@ void hamradio_set_lock(uint_fast8_t lock)
 	const vindex_t vi = getvfoindex(bi);
 
 	glocks [bi] = lock != 0;
-	savemodeinfo(RMT_MODEINFO_BASE(vi), bi);
+	savemodeinfo(RMT_BAND(vi), bi);
 	updateboard();
 }
 
