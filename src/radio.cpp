@@ -29,7 +29,7 @@
 //#define WITHRPTOFFSET 1
 #define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
 #ifndef WITHBANDMEMCOUNT
-#define WITHBANDMEMCOUNT 1
+#define WITHBANDMEMCOUNT 2
 #endif /* WITHBANDMEMCOUNT */
 
 #define UI_TICKS_PERIOD 50	// ms
@@ -3352,7 +3352,7 @@ static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом испол
 										/* номер режима работы в маске (номер тройки бит) */
 static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
 
-#if 1
+#if 0
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
 	 переменных в конфигурационном ОЗУ.
@@ -3431,21 +3431,89 @@ static void putbits(uint8_t * b, unsigned offset, unsigned width, unsigned value
 	}
 }
 
-static unsigned getbits(const uint8_t * b, unsigned offset, unsigned width, unsigned value, unsigned minv, unsigned maxv, unsigned defv)
+static unsigned getbits(const uint8_t * b, unsigned offset, unsigned width, unsigned minv, unsigned maxv, unsigned defv)
 {
-	unsigned v;
+	unsigned v = 0;
 	while (width --)
 	{
 		v = v * 2 + getbit(b, offset ++);
 	}
+	if (v > maxv || v > maxv)
+		v = defv;
 	return v;
 }
 
 static void loadmodeinfo0(nvramaddress_t place, uint_fast8_t bi, uint_fast8_t defrow, uint_fast8_t defcol)
 {
+	uint8_t b [MODEINFO_BUNDLESIZE];
+	unsigned offset = 0;
+	nvram_read(place + OFFSETOF(modeinfo_t, bundle), b, ARRAY_SIZE(b));
+
+	unsigned width;
+	{
+		// lock
+		width = 2;	// с запасом - для обработки начальной установки
+		glocks [bi] = getbits(b, offset, width, 0, 1, 0);
+		offset += width;
+	}
+	{
+		// moderow
+		width = __log2_up(ARRAY_SIZE(modes)) + 1;	// с запасом - для обработки начальной установки
+		gmoderows [bi] = getbits(b, offset, width, 0, MODEROW_COUNT - 1, defrow);
+		offset += width;
+	}
+	{
+		// modecols
+		const unsigned dim1 = ARRAY_SIZE(modes);
+		//const unsigned dim2 = ARRAY_SIZE(modes [0]);
+		unsigned row;
+		for (row = 0; row < dim1; ++ row)
+		{
+			const uint_fast8_t maxvalue = modes [row] [0] - 1;
+			const uint_fast8_t defvalue = defrow == row ? defcol : 0;
+			const unsigned countvalaues = modes [row] [0];
+			const unsigned width = __log2_up(countvalaues) + 1;
+
+			gmodecolmaps [bi] [row] = getbits(b, offset, width,
+					0, maxvalue,
+					defvalue);	// 0 по умолчанию для всех не предустановленных
+			offset += width;
+		}
+	}
 }
 static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
 {
+	uint8_t b [MODEINFO_BUNDLESIZE] = { 0 };
+	unsigned offset = 0;
+	unsigned width;
+	{
+		// lock
+		width = 2;	// с запасом - для обработки начальной установки
+		putbits(b, offset, width, glocks [bi]);
+		offset += width;
+	}
+	{
+		// moderow
+		width = __log2_up(ARRAY_SIZE(modes)) + 1;	// с запасом - для обработки начальной установки
+		putbits(b, offset, width, gmoderows [bi]);
+		offset += width;
+	}
+	{
+		// modecols
+		const unsigned dim1 = ARRAY_SIZE(modes);
+		//const unsigned dim2 = ARRAY_SIZE(modes [0]);
+		unsigned row;
+		for (row = 0; row < dim1; ++ row)
+		{
+			const unsigned countvalaues = modes [row] [0];
+			const unsigned width = __log2_up(countvalaues) + 1;
+
+			putbits(b, offset, width, gmodecolmaps [bi] [row]);
+			offset += width;
+		}
+	}
+
+	nvram_write(place + OFFSETOF(modeinfo_t, bundle), b, ARRAY_SIZE(b));
 }
 
 #endif
@@ -3454,23 +3522,24 @@ static void moderowinfo(void)
 {
 	const unsigned dim1 = ARRAY_SIZE(modes);
 	const unsigned dim2 = ARRAY_SIZE(modes [0]);
-	unsigned bits0 = __log2_up(dim1);
+	unsigned bits0 = __log2_up(dim1) + 1;
 	const unsigned upvalrow = dim1 - 1;
 	unsigned upvalcols [dim1];
 	PRINTF("modes: %u rows (bits0=%u, upvalidate=%u):\n", dim1, bits0, upvalrow);
 	ASSERT(bits0 != 0);
-	unsigned totalbits = bits0;
+	unsigned totalbits = 0;
+	totalbits += __log2_up(2) + 1;	// lock
+	totalbits += bits0;
 	unsigned row;
 	for (row = 0; row < dim1; ++ row)
 	{
 		unsigned countvalaues = modes [row] [0];
-		unsigned bits = __log2_up(countvalaues);
+		unsigned bits = __log2_up(countvalaues) + 1;
 		upvalcols [row] = countvalaues;
 		PRINTF("row [%u]: up to: %u, bits=%u\n", row, countvalaues, bits);
 		totalbits += bits;
 		ASSERT(bits != 0);
 	}
-	totalbits += __log2_up(2);	// lock
 	const unsigned totalbytes = (totalbits + 7) / 8;
 	PRINTF("totalbits=%u, totalbytes=%u\n", totalbits, totalbytes);
 	(void) upvalcols;
