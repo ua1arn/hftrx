@@ -3340,10 +3340,12 @@ locatesubmode(
 	return 0;
 }
 
+static uint_fast32_t gfreqs [BANKINDEX_COUNT] = { DEFAULTDIALFREQ, DEFAULTDIALFREQ };		/* отображаемая на дисплее частота работы */
+static uint_fast8_t glocks [BANKINDEX_COUNT];
+
 static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом используется результат функции getbankindex_xxx(tx) */
 										/* номер режима работы в маске (номер тройки бит) */
 static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
-static uint_fast8_t glocks [BANKINDEX_COUNT];
 
 static void moderowinfo(void)
 {
@@ -4159,7 +4161,6 @@ static int_fast32_t getzerobase(void)
    */
 
 /* параметры диапазона, переключаемые при смене VFO */
-static uint_fast32_t gfreqs [VFOS_COUNT] = { DEFAULTDIALFREQ, DEFAULTDIALFREQ };		/* отображаемая на дисплее частота работы */
 #if ! WITHONEATTONEAMP
 static uint_fast8_t gpamp;
 #endif /* ! WITHONEATTONEAMP */
