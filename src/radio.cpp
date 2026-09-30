@@ -3836,12 +3836,12 @@ struct nvmap {
 		uint8_t voxdelay;	/* задержка отпускания VOX */
 	#endif /* WITHVOX */
 
-	#if WITHELKEY
+	#if WITHTX
 		uint8_t gbkinenable;	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
-	#endif /* WITHELKEY */
+		uint8_t bkindelay;	/* задержка отпускания BREAK-IN */
+	#endif /* WITHTX */
 
 	uint8_t gtxgate;	/* разрешение предусилителя */
-	uint8_t bkindelay;	/* задержка отпускания BREAK-IN */
 	uint8_t grgbeep;	/* разрешение (не-0) или запрещение (0) формирования roger beep */
 	uint8_t rxtxdelay;	/* приём-передача */
 
@@ -6109,13 +6109,6 @@ enum
 		enum { gclassamode = 0 };	/* использование режима клвсс А при передаче */
 	#endif /* WITHPACLASSA */
 
-	#if WITHELKEY
-		static uint_fast8_t gbkinenable = 1;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
-		static uint_fast8_t bkindelay = 20;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
-	#else /* WITHELKEY */
-		enum { gbkinenable = 0 };
-	#endif /* WITHELKEY */
-
 #if TXPATH_BIT_GATE_RX && CTLSTYLE_SW2011ALL
 	enum { pretxdelay = 1 };	/* признак того, что требуется снятие питания со второго смесителя */
 #else
@@ -6139,12 +6132,39 @@ enum
 	static uint_fast8_t txrxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
 
 #else /* WITHTX */
-	static const uint_fast8_t gbkinenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
 	static const uint_fast8_t gvoxenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
-	static const uint_fast8_t bkindelay = 80;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
 #endif /* WITHTX */
 
 #if WITHMENU
+#if WITHTX
+	static uint_fast8_t gbkinenable = 1;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
+	static const struct paramdefdef xgbkinenable =
+	{
+		QLABEL("BREAK-IN"), 0, RJ_ON,	ISTEP1,	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gbkinenable),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gbkinenable,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static uint_fast8_t bkindelay = 20;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
+	static const struct paramdefdef xgbkindelay =
+	{
+		QLABEL("CW DELAY"),  2, RJ_UNSIGNED, ISTEP1,	/* задержка в десятках ms */
+		ITEM_VALUE,
+		5, 160,						/* 0.05..1.6 секунды */
+		OFFSETOF(struct nvmap, bkindelay),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& bkindelay,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+#else /* WITHTX */
+#endif /* WITHTX */
 #if WITHELKEY
 
 	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
@@ -6252,32 +6272,6 @@ enum
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 #endif /* WITHVIBROPLEX */
-#if WITHTX
-	static const struct paramdefdef xgbkinenable =
-	{
-		QLABEL("BREAK-IN"), 0, RJ_ON,	ISTEP1,	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gbkinenable),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gbkinenable,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	};
-	static const struct paramdefdef xgbkindelay =
-	{
-		QLABEL("CW DELAY"),  2, RJ_UNSIGNED, ISTEP1,	/* задержка в десятках ms */
-		ITEM_VALUE,
-		5, 160,						/* 0.05..1.6 секунды */
-		OFFSETOF(struct nvmap, bkindelay),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& bkindelay,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	};
-#endif /* WITHTX */
 #if WITHIF4DSP
 	static uint_fast8_t gcwedgetime = 5;	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static const struct paramdefdef xgcwedgetime =
