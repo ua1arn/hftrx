@@ -470,25 +470,6 @@ ismenukinddp(
 	return (pd->qspecial & itemmask) != 0;
 }
 
-/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
-static uint_fast8_t
-ismenufilterusb(
-	const struct paramdefdef * pd
-	)
-{
-	return ismenukinddp(pd, ITEM_FILTERU);
-}
-
-/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
-static uint_fast8_t
-ismenufilterlsb(
-	const struct paramdefdef * pd
-	)
-{
-	return ismenukinddp(pd, ITEM_FILTERL);
-}
-
-
 /* Сохранить параметр после редактирования */
 static void
 savemenuvalue(
@@ -593,16 +574,6 @@ param_getvalue(
 		const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
 
 		// получение значения для отображения
-		if (ismenufilterlsb(pd))
-		{
-			const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, low_or_center);
-			return getlo4baseflt(filter) + * pv16;
-		}
-		if (ismenufilterusb(pd))
-		{
-			const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, high);
-			return getlo4baseflt(filter) + * pv16;
-		}
 		if (pv16 != NULL)
 		{
 			return (int_fast32_t) * pv16 + pd->funcoffs();
@@ -682,7 +653,7 @@ prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 
 /* получение следующего числа в диапазоне low..high с "заворотом" */
 /* используется при переборе режимов кнопками */
-uint_fast16_t
+static uint_fast16_t
 calc_next(uint_fast16_t v, uint_fast16_t low, uint_fast16_t high)
 {
 	return (v < low || v >= high) ? low : (v + 1);
@@ -3425,8 +3396,6 @@ struct modeprops_tag
 #if ! WITHAGCMODENONE
 	uint8_t agc;	/* режим АРУ для данного семейства режимов */
 #endif /* ! WITHAGCMODENONE */
-	uint8_t filter;	/* индекс фильтра в общей таблице фильтров */
-	//uint16_t step;	/* шаг валкодера в данном режиме */
 
 	uint8_t noisereduct;	/* включение NR для данного режима */
 	uint8_t txaudioindex;	/* источник звука для передачи (индекс) */
@@ -3581,16 +3550,16 @@ struct nvmap {
 
 #if defined(CODEC1_TYPE)
 	uint16_t 	ggrpcodecparams;		// последний посещённый пункт группы
-#if WITHMIC1LEVEL
-	uint16_t gmik1level;
-#endif /* WITHMIC1LEVEL */
-#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
-	uint8_t ALCNEN;// = 0;	// ALC noise gate function control bit
-	uint8_t ALCNTH;// = 0;	// ALC noise gate threshold level
-	uint8_t ALCEN;// = 1;	// only left channel ALC enabled
-	uint8_t ALCMXGAIN;// = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
-	uint8_t ALCMNGAIN;// = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
-#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
+	#if WITHMIC1LEVEL
+		uint16_t gmik1level;
+	#endif /* WITHMIC1LEVEL */
+	#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+		uint8_t ALCNEN;// = 0;	// ALC noise gate function control bit
+		uint8_t ALCNTH;// = 0;	// ALC noise gate threshold level
+		uint8_t ALCEN;// = 1;	// only left channel ALC enabled
+		uint8_t ALCMXGAIN;// = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
+		uint8_t ALCMNGAIN;// = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
+	#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #endif /* defined(CODEC1_TYPE)  */
 #if WITHTX
 	uint16_t	ggrptxparams; // последний посещённый пункт группы
@@ -3961,8 +3930,7 @@ struct nvmap {
 #define RMT_MAINSUBRXMODE_BASE	OFFSETOF(struct nvmap, dwatchmode)
 #define RMT_NR_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].noisereduct)
 #define RMT_AGC_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].agc)
-#define RMT_FILTER_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].filter)
-#define RMT_STEP_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].step)
+#define RMT_TXAUDIO_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txaudioindex)
 
 #define RMT_TXAUDIOINDEX_BASE(i) OFFSETOF(struct nvmap, modes [(i)].txaudioindex)
 #define RMT_MIDDLEMENUPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].gmidmenupos)
@@ -4150,7 +4118,6 @@ static uint_fast8_t gvfosplit [VFOS_COUNT];	// At index 0: RX VFO A or B, at ind
 // На эти параметры ориентируемся при работе кнопками управления, переклбчения фильттров и так далее.
 static uint_fast8_t gsubmode;		/* код текущего режима */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
-static uint_fast8_t gfi;			/* номер фильтра (сквозной) для текущего режима */
 
 // Параметры ставяться в setgsubmode
 static uint_fast16_t gstep_ENC_MAIN;
@@ -4173,7 +4140,7 @@ static nvramaddress_t nvramoffs_mode(nvramaddress_t base, unsigned mode)
 
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
-	return base + RMT_FILTER_BASE(mode) - RMT_FILTER_BASE(mode);
+	return base + RMT_TXAUDIO_BASE(mode) - RMT_TXAUDIO_BASE(mode);
 }
 
 static ptrdiff_t valueoffs_mode(unsigned mode)
@@ -8560,35 +8527,6 @@ board_wakeup(void)
 	return r;
 }
 
-/* получаем PBT offset для текущего режима работы */
-/* TODO: сделать зависимым от текущего фильтра */
-static int_fast16_t
-getpbt(
-	const filter_t * workfilter,
-	uint_fast8_t mode,		/* код режима работы */
-	uint_fast8_t tx				/* признак передачи */
-	)
-{
-	(void) mode;
-	(void) tx;
-	return 0;
-}
-/* получаем IF SHIFT offset для текущего режима работы */
-/* TODO: сделать зависимым от текущего фильтра */
-// Увеличение значения параметра смещает слышимую часть спектра в более высокие частоты
-static int_fast16_t
-getifshift(
-	const filter_t * workfilter,
-	uint_fast8_t mode,		/* код режима работы */
-	uint_fast8_t tx				/* признак передачи */
-	)
-{
-	(void) workfilter;
-	(void) mode;
-	(void) tx;
-	return 0;
-}
-
 #if 0
 static const uint_fast8_t ssb_steps10 [] =
 {
@@ -9369,8 +9307,9 @@ static void savebandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t m
 	save_i32(RMT_MIBFREQ_BASE(bp, bi, mi), gfreqs [bi]);
 	save_i8(RMT_MILOCKMODE_BASE(bp, bi, mi), glocks [bi]);	/* признак блокировки валкодера */
 	const uint_fast8_t row = gmoderows [bi];
+	const uint_fast8_t col = gmodecolmaps [bi] [row];
 	save_i8(RMT_MIMODEROW_BASE(bp, bi, mi), row);
-	save_i8(RMT_MIMODECOLS_BASE(bp, bi, mi, row), gmodecolmaps [bi] [row]);
+	save_i8(RMT_MIMODECOLS_BASE(bp, bi, mi, row), col);
 }
 
 /* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
@@ -10518,11 +10457,10 @@ setgsubmode(
 	/* выбор фильтра */
 	const struct modetempl * const pmodet = getmodetempl(submode);
 	const uint_fast8_t mode = submodes [submode].mode;
-	const uint_fast8_t deffilter = getdefflt(mode, 0);	/* получить индекс фильтра "по умолчанию" для режима */
 
 	gsubmode = submode;
 	gmode = mode;
-	gfi = getsuitablerx(mode, loadvfy8up(RMT_FILTER_BASE(mode), 0, getgfasize() - 1, deffilter));	/* фильтр для режима приёма */
+
 #if ! WITHAGCMODENONE
 	gagcmode = loadvfy8up(RMT_AGC_BASE(mode), 0, AGCMODE_COUNT - 1, pmodet->defagcmode);
 #endif /* ! WITHAGCMODENONE */
@@ -11002,37 +10940,6 @@ gethintlo2(
 	return 0;
 }
 
-/* получаем частоту LO2 для текущего режима работы */
-static int_fast32_t
-getlo2(
-	const filter_t * workfilter,
-	uint_fast8_t mode,		/* код семейства режимов работы */
-	uint_fast8_t mix2lsb,	/* формируем гетеродин для указанной боковой полосы */
-	uint_fast8_t tx,		/* признак работы в режиме передачи */
-	uint_fast8_t hintlo2	/* код пятиисотых килогерц приходит в зависимости от частоты настройки в режиме интерполятора */
-	)
-{
-	// LO2 отсутствует
-	(void) mode;
-	(void) tx;
-	return 0;
-}
-
-/* получаем LO3 для текущего режима работы */
-static int_fast32_t
-
-getlo3(
-	uint_fast8_t mode,		/* код семейства режимов работы */
-	uint_fast8_t mix3lsb,		/* формируем гетеродин для указанной боковой полосы */
-	uint_fast8_t tx		/* признак работы в режиме передачи */
-	)
-{
-	/* смесителя #2A вообще нет в тракте */
-	(void) mode;
-	(void) mix3lsb;
-	return 0;
-}
-
 /* перенастройка формирования гетеродина для указанного режима. */
 static void
 
@@ -11053,47 +10960,6 @@ update_lo0(
 #endif /* WITHIF4DSP */
 }
 
-/* перенастройка формирования гетеродина для указанного режима. */
-static void
-
-update_lo2(
-	uint_fast8_t pathi,		// номер тракта - 0/1: main/sub
-	const filter_t * workfilter,
-	uint_fast8_t mode,		/* код семейства режимов работы */
-	uint_fast8_t lsb,		/* формируем гетеродин для указанной боковой полосы */
-	int_fast32_t f,			/* частота, которую хотим получить на выходе DDS */
-	uint_fast8_t od,		/* делитель перед подачей на смеситель (1, 2, 4, 8...) */
-	uint_fast8_t tx,		/* признак работы в режиме передачи */
-	uint_fast8_t hint		/* код пятиисотых килогерц приходит в зависимости от частоты настройки в режиме интерполятора */
-	)
-{
-	/* смесителя #2 вообще нет в тракте */
-	(void) mode;
-	(void) hint;
-	(void) lsb;
-	(void) f;
-	(void) od;
-	(void) tx;
-}
-
-
-/* перенастройка формирования гетеродина для указанного режима. */
-static void
-
-update_lo3(
-	uint_fast8_t pathi,		// номер тракта - 0/1: main/sub
-	uint_fast8_t mode,		/* код семейства режимов работы */
-	uint_fast8_t lsb,		/* формируем гетеродин для указанной боковой полосы */
-	int_fast32_t f,			/* частота, которую хотим получить на выходе DDS */
-	uint_fast8_t od,		/* делитель перед подачей на смеситель (1, 2, 4, 8...) */
-	uint_fast8_t tx			/* признак работы в режиме передачи */
-	)
-{
-	(void) mode;
-	(void) lsb;
-	(void) tx;
-	synth_lo3_setfreq(pathi, f, od);
-}
 
 // return value: LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 static uint_fast8_t
@@ -11370,19 +11236,6 @@ getlo4enable(
 #else
 	return mdt [mode].lo5side [tx] != LOCODE_INVALID;
 #endif
-}
-
-
-static int_fast32_t
-getlo4ref(
-	const filter_t * workfilter,
-	uint_fast8_t mode,			/* код семейства режима работы */
-	uint_fast8_t mix4lsb,		/* формируем гетеродин для указанной боковой полосы */
-	uint_fast8_t tx				/* для режима передачи - врежиме CW - смещения частоты не требуется. */
-	)
-{
-	// Выравнивание IF с привязкой к центру фильтра основной селекции
-	return getif3filtercenter(workfilter);
 }
 
 // вызывается из user mode
@@ -13012,16 +12865,6 @@ updateboard_noui(
 			//
 			enum { dc = 0 };
 
-			const filter_t * workfilter;
-			if (gtx != 0)
-			{
-				workfilter = gettxfilter(asubmode, getsuitabletx(amode, 0));	/* получаем по gfi/gfitx, хранится фильтр, включенный для данного режима */
-			}
-			else
-			{
-				workfilter = getrxfilter(asubmode, gfi);	/* получаем по gfi/gfitx, хранится фильтр, включенный для данного режима */
-			}
-			ASSERT(workfilter != NULL);
 	#if WITHIF4DSP
 			// Так же, здесь можно решать, какой фильтр ПЧ требуется для данного фильтра dsp.
 			// В случае DUC/DDC, используется "заглушка" - IF3_TYPE_BYPASS.
@@ -13031,15 +12874,15 @@ updateboard_noui(
 			const uint_fast8_t wide = workfilter->widefilter;
 	#endif /* WITHIF4DSP */
 			//
-			const int_fast16_t pbt = getpbt(workfilter, amode, gtx);
-			const int_fast16_t ifshift = getifshift(workfilter, amode, gtx);	/* положительные значения - повышение тембра (фильтр сдвигается "выше"). */
+			const int_fast16_t pbt = 0;
+			const int_fast16_t ifshift = 0;	/* положительные значения - повышение тембра (фильтр сдвигается "выше"). */
 
 			const int_fast32_t freqif6 = getif6(amode, gtx, wide); // Positive number: ssb:0, cw=700, drm=12k
 			const int_fast32_t freqlo6 = UPPERTOSIGN(! mixXlsbs [6], getlo6(amode, gtx, wide, ifshift));
 			const int_fast32_t freqif5 = freqlo6 + UPPERTOSIGN(mixXlsbs [6], freqif6); 	// в режиме CW должно быть 0 для DDC/DUC
 			const int_fast32_t freqlo5 = UPPERTOSIGN(mixXlsbs [5], getlo5(amode, gtx));	// 0 or DSP IF freq (12 kHz)
 			const int_fast32_t freqif4 = freqlo5 + UPPERTOSIGN(mixXlsbs [5], freqif5);
-			const int_fast32_t freqlo4ref = getlo4ref(workfilter, amode, mixXlsbs [4], gtx);
+			const int_fast32_t freqlo4ref = 0;
 
 			// Возможно две стратегии переноса частоты - с согласованием частот среза
 			// и с согласованием центральных частот полос пропускания.
@@ -13057,9 +12900,9 @@ updateboard_noui(
 	#endif
 
 			// Взаимным смещением LO1 и LO2 производится "подрезание" полосы пропускания - PBTs
-			const int_fast32_t freqlo3 = getlo3(amode, mixXlsbs [3], gtx) + UPPERTOSIGN16(mixXlsbs [3], pbt);	/* частота для гетеродина, осуществляющего passband tuning = PBT */
+			const int_fast32_t freqlo3 = 0;	/* частота для гетеродина, осуществляющего passband tuning = PBT */
 			const int_fast32_t freqif2 = freqlo3 + UPPERTOSIGN(mixXlsbs [3], freqif3);
-			const int_fast32_t freqlo2 = getlo2(workfilter, amode, mixXlsbs [2], gtx, lo2hint [pathi]);
+			const int_fast32_t freqlo2 = 0;
 			const int_fast32_t freqif1 = freqlo2 + UPPERTOSIGN(mixXlsbs [2], freqif2);
 			const int_fast32_t freqlo0 = getlo0(lo0hint);
 			synth_if1 [pathi] = UPPERTOSIGN(mixXlsbs [1], freqif1) - UPPERTOSIGN(mixXlsbs [0], freqlo0);	// Запоминается для последующего преобразования рабочей частоты к частоте гетеродина.
@@ -13190,12 +13033,6 @@ updateboard_noui(
 			synth_lo1_setreference(getsynthref(amode));	// расчет коэфф. для работы синтезаторв
 		#endif
 			synth_setreference(getsynthref(amode));	// расчет коэфф. для работы синтезаторв
-
-		/* А теперь настраиваем частоты. */
-			update_lo2(pathi, workfilter, amode, mixXlsbs [2], freqlo2, getlo2div(gtx), gtx, lo2hint [pathi]);
-			update_lo3(pathi, amode, mixXlsbs [3], freqlo3, getlo3div(gtx), gtx);
-
-			synth_lo4_setfreq(pathi, freqlo4, getlo4div(gtx), getlo4enable(amode, gtx));	/* утстановка третьего гетеродина */
 
 		} // pathi
 
@@ -14316,9 +14153,6 @@ uif_key_click_datamode(void)
 static void
 uif_key_changefilter(void)
 {
-	gfi = getsuitablerx(gmode, calc_next(gfi, 0, getgfasize() - 1));
-	save_i8(RMT_FILTER_BASE(gmode), gfi);	/* только здесь сохраняем новый фильтр для режима */
-	updateboard();
 }
 
 #endif /* WITHIF4DSP */
@@ -15772,7 +15606,7 @@ static void fwanswer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) getkenwoodfw(gsubmode, gfi) // полоса пропускания в герцах или код полосы пропускания
+		(int) getkenwoodfw(gsubmode, 0) // полоса пропускания в герцах или код полосы пропускания
 		);
 	cat_answer(len);
 }
@@ -17285,8 +17119,8 @@ processcatmsg(
 		{
 			// Ширина полосы пропускания фильтра на приёме в герцах
 			const uint_fast32_t width = vfy32up(catparam, 0, 9999, 3100);
-			const uint_fast8_t i = findfilter(gmode, gfi, width);	/* поиск фильтра, допустимого для данного режима */
-			gfi = getsuitablerx(gmode, i); /* при переключении через CAT сохранения в NVRAM не производится */
+//			const uint_fast8_t i = findfilter(gmode, gfi, width);	/* поиск фильтра, допустимого для данного режима */
+//			gfi = getsuitablerx(gmode, i); /* при переключении через CAT сохранения в NVRAM не производится */
 			updateboard();	/* полная перенастройка (как после смены режима) */
 		}
 		else
