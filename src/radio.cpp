@@ -9482,11 +9482,11 @@ static void
 
 putmodecol(
 	const uint_fast8_t index, 	// moderow
-	const uint_fast8_t v,
+	const uint_fast8_t col,
 	const uint_fast8_t bi		/* bank index */
 	)
 {
-	gmodecolmaps [bi] [index] = v;
+	gmodecolmaps [bi] [index] = col;
 }
 
 
@@ -13678,12 +13678,15 @@ static void
 uif_key_click_moderow(void)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+
 	uint_fast8_t defrow = gmoderows [bi];		/* строка таблицы режимов, которую покидаем */
 	uint_fast8_t defcol = getmodecol(defrow, bi);
 	const uint_fast8_t forcelsb = getforcelsb(gfreqs [bi]);
 
 	gmoderows [bi] = calc_next(gmoderows [bi], 0, MODEROW_COUNT - 1);		/* идём на следующую строку таблицы запомненых режимов */
 
+#if 0
+	// Обеспечение перехода с LSB в CWR и с USB в CW
 #if WITHMODESETSMART
 	defcol = locatesubmode(SUBMODE_SSBSMART, & defrow);
 #else /* WITHMODESETSMART */
@@ -13691,9 +13694,9 @@ uif_key_click_moderow(void)
 		defcol = locatesubmode(SUBMODE_CW, & defrow);
 	else if (gsubmode == SUBMODE_LSB)	// если текущий режим LSB - ищемм CWR
 		defcol = locatesubmode(SUBMODE_CWR, & defrow);
-	else if (gsubmode == SUBMODE_DGU)	// если текущий режим LSB - ищемм CWR
+	else if (gsubmode == SUBMODE_DGU)	// если текущий режим DGU - ищемм USB
 		defcol = locatesubmode(SUBMODE_USB, & defrow);
-	else if (gsubmode == SUBMODE_DGL)	// если текущий режим LSB - ищемм CWR
+	else if (gsubmode == SUBMODE_DGL)	// если текущий режим DGL - ищемм LSB
 		defcol = locatesubmode(SUBMODE_LSB, & defrow);
 	#if WITHMODESETFULLNFM
 	else if (gsubmode == SUBMODE_AM)	// если текущий режим AM - ищемм FM
@@ -13707,7 +13710,7 @@ uif_key_click_moderow(void)
 		defcol = 0;	/* default value (other cases, then switch from usb to cw, from lsb to cwr) */
 	/* пытаемся обратиться за битами - они, взоможно, заменяться значением defcol */
 	(void) getmodecol(gmoderows [bi], bi);
-
+#endif
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
 	gsubmodechange(getsubmode(bi), bi); /* если надо - сохранение частоты в текущем VFO */
