@@ -3360,6 +3360,38 @@ static unsigned needbits(unsigned maxvalue)
 	return bits;	// Не надо расширять поле
 }
 
+
+// Обеспечение перехода с LSB в CWR и с USB в CW
+// Передварительное заполнение gmodecolmaps по текущему режиму
+static void layoutmodes(uint_fast8_t submode, uint_fast8_t forcelsb, uint_fast8_t bi)
+{
+	uint_fast8_t defrow;
+	uint_fast8_t defcol;
+#if WITHMODESETSMART
+	defcol = locatesubmode(SUBMODE_SSBSMART, & defrow);
+#else /* WITHMODESETSMART */
+	if (submode == SUBMODE_USB)		// если текущий режим USB - ищемм CW
+		defcol = locatesubmode(SUBMODE_CW, & defrow);
+	else if (submode == SUBMODE_LSB)	// если текущий режим LSB - ищемм CWR
+		defcol = locatesubmode(SUBMODE_CWR, & defrow);
+	else if (submode == SUBMODE_DGU)	// если текущий режим DGU - ищемм USB
+		defcol = locatesubmode(SUBMODE_USB, & defrow);
+	else if (submode == SUBMODE_DGL)	// если текущий режим DGL - ищемм LSB
+		defcol = locatesubmode(SUBMODE_LSB, & defrow);
+	#if WITHMODESETFULLNFM
+	else if (submode == SUBMODE_AM)	// если текущий режим AM - ищемм FM
+		defcol = locatesubmode(SUBMODE_NFM, & defrow);
+	#endif
+	else								// в остальных случаях ищем режим по умолчанию для данного диапазона частот
+		defcol = locatesubmode(forcelsb ? SUBMODE_LSB : SUBMODE_USB, & defrow);
+#endif /* WITHMODESETSMART */
+	/* если переходим не на строку с найденными режимаим */
+	if (defrow != gmoderows [bi])
+		defcol = 0;	/* default value (other cases, then switch from usb to cw, from lsb to cwr) */
+	/* пытаемся обратиться за битами - они, взоможно, заменяться значением defcol */
+	//(void) getmodecol(gmoderows [bi], bi);
+}
+
 #if 0
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
@@ -3390,11 +3422,12 @@ static void loadmodeinfo0(nvramaddress_t place, uint_fast8_t bi, uint_fast8_t de
 {
 	// прописываем режим работы по умолчанию для данного диапазона
 	gmoderows [bi] = loadvfy8up(place +  OFFSETOF(modeinfo_t, moderow), 0, MODEROW_COUNT - 1, defrow);
+	memset(gmodecolmaps [bi], 0x00, sizeof gmodecolmaps [bi]);
 	uint_fast8_t row;
 	for (row = 0; row < MODEROW_COUNT; ++ row)
 	{
 		const uint_fast8_t maxvalue = modes [row] [0] - 1;
-		const uint_fast8_t defvalue = defrow == row ? defcol : 0;
+		const uint_fast8_t defvalue = defrow == row ? defcol : gmodecolmaps [bi] [row];
 
 		gmodecolmaps [bi] [row] = loadvfy8up(
 				place + OFFSETOF(modeinfo_t, modecols [row]),
@@ -3469,6 +3502,7 @@ static void loadmodeinfo0(nvramaddress_t place, uint_fast8_t bi, uint_fast8_t de
 		gmoderows [bi] = getbits(b, offset, width, 0, MODEROW_COUNT - 1, defrow);
 		offset += width;
 	}
+	memset(gmodecolmaps [bi], 0x00, sizeof gmodecolmaps [bi]);
 	{
 		// modecols
 		const unsigned dim1 = ARRAY_SIZE(modes);
@@ -3477,7 +3511,7 @@ static void loadmodeinfo0(nvramaddress_t place, uint_fast8_t bi, uint_fast8_t de
 		for (row = 0; row < dim1; ++ row)
 		{
 			const uint_fast8_t maxvalue = modes [row] [0] - 1;
-			const uint_fast8_t defvalue = defrow == row ? defcol : 0;
+			const uint_fast8_t defvalue = defrow == row ? defcol : gmodecolmaps [bi] [row];
 			const unsigned width = needbits(maxvalue);
 
 			gmodecolmaps [bi] [row] = getbits(b, offset, width,
@@ -13684,33 +13718,6 @@ uif_key_click_moderow(void)
 	const uint_fast8_t forcelsb = getforcelsb(gfreqs [bi]);
 
 	gmoderows [bi] = calc_next(gmoderows [bi], 0, MODEROW_COUNT - 1);		/* идём на следующую строку таблицы запомненых режимов */
-
-#if 0
-	// Обеспечение перехода с LSB в CWR и с USB в CW
-#if WITHMODESETSMART
-	defcol = locatesubmode(SUBMODE_SSBSMART, & defrow);
-#else /* WITHMODESETSMART */
-	if (gsubmode == SUBMODE_USB)		// если текущий режим USB - ищемм CW
-		defcol = locatesubmode(SUBMODE_CW, & defrow);
-	else if (gsubmode == SUBMODE_LSB)	// если текущий режим LSB - ищемм CWR
-		defcol = locatesubmode(SUBMODE_CWR, & defrow);
-	else if (gsubmode == SUBMODE_DGU)	// если текущий режим DGU - ищемм USB
-		defcol = locatesubmode(SUBMODE_USB, & defrow);
-	else if (gsubmode == SUBMODE_DGL)	// если текущий режим DGL - ищемм LSB
-		defcol = locatesubmode(SUBMODE_LSB, & defrow);
-	#if WITHMODESETFULLNFM
-	else if (gsubmode == SUBMODE_AM)	// если текущий режим AM - ищемм FM
-		defcol = locatesubmode(SUBMODE_NFM, & defrow);
-	#endif
-	else								// в остальных случаях ищем режим по умолчанию для данного диапазона частот
-		defcol = locatesubmode(forcelsb ? SUBMODE_LSB : SUBMODE_USB, & defrow);
-#endif /* WITHMODESETSMART */
-	/* если переходим не на строку с найденными режимаим */
-	if (defrow != gmoderows [bi])
-		defcol = 0;	/* default value (other cases, then switch from usb to cw, from lsb to cwr) */
-	/* пытаемся обратиться за битами - они, взоможно, заменяться значением defcol */
-	(void) getmodecol(gmoderows [bi], bi);
-#endif
 	/* переустановка частот всех гетеродинов после смены режимов */
 	/* gband должен быть уже известен */
 	gsubmodechange(getsubmode(bi), bi); /* если надо - сохранение частоты в текущем VFO */
