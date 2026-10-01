@@ -151,7 +151,11 @@ static void emac_hw_initialize(void)
 			;
 
 		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 =
+#if WITHETH1G
 			//0x03 * (UINT32_C(1) << 2) |	// SPEED - 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
+#else /* WITHETH1G */
+			0x03 * (UINT32_C(1) << 2) |	// SPEED - 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
+#endif /* WITHETH1G */
 			0x01 * (UINT32_C(1) << 0) | // DUPLEX - 1: Full-duplex
 			0;
 		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 =

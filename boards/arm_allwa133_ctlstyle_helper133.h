@@ -438,7 +438,8 @@
 
 	#if 0
 		#define WITHLWIP 1
-		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
+		//#define WITHETH1G	1
+		//#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
