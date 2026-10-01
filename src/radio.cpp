@@ -7619,13 +7619,13 @@ uint_fast8_t hamradio_get_bringSWR(const char * * label)
 
 typedef struct encfnitem_tag
 {
-	void * ctx;
-	int (* getlabel)(void * ctx, char * buff, size_t count);
+	const void * ctx;
+	int (* getlabel)(const void * ctx, char * buff, size_t count);
 } encfnitem_t;
 
-static int getlabelAFGAIN(void * ctx, char * buff, size_t count)
+static int getlabelAFGAIN(const void * ctx, char * buff, size_t count)
 {
-	const struct paramdefdef * const pd = & xafgain1;
+	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
 	const int_fast32_t value = param_getvalue(pd);
 	int n = 0;
 	n += local_snprintf_P(buff + n, count - n, "AF ");
@@ -7633,16 +7633,16 @@ static int getlabelAFGAIN(void * ctx, char * buff, size_t count)
 	return n;
 }
 
-static int getlabelAFGAINss(void * ctx, char * buff, size_t count)
+static int getlabelAFGAINss(const void * ctx, char * buff, size_t count)
 {
-	const struct paramdefdef * const pd = & xafgain1;
+	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
 	const int_fast32_t value = param_getvalue(pd);
 	return local_snprintf_P(buff, count, "AF %2d", (int) value);
 }
 
-static int getlabelRFGAIN(void * ctx, char * buff, size_t count)
+static int getlabelRFGAIN(const void * ctx, char * buff, size_t count)
 {
-	const struct paramdefdef * const pd = & xrfgain1;
+	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
 	const int_fast32_t value = param_getvalue(pd);
 	int n = 0;
 	n += local_snprintf_P(buff + n, count - n, "RF ");
@@ -7650,46 +7650,46 @@ static int getlabelRFGAIN(void * ctx, char * buff, size_t count)
 	return n;
 }
 
-static int getlabelAGCFENCE(void * ctx, char * buff, size_t count)
+static int getlabelAGCFENCE(const void * ctx, char * buff, size_t count)
 {
-	const struct paramdefdef * const pd = & xagcfence1;
+	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
 	const int_fast32_t value = param_getvalue(pd);
 	return local_snprintf_P(buff, count, "AGC %+d", (int) value);
 }
 
 
-static int getlabelRFGAINsss(void * ctx, char * buff, size_t count)
+static int getlabelRFGAINsss(const void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = & xrfgain1;
 	const int_fast32_t value = param_getvalue(pd);
 	return local_snprintf_P(buff, count, "RF %2d", (int) value);
 }
 
-static int getlabelENC2F(void * ctx, char * buff, size_t count)
+static int getlabelENC2F(const void * ctx, char * buff, size_t count)
 {
 	return local_snprintf_P(buff, count, "ENC2F");
 }
 
-static int getlabelENC3F(void * ctx, char * buff, size_t count)
+static int getlabelENC3F(const void * ctx, char * buff, size_t count)
 {
 	return local_snprintf_P(buff, count, "ENC3F");
 }
 
-static int getlabelENC4F(void * ctx, char * buff, size_t count)
+static int getlabelENC4F(const void * ctx, char * buff, size_t count)
 {
 	return local_snprintf_P(buff, count, "ENC4F");
 }
 
 static const encfnitem_t enclabelsENC1FN [] =
 {
-	{ NULL, getlabelAFGAIN, },
-	{ NULL, getlabelRFGAIN, },
-	{ NULL, getlabelAGCFENCE, },
+	{ & xafgain1, getlabelAFGAIN, },
+	{ & xrfgain1, getlabelRFGAIN, },
+	{ & xagcfence1, getlabelAGCFENCE, },
 };
 
 static const encfnitem_t enclabelsENC2FN [] =
 {
-	{ NULL, getlabelENC2F, },
+	{ & xafgain2, getlabelAFGAIN, },
 };
 
 static const encfnitem_t enclabelsENC3FN [] =
