@@ -127,7 +127,8 @@ static uint_fast8_t 	glob_wnb;	// Noise blanker enable (NB)
 static int_fast16_t 	glob_wnbfence10;	// 0.1 dB step noise blanker fence (dbFS)
 
 // codec-related parameters
-static uint_fast16_t 	glob_afgain;
+static uint_fast16_t 	glob_afgainL;
+static uint_fast16_t 	glob_afgainR;
 static uint_fast8_t 	glob_afmute;	/* отключить звук в наушниках и динамиках */
 static uint_fast8_t		glob_lineinput;	/* используется line input вместо микрофона */
 static uint_fast8_t 	glob_mikeboost20db;	/* Включение усилителя 20 дБ за микрофоном */
@@ -5697,8 +5698,8 @@ prog_codec1reg(void)
 {
 #if defined(CODEC1_TYPE)
 	const codec1if_t * const ifc1 = board_getaudiocodecif();
-	const uint_fast16_t gainL = glob_afgain;
-	const uint_fast16_t gainR = glob_afgain;
+	const uint_fast16_t gainL = glob_afgainL;
+	const uint_fast16_t gainR = glob_afgainR;
 
 	// also use glob_mik1level
 	ifc1->setvolume(gainL, gainR, glob_afmute, glob_dsploudspeaker_off);
@@ -6065,11 +6066,12 @@ board_set_mik1level(uint_fast16_t n)	/* усиление микрофонног�
 
 // Параметр для регулировки уровня на выходе аудио-ЦАП
 void
-board_set_afgain(uint_fast16_t v)
+board_set_afgain(uint_fast16_t gainL, uint_fast16_t gainR)
 {
-	if (glob_afgain != v)
+	if (glob_afgainL != gainL || glob_afgainL != gainR)
 	{
-		glob_afgain = v;
+		glob_afgainL = gainL;
+		glob_afgainR = gainR;
 		board_codec1regchanged();
 	}
 }

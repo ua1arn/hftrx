@@ -4056,7 +4056,8 @@ struct nvmap {
 	uint16_t gsquelchNFM;	/* sуровень открытия шумоподавителя для NFM */
 	uint16_t gfsadcpower10 [2];	/*	Мощность, соответствующая full scale от IF ADC (с тояностью 0.1 дБмВт */
 	#if ! WITHPOTAFGAIN
-		uint16_t afgain1;	// Параметр для регулировки уровня на выходе аудио-ЦАП
+	uint16_t afgain1;	// Параметр для регулировки уровня на выходе аудио-ЦАП
+	uint16_t afgain2;	// Параметр для регулировки уровня на выходе аудио-ЦАП
 	#endif /* ! WITHPOTAFGAIN */
 	#if ! WITHPOTIFGAIN
 		uint16_t rfgain1;	// Параметр для регулировки усиления по ПЧ
@@ -5493,6 +5494,31 @@ enum
 #endif /* WITHPOTAFGAIN */
 		getselector0, nvramoffs0, valueoffs0,
 		& afgain1.value,	/* переменная, которую подстраиваем  - если она 16 бит*/
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
+#if defined WITHAFGAINDEFAULT
+	static dualctl16_t afgain2 = { WITHAFGAINDEFAULT, WITHAFGAINDEFAULT };
+#elif defined WITHPOTAFGAIN
+	static dualctl16_t afgain2 = { BOARD_AFGAIN_MIN, BOARD_AFGAIN_MIN };	// Усиление НЧ на максимуме
+#else
+	static dualctl16_t afgain2 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
+#endif /* defined WITHAFGAINDEFAULT */
+	// Громкость в процентах
+	static const struct paramdefdef xafgain2 =
+	{
+		QLABEL3("AF Gain R", "Volume R", "VOLUMER"), 0, RJ_PERCENTS, ISTEP1,
+		ITEM_VALUE,
+		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
+#if WITHPOTAFGAIN
+		MENUNONVRAM,
+#else /* WITHPOTAFGAIN */
+		OFFSETOF(struct nvmap, afgain2),
+#endif /* WITHPOTAFGAIN */
+		getselector0, nvramoffs0, valueoffs0,
+		& afgain2.value,	/* переменная, которую подстраиваем  - если она 16 бит*/
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
@@ -13328,7 +13354,10 @@ updateboard_noui(
 	#endif /* WITHELKEY */
 
 	#if WITHIF4DSP
-		board_set_afgain(sleepflag == 0 ? param_getvalue(& xafgain1) : BOARD_AFGAIN_MIN);	// Параметр для регулировки уровня на выходе аудио-ЦАП
+		board_set_afgain(
+				sleepflag == 0 ? param_getvalue(& xafgain1) : BOARD_AFGAIN_MIN,	// Параметр для регулировки уровня на выходе аудио-ЦАП
+				sleepflag == 0 ? param_getvalue(& xafgain2) : BOARD_AFGAIN_MIN
+						);
 		board_set_ifgain(sleepflag == 0  ? param_getvalue(& xrfgain1) : BOARD_IFGAIN_MIN);	// Параметр для регулировки усиления ПЧ
 		board_set_agcfence10(param_getvalue(& xagcfenceenable) ? param_getvalue(& xagcfence1) * 10 : INT16_MAX);
 
