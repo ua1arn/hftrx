@@ -376,7 +376,9 @@
 #if WITHIF4DSP
 	#if ! WITHPOTAFGAIN
 	& xafgain1,	// Громкость в процентах
+#if WITHUSEDUALWATCH
 	& xafgain2,	// Громкость в процентах
+#endif /* WITHUSEDUALWATCH */
 	#endif /* ! WITHPOTAFGAIN */
 	#if ! WITHPOTIFGAIN
 	& xrfgain1,	// Усиление ПЧ/ВЧ в процентах

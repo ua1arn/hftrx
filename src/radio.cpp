@@ -5476,15 +5476,19 @@ enum
 
 #if defined WITHAFGAINDEFAULT
 	static dualctl16_t afgain1 = { WITHAFGAINDEFAULT, WITHAFGAINDEFAULT };
+	static dualctl16_t afgain2 = { WITHAFGAINDEFAULT, WITHAFGAINDEFAULT };
 #elif defined WITHPOTAFGAIN
 	static dualctl16_t afgain1 = { BOARD_AFGAIN_MIN, BOARD_AFGAIN_MIN };	// Усиление НЧ на максимуме
+	static dualctl16_t afgain2 = { BOARD_AFGAIN_MIN, BOARD_AFGAIN_MIN };	// Усиление НЧ на максимуме
 #else
 	static dualctl16_t afgain1 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
+	static dualctl16_t afgain2 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
 #endif /* defined WITHAFGAINDEFAULT */
+
 	// Громкость в процентах
 	static const struct paramdefdef xafgain1 =
 	{
-		QLABEL3("AF Gain", "Volume", "VOLUME"), 0, RJ_PERCENTS, ISTEP1,
+		QLABEL3("VolumeL", "Volume Left", "VOLUME_L"), 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 #if WITHPOTAFGAIN
@@ -5498,18 +5502,10 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-
-#if defined WITHAFGAINDEFAULT
-	static dualctl16_t afgain2 = { WITHAFGAINDEFAULT, WITHAFGAINDEFAULT };
-#elif defined WITHPOTAFGAIN
-	static dualctl16_t afgain2 = { BOARD_AFGAIN_MIN, BOARD_AFGAIN_MIN };	// Усиление НЧ на максимуме
-#else
-	static dualctl16_t afgain2 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
-#endif /* defined WITHAFGAINDEFAULT */
 	// Громкость в процентах
 	static const struct paramdefdef xafgain2 =
 	{
-		QLABEL3("AF Gain R", "Volume R", "VOLUMER"), 0, RJ_PERCENTS, ISTEP1,
+		QLABEL3("VolumeR", "Volume Right", "VOLUME_R"), 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 #if WITHPOTAFGAIN
@@ -10239,6 +10235,9 @@ static const struct paramdefdef * enc2menus [] =
 	& xgsquareness10,	/* Коэффициент прямоугольности фильтра в десятых долях */
 #if ! WITHPOTAFGAIN
 	& xafgain1,	// Громкость в процентах
+#if WITHUSEDUALWATCH
+	& xafgain2,	// Громкость в процентах
+#endif /* WITHUSEDUALWATCH */
 #endif /* ! WITHPOTAFGAIN */
 #if ! WITHPOTIFGAIN
 	& xrfgain1,	// Усиление ПЧ/ВЧ в процентах
@@ -19701,13 +19700,13 @@ processmainloopkeyboard(inputevent_t * ev)
 		return 1;	/* клавиша уже обработана */
 #if ! WITHPOTAFGAIN
 	case KBD_CODE_PLAYLOUD:	// громче
-		if (param_rotate(& xafgain1, + 1))
+		if (param_rotate(& xafgain1, + 1) | param_rotate(& xafgain2, + 1))
 		{
 			updateboard();
 		}
 		return 1;
 	case KBD_CODE_PLAYQUITE:	// тише
-		if (param_rotate(& xafgain1, - 1))
+		if (param_rotate(& xafgain1, - 1) | param_rotate(& xafgain2, - 1))
 		{
 			updateboard();
 		}
