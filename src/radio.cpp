@@ -13934,8 +13934,8 @@ static void uif_key_click_memo(void)
 
 	// Выбрать следующую ячейку
 	const nvramaddress_t miload = OFFSETOF(struct nvmap, bandprops [b].miload [bi]);
-	const uint_fast8_t mi = calc_next(loadvfy8up(miload, 0, WITHBANDMEMCOUNT - 1, 0), 0, WITHBANDMEMCOUNT - 1);
-	save_i8(miload, mi);
+	const uint_fast8_t mi = loadvfy8up(miload, 0, WITHBANDMEMCOUNT - 1, 0);
+	save_i8(miload, calc_prev(mi, 0, WITHBANDMEMCOUNT - 1));
 
 	// сохранить текушее состояние
 	verifyband(b);
