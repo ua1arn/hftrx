@@ -13354,10 +13354,26 @@ updateboard_noui(
 	#endif /* WITHELKEY */
 
 	#if WITHIF4DSP
-		board_set_afgain(
-				sleepflag == 0 ? param_getvalue(& xafgain1) : BOARD_AFGAIN_MIN,	// Параметр для регулировки уровня на выходе аудио-ЦАП
-				sleepflag == 0 ? param_getvalue(& xafgain2) : BOARD_AFGAIN_MIN
-						);
+			{
+				int_fast32_t gainL = param_getvalue(& xafgain1);
+				int_fast32_t gainR = param_getvalue(& xafgain2);
+				switch (mainsubrxmodes [param_getvalue(& xdwatchmode)].code)
+				{
+				default:
+				case BOARD_RXMAINSUB_TWO:
+				case BOARD_RXMAINSUB_A_A:
+				case BOARD_RXMAINSUB_B_B:
+					gainR = gainL;
+					break;
+				case BOARD_RXMAINSUB_A_B:
+				case BOARD_RXMAINSUB_B_A:
+					break;
+				}
+				board_set_afgain(
+						sleepflag == 0 ? gainL : BOARD_AFGAIN_MIN,	// Параметр для регулировки уровня на выходе аудио-ЦАП
+						sleepflag == 0 ? gainR : BOARD_AFGAIN_MIN
+								);
+			}
 		board_set_ifgain(sleepflag == 0  ? param_getvalue(& xrfgain1) : BOARD_IFGAIN_MIN);	// Параметр для регулировки усиления ПЧ
 		board_set_agcfence10(param_getvalue(& xagcfenceenable) ? param_getvalue(& xagcfence1) * 10 : INT16_MAX);
 
@@ -14981,6 +14997,8 @@ static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * 
 			default:
 				break;
 			case 0:
+				/* установка громкости */
+				changed |= encoder_flagne(& xafgain2, delta, CATINDEX(CAT_AG_INDEX), NULL);
 				break;
 			}
 		}
@@ -16817,7 +16835,7 @@ processcatmsg(
 				//const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
 				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), 0, 255, 255);
 				const unsigned p2board = p2 * (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) / 255 + BOARD_AFGAIN_MIN;	// масштабирование кода от CAT (0..255) во внутренний диапазоны
-				if (flagne_u16(& afgain1.value, p2board))
+				if (flagne_u16(& afgain1.value, p2board) | flagne_u16(& afgain2.value, p2board))
 				{
 					updateboard();	/* полная перенастройка (как после смены режима) */
 					rc = 1;
