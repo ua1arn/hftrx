@@ -13355,7 +13355,11 @@ updateboard_noui(
 	#if WITHIF4DSP
 			{
 				int_fast32_t gainL = param_getvalue(& xafgain1);
+#if WITHENCODER_2F
 				int_fast32_t gainR = param_getvalue(& xafgain2);
+#else /* WITHENCODER_2F */
+				int_fast32_t gainR = geinL;
+#endif /* WITHENCODER_2F */
 				switch (mainsubrxmodes [param_getvalue(& xdwatchmode)].code)
 				{
 				default:
