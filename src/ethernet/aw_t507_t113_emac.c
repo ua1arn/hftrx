@@ -202,7 +202,7 @@ static void ethernetif_poll(struct netif *netif) {
  * @param p Pointer to the allocated lwIP packet buffer containing data frames.
  * @return ERR_OK on success, ERR_MEM if the TX ring is saturated.
  */
-err_t alw_low_level_output(struct netif *netif, struct pbuf *p) {
+err_t XXXalw_low_level_output(struct netif *netif, struct pbuf *p) {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
 	TP();
     struct emac_dma_tx_desc *current_desc;
@@ -354,6 +354,7 @@ int nic_can_send(void)
 
 void nic_send(const uint8_t * data, int isize)
 {
+    //unsigned size = pbuf_copy_partial(p, (uint8_t *) (uintptr_t) emac_txdesc [i].buf_addr, EMAC_MAX_PACKET_SIZE, 0);
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
     int i = 0;
 
@@ -387,13 +388,12 @@ void nic_send(const uint8_t * data, int isize)
 //		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
 		(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 		0;
-	emac_txdesc [i].buf_addr = (uintptr_t) txbuffs [i];	// BUF_ADDR
-	emac_txdesc [i].next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
+	//emac_txdesc [i].buf_addr = (uintptr_t) txbuffs [i];	// BUF_ADDR
+	//emac_txdesc [i].next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
 
 	dcache_clean((uintptr_t) txbuffs [i], sizeof txbuffs [i]);
 
 	dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
-	emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) & emac_txdesc [i];
 
 	emac_peripheral->EMAC_TX_CTL0 =
 		1 * (UINT32_C(1) << 31) |	// TX_EN
@@ -401,23 +401,13 @@ void nic_send(const uint8_t * data, int isize)
 		0;
 
 	//emac_peripheral->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
-	emac_peripheral->EMAC_TX_CTL1 = EMAC_TX_CTL1_TX_MD_FORW;
-	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_MD_FORW;	// TX_MD 1: TX start after TX DMA FIFO located a full frame
-	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
 	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 	while (emac_peripheral->EMAC_TX_CTL1 & (UINT32_C(1) << 31))
 		;
 }
 
-static err_t XXXlow_level_output(struct netif *netif, struct pbuf *p) {
-	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
-	TP();
-    struct emac_dma_tx_desc *current_desc;
-    struct pbuf *q;
-    uint32_t total_bytes = 0;
-    uint8_t *dst_ptr;
-
-    (void)netif;
+err_t alw_low_level_output(struct netif *netif, struct pbuf *p) {
+	return ERR_OK;
 }
 
 static void emac_nohandler(void * ctx)
@@ -787,8 +777,8 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 				1 * (UINT32_C(1) << 0) |	// RX_ALL
 				0;
 
-		emac_peripheral->EMAC_RX_DMA_DESC_LIST = (uintptr_t) emac_rxdesc;
 	}
+	emac_peripheral->EMAC_RX_DMA_DESC_LIST = (uintptr_t) emac_rxdesc;
 	dcache_clean((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
 	dcache_clean((uintptr_t) rxbuffs, sizeof rxbuffs);
 
@@ -805,6 +795,7 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 			0;
 		emac_txdesc [i].buf_addr = (uintptr_t) txbuffs [i];	// BUF_ADDR
 		emac_txdesc [i].next_desc = (uintptr_t) & emac_txdesc [(i + 1) % ARRAY_SIZE(emac_txdesc)];	// NEXT_DESC_ADDR
+		emac_txdesc [i].next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
 		//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
 
 		//emac_peripheral->EMAC_RX_CTL0 = 0xb8000000;
@@ -847,6 +838,10 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
     }
     {
     	// TX
+		emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) emac_txdesc;
+    	emac_peripheral->EMAC_TX_CTL1 = EMAC_TX_CTL1_TX_MD_FORW;
+    	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_MD_FORW;	// TX_MD 1: TX start after TX DMA FIFO located a full frame
+    	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
     }
 
     if (port_index > 1) {
@@ -965,6 +960,7 @@ void nic_initialize(struct netif *netif)
 		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 		//on_packet = nic_on_packet;
 		//arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
+		netif->linkoutput = alw_low_level_output;//nic_linkoutput_fn;	// используется внутри etharp_output
 		{
 			static dpcobj_t nic_dpc_entry;
 			dpcobj_initialize(& nic_dpc_entry, emac_nohandler, netif);
