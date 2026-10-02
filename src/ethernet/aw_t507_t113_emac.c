@@ -340,12 +340,6 @@ static err_t allwinner_emac_init_port(EMAC_TypeDef *emac_peripheral, struct neti
     return ERR_OK;
 }
 
-
-
-
-
-
-
 static uint8_t rxbuff [EMAC_MAX_PACKET_SIZE];
 static __ALIGNED(4) struct emac_dma_rx_desc emac_rxdesc [1];
 static uint8_t txbuff [EMAC_MAX_PACKET_SIZE];
@@ -711,6 +705,7 @@ static void allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct neti
 //				1 * (UINT32_C(1) << 8) |	// LAST_DESC
 			0;
 		emac_rxdesc [i].control =
+				DESC_RX_CHAINED |
 				(EMAC_MAX_PACKET_SIZE & DESC_RX_BUF_SIZE_MASK) |	// 10:0 BUF_SIZE
 				//len * (UINT32_C(1) << 0) |
 			0;
@@ -730,7 +725,7 @@ static void allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct neti
 			1 * (UINT32_C(1) << 31) |	// RX_EN
 			//1 * (UINT32_C(1) << 29) |	// JUMBO_FRM_EN
 			//1 * (UINT32_C(1) << 28) |	// STRIP_FCS
-			1 * (UINT32_C(1) << 27) |	// CHECK_CRC 1: Calculate CRC and check the IPv4 Header Checksum.
+	//		1 * (UINT32_C(1) << 27) |	// CHECK_CRC 1: Calculate CRC and check the IPv4 Header Checksum.
 			0;
 		emac_peripheral->EMAC_RX_CTL1 =
 				1 * (UINT32_C(1) << 1) |	// 1: RX start read after RX DMA FIFO located a full frame
