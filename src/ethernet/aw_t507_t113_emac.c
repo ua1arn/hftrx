@@ -395,10 +395,6 @@ void nic_send(const uint8_t * data, int isize)
 
 	dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
 
-	emac_peripheral->EMAC_TX_CTL0 =
-		1 * (UINT32_C(1) << 31) |	// TX_EN
-		//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
-		0;
 
 	//emac_peripheral->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
 	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
@@ -842,6 +838,11 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
     	emac_peripheral->EMAC_TX_CTL1 = EMAC_TX_CTL1_TX_MD_FORW;
     	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_MD_FORW;	// TX_MD 1: TX start after TX DMA FIFO located a full frame
     	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
+
+    	emac_peripheral->EMAC_TX_CTL0 =
+    		1 * (UINT32_C(1) << 31) |	// TX_EN
+    		//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
+    		0;
     }
 
     if (port_index > 1) {
