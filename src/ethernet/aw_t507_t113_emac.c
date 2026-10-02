@@ -402,6 +402,58 @@ void nic_send(const uint8_t * data, int isize)
 		;
 }
 
+
+static void emac_nohandler(void * ctx)
+{
+	struct netif * const netif = (struct netif *) ctx;
+	unsigned i = 0;
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
+//	const portholder_t sta = emac_peripheral->EMAC_INT_STA;
+//	emac_peripheral->EMAC_INT_STA = sta;//(UINT32_C(1) << 8);	// RX_P
+	//if (sta & ((UINT32_C(1) << 8)))	// RX_P
+	{
+		dcache_clean_invalidate((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
+		if (emac_rxdesc [i].status & (UINT32_C(1) << 31))
+			return;
+
+
+		//TP();
+        int len = (emac_rxdesc [i].status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
+		//printhex(0, (uint8_t *)(uintptr_t) emac_rxdesc [i].buf_addr, len);
+		struct pbuf *frame = pbuf_alloc(PBUF_RAW, len + ETH_PAD_SIZE, PBUF_POOL);
+		if (frame == NULL)
+		{
+			TP();
+			return;
+		}
+		VERIFY(0 == pbuf_header(frame, - ETH_PAD_SIZE));
+		err_t e = pbuf_take(frame, (uint8_t *)(uintptr_t) emac_rxdesc [i].buf_addr, len);
+		VERIFY(0 == pbuf_header(frame, + ETH_PAD_SIZE));
+		if (e == ERR_OK)
+		{
+			err_t e = ethernet_input(frame, netif);
+			if (e != ERR_OK)
+			{
+				  /* This means the pbuf is freed or consumed,
+				     so the caller doesn't have to free it again */
+			}
+		}
+		else
+		{
+			pbuf_free(frame);
+		}
+
+		dcache_clean_invalidate((uintptr_t) rxbuff, sizeof rxbuff);
+		emac_rxdesc [i].status =
+			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
+	//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
+	//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
+			0;
+		dcache_clean((uintptr_t) & emac_rxdesc [i], sizeof emac_rxdesc [i]);
+	}
+
+}
+
 static void EMAC_Handler(void)
 {
 	unsigned i = 0;
@@ -890,12 +942,12 @@ void nic_initialize(struct netif *netif)
 	if (1)
 	{
 		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
-		on_packet = nic_on_packet;
-		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
+		//on_packet = nic_on_packet;
+		//arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 		{
 			static dpcobj_t nic_dpc_entry;
-			dpcobj_initialize(& nic_dpc_entry, board_nic_dpc, netif);
-			//board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
+			dpcobj_initialize(& nic_dpc_entry, emac_nohandler, netif);
+			board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
 
 		}
 	}
