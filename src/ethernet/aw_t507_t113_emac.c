@@ -628,7 +628,7 @@ static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct 
 }
 
 
-static void allwinner_emac_hw_initialize(void)
+static void allwinner_emac_ccu_init(void)
 {
 	const unsigned ix = HARDWARE_EMAC_IX;	// 0: HARDWARE_EMAC_PTR, 1: EMAC1
 	CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((0 + ix)));	// Gating Clock for EMACx
@@ -639,45 +639,52 @@ static void allwinner_emac_hw_initialize(void)
 	//CCU->EMAC_25M_CLK_REG |= (UINT32_C(1) << 31) | (UINT32_C(1) << 30);	// moved to HARDWARE_ETH_INITIALIZE
 
 	HARDWARE_ETH_INITIALIZE();	// Должно быть тут - снять ресет с PHY до инициализации
-	{
-		// The working clock of EMAC is from AHB3.
+}
+
+static void allwinner_emac_phy_init(void)
+{
+	// The working clock of EMAC is from AHB3.
 #if (CPUSTYLE_T507)
-		HARDWARE_EMAC_EPHY_CLK_REG =
-			0x00051c06 | // 0x00051c06 0x00053c01
-			0;
-		//PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
-		//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, 256);
+	HARDWARE_EMAC_EPHY_CLK_REG =
+		0x00051c06 | // 0x00051c06 0x00053c01
+		0;
+	//PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
+	//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, 256);
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
-		HARDWARE_EMAC_EPHY_CLK_REG =
-			1 * (UINT32_C(1) << 13) |
-			0;
+	HARDWARE_EMAC_EPHY_CLK_REG =
+		1 * (UINT32_C(1) << 13) |
+		0;
 #endif
-		// Сигнал phyrstb тут уже должен бьыть неактивен
+	// Сигнал phyrstb тут уже должен бьыть неактивен
 
-		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
-		while ((HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
-			;
+	HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
+	while ((HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
+		;
 
-		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 =
-			//0x03 * (UINT32_C(1) << 2) |	// SPEED - 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
-			//0x01 * (UINT32_C(1) << 0) | // DUPLEX - 1: Full-duplex
-			0;
-		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 =
-			0x08 * (UINT32_C(1) << 24) |	// BURST_LEN - The burst length of RX and TX DMA transfer.
-			0;
+	HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 =
+		//0x03 * (UINT32_C(1) << 2) |	// SPEED - 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
+		//0x01 * (UINT32_C(1) << 0) | // DUPLEX - 1: Full-duplex
+		0;
+	HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 =
+		0x08 * (UINT32_C(1) << 24) |	// BURST_LEN - The burst length of RX and TX DMA transfer.
+		0;
 
 //			PRINTF("EMAC_BASIC_CTL0=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0);
 //			PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
 //			PRINTF("EMAC_RGMII_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RGMII_STA);
 
 
-		const uint8_t hwaddr [6] = { HWADDR };
-		// ether 1A:0C:74:06:AF:64
-//		HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = 0x000064AF;
-//		HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = 0x06740C1A;
-		HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = USBD_peek_u16(hwaddr + 4);	// upper 16 bits of the first 6-byte MAC address
-		HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = USBD_peek_u32(hwaddr + 0);	// lower 32 bits of the 6-byte first MAC address
-	}
+//	const uint8_t hwaddr [6] = { HWADDR };
+//	// ether 1A:0C:74:06:AF:64
+////		HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = 0x000064AF;
+////		HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = 0x06740C1A;
+//	HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = USBD_peek_u16(hwaddr + 4);	// upper 16 bits of the first 6-byte MAC address
+//	HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = USBD_peek_u32(hwaddr + 0);	// lower 32 bits of the 6-byte first MAC address
+}
+
+static void allwinner_emac_init_port0(void)
+{
+
 	// RX init
 	{
 		unsigned len = EMAC_FRAMESZ;
@@ -756,8 +763,12 @@ static void board_nic_dpc(void * ctx)
 void nic_initialize(struct netif *netif)
 {
 	//PRINTF("nic_initialize start\n");
-	allwinner_emac_hw_initialize();
+	allwinner_emac_ccu_init();
+	allwinner_emac_phy_init();
+
+	allwinner_emac_init_port0();
 	//allwinner_emac_init_port(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
+
 	on_packet = nic_on_packet;
 	//PRINTF("nic_initialize done\n");
 	{
