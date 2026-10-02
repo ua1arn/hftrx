@@ -325,6 +325,7 @@ static void lwip_1s_spool(void * ctx)
 {
 	(void) ctx;
 	sys_check_timeouts();
+	nic_linkspool(ctx);
 }
 
 
@@ -677,7 +678,7 @@ void network_initialize(void)
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, lwip_1s_spool, NULL);
+		dpcobj_initialize(& dpcobj, lwip_1s_spool, & nic_netif_data);
 		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
 		ticker_add(& ticker);
 	}

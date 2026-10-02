@@ -807,6 +807,7 @@ void stpmic1_dump_regulators(void);
 void nic_initialize(void);
 int nic_can_send(void);
 void nic_send(const uint8_t * data, int size);
+void nic_linkspool(void * ctx);
 
 void nic_on_packet(const uint8_t *data, int size);	// использование приянтого от сети пакета
 typedef void (*nic_rxproc_t)(const uint8_t *data, int size);

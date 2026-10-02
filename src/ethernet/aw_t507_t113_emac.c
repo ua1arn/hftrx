@@ -120,6 +120,141 @@ static void EMAC_Handler(void)
 	}
 }
 
+/////////////////
+/// AI-generated
+///
+
+#include "lwip/netif.h"
+#include "lwip/timeouts.h"
+
+/* Realtek RTL8211F PHY Registers */
+#define RTL8211F_PHYSR          26	// PHYSR (PHY Specific Status Register, Page 0xa43, Address 0x1A)
+
+/* RTL8211F PHYSR (Register 26) Bit Definitions */
+#define PHYSR_LINK_STATUS       (1 << 2)
+#define PHYSR_DUPLEX_STATUS     (1 << 3)
+#define PHYSR_SPEED_MASK        (3 << 4)
+#define PHYSR_SPEED_10          (0 << 4)
+#define PHYSR_SPEED_100         (1 << 4)
+#define PHYSR_SPEED_1000        (2 << 4)
+
+/* Allwinner EMAC Register Offsets and Base Addresses */
+//#define SYS_CTRL_BASE           0x01C00000
+//#define EMAC_CLK_REG            (*(volatile uint32_t *)(SYS_CTRL_BASE + 0x30))
+//
+//#define EMAC_BASE               0x01C30000
+//#define EMAC_BASIC_CTL_0        (*(volatile uint32_t *)(EMAC_BASE + 0x00))
+//#define EMAC_MII_CMD            (*(volatile uint32_t *)(EMAC_BASE + 0x48))
+//#define EMAC_MII_DATA           (*(volatile uint32_t *)(EMAC_BASE + 0x4C))
+
+/* Allwinner EMAC Bit Definitions */
+#define EMAC_MII_BUSY           (1 << 0)
+#define EMAC_MII_WRITE          (1 << 1)
+#define EMAC_MII_CLK_DIV_64     (2 << 2)
+
+#define EMAC_CTL_SPEED_1000     (0 << 2)
+#define EMAC_CTL_SPEED_100      (3 << 2)
+#define EMAC_CTL_SPEED_10       (2 << 2)
+#define EMAC_CTL_DUPLEX_FULL    (1 << 0)
+
+/* Internal driver states */
+static uint8_t last_link_state = 0xFF;
+
+/**
+ * @brief Reads a 16-bit register from the PHY via MDIO interface.
+ */
+static uint16_t emac_mdio_read(uint8_t phy_addr, uint8_t reg_addr) {
+    /* Wait until MDIO interface is idle */
+    while (HARDWARE_EMAC_PTR->EMAC_MII_CMD & EMAC_MII_BUSY);
+
+    /* Form read command with safe clock divider */
+    uint32_t cmd = ((phy_addr & 0x1F) << 16) |
+                   ((reg_addr & 0x1F) << 4)  |
+                   EMAC_MII_CLK_DIV_64       |
+                   EMAC_MII_BUSY;
+
+    HARDWARE_EMAC_PTR->EMAC_MII_CMD = cmd;
+
+    /* Wait for command execution completion */
+    while (HARDWARE_EMAC_PTR->EMAC_MII_CMD & EMAC_MII_BUSY);
+
+    return (uint16_t)(HARDWARE_EMAC_PTR->EMAC_MII_DATA & 0xFFFF);
+}
+
+/**
+ * @brief Updates Allwinner EMAC and SYS_CTRL clocks based on speed and duplex.
+ */
+static void allwinner_emac_update_link(uint32_t speed, uint32_t is_full_duplex) {
+    uint32_t clk_val = HARDWARE_EMAC_EPHY_CLK_REG;
+    uint32_t ctl_val = HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0;
+    PRINTF("allwinner_emac_update_link: speed=%u, is_full_duplex=%u\n", speed, is_full_duplex);
+
+    /* Clear existing speed and duplex bits */
+    ctl_val &= ~((3 << 2) | (1 << 0));
+
+    if (is_full_duplex) {
+        ctl_val |= EMAC_CTL_DUPLEX_FULL;
+    }
+
+    /* Configure RGMII clock dividers in CCU and EMAC basic parameters */
+    if (speed == 1000) {
+        ctl_val |= EMAC_CTL_SPEED_1000;
+        clk_val &= ~(0x7 << 8); /* Clear TX Clock divider for 125 MHz */
+        clk_val |= (0 << 8);    /* Divider /1 for Gigabit RGMII */
+    }
+    else if (speed == 100) {
+        ctl_val |= EMAC_CTL_SPEED_100;
+        clk_val &= ~(0x7 << 8);
+        clk_val |= (4 << 8);    /* Divider /5 for 25 MHz RGMII */
+    }
+    else if (speed == 10) {
+        ctl_val |= EMAC_CTL_SPEED_10;
+        clk_val &= ~(0x7 << 8);
+        clk_val |= (49 << 8);   /* Divider /50 for 2.5 MHz RGMII */
+    }
+
+    HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 = ctl_val;
+    //HARDWARE_EMAC_EPHY_CLK_REG = clk_val;
+}
+
+/**
+ * @brief Periodically monitors RTL8211F Auto-Negotiation and updates lwIP.
+ */
+static void check_ethernet_link_status(struct netif *netif) {
+    /* Read vendor-specific register 26 */
+    uint16_t physr = emac_mdio_read(RTL8211F_PHY_ADDR, RTL8211F_PHYSR);
+
+    /* Parse actual Link Status from Bit 2 */
+    uint8_t link_up = (physr & PHYSR_LINK_STATUS) ? 1 : 0;
+
+    if (link_up != last_link_state) {
+        if (link_up) {
+            /* Link established. Extract speed (Bits 5:4) and duplex (Bit 3) */
+            uint8_t speed_bits = physr & PHYSR_SPEED_MASK;
+            uint8_t duplex_bit = (physr & PHYSR_DUPLEX_STATUS) ? 1 : 0;
+
+            uint32_t speed = 100;
+            if (speed_bits == PHYSR_SPEED_10)       speed = 10;
+            else if (speed_bits == PHYSR_SPEED_100)  speed = 100;
+            else if (speed_bits == PHYSR_SPEED_1000) speed = 1000;
+
+            /* Apply hardware speed adjustments to Allwinner EMAC and CCU */
+            allwinner_emac_update_link(speed, duplex_bit);
+
+            /* Notify lwIP core stack */
+            netif_set_link_up(netif);
+            if (!netif_is_up(netif)) {
+                netif_set_up(netif);
+            }
+        } else {
+            /* Link disconnected */
+            netif_set_link_down(netif);
+        }
+        last_link_state = link_up;
+    }
+}
+
+
 static void emac_hw_initialize(void)
 {
 	const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
@@ -151,11 +286,7 @@ static void emac_hw_initialize(void)
 			;
 
 		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 =
-#if WITHETH1G
 			//0x03 * (UINT32_C(1) << 2) |	// SPEED - 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
-#else /* WITHETH1G */
-			0x03 * (UINT32_C(1) << 2) |	// SPEED - 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
-#endif /* WITHETH1G */
 			0x01 * (UINT32_C(1) << 0) | // DUPLEX - 1: Full-duplex
 			0;
 		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 =
@@ -248,6 +379,12 @@ void nic_initialize(void)
 	on_packet = nic_on_packet;
 	//PRINTF("nic_initialize done\n");
 
+}
+
+void nic_linkspool(void * ctx)
+{
+	struct netif * const netif = (struct netif *) ctx;
+	check_ethernet_link_status(netif);
 }
 
 #endif /* WITHLWIP && WITHETHHW && (CPUSTYLE_T507) */
