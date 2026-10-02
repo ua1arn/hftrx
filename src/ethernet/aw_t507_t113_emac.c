@@ -406,15 +406,16 @@ void nic_send(const uint8_t * data, int isize)
 static void emac_nohandler(void * ctx)
 {
 	struct netif * const netif = (struct netif *) ctx;
-	unsigned i = 0;
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
 //	const portholder_t sta = emac_peripheral->EMAC_INT_STA;
 //	emac_peripheral->EMAC_INT_STA = sta;//(UINT32_C(1) << 8);	// RX_P
 	//if (sta & ((UINT32_C(1) << 8)))	// RX_P
+	dcache_clean_invalidate((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(emac_rxdesc); ++ i)
 	{
-		dcache_clean_invalidate((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
 		if (emac_rxdesc [i].status & (UINT32_C(1) << 31))
-			return;
+			continue;
 
 
 		//TP();
@@ -424,7 +425,7 @@ static void emac_nohandler(void * ctx)
 		if (frame == NULL)
 		{
 			TP();
-			return;
+			continue;
 		}
 		VERIFY(0 == pbuf_header(frame, - ETH_PAD_SIZE));
 		err_t e = pbuf_take(frame, (uint8_t *)(uintptr_t) emac_rxdesc [i].buf_addr, len);
@@ -451,7 +452,6 @@ static void emac_nohandler(void * ctx)
 			0;
 		dcache_clean((uintptr_t) & emac_rxdesc [i], sizeof emac_rxdesc [i]);
 	}
-
 }
 
 //static void EMAC_Handler(void)
@@ -772,6 +772,9 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 
 		emac_peripheral->EMAC_RX_DMA_DESC_LIST = (uintptr_t) emac_rxdesc;
 	}
+	dcache_clean((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
+	dcache_clean((uintptr_t) rxbuffs, sizeof rxbuffs);
+
 	// TX init
 	for (i = 0; i < ARRAY_SIZE(emac_txdesc); ++ i)
 	{
@@ -793,7 +796,8 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 
 		//emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 	}
-
+	dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
+	dcache_clean((uintptr_t) txbuffs, sizeof txbuffs);
 
     /* Setup safe default speed and duplex in Basic configuration */
     //emac_peripheral->EMAC_BASIC_CTL0 = EMAC_BASIC_CTL0_SPEED_100 | EMAC_BASIC_CTL0_DUPLEX;
