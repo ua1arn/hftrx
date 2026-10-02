@@ -33,6 +33,8 @@ static nic_rxproc_t on_packet;
 //#define EMAC_HEADER_SIZE               (sizeof (emac_data_packet_t))
 //#define EMAC_RX_BUFFER_SIZE            (EMAC_HEADER_SIZE + ETH_MAX_PACKET_SIZE)
 
+static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct netif *netif, uint8_t port_index);
+
 enum { EMAC_FRAMESZ = 2048 - 4 };
 static RAMNC uint8_t rxbuff [EMAC_FRAMESZ];
 static RAMNC __ALIGNED(4) uint32_t emac_rxdesc [1] [4];
@@ -381,7 +383,7 @@ static err_t allwinner_emac_init_port(EMAC_TypeDef *emac_peripheral, struct neti
     emac_peripheral->EMAC_BASIC_CTL0 = EMAC_BASIC_CTL0_SPEED_100 | EMAC_BASIC_CTL0_DUPLEX;
 
     /* Generate and program the unique port hardware MAC address derived from eFuses */
-    //allwinner_emac_apply_mac_dual(emac_peripheral, netif, port_index);
+    allwinner_emac_apply_mac_dual(emac_peripheral, netif, port_index);
 
     /* 4. Configure DMA options and awake the transmission layers */
     /* Setup Store-and-Forward mode to prevent buffer underrun/overflow errors */
@@ -776,6 +778,7 @@ void nic_initialize(struct netif *netif)
 	if (1)
 	{
 		allwinner_emac_init_port0(HARDWARE_EMAC_PTR);
+		allwinner_emac_apply_mac_dual(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 		on_packet = nic_on_packet;
 		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 	}
@@ -788,7 +791,7 @@ void nic_initialize(struct netif *netif)
 		{
 			static dpcobj_t nic_dpc_entry;
 			dpcobj_initialize(& nic_dpc_entry, board_nic_dpc, netif);
-			//board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
+			board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
 
 		}
 		netif->linkoutput = alw_low_level_output;//nic_linkoutput_fn;	// используется внутри etharp_output
