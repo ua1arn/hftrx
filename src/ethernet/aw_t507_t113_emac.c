@@ -47,6 +47,7 @@ int nic_can_send(void)
 
 void nic_send(const uint8_t * data, int isize)
 {
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
     int i = 0;
 	unsigned size = ulmin32(sizeof txbuff, isize);
 
@@ -78,18 +79,18 @@ void nic_send(const uint8_t * data, int isize)
 	dcache_clean((uintptr_t) txbuff, sizeof txbuff);
 
 	dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
-	HARDWARE_EMAC_PTR->EMAC_TX_DMA_DESC_LIST = (uintptr_t) & emac_txdesc [i];
+	emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) & emac_txdesc [i];
 
-	HARDWARE_EMAC_PTR->EMAC_TX_CTL0 =
+	emac_peripheral->EMAC_TX_CTL0 =
 		1 * (UINT32_C(1) << 31) |	// TX_EN
 		//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
 		0;
 
-	//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
-	HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 1);	// TX_MD 1: TX start after TX DMA FIFO located a full frame
-	HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 30);	// DMA EN
-	HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
-	while (HARDWARE_EMAC_PTR->EMAC_TX_CTL1 & (UINT32_C(1) << 31))
+	//emac_peripheral->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
+	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 1);	// TX_MD 1: TX start after TX DMA FIFO located a full frame
+	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 30);	// DMA EN
+	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
+	while (emac_peripheral->EMAC_TX_CTL1 & (UINT32_C(1) << 31))
 		;
 }
 
@@ -126,6 +127,7 @@ static uint32_t rx_index = 0;
  * @brief Polls the HARDWARE_EMAC_PTR DMA RX ring, extracts packets, and shifts them into lwIP.
  */
 static void ethernetif_poll(struct netif *netif) {
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
     struct emac_dma_desc *current_desc;
     struct pbuf *p = NULL;
     struct pbuf *q;
@@ -175,7 +177,7 @@ static void ethernetif_poll(struct netif *netif) {
         }
 
         /* Poke the receive DMA poll command register to force ring re-scanning */
-        HARDWARE_EMAC_PTR->EMAC_RX_CTL0 = 0x1;
+        emac_peripheral->EMAC_RX_CTL0 = 0x1;
     }
 }
 
@@ -216,6 +218,8 @@ static uint32_t tx_index = 0;
  * @return ERR_OK on success, ERR_MEM if the TX ring is saturated.
  */
 err_t alw_low_level_output(struct netif *netif, struct pbuf *p) {
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
+	TP();
     struct emac_dma_tx_desc *current_desc;
     struct pbuf *q;
     uint32_t total_bytes = 0;
@@ -270,7 +274,7 @@ err_t alw_low_level_output(struct netif *netif, struct pbuf *p) {
     }
 
     /* Poke the transmit poll command register to awake the TX DMA controller if suspended */
-    HARDWARE_EMAC_PTR->EMAC_TX_CTL1 = 0x1;
+    emac_peripheral->EMAC_TX_CTL1 = 0x1;
 
     return ERR_OK;
 }
@@ -310,11 +314,11 @@ struct emac_dma_desc {
  * Dual-port Ring Buffers allocation.
  * Explicitly aligned to a 64-byte boundary to meet Cortex-A53 L1 D-Cache line requirements.
  */
-static struct emac_dma_desc dual_rx_ring[2][EMAC_RX_BUFFERS_COUNT] __attribute__((aligned(64)));
-static struct emac_dma_desc dual_tx_ring[2][EMAC_TX_BUFFERS_COUNT] __attribute__((aligned(64)));
+static RAMNC struct emac_dma_desc dual_rx_ring[2][EMAC_RX_BUFFERS_COUNT] __attribute__((aligned(64)));
+static RAMNC struct emac_dma_desc dual_tx_ring[2][EMAC_TX_BUFFERS_COUNT] __attribute__((aligned(64)));
 
-static uint8_t dual_rx_buffers[2][EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(64)));
-static uint8_t dual_tx_buffers[2][EMAC_TX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(64)));
+static RAMNC uint8_t dual_rx_buffers[2][EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(64)));
+static RAMNC uint8_t dual_tx_buffers[2][EMAC_TX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(64)));
 
 /* Track variables for current software execution points */
 static uint32_t dual_rx_index[2] = {0, 0};
@@ -397,11 +401,12 @@ static err_t allwinner_emac_init_port(EMAC_TypeDef *emac_peripheral, struct neti
 
 static void EMAC_Handler(void)
 {
-	const portholder_t sta = HARDWARE_EMAC_PTR->EMAC_INT_STA;
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
+	const portholder_t sta = emac_peripheral->EMAC_INT_STA;
 	if (sta & ((UINT32_C(1) << 8)))	// RX_P
 	{
-		HARDWARE_EMAC_PTR->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
-		if (1) //((HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA & 0x07) == 0x03)
+		emac_peripheral->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
+		if (1) //((emac_peripheral->EMAC_RX_DMA_STA & 0x07) == 0x03)
 		{
 			if (on_packet)
 				on_packet(rxbuff, sizeof rxbuff);
@@ -418,7 +423,7 @@ static void EMAC_Handler(void)
 		else
 		{
 			TP();
-			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RX_DMA_STA);
+			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) emac_peripheral->EMAC_RX_DMA_STA);
 		}
 	}
 }
@@ -467,8 +472,9 @@ static uint8_t last_link_state = 0xFF;
  * @brief Reads a 16-bit register from the PHY via MDIO interface.
  */
 static uint16_t emac_mdio_read(uint8_t phy_addr, uint8_t reg_addr) {
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
     /* Wait until MDIO interface is idle */
-    while (HARDWARE_EMAC_PTR->EMAC_MII_CMD & EMAC_MII_BUSY);
+    while (emac_peripheral->EMAC_MII_CMD & EMAC_MII_BUSY);
 
     /* Form read command with safe clock divider */
     uint32_t cmd = ((phy_addr & 0x1F) << 16) |
@@ -476,19 +482,20 @@ static uint16_t emac_mdio_read(uint8_t phy_addr, uint8_t reg_addr) {
                    EMAC_MII_CLK_DIV_64       |
                    EMAC_MII_BUSY;
 
-    HARDWARE_EMAC_PTR->EMAC_MII_CMD = cmd;
+    emac_peripheral->EMAC_MII_CMD = cmd;
 
     /* Wait for command execution completion */
-    while (HARDWARE_EMAC_PTR->EMAC_MII_CMD & EMAC_MII_BUSY);
+    while (emac_peripheral->EMAC_MII_CMD & EMAC_MII_BUSY);
 
-    return (uint16_t)(HARDWARE_EMAC_PTR->EMAC_MII_DATA & 0xFFFF);
+    return (uint16_t)(emac_peripheral->EMAC_MII_DATA & 0xFFFF);
 }
 
 /**
  * @brief Updates Allwinner EMAC internal MAC controller speed and duplex settings.
  */
 static void allwinner_emac_update_mac_speed(uint32_t speed, uint32_t is_full_duplex) {
-    uint32_t ctl_val = HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0;
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
+    uint32_t ctl_val = emac_peripheral->EMAC_BASIC_CTL0;
     PRINTF("allwinner_emac_update_mac_speed: speed=%u, is_full_duplex=%u\n", speed, is_full_duplex);
 
     /* Clear existing speed (bits 3:2) and duplex (bit 0) configurations */
@@ -511,13 +518,14 @@ static void allwinner_emac_update_mac_speed(uint32_t speed, uint32_t is_full_dup
     }
 
     /* Write updated values back to the EMAC configuration register */
-    HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 = ctl_val;
+    emac_peripheral->EMAC_BASIC_CTL0 = ctl_val;
 }
 
 /**
  * @brief Periodically checks RTL8211F link status and updates the lwIP network interface.
  */
 static void check_ethernet_link_status(struct netif *netif) {
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
     uint16_t physr = emac_mdio_read(RTL8211F_PHY_ADDR, RTL8211F_PHYSR);
 
     /* Get actual hardware status: 1 = connected, 0 = disconnected */
@@ -643,12 +651,13 @@ static void allwinner_emac_ccu_init(void)
 
 static void allwinner_emac_phy_init(void)
 {
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
 	// The working clock of EMAC is from AHB3.
 #if (CPUSTYLE_T507)
 	HARDWARE_EMAC_EPHY_CLK_REG =
 		0x00051c06 | // 0x00051c06 0x00053c01
 		0;
-	//PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
+	//PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) emac_peripheral->EMAC_BASIC_CTL1);
 	//printhex32((uintptr_t) HARDWARE_EMAC_PTR, HARDWARE_EMAC_PTR, 256);
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	HARDWARE_EMAC_EPHY_CLK_REG =
@@ -657,32 +666,32 @@ static void allwinner_emac_phy_init(void)
 #endif
 	// Сигнал phyrstb тут уже должен бьыть неактивен
 
-	HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
-	while ((HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
+	emac_peripheral->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
+	while ((emac_peripheral->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
 		;
 
-	HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 =
+	emac_peripheral->EMAC_BASIC_CTL0 =
 		//0x03 * (UINT32_C(1) << 2) |	// SPEED - 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
 		//0x01 * (UINT32_C(1) << 0) | // DUPLEX - 1: Full-duplex
 		0;
-	HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 =
+	emac_peripheral->EMAC_BASIC_CTL1 =
 		0x08 * (UINT32_C(1) << 24) |	// BURST_LEN - The burst length of RX and TX DMA transfer.
 		0;
 
-//			PRINTF("EMAC_BASIC_CTL0=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0);
-//			PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1);
-//			PRINTF("EMAC_RGMII_STA=%08X\n", (unsigned) HARDWARE_EMAC_PTR->EMAC_RGMII_STA);
+//			PRINTF("EMAC_BASIC_CTL0=%08X\n", (unsigned) emac_peripheral->EMAC_BASIC_CTL0);
+//			PRINTF("EMAC_BASIC_CTL1=%08X\n", (unsigned) emac_peripheral->EMAC_BASIC_CTL1);
+//			PRINTF("EMAC_RGMII_STA=%08X\n", (unsigned) emac_peripheral->EMAC_RGMII_STA);
 
 
 //	const uint8_t hwaddr [6] = { HWADDR };
 //	// ether 1A:0C:74:06:AF:64
-////		HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = 0x000064AF;
-////		HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = 0x06740C1A;
-//	HARDWARE_EMAC_PTR->EMAC_ADDR [0].HIGH = USBD_peek_u16(hwaddr + 4);	// upper 16 bits of the first 6-byte MAC address
-//	HARDWARE_EMAC_PTR->EMAC_ADDR [0].LOW = USBD_peek_u32(hwaddr + 0);	// lower 32 bits of the 6-byte first MAC address
+////		emac_peripheral->EMAC_ADDR [0].HIGH = 0x000064AF;
+////		emac_peripheral->EMAC_ADDR [0].LOW = 0x06740C1A;
+//	emac_peripheral->EMAC_ADDR [0].HIGH = USBD_peek_u16(hwaddr + 4);	// upper 16 bits of the first 6-byte MAC address
+//	emac_peripheral->EMAC_ADDR [0].LOW = USBD_peek_u32(hwaddr + 0);	// lower 32 bits of the 6-byte first MAC address
 }
 
-static void allwinner_emac_init_port0(void)
+static void allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral)
 {
 
 	// RX init
@@ -701,30 +710,29 @@ static void allwinner_emac_init_port0(void)
 		emac_rxdesc [i][3] = (uintptr_t) emac_rxdesc [0];	// NEXT_DESC_ADDR
 		//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
 
-		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 
-		HARDWARE_EMAC_PTR->EMAC_RX_FRM_FLT =
+		emac_peripheral->EMAC_RX_FRM_FLT =
 //					1 * (UINT32_C(1) << 31) |	// DIS_ADDR_FILTER
 				1 * (UINT32_C(1) << 0) |	// RX_ALL
 				0;
 
-		HARDWARE_EMAC_PTR->EMAC_RX_DMA_DESC_LIST = (uintptr_t) emac_rxdesc;
-		//HARDWARE_EMAC_PTR->EMAC_RX_CTL0 = 0xb8000000;
-		HARDWARE_EMAC_PTR->EMAC_RX_CTL0 =
+		emac_peripheral->EMAC_RX_DMA_DESC_LIST = (uintptr_t) emac_rxdesc;
+		//emac_peripheral->EMAC_RX_CTL0 = 0xb8000000;
+		emac_peripheral->EMAC_RX_CTL0 =
 			1 * (UINT32_C(1) << 31) |	// RX_EN
 			//1 * (UINT32_C(1) << 29) |	// JUMBO_FRM_EN
 			//1 * (UINT32_C(1) << 28) |	// STRIP_FCS
 			1 * (UINT32_C(1) << 27) |	// CHECK_CRC 1: Calculate CRC and check the IPv4 Header Checksum.
 			0;
-		HARDWARE_EMAC_PTR->EMAC_RX_CTL1 =
+		emac_peripheral->EMAC_RX_CTL1 =
 				1 * (UINT32_C(1) << 1) |	// 1: RX start read after RX DMA FIFO located a full frame
 				1 * (UINT32_C(1) << 30) |	// /RX_DMA_EN
 				0;
 
-		HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
+		emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
 
-		HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
-		while (HARDWARE_EMAC_PTR->EMAC_RX_CTL1 & (UINT32_C(1) << 31))
+		emac_peripheral->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
+		while (emac_peripheral->EMAC_RX_CTL1 & (UINT32_C(1) << 31))
 			;
 	}
 	// TX init
@@ -743,18 +751,17 @@ static void allwinner_emac_init_port0(void)
 		emac_txdesc [i][3] = (uintptr_t) emac_txdesc [0];	// NEXT_DESC_ADDR
 		//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
 
-		//arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
+		//emac_peripheral->EMAC_RX_CTL0 = 0xb8000000;
 
-		//HARDWARE_EMAC_PTR->EMAC_RX_CTL0 = 0xb8000000;
+		//emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
 
-		//HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
-
-		//HARDWARE_EMAC_PTR->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
+		//emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 	}
 }
 
 static void board_nic_dpc(void * ctx)
 {
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
 	struct netif * const netif = (struct netif *) ctx;
 
 	ethernetif_poll(netif);
@@ -766,16 +773,25 @@ void nic_initialize(struct netif *netif)
 	allwinner_emac_ccu_init();
 	allwinner_emac_phy_init();
 
-	allwinner_emac_init_port0();
-	//allwinner_emac_init_port(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
-
-	on_packet = nic_on_packet;
-	//PRINTF("nic_initialize done\n");
+	if (1)
 	{
-		static dpcobj_t nic_dpc_entry;
-		dpcobj_initialize(& nic_dpc_entry, board_nic_dpc, netif);
-		//board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
+		allwinner_emac_init_port0(HARDWARE_EMAC_PTR);
+		on_packet = nic_on_packet;
+		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
+	}
+	else
+	{
+		allwinner_emac_init_port0(HARDWARE_EMAC_PTR);
+		allwinner_emac_init_port(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 
+		//PRINTF("nic_initialize done\n");
+		{
+			static dpcobj_t nic_dpc_entry;
+			dpcobj_initialize(& nic_dpc_entry, board_nic_dpc, netif);
+			//board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
+
+		}
+		netif->linkoutput = alw_low_level_output;//nic_linkoutput_fn;	// используется внутри etharp_output
 	}
 
 }
