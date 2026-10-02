@@ -346,16 +346,15 @@ static err_t allwinner_emac_init_port(EMAC_TypeDef *emac_peripheral, struct neti
 
 
 
-
-enum { EMAC_FRAMESZ = 2048 - 4 };
-static RAMNC uint8_t rxbuff [EMAC_FRAMESZ];
-static RAMNC __ALIGNED(4) struct emac_dma_rx_desc emac_rxdesc [1];
-static RAMNC uint8_t txbuff [EMAC_FRAMESZ];
-static RAMNC __ALIGNED(4) struct emac_dma_tx_desc emac_txdesc [1];
+static uint8_t rxbuff [EMAC_MAX_PACKET_SIZE];
+static __ALIGNED(4) struct emac_dma_rx_desc emac_rxdesc [1];
+static uint8_t txbuff [EMAC_MAX_PACKET_SIZE];
+static __ALIGNED(4) struct emac_dma_tx_desc emac_txdesc [1];
 
 int nic_can_send(void)
 {
     int i = 0;
+    dcache_clean_invalidate((uintptr_t) & emac_txdesc [i], sizeof emac_txdesc [i]);
 	return ((emac_txdesc [i].status & (UINT32_C(1) << 31)) == 0);
 }
 
@@ -384,7 +383,7 @@ void nic_send(const uint8_t * data, int isize)
 		1 * (UINT32_C(1) << 29) |	// FIR_DESC
 		//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
 		//1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
-		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
+//		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
 		(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 		0;
 	emac_txdesc [i].buf_addr = (uintptr_t) txbuff;	// BUF_ADDR
@@ -705,7 +704,6 @@ static void allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct neti
 
 	// RX init
 	{
-		unsigned len = EMAC_FRAMESZ;
 		unsigned i = 0;
 		emac_rxdesc [i].status =
 			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
@@ -713,7 +711,8 @@ static void allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct neti
 //				1 * (UINT32_C(1) << 8) |	// LAST_DESC
 			0;
 		emac_rxdesc [i].control =
-				len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
+				(EMAC_MAX_PACKET_SIZE & DESC_RX_BUF_SIZE_MASK) |	// 10:0 BUF_SIZE
+				//len * (UINT32_C(1) << 0) |
 			0;
 		emac_rxdesc [i].buf_addr = (uintptr_t) rxbuff;	// BUF_ADDR
 		emac_rxdesc [i].next_desc = (uintptr_t) & emac_rxdesc [0];	// NEXT_DESC_ADDR
@@ -746,7 +745,7 @@ static void allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct neti
 	}
 	// TX init
 	{
-		unsigned len = EMAC_FRAMESZ;
+		//unsigned len = EMAC_MAX_PACKET_SIZE;
 		unsigned i = 0;
 		emac_txdesc [i].status =
 			//1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
@@ -754,7 +753,7 @@ static void allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct neti
 //				1 * (UINT32_C(1) << 8) |	// LAST_DESC
 			0;
 		emac_txdesc [i].control =
-				len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
+				//len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
 		emac_txdesc [i].buf_addr = (uintptr_t) txbuff;	// BUF_ADDR
 		emac_txdesc [i].next_desc = (uintptr_t) & emac_txdesc [0];	// NEXT_DESC_ADDR
