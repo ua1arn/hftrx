@@ -717,6 +717,8 @@ static void allwinner_emac_hw_initialize(void)
 		HARDWARE_EMAC_PTR->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
 
 		HARDWARE_EMAC_PTR->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
+		while (HARDWARE_EMAC_PTR->EMAC_RX_CTL1 & (UINT32_C(1) << 31))
+			;
 	}
 	// TX init
 	{
