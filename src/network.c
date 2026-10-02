@@ -683,6 +683,29 @@ void network_initialize(void)
 		ticker_add(& ticker);
 	}
 }
+
+static uint_fast8_t glob_eth_dhcp = 1;
+
+void
+board_eth_dhcp(uint_fast8_t v)
+{
+	uint_fast8_t n = !! v;
+	if (glob_eth_dhcp != n)
+	{
+		glob_eth_dhcp = n;
+		if (n)
+		{
+            err_t e = dhcp_start(& nic_netif_data);
+            ASSERT(ERR_OK == e);
+		}
+		else
+		{
+            dhcp_release_and_stop(& nic_netif_data);
+		}
+	}
+}
+
+
 /* Параметры интерфейса для отображения в меню */
 size_t getvaltextethaddr(char * buff, size_t count, int_fast32_t value)
 {

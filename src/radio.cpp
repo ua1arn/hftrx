@@ -3849,27 +3849,27 @@ struct nvmap {
 
 	/* группы */
 	uint16_t ggroup0;			/* последняя группа в менюю, с которой работали */
-	uint16_t	ggrpdisplay;	// последний посещённый пункт группы
-	uint16_t	ggrptxparam;		// последний посещённый пункт группы
-	uint16_t	ggrptxadj;		// последний посещённый пункт группы
-	uint16_t	ggrpsecial;		// последний посещённый пункт группы
-	uint16_t	ggrpaudio;		// последний посещённый пункт группы
-	uint16_t	ggrpmike;		// последний посещённый пункт группы
-	uint16_t 	ggrpmikeeq;		// последний посещённый пункт группы
+	uint16_t	ggrpdisplay;	// последний выбраный пункт группы
+	uint16_t	ggrptxparam;		// последний выбраный пункт группы
+	uint16_t	ggrptxadj;		// последний выбраный пункт группы
+	uint16_t	ggrpsecial;		// последний выбраный пункт группы
+	uint16_t	ggrpaudio;		// последний выбраный пункт группы
+	uint16_t	ggrpmike;		// последний выбраный пункт группы
+	uint16_t 	ggrpmikeeq;		// последний выбраный пункт группы
 #if WITHSUBTONES
-	uint16_t ggrpctcss;		// последний посещённый пункт группы
+	uint16_t ggrpctcss;		// последний выбраный пункт группы
 #endif /* WITHSUBTONES */
 #if defined (RTC1_TYPE)
-	uint16_t	ggrpclock; // последний посещённый пункт группы
+	uint16_t	ggrpclock; // последний выбраный пункт группы
 #endif /* defined (RTC1_TYPE) */
 #if WITHRTTY
-	uint16_t ggrprtty;		// последний посещённый пункт группы
+	uint16_t ggrprtty;		// последний выбраный пункт группы
 
 	uint16_t 	grttybaudrate10;
 	uint16_t 	grttyshift;
 	uint8_t 	grttyinverted;
 #endif /* WITHRTTY */
-	uint16_t	ggrpabout;		// последний посещённый пункт группы
+	uint16_t	ggrpabout;		// последний выбраный пункт группы
 
 #if LO1MODE_HYBRID
 	uint8_t alignmode;			/* режимы для настройки аппаратной части (0-нормальная работа) */
@@ -3910,7 +3910,7 @@ struct nvmap {
 #endif /* WITHSLEEPTIMER */
 
 #if defined(CODEC1_TYPE)
-	uint16_t 	ggrpcodecparams;		// последний посещённый пункт группы
+	uint16_t 	ggrpcodecparams;		// последний выбраный пункт группы
 	#if WITHMIC1LEVEL
 		uint16_t gmik1level;
 	#endif /* WITHMIC1LEVEL */
@@ -3923,7 +3923,7 @@ struct nvmap {
 	#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #endif /* defined(CODEC1_TYPE)  */
 #if WITHTX
-	uint16_t	ggrptxparams; // последний посещённый пункт группы
+	uint16_t	ggrptxparams; // последний выбраный пункт группы
 	//uint8_t gfitx;		/* номер используемого фильтра на передачу */
 	uint8_t gbandf2adj_a [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
 	uint8_t gbandf2adj_b [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
@@ -3941,10 +3941,10 @@ struct nvmap {
 #endif /* WITHTX */
 
 #if WITHNOTCHONOFF
-	uint16_t	ggrpnotch; // последний посещённый пункт группы
+	uint16_t	ggrpnotch; // последний выбраный пункт группы
 	uint8_t gnotch;
 #elif WITHNOTCHFREQ
-	uint16_t	ggrpnotch; // последний посещённый пункт группы
+	uint16_t	ggrpnotch; // последний выбраный пункт группы
 	uint8_t gnotch;		// on/off - кнопкой, не через меню
 	uint8_t gnotchtype;
 	uint16_t gnotchfreq;
@@ -4002,17 +4002,23 @@ struct nvmap {
 	uint8_t stayfreq;	/* при изменении режимов кнопками - не меняем частоту */
 
 #if  WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN || WITHUSEUSBBT)
-	uint16_t	ggrpusb; // последний посещённый пункт группы
+	uint16_t	ggrpusb; // последний выбраный пункт группы
 #endif
 
 #if WITHLWIP
-	uint16_t ggrpeth;
+	uint16_t ggrpeth;	// последний выбраный пункт группы
+
+	uint8_t gethdhcpon;	// DHCP On/Off
+	uint8_t gethaddr;
+	uint8_t gethmask;
+	uint8_t gethgateway;
 #endif /* WITHLWIP */
+
 #if WITHIF4DSP
-	uint16_t	ggrpagc; // последний посещённый пункт группы
-	uint16_t	ggrpagcssb; // последний посещённый пункт группы
-	uint16_t	ggrpagccw; // последний посещённый пункт группы
-	uint16_t	ggrpagcdigi; // последний посещённый пункт группы
+	uint16_t	ggrpagc; // последний выбраный пункт группы
+	uint16_t	ggrpagcssb; // последний выбраный пункт группы
+	uint16_t	ggrpagccw; // последний выбраный пункт группы
+	uint16_t	ggrpagcdigi; // последний выбраный пункт группы
 
 	uint8_t gnoisereductvl;	// noise reduction level
 	uint8_t bwsetpos [BWSETI_count];	/* выбор одной из полос пропускания */
@@ -4025,12 +4031,6 @@ struct nvmap {
 	struct agcseti_tag afsets [AGCSETI_COUNT];	/* режимы приема */
 
 	uint8_t gsquareness10;	// Коэффициент прямоугольности фильтра в десятых долях
-
-#if WITHLWIP
-	uint8_t gethaddr;
-	uint8_t gethmask;
-	uint8_t gethgateway;
-#endif /* WITHLWIP */
 
 	uint8_t gagcoff;
 	uint8_t gamdepth;		/* Глубина модуляции в АМ - 0..100% */
@@ -4105,14 +4105,14 @@ struct nvmap {
 #endif /* WITHIF4DSP */
 
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
-	uint16_t	ggrprfadc; // последний посещённый пункт группы
+	uint16_t	ggrprfadc; // последний выбраный пункт группы
 	uint8_t gdither;	/* управление зашумлением в LTC2208 */
 	uint8_t gdactest;
 	uint8_t gshowovf;				/* Показ индикатора переполнения АЦП */
 #endif /* WITHDSPEXTDDC */
 
 #if WITHMODEM
-	uint16_t	ggrpmodem; // последний посещённый пункт группы
+	uint16_t	ggrpmodem; // последний выбраный пункт группы
 	uint8_t gmodemspeed;	// индекс в таблице скоростей передачи
 	uint8_t gmodemmode;		// применяемая модуляция
 #endif /* WITHMODEM */
@@ -4121,8 +4121,8 @@ struct nvmap {
 	uint8_t lo1level;	/* уровень (амплитуда) LO1 в процентах */
 #endif /* WITHLO1LEVELADJ */
 
-	uint16_t	ggrpfilterscw; // последний посещённый пункт группы
-	uint16_t	ggrpfilters; // последний посещённый пункт группы
+	uint16_t	ggrpfilterscw; // последний выбраный пункт группы
+	uint16_t	ggrpfilters; // последний выбраный пункт группы
 
 #if defined(REFERENCE_FREQ)
 #if defined (DAC1_TYPE)
@@ -4136,7 +4136,7 @@ struct nvmap {
 #endif
 
 #if WITHCAT
-	uint16_t	ggrpcat; // последний посещённый пункт группы
+	uint16_t	ggrpcat; // последний выбраный пункт группы
 	uint8_t catenable;	/* удаленное управление разрешено */
 	uint8_t catbaudrate;	/* номер скорости работы по CAT */
 	#if WITHTX
@@ -4149,7 +4149,7 @@ struct nvmap {
 #endif /* WITHCAT */
 
 #if WITHAUTOTUNER
-	uint16_t 	ggrptuner; // последний посещённый пункт группы
+	uint16_t 	ggrptuner; // последний выбраный пункт группы
 
 	uint8_t gtunerdelay;
 #if WITHAUTOTUNER_N7DDCALGO
@@ -4160,7 +4160,7 @@ struct nvmap {
 
 #if WITHTX
 	#if WITHVOX
-		uint16_t	ggrpvox; // последний посещённый пункт группы
+		uint16_t	ggrpvox; // последний выбраный пункт группы
 		uint8_t gvoxenable;	/* автоматическое управление передатчиком (от голоса) */
 		uint8_t gvoxlevel;	/* уровень срабатывания VOX */
 		uint8_t gavoxlevel;	/* уровень anti-VOX */
@@ -4205,7 +4205,7 @@ struct nvmap {
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
 	uint16_t gipacali;
 #if WITHELKEY
-	uint16_t	ggrpelkey; // последний посещённый пункт группы
+	uint16_t	ggrpelkey; // последний выбраный пункт группы
 	uint8_t elkeywpm;	/* скорость электронного ключа */
 	uint8_t elkeymode;	/* режим электронного ключа - 0 - asf, 1 - paddle, 2 - keyer */
 	uint8_t dashratio;	/* отношение длителности тире к точке в десятках процентов */
@@ -4241,7 +4241,7 @@ struct nvmap {
 #endif /* LO1PHASES */
 
 #if WITHLFM
-	uint16_t	ggrplfm; // последний посещённый пункт группы
+	uint16_t	ggrplfm; // последний выбраный пункт группы
 	uint16_t lfmtoffset;
 	uint16_t lfmtinterval;
 	uint8_t lfmmode;
@@ -4896,6 +4896,20 @@ static const struct paramdefdef xhdmiformat =
 
 #if WITHLWIP
 
+static uint_fast8_t gethdhcpon = 1;
+/* Адрес сетевого интерфейса */
+static const struct paramdefdef xgethdhcpon =
+{
+	QLABEL3("DHCP", "DHCP", "DHCP"), 0, RJ_ON, ISTEP1,
+	ITEM_VALUE,
+	0, HDMIFORMATS_count - 1,
+	OFFSETOF(struct nvmap, gethdhcpon),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gethdhcpon,
+	getzerobase, /* складывается со смещением и отображается */
+	getvaltextethaddr, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 static uint_fast8_t gethaddr;
 /* Адрес сетевого интерфейса */
 static const struct paramdefdef xgethaddr =
@@ -13615,6 +13629,10 @@ updateboard_noui(
 			synth_rts1_setfreq(pathi, getlo0(lo0hint) - freq);	// Установка центральной частоты панорамного индикатора
 		}
 	}
+
+#if WITHLWIP
+	board_eth_dhcp(param_getvalue(& xgethdhcpon));
+#endif /* WITHLWIP */
 
 /* после всех перенастроек включаем передатчик */
 	board_set_tx(gtx);		/* в конце выдаём сигнал разрешения передачи */

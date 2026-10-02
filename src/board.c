@@ -2479,7 +2479,6 @@ board_update_spi2(void)
 
 // Выдача в регистры текущего состояния теневых переменных.
 void 
-
 board_update(void)
 {
 	//PRINTF(PSTR("board_update start.\n"));
@@ -3309,7 +3308,6 @@ uint_fast8_t board_get_catmux(void)
 {
 	return glob_catmux;
 }
-
 
 /////////////////////////////////////////////
 // --- Набор функций требования установки сигналов на управляющих выходах.
