@@ -620,6 +620,7 @@
 		& xgethaddr,
 		& xgethmask,
 		& xgethgateway,
+		& xgethlinkstate,
 #endif /* WITHLWIP */
 #if WITHIF4DSP
 /* group name +++ */

@@ -184,13 +184,14 @@ static uint16_t emac_mdio_read(uint8_t phy_addr, uint8_t reg_addr) {
 /**
  * @brief Updates Allwinner EMAC and SYS_CTRL clocks based on speed and duplex.
  */
+// HARDWARE_EMAC_EPHY_CLK_REG не содержит таких бит - пока совсем убрал
 static void allwinner_emac_update_link(uint32_t speed, uint32_t is_full_duplex) {
-    uint32_t clk_val = HARDWARE_EMAC_EPHY_CLK_REG;
+    //uint32_t clk_val = HARDWARE_EMAC_EPHY_CLK_REG;
     uint32_t ctl_val = HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0;
     PRINTF("allwinner_emac_update_link: speed=%u, is_full_duplex=%u\n", speed, is_full_duplex);
 
     /* Clear existing speed and duplex bits */
-    ctl_val &= ~((3 << 2) | (1 << 0));
+    ctl_val &= ~ ((0x03 << 2) | EMAC_CTL_DUPLEX_FULL);
 
     if (is_full_duplex) {
         ctl_val |= EMAC_CTL_DUPLEX_FULL;
@@ -199,18 +200,18 @@ static void allwinner_emac_update_link(uint32_t speed, uint32_t is_full_duplex) 
     /* Configure RGMII clock dividers in CCU and EMAC basic parameters */
     if (speed == 1000) {
         ctl_val |= EMAC_CTL_SPEED_1000;
-        clk_val &= ~(0x7 << 8); /* Clear TX Clock divider for 125 MHz */
-        clk_val |= (0 << 8);    /* Divider /1 for Gigabit RGMII */
+//        clk_val &= ~(0x7 << 8); /* Clear TX Clock divider for 125 MHz */
+//        clk_val |= (0 << 8);    /* Divider /1 for Gigabit RGMII */
     }
     else if (speed == 100) {
         ctl_val |= EMAC_CTL_SPEED_100;
-        clk_val &= ~(0x7 << 8);
-        clk_val |= (4 << 8);    /* Divider /5 for 25 MHz RGMII */
+//        clk_val &= ~(0x7 << 8);
+//        clk_val |= (4 << 8);    /* Divider /5 for 25 MHz RGMII */
     }
     else if (speed == 10) {
         ctl_val |= EMAC_CTL_SPEED_10;
-        clk_val &= ~(0x7 << 8);
-        clk_val |= (49 << 8);   /* Divider /50 for 2.5 MHz RGMII */
+//        clk_val &= ~(0x7 << 8);
+//        clk_val |= (49 << 8);   /* Divider /50 for 2.5 MHz RGMII */
     }
 
     HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 = ctl_val;
@@ -255,7 +256,7 @@ static void check_ethernet_link_status(struct netif *netif) {
 }
 
 
-static void emac_hw_initialize(void)
+static void allwinner_emac_hw_initialize(void)
 {
 	const unsigned ix = HARDWARE_EMAC_IX;	// 0: EMAC0, 1: EMAC1
 	CCU->EMAC_BGR_REG |= (UINT32_C(1) << ((0 + ix)));	// Gating Clock for EMACx
@@ -375,7 +376,7 @@ static void emac_hw_initialize(void)
 void nic_initialize(void)
 {
 	//PRINTF("nic_initialize start\n");
-	emac_hw_initialize();
+	allwinner_emac_hw_initialize();
 	on_packet = nic_on_packet;
 	//PRINTF("nic_initialize done\n");
 

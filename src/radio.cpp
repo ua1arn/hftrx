@@ -4940,6 +4940,20 @@ static const struct paramdefdef xgethgateway =
 	getzerobase, /* складывается со смещением и отображается */
 	getvaltextethgateway, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
+static uint_fast8_t glinkup;
+/* Адрес сетевого интерфейса */
+static const struct paramdefdef xgethlinkstate =
+{
+	QLABEL3("LINK", "Link", "LINK"), 0, RJ_CB, ISTEP_RO,
+	ITEM_VALUE | ITEM_NOINITNVRAM,
+	0, HDMIFORMATS_count - 1,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	& gzero,
+	NULL,
+	getzerobase, /* складывается со смещением и отображается */
+	getvaltextethlinkstate, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 #endif /* WITHLWIP */
 
 #if WITHLO1LEVELADJ
