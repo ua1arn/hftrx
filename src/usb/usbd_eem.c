@@ -1588,7 +1588,7 @@ const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
 };
 
 
-void nic_initialize(void)
+void nic_initialize(struct netif *netif)
 {
 	nic_rxproc = nic_on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
 }

@@ -765,7 +765,7 @@ void network_initialize(void)
 	struct netif  *netif = & nic_netif_data;
 	init_lwip();
 	nic_buffers_initialize();
-	nic_initialize();
+	nic_initialize(netif);
 	init_netif();
 	nic_set_mac(netif);
 

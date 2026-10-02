@@ -151,7 +151,7 @@ static void ETH1_Handler(void)
 	}
 }
 
-void nic_initialize(void)
+void nic_initialize(struct netif *netif)
 {
 	const uint8_t hwaddr [6] = { HWADDR };
 	// Ethernet controller tests

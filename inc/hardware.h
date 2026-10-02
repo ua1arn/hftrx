@@ -803,8 +803,8 @@ uint_fast8_t stm32mp1_overdrived(void);	// return 1 if CPU supports 800 MHz cloc
 
 int toshiba_ddr_power_init(void);
 void stpmic1_dump_regulators(void);
-
-void nic_initialize(void);
+struct netif;
+void nic_initialize(struct netif *netif);
 int nic_can_send(void);
 void nic_send(const uint8_t * data, int size);
 void nic_linkspool(void * ctx);

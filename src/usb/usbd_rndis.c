@@ -82,7 +82,7 @@ static err_t rndis_output_fn(struct netif *netif, struct pbuf *q, const ip4_addr
 }
 #endif
 
-void nic_initialize(void)
+void nic_initialize(struct netif *netif)
 {
 	nic_rxproc = nic_on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
 }
