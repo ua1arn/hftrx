@@ -340,10 +340,10 @@ static err_t allwinner_emac_init_port(EMAC_TypeDef *emac_peripheral, struct neti
 }
 
 
-static RAMNC uint8_t rxbuffs [1] [EMAC_MAX_PACKET_SIZE];
-static RAMNC __ALIGNED(4) struct emac_dma_rx_desc emac_rxdesc [1];
-static RAMNC uint8_t txbuffs [1] [EMAC_MAX_PACKET_SIZE];
-static RAMNC __ALIGNED(4) struct emac_dma_tx_desc emac_txdesc [1];
+static RAMNC uint8_t rxbuffs [EMAC_RX_BUFFERS_COUNT] [EMAC_MAX_PACKET_SIZE];
+static RAMNC __ALIGNED(4) struct emac_dma_rx_desc emac_rxdesc [EMAC_RX_BUFFERS_COUNT];
+static RAMNC uint8_t txbuffs [EMAC_TX_BUFFERS_COUNT] [EMAC_MAX_PACKET_SIZE];
+static RAMNC __ALIGNED(4) struct emac_dma_tx_desc emac_txdesc [EMAC_TX_BUFFERS_COUNT];
 
 int nic_can_send(void)
 {
@@ -356,6 +356,13 @@ void nic_send(const uint8_t * data, int isize)
 {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
     int i = 0;
+
+    dcache_clean_invalidate((uintptr_t) & emac_txdesc [i], sizeof emac_txdesc [i]);
+    if (emac_txdesc [i].status & (UINT32_C(1) << 31))
+    {
+        /* TX ring buffer saturation - core stack must retry later */
+        return;// ERR_MEM;
+    }
 	unsigned size = ulmin32(sizeof txbuffs [i], isize);
 
 	memcpy(txbuffs [i], data, size);
@@ -402,6 +409,16 @@ void nic_send(const uint8_t * data, int isize)
 		;
 }
 
+static err_t XXXlow_level_output(struct netif *netif, struct pbuf *p) {
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
+	TP();
+    struct emac_dma_tx_desc *current_desc;
+    struct pbuf *q;
+    uint32_t total_bytes = 0;
+    uint8_t *dst_ptr;
+
+    (void)netif;
+}
 
 static void emac_nohandler(void * ctx)
 {
