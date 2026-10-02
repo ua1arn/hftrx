@@ -747,8 +747,9 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 {
 
 	// RX init
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(emac_rxdesc); ++ i)
 	{
-		unsigned i = 0;
 		emac_rxdesc [i].status =
 			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
 //				1 * (UINT32_C(1) << 9) |	// FIR_DESC
@@ -760,7 +761,7 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 				//len * (UINT32_C(1) << 0) |
 			0;
 		emac_rxdesc [i].buf_addr = (uintptr_t) rxbuffs [i];	// BUF_ADDR
-		emac_rxdesc [i].next_desc = (uintptr_t) & emac_rxdesc [0];	// NEXT_DESC_ADDR
+		emac_rxdesc [i].next_desc = (uintptr_t) & emac_rxdesc [(i + 1) % ARRAY_SIZE(emac_rxdesc)];	// NEXT_DESC_ADDR
 		//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
 
 
@@ -772,9 +773,8 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 		emac_peripheral->EMAC_RX_DMA_DESC_LIST = (uintptr_t) emac_rxdesc;
 	}
 	// TX init
+	for (i = 0; i < ARRAY_SIZE(emac_txdesc); ++ i)
 	{
-		//unsigned len = EMAC_MAX_PACKET_SIZE;
-		unsigned i = 0;
 		emac_txdesc [i].status =
 			//1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
 //				1 * (UINT32_C(1) << 9) |	// FIR_DESC
@@ -784,7 +784,7 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 				//len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
 		emac_txdesc [i].buf_addr = (uintptr_t) txbuffs [i];	// BUF_ADDR
-		emac_txdesc [i].next_desc = (uintptr_t) & emac_txdesc [0];	// NEXT_DESC_ADDR
+		emac_txdesc [i].next_desc = (uintptr_t) & emac_txdesc [(i + 1) % ARRAY_SIZE(emac_txdesc)];	// NEXT_DESC_ADDR
 		//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
 
 		//emac_peripheral->EMAC_RX_CTL0 = 0xb8000000;
