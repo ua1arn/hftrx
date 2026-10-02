@@ -341,10 +341,10 @@ static err_t allwinner_emac_init_port(EMAC_TypeDef *emac_peripheral, struct neti
 }
 
 
-static uint8_t rxbuff [EMAC_MAX_PACKET_SIZE];
-static __ALIGNED(4) struct emac_dma_rx_desc emac_rxdesc [1];
-static uint8_t txbuff [EMAC_MAX_PACKET_SIZE];
-static __ALIGNED(4) struct emac_dma_tx_desc emac_txdesc [1];
+static RAMNC uint8_t rxbuff [EMAC_MAX_PACKET_SIZE];
+static RAMNC __ALIGNED(4) struct emac_dma_rx_desc emac_rxdesc [1];
+static RAMNC uint8_t txbuff [EMAC_MAX_PACKET_SIZE];
+static RAMNC __ALIGNED(4) struct emac_dma_tx_desc emac_txdesc [1];
 
 int nic_can_send(void)
 {
