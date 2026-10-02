@@ -693,7 +693,7 @@ static void allwinner_emac_phy_init(void)
 //	emac_peripheral->EMAC_ADDR [0].LOW = USBD_peek_u32(hwaddr + 0);	// lower 32 bits of the 6-byte first MAC address
 }
 
-static void allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral)
+static void allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct netif *netif, uint8_t port_index)
 {
 
 	// RX init
@@ -777,14 +777,14 @@ void nic_initialize(struct netif *netif)
 
 	if (1)
 	{
-		allwinner_emac_init_port0(HARDWARE_EMAC_PTR);
+		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 		allwinner_emac_apply_mac_dual(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 		on_packet = nic_on_packet;
 		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 	}
 	else
 	{
-		allwinner_emac_init_port0(HARDWARE_EMAC_PTR);
+		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 		allwinner_emac_init_port(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 
 		//PRINTF("nic_initialize done\n");
