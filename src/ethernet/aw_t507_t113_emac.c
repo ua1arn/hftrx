@@ -35,67 +35,6 @@ static nic_rxproc_t on_packet;
 
 static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct netif *netif, uint8_t port_index);
 
-enum { EMAC_FRAMESZ = 2048 - 4 };
-static RAMNC uint8_t rxbuff [EMAC_FRAMESZ];
-static RAMNC __ALIGNED(4) uint32_t emac_rxdesc [1] [4];
-static RAMNC uint8_t txbuff [EMAC_FRAMESZ];
-static RAMNC __ALIGNED(4) uint32_t emac_txdesc [1] [4];
-
-int nic_can_send(void)
-{
-    int i = 0;
-	return ((emac_txdesc [i][0] & (UINT32_C(1) << 31)) == 0);
-}
-
-void nic_send(const uint8_t * data, int isize)
-{
-	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
-    int i = 0;
-	unsigned size = ulmin32(sizeof txbuff, isize);
-
-	memcpy(txbuff, data, size);
-
-	emac_txdesc [i][0] =	// status
-		1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
-		0;
-	// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
-	// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт заказанный в дескрипторе размер
-	// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт заказанный в дескрипторе размер
-	// CRC_CTL=0 и CHECKSUM_CTL=0: просто передаёт заказанный в дескрипторе размер
-	// CRC_CTL=1 и CHECKSUM_CTL=3: передаёт на 4 меньше
-	// CRC_CTL=1 и CHECKSUM_CTL=2: передаёт на 4 меньше
-	// CRC_CTL=1 и CHECKSUM_CTL=1: передаёт на 4 меньше
-	// CRC_CTL=1 и CHECKSUM_CTL=0: передаёт на 4 меньше
-	emac_txdesc [i][1] =	// ctl
-		1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
-		1 * (UINT32_C(1) << 30) |	// LAST_DESC
-		1 * (UINT32_C(1) << 29) |	// FIR_DESC
-		//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
-		//1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
-		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
-		(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
-		0;
-	emac_txdesc [i][2] = (uintptr_t) txbuff;	// BUF_ADDR
-	emac_txdesc [i][3] = (uintptr_t) emac_txdesc [i];	// NEXT_DESC_ADDR
-
-	dcache_clean((uintptr_t) txbuff, sizeof txbuff);
-
-	dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
-	emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) & emac_txdesc [i];
-
-	emac_peripheral->EMAC_TX_CTL0 =
-		1 * (UINT32_C(1) << 31) |	// TX_EN
-		//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
-		0;
-
-	//emac_peripheral->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
-	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 1);	// TX_MD 1: TX start after TX DMA FIFO located a full frame
-	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 30);	// DMA EN
-	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
-	while (emac_peripheral->EMAC_TX_CTL1 & (UINT32_C(1) << 31))
-		;
-}
-
 // AI-generated
 
 /* EMAC DMA RX Ring Descriptor Configuration */
@@ -103,7 +42,7 @@ void nic_send(const uint8_t * data, int isize)
 #define EMAC_MAX_PACKET_SIZE    1536
 
 /* Synopsys DesignWare / Allwinner EMAC DMA Descriptor Layout */
-struct emac_dma_desc {
+struct emac_dma_rx_desc {
     volatile uint32_t status;
     volatile uint32_t control;
     volatile uint32_t buf_addr;
@@ -120,7 +59,7 @@ struct emac_dma_desc {
 #define DESC_RX_CHAINED         (1UL << 14)
 
 /* Driver private variables tracking state and rings */
-static struct emac_dma_desc rx_desc_ring[EMAC_RX_BUFFERS_COUNT] __attribute__((aligned(4)));
+static struct emac_dma_rx_desc rx_desc_ring[EMAC_RX_BUFFERS_COUNT] __attribute__((aligned(4)));
 static uint8_t rx_buffer_pool[EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(4)));
 static uint32_t rx_index = 0;
 
@@ -130,7 +69,7 @@ static uint32_t rx_index = 0;
  */
 static void ethernetif_poll(struct netif *netif) {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
-    struct emac_dma_desc *current_desc;
+    struct emac_dma_rx_desc *current_desc;
     struct pbuf *p = NULL;
     struct pbuf *q;
     uint32_t len;
@@ -289,7 +228,7 @@ err_t alw_low_level_output(struct netif *netif, struct pbuf *p) {
 #define EMAC_MAX_PACKET_SIZE      1536
 
 /* Hardware DMA Descriptor Structure for Synopsys DesignWare / Allwinner */
-struct emac_dma_desc {
+struct emac_dma_rx_desc {
     volatile uint32_t status;      /* Buffer/Frame status flags */
     volatile uint32_t control;     /* Control flags and buffer size layout */
     volatile uint32_t buf_addr;    /* Physical pointer to the data buffer */
@@ -316,8 +255,8 @@ struct emac_dma_desc {
  * Dual-port Ring Buffers allocation.
  * Explicitly aligned to a 64-byte boundary to meet Cortex-A53 L1 D-Cache line requirements.
  */
-static RAMNC struct emac_dma_desc dual_rx_ring[2][EMAC_RX_BUFFERS_COUNT] __attribute__((aligned(64)));
-static RAMNC struct emac_dma_desc dual_tx_ring[2][EMAC_TX_BUFFERS_COUNT] __attribute__((aligned(64)));
+static RAMNC struct emac_dma_rx_desc dual_rx_ring[2][EMAC_RX_BUFFERS_COUNT] __attribute__((aligned(64)));
+static RAMNC struct emac_dma_tx_desc dual_tx_ring[2][EMAC_TX_BUFFERS_COUNT] __attribute__((aligned(64)));
 
 static RAMNC uint8_t dual_rx_buffers[2][EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(64)));
 static RAMNC uint8_t dual_tx_buffers[2][EMAC_TX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(64)));
@@ -401,6 +340,74 @@ static err_t allwinner_emac_init_port(EMAC_TypeDef *emac_peripheral, struct neti
     return ERR_OK;
 }
 
+
+
+
+
+
+
+
+enum { EMAC_FRAMESZ = 2048 - 4 };
+static RAMNC uint8_t rxbuff [EMAC_FRAMESZ];
+static RAMNC __ALIGNED(4) struct emac_dma_rx_desc emac_rxdesc [1];
+static RAMNC uint8_t txbuff [EMAC_FRAMESZ];
+static RAMNC __ALIGNED(4) struct emac_dma_tx_desc emac_txdesc [1];
+
+int nic_can_send(void)
+{
+    int i = 0;
+	return ((emac_txdesc [i].status & (UINT32_C(1) << 31)) == 0);
+}
+
+void nic_send(const uint8_t * data, int isize)
+{
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
+    int i = 0;
+	unsigned size = ulmin32(sizeof txbuff, isize);
+
+	memcpy(txbuff, data, size);
+
+	emac_txdesc [i].status =	// status
+		1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
+		0;
+	// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
+	// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт заказанный в дескрипторе размер
+	// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт заказанный в дескрипторе размер
+	// CRC_CTL=0 и CHECKSUM_CTL=0: просто передаёт заказанный в дескрипторе размер
+	// CRC_CTL=1 и CHECKSUM_CTL=3: передаёт на 4 меньше
+	// CRC_CTL=1 и CHECKSUM_CTL=2: передаёт на 4 меньше
+	// CRC_CTL=1 и CHECKSUM_CTL=1: передаёт на 4 меньше
+	// CRC_CTL=1 и CHECKSUM_CTL=0: передаёт на 4 меньше
+	emac_txdesc [i].control =	// ctl
+		1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
+		1 * (UINT32_C(1) << 30) |	// LAST_DESC
+		1 * (UINT32_C(1) << 29) |	// FIR_DESC
+		//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
+		//1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
+		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
+		(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
+		0;
+	emac_txdesc [i].buf_addr = (uintptr_t) txbuff;	// BUF_ADDR
+	emac_txdesc [i].next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
+
+	dcache_clean((uintptr_t) txbuff, sizeof txbuff);
+
+	dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
+	emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) & emac_txdesc [i];
+
+	emac_peripheral->EMAC_TX_CTL0 =
+		1 * (UINT32_C(1) << 31) |	// TX_EN
+		//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
+		0;
+
+	//emac_peripheral->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
+	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 1);	// TX_MD 1: TX start after TX DMA FIFO located a full frame
+	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 30);	// DMA EN
+	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
+	while (emac_peripheral->EMAC_TX_CTL1 & (UINT32_C(1) << 31))
+		;
+}
+
 static void EMAC_Handler(void)
 {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
@@ -414,7 +421,7 @@ static void EMAC_Handler(void)
 				on_packet(rxbuff, sizeof rxbuff);
 
 			unsigned i = 0;
-			emac_rxdesc [i][0] =
+			emac_rxdesc [i].status =
 				1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
 		//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
 		//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
@@ -700,16 +707,16 @@ static void allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct neti
 	{
 		unsigned len = EMAC_FRAMESZ;
 		unsigned i = 0;
-		emac_rxdesc [i][0] =
+		emac_rxdesc [i].status =
 			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
 //				1 * (UINT32_C(1) << 9) |	// FIR_DESC
 //				1 * (UINT32_C(1) << 8) |	// LAST_DESC
 			0;
-		emac_rxdesc [i][1] =
+		emac_rxdesc [i].control =
 				len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
-		emac_rxdesc [i][2] = (uintptr_t) rxbuff;	// BUF_ADDR
-		emac_rxdesc [i][3] = (uintptr_t) emac_rxdesc [0];	// NEXT_DESC_ADDR
+		emac_rxdesc [i].buf_addr = (uintptr_t) rxbuff;	// BUF_ADDR
+		emac_rxdesc [i].next_desc = (uintptr_t) & emac_rxdesc [0];	// NEXT_DESC_ADDR
 		//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
 
 
@@ -741,16 +748,16 @@ static void allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct neti
 	{
 		unsigned len = EMAC_FRAMESZ;
 		unsigned i = 0;
-		emac_txdesc [i][0] =
+		emac_txdesc [i].status =
 			//1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
 //				1 * (UINT32_C(1) << 9) |	// FIR_DESC
 //				1 * (UINT32_C(1) << 8) |	// LAST_DESC
 			0;
-		emac_txdesc [i][1] =
+		emac_txdesc [i].control =
 				len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
-		emac_txdesc [i][2] = (uintptr_t) txbuff;	// BUF_ADDR
-		emac_txdesc [i][3] = (uintptr_t) emac_txdesc [0];	// NEXT_DESC_ADDR
+		emac_txdesc [i].buf_addr = (uintptr_t) txbuff;	// BUF_ADDR
+		emac_txdesc [i].next_desc = (uintptr_t) & emac_txdesc [0];	// NEXT_DESC_ADDR
 		//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
 
 		//emac_peripheral->EMAC_RX_CTL0 = 0xb8000000;
