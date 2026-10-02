@@ -631,14 +631,14 @@ static void init_netif(void)
 #else
 	netif = netif_add(netif, IP4_ADDR_ANY, IP4_ADDR_ANY, IP4_ADDR_ANY, NULL, netif_init_cb, ip_input);
 	//netif_set_link_up(netif);
-	netif_set_up(netif);
+	//netif_set_up(netif);
 #endif
 
 //	while (!netif_is_up(netif))
 //		;
-#if ! DHCP_SERVER
-	dhcp_start(netif);
-#endif
+//#if ! DHCP_SERVER
+//	dhcp_start(netif);
+//#endif
 
 #if LWIP_AUTOIP
 	  autoip_start(netif);

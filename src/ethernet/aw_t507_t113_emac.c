@@ -21,6 +21,7 @@
 #include "netif/etharp.h"
 #include "lwip/ethip6.h"
 #include "lwip/ip.h"
+#include "lwip/dhcp.h"
 
 #include <string.h>
 
@@ -212,18 +213,20 @@ static void allwinner_emac_update_mac_speed(uint32_t speed, uint32_t is_full_dup
 }
 
 /**
- * @brief Periodically monitors RTL8211F Auto-Negotiation and updates lwIP.
+ * @brief Periodically checks RTL8211F link status and updates the lwIP network interface.
  */
 static void check_ethernet_link_status(struct netif *netif) {
-    /* Read vendor-specific register 26 */
     uint16_t physr = emac_mdio_read(RTL8211F_PHY_ADDR, RTL8211F_PHYSR);
 
-    /* Parse actual Link Status from Bit 2 */
-    uint8_t link_up = (physr & PHYSR_LINK_STATUS) ? 1 : 0;
+    /* Get actual hardware status: 1 = connected, 0 = disconnected */
+    uint8_t hw_link_up = (physr & PHYSR_LINK_STATUS) ? 1 : 0;
 
-    if (link_up != last_link_state) {
-        if (link_up) {
-            /* Link established. Extract speed (Bits 5:4) and duplex (Bit 3) */
+    /* Get current lwIP software status: 1 = up, 0 = down */
+    uint8_t sw_link_up = netif_is_link_up(netif) ? 1 : 0;
+
+    /* Compare hardware reality with software stack state */
+    if (hw_link_up != sw_link_up) {
+        if (hw_link_up) {
             uint8_t speed_bits = physr & PHYSR_SPEED_MASK;
             uint8_t duplex_bit = (physr & PHYSR_DUPLEX_STATUS) ? 1 : 0;
 
@@ -232,32 +235,21 @@ static void check_ethernet_link_status(struct netif *netif) {
             else if (speed_bits == PHYSR_SPEED_100)  speed = 100;
             else if (speed_bits == PHYSR_SPEED_1000) speed = 1000;
 
-            /* Apply hardware speed adjustments to Allwinner EMAC and CCU */
             allwinner_emac_update_mac_speed(speed, duplex_bit);
 
-            allwinner_emac_update_mac_speed(speed, duplex_bit);
-
-			/* Propagate physical state to lwIP */
-			netif_set_link_up(netif);
-
-			/* Start or resume DHCP negotiation when cable is plugged in */
-			//dhcp_start(netif);
-
+            netif_set_link_up(netif);
+            err_t e = dhcp_start(netif);
+            ASSERT(ERR_OK == e);
         } else {
-            /* Link disconnected */
-            netif_set_link_down(netif);
-
-            /* FORCED RESET: Inform DHCP core that the lease is no longer valid */
-            //dhcp_release_and_stop(netif);
-
-            /* Optional: Explicitly zero out IP addresses to force strict state */
+            dhcp_release_and_stop(netif);
             netif_set_ipaddr(netif, IP4_ADDR_ANY4);
             netif_set_netmask(netif, IP4_ADDR_ANY4);
             netif_set_gw(netif, IP4_ADDR_ANY4);
-       }
-        last_link_state = link_up;
+            netif_set_link_down(netif);
+        }
     }
 }
+
 
 
 static void allwinner_emac_hw_initialize(void)
@@ -292,7 +284,7 @@ static void allwinner_emac_hw_initialize(void)
 
 		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL0 =
 			//0x03 * (UINT32_C(1) << 2) |	// SPEED - 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
-			0x01 * (UINT32_C(1) << 0) | // DUPLEX - 1: Full-duplex
+			//0x01 * (UINT32_C(1) << 0) | // DUPLEX - 1: Full-duplex
 			0;
 		HARDWARE_EMAC_PTR->EMAC_BASIC_CTL1 =
 			0x08 * (UINT32_C(1) << 24) |	// BURST_LEN - The burst length of RX and TX DMA transfer.
@@ -430,7 +422,6 @@ struct emac_dma_desc {
 static struct emac_dma_desc rx_desc_ring[EMAC_RX_BUFFERS_COUNT] __attribute__((aligned(4)));
 static uint8_t rx_buffer_pool[EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(4)));
 static uint32_t rx_index = 0;
-static uint8_t last_link_state = 0xFF;
 
 /**
  * @brief Reads a 16-bit register from the RTL8211F PHY via EMAC MDIO interface.
@@ -482,15 +473,20 @@ static void allwinner_emac_update_mac_speed(uint32_t speed, uint32_t is_full_dup
 }
 
 /**
- * @brief Periodically monitors RTL8211F link status and updates the lwIP network interface.
- * @note Intended to be called inside the main bare-metal superloop.
+ * @brief Periodically checks RTL8211F link status and updates the lwIP network interface.
  */
 static void check_ethernet_link_status(struct netif *netif) {
     uint16_t physr = emac_mdio_read(PHY_ADDR, RTL8211F_PHYSR);
-    uint8_t link_up = (physr & PHYSR_LINK_STATUS) ? 1 : 0;
 
-    if (link_up != last_link_state) {
-        if (link_up) {
+    /* Get actual hardware status: 1 = connected, 0 = disconnected */
+    uint8_t hw_link_up = (physr & PHYSR_LINK_STATUS) ? 1 : 0;
+
+    /* Get current lwIP software status: 1 = up, 0 = down */
+    uint8_t sw_link_up = netif_is_link_up(netif) ? 1 : 0;
+
+    /* Compare hardware reality with software stack state */
+    if (hw_link_up != sw_link_up) {
+        if (hw_link_up) {
             uint8_t speed_bits = physr & PHYSR_SPEED_MASK;
             uint8_t duplex_bit = (physr & PHYSR_DUPLEX_STATUS) ? 1 : 0;
 
@@ -499,19 +495,17 @@ static void check_ethernet_link_status(struct netif *netif) {
             else if (speed_bits == PHYSR_SPEED_100)  speed = 100;
             else if (speed_bits == PHYSR_SPEED_1000) speed = 1000;
 
-            /* Sync MAC configuration with actual negotiated line parameters */
             allwinner_emac_update_mac_speed(speed, duplex_bit);
 
-            /* Propagate state flags into the lwIP stack engine */
             netif_set_link_up(netif);
-            if (!netif_is_up(netif)) {
-                netif_set_up(netif);
-            }
+            dhcp_start(netif);
         } else {
-            /* Drop link state in the core network stack */
+            dhcp_release_and_stop(netif);
+            netif_set_ipaddr(netif, IP4_ADDR_ANY4);
+            netif_set_netmask(netif, IP4_ADDR_ANY4);
+            netif_set_gw(netif, IP4_ADDR_ANY4);
             netif_set_link_down(netif);
         }
-        last_link_state = link_up;
     }
 }
 
