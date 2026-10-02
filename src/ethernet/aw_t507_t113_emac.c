@@ -215,7 +215,7 @@ static uint32_t tx_index = 0;
  * @param p Pointer to the allocated lwIP packet buffer containing data frames.
  * @return ERR_OK on success, ERR_MEM if the TX ring is saturated.
  */
-static err_t low_level_output(struct netif *netif, struct pbuf *p) {
+err_t alw_low_level_output(struct netif *netif, struct pbuf *p) {
     struct emac_dma_tx_desc *current_desc;
     struct pbuf *q;
     uint32_t total_bytes = 0;
@@ -271,6 +271,126 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 
     /* Poke the transmit poll command register to awake the TX DMA controller if suspended */
     HARDWARE_EMAC_PTR->EMAC_TX_CTL1 = 0x1;
+
+    return ERR_OK;
+}
+#include "lwip/netif.h"
+#include <string.h>
+
+/* Allwinner EMAC DMA Ring Configurations */
+#define EMAC_RX_BUFFERS_COUNT     16
+#define EMAC_TX_BUFFERS_COUNT     16
+#define EMAC_MAX_PACKET_SIZE      1536
+
+/* Hardware DMA Descriptor Structure for Synopsys DesignWare / Allwinner */
+struct emac_dma_desc {
+    volatile uint32_t status;      /* Buffer/Frame status flags */
+    volatile uint32_t control;     /* Control flags and buffer size layout */
+    volatile uint32_t buf_addr;    /* Physical pointer to the data buffer */
+    volatile uint32_t next_desc;   /* Link to the next descriptor element */
+};
+
+/* Bit definitions for RX/TX Descriptors */
+#define DESC_OWN_BY_DMA           (1UL << 31)
+#define DESC_RX_CHAINED           (1UL << 14)
+#define TDES0_TX_CHAINED          (1UL << 20)
+#define DESC_RX_BUF_SIZE_MASK     0x7FF
+
+/* Register Bits for EMAC Control Blocks */
+#define EMAC_BASIC_CTL0_DUPLEX    (1 << 0)   /* Default to Full Duplex on start */
+#define EMAC_BASIC_CTL0_SPEED_100 (3 << 2)   /* Default safe fallback speed 100M */
+#define EMAC_TX_CTL0_TX_EN        (1UL << 31) /* Enable Transmit MAC */
+#define EMAC_TX_CTL1_TX_DMA_EN    (1UL << 30) /* Start Transmit DMA Engine */
+#define EMAC_TX_CTL1_TX_MD_FORW   (1UL << 1)  /* Store-and-Forward mode for TX */
+#define EMAC_RX_CTL0_RX_EN        (1UL << 31) /* Enable Receive MAC */
+#define EMAC_RX_CTL1_RX_DMA_EN    (1UL << 30) /* Start Receive DMA Engine */
+#define EMAC_RX_CTL1_RX_MD_FORW   (1UL << 1)  /* Store-and-Forward mode for RX */
+
+/*
+ * Dual-port Ring Buffers allocation.
+ * Explicitly aligned to a 64-byte boundary to meet Cortex-A53 L1 D-Cache line requirements.
+ */
+static struct emac_dma_desc dual_rx_ring[2][EMAC_RX_BUFFERS_COUNT] __attribute__((aligned(64)));
+static struct emac_dma_desc dual_tx_ring[2][EMAC_TX_BUFFERS_COUNT] __attribute__((aligned(64)));
+
+static uint8_t dual_rx_buffers[2][EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(64)));
+static uint8_t dual_tx_buffers[2][EMAC_TX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(64)));
+
+/* Track variables for current software execution points */
+static uint32_t dual_rx_index[2] = {0, 0};
+static uint32_t dual_tx_index[2] = {0, 0};
+
+
+/**
+ * @brief Fully initializes a specific EMAC hardware peripheral interface.
+ * @param emac_peripheral Pointer to the CMSIS-style peripheral struct (EMAC0 or EMAC1).
+ * @param netif Pointer to the target lwIP layer interface mapping.
+ * @param port_index Zero-based index specifying the target port (0 for EMAC0, 1 for EMAC1).
+ * @return ERR_OK on successful configuration.
+ */
+static err_t allwinner_emac_init_port(EMAC_TypeDef *emac_peripheral, struct netif *netif, uint8_t port_index) {
+    if (port_index > 1) {
+        return ERR_ARG;
+    }
+
+    /* Reset software internal ring pointers */
+    dual_rx_index[port_index] = 0;
+    dual_tx_index[port_index] = 0;
+
+    /* 1. Build and link the RX Ring Descriptors list */
+    for (uint32_t i = 0; i < EMAC_RX_BUFFERS_COUNT; i++) {
+        dual_rx_ring[port_index][i].status = DESC_OWN_BY_DMA;
+        dual_rx_ring[port_index][i].control = DESC_RX_CHAINED | (EMAC_MAX_PACKET_SIZE & DESC_RX_BUF_SIZE_MASK);
+        dual_rx_ring[port_index][i].buf_addr = (uintptr_t)&dual_rx_buffers[port_index][i][0];
+
+        /* Loop the final element descriptor back to the root start address */
+        if (i == (EMAC_RX_BUFFERS_COUNT - 1)) {
+            dual_rx_ring[port_index][i].next_desc = (uintptr_t)&dual_rx_ring[port_index][0];
+        } else {
+            dual_rx_ring[port_index][i].next_desc = (uintptr_t)&dual_rx_ring[port_index][i + 1];
+        }
+    }
+
+    /* 2. Build and link the TX Ring Descriptors list */
+    for (uint32_t i = 0; i < EMAC_TX_BUFFERS_COUNT; i++) {
+        dual_tx_ring[port_index][i].status = 0; /* CPU owns TX rings on bootup */
+        dual_tx_ring[port_index][i].control = 0;
+        dual_tx_ring[port_index][i].buf_addr = (uintptr_t)&dual_tx_buffers[port_index][i][0];
+
+        if (i == (EMAC_TX_BUFFERS_COUNT - 1)) {
+            dual_tx_ring[port_index][i].next_desc = (uintptr_t)&dual_tx_ring[port_index][0];
+        } else {
+            dual_tx_ring[port_index][i].next_desc = (uintptr_t)&dual_tx_ring[port_index][i + 1];
+        }
+    }
+
+    /* Flush all memory structures out of D-Cache to prevent memory hazards for the DMA engine */
+    dcache_clean((uintptr_t)&dual_rx_ring[port_index][0], sizeof(dual_rx_ring[port_index]));
+    dcache_clean((uintptr_t)&dual_tx_ring[port_index][0], sizeof(dual_tx_ring[port_index]));
+    dcache_clean((uintptr_t)&dual_rx_buffers[port_index][0][0], sizeof(dual_rx_buffers[port_index]));
+
+    /* 3. Program core base registers inside the EMAC controller */
+    emac_peripheral->EMAC_RX_DMA_DESC_LIST = (uintptr_t)&dual_rx_ring[port_index][0];
+    emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t)&dual_tx_ring[port_index][0];
+
+    /* Setup safe default speed and duplex in Basic configuration */
+    emac_peripheral->EMAC_BASIC_CTL0 = EMAC_BASIC_CTL0_SPEED_100 | EMAC_BASIC_CTL0_DUPLEX;
+
+    /* Generate and program the unique port hardware MAC address derived from eFuses */
+    //allwinner_emac_apply_mac_dual(emac_peripheral, netif, port_index);
+
+    /* 4. Configure DMA options and awake the transmission layers */
+    /* Setup Store-and-Forward mode to prevent buffer underrun/overflow errors */
+    emac_peripheral->EMAC_TX_CTL1 = EMAC_TX_CTL1_TX_MD_FORW;
+    emac_peripheral->EMAC_RX_CTL1 = EMAC_RX_CTL1_RX_MD_FORW;
+
+    /* Activate both MAC state controllers */
+    emac_peripheral->EMAC_TX_CTL0 |= EMAC_TX_CTL0_TX_EN;
+    emac_peripheral->EMAC_RX_CTL0 |= EMAC_RX_CTL0_RX_EN;
+
+    /* Fire up the main pipeline DMA execution rings */
+    emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;
+    emac_peripheral->EMAC_RX_CTL1 |= EMAC_RX_CTL1_RX_DMA_EN;
 
     return ERR_OK;
 }
@@ -627,12 +747,15 @@ static void allwinner_emac_hw_initialize(void)
 static void board_nic_dpc(void * ctx)
 {
 	struct netif * const netif = (struct netif *) ctx;
+
+	ethernetif_poll(netif);
 }
 
 void nic_initialize(struct netif *netif)
 {
 	//PRINTF("nic_initialize start\n");
 	allwinner_emac_hw_initialize();
+	//allwinner_emac_init_port(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 	on_packet = nic_on_packet;
 	//PRINTF("nic_initialize done\n");
 	{

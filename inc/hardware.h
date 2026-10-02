@@ -803,20 +803,6 @@ uint_fast8_t stm32mp1_overdrived(void);	// return 1 if CPU supports 800 MHz cloc
 
 int toshiba_ddr_power_init(void);
 void stpmic1_dump_regulators(void);
-struct netif;
-void nic_initialize(struct netif *netif);
-int nic_can_send(void);
-void nic_send(const uint8_t * data, int size);
-void nic_linkspool(void * ctx);
-void nic_set_mac(void * ctx);
-
-
-void nic_on_packet(const uint8_t *data, int size);	// использование приянтого от сети пакета
-typedef void (*nic_rxproc_t)(const uint8_t *data, int size);
-#define NIC_MTU 1500  // MTU value
-
-
-void network_initialize(void);
 
 void cpptest(void);
 //#define UNUSED(x) ((void)(x))
@@ -827,6 +813,8 @@ void cpptest(void);
 // Bit zero of the first octet of any Ethernet address associated with the device must always be zero. (See section 6.4.2.3.)
 //#define HWADDR                          0x30,0x89,0x84,0x6A,0x96,0x34
 #define HWADDR                          0x02,0x00,0x00,0x00,0x00,0x00
+
+void network_initialize(void);
 
 #if 1 //CPUSTYLE_XC7Z
 

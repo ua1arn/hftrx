@@ -29,6 +29,7 @@
 #include "lwip/dhcp.h"
 #include "netif/etharp.h"
 #include "lwip/ip_addr.h"
+#include "lwip/err.h"
 
 #include "../lib/dhcp-server/dhserver.h"
 #include "../lib/dns-server/dnserver.h"
@@ -565,6 +566,9 @@ static err_t nic_output_fn(struct netif *netif, struct pbuf *p, const ip4_addr_t
 	return e;
 }
 
+err_t alw_low_level_output(struct netif *netif, struct pbuf *p);
+
+
 static err_t netif_init_cb(struct netif *netif)
 {
 	PRINTF("netif_init_cb\n");
@@ -588,6 +592,7 @@ static err_t netif_init_cb(struct netif *netif)
 	netif->name[1] = 'X';
 	netif->output = etharp_output; //nic_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
 												// и слкдующий callback linkoutput не требовался бы вообще
+	netif->linkoutput = alw_low_level_output;//nic_linkoutput_fn;	// используется внутри etharp_output
 	netif->linkoutput = nic_linkoutput_fn;	// используется внутри etharp_output
 	return ERR_OK;
 }

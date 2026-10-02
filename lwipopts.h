@@ -339,5 +339,19 @@ typedef unsigned sys_prot_t;
 	#define LWIP_NETIF_LOOPBACK 1
 
 #define ETH_PAD_SIZE                    0
+struct netif;
+struct netif;
+void nic_initialize(struct netif *netif);
+int nic_can_send(void);
+void nic_send(const uint8_t * data, int size);
+void nic_linkspool(void * ctx);
+void nic_set_mac(void * ctx);
+
+
+void nic_on_packet(const uint8_t *data, int size);	// использование приянтого от сети пакета
+typedef void (*nic_rxproc_t)(const uint8_t *data, int size);
+#define NIC_MTU 1500  // MTU value
+
+
 
 #endif /* __LWIPOPTS_H__ */
