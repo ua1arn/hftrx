@@ -630,12 +630,12 @@ static void init_netif(void)
 	netif_set_default(netif);
 #else
 	netif = netif_add(netif, IP4_ADDR_ANY, IP4_ADDR_ANY, IP4_ADDR_ANY, NULL, netif_init_cb, ip_input);
-	netif_set_link_up(netif);
+	//netif_set_link_up(netif);
 	netif_set_up(netif);
 #endif
 
-	while (!netif_is_up(netif))
-		;
+//	while (!netif_is_up(netif))
+//		;
 #if ! DHCP_SERVER
 	dhcp_start(netif);
 #endif
@@ -687,7 +687,7 @@ void network_initialize(void)
 size_t getvaltextethaddr(char * buff, size_t count, int_fast32_t value)
 {
 	struct netif  *netif = & nic_netif_data;
-	const ip4_addr_t addr = netif_is_link_up(netif) ? * netif_ip4_addr(netif) : * IP4_ADDR_ANY;
+	const ip4_addr_t addr = * netif_ip4_addr(netif);
 	const u8_t p1 = ip4_addr1_val(addr);
 	const u8_t p2 = ip4_addr2_val(addr);
 	const u8_t p3 = ip4_addr3_val(addr);
@@ -701,7 +701,7 @@ size_t getvaltextethaddr(char * buff, size_t count, int_fast32_t value)
 size_t getvaltextethmask(char * buff, size_t count, int_fast32_t value)
 {
 	struct netif  *netif = & nic_netif_data;
-	const ip4_addr_t netmask = netif_is_link_up(netif) ? * netif_ip4_netmask(netif) : * IP4_ADDR_ANY;
+	const ip4_addr_t netmask = * netif_ip4_netmask(netif);
 	const u8_t p1 = ip4_addr1_val(netmask);
 	const u8_t p2 = ip4_addr2_val(netmask);
 	const u8_t p3 = ip4_addr3_val(netmask);
@@ -715,7 +715,7 @@ size_t getvaltextethmask(char * buff, size_t count, int_fast32_t value)
 size_t getvaltextethgateway(char * buff, size_t count, int_fast32_t value)
 {
 	struct netif  *netif = & nic_netif_data;
-	const ip4_addr_t gw = netif_is_link_up(netif) ? * netif_ip4_gw(netif) : * IP4_ADDR_ANY;
+	const ip4_addr_t gw = * netif_ip4_gw(netif);
 	const u8_t p1 = ip4_addr1_val(gw);
 	const u8_t p2 = ip4_addr2_val(gw);
 	const u8_t p3 = ip4_addr3_val(gw);

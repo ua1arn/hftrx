@@ -235,15 +235,26 @@ static void check_ethernet_link_status(struct netif *netif) {
             /* Apply hardware speed adjustments to Allwinner EMAC and CCU */
             allwinner_emac_update_mac_speed(speed, duplex_bit);
 
-            /* Notify lwIP core stack */
-            netif_set_link_up(netif);
-            if (!netif_is_up(netif)) {
-                netif_set_up(netif);
-            }
+            allwinner_emac_update_mac_speed(speed, duplex_bit);
+
+			/* Propagate physical state to lwIP */
+			netif_set_link_up(netif);
+
+			/* Start or resume DHCP negotiation when cable is plugged in */
+			//dhcp_start(netif);
+
         } else {
             /* Link disconnected */
             netif_set_link_down(netif);
-        }
+
+            /* FORCED RESET: Inform DHCP core that the lease is no longer valid */
+            //dhcp_release_and_stop(netif);
+
+            /* Optional: Explicitly zero out IP addresses to force strict state */
+            netif_set_ipaddr(netif, IP4_ADDR_ANY4);
+            netif_set_netmask(netif, IP4_ADDR_ANY4);
+            netif_set_gw(netif, IP4_ADDR_ANY4);
+       }
         last_link_state = link_up;
     }
 }
@@ -366,6 +377,307 @@ static void allwinner_emac_hw_initialize(void)
 	}
 }
 
+#if 0
+#include "lwip/pbuf.h"
+#include "lwip/netif.h"
+#include <string.h>
+
+/* Realtek RTL8211F PHY Address Configuration */
+#define PHY_ADDR                1
+#define RTL8211F_PHYSR          26
+
+/* RTL8211F PHYSR (Register 26) Bit Definitions */
+#define PHYSR_LINK_STATUS       (1 << 2)
+#define PHYSR_DUPLEX_STATUS     (1 << 3)
+#define PHYSR_SPEED_MASK        (3 << 4)
+#define PHYSR_SPEED_10          (0 << 4)
+#define PHYSR_SPEED_100         (1 << 4)
+#define PHYSR_SPEED_1000        (2 << 4)
+
+/* Allwinner EMAC Management Interface (MDIO) Bit Definitions */
+#define EMAC_MII_BUSY           (1 << 0)
+#define EMAC_MII_WRITE          (1 << 1)
+#define EMAC_MII_CLK_DIV_64     (2 << 2)  /* MDC safe clock divider based on AHB */
+
+/* Allwinner EMAC Basic Control 0 Bit Definitions */
+#define EMAC_CTL_SPEED_1000     (0 << 2)
+#define EMAC_CTL_SPEED_100      (3 << 2)
+#define EMAC_CTL_SPEED_10       (2 << 2)
+#define EMAC_CTL_DUPLEX_FULL    (1 << 0)
+
+/* EMAC DMA RX Ring Descriptor Configuration */
+#define EMAC_RX_BUFFERS_COUNT   16
+#define EMAC_MAX_PACKET_SIZE    1536
+
+/* Synopsys DesignWare / Allwinner EMAC DMA Descriptor Layout */
+struct emac_dma_desc {
+    volatile uint32_t status;
+    volatile uint32_t control;
+    volatile uint32_t buf_addr;
+    volatile uint32_t next_desc;
+};
+
+#define DESC_OWN_BY_DMA         (1UL << 31)
+#define DESC_RX_LAST            (1UL << 8)
+#define DESC_RX_FIRST           (1UL << 9)
+#define DESC_RX_ERRORS_MASK     (1UL << 15)
+#define DESC_RX_FL_MASK         0x3FFF0000
+#define DESC_RX_FL_SHIFT        16
+#define DESC_RX_BUF_SIZE_MASK   0x7FF
+#define DESC_RX_CHAINED         (1UL << 14)
+
+/* Driver private variables tracking state and rings */
+static struct emac_dma_desc rx_desc_ring[EMAC_RX_BUFFERS_COUNT] __attribute__((aligned(4)));
+static uint8_t rx_buffer_pool[EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(4)));
+static uint32_t rx_index = 0;
+static uint8_t last_link_state = 0xFF;
+
+/**
+ * @brief Reads a 16-bit register from the RTL8211F PHY via EMAC MDIO interface.
+ * @note Utilizes standard CMSIS structure pointer EMAC0.
+ */
+static uint16_t emac_mdio_read(uint8_t phy_addr, uint8_t reg_addr) {
+    /* Wait until the MDIO management interface becomes idle */
+    while (EMAC0->EMAC_MII_CMD & EMAC_MII_BUSY);
+
+    /* Construct the MII command with safe clock divider and target addresses */
+    uint32_t cmd = ((phy_addr & 0x1F) << 16) |
+                   ((reg_addr & 0x1F) << 4)  |
+                   EMAC_MII_CLK_DIV_64       |
+                   EMAC_MII_BUSY;
+
+    EMAC0->EMAC_MII_CMD = cmd;
+
+    /* Wait for the hardware to finish fetching data from the external PHY */
+    while (EMAC0->EMAC_MII_CMD & EMAC_MII_BUSY);
+
+    /* Return the read data from the lower 16 bits of the data register */
+    return (uint16_t)(EMAC0->EMAC_MII_DATA & 0xFFFF);
+}
+
+/**
+ * @brief Updates internal MAC speed and duplex settings within the EMAC0 peripheral.
+ */
+static void allwinner_emac_update_mac_speed(uint32_t speed, uint32_t is_full_duplex) {
+    uint32_t ctl_val = EMAC0->EMAC_BASIC_CTL0;
+
+    /* Strip old speed (bits 3:2) and duplex (bit 0) fields */
+    ctl_val &= ~((3 << 2) | (1 << 0));
+
+    if (is_full_duplex) {
+        ctl_val |= EMAC_CTL_DUPLEX_FULL;
+    }
+
+    if (speed == 1000) {
+        ctl_val |= EMAC_CTL_SPEED_1000;
+    }
+    else if (speed == 100) {
+        ctl_val |= EMAC_CTL_SPEED_100;
+    }
+    else if (speed == 10) {
+        ctl_val |= EMAC_CTL_SPEED_10;
+    }
+
+    EMAC0->EMAC_BASIC_CTL0 = ctl_val;
+}
+
+/**
+ * @brief Periodically monitors RTL8211F link status and updates the lwIP network interface.
+ * @note Intended to be called inside the main bare-metal superloop.
+ */
+static void check_ethernet_link_status(struct netif *netif) {
+    uint16_t physr = emac_mdio_read(PHY_ADDR, RTL8211F_PHYSR);
+    uint8_t link_up = (physr & PHYSR_LINK_STATUS) ? 1 : 0;
+
+    if (link_up != last_link_state) {
+        if (link_up) {
+            uint8_t speed_bits = physr & PHYSR_SPEED_MASK;
+            uint8_t duplex_bit = (physr & PHYSR_DUPLEX_STATUS) ? 1 : 0;
+
+            uint32_t speed = 100;
+            if (speed_bits == PHYSR_SPEED_10)       speed = 10;
+            else if (speed_bits == PHYSR_SPEED_100)  speed = 100;
+            else if (speed_bits == PHYSR_SPEED_1000) speed = 1000;
+
+            /* Sync MAC configuration with actual negotiated line parameters */
+            allwinner_emac_update_mac_speed(speed, duplex_bit);
+
+            /* Propagate state flags into the lwIP stack engine */
+            netif_set_link_up(netif);
+            if (!netif_is_up(netif)) {
+                netif_set_up(netif);
+            }
+        } else {
+            /* Drop link state in the core network stack */
+            netif_set_link_down(netif);
+        }
+        last_link_state = link_up;
+    }
+}
+
+/**
+ * @brief Polls the EMAC0 DMA RX ring, extracts packets, and shifts them into lwIP.
+ */
+static void ethernetif_poll(struct netif *netif) {
+    struct emac_dma_desc *current_desc;
+    struct pbuf *p = NULL;
+    struct pbuf *q;
+    uint32_t len;
+
+    while (1) {
+        current_desc = &rx_desc_ring[rx_index];
+
+        /* Check if the hardware DMA controller still owns this descriptor segment */
+        if (current_desc->status & DESC_OWN_BY_DMA) {
+            break;
+        }
+
+        /* Enforce processing only on fully assembled error-free incoming frames */
+        if ((current_desc->status & DESC_RX_FIRST) &&
+            (current_desc->status & DESC_RX_LAST) &&
+           !(current_desc->status & DESC_RX_ERRORS_MASK)) {
+
+            len = (current_desc->status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
+
+            if (len > 0) {
+                p = pbuf_alloc(PBUF_RAW, (uint16_t)len, PBUF_POOL);
+
+                if (p != NULL) {
+                    uint32_t bytes_copied = 0;
+                    uint8_t *src_ptr = (uint8_t *)current_desc->buf_addr;
+
+                    for (q = p; q != NULL; q = q->next) {
+                        memcpy(q->payload, &src_ptr[bytes_copied], q->len);
+                        bytes_copied += q->len;
+                    }
+
+                    if (netif->input(p, netif) != ERR_OK) {
+                        pbuf_free(p);
+                    }
+                }
+            }
+        }
+
+        /* Hand the descriptor frame back to the EMAC hardware engine */
+        current_desc->status = DESC_OWN_BY_DMA;
+
+        /* Increment and wrap the ring array tracker index */
+        rx_index++;
+        if (rx_index >= EMAC_RX_BUFFERS_COUNT) {
+            rx_index = 0;
+        }
+
+        /* Poke the receive DMA poll command register to force ring re-scanning */
+        EMAC0->EMAC_RX_CTL0 = 0x1;
+    }
+}
+
+//
+
+#include "lwip/pbuf.h"
+#include "lwip/netif.h"
+#include <string.h>
+
+/* Allwinner T507-H EMAC TX Descriptor Configuration */
+#define EMAC_TX_BUFFERS_COUNT   16
+#define EMAC_TX_MAX_PACKET_SIZE 1536
+
+/* Synopsys DesignWare / Allwinner EMAC DMA TX Descriptor Layout */
+struct emac_dma_tx_desc {
+    volatile uint32_t status;      /* TDES0: Status / Control */
+    volatile uint32_t control;     /* TDES1: Buffer size / Chain flags */
+    volatile uint32_t buf_addr;    /* TDES2: Physical memory pointer to payload */
+    volatile uint32_t next_desc;   /* TDES3: Next descriptor pointer (Chained) */
+};
+
+/* Bit definitions for emac_dma_tx_desc.status (TDES0) */
+#define TDES0_OWN_BY_DMA        (1UL << 31)  /* 1 = Hardware owns descriptor, 0 = CPU owns it */
+#define TDES0_TX_LAST           (1UL << 30)  /* Last segment of the frame */
+#define TDES0_TX_FIRST          (1UL << 29)  /* First segment of the frame */
+#define TDES0_CHECKSUM_INSERT   (3UL << 27)  /* Enable IP/TCP/UDP hardware checksum calculation */
+#define TDES0_TX_CHAINED        (1UL << 20)  /* Second address is next descriptor link */
+
+/* Bit definitions for emac_dma_tx_desc.control (TDES1) */
+#define TDES1_BUFFER_SIZE_MASK  0x7FF        /* Size of transmit buffer */
+
+/* Driver static structures for TX ring execution */
+static struct emac_dma_tx_desc tx_desc_ring[EMAC_TX_BUFFERS_COUNT] __attribute__((aligned(64)));
+static uint8_t tx_buffer_pool[EMAC_TX_BUFFERS_COUNT][EMAC_TX_MAX_PACKET_SIZE] __attribute__((aligned(64)));
+static uint32_t tx_index = 0;
+
+/* External cache maintenance functions (provided by your toolchain/BSP architecture) */
+extern void arch_dcache_clean_range(uint32_t start_addr, uint32_t size);
+extern void arch_dcache_invalidate_range(uint32_t start_addr, uint32_t size);
+
+/**
+ * @brief Transmits an lwIP pbuf packet chain through the Allwinner EMAC0 TX descriptor ring.
+ * @param netif Pointer to the lwIP network interface configuration.
+ * @param p Pointer to the allocated lwIP packet buffer containing data frames.
+ * @return ERR_OK on success, ERR_MEM if the TX ring is saturated.
+ */
+static err_t low_level_output(struct netif *netif, struct pbuf *p) {
+    struct emac_dma_tx_desc *current_desc;
+    struct pbuf *q;
+    uint32_t total_bytes = 0;
+    uint8_t *dst_ptr;
+
+    (void)netif;
+
+    /* Read the current descriptor index state from the ring */
+    current_desc = &tx_desc_ring[tx_index];
+
+    /* Invalidate descriptor from D-Cache to get the actual hardware state */
+    arch_dcache_invalidate_range((uint32_t)current_desc, sizeof(struct emac_dma_tx_desc));
+
+    /* Check if the descriptor is still held and processed by the EMAC DMA engine */
+    if (current_desc->status & TDES0_OWN_BY_DMA) {
+        /* TX ring buffer saturation - core stack must retry later */
+        return ERR_MEM;
+    }
+
+    dst_ptr = &tx_buffer_pool[tx_index][0];
+
+    /* Flatten the multi-segmented lwIP pbuf chain into a linear hardware buffer */
+    for (q = p; q != NULL; q = q->next) {
+        if ((total_bytes + q->len) > EMAC_TX_MAX_PACKET_SIZE) {
+            /* Packet size exceeds hardware buffer limits, safety abort */
+            return ERR_VAL;
+        }
+        memcpy(&dst_ptr[total_bytes], q->payload, q->len);
+        total_bytes += q->len;
+    }
+
+    /* Push the newly populated data payload out of the CPU data cache into physical DDR memory */
+    arch_dcache_clean_range((uint32_t)dst_ptr, total_bytes);
+
+    /* Set buffer parameters and establish the descriptor configuration */
+    current_desc->control = (total_bytes & TDES1_BUFFER_SIZE_MASK);
+    current_desc->buf_addr = (uint32_t)dst_ptr;
+
+    /* Mark the descriptor as a single complete frame with hardware checksum offloading */
+    current_desc->status = TDES0_TX_FIRST | TDES0_TX_LAST | TDES0_TX_CHAINED | TDES0_CHECKSUM_INSERT;
+
+    /* Hand over descriptor ownership to the EMAC hardware engine */
+    current_desc->status |= TDES0_OWN_BY_DMA;
+
+    /* Push the modified descriptor out of the CPU cache to ensure DMA visible execution */
+    arch_dcache_clean_range((uint32_t)current_desc, sizeof(struct emac_dma_tx_desc));
+
+    /* Increment and wrap around the active TX index tracker */
+    tx_index++;
+    if (tx_index >= EMAC_TX_BUFFERS_COUNT) {
+        tx_index = 0;
+    }
+
+    /* Poke the transmit poll command register to awake the TX DMA controller if suspended */
+    EMAC0->EMAC_TX_CTL1 = 0x1;
+
+    return ERR_OK;
+}
+
+#endif
+
+
 void nic_initialize(void)
 {
 	//PRINTF("nic_initialize start\n");
@@ -380,5 +692,6 @@ void nic_linkspool(void * ctx)
 	struct netif * const netif = (struct netif *) ctx;
 	check_ethernet_link_status(netif);
 }
+
 
 #endif /* WITHLWIP && WITHETHHW && (CPUSTYLE_T507) */
