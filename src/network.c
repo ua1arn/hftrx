@@ -651,6 +651,115 @@ static void init_netif(void)
 	}
 }
 
+
+// UDP for data
+
+uint8_t radio_send_payload(const uint8_t * payload, unsigned size){
+	printhex(0, payload, size);
+	return 0;
+//	tx_radio_packet_configure(&sr_cfg, &tx_buf, size, &payload[0]);
+//	return sr_send_radio_packet(&sr_cfg, &tx_buf, &sr_state);
+//	if(size <= 0) return 0;
+//	return radio_queue_put(&payload[0], size);
+}
+
+#define RADIOPORT 10010 //0x271A
+static const uint_fast16_t myAppPort = RADIOPORT;	// net: 0x271A
+static uint_fast16_t otherSideAppPort = RADIOPORT;	// net: 0x271A
+static struct udp_pcb *pcbudpMyApp = NULL;
+
+// вызывается для передачи в host host данных от радиоблока
+void tx_data_to_host(
+	const uint8_t * dbuff, unsigned dsize,
+	const uint8_t *IPdest
+	)
+{
+	// передаяа пакета средствами LWIP
+	ip_addr_t dstip;
+	IP4_ADDR(& dstip, IPdest [0], IPdest [1], IPdest [2], IPdest [3]);
+
+	struct pbuf *out = pbuf_alloc(PBUF_TRANSPORT, dsize, PBUF_POOL);
+	if (out == NULL)
+	{
+
+		#ifdef DEBUG_UART_MESSAGES
+			printf("pult_tx_data: no memory\n");
+		#endif
+		return;
+	}
+    pbuf_take(out, dbuff, dsize);
+	err_t err = udp_sendto(pcbudpMyApp, out, & dstip, otherSideAppPort);
+	pbuf_free(out);
+	if (err != ERR_OK)
+	{
+		#ifdef DEBUG_UART_MESSAGES
+			printf("pult_tx_data: udp_sendto error\n");
+		#endif
+		return;
+	}
+	//PRINTF("pult_tx_data trough LWIP done\n");
+}
+
+
+
+//void send_payload_to_host(const uint8_t *dbuff, unsigned size)
+//{
+//  uint8_t ta [4];
+//  ta [0] = entries [0].addr [0];
+//  ta [1] = entries [0].addr [1];
+//  ta [2] = entries [0].addr [2];
+//  ta [3] = 255;//entries [0].addr [3];
+//  tx_data_to_host(dbuff, size, ta);
+//}
+
+// вызывается по приёму от host данных для радиоблока
+static void udpapp_recv_proc(void *arg,
+		struct udp_pcb *pcb,
+		struct pbuf *p,
+	   const ip_addr_t *addr, u16_t port)
+{
+//	PRINTF("udpapp_recv_proc from %d.%d.%d.%d from port %u\n",
+//			(addr->addr >> 0) & 0xFF, (addr->addr >> 8) & 0xFF, (addr->addr >> 16) & 0xFF, (addr->addr >> 24) & 0xFF,
+//			port
+//			);
+
+    //const uint8_t srcIp [4] = { ip4_addr1_16(addr), ip4_addr2_16(addr), ip4_addr3_16(addr), ip4_addr4_16(addr) };
+	//PRINTF("complete packet:\n");
+    uint8_t fromhostdata [124];
+    u16_t size = pbuf_copy_partial(p, fromhostdata, sizeof fromhostdata, 0);
+	pbuf_free(p);
+
+#ifdef DEBUG_UART_MESSAGES
+	printf("From host:\n");
+
+	printhex(0, fromhostdata, size);
+#endif
+
+	radio_send_payload(&fromhostdata[0], size);
+//	send_payload_to_host(&fromhostdata[0], size);
+}
+
+static err_t udpapperv_app_init(void)
+{
+	ip_addr_t * const ba = NULL;
+	err_t err;
+	// UDP to application
+	pcbudpMyApp = udp_new();
+	//ASSERT(pcbudpMyApp != NULL);
+	if (pcbudpMyApp == NULL)
+		return ERR_MEM;
+	err = udp_bind(pcbudpMyApp, ba, myAppPort);
+	if (err != ERR_OK)
+	{
+		//udpappserv_free();
+		return err;
+	}
+	udp_recv(pcbudpMyApp, udpapp_recv_proc, NULL);
+
+	return ERR_OK;
+}
+
+
 void network_initialize(void)
 {
 	struct netif  *netif = & nic_netif_data;
@@ -676,6 +785,7 @@ void network_initialize(void)
 #endif /* LWIP_HTTPD_CGI */
 	  //echo_init();
 
+	udpapperv_app_init();
 	{
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
