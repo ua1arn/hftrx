@@ -13631,7 +13631,7 @@ updateboard_noui(
 	}
 
 #if WITHLWIP
-	board_eth_dhcp(param_getvalue(& xgethdhcpon));
+	board_set_eth_dhcp(param_getvalue(& xgethdhcpon));
 #endif /* WITHLWIP */
 
 /* после всех перенастроек включаем передатчик */

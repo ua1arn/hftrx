@@ -161,7 +161,8 @@ void board_set_displayfps(uint_fast8_t v);
 
 void board_set_rtty_parametrs(int_fast32_t baudrate10, int_fast32_t shift, uint_fast8_t inverted);
 
-void board_eth_dhcp(uint_fast8_t v);
+void board_set_eth_dhcp(uint_fast8_t v);
+uint_fast8_t board_get_eth_dhcp(void);
 
 /* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
 // Параметр функции board_set_seqphase()

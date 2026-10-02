@@ -653,10 +653,12 @@ static void init_netif(void)
 
 void network_initialize(void)
 {
+	struct netif  *netif = & nic_netif_data;
 	init_lwip();
 	nic_buffers_initialize();
 	nic_initialize();
 	init_netif();
+	nic_set_mac(netif);
 
 #if 1
 	  PRINTF("network_initialize: start DHCP & DNS\n");
@@ -687,29 +689,38 @@ void network_initialize(void)
 static uint_fast8_t glob_eth_dhcp = 1;
 
 void
-board_eth_dhcp(uint_fast8_t v)
+board_set_eth_dhcp(uint_fast8_t v)
 {
+	struct netif * const netif = & nic_netif_data;
 	uint_fast8_t n = !! v;
 	if (glob_eth_dhcp != n)
 	{
 		glob_eth_dhcp = n;
 		if (n)
 		{
-            err_t e = dhcp_start(& nic_netif_data);
+            err_t e = dhcp_start(netif);
             ASSERT(ERR_OK == e);
 		}
 		else
 		{
-            dhcp_release_and_stop(& nic_netif_data);
+            dhcp_release_and_stop(netif);
+            netif_set_ipaddr(netif, IP4_ADDR_ANY4);
+            netif_set_netmask(netif, IP4_ADDR_ANY4);
+            netif_set_gw(netif, IP4_ADDR_ANY4);
 		}
 	}
+}
+
+uint_fast8_t board_get_eth_dhcp(void)
+{
+	return glob_eth_dhcp;
 }
 
 
 /* Параметры интерфейса для отображения в меню */
 size_t getvaltextethaddr(char * buff, size_t count, int_fast32_t value)
 {
-	struct netif  *netif = & nic_netif_data;
+	struct netif * const netif = & nic_netif_data;
 	const ip4_addr_t addr = * netif_ip4_addr(netif);
 	const u8_t p1 = ip4_addr1_val(addr);
 	const u8_t p2 = ip4_addr2_val(addr);
@@ -723,7 +734,7 @@ size_t getvaltextethaddr(char * buff, size_t count, int_fast32_t value)
 /* Параметры интерфейса для отображения в меню */
 size_t getvaltextethmask(char * buff, size_t count, int_fast32_t value)
 {
-	struct netif  *netif = & nic_netif_data;
+	struct netif * const netif = & nic_netif_data;
 	const ip4_addr_t netmask = * netif_ip4_netmask(netif);
 	const u8_t p1 = ip4_addr1_val(netmask);
 	const u8_t p2 = ip4_addr2_val(netmask);
@@ -737,7 +748,7 @@ size_t getvaltextethmask(char * buff, size_t count, int_fast32_t value)
 /* Параметры интерфейса для отображения в меню */
 size_t getvaltextethgateway(char * buff, size_t count, int_fast32_t value)
 {
-	struct netif  *netif = & nic_netif_data;
+	struct netif * const netif = & nic_netif_data;
 	const ip4_addr_t gw = * netif_ip4_gw(netif);
 	const u8_t p1 = ip4_addr1_val(gw);
 	const u8_t p2 = ip4_addr2_val(gw);
@@ -751,7 +762,7 @@ size_t getvaltextethgateway(char * buff, size_t count, int_fast32_t value)
 /* Параметры интерфейса для отображения в меню */
 size_t getvaltextethlinkstate(char * buff, size_t count, int_fast32_t value)
 {
-	struct netif  *netif = & nic_netif_data;
+	struct netif * const netif = & nic_netif_data;
 	(void) value;
 	return local_snprintf_P(buff, count, "%s", netif_is_link_up(netif) ? "Up" : "Down");
 }
