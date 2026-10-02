@@ -340,6 +340,7 @@ static err_t allwinner_emac_init_port(EMAC_TypeDef *emac_peripheral, struct neti
     return ERR_OK;
 }
 
+
 static uint8_t rxbuff [EMAC_MAX_PACKET_SIZE];
 static __ALIGNED(4) struct emac_dma_rx_desc emac_rxdesc [1];
 static uint8_t txbuff [EMAC_MAX_PACKET_SIZE];
@@ -394,8 +395,9 @@ void nic_send(const uint8_t * data, int isize)
 		0;
 
 	//emac_peripheral->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
-	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 1);	// TX_MD 1: TX start after TX DMA FIFO located a full frame
-	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 30);	// DMA EN
+	emac_peripheral->EMAC_TX_CTL1 = EMAC_TX_CTL1_TX_MD_FORW;
+	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_MD_FORW;	// TX_MD 1: TX start after TX DMA FIFO located a full frame
+	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
 	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 	while (emac_peripheral->EMAC_TX_CTL1 & (UINT32_C(1) << 31))
 		;
@@ -720,23 +722,6 @@ static void allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct neti
 				0;
 
 		emac_peripheral->EMAC_RX_DMA_DESC_LIST = (uintptr_t) emac_rxdesc;
-		//emac_peripheral->EMAC_RX_CTL0 = 0xb8000000;
-		emac_peripheral->EMAC_RX_CTL0 =
-			1 * (UINT32_C(1) << 31) |	// RX_EN
-			//1 * (UINT32_C(1) << 29) |	// JUMBO_FRM_EN
-			//1 * (UINT32_C(1) << 28) |	// STRIP_FCS
-	//		1 * (UINT32_C(1) << 27) |	// CHECK_CRC 1: Calculate CRC and check the IPv4 Header Checksum.
-			0;
-		emac_peripheral->EMAC_RX_CTL1 =
-				1 * (UINT32_C(1) << 1) |	// 1: RX start read after RX DMA FIFO located a full frame
-				1 * (UINT32_C(1) << 30) |	// /RX_DMA_EN
-				0;
-
-		emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
-
-		emac_peripheral->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
-		while (emac_peripheral->EMAC_RX_CTL1 & (UINT32_C(1) << 31))
-			;
 	}
 	// TX init
 	{
@@ -760,6 +745,53 @@ static void allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct neti
 
 		//emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 	}
+
+
+    /* Setup safe default speed and duplex in Basic configuration */
+    //emac_peripheral->EMAC_BASIC_CTL0 = EMAC_BASIC_CTL0_SPEED_100 | EMAC_BASIC_CTL0_DUPLEX;
+
+    /* Generate and program the unique port hardware MAC address derived from eFuses */
+    allwinner_emac_apply_mac_dual(emac_peripheral, netif, port_index);
+
+    {
+    	// RX
+
+		//emac_peripheral->EMAC_RX_CTL0 = 0xb8000000;
+		emac_peripheral->EMAC_RX_CTL0 =
+			1 * (UINT32_C(1) << 31) |	// RX_EN
+			//1 * (UINT32_C(1) << 29) |	// JUMBO_FRM_EN
+			//1 * (UINT32_C(1) << 28) |	// STRIP_FCS
+	//		1 * (UINT32_C(1) << 27) |	// CHECK_CRC 1: Calculate CRC and check the IPv4 Header Checksum.
+			0;
+		emac_peripheral->EMAC_RX_CTL1 =
+				1 * (UINT32_C(1) << 1) |	// 1: RX start read after RX DMA FIFO located a full frame
+				EMAC_RX_CTL1_RX_MD_FORW |
+				1 * (UINT32_C(1) << 30) |	// /RX_DMA_EN
+				0;
+
+		emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
+
+		emac_peripheral->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
+		while (emac_peripheral->EMAC_RX_CTL1 & (UINT32_C(1) << 31))
+			;
+
+    }
+    {
+    	// TX
+    }
+    /* 4. Configure DMA options and awake the transmission layers */
+    /* Setup Store-and-Forward mode to prevent buffer underrun/overflow errors */
+//    emac_peripheral->EMAC_TX_CTL1 = EMAC_TX_CTL1_TX_MD_FORW;
+//    emac_peripheral->EMAC_RX_CTL1 = EMAC_RX_CTL1_RX_MD_FORW;
+
+    /* Activate both MAC state controllers */
+    //emac_peripheral->EMAC_TX_CTL0 |= EMAC_TX_CTL0_TX_EN;
+//    emac_peripheral->EMAC_RX_CTL0 |= EMAC_RX_CTL0_RX_EN;
+
+    /* Fire up the main pipeline DMA execution rings */
+//    emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;
+//    emac_peripheral->EMAC_RX_CTL1 |= EMAC_RX_CTL1_RX_DMA_EN;
+
 }
 
 static void board_nic_dpc(void * ctx)
@@ -785,10 +817,9 @@ void nic_initialize(struct netif *netif)
 	}
 	else
 	{
-		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
+		//allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 		allwinner_emac_init_port(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 
-		//PRINTF("nic_initialize done\n");
 		{
 			static dpcobj_t nic_dpc_entry;
 			dpcobj_initialize(& nic_dpc_entry, board_nic_dpc, netif);
@@ -797,6 +828,7 @@ void nic_initialize(struct netif *netif)
 		}
 		netif->linkoutput = alw_low_level_output;//nic_linkoutput_fn;	// используется внутри etharp_output
 	}
+		//PRINTF("nic_initialize done\n");
 
 }
 
