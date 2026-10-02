@@ -811,7 +811,6 @@ void nic_initialize(struct netif *netif)
 	if (1)
 	{
 		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
-		allwinner_emac_apply_mac_dual(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 		on_packet = nic_on_packet;
 		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 	}
