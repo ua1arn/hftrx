@@ -461,7 +461,7 @@
 	#if 0
 		#define WITHRTTHREAD 1	/* Use rt-thread https://github.com/RT-Thread/rt-thread.git */
 	#endif
-	#if 1
+	#if 0
 		#define WITHLWIP 1
 		//#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
