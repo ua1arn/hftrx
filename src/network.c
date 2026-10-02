@@ -593,7 +593,7 @@ static err_t netif_init_cb(struct netif *netif)
 	netif->output = etharp_output; //nic_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
 												// и слкдующий callback linkoutput не требовался бы вообще
 	netif->linkoutput = alw_low_level_output;//nic_linkoutput_fn;	// используется внутри etharp_output
-	netif->linkoutput = nic_linkoutput_fn;	// используется внутри etharp_output
+	//netif->linkoutput = nic_linkoutput_fn;	// используется внутри etharp_output
 	return ERR_OK;
 }
 
