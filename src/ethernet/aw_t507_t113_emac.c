@@ -25,7 +25,75 @@
 
 #include <string.h>
 
-static nic_rxproc_t on_packet;
+
+/* Offsets for the 128-bit unique Chip ID inside Allwinner SID eFuse space */
+#define SID_OFFSET_CHIPID_W0    0x00
+#define SID_OFFSET_CHIPID_W1    0x04
+#define SID_OFFSET_CHIPID_W2    0x08
+#define SID_OFFSET_CHIPID_W3    0x0C
+
+/* External hardware abstraction function provided by your codebase */
+extern uint_fast32_t allwnr_sid_read(unsigned offs);
+
+/**
+ * @brief Generates a stable, unique MAC address for a specific EMAC port derived from the SID.
+ * @param mac_out Pointer to a 6-byte array where the generated MAC address will be stored.
+ * @param port_index Zero-based index of the EMAC port (0 for EMAC0, 1 for EMAC1).
+ */
+static void allwinner_get_mac_from_sid_dual(uint8_t *mac_out, uint8_t port_index) {
+    /* Read the 128-bit unique hardware key word by word using the provided SID API */
+    uint32_t w0 = (uint32_t)allwnr_sid_read(SID_OFFSET_CHIPID_W0);
+    uint32_t w1 = (uint32_t)allwnr_sid_read(SID_OFFSET_CHIPID_W1);
+    uint32_t w2 = (uint32_t)allwnr_sid_read(SID_OFFSET_CHIPID_W2);
+    uint32_t w3 = (uint32_t)allwnr_sid_read(SID_OFFSET_CHIPID_W3);
+
+    /* Compress 16 unique identity bytes into 4 hash bytes using bitwise XOR */
+    uint32_t hash_low  = w0 ^ w2;
+    uint32_t hash_high = w1 ^ w3;
+
+    /* Build the base 6-byte Ethernet MAC address array */
+    mac_out[0] = 0x02; /* Enforce 'Locally Administered' address bit, clear Multicast bit */
+    mac_out[1] = 0x81; /* Custom static identifier token for the device family */
+    mac_out[2] = (uint8_t)(hash_high >> 8);
+    mac_out[3] = (uint8_t)(hash_high >> 0);
+    mac_out[4] = (uint8_t)(hash_low >> 8);
+
+    /* Modify the least significant byte based on the requested EMAC port index */
+    mac_out[5] = (uint8_t)(hash_low >> 0) + port_index;
+}
+
+/**
+ * @brief Programs the derived unique hardware MAC address into the specific EMAC interface registers.
+ * @param emac_peripheral Pointer to the CMSIS-style EMAC peripheral base (e.g., EMAC0 or EMAC1).
+ * @param netif Pointer to the corresponding lwIP network interface structure.
+ * @param port_index Zero-based index of the EMAC hardware interface.
+ */
+static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct netif *netif, uint8_t port_index) {
+    uint8_t computed_mac[6];
+
+    /* Fetch the unique MAC address with port-specific byte shifting */
+    allwinner_get_mac_from_sid_dual(computed_mac, port_index);
+
+    /* Sync the generated address with the lwIP netif structure layer for ARP processing */
+    netif->hwaddr_len = 6;
+    for (uint8_t i = 0; i < 6; i++) {
+        netif->hwaddr[i] = computed_mac[i];
+    }
+
+    /* Construct the 32-bit Low register payload (Bytes 0, 1, 2, 3) */
+    uint32_t mac_low = ((uint32_t)computed_mac[0] << 0)  |
+                       ((uint32_t)computed_mac[1] << 8)  |
+                       ((uint32_t)computed_mac[2] << 16) |
+                       ((uint32_t)computed_mac[3] << 24);
+
+    /* Construct the 32-bit High register payload (Bytes 4, 5) */
+    uint32_t mac_high = ((uint32_t)computed_mac[4] << 0) |
+                        ((uint32_t)computed_mac[5] << 8);
+
+    /* Write directly to the specified hardware MAC filter registers */
+    emac_peripheral->EMAC_ADDR [0].LOW  = mac_low;	// lower 32 bits of the 6-byte first MAC address
+    emac_peripheral->EMAC_ADDR [0].HIGH = mac_high;	// upper 16 bits of the first 6-byte MAC address
+}
 
 #define ETH_HEADER_SIZE                 14
 #define ETH_MIN_PACKET_SIZE             60
@@ -33,9 +101,6 @@ static nic_rxproc_t on_packet;
 //#define EMAC_HEADER_SIZE               (sizeof (emac_data_packet_t))
 //#define EMAC_RX_BUFFER_SIZE            (EMAC_HEADER_SIZE + ETH_MAX_PACKET_SIZE)
 
-static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct netif *netif, uint8_t port_index);
-
-// AI-generated
 
 /* EMAC DMA RX Ring Descriptor Configuration */
 #define EMAC_RX_BUFFERS_COUNT   16
@@ -49,18 +114,18 @@ struct emac_dma_rx_desc {
     volatile uint32_t next_desc;
 };
 
-#define DESC_OWN_BY_DMA         (1UL << 31)
-#define DESC_RX_LAST            (1UL << 8)
-#define DESC_RX_FIRST           (1UL << 9)
-#define DESC_RX_ERRORS_MASK     (1UL << 15)
+#define DESC_OWN_BY_DMA         (UINT32_C(1) << 31)
+#define DESC_RX_LAST            (UINT32_C(1) << 8)
+#define DESC_RX_FIRST           (UINT32_C(1) << 9)
+#define DESC_RX_ERRORS_MASK     (UINT32_C(1) << 15)
 #define DESC_RX_FL_MASK         0x3FFF0000
 #define DESC_RX_FL_SHIFT        16
-#define DESC_RX_BUF_SIZE_MASK   0x7FF
-#define DESC_RX_CHAINED         (1UL << 14)
+//#define DESC_RX_BUF_SIZE_MASK   0x7FF
+#define DESC_RX_CHAINED         (UINT32_C(1) << 14)
 
 /* Driver private variables tracking state and rings */
-static struct emac_dma_rx_desc rx_desc_ring[EMAC_RX_BUFFERS_COUNT] __attribute__((aligned(4)));
-static uint8_t rx_buffer_pool[EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(4)));
+static struct emac_dma_rx_desc rx_desc_ring[EMAC_RX_BUFFERS_COUNT] __ALIGNED(4);
+static uint8_t rx_buffer_pool[EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __ALIGNED(4);
 static uint32_t rx_index = 0;
 
 /* Allwinner EMAC DMA Ring Configurations */
@@ -77,20 +142,20 @@ struct emac_dma_rx_desc {
 };
 
 /* Bit definitions for RX/TX Descriptors */
-#define DESC_OWN_BY_DMA           (1UL << 31)
-#define DESC_RX_CHAINED           (1UL << 14)
-#define TDES0_TX_CHAINED          (1UL << 20)
-#define DESC_RX_BUF_SIZE_MASK     0x7FF
+#define DESC_OWN_BY_DMA           (UINT32_C(1) << 31)
+#define DESC_RX_CHAINED           (UINT32_C(1) << 14)
+#define TDES0_TX_CHAINED          (UINT32_C(1) << 20)
+#define DESC_RX_BUF_SIZE_MASK     UINT32_C(0x7FF)
 
 /* Register Bits for EMAC Control Blocks */
 #define EMAC_BASIC_CTL0_DUPLEX    (1 << 0)   /* Default to Full Duplex on start */
 #define EMAC_BASIC_CTL0_SPEED_100 (3 << 2)   /* Default safe fallback speed 100M */
-#define EMAC_TX_CTL0_TX_EN        (1UL << 31) /* Enable Transmit MAC */
-#define EMAC_TX_CTL1_TX_DMA_EN    (1UL << 30) /* Start Transmit DMA Engine */
-#define EMAC_TX_CTL1_TX_MD_FORW   (1UL << 1)  /* Store-and-Forward mode for TX */
-#define EMAC_RX_CTL0_RX_EN        (1UL << 31) /* Enable Receive MAC */
-#define EMAC_RX_CTL1_RX_DMA_EN    (1UL << 30) /* Start Receive DMA Engine */
-#define EMAC_RX_CTL1_RX_MD_FORW   (1UL << 1)  /* Store-and-Forward mode for RX */
+#define EMAC_TX_CTL0_TX_EN        (UINT32_C(1) << 31) /* Enable Transmit MAC */
+#define EMAC_TX_CTL1_TX_DMA_EN    (UINT32_C(1) << 30) /* Start Transmit DMA Engine */
+#define EMAC_TX_CTL1_TX_MD_FORW   (UINT32_C(1) << 1)  /* Store-and-Forward mode for TX */
+#define EMAC_RX_CTL0_RX_EN        (UINT32_C(1) << 31) /* Enable Receive MAC */
+#define EMAC_RX_CTL1_RX_DMA_EN    (UINT32_C(1) << 30) /* Start Receive DMA Engine */
+#define EMAC_RX_CTL1_RX_MD_FORW   (UINT32_C(1) << 1)  /* Store-and-Forward mode for RX */
 
 
 
@@ -107,18 +172,18 @@ struct emac_dma_tx_desc {
 };
 
 /* Bit definitions for emac_dma_tx_desc.status (TDES0) */
-#define TDES0_OWN_BY_DMA        (1UL << 31)  /* 1 = Hardware owns descriptor, 0 = CPU owns it */
-#define TDES0_TX_LAST           (1UL << 30)  /* Last segment of the frame */
-#define TDES0_TX_FIRST          (1UL << 29)  /* First segment of the frame */
-#define TDES0_CHECKSUM_INSERT   (3UL << 27)  /* Enable IP/TCP/UDP hardware checksum calculation */
-#define TDES0_TX_CHAINED        (1UL << 20)  /* Second address is next descriptor link */
+#define TDES0_OWN_BY_DMA        (UINT32_C(1) << 31)  /* 1 = Hardware owns descriptor, 0 = CPU owns it */
+#define TDES0_TX_LAST           (UINT32_C(1) << 30)  /* Last segment of the frame */
+#define TDES0_TX_FIRST          (UINT32_C(1) << 29)  /* First segment of the frame */
+#define TDES0_CHECKSUM_INSERT   (UINT32_C(0x03) << 27)  /* Enable IP/TCP/UDP hardware checksum calculation */
+#define TDES0_TX_CHAINED        (UINT32_C(1) << 20)  /* Second address is next descriptor link */
 
 /* Bit definitions for emac_dma_tx_desc.control (TDES1) */
 #define TDES1_BUFFER_SIZE_MASK  0x7FF        /* Size of transmit buffer */
 
 /* Driver static structures for TX ring execution */
-static struct emac_dma_tx_desc tx_desc_ring[EMAC_TX_BUFFERS_COUNT] __attribute__((aligned(64)));
-static uint8_t tx_buffer_pool[EMAC_TX_BUFFERS_COUNT][EMAC_TX_MAX_PACKET_SIZE] __attribute__((aligned(64)));
+static struct emac_dma_tx_desc tx_desc_ring[EMAC_TX_BUFFERS_COUNT] __ALIGNED(64);
+static uint8_t tx_buffer_pool[EMAC_TX_BUFFERS_COUNT][EMAC_TX_MAX_PACKET_SIZE] __ALIGNED(64);
 static uint32_t tx_index = 0;
 
 
@@ -126,11 +191,11 @@ static uint32_t tx_index = 0;
  * Dual-port Ring Buffers allocation.
  * Explicitly aligned to a 64-byte boundary to meet Cortex-A53 L1 D-Cache line requirements.
  */
-static RAMNC struct emac_dma_rx_desc dual_rx_ring[2][EMAC_RX_BUFFERS_COUNT] __attribute__((aligned(64)));
-static RAMNC struct emac_dma_tx_desc dual_tx_ring[2][EMAC_TX_BUFFERS_COUNT] __attribute__((aligned(64)));
+static RAMNC struct emac_dma_rx_desc dual_rx_ring[2][EMAC_RX_BUFFERS_COUNT] __ALIGNED(64);
+static RAMNC struct emac_dma_tx_desc dual_tx_ring[2][EMAC_TX_BUFFERS_COUNT] __ALIGNED(64);
 
-static RAMNC uint8_t dual_rx_buffers[2][EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(64)));
-static RAMNC uint8_t dual_tx_buffers[2][EMAC_TX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __attribute__((aligned(64)));
+static RAMNC uint8_t dual_rx_buffers[2][EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __ALIGNED(64);
+static RAMNC uint8_t dual_tx_buffers[2][EMAC_TX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __ALIGNED(64);
 
 /* Track variables for current software execution points */
 static uint32_t dual_rx_index[2] = {0, 0};
@@ -202,7 +267,7 @@ static void ethernetif_poll(struct netif *netif) {
  * @param p Pointer to the allocated lwIP packet buffer containing data frames.
  * @return ERR_OK on success, ERR_MEM if the TX ring is saturated.
  */
-err_t XXXalw_low_level_output(struct netif *netif, struct pbuf *p) {
+err_t XXXlow_level_output(struct netif *netif, struct pbuf *p) {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
 	TP();
     struct emac_dma_tx_desc *current_desc;
@@ -354,7 +419,7 @@ void nic_send(const uint8_t * data, int isize)
 {
 	}
 
-err_t alw_low_level_output(struct netif *netif, struct pbuf *p) {
+static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
     int i = 0;
@@ -395,11 +460,9 @@ err_t alw_low_level_output(struct netif *netif, struct pbuf *p) {
 
 		dcache_clean((uintptr_t) & emac_txdesc [i], sizeof emac_txdesc [i]);
 
-
-		//emac_peripheral->EMAC_TX_CTL1 &= ~ (UINT32_C(1) << 30);	// DMA EN
 		emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
-		while (emac_peripheral->EMAC_TX_CTL1 & (UINT32_C(1) << 31))
-			;
+		if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
+			return ERR_MEM;
 		return ERR_OK;
 	}
     return ERR_MEM;
@@ -615,78 +678,6 @@ static void check_ethernet_link_status(struct netif *netif) {
             netif_set_link_down(netif);
         }
     }
-}
-
-#include <stdint.h>
-#include "lwip/netif.h"
-
-/* Offsets for the 128-bit unique Chip ID inside Allwinner SID eFuse space */
-#define SID_OFFSET_CHIPID_W0    0x00
-#define SID_OFFSET_CHIPID_W1    0x04
-#define SID_OFFSET_CHIPID_W2    0x08
-#define SID_OFFSET_CHIPID_W3    0x0C
-
-/* External hardware abstraction function provided by your codebase */
-extern uint_fast32_t allwnr_sid_read(unsigned offs);
-
-/**
- * @brief Generates a stable, unique MAC address for a specific EMAC port derived from the SID.
- * @param mac_out Pointer to a 6-byte array where the generated MAC address will be stored.
- * @param port_index Zero-based index of the EMAC port (0 for EMAC0, 1 for EMAC1).
- */
-static void allwinner_get_mac_from_sid_dual(uint8_t *mac_out, uint8_t port_index) {
-    /* Read the 128-bit unique hardware key word by word using the provided SID API */
-    uint32_t w0 = (uint32_t)allwnr_sid_read(SID_OFFSET_CHIPID_W0);
-    uint32_t w1 = (uint32_t)allwnr_sid_read(SID_OFFSET_CHIPID_W1);
-    uint32_t w2 = (uint32_t)allwnr_sid_read(SID_OFFSET_CHIPID_W2);
-    uint32_t w3 = (uint32_t)allwnr_sid_read(SID_OFFSET_CHIPID_W3);
-
-    /* Compress 16 unique identity bytes into 4 hash bytes using bitwise XOR */
-    uint32_t hash_low  = w0 ^ w2;
-    uint32_t hash_high = w1 ^ w3;
-
-    /* Build the base 6-byte Ethernet MAC address array */
-    mac_out[0] = 0x02; /* Enforce 'Locally Administered' address bit, clear Multicast bit */
-    mac_out[1] = 0x81; /* Custom static identifier token for the device family */
-    mac_out[2] = (uint8_t)(hash_high >> 8);
-    mac_out[3] = (uint8_t)(hash_high >> 0);
-    mac_out[4] = (uint8_t)(hash_low >> 8);
-
-    /* Modify the least significant byte based on the requested EMAC port index */
-    mac_out[5] = (uint8_t)(hash_low >> 0) + port_index;
-}
-
-/**
- * @brief Programs the derived unique hardware MAC address into the specific EMAC interface registers.
- * @param emac_peripheral Pointer to the CMSIS-style EMAC peripheral base (e.g., EMAC0 or EMAC1).
- * @param netif Pointer to the corresponding lwIP network interface structure.
- * @param port_index Zero-based index of the EMAC hardware interface.
- */
-static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct netif *netif, uint8_t port_index) {
-    uint8_t computed_mac[6];
-
-    /* Fetch the unique MAC address with port-specific byte shifting */
-    allwinner_get_mac_from_sid_dual(computed_mac, port_index);
-
-    /* Sync the generated address with the lwIP netif structure layer for ARP processing */
-    netif->hwaddr_len = 6;
-    for (uint8_t i = 0; i < 6; i++) {
-        netif->hwaddr[i] = computed_mac[i];
-    }
-
-    /* Construct the 32-bit Low register payload (Bytes 0, 1, 2, 3) */
-    uint32_t mac_low = ((uint32_t)computed_mac[0] << 0)  |
-                       ((uint32_t)computed_mac[1] << 8)  |
-                       ((uint32_t)computed_mac[2] << 16) |
-                       ((uint32_t)computed_mac[3] << 24);
-
-    /* Construct the 32-bit High register payload (Bytes 4, 5) */
-    uint32_t mac_high = ((uint32_t)computed_mac[4] << 0) |
-                        ((uint32_t)computed_mac[5] << 8);
-
-    /* Write directly to the specified hardware MAC filter registers */
-    emac_peripheral->EMAC_ADDR [0].LOW  = mac_low;	// lower 32 bits of the 6-byte first MAC address
-    emac_peripheral->EMAC_ADDR [0].HIGH = mac_high;	// upper 16 bits of the first 6-byte MAC address
 }
 
 
@@ -960,13 +951,13 @@ void nic_initialize(struct netif *netif)
 		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 		//on_packet = nic_on_packet;
 		//arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
-		netif->linkoutput = alw_low_level_output;//nic_linkoutput_fn;	// используется внутри etharp_output
 		{
 			static dpcobj_t nic_dpc_entry;
 			dpcobj_initialize(& nic_dpc_entry, emac_nohandler, netif);
 			board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
 
 		}
+		netif->linkoutput = low_level_output; // используется внутри etharp_output
 	}
 	else
 	{
@@ -979,7 +970,7 @@ void nic_initialize(struct netif *netif)
 			board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
 
 		}
-		netif->linkoutput = alw_low_level_output;//nic_linkoutput_fn;	// используется внутри etharp_output
+		netif->linkoutput = low_level_output; // используется внутри etharp_output
 	}
 		//PRINTF("nic_initialize done\n");
 
