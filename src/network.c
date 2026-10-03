@@ -623,9 +623,9 @@ static void netif_polling(void * ctx)
 
 static void init_netif(void)
 {
-#if ETH_PAD_SIZE != 0
-	#error Wrong ETH_PAD_SIZE value
-#endif
+//#if ETH_PAD_SIZE != 0
+//	#error Wrong ETH_PAD_SIZE value
+//#endif
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 

@@ -338,7 +338,18 @@ typedef unsigned sys_prot_t;
 
 	#define LWIP_NETIF_LOOPBACK 1
 
-#define ETH_PAD_SIZE                    0
+
+/////////////
+/// Buffers lists support
+
+typedef struct
+{
+	int dummy;
+} bufheader_t;
+
+
+#define ETH_PAD_SIZE 0//16//((int) sizeof (bufheader_t))
+
 struct netif;
 struct netif;
 void nic_initialize(struct netif *netif);
