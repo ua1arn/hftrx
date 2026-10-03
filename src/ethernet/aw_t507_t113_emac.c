@@ -484,15 +484,15 @@ static void emac_nohandler(void * ctx)
 		if (emac_rxdesc [i].status & (UINT32_C(1) << 31))
 			continue;
         int len = (emac_rxdesc [i].status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
-		struct pbuf *frame = pbuf_alloc(PBUF_RAW, len + ETH_PAD_SIZE, PBUF_POOL);
+		struct pbuf *frame = pbuf_alloc(PBUF_RAW, len /* + ETH_PAD_SIZE */, PBUF_POOL);
 		if (frame == NULL)
 		{
 			TP();
 			continue;
 		}
-		VERIFY(0 == pbuf_header(frame, - ETH_PAD_SIZE));
+		//VERIFY(0 == pbuf_header(frame, - ETH_PAD_SIZE));
 		err_t e = pbuf_take(frame, (uint8_t *)(uintptr_t) emac_rxdesc [i].buf_addr, len);
-		VERIFY(0 == pbuf_header(frame, + ETH_PAD_SIZE));
+		//VERIFY(0 == pbuf_header(frame, + ETH_PAD_SIZE));
 		if (e == ERR_OK)
 		{
 			err_t e = ethernet_input(frame, netif);
