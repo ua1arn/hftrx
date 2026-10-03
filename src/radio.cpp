@@ -3615,7 +3615,7 @@ static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
 }
 
 #endif
-
+#if 0
 static void moderowinfo(void)
 {
 	const unsigned dim1 = ARRAY_SIZE(modes);
@@ -3642,6 +3642,7 @@ static void moderowinfo(void)
 	PRINTF("totalbits=%u, totalbytes=%u\n", totalbits, totalbytes);
 	(void) upvalcols;
 }
+#endif
 
 static uint_fast8_t
 getmodecol(uint_fast8_t row, uint_fast8_t bi)		/* bank index */
@@ -20852,13 +20853,13 @@ static void hamradio_main_initialize(void)
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 	}
 	// начальная инициализация
-	bandsmap_verify();
-	moderowinfo();
+//	bandsmap_verify();
+//	moderowinfo();
 	seq_purge();
 
 #if FQMODEL_GEN500
 	gfreqs [getbankindex_raw(0)] = 434085900UL;
-	gfreqs [getbankindex_raw(1] = 434085900UL;
+	gfreqs [getbankindex_raw(1)] = 434085900UL;
 #endif /* FQMODEL_GEN500 */
 
 	updateboard();	/* полная перенастройка (как после смены режима) - режим приема */
