@@ -13400,7 +13400,7 @@ updateboard_noui(
 #if WITHENCODER_2F
 				int_fast32_t gainR = param_getvalue(& xafgain2);
 #else /* WITHENCODER_2F */
-				int_fast32_t gainR = geinL;
+				int_fast32_t gainR = gainL;
 #endif /* WITHENCODER_2F */
 				switch (mainsubrxmodes [param_getvalue(& xdwatchmode)].code)
 				{
