@@ -13402,6 +13402,7 @@ updateboard_noui(
 #else /* WITHENCODER_2F */
 				int_fast32_t gainR = gainL;
 #endif /* WITHENCODER_2F */
+#if WITHUSEDUALWATCH
 				switch (mainsubrxmodes [param_getvalue(& xdwatchmode)].code)
 				{
 				default:
@@ -13414,6 +13415,7 @@ updateboard_noui(
 				case BOARD_RXMAINSUB_B_A:
 					break;
 				}
+#endif
 				board_set_afgain(
 						sleepflag == 0 ? gainL : BOARD_AFGAIN_MIN,	// Параметр для регулировки уровня на выходе аудио-ЦАП
 						sleepflag == 0 ? gainR : BOARD_AFGAIN_MIN
