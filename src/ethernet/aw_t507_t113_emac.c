@@ -411,31 +411,27 @@ static RAMNC __ALIGNED(4) struct emac_dma_rx_desc emac_rxdesc [EMAC_RX_BUFFERS_C
 static uint8_t txbuffs [EMAC_TX_BUFFERS_COUNT] [EMAC_MAX_PACKET_SIZE];
 static RAMNC __ALIGNED(4) struct emac_dma_tx_desc emac_txdesc [EMAC_TX_BUFFERS_COUNT];
 
-int nic_can_send(void)
-{
-	return 0;
-}
-
-void nic_send(const uint8_t * data, int isize)
-{
-	}
-
 static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
     int i = 0;
 
-    dcache_clean_invalidate((uintptr_t) & emac_txdesc, sizeof emac_txdesc);
+    dcache_invalidate((uintptr_t) & emac_txdesc, sizeof emac_txdesc);
 	for (i = 0; i < ARRAY_SIZE(emac_txdesc); ++ i)
 	{
-	    if (emac_txdesc [i].status & (UINT32_C(1) << 31))
+		struct emac_dma_tx_desc * txd = & emac_txdesc [i];
+	    if (txd->status & (UINT32_C(1) << 31))
 	    {
 	    	continue;
 	    }
-	    unsigned size = pbuf_copy_partial(p, (uint8_t *) (uintptr_t) emac_txdesc [i].buf_addr, EMAC_MAX_PACKET_SIZE, 0);
-		dcache_clean((uintptr_t) txbuffs [i], sizeof txbuffs [i]);
+	    const uintptr_t dataptr = (uintptr_t) txd->buf_addr;
+	    pbuf_header(p, ETH_PAD_SIZE); /* Сдвигаем указатель назад, чтобы включить область отступа */
+  	  	unsigned size = pbuf_copy_partial(p, (void *) dataptr, EMAC_MAX_PACKET_SIZE, 0);
+  	  	pbuf_header(p, - ETH_PAD_SIZE); /* Восстанавливаем pbuf в исходное состояние */
 
-		emac_txdesc [i].status =	// status
+  	  	dcache_clean(dataptr, size);
+
+  	  	txd->status =	// status
 			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
 			0;
 		// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
@@ -446,7 +442,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		// CRC_CTL=1 и CHECKSUM_CTL=2: передаёт на 4 меньше
 		// CRC_CTL=1 и CHECKSUM_CTL=1: передаёт на 4 меньше
 		// CRC_CTL=1 и CHECKSUM_CTL=0: передаёт на 4 меньше
-		emac_txdesc [i].control =	// ctl
+  	  	txd->control =	// ctl
 			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
 			1 * (UINT32_C(1) << 30) |	// LAST_DESC
 			1 * (UINT32_C(1) << 29) |	// FIR_DESC
@@ -459,7 +455,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		//emac_txdesc [i].next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
 
 
-		dcache_clean((uintptr_t) & emac_txdesc [i], sizeof emac_txdesc [i]);
+		dcache_clean((uintptr_t) txd, sizeof * txd);
 
 		emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 		if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
@@ -481,21 +477,21 @@ static void emac_nohandler(void * ctx)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(emac_rxdesc); ++ i)
 	{
-		if (emac_rxdesc [i].status & (UINT32_C(1) << 31))
+		struct emac_dma_rx_desc * rxd = & emac_rxdesc [i];
+		if (rxd->status & (UINT32_C(1) << 31))
 			continue;
-        int len = (emac_rxdesc [i].status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
-		struct pbuf *frame = pbuf_alloc(PBUF_RAW, len /* + ETH_PAD_SIZE */, PBUF_POOL);
-		if (frame == NULL)
+        int len = (rxd->status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
+ 		struct pbuf *p = pbuf_alloc(PBUF_RAW, len + ETH_PAD_SIZE, PBUF_POOL);
+		if (p == NULL)
 		{
 			TP();
 			continue;
 		}
-		//VERIFY(0 == pbuf_header(frame, - ETH_PAD_SIZE));
-		err_t e = pbuf_take(frame, (uint8_t *)(uintptr_t) emac_rxdesc [i].buf_addr, len);
-		//VERIFY(0 == pbuf_header(frame, + ETH_PAD_SIZE));
+		pbuf_header(p, - ETH_PAD_SIZE); /* Временно сдвигаем указатель payload вперед, пропуская 2 байта отступа для LwIP */
+		err_t e = pbuf_take(p, (uint8_t *) (uintptr_t) rxd->buf_addr, len);
 		if (e == ERR_OK)
 		{
-			err_t e = ethernet_input(frame, netif);
+			err_t e = ethernet_input(p, netif);
 			if (e != ERR_OK)
 			{
 				  /* This means the pbuf is freed or consumed,
@@ -504,11 +500,11 @@ static void emac_nohandler(void * ctx)
 		}
 		else
 		{
-			pbuf_free(frame);
+			pbuf_free(p);
 		}
 
-		dcache_invalidate((uintptr_t) rxbuffs [i], sizeof rxbuffs [i]);	// подготовка к приёму следующего
-		emac_rxdesc [i].status =
+		dcache_invalidate((uintptr_t) rxd->buf_addr, EMAC_MAX_PACKET_SIZE);	// подготовка к приёму следующего
+		rxd->status =
 			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
 	//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
 	//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
