@@ -355,7 +355,26 @@ void nic_set_mac(void * ctx);	// struct netif
 
 #define NIC_MTU 1536  // MTU value
 
-//#define LWIP_PBUF_CUSTOM_DATA  1
+#if CPUSTYLE_ALLWINNER
 
+// Zero-copy support
+/* Synopsys DesignWare / Allwinner EMAC DMA Descriptor Layout */
+struct emac_dma_desc {
+    volatile uint32_t status;
+    volatile uint32_t control;
+    volatile uint32_t buf_addr;
+    volatile uint32_t next_desc;
+};
+
+/* данные, добавляющиеся в конец pbuf_t */
+typedef struct listsupport_tag
+{
+		LIST_ENTRY item __ALIGNED(4);
+		struct emac_dma_desc dmadesc __ALIGNED(4);
+} listsupport_t;
+
+#define LWIP_PBUF_CUSTOM_DATA  listsupport_t custom_item;
+
+#endif /* CPUSTYLE_ALLWINNER */
 
 #endif /* __LWIPOPTS_H__ */
