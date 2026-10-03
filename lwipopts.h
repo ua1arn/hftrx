@@ -358,6 +358,7 @@ void nic_set_mac(void * ctx);	// struct netif
 #if CPUSTYLE_ALLWINNER
 
 // Zero-copy support
+
 /* Synopsys DesignWare / Allwinner EMAC DMA Descriptor Layout */
 struct emac_dma_desc {
     volatile uint32_t status;

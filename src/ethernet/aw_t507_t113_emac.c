@@ -101,18 +101,14 @@ static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct 
 //#define EMAC_HEADER_SIZE               (sizeof (emac_data_packet_t))
 //#define EMAC_RX_BUFFER_SIZE            (EMAC_HEADER_SIZE + ETH_MAX_PACKET_SIZE)
 
+/* Allwinner EMAC DMA Ring Configurations */
+#define EMAC_RX_BUFFERS_COUNT     16
+#define EMAC_TX_BUFFERS_COUNT     16
+#define EMAC_MAX_PACKET_SIZE      1536
 
-/* EMAC DMA RX Ring Descriptor Configuration */
-#define EMAC_RX_BUFFERS_COUNT   16
-#define EMAC_MAX_PACKET_SIZE    1536
-
-/* Synopsys DesignWare / Allwinner EMAC DMA Descriptor Layout */
-struct emac_dma_rx_desc {
-    volatile uint32_t status;
-    volatile uint32_t control;
-    volatile uint32_t buf_addr;
-    volatile uint32_t next_desc;
-};
+/* Allwinner T507-H EMAC TX Descriptor Configuration */
+#define EMAC_TX_BUFFERS_COUNT   16
+#define EMAC_TX_MAX_PACKET_SIZE 1536
 
 #define DESC_OWN_BY_DMA         (UINT32_C(1) << 31)
 #define DESC_RX_LAST            (UINT32_C(1) << 8)
@@ -124,22 +120,9 @@ struct emac_dma_rx_desc {
 #define DESC_RX_CHAINED         (UINT32_C(1) << 14)
 
 /* Driver private variables tracking state and rings */
-static struct emac_dma_rx_desc rx_desc_ring[EMAC_RX_BUFFERS_COUNT] __ALIGNED(4);
+static struct emac_dma_desc rx_desc_ring[EMAC_RX_BUFFERS_COUNT] __ALIGNED(4);
 static uint8_t rx_buffer_pool[EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __ALIGNED(4);
 static uint32_t rx_index = 0;
-
-/* Allwinner EMAC DMA Ring Configurations */
-#define EMAC_RX_BUFFERS_COUNT     16
-#define EMAC_TX_BUFFERS_COUNT     16
-#define EMAC_MAX_PACKET_SIZE      1536
-
-/* Hardware DMA Descriptor Structure for Synopsys DesignWare / Allwinner */
-struct emac_dma_rx_desc {
-    volatile uint32_t status;      /* Buffer/Frame status flags */
-    volatile uint32_t control;     /* Control flags and buffer size layout */
-    volatile uint32_t buf_addr;    /* Physical pointer to the data buffer */
-    volatile uint32_t next_desc;   /* Link to the next descriptor element */
-};
 
 /* Bit definitions for RX/TX Descriptors */
 #define DESC_OWN_BY_DMA           (UINT32_C(1) << 31)
@@ -158,31 +141,18 @@ struct emac_dma_rx_desc {
 #define EMAC_RX_CTL1_RX_MD_FORW   (UINT32_C(1) << 1)  /* Store-and-Forward mode for RX */
 
 
-
-/* Allwinner T507-H EMAC TX Descriptor Configuration */
-#define EMAC_TX_BUFFERS_COUNT   16
-#define EMAC_TX_MAX_PACKET_SIZE 1536
-
-/* Synopsys DesignWare / Allwinner EMAC DMA TX Descriptor Layout */
-struct emac_dma_tx_desc {
-    volatile uint32_t status;      /* TDES0: Status / Control */
-    volatile uint32_t control;     /* TDES1: Buffer size / Chain flags */
-    volatile uint32_t buf_addr;    /* TDES2: Physical memory pointer to payload */
-    volatile uint32_t next_desc;   /* TDES3: Next descriptor pointer (Chained) */
-};
-
-/* Bit definitions for emac_dma_tx_desc.status (TDES0) */
+/* Bit definitions for emac_dma_desc.status (TDES0) */
 #define TDES0_OWN_BY_DMA        (UINT32_C(1) << 31)  /* 1 = Hardware owns descriptor, 0 = CPU owns it */
 #define TDES0_TX_LAST           (UINT32_C(1) << 30)  /* Last segment of the frame */
 #define TDES0_TX_FIRST          (UINT32_C(1) << 29)  /* First segment of the frame */
 #define TDES0_CHECKSUM_INSERT   (UINT32_C(0x03) << 27)  /* Enable IP/TCP/UDP hardware checksum calculation */
 #define TDES0_TX_CHAINED        (UINT32_C(1) << 20)  /* Second address is next descriptor link */
 
-/* Bit definitions for emac_dma_tx_desc.control (TDES1) */
+/* Bit definitions for emac_dma_desc.control (TDES1) */
 #define TDES1_BUFFER_SIZE_MASK  0x7FF        /* Size of transmit buffer */
 
 /* Driver static structures for TX ring execution */
-static struct emac_dma_tx_desc tx_desc_ring[EMAC_TX_BUFFERS_COUNT] __ALIGNED(64);
+static struct emac_dma_desc tx_desc_ring[EMAC_TX_BUFFERS_COUNT] __ALIGNED(64);
 static uint8_t tx_buffer_pool[EMAC_TX_BUFFERS_COUNT][EMAC_TX_MAX_PACKET_SIZE] __ALIGNED(64);
 static uint32_t tx_index = 0;
 
@@ -191,8 +161,8 @@ static uint32_t tx_index = 0;
  * Dual-port Ring Buffers allocation.
  * Explicitly aligned to a 64-byte boundary to meet Cortex-A53 L1 D-Cache line requirements.
  */
-static struct emac_dma_rx_desc dual_rx_ring[2][EMAC_RX_BUFFERS_COUNT] __ALIGNED(64);
-static struct emac_dma_tx_desc dual_tx_ring[2][EMAC_TX_BUFFERS_COUNT] __ALIGNED(64);
+static struct emac_dma_desc dual_rx_ring[2][EMAC_RX_BUFFERS_COUNT] __ALIGNED(64);
+static struct emac_dma_desc dual_tx_ring[2][EMAC_TX_BUFFERS_COUNT] __ALIGNED(64);
 
 static uint8_t dual_rx_buffers[2][EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __ALIGNED(64);
 static uint8_t dual_tx_buffers[2][EMAC_TX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __ALIGNED(64);
@@ -208,7 +178,7 @@ static uint32_t dual_tx_index[2] = {0, 0};
  */
 static void ethernetif_poll(struct netif *netif) {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
-    struct emac_dma_rx_desc *current_desc;
+    struct emac_dma_desc *current_desc;
     struct pbuf *p = NULL;
     struct pbuf *q;
     uint32_t len;
@@ -270,7 +240,7 @@ static void ethernetif_poll(struct netif *netif) {
 err_t XXXlow_level_output(struct netif *netif, struct pbuf *p) {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
 	TP();
-    struct emac_dma_tx_desc *current_desc;
+    struct emac_dma_desc *current_desc;
     struct pbuf *q;
     uint32_t total_bytes = 0;
     uint8_t *dst_ptr;
@@ -281,7 +251,7 @@ err_t XXXlow_level_output(struct netif *netif, struct pbuf *p) {
     current_desc = &tx_desc_ring[tx_index];
 
     /* Invalidate descriptor from D-Cache to get the actual hardware state */
-    dcache_invalidate((uintptr_t)current_desc, sizeof(struct emac_dma_tx_desc));
+    dcache_invalidate((uintptr_t)current_desc, sizeof(struct emac_dma_desc));
 
     /* Check if the descriptor is still held and processed by the EMAC DMA engine */
     if (current_desc->status & TDES0_OWN_BY_DMA) {
@@ -315,7 +285,7 @@ err_t XXXlow_level_output(struct netif *netif, struct pbuf *p) {
     current_desc->status |= TDES0_OWN_BY_DMA;
 
     /* Push the modified descriptor out of the CPU cache to ensure DMA visible execution */
-    dcache_clean((uintptr_t)current_desc, sizeof(struct emac_dma_tx_desc));
+    dcache_clean((uintptr_t)current_desc, sizeof(struct emac_dma_desc));
 
     /* Increment and wrap around the active TX index tracker */
     tx_index++;
@@ -406,10 +376,10 @@ static err_t allwinner_emac_init_port(EMAC_TypeDef *emac_peripheral, struct neti
 
 
 static uint8_t rxbuffs [EMAC_RX_BUFFERS_COUNT] [EMAC_MAX_PACKET_SIZE];
-static RAMNC __ALIGNED(4) struct emac_dma_rx_desc emac_rxdesc [EMAC_RX_BUFFERS_COUNT];
+static RAMNC __ALIGNED(4) struct emac_dma_desc emac_rxdesc [EMAC_RX_BUFFERS_COUNT];
 
 static uint8_t txbuffs [EMAC_TX_BUFFERS_COUNT] [EMAC_MAX_PACKET_SIZE];
-static RAMNC __ALIGNED(4) struct emac_dma_tx_desc emac_txdesc [EMAC_TX_BUFFERS_COUNT];
+static RAMNC __ALIGNED(4) struct emac_dma_desc emac_txdesc [EMAC_TX_BUFFERS_COUNT];
 
 static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 
@@ -419,7 +389,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
     dcache_invalidate((uintptr_t) & emac_txdesc, sizeof emac_txdesc);
 	for (i = 0; i < ARRAY_SIZE(emac_txdesc); ++ i)
 	{
-		struct emac_dma_tx_desc * txd = & emac_txdesc [i];
+		struct emac_dma_desc * txd = & emac_txdesc [i];
 	    if (txd->status & (UINT32_C(1) << 31))
 	    {
 	    	continue;
@@ -478,7 +448,7 @@ static void emac_nohandler(void * ctx)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(emac_rxdesc); ++ i)
 	{
-		struct emac_dma_rx_desc * const rxd = & emac_rxdesc [i];
+		struct emac_dma_desc * const rxd = & emac_rxdesc [i];
 		if (rxd->status & (UINT32_C(1) << 31))
 			continue;
 
