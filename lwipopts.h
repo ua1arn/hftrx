@@ -336,33 +336,26 @@ typedef unsigned sys_prot_t;
 
 #endif /* WITHHTTPUPDATE || WITHISBOOTLOADER */
 
-	#define LWIP_NETIF_LOOPBACK 1
+#define LWIP_NETIF_LOOPBACK 1
 
 
-/////////////
-/// Buffers lists support
+#define ETH_PAD_SIZE 2
 
-typedef struct
-{
-	int dummy;
-} bufheader_t;
-
-
-#define ETH_PAD_SIZE 0//16//((int) sizeof (bufheader_t))
-
-struct netif;
+//struct netif;
 struct netif;
 void nic_initialize(struct netif *netif);
-int nic_can_send(void);
-void nic_send(const uint8_t * data, int size);
+//int nic_can_send(void);
+//void nic_send(const uint8_t * data, int size);
 void nic_linkspool(void * ctx);
-void nic_set_mac(void * ctx);
+void nic_set_mac(void * ctx);	// struct netif
+//
+//
+//void nic_on_packet(const uint8_t *data, int size);	// использование приянтого от сети пакета
+//typedef void (*nic_rxproc_t)(const uint8_t *data, int size);
 
-
-void nic_on_packet(const uint8_t *data, int size);	// использование приянтого от сети пакета
-typedef void (*nic_rxproc_t)(const uint8_t *data, int size);
 #define NIC_MTU 1536  // MTU value
 
+//#define LWIP_PBUF_CUSTOM_DATA  1
 
 
 #endif /* __LWIPOPTS_H__ */
