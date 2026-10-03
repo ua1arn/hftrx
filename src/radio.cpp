@@ -4955,7 +4955,6 @@ static const struct paramdefdef xgethgateway =
 	getzerobase, /* складывается со смещением и отображается */
 	getvaltextethgateway, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-static uint_fast8_t glinkup;
 /* Адрес сетевого интерфейса */
 static const struct paramdefdef xgethlinkstate =
 {
@@ -4968,6 +4967,20 @@ static const struct paramdefdef xgethlinkstate =
 	NULL,
 	getzerobase, /* складывается со смещением и отображается */
 	getvaltextethlinkstate, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static uint_fast8_t gethmacaddr;
+/* Адрес сетевого интерфейса */
+static const struct paramdefdef xgethmacaddr =
+{
+	QLABEL3("MACA", "MAC Address", "MACA"), 0, RJ_CB, ISTEP_RO,
+	ITEM_VALUE | ITEM_NOINITNVRAM,
+	0, HDMIFORMATS_count - 1,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	& gzero,
+	NULL,
+	getzerobase, /* складывается со смещением и отображается */
+	getvaltextethmacaddr, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif /* WITHLWIP */
 

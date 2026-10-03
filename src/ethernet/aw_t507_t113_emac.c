@@ -893,4 +893,17 @@ void nic_set_mac(void * ctx)
 	allwinner_emac_apply_mac_dual(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 }
 
+
+/* Параметры интерфейса для отображения в меню */
+size_t getvaltextethmacaddr(char * buff, size_t count, int_fast32_t value)
+{
+	//struct netif * const netif = & nic_netif_data;
+	(void) value;
+    uint8_t b[6];
+
+    /* Fetch the unique MAC address with port-specific byte shifting */
+    allwinner_get_mac_from_sid_dual(b, HARDWARE_EMAC_IX);
+	return local_snprintf_P(buff, count, "%02X:%02X:%02X:%02X:%02X:%02X", b [0], b [1], b [2], b [3], b [4], b [5]);
+}
+
 #endif /* WITHLWIP && WITHETHHW && (CPUSTYLE_T507) */

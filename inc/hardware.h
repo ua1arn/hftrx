@@ -868,6 +868,7 @@ size_t getvaltextethaddr(char * buff, size_t count, int_fast32_t value);
 size_t getvaltextethmask(char * buff, size_t count, int_fast32_t value);
 size_t getvaltextethgateway(char * buff, size_t count, int_fast32_t value);
 size_t getvaltextethlinkstate(char * buff, size_t count, int_fast32_t value);
+size_t getvaltextethmacaddr(char * buff, size_t count, int_fast32_t value);
 
 // RTOS test stuff
 int blinky_main(void);
