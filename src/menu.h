@@ -621,6 +621,7 @@
 		& xgethaddr,
 		& xgethmask,
 		& xgethgateway,
+		& xgethmacaddr,
 		& xgethlinkstate,
 #endif /* WITHLWIP */
 #if WITHIF4DSP

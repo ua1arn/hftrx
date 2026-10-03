@@ -3615,7 +3615,7 @@ static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
 }
 
 #endif
-
+#if 0
 static void moderowinfo(void)
 {
 	const unsigned dim1 = ARRAY_SIZE(modes);
@@ -3642,6 +3642,7 @@ static void moderowinfo(void)
 	PRINTF("totalbits=%u, totalbytes=%u\n", totalbits, totalbytes);
 	(void) upvalcols;
 }
+#endif
 
 static uint_fast8_t
 getmodecol(uint_fast8_t row, uint_fast8_t bi)		/* bank index */
@@ -4954,7 +4955,6 @@ static const struct paramdefdef xgethgateway =
 	getzerobase, /* складывается со смещением и отображается */
 	getvaltextethgateway, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-static uint_fast8_t glinkup;
 /* Адрес сетевого интерфейса */
 static const struct paramdefdef xgethlinkstate =
 {
@@ -4967,6 +4967,20 @@ static const struct paramdefdef xgethlinkstate =
 	NULL,
 	getzerobase, /* складывается со смещением и отображается */
 	getvaltextethlinkstate, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+static uint_fast8_t gethmacaddr;
+/* Адрес сетевого интерфейса */
+static const struct paramdefdef xgethmacaddr =
+{
+	QLABEL3("MACA", "MAC Address", "MACA"), 0, RJ_CB, ISTEP_RO,
+	ITEM_VALUE | ITEM_NOINITNVRAM,
+	0, HDMIFORMATS_count - 1,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	& gzero,
+	NULL,
+	getzerobase, /* складывается со смещением и отображается */
+	getvaltextethmacaddr, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 #endif /* WITHLWIP */
 
@@ -13386,8 +13400,9 @@ updateboard_noui(
 #if WITHENCODER_2F
 				int_fast32_t gainR = param_getvalue(& xafgain2);
 #else /* WITHENCODER_2F */
-				int_fast32_t gainR = geinL;
+				int_fast32_t gainR = gainL;
 #endif /* WITHENCODER_2F */
+#if WITHUSEDUALWATCH
 				switch (mainsubrxmodes [param_getvalue(& xdwatchmode)].code)
 				{
 				default:
@@ -13400,6 +13415,7 @@ updateboard_noui(
 				case BOARD_RXMAINSUB_B_A:
 					break;
 				}
+#endif
 				board_set_afgain(
 						sleepflag == 0 ? gainL : BOARD_AFGAIN_MIN,	// Параметр для регулировки уровня на выходе аудио-ЦАП
 						sleepflag == 0 ? gainR : BOARD_AFGAIN_MIN
@@ -20852,13 +20868,13 @@ static void hamradio_main_initialize(void)
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 	}
 	// начальная инициализация
-	bandsmap_verify();
-	moderowinfo();
+//	bandsmap_verify();
+//	moderowinfo();
 	seq_purge();
 
 #if FQMODEL_GEN500
 	gfreqs [getbankindex_raw(0)] = 434085900UL;
-	gfreqs [getbankindex_raw(1] = 434085900UL;
+	gfreqs [getbankindex_raw(1)] = 434085900UL;
 #endif /* FQMODEL_GEN500 */
 
 	updateboard();	/* полная перенастройка (как после смены режима) - режим приема */

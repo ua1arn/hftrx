@@ -329,6 +329,8 @@ static void lwip_1s_spool(void * ctx)
 	nic_linkspool(ctx);
 }
 
+#if 0
+
 
 typedef struct nic_buffer_tag
 {
@@ -505,6 +507,7 @@ static err_t nic_linkoutput_fn(struct netif *netif, struct pbuf *p)
     return ERR_OK;
 }
 
+#endif
 
 #if ! LWIP_ARP && 0
 /**
@@ -553,7 +556,7 @@ void pbuf_free_custom(struct pbuf *p)
 
 static struct netif nic_netif_data;
 
-
+#if 0
 
 static err_t nic_output_fn(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
 {
@@ -565,9 +568,7 @@ static err_t nic_output_fn(struct netif *netif, struct pbuf *p, const ip4_addr_t
 	}
 	return e;
 }
-
-err_t alw_low_level_output(struct netif *netif, struct pbuf *p);
-
+#endif
 
 static err_t netif_init_cb(struct netif *netif)
 {
@@ -592,11 +593,12 @@ static err_t netif_init_cb(struct netif *netif)
 	netif->name[1] = 'X';
 	netif->output = etharp_output; //nic_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
 												// и слкдующий callback linkoutput не требовался бы вообще
-	netif->linkoutput = alw_low_level_output;//nic_linkoutput_fn;	// используется внутри etharp_output
-	netif->linkoutput = nic_linkoutput_fn;	// используется внутри etharp_output
+	//netif->linkoutput = alw_low_level_output;//nic_linkoutput_fn;	// используется внутри etharp_output
+	//netif->linkoutput = nic_linkoutput_fn;	// используется внутри etharp_output
 	return ERR_OK;
 }
 
+#if 0
 // Receiving Ethernet packets
 // user-mode function
 static void netif_polling(void * ctx)
@@ -617,12 +619,13 @@ static void netif_polling(void * ctx)
 		}
 	}
 }
+#endif
 
 static void init_netif(void)
 {
-#if ETH_PAD_SIZE != 0
-	#error Wrong ETH_PAD_SIZE value
-#endif
+//#if ETH_PAD_SIZE != 0
+//	#error Wrong ETH_PAD_SIZE value
+//#endif
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 
@@ -648,12 +651,15 @@ static void init_netif(void)
 #if LWIP_AUTOIP
 	  autoip_start(netif);
 #endif /* LWIP_AUTOIP */
+
+#if 0
 	{
 		static dpcobj_t dpcobj;
 
 		dpcobj_initialize(& dpcobj, netif_polling, NULL);
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 	}
+#endif
 }
 
 
@@ -769,7 +775,7 @@ void network_initialize(void)
 {
 	struct netif  *netif = & nic_netif_data;
 	init_lwip();
-	nic_buffers_initialize();
+	//nic_buffers_initialize();
 	nic_initialize(netif);
 	init_netif();
 	nic_set_mac(netif);

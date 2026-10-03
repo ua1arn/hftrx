@@ -336,22 +336,45 @@ typedef unsigned sys_prot_t;
 
 #endif /* WITHHTTPUPDATE || WITHISBOOTLOADER */
 
-	#define LWIP_NETIF_LOOPBACK 1
+#define LWIP_NETIF_LOOPBACK 1
 
-#define ETH_PAD_SIZE                    0
-struct netif;
+
+#define ETH_PAD_SIZE 2
+
+//struct netif;
 struct netif;
 void nic_initialize(struct netif *netif);
-int nic_can_send(void);
-void nic_send(const uint8_t * data, int size);
+//int nic_can_send(void);
+//void nic_send(const uint8_t * data, int size);
 void nic_linkspool(void * ctx);
-void nic_set_mac(void * ctx);
+void nic_set_mac(void * ctx);	// struct netif
+//
+//
+//void nic_on_packet(const uint8_t *data, int size);	// использование приянтого от сети пакета
+//typedef void (*nic_rxproc_t)(const uint8_t *data, int size);
 
+#define NIC_MTU 1536  // MTU value
 
-void nic_on_packet(const uint8_t *data, int size);	// использование приянтого от сети пакета
-typedef void (*nic_rxproc_t)(const uint8_t *data, int size);
-#define NIC_MTU 1500  // MTU value
+#if CPUSTYLE_ALLWINNER
 
+// Zero-copy support
+/* Synopsys DesignWare / Allwinner EMAC DMA Descriptor Layout */
+struct emac_dma_desc {
+    volatile uint32_t status;
+    volatile uint32_t control;
+    volatile uint32_t buf_addr;
+    volatile uint32_t next_desc;
+};
 
+/* данные, добавляющиеся в конец pbuf_t */
+typedef struct listsupport_tag
+{
+		LIST_ENTRY item __ALIGNED(4);
+		struct emac_dma_desc dmadesc __ALIGNED(4);
+} listsupport_t;
+
+#define LWIP_PBUF_CUSTOM_DATA  listsupport_t custom_item;
+
+#endif /* CPUSTYLE_ALLWINNER */
 
 #endif /* __LWIPOPTS_H__ */
