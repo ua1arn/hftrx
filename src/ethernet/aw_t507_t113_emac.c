@@ -425,12 +425,13 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 	    	continue;
 	    }
 	    const uintptr_t dataptr = (uintptr_t) txd->buf_addr;
-	    pbuf_header(p, ETH_PAD_SIZE); /* Сдвигаем указатель назад, чтобы включить область отступа */
+	    pbuf_header(p, - ETH_PAD_SIZE);
 	    const unsigned size = pbuf_copy_partial(p, (void *) dataptr, EMAC_MAX_PACKET_SIZE, 0);
-  	  	pbuf_header(p, - ETH_PAD_SIZE); /* Восстанавливаем pbuf в исходное состояние */
+  	  	pbuf_header(p, + ETH_PAD_SIZE); /* Восстанавливаем pbuf в исходное состояние */
 
   	  	dcache_clean(dataptr, size);
-
+//  	  	PRINTF("tx:\n");
+//  	  	printhex(dataptr, (void *) dataptr, size);
   	  	txd->status =	// status
 			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
 			0;
@@ -481,15 +482,19 @@ static void emac_nohandler(void * ctx)
 		if (rxd->status & (UINT32_C(1) << 31))
 			continue;
 
-		const int len = (rxd->status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
- 		struct pbuf * const p = pbuf_alloc(PBUF_RAW, len + ETH_PAD_SIZE, PBUF_POOL);
+		const uintptr_t dataptr = (uintptr_t) rxd->buf_addr;
+		const int size = (rxd->status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
+ 		struct pbuf * const p = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
 		if (p == NULL)
 		{
 			TP();
 			continue;
 		}
-		pbuf_header(p, - ETH_PAD_SIZE); /* Временно сдвигаем указатель payload вперед, пропуская 2 байта отступа для LwIP */
-		const err_t e = pbuf_take(p, (uint8_t *) (uintptr_t) rxd->buf_addr, len);
+//  	  	PRINTF("rx:\n");
+//  	  	printhex(dataptr, (void *) dataptr, size);
+		pbuf_header(p, - ETH_PAD_SIZE);
+		const err_t e = pbuf_take(p, (void *) dataptr, size);
+		pbuf_header(p, + ETH_PAD_SIZE);
 		if (e == ERR_OK)
 		{
 			const err_t e = ethernet_input(p, netif);
