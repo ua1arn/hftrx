@@ -350,7 +350,7 @@ void nic_set_mac(void * ctx);
 
 void nic_on_packet(const uint8_t *data, int size);	// использование приянтого от сети пакета
 typedef void (*nic_rxproc_t)(const uint8_t *data, int size);
-#define NIC_MTU 1500  // MTU value
+#define NIC_MTU 1536  // MTU value
 
 
 
