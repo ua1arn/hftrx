@@ -191,11 +191,11 @@ static uint32_t tx_index = 0;
  * Dual-port Ring Buffers allocation.
  * Explicitly aligned to a 64-byte boundary to meet Cortex-A53 L1 D-Cache line requirements.
  */
-static RAMNC struct emac_dma_rx_desc dual_rx_ring[2][EMAC_RX_BUFFERS_COUNT] __ALIGNED(64);
-static RAMNC struct emac_dma_tx_desc dual_tx_ring[2][EMAC_TX_BUFFERS_COUNT] __ALIGNED(64);
+static struct emac_dma_rx_desc dual_rx_ring[2][EMAC_RX_BUFFERS_COUNT] __ALIGNED(64);
+static struct emac_dma_tx_desc dual_tx_ring[2][EMAC_TX_BUFFERS_COUNT] __ALIGNED(64);
 
-static RAMNC uint8_t dual_rx_buffers[2][EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __ALIGNED(64);
-static RAMNC uint8_t dual_tx_buffers[2][EMAC_TX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __ALIGNED(64);
+static uint8_t dual_rx_buffers[2][EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __ALIGNED(64);
+static uint8_t dual_tx_buffers[2][EMAC_TX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __ALIGNED(64);
 
 /* Track variables for current software execution points */
 static uint32_t dual_rx_index[2] = {0, 0};
@@ -405,9 +405,10 @@ static err_t allwinner_emac_init_port(EMAC_TypeDef *emac_peripheral, struct neti
 }
 
 
-static RAMNC uint8_t rxbuffs [EMAC_RX_BUFFERS_COUNT] [EMAC_MAX_PACKET_SIZE];
+static uint8_t rxbuffs [EMAC_RX_BUFFERS_COUNT] [EMAC_MAX_PACKET_SIZE];
 static RAMNC __ALIGNED(4) struct emac_dma_rx_desc emac_rxdesc [EMAC_RX_BUFFERS_COUNT];
-static RAMNC uint8_t txbuffs [EMAC_TX_BUFFERS_COUNT] [EMAC_MAX_PACKET_SIZE];
+
+static uint8_t txbuffs [EMAC_TX_BUFFERS_COUNT] [EMAC_MAX_PACKET_SIZE];
 static RAMNC __ALIGNED(4) struct emac_dma_tx_desc emac_txdesc [EMAC_TX_BUFFERS_COUNT];
 
 int nic_can_send(void)
@@ -468,6 +469,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
     return ERR_MEM;
 }
 
+// опрос принятых
 static void emac_nohandler(void * ctx)
 {
 	struct netif * const netif = (struct netif *) ctx;
@@ -481,11 +483,7 @@ static void emac_nohandler(void * ctx)
 	{
 		if (emac_rxdesc [i].status & (UINT32_C(1) << 31))
 			continue;
-
-
-		//TP();
         int len = (emac_rxdesc [i].status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
-		//printhex(0, (uint8_t *)(uintptr_t) emac_rxdesc [i].buf_addr, len);
 		struct pbuf *frame = pbuf_alloc(PBUF_RAW, len + ETH_PAD_SIZE, PBUF_POOL);
 		if (frame == NULL)
 		{
@@ -509,14 +507,14 @@ static void emac_nohandler(void * ctx)
 			pbuf_free(frame);
 		}
 
-		dcache_clean_invalidate((uintptr_t) rxbuffs [i], sizeof rxbuffs [i]);
+		dcache_invalidate((uintptr_t) rxbuffs [i], sizeof rxbuffs [i]);	// подготовка к приёму следующего
 		emac_rxdesc [i].status =
 			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
 	//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
 	//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
 			0;
-		dcache_clean((uintptr_t) & emac_rxdesc [i], sizeof emac_rxdesc [i]);
 	}
+	dcache_clean((uintptr_t) & emac_rxdesc, sizeof emac_rxdesc);
 }
 
 //static void EMAC_Handler(void)
@@ -738,6 +736,9 @@ static void allwinner_emac_phy_init(void)
 
 static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct netif *netif, uint8_t port_index)
 {
+    if (port_index > 1) {
+        return ERR_ARG;
+    }
 
 	// RX init
 	unsigned i;
@@ -818,8 +819,8 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 		//emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
 
 		emac_peripheral->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
-		while (emac_peripheral->EMAC_RX_CTL1 & (UINT32_C(1) << 31))
-			;
+		if (local_wait32mask(& emac_peripheral->EMAC_RX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
+			TP();
 
     }
     {
@@ -834,109 +835,12 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
     		//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
     		0;
     }
-
-    if (port_index > 1) {
-        return ERR_ARG;
-    }
-
-    /* Reset software internal ring pointers */
-    dual_rx_index[port_index] = 0;
-    dual_tx_index[port_index] = 0;
-
-    /* 1. Build and link the RX Ring Descriptors list */
-    for (uint32_t i = 0; i < EMAC_RX_BUFFERS_COUNT; i++) {
-        dual_rx_ring[port_index][i].status = DESC_OWN_BY_DMA;
-        dual_rx_ring[port_index][i].control = DESC_RX_CHAINED | (EMAC_MAX_PACKET_SIZE & DESC_RX_BUF_SIZE_MASK);
-        dual_rx_ring[port_index][i].buf_addr = (uintptr_t)&dual_rx_buffers[port_index][i][0];
-
-        /* Loop the final element descriptor back to the root start address */
-        if (i == (EMAC_RX_BUFFERS_COUNT - 1)) {
-            dual_rx_ring[port_index][i].next_desc = (uintptr_t)&dual_rx_ring[port_index][0];
-        } else {
-            dual_rx_ring[port_index][i].next_desc = (uintptr_t)&dual_rx_ring[port_index][i + 1];
-        }
-    }
-
-    /* 2. Build and link the TX Ring Descriptors list */
-    for (uint32_t i = 0; i < EMAC_TX_BUFFERS_COUNT; i++) {
-        dual_tx_ring[port_index][i].status = 0; /* CPU owns TX rings on bootup */
-        dual_tx_ring[port_index][i].control = 0;
-        dual_tx_ring[port_index][i].buf_addr = (uintptr_t)&dual_tx_buffers[port_index][i][0];
-
-        if (i == (EMAC_TX_BUFFERS_COUNT - 1)) {
-            dual_tx_ring[port_index][i].next_desc = (uintptr_t)&dual_tx_ring[port_index][0];
-        } else {
-            dual_tx_ring[port_index][i].next_desc = (uintptr_t)&dual_tx_ring[port_index][i + 1];
-        }
-    }
-
-    /* Flush all memory structures out of D-Cache to prevent memory hazards for the DMA engine */
-    dcache_clean((uintptr_t)&dual_rx_ring[port_index][0], sizeof(dual_rx_ring[port_index]));
-    dcache_clean((uintptr_t)&dual_tx_ring[port_index][0], sizeof(dual_tx_ring[port_index]));
-    dcache_clean((uintptr_t)&dual_rx_buffers[port_index][0][0], sizeof(dual_rx_buffers[port_index]));
-
-    /* 3. Program core base registers inside the EMAC controller */
-    //emac_peripheral->EMAC_RX_DMA_DESC_LIST = (uintptr_t)&dual_rx_ring[port_index][0];
-    emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t)&dual_tx_ring[port_index][0];
-
-    /* 4. Configure DMA options and awake the transmission layers */
-    /* Setup Store-and-Forward mode to prevent buffer underrun/overflow errors */
-//    emac_peripheral->EMAC_TX_CTL1 = EMAC_TX_CTL1_TX_MD_FORW;
-//    emac_peripheral->EMAC_RX_CTL1 = EMAC_RX_CTL1_RX_MD_FORW;
-
-    /* Activate both MAC state controllers */
-    //emac_peripheral->EMAC_TX_CTL0 |= EMAC_TX_CTL0_TX_EN;
-//    emac_peripheral->EMAC_RX_CTL0 |= EMAC_RX_CTL0_RX_EN;
-
-    /* Fire up the main pipeline DMA execution rings */
-//    emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;
-//    emac_peripheral->EMAC_RX_CTL1 |= EMAC_RX_CTL1_RX_DMA_EN;
     return ERR_OK;
 }
 
 static void board_nic_dpc(void * ctx)
 {
-	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
 	struct netif * const netif = (struct netif *) ctx;
-	unsigned i = 0;
-
-	const portholder_t sta = emac_peripheral->EMAC_INT_STA;
-
-	dcache_clean_invalidate((uintptr_t) rxbuffs [i], sizeof rxbuffs [i]);
-	dcache_clean_invalidate((uintptr_t) & emac_rxdesc [i], sizeof emac_rxdesc [i]);
-	if (emac_rxdesc [i].status & (UINT32_C(1) << 31))
-		return;
-	dcache_clean_invalidate((uintptr_t) rxbuffs [i], sizeof rxbuffs [i]);
-	dcache_clean_invalidate((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
-	{
-		//			if (on_packet)
-//				on_packet(rxbuff, sizeof rxbuff);
-        int len = (emac_rxdesc [i].status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
-		TP();
-		printhex(0, (uint8_t *)(uintptr_t) emac_rxdesc [i].buf_addr, len);
-
-        if (len > 0) {
-        	struct pbuf * p = pbuf_alloc(PBUF_RAW, (uint16_t)EMAC_MAX_PACKET_SIZE, PBUF_POOL);
-
-            if (p != NULL) {
-            	// pbuf_take_at
-        		err_t e = pbuf_take(p, (uint8_t *)(uintptr_t) emac_rxdesc [i].buf_addr, EMAC_MAX_PACKET_SIZE);
-
-                if (netif->input(p, netif) != ERR_OK) {
-                    pbuf_free(p);
-                    TP();
-                }
-            }
-        }
-
-		emac_rxdesc [i].status =
-			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
-	//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
-	//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
-			0;
-	}
-	dcache_clean((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
-	return;
 	ethernetif_poll(netif);
 }
 
