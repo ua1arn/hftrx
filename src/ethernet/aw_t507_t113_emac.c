@@ -520,6 +520,19 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 	unsigned totalscore = 0;
 	unsigned thisoffset = ETH_PAD_SIZE;	// смещение от начала данных в текущем struct pbuf
 	unsigned totallen = p->tot_len;
+	if (0)
+	{
+		// print segmented buffer
+		unsigned sc = 0;
+		struct pbuf *p1 = p;
+		PRINTF("tx all (%04X bytes):\n", p->tot_len);
+		while (p1 != 0)
+		{
+			printhex(0 + sc, p1->payload, p1->len);
+			sc += p1->len;
+			p1 = p1->next;
+		}
+	}
 	ASSERT(p->len == p->tot_len);
 	while (totalscore < totallen)
 	{
