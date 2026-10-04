@@ -489,6 +489,17 @@ static void emac_nohandler(void * ctx)
 	dcache_clean((uintptr_t) & emac_rxdesc, sizeof emac_rxdesc);
 }
 
+static dpcobj_t dpcirq;
+
+static void EMAC_Handler(void)
+{
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
+	const portholder_t sta = emac_peripheral->EMAC_INT_STA;
+	emac_peripheral->EMAC_INT_STA = sta;
+
+	board_dpc_call(& dpcirq, board_dpc_coreid());
+}
+
 //static void EMAC_Handler(void)
 //{
 //	unsigned i = 0;
@@ -759,12 +770,15 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 
 		//emac_peripheral->EMAC_RX_CTL0 = 0xb8000000;
 
-		//emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
 
 		//emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 	}
 	dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
 	dcache_clean((uintptr_t) txbuffs, sizeof txbuffs);
+
+	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
+	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
+
 
     /* Setup safe default speed and duplex in Basic configuration */
     //emac_peripheral->EMAC_BASIC_CTL0 = EMAC_BASIC_CTL0_SPEED_100 | EMAC_BASIC_CTL0_DUPLEX;
@@ -787,8 +801,6 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 				EMAC_RX_CTL1_RX_MD_FORW |
 				1 * (UINT32_C(1) << 30) |	// /RX_DMA_EN
 				0;
-
-		//emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
 
 		emac_peripheral->EMAC_RX_CTL1 |= (UINT32_C(1) << 31);	// RX_DMA_START (auto-clear)
 		if (local_wait32mask(& emac_peripheral->EMAC_RX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
@@ -826,13 +838,13 @@ void nic_initialize(struct netif *netif)
 	{
 		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 		//on_packet = nic_on_packet;
-		//arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
-		{
-			static dpcobj_t nic_dpc_entry;
-			dpcobj_initialize(& nic_dpc_entry, emac_nohandler, netif);
-			board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
+		dpcobj_initialize(& dpcirq, emac_nohandler, netif);
+		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 
-		}
+//		static dpcobj_t nic_dpc_entry;
+//		dpcobj_initialize(& nic_dpc_entry, emac_nohandler, netif);
+//		board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
+
 		netif->linkoutput = low_level_output; // используется внутри etharp_output
 	}
 	else
