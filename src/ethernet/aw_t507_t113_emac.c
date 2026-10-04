@@ -103,7 +103,7 @@ static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct 
 #define ETH_MAX_PACKET_SIZE             (ETH_HEADER_SIZE + NIC_MTU)
 //#define EMAC_HEADER_SIZE               (sizeof (emac_data_packet_t))
 //#define EMAC_RX_BUFFER_SIZE            (EMAC_HEADER_SIZE + ETH_MAX_PACKET_SIZE)
-#define EMAC_TX_MAX_PACKET_SIZE 	1536
+//#define EMAC_TX_MAX_PACKET_SIZE 	1536
 #define EMAC_MAX_PACKET_SIZE      1536
 
 /* Allwinner EMAC DMA Ring Configurations */
@@ -510,16 +510,42 @@ static void emac_rxhandler(void * ctx)
 	dcache_clean((uintptr_t) & emac_rxdesc, sizeof emac_rxdesc);
 }
 
+static void emac_dma_desc_set(struct emac_dma_desc * txd, uint_fast32_t control, uintptr_t buf_addr, unsigned len)
+{
+	txd->buf_addr = buf_addr;
+	txd->control =	// ctl
+	control |
+	len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
+	0;
+}
+
 static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
 
 	//nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
    	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
+  	const uint_fast32_t CONTROLMODE =
+			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
+			//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
+			//1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
+		//		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
+			0;
 
-	unsigned totalscore = 0;
-	unsigned thisoffset = ETH_PAD_SIZE;	// смещение от начала данных в текущем struct pbuf
-	unsigned totallen = p->tot_len;
+   	const uint_fast32_t ONLYONECONTROL =
+   			CONTROLMODE |
+			1 * (UINT32_C(1) << 30) |	// LAST_DESC
+			1 * (UINT32_C(1) << 29) |	// FIR_DESC
+			0;
+   	const uint_fast32_t FIRSTCONTROL =
+   			CONTROLMODE |
+			1 * (UINT32_C(1) << 29) |	// FIR_DESC
+			0;
+   	const uint_fast32_t LASTCONTROL =
+   			CONTROLMODE |
+			1 * (UINT32_C(1) << 30) |	// LAST_DESC
+			0;
+
 	if (0)
 	{
 		// print segmented buffer
@@ -533,51 +559,42 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			p1 = p1->next;
 		}
 	}
-	ASSERT(p->len == p->tot_len);
-	while (totalscore < totallen)
+	if (p->len <= ETH_PAD_SIZE)
 	{
+		// нечего передавать
+	}
+	else if (p->tot_len == p->len)
+	{
+		// состоит из одного сегмента
 		ASSERT(p);
-		const unsigned chunk = ulmin16(EMAC_MAX_PACKET_SIZE, totallen - thisoffset);
+		ASSERT(p->next == NULL);
+		const unsigned chunk = p->tot_len - ETH_PAD_SIZE;
 
 		struct emac_dma_desc * txd = & p->custom_item.dmadesc;
 		InsertTailList(& TxList, & p->custom_item.item);
 
-		pbuf_ref(p);	// Then use pbuf_free
+		pbuf_ref(p);	// Then use pbuf_free (над каждым элементом списка)
 
-	    const uintptr_t dataptr = (uintptr_t) p->payload + thisoffset;
-
-//		PRINTF("tx:\n");
-//		printhex(totalscore, (void *) dataptr, chunk);
+	    const uintptr_t dataptr = (uintptr_t) p->payload + ETH_PAD_SIZE;
 
 		dcache_clean((uintptr_t) dataptr, chunk);
 
+		emac_dma_desc_set(txd, ONLYONECONTROL, dataptr, chunk);
+		txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL	// status
 
 
-		// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=0 и CHECKSUM_CTL=0: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=1 и CHECKSUM_CTL=3: передаёт на 4 меньше
-		// CRC_CTL=1 и CHECKSUM_CTL=2: передаёт на 4 меньше
-		// CRC_CTL=1 и CHECKSUM_CTL=1: передаёт на 4 меньше
-		// CRC_CTL=1 и CHECKSUM_CTL=0: передаёт на 4 меньше
-			txd->control =	// ctl
-			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
-			1 * (UINT32_C(1) << 30) |	// LAST_DESC
-			1 * (UINT32_C(1) << 29) |	// FIR_DESC
-			//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
-			//1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
-		//		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
-			chunk * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
-			0;
-			txd->buf_addr = dataptr;
-			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL	// status
+//		totalscore += chunk + thisoffset;
+//		thisoffset = 0;
+//		p = p->next;
 
-
-		totalscore += chunk + thisoffset;
-		thisoffset = 0;
-		p = p->next;
-
+	}
+	else
+	{
+		// состоит из двух и более сегментов
+		PRINTF("%s: Segmented pbuf: p->tot_len=%u, p->len=%u (siz=%u)\n", __func__, (unsigned) p->tot_len, (unsigned) p->len, EMAC_MAX_PACKET_SIZE);
+		//ASSERT(0);
+		//return ERR_OK;
+		return ERR_MEM;
 	}
 
 	relinkdesc(emac_peripheral);
