@@ -395,6 +395,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		//
 	    if (txd->status & (UINT32_C(1) << 31))
 	    	continue;
+
 	    const uintptr_t dataptr = (uintptr_t) txd->buf_addr;
 	    const unsigned size = pbuf_copy_partial(p, (void *) dataptr, EMAC_MAX_PACKET_SIZE, ETH_PAD_SIZE);
   	  	dcache_clean(dataptr, size);
@@ -420,9 +421,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
 
-  	  	txd->status =	// status
-			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
-			0;
+  	  	txd->status = 1 * (UINT32_C(1) << 31); // TX_DESC_CTL	// status
 
 		//dcache_clean((uintptr_t) txd, sizeof * txd);
 		dcache_clean((uintptr_t) txd, sizeof * txd);
@@ -432,7 +431,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			TP();
 		return ERR_OK;
 	}
-	//TP();
+	TP();
 	if (i == ARRAY_SIZE(emac_txdesc))
 		return ERR_MEM;
 	return ERR_OK;
@@ -449,9 +448,7 @@ static void emac_nohandler(void * ctx)
 			(UINT32_C(1) << 11) |	// RX_OVERFLOW_ERR - When set, a buffer overflow error occurred and current frame is wrong.
 			0x000000DB |			// hardware errors
 			0;
-//	const portholder_t sta = emac_peripheral->EMAC_INT_STA;
-//	emac_peripheral->EMAC_INT_STA = sta;//(UINT32_C(1) << 8);	// RX_P
-	//if (sta & ((UINT32_C(1) << 8)))	// RX_P
+
 	dcache_clean_invalidate((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(emac_rxdesc); ++ i)
@@ -509,14 +506,18 @@ static dpcobj_t dpcirq;
 static void EMAC_Handler(void)
 {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
-	const portholder_t sta = emac_peripheral->EMAC_INT_STA &  emac_peripheral->EMAC_INT_EN;
+	const portholder_t sta0 = emac_peripheral->EMAC_INT_STA;
+	const portholder_t stamask = emac_peripheral->EMAC_INT_EN;
+	const portholder_t sta = sta0 & stamask;
 	emac_peripheral->EMAC_INT_STA = sta;
 
-	if (sta & (UINT32_C(1) << 16))	// RGMII_LINK_STA_P
-	{
-		TP();
-		board_dpc_call(& dpclinkspoolirq, board_dpc_coreid());
-	}
+//	if (sta & (UINT32_C(1) << 16))	// RGMII_LINK_STA_P
+//	{
+//		TP();
+//		board_dpc_call(& dpclinkspoolirq, board_dpc_coreid());
+//	}
+
+	//PRINTF("sta0=%08X,stamask=%08X,sta=%08X\n", (unsigned) sta0, (unsigned) stamask, (unsigned) sta);
 	if (sta & (UINT32_C(1) << 1))
 		PRINTF("TX DMA STOPPED interrupt\n");
 	if (sta & (UINT32_C(1) << 10))
@@ -724,6 +725,7 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 //				1 * (UINT32_C(1) << 8) |	// LAST_DESC
 			0;
 		rxd->control =
+				//1 * (UINT32_C(1) << 31) |	// RX_INT_CTL
 				//DESC_RX_CHAINED |
 				(EMAC_MAX_PACKET_SIZE & DESC_RX_BUF_SIZE_MASK) |	// 10:0 BUF_SIZE
 			0;
@@ -744,11 +746,7 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 	for (i = 0; i < ARRAY_SIZE(emac_txdesc); ++ i)
 	{
 		struct emac_dma_desc * txd = & emac_txdesc [i];
-		txd->status =
-			//1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
-//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
-//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
-			0;
+		txd->status = 0;
 		txd->control =
 				//len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
@@ -805,13 +803,13 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
     }
 
 	//emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 16); // RGMII_LINK_STA_P
-	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
+	//emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
 	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
 
-	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 10); // RX_DMA_STOPPED_INT_EN
-	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 1); // TX_DMA_STOPPED_INT_EN
+	//emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 10); // RX_DMA_STOPPED_INT_EN
+	//emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 1); // TX_DMA_STOPPED_INT_EN
 
-	emac_peripheral->EMAC_INT_EN |= ~ UINT32_C(0);
+	//emac_peripheral->EMAC_INT_EN |= ~ UINT32_C(0);
 
     return ERR_OK;
 }
