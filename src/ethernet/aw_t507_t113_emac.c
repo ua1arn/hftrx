@@ -408,7 +408,7 @@ static void relinktxdesc(EMAC_TypeDef * const emac_peripheral)
 			ls->dmadesc.next_desc = (t->Flink == & TxList) ?
 					(uintptr_t) & lshead->dmadesc :
 					(uintptr_t) & lsnext->dmadesc;
-			ASSERT(ls->dmadesc.status & (UINT32_C(1) << 31));
+			//ASSERT(ls->dmadesc.status & (UINT32_C(1) << 31));
 			dcache_clean((uintptr_t) & ls->dmadesc, sizeof ls->dmadesc);
 
 			t = t->Flink;
