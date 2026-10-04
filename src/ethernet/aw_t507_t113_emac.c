@@ -426,14 +426,17 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		//txd->next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
 
 
+		//dcache_clean((uintptr_t) txd, sizeof * txd);
 		dcache_clean((uintptr_t) txd, sizeof * txd);
 
 		emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 		if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
-			return ERR_MEM;
+			TP();
 		return ERR_OK;
 	}
-    return ERR_MEM;
+	if (i == ARRAY_SIZE(emac_txdesc))
+		return ERR_MEM;
+	return ERR_OK;
 }
 
 // опрос принятых
@@ -499,39 +502,6 @@ static void EMAC_Handler(void)
 
 	board_dpc_call(& dpcirq, board_dpc_coreid());
 }
-
-//static void EMAC_Handler(void)
-//{
-//	unsigned i = 0;
-//	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
-//	const portholder_t sta = emac_peripheral->EMAC_INT_STA;
-//	if (sta & ((UINT32_C(1) << 8)))	// RX_P
-//	{
-//		emac_peripheral->EMAC_INT_STA = (UINT32_C(1) << 8);	// RX_P
-//		if (1) //((emac_peripheral->EMAC_RX_DMA_STA & 0x07) == 0x03)
-//		{
-//			//TP();
-//	        int len = (rxd->status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
-//			//printhex(0, (uint8_t *)(uintptr_t) rxd->buf_addr, len);
-//			if (on_packet)
-//				on_packet(rxbuffs [i], len);
-//
-//			dcache_clean_invalidate((uintptr_t) rxbuffs [i], sizeof rxbuffs [i]);
-//			dcache_clean((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
-//			rxd->status =
-//				1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
-//		//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
-//		//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
-//				0;
-//			dcache_clean((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
-//		}
-//		else
-//		{
-//			TP();
-//			PRINTF("EMAC_RX_DMA_STA=%08X\n", (unsigned) emac_peripheral->EMAC_RX_DMA_STA);
-//		}
-//	}
-//}
 
 /* Realtek RTL8211F PHY Registers */
 #define RTL8211F_PHYSR          26	// PHYSR (PHY Specific Status Register, Page 0xa43, Address 0x1A)
@@ -812,6 +782,10 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
     		1 * (UINT32_C(1) << 31) |	// TX_EN
     		//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
     		0;
+//
+//		emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
+//		if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
+//			TP();
     }
     return ERR_OK;
 }
