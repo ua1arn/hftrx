@@ -402,9 +402,6 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
   	  	dcache_clean(dataptr, size);
 //  	  	PRINTF("tx:\n");
 //  	  	printhex(dataptr, (void *) dataptr, size);
-  	  	txd->status =	// status
-			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
-			0;
 		// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
 		// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт заказанный в дескрипторе размер
 		// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт заказанный в дескрипторе размер
@@ -425,6 +422,9 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		//txd->buf_addr = (uintptr_t) txbuffs [i];	// BUF_ADDR
 		//txd->next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
 
+  	  	txd->status =	// status
+			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
+			0;
 
 		//dcache_clean((uintptr_t) txd, sizeof * txd);
 		dcache_clean((uintptr_t) txd, sizeof * txd);
@@ -455,34 +455,44 @@ static void emac_nohandler(void * ctx)
 		if (rxd->status & (UINT32_C(1) << 31))
 			continue;
 
-		const uintptr_t dataptr = (uintptr_t) rxd->buf_addr;
-		const int size = (rxd->status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
- 		struct pbuf * const p = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
-		if (p == NULL)
-		{
-			TP();
-			continue;
-		}
-//  	  	PRINTF("rx:\n");
-//  	  	printhex(dataptr, (void *) dataptr, size);
-		pbuf_header(p, - ETH_PAD_SIZE);
-		const err_t e = pbuf_take(p, (void *) dataptr, size);
-		pbuf_header(p, + ETH_PAD_SIZE);
-		if (e == ERR_OK)
-		{
-			const err_t e = ethernet_input(p, netif);
-			if (e != ERR_OK)
-			{
-				  /* This means the pbuf is freed or consumed,
-				     so the caller doesn't have to free it again */
-			}
-		}
+		if ((rxd->status & (UINT32_C(1) << 30)) != 0)	// RX_DAF_FAIL (destination addres filter)
+			;
+		else if ((rxd->status & 0x000000DB) != 0)	// Error flags
+			;
 		else
 		{
-			pbuf_free(p);
+			//PRINTF("rxd->status: %08X (err=%08X)\n", (unsigned) rxd->status, (unsigned) (rxd->status & 0x000000DB));
+
+			const uintptr_t dataptr = (uintptr_t) rxd->buf_addr;
+			const int size = (rxd->status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
+	 		struct pbuf * const p = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
+			if (p == NULL)
+			{
+				TP();
+				continue;
+			}
+	//  	  	PRINTF("rx:\n");
+	//  	  	printhex(dataptr, (void *) dataptr, size);
+			const err_t e = pbuf_take_at(p, (void *) dataptr, size, ETH_PAD_SIZE);
+//			pbuf_header(p, - ETH_PAD_SIZE);
+//			const err_t e = pbuf_take(p, (void *) dataptr, size);
+//			pbuf_header(p, + ETH_PAD_SIZE);
+			if (e == ERR_OK)
+			{
+				const err_t e = ethernet_input(p, netif);
+				if (e != ERR_OK)
+				{
+					  /* This means the pbuf is freed or consumed,
+					     so the caller doesn't have to free it again */
+				}
+			}
+			else
+			{
+				pbuf_free(p);
+			}
+			dcache_invalidate((uintptr_t) rxd->buf_addr, EMAC_MAX_PACKET_SIZE);	// подготовка к приёму следующего
 		}
 
-		dcache_invalidate((uintptr_t) rxd->buf_addr, EMAC_MAX_PACKET_SIZE);	// подготовка к приёму следующего
 		rxd->status =
 			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
 	//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
