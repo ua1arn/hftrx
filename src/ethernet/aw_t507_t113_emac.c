@@ -113,7 +113,7 @@ static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct 
 #define DESC_OWN_BY_DMA         (UINT32_C(1) << 31)
 #define DESC_RX_LAST            (UINT32_C(1) << 8)
 #define DESC_RX_FIRST           (UINT32_C(1) << 9)
-#define DESC_RX_ERRORS_MASK     (UINT32_C(1) << 15)
+//#define DESC_RX_ERRORS_MASK     (UINT32_C(1) << 15)
 #define DESC_RX_FL_MASK         0x3FFF0000
 #define DESC_RX_FL_SHIFT        16
 //#define DESC_RX_BUF_SIZE_MASK   0x7FF
@@ -194,7 +194,9 @@ static void ethernetif_poll(struct netif *netif) {
         /* Enforce processing only on fully assembled error-free incoming frames */
         if ((current_desc->status & DESC_RX_FIRST) &&
             (current_desc->status & DESC_RX_LAST) &&
-           !(current_desc->status & DESC_RX_ERRORS_MASK)) {
+           //!(current_desc->status & DESC_RX_ERRORS_MASK) &&
+           1
+		   ) {
 
             len = (current_desc->status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
 
@@ -390,18 +392,16 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 	for (i = 0; i < ARRAY_SIZE(emac_txdesc); ++ i)
 	{
 		struct emac_dma_desc * txd = & emac_txdesc [i];
+		//
 	    if (txd->status & (UINT32_C(1) << 31))
-	    {
 	    	continue;
-	    }
 	    const uintptr_t dataptr = (uintptr_t) txd->buf_addr;
-	    pbuf_header(p, - ETH_PAD_SIZE);
-	    const unsigned size = pbuf_copy_partial(p, (void *) dataptr, EMAC_MAX_PACKET_SIZE, 0);
-  	  	pbuf_header(p, + ETH_PAD_SIZE); /* Восстанавливаем pbuf в исходное состояние */
-
+	    const unsigned size = pbuf_copy_partial(p, (void *) dataptr, EMAC_MAX_PACKET_SIZE, ETH_PAD_SIZE);
   	  	dcache_clean(dataptr, size);
+
 //  	  	PRINTF("tx:\n");
 //  	  	printhex(dataptr, (void *) dataptr, size);
+
 		// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
 		// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт заказанный в дескрипторе размер
 		// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт заказанный в дескрипторе размер
@@ -419,8 +419,6 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 	//		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
 			(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
-		//txd->buf_addr = (uintptr_t) txbuffs [i];	// BUF_ADDR
-		//txd->next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
 
   	  	txd->status =	// status
 			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
@@ -434,6 +432,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			TP();
 		return ERR_OK;
 	}
+	//TP();
 	if (i == ARRAY_SIZE(emac_txdesc))
 		return ERR_MEM;
 	return ERR_OK;
@@ -715,9 +714,8 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 //				1 * (UINT32_C(1) << 8) |	// LAST_DESC
 			0;
 		rxd->control =
-				DESC_RX_CHAINED |
+				//DESC_RX_CHAINED |
 				(EMAC_MAX_PACKET_SIZE & DESC_RX_BUF_SIZE_MASK) |	// 10:0 BUF_SIZE
-				//len * (UINT32_C(1) << 0) |
 			0;
 		rxd->buf_addr = (uintptr_t) rxbuffs [i];	// BUF_ADDR
 		rxd->next_desc = (uintptr_t) & emac_rxdesc [(i + 1) % ARRAY_SIZE(emac_rxdesc)];	// NEXT_DESC_ADDR
