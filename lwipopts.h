@@ -365,16 +365,18 @@ struct emac_dma_desc {
     volatile uint32_t control;
     volatile uint32_t buf_addr;
     volatile uint32_t next_desc;
+    uint32_t pad [(64 - 16) / 4];
 };
 
 /* данные, добавляющиеся в конец pbuf_t */
 typedef struct listsupport_tag
 {
-		LIST_ENTRY item __ALIGNED(4);
-		void * headpbuf;
-		void * memp;
-		struct emac_dma_desc dmadesc __ALIGNED(DCACHEROWSIZE);
-		int dummyAllign __ALIGNED(DCACHEROWSIZE);
+	void * sign1;
+	LIST_ENTRY item __ALIGNED(4);
+	void * headpbuf;
+	struct emac_dma_desc dmadesc __ALIGNED(DCACHEROWSIZE);
+	int dummyAllign __ALIGNED(DCACHEROWSIZE);
+	void * sign2;
 } listsupport_t;
 
 #define LWIP_PBUF_CUSTOM_DATA  listsupport_t custom_item;

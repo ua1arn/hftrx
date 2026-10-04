@@ -389,32 +389,32 @@ static RAMNC __ALIGNED(4) struct emac_dma_desc emac_rxdesc [EMAC_RX_BUFFERS_COUN
 static LIST_ENTRY TxList;
 //static LIST_ENTRY TxDoneList;
 
-static void relinkdesc(EMAC_TypeDef * const emac_peripheral)
+// Перестройка ссылок в списке dma descriptors
+static void relinktxdesc(EMAC_TypeDef * const emac_peripheral)
 {
+	ASSERT(! (emac_peripheral->EMAC_TX_CTL1 & EMAC_TX_CTL1_TX_DMA_EN));
 	// Layout descriptors list
-
-	LIST_ENTRY * const head = TxList.Flink;
-	LIST_ENTRY * t = TxList.Flink;
-	listsupport_t * const lshead = CONTAINING_RECORD(head, listsupport_t, item);
-	listsupport_t * const ls = CONTAINING_RECORD(head, listsupport_t, item);
-	do {
-
-		listsupport_t * const ls = CONTAINING_RECORD(t, listsupport_t, item);
-		listsupport_t * const lsnext = CONTAINING_RECORD(t->Flink, listsupport_t, item);
-
-		ls->dmadesc.next_desc = (t->Flink == & TxList) ?
-				(uintptr_t) & lshead->dmadesc :
-				(uintptr_t) & lsnext->dmadesc;
-
-		dcache_clean((uintptr_t) & ls->dmadesc, sizeof ls->dmadesc);
-
-		t = t->Flink;
-	} while (t != & TxList);
-
-	emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) & lshead->dmadesc;
-
 	if (! IsListEmpty(& TxList))
 	{
+		LIST_ENTRY * const head = TxList.Flink;
+		LIST_ENTRY * t = TxList.Flink;
+		listsupport_t * const lshead = CONTAINING_RECORD(head, listsupport_t, item);
+		do {
+
+			listsupport_t * const ls = CONTAINING_RECORD(t, listsupport_t, item);
+			listsupport_t * const lsnext = CONTAINING_RECORD(t->Flink, listsupport_t, item);
+
+			ls->dmadesc.next_desc = (t->Flink == & TxList) ?
+					(uintptr_t) & lshead->dmadesc :
+					(uintptr_t) & lsnext->dmadesc;
+
+			//dcache_clean((uintptr_t) & ls->dmadesc, sizeof ls->dmadesc);
+
+			t = t->Flink;
+		} while (t != & TxList);
+
+		emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) & lshead->dmadesc;
+
 		emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
 		emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 		if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
@@ -426,29 +426,49 @@ static void emac_txhandler(void * ctx)
 {
 	struct netif * const netif = (struct netif *) ctx;
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
-
+	enum {
+		ALLERR =
+				(UINT32_C(1) << 16) |
+				(UINT32_C(1) << 14) |
+				(UINT32_C(1) << 12) |
+				(UINT32_C(1) << 10) |
+				(UINT32_C(1) << 9) |
+				(UINT32_C(1) << 8) |
+				(UINT32_C(1) << 2) |
+				(UINT32_C(1) << 1) |
+				(UINT32_C(1) << 0) |
+			0
+	};
    	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
-
+   	unsigned deleted = 0;
+   	unsigned total = 0;
    	PLIST_ENTRY t;
    	PLIST_ENTRY next;
 	for (t = TxList.Flink; t != & TxList; t = next)
 	{
 		ASSERT(t != NULL);
+		++ total;
 		next = t->Flink;
 		listsupport_t * const pl = CONTAINING_RECORD(t, listsupport_t, item);
+		ASSERT(pl->sign1 == pl && pl->sign2 == pl);
 		struct emac_dma_desc * txd = & pl->dmadesc;
 		dcache_invalidate((uintptr_t) txd, sizeof * txd);
 		if (pl->dmadesc.status & (UINT32_C(1) << 31))
-			continue;	// пока в работе
+		{
+			if (pl->dmadesc.status & ALLERR)
+				PRINTF("Errors: %08X\n", (unsigned) pl->dmadesc.status);
+			else
+				continue;	// пока в работе
+		}
 
 		RemoveEntryList(t);
 		struct pbuf *p = CONTAINING_RECORD(pl, struct pbuf, custom_item);
 		if (pl->headpbuf)
 			pbuf_free(pl->headpbuf);
-		if (pl->memp)
-			free(pl->memp);
+		++ deleted;
 	}
-	relinkdesc(emac_peripheral);
+	//PRINTF("emac_txhandler: deleted=%u,total=%u\n", deleted, total);
+	relinktxdesc(emac_peripheral);
 }
 
 // опрос принятых
@@ -480,15 +500,12 @@ static void emac_rxhandler(void * ctx)
 	 		struct pbuf * const p = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
 			if (p == NULL)
 			{
-				TP();
+				ASSERT(0);
 				continue;
 			}
 //			PRINTF("rx:\n");
 //			printhex(dataptr, (void *) dataptr, size);
 			const err_t e = pbuf_take_at(p, (void *) dataptr, size, ETH_PAD_SIZE);
-//			pbuf_header(p, - ETH_PAD_SIZE);
-//			const err_t e = pbuf_take(p, (void *) dataptr, size);
-//			pbuf_header(p, + ETH_PAD_SIZE);
 			if (e == ERR_OK)
 			{
 				const err_t e = ethernet_input(p, netif);
@@ -496,11 +513,13 @@ static void emac_rxhandler(void * ctx)
 				{
 					  /* This means the pbuf is freed or consumed,
 					     so the caller doesn't have to free it again */
+					ASSERT(0);
 				}
 			}
 			else
 			{
 				pbuf_free(p);
+				ASSERT(0);
 			}
 			dcache_invalidate((uintptr_t) rxd->buf_addr, EMAC_MAX_PACKET_SIZE);	// подготовка к приёму следующего
 		}
@@ -562,6 +581,8 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 
 	//nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
    	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
+   	while (emac_peripheral->EMAC_TX_CTL1 & EMAC_TX_CTL1_TX_DMA_EN)
+   		;
   	const uint_fast32_t CONTROLMODE =
 			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
 			//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
@@ -575,11 +596,11 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			1 * (UINT32_C(1) << 29) |	// FIR_DESC
 			0;
    	const uint_fast32_t FIRSTCONTROL =
-   			//CONTROLMODE |
+   			CONTROLMODE |
 			1 * (UINT32_C(1) << 29) |	// FIR_DESC
 			0;
    	const uint_fast32_t MIDDLECONTROL =
-   			//CONTROLMODE |
+   			CONTROLMODE |
 			0;
    	const uint_fast32_t LASTCONTROL =
    			CONTROLMODE |
@@ -590,21 +611,48 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 	if (p->tot_len <= ETH_PAD_SIZE)
 	{
 		// нечего передавать
+		ASSERT(0);
 	}
 	else if (p->tot_len == p->len)
 	{
+		//printchain2("send1", p);
 		// состоит из одного сегмента
 		ASSERT(p->next == NULL);
 		p->custom_item.headpbuf = p;
-		p->custom_item.memp = NULL;
 		pbuf_ref(p);	// Then use pbuf_free for only first element in chain
 		struct emac_dma_desc * txd = & p->custom_item.dmadesc;
+		p->custom_item.sign1 = & p->custom_item;
+		p->custom_item.sign2 = & p->custom_item;
 		InsertTailList(& TxList, & p->custom_item.item);
 		const unsigned chunk = p->len - ETH_PAD_SIZE;
 	    const uintptr_t dataptr = (uintptr_t) p->payload + ETH_PAD_SIZE;
 		dcache_clean((uintptr_t) dataptr, chunk);
 		emac_dma_desc_set(txd, ONLYONECONTROL, dataptr, chunk);
 		txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+	}
+	else if (1)
+	{
+		//ASSERT(0);
+		//printchain2("send2", p);
+		// Эксперементальное
+		const unsigned buflen = ((p->tot_len - ETH_PAD_SIZE) + 0xFFF) & ~ UINT32_C(0xFFF);
+		struct pbuf * const newb = pbuf_alloc(PBUF_RAW, buflen, PBUF_POOL);
+		newb->custom_item.headpbuf = newb;
+		ASSERT(newb);
+		newb->custom_item.sign1 = & newb->custom_item;
+		newb->custom_item.sign2 = & newb->custom_item;
+	    const uintptr_t dataptr = (uintptr_t) newb->payload;
+		//pbuf_ref(p);	// Then use pbuf_free for only first element in chain
+		const unsigned chunk = pbuf_copy_partial(p, (void *) dataptr, buflen, ETH_PAD_SIZE);
+
+		//printhex(dataptr, p->custom_item.memp, chunk);
+
+		struct emac_dma_desc * const txd = & newb->custom_item.dmadesc;
+		InsertTailList(& TxList, & newb->custom_item.item);
+		dcache_clean(dataptr, chunk);
+		emac_dma_desc_set(txd, ONLYONECONTROL, dataptr, chunk);
+		txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+
 	}
 	else
 	{
@@ -619,39 +667,18 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 //		printchain("Free2", p);
 //		PRINTF("-------\n");
 //		return ERR_OK;
-
-		if (1)
-		{
-			const unsigned buflen = ((p->tot_len - ETH_PAD_SIZE) + 0xFFF) & ~ UINT32_C(0xFFF);
-			p->custom_item.headpbuf = NULL;
-			p->custom_item.memp = malloc(buflen);
-		    const uintptr_t dataptr = (uintptr_t) p->custom_item.memp;
-			//pbuf_ref(p);	// Then use pbuf_free for only first element in chain
-			const unsigned chunk = pbuf_copy_partial(p, p->custom_item.memp, buflen, ETH_PAD_SIZE);
-
-			printhex(dataptr, p->custom_item.memp, chunk);
-
-			struct emac_dma_desc * const txd = & p->custom_item.dmadesc;
-			InsertTailList(& TxList, & p->custom_item.item);
-			dcache_clean((uintptr_t) dataptr, chunk);
-			emac_dma_desc_set(txd, ONLYONECONTROL, dataptr, chunk);
-			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
-
-		}
-		else
 		{
 			unsigned remain = p->tot_len;
 			{
 				struct pbuf * pfirst = p;
-				pfirst->custom_item.headpbuf = p;
-				pfirst->custom_item.memp = NULL;
+				pfirst->custom_item.headpbuf = NULL;
 				pbuf_ref(pfirst);	// Then use pbuf_free for only first element in chain
 				struct emac_dma_desc * txd = & pfirst->custom_item.dmadesc;
 				InsertTailList(& TxList, & pfirst->custom_item.item);
 
 				const unsigned chunk = pfirst->len - ETH_PAD_SIZE;
 			    const uintptr_t dataptr = (uintptr_t) pfirst->payload + ETH_PAD_SIZE;
-				dcache_clean((uintptr_t) dataptr, chunk);
+				dcache_clean(dataptr, chunk);
 				emac_dma_desc_set(txd, FIRSTCONTROL, dataptr, chunk);
 				txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
 				remain -= pfirst->len;
@@ -660,23 +687,24 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			while (remain)
 			{
 				ASSERT(plast);
-				plast->custom_item.headpbuf = NULL;
-				plast->custom_item.memp = NULL;
+				const unsigned chunk = plast->len;
+				const int ismiddle = remain != chunk;
+				//plast->custom_item.headpbuf = NULL;
+				plast->custom_item.headpbuf = ismiddle ? NULL : p;
 				//pbuf_ref(plast);	// Then use pbuf_free for only first element in chain
 				struct emac_dma_desc * txd = & plast->custom_item.dmadesc;
 				InsertTailList(& TxList, & plast->custom_item.item);
 
-				const unsigned chunk = plast->len;
 			    const uintptr_t dataptr = (uintptr_t) plast->payload;
-				dcache_clean((uintptr_t) dataptr, chunk);
-				emac_dma_desc_set(txd, remain != chunk ? MIDDLECONTROL : LASTCONTROL, dataptr, chunk);
+				dcache_clean(dataptr, chunk);
+				emac_dma_desc_set(txd, ismiddle ? MIDDLECONTROL : LASTCONTROL, dataptr, chunk);
 				txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
 				remain -= chunk;
 				plast = plast->next;
 			}
 		}
 	}
-	relinkdesc(emac_peripheral);
+	relinktxdesc(emac_peripheral);
 	return ERR_OK;
 }
 
