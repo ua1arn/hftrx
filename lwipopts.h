@@ -113,7 +113,6 @@
 
 #if 1
 	#define LWIP_RAM_HEAP_POINTER		lwipBuffer
-	#define MEM_SIZE                        (16384 * 1024uL)
 	extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
 #endif
 
@@ -380,6 +379,11 @@ typedef struct listsupport_tag
 } listsupport_t;
 
 #define LWIP_PBUF_CUSTOM_DATA  listsupport_t custom_item;
+
+#if 1
+	#define LWIP_RAM_HEAP_POINTER		lwipBuffer
+	extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
+#endif
 
 #endif /* CPUSTYLE_ALLWINNER */
 
