@@ -517,41 +517,55 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 	//nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
    	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
 
+	unsigned totalscore = 0;
+	unsigned thisoffset = ETH_PAD_SIZE;	// смещение от начала данных в текущем struct pbuf
+	unsigned totallen = p->tot_len;
+	ASSERT(p->len == p->tot_len);
+	while (totalscore < totallen)
+	{
+		ASSERT(p);
+		const unsigned chunk = ulmin16(EMAC_MAX_PACKET_SIZE, totallen - thisoffset);
 
-	struct emac_dma_desc * txd = & p->custom_item.dmadesc;
-	InsertTailList(& TxList, & p->custom_item.item);
-	pbuf_ref(p);	// Then use pbuf_free
+		struct emac_dma_desc * txd = & p->custom_item.dmadesc;
+		InsertTailList(& TxList, & p->custom_item.item);
 
-	ASSERT(p->tot_len == p->len);	// работа с несегментированными пакетами
-    const uintptr_t dataptr = (uintptr_t) p->payload + ETH_PAD_SIZE;
-    const unsigned size = p->tot_len - ETH_PAD_SIZE;
+		pbuf_ref(p);	// Then use pbuf_free
 
-//	PRINTF("tx:\n");
-//	printhex(dataptr, (void *) dataptr, size);
+	    const uintptr_t dataptr = (uintptr_t) p->payload + thisoffset;
 
-	dcache_clean((uintptr_t) dataptr, size);
+//		PRINTF("tx:\n");
+//		printhex(totalscore, (void *) dataptr, chunk);
 
-// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
-// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт заказанный в дескрипторе размер
-// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт заказанный в дескрипторе размер
-// CRC_CTL=0 и CHECKSUM_CTL=0: просто передаёт заказанный в дескрипторе размер
-// CRC_CTL=1 и CHECKSUM_CTL=3: передаёт на 4 меньше
-// CRC_CTL=1 и CHECKSUM_CTL=2: передаёт на 4 меньше
-// CRC_CTL=1 и CHECKSUM_CTL=1: передаёт на 4 меньше
-// CRC_CTL=1 и CHECKSUM_CTL=0: передаёт на 4 меньше
-	txd->control =	// ctl
-	1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
-	1 * (UINT32_C(1) << 30) |	// LAST_DESC
-	1 * (UINT32_C(1) << 29) |	// FIR_DESC
-	//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
-	//1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
-//		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
-	(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
-	0;
-	txd->buf_addr = dataptr;
-	txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL	// status
+		dcache_clean((uintptr_t) dataptr, chunk);
 
-	//dcache_clean((uintptr_t) txd, sizeof * txd);
+
+
+		// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
+		// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт заказанный в дескрипторе размер
+		// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт заказанный в дескрипторе размер
+		// CRC_CTL=0 и CHECKSUM_CTL=0: просто передаёт заказанный в дескрипторе размер
+		// CRC_CTL=1 и CHECKSUM_CTL=3: передаёт на 4 меньше
+		// CRC_CTL=1 и CHECKSUM_CTL=2: передаёт на 4 меньше
+		// CRC_CTL=1 и CHECKSUM_CTL=1: передаёт на 4 меньше
+		// CRC_CTL=1 и CHECKSUM_CTL=0: передаёт на 4 меньше
+			txd->control =	// ctl
+			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
+			1 * (UINT32_C(1) << 30) |	// LAST_DESC
+			1 * (UINT32_C(1) << 29) |	// FIR_DESC
+			//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
+			//1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
+		//		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
+			chunk * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
+			0;
+			txd->buf_addr = dataptr;
+			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL	// status
+
+
+		totalscore += chunk + thisoffset;
+		thisoffset = 0;
+		p = p->next;
+
+	}
 
 	relinkdesc(emac_peripheral);
 
