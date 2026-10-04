@@ -584,9 +584,8 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 	{
 		// состоит из двух и более сегментов
 		//PRINTF("%s: Segmented pbuf: p->tot_len=%u, p->len=%u (siz=%u)\n", __func__, (unsigned) p->tot_len, (unsigned) p->len, EMAC_MAX_PACKET_SIZE);
-		struct pbuf * pfirst = p;
-		struct pbuf * plast = p->next;
 		{
+			struct pbuf * pfirst = p;
 			pbuf_ref(pfirst);	// Then use pbuf_free (над каждым элементом списка)
 			struct emac_dma_desc * txd = & pfirst->custom_item.dmadesc;
 			InsertTailList(& TxList, & pfirst->custom_item.item);
@@ -596,6 +595,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			emac_dma_desc_set(txd, FIRSTCONTROL, dataptr, chunk);
 			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
 		}
+		struct pbuf * plast = p->next;
 		while (plast != NULL)
 		{
 			pbuf_ref(plast);	// Then use pbuf_free (над каждым элементом списка)
