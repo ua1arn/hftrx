@@ -426,8 +426,9 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		//dcache_clean((uintptr_t) txd, sizeof * txd);
 		dcache_clean((uintptr_t) txd, sizeof * txd);
 
+	   	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
+		ASSERT( ! (emac_peripheral->EMAC_TX_CTL1 & EMAC_TX_CTL1_TX_DMA_EN));
 		emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) emac_txdesc;
-		//ASSERT( ! (emac_peripheral->EMAC_TX_CTL1 & EMAC_TX_CTL1_TX_DMA_EN));
     	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
 		emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 		if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
