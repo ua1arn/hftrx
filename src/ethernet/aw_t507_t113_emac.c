@@ -98,13 +98,14 @@ static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct 
     emac_peripheral->EMAC_ADDR [0].HIGH = mac_high;	// upper 16 bits of the first 6-byte MAC address
 }
 
-#define ETH_HEADER_SIZE                 14
-#define ETH_MIN_PACKET_SIZE             60
-#define ETH_MAX_PACKET_SIZE             (ETH_HEADER_SIZE + NIC_MTU)
+//#define ETH_HEADER_SIZE                 14
+//#define ETH_MIN_PACKET_SIZE             60
+//#define ETH_MAX_PACKET_SIZE             (ETH_HEADER_SIZE + NIC_MTU)
 //#define EMAC_HEADER_SIZE               (sizeof (emac_data_packet_t))
 //#define EMAC_RX_BUFFER_SIZE            (EMAC_HEADER_SIZE + ETH_MAX_PACKET_SIZE)
 //#define EMAC_TX_MAX_PACKET_SIZE 	1536
-#define EMAC_MAX_PACKET_SIZE      1536
+
+#define EMAC_MAX_PACKET_SIZE      2000
 
 /* Allwinner EMAC DMA Ring Configurations */
 #define EMAC_RX_BUFFERS_COUNT     	16
@@ -132,6 +133,7 @@ static uint32_t rx_index = 0;
 #define DESC_RX_CHAINED           (UINT32_C(1) << 14)
 #define TDES0_TX_CHAINED          (UINT32_C(1) << 20)
 #define DESC_RX_BUF_SIZE_MASK     UINT32_C(0x7FF)
+#define DESC_TX_BUF_SIZE_MASK     UINT32_C(0x7FF)
 
 /* Register Bits for EMAC Control Blocks */
 #define EMAC_BASIC_CTL0_DUPLEX    (1 << 0)   /* Default to Full Duplex on start */
@@ -441,7 +443,10 @@ static void emac_txhandler(void * ctx)
 
 		RemoveEntryList(t);
 		struct pbuf *p = CONTAINING_RECORD(pl, struct pbuf, custom_item);
-		pbuf_free(p);
+		if (pl->headpbuf)
+			pbuf_free(pl->headpbuf);
+		if (pl->memp)
+			free(pl->memp);
 	}
 	relinkdesc(emac_peripheral);
 }
@@ -509,13 +514,46 @@ static void emac_rxhandler(void * ctx)
 	dcache_clean((uintptr_t) & emac_rxdesc, sizeof emac_rxdesc);
 }
 
+static void printchain(const char * title, const struct pbuf *p)
+{
+	// print segmented buffer
+	unsigned sc = 0;
+	const struct pbuf *p1 = p;
+	PRINTF("%s: tx all (%u %04X bytes): ", title, p->tot_len, p->tot_len);
+	while (p1 != 0)
+	{
+		PRINTF("ref=%u,n=%u ", p1->ref, p1->len);
+		//printhex(0 + sc, p1->payload, p1->len);
+		sc += p1->len;
+		p1 = p1->next;
+	}
+	PRINTF("\n");
+}
+
+static void printchain2(const char * title, const struct pbuf *p)
+{
+	// print segmented buffer
+	unsigned sc = 0;
+	const struct pbuf *p1 = p;
+	PRINTF("%s: tx all (%u %04X bytes):\n", title, p->tot_len, p->tot_len);
+	while (p1 != 0)
+	{
+		//PRINTF("ref=%u,n=%u ", p1->ref, p1->len);
+		printhex(0 + sc, p1->payload, p1->len);
+		sc += p1->len;
+		p1 = p1->next;
+	}
+	//PRINTF("\n");
+}
+
 static void emac_dma_desc_set(struct emac_dma_desc * txd, uint_fast32_t control, uintptr_t buf_addr, unsigned len)
 {
+	ASSERT(len <= EMAC_MAX_PACKET_SIZE);
 	txd->buf_addr = buf_addr;
 	txd->control =	// ctl
-	control |
-	len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
-	0;
+		control |
+		(len & DESC_TX_BUF_SIZE_MASK) |	// 10:0 BUF_SIZE
+		0;
 }
 
 static err_t low_level_output(struct netif *netif, struct pbuf *p) {
@@ -537,11 +575,11 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			1 * (UINT32_C(1) << 29) |	// FIR_DESC
 			0;
    	const uint_fast32_t FIRSTCONTROL =
-   			CONTROLMODE |
+   			//CONTROLMODE |
 			1 * (UINT32_C(1) << 29) |	// FIR_DESC
 			0;
    	const uint_fast32_t MIDDLECONTROL =
-   			CONTROLMODE |
+   			//CONTROLMODE |
 			0;
    	const uint_fast32_t LASTCONTROL =
    			CONTROLMODE |
@@ -549,19 +587,6 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			0;
 
 	ASSERT(p);
-	if (0)
-	{
-		// print segmented buffer
-		unsigned sc = 0;
-		struct pbuf *p1 = p;
-		PRINTF("tx all (%04X bytes):\n", p->tot_len);
-		while (p1 != 0)
-		{
-			printhex(0 + sc, p1->payload, p1->len);
-			sc += p1->len;
-			p1 = p1->next;
-		}
-	}
 	if (p->tot_len <= ETH_PAD_SIZE)
 	{
 		// нечего передавать
@@ -570,8 +595,9 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 	{
 		// состоит из одного сегмента
 		ASSERT(p->next == NULL);
-
-		pbuf_ref(p);	// Then use pbuf_free (над каждым элементом списка)
+		p->custom_item.headpbuf = p;
+		p->custom_item.memp = NULL;
+		pbuf_ref(p);	// Then use pbuf_free for only first element in chain
 		struct emac_dma_desc * txd = & p->custom_item.dmadesc;
 		InsertTailList(& TxList, & p->custom_item.item);
 		const unsigned chunk = p->len - ETH_PAD_SIZE;
@@ -584,29 +610,70 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 	{
 		// состоит из двух и более сегментов
 		//PRINTF("%s: Segmented pbuf: p->tot_len=%u, p->len=%u (siz=%u)\n", __func__, (unsigned) p->tot_len, (unsigned) p->len, EMAC_MAX_PACKET_SIZE);
+		//printchain2("Before", p);
+//		pbuf_ref(p);	// Then use pbuf_free for only first element in chain
+//		printchain("Ref", p);
+//		pbuf_free(p);
+//		printchain("Free", p);
+//		pbuf_free(p);
+//		printchain("Free2", p);
+//		PRINTF("-------\n");
+//		return ERR_OK;
+
+		if (1)
 		{
-			struct pbuf * pfirst = p;
-			pbuf_ref(pfirst);	// Then use pbuf_free (над каждым элементом списка)
-			struct emac_dma_desc * txd = & pfirst->custom_item.dmadesc;
-			InsertTailList(& TxList, & pfirst->custom_item.item);
-			const unsigned chunk = pfirst->len - ETH_PAD_SIZE;
-		    const uintptr_t dataptr = (uintptr_t) pfirst->payload + ETH_PAD_SIZE;
+			const unsigned buflen = ((p->tot_len - ETH_PAD_SIZE) + 0xFFF) & ~ UINT32_C(0xFFF);
+			p->custom_item.headpbuf = NULL;
+			p->custom_item.memp = malloc(buflen);
+		    const uintptr_t dataptr = (uintptr_t) p->custom_item.memp;
+			//pbuf_ref(p);	// Then use pbuf_free for only first element in chain
+			const unsigned chunk = pbuf_copy_partial(p, p->custom_item.memp, buflen, ETH_PAD_SIZE);
+
+			printhex(dataptr, p->custom_item.memp, chunk);
+
+			struct emac_dma_desc * const txd = & p->custom_item.dmadesc;
+			InsertTailList(& TxList, & p->custom_item.item);
 			dcache_clean((uintptr_t) dataptr, chunk);
-			emac_dma_desc_set(txd, FIRSTCONTROL, dataptr, chunk);
+			emac_dma_desc_set(txd, ONLYONECONTROL, dataptr, chunk);
 			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+
 		}
-		struct pbuf * plast = p->next;
-		while (plast != NULL)
+		else
 		{
-			pbuf_ref(plast);	// Then use pbuf_free (над каждым элементом списка)
-			struct emac_dma_desc * txd = & plast->custom_item.dmadesc;
-			InsertTailList(& TxList, & plast->custom_item.item);
-			const unsigned chunk = plast->len;
-		    const uintptr_t dataptr = (uintptr_t) plast->payload;
-			dcache_clean((uintptr_t) dataptr, chunk);
-			emac_dma_desc_set(txd, plast->next ? MIDDLECONTROL : LASTCONTROL, dataptr, chunk);
-			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
-			plast = plast->next;
+			unsigned remain = p->tot_len;
+			{
+				struct pbuf * pfirst = p;
+				pfirst->custom_item.headpbuf = p;
+				pfirst->custom_item.memp = NULL;
+				pbuf_ref(pfirst);	// Then use pbuf_free for only first element in chain
+				struct emac_dma_desc * txd = & pfirst->custom_item.dmadesc;
+				InsertTailList(& TxList, & pfirst->custom_item.item);
+
+				const unsigned chunk = pfirst->len - ETH_PAD_SIZE;
+			    const uintptr_t dataptr = (uintptr_t) pfirst->payload + ETH_PAD_SIZE;
+				dcache_clean((uintptr_t) dataptr, chunk);
+				emac_dma_desc_set(txd, FIRSTCONTROL, dataptr, chunk);
+				txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+				remain -= pfirst->len;
+			}
+			struct pbuf * plast = p->next;
+			while (remain)
+			{
+				ASSERT(plast);
+				plast->custom_item.headpbuf = NULL;
+				plast->custom_item.memp = NULL;
+				//pbuf_ref(plast);	// Then use pbuf_free for only first element in chain
+				struct emac_dma_desc * txd = & plast->custom_item.dmadesc;
+				InsertTailList(& TxList, & plast->custom_item.item);
+
+				const unsigned chunk = plast->len;
+			    const uintptr_t dataptr = (uintptr_t) plast->payload;
+				dcache_clean((uintptr_t) dataptr, chunk);
+				emac_dma_desc_set(txd, remain != chunk ? MIDDLECONTROL : LASTCONTROL, dataptr, chunk);
+				txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+				remain -= chunk;
+				plast = plast->next;
+			}
 		}
 	}
 	relinkdesc(emac_peripheral);

@@ -277,16 +277,16 @@ void board_update_time(uint32_t sec);
 #define LWIP_DBG_TYPES_ON      		(LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
 
 //#define HTTPD_DEBUG           LWIP_DBG_ON
-#define ETHARP_DEBUG           LWIP_DBG_ON
-#define NETIF_DEBUG            LWIP_DBG_ON
-//#define PBUF_DEBUG             LWIP_DBG_ON
+//#define ETHARP_DEBUG           LWIP_DBG_ON
+//#define NETIF_DEBUG            LWIP_DBG_ON
+#define PBUF_DEBUG             LWIP_DBG_ON
 //#define API_LIB_DEBUG          LWIP_DBG_ON
 //#define API_MSG_DEBUG          LWIP_DBG_ON
 //#define SOCKETS_DEBUG          LWIP_DBG_ON
-#define ICMP_DEBUG             LWIP_DBG_ON
-#define IGMP_DEBUG             LWIP_DBG_ON
-#define INET_DEBUG             LWIP_DBG_ON
-#define IP_DEBUG               LWIP_DBG_ON
+//#define ICMP_DEBUG             LWIP_DBG_ON
+//#define IGMP_DEBUG             LWIP_DBG_ON
+//#define INET_DEBUG             LWIP_DBG_ON
+//#define IP_DEBUG               LWIP_DBG_ON
 //#define IP_REASS_DEBUG         LWIP_DBG_ON
 //#define RAW_DEBUG              LWIP_DBG_ON
 //#define MEM_DEBUG              LWIP_DBG_ON
@@ -339,7 +339,7 @@ typedef unsigned sys_prot_t;
 #define LWIP_NETIF_LOOPBACK 1
 
 
-#define ETH_PAD_SIZE 2
+//#define ETH_PAD_SIZE 2
 
 //struct netif;
 struct netif;
@@ -371,6 +371,8 @@ struct emac_dma_desc {
 typedef struct listsupport_tag
 {
 		LIST_ENTRY item __ALIGNED(4);
+		void * headpbuf;
+		void * memp;
 		struct emac_dma_desc dmadesc __ALIGNED(DCACHEROWSIZE);
 		int dummyAllign __ALIGNED(DCACHEROWSIZE);
 } listsupport_t;
