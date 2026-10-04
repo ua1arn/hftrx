@@ -588,6 +588,9 @@ static err_t netif_init_cb(struct netif *netif)
 	#else
 		netif->flags |= NETIF_FLAG_BROADCAST;
 	#endif /* LWIP_ARP */
+
+	//netif->flags |= NETIF_FLAG_ETHERNET;	// на потом
+
 	netif->state = NULL;
 	netif->name[0] = 'E';
 	netif->name[1] = 'X';
