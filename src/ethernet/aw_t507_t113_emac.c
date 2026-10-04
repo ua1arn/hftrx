@@ -441,8 +441,7 @@ static void emac_txhandler(void * ctx)
 
 		RemoveEntryList(t);
 		struct pbuf *p = CONTAINING_RECORD(pl, struct pbuf, custom_item);
-
-		//ASSERT(0 == pbuf_free(p));
+		pbuf_free(p);
 	}
 	relinkdesc(emac_peripheral);
 }
@@ -541,11 +540,15 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
    			CONTROLMODE |
 			1 * (UINT32_C(1) << 29) |	// FIR_DESC
 			0;
+   	const uint_fast32_t MIDDLECONTROL =
+   			CONTROLMODE |
+			0;
    	const uint_fast32_t LASTCONTROL =
    			CONTROLMODE |
 			1 * (UINT32_C(1) << 30) |	// LAST_DESC
 			0;
 
+	ASSERT(p);
 	if (0)
 	{
 		// print segmented buffer
@@ -559,46 +562,54 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			p1 = p1->next;
 		}
 	}
-	if (p->len <= ETH_PAD_SIZE)
+	if (p->tot_len <= ETH_PAD_SIZE)
 	{
 		// нечего передавать
 	}
 	else if (p->tot_len == p->len)
 	{
 		// состоит из одного сегмента
-		ASSERT(p);
 		ASSERT(p->next == NULL);
-		const unsigned chunk = p->tot_len - ETH_PAD_SIZE;
-
-		struct emac_dma_desc * txd = & p->custom_item.dmadesc;
-		InsertTailList(& TxList, & p->custom_item.item);
 
 		pbuf_ref(p);	// Then use pbuf_free (над каждым элементом списка)
-
+		struct emac_dma_desc * txd = & p->custom_item.dmadesc;
+		InsertTailList(& TxList, & p->custom_item.item);
+		const unsigned chunk = p->len - ETH_PAD_SIZE;
 	    const uintptr_t dataptr = (uintptr_t) p->payload + ETH_PAD_SIZE;
-
 		dcache_clean((uintptr_t) dataptr, chunk);
-
 		emac_dma_desc_set(txd, ONLYONECONTROL, dataptr, chunk);
-		txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL	// status
-
-
-//		totalscore += chunk + thisoffset;
-//		thisoffset = 0;
-//		p = p->next;
-
+		txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
 	}
 	else
 	{
 		// состоит из двух и более сегментов
-		PRINTF("%s: Segmented pbuf: p->tot_len=%u, p->len=%u (siz=%u)\n", __func__, (unsigned) p->tot_len, (unsigned) p->len, EMAC_MAX_PACKET_SIZE);
-		//ASSERT(0);
-		//return ERR_OK;
-		return ERR_MEM;
+		//PRINTF("%s: Segmented pbuf: p->tot_len=%u, p->len=%u (siz=%u)\n", __func__, (unsigned) p->tot_len, (unsigned) p->len, EMAC_MAX_PACKET_SIZE);
+		struct pbuf * pfirst = p;
+		struct pbuf * plast = p->next;
+		{
+			pbuf_ref(pfirst);	// Then use pbuf_free (над каждым элементом списка)
+			struct emac_dma_desc * txd = & pfirst->custom_item.dmadesc;
+			InsertTailList(& TxList, & pfirst->custom_item.item);
+			const unsigned chunk = pfirst->len - ETH_PAD_SIZE;
+		    const uintptr_t dataptr = (uintptr_t) pfirst->payload + ETH_PAD_SIZE;
+			dcache_clean((uintptr_t) dataptr, chunk);
+			emac_dma_desc_set(txd, FIRSTCONTROL, dataptr, chunk);
+			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+		}
+		while (plast != NULL)
+		{
+			pbuf_ref(plast);	// Then use pbuf_free (над каждым элементом списка)
+			struct emac_dma_desc * txd = & plast->custom_item.dmadesc;
+			InsertTailList(& TxList, & plast->custom_item.item);
+			const unsigned chunk = plast->len;
+		    const uintptr_t dataptr = (uintptr_t) plast->payload;
+			dcache_clean((uintptr_t) dataptr, chunk);
+			emac_dma_desc_set(txd, plast->next ? MIDDLECONTROL : LASTCONTROL, dataptr, chunk);
+			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+			plast = plast->next;
+		}
 	}
-
 	relinkdesc(emac_peripheral);
-
 	return ERR_OK;
 }
 
