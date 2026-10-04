@@ -408,8 +408,8 @@ static void relinktxdesc(EMAC_TypeDef * const emac_peripheral)
 			ls->dmadesc.next_desc = (t->Flink == & TxList) ?
 					(uintptr_t) & lshead->dmadesc :
 					(uintptr_t) & lsnext->dmadesc;
-
-			//dcache_clean((uintptr_t) & ls->dmadesc, sizeof ls->dmadesc);
+			ASSERT(ls->dmadesc.status & (UINT32_C(1) << 31));
+			dcache_clean((uintptr_t) & ls->dmadesc, sizeof ls->dmadesc);
 
 			t = t->Flink;
 		} while (t != & TxList);
@@ -640,7 +640,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		emac_dma_desc_set(txd, ONLYONECONTROL, dataptr, chunk);
 		txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
 	}
-	else if (1)
+	else if (!1)
 	{
 		//ASSERT(0);
 		//printchain2("send2", p);
@@ -669,13 +669,15 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		// состоит из двух и более сегментов
 		//PRINTF("%s: Segmented pbuf: p->tot_len=%u, p->len=%u (siz=%u)\n", __func__, (unsigned) p->tot_len, (unsigned) p->len, EMAC_MAX_PACKET_SIZE);
 		//printchain2("Before", p);
-
+		//ASSERT(0);
 		unsigned remain = p->tot_len;
 		{
 			struct pbuf * pfirst = p;
 			pfirst->custom_item.headpbuf = NULL;
-			pbuf_ref(pfirst);	// Then use pbuf_free for only first element in chain
+			pbuf_ref(p);	// Then use pbuf_free for only first element in chain
 			struct emac_dma_desc * txd = & pfirst->custom_item.dmadesc;
+			pfirst->custom_item.sign1 = & pfirst->custom_item;
+			pfirst->custom_item.sign2 = & pfirst->custom_item;
 			InsertTailList(& TxList, & pfirst->custom_item.item);
 
 			const unsigned chunk = pfirst->len - ETH_PAD_SIZE;
@@ -693,6 +695,8 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			const int ismiddle = remain != chunk;
 			plast->custom_item.headpbuf = ismiddle ? NULL : p;
 			struct emac_dma_desc * txd = & plast->custom_item.dmadesc;
+			plast->custom_item.sign1 = & plast->custom_item;
+			plast->custom_item.sign2 = & plast->custom_item;
 			InsertTailList(& TxList, & plast->custom_item.item);
 
 		    const uintptr_t dataptr = (uintptr_t) plast->payload;

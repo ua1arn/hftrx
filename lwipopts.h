@@ -380,7 +380,7 @@ typedef struct listsupport_tag
 
 #define LWIP_PBUF_CUSTOM_DATA  listsupport_t custom_item;
 
-#if 1
+#if 0
 	#define LWIP_RAM_HEAP_POINTER		lwipBuffer
 	extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
 #endif
