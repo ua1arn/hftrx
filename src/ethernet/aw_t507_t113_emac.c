@@ -421,11 +421,14 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
 
-  	  	txd->status = 1 * (UINT32_C(1) << 31); // TX_DESC_CTL	// status
+  	  	txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL	// status
 
 		//dcache_clean((uintptr_t) txd, sizeof * txd);
 		dcache_clean((uintptr_t) txd, sizeof * txd);
 
+		emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) emac_txdesc;
+		//ASSERT( ! (emac_peripheral->EMAC_TX_CTL1 & EMAC_TX_CTL1_TX_DMA_EN));
+    	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
 		emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 		if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
 			TP();
@@ -787,10 +790,9 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
     }
     {
     	// TX
-		emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) emac_txdesc;
+		//emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) emac_txdesc;
     	emac_peripheral->EMAC_TX_CTL1 = EMAC_TX_CTL1_TX_MD_FORW;
     	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_MD_FORW;	// TX_MD 1: TX start after TX DMA FIFO located a full frame
-    	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
 
     	emac_peripheral->EMAC_TX_CTL0 =
     		1 * (UINT32_C(1) << 31) |	// TX_EN
