@@ -100,15 +100,15 @@ static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct 
 #define ETH_MAX_PACKET_SIZE             (ETH_HEADER_SIZE + NIC_MTU)
 //#define EMAC_HEADER_SIZE               (sizeof (emac_data_packet_t))
 //#define EMAC_RX_BUFFER_SIZE            (EMAC_HEADER_SIZE + ETH_MAX_PACKET_SIZE)
-
-/* Allwinner EMAC DMA Ring Configurations */
-#define EMAC_RX_BUFFERS_COUNT     16
-#define EMAC_TX_BUFFERS_COUNT     16
+#define EMAC_TX_MAX_PACKET_SIZE 	1536
 #define EMAC_MAX_PACKET_SIZE      1536
 
+/* Allwinner EMAC DMA Ring Configurations */
+#define EMAC_RX_BUFFERS_COUNT     	16
+#define EMAC_TX_BUFFERS_COUNT   	1//16
+
+
 /* Allwinner T507-H EMAC TX Descriptor Configuration */
-#define EMAC_TX_BUFFERS_COUNT   16
-#define EMAC_TX_MAX_PACKET_SIZE 1536
 
 #define DESC_OWN_BY_DMA         (UINT32_C(1) << 31)
 #define DESC_RX_LAST            (UINT32_C(1) << 8)
@@ -444,6 +444,12 @@ static void emac_nohandler(void * ctx)
 {
 	struct netif * const netif = (struct netif *) ctx;
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
+	const uint_fast32_t RXERRMASK =
+			(UINT32_C(1) << 30) |	// RX_DAF_FAIL - destination address filter
+			(UINT32_C(1) << 13) |	// RX_SAF_FAIL - source address filter
+			(UINT32_C(1) << 11) |	// RX_OVERFLOW_ERR - When set, a buffer overflow error occurred and current frame is wrong.
+			0x000000DB |			// hardware errors
+			0;
 //	const portholder_t sta = emac_peripheral->EMAC_INT_STA;
 //	emac_peripheral->EMAC_INT_STA = sta;//(UINT32_C(1) << 8);	// RX_P
 	//if (sta & ((UINT32_C(1) << 8)))	// RX_P
@@ -455,11 +461,7 @@ static void emac_nohandler(void * ctx)
 		if (rxd->status & (UINT32_C(1) << 31))
 			continue;
 
-		if ((rxd->status & (UINT32_C(1) << 30)) != 0)	// RX_DAF_FAIL (destination addres filter)
-			;
-		else if ((rxd->status & 0x000000DB) != 0)	// Error flags
-			;
-		else
+		if ((rxd->status & RXERRMASK) == 0)	// Error flags
 		{
 			//PRINTF("rxd->status: %08X (err=%08X)\n", (unsigned) rxd->status, (unsigned) (rxd->status & 0x000000DB));
 
@@ -800,11 +802,11 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
     return ERR_OK;
 }
 
-static void board_nic_dpc(void * ctx)
-{
-	struct netif * const netif = (struct netif *) ctx;
-	ethernetif_poll(netif);
-}
+//static void board_nic_dpc(void * ctx)
+//{
+//	struct netif * const netif = (struct netif *) ctx;
+//	ethernetif_poll(netif);
+//}
 
 void nic_initialize(struct netif *netif)
 {
@@ -826,16 +828,16 @@ void nic_initialize(struct netif *netif)
 	}
 	else
 	{
-		//allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
-		allwinner_emac_init_port(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
-
-		{
-			static dpcobj_t nic_dpc_entry;
-			dpcobj_initialize(& nic_dpc_entry, board_nic_dpc, netif);
-			board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
-
-		}
-		netif->linkoutput = low_level_output; // используется внутри etharp_output
+//		//allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
+//		allwinner_emac_init_port(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
+//
+//		{
+//			static dpcobj_t nic_dpc_entry;
+//			dpcobj_initialize(& nic_dpc_entry, board_nic_dpc, netif);
+//			board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
+//
+//		}
+//		netif->linkoutput = low_level_output; // используется внутри etharp_output
 	}
 		//PRINTF("nic_initialize done\n");
 
