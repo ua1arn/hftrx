@@ -422,8 +422,8 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 	//		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
 			(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
-		//emac_txdesc [i].buf_addr = (uintptr_t) txbuffs [i];	// BUF_ADDR
-		//emac_txdesc [i].next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
+		//txd->buf_addr = (uintptr_t) txbuffs [i];	// BUF_ADDR
+		//txd->next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
 
 
 		dcache_clean((uintptr_t) txd, sizeof * txd);
@@ -511,14 +511,14 @@ static void EMAC_Handler(void)
 //		if (1) //((emac_peripheral->EMAC_RX_DMA_STA & 0x07) == 0x03)
 //		{
 //			//TP();
-//	        int len = (emac_rxdesc [i].status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
-//			//printhex(0, (uint8_t *)(uintptr_t) emac_rxdesc [i].buf_addr, len);
+//	        int len = (rxd->status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
+//			//printhex(0, (uint8_t *)(uintptr_t) rxd->buf_addr, len);
 //			if (on_packet)
 //				on_packet(rxbuffs [i], len);
 //
 //			dcache_clean_invalidate((uintptr_t) rxbuffs [i], sizeof rxbuffs [i]);
 //			dcache_clean((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
-//			emac_rxdesc [i].status =
+//			rxd->status =
 //				1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
 //		//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
 //		//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
@@ -675,9 +675,8 @@ static void allwinner_emac_ccu_init(void)
 	HARDWARE_ETH_INITIALIZE();	// Должно быть тут - снять ресет с PHY до инициализации
 }
 
-static void allwinner_emac_phy_init(void)
+static void allwinner_emac_phy_init(EMAC_TypeDef * const emac_peripheral)
 {
-	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
 	// The working clock of EMAC is from AHB3.
 #if (CPUSTYLE_T507)
 	HARDWARE_EMAC_EPHY_CLK_REG =
@@ -727,27 +726,26 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(emac_rxdesc); ++ i)
 	{
-		emac_rxdesc [i].status =
+		struct emac_dma_desc * rxd = & emac_rxdesc [i];
+		rxd->status =
 			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
 //				1 * (UINT32_C(1) << 9) |	// FIR_DESC
 //				1 * (UINT32_C(1) << 8) |	// LAST_DESC
 			0;
-		emac_rxdesc [i].control =
+		rxd->control =
 				DESC_RX_CHAINED |
 				(EMAC_MAX_PACKET_SIZE & DESC_RX_BUF_SIZE_MASK) |	// 10:0 BUF_SIZE
 				//len * (UINT32_C(1) << 0) |
 			0;
-		emac_rxdesc [i].buf_addr = (uintptr_t) rxbuffs [i];	// BUF_ADDR
-		emac_rxdesc [i].next_desc = (uintptr_t) & emac_rxdesc [(i + 1) % ARRAY_SIZE(emac_rxdesc)];	// NEXT_DESC_ADDR
-		//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
-
-
-		emac_peripheral->EMAC_RX_FRM_FLT =
-//					1 * (UINT32_C(1) << 31) |	// DIS_ADDR_FILTER
-				1 * (UINT32_C(1) << 0) |	// RX_ALL
-				0;
+		rxd->buf_addr = (uintptr_t) rxbuffs [i];	// BUF_ADDR
+		rxd->next_desc = (uintptr_t) & emac_rxdesc [(i + 1) % ARRAY_SIZE(emac_rxdesc)];	// NEXT_DESC_ADDR
 
 	}
+	emac_peripheral->EMAC_RX_FRM_FLT =
+//					1 * (UINT32_C(1) << 31) |	// DIS_ADDR_FILTER
+			1 * (UINT32_C(1) << 0) |	// RX_ALL
+			0;
+
 	emac_peripheral->EMAC_RX_DMA_DESC_LIST = (uintptr_t) emac_rxdesc;
 	dcache_clean((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
 	dcache_clean((uintptr_t) rxbuffs, sizeof rxbuffs);
@@ -755,23 +753,19 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 	// TX init
 	for (i = 0; i < ARRAY_SIZE(emac_txdesc); ++ i)
 	{
-		emac_txdesc [i].status =
+		struct emac_dma_desc * txd = & emac_txdesc [i];
+		txd->status =
 			//1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
 //				1 * (UINT32_C(1) << 9) |	// FIR_DESC
 //				1 * (UINT32_C(1) << 8) |	// LAST_DESC
 			0;
-		emac_txdesc [i].control =
+		txd->control =
 				//len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
 			0;
-		emac_txdesc [i].buf_addr = (uintptr_t) txbuffs [i];	// BUF_ADDR
-		emac_txdesc [i].next_desc = (uintptr_t) & emac_txdesc [(i + 1) % ARRAY_SIZE(emac_txdesc)];	// NEXT_DESC_ADDR
-		emac_txdesc [i].next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
-		//printhex32((uintptr_t) emac_rxdesc, emac_rxdesc, sizeof emac_rxdesc);
+		txd->buf_addr = (uintptr_t) txbuffs [i];	// BUF_ADDR
+		txd->next_desc = (uintptr_t) & emac_txdesc [(i + 1) % ARRAY_SIZE(emac_txdesc)];	// NEXT_DESC_ADDR
+		txd->next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
 
-		//emac_peripheral->EMAC_RX_CTL0 = 0xb8000000;
-
-
-		//emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 	}
 	dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
 	dcache_clean((uintptr_t) txbuffs, sizeof txbuffs);
@@ -832,12 +826,11 @@ void nic_initialize(struct netif *netif)
 {
 	//PRINTF("nic_initialize start\n");
 	allwinner_emac_ccu_init();
-	allwinner_emac_phy_init();
+	allwinner_emac_phy_init(HARDWARE_EMAC_PTR);
 
 	if (1)
 	{
 		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
-		//on_packet = nic_on_packet;
 		dpcobj_initialize(& dpcirq, emac_nohandler, netif);
 		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 
