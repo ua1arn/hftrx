@@ -672,9 +672,12 @@ static void allwinner_emac_phy_init(EMAC_TypeDef * const emac_peripheral)
 #endif
 	// Сигнал phyrstb тут уже должен бьыть неактивен
 
+	// Ожидание в 100 мс мало
 	emac_peripheral->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
-	while ((emac_peripheral->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
-		;
+	if (local_wait32mask(& emac_peripheral->EMAC_BASIC_CTL1, (UINT32_C(1) << 0), 0 * (UINT32_C(1) << 0), 1000))
+		TP();
+//	while ((emac_peripheral->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
+//		;
 
 	emac_peripheral->EMAC_BASIC_CTL0 =
 		//0x03 * (UINT32_C(1) << 2) |	// SPEED - 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
