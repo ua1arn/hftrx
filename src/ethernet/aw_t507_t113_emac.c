@@ -503,14 +503,24 @@ static void emac_nohandler(void * ctx)
 	dcache_clean((uintptr_t) & emac_rxdesc, sizeof emac_rxdesc);
 }
 
+static dpcobj_t dpclinkspoolirq;
 static dpcobj_t dpcirq;
 
 static void EMAC_Handler(void)
 {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
-	const portholder_t sta = emac_peripheral->EMAC_INT_STA;
+	const portholder_t sta = emac_peripheral->EMAC_INT_STA &  emac_peripheral->EMAC_INT_EN;
 	emac_peripheral->EMAC_INT_STA = sta;
 
+	if (sta & (UINT32_C(1) << 16))	// RGMII_LINK_STA_P
+	{
+		TP();
+		board_dpc_call(& dpclinkspoolirq, board_dpc_coreid());
+	}
+	if (sta & (UINT32_C(1) << 1))
+		PRINTF("TX DMA STOPPED interrupt\n");
+	if (sta & (UINT32_C(1) << 10))
+		PRINTF("RX DMA STOPPED interrupt\n");
 	board_dpc_call(& dpcirq, board_dpc_coreid());
 }
 
@@ -544,9 +554,6 @@ static void EMAC_Handler(void)
 #define EMAC_CTL_SPEED_10       (2 << 2)
 #define EMAC_CTL_DUPLEX_FULL    (1 << 0)
 
-/* Internal driver states */
-static uint8_t last_link_state = 0xFF;
-
 /**
  * @brief Reads a 16-bit register from the PHY via MDIO interface.
  */
@@ -572,8 +579,7 @@ static uint16_t emac_mdio_read(uint8_t phy_addr, uint8_t reg_addr) {
 /**
  * @brief Updates Allwinner EMAC internal MAC controller speed and duplex settings.
  */
-static void allwinner_emac_update_mac_speed(uint32_t speed, uint32_t is_full_duplex) {
-	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
+static void allwinner_emac_update_mac_speed(EMAC_TypeDef * const emac_peripheral, uint32_t speed, uint32_t is_full_duplex) {
     uint32_t ctl_val = emac_peripheral->EMAC_BASIC_CTL0;
     PRINTF("allwinner_emac_update_mac_speed: speed=%u, is_full_duplex=%u\n", (unsigned) speed, (unsigned) is_full_duplex);
 
@@ -602,6 +608,7 @@ static void allwinner_emac_update_mac_speed(uint32_t speed, uint32_t is_full_dup
 
 /**
  * @brief Periodically checks RTL8211F link status and updates the lwIP network interface.
+ * TODO: check network speed and duplex state
  */
 static void check_ethernet_link_status(struct netif *netif) {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
@@ -624,7 +631,7 @@ static void check_ethernet_link_status(struct netif *netif) {
             else if (speed_bits == PHYSR_SPEED_100)  speed = 100;
             else if (speed_bits == PHYSR_SPEED_1000) speed = 1000;
 
-            allwinner_emac_update_mac_speed(speed, duplex_bit);
+            allwinner_emac_update_mac_speed(emac_peripheral, speed, duplex_bit);
 
             netif_set_link_up(netif);
             if (board_get_eth_dhcp())
@@ -753,10 +760,6 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 	dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
 	dcache_clean((uintptr_t) txbuffs, sizeof txbuffs);
 
-	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
-	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
-
-
     /* Setup safe default speed and duplex in Basic configuration */
     //emac_peripheral->EMAC_BASIC_CTL0 = EMAC_BASIC_CTL0_SPEED_100 | EMAC_BASIC_CTL0_DUPLEX;
 
@@ -800,6 +803,16 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 //		if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
 //			TP();
     }
+
+	//emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 16); // RGMII_LINK_STA_P
+	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
+	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
+
+	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 10); // RX_DMA_STOPPED_INT_EN
+	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 1); // TX_DMA_STOPPED_INT_EN
+
+	emac_peripheral->EMAC_INT_EN |= ~ UINT32_C(0);
+
     return ERR_OK;
 }
 
@@ -808,6 +821,13 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 //	struct netif * const netif = (struct netif *) ctx;
 //	ethernetif_poll(netif);
 //}
+
+// 1 s periodic calls or by EMAC interrupt flag
+void nic_linkspool(void * ctx)
+{
+	struct netif * const netif = (struct netif *) ctx;
+	check_ethernet_link_status(netif);
+}
 
 void nic_initialize(struct netif *netif)
 {
@@ -819,6 +839,7 @@ void nic_initialize(struct netif *netif)
 	{
 		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 		dpcobj_initialize(& dpcirq, emac_nohandler, netif);
+		dpcobj_initialize(& dpclinkspoolirq, nic_linkspool, netif);
 		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 
 //		static dpcobj_t nic_dpc_entry;
@@ -842,13 +863,6 @@ void nic_initialize(struct netif *netif)
 	}
 		//PRINTF("nic_initialize done\n");
 
-}
-
-// 1 s periodic calls
-void nic_linkspool(void * ctx)
-{
-	struct netif * const netif = (struct netif *) ctx;
-	check_ethernet_link_status(netif);
 }
 
 void nic_set_mac(void * ctx)
