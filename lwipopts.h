@@ -371,7 +371,8 @@ struct emac_dma_desc {
 typedef struct listsupport_tag
 {
 		LIST_ENTRY item __ALIGNED(4);
-		struct emac_dma_desc dmadesc __ALIGNED(4);
+		struct emac_dma_desc dmadesc __ALIGNED(DCACHEROWSIZE);
+		int dummyAllign __ALIGNED(DCACHEROWSIZE);
 } listsupport_t;
 
 #define LWIP_PBUF_CUSTOM_DATA  listsupport_t custom_item;
