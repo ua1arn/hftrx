@@ -383,6 +383,31 @@ typedef struct listsupport_tag
 	extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
 #endif
 
+	// Checksum calculated by hardware
+//#define CHECKSUM_GEN_IP                 0
+//#define CHECKSUM_GEN_UDP                0
+//#define CHECKSUM_GEN_TCP                0
+//#define CHECKSUM_GEN_ICMP               0
+//#define CHECKSUM_GEN_ICMP6              0
+//#define CHECKSUM_CHECK_IP               0
+//#define CHECKSUM_CHECK_UDP              0
+//#define CHECKSUM_CHECK_TCP              0
+//#define CHECKSUM_CHECK_ICMP             0
+//#define CHECKSUM_CHECK_ICMP6            0
+
+#else
+	// Other CPUs
+	#define CHECKSUM_GEN_IP                 1
+	#define CHECKSUM_GEN_UDP                1
+	#define CHECKSUM_GEN_TCP                1
+	#define CHECKSUM_GEN_ICMP               1
+	#define CHECKSUM_GEN_ICMP6              1
+	#define CHECKSUM_CHECK_IP               1
+	#define CHECKSUM_CHECK_UDP              1
+	#define CHECKSUM_CHECK_TCP              1
+	#define CHECKSUM_CHECK_ICMP             1
+	#define CHECKSUM_CHECK_ICMP6            1
+
 #endif /* CPUSTYLE_ALLWINNER */
 
 #endif /* __LWIPOPTS_H__ */

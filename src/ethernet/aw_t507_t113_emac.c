@@ -586,6 +586,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 //   		;
   	const uint_fast32_t CONTROLMODE =
 			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
+			//TDES0_CHECKSUM_INSERT |
 			//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
 			//1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
 		//		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
