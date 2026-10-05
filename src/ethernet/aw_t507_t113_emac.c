@@ -99,18 +99,10 @@ static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct 
     emac_peripheral->EMAC_ADDR [0].HIGH |= (UINT32_C(1) << 31);	// MAC_ADDR_CTL 1: Valid
 }
 
-//#define ETH_HEADER_SIZE                 14
-//#define ETH_MIN_PACKET_SIZE             60
-//#define ETH_MAX_PACKET_SIZE             (ETH_HEADER_SIZE + NIC_MTU)
-//#define EMAC_HEADER_SIZE               (sizeof (emac_data_packet_t))
-//#define EMAC_RX_BUFFER_SIZE            (EMAC_HEADER_SIZE + ETH_MAX_PACKET_SIZE)
-//#define EMAC_TX_MAX_PACKET_SIZE 	1536
-
-#define EMAC_MAX_PACKET_SIZE      1536
+#define EMAC_MAX_PACKET_SIZE      2040
 
 /* Allwinner EMAC DMA Ring Configurations */
-#define EMAC_RX_BUFFERS_COUNT     	16
-//#define EMAC_TX_BUFFERS_COUNT   	1//16
+#define EMAC_RX_BUFFERS_COUNT     	64//16
 
 
 /* Allwinner T507-H EMAC TX Descriptor Configuration */
@@ -121,13 +113,14 @@ static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct 
 //#define DESC_RX_ERRORS_MASK     (UINT32_C(1) << 15)
 #define DESC_RX_FL_MASK         0x3FFF0000
 #define DESC_RX_FL_SHIFT        16
-//#define DESC_RX_BUF_SIZE_MASK   0x7FF
 #define DESC_RX_CHAINED         (UINT32_C(1) << 14)
 
+#if 0
 /* Driver private variables tracking state and rings */
 static struct emac_dma_desc rx_desc_ring[EMAC_RX_BUFFERS_COUNT] __ALIGNED(4);
 static uint8_t rx_buffer_pool[EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __ALIGNED(4);
 static uint32_t rx_index = 0;
+#endif
 
 /* Bit definitions for RX/TX Descriptors */
 #define DESC_OWN_BY_DMA           (UINT32_C(1) << 31)
@@ -454,12 +447,9 @@ static void emac_txhandler(void * ctx)
 		ASSERT(pl->sign1 == pl && pl->sign2 == pl);
 		struct emac_dma_desc * txd = & pl->dmadesc;
 		dcache_invalidate((uintptr_t) txd, sizeof * txd);
-		if (pl->dmadesc.status & (UINT32_C(1) << 31))
+		if (pl->dmadesc.status & DESC_OWN_BY_DMA)
 		{
-			if (pl->dmadesc.status & ALLERR)
-				PRINTF("Errors: %08X\n", (unsigned) pl->dmadesc.status);
-			else
-				continue;	// пока в работе
+			continue;	// пока в работе
 		}
 
 		RemoveEntryList(t);
@@ -485,6 +475,11 @@ static void emac_rxhandler(void * ctx)
 			(UINT32_C(1) << 30) |	// RX_DAF_FAIL - destination address filter
 			(UINT32_C(1) << 13) |	// RX_SAF_FAIL - source address filter
 			0;
+	// ставятся, скорее всего, если дескриптор часть цепочки (не проверялось)
+	const int_fast32_t FIRSTANDLAST =
+			DESC_RX_FIRST |
+			DESC_RX_LAST |
+			0;
 
 	dcache_clean_invalidate((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
 	unsigned i;
@@ -492,12 +487,12 @@ static void emac_rxhandler(void * ctx)
 	{
 		struct emac_dma_desc * const rxd = & emac_rxdesc [i];
 		const uint_fast32_t status = rxd->status;
-		if (status & (UINT32_C(1) << 31))
+		if (status & DESC_OWN_BY_DMA)
 			continue;
 
 		if (status & RXADDRERR)
 			;
-		else if ((status & RXERRMASK) == 0)	// Error flags
+		else if ((status & RXERRMASK) == 0 /* && (status & FIRSTANDLAST) == FIRSTANDLAST */)	// Error flags
 		{
 			//PRINTF("rxd->status: %08X (err=%08X)\n", (unsigned) rxd->status, (unsigned) (rxd->status & 0x000000DB));
 
@@ -506,7 +501,7 @@ static void emac_rxhandler(void * ctx)
 	 		struct pbuf * const p = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
 			if (p == NULL)
 			{
-				ASSERT(0);
+				TP();
 				continue;
 			}
 //			PRINTF("rx:\n");
@@ -519,13 +514,13 @@ static void emac_rxhandler(void * ctx)
 				{
 					  /* This means the pbuf is freed or consumed,
 					     so the caller doesn't have to free it again */
-					ASSERT(0);
+					TP();
 				}
 			}
 			else
 			{
 				pbuf_free(p);
-				ASSERT(0);
+				TP();
 			}
 		}
 		else
@@ -534,11 +529,7 @@ static void emac_rxhandler(void * ctx)
 		}
 
 		dcache_invalidate((uintptr_t) rxd->buf_addr, EMAC_MAX_PACKET_SIZE);	// подготовка к приёму следующего
-		rxd->status =
-			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
-	//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
-	//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
-			0;
+		rxd->status = DESC_OWN_BY_DMA;	// RX_DESC_CTL
 		dcache_clean((uintptr_t) rxd, sizeof * rxd);
 	}
 }
