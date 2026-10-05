@@ -109,7 +109,6 @@
 #endif	/* WITHISBOOTLOADER */
 
 #define UDP_TTL 64
-#define ETH_PAD_SIZE                    64
 
 #if 1
 	#define LWIP_RAM_HEAP_POINTER		lwipBuffer
@@ -258,7 +257,6 @@ void board_update_time(uint32_t sec);
 #define SYS_STATS                   0
 #define MEMP_STATS                  0
 #define LINK_STATS                  0
-// #define ETH_PAD_SIZE                2
 #define LWIP_CHKSUM_ALGORITHM       3
 #define LWIP_DHCP                   1
 #define LWIP_IPV4                   1
@@ -338,7 +336,7 @@ typedef unsigned sys_prot_t;
 #define LWIP_NETIF_LOOPBACK 1
 
 
-//#define ETH_PAD_SIZE 2
+#define ETH_PAD_SIZE 2
 
 //struct netif;
 struct netif;
