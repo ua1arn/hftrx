@@ -370,7 +370,6 @@ typedef struct listsupport_tag
 {
 	void * sign1;
 	LIST_ENTRY item __ALIGNED(4);
-	void * headpbuf;
 	struct emac_dma_desc dmadesc __ALIGNED(DCACHEROWSIZE);
 	int dummyAllign __ALIGNED(DCACHEROWSIZE);
 	void * sign2;

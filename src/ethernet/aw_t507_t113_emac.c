@@ -454,8 +454,7 @@ static void emac_txhandler(void * ctx)
 
 		RemoveEntryList(t);
 		struct pbuf *p = CONTAINING_RECORD(pl, struct pbuf, custom_item);
-		if (pl->headpbuf)
-			pbuf_free(pl->headpbuf);
+		pbuf_free(p);
 		++ deleted;
 	}
 	//PRINTF("emac_txhandler: deleted=%u,total=%u\n", deleted, total);
@@ -620,7 +619,6 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		//printchain2("send1", p);
 		// состоит из одного сегмента
 		ASSERT(p->next == NULL);
-		p->custom_item.headpbuf = p;
 		pbuf_ref(p);	// Then use pbuf_free for only first element in chain
 		struct emac_dma_desc * txd = & p->custom_item.dmadesc;
 		p->custom_item.sign1 = & p->custom_item;
@@ -639,7 +637,6 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		// Эксперементальное
 		const unsigned buflen = ((p->tot_len - ETH_PAD_SIZE) + 0xFFF) & ~ UINT32_C(0xFFF);
 		struct pbuf * const newb = pbuf_alloc(PBUF_RAW, buflen, PBUF_POOL);
-		newb->custom_item.headpbuf = newb;
 		ASSERT(newb);
 		newb->custom_item.sign1 = & newb->custom_item;
 		newb->custom_item.sign2 = & newb->custom_item;
@@ -662,11 +659,9 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		//PRINTF("%s: Segmented pbuf: p->tot_len=%u, p->len=%u (siz=%u)\n", __func__, (unsigned) p->tot_len, (unsigned) p->len, EMAC_MAX_PACKET_SIZE);
 		//printchain2("Before", p);
 		//ASSERT(0);
-		unsigned remain = p->tot_len;
 		{
 			struct pbuf * pfirst = p;
-			pfirst->custom_item.headpbuf = NULL;
-			pbuf_ref(p);	// Then use pbuf_free for only first element in chain
+			pbuf_ref(pfirst);
 			struct emac_dma_desc * txd = & pfirst->custom_item.dmadesc;
 			pfirst->custom_item.sign1 = & pfirst->custom_item;
 			pfirst->custom_item.sign2 = & pfirst->custom_item;
@@ -677,15 +672,14 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			dcache_clean(dataptr, chunk);
 			emac_dma_desc_set(txd, FIRSTCONTROL, dataptr, chunk);
 			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
-			remain -= pfirst->len;
 		}
 		struct pbuf * plast = p->next;
-		while (remain)
+		while (plast)
 		{
 			ASSERT(plast);
 			const unsigned chunk = plast->len;
-			const int ismiddle = remain != chunk;
-			plast->custom_item.headpbuf = ismiddle ? NULL : p;
+			const int ismiddle = plast->next != NULL;
+			pbuf_ref(plast);
 			struct emac_dma_desc * txd = & plast->custom_item.dmadesc;
 			plast->custom_item.sign1 = & plast->custom_item;
 			plast->custom_item.sign2 = & plast->custom_item;
@@ -695,8 +689,6 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			dcache_clean(dataptr, chunk);
 			emac_dma_desc_set(txd, ismiddle ? MIDDLECONTROL : LASTCONTROL, dataptr, chunk);
 			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
-			ASSERT(remain >= chunk);
-			remain -= chunk;
 			plast = plast->next;
 		}
 	}
