@@ -770,6 +770,7 @@ static void EMAC_Handler(void)
 #define EMAC_CTL_SPEED_1000     (0 << 2)
 #define EMAC_CTL_SPEED_100      (3 << 2)
 #define EMAC_CTL_SPEED_10       (2 << 2)
+#define EMAC_CTL_SPEED_MASK     (0x03 << 2)
 #define EMAC_CTL_DUPLEX_FULL    (1 << 0)
 
 /**
@@ -798,11 +799,11 @@ static uint16_t emac_mdio_read(uint8_t phy_addr, uint8_t reg_addr) {
  * @brief Updates Allwinner EMAC internal MAC controller speed and duplex settings.
  */
 static void allwinner_emac_update_mac_speed(EMAC_TypeDef * const emac_peripheral, uint32_t speed, uint32_t is_full_duplex) {
-    uint32_t ctl_val = emac_peripheral->EMAC_BASIC_CTL0;
+	uint_fast32_t ctl_val = emac_peripheral->EMAC_BASIC_CTL0;
     PRINTF("allwinner_emac_update_mac_speed: speed=%u, is_full_duplex=%u\n", (unsigned) speed, (unsigned) is_full_duplex);
 
     /* Clear existing speed (bits 3:2) and duplex (bit 0) configurations */
-    ctl_val &= ~((3 << 2) | (1 << 0));
+    ctl_val &= ~ (EMAC_CTL_SPEED_MASK | EMAC_CTL_DUPLEX_FULL);
 
     /* Apply full or half duplex state */
     if (is_full_duplex) {
@@ -824,6 +825,31 @@ static void allwinner_emac_update_mac_speed(EMAC_TypeDef * const emac_peripheral
     emac_peripheral->EMAC_BASIC_CTL0 = ctl_val;
 }
 
+// Non-zero if other then required
+static int allwinner_emac_compare_mac_speed(EMAC_TypeDef * const emac_peripheral, uint32_t speed, uint32_t is_full_duplex) {
+    const uint_fast32_t mask = EMAC_CTL_SPEED_MASK | EMAC_CTL_DUPLEX_FULL;
+    uint_fast32_t ctl_val = 0;
+    //PRINTF("allwinner_emac_compare_mac_speed: speed=%u, is_full_duplex=%u\n", (unsigned) speed, (unsigned) is_full_duplex);
+
+    /* Apply full or half duplex state */
+    if (is_full_duplex) {
+        ctl_val |= EMAC_CTL_DUPLEX_FULL;
+    }
+
+    /* Apply internal MAC speed bits (SYS_CTRL / CCU clocks are bypassed) */
+    if (speed == 1000) {
+        ctl_val |= EMAC_CTL_SPEED_1000;
+    }
+    else if (speed == 100) {
+        ctl_val |= EMAC_CTL_SPEED_100;
+    }
+    else if (speed == 10) {
+        ctl_val |= EMAC_CTL_SPEED_10;
+    }
+    /* Write updated values back to the EMAC configuration register */
+    return (emac_peripheral->EMAC_BASIC_CTL0 & mask) != ctl_val;
+}
+
 /**
  * @brief Periodically checks RTL8211F link status and updates the lwIP network interface.
  * TODO: check network speed and duplex state
@@ -833,23 +859,24 @@ static void check_ethernet_link_status(struct netif *netif) {
     uint16_t physr = emac_mdio_read(RTL8211F_PHY_ADDR, RTL8211F_PHYSR);
 
     /* Get actual hardware status: 1 = connected, 0 = disconnected */
-    uint8_t hw_link_up = (physr & PHYSR_LINK_STATUS) ? 1 : 0;
+    const uint8_t hw_link_up = !! (physr & PHYSR_LINK_STATUS);
+    const uint8_t hw_speed_bits = physr & PHYSR_SPEED_MASK;
+    const uint8_t hw_duplex_bit = !! (physr & PHYSR_DUPLEX_STATUS);
+
+    uint32_t hw_speed = 100;
+    if (hw_speed_bits == PHYSR_SPEED_10)       hw_speed = 10;
+    else if (hw_speed_bits == PHYSR_SPEED_100)  hw_speed = 100;
+    else if (hw_speed_bits == PHYSR_SPEED_1000) hw_speed = 1000;
 
     /* Get current lwIP software status: 1 = up, 0 = down */
-    uint8_t sw_link_up = netif_is_link_up(netif) ? 1 : 0;
+    uint8_t sw_link_up = !!netif_is_link_up(netif);
 
     /* Compare hardware reality with software stack state */
-    if (hw_link_up != sw_link_up) {
+    if (hw_link_up != sw_link_up ||
+    		allwinner_emac_compare_mac_speed(emac_peripheral, hw_speed, hw_duplex_bit)) {
         if (hw_link_up) {
-            uint8_t speed_bits = physr & PHYSR_SPEED_MASK;
-            uint8_t duplex_bit = (physr & PHYSR_DUPLEX_STATUS) ? 1 : 0;
 
-            uint32_t speed = 100;
-            if (speed_bits == PHYSR_SPEED_10)       speed = 10;
-            else if (speed_bits == PHYSR_SPEED_100)  speed = 100;
-            else if (speed_bits == PHYSR_SPEED_1000) speed = 1000;
-
-            allwinner_emac_update_mac_speed(emac_peripheral, speed, duplex_bit);
+            allwinner_emac_update_mac_speed(emac_peripheral, hw_speed, hw_duplex_bit);
 
             netif_set_link_up(netif);
             if (board_get_eth_dhcp())
