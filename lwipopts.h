@@ -195,7 +195,7 @@ void board_update_time(uint32_t sec);
 
 //#define LWIP_TCP_KEEPALIVE 			0
 
-#define MEM_SIZE                    131072
+#define MEM_SIZE                    32768
 #define MEM_ALIGNMENT               64 //8
 #define MEMP_NUM_PBUF 				16
 #define MEMP_NUM_PBUF 				16
@@ -380,7 +380,7 @@ typedef struct listsupport_tag
 
 #define LWIP_PBUF_CUSTOM_DATA  listsupport_t custom_item;
 
-#if 0
+#if 1
 	#define LWIP_RAM_HEAP_POINTER		lwipBuffer
 	extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
 #endif
