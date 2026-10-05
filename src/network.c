@@ -684,14 +684,14 @@ static struct udp_pcb *pcbudpMyApp = NULL;
 
 // вызывается для передачи в host host данных от радиоблока
 void tx_data_to_host(
-	const uint8_t * dbuff, unsigned dsize,
-	const uint8_t *IPdest
+	const void * dbuff, unsigned dsize,
+	const ip_addr_t *IPdest
 	)
 {
-	// передаяа пакета средствами LWIP
-	ip_addr_t dstip;
-	IP4_ADDR(& dstip, IPdest [0], IPdest [1], IPdest [2], IPdest [3]);
+	// передача пакета средствами LWIP
+	ip_addr_t d = * IPdest;	// для тестов
 
+	PRINTF("SendToAddr: %u.%u.%u.%u, port=%u\n", ip4_addr1(& d), ip4_addr2(& d), ip4_addr3(& d), ip4_addr4(& d), otherSideAppPort);
 	struct pbuf *out = pbuf_alloc(PBUF_TRANSPORT, dsize, PBUF_POOL);
 	if (out == NULL)
 	{
@@ -702,7 +702,7 @@ void tx_data_to_host(
 		return;
 	}
     pbuf_take(out, dbuff, dsize);
-	err_t err = udp_sendto(pcbudpMyApp, out, & dstip, otherSideAppPort);
+	err_t err = udp_sendto(pcbudpMyApp, out, & d, otherSideAppPort);
 	pbuf_free(out);
 	if (err != ERR_OK)
 	{
@@ -751,6 +751,10 @@ static void udpapp_recv_proc(void *arg,
 
 	radio_send_payload(&fromhostdata[0], size);
 //	send_payload_to_host(&fromhostdata[0], size);
+
+	char b [128];
+	int n = local_snprintf_P(b, ARRAY_SIZE(b), "You send message!");
+	tx_data_to_host(b, n, addr);
 }
 
 static err_t udpapperv_app_init(void)
