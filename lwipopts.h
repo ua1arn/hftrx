@@ -113,7 +113,6 @@
 
 #if 1
 	#define LWIP_RAM_HEAP_POINTER		lwipBuffer
-	#define MEM_SIZE                        (16384 * 1024uL)
 	extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
 #endif
 
@@ -196,7 +195,7 @@ void board_update_time(uint32_t sec);
 
 //#define LWIP_TCP_KEEPALIVE 			0
 
-#define MEM_SIZE                    131072
+#define MEM_SIZE                    32768
 #define MEM_ALIGNMENT               64 //8
 #define MEMP_NUM_PBUF 				16
 #define MEMP_NUM_PBUF 				16
@@ -277,16 +276,16 @@ void board_update_time(uint32_t sec);
 #define LWIP_DBG_TYPES_ON      		(LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
 
 //#define HTTPD_DEBUG           LWIP_DBG_ON
-#define ETHARP_DEBUG           LWIP_DBG_ON
-#define NETIF_DEBUG            LWIP_DBG_ON
-//#define PBUF_DEBUG             LWIP_DBG_ON
+//#define ETHARP_DEBUG           LWIP_DBG_ON
+//#define NETIF_DEBUG            LWIP_DBG_ON
+#define PBUF_DEBUG             LWIP_DBG_ON
 //#define API_LIB_DEBUG          LWIP_DBG_ON
 //#define API_MSG_DEBUG          LWIP_DBG_ON
 //#define SOCKETS_DEBUG          LWIP_DBG_ON
-#define ICMP_DEBUG             LWIP_DBG_ON
-#define IGMP_DEBUG             LWIP_DBG_ON
-#define INET_DEBUG             LWIP_DBG_ON
-#define IP_DEBUG               LWIP_DBG_ON
+//#define ICMP_DEBUG             LWIP_DBG_ON
+//#define IGMP_DEBUG             LWIP_DBG_ON
+//#define INET_DEBUG             LWIP_DBG_ON
+//#define IP_DEBUG               LWIP_DBG_ON
 //#define IP_REASS_DEBUG         LWIP_DBG_ON
 //#define RAW_DEBUG              LWIP_DBG_ON
 //#define MEM_DEBUG              LWIP_DBG_ON
@@ -339,7 +338,7 @@ typedef unsigned sys_prot_t;
 #define LWIP_NETIF_LOOPBACK 1
 
 
-#define ETH_PAD_SIZE 2
+//#define ETH_PAD_SIZE 2
 
 //struct netif;
 struct netif;
@@ -365,16 +364,26 @@ struct emac_dma_desc {
     volatile uint32_t control;
     volatile uint32_t buf_addr;
     volatile uint32_t next_desc;
+    uint32_t pad [(64 - 16) / 4];
 };
 
 /* данные, добавляющиеся в конец pbuf_t */
 typedef struct listsupport_tag
 {
-		LIST_ENTRY item __ALIGNED(4);
-		struct emac_dma_desc dmadesc __ALIGNED(4);
+	void * sign1;
+	LIST_ENTRY item __ALIGNED(4);
+	void * headpbuf;
+	struct emac_dma_desc dmadesc __ALIGNED(DCACHEROWSIZE);
+	int dummyAllign __ALIGNED(DCACHEROWSIZE);
+	void * sign2;
 } listsupport_t;
 
 #define LWIP_PBUF_CUSTOM_DATA  listsupport_t custom_item;
+
+#if 1
+	#define LWIP_RAM_HEAP_POINTER		lwipBuffer
+	extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
+#endif
 
 #endif /* CPUSTYLE_ALLWINNER */
 

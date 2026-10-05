@@ -53,7 +53,7 @@ static ip4_addr_t myGATEWAY = IPADDR4_INIT_BYTES( 0, 0, 0, 0);
  */
 
 #if defined (LWIP_RAM_HEAP_POINTER)
-	ALIGNX_BEGIN RAMFRAMEBUFF uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE] ALIGNX_END;
+	ALIGNX_BEGIN RAMNC uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE] ALIGNX_END;
 #endif /* defined (LWIP_RAM_HEAP_POINTER) */
 
 
@@ -588,6 +588,9 @@ static err_t netif_init_cb(struct netif *netif)
 	#else
 		netif->flags |= NETIF_FLAG_BROADCAST;
 	#endif /* LWIP_ARP */
+
+	//netif->flags |= NETIF_FLAG_ETHERNET;	// на потом
+
 	netif->state = NULL;
 	netif->name[0] = 'E';
 	netif->name[1] = 'X';

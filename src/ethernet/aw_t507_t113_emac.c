@@ -9,7 +9,6 @@
 
 #if WITHLWIP && WITHETHHW && (CPUSTYLE_T507 || CPUSTYLE_T113 || CPUSTYLE_F133)
 
-
 #include "gpio.h"
 #include "formats.h"
 
@@ -25,6 +24,10 @@
 
 #include <string.h>
 
+
+#ifndef LWIP_PBUF_CUSTOM_DATA
+#error Check lwipopts.h for LWIP_PBUF_CUSTOM_DATA
+#endif
 
 /* Offsets for the 128-bit unique Chip ID inside Allwinner SID eFuse space */
 #define SID_OFFSET_CHIPID_W0    0x00
@@ -92,43 +95,39 @@ static void allwinner_emac_apply_mac_dual(EMAC_TypeDef *emac_peripheral, struct 
 
     /* Write directly to the specified hardware MAC filter registers */
     emac_peripheral->EMAC_ADDR [0].LOW  = mac_low;	// lower 32 bits of the 6-byte first MAC address
-    emac_peripheral->EMAC_ADDR [0].HIGH = mac_high;	// upper 16 bits of the first 6-byte MAC address
+    emac_peripheral->EMAC_ADDR [0].HIGH = mac_high & 0xFFFF;	// upper 16 bits of the first 6-byte MAC address
+    emac_peripheral->EMAC_ADDR [0].HIGH |= (UINT32_C(1) << 31);	// MAC_ADDR_CTL 1: Valid
 }
 
-#define ETH_HEADER_SIZE                 14
-#define ETH_MIN_PACKET_SIZE             60
-#define ETH_MAX_PACKET_SIZE             (ETH_HEADER_SIZE + NIC_MTU)
-//#define EMAC_HEADER_SIZE               (sizeof (emac_data_packet_t))
-//#define EMAC_RX_BUFFER_SIZE            (EMAC_HEADER_SIZE + ETH_MAX_PACKET_SIZE)
+#define EMAC_MAX_PACKET_SIZE      2040
 
 /* Allwinner EMAC DMA Ring Configurations */
-#define EMAC_RX_BUFFERS_COUNT     16
-#define EMAC_TX_BUFFERS_COUNT     16
-#define EMAC_MAX_PACKET_SIZE      1536
+#define EMAC_RX_BUFFERS_COUNT     	64//16
+
 
 /* Allwinner T507-H EMAC TX Descriptor Configuration */
-#define EMAC_TX_BUFFERS_COUNT   16
-#define EMAC_TX_MAX_PACKET_SIZE 1536
 
 #define DESC_OWN_BY_DMA         (UINT32_C(1) << 31)
 #define DESC_RX_LAST            (UINT32_C(1) << 8)
 #define DESC_RX_FIRST           (UINT32_C(1) << 9)
-#define DESC_RX_ERRORS_MASK     (UINT32_C(1) << 15)
+//#define DESC_RX_ERRORS_MASK     (UINT32_C(1) << 15)
 #define DESC_RX_FL_MASK         0x3FFF0000
 #define DESC_RX_FL_SHIFT        16
-//#define DESC_RX_BUF_SIZE_MASK   0x7FF
 #define DESC_RX_CHAINED         (UINT32_C(1) << 14)
 
+#if 0
 /* Driver private variables tracking state and rings */
 static struct emac_dma_desc rx_desc_ring[EMAC_RX_BUFFERS_COUNT] __ALIGNED(4);
 static uint8_t rx_buffer_pool[EMAC_RX_BUFFERS_COUNT][EMAC_MAX_PACKET_SIZE] __ALIGNED(4);
 static uint32_t rx_index = 0;
+#endif
 
 /* Bit definitions for RX/TX Descriptors */
 #define DESC_OWN_BY_DMA           (UINT32_C(1) << 31)
 #define DESC_RX_CHAINED           (UINT32_C(1) << 14)
 #define TDES0_TX_CHAINED          (UINT32_C(1) << 20)
 #define DESC_RX_BUF_SIZE_MASK     UINT32_C(0x7FF)
+#define DESC_TX_BUF_SIZE_MASK     UINT32_C(0x7FF)
 
 /* Register Bits for EMAC Control Blocks */
 #define EMAC_BASIC_CTL0_DUPLEX    (1 << 0)   /* Default to Full Duplex on start */
@@ -151,6 +150,7 @@ static uint32_t rx_index = 0;
 /* Bit definitions for emac_dma_desc.control (TDES1) */
 #define TDES1_BUFFER_SIZE_MASK  0x7FF        /* Size of transmit buffer */
 
+#if 0
 /* Driver static structures for TX ring execution */
 static struct emac_dma_desc tx_desc_ring[EMAC_TX_BUFFERS_COUNT] __ALIGNED(64);
 static uint8_t tx_buffer_pool[EMAC_TX_BUFFERS_COUNT][EMAC_TX_MAX_PACKET_SIZE] __ALIGNED(64);
@@ -194,7 +194,9 @@ static void ethernetif_poll(struct netif *netif) {
         /* Enforce processing only on fully assembled error-free incoming frames */
         if ((current_desc->status & DESC_RX_FIRST) &&
             (current_desc->status & DESC_RX_LAST) &&
-           !(current_desc->status & DESC_RX_ERRORS_MASK)) {
+           //!(current_desc->status & DESC_RX_ERRORS_MASK) &&
+           1
+		   ) {
 
             len = (current_desc->status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
 
@@ -373,134 +375,362 @@ static err_t allwinner_emac_init_port(EMAC_TypeDef *emac_peripheral, struct neti
 
     return ERR_OK;
 }
-
+#endif
 
 static uint8_t rxbuffs [EMAC_RX_BUFFERS_COUNT] [EMAC_MAX_PACKET_SIZE];
 static RAMNC __ALIGNED(4) struct emac_dma_desc emac_rxdesc [EMAC_RX_BUFFERS_COUNT];
 
-static uint8_t txbuffs [EMAC_TX_BUFFERS_COUNT] [EMAC_MAX_PACKET_SIZE];
-static RAMNC __ALIGNED(4) struct emac_dma_desc emac_txdesc [EMAC_TX_BUFFERS_COUNT];
+static LIST_ENTRY TxList;
+//static LIST_ENTRY TxDoneList;
 
-static err_t low_level_output(struct netif *netif, struct pbuf *p) {
-
-	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
-    int i = 0;
-
-    dcache_invalidate((uintptr_t) & emac_txdesc, sizeof emac_txdesc);
-	for (i = 0; i < ARRAY_SIZE(emac_txdesc); ++ i)
+// Перестройка ссылок в списке dma descriptors
+static void relinktxdesc(EMAC_TypeDef * const emac_peripheral)
+{
+	ASSERT(! (emac_peripheral->EMAC_TX_CTL1 & EMAC_TX_CTL1_TX_DMA_EN));
+	// Layout descriptors list
+	if (! IsListEmpty(& TxList))
 	{
-		struct emac_dma_desc * txd = & emac_txdesc [i];
-	    if (txd->status & (UINT32_C(1) << 31))
-	    {
-	    	continue;
-	    }
-	    const uintptr_t dataptr = (uintptr_t) txd->buf_addr;
-	    pbuf_header(p, - ETH_PAD_SIZE);
-	    const unsigned size = pbuf_copy_partial(p, (void *) dataptr, EMAC_MAX_PACKET_SIZE, 0);
-  	  	pbuf_header(p, + ETH_PAD_SIZE); /* Восстанавливаем pbuf в исходное состояние */
+		LIST_ENTRY * const head = TxList.Flink;
+		LIST_ENTRY * t = TxList.Flink;
+		listsupport_t * const lshead = CONTAINING_RECORD(head, listsupport_t, item);
+		do {
 
-  	  	dcache_clean(dataptr, size);
-//  	  	PRINTF("tx:\n");
-//  	  	printhex(dataptr, (void *) dataptr, size);
-  	  	txd->status =	// status
-			1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
-			0;
-		// CRC_CTL=0 и CHECKSUM_CTL=3: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=0 и CHECKSUM_CTL=2: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=0 и CHECKSUM_CTL=1: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=0 и CHECKSUM_CTL=0: просто передаёт заказанный в дескрипторе размер
-		// CRC_CTL=1 и CHECKSUM_CTL=3: передаёт на 4 меньше
-		// CRC_CTL=1 и CHECKSUM_CTL=2: передаёт на 4 меньше
-		// CRC_CTL=1 и CHECKSUM_CTL=1: передаёт на 4 меньше
-		// CRC_CTL=1 и CHECKSUM_CTL=0: передаёт на 4 меньше
-  	  	txd->control =	// ctl
-			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
-			1 * (UINT32_C(1) << 30) |	// LAST_DESC
-			1 * (UINT32_C(1) << 29) |	// FIR_DESC
-			//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
-			//1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
-	//		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
-			(size) * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
-			0;
-		//txd->buf_addr = (uintptr_t) txbuffs [i];	// BUF_ADDR
-		//txd->next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
+			listsupport_t * const ls = CONTAINING_RECORD(t, listsupport_t, item);
+			listsupport_t * const lsnext = CONTAINING_RECORD(t->Flink, listsupport_t, item);
 
+			ls->dmadesc.next_desc = (t->Flink == & TxList) ?
+					(uintptr_t) & lshead->dmadesc :
+					(uintptr_t) & lsnext->dmadesc;
+			//ASSERT(ls->dmadesc.status & (UINT32_C(1) << 31));
+			dcache_clean((uintptr_t) & ls->dmadesc, sizeof ls->dmadesc);
 
-		//dcache_clean((uintptr_t) txd, sizeof * txd);
-		dcache_clean((uintptr_t) txd, sizeof * txd);
+			t = t->Flink;
+		} while (t != & TxList);
 
+		emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) & lshead->dmadesc;
+
+		emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
 		emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
-		if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
+		if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 10))
 			TP();
-		return ERR_OK;
 	}
-	if (i == ARRAY_SIZE(emac_txdesc))
-		return ERR_MEM;
-	return ERR_OK;
 }
 
-// опрос принятых
-static void emac_nohandler(void * ctx)
+static void emac_txhandler(void * ctx)
 {
 	struct netif * const netif = (struct netif *) ctx;
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
-//	const portholder_t sta = emac_peripheral->EMAC_INT_STA;
-//	emac_peripheral->EMAC_INT_STA = sta;//(UINT32_C(1) << 8);	// RX_P
-	//if (sta & ((UINT32_C(1) << 8)))	// RX_P
+	enum {
+		ALLERR =
+				(UINT32_C(1) << 16) |
+				(UINT32_C(1) << 14) |
+				(UINT32_C(1) << 12) |
+				(UINT32_C(1) << 10) |
+				(UINT32_C(1) << 9) |
+				(UINT32_C(1) << 8) |
+				(UINT32_C(1) << 2) |
+				(UINT32_C(1) << 1) |
+				(UINT32_C(1) << 0) |
+			0
+	};
+   	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
+   	unsigned deleted = 0;
+   	unsigned total = 0;
+   	PLIST_ENTRY t;
+   	PLIST_ENTRY next;
+	for (t = TxList.Flink; t != & TxList; t = next)
+	{
+		ASSERT(t != NULL);
+		++ total;
+		next = t->Flink;
+		listsupport_t * const pl = CONTAINING_RECORD(t, listsupport_t, item);
+		ASSERT(pl->sign1 == pl && pl->sign2 == pl);
+		struct emac_dma_desc * txd = & pl->dmadesc;
+		dcache_invalidate((uintptr_t) txd, sizeof * txd);
+		if (pl->dmadesc.status & DESC_OWN_BY_DMA)
+		{
+			continue;	// пока в работе
+		}
+
+		RemoveEntryList(t);
+		struct pbuf *p = CONTAINING_RECORD(pl, struct pbuf, custom_item);
+		if (pl->headpbuf)
+			pbuf_free(pl->headpbuf);
+		++ deleted;
+	}
+	//PRINTF("emac_txhandler: deleted=%u,total=%u\n", deleted, total);
+	relinktxdesc(emac_peripheral);
+}
+
+// опрос принятых
+static void emac_rxhandler(void * ctx)
+{
+	struct netif * const netif = (struct netif *) ctx;
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
+	const uint_fast32_t RXERRMASK =
+			(UINT32_C(1) << 11) |	// RX_OVERFLOW_ERR - When set, a buffer overflow error occurred and current frame is wrong.
+			0x000000DB |			// hardware errors
+			0;
+	const uint_fast32_t RXADDRERR =
+			(UINT32_C(1) << 30) |	// RX_DAF_FAIL - destination address filter
+			(UINT32_C(1) << 13) |	// RX_SAF_FAIL - source address filter
+			0;
+	// ставятся, скорее всего, если дескриптор часть цепочки (не проверялось)
+	const int_fast32_t FIRSTANDLAST =
+			DESC_RX_FIRST |
+			DESC_RX_LAST |
+			0;
+
 	dcache_clean_invalidate((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(emac_rxdesc); ++ i)
 	{
 		struct emac_dma_desc * const rxd = & emac_rxdesc [i];
-		if (rxd->status & (UINT32_C(1) << 31))
+		const uint_fast32_t status = rxd->status;
+		if (status & DESC_OWN_BY_DMA)
 			continue;
 
-		const uintptr_t dataptr = (uintptr_t) rxd->buf_addr;
-		const int size = (rxd->status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
- 		struct pbuf * const p = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
-		if (p == NULL)
+		if (status & RXADDRERR)
+			;
+		else if ((status & RXERRMASK) == 0 /* && (status & FIRSTANDLAST) == FIRSTANDLAST */)	// Error flags
 		{
-			TP();
-			continue;
-		}
-//  	  	PRINTF("rx:\n");
-//  	  	printhex(dataptr, (void *) dataptr, size);
-		pbuf_header(p, - ETH_PAD_SIZE);
-		const err_t e = pbuf_take(p, (void *) dataptr, size);
-		pbuf_header(p, + ETH_PAD_SIZE);
-		if (e == ERR_OK)
-		{
-			const err_t e = ethernet_input(p, netif);
-			if (e != ERR_OK)
+			//PRINTF("rxd->status: %08X (err=%08X)\n", (unsigned) rxd->status, (unsigned) (rxd->status & 0x000000DB));
+
+			const uintptr_t dataptr = (uintptr_t) rxd->buf_addr;
+			const int size = (status & DESC_RX_FL_MASK) >> DESC_RX_FL_SHIFT;
+	 		struct pbuf * const p = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
+			if (p == NULL)
 			{
-				  /* This means the pbuf is freed or consumed,
-				     so the caller doesn't have to free it again */
+				TP();
+				continue;
+			}
+//			PRINTF("rx:\n");
+//			printhex(dataptr, (void *) dataptr, size);
+			const err_t e = pbuf_take_at(p, (void *) dataptr, size, ETH_PAD_SIZE);
+			if (e == ERR_OK)
+			{
+				const err_t e = ethernet_input(p, netif);
+				if (e != ERR_OK)
+				{
+					  /* This means the pbuf is freed or consumed,
+					     so the caller doesn't have to free it again */
+					TP();
+				}
+			}
+			else
+			{
+				pbuf_free(p);
+				TP();
 			}
 		}
 		else
 		{
-			pbuf_free(p);
+			PRINTF("RX errors: %08X (%08X)\n", (unsigned) status, (unsigned) (status & RXERRMASK));
 		}
 
 		dcache_invalidate((uintptr_t) rxd->buf_addr, EMAC_MAX_PACKET_SIZE);	// подготовка к приёму следующего
-		rxd->status =
-			1 * (UINT32_C(1) << 31) |	// RX_DESC_CTL
-	//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
-	//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
-			0;
+		rxd->status = DESC_OWN_BY_DMA;	// RX_DESC_CTL
+		dcache_clean((uintptr_t) rxd, sizeof * rxd);
 	}
-	dcache_clean((uintptr_t) & emac_rxdesc, sizeof emac_rxdesc);
 }
 
-static dpcobj_t dpcirq;
+static void printchain(const char * title, const struct pbuf *p)
+{
+	// print segmented buffer
+	unsigned sc = 0;
+	const struct pbuf *p1 = p;
+	PRINTF("%s: tx all (%u %04X bytes): ", title, p->tot_len, p->tot_len);
+	while (p1 != 0)
+	{
+		PRINTF("ref=%u,n=%u ", p1->ref, p1->len);
+		//printhex(0 + sc, p1->payload, p1->len);
+		sc += p1->len;
+		p1 = p1->next;
+	}
+	PRINTF("\n");
+}
+
+static void printchain2(const char * title, const struct pbuf *p)
+{
+	// print segmented buffer
+	unsigned sc = 0;
+	const struct pbuf *p1 = p;
+	PRINTF("%s: tx all (%u %04X bytes):\n", title, p->tot_len, p->tot_len);
+	while (p1 != 0)
+	{
+		//PRINTF("ref=%u,n=%u ", p1->ref, p1->len);
+		printhex(0 + sc, p1->payload, p1->len);
+		sc += p1->len;
+		p1 = p1->next;
+	}
+	//PRINTF("\n");
+}
+
+static void emac_dma_desc_set(struct emac_dma_desc * txd, uint_fast32_t control, uintptr_t buf_addr, unsigned len)
+{
+	ASSERT(len <= EMAC_MAX_PACKET_SIZE);
+	txd->buf_addr = buf_addr;
+	txd->control =	// ctl
+		control |
+		(len & DESC_TX_BUF_SIZE_MASK) |	// 10:0 BUF_SIZE
+		0;
+}
+
+static err_t low_level_output(struct netif *netif, struct pbuf *p) {
+
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
+
+	//nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
+   	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
+//   	while (emac_peripheral->EMAC_TX_CTL1 & EMAC_TX_CTL1_TX_DMA_EN)
+//   		;
+  	const uint_fast32_t CONTROLMODE =
+			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
+			//0x03 * (UINT32_C(1) << 27) |	// CHECKSUM_CTL
+			//1 * (UINT32_C(1) << 26) |	// CRC_CTL When it is set, the CRC field is not transmitted.
+		//		1 * (UINT32_C(1) << 24) |	// magic. Without it, packets never be sent on H3 SoC
+			0;
+
+   	const uint_fast32_t ONLYONECONTROL =
+   			CONTROLMODE |
+			1 * (UINT32_C(1) << 30) |	// LAST_DESC
+			1 * (UINT32_C(1) << 29) |	// FIR_DESC
+			0;
+   	const uint_fast32_t FIRSTCONTROL =
+   			//CONTROLMODE |
+			1 * (UINT32_C(1) << 29) |	// FIR_DESC
+			0;
+   	const uint_fast32_t MIDDLECONTROL =
+   			//CONTROLMODE |
+			0;
+   	const uint_fast32_t LASTCONTROL =
+   			CONTROLMODE |
+			1 * (UINT32_C(1) << 30) |	// LAST_DESC
+			0;
+
+	ASSERT(p);
+	if (p->tot_len <= ETH_PAD_SIZE)
+	{
+		// нечего передавать
+		ASSERT(0);
+	}
+	else if (p->tot_len == p->len)
+	{
+		//printchain2("send1", p);
+		// состоит из одного сегмента
+		ASSERT(p->next == NULL);
+		p->custom_item.headpbuf = p;
+		pbuf_ref(p);	// Then use pbuf_free for only first element in chain
+		struct emac_dma_desc * txd = & p->custom_item.dmadesc;
+		p->custom_item.sign1 = & p->custom_item;
+		p->custom_item.sign2 = & p->custom_item;
+		InsertTailList(& TxList, & p->custom_item.item);
+		const unsigned chunk = p->len - ETH_PAD_SIZE;
+	    const uintptr_t dataptr = (uintptr_t) p->payload + ETH_PAD_SIZE;
+		dcache_clean((uintptr_t) dataptr, chunk);
+		emac_dma_desc_set(txd, ONLYONECONTROL, dataptr, chunk);
+		txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+	}
+	else if (!1)
+	{
+		//ASSERT(0);
+		//printchain2("send2", p);
+		// Эксперементальное
+		const unsigned buflen = ((p->tot_len - ETH_PAD_SIZE) + 0xFFF) & ~ UINT32_C(0xFFF);
+		struct pbuf * const newb = pbuf_alloc(PBUF_RAW, buflen, PBUF_POOL);
+		newb->custom_item.headpbuf = newb;
+		ASSERT(newb);
+		newb->custom_item.sign1 = & newb->custom_item;
+		newb->custom_item.sign2 = & newb->custom_item;
+	    const uintptr_t dataptr = (uintptr_t) newb->payload;
+		//pbuf_ref(p);	// Then use pbuf_free for only first element in chain
+		const unsigned chunk = pbuf_copy_partial(p, (void *) dataptr, buflen, ETH_PAD_SIZE);
+
+		//printhex(dataptr, p->custom_item.memp, chunk);
+
+		struct emac_dma_desc * const txd = & newb->custom_item.dmadesc;
+		InsertTailList(& TxList, & newb->custom_item.item);
+		dcache_clean(dataptr, chunk);
+		emac_dma_desc_set(txd, ONLYONECONTROL, dataptr, chunk);
+		txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+
+	}
+	else
+	{
+		// состоит из двух и более сегментов
+		//PRINTF("%s: Segmented pbuf: p->tot_len=%u, p->len=%u (siz=%u)\n", __func__, (unsigned) p->tot_len, (unsigned) p->len, EMAC_MAX_PACKET_SIZE);
+		//printchain2("Before", p);
+		//ASSERT(0);
+		unsigned remain = p->tot_len;
+		{
+			struct pbuf * pfirst = p;
+			pfirst->custom_item.headpbuf = NULL;
+			pbuf_ref(p);	// Then use pbuf_free for only first element in chain
+			struct emac_dma_desc * txd = & pfirst->custom_item.dmadesc;
+			pfirst->custom_item.sign1 = & pfirst->custom_item;
+			pfirst->custom_item.sign2 = & pfirst->custom_item;
+			InsertTailList(& TxList, & pfirst->custom_item.item);
+
+			const unsigned chunk = pfirst->len - ETH_PAD_SIZE;
+		    const uintptr_t dataptr = (uintptr_t) pfirst->payload + ETH_PAD_SIZE;
+			dcache_clean(dataptr, chunk);
+			emac_dma_desc_set(txd, FIRSTCONTROL, dataptr, chunk);
+			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+			remain -= pfirst->len;
+		}
+		struct pbuf * plast = p->next;
+		while (remain)
+		{
+			ASSERT(plast);
+			const unsigned chunk = plast->len;
+			const int ismiddle = remain != chunk;
+			plast->custom_item.headpbuf = ismiddle ? NULL : p;
+			struct emac_dma_desc * txd = & plast->custom_item.dmadesc;
+			plast->custom_item.sign1 = & plast->custom_item;
+			plast->custom_item.sign2 = & plast->custom_item;
+			InsertTailList(& TxList, & plast->custom_item.item);
+
+		    const uintptr_t dataptr = (uintptr_t) plast->payload;
+			dcache_clean(dataptr, chunk);
+			emac_dma_desc_set(txd, ismiddle ? MIDDLECONTROL : LASTCONTROL, dataptr, chunk);
+			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+			ASSERT(remain >= chunk);
+			remain -= chunk;
+			plast = plast->next;
+		}
+	}
+	relinktxdesc(emac_peripheral);
+	return ERR_OK;
+}
+
+static dpcobj_t dpclinkspoolirq;
+static dpcobj_t dpcrxirq;
+static dpcobj_t dpctxirq;
 
 static void EMAC_Handler(void)
 {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
-	const portholder_t sta = emac_peripheral->EMAC_INT_STA;
+	const portholder_t sta0 = emac_peripheral->EMAC_INT_STA;
+	const portholder_t stamask = emac_peripheral->EMAC_INT_EN;
+	const portholder_t sta = sta0 & stamask;
 	emac_peripheral->EMAC_INT_STA = sta;
 
-	board_dpc_call(& dpcirq, board_dpc_coreid());
+//	if (sta & (UINT32_C(1) << 16))	// RGMII_LINK_STA_P
+//	{
+//		TP();
+//		board_dpc_call(& dpclinkspoolirq, board_dpc_coreid());
+//	}
+
+//	PRINTF("sta0=%08X,stamask=%08X,sta=%08X\n", (unsigned) sta0, (unsigned) stamask, (unsigned) sta);
+//	if (sta & (UINT32_C(1) << 1))
+//		PRINTF("TX DMA STOPPED interrupt\n");
+//	if (sta & (UINT32_C(1) << 10))
+//		PRINTF("RX DMA STOPPED interrupt\n");
+
+	if (sta & (UINT32_C(1) << 8))	// // RX_INT
+		board_dpc_call(& dpcrxirq, board_dpc_coreid());
+	if (sta & (UINT32_C(1) << 0))	// // TX_INT
+		board_dpc_call(& dpctxirq, board_dpc_coreid());
 }
 
 /* Realtek RTL8211F PHY Registers */
@@ -531,10 +761,8 @@ static void EMAC_Handler(void)
 #define EMAC_CTL_SPEED_1000     (0 << 2)
 #define EMAC_CTL_SPEED_100      (3 << 2)
 #define EMAC_CTL_SPEED_10       (2 << 2)
+#define EMAC_CTL_SPEED_MASK     (0x03 << 2)
 #define EMAC_CTL_DUPLEX_FULL    (1 << 0)
-
-/* Internal driver states */
-static uint8_t last_link_state = 0xFF;
 
 /**
  * @brief Reads a 16-bit register from the PHY via MDIO interface.
@@ -561,13 +789,12 @@ static uint16_t emac_mdio_read(uint8_t phy_addr, uint8_t reg_addr) {
 /**
  * @brief Updates Allwinner EMAC internal MAC controller speed and duplex settings.
  */
-static void allwinner_emac_update_mac_speed(uint32_t speed, uint32_t is_full_duplex) {
-	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
-    uint32_t ctl_val = emac_peripheral->EMAC_BASIC_CTL0;
+static void allwinner_emac_update_mac_speed(EMAC_TypeDef * const emac_peripheral, uint32_t speed, uint32_t is_full_duplex) {
+	uint_fast32_t ctl_val = emac_peripheral->EMAC_BASIC_CTL0;
     PRINTF("allwinner_emac_update_mac_speed: speed=%u, is_full_duplex=%u\n", (unsigned) speed, (unsigned) is_full_duplex);
 
     /* Clear existing speed (bits 3:2) and duplex (bit 0) configurations */
-    ctl_val &= ~((3 << 2) | (1 << 0));
+    ctl_val &= ~ (EMAC_CTL_SPEED_MASK | EMAC_CTL_DUPLEX_FULL);
 
     /* Apply full or half duplex state */
     if (is_full_duplex) {
@@ -589,31 +816,58 @@ static void allwinner_emac_update_mac_speed(uint32_t speed, uint32_t is_full_dup
     emac_peripheral->EMAC_BASIC_CTL0 = ctl_val;
 }
 
+// Non-zero if other then required
+static int allwinner_emac_compare_mac_speed(EMAC_TypeDef * const emac_peripheral, uint32_t speed, uint32_t is_full_duplex) {
+    const uint_fast32_t mask = EMAC_CTL_SPEED_MASK | EMAC_CTL_DUPLEX_FULL;
+    uint_fast32_t ctl_val = 0;
+    //PRINTF("allwinner_emac_compare_mac_speed: speed=%u, is_full_duplex=%u\n", (unsigned) speed, (unsigned) is_full_duplex);
+
+    /* Apply full or half duplex state */
+    if (is_full_duplex) {
+        ctl_val |= EMAC_CTL_DUPLEX_FULL;
+    }
+
+    /* Apply internal MAC speed bits (SYS_CTRL / CCU clocks are bypassed) */
+    if (speed == 1000) {
+        ctl_val |= EMAC_CTL_SPEED_1000;
+    }
+    else if (speed == 100) {
+        ctl_val |= EMAC_CTL_SPEED_100;
+    }
+    else if (speed == 10) {
+        ctl_val |= EMAC_CTL_SPEED_10;
+    }
+    /* Write updated values back to the EMAC configuration register */
+    return (emac_peripheral->EMAC_BASIC_CTL0 & mask) != ctl_val;
+}
+
 /**
  * @brief Periodically checks RTL8211F link status and updates the lwIP network interface.
+ * TODO: check network speed and duplex state
  */
 static void check_ethernet_link_status(struct netif *netif) {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
     uint16_t physr = emac_mdio_read(RTL8211F_PHY_ADDR, RTL8211F_PHYSR);
 
     /* Get actual hardware status: 1 = connected, 0 = disconnected */
-    uint8_t hw_link_up = (physr & PHYSR_LINK_STATUS) ? 1 : 0;
+    const uint8_t hw_link_up = !! (physr & PHYSR_LINK_STATUS);
+    const uint8_t hw_speed_bits = physr & PHYSR_SPEED_MASK;
+    const uint8_t hw_duplex_bit = !! (physr & PHYSR_DUPLEX_STATUS);
+
+    uint32_t hw_speed = 100;
+    if (hw_speed_bits == PHYSR_SPEED_10)       hw_speed = 10;
+    else if (hw_speed_bits == PHYSR_SPEED_100)  hw_speed = 100;
+    else if (hw_speed_bits == PHYSR_SPEED_1000) hw_speed = 1000;
 
     /* Get current lwIP software status: 1 = up, 0 = down */
-    uint8_t sw_link_up = netif_is_link_up(netif) ? 1 : 0;
+    uint8_t sw_link_up = !!netif_is_link_up(netif);
 
     /* Compare hardware reality with software stack state */
-    if (hw_link_up != sw_link_up) {
+    if (hw_link_up != sw_link_up ||
+    		allwinner_emac_compare_mac_speed(emac_peripheral, hw_speed, hw_duplex_bit)) {
         if (hw_link_up) {
-            uint8_t speed_bits = physr & PHYSR_SPEED_MASK;
-            uint8_t duplex_bit = (physr & PHYSR_DUPLEX_STATUS) ? 1 : 0;
 
-            uint32_t speed = 100;
-            if (speed_bits == PHYSR_SPEED_10)       speed = 10;
-            else if (speed_bits == PHYSR_SPEED_100)  speed = 100;
-            else if (speed_bits == PHYSR_SPEED_1000) speed = 1000;
-
-            allwinner_emac_update_mac_speed(speed, duplex_bit);
+            allwinner_emac_update_mac_speed(emac_peripheral, hw_speed, hw_duplex_bit);
 
             netif_set_link_up(netif);
             if (board_get_eth_dhcp())
@@ -661,9 +915,12 @@ static void allwinner_emac_phy_init(EMAC_TypeDef * const emac_peripheral)
 #endif
 	// Сигнал phyrstb тут уже должен бьыть неактивен
 
+	// Ожидание в 100 мс мало
 	emac_peripheral->EMAC_BASIC_CTL1 |= (UINT32_C(1) << 0);	// Soft reset
-	while ((emac_peripheral->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
-		;
+	if (local_wait32mask(& emac_peripheral->EMAC_BASIC_CTL1, (UINT32_C(1) << 0), 0 * (UINT32_C(1) << 0), 1000))
+		TP();
+//	while ((emac_peripheral->EMAC_BASIC_CTL1 & (UINT32_C(1) << 0)) != 0)
+//		;
 
 	emac_peripheral->EMAC_BASIC_CTL0 =
 		//0x03 * (UINT32_C(1) << 2) |	// SPEED - 00: 1000 Mbit/s, 10: 10 Mbit/s, 11: 100 Mbit/s
@@ -703,9 +960,9 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 //				1 * (UINT32_C(1) << 8) |	// LAST_DESC
 			0;
 		rxd->control =
-				DESC_RX_CHAINED |
+				//1 * (UINT32_C(1) << 31) |	// RX_INT_CTL
+				//DESC_RX_CHAINED |
 				(EMAC_MAX_PACKET_SIZE & DESC_RX_BUF_SIZE_MASK) |	// 10:0 BUF_SIZE
-				//len * (UINT32_C(1) << 0) |
 			0;
 		rxd->buf_addr = (uintptr_t) rxbuffs [i];	// BUF_ADDR
 		rxd->next_desc = (uintptr_t) & emac_rxdesc [(i + 1) % ARRAY_SIZE(emac_rxdesc)];	// NEXT_DESC_ADDR
@@ -717,32 +974,27 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
 			0;
 
 	emac_peripheral->EMAC_RX_DMA_DESC_LIST = (uintptr_t) emac_rxdesc;
-	dcache_clean((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
-	dcache_clean((uintptr_t) rxbuffs, sizeof rxbuffs);
+	dcache_clean_invalidate((uintptr_t) emac_rxdesc, sizeof emac_rxdesc);
+	dcache_clean_invalidate((uintptr_t) rxbuffs, sizeof rxbuffs);
 
 	// TX init
-	for (i = 0; i < ARRAY_SIZE(emac_txdesc); ++ i)
-	{
-		struct emac_dma_desc * txd = & emac_txdesc [i];
-		txd->status =
-			//1 * (UINT32_C(1) << 31) |	// TX_DESC_CTL
-//				1 * (UINT32_C(1) << 9) |	// FIR_DESC
-//				1 * (UINT32_C(1) << 8) |	// LAST_DESC
-			0;
-		txd->control =
-				//len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
-			0;
-		txd->buf_addr = (uintptr_t) txbuffs [i];	// BUF_ADDR
-		txd->next_desc = (uintptr_t) & emac_txdesc [(i + 1) % ARRAY_SIZE(emac_txdesc)];	// NEXT_DESC_ADDR
-		txd->next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
+	InitializeListHead(& TxList);
+	//InitializeListHead(& TxDoneList);
 
-	}
-	dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
-	dcache_clean((uintptr_t) txbuffs, sizeof txbuffs);
-
-	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
-	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
-
+//	for (i = 0; i < ARRAY_SIZE(emac_txdesc); ++ i)
+//	{
+//		struct emac_dma_desc * txd = & emac_txdesc [i];
+//		txd->status = 0;
+//		txd->control =
+//				//len * (UINT32_C(1) << 0) |	// 10:0 BUF_SIZE
+//			0;
+//		txd->buf_addr = (uintptr_t) txbuffs [i];	// BUF_ADDR
+//		txd->next_desc = (uintptr_t) & emac_txdesc [(i + 1) % ARRAY_SIZE(emac_txdesc)];	// NEXT_DESC_ADDR
+//		txd->next_desc = (uintptr_t) & emac_txdesc [i];	// NEXT_DESC_ADDR
+//
+//	}
+//	dcache_clean((uintptr_t) emac_txdesc, sizeof emac_txdesc);
+//	dcache_clean((uintptr_t) txbuffs, sizeof txbuffs);
 
     /* Setup safe default speed and duplex in Basic configuration */
     //emac_peripheral->EMAC_BASIC_CTL0 = EMAC_BASIC_CTL0_SPEED_100 | EMAC_BASIC_CTL0_DUPLEX;
@@ -773,27 +1025,38 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
     }
     {
     	// TX
-		emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) emac_txdesc;
+		//emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) emac_txdesc;
     	emac_peripheral->EMAC_TX_CTL1 = EMAC_TX_CTL1_TX_MD_FORW;
     	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_MD_FORW;	// TX_MD 1: TX start after TX DMA FIFO located a full frame
-    	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
 
     	emac_peripheral->EMAC_TX_CTL0 =
     		1 * (UINT32_C(1) << 31) |	// TX_EN
     		//1 * (UINT32_C(1) << 30) |	// TX_FRM_LEN_CTL
     		0;
-//
-//		emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
-//		if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
-//			TP();
     }
+
+	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
+	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
+
+	//emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 10); // RX_DMA_STOPPED_INT_EN
+	//emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 1); // TX_DMA_STOPPED_INT_EN
+
+	//emac_peripheral->EMAC_INT_EN |= ~ UINT32_C(0);
+
     return ERR_OK;
 }
 
-static void board_nic_dpc(void * ctx)
+//static void board_nic_dpc(void * ctx)
+//{
+//	struct netif * const netif = (struct netif *) ctx;
+//	ethernetif_poll(netif);
+//}
+
+// 1 s periodic calls or by EMAC interrupt flag
+void nic_linkspool(void * ctx)
 {
 	struct netif * const netif = (struct netif *) ctx;
-	ethernetif_poll(netif);
+	check_ethernet_link_status(netif);
 }
 
 void nic_initialize(struct netif *netif)
@@ -805,7 +1068,9 @@ void nic_initialize(struct netif *netif)
 	if (1)
 	{
 		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
-		dpcobj_initialize(& dpcirq, emac_nohandler, netif);
+		dpcobj_initialize(& dpcrxirq, emac_rxhandler, netif);
+		dpcobj_initialize(& dpctxirq, emac_txhandler, netif);
+		dpcobj_initialize(& dpclinkspoolirq, nic_linkspool, netif);
 		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 
 //		static dpcobj_t nic_dpc_entry;
@@ -816,26 +1081,19 @@ void nic_initialize(struct netif *netif)
 	}
 	else
 	{
-		//allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
-		allwinner_emac_init_port(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
-
-		{
-			static dpcobj_t nic_dpc_entry;
-			dpcobj_initialize(& nic_dpc_entry, board_nic_dpc, netif);
-			board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
-
-		}
-		netif->linkoutput = low_level_output; // используется внутри etharp_output
+//		//allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
+//		allwinner_emac_init_port(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
+//
+//		{
+//			static dpcobj_t nic_dpc_entry;
+//			dpcobj_initialize(& nic_dpc_entry, board_nic_dpc, netif);
+//			board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
+//
+//		}
+//		netif->linkoutput = low_level_output; // используется внутри etharp_output
 	}
 		//PRINTF("nic_initialize done\n");
 
-}
-
-// 1 s periodic calls
-void nic_linkspool(void * ctx)
-{
-	struct netif * const netif = (struct netif *) ctx;
-	check_ethernet_link_status(netif);
 }
 
 void nic_set_mac(void * ctx)
