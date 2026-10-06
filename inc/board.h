@@ -106,9 +106,10 @@ void board_set_tx_inh_enable(uint_fast8_t v);	/* разрешение реакц
 void board_set_dither(uint_fast8_t v);	/* управление зашумлением в LTC2208 */
 void board_set_adcrand(uint_fast8_t v);	/* управление интерфейсом в LTC2208 */
 void board_set_dacscale(uint_fast16_t n);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100.00% */
-void board_set_digiscale(uint_fast16_t n);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 void board_set_designscale(uint_fast16_t n);	/* используется при калибровке параметров интерполятора */
-void board_set_cwscale(uint_fast16_t n);	/* Уменьшение усиления при передаче в CW режимах 50..100% */
+void board_set_digiscale(uint_fast16_t n);	/* Увеличение усиления при передаче в цифровых режимах */
+void board_set_cwscale(uint_fast16_t n);	/* Уменьшение усиления при передаче в CW, AB, NFM режимах 50..100% */
+void board_set_ssbscale(uint_fast16_t n);	/* Увеличение усиления при передаче в SSB 100..300% */
 void board_set_dac1(uint_fast8_t n);	/* подстройка опорного генератора */
 void board_set_bglight(uint_fast8_t dispoff, uint_fast8_t dispbright);	/* Включение подсветки дисплея */
 void board_set_kblight(uint_fast8_t v);	/* Включение подсветки клавиатуры */

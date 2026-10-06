@@ -169,8 +169,9 @@ static int_fast16_t 	glob_fmdeviation = 3500;
 static uint_fast16_t	glob_dacscale = BOARDDACSCALEMAX;	/* На какую часть (в процентах в квадрате) от полной амплитуды использцется ЦАП передатчика */
 static uint_fast8_t 	glob_dspagc = BOARD_AGCCODE_ON;
 #endif /* WITHIF4DSP */
-static uint_fast16_t	glob_digiscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-static uint_fast16_t	glob_cwscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+static uint_fast16_t	glob_digiscale = 100;	/* Увеличение усиления при передаче в цифровых режимах */
+static uint_fast16_t	glob_ssbcale = 100;	/* Увеличение усиления при передаче в SSB */
+static uint_fast16_t	glob_cwscale = 100;	/* Увеличение усиления при передаче в CW */
 static uint_fast16_t	glob_designscale = 1000;	/* используется при калибровке параметров интерполятора */
 static uint_fast8_t 	glob_digigainmax = 96;
 
@@ -1755,7 +1756,7 @@ static void smeter_parameters_update(agcparams_t * const agcp, const uint_fast32
 
 // Начальная установка параметров АРУ микрофонного тракта передатчика
 
-static void comp_parameters_init(agcparams_t * agcp)
+static void mikeagc_parameters_init(agcparams_t * agcp)
 {
 	const uint_fast32_t sr = ARMI2SRATE;
 	agclevel_t * const p = & agcp->levels;
@@ -1772,20 +1773,20 @@ static void comp_parameters_init(agcparams_t * agcp)
 	p->agcoff = 0;
 	p->gainlimit_ratio = db2ratio(60);
 	p->mininput_ratio = db2ratio(WITHMINFSPOWER);
-	p->levelfence_ratio = txlevelfenceSSB;
+	p->levelfence_ratio = txlevelfenceSSB * (FLOAT_t) 1.5;
 	p->agcfactor = (FLOAT_t) - 1;
 	p->agcfence = 1;
 }
 
 // Установка параметров АРУ передатчика
 
-static void comp_parameters_update(agcparams_t * const agcp, FLOAT_t gainlimit_ratio)
+static void mikeagc_parameters_update(agcparams_t * const agcp, FLOAT_t gainlimit_ratio)
 {
 	agclevel_t * const p = & agcp->levels;
 
 	p->agcoff = glob_mikeagc == 0;
 	p->gainlimit_ratio = gainlimit_ratio;
-	p->levelfence_ratio = txlevelfenceSSB;
+	p->levelfence_ratio = txlevelfenceSSB * (FLOAT_t) 1.5;
 }
 
 
@@ -2792,7 +2793,7 @@ static FLOAT_t agc_getsigpower(
 
 static agcstate_t txagcstate;
 
-static agcparams_t txagcparams [NPROF];
+static agcparams_t mikeagcparams [NPROF];
 
 static uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 static uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
@@ -2821,8 +2822,8 @@ static void agc_initialize(void)
 		}
 
 		// Микрофон всегда с flatgain=1
-		comp_parameters_init(& txagcparams [profile]);
-		agc_state_init(& txagcstate, & txagcparams [profile].levels);
+		mikeagc_parameters_init(& mikeagcparams [profile]);
+		agc_state_init(& txagcstate, & mikeagcparams [profile].levels);
 	}
 
 #if WITHDSPEXTDDC
@@ -3011,7 +3012,7 @@ static FLOAT_t mickeclipscale [NPROF] = { 1, 1 };
 // На входе уже нормированный к txlevelfenceSSB сигнал
 static FLOAT_t txmikeagc(FLOAT_t vi)
 {
-	agcparams_t * const agcp = & txagcparams [gwagcproftx];
+	agcparams_t * const agcp = & mikeagcparams [gwagcproftx];
 	if (agcp->levels.agcoff == 0)
 	{
 		const FLOAT_t siglevel0 = FABSF(vi);
@@ -3042,7 +3043,7 @@ static FLOAT_t txmikeclip(FLOAT_t vi)
 uint_fast8_t dsp_getmikeadcoverflow(void)
 {
 	agcstate_t * const st = & txagcstate;
-	const FLOAT_t FS = txagcparams [gwagcproftx].levels.levelfence_ratio;	// txlevelfenceSSB
+	const FLOAT_t FS = mikeagcparams [gwagcproftx].levels.levelfence_ratio;	// txlevelfenceSSB
 	return st->agcslowcap >= FS * db2ratio((FLOAT_t) - 1);
 }
 
@@ -5415,21 +5416,22 @@ hftxpath_update(hftxpath_t * const txpath, uint_fast8_t profile)
 	#endif
 	const FLOAT_t c1DIGI = c1MODES * (FLOAT_t) glob_digiscale / 100;
 	const FLOAT_t c1CW = c1MODES * (FLOAT_t) glob_cwscale / 100;
+	const FLOAT_t c1SSB = c1MODES * (FLOAT_t) glob_ssbcale / 100;
 
 	txlevelfenceAM = 	txlevelfence * c1CW;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
-	txlevelfenceSSB = 	txlevelfence * c1MODES;
-	txlevelfenceBPSK = 	txlevelfence * c1MODES;
 	txlevelfenceNFM = 	txlevelfence * c1CW;
 	txlevelfenceCW = 	txlevelfence * c1CW;
 	txlevelfenceBPSK = 	txlevelfence * c1CW;
+	txlevelfenceSSB = 	txlevelfence * c1SSB;
 	txlevelfenceDIGI = 	txlevelfence * c1DIGI;
+	txlevelfenceBPSK = 	txlevelfence * c1CW;
 
 	// Параметры АРУ микрофона
-	comp_parameters_update(& txagcparams [profile], (int) glob_mikeagcgain);
+	mikeagc_parameters_update(& mikeagcparams [profile], (int) glob_mikeagcgain);
 
 	{
 		// Настройка ограничителя
-		const FLOAT_t FS_ratio = txagcparams [profile].levels.levelfence_ratio;	// txlevelfenceSSB
+		const FLOAT_t FS_ratio = mikeagcparams [profile].levels.levelfence_ratio;	// txlevelfenceSSB
 		const FLOAT_t grade = 1 - (glob_mikehclip / (FLOAT_t) 100);
 		mickeclipscale [profile] = 1 / grade;
 		mickecliplevelp [profile] = FS_ratio * grade;
@@ -6026,7 +6028,7 @@ board_set_dacscale(uint_fast16_t n)	/* Использование амплиту
 #endif /* WITHIF4DSP */
 
 void 
-board_set_digiscale(uint_fast16_t n)	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+board_set_digiscale(uint_fast16_t n)	/* Увеличение усиления при передаче в цифровых режимах */
 {
 	if (glob_digiscale != n)
 	{
@@ -6036,11 +6038,21 @@ board_set_digiscale(uint_fast16_t n)	/* Увеличение усиления п
 }
 
 void
-board_set_cwscale(uint_fast16_t n)	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+board_set_cwscale(uint_fast16_t n)	/* Увеличение усиления при передаче в CW, NFM, AM */
 {
 	if (glob_cwscale != n)
 	{
 		glob_cwscale = n;
+		board_dsp1regchanged();
+	}
+}
+
+void
+board_set_ssbscale(uint_fast16_t n)	/* Увеличение усиления при передаче в SSB */
+{
+	if (glob_ssbcale != n)
+	{
+		glob_ssbcale = n;
 		board_dsp1regchanged();
 	}
 }

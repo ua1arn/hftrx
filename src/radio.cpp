@@ -4039,8 +4039,9 @@ struct nvmap {
 	uint16_t gtxtot;			/* разрешённое время передачи */
 	uint8_t ggainnfmrx10;		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-	uint16_t ggaindigitx;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-	uint16_t ggaincwtx;		/* Увеличение усиления при передаче в CW режимах 30..150% */
+	uint16_t ggaindigitx;		/* Увеличение усиления при передаче в цифровых режимах */
+	uint16_t ggaincwtx;		/* Увеличение усиления при передаче в CW, AM. NFM режимах 30..150% */
+	uint16_t ggainssbtx;		/* Увеличение усиления при передаче в SSB 30..150% */
 	uint16_t gdesignscale;	/* используется при калибровке параметров интерполятора */
 #if WITHELKEY
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
@@ -7251,44 +7252,7 @@ static const struct paramdefdef xgskipfilteraf =
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHIF4DSP
 #if WITHTX
-	// See HARDWARE_DACSCALE
-	static uint_fast16_t gdesignscale = 1000;		/* используется при калибровке параметров интерполятора */
-	#if WITHTXCPATHCALIBRATE
-	const struct paramdefdef xgdesignscale = {
-		QLABELENC2("TX CALIBR"),  3, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,
-		0, 2500,		/* используется при калибровке параметров интерполятора */
-		OFFSETOF(struct nvmap, gdesignscale),
-		getselector0, nvramoffs0, valueoffs0,
-		& gdesignscale,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	};
-	#endif /* WITHTXCPATHCALIBRATE */
-	#if WITHTXCPATHCALIBRATE
-		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в CW режимах 100..300% */
-		static uint_fast16_t ggaindigitx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-	#elif 1//WITHTXCWREDUCE
-		static uint_fast16_t ggaincwtx = 60;		/* Увеличение усиления при передаче в CW режимах 100..300% */
-		static uint_fast16_t ggaindigitx = 160;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-	#else /* WITHTXCWREDUCE */
-		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в CW режимах 100..300% */
-		static uint_fast16_t ggaindigitx = 160;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-	#endif /* WITHTXCWREDUCE */
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
-	/* Увеличение усиления при передаче в цифровых режимах 90..300% */
-	static const struct paramdefdef xggaindigitx =
-	{
-		QLABEL3("FT8BOOST", "FT8 Boost", "FT8BOOST"),	 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
-		ITEM_VALUE,
-		90, 300,
-		OFFSETOF(struct nvmap, ggaindigitx),
-		getselector0, nvramoffs0, valueoffs0,
-		& ggaindigitx,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	};
 	static uint_fast16_t gtxtimer;
 	static uint_fast16_t gtxtot = 300;		/* разрешённое время передачи */
 	/* разрешённое время передачи */
@@ -7331,15 +7295,64 @@ static const struct paramdefdef xgskipfilteraf =
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+#if WITHTXCPATHCALIBRATE
+	static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в CW режимах */
+	static uint_fast16_t ggaindigitx = 100;		/* Увеличение усиления при передаче в цифровых режимах */
+	static uint_fast16_t ggainssbtx = 100;		/* Увеличение усиления при передаче в SSB */
+#elif 1//WITHTXCWREDUCE
+	static uint_fast16_t ggaincwtx = 60;		/* Увеличение усиления при передаче в CW режимах */
+	static uint_fast16_t ggaindigitx = 160;		/* Увеличение усиления при передаче в цифровых режимах */
+	static uint_fast16_t ggainssbtx = 100;		/* Увеличение усиления при передаче в SSB */
+#endif
+	/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+	static const struct paramdefdef xggaindigitx =
+	{
+		QLABEL3("FT8BOOST", "FT8 Boost", "FT8BOOST"),	 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		ITEM_VALUE,
+		30, 200,
+		OFFSETOF(struct nvmap, ggaindigitx),
+		getselector0, nvramoffs0, valueoffs0,
+		& ggaindigitx,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	/* Увеличение усиления при передаче в цифровых режимах */
 	static const struct paramdefdef xggaincwtx =
 	{
 		QLABEL3("CW BOOST", "CW Boost", "CW BOOST"),	 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в CW режимах 30..150% */
 		ITEM_VALUE,
-		30, 150,
+		30, 200,
 		OFFSETOF(struct nvmap, ggaincwtx),
 		getselector0, nvramoffs0, valueoffs0,
 		& ggaincwtx,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	/* Увеличение усиления при передаче в SSB 100..300% */
+	static const struct paramdefdef xggainssbtx =
+	{
+		QLABEL3("SSB BOOST", "SSB Boost", "SSB BOOST"),	 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в CW режимах 30..150% */
+		ITEM_VALUE,
+		30, 200,
+		OFFSETOF(struct nvmap, ggainssbtx),
+		getselector0, nvramoffs0, valueoffs0,
+		& ggainssbtx,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	// See HARDWARE_DACSCALE
+	static uint_fast16_t gdesignscale = 1000 * HARDWARE_DACSCALE;		/* используется при калибровке параметров интерполятора */
+	static const struct paramdefdef xgdesignscale =
+	{
+		QLABEL3("DUC SCALE", "DUC Scale", "DUC SCALE"),	 3, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в CW режимах 30..150% */
+		ITEM_VALUE,
+		0, 3000,
+		OFFSETOF(struct nvmap, gdesignscale),
+		getselector0, nvramoffs0, valueoffs0,
+		& gdesignscale,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
@@ -13530,9 +13543,10 @@ updateboard_noui(
 			// 0..10000
 			board_set_dacscale(makebandf2adjust(bandf3hint, getactualtxampl()) * (int) gdacscale);	// BOARDDACSCALEMAX
 
-			board_set_digiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
-			board_set_designscale(gdesignscale);	/* используется при калибровке параметров интерполятора */
+			board_set_digiscale(param_getvalue(& xggaindigitx));	/* Увеличение усиления при передаче в цифровых режимах */
+			board_set_cwscale(param_getvalue(& xggaincwtx));	/* Увеличение усиления при передаче в CW, AM, NFM режимах 50..100% */
+			board_set_ssbscale(param_getvalue(& xggainssbtx));	/* Увеличение усиления при передаче в CW, AM, NFM режимах 50..100% */
+			board_set_designscale(param_getvalue(& xgdesignscale));	/* используется при калибровке параметров интерполятора */
 			board_set_amdepth(param_getvalue(& xgamdepth));	/* Глубина модуляции в АМ - 0..100% */
 			board_set_nfmdeviation(param_getvalue(& xgnfmdeviation));
 			board_rgrbeep_setfreq(1000);	/* roger beep - установка тона */
@@ -17826,14 +17840,12 @@ const struct paramdefdef * const * getmiddlemenu_ssb(unsigned * size)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
-	#if WITHVOX && WITHTX
-		& xgvoxenable,
-	#endif /* WITHVOX && WITHTX */
 	#if WITHTX && WITHAFCODEC1HAVEPROC
 		& xgmikeequalizer,
 	#endif /* WITHTX && WITHAFCODEC1HAVEPROC */
 	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
 		& xgzoomxpow2,
+		& xgbottomdb,
 	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
 	#if WITHIF4DSP
 		& xgnoisereduct,

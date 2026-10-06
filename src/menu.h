@@ -420,9 +420,6 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
-#if WITHTX && WITHUSBUAC
-	& xggaindigitx,	/* Увеличение усиления при передаче в цифровых режимах 90..300% */
-#endif /* WITHTX && WITHUSBUAC */
 #endif /* WITHTX && WITHIF4DSP */
 #if WITHUSEAUDIOREC
 	& xgrecmode,
@@ -921,11 +918,15 @@
 #if WITHIF4DSP
 
 	& xgtxtot,			/* разрешённое время передачи */
+	& xggainssbtx,	/* Увеличение усиления при передаче в SSB */
+	& xggaincwtx,		/* Увеличение усиления при передаче в цифровых режимах */
+#if WITHTX && WITHUSBUAC
+	& xggaindigitx,	/* Увеличение усиления при передаче в цифровых режимах */
+#endif /* WITHTX && WITHUSBUAC */
 	& xgamdepth,		/* Глубина модуляции в АМ - 0..100% */
 	& xgnfmdeviation,
-	& xggaincwtx,		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-
 #endif /* WITHIF4DSP */
+
 #if WITHFANTIMER
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
 	(const struct paramdefdef [1]) {
