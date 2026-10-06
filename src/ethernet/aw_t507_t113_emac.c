@@ -383,10 +383,34 @@ static RAMNC __ALIGNED(4) struct emac_dma_desc emac_rxdesc [EMAC_RX_BUFFERS_COUN
 static LIST_ENTRY TxList;
 //static LIST_ENTRY TxDoneList;
 
+static void stoptxdma(EMAC_TypeDef * const emac_peripheral)
+{
+   	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
+   	for (;;)
+   	{
+   		switch (emac_peripheral->EMAC_TX_DMA_STA & 0x07)
+   		{
+   		case 0x00:	// STOP
+   		//case 0x06:	// SUSPEND
+   			break;
+   		default:
+   			continue;
+   		}
+   		break;
+   	}
+}
+
+static void starttxdma(EMAC_TypeDef * const emac_peripheral)
+{
+	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
+	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
+	if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 10))
+		TP();
+}
+
 // Перестройка ссылок в списке dma descriptors
 static void relinktxdesc(EMAC_TypeDef * const emac_peripheral)
 {
-	ASSERT(! (emac_peripheral->EMAC_TX_CTL1 & EMAC_TX_CTL1_TX_DMA_EN));
 	// Layout descriptors list
 	if (! IsListEmpty(& TxList))
 	{
@@ -408,11 +432,6 @@ static void relinktxdesc(EMAC_TypeDef * const emac_peripheral)
 		} while (t != & TxList);
 
 		emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) & lshead->dmadesc;
-
-		emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
-		emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
-		if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 10))
-			TP();
 	}
 }
 
@@ -433,7 +452,7 @@ static void emac_txhandler(void * ctx)
 				(UINT32_C(1) << 0) |
 			0
 	};
-   	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
+	stoptxdma(emac_peripheral);
    	unsigned deleted = 0;
    	unsigned total = 0;
    	PLIST_ENTRY t;
@@ -459,6 +478,7 @@ static void emac_txhandler(void * ctx)
 	}
 	//PRINTF("emac_txhandler: deleted=%u,total=%u\n", deleted, total);
 	relinktxdesc(emac_peripheral);
+	starttxdma(emac_peripheral);
 }
 
 // опрос принятых
@@ -503,7 +523,7 @@ static void emac_rxhandler(void * ctx)
 				TP();
 				continue;
 			}
-//			PRINTF("rx:\n");
+//			PRINTF("rx: %d\n", size);
 //			printhex(dataptr, (void *) dataptr, size);
 			const err_t e = pbuf_take_at(p, (void *) dataptr, size, ETH_PAD_SIZE);
 			if (e == ERR_OK)
@@ -579,10 +599,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
 
-	//nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
-   	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
-//   	while (emac_peripheral->EMAC_TX_CTL1 & EMAC_TX_CTL1_TX_DMA_EN)
-//   		;
+	stoptxdma(emac_peripheral);
   	const uint_fast32_t CONTROLMODE =
 			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
 			//TDES0_CHECKSUM_INSERT |
@@ -691,12 +708,8 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		}
 	}
 	relinktxdesc(emac_peripheral);
+	starttxdma(emac_peripheral);
 	return ERR_OK;
-}
-
-static void nic_wakeup(EMAC_TypeDef * const emac_peripheral) {
-   	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
-	relinktxdesc(emac_peripheral);
 }
 
 static dpcobj_t dpclinkspoolirq;
@@ -864,7 +877,6 @@ static void check_ethernet_link_status(struct netif *netif) {
         if (hw_link_up) {
 
             allwinner_emac_update_mac_speed(emac_peripheral, hw_speed, hw_duplex_bit);
-            nic_wakeup(emac_peripheral);
 
             netif_set_link_up(netif);
             if (board_get_eth_dhcp())
