@@ -675,7 +675,6 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		p = p->next;
 		while (p)
 		{
-			ASSERT(plast);
 			const unsigned chunk = p->len;
 			const int ismiddle = p->next != NULL;
 			pbuf_ref(p);
@@ -693,6 +692,11 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 	}
 	relinktxdesc(emac_peripheral);
 	return ERR_OK;
+}
+
+static void nic_wakeup(EMAC_TypeDef * const emac_peripheral) {
+   	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
+	relinktxdesc(emac_peripheral);
 }
 
 static dpcobj_t dpclinkspoolirq;
@@ -860,6 +864,7 @@ static void check_ethernet_link_status(struct netif *netif) {
         if (hw_link_up) {
 
             allwinner_emac_update_mac_speed(emac_peripheral, hw_speed, hw_duplex_bit);
+            nic_wakeup(emac_peripheral);
 
             netif_set_link_up(netif);
             if (board_get_eth_dhcp())
