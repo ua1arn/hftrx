@@ -48,7 +48,7 @@ void dbg_flush(void); /* дождаться, пока будут передан�
 	#define TP() \
 		do { \
 			static const char this_file [] = __FILE__; \
-			PRINTF(PSTR("At %d in %s.\n"), __LINE__, this_file); \
+			PRINTF(PSTR("At %d in %s - %s.\n"), __LINE__, this_file, __func__); \
 			dbg_flush(); \
 		} while(0)
 #else /* WITHDEBUG */
