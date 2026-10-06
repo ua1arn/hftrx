@@ -123,7 +123,7 @@
  * allocation and deallocation.
  */
 #define SYS_LIGHTWEIGHT_PROT 1
-typedef unsigned sys_prot_t;
+typedef IRQL_t sys_prot_t;
 
 //#define LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT 1
 //#define MEMP_MEM_MALLOC 1
@@ -314,14 +314,13 @@ void board_update_time(uint32_t sec);
  * critical regions during buffer allocation, deallocation and memory
  * allocation and deallocation.
  */
-#define SYS_LIGHTWEIGHT_PROT 1
-typedef unsigned sys_prot_t;
-
-#define ETH_RX_BUFFER_SIZE 32768
+#define SYS_LIGHTWEIGHT_PROT 0
+typedef IRQL_t sys_prot_t;
+//#define LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT 1
 
 #define HTTPD_FSDATA_FILE "src/httpd_files/fsdata.txt"
 
-#define LWIP_RAND() (4)
+#define LWIP_RAND() (hardware_get_random())
 
 #if 1 && ! WITHISBOOTLOADER
 
