@@ -490,7 +490,7 @@ static void emac_txhandler(void * ctx)
 		pbuf_free(p);
 		++ deleted;
 	}
-	PRINTF("emac_txhandler: deleted=%u,total=%u\n", deleted, total);
+	//PRINTF("emac_txhandler: deleted=%u,total=%u\n", deleted, total);
 	if (deleted)
 	{
 		relinktxdesc(emac_peripheral);
@@ -539,8 +539,8 @@ static void emac_rxhandler(void * ctx)
 				TP();
 				continue;
 			}
-			PRINTF("rx: %d\n", size);
-//			printhex(dataptr, (void *) dataptr, size);
+			//PRINTF("rx: %d\n", size);
+			//printhex(dataptr, (void *) dataptr, size);
 			const err_t e = pbuf_take_at(p, (void *) dataptr, size, ETH_PAD_SIZE);
 			if (e == ERR_OK)
 			{
