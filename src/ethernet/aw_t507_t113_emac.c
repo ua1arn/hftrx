@@ -386,7 +386,8 @@ static LIST_ENTRY TxList;
 static void stoptxdma(EMAC_TypeDef * const emac_peripheral)
 {
    	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
-   	local_wait32mask(& emac_peripheral->EMAC_TX_DMA_STA, 0x03, 0x00, 100);
+   	if (local_wait32mask(& emac_peripheral->EMAC_TX_DMA_STA, 0x07, 0x00, 100))
+   		TP();
    	return;
    	for (;;)
    	{
@@ -404,18 +405,29 @@ static void stoptxdma(EMAC_TypeDef * const emac_peripheral)
 
 static void starttxdma(EMAC_TypeDef * const emac_peripheral)
 {
+
 	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
 	emac_peripheral->EMAC_TX_CTL1 |= (UINT32_C(1) << 31);	// TX_DMA_START (auto-clear)
 	if (local_wait32mask(& emac_peripheral->EMAC_TX_CTL1, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 10))
 		TP();
 }
 
+static void addtotxdmalist(struct pbuf * p)
+{
+
+	p->custom_item.sign1 = & p->custom_item;
+	p->custom_item.sign2 = & p->custom_item;
+	InsertTailList(& TxList, & p->custom_item.item);
+}
+
 // Перестройка ссылок в списке dma descriptors
 static void relinktxdesc(EMAC_TypeDef * const emac_peripheral)
 {
 	// Layout descriptors list
+	stoptxdma(emac_peripheral);		// возможно удаляли
 	if (! IsListEmpty(& TxList))
 	{
+
 		LIST_ENTRY * const head = TxList.Flink;
 		LIST_ENTRY * t = TxList.Flink;
 		listsupport_t * const lshead = CONTAINING_RECORD(head, listsupport_t, item);
@@ -434,6 +446,7 @@ static void relinktxdesc(EMAC_TypeDef * const emac_peripheral)
 		} while (t != & TxList);
 
 		emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) & lshead->dmadesc;
+		starttxdma(emac_peripheral);
 	}
 }
 
@@ -454,7 +467,6 @@ static void emac_txhandler(void * ctx)
 				(UINT32_C(1) << 0) |
 			0
 	};
-	stoptxdma(emac_peripheral);
    	unsigned deleted = 0;
    	unsigned total = 0;
    	PLIST_ENTRY t;
@@ -478,9 +490,11 @@ static void emac_txhandler(void * ctx)
 		pbuf_free(p);
 		++ deleted;
 	}
-	//PRINTF("emac_txhandler: deleted=%u,total=%u\n", deleted, total);
-	relinktxdesc(emac_peripheral);
-	starttxdma(emac_peripheral);
+	PRINTF("emac_txhandler: deleted=%u,total=%u\n", deleted, total);
+	if (deleted)
+	{
+		relinktxdesc(emac_peripheral);
+	}
 }
 
 // опрос принятых
@@ -525,7 +539,7 @@ static void emac_rxhandler(void * ctx)
 				TP();
 				continue;
 			}
-//			PRINTF("rx: %d\n", size);
+			PRINTF("rx: %d\n", size);
 //			printhex(dataptr, (void *) dataptr, size);
 			const err_t e = pbuf_take_at(p, (void *) dataptr, size, ETH_PAD_SIZE);
 			if (e == ERR_OK)
@@ -601,7 +615,6 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
 
-	stoptxdma(emac_peripheral);
   	const uint_fast32_t CONTROLMODE =
 			1 * (UINT32_C(1) << 31) |	// TX_INT_CTL
 			//TDES0_CHECKSUM_INSERT |
@@ -633,32 +646,26 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		// нечего передавать
 		ASSERT(0);
 	}
-	else if (p->tot_len == p->len)
+	else if (p->next == NULL)
 	{
 		//printchain2("send1", p);
 		// состоит из одного сегмента
 		ASSERT(p->next == NULL);
 		pbuf_ref(p);	// Then use pbuf_free for only first element in chain
 		struct emac_dma_desc * txd = & p->custom_item.dmadesc;
-		p->custom_item.sign1 = & p->custom_item;
-		p->custom_item.sign2 = & p->custom_item;
-		InsertTailList(& TxList, & p->custom_item.item);
 		const unsigned chunk = p->len - ETH_PAD_SIZE;
 	    const uintptr_t dataptr = (uintptr_t) p->payload + ETH_PAD_SIZE;
 		dcache_clean((uintptr_t) dataptr, chunk);
 		emac_dma_desc_set(txd, ONLYONECONTROL, dataptr, chunk);
 		txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+		addtotxdmalist(p);
 	}
-	else if (!1)
+	else if (0)
 	{
-		//ASSERT(0);
-		//printchain2("send2", p);
 		// Эксперементальное
-		const unsigned buflen = ((p->tot_len - ETH_PAD_SIZE) + 0xFFF) & ~ UINT32_C(0xFFF);
+		const unsigned buflen = ((p->tot_len - ETH_PAD_SIZE) + 0x7FF) & ~ UINT32_C(0x7FF);
 		struct pbuf * const newb = pbuf_alloc(PBUF_RAW, buflen, PBUF_POOL);
 		ASSERT(newb);
-		newb->custom_item.sign1 = & newb->custom_item;
-		newb->custom_item.sign2 = & newb->custom_item;
 	    const uintptr_t dataptr = (uintptr_t) newb->payload;
 		//pbuf_ref(p);	// Then use pbuf_free for only first element in chain
 		const unsigned chunk = pbuf_copy_partial(p, (void *) dataptr, buflen, ETH_PAD_SIZE);
@@ -666,11 +673,10 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		//printhex(dataptr, p->custom_item.memp, chunk);
 
 		struct emac_dma_desc * const txd = & newb->custom_item.dmadesc;
-		InsertTailList(& TxList, & newb->custom_item.item);
 		dcache_clean(dataptr, chunk);
 		emac_dma_desc_set(txd, ONLYONECONTROL, dataptr, chunk);
 		txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
-
+		addtotxdmalist(newb);
 	}
 	else
 	{
@@ -681,15 +687,12 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		{
 			pbuf_ref(p);
 			struct emac_dma_desc * txd = & p->custom_item.dmadesc;
-			p->custom_item.sign1 = & p->custom_item;
-			p->custom_item.sign2 = & p->custom_item;
-			InsertTailList(& TxList, & p->custom_item.item);
-
 			const unsigned chunk = p->len - ETH_PAD_SIZE;
 		    const uintptr_t dataptr = (uintptr_t) p->payload + ETH_PAD_SIZE;
 			dcache_clean(dataptr, chunk);
 			emac_dma_desc_set(txd, FIRSTCONTROL, dataptr, chunk);
 			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+			addtotxdmalist(p);
 		}
 		p = p->next;
 		while (p)
@@ -698,19 +701,15 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 			const int ismiddle = p->next != NULL;
 			pbuf_ref(p);
 			struct emac_dma_desc * txd = & p->custom_item.dmadesc;
-			p->custom_item.sign1 = & p->custom_item;
-			p->custom_item.sign2 = & p->custom_item;
-			InsertTailList(& TxList, & p->custom_item.item);
-
 		    const uintptr_t dataptr = (uintptr_t) p->payload;
 			dcache_clean(dataptr, chunk);
 			emac_dma_desc_set(txd, ismiddle ? MIDDLECONTROL : LASTCONTROL, dataptr, chunk);
 			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
+			addtotxdmalist(p);
 			p = p->next;
 		}
 	}
 	relinktxdesc(emac_peripheral);
-	starttxdma(emac_peripheral);
 	return ERR_OK;
 }
 
@@ -1038,7 +1037,6 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
     	// TX
 		//emac_peripheral->EMAC_TX_DMA_DESC_LIST = (uintptr_t) emac_txdesc;
     	emac_peripheral->EMAC_TX_CTL1 = EMAC_TX_CTL1_TX_MD_FORW;
-    	emac_peripheral->EMAC_TX_CTL1 |= EMAC_TX_CTL1_TX_MD_FORW;	// TX_MD 1: TX start after TX DMA FIFO located a full frame
 
     	emac_peripheral->EMAC_TX_CTL0 =
     		1 * (UINT32_C(1) << 31) |	// TX_EN

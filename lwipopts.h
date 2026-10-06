@@ -194,7 +194,7 @@ void board_update_time(uint32_t sec);
 
 //#define LWIP_TCP_KEEPALIVE 			0
 
-#define MEM_SIZE                    32768
+#define MEM_SIZE                    (4 * 32768)
 #define MEM_ALIGNMENT               64 //8
 #define MEMP_NUM_PBUF 				16
 #define MEMP_NUM_PBUF 				16

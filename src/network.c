@@ -753,7 +753,9 @@ static void udpapp_recv_proc(void *arg,
 //	send_payload_to_host(&fromhostdata[0], size);
 
 	char b [128];
-	int n = local_snprintf_P(b, ARRAY_SIZE(b), "You send message!");
+	//int n = local_snprintf_P(b, ARRAY_SIZE(b), "You send message!");
+	int n = local_snprintf_P(b, ARRAY_SIZE(b), "You send message from port %u with %u bytes of data!", port, size);
+	printhex(0, b, n);
 	tx_data_to_host(b, n, addr);
 }
 
