@@ -406,6 +406,9 @@ hwtimcountfast_t cpu_gethwtimticks(void);	// получение из аппар�
 hwtimcountfast_t cpu_gethwtimticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
 hwtimcountfast_t cpu_gethwtimticksmask(void);	// получение маски на разрядность аппаратного счётчика
 
+// cpu_gethwtimticksfreq() based times
+hwtimcountfast_t get_td_us(uint_fast32_t timeUS);
+hwtimcountfast_t get_td_ms(uint_fast32_t timeMS);
 
 void tickers_initialize(void);
 void tickers_deinitialize(void);

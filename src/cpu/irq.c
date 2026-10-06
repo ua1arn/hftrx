@@ -1960,12 +1960,12 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 
 static volatile uint8_t threads_not_started = 1;
 
-static hwtimcountfast_t get_td_us(uint_fast32_t timeUS)
+hwtimcountfast_t get_td_us(uint_fast32_t timeUS)
 {
 	return timeUS * (cpu_gethwtimticksfreq() / (1000 * 1000));
 }
 
-static hwtimcountfast_t get_td_ms(uint_fast32_t timeMS)
+hwtimcountfast_t get_td_ms(uint_fast32_t timeMS)
 {
 	return timeMS * (cpu_gethwtimticksfreq() / 1000);
 }
