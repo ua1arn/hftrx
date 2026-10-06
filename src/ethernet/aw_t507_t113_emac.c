@@ -386,6 +386,8 @@ static LIST_ENTRY TxList;
 static void stoptxdma(EMAC_TypeDef * const emac_peripheral)
 {
    	emac_peripheral->EMAC_TX_CTL1 &= ~ EMAC_TX_CTL1_TX_DMA_EN;	// DMA EN
+   	local_wait32mask(& emac_peripheral->EMAC_TX_DMA_STA, 0x03, 0x00, 100);
+   	return;
    	for (;;)
    	{
    		switch (emac_peripheral->EMAC_TX_DMA_STA & 0x07)
