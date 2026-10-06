@@ -660,36 +660,35 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		//printchain2("Before", p);
 		//ASSERT(0);
 		{
-			struct pbuf * pfirst = p;
-			pbuf_ref(pfirst);
-			struct emac_dma_desc * txd = & pfirst->custom_item.dmadesc;
-			pfirst->custom_item.sign1 = & pfirst->custom_item;
-			pfirst->custom_item.sign2 = & pfirst->custom_item;
-			InsertTailList(& TxList, & pfirst->custom_item.item);
+			pbuf_ref(p);
+			struct emac_dma_desc * txd = & p->custom_item.dmadesc;
+			p->custom_item.sign1 = & p->custom_item;
+			p->custom_item.sign2 = & p->custom_item;
+			InsertTailList(& TxList, & p->custom_item.item);
 
-			const unsigned chunk = pfirst->len - ETH_PAD_SIZE;
-		    const uintptr_t dataptr = (uintptr_t) pfirst->payload + ETH_PAD_SIZE;
+			const unsigned chunk = p->len - ETH_PAD_SIZE;
+		    const uintptr_t dataptr = (uintptr_t) p->payload + ETH_PAD_SIZE;
 			dcache_clean(dataptr, chunk);
 			emac_dma_desc_set(txd, FIRSTCONTROL, dataptr, chunk);
 			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
 		}
-		struct pbuf * plast = p->next;
-		while (plast)
+		p = p->next;
+		while (p)
 		{
 			ASSERT(plast);
-			const unsigned chunk = plast->len;
-			const int ismiddle = plast->next != NULL;
-			pbuf_ref(plast);
-			struct emac_dma_desc * txd = & plast->custom_item.dmadesc;
-			plast->custom_item.sign1 = & plast->custom_item;
-			plast->custom_item.sign2 = & plast->custom_item;
-			InsertTailList(& TxList, & plast->custom_item.item);
+			const unsigned chunk = p->len;
+			const int ismiddle = p->next != NULL;
+			pbuf_ref(p);
+			struct emac_dma_desc * txd = & p->custom_item.dmadesc;
+			p->custom_item.sign1 = & p->custom_item;
+			p->custom_item.sign2 = & p->custom_item;
+			InsertTailList(& TxList, & p->custom_item.item);
 
-		    const uintptr_t dataptr = (uintptr_t) plast->payload;
+		    const uintptr_t dataptr = (uintptr_t) p->payload;
 			dcache_clean(dataptr, chunk);
 			emac_dma_desc_set(txd, ismiddle ? MIDDLECONTROL : LASTCONTROL, dataptr, chunk);
 			txd->status = (UINT32_C(1) << 31); // TX_DESC_CTL
-			plast = plast->next;
+			p = p->next;
 		}
 	}
 	relinktxdesc(emac_peripheral);
