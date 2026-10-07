@@ -95,20 +95,6 @@ void display2_getmultimenu(multimenuwnd_t * p); /* получение парам
 
 uint_fast8_t display2_getswrmax(void);
 
-uint_fast16_t normalize(
-	uint_fast16_t raw,
-	uint_fast16_t rawmin,	// включает интервал входного raw
-	uint_fast16_t rawmax,	// включает интервал входного raw
-	uint_fast16_t range		// включает максимальное выходное значение
-	);
-
-int_fast32_t approximate(
-	const int32_t * points,		// массив позиций входных значений
-	const int32_t * angles,		// массив позицый выходных значений
-	unsigned n,					// размерность массивов
-	int_fast16_t v				// значение для анализа
-	);
-
 // FUNC menu
 
 void display_2fmenuslines(

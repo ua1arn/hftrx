@@ -6,6 +6,7 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "formats.h"
 #include "utils.h"
 #include <machine/endian.h>
 
@@ -575,4 +576,83 @@ void fill32delay(uintptr_t addr, const uint32_t * data, unsigned count)
 		++ data;
 		addr += 4;
 	}
+}
+
+
+
+uint_fast16_t normalize(
+	uint_fast16_t raw,
+	uint_fast16_t rawmin,	// включает интервал входного raw
+	uint_fast16_t rawmax,	// включает интервал входного raw
+	uint_fast16_t range		// включает максимальное выходное значение
+	)
+{
+	if (rawmin < rawmax)
+	{
+		// Normal direction
+		const uint_fast16_t distance = rawmax - rawmin + 1;
+		if (raw < rawmin)
+			return 0;
+		const uint_fast16_t rawoffset = raw - rawmin;
+		if (rawoffset > distance)
+			return range;
+		return (uint_fast32_t) rawoffset * range / distance;
+	}
+	else
+	{
+		// reverse direction
+		const uint_fast16_t distance = rawmin - rawmax + 1;	//
+		if (raw >= rawmin)
+			return 0;
+		const uint_fast16_t rawoffset = rawmin - raw;
+		if (rawoffset > distance)
+			return range;
+		return (uint_fast32_t) rawoffset * range / distance;
+	}
+}
+
+uint_fast16_t normalize3(
+	uint_fast16_t raw,
+	uint_fast16_t rawmin,
+	uint_fast16_t rawmid,
+	uint_fast16_t rawmax,
+	uint_fast16_t range1,
+	uint_fast16_t range2
+	)
+{
+	if (raw < rawmid)
+		return normalize(raw, rawmin, rawmid, range1);
+	else
+		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
+}
+
+
+int_fast32_t approximate(
+	const int32_t * points,		// массив позиций входных значений
+	const int32_t * angles,		// массив позицый выходных значений
+	unsigned n,					// размерность массивов
+	int_fast16_t v				// значение для анализа
+	)
+{
+	unsigned i;
+	if (n < 2)
+		return 0;
+	for (i = 0; i < (n - 1); ++ i)
+	{
+		const int_fast32_t left = points [i];
+		const int_fast32_t right = points [i + 1];
+		const int_fast32_t minimal = angles [i];
+		const int_fast32_t maximal = angles [i + 1];
+		ASSERT(left < right);
+		ASSERT(minimal < maximal);
+		if (v < left)
+			return minimal;
+		if (v > right)
+			continue;
+		const int_fast32_t offset = v - left;
+		const int_fast32_t range = right - left + 1;	// диапазон входных значение на данном участке
+		const int_fast32_t delta = maximal - minimal + 1;	// диапазон выходных значение на данном участке
+		return (int_fast64_t) offset * delta / range + minimal;
+	}
+	return angles [n - 1];	// при выходе за максимальное значение - уприраемся в правое значение
 }

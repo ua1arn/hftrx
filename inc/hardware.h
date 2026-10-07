@@ -469,7 +469,6 @@ void blinkloop(void);
 #endif
 
 
-#include "mslist.h"
 
 void spool_nmeapps(void * ctx);	// Обработчик вызывается при приходе очередного импульса PPS
 
@@ -713,6 +712,8 @@ void sysinit_ttbr_initialize(void);	/* на каждом процессоре */
 
 void r7s721_sdhi0_dma_handler(void);
 
+#include "mslist.h"
+
 enum ticker_mode
 {
 	TICKERMD_PERIODIC,
@@ -927,7 +928,6 @@ void mpu6500_test(void);
 #include "core32_ca.h"
 #endif
 
-#include "utils.h"
 // Substitutions for t507 ddr ram init
 //#define i2c_read local_i2c_read
 //#define i2c_write local_i2c_write
@@ -994,5 +994,7 @@ void mpu6500_test(void);
 	#include "t113s3_hal.h"
 
 #endif
+
+#include "utils.h"
 
 #endif // HARDWARE_H_INCLUDED
