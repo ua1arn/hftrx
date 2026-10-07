@@ -24,8 +24,8 @@
 	#define WITHCPUXOSC 26000000u	/* На процессоре установлен генератор 26.000 МГц */
 	#define HARDWARE_ADDRSPACE_GB (8)	// Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
 
-	#define CPUB_FREQ_MHz 800//1300//2000
-	#define CPUL_FREQ_MHz 800//1300//2000
+	#define CPUB_FREQ_MHz 1300//2000
+	#define CPUL_FREQ_MHz 1300//2000
 
 	/* модели синтезаторов - схемы частотообразования */
 
@@ -287,7 +287,7 @@
 	//#define CODEC_TYPE_WM8731_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
 	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
-	////#define CODEC_TYPE_NAU8822_USE_SPI	1
+	#define CODEC_TYPE_NAU8822_USE_SPI	1
 	////#define NAU8822_USE_SPI4	1	// SPI 4-Wire 24-bit Write and 32-bit Read Operation
 	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 	//#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
