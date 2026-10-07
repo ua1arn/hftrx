@@ -8149,7 +8149,7 @@ void hightests(void)
 			const uint64_t t1s = timestamp_getticks();
 			unsigned dt = t1 - t0;
 			unsigned dts = t1s - t0s;
-			PRINTF("t0=0x%" PRIX64 ", dt=%u, dts=%u\n", t0, dt, dts);
+			PRINTF("t0=0x%" PRIX64 ", t0s=0x%" PRIX64 ", dt=%u, dts=%u\n", t0, t0s, dt, dts);
 		}
 	}
 #endif
