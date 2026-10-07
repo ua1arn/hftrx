@@ -2895,8 +2895,8 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 	// калибровано для Cortex-A53 процессора
 	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
 #elif __CORTEX_A == 55
-	// калибровано для Cortex-A53 процессора
-	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
+	// калибровано для Cortex-A55 ядра процессора Allwinner A733
+	const unsigned long top = 142uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_T113
 	// калибровано для 1200 МГц Cortex-A7 процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
