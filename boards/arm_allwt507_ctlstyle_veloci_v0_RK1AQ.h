@@ -319,7 +319,7 @@
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	
-	//#define WITHTXCPATHCALIBRATE 1	/* при изменении параметров интерполятора в FPGA выполняем калибровку HARDWARE_DACSCALE */
+	//#define WITHTXCPATHCALIBRATE 1	/* при изменении параметров интерполятора в FPGA выполняем калибровку HARDWARE_DUCSCALE */
 
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
@@ -411,12 +411,6 @@
 	//#define WITHANTSELECT	1	/* Управление переключением антенн */
 
 	//#define WITHVITA49RX	1	/* VITA 49.0-2015 streaming source support */
-	
-//	#define WITHSWRPROT 0			/* ОТЛАДКА - отключена защитa по КСВ */
-//	#define WITHHEATPROT 0			/* ОТЛАДКА - отключена защитa по перегреву */
-
-	
-	
 	
 	#define WITHCAT		1	/* используется CAT */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */

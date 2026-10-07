@@ -1391,7 +1391,11 @@ void local_delay_initialize(void);	// setup parameters for loop-nased delays
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
 	#define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
-	#define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
+	#define BOARDDACSCALEDENOM	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
+
+	#define BOARDDUCSCALEMIN	0	// Нижний предел мощности (аргумент board_set_designDUCscale() */
+	#define BOARDDUCSCALEMAX	1500	// Верхний предел мощности (аргумент board_set_designDUCscale() */
+	#define BOARDDUCSCALEDENOM	1000	// Верхний предел мощности (аргумент board_set_designDUCscale() */
 #endif /* WITHIF4DSP */
 
 #if defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS) && ! defined WITHNMEA

@@ -166,13 +166,13 @@ static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTC
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 static int_fast16_t 	glob_fmdeviation = 3500;
 #if WITHIF4DSP
-static uint_fast16_t	glob_dacscale = BOARDDACSCALEMAX;	/* На какую часть (в процентах в квадрате) от полной амплитуды использцется ЦАП передатчика */
+static uint_fast16_t	glob_designDUCscale = BOARDDUCSCALEDENOM;	/* используется при калибровке параметров интерполятора */
+static uint_fast16_t	glob_dacscale = BOARDDACSCALEDENOM;	/* На какую часть (в процентах в квадрате) от полной амплитуды использцется ЦАП передатчика */
 static uint_fast8_t 	glob_dspagc = BOARD_AGCCODE_ON;
 #endif /* WITHIF4DSP */
 static uint_fast16_t	glob_digiscale = 100;	/* Увеличение усиления при передаче в цифровых режимах */
 static uint_fast16_t	glob_ssbcale = 100;	/* Увеличение усиления при передаче в SSB */
 static uint_fast16_t	glob_cwscale = 100;	/* Увеличение усиления при передаче в CW */
-static uint_fast16_t	glob_designscale = 1000;	/* используется при калибровке параметров интерполятора */
 static uint_fast8_t 	glob_digigainmax = 96;
 
 static int_fast16_t		glob_fsadcpower10 = 0;	// мощность, соответствующая full scale от IF ADC с точностью 0.1 дБмВт
@@ -5410,9 +5410,9 @@ hftxpath_update(hftxpath_t * const txpath, uint_fast8_t profile)
 	const FLOAT_t txlevelfence = 1;	// контролировать по отсутствию индикации переполнения DUC при передаче
 
 	#if WITHTXCPATHCALIBRATE
-		const FLOAT_t c1MODES = (FLOAT_t) glob_designscale / 1000;	// предотвращение переполнения
+		const FLOAT_t c1MODES = (FLOAT_t) glob_designDUCscale / BOARDDUCSCALEDENOM;	// предотвращение переполнения
 	#else /* WITHTXCPATHCALIBRATE */
-		const FLOAT_t c1MODES = (FLOAT_t) HARDWARE_DACSCALE;	// предотвращение переполнения
+		const FLOAT_t c1MODES = (FLOAT_t) HARDWARE_DUCSCALE;	// предотвращение переполнения
 	#endif
 	const FLOAT_t c1DIGI = c1MODES * (FLOAT_t) glob_digiscale / 100;
 	const FLOAT_t c1CW = c1MODES * (FLOAT_t) glob_cwscale / 100;
@@ -5469,7 +5469,7 @@ hftxpath_update(hftxpath_t * const txpath, uint_fast8_t profile)
 		dsp_rtty_tx_set_reverse(& txpath->rtty_tx, glob_rtty_inverted);
 	}
 
-	txpath->scaleDAC = (FLOAT_t) (int) glob_dacscale / BOARDDACSCALEMAX;
+	txpath->scaleDAC = (FLOAT_t) (int) glob_dacscale / BOARDDACSCALEDENOM;
 
 	subtonevolume = (glob_subtonelevel / (FLOAT_t) 100);
 
@@ -6010,22 +6010,7 @@ board_set_nfmdeviation(int_fast16_t n)	/* deviation */
 	}
 }
 
-//	#define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
-//	#define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
 #if WITHIF4DSP
-
-void 
-board_set_dacscale(uint_fast16_t n)	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100.00% */
-{
-	if (glob_dacscale != n)
-	{
-		glob_dacscale = n;	// BOARDDACSCALEMIN..BOARDDACSCALEMAX
-		board_dsp1regchanged();
-	}
-	//PRINTF("board_set_dacscale = %u\n", (unsigned) glob_dacscale);
-}
-
-#endif /* WITHIF4DSP */
 
 void 
 board_set_digiscale(uint_fast16_t n)	/* Увеличение усиления при передаче в цифровых режимах */
@@ -6058,14 +6043,28 @@ board_set_ssbscale(uint_fast16_t n)	/* Увеличение усиления п�
 }
 
 void
-board_set_designscale(uint_fast16_t n)	/* используется при калибровке параметров интерполятора */
+board_set_dacscale(uint_fast16_t n)	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100.00% */
 {
-	if (glob_designscale != n)
+	if (glob_dacscale != n)
 	{
-		glob_designscale = n;
+		glob_dacscale = n;	// BOARDDACSCALEMIN..BOARDDACSCALEMAX
+		board_dsp1regchanged();
+	}
+	//PRINTF("board_set_dacscale = %u\n", (unsigned) glob_dacscale);
+}
+
+void
+board_set_designDUCscale(uint_fast16_t n)	/* 0..1000 используется при калибровке параметров интерполятора */
+{
+	if (glob_designDUCscale != n)
+	{
+		glob_designDUCscale = n;
 		board_dsp1regchanged();
 	}
 }
+
+#endif /* WITHIF4DSP */
+
 void
 board_set_mik1level(uint_fast16_t n)	/* усиление микрофонного усилителя */
 {

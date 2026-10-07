@@ -7343,13 +7343,13 @@ static const struct paramdefdef xgskipfilteraf =
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	// See HARDWARE_DACSCALE
-	static uint_fast16_t gdesignDUCscale = 1000 * HARDWARE_DACSCALE;		/* используется при калибровке параметров интерполятора */
+	// See HARDWARE_DUCSCALE
+	static uint_fast16_t gdesignDUCscale = 1000 * HARDWARE_DUCSCALE;		/* используется при калибровке параметров интерполятора */
 	static const struct paramdefdef xgdesignDUCscale =
 	{
 		QLABEL3("DUC SCALE", "DUC Scale", "DUC SCALE"),	 3, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в CW режимах 30..150% */
 		ITEM_VALUE,
-		0, 3000,
+		BOARDDUCSCALEMIN, BOARDDUCSCALEMAX,
 		OFFSETOF(struct nvmap, gdesignDUCscale),
 		getselector0, nvramoffs0, valueoffs0,
 		& gdesignDUCscale,
@@ -13611,12 +13611,12 @@ updateboard_noui(
 			board_set_afresponcetx(bwseti_getafresponce(bwseti));	/* коррекция АЧХ НЧ тракта передатчика */
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
 			// 0..10000
-			board_set_dacscale(makebandf2adjust(bandf3hint, getactualtxampl()) * (int) gdacscale);	// BOARDDACSCALEMAX
+			board_set_dacscale(makebandf2adjust(bandf3hint, getactualtxampl()) * param_getvalue(& xgdacscale));	// See BOARDDACSCALEDENOM
 
 			board_set_digiscale(param_getvalue(& xggaindigitx));	/* Увеличение усиления при передаче в цифровых режимах */
 			board_set_cwscale(param_getvalue(& xggaincwtx));	/* Увеличение усиления при передаче в CW, AM, NFM режимах 50..100% */
 			board_set_ssbscale(param_getvalue(& xggainssbtx));	/* Увеличение усиления при передаче в CW, AM, NFM режимах 50..100% */
-			board_set_designscale(param_getvalue(& xgdesignDUCscale));	/* используется при калибровке параметров интерполятора */
+			board_set_designDUCscale(param_getvalue(& xgdesignDUCscale));	/* используется при калибровке параметров интерполятора */
 			board_set_amdepth(param_getvalue(& xgamdepth));	/* Глубина модуляции в АМ - 0..100% */
 			board_set_nfmdeviation(param_getvalue(& xgnfmdeviation));
 			board_rgrbeep_setfreq(1000);	/* roger beep - установка тона */
