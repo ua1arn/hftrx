@@ -601,28 +601,6 @@ static err_t netif_init_cb(struct netif *netif)
 	return ERR_OK;
 }
 
-#if 0
-// Receiving Ethernet packets
-// user-mode function
-static void netif_polling(void * ctx)
-{
-	(void) ctx;
-	nic_buffer_t * p;
-	while (nic_buffer_ready(& p) != 0)
-	{
-		struct pbuf *frame = p->frame;
-		nic_buffer_release(p);
-		//PRINTF("ethernet_input:\n");
-		//printhex(0, frame->payload, frame->len);
-		err_t e = ethernet_input(frame, & nic_netif_data);
-		if (e != ERR_OK)
-		{
-			  /* This means the pbuf is freed or consumed,
-			     so the caller doesn't have to free it again */
-		}
-	}
-}
-#endif
 
 static void init_netif(void)
 {
@@ -645,24 +623,11 @@ static void init_netif(void)
 	//netif_set_up(netif);
 #endif
 
-//	while (!netif_is_up(netif))
-//		;
-//#if ! DHCP_SERVER
-//	dhcp_start(netif);
-//#endif
 
 #if LWIP_AUTOIP
 	  autoip_start(netif);
 #endif /* LWIP_AUTOIP */
 
-#if 0
-	{
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, netif_polling, NULL);
-		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-	}
-#endif
 }
 
 
