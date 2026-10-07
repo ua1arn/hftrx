@@ -66,6 +66,7 @@ typedef struct {
 #define OFDM_FFT_LUT_SIZE       256  /* Exact static size matching our high-speed 125 Baud FFT window */
 
 typedef struct {
+    /* OFDM Framing Deserialization State Machine Layer */
     ofdm_rx_fsm_state_t rx_fsm_state;
     uint32_t symbol_sample_idx;
     uint32_t total_symbol_len;
@@ -73,18 +74,29 @@ typedef struct {
     uint32_t fft_len;
     int rx_active;
 
+    /* Multicarrier Demodulation Integrators (DFT Core) */
     FLOAT_t integrator_i[OFDM_MAX_SUBCARRIERS];
     FLOAT_t integrator_q[OFDM_MAX_SUBCARRIERS];
     uint32_t active_tones_count;
 
+    /* HIGH-SPEED HARDWARE OPTIMIZED LUT MATRICES */
     FLOAT_t rx_lut_cos[OFDM_MAX_SUBCARRIERS][OFDM_FFT_LUT_SIZE];
     FLOAT_t rx_lut_sin[OFDM_MAX_SUBCARRIERS][OFDM_FFT_LUT_SIZE];
 
+    /* Differential Decoder History Memory Layer */
     FLOAT_t prev_integrator_i[OFDM_MAX_SUBCARRIERS];
     FLOAT_t prev_integrator_q[OFDM_MAX_SUBCARRIERS];
 
+    /* AUTOMATIC FREQUENCY CONTROL (AFC) LOOP MEMORY FIELDS */
+    FLOAT_t afc_freq_offset_rad;      /* Current calculated integrated loop frequency offset in radians */
+    FLOAT_t afc_integrator;          /* Integral accumulator memory for the tracking PI-loop */
+    FLOAT_t afc_kp;                  /* Proportional tracking loop gain coefficient */
+    FLOAT_t afc_ki;                  /* Integral tracking loop gain coefficient */
+    FLOAT_t subcarrier_base_steps[OFDM_MAX_SUBCARRIERS]; /* Ideal rigid baseline frequency steps layout */
+    FLOAT_t subcarrier_steps[OFDM_MAX_SUBCARRIERS];      /* Dynamic runtime frequency steps modified by AFC */
+
     /* BAREMETAL CORES MEMORY STATE EXTENSIONS FOR DE-SCRAMBLER */
-    uint32_t scrambler_state;         /* LFSR receiver memory state tracking */
+    uint32_t scrambler_state;
 
     uint32_t bit_shifter;
     uint32_t bits_count;
