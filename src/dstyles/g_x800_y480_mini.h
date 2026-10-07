@@ -109,7 +109,7 @@
 		{	42, 25,	3,	0,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 		{	46, 25,	3,	0,	display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
 
-		{	0,	7,	0,	0,	display2_freqX_a_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
+		{	0,	7,	0,	0,	display2_freqX_init,	REDRM_INIS, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	0,	7,	21,	11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 		{	21, 10,	3,	0,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 		{	26, 10,	3,	0,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR

@@ -2734,7 +2734,7 @@ static void display2_freqXa_big(const gxdrawb_t * db,
 
 
 // Подготовка отображения частоты. Герцы маленьким шрифтом.
-static void display2_freqX_a_init(
+static void display2_freqX_init(
 	const gxdrawb_t * db_unused,	// NULL
 	uint_fast8_t xcell,
 	uint_fast8_t ycell,

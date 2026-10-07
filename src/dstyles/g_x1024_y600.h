@@ -95,7 +95,7 @@
 		{	0,	4,	SM_BG_W_CELLS,	SM_BG_H_CELLS, display2_af_spectre15,		& dzi_default, PGSPE, },
 	#endif /* WITHAFSPECTRE */
 
-		{	15,	6,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
+		{	15,	6,	0, 0, display2_freqX_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	15,	6,	21, 11, display2_freqX_a,		& dzi_freqa, PGALL, },	// MAIN FREQ Герцы маленьким шрифтом.
 
 		{	41, 0,	9, 9, display2_fnblock9,	& dzi_default, PGALL, },	// FUNC menu item label & value
