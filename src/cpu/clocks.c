@@ -12959,7 +12959,7 @@ dbgcountfast_t cpu_getdebugticks(void)
 
 #if WITHONETIMESTAMP
 
-static hwtimcountfast_t timestamp_getticks(void)
+hwtimcountfast_t timestamp_getticks(void)
 {
 	uint_fast32_t high, high2;
 	uint_fast32_t low;
@@ -12974,12 +12974,12 @@ static hwtimcountfast_t timestamp_getticks(void)
 	return ((uint_fast64_t) high << 32) | low;
 }
 
-static hwtimcountfast_t timestamp_getmask(void)
+hwtimcountfast_t timestamp_getmask(void)
 {
 	return UINT64_C(0xFFFFFFFFFFFFFFFF);	// TIMESTAMP_STA->CNT width is 64
 }
 
-static hwtimcountfast_t timestamp_getfreq(void)
+hwtimcountfast_t timestamp_getfreq(void)
 {
 	return TIMESTAMP_CTRL->CNT_FREQID_REG;
 }
