@@ -6240,7 +6240,7 @@ enum
 	//  Continuous Tone-Coded Squelch System or CTCSS settings group
 	static const struct paramdefdef xgctssgroup =
 	{
-		QLABEL("CTCSS"), 0, 0, 0, 0,
+		QLABEL("CTCSS"), 0, 0, 0,
 		ITEM_GROUP,
 		0, 0,
 		OFFSETOF(struct nvmap, ggrpctcss),
@@ -11628,7 +11628,7 @@ makebandf2adjust(
 		return amplitude;
 
 #if WITHPACLASSA
-	if (gclassamode)
+	if (param_getvalue(& xgclassamode))
 		return gbandf2adj [lpfno].adj_classa * amplitude / WITHPOWERTRIMMAX;
 #endif /* WITHPACLASSA */
 
@@ -13273,7 +13273,7 @@ updateboard_noui(
 				board_set_squelch_level(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(gsquelch.value, gsquelchNFM) : gsquelch.value);
 				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 				#if WITHSUBTONES
-					board_set_ctcssrx(pamodetempl->subtone && param_getvalue(& xgsubtoneirx) ? gsubtones [param_getvalue(& xgsubtoneirx)] : 0);	// частота subtone (до десятых долей герца).
+					board_set_ctcssrx(Xpamodetempl->subtone && param_getvalue(& xgsubtoneirx) ? gsubtones [param_getvalue(& xgsubtoneirx)] : 0);	// частота subtone (до десятых долей герца).
 				#endif /* WITHSUBTONES */
 			#else /* WITHIF4DSP */
 					(void) Xpamodetempl;
