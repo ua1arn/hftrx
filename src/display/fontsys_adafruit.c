@@ -317,6 +317,36 @@ const unifont_t unifont_big_raw =
 	.fontdata = & unifontdata_small36x54,
 	.label = "CenturyHothic_36x54"
 };
+
+#include "fonts/CenturyHothic_21x41.h"
+static adafruitfont_data_t unifontdata_small21x41;
+const unifont_t unifont_half2_raw =
+{
+	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & CenturyHothic_21x41,
+	.fontdata = & unifontdata_small21x41,
+	.label = "CenturyHothic_21x41"
+};
+
+#include "fonts/CenturyHothic_27x41.h"
+static adafruitfont_data_t unifontdata_small27x41;
+const unifont_t unifont_big2_raw =
+{
+	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & CenturyHothic_27x41,
+	.fontdata = & unifontdata_small27x41,
+	.label = "CenturyHothic_27x41"
+};
 #else /* WITHALTERNATIVEFONTS */
 
 #include "fonts/adafruit_28x54.h"
