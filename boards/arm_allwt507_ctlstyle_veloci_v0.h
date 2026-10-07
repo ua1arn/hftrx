@@ -138,6 +138,7 @@
 	//#define BOARD_DSTYLE "g_x800_y480.h"
 	//#define BOARD_DSTYLE "g_x480_y272_spectrum_notouch.h"
 	#define BOARD_DSTYLE "g_x800_y480_veloci_v0.h"
+	//#define BOARD_DSTYLE "g_x800_y480_x075_veloci_v0.h"
 	//#define BOARD_DSTYLE "g_x800_y480_linux.h"
 	//#define BOARD_DSTYLE_LVGL "g_x800_y480_lvgl.h"
 
