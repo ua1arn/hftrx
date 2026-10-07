@@ -3912,9 +3912,6 @@ struct nvmap {
 
 #if defined(CODEC1_TYPE)
 	uint16_t 	ggrpcodecparams;		// последний выбраный пункт группы
-	#if WITHMIC1LEVEL
-		uint16_t gmik1level;
-	#endif /* WITHMIC1LEVEL */
 	#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 		uint8_t ALCNEN;// = 0;	// ALC noise gate function control bit
 		uint8_t ALCNTH;// = 0;	// ALC noise gate threshold level
@@ -3923,6 +3920,9 @@ struct nvmap {
 		uint8_t ALCMNGAIN;// = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
 	#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #endif /* defined(CODEC1_TYPE)  */
+#if WITHMIC1LEVEL
+	uint16_t gmik1level;
+#endif /* WITHMIC1LEVEL */
 #if WITHTX
 	uint16_t	ggrptxparams; // последний выбраный пункт группы
 	//uint8_t gfitx;		/* номер используемого фильтра на передачу */
@@ -21490,15 +21490,14 @@ void hamradio_get_mic_level_limits(uint_fast8_t * min, uint_fast8_t * max)
 
 uint_fast8_t hamradio_get_mik1level(void)
 {
-	return gmik1level;
+	return param_getvalue(& xgmik1level);
 }
 
 void hamradio_set_mik1level(uint_fast8_t v)
 {
 	ASSERT(v >= WITHMIKEINGAINMIN);
 	ASSERT(v <= WITHMIKEINGAINMAX);
-	gmik1level = v;
-	save_i8(OFFSETOF(struct nvmap, gmik1level), gmik1level);
+	param_setvalue(& xgmik1level, v);
 	updateboard();
 }
 
@@ -21509,28 +21508,28 @@ uint_fast8_t hamradio_get_gmikeagc(void)
 
 void hamradio_set_gmikeagc(uint_fast8_t v)
 {
-	gmikeagc = v != 0;
-	save_i8(OFFSETOF(struct nvmap, gmikeagc), gmikeagc);
+	param_setvalue(& xgmikeagc, !!v);
 	updateboard();
 }
 
 void hamradio_get_mic_agc_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
-	* min = WITHMIKEAGCMIN;
-	* max = WITHMIKEAGCMAX;
+	int_fast32_t vmin, vmax;
+	param_getminmax(& xgmikeagcgain, & vmin, & vmax);
+	* min = vmin;
+	* max = vmax;
 }
 
 uint_fast8_t hamradio_get_gmikeagcgain(void)
 {
-	return gmikeagcgain;
+	return param_getvalue(& xgmikeagcgain);
 }
 
 void hamradio_set_gmikeagcgain(uint_fast8_t v)
 {
 	ASSERT(v >= WITHMIKEINGAINMIN);
 	ASSERT(v <= WITHMIKEINGAINMAX);
-	gmikeagcgain = v;
-	save_i8(OFFSETOF(struct nvmap, gmikeagcgain), gmikeagcgain);
+	param_setvalue(& xgmikeagcgain, v);
 	updateboard();
 }
 
@@ -21538,13 +21537,12 @@ void hamradio_set_gmikeagcgain(uint_fast8_t v)
 
 uint_fast8_t hamradio_get_gmikeboost20db(void)
 {
-	return gmikeboost20db;
+	return param_getvalue(& xgmikeboost20db);
 }
 
 void hamradio_set_gmikeboost20db(uint_fast8_t v)
 {
-	gmikeboost20db = v != 0;
-	save_i8(OFFSETOF(struct nvmap, gmikeboost20db), gmikeboost20db);
+	param_setvalue(& xgmikeboost20db, !! v);
 	updateboard();
 }
 
@@ -21562,7 +21560,7 @@ void hamradio_set_gmikeequalizer(uint_fast8_t v)
 uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i)
 {
 	ASSERT(i < BOARD_AFPROC_BANDS);
-	return gmikeequalizerparams [i];
+	return param_getvalue(xgtxeqs [i]) + EQUALIZERBASE;
 }
 
 void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v)
@@ -21570,7 +21568,7 @@ void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v)
 	ASSERT(i < BOARD_AFPROC_BANDS);
 	ASSERT(v <= EQUALIZERBASE * 2);
 	gmikeequalizerparams [i] = v;
-	//save_i8(OFFSETOF(struct nvmap, gmoniflagxxx), gmoniflagxxx);
+	param_setvalue(xgtxeqs [i], (int) v - EQUALIZERBASE);
 	updateboard();
 }
 
