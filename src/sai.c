@@ -3433,7 +3433,7 @@ static uintptr_t DMAC_get_linkreg(uint_fast32_t regv)
 	}
 }
 
-static uint_fast32_t DMAC_set_linkreg(uintptr_t addr)
+static uint_fast32_t DMAC_pack_linkreg(uintptr_t addr)
 {
 	ASSERT((addr & UINT32_C(0x03)) == 0);
 	if (sizeof (uintptr_t) == sizeof (uint32_t))
@@ -3511,7 +3511,7 @@ static uintptr_t DMAC_desc_get_dst(const volatile uint32_t * desc)
 
 static void DMAC_desc_set_link(volatile uint32_t * desc, uintptr_t next)
 {
-	const uint_fast32_t reg = DMAC_set_linkreg(next);
+	const uint_fast32_t reg = DMAC_pack_linkreg(next);
 	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
 		// A733: bit 9 of Parameter word in descriptor parameter is bit33 of next descriptor address
@@ -3534,10 +3534,14 @@ static void DMAC_desc_set_link(volatile uint32_t * desc, uintptr_t next)
 
 static void DMAC_SetLink(unsigned dmach, uintptr_t descraddr)
 {
-	const uint_fast32_t reg = DMAC_set_linkreg(descraddr);
+	const uint_fast32_t reg = DMAC_pack_linkreg(descraddr);
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = reg;
-	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != reg)
-		;
+	if (local_wait32mask(& DMAC->CH [dmach].DMAC_DESC_ADDR_REGN, UINT32_MAX, reg, 50))
+	{
+		TP();
+	}
+//	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != reg)
+//		;
 }
 
 /* Обработчик прерывания от DMAC */
