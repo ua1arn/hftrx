@@ -108,8 +108,10 @@ static const dzone_t dzones [] =
 	{	0,	5,	SM_BG_W_CELLS,	SM_BG_H_CELLS,	display2_af_spectre15,			& dzi_compat, PGALL, },
 #endif /* WITHAFSPECTRE */
 
-	{	15,	8,	21, 11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 	{	0,	0,	0, 0, display2_freqX_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
+
+	{	15,	8,	21, 11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+	////{	20,	5,	21, 9,	display2_freqX_a_x075,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 
 	{	36, 10,	4,	5,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
@@ -124,6 +126,7 @@ static const dzone_t dzones [] =
 	{	16, 20,	4,	5,	display2_mainsub3,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 	{	20,	20,	4,	5,	display2_vfomode3,	& dzi_vfomode, PGALL, },	// SPL
 	{	24,	20,	12,	5,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ 144.150.000
+	////{	20,	15,	21, 9,	display2_freqX_b_x075,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 	{	36, 20,	4,	5,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
 	{	40, 20,	4,	5,	display2_voxtune3,	& dzi_voxtune, PGALL, },	// VOX
 	{	44,	20,	6,	5,	display2_dummy, & dzi_default, PGALL, },	// Placeholder
