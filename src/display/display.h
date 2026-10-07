@@ -647,7 +647,9 @@ pix_display_value_big(
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
 	uint_fast8_t withhalf,		// 0 - только большие цифры
-	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
+	const gxstyle_t * dbstyle,	/* foreground and background colors, text alignment */
+	const unifont_t * fontbig,
+	const unifont_t * fonthalf
 	);
 
 void rendered_value_big_initialize(const gxstyle_t * gxstylep);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"

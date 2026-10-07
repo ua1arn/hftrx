@@ -376,17 +376,8 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 }
 
 // большой шрифт
-static uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
+static uint_fast16_t display_put_char_font(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle, const unifont_t * const font)
 {
-	const unifont_t * const font = & unifont_big;
-	if (font == NULL)
-		return x;
-	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
-}
-
-static uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
-{
-	const unifont_t * const font = & unifont_half;
 	if (font == NULL)
 		return x;
 	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
@@ -423,7 +414,9 @@ pix_display_value_big(
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
 	uint_fast8_t withhalf,		// 0 - только большие цифры
-	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
+	const gxstyle_t * dbstyle,	/* foreground and background colors, text alignment */
+	const unifont_t * fontbig,
+	const unifont_t * fonthalf
 	)
 {
 	//	if (width > ARRAY_SIZE(vals10))
@@ -441,13 +434,13 @@ pix_display_value_big(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = display_put_char_big(db, xpix, ypix, (z == 0) ? '.' : '#', dbstyle);	// '#' - узкий пробел. Точка всегда узкая
+			xpix = display_put_char_font(db, xpix, ypix, (z == 0) ? '.' : '#', dbstyle, fontbig);	// '#' - узкий пробел. Точка всегда узкая
 		}
 		else if (comma == g)
 		{
 			z = 0;
 			half = withhalf;
-			xpix = display_put_char_big(db, xpix, ypix, '.', dbstyle);
+			xpix = display_put_char_font(db, xpix, ypix, '.', dbstyle, fontbig);
 		}
 
 		if (blinkpos == g)
@@ -456,19 +449,19 @@ pix_display_value_big(
 			// эта позиция редактирования частоты. Справа от неё включаем все нули
 			z = 0;
 			if (half)
-				xpix = display_put_char_half(db, xpix, ypix, bc, dbstyle);
+				xpix = display_put_char_font(db, xpix, ypix, bc, dbstyle, fonthalf);
 			else
-				xpix = display_put_char_big(db, xpix, ypix, bc, dbstyle);
+				xpix = display_put_char_font(db, xpix, ypix, bc, dbstyle, fontbig);
 		}
 		else if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_big(db, xpix, ypix, ' ', dbstyle);	// supress zero
+			xpix = display_put_char_font(db, xpix, ypix, ' ', dbstyle, fontbig);	// supress zero
 		else
 		{
 			z = 0;
 			if (half)
-				xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot, dbstyle);
+				xpix = display_put_char_font(db, xpix, ypix, '0' + res.quot, dbstyle, fonthalf);
 			else
-				xpix = display_put_char_big(db, xpix, ypix, '0' + res.quot, dbstyle);
+				xpix = display_put_char_font(db, xpix, ypix, '0' + res.quot, dbstyle, fontbig);
 		}
 		freq = res.rem;
 	}

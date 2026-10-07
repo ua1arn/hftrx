@@ -191,6 +191,34 @@ const unifont_t unifont_half =
 	.label = "unifont_half"
 };
 
+static ufcache_t unifont_big20;
+const unifont_t unifont_big2 =
+{
+	.decode = ufcached_decode,
+	.totalci = ufcached_totalci,
+	.font_drawwidthci = ufcached_drawwidth,
+	.font_drawheight = ufcached_drawheight,
+	.font_drawci = ufcached_drawci,
+	//
+	.fontraster = & unifont_big2_raw,
+	.fontdata = & unifont_big20,
+	.label = "unifont_big2"
+};
+
+static ufcache_t unifont_half20;
+const unifont_t unifont_half2 =
+{
+	.decode = ufcached_decode,
+	.totalci = ufcached_totalci,
+	.font_drawwidthci = ufcached_drawwidth,
+	.font_drawheight = ufcached_drawheight,
+	.font_drawci = ufcached_drawci,
+	//
+	.fontraster = & unifont_half2_raw,
+	.fontdata = & unifont_half20,
+	.label = "unifont_half2"
+};
+
 
 void rendered_value_big_initialize(const gxstyle_t * gxstylep)
 {
@@ -200,6 +228,8 @@ void rendered_value_big_initialize(const gxstyle_t * gxstylep)
 
 	ufcached_prerender(& unifont_big, fg, bg);
 	ufcached_prerender(& unifont_half, fg, bg);
+	ufcached_prerender(& unifont_big2, fg, bg);
+	ufcached_prerender(& unifont_half2, fg, bg);
 #endif /* WITHPRERENDER */
 }
 

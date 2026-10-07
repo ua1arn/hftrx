@@ -2672,7 +2672,7 @@ display2_freq_big(
 	const gxstyle_t * dbstylep	/* foreground and background colors, text alignment */
 	)
 {
-	pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep);
+	pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep, & unifont_big, & unifont_half);
 }
 
 // Отображение частоты. Герцы так же большим шрифтом.
@@ -2848,6 +2848,7 @@ static void display2_freqX_b(const gxdrawb_t * db,
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
+	const uint_fast8_t comma2 = comma + 3;
 	uint_fast8_t state = 1;
 	//hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
 	const gxstyle_t * const dbstylep = & dbstylev_2rxB [state];
@@ -2855,6 +2856,9 @@ static void display2_freqX_b(const gxdrawb_t * db,
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
 	pix_display_value_small(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, fullwidth, comma, comma + 3, rj, dbstylep);
+	//pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, fullwidth, comma, comma2, rj, 255, 0, 1, dbstylep, dbstylep->gfont, dbstylep->gfont);
+	//pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, fullwidth, comma, comma2, rj, 255, 0, 1, dbstylep, & unifont_big2, & unifont_half2);
+
 }
 
 // отладочная функция измерителя опорной частоты
@@ -9322,7 +9326,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 
 		const uint_fast32_t freq = hamradio_get_freq_pathi(pathi);
 
-		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv);	// отрисовываем верхнюю часть строки
+		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv, & unifont_big, & unifont_half);	// отрисовываем верхнюю часть строки
 	}
 	else if (! strcmp(url.c_str(), dzi_gcombo.id))
 	{
