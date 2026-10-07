@@ -3017,12 +3017,12 @@ static struct bandrange  const bandsmap [] =
 
 #if TUNE_2MBAND
 	/* next three sections - one band - "2 meter". */
-	{ BMF(144000000 - BANDPAD),BMF(146000000 + BANDPAD), 			BMF(144050000), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHz, "144M CW", },		/* CW */
+	{ BMF(144000000 - BANDPAD),BMF(146000000 + BANDPAD), 			BMF(144050000), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		"144M CW", },		/* CW */
 #endif /* TUNE_2MBAND */
 
 #if TUNE_07MBAND
 	/* next three sections - one band - "0.7 meter". */
-	{ BMF(430000000 - BANDPAD),	BMF(440000000 + BANDPAD), 			BMF(430050000), 	BANDMAPSUBMODE_USB | BANDSETF_07M, 		BANDGROUP_430MHz, "", },		/* CW */
+	{ BMF(430000000 - BANDPAD),	BMF(440000000 + BANDPAD), 			BMF(430050000), 	BANDMAPSUBMODE_USB | BANDSETF_07M, 		"", },		/* CW */
 #endif /* TUNE_2MBAND */
 	/* далее никаких диапазонов добавлять нельзя - это служебные элементы и их порядок зависит от других частей пронграммы (band_up и band_down). */
 	{ BMF(TUNE_BOTTOM), 		BMF(BANDMIDDLE), 			BMF(9995000), 		BANDMAPSUBMODE_USB | BANDSETF_ALL, 		"", },			/* обзорный диапазон - HBANDS_COUNT should equal to this index */
