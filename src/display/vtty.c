@@ -450,6 +450,12 @@ vtty_printhex_irqsystem(unsigned long voffs, const unsigned char * buff, unsigne
 		display_vtty_printf_irq(PSTR("\n"));
 	}
 }
+#else /* ! LCDMODE_DUMMY */
 
+
+int display_vtty_putchar(char ch)
+{
+	return (unsigned char) ch;
+}
 
 #endif /* ! LCDMODE_DUMMY */

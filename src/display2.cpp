@@ -4709,15 +4709,17 @@ static void display2_datetime12(const gxdrawb_t * db,
 // Отображение места для какого-либо элемента
 static void display2_dummy(
 	const gxdrawb_t * db,
-	uint_fast8_t x,
-	uint_fast8_t y,
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
 	uint_fast8_t xspan,
 	uint_fast8_t yspan,
 	dctx_t * pctx
 	)
 {
-	const uint_fast8_t state = 0;
-	display_text(db, x, y, "", xspan, yspan, & dbstylev_1state);
+#if ! LCDMODE_DUMMY
+	colpip_fillrect(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), COLORPIP_DARKCYAN);
+	//display_text(db, x, y, "", xspan, yspan, & dbstylev_2rxtx [1]);
+#endif
 }
 
 
