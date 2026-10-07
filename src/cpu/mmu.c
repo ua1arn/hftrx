@@ -17,7 +17,9 @@
 #define MMUUSE2MPAGES (1 && defined (__ARM_ARCH) && defined (__aarch64__))
 #define MMUUSE1MPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
 
-#if ! defined (HARDWARE_ADDRSPACE_GB)
+#if defined HARDWARE_ADDRSPACE_BITS
+	#define HARDWARE_ADDRSPACE_GB (2 << (HARDWARE_ADDRSPACE_BITS - 30))
+#elif ! defined (HARDWARE_ADDRSPACE_GB)
 	#define HARDWARE_ADDRSPACE_GB 4		// Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
 #endif /* ! defined (HARDWARE_ADDRSPACE_GB) */
 
