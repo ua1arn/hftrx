@@ -6923,13 +6923,13 @@ static const struct paramdefdef xgsmetertype =
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 static uint_fast8_t gmenuset; 	/* номер комплекта функций на кнопках (переключается кнопкой MENU) */
-static uint_fast8_t dimmflag;	/* не-0: притушить дисплей. */
-static uint_fast8_t sleepflag;	/* не-0: выключить дисплей и звук. */
+static uint_fast8_t dimmstate;	/* не-0: притушить дисплей. */
+static uint_fast8_t sleepstate;	/* не-0: выключить дисплей и звук. */
 static uint_fast8_t gblinkphase;
 
 uint_fast8_t actpageix(void)
 {
-	if ((dimmflag || sleepflag || dimmmode))
+	if ((dimmstate || sleepstate || dimmmode))
 		return display_getpagesleep();
 	return gmenuset;
 }
@@ -8856,9 +8856,6 @@ static const struct paramdefdef xgdimmtime =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
-static uint_fast16_t dimmcount;
-static uint_fast8_t dimmflagch;	/* не-0: изменилось состояние dimmflag */
-
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 
 #if WITHFANTIMER
@@ -8884,9 +8881,6 @@ static uint_fast8_t fanpaflagch;	/* не-0: изменилось состоян�
 #if WITHSLEEPTIMER
 
 static uint_fast8_t gsleeptime;	/* количество минут до выключения, 0 - не выключаем. Регулируется из меню. */
-static uint_fast16_t sleepcount;	/* счетчик в секундах */
-static uint_fast8_t sleepflagch;	/* не-0: изменилось состояние sleepflag */
-
 static const struct paramdefdef xgsleeptime =
 {
 	QLABEL3("SLEEPTIM", "Sleep Time", "SLEEPTIM"),  0, RJ_UNSIGNED, ISTEP5,
@@ -8901,10 +8895,19 @@ static const struct paramdefdef xgsleeptime =
 };
 
 #else
-	//enum { sleepflag = 0 };
+	//enum { sleepstate = 0 };
 
 #endif /* WITHSLEEPTIMER */
 
+#if WITHSLEEPTIMER
+static int_fast32_t sleepcount;	/* счетчик в секундах */
+static uint_fast8_t sleepstatechanged;	/* не-0: изменилось состояние sleepstate */
+#endif /* WITHSLEEPTIMER */
+
+#if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
+static int_fast32_t dimmcount;
+static uint_fast8_t dimmstatechanged;	/* не-0: изменилось состояние dimmstate */
+#endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 
 /* Произошла какая-то активность со стороны пользователя, зажигаем подсветку.
 	если было состояние "сна" - возвращаем 1 */
@@ -8914,19 +8917,19 @@ board_wakeup(void)
 	uint_fast8_t r = 0;
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 	dimmcount = 0;		/* счётчик времени неактивности */
-	if (dimmflag != 0)
+	if (dimmstate != 0)
 	{
-		dimmflag = 0;
-		dimmflagch = 1;
+		dimmstate = 0;
+		dimmstatechanged = 1;
 		r = 1;
 	}
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 #if WITHSLEEPTIMER
 	sleepcount = 0;		/* счётчик времени неактивности */
-	if (sleepflag != 0)
+	if (sleepstate != 0)
 	{
-		sleepflag = 0;
-		sleepflagch = 1;
+		sleepstate = 0;
+		sleepstatechanged = 1;
 		r = 1;
 	}
 #endif /* WITHSLEEPTIMER */
@@ -9049,7 +9052,7 @@ uif_pwbutton_press(void)
 {
 	txreq_rx(& txreqst0, NULL);	// переходим на приём
 	gpoweronhold = 0;
-	sleepflag = 1;
+	sleepstate = 1;
 	updateboard();
 }
 
@@ -13341,7 +13344,7 @@ updateboard_noui(
 
 		// параметры, не имеющие специфики для разных приемников
 		update_lo0(lo0hint, lo0side);
-		board_set_sleep(sleepflag);
+		board_set_sleep(sleepstate);
 
 		if (gtx == 0)
 		{
@@ -13430,11 +13433,11 @@ updateboard_noui(
 				}
 #endif
 				board_set_afgain(
-						sleepflag == 0 ? gainL : BOARD_AFGAIN_MIN,	// Параметр для регулировки уровня на выходе аудио-ЦАП
-						sleepflag == 0 ? gainR : BOARD_AFGAIN_MIN
+						sleepstate == 0 ? gainL : BOARD_AFGAIN_MIN,	// Параметр для регулировки уровня на выходе аудио-ЦАП
+						sleepstate == 0 ? gainR : BOARD_AFGAIN_MIN
 								);
 			}
-		board_set_ifgain(sleepflag == 0  ? param_getvalue(& xrfgain1) : BOARD_IFGAIN_MIN);	// Параметр для регулировки усиления ПЧ
+		board_set_ifgain(sleepstate == 0  ? param_getvalue(& xrfgain1) : BOARD_IFGAIN_MIN);	// Параметр для регулировки усиления ПЧ
 		board_set_agcfence10(param_getvalue(& xagcfenceenable) ? param_getvalue(& xagcfence1) * 10 : INT16_MAX);
 
 		const uint_fast8_t txaprofile = gtxaprofiles [getmodetempl(txsubmode)->txaprofgp];	// значения 0..NMICPROFILES-1
@@ -13587,10 +13590,10 @@ updateboard_noui(
 		board_set_bldivider(bldividerout);
 	#endif /* WITHDCDCFREQCTL */
 	#if WITHLCDBACKLIGHT
-		board_set_bglight(dimmflag || sleepflag || dimmmode, param_getvalue(& xgbglight));		/* подсветка дисплея  */
+		board_set_bglight(dimmstate || sleepstate || dimmmode, param_getvalue(& xgbglight));		/* подсветка дисплея  */
 	#endif /* WITHLCDBACKLIGHT */
 	#if WITHKBDBACKLIGHT
-		board_set_kblight((dimmflag || sleepflag || dimmmode) ? 0 : param_getvalue(& xgkblight));			/* подсвтка клавиатуры */
+		board_set_kblight((dimmstate || sleepstate || dimmmode) ? 0 : param_getvalue(& xgkblight));			/* подсвтка клавиатуры */
 	#endif /* WITHKBDBACKLIGHT */
 		board_set_poweron(gpoweronhold);
 
@@ -17618,22 +17621,22 @@ static void dpc_1s_timer_fn(void * arg)
 		}
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-		if (gdimmtime == 0)
+		if (param_getvalue(& xgdimmtime) == 0)
 		{
 			// Функция выключена
-			if (dimmflag != 0)
+			if (dimmstate != 0)
 			{
-				dimmflag = 0;
-				dimmflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+				dimmstate = 0;
+				dimmstatechanged = 1;		// запрос на обновление состояния аппаратуры из user mode программы
 			}
 			dimmcount = 0;
 		}
-		else if (dimmflag == 0)		// ещё не выключили
+		else if (dimmstate == 0)		// ещё не выключили
 		{
-			if (++ dimmcount >= gdimmtime)
+			if (++ dimmcount >= param_getvalue(& xgdimmtime))
 			{
-				dimmflag = 1;
-				dimmflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+				dimmstate = 1;
+				dimmstatechanged = 1;		// запрос на обновление состояния аппаратуры из user mode программы
 			}
 		}
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
@@ -17713,22 +17716,22 @@ static void dpc_1s_timer_fn(void * arg)
 #if WITHSLEEPTIMER
 		if (gpoweronhold)
 		{
-			if (gsleeptime == 0)
+			if (param_getvalue(& xgsleeptime) == 0)
 			{
 				// Функция выключена
-				if (sleepflag != 0)
+				if (sleepstate != 0)
 				{
-					sleepflag = 0;
-					sleepflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+					sleepstate = 0;
+					sleepstatechanged = 1;		// запрос на обновление состояния аппаратуры из user mode программы
 				}
 				sleepcount = 0;
 			}
-			else if (sleepflag == 0)		// ещё не выключили
+			else if (sleepstate == 0)		// ещё не выключили
 			{
-				if (++ sleepcount >= gsleeptime * 60)
+				if (++ sleepcount >= param_getvalue(& xgsleeptime) * 60)
 				{
-					sleepflag = 1;
-					sleepflagch = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+					sleepstate = 1;
+					sleepstatechanged = 1;		// запрос на обновление состояния аппаратуры из user mode программы
 				}
 			}
 		}
@@ -20764,9 +20767,9 @@ appspoolprocess(void * ctx)
 	(void) ctx;
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
 	// обработать запрос на обновление состояния аппаратуры из user mode программы
-	if (dimmflagch != 0)
+	if (dimmstatechanged != 0)
 	{
-		dimmflagch = 0;
+		dimmstatechanged = 0;
 		updateboard();
 	}
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
@@ -20780,9 +20783,9 @@ appspoolprocess(void * ctx)
 #endif /* WITHFANTIMER */
 #if WITHSLEEPTIMER
 	// обработать запрос на обновление состояния аппаратуры из user mode программы
-	if (sleepflagch != 0)
+	if (sleepstatechanged != 0)
 	{
-		sleepflagch = 0;
+		sleepstatechanged = 0;
 		updateboard();
 	}
 #endif /* WITHSLEEPTIMER */
