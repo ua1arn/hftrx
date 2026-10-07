@@ -903,7 +903,7 @@
 /* settings page list */
 
 #if WITHTXCPATHCALIBRATE
-	& xgdesignscale,
+	& xgdesignDUCscale,
 #endif /* WITHTXCPATHCALIBRATE */
 #if WITHPOWERTRIM
   #if ! WITHPOTPOWER
@@ -929,63 +929,13 @@
 
 #if WITHFANTIMER
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
-	(const struct paramdefdef [1]) {
-		QLABEL3("FAN TEMP", "FAN Temp", "FAN TEMP"), 0, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gfanpatempflag),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gfanpatempflag,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL3("FAN TMIN", "FAN T Min", "FAN TMIN"),  0, RJ_SIGNED,	ISTEP1,
-		ITEM_VALUE,
-		10, 70,
-		OFFSETOF(struct nvmap, gfanpaofftemp),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gfanpaofftemp,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL3("FAN TMAX", "FAN T Max", "FAN TMAX"),  0, RJ_SIGNED,	ISTEP1,
-		ITEM_VALUE,
-		10, 70,
-		OFFSETOF(struct nvmap, gfanpaontemp),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gfanpaontemp,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgfanpatempflag,
+	& xgfanpaofftemp,
+	& xgfanpaontemp,
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
-	(const struct paramdefdef [1]) {
-		QLABEL3("FAN TIME", "FAN Time", "FAN TIME"),  0, RJ_UNSIGNED,	ISTEP5,
-		ITEM_VALUE,
-		0, FANPATIMEMAX,
-		OFFSETOF(struct nvmap, gfanpatime),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gfanpatime,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgfanpatime,
 	#if WITHFANPWM
-	(const struct paramdefdef [1]) {
-		QLABEL3("FAN FLOW", "FAN Flow", "FAN FLOW"),  0, RJ_UNSIGNED,	ISTEP1,
-		ITEM_VALUE,
-		WITHFANPWMMIN, WITHFANPWMMAX,
-		OFFSETOF(struct nvmap, gfanpapwm),
-		getselector0, nvramoffs0, valueoffs0,
-		& gfanpapwm,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgfanpapwm,
 	#endif /* WITHFANPWM */
 #endif /* WITHFANTIMER */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
@@ -1031,17 +981,7 @@
 	},
 #endif /* WITHDSPEXTDDC */
 #if WITHIF4DSP
-	(const struct paramdefdef [1]) {
-		QLABEL2("DACSCALE", "DAC Scale"),  0, RJ_UNSIGNED,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		OFFSETOF(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gdacscale,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgdacscale,
 #endif /* WITHIF4DSP */
 
 #if WITHIF4DSP

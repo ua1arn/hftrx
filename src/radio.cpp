@@ -4042,7 +4042,7 @@ struct nvmap {
 	uint16_t ggaindigitx;		/* Увеличение усиления при передаче в цифровых режимах */
 	uint16_t ggaincwtx;		/* Увеличение усиления при передаче в CW, AM. NFM режимах 30..150% */
 	uint16_t ggainssbtx;		/* Увеличение усиления при передаче в SSB 30..150% */
-	uint16_t gdesignscale;	/* используется при калибровке параметров интерполятора */
+	uint16_t gdesignDUCscale;	/* используется при калибровке параметров интерполятора */
 #if WITHELKEY
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t gcwssbtx;		/* разрешение самопрослушивания */
@@ -7344,26 +7344,32 @@ static const struct paramdefdef xgskipfilteraf =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	// See HARDWARE_DACSCALE
-	static uint_fast16_t gdesignscale = 1000 * HARDWARE_DACSCALE;		/* используется при калибровке параметров интерполятора */
-	static const struct paramdefdef xgdesignscale =
+	static uint_fast16_t gdesignDUCscale = 1000 * HARDWARE_DACSCALE;		/* используется при калибровке параметров интерполятора */
+	static const struct paramdefdef xgdesignDUCscale =
 	{
 		QLABEL3("DUC SCALE", "DUC Scale", "DUC SCALE"),	 3, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в CW режимах 30..150% */
 		ITEM_VALUE,
 		0, 3000,
-		OFFSETOF(struct nvmap, gdesignscale),
+		OFFSETOF(struct nvmap, gdesignDUCscale),
 		getselector0, nvramoffs0, valueoffs0,
-		& gdesignscale,
+		& gdesignDUCscale,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-	#if defined (WITHDEFDACSCALE)
-		static uint_fast8_t gdacscale = WITHDEFDACSCALE;	/* настраивается под прегруз драйвера. */
-	#else /* defined (WITHDEFDACSCALE) */
-//#warning Limited WITHDEFDACSCALE value used
-		static uint_fast8_t gdacscale = 100;	/* настраивается под прегруз драйвера. */
-	#endif /* defined (WITHDEFDACSCALE) */
+	static uint_fast8_t gdacscale = 100;	/* настраивается под прегруз драйвера. */
+	static const struct paramdefdef xgdacscale = {
+		QLABEL3("DAC SCALE", "DAC Scale", "DAC SCALE"),  0, RJ_UNSIGNED,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		OFFSETOF(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gdacscale,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 
 #endif /* WITHTX */
 
@@ -8876,6 +8882,67 @@ static uint_fast8_t fanpaflagch;	/* не-0: изменилось состоян�
 	#endif /* WITHFANPWM */
 
 #endif /* WITHFANTIMER */
+#if WITHFANTIMER
+#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
+		static const struct paramdefdef xgfanpatempflag = {
+		QLABEL3("FAN TEMP", "FAN Temp", "FAN TEMP"), 0, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gfanpatempflag),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gfanpatempflag,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgfanpaofftemp = {
+		QLABEL3("FAN TMIN", "FAN T Min", "FAN TMIN"),  0, RJ_SIGNED,	ISTEP1,
+		ITEM_VALUE,
+		10, 70,
+		OFFSETOF(struct nvmap, gfanpaofftemp),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gfanpaofftemp,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgfanpaontemp = {
+		QLABEL3("FAN TMAX", "FAN T Max", "FAN TMAX"),  0, RJ_SIGNED,	ISTEP1,
+		ITEM_VALUE,
+		10, 70,
+		OFFSETOF(struct nvmap, gfanpaontemp),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gfanpaontemp,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
+	static const struct paramdefdef xgfanpatime = {
+		QLABEL3("FAN TIME", "FAN Time", "FAN TIME"),  0, RJ_UNSIGNED,	ISTEP5,
+		ITEM_VALUE,
+		0, FANPATIMEMAX,
+		OFFSETOF(struct nvmap, gfanpatime),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gfanpatime,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	#if WITHFANPWM
+	static const struct paramdefdef xgfanpapwm = {
+		QLABEL3("FAN FLOW", "FAN Flow", "FAN FLOW"),  0, RJ_UNSIGNED,	ISTEP1,
+		ITEM_VALUE,
+		WITHFANPWMMIN, WITHFANPWMMAX,
+		OFFSETOF(struct nvmap, gfanpapwm),
+		getselector0, nvramoffs0, valueoffs0,
+		& gfanpapwm,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	#endif /* WITHFANPWM */
+#endif /* WITHFANTIMER */
 
 
 #if WITHSLEEPTIMER
@@ -10307,7 +10374,7 @@ static const struct paramdefdef * enc2menus [] =
 #endif /* WITHELKEY && ! WITHPOTWPM */
 #if WITHTX
 #if WITHTXCPATHCALIBRATE
-	& xgdesignscale,
+	& xgdesignDUCscale,
 #endif /* WITHTXCPATHCALIBRATE */
 #if WITHPOWERTRIM && ! WITHPOTPOWER
 	& xgnormalpower,
@@ -13549,7 +13616,7 @@ updateboard_noui(
 			board_set_digiscale(param_getvalue(& xggaindigitx));	/* Увеличение усиления при передаче в цифровых режимах */
 			board_set_cwscale(param_getvalue(& xggaincwtx));	/* Увеличение усиления при передаче в CW, AM, NFM режимах 50..100% */
 			board_set_ssbscale(param_getvalue(& xggainssbtx));	/* Увеличение усиления при передаче в CW, AM, NFM режимах 50..100% */
-			board_set_designscale(param_getvalue(& xgdesignscale));	/* используется при калибровке параметров интерполятора */
+			board_set_designscale(param_getvalue(& xgdesignDUCscale));	/* используется при калибровке параметров интерполятора */
 			board_set_amdepth(param_getvalue(& xgamdepth));	/* Глубина модуляции в АМ - 0..100% */
 			board_set_nfmdeviation(param_getvalue(& xgnfmdeviation));
 			board_rgrbeep_setfreq(1000);	/* roger beep - установка тона */
