@@ -173,6 +173,10 @@ uint_fast16_t ubpfont_render_char32(
 
 extern const unifont_t unifont_big_raw;	// non-cached version
 extern const unifont_t unifont_half_raw;	// non-cached version
+extern const unifont_t unifont_big2_raw;	// non-cached version
+extern const unifont_t unifont_half2_raw;	// non-cached version
+extern const unifont_t unifont_big2;
+extern const unifont_t unifont_half2;
 extern const unifont_t unifont_big;
 extern const unifont_t unifont_half;
 extern const unifont_t unifont_small;

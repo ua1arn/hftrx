@@ -349,5 +349,35 @@ const unifont_t unifont_big_raw =
 	.label = "adafruit_36x54"
 };
 
+#include "fonts/adafruit_27x41.h"
+static adafruitfont_data_t unifontdata_small27x41;
+const unifont_t unifont_half2_raw =
+{
+	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & adafruit_27x41,
+	.fontdata = & unifontdata_small27x41,
+	.label = "adafruit_27x41"
+};
+
+#include "fonts/adafruit_27x41.h"
+static adafruitfont_data_t unifontdata_small27x41;
+const unifont_t unifont_big2_raw =
+{
+	.decode = adafruitfont_decode,
+	.totalci = adafruitfont_totalci,
+	.font_drawwidthci = adafruitfont_width,
+	.font_drawheight = adafruitfont_height,
+	.font_drawci = adafruitfont_render_char,
+	//
+	.fontraster = & adafruit_27x41,
+	.fontdata = & unifontdata_small27x41,
+	.label = "adafruit_27x41"
+};
+
 #endif /* WITHALTERNATIVEFONTS */
 #endif	/* LCDMODE_LTDC || WITHTOUCHGUI */

@@ -8173,20 +8173,22 @@ void hightests(void)
 			//& unifont_Tahoma_Regular_88x77,	// CP Font Generator support
 //			& unifont_roboto32,	// aptech
 //			& unifont_helvNeueTh70,	// aptech
-			& unifont_FreeMono9pt7b,
-			& unifont_FreeMono12pt7b,
-			& unifont_FreeMono18pt7b,
-			& unifont_FreeMono24pt7b,
-			& unifont_FreeSans12pt7b,
-			& unifont_gothic_11x13,
-			& unifont_gothic_12x16p,
+//			& unifont_FreeMono9pt7b,
+//			& unifont_FreeMono12pt7b,
+//			& unifont_FreeMono18pt7b,
+//			& unifont_FreeMono24pt7b,
+//			& unifont_FreeSans12pt7b,
+//			& unifont_gothic_11x13,
+//			& unifont_gothic_12x16p,
 //			& unifont_msgothic_10x13_prop,
 //			& unifont_msgothic_11x13_mono,
 //			& unifont_msgothic_13x16_prop,
 //			& unifont_msgothic_15x17_prop,
 //			& unifont_msgothic_15x17_mono,
-			& unifont_big,
-			& unifont_half,
+			& unifont_big_raw,
+			& unifont_big2_raw,
+			& unifont_half_raw,
+			& unifont_half2_raw,
 		};
 		unsigned row;
 		uint_fast16_t xpix = 0;
