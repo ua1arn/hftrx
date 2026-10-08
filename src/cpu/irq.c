@@ -3049,6 +3049,19 @@ void SError_Handler(void * frame)
 	case 0x06:	PRINTF("Trapped LDC or STC access.\n"); break;
 	default: break;
 	}
+#if defined (BOARD_BLINK_INITIALIZE)
+	BOARD_BLINK_INITIALIZE();;
+	for (;;)
+	{
+		BOARD_BLINK_SETSTATE(1);
+		local_delay_us(250 * 1000);
+		BOARD_BLINK_SETSTATE(0);
+		local_delay_us(1250 * 1000);
+	}
+#else
+	for (;;)
+		;
+#endif /* defined (BOARD_BLINK_INITIALIZE) */
 }
 
 #elif (__CORTEX_A != 0) && ! defined(__aarch64__) && ! defined(__riscv)
