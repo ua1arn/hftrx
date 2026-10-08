@@ -778,7 +778,13 @@ static void EMAC_Handler(void)
 }
 
 /* Realtek RTL8211F PHY Registers */
-#define RTL8211F_PHYSR          26	// PHYSR (PHY Specific Status Register, Page 0xa43, Address 0x1A)
+// Page 0xa42
+#define RTL8211F_IER			0x12	// INER (Interrupt Enable Register, Page 0xa42, Address 0x12)
+
+// Page 0xa43
+#define RTL8211F_PHYSR          0x1A	// PHYSR (PHY Specific Status Register, Page 0xa43, Address 0x1A)
+#define RTL8211F_INSR			0x1D	// INSR (Interrupt Status Register, Page 0xa43, Address 0x1D)
+#define RTL8211F_PAGSR 			0x1F 	// PAGSR (Page Select Register, Page 0xa43, Address 0x1F)
 
 /* RTL8211F PHYSR (Register 26) Bit Definitions */
 #define PHYSR_LINK_STATUS       (1 << 2)
@@ -814,7 +820,11 @@ static void EMAC_Handler(void)
 static uint16_t emac_mdio_read(uint8_t phy_addr, uint8_t reg_addr) {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
     /* Wait until MDIO interface is idle */
-    while (emac_peripheral->EMAC_MII_CMD & EMAC_MII_BUSY);
+    /* Wait for command execution completion */
+    if (local_wait32mask(& emac_peripheral->EMAC_MII_CMD, EMAC_MII_BUSY, 0 * EMAC_MII_BUSY, 100)) {
+		TP();
+		return 0;
+    }
 
     /* Form read command with safe clock divider */
     uint32_t cmd = ((phy_addr & 0x1F) << 16) |
@@ -825,9 +835,35 @@ static uint16_t emac_mdio_read(uint8_t phy_addr, uint8_t reg_addr) {
     emac_peripheral->EMAC_MII_CMD = cmd;
 
     /* Wait for command execution completion */
-    while (emac_peripheral->EMAC_MII_CMD & EMAC_MII_BUSY);
+    /* Wait for command execution completion */
+    if (local_wait32mask(& emac_peripheral->EMAC_MII_CMD, EMAC_MII_BUSY, 0 * EMAC_MII_BUSY, 100)) {
+		TP();
+    }
 
     return (uint16_t)(emac_peripheral->EMAC_MII_DATA & 0xFFFF);
+}
+
+static void emac_mdio_write(uint8_t phy_addr, uint8_t reg_addr, uint16_t reg_value) {
+	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
+    /* Wait until MDIO interface is idle */
+    if (local_wait32mask(& emac_peripheral->EMAC_MII_CMD, EMAC_MII_BUSY, 0 * EMAC_MII_BUSY, 100)) {
+		TP();
+    	return;
+	}
+
+    /* Form read command with safe clock divider */
+    uint32_t cmd = ((phy_addr & 0x1F) << 16) |
+                   ((reg_addr & 0x1F) << 4)  |
+                   EMAC_MII_CLK_DIV_64       |
+				   EMAC_MII_WRITE |
+                   EMAC_MII_BUSY;
+
+    emac_peripheral->EMAC_MII_CMD = cmd | (reg_value & 0xFFFF);
+
+    /* Wait for command execution completion */
+    if (local_wait32mask(& emac_peripheral->EMAC_MII_CMD, EMAC_MII_BUSY, 0 * EMAC_MII_BUSY, 100)) {
+		TP();
+    }
 }
 
 /**
@@ -885,29 +921,51 @@ static int allwinner_emac_compare_mac_speed(EMAC_TypeDef * const emac_peripheral
     return (emac_peripheral->EMAC_BASIC_CTL0 & mask) != ctl_val;
 }
 
+static const uint_fast16_t insr_mask =
+		(UINT16_C(1) << 10) |	// jabber
+		(UINT16_C(1) << 9) |	// ALDPS state changed
+		(UINT16_C(1) << 7) |	// WOL event occurred
+		//(UINT16_C(1) << 5) |	// Can access PHY Register through MDC/MDIO
+		(UINT16_C(1) << 4) |	// Link status changed
+		(UINT16_C(1) << 3) |	// Auto-Negotiation completed
+		//(UINT16_C(1) << 2) |	// Page (a new LCW) received
+		(UINT16_C(1) << 0) |	// Auto-Negotiation Error
+		0;
+
 /**
  * @brief Periodically checks RTL8211F link status and updates the lwIP network interface.
- * TODO: check network speed and duplex state
  */
 static void check_ethernet_link_status(struct netif *netif) {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
-    uint16_t physr = emac_mdio_read(RTL8211F_PHY_ADDR, RTL8211F_PHYSR);
+    const uint16_t physr = emac_mdio_read(RTL8211F_PHY_ADDR, RTL8211F_PHYSR);
+    const uint16_t insr = emac_mdio_read(RTL8211F_PHY_ADDR, RTL8211F_INSR);
+    //PRINTF("physr=0x%04X, insr=0x%02X\n", (unsigned) physr, (unsigned) insr);
 
     /* Get actual hardware status: 1 = connected, 0 = disconnected */
     const uint8_t hw_link_up = !! (physr & PHYSR_LINK_STATUS);
     const uint8_t hw_speed_bits = physr & PHYSR_SPEED_MASK;
     const uint8_t hw_duplex_bit = !! (physr & PHYSR_DUPLEX_STATUS);
+    const int8_t hw_insr = !! (insr & insr_mask);
 
     uint32_t hw_speed = 100;
-    if (hw_speed_bits == PHYSR_SPEED_10)       hw_speed = 10;
-    else if (hw_speed_bits == PHYSR_SPEED_100)  hw_speed = 100;
-    else if (hw_speed_bits == PHYSR_SPEED_1000) hw_speed = 1000;
+    switch (hw_speed_bits) {
+    case PHYSR_SPEED_10:
+    	hw_speed = 10; break;
+    case PHYSR_SPEED_100:
+    	hw_speed = 100; break;
+    case PHYSR_SPEED_1000:
+    	hw_speed = 1000; break;
+    default:
+    	TP();
+    	break;
+    }
 
     /* Get current lwIP software status: 1 = up, 0 = down */
     uint8_t sw_link_up = !!netif_is_link_up(netif);
 
     /* Compare hardware reality with software stack state */
-    if (hw_link_up != sw_link_up ||
+    if (hw_insr ||
+    		hw_link_up != sw_link_up ||
     		allwinner_emac_compare_mac_speed(emac_peripheral, hw_speed, hw_duplex_bit)) {
         if (hw_link_up) {
 
@@ -985,6 +1043,8 @@ static void allwinner_emac_phy_init(EMAC_TypeDef * const emac_peripheral)
 ////		emac_peripheral->EMAC_ADDR [0].LOW = 0x06740C1A;
 //	emac_peripheral->EMAC_ADDR [0].HIGH = USBD_peek_u16(hwaddr + 4);	// upper 16 bits of the first 6-byte MAC address
 //	emac_peripheral->EMAC_ADDR [0].LOW = USBD_peek_u32(hwaddr + 0);	// lower 32 bits of the 6-byte first MAC address
+
+	//emac_mdio_write(RTL8211F_PHY_ADDR, RTL8211F_IER, insr_mask);
 }
 
 static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct netif *netif, uint8_t port_index)
