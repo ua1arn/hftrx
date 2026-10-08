@@ -3417,9 +3417,11 @@ static void display2_vfomode3(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
-	const char * const labels [1] = { hamradio_get_vfomode3_value(& state), };
-	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	static const char text_SPL [] = "SPL";
+	uint_fast8_t state;
+	hamradio_get_vfomode3_value(& state);
+	display_2states(db, x, y, state, text_SPL, text_SPL, xspan, yspan);
+	(void) pctx;
 }
 
 // VFO mode

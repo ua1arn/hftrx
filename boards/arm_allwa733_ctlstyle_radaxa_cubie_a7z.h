@@ -12,7 +12,7 @@
 #ifndef ARM_ALW_A733_CTL_RADAXA_CUBIE_A7Z_H_INCLUDED
 #define ARM_ALW_A733_CTL_RADAXA_CUBIE_A7Z_H_INCLUDED 1
 
-	#define WITHBRANDSTR "Falcon"
+	#define WITHBRANDSTR "Storch A733"
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
