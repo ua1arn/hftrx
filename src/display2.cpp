@@ -2226,8 +2226,8 @@ static void sm_draw_dial_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 
 		colpip_segm(db, xc, yc, smpr->gs, gswr, smpr->r2 + 2, 1, color, 0, 1);
 		colpip_segm(db, xc, yc, smpr->gs, gswr, smpr->r1 - 2, 1, color, 0, 1);
-		colpip_radius(db, xc, yc, smpr->gs, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
-		colpip_radius(db, xc, yc, gswr, smpr->r1 - 2, smpr->r2 + 2, color, 0, 1);
+		colpip_radius(db, xc, yc, smpr->gs, smpr->r1 - 2, 	smpr->r2 + 2, color, 0, 1);
+		colpip_radius(db, xc, yc, gswr, 	smpr->r1 - 2, 	smpr->r2 + 2, color, 0, 1);
 		polar_to_dek(xc, yc, gswr - 1, smpr->r1 - 4, & xx, & yy, 1);
 		display_floodfill(db, xx, yy, color, bgcolor);
 	}
