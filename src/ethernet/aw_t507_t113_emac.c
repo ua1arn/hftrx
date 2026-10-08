@@ -858,7 +858,8 @@ static void emac_mdio_write(uint8_t phy_addr, uint8_t reg_addr, uint16_t reg_val
 				   EMAC_MII_WRITE |
                    EMAC_MII_BUSY;
 
-    emac_peripheral->EMAC_MII_CMD = cmd | (reg_value & 0xFFFF);
+    emac_peripheral->EMAC_MII_DATA = reg_value & 0xFFFF;
+    emac_peripheral->EMAC_MII_CMD = cmd;
 
     /* Wait for command execution completion */
     if (local_wait32mask(& emac_peripheral->EMAC_MII_CMD, EMAC_MII_BUSY, 0 * EMAC_MII_BUSY, 100)) {
