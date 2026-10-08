@@ -939,7 +939,7 @@ static const uint_fast16_t insr_mask =
 static void check_ethernet_link_status(struct netif *netif) {
 	EMAC_TypeDef * const emac_peripheral = HARDWARE_EMAC_PTR;
     const uint16_t physr = emac_mdio_read(RTL8211F_PHY_ADDR, RTL8211F_PHYSR);
-    const uint16_t insr = emac_mdio_read(RTL8211F_PHY_ADDR, RTL8211F_INSR);
+    const uint16_t insr = 0;//emac_mdio_read(RTL8211F_PHY_ADDR, RTL8211F_INSR);
     //PRINTF("physr=0x%04X, insr=0x%02X\n", (unsigned) physr, (unsigned) insr);
 
     /* Get actual hardware status: 1 = connected, 0 = disconnected */

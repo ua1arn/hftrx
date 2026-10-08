@@ -3854,10 +3854,11 @@ struct nvmap {
 	uint16_t	ggrptxparam;	// последний выбраный пункт группы
 	uint16_t	ggrptxadj;		// последний выбраный пункт группы
 	uint16_t	ggrpsecial;		// последний выбраный пункт группы
-	uint16_t	grpknobs;	// последний выбраный пункт группы
+	uint16_t	grpknobs;		// последний выбраный пункт группы
 	uint16_t	ggrpaudio;		// последний выбраный пункт группы
 	uint16_t	ggrpmike;		// последний выбраный пункт группы
 	uint16_t 	ggrpmikeeq;		// последний выбраный пункт группы
+	uint16_t 	ggrpcalibration;		// последний выбраный пункт группы
 #if WITHSUBTONES
 	uint16_t ggrpctcss;		// последний выбраный пункт группы
 #endif /* WITHSUBTONES */
@@ -6791,6 +6792,17 @@ static const struct paramdefdef xstayfreq =
 	#else
 		uint_fast8_t maxpwrcali = 255;	/* калибровочный параметр PWR-метра */
 	#endif /* WITHSWRMTR */
+		static const struct paramdefdef xswrcalibr = {
+			QLABEL("SWR CALI"),  2, RJ_UNSIGNED, ISTEP1,		/* калибровка SWR-метра */
+			ITEM_VALUE,
+			50, 200, //80, 120,
+			OFFSETOF(struct nvmap, swrcalibr),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& swrcalibr,
+			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
 
 	#if WITHSWRMTR && ! WITHSHOWSWRPWR
 		uint_fast8_t swrmode = 1;
@@ -6835,7 +6847,7 @@ static int_fast32_t getipacalibase(void)
 static uint_fast16_t gipacali = IPACALI_BASE;
 static const struct paramdefdef xgipacali =
 {
-		QLABEL("IPA CALI"), 2, RJ_SIGNED,	ISTEP1,
+		QLABEL3("IPA CALI", "Current Zero", "I PA CALI"), 2, RJ_SIGNED,	ISTEP1,
 		ITEM_VALUE,
 		0, IPACALI_RANGE,
 		OFFSETOF(struct nvmap, gipacali),
@@ -14861,7 +14873,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 
 #endif /* WITHCURRLEVEL2 */
 
-	return curr10 + (gipacali + getipacalibase());
+	return curr10 + param_getvalue(& xgipacali);
 }
 
 #elif WITHCURRLEVEL_1117

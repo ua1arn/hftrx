@@ -569,8 +569,8 @@
 	},
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #endif /* defined(CODEC1_TYPE) */
-/* group name +++ */
 #if WITHENCODER
+/* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("Knobs"), 0, 0, 0,
 		ITEM_GROUP,
@@ -912,6 +912,66 @@
 	& xlfmtinterval,
 	& xlfmfreqbias,
 #endif /* WITHLFM */
+/* group name +++ */
+	(const struct paramdefdef [1]) {
+		QLABEL("Calibration"), 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		OFFSETOF(struct nvmap, ggrpcalibration),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		NULL,
+		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+#if defined(REFERENCE_FREQ)
+#if defined (DAC1_TYPE)
+	(const struct paramdefdef [1]) {
+		QLABEL("REF ADJ"),  0, RJ_UNSIGNED, ISTEP1,		/* подстройка частоты опорного генератора (напряжением) через меню. */
+		ITEM_VALUE,
+		WITHDAC1VALMIN, WITHDAC1VALMAX,
+		OFFSETOF(struct nvmap, dac1level),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,	/* подстройка опорника */
+		& dac1level,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+#endif /* defined (DAC1_TYPE) */
+	& xgreffrquency,		/* ввод реальной частоты опорного генератора через меню. */
+#endif	/* defined(REFERENCE_FREQ) */
+#if (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ	/* подстройка частоты гетеродина через меню. */
+	(const struct paramdefdef [1]) {
+		QLABEL("LO3 FRQ"),  3, RJ_UNSIGNED, ISTEP1,
+		ITEM_VALUE,
+		LO2AMIN, LO2AMAX,
+		OFFSETOF(struct nvmap, lo3offset),
+		getselector0, nvramoffs0, valueoffs0,
+		& lo3offset,	/* подстройка частоты гетеродина */
+		NULL,
+		getlo3base, 	/* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+#endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
+#if defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)
+	& xsi570_xtall_offset,
+#endif /* defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570) */
+#if WITHVOLTLEVEL && ! WITHREFSENSOR
+	& xvoltcalibr100mV,
+#endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
+#if (WITHCURRLEVEL || WITHCURRLEVEL2)
+	& xgipacali,	// Корректировка показаний измерителя тока оконечного каскада
+#endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
+#if WITHTX
+	& xswrcalibr,	/* калибровка SWR-метра */
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+	& xminforward,
+	& xmaxpwrcali,
+#endif
+#endif /* WITHTX */
+#if WITHTXCPATHCALIBRATE
+	& xgdesignDUCscale,
+#endif /* WITHTXCPATHCALIBRATE */
 
 #if WITHTX
 /* settings page header */
@@ -931,9 +991,6 @@
 
 /* settings page list */
 
-#if WITHTXCPATHCALIBRATE
-	& xgdesignDUCscale,
-#endif /* WITHTXCPATHCALIBRATE */
 #if WITHPOWERTRIM
   #if ! WITHPOTPOWER
     & xgnormalpower,        /* мощность при обычной работе на передачу */
@@ -1660,38 +1717,6 @@
 #endif /* WITHRPTOFFSET */
 #endif /* WITHTX */
 
-#if defined(REFERENCE_FREQ)
-#if defined (DAC1_TYPE)
-	(const struct paramdefdef [1]) {
-		QLABEL("REF ADJ"),  0, RJ_UNSIGNED, ISTEP1,		/* подстройка частоты опорного генератора (напряжением) через меню. */
-		ITEM_VALUE,
-		WITHDAC1VALMIN, WITHDAC1VALMAX, 
-		OFFSETOF(struct nvmap, dac1level),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,	/* подстройка опорника */
-		& dac1level,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-#endif /* defined (DAC1_TYPE) */
-	& xgreffrquency,		/* ввод реальной частоты опорного генератора через меню. */
-#endif	/* defined(REFERENCE_FREQ) */
-#if (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ	/* подстройка частоты гетеродина через меню. */
-	(const struct paramdefdef [1]) {
-		QLABEL("LO3 FRQ"),  3, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,
-		LO2AMIN, LO2AMAX, 
-		OFFSETOF(struct nvmap, lo3offset),
-		getselector0, nvramoffs0, valueoffs0,
-		& lo3offset,	/* подстройка частоты гетеродина */
-		NULL,
-		getlo3base, 	/* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-#endif	/* (LO3_SIDE != LOCODE_INVALID) && LO3_FREQADJ */
-#if defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)
-	& xsi570_xtall_offset,
-#endif /* defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570) */
 #if WITHONLYBANDS
 	(const struct paramdefdef [1]) {
 		QLABEL("BANDONLY"), 0, RJ_YES,	ISTEP1,
@@ -1706,12 +1731,6 @@
 	},
 #endif /* WITHONLYBANDS */
 	& xstayfreq,
-#if WITHVOLTLEVEL && ! WITHREFSENSOR
-	& xvoltcalibr100mV,
-#endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
-#if (WITHCURRLEVEL || WITHCURRLEVEL2)
-	& xgipacali,	// Корректировка показаний измерителя тока оконечного каскада
-#endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
 #if WITHTX
 #if WITHSWRMTR && ! WITHSHOWSWRPWR
 	(const struct paramdefdef [1]) {
@@ -1726,20 +1745,7 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHSWRMTR && ! WITHSHOWSWRPWR */
-	(const struct paramdefdef [1]) {
-		QLABEL("SWR CALI"),  2, RJ_UNSIGNED, ISTEP1,		/* калибровка SWR-метра */
-		ITEM_VALUE,
-		50, 200, //80, 120, 
-		OFFSETOF(struct nvmap, swrcalibr),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& swrcalibr,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
-	& xminforward,
-	& xmaxpwrcali,
 	& xgdownatcwtune,
 #endif
 #if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
