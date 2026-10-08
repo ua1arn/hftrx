@@ -632,7 +632,7 @@ void colpip_line(
 	int antialiasing
 	);
 
-void
+uint_fast16_t
 pix_display_value_big(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
@@ -655,7 +655,7 @@ pix_display_value_big(
 void rendered_value_big_initialize(const gxstyle_t * gxstylep);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
 
 // Used in display2_freqX_b
-void
+uint_fast16_t
 pix_display_value_small(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения

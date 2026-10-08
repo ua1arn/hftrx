@@ -376,10 +376,14 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 }
 
 // большой шрифт
+// Символ со специальным значением:
+// '#' - узкий пробел, шириной как у символа '.'
+// ' ' - широкий пробел
 static uint_fast16_t display_put_char_font(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle, const unifont_t * const font)
 {
 	if (font == NULL)
 		return x;
+	//PRINTF("%c", cc);
 	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
 }
 
@@ -399,7 +403,7 @@ static const FLASHMEM int32_t vals10 [] =
 
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
-void
+uint_fast16_t
 pix_display_value_big(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
@@ -419,6 +423,8 @@ pix_display_value_big(
 	const unifont_t * fonthalf
 	)
 {
+	const uint_fast16_t xpix0 = xpix;
+	//PRINTF("pix_display_value_big: width=%u,c=%u,c2=%u,rj=%u,blinkpos=%u,f=%*u : ", width, comma, comma2, rj, blinkpos, (int) width, (unsigned) freq);
 	//	if (width > ARRAY_SIZE(vals10))
 	//		width = ARRAY_SIZE(vals10);
 		//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
@@ -465,6 +471,8 @@ pix_display_value_big(
 		}
 		freq = res.rem;
 	}
+	//PRINTF(" xspanpix=%u\n", (unsigned) (xpix - xpix0));
+	return xpix;
 }
 
 // обычный шрифт
@@ -478,7 +486,7 @@ static uint_fast16_t display_put_char(const gxdrawb_t * db, uint_fast16_t x, uin
 }
 
 // Used in display2_freqX_b
-void
+uint_fast16_t
 pix_display_value_small(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
@@ -558,6 +566,7 @@ pix_display_value_small(
 		}
 		freq = res.rem;
 	}
+	return xpix;
 }
 
 #endif /* LCDMODE_LTDC */
