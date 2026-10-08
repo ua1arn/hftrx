@@ -569,6 +569,35 @@
 	},
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #endif /* defined(CODEC1_TYPE) */
+/* group name +++ */
+#if WITHENCODER
+	(const struct paramdefdef [1]) {
+		QLABEL("Knobs"), 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		OFFSETOF(struct nvmap, grpknobs),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		NULL,
+		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+/* group name --- */
+	& xgenc1pulses,
+	& xgenc1dynamic,
+	& xgenc1div,
+#if WITHENCODER_SUB
+	& xgencsubdynamic,
+	& xgencsubpulses,
+	& xgencsubdiv,
+#endif /* WITHENCODER_SUB */
+
+	& xgbigstep,
+#if WITHENCODER2
+	& xgenc2div,
+#endif /* WITHENCODER2 */
+#endif /* WITHENCODER */
+
 #if WITHUSBHW && (WITHUSBUACOUT || WITHUSBUACIN || WITHUSEUSBBT)
 /* group name +++ */
 	(const struct paramdefdef [1]) {
@@ -1587,7 +1616,6 @@
 
 #endif /* WITHTX */
 
-/* settings page header */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("Special"), 0, 0, 0,
@@ -1616,15 +1644,6 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 #endif /* WITHRFSG */
-#if WITHENCODER
-	& xgenc1pulses,
-	& xgenc1dynamic,
-	& xgenc1div,
-	& xgbigstep,
-#if WITHENCODER2
-	& xgenc2div,
-#endif /* WITHENCODER2 */
-#endif /* WITHENCODER */
 
 #if WITHTX
 #if WITHIF4DSP

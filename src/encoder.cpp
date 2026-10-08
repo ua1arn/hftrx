@@ -47,6 +47,9 @@ struct encoder_tag
 	q31_t enchist [HISTLEN];
 	uint_fast8_t tichist;	// Должно поместиться число от 0 до TICKSMAX включительно
 	uint_fast8_t enchistindex;
+
+	unsigned actualresulution;
+	int dynamic;
 };
 
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
@@ -61,6 +64,8 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->enchistindex = 0;
 	arm_fill_q31(0, e->enchist, HISTLEN);
 	IRQLSPINLOCK_INITIALIZE(& e->encspeedlock);
+	e->actualresulution = 24;
+	e->dynamic = 0;
 }
 
 static void encoder_clear(encoder_t * e)
@@ -204,22 +209,17 @@ static int safegetposition_kbd(void)
 
 /* значение используется вне прерываний - модификация без запрета прерываний */
 
-static unsigned encoder1_actual_resolution = 128 * 4; //(encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
-static uint_fast8_t encoder1_dynamic = 1;
 
-//#define ENCODER_ACTUAL_RESOLUTION (encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
-//static uint_fast8_t encoder_resolution;
-
-void encoder1_set_resolution(unsigned v, uint_fast8_t encdynamic)
+void encoder_set_resolution(encoder_t * e, unsigned v, uint_fast8_t encdynamic)
 {
-	encoder1_actual_resolution = v * 4 * ENCRESSCALE;	/* используется учетверение шагов */
-	encoder1_dynamic = encdynamic;
+	e->actualresulution = v * 4 * ENCRESSCALE;	/* используется учетверение шагов */
+	e->dynamic = encdynamic;
 }
 
 // возвращает количество инкрементов на оборот
-unsigned encoder_get_actualresolution(encoder_t * e)
+unsigned encoder_get_actualresolution(const encoder_t * e)
 {
-	return encoder1_actual_resolution;
+	return e->actualresulution;
 }
 
 /* получение количества шагов, накопленного с момента предыдущего опроса */
@@ -396,7 +396,7 @@ encoder_getrotatehires(
 	unsigned speed;
 	const int32_t nrotate = encoder_get_snapshotproportional(e, & speed);
 
-	if (encoder1_dynamic != 0)
+	if (e->dynamic != 0)
 	{
 		uint_fast8_t i;
 

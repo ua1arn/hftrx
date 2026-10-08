@@ -3851,9 +3851,10 @@ struct nvmap {
 	/* группы */
 	uint16_t ggroup0;			/* последняя группа в менюю, с которой работали */
 	uint16_t	ggrpdisplay;	// последний выбраный пункт группы
-	uint16_t	ggrptxparam;		// последний выбраный пункт группы
+	uint16_t	ggrptxparam;	// последний выбраный пункт группы
 	uint16_t	ggrptxadj;		// последний выбраный пункт группы
 	uint16_t	ggrpsecial;		// последний выбраный пункт группы
+	uint16_t	grpknobs;	// последний выбраный пункт группы
 	uint16_t	ggrpaudio;		// последний выбраный пункт группы
 	uint16_t	ggrpmike;		// последний выбраный пункт группы
 	uint16_t 	ggrpmikeeq;		// последний выбраный пункт группы
@@ -3880,7 +3881,9 @@ struct nvmap {
 #endif /* WITHUSEDUALWATCH */
 #if WITHENCODER
 	uint8_t genc1pulses;		/* индекс в таблице разрешений валкодера */
+	uint8_t gencsubpulses;		/* индекс в таблице разрешений валкодера */
 	uint8_t genc1dynamic;	/* включение динамического енкодера */
+	uint8_t gencsubdynamic;
 #endif /* WITHENCODER */
 
 #if WITHLCDBACKLIGHT
@@ -4220,7 +4223,8 @@ struct nvmap {
 
 	uint8_t gbigstep;		/* больщой шаг валкодера */
 	uint8_t genc1div;		/* во сколько раз уменьшаем разрешение валкодера. */
-	uint8_t genc2div;
+	uint8_t genc2div;		/* во сколько раз уменьшаем разрешение валкодера. */
+	uint8_t gencsubdiv;
 	uint8_t gmutespkr;		/* выключение динамика */
 
 #if LO1FDIV_ADJ
@@ -4386,7 +4390,7 @@ static int_fast32_t getzerobase(void)
 
 	static const struct paramdefdef xgenc1div =
 	{
-		QLABEL("ENC1 DIV"),  0, RJ_UNSIGNED, ISTEP1,
+		QLABEL3("ENC DIV", "Main DIV", "ENC SUB DIV"),  0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		1, 128, 	/* /1 ... /128 */
 		OFFSETOF(struct nvmap, genc1div),
@@ -4397,27 +4401,6 @@ static int_fast32_t getzerobase(void)
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
-#if WITHENCODER2
-
-	#if defined (BOARD_ENCODER2_DIVIDE)
-		static uint_fast8_t genc2div = BOARD_ENCODER2_DIVIDE;
-	#else /* defined (BOARD_ENCODER2_DIVIDE) */
-		static uint_fast8_t genc2div = 2;	/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
-	#endif /* defined (BOARD_ENCODER2_DIVIDE) */
-	static const struct paramdefdef xgenc2div =
-	{
-		QLABEL("ENC2 DIV"),  0, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,
-		1, 8, 	/* /1 ... /8 */
-		OFFSETOF(struct nvmap, genc2div),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& genc2div,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	};
-#endif /* WITHENCODER2 */
-
 #if defined (ENCDYNAMIC_DEFAULT)
 	static uint_fast8_t genc1dynamic = ENCDYNAMIC_DEFAULT;
 #else /* defined (ENCDYNAMIC_DEFAULT) */
@@ -4426,7 +4409,7 @@ static int_fast32_t getzerobase(void)
 
 	static const struct paramdefdef xgenc1dynamic =
 	{
-		QLABEL("ENC1 DYN"), 0, RJ_ON,	ISTEP1,
+		QLABEL3("ENC1 DYN", "Main DYN", "ENC1 DYN"), 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, genc1dynamic),
@@ -4437,6 +4420,67 @@ static int_fast32_t getzerobase(void)
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
+#if WITHENCODER_SUB
+
+#if defined (ENCDIV_DEFAULT)
+	static uint_fast8_t gencsubdiv = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
+#else /* defined (ENCDIV_DEFAULT) */
+	static uint_fast8_t gencsubdiv = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
+#endif /* defined (ENCDIV_DEFAULT) */
+
+#if defined (ENCDYNAMIC_DEFAULT)
+	static uint_fast8_t gencsubdynamic = ENCDYNAMIC_DEFAULT;
+#else /* defined (ENCDYNAMIC_DEFAULT) */
+	static uint_fast8_t gencsubdynamic = 1;
+#endif /* defined (ENCDYNAMIC_DEFAULT) */
+
+	static const struct paramdefdef xgencsubdynamic =
+	{
+		QLABEL3("ENCSUBDYN", "Sub DYN", "ENCSUB DYN"), 0, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, gencsubdynamic),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gencsubdynamic,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
+	static const struct paramdefdef xgencsubdiv =
+	{
+		QLABEL3("ENC SUB DIV", "Sub DIV", "ENC SUB DIV"),  0, RJ_UNSIGNED, ISTEP1,
+		ITEM_VALUE,
+		1, 128, 	/* /1 ... /128 */
+		OFFSETOF(struct nvmap, gencsubdiv),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gencsubdiv,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+#endif
+
+#if WITHENCODER2
+
+	#if defined (BOARD_ENCODER2_DIVIDE)
+		static uint_fast8_t genc2div = BOARD_ENCODER2_DIVIDE;
+	#else /* defined (BOARD_ENCODER2_DIVIDE) */
+		static uint_fast8_t genc2div = 2;	/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+	#endif /* defined (BOARD_ENCODER2_DIVIDE) */
+		static const struct paramdefdef xgenc2div =
+		{
+			QLABEL3("ENC2 DIV", "Knob FN DIV", "ENC2 DIV"),  0, RJ_UNSIGNED, ISTEP1,
+			ITEM_VALUE,
+			1, 128, 	/* /1 ... /128 */
+			OFFSETOF(struct nvmap, genc2div),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& genc2div,
+			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+#endif /* WITHENCODER2 */
 
 #endif /* WITHENCODER */
 
@@ -4611,7 +4655,7 @@ static const struct paramdefdef xgcwpitch10 =
 	static uint_fast8_t gbigstep = (ENCRES_24 >= ENCRES_DEFAULT);	/* модифицируется через меню. */
 	static const struct paramdefdef xgbigstep =
 	{
-		QLABEL("BIG STEP"), 0, RJ_YES,	ISTEP1,
+		QLABEL3("BIG STEP", "Big Step", "BIG STEP"), 0, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		OFFSETOF(struct nvmap, gbigstep),
@@ -4625,13 +4669,27 @@ static const struct paramdefdef xgcwpitch10 =
 	static uint_fast8_t genc1pulses = ENCRES_DEFAULT;		/* 5: 128 индекс в таблице разрешений валкодера */
 	static const struct paramdefdef xgenc1pulses =
 	{
-		QLABEL("ENC1 RES"), 0, RJ_CB,	ISTEP1,
+		QLABEL3("ENC1 PPR", "Main PPR", "ENC1 PPR"), 0, RJ_CB,	ISTEP1,
 		ITEM_VALUE | ITEM_LISTSELECT,
 		0, ARRAY_SIZE(encresols) - 1,
 		OFFSETOF(struct nvmap, genc1pulses),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& genc1pulses,
+		getzerobase, /* складывается со смещением и отображается */
+		getvaltextencres, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
+	static uint_fast8_t gencsubpulses = ENCRES_DEFAULT;		/* 5: 128 индекс в таблице разрешений валкодера */
+	static const struct paramdefdef xgencsubpulses =
+	{
+		QLABEL3("ENCSUB PPR", "Sub PPR", "ENCSUB PPR"), 0, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_LISTSELECT,
+		0, ARRAY_SIZE(encresols) - 1,
+		OFFSETOF(struct nvmap, gencsubpulses),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gencsubpulses,
 		getzerobase, /* складывается со смещением и отображается */
 		getvaltextencres, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
@@ -11817,7 +11875,23 @@ static void
 updateboard2(void)
 {
 #if WITHENCODER
-	encoder1_set_resolution(encresols [param_getvalue(& xgenc1pulses)], genc1dynamic);
+	encoder_set_resolution(& encoder1, encresols [param_getvalue(& xgenc1pulses)], param_getvalue(& xgenc1dynamic));
+#if WITHENCODER_SUB
+	encoder_set_resolution(& encoder_sub, encresols [param_getvalue(& xgencsubpulses)], param_getvalue(& xgencsubdynamic));
+#endif /* WITHENCODER_SUB */
+#if WITHENCODER_1F
+	encoder_set_resolution(& encoder_ENC1F, 24, 0);
+#endif /* WITHENCODER_1F */
+#if WITHENCODER_2F
+	encoder_set_resolution(& encoder_ENC2F, 24, 0);
+#endif /* WITHENCODER_2F */
+#if WITHENCODER_3F
+	encoder_set_resolution(& encoder_ENC3F, 24, 0);
+#endif /* WITHENCODER_3F */
+#if WITHENCODER_4F
+	encoder_set_resolution(& encoder_ENC4F, 24, 0);
+#endif /* WITHENCODER_4F */
+
 #endif /* WITHENCODER */
 	display2_setbgcolor(COLORPIP_BLACK);
 }
@@ -17253,7 +17327,7 @@ processcatmsg(
 		{
 #if WITHENCODER
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoder_pushback(& encoder1, steps * (int) genc1div);
+			encoder_pushback(& encoder1, steps * param_getvalue(& xgenc1div));
 #endif /* WITHENCODER */
 		}
 	}
@@ -17263,7 +17337,7 @@ processcatmsg(
 		{
 #if WITHENCODER
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoder_pushback(& encoder1, 0 - steps * (int) genc1div);
+			encoder_pushback(& encoder1, 0 - steps * param_getvalue(& xgenc1div));
 #endif /* WITHENCODER */
 		}
 	}
@@ -21109,12 +21183,12 @@ static void inputevent_init(inputevent_t * e)
 	mouseevent_initialize(& e->mouse);
 
 #if WITHENCODER
-	knobevent_initialize(& e->encMAIN, & encoder1, 0, genc1div);
+	knobevent_initialize(& e->encMAIN, & encoder1, 0, param_getvalue(& xgenc1div));
 #if WITHENCODER_SUB
-	knobevent_initialize(& e->encSUB, & encoder_sub, 0, genc1div);
+	knobevent_initialize(& e->encSUB, & encoder_sub, 0, param_getvalue(& xgencsubdiv));
 #endif /* WITHENCODER_SUB */
 #if WITHENCODER2
-	knobevent_initialize(& e->encFN, & encoder2, 1, genc2div);
+	knobevent_initialize(& e->encFN, & encoder2, 1, param_getvalue(& xgenc2div));
 #endif /* WITHENCODER2 */
 #if WITHENCODER_1F
 	knobevent_initialize(& e->encF1, & encoder_ENC1F, 1, BOARD_ENC1F_DIVIDE);
