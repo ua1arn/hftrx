@@ -288,7 +288,7 @@ const unifont_t unifont_small2 =
 
 #if WITHALTERNATIVEFONTS
 
-#include "fonts/CenturyHothic_28x54.h"
+#include "fonts/CenturyGothic_28x54.h"
 static adafruitfont_data_t unifontdata_28x54;
 const unifont_t unifont_half_raw =
 {
@@ -298,12 +298,12 @@ const unifont_t unifont_half_raw =
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
 	//
-	.fontraster = & CenturyHothic_28x54,
+	.fontraster = & CenturyGothic_28x54,
 	.fontdata = & unifontdata_28x54,
-	.label = "CenturyHothic_28x54"
+	.label = "CenturyGothic_28x54"
 };
 
-#include "fonts/CenturyHothic_36x54.h"
+#include "fonts/CenturyGothic_36x54.h"
 static adafruitfont_data_t unifontdata_36x54;
 const unifont_t unifont_big_raw =
 {
@@ -313,12 +313,12 @@ const unifont_t unifont_big_raw =
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
 	//
-	.fontraster = & CenturyHothic_36x54,
+	.fontraster = & CenturyGothic_36x54,
 	.fontdata = & unifontdata_36x54,
-	.label = "CenturyHothic_36x54"
+	.label = "CenturyGothic_36x54"
 };
 
-#include "fonts/CenturyHothic_21x41.h"
+#include "fonts/CenturyGothic_21x41.h"
 static adafruitfont_data_t unifontdata_21x41;
 const unifont_t unifont_half2_raw =
 {
@@ -328,12 +328,12 @@ const unifont_t unifont_half2_raw =
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
 	//
-	.fontraster = & CenturyHothic_21x41,
+	.fontraster = & CenturyGothic_21x41,
 	.fontdata = & unifontdata_21x41,
-	.label = "CenturyHothic_21x41"
+	.label = "CenturyGothic_21x41"
 };
 
-#include "fonts/CenturyHothic_27x41.h"
+#include "fonts/CenturyGothic_27x41.h"
 static adafruitfont_data_t unifontdata_27x41;
 const unifont_t unifont_big2_raw =
 {
@@ -343,9 +343,9 @@ const unifont_t unifont_big2_raw =
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
 	//
-	.fontraster = & CenturyHothic_27x41,
+	.fontraster = & CenturyGothic_27x41,
 	.fontdata = & unifontdata_27x41,
-	.label = "CenturyHothic_27x41"
+	.label = "CenturyGothic_27x41"
 };
 #else /* WITHALTERNATIVEFONTS */
 
