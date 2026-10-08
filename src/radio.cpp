@@ -10739,19 +10739,8 @@ const char * hamradio_get_mode_a_value_P(void)
 
 // SSB/CW/AM/FM/..
 // * flag: split active
-const char * hamradio_get_mode_b_value_P(uint_fast8_t * flag)
+const char * hamradio_get_mode_b_value_P(void)
 {
-//	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
-//	{
-//	case SPLITMODES_OFF:	/* no SPLIT -  Обычная перестройка */
-//		* flag = 0;
-//		break;
-//	default:
-//	case SPLITMODES_ON:
-//		* flag = 1;
-//		break;
-//	}
-	* flag = 1;
 	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;	/* VFO B modifications */
 }
 
@@ -23301,9 +23290,7 @@ int infocb_modea(char * b, size_t len, int * pstate)
 
 int infocb_modeb(char * b, size_t len, int * pstate)
 {
-	uint_fast8_t state;
-	const char * const name = hamradio_get_mode_b_value_P(& state);
-	* pstate = state;
+	const char * const name = hamradio_get_mode_b_value_P();
 	return local_snprintf_P(b, len, "%s", name);
 }
 
