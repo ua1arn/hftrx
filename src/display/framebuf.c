@@ -3757,12 +3757,9 @@ void display_floodfill(
 	COLORPIP_T oldColor
 	)
 {
-	PACKEDCOLORPIP_T * const buffer = db->buffer;
-	const uint_fast16_t dx = db->dx;
-	const uint_fast16_t dy = db->dy;
-	ASSERT(x < dx);
-	ASSERT(y < dy);
-	PACKEDCOLORPIP_T * tgr = colpip_mem_at(db, x, y);
+	if (x >= db->dx || y >= db->dy)
+		return;
+	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
 
 	if (* tgr == oldColor && * tgr != newColor)
 	{
