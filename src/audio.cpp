@@ -5409,11 +5409,7 @@ hftxpath_update(hftxpath_t * const txpath, uint_fast8_t profile)
 {
 	const FLOAT_t txlevelfence = 1;	// контролировать по отсутствию индикации переполнения DUC при передаче
 
-	#if WITHTXCPATHCALIBRATE
-		const FLOAT_t c1MODES = (FLOAT_t) glob_designDUCscale / BOARDDUCSCALEDENOM;	// предотвращение переполнения
-	#else /* WITHTXCPATHCALIBRATE */
-		const FLOAT_t c1MODES = (FLOAT_t) HARDWARE_DUCSCALE;	// предотвращение переполнения
-	#endif
+	const FLOAT_t c1MODES = (FLOAT_t) glob_designDUCscale / BOARDDUCSCALEDENOM;	// предотвращение переполнения в DUC тракте
 	const FLOAT_t c1DIGI = c1MODES * (FLOAT_t) glob_digiscale / 100;
 	const FLOAT_t c1CW = c1MODES * (FLOAT_t) glob_cwscale / 100;
 	const FLOAT_t c1SSB = c1MODES * (FLOAT_t) glob_ssbcale / 100;
