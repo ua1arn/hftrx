@@ -935,6 +935,15 @@ typedef struct {
 	ofdm_modem_rx_t ofdm_rx;
 
 	adapter_t nfmdemod;		/* Преобразование выхода demodulator_FM() */
+#if WITHDSPLOCALRXFIR
+
+	// Фильтр для квадратурных каналов приёмника (floating point).
+	FLOAT_t FIRCoef_rx_SSB_IQ [NPROF] [Ntap_rx_SSB_IQ];
+	FLOAT_t local_rx_wiver_window_buf [Ntap_rx_SSB_IQ];
+	FLOAT32P_t firp_rx_x [Ntap_rx_SSB_IQ * 2];
+	uint_fast16_t firp_rx_head;// = 0;
+
+#endif /* WITHDSPLOCALRXFIR */
 
 	const void * sign2;
 } hfrxpath_t;
@@ -962,6 +971,17 @@ typedef struct {
 
 	rtty_transmitter_t rtty_tx;
 	ofdm_modem_tx_t ofdm_tx;
+
+	// буфер с сохранёнными значениями сэмплов
+#if WITHDSPLOCALTXFIR
+
+	// Фильтр для квадратурных каналов передатчика (floating point).
+	FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [Ntap_tx_SSB_IQ];
+	FLOAT_t local_tx_wiver_window_buf [Ntap_tx_SSB_IQ];
+	FLOAT32P_t tx_fir_x [Ntap_tx_SSB_IQ * 2];
+	uint_fast16_t tx_fir_head;// = 0;
+
+#endif /* WITHDSPLOCALTXFIR */
 
 	const void * sign2;
 } hftxpath_t;
