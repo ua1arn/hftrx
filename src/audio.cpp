@@ -1802,7 +1802,7 @@ uint_fast8_t dsp_getavox(uint_fast8_t fullscale)
 	return 0;
 }
 
-static void voxmeter_initialize(void)
+static void voxmeter_initialize(hftxpath_t * const txpath)
 {
 	const uint_fast32_t sr = ARMI2SRATE;
 	VOXCHARGE = MAKETAU0();	// Пиковый детектор со временем заряда 0
@@ -2745,16 +2745,10 @@ static FLOAT_t agc_getsigpower(
 	return sample;
 }
 
-//
-// постоянные времени системы АРУ
-
-static agcstate_t txagcstate;
-
-static agcparams_t mikeagcparams [NPROF];
 
 static uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 // TODO: remove WITHDACOUTDSPAGC
-static void agc_tx_initialize(void)
+static void agc_tx_initialize(hftxpath_t * const txpath)
 {
 	// Установка параметров АРУ передатчика
 	gwagcproftx = 0;
@@ -2765,8 +2759,8 @@ static void agc_tx_initialize(void)
 	{
 		const uint_fast32_t sr = ARMI2SRATE;
 		// Микрофон всегда с flatgain=1
-		mikeagc_parameters_init(& mikeagcparams [profile], sr);
-		agc_state_init(& txagcstate, & mikeagcparams [profile].levels);
+		mikeagc_parameters_init(& txpath->mikeagcparams [profile], sr);
+		agc_state_init(& txpath->txagcstate, & txpath->mikeagcparams [profile].levels);
 	}
 }
 
@@ -2963,13 +2957,13 @@ static FLOAT_t mickeclipscale [NPROF] = { 1, 1 };
 
 // ару и компрессор микрофона
 // На входе уже нормированный к txlevelfenceSSB сигнал
-static FLOAT_t txmikeagc(FLOAT_t vi)
+static FLOAT_t txmikeagc(hftxpath_t * const txpath, FLOAT_t vi)
 {
-	const agcparams_t * const agcp = & mikeagcparams [gwagcproftx];
+	const agcparams_t * const agcp = & txpath->mikeagcparams [gwagcproftx];
 	if (agcp->levels.agcoff == 0)
 	{
 		const FLOAT_t siglevel0 = FABSF(vi);
-		agcstate_t * const st = & txagcstate;
+		agcstate_t * const st = & txpath->txagcstate;
 
 		agc_perform(st, & agcp->times, agccalcstrength_log(& agcp->levels, siglevel0));	// измеритель уровня сигнала
 		const FLOAT_t gain = agccalcgain_log(& agcp->levels, agc_result_slow(st));
@@ -2978,7 +2972,7 @@ static FLOAT_t txmikeagc(FLOAT_t vi)
 	return vi;
 }
 
-static FLOAT_t txmikeclip(FLOAT_t vi)
+static FLOAT_t txmikeclip(hftxpath_t * const txpath, FLOAT_t vi)
 {
 	// Ограничитель
 	const FLOAT_t levelp = mickecliplevelp [gwagcproftx];
@@ -2995,8 +2989,9 @@ static FLOAT_t txmikeclip(FLOAT_t vi)
 /* получения признака переполнения АЦП микрофонного тракта - вызывается из user mode */
 uint_fast8_t dsp_getmikeadcoverflow(void)
 {
-	agcstate_t * const st = & txagcstate;
-	const FLOAT_t FS = mikeagcparams [gwagcproftx].levels.levelfence_ratio;	// txlevelfenceSSB
+    hftxpath_t * const txpath = & tx_path;
+	agcstate_t * const st = & txpath->txagcstate;
+	const FLOAT_t FS = txpath->mikeagcparams [gwagcproftx].levels.levelfence_ratio;	// txlevelfenceSSB
 	return st->agcslowcap >= FS * db2ratio((FLOAT_t) - 1);
 }
 
@@ -3374,6 +3369,7 @@ static void voxmeasure(FLOAT32P_t v)
 
 // return audio sample in range [- 1.. + 1]
 static FLOAT_t mikeinmux(
+	hftxpath_t * const txpath,
 	uint_fast8_t dspmode,
 	FLOAT32P_t * moni
 	)
@@ -3412,8 +3408,8 @@ static FLOAT_t mikeinmux(
 				goto txfrombt;
 			//vi0fmike = get_rout();		// Тест - синусоида 700 герц амплитуы (-1..+1)
 			// источник - микрофон
-			vi0fmike = txmikeagc(vi0fmike * txlevelXXX);	// АРУ
-			vi0fmike = txmikeclip(vi0fmike);				// Ограничитель
+			vi0fmike = txmikeagc(txpath, vi0fmike * txlevelXXX);	// АРУ
+			vi0fmike = txmikeclip(txpath, vi0fmike);				// Ограничитель
 #if WITHREVERB
 			vi0fmike = audio_reverb_calc(vi0fmike);				// Ревербератор
 #endif /* WITHREVERB */
@@ -4595,7 +4591,7 @@ void dsp_processtx(unsigned nsamples0)
 	{
 		monitorbuff [i].IV = 0;
 		monitorbuff [i].QV = 0;
-		txfirbuff [i] = mikeinmux(dspmodeA, & monitorbuff [i]);	// AGC, reverb, compressor - are here
+		txfirbuff [i] = mikeinmux(txpath, dspmodeA, & monitorbuff [i]);	// AGC, reverb, compressor - are here
 	}
 	/* формирование АЧХ перед модулятором */
 	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_blockSize);
@@ -5194,8 +5190,8 @@ hftxpath_init(hftxpath_t * const self)
 #if WITHDSPLOCALTXFIR
 	local_tx_iq_fir_init(& self->tx_iq_fir);
 #endif /* WITHDSPLOCALTXFIR */
-	voxmeter_initialize();
-	agc_tx_initialize();	// RX and TX parameters
+	voxmeter_initialize(self);
+	agc_tx_initialize(self);	// RX and TX parameters
 }
 
 static void
@@ -5338,11 +5334,11 @@ hftxpath_update(hftxpath_t * const txpath, uint_fast8_t profile)
 	txlevelfenceBPSK = 	txlevelfence * c1CW;
 
 	// Параметры АРУ микрофона
-	mikeagc_parameters_update(& mikeagcparams [profile], (int) glob_mikeagcgain);
+	mikeagc_parameters_update(& txpath->mikeagcparams [profile], (int) glob_mikeagcgain);
 
 	{
 		// Настройка ограничителя
-		const FLOAT_t FS_ratio = mikeagcparams [profile].levels.levelfence_ratio;	// txlevelfenceSSB
+		const FLOAT_t FS_ratio = txpath->mikeagcparams [profile].levels.levelfence_ratio;	// txlevelfenceSSB
 		const FLOAT_t grade = 1 - (glob_mikehclip / (FLOAT_t) 100);
 		mickeclipscale [profile] = 1 / grade;
 		mickecliplevelp [profile] = FS_ratio * grade;

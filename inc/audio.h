@@ -985,6 +985,9 @@ typedef struct {
 	local_tx_iq_fir_t tx_iq_fir;
 #endif /* WITHDSPLOCALTXFIR */
 
+	agcstate_t txagcstate;
+	agcparams_t mikeagcparams [NPROF];	// постоянные времени системы АРУ
+
 	const void * sign2;
 } hftxpath_t;
 
