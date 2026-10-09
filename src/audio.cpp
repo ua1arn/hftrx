@@ -4701,7 +4701,7 @@ void dsp_processtx(unsigned nsamples0)
 	{
 		monitorbuff [i].IV = 0;
 		monitorbuff [i].QV = 0;
-		txfirbuff [i] = mikeinmux(dspmodeA, & monitorbuff [i]);
+		txfirbuff [i] = mikeinmux(dspmodeA, & monitorbuff [i]);	// AGC, reverb, compressor - are here
 	}
 	/* формирование АЧХ перед модулятором */
 	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_blockSize);

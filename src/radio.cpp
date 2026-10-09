@@ -6037,7 +6037,7 @@ enum
 			OFFSETOF(struct nvmap, gmikeequalizer),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
-			& gmikeequalizer,
+			& gmikeequalizer,	// 8-bit value
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
@@ -10639,9 +10639,15 @@ void display2_fnblock9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uin
 }
 
 
+static size_t getvaltextdummy(char * buff, size_t count, int_fast32_t value)
+{
+	* buff = '\0';
+	return 0;
+}
+
 static const struct paramdefdef xgdummy =
 {
-	QLABEL(""),  0, RJ_UNSIGNED, 	ISTEP_RO,	// тип процессора
+	QLABEL(""),  0, RJ_CB, 	ISTEP_RO,	// тип процессора
 	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 	0, 0,
 	MENUNONVRAM,
@@ -10649,7 +10655,7 @@ static const struct paramdefdef xgdummy =
 	& gzero,
 	NULL,
 	getzerobase,
-	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	getvaltextdummy, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
 #if ! WITHISBOOTLOADER
