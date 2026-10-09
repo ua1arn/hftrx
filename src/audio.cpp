@@ -2772,26 +2772,18 @@ static void agc_tx_initialize(void)
 
 static uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 
-static void agc_rx_initialize(void)
+static void agc_rx_initialize(hfrxpath_t * const path, uint_fast32_t const sr)
 {
 	// Установка параметров АРУ приёмника
 	gwagcprofrx = 0;
 	uint_fast8_t profile;
 	for (profile = 0; profile < NPROF; ++ profile)
 	{
-		uint_fast8_t pathi;
-		for (pathi = 0; pathi < NTRX; ++ pathi)
-		{
-			uint_fast32_t const sr = ARMSAIRATE;
-		    hfrxpath_t * const path = &rx_paths [pathi];
-
-			agc_parameters_init(& path->rxagcparams [profile], sr);
-			agc_state_init(& path->rxagcstate, & path->rxagcparams [profile].levels);
-			// s-meter
-			agc_parameters_init(& path->rxsmeterparams, sr);
-			agc_state_init(& path->rxsmeterstate, & path->rxsmeterparams.levels);
-		}
-
+        agc_parameters_init(& path->rxagcparams [profile], sr);
+		agc_state_init(& path->rxagcstate, & path->rxagcparams [profile].levels);
+		// s-meter
+		agc_parameters_init(& path->rxsmeterparams, sr);
+		agc_state_init(& path->rxsmeterstate, & path->rxsmeterparams.levels);
 	}
 }
 
@@ -2973,7 +2965,7 @@ static FLOAT_t mickeclipscale [NPROF] = { 1, 1 };
 // На входе уже нормированный к txlevelfenceSSB сигнал
 static FLOAT_t txmikeagc(FLOAT_t vi)
 {
-	agcparams_t * const agcp = & mikeagcparams [gwagcproftx];
+	const agcparams_t * const agcp = & mikeagcparams [gwagcproftx];
 	if (agcp->levels.agcoff == 0)
 	{
 		const FLOAT_t siglevel0 = FABSF(vi);
@@ -5203,6 +5195,7 @@ hftxpath_init(hftxpath_t * const self)
 	local_tx_iq_fir_init(& self->tx_iq_fir);
 #endif /* WITHDSPLOCALTXFIR */
 	voxmeter_initialize();
+	agc_tx_initialize();	// RX and TX parameters
 }
 
 static void
@@ -5211,6 +5204,15 @@ hfrxpath_init(hfrxpath_t * const self)
     const uint32_t sample_rate = ARMI2SRATE;
 	self->sign1 = self;
 	self->sign2 = self;
+
+	self->angle_aflorx = 0;
+	self->delayblanklo6rx = 0;
+	self->manualsquelch = 0;
+	{
+		// AGC
+		agc_rx_initialize(self, sample_rate);	// RX and TX parameters
+
+	}
 	{
 		// RTTY
 		dsp_rtty_rx_init(& self->rtty_rx, sample_rate, 400, 50);
@@ -5221,10 +5223,10 @@ hfrxpath_init(hfrxpath_t * const self)
 		// OFDM BPSK
 		radio_ofdm_modem_configure(self);
 	}
-	dsp_isb_rx_init(& self->isb_rx);
-	self->angle_aflorx = 0;
-	self->delayblanklo6rx = 0;
-	self->manualsquelch = 0;
+	{
+		// ISB
+		dsp_isb_rx_init(& self->isb_rx);
+	}
 	/* Преобразование выхода demodulator_FM() */
 	adpt_initialize(& self->nfmdemod, 32, 0, "nfmdemod");
 #if WITHDSPLOCALRXFIR
@@ -5299,7 +5301,10 @@ hfrxpath_update(
 		// OFDM BPSK
 		radio_ofdm_modem_configure(self);
 	}
-	dsp_isb_rx_init(& self->isb_rx);
+	{
+		// ISB
+		dsp_isb_rx_init(& self->isb_rx);
+	}
 	// Noise Blanker (NB)
 	setNBfence(glob_wnbfence10);
 
@@ -5400,16 +5405,14 @@ void hftrx_init(void)
     ARM_MORPH(arm_blackman_harris_92db)(wiver_window_buf, Ntap_trxi_IQ);
 
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);	// SAM detector support
+	precalc_agclogof10 = LOGF(10);	// AGC support
 
 	/* Адаптер для локальных целочисленных FIR */
 	adpt_initialize(& localfircoefs, 32, 0, "localfircoefs");
 
 	hftxpath_init(& tx_path);
 
-	precalc_agclogof10 = LOGF(10);
 
-	agc_tx_initialize();	// RX and TX parameters
-	agc_rx_initialize();	// RX and TX parameters
 	{
 		const uint_fast8_t rprofile = ! gwagcprofrx;	// индекс профиля, который станет рабочим
 		uint_fast8_t pathi;
