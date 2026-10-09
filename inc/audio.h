@@ -89,15 +89,24 @@ enum
 
 	/* Фильтрация квадратур осуществляется FPGA */
 
-	#if CPUSTYLE_T113 || CPUSTYLE_T507 || CPUSTYLE_A64 || CPUSTYLE_XC7Z || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
+	#if CPUSTYLE_T113 || CPUSTYLE_T507 || CPUSTYLE_A733 || CPUSTYLE_H3 || CPUSTYLE_A64 || CPUSTYLE_XC7Z || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
+		#define Ntap_rx_SSB_IQ	NtapValidate(511)	// SSB/CW RX filters: Wiver filters - for WITHDSPLOCALRXFIR
+		#define Ntap_tx_SSB_IQ	NtapValidate(511)	// SSB/CW TX filter: Wiver filters - for WITHDSPLOCALTXFIR
+
 		#define	Ntap_rx_AUDIO	NtapValidate(1023)
-		#define Ntap_tx_MIKE	NtapValidate(1023)
+		#define Ntap_tx_MIKE	NtapValidate(1023)	// tx equalizer, tx filter
 
 	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_F133
+		#define Ntap_rx_SSB_IQ	NtapValidate(511)	// SSB/CW RX filters: Wiver filters - for WITHDSPLOCALRXFIR
+		#define Ntap_tx_SSB_IQ	NtapValidate(511)	// SSB/CW TX filter: Wiver filters - for WITHDSPLOCALTXFIR
+
 		#define	Ntap_rx_AUDIO	NtapValidate(1023)
 		#define Ntap_tx_MIKE	NtapValidate(511)
 
 	#else /* CPUSTYLE_STM32MP1 */
+		#define Ntap_rx_SSB_IQ	NtapValidate(511)	// SSB/CW RX filters: Wiver filters - for WITHDSPLOCALRXFIR
+		#define Ntap_tx_SSB_IQ	NtapValidate(511)	// SSB/CW TX filter: Wiver filters - for WITHDSPLOCALTXFIR
+
 		#define	Ntap_rx_AUDIO	NtapValidate(511)
 		#define Ntap_tx_MIKE	NtapValidate(511)
 
