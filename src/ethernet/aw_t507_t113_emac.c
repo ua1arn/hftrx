@@ -741,7 +741,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 		}
 	}
 	stoptxdma(emac_peripheral);		// возможно удаляли
-	ASSERT(relinktxdesc(emac_peripheral));
+	VERIFY(relinktxdesc(emac_peripheral));
 	starttxdma(emac_peripheral);
 	//printlisttx(emac_peripheral, "after linkout");
 	return ERR_OK;
