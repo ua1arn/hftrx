@@ -1742,9 +1742,8 @@ static void smeter_parameters_update(agcparams_t * const agcp, const uint_fast32
 
 // Начальная установка параметров АРУ микрофонного тракта передатчика
 
-static void mikeagc_parameters_init(agcparams_t * agcp)
+static void mikeagc_parameters_init(agcparams_t * agcp, const uint_fast32_t sr)
 {
-	const uint_fast32_t sr = ARMI2SRATE;
 	agclevel_t * const p = & agcp->levels;
 	agctime_t * const t = & agcp->times;
 	agc_levels_init(p);
@@ -2753,43 +2752,47 @@ static agcstate_t txagcstate;
 
 static agcparams_t mikeagcparams [NPROF];
 
-static uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 static uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+// TODO: remove WITHDACOUTDSPAGC
+static void agc_tx_initialize(void)
+{
+	// Установка параметров АРУ передатчика
+	gwagcproftx = 0;
 
-static void agc_initialize(void)
+
+	uint_fast8_t profile;
+	for (profile = 0; profile < NPROF; ++ profile)
+	{
+		const uint_fast32_t sr = ARMI2SRATE;
+		// Микрофон всегда с flatgain=1
+		mikeagc_parameters_init(& mikeagcparams [profile], sr);
+		agc_state_init(& txagcstate, & mikeagcparams [profile].levels);
+	}
+}
+
+static uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+
+static void agc_rx_initialize(void)
 {
 	// Установка параметров АРУ приёмника
 	gwagcprofrx = 0;
-	gwagcproftx = 0;
-
-	precalc_agclogof10 = LOGF(10);
-
 	uint_fast8_t profile;
 	for (profile = 0; profile < NPROF; ++ profile)
 	{
 		uint_fast8_t pathi;
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
-		    hfrxpath_t * const path = &rx_paths[pathi];
+			uint_fast32_t const sr = ARMSAIRATE;
+		    hfrxpath_t * const path = &rx_paths [pathi];
 
-			agc_parameters_init(& path->rxagcparams [profile], ARMSAIRATE);
+			agc_parameters_init(& path->rxagcparams [profile], sr);
 			agc_state_init(& path->rxagcstate, & path->rxagcparams [profile].levels);
 			// s-meter
-			agc_parameters_init(& path->rxsmeterparams, ARMSAIRATE);
+			agc_parameters_init(& path->rxsmeterparams, sr);
 			agc_state_init(& path->rxsmeterstate, & path->rxsmeterparams.levels);
 		}
 
-		// Микрофон всегда с flatgain=1
-		mikeagc_parameters_init(& mikeagcparams [profile]);
-		agc_state_init(& txagcstate, & mikeagcparams [profile].levels);
 	}
-
-#if WITHDSPEXTDDC
-
-#elif WITHDACOUTDSPAGC
-	setagcattenuation(0, 0);	// в кодах ЦАП уменьшение усиления
-	setlevelindicator(0);
-#endif /* WITHDSPEXTDDC */
 }
 
 // АРУ вперёд для floaing-point тракта
@@ -3008,61 +3011,6 @@ uint_fast8_t dsp_getmikeadcoverflow(void)
 // agc ---
 
 
-
-//////////////////////////
-#if 1
-// Демодуляция FM
-static ncoftwi_t demodulator_FM(
-	hfrxpath_t * const path,
-	FLOAT32P_t vp1,
-	FLOAT_t sigpower
-	)
-{
-	// Здесь, имея квадратурные сигналы vp1.IV и vp1.QV, начинаем демодуляцию
-	//
-	// tnx Vladimir Vassilevsky
-	// http://www.dsprelated.com/showmessage/71491/2.php
-	//
-
-	if (vp1.IV == 0 && vp1.QV == 0)
-		vp1.QV = 1;
-
-#if 1
-	float32_t result;
-	VERIFY(arm_atan2_f32(vp1.QV, vp1.IV, & result) == ARM_MATH_SUCCESS);
-	const ncoftwi_t fi = OMEGA2FTWI(result);	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
-#else
-	const ncoftwi_t fi = OMEGA2FTWI(ATAN2F(vp1.QV, vp1.IV));	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
-#endif
-	const ncoftwi_t d_fi = (ncoftwi_t) (fi - path->prev_fi);
-	path->prev_fi = fi;
-
-	return d_fi;
-}
-
-/* Получить информацию об ошибке настройки в режиме SAM */
-/* Получить значение отклонения частоты с точностью 0.1 герца */
-uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi)
-{
-    hfrxpath_t * const path = & rx_paths [pathi];
-	const uint_fast32_t sample_rate10 = ARMSAIRATE * 10;
-
-	* p = ((int_fast64_t) path->samdetector.omegai * sample_rate10) >> 32;
-	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_SAM;
-}
-
-/* Получить значение отклонения частоты с точностью 0.1 герца для отображения на дисплее */
-uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi)
-{
-    hfrxpath_t * const path = & rx_paths [pathi];
-	const int_fast32_t sample_rate10 = ARMSAIRATE * 10;
-
-	* p = ((int_fast64_t) path->saved_delta_fi * sample_rate10) >> 32;
-	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_NFM;
-}
-
-#endif
-
 static void samdetector_init(amdemod_t * a)
 {
 	a->phsi = 0;
@@ -3141,6 +3089,9 @@ flush_amd(amdemod_t * a)
 	a->dc_insert = 0;
 }
 #endif
+
+static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
+#define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
 // Демодуляция SAM
 static FLOAT_t
@@ -4151,7 +4102,7 @@ static FLOAT_t baseband_demodulator(
 			const FLOAT32P_t vp1 = scalepair(vp0f, gain);
 			// Демодуляция АМ
 			const FLOAT_t sample = SQRTF(vp1.IV * vp1.IV + vp1.QV * vp1.QV);// * (FLOAT_t) 0.5; //M_SQRT1_2;
-			path->saved_delta_fi = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
+			//path->saved_delta_fi = demodulator_FM(path, vp0f, sigpower);	// погрешность настройки - требуется фильтровать ФНЧ
 			r = sample * agc_levelsquelchopen(path, fltstrengthslow);
 		}
 		break;
@@ -5251,6 +5202,7 @@ hftxpath_init(hftxpath_t * const self)
 #if WITHDSPLOCALTXFIR
 	local_tx_iq_fir_init(& self->tx_iq_fir);
 #endif /* WITHDSPLOCALTXFIR */
+	voxmeter_initialize();
 }
 
 static void
@@ -5311,8 +5263,8 @@ hfrxpath_update(
 	// NFM
 	{
         hftrx_nfm_path_update_from_global(& self->nfm_rx);
-		self->saved_delta_fi = 0;
-		self->prev_fi = 0;
+//		self->saved_delta_fi = 0;
+//		self->prev_fi = 0;
 	}
 
 	// Параметры SAM приёмника
@@ -5447,15 +5399,17 @@ void hftrx_init(void)
     ARM_MORPH(arm_blackman_harris_92db)(rx_audio_window_buf, Ntap_rx_AUDIO);
     ARM_MORPH(arm_blackman_harris_92db)(wiver_window_buf, Ntap_trxi_IQ);
 
-	omega2ftw_k1 = POWF(2, NCOFTWBITS);
+	omega2ftw_k1 = POWF(2, NCOFTWBITS);	// SAM detector support
 
 	/* Адаптер для локальных целочисленных FIR */
 	adpt_initialize(& localfircoefs, 32, 0, "localfircoefs");
 
 	hftxpath_init(& tx_path);
-	// Разрядность поступающего с микрофона сигнала
-	agc_initialize();
-	voxmeter_initialize();
+
+	precalc_agclogof10 = LOGF(10);
+
+	agc_tx_initialize();	// RX and TX parameters
+	agc_rx_initialize();	// RX and TX parameters
 	{
 		const uint_fast8_t rprofile = ! gwagcprofrx;	// индекс профиля, который станет рабочим
 		uint_fast8_t pathi;

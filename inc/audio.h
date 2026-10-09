@@ -751,8 +751,6 @@ typedef int32_t ncoftwi_t;
 #define FTWROUND(ftw) ((uint32_t) (ftw))
 #define FTWAF001(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE100))
 #define FTWAF(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / (int_fast64_t) ARMI2SRATE))
-static FLOAT_t omega2ftw_k1; // = POWF(2, NCOFTWBITS);
-#define OMEGA2FTWI(angle) ((ncoftwi_t) ((FLOAT_t) (angle) * omega2ftw_k1 / (FLOAT_t) M_TWOPI))	// angle in radians -pi..+pi to signed version of ftw_t
 
 // Convert ncoftw_t to q31 argument for arm_sin_cos_q31
 // The Q31 input value is in the range [-1 0.999999] and is mapped to a degree value in the range [-180 179].
@@ -929,8 +927,8 @@ typedef struct {
 	nfm_rx_t nfm_rx;
     FLOAT_t manualsquelch;
 
-	ncoftwi_t prev_fi;
-	volatile int32_t saved_delta_fi;
+//	ncoftwi_t prev_fi;
+//	volatile int32_t saved_delta_fi;
 
     unsigned delayblanklo6rx;
     uint8_t delaylo6lastmoderx;
