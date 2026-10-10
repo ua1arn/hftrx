@@ -226,8 +226,8 @@ typedef int32_t hdmi48bufv_t;
 	//#define HARDWARE_DUCSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 	#define HARDWARE_DUCSCALE	(0.675)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
-	#define FPGADECIMATION 2560uL
-	#define FPGADIVIDERATIO 5uL
+	#define FPGADECIMATION 2560
+	#define FPGADIVIDERATIO 5		// Делитель DUCDDC_FREQ для получения сигнала BCLK - тактирование обмена с процессором
 	#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
 	#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
 
@@ -249,7 +249,7 @@ typedef int32_t hdmi48bufv_t;
 		//#define HARDWARE_DUCSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 		#define HARDWARE_DUCSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
-		#define FPGADECIMATION 2560uL	// должно быть кратно 256
+		#define FPGADECIMATION 2560	// должно быть кратно 256
 
 		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
@@ -263,21 +263,7 @@ typedef int32_t hdmi48bufv_t;
 		//#define HARDWARE_DUCSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 		#define HARDWARE_DUCSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
-		#define FPGADECIMATION 1280uL	// должно быть кратно 256
-
-		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
-		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
-
-	#elif (WITHDSPEXTFIR || WITHDSPEXTDDC) && DIRECT_96M_X1
-		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
-		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
-		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
-		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
-		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
-		//#define HARDWARE_DUCSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-		#define HARDWARE_DUCSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-
-		#define FPGADECIMATION 2000uL	// должно быть кратно 256
+		#define FPGADECIMATION 1280	// должно быть кратно 256
 
 		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
@@ -291,7 +277,7 @@ typedef int32_t hdmi48bufv_t;
 		//#define HARDWARE_DUCSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 		#define HARDWARE_DUCSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
-		#define FPGADECIMATION 1024uL	// должно быть кратно 256
+		#define FPGADECIMATION 1024	// должно быть кратно 256
 
 		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
@@ -301,16 +287,17 @@ typedef int32_t hdmi48bufv_t;
 	#endif /* CPUSTYLE_XC7Z */
 #endif /* CCPUSTYLE_XC7Z || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM */
 
-#if WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN
-	#define ARMI2SMCLKX(scale)	(DUCDDC_FREQ * (uint_fast64_t) (scale) / FPGADECIMATION)
+#if defined (FPGADECIMATION) && WITHI2SCLOCKFROMPIN
+	#define ARMI2SMCLKX(scale)	((int32_t) (DUCDDC_FREQ * (uint_fast64_t) (scale) / FPGADECIMATION))
 #else /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
-	#define ARMI2SMCLKX(scale)	(ARMSAIMCLK * (uint_fast64_t) (scale) / 256)
+	#define ARMI2SMCLKX(scale)	((int32_t) (ARMSAIMCLK * (uint_fast64_t) (scale) / 256))
 #endif /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
 
-#define ARMSAIRATE		(ARMSAIMCLK / 256)	// SAI sample rate (FPGA/IF CODEC side)
+#define SAII2SDIVIDER 256	// Обязательный делитель входного тактирования SAI в STM32
+#define ARMSAIRATE		(ARMSAIMCLK / SAII2SDIVIDER)	// SAI sample rate (FPGA/IF CODEC side)
 
-#define ARMI2SRATE			((int32_t) (ARMI2SMCLK / 256))	// I2S sample rate audio codec (human side)
-#define ARMI2SRATEX(scale)	((int32_t) (ARMI2SMCLKX(scale)))	// I2S sample rate audio codec (human side)
+#define ARMI2SRATE			((int32_t) (ARMI2SMCLK / SAII2SDIVIDER))	// I2S sample rate audio codec (human side)
+#define ARMI2SRATEX(scale)	((int32_t) (ARMI2SMCLKX((scale))))	// I2S sample rate audio codec (human side)
 
 #define ARMI2SRATE100		((int32_t) (ARMI2SRATEX(100)))
 

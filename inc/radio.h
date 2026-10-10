@@ -541,38 +541,6 @@ enum
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
 #endif	/* DIRECT_49M152_X1 */
 
-#if DIRECT_96M_X1
-	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	96000000
-	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
-	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
-	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
-#endif	/* DIRECT_96M_X1 */
-
-#if DIRECT_12M288_X10
-	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	12288000
-	#define DDS1_CLK_MUL	10 		/* Умножитель в DDS1 */
-	#define DDS2_CLK_MUL	10		/* Умножитель в DDS2 */
-	#define DDS3_CLK_MUL	10		/* Умножитель в DDS3 */
-#endif	/* DIRECT_12M288_X10 */
-
-#if DIRECT_160M0_X1
-	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	160000000
-	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
-	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
-	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
-#endif	/* DIRECT_160M0_X1 */
-
-#if DIRECT_48M0_X1
-	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	48000000
-	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
-	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
-	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
-#endif	/* DIRECT_48M0_X1 */
-
 #if DIRECT_50M0_X1
 	#define LO1MODE_DIRECT	1
 	#define REFERENCE_FREQ	50000000
@@ -581,61 +549,16 @@ enum
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
 #endif	/* DIRECT_50M0_X1 */
 
-#if DIRECT_75M0_X1
-	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	75000000
-	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
-	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
-	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
-#endif	/* DIRECT_75M0_X1 */
-
 #if DIRECT_80M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	80000000ul
+	#define REFERENCE_FREQ	80000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS2 */
 #endif	/* DIRECT_80M0_X1 */
 
-#if DIRECT_60M0_X1
-	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	60000000ul
-	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
-	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
-	#define DDS3_CLK_MUL	1		/* Умножитель в DDS2 */
-#endif	/* DIRECT_60M0_X1 */
-
-#if DIRECT_48M0_X8
-	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	48000000ul
-	#define DDS1_CLK_MUL	8 		/* Умножитель в DDS1 */
-	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
-	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
-#endif	/* DIRECT_48M0_X8 */
-
 #define IF3_TYPE_BYPASS	1
 
-/* все возможные фильтры. Не ноль соответствующем бите IF3_FMASK разрешает включение/выключение данного фильтра. */
-#define IF3_FMASK_0P3	(1U << 0)	/* наличие фильтра 0.3 кГц	*/
-#define IF3_FMASK_0P5	(1U << 1)	/* наличие фильтра 0.5 кГц	*/
-#define IF3_FMASK_1P0	(1U << 2)	/* наличие фильтра 1.0 кГц	*/
-#define IF3_FMASK_1P5	(1U << 3)	/* наличие фильтра 1.5 кГц	*/
-#define IF3_FMASK_1P8	(1U << 4)	/* наличие фильтра 1.8 кГц	*/
-#define IF3_FMASK_2P1	(1U << 5)	/* наличие фильтра 2.1 кГц	*/
-#define IF3_FMASK_2P4	(1U << 6)	/* наличие фильтра 2.4 кГц	*/
-#define IF3_FMASK_2P7	(1U << 7)	/* наличие фильтра 2.7 кГц	*/
-#define IF3_FMASK_3P1	(1U << 8)	/* наличие фильтра 3.1 кГц	*/
-#define IF3_FMASK_6P0	(1U << 9)	/* наличие фильтра 6.0 кГц	*/
-#define IF3_FMASK_7P8	(1U << 10)	/* наличие фильтра 7.8 кГц	*/
-#define IF3_FMASK_8P0	(1U << 11)	/* наличие фильтра 8.0 кГц	*/
-#define IF3_FMASK_9P0	(1U << 12)	/* наличие фильтра 9.0 кГц	*/
-#define IF3_FMASK_15P0	(1U << 13)	/* наличие фильтра 15.0 кГц	*/
-#define IF3_FMASK_17P0	(1U << 14)	/* наличие фильтра 17.0 кГц	*/
-#define IF3_FMASK_120P0	(1U << 15)	/* наличие фильтра 120 кГц	*/
-
-//extern uint_fast8_t s9level;		/* уровни калибровки S-метра */
-//extern uint_fast8_t s9delta;		// 9 баллов - 8 интервалов - по 6 децибел каждый
-//extern uint_fast8_t s9_60_delta;		// 60 dB
 extern uint_fast16_t minforward;
 extern uint_fast8_t swrcalibr;
 extern uint_fast8_t maxpwrcali;
