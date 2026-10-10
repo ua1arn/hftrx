@@ -3119,7 +3119,10 @@ void display2_midbar(const gxdrawb_t * db,
 		const char * const label = hamradio_midlabel5(section, & active);
 		const char * const value = hamradio_midvalue5(section, & active);
 		const char * const texts [] = { label, value, };
-		pix_display_texts(db, xpos, y0pix, cellwidth, alldy, & dbstylev_2stateSmall [active], texts, ARRAY_SIZE(texts));
+		if ((section + 1) == MIDCELLS)
+			pix_display_texts(db, xpos, y0pix, alldx - xpos, alldy, & dbstylev_2stateSmall [active], texts, ARRAY_SIZE(texts));
+		else
+			pix_display_texts(db, xpos, y0pix, cellwidth, alldy, & dbstylev_2stateSmall [active], texts, ARRAY_SIZE(texts));
 
 	}
 }

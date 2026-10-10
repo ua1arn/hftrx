@@ -162,7 +162,7 @@ static const dzone_t dzones [] =
 #endif /* WITHMGLOOP */
 	{	23, DLEB,	6,	5,	display2_thermo,		& dzi_thermo, PG1_1, },	// thermo sensor
 	{	29, DLEB,	4,	5,	display2_usbsts3,		& dzi_usbact, PG1_1, },	// USB host status
-	{	33, DLEB,	3,	5,	display2_btsts2,		& dzi_btact, PG1_1, },	// USB host status
+	{	33, DLEB,	3,	5,	display2_btsts2,		& dzi_btact, PG1_1, },	// отображение состояния USB BT
 	{	36, DLEB,	8,	5,	display2_classa7,		& dzi_classa, PG1_1, },	// Class-A power amplifier
 	{	44, DLEB, 	6,  5, 	display2_rxctcss5, 		& dzi_compat, PG1_1, },
 	//{	28, DLEB,	10,	5,	display2_freqmeter10, 	& dzi_default, PGALL, },	// измеренная частота опоры
