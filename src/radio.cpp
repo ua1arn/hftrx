@@ -11389,9 +11389,18 @@ static const struct paramdefdef xgrtcstrobe = {
 
 static void getstamprtc(void)
 {
+	uint_fast16_t vyear;
+	uint_fast8_t vmonth, vday;
+	uint_fast8_t vhour, vminute, vseconds;
+
 	param_setvalue(& xgrtcstrobe, 0);
 	grtcstrobe_shadow = 0;
-	board_rtc_getdatetime(& grtcyear, & grtcmonth, & grtcday, & grtchour, & grtcminute, & grtcseconds);
+	board_rtc_getdatetime(& vyear, & vmonth, & vday, & vhour, & vminute, & vseconds);
+	param_setvalue(& xgrtcyear, vyear);
+	param_setvalue(& xgrtcmonth, vmonth);
+	param_setvalue(& xgrtcday, vday);
+	param_setvalue(& xgrtchour, vhour);
+	param_setvalue(& xgrtcminute, vminute);
 }
 
 static void board_setrtcstrobe(uint_fast8_t val)
