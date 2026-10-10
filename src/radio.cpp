@@ -13983,15 +13983,14 @@ uint_fast8_t hamradio_get_bkin_value(void)
 static void
 uif_key_voxtoggle(void)
 {
-	gvoxenable = calc_next(gvoxenable, 0, 1);
-	save_i8(OFFSETOF(struct nvmap, gvoxenable), gvoxenable);
+	param_keyclick(& xgvoxenable);
 	updateboard();
 }
 
 // текущее состояние VOX
 uint_fast8_t hamradio_get_voxvalue(void)
 {
-	return gvoxenable;
+	return param_getvalue(& xgvoxenable);
 }
 
 #else /* WITHVOX && WITHTX */
