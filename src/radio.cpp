@@ -11328,6 +11328,7 @@ static const struct paramdefdef xgrtcyear = {
 	& grtcyear,
 	NULL,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgrtcmonth = {
 	QLABEL2("TM MONTH", "Month"), 0, RJ_CB,	ISTEP1,
@@ -11349,6 +11350,7 @@ static const struct paramdefdef xgrtcday = {
 	NULL,
 	& grtcday,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgrtchour = {
 	QLABEL2("TM HOUR", "Hour"),  0, RJ_UNSIGNED,	ISTEP1,
