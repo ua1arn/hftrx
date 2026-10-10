@@ -1,9 +1,9 @@
-#ifndef __CenturyGothic_21x41_H_
-#define __CenturyGothic_21x41_H_
+#ifndef __CenturyGothic_21x40_H_
+#define __CenturyGothic_21x40_H_
 
 #include <Adafruit_GFX.h>
 
-const uint8_t CenturyGothic_21x41Bitmaps[] PROGMEM = {
+const uint8_t CenturyGothic_21x40Bitmaps[] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xF0, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -87,7 +87,7 @@ const uint8_t CenturyGothic_21x41Bitmaps[] PROGMEM = {
   0x00
 };
 
-const GFXglyph CenturyGothic_21x41Glyphs[] PROGMEM = {
+const GFXglyph CenturyGothic_21x40Glyphs[] PROGMEM = {
   {     0,   0, -41,  21,    0,    0 },   // 0x20 ' '
   {     0,   0,   0,   0,    0,    0 },   // 0x21 '!'
   {     0,   0,   0,   0,    0,    0 },   // 0x22 '"'
@@ -116,9 +116,9 @@ const GFXglyph CenturyGothic_21x41Glyphs[] PROGMEM = {
   {   868,  18,  41,  21,    0,  -40 }    // 0x39 '9'
 };
 
-const GFXfont CenturyGothic_21x41 PROGMEM = {
-    (uint8_t *)CenturyGothic_21x41Bitmaps,
-    (GFXglyph *)CenturyGothic_21x41Glyphs, 0x20, 0x39,  41
+const GFXfont CenturyGothic_21x40 PROGMEM = {
+    (uint8_t *)CenturyGothic_21x40Bitmaps,
+    (GFXglyph *)CenturyGothic_21x40Glyphs, 0x20, 0x39,  41
 };
 
 #endif

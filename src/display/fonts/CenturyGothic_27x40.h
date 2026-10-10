@@ -1,9 +1,9 @@
-#ifndef __CenturyGothic_27x41_H_
-#define __CenturyGothic_27x41_H_
+#ifndef __CenturyGothic_27x40_H_
+#define __CenturyGothic_27x40_H_
 
 #include <Adafruit_GFX.h>
 
-const uint8_t CenturyGothic_27x41Bitmaps[] PROGMEM = {
+const uint8_t CenturyGothic_27x40Bitmaps[] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0E,
@@ -121,7 +121,7 @@ const uint8_t CenturyGothic_27x41Bitmaps[] PROGMEM = {
   0xE7, 0xFF, 0xFF, 0xFC
 };
 
-const GFXglyph CenturyGothic_27x41Glyphs[] PROGMEM = {
+const GFXglyph CenturyGothic_27x40Glyphs[] PROGMEM = {
   {     0,   0, -41,  27,    0,    0 },   // 0x20 ' '
   {     0,   0,   0,   0,    0,    0 },   // 0x21 '!'
   {     0,   0,   0,   0,    0,    0 },   // 0x22 '"'
@@ -188,9 +188,9 @@ const GFXglyph CenturyGothic_27x41Glyphs[] PROGMEM = {
   {  1365,  27,   2,  27,    0,   -2 }    // 0x5F '_'
 };
 
-const GFXfont CenturyGothic_27x41 PROGMEM = {
-    (uint8_t *)CenturyGothic_27x41Bitmaps,
-    (GFXglyph *)CenturyGothic_27x41Glyphs, 0x20, 0x5F,  41
+const GFXfont CenturyGothic_27x40 PROGMEM = {
+    (uint8_t *)CenturyGothic_27x40Bitmaps,
+    (GFXglyph *)CenturyGothic_27x40Glyphs, 0x20, 0x5F,  41
 };
 
 #endif
