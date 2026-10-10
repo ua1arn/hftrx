@@ -2992,7 +2992,7 @@ display2text_states(const gxdrawb_t * db,
 }
 
 // Отображение режимов TX / RX
-static void display_txrxstate2(const gxdrawb_t * db,
+static void display2_txrxstate2(const gxdrawb_t * db,
 		uint_fast8_t xcell,
 		uint_fast8_t ycell,
 		uint_fast8_t xspan,
@@ -3439,7 +3439,7 @@ static void display2_vfomode5alt(const gxdrawb_t * db,
 }
 
 // VFO mode with memory ch info
-static void display_vfomode5(const gxdrawb_t * db,
+static void display2_vfomode5(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,
@@ -3447,9 +3447,11 @@ static void display_vfomode5(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
-	const char * const labels [1] = { hamradio_get_vfomode5_value(& state), };
-	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	static const char text_SPL [] = "SPLIT";
+	uint_fast8_t state;
+	hamradio_get_vfomode5_value(& state);
+	display_2states(db, x, y, state, text_SPL, text_SPL, xspan, yspan);
+	(void) pctx;
 }
 
 // Отображение режима передачи аудио с USB
@@ -4276,7 +4278,7 @@ static void display2_classa3(const gxdrawb_t * db,
 }
 
 // Отображение уровня сигнала в dBm
-static void display_siglevel7(const gxdrawb_t * db,
+static void display2_siglevel7(const gxdrawb_t * db,
 		uint_fast8_t x,
 		uint_fast8_t y,
 		uint_fast8_t xspan,

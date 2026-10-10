@@ -71,10 +71,10 @@
 
 		{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
-		{	0,	0, 	8, 5, display_siglevel7, 	& dzi_compat, PGALL, },	// signal level dBm
+		{	0,	0, 	8, 5, display2_siglevel7, 	& dzi_compat, PGALL, },	// signal level dBm
 		//{	0,	0, 	6, 5, display2_smeors5, 	& dzi_compat, PGALL, },	// уровень сигнала в баллах S или dBm
 		{	10,	0,	5, 5, display2_rxbwval4,	& dzi_compat, PGALL, },	// RX BW value
-		{	15,	0,	3, 5, display_txrxstate2, 	& dzi_compat, PGALL, },
+		{	15,	0,	3, 5, display2_txrxstate2, 	& dzi_compat, PGALL, },
 		{	18, 0,	4, 5, display2_byp3,		& dzi_compat, PGALL, },	// TUNER BYPASS state (optional)
 		{	22,	0,	6, 5, display2_ant5,		& dzi_compat, PGALL, },
 		{	28,	0,	5, 5, display2_att4,		& dzi_compat, PGALL, },

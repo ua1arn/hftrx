@@ -84,7 +84,7 @@
 	{
 		{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
-		{	0,	0,	2,	0,	display_txrxstate2, * dzi_txrx, PGALL, },
+		{	0,	0,	2,	0,	display2_txrxstate2, * dzi_txrx, PGALL, },
 		{	3,	0,	5,	0,	display2_ant5,		REDRM_MODE, PGALL, },
 		{	9,	0,	4,	0,	display2_att4,		REDRM_MODE, PGALL, },
 		{	14,	0,	3,	0,	display2_preovf3,	REDRM_BARS, PGALL, },

@@ -79,7 +79,7 @@
 	{
 			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		//{	10,	0,	6,	0,	display2_rxbwval6alt,	& dzi_default, PGALL, },	// RX BW value
-		{	17,	0,	2,	0,	display_txrxstate2, & dzi_txrx, PGALL, },
+		{	17,	0,	2,	0,	display2_txrxstate2, & dzi_txrx, PGALL, },
 		{	20,	0,	5,	0,	display2_ant5,		& dzi_antenna, PGALL, },
 		{	26,	0,	4,	0,	display2_att4,		& dzi_attenuator, PGALL, },
 		{	31,	0,	3,	0,	display2_preovf3,	& dzi_default, PGALL, },

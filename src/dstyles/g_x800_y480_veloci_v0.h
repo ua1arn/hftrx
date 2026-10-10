@@ -86,10 +86,10 @@ static const dzone_t dzones [] =
 	{	0,	0,	9,	5,	display2_ENC1F,	& dzi_compat, PGALL, },
 	{	9,	0,	9,	5,	display2_ENC2F,	& dzi_compat, PGALL, },
 
-//	{	0,	0, 	7,	5,	display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
+//	{	0,	0, 	7,	5,	display2_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
 	//{	0,	0, 	5,	5,	display2_smeors5, 	& dzi_compat, PGALL, },	// уровень сигнала в баллах S или dBm
 	//{	10,	0,	4,	5,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
-	{	19,	0,	3,	5,	display_txrxstate2, 	& dzi_txrx, PGALL, },
+	{	19,	0,	3,	5,	display2_txrxstate2, 	& dzi_txrx, PGALL, },
 	{	22,	0,	5,	5,	display2_att4,		& dzi_attenuator, PGALL, },
 	{	27,	0,	4,	5,	display2_preovf3,		& dzi_preamp_ovf, PGALL, },
 
@@ -98,8 +98,8 @@ static const dzone_t dzones [] =
 
 
 #if WITHBARS
-	{   0, 	5,  0,	0,	display2_smeter15_init,	NULL, PGINI, },	//  Инициализация стрелочного прибора
-	{   0, 	5,  SM_BG_W_CELLS, SM_BG_H_CELLS, display2_smeter15,		& dzi_compat, PGALL, },	//  Инициализация стрелочного прибора
+	{   0, 	5,  SM_BG_W_CELLS, SM_BG_H_CELLS,	display2_smeter15_init,	NULL, PGINI, },	//  Инициализация стрелочного прибора
+	{   0, 	5,  SM_BG_W_CELLS, SM_BG_H_CELLS, 	display2_smeter15,		& dzi_compat, PGALL, },	//  Инициализация стрелочного прибора
 //	{   0, 	5,	15,	19,	display2_dummy, 		& dzi_smtr2, PGALL, },	// Placeholder
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
@@ -115,7 +115,7 @@ static const dzone_t dzones [] =
 	//{	15,	8,	14, 8,	display2_freqX_a_x075,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 
-	{	36,	5,	4,	5,	display2_vfomode3,	& dzi_vfomode, PGALL, },	// SPL
+	//{	36,	5,	4,	5,	display2_vfomode3,	& dzi_vfomode, PGALL, },	// SPL
 	//{	40, 5,	4,	5,	display2_mainsub3,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 	//{	44, 5, 6,	5, xxxx },
 
@@ -125,15 +125,16 @@ static const dzone_t dzones [] =
 	{	44,	10,	6,	5,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
 
 	{	36, 15,	4,	5,	display2_nr3,	& dzi_nr, PGALL, },	// NR : was: AGC
-	{	40, 15,	4,	5,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
+	//{	40, 15,	4,	5,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
 	{	44, 15,	6,	5,	display2_notch5,	& dzi_notch, PGALL, },	// NOTCH on/off
 
 	////{	24,	20,	12,	5,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ 144.150.000
 	{	15, 17, 1, 	8,	display2_freqmode_b, & dzi_default, PGALL, },	// Отображение режима настройки VFO B
 	{	16,	17,	14, 8,	display2_freqX_b_x075,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 	{	32, 20,	4,	5,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
+	{	36, 20, 4,	5,	display2_bkin3,	& dzi_bkin, PGALL, },	// BREAK-IN
 	{	40, 20,	4,	5,	display2_voxtune3,	& dzi_voxtune, PGALL, },	// VOX
-	////{	44,	20,	6,	5,	display2_dummy, & dzi_default, PGALL, },	// Placeholder
+	{	44,	20,	6,	5,	display2_vfomode5,	& dzi_vfomode, PGALL, },	// SPL
 
 	// размещены под S-метром (15 ячеек)
 	{	0, 	25,	6,	5,	display2_voltlevelV, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
@@ -144,8 +145,7 @@ static const dzone_t dzones [] =
 	////{ 	28, 25, 4,	5,	display2_dummy, & dzi_default, PGALL, },	// Placeholder
 	{	32, 25,	4,	5,	display2_rec3,	& dzi_rec, PGALL, },	// Отображение режима записи аудио фрагмента
 	{	36, 25,	4,	5,	display2_spk3,	& dzi_spk, PGALL, },	// отображение признака включения динамика
-	{	40, 25, 4,	5,	display2_bkin3,	& dzi_bkin, PGALL, },	// BREAK-IN
-	//{	44,	25,	6,	5,	display2_wpm5, & dzi_wpm, PGALL, },	// 22WPM
+	{	40, 25,	4,	5,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
 	{	44,	25,	6,	5,	display2_lockstate4, & dzi_lock, PGALL, },	// LOCK
 
 	//{	24, 30,	10,	5,	display2_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
