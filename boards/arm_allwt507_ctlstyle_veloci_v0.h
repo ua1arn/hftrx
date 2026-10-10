@@ -350,6 +350,7 @@
 //	#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 //	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 //	#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
+//	#define WITHALTERNATIVEFONTS	1
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
