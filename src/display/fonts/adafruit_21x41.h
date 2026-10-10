@@ -1,9 +1,9 @@
-#ifndef __adafruit_21x41_H_
-#define __adafruit_21x41_H_
+#ifndef __adafruit_21x40_H_
+#define __adafruit_21x40_H_
 
 #include <Adafruit_GFX.h>
 
-const uint8_t adafruit_21x41Bitmaps[] PROGMEM = {
+const uint8_t adafruit_21x40Bitmaps[] PROGMEM = {
   0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
   0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -94,7 +94,7 @@ const uint8_t adafruit_21x41Bitmaps[] PROGMEM = {
   0xFF, 0x3F, 0xFE, 0x00
 };
 
-const GFXglyph adafruit_21x41Glyphs[] PROGMEM = {
+const GFXglyph adafruit_21x40Glyphs[] PROGMEM = {
   {     0,   0,   0,  21,    0,  -40 },   // 0x20 ' '
   {     0,   0,   0,   0,    0,    0 },   // 0x21 '!'
   {     0,   0,   0,   0,    0,    0 },   // 0x22 '"'
@@ -161,9 +161,9 @@ const GFXglyph adafruit_21x41Glyphs[] PROGMEM = {
   {   970,  15,  41,  21,    0,   -3 }    // 0x5F '_'
 };
 
-const GFXfont adafruit_21x41 PROGMEM = {
-    (uint8_t *)adafruit_21x41Bitmaps,
-    (GFXglyph *)adafruit_21x41Glyphs, 0x20, 0x5F,    41
+const GFXfont adafruit_21x40 PROGMEM = {
+    (uint8_t *)adafruit_21x40Bitmaps,
+    (GFXglyph *)adafruit_21x40Glyphs, 0x20, 0x5F,    41
 };
 
 #endif
