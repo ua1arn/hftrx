@@ -193,13 +193,13 @@ static void lvstales_initialize(void)
 		lv_style_t * const s = & xxfreqbstyle;
 
 	    lv_style_init(s);
-//	    lv_style_set_text_color(s, display_lvlcolor(DSGN_BIGCOLORB));
-//	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
+	    lv_style_set_text_color(s, display_lvlcolor(DSGN_BIGCOLOR));
+	    lv_style_set_bg_color(s, display_lvlcolor(display2_getbgcolor()));
 	    lv_style_set_text_align(s, LV_TEXT_ALIGN_RIGHT);
-	    //lv_style_set_pad_ver(s, 15);
-	    //lv_style_set_text_font(s, & eurostyle_56w);
+	    lv_style_set_pad_all(s, 0);
+	    //lv_style_set_text_font(s, & Epson_LTDC_half);	// todo: use Epson_LTDC_big2
 	    //lv_style_set_text_letter_space(s, 5);
-		////lv_style_set_border_width(s, 0);
+		lv_style_set_border_width(s, 0);
 
 	}
 
@@ -744,6 +744,17 @@ static lv_obj_t * dzi_create_freqb(lv_obj_t * parent, const struct dzone * dzp, 
 	return lbl;
 }
 
+static lv_obj_t * dzi_create_freqb_x075(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
+{
+	lv_obj_t * const lbl = lv_info_create(parent, infocb_freqb);
+
+	lv_obj_add_style(lbl, & xxdivstyle, 0);
+	lv_obj_add_style(lbl, & xxfreqbstyle, 0);
+
+	uiupdates(lbl);
+	return lbl;
+}
+
 static lv_obj_t * dzi_create_txrx(lv_obj_t * parent, const struct dzone * dzp, const dzitem_t * dzip, unsigned i)
 {
 	lv_obj_t * const lbl = lv_info_create(parent, infocb_txrx);
@@ -998,6 +1009,14 @@ static const dzitem_t dzi_freqb =
 	.lvelementcreate = LVCREATE(dzi_create_freqb),
 	.id = "freq-b"
 };
+
+static const dzitem_t dzi_freqb_x075 =
+{
+	.lvelementcreate = LVCREATE(dzi_create_freqb_x075),
+	.id = "freq-b"
+};
+
+
 
 static const dzitem_t dzi_txrx =
 {
