@@ -318,8 +318,8 @@ const unifont_t unifont_big_raw =
 	.label = "CenturyGothic_36x54"
 };
 
-#include "fonts/CenturyGothic_21x40.h"
-static adafruitfont_data_t unifontdata_21x40;
+#include "fonts/CenturyGothic_21x41.h"
+static adafruitfont_data_t unifontdata_21x41;
 const unifont_t unifont_half2_raw =
 {
 	.decode = adafruitfont_decode,
@@ -328,13 +328,13 @@ const unifont_t unifont_half2_raw =
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
 	//
-	.fontraster = & CenturyGothic_21x40,
-	.fontdata = & unifontdata_21x40,
-	.label = "CenturyGothic_21x40"
+	.fontraster = & CenturyGothic_21x41,
+	.fontdata = & unifontdata_21x41,
+	.label = "CenturyGothic_21x41"
 };
 
-#include "fonts/CenturyGothic_27x40.h"
-static adafruitfont_data_t unifontdata_27x40;
+#include "fonts/CenturyGothic_27x41.h"
+static adafruitfont_data_t unifontdata_27x41;
 const unifont_t unifont_big2_raw =
 {
 	.decode = adafruitfont_decode,
@@ -343,9 +343,9 @@ const unifont_t unifont_big2_raw =
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
 	//
-	.fontraster = & CenturyGothic_27x40,
-	.fontdata = & unifontdata_27x40,
-	.label = "CenturyGothic_27x40"
+	.fontraster = & CenturyGothic_27x41,
+	.fontdata = & unifontdata_27x41,
+	.label = "CenturyGothic_27x41"
 };
 #else /* WITHALTERNATIVEFONTS */
 
@@ -379,8 +379,8 @@ const unifont_t unifont_big_raw =
 	.label = "adafruit_36x54"
 };
 
-#include "fonts/adafruit_21x40.h"
-static adafruitfont_data_t unifontdata_21x40;
+#include "fonts/adafruit_21x41.h"
+static adafruitfont_data_t unifontdata_21x41;
 const unifont_t unifont_half2_raw =
 {
 	.decode = adafruitfont_decode,
@@ -389,13 +389,13 @@ const unifont_t unifont_half2_raw =
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
 	//
-	.fontraster = & adafruit_21x40,
-	.fontdata = & unifontdata_21x40,
-	.label = "adafruit_21x40"
+	.fontraster = & adafruit_21x41,
+	.fontdata = & unifontdata_21x41,
+	.label = "adafruit_21x41"
 };
 
-#include "fonts/adafruit_27x40.h"
-static adafruitfont_data_t unifontdata_27x40;
+#include "fonts/adafruit_27x41.h"
+static adafruitfont_data_t unifontdata_27x41;
 const unifont_t unifont_big2_raw =
 {
 	.decode = adafruitfont_decode,
@@ -404,9 +404,9 @@ const unifont_t unifont_big2_raw =
 	.font_drawheight = adafruitfont_height,
 	.font_drawci = adafruitfont_render_char,
 	//
-	.fontraster = & adafruit_27x40,
-	.fontdata = & unifontdata_27x40,
-	.label = "adafruit_27x40"
+	.fontraster = & adafruit_27x41,
+	.fontdata = & unifontdata_27x41,
+	.label = "adafruit_27x41"
 };
 
 #endif /* WITHALTERNATIVEFONTS */
