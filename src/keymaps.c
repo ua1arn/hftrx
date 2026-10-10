@@ -477,7 +477,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 8  F3
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 9  F2
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 10 F1
-	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_DWATCHTOGGLE, 	' ', },		// 11 FILTER - 2nd small encoder (encoder_ENC2F object)
+	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_MAX, 			' ', },		// 11 FILTER - 2nd small encoder (encoder_ENC2F object)
 	{ KIF_NONE,		KBD_CODE_MEMO,			KBD_CODE_MEMO_HOLDED, 	' ', },		// 12 MEMO
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 13 BAND DOWN on front panel
 	{ KIF_NONE,		KBD_CODE_DISPMODE,		KBD_CODE_MENU,			' ', },		// 14 FUNC A - 3rd small encoder (encoder_ENC3F object)
@@ -516,7 +516,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_CWMSG3,		KBD_CODE_MAX, 			' ', },		// 8  F3
 	{ KIF_NONE,		KBD_CODE_CWMSG2,		KBD_CODE_MAX,			' ', },		// 9  F2
 	{ KIF_NONE,		KBD_CODE_CWMSG1,		KBD_CODE_MAX,			' ', },		// 10 F1
-	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_DWATCHTOGGLE, 	' ', },		// 11 FILTER - 2nd small encoder (encoder_ENC2F object)
+	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_MAX, 			' ', },		// 11 FILTER - 2nd small encoder (encoder_ENC2F object)
 	{ KIF_NONE,		KBD_CODE_MEMO,			KBD_CODE_MEMO_HOLDED, 	' ', },		// 12 MEMO
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 13 BAND DOWN on front panel
 	{ KIF_NONE,		KBD_CODE_DISPMODE,		KBD_CODE_MENU,			' ', },		// 14 FUNC A - 3rd small encoder (encoder_ENC3F object)
