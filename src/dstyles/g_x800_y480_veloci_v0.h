@@ -110,7 +110,7 @@ static const dzone_t dzones [] =
 
 	{	0,	0,	0, 0, display2_freqX_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 
-	{	15, 5, 2, 9,	display2_dummy, & dzi_default, PGALL, },	// Placeholder
+	{	15, 5, 2, 9,	display2_freqmode_a, & dzi_default, PGALL, },	// Отображение режима настройки VFO A
 	{	18,	5,	18, 11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 	//{	15,	8,	14, 8,	display2_freqX_a_x075,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
@@ -129,7 +129,7 @@ static const dzone_t dzones [] =
 	{	44, 15,	6,	5,	display2_notch5,	& dzi_notch, PGALL, },	// NOTCH on/off
 
 	////{	24,	20,	12,	5,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ 144.150.000
-	{	15, 17, 2, 9,	display2_dummy, & dzi_default, PGALL, },	// Placeholder
+	{	15, 17, 2, 9,	display2_freqmode_b, & dzi_default, PGALL, },	// Отображение режима настройки VFO B
 	{	18,	17,	14, 8,	display2_freqX_b_x075,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 	{	32, 20,	4,	5,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
 	{	40, 20,	4,	5,	display2_voxtune3,	& dzi_voxtune, PGALL, },	// VOX

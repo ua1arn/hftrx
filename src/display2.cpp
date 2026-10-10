@@ -4716,6 +4716,39 @@ static void display2_dummy(
 #endif
 }
 
+// Отображение режима настройки VFO A
+static void display2_freqmode_a(
+	const gxdrawb_t * db,
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	dctx_t * pctx
+	)
+{
+#if ! LCDMODE_DUMMY
+	colpip_fillrect(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), COLORPIP_DARKCYAN);
+	//display_text(db, x, y, "", xspan, yspan, & dbstylev_2rxtx [1]);
+#endif
+}
+
+// Отображение режима настройки VFO B
+static void display2_freqmode_b(
+	const gxdrawb_t * db,
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	dctx_t * pctx
+	)
+{
+#if ! LCDMODE_DUMMY
+	colpip_fillrect(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), COLORPIP_DARKCYAN);
+	//display_text(db, x, y, "", xspan, yspan, & dbstylev_2rxtx [1]);
+#endif
+}
+
+
 
 //+++ bars
 
