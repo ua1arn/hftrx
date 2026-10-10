@@ -5263,6 +5263,70 @@ static const struct paramdefdef xgspectrumpart =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
+
+
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+#if WITHAFSPECTRE
+	static uint_fast8_t gsmetertype = SMETER_TYPE_BARS;
+#else
+	static uint_fast8_t gsmetertype = SMETER_TYPE_DIAL;	/* выбор внешнего вида прибора - стрелочный или градусник */
+#endif /* WITHAFSPECTRE */
+
+static size_t getvaltextsmetertype(char * buff, size_t count, int_fast32_t value)
+{
+	static const char msg_dial [] = "DIAL";
+	static const char msg_bars [] = "BARS";
+	return local_snprintf_P(buff, count, "%s", value ? msg_dial : msg_bars);
+}
+
+/* выбор внешнего вида прибора - стрелочный или градусник */
+static const struct paramdefdef xgsmetertype =
+{
+	QLABEL3("SMETER", "S-meter Type", "SMETER"), 0, RJ_CB,	ISTEP1,
+	ITEM_VALUE | ITEM_LISTSELECT,
+	0, SMETER_TYPE_COUNT - 1,
+	OFFSETOF(struct nvmap, gsmetertype),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gsmetertype,
+	getzerobase, /* складывается со смещением и отображается */
+	getvaltextsmetertype, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
+uint_fast8_t hamradio_get_gsmetertype(void)
+{
+	return param_getvalue(& xgsmetertype);
+}
+
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+
+#if WITHSPECTRUMWF && WITHMENU
+const char * hamradio_change_view_style(uint_fast8_t v)
+{
+	if (v)
+	{
+		if (param_keyclick(& xgviewstyle))
+			updateboard();
+	}
+
+	return view_types [param_getvalue(& xgviewstyle)];
+}
+
+uint_fast8_t hamradio_get_viewstyle(void)
+{
+	return param_getvalue(& xgviewstyle);
+}
+
+void hamradio_settemp_viewstyle(uint_fast8_t v)
+{
+	ASSERT(v < VIEW_count);
+	param_setvalue(& xgviewstyle, v);
+	updateboard();
+}
+
+
+#endif /* WITHSPECTRUMWF && WITHMENU */
+
 #if WITHSPECTRUMWF
 
 #if BOARD_FFTZOOM_POW2MAX > 0
@@ -5334,7 +5398,55 @@ static const struct paramdefdef xgbottomdbtx =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
-#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
+uint_fast8_t hamradio_get_gzoomxpow2(void)
+{
+	return param_getvalue(& xgzoomxpow2);
+}
+
+void hamradio_set_gzoomxpow2(uint_fast8_t v)
+{
+	param_setvalue(& xgzoomxpow2, v);	// Установить значение параметра и сохранить в nvram
+	updateboard();
+}
+
+/* значения со знаком */
+void hamradio_set_bottomdb(int_fast16_t v)
+{
+	param_setvalue(& xgbottomdb, v);
+	updateboard();
+}
+
+/* значения со знаком */
+void hamradio_set_topdb(int_fast16_t v)
+{
+	param_setvalue(& xgtopdb, v);
+	updateboard();
+}
+
+/* значения со знаком */
+int_fast16_t hamradio_get_bottomdb(void)
+{
+	return param_getvalue(& xgbottomdb);
+}
+
+/* значения со знаком */
+int_fast16_t hamradio_get_topdb(void)
+{
+	return param_getvalue(& xgtopdb);
+}
+
+uint8_t hamradio_get_spectrumpart(void)
+{
+	return param_getvalue(& xgspectrumpart);
+}
+
+void hamradio_set_spectrumpart(uint8_t v)
+{
+	param_setvalue(& xgspectrumpart, v);
+	updateboard();
+}
+
+#endif
 
 #endif /* WITHSPECTRUMWF */
 
@@ -5379,8 +5491,6 @@ static const struct paramdefdef xgbottomdbtx =
 	};
 
 #endif /* WITHKBDBACKLIGHT */
-
-static uint_fast8_t gpoweronhold = 1;	/* выдать "1" на выход удержания питания включенным */
 
 static uint_fast8_t gshowdbm = 1;	// Отображение уровня сигнала в dBm или S-memter
 static const struct paramdefdef xgshowdbm =
@@ -6962,35 +7072,6 @@ static const struct paramdefdef xgmutespkr =
 	enum { gheatprot = 0, gtempvmax = 99 };
 
 #endif /* WITHTX */
-
-
-#if (WITHSWRMTR || WITHSHOWSWRPWR)
-#if WITHAFSPECTRE
-	static uint_fast8_t gsmetertype = SMETER_TYPE_BARS;
-#else
-	static uint_fast8_t gsmetertype = SMETER_TYPE_DIAL;	/* выбор внешнего вида прибора - стрелочный или градусник */
-#endif /* WITHAFSPECTRE */
-
-static size_t getvaltextsmetertype(char * buff, size_t count, int_fast32_t value)
-{
-	static const char msg_dial [] = "DIAL";
-	static const char msg_bars [] = "BARS";
-	return local_snprintf_P(buff, count, "%s", value ? msg_dial : msg_bars);
-}
-
-static const struct paramdefdef xgsmetertype =
-{
-	QLABEL3("SMETER", "S-meter Type", "SMETER"), 0, RJ_CB,	ISTEP1,
-	ITEM_VALUE | ITEM_LISTSELECT,
-	0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
-	OFFSETOF(struct nvmap, gsmetertype),
-	getselector0, nvramoffs0, valueoffs0,
-	NULL,
-	& gsmetertype,
-	getzerobase, /* складывается со смещением и отображается */
-	getvaltextsmetertype, /* getvaltext получить текст значения параметра - see RJ_CB */
-};
-#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 static uint_fast8_t gmenuset; 	/* номер комплекта функций на кнопках (переключается кнопкой MENU) */
 static uint_fast8_t dimmstate;	/* не-0: притушить дисплей. */
@@ -9182,6 +9263,9 @@ uint_fast8_t hamradio_get_amfm_highcut10_value(uint_fast8_t * flag)
 }
 #endif /* WITHAMHIGHKBDADJ */
 
+
+static uint_fast8_t gpoweronhold = 1;	/* выдать "1" на выход удержания питания включенным */
+
 #if ! WITHISBOOTLOADER
 
 static void
@@ -9196,7 +9280,6 @@ uif_pwbutton_press(void)
 // проверка, используется ли описатель диапазона с данным кодом в текущей конфигурации.
 // Возврат 0 - не используется
 static uint_fast8_t
-
 existingband(
 	uint_fast8_t b,	// код диапазона
 	uint_fast8_t bandsetbcast,
@@ -9246,7 +9329,6 @@ existingband(
 }
 
 static uint_fast8_t
-
 existingbandsingle(
 	uint_fast8_t b,	// код диапазона
 	uint_fast8_t bandsetbcast
@@ -9259,7 +9341,6 @@ existingbandsingle(
 }
 
 static void
-
 verifyband(const vindex_t b)
 {
 	ASSERT(b != ((vindex_t) - 1));
@@ -22343,90 +22424,6 @@ int_fast8_t hamradio_afresponce(int_fast8_t v)
 
 #endif /* WITHIF4DSP */
 
-#if (WITHSWRMTR || WITHSHOWSWRPWR)
-uint_fast8_t hamradio_get_gsmetertype(void)
-{
-	return gsmetertype;
-}
-#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
-
-#if WITHSPECTRUMWF && WITHMENU
-const char * hamradio_change_view_style(uint_fast8_t v)
-{
-	if (v)
-	{
-		if (param_keyclick(& xgviewstyle))
-			updateboard();
-	}
-
-	return view_types [param_getvalue(& xgviewstyle)];
-}
-
-uint_fast8_t hamradio_get_viewstyle(void)
-{
-	return param_getvalue(& xgviewstyle);
-}
-
-void hamradio_settemp_viewstyle(uint_fast8_t v)
-{
-	ASSERT(v < VIEW_count);
-	gviewstyle = v;
-	updateboard();
-}
-
-#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
-
-uint_fast8_t hamradio_get_gzoomxpow2(void)
-{
-	return param_getvalue(& xgzoomxpow2);
-}
-
-void hamradio_set_gzoomxpow2(uint_fast8_t v)
-{
-	param_setvalue(& xgzoomxpow2, v);	// Установить значение параметра и сохранить в nvram
-	updateboard();
-}
-
-/* значения со знаком */
-void hamradio_set_bottomdb(int_fast16_t v)
-{
-	param_setvalue(& xgbottomdb, v);
-	updateboard();
-}
-
-/* значения со знаком */
-void hamradio_set_topdb(int_fast16_t v)
-{
-	param_setvalue(& xgtopdb, v);
-	updateboard();
-}
-
-/* значения со знаком */
-int_fast16_t hamradio_get_bottomdb(void)
-{
-	return param_getvalue(& xgbottomdb);
-}
-
-/* значения со знаком */
-int_fast16_t hamradio_get_topdb(void)
-{
-	return param_getvalue(& xgtopdb);
-}
-
-uint8_t hamradio_get_spectrumpart(void)
-{
-	return param_getvalue(& xgspectrumpart);
-}
-
-void hamradio_set_spectrumpart(uint8_t v)
-{
-	param_setvalue(& xgspectrumpart, v);
-	updateboard();
-}
-
-#endif
-
-#endif /* WITHSPECTRUMWF && WITHMENU */
 
 const char * hamradio_get_preamp_value(void)
 {
