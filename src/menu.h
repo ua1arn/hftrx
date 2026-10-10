@@ -1026,30 +1026,11 @@
 #endif /* WITHFANTIMER */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	& xgswrprot,
+	& xgswrlim,	/* Предельный КСВ */
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
-	(const struct paramdefdef [1]) {
-		QLABEL2("HEAT LIM", "Heat Limit"),  0, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,
-		20, 85,						/* порог срабатывания защиты по температуре */
-		OFFSETOF(struct nvmap, gtempvmax),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gtempvmax,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL2("HEATPROT", "Heat Prot"), 0, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,						/* защита от перегрева */
-		OFFSETOF(struct nvmap, gheatprot),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gheatprot,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgheatprot,
+	& xgtempvmax,
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 	& xgtxgate,	/* разрешение драйвера и оконечного усилителя */
 

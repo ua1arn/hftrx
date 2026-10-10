@@ -4198,6 +4198,7 @@ struct nvmap {
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	uint8_t gswrprot;	/* защита от превышения КСВ */
+	uint8_t gswrlim;	/* защита от превышения КСВ */
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	uint8_t gdownatcwtune;	/* снижаем мощность до "тюнерной" при нажатии TUNE */
 #endif /* WITHTX */
@@ -6890,7 +6891,6 @@ static const struct paramdefdef xstayfreq =
 
 #if 1//WITHBARS
 
-	uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 32;
 	uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра 1.00 */
 
 	#if WITHSWRMTR
@@ -6997,23 +6997,39 @@ static const struct paramdefdef xgmutespkr =
 };
 										/* маска режимов работы (тройки бит, указывают номер позиции в каждой строке) */
 #if WITHTX
-#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
-	static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
+	#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
+		static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
+	#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
+	static const struct paramdefdef xgtempvmax = {
+		QLABEL2("HEAT LIM", "Heat Limit"),  0, RJ_UNSIGNED, ISTEP1,
+		ITEM_VALUE,
+		20, 85,						/* порог срабатывания защиты по температуре */
+		OFFSETOF(struct nvmap, gtempvmax),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gtempvmax,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
 #if defined (WITHHEATPROT)
 	static uint_fast8_t gheatprot = WITHHEATPROT;	/* защита от перегрева */
 #else /* defined (WITHHEATPROT) */
 	static uint_fast8_t gheatprot = 1;	/* защита от перегрева */
 #endif /* defined (WITHHEATPROT) */
-#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
-#if (WITHSWRMTR || WITHSHOWSWRPWR)
-#if defined (WITHSWRPROT)
-	static uint_fast8_t gswrprot = WITHSWRPROT;
-#else /* defined (WITHSWRPROT) */
-	static uint_fast8_t gswrprot = 1;	/* защита от превышения КСВ */
-#endif /* defined (WITHSWRPROT) */
-#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
-	static uint_fast8_t gdownatcwtune;	/* снижаем мощность до "тюнерной" при нажатии TUNE */
+	static const paramdefdef xgheatprot = {
+		QLABEL3("HEATPROT", "Heat Protect", "HEAT PROT"), 0, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,						/* защита от перегрева */
+		OFFSETOF(struct nvmap, gheatprot),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gheatprot,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 
+	static uint_fast8_t gdownatcwtune;	/* снижаем мощность до "тюнерной" при нажатии TUNE */
 	static const struct paramdefdef xgdownatcwtune =
 	{
 		QLABEL("TUNE LP"), 0, RJ_ON,	ISTEP1,	/* снижаем мощность до "тюнерной" при нажатии TUNE */
@@ -7028,6 +7044,11 @@ static const struct paramdefdef xgmutespkr =
 	};
 
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
+#if defined (WITHSWRPROT)
+	static uint_fast8_t gswrprot = WITHSWRPROT;
+#else /* defined (WITHSWRPROT) */
+	static uint_fast8_t gswrprot = 1;	/* защита от превышения КСВ */
+#endif /* defined (WITHSWRPROT) */
 	static const struct paramdefdef xgswrprot =
 	{
 		QLABEL3("SWR PROT", "SWR Protect", "SWR PROT"), 0, RJ_ON,	ISTEP1,
@@ -7040,9 +7061,23 @@ static const struct paramdefdef xgmutespkr =
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+	static uint_fast8_t gswrlim = 40;	/* Предельный КСВ 1:4 */
+	static const struct paramdefdef xgswrlim =
+	{
+		QLABEL3("SWR LIM", "SWR Limit", "SWR LIM"), 1, RJ_UNSIGNED,	ISTEP1,
+		ITEM_VALUE,
+		20, 100,						/* Предельный КСВ 2:10..1:10 */
+		OFFSETOF(struct nvmap, gswrlim),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gswrlim,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 32;
 	static const struct paramdefdef xminforward =
 	{
-		QLABEL3("FWD LOWR", "FWD Lower", "FWD LOWR"),  0, RJ_UNSIGNED, ISTEP1,		/* нечувствительность SWR-метра */
+		QLABEL3("FWD LOWR", "FWD Lower", "FWD LOWR"),  0, RJ_UNSIGNED, ISTEPLARGE_1,		/* нечувствительность SWR-метра */
 		ITEM_VALUE,
 		1, (1U << HARDWARE_ADCBITS) - 1,
 		OFFSETOF(struct nvmap, minforward),
@@ -7064,13 +7099,7 @@ static const struct paramdefdef xgmutespkr =
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-#endif /* */
-
-#else /* WITHTX */
-
-	enum { gdownatcwtune = 0 };
-	enum { gheatprot = 0, gtempvmax = 99 };
-
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 #endif /* WITHTX */
 
 static uint_fast8_t gmenuset; 	/* номер комплекта функций на кнопках (переключается кнопкой MENU) */
@@ -20205,22 +20234,23 @@ txreq_process0(txreq_t * txreqp)
 	}
 #endif
 #if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
-	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), (int) gtempvmax * 10);
+	//PRINTF("gheatprot=%d,t=%d,max=%d\n", gheatprot, hamradio_get_PAtemp_value(), param_getvalue(& xgtempvmax) * 10);
 	else if (hamradio_get_PAtemp_value() == INT16_MAX)
 	{
 		// термодатчик не подключен
 	}
-	else if (txreqa && gheatprot != 0 && hamradio_get_PAtemp_value() >= (int) gtempvmax * 10) // Градусы в десятых долях
+	else if (txreqa && param_getvalue(& xgheatprot) && hamradio_get_PAtemp_value() >= param_getvalue(& xgtempvmax) * 10) // Градусы в десятых долях
 	{
 		// перегрев
 		txreq_rx0(txreqp, "OVH");
 	}
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 #if (WITHSWRMTR || WITHSHOWSWRPWR) && WITHTX
-	else if (txreqa && getactualdownpower(& txreqst0) == 0 && gswrprot != 0)
+	else if (txreqa && getactualdownpower(& txreqst0) == 0 && param_getvalue(& xgswrprot))
 	{
+		const unsigned range = param_getvalue(& xgswrlim) * SWRMIN / 10;
 		//PRINTF("1 gswrprot=%d,t=%d,swr=%d\n", gswrprot, getactualdownpower(& txreqst0) == 0, get_swr_cached(4 * SWRMIN));
-		if (get_swr_cached(4 * SWRMIN) >= (4 * SWRMIN))	// SWR >= 4.0
+		if (get_swr_cached(range) >= (range))	// SWR >= 4.0
 		{
 			// защита по КСВ
 			txreq_rx0(txreqp, "SWR");
