@@ -11319,9 +11319,6 @@ static uint_fast16_t grtcyear;
 static uint_fast8_t grtcmonth, grtcday;
 static uint_fast8_t grtchour, grtcminute, grtcseconds;
 
-static uint_fast8_t grtcstrobe;
-static uint_fast8_t grtcstrobe_shadow;
-
 static const struct paramdefdef xgrtcyear = {
 	QLABEL2("TM YEAR", "Year"),  0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
@@ -11375,6 +11372,9 @@ static const struct paramdefdef xgrtcminute = {
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
+
+static uint_fast8_t grtcstrobe;
+static uint_fast8_t grtcstrobe_shadow;
 static const struct paramdefdef xgrtcstrobe = {
 	QLABEL2("TM SET", "Set"), 0, RJ_YES,	ISTEP1,
 	ITEM_VALUE,
