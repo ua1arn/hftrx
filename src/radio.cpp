@@ -7679,6 +7679,17 @@ static const struct paramdefdef xgskipfilteraf =
 		#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
 
 		static uint_fast8_t gdactest;
+		static const struct paramdefdef xgdactest = {
+			QLABEL2("DAC TEST", "DAC Test"), 0, RJ_ON,	ISTEP1,	/*  */
+			ITEM_VALUE,
+			0, 1,
+			OFFSETOF(struct nvmap, gdactest),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gdactest,
+			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
 		#if WITHDACSTRAIGHT
 			static const uint_fast8_t gdacstraight = 1;	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 		#else /* WITHDACSTRAIGHT */
@@ -11353,7 +11364,7 @@ static const struct paramdefdef xgrtchour = {
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
-static const struct paramdefdef xgrtcmin = {
+static const struct paramdefdef xgrtcminute = {
 	QLABEL2("TM MIN", "Minute"),  0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	0, 59,
@@ -11378,7 +11389,7 @@ static const struct paramdefdef xgrtcstrobe = {
 
 static void getstamprtc(void)
 {
-	grtcstrobe = 0;
+	param_setvalue(& xgrtcstrobe, 0);
 	grtcstrobe_shadow = 0;
 	board_rtc_getdatetime(& grtcyear, & grtcmonth, & grtcday, & grtchour, & grtcminute, & grtcseconds);
 }
@@ -11387,7 +11398,13 @@ static void board_setrtcstrobe(uint_fast8_t val)
 {
 	if (val != grtcstrobe_shadow && val != 0)
 	{
-		board_rtc_setdatetime(grtcyear, grtcmonth, grtcday, grtchour, grtcminute, 0);
+		board_rtc_setdatetime(
+				param_getvalue(& xgrtcyear),
+				param_getvalue(& xgrtcmonth),
+				param_getvalue(& xgrtcday),
+				param_getvalue(& xgrtchour),
+				param_getvalue(& xgrtcminute),
+				0);
 	}
 	grtcstrobe_shadow = val;
 }
@@ -13561,7 +13578,7 @@ updateboard_noui(
 			board_set_fullbw6(getif6bw(amode, gtx, wide));	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
 			board_set_dspmode(Xpamodetempl->dspmode [gtx]);
 			#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
-				board_set_dactest(gdactest);		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
+				board_set_dactest(param_getvalue(& xgdactest));		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 				board_set_dacstraight(gdacstraight);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 				board_set_tx_inh_enable(gtxinhenable);				/* разрешение реакции на вход tx_inh */
 				//board_set_tx_bpsk_enable(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_TX_BPSK);	/* разрешение прямого формирования модуляции в FPGA */				/* разрешение прямого формирования модуляции в FPGA  */
@@ -13632,9 +13649,9 @@ updateboard_noui(
 			board_set_skipfilteraf(param_getvalue(& xgskipfilteraf));
 		#endif /* ! WITHAGCMODENONE */
 		#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
-			board_set_dither(gdither);	/* управление зашумлением в LTC2208 */
+			board_set_dither(param_getvalue(& xgdither));	/* управление зашумлением в LTC2208 */
 			board_set_adcrand(gadcrand);	/* управление интерфейсом в LTC2208 */
-			board_set_showovf(gshowovf);	/* Показ индикатора переполнения АЦП */
+			board_set_showovf(param_getvalue(& xgshowovf));	/* Показ индикатора переполнения АЦП */
 		#endif /* WITHDSPEXTDDC */
 		} /* (gtx == 0) */
 	#if WITHIF4DSP
@@ -13645,7 +13662,7 @@ updateboard_noui(
 	#endif /* WITHRTTY && WITHIF4DSP */
 
 	#if defined (RTC1_TYPE)
-		board_setrtcstrobe(grtcstrobe);
+		board_setrtcstrobe(param_getvalue(& xgrtcstrobe));
 	#endif /* defined (RTC1_TYPE) */
 	#if WITHANTSELECTRX || WITHANTSELECT1RX
 		board_set_rxantenna(rxantmodes [grxantenna].code);
@@ -22600,7 +22617,7 @@ void display2_set_page_temp(uint_fast8_t page)
 
 void hamradio_set_gdactest(uint8_t v)
 {
-	gdactest = v != 0;
+	param_keyclick(& xgdactest);
 	updateboard();
 }
 

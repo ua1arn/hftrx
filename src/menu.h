@@ -135,7 +135,7 @@
 	& xgrtcmonth,
 	& xgrtcday,
 	& xgrtchour,
-	& xgrtcmin,
+	& xgrtcminute,
 	& xgrtcstrobe,
 #endif /* defined (RTC1_TYPE) */
 /* group name +++ */
@@ -1034,18 +1034,8 @@
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 	& xgtxgate,	/* разрешение драйвера и оконечного усилителя */
 
-#if WITHDSPEXTDDC	/* QLABEL("ВоронёнокQLABEL(" с DSP и FPGA */
-	(const struct paramdefdef [1]) {
-		QLABEL2("DAC TEST", "DAC Test"), 0, RJ_ON,	ISTEP1,	/*  */
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gdactest),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gdactest,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+#if WITHDSPEXTDDC
+	& xgdactest,
 #endif /* WITHDSPEXTDDC */
 #if WITHIF4DSP
 	& xgdacscale,
