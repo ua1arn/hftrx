@@ -1,7 +1,7 @@
 import re
 import os
 
-def scale_local_font_file(input_filename, output_filename, font_name, target_h=41):
+def scale_local_font_file(input_filename, output_filename, font_name, target_h=40):
     if not os.path.exists(input_filename):
         print(f"Ошибка: Локальный файл '{input_filename}' не найден!")
         return
@@ -156,25 +156,29 @@ if __name__ == "__main__":
     # Обработка шрифтов Adafruit
     scale_local_font_file(
         input_filename="adafruit_28x54.h", 
-        output_filename="adafruit_21x41.h", 
-        font_name="adafruit_21x41"
-    )
+        output_filename="adafruit_21x40.h", 
+        font_name="adafruit_21x40",
+         target_h = 40
+   )
     
     scale_local_font_file(
         input_filename="adafruit_36x54.h", 
-        output_filename="adafruit_27x41.h", 
-        font_name="adafruit_27x41"
+        output_filename="adafruit_27x40.h", 
+        font_name="adafruit_27x40",
+        target_h = 40
     )
 
     # Обработка шрифтов Century Gothic
     scale_local_font_file(
-        input_filename="CenturyHothic_28x54.h", 
-        output_filename="CenturyHothic_21x41.h", 
-        font_name="CenturyHothic_21x41"
+        input_filename="CenturyGothic_28x54.h", 
+        output_filename="CenturyGothic_21x40.h", 
+        font_name="CenturyGothic_21x40",
+        target_h = 40
     )
     
     scale_local_font_file(
-        input_filename="CenturyHothic_36x54.h", 
-        output_filename="CenturyHothic_27x41.h", 
-        font_name="CenturyHothic_27x41"
-    )
+        input_filename="CenturyGothic_36x54.h", 
+        output_filename="CenturyGothic_27x40.h", 
+        font_name="CenturyGothic_27x40",
+         target_h = 40
+   )
