@@ -1901,7 +1901,6 @@ SystemInit(void)
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 	sysinit_dsu_initialize();
-	gic600_global_init();
 	gic600_local_init();
 }
 

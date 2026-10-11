@@ -1580,6 +1580,7 @@ __STATIC_INLINE void GIC_DistInitZ(void)
 
   /* Enable distributor with ARE_NS and NS_Group1 */
     GICDistributor->CTLR = ((1U << GICD_CTLR_ARE_NS) | (1U << GICD_CTLR_ENGRP1A));
+    GICDistributor->CTLR  = 0x77;
     //GIC_WaitRWP(GICD_RWP);
     GIC_DistributorWait();
 }
@@ -1627,6 +1628,9 @@ __STATIC_INLINE void GIC_DistInit(void)
 //    GICDistributor->CTLR = ((1U << GICD_CTLR_ARE_NS) | (1U << GICD_CTLR_ENGRP1A));
 //    GIC_DistributorWait();
    //GIC_WaitRWP(GICD_RWP);
+  GICDistributor->CTLR  = 0x77;
+  //GIC_WaitRWP(GICD_RWP);
+  GIC_DistributorWait();
     //Enable distributor
     GIC_EnableDistributor();
 }

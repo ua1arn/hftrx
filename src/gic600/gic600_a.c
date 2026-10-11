@@ -5,8 +5,9 @@
  *      Author: Gena
  */
 
-#if __aarch64__
 #include "hardware.h"
+
+#if __aarch64__ && CPUSTYLE_A733
 #include "formats.h"
 
 void GICv3_Distributor_Init(void) {
@@ -42,8 +43,7 @@ void GICv3_Distributor_Init(void) {
  * @param priority: Interrupt priority value (0x00 to 0xFF, where lower value means higher priority).
  * @param cpu_mask: Bitmask of target cores (Bit 0 = CPU0, Bit 1 = CPU1, ..., Bit 7 = CPU7).
  */
-void GICv3_Configure_Timer_Interrupt(uint8_t priority, uint8_t cpu_mask) {
-    uint32_t int_id = TIMER1_0_IRQn; /* 131 */
+void GICv3_Configure_Interrupt(uint32_t int_id, uint8_t priority, uint8_t cpu_mask) {
 
     /* 1. Disable the targeted interrupt line before altering its configurations */
     GICD->GICD_ICENABLER[int_id / 32] = (1U << (int_id % 32));
@@ -209,9 +209,9 @@ void gic600_local_init(void)
 void gic600_test(void)
 {
 	PRINTF("GIC_GetARE()=%d\n", GIC_GetARE());
-	GICv3_Configure_Timer_Interrupt(0, UINT32_C(1) << 1);
-	for (;;)
-		;
+	GICv3_Configure_Interrupt(TIMER1_0_IRQn, 0, UINT32_C(1) << 1);
+//	for (;;)
+//		;
 }
 #else
 void gic600_global_init(void)
