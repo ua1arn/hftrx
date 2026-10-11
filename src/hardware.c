@@ -2543,8 +2543,8 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	}
 #endif /* CPUSTYLE_VM14 */
 
-	task_scheduler_othercores();
 	gic600_local_init();
+	task_scheduler_othercores();
 }
 
 void arm_hardware_core_poweron(unsigned core)

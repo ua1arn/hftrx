@@ -1158,10 +1158,18 @@ static void IRQ_Handler_GIC_G1(void)
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
 	if (int_id == 1022)
 	{
+#if WITHIRQTRACE
+		dbg_putchar('@');
+		dbg_putchar('a' + arm_hardware_cpuid());
+#endif /* WITHIRQTRACE */
 	}
 
 	if (int_id >= 1020)
 	{
+#if WITHIRQTRACE
+		dbg_putchar('#');
+		dbg_putchar('a' + arm_hardware_cpuid());
+#endif /* WITHIRQTRACE */
 		//LCLSPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
