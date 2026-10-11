@@ -103,9 +103,9 @@ typedef struct
     __IOM uint32_t IGRPMODR [0x020];             /*!< Offset 0xD00 Interrupt Group Modifier Registers */
          RESERVED(0xD80[0x0E00 - 0x0D80], uint8_t)
     __IOM uint32_t NSACR [0x040];                /*!< Offset 0xE00 Non-secure Access Control Registers */
-         RESERVED(0xF00[0x6100 - 0x0F00], uint8_t)
-    __IOM uint64_t IROUTER [0x3DC];              /*!< Offset 0x6100 Interrupt Routing Registers. */
-         RESERVED(0x7FE0[0xC000 - 0x7FE0], uint8_t)
+         RESERVED(0xF00[0x6000 - 0x0F00], uint8_t)
+    __IOM uint64_t IROUTER [0x3DC];              /*!< Offset 0x6000 Interrupt Routing Registers. */
+         RESERVED(0x7EE0[0xC000 - 0x7EE0], uint8_t)
     __IOM uint32_t CHIPSR;                       /*!< Offset 0xC000 Chip Status Register */
     __IOM uint32_t DCHIPR;                       /*!< Offset 0xC004 Default Chip Register */
     __IOM uint64_t CHIPRn [0x004];               /*!< Offset 0xC008 Chip Registers */
@@ -356,22 +356,29 @@ __STATIC_INLINE void GIC_SetTarget(IRQn_Type IRQn, uint32_t cpu_target)
 {
 	if (IRQn >= 32)
 	{
-		if (GIC_GetARE())
+	    if (GIC_GetARE())
 		{
-			/* affinity routing */
-			GICDistributor->IROUTER [IRQn] =
-					GICDistributor_IROUTER_IRM(1) |	/* Interrupts routed to any PE defined as a participating node. */
-					//GICDistributor_IROUTER_Aff0(cpu_target) |
-					GICDistributor_IROUTER_Aff1(cpu_target) |
-					//GICDistributor_IROUTER_Aff2(cpu_target) |
-					//GICDistributor_IROUTER_Aff3(cpu_target) |
-					0;
-		}
-		else
-		{
-			/* legacy */
-//			uint32_t mask = GICDistributor->ITARGETSR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
-//			GICDistributor->ITARGETSR[IRQn / 4U] = mask | ((cpu_target & 0xFFUL) << ((IRQn % 4U) * 8U));
+			if ((cpu_target == 0) || (cpu_target & (cpu_target - 1))) {
+				/* If multiple bits are set in the mask (or mask is 0), enable 1-of-N routing mode.
+				   Bit 31 = 1 means the interrupt can be handled by ANY operational core. */
+				GICDistributor->IROUTER[IRQn] =
+						GICDistributor_IROUTER_IRM(1) |	/* Interrupts routed to any PE defined as a participating node. */
+						0;
+			} else {
+			   /* Exactly one core is selected in the mask. Find its index (0 to 7). */
+				uint32_t core_index = 0;
+				while ((cpu_target & (1U << core_index)) == 0) {
+					core_index++;
+				}
+				/* affinity routing */
+				GICDistributor->IROUTER [IRQn] =
+						GICDistributor_IROUTER_IRM(1) |	/* Interrupts routed to any PE defined as a participating node. */
+						//GICDistributor_IROUTER_Aff0(core_index) |
+						GICDistributor_IROUTER_Aff1(core_index) |
+						//GICDistributor_IROUTER_Aff2(core_index) |
+						//GICDistributor_IROUTER_Aff3(core_index) |
+						0;
+			}
 		}
 	}
 }

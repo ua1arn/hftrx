@@ -67,19 +67,13 @@ void GICv3_Core_Init(uint32_t core_id) {
 
     /* Step 1: Wake up the core's Redistributor interface */
     uint32_t waker = GICR->WAKER;
-    waker &= ~(1 << 1); /* Clear ProcessorSleep bit */
+    waker &= ~ (UINT32_C(1) << 1); /* Clear ProcessorSleep bit */
     GICR->WAKER = waker;
 
     /* Wait until the interface is operational (ChildrenAsleep bit must become 0) */
-    while (GICR->WAKER & (1 << 2))
+    while (GICR->WAKER & (UINT32_C(1) << 2))
     	;
 
-	//printhex32(GIC_REDISTRIBUTOR_BASE, GICR, 1024);
-//    GICR_TypeS * GICR3 = (GICR_TypeS *) GICR;
-//    /* Step 2: Route local core interrupts (SGIs 0-15 and PPIs 16-31) to Non-Secure Group 1 */
-//    GICR3->IGROUPR0  = 0xFFFFFFFF; /* 1 = Group 1 */
-//    GICR3->IGRPMODR0 = 0x00000000; /* 0 = Non-Secure */
-//    ASSERT(GICR3->IGROUPR0 == 0xFFFFFFFF);
 
     /* Step 3: Enable System Register Access (SRE) via the CPU interface */
     __set_ICC_SRE_EL3(0xF);
@@ -100,10 +94,10 @@ void GICv3_Core_Init(uint32_t core_id) {
 
     /* Step 4: Configure routing at the core architecture level (SCR_EL3) */
     uint64_t scr = __get_SCR_EL3();
-    scr &= ~(1 << 2); /* Clear FIQ bit: No FIQ handling at EL3 */
-    scr |= (1 << 1);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
-    scr |= (1 << 2);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
-    scr |= (1 << 10); /* Set RW bit: Enforce Execution at lower ELs to run in 64-bit mode (AArch64) */
+    //scr &= ~ (UINT64_C(1) << 2); /* Clear FIQ bit: No FIQ handling at EL3 */
+    scr |= (UINT64_C(1) << 1);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
+    scr |= (UINT64_C(1) << 2);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
+    scr |= (UINT64_C(1) << 10); /* Set RW bit: Enforce Execution at lower ELs to run in 64-bit mode (AArch64) */
     __set_SCR_EL3(scr);
 //	// D24.2.169 SCR_EL3, Secure Configuration Register
 //	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
@@ -151,12 +145,14 @@ void GICv3_Configure_Timer_Interrupt(uint8_t priority, uint8_t cpu_mask) {
     GICD->GICD_ICFGR[config_index] = icfgr_val;
 
     /* 5. Routing Mapping: Convert the user cpu_mask into GICv3 IROUTER format */
-    if ((0 && cpu_mask == 0) || (cpu_mask & (cpu_mask - 1))) {
+    if ((cpu_mask == 0) || (cpu_mask & (cpu_mask - 1))) {
+    	TP();
         /* If multiple bits are set in the mask (or mask is 0), enable 1-of-N routing mode.
            Bit 31 = 1 means the interrupt can be handled by ANY operational core. */
-        GICD->GICD_IROUTER[int_id] = (1ULL << 31);
+        GICD->GICD_IROUTER[int_id] = (UINT64_C(1) << 31);
     } else {
-        /* Exactly one core is selected in the mask. Find its index (0 to 7). */
+    	TP();
+       /* Exactly one core is selected in the mask. Find its index (0 to 7). */
         uint32_t core_index = 0;
         while ((cpu_mask & (1U << core_index)) == 0) {
             core_index++;
@@ -283,7 +279,10 @@ void gic600_local_init(void)
 
 void gic600_test(void)
 {
+	PRINTF("GIC_GetARE()=%d\n", GIC_GetARE());
 	GICv3_Configure_Timer_Interrupt(0, UINT32_C(1) << 1);
+	for (;;)
+		;
 }
 #else
 void gic600_global_init(void)
