@@ -1670,11 +1670,7 @@ __STATIC_INLINE void GICv3_Core_Init(uint32_t core_id) {
     __set_ICC_SRE_EL3(0xF);
     __ISB(); /* Force architectural register state changes to execute immediately */
 
-    /* 3. Enable CPU System Registers interface */
-    __set_ICC_SRE_EL3(0xF);
-    __ISB();
-
-    __set_ICC_PMR_EL1(0xFF);
+    //__set_ICC_PMR_EL1(0xFF);
     __set_ICC_IGRPEN1_EL3(1); /* Enable Group 1 signaling */
     /* Open the interrupt priority filter gateway completely (0xFF allows all priorities) */
  //   __set_ICC_PMR_EL1(0xFF);
@@ -1685,10 +1681,10 @@ __STATIC_INLINE void GICv3_Core_Init(uint32_t core_id) {
 
     /* Step 4: Configure routing at the core architecture level (SCR_EL3) */
     uint64_t scr = __get_SCR_EL3();
-    //scr &= ~ (UINT64_C(1) << 2); /* Clear FIQ bit: No FIQ handling at EL3 */
+    scr &= ~ (UINT64_C(1) << 0); /* Clear NS bit */
     scr |= (UINT64_C(1) << 1);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
     scr |= (UINT64_C(1) << 2);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
-    scr |= (UINT64_C(1) << 10); /* Set RW bit: Enforce Execution at lower ELs to run in 64-bit mode (AArch64) */
+    //scr |= (UINT64_C(1) << 10); /* Set RW bit: Enforce Execution at lower ELs to run in 64-bit mode (AArch64) */
     __set_SCR_EL3(scr);
 //	// D24.2.169 SCR_EL3, Secure Configuration Register
 //	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3

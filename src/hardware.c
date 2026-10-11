@@ -1527,6 +1527,7 @@ sysinit_vbar_initialize(void)
 	__set_VBAR_EL3(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
 
 	// D24.2.169 SCR_EL3, Secure Configuration Register
+	__set_SCR_EL3(__get_SCR_EL3() & ~ (UINT64_C(1) << 1));	// PE is in Secure state.
 	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
 	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 2));	// Physical FIQ while executing at all exception levels are taken in EL3
 
@@ -1540,6 +1541,9 @@ sysinit_vbar_initialize(void)
 
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
+	__set_SCR(__get_SCR() & ~ (UINT64_C(1) << 1));	// PE is in Secure state.
+	__set_SCR(__get_SCR() | (UINT32_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
+	__set_SCR(__get_SCR() | (UINT32_C(1) << 2));	// Physical FIQ while executing at all exception levels are taken in EL3
 
 #endif /* (__CORTEX_A != 0) */
 

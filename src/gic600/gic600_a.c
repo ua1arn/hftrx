@@ -158,7 +158,7 @@ void GICv3_Configure_Interrupt(uint32_t int_id, uint8_t priority, uint8_t cpu_ma
  * @brief Checks if the CPU core supports ARM GICv3/v4 System Registers.
  * @return 1 if GICv3/v4 is supported, 0 if only GICv2 (or legacy) is available.
  */
-uint32_t Is_GICv3_Supported(void) {
+static uint32_t Is_GICv3_Supported(void) {
     uint64_t pfr0 = __get_ID_AA64PFR0_EL1();
 
     /*
@@ -172,20 +172,20 @@ uint32_t Is_GICv3_Supported(void) {
     return (gic_status == 1U) ? 1U : 0U;
 }
 
-//void Hardware_Interrupt_System_Init(void) {
-//    uint32_t core_id = Get_Linear_Core_ID();
-//
-//    if (Is_GICv3_Supported()) {
-//        /* Safe to execute your GIC-600 / GICv3 code for Allwinner A733 */
-//        if (core_id == 0) {
-//            GICv3_Distributor_Init();
-//        }
-//        GICv3_Core_Init(core_id);
-//    } else {
-//        /* STOP or fallback to GICv2 legacy initialization here */
-//        /* Do NOT touch GICR or ICC registers here to prevent hardfaults */
-//    }
-//}
+static void Hardware_Interrupt_System_Init(void) {
+    uint32_t core_id = arm_hardware_cpuid();
+
+    if (Is_GICv3_Supported()) {
+        /* Safe to execute your GIC-600 / GICv3 code for Allwinner A733 */
+        if (core_id == 0) {
+            GICv3_Distributor_Init();
+        }
+        GICv3_Core_Init(core_id);
+    } else {
+        /* STOP or fallback to GICv2 legacy initialization here */
+        /* Do NOT touch GICR or ICC registers here to prevent hardfaults */
+    }
+}
 
 /* Usage example inside the primary core configuration block */
 //void Setup_System_Timer(void) {
@@ -243,6 +243,7 @@ void gic600_local_init(void)
 {
 	GICv3_Core_Init(Get_Linear_Core_ID());
 }
+
 void GICv3_Fix_Routing_Mode(uint32_t int_id) {
     /* Ensure we are writing to GICD_CTLR in Secure Mode */
     /* Enable Group 0, Group 1 Secure, Group 1 Non-Secure, and BOTH ARE bits */
