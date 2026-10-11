@@ -91,6 +91,10 @@ static inline void __set_ICC_IGRPEN1_EL3(uint64_t value) {
     __asm volatile("msr ICC_IGRPEN1_EL3, %0" : : "r" (value));
 }
 
+static inline void __set_ICC_IGRPEN0_EL1(uint64_t value) {
+    __asm volatile("msr ICC_IGRPEN0_EL1, %0" : : "r" (value));
+}
+
 static inline void __set_SCR_EL3(uint64_t value) {
     __asm volatile("msr SCR_EL3, %0" : : "r" (value));
 }

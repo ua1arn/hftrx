@@ -8,10 +8,10 @@
 #if __aarch64__
 //#include "hardware.h"
 #include "gic600_a.h"
-#include <stdint.h>
+#include <stdio.h>
 
 void GICv3_Distributor_Init(void) {
-    /* Disable Distributor before configuration changes */
+   /* Disable Distributor before configuration changes */
     GICD->CTLR = 0;
 
     /* Wait for Register Write Pending (RWP) bit to clear */
@@ -56,13 +56,18 @@ void GICv3_Core_Init(uint32_t core_id) {
 
     /* Enable signaling of Non-Secure Group 1 interrupts to the core */
     __set_ICC_IGRPEN1_EL3(1);
+    __set_ICC_IGRPEN0_EL1(1);
 
     /* Step 4: Configure routing at the core architecture level (SCR_EL3) */
     uint64_t scr = __get_SCR_EL3();
     scr &= ~(1 << 2); /* Clear FIQ bit: No FIQ handling at EL3 */
     scr |= (1 << 1);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
+    scr |= (1 << 2);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
     scr |= (1 << 10); /* Set RW bit: Enforce Execution at lower ELs to run in 64-bit mode (AArch64) */
     __set_SCR_EL3(scr);
+//	// D24.2.169 SCR_EL3, Secure Configuration Register
+//	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
+//	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 2));	// Physical FIQ while executing at all exception levels are taken in EL3
 
     __ISB(); /* Final pipeline instruction synchronization */
 }
@@ -80,8 +85,8 @@ void GICv3_Configure_Timer_Interrupt(uint8_t priority, uint8_t cpu_mask) {
     while (GICD->STATUSR & (1 << 4)); /* Wait for Register Write Pending (RWP) to clear */
 
     /* 2. Group Allocation: Direct the SPI towards Non-Secure Group 1 context */
-    GICD->IGROUPR[int_id / 32]  |= (1U << (int_id % 32));  /* 1 = Group 1 */
-    GICD->IGRPMODR[int_id / 32] &= ~(1U << (int_id % 32)); /* 0 = Non-Secure */
+//    GICD->IGROUPR[int_id / 32]  |= (1U << (int_id % 32));  /* 1 = Group 1 */
+//    GICD->IGRPMODR[int_id / 32] &= ~(1U << (int_id % 32)); /* 0 = Non-Secure */
 
     /* 3. Priority Configuration: Set the 8-bit priority value
        Each 32-bit register holds 4 priority fields. */
@@ -200,7 +205,7 @@ uint32_t Is_GICv3_Supported(void) {
 void Hardware_Interrupt_System_Init(void) {
     uint32_t core_id = Get_Linear_Core_ID();
 
-    if (1 || Is_GICv3_Supported()) {
+    if (Is_GICv3_Supported()) {
         /* Safe to execute your GIC-600 / GICv3 code for Allwinner A733 */
         if (core_id == 0) {
             GICv3_Distributor_Init();
@@ -223,17 +228,19 @@ void Hardware_Interrupt_System_Init(void) {
 
 void gic600_global_init(void)
 {
-	//GICv3_Distributor_Init();
+	GICv3_Distributor_Init();
 }
 
 void gic600_local_init(void)
 {
-	//GICv3_Core_Init(Get_Linear_Core_ID());
+	GICv3_Core_Init(Get_Linear_Core_ID());
 }
 
 void gic600_test(void)
 {
-	//GICv3_Configure_Timer_Interrupt(0, UINT32_C(1) << 0);
+//	GICv3_Configure_Timer_Interrupt(0, UINT32_C(1) << 1);
+//	for (;;)
+//		;
 }
 #else
 void gic600_global_init(void)
