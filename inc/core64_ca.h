@@ -998,6 +998,19 @@ __STATIC_FORCEINLINE uint64_t __get_ID_AA64MMFR2_EL1(void)
 	return result;
 }
 
+// 4.3.42 Secure Configuration Register
+__STATIC_FORCEINLINE void __set_SCR_EL3(uint64_t value) {
+	__set_RG64("SCR_EL3", value);
+}
+
+// 4.3.42 Secure Configuration Register
+__STATIC_FORCEINLINE uint64_t __get_SCR_EL3(void) {
+	uint64_t result;
+	// MRS <Xt>, SCR_EL3 ; Read SCR_EL3 into Xt
+	__get_RG64("SCR_EL3", result);
+	return result;
+}
+
 #if 0
 __STATIC_FORCEINLINE void __set_SCTLR_EL3(uint64_t value)
 {

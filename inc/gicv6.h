@@ -8,7 +8,9 @@
 #ifndef INC_GICV6_H_
 #define INC_GICV6_H_
 
-#if ! defined (__aarch64__)
+#if defined (__aarch64__)
+#include "core64_ca.h"
+#else
 #include "core32_ca.h"
 #endif
 
@@ -407,7 +409,7 @@ __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
     else
     {
       /* local */
-        cpu_target = __get_MPIDR_EL1() & MPIDR_AFFINITY_MASK;
+        cpu_target = 0;//__get_MPIDR_EL1() & MPIDR_AFFINITY_MASK;
     }
 
     return cpu_target;
@@ -1635,54 +1637,6 @@ __STATIC_INLINE void GIC_DistInit(void)
     GIC_EnableDistributor();
 }
 #endif /* GIC_DISTRIBUTOR_BASE */
-
-/**
- * @brief Extracts a linear core index compatible with GICv3/v4 offset math,
- *        supporting both traditional (Cortex-A53) and DynamIQ (Cortex-A76/A55) layouts.
- * @return Linear core ID (typically 0 to 7 depending on the SoC topology).
- */
-static inline uint32_t Get_Linear_Core_ID(void) {
-    uint64_t mpidr = __get_MPIDR_EL1();
-    uint32_t core_id;
-
-    /* Check Bit 24 (MT - Multi-threading flag) to determine layout style */
-    if (mpidr & (1U << 24)) {
-        /*
-         * DynamIQ Layout (e.g., Allwinner A733 Cortex-A76 / Cortex-A55):
-         * - MT bit is 1.
-         * - Aff1 (bits [15:8]) represents the Core ID.
-         * - Aff0 (bits [7:0]) represents the Thread ID (always 0).
-         */
-        core_id = (uint32_t)((mpidr >> 8) & 0xFFU);
-    } else {
-        /*
-         * Traditional Layout (e.g., Cortex-A53 / Cortex-A7):
-         * - MT bit is 0.
-         * - Aff1 (bits [15:8]) represents the Cluster ID.
-         * - Aff0 (bits [7:0]) represents the Core ID inside the cluster.
-         */
-        core_id = (uint32_t)(mpidr & 0xFFU);
-
-        /*
-         * Optional: If dealing with multi-cluster Cortex-A53 chips (like 8-core big.LITTLE),
-         * you can factor in the cluster ID (Aff1) to prevent core ID overlapping:
-         * uint33_t cluster_id = (uint32_t)((mpidr >> 8) & 0xFFU);
-         * core_id = (cluster_id * 4) + core_id;
-         */
-    }
-
-    return core_id;
-}
-
-static inline void __set_SCR_EL3(uint64_t value) {
-    __asm volatile("msr SCR_EL3, %0" : : "r" (value));
-}
-
-static inline uint64_t __get_SCR_EL3(void) {
-    uint64_t value;
-    __asm volatile("mrs %0, SCR_EL3" : "=r" (value));
-    return value;
-}
 //
 //// 4.3.42 Secure Configuration Register
 //__STATIC_FORCEINLINE void __set_SCR_EL3(uint64_t value)
