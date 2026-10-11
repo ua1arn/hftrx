@@ -7,6 +7,8 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
+//#define WITHIRQTRACE 1	/* перчать номеров возникающих прерываний */
+
 #include "clocks.h"
 #include "board.h"
 #include "gpio.h"
@@ -1085,8 +1087,6 @@ void irqlog_print(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-//#define WITHIRQTRACE 1
-
 //#define INT_ID_MASK		0x3ffuL
 /* Interrupt IDs reported by the HPPIR and IAR registers */
 //#define PENDING_G1_INTID	1022uL
@@ -1302,6 +1302,7 @@ static void FIQ_Handler_GIC_G0(void)
 }
 #endif /* (__CORTEX_A == 55U) */
 
+// Group 1 handler
 static void IRQ_Handler_GIC(void)
 {
 	IRQ_Handler_GIC_G1();
@@ -1309,15 +1310,14 @@ static void IRQ_Handler_GIC(void)
 
 // Call from VFIQ_Handler aarch64
 // Call from FIQ_Handler_aarch32
+// Group 0 handler
 static void FIQ_Handler_GIC(void)
 {
 #if (__CORTEX_A == 55U)
 	FIQ_Handler_GIC_G0();
-#else
-	ASSERT(0);
-	IRQ_Handler_GIC_G1();
 #endif
 }
+
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
@@ -3011,12 +3011,7 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
 	//while (HARDWARE_DEBUG_PUTCHAR('F') == 0) ;
-#if (__CORTEX_A == 55U)
 	FIQ_Handler_GIC();		// Group 0 handler
-	IRQ_Handler_GIC();		// Group 1 handler
-#else
-	IRQ_Handler_GIC();		// Group 1 handler
-#endif /* (__CORTEX_A == 55U) */
 	run_task_curr(task_scheduler(frame));
 }
 
@@ -3097,13 +3092,13 @@ uint32_t __get_DFAR(void)
 // AARCH32
 void IRQ_Handler_aarch32(void * frame)
 {
-	IRQ_Handler_GIC();
+	IRQ_Handler_GIC();			// Group 1 handler
 	run_task_curr_aarch32(task_scheduler(frame));
 }
 
 void FIQ_Handler_aarch32(void * frame)
 {
-	FIQ_Handler_GIC();
+	FIQ_Handler_GIC();			// Group 0 handler
 	run_task_curr_aarch32(task_scheduler(frame));
 }
 

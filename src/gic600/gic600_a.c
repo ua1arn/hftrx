@@ -235,6 +235,18 @@ void gic600_test(void)
 {
 	//GICv3_Configure_Timer_Interrupt(0, UINT32_C(1) << 0);
 }
+#else
+void gic600_global_init(void)
+{
+}
+
+void gic600_local_init(void)
+{
+}
+
+void gic600_test(void)
+{
+}
 
 #endif
 
