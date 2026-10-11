@@ -23,8 +23,8 @@
 	//#define WITHCPUXTAL 26000000u	/* На процессоре установлен кварц 26.000 МГц */
 	#define WITHCPUXOSC 26000000u	/* На процессоре установлен генератор 26.000 МГц */
 
-	#define CPUB_FREQ_MHz 1300//2000
-	#define CPUL_FREQ_MHz 1300//2000
+	#define CPUB_FREQ_MHz 2000
+	#define CPUL_FREQ_MHz 2000
 	//#define HARDWARE_ADDRSPACE_GB (8)	// Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
 	#define HARDWARE_ADDRSPACE_BITS 33
 
