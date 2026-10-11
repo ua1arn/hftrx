@@ -3817,7 +3817,7 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 //		ASSERT((0x03 & GIC_GetConfiguration(int_id)) == cfg);
 	}
 #endif /* ! CPUSTYLE_R7S721 */
-	GIC_SetGroup(int_id, 0);
+	GIC_SetGroup(int_id, 0);	// Group 1: Non-secure group - see IGRPMODR
 
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 

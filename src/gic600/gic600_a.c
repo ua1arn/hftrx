@@ -223,7 +223,7 @@ void Hardware_Interrupt_System_Init(void) {
 
 void gic600_global_init(void)
 {
-	GICv3_Distributor_Init();
+	//GICv3_Distributor_Init();
 }
 
 void gic600_local_init(void)

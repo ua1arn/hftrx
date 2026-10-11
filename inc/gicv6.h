@@ -1313,13 +1313,19 @@ __STATIC_INLINE uint32_t GIC_GetInterfaceId(void)
 */
 __STATIC_INLINE void GIC_SetGroup(IRQn_Type IRQn, uint32_t group)
 {
-  uint32_t igroupr = GICDistributor->IGROUPR[IRQn / 32U];
-  uint32_t shift   = (IRQn % 32U);
+	  uint32_t secure = 0;
+	  uint32_t shift   = (IRQn % 32U);
 
-  igroupr &= (~(1U          << shift));
-  igroupr |= ( (group & 1U) << shift);
+	  uint32_t igroupr = GICDistributor->IGROUPR[IRQn / 32U];
+	  igroupr &= (~(1U          << shift));
+	  igroupr |= ( (group & 1U) << shift);
+	  GICDistributor->IGROUPR[IRQn / 32U] = igroupr;
 
-  GICDistributor->IGROUPR[IRQn / 32U] = igroupr;
+	  // All routed to FIQ
+	  uint32_t igroupmodr = GICDistributor->IGRPMODR[IRQn / 32U];
+	  igroupmodr &= (~(1U          << shift));	 /* 0 = Non-Secure (when coupled with IGROUPR=1) */
+	  igroupmodr |= ( (secure & 1U)   << shift);
+	  GICDistributor->IGRPMODR[IRQn / 32U] = igroupmodr;
 }
 #define GIC_SetSecurity         GIC_SetGroup
 
