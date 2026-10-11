@@ -1459,9 +1459,9 @@ typedef struct GICD_Type
     __IOM uint32_t GICD_IGRPMODR [0x020];             /*!< Offset 0xD00 Interrupt Group Modifier Registers */
          RESERVED(0xD80[0x0E00 - 0x0D80], uint8_t)
     __IOM uint32_t GICD_NSACR [0x040];                /*!< Offset 0xE00 Non-secure Access Control Registers */
-         RESERVED(0xF00[0x6100 - 0x0F00], uint8_t)
-    __IOM uint64_t GICD_IROUTER [0x3DC];              /*!< Offset 0x6100 Interrupt Routing Registers. */
-         RESERVED(0x7FE0[0xC000 - 0x7FE0], uint8_t)
+         RESERVED(0xF00[0x6000 - 0x0F00], uint8_t)
+    __IOM uint64_t GICD_IROUTER [0x3DC];              /*!< Offset 0x6000 Interrupt Routing Registers. */
+         RESERVED(0x7EE0[0xC000 - 0x7EE0], uint8_t)
     __IOM uint32_t GICD_CHIPSR;                       /*!< Offset 0xC000 Chip Status Register */
     __IOM uint32_t GICD_DCHIPR;                       /*!< Offset 0xC004 Default Chip Register */
     __IOM uint64_t GICD_CHIPRn [0x004];               /*!< Offset 0xC008 Chip Registers */

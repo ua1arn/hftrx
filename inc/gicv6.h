@@ -918,6 +918,10 @@ __STATIC_FORCEINLINE void __set_ICC_IGRPEN1_EL1(uint64_t igrpen1)
   //__ASM volatile("MSR  icc_igrpen1_el1, %0" : : "r" (igrpen1) : "memory");
 }
 
+__STATIC_FORCEINLINE void __set_ICC_IGRPEN1_EL3(uint64_t value) {
+    __asm volatile("msr ICC_IGRPEN1_EL3, %0" : : "r" (value));
+}
+
 //__STATIC_FORCEINLINE void __set_ICC_SGI1R_EL1(uint64_t value)
 //{
 //	__MSR(ssICC_SGI1R_EL1, value);
@@ -1035,6 +1039,10 @@ __STATIC_FORCEINLINE void __set_ICC_BPR1_EL1(uint32_t value)
 __STATIC_FORCEINLINE void __set_ICC_IGRPEN0_EL1(uint32_t value)
 {
     __MCR32(sICC_IGRPEN0_EL1, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_IGRPEN1_EL3(uint64_t value) {
+    __asm volatile("msr ICC_IGRPEN1_EL3, %0" : : "r" (value));
 }
 
 __STATIC_FORCEINLINE void __set_ICC_IGRPEN1_EL1(uint32_t value)
