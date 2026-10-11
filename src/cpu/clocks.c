@@ -4491,6 +4491,41 @@ uint_fast32_t allwnr_a733_get_pll_video2_3x_freq(void)
 	return allwnr_a733_get_dcxo_freq() * N / (M1 * P1);
 }
 
+uint_fast32_t allwnr_a733_get_audio0pll4x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_AUDIO0_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 16) & 0x3F);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	AUDIO0PLL4X = 24MHz*N/M1/P0
+	//	When DCXO is 26MHz, AUDIO0PLL4X defaults to be 24.5714*4 MHz
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P0);
+}
+
+uint_fast32_t allwnr_a733_get_audio1pll_div2_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_AUDIO1_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	AUDIO1PLL_DIV2 = 24MHz*N/M1/P0
+	//	AUDIO1PLL_DIV5 = 24MHz*N/M1/P1
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P0);
+}
+
+uint_fast32_t allwnr_a733_get_audio1pll_div5_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_AUDIO1_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	AUDIO1PLL_DIV2 = 24MHz*N/M1/P0
+	//	AUDIO1PLL_DIV5 = 24MHz*N/M1/P1
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P1);
+}
+
 // Default: 1200 MHz
 uint_fast32_t allwnr_a733_get_pll_peri0_2x_freq(void)
 {

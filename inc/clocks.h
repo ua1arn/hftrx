@@ -341,6 +341,11 @@ uint_fast32_t allwnr_a733_get_pll_video1_4x_freq(void);
 uint_fast32_t allwnr_a733_get_pll_video2_4x_freq(void);
 uint_fast32_t allwnr_a733_get_pll_ref_freq(void);
 
+uint_fast32_t allwnr_a733_get_pll_peri0_200M_freq(void);
+uint_fast32_t allwnr_a733_get_audio0pll4x_freq(void);
+uint_fast32_t allwnr_a733_get_audio1pll_div2_freq(void);
+uint_fast32_t allwnr_a733_get_audio1pll_div5_freq(void);
+
 #endif /* CPUSTYLE_A733 */
 
 #if CPUSTYLE_T507
