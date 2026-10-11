@@ -1901,6 +1901,7 @@ SystemInit(void)
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 	sysinit_dsu_initialize();
+	gic600_local_init();
 }
 
 // Вызывается из main, при работающих прерываниях
@@ -2506,6 +2507,7 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	sysinit_fpu_initialize();		// FPU access enable, disable caches
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	stsinit_irql_initialize();	// GIC CPU Interface
+
 	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
 	sysinit_hwtimer_initialize();
@@ -2540,6 +2542,7 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	}
 #endif /* CPUSTYLE_VM14 */
 
+	gic600_local_init();
 	task_scheduler_othercores();
 }
 

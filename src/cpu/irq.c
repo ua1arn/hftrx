@@ -7,6 +7,8 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
+//#define WITHIRQTRACE 1	/* перчать номеров возникающих прерываний */
+
 #include "clocks.h"
 #include "board.h"
 #include "gpio.h"
@@ -1085,8 +1087,6 @@ void irqlog_print(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-//#define WITHIRQTRACE 1
-
 //#define INT_ID_MASK		0x3ffuL
 /* Interrupt IDs reported by the HPPIR and IAR registers */
 //#define PENDING_G1_INTID	1022uL
@@ -1156,15 +1156,20 @@ static void IRQ_Handler_GIC_G1(void)
 
 	// IHI0048B_b_gic_architecture_specification.pdf
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
-#if WITHIRQTRACE
-	//dbg_putchar('X');
-#endif /* WITHIRQTRACE */
 	if (int_id == 1022)
 	{
+#if WITHIRQTRACE
+		dbg_putchar('@');
+		dbg_putchar('a' + arm_hardware_cpuid());
+#endif /* WITHIRQTRACE */
 	}
 
 	if (int_id >= 1020)
 	{
+#if WITHIRQTRACE
+		dbg_putchar('#');
+		dbg_putchar('a' + arm_hardware_cpuid());
+#endif /* WITHIRQTRACE */
 		//LCLSPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
@@ -1178,6 +1183,7 @@ static void IRQ_Handler_GIC_G1(void)
 
 #if WITHIRQTRACE
 		dbg_putchar('X');
+		dbg_putchar('a' + arm_hardware_cpuid());
 		static const char hex [16] = "0123456789ABCDEF";
 		if ((int_id >> 8) & 0x0F)
 			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
@@ -1249,18 +1255,27 @@ static void FIQ_Handler_GIC_G0(void)
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
 
 #if WITHIRQTRACE
-	//dbg_putchar('Y');
+//	dbg_putchar('y');
+//	dbg_putchar('a' + arm_hardware_cpuid());
 #endif /* WITHIRQTRACE */
 	if (int_id == 1022)
 	{
+#if WITHIRQTRACE
+		dbg_putchar('-');
+		dbg_putchar('a' + arm_hardware_cpuid());
+#endif /* WITHIRQTRACE */
 	}
 
 	if (int_id >= 1020)
 	{
+#if WITHIRQTRACE
+		dbg_putchar('=');
+		dbg_putchar('a' + arm_hardware_cpuid());
+#endif /* WITHIRQTRACE */
 		//LCLSPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
-		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
+		GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		//GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
 		//LCLSPIN_UNLOCK(& giclock);
 
 	}
@@ -1270,6 +1285,7 @@ static void FIQ_Handler_GIC_G0(void)
 
 #if WITHIRQTRACE
 		dbg_putchar('Y');
+		dbg_putchar('a' + arm_hardware_cpuid());
 		static const char hex [16] = "0123456789ABCDEF";
 		if ((int_id >> 8) & 0x0F)
 			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
@@ -1300,6 +1316,7 @@ static void FIQ_Handler_GIC_G0(void)
 }
 #endif /* (__CORTEX_A == 55U) */
 
+// Group 1 handler
 static void IRQ_Handler_GIC(void)
 {
 	IRQ_Handler_GIC_G1();
@@ -1307,15 +1324,14 @@ static void IRQ_Handler_GIC(void)
 
 // Call from VFIQ_Handler aarch64
 // Call from FIQ_Handler_aarch32
+// Group 0 handler
 static void FIQ_Handler_GIC(void)
 {
 #if (__CORTEX_A == 55U)
 	FIQ_Handler_GIC_G0();
-#else
-	ASSERT(0);
-	IRQ_Handler_GIC_G1();
 #endif
 }
+
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
@@ -3009,12 +3025,7 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
 	//while (HARDWARE_DEBUG_PUTCHAR('F') == 0) ;
-#if (__CORTEX_A == 55U)
 	FIQ_Handler_GIC();		// Group 0 handler
-	IRQ_Handler_GIC();		// Group 1 handler
-#else
-	IRQ_Handler_GIC();		// Group 1 handler
-#endif /* (__CORTEX_A == 55U) */
 	run_task_curr(task_scheduler(frame));
 }
 
@@ -3095,13 +3106,13 @@ uint32_t __get_DFAR(void)
 // AARCH32
 void IRQ_Handler_aarch32(void * frame)
 {
-	IRQ_Handler_GIC();
+	IRQ_Handler_GIC();			// Group 1 handler
 	run_task_curr_aarch32(task_scheduler(frame));
 }
 
 void FIQ_Handler_aarch32(void * frame)
 {
-	FIQ_Handler_GIC();
+	FIQ_Handler_GIC();			// Group 0 handler
 	run_task_curr_aarch32(task_scheduler(frame));
 }
 
@@ -3651,10 +3662,6 @@ uint_fast8_t arm_hardware_cpuid(void)
 #if CPUSTYLE_RISCV
 	return csr_read_mhartid();
 
-#elif (__CORTEX_A == 55U) && ! defined(__aarch64__)
-	// Cortex-A computers
-	return (__get_MPIDR() >> 8) & 0xFF;
-
 #elif defined(__aarch64__)
     const uint64_t mpidr = __get_MPIDR_EL1();
     /* Check Bit 24 (MT - Multi-threading flag) to determine layout style */
@@ -3815,7 +3822,7 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 //		ASSERT((0x03 & GIC_GetConfiguration(int_id)) == cfg);
 	}
 #endif /* ! CPUSTYLE_R7S721 */
-	GIC_SetGroup(int_id, 0);
+	GIC_SetGroup(int_id, 0);	// Group 1: Non-secure group - see IGRPMODR
 
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 

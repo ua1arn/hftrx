@@ -8,7 +8,9 @@
 #ifndef INC_GICV6_H_
 #define INC_GICV6_H_
 
-#if ! defined (__aarch64__)
+#if defined (__aarch64__)
+#include "core64_ca.h"
+#else
 #include "core32_ca.h"
 #endif
 
@@ -103,9 +105,9 @@ typedef struct
     __IOM uint32_t IGRPMODR [0x020];             /*!< Offset 0xD00 Interrupt Group Modifier Registers */
          RESERVED(0xD80[0x0E00 - 0x0D80], uint8_t)
     __IOM uint32_t NSACR [0x040];                /*!< Offset 0xE00 Non-secure Access Control Registers */
-         RESERVED(0xF00[0x6100 - 0x0F00], uint8_t)
-    __IOM uint64_t IROUTER [0x3DC];              /*!< Offset 0x6100 Interrupt Routing Registers. */
-         RESERVED(0x7FE0[0xC000 - 0x7FE0], uint8_t)
+         RESERVED(0xF00[0x6000 - 0x0F00], uint8_t)
+    __IOM uint64_t IROUTER [0x3DC];              /*!< Offset 0x6000 Interrupt Routing Registers. */
+         RESERVED(0x7EE0[0xC000 - 0x7EE0], uint8_t)
     __IOM uint32_t CHIPSR;                       /*!< Offset 0xC000 Chip Status Register */
     __IOM uint32_t DCHIPR;                       /*!< Offset 0xC004 Default Chip Register */
     __IOM uint64_t CHIPRn [0x004];               /*!< Offset 0xC008 Chip Registers */
@@ -356,22 +358,29 @@ __STATIC_INLINE void GIC_SetTarget(IRQn_Type IRQn, uint32_t cpu_target)
 {
 	if (IRQn >= 32)
 	{
-		if (GIC_GetARE())
+	    if (GIC_GetARE())
 		{
-			/* affinity routing */
-			GICDistributor->IROUTER [IRQn] =
-					GICDistributor_IROUTER_IRM(1) |	/* Interrupts routed to any PE defined as a participating node. */
-					//GICDistributor_IROUTER_Aff0(cpu_target) |
-					GICDistributor_IROUTER_Aff1(cpu_target) |
-					//GICDistributor_IROUTER_Aff2(cpu_target) |
-					//GICDistributor_IROUTER_Aff3(cpu_target) |
-					0;
-		}
-		else
-		{
-			/* legacy */
-//			uint32_t mask = GICDistributor->ITARGETSR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
-//			GICDistributor->ITARGETSR[IRQn / 4U] = mask | ((cpu_target & 0xFFUL) << ((IRQn % 4U) * 8U));
+			if ((cpu_target == 0) || (cpu_target & (cpu_target - 1))) {
+				/* If multiple bits are set in the mask (or mask is 0), enable 1-of-N routing mode.
+				   Bit 31 = 1 means the interrupt can be handled by ANY operational core. */
+				GICDistributor->IROUTER[IRQn] =
+						GICDistributor_IROUTER_IRM(1) |	/* Interrupts routed to any PE defined as a participating node. */
+						0;
+			} else {
+			   /* Exactly one core is selected in the mask. Find its index (0 to 7). */
+				uint32_t core_index = 0;
+				while ((cpu_target & (1U << core_index)) == 0) {
+					core_index++;
+				}
+				/* affinity routing */
+				GICDistributor->IROUTER [IRQn] =
+						GICDistributor_IROUTER_IRM(1) |	/* Interrupts routed to any PE defined as a participating node. */
+						//GICDistributor_IROUTER_Aff0(core_index) |
+						GICDistributor_IROUTER_Aff1(core_index) |
+						//GICDistributor_IROUTER_Aff2(core_index) |
+						//GICDistributor_IROUTER_Aff3(core_index) |
+						0;
+			}
 		}
 	}
 }
@@ -400,7 +409,7 @@ __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
     else
     {
       /* local */
-        cpu_target = __get_MPIDR_EL1() & MPIDR_AFFINITY_MASK;
+        cpu_target = 0;//__get_MPIDR_EL1() & MPIDR_AFFINITY_MASK;
     }
 
     return cpu_target;
@@ -918,6 +927,10 @@ __STATIC_FORCEINLINE void __set_ICC_IGRPEN1_EL1(uint64_t igrpen1)
   //__ASM volatile("MSR  icc_igrpen1_el1, %0" : : "r" (igrpen1) : "memory");
 }
 
+__STATIC_FORCEINLINE void __set_ICC_IGRPEN1_EL3(uint64_t value) {
+    __asm volatile("msr ICC_IGRPEN1_EL3, %0" : : "r" (value));
+}
+
 //__STATIC_FORCEINLINE void __set_ICC_SGI1R_EL1(uint64_t value)
 //{
 //	__MSR(ssICC_SGI1R_EL1, value);
@@ -1035,6 +1048,10 @@ __STATIC_FORCEINLINE void __set_ICC_BPR1_EL1(uint32_t value)
 __STATIC_FORCEINLINE void __set_ICC_IGRPEN0_EL1(uint32_t value)
 {
     __MCR32(sICC_IGRPEN0_EL1, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_IGRPEN1_EL3(uint64_t value) {
+    __asm volatile("msr ICC_IGRPEN1_EL3, %0" : : "r" (value));
 }
 
 __STATIC_FORCEINLINE void __set_ICC_IGRPEN1_EL1(uint32_t value)
@@ -1313,13 +1330,19 @@ __STATIC_INLINE uint32_t GIC_GetInterfaceId(void)
 */
 __STATIC_INLINE void GIC_SetGroup(IRQn_Type IRQn, uint32_t group)
 {
-  uint32_t igroupr = GICDistributor->IGROUPR[IRQn / 32U];
-  uint32_t shift   = (IRQn % 32U);
+	  uint32_t secure = 0;
+	  uint32_t shift   = (IRQn % 32U);
 
-  igroupr &= (~(1U          << shift));
-  igroupr |= ( (group & 1U) << shift);
+	  uint32_t igroupr = GICDistributor->IGROUPR[IRQn / 32U];
+	  igroupr &= (~(1U          << shift));
+	  igroupr |= ( (group & 1U) << shift);
+	  GICDistributor->IGROUPR[IRQn / 32U] = igroupr;
 
-  GICDistributor->IGROUPR[IRQn / 32U] = igroupr;
+	  // All routed to FIQ
+	  uint32_t igroupmodr = GICDistributor->IGRPMODR[IRQn / 32U];
+	  igroupmodr &= (~(1U          << shift));	 /* 0 = Non-Secure (when coupled with IGROUPR=1) */
+	  igroupmodr |= ( (secure & 1U)   << shift);
+	  GICDistributor->IGRPMODR[IRQn / 32U] = igroupmodr;
 }
 #define GIC_SetSecurity         GIC_SetGroup
 
@@ -1559,6 +1582,7 @@ __STATIC_INLINE void GIC_DistInitZ(void)
 
   /* Enable distributor with ARE_NS and NS_Group1 */
     GICDistributor->CTLR = ((1U << GICD_CTLR_ARE_NS) | (1U << GICD_CTLR_ENGRP1A));
+    GICDistributor->CTLR  = 0x77;
     //GIC_WaitRWP(GICD_RWP);
     GIC_DistributorWait();
 }
@@ -1606,10 +1630,72 @@ __STATIC_INLINE void GIC_DistInit(void)
 //    GICDistributor->CTLR = ((1U << GICD_CTLR_ARE_NS) | (1U << GICD_CTLR_ENGRP1A));
 //    GIC_DistributorWait();
    //GIC_WaitRWP(GICD_RWP);
+  GICDistributor->CTLR  = 0x77;
+  //GIC_WaitRWP(GICD_RWP);
+  GIC_DistributorWait();
     //Enable distributor
     GIC_EnableDistributor();
 }
 #endif /* GIC_DISTRIBUTOR_BASE */
+//
+//// 4.3.42 Secure Configuration Register
+//__STATIC_FORCEINLINE void __set_SCR_EL3(uint64_t value)
+//{
+//	// MSR CSSELR_EL1, <Xt> ; Write Xt to CSSELR_EL1
+//	__set_RG64("SCR_EL3", value);
+//}
+//
+//__STATIC_FORCEINLINE uint64_t __get_SCR_EL3(void)
+//{
+//	uint64_t result;
+//	__get_RG64("SCR_EL3", result);
+//	return result;
+//}
+
+__STATIC_INLINE void GICv3_Core_Init(uint32_t core_id) {
+    /* Calculate precise pointer to the target core's 128 KB Redistributor frame using uintptr_t math */
+    GICRedistributor_Type *GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * GIC_REDISTRIBUTOR_STRIDE));
+
+    /* Step 1: Wake up the core's Redistributor interface */
+    uint32_t waker = GICR->WAKER;
+    waker &= ~ (UINT32_C(1) << 1); /* Clear ProcessorSleep bit */
+    GICR->WAKER = waker;
+
+    /* Wait until the interface is operational (ChildrenAsleep bit must become 0) */
+    while (GICR->WAKER & (UINT32_C(1) << 2))
+    	;
+
+
+    /* Step 3: Enable System Register Access (SRE) via the CPU interface */
+    __set_ICC_SRE_EL3(0xF);
+    __ISB(); /* Force architectural register state changes to execute immediately */
+
+    /* 3. Enable CPU System Registers interface */
+    __set_ICC_SRE_EL3(0xF);
+    __ISB();
+
+    __set_ICC_PMR_EL1(0xFF);
+    __set_ICC_IGRPEN1_EL3(1); /* Enable Group 1 signaling */
+    /* Open the interrupt priority filter gateway completely (0xFF allows all priorities) */
+ //   __set_ICC_PMR_EL1(0xFF);
+
+    /* Enable signaling of Non-Secure Group 1 interrupts to the core */
+    __set_ICC_IGRPEN1_EL3(1);
+    __set_ICC_IGRPEN0_EL1(1);
+
+    /* Step 4: Configure routing at the core architecture level (SCR_EL3) */
+    uint64_t scr = __get_SCR_EL3();
+    //scr &= ~ (UINT64_C(1) << 2); /* Clear FIQ bit: No FIQ handling at EL3 */
+    scr |= (UINT64_C(1) << 1);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
+    scr |= (UINT64_C(1) << 2);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
+    scr |= (UINT64_C(1) << 10); /* Set RW bit: Enforce Execution at lower ELs to run in 64-bit mode (AArch64) */
+    __set_SCR_EL3(scr);
+//	// D24.2.169 SCR_EL3, Secure Configuration Register
+//	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
+//	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 2));	// Physical FIQ while executing at all exception levels are taken in EL3
+
+    __ISB(); /* Final pipeline instruction synchronization */
+}
 
 /** \brief Initialize the CPU's interrupt interface
 */

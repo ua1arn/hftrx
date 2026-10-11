@@ -6982,7 +6982,7 @@
    </cluster>
    <cluster>
     <dim>988</dim>
-    <addressOffset>0x00006100</addressOffset>
+    <addressOffset>0x00006000</addressOffset>
     <register>
      <name>GICD_IROUTER</name>
      <displayName>GICD_IROUTER</displayName>

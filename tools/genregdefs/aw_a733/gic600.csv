@@ -31,7 +31,7 @@
 #regdef;	GICD_IGRPMODR;		0x0D00 32;	Interrupt Group Modifier Registers
 #regdef;	GICD_NSACR;			0x0E00 64;	Non-secure Access Control Registers
 
-#regdef;	GICD_IROUTER 8;		0x6100 988;	Interrupt Routing Registers.
+#regdef;	GICD_IROUTER 8;		0x6000 988;	Interrupt Routing Registers.
 
 #regdef;	GICD_CHIPSR;		0xC000;		Chip Status Register
 #regdef;	GICD_DCHIPR;		0xC004;		Default Chip Register

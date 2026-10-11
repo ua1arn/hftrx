@@ -909,6 +909,10 @@ void device_OTG_FS_IRQHandler(void);
 void softdelay(void);
 void mpu6500_test(void);
 
+void gic600_global_init(void);
+void gic600_local_init(void);
+void gic600_test(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

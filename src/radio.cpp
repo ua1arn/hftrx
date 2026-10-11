@@ -6998,8 +6998,7 @@ static const struct paramdefdef xgmutespkr =
 										/* маска режимов работы (тройки бит, указывают номер позиции в каждой строке) */
 #if WITHTX
 	#if (WITHTHERMOLEVEL || WITHTHERMOLEVEL2)
-		static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
-	#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
+	static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
 	static const struct paramdefdef xgtempvmax = {
 		QLABEL2("HEAT LIM", "Heat Limit"),  0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
@@ -7028,6 +7027,7 @@ static const struct paramdefdef xgmutespkr =
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+#endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 
 	static uint_fast8_t gdownatcwtune;	/* снижаем мощность до "тюнерной" при нажатии TUNE */
 	static const struct paramdefdef xgdownatcwtune =
