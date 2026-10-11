@@ -93,6 +93,15 @@ static inline uint64_t __get_SCR_EL3(void) {
     __asm volatile("mrs %0, SCR_EL3" : "=r" (value));
     return value;
 }
+/**
+ * @brief Reads the Processor Feature Register 1 (ID_AA64PFR1_EL1).
+ * @return 64-bit feature register value.
+ */
+static inline uint64_t __get_ID_AA64PFR1_EL1(void) {
+    uint64_t value;
+    __asm volatile("mrs %0, ID_AA64PFR1_EL1" : "=r" (value));
+    return value;
+}
 
 #ifndef __ISB
 static inline  void __ISB(void)

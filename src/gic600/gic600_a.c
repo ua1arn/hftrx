@@ -168,6 +168,36 @@ static inline uint32_t xGet_Linear_Core_ID(void) {
     return core_id;
 }
 
+/**
+ * @brief Checks if the CPU core supports ARM GICv3/v4 System Registers.
+ * @return 1 if GICv3/v4 is supported, 0 if only GICv2 (or legacy) is available.
+ */
+uint32_t Is_GICv3_Supported(void) {
+    uint64_t pfr1 = __get_ID_AA64PFR1_EL1();
+
+    /* Bits [31:28] represent the GIC system register interface support:
+       0b0000 = GICv3/v4 system register interface not supported (GICv2 legacy).
+       0b0001 = GICv3/v4 system register interface is supported. */
+    uint32_t gic_status = (uint32_t)((pfr1 >> 28) & 0x0FU);
+
+    return (gic_status == 1U) ? 1U : 0U;
+}
+
+void Hardware_Interrupt_System_Init(void) {
+    uint32_t core_id = Get_Linear_Core_ID();
+
+    if (Is_GICv3_Supported()) {
+        /* Safe to execute your GIC-600 / GICv3 code for Allwinner A733 */
+        if (core_id == 0) {
+            GICv3_Distributor_Init();
+        }
+        GICv3_Core_Init(core_id);
+    } else {
+        /* STOP or fallback to GICv2 legacy initialization here */
+        /* Do NOT touch GICR or ICC registers here to prevent hardfaults */
+    }
+}
+
 /* Usage example inside the primary core configuration block */
 void Setup_System_Timer(void) {
     /* Get the raw MPIDR value of the current core (e.g. CPU0 = 0x81000000) */
