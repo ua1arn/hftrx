@@ -3653,10 +3653,6 @@ uint_fast8_t arm_hardware_cpuid(void)
 #if CPUSTYLE_RISCV
 	return csr_read_mhartid();
 
-#elif (__CORTEX_A == 55U) && ! defined(__aarch64__)
-	// Cortex-A computers
-	return (__get_MPIDR() >> 8) & 0xFF;
-
 #elif defined(__aarch64__)
     const uint64_t mpidr = __get_MPIDR_EL1();
     /* Check Bit 24 (MT - Multi-threading flag) to determine layout style */
