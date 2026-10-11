@@ -10,8 +10,14 @@
 
 #include <stdint.h>
 
-#define GICD_BASE       ((uintptr_t) 0x03400000)
-#define GICR_BASE       ((uintptr_t) 0x03460000)
+#define GIC_BASE ((uintptr_t) 0x03400000)             /*!< GIC  Base */
+#define GICD_BASE ((uintptr_t) 0x03400000)            /*!< GICD GIC Distributor Base */
+#define GIC_DISTRIBUTOR_BASE ((uintptr_t) 0x03400000) /*!< GIC_DISTRIBUTOR GICD Base */
+#define GICT_BASE ((uintptr_t) 0x03420000)            /*!< GICT GIC ITS translation Base */
+#define GICP_BASE ((uintptr_t) 0x03430000)            /*!< GICP GIC Performance Monitoring Unit Base */
+#define GITS_BASE ((uintptr_t) 0x03440000)            /*!< GITS GIC Secure Access Control Base */
+#define GICR0_BASE ((uintptr_t) 0x03460000)           /*!< GICR GIC Redistributor  Base */
+#define GIC_REDISTRIBUTOR_BASE ((uintptr_t) 0x03460000)/*!< GIC_REDISTRIBUTOR GICD GIC Distributor Base */
 #define TIMER1_0_IRQn   131
 
 /* GIC Distributor (GICD) definitive register structure mapping */
@@ -92,6 +98,15 @@ static inline void __set_SCR_EL3(uint64_t value) {
 static inline uint64_t __get_SCR_EL3(void) {
     uint64_t value;
     __asm volatile("mrs %0, SCR_EL3" : "=r" (value));
+    return value;
+}
+/**
+ * @brief Reads the Processor Feature Register 0 (ID_AA64PFR0_EL1).
+ * @return 64-bit feature register value.
+ */
+static inline uint64_t __get_ID_AA64PFR0_EL1(void) {
+    uint64_t value;
+    __asm volatile("mrs %0, ID_AA64PFR0_EL1" : "=r" (value));
     return value;
 }
 /**

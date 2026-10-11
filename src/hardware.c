@@ -1432,6 +1432,8 @@ stsinit_irql_initialize(void)
 	GIC_CPUInterfaceInit(); //per CPU
 
 #endif
+	gic600_global_init();
+	gic600_local_init();
 	InitializeIrql(IRQL_USER);	// nested interrupts support
 }
 
@@ -2506,6 +2508,8 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	sysinit_fpu_initialize();		// FPU access enable, disable caches
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	stsinit_irql_initialize();	// GIC CPU Interface
+	gic600_local_init();
+
 	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
 	sysinit_hwtimer_initialize();

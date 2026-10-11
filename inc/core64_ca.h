@@ -385,6 +385,17 @@ __STATIC_FORCEINLINE uint32_t __get_CTR_EL0(void)
 	__get_RG32("CTR_EL0", result);
 	return result;
 }
+
+/**
+ * @brief Reads the Processor Feature Register 0 (ID_AA64PFR0_EL1).
+ * @return 64-bit feature register value.
+ */
+__STATIC_FORCEINLINE uint64_t __get_ID_AA64PFR0_EL1(void) {
+	uint32_t result;
+	__get_RG32("ID_AA64PFR0_EL1", result);
+	return result;
+}
+
 /**
  * @brief Reads the Processor Feature Register 1 (ID_AA64PFR1_EL1).
  * @return 64-bit feature register value.

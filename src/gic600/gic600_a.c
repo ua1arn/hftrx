@@ -6,7 +6,7 @@
  */
 
 #if __aarch64__
-
+//#include "hardware.h"
 #include "gic600_a.h"
 #include <stdint.h>
 
@@ -32,7 +32,7 @@ void GICv3_Distributor_Init(void) {
 }
 void GICv3_Core_Init(uint32_t core_id) {
     /* Calculate precise pointer to the target core's 128 KB Redistributor frame using uintptr_t math */
-    GICR_Type *GICR = (GICR_Type *)(GICR_BASE + (core_id * (uintptr_t)0x20000));
+    GICR_Type *GICR = (GICR_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * (uintptr_t)0x20000));
 
     /* Step 1: Wake up the core's Redistributor interface */
     uint32_t waker = GICR->WAKER;
@@ -87,10 +87,12 @@ void GICv3_Configure_Timer_Interrupt(uint8_t priority, uint8_t cpu_mask) {
     uint32_t prio_index = int_id / 4;
     uint32_t prio_shift = (int_id % 4) * 8;
 
-    uint32_t prio_val = GICD->IPRIORITYR[prio_index];
-    prio_val &= ~(0xFFU << prio_shift);          /* Clear old priority byte */
-    prio_val |= ((uint32_t)priority << prio_shift); /* Set new priority byte */
-    GICD->IPRIORITYR[prio_index] = prio_val;
+    if (0) {
+    	   uint32_t prio_val = GICD->IPRIORITYR[prio_index];
+    	    prio_val &= ~(0xFFU << prio_shift);          /* Clear old priority byte */
+    	    prio_val |= ((uint32_t)priority << prio_shift); /* Set new priority byte */
+    	    GICD->IPRIORITYR[prio_index] = prio_val;
+    }
 
     /* 4. Trigger Mapping: Enforce Level-Sensitive mode (00b) */
     uint32_t config_index = int_id / 16;
@@ -137,31 +139,13 @@ static inline uint64_t __get_MPIDR_EL1(void) {
     return value;
 }
 
-/**
- * @brief Extracts a linear core index compatible with the GICv3_Core_Init offset math.
- * @return Linear core ID from 0 to 7 based on Aff1 field for Allwinner A733.
- */
-static inline uint32_t Get_Linear_Core_ID(void) {
-    uint64_t mpidr = __get_MPIDR_EL1();
-
-    /*
-     * Based on actual hardware dump:
-     * MPIDR_EL1 = 0x81000X00 (where X is the core number)
-     * - Bit [24] (MT) = 1 (Multi-threading integrated layout)
-     * - Aff1 (bits [15:8]) = Physical Core ID (0x00 to 0x07)
-     * - Aff0 (bits [7:0])  = Thread ID (always 0x00)
-     */
-    uint32_t core_id = (uint32_t)((mpidr >> 8) & 0xFFU);
-
-    return core_id;
-}
 
 /**
  * @brief Extracts a linear core index compatible with GICv3/v4 offset math,
  *        supporting both traditional (Cortex-A53) and DynamIQ (Cortex-A76/A55) layouts.
  * @return Linear core ID (typically 0 to 7 depending on the SoC topology).
  */
-static inline uint32_t xGet_Linear_Core_ID(void) {
+static inline uint32_t Get_Linear_Core_ID(void) {
     uint64_t mpidr = __get_MPIDR_EL1();
     uint32_t core_id;
 
@@ -199,12 +183,15 @@ static inline uint32_t xGet_Linear_Core_ID(void) {
  * @return 1 if GICv3/v4 is supported, 0 if only GICv2 (or legacy) is available.
  */
 uint32_t Is_GICv3_Supported(void) {
-    uint64_t pfr1 = __get_ID_AA64PFR1_EL1();
+    uint64_t pfr0 = __get_ID_AA64PFR0_EL1();
 
-    /* Bits [31:28] represent the GIC system register interface support:
-       0b0000 = GICv3/v4 system register interface not supported (GICv2 legacy).
-       0b0001 = GICv3/v4 system register interface is supported. */
-    uint32_t gic_status = (uint32_t)((pfr1 >> 28) & 0x0FU);
+    /*
+     * In ARM Architecture Reference Manual:
+     * ID_AA64PFR0_EL1.GIC bits [27:24] specify GIC system register support:
+     * - 0b0000: GICv3/v4 system register interface is NOT implemented (Legacy GICv2 mode).
+     * - 0b0001: GICv3/v4 system register interface IS implemented.
+     */
+    uint32_t gic_status = (uint32_t)((pfr0 >> 24) & 0x0FU);
 
     return (gic_status == 1U) ? 1U : 0U;
 }
@@ -212,7 +199,7 @@ uint32_t Is_GICv3_Supported(void) {
 void Hardware_Interrupt_System_Init(void) {
     uint32_t core_id = Get_Linear_Core_ID();
 
-    if (Is_GICv3_Supported()) {
+    if (1 || Is_GICv3_Supported()) {
         /* Safe to execute your GIC-600 / GICv3 code for Allwinner A733 */
         if (core_id == 0) {
             GICv3_Distributor_Init();
@@ -225,27 +212,28 @@ void Hardware_Interrupt_System_Init(void) {
 }
 
 /* Usage example inside the primary core configuration block */
-void Setup_System_Timer(void) {
-    /* Get the raw MPIDR value of the current core (e.g. CPU0 = 0x81000000) */
-    uint64_t primary_mpidr = __get_MPIDR_EL1();
-
-    /* Route TIMER1_0_IRQn (131) directly to this core */
-    GICv3_Configure_Timer_Interrupt(primary_mpidr, UINT32_C(1) << 0);
-}
+//void Setup_System_Timer(void) {
+//    /* Get the raw MPIDR value of the current core (e.g. CPU0 = 0x81000000) */
+//    uint64_t primary_mpidr = __get_MPIDR_EL1();
+//
+//    /* Route TIMER1_0_IRQn (131) directly to this core */
+//    GICv3_Configure_Timer_Interrupt(primary_mpidr, UINT32_C(1) << 0);
+//}
 
 void gic600_global_init(void)
 {
-	GICv3_Distributor_Init();
+	//GICv3_Distributor_Init();
 }
 
 void gic600_local_init(void)
 {
-
+	//GICv3_Core_Init(Get_Linear_Core_ID());
 }
 
 void gic600_test(void)
 {
-
+	 //GICv3_Configure_Timer_Interrupt(0, UINT32_C(1) << 1);
 }
+
 #endif
 
