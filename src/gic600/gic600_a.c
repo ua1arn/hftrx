@@ -18,7 +18,7 @@ void GICv3_Distributor_Init(void) {
     while (GICD->STATUSR & (1 << 4));
 
     /* Route peripheral SPI interrupts (e.g. indexes 32 to 95) to Non-Secure Group 1 */
-    for (int i = 1; i < 3; i++) {
+    for (int i = 1; i < 32; i++) {
         GICD->IGROUPR[i]  = 0xFFFFFFFF; /* 1 = Group 1 */
         GICD->IGRPMODR[i] = 0x00000000; /* 0 = Non-Secure (when coupled with IGROUPR=1) */
     }
@@ -30,9 +30,10 @@ void GICv3_Distributor_Init(void) {
     /* Ensure synchronization across the memory interconnect */
     while (GICD->STATUSR & (1 << 4));
 }
+
 void GICv3_Core_Init(uint32_t core_id) {
     /* Calculate precise pointer to the target core's 128 KB Redistributor frame using uintptr_t math */
-    GICR_Type *GICR = (GICR_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * (uintptr_t)0x20000));
+    GICR_Type *GICR = (GICR_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * (uintptr_t)0x10000));
 
     /* Step 1: Wake up the core's Redistributor interface */
     uint32_t waker = GICR->WAKER;
@@ -51,7 +52,7 @@ void GICv3_Core_Init(uint32_t core_id) {
     __ISB(); /* Force architectural register state changes to execute immediately */
 
     /* Open the interrupt priority filter gateway completely (0xFF allows all priorities) */
-    __set_ICC_PMR_EL1(0xFF);
+ //   __set_ICC_PMR_EL1(0xFF);
 
     /* Enable signaling of Non-Secure Group 1 interrupts to the core */
     __set_ICC_IGRPEN1_EL3(1);
@@ -222,7 +223,7 @@ void Hardware_Interrupt_System_Init(void) {
 
 void gic600_global_init(void)
 {
-	//GICv3_Distributor_Init();
+	GICv3_Distributor_Init();
 }
 
 void gic600_local_init(void)
@@ -232,7 +233,7 @@ void gic600_local_init(void)
 
 void gic600_test(void)
 {
-	 //GICv3_Configure_Timer_Interrupt(0, UINT32_C(1) << 1);
+	//GICv3_Configure_Timer_Interrupt(0, UINT32_C(1) << 0);
 }
 
 #endif
