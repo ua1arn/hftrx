@@ -235,9 +235,7 @@ void gic600_test(void)
 //	PRINTF("GIC_GetARE()=%d\n", GIC_GetARE());
 //	GICv3_Fix_Routing_Mode(TIMER1_0_IRQn);
 	GICv3_Configure_Interrupt(TIMER1_0_IRQn, 0, UINT32_C(1) << 1);
-//	GICv3_Fix_Routing_Mode(TIMER1_0_IRQn);
-	for (;;)
-		;
+	GICv3_Fix_Routing_Mode(TIMER1_0_IRQn);
 }
 #else
 void gic600_global_init(void)
