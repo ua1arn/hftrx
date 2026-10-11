@@ -5,6 +5,8 @@
  *      Author: Gena
  */
 
+#if __aaarch64__
+
 #include "gic600_a.h"
 #include <stdint.h>
 
@@ -221,3 +223,4 @@ void gic600_test(void)
 {
 
 }
+#endif
