@@ -2485,10 +2485,10 @@ typedef struct RTC_Type
     __IOM uint32_t GP_DATA_REGn [0x008];              /*!< Offset 0x100 (N=0~7) General Purpose Register */
          RESERVED(0x120[0x015C - 0x0120], uint8_t)
     __IOM uint32_t XO_CTRL_WP_REG;                    /*!< Offset 0x15C DCXO Control Write Protect Register */
-    __IOM uint32_t XO_CTRL_REG;                       /*!< Offset 0x160 DCXO Control Register */
+    __IOM uint32_t XO_CTRL0_REG;                      /*!< Offset 0x160 DCXO Control0 Register */
     __IOM uint32_t CALI_CTRL_REG;                     /*!< Offset 0x164 Calibration Control Register */
          RESERVED(0x168[0x016C - 0x0168], uint8_t)
-    __IOM uint32_t XO_GATING_REG;                     /*!< Offset 0x16C DCXO Gating Ctrl Register  */
+    __IOM uint32_t XO_CTRL1_REG;                      /*!< Offset 0x16C DCXO Control1 Register */
          RESERVED(0x170[0x0190 - 0x0170], uint8_t)
     __IOM uint32_t VDD_RTC_REG;                       /*!< Offset 0x190 VDD RTC Regulation Register */
          RESERVED(0x194[0x01F0 - 0x0194], uint8_t)

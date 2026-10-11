@@ -14992,9 +14992,9 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>XO_CTRL_REG</name>
-    <displayName>XO_CTRL_REG</displayName>
-    <description>DCXO Control Register</description>
+    <name>XO_CTRL0_REG</name>
+    <displayName>XO_CTRL0_REG</displayName>
+    <description>DCXO Control0 Register</description>
     <addressOffset>0x160</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -15010,9 +15010,9 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>XO_GATING_REG</name>
-    <displayName>XO_GATING_REG</displayName>
-    <description>DCXO Gating Ctrl Register </description>
+    <name>XO_CTRL1_REG</name>
+    <displayName>XO_CTRL1_REG</displayName>
+    <description>DCXO Control1 Register</description>
     <addressOffset>0x16C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

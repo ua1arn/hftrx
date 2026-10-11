@@ -4344,19 +4344,14 @@ uint_fast32_t allwnr_a733_get_hosc_freq(void)
 	return WITHCPUXOSC;
 }
 
-uint_fast32_t allwnr_a733_get_dcxo_freq(void)
-{
-	return 24 * 1000 * 1000;
-}
-
 uint_fast32_t allwnr_a733_get_rtc_32k_freq(void)
 {
 	return allwnr_a733_get_rc16M_freq() / 512;
 }
 
-uint_fast32_t allwnr_a733_get_pll_ref_freq(void)
+uint_fast32_t allwnr_a733_get_dcxo_freq(void)
 {
-	const uint_fast32_t ctlreg = RTC->XO_CTRL_REG;
+	const uint_fast32_t ctlreg = RTC->XO_CTRL0_REG;
 
 	switch ((ctlreg >> 14) & 0x03)
 	{
@@ -4370,6 +4365,11 @@ uint_fast32_t allwnr_a733_get_pll_ref_freq(void)
 	case 0x03:
 		return 24 * 1000 * 1000;
 	}
+}
+
+uint_fast32_t allwnr_a733_get_pll_ref_freq(void)
+{
+	return allwnr_a733_get_dcxo_freq();
 }
 
 // CPUX -  ARMCortexTM-A76x2 ARMCortexTM-A55x6

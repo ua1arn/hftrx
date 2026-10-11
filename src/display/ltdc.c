@@ -2979,6 +2979,8 @@ static void hardware_de_global_initialize(void)
 	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
 	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
 
+	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 1);	// DCXO_HDMI_GATING
+	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 1));
 
 	const uint_fast32_t lvdsclock = 232848000;
 	const uint_fast32_t lcddotclock = 55000000;
