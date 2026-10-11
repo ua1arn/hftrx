@@ -1178,6 +1178,7 @@ static void IRQ_Handler_GIC_G1(void)
 
 #if WITHIRQTRACE
 		dbg_putchar('X');
+		dbg_putchar('a' + arm_hardware_cpuid());
 		static const char hex [16] = "0123456789ABCDEF";
 		if ((int_id >> 8) & 0x0F)
 			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
@@ -1270,6 +1271,7 @@ static void FIQ_Handler_GIC_G0(void)
 
 #if WITHIRQTRACE
 		dbg_putchar('Y');
+		dbg_putchar('a' + arm_hardware_cpuid());
 		static const char hex [16] = "0123456789ABCDEF";
 		if ((int_id >> 8) & 0x0F)
 			dbg_putchar(hex [(int_id >> 8) & 0x0F]);

@@ -5,7 +5,7 @@
  *      Author: Gena
  */
 
-#if __aaarch64__
+#if __aarch64__
 
 #include "gic600_a.h"
 #include <stdint.h>

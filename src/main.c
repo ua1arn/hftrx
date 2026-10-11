@@ -10,10 +10,6 @@
 #include "bootloader.h"
 #include "formats.h"
 
-void gic600_global_init(void);
-void gic600_local_init(void);
-void gic600_test(void);
-
 /* вызывается при запрещённых прерываниях. */
 void
 lowinitialize(void)
@@ -67,6 +63,7 @@ main(void)
 	task_scheduler_start();
 	global_enableIRQ();
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
+	gic600_test();
 	midtests();
 	application_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
