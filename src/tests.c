@@ -10111,7 +10111,7 @@ void hightests(void)
 			const uintptr_t comp_base = base & ~ (comp_size - 1);
 			const unsigned GICR_CFGID0 = * (volatile uint32_t *) (base + 0x000);
 			const unsigned GICR_CFGID1 = * (volatile uint32_t *) (base + 0x004);
-			const unsigned typer = ((GICR_TypeDef *) comp_base)->GICR_TYPER;
+			const unsigned typer = ((GICR_1_TypeDef *) comp_base)->GICR_TYPER;
 			PRINTF("%p: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X (%s) typer=%08X GICR_CFGID0=%08X GICR_CFGID1=%08X %p comp_size=%u\n",
 					(void *) base,
 					GICR_PIDR4, GICR_PIDR5, GICR_PIDR6, GICR_PIDR7, GICR_PIDR0, GICR_PIDR1, GICR_PIDR2, GICR_PIDR3,

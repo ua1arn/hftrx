@@ -1700,7 +1700,7 @@ static inline uint64_t __get_SCR_EL3(void) {
 
 __STATIC_INLINE void GICv3_Core_Init(uint32_t core_id) {
     /* Calculate precise pointer to the target core's 128 KB Redistributor frame using uintptr_t math */
-    GICRedistributor_Type *GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * 0x10000));
+    GICRedistributor_Type *GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * GIC_REDISTRIBUTOR_STRIDE));
 
     /* Step 1: Wake up the core's Redistributor interface */
     uint32_t waker = GICR->WAKER;

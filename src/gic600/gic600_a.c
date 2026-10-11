@@ -205,13 +205,39 @@ void gic600_local_init(void)
 {
 	GICv3_Core_Init(Get_Linear_Core_ID());
 }
+void GICv3_Fix_Routing_Mode(uint32_t int_id) {
+    /* Ensure we are writing to GICD_CTLR in Secure Mode */
+    /* Enable Group 0, Group 1 Secure, Group 1 Non-Secure, and BOTH ARE bits */
+    GICD->GICD_CTLR = 0x00000037U;
+    //while (GICD->GICD_STATUSR & (1 << 4)); /* Wait for RWP */
+    local_delay_ms(25);
+
+    /*
+     * In GICv3, if ARE is not fully locked by hardware,
+     * GICD_ITARGETSR registers (offsets 0x0800-0x0BFF) might still hold 0xFFFFFFFF (broadcast).
+     * To prevent broadcast in hidden GICv2 bypass mode, clear the target masks
+     * for your interrupt (ID 131).
+     * 131 / 4 = 32. 131 % 4 = 3 (byte offset inside 32-bit register).
+     */
+    volatile uint32_t *itargetsr = (volatile uint32_t *)((uintptr_t)GICD_BASE + 0x0800);
+
+    /* Clear target mask for interrupt 131 to isolate it from GICv2 broadcast */
+    uint32_t target_val = itargetsr[int_id / 4];
+    target_val &= ~(0xFFU << ((int_id % 4) * 8)); /* Clear target byte for ID 131 */
+    itargetsr[int_id / 4] = target_val;
+
+    //while (GICD->GICD_STATUSR & (1 << 4)); /* Wait for RWP */
+    local_delay_ms(25);
+}
 
 void gic600_test(void)
 {
-	PRINTF("GIC_GetARE()=%d\n", GIC_GetARE());
+//	PRINTF("GIC_GetARE()=%d\n", GIC_GetARE());
+//	GICv3_Fix_Routing_Mode(TIMER1_0_IRQn);
 	GICv3_Configure_Interrupt(TIMER1_0_IRQn, 0, UINT32_C(1) << 1);
-//	for (;;)
-//		;
+//	GICv3_Fix_Routing_Mode(TIMER1_0_IRQn);
+	for (;;)
+		;
 }
 #else
 void gic600_global_init(void)
