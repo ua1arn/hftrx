@@ -5,7 +5,7 @@
  *      Author: Gena
  */
 
-#if __aaarch64__
+#if __aaarch64__ || 1
 
 #include "gic600_a.h"
 #include <stdint.h>
@@ -67,13 +67,14 @@ void GICv3_Core_Init(uint32_t core_id) {
 }
 
 /**
- * @brief Configures TIMER1_0_IRQn (131) as Level-Sensitive and routes it via GICD_IROUTER.
- * @param mpidr: Target core affinity mapping byte layout from MPIDR_EL1 register.
+ * @brief Configures TIMER1_0_IRQn (131), sets its priority, trigger type, and routes it using a core mask.
+ * @param priority: Interrupt priority value (0x00 to 0xFF, where lower value means higher priority).
+ * @param cpu_mask: Bitmask of target cores (Bit 0 = CPU0, Bit 1 = CPU1, ..., Bit 7 = CPU7).
  */
-void GICv3_Configure_Timer_Interrupt(uint64_t mpidr) {
+void GICv3_Configure_Timer_Interrupt(uint8_t priority, uint8_t cpu_mask) {
     uint32_t int_id = TIMER1_0_IRQn; /* 131 */
 
-    /* 1. Disable the targeted interrupt line before altering its structural properties */
+    /* 1. Disable the targeted interrupt line before altering its configurations */
     GICD->ICENABLER[int_id / 32] = (1U << (int_id % 32));
     while (GICD->STATUSR & (1 << 4)); /* Wait for Register Write Pending (RWP) to clear */
 
@@ -81,27 +82,50 @@ void GICv3_Configure_Timer_Interrupt(uint64_t mpidr) {
     GICD->IGROUPR[int_id / 32]  |= (1U << (int_id % 32));  /* 1 = Group 1 */
     GICD->IGRPMODR[int_id / 32] &= ~(1U << (int_id % 32)); /* 0 = Non-Secure */
 
-    /* 3. Trigger Mapping: Set as Level-Sensitive (High level)
-       Each INTID utilizes 2 bits configuration inside the register block.
-       Bit 1 of the pair represents: 0 = Level-Sensitive, 1 = Edge-Triggered. */
+    /* 3. Priority Configuration: Set the 8-bit priority value
+       Each 32-bit register holds 4 priority fields. */
+    uint32_t prio_index = int_id / 4;
+    uint32_t prio_shift = (int_id % 4) * 8;
+
+    uint32_t prio_val = GICD->IPRIORITYR[prio_index];
+    prio_val &= ~(0xFFU << prio_shift);          /* Clear old priority byte */
+    prio_val |= ((uint32_t)priority << prio_shift); /* Set new priority byte */
+    GICD->IPRIORITYR[prio_index] = prio_val;
+
+    /* 4. Trigger Mapping: Enforce Level-Sensitive mode (00b) */
     uint32_t config_index = int_id / 16;
     uint32_t config_bit_shift = (int_id % 16) * 2;
 
     uint32_t icfgr_val = GICD->ICFGR[config_index];
-    icfgr_val &= ~(3U << config_bit_shift); /* Clear both bits to enforce Level-Sensitive mode (00b) */
+    icfgr_val &= ~(3U << config_bit_shift);      /* 00b = Level-Sensitive */
     GICD->ICFGR[config_index] = icfgr_val;
 
-    /* 4. Target Routing: Assign delivery to the exact CPU target fetched from 'mpidr' */
-    uint64_t target_affinity = mpidr & 0xFF00FFFFFFULL; /* Clear specific execution flags from MPIDR */
-    GICD->IROUTER[int_id] = target_affinity;            /* Explicit routing execution (Mode Bit 31 = 0) */
+    /* 5. Routing Mapping: Convert the user cpu_mask into GICv3 IROUTER format */
+    if ((cpu_mask == 0) || (cpu_mask & (cpu_mask - 1))) {
+        /* If multiple bits are set in the mask (or mask is 0), enable 1-of-N routing mode.
+           Bit 31 = 1 means the interrupt can be handled by ANY operational core. */
+        GICD->IROUTER[int_id] = (1ULL << 31);
+    } else {
+        /* Exactly one core is selected in the mask. Find its index (0 to 7). */
+        uint32_t core_index = 0;
+        while ((cpu_mask & (1U << core_index)) == 0) {
+            core_index++;
+        }
 
-    /* 5. Enable the configured interrupt line back */
+        /*
+         * Construct the GICv3 target affinity for Allwinner A733.
+         * As proven by the log, the hardware topology places Core ID in Aff1:
+         * MPIDR_EL1 layout for A733: Aff3=0, Aff2=0, Aff1=core_index, Aff0=0.
+         * target_affinity format: (Aff1 << 8)
+         */
+        uint64_t target_affinity = ((uint64_t)core_index << 8);
+        GICD->IROUTER[int_id] = target_affinity; /* Route strictly to the selected core (Bit 31 = 0) */
+    }
+
+    /* 6. Enable the configured interrupt line back */
     GICD->ISENABLER[int_id / 32] = (1U << (int_id % 32));
-    while (GICD->STATUSR & (1 << 4)); /* Execute trailing hardware sync lock wait */
+    while (GICD->STATUSR & (1 << 4)); /* Final RWP hardware synchronization wait */
 }
-#include <stdint.h>
-
-#include <stdint.h>
 
 /**
  * @brief Reads the Multiprocessor Affinity Register (MPIDR_EL1).
@@ -206,7 +230,7 @@ void Setup_System_Timer(void) {
     uint64_t primary_mpidr = __get_MPIDR_EL1();
 
     /* Route TIMER1_0_IRQn (131) directly to this core */
-    GICv3_Configure_Timer_Interrupt(primary_mpidr);
+    GICv3_Configure_Timer_Interrupt(primary_mpidr, UINT32_C(1) << 0);
 }
 
 void gic600_global_init(void)

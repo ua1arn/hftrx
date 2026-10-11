@@ -12,44 +12,45 @@
 
 #define GICD_BASE       ((uintptr_t) 0x03400000)
 #define GICR_BASE       ((uintptr_t) 0x03460000)
+#define TIMER1_0_IRQn   131
 
-#define TIMER1_0_IRQn   131  /* Allwinner A733 Hardware SPI ID for Timer */
-
-#include <stdint.h>
-
-#define GICD_BASE       ((uintptr_t) 0x03400000)
-
+/* GIC Distributor (GICD) definitive register structure mapping */
 typedef struct {
     volatile uint32_t CTLR;              /* 0x0000 - Distributor Control Register */
     const volatile uint32_t TYPER;       /* 0x0004 - Interrupt Controller Type Register */
     const volatile uint32_t IIDR;        /* 0x0008 - Implementer Identification Register */
-    uint32_t RESERVED0;              /* Pad 0x000C to 0x007F */
+    uint32_t RESERVED0[29];             /* 0x000C to 0x007F - Pad to STATUSR */
 
     volatile uint32_t STATUSR;           /* 0x0080 - Status Register */
-    uint32_t RESERVED1[31];          /* Pad 0x0084 to 0x00FF */
+    uint32_t RESERVED1[31];             /* 0x0084 to 0x00FF - Pad to IGROUPR */
 
-    /* Arrays for 1024 interrupts (32 registers each) */
-    volatile uint32_t IGROUPR[32];   /* 0x0100 - Interrupt Group Registers */
-    volatile uint32_t ISENABLER[32]; /* 0x0180 - Interrupt Set-Enable Registers */
-    volatile uint32_t ICENABLER[32]; /* 0x0200 - Interrupt Clear-Enable Registers */
+    /* 1 bit per INTID -> 32 INTIDs per register -> 32 registers for 1024 INTIDs */
+    volatile uint32_t IGROUPR[32];       /* 0x0100 to 0x017F - Interrupt Group Registers */
+    volatile uint32_t ISENABLER[32];     /* 0x0180 to 0x01FF - Interrupt Set-Enable Registers */
+    volatile uint32_t ICENABLER[32];     /* 0x0200 to 0x027F - Interrupt Clear-Enable Registers */
 
-    uint32_t RESERVED2[224];         /* Pad from 0x0280 to 0x05FF */
+    uint32_t RESERVED2[96];             /* 0x0280 to 0x03FF - Pad to IPRIORITYR */
 
-    /* Configuration array (2 bits per INTID, 16 INTIDs per 32-bit register -> 64 registers total) */
-    volatile uint32_t ICFGR[64];     /* 0x0600 - Interrupt Configuration Registers */
+    /* 8 bits per INTID -> 4 INTIDs per register -> 256 registers for 1024 INTIDs */
+    volatile uint32_t IPRIORITYR[256];   /* 0x0400 to 0x07FF - Interrupt Priority Registers */
 
-    uint32_t RESERVED3[448];         /* Pad from 0x0700 to 0x0DFF */
+    /* 2 bits per INTID -> 16 INTIDs per register -> 64 registers for 1024 INTIDs */
+    volatile uint32_t ICFGR[64];         /* 0x0800 to 0x08FF - Interrupt Configuration Registers */
 
-    volatile uint32_t IGRPMODR[32];  /* 0x0D00 - Interrupt Group Modifier Registers */
+    uint32_t RESERVED3[256];            /* 0x0900 to 0x0CFF - Pad to IGRPMODR */
 
-    uint32_t RESERVED4[352];         /* Pad from 0x0E80 to 0x13FF */
+    /* 1 bit per INTID -> 32 INTIDs per register -> 32 registers for 1024 INTIDs */
+    volatile uint32_t IGRPMODR[32];      /* 0x0D00 to 0x0D7F - Interrupt Group Modifier Registers */
 
-    /* 64-bit Interrupt Routing Registers for SPIs (1 register per INTID) */
-    /* SPIs start from index 32, indexes 0-31 are reserved/unimplemented in GICD */
-    volatile uint64_t IROUTER[1024]; /* 0x1400 - Interrupt Routing Registers */
+    uint32_t RESERVED4[416];            /* 0x0D80 to 0x13FF - Pad to IROUTER */
+
+    /* 64-bit Interrupt Routing Registers for SPIs (1 register per INTID).
+       Note: Array index directly corresponds to the INTID. SPIs start at index 32. */
+    volatile uint64_t IROUTER[1024];     /* 0x1400 to 0x33FF - Interrupt Routing Registers */
 } GICD_Type;
 
 #define GICD ((GICD_Type *) GICD_BASE)
+
 /* GIC Redistributor (GICR) register structure mapping per core (128 KB total) */
 typedef struct {
     /* RD_base: Control page (First 64 KB) */
