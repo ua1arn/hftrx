@@ -8,30 +8,6 @@
 #if __aarch64__
 #include "hardware.h"
 #include "formats.h"
-//#include "gic600_a.h"
-#include <stdio.h>
-#if 0
-/* GIC Redistributor (GICR) register structure mapping per core (128 KB total) */
-typedef struct {
-    /* RD_base: Control page (First 64 KB) */
-    volatile uint32_t CTLR;        /* 0x0000 - Redistributor Control Register */
-    const volatile uint32_t IIDR;  /* 0x0004 - Implementer Identification Register */
-    const volatile uint64_t TYPER; /* 0x0008 - Type Register */
-    volatile uint32_t STATUSR;     /* 0x0010 - Status Register */
-    volatile uint32_t WAKER;       /* 0x0014 - Wake Request Register */
-    uint32_t RESERVED0;            /* Offset pad to the next 64 KB page */
-
-    /* SGI_base: SGI/PPI frame page (Second 64 KB) */
-    uint32_t RESERVED1;
-    volatile uint32_t IGROUPR0;    /* 0x0080 - Interrupt Group Register 0 (SGIs/PPIs) */
-    uint32_t RESERVED2;
-    volatile uint32_t ISENABLER0;  /* 0x0100 - Interrupt Set-Enable Register 0 */
-    uint32_t RESERVED3;
-    volatile uint32_t ICENABLER0;  /* 0x0180 - Interrupt Clear-Enable Register 0 */
-    uint32_t RESERVED4;
-    volatile uint32_t IGRPMODR0;   /* 0x0D00 - Interrupt Group Modifier Register 0 */
-} GICR_TypeS;
-#endif
 
 void GICv3_Distributor_Init(void) {
    /* Disable Distributor before configuration changes */
@@ -47,7 +23,7 @@ void GICv3_Distributor_Init(void) {
 
     /* Route peripheral SPI interrupts (e.g. indexes 32 to 95) to Non-Secure Group 1 */
     for (int i = 1; i < 32; i++) {
-        GICD->GICD_IGROUPR[i]  = 0*0xFFFFFFFF; /* 1 = Group 1 */
+        GICD->GICD_IGROUPR[i]  = 1*0xFFFFFFFF; /* 1 = Group 1 */
         GICD->GICD_IGRPMODR[i] = 0x00000000; /* 0 = Non-Secure (when coupled with IGROUPR=1) */
     }
 
@@ -59,51 +35,6 @@ void GICv3_Distributor_Init(void) {
     //while (GICD->GICD_STATUSR & (1 << 4));
 	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
 		;
-}
-
-void GICv3_Core_Init(uint32_t core_id) {
-    /* Calculate precise pointer to the target core's 128 KB Redistributor frame using uintptr_t math */
-    GICRedistributor_Type *GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * (uintptr_t)0x10000));
-
-    /* Step 1: Wake up the core's Redistributor interface */
-    uint32_t waker = GICR->WAKER;
-    waker &= ~ (UINT32_C(1) << 1); /* Clear ProcessorSleep bit */
-    GICR->WAKER = waker;
-
-    /* Wait until the interface is operational (ChildrenAsleep bit must become 0) */
-    while (GICR->WAKER & (UINT32_C(1) << 2))
-    	;
-
-
-    /* Step 3: Enable System Register Access (SRE) via the CPU interface */
-    __set_ICC_SRE_EL3(0xF);
-    __ISB(); /* Force architectural register state changes to execute immediately */
-
-    /* 3. Enable CPU System Registers interface */
-    __set_ICC_SRE_EL3(0xF);
-    __ISB();
-
-    __set_ICC_PMR_EL1(0xFF);
-    __set_ICC_IGRPEN1_EL3(1); /* Enable Group 1 signaling */
-    /* Open the interrupt priority filter gateway completely (0xFF allows all priorities) */
- //   __set_ICC_PMR_EL1(0xFF);
-
-    /* Enable signaling of Non-Secure Group 1 interrupts to the core */
-    __set_ICC_IGRPEN1_EL3(1);
-    __set_ICC_IGRPEN0_EL1(1);
-
-    /* Step 4: Configure routing at the core architecture level (SCR_EL3) */
-    uint64_t scr = __get_SCR_EL3();
-    //scr &= ~ (UINT64_C(1) << 2); /* Clear FIQ bit: No FIQ handling at EL3 */
-    scr |= (UINT64_C(1) << 1);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
-    scr |= (UINT64_C(1) << 2);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
-    scr |= (UINT64_C(1) << 10); /* Set RW bit: Enforce Execution at lower ELs to run in 64-bit mode (AArch64) */
-    __set_SCR_EL3(scr);
-//	// D24.2.169 SCR_EL3, Secure Configuration Register
-//	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
-//	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 2));	// Physical FIQ while executing at all exception levels are taken in EL3
-
-    __ISB(); /* Final pipeline instruction synchronization */
 }
 
 /**
@@ -146,12 +77,10 @@ void GICv3_Configure_Timer_Interrupt(uint8_t priority, uint8_t cpu_mask) {
 
     /* 5. Routing Mapping: Convert the user cpu_mask into GICv3 IROUTER format */
     if ((cpu_mask == 0) || (cpu_mask & (cpu_mask - 1))) {
-    	TP();
         /* If multiple bits are set in the mask (or mask is 0), enable 1-of-N routing mode.
            Bit 31 = 1 means the interrupt can be handled by ANY operational core. */
         GICD->GICD_IROUTER[int_id] = (UINT64_C(1) << 31);
     } else {
-    	TP();
        /* Exactly one core is selected in the mask. Find its index (0 to 7). */
         uint32_t core_index = 0;
         while ((cpu_mask & (1U << core_index)) == 0) {
@@ -187,43 +116,43 @@ void GICv3_Configure_Timer_Interrupt(uint8_t priority, uint8_t cpu_mask) {
 //}
 
 
-/**
- * @brief Extracts a linear core index compatible with GICv3/v4 offset math,
- *        supporting both traditional (Cortex-A53) and DynamIQ (Cortex-A76/A55) layouts.
- * @return Linear core ID (typically 0 to 7 depending on the SoC topology).
- */
-static inline uint32_t Get_Linear_Core_ID(void) {
-    uint64_t mpidr = __get_MPIDR_EL1();
-    uint32_t core_id;
-
-    /* Check Bit 24 (MT - Multi-threading flag) to determine layout style */
-    if (mpidr & (1U << 24)) {
-        /*
-         * DynamIQ Layout (e.g., Allwinner A733 Cortex-A76 / Cortex-A55):
-         * - MT bit is 1.
-         * - Aff1 (bits [15:8]) represents the Core ID.
-         * - Aff0 (bits [7:0]) represents the Thread ID (always 0).
-         */
-        core_id = (uint32_t)((mpidr >> 8) & 0xFFU);
-    } else {
-        /*
-         * Traditional Layout (e.g., Cortex-A53 / Cortex-A7):
-         * - MT bit is 0.
-         * - Aff1 (bits [15:8]) represents the Cluster ID.
-         * - Aff0 (bits [7:0]) represents the Core ID inside the cluster.
-         */
-        core_id = (uint32_t)(mpidr & 0xFFU);
-
-        /*
-         * Optional: If dealing with multi-cluster Cortex-A53 chips (like 8-core big.LITTLE),
-         * you can factor in the cluster ID (Aff1) to prevent core ID overlapping:
-         * uint33_t cluster_id = (uint32_t)((mpidr >> 8) & 0xFFU);
-         * core_id = (cluster_id * 4) + core_id;
-         */
-    }
-
-    return core_id;
-}
+///**
+// * @brief Extracts a linear core index compatible with GICv3/v4 offset math,
+// *        supporting both traditional (Cortex-A53) and DynamIQ (Cortex-A76/A55) layouts.
+// * @return Linear core ID (typically 0 to 7 depending on the SoC topology).
+// */
+//static inline uint32_t Get_Linear_Core_ID(void) {
+//    uint64_t mpidr = __get_MPIDR_EL1();
+//    uint32_t core_id;
+//
+//    /* Check Bit 24 (MT - Multi-threading flag) to determine layout style */
+//    if (mpidr & (1U << 24)) {
+//        /*
+//         * DynamIQ Layout (e.g., Allwinner A733 Cortex-A76 / Cortex-A55):
+//         * - MT bit is 1.
+//         * - Aff1 (bits [15:8]) represents the Core ID.
+//         * - Aff0 (bits [7:0]) represents the Thread ID (always 0).
+//         */
+//        core_id = (uint32_t)((mpidr >> 8) & 0xFFU);
+//    } else {
+//        /*
+//         * Traditional Layout (e.g., Cortex-A53 / Cortex-A7):
+//         * - MT bit is 0.
+//         * - Aff1 (bits [15:8]) represents the Cluster ID.
+//         * - Aff0 (bits [7:0]) represents the Core ID inside the cluster.
+//         */
+//        core_id = (uint32_t)(mpidr & 0xFFU);
+//
+//        /*
+//         * Optional: If dealing with multi-cluster Cortex-A53 chips (like 8-core big.LITTLE),
+//         * you can factor in the cluster ID (Aff1) to prevent core ID overlapping:
+//         * uint33_t cluster_id = (uint32_t)((mpidr >> 8) & 0xFFU);
+//         * core_id = (cluster_id * 4) + core_id;
+//         */
+//    }
+//
+//    return core_id;
+//}
 
 /**
  * @brief Checks if the CPU core supports ARM GICv3/v4 System Registers.
@@ -269,7 +198,7 @@ uint32_t Is_GICv3_Supported(void) {
 
 void gic600_global_init(void)
 {
-	GICv3_Distributor_Init();
+	//GICv3_Distributor_Init();
 }
 
 void gic600_local_init(void)
