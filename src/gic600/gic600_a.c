@@ -245,9 +245,9 @@ void gic600_test(void)
 //	PRINTF("GIC_GetARE()=%d\n", GIC_GetARE());
 //	GICv3_Fix_Routing_Mode(TIMER1_0_IRQn);
 	unsigned irqn = TIMER1_1_IRQn;
-	PRINTF("1 GICDistributor->GICD_CTLR=%08X, GICDistributor->GICD_IROUTER [0x%03X]=%08X\n", (unsigned) GICDistributor->GICD_CTLR, (unsigned) irqn, (unsigned) GICDistributor->GICD_IROUTER [irqn]);
-	GIC_SetTarget(irqn, UINT32_C(1) << 1);
-	PRINTF("3 GICDistributor->GICD_CTLR=%08X, GICDistributor->GICD_IROUTER [0x%03X]=%08X\n", (unsigned) GICDistributor->GICD_CTLR, (unsigned) irqn, (unsigned) GICDistributor->GICD_IROUTER [irqn]);
+//	PRINTF("1 GICDistributor->GICD_CTLR=%08X, GICDistributor->GICD_IROUTER [0x%03X]=%08X\n", (unsigned) GICDistributor->GICD_CTLR, (unsigned) irqn, (unsigned) GICDistributor->GICD_IROUTER [irqn]);
+//	GIC_SetTarget(irqn, UINT32_C(1) << 6);
+//	PRINTF("3 GICDistributor->GICD_CTLR=%08X, GICDistributor->GICD_IROUTER [0x%03X]=%08X\n", (unsigned) GICDistributor->GICD_CTLR, (unsigned) irqn, (unsigned) GICDistributor->GICD_IROUTER [irqn]);
 }
 #else
 void gic600_global_init(void)
