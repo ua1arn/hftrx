@@ -237,7 +237,7 @@ static inline uint32_t Get_Linear_Core_ID(void) {
 
 void gic600_local_init(void)
 {
-	GICv3_Core_Init(Get_Linear_Core_ID());
+	GICv3_Core_Init(arm_hardware_cpuid());
 }
 
 void gic600_test(void)
