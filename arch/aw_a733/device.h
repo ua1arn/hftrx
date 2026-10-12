@@ -1577,7 +1577,21 @@ typedef struct GICR_1_Type
 /*!< GICR_2 GIC Redistributor for SGIs and PPIs summary  */
 typedef struct GICR_2_Type
 {
-         RESERVED(0x000[0x0080 - 0x0000], uint8_t)
+    __IOM uint32_t GICR_CTLR;                         /*!< Offset 0x000 Redistributor Control Register */
+    __IOM uint32_t GICR_IIDR;                         /*!< Offset 0x004 Implementer Identification Register */
+    __IOM uint32_t GICR_TYPER;                        /*!< Offset 0x008 Redistributor Type Register */
+         RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
+    __IOM uint32_t GICR_STATUSR;                      /*!< Offset 0x010 Error Reporting Status Register, optional */
+    __IOM uint32_t GICR_WAKER;                        /*!< Offset 0x014 Redistributor Wake Register */
+    __IM  uint32_t GICR_MPAMIDR;                      /*!< Offset 0x018 Report maximum PARTID and PMG Register */
+    __IOM uint32_t GICR_PARTIDR;                      /*!< Offset 0x01C Set PARTID and PMG Register */
+         RESERVED(0x020[0x0040 - 0x0020], uint8_t)
+    __IOM uint32_t GICR_SETLPIR;                      /*!< Offset 0x040 Set LPI Pending Register */
+         RESERVED(0x044[0x0048 - 0x0044], uint8_t)
+    __IOM uint32_t GICR_CLRLPIR;                      /*!< Offset 0x048 Clear LPI Pending Register */
+         RESERVED(0x04C[0x0070 - 0x004C], uint8_t)
+    __IOM uint32_t GICR_PROPBASER;                    /*!< Offset 0x070 Redistributor Properties Base Address Register */
+         RESERVED(0x074[0x0080 - 0x0074], uint8_t)
     __IOM uint32_t GICR_IGROUPR0;                     /*!< Offset 0x080 Interrupt Group Register */
          RESERVED(0x084[0x0100 - 0x0084], uint8_t)
     __IOM uint32_t GICR_ISENABLER0;                   /*!< Offset 0x100 Interrupt Set-Enable Register */

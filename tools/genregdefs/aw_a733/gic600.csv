@@ -194,6 +194,19 @@
 
 #type; GICR_2; GIC Redistributor for SGIs and PPIs summary 
 
+#regdef;	GICR_CTLR;			0x0000;		Redistributor Control Register
+#regdef;	GICR_IIDR;			0x0004;		Implementer Identification Register
+#regdef;	GICR_TYPER;			0x0008;		Redistributor Type Register
+#regdef;	GICR_STATUSR;		0x0010;		Error Reporting Status Register, optional
+#regdef;	GICR_WAKER;			0x0014;		Redistributor Wake Register
+#regdefr;	GICR_MPAMIDR;		0x0018;		Report maximum PARTID and PMG Register
+#regdef;	GICR_PARTIDR;		0x001C;		Set PARTID and PMG Register
+#regdef;	GICR_SETLPIR;		0x0040;		Set LPI Pending Register
+#regdef;	GICR_CLRLPIR;		0x0048;		Clear LPI Pending Register
+#regdef;	GICR_PROPBASER;		0x0070;		Redistributor Properties Base Address Register
+
+
+
 #regdef;	GICR_IGROUPR0;		0x0080;		Interrupt Group Register
 #regdef;	GICR_ISENABLER0;	0x0100;		Interrupt Set-Enable Register
 #regdef;	GICR_ICENABLER0;	0x0180;		Interrupt Clear-Enable Register
