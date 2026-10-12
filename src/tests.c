@@ -7976,10 +7976,10 @@ void hightests(void)
 	{
 		unsigned core;
 		const uint_fast16_t int_id = SGI15_IRQn;
-		PRINTF("IPC interrupte demo, GIC_GetARE()=%d\n", (int) GIC_GetARE());
-		//PRINTF("IPC interrupte demo\n");
+		//PRINTF("IPC interrupte demo, GIC_GetARE()=%d\n", (int) GIC_GetARE());
+		PRINTF("IPC interrupte demo\n");
 		arm_hardware_set_handler_system(int_id, ipchandlers);
-		for (core = 0; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
+		for (core = 0; core < HARDWARE_NCORES && core < 6 && core < arm_hardware_clustersize(); ++ core)
 		{
 			GIC_SendSGI(int_id, 1U << core, 0x00);	// other CORE, filer=0
 			local_delay_ms(250);

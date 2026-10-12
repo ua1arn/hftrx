@@ -554,31 +554,22 @@ __STATIC_INLINE uint32_t GIC_GetConfiguration(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 {
-  uint32_t mask = GICDistributor->GICD_IPRIORITYR[IRQn / 4U] & ~ (UINT32_C(0xFF) << ((IRQn % 4U) * 8U));
-  GICDistributor->GICD_IPRIORITYR[IRQn / 4U] = mask | ((priority & UINT32_C(0xFF)) << ((IRQn % 4U) * 8U));
-  if (IRQn >= 32)
-	  return;
-  return;
-  for (unsigned core_id = 0; core_id < 6; ++ core_id)
-  {
-	    GICRedistributor_Type *GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * GIC_REDISTRIBUTOR_STRIDE));
+	if ((IRQn < 32) && (GIC_GetARE())) {
+		//GIC_SetRedistPriority(IRQn, priority);
+		for (unsigned core_id = 0; core_id < 6; ++ core_id) {
+			GICRedistributor_Type *GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * GIC_REDISTRIBUTOR_STRIDE));
+			const uint32_t mask = GICR->GICR_IPRIORITYRn[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
 
-	    /* Step 1: Wake up the core's Redistributor interface */
-	    uint32_t waker = GICR->GICR_WAKER;
-	    waker &= ~ (UINT32_C(1) << 1); /* Clear ProcessorSleep bit */
-	    GICR->GICR_WAKER = waker;
+			GICR->GICR_IPRIORITYRn[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
 
-	    /* Wait until the interface is operational (ChildrenAsleep bit must become 0) */
-	    while (GICR->GICR_WAKER & (UINT32_C(1) << 2))
-	    	;
-
-	    GICR->GICR_IGROUPR0 = 0xFFFFFFFF;
-	    GICR->GICR_IGRPMODR0 = 0*0xFFFFFFFF;
-	    GICR->GICR_ISENABLER0 = 0xFFFF;
-
-	    uint32_t mask = GICR->GICR_IPRIORITYRn[IRQn / 4U] & ~ (UINT32_C(0xFF) << ((IRQn % 4U) * 8U));
-	    GICR->GICR_IPRIORITYRn[IRQn / 4U] = mask | ((priority & UINT32_C(0xFF)) << ((IRQn % 4U) * 8U));
-  }
+			GICR->GICR_IGROUPR0 = 0*0xFFFFFFFF;
+			GICR->GICR_IGRPMODR0 = 0*0xFFFFFFFF;
+			GICR->GICR_ISENABLER0 = 0xFFFF;
+		}
+	} else {
+		uint32_t mask = GICDistributor->GICD_IPRIORITYR[IRQn / 4U] & ~ (UINT32_C(0xFF) << ((IRQn % 4U) * 8U));
+		GICDistributor->GICD_IPRIORITYR[IRQn / 4U] = mask | ((priority & UINT32_C(0xFF)) << ((IRQn % 4U) * 8U));
+	}
 
 
 }
@@ -1283,7 +1274,7 @@ __STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16
     val =
     		//(target_aff & 0xFF) * (UINT64_C(1) << 48) |	/* aff3 */
     		(rs & 0x0F) * (UINT64_C(1) << 44) |	/* RangeSelector RS */
-    		//(1) * (UINT64_C(1) << 40) |	/* IRM 0b1Interrupts routed to all PEs in the system, excluding "self". */
+    		(1) * (UINT64_C(1) << 40) |	/* IRM 0b1Interrupts routed to all PEs in the system, excluding "self". */
     		//(target_aff & 0xFF) * (UINT64_C(1) << 32) |	/* aff2 */
     		(IRQn & 0xF) * (UINT64_C(1) << 24) | /* INTID */
     		(target_aff & 0xFF) * (UINT64_C(1) << 16) |	/* aff1 */
@@ -1341,18 +1332,8 @@ __STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t 
 		/* affinity routing */
 		GIC_SendSGI_ARE(IRQn, target_aff, target_list);
 	} else {
-		//GICDistributor->SGIR = ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
+		//GICDistributor->GICD_SGIR = ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
 	}
-}
-
-/** \brief Generate a software interrupt using GIC's SGIR register.
-* \param [in] IRQn Software interrupt to be generated.
-* \param [in] target_list List of CPUs the software interrupt should be forwarded to.
-* \param [in] filter_list Filter to be applied to determine interrupt receivers.
-*/
-__STATIC_INLINE void GIC_SendSGI_v2(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
-{
-  //GICDistributor->SGIR = ((filter_list & 3U) << 24U) | ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
 }
 
 #if defined (GIC_INTERFACE_BASE)
