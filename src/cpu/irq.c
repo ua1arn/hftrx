@@ -1329,6 +1329,8 @@ static void FIQ_Handler_GIC(void)
 {
 #if (__CORTEX_A == 55U)
 	FIQ_Handler_GIC_G0();
+#else
+	ASSERT(0);
 #endif
 }
 

@@ -374,7 +374,7 @@ __STATIC_INLINE void GIC_SetTarget(IRQn_Type IRQn, uint32_t cpu_target)
 				}
 				/* affinity routing */
 				GICDistributor->IROUTER [IRQn] =
-						GICDistributor_IROUTER_IRM(1) |	/* Interrupts routed to any PE defined as a participating node. */
+						//GICDistributor_IROUTER_IRM(1) |	/* Interrupts routed to any PE defined as a participating node. */
 						//GICDistributor_IROUTER_Aff0(core_index) |
 						GICDistributor_IROUTER_Aff1(core_index) |
 						//GICDistributor_IROUTER_Aff2(core_index) |
