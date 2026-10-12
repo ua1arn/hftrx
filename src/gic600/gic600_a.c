@@ -10,33 +10,33 @@
 #if __aarch64__ && CPUSTYLE_A733
 #include "formats.h"
 
-void GICv3_Distributor_Init(void) {
-   /* Disable Distributor before configuration changes */
-    //GICD->GICD_CTLR = 0;
-    GICD->GICD_CTLR = (1U << 6) | (1U << 5) | (1U << 4) | (1U << 1) | (1U << 0);
-    GICD->GICD_CTLR = 0x77;
-    /* Wait for Register Write Pending (RWP) bit to clear */
-//    while (GICD->GICD_STATUSR & (1 << 4));
-	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
-		;
-
-	PRINTF("GICD->GICD_CTLR=0x%08X\n", (unsigned) GICD->GICD_CTLR);
-
-    /* Route peripheral SPI interrupts (e.g. indexes 32 to 95) to Non-Secure Group 1 */
-    for (int i = 1; i < 32; i++) {
-        GICD->GICD_IGROUPR[i]  = 1*0xFFFFFFFF; /* 1 = Group 1 */
-        GICD->GICD_IGRPMODR[i] = 0x00000000; /* 0 = Non-Secure (when coupled with IGROUPR=1) */
-    }
-
-    /* Enable Distributor with Affinity Routing Enabled (ARE) for both Secure and Non-Secure.
-       Acknowledge only Group 1 Non-Secure enabled context. */
-    GICD->GICD_CTLR = (1 << 4) | (1 << 5) | (1 << 1);
-
-    /* Ensure synchronization across the memory interconnect */
-    //while (GICD->GICD_STATUSR & (1 << 4));
-	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
-		;
-}
+//void GICv3_Distributor_Init(void) {
+//   /* Disable Distributor before configuration changes */
+//    //GICDistributor->CTLR = 0;
+//    GICDistributor->CTLR = (1U << 6) | (1U << 5) | (1U << 4) | (1U << 1) | (1U << 0);
+//    GICDistributor->CTLR = 0x77;
+//    /* Wait for Register Write Pending (RWP) bit to clear */
+////    while (GICDistributor->STATUSR & (1 << 4));
+//	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
+//		;
+//
+//	PRINTF("GICDistributor->CTLR=0x%08X\n", (unsigned) GICDistributor->CTLR);
+//
+//    /* Route peripheral SPI interrupts (e.g. indexes 32 to 95) to Non-Secure Group 1 */
+//    for (int i = 1; i < 32; i++) {
+//        GICDistributor->IGROUPR[i]  = 1*0xFFFFFFFF; /* 1 = Group 1 */
+//        GICDistributor->IGRPMODR[i] = 0x00000000; /* 0 = Non-Secure (when coupled with IGROUPR=1) */
+//    }
+//
+//    /* Enable Distributor with Affinity Routing Enabled (ARE) for both Secure and Non-Secure.
+//       Acknowledge only Group 1 Non-Secure enabled context. */
+//    GICDistributor->CTLR = (1 << 4) | (1 << 5) | (1 << 1);
+//
+//    /* Ensure synchronization across the memory interconnect */
+//    //while (GICDistributor->STATUSR & (1 << 4));
+//	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
+//		;
+//}
 
 /**
  * @brief Configures TIMER1_0_IRQn (131), sets its priority, trigger type, and routes it using a core mask.
@@ -46,14 +46,12 @@ void GICv3_Distributor_Init(void) {
 void GICv3_Configure_Interrupt(uint32_t int_id, uint8_t priority, uint8_t cpu_mask) {
 
     /* 1. Disable the targeted interrupt line before altering its configurations */
-    GICD->GICD_ICENABLER[int_id / 32] = (1U << (int_id % 32));
-   // while (GICD->GICD_STATUSR & (1 << 4)); /* Wait for Register Write Pending (RWP) to clear */
-	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
-		;
+    GICDistributor->GICD_ICENABLER[int_id / 32] = (1U << (int_id % 32));
+    GIC_DistributorWait();
 
     /* 2. Group Allocation: Direct the SPI towards Non-Secure Group 1 context */
-//    GICD->IGROUPR[int_id / 32]  |= (1U << (int_id % 32));  /* 1 = Group 1 */
-//    GICD->IGRPMODR[int_id / 32] &= ~(1U << (int_id % 32)); /* 0 = Non-Secure */
+//    GICDistributor->IGROUPR[int_id / 32]  |= (1U << (int_id % 32));  /* 1 = Group 1 */
+//    GICDistributor->IGRPMODR[int_id / 32] &= ~(1U << (int_id % 32)); /* 0 = Non-Secure */
 
     /* 3. Priority Configuration: Set the 8-bit priority value
        Each 32-bit register holds 4 priority fields. */
@@ -61,25 +59,25 @@ void GICv3_Configure_Interrupt(uint32_t int_id, uint8_t priority, uint8_t cpu_ma
     uint32_t prio_shift = (int_id % 4) * 8;
 
     if (0) {
-    	   uint32_t prio_val = GICD->GICD_IPRIORITYR[prio_index];
+    	   uint32_t prio_val = GICDistributor->GICD_IPRIORITYR[prio_index];
     	    prio_val &= ~(0xFFU << prio_shift);          /* Clear old priority byte */
     	    prio_val |= ((uint32_t)priority << prio_shift); /* Set new priority byte */
-    	    GICD->GICD_IPRIORITYR[prio_index] = prio_val;
+    	    GICDistributor->GICD_IPRIORITYR[prio_index] = prio_val;
     }
 
     /* 4. Trigger Mapping: Enforce Level-Sensitive mode (00b) */
     uint32_t config_index = int_id / 16;
     uint32_t config_bit_shift = (int_id % 16) * 2;
 
-    uint32_t icfgr_val = GICD->GICD_ICFGR[config_index];
+    uint32_t icfgr_val = GICDistributor->GICD_ICFGR[config_index];
     icfgr_val &= ~(3U << config_bit_shift);      /* 00b = Level-Sensitive */
-    GICD->GICD_ICFGR[config_index] = icfgr_val;
+    GICDistributor->GICD_ICFGR[config_index] = icfgr_val;
 
     /* 5. Routing Mapping: Convert the user cpu_mask into GICv3 IROUTER format */
     if ((cpu_mask == 0) || (cpu_mask & (cpu_mask - 1))) {
         /* If multiple bits are set in the mask (or mask is 0), enable 1-of-N routing mode.
            Bit 31 = 1 means the interrupt can be handled by ANY operational core. */
-        GICD->GICD_IROUTER[int_id] = (UINT64_C(1) << 31);
+        GICDistributor->GICD_IROUTER[int_id] = (UINT64_C(1) << 31);
     } else {
        /* Exactly one core is selected in the mask. Find its index (0 to 7). */
         uint32_t core_index = 0;
@@ -94,15 +92,13 @@ void GICv3_Configure_Interrupt(uint32_t int_id, uint8_t priority, uint8_t cpu_ma
          * target_affinity format: (Aff1 << 8)
          */
         uint64_t target_affinity = ((uint64_t)core_index << 8);
-        GICD->GICD_IROUTER[int_id] = target_affinity; /* Route strictly to the selected core (Bit 31 = 0) */
-        ASSERT(GICD->GICD_IROUTER[int_id] == target_affinity);
+        GICDistributor->GICD_IROUTER[int_id] = target_affinity; /* Route strictly to the selected core (Bit 31 = 0) */
+        ASSERT(GICDistributor->GICD_IROUTER[int_id] == target_affinity);
     }
 
     /* 6. Enable the configured interrupt line back */
-    GICD->GICD_ISENABLER[int_id / 32] = (1U << (int_id % 32));
-    //while (GICD->GICD_STATUSR & (1 << 4)); /* Final RWP hardware synchronization wait */
-	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
-		;
+    GICDistributor->GICD_ISENABLER[int_id / 32] = (1U << (int_id % 32));
+    GIC_DistributorWait();
 }
 
 ///**
@@ -172,20 +168,20 @@ static uint32_t Is_GICv3_Supported(void) {
     return (gic_status == 1U) ? 1U : 0U;
 }
 
-static void Hardware_Interrupt_System_Init(void) {
-    uint32_t core_id = arm_hardware_cpuid();
-
-    if (Is_GICv3_Supported()) {
-        /* Safe to execute your GIC-600 / GICv3 code for Allwinner A733 */
-        if (core_id == 0) {
-            GICv3_Distributor_Init();
-        }
-        GICv3_Core_Init(core_id);
-    } else {
-        /* STOP or fallback to GICv2 legacy initialization here */
-        /* Do NOT touch GICR or ICC registers here to prevent hardfaults */
-    }
-}
+//static void Hardware_Interrupt_System_Init(void) {
+//    uint32_t core_id = arm_hardware_cpuid();
+//
+//    if (Is_GICv3_Supported()) {
+//        /* Safe to execute your GIC-600 / GICv3 code for Allwinner A733 */
+//        if (core_id == 0) {
+//            GICv3_Distributor_Init();
+//        }
+//        GICv3_Core_Init(core_id);
+//    } else {
+//        /* STOP or fallback to GICv2 legacy initialization here */
+//        /* Do NOT touch GICR or ICC registers here to prevent hardfaults */
+//    }
+//}
 
 /* Usage example inside the primary core configuration block */
 //void Setup_System_Timer(void) {
@@ -244,37 +240,13 @@ void gic600_local_init(void)
 	GICv3_Core_Init(Get_Linear_Core_ID());
 }
 
-void GICv3_Fix_Routing_Mode(uint32_t int_id) {
-    /* Ensure we are writing to GICD_CTLR in Secure Mode */
-    /* Enable Group 0, Group 1 Secure, Group 1 Non-Secure, and BOTH ARE bits */
-    GICD->GICD_CTLR = 0x00000037U;
-    //while (GICD->GICD_STATUSR & (1 << 4)); /* Wait for RWP */
-    local_delay_ms(25);
-
-    /*
-     * In GICv3, if ARE is not fully locked by hardware,
-     * GICD_ITARGETSR registers (offsets 0x0800-0x0BFF) might still hold 0xFFFFFFFF (broadcast).
-     * To prevent broadcast in hidden GICv2 bypass mode, clear the target masks
-     * for your interrupt (ID 131).
-     * 131 / 4 = 32. 131 % 4 = 3 (byte offset inside 32-bit register).
-     */
-    volatile uint32_t *itargetsr = (volatile uint32_t *)((uintptr_t)GICD_BASE + 0x0800);
-
-    /* Clear target mask for interrupt 131 to isolate it from GICv2 broadcast */
-    uint32_t target_val = itargetsr[int_id / 4];
-    target_val &= ~(0xFFU << ((int_id % 4) * 8)); /* Clear target byte for ID 131 */
-    itargetsr[int_id / 4] = target_val;
-
-    //while (GICD->GICD_STATUSR & (1 << 4)); /* Wait for RWP */
-    local_delay_ms(25);
-}
-
 void gic600_test(void)
 {
 //	PRINTF("GIC_GetARE()=%d\n", GIC_GetARE());
 //	GICv3_Fix_Routing_Mode(TIMER1_0_IRQn);
+	PRINTF("1 GICDistributor->GICD_CTLR=%08X\n", (unsigned) GICDistributor->GICD_CTLR);
 	GICv3_Configure_Interrupt(TIMER1_0_IRQn, 0, UINT32_C(1) << 1);
-	GICv3_Fix_Routing_Mode(TIMER1_0_IRQn);
+	PRINTF("2 GICDistributor->GICD_CTLR=%08X\n", (unsigned) GICDistributor->GICD_CTLR);
 }
 #else
 void gic600_global_init(void)

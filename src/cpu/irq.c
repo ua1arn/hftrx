@@ -1273,8 +1273,8 @@ static void FIQ_Handler_GIC_G0(void)
 		dbg_putchar('a' + arm_hardware_cpuid());
 #endif /* WITHIRQTRACE */
 		//LCLSPIN_LOCK(& giclock);
-		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-		GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
+		//GICDistributor->GICD_IPRIORITYR [0] = GICDistributor->GICD_IPRIORITYR [0];
 		//GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
 		//LCLSPIN_UNLOCK(& giclock);
 

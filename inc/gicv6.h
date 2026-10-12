@@ -77,64 +77,75 @@ __STATIC_FORCEINLINE void GIC_RedistributorWait(void)
 */
 typedef struct
 {
-    __IOM uint32_t CTLR;                         /*!< Offset 0x000 Distributor Control Register */
-    __IM  uint32_t TYPER;                        /*!< Offset 0x004 Distributor Controller Type Register */
-    __IM  uint32_t IIDR;                         /*!< Offset 0x008 Distributor Implementer Identification Register */
+    __IOM uint32_t GICD_CTLR;                         /*!< Offset 0x000 Distributor Control Register */
+    __IM  uint32_t GICD_TYPER;                        /*!< Offset 0x004 Distributor Controller Type Register */
+    __IM  uint32_t GICD_IIDR;                         /*!< Offset 0x008 Distributor Implementer Identification Register */
          RESERVED(0x00C[0x0020 - 0x000C], uint8_t)
-    __IOM uint32_t FCTLR;                        /*!< Offset 0x020 Function Control Register */
-    __IOM uint32_t SAC;                          /*!< Offset 0x024 Secure Access Control Register */
+    __IOM uint32_t GICD_FCTLR;                        /*!< Offset 0x020 Function Control Register */
+    __IOM uint32_t GICD_SAC;                          /*!< Offset 0x024 Secure Access Control Register */
          RESERVED(0x028[0x0040 - 0x0028], uint8_t)
-    __OM  uint32_t SETSPI_NSR;                   /*!< Offset 0x040 Non-secure SPI Set Register */
+    __OM  uint32_t GICD_SETSPI_NSR;                   /*!< Offset 0x040 Non-secure SPI Set Register */
          RESERVED(0x044[0x0048 - 0x0044], uint8_t)
-    __OM  uint32_t CLRSPI_NSR;                   /*!< Offset 0x048 Non-secure SPI Clear Register */
+    __OM  uint32_t GICD_CLRSPI_NSR;                   /*!< Offset 0x048 Non-secure SPI Clear Register */
          RESERVED(0x04C[0x0050 - 0x004C], uint8_t)
-    __OM  uint32_t SETSPI_SR;                    /*!< Offset 0x050 Secure SPI Set Register */
+    __OM  uint32_t GICD_SETSPI_SR;                    /*!< Offset 0x050 Secure SPI Set Register */
          RESERVED(0x054[0x0058 - 0x0054], uint8_t)
-    __OM  uint32_t CLRSPI_SR;                    /*!< Offset 0x058 Non-secure SPI Set Register */
+    __OM  uint32_t GICD_CLRSPI_SR;                    /*!< Offset 0x058 Non-secure SPI Set Register */
          RESERVED(0x05C[0x0080 - 0x005C], uint8_t)
-    __IOM uint32_t IGROUPR [0x020];              /*!< Offset 0x080 Interrupt Group Registers */
-    __IOM uint32_t ISENABLER [0x020];            /*!< Offset 0x100 Interrupt Set-Enable Registers */
-    __IOM uint32_t ICENABLER [0x020];            /*!< Offset 0x180 Interrupt Clear-Enable Registers */
-    __IOM uint32_t ISPENDR [0x020];              /*!< Offset 0x200 Interrupt Set-Pending Registers */
-    __IOM uint32_t ICPENDR [0x020];              /*!< Offset 0x280 Interrupt Clear-Pending Registers */
-    __IOM uint32_t ISACTIVER [0x020];            /*!< Offset 0x300 Interrupt Set-Active Registers */
-    __IOM uint32_t ICACTIVER [0x020];            /*!< Offset 0x380 Interrupt Clear-Active Registers */
-    __IOM uint32_t IPRIORITYR [0x100];           /*!< Offset 0x400 Interrupt Priority Registers */
+    __IOM uint32_t GICD_IGROUPR [0x020];              /*!< Offset 0x080 Interrupt Group Registers */
+    __IOM uint32_t GICD_ISENABLER [0x020];            /*!< Offset 0x100 Interrupt Set-Enable Registers */
+    __IOM uint32_t GICD_ICENABLER [0x020];            /*!< Offset 0x180 Interrupt Clear-Enable Registers */
+    __IOM uint32_t GICD_ISPENDR [0x020];              /*!< Offset 0x200 Interrupt Set-Pending Registers */
+    __IOM uint32_t GICD_ICPENDR [0x020];              /*!< Offset 0x280 Interrupt Clear-Pending Registers */
+    __IOM uint32_t GICD_ISACTIVER [0x020];            /*!< Offset 0x300 Interrupt Set-Active Registers */
+    __IOM uint32_t GICD_ICACTIVER [0x020];            /*!< Offset 0x380 Interrupt Clear-Active Registers */
+    __IOM uint32_t GICD_IPRIORITYR [0x100];           /*!< Offset 0x400 Interrupt Priority Registers */
          RESERVED(0x800[0x0C00 - 0x0800], uint8_t)
-    __IOM uint32_t ICFGR [0x040];                /*!< Offset 0xC00 Interrupt Configuration Registers */
-    __IOM uint32_t IGRPMODR [0x020];             /*!< Offset 0xD00 Interrupt Group Modifier Registers */
+    __IOM uint32_t GICD_ICFGR [0x040];                /*!< Offset 0xC00 Interrupt Configuration Registers */
+    __IOM uint32_t GICD_IGRPMODR [0x020];             /*!< Offset 0xD00 Interrupt Group Modifier Registers */
          RESERVED(0xD80[0x0E00 - 0x0D80], uint8_t)
-    __IOM uint32_t NSACR [0x040];                /*!< Offset 0xE00 Non-secure Access Control Registers */
+    __IOM uint32_t GICD_NSACR [0x040];                /*!< Offset 0xE00 Non-secure Access Control Registers */
          RESERVED(0xF00[0x6000 - 0x0F00], uint8_t)
-    __IOM uint64_t IROUTER [0x3DC];              /*!< Offset 0x6000 Interrupt Routing Registers. */
+    __IOM uint64_t GICD_IROUTER [0x3DC];              /*!< Offset 0x6000 Interrupt Routing Registers. */
          RESERVED(0x7EE0[0xC000 - 0x7EE0], uint8_t)
-    __IOM uint32_t CHIPSR;                       /*!< Offset 0xC000 Chip Status Register */
-    __IOM uint32_t DCHIPR;                       /*!< Offset 0xC004 Default Chip Register */
-    __IOM uint64_t CHIPRn [0x004];               /*!< Offset 0xC008 Chip Registers */
+    __IOM uint32_t GICD_CHIPSR;                       /*!< Offset 0xC000 Chip Status Register */
+    __IOM uint32_t GICD_DCHIPR;                       /*!< Offset 0xC004 Default Chip Register */
+    __IOM uint64_t GICD_CHIPRn [0x004];               /*!< Offset 0xC008 Chip Registers */
          RESERVED(0xC028[0xE008 - 0xC028], uint8_t)
-    __IOM uint32_t ICLARn [0x004];               /*!< Offset 0xE008 The first register is ICLAR2. 4.2.9 Interrupt Class Registers, ICLARn on page 4-118 */
+    __IOM uint32_t GICD_ICLARn [0x004];               /*!< Offset 0xE008 The first register is GICD_ICLAR2. 4.2.9 Interrupt Class Registers, GICD_ICLARn on page 4-118 */
          RESERVED(0xE018[0xE108 - 0xE018], uint8_t)
-    __IOM uint32_t IERRRn;                       /*!< Offset 0xE108 The first register is IERRR1. 4.2.10 Interrupt Error Registers, IERRRn on page 4-119 */
+    __IOM uint32_t GICD_IERRRn;                       /*!< Offset 0xE108 The first register is GICD_IERRR1. 4.2.10 Interrupt Error Registers, GICD_IERRRn on page 4-119 */
          RESERVED(0xE10C[0xF000 - 0xE10C], uint8_t)
-    __IM  uint64_t CFGID;                        /*!< Offset 0xF000 Configuration ID Register */
+    __IM  uint64_t GICD_CFGID;                        /*!< Offset 0xF000 Configuration ID Register */
          RESERVED(0xF008[0xFFD0 - 0xF008], uint8_t)
-    __IM  uint32_t PIDR4;                        /*!< Offset 0xFFD0 Peripheral ID 4 Register */
-    __IM  uint32_t PIDR5;                        /*!< Offset 0xFFD4 Peripheral ID 5 Register */
-    __IM  uint32_t PIDR6;                        /*!< Offset 0xFFD8 Peripheral ID 6 Register */
-    __IM  uint32_t PIDR7;                        /*!< Offset 0xFFDC Peripheral ID 7 Register */
-    __IM  uint32_t PIDR0;                        /*!< Offset 0xFFE0 Peripheral ID 0 Register */
-    __IM  uint32_t PIDR1;                        /*!< Offset 0xFFE4 Peripheral ID 1 Register */
-    __IM  uint32_t PIDR2;                        /*!< Offset 0xFFE8 Peripheral ID 2 Register */
-    __IM  uint32_t PIDR3;                        /*!< Offset 0xFFEC Peripheral ID 3 Register */
-    __IM  uint32_t CIDR0;                        /*!< Offset 0xFFF0 Component ID 0 Register */
-    __IM  uint32_t CIDR1;                        /*!< Offset 0xFFF4 Component ID 1 Register */
-    __IM  uint32_t CIDR2;                        /*!< Offset 0xFFF8 Component ID 2 Register */
-    __IM  uint32_t CIDR3;                        /*!< Offset 0xFFFC Component ID 3 Register */
+    __IM  uint32_t GICD_PIDR4;                        /*!< Offset 0xFFD0 Peripheral ID 4 Register */
+    __IM  uint32_t GICD_PIDR5;                        /*!< Offset 0xFFD4 Peripheral ID 5 Register */
+    __IM  uint32_t GICD_PIDR6;                        /*!< Offset 0xFFD8 Peripheral ID 6 Register */
+    __IM  uint32_t GICD_PIDR7;                        /*!< Offset 0xFFDC Peripheral ID 7 Register */
+    __IM  uint32_t GICD_PIDR0;                        /*!< Offset 0xFFE0 Peripheral ID 0 Register */
+    __IM  uint32_t GICD_PIDR1;                        /*!< Offset 0xFFE4 Peripheral ID 1 Register */
+    __IM  uint32_t GICD_PIDR2;                        /*!< Offset 0xFFE8 Peripheral ID 2 Register */
+    __IM  uint32_t GICD_PIDR3;                        /*!< Offset 0xFFEC Peripheral ID 3 Register */
+    __IM  uint32_t GICD_CIDR0;                        /*!< Offset 0xFFF0 Component ID 0 Register */
+    __IM  uint32_t GICD_CIDR1;                        /*!< Offset 0xFFF4 Component ID 1 Register */
+    __IM  uint32_t GICD_CIDR2;                        /*!< Offset 0xFFF8 Component ID 2 Register */
+    __IM  uint32_t GICD_CIDR3;                        /*!< Offset 0xFFFC Component ID 3 Register */
 }  GICDistributor_Type;
 
 #define GICDistributor      ((GICDistributor_Type      *)     GIC_DISTRIBUTOR_BASE ) /*!< \brief GIC Distributor register set access pointer */
 
+
 /* GICDistributor CTLR Register */
+/* ctrl register access in non-secure */
+#define GICD_CTLR_RWP_Pos     		31
+#define GICD_CTLR_E1NWF_S_Pos  		7
+#define GICD_CTLR_DS_Pos  			6
+#define GICD_CTLR_ARE_NS_Pos  		5
+#define GICD_CTLR_ARE_S_Pos  		4
+#define GICD_CTLR_EnableGrp1S_Pos 	2
+#define GICD_CTLR_EnableGrp1NS_Pos 	1
+#define GICD_CTLR_EnableGrp0_Pos  	0
+
 #define GICDistributor_CTLR_EnableGrp0_Pos    0U                                                   /*!< GICDistributor CTLR: EnableGrp0 Position */
 #define GICDistributor_CTLR_EnableGrp0_Msk    (0x1U /*<< GICDistributor_CTLR_EnableGrp0_Pos*/)     /*!< GICDistributor CTLR: EnableGrp0 Mask */
 #define GICDistributor_CTLR_EnableGrp0(x)     (((uint32_t)(((uint32_t)(x)) /*<< GICDistributor_CTLR_EnableGrp0_Pos*/)) & GICDistributor_CTLR_EnableGrp0_Msk)
@@ -192,23 +203,6 @@ typedef struct
 #define GICDistributor_IIDR_ProductID_Pos     24U                                                  /*!< GICDistributor IIDR: ProductID Position */
 #define GICDistributor_IIDR_ProductID_Msk     (0xFFU << GICDistributor_IIDR_ProductID_Pos)         /*!< GICDistributor IIDR: ProductID Mask */
 #define GICDistributor_IIDR_ProductID(x)      (((uint32_t)(((uint32_t)(x)) << GICDistributor_IIDR_ProductID_Pos)) & GICDistributor_IIDR_ProductID_Msk)
-
-/* GICDistributor STATUSR Register */
-#define GICDistributor_STATUSR_RRD_Pos        0U                                                   /*!< GICDistributor STATUSR: RRD Position */
-#define GICDistributor_STATUSR_RRD_Msk        (0x1U /*<< GICDistributor_STATUSR_RRD_Pos*/)         /*!< GICDistributor STATUSR: RRD Mask */
-#define GICDistributor_STATUSR_RRD(x)         (((uint32_t)(((uint32_t)(x)) /*<< GICDistributor_STATUSR_RRD_Pos*/)) & GICDistributor_STATUSR_RRD_Msk)
-
-#define GICDistributor_STATUSR_WRD_Pos        1U                                                   /*!< GICDistributor STATUSR: WRD Position */
-#define GICDistributor_STATUSR_WRD_Msk        (0x1U << GICDistributor_STATUSR_WRD_Pos)             /*!< GICDistributor STATUSR: WRD Mask */
-#define GICDistributor_STATUSR_WRD(x)         (((uint32_t)(((uint32_t)(x)) << GICDistributor_STATUSR_WRD_Pos)) & GICDistributor_STATUSR_WRD_Msk)
-
-#define GICDistributor_STATUSR_RWOD_Pos       2U                                                   /*!< GICDistributor STATUSR: RWOD Position */
-#define GICDistributor_STATUSR_RWOD_Msk       (0x1U << GICDistributor_STATUSR_RWOD_Pos)            /*!< GICDistributor STATUSR: RWOD Mask */
-#define GICDistributor_STATUSR_RWOD(x)        (((uint32_t)(((uint32_t)(x)) << GICDistributor_STATUSR_RWOD_Pos)) & GICDistributor_STATUSR_RWOD_Msk)
-
-#define GICDistributor_STATUSR_WROD_Pos       3U                                                   /*!< GICDistributor STATUSR: WROD Position */
-#define GICDistributor_STATUSR_WROD_Msk       (0x1U << GICDistributor_STATUSR_WROD_Pos)            /*!< GICDistributor STATUSR: WROD Mask */
-#define GICDistributor_STATUSR_WROD(x)        (((uint32_t)(((uint32_t)(x)) << GICDistributor_STATUSR_WROD_Pos)) & GICDistributor_STATUSR_WROD_Msk)
 
 /* GICDistributor SETSPI_NSR Register */
 #define GICDistributor_SETSPI_NSR_INTID_Pos   0U                                                   /*!< GICDistributor SETSPI_NSR: INTID Position */
@@ -307,7 +301,7 @@ typedef struct
 
 __STATIC_FORCEINLINE void GIC_DistributorWait(void)
 {
-	while ((GICDistributor->CTLR & (UINT32_C(1) << 31)) != 0)
+	while ((GICDistributor->GICD_CTLR & (UINT32_C(1) << GICD_CTLR_RWP_Pos)) != 0)
 		;
 }
 
@@ -315,15 +309,26 @@ __STATIC_FORCEINLINE void GIC_DistributorWait(void)
 */
 __STATIC_INLINE void GIC_EnableDistributor(void)
 {
-  GICDistributor->CTLR |= 1U;
-  GIC_DistributorWait();
+	/* Enable distributor with ARE_NS and NS_Group1 */
+	//    GICDistributor->CTLR = ((1U << GICD_CTLR_ARE_NS_Pos) | (1U << GICD_CTLR_ENGRP1A_Pos));
+	//    GIC_DistributorWait();
+	//GIC_WaitRWP(GICD_RWP);
+	GICDistributor->GICD_CTLR  = 0x77;
+	//GIC_WaitRWP(GICD_RWP);
+	GIC_DistributorWait();
+	//  GICDistributor->GICD_CTLR |= 1U;
+	GIC_DistributorWait();
 }
 
 /** \brief Disable the interrupt distributor using the GIC's CTLR register.
 */
 __STATIC_INLINE void GIC_DisableDistributor(void)
 {
-  GICDistributor->CTLR &=~1U;
+  GICDistributor->GICD_CTLR &=
+		  ~ (UINT32_C(1) << GICD_CTLR_EnableGrp1S_Pos) &
+		  ~ (UINT32_C(1) << GICD_CTLR_EnableGrp1NS_Pos) &
+		  ~ (UINT32_C(1) << GICD_CTLR_EnableGrp0_Pos);
+
   GIC_DistributorWait();
 }
 
@@ -332,7 +337,7 @@ __STATIC_INLINE void GIC_DisableDistributor(void)
 */
 __STATIC_INLINE uint32_t GIC_DistributorInfo(void)
 {
-  return (GICDistributor->TYPER);
+  return (GICDistributor->GICD_TYPER);
 }
 
 /** \brief Reads the GIC's IIDR register.
@@ -340,14 +345,14 @@ __STATIC_INLINE uint32_t GIC_DistributorInfo(void)
 */
 __STATIC_INLINE uint32_t GIC_DistributorImplementer(void)
 {
-  return (GICDistributor->IIDR);
+  return (GICDistributor->GICD_IIDR);
 }
 
 /** \brief Get the Affinity Routing status.
 */
 __STATIC_INLINE int GIC_GetARE(void)
 {
-    return !! (GICDistributor->CTLR & 0x30);
+    return !! (GICDistributor->GICD_CTLR & 0x30);
 }
 
 /** \brief Sets the GIC's ITARGETSR register for the given interrupt.
@@ -363,7 +368,7 @@ __STATIC_INLINE void GIC_SetTarget(IRQn_Type IRQn, uint32_t cpu_target)
 			if ((cpu_target == 0) || (cpu_target & (cpu_target - 1))) {
 				/* If multiple bits are set in the mask (or mask is 0), enable 1-of-N routing mode.
 				   Bit 31 = 1 means the interrupt can be handled by ANY operational core. */
-				GICDistributor->IROUTER[IRQn] =
+				GICDistributor->GICD_IROUTER[IRQn] =
 						GICDistributor_IROUTER_IRM(1) |	/* Interrupts routed to any PE defined as a participating node. */
 						0;
 			} else {
@@ -373,7 +378,7 @@ __STATIC_INLINE void GIC_SetTarget(IRQn_Type IRQn, uint32_t cpu_target)
 					core_index++;
 				}
 				/* affinity routing */
-				GICDistributor->IROUTER [IRQn] =
+				GICDistributor->GICD_IROUTER [IRQn] =
 						//GICDistributor_IROUTER_IRM(1) |	/* Interrupts routed to any PE defined as a participating node. */
 						//GICDistributor_IROUTER_Aff0(core_index) |
 						GICDistributor_IROUTER_Aff1(core_index) |
@@ -398,7 +403,7 @@ __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
         if (GIC_GetARE())
         {
         	/* affinity routing */
-            cpu_target = (GICDistributor->IROUTER[IRQn] & GICDistributor_IROUTER_Aff1_Msk) >> GICDistributor_IROUTER_Aff1_Pos;
+            cpu_target = (GICDistributor->GICD_IROUTER[IRQn] & GICDistributor_IROUTER_Aff1_Msk) >> GICDistributor_IROUTER_Aff1_Pos;
         }
         else
         {
@@ -424,7 +429,8 @@ __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_EnableIRQ(IRQn_Type IRQn)
 {
-  GICDistributor->ISENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
+  GICDistributor->GICD_ISENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
+  GIC_DistributorWait();
 }
 
 /** \brief Get interrupt enable status using GIC's ISENABLER register.
@@ -433,7 +439,7 @@ __STATIC_INLINE void GIC_EnableIRQ(IRQn_Type IRQn)
 */
 __STATIC_INLINE uint32_t GIC_GetEnableIRQ(IRQn_Type IRQn)
 {
-  return (GICDistributor->ISENABLER[IRQn / 32U] >> (IRQn % 32U)) & UINT32_C(1);
+  return (GICDistributor->GICD_ISENABLER[IRQn / 32U] >> (IRQn % 32U)) & UINT32_C(1);
 }
 
 /** \brief Disables the given interrupt using GIC's ICENABLER register.
@@ -441,7 +447,8 @@ __STATIC_INLINE uint32_t GIC_GetEnableIRQ(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_DisableIRQ(IRQn_Type IRQn)
 {
-  GICDistributor->ICENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
+  GICDistributor->GICD_ICENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
+  GIC_DistributorWait();
 }
 
 /** \brief Get interrupt pending status from GIC's ISPENDR register.
@@ -453,7 +460,7 @@ __STATIC_INLINE uint32_t GIC_GetPendingIRQ(IRQn_Type IRQn)
 	uint32_t pend;
 
 	if (IRQn >= 16) {
-		pend = (GICDistributor->ISPENDR[IRQn / 32U] >> (IRQn % 32U)) & UINT32_C(1);
+		pend = (GICDistributor->GICD_ISPENDR[IRQn / 32U] >> (IRQn % 32U)) & UINT32_C(1);
 	} else {
 	// INTID 0-15 Software Generated Interrupt
 		pend = 0;//(GICDistributor->SPENDSGIR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
@@ -474,7 +481,7 @@ __STATIC_INLINE uint32_t GIC_GetPendingIRQ(IRQn_Type IRQn)
 __STATIC_INLINE void GIC_SetPendingIRQ(IRQn_Type IRQn)
 {
 	if (IRQn >= 16) {
-		GICDistributor->ISPENDR[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
+		GICDistributor->GICD_ISPENDR[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
 	} else {
 		// INTID 0-15 Software Generated Interrupt
 //		GICDistributor->SPENDSGIR[IRQn / 4U] = 1U << ((IRQn % 4U) * 8U);
@@ -489,7 +496,7 @@ __STATIC_INLINE void GIC_SetPendingIRQ(IRQn_Type IRQn)
 __STATIC_INLINE void GIC_ClearPendingIRQ(IRQn_Type IRQn)
 {
 	if (IRQn >= 16U) {
-		GICDistributor->ICPENDR[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
+		GICDistributor->GICD_ICPENDR[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
 	} else {
 		// INTID 0-15 Software Generated Interrupt
 		//GICDistributor->CPENDSGIR[IRQn / 4U] = UINT32_C(1) << ((IRQn % 4U) * 8U);
@@ -503,14 +510,14 @@ __STATIC_INLINE void GIC_ClearPendingIRQ(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_SetConfiguration(IRQn_Type IRQn, uint32_t int_config)
 {
-  uint32_t icfgr = GICDistributor->ICFGR[IRQn / 16U];  /* read current register content */
+  uint32_t icfgr = GICDistributor->GICD_ICFGR[IRQn / 16U];  /* read current register content */
   const uint32_t shift = (IRQn % 16U) << 1U;                 /* calculate shift value */
 
   int_config &= 3U;                                    /* only 2 bits are valid */
   icfgr &= (~ (UINT32_C(0x03) << shift));                   /* clear bits to change */
   icfgr |= (  int_config 	  << shift);                    /* set new configuration */
 
-  GICDistributor->ICFGR[IRQn / 16U] = icfgr;           /* write new register content */
+  GICDistributor->GICD_ICFGR[IRQn / 16U] = icfgr;           /* write new register content */
 }
 
 /** \brief Get the interrupt configuration from the GIC's ICFGR register.
@@ -520,7 +527,7 @@ __STATIC_INLINE void GIC_SetConfiguration(IRQn_Type IRQn, uint32_t int_config)
 */
 __STATIC_INLINE uint32_t GIC_GetConfiguration(IRQn_Type IRQn)
 {
-  return (GICDistributor->ICFGR[IRQn / 16U] >> ((IRQn % 16U) << 1U)) & UINT32_C(0x03);
+  return (GICDistributor->GICD_ICFGR[IRQn / 16U] >> ((IRQn % 16U) << 1U)) & UINT32_C(0x03);
 }
 
 /** \brief Set the priority for the given interrupt in the GIC's IPRIORITYR register.
@@ -529,8 +536,8 @@ __STATIC_INLINE uint32_t GIC_GetConfiguration(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 {
-  uint32_t mask = GICDistributor->IPRIORITYR[IRQn / 4U] & ~ (UINT32_C(0xFF) << ((IRQn % 4U) * 8U));
-  GICDistributor->IPRIORITYR[IRQn / 4U] = mask | ((priority & UINT32_C(0xFF)) << ((IRQn % 4U) * 8U));
+  uint32_t mask = GICDistributor->GICD_IPRIORITYR[IRQn / 4U] & ~ (UINT32_C(0xFF) << ((IRQn % 4U) * 8U));
+  GICDistributor->GICD_IPRIORITYR[IRQn / 4U] = mask | ((priority & UINT32_C(0xFF)) << ((IRQn % 4U) * 8U));
 }
 
 /** \brief Read the current interrupt priority from GIC's IPRIORITYR register.
@@ -538,7 +545,7 @@ __STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 */
 __STATIC_INLINE uint32_t GIC_GetPriority(IRQn_Type IRQn)
 {
-  return (GICDistributor->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & UINT32_C(0xFF);
+  return (GICDistributor->GICD_IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & UINT32_C(0xFF);
 }
 #endif /* GIC_DISTRIBUTOR_BASE */
 
@@ -1178,8 +1185,8 @@ __STATIC_INLINE uint32_t GIC_GetIRQStatus(IRQn_Type IRQn)
 {
   uint32_t pending, active;
 
-  active = ((GICDistributor->ISACTIVER[IRQn / 32U])  >> (IRQn % 32U)) & UINT32_C(1);
-  pending = ((GICDistributor->ISPENDR[IRQn / 32U]) >> (IRQn % 32U)) & UINT32_C(1);
+  active = ((GICDistributor->GICD_ISACTIVER[IRQn / 32U])  >> (IRQn % 32U)) & UINT32_C(1);
+  pending = ((GICDistributor->GICD_ISPENDR[IRQn / 32U]) >> (IRQn % 32U)) & UINT32_C(1);
 
   return ((active<<1U) | pending);
 }
@@ -1333,16 +1340,16 @@ __STATIC_INLINE void GIC_SetGroup(IRQn_Type IRQn, uint32_t group)
 	  uint32_t secure = 0;
 	  uint32_t shift   = (IRQn % 32U);
 
-	  uint32_t igroupr = GICDistributor->IGROUPR[IRQn / 32U];
+	  uint32_t igroupr = GICDistributor->GICD_IGROUPR[IRQn / 32U];
 	  igroupr &= (~(1U          << shift));
 	  igroupr |= ( (group & 1U) << shift);
-	  GICDistributor->IGROUPR[IRQn / 32U] = igroupr;
+	  GICDistributor->GICD_IGROUPR[IRQn / 32U] = igroupr;
 
 	  // All routed to FIQ
-	  uint32_t igroupmodr = GICDistributor->IGRPMODR[IRQn / 32U];
+	  uint32_t igroupmodr = GICDistributor->GICD_IGRPMODR[IRQn / 32U];
 	  igroupmodr &= (~(1U          << shift));	 /* 0 = Non-Secure (when coupled with IGROUPR=1) */
 	  igroupmodr |= ( (secure & 1U)   << shift);
-	  GICDistributor->IGRPMODR[IRQn / 32U] = igroupmodr;
+	  GICDistributor->GICD_IGRPMODR[IRQn / 32U] = igroupmodr;
 }
 #define GIC_SetSecurity         GIC_SetGroup
 
@@ -1352,7 +1359,7 @@ __STATIC_INLINE void GIC_SetGroup(IRQn_Type IRQn, uint32_t group)
 */
 __STATIC_INLINE uint32_t GIC_GetGroup(IRQn_Type IRQn)
 {
-  return (GICDistributor->IGROUPR[IRQn / 32U] >> (IRQn % 32U)) & 1UL;
+  return (GICDistributor->GICD_IGROUPR[IRQn / 32U] >> (IRQn % 32U)) & 1UL;
 }
 #define GIC_GetSecurity         GIC_GetGroup
 
@@ -1437,16 +1444,6 @@ __STATIC_INLINE GICRedistributor_Type *GIC_GetRdist(void)
 /**
  *
  */
-__STATIC_INLINE uint32_t GIC_GetRedistPriority(IRQn_Type IRQn)
-{
-    GICDistributor_Type *const s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
-
-    return (s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
-}
-
-/**
- *
- */
 __STATIC_INLINE void GIC_RedistWakeUp(void)
 {
   GICRedistributor_Type *const s_RedistBaseAddrs = GIC_GetRdist();
@@ -1465,55 +1462,50 @@ __STATIC_INLINE void GIC_RedistWakeUp(void)
 /**
  *
  */
-__STATIC_INLINE void GIC_SetRedistPriority(IRQn_Type IRQn, uint32_t priority)
-{
-    GICDistributor_Type *const s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
-    const uint32_t mask = s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
+//__STATIC_INLINE void GIC_SetRedistPriority(IRQn_Type IRQn, uint32_t priority)
+//{
+//    GICRedistributor_Type *const s_RedistPPIBaseAddrs = (GICRedistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
+//    const uint32_t mask = s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
+//
+//    s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
+//}
 
-    s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
-}
+/**
+ *
+ */
+//__STATIC_INLINE uint32_t GIC_GetRedistPriority(IRQn_Type IRQn)
+//{
+//    GICDistributor_Type *const s_RedistPPIBaseAddrs = (GICDistributor_Type *)GIC_GetRdistSGIBase(GIC_GetRdist());
+//
+//    return (s_RedistPPIBaseAddrs->IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & 0xFFUL;
+//}
 
 /** \brief Initialize the interrupt redistributor.
 */
 __STATIC_INLINE void GIC_RedistInit(void)
 {
-    uint32_t i;
-    uint32_t priority_field;
-
-  /* Priority level is implementation defined.
-   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
-   priority field and read back the value stored.*/
-    GIC_SetRedistPriority((IRQn_Type)31U, 0xFFU);
-    priority_field = GIC_GetRedistPriority((IRQn_Type)31U);
-
-  /* Wakeup the GIC */
-    GIC_RedistWakeUp();
-
-    for (i = 0; i < 32; i++)
-    {
-      //Disable the SPI interrupt
-        GIC_DisableIRQ((IRQn_Type)i);
-      //Set priority
-      GIC_SetRedistPriority((IRQn_Type)i, priority_field*2U/3U);
-    }
+//    uint32_t i;
+//    uint32_t priority_field;
+//
+//  /* Priority level is implementation defined.
+//   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
+//   priority field and read back the value stored.*/
+//    GIC_SetRedistPriority((IRQn_Type)31U, 0xFFU);
+//    priority_field = GIC_GetRedistPriority((IRQn_Type)31U);
+//
+//  /* Wakeup the GIC */
+//    GIC_RedistWakeUp();
+//
+//    for (i = 0; i < 32; i++)
+//    {
+//      //Disable the SPI interrupt
+//        GIC_DisableIRQ((IRQn_Type)i);
+//      //Set priority
+//      GIC_SetRedistPriority((IRQn_Type)i, priority_field*2U/3U);
+//    }
 }
 #endif /* GIC_REDISTRIBUTOR_BASE */
 
-
-/* ctrl register access in non-secure */
-#define GICD_CTLR_RWP     31
-#define GICD_CTLR_ARE_NS  4
-#define GICD_CTLR_ENGRP1A 1
-#define GICD_CTLR_ENGRP1  0
-
-#define GICR_CTLR_RWP 3
-
-enum gic_rwp {
-    GICD_RWP,
-    GICR_RWP,
-};
-
-#define GICV6_BIT(pos) (UINT32_C(1) << (pos))
 
 /** \brief Initialize the interrupt distributor.
 */
@@ -1554,13 +1546,6 @@ __STATIC_INLINE void GIC_DistInit(void)
       GIC_SetTarget((IRQn_Type)i, 1U);
   }
 
-  /* Enable distributor with ARE_NS and NS_Group1 */
-//    GICDistributor->CTLR = ((1U << GICD_CTLR_ARE_NS) | (1U << GICD_CTLR_ENGRP1A));
-//    GIC_DistributorWait();
-   //GIC_WaitRWP(GICD_RWP);
-  GICDistributor->CTLR  = 0x77;
-  //GIC_WaitRWP(GICD_RWP);
-  GIC_DistributorWait();
     //Enable distributor
     GIC_EnableDistributor();
 }
