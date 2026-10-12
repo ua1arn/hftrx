@@ -520,7 +520,7 @@ extern "C" {
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	#if defined(__aarch64__)
-		#define HARDWARE_NCORES 6
+		#define HARDWARE_NCORES 8
 	#else
 		#define HARDWARE_NCORES 6
 	#endif

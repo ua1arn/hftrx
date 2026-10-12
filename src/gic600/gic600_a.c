@@ -43,63 +43,63 @@
  * @param priority: Interrupt priority value (0x00 to 0xFF, where lower value means higher priority).
  * @param cpu_mask: Bitmask of target cores (Bit 0 = CPU0, Bit 1 = CPU1, ..., Bit 7 = CPU7).
  */
-void GICv3_Configure_Interrupt(uint32_t int_id, uint8_t priority, uint8_t cpu_mask) {
-
-    /* 1. Disable the targeted interrupt line before altering its configurations */
-    GICDistributor->GICD_ICENABLER[int_id / 32] = (1U << (int_id % 32));
-    GIC_DistributorWait();
-
-    /* 2. Group Allocation: Direct the SPI towards Non-Secure Group 1 context */
-//    GICDistributor->IGROUPR[int_id / 32]  |= (1U << (int_id % 32));  /* 1 = Group 1 */
-//    GICDistributor->IGRPMODR[int_id / 32] &= ~(1U << (int_id % 32)); /* 0 = Non-Secure */
-
-    /* 3. Priority Configuration: Set the 8-bit priority value
-       Each 32-bit register holds 4 priority fields. */
-    uint32_t prio_index = int_id / 4;
-    uint32_t prio_shift = (int_id % 4) * 8;
-
-    if (0) {
-    	   uint32_t prio_val = GICDistributor->GICD_IPRIORITYR[prio_index];
-    	    prio_val &= ~(0xFFU << prio_shift);          /* Clear old priority byte */
-    	    prio_val |= ((uint32_t)priority << prio_shift); /* Set new priority byte */
-    	    GICDistributor->GICD_IPRIORITYR[prio_index] = prio_val;
-    }
-
-    /* 4. Trigger Mapping: Enforce Level-Sensitive mode (00b) */
-    uint32_t config_index = int_id / 16;
-    uint32_t config_bit_shift = (int_id % 16) * 2;
-
-    uint32_t icfgr_val = GICDistributor->GICD_ICFGR[config_index];
-    icfgr_val &= ~(3U << config_bit_shift);      /* 00b = Level-Sensitive */
-    GICDistributor->GICD_ICFGR[config_index] = icfgr_val;
-
-    /* 5. Routing Mapping: Convert the user cpu_mask into GICv3 IROUTER format */
-    if ((cpu_mask == 0) || (cpu_mask & (cpu_mask - 1))) {
-        /* If multiple bits are set in the mask (or mask is 0), enable 1-of-N routing mode.
-           Bit 31 = 1 means the interrupt can be handled by ANY operational core. */
-        GICDistributor->GICD_IROUTER[int_id] = (UINT64_C(1) << 31);
-    } else {
-       /* Exactly one core is selected in the mask. Find its index (0 to 7). */
-        uint32_t core_index = 0;
-        while ((cpu_mask & (1U << core_index)) == 0) {
-            core_index++;
-        }
-
-        /*
-         * Construct the GICv3 target affinity for Allwinner A733.
-         * As proven by the log, the hardware topology places Core ID in Aff1:
-         * MPIDR_EL1 layout for A733: Aff3=0, Aff2=0, Aff1=core_index, Aff0=0.
-         * target_affinity format: (Aff1 << 8)
-         */
-        uint64_t target_affinity = ((uint64_t)core_index << 8);
-        GICDistributor->GICD_IROUTER[int_id] = target_affinity; /* Route strictly to the selected core (Bit 31 = 0) */
-        ASSERT(GICDistributor->GICD_IROUTER[int_id] == target_affinity);
-    }
-
-    /* 6. Enable the configured interrupt line back */
-    GICDistributor->GICD_ISENABLER[int_id / 32] = (1U << (int_id % 32));
-    GIC_DistributorWait();
-}
+//void GICv3_Configure_Interrupt(uint32_t int_id, uint8_t priority, uint8_t cpu_mask) {
+//
+//    /* 1. Disable the targeted interrupt line before altering its configurations */
+//    GICDistributor->GICD_ICENABLER[int_id / 32] = (1U << (int_id % 32));
+//    GIC_DistributorWait();
+//
+//    /* 2. Group Allocation: Direct the SPI towards Non-Secure Group 1 context */
+////    GICDistributor->IGROUPR[int_id / 32]  |= (1U << (int_id % 32));  /* 1 = Group 1 */
+////    GICDistributor->IGRPMODR[int_id / 32] &= ~(1U << (int_id % 32)); /* 0 = Non-Secure */
+//
+//    /* 3. Priority Configuration: Set the 8-bit priority value
+//       Each 32-bit register holds 4 priority fields. */
+//    uint32_t prio_index = int_id / 4;
+//    uint32_t prio_shift = (int_id % 4) * 8;
+//
+//    if (0) {
+//    	   uint32_t prio_val = GICDistributor->GICD_IPRIORITYR[prio_index];
+//    	    prio_val &= ~(0xFFU << prio_shift);          /* Clear old priority byte */
+//    	    prio_val |= ((uint32_t)priority << prio_shift); /* Set new priority byte */
+//    	    GICDistributor->GICD_IPRIORITYR[prio_index] = prio_val;
+//    }
+//
+//    /* 4. Trigger Mapping: Enforce Level-Sensitive mode (00b) */
+//    uint32_t config_index = int_id / 16;
+//    uint32_t config_bit_shift = (int_id % 16) * 2;
+//
+//    uint32_t icfgr_val = GICDistributor->GICD_ICFGR[config_index];
+//    icfgr_val &= ~(3U << config_bit_shift);      /* 00b = Level-Sensitive */
+//    GICDistributor->GICD_ICFGR[config_index] = icfgr_val;
+//
+//    /* 5. Routing Mapping: Convert the user cpu_mask into GICv3 IROUTER format */
+//    if ((cpu_mask == 0) || (cpu_mask & (cpu_mask - 1))) {
+//        /* If multiple bits are set in the mask (or mask is 0), enable 1-of-N routing mode.
+//           Bit 31 = 1 means the interrupt can be handled by ANY operational core. */
+//        GICDistributor->GICD_IROUTER[int_id] = (UINT64_C(1) << 31);
+//    } else {
+//       /* Exactly one core is selected in the mask. Find its index (0 to 7). */
+//        uint32_t core_index = 0;
+//        while ((cpu_mask & (1U << core_index)) == 0) {
+//            core_index++;
+//        }
+//
+//        /*
+//         * Construct the GICv3 target affinity for Allwinner A733.
+//         * As proven by the log, the hardware topology places Core ID in Aff1:
+//         * MPIDR_EL1 layout for A733: Aff3=0, Aff2=0, Aff1=core_index, Aff0=0.
+//         * target_affinity format: (Aff1 << 8)
+//         */
+//        uint64_t target_affinity = ((uint64_t)core_index << 8);
+//        GICDistributor->GICD_IROUTER[int_id] = target_affinity; /* Route strictly to the selected core (Bit 31 = 0) */
+//        ASSERT(GICDistributor->GICD_IROUTER[int_id] == target_affinity);
+//    }
+//
+//    /* 6. Enable the configured interrupt line back */
+//    GICDistributor->GICD_ISENABLER[int_id / 32] = (1U << (int_id % 32));
+//    GIC_DistributorWait();
+//}
 
 ///**
 // * @brief Reads the Multiprocessor Affinity Register (MPIDR_EL1).
@@ -244,9 +244,10 @@ void gic600_test(void)
 {
 //	PRINTF("GIC_GetARE()=%d\n", GIC_GetARE());
 //	GICv3_Fix_Routing_Mode(TIMER1_0_IRQn);
-	PRINTF("1 GICDistributor->GICD_CTLR=%08X\n", (unsigned) GICDistributor->GICD_CTLR);
-	GICv3_Configure_Interrupt(TIMER1_0_IRQn, 0, UINT32_C(1) << 1);
-	PRINTF("2 GICDistributor->GICD_CTLR=%08X\n", (unsigned) GICDistributor->GICD_CTLR);
+	unsigned irqn = TIMER1_1_IRQn;
+	PRINTF("1 GICDistributor->GICD_CTLR=%08X, GICDistributor->GICD_IROUTER [0x%03X]=%08X\n", (unsigned) GICDistributor->GICD_CTLR, (unsigned) irqn, (unsigned) GICDistributor->GICD_IROUTER [irqn]);
+	GIC_SetTarget(irqn, UINT32_C(1) << 1);
+	PRINTF("3 GICDistributor->GICD_CTLR=%08X, GICDistributor->GICD_IROUTER [0x%03X]=%08X\n", (unsigned) GICDistributor->GICD_CTLR, (unsigned) irqn, (unsigned) GICDistributor->GICD_IROUTER [irqn]);
 }
 #else
 void gic600_global_init(void)
