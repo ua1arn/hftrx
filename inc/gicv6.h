@@ -82,6 +82,12 @@ __STATIC_FORCEINLINE void GIC_RedistributorWait(void)
 			;
 }
 
+
+#define GIC_REDISTRIBUTOR_STRIDE (0x20000)
+#define GICR_SGI_BASE_OFF        (0x10000)
+#define GICR_WAKER_PS_SHIFT (1)
+#define GICR_WAKER_CA_SHIFT (2)
+
 #endif /* GIC_REDISTRIBUTOR_BASE */
 
 #if defined (GIC_DISTRIBUTOR_BASE)
@@ -550,6 +556,31 @@ __STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 {
   uint32_t mask = GICDistributor->GICD_IPRIORITYR[IRQn / 4U] & ~ (UINT32_C(0xFF) << ((IRQn % 4U) * 8U));
   GICDistributor->GICD_IPRIORITYR[IRQn / 4U] = mask | ((priority & UINT32_C(0xFF)) << ((IRQn % 4U) * 8U));
+  if (IRQn >= 32)
+	  return;
+  return;
+  for (unsigned core_id = 0; core_id < 6; ++ core_id)
+  {
+	    GICRedistributor_Type *GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * GIC_REDISTRIBUTOR_STRIDE));
+
+	    /* Step 1: Wake up the core's Redistributor interface */
+	    uint32_t waker = GICR->GICR_WAKER;
+	    waker &= ~ (UINT32_C(1) << 1); /* Clear ProcessorSleep bit */
+	    GICR->GICR_WAKER = waker;
+
+	    /* Wait until the interface is operational (ChildrenAsleep bit must become 0) */
+	    while (GICR->GICR_WAKER & (UINT32_C(1) << 2))
+	    	;
+
+	    GICR->GICR_IGROUPR0 = 0xFFFFFFFF;
+	    GICR->GICR_IGRPMODR0 = 0*0xFFFFFFFF;
+	    GICR->GICR_ISENABLER0 = 0xFFFF;
+
+	    uint32_t mask = GICR->GICR_IPRIORITYRn[IRQn / 4U] & ~ (UINT32_C(0xFF) << ((IRQn % 4U) * 8U));
+	    GICR->GICR_IPRIORITYRn[IRQn / 4U] = mask | ((priority & UINT32_C(0xFF)) << ((IRQn % 4U) * 8U));
+  }
+
+
 }
 
 /** \brief Read the current interrupt priority from GIC's IPRIORITYR register.
@@ -1235,26 +1266,27 @@ __STATIC_INLINE uint32_t GIC_GetIRQStatus(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16_t tlist)
 {
-    uint32_t aff3, aff2, aff1, rs;
+//    uint32_t aff3, aff2, aff1;
+	uint32_t rs;
     uint64_t val;
 
     if (IRQn >= 16)
         return;
 
-    aff1 = MPIDR_TO_AFF_LEVEL(target_aff, 1);
-    aff2 = MPIDR_TO_AFF_LEVEL(target_aff, 2);
-    aff3 = MPIDR_TO_AFF_LEVEL(target_aff, 3);
-    rs = MPIDR_TO_RS(target_aff);
-    val = COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, IRQn, 0, rs, tlist);
+//    aff1 = MPIDR_TO_AFF_LEVEL(target_aff, 1);
+//    aff2 = MPIDR_TO_AFF_LEVEL(target_aff, 2);
+//    aff3 = MPIDR_TO_AFF_LEVEL(target_aff, 3);
+    rs = 0;//MPIDR_TO_RS(target_aff);
+    //val = COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, IRQn, 0, rs, tlist);
 
     rs = 0; /* RangeSelector */
     val =
-    		(target_aff & 0xFF) * (UINT64_C(1) << 16) |	/* aff1 */
-    		(target_aff & 0xFF) * (UINT64_C(1) << 32) |	/* aff2 */
-    		(target_aff & 0xFF) * (UINT64_C(1) << 48) |	/* aff3 */
-    		(1) * (UINT64_C(1) << 40) |	/* IRM */
+    		//(target_aff & 0xFF) * (UINT64_C(1) << 48) |	/* aff3 */
     		(rs & 0x0F) * (UINT64_C(1) << 44) |	/* RangeSelector RS */
+    		//(1) * (UINT64_C(1) << 40) |	/* IRM 0b1Interrupts routed to all PEs in the system, excluding "self". */
+    		//(target_aff & 0xFF) * (UINT64_C(1) << 32) |	/* aff2 */
     		(IRQn & 0xF) * (UINT64_C(1) << 24) | /* INTID */
+    		(target_aff & 0xFF) * (UINT64_C(1) << 16) |	/* aff1 */
 			(tlist & 0xFF) * (UINT64_C(1) << 0) |
 		0;
 
@@ -1378,11 +1410,6 @@ __STATIC_INLINE uint32_t GIC_GetGroup(IRQn_Type IRQn)
 
 
 #if defined(GIC_REDISTRIBUTOR_BASE)
-
-#define GIC_REDISTRIBUTOR_STRIDE (0x20000)
-#define GICR_SGI_BASE_OFF        (0x10000)
-#define GICR_WAKER_PS_SHIFT (1)
-#define GICR_WAKER_CA_SHIFT (2)
 
 /** \brief Get the Redistributor SGI_base.
 */
@@ -1589,7 +1616,6 @@ __STATIC_INLINE void GICv3_Core_Init(uint32_t core_id) {
     /* Wait until the interface is operational (ChildrenAsleep bit must become 0) */
     while (GICR->GICR_WAKER & (UINT32_C(1) << 2))
     	;
-
 
     /* Step 3: Enable System Register Access (SRE) via the CPU interface */
     __set_ICC_SRE_EL3(0xF);
