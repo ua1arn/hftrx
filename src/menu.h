@@ -140,7 +140,7 @@
 #endif /* defined (RTC1_TYPE) */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL2("Filters CW", "Filters CW"), 0, 0, 0,
+		QLABEL2("FiltersCW", "Filters CW"), 0, 0, 0,
 		ITEM_GROUP, 
 		0, 0, 
 		OFFSETOF(struct nvmap, ggrpfilterscw),
@@ -914,7 +914,7 @@
 #endif /* WITHLFM */
 /* group name +++ */
 	(const struct paramdefdef [1]) {
-		QLABEL("Calibration"), 0, 0, 0,
+		QLABEL2("CALIBRT", "Calibration"), 0, 0, 0,
 		ITEM_GROUP,
 		0, 0,
 		OFFSETOF(struct nvmap, ggrpcalibration),

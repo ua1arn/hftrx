@@ -7931,7 +7931,7 @@ void nand_tests(void)
 #endif /* (WITHNANDHW || WITHNANDSW) */
 
 #if WITHDEBUG && 1
-static void ipchandlers(void)
+static void sgitesthandler(void)
 {
 	unsigned core = arm_hardware_cpuid();
 	PRINTF("Handler: core = %u\n", core);
@@ -7974,19 +7974,26 @@ void hightests(void)
 #endif
 #if 0
 	{
+		// filter_list (bit 25:24 of GICD_SGIR):
+		// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
+		// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
+		// 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
+		const uint_fast32_t filter_list = 0x00;
 		unsigned core;
 		const uint_fast16_t int_id = SGI15_IRQn;
-		PRINTF("IPC interrupte demo, GIC_GetARE()=%d\n", (int) GIC_GetARE());
-		//PRINTF("IPC interrupte demo\n");
-		arm_hardware_set_handler_system(int_id, ipchandlers);
+		//PRINTF("IPC interrupts demo, GIC_GetARE()=%d\n", (int) GIC_GetARE());
+		PRINTF("IPC interrupts demo\n");
+		arm_hardware_set_handler_system(int_id, sgitesthandler);
 		for (core = 0; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 		{
-			GIC_SendSGI(int_id, 1U << core, 0x00);	// other CORE, filer=0
+			GIC_SendSGI(int_id, UINT32_C(1) << core, 0x00);	// specified core
 			local_delay_ms(250);
-
 		}
 		arm_hardware_disable_handler(int_id);
-		PRINTF("IPC interrupte demo done\n");
+		PRINTF("IPC interrupts demo: send all together, except self:\n");
+		GIC_SendSGI(int_id, 1U << core, 0x01);	// other cores, except self
+		local_delay_ms(250);
+		PRINTF("IPC interrupts demo done\n");
 	}
 #endif
 #if 0
@@ -10076,7 +10083,20 @@ void hightests(void)
 #if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	{
 		// GIC600 specs
+		unsigned ITScount = 1;
+		unsigned RDcount = arm_hardware_clustersize();	// RDcount is the total number of “internal Redistributor”, which equals total number of CPU cores.
+		unsigned RDnum = 0;
 		uintptr_t base = GIC_BASE;
+		uintptr_t GICd_base = GIC_BASE + 0 * 0x00010000;	// GICD main page.
+		uintptr_t GICa_base = GIC_BASE + 1 * 0x00010000;	// GICD message-based interrupts alias.
+		uintptr_t GICt_base = GIC_BASE + 2 * 0x00010000;	// GIC trace and debug page.
+		uintptr_t GICs_base = GIC_BASE + 3 * 0x00010000;	// GIC PMU.
+		uintptr_t GIR_LPI_base = GIC_BASE + (4 + (2 * ITScount)) * 0x00010000;	// GICR LPI registers
+		uintptr_t GIR_PPI_SGI_base = GIC_BASE + (5 + (2 * ITScount)) * 0x00010000;	// GICR PPI + SGI registers.
+
+		PRINTF("GIR_LPI_base=%p\n", (void *) GIR_LPI_base);
+		PRINTF("GIR_PPI_SGI_base=%p\n", (void *) GIR_PPI_SGI_base);
+
 		for (;base < (GIC_BASE + (25 * 64 * 1024)); base += 4 * 1024)
 		{
 			//const uint32_t v = * (volatile uint32_t *) (base + 0xFFD0);
@@ -10111,7 +10131,7 @@ void hightests(void)
 			const uintptr_t comp_base = base & ~ (comp_size - 1);
 			const unsigned GICR_CFGID0 = * (volatile uint32_t *) (base + 0x000);
 			const unsigned GICR_CFGID1 = * (volatile uint32_t *) (base + 0x004);
-			const unsigned typer = ((GICR_1_TypeDef *) comp_base)->GICR_TYPER;
+			const unsigned typer = ((GICR_LPI_TypeDef *) comp_base)->GICR_TYPER;
 			PRINTF("%p: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X (%s) typer=%08X GICR_CFGID0=%08X GICR_CFGID1=%08X %p comp_size=%u\n",
 					(void *) base,
 					GICR_PIDR4, GICR_PIDR5, GICR_PIDR6, GICR_PIDR7, GICR_PIDR0, GICR_PIDR1, GICR_PIDR2, GICR_PIDR3,
@@ -10122,8 +10142,26 @@ void hightests(void)
 					(void *) comp_base,
 					(unsigned) comp_size
 					);
-			//printhex32(b, (void *) b, 48);
-			//PRINTF("ncpus=%u\n", (unsigned) ((* (const volatile uint32_t *) (comp_base + 0xF004)) >> 4) & 0xFF);
+			switch (GICR_PIDR0 & 0xFF)
+			{
+			case 0x92:
+				// GICD
+//				{
+//					const GICD_TypeDef * const gicd = (const GICD_TypeDef *) comp_base;
+//					PRINTF("gicd_IIDR: 0x%08X: pid=0x%02X, revision=0x%02X, Implementer=0x%03X\n", (unsigned) gicd->GICD_IIDR, (unsigned) (gicd->GICD_IIDR >> 24) & 0xFF, (unsigned) (gicd->GICD_IIDR >> 12) & 0x0F, (unsigned) (gicd->GICD_IIDR >> 0) & 0xFFF);
+//				}
+//				{
+//					const GICDistributorType * const gicd = (const GICD_TypeDef *) comp_base;
+//					PRINTF("gicd_IIDR: 0x%08X: pid=0x%02X, revision=0x%02X, Implementer=0x%03X\n", (unsigned) gicd->GICD_IIDR, (unsigned) (gicd->GICD_IIDR >> 24) & 0xFF, (unsigned) (gicd->GICD_IIDR >> 12) & 0x0F, (unsigned) (gicd->GICD_IIDR >> 0) & 0xFFF);
+//				}
+				break;
+			case 0x93:
+				// GICR
+				// Table 12-27 GIC physical LPI Redistributor register map - 0x70..
+				// Table 12-28 GIC virtual LPI Redistributor register map - 0x80..
+				// Table 12-29 GIC SGI and PPI Redistributor register map - 0x80..
+				break;
+			}
 		}
 	}
 #endif

@@ -1424,11 +1424,10 @@ stsinit_irql_initialize(void)
 	if (arm_hardware_cpuid() == 0)
 	{
 		GIC_DistInit();
-	#if defined(GIC_REDISTRIBUTOR_BASE)
-		GIC_RedistInit();
-	#endif /* GIC_REDISTRIBUTOR_BASE */
 	}
-	GIC_Enable();
+#if defined(GIC_REDISTRIBUTOR_BASE)
+	GIC_RedistInit();	// на каждом ядре
+#endif /* GIC_REDISTRIBUTOR_BASE */
 	GIC_CPUInterfaceInit(); //per CPU
 
 #endif
@@ -1511,6 +1510,25 @@ sysinit_debug_initialize(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 }
+#if defined(__aarch64__)
+/**
+ * @brief Checks if the CPU core supports ARM GICv3/v4 System Registers.
+ * @return 1 if GICv3/v4 is supported, 0 if only GICv2 (or legacy) is available.
+ */
+static int Is_GICv3_Supported(void) {
+    const uint64_t pfr0 = __get_ID_AA64PFR0_EL1();
+
+    /*
+     * In ARM Architecture Reference Manual:
+     * ID_AA64PFR0_EL1.GIC bits [27:24] specify GIC system register support:
+     * - 0b0000: GICv3/v4 system register interface is NOT implemented (Legacy GICv2 mode).
+     * - 0b0001: GICv3/v4 system register interface IS implemented.
+     */
+    uint32_t gic_status = (uint32_t)((pfr0 >> 24) & 0x0FU);
+
+    return (gic_status == 1U);
+}
+#endif /* defined(__aarch64__) */
 
 static void
 sysinit_vbar_initialize(void)
@@ -1527,9 +1545,38 @@ sysinit_vbar_initialize(void)
 	__set_VBAR_EL3(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
 
 	// D24.2.169 SCR_EL3, Secure Configuration Register
-	__set_SCR_EL3(__get_SCR_EL3() & ~ (UINT64_C(1) << 1));	// PE is in Secure state.
+	__set_SCR_EL3(__get_SCR_EL3() & ~ (UINT64_C(1) << 0));	// NS=0 is in Secure state (see FEAT_RME)
 	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
 	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 2));	// Physical FIQ while executing at all exception levels are taken in EL3
+
+	#if (__CORTEX_A == 55U)
+		if (Is_GICv3_Supported())
+		{
+			/* Step 3: Enable System Register Access (SRE) via the CPU interface */
+			//__set_ICC_SRE_EL3(0xF);
+			__ISB(); /* Force architectural register state changes to execute immediately */
+
+			//__set_ICC_PMR_EL1(0xFF);
+			__set_ICC_IGRPEN1_EL3(1); /* Enable Group 1 signaling */
+			/* Open the interrupt priority filter gateway completely (0xFF allows all priorities) */
+		 //   __set_ICC_PMR_EL1(0xFF);
+
+			__set_ICC_IGRPEN0_EL1(1);
+
+		//    /* Step 4: Configure routing at the core architecture level (SCR_EL3) */
+		//    uint64_t scr = __get_SCR_EL3();
+		//    scr &= ~ (UINT64_C(1) << 0); /* Clear NS bit */
+		//    scr |= (UINT64_C(1) << 1);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
+		//    scr |= (UINT64_C(1) << 2);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
+		//    //scr |= (UINT64_C(1) << 10); /* Set RW bit: Enforce Execution at lower ELs to run in 64-bit mode (AArch64) */
+		//    __set_SCR_EL3(scr);
+		////	// D24.2.169 SCR_EL3, Secure Configuration Register
+		////	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
+		////	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 2));	// Physical FIQ while executing at all exception levels are taken in EL3
+
+			__ISB(); /* Final pipeline instruction synchronization */
+		}
+	#endif
 
 #elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
@@ -1541,9 +1588,11 @@ sysinit_vbar_initialize(void)
 
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
-	__set_SCR(__get_SCR() & ~ (UINT64_C(1) << 1));	// PE is in Secure state.
-	__set_SCR(__get_SCR() | (UINT32_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
-	__set_SCR(__get_SCR() | (UINT32_C(1) << 2));	// Physical FIQ while executing at all exception levels are taken in EL3
+	#if __ARM_ARCH == 8
+	__set_SCR(__get_SCR() & ~ (UINT32_C(1) << 0));	// PE is in Secure state.
+	__set_SCR(__get_SCR() & ~ (UINT32_C(1) << 1));	// IRQs taken to IRQ mode.
+	__set_SCR(__get_SCR() & ~ (UINT32_C(1) << 2));	// FRQs taken to FRQ mode.
+	#endif
 
 #endif /* (__CORTEX_A != 0) */
 
@@ -1905,7 +1954,6 @@ SystemInit(void)
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 	sysinit_dsu_initialize();
-	gic600_local_init();
 }
 
 // Вызывается из main, при работающих прерываниях
@@ -2132,6 +2180,10 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	dcache_clean_invalidate_all();	// startup code should be copied in to sysram for example.
 
 	/* Generate an IT to core 1 */
+	// filter_list (bit 25:24 of GICD_SGIR):
+	// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
+	// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
+	// 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
 	GIC_SendSGI(SGI8_IRQn, UINT32_C(1) << core, 0x00);	// CPU1, filer=0 Forward the interrupt to the CPU interfaces specified in the CPUTargetList field
 }
 
@@ -2519,7 +2571,6 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	sysinit_ttbr_initialize();		// Загрузка TTBR, инвалидация кеш памяти и включение MMU
 
 	unsigned core = arm_hardware_cpuid();
-	GIC_Enable();	// self
 	InitializeIrql(IRQL_IPC_ONLY);	// nested interrupts support
 	global_enableIRQ();
 	cortexa_cpuinfo();
@@ -2546,7 +2597,6 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	}
 #endif /* CPUSTYLE_VM14 */
 
-	gic600_local_init();
 	task_scheduler_othercores();
 }
 

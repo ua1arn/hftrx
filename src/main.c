@@ -63,7 +63,6 @@ main(void)
 	task_scheduler_start();
 	global_enableIRQ();
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
-	gic600_test();
 	midtests();
 	application_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */

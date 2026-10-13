@@ -1532,10 +1532,10 @@ typedef struct GICP_Type
     __IM  uint32_t GICP_CIDR3;                        /*!< Offset 0xFFFC Component ID 3 Register */
 } GICP_TypeDef; /* size of structure = 0x10000 */
 /*
- * @brief GICR_1
+ * @brief GICR_LPI
  */
-/*!< GICR_1 GIC Redistributor for control and physical LPIs */
-typedef struct GICR_1_Type
+/*!< GICR_LPI GIC Redistributor for control and physical LPIs */
+typedef struct GICR_LPI_Type
 {
     __IOM uint32_t GICR_CTLR;                         /*!< Offset 0x000 Redistributor Control Register */
     __IM  uint32_t GICR_IIDR;                         /*!< Offset 0x004  */
@@ -1554,8 +1554,9 @@ typedef struct GICR_1_Type
     __IOM uint64_t GICR_PENDBASER;                    /*!< Offset 0x078 Redistributor LPI Pending Table Base Address Register */
          RESERVED(0x080[0x00A0 - 0x0080], uint8_t)
     __IOM uint64_t GICR_INVLPIR;                      /*!< Offset 0x0A0  */
-    __IOM uint64_t GICR_INVALLR;                      /*!< Offset 0x0A8  */
-         RESERVED(0x0B0[0x00C0 - 0x00B0], uint8_t)
+         RESERVED(0x0A8[0x00B0 - 0x00A8], uint8_t)
+    __IOM uint64_t GICR_INVALLR;                      /*!< Offset 0x0B0  */
+         RESERVED(0x0B8[0x00C0 - 0x00B8], uint8_t)
     __IOM uint32_t GICR_SYNCR;                        /*!< Offset 0x0C0  */
          RESERVED(0x0C4[0xFFD0 - 0x00C4], uint8_t)
     __IM  uint32_t GICR_PIDR4;                        /*!< Offset 0xFFD0 Peripheral ID 4 Register */
@@ -1570,28 +1571,14 @@ typedef struct GICR_1_Type
     __IM  uint32_t GICR_CIDR1;                        /*!< Offset 0xFFF4 Component ID 1 Register */
     __IM  uint32_t GICR_CIDR2;                        /*!< Offset 0xFFF8 Component ID 2 Register */
     __IM  uint32_t GICR_CIDR3;                        /*!< Offset 0xFFFC Component ID 3 Register */
-} GICR_1_TypeDef; /* size of structure = 0x10000 */
+} GICR_LPI_TypeDef; /* size of structure = 0x10000 */
 /*
- * @brief GICR_2
+ * @brief GICR_SGI_PPI
  */
-/*!< GICR_2 GIC Redistributor for SGIs and PPIs summary  */
-typedef struct GICR_2_Type
+/*!< GICR_SGI_PPI GIC Redistributor for SGIs and PPIs summary  */
+typedef struct GICR_SGI_PPI_Type
 {
-    __IOM uint32_t GICR_CTLR;                         /*!< Offset 0x000 Redistributor Control Register */
-    __IOM uint32_t GICR_IIDR;                         /*!< Offset 0x004 Implementer Identification Register */
-    __IOM uint32_t GICR_TYPER;                        /*!< Offset 0x008 Redistributor Type Register */
-         RESERVED(0x00C[0x0010 - 0x000C], uint8_t)
-    __IOM uint32_t GICR_STATUSR;                      /*!< Offset 0x010 Error Reporting Status Register, optional */
-    __IOM uint32_t GICR_WAKER;                        /*!< Offset 0x014 Redistributor Wake Register */
-    __IM  uint32_t GICR_MPAMIDR;                      /*!< Offset 0x018 Report maximum PARTID and PMG Register */
-    __IOM uint32_t GICR_PARTIDR;                      /*!< Offset 0x01C Set PARTID and PMG Register */
-         RESERVED(0x020[0x0040 - 0x0020], uint8_t)
-    __IOM uint32_t GICR_SETLPIR;                      /*!< Offset 0x040 Set LPI Pending Register */
-         RESERVED(0x044[0x0048 - 0x0044], uint8_t)
-    __IOM uint32_t GICR_CLRLPIR;                      /*!< Offset 0x048 Clear LPI Pending Register */
-         RESERVED(0x04C[0x0070 - 0x004C], uint8_t)
-    __IOM uint32_t GICR_PROPBASER;                    /*!< Offset 0x070 Redistributor Properties Base Address Register */
-         RESERVED(0x074[0x0080 - 0x0074], uint8_t)
+         RESERVED(0x000[0x0080 - 0x0000], uint8_t)
     __IOM uint32_t GICR_IGROUPR0;                     /*!< Offset 0x080 Interrupt Group Register */
          RESERVED(0x084[0x0100 - 0x0084], uint8_t)
     __IOM uint32_t GICR_ISENABLER0;                   /*!< Offset 0x100 Interrupt Set-Enable Register */
@@ -1622,17 +1609,8 @@ typedef struct GICR_2_Type
          RESERVED(0xC014[0xFFF0 - 0xC014], uint8_t)
     __IM  uint32_t GICR_CFGID0;                       /*!< Offset 0xFFF0 4.5.4 Configuration ID0 Register, GICR_CFGID0 on page 4-138 */
     __IM  uint32_t GICR_CFGID1;                       /*!< Offset 0xFFF4 4.5.5 Configuration ID1 Register, GICR_CFGID1 on page 4-139 */
-} GICR_2_TypeDef; /* size of structure = 0xFFF8 */
-/*
- * @brief GICR_PPI_LPI
- */
-/*!< GICR_PPI_LPI GIC Redistributor  */
-typedef struct GICR_PPI_LPI_Type
-{
-         RESERVED(0x000[0x0400 - 0x0000], uint8_t)
-    __IOM uint32_t GICR_PPI_LPI_IPRIORITYR [0x008];   /*!< Offset 0x400 Interrupt Priority Registers */
-         RESERVED(0x420[0x10000 - 0x0420], uint8_t)
-} GICR_PPI_LPI_TypeDef; /* size of structure = 0x10000 */
+         RESERVED(0xFFF8[0x10000 - 0xFFF8], uint8_t)
+} GICR_SGI_PPI_TypeDef; /* size of structure = 0x10000 */
 /*
  * @brief GICT
  */

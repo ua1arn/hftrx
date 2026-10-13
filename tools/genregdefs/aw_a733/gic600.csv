@@ -152,12 +152,13 @@
 #regdefr; 	GICP_CIDR2;			0xFFF8;		Component ID 2 Register
 #regdefr; 	GICP_CIDR3;			0xFFFC;		Component ID 3 Register
 
+#regdef; pad 0; 0x10000; alignment
 #typeend;
 
 ## corelink_gic600_generic_interrupt_controller_technical_reference.pdf
 ## 4.4 Redistributor registers for control and physical LPIs
 
-#type; GICR_1; GIC Redistributor for control and physical LPIs
+#type; GICR_LPI; GIC Redistributor for control and physical LPIs
 
 #regdef;  	GICR_CTLR;  		0x0000; 	Redistributor Control Register
 #regdefr; 	GICR_IIDR; 			0x0004; 
@@ -171,7 +172,7 @@
 #regdef;  	GICR_PROPBASER 8; 	0x0070; 	Redistributor Properties Base Address Register
 #regdef;  	GICR_PENDBASER 8; 	0x0078; 	Redistributor LPI Pending Table Base Address Register
 #regdef;  	GICR_INVLPIR 8; 	0x00A0; 
-#regdef;  	GICR_INVALLR 8; 	0x00A8; 
+#regdef;  	GICR_INVALLR 8; 	0x00B0; 
 #regdef;  	GICR_SYNCR; 		0x00C0; 
 
 #regdefr; 	GICR_PIDR4;			0xFFD0;		Peripheral ID 4 Register
@@ -186,26 +187,14 @@
 #regdefr; 	GICR_CIDR1;			0xFFF4;		Component ID 1 Register
 #regdefr; 	GICR_CIDR2;			0xFFF8;		Component ID 2 Register
 #regdefr; 	GICR_CIDR3;			0xFFFC;		Component ID 3 Register
+#regdef; pad 0; 0x10000; alignment
 
 #typeend;
 
 ## corelink_gic600_generic_interrupt_controller_technical_reference.pdf
 ## 4.5 Redistributor registers for SGIs and PPIs summary
 
-#type; GICR_2; GIC Redistributor for SGIs and PPIs summary 
-
-#regdef;	GICR_CTLR;			0x0000;		Redistributor Control Register
-#regdef;	GICR_IIDR;			0x0004;		Implementer Identification Register
-#regdef;	GICR_TYPER;			0x0008;		Redistributor Type Register
-#regdef;	GICR_STATUSR;		0x0010;		Error Reporting Status Register, optional
-#regdef;	GICR_WAKER;			0x0014;		Redistributor Wake Register
-#regdefr;	GICR_MPAMIDR;		0x0018;		Report maximum PARTID and PMG Register
-#regdef;	GICR_PARTIDR;		0x001C;		Set PARTID and PMG Register
-#regdef;	GICR_SETLPIR;		0x0040;		Set LPI Pending Register
-#regdef;	GICR_CLRLPIR;		0x0048;		Clear LPI Pending Register
-#regdef;	GICR_PROPBASER;		0x0070;		Redistributor Properties Base Address Register
-
-
+#type; GICR_SGI_PPI; GIC Redistributor for SGIs and PPIs summary 
 
 #regdef;	GICR_IGROUPR0;		0x0080;		Interrupt Group Register
 #regdef;	GICR_ISENABLER0;	0x0100;		Interrupt Set-Enable Register
@@ -226,6 +215,7 @@
 
 #regdefr; 	GICR_CFGID0;		0xFFF0;		4.5.4 Configuration ID0 Register, GICR_CFGID0 on page 4-138
 #regdefr; 	GICR_CFGID1;		0xFFF4;		4.5.5 Configuration ID1 Register, GICR_CFGID1 on page 4-139
+#regdef; pad 0; 0x10000; alignment
 
 #typeend;
 
@@ -238,16 +228,6 @@
 #regdefw; GICA_CLRSPI_NSR; 	0x0048; 	Aliased Non-secure SPI Clear Register
 #regdefw; GICA_SETSPI_SR; 	0x0050; 	Aliased Secure SPI Set Register
 #regdefw; GICA_CLRSPI_SR; 	0x0058; 	Aliased Secure SPI Clear Register
-#regdef; pad 0; 0x10000; alignment
-
-#typeend;
-
-## corelink_gic600_generic_interrupt_controller_technical_reference.pdf
-## 4.5 Redistributor registers for SGIs and PPIs summary
-
-#type; GICR_PPI_LPI; GIC Redistributor 
-
-#regdef;	GICR_PPI_LPI_IPRIORITYR;	0x0400 8;	Interrupt Priority Registers
 #regdef; pad 0; 0x10000; alignment
 
 #typeend;

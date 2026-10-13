@@ -431,7 +431,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,		' ', },		// SPLIT/SPLIT OFF
 
 	/* матрица слева от индикатора - ряд 4 по счету слева - снизу вверх KI2 */
-	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
+	{ KIF_NONE,		KBD_CODE_MEMO,		KBD_CODE_MEMO_HOLDED, 		' ', },		// CW SPEED
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NR, 			' ', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_12, 			' ', },		// BW/NR
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHHOLD,	' ', },		// DUAL
