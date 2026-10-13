@@ -7974,19 +7974,39 @@ void hightests(void)
 #endif
 #if 0
 	{
-		// PPI/SGI priority test
-		unsigned irqn = TIMER1_3_IRQn;//SGI3_IRQn;
-		unsigned o0 = GIC_GetPriority(irqn);
-		GIC_SetPriority(irqn, 0x40);
-		unsigned o1 = GIC_GetPriority(irqn);
-		GIC_SetPriority(irqn, 0x80);
-		unsigned o2 = GIC_GetPriority(irqn);
-		GIC_SetPriority(irqn, o0);
-		unsigned o3 = GIC_GetPriority(irqn);
-		PRINTF("prio: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X\n", o0, o1, o2, o3);
-		ASSERT(o1 == 0x40);
-		ASSERT(o2 == 0x80);
-		ASSERT(o3 == o0);
+		unsigned irqn = SGI3_IRQn;
+		//unsigned irqn = TIMER1_3_IRQn;
+		{
+			// PPI/SGI priority test
+			unsigned o0 = GIC_GetPriority(irqn);
+			GIC_SetPriority(irqn, 0x40);
+			unsigned o1 = GIC_GetPriority(irqn);
+			GIC_SetPriority(irqn, 0x80);
+			unsigned o2 = GIC_GetPriority(irqn);
+			GIC_SetPriority(irqn, o0);
+			unsigned o3 = GIC_GetPriority(irqn);
+			PRINTF("prio: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X\n", o0, o1, o2, o3);
+			ASSERT(o1 == 0x40);
+			ASSERT(o2 == 0x80);
+			ASSERT(o3 == o0);
+		}
+		{
+			// PPI/SGI enable test
+			unsigned o0 = GIC_GetEnableIRQ(irqn);
+			GIC_EnableIRQ(irqn);
+			unsigned o1 = GIC_GetEnableIRQ(irqn);
+			GIC_DisableIRQ(irqn);
+			unsigned o2 = GIC_GetEnableIRQ(irqn);
+			if (o0)
+				GIC_EnableIRQ(irqn);
+			else
+				GIC_DisableIRQ(irqn);
+			unsigned o3 = GIC_GetEnableIRQ(irqn);
+			PRINTF("enabele: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X\n", o0, o1, o2, o3);
+			ASSERT(o1 == 1);
+			ASSERT(o2 == 0);
+			ASSERT(o3 == o0);
+		}
 	}
 #endif
 #if 1
