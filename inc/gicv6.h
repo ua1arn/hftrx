@@ -9,7 +9,7 @@
 #define INC_GICV6_H_
 
 #if defined (__aarch64__)
-#define HARDWARE_NCORES 8
+#define HARDWARE_NCORES 6
 #include "core64_ca.h"
 #else
 #define HARDWARE_NCORES 6
@@ -1304,7 +1304,12 @@ __STATIC_INLINE uint32_t GIC_GetIRQStatus(IRQn_Type IRQn)
 * \param [in] target_aff Target affinity in MPIDR form.
 * \param [in] tlist List of CPUs the software interrupt should be forwarded to.
 */
-__STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16_t tlist)
+// compatibility with GIC v2
+// filter_list (bit 25:24 of GICD_SGIR):
+// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
+// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
+// 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
+__STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16_t tlist, uint32_t filter_list)
 {
 //    uint32_t aff3, aff2, aff1;
 	uint32_t rs;
@@ -1312,6 +1317,8 @@ __STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16
 
     if (IRQn >= 16)
         return;
+
+    const int sendtoallexceptself = 0x01 == filter_list;
 
 //    aff1 = MPIDR_TO_AFF_LEVEL(target_aff, 1);
 //    aff2 = MPIDR_TO_AFF_LEVEL(target_aff, 2);
@@ -1323,7 +1330,7 @@ __STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16
     val =
     		//(target_aff & 0xFF) * (UINT64_C(1) << 48) |	/* aff3 */
     		(rs & 0x0F) * (UINT64_C(1) << 44) |	/* RangeSelector RS */
-    		//(1) * (UINT64_C(1) << 40) |	/* IRM 0b1 Interrupts routed to all PEs in the system, excluding "self". */
+    		(sendtoallexceptself) * (UINT64_C(1) << 40) |	/* IRM 0b1 Interrupts routed to all PEs in the system, excluding "self". */
     		//(target_aff & 0xFF) * (UINT64_C(1) << 32) |	/* aff2 */
     		(IRQn & 0xF) * (UINT64_C(1) << 24) | /* INTID */
     		(target_aff & 0xFF) * (UINT64_C(1) << 16) |	/* aff1 */
@@ -1331,8 +1338,8 @@ __STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16
 		0;
 
     __DSB();
-    __set_ICC_SGI1R_EL1(val);
-    __set_ICC_SGI0R_EL1(val);	/* added by mgs */
+    //__set_ICC_SGI1R_EL1(val);
+    __set_ICC_SGI0R_EL1(val);	/* added by mgs - у меня пока работает толькоо группа 0 */
     __ISB();
 }
 
@@ -1371,6 +1378,11 @@ __STATIC_FORCEINLINE uint8_t __log2_upX(uint32_t n)
 * \param [in] target_list List of CPUs the software interrupt should be forwarded to.
 * \param [in] filter_list Filter to be applied to determine interrupt receivers.
 */
+// compatibility with GIC v2
+// filter_list (bit 25:24 of GICD_SGIR):
+// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
+// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
+// 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
 __STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
 {
 	if (IRQn >= 16)
@@ -1379,7 +1391,7 @@ __STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t 
 	const uint64_t target_aff = __log2_upX(target_list);
 	if (GIC_GetARE()) {
 		/* affinity routing */
-		GIC_SendSGI_ARE(IRQn, target_aff, target_list);
+		GIC_SendSGI_ARE(IRQn, target_aff, target_list, filter_list);
 	} else {
 		//GICDistributor->GICD_SGIR = ((target_list & 0xFFUL) << 16U) | (IRQn & 0x0FUL);
 	}

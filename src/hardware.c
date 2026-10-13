@@ -2132,6 +2132,10 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	dcache_clean_invalidate_all();	// startup code should be copied in to sysram for example.
 
 	/* Generate an IT to core 1 */
+	// filter_list (bit 25:24 of GICD_SGIR):
+	// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
+	// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
+	// 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
 	GIC_SendSGI(SGI8_IRQn, UINT32_C(1) << core, 0x00);	// CPU1, filer=0 Forward the interrupt to the CPU interfaces specified in the CPUTargetList field
 }
 
