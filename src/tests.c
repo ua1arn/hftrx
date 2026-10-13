@@ -7972,7 +7972,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 1
+#if 0
 	{
 		// filter_list (bit 25:24 of GICD_SGIR):
 		// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
@@ -7981,7 +7981,7 @@ void hightests(void)
 		const uint_fast32_t filter_list = 0x00;
 		unsigned core;
 		const uint_fast16_t int_id = SGI15_IRQn;
-		//PRINTF("IPC interrupte demo, GIC_GetARE()=%d\n", (int) GIC_GetARE());
+		//PRINTF("IPC interrupts demo, GIC_GetARE()=%d\n", (int) GIC_GetARE());
 		PRINTF("IPC interrupts demo\n");
 		arm_hardware_set_handler_system(int_id, sgitesthandler);
 		for (core = 0; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
@@ -7990,7 +7990,7 @@ void hightests(void)
 			local_delay_ms(250);
 		}
 		arm_hardware_disable_handler(int_id);
-		PRINTF("IPC interrupts demo: send all together, except sel:\n");
+		PRINTF("IPC interrupts demo: send all together, except self:\n");
 		GIC_SendSGI(int_id, 1U << core, 0x01);	// other cores, except self
 		local_delay_ms(250);
 		PRINTF("IPC interrupts demo done\n");

@@ -4350,7 +4350,7 @@ void cpu_initialize(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-	IRQ_Initialize();	// GIC_Enable(0) inside
+	//IRQ_Initialize();	// GIC_Enable(0) inside
 	//GIC_Enable();
 #if CPUSTYLE_R7S721
 	r7s721_intc_initialize();

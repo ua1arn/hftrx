@@ -1527,17 +1527,21 @@ __STATIC_INLINE GICRedistributor_Type *GIC_GetRdist(void)
  */
 __STATIC_INLINE void GIC_RedistWakeUp(void)
 {
-  GICRedistributor_Type *const s_RedistBaseAddrs = GIC_GetRdist();
+	GICRedistributor_Type * const GICR = GIC_GetRdist();
 
-    if (!s_RedistBaseAddrs)
-        return;
+	while (! GICR)
+		;
+	if (!GICR)
+		return;
 
-    if (!(s_RedistBaseAddrs->LPI.GICR_WAKER & (1 << GICR_WAKER_CA_SHIFT)))
-        return;
+	/* Step 1: Wake up the core's Redistributor interface */
+	uint32_t waker = GICR->LPI.GICR_WAKER;
+	waker &= ~ (UINT32_C(1) << 1); /* Clear ProcessorSleep bit */
+	GICR->LPI.GICR_WAKER = waker;
 
-  s_RedistBaseAddrs->LPI.GICR_WAKER &= ~ (1 << GICR_WAKER_PS_SHIFT);
-    while (s_RedistBaseAddrs->LPI.GICR_WAKER & (1 << GICR_WAKER_CA_SHIFT))
-        ;
+	/* Wait until the interface is operational (ChildrenAsleep bit must become 0) */
+	while (GICR->LPI.GICR_WAKER & (UINT32_C(1) << 2))
+		;
 }
 
 /**
@@ -1574,8 +1578,8 @@ __STATIC_INLINE void GIC_RedistInit(void)
 //    GIC_SetRedistPriority((IRQn_Type)31U, 0xFFU);
 //    priority_field = GIC_GetRedistPriority((IRQn_Type)31U);
 //
-//  /* Wakeup the GIC */
-//    GIC_RedistWakeUp();
+  /* Wakeup the GIC */
+    GIC_RedistWakeUp();
 //
 //    for (i = 0; i < 32; i++)
 //    {
