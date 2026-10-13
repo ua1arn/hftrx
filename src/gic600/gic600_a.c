@@ -235,6 +235,52 @@ static inline uint32_t Get_Linear_Core_ID(void) {
     return core_id;
 }
 
+
+__STATIC_INLINE void GICv3_Core_Init(uint32_t core_id) {
+    /* Calculate precise pointer to the target core's 128 KB Redistributor frame using uintptr_t math */
+    GICRedistributor_Type *GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * GIC_REDISTRIBUTOR_STRIDE));
+
+    /* Step 1: Wake up the core's Redistributor interface */
+    uint32_t waker = GICR->LPI.GICR_WAKER;
+    waker &= ~ (UINT32_C(1) << 1); /* Clear ProcessorSleep bit */
+    GICR->LPI.GICR_WAKER = waker;
+
+    /* Wait until the interface is operational (ChildrenAsleep bit must become 0) */
+    while (GICR->LPI.GICR_WAKER & (UINT32_C(1) << 2))
+    	;
+
+    for (unsigned i = 0; i < 8; ++ i) {
+//    	GICR->SGI_PPI.GICR_IPRIORITYRn [i] = 0xFFFFFFFF;
+//    	ASSERT(GICR->SGI_PPI.GICR_IPRIORITYRn [i] =- 0xFFFFFFFF);
+    }
+
+    /* Step 3: Enable System Register Access (SRE) via the CPU interface */
+    __set_ICC_SRE_EL3(0xF);
+    __ISB(); /* Force architectural register state changes to execute immediately */
+
+    //__set_ICC_PMR_EL1(0xFF);
+    __set_ICC_IGRPEN1_EL3(1); /* Enable Group 1 signaling */
+    /* Open the interrupt priority filter gateway completely (0xFF allows all priorities) */
+ //   __set_ICC_PMR_EL1(0xFF);
+
+    /* Enable signaling of Non-Secure Group 1 interrupts to the core */
+    __set_ICC_IGRPEN1_EL3(1);
+    __set_ICC_IGRPEN0_EL1(1);
+
+    /* Step 4: Configure routing at the core architecture level (SCR_EL3) */
+    uint64_t scr = __get_SCR_EL3();
+    scr &= ~ (UINT64_C(1) << 0); /* Clear NS bit */
+    scr |= (UINT64_C(1) << 1);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
+    scr |= (UINT64_C(1) << 2);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
+    //scr |= (UINT64_C(1) << 10); /* Set RW bit: Enforce Execution at lower ELs to run in 64-bit mode (AArch64) */
+    __set_SCR_EL3(scr);
+//	// D24.2.169 SCR_EL3, Secure Configuration Register
+//	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
+//	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 2));	// Physical FIQ while executing at all exception levels are taken in EL3
+
+    __ISB(); /* Final pipeline instruction synchronization */
+}
+
 void gic600_local_init(void)
 {
 	GICv3_Core_Init(arm_hardware_cpuid());
@@ -248,6 +294,7 @@ void gic600_test(void)
 //	PRINTF("1 GICDistributor->GICD_CTLR=%08X, GICDistributor->GICD_IROUTER [0x%03X]=%08X\n", (unsigned) GICDistributor->GICD_CTLR, (unsigned) irqn, (unsigned) GICDistributor->GICD_IROUTER [irqn]);
 //	GIC_SetTarget(irqn, UINT32_C(1) << 6);
 //	PRINTF("3 GICDistributor->GICD_CTLR=%08X, GICDistributor->GICD_IROUTER [0x%03X]=%08X\n", (unsigned) GICDistributor->GICD_CTLR, (unsigned) irqn, (unsigned) GICDistributor->GICD_IROUTER [irqn]);
+	//GIC_SetPriority0(15, ARM_SYSTEM_PRIORITY);
 }
 #else
 void gic600_global_init(void)
