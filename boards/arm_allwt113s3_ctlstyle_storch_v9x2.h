@@ -101,7 +101,7 @@
 	#define LCDMODE_DUMMY	1
 	#define BOARD_DSTYLE "g_dummy.h"
 
-#elif 1
+#elif 0
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
@@ -390,7 +390,7 @@
 		#define FULLSET8	1				/* 8 indictors, 8 capacitors */
 		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
 		#define WITHANTSELECT	1	/* Управление переключением антенн */
-	#elif 1
+	#elif 0
 		/* TUNER by R3KBL */
 		#define WITHAUTOTUNER	1			/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
