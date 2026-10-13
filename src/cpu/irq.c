@@ -3713,7 +3713,7 @@ static void arm_hardware_gicsfetch(void)
 	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
 		GIC_SetPriority((IRQn_Type) int_id, gicshadow_prio [int_id]);	// non-atomic operation
-		if (gicshadow_prio [int_id])
+		if (gicshadow_enab [int_id])
 			GIC_EnableIRQ((IRQn_Type) int_id);	// atomic operation
 		else
 			GIC_DisableIRQ((IRQn_Type) int_id);	// atomic operation
@@ -3736,8 +3736,7 @@ static void arm_hardware_populate(int int_ida)
 	// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
 	// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
 	// 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
-	GIC_SendSGI(BOARD_SGI_IRQ, target_list, 0x01);	// send to specified cores
-	//GIC_SendSGI(BOARD_SGI_IRQ, target_list, 0x00);	// other CORE, except self: filer=1
+	GIC_SendSGI(BOARD_SGI_IRQ, target_list, 0x01);	// other CORE, except self: filer=1
 
 	LCLSPIN_UNLOCK(& populate_lock);
 }
