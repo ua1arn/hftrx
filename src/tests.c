@@ -7974,6 +7974,23 @@ void hightests(void)
 #endif
 #if 0
 	{
+		// PPI/SGI priority test
+		unsigned irqn = TIMER1_3_IRQn;//SGI3_IRQn;
+		unsigned o0 = GIC_GetPriority(irqn);
+		GIC_SetPriority(irqn, 0x40);
+		unsigned o1 = GIC_GetPriority(irqn);
+		GIC_SetPriority(irqn, 0x80);
+		unsigned o2 = GIC_GetPriority(irqn);
+		GIC_SetPriority(irqn, o0);
+		unsigned o3 = GIC_GetPriority(irqn);
+		PRINTF("prio: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X\n", o0, o1, o2, o3);
+		ASSERT(o1 == 0x40);
+		ASSERT(o2 == 0x80);
+		ASSERT(o3 == o0);
+	}
+#endif
+#if 1
+	{
 		// filter_list (bit 25:24 of GICD_SGIR):
 		// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
 		// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.

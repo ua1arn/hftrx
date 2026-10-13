@@ -744,7 +744,7 @@ typedef struct
 
 #if (defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)) || \
     defined(DOXYGEN)
-  #include "gicv6.h"
+  #include "gic600.h"
 #endif /*  (__GIC_PRESENT == 1U) || defined(DOXYGEN) */
 
 #if (defined(__TIM_PRESENT) && (__TIM_PRESENT == 1U)) || \

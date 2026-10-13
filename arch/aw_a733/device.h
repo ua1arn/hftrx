@@ -307,9 +307,9 @@ typedef enum IRQn
 
 #if defined(__aarch64__)
     #include <core_ca55.h>
-    #include <gicv6.h>
+    #include <gic600.h>
 #else
-    #include <armv7a_gicv6.h>
+    #include <armv7a_gic600.h>
 #endif
 
 /*

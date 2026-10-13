@@ -1,18 +1,15 @@
-/*
- * gicv6.h
+/**************************************************************************//**
+ * @file     gic600.h
+ * @brief    CMSIS Cortex-A53/A55 Generic Interrupt Controller v3 API header file
  *
- *  Created on: May 31, 2026
- *      Author: Gena
- */
+ ******************************************************************************/
 
 #ifndef INC_GICV6_H_
 #define INC_GICV6_H_
 
 #if defined (__aarch64__)
-#define HARDWARE_NCORES 6
 #include "core64_ca.h"
 #else
-#define HARDWARE_NCORES 6
 #include "core32_ca.h"
 #endif
 
@@ -120,6 +117,7 @@ typedef struct
 } GICRedistributor_Type; /* size of structure = 0x20000 */
 
 #define GICRedistributor      ((GICRedistributor_Type      *)     GIC_REDISTRIBUTOR_BASE ) /*!< \brief GIC ReDistributor register set access pointer */
+__STATIC_INLINE GICRedistributor_Type *GIC_GetRdist(void);	// for current core
 
 // https://developer.arm.com/documentation/ddi0601/2025-12/External-Registers/GICR-CTLR--Redistributor-Control-Register?lang=en
 __STATIC_FORCEINLINE void GIC_RedistributorWait(void)
@@ -491,10 +489,8 @@ __STATIC_INLINE void GIC_EnableIRQ(IRQn_Type IRQn)
 	GICDistributor->GICD_ISENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
 	GIC_DistributorWait();
 	if ((IRQn < 32) && (GIC_GetARE())) {
-		for (unsigned core_id = 0; core_id < HARDWARE_NCORES; ++ core_id) {
-			GICRedistributor_Type * const GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * GIC_REDISTRIBUTOR_STRIDE));
-			GICR->SGI_PPI.GICR_ISENABLER0 = UINT32_C(1) << (IRQn % 32U);
-		}
+		GICRedistributor_Type * const GICR = GIC_GetRdist();
+		GICR->SGI_PPI.GICR_ISENABLER0 = UINT32_C(1) << (IRQn % 32U);
 	}
 }
 
@@ -515,10 +511,8 @@ __STATIC_INLINE void GIC_DisableIRQ(IRQn_Type IRQn)
 	GICDistributor->GICD_ICENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
 	GIC_DistributorWait();
 	if ((IRQn < 32) && (GIC_GetARE())) {
-		for (unsigned core_id = 0; core_id < HARDWARE_NCORES; ++ core_id) {
-			GICRedistributor_Type * const GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * GIC_REDISTRIBUTOR_STRIDE));
-			GICR->SGI_PPI.GICR_ICENABLER0 = UINT32_C(1) << (IRQn % 32U);
-		}
+		GICRedistributor_Type * const GICR = GIC_GetRdist();
+		GICR->SGI_PPI.GICR_ICENABLER0 = UINT32_C(1) << (IRQn % 32U);
 	}
 }
 
@@ -608,19 +602,14 @@ __STATIC_INLINE uint32_t GIC_GetConfiguration(IRQn_Type IRQn)
 __STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 {
 	if ((IRQn < 32) && (GIC_GetARE())) {
-		//GIC_SetRedistPriority(IRQn, priority);
-		for (unsigned core_id = 0; core_id < HARDWARE_NCORES; ++ core_id) {
-			GICRedistributor_Type * const GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * GIC_REDISTRIBUTOR_STRIDE));
-			//
-			const uint32_t mask = GICR->SGI_PPI.GICR_IPRIORITYRn[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
-			GICR->SGI_PPI.GICR_IPRIORITYRn[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
-		}
+		GICRedistributor_Type * const GICR = GIC_GetRdist();
+		//
+		const uint32_t mask = GICR->SGI_PPI.GICR_IPRIORITYRn[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
+		GICR->SGI_PPI.GICR_IPRIORITYRn[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
 	} else {
 		uint32_t mask = GICDistributor->GICD_IPRIORITYR[IRQn / 4U] & ~ (UINT32_C(0xFF) << ((IRQn % 4U) * 8U));
 		GICDistributor->GICD_IPRIORITYR[IRQn / 4U] = mask | ((priority & UINT32_C(0xFF)) << ((IRQn % 4U) * 8U));
 	}
-
-
 }
 
 /** \brief Read the current interrupt priority from GIC's IPRIORITYR register.
@@ -628,7 +617,13 @@ __STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 */
 __STATIC_INLINE uint32_t GIC_GetPriority(IRQn_Type IRQn)
 {
-  return (GICDistributor->GICD_IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & UINT32_C(0xFF);
+	if ((IRQn < 32) && (GIC_GetARE())) {
+		GICRedistributor_Type * const GICR = GIC_GetRdist();
+		//
+		return (GICR->SGI_PPI.GICR_IPRIORITYRn[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & UINT32_C(0xFF);
+	} else {
+		return (GICDistributor->GICD_IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & UINT32_C(0xFF);
+	}
 }
 #endif /* GIC_DISTRIBUTOR_BASE */
 
@@ -1497,6 +1492,7 @@ __STATIC_INLINE uint32_t GIC_MPIDRtoAffinity(void)
 #define GICR_TYPER_LAST_SHIFT (4)
 #define GICR_TYPER_LAST_MASK  (1 << GICR_TYPER_LAST_SHIFT)
 #define GICR_TYPER_AFF_SHIFT  (32)
+
 
 /** \brief Get the Redistributor base.
 */
