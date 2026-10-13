@@ -1448,11 +1448,12 @@ static uint_fast8_t glob_tvoutformat;
 
 const videomode_t * hdmiformats [HDMIFORMATS_count] =
 {
+	& vdmode_HDMI_1920x1080at60,	// б. тел. масштабирует ! TESTED
+	// 600x480 need
 	& vdmode_HDMI_1366x768at60,	// б. тел. не занимается масштабированием этого формата ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
 	& vdmode_HDMI_1024x768at60,	// большой телевизор не занимается масштабированием этого формата ! TESTED
 	& vdmode_HDMI_1280x720at50,	// б. тел. масштабирует ! TESTED
 	& vdmode_HDMI_1440x900at50,	// б. тел. не занимается масштабированием этого формата ! TESTED, параметры не подтверждены, работает на 50 герц
-	& vdmode_HDMI_1920x1080at60,	// б. тел. масштабирует ! TESTED
 };
 
 const videomode_t * get_videomode_TVOUT(void)
