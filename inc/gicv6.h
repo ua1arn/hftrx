@@ -9,8 +9,10 @@
 #define INC_GICV6_H_
 
 #if defined (__aarch64__)
+#define HARDWARE_NCORES 8
 #include "core64_ca.h"
 #else
+#define HARDWARE_NCORES 6
 #include "core32_ca.h"
 #endif
 
@@ -486,8 +488,14 @@ __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_EnableIRQ(IRQn_Type IRQn)
 {
-  GICDistributor->GICD_ISENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
-  GIC_DistributorWait();
+	GICDistributor->GICD_ISENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
+	GIC_DistributorWait();
+	if ((IRQn < 32) && (GIC_GetARE())) {
+		for (unsigned core_id = 0; core_id < HARDWARE_NCORES; ++ core_id) {
+			GICRedistributor_Type * const GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * GIC_REDISTRIBUTOR_STRIDE));
+			GICR->SGI_PPI.GICR_ISENABLER0 = UINT32_C(1) << (IRQn % 32U);
+		}
+	}
 }
 
 /** \brief Get interrupt enable status using GIC's ISENABLER register.
@@ -504,8 +512,14 @@ __STATIC_INLINE uint32_t GIC_GetEnableIRQ(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_DisableIRQ(IRQn_Type IRQn)
 {
-  GICDistributor->GICD_ICENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
-  GIC_DistributorWait();
+	GICDistributor->GICD_ICENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
+	GIC_DistributorWait();
+	if ((IRQn < 32) && (GIC_GetARE())) {
+		for (unsigned core_id = 0; core_id < HARDWARE_NCORES; ++ core_id) {
+			GICRedistributor_Type * const GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * GIC_REDISTRIBUTOR_STRIDE));
+			GICR->SGI_PPI.GICR_ICENABLER0 = UINT32_C(1) << (IRQn % 32U);
+		}
+	}
 }
 
 /** \brief Get interrupt pending status from GIC's ISPENDR register.
@@ -595,15 +609,11 @@ __STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 {
 	if ((IRQn < 32) && (GIC_GetARE())) {
 		//GIC_SetRedistPriority(IRQn, priority);
-		for (unsigned core_id = 0; core_id < 6; ++ core_id) {
-			GICRedistributor_Type *GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * GIC_REDISTRIBUTOR_STRIDE));
+		for (unsigned core_id = 0; core_id < HARDWARE_NCORES; ++ core_id) {
+			GICRedistributor_Type * const GICR = (GICRedistributor_Type *)(GIC_REDISTRIBUTOR_BASE + (core_id * GIC_REDISTRIBUTOR_STRIDE));
+			//
 			const uint32_t mask = GICR->SGI_PPI.GICR_IPRIORITYRn[IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
-
 			GICR->SGI_PPI.GICR_IPRIORITYRn[IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
-
-			GICR->SGI_PPI.GICR_IGROUPR0 = 0*0xFFFFFFFF;
-			GICR->SGI_PPI.GICR_IGRPMODR0 = 0*0xFFFFFFFF;
-			GICR->SGI_PPI.GICR_ISENABLER0 = 0xFFFF;
 		}
 	} else {
 		uint32_t mask = GICDistributor->GICD_IPRIORITYR[IRQn / 4U] & ~ (UINT32_C(0xFF) << ((IRQn % 4U) * 8U));
@@ -1313,7 +1323,7 @@ __STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16
     val =
     		//(target_aff & 0xFF) * (UINT64_C(1) << 48) |	/* aff3 */
     		(rs & 0x0F) * (UINT64_C(1) << 44) |	/* RangeSelector RS */
-    		(1) * (UINT64_C(1) << 40) |	/* IRM 0b1Interrupts routed to all PEs in the system, excluding "self". */
+    		//(1) * (UINT64_C(1) << 40) |	/* IRM 0b1 Interrupts routed to all PEs in the system, excluding "self". */
     		//(target_aff & 0xFF) * (UINT64_C(1) << 32) |	/* aff2 */
     		(IRQn & 0xF) * (UINT64_C(1) << 24) | /* INTID */
     		(target_aff & 0xFF) * (UINT64_C(1) << 16) |	/* aff1 */
