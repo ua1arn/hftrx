@@ -7974,38 +7974,81 @@ void hightests(void)
 #endif
 #if 0
 	{
-		unsigned irqn = SGI3_IRQn;
-		//unsigned irqn = TIMER1_3_IRQn;
+		static const IRQn_Type tests [] =
 		{
-			// PPI/SGI priority test
-			unsigned o0 = GIC_GetPriority(irqn);
-			GIC_SetPriority(irqn, 0x40);
-			unsigned o1 = GIC_GetPriority(irqn);
-			GIC_SetPriority(irqn, 0x80);
-			unsigned o2 = GIC_GetPriority(irqn);
-			GIC_SetPriority(irqn, o0);
-			unsigned o3 = GIC_GetPriority(irqn);
-			PRINTF("prio: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X\n", o0, o1, o2, o3);
-			ASSERT(o1 == 0x40);
-			ASSERT(o2 == 0x80);
-			ASSERT(o3 == o0);
-		}
+			//TIMER1_3_IRQn,
+			MAX_IRQ_n - 1,
+			SGI1_IRQn,
+		};
+		unsigned phase;
+		for (phase = 0; phase < ARRAY_SIZE(tests); ++ phase)
 		{
-			// PPI/SGI enable test
-			unsigned o0 = GIC_GetEnableIRQ(irqn);
-			GIC_EnableIRQ(irqn);
-			unsigned o1 = GIC_GetEnableIRQ(irqn);
-			GIC_DisableIRQ(irqn);
-			unsigned o2 = GIC_GetEnableIRQ(irqn);
-			if (o0)
+			const IRQn_Type irqn = tests [phase];
+			{
+				// PPI/SGI priority test
+				unsigned o0 = GIC_GetPriority(irqn);
+				GIC_SetPriority(irqn, 0x40);
+				unsigned o1 = GIC_GetPriority(irqn);
+				GIC_SetPriority(irqn, 0x80);
+				unsigned o2 = GIC_GetPriority(irqn);
+				GIC_SetPriority(irqn, o0);
+				unsigned o3 = GIC_GetPriority(irqn);
+				PRINTF("prio[%u]: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X\n", (unsigned) irqn, o0, o1, o2, o3);
+				ASSERT(o1 == 0x40);
+				ASSERT(o2 == 0x80);
+				ASSERT(o3 == o0);
+			}
+			{
+				// PPI/SGI enable test
+				unsigned o0 = GIC_GetEnableIRQ(irqn);
 				GIC_EnableIRQ(irqn);
-			else
+				unsigned o1 = GIC_GetEnableIRQ(irqn);
 				GIC_DisableIRQ(irqn);
-			unsigned o3 = GIC_GetEnableIRQ(irqn);
-			PRINTF("enabele: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X\n", o0, o1, o2, o3);
-			ASSERT(o1 == 1);
-			ASSERT(o2 == 0);
-			ASSERT(o3 == o0);
+				unsigned o2 = GIC_GetEnableIRQ(irqn);
+				if (o0)
+					GIC_EnableIRQ(irqn);
+				else
+					GIC_DisableIRQ(irqn);
+				unsigned o3 = GIC_GetEnableIRQ(irqn);
+				PRINTF("enabele[%u]: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X\n", (unsigned) irqn, o0, o1, o2, o3);
+				ASSERT(o1 == 1);
+				ASSERT(o2 == 0);
+				ASSERT(o3 == o0);
+			}
+			{
+				// PPI/SGI configuration test
+				unsigned o0 = GIC_GetConfiguration(irqn);
+				GIC_SetConfiguration(irqn, 0x00);
+				unsigned o1 = GIC_GetConfiguration(irqn);
+				GIC_SetConfiguration(irqn, 0x01);
+				unsigned o2 = GIC_GetConfiguration(irqn);
+				GIC_SetConfiguration(irqn, 0x02);
+				unsigned o3 = GIC_GetConfiguration(irqn);
+				GIC_SetConfiguration(irqn, 0x03);
+				unsigned o4 = GIC_GetConfiguration(irqn);
+				GIC_SetConfiguration(irqn, o0);
+				unsigned o5 = GIC_GetConfiguration(irqn);
+				PRINTF("conf[%u]: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X,o4=0x%02X,o5=0x%02X\n", (unsigned) irqn, o0, o1, o2, o3, o4, o5);
+//				ASSERT(o1 == 0x00);
+//				ASSERT(o2 == 0x01);
+//				ASSERT(o3 == 0x02);
+//				ASSERT(o4 == 0x03);
+				ASSERT(o5 == o0);
+			}
+			{
+				// PPI/SGI group test
+				unsigned o0 = GIC_GetGroup(irqn);
+				GIC_SetGroup(irqn, 0x00);
+				unsigned o1 = GIC_GetGroup(irqn);
+				GIC_SetGroup(irqn, 0x01);
+				unsigned o2 = GIC_GetGroup(irqn);
+				GIC_SetGroup(irqn, o0);
+				unsigned o3 = GIC_GetGroup(irqn);
+				PRINTF("group[%u]: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X\n", (unsigned) irqn, o0, o1, o2, o3);
+				ASSERT(o1 == 0x00);
+				ASSERT(o2 == 0x01);
+				ASSERT(o3 == o0);
+			}
 		}
 	}
 #endif

@@ -1589,14 +1589,14 @@ typedef struct GICR_SGI_PPI_Type
          RESERVED(0x204[0x0280 - 0x0204], uint8_t)
     __IOM uint32_t GICR_ICPENDR0;                     /*!< Offset 0x280 Peripheral Clear Pending Register */
          RESERVED(0x284[0x0300 - 0x0284], uint8_t)
-    __IOM uint32_t GICR_ISACTIVER0;                   /*!< Offset 0x300  */
+    __IOM uint32_t GICR_ISACTIVER0;                   /*!< Offset 0x300 Interrupt Set-Active Register */
          RESERVED(0x304[0x0380 - 0x0304], uint8_t)
-    __IOM uint32_t GICR_ICACTIVER0;                   /*!< Offset 0x380  */
+    __IOM uint32_t GICR_ICACTIVER0;                   /*!< Offset 0x380 Interrupt Clear-Active Register */
          RESERVED(0x384[0x0400 - 0x0384], uint8_t)
-    __IOM uint32_t GICR_IPRIORITYRn [0x008];          /*!< Offset 0x400  */
+    __IOM uint32_t GICR_IPRIORITYR [0x008];           /*!< Offset 0x400 Interrupt Priority Registers */
          RESERVED(0x420[0x0C00 - 0x0420], uint8_t)
-    __IOM uint32_t GICR_ICFGRn;                       /*!< Offset 0xC00 Interrupt Configuration Registers	 */
-         RESERVED(0xC04[0x0D00 - 0x0C04], uint8_t)
+    __IOM uint32_t GICR_ICFGR [0x002];                /*!< Offset 0xC00 Interrupt Configuration Registers	 */
+         RESERVED(0xC08[0x0D00 - 0x0C08], uint8_t)
     __IOM uint32_t GICR_IGRPMODR0;                    /*!< Offset 0xD00 Interrupt Group Modifier Registers	 */
          RESERVED(0xD04[0x0E00 - 0x0D04], uint8_t)
     __IOM uint32_t GICR_NSACR;                        /*!< Offset 0xE00 Non-secure Access Control Register	 */
