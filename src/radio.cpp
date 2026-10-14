@@ -4173,10 +4173,8 @@ struct nvmap {
 		uint8_t voxdelay;	/* задержка отпускания VOX */
 	#endif /* WITHVOX */
 
-	#if WITHTX
-		uint8_t gbkinenable;	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
-		uint8_t bkindelay;	/* задержка отпускания BREAK-IN */
-	#endif /* WITHTX */
+	uint8_t gbkinenable;	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
+	uint8_t bkindelay;	/* задержка отпускания BREAK-IN */
 
 	uint8_t gtxgate;	/* разрешение предусилителя */
 	uint8_t grgbeep;	/* разрешение (не-0) или запрещение (0) формирования roger beep */
@@ -6913,7 +6911,7 @@ static const struct paramdefdef xstayfreq =
 	#endif /* defined (WITHDAC1VALDEF) */
 #endif /* defined (DAC1_TYPE) */
 
-#if 1//WITHBARS
+#if WITHTX
 
 	uint_fast8_t swrcalibr = 100;	/* калибровочный параметр SWR-метра 1.00 */
 
@@ -6943,9 +6941,9 @@ static const struct paramdefdef xstayfreq =
 	#else
 		//static const uint_fast8_t swrmode = 0;
 	#endif
-#else /* WITHBARS */
+#else /* WITHTX */
 	uint_fast8_t swrmode = 0;
-#endif /* WITHBARS */
+#endif /* WITHTX */
 
 #if WITHMENU
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
