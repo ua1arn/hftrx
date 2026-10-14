@@ -8053,7 +8053,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 1
+#if 0
 	{
 		// filter_list (bit 25:24 of GICD_SGIR):
 		// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
