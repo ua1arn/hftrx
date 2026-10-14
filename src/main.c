@@ -40,8 +40,8 @@ lowinitialize(void)
 #endif /* WITHDEBUG */
 
 	//hardware_cw_diagnostics_noirq(1, 0, 0);	// 'D'
-	// Инициализация таймера и списка регистрирумых обработчиков
-	hardware_timer_initialize(TICKS_FREQUENCY);
+	// Инициализация списка регистрирумых обработчиков
+	tickers_initialize();
 
 	board_initialize();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	cpu_initdone();			/* секция init (в которой лежит образ для загрузки в FPGA) больше не нужна */
@@ -63,6 +63,8 @@ main(void)
 	task_scheduler_start();
 	global_enableIRQ();
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
+	// Инициализация таймера
+	hardware_timer_initialize(TICKS_FREQUENCY);
 	midtests();
 	application_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */

@@ -57,7 +57,7 @@ extern IRQHandler_t IRQTable[IRQ_GIC_LINE_COUNT];
 static uint32_t     IRQ_ID0;
 
 /// Initialize interrupt controller.
-int32_t IRQ_Initialize (void) {
+int32_t zzIRQ_Initialize (void) {
   #ifndef IRQ_GIC_EXTERN_IRQ_TABLE
     uint32_t i;
 

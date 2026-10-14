@@ -8075,7 +8075,7 @@ void hightests(void)
 			PRINTF(" - IPC interrupts demo - core%u done\n", core);
 		}
 		arm_hardware_disable_handler(int_id);
-		PRINTF("IPC interrupts demo: send all together, except self: ");
+		PRINTF("IPC interrupts demo - all  : ");
 		GIC_SendSGI(int_id, 0, 0x01);	// other cores, except self
 		local_delay_ms(250);
 		PRINTF(" - IPC interrupts demo done\n");

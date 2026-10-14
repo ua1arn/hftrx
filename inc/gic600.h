@@ -477,22 +477,6 @@ __STATIC_INLINE void GIC_EnableIRQ(IRQn_Type IRQn)
 	}
 }
 
-/** \brief Get interrupt enable status using GIC's ISENABLER register.
-* \param [in] IRQn The interrupt to be queried.
-* \return 0 - interrupt is not enabled, 1 - interrupt is enabled.
-*/
-__STATIC_INLINE uint32_t GIC_GetEnableIRQ(IRQn_Type IRQn)
-{
-	if (IRQn < 32 && GIC_GetARE()) {
-		GICRedistributor_Type * const GICR = GIC_GetRdist();
-		return (GICR->SGI_PPI.GICR_ICENABLER0 >> (IRQn % 32U)) & UINT32_C(1);
-	}
-	else
-	{
-		return (GICDistributor->GICD_ISENABLER[IRQn / 32U] >> (IRQn % 32U)) & UINT32_C(1);
-	}
-}
-
 /** \brief Disables the given interrupt using GIC's ICENABLER register.
 * \param [in] IRQn The interrupt to be disabled.
 */
@@ -505,6 +489,22 @@ __STATIC_INLINE void GIC_DisableIRQ(IRQn_Type IRQn)
 	else
 	{
 		GICDistributor->GICD_ICENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
+	}
+}
+
+/** \brief Get interrupt enable status using GIC's ISENABLER register.
+* \param [in] IRQn The interrupt to be queried.
+* \return 0 - interrupt is not enabled, 1 - interrupt is enabled.
+*/
+__STATIC_INLINE uint32_t GIC_GetEnableIRQ(IRQn_Type IRQn)
+{
+	if (IRQn < 32 && GIC_GetARE()) {
+		GICRedistributor_Type * const GICR = GIC_GetRdist();
+		return (GICR->SGI_PPI.GICR_ISENABLER0 >> (IRQn % 32U)) & UINT32_C(1);
+	}
+	else
+	{
+		return (GICDistributor->GICD_ISENABLER[IRQn / 32U] >> (IRQn % 32U)) & UINT32_C(1);
 	}
 }
 
@@ -1700,8 +1700,8 @@ __STATIC_INLINE void GIC_CPUInterfaceInit(void)
 //    }
     //Disable SGI and PPI interrupts
 	// +++++++++++++++++++++
-	//GIC_DisableIRQ((IRQn_Type)i);	// с этим перестает работать SGI всем кроме себя, но начинает работать PPI
-	GIC_EnableIRQ((IRQn_Type)i);	// с этим работает и SGI и перестает PPI
+	//GIC_DisableIRQ((IRQn_Type)i);	// с этим перестает работать SGI всем кроме себя
+	GIC_EnableIRQ((IRQn_Type)i);	// с этим работает SGI всем кроме себя
 	// -----------------------
     //Set priority
 //    GIC_SetPriority((IRQn_Type)i, priority_field/2U);
@@ -1720,7 +1720,7 @@ __STATIC_INLINE void GIC_Enable(void)
 {
 	// int init_dist
   GIC_DistInit();
-  GIC_CPUInterfaceInit(); //per CPU
+  //GIC_CPUInterfaceInit(); //per CPU
 }
 
 #endif /* (__GIC_PRESENT == 1U)) || defined(DOXYGEN) */
