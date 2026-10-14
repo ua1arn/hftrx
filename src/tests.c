@@ -8068,7 +8068,7 @@ void hightests(void)
 		for (core = 0; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 		{
 			unsigned target_list = UINT32_C(1) << core;
-			const unsigned target_aff = __log2_upX(target_list);
+			const unsigned target_aff = __log2_up(target_list);
 			PRINTF("IPC interrupts demo - core%u: ", core);
 			GIC_SendSGI(int_id, target_list, 0x00);	// specified core
 			local_delay_ms(250);
