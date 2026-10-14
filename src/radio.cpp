@@ -20437,8 +20437,6 @@ applowinitialize(void)
 	hardware_sdhost_initialize();	/* если есть аппаратный контрлллер SD CARD */
 #endif /* WITHSDHCHW */
 
-	kbd_initialize();
-
 #if WITHDEBUG
 	PRINTF("Most of hardware initialized.\n");
 #endif
@@ -23271,6 +23269,8 @@ loadsavedstate(void)
 void
 application_initialize(void)
 {
+	kbd_initialize();
+	PRINTF("kbd_initialize\n");
 	const uint_fast8_t resetconfig = nvramdiags();	/* вызывается при разрешённых прерываниях. */
 #if WITHMENU
 	if (resetconfig)
