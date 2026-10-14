@@ -1073,7 +1073,7 @@ param_rotate(const struct paramdefdef * pd, int_fast32_t nrotate)
 
 #if WITHCAT
 
-static void processcat_enable(uint_fast8_t catenable);
+static void processcat_enable(uint_fast8_t enable);
 static void cat_answer_request(uint_fast8_t catindex);	// call from user-mode
 
 static uint_fast8_t aistate;		/* autoinformation state flag */
@@ -3875,7 +3875,7 @@ struct nvmap {
 	uint16_t	ggrpabout;		// последний выбраный пункт группы
 
 #if LO1MODE_HYBRID
-	uint8_t alignmode;			/* режимы для настройки аппаратной части (0-нормальная работа) */
+	uint8_t galignmode;			/* режимы для настройки аппаратной части (0-нормальная работа) */
 #endif /* LO1MODE_HYBRID */
 #if WITHUSEDUALWATCH
 	uint8_t dwatchmode;		// Левый/правый, A - main RX, B - sub RX
@@ -4143,7 +4143,7 @@ struct nvmap {
 
 #if WITHCAT
 	uint16_t	ggrpcat; // последний выбраный пункт группы
-	uint8_t catenable;	/* удаленное управление разрешено */
+	uint8_t gcatenable;	/* удаленное управление разрешено */
 	uint8_t catbaudrate;	/* номер скорости работы по CAT */
 	#if WITHTX
 		uint8_t catsigptt;	/* Выбраный сигнал для перехода на передачу по CAT */
@@ -4910,10 +4910,34 @@ static const struct paramdefdef xgbandset2m =
 	static uint_fast8_t catprocenable;	/* разрешена работа подсистемы CAT */
 #endif /* WITHCAT */
 
-static uint_fast8_t alignmode;		/* режимы для настройки аппаратной части (0-нормальная работа) */
+#if LO1MODE_HYBRID
+static uint_fast8_t galignmode;		/* режимы для настройки аппаратной части (0-нормальная работа) */
+static const struct paramdefdef xgalignmode = {
+	QLABEL("ALIGN MD"), 0, RJ_YES,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, galignmode),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& galignmode,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+#endif /* LO1MODE_HYBRID */
 
 #if 1//WITHDEBUG
 static uint_fast8_t gforcexvrtr;	/* принудительно включить коммутацию трансвертора */
+static const struct paramdefdef xgforcexvrtr = {
+	QLABEL("FORCEXVR"), 0, RJ_YES,	ISTEP1,	/* принудительно включить коммутацию трансвертора */
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, gforcexvrtr),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gforcexvrtr,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 #else
 	enum { gforcexvrtr = 0 };
 #endif /* WITHDEBUG */
@@ -5550,18 +5574,18 @@ enum
 
 #if WITHCAT
 
-	static uint_fast8_t catenable = 1;	/* модифицируется через меню. */
+	static uint_fast8_t gcatenable = 1;	/* модифицируется через меню. */
 	static uint_fast8_t catbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
 
-	static const struct paramdefdef xcatenable =
+	static const struct paramdefdef xgcatenable =
 	{
 		QLABEL3("CAT ENAB", "CAT Enable", "CAT ENABLE"), 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
-		OFFSETOF(struct nvmap, catenable),
+		OFFSETOF(struct nvmap, gcatenable),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
-		& catenable,
+		& gcatenable,
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
@@ -5681,7 +5705,7 @@ enum
 
 #else /* WITHCAT */
 
-	enum { catenable = 0 };
+	enum { gcatenable = 0 };
 
 #endif /* WITHCAT */
 
@@ -6600,11 +6624,8 @@ enum
 	#endif /* WITHPOWERTRIM, WITHPOWERLPHP */
 
 	#if WITHVOX
-		static uint_fast8_t gvoxenable;	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
-		static uint_fast8_t gvoxlevel = 10;	/* модифицируется через меню - усиление VOX */
-		static uint_fast8_t gavoxlevel = 50;	/* модифицируется через меню - усиление anti-VOX */
-		static uint_fast8_t voxdelay = 70;	/* модифицируется через меню - задержка отпускания VOX */
 
+		static uint_fast8_t gvoxenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
 		static const struct paramdefdef xgvoxenable =
 		{
 			QLABEL3("VOX EN", "VOX Enable", "VOX Enable"), 0, RJ_ON,	ISTEP1,
@@ -6617,6 +6638,8 @@ enum
 			getzerobase,
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
+
+		static uint_fast8_t gvoxlevel = 10;	/* модифицируется через меню - усиление VOX */
 		static const struct paramdefdef xgvoxlevel =
 		{
 			QLABEL3("VOX LEVL", "VOX Level", "VOX LEVEL"),  0, RJ_UNSIGNED, ISTEP1,
@@ -6629,6 +6652,8 @@ enum
 			getzerobase,
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
+
+		static uint_fast8_t gavoxlevel = 50;	/* модифицируется через меню - усиление anti-VOX */
 		static const struct paramdefdef xgavoxlevel =
 		{
 			QLABEL3("AVOX LEV", "A-VOX Level", "AVOX LEVEL"),  0, RJ_UNSIGNED, ISTEP1,
@@ -6641,6 +6666,8 @@ enum
 			getzerobase,
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
+
+		static uint_fast8_t voxdelay = 70;	/* модифицируется через меню - задержка отпускания VOX */
 		static const struct paramdefdef xgvoxdelay =
 		{
 			QLABEL3("VOXDELAY", "VOX Delay", "VOXDELAY"),  2, RJ_UNSIGNED, ISTEP5,	/* 50 mS step of changing value */
@@ -6654,9 +6681,6 @@ enum
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 
-
-	#else /* WITHVOX */
-		enum { gvoxenable = 0 };	/* автоматическое управление передатчиком (от голоса) */
 	#endif /* WITHVOX */
 
 	#if ! WITHPACLASSA
@@ -6717,8 +6741,8 @@ enum
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-#else /* WITHTX */
 #endif /* WITHTX */
+
 #if WITHELKEY
 
 	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
@@ -13600,7 +13624,9 @@ updateboard_noui(
 		#if WITHTX
 			/* переносить эти параметры под условие перенастройки в режиме приёма не стал, так как меню может быть вызвано и при передаче */
 			board_set_txcw(Xpamodetempl->txcw);	// при передаче будет режим без SSB модулятора
-			board_set_vox(gvoxenable && getmodetempl(txsubmode)->vox);	// включение внешних схем VOX
+			#if WITHVOX
+			board_set_vox(param_getvalue(& xgvoxenable) && getmodetempl(txsubmode)->vox);	// включение внешних схем VOX
+			#endif /* WITHVOX */
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
 				board_set_ctcsstx(getmodetempl(txsubmode)->subtone && param_getvalue(& xgsubtoneitx) && gtx ?
@@ -13841,12 +13867,12 @@ updateboard_noui(
 			board_rgrbeep_setfreq(1000);	/* roger beep - установка тона */
 		}
 		#endif /* WITHIF4DSP */
-		seq_set_rgbeep(grgbeep);	/* разрешение (не-0) или запрещение (0) формирования roger beep */
+		seq_set_rgbeep(param_getvalue(& xgrgbeep));	/* разрешение (не-0) или запрещение (0) формирования roger beep */
 		seq_set_rxtxdelay(rxtxdelay, txrxdelay, pretxdelay ? txrxdelay : 0);	/* установить задержку пре переходе на передачу и обратно. */
 		board_sidetone_setfreq(gcwpitch10 * CWPITCHSCALE);	// Минимум - 400 герц (определено набором команд CAT Kenwood).
-		board_set_classamode(gclassamode);	/* использование режима клвсс А при передаче */
-		board_set_txgate(gtxgate);		/* разрешение драйвера и оконечного усилителя */
-		board_set_forcexvrtr(gforcexvrtr);
+		board_set_classamode(param_getvalue(& xgclassamode));	/* использование режима клвсс А при передаче */
+		board_set_txgate(param_getvalue(& xgtxgate));		/* разрешение драйвера и оконечного усилителя */
+		board_set_forcexvrtr(param_getvalue(& xgforcexvrtr));
 		#if WITHMIC1LEVEL
 			board_set_mik1level(gmik1level);
 		#endif /* WITHMIC1LEVEL */
@@ -13896,7 +13922,7 @@ updateboard_noui(
 	board_set_displayfps(glatchfps);
 		/* просто настройки тракта и не относящиеся к приёму-пеердаче. */
 	#if WITHCAT
-		processcat_enable(catenable);
+		processcat_enable(param_getvalue(& xgcatenable));
 		cat_set_speed(catbr2int [catbaudrate] * BRSCALE);
 		#if WITHCAT_MUX
 			board_set_catmux(catmuxmodes [gcatmux].code);	// BOARD_CATMUX_USBCDC or BOARD_CATMUX_DIN8
@@ -21429,17 +21455,17 @@ hamradio_main_step(void)
 			updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 		}
 	#endif /* WITHLFM */
-		if (alignmode)
-		{
 	#if MULTIVFO
+		if (param_getvalue(& xgalignmode))
+		{
 			// вход в режим настройки ГУНов первого гетеродина
 			//display2_needupdate();
 			vfoallignment();
 			//display2_needupdate();
 			updateboard();	/* полная перенастройка (как после смены режима) */
-	#endif // MULTIVFO
-			alignmode = 0;	// в nvram осталась не-0
+			galignmode = 0;	// в nvram осталась не-0
 		}
+	#endif // MULTIVFO
 	#if WITHUSEAUDIOREC
 		if (grecmode)
 		{

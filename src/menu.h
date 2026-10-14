@@ -339,7 +339,7 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
-	& xcatenable,
+	& xgcatenable,
 #if WITHCAT_MUX
 	& xgcatmux,
 #endif /* WITHCAT_MUX */
@@ -1785,31 +1785,11 @@
 #endif /* LO1PHASES */
 
 #if LO1MODE_HYBRID
-	(const struct paramdefdef [1]) {
-		QLABEL("ALIGN MD"), 0, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, alignmode),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& alignmode,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgalignmode,
 #endif	/* LO1MODE_HYBRID */
 
 #if 1//WITHDEBUG
-	(const struct paramdefdef [1]) {
-		QLABEL("FORCEXVR"), 0, RJ_YES,	ISTEP1,	/* принудительно включить коммутацию трансвертора */
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gforcexvrtr),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gforcexvrtr,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgforcexvrtr,
 #endif	/* WITHDEBUG */
 
 #if LO1FDIV_ADJ
