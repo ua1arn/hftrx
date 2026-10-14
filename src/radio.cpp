@@ -13622,9 +13622,6 @@ updateboard_noui(
 		#if WITHTX
 			/* переносить эти параметры под условие перенастройки в режиме приёма не стал, так как меню может быть вызвано и при передаче */
 			board_set_txcw(Xpamodetempl->txcw);	// при передаче будет режим без SSB модулятора
-			#if WITHVOX
-			board_set_vox(param_getvalue(& xgvoxenable) && getmodetempl(txsubmode)->vox);	// включение внешних схем VOX
-			#endif /* WITHVOX */
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
 				board_set_ctcsstx(getmodetempl(txsubmode)->subtone && param_getvalue(& xgsubtoneitx) && gtx ?
@@ -18182,9 +18179,6 @@ const struct paramdefdef * const * getmiddlemenu_am(unsigned * size)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
-	#if WITHVOX && WITHTX
-		& xgvoxenable,
-	#endif /* WITHVOX && WITHTX */
 	#if WITHTX && WITHAFCODEC1HAVEPROC
 		& xgmikeequalizer,
 	#endif /* WITHTX && WITHAFCODEC1HAVEPROC */
@@ -18208,9 +18202,6 @@ const struct paramdefdef * const * getmiddlemenu_digi(unsigned * size)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
-	#if WITHVOX && WITHTX
-		& xgvoxenable,
-	#endif /* WITHVOX && WITHTX */
 	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
 		& xgzoomxpow2,
 	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */
@@ -18227,10 +18218,6 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size)
 {
 	static const struct paramdefdef * const middlemenu [] =
 	{
-		//& xgcwpitch10,
-	#if WITHVOX && WITHTX
-		& xgvoxenable,
-	#endif /* WITHVOX && WITHTX */
 	#if WITHSUBTONES && WITHIF4DSP
 		& xgsubtoneirx,
 		& xgsubtoneitx,
@@ -18262,9 +18249,6 @@ const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * nitems)
 	static const struct paramdefdef * const middlemenu [] =
 	{
 		& xgcwpitch10,
-	#if WITHVOX && WITHTX
-		& xgvoxenable,
-	#endif /* WITHVOX && WITHTX */
 	#if WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0
 		& xgzoomxpow2,
 	#endif /* WITHSPECTRUMWF && BOARD_FFTZOOM_POW2MAX > 0 */

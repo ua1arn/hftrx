@@ -67,7 +67,6 @@ static uint_fast8_t 	glob_antenna;		// выбор антенны (0 - ANT1, 1 - 
 static uint_fast8_t 	glob_rxantenna;		//
 static uint_fast8_t 	glob_preamp;		// включение предусилителя (УВЧ) приёмника
 static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятора
-static uint_fast8_t 	glob_vox;
 static uint_fast8_t 	glob_forcexvrtr;	// принудительно включить коммутацию трансвертора
 static volatile uint_fast8_t 	glob_catmux = BOARD_CATMUX_USBCDC;
 
@@ -2967,19 +2966,6 @@ board_set_forcexvrtr(uint_fast8_t v)
 	{
 		glob_forcexvrtr = n;
 		board_ctlreg1changed();
-	}
-}
-
-/* не нулевой аргумент - включение VOX */
-void
-board_set_vox(uint_fast8_t v)	
-{
-	const uint_fast8_t n = v != 0;
-	if (glob_vox != n)
-	{
-		glob_vox = n;
-		board_ctlreg1changed();
-		board_dsp1regchanged();
 	}
 }
 

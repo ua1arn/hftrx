@@ -95,7 +95,6 @@ void board_set_bcdfreq1k(uint_fast16_t bcdfreq);	/* Для выбора диап
 void board_set_narrow(uint_fast8_t v);	/* установка режима према телеграфа (НЧ) */
 void board_set_notch(uint_fast8_t v);		/* не нулевой аргумент - включение НЧ режекторного фильтра */
 void board_set_notchnarrow(uint_fast8_t v);		/* не нулевой аргумент - включение НЧ режекторного фильтра в режиме CW */
-void board_set_vox(uint_fast8_t v);		/* не нулевой аргумент - включение VOX (для внешних схем) */
 void board_set_preamp(uint_fast8_t v); /* включение УВЧ */
 void board_set_xvrtr(uint_fast8_t v);	/* Разрешить работу конвертора */
 void board_set_dacstraight(uint_fast8_t v);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
