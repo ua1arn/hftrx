@@ -2597,6 +2597,47 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	}
 #endif /* CPUSTYLE_VM14 */
 
+#if 0
+	if (1 && arm_hardware_cpuid() == 2)
+	{
+		const uint_fast16_t int_id = SGI15_IRQn;
+		GICRedistributor_Type * const GICR = GIC_GetRdist();
+		local_delay_ms(2250);
+		PRINTF("%p->GICR_NSACR=%08X\n", GICR, (unsigned) GICR->SGI_PPI.GICR_NSACR);
+		PRINTF("%p->GICR_SGIDR=%08X\n", GICR, (unsigned) GICR->SGI_PPI.GICR_SGIDR);
+		PRINTF("%p->GICR_IGROUPR0=%08X\n", GICR, (unsigned) GICR->SGI_PPI.GICR_IGROUPR0);
+		PRINTF("%p->GICR_IGRPMODR0=%08X\n", GICR, (unsigned) GICR->SGI_PPI.GICR_IGRPMODR0);
+		PRINTF("%p->GICR_ISENABLER0=%08X\n", GICR, (unsigned) GICR->SGI_PPI.GICR_ISENABLER0);
+		PRINTF("%p->GICR_ISPENDR0=%08X\n", GICR, (unsigned) GICR->SGI_PPI.GICR_ISPENDR0);
+		//GICR->SGI_PPI.GICR_ISENABLER0 = 0xFFFFFFFF;
+		//GICR->SGI_PPI.GICR_ICPENDR0 = ~ UINT32_C(0);
+		GICR->SGI_PPI.GICR_ISPENDR0 = 1U << int_id;
+		GICR->SGI_PPI.GICR_ISPENDR0 = 1U << 7;
+		GICR->SGI_PPI.GICR_ISPENDR0 = 1U << 6;
+		GICR->SGI_PPI.GICR_ISENABLER0 = 0xFFFFFFFF;
+		PRINTF("%p->GICR_ISENABLER0=%08X\n", GICR, (unsigned) GICR->SGI_PPI.GICR_ISENABLER0);
+		PRINTF("%p->GICR_ISPENDR0=%08X\n", GICR, (unsigned) GICR->SGI_PPI.GICR_ISPENDR0);
+
+//		PRINTF("IPC interrupts send\n");
+//		local_delay_ms(1200);
+//		GIC_SendSGI(int_id, 0, 0x01);	// To all, except self
+//		local_delay_ms(200);
+//		GIC_SendSGI(int_id, UINT32_C(1) << 0, 0x00);	// specified core
+//		local_delay_ms(200);
+//		GIC_SendSGI(int_id, UINT32_C(1) << 1, 0x00);	// specified core
+//		local_delay_ms(200);
+//		GIC_SendSGI(int_id, UINT32_C(1) << 2, 0x00);	// specified core
+//		local_delay_ms(200);
+//		GIC_SendSGI(int_id, UINT32_C(1) << 0, 0x00);	// specified core
+//		local_delay_ms(200);
+//		GIC_SendSGI(int_id, UINT32_C(1) << 0, 0x00);	// specified core
+//		local_delay_ms(200);
+//		PRINTF("IPC interrupts send done\n");
+	}
+	else
+	{
+	}
+#endif
 	task_scheduler_othercores();
 }
 
