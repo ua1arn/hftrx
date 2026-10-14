@@ -4113,7 +4113,8 @@ struct nvmap {
 #if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 	uint16_t	ggrprfadc; // последний выбраный пункт группы
 	uint8_t gdither;	/* управление зашумлением в LTC2208 */
-	uint8_t gdactest;
+	uint8_t gadcrand;	/* управление интерфейсом в LTC2208 */
+	uint8_t gdactest;	/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 	uint8_t gshowovf;				/* Показ индикатора переполнения АЦП */
 #endif /* WITHDSPEXTDDC */
 
@@ -7451,6 +7452,63 @@ static const struct paramdefdef xgskipfilteraf =
 	uint_fast8_t ALCEN = 0;	// only left channel ALC enabled
 	uint_fast8_t ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
 	uint_fast8_t ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
+
+	static const struct paramdefdef xgALCNEN = {
+		QLABEL("ALC NCEN"), 0, RJ_ON,	ISTEP1,		/* ALC noise gate function control bit. */
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, ALCNEN),	/* ALC noise gate function control bit */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& ALCNEN,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgALCNTH = {
+		QLABEL("ALCNTH"),  0, RJ_UNSIGNED, ISTEP1,		/* ALC noise gate threshold level. */
+		ITEM_VALUE,
+		0, 7,
+		OFFSETOF(struct nvmap, ALCNTH),	/* ALC noise gate threshold level */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& ALCNTH,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgALCEN = {
+		QLABEL("ALC EN"), 0, RJ_ON,	ISTEP1,		/* ALC enabled. */
+		ITEM_VALUE,
+		0, 1,
+		OFFSETOF(struct nvmap, ALCEN),	/* ALC enabled */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& ALCEN,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgALCMXGAIN = {
+		QLABEL("ALCMXGAN"),  0, RJ_UNSIGNED, ISTEP1,		/* Set maximum gain limit for PGA volume setting changes under ALC control. */
+		ITEM_VALUE,
+		0, 7,
+		OFFSETOF(struct nvmap, ALCMXGAIN),	/* Set maximum gain limit for PGA volume setting changes under ALC control */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& ALCMXGAIN,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static const struct paramdefdef xgALCMNGAIN = {
+		QLABEL("ALCMNGAN"),  0, RJ_UNSIGNED, ISTEP1,		/* Set minimum gain value limit for PGA volume setting changes under ALC contro. */
+		ITEM_VALUE,
+		0, 7,
+		OFFSETOF(struct nvmap, ALCMNGAIN),	/* Set minimum gain value limit for PGA volume setting changes under ALC contro */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& ALCMNGAIN,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHIF4DSP
 #if WITHTX
@@ -7582,7 +7640,6 @@ static const struct paramdefdef xgskipfilteraf =
 	}
 
 #if WITHWAVPLAYER || WITHSENDWAV
-	static uint_fast8_t gloopmsg, gloopsec = 15;
 	static uint_fast8_t loopticks;
 	static const char * const loopnames [] =
 	{
@@ -7592,6 +7649,33 @@ static const struct paramdefdef xgskipfilteraf =
 			"3.wav",
 			"4.wav",
 			"5.wav",
+	};
+
+	static uint_fast8_t gloopmsg;
+	static const struct paramdefdef xgloopmsg =
+	{
+		QLABEL("LOOP MSG"),  0, RJ_UNSIGNED, ISTEP1,		/* Select the monitoring sound output level.. */
+		ITEM_VALUE,
+		0, ARRAY_SIZE(loopnames) - 1,
+		OFFSETOF(struct nvmap, gloopmsg),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gloopmsg,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static gloopsec = 15;
+	static const struct paramdefdef xgloopsec =
+	{
+		QLABEL("LOOP SEC"),  0, RJ_UNSIGNED, ISTEP1,		/* Select the monitoring sound output level.. */
+		ITEM_VALUE,
+		15, 240,
+		OFFSETOF(struct nvmap, gloopsec),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gloopsec,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	void playhandler(uint8_t code);
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
@@ -7681,27 +7765,40 @@ static const struct paramdefdef xgskipfilteraf =
 	};
 	static const struct paramdefdef xgfsadcpower10xv =
 	{
-			QLABEL("ADC FSXV"),  1, RJ_SIGNED,	ISTEP1,		/* с колнвертором Калиьровка S-метра - момент перегрузки */
-			ITEM_VALUE,
-			0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
-			OFFSETOF(struct nvmap, gfsadcpower10 [1]),
-			getselector0, nvramoffs0, valueoffs0,
-			& gfsadcpower10 [1],	// 16 bit
-			NULL,
-			getfsasdcbase10, /* складывается со смещением и отображается */
-			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		QLABEL("ADC FSXV"),  1, RJ_SIGNED,	ISTEP1,		/* с колнвертором Калиьровка S-метра - момент перегрузки */
+		ITEM_VALUE,
+		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
+		OFFSETOF(struct nvmap, gfsadcpower10 [1]),
+		getselector0, nvramoffs0, valueoffs0,
+		& gfsadcpower10 [1],	// 16 bit
+		NULL,
+		getfsasdcbase10, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LTC2208 */
 		#if (ADC1_TYPE == ADC_TYPE_AD9246)
-			static const uint_fast8_t gadcrand = 0;		/* управление интерфейсом в LTC2208 */
+			static uint_fast8_t gadcrand = 0;		/* управление интерфейсом в LTC2208 */
 		#else /* ADC1_TYPE == ADC_TYPE_AD9246 */
-			static const uint_fast8_t gadcrand = 1;		/* управление интерфейсом в LTC2208 */
+			static uint_fast8_t gadcrand = 1;		/* управление интерфейсом в LTC2208 */
 		#endif /* ADC1_TYPE == ADC_TYPE_AD9246 */
-
+		static const struct paramdefdef xgadcrand =
+		{
+			QLABEL("ADC RAND"), 0, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
+			ITEM_VALUE,
+			0, 1,
+			OFFSETOF(struct nvmap, gadcrand),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& gadcrand,
+			getzerobase,
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 		static uint_fast8_t gdactest;
-		static const struct paramdefdef xgdactest = {
+		static const struct paramdefdef xgdactest =
+		{
 			QLABEL2("DAC TEST", "DAC Test"), 0, RJ_ON,	ISTEP1,	/*  */
 			ITEM_VALUE,
 			0, 1,
@@ -12959,20 +13056,20 @@ static void codec1_directupdate(void)
 //			unsigned ALCEN = 0;	// only left channel ALC enabled
 //			unsigned ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
 //			unsigned ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
-	unsigned alcctl1 =
-			((ALCEN ? 0x02 : 0x00) << 7) |	// only left channel ALC enabled
-			(ALCMXGAIN << 3) |
-			(ALCMNGAIN << 0) |
+	const unsigned alcctl1 =
+			((param_getvalue(& xgALCEN) ? 0x02 : 0x00) << 7) |	// only left channel ALC enabled
+			(param_getvalue(& xgALCMXGAIN) << 3) |
+			(param_getvalue(& xgALCMNGAIN) << 0) |
 			0;
 	nau8822_setreg(NAU8822_ALC_CONTROL_1, alcctl1);
 
 	// Noise gate
 //			unsigned ALCNEN = 0;	// ALC noise gate function control bit
 //			unsigned ALCNTH = 0;	// ALC noise gate threshold level
-	unsigned ngctl1 =
+	const unsigned ngctl1 =
 			(1 << 4) |	// reserved
-			(ALCNEN << 3) |
-			(ALCNTH << 0) |
+			(param_getvalue(& xgALCNEN) << 3) |
+			(param_getvalue(& xgALCNTH) << 0) |
 			0;
 	nau8822_setreg(NAU8822_NOISE_GATE, ngctl1);
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
@@ -13564,13 +13661,14 @@ updateboard_noui(
 			board_set_trxpath(pathi);	/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
 			if (gtx == 0)
 			{
+				const int_fast32_t notchtype = param_getvalue(& xgnotchtype);
 			#if WITHNOTCHONOFF
-				board_set_notch(gnotch && notchmodes [gnotchtype].code != BOARD_NOTCH_OFF);
-				board_set_notchnarrow(gnotch && notchmodes [gnotchtype].code != BOARD_NOTCH_OFF && pamodetempl->nar);
+				board_set_notch(param_getvalue(& xgnotch) && notchmodes [notchtype].code != BOARD_NOTCH_OFF);
+				board_set_notchnarrow(gnotch && notchmodes [notchtype].code != BOARD_NOTCH_OFF && pamodetempl->nar);
 			#elif WITHNOTCHFREQ
-				board_set_notch_mode(gnotch == 0 ? BOARD_NOTCH_OFF : notchmodes [gnotchtype].code);
-				board_set_notch_width(gnotchwidth.value);
-				board_set_notch_freq(gnotchfreq.value);	// TODO: при AUTONOTCH ставить INT16_MAX ?
+				board_set_notch_mode(param_getvalue(& xgnotch) == 0 ? BOARD_NOTCH_OFF : notchmodes [notchtype].code);
+				board_set_notch_width(param_getvalue(& xgnotchwidth));
+				board_set_notch_freq(param_getvalue(& xgnotchfreq));	// TODO: при AUTONOTCH ставить INT16_MAX ?
 			#endif /* WITHNOTCHFREQ */
 			#if WITHIF4DSP
 				const uint_fast8_t agcseti = Xpamodetempl->agcseti;
@@ -13581,8 +13679,8 @@ updateboard_noui(
 				board_set_agc_t2(gagc [agcseti].release10);		// время разряда медленной цепи АРУ
 				board_set_agc_t4(gagc [agcseti].t4);			// время разряда быстрой цепи АРУ
 				board_set_agc_thung(gagc [agcseti].thung10);	// hold time (hung time) in 0.1 sec
-				board_set_squelch_level(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(gsquelch.value, gsquelchNFM) : gsquelch.value);
-				board_set_gainnfmrx(ggainnfmrx10 * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+				board_set_squelch_level(Xpamodetempl->dspmode [gtx] == DSPCTL_MODE_RX_NFM ? ulmax(param_getvalue(& xgsquelch), param_getvalue(& xgsquelchNFM)) : gsquelch.value);
+				board_set_gainnfmrx(param_getvalue(& xggainnfmrx10) * 10);	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 				#if WITHSUBTONES
 					board_set_ctcssrx(Xpamodetempl->subtone && param_getvalue(& xgsubtoneirx) ? gsubtones [param_getvalue(& xgsubtoneirx)] : 0);	// частота subtone (до десятых долей герца).
 				#endif /* WITHSUBTONES */
@@ -13682,7 +13780,7 @@ updateboard_noui(
 		#endif /* ! WITHAGCMODENONE */
 		#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 			board_set_dither(param_getvalue(& xgdither));	/* управление зашумлением в LTC2208 */
-			board_set_adcrand(gadcrand);	/* управление интерфейсом в LTC2208 */
+			board_set_adcrand(param_getvalue(& xgadcrand));	/* управление интерфейсом в LTC2208 */
 			board_set_showovf(param_getvalue(& xgshowovf));	/* Показ индикатора переполнения АЦП */
 		#endif /* WITHDSPEXTDDC */
 		} /* (gtx == 0) */
@@ -23201,6 +23299,9 @@ static const struct paramdefdef * nomenulist [] =
 	& xgpwri,
 #endif /* WITHPOWERLPHP */
 	& xgusefast,	/* управление режимом валкодера */
+#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
+	& xgadcrand,
+#endif /* WITHDSPEXTDDC */
 	//& xgdummy,		/* чтобы небыло массива с нулевым размером */
 };
 

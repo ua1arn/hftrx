@@ -290,17 +290,7 @@
 	},
 /* group name --- */
 #if 0
-	(const struct paramdefdef [1]) {
-		QLABEL("ADC RAND"), 0, RJ_ON,	ISTEP1,	/* управление интерфейсом в LTC2208 */
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gadcrand),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gadcrand,
-		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgadcrand,
 #endif /* */
 	& xgdither,
 #endif /* WITHDSPEXTDDC */
@@ -397,28 +387,8 @@
 #endif /* WITHIF4DSP */
 #if WITHTX && WITHIF4DSP
 #if WITHWAVPLAYER || WITHSENDWAV
-	(const struct paramdefdef [1]) {
-		QLABEL("LOOP MSG"),  0, RJ_UNSIGNED, ISTEP1,		/* Select the monitoring sound output level.. */
-		ITEM_VALUE,
-		0, ARRAY_SIZE(loopnames) - 1,
-		OFFSETOF(struct nvmap, gloopmsg),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gloopmsg,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("LOOP SEC"),  0, RJ_UNSIGNED, ISTEP1,		/* Select the monitoring sound output level.. */
-		ITEM_VALUE,
-		15, 240,
-		OFFSETOF(struct nvmap, gloopsec),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gloopsec,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgloopmsg,
+	& xgloopsec,
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 #endif /* WITHTX && WITHIF4DSP */
 #if WITHUSEAUDIOREC
@@ -437,6 +407,12 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
+#if defined(CODEC1_TYPE)
+	& xgmikeboost20db,
+#if WITHMIC1LEVEL
+	& xgmik1level,
+#endif /* ITHMIC1LEVEL */
+#endif /* defined(CODEC1_TYPE) */
 #if WITHTX && WITHIF4DSP
 	& xgmike_ssb,
 	& xgmike_dig,
@@ -499,74 +475,15 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
-	& xgmikeboost20db,
-#if WITHMIC1LEVEL
-	& xgmik1level,
-#endif /* ITHMIC1LEVEL */
 #if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	& xglineamp,	/* подстройка усиления с линейного входа через меню. */
 #endif /* WITHAFCODEC1HAVELINEINLEVEL */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
-//	unsigned ALCNEN = 0;	// ALC noise gate function control bit
-//	unsigned ALCNTH = 0;	// ALC noise gate threshold level
-//	unsigned ALCEN = 1;	// only left channel ALC enabled
-//	unsigned ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
-//	unsigned ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
-	(const struct paramdefdef [1]) {
-		QLABEL("ALC NCEN"), 0, RJ_ON,	ISTEP1,		/* ALC noise gate function control bit. */
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, ALCNEN),	/* ALC noise gate function control bit */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& ALCNEN,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("ALCNTH"),  0, RJ_UNSIGNED, ISTEP1,		/* ALC noise gate threshold level. */
-		ITEM_VALUE,
-		0, 7,
-		OFFSETOF(struct nvmap, ALCNTH),	/* ALC noise gate threshold level */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& ALCNTH,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("ALC EN"), 0, RJ_ON,	ISTEP1,		/* ALC enabled. */
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, ALCEN),	/* ALC enabled */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& ALCEN,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("ALCMXGAN"),  0, RJ_UNSIGNED, ISTEP1,		/* Set maximum gain limit for PGA volume setting changes under ALC control. */
-		ITEM_VALUE,
-		0, 7,
-		OFFSETOF(struct nvmap, ALCMXGAIN),	/* Set maximum gain limit for PGA volume setting changes under ALC control */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& ALCMXGAIN,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("ALCMNGAN"),  0, RJ_UNSIGNED, ISTEP1,		/* Set minimum gain value limit for PGA volume setting changes under ALC contro. */
-		ITEM_VALUE,
-		0, 7,
-		OFFSETOF(struct nvmap, ALCMNGAIN),	/* Set minimum gain value limit for PGA volume setting changes under ALC contro */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& ALCMNGAIN,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgALCNEN,		//	unsigned ALCNEN = 0;	// ALC noise gate function control bit
+	& xgALCNTH,		//	unsigned ALCNTH = 0;	// ALC noise gate threshold level
+	& xgALCEN,		//	unsigned ALCEN = 1;	// only left channel ALC enabled
+	& xgALCMXGAIN,	//	unsigned ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
+	& xgALCMNGAIN,	//	unsigned ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #endif /* defined(CODEC1_TYPE) */
 #if WITHENCODER
