@@ -1176,7 +1176,7 @@ __STATIC_FORCEINLINE void __set_ICC_SGI1R_EL1(uint64_t value)
 __STATIC_INLINE void GIC_EnableInterface(void)
 {
 	__set_ICC_IGRPEN0_EL1(1);
-	//__set_ICC_IGRPEN1_EL1(1);
+	__set_ICC_IGRPEN1_EL1(1);
 }
 
 /** \brief Disable the CPU's interrupt interface.
@@ -1184,7 +1184,7 @@ __STATIC_INLINE void GIC_EnableInterface(void)
 __STATIC_INLINE void GIC_DisableInterface(void)
 {
 	__set_ICC_IGRPEN0_EL1(0);
-	//__set_ICC_IGRPEN1_EL1(0);
+	__set_ICC_IGRPEN1_EL1(0);
 }
 
 /** \brief Read the CPU's IAR register.
@@ -1701,7 +1701,7 @@ __STATIC_INLINE void GIC_CPUInterfaceInit(void)
     //Disable SGI and PPI interrupts
 	// +++++++++++++++++++++
 	//GIC_DisableIRQ((IRQn_Type)i);	// с этим перестает работать SGI всем кроме себя
-	GIC_EnableIRQ((IRQn_Type)i);	// с этим работает SGI всем кроме себя
+	//GIC_EnableIRQ((IRQn_Type)i);	// с этим работает SGI всем кроме себя
 	// -----------------------
     //Set priority
 //    GIC_SetPriority((IRQn_Type)i, priority_field/2U);
