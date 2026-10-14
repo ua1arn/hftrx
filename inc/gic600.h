@@ -1319,34 +1319,34 @@ __STATIC_INLINE uint32_t GIC_GetIRQStatus(IRQn_Type IRQn)
 // 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
 // 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
 // 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
-__STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16_t tlist, uint32_t filter_list)
+__STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t aff, uint16_t tlist, uint32_t filter_list)
 {
 //    uint32_t aff3, aff2, aff1;
 	uint32_t rs;
-    uint64_t val;
-    const int sendtoallexceptself = (0x01 == filter_list);
+	uint64_t val;
+	const int sendtoallexceptself = (0x01 == filter_list);
 
 //    aff1 = MPIDR_TO_AFF_LEVEL(target_aff, 1);
 //    aff2 = MPIDR_TO_AFF_LEVEL(target_aff, 2);
 //    aff3 = MPIDR_TO_AFF_LEVEL(target_aff, 3);
-    rs = 0;//MPIDR_TO_RS(target_aff);
-    //val = COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, IRQn, 0, rs, tlist);
-
-    rs = 0; /* RangeSelector */
-    val =
-    		//(target_aff & 0xFF) * (UINT64_C(1) << 48) |	/* aff3 */
-    		(rs & 0x0F) * (UINT64_C(1) << 44) |	/* RangeSelector RS */
-    		(sendtoallexceptself) * (UINT64_C(1) << 40) |	/* IRM 0b1 Interrupts routed to all PEs in the system, excluding "self". */
-    		//(target_aff & 0xFF) * (UINT64_C(1) << 32) |	/* aff2 */
-    		(IRQn & 0xF) * (UINT64_C(1) << 24) | /* INTID */
-    		(target_aff & 0xFF) * (UINT64_C(1) << 16) |	/* aff1 */
+	rs = 0;//MPIDR_TO_RS(target_aff);
+	//val = COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, IRQn, 0, rs, tlist);
+	rs = 0; /* RangeSelector */
+	val =
+			//(target_aff & 0xFF) * (UINT64_C(1) << 48) |	/* aff3 */
+			(rs & 0x0F) * (UINT64_C(1) << 44) |	/* RangeSelector RS */
+			(sendtoallexceptself) * (UINT64_C(1) << 40) |	/* IRM 0b1 Interrupts routed to all PEs in the system, excluding "self". */
+			//(target_aff & 0xFF) * (UINT64_C(1) << 32) |	/* aff2 */
+			(IRQn & 0xF) * (UINT64_C(1) << 24) | /* INTID */
+			(aff & 0xFF) * (UINT64_C(1) << 16) |	/* aff1 */
 			(tlist & 0xFFFF) * (UINT64_C(1) << 0) |
 		0;
+	//PRINTF("xGIC_SendSGI_ARE: aff=0x%02X, tlist=0x%02X, filter_list=0x%02X (val=0x%016lX)\n", (unsigned) aff, (unsigned) tlist, (unsigned) filter_list, val);
 
-    __DSB();
-    //__set_ICC_SGI1R_EL1(val);
-    __set_ICC_SGI0R_EL1(val);	/* added by mgs - у меня пока работает толькоо группа 0 */
-    __ISB();
+	__DSB();
+	__set_ICC_SGI1R_EL1(val);
+	__set_ICC_SGI0R_EL1(val);	/* added by mgs - у меня пока работает толькоо группа 0 */
+	__ISB();
 }
 
 /** \brief Calculate log2 rounded up
@@ -1394,7 +1394,7 @@ __STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t 
 	if (IRQn < 16 && GIC_GetARE()) {
 		/* affinity routing */
 		const uint64_t target_aff = __log2_upX(target_list);
-		GIC_SendSGI_ARE(IRQn, target_aff, target_list, filter_list);
+		GIC_SendSGI_ARE(IRQn, target_aff, 0xFFFF, filter_list);
 	}
 }
 
