@@ -5998,8 +5998,6 @@ enum
 
 	#if WITHREVERB
 		static uint_fast8_t greverb;		/* ревербератор */
-		static uint_fast8_t greverbdelay = 100;		/* ревербератор - задержка (ms) */
-		static uint_fast8_t greverbloss = WITHREVERBLOSSMAX;		/* ревербератор - ослабление на возврате */
 		static const struct paramdefdef xgreverb =
 		{
 			QLABEL2("REVERB", "Reverberator"), 0, RJ_ON,	ISTEP1,
@@ -6012,6 +6010,7 @@ enum
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
+		static uint_fast8_t greverbdelay = 50;		/* ревербератор - задержка (ms) */
 		static const struct paramdefdef xgreverbdelay =
 		{
 			QLABEL2("RVB TIME", "Reverb Delay"),  0, RJ_UNSIGNED, ISTEP1,
@@ -6024,6 +6023,7 @@ enum
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
+		static uint_fast8_t greverbloss = WITHREVERBLOSSDEF;		/* ревербератор - ослабление на возврате */
 		static const struct paramdefdef xgreverbloss =
 		{
 			QLABEL2("RVB LOSS", "Reverb Loss"),  0, RJ_UNSIGNED, ISTEP1,

@@ -93,6 +93,7 @@ extern "C" {
 #define WITHREVERBDELAYMAX 100	/* максимальная задержка ревербератора, % */
 
 #define WITHREVERBLOSSMIN 0		/* минимальное ослабление на возврате ревербератора (dB) */
+#define WITHREVERBLOSSDEF 12	/* максимальная ослабление на возврате ревербератора (dB) */
 #define WITHREVERBLOSSMAX 30	/* максимальная ослабление на возврате ревербератора (dB) */
 
 #define WITHCOMPATTACKMIN 1		/* минимальное время атаки компрессора (мс) */

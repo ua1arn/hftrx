@@ -1938,6 +1938,11 @@ void looptests(void)
 {
 #if 0
 	{
+		PRINTF("dsp_getvox()=%u,dsp_getavox()=%u\n", dsp_getvox(UINT8_MAX), dsp_getavox(UINT8_MAX));
+	}
+#endif
+#if 0
+	{
 		// Encoder tests
 		PRINTF("ef1=%+3d, ef2=%+3d, ef3=%+3d, ef4=%+3d\n",
 				(int) encoder_get_delta(& encoder_ENC1F),

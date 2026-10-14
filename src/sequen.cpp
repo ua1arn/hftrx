@@ -153,9 +153,9 @@ static int vscale(uint_fast8_t v, uint_fast8_t mag)
 // Вызывается при запрещённых прерываниях.
 static void vox_probe(uint_fast8_t vlevel, uint_fast8_t alevel)
 {
-	PRINTF("vlevel=%u,vox_level=%u, %d\n", vlevel, vox_level, vscale(vlevel, vox_level));
+	//PRINTF("vlevel=%u,vox_level=%u, %d\n", vlevel, vox_level, vscale(vlevel, vox_level));
 	// vlevel, alevel - значение 0..UINT8_MAX
-	if ((vscale(vlevel, vox_level) - vscale(alevel, avox_level) > 2))
+	if (vscale(vlevel, vox_level) > vscale(alevel, avox_level))
 	{
 		vox_count = vox_delay;
 	}

@@ -1785,9 +1785,9 @@ static FLOAT_t mikeinlevel;
 static FLOAT_t VOXDISCHARGE;
 static FLOAT_t VOXCHARGE = 0;
 
-static FLOAT_t dvoxlevel;
-static FLOAT_t DVOXDISCHARGE;
-static FLOAT_t DVOXCHARGE = 0;
+//static FLOAT_t dvoxlevel;
+//static FLOAT_t DVOXDISCHARGE;
+//static FLOAT_t DVOXCHARGE = 0;
 
 // Возвращает значения 0..255
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale)
@@ -1799,7 +1799,7 @@ uint_fast8_t dsp_getvox(uint_fast8_t fullscale)
 // Возвращает значения 0..255
 uint_fast8_t dsp_getavox(uint_fast8_t fullscale)
 {
-	return 0;
+	return fullscale / 8;
 }
 
 static void voxmeter_initialize(hftxpath_t * const txpath)
@@ -1808,8 +1808,8 @@ static void voxmeter_initialize(hftxpath_t * const txpath)
 	VOXCHARGE = MAKETAU0();	// Пиковый детектор со временем заряда 0
 	VOXDISCHARGE = MAKETAU((FLOAT_t) 0.02, sr);	// Пиковый детектор со временем разряда 0.02 секунды
 
-	DVOXCHARGE = MAKETAU0();	// Пиковый детектор со временем заряда 0
-	DVOXDISCHARGE = MAKETAU((FLOAT_t) 0.02, sr);	// Пиковый детектор со временем разряда 0.02 секунды
+//	DVOXCHARGE = MAKETAU0();	// Пиковый детектор со временем заряда 0
+//	DVOXDISCHARGE = MAKETAU((FLOAT_t) 0.02, sr);	// Пиковый детектор со временем разряда 0.02 секунды
 }
 
 /////////////////////////////
@@ -3279,9 +3279,9 @@ static void monimux(
 
 // VOX detector и разрядная цепь
 // Поддержка работы VOX
-static void voxmeasure(FLOAT32P_t v)
+static void voxmeasure(FLOAT_t v)
 {
-	const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
+	const FLOAT_t vi0f = FABSF(v);
 	charge2(& mikeinlevel, vi0f, (mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
 }
 
@@ -3297,9 +3297,19 @@ static FLOAT_t mikeinmux(
 	const FLOAT32P_t vi0airpmike = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 	const FLOAT32P_t vi0pairusb = getsampmleusb2();	// с usb (или 0, если ещё не запустился) */
 	const FLOAT32P_t vi0pairbt = getsampmlebt2();	// с BT (или 0, если ещё не запустился) */
-	FLOAT_t vi0fmike = vi0airpmike.IV;
 
-	voxmeasure(vi0airpmike);	// Поддержка работы VOX
+	// Цепочка обработки сигнала с микрофона - работает всегда
+	FLOAT_t vi0fmike = vi0airpmike.IV;
+	vi0fmike = txmikeagc(txpath, vi0fmike * txlevelXXX);	// АРУ
+	vi0fmike = txmikeclip(txpath, vi0fmike);				// Ограничитель
+#if WITHREVERB
+	vi0fmike = audio_reverb_calc(vi0fmike);				// Ревербератор
+#endif /* WITHREVERB */
+#if WITHCOMPRESSOR
+	vi0fmike = audio_compressor_calc(vi0fmike);		// Компрессор
+#endif /* WITHCOMPRESSOR */
+	voxmeasure(vi0fmike);	// Поддержка работы VOX
+
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
@@ -3327,14 +3337,6 @@ static FLOAT_t mikeinmux(
 				goto txfrombt;
 			//vi0fmike = get_rout();		// Тест - синусоида 700 герц амплитуы (-1..+1)
 			// источник - микрофон
-			vi0fmike = txmikeagc(txpath, vi0fmike * txlevelXXX);	// АРУ
-			vi0fmike = txmikeclip(txpath, vi0fmike);				// Ограничитель
-#if WITHREVERB
-			vi0fmike = audio_reverb_calc(vi0fmike);				// Ревербератор
-#endif /* WITHREVERB */
-#if WITHCOMPRESSOR
-			vi0fmike = audio_compressor_calc(vi0fmike);		// Компрессор
-#endif /* WITHCOMPRESSOR */
 			moni->IV = vi0fmike;
 			moni->QV = vi0fmike;
 			return vi0fmike;
@@ -3344,7 +3346,6 @@ static FLOAT_t mikeinmux(
 			// источник - USB
 			moni->IV = vi0pairusb.IV;
 			moni->QV = vi0pairusb.QV;
-			voxmeasure(vi0pairusb);	// Поддержка работы VOX
 			return vi0pairusb.IV * txlevelXXX;
 
 		case BOARD_TXAUDIO_BT:
@@ -3352,7 +3353,6 @@ static FLOAT_t mikeinmux(
 			// источник - BT
 			moni->IV = vi0pairbt.IV;
 			moni->QV = vi0pairbt.QV;
-			voxmeasure(vi0pairbt);	// Поддержка работы VOX
 			return vi0pairbt.IV * txlevelXXX;
 
 		case BOARD_TXAUDIO_NOISE:
