@@ -8063,7 +8063,7 @@ void hightests(void)
 		unsigned core;
 		const uint_fast16_t int_id = SGI15_IRQn;
 		//PRINTF("IPC interrupts demo, GIC_GetARE()=%d\n", (int) GIC_GetARE());
-		PRINTF("IPC interrupts demo\n");
+		PRINTF("IPC interrupts demo start:\n");
 		arm_hardware_set_handler_system(int_id, sgitesthandler);
 		for (core = 0; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 		{

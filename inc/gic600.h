@@ -356,12 +356,6 @@ typedef struct
 
 #if defined (GIC_DISTRIBUTOR_BASE)
 
-__STATIC_FORCEINLINE void GIC_DistributorWait(void)
-{
-	while ((GICDistributor->GICD_CTLR & (UINT32_C(1) << GICD_CTLR_RWP_Pos)) != 0)
-		;
-}
-
 /** \brief  Enable the interrupt distributor using the GIC's CTLR register.
 */
 __STATIC_INLINE void GIC_EnableDistributor(void)
@@ -371,10 +365,8 @@ __STATIC_INLINE void GIC_EnableDistributor(void)
 	//    GIC_DistributorWait();
 	//GIC_WaitRWP(GICD_RWP);
 	GICDistributor->GICD_CTLR  = 0x77;
-	//GIC_WaitRWP(GICD_RWP);
-	GIC_DistributorWait();
-	//  GICDistributor->GICD_CTLR |= 1U;
-	GIC_DistributorWait();
+	while ((GICDistributor->GICD_CTLR & (UINT32_C(1) << GICD_CTLR_RWP_Pos)) != 0)
+		;
 }
 
 /** \brief Disable the interrupt distributor using the GIC's CTLR register.
@@ -386,7 +378,8 @@ __STATIC_INLINE void GIC_DisableDistributor(void)
 		  ~ (UINT32_C(1) << GICD_CTLR_EnableGrp1NS_Pos) &
 		  ~ (UINT32_C(1) << GICD_CTLR_EnableGrp0_Pos);
 
-  GIC_DistributorWait();
+	while ((GICDistributor->GICD_CTLR & (UINT32_C(1) << GICD_CTLR_RWP_Pos)) != 0)
+		;
 }
 
 /** \brief Read the GIC's TYPER register.
@@ -475,12 +468,12 @@ __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_EnableIRQ(IRQn_Type IRQn)
 {
-	GICDistributor->GICD_ISENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
-	GIC_DistributorWait();
 	if (IRQn < 32 && GIC_GetARE()) {
 		GICRedistributor_Type * const GICR = GIC_GetRdist();
 		//
 		GICR->SGI_PPI.GICR_ISENABLER0 = UINT32_C(1) << (IRQn % 32U);
+	} else {
+		GICDistributor->GICD_ISENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
 	}
 }
 
@@ -512,7 +505,6 @@ __STATIC_INLINE void GIC_DisableIRQ(IRQn_Type IRQn)
 	else
 	{
 		GICDistributor->GICD_ICENABLER[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
-		GIC_DistributorWait();
 	}
 }
 
@@ -1707,8 +1699,10 @@ __STATIC_INLINE void GIC_CPUInterfaceInit(void)
 //      GIC_SetConfiguration((IRQn_Type)i, 0U);
 //    }
     //Disable SGI and PPI interrupts
-    //GIC_DisableIRQ((IRQn_Type)i);	// с этим перестает работать SGI всем кроме себя, но начинает работать PPI
-    GIC_EnableIRQ((IRQn_Type)i);	// с этим работает и SGI и PPI
+	// +++++++++++++++++++++
+	//GIC_DisableIRQ((IRQn_Type)i);	// с этим перестает работать SGI всем кроме себя, но начинает работать PPI
+	GIC_EnableIRQ((IRQn_Type)i);	// с этим работает и SGI и перестает PPI
+	// -----------------------
     //Set priority
 //    GIC_SetPriority((IRQn_Type)i, priority_field/2U);
   }
