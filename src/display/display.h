@@ -649,7 +649,8 @@ pix_display_value_big(
 	uint_fast8_t withhalf,		// 0 - только большие цифры
 	const gxstyle_t * dbstyle,	/* foreground and background colors, text alignment */
 	const unifont_t * fontbig,
-	const unifont_t * fonthalf
+	const unifont_t * fonthalf,
+	char narrowSpace		// символ, отображающийся на месте погашенных точек при отображении. Шириной как точка
 	);
 
 void rendered_value_big_initialize(const gxstyle_t * gxstylep);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"

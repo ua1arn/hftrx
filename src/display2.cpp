@@ -2689,7 +2689,7 @@ display2_freq_big(
 	const gxstyle_t * dbstylep	/* foreground and background colors, text alignment */
 	)
 {
-	pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep, & unifont_big, & unifont_half);
+	pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep, & unifont_big, & unifont_half, '#');
 }
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
 static void
@@ -2710,7 +2710,7 @@ display2_freq_big_x075(
 	const gxstyle_t * dbstylep	/* foreground and background colors, text alignment */
 	)
 {
-	pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep, & unifont_big2, & unifont_half2);
+	pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, width, comma, comma2, rj, blinkpos, blinkstate, withhalf, dbstylep, & unifont_big2, & unifont_half2, '#');
 }
 
 // Отображение частоты. Герцы так же большим шрифтом.
@@ -2961,8 +2961,8 @@ static void display2_freqX_b(const gxdrawb_t * db,
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
 	pix_display_value_small(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, fullwidth, comma, comma + 3, rj, dbstylep);
-	//pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, fullwidth, comma, comma2, rj, 255, 0, 1, dbstylep, dbstylep->gfont, dbstylep->gfont);
-	//pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, fullwidth, comma, comma2, rj, 255, 0, 1, dbstylep, & unifont_big2, & unifont_half2);
+	//pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, fullwidth, comma, comma2, rj, 255, 0, 1, dbstylep, dbstylep->gfont, dbstylep->gfont, ' ');
+	//pix_display_value_big(db, GRID2X(xcell), GRID2Y(ycell), GRID2X(xspan), GRID2Y(yspan), freq, fullwidth, comma, comma2, rj, 255, 0, 1, dbstylep, & unifont_big2, & unifont_half2, '#');
 
 }
 
@@ -9470,7 +9470,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 
 		const uint_fast32_t freq = hamradio_get_freq_pathi(pathi);
 
-		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv, & unifont_big, & unifont_half);	// отрисовываем верхнюю часть строки
+		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqv, & unifont_big, & unifont_half, '#');	// отрисовываем верхнюю часть строки
 	}
 	else if (! strcmp(url.c_str(), dzi_gcombo.id))
 	{

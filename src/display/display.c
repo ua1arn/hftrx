@@ -420,7 +420,8 @@ pix_display_value_big(
 	uint_fast8_t withhalf,		// 0 - только большие цифры
 	const gxstyle_t * dbstyle,	/* foreground and background colors, text alignment */
 	const unifont_t * fontbig,
-	const unifont_t * fonthalf
+	const unifont_t * fonthalf,
+	char narrowSpace		// символ, отображающийся на месте погашенных точек при отображении. Шириной как точка
 	)
 {
 	const uint_fast16_t xpix0 = xpix;
@@ -440,7 +441,7 @@ pix_display_value_big(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = display_put_char_font(db, xpix, ypix, (z == 0) ? '.' : '#', dbstyle, fontbig);	// '#' - узкий пробел. Точка всегда узкая
+			xpix = display_put_char_font(db, xpix, ypix, (z == 0) ? '.' : narrowSpace, dbstyle, fontbig);	// narrowSpace - узкий пробел. Точка всегда узкая
 		}
 		else if (comma == g)
 		{
