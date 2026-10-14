@@ -3299,6 +3299,7 @@ static FLOAT_t mikeinmux(
 	const FLOAT32P_t vi0pairbt = getsampmlebt2();	// с BT (или 0, если ещё не запустился) */
 	FLOAT_t vi0fmike = vi0airpmike.IV;
 
+	voxmeasure(vi0airpmike);	// Поддержка работы VOX
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
@@ -3336,7 +3337,6 @@ static FLOAT_t mikeinmux(
 #endif /* WITHCOMPRESSOR */
 			moni->IV = vi0fmike;
 			moni->QV = vi0fmike;
-			voxmeasure(vi0airpmike);	// Поддержка работы VOX
 			return vi0fmike;
 
 		case BOARD_TXAUDIO_USB:

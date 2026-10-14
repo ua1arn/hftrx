@@ -6637,7 +6637,7 @@ enum
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 
-		static uint_fast8_t gvoxlevel = 10;	/* модифицируется через меню - усиление VOX */
+		static uint_fast8_t gvoxlevel = 5;	/* модифицируется через меню - усиление VOX */
 		static const struct paramdefdef xgvoxlevel =
 		{
 			QLABEL3("VOX LEVL", "VOX Level", "VOX LEVEL"),  0, RJ_UNSIGNED, ISTEP1,
@@ -6651,7 +6651,7 @@ enum
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 
-		static uint_fast8_t gavoxlevel = 50;	/* модифицируется через меню - усиление anti-VOX */
+		static uint_fast8_t gavoxlevel = 5;	/* модифицируется через меню - усиление anti-VOX */
 		static const struct paramdefdef xgavoxlevel =
 		{
 			QLABEL3("AVOX LEV", "A-VOX Level", "AVOX LEVEL"),  0, RJ_UNSIGNED, ISTEP1,
