@@ -625,8 +625,11 @@ __STATIC_INLINE void GIC_SetRedistPriority(IRQn_Type IRQn, uint32_t priority)
 __STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 {
 	if (IRQn < 32 && GIC_GetARE()) {
-		GIC_SetRedistPriority(IRQn, priority);
-	} else {
+		GICRedistributor_Type * const GICR = GIC_GetRdist();
+		//
+		const uint32_t mask = GICR->SGI_PPI.GICR_IPRIORITYR [IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
+		GICR->SGI_PPI.GICR_IPRIORITYR [IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
+} else {
 		uint32_t mask = GICDistributor->GICD_IPRIORITYR[IRQn / 4U] & ~ (UINT32_C(0xFF) << ((IRQn % 4U) * 8U));
 		GICDistributor->GICD_IPRIORITYR [IRQn / 4U] = mask | ((priority & UINT32_C(0xFF)) << ((IRQn % 4U) * 8U));
 	}
@@ -1181,7 +1184,7 @@ __STATIC_FORCEINLINE void __set_ICC_SGI1R_EL1(uint64_t value)
 __STATIC_INLINE void GIC_EnableInterface(void)
 {
 	__set_ICC_IGRPEN0_EL1(1);
-	__set_ICC_IGRPEN1_EL1(1);
+	//__set_ICC_IGRPEN1_EL1(1);
 }
 
 /** \brief Disable the CPU's interrupt interface.
@@ -1189,7 +1192,7 @@ __STATIC_INLINE void GIC_EnableInterface(void)
 __STATIC_INLINE void GIC_DisableInterface(void)
 {
 	__set_ICC_IGRPEN0_EL1(0);
-	__set_ICC_IGRPEN1_EL1(0);
+	//__set_ICC_IGRPEN1_EL1(0);
 }
 
 /** \brief Read the CPU's IAR register.
@@ -1345,7 +1348,7 @@ __STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t target_aff, uint16
     		//(target_aff & 0xFF) * (UINT64_C(1) << 32) |	/* aff2 */
     		(IRQn & 0xF) * (UINT64_C(1) << 24) | /* INTID */
     		(target_aff & 0xFF) * (UINT64_C(1) << 16) |	/* aff1 */
-			(tlist & 0xFF) * (UINT64_C(1) << 0) |
+			(tlist & 0xFFFF) * (UINT64_C(1) << 0) |
 		0;
 
     __DSB();
@@ -1598,18 +1601,23 @@ __STATIC_INLINE void GIC_RedistInit(void)
 	while (GICR->LPI.GICR_WAKER & (UINT32_C(1) << 2))
 		;
 
+	__set_ICC_SRE_EL3(__get_ICC_SRE_EL3() | 0x0F);	// Enable SRE (bit 0), Disable IRQ/FIQ Bypass (bits 1,2), Enable Enable (bit 3)
+	__set_ICC_SRE_EL1(__get_ICC_SRE_EL1() | 0x0F);	// Enable SRE (bit 0), Disable IRQ/FIQ Bypass (bits 1,2), Enable Enable (bit 3)
+//	__set_ICC_SRE_EL2(__get_ICC_SRE_EL2() | 0x0F);	// Enable SRE (bit 0), Disable IRQ/FIQ Bypass (bits 1,2), Enable Enable (bit 3)
 
-    //GICR->SGI_PPI.GICR_NSACR = 0x55555555;
+
+	//GICR->SGI_PPI.GICR_NSACR = 0x55555555;
 
 	for (unsigned i = 0; i < 32; i++)
 	{
 		//Disable the SPI interrupt
-		GIC_DisableIRQ((IRQn_Type) i);
+		GIC_EnableIRQ((IRQn_Type) i);		// без этого перестает работать SGI send to all, except self
+		//GIC_DisableIRQ((IRQn_Type) i);	// перестает работать SGI send to all, except self
 		//Set priority
-		GIC_SetRedistPriority((IRQn_Type) i, 0xFF);
+		//GIC_SetRedistPriority((IRQn_Type) i, 0xFF);
 	}
-	GICR->SGI_PPI.GICR_IGROUPR0 = 0*0xFFFFFFFF;	// bits 19..16 are zero
-	GICR->SGI_PPI.GICR_IGRPMODR0 = 0*0xFFFFFFFF;	// bits 19..16 are zero
+//	GICR->SGI_PPI.GICR_IGROUPR0 = 0*0xFFFFFFFF;	// bits 19..16 are zero
+//	GICR->SGI_PPI.GICR_IGRPMODR0 = 0*0xFFFFFFFF;	// bits 19..16 are zero
 }
 #endif /* GIC_REDISTRIBUTOR_BASE */
 
@@ -1620,8 +1628,8 @@ __STATIC_INLINE void GIC_DistInit(void)
 {
   uint32_t i;
   uint32_t num_irq = 0U;
-  uint32_t priority_field;
-  uint32_t ppi_priority;
+//  uint32_t priority_field;
+//  uint32_t ppi_priority;
 
   //A reset sets all bits in the IGROUPRs corresponding to the SPIs to 0,
   //configuring all of the interrupts as Secure.
@@ -1629,28 +1637,28 @@ __STATIC_INLINE void GIC_DistInit(void)
   //Disable interrupt forwarding
   GIC_DisableDistributor();
   //Get the maximum number of interrupts that the GIC supports
-  num_irq = 32U * ((GIC_DistributorInfo() & 0x1FU) + 1U);
-
-  /* Priority level is implementation defined.
-   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
-   priority field and read back the value stored.
-   Use PPI, as it is always accessible, even for a Guest OS using a hypervisor.
-   Then restore the initial state.*/
-    ppi_priority = GIC_GetPriority((IRQn_Type)31U);
-    GIC_SetPriority((IRQn_Type)31U, 0xFFU);
-    priority_field = GIC_GetPriority((IRQn_Type)31U);
-    GIC_SetPriority((IRQn_Type)31U, ppi_priority);
-
+//  num_irq = 32U * ((GIC_DistributorInfo() & 0x1FU) + 1U);
+//
+//  /* Priority level is implementation defined.
+//   To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
+//   priority field and read back the value stored.
+//   Use PPI, as it is always accessible, even for a Guest OS using a hypervisor.
+//   Then restore the initial state.*/
+//    ppi_priority = GIC_GetPriority((IRQn_Type)31U);
+//    GIC_SetPriority((IRQn_Type)31U, 0xFFU);
+//    priority_field = GIC_GetPriority((IRQn_Type)31U);
+//    GIC_SetPriority((IRQn_Type)31U, ppi_priority);
+//
   for (i = 32U; i < num_irq; i++)
   {
       //Disable the SPI interrupt
-      GIC_DisableIRQ((IRQn_Type)i);
+      //GIC_EnableIRQ((IRQn_Type)i);
       //Set level-sensitive (and N-N model)
-      GIC_SetConfiguration((IRQn_Type)i, 0U);
+      //GIC_SetConfiguration((IRQn_Type)i, 0U);
       //Set priority
-      GIC_SetPriority((IRQn_Type)i, priority_field/2U);
+      //GIC_SetPriority((IRQn_Type)i, priority_field/2U);
       //Set target list to CPU0
-      GIC_SetTarget((IRQn_Type)i, 1U);
+      //GIC_SetTarget((IRQn_Type)i, 1U);
   }
 
     //Enable distributor
@@ -1677,7 +1685,7 @@ __STATIC_INLINE void GIC_DistInit(void)
 __STATIC_INLINE void GIC_CPUInterfaceInit(void)
 {
   uint32_t i;
-  uint32_t priority_field;
+//  uint32_t priority_field;
 
   //A reset sets all bits in the IGROUPRs corresponding to the SPIs to 0,
   //configuring all of the interrupts as Secure.
@@ -1688,20 +1696,21 @@ __STATIC_INLINE void GIC_CPUInterfaceInit(void)
   /* Priority level is implementation defined.
    To determine the number of priority bits implemented write 0xFF to an IPRIORITYR
    priority field and read back the value stored.*/
-  GIC_SetPriority((IRQn_Type)0U, 0xFFU);
-  priority_field = GIC_GetPriority((IRQn_Type)0U);
+//  GIC_SetPriority((IRQn_Type)0U, 0xFFU);
+//  priority_field = GIC_GetPriority((IRQn_Type)0U);
 
   //SGI and PPI
   for (i = 0U; i < 32U; i++)
   {
-    if(i > 15U) {
-      //Set level-sensitive (and N-N model) for PPI
-      GIC_SetConfiguration((IRQn_Type)i, 0U);
-    }
+//    if(i > 15U) {
+//      //Set level-sensitive (and N-N model) for PPI
+//      GIC_SetConfiguration((IRQn_Type)i, 0U);
+//    }
     //Disable SGI and PPI interrupts
-    GIC_DisableIRQ((IRQn_Type)i);
+    //GIC_DisableIRQ((IRQn_Type)i);	// с этим перестает работать SGI всем кроме себя, но начинает работать PPI
+    GIC_EnableIRQ((IRQn_Type)i);	// с этим работает и SGI и PPI
     //Set priority
-    GIC_SetPriority((IRQn_Type)i, priority_field/2U);
+//    GIC_SetPriority((IRQn_Type)i, priority_field/2U);
   }
   //Enable interface
   GIC_EnableInterface();
