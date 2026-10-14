@@ -8067,7 +8067,7 @@ void hightests(void)
 		arm_hardware_set_handler_system(int_id, sgitesthandler);
 		for (core = 0; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 		{
-			PRINTF("IPC interrupts demo - core%u\n", core);
+			PRINTF("IPC interrupts demo - core%u: ", core);
 			GIC_SendSGI(int_id, UINT32_C(1) << core, 0x00);	// specified core
 			local_delay_ms(250);
 			GIC_SendSGI(int_id, UINT32_C(1) << core, 0x00);	// specified core
@@ -8075,7 +8075,7 @@ void hightests(void)
 			PRINTF(" - IPC interrupts demo - core%u done\n", core);
 		}
 		arm_hardware_disable_handler(int_id);
-		PRINTF("IPC interrupts demo: send all together, except self:\n");
+		PRINTF("IPC interrupts demo: send all together, except self: ");
 		GIC_SendSGI(int_id, 0, 0x01);	// other cores, except self
 		local_delay_ms(250);
 		PRINTF(" - IPC interrupts demo done\n");
