@@ -3713,10 +3713,10 @@ static void arm_hardware_gicsfetch(void)
 	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
 		GIC_SetPriority((IRQn_Type) int_id, gicshadow_prio [int_id]);	// non-atomic operation
-//		if (gicshadow_enab [int_id])
-//			GIC_EnableIRQ((IRQn_Type) int_id);	// atomic operation
-//		else
-//			GIC_DisableIRQ((IRQn_Type) int_id);	// atomic operation
+		if (gicshadow_enab [int_id])
+			GIC_EnableIRQ((IRQn_Type) int_id);	// atomic operation
+		else
+			GIC_DisableIRQ((IRQn_Type) int_id);	// atomic operation
 	}
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 }
@@ -3731,7 +3731,7 @@ static void arm_hardware_populate(int int_ida)
 	//gicshadow_target [int_id] = targetcpu;
 	//gicshadow_config [int_id] = GIC_GetConfiguration(int_id);
 	gicshadow_prio [int_id] = GIC_GetPriority(int_id);
-	gicshadow_enab [int_id] = GIC_GetEnableIRQ(int_id);
+	gicshadow_enab [int_id] = 1;	// раз вызвана эта функция - данное прерывание точно разрашается
 
 	// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
 	// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
@@ -3839,11 +3839,11 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 
-	#if WITHSMPSYSTEM
-		arm_hardware_populate(int_id);	// populate for other CPUs
-	#endif /* WITHSMPSYSTEM */
-
 	VERIFY(IRQ_Enable(int_id) == 0);
+
+#if WITHSMPSYSTEM
+	arm_hardware_populate(int_id);	// populate for other CPUs
+#endif /* WITHSMPSYSTEM */
 
 #elif CPUSTYLE_RISCV
 
