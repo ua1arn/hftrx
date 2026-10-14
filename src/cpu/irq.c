@@ -3713,10 +3713,10 @@ static void arm_hardware_gicsfetch(void)
 	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
 		GIC_SetPriority((IRQn_Type) int_id, gicshadow_prio [int_id]);	// non-atomic operation
-		if (gicshadow_enab [int_id])
-			GIC_EnableIRQ((IRQn_Type) int_id);	// atomic operation
-		else
-			GIC_DisableIRQ((IRQn_Type) int_id);	// atomic operation
+//		if (gicshadow_enab [int_id])
+//			GIC_EnableIRQ((IRQn_Type) int_id);	// atomic operation
+//		else
+//			GIC_DisableIRQ((IRQn_Type) int_id);	// atomic operation
 	}
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 }
