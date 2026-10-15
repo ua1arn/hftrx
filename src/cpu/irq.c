@@ -1997,7 +1997,7 @@ typedef struct thread_item_tag
 	exception_frame_t * cpuframe;	// cpu state
 	void * allocated;
 	IRQL_t irql;
-	unsigned uprio;
+	//unsigned uprio;
 	const check_ready_t * check_ready;
 	volatile void * check_ready_obj;
 	const char * name;
@@ -2062,7 +2062,7 @@ static int task_idle(void * ctx)
 {
 	for (;;)
 	{
-		task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+		thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	}
 	return 0;
 }
@@ -2072,11 +2072,11 @@ static thread_item_t base_threads [HARDWARE_NCORES];	// состояния по�
 static thread_item_t * startedtask [HARDWARE_NCORES];
 
 static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
-static LIST_ENTRY threads_list [UPRIO_count];
+//static LIST_ENTRY threads_list [UPRIO_count];
+static LIST_ENTRY threads_list [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
 
-static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, unsigned uprio, unsigned irql, const char * name)
+static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, unsigned unused_uprio, unsigned irql, const char * name)
 {
-	ASSERT(ARRAY_SIZE(threads_list) > uprio);
 	thread->affinity = affinity;
 	thread->allocated = aligned_alloc(DCACHEROWSIZE, ramsize);
 	//thread->allocated = malloc(IDLETASKRAM_SIZE);
@@ -2089,13 +2089,13 @@ static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn
 	context_init(stackframe, fn, ctx);
 	thread->cpuframe = stackframe;
 	thread->irql = irql;
-	thread->uprio = uprio;
+	//thread->uprio = uprio;
 	thread->guard = thread;	// debug signature
 	thread->check_ready = NULL;
 	thread->name = name;
 
 	// включаем в список задач
-	InsertTailList(& threads_list [uprio], & thread->item);
+	InsertTailList(& threads_list [GICI_DECODE_IRQL(irql)], & thread->item);
 
 	//PRINTF("Added thread at uprio=%u, irql=%d, affinity=%02X (frame=%p), stack[%p..%p]\n", uprio, irql, affinity, stackframe, stackframe, (void *) top);
 }
@@ -2151,10 +2151,6 @@ void task_scheduler_start(void)
 	threads_not_started = 0;
 }
 
-void task_ticker(void)
-{
-}
-
 // проверка условий отдачи управления задаче
 // Если нашли - ставим error code
 static int task_isready(thread_item_t * tp, uint_fast32_t tn)
@@ -2179,13 +2175,14 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 	ASSERT(affinity);
 	const uint_fast32_t tn = sys_now();
 	// Возвращаем в список задач
-	InsertTailList(& threads_list [taskin->uprio], & taskin->item);
-	unsigned uprio = taskin->uprio;
+	InsertTailList(& threads_list [GICI_DECODE_IRQL(taskin->irql)], & taskin->item);
+	//unsigned uprio = taskin->uprio;
 	//for (;;)
 	{
-		PRLIST_ENTRY const list = & threads_list [uprio];
+		PRLIST_ENTRY const list = & threads_list [GICI_DECODE_IRQL(taskin->irql)];
 		PRLIST_ENTRY t;
 		PRLIST_ENTRY tnext;
+		ASSERT(! IsListEmpty(list));
 		for (t = list->Flink; t != list; t = tnext)
 		{
 			tnext = t->Flink;
@@ -2200,7 +2197,6 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 		}
 	}
 	RemoveEntryList(& taskin->item);
-
 	if (taskin->check_ready)
 	{
 		tasks_print();
@@ -2211,7 +2207,7 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 
 static void thread_print(const thread_item_t * const tp)
 {
-	PRINTF("    task %p: name='%s', uprio=%u. irql=%u (prio=%u), affinity=%08X ", tp, tp->name, tp->uprio, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity);
+	PRINTF("    task %p: name='%s', irql=%u (prio=%u), affinity=%08X ", tp, tp->name, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity);
 	if (tp->check_ready)
 	{
 		ASSERT(tp->check_ready->print);
@@ -2223,7 +2219,7 @@ static void thread_print(const thread_item_t * const tp)
 
 void tasks_print(void)
 {
-	unsigned uprio;
+	unsigned irql;
 	unsigned core;
 	PRINTF("tasks_print: base\n");
 	for (core = 0; core < ARRAY_SIZE(base_threads); ++ core)
@@ -2241,12 +2237,12 @@ void tasks_print(void)
 		thread_print(startedtask [core]);
 	}
 	PRINTF("tasks_print: lists\n");
-	for (uprio = 0; uprio < ARRAY_SIZE(threads_list); ++ uprio)
+	for (irql = 0; irql < ARRAY_SIZE(threads_list); ++ irql)
 	{
-		PRLIST_ENTRY const list = & threads_list [uprio];
+		PRLIST_ENTRY const list = & threads_list [irql];
 		if (IsListEmpty(list))
 			continue;
-		PRINTF("tasks_print: uprio=%u\n", uprio);
+		PRINTF("tasks_print: irql=%u\n", irql);
 		PRLIST_ENTRY t;
 		PRLIST_ENTRY tnext;
 		for (t = list->Flink; t != list; t = tnext)
@@ -2486,7 +2482,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		thread->guard = thread;
 		thread->allocated = NULL;
 		thread->check_ready = NULL;
-		thread->uprio = UPRIO_USER;
+		//thread->uprio = UPRIO_USER;
 		thread->name = "default";
 		//
 		// получаем состояние процесора при первом перрывании
@@ -2495,6 +2491,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 
 		//PRINTF("task_scheduler0: add default %p, flag=%u, core=%u, irql=%u\n", thread, flag, core, irql);
 	}
+	ASSERT(startedtask [core]);
 	startedtask [core]->irql = irql;
 	startedtask [core]->cpuframe = oldframe;
 	if (flag)
@@ -2502,7 +2499,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		task_svc(startedtask [core], code, oldframe);
 	}
 	// смена текущего потока на данном ядре
-	startedtask [core] = task_getready(1U << core, startedtask [core]);
+	startedtask [core] = task_getready(UINT32_C(1) << core, startedtask [core]);
 	IRQLSPIN_UNLOCK(& threadslock, startedtask [core]->irql);
 	return startedtask [core]->cpuframe;
 }
@@ -2518,7 +2515,7 @@ static void * task_scheduler(void * oldframe)
 }
 
 // хотим завершить выполнение кванта, не дожидаясь прерывания
-void task_yield(void)
+void thread_yield(void)
 {
 	const uint_fast8_t coreid = board_dpc_coreid();
 	if (coreid >= 6)
@@ -2535,11 +2532,17 @@ void local_delay_ms(uint_fast32_t timeMS)
 	if (threads_not_started || 1)
 	{
 
+#if ! WITHONETIMESTAMP
+	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
+#endif /* ! WITHONETIMESTAMP */
 		const hwtimcountfast_t t0 = cpu_gethwtimticks();
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) GIC_GetInterfacePriorityMask());
 		while (cpu_gethwtimdelta(t0) < td)
-			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+#if ! WITHONETIMESTAMP
+	thread_set_affinity(affinity);	// lock thread core
+#endif /* ! WITHONETIMESTAMP */
 	}
 	else
 	{
@@ -2561,14 +2564,25 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 		return 0;
 	if (threads_not_started || 1)
 	{
+#if ! WITHONETIMESTAMP
+	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
+#endif /* ! WITHONETIMESTAMP */
 		const hwtimcountfast_t t0 = cpu_gethwtimticks();
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
+			{
+#if ! WITHONETIMESTAMP
+				thread_set_affinity(affinity);	// lock thread core
+#endif /* ! WITHONETIMESTAMP */
 				return 0;
-			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+			}
+			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 		} while (cpu_gethwtimdelta(t0) < td);
+#if ! WITHONETIMESTAMP
+	thread_set_affinity(affinity);	// lock thread core
+#endif /* ! WITHONETIMESTAMP */
 		return 1;
 	}
 	else
@@ -2593,14 +2607,25 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		return 0;
 	if (threads_not_started || 1)
 	{
+#if ! WITHONETIMESTAMP
+	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
+#endif /* ! WITHONETIMESTAMP */
 		const hwtimcountfast_t t0 = cpu_gethwtimticks();
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
+			{
+#if ! WITHONETIMESTAMP
+				thread_set_affinity(affinity);	// lock thread core
+#endif /* ! WITHONETIMESTAMP */
 				return 0;
-			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+			}
+			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 		} while (cpu_gethwtimdelta(t0) < td);
+#if ! WITHONETIMESTAMP
+	thread_set_affinity(affinity);	// lock thread core
+#endif /* ! WITHONETIMESTAMP */
 		return 1;
 	}
 	else
@@ -2635,11 +2660,17 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 				LCLSPIN_UNLOCK(lock);
 				if (! f)
 				{
+#if ! WITHONETIMESTAMP
+					thread_set_affinity(affinity);	// lock thread core
+#endif /* ! WITHONETIMESTAMP */
 					return 0;	// дождались
 				}
 			}
-			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 		} while (cpu_gethwtimdelta(t0) < td);
+#if ! WITHONETIMESTAMP
+		thread_set_affinity(affinity);	// lock thread core
+#endif /* ! WITHONETIMESTAMP */
 		return 1;	// Завепшение по таймауту
 	}
 	else
@@ -2655,9 +2686,9 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 }
 
 // Set thread affinity - return old value
-unsigned task_set_affinity(unsigned affinity)
+unsigned thread_set_affinity(unsigned affinity)
 {
-	if (threads_not_started || 1)
+	if (threads_not_started)
 	{
 		return 1U << arm_hardware_cpuid();
 	}
@@ -2701,7 +2732,6 @@ void task_scheduler_initialize(void)
 }
 
 void task_scheduler_start(void) {}
-void task_ticker(void) {}
 
 void __NO_RETURN task_scheduler_othercores(void)
 {
@@ -2744,7 +2774,7 @@ void tasks_print(void)
 }
 
 // хотим завершить выполнение кванта, не дожидаясь прерывания
-void task_yield(void)
+void thread_yield(void)
 {
 }
 
@@ -2756,7 +2786,7 @@ void local_delay_ms(uint_fast32_t timeMS)
     const hwtimcountfast_t t0 = cpu_gethwtimticks();
     const hwtimcountfast_t td = get_td_ms(timeMS);
     while (cpu_gethwtimdelta(t0) < td)
-    	task_yield();
+    	thread_yield();
 }
 
 
@@ -2771,7 +2801,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 		const uint_fast8_t f = * flag & mask;
 		if (f == state)
 			return 0;
-    	task_yield();
+    	thread_yield();
 	} while (cpu_gethwtimdelta(t0) < td);
 	return 1;
 }
@@ -2790,7 +2820,7 @@ int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast
 			return 0;
 		if (f == errstate)
 			return 1;
-    	task_yield();
+    	thread_yield();
 	} while (cpu_gethwtimdelta(t0) < td);
 	return 1;
 }
@@ -2809,7 +2839,7 @@ int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_f
 			return 0;
 		if (f == errstate)
 			return 1;
-    	task_yield();
+    	thread_yield();
 	} while (cpu_gethwtimdelta(t0) < td);
 	return 1;
 }
@@ -2826,7 +2856,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		const uint_fast32_t f = * flag & mask;
 		if (f == state)
 			return 0;
-    	task_yield();
+    	thread_yield();
 	} while (cpu_gethwtimdelta(t0) < td);
 	return 1;
 }
@@ -2849,14 +2879,14 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 				return 0;	// дождались
 			}
 		}
-    	task_yield();
+    	thread_yield();
 	} while (cpu_gethwtimdelta(t0) < td);
 	return 1;	// Завепшение по таймауту
 }
 
 
 // Set thread affinity - return old value
-unsigned task_set_affinity(unsigned affinity)
+unsigned thread_set_affinity(unsigned affinity)
 {
 	return 0;
 }
@@ -2999,14 +3029,14 @@ void local_delay_us(uint_fast32_t timeUS)
 	if (timeUS == 0)
 		return;
 #if ! WITHONETIMESTAMP
-	const unsigned affinity = task_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
+	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
 #endif /* ! WITHONETIMESTAMP */
 	const hwtimcountfast_t t0 = cpu_gethwtimticks();	// Счетчик увеличивается с частотой процессора
 	const hwtimcountfast_t td = get_td_us(timeUS);
 	while (cpu_gethwtimdelta(t0) < td)
 		;
 #if ! WITHONETIMESTAMP
-	task_set_affinity(affinity);
+	thread_set_affinity(affinity);
 #endif /* ! WITHONETIMESTAMP */
 }
 
@@ -4197,7 +4227,7 @@ void board_dpc_processing(void)
 	ASSERT(coreid < HARDWARE_NCORES);
 	ASSERT(dpc == dpc->tag1);
 	ASSERT(dpc == dpc->tag2);
-	task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+	thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	// Выполнение периодического вызова user-mode функций по списку
 	//if (coreid == 1) dbg_putchar('+');
 	{

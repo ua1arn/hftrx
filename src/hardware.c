@@ -497,7 +497,6 @@ void spool_systimerbundle(void)
 
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
 	tickers_event();
-	task_ticker();
 }
 
 #if WITHCPUADCHW

@@ -922,22 +922,22 @@ extern "C" {
 
 enum
 {
-	UPRIO_REALTIME,
+//	UPRIO_REALTIME,
 	UPRIO_USER,
-	UPRIO_IDLE,
+//	UPRIO_IDLE,
 	//
 	UPRIO_count
 };
 
-#define TASK_AFFINITY_ALL (~0U)
+#define TASK_AFFINITY_ALL (UINT_MAX)
 void task_scheduler_initialize(void);
 void task_scheduler_start(void);
-void task_ticker(void);
 void __NO_RETURN task_scheduler_othercores(void);
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name);
-void task_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 void tasks_print(void);
-unsigned task_set_affinity(unsigned affinity);	// Set thread affinity - return old value
+
+unsigned thread_set_affinity(unsigned affinity);	// Set thread affinity - return old value
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name);
+void thread_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 
 
 #define LOCAL_WAITINFINITY UINT32_MAX
