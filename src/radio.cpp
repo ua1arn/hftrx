@@ -23416,7 +23416,7 @@ application_initialize(void)
 
 #if defined (BOARD_BLINK_SETSTATE)
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t blinktaskram [8192];
-	if (thread_create_user(TASK_AFFINITY_ALL, blinktest2, NULL, blinktaskram, sizeof blinktaskram, "blinktest2"))
+	if (thread_create_user(TASK_AFFINITY_ALL, blinktest2, NULL, blinktaskram, sizeof blinktaskram, "blinktest2") == NULL)
 	{
 #if WITHISBOOTLOADER
 	const unsigned thalf = 100;	// Toggle every 100 ms
