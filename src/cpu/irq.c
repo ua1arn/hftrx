@@ -1978,16 +1978,6 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 
 static volatile uint8_t threads_not_started = 1;
 
-hwtimcountfast_t get_td_us(uint_fast32_t timeUS)
-{
-	return timeUS * (cpu_gethwtimticksfreq() / (1000 * 1000));
-}
-
-hwtimcountfast_t get_td_ms(uint_fast32_t timeMS)
-{
-	return timeMS * (cpu_gethwtimticksfreq() / 1000);
-}
-
 // WITHRTOS
 #if 0
 
@@ -2547,7 +2537,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 		const hwtimcountfast_t t0 = cpu_gethwtimticks();
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) GIC_GetInterfacePriorityMask());
-		while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td)
+		while (cpu_gethwtimdelta(t0) < td)
 			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	}
 	else
@@ -2577,7 +2567,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 			if (((* flag & mask) == state))
 				return 0;
 			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td);
+		} while (cpu_gethwtimdelta(t0) < td);
 		return 1;
 	}
 	else
@@ -2609,7 +2599,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 			if (((* flag & mask) == state))
 				return 0;
 			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td);
+		} while (cpu_gethwtimdelta(t0) < td);
 		return 1;
 	}
 	else
@@ -2648,7 +2638,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 				}
 			}
 			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td);
+		} while (cpu_gethwtimdelta(t0) < td);
 		return 1;	// Завепшение по таймауту
 	}
 	else
@@ -2683,7 +2673,22 @@ unsigned task_set_affinity(unsigned affinity)
 
 // Non-linux, non-scheduler
 
-void task_scheduler_initialize(void) {}
+static LIST_ENTRY lztaskslist;
+static LIST_ENTRY lzthreads_list [HARDWARE_NCORES];
+static LCLSPINLOCK_t lzlock;
+//static thread_item_t lzbase_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
+//static thread_item_t * lzstartedtask [HARDWARE_NCORES];
+
+void task_scheduler_initialize(void)
+{
+	unsigned i;
+	IRQLSPINLOCK_INITIALIZE(& lzlock);
+	for (i = 0; i < ARRAY_SIZE(lzthreads_list); ++ i)
+	{
+		InitializeListHead(& lzthreads_list [i]);
+	}
+}
+
 void task_scheduler_start(void) {}
 void task_ticker(void) {}
 
@@ -2701,31 +2706,35 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 	return NULL;
 }
 
-/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
-static void * task_scheduler(void * oldframe)
+static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
 {
-//	if (arm_hardware_cpuid() >= 1)
-//	{
-//		PRINTF("core%d:\n", (int) arm_hardware_cpuid());
-//		printhex64(0, oldframe, context_size());
-//		for (;;)
-//			;
-//	}
+}
+
+/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
+static void *
+task_scheduler0(exception_frame_t * oldframe, unsigned svcflag, unsigned code)
+{
 	return oldframe;
 }
 
 static void * task_scheduler2(unsigned code, void * oldframe)
 {
-	return oldframe;
+	return task_scheduler0((exception_frame_t *) oldframe, 1, code);
 }
 
-static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
+static void * task_scheduler(void * oldframe)
 {
-
+	return task_scheduler0((exception_frame_t *) oldframe, 0, 0);
 }
+
 void tasks_print(void)
 {
 
+}
+
+// хотим завершить выполнение кванта, не дожидаясь прерывания
+void task_yield(void)
+{
 }
 
 void local_delay_ms(uint_fast32_t timeMS)
@@ -2735,8 +2744,8 @@ void local_delay_ms(uint_fast32_t timeMS)
 
     const hwtimcountfast_t t0 = cpu_gethwtimticks();
     const hwtimcountfast_t td = get_td_ms(timeMS);
-    while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td)
-    	;
+    while (cpu_gethwtimdelta(t0) < td)
+    	task_yield();
 }
 
 
@@ -2751,7 +2760,8 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 		const uint_fast8_t f = * flag & mask;
 		if (f == state)
 			return 0;
-	} while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td);
+    	task_yield();
+	} while (cpu_gethwtimdelta(t0) < td);
 	return 1;
 }
 
@@ -2769,7 +2779,8 @@ int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast
 			return 0;
 		if (f == errstate)
 			return 1;
-	} while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td);
+    	task_yield();
+	} while (cpu_gethwtimdelta(t0) < td);
 	return 1;
 }
 
@@ -2787,7 +2798,8 @@ int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_f
 			return 0;
 		if (f == errstate)
 			return 1;
-	} while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td);
+    	task_yield();
+	} while (cpu_gethwtimdelta(t0) < td);
 	return 1;
 }
 
@@ -2803,7 +2815,8 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		const uint_fast32_t f = * flag & mask;
 		if (f == state)
 			return 0;
-	} while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td);
+    	task_yield();
+	} while (cpu_gethwtimdelta(t0) < td);
 	return 1;
 }
 
@@ -2825,12 +2838,9 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 				return 0;	// дождались
 			}
 		}
-	} while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td);
+    	task_yield();
+	} while (cpu_gethwtimdelta(t0) < td);
 	return 1;	// Завепшение по таймауту
-}
-// хотим завершить выполнение кванта, не дожидаясь прерывания
-void task_yield(void)
-{
 }
 
 
@@ -2982,7 +2992,7 @@ void local_delay_us(uint_fast32_t timeUS)
 #endif /* ! WITHONETIMESTAMP */
 	const hwtimcountfast_t t0 = cpu_gethwtimticks();	// Счетчик увеличивается с частотой процессора
 	const hwtimcountfast_t td = get_td_us(timeUS);
-	while ((cpu_gethwtimticksmask() & (cpu_gethwtimticks() - t0)) < td)
+	while (cpu_gethwtimdelta(t0) < td)
 		;
 #if ! WITHONETIMESTAMP
 	task_set_affinity(affinity);

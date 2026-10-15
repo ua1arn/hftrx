@@ -410,7 +410,17 @@ hwtimcountfast_t timestamp_getticks(void);
 hwtimcountfast_t timestamp_getmask(void);
 hwtimcountfast_t timestamp_getfreq(void);
 
-// cpu_gethwtimticksfreq() based times
+//	Функции для программных ожиданий
+//	const hwtimcountfast_t t0 = cpu_gethwtimdelta(0);
+//	const hwtimcountfast_t dt = get_td_ms(100);	// количество тактов до срабатывания
+//	do {
+//		val = hdmi_read(hdmi, HDMI_PHY_STAT0);
+//		if (!(val & HDMI_PHY_TX_PHY_LOCK))
+//			return 0;
+//
+//	} while (cpu_gethwtimdelta(t0) < dt);
+
+hwtimcountfast_t cpu_gethwtimdelta(hwtimcountfast_t start);	// получение интервала, прошедшего с момента start
 hwtimcountfast_t get_td_us(uint_fast32_t timeUS);
 hwtimcountfast_t get_td_ms(uint_fast32_t timeMS);
 

@@ -7964,6 +7964,24 @@ void hightests(void)
 #endif
 #if 0
 	{
+		PRINTF("cpu_gethwtimdelta() test started\n");
+		// Hardware timers test
+		unsigned i;
+		for (i = 0; i < 10; ++ i)
+		{
+			//	Функции для программных ожиданий
+			const hwtimcountfast_t t0 = cpu_gethwtimdelta(0);
+			const hwtimcountfast_t dt = get_td_ms(1000);	// количество тактов до срабатывания
+			do {
+				// проверяем что-то...
+			} while (cpu_gethwtimdelta(t0) < dt);
+			PRINTF("Time elapsad...\n");
+		}
+		PRINTF("cpu_gethwtimdelta() test done\n");
+	}
+#endif
+#if 0
+	{
 		// Functional encoders test
 		for (;;)
 		{

@@ -13109,6 +13109,22 @@ hwtimcountfast_t cpu_gethwtimticksmask(void)
 #endif
 }
 
+hwtimcountfast_t get_td_us(uint_fast32_t timeUS)
+{
+	return timeUS * (cpu_gethwtimticksfreq() / (1000 * 1000));
+}
+
+hwtimcountfast_t get_td_ms(uint_fast32_t timeMS)
+{
+	return timeMS * (cpu_gethwtimticksfreq() / 1000);
+}
+
+// получение интервала, прошедшего с момента start
+hwtimcountfast_t cpu_gethwtimdelta(hwtimcountfast_t start)
+{
+	return cpu_gethwtimticksmask() & (cpu_gethwtimticks() - start);
+}
+
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 void
 sysinit_perfmeter_initialize(void)
