@@ -1643,7 +1643,7 @@ static void dsphftrxproc_spool_user(void * ctx)
 
 	while (voice32rx.get_readybuffer(& dest))
 	{
-		process_dmabuffer32rx((hfrxpath_t *) ctx, dest->buff);
+		process_dmabuffer32rx(dest->buff);
 		voice32rx.release_buffer(dest);
 		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 	}
@@ -1651,12 +1651,13 @@ static void dsphftrxproc_spool_user(void * ctx)
 
 static int dsphftrxproc_spool_user_thread(void * ctx)
 {
+	(void) ctx;
 	voice32rx_t * dest;
 	for (;;)
 	{
 		if (voice32rx.get_readybuffer(& dest, LOCAL_WAITINFINITY) == false)
 			continue;
-		process_dmabuffer32rx((hfrxpath_t *) ctx, dest->buff);
+		process_dmabuffer32rx(dest->buff);
 		voice32rx.release_buffer(dest);
 		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 	}
@@ -3670,7 +3671,7 @@ static void savetestadc(IFADCvalue_t v0, IFADCvalue_t v1)
 }
 #endif /* WITHDEBUG && WITHFPGAPIPE_CODEC1 */
 
-void process_dmabuffer32rx(hfrxpath_t * path_unused, const IFADCvalue_t * buff)
+void process_dmabuffer32rx(const IFADCvalue_t * buff)
 {
 	unsigned i;
 #if WITHFPGAPIPE_FPGASTATUS
@@ -4562,7 +4563,7 @@ void buffers_start(void)
 	#warning rx process in spool
 	// работа на всех ядрах, кроме нулевого
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
-	if (thread_create_user(TASK_AFFINITY_ALL, dsphftrxproc_spool_user_thread, hftrx_rxgetpathA(), procthread, sizeof procthread, "dsphftrxproc_spool_user_thread") == NULL)
+	if (thread_create_user(TASK_AFFINITY_ALL, dsphftrxproc_spool_user_thread, NULL, procthread, sizeof procthread, "dsphftrxproc_spool_user_thread") == NULL)
 	{
 		static dpcobj_t dsphftrxproc_spool_dpc;
 		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, hftrx_rxgetpathA());

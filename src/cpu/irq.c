@@ -1845,7 +1845,7 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 	f->r0 = (uintptr_t) arg;
 }
 
-// scheduler-mode entry
+// scheduler-mode entry - set svc exit code
 static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 {
 	exception_frame_t * const f = cpuframe;
@@ -1888,7 +1888,7 @@ typedef struct exception_frame_tag
 } exception_frame_t;
 
 
-// scheduler-mode entry
+// scheduler-mode entry - set svc exit code
 static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 {
 	exception_frame_t * const f = cpuframe;
@@ -1930,7 +1930,7 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 {
 }
 
-#elif __riscv
+#elif __riscv && __riscv_xlen==64
 	#warning unsupported context switch on this CPU
 
 typedef struct exception_frame_tag
@@ -1939,6 +1939,7 @@ typedef struct exception_frame_tag
 	uint64_t xx [32];
 } exception_frame_t;
 
+// scheduler-mode entry - set svc exit code
 static void context_set_ec(void * __restrict cpuframe, unsigned ec)
 {
 	exception_frame_t * const f = cpuframe;
@@ -1980,7 +1981,7 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 }
 
 #else
-	#warning unsupported context switch on this CPU
+	#error unsupported context switch on this CPU
 #endif
 
 static volatile uint8_t threads_not_started = 1;
@@ -2104,7 +2105,7 @@ static void thread_add(thread_item_t * const thread, unsigned affinity,
 	InsertTailList(& threads_list [prio], & thread->item);
 	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
 
-	//PRINTF("Added thread at uprio=%u, irql=%d, affinity=%02X (frame=%p), stack[%p..%p]\n", uprio, irql, affinity, stackframe, stackframe, (void *) top);
+	//PRINTF("Added thread at prio=%d, affinity=%02X (frame=%p), stack[%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
 }
 
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, const char * name)
@@ -2112,6 +2113,7 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 	if (threads_not_started)
 	{
 		PRINTF("Wrong call of thread_create_user: '%s'\n", name);
+		return NULL;
 	}
 	ASSERT(threads_not_started == 0);
 	thread_item_t * const thread = (thread_item_t *) rambase;
@@ -2145,13 +2147,6 @@ void task_scheduler_initialize(void)
 		{
 			void * allocated = aligned_alloc(DCACHEROWSIZE, IDLETASKRAM_SIZE);
 			thread_add(& idle_threads [core], 1U << core, task_idle, NULL, allocated, IDLETASKRAM_SIZE, PRIOv_IDLE, "idle");
-//			unsigned priov;
-//			for (priov = 0; priov < PRIOv_count; ++ priov)
-//			{
-//				void * allocated = aligned_alloc(DCACHEROWSIZE, IDLETASKRAM_SIZE);
-//				thread_item_t * const thread = & idle_threads [core] [priov];
-//				thread_add(thread, 1U << core, task_idle, NULL, allocated, IDLETASKRAM_SIZE, UPRIO_IDLE, GICD_ENCODE_PRIORITY(priov), "idle");
-//			}
 		}
 	}
 
@@ -2208,31 +2203,37 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 		}
 	}
 	RemoveEntryList(& taskin->item);
+	// debug stuff
 	if (taskin->check_ready)
 	{
 		tasks_print();
+		ASSERT(taskin->check_ready == NULL);
 	}
-	ASSERT(taskin->check_ready == NULL);
 	return taskin;
 }
 
 static void thread_print(const thread_item_t * const tp)
 {
+	dbg_putchar('-');
 	PRINTF("    task %p: irql=%u (prio=%u), affinity=%08X,  name='%s' ", tp, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity, tp->name);
 	if (tp->check_ready)
 	{
+		dbg_putchar('!');
 		ASSERT(tp->check_ready->print);
 		ASSERT(tp->check_ready_obj);
 		tp->check_ready->print(tp->check_ready, tp->check_ready_obj);
+		dbg_putchar('!');
 	}
 	PRINTF("\n");
 }
 
 void tasks_print(void)
 {
+	IRQL_t lockIrql;
 	unsigned prio;
 	unsigned core;
 	PRINTF("tasks_print: started (for each core)\n");
+	IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
 	for (core = 0; core < ARRAY_SIZE(startedtask); ++ core)
 	{
 		thread_print(startedtask [core]);
@@ -2253,6 +2254,7 @@ void tasks_print(void)
 			thread_print(tp);
 		}
 	}
+	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
 	PRINTF("tasks_print done\n");
 }
 
@@ -2427,7 +2429,7 @@ static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * 
 	default:
 		return;
 	case TASKFN_NOP:
-		ASSERT(arg1 == NULL);
+		//ASSERT(arg1 == NULL);
 		return;
 
 	case TASKFN_SUSPEND:

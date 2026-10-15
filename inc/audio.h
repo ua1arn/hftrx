@@ -992,7 +992,7 @@ void modem_parse(hfrxpath_t * path, const IFADCvalue_t * buff);
 void modem_test(void);
 FLOAT32P_t xget_float_monofreq(void);	// modem test LO quadratures
 
-void process_dmabuffer32rx(hfrxpath_t * path, const IFADCvalue_t * buff);
+void process_dmabuffer32rx(const IFADCvalue_t * buff);
 
 #endif /* WITHINTEGRATEDDSP */
 
