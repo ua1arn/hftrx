@@ -5356,7 +5356,8 @@ void hftrx_init(void)
 	}
 
 	// работа на всех ядрах, кроме нулевого
-	if (thread_create_user(UINT32_C(1) << 1, user_audioproc_thread, NULL, 16 * 1024 * 1024, "user_audioproc_thread") == NULL)
+	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
+	if (thread_create_user(UINT32_C(1) << 1, user_audioproc_thread, NULL, procthread, sizeof procthread, "user_audioproc_thread") == NULL)
 	{
 		static dpcobj_t user_audioproc_dpc;
 		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);

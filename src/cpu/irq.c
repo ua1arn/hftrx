@@ -2000,7 +2000,6 @@ typedef struct thread_item_tag
 	LIST_ENTRY item;
 	unsigned affinity;
 	exception_frame_t * cpuframe;	// cpu state
-	void * allocated;
 	IRQL_t irql;
 	//unsigned uprio;
 	const check_ready_t * check_ready;
@@ -2082,15 +2081,11 @@ static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 //static LIST_ENTRY threads_list [UPRIO_count];
 static LIST_ENTRY threads_list [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
 
-static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, void * allocated, unsigned ramsize, unsigned unused_uprio, unsigned irql, const char * name)
+static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, void * stackbase, unsigned stacksize, unsigned unused_uprio, unsigned irql, const char * name)
 {
 	thread->affinity = affinity;
-	thread->allocated = allocated;;
-	//thread->allocated = malloc(IDLETASKRAM_SIZE);
-	ASSERT(thread->allocated != NULL);
-	while (thread->allocated == NULL)
-		;
-	uintptr_t top = (uintptr_t) thread->allocated + ramsize;
+	ASSERT(stackbase != NULL);
+	uintptr_t top = (uintptr_t) stackbase + stacksize;
 	exception_frame_t * stackframe = (exception_frame_t *) (top - context_size());
 	// Установить параметры потока для запуска
 	context_init(stackframe, fn, ctx);
@@ -2110,15 +2105,16 @@ static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn
 	//PRINTF("Added thread at uprio=%u, irql=%d, affinity=%02X (frame=%p), stack[%p..%p]\n", uprio, irql, affinity, stackframe, stackframe, (void *) top);
 }
 
-
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, const char * name)
 {
 	if (threads_not_started)
 	{
 		PRINTF("Wrong call of thread_create_user: '%s'\n", name);
 	}
 	ASSERT(threads_not_started == 0);
-	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
+	thread_item_t * const thread = (thread_item_t *) rambase;
+	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
+	ramsize -= sizeof (thread_item_t);
 	if (thread != NULL)
 	{
 		void * allocated = aligned_alloc(DCACHEROWSIZE, ramsize);
@@ -2491,7 +2487,6 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 	{
 		thread_item_t * const thread = & base_threads [core];
 		thread->guard = thread;
-		thread->allocated = NULL;
 		thread->check_ready = NULL;
 		//thread->uprio = UPRIO_USER;
 		thread->name = "default";
@@ -2757,7 +2752,7 @@ void __NO_RETURN task_scheduler_othercores(void)
 	}
 }
 
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
+void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, const char * name)
 {
 	return NULL;
 }

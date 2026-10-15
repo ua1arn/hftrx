@@ -23415,7 +23415,8 @@ application_initialize(void)
 	loadnewband(getvfoindex(0), 0);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
 
 #if defined (BOARD_BLINK_SETSTATE)
-	if (thread_create_user(/*TASK_AFFINITY_ALL*/ 1U << 1, blinktest2, NULL, 48 * 1024, "blinktest2") == NULL)
+	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t blinktaskram [8192];
+	if (thread_create_user(/*TASK_AFFINITY_ALL*/ 1U << 1, blinktest2, NULL, blinktaskram, sizeof blinktaskram, "blinktest2"))
 	{
 #if WITHISBOOTLOADER
 	const unsigned thalf = 100;	// Toggle every 100 ms
