@@ -2652,7 +2652,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 {
 	if (timeMS == 0)
 		return 0;
-	if (threads_not_started || 1)
+	if (threads_not_started)
 	{
 #if ! WITHONETIMESTAMP
 	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
