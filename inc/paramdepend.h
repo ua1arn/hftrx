@@ -950,7 +950,6 @@ int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS);
 
 void local_delay_us(uint_fast32_t timeUS);	// may be LOCAL_WAITINFINITY
 void local_delay_ms(uint_fast32_t timeMS);	// may be LOCAL_WAITINFINITY
-void local_delay_initialize(void);	// setup parameters for loop-nased delays
 
 /* STM32: In HS mode and when the DMA is used, all variables and data structures dealing
    with the DMA during the transaction process should be 4-bytes aligned */    

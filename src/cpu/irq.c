@@ -2899,22 +2899,12 @@ unsigned thread_set_affinity(unsigned affinity)
 
 #endif /* */
 
-
-#if CPUSTYLE_ARM || CPUSTYLE_RISCV
-
-static unsigned cpufreqMHz = 10;
-
-#endif
-void local_delay_initialize(void)
-{
-	cpufreqMHz = CPU_FREQ / 1000000;
-}
-
 #if 0
 
 static unsigned long
-local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
+local_delay_uscycles(unsigned timeUS)
 {
+	const unsigned cpufreqMHz = CPU_FREQ / 1000000;
 #if CPUSTYLE_AT91SAM7S
 	#warning TODO: calibrate constant	 looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 175uL / cpufreq_MHz;
@@ -3000,7 +2990,7 @@ void /* RAMFUNC_NONILINE */ local_delay_us(uint_fast32_t timeUS)
 		return;
 #if 0
 	// Частота процессора приволится к мегагерцам.
-	const unsigned long top = local_delay_uscycles(timeUS, cpufreqMHz);
+	const unsigned long top = local_delay_uscycles(timeUS);
 	//
 	volatile unsigned long t;
 	for (t = 0; t < top; ++ t)
@@ -3016,7 +3006,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 	if (timeMS == 0)
 		return;
 	// Частота процессора приволится к мегагерцам.
-	const unsigned long top = local_delay_uscycles(1000, cpufreqMHz);
+	const unsigned long top = local_delay_uscycles(1000);
 	int n;
 	for (n = 0; n < timeMS; ++ n)
 	{

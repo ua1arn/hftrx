@@ -1777,7 +1777,7 @@ SystemInit_BOOT0(void)
 	sysinit_fpu_initialize();	// FPU access enable, disable caches
 	stsinit_irql_initialize();	// GIC CPU Interface
 	sysinit_gpio_initialize();
-	local_delay_initialize();
+	
 }
 
 #endif /* CPUSTYLE_VM14 */
@@ -1926,7 +1926,7 @@ SystemInit(void)
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
-	local_delay_initialize();
+	
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
 #ifdef BOARD_BLINK_INITIALIZE
@@ -1939,7 +1939,7 @@ SystemInit(void)
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
-	local_delay_initialize();
+	
 	sysinit_debug_initialize();
 	int ec = sysinit_sdram_initialize(configtype);
 	if (ec)
