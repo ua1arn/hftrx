@@ -2566,7 +2566,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 {
 	if (timeMS == 0)
 		return 0;
-	if (threads_not_started || 1)
+	if (threads_not_started)
 	{
 #if ! WITHONETIMESTAMP
 	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
@@ -2609,7 +2609,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 {
 	if (timeMS == 0)
 		return 0;
-	if (threads_not_started || 1)
+	if (threads_not_started)
 	{
 #if ! WITHONETIMESTAMP
 	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
@@ -2654,6 +2654,9 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 		return 0;
 	if (threads_not_started || 1)
 	{
+#if ! WITHONETIMESTAMP
+	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
+#endif /* ! WITHONETIMESTAMP */
 		const hwtimcountfast_t t0 = cpu_gethwtimticks();
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		do

@@ -3536,12 +3536,16 @@ static void DMAC_SetLink(unsigned dmach, uintptr_t descraddr)
 {
 	const uint_fast32_t reg = DMAC_pack_linkreg(descraddr);
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = reg;
+#if 0
+	// долгая операция = в случае schedulaer приводит к сбоям
 	if (local_wait32mask(& DMAC->CH [dmach].DMAC_DESC_ADDR_REGN, UINT32_MAX, reg, 50))
 	{
 		TP();
 	}
-//	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != reg)
-//		;
+#else
+	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != reg)
+		;
+#endif
 }
 
 /* Обработчик прерывания от DMAC */
