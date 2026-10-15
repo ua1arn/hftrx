@@ -5356,7 +5356,7 @@ void hftrx_init(void)
 	}
 
 	// работа на всех ядрах, кроме нулевого
-	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, user_audioproc_thread, NULL, 16 * 1024 * 1024, "user_audioproc_thread") == NULL)
+	if (thread_create_user(UINT32_C(1) << 1, user_audioproc_thread, NULL, 16 * 1024 * 1024, "user_audioproc_thread") == NULL)
 	{
 		static dpcobj_t user_audioproc_dpc;
 		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);
@@ -5371,12 +5371,15 @@ void hftrx_init(void)
 	#endif /* WITHINTEGRATEDDSP */
 	}
 
-	static dpcobj_t rttydpcobj;
+	{
+		static dpcobj_t rttydpcobj;
 
-	dpcobj_initialize(& rttydpcobj, modems_spool, NULL);
-	board_dpc_addentry(& rttydpcobj, board_dpc_coreid());
+		dpcobj_initialize(& rttydpcobj, modems_spool, NULL);
+		board_dpc_addentry(& rttydpcobj, board_dpc_coreid());
 
-	modem_update();
+		modem_update();
+
+	}
 
 #if 0
 	{

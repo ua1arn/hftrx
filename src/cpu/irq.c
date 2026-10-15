@@ -2172,6 +2172,7 @@ static int task_isready(thread_item_t * tp, uint_fast32_t tn)
 }
 
 // получить готовую у выполнению задачу
+// пока иищем задачу на том же ядре с тем же приоритетом
 static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 {
 	ASSERT(taskin);
@@ -2179,8 +2180,8 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 	const uint_fast32_t tn = sys_now();
 	// Возвращаем в список задач
 	InsertTailList(& threads_list [taskin->uprio], & taskin->item);
-	unsigned uprio;
-	for (uprio = 0; uprio < ARRAY_SIZE(threads_list); ++ uprio)
+	unsigned uprio = taskin->uprio;
+	//for (;;)
 	{
 		PRLIST_ENTRY const list = & threads_list [uprio];
 		PRLIST_ENTRY t;
@@ -2658,7 +2659,7 @@ unsigned task_set_affinity(unsigned affinity)
 {
 	if (threads_not_started || 1)
 	{
-		return 0;
+		return 1U << arm_hardware_cpuid();
 	}
 	else
 	{
@@ -2673,7 +2674,7 @@ unsigned task_set_affinity(unsigned affinity)
 
 // Non-linux, non-scheduler
 
-static LIST_ENTRY lztaskslist;
+static LIST_ENTRY lztaskslist [HARDWARE_NCORES] [PRIOv_count];
 static LIST_ENTRY lzthreads_list [HARDWARE_NCORES];
 static LCLSPINLOCK_t lzlock;
 //static thread_item_t lzbase_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
@@ -2682,7 +2683,17 @@ static LCLSPINLOCK_t lzlock;
 void task_scheduler_initialize(void)
 {
 	unsigned i;
+	unsigned core;
 	IRQLSPINLOCK_INITIALIZE(& lzlock);
+	for (core = 0; core < HARDWARE_NCORES; ++ core)
+	{
+		unsigned irql;
+		for (irql = 0; irql < PRIOv_count; ++ irql)
+		{
+			InitializeListHead(& lztaskslist [core] [irql]);
+		}
+
+	}
 	for (i = 0; i < ARRAY_SIZE(lzthreads_list); ++ i)
 	{
 		InitializeListHead(& lzthreads_list [i]);
@@ -3569,11 +3580,7 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	const IRQL_t oldv = GIC_GetInterfacePriorityMask();
 //	ASSERT2(oldv != 0, file, line);
 //	ASSERT2(lastirql [core] == oldv, file, line);
-	if (oldv >= newIRQL)
-	{
-		; /* Не понижаем приоритет */
-	}
-	else
+	if (IRQL_LT(newIRQL, oldv))
 	{
 		PRINTF("Last set irqlp=%u irqlv=%u by core=%u at %s/%d:\n", (unsigned) lastirql [core], (unsigned) GICI_DECODE_IRQL(lastirql [core]), core, lastfile [core], lastline [core]);
 		PRINTF("irq fail at %s/%d, newIRQLp=%u, oldp=%u\n", file, line, (unsigned) newIRQL, (unsigned) oldv);
@@ -3585,20 +3592,20 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	ASSERT2(GIC_GetInterfacePriorityMask() == newIRQL, file, line);
 
 #elif defined (__CORTEX_M)
+	const IRQL_t oldv = __get_BASEPRI();
 	////ASSERT2(__get_BASEPRI() >= newIRQL, file, line);	/* Не понижаем приоритет */
-	* oldIrql = __get_BASEPRI();
+	* oldIrql = oldv;
 	__set_BASEPRI(newIRQL);
 #elif CPUSTYLE_RISCV
-	if (PLIC->PLIC_MTH_REG <= newIRQL)
-		; /* Не понижаем приоритет */
-	else
+	const IRQL_t oldv = PLIC->PLIC_MTH_REG;
+	if (IRQL_LT(newIRQL, oldv))
 	{
 		PRINTF("Last set irqlp=%u by core=%u at %s/%d:\n", (unsigned) lastirql [core], core, lastfile [core], lastline [core]);
 		PRINTF("irq fail at %s/%d, newIRQL=%u, old=%u\n", file, line, (unsigned) newIRQL, (unsigned) PLIC->PLIC_MTH_REG);
 		ASSERT2(PLIC->PLIC_MTH_REG <= newIRQL, file, line);	/* Не понижаем приоритет */
 	}
 	//oldIrql * = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
-	* oldIrql = PLIC->PLIC_MTH_REG;
+	* oldIrql = oldv;
 	PLIC->PLIC_MTH_REG = newIRQL;
 
 #else

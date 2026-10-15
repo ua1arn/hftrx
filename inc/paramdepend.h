@@ -741,6 +741,9 @@ extern "C" {
 	/* Cortex-M targets */
 
 	typedef uint_fast32_t IRQL_t;
+	#define IRQL_EQ(a, b) ((a) == (b))	// A имеет равный приоритет с B
+	#define IRQL_GT(a, b) ((a) < (b))	// A более приоритетно чем B
+	#define IRQL_LT(a, b) ((a) > (b))	// A менее приоритетно чем B
 
 	// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
 	extern uint32_t gARM_OVERREALTIME_PRIORITY;
@@ -793,6 +796,9 @@ extern "C" {
 #elif (__GIC_PRESENT == 1)
 
 	typedef uint8_t IRQL_t;
+	#define IRQL_EQ(a, b) ((a) == (b))	// A имеет равный приоритет с B
+	#define IRQL_GT(a, b) ((a) < (b))	// A более приоритетно чем B
+	#define IRQL_LT(a, b) ((a) > (b))	// A менее приоритетно чем B
 
 	enum
 	{
@@ -869,6 +875,9 @@ extern "C" {
 #elif CPUSTYLE_RISCV
 
 	typedef uint_xlen_t IRQL_t;
+	#define IRQL_EQ(a, b) ((a) == (b))	// A имеет равный приоритет с B
+	#define IRQL_GT(a, b) ((a) > (b))	// A более приоритетно чем B
+	#define IRQL_LT(a, b) ((a) < (b))	// A менее приоритетно чем B
 
 	enum
 	{

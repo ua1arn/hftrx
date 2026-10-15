@@ -3670,7 +3670,7 @@ static void savetestadc(IFADCvalue_t v0, IFADCvalue_t v1)
 }
 #endif /* WITHDEBUG && WITHFPGAPIPE_CODEC1 */
 
-void process_dmabuffer32rx(hfrxpath_t * path, const IFADCvalue_t * buff)
+void process_dmabuffer32rx(hfrxpath_t * path_unused, const IFADCvalue_t * buff)
 {
 	unsigned i;
 #if WITHFPGAPIPE_FPGASTATUS
@@ -4561,7 +4561,7 @@ void buffers_start(void)
 
 	#warning rx process in spool
 	// работа на всех ядрах, кроме нулевого
-	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, dsphftrxproc_spool_user_thread, hftrx_rxgetpathA(), 1 * 1024 * 1024, "dsphftrxproc_spool_user_thread") == NULL)
+	if (thread_create_user(UINT32_C(1) << 3, dsphftrxproc_spool_user_thread, hftrx_rxgetpathA(), 1 * 1024 * 1024, "dsphftrxproc_spool_user_thread") == NULL)
 	{
 		static dpcobj_t dsphftrxproc_spool_dpc;
 		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, hftrx_rxgetpathA());
