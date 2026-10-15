@@ -6839,55 +6839,6 @@ board_get_pressed_key(void)
 
 #endif /* WITHKEYBOARD */
 
-#if 0
-// 
-void hardware_cw_diagnostics_noirq(
-	uint_fast8_t c1,
-	uint_fast8_t c2,
-	uint_fast8_t c3)
-{
-	enum { DIT = 100, DASH = DIT * 3, PAUSE = DIT * 1, PAUSE3 = DIT * 3 };
-
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-
-	board_beep_enable(1);
-	if (c1) local_delay_ms(DASH); else local_delay_ms(DIT);
-	board_beep_enable(0);
-
-	local_delay_ms(PAUSE);
-
-	board_beep_enable(1);
-	if (c2) local_delay_ms(DASH); else local_delay_ms(DIT);
-	board_beep_enable(0);
-
-	local_delay_ms(PAUSE);
-
-	board_beep_enable(1);
-	if (c3) local_delay_ms(DASH); else local_delay_ms(DIT);
-	board_beep_enable(0);
-
-	local_delay_ms(PAUSE3);
-
-	LowerIrql(oldIrql);
-}
-
-void hardware_cw_diagnostics(
-	uint_fast8_t c1,
-	uint_fast8_t c2,
-	uint_fast8_t c3)
-{
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-
-	hardware_cw_diagnostics_noirq(c1, c2, c3);
-
-	LowerIrql(oldIrql);
-}
-
-
-#endif
-
 #if WITHSPIHW || WITHSPISW || WITHSPIDEV
 
 static const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED400k;

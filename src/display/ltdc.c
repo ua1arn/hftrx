@@ -118,16 +118,10 @@ static void vdc5_update(
 	)
 {
 	* reg |= mask;
-	(void) * reg;
-	uint_fast32_t count = 1000;
-	while ((* reg & mask) != 0)
+	if (local_wait32mask(reg, mask, 0 * mask, 100))
 	{
-		local_delay_ms(1);
-		if (-- count == 0)
-		{
-			PRINTF(PSTR("vdc5_update: wait reg=%p %s mask=%08X, stay=%08X\n"), reg, label, (unsigned) mask, (unsigned) (* reg & mask));
-			return;
-		}
+		PRINTF(PSTR("vdc5_update: wait reg=%p %s mask=%08X, stay=%08X\n"), reg, label, (unsigned) mask, (unsigned) (* reg & mask));
+
 	}
 }
 
@@ -138,15 +132,10 @@ static void vdc5_wait(
 	uint_fast32_t mask
 	)
 {
-	uint_fast32_t count = 1000;
-	while ((* reg & mask) != 0)
+	if (local_wait32mask(reg, mask, 0 * mask, 100))
 	{
-		local_delay_ms(1);
-		if (-- count == 0)
-		{
-			PRINTF(PSTR("vdc5_wait: wait reg=%p %s mask=%08X, stay=%08X\n"), reg, label, (unsigned) mask, (unsigned) (* reg & mask));
-			return;
-		}
+		PRINTF(PSTR("vdc5_wait: wait reg=%p %s mask=%08X, stay=%08X\n"), reg, label, (unsigned) mask, (unsigned) (* reg & mask));
+
 	}
 }
 
@@ -164,11 +153,7 @@ static void vdc5_wait(
 	ASSERT((val & mask) == val); \
 	* (reg) = (* (reg) & ~ (mask)) | (val & mask); \
 	(void) * (reg);	/* dummy read */ \
-	uint_fast32_t count = 1000; \
-	do { \
-		if (count -- == 0) {PRINTF(PSTR("SETREG32_UPDATE: wait %s/%d\n"), __FILE__, __LINE__); break; } \
-		local_delay_ms(1); \
-	} while (((* (reg)) & mask) != 0); /* wait for bit chamge to zero */ \
+	if (local_wait32mask((reg), (mask), val, 100)) PRINTF(PSTR("SETREG32_UPDATE: wait %s/%d\n"), __FILE__, __LINE__); \
 } while (0)
 
 /* Set value at specified position of I/O register */

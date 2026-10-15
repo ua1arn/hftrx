@@ -206,7 +206,6 @@ int arm_hardware_sdram_initialize(int configtype)
 	PRINTF("settings: allwnr_t113_get_dram_freq()=%ukHz\n", (unsigned) (allwnr_t113_get_dram_freq() / 1000));
 
 	PRINTF("arm_hardware_sdram_initialize done\n");
-	//local_delay_ms(1000);
 	return 0;
 }
 

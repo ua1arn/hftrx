@@ -8603,7 +8603,7 @@ static enum phases auto_tune0(void)
 	{
 		if (tuneabort())
 			return PHASE_ABORT; //goto aborted;
-		local_delay_ms(50);
+		tuner_waitadc();
 		adcvalholder_t r;
 		adcvalholder_t f;
 		const uint_fast16_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
@@ -13964,7 +13964,9 @@ updateboard_noui(
 		seq_set_rgbeep(param_getvalue(& xgrgbeep));	/* разрешение (не-0) или запрещение (0) формирования roger beep */
 		seq_set_rxtxdelay(rxtxdelay, txrxdelay, pretxdelay ? txrxdelay : 0);	/* установить задержку пре переходе на передачу и обратно. */
 		board_sidetone_setfreq(gcwpitch10 * CWPITCHSCALE);	// Минимум - 400 герц (определено набором команд CAT Kenwood).
+	#if WITHPACLASSA
 		board_set_classamode(param_getvalue(& xgclassamode));	/* использование режима клвсс А при передаче */
+	#endif /* WITHPACLASSA */
 		board_set_txgate(param_getvalue(& xgtxgate));		/* разрешение драйвера и оконечного усилителя */
 		board_set_forcexvrtr(param_getvalue(& xgforcexvrtr));
 		#if WITHMIC1LEVEL
@@ -20688,13 +20690,7 @@ static uint_fast8_t nvramdiags(void)
 		display_menu_digit(sizeof (struct nvmap), 9, 0, 0);
 		display_text(& dbv, 0, 0, msg, strlen(msg), MSGYCELLS, & dbstylev);
 		colmain_nextfb();
-
-
-		unsigned i;
-		for (i = 0; i < 50; ++ i)
-		{
-			local_delay_ms(20);
-		}
+		local_delay_ms(2000);
 		*/
 	}
 

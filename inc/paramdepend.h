@@ -1265,10 +1265,6 @@ void local_delay_initialize(void);	// setup parameters for loop-nased delays
 	//#error Undefined CTLREGMODE_xxx option
 #endif
 
-#define HARDWARE_DELAY_MS(t) do { local_delay_ms(t); } while (0)	//HAL_Delay(t)
-#define HARDWARE_DELAY_US(t) do { local_delay_us(t); } while (0)
-#define HARDWARE_GETTICK_MS() ((uint32_t) 0) // HAL_GetTick()
-
 #define WITHONETIMESTAMP (CPUSTYLE_ALLWINNER && defined (TIMESTAMP_STA) && defined (TIMESTAMP_CTRL))	// В случае единственного timestamp таймера - нет нужды заперщать перпланировщик
 
 #define WITHSPECTRUMWF (WITHIF4DSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_DUMMY)

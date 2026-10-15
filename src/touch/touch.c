@@ -232,7 +232,6 @@ void board_tsc_calibration(void)
 					PRINTF("{ %u, %u, }, /* point %u */\n", x, y, tg);
 					break;
 				}
-				//local_delay_ms(1);
 			}
 			gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 			// стереть фон

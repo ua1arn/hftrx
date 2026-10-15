@@ -2216,7 +2216,6 @@ static void BarTest(void)
 		display_solidbar(x, y, x2, y2, color);	// MDMA работает минуя кеш-память
 
 		colmain_nextfb();
-		//local_delay_ms(5);
 		testsloopprocessing();		// обработка отложенного вызова user mode функций
 	}
 
