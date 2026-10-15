@@ -2058,8 +2058,10 @@ struct taskfnparam_setaffinity
 	unsigned oldaffinity;
 };
 
+// не должно ничего ожидать - попадаем сюда, когда нет thread для исполнения
 static int task_idle(void * ctx)
 {
+	(void) ctx;
 	for (;;)
 	{
 		thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
@@ -2067,7 +2069,6 @@ static int task_idle(void * ctx)
 	return 0;
 }
 
-//static thread_item_t idle_threads [HARDWARE_NCORES * (PRIOv_count - PRIOv_IPC)];
 static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
 static thread_item_t * startedtask [HARDWARE_NCORES];
 
@@ -2117,33 +2118,31 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 
 void task_scheduler_initialize(void)
 {
-	unsigned i;
-	IRQLSPINLOCK_INITIALIZE(& threadslock);
-	for (i = 0; i < ARRAY_SIZE(threads_list); ++ i)
 	{
-		InitializeListHead(& threads_list [i]);
+		unsigned i;
+		IRQLSPINLOCK_INITIALIZE(& threadslock);
+		// На каждый IRQL свой список
+		for (i = 0; i < ARRAY_SIZE(threads_list); ++ i)
+		{
+			InitializeListHead(& threads_list [i]);
+		}
 	}
-//	for (i = 0; i < ARRAY_SIZE(idle_threads); ++ i)
-//	{
-//		thread_item_t * const thread = & idle_threads [i];
-//		const unsigned core = i % HARDWARE_NCORES;
-//		const IRQL_t irql = GICI_ENCODE_IRQL(PRIOv_IPC + (i / HARDWARE_NCORES));
-//		switch (irql)
-//		{
-////		case IRQL_USER:
-////		case IRQL_SYSTEM:
-////		case IRQL_REALTIME:
-////		case IRQL_OVERREALTIME:
-////		case IRQL_BOARD:
-//		case IRQL_IPC:
-//		case IRQL_IPC_ONLY:
-//			continue;
-//		default:
-//			break;
-//		}
-//		//
-//		thread_add(thread, 1U << core, task_idle, NULL, IDLETASKRAM_SIZE, UPRIO_IDLE, irql, "idle");
-//	}
+#if 1
+	{
+		// на каждое ядро список
+		static thread_item_t idle_threads [HARDWARE_NCORES] [PRIOv_count];
+		unsigned core;
+		for (core = 0; core < HARDWARE_NCORES; ++ core)
+		{
+			unsigned priov;
+			for (priov = 0; priov < PRIOv_count; ++ priov)
+			{
+				thread_item_t * const thread = & idle_threads [core] [priov];
+				thread_add(thread, 1U << core, task_idle, NULL, IDLETASKRAM_SIZE, UPRIO_IDLE, GICD_ENCODE_PRIORITY(priov), "idle");
+			}
+		}
+	}
+#endif
 }
 
 void task_scheduler_start(void)

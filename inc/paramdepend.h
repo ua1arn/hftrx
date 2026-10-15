@@ -922,9 +922,8 @@ extern "C" {
 
 enum
 {
-//	UPRIO_REALTIME,
 	UPRIO_USER,
-//	UPRIO_IDLE,
+	UPRIO_IDLE,
 	//
 	UPRIO_count
 };
