@@ -7935,15 +7935,12 @@ void nand_tests(void)
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
 
-#if WITHDEBUG && 1
 static void sgitesthandler(void)
 {
 	unsigned core = arm_hardware_cpuid();
 	//PRINTF("Handler: core = %u\n", core);
 	dbg_putchar('a' + core);
 }
-
-#endif
 
 void hightests(void)
 {
