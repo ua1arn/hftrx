@@ -3830,10 +3830,11 @@ void arm_hardware_populte_second_initialize(void)
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
 {
+	//targetcpu = ~ 0;
 	const IRQn_Type int_id = (IRQn_Type) int_ida;
 	//PRINTF("arm_hardware_set_handler: int_id=%u\n", (unsigned) int_id);
 #if CPUSTYLE_AT91SAM7S
-
+_unused
 	const uint_fast32_t mask32 = (1UL << int_id);
 
 	AT91C_BASE_AIC->AIC_IDCR = mask32;		// disable interrupt
@@ -3872,6 +3873,8 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 	cfg &= ~ 0x02u;	/* Set level sensitive configuration */
 #endif /* CPUSTYLE_XC7Z */
 	cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
+	// WITHRTOS
+	//cfg &= ~ 0x01u;	/* N-N model */
 #if ! CPUSTYLE_R7S721
 	/* do not change edge/level settings of specified interrupts - leave initialized at start-up */
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
