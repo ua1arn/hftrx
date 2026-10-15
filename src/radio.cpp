@@ -21034,6 +21034,11 @@ static void keyspoolprocess(void * ctx)
 		default:
 			PRINTF("key=%02X\n", (unsigned char) c);
 			break;
+#if 1
+		case 't':
+			tasks_print();
+			break;
+#endif
 #if 0
 		case 'd':
 			if (swrsim < 30)

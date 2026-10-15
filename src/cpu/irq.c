@@ -2064,6 +2064,7 @@ static int task_idle(void * ctx)
 	(void) ctx;
 	for (;;)
 	{
+		//dbg_putchar('a' + arm_hardware_cpuid());
 		thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	}
 	return 0;
@@ -2095,8 +2096,11 @@ static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn
 	thread->check_ready = NULL;
 	thread->name = name;
 
+	IRQL_t lockIrql;
+	IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
 	// включаем в список задач
 	InsertTailList(& threads_list [GICI_DECODE_IRQL(irql)], & thread->item);
+	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
 
 	//PRINTF("Added thread at uprio=%u, irql=%d, affinity=%02X (frame=%p), stack[%p..%p]\n", uprio, irql, affinity, stackframe, stackframe, (void *) top);
 }
@@ -2528,7 +2532,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 {
 	if (timeMS == 0)
 		return;
-	if (threads_not_started || 1)
+	if (threads_not_started)
 	{
 
 #if ! WITHONETIMESTAMP
@@ -2552,6 +2556,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 		//PRINTF("local_delay_ms: t0=0x%08X, td=0x%08X\n", (unsigned) v.t0, (unsigned) v.td);
 		//PRINTF("2 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) v.t0, (unsigned) v.td, (unsigned) GIC_GetInterfacePriorityMask());
 		task_sysfn(TASKFN_SUSPEND, & v);
+		//TP();
 	}
 }
 
