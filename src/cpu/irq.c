@@ -2174,8 +2174,7 @@ static int task_isready(thread_item_t * tp, uint_fast32_t tn)
 	return 1;
 }
 
-// получить готовую у выполнению задачу
-// пока иищем задачу на том же ядре с тем же приоритетом
+// получить готовую у выполнению задачу для ядра, попадающего в affinity
 static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 {
 	ASSERT(taskin);
@@ -2228,22 +2227,12 @@ void tasks_print(void)
 {
 	unsigned irql;
 	unsigned core;
-	PRINTF("tasks_print: base\n");
-	for (core = 0; core < ARRAY_SIZE(base_threads); ++ core)
-	{
-		thread_print(& base_threads [core]);
-	}
-//	PRINTF("tasks_print: idle\n");
-//	for (core = 0; core < ARRAY_SIZE(idle_threads); ++ core)
-//	{
-//		thread_print(& idle_threads [core]);
-//	}
-	PRINTF("tasks_print: started\n");
+	PRINTF("tasks_print: started (for each core)\n");
 	for (core = 0; core < ARRAY_SIZE(startedtask); ++ core)
 	{
 		thread_print(startedtask [core]);
 	}
-	PRINTF("tasks_print: lists\n");
+	PRINTF("tasks_print: ready lists\n");
 	for (irql = 0; irql < ARRAY_SIZE(threads_list); ++ irql)
 	{
 		PRLIST_ENTRY const list = & threads_list [irql];

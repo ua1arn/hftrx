@@ -4562,7 +4562,7 @@ void buffers_start(void)
 	#warning rx process in spool
 	// работа на всех ядрах, кроме нулевого
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
-	if (thread_create_user(UINT32_C(1) << 3, dsphftrxproc_spool_user_thread, hftrx_rxgetpathA(), procthread, sizeof procthread, "dsphftrxproc_spool_user_thread") == NULL)
+	if (thread_create_user(TASK_AFFINITY_ALL, dsphftrxproc_spool_user_thread, hftrx_rxgetpathA(), procthread, sizeof procthread, "dsphftrxproc_spool_user_thread") == NULL)
 	{
 		static dpcobj_t dsphftrxproc_spool_dpc;
 		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, hftrx_rxgetpathA());
