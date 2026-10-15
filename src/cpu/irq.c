@@ -2704,31 +2704,9 @@ unsigned thread_set_affinity(unsigned affinity)
 
 // Non-linux, non-scheduler
 
-static LIST_ENTRY lztaskslist [HARDWARE_NCORES] [PRIOv_count];
-static LIST_ENTRY lzthreads_list [HARDWARE_NCORES];
-static LCLSPINLOCK_t lzlock;
-//static thread_item_t lzbase_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
-//static thread_item_t * lzstartedtask [HARDWARE_NCORES];
-
 void task_scheduler_initialize(void)
 {
-	unsigned i;
-	unsigned core;
-	IRQLSPINLOCK_INITIALIZE(& lzlock);
-	for (core = 0; core < HARDWARE_NCORES; ++ core)
-	{
-		unsigned irql;
-		for (irql = 0; irql < PRIOv_count; ++ irql)
-		{
-			InitializeListHead(& lztaskslist [core] [irql]);
-		}
-
 	}
-	for (i = 0; i < ARRAY_SIZE(lzthreads_list); ++ i)
-	{
-		InitializeListHead(& lzthreads_list [i]);
-	}
-}
 
 void task_scheduler_start(void) {}
 
