@@ -2559,7 +2559,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 #if ! WITHONETIMESTAMP
 	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
 #endif /* ! WITHONETIMESTAMP */
-		const hwtimcountfast_t t0 = cpu_gethwtimticks();
+		const hwtimcountfast_t t0 = get_td_delta(0);
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) GIC_GetInterfacePriorityMask());
 		while (get_td_delta(t0) < td)
@@ -2592,7 +2592,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 #if ! WITHONETIMESTAMP
 	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
 #endif /* ! WITHONETIMESTAMP */
-		const hwtimcountfast_t t0 = cpu_gethwtimticks();
+		const hwtimcountfast_t t0 = get_td_delta(0);
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		do
 		{
@@ -2635,7 +2635,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 #if ! WITHONETIMESTAMP
 	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
 #endif /* ! WITHONETIMESTAMP */
-		const hwtimcountfast_t t0 = cpu_gethwtimticks();
+		const hwtimcountfast_t t0 = get_td_delta(0);
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		do
 		{
@@ -2678,7 +2678,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 #if ! WITHONETIMESTAMP
 	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
 #endif /* ! WITHONETIMESTAMP */
-		const hwtimcountfast_t t0 = cpu_gethwtimticks();
+		const hwtimcountfast_t t0 = get_td_delta(0);
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		do
 		{
@@ -2789,7 +2789,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 	if (timeMS == 0)
 		return;
 
-    const hwtimcountfast_t t0 = cpu_gethwtimticks();
+    const hwtimcountfast_t t0 = get_td_delta(0);
     const hwtimcountfast_t td = get_td_ms(timeMS);
     while (get_td_delta(t0) < td)
     	thread_yield();
@@ -2800,7 +2800,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 // return non-zero: timeout error
 int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS)
 {
-	const hwtimcountfast_t t0 = cpu_gethwtimticks();
+	const hwtimcountfast_t t0 = get_td_delta(0);
 	const hwtimcountfast_t td = get_td_ms(timeMS);
 	do
 	{
@@ -2817,7 +2817,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 // return non-zero: timeout error
 int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast8_t errstate, uint_fast32_t timeMS)
 {
-	const hwtimcountfast_t t0 = cpu_gethwtimticks();
+	const hwtimcountfast_t t0 = get_td_delta(0);
 	const hwtimcountfast_t td = get_td_ms(timeMS);
 	do
 	{
@@ -2835,7 +2835,7 @@ int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast
 // return non-zero: timeout error or errormask
 int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t errstate, uint_fast32_t timeMS)
 {
-	const hwtimcountfast_t t0 = cpu_gethwtimticks();
+	const hwtimcountfast_t t0 = get_td_delta(0);
 	const hwtimcountfast_t td = get_td_ms(timeMS);
 	//PRINTF("local_wait32mask: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
@@ -2854,7 +2854,7 @@ int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_f
 // return non-zero: timeout error
 int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS)
 {
-	const hwtimcountfast_t t0 = cpu_gethwtimticks();
+	const hwtimcountfast_t t0 = get_td_delta(0);
 	const hwtimcountfast_t td = get_td_ms(timeMS);
 	//PRINTF("local_wait32mask: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
@@ -2871,7 +2871,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 // return non-zero: timeout error
 int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS)
 {
-	const hwtimcountfast_t t0 = cpu_gethwtimticks();
+	const hwtimcountfast_t t0 = get_td_delta(0);
 	const hwtimcountfast_t td = get_td_ms(timeMS);
 	//PRINTF("local_waitlist: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
@@ -3037,7 +3037,7 @@ void local_delay_us(uint_fast32_t timeUS)
 #if ! WITHONETIMESTAMP
 	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
 #endif /* ! WITHONETIMESTAMP */
-	const hwtimcountfast_t t0 = cpu_gethwtimticks();	// Счетчик увеличивается с частотой процессора
+	const hwtimcountfast_t t0 = get_td_delta(0);	// Счетчик увеличивается с частотой процессора
 	const hwtimcountfast_t td = get_td_us(timeUS);
 	while (get_td_delta(t0) < td)
 		;

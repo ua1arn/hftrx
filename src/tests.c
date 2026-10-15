@@ -7970,7 +7970,7 @@ void hightests(void)
 		for (i = 0; i < 10; ++ i)
 		{
 			//	Функции для программных ожиданий
-			const hwtimcountfast_t t0 = get_td_delta(0);
+			const hwtimcountfast_t t0 = get_td_delta(0);	// начальное значение счетчика тактов
 			const hwtimcountfast_t dt = get_td_ms(1000);	// количество тактов до срабатывания
 			do {
 				// проверяем что-то...
