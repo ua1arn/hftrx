@@ -1719,6 +1719,9 @@ static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * 
 
 #if defined(__aarch64__)
 
+#define IDLETASKRAM_SIZE (16 * 1024)
+
+
 typedef struct exception_frame_tag
 {
 	uint64_t exc_type;
@@ -1799,6 +1802,8 @@ static uint64_t task_sysfn(unsigned arg0, volatile void * arg1)
 
 #elif __CORTEX_A != 0 && ! defined(__aarch64__)
 
+#define IDLETASKRAM_SIZE (8 * 1024)
+
 typedef struct exception_frame_tag
 {
 	uint32_t vfpregs [64];
@@ -1871,6 +1876,8 @@ static uint32_t task_sysfn(unsigned arg0, volatile void * arg1)
 }
 
 #elif __CORTEX_M != 0
+
+#define IDLETASKRAM_SIZE (8 * 1024)
 
 #warning unsupported context switch on this CPU
 
@@ -1981,8 +1988,6 @@ static volatile uint8_t threads_not_started = 1;
 // WITHRTOS
 #if 0
 
-#define IDLETASKRAM_SIZE (256 * 1024)
-
 typedef struct check_ready_tag
 {
 	int (* ready)(const struct check_ready_tag * ch, struct thread_item_tag * thread, uint_fast32_t tn, volatile void * arg1);
@@ -2077,10 +2082,10 @@ static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 //static LIST_ENTRY threads_list [UPRIO_count];
 static LIST_ENTRY threads_list [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
 
-static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, unsigned unused_uprio, unsigned irql, const char * name)
+static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, void * allocated, unsigned ramsize, unsigned unused_uprio, unsigned irql, const char * name)
 {
 	thread->affinity = affinity;
-	thread->allocated = aligned_alloc(DCACHEROWSIZE, ramsize);
+	thread->allocated = allocated;;
 	//thread->allocated = malloc(IDLETASKRAM_SIZE);
 	ASSERT(thread->allocated != NULL);
 	while (thread->allocated == NULL)
@@ -2105,6 +2110,7 @@ static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn
 	//PRINTF("Added thread at uprio=%u, irql=%d, affinity=%02X (frame=%p), stack[%p..%p]\n", uprio, irql, affinity, stackframe, stackframe, (void *) top);
 }
 
+
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
 {
 	if (threads_not_started)
@@ -2115,7 +2121,8 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
 	if (thread != NULL)
 	{
-		thread_add(thread, affinity, fn, ctx, ramsize, UPRIO_USER, IRQL_USER, name);
+		void * allocated = aligned_alloc(DCACHEROWSIZE, ramsize);
+		thread_add(thread, affinity, fn, ctx, allocated, ramsize, UPRIO_USER, IRQL_USER, name);
 	}
 	return thread;
 }
@@ -2131,7 +2138,7 @@ void task_scheduler_initialize(void)
 			InitializeListHead(& threads_list [i]);
 		}
 	}
-#if 1
+
 	{
 		// на каждое ядро список
 		static thread_item_t idle_threads [HARDWARE_NCORES] [PRIOv_count];
@@ -2141,12 +2148,13 @@ void task_scheduler_initialize(void)
 			unsigned priov;
 			for (priov = 0; priov < PRIOv_count; ++ priov)
 			{
+				void * allocated = aligned_alloc(DCACHEROWSIZE, IDLETASKRAM_SIZE);
 				thread_item_t * const thread = & idle_threads [core] [priov];
-				thread_add(thread, 1U << core, task_idle, NULL, IDLETASKRAM_SIZE, UPRIO_IDLE, GICD_ENCODE_PRIORITY(priov), "idle");
+				thread_add(thread, 1U << core, task_idle, NULL, allocated, IDLETASKRAM_SIZE, UPRIO_IDLE, GICD_ENCODE_PRIORITY(priov), "idle");
 			}
 		}
 	}
-#endif
+
 }
 
 void task_scheduler_start(void)
