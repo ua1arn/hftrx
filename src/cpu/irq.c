@@ -1992,7 +1992,7 @@ static volatile uint8_t threads_not_started = 1;
 typedef struct check_ready_tag
 {
 	int (* ready)(const struct check_ready_tag * ch, struct thread_item_tag * thread, uint_fast32_t tn, volatile void * arg1);
-	void (* print)(const struct check_ready_tag * ch, volatile void * arg1);
+	int (* print)(char *__restrict buff, size_t size, const struct check_ready_tag * ch, volatile void * arg1);
 	const char * name;
 } check_ready_t;
 
@@ -2212,50 +2212,63 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 	return taskin;
 }
 
-static void thread_print(const thread_item_t * const tp)
+static int thread_print(char *__restrict buff, size_t size, const thread_item_t * const tp)
 {
-	dbg_putchar('-');
-	PRINTF("    task %p: irql=%u (prio=%u), affinity=%08X,  name='%s' ", tp, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity, tp->name);
+	int n = 0;
+	n += local_snprintf_P(buff + n, size - n, "  task %p: irql=0x%02X (prio=%u), affinity=0x%08X, name='%s' ", tp, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity, tp->name);
 	if (tp->check_ready)
 	{
-		dbg_putchar('!');
 		ASSERT(tp->check_ready->print);
 		ASSERT(tp->check_ready_obj);
-		tp->check_ready->print(tp->check_ready, tp->check_ready_obj);
-		dbg_putchar('!');
+		n += tp->check_ready->print(buff + n, size - n, tp->check_ready, tp->check_ready_obj);
 	}
-	PRINTF("\n");
+	n += local_snprintf_P(buff + n, size - n, "\n");
+	return n;
 }
 
-void tasks_print(void)
+static int tasks_print0(char *__restrict buff, size_t size)
 {
+	int n = 0;
 	IRQL_t lockIrql;
 	unsigned prio;
 	unsigned core;
-	PRINTF("tasks_print: started (for each core)\n");
+
+	n += local_snprintf_P(buff + n, size - n, "tasks_print: started (for each core):\n");
 	IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
 	for (core = 0; core < ARRAY_SIZE(startedtask); ++ core)
 	{
-		thread_print(startedtask [core]);
+		n += thread_print(buff + n, size - n, startedtask [core]);
 	}
-	PRINTF("tasks_print: ready lists\n");
+	n += local_snprintf_P(buff + n, size - n, "tasks_print: not started lists:\n");
 	for (prio = 0; prio < ARRAY_SIZE(threads_list); ++ prio)
 	{
 		PRLIST_ENTRY const list = & threads_list [prio];
 		if (IsListEmpty(list))
 			continue;	// На данном PRIORITY ничего нет
-		PRINTF("tasks_print: prio=%u\n", prio);
+		n += local_snprintf_P(buff + n, size - n, "tasks_print: prio=%u\n", prio);
 		PRLIST_ENTRY t;
 		PRLIST_ENTRY tnext;
 		for (t = list->Flink; t != list; t = tnext)
 		{
 			tnext = t->Flink;
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-			thread_print(tp);
+			n += thread_print(buff + n, size - n, tp);
 		}
 	}
 	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
-	PRINTF("tasks_print done\n");
+	n += local_snprintf_P(buff + n, size - n, "tasks_print done\n");
+
+	//
+	return n;
+}
+
+void tasks_print(void)
+{
+	char buff [8192];
+	size_t size = ARRAY_SIZE(buff);
+	tasks_print0(buff, size);
+	// use result
+	dbg_puts_impl(buff);
 }
 
 void __NO_RETURN task_scheduler_othercores(void)
@@ -2276,13 +2289,15 @@ static int ready_timeout(uint_fast32_t tn, uint_fast32_t t0, uint_fast32_t td)
 }
 
 
-static void print_suspend(const check_ready_t * chrdyttag, volatile void * arg1)
+static int print_suspend(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, volatile void * arg1)
 {
+	unsigned n = 0;
 	volatile struct taskfnparam_suspend * const param = (volatile struct taskfnparam_suspend *) arg1;
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
-	PRINTF("%s: ", chrdyttag->name);
-	PRINTF("td=%u", (unsigned) param->td);
+	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
+	n += local_snprintf_P(buff + n, size - n, "td=%u", (unsigned) param->td);
+	return n;
 }
 
 static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
@@ -2298,13 +2313,15 @@ static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thre
 	return ready_timeout(tn, param->t0, param->td);
 }
 
-static void print_wait32(const check_ready_t * chrdyttag, volatile void * arg1)
+static int print_wait32(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, volatile void * arg1)
 {
+	unsigned n = 0;
 	volatile struct taskfnparam_wait32 * const param = (volatile struct taskfnparam_wait32 *) arg1;
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
-	PRINTF("%s: ", chrdyttag->name);
-	PRINTF("flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
+	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
+	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
+	return n;
 }
 
 static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
@@ -2331,13 +2348,15 @@ static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * threa
 	return 0;
 }
 
-static void print_wait8(const check_ready_t * chrdyttag, volatile void * arg1)
+static int print_wait8(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, volatile void * arg1)
 {
+	unsigned n = 0;
 	volatile struct taskfnparam_wait8 * const param = (volatile struct taskfnparam_wait8 *) arg1;
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
-	PRINTF("%s: ", chrdyttag->name);
-	PRINTF("flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
+	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
+	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
+	return n;
 }
 
 static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
@@ -2359,12 +2378,14 @@ static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread
 	return 0;
 }
 
-static void print_waitlist(const check_ready_t * chrdyttag, volatile void * arg1)
+static int print_waitlist(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, volatile void * arg1)
 {
+	unsigned n = 0;
 	volatile struct taskfnparam_waitlist * const param = (volatile struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
-	PRINTF("%s: ", chrdyttag->name);
+	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
+	return n;
 }
 
 static int readyfn_waitlist(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
@@ -2479,6 +2500,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		return oldframe;
 	ASSERT(threads_not_started == 0);
 	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC);
+	ASSERT(GICI_DECODE_IRQL(irql) < PRIOv_count);
 	if (startedtask [core] == NULL)
 	{
 		thread_item_t * const thread = & base_threads [core];
@@ -2651,7 +2673,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 {
 	if (timeMS == 0)
 		return 0;
-	if (threads_not_started)
+	if (threads_not_started || 1)
 	{
 #if ! WITHONETIMESTAMP
 	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
