@@ -1536,12 +1536,12 @@
 	#define HARDWARE_ETH_INITIALIZE() do { \
 		const portholder_t NRSTB = UINT32_C(1) << 6; /* PI6 PHYRSTB */ \
 		\
-		arm_hardware_pioi_outputs(UINT32_C(1) << 0, 1 * UINT32_C(1) << 0); /* PI0 RGMII_RXD3 */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 1, 0 * UINT32_C(1) << 1); /* PI1 RGMII_RXD2 */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 2, 0 * UINT32_C(1) << 2); /* PI2 RGMII_RXD1 */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 3, 1 * UINT32_C(1) << 3); /* PI3 RGMII_RXD0 */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 4, 0 * UINT32_C(1) << 4); /* PI4 RGMII_RXCK */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 5, 0 * UINT32_C(1) << 5); /* PI5 RGMII_RXCTL */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 0, 1 * UINT32_C(1) << 0); /* PI0 PHYAD0 RGMII_RXD3 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 4, 0 * UINT32_C(1) << 4); /* PI4 PHYAD1 RGMII_RXCK */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 5, 0 * UINT32_C(1) << 5); /* PI5 PHYAD2 RGMII_RXCTL */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 1, 0 * UINT32_C(1) << 1); /* PI1 PLLOFF RGMII_RXD2 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 2, 0 * UINT32_C(1) << 2); /* PI2 TXDLY RGMII_RXD1 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 3, 1 * UINT32_C(1) << 3); /* PI3 RXDLY RGMII_RXD0 */ \
 		\
 		arm_hardware_pioi_outputs(NRSTB, 0 * NRSTB); /* PI6 PHYRSTB */ \
 		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
