@@ -768,6 +768,7 @@ extern "C" {
 		PRIOv_SYSTEM,
 		PRIOv_BOARD,
 		PRIOv_USER,
+		PRIOv_IDLE,
 		//
 		PRIOv_count
 	};
@@ -809,6 +810,7 @@ extern "C" {
 		PRIOv_SYS,		/* таймеры, USB */
 		PRIOv_BRD,		/* папаметы фильттров, board_set_xxx */
 		PRIOv_USER,
+		PRIOv_IDLE,
 		//
 		PRIOv_count
 	};
@@ -881,7 +883,8 @@ extern "C" {
 
 	enum
 	{
-		ARM_USER_PRIORITY = 0,		/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+		ARM_IDLE_PRIORITY = 0,
+		ARM_USER_PRIORITY,		/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
 		ARM_BOARD_PRIORITY,			/* установка параметров */
 		ARM_SYSTEM_PRIORITY,		/* таймеры, USB */
 		ARM_REALTIME_PRIORITY,		/* звук */
@@ -919,14 +922,6 @@ extern "C" {
 	#define global_disableIRQ() do {  } while (0)
 
 #endif /* CPUSTYLE_ARM_CM3 */
-
-enum
-{
-	UPRIO_USER,
-	UPRIO_IDLE,
-	//
-	UPRIO_count
-};
 
 #define TASK_AFFINITY_ALL (UINT_MAX)
 void task_scheduler_initialize(void);

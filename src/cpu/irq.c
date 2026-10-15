@@ -2081,7 +2081,9 @@ static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 //static LIST_ENTRY threads_list [UPRIO_count];
 static LIST_ENTRY threads_list [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
 
-static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, void * stackbase, unsigned stacksize, unsigned unused_uprio, unsigned irql, const char * name)
+static void thread_add(thread_item_t * const thread, unsigned affinity,
+		int (*fn)(void * ctx), void * ctx,
+		void * stackbase, unsigned stacksize, unsigned prio, const char * name)
 {
 	thread->affinity = affinity;
 	ASSERT(stackbase != NULL);
@@ -2090,16 +2092,16 @@ static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn
 	// Установить параметры потока для запуска
 	context_init(stackframe, fn, ctx);
 	thread->cpuframe = stackframe;
-	thread->irql = irql;
+	thread->irql = GICI_ENCODE_IRQL(prio);
 	//thread->uprio = uprio;
 	thread->guard = thread;	// debug signature
 	thread->check_ready = NULL;
 	thread->name = name;
 
 	IRQL_t lockIrql;
-	IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
 	// включаем в список задач
-	InsertTailList(& threads_list [GICI_DECODE_IRQL(irql)], & thread->item);
+	IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
+	InsertTailList(& threads_list [prio], & thread->item);
 	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
 
 	//PRINTF("Added thread at uprio=%u, irql=%d, affinity=%02X (frame=%p), stack[%p..%p]\n", uprio, irql, affinity, stackframe, stackframe, (void *) top);
@@ -2118,7 +2120,7 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 	if (thread != NULL)
 	{
 		void * allocated = aligned_alloc(DCACHEROWSIZE, ramsize);
-		thread_add(thread, affinity, fn, ctx, allocated, ramsize, UPRIO_USER, IRQL_USER, name);
+		thread_add(thread, affinity, fn, ctx, allocated, ramsize, PRIOv_USER, name);
 	}
 	return thread;
 }
@@ -2137,17 +2139,19 @@ void task_scheduler_initialize(void)
 
 	{
 		// на каждое ядро список
-		static thread_item_t idle_threads [HARDWARE_NCORES] [PRIOv_count];
+		static thread_item_t idle_threads [HARDWARE_NCORES];
 		unsigned core;
 		for (core = 0; core < HARDWARE_NCORES; ++ core)
 		{
-			unsigned priov;
-			for (priov = 0; priov < PRIOv_count; ++ priov)
-			{
-				void * allocated = aligned_alloc(DCACHEROWSIZE, IDLETASKRAM_SIZE);
-				thread_item_t * const thread = & idle_threads [core] [priov];
-				thread_add(thread, 1U << core, task_idle, NULL, allocated, IDLETASKRAM_SIZE, UPRIO_IDLE, GICD_ENCODE_PRIORITY(priov), "idle");
-			}
+			void * allocated = aligned_alloc(DCACHEROWSIZE, IDLETASKRAM_SIZE);
+			thread_add(& idle_threads [core], 1U << core, task_idle, NULL, allocated, IDLETASKRAM_SIZE, PRIOv_IDLE, "idle");
+//			unsigned priov;
+//			for (priov = 0; priov < PRIOv_count; ++ priov)
+//			{
+//				void * allocated = aligned_alloc(DCACHEROWSIZE, IDLETASKRAM_SIZE);
+//				thread_item_t * const thread = & idle_threads [core] [priov];
+//				thread_add(thread, 1U << core, task_idle, NULL, allocated, IDLETASKRAM_SIZE, UPRIO_IDLE, GICD_ENCODE_PRIORITY(priov), "idle");
+//			}
 		}
 	}
 
@@ -2183,12 +2187,13 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 	// Возвращаем в список задач
 	InsertTailList(& threads_list [GICI_DECODE_IRQL(taskin->irql)], & taskin->item);
 	//unsigned uprio = taskin->uprio;
-	//for (;;)
+	unsigned prio;
+	// Начинаем от высшего IRQL к низшему
+	for (prio = 0; prio < PRIOv_count; ++ prio)
 	{
-		PRLIST_ENTRY const list = & threads_list [GICI_DECODE_IRQL(taskin->irql)];
+		PRLIST_ENTRY const list = & threads_list [prio];
 		PRLIST_ENTRY t;
 		PRLIST_ENTRY tnext;
-		ASSERT(! IsListEmpty(list));
 		for (t = list->Flink; t != list; t = tnext)
 		{
 			tnext = t->Flink;
@@ -2213,7 +2218,7 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 
 static void thread_print(const thread_item_t * const tp)
 {
-	PRINTF("    task %p: name='%s', irql=%u (prio=%u), affinity=%08X ", tp, tp->name, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity);
+	PRINTF("    task %p: irql=%u (prio=%u), affinity=%08X,  name='%s' ", tp, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity, tp->name);
 	if (tp->check_ready)
 	{
 		ASSERT(tp->check_ready->print);
@@ -2225,7 +2230,7 @@ static void thread_print(const thread_item_t * const tp)
 
 void tasks_print(void)
 {
-	unsigned irql;
+	unsigned prio;
 	unsigned core;
 	PRINTF("tasks_print: started (for each core)\n");
 	for (core = 0; core < ARRAY_SIZE(startedtask); ++ core)
@@ -2233,12 +2238,12 @@ void tasks_print(void)
 		thread_print(startedtask [core]);
 	}
 	PRINTF("tasks_print: ready lists\n");
-	for (irql = 0; irql < ARRAY_SIZE(threads_list); ++ irql)
+	for (prio = 0; prio < ARRAY_SIZE(threads_list); ++ prio)
 	{
-		PRLIST_ENTRY const list = & threads_list [irql];
+		PRLIST_ENTRY const list = & threads_list [prio];
 		if (IsListEmpty(list))
-			continue;
-		PRINTF("tasks_print: irql=%u\n", irql);
+			continue;	// На данном PRIORITY ничего нет
+		PRINTF("tasks_print: prio=%u\n", prio);
 		PRLIST_ENTRY t;
 		PRLIST_ENTRY tnext;
 		for (t = list->Flink; t != list; t = tnext)
