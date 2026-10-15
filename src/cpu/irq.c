@@ -2562,7 +2562,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 		const hwtimcountfast_t t0 = cpu_gethwtimticks();
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) GIC_GetInterfacePriorityMask());
-		while (cpu_gethwtimdelta(t0) < td)
+		while (get_td_delta(t0) < td)
 			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 #if ! WITHONETIMESTAMP
 	thread_set_affinity(affinity);	// lock thread core
@@ -2604,7 +2604,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 				return 0;
 			}
 			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while (cpu_gethwtimdelta(t0) < td);
+		} while (get_td_delta(t0) < td);
 #if ! WITHONETIMESTAMP
 	thread_set_affinity(affinity);	// lock thread core
 #endif /* ! WITHONETIMESTAMP */
@@ -2647,7 +2647,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 				return 0;
 			}
 			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while (cpu_gethwtimdelta(t0) < td);
+		} while (get_td_delta(t0) < td);
 #if ! WITHONETIMESTAMP
 	thread_set_affinity(affinity);	// lock thread core
 #endif /* ! WITHONETIMESTAMP */
@@ -2695,7 +2695,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 				}
 			}
 			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while (cpu_gethwtimdelta(t0) < td);
+		} while (get_td_delta(t0) < td);
 #if ! WITHONETIMESTAMP
 		thread_set_affinity(affinity);	// lock thread core
 #endif /* ! WITHONETIMESTAMP */
@@ -2791,7 +2791,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 
     const hwtimcountfast_t t0 = cpu_gethwtimticks();
     const hwtimcountfast_t td = get_td_ms(timeMS);
-    while (cpu_gethwtimdelta(t0) < td)
+    while (get_td_delta(t0) < td)
     	thread_yield();
 }
 
@@ -2808,7 +2808,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 		if (f == state)
 			return 0;
     	thread_yield();
-	} while (cpu_gethwtimdelta(t0) < td);
+	} while (get_td_delta(t0) < td);
 	return 1;
 }
 
@@ -2827,7 +2827,7 @@ int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast
 		if (f == errstate)
 			return 1;
     	thread_yield();
-	} while (cpu_gethwtimdelta(t0) < td);
+	} while (get_td_delta(t0) < td);
 	return 1;
 }
 
@@ -2846,7 +2846,7 @@ int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_f
 		if (f == errstate)
 			return 1;
     	thread_yield();
-	} while (cpu_gethwtimdelta(t0) < td);
+	} while (get_td_delta(t0) < td);
 	return 1;
 }
 
@@ -2863,7 +2863,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		if (f == state)
 			return 0;
     	thread_yield();
-	} while (cpu_gethwtimdelta(t0) < td);
+	} while (get_td_delta(t0) < td);
 	return 1;
 }
 
@@ -2886,7 +2886,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 			}
 		}
     	thread_yield();
-	} while (cpu_gethwtimdelta(t0) < td);
+	} while (get_td_delta(t0) < td);
 	return 1;	// Завепшение по таймауту
 }
 
@@ -3039,7 +3039,7 @@ void local_delay_us(uint_fast32_t timeUS)
 #endif /* ! WITHONETIMESTAMP */
 	const hwtimcountfast_t t0 = cpu_gethwtimticks();	// Счетчик увеличивается с частотой процессора
 	const hwtimcountfast_t td = get_td_us(timeUS);
-	while (cpu_gethwtimdelta(t0) < td)
+	while (get_td_delta(t0) < td)
 		;
 #if ! WITHONETIMESTAMP
 	thread_set_affinity(affinity);
