@@ -2298,8 +2298,6 @@ static int tasks_print0(char *__restrict buff, size_t size)
 
 void tasks_print(void)
 {
-	const IRQL_t irql = GIC_GetInterfacePriorityMask();
-	PRINTF("now prio=%u ", (unsigned) GICI_DECODE_IRQL(irql));
 	char buff [8192];
 	size_t size = ARRAY_SIZE(buff);
 	tasks_print0(buff, size);
@@ -4437,3 +4435,21 @@ void cpu_initialize(void)
 	//PRINTF("cpu_initialize done\n");
 }
 
+#if CPUSTYLE_T507
+
+void timer_print(void)
+{
+	const unsigned intn = TIMER1_IRQn;
+	const IRQL_t irql = GIC_GetInterfacePriorityMask();
+	PRINTF("now prio=%u (irql=%02X) ", (unsigned) GICI_DECODE_IRQL(irql), (unsigned) irql);
+	unsigned e = GIC_GetEnableIRQ(intn);
+	unsigned p = GIC_GetPriority(intn);
+	unsigned g = GIC_GetGroup(intn);
+	unsigned t = GIC_GetTarget(intn);
+	unsigned c = GIC_GetConfiguration(intn);
+	unsigned m = GIC_GetIRQStatus(intn);
+	void * h = IRQ_GetHandler(intn);
+	PRINTF("timer_print: e=%u, p=%u, g=%u, t=%u, c=%u, m=%u, h=%p\n", e, p, g, t, c, m, h);
+}
+
+#endif
