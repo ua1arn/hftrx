@@ -4314,31 +4314,6 @@ void cpu_initialize(void)
 
 	cpump_initialize();
 
-#elif CPUSTYLE_ATMEGA328
-	// управления JTAG нету
-
-#elif CPUSTYLE_ATMEGA128
-
-#elif CPUSTYLE_ATMEGA32
-
-	#if CPUSTYLE_ATMEGA_XXX4
-
-		// Для забывших выключить JTAG
-		MCUCR = (1u << JTD);	// must write this bit to the desired value twice within four cycles to change its value.
-		MCUCR = (1u << JTD);
-
-		CLKPR = (1u << CLKPCE);	// CLKPCE is cleared by hardware four cycles after it is written or when CLKPS bits are written.
-		CLKPR = 0x00;
-
-
-	#else
-
-		// Для забывших выключить JTAG
-		MCUCSR = (1u << JTD);	// must write this bit to the desired value twice within four cycles to change its value.
-		MCUCSR = (1u << JTD);
-
-	#endif
-
 #elif CPUSTYLE_RISCV
 
 	// https://www.shincbm.com/embedded/2021/05/06/riscv-and-modern-c++-part1-6.html

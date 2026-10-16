@@ -2602,7 +2602,7 @@ void arm_hardware_core_poweron(unsigned core)
 #endif
 }
 
-// Поддержтвается ли на текущем CORE aarch32
+// Поддерживается ли на текущем CORE aarch32
 int arm_hardware_aarch32implemented(void)
 {
 #if CPUSTYLE_A733

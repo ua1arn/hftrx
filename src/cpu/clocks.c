@@ -7515,66 +7515,6 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	SysTick_Config(calcdivround2(BOARD_SYSTICK_FREQ, ticksfreq));	// CMSIS устанавливает SysTick_CTRL_CLKSOURCE_Msk
 	arm_hardware_set_handler_system(SysTick_IRQn, SysTick_Handler_Active);		// разрешение прерывания игнорируется для системныз векторов
 
-#elif CPUSTYLE_ATMEGA328
-
-	// ATMega328
-	// Timer/Counter 2 initialization
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, & value, 1);
-
-	ASSR = 0x00;
-	TCCR2A = (1u << WGM01);	// CTC mode = 0x02
-	TCCR2B = prei + 1; // прескалер
-	OCR2A = value;	// делитель - программирование полного периода
-	OCR2B = 0x00;
-	TIMSK2 |= (UINT32_C(1) << OCIE2A);	//0x02;	// enable interrupt from Timer/Counter 2 - use TIMER2_COMP_vect
-
-	TCNT2 = 0x00;
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	// Modern ATMega644
-
-	// Timer/Counter 0 initialization
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
-	TCCR0A = (1u << WGM01);	// CTC mode = 0x02
-	TCCR0B = prei + 1; // прескалер
-	OCR0A = value;	// делитель - программирование полного периода
-	OCR0B = 0x00;
-	TIMSK0 |= (UINT32_C(1) << OCIE0A);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMPA_vect
-
-	TCNT0 = 0x00;
-
-#elif CPUSTYLE_ATMEGA128
-	// ATMega128/ATMega64
-
-	// Timer/Counter 0 initialization
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA128_TIMER0_WIDTH, ATMEGA128_TIMER0_TAPS, & value, 1);
-	TCCR0 = (UINT32_C(1) << WGM01) | (prei + 1);	// прескалер
-	OCR0 = value;	// делитель - программирование полного периода
-
-	TIMSK |= (UINT32_C(1) << OCIE0);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMP_vect
-
-	TCNT0 = 0x00;
-
-#elif CPUSTYLE_ATMEGA32
-	// Classic ATMega32
-
-	// Timer/Counter 0 initialization
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
-	TCCR0 = (UINT32_C(1) << WGM01) | (prei + 1);	// прескалер
-	OCR0 = value;	// делитель - программирование полного периода
-
-	TIMSK |= (UINT32_C(1) << OCIE0);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMP_vect
-
-	TCNT0 = 0x00;
 
 #elif CPUSTYLE_AT91SAM7S
 
