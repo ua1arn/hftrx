@@ -2299,7 +2299,8 @@ static int print_suspend(char *__restrict buff, size_t size, const check_ready_t
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
-	n += local_snprintf_P(buff + n, size - n, "td=%u", (unsigned) param->td);
+	n += local_snprintf_P(buff + n, size - n, "t0=%u ", (unsigned) param->t0);
+	n += local_snprintf_P(buff + n, size - n, "td=%u ", (unsigned) param->td);
 	return n;
 }
 
@@ -2323,7 +2324,7 @@ static int print_wait32(char *__restrict buff, size_t size, const check_ready_t 
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
-	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
+	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, t0=%u, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->t0, (unsigned) param->td);
 	return n;
 }
 
@@ -2358,7 +2359,7 @@ static int print_wait8(char *__restrict buff, size_t size, const check_ready_t *
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
-	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
+	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, t0=%u, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->t0, (unsigned) param->td);
 	return n;
 }
 
@@ -2388,6 +2389,7 @@ static int print_waitlist(char *__restrict buff, size_t size, const check_ready_
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
+	n += local_snprintf_P(buff + n, size - n, "t0=%u, td=%u", (unsigned) param->t0, (unsigned) param->td);
 	return n;
 }
 
