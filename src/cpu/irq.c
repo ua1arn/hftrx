@@ -2001,7 +2001,6 @@ typedef struct thread_item_tag
 	unsigned affinity;
 	exception_frame_t * cpuframe;	// cpu state
 	IRQL_t irql;
-	//unsigned uprio;
 	const check_ready_t * check_ready;
 	volatile void * check_ready_obj;
 	char name [32];
@@ -2082,10 +2081,18 @@ static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 static LIST_ENTRY threads_listW;
 static LIST_ENTRY threads_listR [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
 
-static void thread_add(thread_item_t * const thread, unsigned affinity,
-		int (*fn)(void * ctx), void * ctx,
-		void * stackbase, unsigned stacksize, unsigned prio, const char * name)
-{
+
+static void task_insertready(thread_item_t * const tp) {
+	ASSERT(tp->check_ready == NULL);
+	InsertTailList(& threads_listR [GICI_DECODE_IRQL(tp->irql)], & tp->item);
+}
+
+static void thread_add(
+	thread_item_t * const thread, unsigned affinity,
+	int (*fn)(void * ctx), void * ctx,
+	void * stackbase, unsigned stacksize,
+	unsigned prio, const char * name) {
+
 	ASSERT(NULL != thread);
 	ASSERT(NULL != stackbase);
 	uintptr_t top = (uintptr_t) stackbase + stacksize;
@@ -2103,7 +2110,7 @@ static void thread_add(thread_item_t * const thread, unsigned affinity,
 	IRQL_t lockIrql;
 	// включаем в список задач
 	IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
-	InsertTailList(& threads_listR [prio], & thread->item);	// Пскольку готово у выполнению - в список готовых
+	task_insertready(thread);	// Поскольку готово у выполнению - в список готовых
 	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
 
 	//PRINTF("Added thread at prio=%d, affinity=%02X (frame=%p), stack[%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
@@ -2188,7 +2195,7 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin) 
 		InsertTailList(& threads_listW, & taskin->item);
 	} else {
 		// Ничего не ждёт
-		InsertTailList(& threads_listR [GICI_DECODE_IRQL(taskin->irql)], & taskin->item);
+		task_insertready(taskin);
 	}
 
 	// Обрабатываем проверку ожидания
@@ -2199,7 +2206,7 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin) 
 			task_isready(tp, tn);
 		if (tp->check_ready == NULL) {
 			RemoveEntryList(& tp->item);
-			InsertTailList(& threads_listR [GICI_DECODE_IRQL(tp->irql)], & tp->item);
+			task_insertready(tp);
 		}
 	}
 
