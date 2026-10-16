@@ -21000,6 +21000,9 @@ static void keyspoolprocess(void * ctx)
 		case 't':
 			tasks_print();
 			break;
+		case 'q':
+			timer_print();
+			break;
 #endif /* WITHRTOS */
 #if 0
 		case 'd':

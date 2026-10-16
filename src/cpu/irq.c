@@ -4450,6 +4450,7 @@ void timer_print(void)
 	unsigned m = GIC_GetIRQStatus(intn);
 	void * h = IRQ_GetHandler(intn);
 	PRINTF("timer_print: e=%u, p=%u, g=%u, t=%u, c=%u, m=%u, h=%p\n", e, p, g, t, c, m, h);
+	GIC_EndInterrupt((IRQn_Type) intn);	/* CPUID, EOINTID */
 }
 
 #endif
