@@ -12907,55 +12907,58 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 
 }
 
+// обработка и сохранение в savesampleout16stereo_user()
+static void speexframeprocessing(speexel_t * p)
+{
+	unsigned score;
+	for (score = 0; score < FIRBUFSIZE; )
+	{
+		const unsigned len = 256;
+		const unsigned rest = (FIRBUFSIZE - score);
+		const unsigned chunk = rest >= len ? len : rest;
+#if WITHUSEDUALWATCH
+		deliveryfloat_buffer(& speexinfloat, p + FIRBUFSIZE + score, p + score, chunk);	// to AUDIO codec
+#else /* WITHUSEDUALWATCH */
+		deliveryfloat_buffer(& speexinfloat, p + score, p + score, chunk);	// to AUDIO codec
+#endif /* WITHUSEDUALWATCH */
+		score += chunk;
+	}
+	uint_fast8_t pathi;
+	FLOAT_t * outsp [NTRX];
+	for (pathi = 0; pathi < NTRX; ++ pathi)
+	{
+		rxaproc_t * const nrp = & rxaprocs [pathi];
+		//const uint_fast8_t amode = getamode(pathi);
+		// nrp->outsp указывает на результат обработки
+		//outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
+		outsp [pathi] = afpcw(pathi, nrp, p + pathi * FIRBUFSIZE);
+	}
+	//////////////////////////////////////////////
+	// Save results
+	//unsigned score;
+	for (score = 0; score < FIRBUFSIZE; )
+	{
+		const unsigned len = 256;
+		const unsigned rest = (FIRBUFSIZE - score);
+		const unsigned chunk = rest >= len ? len : rest;
+#if WITHUSEDUALWATCH
+		deliveryfloat_buffer(& speexoutfloat, outsp [0] + score, outsp [1] + score, chunk);	// to AUDIO codec
+#else /* WITHUSEDUALWATCH */
+		deliveryfloat_buffer(& speexoutfloat, outsp [0] + score, outsp [0] + score, chunk);	// to AUDIO codec
+#endif /* WITHUSEDUALWATCH */
+		score += chunk;
+	}
+}
 
 // user-mode processing - NR, эквалайзер приёмника
-void
-user_audioproc(void * ctx)
+void user_audioproc(void * ctx)
 {
 	(void) ctx;
 #if ! WITHSKIPUSERMODE
 	speexel_t * p;
 	while (takespeexready(& p, 0))
 	{
-		// обработка и сохранение в savesampleout16stereo_user()
-		unsigned score;
-		for (score = 0; score < FIRBUFSIZE; )
-		{
-			const unsigned len = 256;
-			const unsigned rest = (FIRBUFSIZE - score);
-			const unsigned chunk = rest >= len ? len : rest;
-	#if WITHUSEDUALWATCH
-			deliveryfloat_buffer(& speexinfloat, p + FIRBUFSIZE + score, p + score, chunk);	// to AUDIO codec
-	#else /* WITHUSEDUALWATCH */
-			deliveryfloat_buffer(& speexinfloat, p + score, p + score, chunk);	// to AUDIO codec
-	#endif /* WITHUSEDUALWATCH */
-			score += chunk;
-		}
-		uint_fast8_t pathi;
-		FLOAT_t * outsp [NTRX];
-		for (pathi = 0; pathi < NTRX; ++ pathi)
-		{
-			rxaproc_t * const nrp = & rxaprocs [pathi];
-			//const uint_fast8_t amode = getamode(pathi);
-			// nrp->outsp указывает на результат обработки
-			//outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
-			outsp [pathi] = afpcw(pathi, nrp, p + pathi * FIRBUFSIZE);
-		}
-		//////////////////////////////////////////////
-		// Save results
-		//unsigned score;
-		for (score = 0; score < FIRBUFSIZE; )
-		{
-			const unsigned len = 256;
-			const unsigned rest = (FIRBUFSIZE - score);
-			const unsigned chunk = rest >= len ? len : rest;
-	#if WITHUSEDUALWATCH
-			deliveryfloat_buffer(& speexoutfloat, outsp [0] + score, outsp [1] + score, chunk);	// to AUDIO codec
-	#else /* WITHUSEDUALWATCH */
-			deliveryfloat_buffer(& speexoutfloat, outsp [0] + score, outsp [0] + score, chunk);	// to AUDIO codec
-	#endif /* WITHUSEDUALWATCH */
-			score += chunk;
-		}
+		speexframeprocessing(p);	// обработка и сохранение в savesampleout16stereo_user()
 		// Освобождаем буфер
 		releasespeexbuffer(p);
 	}
@@ -12964,54 +12967,16 @@ user_audioproc(void * ctx)
 
 int user_audioproc_thread(void * ctx)	// user-mode processing - NR, эквалайзер приёмника
 {
+	(void) ctx;
 	for (;;)
 	{
-		(void) ctx;
 		thread_yield();
 
 	#if ! WITHSKIPUSERMODE
 		speexel_t * p;
 		if (takespeexready(& p, LOCAL_WAITINFINITY))
 		{
-			// обработка и сохранение в savesampleout16stereo_user()
-			unsigned score;
-			for (score = 0; score < FIRBUFSIZE; )
-			{
-				const unsigned len = 256;
-				const unsigned rest = (FIRBUFSIZE - score);
-				const unsigned chunk = rest >= len ? len : rest;
-		#if WITHUSEDUALWATCH
-				deliveryfloat_buffer(& speexinfloat, p + FIRBUFSIZE + score, p + score, chunk);	// to AUDIO codec
-		#else /* WITHUSEDUALWATCH */
-				deliveryfloat_buffer(& speexinfloat, p + score, p + score, chunk);	// to AUDIO codec
-		#endif /* WITHUSEDUALWATCH */
-				score += chunk;
-			}
-			uint_fast8_t pathi;
-			FLOAT_t * outsp [NTRX];
-			for (pathi = 0; pathi < NTRX; ++ pathi)
-			{
-				rxaproc_t * const nrp = & rxaprocs [pathi];
-				//const uint_fast8_t amode = getamode(pathi);
-				// nrp->outsp указывает на результат обработки
-				//outsp [pathi] = mdt [amode].afproc(pathi, nrp, p + pathi * FIRBUFSIZE);
-				outsp [pathi] = afpcw(pathi, nrp, p + pathi * FIRBUFSIZE);
-			}
-			//////////////////////////////////////////////
-			// Save results
-			//unsigned score;
-			for (score = 0; score < FIRBUFSIZE; )
-			{
-				const unsigned len = 256;
-				const unsigned rest = (FIRBUFSIZE - score);
-				const unsigned chunk = rest >= len ? len : rest;
-		#if WITHUSEDUALWATCH
-				deliveryfloat_buffer(& speexoutfloat, outsp [0] + score, outsp [1] + score, chunk);	// to AUDIO codec
-		#else /* WITHUSEDUALWATCH */
-				deliveryfloat_buffer(& speexoutfloat, outsp [0] + score, outsp [0] + score, chunk);	// to AUDIO codec
-		#endif /* WITHUSEDUALWATCH */
-				score += chunk;
-			}
+			speexframeprocessing(p);	// обработка и сохранение в savesampleout16stereo_user()
 			// Освобождаем буфер
 			releasespeexbuffer(p);
 		}
