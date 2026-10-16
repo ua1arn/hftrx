@@ -2236,7 +2236,7 @@ static int tasks_print0(char *__restrict buff, size_t size)
 	{
 		n += thread_print(buff + n, size - n, startedtask [core]);
 	}
-	n += local_snprintf_P(buff + n, size - n, "tasks_print: not started lists:\n");
+	n += local_snprintf_P(buff + n, size - n, "tasks_print: not started lists, sys_now=%u:\n", (unsigned) sys_now());
 	for (prio = 0; prio < ARRAY_SIZE(threads_list); ++ prio)
 	{
 		PRLIST_ENTRY const list = & threads_list [prio];
@@ -2261,6 +2261,8 @@ static int tasks_print0(char *__restrict buff, size_t size)
 
 void tasks_print(void)
 {
+	const IRQL_t irql = GIC_GetInterfacePriorityMask();
+	PRINTF("now prio=%u ", (unsigned) GICI_DECODE_IRQL(irql));
 	char buff [8192];
 	size_t size = ARRAY_SIZE(buff);
 	tasks_print0(buff, size);
