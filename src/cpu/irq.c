@@ -2174,40 +2174,39 @@ static int task_isready(thread_item_t * tp, uint_fast32_t tn)
 }
 
 // получить готовую у выполнению задачу для ядра, попадающего в affinity
-static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
-{
+static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin) {
 	const uint_fast32_t tn = sys_now();
 	ASSERT(taskin);
 	ASSERT(affinity);
-	// Возвращаем в список задач
-	if (taskin->check_ready != NULL) {
-		InsertTailList(& threads_listW, & taskin->item);
-	} else {
-		InsertTailList(& threads_listR [GICI_DECODE_IRQL(taskin->irql)], & taskin->item);
-	}
-	//unsigned uprio = taskin->uprio;
 	unsigned prio;
 	PRLIST_ENTRY t;
 	PRLIST_ENTRY tnext;
-	for (t = threads_listW.Flink; t != & threads_listW; t = tnext)
-	{
+
+	// Возвращаем в список задач
+	if (taskin->check_ready != NULL) {
+		// Необходимо ждать
+		InsertTailList(& threads_listW, & taskin->item);
+	} else {
+		// Ничего не ждёт
+		InsertTailList(& threads_listR [GICI_DECODE_IRQL(taskin->irql)], & taskin->item);
+	}
+
+	// Обрабатываем проверку ожидания
+	for (t = threads_listW.Flink; t != & threads_listW; t = tnext) {
 		tnext = t->Flink;
 		thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
 		if (tp->affinity & affinity)
 			task_isready(tp, tn);
-		if (tp->check_ready == 0)
-		{
+		if (tp->check_ready == NULL) {
 			RemoveEntryList(& tp->item);
 			InsertTailList(& threads_listR [GICI_DECODE_IRQL(tp->irql)], & tp->item);
 		}
 	}
-	// Начинаем от высшего IRQL к низшему
-	for (prio = 0; prio < PRIOv_count; ++ prio)
-	{
+
+	// Начинаем от высшего IRQL к низшему - ищем подходящий к исполнению.
+	for (prio = 0; prio < PRIOv_count; ++ prio) {
 		PRLIST_ENTRY const listR = & threads_listR [prio];
-		PRLIST_ENTRY t;
-		for (t = listR->Flink; t != listR; t = t->Flink)
-		{
+		for (t = listR->Flink; t != listR; t = t->Flink) {
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
 			if ((tp->affinity & affinity) && tp->check_ready == NULL)
 			{
@@ -2219,8 +2218,7 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 	}
 	RemoveEntryList(& taskin->item);
 	// debug stuff
-	if (taskin->check_ready)
-	{
+	if (taskin->check_ready != NULL) {
 		//tasks_print();
 		ASSERT(taskin->check_ready == NULL);
 	}
