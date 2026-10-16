@@ -5069,7 +5069,7 @@ static dpcobj_t userprintdpc;
 static void historyPrint(void)
 {
 	historyStop = 1;
-	dpcobj_initialize(& userprintdpc, historyUserPrint, NULL);
+	dpcobj_initialize(& userprintdpc, historyUserPrint, NULL, "userprintdpc");
 	board_dpc_call(& userprintdpc, 0);
 
 }
@@ -5741,7 +5741,7 @@ void hftrx_init(void)
 	{
 		static dpcobj_t rttydpcobj;
 
-		dpcobj_initialize(& rttydpcobj, modems_spool, NULL);
+		dpcobj_initialize(& rttydpcobj, modems_spool, NULL, "rttydpcobj");
 		board_dpc_addentry(& rttydpcobj, board_dpc_coreid());
 
 		modem_update();

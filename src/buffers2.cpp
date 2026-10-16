@@ -4191,8 +4191,9 @@ void buffers_start(void)
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
 	if (thread_create_user(TASK_AFFINITY_ALL, dsphftrxproc_spool_user_thread, NULL, procthread, sizeof procthread, "dsphftrxproc_spool_user_thread") == NULL)
 	{
+		PRINTF("buffers_start: rx process in spool, TXSPOOLCORE=%u\n", TXSPOOLCORE);
 		static dpcobj_t dsphftrxproc_spool_dpc;
-		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, hftrx_rxgetpathA());
+		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, hftrx_rxgetpathA(), "dsphftrxproc_spool_dpc");
 		board_dpc_addentry(& dsphftrxproc_spool_dpc, TXSPOOLCORE);
 	}
 

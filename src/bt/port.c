@@ -682,7 +682,7 @@ void bt_initialize(void)
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, dpc_0p01_s_timer_fn, NULL);
+		dpcobj_initialize(& dpcobj, dpc_0p01_s_timer_fn, NULL, "dpc_0p01_s_timer_fn");
 		ticker_initialize_user(& ticker, NTICKS(10), & dpcobj);
 		ticker_add(& ticker);
 	}

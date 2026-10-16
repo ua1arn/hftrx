@@ -361,12 +361,12 @@ void user_uart5_initialize(void)
 
 	static ticker_t uart5_ticker;
 	static dpcobj_t uart5_dpc_timed;
-	dpcobj_initialize(& uart5_dpc_timed, uart5_dpc_spool, NULL);
+	dpcobj_initialize(& uart5_dpc_timed, uart5_dpc_spool, NULL, "uart5_dpc_timed");
 	ticker_initialize_user(& uart5_ticker, NTICKS(PERIODSPOOL), & uart5_dpc_timed);
 	ticker_add(& uart5_ticker);
 
 	static dpcobj_t uart5_dpc_entry;
-	dpcobj_initialize(& uart5_dpc_entry, uart5_spool, NULL);
+	dpcobj_initialize(& uart5_dpc_entry, uart5_spool, NULL, "uart5_dpc_entry");
 	board_dpc_addentry(& uart5_dpc_entry, board_dpc_coreid());
 }
 

@@ -8172,7 +8172,7 @@ void hightests(void)
 		unsigned core;
 		for (core = 0; core < ARRAY_SIZE(userprintdpcs); ++ core)
 		{
-			dpcobj_initialize(& userprintdpcs [core], coremark_wrapper, NULL);
+			dpcobj_initialize(& userprintdpcs [core], coremark_wrapper, NULL, "coremark_wrapper");
 			board_dpc_addentry(& userprintdpcs [core], core);
 		}
 	}

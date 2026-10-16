@@ -2119,6 +2119,16 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 	return thread;
 }
 
+
+static int ocorespump(void * ctx)
+{
+	for (;;)
+	{
+		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
+	}
+	return 0;
+}
+
 void task_scheduler_initialize(void)
 {
 	{
@@ -2132,14 +2142,9 @@ void task_scheduler_initialize(void)
 	}
 
 	{
-		// на каждое ядро список
-		static thread_item_t idle_threads [HARDWARE_NCORES];
-		unsigned core;
-		for (core = 0; core < HARDWARE_NCORES; ++ core)
-		{
-			void * allocated = aligned_alloc(DCACHEROWSIZE, IDLETASKRAM_SIZE);
-			thread_add(& idle_threads [core], 1U << core, task_idle, NULL, allocated, IDLETASKRAM_SIZE, PRIOv_IDLE, "idle");
-		}
+		// пока - добавляем для 0-го ядра.
+		void * allocated = aligned_alloc(DCACHEROWSIZE, IDLETASKRAM_SIZE);
+		thread_add(allocated, 1U << 0, task_idle, NULL, allocated, IDLETASKRAM_SIZE, PRIOv_IDLE, "idle0");
 	}
 
 }
@@ -2263,15 +2268,20 @@ void tasks_print(void)
 	dbg_puts_impl(buff);
 }
 
+// завершение инициализации - уход в вечный цикл
 void __NO_RETURN task_scheduler_othercores(void)
 {
 	ASSERT(threads_not_started == 0);
-	thread_yield();	// этот поток включается в список учтенных.
+
+	const unsigned core = arm_hardware_cpuid();
+	void * allocated = aligned_alloc(DCACHEROWSIZE, IDLETASKRAM_SIZE);
+	thread_add(allocated, 1U << core, ocorespump, NULL, allocated, IDLETASKRAM_SIZE, PRIOv_USER, "dpc");
+	LowerIrql(IRQL_IDLE);
 	for (;;)
 	{
-		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
-		//__DMB();
+		thread_yield();
 	}
+
 }
 
 static int ready_timeout(uint_fast32_t tn, uint_fast32_t t0, uint_fast32_t td)
@@ -2578,8 +2588,6 @@ void local_delay_ms(uint_fast32_t timeMS)
 // return non-zero: timeout error
 int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS)
 {
-	if (timeMS == 0)
-		return 0;
 	if (threads_not_started)
 	{
 #if ! WITHONETIMESTAMP
@@ -2621,8 +2629,6 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 // return non-zero: timeout error
 int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS)
 {
-	if (timeMS == 0)
-		return 0;
 	if (threads_not_started)
 	{
 #if ! WITHONETIMESTAMP
@@ -2664,8 +2670,6 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 // return non-zero: timeout error
 int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS)
 {
-	if (timeMS == 0)
-		return 0;
 	if (threads_not_started)
 	{
 #if ! WITHONETIMESTAMP
@@ -2732,6 +2736,7 @@ void task_scheduler_initialize(void)
 
 void task_scheduler_start(void) {}
 
+// завершение инициализации - уход в вечный цикл
 void __NO_RETURN task_scheduler_othercores(void)
 {
 	for (;;)
@@ -4073,13 +4078,14 @@ void board_dpc_initialize(void)
 	}
 }
 
-void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg)
+void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg, const char * name)
 {
 	dp->flag = 0;
 	dp->fn = func;
 	dp->ctx = arg;
 	dp->tag1 = dp;
 	dp->tag2 = dp;
+	local_snprintf_P(dp->name, ARRAY_SIZE(dp->name), "%s", name);
 }
 
 static void dpcobj_release(dpcobj_t * dp)
@@ -4182,7 +4188,7 @@ uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 /* добавить функцию для периодического вызова */
 uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
 {
-	//PRINTF("board_dpc_addentry: dp=%p, coreid=%u\n", dp, (unsigned) coreid);
+	PRINTF("board_dpc_addentry: dp=%p, coreid=%u name='%s\n", dp, (unsigned) coreid, dp->name);
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	LCLSPINLOCK_t * const lock = & dpc->lock;

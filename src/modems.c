@@ -1064,7 +1064,7 @@ void modem_initialze(void)
 	ticker_add(& modemticker);
 
 
-	dpcobj_initialize(& modem_dpc, processmodem, NULL);
+	dpcobj_initialize(& modem_dpc, processmodem, NULL, "modem_dpc");
 	board_dpc_addentry(& modem_dpc, board_dpc_coreid());
 }
 

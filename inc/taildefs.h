@@ -301,10 +301,11 @@ void InitializeIrql(IRQL_t newIRQL);
 		udpcfn_t fn;
 		void * ctx;
 		uint8_t delflag;	// помечена для удаления
+		char name [32];
 		void * tag2;
 	} dpcobj_t;
 
-	void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg);
+	void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg, const char * name);
 	void board_dpc_processing(void);	// user-mode функция обработки списков запросов dpc на текущем процессоре
 	uint_fast8_t board_dpc_coreid(void);	// получить core id текушего потока
 	uint_fast8_t board_dpc_display_coreid(void);	// получить core id для UI потока

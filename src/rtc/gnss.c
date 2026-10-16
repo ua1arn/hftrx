@@ -268,7 +268,7 @@ void nmeagnss_initialize(void)
 	const uint_fast32_t baudrate = UINT32_C(115200);
 	nmea_state = NMEAST_INITIALIZED;
 
-	dpcobj_initialize(& dpcobj_gnss, dpc_parsehandler, NULL);		// Update RTC by NMEA time
+	dpcobj_initialize(& dpcobj_gnss, dpc_parsehandler, NULL, "dpcobj_gnss");		// Update RTC by NMEA time
 
 //	VERIFY(board_dpc_addentry(& nmeaspool, board_dpc_coreid()));
 

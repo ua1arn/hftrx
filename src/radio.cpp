@@ -17875,7 +17875,7 @@ static dpcobj_t cat_dpc;
 // High level cat initialize
 static void cat_initialize(void)
 {
-	dpcobj_initialize(& cat_dpc, cat_dpc_func, NULL);
+	dpcobj_initialize(& cat_dpc, cat_dpc_func, NULL, "cat_dpc");
 	board_dpc_addentry(& cat_dpc, board_dpc_coreid());
 }
 
@@ -21186,7 +21186,7 @@ static void hamradio_main_initialize(void)
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL);
+		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL, "dpc_1s_timer_fn");
 		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
 		ticker_add(& ticker);
 	}
@@ -21195,7 +21195,7 @@ static void hamradio_main_initialize(void)
 		static dpcobj_t dpcobj;
 
 		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
-		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL);
+		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL, "dpc_displatch_timer_fn");
 		ticker_initialize_user_display(& displatchticker, NTICKS(calcdivround2(1000, glatchfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
 		ticker_add(& displatchticker);
 	}
@@ -21203,7 +21203,7 @@ static void hamradio_main_initialize(void)
 		static ticker_t refreshticker;
 		static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, dpc_displatch_refresh_fn, NULL);
+		dpcobj_initialize(& dpcobj, dpc_displatch_refresh_fn, NULL, "dpc_displatch_refresh_fn");
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 		ticker_initialize_user_display(& refreshticker, NTICKS(calcdivround2(1000, gdisplayfreqsfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
 		ticker_add(& refreshticker);
@@ -21213,7 +21213,7 @@ static void hamradio_main_initialize(void)
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, dpc_0p1_s_timer_fn, NULL);
+		dpcobj_initialize(& dpcobj, dpc_0p1_s_timer_fn, NULL, "dpc_0p1_s_timer_fn");
 		ticker_initialize_user(& ticker, NTICKS(100), & dpcobj);
 		ticker_add(& ticker);
 	}
@@ -21221,7 +21221,7 @@ static void hamradio_main_initialize(void)
 #if WITHAUTOTUNER
 	{
 		static dpcobj_t dpcobj;
-		dpcobj_initialize(& dpcobj, dpc_tunertimer_fn, NULL);
+		dpcobj_initialize(& dpcobj, dpc_tunertimer_fn, NULL, "dpc_tunertimer_fn");
 		ticker_initialize_user(& ticker_tuner, NTICKS(gtunerdelay), & dpcobj);
 		ticker_add(& ticker_tuner);
 	}
@@ -21230,14 +21230,14 @@ static void hamradio_main_initialize(void)
 	{
 		static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, keyspoolprocess, NULL);
+		dpcobj_initialize(& dpcobj, keyspoolprocess, NULL, "keyspoolprocess");
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 	}
 #endif
 	{
 		static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, appspoolprocess, NULL);
+		dpcobj_initialize(& dpcobj, appspoolprocess, NULL, "appspoolprocess");
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 	}
 	// начальная инициализация
@@ -23450,7 +23450,7 @@ application_initialize(void)
 	if (thread_create_user(TASK_AFFINITY_ALL, user_audioproc_thread, NULL, procthread, sizeof procthread, "user_audioproc_thread") == NULL)
 	{
 		static dpcobj_t user_audioproc_dpc;
-		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);
+		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL, "user_audioproc_dpc");
 
 		// CPUSTYLE_STM32MP1: DSP обработка выполняется в обработчике REALTIME прерываний от DMA - CORE #1 - потому туда помещать ещё аудиообработку проблематично по произволдительности
 	#if ! WITHINTEGRATEDDSP || ! WITHSMPSYSTEM || CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1

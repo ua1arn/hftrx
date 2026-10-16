@@ -840,6 +840,7 @@ extern "C" {
 	#define IRQL_SYSTEM 		(GICI_ENCODE_IRQL(PRIOv_SYS))
 	#define IRQL_BOARD			(GICI_ENCODE_IRQL(PRIOv_BRD))
 	#define IRQL_USER 			(GICI_ENCODE_IRQL(PRIOv_USER))
+	#define IRQL_IDLE 			(GICI_ENCODE_IRQL(PRIOv_IDLE))
 
 	// A lower priority value indicating a higher priority
 	// Value for GICD
@@ -926,7 +927,7 @@ extern "C" {
 #define TASK_AFFINITY_ALL (UINT_MAX)
 void task_scheduler_initialize(void);
 void task_scheduler_start(void);
-void __NO_RETURN task_scheduler_othercores(void);
+void __NO_RETURN task_scheduler_othercores(void);	// завершение инициализации - уход в вечный цикл
 void tasks_print(void);
 
 unsigned thread_set_affinity(unsigned affinity);	// Set thread affinity - return old value

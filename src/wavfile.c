@@ -663,7 +663,7 @@ static dpcobj_t sdcard_dpc_entry;
 void sdcardinitialize(void)
 {
 	sdstate = SDSTATE_IDLE;
-	dpcobj_initialize(& sdcard_dpc_entry, sdcard_doc_process, NULL);
+	dpcobj_initialize(& sdcard_dpc_entry, sdcard_doc_process, NULL, "sdcard_dpc_entry");
 	board_dpc_addentry(& sdcard_dpc_entry, board_dpc_coreid());
 }
 

@@ -560,8 +560,8 @@ void nmeatuner_initialize(void)
 	hardware_uart2_enablerx(1);
 	hardware_uart2_enabletx(0);
 
-	dpcobj_initialize(& dpc_ua1ceituner, uart2_dpc_spool, NULL);
-	dpcobj_initialize(& uart2_dpc_timed, uart2_dpc_spool, NULL);
+	dpcobj_initialize(& dpc_ua1ceituner, uart2_dpc_spool, NULL, "dpc_ua1ceituner");
+	dpcobj_initialize(& uart2_dpc_timed, uart2_dpc_spool, NULL, "uart2_dpc_timed");
 	ticker_initialize_user(& uart2_ticker, NTICKS(1000), & uart2_dpc_timed);
 	ticker_add(& uart2_ticker);
 }
@@ -4712,7 +4712,7 @@ static void board_rtc_initialize(void)
 		static dpcobj_t dpcobj;
 		static ticker_t ticker;
 
-		dpcobj_initialize(& dpcobj, board_rtc_cache_update, NULL);
+		dpcobj_initialize(& dpcobj, board_rtc_cache_update, NULL, "board_rtc_cache_update");
 		ticker_initialize_user(& ticker, NTICKS(500), & dpcobj);
 		ticker_add(& ticker);
 	}
@@ -5172,7 +5172,7 @@ void ua1cei_magloop_initialize(void)
 	HARDWARE_NMEAX_ENABLERX(1);
 	HARDWARE_NMEAX_ENABLETX(0);
 
-	dpcobj_initialize(& nmeaX_dpc_timed, nmeaX_dpc_spool, NULL);
+	dpcobj_initialize(& nmeaX_dpc_timed, nmeaX_dpc_spool, NULL, "nmeaX_dpc_timed");
 	ticker_initialize_user(& nmeaX_ticker, NTICKS(1000), & nmeaX_dpc_timed);
 	ticker_add(& nmeaX_ticker);
 

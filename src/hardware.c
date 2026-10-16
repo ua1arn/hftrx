@@ -2586,7 +2586,7 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	}
 #endif /* CPUSTYLE_VM14 */
 
-	task_scheduler_othercores();
+	task_scheduler_othercores();	// завершение инициализации - уход в вечный цикл
 }
 
 void arm_hardware_core_poweron(unsigned core)
