@@ -141,6 +141,7 @@ enum
 #else /* CODEC1_FRAMEBITS == 64 */
 
 	//#error Unsupported CODEC1_FRAMEBITS value
+	typedef int32_t aubufv_t;
 
 #endif /* CODEC1_FRAMEBITS == 64 */
 
@@ -552,6 +553,8 @@ void elfill_dmabuffer32tx(FLOAT_t ch0, FLOAT_t ch1, int32_t v3);
 void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_dmabufferhdmi48tx(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_recordswav48(FLOAT_t ch0, FLOAT_t ch1);
+
+void elfill_dmabuffer16rx_raw(aubufv_t ch0, aubufv_t ch1);	/* Перенос из FPGA PIPE в формируемый буфер виртуального кодекв */
 
 uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest);
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest);
@@ -1038,9 +1041,6 @@ extern volatile phase_t mirror_nco2;
 extern volatile phase_t mirror_nco3;
 extern volatile phase_t mirror_nco4;
 extern volatile phase_t mirror_ncorts;
-
-void user_audioproc(void * ctx);	// user-mode processing - NR, эквалайзер приёмника
-int user_audioproc_thread(void * ctx);	// user-mode processing - NR, эквалайзер приёмника
 
 // Эквалайзер НЧ тракта передатчика
 //	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц

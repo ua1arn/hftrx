@@ -12908,7 +12908,7 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 }
 
 // обработка и сохранение в savesampleout16stereo_user()
-static void speexframeprocessing(speexel_t * p)
+static void speexel_processing(speexel_t * p)
 {
 	unsigned score;
 	for (score = 0; score < FIRBUFSIZE; )
@@ -12951,21 +12951,22 @@ static void speexframeprocessing(speexel_t * p)
 }
 
 // user-mode processing - NR, эквалайзер приёмника
-void user_audioproc(void * ctx)
+static void user_audioproc(void * ctx)
 {
 	(void) ctx;
 #if ! WITHSKIPUSERMODE
 	speexel_t * p;
 	while (takespeexready(& p, 0))
 	{
-		speexframeprocessing(p);	// обработка и сохранение в savesampleout16stereo_user()
+		speexel_processing(p);	// обработка и сохранение в savesampleout16stereo_user()
 		// Освобождаем буфер
 		releasespeexbuffer(p);
 	}
 #endif /* ! WITHSKIPUSERMODE */
 }
 
-int user_audioproc_thread(void * ctx)	// user-mode processing - NR, эквалайзер приёмника
+// thread: user-mode processing - NR, эквалайзер приёмника
+static int user_audioproc_thread(void * ctx)
 {
 	(void) ctx;
 	for (;;)
@@ -12976,7 +12977,7 @@ int user_audioproc_thread(void * ctx)	// user-mode processing - NR, эквала
 		speexel_t * p;
 		if (takespeexready(& p, LOCAL_WAITINFINITY))
 		{
-			speexframeprocessing(p);	// обработка и сохранение в savesampleout16stereo_user()
+			speexel_processing(p);	// обработка и сохранение в savesampleout16stereo_user()
 			// Освобождаем буфер
 			releasespeexbuffer(p);
 		}
@@ -20995,11 +20996,11 @@ static void keyspoolprocess(void * ctx)
 		default:
 			PRINTF("key=%02X\n", (unsigned char) c);
 			break;
-#if 1
+#if WITHRTOS
 		case 't':
 			tasks_print();
 			break;
-#endif
+#endif /* WITHRTOS */
 #if 0
 		case 'd':
 			if (swrsim < 30)
@@ -23438,6 +23439,23 @@ application_initialize(void)
 	buffers_start();	// DSP processing process
 	hftrx_init();		// цифровая обработка подготавливается
 	InitNoiseReduction();
+
+	// работа на всех ядрах, кроме нулевого
+	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
+	if (thread_create_user(TASK_AFFINITY_ALL, user_audioproc_thread, NULL, procthread, sizeof procthread, "user_audioproc_thread") == NULL)
+	{
+		static dpcobj_t user_audioproc_dpc;
+		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);
+
+		// CPUSTYLE_STM32MP1: DSP обработка выполняется в обработчике REALTIME прерываний от DMA - CORE #1 - потому туда помещать ещё аудиообработку проблематично по произволдительности
+	#if ! WITHINTEGRATEDDSP || ! WITHSMPSYSTEM || CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1
+		board_dpc_addentry(& user_audioproc_dpc, 0);
+	#elif (HARDWARE_NCORES == 2)
+		board_dpc_addentry(& user_audioproc_dpc, 1);
+	#elif WITHINTEGRATEDDSP
+		board_dpc_addentry(& user_audioproc_dpc, 2);
+	#endif /* WITHINTEGRATEDDSP */
+	}
 
 #if WITHSUBTONES && 1
 	dtmf_initialize();

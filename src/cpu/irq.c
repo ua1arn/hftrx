@@ -1986,8 +1986,7 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 
 static volatile uint8_t threads_not_started = 1;
 
-// WITHRTOS
-#if 0
+#if WITHRTOS
 
 typedef struct check_ready_tag
 {
