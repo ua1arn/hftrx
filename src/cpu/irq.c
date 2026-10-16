@@ -2079,7 +2079,7 @@ static thread_item_t * startedtask [HARDWARE_NCORES];
 
 static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 //static LIST_ENTRY threads_list [UPRIO_count];
-static LIST_ENTRY threads_listW [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
+static LIST_ENTRY threads_listW;
 static LIST_ENTRY threads_listR [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
 
 static void thread_add(thread_item_t * const thread, unsigned affinity,
@@ -2140,8 +2140,8 @@ void task_scheduler_initialize(void)
 		for (prio = 0; prio < PRIOv_count; ++ prio)
 		{
 			InitializeListHead(& threads_listR [prio]);
-			InitializeListHead(& threads_listW [prio]);
 		}
+		InitializeListHead(& threads_listW);
 	}
 
 	{
@@ -2181,29 +2181,24 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 	ASSERT(affinity);
 	// Возвращаем в список задач
 	if (taskin->check_ready != NULL) {
-		InsertTailList(& threads_listW [GICI_DECODE_IRQL(taskin->irql)], & taskin->item);
+		InsertTailList(& threads_listW, & taskin->item);
 	} else {
 		InsertTailList(& threads_listR [GICI_DECODE_IRQL(taskin->irql)], & taskin->item);
 	}
 	//unsigned uprio = taskin->uprio;
 	unsigned prio;
-	for (prio = 0; prio < PRIOv_count; ++ prio)
+	PRLIST_ENTRY t;
+	PRLIST_ENTRY tnext;
+	for (t = threads_listW.Flink; t != & threads_listW; t = tnext)
 	{
-		PRLIST_ENTRY const listW = & threads_listW [prio];
-		PRLIST_ENTRY const listR = & threads_listR [prio];
-		PRLIST_ENTRY t;
-		PRLIST_ENTRY tnext;
-		for (t = listW->Flink; t != listW; t = tnext)
+		tnext = t->Flink;
+		thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
+		if (tp->affinity & affinity)
+			task_isready(tp, tn);
+		if (tp->check_ready == 0)
 		{
-			tnext = t->Flink;
-			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-			if (tp->affinity & affinity)
-				task_isready(tp, tn);
-			if (tp->check_ready == 0)
-			{
-				RemoveEntryList(& tp->item);
-				InsertTailList(listR, & tp->item);
-			}
+			RemoveEntryList(& tp->item);
+			InsertTailList(& threads_listR [GICI_DECODE_IRQL(tp->irql)], & tp->item);
 		}
 	}
 	// Начинаем от высшего IRQL к низшему
@@ -2259,22 +2254,20 @@ static int tasks_print0(char *__restrict buff, size_t size)
 	{
 		n += thread_print(buff + n, size - n, startedtask [core]);
 	}
-	n += local_snprintf_P(buff + n, size - n, "tasks_print: Waitimg lists, sys_now=%u:\n", (unsigned) sys_now());
-	for (prio = 0; prio < PRIOv_count; ++ prio)
+
+	n += local_snprintf_P(buff + n, size - n, "tasks_print: Waiting, sys_now=%u:\n", (unsigned) sys_now());
 	{
-		PRLIST_ENTRY const list = & threads_listW [prio];
-		if (IsListEmpty(list))
-			continue;	// На данном PRIORITY ничего нет
 		//n += local_snprintf_P(buff + n, size - n, "tasks_print: prio=%u\n", prio);
 		PRLIST_ENTRY t;
 		PRLIST_ENTRY tnext;
-		for (t = list->Flink; t != list; t = tnext)
+		for (t = threads_listW.Flink; t != & threads_listW; t = tnext)
 		{
 			tnext = t->Flink;
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
 			n += thread_print(buff + n, size - n, tp);
 		}
 	}
+
 	n += local_snprintf_P(buff + n, size - n, "tasks_print: Ready lists:\n");
 	for (prio = 0; prio < PRIOv_count; ++ prio)
 	{
