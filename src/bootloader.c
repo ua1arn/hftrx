@@ -54,7 +54,7 @@ struct stm32_header {
 	uint8_t ecdsa_public_key[64];
 	uint8_t padding[83];
 	uint8_t binary_type;
-} ATTRPACKED;
+} __PACKED;
 
 #define HEADER_MAGIC	0x324d5453  //	__be32_to_cpu(0x53544D32)
 

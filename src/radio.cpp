@@ -1655,7 +1655,7 @@ struct micproc
 {
 	uint8_t comp;
 	uint8_t complevel;
-} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 struct micprof_cell
 {
@@ -2049,7 +2049,7 @@ struct agcseti_tag
 	uint8_t release10;
 	uint8_t t4;
 	uint8_t thung10;
-} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 struct afsetitempl
 {
@@ -3402,7 +3402,7 @@ typedef struct modeinfo_tag
 	uint8_t moderow;					/* номер режима работы в маске (номер тройки бит) */
 	uint8_t modecols [MODEROW_COUNT];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
 	uint8_t lock;						/* блокировка валкодера */
-} ATTRPACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 // Save lock, morerow, modecol
 static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
@@ -3461,7 +3461,7 @@ typedef struct modeinfo_tag
 {
 	uint32_t freq;		/* рабочая частота */
 	uint8_t bundle [MODEINFO_BUNDLESIZE];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
-} ATTRPACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 
 static unsigned getbit(const uint8_t * b, unsigned pos)
@@ -3776,7 +3776,7 @@ struct modeprops_tag
 	uint8_t txaudioindex;	/* источник звука для передачи (индекс) */
 	uint8_t	gmidmenupos;	/* активный пункт в middlemenu */
 
-} ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
@@ -3786,7 +3786,7 @@ struct modeprops_tag
 struct onerxant_tag {
 	uint8_t pamp;		/* режим УВЧ */
 	uint8_t att;		/* режим аттенюатора */
-} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 #define MLAPARAMC_MAX 65530
 struct onetxant_tag {
@@ -3799,7 +3799,7 @@ struct onetxant_tag {
 #else /* WITHAUTOTUNER */
 	uint8_t dummy_paramm;
 #endif /* WITHAUTOTUNER */
-} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
@@ -3829,7 +3829,7 @@ struct bandprops_tag {
 	struct onerxant_tag orxants [ANTMODE_COUNT];	// Параметры, связанные с антенами, которые могут использоваться на приём (TODO: добавить для приёмной антенны)
 #endif
 	struct onetxant_tag otxants [ANTMODE_COUNT];	// Параметры, связанные с антенами, которые могут использоваться на передачу (параметры тюнера)
-} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 enum { BANDS_COUNT = HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT };
 enum { BANDPROPS_COUNT = HBANDS_COUNT + XBANDS_COUNT };
@@ -4284,7 +4284,7 @@ struct nvmap {
 #endif /* WITHDEBUG */
 
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
-} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* константы, определяющие расположение параметров в FRAM */
 

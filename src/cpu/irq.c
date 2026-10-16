@@ -4312,7 +4312,7 @@ void cpu_initialize(void)
 	board_dpc_initialize();		/* инициализация списка user-mode опросных функций */
 #if (__CORTEX_A != 0)
 
-	cpump_initialize();
+	cpump_initialize();	// Запуск остальных процессоров
 
 #elif CPUSTYLE_RISCV
 

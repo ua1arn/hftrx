@@ -733,7 +733,7 @@ typedef struct
     uint32_t filesize;
     uint32_t reserved;
     uint32_t fileoffset_to_pixelarray;
-} ATTRPACKED fileheader_t;
+} __PACKED fileheader_t;
 
 typedef struct
 {
@@ -748,12 +748,12 @@ typedef struct
     uint32_t xpixelpermeter;
     uint32_t numcolorspallette;
     uint32_t mostimpcolor;
-} ATTRPACKED bitmapinfoheader_t;
+} __PACKED bitmapinfoheader_t;
 
 typedef struct {
 	fileheader_t fileheader;
     bitmapinfoheader_t bitmapinfoheader;
-} ATTRPACKED bitmap_t;
+} __PACKED bitmap_t;
 
 //#define pixel 0xFF
 
@@ -893,7 +893,7 @@ struct WavHdr0
 	WORD  wBitsPerSample;
 	WORD  cbSize;
 
-} ATTRPACKED;
+} __PACKED;
 
 static struct WavHdr0 hdr0;
 

@@ -963,9 +963,6 @@ void local_delay_ms(uint_fast32_t timeMS);	// may be LOCAL_WAITINFINITY
 	#define __ALIGN4_END    __attribute__ ((aligned (4)))
 	#define __ALIGN4_BEGIN         
 
-	#define ATTRPACKED __attribute__ ((packed))
-	#define ATTRNORETURN __attribute__ ((__noreturn__))
-
 #else                           
 	#if defined   (__CC_ARM)      /* ARM Compiler */
 		#define __ALIGN4_BEGIN    __align(4)  
@@ -977,9 +974,6 @@ void local_delay_ms(uint_fast32_t timeMS);	// may be LOCAL_WAITINFINITY
 		#define __ALIGN4_BEGIN    __align(4) 
 		#define __ALIGN4_END
 	#endif /* __CC_ARM */  
-
-	#define ATTRPACKED __attribute__ ((packed))
-	#define ATTRNORETURN __attribute__ ((__noreturn__))
 
 #endif /* __GNUC__ */
 

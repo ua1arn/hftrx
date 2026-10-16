@@ -754,13 +754,13 @@ void dbg_flush(void)
 
 #if (CPUSTYLE_ARM || CPUSTYLE_RISCV)
 
-void ATTRNORETURN __attribute__ ((used)) (__assert) (const char * file, int line, const char * msg)
+void __NO_RETURN __attribute__ ((used)) (__assert) (const char * file, int line, const char * msg)
 {
 	for (;;)
 		;
 }
 
-void ATTRNORETURN __attribute__ ((used)) (__assert_func) (const char * file, int line, const char * func, const char * msg)
+void __NO_RETURN __attribute__ ((used)) (__assert_func) (const char * file, int line, const char * func, const char * msg)
 {
 	for (;;)
 		;
