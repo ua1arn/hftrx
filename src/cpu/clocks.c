@@ -7304,14 +7304,14 @@ void hardware_spi_io_delay(void)
 	void TIMER0_IRQHandler(void)
 	{
 		enum { IX = 0 };
-		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
+		const uint_fast32_t st = TIMER->TMR_IRQ_STA_REG;
+		TIMER->TMR_IRQ_STA_REG = st;
 		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR0_IRQ_PEND
 		{
 			// Таймер электронного ключа
 			// 1/20 dot length interval timer
 			spool_elkeybundle();
 
-			TIMER->TMR_IRQ_STA_REG = (UINT32_C(1) << IX);	// TMR0_IRQ_PEND
 		}
 	}
 
@@ -7319,13 +7319,13 @@ void hardware_spi_io_delay(void)
 	void TIMER1_IRQHandler(void)
 	{
 		enum { IX = 1 };
-		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
+		const uint_fast32_t st = TIMER->TMR_IRQ_STA_REG;
+		TIMER->TMR_IRQ_STA_REG = st;
 		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR1_IRQ_PEND
 		{
+			dbg_putchar('.');
 			// timebase
 			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-
-			TIMER->TMR_IRQ_STA_REG = (UINT32_C(1) << IX);	// TMR1_IRQ_PEND
 		}
 	}
 
@@ -7335,14 +7335,14 @@ void hardware_spi_io_delay(void)
 	void TIMER1_0_IRQHandler(void)
 	{
 		enum { IX = 0 };
-		const portholder_t st = Timer1_CPUX->TMR_IRQ_STA_REG;
+		const uint_fast32_t st = Timer1_CPUX->TMR_IRQ_STA_REG;
+		Timer1_CPUX->TMR_IRQ_STA_REG = st;
 		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR0_IRQ_PEND
 		{
 			// Таймер электронного ключа
 			// 1/20 dot length interval timer
 			spool_elkeybundle();
 
-			Timer1_CPUX->TMR_IRQ_STA_REG = (UINT32_C(1) << IX);	// TMR0_IRQ_PEND
 		}
 	}
 
@@ -7350,13 +7350,13 @@ void hardware_spi_io_delay(void)
 	void TIMER1_1_IRQHandler(void)
 	{
 		enum { IX = 1 };
-		const portholder_t st = Timer1_CPUX->TMR_IRQ_STA_REG;
+		const uint_fast32_t st = Timer1_CPUX->TMR_IRQ_STA_REG;
+		Timer1_CPUX->TMR_IRQ_STA_REG = st;
 		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR1_IRQ_PEND
 		{
 			// timebase
 			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 
-			Timer1_CPUX->TMR_IRQ_STA_REG = (UINT32_C(1) << IX);	// TMR1_IRQ_PEND
 		}
 	}
 
