@@ -2110,20 +2110,13 @@ static void thread_add(thread_item_t * const thread, unsigned affinity,
 
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, const char * name)
 {
-	if (threads_not_started)
-	{
-		PRINTF("Wrong call of thread_create_user: '%s'\n", name);
-		return NULL;
-	}
 	ASSERT(threads_not_started == 0);
+
 	thread_item_t * const thread = (thread_item_t *) rambase;
 	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
 	ramsize -= sizeof (thread_item_t);
-	if (thread != NULL)
-	{
-		void * allocated = aligned_alloc(DCACHEROWSIZE, ramsize);
-		thread_add(thread, affinity, fn, ctx, allocated, ramsize, PRIOv_USER, name);
-	}
+	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_USER, name);
+
 	return thread;
 }
 

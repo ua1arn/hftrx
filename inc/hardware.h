@@ -880,7 +880,6 @@ uint32_t board_millis(void);	// TinyUsb callback
 int sys_dram_init(void);	// 0 - error
 int main(void);
 void SystemInit(void);
-void main_SystemInit(void);	// Вызывается из main, при работающих прерываниях
 
 size_t getvaltextethaddr(char * buff, size_t count, int_fast32_t value);
 size_t getvaltextethmask(char * buff, size_t count, int_fast32_t value);

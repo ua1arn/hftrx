@@ -1912,11 +1912,11 @@ SystemInit(void)
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */
 	sysinit_fpu_initialize();	// FPU access enable, disable caches
+	sysinit_perfmeter_initialize();
+	sysinit_hwtimer_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	stsinit_irql_initialize();	// GIC CPU Interface
 	sysinit_smp_initialize();	// Set SMP bit
-	sysinit_perfmeter_initialize();
-	sysinit_hwtimer_initialize();
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
@@ -1926,7 +1926,6 @@ SystemInit(void)
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
-	
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
 #ifdef BOARD_BLINK_INITIALIZE
@@ -1939,7 +1938,6 @@ SystemInit(void)
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
-	
 	sysinit_debug_initialize();
 	int ec = sysinit_sdram_initialize(configtype);
 	if (ec)
@@ -1953,11 +1951,6 @@ SystemInit(void)
 	sysinit_cache_L2_initialize();	// L2 cache, SCU initialize
 	sysinit_ttbr_initialize();		/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 	sysinit_dsu_initialize();
-}
-
-// Вызывается из main, при работающих прерываниях
-void main_SystemInit(void)
-{
 }
 
 /* Функция, вызываемая для инициализации DDR памяти из XFEL */
@@ -2560,15 +2553,13 @@ static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 __NO_RETURN void Reset_CPUn_Handler(void)
 {
 	sysinit_fpu_initialize();		// FPU access enable, disable caches
-	sysinit_vbar_initialize();		// interrupt vectors relocate
-	stsinit_irql_initialize();	// GIC CPU Interface
-
-	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
 	sysinit_hwtimer_initialize();
+	sysinit_vbar_initialize();		// interrupt vectors relocate
+	stsinit_irql_initialize();	// GIC CPU Interface
+	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_ttbr_initialize();		// Загрузка TTBR, инвалидация кеш памяти и включение MMU
-
 	unsigned core = arm_hardware_cpuid();
 	InitializeIrql(IRQL_IPC_ONLY);	// nested interrupts support
 	global_enableIRQ();
@@ -2576,11 +2567,9 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	arm_hardware_populte_second_initialize();
 	global_enableIRQ();	//  __ASM volatile ("cpsie i" : : : "memory");
 	LCLSPIN_UNLOCK(& cpu1init);
-
 	LCLSPIN_LOCK(& cpu1userstart [core]);		/* ждем пока основной user thread не разрешит выполняться */
 	LCLSPIN_UNLOCK(& cpu1userstart [core]);
 	InitializeIrql(IRQL_USER);	// nested interrupts support
-
 	GIC_SetPriority(SGI15_IRQn, ARM_SYSTEM_PRIORITY);	// for tests, non-atomic operation
 
 #if CPUSTYLE_VM14
