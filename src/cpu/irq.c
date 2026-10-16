@@ -2180,21 +2180,29 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 	InsertTailList(& threads_list [GICI_DECODE_IRQL(taskin->irql)], & taskin->item);
 	//unsigned uprio = taskin->uprio;
 	unsigned prio;
+	for (prio = 0; prio < PRIOv_count; ++ prio)
+	{
+		PRLIST_ENTRY const list = & threads_list [prio];
+		PRLIST_ENTRY t;
+		for (t = list->Flink; t != list; t = t->Flink)
+		{
+			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
+			if (tp->affinity & affinity)
+				task_isready(tp, tn);
+		}
+	}
 	// Начинаем от высшего IRQL к низшему
 	for (prio = 0; prio < PRIOv_count; ++ prio)
 	{
 		PRLIST_ENTRY const list = & threads_list [prio];
 		PRLIST_ENTRY t;
-		PRLIST_ENTRY tnext;
-		for (t = list->Flink; t != list; t = tnext)
+		for (t = list->Flink; t != list; t = t->Flink)
 		{
-			tnext = t->Flink;
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-			if ((tp->affinity & affinity) && task_isready(tp, tn))
+			if ((tp->affinity & affinity) && tp->check_ready == NULL)
 			{
 				// Нашли подходящий поток
 				RemoveEntryList(& tp->item);
-				ASSERT(tp->check_ready == NULL);
 				return tp;
 			}
 		}
@@ -2203,7 +2211,7 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 	// debug stuff
 	if (taskin->check_ready)
 	{
-		tasks_print();
+		//tasks_print();
 		ASSERT(taskin->check_ready == NULL);
 	}
 	return taskin;

@@ -7304,9 +7304,9 @@ void hardware_spi_io_delay(void)
 	void TIMER0_IRQHandler(void)
 	{
 		enum { IX = 0 };
-		const uint_fast32_t st = TIMER->TMR_IRQ_STA_REG;
+		const uint_fast32_t st = TIMER->TMR_IRQ_STA_REG & (UINT32_C(1) << IX);	// TMR0_IRQ_PEND
 		TIMER->TMR_IRQ_STA_REG = st;
-		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR0_IRQ_PEND
+		if (st)
 		{
 			// Таймер электронного ключа
 			// 1/20 dot length interval timer
@@ -7319,11 +7319,10 @@ void hardware_spi_io_delay(void)
 	void TIMER1_IRQHandler(void)
 	{
 		enum { IX = 1 };
-		const uint_fast32_t st = TIMER->TMR_IRQ_STA_REG;
+		const uint_fast32_t st = TIMER->TMR_IRQ_STA_REG & (UINT32_C(1) << IX);	// TMR1_IRQ_PEND
 		TIMER->TMR_IRQ_STA_REG = st;
-		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR1_IRQ_PEND
+		if (st)
 		{
-			dbg_putchar('.');
 			// timebase
 			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		}
@@ -7335,9 +7334,9 @@ void hardware_spi_io_delay(void)
 	void TIMER1_0_IRQHandler(void)
 	{
 		enum { IX = 0 };
-		const uint_fast32_t st = Timer1_CPUX->TMR_IRQ_STA_REG;
+		const uint_fast32_t st = Timer1_CPUX->TMR_IRQ_STA_REG & (UINT32_C(1) << IX);	// TMR0_IRQ_PEND
 		Timer1_CPUX->TMR_IRQ_STA_REG = st;
-		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR0_IRQ_PEND
+		if (st)
 		{
 			// Таймер электронного ключа
 			// 1/20 dot length interval timer
@@ -7350,9 +7349,9 @@ void hardware_spi_io_delay(void)
 	void TIMER1_1_IRQHandler(void)
 	{
 		enum { IX = 1 };
-		const uint_fast32_t st = Timer1_CPUX->TMR_IRQ_STA_REG;
+		const uint_fast32_t st = Timer1_CPUX->TMR_IRQ_STA_REG & (UINT32_C(1) << IX);	// TMR1_IRQ_PEND
 		Timer1_CPUX->TMR_IRQ_STA_REG = st;
-		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR1_IRQ_PEND
+		if (st)
 		{
 			// timebase
 			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
