@@ -13111,12 +13111,16 @@ hwtimcountfast_t cpu_gethwtimticksmask(void)
 
 hwtimcountfast_t get_td_us(uint_fast32_t timeUS)
 {
-	return timeUS * (cpu_gethwtimticksfreq() / (1000 * 1000));
+	return timeUS == LOCAL_WAITINFINITY ?
+			cpu_gethwtimticksmask() :
+			timeUS * (cpu_gethwtimticksfreq() / (1000 * 1000));
 }
 
 hwtimcountfast_t get_td_ms(uint_fast32_t timeMS)
 {
-	return timeMS * (cpu_gethwtimticksfreq() / 1000);
+	return timeMS == LOCAL_WAITINFINITY ?
+			cpu_gethwtimticksmask() :
+			timeMS * (cpu_gethwtimticksfreq() / 1000);
 }
 
 // получение интервала, прошедшего с момента start
