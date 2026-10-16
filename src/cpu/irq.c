@@ -2103,10 +2103,10 @@ static void thread_add(thread_item_t * const thread, unsigned affinity,
 	IRQL_t lockIrql;
 	// включаем в список задач
 	IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
-	InsertTailList(& threads_listR [prio], & thread->item);	// рскольку готово у выполнению - в список готовых
+	InsertTailList(& threads_listR [prio], & thread->item);	// Пскольку готово у выполнению - в список готовых
 	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
 
-	PRINTF("Added thread at prio=%d, affinity=%02X (frame=%p), stack[%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
+	//PRINTF("Added thread at prio=%d, affinity=%02X (frame=%p), stack[%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
 }
 
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, const char * name)
