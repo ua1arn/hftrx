@@ -4162,6 +4162,7 @@ uint_fast8_t board_dpc_display_coreid(void)
 /* добавить функцию для однократного вызова */
 uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 {
+	//PRINTF("board_dpc_call: dp=%p, coreid=%u name='%s\n", dp, (unsigned) coreid, dp->name);
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	LCLSPINLOCK_t * const lock = & dpc->lock;
@@ -4188,7 +4189,7 @@ uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 /* добавить функцию для периодического вызова */
 uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
 {
-	PRINTF("board_dpc_addentry: dp=%p, coreid=%u name='%s\n", dp, (unsigned) coreid, dp->name);
+	//PRINTF("board_dpc_addentry: dp=%p, coreid=%u name='%s\n", dp, (unsigned) coreid, dp->name);
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	LCLSPINLOCK_t * const lock = & dpc->lock;
