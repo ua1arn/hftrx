@@ -2079,18 +2079,20 @@ static thread_item_t * startedtask [HARDWARE_NCORES];
 
 static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 //static LIST_ENTRY threads_list [UPRIO_count];
-static LIST_ENTRY threads_list [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
+static LIST_ENTRY threads_listW [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
+static LIST_ENTRY threads_listR [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
 
 static void thread_add(thread_item_t * const thread, unsigned affinity,
 		int (*fn)(void * ctx), void * ctx,
 		void * stackbase, unsigned stacksize, unsigned prio, const char * name)
 {
-	thread->affinity = affinity;
-	ASSERT(stackbase != NULL);
+	ASSERT(NULL != thread);
+	ASSERT(NULL != stackbase);
 	uintptr_t top = (uintptr_t) stackbase + stacksize;
 	exception_frame_t * stackframe = (exception_frame_t *) (top - context_size());
 	// Установить параметры потока для запуска
 	context_init(stackframe, fn, ctx);
+	thread->affinity = affinity;
 	thread->cpuframe = stackframe;
 	thread->irql = GICI_ENCODE_IRQL(prio);
 	//thread->uprio = uprio;
@@ -2101,10 +2103,10 @@ static void thread_add(thread_item_t * const thread, unsigned affinity,
 	IRQL_t lockIrql;
 	// включаем в список задач
 	IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
-	InsertTailList(& threads_list [prio], & thread->item);
+	InsertTailList(& threads_listR [prio], & thread->item);	// рскольку готово у выполнению - в список готовых
 	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
 
-	//PRINTF("Added thread at prio=%d, affinity=%02X (frame=%p), stack[%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
+	PRINTF("Added thread at prio=%d, affinity=%02X (frame=%p), stack[%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
 }
 
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, const char * name)
@@ -2132,12 +2134,13 @@ static int ocorespump(void * ctx)
 void task_scheduler_initialize(void)
 {
 	{
-		unsigned i;
+		unsigned prio;
 		IRQLSPINLOCK_INITIALIZE(& threadslock);
 		// На каждый IRQL свой список
-		for (i = 0; i < ARRAY_SIZE(threads_list); ++ i)
+		for (prio = 0; prio < PRIOv_count; ++ prio)
 		{
-			InitializeListHead(& threads_list [i]);
+			InitializeListHead(& threads_listR [prio]);
+			InitializeListHead(& threads_listW [prio]);
 		}
 	}
 
@@ -2173,30 +2176,42 @@ static int task_isready(thread_item_t * tp, uint_fast32_t tn)
 // получить готовую у выполнению задачу для ядра, попадающего в affinity
 static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
 {
+	const uint_fast32_t tn = sys_now();
 	ASSERT(taskin);
 	ASSERT(affinity);
-	const uint_fast32_t tn = sys_now();
 	// Возвращаем в список задач
-	InsertTailList(& threads_list [GICI_DECODE_IRQL(taskin->irql)], & taskin->item);
+	if (taskin->check_ready != NULL) {
+		InsertTailList(& threads_listW [GICI_DECODE_IRQL(taskin->irql)], & taskin->item);
+	} else {
+		InsertTailList(& threads_listR [GICI_DECODE_IRQL(taskin->irql)], & taskin->item);
+	}
 	//unsigned uprio = taskin->uprio;
 	unsigned prio;
 	for (prio = 0; prio < PRIOv_count; ++ prio)
 	{
-		PRLIST_ENTRY const list = & threads_list [prio];
+		PRLIST_ENTRY const listW = & threads_listW [prio];
+		PRLIST_ENTRY const listR = & threads_listR [prio];
 		PRLIST_ENTRY t;
-		for (t = list->Flink; t != list; t = t->Flink)
+		PRLIST_ENTRY tnext;
+		for (t = listW->Flink; t != listW; t = tnext)
 		{
+			tnext = t->Flink;
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
 			if (tp->affinity & affinity)
 				task_isready(tp, tn);
+			if (tp->check_ready == 0)
+			{
+				RemoveEntryList(& tp->item);
+				InsertTailList(listR, & tp->item);
+			}
 		}
 	}
 	// Начинаем от высшего IRQL к низшему
 	for (prio = 0; prio < PRIOv_count; ++ prio)
 	{
-		PRLIST_ENTRY const list = & threads_list [prio];
+		PRLIST_ENTRY const listR = & threads_listR [prio];
 		PRLIST_ENTRY t;
-		for (t = list->Flink; t != list; t = t->Flink)
+		for (t = listR->Flink; t != listR; t = t->Flink)
 		{
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
 			if ((tp->affinity & affinity) && tp->check_ready == NULL)
@@ -2244,13 +2259,29 @@ static int tasks_print0(char *__restrict buff, size_t size)
 	{
 		n += thread_print(buff + n, size - n, startedtask [core]);
 	}
-	n += local_snprintf_P(buff + n, size - n, "tasks_print: not started lists, sys_now=%u:\n", (unsigned) sys_now());
-	for (prio = 0; prio < ARRAY_SIZE(threads_list); ++ prio)
+	n += local_snprintf_P(buff + n, size - n, "tasks_print: Waitimg lists, sys_now=%u:\n", (unsigned) sys_now());
+	for (prio = 0; prio < PRIOv_count; ++ prio)
 	{
-		PRLIST_ENTRY const list = & threads_list [prio];
+		PRLIST_ENTRY const list = & threads_listW [prio];
 		if (IsListEmpty(list))
 			continue;	// На данном PRIORITY ничего нет
-		n += local_snprintf_P(buff + n, size - n, "tasks_print: prio=%u\n", prio);
+		//n += local_snprintf_P(buff + n, size - n, "tasks_print: prio=%u\n", prio);
+		PRLIST_ENTRY t;
+		PRLIST_ENTRY tnext;
+		for (t = list->Flink; t != list; t = tnext)
+		{
+			tnext = t->Flink;
+			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
+			n += thread_print(buff + n, size - n, tp);
+		}
+	}
+	n += local_snprintf_P(buff + n, size - n, "tasks_print: Ready lists:\n");
+	for (prio = 0; prio < PRIOv_count; ++ prio)
+	{
+		PRLIST_ENTRY const list = & threads_listR [prio];
+		if (IsListEmpty(list))
+			continue;	// На данном PRIORITY ничего нет
+		//n += local_snprintf_P(buff + n, size - n, "tasks_print: prio=%u\n", prio);
 		PRLIST_ENTRY t;
 		PRLIST_ENTRY tnext;
 		for (t = list->Flink; t != list; t = tnext)
@@ -3394,6 +3425,7 @@ static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, i
 #if WITHDEBUG
 			if (-- v == 0)
 			{
+				local_delay_ms(200 * arm_hardware_cpuid());
 				PRINTF("Locked by CPU%u %s(%d), CPU%u wait at %s(%d)\n", p->cpuid, p->file, p->line, arm_hardware_cpuid(), file, line);
 				for (;;)
 					;
@@ -3492,6 +3524,7 @@ static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, i
 #if WITHDEBUG
 			if (-- v == 0)
 			{
+				local_delay_ms(200 * arm_hardware_cpuid());
 				PRINTF("Locked by CPU%u %s(%d), CPU%u wait at %s(%d)\n", p->cpuid, p->file, p->line, arm_hardware_cpuid(), file, line);
 				for (;;)
 					;
