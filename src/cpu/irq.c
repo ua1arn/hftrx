@@ -2004,7 +2004,7 @@ typedef struct thread_item_tag
 	//unsigned uprio;
 	const check_ready_t * check_ready;
 	volatile void * check_ready_obj;
-	const char * name;
+	char name [32];
 	void * guard;	// debug signature
 } thread_item_t;
 
@@ -2096,7 +2096,7 @@ static void thread_add(thread_item_t * const thread, unsigned affinity,
 	//thread->uprio = uprio;
 	thread->guard = thread;	// debug signature
 	thread->check_ready = NULL;
-	thread->name = name;
+	local_snprintf_P(thread->name, ARRAY_SIZE(thread->name), "%s", name);
 
 	IRQL_t lockIrql;
 	// включаем в список задач
@@ -2510,7 +2510,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		thread->guard = thread;
 		thread->check_ready = NULL;
 		//thread->uprio = UPRIO_USER;
-		thread->name = "default";
+		local_snprintf_P(thread->name, ARRAY_SIZE(thread->name), "def%u", core);
 		//
 		// получаем состояние процесора при первом перрывании
 		thread->affinity = 1U << core;
