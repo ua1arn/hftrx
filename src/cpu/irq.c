@@ -3423,7 +3423,7 @@ static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, i
 #if WITHDEBUG
 			if (-- v == 0)
 			{
-				local_delay_ms(200 * arm_hardware_cpuid());
+				//local_delay_ms(200 * arm_hardware_cpuid());
 				PRINTF("Locked by CPU%u %s(%d), CPU%u wait at %s(%d)\n", p->cpuid, p->file, p->line, arm_hardware_cpuid(), file, line);
 				for (;;)
 					;
@@ -3522,7 +3522,7 @@ static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, i
 #if WITHDEBUG
 			if (-- v == 0)
 			{
-				local_delay_ms(200 * arm_hardware_cpuid());
+				//local_delay_ms(200 * arm_hardware_cpuid());
 				PRINTF("Locked by CPU%u %s(%d), CPU%u wait at %s(%d)\n", p->cpuid, p->file, p->line, arm_hardware_cpuid(), file, line);
 				for (;;)
 					;
