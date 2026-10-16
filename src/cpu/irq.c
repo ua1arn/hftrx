@@ -2266,6 +2266,7 @@ void tasks_print(void)
 void __NO_RETURN task_scheduler_othercores(void)
 {
 	ASSERT(threads_not_started == 0);
+	thread_yield();	// этот поток включается в список учтенных.
 	for (;;)
 	{
 		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре

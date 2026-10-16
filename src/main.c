@@ -62,6 +62,7 @@ main(void)
 	applowinitialize();	/* вызывается при запрещённых прерываниях. */
 	task_scheduler_start();
 	global_enableIRQ();
+	thread_yield();	// этот поток включается в список учтенных.
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
 	// Инициализация таймера
 	hardware_timer_initialize(TICKS_FREQUENCY);
