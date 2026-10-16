@@ -113,6 +113,8 @@ enum { delay_dit = ELKEY_DISCRETE * 1, delay_words = ELKEY_DISCRETE * 6 };	// м
 static uint_fast8_t delay_space;	// 10
 static uint_fast8_t delay_dash;	// 30
 
+static LCLSPINLOCK_t elkey_lock = IRQLSPINLOCK_INIT;
+
 	
 #if WITHVIBROPLEX
 	enum { ELKEY_DERATE_QUOTANT = 2 };
@@ -121,14 +123,14 @@ static uint_fast8_t delay_dash;	// 30
 	static void elkeyx_set_slope(elkey_t * const elkey, uint_fast8_t slope)
 	{
 		IRQL_t oldIrql;
-		RiseIrql(ELKEY_IRQL, & oldIrql);
+		IRQLSPIN_LOCK(& elkey_lock, & oldIrql, ELKEY_IRQL);
 		if (elkey->vibroplex_slope > slope)
 		{
 			elkey->vibroplex_grade = 0;
 			elkey->vibroplex_derate = 0;
 		}
 		elkey->vibroplex_slope = slope;
-		LowerIrql(oldIrql);
+		IRQLSPIN_UNLOCK(& elkey_lock, oldIrql);
 	}
 
 	static void elkey_vibroplex_next(elkey_t * const elkey)
@@ -869,12 +871,12 @@ void elkey_set_format(
 {
 #if WITHELKEY
 	IRQL_t oldIrql;
-	RiseIrql(ELKEY_IRQL, & oldIrql);
+	IRQLSPIN_LOCK(& elkey_lock, & oldIrql, ELKEY_IRQL);
 
 	delay_space = spaceratio * ELKEY_DISCRETE / 10;
 	delay_dash = dashratio * ELKEY_DISCRETE / 10;
 
-	LowerIrql(oldIrql);
+	IRQLSPIN_UNLOCK(& elkey_lock, oldIrql);
 #endif /* WITHELKEY */
 }
 
@@ -975,12 +977,13 @@ void spool_elkeybundle(void)
 /* инициализация сиквенсора и телеграфного ключа. Выполняется при запрещённых прерываниях. */
 void elkey_initialize(void)
 {
+	IRQLSPINLOCK_INITIALIZE(& elkey_lock);
 	hardware_elkey_ports_initialize();
-	hardware_elkey_timer_initialize();
 	elkeyx_initialize(& elkey0, ELKEY_STATE_INITIALIZE);
 #if WITHCAT
 	elkeyx_initialize(& elkey1, ELKEY_STATE_AUTO_INITIALIZE);
 #endif /* WITHCAT */
+	hardware_elkey_timer_initialize();
 }
 
 // P 2 + 4 + 4 + 2 + 2
