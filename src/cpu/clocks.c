@@ -12931,21 +12931,27 @@ dbgcountfast_t cpu_getdebugticks(void)
 }
 
 
-#if WITHONETIMESTAMP
+#if defined TIMESTAMP_STA
+// Allwinner timestamp registers
 
 hwtimcountfast_t timestamp_getticks(void)
 {
-	uint_fast32_t high, high2;
-	uint_fast32_t low;
-	high = TIMESTAMP_STA->CNT_HI_REG;
-	do
+	for (;;)
 	{
-		high2 = high;
-		low = TIMESTAMP_STA->CNT_LOW_REG;
-		high = TIMESTAMP_STA->CNT_HI_REG;
-	} while (high != high2);
+		uint_fast32_t high1, high2;
+		uint_fast32_t low;
 
-	return ((uint_fast64_t) high << 32) | low;
+		high1 = TIMESTAMP_STA->CNT_HI_REG;
+		low = TIMESTAMP_STA->CNT_LOW_REG;
+		high2 = TIMESTAMP_STA->CNT_HI_REG;
+		if (high1 == high2)
+			return ((uint_fast64_t) high2 << 32) | low;
+		low = TIMESTAMP_STA->CNT_LOW_REG;
+		high1 = TIMESTAMP_STA->CNT_HI_REG;
+		if (high1 == high2)
+			return ((uint_fast64_t) high1 << 32) | low;
+	}
+
 }
 
 hwtimcountfast_t timestamp_getmask(void)
@@ -12958,7 +12964,59 @@ hwtimcountfast_t timestamp_getfreq(void)
 	return TIMESTAMP_CTRL->CNT_FREQID_REG;
 }
 
+#elif defined STGENR
+// STM32MP1 tmestamp registers
+
+hwtimcountfast_t timestamp_getticks(void)
+{
+	for (;;)
+	{
+		uint_fast32_t high1, high2;
+		uint_fast32_t low;
+
+		high1 = STGENR->CNTCVU;
+		low = STGENR->CNTCVL;
+		high2 = STGENR->CNTCVU;
+		if (high1 == high2)
+			return ((uint_fast64_t) high2 << 32) | low;
+		low = STGENR->CNTCVL;
+		high1 = STGENR->CNTCVU;
+		if (high1 == high2)
+			return ((uint_fast64_t) high1 << 32) | low;
+	}
+
+}
+
+hwtimcountfast_t timestamp_getmask(void)
+{
+	return UINT64_C(0xFFFFFFFFFFFFFFFF);	// TIMESTAMP_STA->CNT width is 64
+}
+
+hwtimcountfast_t timestamp_getfreq(void)
+{
+	return STGENC->CNTFID0;
+}
 #endif /* WITHONETIMESTAMP */
+
+hwtimcountfast_t get_td_us(uint_fast32_t timeUS)
+{
+	return timeUS == LOCAL_WAITINFINITY ?
+			timestamp_getmask() :
+			timeUS * (timestamp_getfreq() / (1000 * 1000));
+}
+
+hwtimcountfast_t get_td_ms(uint_fast32_t timeMS)
+{
+	return timeMS == LOCAL_WAITINFINITY ?
+			timestamp_getmask() :
+			timeMS * (timestamp_getfreq() / 1000);
+}
+
+// получение интервала, прошедшего с момента start
+hwtimcountfast_t get_td_delta(hwtimcountfast_t start)
+{
+	return timestamp_getmask() & (timestamp_getticks() - start);
+}
 
 // получение маски на разрядность аппаратного счётчика
 dbgcountfast_t cpu_getdebugticksmask(void)
@@ -12980,92 +13038,6 @@ dbgcountfast_t cpu_getdebugticksmask(void)
 	return UINT32_C(0xFFFFFFFF);
 
 #endif
-}
-
-// получение из аппаратного счетчика монотонно увеличивающегося кода
-hwtimcountfast_t cpu_gethwtimticks(void)
-{
-	//return cpu_getdebugticks();
-#if WITHONETIMESTAMP
-	return timestamp_getticks();
-
-#elif (defined (__CORTEX_A) && __CORTEX_A == 9)
-	return cpu_getdebugticks();
-
-#elif defined(__aarch64__)
-	return __get_CNTPCT_EL0();
-
-#elif (defined (__CORTEX_A))
-	return __get_CNTPCT();
-
-#else
-	return cpu_getdebugticks();
-
-#endif
-}
-
-// получение частоты, с которой инкрементируется счетчик
-hwtimcountfast_t cpu_gethwtimticksfreq(void)
-{
-	//return cpu_getdebugticksfreq();
-#if WITHONETIMESTAMP
-	return timestamp_getfreq();
-
-#elif (defined (__CORTEX_A) && __CORTEX_A == 9)
-	return cpu_getdebugticksfreq();
-
-#elif defined(__aarch64__)
-	return __get_CNTFRQ_EL0();
-
-#elif (defined (__CORTEX_A))
-	return __get_CNTFRQ();
-
-#else
-	return cpu_getdebugticksfreq();
-
-#endif
-}
-
-// получение маски на разрядность аппаратного счётчика
-hwtimcountfast_t cpu_gethwtimticksmask(void)
-{
-	//return cpu_getdebugticksmask();
-#if WITHONETIMESTAMP
-	return timestamp_getmask();
-
-#elif (defined (__CORTEX_A) && __CORTEX_A == 9)
-	return cpu_getdebugticksmask();
-
-#elif defined(__aarch64__)
-	return UINT64_C(0xFFFFFFFFFFFFFFFF);
-
-#elif (defined (__CORTEX_A))
-	return UINT64_C(0xFFFFFFFFFFFFFFFF);
-
-#else
-	return cpu_getdebugticksmask();
-
-#endif
-}
-
-hwtimcountfast_t get_td_us(uint_fast32_t timeUS)
-{
-	return timeUS == LOCAL_WAITINFINITY ?
-			cpu_gethwtimticksmask() :
-			timeUS * (cpu_gethwtimticksfreq() / (1000 * 1000));
-}
-
-hwtimcountfast_t get_td_ms(uint_fast32_t timeMS)
-{
-	return timeMS == LOCAL_WAITINFINITY ?
-			cpu_gethwtimticksmask() :
-			timeMS * (cpu_gethwtimticksfreq() / 1000);
-}
-
-// получение интервала, прошедшего с момента start
-hwtimcountfast_t get_td_delta(hwtimcountfast_t start)
-{
-	return cpu_gethwtimticksmask() & (cpu_gethwtimticks() - start);
 }
 
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c

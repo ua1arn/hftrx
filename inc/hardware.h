@@ -402,10 +402,6 @@ dbgcountfast_t cpu_getdebugticks(void);	// получение из аппара�
 dbgcountfast_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
 dbgcountfast_t cpu_getdebugticksmask(void);	// получение маски на разрядность аппаратного счётчика
 
-hwtimcountfast_t cpu_gethwtimticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
-hwtimcountfast_t cpu_gethwtimticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
-hwtimcountfast_t cpu_gethwtimticksmask(void);	// получение маски на разрядность аппаратного счётчика
-
 hwtimcountfast_t timestamp_getticks(void);
 hwtimcountfast_t timestamp_getmask(void);
 hwtimcountfast_t timestamp_getfreq(void);

@@ -1990,7 +1990,7 @@ static volatile uint8_t threads_not_started = 1;
 
 typedef struct check_ready_tag
 {
-	int (* ready)(const struct check_ready_tag * ch, struct thread_item_tag * thread, uint_fast32_t tn, volatile void * arg1);
+	int (* ready)(const struct check_ready_tag * ch, struct thread_item_tag * thread, hwtimcountfast_t tn, volatile void * arg1);
 	int (* print)(char *__restrict buff, size_t size, const struct check_ready_tag * ch, volatile void * arg1);
 	const char * name;
 } check_ready_t;
@@ -2022,8 +2022,8 @@ enum
 
 struct taskfnparam_suspend
 {
-	uint32_t t0;
-	uint32_t td;
+	hwtimcount_t t0;
+	hwtimcount_t td;
 	volatile void * guard;
 };
 
@@ -2031,8 +2031,8 @@ struct taskfnparam_wait32
 {
 	const volatile uint32_t * flag;
 	uint32_t mask, state;
-	uint32_t t0;
-	uint32_t td;
+	hwtimcount_t t0;
+	hwtimcount_t td;
 	volatile void * guard;
 };
 
@@ -2040,8 +2040,8 @@ struct taskfnparam_wait8
 {
 	const volatile uint8_t * flag;
 	uint8_t mask, state;
-	uint32_t t0;
-	uint32_t td;
+	hwtimcount_t t0;
+	hwtimcount_t td;
 	volatile void * guard;
 };
 
@@ -2049,8 +2049,8 @@ struct taskfnparam_waitlist
 {
 	PRLIST_ENTRY list;
 	LCLSPINLOCK_t * lock;
-	uint32_t t0;
-	uint32_t td;
+	hwtimcount_t t0;
+	hwtimcount_t td;
 	volatile void * guard;
 };
 
@@ -2166,7 +2166,7 @@ void task_scheduler_start(void)
 
 // проверка условий отдачи управления задаче
 // Если нашли - ставим error code
-static int task_isready(thread_item_t * tp, uint_fast32_t tn)
+static int task_isready(thread_item_t * tp, hwtimcountfast_t tn)
 {
 	if (tp->check_ready != NULL)
 	{
@@ -2182,7 +2182,7 @@ static int task_isready(thread_item_t * tp, uint_fast32_t tn)
 
 // получить готовую у выполнению задачу для ядра, попадающего в affinity
 static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin) {
-	const uint_fast32_t tn = sys_now();
+	const hwtimcountfast_t tn = timestamp_getticks();
 	ASSERT(taskin);
 	ASSERT(affinity);
 	unsigned prio;
@@ -2321,7 +2321,7 @@ void __NO_RETURN task_scheduler_othercores(void)
 
 }
 
-static int ready_timeout(uint_fast32_t tn, uint_fast32_t t0, uint_fast32_t td)
+static int ready_timeout(uint_fast32_t tn, hwtimcountfast_t t0, hwtimcountfast_t td)
 {
 	if (td == LOCAL_WAITINFINITY)
 		return 0;
@@ -2341,7 +2341,7 @@ static int print_suspend(char *__restrict buff, size_t size, const check_ready_t
 	return n;
 }
 
-static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
+static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_suspend * const param = (volatile struct taskfnparam_suspend *) arg1;
 	if (param == NULL || param->guard != param)
@@ -2365,7 +2365,7 @@ static int print_wait32(char *__restrict buff, size_t size, const check_ready_t 
 	return n;
 }
 
-static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
+static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_wait32 * const param = (volatile struct taskfnparam_wait32 *) arg1;
 	if (param == NULL || param->guard != param)
@@ -2400,7 +2400,7 @@ static int print_wait8(char *__restrict buff, size_t size, const check_ready_t *
 	return n;
 }
 
-static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
+static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_wait8 * const param = (volatile struct taskfnparam_wait8 *) arg1;
 	ASSERT(param != NULL);
@@ -2430,7 +2430,7 @@ static int print_waitlist(char *__restrict buff, size_t size, const check_ready_
 	return n;
 }
 
-static int readyfn_waitlist(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
+static int readyfn_waitlist(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_waitlist * const param = (volatile struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
@@ -2598,23 +2598,17 @@ void local_delay_ms(uint_fast32_t timeMS)
 	if (threads_not_started)
 	{
 
-#if ! WITHONETIMESTAMP
-	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
-#endif /* ! WITHONETIMESTAMP */
-		const hwtimcountfast_t t0 = get_td_delta(0);
+		const hwtimcountfast_t t0 = timestamp_getticks();
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) GIC_GetInterfacePriorityMask());
 		while (get_td_delta(t0) < td)
 			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-#if ! WITHONETIMESTAMP
-	thread_set_affinity(affinity);	// lock thread core
-#endif /* ! WITHONETIMESTAMP */
 	}
 	else
 	{
 		volatile struct taskfnparam_suspend v;
-		v.t0 = sys_now();
-		v.td = timeMS;
+		v.t0 = timestamp_getticks();
+		v.td = get_td_ms(timeMS);
 		v.guard = & v;
 		//PRINTF("local_delay_ms: t0=0x%08X, td=0x%08X\n", (unsigned) v.t0, (unsigned) v.td);
 		//PRINTF("2 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) v.t0, (unsigned) v.td, (unsigned) GIC_GetInterfacePriorityMask());
@@ -2629,32 +2623,23 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 {
 	if (threads_not_started)
 	{
-#if ! WITHONETIMESTAMP
-	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
-#endif /* ! WITHONETIMESTAMP */
-		const hwtimcountfast_t t0 = get_td_delta(0);
+		const hwtimcountfast_t t0 = timestamp_getticks();
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
 			{
-#if ! WITHONETIMESTAMP
-				thread_set_affinity(affinity);	// lock thread core
-#endif /* ! WITHONETIMESTAMP */
 				return 0;
 			}
 			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 		} while (get_td_delta(t0) < td);
-#if ! WITHONETIMESTAMP
-	thread_set_affinity(affinity);	// lock thread core
-#endif /* ! WITHONETIMESTAMP */
 		return 1;
 	}
 	else
 	{
 		volatile struct taskfnparam_wait8 v;
-		v.t0 = sys_now();
-		v.td = timeMS;
+		v.t0 = timestamp_getticks();
+		v.td = get_td_ms(timeMS);
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
@@ -2670,32 +2655,23 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 {
 	if (threads_not_started)
 	{
-#if ! WITHONETIMESTAMP
-	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
-#endif /* ! WITHONETIMESTAMP */
-		const hwtimcountfast_t t0 = get_td_delta(0);
+		const hwtimcountfast_t t0 = timestamp_getticks();
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
 			{
-#if ! WITHONETIMESTAMP
-				thread_set_affinity(affinity);	// lock thread core
-#endif /* ! WITHONETIMESTAMP */
 				return 0;
 			}
 			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 		} while (get_td_delta(t0) < td);
-#if ! WITHONETIMESTAMP
-	thread_set_affinity(affinity);	// lock thread core
-#endif /* ! WITHONETIMESTAMP */
 		return 1;
 	}
 	else
 	{
 		volatile struct taskfnparam_wait32 v;
-		v.t0 = sys_now();
-		v.td = timeMS;
+		v.t0 = timestamp_getticks();
+		v.td = get_td_ms(timeMS);
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
@@ -2711,10 +2687,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 {
 	if (threads_not_started)
 	{
-#if ! WITHONETIMESTAMP
-	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
-#endif /* ! WITHONETIMESTAMP */
-		const hwtimcountfast_t t0 = get_td_delta(0);
+		const hwtimcountfast_t t0 = timestamp_getticks();
 		const hwtimcountfast_t td = get_td_ms(timeMS);
 		do
 		{
@@ -2724,24 +2697,18 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 				LCLSPIN_UNLOCK(lock);
 				if (! f)
 				{
-#if ! WITHONETIMESTAMP
-					thread_set_affinity(affinity);	// lock thread core
-#endif /* ! WITHONETIMESTAMP */
 					return 0;	// дождались
 				}
 			}
 			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 		} while (get_td_delta(t0) < td);
-#if ! WITHONETIMESTAMP
-		thread_set_affinity(affinity);	// lock thread core
-#endif /* ! WITHONETIMESTAMP */
 		return 1;	// Завершение по таймауту
 	}
 	else
 	{
 		volatile struct taskfnparam_waitlist v;
-		v.t0 = sys_now();
-		v.td = timeMS;
+		v.t0 = timestamp_getticks();
+		v.td = get_td_ms(timeMS);
 		v.list = list;
 		v.lock = lock;
 		v.guard = & v;
@@ -2826,7 +2793,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 	if (timeMS == 0)
 		return;
 
-    const hwtimcountfast_t t0 = get_td_delta(0);
+    const hwtimcountfast_t t0 = timestamp_getticks();
     const hwtimcountfast_t td = get_td_ms(timeMS);
     while (get_td_delta(t0) < td)
     	thread_yield();
@@ -2837,7 +2804,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 // return non-zero: timeout error
 int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS)
 {
-	const hwtimcountfast_t t0 = get_td_delta(0);
+	const hwtimcountfast_t t0 = timestamp_getticks();
 	const hwtimcountfast_t td = get_td_ms(timeMS);
 	do
 	{
@@ -2854,7 +2821,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 // return non-zero: timeout error
 int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast8_t errstate, uint_fast32_t timeMS)
 {
-	const hwtimcountfast_t t0 = get_td_delta(0);
+	const hwtimcountfast_t t0 = timestamp_getticks();
 	const hwtimcountfast_t td = get_td_ms(timeMS);
 	do
 	{
@@ -2872,7 +2839,7 @@ int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast
 // return non-zero: timeout error or errormask
 int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t errstate, uint_fast32_t timeMS)
 {
-	const hwtimcountfast_t t0 = get_td_delta(0);
+	const hwtimcountfast_t t0 = timestamp_getticks();
 	const hwtimcountfast_t td = get_td_ms(timeMS);
 	//PRINTF("local_wait32mask: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
@@ -2891,7 +2858,7 @@ int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_f
 // return non-zero: timeout error
 int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS)
 {
-	const hwtimcountfast_t t0 = get_td_delta(0);
+	const hwtimcountfast_t t0 = timestamp_getticks();
 	const hwtimcountfast_t td = get_td_ms(timeMS);
 	//PRINTF("local_wait32mask: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
@@ -2908,7 +2875,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 // return non-zero: timeout error
 int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS)
 {
-	const hwtimcountfast_t t0 = get_td_delta(0);
+	const hwtimcountfast_t t0 = timestamp_getticks();
 	const hwtimcountfast_t td = get_td_ms(timeMS);
 	//PRINTF("local_waitlist: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
@@ -3061,18 +3028,11 @@ void local_delay_us(uint_fast32_t timeUS)
 {
 	if (timeUS == 0)
 		return;
-#if ! WITHONETIMESTAMP
-	const unsigned affinity = thread_set_affinity(1U << arm_hardware_cpuid());	// lock thread core
-#endif /* ! WITHONETIMESTAMP */
-	const hwtimcountfast_t t0 = get_td_delta(0);	// Счетчик увеличивается с частотой процессора
+	const hwtimcountfast_t t0 = timestamp_getticks();	// Счетчик увеличивается с частотой процессора
 	const hwtimcountfast_t td = get_td_us(timeUS);
 	while (get_td_delta(t0) < td)
 		;
-#if ! WITHONETIMESTAMP
-	thread_set_affinity(affinity);
-#endif /* ! WITHONETIMESTAMP */
 }
-
 
 #endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
 
