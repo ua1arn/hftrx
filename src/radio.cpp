@@ -21357,11 +21357,12 @@ application_mainloop(void * ctx)
 
 	case STHRL_RXTX:
 		// работа с пользователем
+	#if WITHAUTOTUNER
 		if (txreq_getreqautotune(& txreqst0) != 0 && gtx != 0)
 		{
 			tuner_start();
 		}
-
+	#endif /* WITHAUTOTUNER */
 
 	#if WITHLFM && ! BOARD_PPSIN_BIT
 		if (lfmmode)

@@ -2095,6 +2095,12 @@ void sysinit_hwtimer_initialize(void)
 	//TIMESTAMP_CTRL->CNT_FREQID_REG = f;
 }
 
+// Allwinner V3s Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+
+}
+
 // Allwinner V3s PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -2247,6 +2253,12 @@ void sysinit_hwtimer_initialize(void)
 	__set_CNTFRQ(f);
 #endif
 	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+}
+
+// Allwinner H3 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+
 }
 
 // Allwinner H3
@@ -3002,6 +3014,12 @@ void sysinit_hwtimer_initialize(void)
 	__set_CNTFRQ(f);
 #endif
 	//TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+}
+
+// Allwinner A64 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+
 }
 
 // Allwinner A64 PLL initialize
@@ -4222,7 +4240,7 @@ void sysinit_boot_disconnect(void)
 	//printhex32(IOMMU_BASE, IOMMU, sizeof * IOMMU);
 }
 
-// на каждом CORE
+// Allwinner T507/H618/H616 на каждом CORE
 void sysinit_hwtimer_initialize(void)
 {
 	const uint_fast32_t f = allwnr_t507_get_hosc_freq();	// 24000000
@@ -4231,6 +4249,12 @@ void sysinit_hwtimer_initialize(void)
 #else
 	__set_CNTFRQ(f);
 #endif
+}
+
+// Allwinner T507/H618/H616 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+	const uint_fast32_t f = allwnr_t507_get_hosc_freq();	// 24000000
 	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
 }
 
@@ -5129,6 +5153,12 @@ void sysinit_hwtimer_initialize(void)
 #else
 	__set_CNTFRQ(f);
 #endif
+}
+
+// A733 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+	const uint_fast32_t f = allwnr_a733_get_dcxo_freq();	// 24000000
 	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
 }
 
@@ -5245,6 +5275,12 @@ void sysinit_hwtimer_initialize(void)
 #else
 	__set_CNTFRQ(f);
 #endif
+}
+
+// Allwinner A133 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+	const uint_fast32_t f = allwnr_a133_get_hosc_freq();	// 24000000
 	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
 }
 
@@ -6649,10 +6685,16 @@ void sysinit_boot_disconnect(void)
 void sysinit_hwtimer_initialize(void)
 {
 	const uint_fast32_t f = allwnr_t113_get_hosc_freq();	// 24000000
-	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
 #if __CORTEX_A
 	__set_CNTFRQ(f);
 #endif
+}
+
+// Allwinner T113/F133/D1s Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+	const uint_fast32_t f = allwnr_t113_get_hosc_freq();	// 24000000
+	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
 }
 
 // Allwinner T113/F133/D1s PLL initialize
@@ -6916,6 +6958,13 @@ void sysinit_hwtimer_initialize(void)
 	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
 }
 
+// 1892ВМ14Я Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+	const uint_fast32_t f = allwnr_t113_get_hosc_freq();	// 24000000
+	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+}
+
 // 1892ВМ14Я PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -7072,6 +7121,15 @@ void sysinit_hwtimer_initialize(void)
 //	const uint_fast32_t f = WITHCPUXTAL;//allwnr_t113_get_hosc_freq();	// 24000000
 //	__set_CNTFRQ(f);
 	//TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+}
+
+// r7s721 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+
+//	const uint_fast32_t f = allwnr_t113_get_hosc_freq();	// 24000000
+//	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+
 }
 
 // r7s721 PLL initialize
@@ -8407,6 +8465,14 @@ void sysinit_hwtimer_initialize(void)
 	const uint_fast32_t f = HSI64FREQ;//stm32mp1_get_hsi_freq(); // 64 MHz
 	__set_CNTFRQ(f);
 	PL1_SetCounterFrequency(f);	// same as above
+}
+
+// STM32MP1 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+	const uint_fast32_t f = HSI64FREQ;//stm32mp1_get_hsi_freq(); // 64 MHz
+	RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_STGENROEN_Msk;
+	(void) RCC->MP_APB4ENSETR;
 }
 
 // STM32MP1 PLL initialize
@@ -10901,8 +10967,14 @@ void sysinit_boot_disconnect(void)
 {
 }
 
-// на каждом CORE
+// ZYNQ 7000 на каждом CORE
 void sysinit_hwtimer_initialize(void)
+{
+
+}
+
+// ZYNQ 7000 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
 {
 
 }
@@ -10986,8 +11058,14 @@ void sysinit_boot_disconnect(void)
 {
 }
 
-// на каждом CORE
+// STM32H7xx на каждом CORE
 void sysinit_hwtimer_initialize(void)
+{
+
+}
+
+// STM32H7xx Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
 {
 
 }
@@ -11042,6 +11120,12 @@ void sysinit_boot_disconnect(void)
 
 // на каждом CORE
 void sysinit_hwtimer_initialize(void)
+{
+
+}
+
+// STM32F7xx Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
 {
 
 }

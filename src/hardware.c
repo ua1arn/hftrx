@@ -1913,6 +1913,7 @@ void
 SystemInit(void)
 {
 	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */
+	sysinit_timestamp_initialize();
 	//PRINTF("CCU->PLL_CPU_CTRL_REG=%08X\n", (unsigned) CCU->PLL_CPU_CTRL_REG);
 	//PRINTF("CCU->MBUS_MAT_CLK_GATING_REG=%08X\n", (unsigned) CCU->MBUS_MAT_CLK_GATING_REG);
 #if CPUSTYLE_VM14
@@ -1966,6 +1967,7 @@ void __attribute__((used)) SystemDRAMInit(void)
 #if CPUSTYLE_VM14
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */
+	sysinit_timestamp_initialize();
 	sysinit_fpu_initialize();	// FPU access enable, disable caches
 	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
