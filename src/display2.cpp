@@ -6008,13 +6008,6 @@ static void release_fftbuffer(fftbuff_t * p)
 static int_fast8_t getfilled_fftbuffer(fftbuff_t * * dest)
 {
 	IRQL_t oldIrql;
-//	//IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
-//	if (local_waitlist(& fftlistready, & fftlistlock, FFTLOCL_IRQL, 0)) {
-//		//IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
-//		dbg_putchar('-');
-//		return 0;
-//	}
-	//IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
 	IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
 	if (! IsListEmpty(& fftlistready))
 	{
@@ -6022,11 +6015,9 @@ static int_fast8_t getfilled_fftbuffer(fftbuff_t * * dest)
 		IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
-		dbg_putchar('+');
 		return 1;
 	}
 	IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
-	dbg_putchar('=');
 	return 0;
 }
 
