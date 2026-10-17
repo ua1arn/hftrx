@@ -1210,6 +1210,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #if WITHAUTOTUNER
 	#if WITHAUTOTUNER_AVBELNN
+		#warning check schematics
 		// Плата управления LPF и тюнером от avbelnn
 		// us4ijr
 
@@ -1526,7 +1527,6 @@ prog_ctrlreg(uint_fast8_t plane)
 		////RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102 + bs - 050, txgated && ! xvrtr);
 		RBBIT(0101 + bs - 050, glob_fanflag || txgated);	// FAN
-		RBBIT(0100 + bs - 050, 0);	// unused
 
 		// 0100 is a bpf7
 		RBVAL(0072 + bs - 050, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
@@ -1790,7 +1790,6 @@ prog_ctrlreg(uint_fast8_t plane)
 		////RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102 + bs - 050, txgated && ! xvrtr);
 		RBBIT(0101 + bs - 050, glob_fanflag);	// FAN
-		RBBIT(0100 + bs - 050, 0);	// unused
 
 		// 0100 is a bpf7
 		RBVAL(0072 + bs - 050, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
@@ -1922,6 +1921,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBVAL(0050, 1U << glob_bandf2, 7);	// LPF6..LPF0
 
 	#elif WITHAUTOTUNER_AVBELNN
+		#warning Check schematics
 		// Плата управления LPF и тюнером от avbelnn
 		// us4ijr
 
