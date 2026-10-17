@@ -5952,7 +5952,7 @@ static LIST_ENTRY fftlistready;
 static LCLSPINLOCK_t fftlistlock = IRQLSPINLOCK_INIT;
 
 // realtime-mode function
-uint_fast8_t allocate_fftbuffer(fftbuff_t * * dest)
+static uint_fast8_t allocate_fftbuffer(fftbuff_t * * dest)
 {
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
@@ -5996,7 +5996,7 @@ static int saveready_fftbuffer(fftbuff_t * p)
 }
 
 // user-mode function
-void release_fftbuffer(fftbuff_t * p)
+static void release_fftbuffer(fftbuff_t * p)
 {
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
@@ -6005,14 +6005,15 @@ void release_fftbuffer(fftbuff_t * p)
 }
 
 // user-mode function
-uint_fast8_t getfilled_fftbuffer(fftbuff_t * * dest)
+static int_fast8_t getfilled_fftbuffer(fftbuff_t * * dest)
 {
 	IRQL_t oldIrql;
-	//IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
-	if (local_waitlist(& fftlistready, & fftlistlock, FFTLOCL_IRQL, 0)) {
-		//IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
-		return 0;
-	}
+//	//IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
+//	if (local_waitlist(& fftlistready, & fftlistlock, FFTLOCL_IRQL, 0)) {
+//		//IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
+//		dbg_putchar('-');
+//		return 0;
+//	}
 	//IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
 	IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
 	if (! IsListEmpty(& fftlistready))
@@ -6021,9 +6022,11 @@ uint_fast8_t getfilled_fftbuffer(fftbuff_t * * dest)
 		IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
+		dbg_putchar('+');
 		return 1;
 	}
 	IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
+	dbg_putchar('=');
 	return 0;
 }
 
