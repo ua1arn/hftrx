@@ -2005,9 +2005,9 @@ typedef struct thread_item_tag
 	unsigned affinity;
 	exception_frame_t * cpuframe;	// cpu state
 	IRQL_t irql;
-	const check_ready_t * check_ready;
-	volatile void * check_ready_obj;
-	char name [32];
+	const check_ready_t * check_ready;	// condition check function
+	volatile void * check_ready_obj;	// user-space wait condition parameters
+	const char * name;
 	void * guard;	// debug signature
 } thread_item_t;
 
@@ -2106,10 +2106,9 @@ static void thread_add(
 	thread->affinity = affinity;
 	thread->cpuframe = stackframe;
 	thread->irql = GICI_ENCODE_IRQL(prio);
-	//thread->uprio = uprio;
 	thread->guard = thread;	// debug signature
 	thread->check_ready = NULL;
-	local_snprintf_P(thread->name, ARRAY_SIZE(thread->name), "%s", name);
+	thread->name = name;
 
 	IRQL_t lockIrql;
 	// включаем в список задач
@@ -2132,16 +2131,6 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 	return thread;
 }
 
-
-static int ocorespump(void * ctx)
-{
-	for (;;)
-	{
-		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
-	}
-	return 0;
-}
-
 void task_scheduler_initialize(void) {
 	{
 		unsigned prio;
@@ -2155,9 +2144,12 @@ void task_scheduler_initialize(void) {
 	}
 
 	{
-		// пока - добавляем для 0-го ядра.
-		void * allocated = aligned_alloc(DCACHEROWSIZE, IDLETASKRAM_SIZE);
-		thread_add(allocated, 1U << 0, task_idle, NULL, allocated, IDLETASKRAM_SIZE, PRIOv_IDLE, "idle0");
+		unsigned core;
+		// На каждый процессор
+		for (core = 0; core < HARDWARE_NCORES; ++ core) {
+			void * allocated = aligned_alloc(DCACHEROWSIZE, IDLETASKRAM_SIZE);
+			thread_add(allocated, 1U << core, task_idle, NULL, allocated, IDLETASKRAM_SIZE, PRIOv_IDLE, "idle");
+		}
 	}
 
 }
@@ -2245,7 +2237,7 @@ static int tasks_print0(char *__restrict buff, size_t size)
 		n += thread_print(buff + n, size - n, startedtask [core]);
 	}
 
-	n += local_snprintf_P(buff + n, size - n, "tasks_print: Waiting, timestamp_getticks=%u:\n", (unsigned) timestamp_getticks());
+	n += local_snprintf_P(buff + n, size - n, "tasks_print: Waiting, timestamp_getticks=%" PRIu64 ":\n", (uint64_t) timestamp_getticks());
 	{
 		//n += local_snprintf_P(buff + n, size - n, "tasks_print: prio=%u\n", prio);
 		PRLIST_ENTRY t;
@@ -2294,21 +2286,15 @@ void tasks_print(void)
 void __NO_RETURN task_scheduler_othercores(void)
 {
 	ASSERT(threads_not_started == 0);
-
-	const unsigned core = arm_hardware_cpuid();
-	void * allocated = aligned_alloc(DCACHEROWSIZE, IDLETASKRAM_SIZE);
-	thread_add(allocated, 1U << core, ocorespump, NULL, allocated, IDLETASKRAM_SIZE, PRIOv_USER, "dpc");
-	LowerIrql(IRQL_IDLE);
 	for (;;)
 	{
-		thread_yield();
+		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
 	}
-
 }
 
 static int ready_timeout(uint_fast32_t tn, hwtimcountfast_t t0, hwtimcountfast_t td)
 {
-	if (td == LOCAL_WAITINFINITY)
+	if (td == cpu_getdebugticksmask())
 		return 0;
 	return (uint32_t) (tn - t0) >= td;
 }
@@ -2321,8 +2307,8 @@ static int print_suspend(char *__restrict buff, size_t size, const check_ready_t
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
-	n += local_snprintf_P(buff + n, size - n, "t0=%u ", (unsigned) param->t0);
-	n += local_snprintf_P(buff + n, size - n, "td=%u ", (unsigned) param->td);
+	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
+	n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) param->td);
 	return n;
 }
 
@@ -2346,7 +2332,9 @@ static int print_wait32(char *__restrict buff, size_t size, const check_ready_t 
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
-	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, t0=%u, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->t0, (unsigned) param->td);
+	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, ", param->flag, (unsigned) param->mask, (unsigned) param->state);
+	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
+	n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) param->td);
 	return n;
 }
 
@@ -2381,7 +2369,9 @@ static int print_wait8(char *__restrict buff, size_t size, const check_ready_t *
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
-	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, t0=%u, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->t0, (unsigned) param->td);
+	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, ", param->flag, (unsigned) param->mask, (unsigned) param->state);
+	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
+	n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) param->td);
 	return n;
 }
 
@@ -2411,7 +2401,8 @@ static int print_waitlist(char *__restrict buff, size_t size, const check_ready_
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
-	n += local_snprintf_P(buff + n, size - n, "t0=%u, td=%u", (unsigned) param->t0, (unsigned) param->td);
+	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
+	n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) param->td);
 	return n;
 }
 
@@ -2540,8 +2531,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		thread_item_t * const thread = & base_threads [core];
 		thread->guard = thread;
 		thread->check_ready = NULL;
-		//thread->uprio = UPRIO_USER;
-		local_snprintf_P(thread->name, ARRAY_SIZE(thread->name), "def%u", core);
+		thread->name = "def";
 		//
 		// получаем состояние процесора при первом перрывании
 		thread->affinity = 1U << core;
@@ -2555,9 +2545,9 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 
 	if (flag)  {
 		// обработка системныз вызовов
-		task_svc(* pt, code, oldframe);	// thread переходит в список ждущих или готоых - или исчезает
+		task_svc(* pt, code, oldframe);	// thread переходит в список ждущих или готовых - или исчезает
 	} else {
-		task_insertready(* pt);
+		task_insertready(* pt);		// раз сэда попали - значит точно не ждали ничего
 	}
 
 	task_resched(timestamp_getticks());	// перепланировка
