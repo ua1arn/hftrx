@@ -2142,8 +2142,7 @@ static int ocorespump(void * ctx)
 	return 0;
 }
 
-void task_scheduler_initialize(void)
-{
+void task_scheduler_initialize(void) {
 	{
 		unsigned prio;
 		IRQLSPINLOCK_INITIALIZE(& threadslock);
@@ -2163,35 +2162,29 @@ void task_scheduler_initialize(void)
 
 }
 
-void task_scheduler_start(void)
-{
+void task_scheduler_start(void) {
 	threads_not_started = 0;
 }
 
 // проверка условий отдачи управления задаче
 // Если нашли - ставим error code
-static int task_isready(thread_item_t * tp, hwtimcountfast_t tn)
-{
+static int task_isready(thread_item_t * tp, hwtimcountfast_t tn) {
 	ASSERT(tp->check_ready);
-	if (tp->check_ready->ready(tp->check_ready, tp, tn, tp->check_ready_obj))
-	{
-		tp->check_ready = NULL;	// признак готовности - для печати
-		return 1;
-	}
-	return 0;
+	return tp->check_ready->ready(tp->check_ready, tp, tn, tp->check_ready_obj);
 }
-// перепроверить условиз возобновления приостанловленных threads
-static thread_item_t * task_resched(hwtimcountfast_t tn) {
-	//const hwtimcountfast_t tn = timestamp_getticks();
+
+// перепроверить условия возобновления приостановленных threads
+static void task_resched(hwtimcountfast_t tn) {
 	PRLIST_ENTRY t;
 	PRLIST_ENTRY tnext;
 
-	// Обрабатываем проверку ожидания
+	// Обрабатываем проверку условия возобновления
 	for (t = threads_listW.Flink; t != & threads_listW; t = tnext) {
 		tnext = t->Flink;
 		thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
 		if (task_isready(tp, tn)) {
 			RemoveEntryList(& tp->item);
+			tp->check_ready = NULL;	// признак готовности - для печати
 			task_insertready(tp);
 		}
 	}
@@ -2207,7 +2200,6 @@ static thread_item_t * task_getready(unsigned affinity) {
 	// Начинаем от высшего IRQL к низшему - ищем подходящий к исполнению на данном ядре.
 	for (prio = 0; prio < PRIOv_count; ++ prio) {
 		PRLIST_ENTRY t;
-		PRLIST_ENTRY tnext;
 		PRLIST_ENTRY const listR = & threads_listR [prio];
 		for (t = listR->Flink; t != listR; t = t->Flink) {
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
