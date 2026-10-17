@@ -1148,9 +1148,12 @@ static void IRQ_Handler_GIC_G1(void)
 //		break;
 //	}
 	//(void) GICInterface->HPPIR;
+	__ISB();
 	(void) GIC_GetHighPendingIRQ();
+	__ISB();
 
 	const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
+	__ISB();
 
 	const IRQn_ID_t int_id = gicc_iar & UINT32_C(0x3FF);
 
@@ -1243,9 +1246,12 @@ static void FIQ_Handler_GIC_G0(void)
 //		break;
 //	}
 	//(void) GICInterface->HPPIR;
+	__ISB();
 	(void) GIC_GetHighPendingIRQG0();
+	__ISB();
 	const uint_fast32_t gicc_iar = GIC_AcknowledgePendingG0(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
 	//const uint_fast32_t gicc_iarg0 = GIC_AcknowledgePendingG0(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
+	__ISB();
 
 	//BC_iar=00BC, iarg0=03FF
 //	PRINTF("iar=%04X, iarg0=%04X ", gicc_iar, gicc_iarg0);
@@ -1310,7 +1316,6 @@ static void FIQ_Handler_GIC_G0(void)
 		//LCLSPIN_UNLOCK(& giclock);
 	}
 	//dbg_putchar(' ');
-
 	GIC_EndInterruptG0((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
 	//GICInterface->EOIR = gicc_iar;
 }
@@ -1730,9 +1735,8 @@ typedef struct exception_frame_tag
 	uint64_t exc_elr_el3;
 	uint64_t exc_spsr_el3;		// Store (spsr, x0)
 	uint64_t x0;
-	// saved by push_trapframe_float -  total 544 bytes = 68 qwords
-	uint64_t xx, fpsr;	// xx, FPSR (check order)
-	uint64_t fpcr, fpexc32_el2;	// FPCR, FPEXC32_EL2 (check order)
+	// saved by push_trapframe_float -  total 528 bytes = 66    qwords
+	uint64_t fpcr, fpsr;	// FPCR, FPSR
 	uint64_t vfpregs [64];	// 32 128-bit registers
 	// saved by push_trapframe_int - total 240 bytes = 30 qwords
 	uint64_t x1, x2, x3, x4, x5, x6, x7, x8, x9, x10;
@@ -1764,9 +1768,9 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 //    f->exc_spsr_el3 = 0x000000006000030D;
 //    ASSERT(f->exc_spsr_el3 == 0x000000006000030D);
 
-	f->fpsr = 0;
-	f->fpcr = 0;
-	f->fpexc32_el2 = 0;
+	f->fpsr = 0x00000000;
+	f->fpcr = 0x00000000;	// возможно, стоит сделать единое на все ядра - значение как в sysinit_fpu_initialize
+	//f->fpexc32_el2 = 0;
 	f->exc_elr_el3 = (uintptr_t) fn;
 	f->x0 = (uintptr_t) arg;
 }
@@ -2235,7 +2239,9 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin) 
 static int thread_print(char *__restrict buff, size_t size, const thread_item_t * const tp)
 {
 	int n = 0;
+	exception_frame_t * const f = tp->cpuframe;
 	n += local_snprintf_P(buff + n, size - n, "  task %p: irql=0x%02X (prio=%u), affinity=0x%08X, name='%s' ", tp, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity, tp->name);
+	//n += local_snprintf_P(buff + n, size - n, "fpcr=%08X, fpsr=%08X ", (unsigned) f->fpcr, (unsigned) f->fpsr);
 	if (tp->check_ready)
 	{
 		ASSERT(tp->check_ready->print);
@@ -2260,7 +2266,7 @@ static int tasks_print0(char *__restrict buff, size_t size)
 		n += thread_print(buff + n, size - n, startedtask [core]);
 	}
 
-	n += local_snprintf_P(buff + n, size - n, "tasks_print: Waiting, sys_now=%u:\n", (unsigned) sys_now());
+	n += local_snprintf_P(buff + n, size - n, "tasks_print: Waiting, timestamp_getticks=%u:\n", (unsigned) timestamp_getticks());
 	{
 		//n += local_snprintf_P(buff + n, size - n, "tasks_print: prio=%u\n", prio);
 		PRLIST_ENTRY t;
@@ -4411,6 +4417,12 @@ void timer_print(void)
 	void * h = IRQ_GetHandler(intn);
 	PRINTF("timer_print: e=%u, p=%u, g=%u, t=%u, c=%u, m=%u, h=%p\n", e, p, g, t, c, m, h);
 	GIC_EndInterrupt((IRQn_Type) intn);	/* CPUID, EOINTID */
+}
+
+#else
+
+void timer_print(void)
+{
 }
 
 #endif

@@ -1368,6 +1368,7 @@ sysinit_fpu_initialize(void)
 		__set_SCTLR_EL1(__get_SCTLR_EL1() & ~ SCTLR_EL3_A_Msk);	// Disable stack alignment check. The possible values are
 	#endif
 
+	__set_FPCR(0x00000000);
 	L1C_DisableCaches();
 	L1C_DisableBTAC();
 	MMU_Disable();
@@ -1379,6 +1380,8 @@ sysinit_fpu_initialize(void)
 	__FPU_Enable_fixed();
 	#endif
 
+	// AArch64 System register FPCR bits [26:15] are architecturally mapped to AArch32 System register FPSCR[26:15].
+	__set_FPSCR(0x00000000);
 	L1C_DisableCaches();
 	L1C_DisableBTAC();
 	MMU_Disable();

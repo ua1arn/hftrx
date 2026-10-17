@@ -1657,20 +1657,6 @@ __STATIC_INLINE void GIC_DistInit(void)
     GIC_EnableDistributor();
 }
 #endif /* GIC_DISTRIBUTOR_BASE */
-//
-//// 4.3.42 Secure Configuration Register
-//__STATIC_FORCEINLINE void __set_SCR_EL3(uint64_t value)
-//{
-//	// MSR CSSELR_EL1, <Xt> ; Write Xt to CSSELR_EL1
-//	__set_RG64("SCR_EL3", value);
-//}
-//
-//__STATIC_FORCEINLINE uint64_t __get_SCR_EL3(void)
-//{
-//	uint64_t result;
-//	__get_RG64("SCR_EL3", result);
-//	return result;
-//}
 
 /** \brief Initialize the CPU's interrupt interface
 */

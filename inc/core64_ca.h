@@ -1011,6 +1011,19 @@ __STATIC_FORCEINLINE uint64_t __get_SCR_EL3(void) {
 	return result;
 }
 
+// FPCR, Floating-point Control Register
+__STATIC_FORCEINLINE void __set_FPCR(uint32_t value) {
+	__set_RG32("FPCR", value);
+}
+
+// FPCR, Floating-point Control Register
+__STATIC_FORCEINLINE uint32_t __get_FPCR(void) {
+	uint32_t result;
+	// MRS <Xt>, FPCR ; Read FPCR into Xt
+	__get_RG32("FPCR", result);
+	return result;
+}
+
 #if 0
 __STATIC_FORCEINLINE void __set_SCTLR_EL3(uint64_t value)
 {
