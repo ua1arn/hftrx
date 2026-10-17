@@ -1315,7 +1315,6 @@ static void FIQ_Handler_GIC_G0(void)
 		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
 		//LCLSPIN_UNLOCK(& giclock);
 	}
-	//dbg_putchar(' ');
 	GIC_EndInterruptG0((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
 	//GICInterface->EOIR = gicc_iar;
 }
@@ -3348,8 +3347,7 @@ static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, i
 				for (;;)
 					;
 			}
-			//dbg_putchar('.');
-#else /* WITHDEBUG */
+else /* WITHDEBUG */
 			__WFE();
 #endif /* WITHDEBUG */
 			//__NOP();	// !!!! strange, but unstable work without this line...
@@ -4037,7 +4035,6 @@ void board_dpc_initialize(void)
 		InitializeListHead(& dpc->dpclistcalls);
 		dpc->tag1 = dpc;
 		dpc->tag2 = dpc;
-
 	}
 }
 

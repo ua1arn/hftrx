@@ -301,32 +301,32 @@ void ticker_add(ticker_t * p)
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
-void ticker_remove(ticker_t * p)
-{
-	IRQL_t oldIrql;
-	ASSERT(p->guard == p);
-
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
-	RemoveEntryVList(& p->item);
-	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
-}
+//void ticker_remove(ticker_t * p)
+//{
+//	IRQL_t oldIrql;
+//	ASSERT(p->guard == p);
+//
+//	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+//	RemoveEntryVList(& p->item);
+//	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
+//}
 
 /* начало интервала в случае TICKERMD_MANUAL */
-void ticker_start(ticker_t * p)
-{
-	IRQL_t oldIrql;
-	ASSERT(p->guard == p);
-
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
-	switch (p->mode)
-	{
-	case TICKERMD_MANUAL:
-		break;
-	default:
-		break;
-	}
-	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
-}
+//void ticker_start(ticker_t * p)
+//{
+//	IRQL_t oldIrql;
+//	ASSERT(p->guard == p);
+//
+//	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+//	switch (p->mode)
+//	{
+//	case TICKERMD_MANUAL:
+//		break;
+//	default:
+//		break;
+//	}
+//	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
+//}
 
 /* изменение периода запущенного тикера */
 void ticker_setperiod(ticker_t * p, unsigned nticks)

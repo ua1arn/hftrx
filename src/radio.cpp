@@ -21341,7 +21341,6 @@ hamradio_main_step(void)
 		break;
 
 	case STHRL_RXTX_FQCHANGED:
-		//dbg_putchar('0');
 			/* валкодер перестал вращаться - если было изменение частоты - сохраняем конфигурацию */
 			if (refreshenabled_freqs())
 			{
@@ -21360,7 +21359,6 @@ hamradio_main_step(void)
 			// @suppress("No break at end of case")
 
 	case STHRL_RXTX:
-		//dbg_putchar('1');
 		// работа с пользователем
 		if (txreq_getreqautotune(& txreqst0) != 0 && gtx != 0)
 		{
@@ -21408,7 +21406,6 @@ hamradio_main_step(void)
 	#endif /* WITHUSEAUDIOREC */
 
 		{
-			//dbg_putchar('3');
 #if WITHMENU
 			if (ginmenu0 && processmenukeyandencoder(& event))
 			{
@@ -21428,7 +21425,6 @@ hamradio_main_step(void)
 
 			} // end keyboard processing
 		}
-		//dbg_putchar('4');
 		if (processpots())
 		{
 			/* обновление индикатора без сохранения состояния диапазона */
@@ -21439,7 +21435,6 @@ hamradio_main_step(void)
 
 		} // end potentiometers processing
 
-		//dbg_putchar('5');
 		if (processmainloopencoders(ginmenu0, & event))
 		{
 	#if WITHTOUCHGUI
@@ -21447,7 +21442,6 @@ hamradio_main_step(void)
 	#endif /* WITHTOUCHGUI */
 
 		}
-		//dbg_putchar('6');
 		// Knobs rotation processing
 		if (! ginmenu0 && processmainlooptuneknobs(& event))
 		{
@@ -21460,7 +21454,6 @@ hamradio_main_step(void)
 	default:
 		break;
 	}
-	//dbg_putchar('9');
 	return STTE_OK;
 }
 
@@ -23268,7 +23261,7 @@ application_initialize(void)
 #else /* WITHRTOS */
 #endif /* WITHRTOS */
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t blinktaskram [8192];
-	if (thread_create_user(TASK_AFFINITY_ALL, blinktest2, NULL, blinktaskram, sizeof blinktaskram, "blinktest2") == NULL)
+	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, blinktest2, NULL, blinktaskram, sizeof blinktaskram, "blinktest2") == NULL)
 	{
 #if WITHISBOOTLOADER
 	const unsigned thalf = 100;	// Toggle every 100 ms
@@ -23334,7 +23327,7 @@ application_initialize(void)
 #else /* WITHRTOS */
 #endif /* WITHRTOS */
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
-	if (thread_create_user(TASK_AFFINITY_ALL, user_audioproc_thread, NULL, procthread, sizeof procthread, "user_audioproc_thread") == NULL)
+	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, user_audioproc_thread, NULL, procthread, sizeof procthread, "user_audioproc_thread") == NULL)
 	{
 		static dpcobj_t user_audioproc_dpc;
 		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL, "user_audioproc_dpc");
