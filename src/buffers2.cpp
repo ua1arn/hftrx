@@ -555,12 +555,16 @@ public:
 	bool get_readybuffer_raw(element_t * * dest, uint_fast32_t timeMS = 0)
 	{
 		IRQL_t oldIrql;
+		//IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 		if (timeMS != 0)
 		{
 			// Запрос с ненулевым аргументром timeMS может возникнуть только из выделенных потоков
-			if (local_waitlist(& readylist, & irqllock, timeMS) != 0)	// timeot
+			if (local_waitlist(& readylist, & irqllock, irqllockarg, timeMS) != 0) {	// timeot
+				//IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 				return false;
+			}
 		}
+		//IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& readylist))
 		{

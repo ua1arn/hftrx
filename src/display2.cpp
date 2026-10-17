@@ -5947,73 +5947,83 @@ typedef struct fftbuff_tag
 } fftbuff_t;
 
 static LIST_ENTRY fftbuffree;
-static LIST_ENTRY fftbufready;
-static LCLSPINLOCK_t fftlock = IRQLSPINLOCK_INIT;
 #define FFTLOCL_IRQL IRQL_REALTIME
+static LIST_ENTRY fftlistready;
+static LCLSPINLOCK_t fftlistlock = IRQLSPINLOCK_INIT;
 
 // realtime-mode function
 uint_fast8_t allocate_fftbuffer(fftbuff_t * * dest)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& fftlock, & oldIrql, FFTLOCL_IRQL);
+	IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
 	if (! IsListEmpty(& fftbuffree))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbuffree);
-		IRQLSPIN_UNLOCK(& fftlock, oldIrql);
+		IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
 	}
 	/* Начинаем отбрасывать самые старые в очереди готовых. */
-	if (! IsListEmpty(& fftbufready))
+	if (! IsListEmpty(& fftlistready))
 	{
-		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
-		IRQLSPIN_UNLOCK(& fftlock, oldIrql);
+		const PLIST_ENTRY t = RemoveTailList(& fftlistready);
+		IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
 	}
-	IRQLSPIN_UNLOCK(& fftlock, oldIrql);
+	IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
+	TP();
 	return 0;
 }
 
 // realtime-mode function
-void saveready_fftbuffer(fftbuff_t * p)
+static int saveready_fftbuffer(fftbuff_t * p)
 {
+	int flag = 1;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& fftlock, & oldIrql, FFTLOCL_IRQL);
-	while (! IsListEmpty(& fftbufready))
+	IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
+	while (! IsListEmpty(& fftlistready))
 	{
-		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
+		const PLIST_ENTRY t = RemoveTailList(& fftlistready);
 		InsertHeadList(& fftbuffree, t);
+		++ flag;
 	}
-	InsertHeadList(& fftbufready, & p->item);
-	IRQLSPIN_UNLOCK(& fftlock, oldIrql);
+	InsertHeadList(& fftlistready, & p->item);
+	IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
+	return !! flag;
 }
 
 // user-mode function
 void release_fftbuffer(fftbuff_t * p)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& fftlock, & oldIrql, FFTLOCL_IRQL);
+	IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
 	InsertHeadList(& fftbuffree, & p->item);
-	IRQLSPIN_UNLOCK(& fftlock, oldIrql);
+	IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
 }
 
 // user-mode function
-uint_fast8_t  getfilled_fftbuffer(fftbuff_t * * dest)
+uint_fast8_t getfilled_fftbuffer(fftbuff_t * * dest)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& fftlock, & oldIrql, FFTLOCL_IRQL);
-	if (! IsListEmpty(& fftbufready))
+	//IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
+	if (local_waitlist(& fftlistready, & fftlistlock, FFTLOCL_IRQL, 0)) {
+		//IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
+		return 0;
+	}
+	//IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
+	IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
+	if (! IsListEmpty(& fftlistready))
 	{
-		const PLIST_ENTRY t = RemoveTailList(& fftbufready);
-		IRQLSPIN_UNLOCK(& fftlock, oldIrql);
+		const PLIST_ENTRY t = RemoveTailList(& fftlistready);
+		IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
 		fftbuff_t * const p = CONTAINING_RECORD(t, fftbuff_t, item);
 		* dest = p;
 		return 1;
 	}
-	IRQLSPIN_UNLOCK(& fftlock, oldIrql);
+	IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
 	return 0;
 }
 
@@ -6066,7 +6076,7 @@ void fftbuffer_initialize(void)
 		fftbuff_t * const p = & fftbuffersarray [i];
 		InsertHeadList(& fftbuffree, & p->item);
 	}
-	InitializeListHead(& fftbufready);	// Для выдачи на дисплей
+	InitializeListHead(& fftlistready);	// Для выдачи на дисплей
 	/* начальный запрос буферов заполнение выборок. */
 	for (i = 0; i < NOVERLAP; ++ i)
 	{
@@ -6078,7 +6088,7 @@ void fftbuffer_initialize(void)
 		ARM_MORPH(arm_fill)(0, (* ppf)->largebuffI, filled);
 		ARM_MORPH(arm_fill)(0, (* ppf)->largebuffQ, filled);
 	}
-	IRQLSPINLOCK_INITIALIZE(& fftlock);
+	IRQLSPINLOCK_INITIALIZE(& fftlistlock);
 }
 
 #if (__ARM_FP & 0x08) || __riscv_d

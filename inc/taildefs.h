@@ -277,7 +277,7 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define IRQLSPIN_LOCK(p, oldIrql, newirql) do { RiseIrql((newirql), (oldIrql)); LCLSPIN_LOCK((p)); } while (0)
 	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK((p)); LowerIrql(oldIrql); } while (0)
 
-	int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS);
+	int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fast32_t timeMS);
 
 	// wait expected state of variable
 	// return non-zero: timeout error
