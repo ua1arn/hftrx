@@ -2193,21 +2193,11 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin) 
 	PRLIST_ENTRY t;
 	PRLIST_ENTRY tnext;
 
-	// Возвращаем в список задач
-	if (taskin->check_ready != NULL) {
-		// Необходимо ждать
-		InsertTailList(& threads_listW, & taskin->item);
-	} else {
-		// Ничего не ждёт
-		task_insertready(taskin);
-	}
-
 	// Обрабатываем проверку ожидания
 	for (t = threads_listW.Flink; t != & threads_listW; t = tnext) {
 		tnext = t->Flink;
 		thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-		if (tp->affinity & affinity)
-			task_isready(tp, tn);
+		task_isready(tp, tn);
 		if (tp->check_ready == NULL) {
 			RemoveEntryList(& tp->item);
 			task_insertready(tp);
@@ -2496,33 +2486,39 @@ static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * 
 	switch (arg0)
 	{
 	default:
+		task_insertready(thread);
 		return;
 	case TASKFN_NOP:
 		//ASSERT(arg1 == NULL);
+		task_insertready(thread);
 		return;
 
 	case TASKFN_SUSPEND:
 		ASSERT(threads_not_started == 0);
 		thread->check_ready_obj = arg1;
 		thread->check_ready = & readytag_suspend;
+		InsertTailList(& threads_listW, & thread->item);
 		return;
 
 	case TASKFN_WAIT32:
 		ASSERT(threads_not_started == 0);
 		thread->check_ready_obj = arg1;
 		thread->check_ready = & readytag_wait32;
+		InsertTailList(& threads_listW, & thread->item);
 		return;
 
 	case TASKFN_WAIT8:
 		ASSERT(threads_not_started == 0);
 		thread->check_ready_obj = arg1;
 		thread->check_ready = & readytag_wait8;
+		InsertTailList(& threads_listW, & thread->item);
 		return;
 
 	case TASKFN_WAITLIST:
 		ASSERT(threads_not_started == 0);
 		thread->check_ready_obj = arg1;
 		thread->check_ready = & readytag_waitlist;
+		InsertTailList(& threads_listW, & thread->item);
 		return;
 
 	case TASKFN_SETAFFINITY:
@@ -2533,7 +2529,7 @@ static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * 
 			param->oldaffinity = thread->affinity;
 			thread->affinity = param->newaffinity;
 		}
-
+		task_insertready(thread);
 		return;
 	}
 }
@@ -2549,8 +2545,9 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 	ASSERT(threads_not_started == 0);
 	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC);
 	ASSERT(GICI_DECODE_IRQL(irql) < PRIOv_count);
-	if (startedtask [core] == NULL)
-	{
+	thread_item_t * * const pt = & startedtask [core];
+	if (* pt == NULL)  {
+		// ещё не имеет своей структуры - создан в момент start-up системы.
 		thread_item_t * const thread = & base_threads [core];
 		thread->guard = thread;
 		thread->check_ready = NULL;
@@ -2559,20 +2556,23 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		//
 		// получаем состояние процесора при первом перрывании
 		thread->affinity = 1U << core;
-		startedtask [core] = thread;
+		* pt = thread;
 
 		//PRINTF("task_scheduler0: add default %p, flag=%u, core=%u, irql=%u\n", thread, flag, core, irql);
 	}
-	ASSERT(startedtask [core]);
-	startedtask [core]->irql = irql;
-	startedtask [core]->cpuframe = oldframe;
-	if (flag)
-	{
-		task_svc(startedtask [core], code, oldframe);
+	ASSERT(* pt);
+	(* pt)->irql = irql;
+	(* pt)->cpuframe = oldframe;
+
+	if (flag)  {
+		// обработка системныз вызовов
+		task_svc(* pt, code, oldframe);	// thread переходит в список ждущих или готоых - или исчезает
+	} else {
+		task_insertready(* pt);
 	}
 	// смена текущего потока на данном ядре
-	startedtask [core] = task_getready(UINT32_C(1) << core, startedtask [core]);
-	IRQLSPIN_UNLOCK(& threadslock, startedtask [core]->irql);
+	* pt = task_getready(UINT32_C(1) << core, * pt);
+	IRQLSPIN_UNLOCK(& threadslock, (* pt)->irql);
 	return startedtask [core]->cpuframe;
 }
 
