@@ -2180,12 +2180,9 @@ static int task_isready(thread_item_t * tp, hwtimcountfast_t tn)
 	}
 	return 0;
 }
-
-// получить готовую у выполнению задачу для ядра, попадающего в affinity
-static thread_item_t * task_getready(unsigned affinity) {
-	const hwtimcountfast_t tn = timestamp_getticks();
-	ASSERT(affinity);
-	unsigned prio;
+// перепроверить условиз возобновления приостанловленных threads
+static thread_item_t * task_resched(hwtimcountfast_t tn) {
+	//const hwtimcountfast_t tn = timestamp_getticks();
 	PRLIST_ENTRY t;
 	PRLIST_ENTRY tnext;
 
@@ -2198,10 +2195,19 @@ static thread_item_t * task_getready(unsigned affinity) {
 			task_insertready(tp);
 		}
 	}
+}
+
+// получить готовую у выполнению задачу для ядра, попадающего в affinity
+static thread_item_t * task_getready(unsigned affinity) {
+	const hwtimcountfast_t tn = timestamp_getticks();
+	ASSERT(affinity);
+	unsigned prio;
 
 	// Ищем среди готовых
 	// Начинаем от высшего IRQL к низшему - ищем подходящий к исполнению на данном ядре.
 	for (prio = 0; prio < PRIOv_count; ++ prio) {
+		PRLIST_ENTRY t;
+		PRLIST_ENTRY tnext;
 		PRLIST_ENTRY const listR = & threads_listR [prio];
 		for (t = listR->Flink; t != listR; t = t->Flink) {
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
@@ -2561,8 +2567,10 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 	} else {
 		task_insertready(* pt);
 	}
-	// смена текущего потока на данном ядре
-	* pt = task_getready(UINT32_C(1) << core);
+
+	task_resched(timestamp_getticks());	// перепланировка
+	* pt = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
+
 	IRQLSPIN_UNLOCK(& threadslock, (* pt)->irql);
 	return startedtask [core]->cpuframe;
 }
