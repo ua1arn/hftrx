@@ -18,7 +18,7 @@
 
 /////////////////////////
 ///
-void ctlboardt507_mainloop(void)
+void ctlboardt507_mainloop(void * ctx)
 {
 	PRINTF("ctlboardt507_mainloop [%p]\n", ctlboardt507_mainloop);
 

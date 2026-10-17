@@ -20887,13 +20887,13 @@ static uint_fast8_t nvramdiags(void)
 #endif
 	return resetconfig;
 }
+#if WITHAUTOTUNER
 
 // работа в машине состояний тюнера
 // возврат STTE_OK для перехода на следующее состояние
 // возврат STTE_BUSY - продолжаем тут
 static enum tnrstate hamradio_tune_step(void)
 {
-#if WITHAUTOTUNER
 	switch (tunerstate)
 	{
 	case TUNERSTATE_0:
@@ -20968,11 +20968,8 @@ static enum tnrstate hamradio_tune_step(void)
 	}
 
 	return tunerstate;
-
-#else /* WITHAUTOTUNER */
-	return TUNERSTATE_0;
-#endif /* WITHAUTOTUNER */
 }
+#endif /* WITHAUTOTUNER */
 
 #if WITHDEBUG
 
@@ -23736,9 +23733,12 @@ int infocb_thermo(char * b, size_t len, int * pstate)
 #endif
 }
 
+#endif /* ! WITHISBOOTLOADER */
+
 // инициализация главной машины состояний и запуск опроса елавиатуры/валкодеров
 void hamradio_main_start(void)
 {
+#if ! WITHISBOOTLOADER
 	{
 		static ticker_t ticker;
 
@@ -23851,6 +23851,7 @@ void hamradio_main_start(void)
 			;
 	}
 #endif /* FQMODEL_GEN500 */
+#endif /* ! WITHISBOOTLOADER */
 
 	// выполнение основного цикла
 #if WITHISBOOTLOADER && WITHISBOOTLOADERFATFS
@@ -23874,6 +23875,4 @@ void hamradio_main_start(void)
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 	}
 }
-
-#endif /* ! WITHISBOOTLOADER */
 
