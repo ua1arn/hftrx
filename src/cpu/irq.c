@@ -2513,17 +2513,8 @@ static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * 
 	}
 }
 
-/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
-static void *
-task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
+static thread_item_t * refreshactivetask(exception_frame_t * oldframe, unsigned core)
 {
-	const unsigned core = arm_hardware_cpuid();
-	IRQL_t irql;
-	if (threads_not_started)
-		return oldframe;
-	ASSERT(threads_not_started == 0);
-	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC);
-	ASSERT(GICI_DECODE_IRQL(irql) < PRIOv_count);
 	thread_item_t * * const pt = & startedtask [core];
 	if (* pt == NULL)  {
 		// ещё не имеет своей структуры - создан в момент start-up системы.
@@ -2538,21 +2529,36 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 
 		//PRINTF("task_scheduler0: add default %p, flag=%u, core=%u, irql=%u\n", thread, flag, core, irql);
 	}
-	ASSERT(* pt);
-	(* pt)->irql = irql;
 	(* pt)->cpuframe = oldframe;
+	return (* pt);
+}
+
+/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
+static void *
+task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
+{
+	const unsigned core = arm_hardware_cpuid();
+	IRQL_t irql;
+	if (threads_not_started)
+		return oldframe;
+	ASSERT(threads_not_started == 0);
+	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC);
+	ASSERT(GICI_DECODE_IRQL(irql) < PRIOv_count);
+	thread_item_t * const tp = refreshactivetask(oldframe, core);
+	ASSERT(tp);
+	tp->irql = irql;
 
 	if (flag)  {
 		// обработка системныз вызовов
-		task_svc(* pt, code, oldframe);	// thread переходит в список ждущих или готовых - или исчезает
+		task_svc(tp, code, oldframe);	// thread переходит в список ждущих или готовых - или исчезает
 	} else {
-		task_insertready(* pt);		// раз сэда попали - значит точно не ждали ничего
+		task_insertready(tp);		// раз сэда попали - значит точно не ждали ничего
 	}
 
 	task_resched(timestamp_getticks());	// перепланировка
-	* pt = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
+	startedtask [core] = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
 
-	IRQLSPIN_UNLOCK(& threadslock, (* pt)->irql);
+	IRQLSPIN_UNLOCK(& threadslock, tp->irql);
 	return startedtask [core]->cpuframe;
 }
 
@@ -2678,7 +2684,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 }
 
 // Set thread affinity - return old value
-unsigned thread_set_affinity(unsigned affinity)
+static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 {
 
 	if (threads_not_started)
@@ -2688,19 +2694,10 @@ unsigned thread_set_affinity(unsigned affinity)
 	else
 	{
 		const unsigned core = arm_hardware_cpuid();
-		IRQL_t lockIrql;
-		IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
-		thread_item_t * const tp = startedtask [core];
-		if (tp)
-		{
-			ASSERT(tp);
-			const unsigned aff = tp->affinity;
-			tp->affinity = affinity;
-			IRQLSPIN_UNLOCK(& threadslock, lockIrql);
-			return aff;
-		}
-		IRQLSPIN_UNLOCK(& threadslock, lockIrql);
-		return 1U << arm_hardware_cpuid();
+		thread_item_t * const tp = refreshactivetask(oldframe, core);
+		const unsigned aff = tp->affinity;
+		tp->affinity = affinity;
+		return aff;
 
 		volatile struct taskfnparam_setaffinity v;
 		v.newaffinity = affinity;
@@ -2873,7 +2870,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 
 
 // Set thread affinity - return old value
-unsigned thread_set_affinity(unsigned affinity)
+static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 {
 	return 0;
 }
@@ -3037,9 +3034,9 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 // 0x280
 void __NO_RETURN VIRQ_Handler(void * frame)
 {
-	const unsigned aff = thread_set_affinity(1U << arm_hardware_cpuid());
+	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	IRQ_Handler_GIC();		// Group 1 handler
-	thread_set_affinity(aff);
+	thread_set_affinity(frame, aff);
 	run_task_curr(task_scheduler(frame));
 }
 
@@ -3048,9 +3045,9 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 // 0x300
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
-	const unsigned aff = thread_set_affinity(1U << arm_hardware_cpuid());
+	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	FIQ_Handler_GIC();		// Group 0 handler
-	thread_set_affinity(aff);
+	thread_set_affinity(frame, aff);
 	run_task_curr(task_scheduler(frame));
 }
 
@@ -3131,17 +3128,17 @@ uint32_t __get_DFAR(void)
 // AARCH32
 void IRQ_Handler_aarch32(void * frame)
 {
-	const unsigned aff = thread_set_affinity(1U << arm_hardware_cpuid());
+	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	IRQ_Handler_GIC();			// Group 1 handler
-	thread_set_affinity(aff);
+	thread_set_affinity(frame, aff);
 	run_task_curr_aarch32(task_scheduler(frame));
 }
 
 void FIQ_Handler_aarch32(void * frame)
 {
-	const unsigned aff = thread_set_affinity(1U << arm_hardware_cpuid());
+	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	FIQ_Handler_GIC();			// Group 0 handler
-	thread_set_affinity(aff);
+	thread_set_affinity(frame, aff);
 	run_task_curr_aarch32(task_scheduler(frame));
 }
 

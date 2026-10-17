@@ -931,7 +931,6 @@ void __NO_RETURN task_scheduler_othercores(void);	// завершение ини
 void tasks_print(void);
 void timer_print(void);
 
-unsigned thread_set_affinity(unsigned affinity);	// Set thread affinity - return old value
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, const char * name);
 void thread_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 
