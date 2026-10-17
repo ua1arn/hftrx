@@ -2172,22 +2172,18 @@ void task_scheduler_start(void)
 // Если нашли - ставим error code
 static int task_isready(thread_item_t * tp, hwtimcountfast_t tn)
 {
-	if (tp->check_ready != NULL)
+	ASSERT(tp->check_ready);
+	if (tp->check_ready->ready(tp->check_ready, tp, tn, tp->check_ready_obj))
 	{
-		if (tp->check_ready->ready(tp->check_ready, tp, tn, tp->check_ready_obj))
-		{
-			tp->check_ready = NULL;	// признак готовности
-			return 1;
-		}
-		return 0;
+		tp->check_ready = NULL;	// признак готовности - для печати
+		return 1;
 	}
-	return 1;
+	return 0;
 }
 
 // получить готовую у выполнению задачу для ядра, попадающего в affinity
-static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin) {
+static thread_item_t * task_getready(unsigned affinity) {
 	const hwtimcountfast_t tn = timestamp_getticks();
-	ASSERT(taskin);
 	ASSERT(affinity);
 	unsigned prio;
 	PRLIST_ENTRY t;
@@ -2197,19 +2193,19 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin) 
 	for (t = threads_listW.Flink; t != & threads_listW; t = tnext) {
 		tnext = t->Flink;
 		thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-		task_isready(tp, tn);
-		if (tp->check_ready == NULL) {
+		if (task_isready(tp, tn)) {
 			RemoveEntryList(& tp->item);
 			task_insertready(tp);
 		}
 	}
 
-	// Начинаем от высшего IRQL к низшему - ищем подходящий к исполнению.
+	// Ищем среди готовых
+	// Начинаем от высшего IRQL к низшему - ищем подходящий к исполнению на данном ядре.
 	for (prio = 0; prio < PRIOv_count; ++ prio) {
 		PRLIST_ENTRY const listR = & threads_listR [prio];
 		for (t = listR->Flink; t != listR; t = t->Flink) {
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-			if ((tp->affinity & affinity) && tp->check_ready == NULL)
+			if ((tp->affinity & affinity))
 			{
 				// Нашли подходящий поток
 				RemoveEntryList(& tp->item);
@@ -2217,13 +2213,8 @@ static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin) 
 			}
 		}
 	}
-	RemoveEntryList(& taskin->item);
-	// debug stuff
-	if (taskin->check_ready != NULL) {
-		//tasks_print();
-		ASSERT(taskin->check_ready == NULL);
-	}
-	return taskin;
+	ASSERT(0);
+	return NULL;
 }
 
 static int thread_print(char *__restrict buff, size_t size, const thread_item_t * const tp)
@@ -2571,7 +2562,7 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		task_insertready(* pt);
 	}
 	// смена текущего потока на данном ядре
-	* pt = task_getready(UINT32_C(1) << core, * pt);
+	* pt = task_getready(UINT32_C(1) << core);
 	IRQLSPIN_UNLOCK(& threadslock, (* pt)->irql);
 	return startedtask [core]->cpuframe;
 }
