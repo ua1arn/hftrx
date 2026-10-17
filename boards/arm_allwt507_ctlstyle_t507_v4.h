@@ -285,7 +285,7 @@
 	//
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-	//#define WITHRTOS	1	/* Использование RTOS */
+	
 
 
 	// FPGA section

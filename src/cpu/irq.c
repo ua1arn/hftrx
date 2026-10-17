@@ -15,6 +15,8 @@
 #include "formats.h"	// for debug prints
 #include <string.h>
 
+#define WITHRTOS 1
+
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 #include "a-profile/irq_ctrl.h" // CMSIS_6 file

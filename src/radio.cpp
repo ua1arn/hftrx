@@ -21003,7 +21003,7 @@ static void keyspoolprocess(void * ctx)
 		default:
 			PRINTF("key=%02X\n", (unsigned char) c);
 			break;
-#if WITHRTOS
+#if 1//WITHRTOS
 		case 't':
 			tasks_print();
 			break;
@@ -23244,9 +23244,6 @@ application_initialize(void)
 	loadnewband(getvfoindex(0), 0);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
 
 #if defined (BOARD_BLINK_SETSTATE)
-#if WITHRTOS /* Использование RTOS */
-#else /* WITHRTOS */
-#endif /* WITHRTOS */
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t blinktaskram [8192];
 	if (thread_create_user(TASK_AFFINITY_ALL, blinktest2, NULL, blinktaskram, sizeof blinktaskram, "blinktest2") == NULL)
 	{
@@ -23310,9 +23307,6 @@ application_initialize(void)
 	hftrx_init();		// цифровая обработка подготавливается
 	InitNoiseReduction();
 
-#if WITHRTOS /* Использование RTOS */
-#else /* WITHRTOS */
-#endif /* WITHRTOS */
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
 	if (thread_create_user(TASK_AFFINITY_ALL, user_audioproc_thread, NULL, procthread, sizeof procthread, "user_audioproc_thread") == NULL)
 	{
