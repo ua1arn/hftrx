@@ -896,10 +896,10 @@ size_t getRamDiskSize(void);
 
 void lowinitialize(void);
 void applowinitialize(void);
-void application_mainloop(void);
 void application_initialize(void);
 void appsendchar(char c);
 void modemsendchar(char c);
+void hamradio_main_start(void);
 
 void ohciehci_clk_init(void);
 void usbdevice_clk_init(void);

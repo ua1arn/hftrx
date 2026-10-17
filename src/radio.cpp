@@ -137,7 +137,6 @@ processmessages(
 	}
 #endif /* ! WITHISBOOTLOADER */
 
-	board_dpc_processing();		// обработка отложенного вызова user mode функций
 	watchdog_ping();
 
 #if WITHLVGL && WITHLVGLINDEV
@@ -21175,125 +21174,6 @@ enum
 
 static uint_fast8_t sthrl = STHRL_RXTX;
 
-// инициализация главной машины состояний
-static void hamradio_main_initialize(void)
-{
-	{
-		static ticker_t ticker;
-
-		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), refreshticker_cb, NULL);	// вызывается с частотой 1/UI_TICKS_PERIOD (например, 20 Гц) с запрещенными прерываниями.
-		ticker_add(& ticker);
-	}
-
-	{
-		static ticker_t ticker;
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL, "dpc_1s_timer_fn");
-		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
-		ticker_add(& ticker);
-	}
-
-	{
-		static dpcobj_t dpcobj;
-
-		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
-		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL, "dpc_displatch_timer_fn");
-		ticker_initialize_user_display(& displatchticker, NTICKS(calcdivround2(1000, glatchfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
-		ticker_add(& displatchticker);
-	}
-	{
-		static ticker_t refreshticker;
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, dpc_displatch_refresh_fn, NULL, "dpc_displatch_refresh_fn");
-		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-		ticker_initialize_user_display(& refreshticker, NTICKS(calcdivround2(1000, gdisplayfreqsfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
-		ticker_add(& refreshticker);
-	}
-
-	{
-		static ticker_t ticker;
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, dpc_0p1_s_timer_fn, NULL, "dpc_0p1_s_timer_fn");
-		ticker_initialize_user(& ticker, NTICKS(100), & dpcobj);
-		ticker_add(& ticker);
-	}
-
-#if WITHAUTOTUNER
-	{
-		static dpcobj_t dpcobj;
-		dpcobj_initialize(& dpcobj, dpc_tunertimer_fn, NULL, "dpc_tunertimer_fn");
-		ticker_initialize_user(& ticker_tuner, NTICKS(gtunerdelay), & dpcobj);
-		ticker_add(& ticker_tuner);
-	}
-#endif /* WITHAUTOTUNER */
-#if WITHDEBUG
-	{
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, keyspoolprocess, NULL, "keyspoolprocess");
-		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-	}
-#endif
-	{
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, appspoolprocess, NULL, "appspoolprocess");
-		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-	}
-	// начальная инициализация
-//	bandsmap_verify();
-//	moderowinfo();
-	seq_purge();
-
-#if FQMODEL_GEN500
-	gfreqs [getbankindex_raw(0)] = 434085900UL;
-	gfreqs [getbankindex_raw(1)] = 434085900UL;
-#endif /* FQMODEL_GEN500 */
-
-	updateboard();	/* полная перенастройка (как после смены режима) - режим приема */
-	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
-	//display2_needupdate();
-
-#if 0 && MODEL_MAXLAB
-	// тестирование алгоритма для MAXLAB
-	{
-		unsigned n;
-		uint_fast32_t f;
-
-		f = 5500000;
-		for (n = 0; n < 1000; n += 50)
-			synth_lo1_setfreq(f + n. getlo1div(tx));
-		f = 5999000;
-		for (n = 0; n < 1000; n += 50)
-			synth_lo1_setfreq(f + n, getlo1div(tx));
-		//for (;;)
-		//	;
-	}
-#endif
-
-#if FQMODEL_GEN500
-	{
-		const spitarget_t target = targetpll2;		/* addressing to chip */
-
-		void prog_cmx992_print(spitarget_t target), prog_cmx992_initialize(spitarget_t target);
-
-		//prog_cmx992_initialize(target);
-		for (;;)
-			prog_cmx992_print(target);
-
-		//display2_needupdate();	// Обновление дисплея - всё, включая частоту
-
-		//prog_pll1_init();
-		synth_lo1_setfreq((434085900UL - 10700000UL) / 3. getlo1div(gtx));
-		for (;;)
-			;
-	}
-#endif /* FQMODEL_GEN500 */
-}
-
 /* Возвращаем не-0, если было изменение частоты настройки */
 static uint_fast8_t
 processmainlooptuneknobs(inputevent_t * ev)
@@ -21461,6 +21341,7 @@ hamradio_main_step(void)
 		break;
 
 	case STHRL_RXTX_FQCHANGED:
+		//dbg_putchar('0');
 			/* валкодер перестал вращаться - если было изменение частоты - сохраняем конфигурацию */
 			if (refreshenabled_freqs())
 			{
@@ -21479,6 +21360,7 @@ hamradio_main_step(void)
 			// @suppress("No break at end of case")
 
 	case STHRL_RXTX:
+		//dbg_putchar('1');
 		// работа с пользователем
 		if (txreq_getreqautotune(& txreqst0) != 0 && gtx != 0)
 		{
@@ -21526,6 +21408,7 @@ hamradio_main_step(void)
 	#endif /* WITHUSEAUDIOREC */
 
 		{
+			//dbg_putchar('3');
 #if WITHMENU
 			if (ginmenu0 && processmenukeyandencoder(& event))
 			{
@@ -21545,6 +21428,7 @@ hamradio_main_step(void)
 
 			} // end keyboard processing
 		}
+		//dbg_putchar('4');
 		if (processpots())
 		{
 			/* обновление индикатора без сохранения состояния диапазона */
@@ -21555,6 +21439,7 @@ hamradio_main_step(void)
 
 		} // end potentiometers processing
 
+		//dbg_putchar('5');
 		if (processmainloopencoders(ginmenu0, & event))
 		{
 	#if WITHTOUCHGUI
@@ -21562,6 +21447,7 @@ hamradio_main_step(void)
 	#endif /* WITHTOUCHGUI */
 
 		}
+		//dbg_putchar('6');
 		// Knobs rotation processing
 		if (! ginmenu0 && processmainlooptuneknobs(& event))
 		{
@@ -21574,6 +21460,7 @@ hamradio_main_step(void)
 	default:
 		break;
 	}
+	//dbg_putchar('9');
 	return STTE_OK;
 }
 
@@ -22737,13 +22624,10 @@ uint_fast8_t hamradio_get_gvfoab(void)
 
 // основной цикл программы при работе в режиме любительского премника
 void
-application_mainloop(void)
+application_mainloop(void * ctx)
 {
-	hamradio_main_initialize();
-	for (;;)
-	{
-		hamradio_main_step();
-	}
+	(void) ctx;
+	hamradio_main_step();
 }
 
 #endif /* ! WITHISBOOTLOADER */
@@ -23867,6 +23751,147 @@ int infocb_thermo(char * b, size_t len, int * pstate)
 #else
 	return 0;
 #endif
+}
+
+// инициализация главной машины состояний и запуск опроса елавиатуры/валкодеров
+void hamradio_main_start(void)
+{
+	{
+		static ticker_t ticker;
+
+		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), refreshticker_cb, NULL);	// вызывается с частотой 1/UI_TICKS_PERIOD (например, 20 Гц) с запрещенными прерываниями.
+		ticker_add(& ticker);
+	}
+
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL, "dpc_1s_timer_fn");
+		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
+		ticker_add(& ticker);
+	}
+
+	{
+		static dpcobj_t dpcobj;
+
+		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
+		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL, "dpc_displatch_timer_fn");
+		ticker_initialize_user_display(& displatchticker, NTICKS(calcdivround2(1000, glatchfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_add(& displatchticker);
+	}
+	{
+		static ticker_t refreshticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, dpc_displatch_refresh_fn, NULL, "dpc_displatch_refresh_fn");
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+		ticker_initialize_user_display(& refreshticker, NTICKS(calcdivround2(1000, gdisplayfreqsfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_add(& refreshticker);
+	}
+
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, dpc_0p1_s_timer_fn, NULL, "0p1_s");
+		ticker_initialize_user(& ticker, NTICKS(100), & dpcobj);
+		ticker_add(& ticker);
+	}
+
+#if WITHAUTOTUNER
+	{
+		static dpcobj_t dpcobj;
+		dpcobj_initialize(& dpcobj, dpc_tunertimer_fn, NULL, "dpc_tunertimer");
+		ticker_initialize_user(& ticker_tuner, NTICKS(gtunerdelay), & dpcobj);
+		ticker_add(& ticker_tuner);
+	}
+#endif /* WITHAUTOTUNER */
+#if WITHDEBUG
+	{
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, keyspoolprocess, NULL, "keyspoolprocess");
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
+#endif
+	{
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, appspoolprocess, NULL, "appspoolprocess");
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
+	// начальная инициализация
+//	bandsmap_verify();
+//	moderowinfo();
+	seq_purge();
+
+#if FQMODEL_GEN500
+	gfreqs [getbankindex_raw(0)] = 434085900UL;
+	gfreqs [getbankindex_raw(1)] = 434085900UL;
+#endif /* FQMODEL_GEN500 */
+
+	updateboard();	/* полная перенастройка (как после смены режима) - режим приема */
+	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
+	//display2_needupdate();
+
+#if 0 && MODEL_MAXLAB
+	// тестирование алгоритма для MAXLAB
+	{
+		unsigned n;
+		uint_fast32_t f;
+
+		f = 5500000;
+		for (n = 0; n < 1000; n += 50)
+			synth_lo1_setfreq(f + n. getlo1div(tx));
+		f = 5999000;
+		for (n = 0; n < 1000; n += 50)
+			synth_lo1_setfreq(f + n, getlo1div(tx));
+		//for (;;)
+		//	;
+	}
+#endif
+
+#if FQMODEL_GEN500
+	{
+		const spitarget_t target = targetpll2;		/* addressing to chip */
+
+		void prog_cmx992_print(spitarget_t target), prog_cmx992_initialize(spitarget_t target);
+
+		//prog_cmx992_initialize(target);
+		for (;;)
+			prog_cmx992_print(target);
+
+		//display2_needupdate();	// Обновление дисплея - всё, включая частоту
+
+		//prog_pll1_init();
+		synth_lo1_setfreq((434085900UL - 10700000UL) / 3. getlo1div(gtx));
+		for (;;)
+			;
+	}
+#endif /* FQMODEL_GEN500 */
+
+	// выполнение основного цикла
+#if WITHISBOOTLOADER && WITHISBOOTLOADERFATFS
+	void (* const mainfn)(void * ctx) = bootloader_fatfs_mainloop;
+#elif WITHISBOOTLOADER0
+	void (* const mainfn)(void * ctx) = bootloader0_mainloop;
+#elif WITHCTRLBOARDT507
+	void (* const mainfn)(void * ctx) = ctlboardt507_mainloop;
+#elif WITHISBOOTLOADER
+	void (* const mainfn)(void * ctx) = bootloader_mainloop;
+#elif 0
+	void (* const mainfn)(void * ctx) = hamradio_mainloop_beacon;
+#else
+	void (* const mainfn)(void * ctx) = application_mainloop;
+#endif
+
+	{
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, mainfn, NULL, "main_loop");
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
 }
 
 #endif /* ! WITHISBOOTLOADER */

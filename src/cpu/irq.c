@@ -2279,7 +2279,7 @@ void tasks_print(void)
 	size_t size = ARRAY_SIZE(buff);
 	tasks_print0(buff, size);
 	// use result
-	dbg_puts_impl(buff);
+	dbg_puts(buff);
 }
 
 // завершение инициализации - уход в вечный цикл
@@ -3184,7 +3184,7 @@ void __NO_RETURN SWI_Handler_aarch32(void * frame)
 void PAbort_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
-	dbg_puts_impl("PAbort_Handler trapped. CPUID=");
+	dbg_puts("PAbort_Handler trapped. CPUID=");
 	dbg_putchar('0' + (arm_hardware_cpuid()));
 	dbg_putchar('\n');
 #pragma GCC diagnostic push
@@ -3254,7 +3254,7 @@ void PAbort_Handler(void)
 void DAbort_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
-	dbg_puts_impl("DAbort_Handler trapped. CPUID=");
+	dbg_puts("DAbort_Handler trapped. CPUID=");
 	dbg_putchar('0' + (arm_hardware_cpuid()));
 	dbg_putchar('\n');
 #pragma GCC diagnostic push
@@ -3322,7 +3322,7 @@ void DAbort_Handler(void)
 
 void Hyp_Handler(void)
 {
-	dbg_puts_impl(PSTR("Hyp_Handler trapped. CPUID="));
+	dbg_puts(PSTR("Hyp_Handler trapped. CPUID="));
 	dbg_putchar('0' + (arm_hardware_cpuid()));
 	dbg_putchar('\n');
 	for (;;)

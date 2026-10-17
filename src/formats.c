@@ -383,7 +383,7 @@ void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 	va_end(ap);
 	b [ARRAY_SIZE(b) - 1] = '\0';
 
-	dbg_puts_impl(b);
+	dbg_puts(b);
 //	IRQLSPIN_UNLOCK(& printflock, irql);
 }
 
@@ -702,7 +702,7 @@ int dbg_putchar(int c)
 	return dbg_writechar(c);
 }
 
-int dbg_puts_impl(const char * s)
+int dbg_puts(const char * s)
 {
 	char c;
 	while ((c = * s ++) != '\0')
@@ -738,7 +738,7 @@ int dbg_writechar(int c)
 	return c;
 }
 
-int dbg_puts_impl(const char * s)
+int dbg_puts(const char * s)
 {
 	(void) s;
 	return 0;

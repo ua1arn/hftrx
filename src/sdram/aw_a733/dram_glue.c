@@ -126,7 +126,7 @@ int printf_dram(const char *format, ...)
 	va_end(ap);
 	b [ARRAY_SIZE(b) - 1] = '\0';
 
-	dbg_puts_impl(b);
+	dbg_puts(b);
 //	IRQLSPIN_UNLOCK(& printflock, irql);
 	return n;
 }
