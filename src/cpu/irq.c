@@ -2680,12 +2680,28 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 // Set thread affinity - return old value
 unsigned thread_set_affinity(unsigned affinity)
 {
+
 	if (threads_not_started)
 	{
 		return 1U << arm_hardware_cpuid();
 	}
 	else
 	{
+		const unsigned core = arm_hardware_cpuid();
+		IRQL_t lockIrql;
+		IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
+		thread_item_t * const tp = startedtask [core];
+		if (tp)
+		{
+			ASSERT(tp);
+			const unsigned aff = tp->affinity;
+			tp->affinity = affinity;
+			IRQLSPIN_UNLOCK(& threadslock, lockIrql);
+			return aff;
+		}
+		IRQLSPIN_UNLOCK(& threadslock, lockIrql);
+		return 1U << arm_hardware_cpuid();
+
 		volatile struct taskfnparam_setaffinity v;
 		v.newaffinity = affinity;
 		task_sysfn(TASKFN_SETAFFINITY, & v);
@@ -3021,8 +3037,9 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 // 0x280
 void __NO_RETURN VIRQ_Handler(void * frame)
 {
-	//while (HARDWARE_DEBUG_PUTCHAR('I') == 0) ;
+	const unsigned aff = thread_set_affinity(1U << arm_hardware_cpuid());
 	IRQ_Handler_GIC();		// Group 1 handler
+	thread_set_affinity(aff);
 	run_task_curr(task_scheduler(frame));
 }
 
@@ -3031,8 +3048,9 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 // 0x300
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
-	//while (HARDWARE_DEBUG_PUTCHAR('F') == 0) ;
+	const unsigned aff = thread_set_affinity(1U << arm_hardware_cpuid());
 	FIQ_Handler_GIC();		// Group 0 handler
+	thread_set_affinity(aff);
 	run_task_curr(task_scheduler(frame));
 }
 
@@ -3113,13 +3131,17 @@ uint32_t __get_DFAR(void)
 // AARCH32
 void IRQ_Handler_aarch32(void * frame)
 {
+	const unsigned aff = thread_set_affinity(1U << arm_hardware_cpuid());
 	IRQ_Handler_GIC();			// Group 1 handler
+	thread_set_affinity(aff);
 	run_task_curr_aarch32(task_scheduler(frame));
 }
 
 void FIQ_Handler_aarch32(void * frame)
 {
+	const unsigned aff = thread_set_affinity(1U << arm_hardware_cpuid());
 	FIQ_Handler_GIC();			// Group 0 handler
+	thread_set_affinity(aff);
 	run_task_curr_aarch32(task_scheduler(frame));
 }
 
@@ -3786,7 +3808,6 @@ void arm_hardware_populte_second_initialize(void)
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
 {
-	//targetcpu = ~ 0;
 	const IRQn_Type int_id = (IRQn_Type) int_ida;
 	//PRINTF("arm_hardware_set_handler: int_id=%u\n", (unsigned) int_id);
 #if CPUSTYLE_AT91SAM7S
@@ -3828,9 +3849,9 @@ _unused
 #else
 	cfg &= ~ 0x02u;	/* Set level sensitive configuration */
 #endif /* CPUSTYLE_XC7Z */
-	cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
+	//cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
 	// WITHRTOS
-	//cfg &= ~ 0x01u;	/* N-N model */
+	cfg &= ~ 0x01u;	/* N-N model */
 #if ! CPUSTYLE_R7S721
 	/* do not change edge/level settings of specified interrupts - leave initialized at start-up */
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation

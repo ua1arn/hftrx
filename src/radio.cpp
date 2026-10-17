@@ -23261,7 +23261,7 @@ application_initialize(void)
 #else /* WITHRTOS */
 #endif /* WITHRTOS */
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t blinktaskram [8192];
-	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, blinktest2, NULL, blinktaskram, sizeof blinktaskram, "blinktest2") == NULL)
+	if (thread_create_user(TASK_AFFINITY_ALL, blinktest2, NULL, blinktaskram, sizeof blinktaskram, "blinktest2") == NULL)
 	{
 #if WITHISBOOTLOADER
 	const unsigned thalf = 100;	// Toggle every 100 ms
@@ -23327,7 +23327,7 @@ application_initialize(void)
 #else /* WITHRTOS */
 #endif /* WITHRTOS */
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
-	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, user_audioproc_thread, NULL, procthread, sizeof procthread, "user_audioproc_thread") == NULL)
+	if (thread_create_user(TASK_AFFINITY_ALL, user_audioproc_thread, NULL, procthread, sizeof procthread, "user_audioproc_thread") == NULL)
 	{
 		static dpcobj_t user_audioproc_dpc;
 		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL, "user_audioproc_dpc");
