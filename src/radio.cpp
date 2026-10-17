@@ -8365,7 +8365,7 @@ static uint_fast8_t tuneabort(void)
 	// счетчик перебора сбрасывается в 0 - и до обновления экрана дело не доходит.
 
 	txreq_process();	/* обработка запросов */
-	processmessages(& kbch, & kbready);
+	processmessages(& kbch, & kbready);	// CAT?
 	if (! txreq_getreqautotune(& txreqst0))
 		return 1;
 	if (kbready != 0)
@@ -8374,6 +8374,7 @@ static uint_fast8_t tuneabort(void)
 		{
 		case KBD_CODE_ATUBYPASS:
 		case KBD_CODE_ATUSTART:
+			TP();
 			return 1;
 		}
 	}
@@ -8702,19 +8703,43 @@ static void auto_tune3(void)
 
 #endif /* WITHAUTOTUNER */
 
+
 #if WITHAUTOTUNER
 
-static ticker_t ticker_tuner;
-
-/* user-mode function */
-static void dpc_tunertimer_fn(void * arg)
+enum tnrstate
 {
+	TUNERSTATE_0,
+	TUNERSTATE_01,
+	TUNERSTATE_1,
+	TUNERSTATE_2,
+	TUNERSTATE_DONE,
+	TUNERSTATE_ABORTING,
+};
+
+static enum tnrstate hamradio_tune_step(void);
+
+static enum tnrstate tunerstate = TUNERSTATE_0;
+
+static volatile uint32_t tunerstartflag;
+
+static int tuner_thread(void * arg)
+{
+	tunerstate = TUNERSTATE_0;
+	for (;;)
+	{
+		local_wait32mask(& tunerstartflag, 1, 1, LOCAL_WAITINFINITY);
+		tunerstartflag = 0;
+		TP();
+		while (hamradio_tune_step() != TUNERSTATE_0)
+			;
+		TP();
+		tunerstartflag = 0;
+	}
 }
 
-/* закончили установку нового состояния тюнера - запускаем новый период таймера */
-static void tuner_eventrestart(void)
+static void tuner_start(void)
 {
-	ticker_setperiod(& ticker_tuner, NTICKS(gtunerdelay));
+	tunerstartflag = 1;
 }
 
 #endif /* WITHAUTOTUNER */
@@ -13974,7 +13999,6 @@ updateboard_noui(
 
 	#if WITHAUTOTUNER
 		board_set_tuner_group();
-		ticker_setperiod(& ticker_tuner, NTICKS(gtunerdelay));
 	#else /* WITHAUTOTUNER */
 		board_set_tuner_bypass(1);
 	#endif /* WITHAUTOTUNER */
@@ -19126,12 +19150,14 @@ processmenukeyandencoder(inputevent_t * ev)
 
 #if WITHAUTOTUNER
 	case KBD_CODE_ATUSTART:
+		TP();
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		uif_key_atunerstart();
 		ev->frontkeyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_ATUBYPASS:
+		TP();
 		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
 		uif_key_bypasstoggle();
 		ev->frontkeyevent.kbready = 0;
@@ -19741,10 +19767,12 @@ process_key_menuset_common(uint_fast8_t kbch)
 
 #if WITHAUTOTUNER
 	case KBD_CODE_ATUSTART:
+		TP();
 		uif_key_atunerstart();
 		return 1;	/* клавиша уже обработана */
 
 	case KBD_CODE_ATUBYPASS:
+		TP();
 		uif_key_bypasstoggle();
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHAUTOTUNER */
@@ -20860,27 +20888,10 @@ static uint_fast8_t nvramdiags(void)
 	return resetconfig;
 }
 
-#if WITHAUTOTUNER
-
-enum tnrstate
-{
-	TUNERSTATE_0,
-	TUNERSTATE_01,
-	TUNERSTATE_1,
-	TUNERSTATE_2,
-	TUNERSTATE_DONE,
-	TUNERSTATE_ABORTING,
-};
-
-static enum tnrstate tunerstate = TUNERSTATE_0;
-
-
-#endif /* WITHAUTOTUNER */
-
 // работа в машине состояний тюнера
 // возврат STTE_OK для перехода на следующее состояние
 // возврат STTE_BUSY - продолжаем тут
-static STTE_t hamradio_tune_step(void)
+static enum tnrstate hamradio_tune_step(void)
 {
 #if WITHAUTOTUNER
 	switch (tunerstate)
@@ -20956,10 +20967,10 @@ static STTE_t hamradio_tune_step(void)
 		break;
 	}
 
-	return tunerstate == TUNERSTATE_0 ? STTE_OK : STTE_BUSY;
+	return tunerstate;
 
 #else /* WITHAUTOTUNER */
-	return STTE_OK;
+	return TUNERSTATE_0;
 #endif /* WITHAUTOTUNER */
 }
 
@@ -21166,7 +21177,6 @@ enum
 	//STHTL_IDLE,
 	STHRL_RXTX,
 	STHRL_RXTX_FQCHANGED,
-	STHRL_TUNE,
 	STHRL_MENU,
 	//
 	STHRL_count
@@ -21317,8 +21327,8 @@ static void inputevent_init(inputevent_t * e)
 }
 
 // работа в главной машине состояний
-static STTE_t
-hamradio_main_step(void)
+static void
+application_mainloop(void * ctx)
 {
 	const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);		/* состояние выбора банков может измениться */
 	const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);		/* состояние выбора банков может измениться */
@@ -21330,16 +21340,6 @@ hamradio_main_step(void)
 	txreq_process();	/* обработка запросов */
 	switch (sthrl)
 	{
-//	case STHRL_MENU:
-//		if (hamradio_menu_step() == STTE_OK)
-//			sthrl = STHRL_RXTX;
-//		break;
-
-	case STHRL_TUNE:
-		if (hamradio_tune_step() == STTE_OK)
-			sthrl = STHRL_RXTX;
-		break;
-
 	case STHRL_RXTX_FQCHANGED:
 			/* валкодер перестал вращаться - если было изменение частоты - сохраняем конфигурацию */
 			if (refreshenabled_freqs())
@@ -21362,8 +21362,7 @@ hamradio_main_step(void)
 		// работа с пользователем
 		if (txreq_getreqautotune(& txreqst0) != 0 && gtx != 0)
 		{
-			sthrl = STHRL_TUNE;
-			break;
+			tuner_start();
 		}
 
 
@@ -21454,7 +21453,6 @@ hamradio_main_step(void)
 	default:
 		break;
 	}
-	return STTE_OK;
 }
 
 uint_fast8_t hamradio_get_gmutespkr(void)
@@ -22613,14 +22611,6 @@ void hamradio_split_vfo_swap(void)
 uint_fast8_t hamradio_get_gvfoab(void)
 {
 	return gvfoab;
-}
-
-// основной цикл программы при работе в режиме любительского премника
-void
-application_mainloop(void * ctx)
-{
-	(void) ctx;
-	hamradio_main_step();
 }
 
 #endif /* ! WITHISBOOTLOADER */
@@ -23794,10 +23784,8 @@ void hamradio_main_start(void)
 
 #if WITHAUTOTUNER
 	{
-		static dpcobj_t dpcobj;
-		dpcobj_initialize(& dpcobj, dpc_tunertimer_fn, NULL, "dpc_tunertimer");
-		ticker_initialize_user(& ticker_tuner, NTICKS(gtunerdelay), & dpcobj);
-		ticker_add(& ticker_tuner);
+		static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t tunertaskram [1 * 1024 * 1024];
+		thread_create_user(TASK_AFFINITY_ALL, tuner_thread, NULL, tunertaskram, sizeof tunertaskram, "tuner_thread");
 	}
 #endif /* WITHAUTOTUNER */
 #if WITHDEBUG
