@@ -2588,11 +2588,6 @@ static void * task_scheduler(void * oldframe)
 // хотим завершить выполнение кванта, не дожидаясь прерывания
 void thread_yield(void)
 {
-	const uint_fast8_t coreid = board_dpc_coreid();
-	if (coreid >= 6)
-		return;
-//	__WFI();	// пока так
-//	__SEV();
 	task_sysfn(TASKFN_NOP, NULL);
 }
 
