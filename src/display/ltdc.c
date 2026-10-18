@@ -2878,6 +2878,9 @@ static void hardware_de_global_initialize(void)
 #elif CPUSTYLE_A733
 	/* Global DE settings */
 
+    // See https://github.com/beg0fthend/edk2-a733/blob/44aeea539549e44d8f78922e3ba8c7682b084292/research/a733-pcie-nvme-bringup.md
+
+
     //all_Type_print2("Simulation");
 //	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 //	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
@@ -2967,15 +2970,19 @@ static void hardware_de_global_initialize(void)
 	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 1);	// DCXO_HDMI_GATING
 	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 1));
 
+	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 5);	// DCXO_SERDES1_GATING
+	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 5));
+
+	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 4);	// DCXO_SERDES0_GATING
+	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 4));
+
 	const uint_fast32_t lvdsclock = 232848000;
 	const uint_fast32_t lcddotclock = 55000000;
 	uint_fast32_t hdmidotclock = 360 * 1000 * 1000; //  80291880;
 
+
 #ifdef TCONLCD_PTR
 
-		// нужно для VDS/MIPI-DSI ?
-		CCU->COMBPHY0_CLK_REG |= (UINT32_C(1) << 31);	// COMBPHY0_CLK_GATING
-		CCU->COMBPHY1_CLK_REG |= (UINT32_C(1) << 31);	// COMBPHY0_CLK_GATING
 
 		// lvds
 		CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DPSS_TOP0_GATING Open the clock gate
@@ -3131,9 +3138,11 @@ static void hardware_de_global_initialize(void)
 
 
 	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_GATING
+	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 1);	// HDMI_GATING
 	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 18);	// HDMI_HDCP_RST
 	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST (19 & 18 - hdmi1 ?)
-	//PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+	CCU->HDMI_BGR_REG |= ~0u;
+	PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
 
 	////CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
 	//PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
@@ -3162,6 +3171,44 @@ static void hardware_de_global_initialize(void)
 	CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
 	//PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
 
+	{
+		uint32_t Zclk_val = (UINT32_C(1) << 31) | (UINT32_C(3) << 24) | 0x0;
+		CCU->COMBPHY0_CLK_REG =Zclk_val;//|= (UINT32_C(1) << 31);	// COMBPHY0_CLK_GATING
+		CCU->COMBPHY1_CLK_REG =Zclk_val;//|= (UINT32_C(1) << 31);	// COMBPHY0_CLK_GATING
+		/* =========================================================================
+       ШАГ 1: Переключение системных MUX Combo PHY в режим HDMI
+       ========================================================================= */
+
+		// COMBPHY0: сбрасываем нижние биты [1:0] и выставляем режим HDMI (0x2)
+		COMBPHY0->COMBPHY_CFG_REG = (COMBPHY0->COMBPHY_CFG_REG & ~((UINT32_C(1) << 1) | (UINT32_C(1) << 0)))
+									| (UINT32_C(1) << 1);
+
+		// COMBPHY1: проделываем аналогичное переключение
+		COMBPHY1->COMBPHY_CFG_REG = (COMBPHY1->COMBPHY_CFG_REG & ~((UINT32_C(1) << 1) | (UINT32_C(1) << 0)))
+									| (UINT32_C(1) << 1);
+
+		/* =========================================================================
+		   ШАГ 2: Управление аналоговой изоляцией падов и внутренним питанием PHY
+		   ========================================================================= */
+
+		// COMBPHY0: Сбрасываем BIT(0) (Отключаем ISO), взводим BIT(1) (Включаем Power)
+		uint32_t ctrl0_val = COMBPHY0->COMBPHY_CTRL_REG;
+		ctrl0_val &= ~(UINT32_C(1) << 0); // Отключаем Analog Isolation
+		ctrl0_val |= (UINT32_C(1) << 1);  // Активируем внутреннее питание ячейки
+		COMBPHY0->COMBPHY_CTRL_REG = ctrl0_val;
+
+		// COMBPHY1: Выполняем аналогичные действия
+		uint32_t ctrl1_val = COMBPHY1->COMBPHY_CTRL_REG;
+		ctrl1_val &= ~(UINT32_C(1) << 0); // Отключаем Analog Isolation
+		ctrl1_val |= (UINT32_C(1) << 1);  // Активируем внутреннее питание ячейки
+		COMBPHY1->COMBPHY_CTRL_REG = ctrl1_val;
+
+		/* Аппаратная пауза для стабилизации переходных процессов ключей */
+		local_delay_us(200);
+
+		PRINTHEX32(*COMBPHY0);
+		PRINTHEX32(*COMBPHY1);
+	}
 #endif
 
 //    CCU->TVE0_CLK_REG = 0x82000001;

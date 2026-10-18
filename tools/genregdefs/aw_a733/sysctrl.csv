@@ -1,0 +1,23 @@
+#type; SYSCTRL; System Control Matrix (Allwinner A733 / sun60iw2)
+
+#rem; Base address: 0x03000000
+#base; SYSCTRL 0x03000000
+
+#rem; Based on sun60iw2 low-level hardware design and system matrix configuration
+
+#regdef; VER_REG; 0x0000;          Chip version and SoC identification register
+#regdef; SRAM_CTRL_REG0; 0x0010;   SRAM access permission and security mapping control 0
+#regdef; SRAM_CTRL_REG1; 0x0014;   SRAM configuration and section mapping register 1
+#regdef; SRAM_VER_REG; 0x0020;     SRAM macro version and hardware generation register
+#regdef; SYS_PIN_LAT_REG; 0x0030;  System pin latch configuration register (state freeze)
+
+#rem; Combo PHY MUX & Isolation control blocks (integrated into SYSCTRL for A733)
+#regdef; COMBPHY0_CFG_REG; 0x0040; System routing configuration for COMBPHY0 (MUX PCIe/USB3/HDMI)
+#regdef; COMBPHY1_CFG_REG; 0x0044; System routing configuration for COMBPHY1 (MUX PCIe/USB3/HDMI)
+#regdef; PCIE_REFCLK_REG; 0x0048;  PCIe reference clock selection and internal multiplier control
+#regdef; COMBPHY_CTRL_REG; 0x004C; Global analog power enable and internal LDO control for PHYs
+#regdef; COMBPHY_ISO_REG; 0x0050;  Analog pad isolation control (Clear bits [1:0] to unblock I2C to PHY)
+
+#regdef; align 0; 0x1000; set size
+
+#typeend;

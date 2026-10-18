@@ -201,6 +201,7 @@ typedef enum IRQn
 #define SPI1_BASE ((uintptr_t) 0x02541000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI2_BASE ((uintptr_t) 0x02542000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI3_BASE ((uintptr_t) 0x02543000)            /*!< SPI Serial Peripheral Interface Base */
+#define SYSCTRL_BASE ((uintptr_t) 0x03000000)         /*!< SYSCTRL System Control Matrix (Allwinner A733 / sun60iw2) Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Security ID Base */
 #define Timer0_CPUX_BASE ((uintptr_t) 0x03009000)     /*!< TIMER0  Base */
 #define GIC_BASE ((uintptr_t) 0x03400000)             /*!< GIC  Base */
@@ -286,6 +287,8 @@ typedef enum IRQn
 #define eDP_REG_PAD_BASE ((uintptr_t) 0x05760000)     /*!< eDP_REG_PAD  Base */
 #define PCIe_BASE ((uintptr_t) 0x06400000)            /*!< PCIe  Base */
 #define USB3P1_DRD_BASE ((uintptr_t) 0x06A00000)      /*!< USB3P1_DRD  Base */
+#define COMBPHY0_BASE ((uintptr_t) 0x06C80000)        /*!< COMBPHY  Base */
+#define COMBPHY1_BASE ((uintptr_t) 0x06CA0000)        /*!< COMBPHY  Base */
 #define S_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< PRCM Power Reset Clock Management (PRCM) Base */
 #define S_GPIOL_BASE ((uintptr_t) 0x07025000)         /*!< S_GPIO Secure Port Controller Base */
 #define S_GPIOM_BASE ((uintptr_t) 0x07025030)         /*!< S_GPIO Secure Port Controller Base */
@@ -773,6 +776,16 @@ typedef struct CLUSTER_CFG_Type
     __IOM uint32_t DSU_AXI1_MNT_RBD_REG;              /*!< Offset 0x80E8 DSUAXI1MONITORReadBandwidth Register */
     __IOM uint32_t DSU_AXI1_MNT_WBD_REG;              /*!< Offset 0x80EC DSUAXI1MONITORWriteBandwidth Register */
 } CLUSTER_CFG_TypeDef; /* size of structure = 0x80F0 */
+/*
+ * @brief COMBPHY
+ */
+/*!< COMBPHY  */
+typedef struct COMBPHY_Type
+{
+    __IOM uint32_t COMBPHY_CFG_REG;                   /*!< Offset 0x000  */
+    __IOM uint32_t COMBPHY_CTRL_REG;                  /*!< Offset 0x004  */
+    __IOM uint32_t COMBPHY_STAT_REG;                  /*!< Offset 0x008  */
+} COMBPHY_TypeDef; /* size of structure = 0x00C */
 /*
  * @brief CPUS_INTERRUPT_CTRL
  */
@@ -2630,6 +2643,32 @@ typedef struct SPI_Type
          RESERVED(0x304[0x1000 - 0x0304], uint8_t)
 } SPI_TypeDef; /* size of structure = 0x1000 */
 /*
+ * Base address: 0x03000000
+ * Based on sun60iw2 low-level hardware design and system matrix configuration
+ */
+/*
+ * @brief SYSCTRL
+ */
+/*!< SYSCTRL System Control Matrix (Allwinner A733 / sun60iw2) */
+typedef struct SYSCTRL_Type
+{
+    __IOM uint32_t VER_REG;                           /*!< Offset 0x000 Chip version and SoC identification register */
+         RESERVED(0x004[0x0010 - 0x0004], uint8_t)
+    __IOM uint32_t SRAM_CTRL_REG0;                    /*!< Offset 0x010 SRAM access permission and security mapping control 0 */
+    __IOM uint32_t SRAM_CTRL_REG1;                    /*!< Offset 0x014 SRAM configuration and section mapping register 1 */
+         RESERVED(0x018[0x0020 - 0x0018], uint8_t)
+    __IOM uint32_t SRAM_VER_REG;                      /*!< Offset 0x020 SRAM macro version and hardware generation register */
+         RESERVED(0x024[0x0030 - 0x0024], uint8_t)
+    __IOM uint32_t SYS_PIN_LAT_REG;                   /*!< Offset 0x030 System pin latch configuration register (state freeze) */
+         RESERVED(0x034[0x0040 - 0x0034], uint8_t)
+    __IOM uint32_t COMBPHY0_CFG_REG;                  /*!< Offset 0x040 System routing configuration for COMBPHY0 (MUX PCIe/USB3/HDMI) */
+    __IOM uint32_t COMBPHY1_CFG_REG;                  /*!< Offset 0x044 System routing configuration for COMBPHY1 (MUX PCIe/USB3/HDMI) */
+    __IOM uint32_t PCIE_REFCLK_REG;                   /*!< Offset 0x048 PCIe reference clock selection and internal multiplier control */
+    __IOM uint32_t COMBPHY_CTRL_REG;                  /*!< Offset 0x04C Global analog power enable and internal LDO control for PHYs */
+    __IOM uint32_t COMBPHY_ISO_REG;                   /*!< Offset 0x050 Analog pad isolation control (Clear bits [1:0] to unblock I2C to PHY) */
+         RESERVED(0x054[0x1000 - 0x0054], uint8_t)
+} SYSCTRL_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief S_GPIO
  */
 /*!< S_GPIO Secure Port Controller */
@@ -3116,6 +3155,7 @@ typedef struct USB_OHCI_Capability_Type
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define SPI2 ((SPI_TypeDef *) SPI2_BASE)              /*!< SPI2 Serial Peripheral Interface register set access pointer */
 #define SPI3 ((SPI_TypeDef *) SPI3_BASE)              /*!< SPI3 Serial Peripheral Interface register set access pointer */
+#define SYSCTRL ((SYSCTRL_TypeDef *) SYSCTRL_BASE)    /*!< SYSCTRL System Control Matrix (Allwinner A733 / sun60iw2) register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define GICD ((GICD_TypeDef *) GICD_BASE)             /*!< GICD GIC Distributor register set access pointer */
 #define GICT ((GICT_TypeDef *) GICT_BASE)             /*!< GICT GIC ITS translation register set access pointer */
@@ -3190,6 +3230,8 @@ typedef struct USB_OHCI_Capability_Type
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0 TV Output register set access pointer */
 #define TCON_TV1 ((TCON_TV_TypeDef *) TCON_TV1_BASE)  /*!< TCON_TV1 TV Output register set access pointer */
 #define PCIe ((PCIe_TypeDef *) PCIe_BASE)             /*!< PCIe  register set access pointer */
+#define COMBPHY0 ((COMBPHY_TypeDef *) COMBPHY0_BASE)  /*!< COMBPHY0  register set access pointer */
+#define COMBPHY1 ((COMBPHY_TypeDef *) COMBPHY1_BASE)  /*!< COMBPHY1  register set access pointer */
 #define S_PRCM ((PRCM_TypeDef *) S_PRCM_BASE)         /*!< S_PRCM Power Reset Clock Management (PRCM) register set access pointer */
 #define S_GPIOL ((S_GPIO_TypeDef *) S_GPIOL_BASE)     /*!< S_GPIOL Secure Port Controller register set access pointer */
 #define S_GPIOM ((S_GPIO_TypeDef *) S_GPIOM_BASE)     /*!< S_GPIOM Secure Port Controller register set access pointer */

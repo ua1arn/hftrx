@@ -723,15 +723,24 @@ parseregdef(char *s0, char *fldname, unsigned fldsize, enum regsccess rorw, cons
 // registers list bay be empty
 static void parsereglist(FILE *fp, const char *file, PLIST_ENTRY listhead)
 {
+	char comment[TKSZ];
 	char fldname[VNAME_MAX];
 	unsigned fldsize;
 	int pos; /* end of parsed field position */
 
 	for (;;)
 	{
+		memset(comment, 0, sizeof comment);
 		//fprintf(stderr, "token0=%s\n", token0);
 		if (0)
 		{
+		}
+		else if (1 == sscanf(token0, "#rem; %1023[^\n]\n", comment))
+		{
+			//fprintf(stderr, "Parsed comment='%s'\n", comment);
+			//storecomments(pfl, comment);
+			if (nextline(fp) == 0)
+				break;
 		}
 		else if (2
 				== sscanf(token0, "#regdefr; %[a-zA-Z_0-9/-] %i %n", fldname,
