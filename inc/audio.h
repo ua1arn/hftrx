@@ -219,6 +219,21 @@ typedef int32_t hdmi48bufv_t;
 	typedef int32_t IFADCvalue_t;
 	typedef int32_t IFDACvalue_t;
 
+	// CIC 1 (1/128) decimator parameters in DDC path
+	#define DDC_CIC1_STAGES     9
+	#define DDC_CIC1_DELAY      1
+	#define DDC_CIC1_DECIMATION 128
+
+	// CIC 2 (1/20) decimator parameters in DDC path
+	#define DDC_CIC2_STAGES     9
+	#define DDC_CIC2_DELAY      1
+	#define DDC_CIC2_DECIMATION 20
+
+	// Parameters of the single CIC interpolator (1/2560) in DUC path
+	#define DUC_CIC_STAGES     9
+	#define DUC_CIC_DELAY      1
+	#define DUC_CIC_INTERP     2560
+
 	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
@@ -246,6 +261,18 @@ typedef int32_t hdmi48bufv_t;
 		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
 		#define HARDWARE_COEFWIDTH	32		// Разрядность коэффициентов. format is S0.31
+
+		// CIC (1/2560) decimator parameters in DDC path
+		#define DDC_CIC1_STAGES     9
+		#define DDC_CIC1_DELAY      1
+		#define DDC_CIC1_DECIMATION 2560
+
+		// Parameters of the single CIC interpolator (1/2560) in DUC path
+		#define DUC_CIC_STAGES     9
+		#define DUC_CIC_DELAY      1
+		#define DUC_CIC_INTERP     2560
+
+
 		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
 		//#define HARDWARE_DUCSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 		#define HARDWARE_DUCSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора

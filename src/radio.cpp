@@ -20201,11 +20201,14 @@ static uint_fast8_t modetxrequest(void)
 	const uint_fast8_t bi = getbankindex_tx(1);		// TX bankindex
 	const uint_fast8_t submode = getsubmode(bi);	// какая модуляция в режиме передачи
 	const struct modetempl * const pmodet = getmodetempl(submode);
+#if WITHTX
 	if (param_getvalue(& xgbkinenable) && pmodet->txcw && (pmodet->wbkin || (pmodet->abkin && gcwssbtx)) && vox_getbkin())
 		return 1;
+#if WITHVOX
 	if (param_getvalue(& xgvoxenable) && pmodet->vox && vox_getptt())
 		return 1;
-
+#endif /* WITHVOX */
+#endif /* WITHTX */
 	return 0;
 }
 

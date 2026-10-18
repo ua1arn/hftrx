@@ -9,3 +9,28 @@
 #regdef; DBG_STATE; 0x001C; Debug State Register
 
 #typeend;
+
+
+
+## layout from A733
+
+#type; TIMESTAMP_STA;
+#base; TIMESTAMP_STA 0x01C1B000
+
+#regdefr; CNT_LOW_REG; 0x0000; 	Counter Low Register
+#regdefr; CNT_HI_REG; 0x0004; 	Counter High Register
+
+#typeend;
+
+## layout from A733
+
+#type; TIMESTAMP_CTRL;
+#base; TIMESTAMP_CTRL 0x01C1A000
+
+#regdef; TSTAMP_CTRL_REG; 	0x0000; Counter Control Register.
+#regdef; CNTSR; 			0x0004; Timestamp Status Register
+#regdef; CNT_CTRL_LOW_REG; 	0x0008; Counter Low Register
+#regdef; CNT_CTRL_HI_REG; 	0x000C; Counter High Register
+#regdef; CNT_FREQID_REG; 	0x0020; Counter Base Frequency ID Register
+
+#typeend;
