@@ -2878,6 +2878,9 @@ static void hardware_de_global_initialize(void)
 #elif CPUSTYLE_A733
 	/* Global DE settings */
 
+    // See https://github.com/beg0fthend/edk2-a733/blob/44aeea539549e44d8f78922e3ba8c7682b084292/research/a733-pcie-nvme-bringup.md
+
+
     //all_Type_print2("Simulation");
 //	CCU->DISPLAY_IF_TOP_BGR_REG |= (UINT32_C(1) << 0);	// DISPLAY_IF_TOP_GATING
 //	CCU->DISPLAY_IF_TOP_BGR_REG &= ~ (UINT32_C(1) << 16);	// DISPLAY_IF_TOP_RST Assert
