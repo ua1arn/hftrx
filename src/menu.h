@@ -1838,3 +1838,6 @@
 	& xgddrfreq,
 	& xgbusfreq,
 #endif
+#if WITHRTOS
+	& xgwithrtos,
+#endif /* WITHRTOS */
