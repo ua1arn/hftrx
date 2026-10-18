@@ -1062,6 +1062,7 @@ static void calculate_variable_slope_lpf(FLOAT_t *const h, const FLOAT_t *const 
  */
 void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f_cutoff, const FLOAT_t w_trans) {
 
+	ASSERT(num_taps < 1024);
     // Automatically select FFT size based on filter length
     const uint32_t fft_size = (num_taps <= 512) ? 1024 : 2048;
 
@@ -1190,6 +1191,7 @@ void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const pre
  */
 void calculate_duc_lpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f_cutoff) {
 
+	ASSERT(num_taps < 1024);
     // Automatically select FFT size based on filter length
     const uint32_t fft_size = (num_taps <= 512) ? 1024 : 2048;
 
