@@ -8,7 +8,6 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
 //#define WITHIRQTRACE 1	/* печать номеров возникающих прерываний */
-//#define WITHRTOS 1
 
 #include "formats.h"	// for debug prints
 #include "clocks.h"
