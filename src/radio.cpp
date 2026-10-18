@@ -20985,6 +20985,7 @@ static volatile uint32_t tuner_control;
 
 static int tuner_thread(void * ctx)
 {
+	(void) ctx;	// unused parameter
 	for (;;)
 	{
 		if (local_wait32mask(& tuner_control, 0x01, 0x01, LOCAL_WAITINFINITY))
@@ -20999,7 +21000,10 @@ static int tuner_thread(void * ctx)
 #if WITHDEBUG
 
 
-__WEAK void modem_spool(void * ctx) { }
+__WEAK void modem_spool(void * ctx) {
+	(void) ctx;	// unused parameter
+
+}
 __WEAK void modem_send(uint_fast8_t c) {}
 
 static void keyspoolprocess(void * ctx)
@@ -22714,8 +22718,9 @@ struct band
 };
 
 static void
-hamradio_mainloop_beacon(void)
+hamradio_mainloop_beacon(void * ctx)
 {
+	(void) ctx;	// unused parameter
 	uint8_t ifreq;
 	static const struct band ffs [] =
 	{
@@ -22866,6 +22871,7 @@ board_set_ctcssrx(
 
 void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
+	(void) ctx;	// unused parameter
 	static FLOAT_t ctcss_buffer [goe_ctssLENGTH * CTCSS_DECIM];	// входные данные для обработки
 	static unsigned incount;
 	unsigned i;
@@ -23023,6 +23029,7 @@ static goeSTATE_t goeSTATEs [DTMF_NFREQUES];
 
 static void dtmf_out(void * ctx, char c)
 {
+	(void) ctx;	// unused parameter
 	PRINTF("%c", c);
 }
 
@@ -23035,6 +23042,7 @@ static FLOAT_t goertz_dtmf_win [goe_dtmfLENGTH]; // Window
 
 void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
+	(void) ctx;	// unused parameter
 	static unsigned n;
 	unsigned i;
 

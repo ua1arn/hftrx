@@ -427,6 +427,7 @@ void bootloader0_mainloop(void)
 
 void bootloader_mainloop(void * ctx)
 {
+	(void) ctx;
 	PRINTF("bootloader_mainloop: wait user/USB loop [%p]\n", bootloader_mainloop);
 	PRINTF("bootloader_mainloop: user user/USB loop, CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 

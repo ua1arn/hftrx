@@ -20,6 +20,7 @@
 ///
 void ctlboardt507_mainloop(void * ctx)
 {
+	(void) ctx;
 	PRINTF("ctlboardt507_mainloop [%p]\n", ctlboardt507_mainloop);
 
 	/* подготовка к работе каналов обмена с периферией */
