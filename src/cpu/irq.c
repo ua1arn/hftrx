@@ -7,15 +7,13 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
-//#define WITHIRQTRACE 1	/* перчать номеров возникающих прерываний */
+//#define WITHIRQTRACE 1	/* печать номеров возникающих прерываний */
+//#define WITHRTOS 1
 
-#include "clocks.h"
-#include "board.h"
-#include "gpio.h"
 #include "formats.h"	// for debug prints
+#include "clocks.h"
 #include <string.h>
 
-#define WITHRTOS 1
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 

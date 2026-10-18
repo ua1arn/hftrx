@@ -121,7 +121,7 @@ extern "C" {
 	#include "arch/renesasRZA1/iodefine.h"		// peripherial registers
 	#include "arch/renesasRZA1/rza_io_regrw.h"	// iobitmasks
 
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 
 	#define DCACHEROWSIZE 32
@@ -143,7 +143,7 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
 	#include "arch/stm32mp1xx/stm32mp1xx.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -172,7 +172,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_a64.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 64
@@ -188,7 +188,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_t507.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	//	I-Cache L1: 32 KB, 256 Sets, 64 Bytes/Line, 2-Way
 	//	D-Cache L1: 32 KB, 128 Sets, 64 Bytes/Line, 4-Way
@@ -208,7 +208,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_a733.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	//	I-Cache L1: 32 KB, 256 Sets, 64 Bytes/Line, 2-Way
 	//	D-Cache L1: 32 KB, 128 Sets, 64 Bytes/Line, 4-Way
@@ -227,7 +227,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_a133.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	//	I-Cache L1: 32 KB, 256 Sets, 64 Bytes/Line, 2-Way
 	//	D-Cache L1: 32 KB, 128 Sets, 64 Bytes/Line, 4-Way
@@ -245,7 +245,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_v853x.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -259,7 +259,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_h3.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -274,7 +274,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_t113x.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -289,7 +289,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_t153.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -304,7 +304,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_v3s.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -318,7 +318,7 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
 	#include "elvees_vm14.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
@@ -337,7 +337,7 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
 	#include "arch/zynq/zynq7000.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
@@ -351,7 +351,7 @@ extern "C" {
 	#define CPUSTYLE_ROCKCHIP	1		/* */
 
 	#include "rk3566.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	//	I-Cache L1: 32 KB, 256 Sets, 64 Bytes/Line, 2-Way
 	//	D-Cache L1: 32 KB, 128 Sets, 64 Bytes/Line, 4-Way
@@ -385,40 +385,6 @@ extern "C" {
 void cpu_initialize(void);
 void arm_hardware_reset(void);
 void cpu_initdone(void);	// секция init больше не нужна
-
-#if defined(__aarch64__) || (defined (__CORTEX_A)) || (defined(__riscv) && (__riscv_xlen == 64))
-	typedef uint64_t dbgcount_t;
-	typedef uint_fast64_t dbgcountfast_t;
-	typedef uint64_t hwtimcount_t;
-	typedef uint_fast64_t hwtimcountfast_t;
-#else
-	typedef uint32_t dbgcount_t;
-	typedef uint_fast32_t dbgcountfast_t;
-	typedef uint32_t hwtimcount_t;
-	typedef uint_fast32_t hwtimcountfast_t;
-#endif
-
-dbgcountfast_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
-dbgcountfast_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
-dbgcountfast_t cpu_getdebugticksmask(void);	// получение маски на разрядность аппаратного счётчика
-
-hwtimcountfast_t timestamp_getticks(void);
-hwtimcountfast_t timestamp_getmask(void);
-hwtimcountfast_t timestamp_getfreq(void);
-
-//	Функции для программных ожиданий
-//	const hwtimcountfast_t t0 = get_td_delta(0);
-//	const hwtimcountfast_t dt = get_td_ms(100);	// количество тактов до срабатывания
-//	do {
-//		val = hdmi_read(hdmi, HDMI_PHY_STAT0);
-//		if (!(val & HDMI_PHY_TX_PHY_LOCK))
-//			return 0;
-//
-//	} while (get_td_delta(t0) < dt);
-
-hwtimcountfast_t get_td_delta(hwtimcountfast_t start);	// получение интервала, прошедшего с момента start
-hwtimcountfast_t get_td_us(uint_fast32_t timeUS);
-hwtimcountfast_t get_td_ms(uint_fast32_t timeMS);
 
 void tickers_initialize(void);
 void tickers_deinitialize(void);
