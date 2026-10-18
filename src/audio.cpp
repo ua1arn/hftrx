@@ -1051,26 +1051,24 @@ static void calculate_variable_slope_lpf(FLOAT_t *const h, const FLOAT_t *const 
 }
 
 /**
- * @brief Computes LPF coefficients for DDC path with droop compensation for two cascaded CIC decimators.
+ * @brief Computes LPF coefficients for DDC path with droop compensation for CIC decimators.
  *
  * @param h                 Output buffer for calculated FIR impulse response (size: num_taps).
  * @param preformed_window  Pre-calculated smoothing window array (size: num_taps).
  * @param num_taps          Number of FIR taps (filter length).
- * @param fs                Output sampling rate (e.g., 48000.0).
- * @param f_cutoff          LPF cutoff frequency (e.g., up to 12000.0).
+ * @param fs                Output sampling rate passed dynamically (e.g., 48000).
+ * @param f_cutoff          LPF cutoff frequency (e.g., up to 12000).
  * @param w_trans           Filter transition bandwidth.
  */
 void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f_cutoff, const FLOAT_t w_trans) {
 
-	ASSERT(num_taps < 1024);
-    // Automatically select FFT size based on filter length
+    ASSERT(num_taps < 1024);
     const uint32_t fft_size = (num_taps <= 512) ? 1024 : 2048;
 
-    // Use ARM_MORPH macros to instantiate masked CFFT structure and initializer
     ARM_MORPH(arm_cfft_instance) ready_cfft;
     ARM_MORPH(arm_cfft_init)(&ready_cfft, fft_size);
 
-    // Complex spectrum buffer (interleaved Real/Imag). Max size 2048 * 2 for hftrx architecture
+    // Complex spectrum buffer (interleaved Real/Imag)
     FLOAT_t fft_buffer[2048 * 2];
 
     const FLOAT_t freq_step = fs / (FLOAT_t)fft_size;
@@ -1091,8 +1089,7 @@ void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const pre
     {
         FLOAT_t f = i * freq_step;
 
-        // Mirror frequency above Nyquist for proper IFFT reconstruction
-        if (f > fs / 2.0f) {
+        if (f > fs / 2) {
             f = fs - f;
         }
 
@@ -1100,66 +1097,62 @@ void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const pre
         {
             FLOAT_t amplitude = 0;
 
-            // Calculate ideal linear roll-off within the transition zone
             if (f <= f_cutoff) {
                 amplitude = 1;
             } else {
                 amplitude = 1 - ((f - f_cutoff) / w_trans);
             }
 
-            // Calculate frequency response of the 1st CIC stage (1/128)
+            // 1st CIC stage response
             FLOAT_t arc1 = M_PI * f * D1 / fs;
             FLOAT_t arc1_in = M_PI * f * M1 * D1 / fs;
             FLOAT_t h_cic1 = 1;
 
-            if (arc1 > 1e-7f) {
+            if (arc1 > 1e-7) {
                 FLOAT_t sin_out = SINF(arc1);
                 FLOAT_t sin_in  = SINF(arc1_in / M1);
-                if (FABSF(sin_in) > 1e-7f) {
+                if (FABSF(sin_in) > 1e-7) {
                     h_cic1 = POWF(sin_out / (M1 * sin_in), N1);
                 }
             }
+
+            FLOAT_t h_total_dec = h_cic1;
+
 #ifdef DDC_CIC2_DECIMATION
-            // Calculate frequency response of the 2nd CIC stage (1/20)
+            // Conditional compile for the 2nd CIC stage response
             FLOAT_t arc2 = M_PI * f * D2 / fs;
             FLOAT_t arc2_in = M_PI * f * M2 * D2 / fs;
             FLOAT_t h_cic2 = 1;
 
-            if (arc2 > 1e-7f) {
+            if (arc2 > 1e-7) {
                 FLOAT_t sin_out = SINF(arc2);
                 FLOAT_t sin_in  = SINF(arc2_in / M2);
-                if (FABSF(sin_in) > 1e-7f) {
+                if (FABSF(sin_in) > 1e-7) {
                     h_cic2 = POWF(sin_out / (M2 * sin_in), N2);
                 }
             }
-#else
-            FLOAT_t h_cic2 = 1;
+            h_total_dec *= h_cic2;
 #endif
 
-            FLOAT_t h_total_dec = h_cic1 * h_cic2;
-
-            // Stabilize inverse filter by avoiding division by zero at the spectrum edges
-            if (h_total_dec < 0.01f) {
-                h_total_dec = 0.01f;
+            // Avoid division by zero/noise amplification at the filter edges
+            if (h_total_dec < 0.01) {
+                h_total_dec = 0.01;
             }
 
-            // Apply inverse CIC droop compensation to the target passband amplitude
-            fft_buffer[2 * i]     = amplitude / h_total_dec; // Real
-            fft_buffer[2 * i + 1] = 0;                    // Imag
+            fft_buffer[2 * i]     = amplitude / h_total_dec;
+            fft_buffer[2 * i + 1] = 0;
         }
         else
         {
-            // Stopband area
             fft_buffer[2 * i]     = 0;
             fft_buffer[2 * i + 1] = 0;
         }
     }
 
-    // Step 2: Compute IFFT using ARM_MORPH wrapper macro
-    // Execution parameters: instance, buffer pointer, ifftFlag = 1, bitReverseFlag = 1
+    // Step 2: Compute IFFT via ARM_MORPH macro wrapper
     ARM_MORPH(arm_cfft)(&ready_cfft, (FLOAT_t *)fft_buffer, 1, 1);
 
-    // Step 3: Shift time origin to center the impulse response and apply preformed_window
+    // Step 3: Shift time origin to center the impulse response and apply window
     const uint32_t half_taps = num_taps / 2;
     FLOAT_t window_sum = 0;
 
@@ -1175,10 +1168,10 @@ void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const pre
         window_sum += h[n];
     }
 
-    // Step 4: Normalize coefficients using FABSF macro to guarantee unity gain at DC (0 Hz)
-    if (FABSF(window_sum) > 1e-5f)
+    // Step 4: Normalize coefficients for unity gain at DC (0 Hz)
+    if (FABSF(window_sum) > 1e-5)
     {
-        const FLOAT_t norm_factor = 1.0f / window_sum;
+        const FLOAT_t norm_factor = 1 / window_sum;
         for (int n = 0; n < num_taps; n++) {
             h[n] *= norm_factor;
         }
@@ -1191,16 +1184,14 @@ void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const pre
  * @param h                 Output buffer for calculated FIR impulse response (size: num_taps).
  * @param preformed_window  Pre-calculated smoothing window array (size: num_taps).
  * @param num_taps          Number of FIR taps (filter length).
- * @param fs                Input sampling rate before interpolation (e.g., 48000.0).
- * @param f_cutoff          LPF cutoff frequency (e.g., 12000.0).
+ * @param fs                Input sampling rate before interpolation passed dynamically (e.g., 48000).
+ * @param f_cutoff          LPF cutoff frequency (e.g., 12000 for wideband signals).
  */
 void calculate_duc_lpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f_cutoff) {
 
-	ASSERT(num_taps < 1024);
-    // Automatically select FFT size based on filter length
+    ASSERT(num_taps < 1024);
     const uint32_t fft_size = (num_taps <= 512) ? 1024 : 2048;
 
-    // Use ARM_MORPH macros to instantiate masked CFFT structure and initializer
     ARM_MORPH(arm_cfft_instance) ready_cfft;
     ARM_MORPH(arm_cfft_init)(&ready_cfft, fft_size);
 
@@ -1213,53 +1204,50 @@ void calculate_duc_lpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, 
     const FLOAT_t D = (FLOAT_t)DUC_CIC_DELAY;
     const FLOAT_t N = (FLOAT_t)DUC_CIC_STAGES;
 
-    // Step 1: Synthesize target frequency response (strict brick-wall rectangular mask)
+    // Step 1: Synthesize target frequency response (brick-wall mask with pre-emphasis)
     for (uint32_t i = 0; i < fft_size; i++)
     {
         FLOAT_t f = i * freq_step;
 
-        // Mirror frequency above Nyquist for proper IFFT reconstruction
-        if (f > fs / 2.0f) {
+        if (f > fs / 2) {
             f = fs - f;
         }
 
-        // Strict rectangular filtering up to f_cutoff
+        // Strict rectangular filtering up to f_cutoff (~12 kHz)
         if (f <= f_cutoff)
         {
-            // Calculate frequency response of the single massive CIC interpolator stage (x2560)
+            // Calculate frequency response of the single stage CIC interpolator (x2560)
             FLOAT_t arc = M_PI * f * D / fs;
             FLOAT_t arc_in = M_PI * f * L * D / fs;
-            FLOAT_t h_cic = 1.0f;
+            FLOAT_t h_cic = 1;
 
-            if (arc > 1e-7f) {
+            if (arc > 1e-7) {
                 FLOAT_t sin_out = SINF(arc);
                 FLOAT_t sin_in  = SINF(arc_in / L);
-                if (FABSF(sin_in) > 1e-7f) {
+                if (FABSF(sin_in) > 1e-7) {
                     h_cic = POWF(sin_out / (L * sin_in), N);
                 }
             }
 
-            // Prevent division by zero near the interpolation nulls
-            if (h_cic < 0.01f) {
-                h_cic = 0.01f;
+            if (h_cic < 0.01) {
+                h_cic = 0.01;
             }
 
-            // Pre-emphasis: invert the CIC roll-off directly inside the LPF passband
-            fft_buffer[2 * i]     = 1.0f / h_cic; // Real
-            fft_buffer[2 * i + 1] = 0;         // Imag
+            // Apply inverse CIC droop compensation directly inside the LPF passband
+            fft_buffer[2 * i]     = 1 / h_cic;
+            fft_buffer[2 * i + 1] = 0;
         }
         else
         {
-            // LPF Stopband (everything above f_cutoff)
             fft_buffer[2 * i]     = 0;
             fft_buffer[2 * i + 1] = 0;
         }
     }
 
-    // Step 2: Compute IFFT using ARM_MORPH wrapper macro
-    ARM_MORPH(arm_cfft)(&ready_cfft, fft_buffer, 1, 1);
+    // Step 2: Compute IFFT via ARM_MORPH macro wrapper
+    ARM_MORPH(arm_cfft)(&ready_cfft, (FLOAT_t *)fft_buffer, 1, 1);
 
-    // Step 3: Shift time origin to center the impulse response and apply preformed_window
+    // Step 3: Shift time origin to center the impulse response and apply window
     const uint32_t half_taps = num_taps / 2;
     FLOAT_t window_sum = 0;
 
@@ -1275,10 +1263,10 @@ void calculate_duc_lpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, 
         window_sum += h[n];
     }
 
-    // Step 4: Normalize coefficients using FABSF macro to guarantee unity gain at DC (0 Hz)
-    if (FABSF(window_sum) > 1e-5f)
+    // Step 4: Normalize coefficients for unity gain at DC (0 Hz)
+    if (FABSF(window_sum) > 1e-5)
     {
-        const FLOAT_t norm_factor = 1.0f / window_sum;
+        const FLOAT_t norm_factor = 1 / window_sum;
         for (int n = 0; n < num_taps; n++) {
             h[n] *= norm_factor;
         }
