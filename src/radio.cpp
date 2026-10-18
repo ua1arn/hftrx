@@ -4145,7 +4145,7 @@ struct nvmap {
 #if WITHCAT
 	uint16_t	ggrpcat; // последний выбраный пункт группы
 	uint8_t gcatenable;	/* удаленное управление разрешено */
-	uint8_t catbaudrate;	/* номер скорости работы по CAT */
+	uint8_t gcatbaudrate;	/* номер скорости работы по CAT */
 	#if WITHTX
 		uint8_t catsigptt;	/* Выбраный сигнал для перехода на передачу по CAT */
 	#endif /* WITHTX */
@@ -5574,7 +5574,7 @@ enum
 #if WITHCAT
 
 	static uint_fast8_t gcatenable = 1;	/* модифицируется через меню. */
-	static uint_fast8_t catbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
+	static uint_fast8_t gcatbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
 
 	static const struct paramdefdef xgcatenable =
 	{
@@ -5631,15 +5631,15 @@ enum
 			getzerobase,
 			getvaltextcatmux, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
-		static const struct paramdefdef xcatbaudrate =
+		static const struct paramdefdef xgcatbaudrate =
 		{
 			QLABEL3("CAT SPD", "CAT Speed", "CAT SPD"), 0, RJ_CB,	ISTEP1,
 			ITEM_VALUE | ITEM_LISTSELECT,
 			0, ARRAY_SIZE(catbr2int) - 1,
-			OFFSETOF(struct nvmap, catbaudrate),
+			OFFSETOF(struct nvmap, gcatbaudrate),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
-			& catbaudrate,
+			& gcatbaudrate,
 			getzerobase,
 			getvaltextcatspeed, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
@@ -13967,7 +13967,7 @@ updateboard_noui(
 		/* просто настройки тракта и не относящиеся к приёму-пеердаче. */
 	#if WITHCAT
 		processcat_enable(param_getvalue(& xgcatenable));
-		cat_set_speed(catbr2int [catbaudrate] * BRSCALE);
+		cat_set_speed(catbr2int [param_getvalue(& xgcatbaudrate)] * BRSCALE);
 		#if WITHCAT_MUX
 			board_set_catmux(catmuxmodes [gcatmux].code);	// BOARD_CATMUX_USBCDC or BOARD_CATMUX_DIN8
 		#endif /* WITHCAT_MUX */
@@ -23218,9 +23218,9 @@ application_initialize(void)
 	// Инициализируем то что не получается иниитить в описании перменных.
 #if WITHCAT
 #ifdef WITHCATSPEED
-	catbaudrate = findcatbaudrate(catbaudrate, WITHCATSPEED);
+	gcatbaudrate = findcatbaudrate(param_getvalue(& xgcatbaudrate), WITHCATSPEED);
 #else
-	catbaudrate = findcatbaudrate(catbaudrate, 9600);
+	gcatbaudrate = findcatbaudrate(param_getvalue(& xgcatbaudrate), 9600);
 #endif
 #endif /* WITHCAT */
 #if ! HARDWARE_IGNORENONVRAM
