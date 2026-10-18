@@ -3830,7 +3830,7 @@ struct onetxant_tag {
  	 Информация, сохраняемая для группы диапазонов */
 
 struct bandprops_tag {
-	modeinfo_t mmbands [MICLASS_count];	// частота, lock, mode
+	modeinfo_t mibands [MICLASS_count];	// частота, lock, mode
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 	uint8_t rxant;		/* признак включения приемной антенны */
 	uint8_t ant;		/* код выбора антенны (0/1) */
@@ -4327,7 +4327,7 @@ struct nvmap {
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
 
 #define RMT_BAND(b) 			(OFFSETOF(struct nvmap, bands [(b)]))		// хранимые диапазоны
-#define RMT_MIBAND(bp, miclass) 	(OFFSETOF(struct nvmap, bandprops [(bp)].mmbands [(miclass)]))
+#define RMT_MIBAND(bp, miclass) 	(OFFSETOF(struct nvmap, bandprops [(bp)].mibands [(miclass)]))
 
 #define RMT_BFREQ_BASE(b) 				(RMT_BAND((b)) + OFFSETOF(struct modeinfo_tag, freq))				/* последняя частота, на которую настроились (4 байта) */
 
@@ -10075,12 +10075,12 @@ storebandstate(const vindex_t vi, const uint_fast8_t bi)
 
 	storebandprops(bp, ant, rxant);
 }
-
-static void loadbandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t mi)
+// возврат не-0 если частота не поменялась.
+static int loadbandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t mi)
 {
+	const uint_fast32_t oldfreq = gfreqs [bi];
 	ASSERT(bp < BANDPROPS_COUNT);
 	gfreqs [bi] = loadvfy32(RMT_MIBFREQ_BASE(bp, mi), get_band_bottom(bp), get_band_top(bp), get_band_init(bp));
-
 #if WITHONLYBANDS
 	const vindex_t hb = getfreqband(gfreqs [bi], bandset_no_check);
 	tune_bottom_active [bi] = get_band_bottom(hb);
@@ -10089,6 +10089,7 @@ static void loadbandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t m
 
 	loadmodeinfo(RMT_MIBAND(bp, mi), bi, gfreqs [bi]);
 	//
+	return (oldfreq == gfreqs [bi]);
 }
 
 static void savebandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t miclass)
@@ -14441,10 +14442,13 @@ static void uif_key_click_memo(void)
 	const uint_fast8_t miclass = getmodetempl(gsubmode)->miclass;
 	if (miclass < MICLASS_count)
 	{
-		// Выбрать следующий класс
-		const uint_fast8_t miclassnext = calc_next(getmodetempl(gsubmode)->miclass, 0, MICLASS_count - 1);
-		loadbandmemortstate(b, bi, miclassnext);
-		PRINTF("%s: b=%u, bi=%u, miclassnext=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) miclassnext, (unsigned) gfreqs [bi]);
+		if (loadbandmemortstate(b, bi, miclass))
+		{
+			// Выбрать следующий класс
+			const uint_fast8_t miclassnext = calc_next(getmodetempl(gsubmode)->miclass, 0, MICLASS_count - 1);
+			loadbandmemortstate(b, bi, miclassnext);
+			PRINTF("%s: b=%u, bi=%u, miclassnext=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) miclassnext, (unsigned) gfreqs [bi]);
+		}
 	}
 
 	// сохранить текушее состояние
