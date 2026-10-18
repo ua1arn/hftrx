@@ -138,7 +138,7 @@ processmessages(
 #endif /* ! WITHISBOOTLOADER */
 
 	watchdog_ping();
-#if ! WITHRTOS
+#if 1//! WITHRTOS
 	board_dpc_processing();
 #endif
 
@@ -23850,7 +23850,7 @@ void hamradio_main_start(void)
 	void (* const mainfn)(void * ctx) = application_mainloop;
 #endif
 
-#if WITHRTOS
+#if 0//WITHRTOS
 	{
 		static dpcobj_t dpcobj;	// main loop
 
