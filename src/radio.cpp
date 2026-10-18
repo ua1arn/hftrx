@@ -5589,6 +5589,23 @@ enum
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
+	static size_t getvaltextcatspeed(char * buff, size_t count, int_fast32_t value)
+	{
+		return local_snprintf_P(buff, count, "%u", catbr2int [value] * BRSCALE);
+	}
+	static const struct paramdefdef xgcatbaudrate =
+	{
+		QLABEL3("CAT SPD", "CAT Speed", "CAT SPD"), 0, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_LISTSELECT,
+		0, ARRAY_SIZE(catbr2int) - 1,
+		OFFSETOF(struct nvmap, gcatbaudrate),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gcatbaudrate,
+		getzerobase,
+		getvaltextcatspeed, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
 	#if WITHCAT_MUX
 
 		static const struct catmuxmode_tag
@@ -5603,11 +5620,6 @@ enum
 		#endif /* WITHUSEUSBBT */
 			{	BOARD_CATMUX_DIN8, "DIN8", },
 		};
-
-		static size_t getvaltextcatspeed(char * buff, size_t count, int_fast32_t value)
-		{
-			return local_snprintf_P(buff, count, "%u", catbr2int [value] * BRSCALE);
-		}
 
 		#if WITHCAT_MUX
 		static size_t getvaltextcatmux(char * buff, size_t count, int_fast32_t value)
@@ -5630,18 +5642,6 @@ enum
 			& gcatmux,
 			getzerobase,
 			getvaltextcatmux, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		static const struct paramdefdef xgcatbaudrate =
-		{
-			QLABEL3("CAT SPD", "CAT Speed", "CAT SPD"), 0, RJ_CB,	ISTEP1,
-			ITEM_VALUE | ITEM_LISTSELECT,
-			0, ARRAY_SIZE(catbr2int) - 1,
-			OFFSETOF(struct nvmap, gcatbaudrate),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& gcatbaudrate,
-			getzerobase,
-			getvaltextcatspeed, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 
 	#elif WITHCAT_CDC
@@ -20842,9 +20842,7 @@ static uint_fast8_t nvramdiags(void)
 #endif
 	return resetconfig;
 }
-#if WITHAUTOTUNER
 
-#if WITHAUTOTUNER
 
 enum tnrstate
 {
@@ -20859,13 +20857,12 @@ enum tnrstate
 static enum tnrstate tunerstate = TUNERSTATE_0;
 
 
-#endif /* WITHAUTOTUNER */
-
 // работа в машине состояний тюнера
 // возврат STTE_OK для перехода на следующее состояние
 // возврат STTE_BUSY - продолжаем тут
 static STTE_t hamradio_tune_step(void)
 {
+#if WITHAUTOTUNER
 	switch (tunerstate)
 	{
 	case TUNERSTATE_0:
