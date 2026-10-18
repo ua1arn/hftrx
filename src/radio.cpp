@@ -138,7 +138,7 @@ processmessages(
 #endif /* ! WITHISBOOTLOADER */
 
 	watchdog_ping();
-#if 1//! WITHRTOS
+#if ! WITHRTOS
 	board_dpc_processing();
 #endif
 
@@ -20943,6 +20943,23 @@ static STTE_t hamradio_tune_step(void)
 #endif /* WITHAUTOTUNER */
 }
 
+#if WITHRTOS
+
+static volatile uint32_t tuner_control;
+
+static int tuner_thread(void * ctx)
+{
+	for (;;)
+	{
+		if (local_wait32mask(& tuner_control, 0x01, 0x01, LOCAL_WAITINFINITY))
+			continue;
+		while (hamradio_tune_step() == STTE_BUSY)
+			;
+		tuner_control = 0;
+	}
+}
+#endif /* WITHRTOS */
+
 #if WITHDEBUG
 
 
@@ -21312,10 +21329,12 @@ hamradio_main_step(void)
 //			sthrl = STHRL_RXTX;
 //		break;
 
+#if ! WITHRTOS
 	case STHRL_TUNE:
 		if (hamradio_tune_step() == STTE_OK)
 			sthrl = STHRL_RXTX;
 		break;
+#endif
 
 	case STHRL_RXTX_FQCHANGED:
 			/* валкодер перестал вращаться - если было изменение частоты - сохраняем конфигурацию */
@@ -21340,8 +21359,12 @@ hamradio_main_step(void)
 	#if WITHAUTOTUNER
 		if (txreq_getreqautotune(& txreqst0) != 0 && gtx != 0)
 		{
+#if WITHRTOS
+			tuner_control = 1;
+#else
 			sthrl = STHRL_TUNE;
 			break;
+#endif
 		}
 	#endif /* WITHAUTOTUNER */
 
@@ -23361,6 +23384,13 @@ application_initialize(void)
 	bt_initialize();
 #endif /* WITHUSEUSBBT */
 
+#if WITHRTOS
+	{
+		static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
+		VERIFY(thread_create_user(TASK_AFFINITY_ALL, tuner_thread, NULL, procthread, sizeof procthread, "tuner_thread"));
+
+	}
+#endif
 }
 
 
@@ -23847,7 +23877,7 @@ void hamradio_main_start(void)
 	void (* const mainfn)(void * ctx) = application_mainloop;
 #endif
 
-#if 0//WITHRTOS
+#if WITHRTOS
 	{
 		static dpcobj_t dpcobj;	// main loop
 
