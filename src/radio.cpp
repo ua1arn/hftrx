@@ -312,8 +312,6 @@ static uint_fast32_t
 prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 							   uint_fast32_t step, uint_fast32_t bottom);
 
-static void tuner_eventrestart(void);
-
 static uint_fast8_t getdefantenna(uint_fast32_t f);
 static uint_fast8_t geteffantenna(uint_fast32_t f);	/* действительно выбранная антенна с учетом ручного или автоматического переключения */
 static uint_fast8_t geteffrxantenna(uint_fast32_t f);	/* действительно выбранная антенна с учетом ручного или автоматического переключения */
@@ -8705,23 +8703,6 @@ static void auto_tune3(void)
 
 #endif /* WITHAUTOTUNER */
 
-#if WITHAUTOTUNER
-
-static ticker_t ticker_tuner;
-
-/* user-mode function */
-static void dpc_tunertimer_fn(void * arg)
-{
-}
-
-/* закончили установку нового состояния тюнера - запускаем новый период таймера */
-static void tuner_eventrestart(void)
-{
-	ticker_setperiod(& ticker_tuner, NTICKS(gtunerdelay));
-}
-
-#endif /* WITHAUTOTUNER */
-
 #if defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
 
 static void fillrelaxedsign(uint8_t * tsign)
@@ -13977,7 +13958,6 @@ updateboard_noui(
 
 	#if WITHAUTOTUNER
 		board_set_tuner_group();
-		ticker_setperiod(& ticker_tuner, NTICKS(gtunerdelay));
 	#else /* WITHAUTOTUNER */
 		board_set_tuner_bypass(1);
 	#endif /* WITHAUTOTUNER */
@@ -23790,14 +23770,6 @@ void hamradio_main_start(void)
 		ticker_add(& ticker);
 	}
 
-#if WITHAUTOTUNER
-	{
-		static dpcobj_t dpcobj;
-		dpcobj_initialize(& dpcobj, dpc_tunertimer_fn, NULL, "dpc_tunertimer");
-		ticker_initialize_user(& ticker_tuner, NTICKS(gtunerdelay), & dpcobj);
-		ticker_add(& ticker_tuner);
-	}
-#endif /* WITHAUTOTUNER */
 #if WITHDEBUG
 	{
 		static dpcobj_t dpcobj;	// debug keyboard spool
