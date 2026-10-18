@@ -90,27 +90,27 @@ extern "C" {
 
 	}
 
-	void ATTRNORETURN __cxa_rethrow()
+	void __NO_RETURN __cxa_rethrow()
 	{
 		ASSERT(0);
 		for (;;)
 			;
 	}
-	void ATTRNORETURN __cxa_throw_bad_array_length()
-	{
-		ASSERT(0);
-		for (;;)
-			;
-	}
-
-	void ATTRNORETURN __cxa_throw_bad_array_new_length()
+	void __NO_RETURN __cxa_throw_bad_array_length()
 	{
 		ASSERT(0);
 		for (;;)
 			;
 	}
 
-	void ATTRNORETURN __attribute__ ((used)) __cxa_call_unexpected (void*)
+	void __NO_RETURN __cxa_throw_bad_array_new_length()
+	{
+		ASSERT(0);
+		for (;;)
+			;
+	}
+
+	void __NO_RETURN __attribute__ ((used)) __cxa_call_unexpected (void*)
 	{
 		ASSERT(0);
 		for (;;)

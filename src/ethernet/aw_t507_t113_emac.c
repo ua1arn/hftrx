@@ -1179,14 +1179,10 @@ void nic_initialize(struct netif *netif)
 	if (1)
 	{
 		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
-		dpcobj_initialize(& dpcrxirq, emac_rxhandler, netif);
-		dpcobj_initialize(& dpctxirq, emac_txhandler, netif);
-		dpcobj_initialize(& dpclinkspoolirq, nic_linkspool, netif);
+		dpcobj_initialize(& dpcrxirq, emac_rxhandler, netif, "dpcrxirq");
+		dpcobj_initialize(& dpctxirq, emac_txhandler, netif, "dpctxirq");
+		dpcobj_initialize(& dpclinkspoolirq, nic_linkspool, netif, "dpclinkspoolirq");
 		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
-
-//		static dpcobj_t nic_dpc_entry;
-//		dpcobj_initialize(& nic_dpc_entry, emac_nohandler, netif);
-//		board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
 
 		netif->linkoutput = low_level_output; // используется внутри etharp_output
 	}
@@ -1197,7 +1193,7 @@ void nic_initialize(struct netif *netif)
 //
 //		{
 //			static dpcobj_t nic_dpc_entry;
-//			dpcobj_initialize(& nic_dpc_entry, board_nic_dpc, netif);
+//			dpcobj_initialize(& nic_dpc_entry, board_nic_dpc, netif, "board_nic_dpc");
 //			board_dpc_addentry(& nic_dpc_entry, board_dpc_coreid());
 //
 //		}

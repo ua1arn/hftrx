@@ -555,12 +555,16 @@ public:
 	bool get_readybuffer_raw(element_t * * dest, uint_fast32_t timeMS = 0)
 	{
 		IRQL_t oldIrql;
+		//IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 		if (timeMS != 0)
 		{
 			// Запрос с ненулевым аргументром timeMS может возникнуть только из выделенных потоков
-			if (local_waitlist(& readylist, & irqllock, timeMS) != 0)	// timeot
+			if (local_waitlist(& readylist, & irqllock, irqllockarg, timeMS) != 0) {	// timeot
+				//IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 				return false;
+			}
 		}
+		//IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& readylist))
 		{
@@ -4183,12 +4187,14 @@ void buffers_start(void)
 #if ! TXSPOOLCOND
 
 	#warning rx process in spool
-	// работа на всех ядрах, кроме нулевого
+
+
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
 	if (thread_create_user(TASK_AFFINITY_ALL, dsphftrxproc_spool_user_thread, NULL, procthread, sizeof procthread, "dsphftrxproc_spool_user_thread") == NULL)
 	{
+		PRINTF("buffers_start: rx process in spool, TXSPOOLCORE=%u\n", TXSPOOLCORE);
 		static dpcobj_t dsphftrxproc_spool_dpc;
-		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, hftrx_rxgetpathA());
+		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, hftrx_rxgetpathA(), "dsphftrxproc_spool_dpc");
 		board_dpc_addentry(& dsphftrxproc_spool_dpc, TXSPOOLCORE);
 	}
 

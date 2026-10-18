@@ -137,8 +137,10 @@ processmessages(
 	}
 #endif /* ! WITHISBOOTLOADER */
 
-	board_dpc_processing();		// обработка отложенного вызова user mode функций
 	watchdog_ping();
+#if 1//! WITHRTOS
+	board_dpc_processing();
+#endif
 
 #if WITHLVGL && WITHLVGLINDEV
 
@@ -309,8 +311,6 @@ nextfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 static uint_fast32_t
 prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 							   uint_fast32_t step, uint_fast32_t bottom);
-
-static void tuner_eventrestart(void);
 
 static uint_fast8_t getdefantenna(uint_fast32_t f);
 static uint_fast8_t geteffantenna(uint_fast32_t f);	/* действительно выбранная антенна с учетом ручного или автоматического переключения */
@@ -1655,7 +1655,7 @@ struct micproc
 {
 	uint8_t comp;
 	uint8_t complevel;
-} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 struct micprof_cell
 {
@@ -2049,7 +2049,7 @@ struct agcseti_tag
 	uint8_t release10;
 	uint8_t t4;
 	uint8_t thung10;
-} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 struct afsetitempl
 {
@@ -3402,7 +3402,7 @@ typedef struct modeinfo_tag
 	uint8_t moderow;					/* номер режима работы в маске (номер тройки бит) */
 	uint8_t modecols [MODEROW_COUNT];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
 	uint8_t lock;						/* блокировка валкодера */
-} ATTRPACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 // Save lock, morerow, modecol
 static void savemodeinfo(nvramaddress_t place, uint_fast8_t bi)
@@ -3461,7 +3461,7 @@ typedef struct modeinfo_tag
 {
 	uint32_t freq;		/* рабочая частота */
 	uint8_t bundle [MODEINFO_BUNDLESIZE];	/* массив режимов работы - каждый байт указывают номер позиции в каждой строке) */
-} ATTRPACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED modeinfo_t;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 
 static unsigned getbit(const uint8_t * b, unsigned pos)
@@ -3776,7 +3776,7 @@ struct modeprops_tag
 	uint8_t txaudioindex;	/* источник звука для передачи (индекс) */
 	uint8_t	gmidmenupos;	/* активный пункт в middlemenu */
 
-} ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
@@ -3786,7 +3786,7 @@ struct modeprops_tag
 struct onerxant_tag {
 	uint8_t pamp;		/* режим УВЧ */
 	uint8_t att;		/* режим аттенюатора */
-} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 #define MLAPARAMC_MAX 65530
 struct onetxant_tag {
@@ -3799,7 +3799,7 @@ struct onetxant_tag {
 #else /* WITHAUTOTUNER */
 	uint8_t dummy_paramm;
 #endif /* WITHAUTOTUNER */
-} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
@@ -3829,7 +3829,7 @@ struct bandprops_tag {
 	struct onerxant_tag orxants [ANTMODE_COUNT];	// Параметры, связанные с антенами, которые могут использоваться на приём (TODO: добавить для приёмной антенны)
 #endif
 	struct onetxant_tag otxants [ANTMODE_COUNT];	// Параметры, связанные с антенами, которые могут использоваться на передачу (параметры тюнера)
-} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 enum { BANDS_COUNT = HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT };
 enum { BANDPROPS_COUNT = HBANDS_COUNT + XBANDS_COUNT };
@@ -4145,7 +4145,7 @@ struct nvmap {
 #if WITHCAT
 	uint16_t	ggrpcat; // последний выбраный пункт группы
 	uint8_t gcatenable;	/* удаленное управление разрешено */
-	uint8_t catbaudrate;	/* номер скорости работы по CAT */
+	uint8_t gcatbaudrate;	/* номер скорости работы по CAT */
 	#if WITHTX
 		uint8_t catsigptt;	/* Выбраный сигнал для перехода на передачу по CAT */
 	#endif /* WITHTX */
@@ -4284,7 +4284,7 @@ struct nvmap {
 #endif /* WITHDEBUG */
 
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
-} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* константы, определяющие расположение параметров в FRAM */
 
@@ -4516,7 +4516,7 @@ static uint_fast8_t gvfosplit [VFOS_COUNT];	// At index 0: RX VFO A or B, at ind
 
 // Параметры, выставляемые в update board
 // кэш установленных параметров.
-// На эти параметры ориентируемся при работе кнопками управления, переклбчения фильттров и так далее.
+// На эти параметры ориентируемся при работе кнопками управления, переклбчения фильтров и так далее.
 static uint_fast8_t gsubmode;		/* код текущего режима */
 static uint_fast8_t gmode;		/* текущий код группы режимов */
 
@@ -5574,7 +5574,7 @@ enum
 #if WITHCAT
 
 	static uint_fast8_t gcatenable = 1;	/* модифицируется через меню. */
-	static uint_fast8_t catbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
+	static uint_fast8_t gcatbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
 
 	static const struct paramdefdef xgcatenable =
 	{
@@ -5587,6 +5587,23 @@ enum
 		& gcatenable,
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
+	static size_t getvaltextcatspeed(char * buff, size_t count, int_fast32_t value)
+	{
+		return local_snprintf_P(buff, count, "%u", catbr2int [value] * BRSCALE);
+	}
+	static const struct paramdefdef xgcatbaudrate =
+	{
+		QLABEL3("CAT SPD", "CAT Speed", "CAT SPD"), 0, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_LISTSELECT,
+		0, ARRAY_SIZE(catbr2int) - 1,
+		OFFSETOF(struct nvmap, gcatbaudrate),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gcatbaudrate,
+		getzerobase,
+		getvaltextcatspeed, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
 	#if WITHCAT_MUX
@@ -5603,11 +5620,6 @@ enum
 		#endif /* WITHUSEUSBBT */
 			{	BOARD_CATMUX_DIN8, "DIN8", },
 		};
-
-		static size_t getvaltextcatspeed(char * buff, size_t count, int_fast32_t value)
-		{
-			return local_snprintf_P(buff, count, "%u", catbr2int [value] * BRSCALE);
-		}
 
 		#if WITHCAT_MUX
 		static size_t getvaltextcatmux(char * buff, size_t count, int_fast32_t value)
@@ -5630,18 +5642,6 @@ enum
 			& gcatmux,
 			getzerobase,
 			getvaltextcatmux, /* getvaltext получить текст значения параметра - see RJ_CB */
-		};
-		static const struct paramdefdef xcatbaudrate =
-		{
-			QLABEL3("CAT SPD", "CAT Speed", "CAT SPD"), 0, RJ_CB,	ISTEP1,
-			ITEM_VALUE | ITEM_LISTSELECT,
-			0, ARRAY_SIZE(catbr2int) - 1,
-			OFFSETOF(struct nvmap, catbaudrate),
-			getselector0, nvramoffs0, valueoffs0,
-			NULL,
-			& catbaudrate,
-			getzerobase,
-			getvaltextcatspeed, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 
 	#elif WITHCAT_CDC
@@ -8366,7 +8366,7 @@ static uint_fast8_t tuneabort(void)
 	// счетчик перебора сбрасывается в 0 - и до обновления экрана дело не доходит.
 
 	txreq_process();	/* обработка запросов */
-	processmessages(& kbch, & kbready);
+	processmessages(& kbch, & kbready);	// CAT?
 	if (! txreq_getreqautotune(& txreqst0))
 		return 1;
 	if (kbready != 0)
@@ -8699,23 +8699,6 @@ static void auto_tune3(void)
 	tunerind = loadvfy8up(OFFSETOF(struct nvmap, bandprops [tuner_bp].otxants [tuner_ant].tunerind), LMIN, LMAX, tunerind);
 	tunertype = loadvfy8up(OFFSETOF(struct nvmap, bandprops [tuner_bp].otxants [tuner_ant].tunertype), 0, KSCH_COUNT - 1, tunertype);
 	updateboard_tuner();
-}
-
-#endif /* WITHAUTOTUNER */
-
-#if WITHAUTOTUNER
-
-static ticker_t ticker_tuner;
-
-/* user-mode function */
-static void dpc_tunertimer_fn(void * arg)
-{
-}
-
-/* закончили установку нового состояния тюнера - запускаем новый период таймера */
-static void tuner_eventrestart(void)
-{
-	ticker_setperiod(& ticker_tuner, NTICKS(gtunerdelay));
 }
 
 #endif /* WITHAUTOTUNER */
@@ -13975,7 +13958,6 @@ updateboard_noui(
 
 	#if WITHAUTOTUNER
 		board_set_tuner_group();
-		ticker_setperiod(& ticker_tuner, NTICKS(gtunerdelay));
 	#else /* WITHAUTOTUNER */
 		board_set_tuner_bypass(1);
 	#endif /* WITHAUTOTUNER */
@@ -13985,7 +13967,7 @@ updateboard_noui(
 		/* просто настройки тракта и не относящиеся к приёму-пеердаче. */
 	#if WITHCAT
 		processcat_enable(param_getvalue(& xgcatenable));
-		cat_set_speed(catbr2int [catbaudrate] * BRSCALE);
+		cat_set_speed(catbr2int [param_getvalue(& xgcatbaudrate)] * BRSCALE);
 		#if WITHCAT_MUX
 			board_set_catmux(catmuxmodes [gcatmux].code);	// BOARD_CATMUX_USBCDC or BOARD_CATMUX_DIN8
 		#endif /* WITHCAT_MUX */
@@ -17875,7 +17857,7 @@ static dpcobj_t cat_dpc;
 // High level cat initialize
 static void cat_initialize(void)
 {
-	dpcobj_initialize(& cat_dpc, cat_dpc_func, NULL);
+	dpcobj_initialize(& cat_dpc, cat_dpc_func, NULL, "cat_dpc");
 	board_dpc_addentry(& cat_dpc, board_dpc_coreid());
 }
 
@@ -20861,7 +20843,6 @@ static uint_fast8_t nvramdiags(void)
 	return resetconfig;
 }
 
-#if WITHAUTOTUNER
 
 enum tnrstate
 {
@@ -20875,8 +20856,6 @@ enum tnrstate
 
 static enum tnrstate tunerstate = TUNERSTATE_0;
 
-
-#endif /* WITHAUTOTUNER */
 
 // работа в машине состояний тюнера
 // возврат STTE_OK для перехода на следующее состояние
@@ -20996,7 +20975,7 @@ static void keyspoolprocess(void * ctx)
 		default:
 			PRINTF("key=%02X\n", (unsigned char) c);
 			break;
-#if WITHRTOS
+#if 1//WITHRTOS
 		case 't':
 			tasks_print();
 			break;
@@ -21171,125 +21150,6 @@ enum
 };
 
 static uint_fast8_t sthrl = STHRL_RXTX;
-
-// инициализация главной машины состояний
-static void hamradio_main_initialize(void)
-{
-	{
-		static ticker_t ticker;
-
-		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), refreshticker_cb, NULL);	// вызывается с частотой 1/UI_TICKS_PERIOD (например, 20 Гц) с запрещенными прерываниями.
-		ticker_add(& ticker);
-	}
-
-	{
-		static ticker_t ticker;
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL);
-		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
-		ticker_add(& ticker);
-	}
-
-	{
-		static dpcobj_t dpcobj;
-
-		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
-		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL);
-		ticker_initialize_user_display(& displatchticker, NTICKS(calcdivround2(1000, glatchfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
-		ticker_add(& displatchticker);
-	}
-	{
-		static ticker_t refreshticker;
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, dpc_displatch_refresh_fn, NULL);
-		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-		ticker_initialize_user_display(& refreshticker, NTICKS(calcdivround2(1000, gdisplayfreqsfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
-		ticker_add(& refreshticker);
-	}
-
-	{
-		static ticker_t ticker;
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, dpc_0p1_s_timer_fn, NULL);
-		ticker_initialize_user(& ticker, NTICKS(100), & dpcobj);
-		ticker_add(& ticker);
-	}
-
-#if WITHAUTOTUNER
-	{
-		static dpcobj_t dpcobj;
-		dpcobj_initialize(& dpcobj, dpc_tunertimer_fn, NULL);
-		ticker_initialize_user(& ticker_tuner, NTICKS(gtunerdelay), & dpcobj);
-		ticker_add(& ticker_tuner);
-	}
-#endif /* WITHAUTOTUNER */
-#if WITHDEBUG
-	{
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, keyspoolprocess, NULL);
-		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-	}
-#endif
-	{
-		static dpcobj_t dpcobj;
-
-		dpcobj_initialize(& dpcobj, appspoolprocess, NULL);
-		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-	}
-	// начальная инициализация
-//	bandsmap_verify();
-//	moderowinfo();
-	seq_purge();
-
-#if FQMODEL_GEN500
-	gfreqs [getbankindex_raw(0)] = 434085900UL;
-	gfreqs [getbankindex_raw(1)] = 434085900UL;
-#endif /* FQMODEL_GEN500 */
-
-	updateboard();	/* полная перенастройка (как после смены режима) - режим приема */
-	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
-	//display2_needupdate();
-
-#if 0 && MODEL_MAXLAB
-	// тестирование алгоритма для MAXLAB
-	{
-		unsigned n;
-		uint_fast32_t f;
-
-		f = 5500000;
-		for (n = 0; n < 1000; n += 50)
-			synth_lo1_setfreq(f + n. getlo1div(tx));
-		f = 5999000;
-		for (n = 0; n < 1000; n += 50)
-			synth_lo1_setfreq(f + n, getlo1div(tx));
-		//for (;;)
-		//	;
-	}
-#endif
-
-#if FQMODEL_GEN500
-	{
-		const spitarget_t target = targetpll2;		/* addressing to chip */
-
-		void prog_cmx992_print(spitarget_t target), prog_cmx992_initialize(spitarget_t target);
-
-		//prog_cmx992_initialize(target);
-		for (;;)
-			prog_cmx992_print(target);
-
-		//display2_needupdate();	// Обновление дисплея - всё, включая частоту
-
-		//prog_pll1_init();
-		synth_lo1_setfreq((434085900UL - 10700000UL) / 3. getlo1div(gtx));
-		for (;;)
-			;
-	}
-#endif /* FQMODEL_GEN500 */
-}
 
 /* Возвращаем не-0, если было изменение частоты настройки */
 static uint_fast8_t
@@ -21477,12 +21337,13 @@ hamradio_main_step(void)
 
 	case STHRL_RXTX:
 		// работа с пользователем
+	#if WITHAUTOTUNER
 		if (txreq_getreqautotune(& txreqst0) != 0 && gtx != 0)
 		{
 			sthrl = STHRL_TUNE;
 			break;
 		}
-
+	#endif /* WITHAUTOTUNER */
 
 	#if WITHLFM && ! BOARD_PPSIN_BIT
 		if (lfmmode)
@@ -22734,13 +22595,10 @@ uint_fast8_t hamradio_get_gvfoab(void)
 
 // основной цикл программы при работе в режиме любительского премника
 void
-application_mainloop(void)
+application_mainloop(void * ctx)
 {
-	hamradio_main_initialize();
-	for (;;)
-	{
-		hamradio_main_step();
-	}
+	(void) ctx;
+	hamradio_main_step();
 }
 
 #endif /* ! WITHISBOOTLOADER */
@@ -23357,9 +23215,9 @@ application_initialize(void)
 	// Инициализируем то что не получается иниитить в описании перменных.
 #if WITHCAT
 #ifdef WITHCATSPEED
-	catbaudrate = findcatbaudrate(catbaudrate, WITHCATSPEED);
+	gcatbaudrate = findcatbaudrate(param_getvalue(& xgcatbaudrate), WITHCATSPEED);
 #else
-	catbaudrate = findcatbaudrate(catbaudrate, 9600);
+	gcatbaudrate = findcatbaudrate(param_getvalue(& xgcatbaudrate), 9600);
 #endif
 #endif /* WITHCAT */
 #if ! HARDWARE_IGNORENONVRAM
@@ -23440,12 +23298,11 @@ application_initialize(void)
 	hftrx_init();		// цифровая обработка подготавливается
 	InitNoiseReduction();
 
-	// работа на всех ядрах, кроме нулевого
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
 	if (thread_create_user(TASK_AFFINITY_ALL, user_audioproc_thread, NULL, procthread, sizeof procthread, "user_audioproc_thread") == NULL)
 	{
 		static dpcobj_t user_audioproc_dpc;
-		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL);
+		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL, "user_audioproc_dpc");
 
 		// CPUSTYLE_STM32MP1: DSP обработка выполняется в обработчике REALTIME прерываний от DMA - CORE #1 - потому туда помещать ещё аудиообработку проблематично по произволдительности
 	#if ! WITHINTEGRATEDDSP || ! WITHSMPSYSTEM || CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1
@@ -23862,4 +23719,146 @@ int infocb_thermo(char * b, size_t len, int * pstate)
 }
 
 #endif /* ! WITHISBOOTLOADER */
+
+// инициализация главной машины состояний и запуск опроса елавиатуры/валкодеров
+void hamradio_main_start(void)
+{
+#if ! WITHISBOOTLOADER
+	{
+		static ticker_t ticker;
+
+		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), refreshticker_cb, NULL);	// вызывается с частотой 1/UI_TICKS_PERIOD (например, 20 Гц) с запрещенными прерываниями.
+		ticker_add(& ticker);
+	}
+
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;	// 1s
+
+		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL, "dpc_1s_timer_fn");
+		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
+		ticker_add(& ticker);
+	}
+
+	{
+		static dpcobj_t dpcobj;	// displatch
+
+		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
+		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL, "dpc_displatch_timer_fn");
+		ticker_initialize_user_display(& displatchticker, NTICKS(calcdivround2(1000, glatchfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_add(& displatchticker);
+	}
+	{
+		static ticker_t refreshticker;
+		static dpcobj_t dpcobj;	// display refresh
+
+		dpcobj_initialize(& dpcobj, dpc_displatch_refresh_fn, NULL, "dpc_displatch_refresh_fn");
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+		ticker_initialize_user_display(& refreshticker, NTICKS(calcdivround2(1000, gdisplayfreqsfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_add(& refreshticker);
+	}
+
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;	// 0.1s
+
+		dpcobj_initialize(& dpcobj, dpc_0p1_s_timer_fn, NULL, "0p1_s");
+		ticker_initialize_user(& ticker, NTICKS(100), & dpcobj);
+		ticker_add(& ticker);
+	}
+
+#if WITHDEBUG
+	{
+		static dpcobj_t dpcobj;	// debug keyboard spool
+
+		dpcobj_initialize(& dpcobj, keyspoolprocess, NULL, "keyspoolprocess");
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
+#endif
+	{
+		static dpcobj_t dpcobj;	// app spool
+
+		dpcobj_initialize(& dpcobj, appspoolprocess, NULL, "appspoolprocess");
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
+	// начальная инициализация
+//	bandsmap_verify();
+//	moderowinfo();
+	seq_purge();
+
+#if FQMODEL_GEN500
+	gfreqs [getbankindex_raw(0)] = 434085900UL;
+	gfreqs [getbankindex_raw(1)] = 434085900UL;
+#endif /* FQMODEL_GEN500 */
+
+	updateboard();	/* полная перенастройка (как после смены режима) - режим приема */
+	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
+	//display2_needupdate();
+
+#if 0 && MODEL_MAXLAB
+	// тестирование алгоритма для MAXLAB
+	{
+		unsigned n;
+		uint_fast32_t f;
+
+		f = 5500000;
+		for (n = 0; n < 1000; n += 50)
+			synth_lo1_setfreq(f + n. getlo1div(tx));
+		f = 5999000;
+		for (n = 0; n < 1000; n += 50)
+			synth_lo1_setfreq(f + n, getlo1div(tx));
+		//for (;;)
+		//	;
+	}
+#endif
+
+#if FQMODEL_GEN500
+	{
+		const spitarget_t target = targetpll2;		/* addressing to chip */
+
+		void prog_cmx992_print(spitarget_t target), prog_cmx992_initialize(spitarget_t target);
+
+		//prog_cmx992_initialize(target);
+		for (;;)
+			prog_cmx992_print(target);
+
+		//display2_needupdate();	// Обновление дисплея - всё, включая частоту
+
+		//prog_pll1_init();
+		synth_lo1_setfreq((434085900UL - 10700000UL) / 3. getlo1div(gtx));
+		for (;;)
+			;
+	}
+#endif /* FQMODEL_GEN500 */
+#endif /* ! WITHISBOOTLOADER */
+
+	// выполнение основного цикла
+#if WITHISBOOTLOADER && WITHISBOOTLOADERFATFS
+	void (* const mainfn)(void * ctx) = bootloader_fatfs_mainloop;
+#elif WITHISBOOTLOADER0
+	void (* const mainfn)(void * ctx) = bootloader0_mainloop;
+#elif WITHCTRLBOARDT507
+	void (* const mainfn)(void * ctx) = ctlboardt507_mainloop;
+#elif WITHISBOOTLOADER
+	void (* const mainfn)(void * ctx) = bootloader_mainloop;
+#elif 0
+	void (* const mainfn)(void * ctx) = hamradio_mainloop_beacon;
+#else
+	void (* const mainfn)(void * ctx) = application_mainloop;
+#endif
+
+#if 0//WITHRTOS
+	{
+		static dpcobj_t dpcobj;	// main loop
+
+		dpcobj_initialize(& dpcobj, mainfn, NULL, "main_loop");
+		board_dpc_addentry(& dpcobj, board_dpc_coreid());
+	}
+#else
+	for (;;)
+	{
+		mainfn(NULL);
+	}
+#endif
+}
 

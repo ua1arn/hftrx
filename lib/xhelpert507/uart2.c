@@ -286,7 +286,7 @@ void user_uart2_initialize(void)
 	hardware_uart2_enablerx(0);
 	hardware_uart2_enabletx(0);
 
-//	dpcobj_initialize(& uart2_dpc_entry, uart2_spool, NULL);
+//	dpcobj_initialize(& uart2_dpc_entry, uart2_spool, NULL, "uart2_dpc_entry");
 //	board_dpc_addentry(& uart2_dpc_entry, board_dpc_coreid());
 }
 

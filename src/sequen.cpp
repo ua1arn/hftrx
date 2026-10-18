@@ -283,7 +283,6 @@ static void keyqueueclear(void)
 {
 	//keyqueuecnt = 0;
 	keyqueueget = keyqueueput = 0;
-	//dbg_putchar('x');
 }
 
 /* Начальное значение параметров управления трактом - для исключения использования неинициализированных значений. */

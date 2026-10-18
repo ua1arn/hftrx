@@ -936,11 +936,11 @@ void user_uart3_initialize(void)
 
 	static ticker_t uart3_ticker;
 	static dpcobj_t uart3_dpc_timed;
-	dpcobj_initialize(& uart3_dpc_timed, uart3_dpc_spool, NULL);
+	dpcobj_initialize(& uart3_dpc_timed, uart3_dpc_spool, NULL, "uart3_dpc_timed");
 	ticker_initialize_user(& uart3_ticker, NTICKS(PERIODSPOOL), & uart3_dpc_timed);
 	ticker_add(& uart3_ticker);
 
-	dpcobj_initialize(& uart3_dpc_entry, uart3_spool, NULL);
+	dpcobj_initialize(& uart3_dpc_entry, uart3_spool, NULL, "uart3_dpc_entry");
 	board_dpc_addentry(& uart3_dpc_entry, board_dpc_coreid());
 }
 

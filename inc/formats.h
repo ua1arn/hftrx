@@ -38,7 +38,7 @@ void printhex64_titled(uintptr_t voffs, const void * vbuff, size_t length, const
 void mem2hex(uintptr_t address, unsigned size);
 
 // spool-based functions for debug
-int dbg_puts_impl(const char * s);	/* печать строки без использования форматных преоьразования */
+int dbg_puts(const char * s);	/* печать строки без использования форматных преоьразования */
 int dbg_putchar(int c);
 int dbg_writechar(int c);	/* вывод символа без преобразования '\n' в пару символов '\r' '\n' */
 int dbg_getchar(char * r);

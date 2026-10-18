@@ -70,18 +70,10 @@ main(void)
 	application_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 
-#if WITHISBOOTLOADER && WITHISBOOTLOADERFATFS
-	bootloader_fatfs_mainloop();
-#elif WITHISBOOTLOADER0
-	bootloader0_mainloop();
-#elif WITHCTRLBOARDT507
-	ctlboardt507_mainloop();
-#elif WITHISBOOTLOADER
-	bootloader_mainloop();
-#elif 0
-	hamradio_mainloop_beacon();
-#else
-	application_mainloop();
-#endif
+	hamradio_main_start();
+	for (;;)
+	{
+		board_dpc_processing();		// обработка отложенного вызова user mode функций
+	}
 	return 0;
 }

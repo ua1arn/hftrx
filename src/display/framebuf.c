@@ -212,7 +212,7 @@ static LCLSPINLOCK_t rotlock;
 
 static void g2d_rot_accure(IRQL_t * pirql)
 {
-	IRQLSPIN_LOCK(& rotlock, pirql, IRQL_BOARD);
+	IRQLSPIN_LOCK(& rotlock, pirql, BRDSYS_IRQL);
 }
 static void g2d_rot_release(IRQL_t irql)
 {

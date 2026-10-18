@@ -520,7 +520,7 @@ extern "C" {
 	#define SPISPEEDUFAST 	(25000000)	/* 24 MHz на SCLK - требуемая скорость передачи по SPI */
 
 	#if defined(__aarch64__)
-		#define HARDWARE_NCORES 6
+		#define HARDWARE_NCORES 8
 	#else
 		#define HARDWARE_NCORES 6
 	#endif
@@ -803,12 +803,12 @@ extern "C" {
 
 	enum
 	{
-		PRIOv_IPC = 1,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
+		PRIOv_IPC = 0,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
 		PRIOv_IPC_ONLY,
 		PRIOv_OVRT,
 		PRIOv_RT,
 		PRIOv_SYS,		/* таймеры, USB */
-		PRIOv_BRD,		/* папаметы фильттров, board_set_xxx */
+		PRIOv_BRD,		/* параметры фильтров, board_set_xxx */
 		PRIOv_USER,
 		PRIOv_IDLE,
 		//
@@ -840,6 +840,7 @@ extern "C" {
 	#define IRQL_SYSTEM 		(GICI_ENCODE_IRQL(PRIOv_SYS))
 	#define IRQL_BOARD			(GICI_ENCODE_IRQL(PRIOv_BRD))
 	#define IRQL_USER 			(GICI_ENCODE_IRQL(PRIOv_USER))
+	#define IRQL_IDLE 			(GICI_ENCODE_IRQL(PRIOv_IDLE))
 
 	// A lower priority value indicating a higher priority
 	// Value for GICD
@@ -926,10 +927,9 @@ extern "C" {
 #define TASK_AFFINITY_ALL (UINT_MAX)
 void task_scheduler_initialize(void);
 void task_scheduler_start(void);
-void __NO_RETURN task_scheduler_othercores(void);
+void __NO_RETURN task_scheduler_othercores(void);	// завершение инициализации - уход в вечный цикл
 void tasks_print(void);
 
-unsigned thread_set_affinity(unsigned affinity);	// Set thread affinity - return old value
 void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, const char * name);
 void thread_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 
@@ -963,9 +963,6 @@ void local_delay_ms(uint_fast32_t timeMS);	// may be LOCAL_WAITINFINITY
 	#define __ALIGN4_END    __attribute__ ((aligned (4)))
 	#define __ALIGN4_BEGIN         
 
-	#define ATTRPACKED __attribute__ ((packed))
-	#define ATTRNORETURN __attribute__ ((__noreturn__))
-
 #else                           
 	#if defined   (__CC_ARM)      /* ARM Compiler */
 		#define __ALIGN4_BEGIN    __align(4)  
@@ -977,9 +974,6 @@ void local_delay_ms(uint_fast32_t timeMS);	// may be LOCAL_WAITINFINITY
 		#define __ALIGN4_BEGIN    __align(4) 
 		#define __ALIGN4_END
 	#endif /* __CC_ARM */  
-
-	#define ATTRPACKED __attribute__ ((packed))
-	#define ATTRNORETURN __attribute__ ((__noreturn__))
 
 #endif /* __GNUC__ */
 
@@ -1263,8 +1257,6 @@ void local_delay_ms(uint_fast32_t timeMS);	// may be LOCAL_WAITINFINITY
 #else
 	//#error Undefined CTLREGMODE_xxx option
 #endif
-
-#define WITHONETIMESTAMP (CPUSTYLE_ALLWINNER && defined (TIMESTAMP_STA) && defined (TIMESTAMP_CTRL))	// В случае единственного timestamp таймера - нет нужды заперщать перпланировщик
 
 #define WITHSPECTRUMWF (WITHIF4DSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_DUMMY)
 

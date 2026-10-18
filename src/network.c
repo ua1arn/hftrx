@@ -595,7 +595,7 @@ void network_initialize(void)
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, lwip_1s_spool, & nic_netif_data);
+		dpcobj_initialize(& dpcobj, lwip_1s_spool, & nic_netif_data, "lwip_1s_spool");
 		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
 		ticker_add(& ticker);
 	}

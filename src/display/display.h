@@ -74,7 +74,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		struct rgb_24b
 		{
 			uint8_t r, g, b;
-		} ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре.
+		} __PACKED;// аттрибут GCC, исключает "дыры" в структуре.
 
 		typedef struct rgb_24b PACKEDCOLORPIP_T;	// 3 байта для последовательной выдачи как RGB для LCDMODE_ILI8961
 

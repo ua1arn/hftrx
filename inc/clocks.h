@@ -611,10 +611,46 @@ calcdividerselect(
 	//#warning Undefined CPUSTYLE_XXX
 #endif
 
+
+#if defined(__aarch64__) || (defined (__CORTEX_A)) || (defined(__riscv) && (__riscv_xlen == 64))
+	typedef uint64_t dbgcount_t;
+	typedef uint_fast64_t dbgcountfast_t;
+	typedef uint64_t hwtimcount_t;
+	typedef uint_fast64_t hwtimcountfast_t;
+#else
+	typedef uint32_t dbgcount_t;
+	typedef uint_fast32_t dbgcountfast_t;
+	typedef uint32_t hwtimcount_t;
+	typedef uint_fast32_t hwtimcountfast_t;
+#endif
+
+dbgcountfast_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
+dbgcountfast_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
+dbgcountfast_t cpu_getdebugticksmask(void);	// получение маски на разрядность аппаратного счётчика
+
+hwtimcountfast_t timestamp_getticks(void);
+hwtimcountfast_t timestamp_getmask(void);
+hwtimcountfast_t timestamp_getfreq(void);
+
+//	Функции для программных ожиданий
+//	const hwtimcountfast_t t0 = get_td_delta(0);
+//	const hwtimcountfast_t dt = get_td_ms(100);	// количество тактов до срабатывания
+//	do {
+//		val = hdmi_read(hdmi, HDMI_PHY_STAT0);
+//		if (!(val & HDMI_PHY_TX_PHY_LOCK))
+//			return 0;
+//
+//	} while (get_td_delta(t0) < dt);
+
+hwtimcountfast_t get_td_delta(hwtimcountfast_t start);	// получение интервала, прошедшего с момента start
+hwtimcountfast_t get_td_us(uint_fast32_t timeUS);
+hwtimcountfast_t get_td_ms(uint_fast32_t timeMS);
+
 void sysinit_boot_disconnect(void);
 void sysinit_pll_initialize(int forced);	// PLL initialize
 void sysinit_perfmeter_initialize(void);	// на каждом CORE
-void sysinit_hwtimer_initialize(void);	// на каждом CORE (но вообще-то он один...)
+void sysinit_hwtimer_initialize(void);	// на каждом CORE
+void sysinit_timestamp_initialize(void);	// Один счётчик на весь чип
 
 #ifdef __cplusplus
 }

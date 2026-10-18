@@ -334,7 +334,7 @@
 	& xgcatmux,
 #endif /* WITHCAT_MUX */
 #if WITHUSBCDCACM == 0 || WITHCAT_MUX
-	& xcatbaudrate,
+	& xgcatbaudrate,
 #endif /* WITHUSBCDCACM == 0 || WITHCAT_MUX */
 #if WITHTX
 	& xcatsigptt,

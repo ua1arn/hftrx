@@ -310,7 +310,7 @@
 //	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 //	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 //	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-//	//#define WITHRTOS	1	/* Использование RTOS */
+//	
 //
 //	#define WITHIF4DSP	1			/*  "Дятел" */
 //	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */

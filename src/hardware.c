@@ -301,32 +301,32 @@ void ticker_add(ticker_t * p)
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
-void ticker_remove(ticker_t * p)
-{
-	IRQL_t oldIrql;
-	ASSERT(p->guard == p);
-
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
-	RemoveEntryVList(& p->item);
-	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
-}
+//void ticker_remove(ticker_t * p)
+//{
+//	IRQL_t oldIrql;
+//	ASSERT(p->guard == p);
+//
+//	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+//	RemoveEntryVList(& p->item);
+//	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
+//}
 
 /* начало интервала в случае TICKERMD_MANUAL */
-void ticker_start(ticker_t * p)
-{
-	IRQL_t oldIrql;
-	ASSERT(p->guard == p);
-
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
-	switch (p->mode)
-	{
-	case TICKERMD_MANUAL:
-		break;
-	default:
-		break;
-	}
-	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
-}
+//void ticker_start(ticker_t * p)
+//{
+//	IRQL_t oldIrql;
+//	ASSERT(p->guard == p);
+//
+//	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+//	switch (p->mode)
+//	{
+//	case TICKERMD_MANUAL:
+//		break;
+//	default:
+//		break;
+//	}
+//	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
+//}
 
 /* изменение периода запущенного тикера */
 void ticker_setperiod(ticker_t * p, unsigned nticks)
@@ -497,6 +497,10 @@ void spool_systimerbundle(void)
 
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
 	tickers_event();
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	// force re-schedule
+	GIC_SendSGI(SGI14_IRQn, 0, 0x01);	// other cores, except self
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 }
 
 #if WITHCPUADCHW
@@ -1368,6 +1372,7 @@ sysinit_fpu_initialize(void)
 		__set_SCTLR_EL1(__get_SCTLR_EL1() & ~ SCTLR_EL3_A_Msk);	// Disable stack alignment check. The possible values are
 	#endif
 
+	__set_FPCR(0x00000000);
 	L1C_DisableCaches();
 	L1C_DisableBTAC();
 	MMU_Disable();
@@ -1379,6 +1384,8 @@ sysinit_fpu_initialize(void)
 	__FPU_Enable_fixed();
 	#endif
 
+	// AArch64 System register FPCR bits [26:15] are architecturally mapped to AArch32 System register FPSCR[26:15].
+	__set_FPSCR(0x00000000);
 	L1C_DisableCaches();
 	L1C_DisableBTAC();
 	MMU_Disable();
@@ -1906,6 +1913,7 @@ void
 SystemInit(void)
 {
 	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */
+	sysinit_timestamp_initialize();
 	//PRINTF("CCU->PLL_CPU_CTRL_REG=%08X\n", (unsigned) CCU->PLL_CPU_CTRL_REG);
 	//PRINTF("CCU->MBUS_MAT_CLK_GATING_REG=%08X\n", (unsigned) CCU->MBUS_MAT_CLK_GATING_REG);
 #if CPUSTYLE_VM14
@@ -1959,6 +1967,7 @@ void __attribute__((used)) SystemDRAMInit(void)
 #if CPUSTYLE_VM14
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */
+	sysinit_timestamp_initialize();
 	sysinit_fpu_initialize();	// FPU access enable, disable caches
 	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
@@ -2586,7 +2595,7 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	}
 #endif /* CPUSTYLE_VM14 */
 
-	task_scheduler_othercores();
+	task_scheduler_othercores();	// завершение инициализации - уход в вечный цикл
 }
 
 void arm_hardware_core_poweron(unsigned core)
@@ -2602,7 +2611,7 @@ void arm_hardware_core_poweron(unsigned core)
 #endif
 }
 
-// Поддержтвается ли на текущем CORE aarch32
+// Поддерживается ли на текущем CORE aarch32
 int arm_hardware_aarch32implemented(void)
 {
 #if CPUSTYLE_A733

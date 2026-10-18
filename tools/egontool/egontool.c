@@ -6,7 +6,7 @@
 
 #if defined   (__GNUC__)        /* GNU Compiler */
 	#include <stdint.h>
-	#define ATTRPACKED __attribute__ ((packed))
+	#define ATTRPACKED __attribute__ ((packed, aligned(1)))
 #else
 	#define ATTRPACKED
 	typedef unsigned int uint32_t;

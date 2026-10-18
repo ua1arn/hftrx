@@ -14,10 +14,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
-void bootloader_fatfs_mainloop(void);
-void bootloader_mainloop(void);
-void bootloader0_mainloop(void);
-void ctlboardt507_mainloop(void);
+void bootloader_fatfs_mainloop(void * ctx);
+void bootloader_mainloop(void * ctx);
+void bootloader0_mainloop(void * ctx);
+void ctlboardt507_mainloop(void * ctx);
 
 #if CPUSTYLE_STM32MP1
 	// Bootloader parameters

@@ -8172,7 +8172,7 @@ void hightests(void)
 		unsigned core;
 		for (core = 0; core < ARRAY_SIZE(userprintdpcs); ++ core)
 		{
-			dpcobj_initialize(& userprintdpcs [core], coremark_wrapper, NULL);
+			dpcobj_initialize(& userprintdpcs [core], coremark_wrapper, NULL, "coremark_wrapper");
 			board_dpc_addentry(& userprintdpcs [core], core);
 		}
 	}
@@ -12544,35 +12544,6 @@ void lowtests(void)
 		}
 	}
 #endif
-#if 0 && CPUSTYLE_STM32MP1
-	{
-		// калибровка программной задержки
-
-		//RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_TZPCEN;
-		//PRINTF("Hello. STM32MP157\n");
-		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
-		// LED blinking test
-		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-		//const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
-		const uint_fast32_t maska = (1uL << 13);	// PA13 - bootloader status LED
-		//arm_hardware_piod_outputs(maskd, 1 * maskd);
-		arm_hardware_pioa_outputs(maska, 1 * maska);
-		for (;;)
-		{
-			//dbg_putchar('5');
-			//(GPIOD)->BSRR = BSRR_S(maskd);
-			(GPIOA)->BSRR = BSRR_S(maska);
-			__DSB();
-			local_delay_ms(50);
-			//dbg_putchar('#');
-			//(GPIOD)->BSRR = BSRR_C(maskd);
-			(GPIOA)->BSRR = BSRR_C(maska);
-			__DSB();
-			local_delay_ms(50);
-
-		}
-	}
-#endif /* CPUSTYLE_STM32MP1 */
 #if 0 && WITHDEBUG
 	{
 		// c++ execution test

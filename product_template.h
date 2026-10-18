@@ -22,6 +22,7 @@
 //#define WITHUACPLAYER 1	/* проигрывание с USB по умолчанию включено */
 //#define WITHSWRPROT 0			/* ОТЛАДКА - отключена защитa по КСВ */
 //#define WITHHEATPROT 0			/* ОТЛАДКА - отключена защитa по перегреву */
+//#define WITHRTOS 1
 
 //#define DEBUGSPEED 500000
 #define DEBUGSPEED 115200
