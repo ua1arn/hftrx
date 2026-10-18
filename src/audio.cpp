@@ -1051,6 +1051,234 @@ static void calculate_variable_slope_lpf(FLOAT_t *const h, const FLOAT_t *const 
 }
 
 /**
+ * @brief Computes LPF coefficients for DDC path with droop compensation for two cascaded CIC decimators.
+ *
+ * @param h                 Output buffer for calculated FIR impulse response (size: num_taps).
+ * @param preformed_window  Pre-calculated smoothing window array (size: num_taps).
+ * @param num_taps          Number of FIR taps (filter length).
+ * @param fs                Output sampling rate (e.g., 48000.0).
+ * @param f_cutoff          LPF cutoff frequency (e.g., up to 12000.0).
+ * @param w_trans           Filter transition bandwidth.
+ */
+void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f_cutoff, const FLOAT_t w_trans) {
+
+    // Automatically select FFT size based on filter length
+    const uint32_t fft_size = (num_taps <= 512) ? 1024 : 2048;
+
+    // Use ARM_MORPH macros to instantiate masked CFFT structure and initializer
+    ARM_MORPH(arm_cfft_instance) ready_cfft;
+    ARM_MORPH(arm_cfft_init)(&ready_cfft, fft_size);
+
+    // Complex spectrum buffer (interleaved Real/Imag). Max size 2048 * 2 for hftrx architecture
+    FLOAT_t fft_buffer[2048 * 2];
+
+    const FLOAT_t freq_step = fs / (FLOAT_t)fft_size;
+    const FLOAT_t f_stop = f_cutoff + w_trans;
+
+    const FLOAT_t M1 = (FLOAT_t)DDC_CIC1_DECIMATION;
+    const FLOAT_t D1 = (FLOAT_t)DDC_CIC1_DELAY;
+    const FLOAT_t N1 = (FLOAT_t)DDC_CIC1_STAGES;
+
+    const FLOAT_t M2 = (FLOAT_t)DDC_CIC2_DECIMATION;
+    const FLOAT_t D2 = (FLOAT_t)DDC_CIC2_DELAY;
+    const FLOAT_t N2 = (FLOAT_t)DDC_CIC2_STAGES;
+
+    // Step 1: Synthesize target frequency response with inverse CIC compensation
+    for (uint32_t i = 0; i < fft_size; i++)
+    {
+        FLOAT_t f = i * freq_step;
+
+        // Mirror frequency above Nyquist for proper IFFT reconstruction
+        if (f > fs / 2.0f) {
+            f = fs - f;
+        }
+
+        if (f <= f_stop)
+        {
+            FLOAT_t amplitude = 0.0f;
+
+            // Calculate ideal linear roll-off within the transition zone
+            if (f <= f_cutoff) {
+                amplitude = 1.0f;
+            } else {
+                amplitude = 1.0f - ((f - f_cutoff) / w_trans);
+            }
+
+            // Calculate frequency response of the 1st CIC stage (1/128)
+            FLOAT_t arc1 = M_PI * f * D1 / fs;
+            FLOAT_t arc1_in = M_PI * f * M1 * D1 / fs;
+            FLOAT_t h_cic1 = 1.0f;
+
+            if (arc1 > 1e-7f) {
+                FLOAT_t sin_out = SINF(arc1);
+                FLOAT_t sin_in  = SINF(arc1_in / M1);
+                if (FABSF(sin_in) > 1e-7f) {
+                    h_cic1 = powf(sin_out / (M1 * sin_in), N1);
+                }
+            }
+
+            // Calculate frequency response of the 2nd CIC stage (1/20)
+            FLOAT_t arc2 = M_PI * f * D2 / fs;
+            FLOAT_t arc2_in = M_PI * f * M2 * D2 / fs;
+            FLOAT_t h_cic2 = 1.0f;
+
+            if (arc2 > 1e-7f) {
+                FLOAT_t sin_out = SINF(arc2);
+                FLOAT_t sin_in  = SINF(arc2_in / M2);
+                if (FABSF(sin_in) > 1e-7f) {
+                    h_cic2 = powf(sin_out / (M2 * sin_in), N2);
+                }
+            }
+
+            FLOAT_t h_total_dec = h_cic1 * h_cic2;
+
+            // Stabilize inverse filter by avoiding division by zero at the spectrum edges
+            if (h_total_dec < 0.01f) {
+                h_total_dec = 0.01f;
+            }
+
+            // Apply inverse CIC droop compensation to the target passband amplitude
+            fft_buffer[2 * i]     = amplitude / h_total_dec; // Real
+            fft_buffer[2 * i + 1] = 0.0f;                    // Imag
+        }
+        else
+        {
+            // Stopband area
+            fft_buffer[2 * i]     = 0.0f;
+            fft_buffer[2 * i + 1] = 0.0f;
+        }
+    }
+
+    // Step 2: Compute IFFT using ARM_MORPH wrapper macro
+    // Execution parameters: instance, buffer pointer, ifftFlag = 1, bitReverseFlag = 1
+    ARM_MORPH(arm_cfft)(&ready_cfft, (FLOAT_t *)fft_buffer, 1, 1);
+
+    // Step 3: Shift time origin to center the impulse response and apply preformed_window
+    const uint32_t half_taps = num_taps / 2;
+    FLOAT_t window_sum = 0.0f;
+
+    for (int n = 0; n < num_taps; n++)
+    {
+        int32_t idx = n - (int32_t)half_taps;
+        if (idx < 0) {
+            idx += fft_size;
+        }
+
+        FLOAT_t raw_tap = fft_buffer[2 * idx];
+        h[n] = raw_tap * preformed_window[n];
+        window_sum += h[n];
+    }
+
+    // Step 4: Normalize coefficients using FABSF macro to guarantee unity gain at DC (0 Hz)
+    if (FABSF(window_sum) > 1e-5f)
+    {
+        const FLOAT_t norm_factor = 1.0f / window_sum;
+        for (int n = 0; n < num_taps; n++) {
+            h[n] *= norm_factor;
+        }
+    }
+}
+
+/**
+ * @brief Computes LPF coefficients for DUC path with brick-wall response and single-stage CIC pre-compensation.
+ *
+ * @param h                 Output buffer for calculated FIR impulse response (size: num_taps).
+ * @param preformed_window  Pre-calculated smoothing window array (size: num_taps).
+ * @param num_taps          Number of FIR taps (filter length).
+ * @param fs                Input sampling rate before interpolation (e.g., 48000.0).
+ * @param f_cutoff          LPF cutoff frequency (e.g., 12000.0).
+ */
+void calculate_duc_lpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, const int num_taps, const FLOAT_t fs, const FLOAT_t f_cutoff) {
+
+    // Automatically select FFT size based on filter length
+    const uint32_t fft_size = (num_taps <= 512) ? 1024 : 2048;
+
+    // Use ARM_MORPH macros to instantiate masked CFFT structure and initializer
+    ARM_MORPH(arm_cfft_instance) ready_cfft;
+    ARM_MORPH(arm_cfft_init)(&ready_cfft, fft_size);
+
+    // Complex spectrum buffer of fixed size for IFFT processing
+    FLOAT_t fft_buffer[2048 * 2];
+
+    const FLOAT_t freq_step = fs / (FLOAT_t)fft_size;
+
+    const FLOAT_t L = (FLOAT_t)DUC_CIC_INTERP;
+    const FLOAT_t D = (FLOAT_t)DUC_CIC_DELAY;
+    const FLOAT_t N = (FLOAT_t)DUC_CIC_STAGES;
+
+    // Step 1: Synthesize target frequency response (strict brick-wall rectangular mask)
+    for (uint32_t i = 0; i < fft_size; i++)
+    {
+        FLOAT_t f = i * freq_step;
+
+        // Mirror frequency above Nyquist for proper IFFT reconstruction
+        if (f > fs / 2.0f) {
+            f = fs - f;
+        }
+
+        // Strict rectangular filtering up to f_cutoff
+        if (f <= f_cutoff)
+        {
+            // Calculate frequency response of the single massive CIC interpolator stage (x2560)
+            FLOAT_t arc = M_PI * f * D / fs;
+            FLOAT_t arc_in = M_PI * f * L * D / fs;
+            FLOAT_t h_cic = 1.0f;
+
+            if (arc > 1e-7f) {
+                FLOAT_t sin_out = SINF(arc);
+                FLOAT_t sin_in  = SINF(arc_in / L);
+                if (FABSF(sin_in) > 1e-7f) {
+                    h_cic = powf(sin_out / (L * sin_in), N);
+                }
+            }
+
+            // Prevent division by zero near the interpolation nulls
+            if (h_cic < 0.01f) {
+                h_cic = 0.01f;
+            }
+
+            // Pre-emphasis: invert the CIC roll-off directly inside the LPF passband
+            fft_buffer[2 * i]     = 1.0f / h_cic; // Real
+            fft_buffer[2 * i + 1] = 0.0f;         // Imag
+        }
+        else
+        {
+            // LPF Stopband (everything above f_cutoff)
+            fft_buffer[2 * i]     = 0.0f;
+            fft_buffer[2 * i + 1] = 0.0f;
+        }
+    }
+
+    // Step 2: Compute IFFT using ARM_MORPH wrapper macro
+    ARM_MORPH(arm_cfft)(&ready_cfft, fft_buffer, 1, 1);
+
+    // Step 3: Shift time origin to center the impulse response and apply preformed_window
+    const uint32_t half_taps = num_taps / 2;
+    FLOAT_t window_sum = 0.0f;
+
+    for (int n = 0; n < num_taps; n++)
+    {
+        int32_t idx = n - (int32_t)half_taps;
+        if (idx < 0) {
+            idx += fft_size;
+        }
+
+        FLOAT_t raw_tap = fft_buffer[2 * idx];
+        h[n] = raw_tap * preformed_window[n];
+        window_sum += h[n];
+    }
+
+    // Step 4: Normalize coefficients using FABSF macro to guarantee unity gain at DC (0 Hz)
+    if (FABSF(window_sum) > 1e-5f)
+    {
+        const FLOAT_t norm_factor = 1.0f / window_sum;
+        for (int n = 0; n < num_taps; n++) {
+            h[n] *= norm_factor;
+        }
+    }
+}
+
+/**
  * @brief  Generates a single-pass Bandpass FIR filter with a fixed brick-wall main passband
  *         and an integrated dynamically adjustable brick-wall Notch filter.
  *         Windowed and optimized via CMSIS-DSP.
@@ -2191,7 +2419,7 @@ static int_fast16_t audio_validatebw6(int_fast16_t n)
 }
 
 // Установка параметров тракта приёмника
-static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
+static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, uint_fast8_t tx)
 {
     hftxpath_t * const txpath = & tx_path;
     hfrxpath_t * const path = & rx_paths[pathi];
@@ -2246,7 +2474,10 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 	{
 		const int cutfreq = fullbw6 / 2;
 
-		calculate_variable_slope_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq, transition);
+		if (tx)
+			calculate_duc_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq);
+		else
+			calculate_variable_slope_ddc_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq, transition);
 
 	//	PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
 
@@ -2254,7 +2485,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		if (isdspmoderx(dspmode))
 		{
 			local_rx_iq_fir_t * const fir = & path->rx_iq_fir;
-			calculate_variable_slope_lpf(fir->FIRCoef_rx_SSB_IQ [spf], fir->window_buf, Ntap_rx_SSB_IQ, fs, cutfreq, transition);
+			calculate_variable_slope_ddc_lpf(fir->FIRCoef_rx_SSB_IQ [spf], fir->window_buf, Ntap_rx_SSB_IQ, fs, cutfreq, transition);
 			ARM_MORPH(arm_scale)(fir->FIRCoef_rx_SSB_IQ [spf], 2, fir->FIRCoef_rx_SSB_IQ [spf], Ntap_rx_SSB_IQ);
 		}
 		#if WITHDSPEXTDDC
@@ -2266,7 +2497,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		if (isdspmodetx(dspmode))
 		{
 			local_tx_iq_fir_t * const fir = & txpath->tx_iq_fir;
-			calculate_variable_slope_lpf(fir->FIRCoef_tx_SSB_IQ [spf], fir->window_buf, Ntap_tx_SSB_IQ, fs, cutfreq, transition);
+			calculate_duc_lpf(fir->FIRCoef_tx_SSB_IQ [spf], fir->window_buf, Ntap_tx_SSB_IQ, fs, cutfreq);
 			ARM_MORPH(arm_scale)(fir->FIRCoef_tx_SSB_IQ [spf], 2, fir->FIRCoef_tx_SSB_IQ [spf], Ntap_tx_SSB_IQ);
 		}
 		#if WITHDSPEXTDDC
@@ -2361,7 +2592,7 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi, uint_fast8_
     globDSPMode  [spf] [pathi] = glob_dspmodes [pathi];
 
 	// второй фильтр грузится только в режиме приёма (обеспечиватся внешним циклом).
-	audio_setup_wiver(spf, pathi);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
+	audio_setup_wiver(spf, pathi, tx);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
 
 	{
 		const ncoftw_t lo6_ftw = FTWAF(- glob_lo6 [pathi]);
