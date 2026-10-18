@@ -7309,6 +7309,23 @@ static const struct paramdefdef xgcputype =
 	getvaltextcputype, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
+#if WITHRTOS
+
+static uint_fast8_t gwithrtos = 1;
+static const struct paramdefdef xgwithrtos =
+{
+	QLABEL("RT OS"), 0, RJ_YES, 	ISTEP_RO,	// тип плаинровщика
+	ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
+	0, 0,
+	MENUNONVRAM,
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gwithrtos,
+	getzerobase,
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+#endif /* WITHRTOS */
+
 #ifdef DDR_FREQ
 /* поддержка ABOUT: частота памяти */
 static int_fast32_t getddrfreqbase(void)
