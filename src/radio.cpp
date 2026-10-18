@@ -2298,7 +2298,17 @@ struct modetempl
 	uint8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
 	const struct paramdefdef * const * (* middlemenu)(unsigned * size);
+	uint8_t miclass;			// для запоминания memory
 	const char * label;					// для контроля правильности инициализации структуры
+};
+
+enum miclass_tag
+{
+	MICLASS_CW,
+	MICLASS_DIGI,
+	MICLASS_PHONE,
+	//
+	MICLASS_count
 };
 
 // modes
@@ -2338,6 +2348,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_cw,
+		MICLASS_CW,
 		"CW",
 	},
 	/* MODE_SSB */
@@ -2372,6 +2383,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_ssb,
+		MICLASS_PHONE,
 		"SSB",
 	},
 	/* MODE_AM */
@@ -2406,6 +2418,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_am,
+		MICLASS_PHONE,
 		"AM",
 	},
 #if WITHSAM
@@ -2441,6 +2454,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_am,
+		MICLASS_PHONE,
 		"SAM",
 	},
 #endif /* WITHSAM */
@@ -2476,6 +2490,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_FM, BOARD_DETECTOR_FM, }, 		/* FM detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_nfm,
+		MICLASS_PHONE,
 		"NFM",
 	},
 	/* MODE_DRM */
@@ -2510,6 +2525,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_MUTE, BOARD_DETECTOR_MUTE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_am,
+		MICLASS_count,
 		"DRM",
 	},
 	/* MODE_CWZ - этот режим при передаче используется во время TUNE. */
@@ -2544,6 +2560,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_TUNE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_am,
+		MICLASS_count,
 		"CWZ",
 	},
 #if WITHWFM || WITHMODESETFULLNFMWFM
@@ -2580,6 +2597,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_WFM, BOARD_DETECTOR_WFM, },		/* WFM detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_wfm,
+		MICLASS_count,
 		"WFM",
 	},
 #endif /* WITHWFM || WITHMODESETFULLNFMWFM */
@@ -2619,6 +2637,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_digi,
+		MICLASS_DIGI,
 		"DIG",
 	},
 	/* MODE_RTTY */
@@ -2657,6 +2676,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_digi,
+		MICLASS_count,
 		"TTY",
 	},
 #if WITHMODEM
@@ -2692,6 +2712,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_digi,
+		MICLASS_count,
 		"MDM",
 	},
 #endif /* WITHMODEM */
@@ -2731,6 +2752,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_ssb,
+		MICLASS_count,
 		"ISB",
 	},
 #if WITHFREEDV
@@ -2766,6 +2788,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_ssb,
+		MICLASS_count,
 		"FDV",
 	},
 #endif /* WITHFREEDV */
@@ -3807,9 +3830,7 @@ struct onetxant_tag {
  	 Информация, сохраняемая для группы диапазонов */
 
 struct bandprops_tag {
-	uint8_t miload [BANKINDEX_COUNT];			// последний индекс, из которого выбиралась ячейка памяти.
-	uint8_t mistore [BANKINDEX_COUNT];		// последний индекс, в который запоминалась ячейка памяти.
-	modeinfo_t mibands [BANKINDEX_COUNT] [WITHBANDMEMCOUNT];	// частота, lock, mode
+	modeinfo_t mmbands [MICLASS_count];	// частота, lock, mode
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 	uint8_t rxant;		/* признак включения приемной антенны */
 	uint8_t ant;		/* код выбора антенны (0/1) */
@@ -4306,11 +4327,11 @@ struct nvmap {
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
 
 #define RMT_BAND(b) 			(OFFSETOF(struct nvmap, bands [(b)]))		// хранимые диапазоны
-#define RMT_MIBAND(bp, bi, mi) 	(OFFSETOF(struct nvmap, bandprops [(bp)].mibands [(bi)] [(mi)]))
+#define RMT_MIBAND(bp, miclass) 	(OFFSETOF(struct nvmap, bandprops [(bp)].mmbands [(miclass)]))
 
 #define RMT_BFREQ_BASE(b) 				(RMT_BAND((b)) + OFFSETOF(struct modeinfo_tag, freq))				/* последняя частота, на которую настроились (4 байта) */
 
-#define RMT_MIBFREQ_BASE(bp, bi, mi) 		(RMT_MIBAND((bp), (bi), (mi)) + OFFSETOF(struct modeinfo_tag, freq))		/* последняя частота, на которую настроились (4 байта) */
+#define RMT_MIBFREQ_BASE(bp, miclass) 		(RMT_MIBAND((bp), (miclass)) + OFFSETOF(struct modeinfo_tag, freq))		/* последняя частота, на которую настроились (4 байта) */
 
 #define RMT_PAMPBG3_BASE(bp, ant, rxant) (OFFSETOF(struct nvmap, bandprops [(bp)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].pamp))	/* признак включения аттенюатора (1 байт) */
 #define RMT_ATTBG3_BASE(bp, ant, rxant) (OFFSETOF(struct nvmap, bandprops [(bp)].orxants [(rxant) ? ANTMODE_COUNT : (ant)].att))		/* признак включения аттенюатора (1 байт) */
@@ -10041,7 +10062,7 @@ storebandstate(const vindex_t vi, const uint_fast8_t bi)
 static void loadbandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t mi)
 {
 	ASSERT(bp < BANDPROPS_COUNT);
-	gfreqs [bi] = loadvfy32(RMT_MIBFREQ_BASE(bp, bi, mi), get_band_bottom(bp), get_band_top(bp), get_band_init(bp));
+	gfreqs [bi] = loadvfy32(RMT_MIBFREQ_BASE(bp, mi), get_band_bottom(bp), get_band_top(bp), get_band_init(bp));
 
 #if WITHONLYBANDS
 	const vindex_t hb = getfreqband(gfreqs [bi], bandset_no_check);
@@ -10049,14 +10070,14 @@ static void loadbandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t m
 	tune_top_active [bi] = get_band_top(hb);
 #endif
 
-	loadmodeinfo(RMT_MIBAND(bp, bi, mi), bi, gfreqs [bi]);
+	loadmodeinfo(RMT_MIBAND(bp, mi), bi, gfreqs [bi]);
 	//
 }
 
-static void savebandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t mi)
+static void savebandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t miclass)
 {
-	save_i32(RMT_MIBFREQ_BASE(bp, bi, mi), gfreqs [bi]);
-	savemodeinfo(RMT_MIBAND(bp, bi, mi), bi);
+	save_i32(RMT_MIBFREQ_BASE(bp, miclass), gfreqs [bi]);
+	savemodeinfo(RMT_MIBAND(bp, miclass), bi);
 }
 
 /* внести новое значение в битовую маску */
@@ -14400,18 +14421,20 @@ static void uif_key_click_memo(void)
 
 	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 
-	// Выбрать следующую ячейку
-	const nvramaddress_t miload = OFFSETOF(struct nvmap, bandprops [b].miload [bi]);
-	const uint_fast8_t mi = loadvfy8up(miload, 0, WITHBANDMEMCOUNT - 1, 0);
-	save_i8(miload, calc_prev(mi, 0, WITHBANDMEMCOUNT - 1));
+	const uint_fast8_t miclass = getmodetempl(gsubmode)->miclass;
+	if (miclass < MICLASS_count)
+	{
+		// Выбрать следующий класс
+		const uint_fast8_t miclassnext = calc_next(getmodetempl(gsubmode)->miclass, 0, MICLASS_count - 1);
+		loadbandmemortstate(b, bi, miclassnext);
+		PRINTF("%s: b=%u, bi=%u, miclassnext=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) miclassnext, (unsigned) gfreqs [bi]);
+	}
 
 	// сохранить текушее состояние
 	verifyband(b);
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	storebandfreq(b, bi);
 
-	loadbandmemortstate(b, bi, mi);
-	PRINTF("%s: b=%u, bi=%u, mi=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) mi, (unsigned) gfreqs [bi]);
 
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
@@ -14433,16 +14456,12 @@ static void uif_key_hold_memo(void)
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	storebandfreq(b, bi);
 
-	// Выбрать следующую ячейку
-	const nvramaddress_t miload = OFFSETOF(struct nvmap, bandprops [b].miload [bi]);
-	const nvramaddress_t mistore = OFFSETOF(struct nvmap, bandprops [b].mistore [bi]);
-	const uint_fast8_t mi = calc_next(loadvfy8up(mistore, 0, WITHBANDMEMCOUNT - 1, 0), 0, WITHBANDMEMCOUNT - 1);
-	save_i8(mistore, mi);
-	save_i8(miload, mi);
-	savebandmemortstate(b, bi, mi);
-
-	PRINTF("%s: b=%u, bi=%u, mi=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) mi, (unsigned) gfreqs [bi]);
-
+	const uint_fast8_t miclass = getmodetempl(gsubmode)->miclass;
+	if (miclass < MICLASS_count)
+	{
+		savebandmemortstate(b, bi, miclass);
+		PRINTF("%s: b=%u, bi=%u, miclass=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) miclass, (unsigned) gfreqs [bi]);
+	}
 }
 
 #if ! WITHAGCMODENONE
