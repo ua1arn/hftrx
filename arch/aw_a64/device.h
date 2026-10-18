@@ -140,9 +140,11 @@ typedef enum IRQn
 #define SID_BASE ((uintptr_t) 0x01C14000)             /*!< SID Security ID Base */
 #define MSGBOX_BASE ((uintptr_t) 0x01C17000)          /*!< MSGBOX  Base */
 #define USBOTG0_BASE ((uintptr_t) 0x01C19000)         /*!< USBOTG USB OTG Dual-Role Device controller Base */
+#define TIMESTAMP_CTRL_BASE ((uintptr_t) 0x01C1A000)  /*!< TIMESTAMP_CTRL  Base */
 #define USBEHCI0_BASE ((uintptr_t) 0x01C1A000)        /*!< USB_EHCI_Capability  Base */
 #define USBOHCI0_BASE ((uintptr_t) 0x01C1A400)        /*!< USB_OHCI_Capability  Base */
 #define USBPHY0_BASE ((uintptr_t) 0x01C1A800)         /*!< USBPHYC  Base */
+#define TIMESTAMP_STA_BASE ((uintptr_t) 0x01C1B000)   /*!< TIMESTAMP_STA  Base */
 #define USBEHCI1_BASE ((uintptr_t) 0x01C1B000)        /*!< USB_EHCI_Capability  Base */
 #define USBOHCI1_BASE ((uintptr_t) 0x01C1B400)        /*!< USB_OHCI_Capability  Base */
 #define USBPHY1_BASE ((uintptr_t) 0x01C1B800)         /*!< USBPHYC  Base */
@@ -2592,6 +2594,28 @@ typedef struct TIMER_Type
          RESERVED(0x0BC[0x0400 - 0x00BC], uint8_t)
 } TIMER_TypeDef; /* size of structure = 0x400 */
 /*
+ * @brief TIMESTAMP_CTRL
+ */
+/*!< TIMESTAMP_CTRL  */
+typedef struct TIMESTAMP_CTRL_Type
+{
+    __IOM uint32_t TSTAMP_CTRL_REG;                   /*!< Offset 0x000 Counter Control Register. */
+    __IOM uint32_t CNTSR;                             /*!< Offset 0x004 Timestamp Status Register */
+    __IOM uint32_t CNT_CTRL_LOW_REG;                  /*!< Offset 0x008 Counter Low Register */
+    __IOM uint32_t CNT_CTRL_HI_REG;                   /*!< Offset 0x00C Counter High Register */
+         RESERVED(0x010[0x0020 - 0x0010], uint8_t)
+    __IOM uint32_t CNT_FREQID_REG;                    /*!< Offset 0x020 Counter Base Frequency ID Register */
+} TIMESTAMP_CTRL_TypeDef; /* size of structure = 0x024 */
+/*
+ * @brief TIMESTAMP_STA
+ */
+/*!< TIMESTAMP_STA  */
+typedef struct TIMESTAMP_STA_Type
+{
+    __IM  uint32_t CNT_LOW_REG;                       /*!< Offset 0x000 Counter Low Register */
+    __IM  uint32_t CNT_HI_REG;                        /*!< Offset 0x004 Counter High Register */
+} TIMESTAMP_STA_TypeDef; /* size of structure = 0x008 */
+/*
  * @brief TPADC
  */
 /*!< TPADC  */
@@ -3247,9 +3271,11 @@ typedef struct VE_Type
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define MSGBOX ((MSGBOX_TypeDef *) MSGBOX_BASE)       /*!< MSGBOX  register set access pointer */
 #define USBOTG0 ((USBOTG_TypeDef *) USBOTG0_BASE)     /*!< USBOTG0 USB OTG Dual-Role Device controller register set access pointer */
+#define TIMESTAMP_CTRL ((TIMESTAMP_CTRL_TypeDef *) TIMESTAMP_CTRL_BASE)/*!< TIMESTAMP_CTRL  register set access pointer */
 #define USBEHCI0 ((USB_EHCI_Capability_TypeDef *) USBEHCI0_BASE)/*!< USBEHCI0  register set access pointer */
 #define USBOHCI0 ((USB_OHCI_Capability_TypeDef *) USBOHCI0_BASE)/*!< USBOHCI0  register set access pointer */
 #define USBPHY0 ((USBPHYC_TypeDef *) USBPHY0_BASE)    /*!< USBPHY0  register set access pointer */
+#define TIMESTAMP_STA ((TIMESTAMP_STA_TypeDef *) TIMESTAMP_STA_BASE)/*!< TIMESTAMP_STA  register set access pointer */
 #define USBEHCI1 ((USB_EHCI_Capability_TypeDef *) USBEHCI1_BASE)/*!< USBEHCI1  register set access pointer */
 #define USBOHCI1 ((USB_OHCI_Capability_TypeDef *) USBOHCI1_BASE)/*!< USBOHCI1  register set access pointer */
 #define USBPHY1 ((USBPHYC_TypeDef *) USBPHY1_BASE)    /*!< USBPHY1  register set access pointer */
