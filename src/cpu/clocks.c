@@ -13015,7 +13015,7 @@ dbgcountfast_t cpu_getdebugticks(void)
 }
 
 
-#if defined TIMESTAMP_STA
+#if CPUSTYLE_ALLWINNER && defined (TIMESTAMP_STA)
 // Allwinner timestamp registers
 
 hwtimcountfast_t timestamp_getticks(void)
@@ -13080,7 +13080,10 @@ hwtimcountfast_t timestamp_getfreq(void)
 {
 	return STGENC->CNTFID0;
 }
+
 #else
+
+#warning timestamp_getticks replaced by debug counter
 
 hwtimcountfast_t timestamp_getticks(void)
 {
