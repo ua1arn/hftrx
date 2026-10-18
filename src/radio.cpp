@@ -138,6 +138,9 @@ processmessages(
 #endif /* ! WITHISBOOTLOADER */
 
 	watchdog_ping();
+#if ! WITHRTOS
+	board_dpc_processing();
+#endif
 
 #if WITHLVGL && WITHLVGLINDEV
 
@@ -23753,7 +23756,7 @@ void hamradio_main_start(void)
 
 	{
 		static ticker_t ticker;
-		static dpcobj_t dpcobj;
+		static dpcobj_t dpcobj;	// 1s
 
 		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL, "dpc_1s_timer_fn");
 		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
@@ -23761,7 +23764,7 @@ void hamradio_main_start(void)
 	}
 
 	{
-		static dpcobj_t dpcobj;
+		static dpcobj_t dpcobj;	// displatch
 
 		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
 		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL, "dpc_displatch_timer_fn");
@@ -23770,7 +23773,7 @@ void hamradio_main_start(void)
 	}
 	{
 		static ticker_t refreshticker;
-		static dpcobj_t dpcobj;
+		static dpcobj_t dpcobj;	// display refresh
 
 		dpcobj_initialize(& dpcobj, dpc_displatch_refresh_fn, NULL, "dpc_displatch_refresh_fn");
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
@@ -23780,7 +23783,7 @@ void hamradio_main_start(void)
 
 	{
 		static ticker_t ticker;
-		static dpcobj_t dpcobj;
+		static dpcobj_t dpcobj;	// 0.1s
 
 		dpcobj_initialize(& dpcobj, dpc_0p1_s_timer_fn, NULL, "0p1_s");
 		ticker_initialize_user(& ticker, NTICKS(100), & dpcobj);
@@ -23797,14 +23800,14 @@ void hamradio_main_start(void)
 #endif /* WITHAUTOTUNER */
 #if WITHDEBUG
 	{
-		static dpcobj_t dpcobj;
+		static dpcobj_t dpcobj;	// debug keyboard spool
 
 		dpcobj_initialize(& dpcobj, keyspoolprocess, NULL, "keyspoolprocess");
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 	}
 #endif
 	{
-		static dpcobj_t dpcobj;
+		static dpcobj_t dpcobj;	// app spool
 
 		dpcobj_initialize(& dpcobj, appspoolprocess, NULL, "appspoolprocess");
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
@@ -23875,11 +23878,18 @@ void hamradio_main_start(void)
 	void (* const mainfn)(void * ctx) = application_mainloop;
 #endif
 
+#if WITHRTOS
 	{
-		static dpcobj_t dpcobj;
+		static dpcobj_t dpcobj;	// main loop
 
 		dpcobj_initialize(& dpcobj, mainfn, NULL, "main_loop");
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 	}
+#else
+	for (;;)
+	{
+		mainfn(NULL);
+	}
+#endif
 }
 
