@@ -13080,6 +13080,22 @@ hwtimcountfast_t timestamp_getfreq(void)
 {
 	return STGENC->CNTFID0;
 }
+#else
+
+hwtimcountfast_t timestamp_getticks(void)
+{
+	return cpu_getdebugticks();
+}
+hwtimcountfast_t timestamp_getmask(void)
+{
+	return cpu_getdebugticksmask();
+}
+
+hwtimcountfast_t timestamp_getfreq(void)
+{
+	return cpu_getdebugticksfreq();
+}
+
 #endif /* WITHONETIMESTAMP */
 
 hwtimcountfast_t get_td_us(uint_fast32_t timeUS)

@@ -1080,9 +1080,11 @@ void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const pre
     const FLOAT_t D1 = (FLOAT_t)DDC_CIC1_DELAY;
     const FLOAT_t N1 = (FLOAT_t)DDC_CIC1_STAGES;
 
+#ifdef DDC_CIC2_DECIMATION
     const FLOAT_t M2 = (FLOAT_t)DDC_CIC2_DECIMATION;
     const FLOAT_t D2 = (FLOAT_t)DDC_CIC2_DELAY;
     const FLOAT_t N2 = (FLOAT_t)DDC_CIC2_STAGES;
+#endif
 
     // Step 1: Synthesize target frequency response with inverse CIC compensation
     for (uint32_t i = 0; i < fft_size; i++)
@@ -1117,7 +1119,7 @@ void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const pre
                     h_cic1 = POWF(sin_out / (M1 * sin_in), N1);
                 }
             }
-
+#ifdef DDC_CIC2_DECIMATION
             // Calculate frequency response of the 2nd CIC stage (1/20)
             FLOAT_t arc2 = M_PI * f * D2 / fs;
             FLOAT_t arc2_in = M_PI * f * M2 * D2 / fs;
@@ -1130,6 +1132,9 @@ void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const pre
                     h_cic2 = POWF(sin_out / (M2 * sin_in), N2);
                 }
             }
+#else
+            FLOAT_t h_cic2 = 1;
+#endif
 
             FLOAT_t h_total_dec = h_cic1 * h_cic2;
 
