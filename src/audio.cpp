@@ -1096,38 +1096,38 @@ void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const pre
 
         if (f <= f_stop)
         {
-            FLOAT_t amplitude = 0.0f;
+            FLOAT_t amplitude = 0;
 
             // Calculate ideal linear roll-off within the transition zone
             if (f <= f_cutoff) {
-                amplitude = 1.0f;
+                amplitude = 1;
             } else {
-                amplitude = 1.0f - ((f - f_cutoff) / w_trans);
+                amplitude = 1 - ((f - f_cutoff) / w_trans);
             }
 
             // Calculate frequency response of the 1st CIC stage (1/128)
             FLOAT_t arc1 = M_PI * f * D1 / fs;
             FLOAT_t arc1_in = M_PI * f * M1 * D1 / fs;
-            FLOAT_t h_cic1 = 1.0f;
+            FLOAT_t h_cic1 = 1;
 
             if (arc1 > 1e-7f) {
                 FLOAT_t sin_out = SINF(arc1);
                 FLOAT_t sin_in  = SINF(arc1_in / M1);
                 if (FABSF(sin_in) > 1e-7f) {
-                    h_cic1 = powf(sin_out / (M1 * sin_in), N1);
+                    h_cic1 = POWF(sin_out / (M1 * sin_in), N1);
                 }
             }
 
             // Calculate frequency response of the 2nd CIC stage (1/20)
             FLOAT_t arc2 = M_PI * f * D2 / fs;
             FLOAT_t arc2_in = M_PI * f * M2 * D2 / fs;
-            FLOAT_t h_cic2 = 1.0f;
+            FLOAT_t h_cic2 = 1;
 
             if (arc2 > 1e-7f) {
                 FLOAT_t sin_out = SINF(arc2);
                 FLOAT_t sin_in  = SINF(arc2_in / M2);
                 if (FABSF(sin_in) > 1e-7f) {
-                    h_cic2 = powf(sin_out / (M2 * sin_in), N2);
+                    h_cic2 = POWF(sin_out / (M2 * sin_in), N2);
                 }
             }
 
@@ -1140,13 +1140,13 @@ void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const pre
 
             // Apply inverse CIC droop compensation to the target passband amplitude
             fft_buffer[2 * i]     = amplitude / h_total_dec; // Real
-            fft_buffer[2 * i + 1] = 0.0f;                    // Imag
+            fft_buffer[2 * i + 1] = 0;                    // Imag
         }
         else
         {
             // Stopband area
-            fft_buffer[2 * i]     = 0.0f;
-            fft_buffer[2 * i + 1] = 0.0f;
+            fft_buffer[2 * i]     = 0;
+            fft_buffer[2 * i + 1] = 0;
         }
     }
 
@@ -1156,7 +1156,7 @@ void calculate_variable_slope_ddc_lpf(FLOAT_t *const h, const FLOAT_t *const pre
 
     // Step 3: Shift time origin to center the impulse response and apply preformed_window
     const uint32_t half_taps = num_taps / 2;
-    FLOAT_t window_sum = 0.0f;
+    FLOAT_t window_sum = 0;
 
     for (int n = 0; n < num_taps; n++)
     {
@@ -1230,7 +1230,7 @@ void calculate_duc_lpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, 
                 FLOAT_t sin_out = SINF(arc);
                 FLOAT_t sin_in  = SINF(arc_in / L);
                 if (FABSF(sin_in) > 1e-7f) {
-                    h_cic = powf(sin_out / (L * sin_in), N);
+                    h_cic = POWF(sin_out / (L * sin_in), N);
                 }
             }
 
@@ -1241,13 +1241,13 @@ void calculate_duc_lpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, 
 
             // Pre-emphasis: invert the CIC roll-off directly inside the LPF passband
             fft_buffer[2 * i]     = 1.0f / h_cic; // Real
-            fft_buffer[2 * i + 1] = 0.0f;         // Imag
+            fft_buffer[2 * i + 1] = 0;         // Imag
         }
         else
         {
             // LPF Stopband (everything above f_cutoff)
-            fft_buffer[2 * i]     = 0.0f;
-            fft_buffer[2 * i + 1] = 0.0f;
+            fft_buffer[2 * i]     = 0;
+            fft_buffer[2 * i + 1] = 0;
         }
     }
 
@@ -1256,7 +1256,7 @@ void calculate_duc_lpf(FLOAT_t *const h, const FLOAT_t *const preformed_window, 
 
     // Step 3: Shift time origin to center the impulse response and apply preformed_window
     const uint32_t half_taps = num_taps / 2;
-    FLOAT_t window_sum = 0.0f;
+    FLOAT_t window_sum = 0;
 
     for (int n = 0; n < num_taps; n++)
     {
@@ -2932,8 +2932,8 @@ void agc_state_init(agcstate_t * __restrict st, const agclevel_t * __restrict ag
 
 // TODO: eliminate LOGF
 // are equal:
-//gain = valelout / adjsig * powf(10.0f, log10f(adjsig / valelin) * agcfactor);
-//gain = valelout / adjsig * powf(adjsig / valelin, agcfactor);
+//gain = valelout / adjsig * POWF(10.0f, log10f(adjsig / valelin) * agcfactor);
+//gain = valelout / adjsig * POWF(adjsig / valelin, agcfactor);
 
 // Для работы функции agc_perform требуется siglevel, больше значения которого
 // соответствуют большим уровням сигнала. может быть отрицательным
