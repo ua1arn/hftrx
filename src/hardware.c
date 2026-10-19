@@ -401,19 +401,15 @@ void tickers_initialize(void)
 	IRQLSPINLOCK_INITIALIZE(& adcdoneslock);
 	InitializeListHead(& adcdones);
 
-#if WITHCPUADCHW
-
-	static ticker_t adcticker;
-	ticker_initialize(& adcticker, KBD_TICKS_PERIOD, adcstart_event, NULL);
-	ticker_add(& adcticker);
-
-#else /* WITHCPUADCHW */
-
-	static ticker_t adcticker;
-	ticker_initialize(& adcticker, KBD_TICKS_PERIOD, adcdones_event, NULL);
-	ticker_add(& adcticker);
-
-#endif /* WITHCPUADCHW */
+	{
+		static ticker_t adcticker;
+	#if WITHCPUADCHW
+		ticker_initialize(& adcticker, KBD_TICKS_PERIOD, adcstart_event, NULL);
+	#else /* WITHCPUADCHW */
+		ticker_initialize(& adcticker, KBD_TICKS_PERIOD, adcdones_event, NULL);
+	#endif /* WITHCPUADCHW */
+		ticker_add(& adcticker);
+	}
 }
 
 void tickers_deinitialize(void)
