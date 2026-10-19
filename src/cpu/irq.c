@@ -3847,17 +3847,18 @@ _unused
 #else
 	cfg &= ~ 0x02u;	/* Set level sensitive configuration */
 #endif /* CPUSTYLE_XC7Z */
-	//cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
-	// WITHRTOS
-	cfg &= ~ 0x01u;	/* N-N model */
+	if (0)
+	{
+		cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
+	}
+	else
+	{
+		cfg &= ~ 0x01u;	/* N-N model - old version */
+	}
+
 #if ! CPUSTYLE_R7S721
 	/* do not change edge/level settings of specified interrupts - leave initialized at start-up */
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
-	if (int_id >= 32)
-	{
-//		PRINTF("cfg[%u]: set=%02X get=%02X\n", (unsigned) int_id, (unsigned) cfg, (unsigned) (0x03 & GIC_GetConfiguration(int_id)));
-//		ASSERT((0x03 & GIC_GetConfiguration(int_id)) == cfg);
-	}
 #endif /* ! CPUSTYLE_R7S721 */
 	GIC_SetGroup(int_id, 0);	// Group 1: Non-secure group - see IGRPMODR
 
