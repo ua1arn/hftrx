@@ -805,10 +805,10 @@ extern "C" {
 	{
 		PRIOv_IPC = 0,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
 		PRIOv_IPC_ONLY,
-		PRIOv_OVRT,
-		PRIOv_RT,
-		PRIOv_SYS,		/* таймеры, USB */
-		PRIOv_BRD,		/* параметры фильтров, board_set_xxx */
+		PRIOv_OVERREALTIME,
+		PRIOv_REALTIME,
+		PRIOv_SYSTEM,		/* таймеры, USB */
+		PRIOv_BOARD,		/* параметры фильтров, board_set_xxx */
 		PRIOv_USER,
 		PRIOv_IDLE,
 		//
@@ -835,19 +835,19 @@ extern "C" {
 	// value for GIC_SetInterfacePriorityMask
 	#define IRQL_IPC 			(GICI_ENCODE_IRQL(PRIOv_IPC))
 	#define IRQL_IPC_ONLY 		(GICI_ENCODE_IRQL(PRIOv_IPC_ONLY))
-	#define IRQL_OVERREALTIME 	(GICI_ENCODE_IRQL(PRIOv_OVRT))
-	#define IRQL_REALTIME	 	(GICI_ENCODE_IRQL(PRIOv_RT))
-	#define IRQL_SYSTEM 		(GICI_ENCODE_IRQL(PRIOv_SYS))
-	#define IRQL_BOARD			(GICI_ENCODE_IRQL(PRIOv_BRD))
+	#define IRQL_OVERREALTIME 	(GICI_ENCODE_IRQL(PRIOv_OVERREALTIME))
+	#define IRQL_REALTIME	 	(GICI_ENCODE_IRQL(PRIOv_REALTIME))
+	#define IRQL_SYSTEM 		(GICI_ENCODE_IRQL(PRIOv_SYSTEM))
+	#define IRQL_BOARD			(GICI_ENCODE_IRQL(PRIOv_BOARD))
 	#define IRQL_USER 			(GICI_ENCODE_IRQL(PRIOv_USER))
 	#define IRQL_IDLE 			(GICI_ENCODE_IRQL(PRIOv_IDLE))
 
 	// A lower priority value indicating a higher priority
 	// Value for GICD
 	#define ARM_IPC_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_IPC))
-	#define ARM_OVERREALTIME_PRIORITY	(GICD_ENCODE_PRIORITY(PRIOv_OVRT))	/* валкодер и телеграф */
-	#define ARM_REALTIME_PRIORITY		(GICD_ENCODE_PRIORITY(PRIOv_RT))	/* звук */
-	#define ARM_SYSTEM_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_SYS))	/* таймеры, USB */
+	#define ARM_OVERREALTIME_PRIORITY	(GICD_ENCODE_PRIORITY(PRIOv_OVERREALTIME))	/* валкодер и телеграф */
+	#define ARM_REALTIME_PRIORITY		(GICD_ENCODE_PRIORITY(PRIOv_REALTIME))	/* звук */
+	#define ARM_SYSTEM_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_SYSTEM))	/* таймеры, USB */
 
 	#define BOARD_SGI_IRQ 	SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
 
@@ -940,6 +940,7 @@ void __NO_RETURN task_scheduler_othercores(void);	// завершение ини
 void tasks_print(void);
 
 void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
+void * thread_create_board(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
 void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
 void * thread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
 void thread_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания

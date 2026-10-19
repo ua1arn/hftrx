@@ -2131,6 +2131,18 @@ void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, uns
 	return thread;
 }
 
+void * thread_create_board(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+{
+	ASSERT(threads_not_started == 0);
+
+	thread_item_t * const thread = (thread_item_t *) rambase;
+	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
+	ramsize -= sizeof (thread_item_t);
+	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_BOARD, name);
+
+	return thread;
+}
+
 void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
 {
 	ASSERT(threads_not_started == 0);
@@ -2138,7 +2150,7 @@ void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, u
 	thread_item_t * const thread = (thread_item_t *) rambase;
 	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
 	ramsize -= sizeof (thread_item_t);
-	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_SYS, name);
+	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_SYSTEM, name);
 
 	return thread;
 }
@@ -2150,7 +2162,7 @@ void * Xthread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase
 	thread_item_t * const thread = (thread_item_t *) rambase;
 	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
 	ramsize -= sizeof (thread_item_t);
-	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_RT, name);
+	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_REALTIME, name);
 
 	return thread;
 }
@@ -2753,6 +2765,11 @@ void __NO_RETURN task_scheduler_othercores(void)
 }
 
 void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+{
+	return NULL;
+}
+
+void * thread_create_board(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
 {
 	return NULL;
 }
