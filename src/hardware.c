@@ -2586,7 +2586,10 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	}
 #endif /* CPUSTYLE_VM14 */
 
-	task_scheduler_othercores();	// завершение инициализации - уход в вечный цикл
+	for (;;)
+	{
+		board_dpc_processing();		// обработка отложенного вызова user mode функций для данного ядра
+	}
 }
 
 void arm_hardware_core_poweron(unsigned core)

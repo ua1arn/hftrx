@@ -139,7 +139,7 @@ processmessages(
 
 	watchdog_ping();
 #if ! WITHRTOS
-	board_dpc_processing();
+	board_dpc_processing();		// обработка отложенного вызова user mode функций для данного ядра
 #endif /* ! WITHRTOS */
 
 #if WITHLVGL && WITHLVGLINDEV

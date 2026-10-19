@@ -1717,7 +1717,7 @@ void IRQ15_Handler(void)
 #endif /* CPUSTYLE_RISCV */
 
 typedef struct thread_item_tag thread_item_t;
-static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1);
+static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1);
 
 
 #if defined(__aarch64__)
@@ -1782,7 +1782,7 @@ static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
-	task_handler(thread, (unsigned) f->x0, (void *) f->x1);
+	task_syscall_handler(thread, (unsigned) f->x0, (void *) f->x1);
 }
 
 // user-mode entry
@@ -1857,7 +1857,7 @@ static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
-	task_handler(thread, (unsigned) f->r0, (void *) f->r1);
+	task_syscall_handler(thread, (unsigned) f->r0, (void *) f->r1);
 }
 
 // user-mode entry
@@ -1900,7 +1900,7 @@ static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
-	task_handler(thread, (unsigned) f->r0, (void *) f->r1);
+	task_syscall_handler(thread, (unsigned) f->r0, (void *) f->r1);
 }
 
 // user-mode entry
@@ -1952,7 +1952,7 @@ static void context_set_ec(void * __restrict cpuframe, unsigned ec)
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
-	task_handler(thread, (unsigned) f->x3, (void *) f->x4);
+	task_syscall_handler(thread, (unsigned) f->x3, (void *) f->x4);
 }
 
 // user-mode entry
@@ -2009,13 +2009,12 @@ typedef struct thread_item_tag
 	void * guard;	// debug signature
 } thread_item_t;
 
-static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
-static thread_item_t * startedtask [HARDWARE_NCORES];
 
 static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
-//static LIST_ENTRY threads_list [UPRIO_count];
-static LIST_ENTRY threads_listW;
-static LIST_ENTRY threads_listR [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
+
+static thread_item_t * startedtask [HARDWARE_NCORES];	// последнее запущенное на core
+static LIST_ENTRY threads_listW;	// threads im wait state
+static LIST_ENTRY threads_listR [PRIOv_count];	// threads in ready state
 
 void thread_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 
@@ -2324,16 +2323,6 @@ void tasks_print(void)
 	dbg_puts(buff);
 }
 
-// завершение инициализации - уход в вечный цикл
-void __NO_RETURN task_scheduler_othercores(void)
-{
-	ASSERT(threads_not_started == 0);
-	for (;;)
-	{
-		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
-	}
-}
-
 static int ready_timeout(uint_fast32_t tn, hwtimcountfast_t t0, hwtimcountfast_t td)
 {
 	if (td == cpu_getdebugticksmask())
@@ -2503,7 +2492,8 @@ static const check_ready_t readytag_waitlist =
 	.name = "waitlist"
 };
 
-static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
+// thread может быть включена в список ожидающих
+static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
 {
 	switch (arg0)
 	{
@@ -2558,8 +2548,9 @@ static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * 
 
 static thread_item_t * refreshactivetask(exception_frame_t * oldframe, unsigned core)
 {
-	thread_item_t * * const pt = & startedtask [core];
+	thread_item_t * * const pt = & startedtask [core];	// не NULL - значит запускали из task_scheduler0
 	if (* pt == NULL)  {
+		static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
 		// ещё не имеет своей структуры - создан в момент start-up системы.
 		thread_item_t * const thread = & base_threads [core];
 		thread->guard = thread;
@@ -2578,31 +2569,31 @@ static thread_item_t * refreshactivetask(exception_frame_t * oldframe, unsigned 
 
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 static void *
-task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
+task_scheduler0(exception_frame_t * oldframe, unsigned syscallflag, unsigned code)
 {
 	const unsigned core = arm_hardware_cpuid();
 	IRQL_t irql;
 	if (threads_not_started)
 		return oldframe;
-	ASSERT(threads_not_started == 0);
 	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC);
+	ASSERT(threads_not_started == 0);
 	thread_item_t * const tp = refreshactivetask(oldframe, core);	// also set cpuframe
 	ASSERT(tp);
 	tp->prio = GICI_DECODE_IRQL(irql);
 
-	if (flag)  {
+	if (syscallflag)  {
 		// обработка системныз вызовов
 		task_svc(tp, code, oldframe);	// thread переходит в список ждущих или готовых - или исчезает
 	} else {
 		task_insertready(tp);		// раз сэда попали - значит точно не ждали ничего
 	}
 
-	task_resched(timestamp_getticks());	// перепланировка
+	// перепланировка
+	task_resched(timestamp_getticks());
 
 	// Запуск
 	startedtask [core] = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
-	irql = GICI_ENCODE_IRQL(startedtask [core]->prio);
-	IRQLSPIN_UNLOCK(& threadslock, irql);
+	IRQLSPIN_UNLOCK(& threadslock, GICI_ENCODE_IRQL(startedtask [core]->prio));
 	return startedtask [core]->cpuframe;
 }
 
@@ -2760,16 +2751,6 @@ void task_scheduler_initialize(void)
 
 void task_scheduler_start(void) {}
 
-// завершение инициализации - уход в вечный цикл
-void __NO_RETURN task_scheduler_othercores(void)
-{
-	for (;;)
-	{
-		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
-		__DMB();
-	}
-}
-
 void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
 {
 	return NULL;
@@ -2790,7 +2771,7 @@ void * thread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase,
 	return NULL;
 }
 
-static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
+static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
 {
 }
 
@@ -4264,7 +4245,6 @@ void board_dpc_processing(void)
 	ASSERT(coreid < HARDWARE_NCORES);
 	ASSERT(dpc == dpc->tag1);
 	ASSERT(dpc == dpc->tag2);
-	thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	// Выполнение периодического вызова user-mode функций по списку
 	//if (coreid == 1) dbg_putchar('+');
 	{
@@ -4329,11 +4309,12 @@ void board_dpc_processing(void)
 	//__WFI();
 #endif /* WITHSMPSYSTEM */
 	//if (coreid == 1) dbg_putchar('-');
+	thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 }
 
 void testsloopprocessing(void)
 {
-	board_dpc_processing();		// обработка отложенного вызова user mode функций
+	board_dpc_processing();		// обработка отложенного вызова user mode функций для данного ядра
 	watchdog_ping();
 }
 
