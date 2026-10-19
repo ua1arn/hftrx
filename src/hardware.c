@@ -367,7 +367,7 @@ static void tickers_event(void)
 
 		if ((timestamp_getmask() & (tn - p->t0)) >= p->td)
 		{
-			p->t0 = tn;
+			p->t0 += p->td;
 			if (p->cb != NULL)
 				(p->cb)(p->ctx);
 			switch (p->mode)
