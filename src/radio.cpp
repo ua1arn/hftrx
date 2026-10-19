@@ -140,7 +140,7 @@ processmessages(
 	watchdog_ping();
 #if ! WITHRTOS
 	board_dpc_processing();
-#endif
+#endif /* ! WITHRTOS */
 
 #if WITHLVGL && WITHLVGLINDEV
 
@@ -13002,7 +13002,7 @@ static int audioproc_thread(void * ctx)
 			releasespeexbuffer(p);
 		}
 	#else
-		thread_yield();
+		local_delay_ms(LOCAL_WAITINFINITY);
 	#endif /* ! WITHSKIPUSERMODE */
 	}
 	return 0;
@@ -21381,7 +21381,7 @@ hamradio_main_step(void)
 		if (hamradio_tune_step() == STTE_OK)
 			sthrl = STHRL_RXTX;
 		break;
-#endif
+#endif /* ! WITHRTOS */
 
 	case STHRL_RXTX_FQCHANGED:
 			/* валкодер перестал вращаться - если было изменение частоты - сохраняем конфигурацию */
@@ -21408,10 +21408,10 @@ hamradio_main_step(void)
 		{
 #if WITHRTOS
 			tuner_control = 1;
-#else
+#else /* WITHRTOS */
 			sthrl = STHRL_TUNE;
 			break;
-#endif
+#endif /* WITHRTOS */
 		}
 	#endif /* WITHAUTOTUNER */
 
@@ -23445,7 +23445,7 @@ application_initialize(void)
 		VERIFY(thread_create_user(tuner_thread, NULL, procthread, sizeof procthread, TASK_AFFINITY_ALL, "tuner_thread"));
 
 	}
-#endif
+#endif /* WITHRTOS */
 }
 
 
@@ -23939,11 +23939,11 @@ void hamradio_main_start(void)
 		dpcobj_initialize(& dpcobj, mainfn, NULL, "main_loop");
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 	}
-#else
+#else /* WITHRTOS */
 	for (;;)
 	{
 		mainfn(NULL);
 	}
-#endif
+#endif /* WITHRTOS */
 }
 
