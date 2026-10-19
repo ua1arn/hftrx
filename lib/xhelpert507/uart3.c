@@ -931,13 +931,13 @@ void user_uart3_initialize(void)
 	hardware_uart3_enablerx(1);
 	hardware_uart3_enabletx(0);
 
-	ticker_initialize(& uart3_pkg_ticker, NTICKS(UART_TICKS_PERIOD), uart3_timer_pkg_event, NULL);
+	ticker_initialize(& uart3_pkg_ticker, UART_TICKS_PERIOD, uart3_timer_pkg_event, NULL);
 	ticker_add(& uart3_pkg_ticker);
 
 	static ticker_t uart3_ticker;
 	static dpcobj_t uart3_dpc_timed;
 	dpcobj_initialize(& uart3_dpc_timed, uart3_dpc_spool, NULL, "uart3_dpc_timed");
-	ticker_initialize_user(& uart3_ticker, NTICKS(PERIODSPOOL), & uart3_dpc_timed);
+	ticker_initialize_user(& uart3_ticker, PERIODSPOOL, & uart3_dpc_timed);
 	ticker_add(& uart3_ticker);
 
 	dpcobj_initialize(& uart3_dpc_entry, uart3_spool, NULL, "uart3_dpc_entry");

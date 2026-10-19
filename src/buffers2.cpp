@@ -4212,7 +4212,7 @@ void buffers_initialize(void)
 
 #if WITHBUFFERSDEBUG
 	static ticker_t buffticker;
-	ticker_initialize(& buffticker, NTICKS(DBG_PERIOD), buffers_spool, NULL);
+	ticker_initialize(& buffticker, DBG_PERIOD, buffers_spool, NULL);
 	ticker_add(& buffticker);
 #endif /* WITHBUFFERSDEBUG */
 

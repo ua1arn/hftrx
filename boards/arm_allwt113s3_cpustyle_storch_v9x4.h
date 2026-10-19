@@ -276,7 +276,7 @@
 		static ticker_t th; \
 		arm_hardware_pioe_altfn2m(TARGET_ENCODER2_BITS, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, 0); \
-		ticker_initialize(& th, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
+		ticker_initialize(& th, ENC_TICKS_PERIOD, spool_encinterrupts, & encoder2); \
 		ticker_add(& th); \
 		einthandler_initialize(& eh, TARGET_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \

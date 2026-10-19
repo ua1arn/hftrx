@@ -304,7 +304,7 @@
 				einthandler_initialize(& h2, EENCODER2_BITS, spool_encinterrupts_ccw, & encoder2); \
 				arm_hardware_piog_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 				/* ticker for spool */ \
-				ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts_ccw, & encoder2); \
+				ticker_initialize(& th2, ENC_TICKS_PERIOD, spool_encinterrupts_ccw, & encoder2); \
 			} while (0)
 	#else /* ENCODER2_REVERSE */
 		#define ENCODER2_INITIALIZE() \
@@ -317,7 +317,7 @@
 				einthandler_initialize(& h2, EENCODER2_BITS, spool_encinterrupts, & encoder2); \
 				arm_hardware_piog_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & h2); \
 				/* ticker for spool */ \
-				ticker_initialize(& th2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
+				ticker_initialize(& th2, ENC_TICKS_PERIOD, spool_encinterrupts, & encoder2); \
 			} while (0)
 	#endif /* ENCODER2_REVERSE */
 

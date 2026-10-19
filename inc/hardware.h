@@ -378,7 +378,7 @@ extern "C" {
 #define MASK2LSB(mask)  ((mask) & (0 - (mask)))
 
 /* макрооределение для расчёта количества "тиков" для выдержки величин задержек. */
-#define NTICKS(t_mS) ((uint_fast16_t) (((uint_fast32_t) (t_mS) * TICKS_FREQUENCY + 500) / 1000))
+//#define NTICKS(t_mS) ((uint_fast16_t) (((uint_fast32_t) (t_mS) * TICKS_FREQUENCY + 500) / 1000))
 
 #define OFFSETOF(s, m) ((size_t) (uintptr_t) & (((s *) (uintptr_t) 0) -> m))
 
@@ -687,46 +687,6 @@ void sysinit_mmu_tables(void);
 void sysinit_ttbr_initialize(void);	/* на каждом процессоре */
 
 void r7s721_sdhi0_dma_handler(void);
-
-#include "mslist.h"
-
-enum ticker_mode
-{
-	TICKERMD_PERIODIC,
-	TICKERMD_MANUAL
-};
-typedef struct ticker_tag
-{
-	VLIST_ENTRY item;
-	unsigned period;
-	//unsigned fired;
-	unsigned ticks;		// текущее количество тиков
-	void (* cb)(void *);
-	void * ctx;
-	enum ticker_mode mode;
-	void * guard;
-} ticker_t;
-
-struct dpcobj_tag;
-void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
-void ticker_initialize_user(ticker_t * p, unsigned nticks, struct dpcobj_tag * dpc);
-void ticker_initialize_user_display(ticker_t * p, unsigned nticks, struct dpcobj_tag * dpc);	// DPC будет вызываться на ядре board_dpc_display_coreid()
-void ticker_initialize_ext(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx, enum ticker_mode mode);
-void ticker_setperiod(ticker_t * p, unsigned nticks);	/* изменение периода запущенного тикера */
-void ticker_start(ticker_t * p);	/* начало интервала в случае TICKERMD_MANUAL */
-void ticker_add(ticker_t * p);
-void ticker_remove(ticker_t * p);
-
-typedef struct adcdone_tag
-{
-	VLIST_ENTRY item;
-	void (* cb)(void *);
-	void * ctx;
-} adcdone_t;
-
-void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx);
-void adcdone_add(adcdone_t * p);
-void adcdone_del(adcdone_t * p);
 
 void bootloader_deffereddetach(void * arg);
 int bootloader_withusb(void);

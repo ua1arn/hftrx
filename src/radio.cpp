@@ -138,9 +138,9 @@ processmessages(
 #endif /* ! WITHISBOOTLOADER */
 
 	watchdog_ping();
-#if 1//! WITHRTOS
+#if ! WITHRTOS
 	board_dpc_processing();
-#endif
+#endif /* ! WITHRTOS */
 
 #if WITHLVGL && WITHLVGLINDEV
 
@@ -13002,7 +13002,7 @@ static int audioproc_thread(void * ctx)
 			releasespeexbuffer(p);
 		}
 	#else
-		thread_yield();
+		local_delay_ms(LOCAL_WAITINFINITY);
 	#endif /* ! WITHSKIPUSERMODE */
 	}
 	return 0;
@@ -14001,7 +14001,7 @@ updateboard_noui(
 		board_set_tuner_bypass(1);
 	#endif /* WITHAUTOTUNER */
 
-	ticker_setperiod(& displatchticker, NTICKS(calcdivround2(1000, glatchfps)));	// частота обновления изображения на экране
+	ticker_setperiod(& displatchticker, calcdivround2(1000, glatchfps));	// частота обновления изображения на экране
 	board_set_displayfps(glatchfps);
 		/* просто настройки тракта и не относящиеся к приёму-пеердаче. */
 	#if WITHCAT
@@ -20576,15 +20576,15 @@ static int blinktest2(void * ctx)
 static uint_fast8_t
 keyboard_test(void)
 {
-	uint_fast8_t n;
-
-	// 1 second total
-	for (n = 0; n < 100; ++ n)
-	{
+	const hwtimcountfast_t t0 = get_td_delta(0);
+	const hwtimcountfast_t dt = get_td_ms(1000);	// 1 second total
+	do {
 		if (kbd_is_tready() != 0)
 			return 1;
-		local_delay_ms(10);
-	}
+
+	} while (get_td_delta(t0) < dt);
+
+
 	return 0;
 }
 
@@ -20986,10 +20986,31 @@ static STTE_t hamradio_tune_step(void)
 #endif /* WITHAUTOTUNER */
 }
 
+#if WITHRTOS
+
+static volatile uint32_t tuner_control;
+
+static int tuner_thread(void * ctx)
+{
+	(void) ctx;	// unused parameter
+	for (;;)
+	{
+		if (local_wait32mask(& tuner_control, 0x01, 0x01, LOCAL_WAITINFINITY))
+			continue;
+		while (hamradio_tune_step() == STTE_BUSY)
+			;
+		tuner_control = 0;
+	}
+}
+#endif /* WITHRTOS */
+
 #if WITHDEBUG
 
 
-__WEAK void modem_spool(void * ctx) { }
+__WEAK void modem_spool(void * ctx) {
+	(void) ctx;	// unused parameter
+
+}
 __WEAK void modem_send(uint_fast8_t c) {}
 
 static void keyspoolprocess(void * ctx)
@@ -21355,10 +21376,12 @@ hamradio_main_step(void)
 //			sthrl = STHRL_RXTX;
 //		break;
 
+#if ! WITHRTOS
 	case STHRL_TUNE:
 		if (hamradio_tune_step() == STTE_OK)
 			sthrl = STHRL_RXTX;
 		break;
+#endif /* ! WITHRTOS */
 
 	case STHRL_RXTX_FQCHANGED:
 			/* валкодер перестал вращаться - если было изменение частоты - сохраняем конфигурацию */
@@ -21383,8 +21406,12 @@ hamradio_main_step(void)
 	#if WITHAUTOTUNER
 		if (txreq_getreqautotune(& txreqst0) != 0 && gtx != 0)
 		{
+#if WITHRTOS
+			tuner_control = 1;
+#else /* WITHRTOS */
 			sthrl = STHRL_TUNE;
 			break;
+#endif /* WITHRTOS */
 		}
 	#endif /* WITHAUTOTUNER */
 
@@ -22698,8 +22725,9 @@ struct band
 };
 
 static void
-hamradio_mainloop_beacon(void)
+hamradio_mainloop_beacon(void * ctx)
 {
+	(void) ctx;	// unused parameter
 	uint8_t ifreq;
 	static const struct band ffs [] =
 	{
@@ -22850,6 +22878,7 @@ board_set_ctcssrx(
 
 void ctcss_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
+	(void) ctx;	// unused parameter
 	static FLOAT_t ctcss_buffer [goe_ctssLENGTH * CTCSS_DECIM];	// входные данные для обработки
 	static unsigned incount;
 	unsigned i;
@@ -23007,6 +23036,7 @@ static goeSTATE_t goeSTATEs [DTMF_NFREQUES];
 
 static void dtmf_out(void * ctx, char c)
 {
+	(void) ctx;	// unused parameter
 	PRINTF("%c", c);
 }
 
@@ -23019,6 +23049,7 @@ static FLOAT_t goertz_dtmf_win [goe_dtmfLENGTH]; // Window
 
 void dtmf_processing(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
+	(void) ctx;	// unused parameter
 	static unsigned n;
 	unsigned i;
 
@@ -23287,7 +23318,7 @@ application_initialize(void)
 	const unsigned thalf = 500;	// Toggle every 500 ms
 #endif /* WITHISBOOTLOADER */
 		static ticker_t ticker_blinks;
-		ticker_initialize(& ticker_blinks, NTICKS(thalf), blinktest, NULL);
+		ticker_initialize(& ticker_blinks, thalf, blinktest, NULL);
 		ticker_add(& ticker_blinks);
 	}
 #endif /* defined (BOARD_BLINK_SETSTATE) */
@@ -23408,6 +23439,13 @@ application_initialize(void)
 	bt_initialize();
 #endif /* WITHUSEUSBBT */
 
+#if WITHRTOS
+	{
+		static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
+		VERIFY(thread_create_user(tuner_thread, NULL, procthread, sizeof procthread, TASK_AFFINITY_ALL, "tuner_thread"));
+
+	}
+#endif /* WITHRTOS */
 }
 
 
@@ -23774,7 +23812,7 @@ void hamradio_main_start(void)
 	{
 		static ticker_t ticker;
 
-		ticker_initialize(& ticker, NTICKS(UI_TICKS_PERIOD), refreshticker_cb, NULL);	// вызывается с частотой 1/UI_TICKS_PERIOD (например, 20 Гц) с запрещенными прерываниями.
+		ticker_initialize(& ticker, UI_TICKS_PERIOD, refreshticker_cb, NULL);	// вызывается с частотой 1/UI_TICKS_PERIOD (например, 20 Гц) с запрещенными прерываниями.
 		ticker_add(& ticker);
 	}
 
@@ -23783,7 +23821,7 @@ void hamradio_main_start(void)
 		static dpcobj_t dpcobj;	// 1s
 
 		dpcobj_initialize(& dpcobj, dpc_1s_timer_fn, NULL, "dpc_1s_timer_fn");
-		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
+		ticker_initialize_user(& ticker, 1000, & dpcobj);
 		ticker_add(& ticker);
 	}
 
@@ -23792,7 +23830,7 @@ void hamradio_main_start(void)
 
 		IRQLSPINLOCK_INITIALIZE(& boardupdatelock);
 		dpcobj_initialize(& dpcobj, dpc_displatch_timer_fn, NULL, "dpc_displatch_timer_fn");
-		ticker_initialize_user_display(& displatchticker, NTICKS(calcdivround2(1000, glatchfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_initialize_user_display(& displatchticker, calcdivround2(1000, glatchfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
 		ticker_add(& displatchticker);
 	}
 	{
@@ -23801,7 +23839,7 @@ void hamradio_main_start(void)
 
 		dpcobj_initialize(& dpcobj, dpc_displatch_refresh_fn, NULL, "dpc_displatch_refresh_fn");
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-		ticker_initialize_user_display(& refreshticker, NTICKS(calcdivround2(1000, gdisplayfreqsfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_initialize_user_display(& refreshticker, calcdivround2(1000, gdisplayfreqsfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
 		ticker_add(& refreshticker);
 	}
 
@@ -23810,7 +23848,7 @@ void hamradio_main_start(void)
 		static dpcobj_t dpcobj;	// 0.1s
 
 		dpcobj_initialize(& dpcobj, dpc_0p1_s_timer_fn, NULL, "0p1_s");
-		ticker_initialize_user(& ticker, NTICKS(100), & dpcobj);
+		ticker_initialize_user(& ticker, 100, & dpcobj);
 		ticker_add(& ticker);
 	}
 
@@ -23894,18 +23932,18 @@ void hamradio_main_start(void)
 	void (* const mainfn)(void * ctx) = application_mainloop;
 #endif
 
-#if 0//WITHRTOS
+#if WITHRTOS
 	{
 		static dpcobj_t dpcobj;	// main loop
 
 		dpcobj_initialize(& dpcobj, mainfn, NULL, "main_loop");
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
 	}
-#else
+#else /* WITHRTOS */
 	for (;;)
 	{
 		mainfn(NULL);
 	}
-#endif
+#endif /* WITHRTOS */
 }
 

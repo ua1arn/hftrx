@@ -11,6 +11,7 @@
 #include "encoder.h"
 
 #if WITHENCODER
+#include "clocks.h"
 
 #include "keyboard.h"	/* функция опроса электронного ключа */
 //#include "display.h"	/* test */
@@ -458,16 +459,16 @@ void encoders_initialize(void)
 	encoder_initialize(& encoder_kbd, hardware_get_encoderummy_bits);
 
 #if WITHENCODER
-	ticker_initialize(& encticker, NTICKS(ENC_TICKS_PERIOD), encspeed_spool, & encoder1);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& encticker, ENC_TICKS_PERIOD, encspeed_spool, & encoder1);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker);
 #endif /* WITHENCODER */
 #if WITHENCODER_SUB
-	ticker_initialize(& encticker_sub, NTICKS(ENC_TICKS_PERIOD), encspeed_spool, & encoder_sub);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& encticker_sub, ENC_TICKS_PERIOD, encspeed_spool, & encoder_sub);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker_sub);
 #endif /* WITHENCODER */
 #if WITHENCODER2 && ! ENCODER2_NOSPOOL
 	// второй енкодер всегда по опросу (если это не назначено при инициализации)
-	ticker_initialize(& encticker2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupt2_local, NULL);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& encticker2, ENC_TICKS_PERIOD, spool_encinterrupt2_local, NULL);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker2);
 #endif /* WITHENCODER2 && ! ENCODER2_NOSPOOL */
 }

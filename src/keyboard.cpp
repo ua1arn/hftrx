@@ -9,6 +9,7 @@
 #include "buffers.h"
 #include "encoder.h"
 #include "board.h"
+#include "clocks.h"
 
 #include <atomic>
 
@@ -94,7 +95,7 @@ static void kbdst_initialize(kbdst_t * kbdp, const struct qmkey * (* get_pressed
 	adcdone_initialize(& kbdp->aevent, kbd_spool, kbdp);
 	adcdone_add(& kbdp->aevent);
 #else /* KEYBOARD_USE_ADC */
-	ticker_initialize(& kbdp->kbdticker, NTICKS(KBD_TICKS_PERIOD), kbd_spool, kbdp);
+	ticker_initialize(& kbdp->kbdticker, KBD_TICKS_PERIOD, kbd_spool, kbdp);
 	ticker_add(& kbdp->kbdticker);
 #endif /* KEYBOARD_USE_ADC */
 }

@@ -264,7 +264,7 @@ void board_tsc_initialize(void)
 #endif
 
 	static ticker_t xpt204_ticker;
-	ticker_initialize(& xpt204_ticker, NTICKS(XPT2046_SPOOLMS), xpt204_spool, NULL);
+	ticker_initialize(& xpt204_ticker, XPT2046_SPOOLMS, xpt204_spool, NULL);
 	ticker_add(& xpt204_ticker);
 
 	//BOARD_XPT2046_INT_CONNECT();

@@ -356,13 +356,13 @@ void user_uart5_initialize(void)
 	hardware_uart5_enabletx(0);
 
 	static ticker_t uart5_pkg_ticker;
-	ticker_initialize(& uart5_pkg_ticker, NTICKS(UART_TICKS_PERIOD), uart5_timer_pkg_event, NULL);
+	ticker_initialize(& uart5_pkg_ticker, UART_TICKS_PERIOD, uart5_timer_pkg_event, NULL);
 	ticker_add(& uart5_pkg_ticker);
 
 	static ticker_t uart5_ticker;
 	static dpcobj_t uart5_dpc_timed;
 	dpcobj_initialize(& uart5_dpc_timed, uart5_dpc_spool, NULL, "uart5_dpc_timed");
-	ticker_initialize_user(& uart5_ticker, NTICKS(PERIODSPOOL), & uart5_dpc_timed);
+	ticker_initialize_user(& uart5_ticker, PERIODSPOOL, & uart5_dpc_timed);
 	ticker_add(& uart5_ticker);
 
 	static dpcobj_t uart5_dpc_entry;

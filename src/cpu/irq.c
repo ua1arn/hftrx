@@ -2017,6 +2017,8 @@ static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 static LIST_ENTRY threads_listW;
 static LIST_ENTRY threads_listR [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
 
+void thread_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
+
 #if WITHRTOS
 
 
@@ -2193,6 +2195,7 @@ void task_scheduler_initialize(void) {
 
 void task_scheduler_start(void) {
 	threads_not_started = 0;
+	thread_yield();	// этот поток включается в список учтенных.
 }
 
 // проверка условий отдачи управления задаче
