@@ -891,6 +891,7 @@ extern "C" {
 		ARM_REALTIME_PRIORITY,		/* звук */
 		ARM_OVERREALTIME_PRIORITY,	/* валкодер и телеграф */
 		ARM_IPC_ONLY_PRIORITY,
+		ARM_IPC_PRIORITY,
 		//
 		PRIOv_count
 	};
@@ -901,6 +902,7 @@ extern "C" {
 	#define IRQL_REALTIME 			ARM_REALTIME_PRIORITY
 	#define IRQL_OVERREALTIME		ARM_OVERREALTIME_PRIORITY
 	#define IRQL_IPC_ONLY			ARM_IPC_ONLY_PRIORITY
+	#define IRQL_IPC				ARM_IPC_PRIORITY
 
 	#define GICD_ENCODE_PRIORITY(priov) 	(priov)	// Value for GICDistributor->IPRIORITYR[n]
 	#define GICI_ENCODE_IRQL(priov) 		(priov)	// value for GICInterface->PMR
