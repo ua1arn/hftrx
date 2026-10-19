@@ -1934,6 +1934,7 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 
 #elif __riscv && __riscv_xlen==64
 	#warning unsupported context switch on this CPU
+#define IDLETASKRAM_SIZE (16 * 1024)
 
 typedef struct exception_frame_tag
 {
@@ -1988,7 +1989,6 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 
 static volatile uint8_t threads_not_started = 1;
 
-#if WITHRTOS
 
 typedef struct check_ready_tag
 {
@@ -2008,6 +2008,16 @@ typedef struct thread_item_tag
 	const char * name;
 	void * guard;	// debug signature
 } thread_item_t;
+
+static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
+static thread_item_t * startedtask [HARDWARE_NCORES];
+
+static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
+//static LIST_ENTRY threads_list [UPRIO_count];
+static LIST_ENTRY threads_listW;
+static LIST_ENTRY threads_listR [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
+
+#if WITHRTOS
 
 
 enum
@@ -2075,14 +2085,6 @@ static int task_idle(void * ctx)
 	return 0;
 }
 
-static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
-static thread_item_t * startedtask [HARDWARE_NCORES];
-
-static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
-//static LIST_ENTRY threads_list [UPRIO_count];
-static LIST_ENTRY threads_listW;
-static LIST_ENTRY threads_listR [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
-
 
 static void task_insertready(thread_item_t * const tp) {
 	ASSERT(tp->check_ready == NULL);
@@ -2117,7 +2119,7 @@ static void thread_add(
 	//PRINTF("Added thread at prio=%d, affinity=%02X (frame=%p), stack[%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
 }
 
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, const char * name)
+void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
 {
 	ASSERT(threads_not_started == 0);
 
@@ -2125,6 +2127,30 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
 	ramsize -= sizeof (thread_item_t);
 	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_USER, name);
+
+	return thread;
+}
+
+void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+{
+	ASSERT(threads_not_started == 0);
+
+	thread_item_t * const thread = (thread_item_t *) rambase;
+	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
+	ramsize -= sizeof (thread_item_t);
+	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_SYS, name);
+
+	return thread;
+}
+
+void * thread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+{
+	ASSERT(threads_not_started == 0);
+
+	thread_item_t * const thread = (thread_item_t *) rambase;
+	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
+	ramsize -= sizeof (thread_item_t);
+	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_RT, name);
 
 	return thread;
 }
@@ -2685,6 +2711,11 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 // Set thread affinity - return old value
 static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 {
+	const unsigned core = arm_hardware_cpuid();
+	thread_item_t * const tp = refreshactivetask(oldframe, core);
+	const unsigned aff = tp->affinity;
+	tp->affinity = affinity;
+	return aff;
 
 	if (threads_not_started)
 	{
@@ -2692,11 +2723,6 @@ static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 	}
 	else
 	{
-		const unsigned core = arm_hardware_cpuid();
-		thread_item_t * const tp = refreshactivetask(oldframe, core);
-		const unsigned aff = tp->affinity;
-		tp->affinity = affinity;
-		return aff;
 
 		volatile struct taskfnparam_setaffinity v;
 		v.newaffinity = affinity;
@@ -3845,17 +3871,18 @@ _unused
 #else
 	cfg &= ~ 0x02u;	/* Set level sensitive configuration */
 #endif /* CPUSTYLE_XC7Z */
-	//cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
-	// WITHRTOS
-	cfg &= ~ 0x01u;	/* N-N model */
+	if (0)
+	{
+		cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
+	}
+	else
+	{
+		cfg &= ~ 0x01u;	/* N-N model - old version */
+	}
+
 #if ! CPUSTYLE_R7S721
 	/* do not change edge/level settings of specified interrupts - leave initialized at start-up */
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
-	if (int_id >= 32)
-	{
-//		PRINTF("cfg[%u]: set=%02X get=%02X\n", (unsigned) int_id, (unsigned) cfg, (unsigned) (0x03 & GIC_GetConfiguration(int_id)));
-//		ASSERT((0x03 & GIC_GetConfiguration(int_id)) == cfg);
-	}
 #endif /* ! CPUSTYLE_R7S721 */
 	GIC_SetGroup(int_id, 0);	// Group 1: Non-secure group - see IGRPMODR
 

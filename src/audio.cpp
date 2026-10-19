@@ -3419,7 +3419,209 @@ demodulator_SAM(
 	return audio;
 }
 
+typedef struct {
+    // Настройки и состояние компрессора
+    FLOAT_t threshold_db;
+    FLOAT_t ratio_factor;
+    FLOAT_t attack_coef;
+    FLOAT_t release_coef;
+    FLOAT_t makeup_linear;
+    FLOAT_t envelope_db;
 
+    // Настройки и состояние Noise Gate
+    FLOAT_t gate_threshold_db;  // Будет адаптироваться автоматически
+    FLOAT_t gate_range_db;
+    FLOAT_t gate_attack_coef;
+    FLOAT_t gate_release_coef;
+    FLOAT_t gate_gain_db;
+
+    // Переменные блока автокалибровки шума
+    FLOAT_t noise_floor_est_db; // Текущая оценка уровня фонового шума
+    FLOAT_t auto_cal_speed_up;  // Скорость подстройки вверх (медленно)
+    FLOAT_t auto_cal_speed_dn;  // Скорость подстройки вниз (быстро)
+    FLOAT_t gate_safety_margin; // Запас над уровнем шума (например, +6.0f дБ)
+} HF_SpeechProcessor_t;
+
+static HF_SpeechProcessor_t tx_proc;
+
+/**
+ * Инициализация комплексного речевого процессора передатчика
+ */
+void HF_SpeechProcessor_Init(FLOAT_t sample_rate,
+                             FLOAT_t comp_threshold_db, FLOAT_t comp_ratio,
+                             FLOAT_t comp_attack_ms, FLOAT_t comp_release_ms, FLOAT_t comp_makeup_db,
+                             FLOAT_t gate_range_db, FLOAT_t gate_attack_ms, FLOAT_t gate_release_ms)
+{
+    // Инициализация компрессора
+    tx_proc.threshold_db  = comp_threshold_db;
+    tx_proc.ratio_factor  = (1.0f / comp_ratio) - 1.0f;
+    tx_proc.attack_coef   = EXPF(-1.0f / (sample_rate * (comp_attack_ms / 1000.0f)));
+    tx_proc.release_coef  = EXPF(-1.0f / (sample_rate * (comp_release_ms / 1000.0f)));
+    tx_proc.makeup_linear = POWF(10.0f, comp_makeup_db / 20.0f);
+    tx_proc.envelope_db   = -100.0f;
+
+    // Инициализация Noise Gate
+    tx_proc.gate_range_db     = gate_range_db;
+    tx_proc.gate_attack_coef  = EXPF(-1.0f / (sample_rate * (gate_attack_ms / 1000.0f)));
+    tx_proc.gate_release_coef = EXPF(-1.0f / (sample_rate * (gate_release_ms / 1000.0f)));
+    tx_proc.gate_gain_db      = gate_range_db;
+
+    // Параметры автоматического детектора шума
+    tx_proc.noise_floor_est_db = -50.0f; // Начальное предположение (средний шум)
+    tx_proc.gate_threshold_db  = -44.0f; // Шум + запас
+    tx_proc.gate_safety_margin = 6.0f;   // Порог открытия ставится на 6 дБ выше шума
+
+    // Коэффициенты фильтра адаптации (постоянные времени ~1..2 секунды)
+    tx_proc.auto_cal_speed_up = EXPF(-1.0f / (sample_rate * 2.0f)); // Медленный подъем (чтобы речь не сбивала)
+    tx_proc.auto_cal_speed_dn = EXPF(-1.0f / (sample_rate * 0.5f)); // Быстрый спуск к реальному дну шума
+}
+
+/**
+ * Адаптивный речевой процессор (Sample-by-sample)
+ */
+FLOAT_t HF_SpeechProcessor_Process(FLOAT_t in_sample)
+{
+    // 1. Измерение модуля мгновенной амплитуды
+    FLOAT_t abs_sample = FABSF(in_sample);
+    if (abs_sample < 1e-5f) {
+        abs_sample = 1e-5f;
+    }
+
+    // 2. Расчет уровня сигнала в дБ
+    FLOAT_t input_db = 20.0f * LOG10F(abs_sample);
+
+    // 3. Фильтрация логарифмической огибающей основного сигнала
+    if (input_db > tx_proc.envelope_db) {
+        tx_proc.envelope_db = tx_proc.attack_coef * tx_proc.envelope_db +
+                              (1.0f - tx_proc.attack_coef) * input_db;
+    } else {
+        tx_proc.envelope_db = tx_proc.release_coef * tx_proc.envelope_db +
+                              (1.0f - tx_proc.release_coef) * input_db;
+    }
+
+    // =========================================================================
+    // БЛОК АВТОМАТИЧЕСКОЙ КАЛИБРОВКИ ШУМА (BACKGROUND NOISE TRACKER)
+    // =========================================================================
+    // Детектор «минимума»: если текущая огибающая ниже нашей оценки шума,
+    // значит мы нашли реальную паузу, и оценка быстро падает вниз.
+    // Если огибающая выше — оценка медленно дрейфует вверх на случай, если шум в шеке вырос.
+    if (tx_proc.envelope_db < tx_proc.noise_floor_est_db) {
+        tx_proc.noise_floor_est_db = tx_proc.auto_cal_speed_dn * tx_proc.noise_floor_est_db +
+                                     (1 - tx_proc.auto_cal_speed_dn) * tx_proc.envelope_db;
+    } else {
+        tx_proc.noise_floor_est_db = tx_proc.auto_cal_speed_up * tx_proc.noise_floor_est_db +
+                                     (1 - tx_proc.auto_cal_speed_up) * tx_proc.envelope_db;
+    }
+
+    // Ограничиваем разумные пределы шума (чтобы при полной тишине гейт не ушел в ноль)
+    if (tx_proc.noise_floor_est_db < -70.0f) {
+        tx_proc.noise_floor_est_db = -70.0f;
+    }
+
+    // Автоматический пересчет порога открытия: уровень шума + гистерезис (запас безопасности)
+    tx_proc.gate_threshold_db = tx_proc.noise_floor_est_db + tx_proc.gate_safety_margin;
+
+    // =========================================================================
+    // БЛОК 1: LOGIC NOISE GATE (DOWNWARD EXPANDER)
+    // =========================================================================
+    FLOAT_t target_gate_gain_db = 0;
+
+    if (tx_proc.envelope_db < tx_proc.gate_threshold_db) {
+        // Сигнал ниже динамического порога шума — мягко экспандируем (2:1)
+        target_gate_gain_db = (tx_proc.envelope_db - tx_proc.gate_threshold_db) * 2.0f;
+        if (target_gate_gain_db < tx_proc.gate_range_db) {
+            target_gate_gain_db = tx_proc.gate_range_db;
+        }
+    } else {
+        target_gate_gain_db = 0.0f; // Гейт полностью открыт для полезной речи
+    }
+
+    // Сглаживание траектории коэффициента гейта (исключение щелчков в эфире)
+    if (target_gate_gain_db > tx_proc.gate_gain_db) {
+        tx_proc.gate_gain_db = tx_proc.gate_attack_coef * tx_proc.gate_gain_db +
+                               (1 - tx_proc.gate_attack_coef) * target_gate_gain_db;
+    } else {
+        tx_proc.gate_gain_db = tx_proc.gate_release_coef * tx_proc.gate_gain_db +
+                               (1 - tx_proc.gate_release_coef) * target_gate_gain_db;
+    }
+
+    FLOAT_t gate_gain_linear = POWF(10, tx_proc.gate_gain_db / 20);
+    FLOAT_t gated_sample = in_sample * gate_gain_linear;
+
+    // =========================================================================
+    // БЛОК 2: SPEECH COMPRESSOR & MAKEUP GAIN
+    // =========================================================================
+    FLOAT_t gain_reduction_db = 0.0f;
+
+    if (tx_proc.envelope_db > tx_proc.threshold_db) {
+        gain_reduction_db = tx_proc.ratio_factor * (tx_proc.envelope_db - tx_proc.threshold_db);
+    }
+
+    FLOAT_t comp_gain_linear = POWF(10.0f, gain_reduction_db / 20.0f);
+    FLOAT_t out_sample = gated_sample * (comp_gain_linear * tx_proc.makeup_linear);
+
+    return out_sample;
+}
+
+
+/**
+ * Инициализация звукового тракта передачи (вызывается один раз при старте трансивера)
+ */
+void TX_Audio_System_Init(void)
+{
+    // Предположим, частота дискретизации нашего DSP-тракта составляет 16 кГц
+    const FLOAT_t AUDIO_SAMPLE_RATE = dsp_get_sampleratetx();
+
+    /*
+      Параметры инициализации речевого процессора для КВ-трансивера:
+      -------------------------------------------------------------------------
+      1. AUDIO_SAMPLE_RATE  = 16000.0f  (Частота дискретизации, Гц)
+      2. comp_threshold_db  = -20.0f    (Порог компрессии: -20 дБ от полной шкалы)
+      3. comp_ratio         = 4.0f      (Степень сжатия 4:1 — классика для плотной речи)
+      4. comp_attack_ms     = 2.0f      (Атака компрессора 2 мс — мгновенный перехват пиков)
+      5. comp_release_ms    = 100.0f    (Восстановление 100 мс — сглаживание по слогам)
+      6. comp_makeup_db     = 10.0f     (Makeup Gain +10 дБ — жестко поднимаем среднюю мощность)
+      7. gate_range_db      = -18.0f    (Паузы приглушаем на 18 дБ — шум УМ полностью уйдет)
+      8. gate_attack_ms     = 1.5f      (Атака гейта 1.5 мс — открытие без пропуска первой буквы)
+      9. gate_release_ms    = 200.0f    (Отпускание гейта 200 мс — плавное закрытие в паузах)
+    */
+    HF_SpeechProcessor_Init(
+        AUDIO_SAMPLE_RATE,
+        -20.0f, 4.0f, 2.0f, 100.0f, 10.0f, // Параметры компрессора
+        -18.0f, 1.5f, 200.0f               // Параметры Noise Gate
+    );
+
+    // Дополнительная инициализация аппаратных блоков (кодек, прерывания)...
+}
+
+/**
+ * Пример обработчика прерывания АЦП / Аудио-кодека (вызывается на каждый сэмпл)
+ * Входные данные от кодека обычно приходят в формате целых чисел (например, int16_t или int32_t)
+ */
+//void  AUDIO_Codec_Tx_IRQHandler(void)
+//{
+//    // 1. Получаем «сырой» отсчет из входного буфера кодека/АЦП (например, 16-битный с микрофона)
+//    int16_t raw_mic_sample = AUDIO_Get_Mic_Sample();
+//
+//    // 2. Нормализуем значение в масштаб FLOAT_t [-1.0f ... +1.0f], требуемый для DSP
+//    FLOAT_t dsp_input = (FLOAT_t)raw_mic_sample / 32768.0f;
+//
+//    // 3. Выполняем сквозную обработку (Адаптивный Noise Gate + Компрессия + Makeup)
+//    // Функция выполнится максимально быстро благодаря макросам из dspdefines.h
+//    FLOAT_t dsp_output = HF_SpeechProcessor_Process(dsp_input);
+//
+//    // 4. Переводим обработанный сигнал обратно в целочисленный формат для ЦАП / Модулятора
+//    // Включаем жесткое ограничение (Clipping), чтобы не допустить переполнения сетки int16_t
+//    FLOAT_t scaled_output = dsp_output * 32767.0f;
+//
+//    if (scaled_output > 32767.0f)  scaled_output = 32767.0f;
+//    if (scaled_output < -32768.0f) scaled_output = -32768.0f;
+//
+//    int16_t tx_output_sample = (int16_t)scaled_output;
+//
+//    // 5. Отправляем готовый сэмпл в тракт формирования SSB/AM или напрямую в ЦАП передатчика
+//    AUDIO_Send_To_Modulator(tx_output_sample);
+//}
 
 /* Значения 0..1 */
 

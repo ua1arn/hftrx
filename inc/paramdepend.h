@@ -884,23 +884,32 @@ extern "C" {
 
 	enum
 	{
-		ARM_IDLE_PRIORITY = 0,
-		ARM_USER_PRIORITY,		/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
-		ARM_BOARD_PRIORITY,			/* установка параметров */
-		ARM_SYSTEM_PRIORITY,		/* таймеры, USB */
-		ARM_REALTIME_PRIORITY,		/* звук */
-		ARM_OVERREALTIME_PRIORITY,	/* валкодер и телеграф */
-		ARM_IPC_ONLY_PRIORITY,
+		PRIOv_IDLE = 0,
+		PRIOv_USER,		/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+		PRIOv_BOARD,			/* установка параметров */
+		PRIOv_SYSTEM,		/* таймеры, USB */
+		PRIOv_REALTIME,		/* звук */
+		PRIOv_OVERREALTIME,	/* валкодер и телеграф */
+		PRIOv_IPC_ONLY,
+		PRIOv_IPC,
 		//
 		PRIOv_count
 	};
 
-	#define IRQL_USER				ARM_USER_PRIORITY
-	#define IRQL_SYSTEM 			ARM_SYSTEM_PRIORITY
-	#define IRQL_BOARD				ARM_BOARD_PRIORITY
-	#define IRQL_REALTIME 			ARM_REALTIME_PRIORITY
-	#define IRQL_OVERREALTIME		ARM_OVERREALTIME_PRIORITY
-	#define IRQL_IPC_ONLY			ARM_IPC_ONLY_PRIORITY
+	#define IRQL_IDLE				PRIOv_IDLE
+	#define IRQL_USER				PRIOv_USER
+	#define IRQL_SYSTEM 			PRIOv_SYSTEM
+	#define IRQL_BOARD				PRIOv_BOARD
+	#define IRQL_REALTIME 			PRIOv_REALTIME
+	#define IRQL_OVERREALTIME		PRIOv_OVERREALTIME
+	#define IRQL_IPC_ONLY			PRIOv_IPC_ONLY
+	#define IRQL_IPC				PRIOv_IPC
+
+	#define ARM_IPC_PRIORITY			PRIOv_IPC
+	#define ARM_OVERREALTIME_PRIORITY	PRIOv_OVERREALTIME	/* валкодер и телеграф */
+	#define ARM_REALTIME_PRIORITY		PRIOv_REALTIME		/* звук */
+	#define ARM_SYSTEM_PRIORITY			PRIOv_SYSTEM		/* таймеры, USB */
+	#define ARM_USER_PRIORITY			PRIOv_USER
 
 	#define GICD_ENCODE_PRIORITY(priov) 	(priov)	// Value for GICDistributor->IPRIORITYR[n]
 	#define GICI_ENCODE_IRQL(priov) 		(priov)	// value for GICInterface->PMR
@@ -930,7 +939,9 @@ void task_scheduler_start(void);
 void __NO_RETURN task_scheduler_othercores(void);	// завершение инициализации - уход в вечный цикл
 void tasks_print(void);
 
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, const char * name);
+void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
+void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
+void * thread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
 void thread_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 
 

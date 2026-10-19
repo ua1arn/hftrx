@@ -1632,18 +1632,7 @@ uintptr_t getfilled_dmabuffer32rx(void)
 	return (uintptr_t) dest->buff;
 }
 
-void save_dmabuffer32rx(uintptr_t addr)
-{
-	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
-	voice32rx.save_readybuffer(p);
-	// dsphftrxproc_spool_user on other CPUs
-#if TXSPOOLCOND
-	#warning rx process in interrupt
-	dsphftrxproc_spool_user(hftrx_rxgetpathA());
-#endif /* TXSPOOLCOND */
-}
-
-
+#if ! WITHRTOS
 // Обработка сразу в прерывании
 #define TXSPOOLCOND (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM))
 //#define TXSPOOLCOND 1	// Force in-interrupt 32rx stream parsing
@@ -1662,17 +1651,30 @@ static void dsphftrxproc_spool_user(void * ctx)
 		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 	}
 }
+#endif
 
-static int dsphftrxproc_spool_user_thread(void * ctx)
+void save_dmabuffer32rx(uintptr_t addr)
+{
+	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+	voice32rx.save_readybuffer(p);
+	// dsphftrxproc_spool_user on other CPUs
+#if ! WITHRTOS && TXSPOOLCOND
+	#warning rx process in interrupt
+	dsphftrxproc_spool_user(hftrx_rxgetpathA());
+#endif /* TXSPOOLCOND */
+}
+
+static int buffprocess_thread(void * ctx)
 {
 	(void) ctx;
-	voice32rx_t * dest;
 	for (;;)
 	{
+		voice32rx_t * dest;
 		if (voice32rx.get_readybuffer(& dest, LOCAL_WAITINFINITY) == false)
 			continue;
 		process_dmabuffer32rx(dest->buff);
 		voice32rx.release_buffer(dest);
+
 		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 	}
 	return 0;
@@ -4184,13 +4186,15 @@ void buffers_start(void)
 {
 #if WITHINTEGRATEDDSP
 
-#if ! TXSPOOLCOND
+#if WITHRTOS
+	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
+	VERIFY(thread_create_system(buffprocess_thread, NULL, procthread, sizeof procthread, TASK_AFFINITY_ALL, "buffprocess_thread"));
+
+#elif ! TXSPOOLCOND
 
 	#warning rx process in spool
 
 
-	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
-	if (thread_create_user(TASK_AFFINITY_ALL, dsphftrxproc_spool_user_thread, NULL, procthread, sizeof procthread, "dsphftrxproc_spool_user_thread") == NULL)
 	{
 		PRINTF("buffers_start: rx process in spool, TXSPOOLCORE=%u\n", TXSPOOLCORE);
 		static dpcobj_t dsphftrxproc_spool_dpc;
