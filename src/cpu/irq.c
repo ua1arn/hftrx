@@ -2747,22 +2747,19 @@ static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 {
 	const unsigned core = arm_hardware_cpuid();
 	thread_item_t * const tp = refreshactivetask(oldframe, core);
-//	ASSERT(tp);
-//	const unsigned aff = tp->affinity;
-//	tp->affinity = affinity;
-//	return aff;
+
 #if defined(__aarch64__)
-	unsigned aff2;
+	unsigned aff;
 	do {
-		aff2 = __LDAXRB(& tp->affinity);
+		aff = __LDAXRB(& tp->affinity);
 	} while (__STXRB(affinity, & tp->affinity)); //retry until lock successfully
-	return aff2;
+	return aff;
 #elif __CORTEX_A
-	unsigned aff2;
+	unsigned aff;
 	do {
-		aff2 = __LDREXB(& tp->affinity);
+		aff = __LDREXB(& tp->affinity);
 	} while (__STREXB(affinity, & tp->affinity)); //retry until lock successfully
-	return aff2;
+	return aff;
 #else
 	const unsigned aff = tp->affinity;
 	tp->affinity = affinity;
