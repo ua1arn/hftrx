@@ -1667,13 +1667,14 @@ void save_dmabuffer32rx(uintptr_t addr)
 static int dsphftrxproc_user_thread(void * ctx)
 {
 	(void) ctx;
-	voice32rx_t * dest;
 	for (;;)
 	{
+		voice32rx_t * dest;
 		if (voice32rx.get_readybuffer(& dest, LOCAL_WAITINFINITY) == false)
 			continue;
 		process_dmabuffer32rx(dest->buff);
 		voice32rx.release_buffer(dest);
+
 		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 	}
 	return 0;
