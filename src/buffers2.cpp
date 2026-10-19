@@ -1632,17 +1632,6 @@ uintptr_t getfilled_dmabuffer32rx(void)
 	return (uintptr_t) dest->buff;
 }
 
-void save_dmabuffer32rx(uintptr_t addr)
-{
-	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
-	voice32rx.save_readybuffer(p);
-	// dsphftrxproc_spool_user on other CPUs
-#if TXSPOOLCOND
-	#warning rx process in interrupt
-	dsphftrxproc_spool_user(hftrx_rxgetpathA());
-#endif /* TXSPOOLCOND */
-}
-
 
 // Обработка сразу в прерывании
 #define TXSPOOLCOND (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM))
@@ -1661,6 +1650,17 @@ static void dsphftrxproc_spool_user(void * ctx)
 		voice32rx.release_buffer(dest);
 		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 	}
+}
+
+void save_dmabuffer32rx(uintptr_t addr)
+{
+	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
+	voice32rx.save_readybuffer(p);
+	// dsphftrxproc_spool_user on other CPUs
+#if TXSPOOLCOND
+	#warning rx process in interrupt
+	dsphftrxproc_spool_user(hftrx_rxgetpathA());
+#endif /* TXSPOOLCOND */
 }
 
 static int dsphftrxproc_spool_user_thread(void * ctx)
