@@ -11,6 +11,7 @@
 #include "hardware.h"
 #include "formats.h"	// for debug prints
 #include "board.h"
+#include "clocks.h"
 #include <atomic>
 
 static ticker_t seqticker;

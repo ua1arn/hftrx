@@ -13116,9 +13116,9 @@ hwtimcountfast_t get_td_ms(uint_fast32_t timeMS)
 }
 
 // получение интервала, прошедшего с момента start
-hwtimcountfast_t get_td_delta(hwtimcountfast_t start)
+hwtimcountfast_t get_td_delta(hwtimcountfast_t t0)
 {
-	return timestamp_getmask() & (timestamp_getticks() - start);
+	return timestamp_getmask() & (timestamp_getticks() - t0);
 }
 
 // получение маски на разрядность аппаратного счётчика

@@ -252,7 +252,7 @@ static volatile int recstop;
 
 static void test_recodspool(void * ctx)
 {
-	if (recticks < NTICKS(60000))
+	if (recticks < 600)
 	{
 		++ recticks;
 	}
@@ -10892,7 +10892,7 @@ void hightests(void)
 		static ticker_t test_recordticker;
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_initialize(& test_recordticker, 100, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 		ticker_add(& test_recordticker);
 		LowerIrql(oldIrql);
 		{
@@ -10941,7 +10941,7 @@ void hightests(void)
 		static ticker_t test_recordticker;
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_initialize(& test_recordticker, 100, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 		ticker_add(& test_recordticker);
 		LowerIrql(oldIrql);
 		fatfs_filesystest(1);

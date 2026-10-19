@@ -255,19 +255,19 @@ static LCLSPINLOCK_t adcdoneslock = IRQLSPINLOCK_INIT;
 static VLIST_ENTRY tickers;
 static VLIST_ENTRY adcdones;
 
-void ticker_initialize_ext(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx, enum ticker_mode mode)
+static void ticker_initialize_ext(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, enum ticker_mode mode)
 {
-	p->period = nticks;
-	p->ticks = 0;
+	p->t0 = timestamp_getticks();
+	p->td = get_td_ms(timeMS);
 	p->cb = cb;
 	p->ctx = ctx;
 	p->mode = mode;
 	p->guard = p;
 }
 
-void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx)
+void ticker_initialize(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx)
 {
-	ticker_initialize_ext(p, nticks, cb, ctx, TICKERMD_PERIODIC);
+	ticker_initialize_ext(p, timeMS, cb, ctx, TICKERMD_PERIODIC);
 }
 
 static void ticker_trampoline(void * ctx)
@@ -280,15 +280,15 @@ static void ticker_trampoline_display(void * ctx)
 	board_dpc_call((dpcobj_t *) ctx, board_dpc_display_coreid());	// Запрос отложенного выполнения USER-MODE функции на ядре 1
 }
 
-void ticker_initialize_user(ticker_t * p, unsigned nticks, dpcobj_t * dpc)
+void ticker_initialize_user(ticker_t * p, uint_fast32_t timeMS, dpcobj_t * dpc)
 {
-	ticker_initialize(p, nticks, ticker_trampoline, dpc);
+	ticker_initialize(p, timeMS, ticker_trampoline, dpc);
 }
 
 // DPC будет вызываться на ядре board_dpc_display_coreid()
-void ticker_initialize_user_display(ticker_t * p, unsigned nticks, dpcobj_t * dpc)
+void ticker_initialize_user_display(ticker_t * p, uint_fast32_t timeMS, dpcobj_t * dpc)
 {
-	ticker_initialize(p, nticks, ticker_trampoline_display, dpc);
+	ticker_initialize(p, timeMS, ticker_trampoline_display, dpc);
 }
 
 void ticker_add(ticker_t * p)
@@ -329,21 +329,13 @@ void ticker_add(ticker_t * p)
 //}
 
 /* изменение периода запущенного тикера */
-void ticker_setperiod(ticker_t * p, unsigned nticks)
+void ticker_setperiod(ticker_t * p, uint_fast32_t timeMS)
 {
 	IRQL_t oldIrql;
 
 	ASSERT(p->guard == p);
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
-	if (p->period < nticks)
-	{
-		p->period = nticks;
-	}
-	else if (p->period > nticks)
-	{
-		p->period = nticks;
-		p->ticks = 0;
-	}
+	p->td = get_td_ms(timeMS);
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
@@ -351,6 +343,7 @@ void ticker_setperiod(ticker_t * p, unsigned nticks)
 static void tickers_event(void)
 {
 	IRQL_t oldIrql;
+	const hwtimcountfast_t tn = timestamp_getticks();
 
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	PVLIST_ENTRY t;
@@ -371,9 +364,10 @@ static void tickers_event(void)
 		default:
 			break;
 		}
-		if (++ p->ticks >= p->period)
+
+		if ((timestamp_getmask() & (tn - p->t0)) >= p->td)
 		{
-			p->ticks = 0;
+			p->t0 = tn;
 			if (p->cb != NULL)
 				(p->cb)(p->ctx);
 			switch (p->mode)
@@ -410,13 +404,13 @@ void tickers_initialize(void)
 #if WITHCPUADCHW
 
 	static ticker_t adcticker;
-	ticker_initialize(& adcticker, SEQNTICKS(KBD_TICKS_PERIOD), adcstart_event, NULL);
+	ticker_initialize(& adcticker, KBD_TICKS_PERIOD, adcstart_event, NULL);
 	ticker_add(& adcticker);
 
 #else /* WITHCPUADCHW */
 
 	static ticker_t adcticker;
-	ticker_initialize(& adcticker, SEQNTICKS(KBD_TICKS_PERIOD), adcdones_event, NULL);
+	ticker_initialize(& adcticker, KBD_TICKS_PERIOD, adcdones_event, NULL);
 	ticker_add(& adcticker);
 
 #endif /* WITHCPUADCHW */

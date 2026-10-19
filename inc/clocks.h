@@ -646,6 +646,46 @@ hwtimcountfast_t get_td_delta(hwtimcountfast_t start);	// получение и�
 hwtimcountfast_t get_td_us(uint_fast32_t timeUS);
 hwtimcountfast_t get_td_ms(uint_fast32_t timeMS);
 
+
+#include "mslist.h"
+
+enum ticker_mode
+{
+	TICKERMD_PERIODIC,
+	TICKERMD_MANUAL
+};
+typedef struct ticker_tag
+{
+	VLIST_ENTRY item;
+	hwtimcount_t t0;
+	hwtimcount_t td;
+	void (* cb)(void *);
+	void * ctx;
+	enum ticker_mode mode;
+	void * guard;
+} ticker_t;
+
+struct dpcobj_tag;
+void ticker_initialize(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx);
+void ticker_initialize_user(ticker_t * p, uint_fast32_t timeMS, struct dpcobj_tag * dpc);
+void ticker_initialize_user_display(ticker_t * p, uint_fast32_t timeMS, dpcobj_t * dpc);	// DPC будет вызываться на ядре board_dpc_display_coreid()
+//void ticker_initialize_ext(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, enum ticker_mode mode);
+void ticker_setperiod(ticker_t * p, uint_fast32_t timeMS);	/* изменение периода запущенного тикера */
+void ticker_start(ticker_t * p);	/* начало интервала в случае TICKERMD_MANUAL */
+void ticker_add(ticker_t * p);
+void ticker_remove(ticker_t * p);
+
+typedef struct adcdone_tag
+{
+	VLIST_ENTRY item;
+	void (* cb)(void *);
+	void * ctx;
+} adcdone_t;
+
+void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx);
+void adcdone_add(adcdone_t * p);
+void adcdone_del(adcdone_t * p);
+
 void sysinit_boot_disconnect(void);
 void sysinit_pll_initialize(int forced);	// PLL initialize
 void sysinit_perfmeter_initialize(void);	// на каждом CORE
