@@ -2000,7 +2000,7 @@ typedef struct check_ready_tag
 typedef struct thread_item_tag
 {
 	LIST_ENTRY item;
-	uint8_t affinity;
+	__ALIGNED(8) uint8_t affinity;
 	exception_frame_t * cpuframe;	// cpu state
 	uint8_t prio;
 	const check_ready_t * check_ready;	// condition check function
@@ -2747,9 +2747,27 @@ static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 {
 	const unsigned core = arm_hardware_cpuid();
 	thread_item_t * const tp = refreshactivetask(oldframe, core);
+//	ASSERT(tp);
+//	const unsigned aff = tp->affinity;
+//	tp->affinity = affinity;
+//	return aff;
+#if defined(__aarch64__)
+	unsigned aff2;
+	do {
+		aff2 = __LDAXRB(& tp->affinity);
+	} while (__STXRB(affinity, & tp->affinity)); //retry until lock successfully
+	return aff2;
+#elif __CORTEX_A
+	unsigned aff2;
+	do {
+		aff2 = __LDREXB(& tp->affinity);
+	} while (__STREXB(affinity, & tp->affinity)); //retry until lock successfully
+	return aff2;
+#else
 	const unsigned aff = tp->affinity;
 	tp->affinity = affinity;
 	return aff;
+#endif
 
 	if (threads_not_started)
 	{
