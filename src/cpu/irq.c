@@ -1989,7 +1989,6 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 
 static volatile uint8_t threads_not_started = 1;
 
-#if WITHRTOS
 
 typedef struct check_ready_tag
 {
@@ -2009,6 +2008,16 @@ typedef struct thread_item_tag
 	const char * name;
 	void * guard;	// debug signature
 } thread_item_t;
+
+static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
+static thread_item_t * startedtask [HARDWARE_NCORES];
+
+static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
+//static LIST_ENTRY threads_list [UPRIO_count];
+static LIST_ENTRY threads_listW;
+static LIST_ENTRY threads_listR [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
+
+#if WITHRTOS
 
 
 enum
@@ -2075,14 +2084,6 @@ static int task_idle(void * ctx)
 	}
 	return 0;
 }
-
-static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
-static thread_item_t * startedtask [HARDWARE_NCORES];
-
-static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
-//static LIST_ENTRY threads_list [UPRIO_count];
-static LIST_ENTRY threads_listW;
-static LIST_ENTRY threads_listR [PRIOv_count];	// GICI_DECODE_IRQL(irql) as index
 
 
 static void task_insertready(thread_item_t * const tp) {
@@ -2686,6 +2687,11 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 // Set thread affinity - return old value
 static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 {
+	const unsigned core = arm_hardware_cpuid();
+	thread_item_t * const tp = refreshactivetask(oldframe, core);
+	const unsigned aff = tp->affinity;
+	tp->affinity = affinity;
+	return aff;
 
 	if (threads_not_started)
 	{
@@ -2693,11 +2699,6 @@ static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 	}
 	else
 	{
-		const unsigned core = arm_hardware_cpuid();
-		thread_item_t * const tp = refreshactivetask(oldframe, core);
-		const unsigned aff = tp->affinity;
-		tp->affinity = affinity;
-		return aff;
 
 		volatile struct taskfnparam_setaffinity v;
 		v.newaffinity = affinity;
