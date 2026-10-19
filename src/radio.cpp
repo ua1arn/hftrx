@@ -20546,7 +20546,7 @@ applowinitialize(void)
 }
 
 #if defined (BOARD_BLINK_SETSTATE)
-
+// Non-RTOS function
 static void blinktest(void * ctx)
 {
 	static uint_fast8_t state;
@@ -20554,6 +20554,7 @@ static void blinktest(void * ctx)
 	BOARD_BLINK_SETSTATE(state);
 }
 
+// RTOS thread
 static int blinktest2(void * ctx)
 {
 #if WITHISBOOTLOADER
@@ -23309,18 +23310,23 @@ application_initialize(void)
 	loadnewband(getvfoindex(0), 0);	/* загрузка последнего сохраненного состояния - всегда VFO или MEMxx */
 
 #if defined (BOARD_BLINK_SETSTATE)
-	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t blinktaskram [8192];
-	if (thread_create_user(blinktest2, NULL, blinktaskram, sizeof blinktaskram, TASK_AFFINITY_ALL, "blinktest2") == NULL)
+#if WITHRTOS
 	{
-#if WITHISBOOTLOADER
-	const unsigned thalf = 100;	// Toggle every 100 ms
-#else /* WITHISBOOTLOADER */
-	const unsigned thalf = 500;	// Toggle every 500 ms
-#endif /* WITHISBOOTLOADER */
+		static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t blinktaskram [2 * 1024];
+		VERIFY(thread_create_user(blinktest2, NULL, blinktaskram, sizeof blinktaskram, TASK_AFFINITY_ALL, "blinktest2"));
+	}
+#else	/* WITHRTOS */
+	{
+	#if WITHISBOOTLOADER
+		const unsigned thalf = 100;	// Toggle every 100 ms
+	#else /* WITHISBOOTLOADER */
+		const unsigned thalf = 500;	// Toggle every 500 ms
+	#endif /* WITHISBOOTLOADER */
 		static ticker_t ticker_blinks;
 		ticker_initialize(& ticker_blinks, thalf, blinktest, NULL);
 		ticker_add(& ticker_blinks);
 	}
+#endif /* WITHRTOS */
 #endif /* defined (BOARD_BLINK_SETSTATE) */
 
 #if WITHLWIP

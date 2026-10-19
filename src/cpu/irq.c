@@ -1722,7 +1722,7 @@ static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile
 
 #if defined(__aarch64__)
 
-#define IDLETASKRAM_SIZE (16 * 1024)
+#define IDLETASKRAM_SIZE (4 * 1024)
 
 
 typedef struct exception_frame_tag
@@ -1804,7 +1804,7 @@ static uint64_t task_sysfn(unsigned arg0, volatile void * arg1)
 
 #elif __CORTEX_A != 0 && ! defined(__aarch64__)
 
-#define IDLETASKRAM_SIZE (8 * 1024)
+#define IDLETASKRAM_SIZE (2 * 1024)
 
 typedef struct exception_frame_tag
 {
@@ -2005,8 +2005,11 @@ typedef struct thread_item_tag
 	uint8_t prio;
 	const check_ready_t * check_ready;	// condition check function
 	volatile void * check_ready_obj;	// user-space wait condition parameters
+#if WITHDEBUG
+	uintptr_t bottom, top;	// memory area bounds
 	const char * name;
 	void * guard;	// debug signature
+#endif /* WITHDEBUG */
 } thread_item_t;
 
 
@@ -2086,12 +2089,13 @@ static int task_idle(void * ctx)
 	return 0;
 }
 
-
+// сохранить в списке готовых к выполнению
 static void task_insertready(thread_item_t * const tp) {
 	ASSERT(tp->check_ready == NULL);
 	InsertTailList(& threads_listR [tp->prio], & tp->item);
 }
 
+// прописать все свойства отока и сохранить в списке готовых к выполнению
 static void thread_add(
 	thread_item_t * const thread, unsigned affinity,
 	int (*fn)(void * ctx), void * ctx,
@@ -2100,7 +2104,7 @@ static void thread_add(
 
 	ASSERT(NULL != thread);
 	ASSERT(NULL != stackbase);
-	uintptr_t top = (uintptr_t) stackbase + stacksize;
+	const uintptr_t top = (uintptr_t) stackbase + stacksize;
 	exception_frame_t * stackframe = (exception_frame_t *) (top - context_size());
 	// Установить параметры потока для запуска
 	context_init(stackframe, fn, ctx);
@@ -2109,8 +2113,12 @@ static void thread_add(
 	thread->prio = prio;
 	thread->guard = thread;	// debug signature
 	thread->check_ready = NULL;
-	thread->name = name;
 	ASSERT(thread->affinity);
+#if WITHDEBUG
+	thread->name = name;
+	thread->bottom = (uintptr_t) stackbase;
+	thread->top = top;
+#endif /* WITHDEBUG */
 
 	IRQL_t lockIrql;
 	// включаем в список задач
@@ -2118,7 +2126,7 @@ static void thread_add(
 	task_insertready(thread);	// Поскольку готово у выполнению - в список готовых
 	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
 
-	//PRINTF("Added thread at prio=%d, affinity=%02X (frame=%p), stack[%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
+	//PRINTF("Added thread at prio=%d, aff=%02X (frame=%p), stack[%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
 }
 
 void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
@@ -2250,7 +2258,9 @@ static int thread_print(char *__restrict buff, size_t size, const thread_item_t 
 {
 	int n = 0;
 	exception_frame_t * const f = tp->cpuframe;
-	n += local_snprintf_P(buff + n, size - n, "%s %p: irql=0x%02X (prio=%u), affinity=0x%08X, name='%s' ", title, tp, (unsigned) GICI_ENCODE_IRQL(tp->prio), (unsigned) tp->prio, (unsigned) tp->affinity, tp->name);
+	n += local_snprintf_P(buff + n, size - n, "%s %p: irql=0x%02X (prio=%u), aff=0x%08X, ", title, tp, (unsigned) GICI_ENCODE_IRQL(tp->prio), (unsigned) tp->prio, (unsigned) tp->affinity);
+	n += local_snprintf_P(buff + n, size - n, "use=%3u%% ", (unsigned) (100 * (tp->top - (uintptr_t) tp->cpuframe) /  (tp->top - tp->bottom)));
+	n += local_snprintf_P(buff + n, size - n, "name='%s' ", tp->name);
 	//n += local_snprintf_P(buff + n, size - n, "fpcr=%08X, fpsr=%08X ", (unsigned) f->fpcr, (unsigned) f->fpsr);
 	if (tp->check_ready)
 	{
@@ -2261,6 +2271,8 @@ static int thread_print(char *__restrict buff, size_t size, const thread_item_t 
 	n += local_snprintf_P(buff + n, size - n, "\n");
 	return n;
 }
+
+#if WITHDEBUG
 
 static int tasks_print0(char *__restrict buff, size_t size)
 {
@@ -2322,6 +2334,12 @@ void tasks_print(void)
 	// use result
 	dbg_puts(buff);
 }
+#else /* WITHDEBUG */
+void tasks_print(void)
+{
+
+}
+#endif /* WITHDEBUG */
 
 static int ready_timeout(uint_fast32_t tn, hwtimcountfast_t t0, hwtimcountfast_t td)
 {
@@ -2555,7 +2573,11 @@ static thread_item_t * refreshactivetask(exception_frame_t * oldframe, unsigned 
 		thread_item_t * const thread = & base_threads [core];
 		thread->guard = thread;
 		thread->check_ready = NULL;
+#if WITHDEBUG
 		thread->name = "def";
+		thread->bottom = 0;
+		thread->top = 0;
+#endif /* WITHDEBUG */
 		//
 		// получаем состояние процесора при первом перрывании
 		thread->affinity = 1U << core;
@@ -2719,6 +2741,8 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 }
 
 // Set thread affinity - return old value
+// функция нужна для запрета смены процессора при выполнении обработчика преерываний.
+// (EOI должно идти в GIC INTERFACE того же ядра, где и возникло)
 static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 {
 	const unsigned core = arm_hardware_cpuid();
