@@ -2002,7 +2002,7 @@ typedef struct thread_item_tag
 	LIST_ENTRY item;
 	unsigned affinity;
 	exception_frame_t * cpuframe;	// cpu state
-	IRQL_t irql;
+	unsigned prio;
 	const check_ready_t * check_ready;	// condition check function
 	volatile void * check_ready_obj;	// user-space wait condition parameters
 	const char * name;
@@ -2088,7 +2088,7 @@ static int task_idle(void * ctx)
 
 static void task_insertready(thread_item_t * const tp) {
 	ASSERT(tp->check_ready == NULL);
-	InsertTailList(& threads_listR [GICI_DECODE_IRQL(tp->irql)], & tp->item);
+	InsertTailList(& threads_listR [tp->prio], & tp->item);
 }
 
 static void thread_add(
@@ -2105,7 +2105,7 @@ static void thread_add(
 	context_init(stackframe, fn, ctx);
 	thread->affinity = affinity;
 	thread->cpuframe = stackframe;
-	thread->irql = GICI_ENCODE_IRQL(prio);
+	thread->prio = prio;
 	thread->guard = thread;	// debug signature
 	thread->check_ready = NULL;
 	thread->name = name;
@@ -2143,7 +2143,7 @@ void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, u
 	return thread;
 }
 
-void * thread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+void * Xthread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
 {
 	ASSERT(threads_not_started == 0);
 
@@ -2235,7 +2235,7 @@ static int thread_print(char *__restrict buff, size_t size, const thread_item_t 
 {
 	int n = 0;
 	exception_frame_t * const f = tp->cpuframe;
-	n += local_snprintf_P(buff + n, size - n, "  task %p: irql=0x%02X (prio=%u), affinity=0x%08X, name='%s' ", tp, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity, tp->name);
+	n += local_snprintf_P(buff + n, size - n, "  task %p: irql=0x%02X (prio=%u), affinity=0x%08X, name='%s' ", tp, (unsigned) GICI_ENCODE_IRQL(tp->prio), (unsigned) tp->prio, (unsigned) tp->affinity, tp->name);
 	//n += local_snprintf_P(buff + n, size - n, "fpcr=%08X, fpsr=%08X ", (unsigned) f->fpcr, (unsigned) f->fpsr);
 	if (tp->check_ready)
 	{
@@ -2568,10 +2568,9 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 		return oldframe;
 	ASSERT(threads_not_started == 0);
 	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC);
-	ASSERT(GICI_DECODE_IRQL(irql) < PRIOv_count);
-	thread_item_t * const tp = refreshactivetask(oldframe, core);
+	thread_item_t * const tp = refreshactivetask(oldframe, core);	// also set cpuframe
 	ASSERT(tp);
-	tp->irql = irql;
+	tp->prio = GICI_DECODE_IRQL(irql);
 
 	if (flag)  {
 		// обработка системныз вызовов
@@ -2581,9 +2580,11 @@ task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
 	}
 
 	task_resched(timestamp_getticks());	// перепланировка
-	startedtask [core] = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
 
-	IRQLSPIN_UNLOCK(& threadslock, tp->irql);
+	// Запуск
+	startedtask [core] = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
+	irql = GICI_ENCODE_IRQL(startedtask [core]->prio);
+	IRQLSPIN_UNLOCK(& threadslock, irql);
 	return startedtask [core]->cpuframe;
 }
 
@@ -2751,7 +2752,17 @@ void __NO_RETURN task_scheduler_othercores(void)
 	}
 }
 
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, const char * name)
+void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+{
+	return NULL;
+}
+
+void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+{
+	return NULL;
+}
+
+void * thread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
 {
 	return NULL;
 }
