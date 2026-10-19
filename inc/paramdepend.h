@@ -934,6 +934,13 @@ extern "C" {
 #endif /* CPUSTYLE_ARM_CM3 */
 
 #define TASK_AFFINITY_ALL (UINT_MAX)
+
+#if CPUSTYLE_A733 && __aarch64__
+	#define TTASK_AFFINITY_AUDIOPROC ((1U << 6) | (1U << 7))
+#else
+#define TTASK_AFFINITY_AUDIOPROC TASK_AFFINITY_ALL
+#endif
+
 void task_scheduler_initialize(void);
 void task_scheduler_start(void);
 void __NO_RETURN task_scheduler_othercores(void);	// завершение инициализации - уход в вечный цикл
