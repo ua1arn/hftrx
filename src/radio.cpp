@@ -23442,7 +23442,7 @@ application_initialize(void)
 #if WITHRTOS
 	{
 		static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
-		VERIFY(thread_create_user(TASK_AFFINITY_ALL, tuner_thread, NULL, procthread, sizeof procthread, "tuner_thread"));
+		VERIFY(thread_create_user(tuner_thread, NULL, procthread, sizeof procthread, TASK_AFFINITY_ALL, "tuner_thread"));
 
 	}
 #endif
