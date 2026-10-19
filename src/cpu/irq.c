@@ -1934,6 +1934,7 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 
 #elif __riscv && __riscv_xlen==64
 	#warning unsupported context switch on this CPU
+#define IDLETASKRAM_SIZE (16 * 1024)
 
 typedef struct exception_frame_tag
 {
