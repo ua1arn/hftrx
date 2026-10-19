@@ -52,7 +52,7 @@ static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
-#define VOICE32RX_CAPACITY (8 * BUFOVERSIZE)
+#define VOICE32RX_CAPACITY (16 * BUFOVERSIZE)
 #define VOICE32TX_CAPACITY (16 * BUFOVERSIZE)
 
 #define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
@@ -4188,7 +4188,7 @@ void buffers_start(void)
 
 #if WITHRTOS
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
-	VERIFY(thread_create_system(buffprocess_thread, NULL, procthread, sizeof procthread, TASK_AFFINITY_ALL, "buffprocess_thread"));
+	VERIFY(thread_create_user(buffprocess_thread, NULL, procthread, sizeof procthread, TASK_AFFINITY_ALL, "buffprocess_thread"));
 
 #elif ! TXSPOOLCOND
 

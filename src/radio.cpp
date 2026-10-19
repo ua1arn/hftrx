@@ -12993,8 +12993,6 @@ static int audioproc_thread(void * ctx)
 	(void) ctx;
 	for (;;)
 	{
-		thread_yield();
-
 	#if ! WITHSKIPUSERMODE
 		speexel_t * p;
 		if (takespeexready(& p, LOCAL_WAITINFINITY))
@@ -13003,6 +13001,8 @@ static int audioproc_thread(void * ctx)
 			// Освобождаем буфер
 			releasespeexbuffer(p);
 		}
+	#else
+		thread_yield();
 	#endif /* ! WITHSKIPUSERMODE */
 	}
 	return 0;
