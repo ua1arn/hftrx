@@ -23375,7 +23375,7 @@ application_initialize(void)
 #if WITHRTOS
 
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
-	VERIFY(thread_create_user(audioproc_thread, NULL, procthread, sizeof procthread, TASK_AFFINITY_ALL, "audioproc_thread"));
+	VERIFY(thread_create_user(audioproc_thread, NULL, procthread, sizeof procthread, TTASK_AFFINITY_AUDIOPROC, "audioproc_thread"));
 #else /* WITHRTOS */
 	{
 		static dpcobj_t user_audioproc_dpc;

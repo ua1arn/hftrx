@@ -2000,9 +2000,9 @@ typedef struct check_ready_tag
 typedef struct thread_item_tag
 {
 	LIST_ENTRY item;
-	unsigned affinity;
+	uint8_t affinity;
 	exception_frame_t * cpuframe;	// cpu state
-	unsigned prio;
+	uint8_t prio;
 	const check_ready_t * check_ready;	// condition check function
 	volatile void * check_ready_obj;	// user-space wait condition parameters
 	const char * name;
@@ -2109,6 +2109,7 @@ static void thread_add(
 	thread->guard = thread;	// debug signature
 	thread->check_ready = NULL;
 	thread->name = name;
+	ASSERT(thread->affinity);
 
 	IRQL_t lockIrql;
 	// включаем в список задач
@@ -2243,11 +2244,11 @@ static thread_item_t * task_getready(unsigned affinity) {
 	return NULL;
 }
 
-static int thread_print(char *__restrict buff, size_t size, const thread_item_t * const tp)
+static int thread_print(char *__restrict buff, size_t size, const thread_item_t * const tp, const char * title)
 {
 	int n = 0;
 	exception_frame_t * const f = tp->cpuframe;
-	n += local_snprintf_P(buff + n, size - n, "  task %p: irql=0x%02X (prio=%u), affinity=0x%08X, name='%s' ", tp, (unsigned) GICI_ENCODE_IRQL(tp->prio), (unsigned) tp->prio, (unsigned) tp->affinity, tp->name);
+	n += local_snprintf_P(buff + n, size - n, "%s %p: irql=0x%02X (prio=%u), affinity=0x%08X, name='%s' ", title, tp, (unsigned) GICI_ENCODE_IRQL(tp->prio), (unsigned) tp->prio, (unsigned) tp->affinity, tp->name);
 	//n += local_snprintf_P(buff + n, size - n, "fpcr=%08X, fpsr=%08X ", (unsigned) f->fpcr, (unsigned) f->fpsr);
 	if (tp->check_ready)
 	{
@@ -2270,7 +2271,9 @@ static int tasks_print0(char *__restrict buff, size_t size)
 	IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
 	for (core = 0; core < ARRAY_SIZE(startedtask); ++ core)
 	{
-		n += thread_print(buff + n, size - n, startedtask [core]);
+		char title [16];
+		local_snprintf_P(title, ARRAY_SIZE(title), "core%u", core);
+		n += thread_print(buff + n, size - n, startedtask [core], title);
 	}
 
 	n += local_snprintf_P(buff + n, size - n, "tasks_print: Waiting, timestamp_getticks=%" PRIu64 ":\n", (uint64_t) timestamp_getticks());
@@ -2282,7 +2285,7 @@ static int tasks_print0(char *__restrict buff, size_t size)
 		{
 			tnext = t->Flink;
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-			n += thread_print(buff + n, size - n, tp);
+			n += thread_print(buff + n, size - n, tp, "     ");
 		}
 	}
 
@@ -2299,7 +2302,7 @@ static int tasks_print0(char *__restrict buff, size_t size)
 		{
 			tnext = t->Flink;
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-			n += thread_print(buff + n, size - n, tp);
+			n += thread_print(buff + n, size - n, tp, "     ");
 		}
 	}
 	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
