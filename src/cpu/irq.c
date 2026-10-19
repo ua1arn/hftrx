@@ -2119,7 +2119,7 @@ static void thread_add(
 	//PRINTF("Added thread at prio=%d, affinity=%02X (frame=%p), stack[%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
 }
 
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, const char * name)
+void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
 {
 	ASSERT(threads_not_started == 0);
 
@@ -2127,6 +2127,30 @@ void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, 
 	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
 	ramsize -= sizeof (thread_item_t);
 	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_USER, name);
+
+	return thread;
+}
+
+void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+{
+	ASSERT(threads_not_started == 0);
+
+	thread_item_t * const thread = (thread_item_t *) rambase;
+	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
+	ramsize -= sizeof (thread_item_t);
+	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_SYS, name);
+
+	return thread;
+}
+
+void * thread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+{
+	ASSERT(threads_not_started == 0);
+
+	thread_item_t * const thread = (thread_item_t *) rambase;
+	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
+	ramsize -= sizeof (thread_item_t);
+	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_RT, name);
 
 	return thread;
 }

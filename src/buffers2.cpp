@@ -1664,7 +1664,7 @@ void save_dmabuffer32rx(uintptr_t addr)
 #endif /* TXSPOOLCOND */
 }
 
-static int dsphftrxproc_user_thread(void * ctx)
+static int buffprocess_thread(void * ctx)
 {
 	(void) ctx;
 	for (;;)
@@ -4188,7 +4188,7 @@ void buffers_start(void)
 
 #if WITHRTOS
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
-	VERIFY(thread_create_user(TASK_AFFINITY_ALL, dsphftrxproc_user_thread, NULL, procthread, sizeof procthread, "dsphftrxproc_user_thread"));
+	VERIFY(thread_create_system(buffprocess_thread, NULL, procthread, sizeof procthread, TASK_AFFINITY_ALL, "buffprocess_thread"));
 
 #elif ! TXSPOOLCOND
 

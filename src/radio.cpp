@@ -12988,7 +12988,7 @@ static void user_audioproc(void * ctx)
 }
 
 // thread: user-mode processing - NR, эквалайзер приёмника
-static int user_audioproc_thread(void * ctx)
+static int audioproc_thread(void * ctx)
 {
 	(void) ctx;
 	for (;;)
@@ -23279,7 +23279,7 @@ application_initialize(void)
 
 #if defined (BOARD_BLINK_SETSTATE)
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t blinktaskram [8192];
-	if (thread_create_user(TASK_AFFINITY_ALL, blinktest2, NULL, blinktaskram, sizeof blinktaskram, "blinktest2") == NULL)
+	if (thread_create_user(blinktest2, NULL, blinktaskram, sizeof blinktaskram, TASK_AFFINITY_ALL, "blinktest2") == NULL)
 	{
 #if WITHISBOOTLOADER
 	const unsigned thalf = 100;	// Toggle every 100 ms
@@ -23341,8 +23341,11 @@ application_initialize(void)
 	hftrx_init();		// цифровая обработка подготавливается
 	InitNoiseReduction();
 
+#if WITHRTOS
+
 	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
-	if (thread_create_user(TASK_AFFINITY_ALL, user_audioproc_thread, NULL, procthread, sizeof procthread, "user_audioproc_thread") == NULL)
+	VERIFY(thread_create_user(audioproc_thread, NULL, procthread, sizeof procthread, TASK_AFFINITY_ALL, "audioproc_thread"));
+#else /* WITHRTOS */
 	{
 		static dpcobj_t user_audioproc_dpc;
 		dpcobj_initialize(& user_audioproc_dpc, user_audioproc, NULL, "user_audioproc_dpc");
@@ -23356,6 +23359,7 @@ application_initialize(void)
 		board_dpc_addentry(& user_audioproc_dpc, 2);
 	#endif /* WITHINTEGRATEDDSP */
 	}
+#endif /* WITHRTOS */
 
 #if WITHSUBTONES && 1
 	dtmf_initialize();

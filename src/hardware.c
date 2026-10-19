@@ -497,9 +497,10 @@ void spool_systimerbundle(void)
 
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
 	tickers_event();
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-	// force re-schedule
-	GIC_SendSGI(SGI14_IRQn, 0, 0x01);	// other cores, except self
+
+	// force re-schedule - not need then tickless scheduler
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) && WITHRTOS
+	//GIC_SendSGI(SGI14_IRQn, 0, 0x01);	// other cores, except self
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 }
 
