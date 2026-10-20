@@ -2438,8 +2438,13 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, 
 //	PRINTF(PSTR("audio_setup_wiver: construct bypass glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
 	if (fullbw6 == INT16_MAX || dspmode == DSPCTL_MODE_TX_NFM)
 	{
+		const FLOAT_t fbypascut = fs * 4 / 10;
 		// make bypass filter
-		calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
+		//calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
+		if (tx)
+			calculate_duc_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, fbypascut);
+		else
+			calculate_variable_slope_ddc_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, fbypascut, 0);
 	#if WITHDSPLOCALRXFIR
 		if (isdspmoderx(dspmode))
 		{
