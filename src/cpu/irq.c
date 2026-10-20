@@ -1722,7 +1722,7 @@ static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile
 
 #if defined(__aarch64__)
 
-#define IDLETASKRAM_SIZE (4 * 1024)
+#define IDLETASKRAM_SIZE (16 * 1024)
 
 
 typedef struct exception_frame_tag
@@ -1804,7 +1804,7 @@ static uint64_t task_sysfn(unsigned arg0, volatile void * arg1)
 
 #elif __CORTEX_A != 0 && ! defined(__aarch64__)
 
-#define IDLETASKRAM_SIZE (2 * 1024)
+#define IDLETASKRAM_SIZE (8 * 1024)
 
 typedef struct exception_frame_tag
 {
@@ -1879,7 +1879,7 @@ static uint32_t task_sysfn(unsigned arg0, volatile void * arg1)
 
 #elif __CORTEX_M != 0
 
-#define IDLETASKRAM_SIZE (8 * 1024)
+#define IDLETASKRAM_SIZE (16 * 1024)
 
 #warning unsupported context switch on this CPU
 
@@ -1934,7 +1934,7 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 
 #elif __riscv && __riscv_xlen==64
 	#warning unsupported context switch on this CPU
-#define IDLETASKRAM_SIZE (16 * 1024)
+#define IDLETASKRAM_SIZE (32 * 1024)
 
 typedef struct exception_frame_tag
 {
@@ -2370,7 +2370,7 @@ static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thre
 		tasks_print();
 	}
 	ASSERT(param != NULL);
-	ASSERT(param->guard == param);
+	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
 	return ready_timeout(tn, param->t0, param->td);
 }
 
@@ -2396,7 +2396,7 @@ static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * threa
 		tasks_print();
 	}
 	ASSERT(param != NULL);
-	ASSERT(param->guard == param);
+	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
 	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)
 	{
@@ -2428,7 +2428,7 @@ static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread
 {
 	volatile struct taskfnparam_wait8 * const param = (volatile struct taskfnparam_wait8 *) arg1;
 	ASSERT(param != NULL);
-	ASSERT(param->guard == param);
+	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
 	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)
 	{
@@ -2448,7 +2448,6 @@ static int print_waitlist(char *__restrict buff, size_t size, const check_ready_
 	unsigned n = 0;
 	volatile struct taskfnparam_waitlist * const param = (volatile struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
-	ASSERT(param->guard == param);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
 	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
 	n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) param->td);
@@ -2459,7 +2458,7 @@ static int readyfn_waitlist(const check_ready_t * chrdyttag, thread_item_t * thr
 {
 	volatile struct taskfnparam_waitlist * const param = (volatile struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
-	ASSERT(param->guard == param);
+	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
 	if (LCLSPIN_TRAYLOCK(param->lock))
 	{
 		const int f = IsListEmpty(param->list);
@@ -2748,23 +2747,9 @@ static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 	const unsigned core = arm_hardware_cpuid();
 	thread_item_t * const tp = refreshactivetask(oldframe, core);
 
-#if defined(__aarch64__)
-	unsigned aff;
-	do {
-		aff = __LDAXRB(& tp->affinity);
-	} while (__STXRB(affinity, & tp->affinity)); //retry until lock successfully
-	return aff;
-#elif __CORTEX_A
-	unsigned aff;
-	do {
-		aff = __LDREXB(& tp->affinity);
-	} while (__STREXB(affinity, & tp->affinity)); //retry until lock successfully
-	return aff;
-#else
 	const unsigned aff = tp->affinity;
 	tp->affinity = affinity;
 	return aff;
-#endif
 
 	if (threads_not_started)
 	{

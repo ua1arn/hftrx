@@ -4187,7 +4187,7 @@ void buffers_start(void)
 #if WITHINTEGRATEDDSP
 
 #if WITHRTOS
-	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [8 * 1024 * 1024];
+	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [16 * 1024 * 1024];
 	VERIFY(thread_create_user(buffprocess_thread, NULL, procthread, sizeof procthread, TTASK_AFFINITY_AUDIOPROC, "buffprocess_thread"));
 
 #elif ! TXSPOOLCOND

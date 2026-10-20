@@ -273,11 +273,11 @@ void InitializeIrql(IRQL_t newIRQL);
 
 #endif /* WITHSMPSYSTEM */
 
-#include "mslist.h"
 	/* Захват spinlock с установкой требуемого IRQL и сохранением ранее установленного */
 	#define IRQLSPIN_LOCK(p, oldIrql, newirql) do { RiseIrql((newirql), (oldIrql)); LCLSPIN_LOCK((p)); } while (0)
 	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK((p)); LowerIrql(oldIrql); } while (0)
 
+#include "mslist.h"
 	int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fast32_t timeMS);
 
 	// wait expected state of variable
