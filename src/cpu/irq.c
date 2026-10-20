@@ -2111,10 +2111,10 @@ static void thread_add(
 	thread->affinity = affinity;
 	thread->cpuframe = stackframe;
 	thread->prio = prio;
-	thread->guard = thread;	// debug signature
 	thread->check_ready = NULL;
 	ASSERT(thread->affinity);
 #if WITHDEBUG
+	thread->guard = thread;	// debug signature
 	thread->name = name;
 	thread->bottom = (uintptr_t) stackbase;
 	thread->top = top;
@@ -2254,6 +2254,7 @@ static thread_item_t * task_getready(unsigned affinity) {
 	return NULL;
 }
 
+#if WITHDEBUG
 static int thread_print(char *__restrict buff, size_t size, const thread_item_t * const tp, const char * title)
 {
 	int n = 0;
@@ -2272,7 +2273,6 @@ static int thread_print(char *__restrict buff, size_t size, const thread_item_t 
 	return n;
 }
 
-#if WITHDEBUG
 
 static int tasks_print0(char *__restrict buff, size_t size)
 {
@@ -2570,9 +2570,9 @@ static thread_item_t * refreshactivetask(exception_frame_t * oldframe, unsigned 
 		static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
 		// ещё не имеет своей структуры - создан в момент start-up системы.
 		thread_item_t * const thread = & base_threads [core];
-		thread->guard = thread;
 		thread->check_ready = NULL;
 #if WITHDEBUG
+		thread->guard = thread;
 		thread->name = "def";
 		thread->bottom = 0;
 		thread->top = 0;
