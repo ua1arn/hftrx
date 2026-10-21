@@ -2260,7 +2260,10 @@ static int thread_print(char *__restrict buff, size_t size, const thread_item_t 
 	int n = 0;
 	exception_frame_t * const f = tp->cpuframe;
 	n += local_snprintf_P(buff + n, size - n, "%s %p: irql=0x%02X (prio=%u), aff=0x%08X, ", title, tp, (unsigned) GICI_ENCODE_IRQL(tp->prio), (unsigned) tp->prio, (unsigned) tp->affinity);
-	n += local_snprintf_P(buff + n, size - n, "use=%3u%% ", (unsigned) (100 * (tp->top - (uintptr_t) tp->cpuframe) /  (tp->top - tp->bottom)));
+	if (tp->bottom)
+		n += local_snprintf_P(buff + n, size - n, "use=%3u%% ", (unsigned) (100 * (tp->top - (uintptr_t) tp->cpuframe) /  (tp->top - tp->bottom)));
+	else
+		n += local_snprintf_P(buff + n, size - n, "         ");
 	n += local_snprintf_P(buff + n, size - n, "name='%s' ", tp->name);
 	//n += local_snprintf_P(buff + n, size - n, "fpcr=%08X, fpsr=%08X ", (unsigned) f->fpcr, (unsigned) f->fpsr);
 	if (tp->check_ready)
