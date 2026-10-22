@@ -4167,6 +4167,7 @@ struct nvmap {
 	uint16_t	ggrpcat; // последний выбраный пункт группы
 	uint8_t gcatenable;	/* удаленное управление разрешено */
 	uint8_t gcatbaudrate;	/* номер скорости работы по CAT */
+	uint8_t gcataddress;	/* адрес устройства в протоколе YAESU */
 	#if WITHTX
 		uint8_t catsigptt;	/* Выбраный сигнал для перехода на передачу по CAT */
 	#endif /* WITHTX */
@@ -5609,6 +5610,26 @@ enum
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+
+#if WITHCATYAESU
+	static uint_fast8_t gcataddress = 0x78;
+	static size_t getvaltexthex(char * buff, size_t count, int_fast32_t value)
+	{
+		return local_snprintf_P(buff, count, "0x%02X", (unsigned) value);
+	}
+	static const struct paramdefdef xgcataddress =
+	{
+		QLABEL3("CAT ADDR", "CAT Address", "CAT ADDR"), 0, RJ_CB,	ISTEP1,
+		ITEM_VALUE,
+		0, 254,
+		OFFSETOF(struct nvmap, gcataddress),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gcataddress,
+		getzerobase,
+		getvaltexthex, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+#endif /* WITHCATYAESU */
 
 	static size_t getvaltextcatspeed(char * buff, size_t count, int_fast32_t value)
 	{
