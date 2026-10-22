@@ -330,9 +330,9 @@
 	},
 /* group name --- */
 	& xgcatenable,
-#if WITHCATYAESU
+#if WITHCAT_ICOM
 	& xgcataddress,
-#endif /* WITHCATYAESU */
+#endif /* WITHCAT_ICOM */
 #if WITHCAT_MUX
 	& xgcatmux,
 #endif /* WITHCAT_MUX */

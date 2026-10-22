@@ -26,7 +26,7 @@
 #include <atomic>
 
 //#define WITHCAT_YAESU 1
-
+//#define WITHCAT_ICOM 1
 #ifndef WITHCAT_YAESU
 	#define WITHCAT_KENWOOD 1
 #endif
@@ -5617,7 +5617,7 @@ enum
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
-#if WITHCATYAESU
+#if WITHCAT_ICOM
 	static uint_fast8_t gcataddress = 0x78;
 	static size_t getvaltexthex(char * buff, size_t count, int_fast32_t value)
 	{
@@ -5635,7 +5635,7 @@ enum
 		getzerobase,
 		getvaltexthex, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-#endif /* WITHCATYAESU */
+#endif /* WITHCAT_ICOM */
 
 	static size_t getvaltextcatspeed(char * buff, size_t count, int_fast32_t value)
 	{
