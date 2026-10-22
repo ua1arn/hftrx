@@ -25,6 +25,12 @@
 #include "dspdefines.h"
 #include <atomic>
 
+//#define WITHCAT_YAESU 1
+
+#ifndef WITHCAT_YAESU
+	#define WITHCAT_KENWOOD 1
+#endif
+
 #define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 //#define WITHRPTOFFSET 1
 #define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
@@ -15651,18 +15657,22 @@ ascii_toupper(uint_fast8_t c)
 // HXCat use same default settings
 
 
-#if WITHCAT
 
-static uint_fast8_t morsefill;	/* индекс буфера, заполняемого в данный момент. Противоположгый передаётся. */
+static LCLSPINLOCK_t catsyslock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t usbsyslock = IRQLSPINLOCK_INIT;
 
-static uint_fast8_t inpmorselength [2];
-static uint_fast8_t sendmorsepos [2];
+#if WITHUSBHW && WITHUSBCDCACM
+static uint_fast8_t cat_answer_ready_cdcacm(void)
+{
+	uint_fast8_t f;
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& usbsyslock, & oldIrql, USBSYS_IRQL);
+	f = usbd_cdc_ready();
+	IRQLSPIN_UNLOCK(& usbsyslock, oldIrql);
+	return f;
+}
+#endif /* WITHUSBHW && WITHUSBCDCACM */
 
-#if WITHELKEY
-	static void cat_set_kyanswer(uint_fast8_t force);
-	static uint_fast8_t cathasparamerror;
-	static unsigned char morsestring [2] [25];
-#endif /* WITHELKEY */
 
 static uint_fast8_t catstatein = CATSTATE_HALTED;
 
@@ -15715,21 +15725,6 @@ static uint_fast8_t cat_answer_ready_uart(void)
 {
 	return 1;
 }
-
-static LCLSPINLOCK_t catsyslock = IRQLSPINLOCK_INIT;
-static LCLSPINLOCK_t usbsyslock = IRQLSPINLOCK_INIT;
-
-#if WITHUSBHW && WITHUSBCDCACM
-static uint_fast8_t cat_answer_ready_cdcacm(void)
-{
-	uint_fast8_t f;
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& usbsyslock, & oldIrql, USBSYS_IRQL);
-	f = usbd_cdc_ready();
-	IRQLSPIN_UNLOCK(& usbsyslock, oldIrql);
-	return f;
-}
-#endif /* WITHUSBHW && WITHUSBCDCACM */
 
 #if WITHUSBHW && WITHUSBCDCACM
 static void
@@ -15836,6 +15831,142 @@ cat_answervariable(const char * p, uint_fast8_t len)
 #endif /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
 }
 
+
+#if WITHTX && WITHCAT
+
+static uint_fast8_t
+cat_get_signal(uint_fast8_t selector)
+{
+	switch (selector)
+	{
+	case BOARD_CATSIG_SER1_RTS: return HARDWARE_CAT_GET_RTS();
+	case BOARD_CATSIG_SER1_DTR: return HARDWARE_CAT_GET_DTR();
+#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
+	case BOARD_CATSIG_SER2_RTS: return HARDWARE_CAT2_GET_RTS();
+	case BOARD_CATSIG_SER2_DTR: return HARDWARE_CAT2_GET_DTR();
+#endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
+	default: return 0;
+	}
+}
+
+// Вызывается из пользовательской программы
+// Получить запрос перехода на передачу от порта управления CAT.
+static uint_fast8_t
+cat_get_hwptt(void)
+{
+	if (catprocenable != 0)
+	{
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+		const uint_fast8_t r = cat_get_signal(catsigptt);
+		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
+
+		return r;
+	}
+	return 0;
+}
+
+#else
+static uint_fast8_t
+cat_get_hwptt(void)
+{
+	return 0;
+}
+#endif /* WITHTX && WITHCAT */
+
+// Вызывается из обработчика перерываний
+// Получить нажате ключа от порта управления, вызывается из обработчика перерываний
+uint_fast8_t cat_get_keydown(void)
+{
+#if WITHELKEY && WITHTX
+	if (catprocenable != 0)
+	{
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+		const uint_fast8_t r = cat_get_signal(catsigkey);
+		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
+
+		return r;
+	}
+#endif /* WITHELKEY && WITHTX */
+	return 0;
+
+}
+
+#if WITHCAT && WITHCAT_YAESU
+/* возврат ненуля - была какая-либо команда
+	требуется обновление дисплея */
+static uint_fast8_t
+processcatmsg(
+	char catcommand1,
+	char catcommand2,
+	uint_fast8_t cathasparam,
+	uint_fast8_t catpcount,	// количество символов за кодом команды
+	const uint8_t * catp	// массив символов
+	)
+{
+	return 0;
+}
+
+/* вызывается из обработчика прерываний */
+/* Получить следующий символ для передачи (только верхний регистр) */
+static char cat_getnextcw(void)
+{
+	return '\0';
+}
+
+static void cat_answer_forming(void)
+{
+
+}
+
+static void cat_answer_request(uint_fast8_t code)
+{
+
+}
+
+/* вызывается из обработчика прерываний */
+void cat2_parsechar(uint_fast8_t c)
+{
+}
+
+/* вызывается из обработчика прерываний */
+// произошла потеря символа (символов) при получении данных с CAT компорта
+void cat2_rxoverflow(void)
+{
+
+}
+
+/* вызывается из обработчика прерываний */
+// произошёл разрыв связи при работе по USB CDC
+void cat2_disconnect(void)
+{
+	catstatein = CATSTATE_WAITCOMMAND1;
+	catstateout = CATSTATEO_SENDREADY;
+}
+
+/* эта операция вызывается неоднократно - не должна мешать работе при уже разрешённом CAT */
+static void processcat_enable(uint_fast8_t enable)
+{
+	if (catprocenable == enable)
+		return;
+	catprocenable = enable;
+}
+
+#endif /* WITHCAT && WITHCAT_YAESU */
+
+#if WITHCAT && WITHCAT_KENWOOD
+
+static uint_fast8_t morsefill;	/* индекс буфера, заполняемого в данный момент. Противоположгый передаётся. */
+
+static uint_fast8_t inpmorselength [2];
+static uint_fast8_t sendmorsepos [2];
+
+#if WITHELKEY
+	static void cat_set_kyanswer(uint_fast8_t force);
+	static uint_fast8_t cathasparamerror;
+	static unsigned char morsestring [2] [25];
+#endif /* WITHELKEY */
 
 // *************************
 
@@ -16822,68 +16953,6 @@ static void badcommandanswer(uint_fast8_t arg)
 	static const char badcommand [] = "?;";	// ответ на команду с неправильным синтаксисом
 
 	cat_answervariable(badcommand, 2);	// после ответа - ждём новую.
-}
-
-#if WITHTX
-
-static uint_fast8_t
-cat_get_signal(uint_fast8_t selector)
-{
-	switch (selector)
-	{
-	case BOARD_CATSIG_SER1_RTS: return HARDWARE_CAT_GET_RTS();
-	case BOARD_CATSIG_SER1_DTR: return HARDWARE_CAT_GET_DTR();
-#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
-	case BOARD_CATSIG_SER2_RTS: return HARDWARE_CAT2_GET_RTS();
-	case BOARD_CATSIG_SER2_DTR: return HARDWARE_CAT2_GET_DTR();
-#endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
-	default: return 0;
-	}
-}
-
-// Вызывается из пользовательской программы
-// Получить запрос перехода на передачу от порта управления CAT.
-static uint_fast8_t
-cat_get_hwptt(void)
-{
-	if (catprocenable != 0)
-	{
-		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
-		const uint_fast8_t r = cat_get_signal(catsigptt);
-		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
-
-		return r;
-	}
-	return 0;
-}
-
-#else
-static uint_fast8_t
-cat_get_hwptt(void)
-{
-	return 0;
-}
-#endif /* WITHTX */
-
-
-// Вызывается из обработчика перерываний
-// Получить нажате ключа от порта управления, вызывается из обработчика перерываний
-uint_fast8_t cat_get_keydown(void)
-{
-#if WITHELKEY && WITHTX
-	if (catprocenable != 0)
-	{
-		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
-		const uint_fast8_t r = cat_get_signal(catsigkey);
-		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
-
-		return r;
-	}
-#endif /* WITHELKEY && WITHTX */
-	return 0;
-
 }
 
 static void
@@ -17883,6 +17952,11 @@ processcatmsg(
 	return rc;
 }
 
+#endif	/* WITHCAT */
+
+
+#if WITHCAT
+
 // user-mode function
 static void cat_dpc_func(void * ctx)
 {
@@ -17892,24 +17966,16 @@ static void cat_dpc_func(void * ctx)
 	}
 }
 
-static dpcobj_t cat_dpc;
 
 // High level cat initialize
 static void cat_initialize(void)
 {
+	static dpcobj_t cat_dpc;
+
 	dpcobj_initialize(& cat_dpc, cat_dpc_func, NULL, "cat_dpc");
 	board_dpc_addentry(& cat_dpc, board_dpc_coreid());
 }
-
-#else	/* WITHCAT */
-
-static uint_fast8_t
-cat_get_hwptt(void)
-{
-	return 0;
-}
-#endif	/* WITHCAT */
-
+#endif /* WITHCAT */
 
 #if WITHELKEY
 
