@@ -15696,7 +15696,7 @@ static uint_fast8_t cat_answer_ready_cdcacm(void)
 }
 #endif /* WITHUSBHW && WITHUSBCDCACM */
 
-
+#if WITHCAT
 static uint_fast8_t catstatein = CATSTATE_HALTED;
 
 static std::atomic<uint_fast8_t> catstateout(CATSTATEO_HALTED);
@@ -15853,7 +15853,7 @@ cat_answervariable(const char * p, uint_fast8_t len)
 	cat_answervariable_uart(p, len);
 #endif /* WITHUSBHW && WITHUSBCDCACM && WITHCAT_CDC */
 }
-
+#endif /* WITHCAT */
 
 #if WITHTX && WITHCAT
 
@@ -15901,7 +15901,7 @@ cat_get_hwptt(void)
 // Получить нажате ключа от порта управления, вызывается из обработчика перерываний
 uint_fast8_t cat_get_keydown(void)
 {
-#if WITHELKEY && WITHTX
+#if WITHELKEY && WITHTX && WITHCAT
 	if (catprocenable != 0)
 	{
 		IRQL_t oldIrql;
@@ -15911,7 +15911,7 @@ uint_fast8_t cat_get_keydown(void)
 
 		return r;
 	}
-#endif /* WITHELKEY && WITHTX */
+#endif /*  WITHELKEY && WITHTX && WITHCAT */
 	return 0;
 
 }
