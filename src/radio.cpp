@@ -27,7 +27,7 @@
 
 //#define WITHCAT_YAESU 1
 //#define WITHCAT_ICOM 1
-#ifndef WITHCAT_YAESU
+#if ! defined (WITHCAT_YAESU) && ! defined (WITHCAT_ICOM)
 	#define WITHCAT_KENWOOD 1
 #endif
 
@@ -15392,7 +15392,7 @@ refreshenabled_freqs(void)
 static void
 refreshperformed_freqs(void)
 {
-	const uint_fast32_t n = UINTICKS(calcdivround2(1000, gdisplayfreqsfps));	// 50 ms - обновление с частотой 20 герц
+	const uint_fast32_t n = UINTICKS(calcdivround2(1000, param_getvalue(& xgdisplayfreqsfps)));	// 50 ms - обновление с частотой 20 герц
 
 	counterupdatedfreqs = n;
 }
@@ -23932,7 +23932,7 @@ void hamradio_main_start(void)
 
 		dpcobj_initialize(& dpcobj, dpc_displatch_refresh_fn, NULL, "dpc_displatch_refresh_fn");
 		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-		ticker_initialize_user_display(& refreshticker, calcdivround2(1000, gdisplayfreqsfps), & dpcobj);	// 50 ms - обновление с частотой 20 герц
+		ticker_initialize_user_display(& refreshticker, calcdivround2(1000, param_getvalue(& xgdisplayfreqsfps)), & dpcobj);	// 50 ms - обновление с частотой 20 герц
 		ticker_add(& refreshticker);
 	}
 
