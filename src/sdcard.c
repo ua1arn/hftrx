@@ -5331,6 +5331,9 @@ void hardware_sdhost_initialize(void)
 	HARDWARE_SDIOSENSE_INITIALIZE();
 	HARDWARE_SDIO_INITIALIZE();
 
+#elif CPUSTYLE_A733
+	#warning CPUSTYLE_A733 to be implemented
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
