@@ -423,6 +423,7 @@
 	& xgmike_fm,
 	& xgmikeagc,
 	& xgmikeagcgain,
+	& xgmikehcompressor,
 	& xgmikehclip,
 #if WITHCOMPRESSOR
 	& xgcompressor_attack,

@@ -136,11 +136,16 @@ static uint_fast8_t		glob_mikeagc = 1;	/* Включение программн�
 static uint_fast8_t		glob_mikeagcgain = 40;	/* предел усиления в АРУ */
 static uint_fast8_t		glob_mikehclip;			/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
 static uint_fast8_t 	glob_mikeequal;	// Включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
+
+#if WITHCOMPRESSOR
 static uint_fast8_t		glob_compattack;
 static uint_fast8_t		glob_comprelease;
 static uint_fast8_t		glob_comphold;
 static uint_fast8_t		glob_compgain;
 static uint_fast8_t		glob_compthreshold;
+#endif /* WITHCOMPRESSOR */
+
+static uint_fast8_t 	glob_mikecomp;
 
 #if WITHREVERB
 	static uint_fast8_t glob_reverb;		/* ревербератор */
@@ -3736,7 +3741,14 @@ static FLOAT_t mikeinmux(
 	// Цепочка обработки сигнала с микрофона - работает всегда
 	FLOAT_t vi0fmike = vi0airpmike.IV;
 	vi0fmike = txmikeagc(txpath, vi0fmike * txlevelXXX);	// АРУ
-	vi0fmike = txmikeclip(txpath, vi0fmike);				// Ограничитель
+	if (glob_mikecomp)
+	{
+		vi0fmike = HF_SpeechProcessor_Process(vi0fmike);				// компрессор
+	}
+	else
+	{
+		vi0fmike = txmikeclip(txpath, vi0fmike);				// Ограничитель
+	}
 #if WITHREVERB
 	vi0fmike = audio_reverb_calc(vi0fmike);				// Ревербератор
 #endif /* WITHREVERB */
@@ -6069,7 +6081,7 @@ hftxpath_update(hftxpath_t * const txpath, uint_fast8_t profile)
 
 	// Параметры АРУ микрофона
 	mikeagc_parameters_update(& txpath->mikeagcparams [profile], (int) glob_mikeagcgain);
-
+	TX_Audio_System_Init();
 	{
 		// Настройка ограничителя
 		const FLOAT_t FS_ratio = txpath->mikeagcparams [profile].levels.levelfence_ratio;	// txlevelfenceSSB
@@ -6758,23 +6770,24 @@ board_set_mikeboost20db(uint_fast8_t n)
 
 /* Включение программной АРУ перед модулятором */
 void
-board_set_mikeagc(uint_fast8_t n)
+board_set_mikeagc(uint_fast8_t n, uint_fast8_t gain)
 {
 	const uint_fast8_t v = n != 0;
-	if (glob_mikeagc != v)
+	if (glob_mikeagc != v || glob_mikeagcgain != gain)
 	{
 		glob_mikeagc = v;
+		glob_mikeagcgain = gain;
 		board_dsp1regchanged();
 	}
 }
 
-/* Максимальное усидение АРУ микрофона */
 void
-board_set_mikeagcgain(uint_fast8_t v)
+board_set_mikeacomp(uint_fast8_t n)
 {
-	if (glob_mikeagcgain != v)
+	const uint_fast8_t v = n != 0;
+	if (glob_mikecomp != v)
 	{
-		glob_mikeagcgain = v;
+		glob_mikecomp = v;
 		board_dsp1regchanged();
 	}
 }
@@ -6801,6 +6814,7 @@ board_set_skipfilteraf(uint_fast8_t n)
 	}
 }
 
+#if WITHCOMPRESSOR
 /* компрессор */
 void
 board_set_compressor(uint_fast8_t attack, uint_fast8_t release, uint_fast8_t hold, uint_fast8_t gain, uint_fast8_t threshold)
@@ -6815,6 +6829,7 @@ board_set_compressor(uint_fast8_t attack, uint_fast8_t release, uint_fast8_t hol
 		board_dsp1regchanged();
 	}
 }
+#endif /* WITHCOMPRESSOR */
 
 /* ревербератор */
 void

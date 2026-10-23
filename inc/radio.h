@@ -1017,7 +1017,7 @@ param_setvalue(
 	int_fast32_t v
 	);
 int_fast32_t
-param_getvalue(
+param_val(
 	const struct paramdefdef * pd
 	);
 void
