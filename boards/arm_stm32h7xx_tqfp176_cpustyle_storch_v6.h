@@ -47,7 +47,7 @@
 //#define USB_OTG_HS                   USB1_OTG_HS
 //#define USB_OTG_FS                   USB2_OTG_FS
 
-#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 #if WITHUSEUSBFLASH
 	#define WITHUSBHW_HOST		USB2_OTG_FS

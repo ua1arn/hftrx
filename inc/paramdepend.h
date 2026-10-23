@@ -762,11 +762,12 @@ extern "C" {
 
 	enum
 	{
+		PRIOv_IPC = 0,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
 		PRIOv_IPC_ONLY,
 		PRIOv_OVERREALTIME,
 		PRIOv_REALTIME,
-		PRIOv_SYSTEM,
-		PRIOv_BOARD,
+		PRIOv_SYSTEM,		/* таймеры, USB */
+		PRIOv_BOARD,		/* параметры фильтров, board_set_xxx */
 		PRIOv_USER,
 		PRIOv_IDLE,
 		//
@@ -779,8 +780,10 @@ extern "C" {
 	#define IRQL_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_REALTIME, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_OVERREALTIME, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_IPC_ONLY ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_IPC_ONLY, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_IPC ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_IPC, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 
-	#define GICI_DECODE_IRQL(irql) (0)	// TODO: use NVIC_DecodePriority
+	#define GICI_DECODE_IRQL(irql) 		(irql)	// TODO: use NVIC_DecodePriority
+	#define GICI_ENCODE_IRQL(prio) 		(prio)
 
 	#define global_enableIRQ() do { __enable_irq(); } while (0)
 	#define global_disableIRQ() do { __disable_irq(); } while (0)

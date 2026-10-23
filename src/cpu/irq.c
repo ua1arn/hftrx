@@ -1883,11 +1883,37 @@ static uint32_t task_sysfn(unsigned arg0, volatile void * arg1)
 
 #warning unsupported context switch on this CPU
 
-typedef struct exception_frame_tag
-{
-	uint32_t r0, r1, r2;
-	uint32_t xx [32];
-} exception_frame_t;
+typedef struct {
+    /* Core CPU registers */
+    uint32_t r0;       /* Lowest address (SP pointer points here) */
+    uint32_t r1;
+    uint32_t r2;
+    uint32_t r3;
+    uint32_t r12;
+    uint32_t lr;       /* Link Register (R14) */
+    uint32_t pc;       /* Program Counter (R15) — Return address */
+    uint32_t xpsr;     /* Execution Program Status Register */
+
+    /* Floating-Point Unit (FPU) extension registers */
+    uint32_t s0;
+    uint32_t s1;
+    uint32_t s2;
+    uint32_t s3;
+    uint32_t s4;
+    uint32_t s5;
+    uint32_t s6;
+    uint32_t s7;
+    uint32_t s8;
+    uint32_t s9;
+    uint32_t s10;
+    uint32_t s11;
+    uint32_t s12;
+    uint32_t s13;
+    uint32_t s14;
+    uint32_t s15;
+    uint32_t fpscr;    /* Floating-point Status and Control Register */
+    uint32_t reserved; /* Highest address — Padding to maintain 8-byte alignment */
+} __attribute__((packed)) exception_frame_t;
 
 
 // scheduler-mode entry - set svc exit code

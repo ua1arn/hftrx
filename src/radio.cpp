@@ -5450,6 +5450,7 @@ static const struct paramdefdef xgbottomdbtx =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
+#if BOARD_FFTZOOM_POW2MAX > 0
 uint_fast8_t hamradio_get_gzoomxpow2(void)
 {
 	return param_getvalue(& xgzoomxpow2);
@@ -5460,6 +5461,7 @@ void hamradio_set_gzoomxpow2(uint_fast8_t v)
 	param_setvalue(& xgzoomxpow2, v);	// Установить значение параметра и сохранить в nvram
 	updateboard();
 }
+#endif
 
 /* значения со знаком */
 void hamradio_set_bottomdb(int_fast16_t v)
@@ -6636,7 +6638,7 @@ enum
 		#if WITHLOWPOWEREXTTUNE
 			static uint_fast8_t gtunepower = WITHPOWERTRIMATU; /* мощность при работе автоматического согласующего устройства */
 		#else /* WITHLOWPOWEREXTTUNE */
-			enum { gtunepower = WITHPOWERTRIMMAX }; /* мощность при работе автоматического согласующего устройства */
+			static uint_fast8_t gtunepower = WITHPOWERTRIMMAX; /* мощность при работе автоматического согласующего устройства */
 		#endif /* WITHLOWPOWEREXTTUNE */
 	#elif WITHPOWERLPHP
 
