@@ -205,9 +205,12 @@
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-	#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
-	#define WITHUSBHW_OTG_IRQ	USB20_OTG_DEVICE_IRQn
+	#define WITHUSBHW_DEVICE	USB0_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
+	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
+	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
+	//#define WITHUSBDEV_DMAENABLE 1
 #if WITHFUSBDFS
 	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 #elif WITHFUSBDHS
@@ -236,15 +239,13 @@
 	#endif /* WITHTINYUSB */
 
 	#if 1
-		// USB3-DP & USB3-DM used
-		#define WITHUSBHW_EHCI		USB20_HOST3_EHCI
-		#define WITHUSBHW_EHCI_IRQ	USB20_HOST3_EHCI_IRQn
-		#define WITHUSBHW_EHCI_IX	3
+		#define WITHUSBHW_EHCI		USB1_EHCI
+		#define WITHUSBHW_EHCI_IRQ	USB1_EHCI_IRQn
+		#define WITHUSBHW_EHCI_IX	1
 
-		// USB3-DP & USB3-DM used
-		#define WITHUSBHW_OHCI		USB20_HOST3_OHCI
-		#define WITHUSBHW_OHCI_IRQ	USB20_HOST3_OHCI_IRQn
-		#define WITHUSBHW_OHCI_IX	3
+		#define WITHUSBHW_OHCI		USB1_OHCI
+		#define WITHUSBHW_OHCI_IRQ	USB1_OHCI_IRQn
+		#define WITHUSBHW_OHCI_IX	1
 	#endif
 
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
@@ -1362,18 +1363,17 @@
 
 	#define LCD_LVDS_IF_REG_VALUE ( \
 		(UINT32_C(1) << 31) |	/* LCD_LVDS_EN */ \
-		0 * (UINT32_C(1) << 30) |	/* LCD_LVDS_LINK: 0: single link */ \
-		0 * (UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0: NS MODE for THC63LVDF84B converter) */ \
-		0 * (UINT32_C(1) << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */ \
+		(UINT32_C(0) << 30) |	/* LCD_LVDS_LINK: 0: single link */ \
+		(! UINT32_C(1) << 27) |	/* LCD_LVDS_MODE 1: JEIDA mode (0 for THC63LVDF84B converter) */ \
+		(UINT32_C(0) << 26) |	/* LCD_LVDS_BITWIDTH 0: 24-bit */ \
 		(UINT32_C(1) << 20) |	/* LCD_LVDS_CLK_SEL 1: LCD CLK */ \
 		0 * (UINT32_C(1) << 25) |		/* LCD_LVDS_DEBUG_EN */ \
 		0 * (UINT32_C(1) << 24) |		/* LCD_LVDS_DEBUG_MODE */ \
-		/* младшие 5 бит имеют неправильное описание - на самом деле "0" - нормально разведенные пары. */ \
 		0 * (UINT32_C(1) << 4) |				/* LCD_LVDS_CLK_POL: 0: reverse, 1: normal */ \
 		0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */ \
 		0)
 
-	#define HARDWARE_LVDS_INITIALIZE() do { \
+	#define xHARDWARE_LVDS_INITIALIZE() do { \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF3); 	/* PD0 LVDS0_V0P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF3); 	/* PD1 LVDS0_V0N */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF3); 	/* PD2 LVDS0_V1P */ \
@@ -1385,30 +1385,36 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF3); 	/* PD8 LVDS0_V3P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
+
+	#define HARDWARE_LVDS_INITIALIZE() do { \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 16, GPIO_CFG_AF3); 	/* PD16 LVDS1_CKP */ \
+		arm_hardware_piod_altfn50(UINT32_C(1) << 17, GPIO_CFG_AF3); 	/* PD17 LVDS1_CKN */ \
+	} while (0)
 	#define HARDWARE_HDMI_INITIALIZE() do { \
 	} while (0)
 
 	#if WITHHDMITVHW
-		// Надо для HDMI и TVOUT
+		//	CON_TV0 controls HDMI interface
+		//	CON_TV1 controls eDP interface
 		#define	TCONTV_IX 0	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define	TCONTV_PTR TCON_TV0	/* 0 - TCON_TV0, 1: TCON_TV0 */
-		#define	TCONTV_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
-		#define	TCONTV_CCU_BGR_REG (CCU->TCON_TV_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		//#define	TCONTV_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
+		#define	TCONTV_CCU_BGR_REG (CCU->TCONTV0_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
 		#define TCONTV_IRQ TCON_TV0_IRQn
 		#define TCONTV_GINT0_REG (TCON_TV0->TV_GINT0_REG)
 		#define BOARD_TCONTVFREQ (allwnr_a733_get_tcon_tv0_freq())
-		#define RTMIXIDTV 2	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
+		#define RTMIXIDTV 1	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#endif
-	#if 1
+	#if 0
 		// LCD
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_CCU_BGR_REG (CCU->TCON_LCD_BGR_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
-		#define BOARD_TCONLCDFREQ (allwnr_a733_get_tcon_lcd0_freq())
-		#define TCONLCD_IRQ TCON_LCD0_IRQn
+		#define BOARD_TCONLCDFREQ (allwnr_a733_get_v0_tconlcd0_freq())
+		#define TCONLCD_IRQ TCON0_LCD0_IRQn
 		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
-		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 */
+		#define TCONLCD_LVDSIX 1	/* 0 -LVDS0 */
 		#define RTMIXIDLCD 1	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#endif
 
