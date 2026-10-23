@@ -50,26 +50,17 @@
 
 #if 1//WITHISBOOTLOADER
 
-	#define WITHSDRAM_AXP853	1	/* AXP853T power management chip */
-	// AXP853T on HelperBoard T507 Core Board
-	#define PMIC_I2C_W 0x6C	// 7bit: 0x36
+	#define WITHSDRAM_AXP318	1	/* PL0 PMU-SCK, PL1 PMU-SDA, AXP318 power management chip */
+
+	#define PMIC_I2C_W (0x36 << 1)	// 7bit: 0x36/0x37
 	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-	int board_helperboard_t507_lpddr4_axp853_initialize(void);
-	int board_helperboard_t507_lpddr3_axp853_initialize(void);
+	int board_radaxa_cubie_axp318w_initialize(void);
 
-	/* Контроллер питания AXP305 */
-	#define xBOARD_PMIC_INITIALIZE() do { \
-		board_helperboard_t507_lpddr4_axp853_initialize(); /* Voltages are set here */ \
+	/* Контроллер питания AXP313 */
+	#define BOARD_PMIC_INITIALIZE() do { \
+		board_radaxa_cubie_axp318w_initialize(); \
 	} while (0)
-	#define BOARD_PMIC_SELECTOR(configtype) do { \
-		switch (configtype) { \
-		case 1: board_helperboard_t507_lpddr4_axp853_initialize(); break; /* HelperBoard v1.2 2021 - LPDDR4 32 bit */ \
-		case 5: board_helperboard_t507_lpddr3_axp853_initialize(); break; /* HelperBoard v1.1 2026 - LPDDR3 32 bit */ \
-		default: break; \
-		} \
-	} while (0)
-
 #endif /* WITHISBOOTLOADER */
 
 #if WITHISBOOTLOADER
@@ -1054,27 +1045,13 @@
 
 #endif /* WITHSPIHW */
 
-#if WITHDEBUG
-	// WITHUART0HW
-	// Используется периферийный контроллер последовательного порта UART0 */
-	#define HARDWARE_UART0_INITIALIZE() do { \
-			const portholder_t TXMASK = UINT32_C(1) << 0; /* PH0 UART0-TX */ \
-			const portholder_t RXMASK = UINT32_C(1) << 1; /* PH1 UART0-RX - pull-up RX data */  \
-			arm_hardware_pioh_altfn2m(TXMASK, GPIO_CFG_AF2); \
-			arm_hardware_pioh_altfn2m(RXMASK, GPIO_CFG_AF2); \
-			arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
-		} while (0)
-#else /* WITHDEBUG */
-	// WITHUART0HW
-	// Используется периферийный контроллер последовательного порта UART0 */
-	#define HARDWARE_UART0_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 2; /* PF2 UART0-TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 4; /* PF4 UART0-RX - pull-up RX data */  \
-		arm_hardware_piof_altfn2m(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_piof_altfn2m(RXMASK, GPIO_CFG_AF3); \
-		arm_hardware_piof_updown(RXMASK | TXMASK, RXMASK, 0); \
+#define HARDWARE_UART0_INITIALIZE() do { \
+		const portholder_t TXMASK = UINT32_C(1) << 0; /* PB0 UART0_TX */ \
+		const portholder_t RXMASK = UINT32_C(1) << 1; /* PB1 UART0_RX - pull-up RX data */  \
+		arm_hardware_piob_altfn2m(TXMASK, GPIO_CFG_AF3); \
+		arm_hardware_piob_altfn2m(RXMASK, GPIO_CFG_AF3); \
+		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 	} while (0)
-#endif /* WITHDEBUG */
 
 // WITHUART5HW
 // Используется периферийный контроллер последовательного порта UART5 (rear panel) */
