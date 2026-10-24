@@ -1280,12 +1280,12 @@
 	//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	/* Яркость Управлятся через PWM */
-	#define HARDWARE_BL_PWMCH 0	/* PWM0 */
+	#define HARDWARE_BL_PWMCH 4	/* PWM0-4 */
 	#define HARDWARE_BL_FREQ 	10000	/* Частота PWM управления подсветкой */
 	#define	HARDWARE_BL_INITIALIZE() do { \
-		const portholder_t ENmask = (UINT32_C(1) << 28); /* PD28 */ \
+		const portholder_t ENmask = (UINT32_C(1) << 22); /* PD22 */ \
 		hardware_dcdcfreq_pwm_initialize(HARDWARE_BL_PWMCH); \
-		arm_hardware_piod_altfn2m(ENmask, GPIO_CFG_AF2); /* PD28 - PWM0 */ \
+		arm_hardware_piod_altfn2m(ENmask, GPIO_CFG_AF2); /* PD22 - PWM0-4 */ \
 	} while (0)
 	// en: 0/1, level=WITHLCDBACKLIGHTMIN..WITHLCDBACKLIGHTMAX
 	// level=WITHLCDBACKLIGHTMIN не приводит к выключениию подсветки
@@ -1311,12 +1311,16 @@
 	#define WITHLCDBACKLIGHTMAX	1	// Верхний предел регулировки (показываемый на дисплее)
 	/* BL0: PA12. BL1: PA11, EN: PD28  */
 	#define	HARDWARE_BL_INITIALIZE() do { \
+		const portholder_t ENmask = (UINT32_C(1) << 22); /* PD22 */ \
+		arm_hardware_piod_outputs(ENmask, 1 * ENmask); /* PD22 - PWM0-4 */ \
 	} while (0)
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	/* LCD_BL_ADJ0: PA12, LCD_BL_ADJ1: PA11, LCD_BL_ENABLE:PD28 */
 	/* level: начиная от WITHLCDBACKLIGHTMIN */
 	#define HARDWARE_BL_SET(en, level) do { \
+		const portholder_t ENmask = (UINT32_C(1) << 22); /* PD22 */ \
+		gpioX_setstate(GPIOD, ENmask, !! (en) * ENmask); \
 	} while (0)
 
 #endif /* WITHBLPWMCTL */
@@ -1404,73 +1408,17 @@
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 
-	//	tsc interrupt XS26, pin 08
-	//	tsc/LCD reset, XS26, pin 22
-	//	tsc SCL: XS26, pin 01
-	//	tsc SDA: XS26, pin 02
-
 	void stmpe811_interrupt_handler(void * ctx);
 
-	#define BOARD_STMPE811_INT_PIN (UINT32_C(1) << 7)		/* PE7 : TSC interrupt */
+	#define BOARD_STMPE811_INT_PIN (UINT32_C(1) << 4)		/* PL4 : TSC interrupt */
 
 	#define BOARD_STMPE811_INT_CONNECT() do { \
 		static einthandler_t h; \
-		arm_hardware_pioe_inputs(BOARD_STMPE811_INT_PIN); \
-		arm_hardware_pioe_updown(BOARD_STMPE811_INT_PIN, BOARD_STMPE811_INT_PIN, 0); \
-		arm_hardware_pioe_onchangeinterrupt(BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h, stmpe811_interrupt_handler); \
+		arm_hardware_piol_inputs(BOARD_STMPE811_INT_PIN); \
+		arm_hardware_piol_updown(BOARD_STMPE811_INT_PIN, BOARD_STMPE811_INT_PIN, 0); \
+		arm_hardware_piol_onchangeinterrupt(BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h, stmpe811_interrupt_handler); \
 	} while (0)
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
-
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
-
-	//	tsc interrupt XS26, pin 08
-	//	tsc/LCD reset, XS26, pin 22
-	//	tsc SCL: XS26, pin 01
-	//	tsc SDA: XS26, pin 02
-
-	void gt911_interrupt_handler(void * ctx);
-
-	#define BOARD_GPIOA_GT911_INT_PIN (UINT32_C(1) << 7)		/* PE7 : tsc interrupt XS26, pin 08 */
-	#define BOARD_GT911_RESET_PIN (UINT32_C(1) << x)			/* Pxxx : tsc/LCD reset, XS26, pin 22 */
-
-	#define BOARD_GT911_RESET_SET(v) do { gpioX_setstate(GPIOE, BOARD_GT911_RESET_PIN, !! (v)); local_delay_us(1); } while (0)
-	#define BOARD_GT911_INT_SET(v) do { gpioX_setstate(GPIOE, BOARD_GPIOA_GT911_INT_PIN, !! (v)); local_delay_us(1); } while (0)
-
-	#define BOARD_GT911_RESET_INITIO_1() do { \
-		arm_hardware_pioe_outputs2m(BOARD_GPIOA_GT911_INT_PIN, 1 * BOARD_GPIOA_GT911_INT_PIN); \
-		arm_hardware_pioe_outputs2m(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
-		 local_delay_ms(200);  \
-	} while (0)
-
-	#define BOARD_GT911_RESET_INITIO_2() do { \
-		arm_hardware_pioe_inputs(BOARD_GPIOA_GT911_INT_PIN); \
-		arm_hardware_pioe_updown(_xMask, BOARD_GPIOA_GT911_INT_PIN, 0); \
-	} while (0)
-
-	#define BOARD_GT911_INT_CONNECT() do { \
-		static einthandler_t h; \
-		arm_hardware_pioa_inputs(BOARD_GPIOA_GT911_INT_PIN); \
-		arm_hardware_pioa_updown(_xMask, BOARD_GPIOA_GT911_INT_PIN, 0); \
-		arm_hardware_pioa_onchangeinterrupt(BOARD_GPIOA_GT911_INT_PIN, 1 * BOARD_GPIOA_GT911_INT_PIN, 0 * BOARD_GPIOA_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h, gt911_interrupt_handler); \
-	} while (0)
-	//gt911_interrupt_handler
-
-#endif
-
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_XPT2046)
-
-	#define BOARD_XPT2046_INT_PIN (UINT32_C(1) << 7)		/* PE7 : tsc interrupt */
-	//#define BOARD_XPT2046_INT_GET() (!! (gpioX_getinputs(GPIOE) & BOARD_XPT2046_INT_PIN))
-	#define BOARD_XPT2046_INT_CONNECT() do { \
-		static einthandler_t h; \
-		einthandler_initialize(& h, BOARD_XPT2046_INT_PIN, xpt2406_interrupt_handler, NULL); \
-		arm_hardware_pioe_inputs(BOARD_XPT2046_INT_PIN); \
-		arm_hardware_pioe_altfn2m(BOARD_XPT2046_INT_PIN, GPIO_CFG_EINT); \
-		arm_hardware_pioe_updown(BOARD_XPT2046_INT_PIN, BOARD_XPT2046_INT_PIN, 0); \
-		arm_hardware_pioe_onchangeinterrupt(BOARD_XPT2046_INT_PIN, 0 * BOARD_XPT2046_INT_PIN, 1 * BOARD_XPT2046_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM, & h); /* Low level active */ \
-	} while (0)
-
-#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_XPT2046) */
 
 #define BOARD_BLINK_BIT (UINT32_C(1) << 2)	// PL2 BOOT_LED
 #define BOARD_FRONT_RED_BIT (UINT32_C(1) << 12)	// PL12 FRONTLED_RED
