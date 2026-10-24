@@ -4774,6 +4774,11 @@ uint_fast32_t allwnr_a733_get_s_twi_freq(void)
 	return allwnr_a733_get_apb1_freq();
 }
 
+uint_fast32_t allwnr_a733_get_s_spi_freq(void)
+{
+	return allwnr_a733_get_apb1_freq();
+}
+
 uint_fast32_t allwnr_a733_get_spi0_freq(void)
 {
 	return allwnr_a733_get_sysclk24M_freq();

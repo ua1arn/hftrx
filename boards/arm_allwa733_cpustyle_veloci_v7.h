@@ -938,16 +938,15 @@
 
 	#define targetctl1		(UINT32_C(1) << 11)		// PE11 board control registers chain
 	#define targetnvram		(UINT32_C(1) << 15)		// PK15 NVRAM FM25W256
-	#define targetadck		(UINT32_C(1) << 21)		// PE21 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
-	#define targetxad2		(UINT32_C(1) << 16)		// PE16 ext2 external SPI device (PA BOARD ADC) CSEXT2
-	#define targetfpga1gate	(UINT32_C(1) << 11)		// PE11 data gate for all FPGA SPI operations (0: active)
+	#define targetadck		(UINT32_C(1) << 17)		// PK17 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
+	#define targetxad2		(UINT32_C(1) << 16)		// PK16 ext2 external SPI device (PA BOARD ADC) CSEXT2
+	#define targetfpga1gate	(UINT32_C(1) << 13)		// PE13 data gate for all FPGA SPI operations (0: active)
 	#define targetfpga1only	(UINT32_C(1) << 17)		// PE17 FPGA control registers CS1
 	#define targetfpga1		(targetfpga1only | targetfpga1gate)
 
-	#define SPI_DRIVE_CODEC1 GPIO_DRV_0
 	#define SPI_DRIVE(drv) do { \
-		gpioX_prog(GPIOH, SPI_SCLK_BIT, GPIO_CFG_AF4, (drv), GPIO_PULL_NONE); 	/* PH6 SPI1_CLK */ \
-		gpioX_prog(GPIOH, SPI_MOSI_BIT, GPIO_CFG_AF4, (drv), GPIO_PULL_NONE); 	/* PH7 SPI1_MOSI */ \
+		s_gpioX_prog(S_GPIOL, SPI_SCLK_BIT, GPIO_CFG_AF4, (drv), GPIO_PULL_NONE); 	/* PL5 SPI1_CLK */ \
+		s_gpioX_prog(S_GPIOL, SPI_MOSI_BIT, GPIO_CFG_AF4, (drv), GPIO_PULL_NONE); 	/* PL6 SPI1_MOSI */ \
 	} while (0)
 
 	/* Вызывается до выдачи chip select */
@@ -997,8 +996,8 @@
 		arm_hardware_piok_outputs20m(targetnvram, 1 * targetnvram); /*  */ \
 		arm_hardware_pioe_outputs20m(targetctl1, 1 * targetctl1); /*  */ \
 		/*arm_hardware_pioe_outputs20m(targetcodec1, 1 * targetcodec1); *//*  */ \
-		arm_hardware_pioe_outputs20m(targetadck, 1 * targetadck); /*  */ \
-		arm_hardware_pioe_outputs20m(targetxad2, 1 * targetxad2); /*  */ \
+		arm_hardware_piok_outputs20m(targetadck, 1 * targetadck); /*  */ \
+		arm_hardware_piok_outputs20m(targetxad2, 1 * targetxad2); /*  */ \
 		arm_hardware_pioe_outputs20m(targetfpga1only, 1 * targetfpga1only); /*  */ \
 		arm_hardware_pioe_outputs20m(targetfpga1gate, 1 * targetfpga1gate); /*  */ \
 	} while (0)
@@ -1008,9 +1007,9 @@
 	} while (0)
 
 	// MOSI & SCK port
-	#define	SPI_SCLK_BIT			(UINT32_C(1) << 6)	// PH6 SPI1_CLK
-	#define	SPI_MOSI_BIT			(UINT32_C(1) << 7)	// PH7 SPI1_MOSI
-	#define	SPI_MISO_BIT			(UINT32_C(1) << 8)	// PH8 SPI1_MISO
+	#define	SPI_SCLK_BIT			(UINT32_C(1) << 5)	// PL5 S_SPI0_CLK
+	#define	SPI_MOSI_BIT			(UINT32_C(1) << 6)	// PL6 S_SPI0_MOSI
+	#define	SPI_MISO_BIT			(UINT32_C(1) << 7)	// PL7 S_SPI0_MISO
 
 	/* Выводы соединения с QSPI BOOT NOR FLASH */
 	//#define SPDIF_SCLK_BIT (UINT32_C(1) << 2)	// PC2 SPI0_CLK
@@ -1020,14 +1019,12 @@
 	//#define SPDIF_D2_BIT (UINT32_C(1) << 6)		// PC6 SPI0_WP/D2
 	//#define SPDIF_D3_BIT (UINT32_C(1) << 7)		// PC7 SPI0_HOLD/D3
 
-	#define	SPIHARD_CCU_CLK_REG (CCU->SPI1_CLK_REG)	/* 0 - SPI0, 1: SPI1... */
-	#define	SPIHARD_CCU_BGR_REG (CCU->SPI1_BGR_REG)	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_CCU_CLK_REG (S_PRCM->S_SPI_CLK_REG)
+	#define	SPIHARD_CCU_BGR_REG (S_PRCM->S_SPI_BGR_REG)
 	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x00	/* A733: 0X00: osc24m */
-	#define HARDWARE_SPI_FREQ (allwnr_a733_get_spi1_freq())
+	#define HARDWARE_SPI_FREQ (allwnr_a733_get_s_spi_freq())
 
-	/* to be removed... */
-	#define	SPIHARD_IX 1	/* 0 - SPI0, 1: SPI1... */
-	#define	SPIHARD_PTR SPI1	/* 0 - SPI0, 1: SPI1... */
+	#define	SPIHARD_PTR S_SPI	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIDFHARD_PTR SPIHARD_PTR
 	#define SPIDFHARD_IX SPIHARD_IX
 
@@ -1037,12 +1034,12 @@
 	// сделать зависящим от target
 	#define SPI_GET_PTR(target) SPIHARD_PTR//((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )
 
-	#define HARDWARE_SPI1_INITIALIZE() do { \
-		arm_hardware_piod_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF6); 	/* PD11 SPI0_CLK */ \
-		arm_hardware_piod_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF6); 	/* PC12 SPI0_MOSI */ \
-		arm_hardware_piod_altfn50(SPI_MISO_BIT, GPIO_CFG_AF6); 	/* PC13 SPI0_MISO */ \
+	#define HARDWARE_S_SPI0_INITIALIZE() do { \
+		arm_hardware_piol_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF6); 	/* PL5 S_SPI0_CLK */ \
+		arm_hardware_piol_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF6); 	/* PL6 S_SPI0_MOSI */ \
+		arm_hardware_piol_altfn50(SPI_MISO_BIT, GPIO_CFG_AF6); 	/* PL7 S_SPI0_MISO */ \
 	} while (0)
-	#define WITHSPI1HW	1	// Use SPI1
+	#define WITHSSPIHW	1	// Use S_SPI
 
 #endif /* WITHSPIHW */
 
@@ -1128,27 +1125,27 @@
 #if 1//WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 	/* outputs */
-	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(5); } while (0)
-	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(5); } while (0)
-	#define FPGA_NCONFIG_BIT		(UINT32_C(1) << 12)	/* PE12 bit connected to nCONFIG pin ALTERA FPGA */
+	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOB, (v), !! (1) * (v)); local_delay_us(5); } while (0)
+	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOB, (v), !! (0) * (v)); local_delay_us(5); } while (0)
+	#define FPGA_NCONFIG_BIT		(UINT32_C(1) << 10)	/* PB10 bit connected to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
-	#define FPGA_CONF_DONE_INPUT	gpioX_getinputs(GPIOE)
-	#define FPGA_CONF_DONE_BIT		(UINT32_C(1) << 14)	/* PE14 bit connected to CONF_DONE pin ALTERA FPGA */
+	#define FPGA_CONF_DONE_INPUT	gpioX_getinputs(GPIOB)
+	#define FPGA_CONF_DONE_BIT		(UINT32_C(1) << 4)	/* PB4 bit connected to CONF_DONE pin ALTERA FPGA */
 
-	#define FPGA_NSTATUS_INPUT		gpioX_getinputs(GPIOE)
-	#define FPGA_NSTATUS_BIT		(UINT32_C(1) << 13)	/* PE13 bit connected to NSTATUS pin ALTERA FPGA */
+	#define FPGA_NSTATUS_INPUT		gpioX_getinputs(GPIOB)
+	#define FPGA_NSTATUS_BIT		(UINT32_C(1) << 9)	/* PB9 bit connected to NSTATUS pin ALTERA FPGA */
 
-	#define FPGA_INIT_DONE_INPUT	gpioX_getinputs(GPIOE)
-	#define FPGA_INIT_DONE_BIT		(UINT32_C(1) << 15)	/* PE15 bit connected to INIT_DONE pin ALTERA FPGA */
+	#define FPGA_INIT_DONE_INPUT	gpioX_getinputs(GPIOB)
+	#define FPGA_INIT_DONE_BIT		(UINT32_C(1) << 3)	/* PB3 bit connected to INIT_DONE pin ALTERA FPGA */
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
-			arm_hardware_pioe_outputs20m(targetfpga1gate, 1 * targetfpga1gate); /*  */ \
-			arm_hardware_pioe_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
-			arm_hardware_pioe_inputs(FPGA_NSTATUS_BIT); \
-			arm_hardware_pioe_inputs(FPGA_CONF_DONE_BIT); \
-			arm_hardware_pioe_inputs(FPGA_INIT_DONE_BIT); \
+			arm_hardware_pioe_outputs20m(targetfpga1gate, 1 * targetfpga1gate); /* PE13 */ \
+			arm_hardware_piob_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
+			arm_hardware_piob_inputs(FPGA_NSTATUS_BIT); \
+			arm_hardware_piob_inputs(FPGA_CONF_DONE_BIT); \
+			arm_hardware_piob_inputs(FPGA_INIT_DONE_BIT); \
 			local_delay_us(5); \
 		} while (0)
 
@@ -1180,24 +1177,24 @@
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
 
 	// FPGA PIN_23
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(1); } while (0) // do { GPIOC->BSRR = BSRR_C(v); (void) GPIOC->BSRR; } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(1); } while (0) // do { GPIOC->BSRR = BSRR_S(v); (void) GPIOC->BSRR; } while (0)
-	#define TARGET_FPGA_FIR_CS_BIT (UINT32_C(1) << 2)	/* PE2 - fir CS ~FPGA_FIR_CLK */
+	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); local_delay_us(1); } while (0) // do { GPIOC->BSRR = BSRR_C(v); (void) GPIOC->BSRR; } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { gpioX_setstate(GPIOD, (v), !! (1) * (v)); local_delay_us(1); } while (0) // do { GPIOC->BSRR = BSRR_S(v); (void) GPIOC->BSRR; } while (0)
+	#define TARGET_FPGA_FIR_CS_BIT (UINT32_C(1) << 19)	/* PD19 - fir CS ~FPGA_FIR_CLK */
 
 	// FPGA PIN_8
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(1); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(1); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR1_WE_BIT (UINT32_C(1) << 3)	/* PE3 - fir1 WE */
+	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); local_delay_us(1); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { gpioX_setstate(GPIOD, (v), !! (1) * (v)); local_delay_us(1); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
+	#define TARGET_FPGA_FIR1_WE_BIT (UINT32_C(1) << 17)	/* PD17 - fir1 WE */
 
 	// FPGA PIN_7
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { gpioX_setstate(GPIOE, (v), !! (0) * (v)); local_delay_us(1); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { gpioX_setstate(GPIOE, (v), !! (1) * (v)); local_delay_us(1); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
-	#define TARGET_FPGA_FIR2_WE_BIT (UINT32_C(1) << 0)	/* PE0 - fir2 WE */
+	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { gpioX_setstate(GPIOD, (v), !! (0) * (v)); local_delay_us(1); } while (0) // do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { gpioX_setstate(GPIOD, (v), !! (1) * (v)); local_delay_us(1); } while (0) // do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
+	#define TARGET_FPGA_FIR2_WE_BIT (UINT32_C(1) << 18)	/* PD18 - fir2 WE */
 
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-			arm_hardware_pioe_outputs2m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
-			arm_hardware_pioe_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_pioe_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
+			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
+			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
+			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
 #endif
 
