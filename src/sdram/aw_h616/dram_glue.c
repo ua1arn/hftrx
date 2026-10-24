@@ -9,12 +9,12 @@
 
 #include "hardware.h"
 
-#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H618_LPDDR4 || CONFIG_SUNXI_DRAM_H616_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR4)
+#include "dram_glue.h"
+#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H618_LPDDR4 || CONFIG_SUNXI_DRAM_H616_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR3)
 
 #include "formats.h"
 #include "clocks.h"
 #include <string.h>
-#include "dram_glue.h"
 
 
 static int xdramc_simple_wr_test(unsigned int mem_mb, int len)
@@ -155,11 +155,11 @@ int arm_hardware_sdram_initialize(int configtype)
 		memsizeMB = memsizeB / 1024 / 1024;
 		break;
 	case 5:	// HelperBoard v1.1 2026 - LPDDR3 32 bit
-//		memsizeB = sunxi_dram_init();
-//		memsizeMB = memsizeB / 1024 / 1024;
+		memsizeB = sunxi_dram_init();
+		memsizeMB = memsizeB / 1024 / 1024;
 		break;
 	default:
-		PRINTF("Not handled memory config value\n");
+		PRINTF("Not handled memory config value %d\n", configtype);
 		break;
 	}
 	//memsize =  dram_power_up_process(& lpddr4);

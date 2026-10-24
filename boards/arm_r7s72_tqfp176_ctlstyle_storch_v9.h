@@ -61,7 +61,7 @@
 	// --- вариации прошивки, специфические для разных плат
 
 	#define WITHPREAMPATT2_6DB		1	// Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
-	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
+	
 	//#define WITHATT2_6DB		1		// LTC2217 or AD9246 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 
 	
@@ -80,8 +80,8 @@
 	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
 	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
 	// --- Особые варианты расположения кнопок на клавиатуре
-	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
-	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
+	
+	
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #if WITHISBOOTLOADER
@@ -333,7 +333,7 @@
 	#define WITHIF4DSP	1	// "Дятел"
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
-	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
+	
 	//#define WITHTXCPATHCALIBRATE 1	/* при изменении параметров интерполятора в FPGA выполняем калибровку */
 
 	// выбор накопителя
@@ -368,7 +368,7 @@
 	//#define WITHLFM		1	/* LFM MODE */
 	
 	
-	#define WITHSPKMUTE		1	/* управление выключением динамика */
+	
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	//#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
@@ -448,57 +448,7 @@
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
-#endif /* WITHISBOOTLOADER */
-
-	
-	
-	
-
-	#if 0
-		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
-	#elif 0
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define WITHBBOXFREQ	26985000L		// частота после включения
-		//#define WITHBBOXFREQ	(26985000L - 260)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
-		//#define WITHBBOXFREQ	(26985000L - 1600)		// частота после включения
-		//#define WITHBBOXFREQ	(14070000L - 1000)		// прослушивание BPSK частот
-		//#define WITHBBOXFREQ	(14065000L - 135)		// частота после включения - 135 коррекция частоты платы с  122.88 для попадания в приём платы с 100 МГц генератором без коррекции
-		//#define WITHBBOXFREQ	14065000L		// частота после включения
-		//#define WITHBBOXFREQ	(14065000L - 1000)		// частота после включения
-		//#define WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
-		#define WITHBBOXSUBMODE	SUBMODE_BPSK	// единственный режим работы
-		//#define WITHBBOXFREQ	27100000L		// частота после включения
-		//#define WITHBBOXSUBMODE	SUBMODE_CW	// единственный режим работы
-		//#define WITHBBOXTX		1		// автоматический переход на передачу
-	#elif 0
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define WITHBBOXFREQ	136000L		// частота после включения
-		#define WITHBBOXSUBMODE	SUBMODE_USB	// единственный режим работы
-		#define WITHBBOXREC	1		// автоматическое включение режима записи после подачи питания
-	#elif 0
-		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
-		#define WITHBBOXFREQ	7030000L		// частота после включения
-		#define WITHBBOXSUBMODE	SUBMODE_LSB	// единственный режим работы
-		#define WITHBBOXTX		1		// автоматический переход на передачу
-		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE	// 2: 2tone, 1: noise 
-	#endif
-
-	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
-
-	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
-
-	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
-
-
 	//#define WITHWFM	1			/* используется WFM */
-	/* все возможные в данной конфигурации фильтры */
-	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
-	/* все возможные в данной конфигурации фильтры для передачи */
-	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
-	/* фильтры, для которых стоит признак HAVE */
-	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
 	// Назначения входов АЦП процессора.
 	enum 
@@ -523,7 +473,7 @@
 	#elif WITHAUTOTUNER_AVBELNN
 
 		#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
-		#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
+		
 		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 External thermo sensor ST LM235Z
 
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
@@ -547,7 +497,7 @@
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 
 		#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
-		#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
+		
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
@@ -569,7 +519,7 @@
 		// QRP вариант - только 5 ватт на плате
 
 		#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
-		#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
+		
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHSWRPROT 0	/* отключаем защиту по КСВ */
@@ -584,6 +534,23 @@
 		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 	#endif /* WITHAUTOTUNER_AVBELNN */
 
+	};
+
+#endif /* WITHISBOOTLOADER */
+
+	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
+	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
+	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
+	/* все возможные в данной конфигурации фильтры */
+	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+	/* все возможные в данной конфигурации фильтры для передачи */
+	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
+	/* фильтры, для которых стоит признак HAVE */
+	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+
+	/* кеширование днных */
+	enum
+	{
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		REFMRRIX = BOARD_ADCMRRIN(2),

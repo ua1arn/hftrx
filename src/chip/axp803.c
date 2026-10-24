@@ -1280,7 +1280,7 @@ int board_helperboard_t507_lpddr4_axp853_initialize(void)
 //					1U << 6);	// DCDC 2&3 polyphase control
 
 	PRINTF("PMIC: AXP853T/AXP858 ON\n");
-	local_delay_initialize();
+	
 	local_delay_ms(100);
 	axp858_set_sw(1);
 	local_delay_ms(100);
@@ -1356,7 +1356,7 @@ int board_helperboard_t507_lpddr3_axp853_initialize(void)
 //					1U << 6);	// DCDC 2&3 polyphase control
 
 	PRINTF("PMIC: AXP853T/AXP858 ON\n");
-	local_delay_initialize();
+	
 	local_delay_ms(100);
 	axp858_set_sw(1);
 	local_delay_ms(100);
@@ -1535,7 +1535,7 @@ int board_helperboard_a133_axp707_initialize(void)
 //					1U << 6);	// DCDC 2&3 polyphase control
 
 	PRINTF("PMIC: axp707 ON\n");
-	local_delay_initialize();
+	
 	local_delay_ms(100);
 	axp707_set_sw(1);
 	local_delay_ms(100);

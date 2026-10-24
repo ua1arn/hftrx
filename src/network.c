@@ -18,6 +18,7 @@
 #if WITHLWIP
 
 #include "sdcard.h"
+#include "clocks.h"
 
 #include <stdbool.h>
 #include "lwip/opt.h"
@@ -29,6 +30,7 @@
 #include "lwip/dhcp.h"
 #include "netif/etharp.h"
 #include "lwip/ip_addr.h"
+#include "lwip/err.h"
 
 #include "../lib/dhcp-server/dhserver.h"
 #include "../lib/dns-server/dnserver.h"
@@ -52,7 +54,7 @@ static ip4_addr_t myGATEWAY = IPADDR4_INIT_BYTES( 0, 0, 0, 0);
  */
 
 #if defined (LWIP_RAM_HEAP_POINTER)
-	ALIGNX_BEGIN RAMFRAMEBUFF uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE] ALIGNX_END;
+	ALIGNX_BEGIN RAMNC uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE] ALIGNX_END;
 #endif /* defined (LWIP_RAM_HEAP_POINTER) */
 
 
@@ -325,184 +327,8 @@ static void lwip_1s_spool(void * ctx)
 {
 	(void) ctx;
 	sys_check_timeouts();
+	nic_linkspool(ctx);
 }
-
-
-typedef struct nic_buffer_tag
-{
-	VLIST_ENTRY item;
-	struct pbuf *frame;
-} nic_buffer_t;
-
-static LCLSPINLOCK_t nicbufflock = IRQLSPINLOCK_INIT;
-#define NICBUFFLOCK_IRQL IRQL_SYSTEM
-
-static void nicbuff_lock(IRQL_t * oldIrql)
-{
-	IRQLSPIN_LOCK(& nicbufflock, oldIrql, NICBUFFLOCK_IRQL);
-}
-
-static void nicbuff_unlock(IRQL_t irql)
-{
-	IRQLSPIN_UNLOCK(& nicbufflock, irql);
-}
-
-static VLIST_ENTRY nic_buffers_free;
-static VLIST_ENTRY nic_buffers_ready;
-
-static void nic_buffers_initialize(void)
-{
-	static RAMFRAMEBUFF nic_buffer_t sliparray [64];
-	unsigned i;
-
-	InitializeListHead(& nic_buffers_free);	// Незаполненные
-	InitializeListHead(& nic_buffers_ready);	// Для обработки
-
-	for (i = 0; i < (sizeof sliparray / sizeof sliparray [0]); ++ i)
-	{
-		nic_buffer_t * const p = & sliparray [i];
-		InsertHeadVList(& nic_buffers_free, & p->item);
-	}
-}
-
-static int nic_buffer_alloc(nic_buffer_t * * tp)
-{
-	IRQL_t oldIrql;
-	nicbuff_lock(& oldIrql);
-	if (! IsListEmpty(& nic_buffers_free))
-	{
-		const PVLIST_ENTRY t = RemoveTailVList(& nic_buffers_free);
-		nicbuff_unlock(oldIrql);
-		nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
-		* tp = p;
-		return 1;
-	}
-	nicbuff_unlock(oldIrql);
-	return 0;
-}
-
-static int nic_buffer_ready(nic_buffer_t * * tp)
-{
-	IRQL_t oldIrql;
-	nicbuff_lock(& oldIrql);
-	if (! IsListEmpty(& nic_buffers_ready))
-	{
-		const PVLIST_ENTRY t = RemoveTailVList(& nic_buffers_ready);
-		nicbuff_unlock(oldIrql);
-		nic_buffer_t * const p = CONTAINING_RECORD(t, nic_buffer_t, item);
-		* tp = p;
-		return 1;
-	}
-	nicbuff_unlock(oldIrql);
-	return 0;
-}
-
-static void nic_buffer_release(nic_buffer_t * p)
-{
-	IRQL_t oldIrql;
-	nicbuff_lock(& oldIrql);
-	InsertHeadVList(& nic_buffers_free, & p->item);
-	nicbuff_unlock(oldIrql);
-}
-
-// сохранить принятый
-static void nic_buffer_rx(nic_buffer_t * p)
-{
-	IRQL_t oldIrql;
-	nicbuff_lock(& oldIrql);
-	InsertHeadVList(& nic_buffers_ready, & p->item);
-	nicbuff_unlock(oldIrql);
-}
-
-void nic_on_packet(const uint8_t *data, int size)
-{
-	//printhex(0, data, size);
-	nic_buffer_t * p;
-	if (nic_buffer_alloc(& p) != 0)
-	{
-		struct pbuf *frame;
-		frame = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
-		if (frame == NULL)
-		{
-			TP();
-			nic_buffer_release(p);
-			return;
-		}
-		VERIFY(0 == pbuf_header(frame, - ETH_PAD_SIZE));
-		err_t e = pbuf_take(frame, data, size);
-		VERIFY(0 == pbuf_header(frame, + ETH_PAD_SIZE));
-		if (e == ERR_OK)
-		{
-			//PRINTF("nic_on_packet:\n");
-			//printhex(0, frame->payload, frame->len);
-			p->frame = frame;
-			nic_buffer_rx(p);
-		}
-		else
-		{
-			pbuf_free(frame);
-			nic_buffer_release(p);
-		}
-
-	}
-}
-
-/**
- * This function should do the actual transmission of the packet. The packet is
- * contained in the pbuf that is passed to the function. This pbuf
- * might be chained.
- *
- * @param netif the lwip network interface structure for this ethernetif
- * @param p the MAC packet to send (e.g. IP packet including MAC addresses and type)
- * @return ERR_OK if the packet could be sent
- *         an err_t value if the packet couldn't be sent
- *
- * @note Returning ERR_MEM here if a DMA queue of your MAC is full can lead to
- *       strange results. You might consider waiting for space in the DMA queue
- *       to become availale since the stack doesn't retry to send a packet
- *       dropped because of memory failure (except for the TCP timers).
- */
-
-// Transceiving Ethernet packets
-static err_t nic_linkoutput_fn(struct netif *netif, struct pbuf *p)
-{
-	//PRINTF("nic_linkoutput_fn\n");
-    int i;
-    struct pbuf *q;
-    static uint8_t data [ETH_PAD_SIZE + NIC_MTU + 14 + 4];
-    //static uint8_t data [8192];
-    int size = 0;
-
-    for (i = 0; i < 200; i++)
-    {
-        if (nic_can_send()) break;
-        local_delay_ms(1);
-    }
-
-    if (!nic_can_send())
-    {
-		return ERR_MEM;
-    }
-
-	//PRINTF("nic_linkoutput_fn: 2\n");
-	//printhex(0, p->payload, p->len);
-    VERIFY(0 == pbuf_header(p, - ETH_PAD_SIZE));
-    size = pbuf_copy_partial(p, data, sizeof data, 0);
-//    if (size > sizeof dataX)
-//    {
-//    	PRINTF("************************ nic_linkoutput_fn: size = %d\n", size);
-//    	ASSERT(0);
-//    }
-
-    nic_send(data, size);
-//    for (i = 0; i < 200; i++)
-//    {
-//        if (nic_can_send()) break;
-//        local_delay_ms(1);
-//    }
-    return ERR_OK;
-}
-
 
 #if ! LWIP_ARP && 0
 /**
@@ -551,7 +377,7 @@ void pbuf_free_custom(struct pbuf *p)
 
 static struct netif nic_netif_data;
 
-
+#if 0
 
 static err_t nic_output_fn(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
 {
@@ -563,6 +389,7 @@ static err_t nic_output_fn(struct netif *netif, struct pbuf *p, const ip4_addr_t
 	}
 	return e;
 }
+#endif
 
 static err_t netif_init_cb(struct netif *netif)
 {
@@ -582,41 +409,25 @@ static err_t netif_init_cb(struct netif *netif)
 	#else
 		netif->flags |= NETIF_FLAG_BROADCAST;
 	#endif /* LWIP_ARP */
+
+	//netif->flags |= NETIF_FLAG_ETHERNET;	// на потом
+
 	netif->state = NULL;
 	netif->name[0] = 'E';
 	netif->name[1] = 'X';
 	netif->output = etharp_output; //nic_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
 												// и слкдующий callback linkoutput не требовался бы вообще
-	netif->linkoutput = nic_linkoutput_fn;	// используется внутри etharp_output
+	//netif->linkoutput = alw_low_level_output;//nic_linkoutput_fn;	// используется внутри etharp_output
+	//netif->linkoutput = nic_linkoutput_fn;	// используется внутри etharp_output
 	return ERR_OK;
 }
 
-// Receiving Ethernet packets
-// user-mode function
-static void netif_polling(void * ctx)
-{
-	(void) ctx;
-	nic_buffer_t * p;
-	while (nic_buffer_ready(& p) != 0)
-	{
-		struct pbuf *frame = p->frame;
-		nic_buffer_release(p);
-		//PRINTF("ethernet_input:\n");
-		//printhex(0, frame->payload, frame->len);
-		err_t e = ethernet_input(frame, & nic_netif_data);
-		if (e != ERR_OK)
-		{
-			  /* This means the pbuf is freed or consumed,
-			     so the caller doesn't have to free it again */
-		}
-	}
-}
 
 static void init_netif(void)
 {
-#if ETH_PAD_SIZE != 0
-	#error Wrong ETH_PAD_SIZE value
-#endif
+//#if ETH_PAD_SIZE != 0
+//	#error Wrong ETH_PAD_SIZE value
+//#endif
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 
@@ -629,33 +440,140 @@ static void init_netif(void)
 	netif_set_default(netif);
 #else
 	netif = netif_add(netif, IP4_ADDR_ANY, IP4_ADDR_ANY, IP4_ADDR_ANY, NULL, netif_init_cb, ip_input);
-	netif_set_link_up(netif);
-	netif_set_up(netif);
+	//netif_set_link_up(netif);
+	//netif_set_up(netif);
 #endif
 
-	while (!netif_is_up(netif))
-		;
-#if ! DHCP_SERVER
-	dhcp_start(netif);
-#endif
 
 #if LWIP_AUTOIP
 	  autoip_start(netif);
 #endif /* LWIP_AUTOIP */
-	{
-		static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, netif_polling, NULL);
-		board_dpc_addentry(& dpcobj, board_dpc_coreid());
-	}
 }
+
+
+// UDP for data
+
+uint8_t radio_send_payload(const uint8_t * payload, unsigned size){
+	printhex(0, payload, size);
+	return 0;
+//	tx_radio_packet_configure(&sr_cfg, &tx_buf, size, &payload[0]);
+//	return sr_send_radio_packet(&sr_cfg, &tx_buf, &sr_state);
+//	if(size <= 0) return 0;
+//	return radio_queue_put(&payload[0], size);
+}
+
+#define RADIOPORT 10010 //0x271A
+static const uint_fast16_t myAppPort = RADIOPORT;	// net: 0x271A
+static uint_fast16_t otherSideAppPort = RADIOPORT;	// net: 0x271A
+static struct udp_pcb *pcbudpMyApp = NULL;
+
+// вызывается для передачи в host host данных от радиоблока
+void tx_data_to_host(
+	const void * dbuff, unsigned dsize,
+	const ip_addr_t *IPdest
+	)
+{
+	// передача пакета средствами LWIP
+	ip_addr_t d = * IPdest;	// для тестов
+
+	PRINTF("SendToAddr: %u.%u.%u.%u, port=%u\n", ip4_addr1(& d), ip4_addr2(& d), ip4_addr3(& d), ip4_addr4(& d), otherSideAppPort);
+	struct pbuf *out = pbuf_alloc(PBUF_TRANSPORT, dsize, PBUF_POOL);
+	if (out == NULL)
+	{
+
+		#ifdef DEBUG_UART_MESSAGES
+			printf("pult_tx_data: no memory\n");
+		#endif
+		return;
+	}
+    pbuf_take(out, dbuff, dsize);
+	err_t err = udp_sendto(pcbudpMyApp, out, & d, otherSideAppPort);
+	pbuf_free(out);
+	if (err != ERR_OK)
+	{
+		#ifdef DEBUG_UART_MESSAGES
+			printf("pult_tx_data: udp_sendto error\n");
+		#endif
+		return;
+	}
+	//PRINTF("pult_tx_data trough LWIP done\n");
+}
+
+
+
+//void send_payload_to_host(const uint8_t *dbuff, unsigned size)
+//{
+//  uint8_t ta [4];
+//  ta [0] = entries [0].addr [0];
+//  ta [1] = entries [0].addr [1];
+//  ta [2] = entries [0].addr [2];
+//  ta [3] = 255;//entries [0].addr [3];
+//  tx_data_to_host(dbuff, size, ta);
+//}
+
+// вызывается по приёму от host данных для радиоблока
+static void udpapp_recv_proc(void *arg,
+		struct udp_pcb *pcb,
+		struct pbuf *p,
+	   const ip_addr_t *addr, u16_t port)
+{
+//	PRINTF("udpapp_recv_proc from %d.%d.%d.%d from port %u\n",
+//			(addr->addr >> 0) & 0xFF, (addr->addr >> 8) & 0xFF, (addr->addr >> 16) & 0xFF, (addr->addr >> 24) & 0xFF,
+//			port
+//			);
+
+    //const uint8_t srcIp [4] = { ip4_addr1_16(addr), ip4_addr2_16(addr), ip4_addr3_16(addr), ip4_addr4_16(addr) };
+	//PRINTF("complete packet:\n");
+    uint8_t fromhostdata [124];
+    u16_t size = pbuf_copy_partial(p, fromhostdata, sizeof fromhostdata, 0);
+	pbuf_free(p);
+
+#ifdef DEBUG_UART_MESSAGES
+	printf("From host:\n");
+
+	printhex(0, fromhostdata, size);
+#endif
+
+	radio_send_payload(&fromhostdata[0], size);
+//	send_payload_to_host(&fromhostdata[0], size);
+
+	char b [128];
+	//int n = local_snprintf_P(b, ARRAY_SIZE(b), "You send message!");
+	int n = local_snprintf_P(b, ARRAY_SIZE(b), "You send message from port %u with %u bytes of data!", port, size);
+	printhex(0, b, n);
+	tx_data_to_host(b, n, addr);
+}
+
+static err_t udpapperv_app_init(void)
+{
+	ip_addr_t * const ba = NULL;
+	err_t err;
+	// UDP to application
+	pcbudpMyApp = udp_new();
+	//ASSERT(pcbudpMyApp != NULL);
+	if (pcbudpMyApp == NULL)
+		return ERR_MEM;
+	err = udp_bind(pcbudpMyApp, ba, myAppPort);
+	if (err != ERR_OK)
+	{
+		//udpappserv_free();
+		return err;
+	}
+	udp_recv(pcbudpMyApp, udpapp_recv_proc, NULL);
+
+	return ERR_OK;
+}
+
 
 void network_initialize(void)
 {
+	struct netif  *netif = & nic_netif_data;
 	init_lwip();
-	nic_buffers_initialize();
-	nic_initialize();
+	//nic_buffers_initialize();
+	nic_initialize(netif);
 	init_netif();
+	nic_set_mac(netif);
 
 #if 1
 	  PRINTF("network_initialize: start DHCP & DNS\n");
@@ -673,24 +591,58 @@ void network_initialize(void)
 #endif /* LWIP_HTTPD_CGI */
 	  //echo_init();
 
+	udpapperv_app_init();
 	{
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, lwip_1s_spool, NULL);
-		ticker_initialize_user(& ticker, NTICKS(1000), & dpcobj);
+		dpcobj_initialize(& dpcobj, lwip_1s_spool, & nic_netif_data, "lwip_1s_spool");
+		ticker_initialize_user(& ticker, 1000, & dpcobj);
 		ticker_add(& ticker);
 	}
 }
+
+static uint_fast8_t glob_eth_dhcp = 1;
+
+void
+board_set_eth_dhcp(uint_fast8_t v)
+{
+	struct netif * const netif = & nic_netif_data;
+	uint_fast8_t n = !! v;
+	if (glob_eth_dhcp != n)
+	{
+		glob_eth_dhcp = n;
+		if (n)
+		{
+            err_t e = dhcp_start(netif);
+            ASSERT(ERR_OK == e);
+		}
+		else
+		{
+            dhcp_release_and_stop(netif);
+            netif_set_ipaddr(netif, IP4_ADDR_ANY4);
+            netif_set_netmask(netif, IP4_ADDR_ANY4);
+            netif_set_gw(netif, IP4_ADDR_ANY4);
+		}
+	}
+}
+
+uint_fast8_t board_get_eth_dhcp(void)
+{
+	return glob_eth_dhcp;
+}
+
+
 /* Параметры интерфейса для отображения в меню */
 size_t getvaltextethaddr(char * buff, size_t count, int_fast32_t value)
 {
-	struct netif  *netif = & nic_netif_data;
+	struct netif * const netif = & nic_netif_data;
 	const ip4_addr_t addr = * netif_ip4_addr(netif);
 	const u8_t p1 = ip4_addr1_val(addr);
 	const u8_t p2 = ip4_addr2_val(addr);
 	const u8_t p3 = ip4_addr3_val(addr);
 	const u8_t p4 = ip4_addr4_val(addr);
+	(void) value;
 	/* Параметры интерфейса для отображения в меню  */
 	return local_snprintf_P(buff, count, "%u.%u.%u.%u", p1, p2, p3, p4);
 }
@@ -698,12 +650,13 @@ size_t getvaltextethaddr(char * buff, size_t count, int_fast32_t value)
 /* Параметры интерфейса для отображения в меню */
 size_t getvaltextethmask(char * buff, size_t count, int_fast32_t value)
 {
-	struct netif  *netif = & nic_netif_data;
+	struct netif * const netif = & nic_netif_data;
 	const ip4_addr_t netmask = * netif_ip4_netmask(netif);
 	const u8_t p1 = ip4_addr1_val(netmask);
 	const u8_t p2 = ip4_addr2_val(netmask);
 	const u8_t p3 = ip4_addr3_val(netmask);
 	const u8_t p4 = ip4_addr4_val(netmask);
+	(void) value;
 	/* Параметры интерфейса для отображения в меню  */
 	return local_snprintf_P(buff, count, "%u.%u.%u.%u", p1, p2, p3, p4);
 }
@@ -711,14 +664,23 @@ size_t getvaltextethmask(char * buff, size_t count, int_fast32_t value)
 /* Параметры интерфейса для отображения в меню */
 size_t getvaltextethgateway(char * buff, size_t count, int_fast32_t value)
 {
-	struct netif  *netif = & nic_netif_data;
+	struct netif * const netif = & nic_netif_data;
 	const ip4_addr_t gw = * netif_ip4_gw(netif);
 	const u8_t p1 = ip4_addr1_val(gw);
 	const u8_t p2 = ip4_addr2_val(gw);
 	const u8_t p3 = ip4_addr3_val(gw);
 	const u8_t p4 = ip4_addr4_val(gw);
+	(void) value;
 	/* Параметры интерфейса для отображения в меню  */
 	return local_snprintf_P(buff, count, "%u.%u.%u.%u", p1, p2, p3, p4);
+}
+
+/* Параметры интерфейса для отображения в меню */
+size_t getvaltextethlinkstate(char * buff, size_t count, int_fast32_t value)
+{
+	struct netif * const netif = & nic_netif_data;
+	(void) value;
+	return local_snprintf_P(buff, count, "%s", netif_is_link_up(netif) ? "Up" : "Down");
 }
 
 #else

@@ -71,10 +71,10 @@
 
 		{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
-		{	0,	0, 	8, 5, display_siglevel7, 	& dzi_compat, PGALL, },	// signal level dBm
+		{	0,	0, 	8, 5, display2_siglevel7, 	& dzi_compat, PGALL, },	// signal level dBm
 		//{	0,	0, 	6, 5, display2_smeors5, 	& dzi_compat, PGALL, },	// уровень сигнала в баллах S или dBm
 		{	10,	0,	5, 5, display2_rxbwval4,	& dzi_compat, PGALL, },	// RX BW value
-		{	15,	0,	3, 5, display_txrxstate2, 	& dzi_compat, PGALL, },
+		{	15,	0,	3, 5, display2_txrxstate2, 	& dzi_compat, PGALL, },
 		{	18, 0,	4, 5, display2_byp3,		& dzi_compat, PGALL, },	// TUNER BYPASS state (optional)
 		{	22,	0,	6, 5, display2_ant5,		& dzi_compat, PGALL, },
 		{	28,	0,	5, 5, display2_att4,		& dzi_compat, PGALL, },
@@ -90,25 +90,26 @@
 		{	0,	5,	SM_BG_W_CELLS,	SM_BG_H_CELLS, display2_af_spectre15,		& dzi_compat, PG0, },
 	#endif /* WITHAFSPECTRE */
 
-		{	15,	6,	0, 0, display2_freqX_a_init,	& dzi_compat, PGINI, },	// MAIN FREQ Частота (большие цифры)
-		{	15,	6,	21, 11, display2_freqX_a,	& dzi_compat, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+		{	15,	5,	0, 	0, display2_freqX_init,	& dzi_compat, PGINI, },	// MAIN FREQ Частота (большие цифры)
+		{	15, 5, 	1, 	8,	display2_freqmode_a, & dzi_default, PGALL, },	// Отображение режима настройки VFO A
+		{	16,	5,	21, 11, display2_freqX_a,	& dzi_compat, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
-		{	40, 0,	10, 9, display2_fnblock9,	& dzi_compat, PGALL, },	// FUNC menu item label & value
+		{	40, 0,	10, 9, 	display2_fnblock9,	& dzi_compat, PGALL, },	// FUNC menu item label & value
 
-		{	36, 10,	4, 5, display2_mode3_a,		& dzi_compat,	PGALL, },	// SSB/CW/AM/FM/...
-		{	40, 10,	4, 5, display2_rxbw3,		& dzi_compat, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	44, 10,	6, 5, display2_agc3,		& dzi_compat, PGALL, },	// AGC mode
+		{	36, 10,	4, 5, 	display2_mode3_a,		& dzi_compat,	PGALL, },	// SSB/CW/AM/FM/...
+		{	40, 10,	4, 5, 	display2_rxbw3,		& dzi_compat, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	44, 10,	6, 5, 	display2_notch5,		& dzi_compat, PGALL, },	// NOTCH on/off
 
-		{	36, 15,	4, 5, display2_nr3,			& dzi_compat, PGALL, },	// NR : was: AGC
-		{	40, 15,	4, 5, display2_datamode3,	& dzi_compat, PGALL, },	// DATA mode indicator
-		{	44, 15,	6, 5, display2_notch5,		& dzi_compat, PGALL, },	// NOTCH on/off
+		{	36, 15,	4, 	5, 	display2_nr3,			& dzi_compat, PGALL, },	// NR : was: AGC
+		{	40, 15,	4, 	5, 	display2_datamode3,	& dzi_compat, PGALL, },	// DATA mode indicator
+		{	44, 15,	6, 	5, 	display2_voxtune3,		& dzi_compat, PGALL, },	// VOX
 
-		{	15, 20,	4, 5, display2_mainsub3,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
-		{	20,	20,	4, 5, display2_vfomode3,	& dzi_compat, PGALL, },	// SPL
-		{	24,	20,	12, 5, display2_freqX_b,	& dzi_compat, PGALL, },	// SUB FREQ
-		{	36, 20,	4, 5, display2_mode3_b,		& dzi_compat,	PGALL, },	// SSB/CW/AM/FM/...
-		{	40, 20,	4, 5, display2_voxtune3,	& dzi_compat, PGALL, },	// VOX
-		{	44,	20,	6, 5, display2_lockstate4, 	& dzi_compat, PGALL, },	// LOCK
+		{	15, 18, 1, 	8,	display2_freqmode_b, & dzi_default, PGALL, },	// Отображение режима настройки VFO B
+		{	16,	18,	12, 8, 	display2_freqX_b_x075,	& dzi_compat, PGALL, },	// SUB FREQ
+		{	32, 20,	4, 	5, 	display2_mode3_b,		& dzi_compat,	PGALL, },	// SSB/CW/AM/FM/...
+		{	36, 20,	4, 	5, 	display2_mainsub3,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+		{	40,	20,	4, 	5, 	display2_vfomode3,	& dzi_compat, PGALL, },	// SPL
+		{	44,	20,	6, 	5, 	display2_lockstate4, 	& dzi_compat, PGALL, },	// LOCK
 
 		// размещены под S-метром (15 ячеек)
 		{	0, 	25,	6, 5, display2_voltlevelV, & dzi_compat, PGALL, },	// voltmeter with "V"

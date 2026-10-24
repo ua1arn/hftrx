@@ -14,14 +14,10 @@ enum {
 };
 
 /* параметры спектра/водопада */
-enum
-{
-	BDTH_ALLRX = (50), 		// ширина зоны для отображение графического окна на индикаторе
-	BDCV_ALLRX = (DLEB - DLES) - 1,	// количество cells, отведенное под панораму и волопад.
-	//
-	BDTH_ALL = 50, 		// ширина индикатора
-	B_unused
-};
+#define BDTH_ALLRX 50 					// ширина зоны для отображение графического окна на индикаторе
+#define BDCV_ALLRX ((DLEB - DLES) - 1)	// количество cells, отведенное под панораму и волопад.
+#define BDTH_ALL 50 					// ширина индикатора
+#define RTTYSPEC 20						// высота, занятая показом спектра при RTTY
 
 /* параметры S-метра */
 enum
@@ -51,13 +47,22 @@ enum
 enum
 {
 	DPAGE0,					// Страница, в которой отображаются основные (или все)
+#if WITHRTTY
+	DPAGE1,					// Страница, в которой отображаются основные (или все)
+#endif /* WITHRTTY */
 	DISPLC_MODCOUNT
 };
 
 enum
 {
 	PG0 = REDRSUBSET(DPAGE0),
-	PGALL = PG0 | REDRSUBSET_MENU,
+#if WITHRTTY
+	PG1 = REDRSUBSET(DPAGE1),
+#else /* WITHRTTY */
+	PG1 = 0,
+#endif /* WITHRTTY */
+	PG1_1 = PG0 | PG1,
+	PGALL = PG1_1 | REDRSUBSET_MENU,
 	PGWFL = PG0,	// страница отображения водопада
 	PGSPE = PG0,	// страница отображения панорамы
 	PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
@@ -67,15 +72,12 @@ enum
 	PGunused
 };
 
-#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
+#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
 #define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
 #define DISPLC_RADIUS 	5	// радиус закругления углов плиток в dzones
 
 // 480/5 = 96, 800/16=50
 // 272/5 = 54, 480/16=30 (old)
-
-
-
 
 static const dzone_t dzones [] =
 {
@@ -84,10 +86,10 @@ static const dzone_t dzones [] =
 	{	0,	0,	9,	5,	display2_ENC1F,	& dzi_compat, PGALL, },
 	{	9,	0,	9,	5,	display2_ENC2F,	& dzi_compat, PGALL, },
 
-//	{	0,	0, 	7,	5,	display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
+//	{	0,	0, 	7,	5,	display2_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
 	//{	0,	0, 	5,	5,	display2_smeors5, 	& dzi_compat, PGALL, },	// уровень сигнала в баллах S или dBm
 	//{	10,	0,	4,	5,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
-	{	19,	0,	3,	5,	display_txrxstate2, 	& dzi_txrx, PGALL, },
+	{	19,	0,	3,	5,	display2_txrxstate2, 	& dzi_txrx, PGALL, },
 	{	22,	0,	5,	5,	display2_att4,		& dzi_attenuator, PGALL, },
 	{	27,	0,	4,	5,	display2_preovf3,		& dzi_preamp_ovf, PGALL, },
 
@@ -96,8 +98,8 @@ static const dzone_t dzones [] =
 
 
 #if WITHBARS
-	{   0, 	5,  0,	0,	display2_smeter15_init,	NULL, PGINI, },	//  Инициализация стрелочного прибора
-	{   0, 	5,  SM_BG_W_CELLS, SM_BG_H_CELLS, display2_smeter15,		& dzi_compat, PGALL, },	//  Инициализация стрелочного прибора
+	{   0, 	5,  SM_BG_W_CELLS, SM_BG_H_CELLS,	display2_smeter15_init,	NULL, PGINI, },	//  Инициализация стрелочного прибора
+	{   0, 	5,  SM_BG_W_CELLS, SM_BG_H_CELLS, 	display2_smeter15,		& dzi_compat, PGALL, },	//  Инициализация стрелочного прибора
 //	{   0, 	5,	15,	19,	display2_dummy, 		& dzi_smtr2, PGALL, },	// Placeholder
 #endif /* WITHBARS */
 #if WITHAFSPECTRE
@@ -106,9 +108,16 @@ static const dzone_t dzones [] =
 	{	0,	5,	SM_BG_W_CELLS,	SM_BG_H_CELLS,	display2_af_spectre15,			& dzi_compat, PGALL, },
 #endif /* WITHAFSPECTRE */
 
-	{	15,	8,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
-	{	15,	8,	21, 11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+	{	0,	0,	0, 0, 	display2_freqX_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 
+	{	15, 5, 	1, 	8,	display2_freqmode_a, & dzi_default, PGALL, },	// Отображение режима настройки VFO A
+	{	17,	5,	18, 11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+	//{	15,	8,	14, 8,	display2_freqX_a_x075,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+
+
+	//{	36,	5,	4,	5,	display2_vfomode3,	& dzi_vfomode, PGALL, },	// SPL
+	//{	40, 5,	4,	5,	display2_mainsub3,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+	//{	44, 5, 6,	5, xxxx },
 
 	{	36, 10,	4,	5,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 	{	40, 10,	4,	5,	display2_rxbw3,	& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
@@ -116,15 +125,16 @@ static const dzone_t dzones [] =
 	{	44,	10,	6,	5,	display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
 
 	{	36, 15,	4,	5,	display2_nr3,	& dzi_nr, PGALL, },	// NR : was: AGC
-	{	40, 15,	4,	5,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
+	//{	40, 15,	4,	5,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
 	{	44, 15,	6,	5,	display2_notch5,	& dzi_notch, PGALL, },	// NOTCH on/off
 
-	{	16, 20,	4,	5,	display2_mainsub3,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
-	{	20,	20,	4,	5,	display2_vfomode3,	& dzi_vfomode, PGALL, },	// SPL
-	{	24,	20,	12,	5,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ 144.150.000
-	{	36, 20,	4,	5,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
+	////{	24,	20,	12,	5,	display2_freqX_b,	& dzi_freqb, PGALL, },	// SUB FREQ 144.150.000
+	{	15, 17, 1, 	8,	display2_freqmode_b, & dzi_default, PGALL, },	// Отображение режима настройки VFO B
+	{	17,	17,	14, 8,	display2_freqX_b_x075,	& dzi_freqb_x075, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
+	{	32, 20,	4,	5,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
+	{	36, 20, 4,	5,	display2_bkin3,	& dzi_bkin, PGALL, },	// BREAK-IN
 	{	40, 20,	4,	5,	display2_voxtune3,	& dzi_voxtune, PGALL, },	// VOX
-	{	44,	20,	6,	5,	display2_dummy, & dzi_default, PGALL, },	// Placeholder
+	{	44,	20,	6,	5,	display2_vfomode5,	& dzi_vfomode, PGALL, },	// SPL
 
 	// размещены под S-метром (15 ячеек)
 	{	0, 	25,	6,	5,	display2_voltlevelV, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
@@ -132,11 +142,10 @@ static const dzone_t dzones [] =
 
 	{	18,	25,	6,	5,	display2_ant5,	& dzi_antenna, PGALL, },
 	{	24, 25,	4,	5,	display2_byp3,	& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
-	{ 	28, 25, 4,	5,	display2_dummy, & dzi_default, PGALL, },	// Placeholder
+	////{ 	28, 25, 4,	5,	display2_dummy, & dzi_default, PGALL, },	// Placeholder
 	{	32, 25,	4,	5,	display2_rec3,	& dzi_rec, PGALL, },	// Отображение режима записи аудио фрагмента
 	{	36, 25,	4,	5,	display2_spk3,	& dzi_spk, PGALL, },	// отображение признака включения динамика
-	{	40, 25, 4,	5,	display2_bkin3,	& dzi_bkin, PGALL, },	// BREAK-IN
-	//{	44,	25,	6,	5,	display2_wpm5, & dzi_wpm, PGALL, },	// 22WPM
+	{	40, 25,	4,	5,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
 	{	44,	25,	6,	5,	display2_lockstate4, & dzi_lock, PGALL, },	// LOCK
 
 	//{	24, 30,	10,	5,	display2_freqmeter10, & dzi_default, PGALL, },	// измеренная частота опоры
@@ -151,11 +160,11 @@ static const dzone_t dzones [] =
 #if WITHMGLOOP
 	{	13,	DLEB, 	10, 5, display2_mla9,		& dzi_compat, PGALL, },
 #endif /* WITHMGLOOP */
-	{	23, DLEB,	6,	5,	display2_thermo,		& dzi_thermo, PG0, },	// thermo sensor
-	{	29, DLEB,	4,	5,	display2_usbsts3,		& dzi_usbact, PG0, },	// USB host status
-	{	33, DLEB,	3,	5,	display2_btsts2,		& dzi_btact, PG0, },	// USB host status
-	{	36, DLEB,	8,	5,	display2_classa7,		& dzi_classa, PG0, },	// Class-A power amplifier
-	{	44, DLEB, 	6,  5, 	display2_rxctcss5, 		& dzi_compat, PG0, },
+	{	23, DLEB,	6,	5,	display2_thermo,		& dzi_thermo, PG1_1, },	// thermo sensor
+	{	29, DLEB,	4,	5,	display2_usbsts3,		& dzi_usbact, PG1_1, },	// USB host status
+	{	33, DLEB,	3,	5,	display2_btsts2,		& dzi_btact, PG1_1, },	// отображение состояния USB BT
+	{	36, DLEB,	8,	5,	display2_classa7,		& dzi_classa, PG1_1, },	// Class-A power amplifier
+	{	44, DLEB, 	6,  5, 	display2_rxctcss5, 		& dzi_compat, PG1_1, },
 	//{	28, DLEB,	10,	5,	display2_freqmeter10, 	& dzi_default, PGALL, },	// измеренная частота опоры
 
 #if WITHMENU
@@ -166,6 +175,13 @@ static const dzone_t dzones [] =
 	// Middle bar
 	{	0, MIDMENU,	BDTH_ALLRX,	8,	display2_midbar,  	& dzi_compat, PG0, },
 #endif /* WITHMENU */
+
+#if WITHRTTY
+
+	{	0, MIDMENU + 0, 		BDTH_ALLRX, 	RTTYSPEC, 						display2_spectrum,	& dzi_compat, PG1, },	// Вывод спектроанализатора
+	{	0, MIDMENU + RTTYSPEC, 	BDTH_ALLRX, 	DLEB - MIDMENU - 1 - RTTYSPEC, 	display2_vtty,		& dzi_compat, PG1, },	// Вывод текущего состояния протокола
+	{	0, MIDMENU + RTTYSPEC,	 BDTH_ALLRX, 	DLEB - MIDMENU - 1 - RTTYSPEC, 	display2_vtty_init,	& dzi_compat, PGINI, },	// Подготовка видеобуфера окна протокола
+#endif /* WITHRTTY */
 
 	// sleep mode display
 	{	5,	25,	13,	4,	display2_datetime12,		& dzi_datetime12, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40

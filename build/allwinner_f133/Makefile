@@ -20,7 +20,7 @@ TRGT2 = riscv-none-elf
 TRGT = $(TRGT2)-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
-#XFEL = ../../tools/xfel-windows-v1.3.5/xfel
+#XFEL = ../../tools/xfel-windows-v1.3.6/xfel
 XFEL = ./xfel_fixed_t113-s3
 BUSYBOX = busybox
 
@@ -48,7 +48,7 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex
 BIN  = $(CP) -O binary
-AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/15.2.0/liblto_plugin.dll
+AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/14.2.1/liblto_plugin.dll
 OBJDUMP = $(TRGT)objdump
 
 # The D1s features a single RV64GCV core XuanTie C906 from T-Head Semiconductor (subsidiary of Alibaba).

@@ -142,15 +142,6 @@ si570_recal(void)
 	//TP();
 }
 
-// Эти две переменные не ststic для доступа к ним из меню.
-static int_fast32_t si570_xtall_base; 
-uint_fast16_t si570_xtall_offset = OSCSHIFT; 
-
-int_fast32_t si570_get_xtall_base(void)
-{
-	return si570_xtall_base;
-}
-
 static uint_fast64_t anchorftw;
 static uint_fast64_t anchorftw_bottom;
 static uint_fast64_t anchorftw_top;
@@ -279,14 +270,14 @@ si570_initialize(void)
 
 			if (si570_verify_xtall(si570_xtall))
 			{
-				si570_xtall_base = si570_xtall - OSCSHIFT;
+				hamradio_set_si570reference(si570_xtall);
 				anchor_hint = si570_get_hint(inifreqs [freqindex]);
 				goto allDone;
 			}
 		}
 	}
 	// Для случая, когда ни одно из предположений не оправдалос.
-	si570_xtall_base = SI570_XTAL_INIT - OSCSHIFT;
+	hamradio_set_si570reference(SI570_XTAL_INIT);
 	anchor_hint = (pllhint_t) 0;
 	si570_reg = 0x07;
 allDone:
@@ -313,7 +304,7 @@ allDone:
 
 		local_snprintf_P(buff, sizeof buff / sizeof buff [0],
 			PSTR("[%lu]"),
-			 (unsigned long) (si570_xtall_base + si570_xtall_offset)
+			 (unsigned long) (si570_xtall_base + si570_xtall_offset)	// See xsi570_xtall_offset in radio.cpp
 			 );
 		gxstyle_textcolor(& dbstylev, COLOR_WHITEALL, COLOR_BLACK);
 		display_text(db, 0, 2, buff, & dbstylev);

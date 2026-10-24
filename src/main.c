@@ -10,7 +10,6 @@
 #include "bootloader.h"
 #include "formats.h"
 
-
 /* вызывается при запрещённых прерываниях. */
 void
 lowinitialize(void)
@@ -41,8 +40,8 @@ lowinitialize(void)
 #endif /* WITHDEBUG */
 
 	//hardware_cw_diagnostics_noirq(1, 0, 0);	// 'D'
-	// Инициализация таймера и списка регистрирумых обработчиков
-	hardware_timer_initialize(TICKS_FREQUENCY);
+	// Инициализация списка регистрирумых обработчиков
+	tickers_initialize();
 
 	board_initialize();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	cpu_initdone();			/* секция init (в которой лежит образ для загрузки в FPGA) больше не нужна */
@@ -64,23 +63,16 @@ main(void)
 	task_scheduler_start();
 	global_enableIRQ();
 	cpump_runuser();	/* остальным ядрам разрешаем выполнять прерывания */
+	// Инициализация таймера
+	hardware_timer_initialize(TICKS_FREQUENCY);
 	midtests();
-	initialize2();	/* вызывается при разрешённых прерываниях. */
 	application_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 
-#if WITHISBOOTLOADER && WITHISBOOTLOADERFATFS
-	bootloader_fatfs_mainloop();
-#elif WITHISBOOTLOADER0
-	bootloader0_mainloop();
-#elif WITHCTRLBOARDT507
-	ctlboardt507_mainloop();
-#elif WITHISBOOTLOADER
-	bootloader_mainloop();
-#elif 0
-	hamradio_mainloop_beacon();
-#else
-	application_mainloop();
-#endif
+	hamradio_main_start();
+	for (;;)
+	{
+		board_dpc_processing();		// обработка отложенного вызова user mode функций
+	}
 	return 0;
 }

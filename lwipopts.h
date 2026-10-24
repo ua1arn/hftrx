@@ -109,11 +109,9 @@
 #endif	/* WITHISBOOTLOADER */
 
 #define UDP_TTL 64
-#define ETH_PAD_SIZE                    64
 
 #if 1
 	#define LWIP_RAM_HEAP_POINTER		lwipBuffer
-	#define MEM_SIZE                        (16384 * 1024uL)
 	extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
 #endif
 
@@ -125,7 +123,7 @@
  * allocation and deallocation.
  */
 #define SYS_LIGHTWEIGHT_PROT 1
-typedef unsigned sys_prot_t;
+typedef IRQL_t sys_prot_t;
 
 //#define LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT 1
 //#define MEMP_MEM_MALLOC 1
@@ -196,7 +194,7 @@ void board_update_time(uint32_t sec);
 
 //#define LWIP_TCP_KEEPALIVE 			0
 
-#define MEM_SIZE                    131072
+#define MEM_SIZE                    (4 * 32768)
 #define MEM_ALIGNMENT               64 //8
 #define MEMP_NUM_PBUF 				16
 #define MEMP_NUM_PBUF 				16
@@ -259,7 +257,6 @@ void board_update_time(uint32_t sec);
 #define SYS_STATS                   0
 #define MEMP_STATS                  0
 #define LINK_STATS                  0
-// #define ETH_PAD_SIZE                2
 #define LWIP_CHKSUM_ALGORITHM       3
 #define LWIP_DHCP                   1
 #define LWIP_IPV4                   1
@@ -277,16 +274,16 @@ void board_update_time(uint32_t sec);
 #define LWIP_DBG_TYPES_ON      		(LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
 
 //#define HTTPD_DEBUG           LWIP_DBG_ON
-#define ETHARP_DEBUG           LWIP_DBG_ON
-#define NETIF_DEBUG            LWIP_DBG_ON
-//#define PBUF_DEBUG             LWIP_DBG_ON
+//#define ETHARP_DEBUG           LWIP_DBG_ON
+//#define NETIF_DEBUG            LWIP_DBG_ON
+#define PBUF_DEBUG             LWIP_DBG_ON
 //#define API_LIB_DEBUG          LWIP_DBG_ON
 //#define API_MSG_DEBUG          LWIP_DBG_ON
 //#define SOCKETS_DEBUG          LWIP_DBG_ON
-#define ICMP_DEBUG             LWIP_DBG_ON
-#define IGMP_DEBUG             LWIP_DBG_ON
-#define INET_DEBUG             LWIP_DBG_ON
-#define IP_DEBUG               LWIP_DBG_ON
+//#define ICMP_DEBUG             LWIP_DBG_ON
+//#define IGMP_DEBUG             LWIP_DBG_ON
+//#define INET_DEBUG             LWIP_DBG_ON
+//#define IP_DEBUG               LWIP_DBG_ON
 //#define IP_REASS_DEBUG         LWIP_DBG_ON
 //#define RAW_DEBUG              LWIP_DBG_ON
 //#define MEM_DEBUG              LWIP_DBG_ON
@@ -317,14 +314,13 @@ void board_update_time(uint32_t sec);
  * critical regions during buffer allocation, deallocation and memory
  * allocation and deallocation.
  */
-#define SYS_LIGHTWEIGHT_PROT 1
-typedef unsigned sys_prot_t;
-
-#define ETH_RX_BUFFER_SIZE 32768
+#define SYS_LIGHTWEIGHT_PROT 0
+typedef IRQL_t sys_prot_t;
+//#define LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT 1
 
 #define HTTPD_FSDATA_FILE "src/httpd_files/fsdata.txt"
 
-#define LWIP_RAND() (4)
+#define LWIP_RAND() (hardware_get_random())
 
 #if 1 && ! WITHISBOOTLOADER
 
@@ -336,8 +332,80 @@ typedef unsigned sys_prot_t;
 
 #endif /* WITHHTTPUPDATE || WITHISBOOTLOADER */
 
-	#define LWIP_NETIF_LOOPBACK 1
+#define LWIP_NETIF_LOOPBACK 1
 
-#define ETH_PAD_SIZE                    0
+
+#define ETH_PAD_SIZE 2
+
+//struct netif;
+struct netif;
+void nic_initialize(struct netif *netif);
+//int nic_can_send(void);
+//void nic_send(const uint8_t * data, int size);
+void nic_linkspool(void * ctx);
+void nic_set_mac(void * ctx);	// struct netif
+//
+//
+//void nic_on_packet(const uint8_t *data, int size);	// использование приянтого от сети пакета
+//typedef void (*nic_rxproc_t)(const uint8_t *data, int size);
+
+#define NIC_MTU 1536  // MTU value
+
+#if CPUSTYLE_ALLWINNER
+
+// Zero-copy support
+
+/* Synopsys DesignWare / Allwinner EMAC DMA Descriptor Layout */
+struct emac_dma_desc {
+    volatile uint32_t status;
+    volatile uint32_t control;
+    volatile uint32_t buf_addr;
+    volatile uint32_t next_desc;
+    uint32_t pad [(64 - 16) / 4];
+};
+
+/* данные, добавляющиеся в конец pbuf_t */
+typedef struct listsupport_tag
+{
+	void * sign1;
+	LIST_ENTRY item __ALIGNED(4);
+	struct emac_dma_desc dmadesc __ALIGNED(DCACHEROWSIZE);
+	int dummyAllign __ALIGNED(DCACHEROWSIZE);
+	void * sign2;
+} listsupport_t;
+
+#define LWIP_PBUF_CUSTOM_DATA  listsupport_t custom_item;
+
+#if 1
+	#define LWIP_RAM_HEAP_POINTER		lwipBuffer
+	extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
+#endif
+
+	// Checksum calculated by hardware
+//#define CHECKSUM_GEN_IP                 0
+//#define CHECKSUM_GEN_UDP                0
+//#define CHECKSUM_GEN_TCP                0
+//#define CHECKSUM_GEN_ICMP               0
+//#define CHECKSUM_GEN_ICMP6              0
+//#define CHECKSUM_CHECK_IP               0
+//#define CHECKSUM_CHECK_UDP              0
+//#define CHECKSUM_CHECK_TCP              0
+//#define CHECKSUM_CHECK_ICMP             0
+//#define CHECKSUM_CHECK_ICMP6            0
+
+#else
+	// Other CPUs
+	#define CHECKSUM_GEN_IP                 1
+	#define CHECKSUM_GEN_UDP                1
+	#define CHECKSUM_GEN_TCP                1
+	#define CHECKSUM_GEN_ICMP               1
+	#define CHECKSUM_GEN_ICMP6              1
+	#define CHECKSUM_CHECK_IP               1
+	#define CHECKSUM_CHECK_UDP              1
+	#define CHECKSUM_CHECK_TCP              1
+	#define CHECKSUM_CHECK_ICMP             1
+	#define CHECKSUM_CHECK_ICMP6            1
+
+#endif /* CPUSTYLE_ALLWINNER */
 
 #endif /* __LWIPOPTS_H__ */

@@ -201,6 +201,7 @@ typedef enum IRQn
 #define SPI1_BASE ((uintptr_t) 0x02541000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI2_BASE ((uintptr_t) 0x02542000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI3_BASE ((uintptr_t) 0x02543000)            /*!< SPI Serial Peripheral Interface Base */
+#define SYSCTRL_BASE ((uintptr_t) 0x03000000)         /*!< SYSCTRL System Control Matrix (Allwinner A733 / sun60iw2) Base */
 #define SID_BASE ((uintptr_t) 0x03006000)             /*!< SID Security ID Base */
 #define Timer0_CPUX_BASE ((uintptr_t) 0x03009000)     /*!< TIMER0  Base */
 #define GIC_BASE ((uintptr_t) 0x03400000)             /*!< GIC  Base */
@@ -286,6 +287,8 @@ typedef enum IRQn
 #define eDP_REG_PAD_BASE ((uintptr_t) 0x05760000)     /*!< eDP_REG_PAD  Base */
 #define PCIe_BASE ((uintptr_t) 0x06400000)            /*!< PCIe  Base */
 #define USB3P1_DRD_BASE ((uintptr_t) 0x06A00000)      /*!< USB3P1_DRD  Base */
+#define COMBPHY0_BASE ((uintptr_t) 0x06C80000)        /*!< COMBPHY  Base */
+#define COMBPHY1_BASE ((uintptr_t) 0x06CA0000)        /*!< COMBPHY  Base */
 #define S_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< PRCM Power Reset Clock Management (PRCM) Base */
 #define S_GPIOL_BASE ((uintptr_t) 0x07025000)         /*!< S_GPIO Secure Port Controller Base */
 #define S_GPIOM_BASE ((uintptr_t) 0x07025030)         /*!< S_GPIO Secure Port Controller Base */
@@ -307,9 +310,9 @@ typedef enum IRQn
 
 #if defined(__aarch64__)
     #include <core_ca55.h>
-    #include <gicv6.h>
+    #include <gic600.h>
 #else
-    #include <armv7a_gicv6.h>
+    #include <armv7a_gic600.h>
 #endif
 
 /*
@@ -773,6 +776,16 @@ typedef struct CLUSTER_CFG_Type
     __IOM uint32_t DSU_AXI1_MNT_RBD_REG;              /*!< Offset 0x80E8 DSUAXI1MONITORReadBandwidth Register */
     __IOM uint32_t DSU_AXI1_MNT_WBD_REG;              /*!< Offset 0x80EC DSUAXI1MONITORWriteBandwidth Register */
 } CLUSTER_CFG_TypeDef; /* size of structure = 0x80F0 */
+/*
+ * @brief COMBPHY
+ */
+/*!< COMBPHY  */
+typedef struct COMBPHY_Type
+{
+    __IOM uint32_t COMBPHY_CFG_REG;                   /*!< Offset 0x000  */
+    __IOM uint32_t COMBPHY_CTRL_REG;                  /*!< Offset 0x004  */
+    __IOM uint32_t COMBPHY_STAT_REG;                  /*!< Offset 0x008  */
+} COMBPHY_TypeDef; /* size of structure = 0x00C */
 /*
  * @brief CPUS_INTERRUPT_CTRL
  */
@@ -1459,9 +1472,9 @@ typedef struct GICD_Type
     __IOM uint32_t GICD_IGRPMODR [0x020];             /*!< Offset 0xD00 Interrupt Group Modifier Registers */
          RESERVED(0xD80[0x0E00 - 0x0D80], uint8_t)
     __IOM uint32_t GICD_NSACR [0x040];                /*!< Offset 0xE00 Non-secure Access Control Registers */
-         RESERVED(0xF00[0x6100 - 0x0F00], uint8_t)
-    __IOM uint64_t GICD_IROUTER [0x3DC];              /*!< Offset 0x6100 Interrupt Routing Registers. */
-         RESERVED(0x7FE0[0xC000 - 0x7FE0], uint8_t)
+         RESERVED(0xF00[0x6000 - 0x0F00], uint8_t)
+    __IOM uint64_t GICD_IROUTER [0x3DC];              /*!< Offset 0x6000 Interrupt Routing Registers. */
+         RESERVED(0x7EE0[0xC000 - 0x7EE0], uint8_t)
     __IOM uint32_t GICD_CHIPSR;                       /*!< Offset 0xC000 Chip Status Register */
     __IOM uint32_t GICD_DCHIPR;                       /*!< Offset 0xC004 Default Chip Register */
     __IOM uint64_t GICD_CHIPRn [0x004];               /*!< Offset 0xC008 Chip Registers */
@@ -1532,10 +1545,10 @@ typedef struct GICP_Type
     __IM  uint32_t GICP_CIDR3;                        /*!< Offset 0xFFFC Component ID 3 Register */
 } GICP_TypeDef; /* size of structure = 0x10000 */
 /*
- * @brief GICR_1
+ * @brief GICR_LPI
  */
-/*!< GICR_1 GIC Redistributor for control and physical LPIs */
-typedef struct GICR_1_Type
+/*!< GICR_LPI GIC Redistributor for control and physical LPIs */
+typedef struct GICR_LPI_Type
 {
     __IOM uint32_t GICR_CTLR;                         /*!< Offset 0x000 Redistributor Control Register */
     __IM  uint32_t GICR_IIDR;                         /*!< Offset 0x004  */
@@ -1554,8 +1567,9 @@ typedef struct GICR_1_Type
     __IOM uint64_t GICR_PENDBASER;                    /*!< Offset 0x078 Redistributor LPI Pending Table Base Address Register */
          RESERVED(0x080[0x00A0 - 0x0080], uint8_t)
     __IOM uint64_t GICR_INVLPIR;                      /*!< Offset 0x0A0  */
-    __IOM uint64_t GICR_INVALLR;                      /*!< Offset 0x0A8  */
-         RESERVED(0x0B0[0x00C0 - 0x00B0], uint8_t)
+         RESERVED(0x0A8[0x00B0 - 0x00A8], uint8_t)
+    __IOM uint64_t GICR_INVALLR;                      /*!< Offset 0x0B0  */
+         RESERVED(0x0B8[0x00C0 - 0x00B8], uint8_t)
     __IOM uint32_t GICR_SYNCR;                        /*!< Offset 0x0C0  */
          RESERVED(0x0C4[0xFFD0 - 0x00C4], uint8_t)
     __IM  uint32_t GICR_PIDR4;                        /*!< Offset 0xFFD0 Peripheral ID 4 Register */
@@ -1570,12 +1584,12 @@ typedef struct GICR_1_Type
     __IM  uint32_t GICR_CIDR1;                        /*!< Offset 0xFFF4 Component ID 1 Register */
     __IM  uint32_t GICR_CIDR2;                        /*!< Offset 0xFFF8 Component ID 2 Register */
     __IM  uint32_t GICR_CIDR3;                        /*!< Offset 0xFFFC Component ID 3 Register */
-} GICR_1_TypeDef; /* size of structure = 0x10000 */
+} GICR_LPI_TypeDef; /* size of structure = 0x10000 */
 /*
- * @brief GICR_2
+ * @brief GICR_SGI_PPI
  */
-/*!< GICR_2 GIC Redistributor for SGIs and PPIs summary  */
-typedef struct GICR_2_Type
+/*!< GICR_SGI_PPI GIC Redistributor for SGIs and PPIs summary  */
+typedef struct GICR_SGI_PPI_Type
 {
          RESERVED(0x000[0x0080 - 0x0000], uint8_t)
     __IOM uint32_t GICR_IGROUPR0;                     /*!< Offset 0x080 Interrupt Group Register */
@@ -1588,14 +1602,14 @@ typedef struct GICR_2_Type
          RESERVED(0x204[0x0280 - 0x0204], uint8_t)
     __IOM uint32_t GICR_ICPENDR0;                     /*!< Offset 0x280 Peripheral Clear Pending Register */
          RESERVED(0x284[0x0300 - 0x0284], uint8_t)
-    __IOM uint32_t GICR_ISACTIVER0;                   /*!< Offset 0x300  */
+    __IOM uint32_t GICR_ISACTIVER0;                   /*!< Offset 0x300 Interrupt Set-Active Register */
          RESERVED(0x304[0x0380 - 0x0304], uint8_t)
-    __IOM uint32_t GICR_ICACTIVER0;                   /*!< Offset 0x380  */
+    __IOM uint32_t GICR_ICACTIVER0;                   /*!< Offset 0x380 Interrupt Clear-Active Register */
          RESERVED(0x384[0x0400 - 0x0384], uint8_t)
-    __IOM uint32_t GICR_IPRIORITYRn [0x008];          /*!< Offset 0x400  */
+    __IOM uint32_t GICR_IPRIORITYR [0x008];           /*!< Offset 0x400 Interrupt Priority Registers */
          RESERVED(0x420[0x0C00 - 0x0420], uint8_t)
-    __IOM uint32_t GICR_ICFGRn;                       /*!< Offset 0xC00 Interrupt Configuration Registers	 */
-         RESERVED(0xC04[0x0D00 - 0x0C04], uint8_t)
+    __IOM uint32_t GICR_ICFGR [0x002];                /*!< Offset 0xC00 Interrupt Configuration Registers	 */
+         RESERVED(0xC08[0x0D00 - 0x0C08], uint8_t)
     __IOM uint32_t GICR_IGRPMODR0;                    /*!< Offset 0xD00 Interrupt Group Modifier Registers	 */
          RESERVED(0xD04[0x0E00 - 0x0D04], uint8_t)
     __IOM uint32_t GICR_NSACR;                        /*!< Offset 0xE00 Non-secure Access Control Register	 */
@@ -1608,17 +1622,8 @@ typedef struct GICR_2_Type
          RESERVED(0xC014[0xFFF0 - 0xC014], uint8_t)
     __IM  uint32_t GICR_CFGID0;                       /*!< Offset 0xFFF0 4.5.4 Configuration ID0 Register, GICR_CFGID0 on page 4-138 */
     __IM  uint32_t GICR_CFGID1;                       /*!< Offset 0xFFF4 4.5.5 Configuration ID1 Register, GICR_CFGID1 on page 4-139 */
-} GICR_2_TypeDef; /* size of structure = 0xFFF8 */
-/*
- * @brief GICR_PPI_LPI
- */
-/*!< GICR_PPI_LPI GIC Redistributor  */
-typedef struct GICR_PPI_LPI_Type
-{
-         RESERVED(0x000[0x0400 - 0x0000], uint8_t)
-    __IOM uint32_t GICR_PPI_LPI_IPRIORITYR [0x008];   /*!< Offset 0x400 Interrupt Priority Registers */
-         RESERVED(0x420[0x10000 - 0x0420], uint8_t)
-} GICR_PPI_LPI_TypeDef; /* size of structure = 0x10000 */
+         RESERVED(0xFFF8[0x10000 - 0xFFF8], uint8_t)
+} GICR_SGI_PPI_TypeDef; /* size of structure = 0x10000 */
 /*
  * @brief GICT
  */
@@ -2485,10 +2490,10 @@ typedef struct RTC_Type
     __IOM uint32_t GP_DATA_REGn [0x008];              /*!< Offset 0x100 (N=0~7) General Purpose Register */
          RESERVED(0x120[0x015C - 0x0120], uint8_t)
     __IOM uint32_t XO_CTRL_WP_REG;                    /*!< Offset 0x15C DCXO Control Write Protect Register */
-    __IOM uint32_t XO_CTRL_REG;                       /*!< Offset 0x160 DCXO Control Register */
+    __IOM uint32_t XO_CTRL0_REG;                      /*!< Offset 0x160 DCXO Control0 Register */
     __IOM uint32_t CALI_CTRL_REG;                     /*!< Offset 0x164 Calibration Control Register */
          RESERVED(0x168[0x016C - 0x0168], uint8_t)
-    __IOM uint32_t XO_GATING_REG;                     /*!< Offset 0x16C DCXO Gating Ctrl Register  */
+    __IOM uint32_t XO_CTRL1_REG;                      /*!< Offset 0x16C DCXO Control1 Register */
          RESERVED(0x170[0x0190 - 0x0170], uint8_t)
     __IOM uint32_t VDD_RTC_REG;                       /*!< Offset 0x190 VDD RTC Regulation Register */
          RESERVED(0x194[0x01F0 - 0x0194], uint8_t)
@@ -2637,6 +2642,32 @@ typedef struct SPI_Type
     __IOM uint32_t SPI_RXD;                           /*!< Offset 0x300 SPI RX Data Register */
          RESERVED(0x304[0x1000 - 0x0304], uint8_t)
 } SPI_TypeDef; /* size of structure = 0x1000 */
+/*
+ * Base address: 0x03000000
+ * Based on sun60iw2 low-level hardware design and system matrix configuration
+ */
+/*
+ * @brief SYSCTRL
+ */
+/*!< SYSCTRL System Control Matrix (Allwinner A733 / sun60iw2) */
+typedef struct SYSCTRL_Type
+{
+    __IOM uint32_t VER_REG;                           /*!< Offset 0x000 Chip version and SoC identification register */
+         RESERVED(0x004[0x0010 - 0x0004], uint8_t)
+    __IOM uint32_t SRAM_CTRL_REG0;                    /*!< Offset 0x010 SRAM access permission and security mapping control 0 */
+    __IOM uint32_t SRAM_CTRL_REG1;                    /*!< Offset 0x014 SRAM configuration and section mapping register 1 */
+         RESERVED(0x018[0x0020 - 0x0018], uint8_t)
+    __IOM uint32_t SRAM_VER_REG;                      /*!< Offset 0x020 SRAM macro version and hardware generation register */
+         RESERVED(0x024[0x0030 - 0x0024], uint8_t)
+    __IOM uint32_t SYS_PIN_LAT_REG;                   /*!< Offset 0x030 System pin latch configuration register (state freeze) */
+         RESERVED(0x034[0x0040 - 0x0034], uint8_t)
+    __IOM uint32_t COMBPHY0_CFG_REG;                  /*!< Offset 0x040 System routing configuration for COMBPHY0 (MUX PCIe/USB3/HDMI) */
+    __IOM uint32_t COMBPHY1_CFG_REG;                  /*!< Offset 0x044 System routing configuration for COMBPHY1 (MUX PCIe/USB3/HDMI) */
+    __IOM uint32_t PCIE_REFCLK_REG;                   /*!< Offset 0x048 PCIe reference clock selection and internal multiplier control */
+    __IOM uint32_t COMBPHY_CTRL_REG;                  /*!< Offset 0x04C Global analog power enable and internal LDO control for PHYs */
+    __IOM uint32_t COMBPHY_ISO_REG;                   /*!< Offset 0x050 Analog pad isolation control (Clear bits [1:0] to unblock I2C to PHY) */
+         RESERVED(0x054[0x1000 - 0x0054], uint8_t)
+} SYSCTRL_TypeDef; /* size of structure = 0x1000 */
 /*
  * @brief S_GPIO
  */
@@ -2836,7 +2867,7 @@ typedef struct TIMESTAMP_CTRL_Type
     __IOM uint32_t CNT_CTRL_LOW_REG;                  /*!< Offset 0x008 Counter Low Register */
     __IOM uint32_t CNT_CTRL_HI_REG;                   /*!< Offset 0x00C Counter High Register */
          RESERVED(0x010[0x0020 - 0x0010], uint8_t)
-    __IOM uint32_t CNT_FREQID_REG;                    /*!< Offset 0x020 Counte rBase Frequency ID Register */
+    __IOM uint32_t CNT_FREQID_REG;                    /*!< Offset 0x020 Counter Base Frequency ID Register */
 } TIMESTAMP_CTRL_TypeDef; /* size of structure = 0x024 */
 /*
  * @brief TIMESTAMP_STA
@@ -2844,8 +2875,8 @@ typedef struct TIMESTAMP_CTRL_Type
 /*!< TIMESTAMP_STA  */
 typedef struct TIMESTAMP_STA_Type
 {
-    __IOM uint32_t CNT_LOW_REG;                       /*!< Offset 0x000 Counter Low Register */
-    __IOM uint32_t CNT_HI_REG;                        /*!< Offset 0x004 Counter High Register */
+    __IM  uint32_t CNT_LOW_REG;                       /*!< Offset 0x000 Counter Low Register */
+    __IM  uint32_t CNT_HI_REG;                        /*!< Offset 0x004 Counter High Register */
 } TIMESTAMP_STA_TypeDef; /* size of structure = 0x008 */
 /*
  * @brief TWI
@@ -3124,6 +3155,7 @@ typedef struct USB_OHCI_Capability_Type
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define SPI2 ((SPI_TypeDef *) SPI2_BASE)              /*!< SPI2 Serial Peripheral Interface register set access pointer */
 #define SPI3 ((SPI_TypeDef *) SPI3_BASE)              /*!< SPI3 Serial Peripheral Interface register set access pointer */
+#define SYSCTRL ((SYSCTRL_TypeDef *) SYSCTRL_BASE)    /*!< SYSCTRL System Control Matrix (Allwinner A733 / sun60iw2) register set access pointer */
 #define SID ((SID_TypeDef *) SID_BASE)                /*!< SID Security ID register set access pointer */
 #define GICD ((GICD_TypeDef *) GICD_BASE)             /*!< GICD GIC Distributor register set access pointer */
 #define GICT ((GICT_TypeDef *) GICT_BASE)             /*!< GICT GIC ITS translation register set access pointer */
@@ -3198,6 +3230,8 @@ typedef struct USB_OHCI_Capability_Type
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0 TV Output register set access pointer */
 #define TCON_TV1 ((TCON_TV_TypeDef *) TCON_TV1_BASE)  /*!< TCON_TV1 TV Output register set access pointer */
 #define PCIe ((PCIe_TypeDef *) PCIe_BASE)             /*!< PCIe  register set access pointer */
+#define COMBPHY0 ((COMBPHY_TypeDef *) COMBPHY0_BASE)  /*!< COMBPHY0  register set access pointer */
+#define COMBPHY1 ((COMBPHY_TypeDef *) COMBPHY1_BASE)  /*!< COMBPHY1  register set access pointer */
 #define S_PRCM ((PRCM_TypeDef *) S_PRCM_BASE)         /*!< S_PRCM Power Reset Clock Management (PRCM) register set access pointer */
 #define S_GPIOL ((S_GPIO_TypeDef *) S_GPIOL_BASE)     /*!< S_GPIOL Secure Port Controller register set access pointer */
 #define S_GPIOM ((S_GPIO_TypeDef *) S_GPIOM_BASE)     /*!< S_GPIOM Secure Port Controller register set access pointer */

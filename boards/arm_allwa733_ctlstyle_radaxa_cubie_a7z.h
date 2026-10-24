@@ -12,7 +12,7 @@
 #ifndef ARM_ALW_A733_CTL_RADAXA_CUBIE_A7Z_H_INCLUDED
 #define ARM_ALW_A733_CTL_RADAXA_CUBIE_A7Z_H_INCLUDED 1
 
-	#define WITHBRANDSTR "Falcon"
+	#define WITHBRANDSTR "Storch A733"
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -22,10 +22,11 @@
 
 	//#define WITHCPUXTAL 26000000u	/* На процессоре установлен кварц 26.000 МГц */
 	#define WITHCPUXOSC 26000000u	/* На процессоре установлен генератор 26.000 МГц */
-	#define HARDWARE_ADDRSPACE_GB (8)	// Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
 
-	#define CPUB_FREQ_MHz 1300//2000
-	#define CPUL_FREQ_MHz 1300//2000
+	#define CPUB_FREQ_MHz 2000
+	#define CPUL_FREQ_MHz 2000
+	//#define HARDWARE_ADDRSPACE_GB (8)	// Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
+	#define HARDWARE_ADDRSPACE_BITS 33
 
 	/* модели синтезаторов - схемы частотообразования */
 
@@ -73,8 +74,8 @@
 	//#define KEYB_VELOCI24_V0_UA1CEI	1	/* 24 кнопки на 6 линий */
 	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
 
-	#define WITHPABIASMIN		0
-	#define WITHPABIASMAX		255
+	
+	
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
@@ -88,14 +89,14 @@
 
 	#define WITHPREAMPATT2_6DB 1	/* LTC2208 Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
-	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
+	
 
 	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	// --- Особые варианты расположения кнопок на клавиатуре
-	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
-	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
+	
+	
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #if WITHISBOOTLOADER
@@ -182,9 +183,9 @@
 #if WITHISBOOTLOADER
 
 	// +++ заглушки для плат с DSP обработкой
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
-	#define WITHAGCMODENONE 1
+	
+	
+	
 
 	#define BOARD_DETECTOR_AM 	0		// Заглушка
 	#define BOARD_DETECTOR_FM 	0		// Заглушка
@@ -222,29 +223,30 @@
 
 
 	// +++ заглушки для плат с DSP обработкой
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
-	#define WITHAGCMODENONE 1
+	
+	
+	
 
-	#define BOARD_DETECTOR_AM 	0		// Заглушка
-	#define BOARD_DETECTOR_FM 	0		// Заглушка
-	#define BOARD_DETECTOR_MUTE 	0		// Заглушка
-	#define BOARD_DETECTOR_TUNE 	0		// Заглушка
-
-	// +++ заглушки для плат с DSP обработкой
-	#define BOARD_NOTCH_OFF		0
-	#define BOARD_NOTCH_MANUAL	0
-	#define BOARD_NOTCH_AUTO	0
+//	#define BOARD_DETECTOR_AM 	0		// Заглушка
+//	#define BOARD_DETECTOR_FM 	0		// Заглушка
+//	#define BOARD_DETECTOR_MUTE 	0		// Заглушка
+//	#define BOARD_DETECTOR_TUNE 	0		// Заглушка
+//
+//	// +++ заглушки для плат с DSP обработкой
+//	#define BOARD_NOTCH_OFF		0
+//	#define BOARD_NOTCH_MANUAL	0
+//	#define BOARD_NOTCH_AUTO	0
 
 	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
 	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
-/// -- stub
-//	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
-//
-//	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
-//
-//	//#define FORMATFROMLIBRARY 	1
+// -- stub
+
+	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
+
+	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
+
+	//#define FORMATFROMLIBRARY 	1
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 //	//#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 //	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
@@ -252,16 +254,16 @@
 //
 //	
 	#define COLORSTYLE_GREEN	1
-//	//#define COLORSTYLE_BLUE	1
-//	//#define COLORSTYLE_RED	1
-//	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
-//
-//	#define ENCRES_DEFAULT ENCRES_600
-//	#define ENCRES_SUB_DEFAULT ENCRES_24
-//	//#define WITHDIRECTFREQENER	1
-//	#define WITHENCODER		1	/* для изменения частоты имеется енкодер */
-//	#define WITHENCODER2	1		/* есть второй валкодер */
-//
+	//#define COLORSTYLE_BLUE	1
+	//#define COLORSTYLE_RED	1
+	//#define WITHFUSBDFS 1	/* USB DEVICE FS */
+
+	#define ENCRES_DEFAULT ENCRES_600
+	#define ENCRES_SUB_DEFAULT ENCRES_24
+	//#define WITHDIRECTFREQENER	1
+	#define WITHENCODER		1	/* для изменения частоты имеется енкодер */
+	#define WITHENCODER2	1		/* есть второй валкодер */
+
 ////	#define WITHENCODER_SUB	1		/* есть второй валкодер */
 ////	#define ENCDIV_DEFAULT 2
 ////	#define ENCDYNAMIC_DEFAULT 0
@@ -276,86 +278,85 @@
 ////	#define BOARD_ENC3F_DIVIDE 1		/* значение для валкодера с "трещёткой" */
 ////	#define BOARD_ENC4F_DIVIDE 1		/* значение для валкодера с "трещёткой" */
 //
-//	/* Board hardware configuration */
-//	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
-//	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
-//	//#define CODEC_TYPE_TLV320AIC23B_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
-//	#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
-//
-//	//#define CODEC_TYPE_WM8731_USE_SPI	1
-//	//#define CODEC_TYPE_WM8731_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
-//
-//	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
-//	////#define CODEC_TYPE_NAU8822_USE_SPI	1
-//	////#define NAU8822_USE_SPI4	1	// SPI 4-Wire 24-bit Write and 32-bit Read Operation
-//	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
-//	//#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
-//	////#define WITHAFCODEC1HAVELINEINLEVEL 1	// (rear panel mini-din 6 pin input)
-//
-//	//#define WITHBBOXMIKESRC BOARD_TXAUDIO_LINE
-//	//#define CODEC_TYPE_NAU8822_NO_BTL 1		// Выходы SPK кодека не используются как мостовой выход, а идут к следующему каскаду усиления (отключаем инверсию правого канала)
-//
-//	#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
-//	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
-//	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
-//
-//	#define WITHFPGAIF_FRAMEBITS 512	// Полный размер фрейма = 512 для WITHFPGAPIPE_CODEC1
-//	//#define WITHFPGAIF_FRAMEBITS 256
-//	//#define WITHFPGARTS_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
-//	#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-//	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-//	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-//	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
-//
+	/* Board hardware configuration */
+	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
+	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
+	//#define CODEC_TYPE_TLV320AIC23B_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
+	#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
+
+	//#define CODEC_TYPE_WM8731_USE_SPI	1
+	//#define CODEC_TYPE_WM8731_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
+
+	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
+	#define CODEC_TYPE_NAU8822_USE_SPI	1
+	////#define NAU8822_USE_SPI4	1	// SPI 4-Wire 24-bit Write and 32-bit Read Operation
+	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
+	//#define CODEC1_IFC_MASTER 1	// кодек формирует синхронизацию
+	////#define WITHAFCODEC1HAVELINEINLEVEL 1	// (rear panel mini-din 6 pin input)
+
+	//#define WITHBBOXMIKESRC BOARD_TXAUDIO_LINE
+	//#define CODEC_TYPE_NAU8822_NO_BTL 1		// Выходы SPK кодека не используются как мостовой выход, а идут к следующему каскаду усиления (отключаем инверсию правого канала)
+
+	#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
+	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
+	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
+
+	#define WITHFPGAIF_FRAMEBITS 512	// Полный размер фрейма = 512 для WITHFPGAPIPE_CODEC1
+	//#define WITHFPGAIF_FRAMEBITS 256
+	//#define WITHFPGARTS_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
+	#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
+	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
+
 //	#define WITHWATCHDOG	(! WITHDEBUG && 1)	/* разрешение сторожевого таймера в устройстве */
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
-//	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
-//	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-//	//#define WITHRTOS	1	/* Использование RTOS */
-//
-//	#define WITHIF4DSP	1			/*  "Дятел" */
-//	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
-//	//
-//	#define WITHDSPEXTDDC 1				/* Квадратуры обрабатываются аппаратным DUC/DDC */
-//	#define WITHDSPEXTTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
-//	#define WITHDSPEXTRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
-//	//#define WITHDSPLOCALTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
-//	//#define WITHDSPLOCALRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
-//
-//	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
-//	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
-//	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
-//	//#define WITHTXCPATHCALIBRATE 1	/* при изменении параметров интерполятора в FPGA выполняем калибровку HARDWARE_DACSCALE */
-//
-//	// FPGA section
-//	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
-//	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
-//
-//	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_veloci_v0.h"	// для WITHFPGAPIPE_CODEC1
-//	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_veloci_v2.h"	// для WITHFPGAPIPE_CODEC1, 2x RF ADC, 122.8 * 1.5 DAC clock
-//
-//	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
-//	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-//	#define WITHUSEDUALWATCH	1	// Второй приемник
-//	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
-//	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
-//	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
-//
-//	#if 0
-//		#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
-//	#endif
-//	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-//	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
-//	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
-//	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
-//
-//	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
-//	#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
-//	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
-//	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
-//
-//	
-//	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
+	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
+	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
+
+	#define WITHIF4DSP	1			/*  "Дятел" */
+	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
+	//
+	#define WITHDSPEXTDDC 1				/* Квадратуры обрабатываются аппаратным DUC/DDC */
+	#define WITHDSPEXTTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
+	#define WITHDSPEXTRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
+	//#define WITHDSPLOCALTXFIR 1			/* Фильтрация квадратур на передаче осуществляется внешней аппаратурой */
+	//#define WITHDSPLOCALRXFIR 1			/* Фильтрация квадратур на приёме осуществляется внешней аппаратурой */
+
+	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
+	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+	
+	//#define WITHTXCPATHCALIBRATE 1	/* при изменении параметров интерполятора в FPGA выполняем калибровку HARDWARE_DUCSCALE */
+
+	// FPGA section
+	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
+	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
+
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_veloci_v0.h"	// для WITHFPGAPIPE_CODEC1
+	//#define BOARD_BITIMAGE_NAME "rbf/rbfimage_veloci_v2.h"	// для WITHFPGAPIPE_CODEC1, 2x RF ADC, 122.8 * 1.5 DAC clock
+
+	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
+	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
+	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
+	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
+
+	#if 0
+		#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
+	#endif
+	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
+	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
+
+	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
+	#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
+	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
+	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
+
+
+	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
@@ -372,7 +373,7 @@
 			
 			#define WITHAFGAINDEFAULT	(150 * BOARD_AFGAIN_MAX / 255)
 			#define WITHALTERNATIVEFONTS	1
-			#define WITHAFEQUALIZER		1
+			
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 			#define WITHDEFAULTVIEW		VIEW_3DSS
@@ -447,63 +448,63 @@
 	#endif
 
 
-//	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
-//	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
-//	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-//
-//	#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-//	#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
-//	#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
-//
-//	#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
-//	#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
-//	//#define WITHANTSELECT	1	/* Управление переключением антенн */
-//
-//
-////	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
-////	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
-//
-//	
-//	
-//	
-//	#define WITHCAT		1	/* используется CAT */
-//	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
-//	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
-//	//
-//	//#define WITHBEACON	1	/* Используется режим маяка */
-//	#if WITHTX
-//		#define WITHVOX			1	/* используется VOX */
-//		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-//		#define WITHSWRMTR	1		/* Измеритель КСВ */
-//	#endif /* WITHTX */
-//
-//
-//	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
-//	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
-//	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
-//	#define WITHSPKMUTE		1	/* управление выключением динамика */
-//	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
-//	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
-//
-//	// Есть ли регулировка параметров потенциометрами
-//	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-//	//#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-//	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
-//	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
-//	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
-//	#define WITHAFGAINDEFAULT    (150 * BOARD_AFGAIN_MAX / 255)
-//
-//	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
-//
-//	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
-//	//#define WITHBCBANDS		1		/* в таблице диапазонов присутствуют вещательные диапазоны */
-//	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
-//	//#define WITHLO1LEVELADJ		1	/* включено управление уровнем (амплитудой) LO1 */
-//	//#define WITHLFM		1	/* LFM MODE */
-//	//#define LFMTICKSFREQ ARMI2SRATE
-//	////*#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
-//	
-//	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
+	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
+	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
+	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+
+	#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+	#define WITHAUTOTUNER_N7DDCALGO	1	/* Есть функция автотюнера по алгоритму N7DDC */
+	#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
+
+	#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
+	#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
+	//#define WITHANTSELECT	1	/* Управление переключением антенн */
+
+
+//	#define WITHSWRPROT 0			/* ОТЛАДКА - отключена защитa по КСВ */
+//	#define WITHHEATPROT 0			/* ОТЛАДКА - отключена защитa по перегреву */
+
+
+
+
+	#define WITHCAT		1	/* используется CAT */
+	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
+	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
+	//
+	//#define WITHBEACON	1	/* Используется режим маяка */
+	#if WITHTX
+		#define WITHVOX			1	/* используется VOX */
+		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
+		#define WITHSWRMTR	1		/* Измеритель КСВ */
+	#endif /* WITHTX */
+
+
+	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
+	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
+	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
+
+	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
+	//#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
+
+	// Есть ли регулировка параметров потенциометрами
+	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
+	//#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
+	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
+	#define WITHAFGAINDEFAULT    (150 * BOARD_AFGAIN_MAX / 255)
+
+	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
+
+	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
+	//#define WITHBCBANDS		1		/* в таблице диапазонов присутствуют вещательные диапазоны */
+	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
+	//#define WITHLO1LEVELADJ		1	/* включено управление уровнем (амплитудой) LO1 */
+	//#define WITHLFM		1	/* LFM MODE */
+	//#define LFMTICKSFREQ ARMI2SRATE
+	////*#define WITHREFSENSOR	1		/* измерение по выделенному каналу АЦП опорного напряжения */
+
+	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 //
 //	#if 0
 //		#define WITHRTTHREAD 1	/* Use rt-thread https://github.com/RT-Thread/rt-thread.git */
@@ -527,7 +528,7 @@
 //	#define WITHFANPWMMIN 1
 //	#define WITHFANPWMMAX 4
 //
-//	#define WITHPOWERTRIM		1	// Имеется управление мощностью
+	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 
 	/* что за память настроек и частот используется в контроллере */
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25XXXX	// SERIAL FRAM AUTODETECT
@@ -576,19 +577,8 @@
 //	#define WITHELKEY	1
 //	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
 //
-//	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 //	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
-
-#endif /* WITHISBOOTLOADER */
-
-	#define WITHMODESETFULLNFM 1
-
-	/* все возможные в данной конфигурации фильтры */
-	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
-	/* все возможные в данной конфигурации фильтры для передачи */
-	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
-	/* фильтры, для которых стоит признак HAVE */
-	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
@@ -630,6 +620,21 @@
 		XTHERMOREFIX = BOARD_ADCX2IN(6),		// MCP3208 DA6 External thermo sensor TI LM35 (reference)
 		VOLTSOURCE = BOARD_ADCX2IN(5),		// Средняя точка делителя напряжения питания
 
+	};
+
+#endif /* WITHISBOOTLOADER */
+
+	#define WITHMODESETFULLNFM 1
+
+	/* все возможные в данной конфигурации фильтры */
+	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+	/* все возможные в данной конфигурации фильтры для передачи */
+	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
+	/* фильтры, для которых стоит признак HAVE */
+	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+
+	enum
+	{
 		/* кеширование днных */
 
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации

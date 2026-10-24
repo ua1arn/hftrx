@@ -342,7 +342,7 @@ void nic_send(const uint8_t * data, int size)
 
 }
 
-void nic_initialize(void)
+void nic_initialize(struct netif *netif)
 {
 	  HAL_StatusTypeDef hal_eth_init_status = HAL_OK;
 	  uint32_t idx = 0;

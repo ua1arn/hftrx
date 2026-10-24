@@ -7,11 +7,12 @@
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
-#include "clocks.h"
-#include "board.h"
-#include "gpio.h"
+//#define WITHIRQTRACE 1	/* печать номеров возникающих прерываний */
+
 #include "formats.h"	// for debug prints
+#include "clocks.h"
 #include <string.h>
+
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
@@ -1085,8 +1086,6 @@ void irqlog_print(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-//#define WITHIRQTRACE 1
-
 //#define INT_ID_MASK		0x3ffuL
 /* Interrupt IDs reported by the HPPIR and IAR registers */
 //#define PENDING_G1_INTID	1022uL
@@ -1148,23 +1147,31 @@ static void IRQ_Handler_GIC_G1(void)
 //		break;
 //	}
 	//(void) GICInterface->HPPIR;
+	__ISB();
 	(void) GIC_GetHighPendingIRQ();
+	__ISB();
 
 	const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
+	__ISB();
 
 	const IRQn_ID_t int_id = gicc_iar & UINT32_C(0x3FF);
 
 	// IHI0048B_b_gic_architecture_specification.pdf
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
-#if WITHIRQTRACE
-	//dbg_putchar('X');
-#endif /* WITHIRQTRACE */
 	if (int_id == 1022)
 	{
+#if WITHIRQTRACE
+		dbg_putchar('@');
+		dbg_putchar('a' + arm_hardware_cpuid());
+#endif /* WITHIRQTRACE */
 	}
 
 	if (int_id >= 1020)
 	{
+#if WITHIRQTRACE
+		dbg_putchar('#');
+		dbg_putchar('a' + arm_hardware_cpuid());
+#endif /* WITHIRQTRACE */
 		//LCLSPIN_LOCK(& giclock);
 		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
@@ -1178,6 +1185,7 @@ static void IRQ_Handler_GIC_G1(void)
 
 #if WITHIRQTRACE
 		dbg_putchar('X');
+		dbg_putchar('a' + arm_hardware_cpuid());
 		static const char hex [16] = "0123456789ABCDEF";
 		if ((int_id >> 8) & 0x0F)
 			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
@@ -1237,9 +1245,12 @@ static void FIQ_Handler_GIC_G0(void)
 //		break;
 //	}
 	//(void) GICInterface->HPPIR;
+	__ISB();
 	(void) GIC_GetHighPendingIRQG0();
+	__ISB();
 	const uint_fast32_t gicc_iar = GIC_AcknowledgePendingG0(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
 	//const uint_fast32_t gicc_iarg0 = GIC_AcknowledgePendingG0(); // CPUID, Interrupt ID - use GIC_AcknowledgePending
+	__ISB();
 
 	//BC_iar=00BC, iarg0=03FF
 //	PRINTF("iar=%04X, iarg0=%04X ", gicc_iar, gicc_iarg0);
@@ -1249,18 +1260,27 @@ static void FIQ_Handler_GIC_G0(void)
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
 
 #if WITHIRQTRACE
-	//dbg_putchar('Y');
+//	dbg_putchar('y');
+//	dbg_putchar('a' + arm_hardware_cpuid());
 #endif /* WITHIRQTRACE */
 	if (int_id == 1022)
 	{
+#if WITHIRQTRACE
+		dbg_putchar('-');
+		dbg_putchar('a' + arm_hardware_cpuid());
+#endif /* WITHIRQTRACE */
 	}
 
 	if (int_id >= 1020)
 	{
+#if WITHIRQTRACE
+		dbg_putchar('=');
+		dbg_putchar('a' + arm_hardware_cpuid());
+#endif /* WITHIRQTRACE */
 		//LCLSPIN_LOCK(& giclock);
-		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
 		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
+		//GICDistributor->GICD_IPRIORITYR [0] = GICDistributor->GICD_IPRIORITYR [0];
+		//GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
 		//LCLSPIN_UNLOCK(& giclock);
 
 	}
@@ -1270,6 +1290,7 @@ static void FIQ_Handler_GIC_G0(void)
 
 #if WITHIRQTRACE
 		dbg_putchar('Y');
+		dbg_putchar('a' + arm_hardware_cpuid());
 		static const char hex [16] = "0123456789ABCDEF";
 		if ((int_id >> 8) & 0x0F)
 			dbg_putchar(hex [(int_id >> 8) & 0x0F]);
@@ -1293,13 +1314,12 @@ static void FIQ_Handler_GIC_G0(void)
 		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
 		//LCLSPIN_UNLOCK(& giclock);
 	}
-	//dbg_putchar(' ');
-
 	GIC_EndInterruptG0((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
 	//GICInterface->EOIR = gicc_iar;
 }
 #endif /* (__CORTEX_A == 55U) */
 
+// Group 1 handler
 static void IRQ_Handler_GIC(void)
 {
 	IRQ_Handler_GIC_G1();
@@ -1307,15 +1327,16 @@ static void IRQ_Handler_GIC(void)
 
 // Call from VFIQ_Handler aarch64
 // Call from FIQ_Handler_aarch32
+// Group 0 handler
 static void FIQ_Handler_GIC(void)
 {
 #if (__CORTEX_A == 55U)
 	FIQ_Handler_GIC_G0();
 #else
 	ASSERT(0);
-	IRQ_Handler_GIC_G1();
 #endif
 }
+
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
@@ -1696,10 +1717,13 @@ void IRQ15_Handler(void)
 #endif /* CPUSTYLE_RISCV */
 
 typedef struct thread_item_tag thread_item_t;
-static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1);
+static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1);
 
 
 #if defined(__aarch64__)
+
+#define IDLETASKRAM_SIZE (16 * 1024)
+
 
 typedef struct exception_frame_tag
 {
@@ -1709,9 +1733,8 @@ typedef struct exception_frame_tag
 	uint64_t exc_elr_el3;
 	uint64_t exc_spsr_el3;		// Store (spsr, x0)
 	uint64_t x0;
-	// saved by push_trapframe_float -  total 544 bytes = 68 qwords
-	uint64_t xx, fpsr;	// xx, FPSR (check order)
-	uint64_t fpcr, fpexc32_el2;	// FPCR, FPEXC32_EL2 (check order)
+	// saved by push_trapframe_float -  total 528 bytes = 66    qwords
+	uint64_t fpcr, fpsr;	// FPCR, FPSR
 	uint64_t vfpregs [64];	// 32 128-bit registers
 	// saved by push_trapframe_int - total 240 bytes = 30 qwords
 	uint64_t x1, x2, x3, x4, x5, x6, x7, x8, x9, x10;
@@ -1743,9 +1766,9 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 //    f->exc_spsr_el3 = 0x000000006000030D;
 //    ASSERT(f->exc_spsr_el3 == 0x000000006000030D);
 
-	f->fpsr = 0;
-	f->fpcr = 0;
-	f->fpexc32_el2 = 0;
+	f->fpsr = 0x00000000;
+	f->fpcr = 0x00000000;	// возможно, стоит сделать единое на все ядра - значение как в sysinit_fpu_initialize
+	//f->fpexc32_el2 = 0;
 	f->exc_elr_el3 = (uintptr_t) fn;
 	f->x0 = (uintptr_t) arg;
 }
@@ -1759,7 +1782,7 @@ static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
-	task_handler(thread, (unsigned) f->x0, (void *) f->x1);
+	task_syscall_handler(thread, (unsigned) f->x0, (void *) f->x1);
 }
 
 // user-mode entry
@@ -1780,6 +1803,8 @@ static uint64_t task_sysfn(unsigned arg0, volatile void * arg1)
 }
 
 #elif __CORTEX_A != 0 && ! defined(__aarch64__)
+
+#define IDLETASKRAM_SIZE (8 * 1024)
 
 typedef struct exception_frame_tag
 {
@@ -1822,7 +1847,7 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 	f->r0 = (uintptr_t) arg;
 }
 
-// scheduler-mode entry
+// scheduler-mode entry - set svc exit code
 static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 {
 	exception_frame_t * const f = cpuframe;
@@ -1832,7 +1857,7 @@ static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
-	task_handler(thread, (unsigned) f->r0, (void *) f->r1);
+	task_syscall_handler(thread, (unsigned) f->r0, (void *) f->r1);
 }
 
 // user-mode entry
@@ -1854,16 +1879,44 @@ static uint32_t task_sysfn(unsigned arg0, volatile void * arg1)
 
 #elif __CORTEX_M != 0
 
+#define IDLETASKRAM_SIZE (16 * 1024)
+
 #warning unsupported context switch on this CPU
 
-typedef struct exception_frame_tag
-{
-	uint32_t r0, r1, r2;
-	uint32_t xx [32];
-} exception_frame_t;
+typedef struct {
+    /* Core CPU registers */
+    uint32_t r0;       /* Lowest address (SP pointer points here) */
+    uint32_t r1;
+    uint32_t r2;
+    uint32_t r3;
+    uint32_t r12;
+    uint32_t lr;       /* Link Register (R14) */
+    uint32_t pc;       /* Program Counter (R15) — Return address */
+    uint32_t xpsr;     /* Execution Program Status Register */
+
+    /* Floating-Point Unit (FPU) extension registers */
+    uint32_t s0;
+    uint32_t s1;
+    uint32_t s2;
+    uint32_t s3;
+    uint32_t s4;
+    uint32_t s5;
+    uint32_t s6;
+    uint32_t s7;
+    uint32_t s8;
+    uint32_t s9;
+    uint32_t s10;
+    uint32_t s11;
+    uint32_t s12;
+    uint32_t s13;
+    uint32_t s14;
+    uint32_t s15;
+    uint32_t fpscr;    /* Floating-point Status and Control Register */
+    uint32_t reserved; /* Highest address — Padding to maintain 8-byte alignment */
+} __attribute__((packed)) exception_frame_t;
 
 
-// scheduler-mode entry
+// scheduler-mode entry - set svc exit code
 static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 {
 	exception_frame_t * const f = cpuframe;
@@ -1873,7 +1926,7 @@ static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
-	task_handler(thread, (unsigned) f->r0, (void *) f->r1);
+	task_syscall_handler(thread, (unsigned) f->r0, (void *) f->r1);
 }
 
 // user-mode entry
@@ -1905,8 +1958,9 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 {
 }
 
-#elif __riscv
+#elif __riscv && __riscv_xlen==64
 	#warning unsupported context switch on this CPU
+#define IDLETASKRAM_SIZE (32 * 1024)
 
 typedef struct exception_frame_tag
 {
@@ -1914,6 +1968,7 @@ typedef struct exception_frame_tag
 	uint64_t xx [32];
 } exception_frame_t;
 
+// scheduler-mode entry - set svc exit code
 static void context_set_ec(void * __restrict cpuframe, unsigned ec)
 {
 	exception_frame_t * const f = cpuframe;
@@ -1923,7 +1978,7 @@ static void context_set_ec(void * __restrict cpuframe, unsigned ec)
 // scheduler-mode entry
 static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
 {
-	task_handler(thread, (unsigned) f->x3, (void *) f->x4);
+	task_syscall_handler(thread, (unsigned) f->x3, (void *) f->x4);
 }
 
 // user-mode entry
@@ -1955,46 +2010,44 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 }
 
 #else
-	#warning unsupported context switch on this CPU
+	#error unsupported context switch on this CPU
 #endif
 
 static volatile uint8_t threads_not_started = 1;
 
-static dbgcountfast_t get_td_us(uint_fast32_t timeUS)
-{
-	return timeUS * (cpu_getdebugticksfreq() / (1000 * 1000));
-}
-
-static dbgcountfast_t get_td_ms(uint_fast32_t timeMS)
-{
-	return timeMS * (cpu_getdebugticksfreq() / 1000);
-}
-
-// WITHRTOS
-#if 0
-
-#define IDLETASKRAM_SIZE (256 * 1024)
 
 typedef struct check_ready_tag
 {
-	int (* ready)(const struct check_ready_tag * ch, struct thread_item_tag * thread, uint_fast32_t tn, volatile void * arg1);
-	void (* print)(const struct check_ready_tag * ch, volatile void * arg1);
+	int (* ready)(const struct check_ready_tag * ch, struct thread_item_tag * thread, hwtimcountfast_t tn, volatile void * arg1);
+	int (* print)(char *__restrict buff, size_t size, const struct check_ready_tag * ch, volatile void * arg1);
 	const char * name;
 } check_ready_t;
 
 typedef struct thread_item_tag
 {
 	LIST_ENTRY item;
-	unsigned affinity;
+	__ALIGNED(8) uint8_t affinity;
 	exception_frame_t * cpuframe;	// cpu state
-	void * allocated;
-	IRQL_t irql;
-	unsigned uprio;
-	const check_ready_t * check_ready;
-	volatile void * check_ready_obj;
+	uint8_t prio;
+	const check_ready_t * check_ready;	// condition check function
+	volatile void * check_ready_obj;	// user-space wait condition parameters
+#if WITHDEBUG
+	uintptr_t bottom, top;	// memory area bounds
 	const char * name;
 	void * guard;	// debug signature
+#endif /* WITHDEBUG */
 } thread_item_t;
+
+
+static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
+
+static thread_item_t * startedtask [HARDWARE_NCORES];	// последнее запущенное на core
+static LIST_ENTRY threads_listW;	// threads im wait state
+static LIST_ENTRY threads_listR [PRIOv_count];	// threads in ready state
+
+void thread_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
+
+#if WITHRTOS
 
 
 enum
@@ -2004,14 +2057,15 @@ enum
 	TASKFN_WAIT32,
 	TASKFN_WAIT8,
 	TASKFN_WAITLIST,
+	TASKFN_SETAFFINITY,
 	//
 	TASKFN_count
 };
 
 struct taskfnparam_suspend
 {
-	uint32_t t0;
-	uint32_t td;
+	hwtimcount_t t0;
+	hwtimcount_t td;
 	volatile void * guard;
 };
 
@@ -2019,8 +2073,8 @@ struct taskfnparam_wait32
 {
 	const volatile uint32_t * flag;
 	uint32_t mask, state;
-	uint32_t t0;
-	uint32_t td;
+	hwtimcount_t t0;
+	hwtimcount_t td;
 	volatile void * guard;
 };
 
@@ -2028,8 +2082,8 @@ struct taskfnparam_wait8
 {
 	const volatile uint8_t * flag;
 	uint8_t mask, state;
-	uint32_t t0;
-	uint32_t td;
+	hwtimcount_t t0;
+	hwtimcount_t td;
 	volatile void * guard;
 };
 
@@ -2037,239 +2091,306 @@ struct taskfnparam_waitlist
 {
 	PRLIST_ENTRY list;
 	LCLSPINLOCK_t * lock;
-	uint32_t t0;
-	uint32_t td;
+	hwtimcount_t t0;
+	hwtimcount_t td;
 	volatile void * guard;
 };
 
+
+struct taskfnparam_setaffinity
+{
+	unsigned newaffinity;
+	unsigned oldaffinity;
+};
+
+// не должно ничего ожидать - попадаем сюда, когда нет thread для исполнения
 static int task_idle(void * ctx)
 {
+	(void) ctx;
 	for (;;)
 	{
-		task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+		//dbg_putchar('a' + arm_hardware_cpuid());
+		thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	}
 	return 0;
 }
 
-//static thread_item_t idle_threads [HARDWARE_NCORES * (PRIOv_count - PRIOv_IPC)];
-static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
-static thread_item_t * startedtask [HARDWARE_NCORES];
+// сохранить в списке готовых к выполнению
+static void task_insertready(thread_item_t * const tp) {
+	ASSERT(tp->check_ready == NULL);
+	InsertTailList(& threads_listR [tp->prio], & tp->item);
+}
 
-static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
-static LIST_ENTRY threads_list [UPRIO_count];
+// прописать все свойства отока и сохранить в списке готовых к выполнению
+static void thread_add(
+	thread_item_t * const thread, unsigned affinity,
+	int (*fn)(void * ctx), void * ctx,
+	void * stackbase, unsigned stacksize,
+	unsigned prio, const char * name) {
 
-static void thread_add(thread_item_t * const thread, unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, unsigned uprio, unsigned irql, const char * name)
-{
-	ASSERT(ARRAY_SIZE(threads_list) > uprio);
-	thread->affinity = affinity;
-	thread->allocated = aligned_alloc(DCACHEROWSIZE, ramsize);
-	//thread->allocated = malloc(IDLETASKRAM_SIZE);
-	ASSERT(thread->allocated != NULL);
-	while (thread->allocated == NULL)
-		;
-	uintptr_t top = (uintptr_t) thread->allocated + ramsize;
+	ASSERT(NULL != thread);
+	ASSERT(NULL != stackbase);
+	const uintptr_t top = (uintptr_t) stackbase + stacksize;
 	exception_frame_t * stackframe = (exception_frame_t *) (top - context_size());
 	// Установить параметры потока для запуска
 	context_init(stackframe, fn, ctx);
+	thread->affinity = affinity;
 	thread->cpuframe = stackframe;
-	thread->irql = irql;
-	thread->uprio = uprio;
-	thread->guard = thread;	// debug signature
+	thread->prio = prio;
 	thread->check_ready = NULL;
+	ASSERT(thread->affinity);
+#if WITHDEBUG
+	thread->guard = thread;	// debug signature
 	thread->name = name;
+	thread->bottom = (uintptr_t) stackbase;
+	thread->top = top;
+#endif /* WITHDEBUG */
 
+	IRQL_t lockIrql;
 	// включаем в список задач
-	InsertTailList(& threads_list [uprio], & thread->item);
+	IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
+	task_insertready(thread);	// Поскольку готово у выполнению - в список готовых
+	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
 
-	//PRINTF("Added thread at uprio=%u, irql=%d, affinity=%02X (frame=%p), stack[%p..%p]\n", uprio, irql, affinity, stackframe, stackframe, (void *) top);
+	//PRINTF("Added thread at prio=%d, aff=%02X (frame=%p), stack[%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
 }
 
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
+void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
 {
-	if (threads_not_started)
-	{
-		PRINTF("Wrong call of thread_create_user: '%s'\n", name);
-	}
 	ASSERT(threads_not_started == 0);
-	thread_item_t * const thread = (thread_item_t *) malloc(sizeof (thread_item_t));
-	if (thread != NULL)
-	{
-		thread_add(thread, affinity, fn, ctx, ramsize, UPRIO_USER, IRQL_USER, name);
-	}
+
+	thread_item_t * const thread = (thread_item_t *) rambase;
+	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
+	ramsize -= sizeof (thread_item_t);
+	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_USER, name);
+
 	return thread;
 }
 
-void task_scheduler_initialize(void)
+void * thread_create_board(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
 {
-	unsigned i;
-	IRQLSPINLOCK_INITIALIZE(& threadslock);
-	for (i = 0; i < ARRAY_SIZE(threads_list); ++ i)
+	ASSERT(threads_not_started == 0);
+
+	thread_item_t * const thread = (thread_item_t *) rambase;
+	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
+	ramsize -= sizeof (thread_item_t);
+	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_BOARD, name);
+
+	return thread;
+}
+
+void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+{
+	ASSERT(threads_not_started == 0);
+
+	thread_item_t * const thread = (thread_item_t *) rambase;
+	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
+	ramsize -= sizeof (thread_item_t);
+	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_SYSTEM, name);
+
+	return thread;
+}
+
+void * Xthread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+{
+	ASSERT(threads_not_started == 0);
+
+	thread_item_t * const thread = (thread_item_t *) rambase;
+	rambase = (void *) ((uintptr_t) rambase + sizeof (thread_item_t));
+	ramsize -= sizeof (thread_item_t);
+	thread_add(thread, affinity, fn, ctx, rambase, ramsize, PRIOv_REALTIME, name);
+
+	return thread;
+}
+
+void task_scheduler_initialize(void) {
 	{
-		InitializeListHead(& threads_list [i]);
+		unsigned prio;
+		IRQLSPINLOCK_INITIALIZE(& threadslock);
+		// На каждый IRQL свой список
+		for (prio = 0; prio < PRIOv_count; ++ prio)
+		{
+			InitializeListHead(& threads_listR [prio]);
+		}
+		InitializeListHead(& threads_listW);
 	}
-//	for (i = 0; i < ARRAY_SIZE(idle_threads); ++ i)
-//	{
-//		thread_item_t * const thread = & idle_threads [i];
-//		const unsigned core = i % HARDWARE_NCORES;
-//		const IRQL_t irql = GICI_ENCODE_IRQL(PRIOv_IPC + (i / HARDWARE_NCORES));
-//		switch (irql)
-//		{
-////		case IRQL_USER:
-////		case IRQL_SYSTEM:
-////		case IRQL_REALTIME:
-////		case IRQL_OVERREALTIME:
-////		case IRQL_BOARD:
-//		case IRQL_IPC:
-//		case IRQL_IPC_ONLY:
-//			continue;
-//		default:
-//			break;
-//		}
-//		//
-//		thread_add(thread, 1U << core, task_idle, NULL, IDLETASKRAM_SIZE, UPRIO_IDLE, irql, "idle");
-//	}
+
+	{
+		unsigned core;
+		// На каждый процессор
+		for (core = 0; core < HARDWARE_NCORES; ++ core) {
+			void * allocated = aligned_alloc(DCACHEROWSIZE, IDLETASKRAM_SIZE);
+			thread_add(allocated, 1U << core, task_idle, NULL, allocated, IDLETASKRAM_SIZE, PRIOv_IDLE, "idle");
+		}
+	}
+
 }
 
-void task_scheduler_start(void)
-{
+void task_scheduler_start(void) {
 	threads_not_started = 0;
-}
-
-void task_ticker(void)
-{
+	thread_yield();	// этот поток включается в список учтенных.
 }
 
 // проверка условий отдачи управления задаче
 // Если нашли - ставим error code
-static int task_isready(thread_item_t * tp, uint_fast32_t tn)
-{
-	if (tp->check_ready != NULL)
-	{
-		if (tp->check_ready->ready(tp->check_ready, tp, tn, tp->check_ready_obj))
-		{
-			tp->check_ready = NULL;	// признак готовности
-			return 1;
-		}
-		return 0;
-	}
-	return 1;
+static int task_isready(thread_item_t * tp, hwtimcountfast_t tn) {
+	ASSERT(tp->check_ready);
+	return tp->check_ready->ready(tp->check_ready, tp, tn, tp->check_ready_obj);
 }
 
-// получить готовую у выполнению задачу
-static thread_item_t * task_getready(unsigned affinity, thread_item_t * taskin)
-{
-	ASSERT(taskin);
+// перепроверить условия возобновления приостановленных threads
+static void task_resched(hwtimcountfast_t tn) {
+	PRLIST_ENTRY t;
+	PRLIST_ENTRY tnext;
+
+	// Обрабатываем проверку условия возобновления
+	for (t = threads_listW.Flink; t != & threads_listW; t = tnext) {
+		tnext = t->Flink;
+		thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
+		if (task_isready(tp, tn)) {
+			RemoveEntryList(& tp->item);
+			tp->check_ready = NULL;	// признак готовности - для печати
+			task_insertready(tp);
+		}
+	}
+}
+
+// получить готовую у выполнению задачу для ядра, попадающего в affinity
+static thread_item_t * task_getready(unsigned affinity) {
+	const hwtimcountfast_t tn = timestamp_getticks();
 	ASSERT(affinity);
-	const uint_fast32_t tn = sys_now();
-	// Возвращаем в список задач
-	InsertTailList(& threads_list [taskin->uprio], & taskin->item);
-	unsigned uprio;
-	for (uprio = 0; uprio < ARRAY_SIZE(threads_list); ++ uprio)
-	{
-		PRLIST_ENTRY const list = & threads_list [uprio];
+	unsigned prio;
+
+	// Ищем среди готовых
+	// Начинаем от высшего IRQL к низшему - ищем подходящий к исполнению на данном ядре.
+	for (prio = 0; prio < PRIOv_count; ++ prio) {
 		PRLIST_ENTRY t;
-		PRLIST_ENTRY tnext;
-		for (t = list->Flink; t != list; t = tnext)
-		{
-			tnext = t->Flink;
+		PRLIST_ENTRY const listR = & threads_listR [prio];
+		for (t = listR->Flink; t != listR; t = t->Flink) {
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-			if ((tp->affinity & affinity) && task_isready(tp, tn))
+			if ((tp->affinity & affinity))
 			{
 				// Нашли подходящий поток
 				RemoveEntryList(& tp->item);
-				ASSERT(tp->check_ready == NULL);
 				return tp;
 			}
 		}
 	}
-	RemoveEntryList(& taskin->item);
-
-	if (taskin->check_ready)
-	{
-		tasks_print();
-	}
-	ASSERT(taskin->check_ready == NULL);
-	return taskin;
+	ASSERT(0);
+	return NULL;
 }
 
-static void thread_print(const thread_item_t * const tp)
+#if WITHDEBUG
+static int thread_print(char *__restrict buff, size_t size, const thread_item_t * const tp, const char * title)
 {
-	PRINTF("    task %p: name='%s', uprio=%u. irql=%u (prio=%u), affinity=%08X ", tp, tp->name, tp->uprio, (unsigned) tp->irql, (unsigned) GICI_DECODE_IRQL(tp->irql), (unsigned) tp->affinity);
+	int n = 0;
+	exception_frame_t * const f = tp->cpuframe;
+	n += local_snprintf_P(buff + n, size - n, "%s %p: irql=0x%02X (prio=%u), aff=0x%08X, ", title, tp, (unsigned) GICI_ENCODE_IRQL(tp->prio), (unsigned) tp->prio, (unsigned) tp->affinity);
+	if (tp->bottom)
+		n += local_snprintf_P(buff + n, size - n, "use=%3u%% ", (unsigned) (100 * (tp->top - (uintptr_t) tp->cpuframe) /  (tp->top - tp->bottom)));
+	else
+		n += local_snprintf_P(buff + n, size - n, "         ");
+	n += local_snprintf_P(buff + n, size - n, "name='%s' ", tp->name);
+	//n += local_snprintf_P(buff + n, size - n, "fpcr=%08X, fpsr=%08X ", (unsigned) f->fpcr, (unsigned) f->fpsr);
 	if (tp->check_ready)
 	{
 		ASSERT(tp->check_ready->print);
 		ASSERT(tp->check_ready_obj);
-		tp->check_ready->print(tp->check_ready, tp->check_ready_obj);
+		n += tp->check_ready->print(buff + n, size - n, tp->check_ready, tp->check_ready_obj);
 	}
-	PRINTF("\n");
+	n += local_snprintf_P(buff + n, size - n, "\n");
+	return n;
 }
 
-void tasks_print(void)
+
+static int tasks_print0(char *__restrict buff, size_t size)
 {
-	unsigned uprio;
+	int n = 0;
+	IRQL_t lockIrql;
+	unsigned prio;
 	unsigned core;
-	PRINTF("tasks_print: base\n");
-	for (core = 0; core < ARRAY_SIZE(base_threads); ++ core)
-	{
-		thread_print(& base_threads [core]);
-	}
-//	PRINTF("tasks_print: idle\n");
-//	for (core = 0; core < ARRAY_SIZE(idle_threads); ++ core)
-//	{
-//		thread_print(& idle_threads [core]);
-//	}
-	PRINTF("tasks_print: started\n");
+
+	n += local_snprintf_P(buff + n, size - n, "tasks_print: started (for each core):\n");
+	IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
 	for (core = 0; core < ARRAY_SIZE(startedtask); ++ core)
 	{
-		thread_print(startedtask [core]);
+		char title [16];
+		local_snprintf_P(title, ARRAY_SIZE(title), "core%u", core);
+		n += thread_print(buff + n, size - n, startedtask [core], title);
 	}
-	PRINTF("tasks_print: lists\n");
-	for (uprio = 0; uprio < ARRAY_SIZE(threads_list); ++ uprio)
+
+	n += local_snprintf_P(buff + n, size - n, "tasks_print: Waiting, timestamp_getticks=%" PRIu64 ":\n", (uint64_t) timestamp_getticks());
 	{
-		PRLIST_ENTRY const list = & threads_list [uprio];
+		//n += local_snprintf_P(buff + n, size - n, "tasks_print: prio=%u\n", prio);
+		PRLIST_ENTRY t;
+		PRLIST_ENTRY tnext;
+		for (t = threads_listW.Flink; t != & threads_listW; t = tnext)
+		{
+			tnext = t->Flink;
+			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
+			n += thread_print(buff + n, size - n, tp, "     ");
+		}
+	}
+
+	n += local_snprintf_P(buff + n, size - n, "tasks_print: Ready lists:\n");
+	for (prio = 0; prio < PRIOv_count; ++ prio)
+	{
+		PRLIST_ENTRY const list = & threads_listR [prio];
 		if (IsListEmpty(list))
-			continue;
-		PRINTF("tasks_print: uprio=%u\n", uprio);
+			continue;	// На данном PRIORITY ничего нет
+		//n += local_snprintf_P(buff + n, size - n, "tasks_print: prio=%u\n", prio);
 		PRLIST_ENTRY t;
 		PRLIST_ENTRY tnext;
 		for (t = list->Flink; t != list; t = tnext)
 		{
 			tnext = t->Flink;
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-			thread_print(tp);
+			n += thread_print(buff + n, size - n, tp, "     ");
 		}
 	}
-	PRINTF("tasks_print done\n");
+	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
+	n += local_snprintf_P(buff + n, size - n, "tasks_print done\n");
+
+	//
+	return n;
 }
 
-void __NO_RETURN task_scheduler_othercores(void)
+void tasks_print(void)
 {
-	ASSERT(threads_not_started == 0);
-	for (;;)
-	{
-		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
-		//__DMB();
-	}
+	char buff [8192];
+	size_t size = ARRAY_SIZE(buff);
+	tasks_print0(buff, size);
+	// use result
+	dbg_puts(buff);
 }
-
-static int ready_timeout(uint_fast32_t tn, uint_fast32_t t0, uint_fast32_t td)
+#else /* WITHDEBUG */
+void tasks_print(void)
 {
-	if (td == LOCAL_WAITINFINITY)
+
+}
+#endif /* WITHDEBUG */
+
+static int ready_timeout(uint_fast32_t tn, hwtimcountfast_t t0, hwtimcountfast_t td)
+{
+	if (td == cpu_getdebugticksmask())
 		return 0;
 	return (uint32_t) (tn - t0) >= td;
 }
 
 
-static void print_suspend(const check_ready_t * chrdyttag, volatile void * arg1)
+static int print_suspend(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, volatile void * arg1)
 {
+	unsigned n = 0;
 	volatile struct taskfnparam_suspend * const param = (volatile struct taskfnparam_suspend *) arg1;
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
-	PRINTF("%s: ", chrdyttag->name);
-	PRINTF("td=%u", (unsigned) param->td);
+	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
+	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
+	n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) param->td);
+	return n;
 }
 
-static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
+static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_suspend * const param = (volatile struct taskfnparam_suspend *) arg1;
 	if (param == NULL || param->guard != param)
@@ -2278,20 +2399,24 @@ static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thre
 		tasks_print();
 	}
 	ASSERT(param != NULL);
-	ASSERT(param->guard == param);
+	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
 	return ready_timeout(tn, param->t0, param->td);
 }
 
-static void print_wait32(const check_ready_t * chrdyttag, volatile void * arg1)
+static int print_wait32(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, volatile void * arg1)
 {
+	unsigned n = 0;
 	volatile struct taskfnparam_wait32 * const param = (volatile struct taskfnparam_wait32 *) arg1;
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
-	PRINTF("%s: ", chrdyttag->name);
-	PRINTF("flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
+	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
+	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, ", param->flag, (unsigned) param->mask, (unsigned) param->state);
+	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
+	n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) param->td);
+	return n;
 }
 
-static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
+static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_wait32 * const param = (volatile struct taskfnparam_wait32 *) arg1;
 	if (param == NULL || param->guard != param)
@@ -2300,7 +2425,7 @@ static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * threa
 		tasks_print();
 	}
 	ASSERT(param != NULL);
-	ASSERT(param->guard == param);
+	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
 	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)
 	{
@@ -2315,20 +2440,24 @@ static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * threa
 	return 0;
 }
 
-static void print_wait8(const check_ready_t * chrdyttag, volatile void * arg1)
+static int print_wait8(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, volatile void * arg1)
 {
+	unsigned n = 0;
 	volatile struct taskfnparam_wait8 * const param = (volatile struct taskfnparam_wait8 *) arg1;
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
-	PRINTF("%s: ", chrdyttag->name);
-	PRINTF("flag=%p, mask=0x%08x, state=0x%08x, td=%u", param->flag, (unsigned) param->mask, (unsigned) param->state, (unsigned) param->td);
+	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
+	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, ", param->flag, (unsigned) param->mask, (unsigned) param->state);
+	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
+	n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) param->td);
+	return n;
 }
 
-static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
+static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_wait8 * const param = (volatile struct taskfnparam_wait8 *) arg1;
 	ASSERT(param != NULL);
-	ASSERT(param->guard == param);
+	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
 	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)
 	{
@@ -2343,19 +2472,22 @@ static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread
 	return 0;
 }
 
-static void print_waitlist(const check_ready_t * chrdyttag, volatile void * arg1)
+static int print_waitlist(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, volatile void * arg1)
 {
+	unsigned n = 0;
 	volatile struct taskfnparam_waitlist * const param = (volatile struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
-	ASSERT(param->guard == param);
-	PRINTF("%s: ", chrdyttag->name);
+	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
+	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
+	n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) param->td);
+	return n;
 }
 
-static int readyfn_waitlist(const check_ready_t * chrdyttag, thread_item_t * thread, uint_fast32_t tn, volatile void * arg1)
+static int readyfn_waitlist(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, volatile void * arg1)
 {
 	volatile struct taskfnparam_waitlist * const param = (volatile struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
-	ASSERT(param->guard == param);
+	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
 	if (LCLSPIN_TRAYLOCK(param->lock))
 	{
 		const int f = IsListEmpty(param->list);
@@ -2406,76 +2538,112 @@ static const check_ready_t readytag_waitlist =
 	.name = "waitlist"
 };
 
-static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
+// thread может быть включена в список ожидающих
+static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
 {
 	switch (arg0)
 	{
 	default:
+		task_insertready(thread);
 		return;
 	case TASKFN_NOP:
-		ASSERT(arg1 == NULL);
+		//ASSERT(arg1 == NULL);
+		task_insertready(thread);
 		return;
 
 	case TASKFN_SUSPEND:
 		ASSERT(threads_not_started == 0);
 		thread->check_ready_obj = arg1;
 		thread->check_ready = & readytag_suspend;
+		InsertTailList(& threads_listW, & thread->item);
 		return;
 
 	case TASKFN_WAIT32:
 		ASSERT(threads_not_started == 0);
 		thread->check_ready_obj = arg1;
 		thread->check_ready = & readytag_wait32;
+		InsertTailList(& threads_listW, & thread->item);
 		return;
 
 	case TASKFN_WAIT8:
 		ASSERT(threads_not_started == 0);
 		thread->check_ready_obj = arg1;
 		thread->check_ready = & readytag_wait8;
+		InsertTailList(& threads_listW, & thread->item);
 		return;
 
 	case TASKFN_WAITLIST:
 		ASSERT(threads_not_started == 0);
 		thread->check_ready_obj = arg1;
 		thread->check_ready = & readytag_waitlist;
+		InsertTailList(& threads_listW, & thread->item);
+		return;
+
+	case TASKFN_SETAFFINITY:
+		{
+			volatile struct taskfnparam_setaffinity * const param = (volatile struct taskfnparam_setaffinity *) arg1;
+			ASSERT(threads_not_started == 0);
+			thread->check_ready_obj = NULL;
+			param->oldaffinity = thread->affinity;
+			thread->affinity = param->newaffinity;
+		}
+		task_insertready(thread);
 		return;
 	}
 }
 
+static thread_item_t * refreshactivetask(exception_frame_t * oldframe, unsigned core)
+{
+	thread_item_t * * const pt = & startedtask [core];	// не NULL - значит запускали из task_scheduler0
+	if (* pt == NULL)  {
+		static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
+		// ещё не имеет своей структуры - создан в момент start-up системы.
+		thread_item_t * const thread = & base_threads [core];
+		thread->check_ready = NULL;
+#if WITHDEBUG
+		thread->guard = thread;
+		thread->name = "def";
+		thread->bottom = 0;
+		thread->top = 0;
+#endif /* WITHDEBUG */
+		//
+		// получаем состояние процесора при первом перрывании
+		thread->affinity = 1U << core;
+		* pt = thread;
+
+		//PRINTF("task_scheduler0: add default %p, flag=%u, core=%u, irql=%u\n", thread, flag, core, irql);
+	}
+	(* pt)->cpuframe = oldframe;
+	return (* pt);
+}
+
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 static void *
-task_scheduler0(exception_frame_t * oldframe, unsigned flag, unsigned code)
+task_scheduler0(exception_frame_t * oldframe, unsigned syscallflag, unsigned code)
 {
 	const unsigned core = arm_hardware_cpuid();
 	IRQL_t irql;
 	if (threads_not_started)
 		return oldframe;
-	ASSERT(threads_not_started == 0);
 	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC);
-	if (startedtask [core] == NULL)
-	{
-		thread_item_t * const thread = & base_threads [core];
-		thread->guard = thread;
-		thread->allocated = NULL;
-		thread->check_ready = NULL;
-		thread->uprio = UPRIO_USER;
-		thread->name = "default";
-		//
-		// получаем состояние процесора при первом перрывании
-		thread->affinity = 1U << core;
-		startedtask [core] = thread;
+	ASSERT(threads_not_started == 0);
+	thread_item_t * const tp = refreshactivetask(oldframe, core);	// also set cpuframe
+	ASSERT(tp);
+	tp->prio = GICI_DECODE_IRQL(irql);
 
-		//PRINTF("task_scheduler0: add default %p, flag=%u, core=%u, irql=%u\n", thread, flag, core, irql);
+	if (syscallflag)  {
+		// обработка системныз вызовов
+		task_svc(tp, code, oldframe);	// thread переходит в список ждущих или готовых - или исчезает
+	} else {
+		task_insertready(tp);		// раз сэда попали - значит точно не ждали ничего
 	}
-	startedtask [core]->irql = irql;
-	startedtask [core]->cpuframe = oldframe;
-	if (flag)
-	{
-		task_svc(startedtask [core], code, oldframe);
-	}
-	// смена текущего потока на данном ядре
-	startedtask [core] = task_getready(1U << core, startedtask [core]);
-	IRQLSPIN_UNLOCK(& threadslock, startedtask [core]->irql);
+
+	// перепланировка
+	task_resched(timestamp_getticks());
+
+	// Запуск
+	startedtask [core] = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
+	IRQLSPIN_UNLOCK(& threadslock, GICI_ENCODE_IRQL(startedtask [core]->prio));
 	return startedtask [core]->cpuframe;
 }
 
@@ -2490,13 +2658,8 @@ static void * task_scheduler(void * oldframe)
 }
 
 // хотим завершить выполнение кванта, не дожидаясь прерывания
-void task_yield(void)
+void thread_yield(void)
 {
-	const uint_fast8_t coreid = board_dpc_coreid();
-	if (coreid >= 6)
-		return;
-//	__WFI();	// пока так
-//	__SEV();
 	task_sysfn(TASKFN_NOP, NULL);
 }
 
@@ -2504,24 +2667,25 @@ void local_delay_ms(uint_fast32_t timeMS)
 {
 	if (timeMS == 0)
 		return;
-	if (threads_not_started || 1)
+	if (threads_not_started)
 	{
 
-		const dbgcountfast_t t0 = cpu_getdebugticks();
-		const dbgcountfast_t td = get_td_ms(timeMS);
+		const hwtimcountfast_t t0 = timestamp_getticks();
+		const hwtimcountfast_t td = get_td_ms(timeMS);
 		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) GIC_GetInterfacePriorityMask());
-		while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td)
-			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+		while (get_td_delta(t0) < td)
+			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	}
 	else
 	{
 		volatile struct taskfnparam_suspend v;
-		v.t0 = sys_now();
-		v.td = timeMS;
+		v.t0 = timestamp_getticks();
+		v.td = get_td_ms(timeMS);
 		v.guard = & v;
 		//PRINTF("local_delay_ms: t0=0x%08X, td=0x%08X\n", (unsigned) v.t0, (unsigned) v.td);
 		//PRINTF("2 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) v.t0, (unsigned) v.td, (unsigned) GIC_GetInterfacePriorityMask());
 		task_sysfn(TASKFN_SUSPEND, & v);
+		//TP();
 	}
 }
 
@@ -2529,25 +2693,25 @@ void local_delay_ms(uint_fast32_t timeMS)
 // return non-zero: timeout error
 int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS)
 {
-	if (timeMS == 0)
-		return 0;
-	if (threads_not_started || 1)
+	if (threads_not_started)
 	{
-		const dbgcountfast_t t0 = cpu_getdebugticks();
-		const dbgcountfast_t td = get_td_ms(timeMS);
+		const hwtimcountfast_t t0 = timestamp_getticks();
+		const hwtimcountfast_t td = get_td_ms(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
+			{
 				return 0;
-			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td);
+			}
+			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+		} while (get_td_delta(t0) < td);
 		return 1;
 	}
 	else
 	{
 		volatile struct taskfnparam_wait8 v;
-		v.t0 = sys_now();
-		v.td = timeMS;
+		v.t0 = timestamp_getticks();
+		v.td = get_td_ms(timeMS);
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
@@ -2561,25 +2725,25 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 // return non-zero: timeout error
 int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS)
 {
-	if (timeMS == 0)
-		return 0;
-	if (threads_not_started || 1)
+	if (threads_not_started)
 	{
-		const dbgcountfast_t t0 = cpu_getdebugticks();
-		const dbgcountfast_t td = get_td_ms(timeMS);
+		const hwtimcountfast_t t0 = timestamp_getticks();
+		const hwtimcountfast_t td = get_td_ms(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
+			{
 				return 0;
-			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td);
+			}
+			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+		} while (get_td_delta(t0) < td);
 		return 1;
 	}
 	else
 	{
 		volatile struct taskfnparam_wait32 v;
-		v.t0 = sys_now();
-		v.td = timeMS;
+		v.t0 = timestamp_getticks();
+		v.td = get_td_ms(timeMS);
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
@@ -2591,38 +2755,42 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 
 // wait expected state of variable
 // return non-zero: timeout error
-int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS)
+int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fast32_t timeMS)
 {
-	if (timeMS == 0)
-		return 0;
-	if (threads_not_started || 1)
+	ASSERT(threads_not_started == 0);
+
+	volatile struct taskfnparam_waitlist v;
+	v.t0 = timestamp_getticks();
+	v.td = get_td_ms(timeMS);
+	v.list = list;
+	v.lock = lock;
+	v.guard = & v;
+	return task_sysfn(TASKFN_WAITLIST, & v);
+}
+
+// Set thread affinity - return old value
+// функция нужна для запрета смены процессора при выполнении обработчика преерываний.
+// (EOI должно идти в GIC INTERFACE того же ядра, где и возникло)
+static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
+{
+	const unsigned core = arm_hardware_cpuid();
+	thread_item_t * const tp = refreshactivetask(oldframe, core);
+
+	const unsigned aff = tp->affinity;
+	tp->affinity = affinity;
+	return aff;
+
+	if (threads_not_started)
 	{
-		const dbgcountfast_t t0 = cpu_getdebugticks();
-		const dbgcountfast_t td = get_td_ms(timeMS);
-		do
-		{
-			if (LCLSPIN_TRAYLOCK(lock))
-			{
-				const int f = IsListEmpty(list);
-				LCLSPIN_UNLOCK(lock);
-				if (! f)
-				{
-					return 0;	// дождались
-				}
-			}
-			task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td);
-		return 1;	// Завепшение по таймауту
+		return 1U << arm_hardware_cpuid();
 	}
 	else
 	{
-		volatile struct taskfnparam_waitlist v;
-		v.t0 = sys_now();
-		v.td = timeMS;
-		v.list = list;
-		v.lock = lock;
-		v.guard = & v;
-		return task_sysfn(TASKFN_WAITLIST, & v);
+
+		volatile struct taskfnparam_setaffinity v;
+		v.newaffinity = affinity;
+		task_sysfn(TASKFN_SETAFFINITY, & v);
+		return v.oldaffinity;
 	}
 }
 
@@ -2630,49 +2798,61 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 
 // Non-linux, non-scheduler
 
-void task_scheduler_initialize(void) {}
-void task_scheduler_start(void) {}
-void task_ticker(void) {}
-
-void __NO_RETURN task_scheduler_othercores(void)
+void task_scheduler_initialize(void)
 {
-	for (;;)
-	{
-		board_dpc_processing();		// user-mode функция обработки списков запросов dpc на текущем процессоре
-		__DMB();
 	}
-}
 
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name)
+void task_scheduler_start(void) {}
+
+void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
 {
 	return NULL;
 }
 
-/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
-static void * task_scheduler(void * oldframe)
+void * thread_create_board(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
 {
-//	if (arm_hardware_cpuid() >= 1)
-//	{
-//		PRINTF("core%d:\n", (int) arm_hardware_cpuid());
-//		printhex64(0, oldframe, context_size());
-//		for (;;)
-//			;
-//	}
+	return NULL;
+}
+
+void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+{
+	return NULL;
+}
+
+void * thread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+{
+	return NULL;
+}
+
+static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
+{
+}
+
+/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
+static void *
+task_scheduler0(exception_frame_t * oldframe, unsigned svcflag, unsigned code)
+{
 	return oldframe;
 }
 
 static void * task_scheduler2(unsigned code, void * oldframe)
 {
-	return oldframe;
+	return task_scheduler0((exception_frame_t *) oldframe, 1, code);
 }
 
-static void task_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
+static void * task_scheduler(void * oldframe)
 {
-
+	return task_scheduler0((exception_frame_t *) oldframe, 0, 0);
 }
+
 void tasks_print(void)
 {
 
+}
+
+// хотим завершить выполнение кванта, не дожидаясь прерывания
+void thread_yield(void)
+{
 }
 
 void local_delay_ms(uint_fast32_t timeMS)
@@ -2680,10 +2860,10 @@ void local_delay_ms(uint_fast32_t timeMS)
 	if (timeMS == 0)
 		return;
 
-    const dbgcountfast_t t0 = cpu_getdebugticks();
-    const dbgcountfast_t td = get_td_ms(timeMS);
-    while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td)
-    	;
+    const hwtimcountfast_t t0 = timestamp_getticks();
+    const hwtimcountfast_t td = get_td_ms(timeMS);
+    while (get_td_delta(t0) < td)
+    	thread_yield();
 }
 
 
@@ -2691,13 +2871,53 @@ void local_delay_ms(uint_fast32_t timeMS)
 // return non-zero: timeout error
 int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS)
 {
-	const dbgcountfast_t t0 = cpu_getdebugticks();
-	const dbgcountfast_t td = get_td_ms(timeMS);
+	const hwtimcountfast_t t0 = timestamp_getticks();
+	const hwtimcountfast_t td = get_td_ms(timeMS);
 	do
 	{
-		if (((* flag & mask) == state))
+		const uint_fast8_t f = * flag & mask;
+		if (f == state)
 			return 0;
-	} while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td);
+    	thread_yield();
+	} while (get_td_delta(t0) < td);
+	return 1;
+}
+
+
+// wait expected state of variable
+// return non-zero: timeout error
+int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast8_t errstate, uint_fast32_t timeMS)
+{
+	const hwtimcountfast_t t0 = timestamp_getticks();
+	const hwtimcountfast_t td = get_td_ms(timeMS);
+	do
+	{
+		const uint_fast8_t f = * flag & mask;
+		if (f == state)
+			return 0;
+		if (f == errstate)
+			return 1;
+    	thread_yield();
+	} while (get_td_delta(t0) < td);
+	return 1;
+}
+
+// wait expected state of variable
+// return non-zero: timeout error or errormask
+int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t errstate, uint_fast32_t timeMS)
+{
+	const hwtimcountfast_t t0 = timestamp_getticks();
+	const hwtimcountfast_t td = get_td_ms(timeMS);
+	//PRINTF("local_wait32mask: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
+	do
+	{
+		const uint_fast32_t f = * flag & mask;
+		if (f == state)
+			return 0;
+		if (f == errstate)
+			return 1;
+    	thread_yield();
+	} while (get_td_delta(t0) < td);
 	return 1;
 }
 
@@ -2705,22 +2925,25 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 // return non-zero: timeout error
 int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS)
 {
-	const dbgcountfast_t t0 = cpu_getdebugticks();
-	const dbgcountfast_t td = get_td_ms(timeMS);
+	const hwtimcountfast_t t0 = timestamp_getticks();
+	const hwtimcountfast_t td = get_td_ms(timeMS);
 	//PRINTF("local_wait32mask: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
 	{
-		if (((* flag & mask) == state))
+		const uint_fast32_t f = * flag & mask;
+		if (f == state)
 			return 0;
-	} while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td);
+    	thread_yield();
+	} while (get_td_delta(t0) < td);
 	return 1;
 }
+
 // wait expected state of variable
 // return non-zero: timeout error
-int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS)
+int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fast32_t timeMS)
 {
-	const dbgcountfast_t t0 = cpu_getdebugticks();
-	const dbgcountfast_t td = get_td_ms(timeMS);
+	const hwtimcountfast_t t0 = timestamp_getticks();
+	const hwtimcountfast_t td = get_td_ms(timeMS);
 	//PRINTF("local_waitlist: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
 	{
@@ -2733,32 +2956,26 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, uint_fast32_t timeMS
 				return 0;	// дождались
 			}
 		}
-	} while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td);
-	return 1;	// Завепшение по таймауту
+    	thread_yield();
+	} while (get_td_delta(t0) < td);
+	return 1;	// Завершение по таймауту
 }
-// хотим завершить выполнение кванта, не дожидаясь прерывания
-void task_yield(void)
+
+
+// Set thread affinity - return old value
+static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 {
+	return 0;
 }
 
 #endif /* */
 
-
-#if CPUSTYLE_ARM || CPUSTYLE_RISCV
-
-static unsigned cpufreqMHz = 10;
-
-#endif
-void local_delay_initialize(void)
-{
-	cpufreqMHz = CPU_FREQ / 1000000;
-}
-
 #if 0
 
 static unsigned long
-local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
+local_delay_uscycles(unsigned timeUS)
 {
+	const unsigned cpufreqMHz = CPU_FREQ / 1000000;
 #if CPUSTYLE_AT91SAM7S
 	#warning TODO: calibrate constant	 looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 175uL / cpufreq_MHz;
@@ -2814,8 +3031,8 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 	// калибровано для Cortex-A53 процессора
 	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
 #elif __CORTEX_A == 55
-	// калибровано для Cortex-A53 процессора
-	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
+	// калибровано для Cortex-A55 ядра процессора Allwinner A733
+	const unsigned long top = 142uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_T113
 	// калибровано для 1200 МГц Cortex-A7 процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
@@ -2844,7 +3061,7 @@ void /* RAMFUNC_NONILINE */ local_delay_us(uint_fast32_t timeUS)
 		return;
 #if 0
 	// Частота процессора приволится к мегагерцам.
-	const unsigned long top = local_delay_uscycles(timeUS, cpufreqMHz);
+	const unsigned long top = local_delay_uscycles(timeUS);
 	//
 	volatile unsigned long t;
 	for (t = 0; t < top; ++ t)
@@ -2860,7 +3077,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 	if (timeMS == 0)
 		return;
 	// Частота процессора приволится к мегагерцам.
-	const unsigned long top = local_delay_uscycles(1000, cpufreqMHz);
+	const unsigned long top = local_delay_uscycles(1000);
 	int n;
 	for (n = 0; n < timeMS; ++ n)
 	{
@@ -2878,13 +3095,11 @@ void local_delay_us(uint_fast32_t timeUS)
 {
 	if (timeUS == 0)
 		return;
-
-	const dbgcountfast_t t0 = cpu_getdebugticks();	// Счетчик увеличивается с частотой процессора
-	const dbgcountfast_t td = get_td_us(timeUS);
-	while ((cpu_getdebugticksmask() & (cpu_getdebugticks() - t0)) < td)
+	const hwtimcountfast_t t0 = timestamp_getticks();	// Счетчик увеличивается с частотой процессора
+	const hwtimcountfast_t td = get_td_us(timeUS);
+	while (get_td_delta(t0) < td)
 		;
 }
-
 
 #endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
 
@@ -2912,8 +3127,9 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 // 0x280
 void __NO_RETURN VIRQ_Handler(void * frame)
 {
-	//while (HARDWARE_DEBUG_PUTCHAR('I') == 0) ;
+	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	IRQ_Handler_GIC();		// Group 1 handler
+	thread_set_affinity(frame, aff);
 	run_task_curr(task_scheduler(frame));
 }
 
@@ -2922,13 +3138,9 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 // 0x300
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
-	//while (HARDWARE_DEBUG_PUTCHAR('F') == 0) ;
-#if (__CORTEX_A == 55U)
+	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	FIQ_Handler_GIC();		// Group 0 handler
-	IRQ_Handler_GIC();		// Group 1 handler
-#else
-	IRQ_Handler_GIC();		// Group 1 handler
-#endif /* (__CORTEX_A == 55U) */
+	thread_set_affinity(frame, aff);
 	run_task_curr(task_scheduler(frame));
 }
 
@@ -2963,6 +3175,19 @@ void SError_Handler(void * frame)
 	case 0x06:	PRINTF("Trapped LDC or STC access.\n"); break;
 	default: break;
 	}
+#if defined (BOARD_BLINK_INITIALIZE)
+	BOARD_BLINK_INITIALIZE();;
+	for (;;)
+	{
+		BOARD_BLINK_SETSTATE(1);
+		local_delay_us(250 * 1000);
+		BOARD_BLINK_SETSTATE(0);
+		local_delay_us(1250 * 1000);
+	}
+#else
+	for (;;)
+		;
+#endif /* defined (BOARD_BLINK_INITIALIZE) */
 }
 
 #elif (__CORTEX_A != 0) && ! defined(__aarch64__) && ! defined(__riscv)
@@ -2996,13 +3221,17 @@ uint32_t __get_DFAR(void)
 // AARCH32
 void IRQ_Handler_aarch32(void * frame)
 {
-	IRQ_Handler_GIC();
+	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
+	IRQ_Handler_GIC();			// Group 1 handler
+	thread_set_affinity(frame, aff);
 	run_task_curr_aarch32(task_scheduler(frame));
 }
 
 void FIQ_Handler_aarch32(void * frame)
 {
-	FIQ_Handler_GIC();
+	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
+	FIQ_Handler_GIC();			// Group 0 handler
+	thread_set_affinity(frame, aff);
 	run_task_curr_aarch32(task_scheduler(frame));
 }
 
@@ -3046,7 +3275,7 @@ void __NO_RETURN SWI_Handler_aarch32(void * frame)
 void PAbort_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
-	dbg_puts_impl("PAbort_Handler trapped. CPUID=");
+	dbg_puts("PAbort_Handler trapped. CPUID=");
 	dbg_putchar('0' + (arm_hardware_cpuid()));
 	dbg_putchar('\n');
 #pragma GCC diagnostic push
@@ -3116,7 +3345,7 @@ void PAbort_Handler(void)
 void DAbort_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
-	dbg_puts_impl("DAbort_Handler trapped. CPUID=");
+	dbg_puts("DAbort_Handler trapped. CPUID=");
 	dbg_putchar('0' + (arm_hardware_cpuid()));
 	dbg_putchar('\n');
 #pragma GCC diagnostic push
@@ -3184,7 +3413,7 @@ void DAbort_Handler(void)
 
 void Hyp_Handler(void)
 {
-	dbg_puts_impl(PSTR("Hyp_Handler trapped. CPUID="));
+	dbg_puts(PSTR("Hyp_Handler trapped. CPUID="));
 	dbg_putchar('0' + (arm_hardware_cpuid()));
 	dbg_putchar('\n');
 	for (;;)
@@ -3225,12 +3454,12 @@ static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, i
 #if WITHDEBUG
 			if (-- v == 0)
 			{
+				//local_delay_ms(200 * arm_hardware_cpuid());
 				PRINTF("Locked by CPU%u %s(%d), CPU%u wait at %s(%d)\n", p->cpuid, p->file, p->line, arm_hardware_cpuid(), file, line);
 				for (;;)
 					;
 			}
-			//dbg_putchar('.');
-#else /* WITHDEBUG */
+else /* WITHDEBUG */
 			__WFE();
 #endif /* WITHDEBUG */
 			//__NOP();	// !!!! strange, but unstable work without this line...
@@ -3323,6 +3552,7 @@ static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, i
 #if WITHDEBUG
 			if (-- v == 0)
 			{
+				//local_delay_ms(200 * arm_hardware_cpuid());
 				PRINTF("Locked by CPU%u %s(%d), CPU%u wait at %s(%d)\n", p->cpuid, p->file, p->line, arm_hardware_cpuid(), file, line);
 				for (;;)
 					;
@@ -3447,11 +3677,7 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	const IRQL_t oldv = GIC_GetInterfacePriorityMask();
 //	ASSERT2(oldv != 0, file, line);
 //	ASSERT2(lastirql [core] == oldv, file, line);
-	if (oldv >= newIRQL)
-	{
-		; /* Не понижаем приоритет */
-	}
-	else
+	if (IRQL_LT(newIRQL, oldv))
 	{
 		PRINTF("Last set irqlp=%u irqlv=%u by core=%u at %s/%d:\n", (unsigned) lastirql [core], (unsigned) GICI_DECODE_IRQL(lastirql [core]), core, lastfile [core], lastline [core]);
 		PRINTF("irq fail at %s/%d, newIRQLp=%u, oldp=%u\n", file, line, (unsigned) newIRQL, (unsigned) oldv);
@@ -3463,20 +3689,20 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	ASSERT2(GIC_GetInterfacePriorityMask() == newIRQL, file, line);
 
 #elif defined (__CORTEX_M)
+	const IRQL_t oldv = __get_BASEPRI();
 	////ASSERT2(__get_BASEPRI() >= newIRQL, file, line);	/* Не понижаем приоритет */
-	* oldIrql = __get_BASEPRI();
+	* oldIrql = oldv;
 	__set_BASEPRI(newIRQL);
 #elif CPUSTYLE_RISCV
-	if (PLIC->PLIC_MTH_REG <= newIRQL)
-		; /* Не понижаем приоритет */
-	else
+	const IRQL_t oldv = PLIC->PLIC_MTH_REG;
+	if (IRQL_LT(newIRQL, oldv))
 	{
 		PRINTF("Last set irqlp=%u by core=%u at %s/%d:\n", (unsigned) lastirql [core], core, lastfile [core], lastline [core]);
 		PRINTF("irq fail at %s/%d, newIRQL=%u, old=%u\n", file, line, (unsigned) newIRQL, (unsigned) PLIC->PLIC_MTH_REG);
 		ASSERT2(PLIC->PLIC_MTH_REG <= newIRQL, file, line);	/* Не понижаем приоритет */
 	}
 	//oldIrql * = csr_read_clr_bits_mie(MIE_MEI_BIT_MASK | MIE_MTI_BIT_MASK);
-	* oldIrql = PLIC->PLIC_MTH_REG;
+	* oldIrql = oldv;
 	PLIC->PLIC_MTH_REG = newIRQL;
 
 #else
@@ -3531,9 +3757,9 @@ void InitializeIrql(IRQL_t newIRQL)
 
 uint_fast8_t arm_hardware_clustersize(void)
 {
-#if (__CORTEX_A == 55U) && __aarch64__
+#if (__CORTEX_A == 55U) && defined(__aarch64__)
 	return (__get_CLUSTERCFR_EL1() & 0x07) + 1;
-#elif (__CORTEX_A == 55U) && ! __aarch64__
+#elif (__CORTEX_A == 55U) && ! defined(__aarch64__)
 	return (__get_CLUSTERCFR() & 0x07) + 1;
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	// Cortex-A computers
@@ -3552,20 +3778,18 @@ uint_fast8_t arm_hardware_cpuid(void)
 #if CPUSTYLE_RISCV
 	return csr_read_mhartid();
 
-#elif (__CORTEX_A == 55U) && ! defined(__aarch64__)
-	// Cortex-A computers
-	return (__get_MPIDR() >> 8) & 0xFF;
-
-#elif (__CORTEX_A == 55U) && defined(__aarch64__)
-	// Cortex-A computers
-	return (__get_MPIDR_EL1() >> MPIDR_AFF1_SHIFT) & MPIDR_AFFLVL_MASK;
-
 #elif defined(__aarch64__)
+    const uint64_t mpidr = __get_MPIDR_EL1();
+    /* Check Bit 24 (MT - Multi-threading flag) to determine layout style */
+    return (mpidr & (UINT32_C(1) << 24)) ? (mpidr >> 8) & 0xFF : (mpidr & 0xFF);
 	// Cortex-A53 computers
 	return __get_MPIDR_EL1() & 0xFF;	// Aff0
 
 #elif (__ARM_ARCH == 8)
 	// Cortex-A computers
+    const uint64_t mpidr = __get_MPIDR();
+    /* Check Bit 24 (MT - Multi-threading flag) to determine layout style */
+    return (mpidr & (UINT32_C(1) << 24)) ? (mpidr >> 8) & 0xFF : (mpidr & 0xFF);
 
 	return __get_MPIDR() & 0xFF;
 
@@ -3590,6 +3814,7 @@ static RAMDTCM LCLSPINLOCK_t populate_lock = IRQLSPINLOCK_INIT;
 //static uint8_t gicshadow_target [1024];
 //static uint8_t gicshadow_config [1024];
 static uint8_t gicshadow_prio [1024];
+static uint8_t gicshadow_enab [1024];
 
 /* Обработчик SGI прерывания для синхронизации приоритетов GIC на остальных ядрах */
 static void arm_hardware_gicsfetch(void)
@@ -3602,11 +3827,15 @@ static void arm_hardware_gicsfetch(void)
 	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
 		GIC_SetPriority((IRQn_Type) int_id, gicshadow_prio [int_id]);	// non-atomic operation
+		if (gicshadow_enab [int_id])
+			GIC_EnableIRQ((IRQn_Type) int_id);	// atomic operation
+		else
+			GIC_DisableIRQ((IRQn_Type) int_id);	// atomic operation
 	}
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 }
 
-/* вызывается на любом ядре */
+/* вызывается на любом ядре, получают нотификацию все, кроме теущего */
 static void arm_hardware_populate(int int_ida)
 {
 	const IRQn_Type int_id = (IRQn_Type) int_ida;
@@ -3616,8 +3845,12 @@ static void arm_hardware_populate(int int_ida)
 	//gicshadow_target [int_id] = targetcpu;
 	//gicshadow_config [int_id] = GIC_GetConfiguration(int_id);
 	gicshadow_prio [int_id] = GIC_GetPriority(int_id);
+	gicshadow_enab [int_id] = 1;	// раз вызвана эта функция - данное прерывание точно разрашается
 
-	GIC_SendSGI(BOARD_SGI_IRQ, target_list, 0x00);	// other CORE, filer=0
+	// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
+	// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
+	// 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
+	GIC_SendSGI(BOARD_SGI_IRQ, target_list, 0x01);	// other CORE, except self: filer=1
 
 	LCLSPIN_UNLOCK(& populate_lock);
 }
@@ -3627,20 +3860,22 @@ static void arm_hardware_populate_initialize(void)
 {
 	ASSERT(arm_hardware_cpuid() == 0);
 	//PRINTF("arm_hardware_populate_initialize\n");
+	LCLSPIN_LOCK(& gicdistrib_lock);
+	GIC_SetPriority(BOARD_SGI_IRQ, ARM_IPC_PRIORITY);	// non-atomic operation
 	// Get ITLinesNumber
 	const unsigned ITLinesNumber = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
 	unsigned int_id;
 	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
 		gicshadow_prio [int_id] = GIC_GetPriority((IRQn_Type) int_id);
+		gicshadow_enab [int_id] = GIC_GetEnableIRQ((IRQn_Type) int_id);
 	}
+	LCLSPIN_UNLOCK(& gicdistrib_lock);
 	//IRQLSPINLOCK_INITIALIZE(& gicdistrib_lock);
 	//IRQLSPINLOCK_INITIALIZE(& populate_lock);
 
-	LCLSPIN_LOCK(& gicdistrib_lock);
-	GIC_SetPriority(BOARD_SGI_IRQ, ARM_IPC_PRIORITY);	// non-atomic operation
-	LCLSPIN_UNLOCK(& gicdistrib_lock);
-	dcache_clean_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+//	dcache_clean_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+//	dcache_clean_invalidate((uintptr_t) gicshadow_enab, sizeof gicshadow_enab);
 
 	/* Установить на все процессоры кроме текущего */
 	arm_hardware_set_handler(BOARD_SGI_IRQ, arm_hardware_gicsfetch, ARM_IPC_PRIORITY, 0x0F & ~ (1u << arm_hardware_cpuid()));
@@ -3666,7 +3901,7 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 	const IRQn_Type int_id = (IRQn_Type) int_ida;
 	//PRINTF("arm_hardware_set_handler: int_id=%u\n", (unsigned) int_id);
 #if CPUSTYLE_AT91SAM7S
-
+_unused
 	const uint_fast32_t mask32 = (1UL << int_id);
 
 	AT91C_BASE_AIC->AIC_IDCR = mask32;		// disable interrupt
@@ -3704,25 +3939,28 @@ void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uin
 #else
 	cfg &= ~ 0x02u;	/* Set level sensitive configuration */
 #endif /* CPUSTYLE_XC7Z */
-	cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
+	if (0)
+	{
+		cfg |= 0x01u;	/* Set 1-N model - Only one processor handles this interrupt. */
+	}
+	else
+	{
+		cfg &= ~ 0x01u;	/* N-N model - old version */
+	}
+
 #if ! CPUSTYLE_R7S721
 	/* do not change edge/level settings of specified interrupts - leave initialized at start-up */
 	GIC_SetConfiguration(int_id, cfg);// non-atomic operation
-	if (int_id >= 32)
-	{
-//		PRINTF("cfg[%u]: set=%02X get=%02X\n", (unsigned) int_id, (unsigned) cfg, (unsigned) (0x03 & GIC_GetConfiguration(int_id)));
-//		ASSERT((0x03 & GIC_GetConfiguration(int_id)) == cfg);
-	}
 #endif /* ! CPUSTYLE_R7S721 */
-	GIC_SetGroup(int_id, 0);
+	GIC_SetGroup(int_id, 0);	// Group 1: Non-secure group - see IGRPMODR
 
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 
-	#if WITHSMPSYSTEM
-		arm_hardware_populate(int_id);	// populate for other CPUs
-	#endif /* WITHSMPSYSTEM */
-
 	VERIFY(IRQ_Enable(int_id) == 0);
+
+#if WITHSMPSYSTEM
+	arm_hardware_populate(int_id);	// populate for other CPUs
+#endif /* WITHSMPSYSTEM */
 
 #elif CPUSTYLE_RISCV
 
@@ -3909,17 +4147,17 @@ void board_dpc_initialize(void)
 		InitializeListHead(& dpc->dpclistcalls);
 		dpc->tag1 = dpc;
 		dpc->tag2 = dpc;
-
 	}
 }
 
-void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg)
+void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg, const char * name)
 {
 	dp->flag = 0;
 	dp->fn = func;
 	dp->ctx = arg;
 	dp->tag1 = dp;
 	dp->tag2 = dp;
+	local_snprintf_P(dp->name, ARRAY_SIZE(dp->name), "%s", name);
 }
 
 static void dpcobj_release(dpcobj_t * dp)
@@ -3996,6 +4234,7 @@ uint_fast8_t board_dpc_display_coreid(void)
 /* добавить функцию для однократного вызова */
 uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 {
+	//PRINTF("board_dpc_call: dp=%p, coreid=%u name='%s\n", dp, (unsigned) coreid, dp->name);
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	LCLSPINLOCK_t * const lock = & dpc->lock;
@@ -4022,7 +4261,7 @@ uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
 /* добавить функцию для периодического вызова */
 uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
 {
-	//PRINTF("board_dpc_addentry: dp=%p, coreid=%u\n", dp, (unsigned) coreid);
+	//PRINTF("board_dpc_addentry: dp=%p, coreid=%u name='%s\n", dp, (unsigned) coreid, dp->name);
 	IRQL_t oldIrql;
 	DPCDATA_t * const dpc = & dpcdatas [coreid];
 	LCLSPINLOCK_t * const lock = & dpc->lock;
@@ -4059,7 +4298,6 @@ void board_dpc_processing(void)
 	ASSERT(coreid < HARDWARE_NCORES);
 	ASSERT(dpc == dpc->tag1);
 	ASSERT(dpc == dpc->tag2);
-	task_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	// Выполнение периодического вызова user-mode функций по списку
 	//if (coreid == 1) dbg_putchar('+');
 	{
@@ -4124,11 +4362,12 @@ void board_dpc_processing(void)
 	//__WFI();
 #endif /* WITHSMPSYSTEM */
 	//if (coreid == 1) dbg_putchar('-');
+	thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 }
 
 void testsloopprocessing(void)
 {
-	board_dpc_processing();		// обработка отложенного вызова user mode функций
+	board_dpc_processing();		// обработка отложенного вызова user mode функций для данного ядра
 	watchdog_ping();
 }
 
@@ -4152,32 +4391,7 @@ void cpu_initialize(void)
 	board_dpc_initialize();		/* инициализация списка user-mode опросных функций */
 #if (__CORTEX_A != 0)
 
-	cpump_initialize();
-
-#elif CPUSTYLE_ATMEGA328
-	// управления JTAG нету
-
-#elif CPUSTYLE_ATMEGA128
-
-#elif CPUSTYLE_ATMEGA32
-
-	#if CPUSTYLE_ATMEGA_XXX4
-
-		// Для забывших выключить JTAG
-		MCUCR = (1u << JTD);	// must write this bit to the desired value twice within four cycles to change its value.
-		MCUCR = (1u << JTD);
-
-		CLKPR = (1u << CLKPCE);	// CLKPCE is cleared by hardware four cycles after it is written or when CLKPS bits are written.
-		CLKPR = 0x00;
-
-
-	#else
-
-		// Для забывших выключить JTAG
-		MCUCSR = (1u << JTD);	// must write this bit to the desired value twice within four cycles to change its value.
-		MCUCSR = (1u << JTD);
-
-	#endif
+	cpump_initialize();	// Запуск остальных процессоров
 
 #elif CPUSTYLE_RISCV
 
@@ -4236,7 +4450,7 @@ void cpu_initialize(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-	IRQ_Initialize();	// GIC_Enable(0) inside
+	//IRQ_Initialize();	// GIC_Enable(0) inside
 	//GIC_Enable();
 #if CPUSTYLE_R7S721
 	r7s721_intc_initialize();
@@ -4251,4 +4465,3 @@ void cpu_initialize(void)
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 	//PRINTF("cpu_initialize done\n");
 }
-

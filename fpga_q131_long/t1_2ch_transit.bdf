@@ -8376,11 +8376,6 @@ applicable agreement for further details.
 	(pt -4496 1392)
 )
 (connector
-	(pt -4456 1208)
-	(pt -4360 1208)
-	(bus)
-)
-(connector
 	(pt -4448 976)
 	(pt -4416 976)
 )
@@ -8502,102 +8497,6 @@ applicable agreement for further details.
 	(pt -3872 856)
 )
 (connector
-	(text "reset_n" (rect -4096 1192 -4060 1204)(font "Arial" ))
-	(pt -4152 1208)
-	(pt -4064 1208)
-)
-(connector
-	(text "mode_rx" (rect -4097 1208 -4055 1220)(font "Arial" ))
-	(pt -4152 1224)
-	(pt -4064 1224)
-)
-(connector
-	(text "mode_tx" (rect -4095 1224 -4053 1236)(font "Arial" ))
-	(pt -4152 1240)
-	(pt -4064 1240)
-)
-(connector
-	(text "adc_pga" (rect -4101 1240 -4060 1252)(font "Arial" ))
-	(pt -4152 1256)
-	(pt -4064 1256)
-)
-(connector
-	(text "adc_dith" (rect -4096 1272 -4055 1284)(font "Arial" ))
-	(pt -4152 1288)
-	(pt -4064 1288)
-)
-(connector
-	(text "flt_reset_n" (rect -4104 1288 -4051 1300)(font "Arial" ))
-	(pt -4152 1304)
-	(pt -4064 1304)
-)
-(connector
-	(text "fir_profile" (rect -4104 1304 -4057 1316)(font "Arial" ))
-	(pt -4152 1320)
-	(pt -4064 1320)
-)
-(connector
-	(text "fir_weprofile" (rect -4104 1320 -4044 1332)(font "Arial" ))
-	(pt -4152 1336)
-	(pt -4064 1336)
-)
-(connector
-	(text "fir2_profile" (rect -4112 1336 -4059 1348)(font "Arial" ))
-	(pt -4152 1352)
-	(pt -4064 1352)
-)
-(connector
-	(text "fir2_weprofile" (rect -4112 1352 -4046 1364)(font "Arial" ))
-	(pt -4152 1368)
-	(pt -4064 1368)
-)
-(connector
-	(text "i2s_enable" (rect -4104 1368 -4053 1380)(font "Arial" ))
-	(pt -4152 1384)
-	(pt -4064 1384)
-)
-(connector
-	(text "dacstraight" (rect -4110 1384 -4056 1396)(font "Arial" ))
-	(pt -4152 1400)
-	(pt -4064 1400)
-)
-(connector
-	(text "adc_fifo" (rect -4096 1400 -4055 1412)(font "Arial" ))
-	(pt -4152 1416)
-	(pt -4064 1416)
-)
-(connector
-	(text "xvrtr_on" (rect -4102 1416 -4061 1428)(font "Arial" ))
-	(pt -4152 1432)
-	(pt -4064 1432)
-)
-(connector
-	(text "dactest" (rect -4102 1432 -4066 1444)(font "Arial" ))
-	(pt -4152 1448)
-	(pt -4064 1448)
-)
-(connector
-	(text "tx_inh_enable" (rect -4126 1448 -4059 1460)(font "Arial" ))
-	(pt -4152 1464)
-	(pt -4064 1464)
-)
-(connector
-	(text "tx_bpsk_enable" (rect -4134 1464 -4058 1476)(font "Arial" ))
-	(pt -4152 1480)
-	(pt -4064 1480)
-)
-(connector
-	(text "mode_wfm" (rect -4118 1480 -4064 1492)(font "Arial" ))
-	(pt -4152 1496)
-	(pt -4064 1496)
-)
-(connector
-	(text "adcoffset[15..0]" (rect -4134 1496 -4054 1508)(font "Arial" ))
-	(pt -4152 1512)
-	(pt -4064 1512)
-	(bus)
-)
-(connector
 	(pt -4624 1240)
 	(pt -4688 1240)
 	(color 255 0 0)
@@ -8635,16 +8534,6 @@ applicable agreement for further details.
 (connector
 	(pt -4816 864)
 	(pt -4648 864)
-)
-(connector
-	(text "tx_loopback" (rect -4126 1512 -4067 1524)(font "Arial" ))
-	(pt -4152 1528)
-	(pt -4064 1528)
-)
-(connector
-	(text "txdac_en" (rect -4110 1528 -4066 1540)(font "Arial" ))
-	(pt -4152 1544)
-	(pt -4064 1544)
 )
 (connector
 	(text "nblvl[31..0]" (rect -4462 608 -4407 620)(font "Arial" ))
@@ -8691,16 +8580,6 @@ applicable agreement for further details.
 (connector
 	(pt -4216 1112)
 	(pt -4272 1112)
-)
-(connector
-	(text "nb1_en" (rect -4118 1544 -4083 1556)(font "Arial" ))
-	(pt -4152 1560)
-	(pt -4064 1560)
-)
-(connector
-	(text "nb2_en" (rect -4118 1560 -4083 1572)(font "Arial" ))
-	(pt -4152 1576)
-	(pt -4064 1576)
 )
 (connector
 	(pt -3976 792)
@@ -9867,6 +9746,117 @@ applicable agreement for further details.
 (connector
 	(pt -4032 0)
 	(pt -3848 0)
+)
+(connector
+	(pt -4456 1208)
+	(pt -4360 1208)
+	(bus)
+)
+(connector
+	(text "reset_n" (rect -4096 1192 -4060 1204)(font "Arial" ))
+	(pt -4152 1208)
+	(pt -4064 1208)
+)
+(connector
+	(text "mode_rx" (rect -4097 1208 -4055 1220)(font "Arial" ))
+	(pt -4152 1224)
+	(pt -4064 1224)
+)
+(connector
+	(text "mode_tx" (rect -4095 1224 -4053 1236)(font "Arial" ))
+	(pt -4152 1240)
+	(pt -4064 1240)
+)
+(connector
+	(text "adc_pga" (rect -4101 1240 -4060 1252)(font "Arial" ))
+	(pt -4152 1256)
+	(pt -4064 1256)
+)
+(connector
+	(text "adc_dith" (rect -4096 1272 -4055 1284)(font "Arial" ))
+	(pt -4152 1288)
+	(pt -4064 1288)
+)
+(connector
+	(text "flt_reset_n" (rect -4104 1288 -4051 1300)(font "Arial" ))
+	(pt -4152 1304)
+	(pt -4064 1304)
+)
+(connector
+	(text "fir_profile" (rect -4104 1304 -4057 1316)(font "Arial" ))
+	(pt -4152 1320)
+	(pt -4064 1320)
+)
+(connector
+	(text "fir_weprofile" (rect -4104 1320 -4044 1332)(font "Arial" ))
+	(pt -4152 1336)
+	(pt -4064 1336)
+)
+(connector
+	(text "fir2_profile" (rect -4112 1336 -4059 1348)(font "Arial" ))
+	(pt -4152 1352)
+	(pt -4064 1352)
+)
+(connector
+	(text "fir2_weprofile" (rect -4112 1352 -4046 1364)(font "Arial" ))
+	(pt -4152 1368)
+	(pt -4064 1368)
+)
+(connector
+	(text "i2s_enable" (rect -4104 1368 -4053 1380)(font "Arial" ))
+	(pt -4152 1384)
+	(pt -4064 1384)
+)
+(connector
+	(text "dacstraight" (rect -4110 1384 -4056 1396)(font "Arial" ))
+	(pt -4152 1400)
+	(pt -4064 1400)
+)
+(connector
+	(text "adc_fifo" (rect -4096 1400 -4055 1412)(font "Arial" ))
+	(pt -4152 1416)
+	(pt -4064 1416)
+)
+(connector
+	(text "xvrtr_on" (rect -4102 1416 -4061 1428)(font "Arial" ))
+	(pt -4152 1432)
+	(pt -4064 1432)
+)
+(connector
+	(text "dactest" (rect -4102 1432 -4066 1444)(font "Arial" ))
+	(pt -4152 1448)
+	(pt -4064 1448)
+)
+(connector
+	(text "tx_inh_enable" (rect -4126 1448 -4059 1460)(font "Arial" ))
+	(pt -4152 1464)
+	(pt -4064 1464)
+)
+(connector
+	(text "adcoffset[15..0]" (rect -4134 1496 -4054 1508)(font "Arial" ))
+	(pt -4152 1512)
+	(pt -4064 1512)
+	(bus)
+)
+(connector
+	(text "tx_loopback" (rect -4126 1512 -4067 1524)(font "Arial" ))
+	(pt -4152 1528)
+	(pt -4064 1528)
+)
+(connector
+	(text "txdac_en" (rect -4110 1528 -4066 1540)(font "Arial" ))
+	(pt -4152 1544)
+	(pt -4064 1544)
+)
+(connector
+	(text "nb1_en" (rect -4118 1544 -4083 1556)(font "Arial" ))
+	(pt -4152 1560)
+	(pt -4064 1560)
+)
+(connector
+	(text "nb2_en" (rect -4118 1560 -4083 1572)(font "Arial" ))
+	(pt -4152 1576)
+	(pt -4064 1576)
 )
 (junction (pt -1592 -696))
 (junction (pt -4384 -696))

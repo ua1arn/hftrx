@@ -76,17 +76,17 @@
 	{
 			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
-		{	0,	0, 	7, 4, display_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
+		{	0,	0, 	7, 4, display2_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
 		//{	0,	0, 	5, 4, display2_smeors5, 	& dzi_default, PGALL, },	// уровень сигнала в баллах S или dBm
 		{	10,	0,	4, 4, display2_rxbwval4,	& dzi_rxbwval, PGALL, },	// RX BW value
-		{	15,	0,	2, 4, display_txrxstate2, 	& dzi_txrx, PGALL, },
+		{	15,	0,	2, 4, display2_txrxstate2, 	& dzi_txrx, PGALL, },
 		{	18, 0,	3, 4, display2_atu3,		& dzi_tune, PGALL, },	// TUNER state (optional)
 		{	22, 0,	3, 4, display2_byp3,		& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
 		{	26,	0,	5, 4, display2_ant5,		& dzi_antenna, PGALL, },
 		{	32,	0,	4, 4, display2_att4,		& dzi_attenuator, PGALL, },
 		{	37,	0,	3, 4, display2_preovf3,		& dzi_preamp_ovf, PGALL, },
 	#if WITHBARS
-		{   0, 	4,  0, 0, display2_smeter15_init,& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
+		{   0, 	4,  SM_BG_W_CELLS, SM_BG_H_CELLS, display2_smeter15_init,& dzi_default, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	4,	SM_BG_W_CELLS, SM_BG_H_CELLS, display2_smeter15, 	& dzi_smtr2, PGALL, },	// Изображение стрелочного прибора
 	#endif /* WITHBARS */
 	#if WITHAFSPECTRE
@@ -95,7 +95,7 @@
 		{	0,	4,	SM_BG_W_CELLS,	SM_BG_H_CELLS, display2_af_spectre15,		& dzi_default, PGSPE, },
 	#endif /* WITHAFSPECTRE */
 
-		{	15,	6,	0, 0, display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
+		{	15,	6,	21, 11, display2_freqX_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	15,	6,	21, 11, display2_freqX_a,		& dzi_freqa, PGALL, },	// MAIN FREQ Герцы маленьким шрифтом.
 
 		{	41, 0,	9, 9, display2_fnblock9,	& dzi_default, PGALL, },	// FUNC menu item label & value

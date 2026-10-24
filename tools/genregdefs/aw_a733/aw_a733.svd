@@ -2876,6 +2876,44 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>COMBPHY0</name>
+  <description></description>
+  <baseAddress>0x06C80000</baseAddress>
+  <registers>
+   <register>
+    <name>COMBPHY_CFG_REG</name>
+    <displayName>COMBPHY_CFG_REG</displayName>
+    <description></description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COMBPHY_CTRL_REG</name>
+    <displayName>COMBPHY_CTRL_REG</displayName>
+    <description></description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COMBPHY_STAT_REG</name>
+    <displayName>COMBPHY_STAT_REG</displayName>
+    <description></description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="COMBPHY0">
+  <name>COMBPHY1</name>
+  <baseAddress>0x06CA0000</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>CPUS_INTERRUPT_CTRL</name>
   <description></description>
   <baseAddress>0x02055000</baseAddress>
@@ -6982,7 +7020,7 @@
    </cluster>
    <cluster>
     <dim>988</dim>
-    <addressOffset>0x00006100</addressOffset>
+    <addressOffset>0x00006000</addressOffset>
     <register>
      <name>GICD_IROUTER</name>
      <displayName>GICD_IROUTER</displayName>
@@ -14992,9 +15030,9 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>XO_CTRL_REG</name>
-    <displayName>XO_CTRL_REG</displayName>
-    <description>DCXO Control Register</description>
+    <name>XO_CTRL0_REG</name>
+    <displayName>XO_CTRL0_REG</displayName>
+    <description>DCXO Control0 Register</description>
     <addressOffset>0x160</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -15010,9 +15048,9 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>XO_GATING_REG</name>
-    <displayName>XO_GATING_REG</displayName>
-    <description>DCXO Gating Ctrl Register </description>
+    <name>XO_CTRL1_REG</name>
+    <displayName>XO_CTRL1_REG</displayName>
+    <description>DCXO Control1 Register</description>
     <addressOffset>0x16C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -16012,6 +16050,103 @@
   </interrupt>
   </peripheral>
   <peripheral>
+  <name>SYSCTRL</name>
+  <description>System Control Matrix (Allwinner A733 / sun60iw2)</description>
+  <baseAddress>0x03000000</baseAddress>
+  <registers>
+   <register>
+    <name>VER_REG</name>
+    <displayName>VER_REG</displayName>
+    <description>Chip version and SoC identification register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SRAM_CTRL_REG0</name>
+    <displayName>SRAM_CTRL_REG0</displayName>
+    <description>SRAM access permission and security mapping control 0</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SRAM_CTRL_REG1</name>
+    <displayName>SRAM_CTRL_REG1</displayName>
+    <description>SRAM configuration and section mapping register 1</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SRAM_VER_REG</name>
+    <displayName>SRAM_VER_REG</displayName>
+    <description>SRAM macro version and hardware generation register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>SYS_PIN_LAT_REG</name>
+    <displayName>SYS_PIN_LAT_REG</displayName>
+    <description>System pin latch configuration register (state freeze)</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COMBPHY0_CFG_REG</name>
+    <displayName>COMBPHY0_CFG_REG</displayName>
+    <description>System routing configuration for COMBPHY0 (MUX PCIe/USB3/HDMI)</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COMBPHY1_CFG_REG</name>
+    <displayName>COMBPHY1_CFG_REG</displayName>
+    <description>System routing configuration for COMBPHY1 (MUX PCIe/USB3/HDMI)</description>
+    <addressOffset>0x044</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PCIE_REFCLK_REG</name>
+    <displayName>PCIE_REFCLK_REG</displayName>
+    <description>PCIe reference clock selection and internal multiplier control</description>
+    <addressOffset>0x048</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COMBPHY_CTRL_REG</name>
+    <displayName>COMBPHY_CTRL_REG</displayName>
+    <description>Global analog power enable and internal LDO control for PHYs</description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>COMBPHY_ISO_REG</name>
+    <displayName>COMBPHY_ISO_REG</displayName>
+    <description>Analog pad isolation control (Clear bits [1:0] to unblock I2C to PHY)</description>
+    <addressOffset>0x050</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>S_GPIOL</name>
   <description>Secure Port Controller</description>
   <baseAddress>0x07025000</baseAddress>
@@ -16886,7 +17021,7 @@
    <register>
     <name>CNT_FREQID_REG</name>
     <displayName>CNT_FREQID_REG</displayName>
-    <description>Counte rBase Frequency ID Register</description>
+    <description>Counter Base Frequency ID Register</description>
     <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>

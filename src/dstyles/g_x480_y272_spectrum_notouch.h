@@ -83,7 +83,7 @@
 	{
 		{	0,	0,	0, 	0, 	display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
-		{	0,	0,	2,	3,	display_txrxstate2, & dzi_txrx, PGALL, },
+		{	0,	0,	2,	3,	display2_txrxstate2, & dzi_txrx, PGALL, },
 		{	3,	0,	5,	3,	display2_ant5,		& dzi_antenna, PGALL, },
 		{	9,	0,	4,	3,	display2_att4,		& dzi_attenuator, PGALL, },
 		{	14,	0,	3,	3,	display2_preovf3,	& dzi_default, PGALL, },
@@ -101,7 +101,7 @@
 //		{	25,	15,	5,	3,	display2_agc3,		& dzi_default, PGALL, },	// AGC mode
 		{	25,	17,	5,	3,	display2_voxtune3,	& dzi_default, PGNOMEMU, },	// VOX
 
-		{	0,	3,	0,	0,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
+		{	0,	3,	21,	11,	display2_freqX_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	0,	3,	21,	11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 		{	21,	8,	3,	3,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 		{	21,	11,	3,	3,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR

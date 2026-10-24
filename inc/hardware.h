@@ -121,7 +121,7 @@ extern "C" {
 	#include "arch/renesasRZA1/iodefine.h"		// peripherial registers
 	#include "arch/renesasRZA1/rza_io_regrw.h"	// iobitmasks
 
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 
 	#define DCACHEROWSIZE 32
@@ -143,7 +143,7 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
 	#include "arch/stm32mp1xx/stm32mp1xx.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -172,7 +172,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_a64.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 64
@@ -188,7 +188,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_t507.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	//	I-Cache L1: 32 KB, 256 Sets, 64 Bytes/Line, 2-Way
 	//	D-Cache L1: 32 KB, 128 Sets, 64 Bytes/Line, 4-Way
@@ -208,7 +208,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_a733.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	//	I-Cache L1: 32 KB, 256 Sets, 64 Bytes/Line, 2-Way
 	//	D-Cache L1: 32 KB, 128 Sets, 64 Bytes/Line, 4-Way
@@ -227,7 +227,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_a133.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	//	I-Cache L1: 32 KB, 256 Sets, 64 Bytes/Line, 2-Way
 	//	D-Cache L1: 32 KB, 128 Sets, 64 Bytes/Line, 4-Way
@@ -245,7 +245,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_v853x.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -259,7 +259,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_h3.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -274,7 +274,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_t113x.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -289,7 +289,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_t153.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -304,7 +304,7 @@ extern "C" {
 	#define CPUSTYLE_ALLWINNER	1		/* */
 
 	#include "allwnr_v3s.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 64
 	#define ICACHEROWSIZE 32
@@ -318,7 +318,7 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
 	#include "elvees_vm14.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
@@ -337,7 +337,7 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
 	#include "arch/zynq/zynq7000.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
@@ -351,7 +351,7 @@ extern "C" {
 	#define CPUSTYLE_ROCKCHIP	1		/* */
 
 	#include "rk3566.h"
-	//#include "a-profile/irq_ctrl.h" // CMSIS_6 file
+
 
 	//	I-Cache L1: 32 KB, 256 Sets, 64 Bytes/Line, 2-Way
 	//	D-Cache L1: 32 KB, 128 Sets, 64 Bytes/Line, 4-Way
@@ -378,25 +378,13 @@ extern "C" {
 #define MASK2LSB(mask)  ((mask) & (0 - (mask)))
 
 /* макрооределение для расчёта количества "тиков" для выдержки величин задержек. */
-#define NTICKS(t_mS) ((uint_fast16_t) (((uint_fast32_t) (t_mS) * TICKS_FREQUENCY + 500) / 1000))
+//#define NTICKS(t_mS) ((uint_fast16_t) (((uint_fast32_t) (t_mS) * TICKS_FREQUENCY + 500) / 1000))
 
 #define OFFSETOF(s, m) ((size_t) (uintptr_t) & (((s *) (uintptr_t) 0) -> m))
 
 void cpu_initialize(void);
 void arm_hardware_reset(void);
 void cpu_initdone(void);	// секция init больше не нужна
-
-#if defined(__aarch64__) || (defined(__riscv) && (__riscv_xlen == 64))
-	typedef uint64_t dbgcount_t;
-	typedef uint_fast64_t dbgcountfast_t;
-#else
-	typedef uint32_t dbgcount_t;
-	typedef uint_fast32_t dbgcountfast_t;
-#endif
-
-dbgcountfast_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
-dbgcountfast_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
-dbgcountfast_t cpu_getdebugticksmask(void);	// получение маски на разрядность аппаратного счётчика
 
 void tickers_initialize(void);
 void tickers_deinitialize(void);
@@ -431,7 +419,6 @@ void blinkloop(void);
 	typedef uint_fast32_t portholder_t;		
 
 	#define FLASHMEM //__flash
-	#define NOINLINEAT // __attribute__((noinline))
 
 	#define ATTRWEAK __WEAK
 	// Use __attribute__ ((weak, alias("Default_Handler")))
@@ -447,7 +434,6 @@ void blinkloop(void);
 	typedef uint_fast32_t portholder_t;
 
 	#define FLASHMEM //__flash
-	#define NOINLINEAT // __attribute__((noinline))
 
 	#define ATTRWEAK __WEAK
 	// Use __attribute__ ((weak, alias("Default_Handler")))
@@ -459,7 +445,6 @@ void blinkloop(void);
 #endif
 
 
-#include "mslist.h"
 
 void spool_nmeapps(void * ctx);	// Обработчик вызывается при приходе очередного импульса PPS
 
@@ -670,10 +655,10 @@ void sysinit_cache_L2_initialize(void);	/* инициадизации кеш-п�
 
 typedef struct getmmudesc_tag
 {
-	unsigned (* mcached)(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
-	unsigned (* mncached)(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
-	unsigned (* mdevice)(uint8_t * b, uint_fast64_t phyaddr);
-	unsigned (* mnoaccess)(uint8_t * b, uint_fast64_t phyaddr);
+	unsigned (* mcached)(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);	// block item
+	unsigned (* mncached)(uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);	// block item
+	unsigned (* mdevice)(uint8_t * b, uint_fast64_t phyaddr);	// block item
+	unsigned (* mnoaccess)(uint8_t * b, uint_fast64_t phyaddr);	// block item
 	unsigned (* mtable)(uint8_t * b, uint_fast64_t phyaddr, int level);	// next level table
 } getmmudesc_t;
 
@@ -694,6 +679,7 @@ typedef struct mmulayout_tag
 /* зависящая от процессора карта распределения memory regions */
 unsigned ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
 unsigned gpu_ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn);
+uintptr_t hardware_gpu_ttb(void);	// таблица трансляции для GPU
 
 void gpu_test(void);
 
@@ -701,44 +687,6 @@ void sysinit_mmu_tables(void);
 void sysinit_ttbr_initialize(void);	/* на каждом процессоре */
 
 void r7s721_sdhi0_dma_handler(void);
-
-enum ticker_mode
-{
-	TICKERMD_PERIODIC,
-	TICKERMD_MANUAL
-};
-typedef struct ticker_tag
-{
-	VLIST_ENTRY item;
-	unsigned period;
-	//unsigned fired;
-	unsigned ticks;		// текущее количество тиков
-	void (* cb)(void *);
-	void * ctx;
-	enum ticker_mode mode;
-	void * guard;
-} ticker_t;
-
-struct dpcobj_tag;
-void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
-void ticker_initialize_user(ticker_t * p, unsigned nticks, struct dpcobj_tag * dpc);
-void ticker_initialize_user_display(ticker_t * p, unsigned nticks, struct dpcobj_tag * dpc);	// DPC будет вызываться на ядре board_dpc_display_coreid()
-void ticker_initialize_ext(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx, enum ticker_mode mode);
-void ticker_setperiod(ticker_t * p, unsigned nticks);	/* изменение периода запущенного тикера */
-void ticker_start(ticker_t * p);	/* начало интервала в случае TICKERMD_MANUAL */
-void ticker_add(ticker_t * p);
-void ticker_remove(ticker_t * p);
-
-typedef struct adcdone_tag
-{
-	VLIST_ENTRY item;
-	void (* cb)(void *);
-	void * ctx;
-} adcdone_t;
-
-void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx);
-void adcdone_add(adcdone_t * p);
-void adcdone_del(adcdone_t * p);
 
 void bootloader_deffereddetach(void * arg);
 int bootloader_withusb(void);
@@ -796,19 +744,7 @@ uint_fast8_t stm32mp1_overdrived(void);	// return 1 if CPU supports 800 MHz cloc
 int toshiba_ddr_power_init(void);
 void stpmic1_dump_regulators(void);
 
-void nic_initialize(void);
-int nic_can_send(void);
-void nic_send(const uint8_t * data, int size);
-
-void nic_on_packet(const uint8_t *data, int size);	// использование приянтого от сети пакета
-typedef void (*nic_rxproc_t)(const uint8_t *data, int size);
-#define NIC_MTU 1500  // MTU value
-
-
-void network_initialize(void);
-
 void cpptest(void);
-
 //#define UNUSED(x) ((void)(x))
 
 
@@ -817,6 +753,8 @@ void cpptest(void);
 // Bit zero of the first octet of any Ethernet address associated with the device must always be zero. (See section 6.4.2.3.)
 //#define HWADDR                          0x30,0x89,0x84,0x6A,0x96,0x34
 #define HWADDR                          0x02,0x00,0x00,0x00,0x00,0x00
+
+void network_initialize(void);
 
 #if 1 //CPUSTYLE_XC7Z
 
@@ -864,11 +802,12 @@ uint32_t board_millis(void);	// TinyUsb callback
 int sys_dram_init(void);	// 0 - error
 int main(void);
 void SystemInit(void);
-void main_SystemInit(void);	// Вызывается из main, при работающих прерываниях
 
 size_t getvaltextethaddr(char * buff, size_t count, int_fast32_t value);
 size_t getvaltextethmask(char * buff, size_t count, int_fast32_t value);
 size_t getvaltextethgateway(char * buff, size_t count, int_fast32_t value);
+size_t getvaltextethlinkstate(char * buff, size_t count, int_fast32_t value);
+size_t getvaltextethmacaddr(char * buff, size_t count, int_fast32_t value);
 
 // RTOS test stuff
 int blinky_main(void);
@@ -883,9 +822,10 @@ size_t getRamDiskSize(void);
 
 void lowinitialize(void);
 void applowinitialize(void);
-void initialize2(void);
-void application_mainloop(void);
 void application_initialize(void);
+void appsendchar(char c);
+void modemsendchar(char c);
+void hamradio_main_start(void);
 
 void ohciehci_clk_init(void);
 void usbdevice_clk_init(void);
@@ -923,7 +863,6 @@ void mpu6500_test(void);
 #include "core32_ca.h"
 #endif
 
-#include "utils.h"
 // Substitutions for t507 ddr ram init
 //#define i2c_read local_i2c_read
 //#define i2c_write local_i2c_write
@@ -990,5 +929,7 @@ void mpu6500_test(void);
 	#include "t113s3_hal.h"
 
 #endif
+
+#include "utils.h"
 
 #endif // HARDWARE_H_INCLUDED

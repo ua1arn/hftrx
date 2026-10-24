@@ -20,6 +20,10 @@
 
 //#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 //#define WITHUACPLAYER 1	/* проигрывание с USB по умолчанию включено */
+//#define WITHSWRPROT 0			/* ОТЛАДКА - отключена защитa по КСВ */
+//#define WITHHEATPROT 0			/* ОТЛАДКА - отключена защитa по перегреву */
+//#define WITHRTOS (1 && ! WITHISBOOTLOADER)
+
 //#define DEBUGSPEED 500000
 #define DEBUGSPEED 115200
 //#define DEFAULTDIALFREQ	44880000
@@ -47,7 +51,6 @@
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6_nikulski.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6_idenis.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6_nodisplay.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
-	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6_radiolav.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6_UA1M.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_stm32h7xx_tqfp176_ctlstyle_storch_v6_RA1AGO.h"	// Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -116,6 +119,10 @@
 	#include "boards/arm_allwa733_ctlstyle_orangepi_4_pro.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwa733_cpustyle_orangepi_4_pro.h"
+#elif (CPUSTYLE_A733) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwa733_ctlstyle_veloci_v7.h"	// Rrfboard_v7.pcb
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwa733_cpustyle_veloci_v7.h"// Rrfboard_v7.pcb
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 0
 	#include "boards/arm_allwh618_ctlstyle_orangepi_zero2w.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
@@ -167,7 +174,7 @@
 	//#include "boards/arm_allwt113s3_ctlstyle_storch_v9w_ua1cei.h"	// rmainunit_sv9w.pcb, rmainunit_sv9x.pcb  Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_storch_v9w.h"	// rmainunit_sv9w.pcb, rmainunit_sv9x.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 0
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt113s3_ctlstyle_storch_v9x2.h"	// rmainunit_sv9x1.pcb, rmainunit_sv9x2.pcb, rmainunit_sv9x3.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_allwt113s3_ctlstyle_storch_v9x2-kalitv.h"	// rmainunit_sv9x1.pcb, rmainunit_sv9x2.pcb, rmainunit_sv9x3.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	//#include "boards/arm_allwt113s3_ctlstyle_storch_v9x2_veryoldlazy.h"	// rmainunit_sv9x1.pcb, rmainunit_sv9x2.pcb, rmainunit_sv9x3.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
@@ -175,6 +182,10 @@
 	//#include "boards/arm_allwt113s3_ctlstyle_storch_v9x2_R3XBQ.h"	// rmainunit_sv9x1.pcb, rmainunit_sv9x2.pcb, rmainunit_sv9x3.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt113s3_cpustyle_storch_v9x2.h"	// rmainunit_sv9x1.pcb, rmainunit_sv9x2.pcb, rmainunit_sv9x3.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
+	#include "boards/arm_allwt113s3_ctlstyle_storch_v9x4.h"	// rmainunit_sv9x4.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwt113s3_cpustyle_storch_v9x4.h"	// rmainunit_sv9x4.pcb Allwinner t133-S3, USB HUB, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwt113s3_ctlstyle_mango_pi.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */

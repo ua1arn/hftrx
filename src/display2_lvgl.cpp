@@ -86,7 +86,7 @@ lv_obj_t * hamradio_walkmenu_getparameditor(const struct paramdefdef * pd, lv_ob
 			param_format(pd, b, ARRAY_SIZE(b), value);
 			lv_dropdown_add_option(dd, b, LV_DROPDOWN_POS_LAST);
 		}
-		lv_dropdown_set_selected(dd, param_getvalue(pd));
+		lv_dropdown_set_selected(dd, param_val(pd));
 		lv_obj_set_grid_cell(dd, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
 		lv_obj_add_event_cb(dd, parameditor_dropdown_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
 	}
@@ -100,7 +100,7 @@ lv_obj_t * hamradio_walkmenu_getparameditor(const struct paramdefdef * pd, lv_ob
 			lv_obj_set_grid_cell(label, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
 			lv_obj_t * sw = lv_switch_create(obj);
-			lv_obj_add_state(sw, param_getvalue(pd) ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
+			lv_obj_add_state(sw, param_val(pd) ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
 			lv_obj_set_grid_cell(sw, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
 			lv_obj_add_event_cb(sw, parameditor_switch_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);
 
@@ -112,12 +112,12 @@ lv_obj_t * hamradio_walkmenu_getparameditor(const struct paramdefdef * pd, lv_ob
 			lv_obj_set_grid_cell(label_name, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_START, 0, 1);
 
 			lv_obj_t * label_value = lv_label_create(obj);
-			lv_label_set_text_fmt(label_value, "%" PRIiFAST32, param_getvalue(pd));
+			lv_label_set_text_fmt(label_value, "%" PRIiFAST32, param_val(pd));
 			lv_obj_set_grid_cell(label_value, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_START, 0, 1);
 
 			lv_obj_t * slider = lv_slider_create(obj);
 			lv_slider_set_range(slider, pd->qbottom, pd->qupper);
-			lv_slider_set_value(slider, param_getvalue(pd), LV_ANIM_OFF);
+			lv_slider_set_value(slider, param_val(pd), LV_ANIM_OFF);
 			lv_obj_set_user_data(slider, label_value);
 			lv_obj_set_grid_cell(slider, LV_GRID_ALIGN_START, 2, 1, LV_GRID_ALIGN_START, 0, 1);
 			lv_obj_add_event_cb(slider, parameditor_slider_cb, LV_EVENT_VALUE_CHANGED, (struct paramdefdef *) pd);

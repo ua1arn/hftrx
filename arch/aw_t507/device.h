@@ -117,8 +117,8 @@ typedef enum IRQn
     CE_S_IRQn = 124,                                  /*!< CE CE interrupt */
     VE_IRQn = 125,                                    /*!< VE Video Encoding */
     GPU_EVENT_IRQn = 126,                             /*!< GPU GPU_EVENT interrupt */
-    GPU_JOB_IRQn = 127,                               /*!< GPU GPU_JOB interrupt */
-    GPU_MMU_IRQn = 128,                               /*!< GPU GPU_MMU interrupt */
+    GPU_JOB_IRQn = 127,                               /*!< GPU_JOB_CONTROL GPU_JOB interrupt */
+    GPU_MMU_IRQn = 128,                               /*!< GPU_MMU GPU_MMU interrupt */
     GPU_IRQn = 129,                                   /*!< GPU GPU interrupt */
     NMI_IRQn = 135,                                   /*!< C0_CPUX_CFG NMI interrupt  */
     ALARM0_IRQn = 136,                                /*!< RTC Real Time Clock */
@@ -334,6 +334,9 @@ typedef enum IRQn
 #define R_CAN0_BASE ((uintptr_t) 0x07082000)          /*!< R_CAN Car Area Network controller Base */
 #define CPU_SUBSYS_CTRL_BASE ((uintptr_t) 0x08100000) /*!< CPU_SUBSYS_CTRL T507/H618 CPU Subsystem Control Register List Base */
 #define CPU_SUBSYS_CTRL_H616_BASE ((uintptr_t) 0x08100000)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List Base */
+#define TIMESTAMP_STA_BASE ((uintptr_t) 0x08110000)   /*!< TIMESTAMP_STA  Base */
+#define TIMESTAMP_CTRL_BASE ((uintptr_t) 0x08120000)  /*!< TIMESTAMP_CTRL  Base */
+#define IDC_BASE ((uintptr_t) 0x08130000)             /*!< IDC  Base */
 #define C0_CPUX_CFG_BASE ((uintptr_t) 0x09010000)     /*!< C0_CPUX_CFG T507/H618 Cluster 0 Configuration Register List Base */
 #define C0_CPUX_CFG_H616_BASE ((uintptr_t) 0x09010000)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List Base */
 
@@ -1727,8 +1730,8 @@ typedef struct GPU_MMU_Type
         __IOM uint32_t AS_TRANSCFG_HI;                /*!< Offset 0x434 (RW) Translation table configuration for address space n, high word */
         __IM  uint32_t AS_FAULTEXTRA_LO;              /*!< Offset 0x438 (RO) Secondary fault address for address space n, low word */
         __IM  uint32_t AS_FAULTEXTRA_HI;              /*!< Offset 0x43C (RO) Secondary fault address for address space n, high word */
-    } MMU_AS [0x010];                                 /*!< Offset 0x400 Configuration registers for address space 0..15 */
-} GPU_MMU_TypeDef; /* size of structure = 0x800 */
+    } MMU_AS [0x008];                                 /*!< Offset 0x400 Configuration registers for address space 0..15 (0..7 - really existing) */
+} GPU_MMU_TypeDef; /* size of structure = 0x600 */
 /*
  * @brief HDMI_TX
  */
@@ -2588,6 +2591,14 @@ typedef struct PRCM_Type
     __IOM uint32_t PRCM_VERSION_REG;                  /*!< Offset 0x3F0 PRCM Version Register */
 } PRCM_TypeDef; /* size of structure = 0x3F4 */
 /*
+ * @brief PSI
+ */
+/*!< PSI  */
+typedef struct PSI_Type
+{
+         RESERVED(0x000[0x1000 - 0x0000], uint8_t)
+} PSI_TypeDef; /* size of structure = 0x1000 */
+/*
  * @brief PWM
  */
 /*!< PWM Pulse Width Modulation module */
@@ -3034,6 +3045,28 @@ typedef struct TIMER_Type
     __IOM uint32_t AVS_CNT_DIV_REG;                   /*!< Offset 0x0CC AVS Divisor Register */
          RESERVED(0x0D0[0x0400 - 0x00D0], uint8_t)
 } TIMER_TypeDef; /* size of structure = 0x400 */
+/*
+ * @brief TIMESTAMP_CTRL
+ */
+/*!< TIMESTAMP_CTRL  */
+typedef struct TIMESTAMP_CTRL_Type
+{
+    __IOM uint32_t TSTAMP_CTRL_REG;                   /*!< Offset 0x000 Timestamp Control Register */
+         RESERVED(0x004[0x0008 - 0x0004], uint8_t)
+    __IOM uint32_t CNT_CTRL_LOW_REG;                  /*!< Offset 0x008 Counter Low Register */
+    __IOM uint32_t CNT_CTRL_HI_REG;                   /*!< Offset 0x00C Counter High Register */
+         RESERVED(0x010[0x0020 - 0x0010], uint8_t)
+    __IOM uint32_t CNT_FREQID_REG;                    /*!< Offset 0x020 Counter Base Frequency ID Register */
+} TIMESTAMP_CTRL_TypeDef; /* size of structure = 0x024 */
+/*
+ * @brief TIMESTAMP_STA
+ */
+/*!< TIMESTAMP_STA  */
+typedef struct TIMESTAMP_STA_Type
+{
+    __IM  uint32_t CNT_LOW_REG;                       /*!< Offset 0x000 Counter Low Register */
+    __IM  uint32_t CNT_HI_REG;                        /*!< Offset 0x004 Counter High Register */
+} TIMESTAMP_STA_TypeDef; /* size of structure = 0x008 */
 /*
  * @brief TSC
  */
@@ -3936,6 +3969,8 @@ typedef struct VE_Type
 #define R_CAN0 ((R_CAN_TypeDef *) R_CAN0_BASE)        /*!< R_CAN0 Car Area Network controller register set access pointer */
 #define CPU_SUBSYS_CTRL ((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)/*!< CPU_SUBSYS_CTRL T507/H618 CPU Subsystem Control Register List register set access pointer */
 #define CPU_SUBSYS_CTRL_H616 ((CPU_SUBSYS_CTRL_H616_TypeDef *) CPU_SUBSYS_CTRL_H616_BASE)/*!< CPU_SUBSYS_CTRL_H616 H616 CPU Subsystem Control Register List register set access pointer */
+#define TIMESTAMP_STA ((TIMESTAMP_STA_TypeDef *) TIMESTAMP_STA_BASE)/*!< TIMESTAMP_STA  register set access pointer */
+#define TIMESTAMP_CTRL ((TIMESTAMP_CTRL_TypeDef *) TIMESTAMP_CTRL_BASE)/*!< TIMESTAMP_CTRL  register set access pointer */
 #define C0_CPUX_CFG ((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)/*!< C0_CPUX_CFG T507/H618 Cluster 0 Configuration Register List register set access pointer */
 #define C0_CPUX_CFG_H616 ((C0_CPUX_CFG_H616_TypeDef *) C0_CPUX_CFG_H616_BASE)/*!< C0_CPUX_CFG_H616 H616 Cluster 0 Configuration Register List register set access pointer */
 

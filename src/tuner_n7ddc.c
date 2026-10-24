@@ -109,13 +109,13 @@ static int sharp_cap(int (*cb)(void *ctx), void *ctx)
 			return ec;
 
 		if (SWR >= min_SWR) {
-			//local_delay_ms(10);
+
 			if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
 				return ec;
 		}
 
 		if (SWR >= min_SWR) {
-			//local_delay_ms(10);
+
 			if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
 				return ec;
 		}
@@ -164,13 +164,13 @@ static int sharp_ind(int (*cb)(void *ctx), void *ctx)
 			return ec;
 
 		if (SWR >= min_SWR) {
-			//local_delay_ms(10);
+
 			if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
 				return ec;
 		}
 
 		if (SWR >= min_SWR) {
-			//local_delay_ms(10);
+
 			if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
 				return ec;
 		}
@@ -274,7 +274,7 @@ static int coarse_tune(int (*cb)(void *ctx), void *ctx)
 	cap = mem_cap;
 	set_indcap(ind, cap);
 	step_cap = mem_step_cap;
-	//local_delay_ms(10);	// for safe
+		// for safe
 
 	return N7DDCTUNE_OK;
 }
@@ -296,7 +296,7 @@ static int sub_tune(int (*cb)(void *ctx), void *ctx)
 		return N7DDCTUNE_ERROR;
 	}
 
-	//local_delay_ms(10);
+
 	if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
 		return ec;
 	if (SWR < SWRENOUGH)
@@ -341,7 +341,7 @@ static int sub_tune(int (*cb)(void *ctx), void *ctx)
 	atu_reset();
 	set_sw(SW);
 
-	//local_delay_ms(50);
+
 	if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
 		return ec;
 	if (SWR < SWRENOUGH)
@@ -355,7 +355,7 @@ static int sub_tune(int (*cb)(void *ctx), void *ctx)
 		return N7DDCTUNE_ERROR;
 	}
 
-	//local_delay_ms(10);
+
 	if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
 		return ec;
 	if (SWR < SWRENOUGH)
@@ -411,7 +411,7 @@ static int tune0(int (*cb)(void *ctx), void *ctx)
 
 	atu_reset();
 
-	//local_delay_ms(50);
+
 	if ((ec = local_get_swr(cb, ctx)) != N7DDCTUNE_OK)
 		return ec;
 	if (SWR < SWRENOUGH110)

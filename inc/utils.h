@@ -21,6 +21,12 @@ uint_fast32_t
 USBD_peek_u32(
 	const uint8_t * buff
 	);
+/* получить 64-бит значение */
+/* Little endian memory layout */
+uint_fast64_t
+USBD_peek_u64(
+	const uint8_t * buff
+	);
 /* получить 32-бит значение */
 /* Little endian memory layout */
 float
@@ -101,6 +107,7 @@ uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b);
 uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b);
 uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b);
 uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b);
+int_fast32_t slabs32(int_fast32_t a);
 unsigned long ulmin(unsigned long a, unsigned long b);
 unsigned long ulmax(unsigned long a, unsigned long b);
 signed long slmin(signed long a, signed long b);
@@ -214,6 +221,27 @@ int_fast32_t iabs32(int_fast32_t v);
 int iabs(int v);
 void fill32(uintptr_t addr, const uint32_t * data, unsigned count);
 void fill32delay(uintptr_t addr, const uint32_t * data, unsigned count);
+
+uint_fast16_t normalize(
+	uint_fast16_t raw,
+	uint_fast16_t rawmin,	// включает интервал входного raw
+	uint_fast16_t rawmax,	// включает интервал входного raw
+	uint_fast16_t range		// включает максимальное выходное значение
+	);
+uint_fast16_t normalize3(
+	uint_fast16_t raw,
+	uint_fast16_t rawmin,
+	uint_fast16_t rawmid,
+	uint_fast16_t rawmax,
+	uint_fast16_t range1,
+	uint_fast16_t range2
+	);
+int_fast32_t approximate(
+	const int32_t * points,		// массив позиций входных значений
+	const int32_t * angles,		// массив позицый выходных значений
+	unsigned n,					// размерность массивов
+	int_fast16_t v				// значение для анализа
+	);
 
 #ifdef __cplusplus
 }

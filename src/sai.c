@@ -255,7 +255,6 @@ uintptr_t stm32_dmaswap(volatile uint32_t * reg, uintptr_t newaddr)
 //
 #if WITHI2SCLOCKFROMPIN
 	static uint_fast32_t 
-	NOINLINEAT
 	calcdivround_exti2s(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
@@ -264,7 +263,6 @@ uintptr_t stm32_dmaswap(volatile uint32_t * reg, uintptr_t newaddr)
 	}
 #else /* WITHI2SCLOCKFROMPIN */
 	static uint_fast32_t 
-	NOINLINEAT
 	calcdivround_plli2s(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
@@ -1160,7 +1158,6 @@ static const codechw_t audiocodechw_i2s3_rx_slave =
 
 	#if WITHSAICLOCKFROMPIN
 		static uint_fast32_t 
-		NOINLINEAT
 		calcdivround_extsai(
 			uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 			)
@@ -1171,7 +1168,6 @@ static const codechw_t audiocodechw_i2s3_rx_slave =
 
 	#else
 		static uint_fast32_t 
-		NOINLINEAT
 		calcdivround_pllsai(
 			uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 			)
@@ -3437,7 +3433,7 @@ static uintptr_t DMAC_get_linkreg(uint_fast32_t regv)
 	}
 }
 
-static uint_fast32_t DMAC_set_linkreg(uintptr_t addr)
+static uint_fast32_t DMAC_pack_linkreg(uintptr_t addr)
 {
 	ASSERT((addr & UINT32_C(0x03)) == 0);
 	if (sizeof (uintptr_t) == sizeof (uint32_t))
@@ -3515,7 +3511,7 @@ static uintptr_t DMAC_desc_get_dst(const volatile uint32_t * desc)
 
 static void DMAC_desc_set_link(volatile uint32_t * desc, uintptr_t next)
 {
-	const uint_fast32_t reg = DMAC_set_linkreg(next);
+	const uint_fast32_t reg = DMAC_pack_linkreg(next);
 	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
 		// A733: bit 9 of Parameter word in descriptor parameter is bit33 of next descriptor address
@@ -3538,10 +3534,18 @@ static void DMAC_desc_set_link(volatile uint32_t * desc, uintptr_t next)
 
 static void DMAC_SetLink(unsigned dmach, uintptr_t descraddr)
 {
-	const uint_fast32_t reg = DMAC_set_linkreg(descraddr);
+	const uint_fast32_t reg = DMAC_pack_linkreg(descraddr);
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = reg;
+#if 0
+	// долгая операция = в случае schedulaer приводит к сбоям
+	if (local_wait32mask(& DMAC->CH [dmach].DMAC_DESC_ADDR_REGN, UINT32_MAX, reg, 50))
+	{
+		TP();
+	}
+#else
 	while (DMAC->CH [dmach].DMAC_DESC_ADDR_REGN != reg)
 		;
+#endif
 }
 
 /* Обработчик прерывания от DMAC */
@@ -3762,7 +3766,12 @@ static void DMAC_clock_initialize(DMAC_TypeDef * dmac)
     #warning CPUSTYLE_A133 to be implemented
 
 #elif CPUSTYLE_A733
-	#warning CPUSTYLE_A733 to be implemented
+	CCU->DMA0_BGR_REG |= (UINT32_C(1) << 0);			// DMA0_GATING 1: Pass clock
+	CCU->DMA0_BGR_REG |= (UINT32_C(1) << 16);			// DMA0_RST 1: De-assert reset
+	CCU->DMA1_BGR_REG |= (UINT32_C(1) << 0);			// DMA1_GATING 1: Pass clock
+	CCU->DMA1_BGR_REG |= (UINT32_C(1) << 16);			// DMA1_RST 1: De-assert reset
+	CCU->MBUS_GATE_EN_REG |= (UINT32_C(1) << 3);	// DMA1_MCLK_EN
+	CCU->MBUS_GATE_EN_REG |= (UINT32_C(1) << 0);	// DMA0_MCLK_EN
 
 #else
 	#error Unhandled CPUSTYLE_xxx
@@ -4431,6 +4440,68 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
 
 #elif CPUSTYLE_A733
 	#warning CPUSTYLE_A733 to be implemented
+	volatile uint32_t * clk_reg;
+	volatile uint32_t * bgr_reg;
+	switch (ix)
+	{
+	case 0:
+		bgr_reg = & CCU->I2SPCM0_BGR_REG;
+		clk_reg = & CCU->I2SPCM0_CLK_REG;
+		break;
+	case 1:
+		bgr_reg = & CCU->I2SPCM1_BGR_REG;
+		clk_reg = & CCU->I2SPCM1_CLK_REG;
+		break;
+	case 2:
+		bgr_reg = & CCU->I2SPCM2_BGR_REG;
+		clk_reg = & CCU->I2SPCM2_CLK_REG;
+		break;
+	case 3:
+		bgr_reg = & CCU->I2SPCM3_BGR_REG;
+		clk_reg = & CCU->I2SPCM3_CLK_REG;
+		break;
+	case 4:
+		bgr_reg = & CCU->I2SPCM4_BGR_REG;
+		clk_reg = & CCU->I2SPCM4_CLK_REG;
+		break;
+	}
+
+	const unsigned long src = 0x03;
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	000: AUDIO0PLL4X
+	//	001: AUDIO1PLL_DIV2
+	//	010: AUDIO1PLL_DIV5
+	//	011: PERI0_200M
+	unsigned long clk;
+	switch (src)
+	{
+	default:
+	case 0x00:
+		clk = allwnr_a733_get_audio0pll4x_freq();
+		break;
+	case 0x01:
+		clk = allwnr_a733_get_audio1pll_div2_freq();
+		break;
+	case 0x02:
+		clk = allwnr_a733_get_audio1pll_div5_freq();
+		break;
+	case 0x03:
+		clk = allwnr_a733_get_pll_peri0_200M_freq();
+		break;
+	}
+	//TP();
+	const unsigned value = calcdivround2(clk, mclkf);
+	PRINTF("i2s%u: value=%u, mclkf=%u, (clk=%lu)\n", ix, value, mclkf, clk);
+
+	* clk_reg =
+		1 * (UINT32_C(1) << 31) |				// I2S/PCM1_CLK_GATING: 1: Clock is ON
+		src * (UINT32_C(1) << 24) |	// CLK_SRC_SEL
+		(0x1F & (value - 1)) * (UINT32_C(1) << 0) |	// Factor M (0..31)
+		0;
+
+	* bgr_reg |= (UINT32_C(1) << 0);		// Gating Clock for I2S/PCMx
+	* bgr_reg |= (UINT32_C(1) << 16);		// I2S/PCMx Reset
 
 #else
 	#error Unhandled CPUSTYLE_xxx
@@ -4706,7 +4777,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	//i2s->I2S_PCM_INT |= 0xFF;
 //	arm_hardware_set_handler_system(I2S_PCMx_IRQn, I2S_PCMx_IrqHandler);
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A733)
 	/* Установка формата обмна */
 	// Каналы I2S
 
@@ -4835,9 +4906,9 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 
 #elif CPUSTYLE_A133
     #warning CPUSTYLE_A133 to be implemented
-
-#elif CPUSTYLE_A733
-	#warning CPUSTYLE_A733 to be implemented
+//
+//#elif CPUSTYLE_A733
+//	#warning CPUSTYLE_A733 to be implemented
 
 #else
 	#error Unhandled CPUSTYLE_xxx

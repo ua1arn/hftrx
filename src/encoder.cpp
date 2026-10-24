@@ -11,6 +11,7 @@
 #include "encoder.h"
 
 #if WITHENCODER
+#include "clocks.h"
 
 #include "keyboard.h"	/* функция опроса электронного ключа */
 //#include "display.h"	/* test */
@@ -40,12 +41,16 @@ struct encoder_tag
 	atomicpos_t account;	// обновляется по прерыванию
 	uint8_t old_val;
 	uint_fast8_t (* getpins)(void);
+	uint8_t active4;	// механический валкодер прошёл мёртвую зону (нестабильное положение)
 
 	/* перенесено из глобальной области видимости */
 	LCLSPINLOCK_t encspeedlock;
 	q31_t enchist [HISTLEN];
 	uint_fast8_t tichist;	// Должно поместиться число от 0 до TICKSMAX включительно
 	uint_fast8_t enchistindex;
+
+	unsigned actualresulution;
+	int dynamic;
 };
 
 void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
@@ -54,11 +59,14 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->getpins = agetpins;
 	e->position = 0;
 	e->account = 0;
+	e->active4 = 0;
 
 	e->tichist = 0;
 	e->enchistindex = 0;
 	arm_fill_q31(0, e->enchist, HISTLEN);
 	IRQLSPINLOCK_INITIALIZE(& e->encspeedlock);
+	e->actualresulution = 24;
+	e->dynamic = 0;
 }
 
 static void encoder_clear(encoder_t * e)
@@ -73,38 +81,10 @@ static void encoder_clear(encoder_t * e)
 	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
 }
 
-/* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
-void spool_encinterrupts4_dirA_cw(void * ctx)
-{
-	encoder_t * const e = (encoder_t *) ctx;
-	const int_fast8_t step = (e->getpins() & GETENCBIT_A) ? + 1 : - 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	e->position += step;
-}
-
-/* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
-void spool_encinterrupts4_dirA_ccw(void * ctx)
-{
-	encoder_t * const e = (encoder_t *) ctx;
-	const int_fast8_t step = (e->getpins() & GETENCBIT_A) ? - 1 : + 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	e->position += step;
-}
-
-/* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
-void spool_encinterrupts4_dirB_cw(void * ctx)
-{
-	encoder_t * const e = (encoder_t *) ctx;
-	const int_fast8_t step = (e->getpins() & GETENCBIT_B) ? + 1 : - 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	e->position += step;
-}
-
-/* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
-void spool_encinterrupts4_dirB_ccw(void * ctx)
-{
-	encoder_t * const e = (encoder_t *) ctx;
-	const int_fast8_t step = (e->getpins() & GETENCBIT_B) ? - 1 : + 1;	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	e->position += step;
-}
-
+// оптика
+// dimensions are:
+// old_bits new_bits
+// GETENCBIT_A, GETENCBIT_B
 static const int8_t graydecoder [4][4] =
 {
 	{
@@ -133,30 +113,87 @@ static const int8_t graydecoder [4][4] =
 	},
 };
 
-/* прерывание по любому перепаду сигнала на входах от валкодера */
+// механика (с "трещёткой" - Detent)
+// Вращение влево: 3-2-0-1-3 (3 - стабильное состояние, 0 - dead position)
+// Вращение вправо: 3-1-0-2-3 (3 - стабильное состояние, 0 - dead position)
+// модификация позиции происходит на последней фазе - перехода к стабильному состоянию.
+// dimensions are:
+// old_bits new_bits
+// GETENCBIT_A, GETENCBIT_B
+static const int8_t graydecoder4 [4][4] =
+{
+	{
+		+0,		/* 00 -> 00 stopped				*/
+		+0,		/* 00 -> 01 rotate left			*/
+		+0,		/* 00 -> 10 rotate right		*/
+		+0,		/* 00 -> 11 invalid combination */
+	},
+	{
+		+0,		/* 01 -> 00 rotate right		*/
+		+0,		/* 01 -> 01 stopped				*/
+		+0,		/* 01 -> 10 invalid combination */
+		-1,		/* 01 -> 11 rotate left			*/
+	},
+	{
+		+0,		/* 10 -> 00 rotate left			*/
+		+0,		/* 10 -> 01 invalid combination */
+		+0,		/* 10 -> 10 stopped				*/
+		+1,		/* 10 -> 11 rotate right		*/
+	},
+	{
+		+0,		/* 11 -> 00 invalid combination */
+		+0,		/* 11 -> 01 rotate right		*/
+		+0,		/* 11 -> 10 rotate left			*/
+		+0,		/* 11 -> 11 stopped				*/
+	},
+};
+
+static const int8_t deadstates4 [4] =
+{
+		1, 0, 0, 0
+};
+
+/* оптика - прерывание по любому перепаду сигнала на входах от валкодера */
 void spool_encinterrupts(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
-	// dimensions are:
-	// old_bits new_bits
-	// GETENCBIT_A, GETENCBIT_B
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	const int_fast8_t step = graydecoder [e->old_val][new_val];
-
+	const int_fast8_t step = graydecoder [e->old_val] [new_val];
 	e->position += step;
 	e->old_val = new_val;
 }
 
-/* прерывание по любому перепаду сигнала на входах от валкодера */
+/* оптика - прерывание по изменению сигнала на входах от валкодера */
 void spool_encinterrupts_ccw(void * ctx)
 {
 	encoder_t * const e = (encoder_t *) ctx;
-	// dimensions are:
-	// old_bits new_bits
-	// GETENCBIT_A, GETENCBIT_B
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	const int_fast8_t step = - graydecoder [e->old_val][new_val];
-	e->position += step;
+	const int_fast8_t step = graydecoder [e->old_val] [new_val];
+	e->position -= step;
+	e->old_val = new_val;
+}
+
+/* механика - прерывание по изменению сигнала на входах от валкодера */
+void spool_encinterrupts4_cw(void * ctx)
+{
+	encoder_t * const e = (encoder_t *) ctx;
+	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	const int_fast8_t step = graydecoder4 [e->old_val] [new_val];
+	const int active = e->active4 || deadstates4 [new_val];
+	e->position += step * active;
+	e->active4 = active && ! step;	// сброс после использования
+	e->old_val = new_val;
+}
+
+/* механика - прерывание по изменению сигнала на входах от валкодера */
+void spool_encinterrupts4_ccw(void * ctx)
+{
+	encoder_t * const e = (encoder_t *) ctx;
+	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	const int_fast8_t step = graydecoder4 [e->old_val] [new_val];
+	const int active = e->active4 || deadstates4 [new_val];
+	e->position -= step * active;
+	e->active4 = active && ! step;	// сброс после использования
 	e->old_val = new_val;
 }
 
@@ -173,22 +210,17 @@ static int safegetposition_kbd(void)
 
 /* значение используется вне прерываний - модификация без запрета прерываний */
 
-static unsigned encoder1_actual_resolution = 128 * 4; //(encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
-static uint_fast8_t encoder1_dynamic = 1;
 
-//#define ENCODER_ACTUAL_RESOLUTION (encoder_resolution * 4 * ENCRESSCALE)	// Number of increments/decrements per revolution
-//static uint_fast8_t encoder_resolution;
-
-void encoder1_set_resolution(unsigned v, uint_fast8_t encdynamic)
+void encoder_set_resolution(encoder_t * e, unsigned v, uint_fast8_t encdynamic)
 {
-	encoder1_actual_resolution = v * 4 * ENCRESSCALE;	/* используется учетверение шагов */
-	encoder1_dynamic = encdynamic;
+	e->actualresulution = v * 4 * ENCRESSCALE;	/* используется учетверение шагов */
+	e->dynamic = encdynamic;
 }
 
 // возвращает количество инкрементов на оборот
-unsigned encoder_get_actualresolution(encoder_t * e)
+unsigned encoder_get_actualresolution(const encoder_t * e)
 {
-	return encoder1_actual_resolution;
+	return e->actualresulution;
 }
 
 /* получение количества шагов, накопленного с момента предыдущего опроса */
@@ -365,7 +397,7 @@ encoder_getrotatehires(
 	unsigned speed;
 	const int32_t nrotate = encoder_get_snapshotproportional(e, & speed);
 
-	if (encoder1_dynamic != 0)
+	if (e->dynamic != 0)
 	{
 		uint_fast8_t i;
 
@@ -427,16 +459,16 @@ void encoders_initialize(void)
 	encoder_initialize(& encoder_kbd, hardware_get_encoderummy_bits);
 
 #if WITHENCODER
-	ticker_initialize(& encticker, NTICKS(ENC_TICKS_PERIOD), encspeed_spool, & encoder1);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& encticker, ENC_TICKS_PERIOD, encspeed_spool, & encoder1);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker);
 #endif /* WITHENCODER */
 #if WITHENCODER_SUB
-	ticker_initialize(& encticker_sub, NTICKS(ENC_TICKS_PERIOD), encspeed_spool, & encoder_sub);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& encticker_sub, ENC_TICKS_PERIOD, encspeed_spool, & encoder_sub);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker_sub);
 #endif /* WITHENCODER */
 #if WITHENCODER2 && ! ENCODER2_NOSPOOL
 	// второй енкодер всегда по опросу (если это не назначено при инициализации)
-	ticker_initialize(& encticker2, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupt2_local, NULL);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& encticker2, ENC_TICKS_PERIOD, spool_encinterrupt2_local, NULL);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker2);
 #endif /* WITHENCODER2 && ! ENCODER2_NOSPOOL */
 }

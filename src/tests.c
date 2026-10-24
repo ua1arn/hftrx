@@ -252,7 +252,7 @@ static volatile int recstop;
 
 static void test_recodspool(void * ctx)
 {
-	if (recticks < NTICKS(60000))
+	if (recticks < 600)
 	{
 		++ recticks;
 	}
@@ -1938,6 +1938,11 @@ void looptests(void)
 {
 #if 0
 	{
+		PRINTF("dsp_getvox()=%u,dsp_getavox()=%u\n", dsp_getvox(UINT8_MAX), dsp_getavox(UINT8_MAX));
+	}
+#endif
+#if 0
+	{
 		// Encoder tests
 		PRINTF("ef1=%+3d, ef2=%+3d, ef3=%+3d, ef4=%+3d\n",
 				(int) encoder_get_delta(& encoder_ENC1F),
@@ -2211,7 +2216,6 @@ static void BarTest(void)
 		display_solidbar(x, y, x2, y2, color);	// MDMA работает минуя кеш-память
 
 		colmain_nextfb();
-		//local_delay_ms(5);
 		testsloopprocessing();		// обработка отложенного вызова user mode функций
 	}
 
@@ -7930,14 +7934,12 @@ void nand_tests(void)
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
 
-#if WITHDEBUG && 1
-static void ipchandlers(void)
+static void sgitesthandler(void)
 {
 	unsigned core = arm_hardware_cpuid();
-	PRINTF("Handler: core = %u\n", core);
+	//PRINTF("Handler: core = %u\n", core);
+	dbg_putchar('a' + core);
 }
-
-#endif
 
 void hightests(void)
 {
@@ -7955,19 +7957,149 @@ void hightests(void)
 #endif
 #if 0
 	{
+		modem_test();
+
+	}
+#endif
+#if 0
+	{
+		PRINTF("get_td_delta() test started\n");
+		// Hardware timers test
+		unsigned i;
+		for (i = 0; i < 10; ++ i)
+		{
+			//	Функции для программных ожиданий
+			const hwtimcountfast_t t0 = get_td_delta(0);	// начальное значение счетчика тактов
+			const hwtimcountfast_t dt = get_td_ms(1000);	// количество тактов до срабатывания
+			do {
+				// проверяем что-то...
+			} while (get_td_delta(t0) < dt);
+			PRINTF("Time elapsad...\n");
+		}
+		PRINTF("get_td_delta() test done\n");
+	}
+#endif
+#if 0
+	{
+		// Functional encoders test
+		for (;;)
+		{
+			const unsigned e1 = hardware_get_encoder3_bits();
+			const unsigned e2 = hardware_get_encoder4_bits();
+			const unsigned e3 = hardware_get_encoder5_bits();
+			const unsigned e4 = hardware_get_encoder6_bits();
+			PRINTF("e: %u %u %u %u\n", e1, e2, e3, e4);
+		}
+	}
+#endif
+#if 0
+	{
+		static const IRQn_Type tests [] =
+		{
+			//TIMER1_3_IRQn,
+			MAX_IRQ_n - 1,
+			SGI1_IRQn,
+		};
+		unsigned phase;
+		for (phase = 0; phase < ARRAY_SIZE(tests); ++ phase)
+		{
+			const IRQn_Type irqn = tests [phase];
+			{
+				// PPI/SGI priority test
+				unsigned o0 = GIC_GetPriority(irqn);
+				GIC_SetPriority(irqn, 0x40);
+				unsigned o1 = GIC_GetPriority(irqn);
+				GIC_SetPriority(irqn, 0x80);
+				unsigned o2 = GIC_GetPriority(irqn);
+				GIC_SetPriority(irqn, o0);
+				unsigned o3 = GIC_GetPriority(irqn);
+				PRINTF("prio[%u]: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X\n", (unsigned) irqn, o0, o1, o2, o3);
+				ASSERT(o1 == 0x40);
+				ASSERT(o2 == 0x80);
+				ASSERT(o3 == o0);
+			}
+			{
+				// PPI/SGI enable test
+				unsigned o0 = GIC_GetEnableIRQ(irqn);
+				GIC_EnableIRQ(irqn);
+				unsigned o1 = GIC_GetEnableIRQ(irqn);
+				GIC_DisableIRQ(irqn);
+				unsigned o2 = GIC_GetEnableIRQ(irqn);
+				if (o0)
+					GIC_EnableIRQ(irqn);
+				else
+					GIC_DisableIRQ(irqn);
+				unsigned o3 = GIC_GetEnableIRQ(irqn);
+				PRINTF("enabele[%u]: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X\n", (unsigned) irqn, o0, o1, o2, o3);
+				ASSERT(o1 == 1);
+				ASSERT(o2 == 0);
+				ASSERT(o3 == o0);
+			}
+			{
+				// PPI/SGI configuration test
+				unsigned o0 = GIC_GetConfiguration(irqn);
+				GIC_SetConfiguration(irqn, 0x00);
+				unsigned o1 = GIC_GetConfiguration(irqn);
+				GIC_SetConfiguration(irqn, 0x01);
+				unsigned o2 = GIC_GetConfiguration(irqn);
+				GIC_SetConfiguration(irqn, 0x02);
+				unsigned o3 = GIC_GetConfiguration(irqn);
+				GIC_SetConfiguration(irqn, 0x03);
+				unsigned o4 = GIC_GetConfiguration(irqn);
+				GIC_SetConfiguration(irqn, o0);
+				unsigned o5 = GIC_GetConfiguration(irqn);
+				PRINTF("conf[%u]: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X,o4=0x%02X,o5=0x%02X\n", (unsigned) irqn, o0, o1, o2, o3, o4, o5);
+//				ASSERT(o1 == 0x00);
+//				ASSERT(o2 == 0x01);
+//				ASSERT(o3 == 0x02);
+//				ASSERT(o4 == 0x03);
+				ASSERT(o5 == o0);
+			}
+			{
+				// PPI/SGI group test
+				unsigned o0 = GIC_GetGroup(irqn);
+				GIC_SetGroup(irqn, 0x00);
+				unsigned o1 = GIC_GetGroup(irqn);
+				GIC_SetGroup(irqn, 0x01);
+				unsigned o2 = GIC_GetGroup(irqn);
+				GIC_SetGroup(irqn, o0);
+				unsigned o3 = GIC_GetGroup(irqn);
+				PRINTF("group[%u]: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X\n", (unsigned) irqn, o0, o1, o2, o3);
+				ASSERT(o1 == 0x00);
+				ASSERT(o2 == 0x01);
+				ASSERT(o3 == o0);
+			}
+		}
+	}
+#endif
+#if 0
+	{
+		// filter_list (bit 25:24 of GICD_SGIR):
+		// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
+		// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
+		// 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
+		const uint_fast32_t filter_list = 0x00;
 		unsigned core;
 		const uint_fast16_t int_id = SGI15_IRQn;
-		PRINTF("IPC interrupte demo, GIC_GetARE()=%d\n", (int) GIC_GetARE());
-		//PRINTF("IPC interrupte demo\n");
-		arm_hardware_set_handler_system(int_id, ipchandlers);
+		//PRINTF("IPC interrupts demo, GIC_GetARE()=%d\n", (int) GIC_GetARE());
+		PRINTF("IPC interrupts demo start:\n");
+		arm_hardware_set_handler_system(int_id, sgitesthandler);
 		for (core = 0; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 		{
-			GIC_SendSGI(int_id, 1U << core, 0x00);	// other CORE, filer=0
+			unsigned target_list = UINT32_C(1) << core;
+			const unsigned target_aff = __log2_up(target_list);
+			PRINTF("IPC interrupts demo - core%u: ", core);
+			GIC_SendSGI(int_id, target_list, 0x00);	// specified core
 			local_delay_ms(250);
-
+			GIC_SendSGI(int_id, target_list, 0x00);	// specified core
+			local_delay_ms(250);
+			PRINTF(" - IPC interrupts demo - core%u (aff=0x%02X) done\n", core, target_aff);
 		}
 		arm_hardware_disable_handler(int_id);
-		PRINTF("IPC interrupte demo done\n");
+		PRINTF("IPC interrupts demo - all  : ");
+		GIC_SendSGI(int_id, 0, 0x01);	// other cores, except self
+		local_delay_ms(250);
+		PRINTF(" - IPC interrupts demo done\n");
 	}
 #endif
 #if 0
@@ -8040,14 +8172,14 @@ void hightests(void)
 		unsigned core;
 		for (core = 0; core < ARRAY_SIZE(userprintdpcs); ++ core)
 		{
-			dpcobj_initialize(& userprintdpcs [core], coremark_wrapper, NULL);
+			dpcobj_initialize(& userprintdpcs [core], coremark_wrapper, NULL, "coremark_wrapper");
 			board_dpc_addentry(& userprintdpcs [core], core);
 		}
 	}
 #endif
 #if 0 && ! WITHISBOOTLOADER
 	{
-	#if __aarch64__
+	#if defined(__aarch64__)
 		asm volatile (
 				"ldr x0,  =0x1234123412341234\n"
 				"ldr x1,  =0x2121212121212121\n"
@@ -8090,7 +8222,7 @@ void hightests(void)
 		colmain_nextfb();
 	}
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 0 && LCDMODE_ARGB8888
+#if 0 && (LCDMODE_ARGB8888 || LCDMODE_BGRA8888)
 	{
 		void rcq_demo(void);
 
@@ -8106,6 +8238,34 @@ void hightests(void)
 		gpu_test();
 	}
 #endif
+#if 0 && ! WITHISBOOTLOADER
+	{
+		// timestamp tests
+		//TIMESTAMP_CTRL->CNT_FREQID_REG = 0x16E3600;	// 24000000
+		//TIMESTAMP_CTRL->CNT_FREQID_REG = allwnr_t507_get_hosc_freq();	// 24000000
+		//TIMESTAMP_CTRL->TSTAMP_CTRL_REG &= ~ (UINT32_C(1) << 0);	// Stop timestamp counter
+//		PRINTHEX32(* TIMESTAMP_STA);
+//		PRINTHEX32(* TIMESTAMP_STA);
+//		PRINTHEX32(* TIMESTAMP_STA);
+
+		//PRINTHEX32(* TIMESTAMP_CTRL);
+		PRINTF("freq=%08X (%u)\n", (unsigned) __get_CNTFRQ_EL0(), (unsigned) __get_CNTFRQ_EL0());
+		PRINTF("freqs=%08X (%u)\n", (unsigned) timestamp_getfreq(), (unsigned) timestamp_getfreq());
+		for (;;)
+		{
+//			PRINTHEX64(* TIMESTAMP_STA);
+//			PRINTHEX32(* TIMESTAMP_CTRL);
+			const uint64_t t0 = __get_CNTPCT_EL0();
+			const uint64_t t0s = timestamp_getticks();
+			local_delay_ms(1000);
+			const uint64_t t1 = __get_CNTPCT_EL0();
+			const uint64_t t1s = timestamp_getticks();
+			unsigned dt = t1 - t0;
+			unsigned dts = t1s - t0s;
+			PRINTF("t0=0x%" PRIX64 ", t0s=0x%" PRIX64 ", dt=%u, dts=%u\n", t0, t0s, dt, dts);
+		}
+	}
+#endif
 #if 0 && WITHLTDCHW && LCDMODE_LTDC
 	{
 		// Font test
@@ -8115,31 +8275,34 @@ void hightests(void)
 		gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
 		colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, display2_getbgcolor());
 		//display_text(& dbv, 0, 0, "Start2...", 10, 16, & dbstylev);
-		static const char msg [] = "HELLO! test: 0123456789+-.#";
+		//static const char msg [] = "HELLO! test: 0123456789+-.#";
 		//static const char msg [] = "HELLO! test";
+		static const char msg [] = "01234567890._";
 		static const unifont_t * const fonts [] =
 		{
 			& unifont_small,
 			& unifont_small2,
-			& unifont_small3,	// шрифт, используемый при отриосовке надписей на шкале
+			& unifont_small3,	// шрифт, используемый при отрисовке надписей на шкале
 			//& unifont_small_x2,	// vtty_x2.c
 			//& unifont_Tahoma_Regular_88x77,	// CP Font Generator support
 //			& unifont_roboto32,	// aptech
 //			& unifont_helvNeueTh70,	// aptech
-			& unifont_FreeMono9pt7b,
-			& unifont_FreeMono12pt7b,
-			& unifont_FreeMono18pt7b,
-			& unifont_FreeMono24pt7b,
-			& unifont_FreeSans12pt7b,
-			& unifont_gothic_11x13,
-			& unifont_gothic_12x16p,
+//			& unifont_FreeMono9pt7b,
+//			& unifont_FreeMono12pt7b,
+//			& unifont_FreeMono18pt7b,
+//			& unifont_FreeMono24pt7b,
+//			& unifont_FreeSans12pt7b,
+//			& unifont_gothic_11x13,
+//			& unifont_gothic_12x16p,
 //			& unifont_msgothic_10x13_prop,
 //			& unifont_msgothic_11x13_mono,
 //			& unifont_msgothic_13x16_prop,
 //			& unifont_msgothic_15x17_prop,
 //			& unifont_msgothic_15x17_mono,
-			& unifont_big,
-			& unifont_half,
+			& unifont_big_raw,
+			& unifont_big2_raw,
+			& unifont_half_raw,
+			& unifont_half2_raw,
 		};
 		unsigned row;
 		uint_fast16_t xpix = 0;
@@ -9113,7 +9276,7 @@ void hightests(void)
 		TP();
 	}
 #endif
-#if 0 && LCDMODE_LTDC && LCDMODE_ARGB8888
+#if 0 && LCDMODE_LTDC && (LCDMODE_ARGB8888 || LCDMODE_BGRA8888)
 	{
 		// DE overlays test
 		enum { picy = 110, picx = 150 };
@@ -9165,7 +9328,7 @@ void hightests(void)
 
 	}
 #endif
-#if 0 && LCDMODE_LTDC && LCDMODE_ARGB8888
+#if 0 && LCDMODE_LTDC && (LCDMODE_ARGB8888 || LCDMODE_BGRA8888)
 	{
 		enum { picy = 110, picx = 150 };
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -9609,7 +9772,6 @@ void hightests(void)
 #if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		const COLORPIP_T bg = display2_getbgcolor();
-		PACKEDCOLORPIP_T * const buffer = colmain_fb_draw();
 
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
@@ -9622,12 +9784,18 @@ void hightests(void)
 //		for (;;)
 //			;
 
-		for (int pos = 0; pos < 24; ++ pos)
+		for (;;)
 		{
-			COLORPIP_T c = TFTALPHA(255, UINT32_C(1) << pos);
-			colpip_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, c);
-			PRINTF("color=%08X pos=%d\n", (unsigned) c, pos);
-			local_delay_ms(2000);
+			for (int pos = 0; pos < (LCDMODE_PIXELSIZE * 8); ++ pos)
+			{
+				gxdrawb_t dbv;	// framebuffer для выдачи диагностических сообщений
+				gxdrawb_initialize(& dbv, colmain_fb_draw(), DIM_X, DIM_Y);
+				COLORPIP_T c = TFTALPHA(255, UINT32_C(1) << pos);
+				colpip_fillrect(& dbv, 0, 0, DIM_X, DIM_Y, c);
+				colmain_nextfb();
+				PRINTF("color=%08X pos=%d\n", (unsigned) c, pos);
+				local_delay_ms(2000);
+			}
 		}
 		for (;;)
 			;
@@ -10021,7 +10189,20 @@ void hightests(void)
 #if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	{
 		// GIC600 specs
+		unsigned ITScount = 1;
+		unsigned RDcount = arm_hardware_clustersize();	// RDcount is the total number of “internal Redistributor”, which equals total number of CPU cores.
+		unsigned RDnum = 0;
 		uintptr_t base = GIC_BASE;
+		uintptr_t GICd_base = GIC_BASE + 0 * 0x00010000;	// GICD main page.
+		uintptr_t GICa_base = GIC_BASE + 1 * 0x00010000;	// GICD message-based interrupts alias.
+		uintptr_t GICt_base = GIC_BASE + 2 * 0x00010000;	// GIC trace and debug page.
+		uintptr_t GICs_base = GIC_BASE + 3 * 0x00010000;	// GIC PMU.
+		uintptr_t GIR_LPI_base = GIC_BASE + (4 + (2 * ITScount)) * 0x00010000;	// GICR LPI registers
+		uintptr_t GIR_PPI_SGI_base = GIC_BASE + (5 + (2 * ITScount)) * 0x00010000;	// GICR PPI + SGI registers.
+
+		PRINTF("GIR_LPI_base=%p\n", (void *) GIR_LPI_base);
+		PRINTF("GIR_PPI_SGI_base=%p\n", (void *) GIR_PPI_SGI_base);
+
 		for (;base < (GIC_BASE + (25 * 64 * 1024)); base += 4 * 1024)
 		{
 			//const uint32_t v = * (volatile uint32_t *) (base + 0xFFD0);
@@ -10056,7 +10237,7 @@ void hightests(void)
 			const uintptr_t comp_base = base & ~ (comp_size - 1);
 			const unsigned GICR_CFGID0 = * (volatile uint32_t *) (base + 0x000);
 			const unsigned GICR_CFGID1 = * (volatile uint32_t *) (base + 0x004);
-			const unsigned typer = ((GICR_TypeDef *) comp_base)->GICR_TYPER;
+			const unsigned typer = ((GICR_LPI_TypeDef *) comp_base)->GICR_TYPER;
 			PRINTF("%p: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X (%s) typer=%08X GICR_CFGID0=%08X GICR_CFGID1=%08X %p comp_size=%u\n",
 					(void *) base,
 					GICR_PIDR4, GICR_PIDR5, GICR_PIDR6, GICR_PIDR7, GICR_PIDR0, GICR_PIDR1, GICR_PIDR2, GICR_PIDR3,
@@ -10067,8 +10248,26 @@ void hightests(void)
 					(void *) comp_base,
 					(unsigned) comp_size
 					);
-			//printhex32(b, (void *) b, 48);
-			//PRINTF("ncpus=%u\n", (unsigned) ((* (const volatile uint32_t *) (comp_base + 0xF004)) >> 4) & 0xFF);
+			switch (GICR_PIDR0 & 0xFF)
+			{
+			case 0x92:
+				// GICD
+//				{
+//					const GICD_TypeDef * const gicd = (const GICD_TypeDef *) comp_base;
+//					PRINTF("gicd_IIDR: 0x%08X: pid=0x%02X, revision=0x%02X, Implementer=0x%03X\n", (unsigned) gicd->GICD_IIDR, (unsigned) (gicd->GICD_IIDR >> 24) & 0xFF, (unsigned) (gicd->GICD_IIDR >> 12) & 0x0F, (unsigned) (gicd->GICD_IIDR >> 0) & 0xFFF);
+//				}
+//				{
+//					const GICDistributorType * const gicd = (const GICD_TypeDef *) comp_base;
+//					PRINTF("gicd_IIDR: 0x%08X: pid=0x%02X, revision=0x%02X, Implementer=0x%03X\n", (unsigned) gicd->GICD_IIDR, (unsigned) (gicd->GICD_IIDR >> 24) & 0xFF, (unsigned) (gicd->GICD_IIDR >> 12) & 0x0F, (unsigned) (gicd->GICD_IIDR >> 0) & 0xFFF);
+//				}
+				break;
+			case 0x93:
+				// GICR
+				// Table 12-27 GIC physical LPI Redistributor register map - 0x70..
+				// Table 12-28 GIC virtual LPI Redistributor register map - 0x80..
+				// Table 12-29 GIC SGI and PPI Redistributor register map - 0x80..
+				break;
+			}
 		}
 	}
 #endif
@@ -10693,7 +10892,7 @@ void hightests(void)
 		static ticker_t test_recordticker;
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_initialize(& test_recordticker, 100, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 		ticker_add(& test_recordticker);
 		LowerIrql(oldIrql);
 		{
@@ -10742,7 +10941,7 @@ void hightests(void)
 		static ticker_t test_recordticker;
 		IRQL_t oldIrql;
 		RiseIrql(IRQL_SYSTEM, & oldIrql);
-		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_initialize(& test_recordticker, 100, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 		ticker_add(& test_recordticker);
 		LowerIrql(oldIrql);
 		fatfs_filesystest(1);
@@ -10869,7 +11068,7 @@ void hightests(void)
 #if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		// test: вывод палитры на экран
-		const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отриосовке надписей на шкале
+		const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
 		display2_fillbg(db);
 		PACKEDCOLORPIP_T * const fr = colmain_fb_draw();
 		int sepx = 3, sepy = 3;
@@ -12345,35 +12544,6 @@ void lowtests(void)
 		}
 	}
 #endif
-#if 0 && CPUSTYLE_STM32MP1
-	{
-		// калибровка программной задержки
-
-		//RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_TZPCEN;
-		//PRINTF("Hello. STM32MP157\n");
-		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
-		// LED blinking test
-		//const uint_fast32_t mask = (1uL << 14);	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-		//const uint_fast32_t maskd = (1uL << 14);	// PD14 - LED on small board
-		const uint_fast32_t maska = (1uL << 13);	// PA13 - bootloader status LED
-		//arm_hardware_piod_outputs(maskd, 1 * maskd);
-		arm_hardware_pioa_outputs(maska, 1 * maska);
-		for (;;)
-		{
-			//dbg_putchar('5');
-			//(GPIOD)->BSRR = BSRR_S(maskd);
-			(GPIOA)->BSRR = BSRR_S(maska);
-			__DSB();
-			local_delay_ms(50);
-			//dbg_putchar('#');
-			//(GPIOD)->BSRR = BSRR_C(maskd);
-			(GPIOA)->BSRR = BSRR_C(maska);
-			__DSB();
-			local_delay_ms(50);
-
-		}
-	}
-#endif /* CPUSTYLE_STM32MP1 */
 #if 0 && WITHDEBUG
 	{
 		// c++ execution test

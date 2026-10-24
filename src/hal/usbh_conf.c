@@ -746,7 +746,7 @@ USBH_StatusTypeDef  USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint8_t state)
 		board_set_usbhostvbuson(0);
 		board_update();
 	}
-	HARDWARE_DELAY_MS(200);
+	local_delay_ms(200);
 	return USBH_OK;
 }
 

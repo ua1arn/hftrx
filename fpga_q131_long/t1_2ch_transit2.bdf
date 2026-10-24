@@ -8401,16 +8401,6 @@ applicable agreement for further details.
 	(pt -4064 1464)
 )
 (connector
-	(text "tx_bpsk_enable" (rect -4134 1464 -4058 1476)(font "Arial" ))
-	(pt -4152 1480)
-	(pt -4064 1480)
-)
-(connector
-	(text "mode_wfm" (rect -4118 1480 -4064 1492)(font "Arial" ))
-	(pt -4152 1496)
-	(pt -4064 1496)
-)
-(connector
 	(text "adcoffset[15..0]" (rect -4134 1496 -4054 1508)(font "Arial" ))
 	(pt -4152 1512)
 	(pt -4064 1512)

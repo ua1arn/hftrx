@@ -17,12 +17,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#if GUI_EXTERNAL_FONTS
-
-//typedef void /* struct gxdrawb_tag */ gxdrawb_t;
-typedef void /* struct unifont_tag */ unifont_t;
-
-#else /* GUI_EXTERNAL_FONTS */
 //--------------------------------------------------------------
 // Структура шрифта одного размера (не более 16 пикселей шириной)
 //--------------------------------------------------------------
@@ -82,7 +76,7 @@ typedef struct hftrx_GFXfont_tag
 	hftrx_GFXglyph_t *glyph;  ///< Glyph array
 	uint16_t first;   ///< ASCII extents (first char)
 	uint16_t last;    ///< ASCII extents (last char)
-	uint8_t yAdvance; ///< Newline distance (y axis)
+	uint8_t yAdvance; ///< Newline distance (Y axis)
 } hftrx_GFXfont_t;
 
 
@@ -179,6 +173,10 @@ uint_fast16_t ubpfont_render_char32(
 
 extern const unifont_t unifont_big_raw;	// non-cached version
 extern const unifont_t unifont_half_raw;	// non-cached version
+extern const unifont_t unifont_big2_raw;	// non-cached version
+extern const unifont_t unifont_half2_raw;	// non-cached version
+extern const unifont_t unifont_big2;
+extern const unifont_t unifont_half2;
 extern const unifont_t unifont_big;
 extern const unifont_t unifont_half;
 extern const unifont_t unifont_small;
@@ -207,10 +205,6 @@ extern const unifont_t unifont_msgothic_15x17_mono;
 #define SMALLCHARW 16 /* Font width */
 #define SMALLCHARH2 16 /* Font height */
 #define SMALLCHARW2 10 /* Font width */
-
-#endif /* GUI_EXTERNAL_FONTS */
-
-
 
 #ifdef __cplusplus
 }

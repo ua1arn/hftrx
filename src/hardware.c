@@ -255,19 +255,19 @@ static LCLSPINLOCK_t adcdoneslock = IRQLSPINLOCK_INIT;
 static VLIST_ENTRY tickers;
 static VLIST_ENTRY adcdones;
 
-void ticker_initialize_ext(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx, enum ticker_mode mode)
+static void ticker_initialize_ext(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, enum ticker_mode mode)
 {
-	p->period = nticks;
-	p->ticks = 0;
+	p->t0 = timestamp_getticks();
+	p->td = get_td_ms(timeMS);
 	p->cb = cb;
 	p->ctx = ctx;
 	p->mode = mode;
 	p->guard = p;
 }
 
-void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx)
+void ticker_initialize(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx)
 {
-	ticker_initialize_ext(p, nticks, cb, ctx, TICKERMD_PERIODIC);
+	ticker_initialize_ext(p, timeMS, cb, ctx, TICKERMD_PERIODIC);
 }
 
 static void ticker_trampoline(void * ctx)
@@ -280,15 +280,15 @@ static void ticker_trampoline_display(void * ctx)
 	board_dpc_call((dpcobj_t *) ctx, board_dpc_display_coreid());	// Запрос отложенного выполнения USER-MODE функции на ядре 1
 }
 
-void ticker_initialize_user(ticker_t * p, unsigned nticks, dpcobj_t * dpc)
+void ticker_initialize_user(ticker_t * p, uint_fast32_t timeMS, dpcobj_t * dpc)
 {
-	ticker_initialize(p, nticks, ticker_trampoline, dpc);
+	ticker_initialize(p, timeMS, ticker_trampoline, dpc);
 }
 
 // DPC будет вызываться на ядре board_dpc_display_coreid()
-void ticker_initialize_user_display(ticker_t * p, unsigned nticks, dpcobj_t * dpc)
+void ticker_initialize_user_display(ticker_t * p, uint_fast32_t timeMS, dpcobj_t * dpc)
 {
-	ticker_initialize(p, nticks, ticker_trampoline_display, dpc);
+	ticker_initialize(p, timeMS, ticker_trampoline_display, dpc);
 }
 
 void ticker_add(ticker_t * p)
@@ -301,49 +301,41 @@ void ticker_add(ticker_t * p)
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
-void ticker_remove(ticker_t * p)
-{
-	IRQL_t oldIrql;
-	ASSERT(p->guard == p);
-
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
-	RemoveEntryVList(& p->item);
-	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
-}
+//void ticker_remove(ticker_t * p)
+//{
+//	IRQL_t oldIrql;
+//	ASSERT(p->guard == p);
+//
+//	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+//	RemoveEntryVList(& p->item);
+//	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
+//}
 
 /* начало интервала в случае TICKERMD_MANUAL */
-void ticker_start(ticker_t * p)
-{
-	IRQL_t oldIrql;
-	ASSERT(p->guard == p);
-
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
-	switch (p->mode)
-	{
-	case TICKERMD_MANUAL:
-		break;
-	default:
-		break;
-	}
-	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
-}
+//void ticker_start(ticker_t * p)
+//{
+//	IRQL_t oldIrql;
+//	ASSERT(p->guard == p);
+//
+//	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+//	switch (p->mode)
+//	{
+//	case TICKERMD_MANUAL:
+//		break;
+//	default:
+//		break;
+//	}
+//	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
+//}
 
 /* изменение периода запущенного тикера */
-void ticker_setperiod(ticker_t * p, unsigned nticks)
+void ticker_setperiod(ticker_t * p, uint_fast32_t timeMS)
 {
 	IRQL_t oldIrql;
 
 	ASSERT(p->guard == p);
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
-	if (p->period < nticks)
-	{
-		p->period = nticks;
-	}
-	else if (p->period > nticks)
-	{
-		p->period = nticks;
-		p->ticks = 0;
-	}
+	p->td = get_td_ms(timeMS);
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
@@ -351,6 +343,7 @@ void ticker_setperiod(ticker_t * p, unsigned nticks)
 static void tickers_event(void)
 {
 	IRQL_t oldIrql;
+	const hwtimcountfast_t tn = timestamp_getticks();
 
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
 	PVLIST_ENTRY t;
@@ -371,9 +364,10 @@ static void tickers_event(void)
 		default:
 			break;
 		}
-		if (++ p->ticks >= p->period)
+
+		if ((timestamp_getmask() & (tn - p->t0)) >= p->td)
 		{
-			p->ticks = 0;
+			p->t0 += p->td;
 			if (p->cb != NULL)
 				(p->cb)(p->ctx);
 			switch (p->mode)
@@ -407,19 +401,15 @@ void tickers_initialize(void)
 	IRQLSPINLOCK_INITIALIZE(& adcdoneslock);
 	InitializeListHead(& adcdones);
 
-#if WITHCPUADCHW
-
-	static ticker_t adcticker;
-	ticker_initialize(& adcticker, SEQNTICKS(KBD_TICKS_PERIOD), adcstart_event, NULL);
-	ticker_add(& adcticker);
-
-#else /* WITHCPUADCHW */
-
-	static ticker_t adcticker;
-	ticker_initialize(& adcticker, SEQNTICKS(KBD_TICKS_PERIOD), adcdones_event, NULL);
-	ticker_add(& adcticker);
-
-#endif /* WITHCPUADCHW */
+	{
+		static ticker_t adcticker;
+	#if WITHCPUADCHW
+		ticker_initialize(& adcticker, KBD_TICKS_PERIOD, adcstart_event, NULL);
+	#else /* WITHCPUADCHW */
+		ticker_initialize(& adcticker, KBD_TICKS_PERIOD, adcdones_event, NULL);
+	#endif /* WITHCPUADCHW */
+		ticker_add(& adcticker);
+	}
 }
 
 void tickers_deinitialize(void)
@@ -497,7 +487,11 @@ void spool_systimerbundle(void)
 
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
 	tickers_event();
-	task_ticker();
+
+	// force re-schedule - not need then tickless scheduler
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) && WITHRTOS
+	//GIC_SendSGI(SGI14_IRQn, 0, 0x01);	// other cores, except self
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 }
 
 #if WITHCPUADCHW
@@ -507,7 +501,7 @@ void spool_systimerbundle(void)
 	перечисленных в таблице adcinputs.
 */
 
-RAMFUNC void spool_adcdonebundle(void)
+void spool_adcdonebundle(void)
 {
 	adcdones_event(NULL);
 }
@@ -1369,6 +1363,7 @@ sysinit_fpu_initialize(void)
 		__set_SCTLR_EL1(__get_SCTLR_EL1() & ~ SCTLR_EL3_A_Msk);	// Disable stack alignment check. The possible values are
 	#endif
 
+	__set_FPCR(0x00000000);
 	L1C_DisableCaches();
 	L1C_DisableBTAC();
 	MMU_Disable();
@@ -1380,6 +1375,8 @@ sysinit_fpu_initialize(void)
 	__FPU_Enable_fixed();
 	#endif
 
+	// AArch64 System register FPCR bits [26:15] are architecturally mapped to AArch32 System register FPSCR[26:15].
+	__set_FPSCR(0x00000000);
 	L1C_DisableCaches();
 	L1C_DisableBTAC();
 	MMU_Disable();
@@ -1424,11 +1421,10 @@ stsinit_irql_initialize(void)
 	if (arm_hardware_cpuid() == 0)
 	{
 		GIC_DistInit();
-	#if defined(GIC_REDISTRIBUTOR_BASE)
-		GIC_RedistInit();
-	#endif /* GIC_REDISTRIBUTOR_BASE */
 	}
-	GIC_Enable();
+#if defined(GIC_REDISTRIBUTOR_BASE)
+	GIC_RedistInit();	// на каждом ядре
+#endif /* GIC_REDISTRIBUTOR_BASE */
 	GIC_CPUInterfaceInit(); //per CPU
 
 #endif
@@ -1511,154 +1507,25 @@ sysinit_debug_initialize(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 }
+#if defined(__aarch64__)
+/**
+ * @brief Checks if the CPU core supports ARM GICv3/v4 System Registers.
+ * @return 1 if GICv3/v4 is supported, 0 if only GICv2 (or legacy) is available.
+ */
+static int Is_GICv3_Supported(void) {
+    const uint64_t pfr0 = __get_ID_AA64PFR0_EL1();
 
-// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
-// получение частоты, с которой инкрементируется счетчик
-dbgcountfast_t cpu_getdebugticksfreq(void)
-{
-	return SystemCoreClock;//CPU_FREQ;
-#if WITHISBOOTLOADER
-	return CPU_FREQ;	// пока ОЗУ не инициализированно
-#else /* WITHISBOOTLOADER */
-	return SystemCoreClock;//CPU_FREQ;
-#endif /* WITHISBOOTLOADER */
+    /*
+     * In ARM Architecture Reference Manual:
+     * ID_AA64PFR0_EL1.GIC bits [27:24] specify GIC system register support:
+     * - 0b0000: GICv3/v4 system register interface is NOT implemented (Legacy GICv2 mode).
+     * - 0b0001: GICv3/v4 system register interface IS implemented.
+     */
+    uint32_t gic_status = (uint32_t)((pfr0 >> 24) & 0x0FU);
+
+    return (gic_status == 1U);
 }
-
-// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
-// получение из аппаратного счетчика монотонно увеличивающегося кода
-// see sysinit_perfmeter_initialize() in hardware.c
-// Счетчик увеличивается с частотой процессора
-
-dbgcountfast_t cpu_getdebugticks(void)
-{
-#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
-	return DWT->CYCCNT;	// use TIMESTAMP_GET();
-
-#elif defined(__aarch64__)
-	return __get_PMCCNTR_EL0();
-
-#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
-	if (0)
-	{
-		uint64_t result;
-		// MRRC{<c>}{<q>} <coproc>, {#}<opc1>, <Rt>, <Rt2>, <CRm>
-		// cp, op1, Rt, CRm
-		__get_CP64(15, 9, result, 0);
-		return result;
-	}
-	{
-		uint32_t result;
-		// Read CCNT Register
-		//	MRC p15, 0, <Rt>, c9, c13, 0 : Read PMCCNTR into Rt
-		//	MCR p15, 0, <Rt>, c9, c13, 0 : Write Rt to PMCCNTR
-		//asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));
-		__get_CP(15, 0, result, 9, 13, 0);
-		return result;
-	}
-
-#elif defined(__riscv)
-
-	return csr_read_mcycle();
-
-#else
-	#warning Wrong CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
-	return 0;
-
-#endif
-}
-
-// получение маски на разрядность аппаратного счётчика
-dbgcountfast_t cpu_getdebugticksmask(void)
-{
-#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
-	return UINT32_MAX;	// DWT->CYCCNT width is 32
-
-#elif defined(__aarch64__)
-	return UINT64_MAX;	// PMCCNTR width is 64
-
-#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
-	return UINT32_MAX;	// PMCCNTR width is 32
-
-#elif defined(__riscv)
-	return UINT64_MAX;	// mcycle width is 64
-
-#else
-	#warning Wrong CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
-	return UINT32_MAX;
-
-#endif
-}
-
-// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
-static void
-sysinit_perfmeter_initialize(void)
-{
-#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
-
-	#if WITHDEBUG && __CORTEX_M == 7U
-		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
-		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-		DWT->LAR = 0x00000000;	// Key value for lock
-	#endif /* WITHDEBUG && __CORTEX_M == 7U */
-
-#elif defined(__aarch64__)
-		__set_PMCNTENSET_EL0(__get_PMCNTENSET_EL0() | (UINT32_C(1) << 31));
-		__set_PMCR_EL0(__get_PMCR_EL0() | (UINT32_C(1) << 0));
-
-#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
-
-//	{
-//		uint32_t value;
-//		__get_CP(15, 0, value, 9, 12, 0);	// Read PMNC
-//		PRINTF("PMNC=0x%" PRIX32 "\n", value);
-//		PRINTF("counters=%" PRIu32 "\n", (value >> 11) & 0x1F);
-//	}
-	{
-		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
-		    /* enable user-mode access to the performance counter*/
-		// User Enable Register (USEREN)
-		//asm ("MCR p15, 0, %0, C9, C14, 0\n\t" :: "r"(1));
-		__set_CP(15, 0, 0x00000001, 9, 14, 0);
-
-		/* disable counter overflow interrupts (just in case)*/
-		// Interrupt Enable Clear Register (INTENC)
-		//asm ("MCR p15, 0, %0, C9, C14, 2\n\t" :: "r"(0x8000000f));
-		__set_CP(15, 0, 0x80000000, 9, 14, 2);
-
-		enum { do_reset = 0, enable_divider = 0 };
-		// in general enable all counters (including cycle counter)
-		uint32_t value = (UINT32_C(1) << 0);	// ENABLE bit
-
-		// peform reset:
-		if (do_reset)
-		{
-			value |= (UINT32_C(1) << 1);     // reset all counters to zero.
-			value |= (UINT32_C(1) << 2);     // reset cycle counter to zero.
-		}
-
-		if (enable_divider)
-			value |= (UINT32_C(1) << 3);     // enable "by 64" divider for CCNT. Clock Divider, bit [3]
-
-		value |= (UINT32_C(1) << 4);		// Export Enable, bit [4]
-
-		// program the performance-counter control-register PMNC:
-		//asm volatile ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));
-		__set_CP(15, 0, value, 9, 12, 0);
-
-		// enable all counters: Count Enable Set Register (CNTENS)
-		//asm volatile ("MCR p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));
-		__set_CP(15, 0, 0x80000000, 9, 12, 1);
-
-		// clear overflows: Overflow Flag Status Register (FLAG)
-		//asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
-		__set_CP(15, 0, 0x80000000, 9, 12, 3);
-	}
-
-#elif defined(__riscv)
-
-#endif /* ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__)) */
-}
+#endif /* defined(__aarch64__) */
 
 static void
 sysinit_vbar_initialize(void)
@@ -1675,8 +1542,38 @@ sysinit_vbar_initialize(void)
 	__set_VBAR_EL3(vbase);	 // Set Vector Base Address Register (Bits 10..0 of address should be zero)
 
 	// D24.2.169 SCR_EL3, Secure Configuration Register
+	__set_SCR_EL3(__get_SCR_EL3() & ~ (UINT64_C(1) << 0));	// NS=0 is in Secure state (see FEAT_RME)
 	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
 	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 2));	// Physical FIQ while executing at all exception levels are taken in EL3
+
+	#if (__CORTEX_A == 55U)
+		if (Is_GICv3_Supported())
+		{
+			/* Step 3: Enable System Register Access (SRE) via the CPU interface */
+			//__set_ICC_SRE_EL3(0xF);
+			__ISB(); /* Force architectural register state changes to execute immediately */
+
+			//__set_ICC_PMR_EL1(0xFF);
+			__set_ICC_IGRPEN1_EL3(1); /* Enable Group 1 signaling */
+			/* Open the interrupt priority filter gateway completely (0xFF allows all priorities) */
+		 //   __set_ICC_PMR_EL1(0xFF);
+
+			__set_ICC_IGRPEN0_EL1(1);
+
+		//    /* Step 4: Configure routing at the core architecture level (SCR_EL3) */
+		//    uint64_t scr = __get_SCR_EL3();
+		//    scr &= ~ (UINT64_C(1) << 0); /* Clear NS bit */
+		//    scr |= (UINT64_C(1) << 1);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
+		//    scr |= (UINT64_C(1) << 2);  /* Set IRQ bit: Route Non-Secure Group 1 interrupts to lower EL levels as IRQ */
+		//    //scr |= (UINT64_C(1) << 10); /* Set RW bit: Enforce Execution at lower ELs to run in 64-bit mode (AArch64) */
+		//    __set_SCR_EL3(scr);
+		////	// D24.2.169 SCR_EL3, Secure Configuration Register
+		////	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 1));	// Physical IRQ while executing at all exception levels are taken in EL3
+		////	__set_SCR_EL3(__get_SCR_EL3() | (UINT64_C(1) << 2));	// Physical FIQ while executing at all exception levels are taken in EL3
+
+			__ISB(); /* Final pipeline instruction synchronization */
+		}
+	#endif
 
 #elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
@@ -1688,6 +1585,11 @@ sysinit_vbar_initialize(void)
 
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_V_Msk);	// v=0 - use VBAR as vectors address
 	__set_SCTLR(__get_SCTLR() & ~ SCTLR_A_Msk);	// 0 = Strict alignment fault checking disabled. This is the reset value.
+	#if __ARM_ARCH == 8
+	__set_SCR(__get_SCR() & ~ (UINT32_C(1) << 0));	// PE is in Secure state.
+	__set_SCR(__get_SCR() & ~ (UINT32_C(1) << 1));	// IRQs taken to IRQ mode.
+	__set_SCR(__get_SCR() & ~ (UINT32_C(1) << 2));	// FRQs taken to FRQ mode.
+	#endif
 
 #endif /* (__CORTEX_A != 0) */
 
@@ -1873,7 +1775,7 @@ SystemInit_BOOT0(void)
 	sysinit_fpu_initialize();	// FPU access enable, disable caches
 	stsinit_irql_initialize();	// GIC CPU Interface
 	sysinit_gpio_initialize();
-	local_delay_initialize();
+	
 }
 
 #endif /* CPUSTYLE_VM14 */
@@ -2002,16 +1904,18 @@ void
 SystemInit(void)
 {
 	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */
+	sysinit_timestamp_initialize();
 	//PRINTF("CCU->PLL_CPU_CTRL_REG=%08X\n", (unsigned) CCU->PLL_CPU_CTRL_REG);
 	//PRINTF("CCU->MBUS_MAT_CLK_GATING_REG=%08X\n", (unsigned) CCU->MBUS_MAT_CLK_GATING_REG);
 #if CPUSTYLE_VM14
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */
 	sysinit_fpu_initialize();	// FPU access enable, disable caches
+	sysinit_perfmeter_initialize();
+	sysinit_hwtimer_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	stsinit_irql_initialize();	// GIC CPU Interface
 	sysinit_smp_initialize();	// Set SMP bit
-	sysinit_perfmeter_initialize();
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
@@ -2021,7 +1925,6 @@ SystemInit(void)
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
-	local_delay_initialize();
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
 #ifdef BOARD_BLINK_INITIALIZE
@@ -2034,7 +1937,6 @@ SystemInit(void)
 #ifdef USE_HAL_DRIVER
 	HAL_Init();
 #endif /* USE_HAL_DRIVER */
-	local_delay_initialize();
 	sysinit_debug_initialize();
 	int ec = sysinit_sdram_initialize(configtype);
 	if (ec)
@@ -2050,20 +1952,17 @@ SystemInit(void)
 	sysinit_dsu_initialize();
 }
 
-// Вызывается из main, при работающих прерываниях
-void main_SystemInit(void)
-{
-}
-
 /* Функция, вызываемая для инициализации DDR памяти из XFEL */
 void __attribute__((used)) SystemDRAMInit(void)
 {
 #if CPUSTYLE_VM14
 	resetCPU(1);
 #endif /* CPUSTYLE_VM14 */
+	sysinit_timestamp_initialize();
 	sysinit_fpu_initialize();	// FPU access enable, disable caches
 	sysinit_smp_initialize();	// Set SMP bit
 	sysinit_perfmeter_initialize();
+	sysinit_hwtimer_initialize();
 	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
 	const int configtype = sysinit_getconfigtype();
@@ -2273,6 +2172,10 @@ void aarch32_mp_cpuN_start(uintptr_t startfunc, unsigned core)
 	dcache_clean_invalidate_all();	// startup code should be copied in to sysram for example.
 
 	/* Generate an IT to core 1 */
+	// filter_list (bit 25:24 of GICD_SGIR):
+	// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
+	// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
+	// 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
 	GIC_SendSGI(SGI8_IRQn, UINT32_C(1) << core, 0x00);	// CPU1, filer=0 Forward the interrupt to the CPU interfaces specified in the CPUTargetList field
 }
 
@@ -2650,27 +2553,25 @@ static LCLSPINLOCK_t cpu1userstart [HARDWARE_NCORES];
 __NO_RETURN void Reset_CPUn_Handler(void)
 {
 	sysinit_fpu_initialize();		// FPU access enable, disable caches
+	sysinit_perfmeter_initialize();
+	sysinit_hwtimer_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	stsinit_irql_initialize();	// GIC CPU Interface
 	sysinit_smp_initialize();	// Set SMP bit
-	sysinit_perfmeter_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_ttbr_initialize();		// Загрузка TTBR, инвалидация кеш памяти и включение MMU
-
 	unsigned core = arm_hardware_cpuid();
-	GIC_Enable();	// self
 	InitializeIrql(IRQL_IPC_ONLY);	// nested interrupts support
 	global_enableIRQ();
 	cortexa_cpuinfo();
 	arm_hardware_populte_second_initialize();
 	global_enableIRQ();	//  __ASM volatile ("cpsie i" : : : "memory");
 	LCLSPIN_UNLOCK(& cpu1init);
-
 	LCLSPIN_LOCK(& cpu1userstart [core]);		/* ждем пока основной user thread не разрешит выполняться */
 	LCLSPIN_UNLOCK(& cpu1userstart [core]);
-	InitializeIrql(IRQL_USER);	// nested interrupts support
-
 	GIC_SetPriority(SGI15_IRQn, ARM_SYSTEM_PRIORITY);	// for tests, non-atomic operation
+
+	InitializeIrql(IRQL_USER);	// nested interrupts support
 
 #if CPUSTYLE_VM14
 	{
@@ -2685,7 +2586,10 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	}
 #endif /* CPUSTYLE_VM14 */
 
-	task_scheduler_othercores();
+	for (;;)
+	{
+		board_dpc_processing();		// обработка отложенного вызова user mode функций для данного ядра
+	}
 }
 
 void arm_hardware_core_poweron(unsigned core)
@@ -2701,7 +2605,7 @@ void arm_hardware_core_poweron(unsigned core)
 #endif
 }
 
-// Поддержтвается ли на текущем CORE aarch32
+// Поддерживается ли на текущем CORE aarch32
 int arm_hardware_aarch32implemented(void)
 {
 #if CPUSTYLE_A733
@@ -3120,6 +3024,34 @@ ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, ui
 
 	return arch->mdevice(b, phyaddr);
 
+#endif
+}
+/* зависящая от процессора карта распределения memory regions - GPU Mali */
+unsigned
+gpu_ttb_mempage_accessbits(const mmulayout_t * layout, const getmmudesc_t * arch, uint8_t * b, uint_fast64_t phyaddr, int ro, int xn)
+{
+	extern uint32_t __RAMNC_BASE;
+	extern uint32_t __RAMNC_TOP;
+	const uintptr_t __ramnc_base = (uintptr_t) & __RAMNC_BASE;
+	const uintptr_t __ramnc_top = (uintptr_t) & __RAMNC_TOP;
+	if (phyaddr >= __ramnc_base && phyaddr < __ramnc_top)			// non-cached DRAM
+		return arch->mncached(b, phyaddr, ro, 1 || xn);
+
+#if CPUSTYLE_A64
+
+	// Все сравнения должны быть не точнее 2 (16) MB
+	if (phyaddr < 0x40000000)
+		return arch->mnoaccess(b, phyaddr);
+	return arch->mcached(b, phyaddr, ro, xn);
+
+#elif CPUSTYLE_T507
+
+	// Все сравнения должны быть не точнее 2 (16) MB
+	if (phyaddr < 0x40000000)
+		return arch->mnoaccess(b, phyaddr);
+	return arch->mcached(b, phyaddr, ro, xn);
+#else
+	return arch->mnoaccess(b, phyaddr);
 #endif
 }
 #endif

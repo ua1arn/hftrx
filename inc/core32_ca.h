@@ -28,6 +28,20 @@ __STATIC_INLINE uint32_t __get_CTR(void)
 
 #if (__ARM_ARCH == 8) && ! defined(__aarch64__)
 
+// SCR, Secure Configuration Register
+__STATIC_INLINE uint32_t __get_SCR(void)
+{
+    uint32_t result;
+ 	__get_CP(15, 0, result, 1, 1, 0);	// mrc	15, 0, r0, 1, 1, {0}
+    return result;
+}
+
+// SCR, Secure Configuration Register
+__STATIC_INLINE void __set_SCR(uint32_t value)
+{
+	__set_CP(15, 0, value, 1, 1, 0);	// mcr	15, 0, r0, 1, 1, {0}
+}
+
 // DDI0500J_cortex_a53_r0p4_trm.pdf
 
 // 4.5.76 CPU Auxiliary Control Register
@@ -118,7 +132,7 @@ __STATIC_INLINE void __set_ICC_CTLR_EL1(uint32_t value)
 
 #endif /* (__ARM_ARCH == 8) && ! defined(__aarch64__) */
 
-#if (__CORTEX_A == 55U) && ! __aarch64__
+#if (__CORTEX_A == 55U) && ! defined(__aarch64__)
 // AArch32 (CLUSTERCFR) and AArch64 (CLUSTERCFR_EL1)
 // MRS <Xt>, S3_0_C15_C3_0; Read CLUSTERCFR_EL1 into Xt
 // MRC p15, 0, <Rt>, c15, c3, 0; Read CLUSTERCFR into Rt

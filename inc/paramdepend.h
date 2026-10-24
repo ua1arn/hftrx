@@ -741,6 +741,9 @@ extern "C" {
 	/* Cortex-M targets */
 
 	typedef uint_fast32_t IRQL_t;
+	#define IRQL_EQ(a, b) ((a) == (b))	// A имеет равный приоритет с B
+	#define IRQL_GT(a, b) ((a) < (b))	// A более приоритетно чем B
+	#define IRQL_LT(a, b) ((a) > (b))	// A менее приоритетно чем B
 
 	// The processor does not process any exception with a priority value greater than or equal to BASEPRI.
 	extern uint32_t gARM_OVERREALTIME_PRIORITY;
@@ -759,12 +762,14 @@ extern "C" {
 
 	enum
 	{
+		PRIOv_IPC = 0,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
 		PRIOv_IPC_ONLY,
 		PRIOv_OVERREALTIME,
 		PRIOv_REALTIME,
-		PRIOv_SYSTEM,
-		PRIOv_BOARD,
+		PRIOv_SYSTEM,		/* таймеры, USB */
+		PRIOv_BOARD,		/* параметры фильтров, board_set_xxx */
 		PRIOv_USER,
+		PRIOv_IDLE,
 		//
 		PRIOv_count
 	};
@@ -775,8 +780,10 @@ extern "C" {
 	#define IRQL_REALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_REALTIME, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_OVERREALTIME ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_OVERREALTIME, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_IPC_ONLY ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_IPC_ONLY, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
+	#define IRQL_IPC ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_IPC, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 
-	#define GICI_DECODE_IRQL(irql) (0)	// TODO: use NVIC_DecodePriority
+	#define GICI_DECODE_IRQL(irql) 		(irql)	// TODO: use NVIC_DecodePriority
+	#define GICI_ENCODE_IRQL(prio) 		(prio)
 
 	#define global_enableIRQ() do { __enable_irq(); } while (0)
 	#define global_disableIRQ() do { __disable_irq(); } while (0)
@@ -793,16 +800,20 @@ extern "C" {
 #elif (__GIC_PRESENT == 1)
 
 	typedef uint8_t IRQL_t;
+	#define IRQL_EQ(a, b) ((a) == (b))	// A имеет равный приоритет с B
+	#define IRQL_GT(a, b) ((a) < (b))	// A более приоритетно чем B
+	#define IRQL_LT(a, b) ((a) > (b))	// A менее приоритетно чем B
 
 	enum
 	{
-		PRIOv_IPC = 1,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
+		PRIOv_IPC = 0,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
 		PRIOv_IPC_ONLY,
-		PRIOv_OVRT,
-		PRIOv_RT,
-		PRIOv_SYS,		/* таймеры, USB */
-		PRIOv_BRD,		/* папаметы фильттров, board_set_xxx */
+		PRIOv_OVERREALTIME,
+		PRIOv_REALTIME,
+		PRIOv_SYSTEM,		/* таймеры, USB */
+		PRIOv_BOARD,		/* параметры фильтров, board_set_xxx */
 		PRIOv_USER,
+		PRIOv_IDLE,
 		//
 		PRIOv_count
 	};
@@ -827,18 +838,19 @@ extern "C" {
 	// value for GIC_SetInterfacePriorityMask
 	#define IRQL_IPC 			(GICI_ENCODE_IRQL(PRIOv_IPC))
 	#define IRQL_IPC_ONLY 		(GICI_ENCODE_IRQL(PRIOv_IPC_ONLY))
-	#define IRQL_OVERREALTIME 	(GICI_ENCODE_IRQL(PRIOv_OVRT))
-	#define IRQL_REALTIME	 	(GICI_ENCODE_IRQL(PRIOv_RT))
-	#define IRQL_SYSTEM 		(GICI_ENCODE_IRQL(PRIOv_SYS))
-	#define IRQL_BOARD			(GICI_ENCODE_IRQL(PRIOv_BRD))
+	#define IRQL_OVERREALTIME 	(GICI_ENCODE_IRQL(PRIOv_OVERREALTIME))
+	#define IRQL_REALTIME	 	(GICI_ENCODE_IRQL(PRIOv_REALTIME))
+	#define IRQL_SYSTEM 		(GICI_ENCODE_IRQL(PRIOv_SYSTEM))
+	#define IRQL_BOARD			(GICI_ENCODE_IRQL(PRIOv_BOARD))
 	#define IRQL_USER 			(GICI_ENCODE_IRQL(PRIOv_USER))
+	#define IRQL_IDLE 			(GICI_ENCODE_IRQL(PRIOv_IDLE))
 
 	// A lower priority value indicating a higher priority
 	// Value for GICD
 	#define ARM_IPC_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_IPC))
-	#define ARM_OVERREALTIME_PRIORITY	(GICD_ENCODE_PRIORITY(PRIOv_OVRT))	/* валкодер и телеграф */
-	#define ARM_REALTIME_PRIORITY		(GICD_ENCODE_PRIORITY(PRIOv_RT))	/* звук */
-	#define ARM_SYSTEM_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_SYS))	/* таймеры, USB */
+	#define ARM_OVERREALTIME_PRIORITY	(GICD_ENCODE_PRIORITY(PRIOv_OVERREALTIME))	/* валкодер и телеграф */
+	#define ARM_REALTIME_PRIORITY		(GICD_ENCODE_PRIORITY(PRIOv_REALTIME))	/* звук */
+	#define ARM_SYSTEM_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_SYSTEM))	/* таймеры, USB */
 
 	#define BOARD_SGI_IRQ 	SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
 
@@ -869,25 +881,38 @@ extern "C" {
 #elif CPUSTYLE_RISCV
 
 	typedef uint_xlen_t IRQL_t;
+	#define IRQL_EQ(a, b) ((a) == (b))	// A имеет равный приоритет с B
+	#define IRQL_GT(a, b) ((a) > (b))	// A более приоритетно чем B
+	#define IRQL_LT(a, b) ((a) < (b))	// A менее приоритетно чем B
 
 	enum
 	{
-		ARM_USER_PRIORITY = 0,		/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
-		ARM_BOARD_PRIORITY,			/* установка параметров */
-		ARM_SYSTEM_PRIORITY,		/* таймеры, USB */
-		ARM_REALTIME_PRIORITY,		/* звук */
-		ARM_OVERREALTIME_PRIORITY,	/* валкодер и телеграф */
-		ARM_IPC_ONLY_PRIORITY,
+		PRIOv_IDLE = 0,
+		PRIOv_USER,		/* Значение, на которое инициализируется PLIC->PLIC_MTH_REG */
+		PRIOv_BOARD,			/* установка параметров */
+		PRIOv_SYSTEM,		/* таймеры, USB */
+		PRIOv_REALTIME,		/* звук */
+		PRIOv_OVERREALTIME,	/* валкодер и телеграф */
+		PRIOv_IPC_ONLY,
+		PRIOv_IPC,
 		//
 		PRIOv_count
 	};
 
-	#define IRQL_USER				ARM_USER_PRIORITY
-	#define IRQL_SYSTEM 			ARM_SYSTEM_PRIORITY
-	#define IRQL_BOARD				ARM_BOARD_PRIORITY
-	#define IRQL_REALTIME 			ARM_REALTIME_PRIORITY
-	#define IRQL_OVERREALTIME		ARM_OVERREALTIME_PRIORITY
-	#define IRQL_IPC_ONLY			ARM_IPC_ONLY_PRIORITY
+	#define IRQL_IDLE				PRIOv_IDLE
+	#define IRQL_USER				PRIOv_USER
+	#define IRQL_SYSTEM 			PRIOv_SYSTEM
+	#define IRQL_BOARD				PRIOv_BOARD
+	#define IRQL_REALTIME 			PRIOv_REALTIME
+	#define IRQL_OVERREALTIME		PRIOv_OVERREALTIME
+	#define IRQL_IPC_ONLY			PRIOv_IPC_ONLY
+	#define IRQL_IPC				PRIOv_IPC
+
+	#define ARM_IPC_PRIORITY			PRIOv_IPC
+	#define ARM_OVERREALTIME_PRIORITY	PRIOv_OVERREALTIME	/* валкодер и телеграф */
+	#define ARM_REALTIME_PRIORITY		PRIOv_REALTIME		/* звук */
+	#define ARM_SYSTEM_PRIORITY			PRIOv_SYSTEM		/* таймеры, USB */
+	#define ARM_USER_PRIORITY			PRIOv_USER
 
 	#define GICD_ENCODE_PRIORITY(priov) 	(priov)	// Value for GICDistributor->IPRIORITYR[n]
 	#define GICI_ENCODE_IRQL(priov) 		(priov)	// value for GICInterface->PMR
@@ -911,23 +936,22 @@ extern "C" {
 
 #endif /* CPUSTYLE_ARM_CM3 */
 
-enum
-{
-	UPRIO_REALTIME,
-	UPRIO_USER,
-	UPRIO_IDLE,
-	//
-	UPRIO_count
-};
+#define TASK_AFFINITY_ALL (UINT_MAX)
 
-#define TASK_AFFINITY_ALL (~0U)
+#if CPUSTYLE_A733 && __aarch64__
+	#define TTASK_AFFINITY_AUDIOPROC ((1U << 6) | (1U << 7))
+#else
+#define TTASK_AFFINITY_AUDIOPROC TASK_AFFINITY_ALL
+#endif
+
 void task_scheduler_initialize(void);
 void task_scheduler_start(void);
-void task_ticker(void);
-void __NO_RETURN task_scheduler_othercores(void);
-void * thread_create_user(unsigned affinity, int (*fn)(void * ctx), void * ctx, unsigned ramsize, const char * name);
-void task_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 void tasks_print(void);
+
+void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
+void * thread_create_board(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
+void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
+void * thread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
 
 
 #define LOCAL_WAITINFINITY UINT32_MAX
@@ -935,7 +959,9 @@ void tasks_print(void);
 // return non-zero: timeout error
 // timeMS may be LOCAL_WAITINFINITY
 int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS);
+int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast8_t errstate, uint_fast32_t timeMS);
 int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS);
+int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t errstate, uint_fast32_t timeMS);
 
 // wait non-zero state of variable
 // return non-zero: timeout error
@@ -944,7 +970,6 @@ int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS);
 
 void local_delay_us(uint_fast32_t timeUS);	// may be LOCAL_WAITINFINITY
 void local_delay_ms(uint_fast32_t timeMS);	// may be LOCAL_WAITINFINITY
-void local_delay_initialize(void);	// setup parameters for loop-nased delays
 
 /* STM32: In HS mode and when the DMA is used, all variables and data structures dealing
    with the DMA during the transaction process should be 4-bytes aligned */    
@@ -958,9 +983,6 @@ void local_delay_initialize(void);	// setup parameters for loop-nased delays
 	#define __ALIGN4_END    __attribute__ ((aligned (4)))
 	#define __ALIGN4_BEGIN         
 
-	#define ATTRPACKED __attribute__ ((packed))
-	#define ATTRNORETURN __attribute__ ((__noreturn__))
-
 #else                           
 	#if defined   (__CC_ARM)      /* ARM Compiler */
 		#define __ALIGN4_BEGIN    __align(4)  
@@ -972,9 +994,6 @@ void local_delay_initialize(void);	// setup parameters for loop-nased delays
 		#define __ALIGN4_BEGIN    __align(4) 
 		#define __ALIGN4_END
 	#endif /* __CC_ARM */  
-
-	#define ATTRPACKED __attribute__ ((packed))
-	#define ATTRNORETURN __attribute__ ((__noreturn__))
 
 #endif /* __GNUC__ */
 
@@ -1259,10 +1278,6 @@ void local_delay_initialize(void);	// setup parameters for loop-nased delays
 	//#error Undefined CTLREGMODE_xxx option
 #endif
 
-#define HARDWARE_DELAY_MS(t) do { local_delay_ms(t); } while (0)	//HAL_Delay(t)
-#define HARDWARE_DELAY_US(t) do { local_delay_us(t); } while (0)
-#define HARDWARE_GETTICK_MS() ((uint32_t) 0) // HAL_GetTick()
-
 #define WITHSPECTRUMWF (WITHIF4DSP && (WITHRTS96 || WITHRTS192) && ! LCDMODE_DUMMY)
 
 /* Сброс мощности при запросе TUNE от автотюнера или извне */
@@ -1320,6 +1335,11 @@ void local_delay_initialize(void);	// setup parameters for loop-nased delays
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_PIXELSIZE 4
 
+#elif LCDMODE_BGRA8888
+	/* Экран 32 бит BGRA8888 */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	#define LCDMODE_PIXELSIZE 4
+
 #elif LCDMODE_DUMMY
 
 	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
@@ -1331,7 +1351,7 @@ void local_delay_initialize(void);	// setup parameters for loop-nased delays
 	#error WIHSPIDFSW and WIHSPIDFHW can not be used in same time
 #endif /* WIHSPIDFSW && WIHSPIDFHW */
 
-#define WITHPRERENDER (1 && WITHLTDCHW && (LCDMODE_RGB565 || LCDMODE_ARGB8888))		/* использование предварительно построенных изображений при отображении частоты */
+#define WITHPRERENDER (1 && WITHLTDCHW && (LCDMODE_RGB565 || LCDMODE_ARGB8888 || LCDMODE_BGRA8888))		/* использование предварительно построенных изображений при отображении частоты */
 
 #if WITHTOUCHGUI
 
@@ -1381,7 +1401,11 @@ void local_delay_initialize(void);	// setup parameters for loop-nased delays
 	#define BOARDPOWERMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 
 	#define BOARDDACSCALEMIN	0	// Нижний предел мощности (аргумент board_set_dacscale() */
-	#define BOARDDACSCALEMAX	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
+	#define BOARDDACSCALEDENOM	10000	// Верхний предел мощности (аргумент board_set_dacscale() */
+
+	#define BOARDDUCSCALEMIN	0	// Нижний предел мощности (аргумент board_set_designDUCscale() */
+	#define BOARDDUCSCALEMAX	1500	// Верхний предел мощности (аргумент board_set_designDUCscale() */
+	#define BOARDDUCSCALEDENOM	1000	// Верхний предел мощности (аргумент board_set_designDUCscale() */
 #endif /* WITHIF4DSP */
 
 #if defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS) && ! defined WITHNMEA

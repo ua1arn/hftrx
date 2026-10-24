@@ -82,11 +82,11 @@
 		{	31,	0,	5, 5, display2_dummy,		& dzi_attenuator, PGALL, },
 		{	36,	0,	5, 5, display2_dummy,		& dzi_preamp_ovf, PGALL, },
 	#if WITHBARS
-		{   0, 	5,  0, 0, display2_smeter15_init, & dzi_default, PGINI, },	//  Инициализация стрелочного прибора
+		{   0, 	5,  SM_BG_W_CELLS, SM_BG_H_CELLS, display2_smeter15_init, & dzi_default, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	5,	SM_BG_W_CELLS, SM_BG_H_CELLS, display2_smeter15, 	& dzi_smtr2, PGALL, },	// Изображение стрелочного прибора
 	#endif /* WITHBARS */
 	#if WITHAFSPECTRE
-		{	0,	5,	0, 0, display2_af_spectre15_init,	& dzi_default, PGINI, },
+		{	0,	5,	SM_BG_W_CELLS, SM_BG_H_CELLS, display2_af_spectre15_init,	& dzi_default, PGINI, },
 		{	0,	5,	0, 0, display2_af_spectre15_latch,	& dzi_default,	PGLATCH, },
 		{	0,	5,	SM_BG_W_CELLS,	SM_BG_H_CELLS, display2_af_spectre15,		& dzi_default, PG0, },
 	#endif /* WITHAFSPECTRE */

@@ -39,8 +39,8 @@
 
 #type; TIMESTAMP_STA;
 
-#regdef; CNT_LOW_REG; 0x0000; Counter Low Register
-#regdef; CNT_HI_REG; 0x0004; Counter High Register
+#regdefr; CNT_LOW_REG; 0x0000; Counter Low Register
+#regdefr; CNT_HI_REG; 0x0004; Counter High Register
 
 #typeend;
 
@@ -49,7 +49,7 @@
 #regdef; TSTAMP_CTRL_REG; 0x0000; Timestamp Control Register
 #regdef; CNT_CTRL_LOW_REG; 0x0008; Counter Low Register
 #regdef; CNT_CTRL_HI_REG; 0x000C; Counter High Register
-#regdef; CNT_FREQID_REG; 0x0020; Counte rBase Frequency ID Register
+#regdef; CNT_FREQID_REG; 0x0020; Counter Base Frequency ID Register
 
 #typeend;
 

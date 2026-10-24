@@ -40,6 +40,8 @@ extern "C" {
 	#define FMINF	fmin
 	#define LDEXPF	ldexp
 	#define FREXPF	frexp
+	#define ROUNDF	round
+	#define FLOAT_MIN DBL_MIN
 
 	#if defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMA)
 		#define FMAF	fma
@@ -72,6 +74,8 @@ extern "C" {
 	#define FMINF	fminf
 	#define LDEXPF	ldexpf
 	#define FREXPF	frexpf
+	#define ROUNDF	roundf
+	#define FLOAT_MIN FLT_MIN
 
 	#if defined (__ARM_FEATURE_FMA) || defined (FP_FAST_FMAF)
 		#define FMAF	fmaf
@@ -132,6 +136,10 @@ typedef struct
 	int_fast32_t ivqv [2];
 } INT32P_t;
 
+typedef struct
+{
+	FLOAT_t i, q;
+} COMPLEX_t;
 
 #ifdef __cplusplus
 }

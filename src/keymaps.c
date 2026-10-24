@@ -285,7 +285,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,	KBD_CODE_ATUSTART, '*', },		// BYP/ATU
 	{ KIF_NONE,		KBD_CODE_19,	KBD_CODE_19, 		'7', },
 	{ KIF_NONE,		KBD_CODE_18,	KBD_CODE_18,		'4', },
-	{ KIF_NONE,		KBD_CODE_ANTENNA,	KBD_CODE_ANTENNA_HOLDED, 		'1', },
+	{ KIF_NONE,		KBD_CODE_ANTENNA,	KBD_CODE_ANTNN_HOLDED, 		'1', },
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
@@ -331,7 +331,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	/* матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_MAX,			' ', },		// VOX
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
-	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED, 			' ', },		// ANTENNA
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTNN_HOLDED, 			' ', },		// ANTENNA
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,			KBD_CODE_21, 		' ', },		// A=B
 
 	/* кнопка дополнительного валкодера */
@@ -379,7 +379,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	/* матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_DATATOGGLE,	' ', },		// VOX/DATA
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
-	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED,' ', },		// ANTENNA
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTNN_HOLDED,' ', },		// ANTENNA
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			' ', },		// A=B
     //{ KIF_NONE,     KBD_CODE_CWMSG1,        KBD_CODE_CWMSG3,         ' ', },        // A=B - CW MESSAGES
 
@@ -431,7 +431,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,		' ', },		// SPLIT/SPLIT OFF
 
 	/* матрица слева от индикатора - ряд 4 по счету слева - снизу вверх KI2 */
-	{ KIF_NONE,		KBD_CODE_MENU_CWSPEED,	KBD_CODE_11, 			' ', },		// CW SPEED
+	{ KIF_NONE,		KBD_CODE_MEMO,		KBD_CODE_MEMO_HOLDED, 		' ', },		// CW SPEED
 	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NR, 			' ', },		// NOTCH
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_12, 			' ', },		// BW/NR
 	{ KIF_NONE,		KBD_CODE_DWATCHTOGGLE,	KBD_CODE_DWATCHHOLD,	' ', },		// DUAL
@@ -446,7 +446,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	/* матрица слева от индикатора - ряд 2 по счету слева - снизу вверх KI0 */
 	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_DATATOGGLE,	' ', },		// VOX/DATA
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
-	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED,' ', },		// ANTENNA
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTNN_HOLDED,' ', },		// ANTENNA
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			' ', },		// A=B
     //{ KIF_NONE,     KBD_CODE_CWMSG1,        KBD_CODE_CWMSG3,         ' ', },        // A=B - CW MESSAGES
 
@@ -466,28 +466,28 @@ uint_fast16_t geterasekey(void)
 /* 24 кнопки на 6 линий */
 static const struct qmkey qmdefs [NQMKEYS] =
 {
-	{ KIF_NONE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD,			' ', },		// 0  reserved
+	{ KIF_NONE,		KBD_CODE_23,			KBD_CODE_23,			' ', },		// 0  reserved
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 1  MH31 FST
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// 2  MH31 UP
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 3  MH31 DOWN
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP,	 	' ', },		// 4  BAND UP on front panel
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// 5  LOCK
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 6  STEP?
-	{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, 			' ', },		// 7  F4
-	{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX, 			' ', },		// 8  F3
-	{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX,			' ', },		// 9  F2
-	{ KIF_NONE,		KBD_CODE_MAX,		KBD_CODE_MAX,			' ', },		// 10 F1
-	{ KIF_NONE,		KBD_CODE_BW,			KBD_ENC2F_HOLD, 		' ', },		// 11 FILTER - 2nd small encoder (encoder_ENC2F object)
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 7  F4
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 8  F3
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 9  F2
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 10 F1
+	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_MAX, 			' ', },		// 11 FILTER - 2nd small encoder (encoder_ENC2F object)
 	{ KIF_NONE,		KBD_CODE_MEMO,			KBD_CODE_MEMO_HOLDED, 	' ', },		// 12 MEMO
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 13 BAND DOWN on front panel
-	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD,		' ', },		// 14 FUNC A - 3rd small encoder (encoder_ENC3F object)
-	{ KIF_NONE,		KBD_CODE_DISPMODE,		KBD_CODE_MENU,			' ', },		// 15 FUNC B - 4th small encoder (encoder_ENC4F object)
+	{ KIF_NONE,		KBD_CODE_DISPMODE,		KBD_CODE_MENU,			' ', },		// 14 FUNC A - 3rd small encoder (encoder_ENC3F object)
+	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD,		' ', },		// 15 FUNC B - 4th small encoder (encoder_ENC4F object)
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_MAX,			' ', },		// 16 A=B
 	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,	' ', },		// 17 RIT
 	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_MAX,			' ', },		// 18 A/B
 	{ KIF_NONE,		KBD_ENC1F_PRESS,		KBD_ENC1F_HOLD,			' ', },		// 19 RF/SPD - 1st small encoder (encoder_ENC1F object)
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// 20 ATT/IPO ATT/PRE
-	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED,' ', },		// 21 ANT1/ANT2
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTNN_HOLDED,	' ', },		// 21 ANT1/ANT2
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// 22 TUNER BYP/ATU START
 	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// 23 MOX/TUNE
 
@@ -505,7 +505,7 @@ uint_fast16_t geterasekey(void)
 /* 24 кнопки на 6 линий */
 static const struct qmkey qmdefs [NQMKEYS] =
 {
-	{ KIF_NONE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD,			' ', },		// 0  reserved
+	{ KIF_NONE,		KBD_CODE_23,			KBD_CODE_23,			' ', },		// 0  reserved
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 1  MH31 FST
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// 2  MH31 UP
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 3  MH31 DOWN
@@ -516,17 +516,17 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_CWMSG3,		KBD_CODE_MAX, 			' ', },		// 8  F3
 	{ KIF_NONE,		KBD_CODE_CWMSG2,		KBD_CODE_MAX,			' ', },		// 9  F2
 	{ KIF_NONE,		KBD_CODE_CWMSG1,		KBD_CODE_MAX,			' ', },		// 10 F1
-	{ KIF_NONE,		KBD_CODE_BW,			KBD_ENC2F_HOLD, 		' ', },		// 11 FILTER - 2nd small encoder (encoder_ENC2F object)
+	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_MAX, 			' ', },		// 11 FILTER - 2nd small encoder (encoder_ENC2F object)
 	{ KIF_NONE,		KBD_CODE_MEMO,			KBD_CODE_MEMO_HOLDED, 	' ', },		// 12 MEMO
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 13 BAND DOWN on front panel
-	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD,		' ', },		// 14 FUNC A - 3rd small encoder (encoder_ENC3F object)
-	{ KIF_NONE,		KBD_CODE_DISPMODE,		KBD_CODE_MENU,			' ', },		// 15 FUNC B - 4th small encoder (encoder_ENC4F object)
+	{ KIF_NONE,		KBD_CODE_DISPMODE,		KBD_CODE_MENU,			' ', },		// 14 FUNC A - 3rd small encoder (encoder_ENC3F object)
+	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD,		' ', },		// 15 FUNC B - 4th small encoder (encoder_ENC4F object)
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_MAX,			' ', },		// 16 A=B
 	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED,	' ', },		// 17 RIT
 	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_MAX,			' ', },		// 18 A/B
 	{ KIF_NONE,		KBD_ENC1F_PRESS,		KBD_ENC1F_HOLD,			' ', },		// 19 RF/SPD - 1st small encoder (encoder_ENC1F object)
 	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// 20 ATT/IPO ATT/PRE
-	{ KIF_NONE,		KBD_CODE_ANTENNA_HOLDED,		KBD_CODE_MAX,' ', },		// 21 ANT1/ANT2
+	{ KIF_NONE,		KBD_CODE_ANTNN_HOLDED,	KBD_CODE_MAX,			' ', },		// 21 ANT1/ANT2
 	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// 22 TUNER BYP/ATU START
 	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// 23 MOX/TUNE
 
@@ -573,7 +573,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	/* матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_DATATOGGLE,	'0', },		// VOX/DATA
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	'8', },		// REC
-	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED, 			'5', },		// ANTENNA
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTNN_HOLDED, 			'5', },		// ANTENNA
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			'2', },		// A=B
 
 	/* кнопка дополнительного валкодера */
@@ -615,7 +615,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	/* матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_DATATOGGLE,	'0', },		// VOX/DATA
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	'8', },		// REC
-	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED, 			'5', },		// ANTENNA
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTNN_HOLDED, 			'5', },		// ANTENNA
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			'2', },		// A=B
 };
 
@@ -711,66 +711,10 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	/* Cлева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_MAX,			' ', },		// VOX
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
-	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED, 			' ', },		// ANTENNA
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTNN_HOLDED, 			' ', },		// ANTENNA
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_22, 			' ', },		// A=B
 	{ KIF_NONE,		KBD_CODE_17,			KBD_CODE_18,			' ', },
 	{ KIF_NONE,		KBD_CODE_19,			KBD_CODE_20,			' ', },
-
-	/* кнопка дополнительного валкодера */
-	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
-	/* кнопка выключения питания (включение аппаратно) */
-	{ KIF_POWER, 	KBD_CODE_MAX,		KBD_CODE_POWEROFF, 			' ', },
-};
-
-uint_fast16_t geterasekey(void)
-{
-	return KBD_CODE_SPLIT;
-}
-
-#elif KEYB_FPANEL30_V3
-
-/* 30 кнопок на 5 линий - плата rfrontpanel_v3 + LCDMODE_S1D13781 & LCDMODE_LQ043T3DX02K в нормальном расположении */
-static const struct qmkey qmdefs [NQMKEYS] =
-{
-	/* RRR справа от индикатора, крайний правый (дальний от инлдикатора) - снизу вверх */
-	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// BAND DOWN
-	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// BAND UP
-	{ KIF_ERASE,	KBD_CODE_SPLIT,			KBD_CODE_SPLIT_HOLDED, 	'#', },		// SPLIT/SPLIT OFF
-	{ KIF_NONE,		KBD_CODE_BAND_24M9,		KBD_CODE_MENU_CWSPEED, 	'9', },		// CW SPEED
-	{ KIF_NONE,		KBD_CODE_BAND_14M0,		KBD_CODE_1,				'6', },		//
-	{ KIF_NONE,		KBD_CODE_BAND_5M3,		KBD_CODE_A_EX_B,		'3', },		// A/B
-
-	/* LLL Cлева от индикатора - ряд 1 по счету слева - снизу вверх */
-	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// MOX/TUNE
-	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// TUNER BYP/ATU START
-	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC/SD FORMAT
-	{ KIF_NONE,		KBD_CODE_NOTCHTOGGLE,	KBD_CODE_NOTCHFREQ, 	' ', },		// NOTCH
-	{ KIF_NONE,		KBD_CODE_PAMP,			KBD_CODE_5, 			' ', },		// PRE
-	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_6,				' ', },		// ATT
-
-	/* RRR справа от индикатора, второй от края - снизу вверх */
-	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// LOCK
-	{ KIF_NONE,		KBD_CODE_ENTERFREQ,		KBD_CODE_ENTERFREQDONE,	' ', },		// enter frequency
-	{ KIF_NONE,		KBD_CODE_BAND_50M0,		KBD_CODE_BKIN,			'0', },		// BREAK-IN
-	{ KIF_NONE,		KBD_CODE_BAND_21M0,		KBD_CODE_LDSPTGL,		'8', },		// Seaker on/off
-	{ KIF_NONE,		KBD_CODE_BAND_10M1,		KBD_CODE_BAND_10M1,		'5', },		// 11
-	{ KIF_NONE,		KBD_CODE_BAND_3M5,		KBD_CODE_A_EQ_B,		'2', },		// A=B
-
-	/* RRR справа от индикатора, ближний к индикатиору - снизу вверх */
-	{ KIF_EXTMENU,	KBD_CODE_DISPMODE,		KBD_CODE_MENU,			' ', },		// MENU
-	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_10, 			' ', },		// A/B
-	{ KIF_NONE,		KBD_CODE_BAND_28M0,		KBD_CODE_VOXTOGGLE,		'.', },		// VOX
-	{ KIF_NONE,		KBD_CODE_BAND_18M0,		KBD_CODE_DATATOGGLE,	'7', },		// DATA MODE
-	{ KIF_NONE,		KBD_CODE_BAND_7M0,		KBD_CODE_ANTENNA,		'4', },		// ANTENNA
-	{ KIF_NONE,		KBD_CODE_BAND_1M8,		KBD_CODE_11,			'1', },		//
-
-	/* LLL Cлева от индикатора - ряд 2 по счету слева - снизу вверх */
-	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_NR, 			' ', },		// BW/NR
-	{ KIF_NONE,		KBD_CODE_LDSPTGL,		KBD_CODE_DATATOGGLE,	' ', },		// BW/NR
-	{ KIF_NONE,		KBD_CODE_MODE_3,		KBD_CODE_MODEMOD_3, 	' ', },		// MODE/SUBMODE
-	{ KIF_NONE,		KBD_CODE_MODE_2,		KBD_CODE_MODEMOD_2, 	' ', },		// MODE/SUBMODE
-	{ KIF_NONE,		KBD_CODE_MODE_1,		KBD_CODE_MODEMOD_1, 	' ', },		// MODE/SUBMODE
-	{ KIF_NONE,		KBD_CODE_MODE_0,		KBD_CODE_MODEMOD_0, 	' ', },		// MODE/SUBMODE
 
 	/* кнопка дополнительного валкодера */
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
@@ -812,7 +756,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 #else /* WITHAMHIGHKBDADJ */
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			'1', },		// A=B
 #endif /* WITHAMHIGHKBDADJ */
-	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED, 			'4', },		// ANTENNA
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTNN_HOLDED, 			'4', },		// ANTENNA
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	'7', },		// REC
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,		KBD_CODE_ENTERFREQDONE,	'*', },		// direct frequencu enter
 
@@ -866,7 +810,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 #else /* WITHAMHIGHKBDADJ */
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			'1', },		// A=B
 #endif /* WITHAMHIGHKBDADJ */
-	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED, '4', },		// ANTENNA
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTNN_HOLDED, '4', },		// ANTENNA
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	'7', },		// REC
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,		KBD_CODE_ENTERFREQDONE,	'*', },		// direct frequencu enter
 
@@ -920,7 +864,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 #else /* WITHAMHIGHKBDADJ */
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			'1', },		// A=B
 #endif /* WITHAMHIGHKBDADJ */
-	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED, '4', },		// ANTENNA
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTNN_HOLDED, '4', },		// ANTENNA
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	'7', },		// REC
 	{ KIF_NONE,		KBD_CODE_ENTERFREQ,		KBD_CODE_ENTERFREQDONE,	'*', },		// direct frequencu enter
 
@@ -978,7 +922,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	/* матрица слева от индикатора - ряд 2 по счету слева - снизу вверх */
 	{ KIF_NONE,		KBD_CODE_VOXTOGGLE,		KBD_CODE_MAX,			' ', },		// VOX
 	{ KIF_NONE,		KBD_CODE_RECORDTOGGLE,	KBD_CODE_RECORD_HOLDED,	' ', },		// REC
-	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTENNA_HOLDED,' ', },		// ANTENNA
+	{ KIF_NONE,		KBD_CODE_ANTENNA,		KBD_CODE_ANTNN_HOLDED,' ', },		// ANTENNA
 	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_21, 			' ', },		// A=B
 
 	/* кнопка дополнительного валкодера */

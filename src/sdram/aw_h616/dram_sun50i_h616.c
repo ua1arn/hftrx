@@ -13,7 +13,8 @@
  *
  */
 #include "dram_glue.h"
-#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H618_LPDDR4 || CONFIG_SUNXI_DRAM_H616_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR4)
+
+#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H618_LPDDR4 || CONFIG_SUNXI_DRAM_H616_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR3)
 //#include <init.h>
 //#include <log.h>
 //#include <asm/io.h>
@@ -888,7 +889,7 @@ static void mctl_phy_ca_bit_delay_compensation(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("1 This DRAM setup is currently not supported.\n");
 	};
 }
 
@@ -899,7 +900,7 @@ static bool mctl_phy_init(const struct dram_para *para,
 			(struct sunxi_mctl_com_reg *)SUNXI_DRAM_COM_BASE;
 	struct sunxi_mctl_ctl_reg * const mctl_ctl =
 			(struct sunxi_mctl_ctl_reg *)SUNXI_DRAM_CTL0_BASE;
-	u32 val, val2, *ptr, mr0, mr2;
+	u32 val, val2 = 6, *ptr, mr0, mr2;
 	int i;
 
 	if (para->type == SUNXI_DRAM_TYPE_LPDDR4)
@@ -936,7 +937,7 @@ static bool mctl_phy_init(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("2 This DRAM setup is currently not supported.\n");
 	};
 
 	writel(val, SUNXI_DRAM_PHY0_BASE + 0x14);
@@ -973,7 +974,7 @@ static bool mctl_phy_init(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("3 This DRAM setup is currently not supported.\n");
 	};
 
 	writel(val, SUNXI_DRAM_PHY0_BASE + 0x3dc);
@@ -993,7 +994,7 @@ static bool mctl_phy_init(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("4 This DRAM setup is currently not supported.\n");
 	};
 	clrsetbits_le32(SUNXI_DRAM_PHY0_BASE + 4, 0x7, val);
 
@@ -1143,7 +1144,7 @@ static bool mctl_phy_init(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("5 This DRAM setup is currently not supported.\n");
 	};
 
 	writel(0, SUNXI_DRAM_PHY0_BASE + 0x54);
@@ -1234,7 +1235,7 @@ static bool mctl_ctrl_init(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("6 This DRAM setup is currently not supported.\n");
 	};
 	if (config->bus_full_width)
 		reg_val |= MSTR_BUSWIDTH_FULL;
@@ -1259,7 +1260,7 @@ static bool mctl_ctrl_init(const struct dram_para *para,
 		break;
 	case SUNXI_DRAM_TYPE_DDR4:
 	default:
-		panic("This DRAM setup is currently not supported.\n");
+		panic("7 This DRAM setup is currently not supported.\n");
 	};
 	writel(reg_val, &mctl_ctl->odtcfg);
 	writel(reg_val, &mctl_ctl->unk_0x2240);
@@ -1360,7 +1361,7 @@ static void mctl_auto_detect_rank_width(const struct dram_para *para,
 	if (mctl_core_init(para, config))
 		return;
 
-	panic("This DRAM setup is currently not supported.\n");
+	panic("8 This DRAM setup is currently not supported.\n");
 }
 
 static void mctl_auto_detect_dram_size(const struct dram_para *para,
@@ -1408,6 +1409,116 @@ static unsigned long mctl_calc_size(const struct dram_config *config)
 	return (1ULL << (config->cols + config->rows + 3)) * width * config->ranks;
 }
 
+#if 0
+// [dram_para]
+static const struct dram_para para = {
+		.clk       = 792,
+		.type      = 8,
+		.dx_odt    = 0x08080808,
+		.dx_dri    = 0x0e0e0e0e,
+		.ca_dri    = 0x0e0e,
+		.odt_en    = 0x7887bbbb,
+		.para1     = 0x30fa,
+		.para2     = 0x0000,
+		.mr0       = 0x0,
+		.mr1       = 0x34,
+		.mr2       = 0x1b,
+		.mr3       = 0x33,
+		.mr4       = 0x3,
+		.mr5       = 0x0,
+		.mr6       = 0x0,
+		.mr11      = 0x4,
+		.mr12      = 0x72,
+		.mr13      = 0x0,
+		.mr14      = 0x9,
+		.mr16      = 0x0,
+		.mr17      = 0x0,
+		.mr22      = 0x24,
+		.tpr0      = 0x0,
+		.tpr1      = 0x0,
+		.tpr2      = 0x0,
+		.tpr3      = 0x0,
+		.tpr6      = 0x40808080,
+		.tpr10     = 0x402f6633,
+		.tpr11     = 0,
+		.tpr12     = 0,
+		.tpr13     = 0x2000c60,
+};
+#elif 0
+// со старой платой HelperBoardT507 LPDDR4 работает - Но не на всех экземплярах
+// configtype=1
+//[dram_para3]
+static const struct dram_para para = {
+	.clk       = 792,
+	.type      = 8,
+	.dx_odt    = 0x0c0c0c0c,
+	.dx_dri    = 0x0e0e0e0e,
+	.ca_dri    = 0x0e0e,
+	.odt_en    = 0x7887bbbb,
+	.para1     = 0x30FA,
+	.para2     = 0x0000,
+	.mr0       = 0x0,
+	.mr1       = 0x34,
+	.mr2       = 0x1b,
+	.mr3       = 0x33,
+	.mr4       = 0x3,
+	.mr5       = 0x0,
+	.mr6       = 0x0,
+	.mr11      = 0x4,
+	.mr12      = 0x72,
+	.mr13      = 0x0,
+	.mr14      = 0x9,
+	.mr16      = 0x0,
+	.mr17      = 0x0,
+	.mr22      = 0x24,
+	.tpr0      = 0x0,
+	.tpr1      = 0x0,
+	.tpr2      = 0x0,
+	.tpr3      = 0x0,
+	.tpr6      = 0x31808080,
+	.tpr10     = 0x402e0000,
+	.tpr11     = 0x22262622,
+	.tpr12     = 0x0b0c0d0b,
+	.tpr13     = 0x61,
+};
+#elif 0
+//[dram_para4]
+static const struct dram_para para = {
+		.clk = 792,
+		.type = 7,
+		.dx_odt = 0x06060606,
+		.dx_dri = 0x0d0d0d0d,
+		.ca_dri = 0x0d0d,
+		.odt_en = 0x9988ffff,
+		.para1 = 0x30fa,
+		.para2 = 0x1000,
+		.mr0 = 0x0,
+		.mr1 = 0xc3,
+		.mr2 = 0x6,
+		.mr3 = 0x1,
+		.mr4 = 0x0,
+		.mr5 = 0x0,
+		.mr6 = 0x0,
+		.mr11 = 0x0,
+		.mr12 = 0x0,
+		.mr13 = 0x0,
+		.mr14 = 0x0,
+		.mr16 = 0x0,
+		.mr17 = 0x0,
+		.mr22 = 0x0,
+		.tpr0 = 0x0,
+		.tpr1 = 0x0,
+		.tpr2 = 0x1,
+		.tpr3 = 0x0,
+		.tpr6 = 0x35bd8080,
+		.tpr10 = 0x402f4469,
+		.tpr11 = 0x0c0c080c,
+		.tpr12 = 0x0d0a0b0c,
+		.tpr13 = 0x000c60,
+};
+
+#else
+
 static const struct dram_para para = {
 	.clk = CONFIG_DRAM_CLK,
 #ifdef BOARD_CONFIG_DRAM_TYPE
@@ -1415,6 +1526,8 @@ static const struct dram_para para = {
 #elif defined(CONFIG_SUNXI_DRAM_H616_DDR3_1333)
 	.type = SUNXI_DRAM_TYPE_DDR3,
 #elif defined(CONFIG_SUNXI_DRAM_H616_LPDDR3)
+	.type = SUNXI_DRAM_TYPE_LPDDR3,
+#elif defined(CONFIG_SUNXI_DRAM_T507_LPDDR3)
 	.type = SUNXI_DRAM_TYPE_LPDDR3,
 #elif defined(CONFIG_SUNXI_DRAM_H616_LPDDR4)
 	.type = SUNXI_DRAM_TYPE_LPDDR4,
@@ -1434,6 +1547,82 @@ static const struct dram_para para = {
 	.tpr11 = CONFIG_DRAM_SUN50I_H616_TPR11,
 	.tpr12 = CONFIG_DRAM_SUN50I_H616_TPR12,
 };
+#endif
+
+void dram_para_print(const struct dram_para * p)
+{
+	PRINTF("clk=0x%08X (%u)\n", (unsigned) p->clk, (unsigned) p->clk);
+	PRINTF("type=0x%08X\n", (unsigned) p->type);
+	PRINTF("dx_odt=0x%08X\n", (unsigned) p->dx_odt);
+	PRINTF("dx_dri=0x%08X\n", (unsigned) p->dx_dri);
+	PRINTF("ca_dri=0x%08X\n", (unsigned) p->ca_dri);
+	PRINTF("para0=0x%08X\n", (unsigned) p->para0);
+	PRINTF("para1=0x%08X\n", (unsigned) p->para1);
+	PRINTF("para2=0x%08X\n", (unsigned) p->para2);
+	PRINTF("mr0=0x%08X\n", (unsigned) p->mr0);
+	PRINTF("mr1=0x%08X\n", (unsigned) p->mr1);
+	PRINTF("mr2=0x%08X\n", (unsigned) p->mr2);
+	PRINTF("mr3=0x%08X\n", (unsigned) p->mr3);
+	PRINTF("mr4=0x%08X\n", (unsigned) p->mr4);
+	PRINTF("mr5=0x%08X\n", (unsigned) p->mr5);
+	PRINTF("mr6=0x%08X\n", (unsigned) p->mr6);
+	PRINTF("mr11=0x%08X\n", (unsigned) p->mr11);
+	PRINTF("mr12=0x%08X\n", (unsigned) p->mr12);
+	PRINTF("mr13=0x%08X\n", (unsigned) p->mr13);
+	PRINTF("mr14=0x%08X\n", (unsigned) p->mr14);
+	PRINTF("mr16=0x%08X\n", (unsigned) p->mr16);
+	PRINTF("mr17=0x%08X\n", (unsigned) p->mr17);
+	PRINTF("mr22=0x%08X\n", (unsigned) p->mr22);
+	PRINTF("tpr0=0x%08X\n", (unsigned) p->tpr0);
+	PRINTF("tpr1=0x%08X\n", (unsigned) p->tpr1);
+	PRINTF("tpr2=0x%08X\n", (unsigned) p->tpr2);
+	PRINTF("tpr3=0x%08X\n", (unsigned) p->tpr3);
+	PRINTF("tpr6=0x%08X\n", (unsigned) p->tpr6);
+	PRINTF("tpr10=0x%08X\n", (unsigned) p->tpr10);
+	PRINTF("tpr11=0x%08X\n", (unsigned) p->tpr11);
+	PRINTF("tpr12=0x%08X\n", (unsigned) p->tpr12);
+	PRINTF("tpr13=0x%08X\n", (unsigned) p->tpr13);
+	PRINTF("tpr14=0x%08X\n", (unsigned) p->tpr14);
+	PRINTF("odt_en=0x%08X\n", (unsigned) p->odt_en);
+}
+
+static void fillpara(struct dram_para * p)
+{
+	volatile uint32_t * const para = (volatile uint32_t *) p;
+
+	para[0] = 0x318;
+	para[1] = 0x7;
+	para[2] = 0x6060606;
+	para[3] = 0xd0d0d0d;
+	para[4] = 0xd0d;
+	para[5] = 0x9988ffff;
+	para[6] = 0x30ea;
+	para[7] = 0x4001000;
+	para[8] = 0x0;
+	para[9] = 0x83;
+	para[10] = 0x1c;
+	para[11] = 0x1;
+	para[12] = 0x0;
+	para[13] = 0x0;
+	para[14] = 0;
+	para[15] = 0;
+	para[16] = 0;
+	para[17] = 0;
+	para[18] = 0;
+	para[19] = 0;
+	para[20] = 0;
+	para[21] = 0;
+	para[22] = 0;
+	para[23] = 0x80000000;
+	para[24] = 0x1;
+	para[25] = 0x0;
+	para[26] = 0x35bd8080;
+	para[27] = 0x402f4469;
+	para[28] = 0xc0c0b0b;
+	para[29] = 0x10120f10;
+	para[30] = 0x6c61;
+	para[31] = 0x0;
+}
 
 unsigned long sunxi_dram_init(void)
 {
@@ -1442,6 +1631,8 @@ unsigned long sunxi_dram_init(void)
 	struct dram_config config;
 	unsigned long size;
 
+	//fillpara(& para);
+	dram_para_print(& para);
 	setbits_le32(&prcm->res_cal_ctrl, BIT(8));
 	clrbits_le32(&prcm->ohms240, 0x3f);
 

@@ -2042,6 +2042,11 @@ void sysinit_boot_disconnect(void)
 // V3s
 void allwnr_v3s_pll_initialize(void)
 {
+	{
+		const uint_fast32_t f = allwnr_v3s_get_hosc_freq();	// 24000000
+		__set_CNTFRQ(f);
+		TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+	}
 	clock_set_pll_cpu(50 * allwnr_v3s_get_hosc_freq());
 
 	/* pll video - 396MHZ */
@@ -2079,6 +2084,21 @@ void allwnr_v3s_pll_initialize(void)
 	CCU->MBUS_CLK_REG = 0x81000003;
 	(void) CCU->MBUS_CLK_REG;
 	local_delay_us(10);
+}
+
+
+// на каждом CORE
+void sysinit_hwtimer_initialize(void)
+{
+	const uint_fast32_t f = allwnr_v3s_get_hosc_freq();	// 24000000
+	__set_CNTFRQ(f);
+	//TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+}
+
+// Allwinner V3s Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+
 }
 
 // Allwinner V3s PLL initialize
@@ -2222,11 +2242,28 @@ void sysinit_boot_disconnect(void)
 
 
 }
+
+// на каждом CORE
+void sysinit_hwtimer_initialize(void)
+{
+	const uint_fast32_t f = allwnr_h3_get_hosc_freq();	// 24000000
+#if defined(__aarch64__)
+	__set_CNTFRQ_EL0(f);
+#else
+	__set_CNTFRQ(f);
+#endif
+	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+}
+
+// Allwinner H3 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+
+}
+
 // Allwinner H3
 void sysinit_pll_initialize(int forced)
 {
-
-
 }
 
 #elif CPUSTYLE_A64
@@ -2967,12 +3004,28 @@ void sysinit_boot_disconnect(void)
 	USBPHY1->HCI_ICR = 0;
 }
 
+// на каждом CORE
+void sysinit_hwtimer_initialize(void)
+{
+	const uint_fast32_t f = allwnr_a64_get_hosc_freq();	// 24000000
+#if defined(__aarch64__)
+	__set_CNTFRQ_EL0(f);
+#else
+	__set_CNTFRQ(f);
+#endif
+	//TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+}
+
+// Allwinner A64 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+
+}
+
 // Allwinner A64 PLL initialize
 void
 sysinit_pll_initialize(int forced)
 {
-
-
 	allwnr_a64_pll_initialize();
 
 	//	The PLL_PERIPH0(1X) = 24MHz*N*K/2.
@@ -4187,6 +4240,24 @@ void sysinit_boot_disconnect(void)
 	//printhex32(IOMMU_BASE, IOMMU, sizeof * IOMMU);
 }
 
+// Allwinner T507/H618/H616 на каждом CORE
+void sysinit_hwtimer_initialize(void)
+{
+	const uint_fast32_t f = allwnr_t507_get_hosc_freq();	// 24000000
+#if defined(__aarch64__)
+	__set_CNTFRQ_EL0(f);
+#else
+	__set_CNTFRQ(f);
+#endif
+}
+
+// Allwinner T507/H618/H616 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+	const uint_fast32_t f = allwnr_t507_get_hosc_freq();	// 24000000
+	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+}
+
 // Allwinner T507/H618/H616 PLL initialize
 void sysinit_pll_initialize(int forced)
 {
@@ -4297,19 +4368,14 @@ uint_fast32_t allwnr_a733_get_hosc_freq(void)
 	return WITHCPUXOSC;
 }
 
-uint_fast32_t allwnr_a733_get_dcxo_freq(void)
-{
-	return 24 * 1000 * 1000;
-}
-
 uint_fast32_t allwnr_a733_get_rtc_32k_freq(void)
 {
 	return allwnr_a733_get_rc16M_freq() / 512;
 }
 
-uint_fast32_t allwnr_a733_get_pll_ref_freq(void)
+uint_fast32_t allwnr_a733_get_dcxo_freq(void)
 {
-	const uint_fast32_t ctlreg = RTC->XO_CTRL_REG;
+	const uint_fast32_t ctlreg = RTC->XO_CTRL0_REG;
 
 	switch ((ctlreg >> 14) & 0x03)
 	{
@@ -4323,6 +4389,11 @@ uint_fast32_t allwnr_a733_get_pll_ref_freq(void)
 	case 0x03:
 		return 24 * 1000 * 1000;
 	}
+}
+
+uint_fast32_t allwnr_a733_get_pll_ref_freq(void)
+{
+	return allwnr_a733_get_dcxo_freq();
 }
 
 // CPUX -  ARMCortexTM-A76x2 ARMCortexTM-A55x6
@@ -4441,6 +4512,41 @@ uint_fast32_t allwnr_a733_get_pll_video2_3x_freq(void)
 	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
 	//	VIDEO2PLL4X = InputFreq *N/M1/P0.
 	//	VIDEO2LL3X = InputFreq *N/M1/P1.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P1);
+}
+
+uint_fast32_t allwnr_a733_get_audio0pll4x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_AUDIO0_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 16) & 0x3F);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	AUDIO0PLL4X = 24MHz*N/M1/P0
+	//	When DCXO is 26MHz, AUDIO0PLL4X defaults to be 24.5714*4 MHz
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P0);
+}
+
+uint_fast32_t allwnr_a733_get_audio1pll_div2_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_AUDIO1_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	AUDIO1PLL_DIV2 = 24MHz*N/M1/P0
+	//	AUDIO1PLL_DIV5 = 24MHz*N/M1/P1
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P0);
+}
+
+uint_fast32_t allwnr_a733_get_audio1pll_div5_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_AUDIO1_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	AUDIO1PLL_DIV2 = 24MHz*N/M1/P0
+	//	AUDIO1PLL_DIV5 = 24MHz*N/M1/P1
 	return allwnr_a733_get_dcxo_freq() * N / (M1 * P1);
 }
 
@@ -4664,6 +4770,11 @@ uint_fast32_t allwnr_a733_get_twi_freq(void)
 }
 
 uint_fast32_t allwnr_a733_get_s_twi_freq(void)
+{
+	return allwnr_a733_get_apb1_freq();
+}
+
+uint_fast32_t allwnr_a733_get_s_spi_freq(void)
 {
 	return allwnr_a733_get_apb1_freq();
 }
@@ -5038,6 +5149,25 @@ static void a733_ccu_pll_enable(volatile uint32_t * reg)
 	local_delay_us(20 * 1000);
 }
 
+// на каждом CORE
+void sysinit_hwtimer_initialize(void)
+{
+	const uint_fast32_t f = allwnr_a733_get_dcxo_freq();	// 24000000
+#if defined(__aarch64__)
+	__set_CNTFRQ_EL0(f);
+#else
+	__set_CNTFRQ(f);
+#endif
+}
+
+// A733 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+	const uint_fast32_t f = allwnr_a733_get_dcxo_freq();	// 24000000
+	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+}
+
+// A733
 void sysinit_pll_initialize(int forced)
 {
 	//fill32delay(CCU_BASE + 0x0a0, ccu_pattern, ARRAY_SIZE(ccu_pattern));
@@ -5139,6 +5269,24 @@ uint_fast32_t allwnr_a133_get_spi2_freq(void)
 
 void sysinit_boot_disconnect(void)
 {
+}
+
+// на каждом CORE
+void sysinit_hwtimer_initialize(void)
+{
+	const uint_fast32_t f = allwnr_a133_get_hosc_freq();	// 24000000
+#if defined(__aarch64__)
+	__set_CNTFRQ_EL0(f);
+#else
+	__set_CNTFRQ(f);
+#endif
+}
+
+// Allwinner A133 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+	const uint_fast32_t f = allwnr_a133_get_hosc_freq();	// 24000000
+	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
 }
 
 // Allwinner A133 PLL initialize
@@ -6467,12 +6615,12 @@ void allwnr_t113_pll_initialize(int N)
 	CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// RISC_MCLK_EN
 	f133_set_axi(0x00, 1, 1);	// OSC24
 #endif
-	local_delay_initialize();
+	
 	t113_delay_us(25 * 1000);
 	CCU->PSI_CLK_REG = 0;	// AHB freq from OSC24
 	CCU->APB0_CLK_REG = 0;	// переключаем источник APB0 на HOSC
 	CCU->APB1_CLK_REG = 0;	// переключаем источник APB1 на HOSC
-	local_delay_initialize();
+	
 
 	t113_delay_us(25 * 1000);
 	allwnr_t113_module_pll_spr(& CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_PAT0_CTRL_REG);	// Set Spread Frequency Mode
@@ -6482,7 +6630,7 @@ void allwnr_t113_pll_initialize(int N)
 	t113_delay_us(25 * 1000);
 
 	t113_set_pll_cpu(N);	// see sdram.c
-	local_delay_initialize();
+	
 	t113_delay_us(25 * 1000);
 
 #if CPUSTYLE_T113
@@ -6490,25 +6638,25 @@ void allwnr_t113_pll_initialize(int N)
 #elif CPUSTYLE_F133
 	f133_set_axi(0x05, 2, 1);	// 101: PLL_CPU
 #endif
-	local_delay_initialize();
+	
 	t113_delay_us(25 * 1000);
 
 	t113_set_mbus();
-	local_delay_initialize();
+	
 	t113_delay_us(25 * 1000);
 	t113_set_psi_ahb();
-	local_delay_initialize();
+	
 	t113_delay_us(25 * 1000);
 	t113_set_apb0(UINT32_C(100) * 1000 * 1000);	// 100 MHz
-	local_delay_initialize();
+	
 	t113_delay_us(25 * 1000);
 	t113_set_apb1(UINT32_C(300) * 1000 * 1000);	// 192 MHz - for 4M baud rate
-	local_delay_initialize();
+	
 	t113_delay_us(25 * 1000);
 #if CPUSTYLE_F133
 	CCU->RISC_CFG_BGR_REG |= (UINT32_C(1) << 16) | (UINT32_C(1) << 0);	// не проищзволит видимого эффекта
 #endif
-	local_delay_initialize();
+	
 	t113_delay_us(25 * 1000);
 }
 
@@ -6538,11 +6686,26 @@ void sysinit_boot_disconnect(void)
 	}
 }
 
+// на каждом CORE
+void sysinit_hwtimer_initialize(void)
+{
+	const uint_fast32_t f = allwnr_t113_get_hosc_freq();	// 24000000
+#if __CORTEX_A
+	__set_CNTFRQ(f);
+#endif
+}
+
+// Allwinner T113/F133/D1s Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+	const uint_fast32_t f = allwnr_t113_get_hosc_freq();	// 24000000
+	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+}
+
 // Allwinner T113/F133/D1s PLL initialize
 void
 sysinit_pll_initialize(int forced)
 {
-
 #if CPUSTYLE_F133
 	allwnr_t113_pll_initialize(forced ? RV_PLL_CPU_N : 17);
 #else
@@ -6792,6 +6955,21 @@ void sysinit_boot_disconnect(void)
 
 }
 
+// на каждом CORE
+void sysinit_hwtimer_initialize(void)
+{
+	const uint_fast32_t f = allwnr_t113_get_hosc_freq();	// 24000000
+	__set_CNTFRQ(f);
+	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+}
+
+// 1892ВМ14Я Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+	const uint_fast32_t f = allwnr_t113_get_hosc_freq();	// 24000000
+	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+}
+
 // 1892ВМ14Я PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -6939,6 +7117,24 @@ void r7s721_pll_initialize(void)
 
 void sysinit_boot_disconnect(void)
 {
+}
+
+// r7s721
+// на каждом CORE
+void sysinit_hwtimer_initialize(void)
+{
+//	const uint_fast32_t f = WITHCPUXTAL;//allwnr_t113_get_hosc_freq();	// 24000000
+//	__set_CNTFRQ(f);
+	//TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+}
+
+// r7s721 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+
+//	const uint_fast32_t f = allwnr_t113_get_hosc_freq();	// 24000000
+//	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+
 }
 
 // r7s721 PLL initialize
@@ -7171,14 +7367,14 @@ void hardware_spi_io_delay(void)
 	void TIMER0_IRQHandler(void)
 	{
 		enum { IX = 0 };
-		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
-		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR0_IRQ_PEND
+		const uint_fast32_t st = TIMER->TMR_IRQ_STA_REG & (UINT32_C(1) << IX);	// TMR0_IRQ_PEND
+		TIMER->TMR_IRQ_STA_REG = st;
+		if (st)
 		{
 			// Таймер электронного ключа
 			// 1/20 dot length interval timer
 			spool_elkeybundle();
 
-			TIMER->TMR_IRQ_STA_REG = (UINT32_C(1) << IX);	// TMR0_IRQ_PEND
 		}
 	}
 
@@ -7186,13 +7382,12 @@ void hardware_spi_io_delay(void)
 	void TIMER1_IRQHandler(void)
 	{
 		enum { IX = 1 };
-		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
-		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR1_IRQ_PEND
+		const uint_fast32_t st = TIMER->TMR_IRQ_STA_REG & (UINT32_C(1) << IX);	// TMR1_IRQ_PEND
+		TIMER->TMR_IRQ_STA_REG = st;
+		if (st)
 		{
 			// timebase
 			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-
-			TIMER->TMR_IRQ_STA_REG = (UINT32_C(1) << IX);	// TMR1_IRQ_PEND
 		}
 	}
 
@@ -7202,14 +7397,14 @@ void hardware_spi_io_delay(void)
 	void TIMER1_0_IRQHandler(void)
 	{
 		enum { IX = 0 };
-		const portholder_t st = Timer1_CPUX->TMR_IRQ_STA_REG;
-		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR0_IRQ_PEND
+		const uint_fast32_t st = Timer1_CPUX->TMR_IRQ_STA_REG & (UINT32_C(1) << IX);	// TMR0_IRQ_PEND
+		Timer1_CPUX->TMR_IRQ_STA_REG = st;
+		if (st)
 		{
 			// Таймер электронного ключа
 			// 1/20 dot length interval timer
 			spool_elkeybundle();
 
-			Timer1_CPUX->TMR_IRQ_STA_REG = (UINT32_C(1) << IX);	// TMR0_IRQ_PEND
 		}
 	}
 
@@ -7217,13 +7412,13 @@ void hardware_spi_io_delay(void)
 	void TIMER1_1_IRQHandler(void)
 	{
 		enum { IX = 1 };
-		const portholder_t st = Timer1_CPUX->TMR_IRQ_STA_REG;
-		if ((st & (UINT32_C(1) << IX)) != 0)	// TMR1_IRQ_PEND
+		const uint_fast32_t st = Timer1_CPUX->TMR_IRQ_STA_REG & (UINT32_C(1) << IX);	// TMR1_IRQ_PEND
+		Timer1_CPUX->TMR_IRQ_STA_REG = st;
+		if (st)
 		{
 			// timebase
 			spool_systimerbundle();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 
-			Timer1_CPUX->TMR_IRQ_STA_REG = (UINT32_C(1) << IX);	// TMR1_IRQ_PEND
 		}
 	}
 
@@ -7375,7 +7570,6 @@ void hardware_spi_io_delay(void)
 void
 hardware_timer_initialize(uint_fast32_t ticksfreq)
 {
-	tickers_initialize();
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
@@ -7383,66 +7577,6 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	SysTick_Config(calcdivround2(BOARD_SYSTICK_FREQ, ticksfreq));	// CMSIS устанавливает SysTick_CTRL_CLKSOURCE_Msk
 	arm_hardware_set_handler_system(SysTick_IRQn, SysTick_Handler_Active);		// разрешение прерывания игнорируется для системныз векторов
 
-#elif CPUSTYLE_ATMEGA328
-
-	// ATMega328
-	// Timer/Counter 2 initialization
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, & value, 1);
-
-	ASSR = 0x00;
-	TCCR2A = (1u << WGM01);	// CTC mode = 0x02
-	TCCR2B = prei + 1; // прескалер
-	OCR2A = value;	// делитель - программирование полного периода
-	OCR2B = 0x00;
-	TIMSK2 |= (UINT32_C(1) << OCIE2A);	//0x02;	// enable interrupt from Timer/Counter 2 - use TIMER2_COMP_vect
-
-	TCNT2 = 0x00;
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	// Modern ATMega644
-
-	// Timer/Counter 0 initialization
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
-	TCCR0A = (1u << WGM01);	// CTC mode = 0x02
-	TCCR0B = prei + 1; // прескалер
-	OCR0A = value;	// делитель - программирование полного периода
-	OCR0B = 0x00;
-	TIMSK0 |= (UINT32_C(1) << OCIE0A);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMPA_vect
-
-	TCNT0 = 0x00;
-
-#elif CPUSTYLE_ATMEGA128
-	// ATMega128/ATMega64
-
-	// Timer/Counter 0 initialization
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA128_TIMER0_WIDTH, ATMEGA128_TIMER0_TAPS, & value, 1);
-	TCCR0 = (UINT32_C(1) << WGM01) | (prei + 1);	// прескалер
-	OCR0 = value;	// делитель - программирование полного периода
-
-	TIMSK |= (UINT32_C(1) << OCIE0);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMP_vect
-
-	TCNT0 = 0x00;
-
-#elif CPUSTYLE_ATMEGA32
-	// Classic ATMega32
-
-	// Timer/Counter 0 initialization
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
-	TCCR0 = (UINT32_C(1) << WGM01) | (prei + 1);	// прескалер
-	OCR0 = value;	// делитель - программирование полного периода
-
-	TIMSK |= (UINT32_C(1) << OCIE0);	// enable interrupt from Timer/Counter 0 - use TIMER0_COMP_vect
-
-	TCNT0 = 0x00;
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -7510,22 +7644,6 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	arm_hardware_set_handler_system(TIM5_IRQn, TIM5_IRQHandler);
 
-	// Prepare funcionality: use CNTP
-	const uint_fast32_t gtimfreq = stm32mp1_get_hsi_freq();
-
-	PL1_SetCounterFrequency(gtimfreq);	// CNTFRQ
-
-	gtimloadvalue = calcdivround2(gtimfreq, ticksfreq) - 1;
-	// Private timer use
-	// Disable Private Timer and set load value
-	PL1_SetControl(0);	// CNTP_CTL
-	PL1_SetLoadValue(gtimloadvalue);	// CNTP_TVAL
-
-	//arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, SecurePhysicalTimer_IRQHandler);
-
-	// Enable timer control
-	PL1_SetControl(1);
-
 #elif CPUSTYLE_A733
 	// timebase timer
 	const unsigned ix = 1;
@@ -7547,7 +7665,8 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	Timer1_CPUX->TMR_IRQ_EN_REG |= (UINT32_C(1) << (0 + ix));	// TMR1_IRQ_EN
 
-	arm_hardware_set_handler_system(TIMER1_1_IRQn, TIMER1_1_IRQHandler);	// timebase timer
+	arm_hardware_set_handler(TIMER1_1_IRQn, TIMER1_1_IRQHandler, ARM_SYSTEM_PRIORITY, 1U << 4);
+	//arm_hardware_set_handler_system(TIMER1_1_IRQn, TIMER1_1_IRQHandler);	// timebase timer
 
 #elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_A133 || CPUSTYLE_A733)
 
@@ -7659,7 +7778,6 @@ void stm32mp1_pll1_slow(uint_fast8_t slow)
 
 void stm32mp1_pll_initialize(int forced_unused)
 {
-
 	//return;
 	// PLL1 DIVN=0x1f. DIVM=0x4, DIVP=0x0
 	// HSI 64MHz/5*32 = 409.6 MHz
@@ -8344,6 +8462,22 @@ uint_fast32_t hardware_get_dotclock(uint_fast32_t dotfreq)
 void sysinit_boot_disconnect(void)
 {
 	SPIDF_HANGOFF();
+}
+
+// на каждом CORE
+void sysinit_hwtimer_initialize(void)
+{
+	const uint_fast32_t f = HSI64FREQ;//stm32mp1_get_hsi_freq(); // 64 MHz
+	__set_CNTFRQ(f);
+	PL1_SetCounterFrequency(f);	// same as above
+}
+
+// STM32MP1 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+	const uint_fast32_t f = HSI64FREQ;//stm32mp1_get_hsi_freq(); // 64 MHz
+	RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_STGENROEN_Msk;
+	(void) RCC->MP_APB4ENSETR;
 }
 
 // STM32MP1 PLL initialize
@@ -10838,6 +10972,18 @@ void sysinit_boot_disconnect(void)
 {
 }
 
+// ZYNQ 7000 на каждом CORE
+void sysinit_hwtimer_initialize(void)
+{
+
+}
+
+// ZYNQ 7000 Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+
+}
+
 // ZYNQ 7000 PLL initialize
 void
 sysinit_pll_initialize(int forced)
@@ -10902,7 +11048,7 @@ sysinit_pll_initialize(int forced)
 
 		SCLR->APER_CLK_CTRL |= (UINT32_C(1) << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
 	}
-	local_delay_initialize();
+	
 	local_delay_ms(50);
 
 #endif /* WITHISBOOTLOADER */
@@ -10915,6 +11061,18 @@ sysinit_pll_initialize(int forced)
 
 void sysinit_boot_disconnect(void)
 {
+}
+
+// STM32H7xx на каждом CORE
+void sysinit_hwtimer_initialize(void)
+{
+
+}
+
+// STM32H7xx Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
+
 }
 
 // STM32H7xx PLL initialize
@@ -10962,6 +11120,18 @@ sysinit_pll_initialize(int forced)
 void sysinit_boot_disconnect(void)
 {
 
+
+}
+
+// на каждом CORE
+void sysinit_hwtimer_initialize(void)
+{
+
+}
+
+// STM32F7xx Один счётчик на весь чип
+void sysinit_timestamp_initialize(void)
+{
 
 }
 
@@ -11830,6 +12000,12 @@ build_adc_mask(void)
 	}
 	return mask;
 }
+
+#if CPUSTYLE_STM32MP1
+	#define ADC_ISR_LDORDY_Pos                (12U)
+	#define ADC_ISR_LDORDY_Msk                (0x1UL << ADC_ISR_LDORDY_Pos)        /*!< 0x00001000 */
+	#define ADC_ISR_LDORDY                    ADC_ISR_LDORDY_Msk                   /*!< ADC LDO output voltage ready bit */
+#endif /* CPUSTYLE_STM32MP1 */
 
 void hardware_adc_initialize(void)
 {
@@ -12786,3 +12962,259 @@ uint_fast32_t allwnr_sid_read(unsigned offs)
 	return val;
 }
 #endif /* CPUSTYLE_ALLWINNER && defined (SID) */
+
+
+// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+// получение частоты, с которой инкрементируется счетчик
+dbgcountfast_t cpu_getdebugticksfreq(void)
+{
+	return SystemCoreClock;//CPU_FREQ;
+#if WITHISBOOTLOADER
+	return CPU_FREQ;	// пока ОЗУ не инициализированно
+#else /* WITHISBOOTLOADER */
+	return SystemCoreClock;//CPU_FREQ;
+#endif /* WITHISBOOTLOADER */
+}
+
+// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+// получение из аппаратного счетчика монотонно увеличивающегося кода
+// see sysinit_perfmeter_initialize() in hardware.c
+// Счетчик увеличивается с частотой процессора
+
+dbgcountfast_t cpu_getdebugticks(void)
+{
+#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
+	return DWT->CYCCNT;	// use TIMESTAMP_GET();
+
+#elif defined(__aarch64__)
+	return __get_PMCCNTR_EL0();
+
+#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
+	if (0)
+	{
+		uint64_t result;
+		// MRRC{<c>}{<q>} <coproc>, {#}<opc1>, <Rt>, <Rt2>, <CRm>
+		// cp, op1, Rt, CRm
+		__get_CP64(15, 9, result, 0);
+		return result;
+	}
+	{
+		uint32_t result;
+		// Read CCNT Register
+		//	MRC p15, 0, <Rt>, c9, c13, 0 : Read PMCCNTR into Rt
+		//	MCR p15, 0, <Rt>, c9, c13, 0 : Write Rt to PMCCNTR
+		//asm volatile ("MRC p15, 0, %0, c9, c13, 0\t\n": "=r"(value));
+		__get_CP(15, 0, result, 9, 13, 0);
+		return result;
+	}
+
+#elif defined(__riscv)
+
+	return csr_read_mcycle();
+
+#else
+	#warning Wrong CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
+	return 0;
+
+#endif
+}
+
+
+#if CPUSTYLE_ALLWINNER && defined (TIMESTAMP_STA)
+// Allwinner timestamp registers
+
+hwtimcountfast_t timestamp_getticks(void)
+{
+	for (;;)
+	{
+		uint_fast32_t high1, high2;
+		uint_fast32_t low;
+
+		high1 = TIMESTAMP_STA->CNT_HI_REG;
+		low = TIMESTAMP_STA->CNT_LOW_REG;
+		high2 = TIMESTAMP_STA->CNT_HI_REG;
+		if (high1 == high2)
+			return ((uint_fast64_t) high2 << 32) | low;
+		low = TIMESTAMP_STA->CNT_LOW_REG;
+		high1 = TIMESTAMP_STA->CNT_HI_REG;
+		if (high1 == high2)
+			return ((uint_fast64_t) high1 << 32) | low;
+	}
+
+}
+
+hwtimcountfast_t timestamp_getmask(void)
+{
+	return UINT64_C(0xFFFFFFFFFFFFFFFF);	// TIMESTAMP_STA->CNT width is 64
+}
+
+hwtimcountfast_t timestamp_getfreq(void)
+{
+	return TIMESTAMP_CTRL->CNT_FREQID_REG;
+}
+
+#elif defined STGENR
+// STM32MP1 tmestamp registers
+
+hwtimcountfast_t timestamp_getticks(void)
+{
+	for (;;)
+	{
+		uint_fast32_t high1, high2;
+		uint_fast32_t low;
+
+		high1 = STGENR->CNTCVU;
+		low = STGENR->CNTCVL;
+		high2 = STGENR->CNTCVU;
+		if (high1 == high2)
+			return ((uint_fast64_t) high2 << 32) | low;
+		low = STGENR->CNTCVL;
+		high1 = STGENR->CNTCVU;
+		if (high1 == high2)
+			return ((uint_fast64_t) high1 << 32) | low;
+	}
+
+}
+
+hwtimcountfast_t timestamp_getmask(void)
+{
+	return UINT64_C(0xFFFFFFFFFFFFFFFF);	// TIMESTAMP_STA->CNT width is 64
+}
+
+hwtimcountfast_t timestamp_getfreq(void)
+{
+	return STGENC->CNTFID0;
+}
+
+#else
+
+#warning timestamp_getticks replaced by debug counter
+
+hwtimcountfast_t timestamp_getticks(void)
+{
+	return cpu_getdebugticks();
+}
+hwtimcountfast_t timestamp_getmask(void)
+{
+	return cpu_getdebugticksmask();
+}
+
+hwtimcountfast_t timestamp_getfreq(void)
+{
+	return cpu_getdebugticksfreq();
+}
+
+#endif /* WITHONETIMESTAMP */
+
+hwtimcountfast_t get_td_us(uint_fast32_t timeUS)
+{
+	return timeUS == LOCAL_WAITINFINITY ?
+			timestamp_getmask() :
+			timeUS * (timestamp_getfreq() / (1000 * 1000));
+}
+
+hwtimcountfast_t get_td_ms(uint_fast32_t timeMS)
+{
+	return timeMS == LOCAL_WAITINFINITY ?
+			timestamp_getmask() :
+			timeMS * (timestamp_getfreq() / 1000);
+}
+
+// получение интервала, прошедшего с момента start
+hwtimcountfast_t get_td_delta(hwtimcountfast_t t0)
+{
+	return timestamp_getmask() & (timestamp_getticks() - t0);
+}
+
+// получение маски на разрядность аппаратного счётчика
+dbgcountfast_t cpu_getdebugticksmask(void)
+{
+#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
+	return UINT32_C(0xFFFFFFFF);	// DWT->CYCCNT width is 32
+
+#elif defined(__aarch64__)
+	return UINT64_C(0xFFFFFFFFFFFFFFFF);	// PMCCNTR width is 64
+
+#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
+	return UINT32_C(0xFFFFFFFF);	// PMCCNTR width is 32
+
+#elif defined(__riscv)
+	return UINT64_C(0xFFFFFFFFFFFFFFFF);	// mcycle width is 64
+
+#else
+	#warning Wrong CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
+	return UINT32_C(0xFFFFFFFF);
+
+#endif
+}
+
+// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
+void
+sysinit_perfmeter_initialize(void)
+{
+#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
+
+	#if WITHDEBUG && __CORTEX_M == 7U
+		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
+		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+		DWT->LAR = 0x00000000;	// Key value for lock
+	#endif /* WITHDEBUG && __CORTEX_M == 7U */
+
+#elif defined(__aarch64__)
+		__set_PMCNTENSET_EL0(__get_PMCNTENSET_EL0() | (UINT32_C(1) << 31));
+		__set_PMCR_EL0(__get_PMCR_EL0() | (UINT32_C(1) << 0));
+
+#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
+
+//	{
+//		uint32_t value;
+//		__get_CP(15, 0, value, 9, 12, 0);	// Read PMNC
+//		PRINTF("PMNC=0x%" PRIX32 "\n", value);
+//		PRINTF("counters=%" PRIu32 "\n", (value >> 11) & 0x1F);
+//	}
+	{
+		// From https://stackoverflow.com/questions/3247373/how-to-measure-program-execution-time-in-arm-cortex-a8-processor
+		    /* enable user-mode access to the performance counter*/
+		// User Enable Register (USEREN)
+		//asm ("MCR p15, 0, %0, C9, C14, 0\n\t" :: "r"(1));
+		__set_CP(15, 0, 0x00000001, 9, 14, 0);
+
+		/* disable counter overflow interrupts (just in case)*/
+		// Interrupt Enable Clear Register (INTENC)
+		//asm ("MCR p15, 0, %0, C9, C14, 2\n\t" :: "r"(0x8000000f));
+		__set_CP(15, 0, 0x80000000, 9, 14, 2);
+
+		enum { do_reset = 0, enable_divider = 0 };
+		// in general enable all counters (including cycle counter)
+		uint32_t value = (UINT32_C(1) << 0);	// ENABLE bit
+
+		// peform reset:
+		if (do_reset)
+		{
+			value |= (UINT32_C(1) << 1);     // reset all counters to zero.
+			value |= (UINT32_C(1) << 2);     // reset cycle counter to zero.
+		}
+
+		if (enable_divider)
+			value |= (UINT32_C(1) << 3);     // enable "by 64" divider for CCNT. Clock Divider, bit [3]
+
+		value |= (UINT32_C(1) << 4);		// Export Enable, bit [4]
+
+		// program the performance-counter control-register PMNC:
+		//asm volatile ("MCR p15, 0, %0, c9, c12, 0\t\n" :: "r"(value));
+		__set_CP(15, 0, value, 9, 12, 0);
+
+		// enable all counters: Count Enable Set Register (CNTENS)
+		//asm volatile ("MCR p15, 0, %0, c9, c12, 1\t\n" :: "r"(0x8000000f));
+		__set_CP(15, 0, 0x80000000, 9, 12, 1);
+
+		// clear overflows: Overflow Flag Status Register (FLAG)
+		//asm volatile ("MCR p15, 0, %0, c9, c12, 3\t\n" :: "r"(0x8000000f));
+		__set_CP(15, 0, 0x80000000, 9, 12, 3);
+	}
+
+#elif defined(__riscv)
+
+#endif /* ((__CORTEX_A != 0) || CPUSTYLE_ARM9) && (! defined(__aarch64__)) */
+}

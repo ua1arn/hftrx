@@ -52,7 +52,7 @@ static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 
 #define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
-#define VOICE32RX_CAPACITY (8 * BUFOVERSIZE)
+#define VOICE32RX_CAPACITY (16 * BUFOVERSIZE)
 #define VOICE32TX_CAPACITY (16 * BUFOVERSIZE)
 
 #define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
@@ -73,8 +73,6 @@ static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 #endif /* WITHUSBHW */
 
 #include <string.h>		// for memset
-
-static uint_fast8_t		glob_swaprts;		// управление боковой выхода спектроанализатора
 
 #if defined CODEC1_TYPE
 	adapter_t afcodecrx;		/* от микрофона */
@@ -557,12 +555,16 @@ public:
 	bool get_readybuffer_raw(element_t * * dest, uint_fast32_t timeMS = 0)
 	{
 		IRQL_t oldIrql;
+		//IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 		if (timeMS != 0)
 		{
 			// Запрос с ненулевым аргументром timeMS может возникнуть только из выделенных потоков
-			if (local_waitlist(& readylist, & irqllock, timeMS) != 0)	// timeot
+			if (local_waitlist(& readylist, & irqllock, irqllockarg, timeMS) != 0) {	// timeot
+				//IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 				return false;
+			}
 		}
+		//IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& readylist))
 		{
@@ -1173,7 +1175,7 @@ void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1)
 //}
 
 /* Перенос из FPGA PIPE в формируемый буфер виртуального кодекв */
-static void elfill_dmabuffer16rx_raw(aubufv_t ch0, aubufv_t ch1)
+void elfill_dmabuffer16rx_raw(aubufv_t ch0, aubufv_t ch1)
 {
 	codec16rx.savedata_raw(ch0, ch1, putcbf_dmabuffer16rx_raw);
 }
@@ -1513,7 +1515,7 @@ void save_dmabuffer32tx(uintptr_t addr)
 #if WITHFPGAPIPE_CODEC1
 
 // копирование полей для кодека в передаваемый на FPGA буфер
-static uintptr_t RAMFUNC
+static uintptr_t
 pipe_dmabuffer32tx_codec1(uintptr_t addr32tx, uintptr_t addr16tx)
 {
 	// Предполагается что типы данных позволяют транзитом передавать сэмплы, не беспокоясь о преобразовании форматов
@@ -1630,6 +1632,7 @@ uintptr_t getfilled_dmabuffer32rx(void)
 	return (uintptr_t) dest->buff;
 }
 
+#if ! WITHRTOS
 // Обработка сразу в прерывании
 #define TXSPOOLCOND (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM))
 //#define TXSPOOLCOND 1	// Force in-interrupt 32rx stream parsing
@@ -1640,7 +1643,7 @@ uintptr_t getfilled_dmabuffer32rx(void)
 static void dsphftrxproc_spool_user(void * ctx)
 {
 	voice32rx_t * dest;
-	(void) ctx;
+
 	while (voice32rx.get_readybuffer(& dest))
 	{
 		process_dmabuffer32rx(dest->buff);
@@ -1648,31 +1651,33 @@ static void dsphftrxproc_spool_user(void * ctx)
 		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 	}
 }
-
-static int dsphftrxproc_spool_user_thread(void * ctx)
-{
-	voice32rx_t * dest;
-	(void) ctx;
-	for (;;)
-	{
-		if (voice32rx.get_readybuffer(& dest, LOCAL_WAITINFINITY) == false)
-			continue;
-		process_dmabuffer32rx(dest->buff);
-		voice32rx.release_buffer(dest);
-		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
-	}
-	return 0;
-}
+#endif
 
 void save_dmabuffer32rx(uintptr_t addr)
 {
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 	voice32rx.save_readybuffer(p);
 	// dsphftrxproc_spool_user on other CPUs
-#if TXSPOOLCOND
+#if ! WITHRTOS && TXSPOOLCOND
 	#warning rx process in interrupt
-	dsphftrxproc_spool_user(NULL);
+	dsphftrxproc_spool_user(hftrx_rxgetpathA());
 #endif /* TXSPOOLCOND */
+}
+
+static int buffprocess_thread(void * ctx)
+{
+	(void) ctx;
+	for (;;)
+	{
+		voice32rx_t * dest;
+		if (voice32rx.get_readybuffer(& dest, LOCAL_WAITINFINITY) == false)
+			continue;
+		process_dmabuffer32rx(dest->buff);
+		voice32rx.release_buffer(dest);
+
+		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
+	}
+	return 0;
 }
 
 ///////////////////////////////////////
@@ -2814,7 +2819,7 @@ void recordsampleUAC(FLOAT_t left, FLOAT_t right)
 
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
-RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
+uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 {
 	return elfetch_dmabuffer16rx(v->ivqv);
 }
@@ -2824,7 +2829,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
-RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
+uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 {
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE)
 	return elfetch_dmabufferuacout48(v->ivqv);
@@ -2834,7 +2839,7 @@ RAMFUNC uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
-RAMFUNC uint_fast8_t getsampmlebt(FLOAT32P_t * v)
+uint_fast8_t getsampmlebt(FLOAT32P_t * v)
 {
 #if WITHUSEUSBBT
 	return elfetch_dmabufferbtout48(v->ivqv);
@@ -3353,7 +3358,7 @@ static uint_fast8_t isrts192(void)
 #if WITHRTS192 && 0
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после оцифровки - отдельный канал спектроанализатора
-void RAMFUNC save_dmabuffer32rts192(uintptr_t addr)
+void save_dmabuffer32rts192(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
 	voice32rts192_t * const p = CONTAINING_RECORD(addr, voice32rts192_t, u.buff);
@@ -3370,370 +3375,6 @@ void RAMFUNC save_dmabuffer32rts192(uintptr_t addr)
 	release_dmabuffer32rts192(addr);
 }
 #endif /* WITHRTS192 */
-
-#if WITHDSPEXTDDC && WITHRTS96
-// использование данных о спектре, передаваемых в общем фрейме
-static void RAMFUNC
-saverts96pair(const IFADCvalue_t * buff)
-{
-	// формирование отображения спектра
-	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
-	if (glob_swaprts != 0)
-	{
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS0Q],	// previous
-			buff [DMABUF32RXRTS0I]
-			);
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS1Q],	// current
-			buff [DMABUF32RXRTS1I]
-			);
-	}
-	else
-	{
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS0I],	// previous
-			buff [DMABUF32RXRTS0Q]
-			);
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS1I],	// current
-			buff [DMABUF32RXRTS1Q]
-			);
-	}
-}
-
-#endif /* WITHDSPEXTDDC && WITHRTS96 */
-
-#if WITHDSPEXTDDC && WITHRTS192
-// использование данных о спектре, передаваемых в общем фрейме
-static void RAMFUNC
-saverts192quad(const IFADCvalue_t * buff)
-{
-	// формирование отображения спектра
-	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
-	if (glob_swaprts != 0)
-	{
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS0Q],	// previous
-			buff [DMABUF32RXRTS0I]
-			);
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS1Q],	// previous
-			buff [DMABUF32RXRTS1I]
-			);
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS2Q],	// previous
-			buff [DMABUF32RXRTS2I]
-			);
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS3Q],	// current
-			buff [DMABUF32RXRTS3I]
-			);
-	}
-	else
-	{
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS0I],	// previous
-			buff [DMABUF32RXRTS0Q]
-			);
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS1I],	// previous
-			buff [DMABUF32RXRTS1Q]
-			);
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS2I],	// previous
-			buff [DMABUF32RXRTS2Q]
-			);
-		deliveryint(
-			& rtstargetsint,
-			buff [DMABUF32RXRTS3I],	// current
-			buff [DMABUF32RXRTS3Q]
-			);
-	}
-}
-#endif /* WITHDSPEXTDDC && WITHRTS192 */
-
-#if WITHSEQTEST
-
-// Проверка качества линии передачи от FPGA
-static int32_t seqNext [DMABUFFSTEP32RX];
-static uint_fast8_t  seqNextValid [DMABUFFSTEP32RX];
-static int seqErrors;
-static int seqTotal;
-static int seqDone;
-
-enum { MAXSEQHIST = DMABUFCLUSTER + 5 };
-
-static int32_t seqHist [MAXSEQHIST] [DMABUFFSTEP32RX];
-static const void * seqHistP [MAXSEQHIST];
-static unsigned seqPos;
-static unsigned seqAfterError;
-static unsigned seqValidateSkip;
-static int iMAX, qMAX, deltaMAX;
-static int32_t seqPresent, seqExpected;
-
-static volatile int historyStop;
-static const int testSlot = 2;
-static void historyUserPrint(void * ctx)
-{
-	PRINTF("seqErrors=%d, seqTotal=%d, seqPresent=%08X, seqExpected=%08X\n", seqErrors, seqTotal, (unsigned) seqPresent, (unsigned) seqExpected);
-	//PRINTF("iMAX=%d(0x%08X), qMAX=%d(0x%08X), deltaMAX=%d\n", iMAX, iMAX, qMAX, qMAX, deltaMAX);
-	unsigned i;
-	for (i = 0; i < MAXSEQHIST; ++ i)
-	{
-		unsigned ix = ((MAXSEQHIST - 1) - i + seqPos) % MAXSEQHIST;
-		PRINTF("hist %02d @%p :", i, seqHistP [ix]);
-		unsigned col;
-		for (col = 0; col < DMABUFFSTEP32RX; ++ col)
-			PRINTF("%08X ", (unsigned) seqHist [ix] [col]);
-		PRINTF("\n");
-	}
-//	seqValidateSkip = 0;
-	seqAfterError = 0;
-	seqErrors = 0;
-	seqNextValid [testSlot] = 0;
-	seqPos = 0;
-	memset(seqHist, 0xE5, sizeof seqHist);
-	historyStop = 0;
-}
-
-static dpcobj_t userprintdpc;
-static void historyPrint(void)
-{
-	historyStop = 1;
-	dpcobj_initialize(& userprintdpc, historyUserPrint, NULL);
-	board_dpc_call(& userprintdpc, 0);
-
-}
-// Save data for history
-static void historySave(const int32_t * base)
-{
-	if (historyStop)
-		return;
-	seqPos = (seqPos == 0) ? MAXSEQHIST - 1 : seqPos - 1;
-	//memcpy(seqHist [seqPos], base, sizeof seqHist [seqPos]);
-	unsigned col;
-	for (col = 0; col < DMABUFFSTEP32RX; ++ col)
-		seqHist [seqPos] [col] = base [col];
-	seqHistP [seqPos] = base;
-}
-
-static void rangeValidate(const int32_t * b)
-{
-	if (historyStop)
-		return;
-	int32_t i = b [DMABUF32RX0I] << 4;
-	int32_t q = b [DMABUF32RX0Q] << 4;
-	const int32_t delta = INT32_MAX / 100;
-	do
-	{
-		if (i > delta)
-			break;
-		if (q > delta)
-			break;
-		if (i < - delta)
-			break;
-		if (q < - delta)
-			break;
-		return;
-	} while (0);
-
-	iMAX = i, qMAX = q, deltaMAX = delta;
-	historyPrint();
-}
-
-static void validateSeq(uint_fast8_t slot)
-{
-	if (historyStop)
-		return;
-	if (seqValidateSkip < 6000)
-	{
-		++ seqValidateSkip;
-		return;
-	}
-
-	// Was error, record tail
-	if (seqAfterError)
-	{
-		if (-- seqAfterError == 0)
-		{
-			historyPrint();
-		}
-		return;
-	}
-
-	if (seqDone)
-		return;
-
-	const int32_t v = seqHist [seqPos] [slot];
-	if (seqNextValid [slot])
-	{
-		if (seqNext [slot] != v)
-		{
-			seqPresent = v;
-			seqExpected = seqNext [slot];
-			++ seqErrors;
-			seqAfterError = 4;	// Еще четыре фрейма и стоп
-		}
-		++ seqTotal;
-	}
-	seqNextValid [slot] = 1;
-	seqNext [slot] = v + 1;
-}
-#endif
-
-#if WITHDEBUG && defined (DMABUFF32RX_ADCTEST_C0)
-// ADC lines test (with FPGA firmware support)
-
-static uint32_t v0_array [1024];
-static unsigned v0_count;
-static unsigned v0_skip;
-
-static void savetestadc(IFADCvalue_t v0, IFADCvalue_t v1)
-{
-	const unsigned N = ARRAY_SIZE(v0_array);
-	unsigned i;
-	uint_fast32_t results;
-	uint_fast32_t shorted;	// bit0: short d0-d1. bit1: short d1-d2
-
-	ASSERT(v0 == v1);
-	if (v0_skip < 128000)
-	{
-		++ v0_skip;
-		return;
-	}
-	if (v0_count < N)
-	{
-		v0_array [v0_count] = v0;
-		++ v0_count;
-		return;
-	}
-	// Analyze
-	// tied to VCC/GND lines diagnostics
-	results = 0;
-	for (i = 1; i < N; ++ i)
-	{
-		const uint32_t diffs = v0_array [i - 1] ^ v0_array [i];
-		results |= diffs;
-	}
-	// shorted lines diagnostics
-	shorted = ~ UINT32_C(0);
-	for (i = 0; i < N; ++ i)
-	{
-		unsigned bitpos;
-		for (bitpos = 0; bitpos < 15; ++ bitpos)
-		{
-			unsigned state = (v0_array [i] >> bitpos) & 0x03;
-			switch (state)
-			{
-			case 0x00:
-			case 0x03:
-				break;
-			default:
-				shorted &= ~ (UINT32_C(1) << bitpos);
-				break;
-			}
-		}
-	}
-	PRINTF("ADC lines stable: 0x%04X [", (unsigned) (0xFFFF & ~ results));
-	for (i = 0; i < 16; ++ i)
-	{
-		uint_fast32_t mask = UINT32_C(1) << i;
-		if (results & mask)
-			continue;
-		PRINTF("D%u ", i);
-	}
-	PRINTF("]\n");
-	PRINTF("ADC lines same: 0x%04X [", (unsigned) (shorted & 0x7FFF));
-	for (i = 0; i < 15; ++ i)
-	{
-		uint_fast32_t mask = UINT32_C(1) << i;
-		if (shorted & mask)
-		{
-			PRINTF("D%u-D%u ", i, i + 1);
-		}
-	}
-	PRINTF("]\n");
-	//printhex32(0, v0_array, sizeof v0_array);
-	for (;;)
-		;
-}
-#endif /* WITHDEBUG && WITHFPGAPIPE_CODEC1 */
-
-void process_dmabuffer32rx(const IFADCvalue_t * buff)
-{
-	unsigned i;
-#if WITHFPGAPIPE_FPGASTATUS
-	/* получение состояния от FPGA через I2S канал */
-	board_savefpgastatus(buff [DMABUFF32RX_STATUS0], buff [DMABUFF32RX_STATUS1]);
-#endif /* WITHFPGAPIPE_FPGASTATUS */
-#if 0 && WITHDEBUG && defined (DMABUFF32RX_ADCTEST_C0)
-	savetestadc(buff [DMABUFF32RX_ADCTEST_C0], buff [DMABUFF32RX_ADCTEST_C1]);
-#endif /* WITHDEBUG && defined (DMABUFF32RX_ADCTEST_C0) */
-	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFFSTEP32RX)
-	{
-		const IFADCvalue_t * const b = buff + i;
-		//
-#if WITHSEQTEST
-	historySave(b);	// Save data for history
-//	rangeValidate(b);
-	if (0)
-	{
-		// Проверка качества линии передачи от FPGA
-		uint_fast8_t slot;
-		for (slot = 0; slot < DMABUFFSTEP32RX; ++ slot)
-			validateSeq(slot);
-	}
-	else if (1)
-	{
-		validateSeq(testSlot);
-	}
-#endif
-#if 0
-		// Тестирование - заменить приянтые квадратуры синтезированными
-		inject_testsignals(b);
-#endif
-#if WITHRTS96
-		saverts96pair(b);	// использование данных о спектре, передаваемых в общем фрейме
-#elif WITHRTS192
-		saverts192quad(b);	// использование данных о спектре, передаваемых в общем фрейме
-#endif /* WITHRTS96 */
-
-#if WITHDSPEXTDDC
-#if WITHUSEDUALWATCH
-		FLOAT_t left = rxdmaproc(0, b [DMABUF32RX0I], b [DMABUF32RX0Q]);
-		FLOAT_t right = rxdmaproc(1, b [DMABUF32RX1I], b [DMABUF32RX1Q]);
-		savedemod_to_AF_proc(left, right);
-#else /* WITHUSEDUALWATCH */
-		FLOAT_t left = rxdmaproc(0, b [DMABUF32RX0I], b [DMABUF32RX0Q]);
-		savedemod_to_AF_proc(left, left);
-#endif /* WITHUSEDUALWATCH */
-#else /* WITHDSPEXTDDC */
-		// обработка IF4
-		FLOAT_t left = rxdmaproc(0, b [DMABUF32RX], 0);
-		savedemod_to_AF_proc(left, left);
-#endif /* WITHDSPEXTDDC */
-#if WITHFPGAPIPE_CODEC1
-		//elfill_dmabuffer16rx(adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_LEFT]), adpt_input(& afcodecrx, b [DMABUFF32RX_CODEC1_RIGHT]));
-		elfill_dmabuffer16rx_raw(b [DMABUFF32RX_CODEC1_LEFT], b [DMABUFF32RX_CODEC1_RIGHT]);
-#endif /* WITHFPGAPIPE_CODEC1 */
-	}
-
-#if WITHWFM
-	dsp_extbuffer32wfm(p->buff);
-#endif /* WITHWFM */
-}
 
 
 //////////////////////////////////////////
@@ -4418,21 +4059,6 @@ void buffers_diagnostics(void)
 
 #endif /* WITHBUFFERSDEBUG */
 
-//////////////////////////////////////////
-
-// Преобразовать отношение напряжений выраженное в "разах" к децибелам.
-
-FLOAT_t ratio2db(FLOAT_t ratio)
-{
-	return LOG10F(ratio) * 20;
-}
-
-// Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
-
-FLOAT_t db2ratio(FLOAT_t valueDBb)
-{
-	return POWF(10, (valueDBb) / 20);
-}
 
 //////////////////////////////////////////
 
@@ -4560,14 +4186,19 @@ void buffers_start(void)
 {
 #if WITHINTEGRATEDDSP
 
-#if ! TXSPOOLCOND
+#if WITHRTOS
+	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [16 * 1024 * 1024];
+	VERIFY(thread_create_user(buffprocess_thread, NULL, procthread, sizeof procthread, TTASK_AFFINITY_AUDIOPROC, "buffprocess_thread"));
+
+#elif ! TXSPOOLCOND
 
 	#warning rx process in spool
-	// работа на всех ядрах, кроме нулевого
-	if (thread_create_user(TASK_AFFINITY_ALL & ~ 1U, dsphftrxproc_spool_user_thread, NULL, 1 * 1024 * 1024, "dsphftrxproc_spool_user_thread") == NULL)
+
+
 	{
+		PRINTF("buffers_start: rx process in spool, TXSPOOLCORE=%u\n", TXSPOOLCORE);
 		static dpcobj_t dsphftrxproc_spool_dpc;
-		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, NULL);
+		dpcobj_initialize(& dsphftrxproc_spool_dpc, dsphftrxproc_spool_user, hftrx_rxgetpathA(), "dsphftrxproc_spool_dpc");
 		board_dpc_addentry(& dsphftrxproc_spool_dpc, TXSPOOLCORE);
 	}
 
@@ -4581,7 +4212,7 @@ void buffers_initialize(void)
 
 #if WITHBUFFERSDEBUG
 	static ticker_t buffticker;
-	ticker_initialize(& buffticker, NTICKS(DBG_PERIOD), buffers_spool, NULL);
+	ticker_initialize(& buffticker, DBG_PERIOD, buffers_spool, NULL);
 	ticker_add(& buffticker);
 #endif /* WITHBUFFERSDEBUG */
 
@@ -4794,14 +4425,3 @@ buffers_set_uacoutalt(uint_fast8_t v, uint_fast8_t ep)	/* выбор альте�
 #endif /* WITHINTEGRATEDDSP */
 }
 
-
-void
-board_set_swaprts(uint_fast8_t v)	/* если используется конвертор на Rafael Micro R820T - требуется инверсия спектра */
-{
-	const uint_fast8_t n = v != 0;
-	if (glob_swaprts != n)
-	{
-		glob_swaprts = n;
-		//board_dsp1regchanged();
-	}
-}

@@ -54,7 +54,7 @@ struct stm32_header {
 	uint8_t ecdsa_public_key[64];
 	uint8_t padding[83];
 	uint8_t binary_type;
-} ATTRPACKED;
+} __PACKED;
 
 #define HEADER_MAGIC	0x324d5453  //	__be32_to_cpu(0x53544D32)
 
@@ -292,7 +292,7 @@ void bootloader_deffereddetach(void * arg)
 
 #if WITHISBOOTLOADERFATFS
 
-void bootloader_fatfs_mainloop(void)
+void bootloader_fatfs_mainloop(void * ctx)
 {
 	static const char IMAGENAME [] = WITHISBOOTLOADERIMAGE;
 	static FATFSALIGN_BEGIN BYTE header [sizeof (struct stm32_header)] FATFSALIGN_END;
@@ -425,8 +425,9 @@ void bootloader0_mainloop(void)
 
 #endif
 
-void bootloader_mainloop(void)
+void bootloader_mainloop(void * ctx)
 {
+	(void) ctx;
 	PRINTF("bootloader_mainloop: wait user/USB loop [%p]\n", bootloader_mainloop);
 	PRINTF("bootloader_mainloop: user user/USB loop, CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 

@@ -493,4 +493,68 @@ util_bitpack_ufixed_nonzero(float v, uint32_t start, uint32_t end,
    return util_bitpack_ufixed(v, start, end, fract_bits);
 }
 
+union fi {
+   float f;
+   int32_t i;
+   uint32_t ui;
+};
+
+
+union di {
+   double d;
+   int64_t i;
+   uint64_t ui;
+};
+
+#ifndef __OPENCL_VERSION__
+/**
+ * Return float bits.
+ */
+static inline unsigned
+fui( float f )
+{
+   union fi fi;
+   fi.f = f;
+   return fi.ui;
+}
+
+static inline float
+uif(uint32_t ui)
+{
+   union fi fi;
+   fi.ui = ui;
+   return fi.f;
+}
+
+#else
+static inline uint32_t
+fui(float f)
+{
+   return as_uint(f);
+}
+
+static inline float
+uif(uint32_t ui)
+{
+   return as_float(ui);
+}
+#endif
+
+static inline uint64_t
+dui( double f )
+{
+   union di di;
+   di.d = f;
+   return di.ui;
+}
+
+static inline double
+uid(uint64_t ui)
+{
+   union di di;
+   di.ui = ui;
+   return di.d;
+}
+
+
 #endif /* UTIL_BITPACK_HELPERS_H */

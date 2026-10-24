@@ -25,17 +25,6 @@ void synthcalc_init(void);
 #define phase_fromulong(o, v) { * (o) = (v); } while (0)
 #define phase_fromuint(o, v) { * (o) = (v); } while (0)
 
-void synth_lo4_setfreq(
-	uint_fast8_t pathi,	/* номер тракта - 0/1: main/sub */
-	int_fast32_t f,		/* частота, которую хотим получить на выходе DDS */
-	uint_fast8_t od,	/* делитель перед подачей на смеситель (1, 2, 4, 8...) */
-	int_fast8_t enable	/* не=0 = разрешение работы гетеродина */
-	);
-void synth_lo3_setfreq(
-	uint_fast8_t pathi,		/* номер тракта - 0/1: main/sub */
-	int_fast32_t f,	/* частота, которую хотим получить на выходе DDS */
-	uint_fast8_t od	/* делитель перед подачей на смеситель (1, 2, 4, 8...) */
-	);
 void synth_lo2_setfreq(
 	uint_fast8_t pathi,		/* номер тракта - 0/1: main/sub */
 	int_fast32_t f,	/* частота, которую хотим получить на выходе DDS */

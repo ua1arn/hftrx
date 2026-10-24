@@ -46,8 +46,8 @@ void encoder_kbdctl(
 	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
 	);
 
-void encoder1_set_resolution(unsigned resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
-unsigned encoder_get_actualresolution(encoder_t * e);	// возвращает количество инкрементов на оборот
+void encoder_set_resolution(encoder_t * e, unsigned resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
+unsigned encoder_get_actualresolution(const encoder_t * e);	// возвращает количество инкрементов на оборот
 
 #define ENCODER_NORMALIZED_RESOLUTION (1440)	// виртуальных импульсов за оборот в секунду - нормализованная скорость
 //#define ENCODER_NORMALIZED_RESOLUTION (144)	// виртуальных импульсов за оборот в секунду - нормализованная скорость
@@ -71,12 +71,11 @@ extern encoder_t encoder_ENC4F;
 extern encoder_t encoder_kbd;
 
 
-void spool_encinterrupts(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
-void spool_encinterrupts_ccw(void * ctx);	/* прерывание по изменению сигнала на входах от валкодера */
-void spool_encinterrupts4_dirA_ccw(void * ctx);	/* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
-void spool_encinterrupts4_dirB_ccw(void * ctx);	/* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
-void spool_encinterrupts4_dirA_cw(void * ctx);	/* прерывание по одному перепаду сигнала на входе B от валкодера - направление по A */
-void spool_encinterrupts4_dirB_cw(void * ctx);	/* прерывание по одному перепаду сигнала на входе A от валкодера - направление по B */
+void spool_encinterrupts(void * ctx);	/* оптика - прерывание по изменению сигнала на входах от валкодера */
+void spool_encinterrupts_ccw(void * ctx);	/* оптика - прерывание по изменению сигнала на входах от валкодера */
+
+void spool_encinterrupts4_cw(void * ctx);	/* механика - прерывание по изменению сигнала на входах от валкодера */
+void spool_encinterrupts4_ccw(void * ctx);	/* механика - прерывание по изменению сигнала на входах от валкодера */
 
 void hardware_encoders_initialize(void);
 

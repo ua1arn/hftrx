@@ -10,7 +10,7 @@
 
 #include "hardware.h"
 
-#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H618_LPDDR4 || CONFIG_SUNXI_DRAM_H616_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR4)
+#if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H618_LPDDR4 || CONFIG_SUNXI_DRAM_H616_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR3)
 #include "formats.h"
 
 #define BIT BIT_U32
@@ -107,7 +107,7 @@ typedef struct dram_para
 	uint32_t para0;
 	uint32_t para1;
 	uint32_t para2;
-	uint32_t mr0;
+	uint32_t mr0;	// 8
 	uint32_t mr1;
 	uint32_t mr2;
 	uint32_t mr3;
@@ -115,7 +115,7 @@ typedef struct dram_para
 	uint32_t mr5;
 	uint32_t mr6;
 	uint32_t mr11;
-	uint32_t mr12;
+	uint32_t mr12;	// 0x10
 	uint32_t mr13;
 	uint32_t mr14;
 	uint32_t mr16;
@@ -123,7 +123,7 @@ typedef struct dram_para
 	uint32_t mr22;
 	uint32_t tpr0;
 	uint32_t tpr1;
-	uint32_t tpr2;
+	uint32_t tpr2;	// 0x18
 	uint32_t tpr3;
 	uint32_t tpr6;
 	uint32_t tpr10;
@@ -132,7 +132,7 @@ typedef struct dram_para
 	uint32_t tpr13;
 	uint32_t tpr14;
 
-	uint32_t odt_en;
+	uint32_t odt_en;	// 0x20
 } dram_para_t;
 
 // CONFIG_DRAM_SUN50I_H616_UNKNOWN_FEATURE
@@ -710,32 +710,68 @@ struct dram_config {
 };
 
 
-#if CPUSTYLE_T507
+#if CONFIG_SUNXI_DRAM_T507_LPDDR3
+	//#warning LPDDR3
 
-#define CONFIG_DRAM_SUN50I_H616_TPR0 0x0
-#define CONFIG_DRAM_SUN50I_H616_TPR2 0x0
+	//dram_clk = 792
+	//dram_type = 7
+	#define CONFIG_DRAM_SUN50I_H616_DX_ODT 0x06060606
+	#define CONFIG_DRAM_SUN50I_H616_DX_DRI 0x0d0d0d0d
+	#define CONFIG_DRAM_SUN50I_H616_CA_DRI 0x0d0d
+	#define CONFIG_DRAM_SUN50I_H616_ODT_EN 0x9988ffff
+	#define CONFIG_DRAM_SUN50I_H616_PARA1 0x30fa
+	#define CONFIG_DRAM_SUN50I_H616_PARA2 0x1000
+	//dram_mr0 = 0x0
+	//dram_mr1 = 0xc3
+	//dram_mr2 = 0x6
+	//dram_mr3 = 0x1
+	//dram_mr4 = 0x0
+	//dram_mr5 = 0x0
+	//dram_mr6 = 0x0
+	//dram_mr11 = 0x0
+	//dram_mr12 = 0x0
+	//dram_mr13 = 0x0
+	//dram_mr14 = 0x0
+	//dram_mr16 = 0x0
+	//dram_mr17 = 0x0
+	//dram_mr22 = 0x0
+	#define CONFIG_DRAM_SUN50I_H616_TPR0 0x0
+	//dram_tpr1 = 0x0
+	#define CONFIG_DRAM_SUN50I_H616_TPR2 0x1
+	//dram_tpr3 = 0x0
+	#define CONFIG_DRAM_SUN50I_H616_TPR6 0x35bd8080
+	#define CONFIG_DRAM_SUN50I_H616_TPR10 0x402f4469
+	#define CONFIG_DRAM_SUN50I_H616_TPR11 0x0c0c080c
+	#define CONFIG_DRAM_SUN50I_H616_TPR12 0x0d0a0b0c
+	#define CONFIG_DRAM_SUN50I_H616_TPR13 0x000c60
 
-/* 1GB LPDDR4 @ HelperBoard507 */
-//#define CONFIG_DRAM_SUN50I_H616_DX_ODT 0x0c0c0c0c
-//#define CONFIG_DRAM_SUN50I_H616_DX_DRI 0x0e0e0e0e
-//#define CONFIG_DRAM_SUN50I_H616_CA_DRI 0x0e0e
-//#define CONFIG_DRAM_SUN50I_H616_ODT_EN 0x7887bbbb
-//#define CONFIG_DRAM_SUN50I_H616_TPR10 0x402e0000
-//#define CONFIG_DRAM_SUN50I_H616_TPR11 0x22262622
-//#define CONFIG_DRAM_SUN50I_H616_TPR12 0x0b0c0d0b
+#elif CONFIG_SUNXI_DRAM_T507_LPDDR4
+	// LPDDR4 versions
+	#define CONFIG_DRAM_SUN50I_H616_TPR0 0x0
+	#define CONFIG_DRAM_SUN50I_H616_TPR2 0x0
 
-// https://github.com/wirenboard/u-boot-upstream/blob/4eb7bc820e8ed06ba2e2a1e6fd870060906393be/configs/sun50i_wirenboard8_defconfig#L8C1-L16C1
+	/* 1GB LPDDR4 @ HelperBoard507 */
+	//#define CONFIG_DRAM_SUN50I_H616_DX_ODT 0x0c0c0c0c
+	//#define CONFIG_DRAM_SUN50I_H616_DX_DRI 0x0e0e0e0e
+	//#define CONFIG_DRAM_SUN50I_H616_CA_DRI 0x0e0e
+	//#define CONFIG_DRAM_SUN50I_H616_ODT_EN 0x7887bbbb
+	//#define CONFIG_DRAM_SUN50I_H616_TPR10 0x402e0000
+	//#define CONFIG_DRAM_SUN50I_H616_TPR11 0x22262622
+	//#define CONFIG_DRAM_SUN50I_H616_TPR12 0x0b0c0d0b
 
-#define CONFIG_DRAM_SUN50I_H616_DX_ODT 0x07070707
-#define CONFIG_DRAM_SUN50I_H616_DX_DRI 0x0e0e0e0e
-#define CONFIG_DRAM_SUN50I_H616_CA_DRI 0x0e0e
-#define CONFIG_DRAM_SUN50I_H616_ODT_EN 0xaaaaeeee
-#define CONFIG_DRAM_SUN50I_H616_TPR6 0x44000000
-#define CONFIG_DRAM_SUN50I_H616_TPR10 0x402f6633
-#define CONFIG_DRAM_SUN50I_H616_TPR11 0x24242624
-#define CONFIG_DRAM_SUN50I_H616_TPR12 0x0f0f100f
+	// https://github.com/wirenboard/u-boot-upstream/blob/4eb7bc820e8ed06ba2e2a1e6fd870060906393be/configs/sun50i_wirenboard8_defconfig#L8C1-L16C1
+	/* 1GB LPDDR4 @ HelperBoard507 */
 
-#elif CPUSTYLE_A133
+	#define CONFIG_DRAM_SUN50I_H616_DX_ODT 0x07070707
+	#define CONFIG_DRAM_SUN50I_H616_DX_DRI 0x0e0e0e0e
+	#define CONFIG_DRAM_SUN50I_H616_CA_DRI 0x0e0e
+	#define CONFIG_DRAM_SUN50I_H616_ODT_EN 0xaaaaeeee
+	#define CONFIG_DRAM_SUN50I_H616_TPR6 0x44000000
+	#define CONFIG_DRAM_SUN50I_H616_TPR10 0x402f6633
+	#define CONFIG_DRAM_SUN50I_H616_TPR11 0x24242624
+	#define CONFIG_DRAM_SUN50I_H616_TPR12 0x0f0f100f
+
+#elif CONFIG_SUNXI_DRAM_A133_LPDDR4
 
 // https://github.com/u-boot/u-boot/blob/d33b21b7e261691e8d6613a24cc9b0ececba3b01/configs/liontron-h-a133l_defconfig#L1
 

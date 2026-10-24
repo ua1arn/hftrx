@@ -48,7 +48,7 @@ enum
 // Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
 
 #define NtapValidate(n)	((unsigned) (n) / 8 * 8 + 1)	/* Гарантируется пригодность для симметричного фильтра */
-#define NtapCoeffs(n)	((unsigned) (n) / 2 + 1)
+#define NtapHalf(n)	((unsigned) (n) / 2 + 1)
 
 #if WITHDSPLOCALRXFIR || WITHDSPLOCALTXFIR
 
@@ -60,7 +60,6 @@ enum
 
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
-		#define DUALRXFLT		0
 
 	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_A64 || CPUSTYLE_H3 || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
 
@@ -69,7 +68,6 @@ enum
 
 		#define Ntap_tx_MIKE	NtapValidate(241)	// single samples, floating point implementation
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
-		#define DUALRXFLT		1
 
 	#elif CPUSTYLE_STM32F7XX
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
@@ -77,7 +75,6 @@ enum
 
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
-		#define DUALRXFLT		0
 
 	#else
 		#define Ntap_rx_SSB_IQ	NtapValidate(181)	// SSB/CW filters: complex numbers, floating-point implementation
@@ -85,7 +82,6 @@ enum
 
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 		#define	Ntap_rx_AUDIO	NtapValidate(241)
-		#define DUALRXFLT		0
 
 	#endif
 
@@ -93,20 +89,26 @@ enum
 
 	/* Фильтрация квадратур осуществляется FPGA */
 
-	#if CPUSTYLE_T113 || CPUSTYLE_T507 || CPUSTYLE_A64 || CPUSTYLE_XC7Z || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
+	#if CPUSTYLE_T113 || CPUSTYLE_T507 || CPUSTYLE_A733 || CPUSTYLE_H3 || CPUSTYLE_A64 || CPUSTYLE_XC7Z || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
+		#define Ntap_rx_SSB_IQ	NtapValidate(511)	// SSB/CW RX filters: Wiver filters - for WITHDSPLOCALRXFIR
+		#define Ntap_tx_SSB_IQ	NtapValidate(511)	// SSB/CW TX filter: Wiver filters - for WITHDSPLOCALTXFIR
+
 		#define	Ntap_rx_AUDIO	NtapValidate(1023)
-		#define Ntap_tx_MIKE	NtapValidate(1023)
-		#define DUALRXFLT 1
+		#define Ntap_tx_MIKE	NtapValidate(1023)	// tx equalizer, tx filter
 
 	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_F133
+		#define Ntap_rx_SSB_IQ	NtapValidate(511)	// SSB/CW RX filters: Wiver filters - for WITHDSPLOCALRXFIR
+		#define Ntap_tx_SSB_IQ	NtapValidate(511)	// SSB/CW TX filter: Wiver filters - for WITHDSPLOCALTXFIR
+
 		#define	Ntap_rx_AUDIO	NtapValidate(1023)
 		#define Ntap_tx_MIKE	NtapValidate(511)
-		#define DUALRXFLT 0
 
 	#else /* CPUSTYLE_STM32MP1 */
+		#define Ntap_rx_SSB_IQ	NtapValidate(511)	// SSB/CW RX filters: Wiver filters - for WITHDSPLOCALRXFIR
+		#define Ntap_tx_SSB_IQ	NtapValidate(511)	// SSB/CW TX filter: Wiver filters - for WITHDSPLOCALTXFIR
+
 		#define	Ntap_rx_AUDIO	NtapValidate(511)
 		#define Ntap_tx_MIKE	NtapValidate(511)
-		#define DUALRXFLT 0
 
 	#endif /* CPUSTYLE_STM32MP1 */
 
@@ -139,6 +141,7 @@ enum
 #else /* CODEC1_FRAMEBITS == 64 */
 
 	//#error Unsupported CODEC1_FRAMEBITS value
+	typedef int32_t aubufv_t;
 
 #endif /* CODEC1_FRAMEBITS == 64 */
 
@@ -216,16 +219,31 @@ typedef int32_t hdmi48bufv_t;
 	typedef int32_t IFADCvalue_t;
 	typedef int32_t IFDACvalue_t;
 
+	// CIC 1 (1/128) decimator parameters in DDC path
+	#define DDC_CIC1_STAGES     9
+	#define DDC_CIC1_DELAY      1
+	#define DDC_CIC1_DECIMATION 128
+
+	// CIC 2 (1/20) decimator parameters in DDC path
+	#define DDC_CIC2_STAGES     9
+	#define DDC_CIC2_DELAY      1
+	#define DDC_CIC2_DECIMATION 20
+
+	// Parameters of the single CIC interpolator (1/2560) in DUC path
+	#define DUC_CIC_STAGES     9
+	#define DUC_CIC_DELAY      1
+	#define DUC_CIC_INTERP     2560
+
 	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
 	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
 	// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
-	//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-	#define HARDWARE_DACSCALE	(0.675)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+	//#define HARDWARE_DUCSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+	#define HARDWARE_DUCSCALE	(0.675)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
-	#define FPGADECIMATION 2560uL
-	#define FPGADIVIDERATIO 5uL
+	#define FPGADECIMATION 2560
+	#define FPGADIVIDERATIO 5		// Делитель DUCDDC_FREQ для получения сигнала BCLK - тактирование обмена с процессором
 	#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
 	#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
 
@@ -243,11 +261,23 @@ typedef int32_t hdmi48bufv_t;
 		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
 		#define HARDWARE_COEFWIDTH	32		// Разрядность коэффициентов. format is S0.31
-		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
-		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
-		#define FPGADECIMATION 2560uL	// должно быть кратно 256
+		// CIC (1/2560) decimator parameters in DDC path
+		#define DDC_CIC1_STAGES     9
+		#define DDC_CIC1_DELAY      1
+		#define DDC_CIC1_DECIMATION 2560
+
+		// Parameters of the single CIC interpolator (1/2560) in DUC path
+		#define DUC_CIC_STAGES     9
+		#define DUC_CIC_DELAY      1
+		#define DUC_CIC_INTERP     2560
+
+
+		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+		//#define HARDWARE_DUCSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		#define HARDWARE_DUCSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+
+		#define FPGADECIMATION 2560	// должно быть кратно 256
 
 		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
@@ -258,24 +288,10 @@ typedef int32_t hdmi48bufv_t;
 		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
 		#define HARDWARE_COEFWIDTH	32		// Разрядность коэффициентов. format is S0.31
 		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
-		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		//#define HARDWARE_DUCSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		#define HARDWARE_DUCSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
-		#define FPGADECIMATION 1280uL	// должно быть кратно 256
-
-		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
-		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
-
-	#elif (WITHDSPEXTFIR || WITHDSPEXTDDC) && DIRECT_96M_X1
-		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
-		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
-		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
-		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
-		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
-		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-
-		#define FPGADECIMATION 2000uL	// должно быть кратно 256
+		#define FPGADECIMATION 1280	// должно быть кратно 256
 
 		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
@@ -286,10 +302,10 @@ typedef int32_t hdmi48bufv_t;
 		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
 		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
 		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
-		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		//#define HARDWARE_DUCSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		#define HARDWARE_DUCSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
-		#define FPGADECIMATION 1024uL	// должно быть кратно 256
+		#define FPGADECIMATION 1024	// должно быть кратно 256
 
 		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
@@ -299,16 +315,17 @@ typedef int32_t hdmi48bufv_t;
 	#endif /* CPUSTYLE_XC7Z */
 #endif /* CCPUSTYLE_XC7Z || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM */
 
-#if WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN
-	#define ARMI2SMCLKX(scale)	(DUCDDC_FREQ * (uint_fast64_t) (scale) / FPGADECIMATION)
+#if defined (FPGADECIMATION) && WITHI2SCLOCKFROMPIN
+	#define ARMI2SMCLKX(scale)	((int32_t) (DUCDDC_FREQ * (uint_fast64_t) (scale) / FPGADECIMATION))
 #else /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
-	#define ARMI2SMCLKX(scale)	(ARMSAIMCLK * (uint_fast64_t) (scale) / 256)
+	#define ARMI2SMCLKX(scale)	((int32_t) (ARMSAIMCLK * (uint_fast64_t) (scale) / 256))
 #endif /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
 
-#define ARMSAIRATE		(ARMSAIMCLK / 256)	// SAI sample rate (FPGA/IF CODEC side)
+#define SAII2SDIVIDER 256	// Обязательный делитель входного тактирования SAI в STM32
+#define ARMSAIRATE		(ARMSAIMCLK / SAII2SDIVIDER)	// SAI sample rate (FPGA/IF CODEC side)
 
-#define ARMI2SRATE			((int32_t) (ARMI2SMCLK / 256))	// I2S sample rate audio codec (human side)
-#define ARMI2SRATEX(scale)	((int32_t) (ARMI2SMCLKX(scale)))	// I2S sample rate audio codec (human side)
+#define ARMI2SRATE			((int32_t) (ARMI2SMCLK / SAII2SDIVIDER))	// I2S sample rate audio codec (human side)
+#define ARMI2SRATEX(scale)	((int32_t) (ARMI2SMCLKX((scale))))	// I2S sample rate audio codec (human side)
 
 #define ARMI2SRATE100		((int32_t) (ARMI2SRATEX(100)))
 
@@ -376,10 +393,9 @@ typedef struct agcstate
 	unsigned agchangticks;	// сколько сэмплов надо сохранять agcslowcap неизменным.
 } agcstate_t;
 
-typedef struct agcparams
+// Параметры временных характеристик АРУ
+typedef struct agctime_tag
 {
-	uint8_t agcoff;	// признак отключения АРУ
-
 	// Временные парметры АРУ
 
 	// постоянные времени цепи АРУ для реакции на импульсные помехи (быстрая АРУ).
@@ -390,23 +406,38 @@ typedef struct agcparams
 	FLOAT_t chargespeedslow;		//0.05f;	// 1 - мгновенно, 0 - никогда
 	FLOAT_t dischargespeedslow;	// 1 - мгновенно, 0 - никогда
 	unsigned hungticks;				// сколько сэмплов надо сохранять agcslowcap неизменным.
+} agctime_t;
 
+// Параметры амплитудных характеристик АРУ
+typedef struct agclevel_tag
+{
+	uint8_t agcoff;	// признак отключения АРУ
 	// Амплитудные параметры АРУ
-
+	FLOAT_t agcfence;	// с какого уровня сигнала наступает точка пергиба АРУ
 	FLOAT_t gainlimit_ratio;				// Максимальное усиление в разах по напряжению, допустимое для АРУ
 	FLOAT_t	mininput_ratio;
 	FLOAT_t levelfence_ratio;				// Максимальнное значение на выхоле АРУ
 	FLOAT_t agcfactor;				// Параметр при вычислении "спортивной" АРУ
+} agclevel_t;
+
+
+typedef struct agcparams
+{
+	agctime_t times;	// Параметры временных характеристик АРУ
+	agclevel_t levels;	// Параметры амплитудных характеристик АРУ
 } agcparams_t;
 
-void agc_state_initialize(agcstate_t * __restrict st, const agcparams_t * __restrict agcp);
-void agc_state_initialize2(agcstate_t * __restrict st, const agcparams_t * __restrict agcp);	// hack for peaks display
-void agc_parameters_initialize(volatile agcparams_t * agcp, uint_fast32_t sr);
-void agc_parameters_peaks_initialize(volatile agcparams_t * agcp, uint_fast32_t sr);
-FLOAT_t MAKETAUIF2(FLOAT_t t, uint_fast32_t sr);
-void agc_perform(const agcparams_t * agcp, agcstate_t * st, FLOAT_t sample);
-FLOAT_t agc_result_fast(agcstate_t * st);
-FLOAT_t agc_result_slow(agcstate_t * st);
+FLOAT_t ratio2db(FLOAT_t ratio);
+FLOAT_t db2ratio(FLOAT_t valueDBb);
+
+void agc_state_init(agcstate_t * __restrict st, const agclevel_t * __restrict agcp);
+void agc_state_initialize0(agcstate_t * __restrict st, FLOAT_t level);
+void agc_parameters_init(agcparams_t * agcp, uint_fast32_t sr);
+void agc_parameters_pwrpeaks_init(agctime_t * agcp, uint_fast32_t sr);
+void agc_parameters_peaks_init(agctime_t * agcp, uint_fast32_t sr);
+void agc_perform(agcstate_t * st, const agctime_t * agcp, FLOAT_t sample);
+FLOAT_t agc_result_fast(const agcstate_t * st);
+FLOAT_t agc_result_slow(const agcstate_t * st);
 
 unsigned audiorec_getwidth(void);
 
@@ -463,13 +494,17 @@ void board_set_amdepth(uint_fast8_t n);		/* Глубина модуляции в
 void board_set_swaprts(uint_fast8_t v);	/* если используется конвертор на Rafael Micro R820T - требуется инверсия спектра */
 void board_set_lo6(int_fast32_t f);
 void board_set_fullbw6(int_fast16_t f);	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
-void board_set_fltsofter(uint_fast8_t n);	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
+void board_set_flttransition(uint_fast16_t n);	/* Ширина переходной полосы */
 void board_set_aflowcutrx(int_fast16_t v);		/* Нижняя частота среза фильтра НЧ */
 void board_set_afhighcutrx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */
+void board_set_afwide(uint_fast8_t n);		/* Обработка использует фильтр с центральной частотой и полосой (0) или пвры частот */
 void board_set_aflowcuttx(int_fast16_t v);		/* Нижняя частота среза фильтра НЧ */
 void board_set_afhighcuttx(int_fast16_t v);	/* Верхняя частота среза фильтра НЧ */
-void board_set_afgain(uint_fast16_t v);	// Параметр для регулировки уровня на выходе аудио-ЦАП
+void board_set_afgain(uint_fast16_t gainL, uint_fast16_t gainR);	// Параметр для регулировки уровня на выходе аудио-ЦАП
 void board_set_ifgain(uint_fast16_t v);	// Параметр для регулировки усиления ПЧ/ВЧ
+void board_set_agcfence10(int_fast16_t v);	// Точка пергиба характеристики АРУ
+void board_set_skipfilteraf(uint_fast8_t n);
+
 void board_set_dspmode(uint_fast8_t v);	// Параметр для установки режима работы приёмника A/передатчика A
 void board_set_lineinput(uint_fast8_t n);	// Включение line input (rear panel mini-din 6 pin input) вместо микрофона
 void board_set_lineamp(uint_fast16_t v);	// Параметр для регулировки уровня на входе аудио-ЦАП при работе с LINE IN
@@ -477,9 +512,9 @@ void board_set_txaudio(uint_fast8_t v);	// Альтернативные исто
 void board_set_mikeboost20db(uint_fast8_t n);	// Включение предусилителя за микрофоном
 void board_set_afmute(uint_fast8_t n);	// Отключение звука
 void board_set_mikeequal(uint_fast8_t n);	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-void board_set_mikeequalparams(const uint_fast8_t * p);	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-void board_set_mikeagc(uint_fast8_t n);		/* Включение программной АРУ перед модулятором */
-void board_set_mikeagcgain(uint_fast8_t v);	/* Максимальное усидение АРУ микрофона */
+void board_set_mikeequalparams(const uint_fast8_t * p, unsigned nbands);	// Эквалайзер НЧ тракта передатчика
+void board_set_mikeagc(uint_fast8_t n, uint_fast8_t gain);		/* Включение программной АРУ перед модулятором */
+void board_set_mikeacomp(uint_fast8_t v);	/* Compressor */
 void board_set_afresponcerx(int_fast8_t v);	/* изменение тембра звука в канале приемника */
 void board_set_afresponcetx(int_fast8_t v);	/* изменение тембра звука в канале передатчика */
 void board_set_mikehclip(uint_fast8_t gmikehclip);	/* Ограничитель */
@@ -492,7 +527,7 @@ void board_set_datatx(uint_fast8_t v);	/* автоматическое изме�
 void board_set_usb_ft8cn(uint_fast8_t v);	/* совместимость VID/PID для работы с программой FT8CN */
 void board_set_usb_hs(uint_fast8_t v);	/* Использование USB HS dvtcn USB FS */
 
-void dsp_initialize(void);
+void hftrx_init(void);
 int ctcss_squelch(void);
 
 #if WITHINTEGRATEDDSP
@@ -501,6 +536,7 @@ int ctcss_squelch(void);
 	// возвращает значения от 0 до ymax включительно
 	// 0 - минимальный сигнал, ymax - максимальный
 	int dsp_mag2y(FLOAT_t mag, int ymax, int_fast16_t topdb, int_fast16_t bottomdb);
+	int dsp_power2y(int_fast16_t power, int ymax, int_fast16_t topdb, int_fast16_t bottomdb);
 	FLOAT_t ratio2db(FLOAT_t ratio);	// Преобразовать отношение напряжений выраженное в "разах" к децибелам.
 	FLOAT_t db2ratio(FLOAT_t valueDBb);	// Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
 
@@ -523,8 +559,8 @@ uint_fast16_t dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uin
 int_fast16_t dsp_rssi10(int_fast16_t * tracemax, uint_fast8_t pathi);	/* получить значение уровня сигнала для s-метра в 0.1 дБмВт */
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale);	/* получить значение от детектора VOX */
 uint_fast8_t dsp_getavox(uint_fast8_t fullscale);	/* получить значение от детектора Anti-VOX */
-uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi);	/* Получить значение отклонения частоты с точностью 0.1 герца */
 uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признака переполнения АЦП микрофонного тракта */
+int_fast16_t dsp_agcfence10(void);	/* получить значение точки перегиба АРУ в 0.1 дБмВт */
 
 void dsp_speed_diagnostics(void);	/* DSP speed test */
 void beginstamp(void);
@@ -544,6 +580,8 @@ void elfill_dmabuffer32tx(FLOAT_t ch0, FLOAT_t ch1, int32_t v3);
 void elfill_dmabuffer16tx(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_dmabufferhdmi48tx(FLOAT_t ch0, FLOAT_t ch1);
 void elfill_recordswav48(FLOAT_t ch0, FLOAT_t ch1);
+
+void elfill_dmabuffer16rx_raw(aubufv_t ch0, aubufv_t ch1);	/* Перенос из FPGA PIPE в формируемый буфер виртуального кодекв */
 
 uint_fast8_t elfetch_dmabufferuacout48(FLOAT_t * dest);
 uint_fast8_t elfetch_dmabuffer16rx(FLOAT_t * dest);
@@ -588,7 +626,7 @@ const codec2if_t * board_getfpgacodecif(void);		// получить интерф
 
 /* загрузка коэффициентов FIR фильтра в FPGA */
 void board_fpga_fir_initialize(void);
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth); /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
+void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth); /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
 
 /* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
  * Возврат 0, если нет ничего для воспроизведения.
@@ -652,7 +690,8 @@ void dsp_extbuffer32wfm(const IFADCvalue_t * buff);	// RX
 void inject_testsignals(IFADCvalue_t * dbuff);
 void savedemod_to_AF_proc(FLOAT_t left, FLOAT_t right);	// Сохранение сэмплов с выхода демодулятора
 FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv);
-void process_dmabuffer32rx(const IFADCvalue_t * buff);
+void rxdmaprocISB(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv, FLOAT_t * usb, FLOAT_t * lsb);
+int isISBMode(uint_fast8_t pathi);
 
 enum {
 	AF_EQUALIZER_BANDS = 3,		// число полос
@@ -663,17 +702,82 @@ enum {
 };
 #endif /* WITHIF4DSP */
 
-int_fast32_t hamradio_get_af_equalizer_base(void);
-int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v);
-void hamradio_set_af_equalizer_gain_rx(uint_fast8_t index, uint_fast8_t gain);
-void board_set_equalizer_rx(uint_fast8_t n);
-void board_set_equalizer_tx(uint_fast8_t n);
-void board_set_equalizer_rx_gains(const uint_fast8_t * p);
-void board_set_equalizer_tx_gains(const uint_fast8_t * p);
-uint_fast8_t hamradio_get_geqrx(void);
-void hamradio_set_geqrx(uint_fast8_t v);
+#if WITHINTEGRATEDDSP
 
-void audio_rx_equalizer(FLOAT_t *buffer, uint_fast16_t size);
+#define NPROF 2	/* количество профилей параметров DSP фильтров. */
+
+
+/*
+ * Object-oriented NFM Signaling Module for hftrx
+ *
+ * Target path structure encapsulation using hfrxpath_t object abstraction.
+ * Pure C numeric conversions without double promotion.
+ * Localization via static bindings.
+ */
+
+/* NFM PLL demodulator state structure */
+typedef struct {
+    FLOAT_t phase;       /* Phase of the numeric controlled oscillator (NCO) */
+    FLOAT_t freq;        /* Integral component of the loop filter */
+    FLOAT_t kp;          /* Proportional gain of the PLL loop */
+    FLOAT_t ki;          /* Integral gain of the PLL loop */
+    FLOAT_t lock_avg;    /* Smoothed loop lock indicator (Lock Detector) */
+} nfm_pll_t;
+
+/* NFM De-emphasis filter state structure (1st order IIR) */
+typedef struct {
+    FLOAT_t b0;          /* Filter coefficient b0 */
+    FLOAT_t b1;          /* Filter coefficient b1 */
+    FLOAT_t a1;          /* Filter coefficient a1 */
+    FLOAT_t x1;          /* Delay element for input state x[n-1] */
+    FLOAT_t y1;          /* Delay element for output state y[n-1] */
+    FLOAT_t denom;
+} nfm_deemph_t;
+
+/* CIC Decimator state structure (2nd order, optimized for M=45) */
+typedef struct {
+    FLOAT_t integrator1;         /* First integrator stage running at 48 kHz */
+    FLOAT_t integrator2;         /* Second integrator stage running at 48 kHz */
+    FLOAT_t comb1_delay;         /* First comb stage delay element running at 1066 Hz */
+    FLOAT_t comb2_delay;         /* Second comb stage delay element running at 1066 Hz */
+    uint32_t decimation_counter; /* Downsampling rate counter (0 to 44) */
+} ctcss_cic_t;
+
+/* CTCSS Goertzel detector state structure */
+typedef struct {
+    FLOAT_t coeff;       /* Feedback coefficient */
+    FLOAT_t q0;          /* State variable q[n] */
+    FLOAT_t q1;          /* State variable q[n-1] */
+    FLOAT_t q2;          /* State variable q[n-2] */
+    uint32_t count;      /* Current sample index in the block */
+    uint32_t block_size; /* Block size N (defines integration window, e.g., 160) */
+} ctcss_goertzel_t;
+
+/* DCS Detector state structure */
+typedef struct {
+    FLOAT_t dcs_integrator;    /* Integrate samples for bit slicing */
+    int32_t phase_accumulator; /* Precise NCO phase for clock recovery */
+    uint32_t bit_buffer;       /* Shift register for 23 received bits */
+    FLOAT_t prev_sample;       /* Last sample for edge detection */
+} dcs_detector_t;
+
+typedef uint32_t ncoftw_t;
+typedef int32_t ncoftwi_t;
+
+#define NCOFTWBITS 32	// количество битов в ncoftw_t
+#define FTWROUND(ftw) ((uint32_t) (ftw))
+#define FTWAF001(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / ARMI2SRATE100))
+#define FTWAF(freq) ((ncoftwi_t) (((int_fast64_t) (freq) << NCOFTWBITS) / (int_fast64_t) ARMI2SRATE))
+
+// Convert ncoftw_t to q31 argument for arm_sin_cos_q31
+// The Q31 input value is in the range [-1 0.999999] and is mapped to a degree value in the range [-180 179].
+#define FTW2_SINCOS_Q31(angle) ((ncoftwi_t) (angle))
+// Convert ncoftw_t to q31 argument for arm_sin_q31
+// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*M_PI).
+#define FTW2_COS_Q31(angle) ((q31_t) ((((ncoftw_t) (angle)) + 0x80000000) / 2))
+#define FAST_Q31_2_FLOAT(val) ((q31_t) (val) / (FLOAT_t) 2147483648)
+
+
 
 //////////////////////////
 /// IIR
@@ -701,6 +805,226 @@ void biquad_init_bandpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t 
 void biquad_init_bandstop(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f1, FLOAT_t f2);
 void biquad_init_highpass(iir_filter_t *filter, FLOAT_t fs, FLOAT_t f);
 void iir_freq_resp(iir_filter_t *filter, FLOAT_t *hcomplex, FLOAT_t fs, FLOAT_t f);
+
+enum { AMDSTAGES = 7, AMDOUT_IDX = (3 * AMDSTAGES) };
+
+
+typedef struct
+{
+	//int run;
+	//int buff_size;					// buffer size
+	//FLOAT_t *in_buff;					// pointer to input buffer
+	//FLOAT_t *out_buff;				// pointer to output buffer
+	//int mode;							// demodulation mode
+	//FLOAT_t sample_rate;				// sample rate
+	FLOAT_t dc;							// dc component in demodulated output
+	ncoftwi_t omegai_min;					// pll - minimum lock check parameter
+	ncoftwi_t omegai_max;					// pll - maximum lock check parameter
+	ncoftwi_t phsi;						// pll - phase accumulator
+	ncoftwi_t omegai;						// pll - locked pll frequency
+	ncoftwi_t fil_outi;					// pll - filter output
+	int64_t g1i, g2i;					// pll - filter gain parameters
+
+	FLOAT_t mtauR;						// carrier removal multiplier
+	FLOAT_t onem_mtauR;					// 1.0 - carrier_removal_multiplier
+	FLOAT_t mtauI;						// carrier insertion multiplier
+	FLOAT_t onem_mtauI;					// 1.0 - carrier_insertion_multiplier
+
+	FLOAT_t a [3 * AMDSTAGES + 3];		// Filter a variables
+	FLOAT_t b [3 * AMDSTAGES + 3];		// Filter b variables
+	FLOAT_t c [3 * AMDSTAGES + 3];		// Filter c variables
+	FLOAT_t d [3 * AMDSTAGES + 3];		// Filter d variables
+	FLOAT_t c0 [AMDSTAGES];				// Filter coefficients - path 0
+	FLOAT_t c1 [AMDSTAGES];				// Filter coefficients - path 1
+	FLOAT_t dsI;						// delayed sample, I path
+	FLOAT_t dsQ;						// delayed sample, Q path
+	FLOAT_t dc_insert;					// dc component to insert in output
+	int sbmode;						// sideband mode
+	//int levelfade;					// Fade Leveler switch
+} amdemod_t;
+
+#ifndef _ISB_H_
+#define _ISB_H_
+
+#include <stdint.h>
+
+#define ISB_FIR_TAPS            257
+#define ISB_DELAY_LEN           128  /* Bounded strictly to (ISB_FIR_TAPS - 1) / 2 */
+
+/**
+ * @brief Isolated structure for sample-by-sample Independent Sideband (ISB) Demodulator.
+ * Contains internal lookup matrices and historical delay lines for 90-degree phase splitting.
+ */
+typedef struct {
+    /* Circular history registers buffers for real-time streaming convolution */
+    FLOAT_t buffer_q[ISB_FIR_TAPS];  /* History buffer for the imaginary Q-channel */
+    FLOAT_t buffer_i[ISB_DELAY_LEN]; /* Line delay buffer to sync the real I-channel phase */
+
+    uint32_t wr_idx_q;               /* Write pointer index for Q-channel history buffer */
+    uint32_t wr_idx_i;               /* Write pointer index for I-channel delay buffer */
+
+    /* Pre-calculated static FIR coefficients for the 90-degree Hilbert transformer */
+    FLOAT_t hilbert_taps[ISB_FIR_TAPS];
+} isb_demodulator_t;
+
+/* ========================================================================== */
+/* ISB DEMODULATOR INTERFACE EXPORTED API PROTOTYPES                          */
+/* ========================================================================== */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @brief GLOBAL ISB INITIALIZER: Clears buffers and pre-calculates Hilbert FIR filter coefficients.
+ * @param self Pointer to the active isolated ISB demodulator context.
+ */
+void dsp_isb_rx_init(isb_demodulator_t * const self);
+
+/**
+ * @brief MAIN EXPORT LAYER: Processes one complex IQ sample and extracts independent LSB/USB audio outputs.
+ * Executed sample-by-sample inside the hot path sound card DMA interrupt handler.
+ *
+ * @param self Pointer to the active isolated ISB demodulator context.
+ * @param in_i Input real quadrature component (I) from the LPF filtered down-converter.
+ * @param in_q Input imaginary quadrature component (Q) from the LPF filtered down-converter.
+ * @param out_usb Output pointer to return extracted Upper Sideband (USB) voice sample.
+ * @param out_lsb Output pointer to return extracted Lower Sideband (LSB) voice sample.
+ */
+void dsp_isb_rx_process_sample(
+    isb_demodulator_t * const self,
+    const FLOAT_t in_i,
+    const FLOAT_t in_q,
+    FLOAT_t * const out_usb,
+    FLOAT_t * const out_lsb);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _ISB_H_ */
+
+#include "rtty.h"
+#include "ofdm_bpsk.h"
+
+typedef struct {
+    nfm_pll_t demodulator;
+    nfm_deemph_t audio_filter;
+
+    ctcss_cic_t cic_decimator;
+    ctcss_goertzel_t ctcss_det;
+    dcs_detector_t dcs_det;
+
+	uint8_t ctcss_squelch_open;
+    uint8_t dcs_squelch_open;
+    uint16_t dcs_target_code;
+} nfm_rx_t;
+
+
+typedef struct {
+	// Фильтр для квадратурных каналов приёмника (floating point).
+	FLOAT_t FIRCoef_rx_SSB_IQ [NPROF] [Ntap_rx_SSB_IQ];
+	FLOAT_t window_buf [Ntap_rx_SSB_IQ];
+	FLOAT32P_t fir_x [Ntap_rx_SSB_IQ * 2];
+	uint_fast16_t fir_head;// = 0;
+} local_rx_iq_fir_t;
+
+typedef struct {
+	// буфер с сохранёнными значениями сэмплов
+	FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [Ntap_tx_SSB_IQ];
+	FLOAT_t window_buf [Ntap_tx_SSB_IQ];
+	FLOAT32P_t fir_x [Ntap_tx_SSB_IQ * 2];
+	uint_fast16_t fir_head;// = 0;
+} local_tx_iq_fir_t;
+
+/* Complete RX Signal Path Object Model for hftrx */
+typedef struct {
+	const void * sign1;
+	// NFM
+	nfm_rx_t nfm_rx;
+    FLOAT_t manualsquelch;
+
+//	ncoftwi_t prev_fi;
+//	volatile int32_t saved_delta_fi;
+
+    unsigned delayblanklo6rx;
+    uint8_t delaylo6lastmoderx;
+
+    ncoftw_t anglestep_aflorx;
+    ncoftw_t angle_aflorx;
+
+    amdemod_t samdetector;	/* AM demodulator */
+
+
+    agcparams_t rxsmeterparams;
+    agcstate_t rxsmeterstate;	// На каждый приёмник
+    agcstate_t rxagcstate;	// На каждый приёмник
+    agcparams_t rxagcparams [NPROF];
+
+    isb_demodulator_t isb_rx;
+	rtty_receiver_t rtty_rx;
+	ofdm_modem_rx_t ofdm_rx;
+
+	adapter_t nfmdemod;		/* Преобразование выхода demodulator_FM() */
+#if WITHDSPLOCALRXFIR
+	local_rx_iq_fir_t rx_iq_fir;
+#endif /* WITHDSPLOCALRXFIR */
+
+	const void * sign2;
+} hfrxpath_t;
+
+	/* Complete TX Signal Path Object Model for hftrx */
+typedef struct {
+	const void * sign1;
+
+	volatile FLOAT_t scaleDAC;// = 1;
+	unsigned shapeSidetonePos;// = 0;
+	volatile uint_fast8_t shapeSidetoneInpit;// = 0;
+	volatile uint_fast8_t shapeCWSSBSidetoneInpit;// = 0;
+
+	unsigned shapeTXEnvelopPos;// = 0;
+	unsigned shapeCWSSBEnvelopPos;// = 0;
+
+	volatile unsigned enveloplen0;// = NSAITICKS(5) + 1;	/* Изменяется через меню. */
+
+    unsigned delayblanklo6tx;
+    uint8_t delaylo6lastmodetx;
+    ncoftw_t anglestep_aflotx;
+    ncoftw_t angle_aflotx;
+
+	ncoftw_t gnfmdeviationftw;// = FTWAF(7500);	// 7.5 kHz (-7.5..+7.5) deviation
+
+	rtty_transmitter_t rtty_tx;
+	ofdm_modem_tx_t ofdm_tx;
+
+#if WITHDSPLOCALTXFIR
+	// Фильтр для квадратурных каналов передатчика (floating point).
+	local_tx_iq_fir_t tx_iq_fir;
+#endif /* WITHDSPLOCALTXFIR */
+
+	agcstate_t txagcstate;
+	agcparams_t mikeagcparams [NPROF];	// постоянные времени системы АРУ
+
+	const void * sign2;
+} hftxpath_t;
+
+
+hfrxpath_t * hftrx_rxgetpathA(void);
+hftxpath_t * hftrx_txgetpath(void);
+
+void modem_init(void);
+
+void modem_spool(void * ctx);
+void modem_send(uint_fast8_t c);
+void modem_fill(hfrxpath_t * path, IFADCvalue_t * buff);
+void modem_parse(hfrxpath_t * path, const IFADCvalue_t * buff);
+
+void modem_test(void);
+FLOAT32P_t xget_float_monofreq(void);	// modem test LO quadratures
+
+void process_dmabuffer32rx(const IFADCvalue_t * buff);
+
+#endif /* WITHINTEGRATEDDSP */
 
 #if __STDC__
 
@@ -745,8 +1069,13 @@ extern volatile phase_t mirror_nco3;
 extern volatile phase_t mirror_nco4;
 extern volatile phase_t mirror_ncorts;
 
-void user_audioproc(void * ctx);	// user-mode processing - NR, эквалайзер приёмника
-int user_audioproc_thread(void * ctx);	// user-mode processing - NR, эквалайзер приёмника
+// Эквалайзер НЧ тракта передатчика
+//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
+//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
+//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
+
+#define BOARD_AFPROC_BANDS 	10
+#define EQUALIZERBASE 12	// -12..+12
 
 #ifdef __cplusplus
 }

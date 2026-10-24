@@ -53,9 +53,6 @@
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
-	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
-
 	#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
@@ -271,25 +268,13 @@
 		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, TARGET_ENCODER_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
 	} while (0)
 
-	// Эксперементальная - только прерывания
-	#define TARGET_FUNC_ENC_INITIALIZEx() do { \
-		/* FUNC encoder по прерываниям */ \
-		static einthandler_t eh; \
-		static ticker_t th; \
-		arm_hardware_pioe_altfn20(TARGET_ENCODER2_A, GPIO_CFG_EINT); \
-		arm_hardware_pioe_inputs(TARGET_ENCODER2_B); \
-		arm_hardware_pioe_updown(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, 0); \
-		einthandler_initialize(& eh, TARGET_ENCODER2_A, spool_encinterrupts4_dirB_ccw, & encoder2); \
-		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER2_A, 1 * TARGET_ENCODER2_A, 0 * TARGET_ENCODER2_A, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \
-	} while (0)
-
 	#define TARGET_FUNC_ENC_INITIALIZE() do { \
 		/* FUNC encoder по опросу и прерываниям */ \
 		static einthandler_t eh; \
 		static ticker_t th; \
 		arm_hardware_pioe_altfn20(TARGET_ENCODER2_BITS, GPIO_CFG_EINT); \
 		arm_hardware_pioe_updown(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, 0); \
-		ticker_initialize(& th, NTICKS(ENC_TICKS_PERIOD), spool_encinterrupts, & encoder2); \
+		ticker_initialize(& th, ENC_TICKS_PERIOD, spool_encinterrupts, & encoder2); \
 		ticker_add(& th); \
 		einthandler_initialize(& eh, TARGET_ENCODER2_BITS, spool_encinterrupts, & encoder2); \
 		arm_hardware_pioe_onchangeinterrupt(TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, TARGET_ENCODER2_BITS, ENCODER_PRIORITY, ENCODER_TARGETCPU, & eh); \

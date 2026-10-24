@@ -31,7 +31,7 @@
 #regdef;	GICD_IGRPMODR;		0x0D00 32;	Interrupt Group Modifier Registers
 #regdef;	GICD_NSACR;			0x0E00 64;	Non-secure Access Control Registers
 
-#regdef;	GICD_IROUTER 8;		0x6100 988;	Interrupt Routing Registers.
+#regdef;	GICD_IROUTER 8;		0x6000 988;	Interrupt Routing Registers.
 
 #regdef;	GICD_CHIPSR;		0xC000;		Chip Status Register
 #regdef;	GICD_DCHIPR;		0xC004;		Default Chip Register
@@ -152,12 +152,13 @@
 #regdefr; 	GICP_CIDR2;			0xFFF8;		Component ID 2 Register
 #regdefr; 	GICP_CIDR3;			0xFFFC;		Component ID 3 Register
 
+#regdef; pad 0; 0x10000; alignment
 #typeend;
 
 ## corelink_gic600_generic_interrupt_controller_technical_reference.pdf
 ## 4.4 Redistributor registers for control and physical LPIs
 
-#type; GICR_1; GIC Redistributor for control and physical LPIs
+#type; GICR_LPI; GIC Redistributor for control and physical LPIs
 
 #regdef;  	GICR_CTLR;  		0x0000; 	Redistributor Control Register
 #regdefr; 	GICR_IIDR; 			0x0004; 
@@ -171,7 +172,7 @@
 #regdef;  	GICR_PROPBASER 8; 	0x0070; 	Redistributor Properties Base Address Register
 #regdef;  	GICR_PENDBASER 8; 	0x0078; 	Redistributor LPI Pending Table Base Address Register
 #regdef;  	GICR_INVLPIR 8; 	0x00A0; 
-#regdef;  	GICR_INVALLR 8; 	0x00A8; 
+#regdef;  	GICR_INVALLR 8; 	0x00B0; 
 #regdef;  	GICR_SYNCR; 		0x00C0; 
 
 #regdefr; 	GICR_PIDR4;			0xFFD0;		Peripheral ID 4 Register
@@ -186,13 +187,14 @@
 #regdefr; 	GICR_CIDR1;			0xFFF4;		Component ID 1 Register
 #regdefr; 	GICR_CIDR2;			0xFFF8;		Component ID 2 Register
 #regdefr; 	GICR_CIDR3;			0xFFFC;		Component ID 3 Register
+#regdef; pad 0; 0x10000; alignment
 
 #typeend;
 
 ## corelink_gic600_generic_interrupt_controller_technical_reference.pdf
 ## 4.5 Redistributor registers for SGIs and PPIs summary
 
-#type; GICR_2; GIC Redistributor for SGIs and PPIs summary 
+#type; GICR_SGI_PPI; GIC Redistributor for SGIs and PPIs summary 
 
 #regdef;	GICR_IGROUPR0;		0x0080;		Interrupt Group Register
 #regdef;	GICR_ISENABLER0;	0x0100;		Interrupt Set-Enable Register
@@ -200,12 +202,12 @@
 #regdef;	GICR_ISPENDR0;		0x0200;		Interrupt Set-Pending Register
 #regdef;	GICR_ICPENDR0;		0x0280;		Peripheral Clear Pending Register
 
-#regdef;	GICR_ISACTIVER0;	0x0300;	
-#regdef;	GICR_ICACTIVER0;	0x0380;	
-#regdef;	GICR_IPRIORITYRn;	0x0400 8;	
-#regdef;	GICR_ICFGRn;		0x0C00;		Interrupt Configuration Registers	
+#regdef;	GICR_ISACTIVER0;	0x0300;		Interrupt Set-Active Register
+#regdef;	GICR_ICACTIVER0;	0x0380;		Interrupt Clear-Active Register
+#regdef;	GICR_IPRIORITYR;	0x0400 8;	Interrupt Priority Registers
+#regdef;	GICR_ICFGR;			0x0C00 2;	Interrupt Configuration Registers	
 #regdef;	GICR_IGRPMODR0;		0x0D00;		Interrupt Group Modifier Registers	
-#regdef;	GICR_NSACR;			0x0E00;	Non-secure Access Control Register	
+#regdef;	GICR_NSACR;			0x0E00;		Non-secure Access Control Register	
 
 #regdefr;	GICR_MISCSTATUSR;	0xC000;		4.5.1 Miscellaneous Status Register, GICR_MISCSTATUSR on page 4-136
 #regdefr;	GICR_IERRVR;		0xC008;		4.5.2 Interrupt Error Valid Register, GICR_IERRVR on page 4-137
@@ -213,6 +215,7 @@
 
 #regdefr; 	GICR_CFGID0;		0xFFF0;		4.5.4 Configuration ID0 Register, GICR_CFGID0 on page 4-138
 #regdefr; 	GICR_CFGID1;		0xFFF4;		4.5.5 Configuration ID1 Register, GICR_CFGID1 on page 4-139
+#regdef; pad 0; 0x10000; alignment
 
 #typeend;
 
@@ -225,16 +228,6 @@
 #regdefw; GICA_CLRSPI_NSR; 	0x0048; 	Aliased Non-secure SPI Clear Register
 #regdefw; GICA_SETSPI_SR; 	0x0050; 	Aliased Secure SPI Set Register
 #regdefw; GICA_CLRSPI_SR; 	0x0058; 	Aliased Secure SPI Clear Register
-#regdef; pad 0; 0x10000; alignment
-
-#typeend;
-
-## corelink_gic600_generic_interrupt_controller_technical_reference.pdf
-## 4.5 Redistributor registers for SGIs and PPIs summary
-
-#type; GICR_PPI_LPI; GIC Redistributor 
-
-#regdef;	GICR_PPI_LPI_IPRIORITYR;	0x0400 8;	Interrupt Priority Registers
 #regdef; pad 0; 0x10000; alignment
 
 #typeend;

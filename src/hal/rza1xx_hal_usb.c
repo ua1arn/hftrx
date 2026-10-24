@@ -214,7 +214,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cf
     } else {
         USBx->SYSCFG0 |= USB_HSE;                      /* High-Speed */
     }
-    HARDWARE_DELAY_US(1500);
+    local_delay_us(1500);
 
 	// When the function controller mode is selected, set all the bits in this register to 0.
 	for (i = 0; i < USB20_DEVADD0_COUNT; ++ i) {
@@ -282,9 +282,9 @@ HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 
     /* Disable pullup on D+ */
     USBx->SYSCFG0 &= ~USB_DPRPU;
-    HARDWARE_DELAY_MS(1);
+    local_delay_ms(1);
     USBx->SYSCFG0 |= USB_DCFM;
-    HARDWARE_DELAY_MS(1);
+    local_delay_ms(1);
     USBx->SYSCFG0 &= ~USB_DCFM;
 
     USBx->INTENB0 = 0;
@@ -997,7 +997,7 @@ void USBPhyHw_chg_curpipe(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t 
     *p_reg = buf;
 
     do {
-        HARDWARE_DELAY_US(1);
+        local_delay_us(1);
         buf = *p_reg;
     } while ((buf & (uint16_t)(USB_ISEL | USB_CURPIPE)) != (uint16_t)(isel_val | pipe));
 }
@@ -1015,7 +1015,7 @@ uint16_t USBPhyHw_is_set_frdy(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint1
         if ((uint16_t)(buffer & USB_FRDY) == USB_FRDY) {
             return (buffer);
         }
-        HARDWARE_DELAY_US(1);
+        local_delay_us(1);
     }
 
     return (USB_FIFOERROR);
@@ -1409,7 +1409,7 @@ void USBPhyHw_set_pid(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t new_
             *p_reg |= new_pid;
 
             do {
-                HARDWARE_DELAY_US(1);
+                local_delay_us(1);
                 p_reg = USBPhyHw_get_pipectr_reg(USBx, pipe);
             } while ((*p_reg & USB_PBUSY) == USB_PBUSY);
             break;
@@ -1676,18 +1676,18 @@ void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode)
                 USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
                 USB200.SYSCFG0 = 0;
                 USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-                HARDWARE_DELAY_US(1000);
+                local_delay_us(1000);
                 USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
             } else {
                 USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-                HARDWARE_DELAY_US(1000);
+                local_delay_us(1000);
                 USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
             }
         } else {
             USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
             USB200.SYSCFG0 = 0;
             USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-            HARDWARE_DELAY_US(1000);
+            local_delay_us(1000);
             USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
         }
 	} else if (USBx == & USB201) {
@@ -1699,12 +1699,12 @@ void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode)
 	            USB201.SYSCFG0 = 0;
 	            USB200.SYSCFG0 = 0;
 	            USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-	            HARDWARE_DELAY_US(1000);
+	            local_delay_us(1000);
 	            USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
 	            USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
 	        } else {
 	            USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-	            HARDWARE_DELAY_US(1000);
+	            local_delay_us(1000);
 	            USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
 	        }
 	    } else {
@@ -1713,7 +1713,7 @@ void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode)
 	        USB201.SYSCFG0 = 0;
 	        USB200.SYSCFG0 = 0;
 	        USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-	        HARDWARE_DELAY_US(1000);
+	        local_delay_us(1000);
 	        USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
 	        USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
 	    }
@@ -1742,9 +1742,9 @@ int USBPhyHw_chk_vbsts(USB_OTG_GlobalTypeDef * USBx)
     /* VBUS chattering cut */
     do {
         buf1 = USBx->INTSTS0;
-        HARDWARE_DELAY_US(10);
+        local_delay_us(10);
         buf2 = USBx->INTSTS0;
-        HARDWARE_DELAY_US(10);
+        local_delay_us(10);
         buf3 = USBx->INTSTS0;
     } while (((buf1 & USB_VBSTS) != (buf2 & USB_VBSTS)) || ((buf2 & USB_VBSTS) != (buf3 & USB_VBSTS)));
 
@@ -2362,7 +2362,7 @@ static uint_fast8_t usbd_wait_fifo(
 			(USBx->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe << USB_CFIFOSEL_CURPIPE_SHIFT) ||
 			(USBx->CFIFOCTR & USB_CFIFOCTR_FRDY) == 0)	// FRDY
 	{
-		HARDWARE_DELAY_US(1);
+		local_delay_us(1);
 		if (-- waitcnt == 0)
 		{
             return 1;
@@ -4384,10 +4384,10 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
 {
 	USB_ResetPort2(USBx, 1);
 	//HAL_Delay(100U);                                 /* See Note #1 */
-	HARDWARE_DELAY_MS(100);
+	local_delay_ms(100);
 	USB_ResetPort2(USBx, 0);
 	//HAL_Delay(10U);
-	HARDWARE_DELAY_MS(10);
+	local_delay_ms(10);
 
 	return HAL_OK;
 }
@@ -4633,7 +4633,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, USB_OTG_CfgTypeDef 
 		USB_SYSCFG_UCKSEL_Value |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
 		0;
 	(void) SYSCFG0_0;
-	HARDWARE_DELAY_MS(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
+	local_delay_ms(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
 
 	USBx->SUSPMODE |= USB_SUSPMODE_SUSPM;	// SUSPM 1: The clock supplied to this module is enabled.
 	(void) USBx->SUSPMODE;

@@ -2080,7 +2080,7 @@ void hardware_spi_connect_b16(SPI_t * spi, spi_speeds_t spispeedindex, spi_modes
 
 }
 
-portholder_t RAMFUNC hardware_spi_complete_b16(SPI_t * spi)	/* дождаться готовности */
+portholder_t hardware_spi_complete_b16(SPI_t * spi)	/* дождаться готовности */
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -2135,7 +2135,7 @@ portholder_t RAMFUNC hardware_spi_complete_b16(SPI_t * spi)	/* дождатьс�
 /* передача первого байта в последовательности - Не проверяем готовность перед передачей,
    завершение передачи будут проверять другие.
 */
-void RAMFUNC hardware_spi_b16_p1(
+void hardware_spi_b16_p1(
 	SPI_t * spi,
 	portholder_t v		/* значение слова для передачи */
 	)
@@ -2184,7 +2184,7 @@ void RAMFUNC hardware_spi_b16_p1(
 
 /* передача одного из средних байтов/слов в последовательности */
 /* дождаться готовности, передача байта */
-portholder_t RAMFUNC hardware_spi_b16_p2(
+portholder_t hardware_spi_b16_p2(
 	SPI_t * spi,
 	portholder_t v		/* значение байта для передачи */
 	)
@@ -2196,7 +2196,7 @@ portholder_t RAMFUNC hardware_spi_b16_p2(
 }
 
 /* передача байта/слова, возврат считанного */
-portholder_t RAMFUNC hardware_spi_b16(
+portholder_t hardware_spi_b16(
 	SPI_t * spi,
 	portholder_t v		/* значение байта для передачи */
 	)

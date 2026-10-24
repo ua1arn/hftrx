@@ -74,7 +74,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		struct rgb_24b
 		{
 			uint8_t r, g, b;
-		} ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре.
+		} __PACKED;// аттрибут GCC, исключает "дыры" в структуре.
 
 		typedef struct rgb_24b PACKEDCOLORPIP_T;	// 3 байта для последовательной выдачи как RGB для LCDMODE_ILI8961
 
@@ -123,14 +123,13 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 		typedef uint32_t PACKEDCOLORPIP_T;
 
 		// AAAAAAAA.RRRRRRR.GGGGGGGG.BBBBBBBB
-		#define TFTRGB(red, green, blue) \
-			(  (uint_fast32_t) ( \
-					((uint_fast32_t) (255) << 24)  | /* Alpha channel value - opaque */ \
-					(((uint_fast32_t) (red) << 16) & 0xFF0000)  | \
-					(((uint_fast32_t) (green) << 8) & 0xFF00) | \
-					(((uint_fast32_t) (blue) << 0) &  0x00FF) \
-				) \
-			)
+		#define TFTRGB(red, green, blue) ( \
+			255 * (UINT32_C(1) << 24) | /* Alpha channel value - opaque */ \
+			(0xFF & (red)) * (UINT32_C(1) << 16) | \
+			(0xFF & (green)) * (UINT32_C(1) << 8) | \
+			(0xFF & (blue)) * (UINT32_C(1) << 0) \
+		)
+		// AAAAAAAA.RRRRRRR.GGGGGGGG.BBBBBBBB
 		#define TFTALPHA(alpha, color24) \
 			(  (uint_fast32_t) ( \
 					((uint_fast32_t) (alpha) << 24)  | /* Alpha value, 0: transparent, 255: opaque */ \
@@ -139,10 +138,39 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 			)
 
 		// Get color components from framebuffer value
+		// AAAAAAAA.RRRRRRR.GGGGGGGG.BBBBBBBB
 		#define COLORPIP_A(v) (((v) & 0xFF000000) >> 24)
 		#define COLORPIP_R(v) (((v) & 0xFF0000) >> 16)
 		#define COLORPIP_G(v) (((v) & 0xFF00) >> 8)
 		#define COLORPIP_B(v) (((v) & 0xFF) >> 0)
+
+
+	#elif LCDMODE_BGRA8888
+
+		typedef uint_fast32_t COLORPIP_T;
+		typedef uint32_t PACKEDCOLORPIP_T;
+
+		// BBBBBBBB.GGGGGGGG.RRRRRRR.AAAAAAAA
+		#define TFTRGB(red, green, blue) ( \
+			255 * (UINT32_C(1) << 0) | /* Alpha channel value - opaque */ \
+			(0xFF & (red)) * (UINT32_C(1) << 8) | \
+			(0xFF & (green)) * (UINT32_C(1) << 16) | \
+			(0xFF & (blue)) * (UINT32_C(1) << 24) \
+		)
+		// BBBBBBBB.GGGGGGGG.RRRRRRR.AAAAAAAA
+		#define TFTALPHA(alpha, color24) \
+			(  (uint_fast32_t) ( \
+					((uint_fast32_t) (alpha) << 0)  | /* Alpha value, 0: transparent, 255: opaque */ \
+					(((uint_fast32_t) (color24) << 8) & 0xFFFFFF00) \
+				) \
+			)
+
+		// BBBBBBBB.GGGGGGGG.RRRRRRR.AAAAAAAA
+		// Get color components from framebuffer value
+		#define COLORPIP_B(v) (((v) & 0xFF000000) >> 24)
+		#define COLORPIP_G(v) (((v) & 0xFF0000) >> 16)
+		#define COLORPIP_R(v) (((v) & 0xFF00) >> 8)
+		#define COLORPIP_A(v) (((v) & 0xFF) >> 0)
 
 	#elif LCDMODE_RGB565
 
@@ -312,14 +340,6 @@ void (colpip_point_debug)(
 // Поставить цветную точку.
 #define colpip_point(db, col, row, color) do { colpip_point_debug((db), (col), (row), (color), __FILE__, __LINE__); } while (0)
 
-// поставить цветную точку (модификация с сохранением старого изоьражения).
-void colpip_point_xor(
-	const gxdrawb_t * db,
-	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	COLORPIP_T color
-	);
-
 void display_bar(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,
@@ -476,16 +496,6 @@ colpip_segm(
 
 // Нарисовать вертикальную цветную полосу
 void
-colpip_xor_vline(
-	const gxdrawb_t * db,
-	uint_fast16_t x,	// горизонтальная координата пикселя (0..dx-1) слева направо
-	uint_fast16_t y,	// вертикальная координата пикселя (0..dy-1) сверху вниз
-	uint_fast16_t h,	// высота
-	COLORPIP_T color
-	);
-
-// Нарисовать вертикальную цветную полосу
-void
 colpip_set_vline(
 	const gxdrawb_t * db,
 	uint_fast16_t x,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
@@ -622,7 +632,7 @@ void colpip_line(
 	int antialiasing
 	);
 
-void
+uint_fast16_t
 pix_display_value_big(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
@@ -637,25 +647,29 @@ pix_display_value_big(
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
 	uint_fast8_t withhalf,		// 0 - только большие цифры
-	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
+	const gxstyle_t * dbstyle,	/* foreground and background colors, text alignment */
+	const unifont_t * fontbig,
+	const unifont_t * fonthalf,
+	char narrowSpace		// символ, отображающийся на месте погашенных точек при отображении. Шириной как точка
 	);
 
 void rendered_value_big_initialize(const gxstyle_t * gxstylep);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
 
-void
-pix_display_value_small(
-	const gxdrawb_t * db,
-	uint_fast16_t xpix,	// x координата начала вывода значения
-	uint_fast16_t ypix,	// y координата начала вывода значения
-	uint_fast16_t w,
-	uint_fast16_t h,
-	int_fast32_t freq,
-	uint_fast8_t width,	// full width (if >= 128 - display with sign)
-	uint_fast8_t comma,		// comma position (from right, inside width)
-	uint_fast8_t comma2,
-	uint_fast8_t rj,		// right truncated
-	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
-	);
+// Used in display2_freqX_b
+//uint_fast16_t
+//pix_display_value_small(
+//	const gxdrawb_t * db,
+//	uint_fast16_t xpix,	// x координата начала вывода значения
+//	uint_fast16_t ypix,	// y координата начала вывода значения
+//	uint_fast16_t w,
+//	uint_fast16_t h,
+//	int_fast32_t freq,
+//	uint_fast8_t width,	// full width (if >= 128 - display with sign)
+//	uint_fast8_t comma,		// comma position (from right, inside width)
+//	uint_fast8_t comma2,
+//	uint_fast8_t rj,		// right truncated
+//	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
+//	);
 
 void display_floodfill(
 	const gxdrawb_t * db,
@@ -677,10 +691,6 @@ void display_do_AA(
 	uint_fast16_t width,
 	uint_fast16_t height
 	);
-
-#define WSIGNFLAG 0x80	// отображается плюс или минус в зависимости от знака значения
-#define WMINUSFLAG 0x40	// отображается пробел или минус в зависимости от знака значения
-#define WWIDTHFLAG 0x3F	// оставшиеся биты под ширину поля
 
 int display_vtty_putchar(char ch);
 void display_vtty_printf(const char * format, ...);

@@ -1,13 +1,13 @@
 @rem CONFIG_MACH_SUN50IW9
 
-SET CONVERTER=..\Debug\genregdefs.exe --cortexa5x "core_ca55.h:gicv6.h" --cortexa7 "armv7a_gicv6.h" --guid "{2A4CD94A-A755-4786-BB96-E52021B2959C}"
+SET CONVERTER=..\Debug\genregdefs.exe --cortexa5x "core_ca55.h:gic600.h" --cortexa7 "armv7a_gic600.h" --guid "{2A4CD94A-A755-4786-BB96-E52021B2959C}"
 SET OUTFILE=..\..\..\arch\aw_a733\device.h
 SET FILELIST= ^
 	timer.csv gic600.csv gpio.csv twi.csv spi.csv uart.csv smhc.csv ^
 	dmac.csv ^
 	i2s_pcm.csv ^
 	..\aw_generic\usb_ehci_capability.csv ..\aw_generic\usb_ohci_capability.csv ..\aw_generic\usbehci.csv ..\aw_generic\usbotg.csv ^
-	ccu.csv ppu.csv rtc.csv prcm.csv sid.csv r_cpucfg.csv cpu_subsys.csv intctrl.csv ^
+	ccu.csv ppu.csv rtc.csv prcm.csv sid.csv sysctrl.csv r_cpucfg.csv cpu_subsys.csv intctrl.csv ^
 	g2d.csv de33.csv tcon_tv.csv tconlcd.csv hdmi.csv ^
 	display0_top.csv display1_top.csv ^
 	pcie30.csv ^

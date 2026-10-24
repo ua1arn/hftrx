@@ -11,6 +11,7 @@
 #include "hardware.h"
 #include "formats.h"	// for debug prints
 #include "board.h"
+#include "clocks.h"
 #include <atomic>
 
 static ticker_t seqticker;
@@ -153,8 +154,9 @@ static int vscale(uint_fast8_t v, uint_fast8_t mag)
 // Вызывается при запрещённых прерываниях.
 static void vox_probe(uint_fast8_t vlevel, uint_fast8_t alevel)
 {
+	//PRINTF("vlevel=%u,vox_level=%u, %d\n", vlevel, vox_level, vscale(vlevel, vox_level));
 	// vlevel, alevel - значение 0..UINT8_MAX
-	if ((vscale(vlevel, vox_level) - vscale(alevel, avox_level) >= 16))
+	if (vscale(vlevel, vox_level) > vscale(alevel, avox_level))
 	{
 		vox_count = vox_delay;
 	}
@@ -282,7 +284,6 @@ static void keyqueueclear(void)
 {
 	//keyqueuecnt = 0;
 	keyqueueget = keyqueueput = 0;
-	//dbg_putchar('x');
 }
 
 /* Начальное значение параметров управления трактом - для исключения использования неинициализированных значений. */
@@ -315,7 +316,6 @@ void seq_set_txgate(
    Вызывается из seq_spool_ticks().
 */
 static uint_fast8_t 
-//NOINLINEAT
 seqhastxrequest(void)
 {
 	return !! ptt;
@@ -591,8 +591,8 @@ void seq_ask_txstate(
 }
 
 // состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
-uint_fast8_t seq_get_phase(void)
-{
-	return SEQPHASE_INIT;
-}
+//uint_fast8_t seq_get_phase(void)
+//{
+//	return SEQPHASE_INIT;
+//}
 

@@ -79,14 +79,13 @@
 
 	
 	
-	//#define WITHASYNCUI	1		// экспериментальный опции
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	//#define KEYB_VELOCI24_V0	1	/* 24 кнопки на 6 линий */
 	#define KEYB_VELOCI24_V0_UA1CEI	1	/* 24 кнопки на 6 линий */
 
-	#define WITHPABIASMIN		0
-	#define WITHPABIASMAX		255
+	
+	
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
@@ -100,14 +99,14 @@
 
 	#define WITHPREAMPATT2_6DB 1	/* LTC2208 Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
-	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
+	
 
 	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	// --- Особые варианты расположения кнопок на клавиатуре
-	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
-	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
+	
+	
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #if WITHISBOOTLOADER
@@ -132,6 +131,7 @@
 
 	#define LCDMODE_RGB565 1	/* Экран 16 бит */
 	//#define LCDMODE_ARGB8888	1	/* Экран 32 бит ARGB8888 */
+	//#define LCDMODE_BGRA8888	1	/* Экран 32 бит BGRA8888 */
 
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	//#define WITHMIPIDSISHW 1	/* MIPI-DSI display support */
@@ -194,9 +194,9 @@
 #if WITHISBOOTLOADER
 
 	// +++ заглушки для плат с DSP обработкой
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
-	#define WITHAGCMODENONE 1
+	
+	
+	
 
 	#define BOARD_DETECTOR_AM 	0		// Заглушка
 	#define BOARD_DETECTOR_FM 	0		// Заглушка
@@ -228,7 +228,10 @@
 
 #else /* WITHISBOOTLOADER */
 	//#define WITHFUSBDFS 1	/* USB DEVICE FS c*/
-
+	#if 0
+		#define WITHMGLOOP 1
+		#define WITHMGLOOP_BAUDRATE 57600
+	#endif
 	//#define WITHUSBHEADSET	1	/* Функциональность USB микрофона */
 	
 	//#define FORMATFROMLIBRARY 	1
@@ -246,6 +249,7 @@
 	//#define COLORSTYLE_WHITE	1
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 	
+	#define WITHOVFHIDE 1	/* отключить показ индикатора перегрузки */
 
 	#define ENCRES_DEFAULT ENCRES_600
 	#define ENCRES_SUB_DEFAULT ENCRES_600
@@ -301,7 +305,7 @@
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-	//#define WITHRTOS	1	/* Использование RTOS */
+	
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
@@ -314,8 +318,8 @@
 
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
-	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
-	//#define WITHTXCPATHCALIBRATE 1	/* при изменении параметров интерполятора в FPGA выполняем калибровку HARDWARE_DACSCALE */
+	
+	//#define WITHTXCPATHCALIBRATE 1	/* при изменении параметров интерполятора в FPGA выполняем калибровку HARDWARE_DUCSCALE */
 
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
@@ -346,7 +350,6 @@
 	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
 
 	
-	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 //	#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 //	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 //	#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
@@ -364,7 +367,7 @@
 			#define FORMATFROMLIBRARY 	1
 			
 			#define WITHALTERNATIVEFONTS	1
-			#define WITHAFEQUALIZER		1
+			
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 			#define WITHDEFAULTVIEW		VIEW_3DSS
@@ -409,13 +412,6 @@
 
 	//#define WITHVITA49RX	1	/* VITA 49.0-2015 streaming source support */
 	
-	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
-	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
-	#define WITHOVFHIDE 1		/* скрыть показ OVF */
-
-	
-	
-	
 	#define WITHCAT		1	/* используется CAT */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
@@ -427,13 +423,12 @@
 		#define WITHSWRMTR	1		/* Измеритель КСВ */
 	#endif /* WITHTX */
 	
+	
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
-	#define WITHSPKMUTE		1	/* управление выключением динамика */
+	
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
-//	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
-//	#define WITHLOCKFULL	1	/* блокировка всего управления, а не только перестройки */
 
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
@@ -460,6 +455,7 @@
 	#endif
 	#if 0
 		#define WITHLWIP 1
+		//#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	#if 0
 		#define WITHLVGL 1		/* bare-metal config of LVGL */
@@ -529,16 +525,12 @@
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
-#endif /* WITHISBOOTLOADER */
 
 	#define WITHMODESETFULLNFM 1
+//	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
+//	#define WITHLOCKFULL	1	/* блокировка всего управления, а не только перестройки */
+	#define WITHRTTY 1			/* подержка работы RTTY */
 
-	/* все возможные в данной конфигурации фильтры */
-	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
-	/* все возможные в данной конфигурации фильтры для передачи */
-	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
-	/* фильтры, для которых стоит признак HAVE */
-	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
@@ -580,8 +572,20 @@
 		XTHERMOREFIX = BOARD_ADCX2IN(6),		// MCP3208 DA6 External thermo sensor TI LM35 (reference)
 		VOLTSOURCE = BOARD_ADCX2IN(5),		// Средняя точка делителя напряжения питания
 
-		/* кеширование днных */
+	};
 
+#endif /* WITHISBOOTLOADER */
+
+	/* все возможные в данной конфигурации фильтры */
+	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+	/* все возможные в данной конфигурации фильтры для передачи */
+	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
+	/* фильтры, для которых стоит признак HAVE */
+	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+
+	/* кеширование днных */
+	enum
+	{
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 		XTHERMOREFMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX = BOARD_ADCMRRIN(2),	// кеш - индекc не должен повторяться в конфигурации

@@ -79,7 +79,6 @@ extern const phase_t phase_0;
 */
 
 static void 
-//NOINLINEAT
 prog_ad9835_pair(
 	spitarget_t target,		/* addressing to chip */
 	uint_fast8_t v1,
@@ -109,7 +108,7 @@ prog_ad9835_pair(
 
 /* internal data */
 static void 
-//NOINLINEAT
+
 prog_ad9835_freq(
 	spitarget_t target,		/* addressing to chip */
 	const phase_t * ftw,		/* ftw value */
@@ -137,7 +136,7 @@ prog_ad9835_freq(
 
 /* programming AD9835 */
 static void 
-//NOINLINEAT
+
 prog_ad9835_init(
 	spitarget_t target,		/* addressing to chip */
 	uint_fast8_t * profile	/* место для хранения информации о последнем использованном профиле */

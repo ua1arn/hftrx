@@ -320,4 +320,23 @@ void xcz_audio_tx_enable(uint_fast8_t state)
 
 #endif /* WITHRTS96 */
 
+#else
+
+void xcz_rxtx_state(uint8_t tx)
+{
+
+}
+void xcz_dds_ftw(const uint_least64_t * val)
+{
+
+}
+void xcz_dds_ftw_sub(const uint_least64_t * val)
+{
+
+}
+void xcz_dds_rts(const uint_least64_t * val)
+{
+
+}
+
 #endif /* CPUSTYLE_XC7Z && ! WITHISBOOTLOADER */

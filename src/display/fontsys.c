@@ -156,7 +156,7 @@ static void ufcached_prerender(const unifont_t * font, COLORPIP_T fg, COLORPIP_T
 	for (ci = 0; ci < cicount; ++ ci, xpix += cache->cellw)
 	{
 		const uint_fast16_t ypix = 0;
-		pf->font_drawci(& cache->dbv, xpix, 0, pf, ci, fg);
+		pf->font_drawci(& cache->dbv, xpix, ypix, pf, ci, fg);
 		display_do_AA(& cache->dbv, xpix, ypix, pf->font_drawwidthci(pf, ci), cache->cellh);
 	}
 	dcache_clean(cache->dbv.cachebase, cache->dbv.cachesize);
@@ -191,6 +191,34 @@ const unifont_t unifont_half =
 	.label = "unifont_half"
 };
 
+static ufcache_t unifont_big20;
+const unifont_t unifont_big2 =
+{
+	.decode = ufcached_decode,
+	.totalci = ufcached_totalci,
+	.font_drawwidthci = ufcached_drawwidth,
+	.font_drawheight = ufcached_drawheight,
+	.font_drawci = ufcached_drawci,
+	//
+	.fontraster = & unifont_big2_raw,
+	.fontdata = & unifont_big20,
+	.label = "unifont_big2"
+};
+
+static ufcache_t unifont_half20;
+const unifont_t unifont_half2 =
+{
+	.decode = ufcached_decode,
+	.totalci = ufcached_totalci,
+	.font_drawwidthci = ufcached_drawwidth,
+	.font_drawheight = ufcached_drawheight,
+	.font_drawci = ufcached_drawci,
+	//
+	.fontraster = & unifont_half2_raw,
+	.fontdata = & unifont_half20,
+	.label = "unifont_half2"
+};
+
 
 void rendered_value_big_initialize(const gxstyle_t * gxstylep)
 {
@@ -200,6 +228,8 @@ void rendered_value_big_initialize(const gxstyle_t * gxstylep)
 
 	ufcached_prerender(& unifont_big, fg, bg);
 	ufcached_prerender(& unifont_half, fg, bg);
+	ufcached_prerender(& unifont_big2, fg, bg);
+	ufcached_prerender(& unifont_half2, fg, bg);
 #endif /* WITHPRERENDER */
 }
 

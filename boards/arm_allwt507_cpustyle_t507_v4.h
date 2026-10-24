@@ -60,7 +60,7 @@
 	#define BOARD_PMIC_SELECTOR(configtype) do { \
 		switch (configtype) { \
 		case 1: board_helperboard_t507_lpddr4_axp853_initialize(); break; /* HelperBoard v1.2 2021 - LPDDR4 32 bit */ \
-		case 555: board_helperboard_t507_lpddr3_axp853_initialize(); break; /* HelperBoard v1.1 2026 - LPDDR3 32 bit */ \
+		case 5: board_helperboard_t507_lpddr3_axp853_initialize(); break; /* HelperBoard v1.1 2026 - LPDDR3 32 bit */ \
 		default: break; \
 		} \
 	} while (0)
@@ -733,7 +733,7 @@
 	#define HARDWARE_EMAC_PTR EMAC0
 	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
 	#define HARDWARE_EMAC_IRQ EMAC0_IRQn
-
+	#define RTL8211F_PHY_ADDR           0//1  // Зависит от аппаратной схемы (обычно 1)
 
 #endif /* WITHETHHW */
 

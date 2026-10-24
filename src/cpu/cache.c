@@ -278,11 +278,11 @@ void L1_CleanDCache_by_Addr(void * addr, int32_t dsize)
 		__DSB();
 		do
 		{
-#if __aarch64__
+#if defined(__aarch64__)
 			__set_DCCVAC(op_mva);	// Clean data cache line by address.
-#else /* __aarch64__ */
+#else /* defined(__aarch64__) */
 			__set_DCCMVAC(op_mva);	// Clean data cache line by address.
-#endif /* __aarch64__ */
+#endif /* defined(__aarch64__) */
 			op_mva += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
@@ -299,11 +299,11 @@ void L1_CleanInvalidateDCache_by_Addr(void * addr, int32_t dsize)
 		__DSB();
 		do
 		{
-#if __aarch64__
+#if defined(__aarch64__)
 			__set_DCCIVAC(op_mva);	// Clean and Invalidate data cache by address.
-#else /* __aarch64__ */
+#else /* defined(__aarch64__) */
 			__set_DCCIMVAC(op_mva);	// Clean and Invalidate data cache by address.
-#endif /* __aarch64__ */
+#endif /* defined(__aarch64__) */
 			op_mva += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
@@ -319,11 +319,11 @@ void L1_InvalidateDCache_by_Addr(void * addr, int32_t dsize)
 		uintptr_t op_mva = (uintptr_t) addr;
 		do
 		{
-#if __aarch64__
+#if defined(__aarch64__)
 			__set_DCIVAC(op_mva);	// Invalidate data cache line by address.
-#else /* __aarch64__ */
+#else /* defined(__aarch64__) */
 			__set_DCIMVAC(op_mva);	// Invalidate data cache line by address.
-#endif /* __aarch64__ */
+#endif /* defined(__aarch64__) */
 			op_mva += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
@@ -333,11 +333,11 @@ void L1_InvalidateDCache_by_Addr(void * addr, int32_t dsize)
 
 static uint32_t get_ctr(void)
 {
-#if __aarch64__
+#if defined(__aarch64__)
 	const uint32_t v = __get_CTR_EL0();
-#else /* __aarch64__ */
+#else /* defined(__aarch64__) */
 	const uint32_t v = __get_CTR();
-#endif /* __aarch64__ */
+#endif /* defined(__aarch64__) */
 	return v;
 }
 
@@ -410,7 +410,7 @@ void L2_InvalidateDCache_by_Addr(void *__restrict addr, int32_t dsize)
 // применяется после начальной инициализации среды выполнния
 void dcache_clean_invalidate_all(void)
 {
-#if __aarch64__
+#if defined(__aarch64__)
 	extern uint32_t Reset_Handler, __stack;
 	dcache_clean_invalidate((uintptr_t) & Reset_Handler, (uintptr_t) & __stack - (uintptr_t) & Reset_Handler);
 #else

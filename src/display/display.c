@@ -376,19 +376,14 @@ void pix_display_texts(const gxdrawb_t * db, uint_fast16_t xpixB, uint_fast16_t 
 }
 
 // большой шрифт
-static uint_fast16_t display_put_char_big(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
+// Символ со специальным значением:
+// '#' - узкий пробел, шириной как у символа '.'
+// ' ' - широкий пробел
+static uint_fast16_t display_put_char_font(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle, const unifont_t * const font)
 {
-	const unifont_t * const font = & unifont_big;
 	if (font == NULL)
 		return x;
-	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
-}
-
-static uint_fast16_t display_put_char_half(const gxdrawb_t * db, uint_fast16_t x, uint_fast16_t y, char cc, const gxstyle_t * dbstyle)
-{
-	const unifont_t * const font = & unifont_half;
-	if (font == NULL)
-		return x;
+	//PRINTF("%c", cc);
 	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
 }
 
@@ -408,7 +403,7 @@ static const FLASHMEM int32_t vals10 [] =
 
 
 // Отображение цифр в поле "больших цифр" - индикатор основной частоты настройки аппарата.
-void
+uint_fast16_t
 pix_display_value_big(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
@@ -423,9 +418,14 @@ pix_display_value_big(
 	uint_fast8_t blinkpos,		// позиция, где символ заменён пробелом
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
 	uint_fast8_t withhalf,		// 0 - только большие цифры
-	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
+	const gxstyle_t * dbstyle,	/* foreground and background colors, text alignment */
+	const unifont_t * fontbig,
+	const unifont_t * fonthalf,
+	char narrowSpace		// символ, отображающийся на месте погашенных точек при отображении. Шириной как точка
 	)
 {
+	const uint_fast16_t xpix0 = xpix;
+	//PRINTF("pix_display_value_big: width=%u,c=%u,c2=%u,rj=%u,blinkpos=%u,f=%*u : ", width, comma, comma2, rj, blinkpos, (int) width, (unsigned) freq);
 	//	if (width > ARRAY_SIZE(vals10))
 	//		width = ARRAY_SIZE(vals10);
 		//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
@@ -441,13 +441,13 @@ pix_display_value_big(
 		// разделитель десятков мегагерц
 		if (comma2 == g)
 		{
-			xpix = display_put_char_big(db, xpix, ypix, (z == 0) ? '.' : '#', dbstyle);	// '#' - узкий пробел. Точка всегда узкая
+			xpix = display_put_char_font(db, xpix, ypix, (z == 0) ? '.' : narrowSpace, dbstyle, fontbig);	// narrowSpace - узкий пробел. Точка всегда узкая
 		}
 		else if (comma == g)
 		{
 			z = 0;
 			half = withhalf;
-			xpix = display_put_char_big(db, xpix, ypix, '.', dbstyle);
+			xpix = display_put_char_font(db, xpix, ypix, '.', dbstyle, fontbig);
 		}
 
 		if (blinkpos == g)
@@ -456,22 +456,24 @@ pix_display_value_big(
 			// эта позиция редактирования частоты. Справа от неё включаем все нули
 			z = 0;
 			if (half)
-				xpix = display_put_char_half(db, xpix, ypix, bc, dbstyle);
+				xpix = display_put_char_font(db, xpix, ypix, bc, dbstyle, fonthalf);
 			else
-				xpix = display_put_char_big(db, xpix, ypix, bc, dbstyle);
+				xpix = display_put_char_font(db, xpix, ypix, bc, dbstyle, fontbig);
 		}
 		else if (z == 1 && (i + 1) < j && res.quot == 0)
-			xpix = display_put_char_big(db, xpix, ypix, ' ', dbstyle);	// supress zero
+			xpix = display_put_char_font(db, xpix, ypix, ' ', dbstyle, fontbig);	// supress zero
 		else
 		{
 			z = 0;
 			if (half)
-				xpix = display_put_char_half(db, xpix, ypix, '0' + res.quot, dbstyle);
+				xpix = display_put_char_font(db, xpix, ypix, '0' + res.quot, dbstyle, fonthalf);
 			else
-				xpix = display_put_char_big(db, xpix, ypix, '0' + res.quot, dbstyle);
+				xpix = display_put_char_font(db, xpix, ypix, '0' + res.quot, dbstyle, fontbig);
 		}
 		freq = res.rem;
 	}
+	//PRINTF(" xspanpix=%u\n", (unsigned) (xpix - xpix0));
+	return xpix;
 }
 
 // обычный шрифт
@@ -483,9 +485,9 @@ static uint_fast16_t display_put_char(const gxdrawb_t * db, uint_fast16_t x, uin
 		return x;
 	return font->font_drawci(db, x, y, font, font->decode(font, cc), dbstyle->textcolor);
 }
-
-void
-NOINLINEAT
+#if 0
+// Used in display2_freqX_b
+uint_fast16_t
 pix_display_value_small(
 	const gxdrawb_t * db,
 	uint_fast16_t xpix,	// x координата начала вывода значения
@@ -503,10 +505,11 @@ pix_display_value_small(
 	const unifont_t * const font = dbstylep->gfont;
 //	if (width > ARRAY_SIZE(vals10))
 //		width = ARRAY_SIZE(vals10);
-	const uint_fast8_t wsign = (width & WSIGNFLAG) != 0;
-	const uint_fast8_t wminus = (width & WMINUSFLAG) != 0;
+	const uint_fast8_t wsign = 0;//(width & WSIGNFLAG) != 0;
+	const uint_fast8_t wminus = 0;//(width & WMINUSFLAG) != 0;
 	const uint_fast8_t j = ARRAY_SIZE(vals10) - rj;
-	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
+	//uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
+	uint_fast8_t i = j - width;	// Номер цифры по порядку
 	uint_fast8_t z = 1;	// если в позиции встретился '0' - не отоображать
 
 	if (dbstylep->bgradius)
@@ -564,8 +567,9 @@ pix_display_value_small(
 		}
 		freq = res.rem;
 	}
+	return xpix;
 }
-
+#endif
 #endif /* LCDMODE_LTDC */
 
 #if LCDMODE_LTDC
@@ -1445,11 +1449,12 @@ static uint_fast8_t glob_tvoutformat;
 
 const videomode_t * hdmiformats [HDMIFORMATS_count] =
 {
+	& vdmode_HDMI_1920x1080at60,	// б. тел. масштабирует ! TESTED
+	// 600x480 need
 	& vdmode_HDMI_1366x768at60,	// б. тел. не занимается масштабированием этого формата ! TESTED, параметры не подтверждены, работает и на 50 и 60 герц
 	& vdmode_HDMI_1024x768at60,	// большой телевизор не занимается масштабированием этого формата ! TESTED
 	& vdmode_HDMI_1280x720at50,	// б. тел. масштабирует ! TESTED
 	& vdmode_HDMI_1440x900at50,	// б. тел. не занимается масштабированием этого формата ! TESTED, параметры не подтверждены, работает на 50 герц
-	& vdmode_HDMI_1920x1080at60,	// б. тел. масштабирует ! TESTED
 };
 
 const videomode_t * get_videomode_TVOUT(void)

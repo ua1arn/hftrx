@@ -172,8 +172,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		USBPHYC->PLL |= USBPHYC_PLL_PLLEN_Msk;
 		(void) USBPHYC->PLL;
 
-		//HAL_Delay(10);
-		local_delay_ms(10);
+		HAL_Delay(10);
 
 		while ((USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) == 0)
 			;

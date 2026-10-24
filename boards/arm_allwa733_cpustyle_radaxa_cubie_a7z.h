@@ -59,9 +59,6 @@
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	////#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
-	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
-
 	//#define WITHUSBHW_DEVICE	USB0_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
@@ -277,12 +274,14 @@
 
 #endif
 
-	#define I2S0HW_INITIALIZE(master) do { \
+	#define xI2S0HW_INITIALIZE(master) do { \
 		arm_hardware_pioi_altfn20(UINT32_C(1) << 4,	GPIO_CFG_AF3); /* PB4 I2S0-MCLK	*/ \
 		arm_hardware_pioi_altfn20(UINT32_C(1) << 6,	GPIO_CFG_AF3); /* PB6 I2S0-LRCK	*/ \
 		arm_hardware_pioi_altfn20(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PB5 I2S0-BCLK	*/ \
 		arm_hardware_pioi_altfn20(UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PB7 I2S0-DOUT0 to FPGA */ \
 		arm_hardware_pioi_altfn20(UINT32_C(1) << 8,	GPIO_CFG_AF3); /* PB8 I2S0-DIN0 from FPGA */ \
+	} while (0)
+	#define I2S0HW_INITIALIZE(master) do { \
 	} while (0)
 	#define HARDWARE_I2S0HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S0HW_DOUT 0	/* DOUT0 used */
@@ -714,23 +713,23 @@
 	#define	TWIHARD_S_TWI0_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_a733_get_apb2_freq() or allwnr_a733_get_apbs2_freq()
 #endif
 
-#if 0
+#if 1
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	#define WITHTWI3HW 1
+	#define WITHTWI2HW 1
 
-	// 26-pin CON4 pin 01 - +3.3, pin 09 - GND
-	// PH4 TWI3-SCK pin 05
-	// PH5 TWI3-SDA pin 03
-	#define TARGET_TWI_TWCK		(UINT32_C(1) << 4)
-	#define TARGET_TWI_TWD		(UINT32_C(1) << 5)
+	// 26-pin CON4 pin 01, 17 - +3.3, pin 09, 25, 6, 14, 20, 30, 34 - GND
+	// PD16 TWI2-SCK pin 28
+	// PD17 TWI2-SDA pin 27
+	#define TARGET_TWI_TWCK		(UINT32_C(1) << 28)
+	#define TARGET_TWI_TWD		(UINT32_C(1) << 27)
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	HARDWARE_TWI3_INITIALIZE() do { \
-		arm_hardware_pioh_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF5);	/* PH4 TWI3-SCK */ \
-		arm_hardware_pioh_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF5);		/* PH5 TWI3-SDA */ \
+	#define	HARDWARE_TWI2_INITIALIZE() do { \
+		arm_hardware_piod_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF6);	/* PD16 TWI2-SCK */ \
+		arm_hardware_piod_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF6);		/* PD17 TWI2-SDA */ \
 	} while (0)
-	#define	TWIHARD_PTR TWI3	/* 0 - TWI0, 1: TWI1... */
+	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
 	#define	TWIHARD_FREQ (allwnr_a733_get_twi_freq()) // APBS2_CLK allwnr_a733_get_apb2_freq() or allwnr_a733_get_apbs2_freq()
 
 #endif /* WITHTWISW || WITHTWIHW */
@@ -1061,6 +1060,7 @@
 	#define HARDWARE_EMAC_PTR EMAC0
 	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
 	#define HARDWARE_EMAC_IRQ EMAC0_IRQn
+	#define RTL8211F_PHY_ADDR           0//1  // Зависит от аппаратной схемы (обычно 1)
 
 #endif /* WITHETHHW */
 

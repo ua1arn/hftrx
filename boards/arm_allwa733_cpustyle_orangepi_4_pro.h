@@ -61,9 +61,6 @@
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	////#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
-	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
-
 	////#define WITHUSBHW_DEVICE	USBOTG0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
@@ -1029,6 +1026,7 @@
 	#define HARDWARE_EMAC_PTR EMAC0
 	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
 	#define HARDWARE_EMAC_IRQ EMAC0_IRQn
+	#define RTL8211F_PHY_ADDR           0//1  // Зависит от аппаратной схемы (обычно 1)
 
 #endif /* WITHETHHW */
 

@@ -9458,7 +9458,7 @@ arm_hardware_pioi_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 
 #if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F
 /* прерывания от валколера при наличии в системе вложенных прерываний вызываются на уровне приоритета REALTINE */
-RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
+void stm32fxxx_pinirq(portholder_t pr)
 {
 #if WITHENCODER && defined (ENCODER_BITS)
 	if ((pr & ENCODER_BITS) != 0)

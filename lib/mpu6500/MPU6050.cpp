@@ -1364,7 +1364,7 @@ bool MPU6050_Base::getSlave4WriteMode() {
 void MPU6050_Base::setSlave4WriteMode(bool mode) {
     I2Cdev::writeBit(devAddr, MPU6050_RA_I2C_SLV4_CTRL, MPU6050_I2C_SLV4_REG_DIS_BIT, mode, wireObj);
 }
-/** Get Slave 4 master local_delay_ms value.
+/** Get Slave 4 master delay value.
  * This configures the reduced access rate of I2C slaves relative to the Sample
  * Rate. When a slave's access rate is decreased relative to the Sample Rate,
  * the slave is accessed every:
@@ -1376,20 +1376,20 @@ void MPU6050_Base::setSlave4WriteMode(bool mode) {
  * the Sample Rate is determined by I2C_MST_DELAY_CTRL (register 103). For
  * further information regarding the Sample Rate, please refer to register 25.
  *
- * @return Current Slave 4 master local_delay_ms value
+ * @return Current Slave 4 master delay value
  * @see MPU6050_RA_I2C_SLV4_CTRL
  */
 uint8_t MPU6050_Base::getSlave4MasterDelay() {
     I2Cdev::readBits(devAddr, MPU6050_RA_I2C_SLV4_CTRL, MPU6050_I2C_SLV4_MST_DLY_BIT, MPU6050_I2C_SLV4_MST_DLY_LENGTH, buffer, I2Cdev::readTimeout, wireObj);
     return buffer[0];
 }
-/** Set Slave 4 master local_delay_ms value.
- * @param local_delay_ms New Slave 4 master local_delay_ms value
+/** Set Slave 4 master delay value.
+ * @param delay New Slave 4 master delay value
  * @see getSlave4MasterDelay()
  * @see MPU6050_RA_I2C_SLV4_CTRL
  */
-void MPU6050_Base::setSlave4MasterDelay(uint8_t local_delay_ms) {
-    I2Cdev::writeBits(devAddr, MPU6050_RA_I2C_SLV4_CTRL, MPU6050_I2C_SLV4_MST_DLY_BIT, MPU6050_I2C_SLV4_MST_DLY_LENGTH, local_delay_ms, wireObj);
+void MPU6050_Base::setSlave4MasterDelay(uint8_t delay) {
+    I2Cdev::writeBits(devAddr, MPU6050_RA_I2C_SLV4_CTRL, MPU6050_I2C_SLV4_MST_DLY_BIT, MPU6050_I2C_SLV4_MST_DLY_LENGTH, delay, wireObj);
 }
 /** Get last available byte read from Slave 4.
  * This register stores the data read from Slave 4. This field is populated
@@ -2275,11 +2275,11 @@ void MPU6050_Base::setSlaveOutputByte(uint8_t num, uint8_t data) {
 
 // I2C_MST_DELAY_CTRL register
 
-/** Get external data shadow local_delay_ms enabled status.
+/** Get external data shadow delay enabled status.
  * This register is used to specify the timing of external sensor data
  * shadowing. When DELAY_ES_SHADOW is set to 1, shadowing of external
  * sensor data is delayed until all data has been received.
- * @return Current external data shadow local_delay_ms enabled status.
+ * @return Current external data shadow delay enabled status.
  * @see MPU6050_RA_I2C_MST_DELAY_CTRL
  * @see MPU6050_DELAYCTRL_DELAY_ES_SHADOW_BIT
  */
@@ -2287,8 +2287,8 @@ bool MPU6050_Base::getExternalShadowDelayEnabled() {
     I2Cdev::readBit(devAddr, MPU6050_RA_I2C_MST_DELAY_CTRL, MPU6050_DELAYCTRL_DELAY_ES_SHADOW_BIT, buffer, I2Cdev::readTimeout, wireObj);
     return buffer[0];
 }
-/** Set external data shadow local_delay_ms enabled status.
- * @param enabled New external data shadow local_delay_ms enabled status.
+/** Set external data shadow delay enabled status.
+ * @param enabled New external data shadow delay enabled status.
  * @see getExternalShadowDelayEnabled()
  * @see MPU6050_RA_I2C_MST_DELAY_CTRL
  * @see MPU6050_DELAYCTRL_DELAY_ES_SHADOW_BIT
@@ -2296,8 +2296,8 @@ bool MPU6050_Base::getExternalShadowDelayEnabled() {
 void MPU6050_Base::setExternalShadowDelayEnabled(bool enabled) {
     I2Cdev::writeBit(devAddr, MPU6050_RA_I2C_MST_DELAY_CTRL, MPU6050_DELAYCTRL_DELAY_ES_SHADOW_BIT, enabled, wireObj);
 }
-/** Get slave local_delay_ms enabled status.
- * When a particular slave local_delay_ms is enabled, the rate of access for the that
+/** Get slave delay enabled status.
+ * When a particular slave delay is enabled, the rate of access for the that
  * slave device is reduced. When a slave's access rate is decreased relative to
  * the Sample Rate, the slave is accessed every:
  *
@@ -2310,7 +2310,7 @@ void MPU6050_Base::setExternalShadowDelayEnabled(bool enabled) {
  * For further information regarding the Sample Rate, please refer to register 25.
  *
  * @param num Slave number (0-4)
- * @return Current slave local_delay_ms enabled status.
+ * @return Current slave delay enabled status.
  * @see MPU6050_RA_I2C_MST_DELAY_CTRL
  * @see MPU6050_DELAYCTRL_I2C_SLV0_DLY_EN_BIT
  */
@@ -2320,9 +2320,9 @@ bool MPU6050_Base::getSlaveDelayEnabled(uint8_t num) {
     I2Cdev::readBit(devAddr, MPU6050_RA_I2C_MST_DELAY_CTRL, num, buffer, I2Cdev::readTimeout, wireObj);
     return buffer[0];
 }
-/** Set slave local_delay_ms enabled status.
+/** Set slave delay enabled status.
  * @param num Slave number (0-4)
- * @param enabled New slave local_delay_ms enabled status.
+ * @param enabled New slave delay enabled status.
  * @see MPU6050_RA_I2C_MST_DELAY_CTRL
  * @see MPU6050_DELAYCTRL_I2C_SLV0_DLY_EN_BIT
  */
@@ -2362,17 +2362,17 @@ void MPU6050_Base::resetTemperaturePath() {
 
 // MOT_DETECT_CTRL register
 
-/** Get accelerometer power-on local_delay_ms.
+/** Get accelerometer power-on delay.
  * The accelerometer data path provides samples to the sensor registers, Motion
  * detection, Zero Motion detection, and Free Fall detection modules. The
  * signal path contains filters which must be flushed on wake-up with new
  * samples before the detection modules begin operations. The default wake-up
- * local_delay_ms, of 4ms can be lengthened by up to 3ms. This additional local_delay_ms is
+ * delay, of 4ms can be lengthened by up to 3ms. This additional delay is
  * specified in ACCEL_ON_DELAY in units of 1 LSB = 1 ms. The user may select
  * any value above zero unless instructed otherwise by InvenSense. Please refer
  * to Section 8 of the MPU-6000/MPU-6050 Product Specification document for
  * further information regarding the detection modules.
- * @return Current accelerometer power-on local_delay_ms
+ * @return Current accelerometer power-on delay
  * @see MPU6050_RA_MOT_DETECT_CTRL
  * @see MPU6050_DETECT_ACCEL_ON_DELAY_BIT
  */
@@ -2380,14 +2380,14 @@ uint8_t MPU6050_Base::getAccelerometerPowerOnDelay() {
     I2Cdev::readBits(devAddr, MPU6050_RA_MOT_DETECT_CTRL, MPU6050_DETECT_ACCEL_ON_DELAY_BIT, MPU6050_DETECT_ACCEL_ON_DELAY_LENGTH, buffer, I2Cdev::readTimeout, wireObj);
     return buffer[0];
 }
-/** Set accelerometer power-on local_delay_ms.
- * @param local_delay_ms New accelerometer power-on local_delay_ms (0-3)
+/** Set accelerometer power-on delay.
+ * @param delay New accelerometer power-on delay (0-3)
  * @see getAccelerometerPowerOnDelay()
  * @see MPU6050_RA_MOT_DETECT_CTRL
  * @see MPU6050_DETECT_ACCEL_ON_DELAY_BIT
  */
-void MPU6050_Base::setAccelerometerPowerOnDelay(uint8_t local_delay_ms) {
-    I2Cdev::writeBits(devAddr, MPU6050_RA_MOT_DETECT_CTRL, MPU6050_DETECT_ACCEL_ON_DELAY_BIT, MPU6050_DETECT_ACCEL_ON_DELAY_LENGTH, local_delay_ms, wireObj);
+void MPU6050_Base::setAccelerometerPowerOnDelay(uint8_t delay) {
+    I2Cdev::writeBits(devAddr, MPU6050_RA_MOT_DETECT_CTRL, MPU6050_DETECT_ACCEL_ON_DELAY_BIT, MPU6050_DETECT_ACCEL_ON_DELAY_LENGTH, delay, wireObj);
 }
 /** Get Free Fall detection counter decrement configuration.
  * Detection is registered by the Free Fall detection module after accelerometer
@@ -2556,7 +2556,7 @@ void MPU6050_Base::resetSensors() {
 // PWR_MGMT_1 register
 
 /** Trigger a full device reset.
- * A small local_delay_ms of ~50ms may be desirable after triggering a reset.
+ * A small delay of ~50ms may be desirable after triggering a reset.
  * @see MPU6050_RA_PWR_MGMT_1
  * @see MPU6050_PWR1_DEVICE_RESET_BIT
  */

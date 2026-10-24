@@ -12,11 +12,14 @@
 #include <limits.h>
 
 //#define MMUUSE4KPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
+//#define MMUUSE4KPAGESLONG (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
 //#define MMUUSE16MPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
 #define MMUUSE2MPAGES (1 && defined (__ARM_ARCH) && defined (__aarch64__))
 #define MMUUSE1MPAGES (1 && defined (__ARM_ARCH) && ! defined (__aarch64__))
 
-#if ! defined (HARDWARE_ADDRSPACE_GB)
+#if defined HARDWARE_ADDRSPACE_BITS
+	#define HARDWARE_ADDRSPACE_GB (2 << (HARDWARE_ADDRSPACE_BITS - 30))
+#elif ! defined (HARDWARE_ADDRSPACE_GB)
 	#define HARDWARE_ADDRSPACE_GB 4		// Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
 #endif /* ! defined (HARDWARE_ADDRSPACE_GB) */
 
@@ -140,8 +143,9 @@
 	(SHattr) * (UINT64_C(1) << 8) |		/* SH[1:0] */ \
 	0x01 * (UINT64_C(1) << 6) |		/* AP[2:1] (AP = 0x02) */ \
 	0x00 * (UINT64_C(1) << 5) |		/* NS */ \
-	(AttrIndx & 0x07) * (UINT64_C(1) << 2) | /* AttrIndx[2:0] */ \
+	((AttrIndx) & 0x07) * (UINT64_C(1) << 2) | /* AttrIndx[2:0] */ \
 	0)
+// Upper attributes - bits 63..50
 #define AARCH64_UPPER_ATTR (UINT64_C(0))
 
 enum aarch64_attrindex
@@ -326,6 +330,24 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 		0 \
 	)
 
+// G5.5 The VMSAv8-32 Long-descriptor translation table format
+// G5.5.2.1 VMSAv8-32 Long-descriptor level 1 and level 2 descriptor formats
+// Small page (4KB memory page)
+// TBD
+#define	TTB_SMALLSECTION_LONG_AARCH32_4K(pa, TEXv, Bv, Cv, DOMAINv, SHAREDv, APv, XNv) ( \
+		(((pa) >> 12) & 0xFFFFF) * (UINT64_C(1) << 12) |	/* Section base address, PA[31:12] */ \
+		0 * (UINT64_C(1) << 11) |	/* nG */ \
+		!! (SHAREDv) * (UINT64_C(1) << 10) |	/* ! S */ \
+		(((APv) >> 2) & 0x01) * (UINT64_C(1) << 9) |	/* AP[2] */ \
+		((TEXv) & 0x07) * (UINT64_C(1) << 6) |	/* TEX */ \
+		(((APv) >> 0) & 0x03) * (UINT64_C(1) << 4) |	/* AP [1..0] */ \
+		!! (Cv) * (UINT64_C(1) << 3) |	/* C */ \
+		!! (Bv) * (UINT64_C(1) << 2) |	/* B */ \
+		1 * (UINT64_C(1) << 1) |	/* 1 */ \
+		!! (XNv) * (UINT64_C(1) << 0) |	/* XN The Execute-never bit. */ \
+		0 \
+	)
+
 #define	TTB_SUPERSECTION_AARCH32_16M_NCACHED(addr, ro, xn)	TTB_SUPERSECTION_AARCH32_16M((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
 #define	TTB_SUPERSECTION_AARCH32_16M_CACHED(addr, ro, xn) 	TTB_SUPERSECTION_AARCH32_16M((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
 #define	TTB_SUPERSECTION_AARCH32_16M_DEVICE(addr) 			TTB_SUPERSECTION_AARCH32_16M((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
@@ -337,7 +359,12 @@ There is no rationale to use "Strongly-Ordered" with Cortex-A7
 #define	TTB_SMALLSECTION_AARCH32_4K_NCACHED(addr, ro, xn)	TTB_SMALLSECTION_AARCH32_4K((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_DOMAINval, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
 #define	TTB_SMALLSECTION_AARCH32_4K_CACHED(addr, ro, xn) 	TTB_SMALLSECTION_AARCH32_4K((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_DOMAINval, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
 #define	TTB_SMALLSECTION_AARCH32_4K_DEVICE(addr) 			TTB_SMALLSECTION_AARCH32_4K((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
-// First-level table entry - Page table
+
+#define	TTB_SMALLSECTION_LONG_AARCH32_4K_NCACHED(addr, ro, xn)	TTB_SMALLSECTION_LONG_AARCH32_4K((addr), AARCH32_TEXval_NCRAM, AARCH32_Bval_NCRAM, AARCH32_Cval_NCRAM, AARCH32_DOMAINval, AARCH32_SHAREDval_NCRAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_SMALLSECTION_LONG_AARCH32_4K_CACHED(addr, ro, xn) 	TTB_SMALLSECTION_LONG_AARCH32_4K((addr), AARCH32_TEXval_RAM, AARCH32_Bval_RAM, AARCH32_Cval_RAM, AARCH32_DOMAINval, AARCH32_SHAREDval_RAM, (ro) ? AARCH32_APROval : AARCH32_APRWval, (xn) != 0)
+#define	TTB_SMALLSECTION_LONG_AARCH32_4K_DEVICE(addr) 			TTB_SMALLSECTION_LONG_AARCH32_4K((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
+
+		// First-level table entry - Page table
 #define	TTB_AARCH32_PAGETABLE(addr) 			TTB_AARCH32_PAGETABLE_RAW((addr), AARCH32_TEXval_DEVICE, AARCH32_Bval_DEVICE, AARCH32_Cval_DEVICE, AARCH32_DOMAINval, AARCH32_SHAREDval_DEVICE, AARCH32_APRWval, 1 /* XN=1 */)
 
 
@@ -436,6 +463,17 @@ static const getmmudesc_t aarch64_table_2M =
 	.mnoaccess = aarch64_2M_mnoaccess,
 	.mtable = aarch64_2M_mtable
 };
+
+static const getmmudesc_t mali_g31_table_2M =
+{
+	.mcached = aarch64_2M_mcached,
+	.mncached = aarch64_2M_mncached,
+	.mdevice = aarch64_2M_mdevice,
+	.mnoaccess = aarch64_2M_mnoaccess,
+	.mtable = aarch64_2M_mtable
+};
+
+
 
 ///////////////
 ///
@@ -573,7 +611,7 @@ static const getmmudesc_t a9aarch32_table_1M =
 };
 #endif
 
-//	9aarch32_table_1M: mcached = 00005DE6
+//	a9aarch32_table_1M: mcached = 00005DE6
 //	a9aarch32_table_1M: mncached = 00000DF6
 //	a9aarch32_table_1M: mdevice = 00000DF6
 //	a9aarch32_table_1M: mnoaccess = 00000000
@@ -669,6 +707,38 @@ static const getmmudesc_t aarch32_v7_table_4k =
 	.mdevice = arch32_4k_mdevice,
 	.mnoaccess = arch32_4k_mnoaccess,
 	.mtable = arch32_4k_mtable
+};
+
+static unsigned arch32_long_4k_mcached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
+{
+	return USBD_poke_u64(b, TTB_SMALLSECTION_LONG_AARCH32_4K_CACHED(addr, ro, xn));
+}
+static unsigned arch32_long_4k_mncached(uint8_t * b, uint_fast64_t addr, int ro, int xn)
+{
+	return USBD_poke_u64(b, TTB_SMALLSECTION_LONG_AARCH32_4K_NCACHED(addr, ro, xn));
+}
+static unsigned arch32_long_4k_mdevice(uint8_t * b, uint_fast64_t addr)
+{
+	return USBD_poke_u64(b, TTB_SMALLSECTION_LONG_AARCH32_4K_DEVICE(addr));
+}
+static unsigned arch32_long_4k_mnoaccess(uint8_t * b, uint_fast64_t addr)
+{
+	return USBD_poke_u64(b, UINT32_C(0));
+}
+// Next level table
+static unsigned arch32_long_4k_mtable(uint8_t * b, uint_fast64_t addr, int level)
+{
+	// 1KB granulation address - 2KB?
+	return USBD_poke_u64(b, TTB_AARCH32_PAGETABLE(addr));	// First-level table entry - Page table
+}
+
+static const getmmudesc_t aarch32_long_v7_table_4k =
+{
+	.mcached = arch32_long_4k_mcached,
+	.mncached = arch32_long_4k_mncached,
+	.mdevice = arch32_long_4k_mdevice,
+	.mnoaccess = arch32_long_4k_mnoaccess,
+	.mtable = arch32_long_4k_mtable
 };
 
 #if ! defined(__aarch64__)
@@ -1213,8 +1283,8 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 		for (; pages --; phyaddr += pagesize)
 		{
 			tb += p->level != INT_MAX ?
-					p->arch->mtable(tb, phyaddr, p->level) :
-					accessbits(p, p->arch, tb, phyaddr, p->ro, p->xn);
+					p->arch->mtable(tb, phyaddr, p->level) :			// table item
+					accessbits(p, p->arch, tb, phyaddr, p->ro, p->xn);	// block item
 		}
 		const ptrdiff_t cachesize = tb - p->table;
 		dcache_clean_invalidate((uintptr_t) p->table, cachesize);
@@ -1291,7 +1361,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phybytes = NULL,
 			.phypageszlog2 = 21,	// 2MB
 			.pagecount = AARCH64_LEVEL1_SIZE,
-			.table = xxlevel1_pagetable_u64,
+			.table = xxlevel1_pagetable_u64,	// block items
 			.level = INT_MAX,	// memory pages with access bits
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1300,7 +1370,7 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 			.phybytes = xxlevel1_pagetable_u64,
 			.phypageszlog2 = 9 + 3,	// 512 elements by 8 bytes in each page of xxlevel1_pagetable_u64
 			.pagecount = AARCH64_LEVEL0_SIZE,
-			.table = ttb0_base,
+			.table = ttb0_base,	// table items
 			.level = 0, // page table level (pass to mtable)
 			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
 		},
@@ -1358,6 +1428,39 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 	};
 	static const int glongdesc = 0;
 
+#elif MMUUSE4KPAGESLONG
+	// long (64 bit) descriptors
+	#define vHARDWARE_ADDRSPACE_GB 4
+	// AARCH32
+	// pages of 4 k
+	#define AARCH32_LONG_4K_LEVEL1_SIZE (vHARDWARE_ADDRSPACE_GB * 256 * 1024)	// физическая память - страницы по 4 KB
+	#define AARCH32_LONG_4K_LEVEL0_SIZE (AARCH32_LONG_4K_LEVEL1_SIZE / 256)
+	static RAMFRAMEBUFF __ALIGNED(16 * 1024) uint8_t ttb0_base [AARCH32_LONG_4K_LEVEL0_SIZE * sizeof (uint64_t)];
+	static RAMFRAMEBUFF __ALIGNED(1 * 1024) uint8_t level1_pagetable_u64 [AARCH32_LONG_4K_LEVEL1_SIZE * sizeof (uint64_t)];	// вся физическая память страницами по 4 килобайта
+	static const mmulayout_t mmuinfo [] =
+	{
+		{
+			.arch = & aarch32_long_v7_table_4k,
+			.phyaddr = 0x00000000,	/* Начало физической памяти */
+			.phybytes = NULL,
+			.phypageszlog2 = 12,	// 4KB
+			.pagecount = AARCH32_LONG_4K_LEVEL1_SIZE,
+			.table = level1_pagetable_u64,
+			.level = INT_MAX,	// memory pages with access bits
+			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
+		},
+		{
+			.arch = & aarch32_long_v7_table_4k,
+			.phybytes = level1_pagetable_u64,
+			.phypageszlog2 = 11,	// 2KB
+			.pagecount = AARCH32_LONG_4K_LEVEL0_SIZE,
+			.table = ttb0_base,
+			.level = 0, // page table level (pass to mtable)
+			.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
+		},
+	};
+	static const int glongdesc = 1;
+
 #elif MMUUSE1MPAGES
 	// pages of 1 MB
 	#define AARCH32_1MB_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB * 1024)
@@ -1384,6 +1487,46 @@ static void fillmmu(const mmulayout_t * p, unsigned n, unsigned (* accessbits)(c
 
 #endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 || CPUSTYLE_RISCV */
 
+#if WITHGPUHW
+
+// pages of 2 MB
+#define MALI_G31_LEVEL0_SIZE (HARDWARE_ADDRSPACE_GB)
+#define MALI_G31_LEVEL1_SIZE (HARDWARE_ADDRSPACE_GB * 512)		// pages of 2 MB
+//	A translation table is required to be aligned to the size of the table. If a table contains fewer than
+//	eight entries, it must be aligned on a 64 byte address boundary.
+static RAMFRAMEBUFF __ALIGNED(MALI_G31_LEVEL0_SIZE * sizeof (uint64_t)) uint8_t mali_ttb0_base [MALI_G31_LEVEL0_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
+static RAMFRAMEBUFF __ALIGNED(4 * 1024) uint8_t mali_xxlevel1_pagetable_u64 [MALI_G31_LEVEL1_SIZE * sizeof (uint64_t)];	// ttb0_base must be a 4KB-aligned address.
+
+static const mmulayout_t mali_mmuinfo [] =
+{
+	{
+		.arch = & mali_g31_table_2M,
+		.phyaddr = 0x00000000,	/* Начало физической памяти */
+		.phybytes = NULL,
+		.phypageszlog2 = 21,	// 2MB
+		.pagecount = MALI_G31_LEVEL1_SIZE,
+		.table = mali_xxlevel1_pagetable_u64,
+		.level = INT_MAX,	// memory pages with access bits
+		.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
+	},
+	{
+		.arch = & mali_g31_table_2M,
+		.phybytes = mali_xxlevel1_pagetable_u64,
+		.phypageszlog2 = 9 + 3,	// 512 elements by 8 bytes in each page of xxlevel1_pagetable_u64
+		.pagecount = MALI_G31_LEVEL0_SIZE,
+		.table = mali_ttb0_base,
+		.level = 0, // page table level (pass to mtable)
+		.ro = 0, .xn = 0	// page attributes (pass to mcached/mncached)
+	},
+};
+
+uintptr_t hardware_gpu_ttb(void)
+{
+	return (uintptr_t) mali_ttb0_base;
+}
+
+#endif /* WITHGPUHW */
+
 /* Один раз - инициализация таблиц в памяти */
 void
 sysinit_mmu_tables(void)
@@ -1399,6 +1542,9 @@ sysinit_mmu_tables(void)
 
 #endif
 	//PRINTF("sysinit_mmu_tables done.\n");
+#if WITHGPUHW
+	fillmmu(mali_mmuinfo, ARRAY_SIZE(mali_mmuinfo), gpu_ttb_mempage_accessbits);
+#endif
 }
 
 #if (__CORTEX_A != 0)

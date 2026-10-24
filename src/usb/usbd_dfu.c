@@ -935,7 +935,7 @@ static USBD_StatusTypeDef  USBD_DFU_Init(USBD_HandleTypeDef *pdev, uint_fast8_t 
     }
   }
 #if WITHISBOOTLOADER
-	dpcobj_initialize(& dpc_deffereddetach, bootloader_deffereddetach, NULL);
+	dpcobj_initialize(& dpc_deffereddetach, bootloader_deffereddetach, NULL, "bootloader_deffereddetach");
 #endif /* WITHISBOOTLOADER */
   return USBD_OK;
 }

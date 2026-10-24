@@ -89,13 +89,11 @@ extern "C" {
 #define WITHAVOXLEVELMIN	0	/*  % */
 #define WITHAVOXLEVELMAX	100	/*  % */
 
-#define WITHFILTSOFTMIN		0		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
-#define WITHFILTSOFTMAX		10		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
-
 #define WITHREVERBDELAYMIN 1	/* минимальная задержка ревербератора, % */
 #define WITHREVERBDELAYMAX 100	/* максимальная задержка ревербератора, % */
 
 #define WITHREVERBLOSSMIN 0		/* минимальное ослабление на возврате ревербератора (dB) */
+#define WITHREVERBLOSSDEF 12	/* максимальная ослабление на возврате ревербератора (dB) */
 #define WITHREVERBLOSSMAX 30	/* максимальная ослабление на возврате ревербератора (dB) */
 
 #define WITHCOMPATTACKMIN 1		/* минимальное время атаки компрессора (мс) */
@@ -120,12 +118,13 @@ extern "C" {
 	#define WITHDAC1VALMAX	255
 #endif /* defined (DAC1_TYPE) */
 
+#define	BOARD_AGCCODE_ON	0
+#define	BOARD_AGCCODE_OFF	1
+
 #if WITHIF4DSP
 
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
 
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
 
 	#define BOARD_NOTCH_OFF		0
 	#define BOARD_NOTCH_MANUAL	1
@@ -138,7 +137,6 @@ extern "C" {
 	#define WITHMIC1LEVEL		1	/* установка усиления микрофона */
 
 	#define	SQUELCHMAX	255	/* Kenwood's value */
-	#define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
 #endif /* WITHIF4DSP */
 
 #define CWPITCHSCALE 	10
@@ -161,8 +159,7 @@ enum
 
 	DSPCTL_MODE_RX_BPSK,
 	DSPCTL_MODE_RX_FREEDV,
-	DSPCTL_MODE_RX_WIDE, 	/* Приём с заданием полосы значениями верхнего и нижнего среза АЧХ */
-	DSPCTL_MODE_RX_NARROW, 	/* Приём с заданием полосы значением центральной частоты и полосы пропускания */
+	DSPCTL_MODE_RX_SSB,
 	DSPCTL_MODE_RX_AM,
 	DSPCTL_MODE_RX_SAM,
 	DSPCTL_MODE_RX_NFM,
@@ -170,6 +167,7 @@ enum
 	DSPCTL_MODE_RX_DRM,		/* принятиый сигнал транслируется на выход на частоте 12 кГц */
 	DSPCTL_MODE_RX_ISB,		/* прием двух независимых боковых полос */
 	DSPCTL_MODE_RX_WFM,		/* прием WFM (демодуляция в FPGA, только без WITHUSEDUALWATCH)	*/
+	DSPCTL_MODE_RX_RTTY,
 
 	DSPCTL_MODE_RX_TOP,
 
@@ -183,6 +181,7 @@ enum
 	DSPCTL_MODE_TX_ISB,		/* передача двух независимых боковых полос */
 	DSPCTL_MODE_TX_BPSK,
 	DSPCTL_MODE_TX_FREEDV,
+	DSPCTL_MODE_TX_RTTY,
 
 	DSPCTL_MODE_TX_TOP,
 	//
@@ -260,135 +259,6 @@ enum {
 	//
 	MODE_COUNT	/* номера режимов представляют собой ещё позиции битов в масках допустимых режимов работы для фильтров */
 };
-
-//#if WITHMODEM || WITHWFM || WITHIF4DSP || CPUSTYLE_ARM
-	typedef uint_fast16_t MODEMASK_T;	/* Тип, достаточный для хранения MODE_COUNT битов */
-//#else /* WITHMODEM || WITHWFM */
-//	typedef uint_fast8_t MODEMASK_T;	/* Тип, достаточный для хранения MODE_COUNT битов */
-//#endif /* WITHMODEM || WITHWFM || WITHIF4DSP || CPUSTYLE_ARM */
-
-
-typedef struct lo2param_tag
-{
-	uint_least64_t lo2n [2];			/* N параметр для ФАПЧ (RX и TX) */
-	uint_least64_t lo2r [2];			/* R параметр для ФАПЧ (RX и TX) */
-	int_fast32_t lo4base;				/* IF3FREQBASE, например */
-} lo2param_t;
-
-/* Описание фильтра */
-/* Если фильтр присутствует только в тракте према, поле suitmodestx = 0 */
-/* Если фильтр присутствует только в тракте передачи, поле suitmodesrx = 0 */
-/* В массиве code заполняются поля соответственно коммктации фильтра в траакты приема и передачи */
-typedef struct filter_tag
-{
-	MODEMASK_T suitmodesrx;	/* suitable for: modefamily bits */
-	MODEMASK_T suitmodestx;	/* suitable for: modefamily bits */
-	MODEMASK_T defmodes;	/* default for: modefamily bits */
-	uint_fast16_t low_or_center;		/* frequency of low edge (for ssb detector) -  Hz - offset from ::if3base  */
-	uint_fast16_t high;		/*  high edge frequency (for ssb detector) - Hz - offset from ::if3base, 0 for narrow filters */
-	uint_fast16_t code [2];	/* code of filter for RX/TX board control */
-	uint_fast8_t present;	/* this filter installed */
-	uint_fast8_t widefilter;	/* 0 - считается "узким", 1 - "широким" */
-	uint_fast16_t ceoffset;		/*  смещённый на IF3CEOFFS сдвиг центральной частоты: IF3CEOFFS - 0 герц */
-	const lo2param_t * lo2set;
-	const char * labelf3;	/* name of filter - 3 chars width */
-} filter_t;
-
-#define IF3OFFS 15000	/* половина перестройки частоты ската через меню - удвоенное значение должно помещаться в uint_fast16_t */
-#define IF3CEOFFS 5000	/* половина перестройки частоты центра через меню - удвоенное значение должно помещаться в uint_fast16_t */
-
-// используемые в меню фильтры
-extern filter_t fi_2p4;
-extern filter_t fi_2p4_tx;
-extern filter_t fi_2p7;
-extern filter_t fi_2p7_tx;
-extern filter_t fi_0p3;
-extern filter_t fi_0p5;
-extern filter_t fi_1p8;
-extern filter_t fi_3p1;
-extern filter_t fi_3p1_tx;
-extern filter_t fi_6p0;
-extern filter_t fi_7p8;
-extern filter_t fi_8p0;
-extern filter_t fi_9p0;
-extern filter_t fi_15p0;
-extern filter_t fi_15p0_tx_nfm;
-extern filter_t fi_17p0;
-
-extern filter_t fi_2p0_455;
-extern filter_t fi_10p0_455;
-extern filter_t fi_3p0_455;
-extern filter_t fi_6p0_455;
-
-extern uint_fast16_t lo4offset;			/* частота (без базы) третьего гетеродина */
-extern uint_fast16_t lo4offsets [2]; 	/* частота (без базы) третьего гетеродина для разных боковых */
-
-int_fast32_t getlo4base(void); /* = IF3FREQBASE */
-int_fast32_t getcefreqshiftbase(void); /* = (int_fast32_t) 0 - IF3CEOFFS */
-
-int_fast32_t
-getif3filtercenter(
-	const filter_t * workfilter
-	);
-
-/* = IF3FREQBASE (для фильтра) */
-int_fast32_t getlo4baseflt(
-	const filter_t * workfilter 
-	);
-
-uint_fast16_t calc_next(uint_fast16_t v, uint_fast16_t low, uint_fast16_t high);
-
-uint_fast8_t getgfasize(void);
-
-const filter_t * 
-NOINLINEAT
-getrxfilter(
-	uint_fast8_t submode,
-	uint_fast8_t ix		/* текущий номер фильтра  */
-	);
-
-const filter_t * 
-NOINLINEAT
-gettxfilter(
-	uint_fast8_t submode,
-	uint_fast8_t ix		/* текущий номер фильтра  */
-	);
-
-uint_fast8_t 
-//NOINLINEAT
-getdefflt(
-	uint_fast8_t mode,
-	uint_fast8_t ix		/* текущий номер фильтра - возвращается если не нашли допустимых */
-	);
-uint_fast8_t 
-//NOINLINEAT
-getsuitablerx(
-	uint_fast8_t mode,
-	uint_fast8_t ix		/* текущий номер фильтра - возвращается если не нашли допустимых */
-	);
-uint_fast8_t 
-//NOINLINEAT
-getsuitabletx(
-	uint_fast8_t mode,
-	uint_fast8_t ix		/* текущий номер фильтра - возвращается если не нашли допустимых */
-	);
-
-uint_fast8_t 
-findfilter(
-	uint_fast8_t mode,
-	uint_fast8_t ix,		// текущий быбранный фильтр
-	unsigned width);			// полоса фильтра в герцах
-
-const phase_t * getplo2n(
-	const filter_t * workfilter,
-	uint_fast8_t tx			/* признак работы в режиме передачи */
-	);
-
-const phase_t * getplo2r(
-	const filter_t * workfilter,
-	uint_fast8_t tx			/* признак работы в режиме передачи */
-	);
-
 
 enum
 {
@@ -521,16 +391,6 @@ uint_fast8_t elkey_get_ptt(void);
 uint_fast8_t elkey_getnextcw(void);	// Получение символа для передачи (только верхний регистр)
 uint_fast8_t vox_getbkin(void);
 
-/* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
-// Параметр функции board_set_seqphase()
-enum
-{
-	SEQPHASE_INIT,	// RX
-	SEQPHASE_FULLTX,	// TX
-	//
-	SEQPHASE_COUNT
-};
-
 /* обработка меню - установить задержку пре переходе на передачу и обратно. */
 void seq_set_rxtxdelay(
 	uint_fast8_t rxtxdelay, 
@@ -570,11 +430,15 @@ void dsp_sidetone_setfreq(uint_least16_t tonefreq01);	/* tonefreq01 - часто
 /* сиквенсор приём-передача - и по таймерным и по 1/ELKEY_DISCRETE точки */
 void elkey_spool_dots(void);	/* электронный ключ - вызывается с периодом 1/ELKEY_DISCRETE от длительности точки. */
 void spool_0p128(void);	// OPERA support
+
 /* Коды описывающие преобразования спектра в тракте */
-#define LOCODE_UPPER	0	/* При преобразовании на этом гетеродине происходит инверсия спектра */
-#define LOCODE_LOWER	1	/* При преобразовании на этом гетеродине нет инверсии спектра */
-#define LOCODE_TARGETED	2	/* Этот гетеродин управляется для получения требуемой боковой. Только один может быть таким. */
-#define LOCODE_INVALID	3	/* Этого гетеродина (и сместеля) нет. */
+enum
+{
+	LOCODE_UPPER,	/* При преобразовании на этом гетеродине происходит инверсия спектра */
+	LOCODE_LOWER,	/* При преобразовании на этом гетеродине нет инверсии спектра */
+	LOCODE_TARGETED,	/* Этот гетеродин управляется для получения требуемой боковой. Только один может быть таким. */
+	LOCODE_INVALID		/* Этого гетеродина (и сместеля) нет. */
+};
 
 /* DUC/DDC. обработка квадратур в DSP процессоре */
 #if FQMODEL_FPGA
@@ -670,37 +534,13 @@ void spool_0p128(void);	// OPERA support
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
 #endif	/* DIRECT_122M88_X1 */
 
-#if DIRECT_96M_X1
+#if DIRECT_49M152_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	96000000
+	#define REFERENCE_FREQ	49152000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
-#endif	/* DIRECT_96M_X1 */
-
-#if DIRECT_12M288_X10
-	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	12288000
-	#define DDS1_CLK_MUL	10 		/* Умножитель в DDS1 */
-	#define DDS2_CLK_MUL	10		/* Умножитель в DDS2 */
-	#define DDS3_CLK_MUL	10		/* Умножитель в DDS3 */
-#endif	/* DIRECT_12M288_X10 */
-
-#if DIRECT_160M0_X1
-	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	160000000
-	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
-	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
-	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
-#endif	/* DIRECT_160M0_X1 */
-
-#if DIRECT_48M0_X1
-	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	48000000
-	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
-	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
-	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
-#endif	/* DIRECT_48M0_X1 */
+#endif	/* DIRECT_49M152_X1 */
 
 #if DIRECT_50M0_X1
 	#define LO1MODE_DIRECT	1
@@ -710,61 +550,16 @@ void spool_0p128(void);	// OPERA support
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
 #endif	/* DIRECT_50M0_X1 */
 
-#if DIRECT_75M0_X1
-	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	75000000
-	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
-	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
-	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
-#endif	/* DIRECT_75M0_X1 */
-
 #if DIRECT_80M0_X1
 	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	80000000ul
+	#define REFERENCE_FREQ	80000000
 	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
 	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS2 */
 #endif	/* DIRECT_80M0_X1 */
 
-#if DIRECT_60M0_X1
-	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	60000000ul
-	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
-	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
-	#define DDS3_CLK_MUL	1		/* Умножитель в DDS2 */
-#endif	/* DIRECT_60M0_X1 */
-
-#if DIRECT_48M0_X8
-	#define LO1MODE_DIRECT	1
-	#define REFERENCE_FREQ	48000000ul
-	#define DDS1_CLK_MUL	8 		/* Умножитель в DDS1 */
-	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
-	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
-#endif	/* DIRECT_48M0_X8 */
-
 #define IF3_TYPE_BYPASS	1
 
-/* все возможные фильтры. Не ноль соответствующем бите IF3_FMASK разрешает включение/выключение данного фильтра. */
-#define IF3_FMASK_0P3	(1U << 0)	/* наличие фильтра 0.3 кГц	*/
-#define IF3_FMASK_0P5	(1U << 1)	/* наличие фильтра 0.5 кГц	*/
-#define IF3_FMASK_1P0	(1U << 2)	/* наличие фильтра 1.0 кГц	*/
-#define IF3_FMASK_1P5	(1U << 3)	/* наличие фильтра 1.5 кГц	*/
-#define IF3_FMASK_1P8	(1U << 4)	/* наличие фильтра 1.8 кГц	*/
-#define IF3_FMASK_2P1	(1U << 5)	/* наличие фильтра 2.1 кГц	*/
-#define IF3_FMASK_2P4	(1U << 6)	/* наличие фильтра 2.4 кГц	*/
-#define IF3_FMASK_2P7	(1U << 7)	/* наличие фильтра 2.7 кГц	*/
-#define IF3_FMASK_3P1	(1U << 8)	/* наличие фильтра 3.1 кГц	*/
-#define IF3_FMASK_6P0	(1U << 9)	/* наличие фильтра 6.0 кГц	*/
-#define IF3_FMASK_7P8	(1U << 10)	/* наличие фильтра 7.8 кГц	*/
-#define IF3_FMASK_8P0	(1U << 11)	/* наличие фильтра 8.0 кГц	*/
-#define IF3_FMASK_9P0	(1U << 12)	/* наличие фильтра 9.0 кГц	*/
-#define IF3_FMASK_15P0	(1U << 13)	/* наличие фильтра 15.0 кГц	*/
-#define IF3_FMASK_17P0	(1U << 14)	/* наличие фильтра 17.0 кГц	*/
-#define IF3_FMASK_120P0	(1U << 15)	/* наличие фильтра 120 кГц	*/
-
-//extern uint_fast8_t s9level;		/* уровни калибровки S-метра */
-//extern uint_fast8_t s9delta;		// 9 баллов - 8 интервалов - по 6 децибел каждый
-//extern uint_fast8_t s9_60_delta;		// 60 dB
 extern uint_fast16_t minforward;
 extern uint_fast8_t swrcalibr;
 extern uint_fast8_t maxpwrcali;
@@ -786,6 +581,11 @@ void updateboard(void);	/* полная перенастройка */
 #define WITHBOTTOMDBMAX 	(+ 10 - DBVALOFFSET_BASE)
 #define WITHBOTTOMDBDEFAULT (- 130 - DBVALOFFSET_BASE)
 #define WITHBOTTOMDBDEFAULTTX (- 110 - DBVALOFFSET_BASE)
+
+/* Беззнаковые значения, хранимые в NVRAM */
+#define	BOARD_AGCFENCE_MIN	(- 133 - DBVALOFFSET_BASE)		/* код управления точки перегиба АРУ ВЧ тракта */
+#define	BOARD_AGCFENCE_MAX	(+ 62 - DBVALOFFSET_BASE)		/* код управления точки перегиба АРУ ВЧ тракта */
+#define	BOARD_AGCFENCE_DEFAULT	(- 55 - DBVALOFFSET_BASE)	/* код управления точки перегиба АРУ ВЧ тракта */
 
 /* выбор внешнего вида прибора - стрелочный или градусник */
 enum
@@ -906,9 +706,6 @@ enum
 #define ITEM_VALUE	(UINT8_C(1) << 0)	/* пункт меню для редактирования параметра */
 #define ITEM_GROUP	(UINT8_C(1) << 1)	/* пункт меню без изменяемого значения - связан с подменю */
 
-#define ITEM_FILTERU	(UINT8_C(1) << 2)	/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
-#define ITEM_FILTERL	(UINT8_C(1) << 3)	/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
-
 #define ITEM_NOINITNVRAM	(UINT8_C(1) << 4)	/* значение этого пункта не используется при начальной инициализации NVRAM */
 #define ITEM_LISTSELECT	(UINT8_C(1) << 5)	/* отображение этого элемента в lvgl списком значений на выбор */
 
@@ -923,7 +720,7 @@ typedef struct paramdefdef
 	const char * label;			/* название пункта меню для широкого меню */
 	const char * enc2label;		/* название пункта меню для FUNC меню */
 
-	uint8_t qwidth_unused, qcomma, qrj;
+	uint8_t qcomma, qrj;
 	uint8_t qistep;
 	uint8_t qspecial;	/* признак к какому меню относится */
 
@@ -953,8 +750,9 @@ const char * hamradio_get_ant5_value(void);	// antenna
 const char * hamradio_get_att_value_P(void);	// RX attenuator
 const char * hamradio_get_hplp_value_P(void);	// HP/LP
 const char * hamradio_get_mainsubrxmode3_value_P(void);	// текущее состояние DUAL WATCH
+uint_fast8_t hamradio_get_shofvfobmarker(void);	// Показ маркера полосы пропускания второго VFO
 const char * hamradio_get_mode_a_value_P(void);	// SSB/CW/AM/FM/..
-const char * hamradio_get_mode_b_value_P(uint_fast8_t * flag);	// SSB/CW/AM/FM/..
+const char * hamradio_get_mode_b_value_P(void);	// SSB/CW/AM/FM/..
 const char * hamradio_get_notchtype5_P(void);	// FREQ/ANOTCH
 const char * hamradio_get_pre_value(void);	// RX preamplifier
 const char * hamradio_get_preamp_value(void);
@@ -1037,7 +835,7 @@ uint_fast8_t hamradio_get_gnotch(void);
 uint_fast8_t hamradio_get_gnotchtype(void);
 uint_fast8_t hamradio_get_greverb(void);
 uint_fast8_t hamradio_get_gsmetertype(void);
-uint_fast8_t hamradio_get_gvfoab(void);
+uint_fast8_t hamradio_get_gvfoab(void);	// кандидат на удаление (VFO A всегда на большом индикаторе)
 uint_fast8_t hamradio_get_gvoxenable(void);
 uint_fast8_t hamradio_get_gzoomxpow2(void);
 uint_fast8_t hamradio_get_high_bp(int_least16_t rotate);
@@ -1050,7 +848,8 @@ uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p);		// NR ON/OFF
 uint_fast8_t hamradio_get_rec_value(void);	// AUDIO recording state
 uint_fast8_t hamradio_get_reverb_delay(void);
 uint_fast8_t hamradio_get_reverb_loss(void);
-uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
+//uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi);		/* Получить значение отклонения частоты с точностью 0.1 герца */
+//uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi);	/* Получить значение отклонения частоты с точностью 0.1 герца */
 uint_fast8_t hamradio_get_spkon_value(void);	// не-0: динамик включен
 uint_fast8_t hamradio_get_submode(void);
 uint_fast8_t hamradio_get_tunemodevalue(void);	// текущее состояние TUNE
@@ -1081,7 +880,7 @@ void hamradio_disable_encoder2_redirect (void);
 void hamradio_disable_keyboard_redirect(void);
 void hamradio_enable_encoder2_redirect (void);
 void hamradio_enable_keyboard_redirect(void);
-void hamradio_get_antivox_delay_limits(uint_fast8_t * min, uint_fast8_t * max);
+void hamradio_get_antivox_level_limits(uint_fast8_t * min, uint_fast8_t * max);
 int hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC1F */
 int hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояняя ENC2F */
 int hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t count);	/* получить надпись для отображения состояния ENC3F */
@@ -1145,10 +944,17 @@ void hamradio_set_vox_level(uint_fast8_t v);
 void hamradio_setautotune(void);
 void hamradio_setrx(void);
 void hamradio_settemp_viewstyle(uint_fast8_t v);
-void hamradio_split_mode_toggle(void);
+void hamradio_dwatch_toggle(void);
 void hamradio_split_vfo_swap(void);
 void hamradio_tick_sof(void);
 void hamradio_walkmenu(void * walkctx, void * (* groupcb)(void * walkctx, const void * groupitem), void (* itemcb)(void * walkctx, void * groupctx, const void * paramitem));
+void hamradio_set_si570reference(int_fast32_t f);
+
+int hamradio_get_af_equalizer_gain_tx(int band);
+void hamradio_set_af_equalizer_gain_tx(int band, int v);
+int hamradio_get_af_equalizer_base(void);
+int hamradio_get_eqalizer_tx(void);
+void hamradio_set_eqalizer_tx(int v);
 
 // LVGL interface functions
 int infocb_modea(char * b, size_t len, int * pstate);
@@ -1211,12 +1017,19 @@ param_setvalue(
 	int_fast32_t v
 	);
 int_fast32_t
-param_getvalue(
+param_val(
 	const struct paramdefdef * pd
 	);
 void
 param_load(
 	const struct paramdefdef * pd
+	);
+// Минимальное и максимальное значение, которое можно передать в param_setvalue
+void
+param_getminmax(
+	const struct paramdefdef * pd,
+	int_fast32_t * pmin,
+	int_fast32_t * pmax
 	);
 
 

@@ -1,4 +1,4 @@
-const uint8_t CenturyHothic_36x54Bitmaps[] PROGMEM = {
+const uint8_t CenturyGothic_36x54Bitmaps[] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -218,7 +218,7 @@ const uint8_t CenturyHothic_36x54Bitmaps[] PROGMEM = {
   0xFF, 0xF0
 };
 
-const GFXglyph CenturyHothic_36x54Glyphs[] PROGMEM = {
+const GFXglyph CenturyGothic_36x54Glyphs[] PROGMEM = {
   {     0,   0,   0,  36,    0,  -53 },   // 0x20 ' '
   {     0,   0,   0,   0,    0,    0 },   // 0x21 '!'
   {     0,   0,   0,   0,    0,    0 },   // 0x22 '"'
@@ -285,8 +285,8 @@ const GFXglyph CenturyHothic_36x54Glyphs[] PROGMEM = {
   {  2580,  36,   3,  36,    0,   -3 }    // 0x5F '_'
 };
 
-const GFXfont CenturyHothic_36x54 PROGMEM = {
-    (uint8_t *)CenturyHothic_36x54Bitmaps,
-    (GFXglyph *)CenturyHothic_36x54Glyphs, 0x20, 0x5F,  54};
+const GFXfont CenturyGothic_36x54 PROGMEM = {
+    (uint8_t *)CenturyGothic_36x54Bitmaps,
+    (GFXglyph *)CenturyGothic_36x54Glyphs, 0x20, 0x5F,  54};
 
 // Approx. 2694 bytes

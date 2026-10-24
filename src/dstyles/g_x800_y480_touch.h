@@ -79,7 +79,7 @@
 	{
 			{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 		//{	10,	0,	6,	0,	display2_rxbwval6alt,	& dzi_default, PGALL, },	// RX BW value
-		{	17,	0,	2,	0,	display_txrxstate2, & dzi_txrx, PGALL, },
+		{	17,	0,	2,	0,	display2_txrxstate2, & dzi_txrx, PGALL, },
 		{	20,	0,	5,	0,	display2_ant5,		& dzi_antenna, PGALL, },
 		{	26,	0,	4,	0,	display2_att4,		& dzi_attenuator, PGALL, },
 		{	31,	0,	3,	0,	display2_preovf3,	& dzi_default, PGALL, },
@@ -117,7 +117,7 @@
 		{	43, 15,	3,	0,	display2_atu3,		& dzi_tune, PGALL, },	// TUNER state (optional)
 		{	43, 20,	3,	0,	display2_byp3,		& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
 
-		{	17,	7,	0,	0,	display2_freqX_a_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
+		{	17,	7,	0,	0,	display2_freqX_init,	& dzi_default, PGINI, },	// MAIN FREQ Частота (большие цифры)
 		{	17,	7,	21,	11,	display2_freqX_a,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 		{	38, 10,	3,	0,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 		{	43, 10,	3,	0,	display2_rxbw3,		& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR

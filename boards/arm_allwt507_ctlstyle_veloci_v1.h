@@ -31,7 +31,7 @@
 	#define HARDWARE_ADDRSPACE_GB (8)	// Размер адресного пространства (для 4 ГБ памяти надо 8 ГБ - базовый адрес ОЗУ 0x40000000).
 
 	//  PLL_CPUX=24MHz*N/P
-#if 0
+#if 1
 	/* 1396 MHz */
 	#define PLL_CPU_N 	116
 	#define PLL_CPU_P_POW 1
@@ -86,8 +86,8 @@
 	//#define KEYB_VELOCI24_V0	1	/* 24 кнопки на 6 линий */
 	#define KEYB_VELOCI24_V0_UA1CEI	1	/* 24 кнопки на 6 линий */
 
-	#define WITHPABIASMIN		0
-	#define WITHPABIASMAX		255
+	
+	
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
@@ -101,14 +101,14 @@
 
 	#define WITHPREAMPATT2_6DB 1	/* LTC2208 Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
-	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
+	
 
 	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
 
 	// --- Особые варианты расположения кнопок на клавиатуре
-	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
-	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
+	
+	
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #if WITHISBOOTLOADER
@@ -195,9 +195,9 @@
 #if WITHISBOOTLOADER
 
 	// +++ заглушки для плат с DSP обработкой
-	#define	BOARD_AGCCODE_ON	0x00
-	#define	BOARD_AGCCODE_OFF	0x01
-	#define WITHAGCMODENONE 1
+	
+	
+	
 
 	#define BOARD_DETECTOR_AM 	0		// Заглушка
 	#define BOARD_DETECTOR_FM 	0		// Заглушка
@@ -302,7 +302,7 @@
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-	//#define WITHRTOS	1	/* Использование RTOS */
+	
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
@@ -315,8 +315,8 @@
 
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
-	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
-	//#define WITHTXCPATHCALIBRATE 1	/* при изменении параметров интерполятора в FPGA выполняем калибровку HARDWARE_DACSCALE */
+	
+	//#define WITHTXCPATHCALIBRATE 1	/* при изменении параметров интерполятора в FPGA выполняем калибровку HARDWARE_DUCSCALE */
 
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
@@ -347,7 +347,6 @@
 	//#define WITHDISPLAYSNAPSHOT 1	/* запись видимого изображения */
 
 	
-	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 //	#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 //	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 //	#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
@@ -365,7 +364,7 @@
 			#define FORMATFROMLIBRARY 	1
 			
 			#define WITHALTERNATIVEFONTS	1
-			#define WITHAFEQUALIZER		1
+			
 			#define WITHALTERNATIVELAYOUT	1
 			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB8888 видеобуфера */
 			#define WITHDEFAULTVIEW		VIEW_3DSS
@@ -409,13 +408,7 @@
 	//#define WITHANTSELECT	1	/* Управление переключением антенн */
 
 	//#define WITHVITA49RX	1	/* VITA 49.0-2015 streaming source support */
-	
-//	#define WITHSWRPROT 0			/* ОТЛАДКА - отключенна защит по КСВ */
-//	#define WITHHEATPROT 0			/* ОТЛАДКА - отключенна защит по перегреву */
 
-	
-	
-	
 	#define WITHCAT		1	/* используется CAT */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
@@ -430,9 +423,7 @@
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
-	#define WITHSPKMUTE		1	/* управление выключением динамика */
-	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
-//	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
+	
 //	#define WITHLOCKFULL	1	/* блокировка всего управления, а не только перестройки */
 
 	// Есть ли регулировка параметров потенциометрами
@@ -460,6 +451,7 @@
 	#endif
 	#if 0
 		#define WITHLWIP 1
+		//#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
 	#if 0
 		#define WITHLVGL 1		/* bare-metal config of LVGL */
@@ -529,16 +521,11 @@
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
-#endif /* WITHISBOOTLOADER */
 
 	#define WITHMODESETFULLNFM 1
-
-	/* все возможные в данной конфигурации фильтры */
-	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
-	/* все возможные в данной конфигурации фильтры для передачи */
-	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
-	/* фильтры, для которых стоит признак HAVE */
-	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
+//	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
+	#define WITHRTTY 1	/* подержка демодулятора RTTY */
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
@@ -567,6 +554,15 @@
 		#endif /* WITHTHERMOLEVEL2 */
 	#endif /* WITHTHERMOLEVEL */
 
+#endif /* WITHISBOOTLOADER */
+
+	/* все возможные в данной конфигурации фильтры */
+	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+	/* все возможные в данной конфигурации фильтры для передачи */
+	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
+	/* фильтры, для которых стоит признак HAVE */
+	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+
 	// Назначения входов АЦП процессора.
 	enum
 	{
@@ -579,9 +575,11 @@
 		XTHERMOIX = BOARD_ADCX2IN(4),		// MCP3208 DA6 External thermo sensor TI LM35
 		XTHERMOREFIX = BOARD_ADCX2IN(6),		// MCP3208 DA6 External thermo sensor TI LM35 (reference)
 		VOLTSOURCE = BOARD_ADCX2IN(5),		// Средняя точка делителя напряжения питания
+	};
 
-		/* кеширование днных */
-
+	/* кеширование днных */
+	enum
+	{
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 		XTHERMOREFMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX = BOARD_ADCMRRIN(2),	// кеш - индекc не должен повторяться в конфигурации

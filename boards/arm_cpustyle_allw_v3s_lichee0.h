@@ -55,9 +55,6 @@
 	
 
 	////#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
-	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
-
 	////#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
@@ -797,20 +794,6 @@
 	*/
 
 	#define	USBD_EHCI_INITIALIZE() do { \
-		RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_USBPHYEN; \
-		(void) RCC->MP_APB4ENSETR; \
-		RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_USBPHYLPEN; \
-		(void) RCC->MP_APB4LPENSETR; \
-		/* STM32_USBPHYC_MISC bit fields */ \
-		/*	SWITHOST 0: Select OTG controller for 2nd PHY port */ \
-		/*	SWITHOST 1: Select Host controller for 2nd PHY port */ \
-		/*	EHCI controller hard wired to 1st PHY port */ \
-		USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST_Msk | USBPHYC_MISC_PPCKDIS_Msk)) | \
-			(USBPHYC_MISC_SWITHOST_VAL << USBPHYC_MISC_SWITHOST_Pos) |	/* 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port */ \
-			(USBPHYC_MISC_PPCKDIS_VAL << USBPHYC_MISC_PPCKDIS_Pos) | \
-			0; \
-		(void) USBPHYC->MISC; \
-		arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); /* PD2 */ \
 		} while (0)
 
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \

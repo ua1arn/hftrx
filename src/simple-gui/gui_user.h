@@ -35,7 +35,7 @@ void window_receive_process(void);
 void window_notch_process(void);
 void window_gui_settings_process(void);
 void window_infobar_menu_process(void);
-void window_af_eq_process(void);
+void window_tx_eq_process(void);
 void window_shift_process(void);
 void window_menu_params_process(void);
 void window_time_process(void);

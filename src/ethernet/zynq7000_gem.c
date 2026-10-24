@@ -19,7 +19,7 @@ int nic_can_send(void)
 void nic_send(const uint8_t * data, int isize)
 {
 }
-void nic_initialize(void)
+void nic_initialize(struct netif *netif)
 {
 	PRINTF("nic_initialize:\n");
 

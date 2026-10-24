@@ -245,7 +245,7 @@ Reset_Handler:
 .endm
 
 .macro push_trapframe_float
-	/* total 544 bytes = 68 qwords */
+	/* total 528 bytes = 66 qwords */
 	/* Wait for FPU operation done */
  	mrs	x1, FPSR
 
@@ -271,28 +271,21 @@ Reset_Handler:
 	stp q0, q1, [sp, #-32]!
 
 	/* Save VFP control state */
-	 /* 32 bytes */
+	 /* 16 bytes */
 	mrs	x1, FPCR
-	mrs x2, FPEXC32_EL2
-	stp	x1, x2, [sp, #-16]!
-
-	//mrs	x1, FPCR
 	mrs x2, FPSR
 	stp	x1, x2, [sp, #-16]!
 .endm
 
 .macro pop_trapframe_float
-	/* total 544 bytes = 68 qwords */
+	/* total 528 bytes = 66 qwords */
 	/* Wait for FPU operation done */
  	mrs	x1, FPSR
 	/* Restore VFP control state */
 	ldp	x1, x2, [sp], #16
 	//msr	FPCR, x1
 	msr FPSR, x2
-
-	ldp	x1, x2, [sp], #16
 	msr	FPCR, x1
-	msr FPEXC32_EL2, x2
 
 	/*
 	 * Restore floating point registers from (q0,q1) pair to (q30,q31) pair.

@@ -20,11 +20,12 @@
 #include "display2.h"
 #include <string.h>
 
-#if CPUSTYLE_T507
-#define __OPENCL_VERSION__
+#if WITHGPUHW && CPUSTYLE_T507
+//#define __OPENCL_VERSION__
 //#include "panfrost_regs.h"
 
 //#include "mali_bifrost_v6.h"
+#include "pan_pack_helpers.h"
 #include "bifrost_v7.h"
 
 // Выравнивание для кэш-линий GPU
@@ -39,12 +40,13 @@
 static void gpu_as_command(unsigned as, unsigned cmd)
 {
     // Ожидание готовности MMU AS
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1)
-        ;
+	if (local_wait32mask(& GPU_MMU->MMU_AS[as].AS_STATUS, 0x1, 0 * 0x1, 100))
+		return;	// timeout
+
     GPU_MMU->MMU_AS[as].AS_COMMAND = cmd;
     // Ожидание завершения команды
-    while (GPU_MMU->MMU_AS[as].AS_STATUS & 0x1)
-        ;
+	if (local_wait32mask(& GPU_MMU->MMU_AS[as].AS_STATUS, 0x1, 0 * 0x1, 100))
+		return;	// timeout
 }
 
 
@@ -101,9 +103,8 @@ static void gpu_command(unsigned cmd)
 
 static void gpu_wait(unsigned mask)
 {
-	while ((GPU_CONTROL->GPU_IRQ_RAWSTAT & mask) != mask)
-		;
-	GPU_CONTROL->GPU_IRQ_CLEAR = mask;
+	if (! local_wait32mask(& GPU_CONTROL->GPU_IRQ_RAWSTAT, mask, mask, 100))
+		GPU_CONTROL->GPU_IRQ_CLEAR = GPU_IRQ_REG_ALL;
 }
 
 /* AS_COMMAND register commands */
@@ -128,8 +129,8 @@ void GPU_JOB_IRQHandler(void)
 	PRINTF("GPU_JOB_IRQHandler\n");
     PRINTF("h GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_IRQ_RAWSTAT);
     PRINTF("h GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
-    GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
-    GPU_JOB_CONTROL->JOB_IRQ_CLEAR = ~ 0;
+    GPU_JOB_CONTROL->JOB_INT_CLEAR = 0xFFFFFFFF;
+    GPU_JOB_CONTROL->JOB_IRQ_CLEAR = 0xFFFFFFFF;
 }
 
 void GPU_MMU_IRQHandler(void)
@@ -189,13 +190,14 @@ static void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
     PRINTF("   Slot %u Tail Address:       0x%08X%08X\n", slot, (unsigned)tail_hi, (unsigned)tail_lo);
 
     // Проверяем, не ругнулся ли при этом MMU (адресное пространство AS0 на 0x400)
-//    PRINTF("   MMU Fault Status (as=%u) = 0x%08X\n", as, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTSTATUS);
-//    PRINTF("   MMU Fault Address = 0x%08X%08X\n",
-//           (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_LO);
+    PRINTF("   MMU Fault Status (as=%u) = 0x%08X\n", as, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTSTATUS);
+    PRINTF("   MMU Fault Address = 0x%08X%08X\n",
+           (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_HI, (unsigned)GPU_MMU->MMU_AS [as].AS_FAULTADDRESS_LO);
 }
 
 static int gpu_submit_job(unsigned slot, uintptr_t job)
 {
+	unsigned as = 0;
 //	PRINTF("gpu_submit_job: head=%p, slot=%u\n", (void *) head, slot);
 //	printhex32((uintptr_t) job, job, 64);
     // Записываем физический адрес начала структуры v_job в регистр указателя слота 0
@@ -221,14 +223,15 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
     __DSB();
     // Ожидание завершения работы аппаратного тайлера геометрии
     // В hftrx прерывания выводят ASSERT(0), поэтому опрашиваем статус в цикле (polling)
-    if (local_wait32mask(& GPU_JOB_CONTROL->JOB_INT_RAWSTAT, (UINT32_C(1) << slot), 1 * (UINT32_C(1) << slot), 100))//Was: JOB_IRQ_RAWSTAT
+    if (local_wait32mask2(& GPU_JOB_CONTROL->JOB_INT_RAWSTAT, (UINT32_C(0x10001) << slot), 1 * (UINT32_C(1) << slot), 1 * (UINT32_C(0x10000) << slot), 100))//Was: JOB_IRQ_RAWSTAT
     {
+    	// timeout
     	PRINTF("error job @%p:\n", (void *) job);
     	dcache_invalidate((uintptr_t) job, 128);
     	printhex32(job, (void *) job, 128);
     	PRINTF("gpu timeout: GPU_JOB_CONTROL->JOB_INT_RAWSTAT=%08X\n", (unsigned) GPU_JOB_CONTROL->JOB_INT_RAWSTAT);
-    	gpu_diagnose_slot_fault(slot, 0);
-        GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
+    	gpu_diagnose_slot_fault(slot, as);
+        GPU_JOB_CONTROL->JOB_INT_CLEAR = 0xFFFFFFFF;
         return 1;
     }
     else
@@ -237,13 +240,60 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
 //    	dcache_invalidate((uintptr_t) job, 128);
 //    	printhex32(job, (void *) job, 128);
         GPU_JOB_CONTROL->JOB_INT_CLEAR = (UINT32_C(1) << slot); // Сброс флага прерывания
-        GPU_JOB_CONTROL->JOB_INT_CLEAR = ~ 0;
+        GPU_JOB_CONTROL->JOB_INT_CLEAR = 0xFFFFFFFF;
         return 0;
     }
 }
 
 static int gpu_run_write_value_test_mesa(void) {
 	PRINTF("gpu_run_write_value_test_mesa:\n");
+	// Переменная-цель, куда будет писать GPU.
+	GPU_ALIGN static volatile uint64_t gpu_test_target [2];
+
+	GPU_ALIGN static MALI_WRITE_VALUE_JOB_PACKED_T job_p;
+	GPU_ALIGN static MALI_WRITE_VALUE_JOB_PACKED_T job2_p;
+
+	pan_section_pack(& job_p, WRITE_VALUE_JOB, HEADER, header) {
+		header.type = MALI_JOB_TYPE_WRITE_VALUE;
+		header.index = 1;
+		header.next = (uintptr_t) & job2_p;
+	}
+	pan_section_pack(& job2_p, WRITE_VALUE_JOB, HEADER, header) {
+		header.type = MALI_JOB_TYPE_WRITE_VALUE;
+		header.index = 2;
+		header.barrier = 1;
+		header.next = (uintptr_t) 0;
+	}
+
+	pan_section_pack(& job_p, WRITE_VALUE_JOB, PAYLOAD, payload) {
+		payload.address = (uintptr_t) & gpu_test_target [0];
+		payload.type = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64;
+		payload.immediate_value = 0xDEADBEEFABBA1980;
+	}
+	pan_section_pack(& job2_p, WRITE_VALUE_JOB, PAYLOAD, payload) {
+		payload.address = (uintptr_t) & gpu_test_target [1];
+		payload.type = MALI_WRITE_VALUE_TYPE_IMMEDIATE_64;
+		payload.immediate_value = 0x0123456789ABCDEF;
+	}
+//    PRINTHEX32(job_p);
+//    PRINTHEX32(job2_p);
+
+    dcache_clean_invalidate((uintptr_t) & job_p, sizeof job_p);
+    dcache_clean_invalidate((uintptr_t) & job2_p, sizeof job2_p);
+    memset((void *) gpu_test_target, 0xE5, sizeof gpu_test_target);
+    dcache_clean_invalidate((uintptr_t) & gpu_test_target, sizeof gpu_test_target);
+    if (gpu_submit_job(2, (uintptr_t) & job_p))
+    	return 1;	// err
+      // Проверяем результат выполнения
+    printhex64((uintptr_t) gpu_test_target, (void *)gpu_test_target, sizeof gpu_test_target);
+    return 0;
+}
+
+static int gpu_run_write_value_test_mesa2(void) {
+	PRINTF("gpu_run_write_value_test_mesa2:\n");
+
+//	volatile uint32_t * const p = (volatile uint32_t *) 0x40;
+//	* p = 1234;
 
 	// Переменная-цель, куда будет писать GPU.
 	static volatile uint64_t GPU_ALIGN gpu_test_target [2];
@@ -290,44 +340,117 @@ static int gpu_run_write_value_test_mesa(void) {
     pjob2.immediate_value = 0x0123456789ABCDEF;               // Данные для записи
 	MALI_WRITE_VALUE_JOB_PAYLOAD_pack(& job2_p.PAYLOAD, & pjob2);
 
+//    PRINTHEX32(job_p);
+//    PRINTHEX32(job2_p);
 
-    dcache_clean_invalidate((uintptr_t)&job_p, sizeof(job_p));
-    dcache_clean_invalidate((uintptr_t)&job2_p, sizeof(job2_p));
-
-    dcache_clean_invalidate((uintptr_t)&gpu_test_target, sizeof(gpu_test_target));
-
+    dcache_clean_invalidate((uintptr_t) & job_p, sizeof job_p);
+    dcache_clean_invalidate((uintptr_t) & job2_p, sizeof job2_p);
+    memset((void *) gpu_test_target, 0xE5, sizeof gpu_test_target);
+    dcache_clean_invalidate((uintptr_t) & gpu_test_target, sizeof gpu_test_target);
     if (gpu_submit_job(2, (uintptr_t) & job_p))
     	return 1;	// err
       // Проверяем результат выполнения
-    printhex64(0, (void *) gpu_test_target, sizeof gpu_test_target);
+    printhex64((uintptr_t) gpu_test_target, (void *)gpu_test_target, sizeof gpu_test_target);
     return 0;
 }
 
-// fill rectangle
-/* Истинный бинарный код пустого фрагментного шейдера для Bifrost v7 (Mali-G31 v7) */
-GPU_ALIGN static const uint32_t bifrost_v7_clear_shader[] = {
-    UINT32_C(0x00000000), UINT32_C(0x00000000), /* Системная клауза-префикс v7 */
-    UINT32_C(0x7C003C00), UINT32_C(0x00000000)  /* Аппаратная v7-команда: END + Blend Writeout */
-};
+static void gpu_computejob(void)
+{
+	PRINTF("gpu_computejob:\n");
+    // Выравнивание по границе 64 байт для корректной работы MMU Mali
+    GPU_ALIGN static const uint64_t empty_compute_shader_isa [8] =
+    {
+		UINT64_C(0x0000000004000000), // Слово 1: Заголовок кластера (Clause Header)
+		UINT64_C(0x0000080000000000)  // Слово 2: Инструкция NOP с флагом завершения (.end)
+    };
 
-/* Выделение памяти под вспомогательные упакованные дескрипторы Mesa */
-GPU_ALIGN static MALI_RENDER_TARGET_PACKED_T      rt_p;
-GPU_ALIGN static MALI_RENDERER_STATE_PACKED_T     rst_p;
-GPU_ALIGN static MALI_TILER_HEAP_PACKED_T         th_p;
-GPU_ALIGN static uint64_t                         gpu_fragment_tile_meta_dummy [1024];
+    GPU_ALIGN static MALI_COMPUTE_JOB_PACKED_T     job_p;
+    GPU_ALIGN static MALI_RENDERER_STATE_PACKED_T     rsd_p;
+
+    pan_pack(& rsd_p, RENDERER_STATE, rsd) {
+        // при 0-й ссылке на shader получаем успешно выполнившуюся compute job
+    	rsd.shader.shader = 1*(uintptr_t) & empty_compute_shader_isa;//& bifrost_v7_clear_shader;//& minimal_compute_shader_isa; /* Чистый v7-адрес без тегов */
+    }
+    pan_section_pack(& job_p, COMPUTE_JOB, HEADER, header) {
+    	header.type = MALI_JOB_TYPE_COMPUTE;
+    	header.index = 1;
+    	header.barrier = 1;
+    }
+    pan_section_pack(& job_p, COMPUTE_JOB, INVOCATION, invocaton) {
+    }
+    pan_section_pack(& job_p, COMPUTE_JOB, PARAMETERS, parameters) {
+    }
+    pan_section_pack(& job_p, COMPUTE_JOB, DRAW, draw) {
+        draw.state = (uintptr_t) & rsd_p;
+    }
+
+//	PRINTHEX32(job_p);
+//	PRINTHEX32(fb_p);
+//	PRINTHEX32(rst_p);
+//	PRINTHEX32(rt_p);
+
+    /* 7. ОЧИСТКА КЭША ДАННЫХ ДЛЯ ВСЕХ УЧАСТНИКОВ DMA-ОБМЕНА */
+    dcache_clean_invalidate((uintptr_t)&empty_compute_shader_isa, sizeof empty_compute_shader_isa );
+    dcache_clean_invalidate((uintptr_t)&job_p, sizeof job_p );
+    dcache_clean_invalidate((uintptr_t)&rsd_p, sizeof rsd_p );
+
+    __DSB();
+
+    /* 8. ОТПРАВКА ЗАДАНИЯ В СЛОТ ФРАГМЕНТОВ (СЛОТ 1) */
+    if (gpu_submit_job(1, (uintptr_t)&job_p))
+    {
+        PRINTF("gpu_computejob: Job Fault!\n");
+        return;
+    }
+    else
+    {
+        PRINTF("gpu_computejob: Job Okay!\n");
+        return;
+    }
+}
 
 static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, uint32_t height, uint32_t stride)
 {
     PRINTF("gpu_clear_screen mesa bifrost v7 start:\n");
+
+    // fill rectangle
+    /* Истинный бинарный код пустого фрагментного шейдера для Bifrost v7 (Mali-G31 v7) */
+    GPU_ALIGN static const uint32_t bifrost_v7_clear_shader[] = {
+        UINT32_C(0x00000000), UINT32_C(0x00000000), /* Системная клауза-префикс v7 */
+        UINT32_C(0x7C003C00), UINT32_C(0x00000000)  /* Аппаратная v7-команда: END + Blend Writeout */
+    };
+
+	/* Минимальный пустой микро-шейдер (NOP + TERMINAL) для ARM Mali Bifrost v7.
+	 * Занимает ровно 24 байта (1 заголовок клаузы + 1 VLIW-инструкция).
+	 */
+	GPU_ALIGN static const uint32_t bifrost_v7_nop_shader[] = {
+		/* 1. Заголовок клаузы (Clause Header) — 8 байт
+		 * Указывает: 1 инструкция в блоке, тип — Terminal General-Purpose
+		 */
+		UINT32_C(0x00000001), UINT32_C(0x00050000),
+
+		/* 2. Тело VLIW-инструкции — 16 байт
+		 * Младшие 8 байт: Опкоды FMA/ADD обнулены (чистый ALU NOP, регистры на R63)
+		 * Старшие 8 байт: Байт Flow Control содержит маску 0xC (MALI_FLOW_TERMINAL)
+		 */
+		UINT32_C(0x00000000), UINT32_C(0x00000000),
+		UINT32_C(0x00000000), UINT32_C(0x20C00000)
+	};
+
+    /* Выделение памяти под вспомогательные упакованные дескрипторы Mesa */
+    GPU_ALIGN static MALI_RENDER_TARGET_PACKED_T      rt_p;
+    GPU_ALIGN static MALI_RENDERER_STATE_PACKED_T     rst_p;
+    GPU_ALIGN static MALI_TILER_HEAP_PACKED_T         th_p;
+    GPU_ALIGN static uint64_t                         gpu_fragment_tile_meta_dummy [1024];
 
     /* Выделяем монолитные упакованные контейнеры под структуры Framebuffer и Job */
     GPU_ALIGN static MALI_FRAMEBUFFER_PACKED_T      fb_p;
     GPU_ALIGN static MALI_FRAGMENT_JOB_PACKED_T     job_p;
 
     /* Объявление "распакованных" структур строго по типам из вашего bifrost_v7.h */
-    MALI_WRITE_VALUE_JOB_SECTION_HEADER_TYPE        jh   = { MALI_WRITE_VALUE_JOB_SECTION_HEADER_header, .type = MALI_JOB_TYPE_FRAGMENT };
-    MALI_FRAGMENT_JOB_SECTION_PAYLOAD_TYPE         jp   = { MALI_FRAGMENT_JOB_SECTION_PAYLOAD_header };
-    MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE        fbp  = { MALI_FRAMEBUFFER_SECTION_PARAMETERS_header };
+    MALI_FRAGMENT_JOB_SECTION_HEADER_TYPE jh   = { MALI_FRAGMENT_JOB_SECTION_HEADER_header, .type = MALI_JOB_TYPE_FRAGMENT };
+    MALI_FRAGMENT_JOB_SECTION_PAYLOAD_TYPE jp   = { MALI_FRAGMENT_JOB_SECTION_PAYLOAD_header };
+    MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE fbp  = { MALI_FRAMEBUFFER_SECTION_PARAMETERS_header };
     struct MALI_TILER_HEAP         th   = { MALI_TILER_HEAP_header };
     struct MALI_RENDER_TARGET      rt   = { MALI_RENDER_TARGET_header };
     struct MALI_RENDERER_STATE     rst  = { MALI_RENDERER_STATE_header };
@@ -340,8 +463,24 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     MALI_TILER_HEAP_pack(&th_p, &th);
 
     /* 2. НАСТРОЙКА RENDER TARGET (Линейный кадровый буфер RAW32) */
+    rt.rgb.write_enable = true;
+#if LCDMODE_ARGB8888
+    rt.rgb.writeback_format = MALI_COLOR_FORMAT_R8G8B8A8; /* RAW32 + MALI_BLOCK_FORMAT_LINEAR */
+    rt.rgb.writeback_block_format = MALI_BLOCK_FORMAT_LINEAR;
+    rt.rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_RAW32;
+#elif LCDMODE_BGRA8888
+    rt.rgb.writeback_format = MALI_COLOR_FORMAT_R8G8B8A8; /* RAW32 + MALI_BLOCK_FORMAT_LINEAR */
+    rt.rgb.writeback_block_format = MALI_BLOCK_FORMAT_LINEAR;
+    rt.rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_RAW32;
+#elif LCDMODE_RGB565
     rt.rgb.writeback_format = MALI_COLOR_FORMAT_R5G6B5; /* RAW32 + MALI_BLOCK_FORMAT_LINEAR */
+    rt.rgb.writeback_block_format = MALI_BLOCK_FORMAT_LINEAR;
+    rt.rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_RAW16;
+#else
+#endif
+
     rt.rgb.writeback_buffer.row_stride = stride;
+    rt.rgb.writeback_buffer.surface_stride = stride; //???
     rt.rgb.writeback_buffer.base = framebuffer_phys_addr;
 
     /* Запись цвета очистки в покомпонентном формате FP32 (Пурпурный / Magenta) */
@@ -351,7 +490,9 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     MALI_RENDER_TARGET_pack(&rt_p, &rt);
 
     /* 3. НАСТРОЙКА RENDERER STATE (Привязка v7 Dummy-шейдера и флагов блендинга) */
-    rst.shader.shader = (uintptr_t)&bifrost_v7_clear_shader; /* Чистый v7-адрес без тегов */
+    rst.shader.shader = (uintptr_t) & bifrost_v7_clear_shader; /* Чистый v7-адрес без тегов */
+    //rst.shader.shader = (uintptr_t) & bifrost_v7_nop_shader; /* Чистый v7-адрес без тегов */
+
 //    rst.properties = UINT64_C(0x0000100000000000);             /* Квант потоков для v7 */
 //    rst.blend.flags = UINT32_C(0x00011000);                    /* Режим Replace RAW32 */
     MALI_RENDERER_STATE_pack(&rst_p, &rst);
@@ -359,11 +500,14 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     /* 4. НАСТРОЙКА FRAMEBUFFER PARAMETERS (MFBD) */
     fbp.bound_min_x = 0;
     fbp.bound_min_y = 0;
-    fbp.bound_max_x = (width / 16) - 1;
-    fbp.bound_max_y = (height / 16) - 1;
-    fbp.width = width;
-    fbp.height = height;
+    fbp.bound_max_x = 1;//(width + 15) / 16 - 1;
+    fbp.bound_max_y = 1;//(height + 15) / 16 - 1;
+    fbp.width = 1;//width;
+    fbp.height = 1;//height;
     fbp.effective_tile_size = 16;
+    fbp.sample_count = 1;//MALI_SAMPLE_COUNT_1;
+    //fbp.clean_pixel_backend = true;
+    fbp.z_internal_format = MALI_R16_SNORM;//MALI_Z_INTERNAL_FORMAT_R16F;
 //    fbp.sample_mask = UINT32_C(0x00000001);                    /* 1x MSAA режим */
     fbp.render_target_count = 1;
 //    fbp.tiler_disabled = true;                                 /* Отключает опрос пустых полигональных листов */
@@ -377,8 +521,8 @@ static void gpu_clear_screen(uintptr_t framebuffer_phys_addr, uint32_t width, ui
     /* 5. НАСТРОЙКА FRAGMENT JOB PAYLOAD */
     jp.bound_min_x = 0;
     jp.bound_min_y = 0;
-    jp.bound_max_x = (width / 16) - 1;
-    jp.bound_max_y = (height / 16) - 1;
+    jp.bound_max_x = (width + 15) / 16 - 1;
+    jp.bound_max_y = (height + 15) / 16 - 1;
     jp.has_tile_enable_map = false;
     jp.framebuffer = (uintptr_t)&fb_p | UINT64_C(1);           /* tagged = true */
 //    jp.tile_alloc = (uintptr_t)&th_p;
@@ -576,7 +720,7 @@ static void mali_bifrost_power_on(void)
 
 #define REG_L2_PWR_DOMAIN_COMMAND      0x0010
 #define REG_L2_PWR_DOMAIN_STATUS       0x0014
-
+// не требуется
 static void mali_bifrost_l2_ready(void)
 {
     volatile uint32_t *l2_pwr_cmd  = (volatile uint32_t *)(GPU_CONTROL_BASE + REG_L2_PWR_DOMAIN_COMMAND);
@@ -591,25 +735,20 @@ static void mali_bifrost_l2_ready(void)
 
 void gpu_test(void)
 {
-#if 0
-	PRINTF("board_gpu_initialize: L2_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->L2_FEATURES);
-	PRINTF("board_gpu_initialize: CORE_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->CORE_FEATURES);
-	PRINTF("board_gpu_initialize: TILER_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->TILER_FEATURES);
-	PRINTF("board_gpu_initialize: MEM_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->MEM_FEATURES);
-	PRINTF("board_gpu_initialize: MMU_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->MMU_FEATURES);
-	PRINTF("board_gpu_initialize: SHADER_PRESENT_LO=0x%08X\n", (unsigned) GPU_CONTROL->SHADER_PRESENT_LO);
-	PRINTF("board_gpu_initialize: SHADER_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->SHADER_PRESENT_HI);
-	PRINTF("board_gpu_initialize: TILER_PRESENT_LO=0x%08X\n", (unsigned) GPU_CONTROL->TILER_PRESENT_LO);
-	PRINTF("board_gpu_initialize: TILER_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->TILER_PRESENT_HI);
-	PRINTF("board_gpu_initialize: L2_PRESENT_LO=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_LO);
-	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
-#endif
-
 #if 1
 	gpu_run_write_value_test_mesa();
+	gpu_computejob();
+	gpu_run_write_value_test_mesa2();
+	gpu_computejob();
 	gpu_run_write_value_test_mesa();
-	gpu_run_write_value_test_mesa();
-	//return;
+	gpu_computejob();
+	return;
+#endif
+#if 0
+	gpu_computejob();
+	gpu_computejob();
+	gpu_computejob();
+	return;
 #endif
 #if 1
 	{
@@ -619,15 +758,15 @@ void gpu_test(void)
 	    memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * LCDMODE_PIXELSIZE);
 	    gpu_clear_screen(fbaddr, DIM_X, DIM_Y, DIM_X * LCDMODE_PIXELSIZE);
 	    colmain_nextfb();
-
-	    TP();
-	    for (;;)
-	    	;
+//
+//	    TP();
+//	    for (;;)
+//	    	;
 	}
 #endif
 }
 #define GPU_L2_MMU_CONFIG  0x0008 // Смещение внутри блока GPU_CONTROL (0x01800008)
-
+// не требуется
 static void mali_bifrost_open_mmu_bus(void)
 {
     volatile uint32_t *l2_mmu_config = (volatile uint32_t *)(GPU_BASE + GPU_L2_MMU_CONFIG);
@@ -644,55 +783,98 @@ static void mali_bifrost_open_mmu_bus(void)
 
 static void mali_g31_mmu_enable(void)
 {
-    unsigned as = 0; // Шейдерный домен по умолчанию
+	const uint64_t table_phys_addr = hardware_gpu_ttb();
 
-    /*
-     *
-     * 2. Как расшифровывается эта маска по байтам (Индексы от 0 до 7)
-     * Mali считывает младшие 32 бита (LO) как 4 независимых правила кэширования:
-     * Байт 0 (Индекс 0) = 0xFF: Традиционная кэшируемая память (Write-Back, Read/Write-Allocate). Основной тип для кода, текстур и дескрипторов.
-     * Байт 1 (Индекс 1) = 0x88: Память с типом Write-Through (прямая запись, без аллокации кэша на запись).
-     * Байт 2 (Индекс 2) = 0x44: Non-Cacheable (некэшируемая память). Именно этот индекс критически важен, если вы хотите отключить кэширование GPU для буфера результатов (как в тесте WRITE_VALUE).
-     * Байт 3 (Индекс 3) = 0x00: Память типа Device (для регистров или специфического MMIO, если применимо).
-     * Байты 4–7 (Индекс 4-7) = 0x00: Зарезервированы / не используются для стандартных буферов.
-     *
-     */
-	// Индекс 0 = 0xAA (Cacheable), Индекс 1 = 0x22 (Non-Cacheable)
-	GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0x00000000;
-	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = ~0;//0x004488ff;
-	__DSB();
-
-	uint64_t table_phys_addr = 0;
 	ASSERT((table_phys_addr & 0xFFF) == 0);
 
-	// 3. Загружаем физический адрес плоской таблицы
-	// Младшие биты 0x03 включают режим трансляции LPAE
-	uint64_t transtab_val = table_phys_addr |
-//		1 * (UINT64_C(1) << 4) |	// SHARE_OUTER
-		1 * (UINT64_C(1) << 3) |	// SHARE_INNER
-		1 * (UINT64_C(1) << 2) |	// READ_INNER
-//		0x03 * (UINT64_C(1) << 0) |	// ADRMODE: TABLE (Включена трансляция по таблицам страниц LPAE).
-		0x01 * (UINT64_C(1) << 0) |	// ADRMODE: IDENTITY
+	/**
+	 * БитыНазвание конфигурацииОписание и назначение
+	 * 0:1 Address Mode (ADRMODE) Задает базовый режим адресации:• 0x0 — Запрещено / Неактивно • 0x2 — Режим AArch64 (LPAE) с размером страницы 4 КБ • 0x3 — Режим AArch64 (LPAE) с размером страницы 64 КБ
+	 * 2:5 Input Address Size (IAS) Определяет ширину входного виртуального адреса (VA Bits). Задается в виде закодированного смещения (например, для 48-битного адресного пространства VA_BITS=48).
+	 * 6:9 Output Address Size (OAS) Определяет ширину выходного физического адреса (PA Bits) системы. На Bifrost v7 обычно аппаратно ограничена шиной SoC (например, 40 или 44 бита).
+	 * 10 Disable Translation (DT) Флаг отключения трансляции (Bypass MMU). Если выставлен в 1, запросы идут напрямую по физическим адресам без таблиц страниц (используется для отладки).
+	 * 11 Unprivileged Access Control Флаг, управляющий разделением прав доступа на уровне пользователя и суперпользователя (User/Privileged).
+	 * 12:15 Starting Level (SL) Задает начальный уровень обхода таблиц страниц (Level 0, Level 1 или Level 2) в зависимости от размера страницы и размера виртуального адреса.
+	 * 16:31 ReservedЗарезервировано под аппаратные нужды архитектуры (обычно заполняется нулями 0).
+	 *
+	 */
+	const uint64_t transflags_val =
+//		0x01 * (UINT64_C(1) << 11) |
+//	    0x01 * (UINT64_C(1) << 10) |	// DT
+		0x02 * (UINT64_C(1) << 0) |	//  (Включает режим адресации ARM 64-bit LPAE с размером страницы 4 КБ).
+		//0x03 * (UINT64_C(1) << 0) |	// ВЫЗЫВАЕТ ОШИБКУ ДАЖЕ ПРИ IDENTITY (Включает режим адресации ARM 64-bit LPAE с размером страницы 64 КБ).
 		0;
 
-	GPU_MMU->MMU_AS[as].AS_TRANSCFG_HI = 0x00;
-	GPU_MMU->MMU_AS[as].AS_TRANSCFG_LO = 0x02;	//  (Включает режим адресации ARM 64-bit LPAE с размером страницы 4 КБ).
 
-    // 3. Записываем адрес в регистры AS0 (теперь они строго на 0x01802400)
-    GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = ptr_hi32(transtab_val); //(uint32_t)(transtab_val >> 32);
-    GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = ptr_lo32(transtab_val); //(uint32_t)(transtab_val & 0xFFFFFFFF);
+    	// 3. Загружаем физический адрес плоской таблицы
+    	// Младшие биты 0x03 включают режим трансляции LPAE
+	const uint64_t transtab_val = table_phys_addr |
+		1 * (UINT64_C(1) << 4) |	// SHARE_OUTER
+//		1 * (UINT64_C(1) << 3) |	// SHARE_INNER - не устанавливается
+		1 * (UINT64_C(1) << 2) |	// READ_INNER
+//   	0x03 * (UINT64_C(1) << 0) |	// ADRMODE: TABLE (Включена трансляция по таблицам страниц LPAE).
+		0x01 * (UINT64_C(1) << 0) |	// ADRMODE: IDENTITY
+		0;
+	/*
+	 *
+	 * 2. Как расшифровывается эта маска по байтам (Индексы от 0 до 7)
+	 * Mali считывает младшие 32 бита (LO) как 4 независимых правила кэширования:
+	 * Байт 0 (Индекс 0) = 0xFF: Традиционная кэшируемая память (Write-Back, Read/Write-Allocate). Основной тип для кода, текстур и дескрипторов.
+	 * Байт 1 (Индекс 1) = 0x88: Память с типом Write-Through (прямая запись, без аллокации кэша на запись).
+	 * Байт 2 (Индекс 2) = 0x44: Non-Cacheable (некэшируемая память). Именно этот индекс критически важен, если вы хотите отключить кэширование GPU для буфера результатов (как в тесте WRITE_VALUE).
+	 * Байт 3 (Индекс 3) = 0x00: Память типа Device (для регистров или специфического MMIO, если применимо).
+	 * Байты 4–7 (Индекс 4-7) = 0x00: Зарезервированы / не используются для стандартных буферов.
+	 *
+	 */
+//	enum aarch64_attrindex
+//	{
+//		AARCH64_ATTR_INDEX_CACHED = 0,
+//		AARCH64_ATTR_INDEX_NCACHED,
+//		AARCH64_ATTR_INDEX_DEVICE
+//
+//	};
+	// Индекс 0 = 0xAA (Cacheable), Индекс 1 = 0x22 (Non-Cacheable)
 
-    __DSB();
+    const uint64_t memattrval =
+    		0x000044FF |
+    		0;
 
-//    gpu_as_command(as, 0x01);	// Отправляем команду UPDATE для применения таблиц
-//    gpu_as_command(as, 0x03);	// Очищаем внутренний TLB кэш MMU от старых зависших ошибок 0xC8 AS_COMMAND_INVALIDATE
+    unsigned as = 0; // Шейдерный домен по умолчанию
+    for (as = 0; as < ARRAY_SIZE(GPU_MMU->MMU_AS); ++ as)
+    {
+    	GPU_MMU->MMU_AS[as].AS_MEMATTR_HI = 0xFFFFFFFF & (memattrval >> 32);
+    	GPU_MMU->MMU_AS[as].AS_MEMATTR_LO = 0xFFFFFFFF & (memattrval >> 0);
 
-	gpu_as_command(as, AS_COMMAND_UPDATE);
-	gpu_as_command(as, AS_COMMAND_INVALIDATE);
-//	gpu_as_command(as, AS_COMMAND_FLUSH_PT);
+    	GPU_MMU->MMU_AS[as].AS_TRANSCFG_HI = 0xFFFFFFFF & (transflags_val >> 32);
+    	GPU_MMU->MMU_AS[as].AS_TRANSCFG_LO = 0xFFFFFFFF & (transflags_val >> 0);
 
-//	printhex32((uintptr_t) & GPU_MMU->MMU_AS[as], & GPU_MMU->MMU_AS[as], sizeof GPU_MMU->MMU_AS[as]);
-//    PRINTF("Mali-G31: MMU Address Space 0 successfully enabled at offset 0x400!\n");
+        GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI = 0xFFFFFFFF & (transtab_val >> 32);
+        GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO = 0xFFFFFFFF & (transtab_val >> 0);
+
+        __DSB();
+
+//        PRINTF("mali_g31_mmu_enable: as=%u: transtab_val=%08X%08X\n", as, (unsigned) (0xFFFFFFFF & (transtab_val >> 32)), (unsigned) (0xFFFFFFFF & (transtab_val >> 0)));
+//        PRINTHEX32(GPU_MMU->MMU_AS[as].AS_MEMATTR_HI);
+//        PRINTHEX32(GPU_MMU->MMU_AS[as].AS_MEMATTR_LO);
+//        PRINTHEX32(GPU_MMU->MMU_AS[as].AS_TRANSCFG_HI);
+//        PRINTHEX32(GPU_MMU->MMU_AS[as].AS_TRANSCFG_LO);
+//        PRINTHEX32(GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI);
+//        PRINTHEX32(GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO);
+        ASSERT(GPU_MMU->MMU_AS[as].AS_MEMATTR_HI == (0xFFFFFFFF & (memattrval >> 32)));
+        ASSERT(GPU_MMU->MMU_AS[as].AS_MEMATTR_LO == (0xFFFFFFFF & (memattrval >> 0)));
+        ASSERT(GPU_MMU->MMU_AS[as].AS_TRANSCFG_HI == (0xFFFFFFFF & (transflags_val >> 32)));
+        ASSERT(GPU_MMU->MMU_AS[as].AS_TRANSCFG_LO == (0xFFFFFFFF & (transflags_val >> 0)));
+        ASSERT(GPU_MMU->MMU_AS[as].AS_TRANSTAB_HI == (0xFFFFFFFF & (transtab_val >> 32)));
+        ASSERT(GPU_MMU->MMU_AS[as].AS_TRANSTAB_LO == (0xFFFFFFFF & (transtab_val >> 0)));
+
+    //    gpu_as_command(as, 0x01);	// Отправляем команду UPDATE для применения таблиц
+    //    gpu_as_command(as, 0x03);	// Очищаем внутренний TLB кэш MMU от старых зависших ошибок 0xC8 AS_COMMAND_INVALIDATE
+
+    	gpu_as_command(as, AS_COMMAND_UPDATE);
+    	gpu_as_command(as, AS_COMMAND_INVALIDATE);
+    //	gpu_as_command(as, AS_COMMAND_FLUSH_PT);
+
+    }
 }
 
 //
@@ -788,6 +970,19 @@ void board_gpu_initialize(void)
 	GPU_MMU->MMU_IRQ_MASK = 0xFFFFFFFF;
 //    PRINTF("1 GPU_MMU:\n");
 //    printhex32(GPU_MMU_BASE, GPU_MMU, 4096);
+#if 0
+	PRINTF("board_gpu_initialize: L2_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->L2_FEATURES);
+	PRINTF("board_gpu_initialize: CORE_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->CORE_FEATURES);
+	PRINTF("board_gpu_initialize: TILER_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->TILER_FEATURES);
+	PRINTF("board_gpu_initialize: MEM_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->MEM_FEATURES);
+	PRINTF("board_gpu_initialize: MMU_FEATURES=0x%08X\n", (unsigned) GPU_CONTROL->MMU_FEATURES);
+	PRINTF("board_gpu_initialize: SHADER_PRESENT_LO=0x%08X\n", (unsigned) GPU_CONTROL->SHADER_PRESENT_LO);
+	PRINTF("board_gpu_initialize: SHADER_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->SHADER_PRESENT_HI);
+	PRINTF("board_gpu_initialize: TILER_PRESENT_LO=0x%08X\n", (unsigned) GPU_CONTROL->TILER_PRESENT_LO);
+	PRINTF("board_gpu_initialize: TILER_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->TILER_PRESENT_HI);
+	PRINTF("board_gpu_initialize: L2_PRESENT_LO=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_LO);
+	PRINTF("board_gpu_initialize: L2_PRESENT_HI=0x%08X\n", (unsigned) GPU_CONTROL->L2_PRESENT_HI);
+#endif
 
 	gpu_command(GPU_COMMAND_HARD_RESET);
 	gpu_wait(RESET_COMPLETED);
@@ -812,7 +1007,7 @@ void board_gpu_initialize(void)
 	PRINTF("board_gpu_initialize done.\n");
 }
 
-#elif CPUSTYLE_STM32MP1
+#elif  WITHGPUHW && CPUSTYLE_STM32MP1
 
 void GPU_IRQHandler(void)
 {

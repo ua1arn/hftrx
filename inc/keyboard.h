@@ -25,7 +25,6 @@ enum
 	KBD_CODE_ATT,
 	KBD_CODE_BW,	// IF Bandwidth
 	KBD_CODE_NR,	// AF Noise Reduction
-	KBD_CODE_IFSHIFT,
 	KBD_CODE_BAND_UP, KBD_CODE_BAND_DOWN,
 	KBD_CODE_MENU_UP, KBD_CODE_MENU_DOWN,	// навигация по меню
 	KBD_CODE_BKIN,
@@ -34,11 +33,6 @@ enum
 
 	KBD_CODE_MENU,
 	KBD_CODE_MODE, KBD_CODE_MODEMOD,	// переключение режимов - первый код при коротком нажатии, второй - при удержанном
-
-	KBD_CODE_MODE_3, KBD_CODE_MODEMOD_3,
-	KBD_CODE_MODE_2, KBD_CODE_MODEMOD_2,
-	KBD_CODE_MODE_1, KBD_CODE_MODEMOD_1,
-	KBD_CODE_MODE_0, KBD_CODE_MODEMOD_0,
 
 	KBD_CODE_LOCK,
 	KBD_CODE_USEFAST,
@@ -58,8 +52,7 @@ enum
 	KBD_CODE_NOTCHTOGGLE,
 	KBD_CODE_NOTCHFREQ,
 	KBD_CODE_COMPTOGGLE,
-	KBD_CODE_ALTTOGGLE,
-	KBD_CODE_LDSPTGL,
+	KBD_CODE_LDSPTGL,		// Loudspeaker toggle
 	KBD_CODE_DATATOGGLE,
 	KBD_CODE_DWATCHTOGGLE,
 	KBD_CODE_DWATCHHOLD,
@@ -71,7 +64,7 @@ enum
 	KBD_CODE_AGC,
 	KBD_CODE_PAMP,
 	KBD_CODE_GEN_HAM,
-	KBD_CODE_ANTENNA, KBD_CODE_ANTENNA_HOLDED,
+	KBD_CODE_ANTENNA, KBD_CODE_ANTNN_HOLDED,
 	KBD_CODE_MOX,
 	KBD_CODE_DIGI,
 
@@ -112,12 +105,6 @@ enum
 	KBD_CODE_21,
 	KBD_CODE_22,
 	KBD_CODE_23,
-
-	KBD_CODE_USER1,
-	KBD_CODE_USER2,
-	KBD_CODE_USER3,
-	KBD_CODE_USER4,
-	KBD_CODE_USER5,
 	//
 	KBD_CODE_POWEROFF,
 	//
@@ -188,7 +175,6 @@ enum
 void  kbd_initialize(void);
 
 uint_fast8_t kbd_is_tready(void);
-void kbd_pass(void);
 /* получение скан-кода клавиши, возврат 0 в случае отсутствия.
  */
 uint_fast8_t kbd_scan(uint_fast16_t * key);

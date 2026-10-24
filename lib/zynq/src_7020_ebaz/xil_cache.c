@@ -22,7 +22,7 @@ void Xil_DCacheInvalidateRange(uintptr_t adr, uint32_t len)
 
 void Xil_DCacheFlush(void)
 {
-	dcache_clean_all();
+	dcache_clean_invalidate_all();
 }
 
 void Xil_DCacheFlushRange(uintptr_t adr, uint32_t len)

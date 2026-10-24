@@ -230,11 +230,11 @@ void user_uart0_initialize(void)
 
 	static ticker_t uart0_ticker;
 	static dpcobj_t uart0_dpc_timed;
-	dpcobj_initialize(& uart0_dpc_timed, uart0_dpc_spool, NULL);
-	ticker_initialize_user(& uart0_ticker, NTICKS(PERIODSPOOL), & uart0_dpc_timed);
+	dpcobj_initialize(& uart0_dpc_timed, uart0_dpc_spool, NULL, "uart0_dpc_timed");
+	ticker_initialize_user(& uart0_ticker, PERIODSPOOL, & uart0_dpc_timed);
 	ticker_add(& uart0_ticker);
 
-	dpcobj_initialize(& uart0_dpc_entry, uart0_spool, NULL);
+	dpcobj_initialize(& uart0_dpc_entry, uart0_spool, NULL, "uart0_dpc_entry");
 	board_dpc_addentry(& uart0_dpc_entry, board_dpc_coreid());
 #endif
 }

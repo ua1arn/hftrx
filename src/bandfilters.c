@@ -469,12 +469,6 @@ void bandf_calc_initialize(void)
 	#define BAND2CALCS	ARRAY_SIZE(board_band2fs)	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
-	CTLREGMODE_RAVENDSP_V1 || /* Трансивер Вороненок с IF DSP трактом */ \
-	CTLREGMODE_RAVENDSP_V5 || \
-	CTLREGMODE_RAVENDSP_V6 || \
-	CTLREGMODE_RAVENDSP_V7 || \
-	CTLREGMODE_STORCH_V4 ||		/* modem only v2 */ \
-	CTLREGMODE_STORCH_V5 ||		/* mimni RX */ \
 	1 || \
 	0
 	// 3 5 9 16 22 35

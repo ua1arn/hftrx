@@ -67,7 +67,6 @@ static uint_fast8_t 	glob_antenna;		// выбор антенны (0 - ANT1, 1 - 
 static uint_fast8_t 	glob_rxantenna;		//
 static uint_fast8_t 	glob_preamp;		// включение предусилителя (УВЧ) приёмника
 static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятора
-static uint_fast8_t 	glob_vox;
 static uint_fast8_t 	glob_forcexvrtr;	// принудительно включить коммутацию трансвертора
 static volatile uint_fast8_t 	glob_catmux = BOARD_CATMUX_USBCDC;
 
@@ -105,9 +104,9 @@ static uint_fast8_t 	glob_classamode;	/* использование режима
 static uint_fast8_t		glob_flt_reset_n;	// сброс фильтров в FPGA DSP
 static uint_fast8_t		glob_dactest;		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 static uint_fast8_t		glob_tx_inh_enable;	/* разрешение реакции FPGA на вход tx_inh */
-static uint_fast8_t		glob_tx_bpsk_enable;	/* разрешение прямого формирования модуляции в FPGA */
-static uint_fast8_t		glob_seqphase = SEQPHASE_INIT;		/* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
-static uint_fast8_t		glob_mode_wfm;
+//static uint_fast8_t		glob_tx_bpsk_enable;	/* разрешение прямого формирования модуляции в FPGA */
+//static uint_fast8_t		glob_seqphase = SEQPHASE_INIT;		/* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
+//static uint_fast8_t		glob_mode_wfm;
 static uint_fast8_t		glob_xvrtr;
 static uint_fast8_t		glob_dacstraight;	// Требуется формирование кода для ЦАП в режиме беззнакового кода
 static uint_fast8_t		glob_dither;		/* управление зашумлением в LTC2208 */
@@ -561,9 +560,9 @@ void nmeatuner_initialize(void)
 	hardware_uart2_enablerx(1);
 	hardware_uart2_enabletx(0);
 
-	dpcobj_initialize(& dpc_ua1ceituner, uart2_dpc_spool, NULL);
-	dpcobj_initialize(& uart2_dpc_timed, uart2_dpc_spool, NULL);
-	ticker_initialize_user(& uart2_ticker, NTICKS(1000), & uart2_dpc_timed);
+	dpcobj_initialize(& dpc_ua1ceituner, uart2_dpc_spool, NULL, "dpc_ua1ceituner");
+	dpcobj_initialize(& uart2_dpc_timed, uart2_dpc_spool, NULL, "uart2_dpc_timed");
+	ticker_initialize_user(& uart2_ticker, 1000, & uart2_dpc_timed);
 	ticker_add(& uart2_ticker);
 }
 
@@ -950,177 +949,6 @@ pll1_getoutdivider(
 
 #if 0
 
-#elif CTLREGMODE_RAVENDSP_V6	// "Воронёнок" с DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-// "Воронёнок" с DSP и FPGA, SD-CARD
-static void 
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-	// registers chain control register
-	{
-		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
-		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
-		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
-		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
-
-		enum
-		{
-			HARDWARE_OPA2674I_FULLPOWER = 0x03,
-			HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
-			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
-			HARDWARE_OPA2674I_SHUTDOWN = 0x00
-		};
-		static const uint_fast8_t powerxlat [] =
-		{
-			HARDWARE_OPA2674I_IDLEPOWER,
-			HARDWARE_OPA2674I_POWERCUTBACK,
-			HARDWARE_OPA2674I_FULLPOWER,
-		};
-		const spitarget_t target = targetctl1;
-
-
-#if 1
-		rbtype_t rbbuff [8] = { 0 };
-		/* +++ Управление согласующим устройством */
-		/* дополнительный регистр */
-		RBBIT(0073, glob_tx);				/* pin 03:индикатор передачи */
-		RBBIT(0072, glob_antenna);			// pin 02: выбор антенны (0 - ANT1, 1 - ANT2)
-		RBBIT(0071, ! glob_tuner_bypass);		// pin 01: обход СУ (1 - работа)
-		RBBIT(0070, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 15: TYPE OF TUNER 	*/
-		/* регистр управления массивом конденсаторов */
-		RBVAL8(0060, glob_tuner_bypass ? 0 : glob_tuner_C);			/* Capacitors tuner bank 	*/
-		/* регистр управления наборной индуктивностью. */
-		RBVAL8(0050, glob_tuner_bypass ? 0 : glob_tuner_L);			/* Inductors tuner bank 	*/
-		/* --- Управление согласующим устройством */
-#else
-		rbtype_t rbbuff [5] = { 0 };
-
-#endif
-		const uint_fast8_t txgated = glob_tx && glob_txgate;
-		// STP08CP05TTR на части передатчика
-		RBBIT(0047, glob_antenna);		// D7: antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
-		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
-
-		// STP08CP05TTR в управлении диапазонными фильтрами приёмника
-		RBVAL(0031, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
-		RBBIT(0030, txgated);			// D0: включение подачи смещения на выходной каскад усилителя мощности
-
-		// STP08CP05TTR в управлении диапазонными фильтрами приёмника
-		RBVAL(0026, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
-		RBVAL(0024, ~ (txgated ? powerxlat [glob_stage2level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 2
-		RBVAL(0022, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
-		RBBIT(0021, glob_tx);				// D1: TX ANT relay
-		RBBIT(0020, glob_bandf == 0);		// D0: средневолновый ФНЧ
-
-		// SN74HC595PW рядом с DIN8
-		RBNULL(0014, 4);
-		RBVAL(0010, glob_bandf3, 4);			/* D3:D0: DIN8 PA band select */
-
-		// STP08CP05TTR рядом с DIN8
-		RBBIT(0007, glob_fanflag);			// D7: TX FAN
-		RBBIT(0006, glob_tx);				// D6: EXT PTT signal
-		RBBIT(0005, glob_bandf == 0);		// D5: средневолновый ФНЧ - управление реле
-		RBBIT(0004, glob_sdcardpoweron);		/* D4: SD CARD POWER */
-		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight */
-		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight */
-		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
-		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
-
-		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	}
-}
-
-#elif CTLREGMODE_RAVENDSP_V7	// V6 fixed "Воронёнок" с DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
-
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-// "Воронёнок" с DSP и FPGA, SD-CARD
-static void 
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-	// registers chain control register
-	{
-		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
-		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
-		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
-		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
-
-		enum
-		{
-			HARDWARE_OPA2674I_FULLPOWER = 0x03,
-			HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
-			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
-			HARDWARE_OPA2674I_SHUTDOWN = 0x00
-		};
-		static const uint_fast8_t powerxlat [] =
-		{
-			HARDWARE_OPA2674I_IDLEPOWER,
-			HARDWARE_OPA2674I_POWERCUTBACK,
-			HARDWARE_OPA2674I_FULLPOWER,
-		};
-		const spitarget_t target = targetctl1;
-
-
-#if 0
-		rbtype_t rbbuff [8] = { 0 };
-		/* +++ Управление согласующим устройством */
-		/* дополнительный регистр */
-		RBBIT(0073, glob_tx);				/* pin 03:индикатор передачи */
-		RBBIT(0072, glob_antenna);			// pin 02: выбор антенны (0 - ANT1, 1 - ANT2)
-		RBBIT(0071, ! glob_tuner_bypass);		// pin 01: обход СУ (1 - работа)
-		RBBIT(0070, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 15: TYPE OF TUNER 	*/
-		/* регистр управления массивом конденсаторов */
-		RBVAL8(0060, glob_tuner_bypass ? 0 : glob_tuner_C);			/* Capacitors tuner bank 	*/
-		/* регистр управления наборной индуктивностью. */
-		RBVAL8(0050, glob_tuner_bypass ? 0 : glob_tuner_L);			/* Inductors tuner bank 	*/
-		/* --- Управление согласующим устройством */
-#else
-		rbtype_t rbbuff [5] = { 0 };
-
-#endif
-		const uint_fast8_t txgated = glob_tx && glob_txgate;
-
-#if 0//KEYB_FPANEL20_V0A_UY5UM
-		RBBIT(0047, glob_antenna);		// D7: antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
-		RBBIT(0046, glob_antenna);		// D6: antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
-		RBVAL(0040, 1U << glob_bandf2, 6);		// D0..D5: band select бит выбора диапазонного фильтра передатчика
-#else /* KEYB_FPANEL20_V0A_UY5UM */
-		// DD23 STP08CP05TTR на части передатчика
-		RBBIT(0047, glob_antenna);		// D7: antenns select бит выбора антенны (0 - ANT1, 1 - ANT2)
-		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
-#endif /* KEYB_FPANEL20_V0A_UY5UM */
-
-		// DD1 STP08CP05TTR в управлении диапазонными фильтрами приёмника
-		RBVAL(0031, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
-		RBBIT(0030, txgated);		// D0: включение подачи смещения на выходной каскад усилителя мощности
-
-		// DD3 STP08CP05TTR в управлении диапазонными фильтрами приёмника
-		RBVAL(0026, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
-		RBVAL(0024, ~ (txgated ? powerxlat [glob_stage2level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 2
-		RBVAL(0022, ~ (txgated ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
-		RBBIT(0021, glob_tx);				// D1: TX ANT relay
-		RBBIT(0020, glob_bandf == 0);		// D0: средневолновый ФНЧ
-
-		// DD21 SN74HC595PW рядом с DIN8
-		RBNULL(0014, 4);
-		RBVAL(0010, glob_bandf3, 4);			/* D3:D0: DIN8 PA band select */
-
-		// DD5 STP08CP05TTR рядом с DIN8
-		RBBIT(0007, glob_fanflag);			// D7: TX FAN
-		RBBIT(0006, glob_tx);				// D6: EXT PTT signal
-		RBBIT(0005, glob_bandf == 0);		// D5: средневолновый ФНЧ - управление реле
-		RBBIT(0004, glob_sdcardpoweron);		/* D4: SD CARD POWER */
-		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight */
-		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight */
-		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
-		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
-
-		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	}
-}
 
 #elif CTLREGMODE_STORCH_V1	// V6 fixed "Воронёнок" с USB FS, DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
 
@@ -1128,7 +956,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 // "Storch" с USB, DSP и FPGA, SD-CARD
 static void 
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1215,7 +1043,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 // "Storch" с USB, DSP и FPGA, SD-CARD, TFT 4.3"
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1350,7 +1178,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 // "Storch" с USB, DSP и FPGA, SD-CARD, TFT 4.3"
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1382,6 +1210,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #if WITHAUTOTUNER
 	#if WITHAUTOTUNER_AVBELNN
+		#warning check schematics
 		// Плата управления LPF и тюнером от avbelnn
 		// us4ijr
 
@@ -1484,7 +1313,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1598,7 +1427,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1698,7 +1527,6 @@ prog_ctrlreg(uint_fast8_t plane)
 		////RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102 + bs - 050, txgated && ! xvrtr);
 		RBBIT(0101 + bs - 050, glob_fanflag || txgated);	// FAN
-		RBBIT(0100 + bs - 050, 0);	// unused
 
 		// 0100 is a bpf7
 		RBVAL(0072 + bs - 050, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
@@ -1792,7 +1620,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1890,7 +1718,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -1962,7 +1790,6 @@ prog_ctrlreg(uint_fast8_t plane)
 		////RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
 		RBBIT(0102 + bs - 050, txgated && ! xvrtr);
 		RBBIT(0101 + bs - 050, glob_fanflag);	// FAN
-		RBBIT(0100 + bs - 050, 0);	// unused
 
 		// 0100 is a bpf7
 		RBVAL(0072 + bs - 050, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
@@ -2046,7 +1873,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -2094,6 +1921,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBVAL(0050, 1U << glob_bandf2, 7);	// LPF6..LPF0
 
 	#elif WITHAUTOTUNER_AVBELNN
+		#warning Check schematics
 		// Плата управления LPF и тюнером от avbelnn
 		// us4ijr
 
@@ -2174,58 +2002,6 @@ prog_ctrlreg(uint_fast8_t plane)
 	}
 }
 
-#elif CTLREGMODE_STORCH_V4
-// Modem v2
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-static void 
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-	{
-		const spitarget_t target = targetctl1;
-		rbtype_t rbbuff [1] = { 0 };
-
-		RBBIT(0007, glob_tx);					// антенное реле
-		RBBIT(0005, glob_tx && glob_txgate);	// питание предварительного усилителя и цепь смещения оконечного
-		RBBIT(0004, ! glob_tx);					// питание УВЧ
-
-		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	}
-}
-
-#elif CTLREGMODE_STORCH_V5	// USB FS, USB HS, DSP и FPGA, DUAL WATCH, SD-CARD mimi rx board
-
-#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
-
-// "Storch" с USB, DSP и FPGA, SD-CARD
-static void 
-//NOINLINEAT
-prog_ctrlreg(uint_fast8_t plane)
-{
-	// registers chain control register
-	{
-		const uint_fast8_t lcdblcode = (glob_bglight - WITHLCDBACKLIGHTMIN);
-		const spitarget_t target = targetctl1;
-
-		rbtype_t rbbuff [2] = { 0 };
-
-		// DD16 STP08CP05TTR в управлении диапазонными фильтрами приёмника
-		RBVAL(0010, glob_tx ? 0 : (1U << glob_bandf), 8);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
-
-		// DD14 STP08CP05TTR рядом с DIN8
-		//RBBIT(0007, ! glob_reset_n);		// D7: NMEA reset
-		RBBIT(0007, glob_tx);				// D7: PTT out for UA1CEI
-		RBVAL(0005, glob_att, 2);			/* D5:D5: 12 dB and 6 dB attenuator control */
-		RBBIT(0004,  glob_bandf == 0);		/* D4: средневолновый ФНЧ - управление реле на выходе фильтров */
-		RBBIT(0003, lcdblcode & 0x02);		/* D3	- LCD backlight */
-		RBBIT(0002, lcdblcode & 0x02);		/* D2	- LCD backlight */
-		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
-		RBBIT(0000, glob_tx);			/* D0: PTT out for UA1CEI keyboard backlight */
-
-		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	}
-}
-
 #elif CTLREGMODE_STORCH_V6	// USB FS, USB HS, DSP и FPGA, DUAL WATCH, SD-CARD mimi rx board
 // Rmainunit_v5la.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
 
@@ -2233,7 +2009,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 // "Storch" с USB, DSP и FPGA, SD-CARD
 static void 
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -2281,7 +2057,7 @@ prog_ctrlreg(uint_fast8_t plane)
 const uint_fast8_t bpf_xlat [6] = { 1, 3, 0, 2, 1, 3 };
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	enum
@@ -2339,7 +2115,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 #if WITHEXTRFBOARDTEST				// UA3REO RF-UNIT rev.2 test
@@ -2375,7 +2151,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	enum
@@ -2445,7 +2221,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	{
@@ -2472,7 +2248,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 static void
-//NOINLINEAT
+
 prog_ctrlreg(uint_fast8_t plane)
 {
 	// registers chain control register
@@ -2626,7 +2402,7 @@ static void prog_ctrlreg(uint_fast8_t plane)
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
 
 	static void 
-	//NOINLINEAT
+	
 	prog_ctrlreg(uint_fast8_t plane)
 	{
 		//const spitarget_t target = targetctl1;
@@ -2702,7 +2478,6 @@ board_update_spi2(void)
 
 // Выдача в регистры текущего состояния теневых переменных.
 void 
-//NOINLINEAT
 board_update(void)
 {
 	//PRINTF(PSTR("board_update start.\n"));
@@ -3103,38 +2878,38 @@ board_set_tx_inh_enable(uint_fast8_t v)
 }
 
 /* разрешение прямого формирования модуляции в FPGA */
-void
-board_set_tx_bpsk_enable(uint_fast8_t v)
-{
-	uint_fast8_t n = v != 0;
-	if (glob_tx_bpsk_enable != n)
-	{
-		glob_tx_bpsk_enable = n;
-		board_ctlreg1changed();
-	}
-}
+//void
+//board_set_tx_bpsk_enable(uint_fast8_t v)
+//{
+//	uint_fast8_t n = v != 0;
+//	if (glob_tx_bpsk_enable != n)
+//	{
+//		glob_tx_bpsk_enable = n;
+//		board_ctlreg1changed();
+//	}
+//}
 
 /* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
-void
-board_set_seqphase(uint_fast8_t n)
-{
-	if (glob_seqphase != n)
-	{
-		glob_seqphase = n;
-		board_ctlreg1changed();
-	}
-}
+//void
+//board_set_seqphase(uint_fast8_t n)
+//{
+//	if (glob_seqphase != n)
+//	{
+//		glob_seqphase = n;
+//		board_ctlreg1changed();
+//	}
+//}
 
-void
-board_set_mode_wfm(uint_fast8_t v)
-{
-	uint_fast8_t n = v != 0;
-	if (glob_mode_wfm != n)
-	{
-		glob_mode_wfm = n;
-		board_ctlreg1changed();
-	}
-}
+//void
+//board_set_mode_wfm(uint_fast8_t v)
+//{
+//	uint_fast8_t n = v != 0;
+//	if (glob_mode_wfm != n)
+//	{
+//		glob_mode_wfm = n;
+//		board_ctlreg1changed();
+//	}
+//}
 
 void
 board_set_xvrtr(uint_fast8_t v)
@@ -3191,19 +2966,6 @@ board_set_forcexvrtr(uint_fast8_t v)
 	{
 		glob_forcexvrtr = n;
 		board_ctlreg1changed();
-	}
-}
-
-/* не нулевой аргумент - включение VOX */
-void
-board_set_vox(uint_fast8_t v)	
-{
-	const uint_fast8_t n = v != 0;
-	if (glob_vox != n)
-	{
-		glob_vox = n;
-		board_ctlreg1changed();
-		board_dsp1regchanged();
 	}
 }
 
@@ -3532,7 +3294,6 @@ uint_fast8_t board_get_catmux(void)
 {
 	return glob_catmux;
 }
-
 
 /////////////////////////////////////////////
 // --- Набор функций требования установки сигналов на управляющих выходах.
@@ -4393,7 +4154,7 @@ void board_fpga_fir_initialize(void)
 }
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	const int iHalfLen = (Ntap - 1) / 2;
 	int i = 0, m = 0, bits = 0;
@@ -4450,7 +4211,7 @@ void board_fpga_fir_initialize(void)
 }
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 	const int iHalfLen = (Ntap - 1) / 2;
 	int i = 0, m = 0, bits = 0;
@@ -4728,8 +4489,8 @@ board_fpga_fir_send(
 	board_fpga_fir_coef_p1(spi, 0x00000000);	// 1-st dummy
 	board_fpga_fir_coef_p2(spi, 0x00000000);	// 2-nd dummy
 
-	//single_rate_out_write_ser(kf, Ntap / 2 + 1); // NtapCoeffs(Ntap);
-	single_rate_out_write_mcv(spi, kf, Ntap, CWidth); // NtapCoeffs(Ntap);
+	//single_rate_out_write_ser(kf, Ntap / 2 + 1); // NtapHalf(Ntap);
+	single_rate_out_write_mcv(spi, kf, Ntap, CWidth); // NtapHalf(Ntap);
 	//sendbatch();
 
 	board_fpga_fir_complete(spi);
@@ -4772,15 +4533,8 @@ static int_fast64_t expandsign(int_fast32_t v, unsigned CWidth)
 #endif /* WITHDEBUG */
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
-#if 0 && WITHDEBUG
-	int_fast64_t sum = 0;
-	unsigned i;
-	for (i = 0; i < Ntap; ++ i)
-		sum += expandsign(k [i], CWidth);
-	PRINTF(PSTR("board_reload_fir: ifir=%u, Ntap=%u, sum=%08lX%08lX, CWidth=%u\n"), ifir, Ntap, (unsigned long) (sum >> 32), (unsigned long) (sum >> 0), CWidth);
-#endif /* WITHDEBUG */
 	board_fpga_fir_send(ifir, kf, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
 	boart_tgl_firprofile(ifir);
 }
@@ -4794,7 +4548,7 @@ void board_fpga_fir_initialize(void)
 }
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 
 }
@@ -4810,7 +4564,7 @@ void board_fpga_fir_initialize(void)
 }
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
-void board_reload_fir(uint_fast8_t ifir, const int32_t * const k, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
+void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap, unsigned CWidth)
 {
 
 }
@@ -4958,8 +4712,8 @@ static void board_rtc_initialize(void)
 		static dpcobj_t dpcobj;
 		static ticker_t ticker;
 
-		dpcobj_initialize(& dpcobj, board_rtc_cache_update, NULL);
-		ticker_initialize_user(& ticker, NTICKS(500), & dpcobj);
+		dpcobj_initialize(& dpcobj, board_rtc_cache_update, NULL, "board_rtc_cache_update");
+		ticker_initialize_user(& ticker, 500, & dpcobj);	// 0.5 s period
 		ticker_add(& ticker);
 	}
 }
@@ -5418,8 +5172,8 @@ void ua1cei_magloop_initialize(void)
 	HARDWARE_NMEAX_ENABLERX(1);
 	HARDWARE_NMEAX_ENABLETX(0);
 
-	dpcobj_initialize(& nmeaX_dpc_timed, nmeaX_dpc_spool, NULL);
-	ticker_initialize_user(& nmeaX_ticker, NTICKS(1000), & nmeaX_dpc_timed);
+	dpcobj_initialize(& nmeaX_dpc_timed, nmeaX_dpc_spool, NULL, "nmeaX_dpc_timed");
+	ticker_initialize_user(& nmeaX_ticker, 1000, & nmeaX_dpc_timed);
 	ticker_add(& nmeaX_ticker);
 
 	ua1cei_magloop_inited = 1;
@@ -6353,8 +6107,8 @@ uint_fast8_t board_get_adcch(uint_fast8_t i)
 enum
 {
 	BOARD_ADCFILTER_DIRECT,		/* фильтрация не применяется (значение для всех каналов по умолчанию) */
-	BOARD_ADCFILTER_TRACETOP3S,	/* Отслеживание максимума с постоянной времени 3 секунды */
 	BOARD_ADCFILTER_LPF,			/* ФНЧ, параметр задается в виде числа с фиксированной точкой */
+	BOARD_ADCFILTER_PEAKS,
 	//
 	BOARD_ADCFILTER_TYPECOUNT
 };
@@ -6368,14 +6122,22 @@ typedef struct lpfdata_tag
 	int32_t summ;	/* сумма всех элементов очереди */
 } lpfdata_t;
 
+typedef struct peaksdata_tag
+{
+	agcstate_t state;
+	const agctime_t * times;	// Параметры временных характеристик заряда-разряда
+} peaksdata_t;
+
 typedef struct boardadc_tag
 {
 
 	volatile adcvalholder_t adc_data_raw;	// входные данные для фильтра
+	adcvalholder_t peak_data_filtered;		// выход фильтра
 	adcvalholder_t adc_data_filtered;		// выход фильтра
 	//uint8_t adc_data_smoothed_u8;		// выход фильтра
 	uint8_t adc_filter;			/* методы фильтрации данных */
 	lpfdata_t * lpf;
+	peaksdata_t * peaks;
 } boardadc_t;
 
 static boardadc_t badcst [HARDWARE_ADCINPUTS];
@@ -6398,6 +6160,15 @@ adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t adci)
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
 	return padcs->adc_filter == BOARD_ADCFILTER_DIRECT ? padcs->adc_data_raw : padcs->adc_data_filtered;
+}
+
+/* получить пару значений от фильтра АЦП */
+adcvalholder_t board_getadc_filtered_truevalue2(uint_fast8_t adci, adcvalholder_t * peakv)
+{
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	boardadc_t * const padcs = & badcst [adci];
+	* peakv = padcs->peak_data_filtered;
+	return padcs->adc_data_filtered;
 }
 
 /* получить значение от АЦП */
@@ -6569,21 +6340,32 @@ static void lpf_initialize(lpfdata_t * lpfdata)
 	lpfdata->summ = 0;
 }
 
-static adcvalholder_t
-lpf_filter(lpfdata_t * lpfdata, adcvalholder_t raw)
+static void peaks_initialize(peaksdata_t * peaksdata, const agctime_t * times)
 {
+	agc_state_initialize0(& peaksdata->state, 0);
+	peaksdata->times = times;
+}
+
+
+
+static void
+lpf_filter(boardadc_t * const padcs, adcvalholder_t raw)
+{
+	lpfdata_t * const lpfdata = padcs->lpf;
 	lpfdata->summ += (sadcvalholder_t) raw;	// добавить входящее
 	lpfdata->summ -= lpfdata->queue [lpfdata->qpos];	// вычесть выходящее
 	lpfdata->queue [lpfdata->qpos] = raw;
 	lpfdata->qpos = (lpfdata->qpos + 1) % ADC_LPF_WND;
-	return lpfdata->summ / ADC_LPF_WND;
+	padcs->adc_data_filtered = lpfdata->summ / ADC_LPF_WND;
 }
 
-static adcvalholder_t
-tracetop3s_filter(adcvalholder_t raw, adcvalholder_t v0)
+static void
+peaks_filter(boardadc_t * const padcs, adcvalholder_t raw)
 {
-	enum { DELAY3SNUM = 993, DELAY3SDENOM = 1000 };	// todo: сделать расчет в зависимости от частоты системного таймера
-	return v0 < raw ? raw : v0 * (uint_fast32_t) DELAY3SNUM / DELAY3SDENOM;
+	peaksdata_t * const peaksdata = padcs->peaks;
+	agc_perform(& peaksdata->state, peaksdata->times, raw);
+	padcs->adc_data_filtered = agc_result_fast(& peaksdata->state);
+	padcs->peak_data_filtered = agc_result_slow(& peaksdata->state);
 }
 
 /* Установить способ фильтрации данных LPF и частоту среза - параметр 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
@@ -6595,6 +6377,17 @@ hardware_set_adc_filterLPF(uint_fast8_t adci, lpfdata_t * lpfdata)
 	padcs->adc_filter = BOARD_ADCFILTER_LPF;
 	padcs->lpf = lpfdata;
 	lpf_initialize(lpfdata);
+}
+
+/* Установить способ фильтрации данных LPF и частоту среза - параметр 1.0..0.0, умноженное на BOARD_ADCFILTER_LPF_DENOM */
+static void
+hardware_set_adc_filterPEAKS(uint_fast8_t adci, peaksdata_t * peaksdata, const agctime_t * agcp)
+{
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	boardadc_t * const padcs = & badcst [adci];
+	padcs->adc_filter = BOARD_ADCFILTER_PEAKS;
+	padcs->peaks = peaksdata;
+	peaks_initialize(peaksdata, agcp);
 }
 
 // Функция вызывается из обработчика прерывания завершения преобразования
@@ -6680,13 +6473,12 @@ static void board_adc_filtering(void * ctx)
 			padcs->adc_data_filtered = raw;
 			break;
 
-		case BOARD_ADCFILTER_TRACETOP3S:
-			// Отслеживание максимума с постоянной времени 3 секунды
-			padcs->adc_data_filtered = tracetop3s_filter(raw, padcs->adc_data_filtered);
+		case BOARD_ADCFILTER_LPF:
+			lpf_filter(padcs, raw);
 			break;
 
-		case BOARD_ADCFILTER_LPF:
-			padcs->adc_data_filtered = lpf_filter(padcs->lpf, raw);
+		case BOARD_ADCFILTER_PEAKS:
+			peaks_filter(padcs, raw);
 			break;
 
 		default:
@@ -6709,15 +6501,16 @@ adcfilters_initialize(void)
 	adcdone_initialize(& adcevent, board_adc_filtering, NULL);
 	adcdone_add(& adcevent);
 
-	#if WITHBARS && ! WITHINTEGRATEDDSP
-		hardware_set_adc_filter(SMETERIX, BOARD_ADCFILTER_TRACETOP3S);
-	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */
-
 	#if WITHTX && (WITHSWRMTR)
 		{
 			static lpfdata_t pwr;
+			static peaksdata_t pwr2;
+			static agctime_t pwrmeterparams;
 
-			hardware_set_adc_filterLPF(PWRMRRIX, & pwr);	// Включить фильтр
+			agc_parameters_pwrpeaks_init(& pwrmeterparams, 1000 / KBD_TICKS_PERIOD);
+
+			//hardware_set_adc_filterLPF(PWRMRRIX, & pwr);	// Включить фильтр
+			hardware_set_adc_filterPEAKS(PWRMRRIX, & pwr2, & pwrmeterparams);	// Включить фильтр
 			//hardware_set_adc_filter(PWRMRRIX, BOARD_ADCFILTER_DIRECT);		// Отключить фильтр
 		}
 	#endif /* WITHTX && (WITHSWRMTR) */
@@ -6777,10 +6570,10 @@ void board_adc_initialize(void)
 	{
 		uint_fast8_t i;
 		/* какие из каналов включать.. */
-		PRINTF(PSTR("ADCINPUTS_COUNT=%d: "), (int) board_get_adcinputs());
+		PRINTF("ADCINPUTS_COUNT=%d: ", (int) board_get_adcinputs());
 		for (i = 0; i < board_get_adcinputs(); ++ i)
 		{
-			PRINTF(PSTR("%d%c"), board_get_adcch(i), (i + 1) == board_get_adcinputs() ? '\n' : ',');
+			PRINTF("%d%c", board_get_adcch(i), (i + 1) == board_get_adcinputs() ? '\n' : ',');
 		}
 	}
 #endif /* WITHDEBUG */
@@ -7045,55 +6838,6 @@ board_get_pressed_key(void)
 
 
 #endif /* WITHKEYBOARD */
-
-#if 0
-// 
-void hardware_cw_diagnostics_noirq(
-	uint_fast8_t c1,
-	uint_fast8_t c2,
-	uint_fast8_t c3)
-{
-	enum { DIT = 100, DASH = DIT * 3, PAUSE = DIT * 1, PAUSE3 = DIT * 3 };
-
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-
-	board_beep_enable(1);
-	if (c1) local_delay_ms(DASH); else local_delay_ms(DIT);
-	board_beep_enable(0);
-
-	local_delay_ms(PAUSE);
-
-	board_beep_enable(1);
-	if (c2) local_delay_ms(DASH); else local_delay_ms(DIT);
-	board_beep_enable(0);
-
-	local_delay_ms(PAUSE);
-
-	board_beep_enable(1);
-	if (c3) local_delay_ms(DASH); else local_delay_ms(DIT);
-	board_beep_enable(0);
-
-	local_delay_ms(PAUSE3);
-
-	LowerIrql(oldIrql);
-}
-
-void hardware_cw_diagnostics(
-	uint_fast8_t c1,
-	uint_fast8_t c2,
-	uint_fast8_t c3)
-{
-	IRQL_t oldIrql;
-	RiseIrql(IRQL_SYSTEM, & oldIrql);
-
-	hardware_cw_diagnostics_noirq(c1, c2, c3);
-
-	LowerIrql(oldIrql);
-}
-
-
-#endif
 
 #if WITHSPIHW || WITHSPISW || WITHSPIDEV
 

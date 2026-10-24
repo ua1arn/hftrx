@@ -6,6 +6,7 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "formats.h"
 #include "utils.h"
 #include <machine/endian.h>
 
@@ -99,10 +100,32 @@ uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
 	return a < b ? a : b;
 }
 
+int_fast32_t slabs32(int_fast32_t a)
+{
+	return a > 0 ? a : - a;
+}
+
 uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 {
 	return a > b ? a : b;
 }
+
+#ifndef   __UNALIGNED_UINT64_WRITE
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpacked"
+  #pragma GCC diagnostic ignored "-Wattributes"
+  __PACKED_STRUCT T_UINT64_WRITE { uint64_t v; };
+  #pragma GCC diagnostic pop
+  #define __UNALIGNED_UINT64_WRITE(addr, val)    (void)((((struct T_UINT64_WRITE *)(void *)(addr))->v) = (val))
+#endif
+#ifndef   __UNALIGNED_UINT64_READ
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpacked"
+  #pragma GCC diagnostic ignored "-Wattributes"
+  __PACKED_STRUCT T_UINT64_READ { uint64_t v; };
+  #pragma GCC diagnostic pop
+  #define __UNALIGNED_UINT64_READ(addr)          (((const struct T_UINT64_READ *)(const void *)(addr))->v)
+#endif
 
 /* получить 16-бит значение */
 /* Little endian memory layout */
@@ -176,6 +199,9 @@ unsigned USBD_poke_u32(uint8_t * __RESTRICT buff, uint_fast32_t v)
 /* Little endian memory layout */
 unsigned USBD_poke_u64(uint8_t * __RESTRICT buff, uint_fast64_t v)
 {
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
+	__UNALIGNED_UINT64_WRITE(buff, v);
+#else
 	buff [0] = (uint8_t) (v >> 0);
 	buff [1] = (uint8_t) (v >> 8);
 	buff [2] = (uint8_t) (v >> 16);
@@ -184,7 +210,31 @@ unsigned USBD_poke_u64(uint8_t * __RESTRICT buff, uint_fast64_t v)
 	buff [5] = (uint8_t) (v >> 40);
 	buff [6] = (uint8_t) (v >> 48);
 	buff [7] = (uint8_t) (v >> 56);
+#endif
+
 	return 8;
+}
+
+/* получить 64-бит значение */
+/* Little endian memory layout */
+uint_fast64_t
+USBD_peek_u64(
+	const uint8_t * __RESTRICT buff
+	)
+{
+#if (_BYTE_ORDER == _LITTLE_ENDIAN)
+	return __UNALIGNED_UINT64_READ(buff);
+#else
+	return
+		((uint_fast64_t) buff [3] << 56) +
+		((uint_fast64_t) buff [3] << 48) +
+		((uint_fast64_t) buff [3] << 40) +
+		((uint_fast64_t) buff [3] << 32) +
+		((uint_fast64_t) buff [3] << 24) +
+		((uint_fast64_t) buff [2] << 16) +
+		((uint_fast64_t) buff [1] << 8) +
+		((uint_fast64_t) buff [0] << 0);
+#endif
 }
 
 /* получить 32-бит значение */
@@ -526,4 +576,83 @@ void fill32delay(uintptr_t addr, const uint32_t * data, unsigned count)
 		++ data;
 		addr += 4;
 	}
+}
+
+
+
+uint_fast16_t normalize(
+	uint_fast16_t raw,
+	uint_fast16_t rawmin,	// включает интервал входного raw
+	uint_fast16_t rawmax,	// включает интервал входного raw
+	uint_fast16_t range		// включает максимальное выходное значение
+	)
+{
+	if (rawmin < rawmax)
+	{
+		// Normal direction
+		const uint_fast16_t distance = rawmax - rawmin + 1;
+		if (raw < rawmin)
+			return 0;
+		const uint_fast16_t rawoffset = raw - rawmin;
+		if (rawoffset > distance)
+			return range;
+		return (uint_fast32_t) rawoffset * range / distance;
+	}
+	else
+	{
+		// reverse direction
+		const uint_fast16_t distance = rawmin - rawmax + 1;	//
+		if (raw >= rawmin)
+			return 0;
+		const uint_fast16_t rawoffset = rawmin - raw;
+		if (rawoffset > distance)
+			return range;
+		return (uint_fast32_t) rawoffset * range / distance;
+	}
+}
+
+uint_fast16_t normalize3(
+	uint_fast16_t raw,
+	uint_fast16_t rawmin,
+	uint_fast16_t rawmid,
+	uint_fast16_t rawmax,
+	uint_fast16_t range1,
+	uint_fast16_t range2
+	)
+{
+	if (raw < rawmid)
+		return normalize(raw, rawmin, rawmid, range1);
+	else
+		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
+}
+
+
+int_fast32_t approximate(
+	const int32_t * points,		// массив позиций входных значений
+	const int32_t * angles,		// массив позицый выходных значений
+	unsigned n,					// размерность массивов
+	int_fast16_t v				// значение для анализа
+	)
+{
+	unsigned i;
+	if (n < 2)
+		return 0;
+	for (i = 0; i < (n - 1); ++ i)
+	{
+		const int_fast32_t left = points [i];
+		const int_fast32_t right = points [i + 1];
+		const int_fast32_t minimal = angles [i];
+		const int_fast32_t maximal = angles [i + 1];
+		ASSERT(left < right);
+		ASSERT(minimal < maximal);
+		if (v < left)
+			return minimal;
+		if (v > right)
+			continue;
+		const int_fast32_t offset = v - left;
+		const int_fast32_t range = right - left + 1;	// диапазон входных значение на данном участке
+		const int_fast32_t delta = maximal - minimal + 1;	// диапазон выходных значение на данном участке
+		return (int_fast64_t) offset * delta / range + minimal;
+	}
+	return angles [n - 1];	// при выходе за максимальное значение - уприраемся в правое значение
 }

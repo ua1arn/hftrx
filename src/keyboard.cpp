@@ -9,6 +9,7 @@
 #include "buffers.h"
 #include "encoder.h"
 #include "board.h"
+#include "clocks.h"
 
 #include <atomic>
 
@@ -94,7 +95,7 @@ static void kbdst_initialize(kbdst_t * kbdp, const struct qmkey * (* get_pressed
 	adcdone_initialize(& kbdp->aevent, kbd_spool, kbdp);
 	adcdone_add(& kbdp->aevent);
 #else /* KEYBOARD_USE_ADC */
-	ticker_initialize(& kbdp->kbdticker, NTICKS(KBD_TICKS_PERIOD), kbd_spool, kbdp);
+	ticker_initialize(& kbdp->kbdticker, KBD_TICKS_PERIOD, kbd_spool, kbdp);
 	ticker_add(& kbdp->kbdticker);
 #endif /* KEYBOARD_USE_ADC */
 }
@@ -387,16 +388,6 @@ static uint_fast16_t kbdx_scan(kbdst_t * kbdp, uint_fast16_t * v)
 	return f;
 }
 
-void kbdx_pass(kbdst_t * kbdp)
-{
-	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
-
-	kbd_spool(kbdp);
-
-	IRQLSPIN_UNLOCK(& irqllock, oldIrql);
-}
-
 uint_fast8_t kbd_scan(uint_fast16_t * v)
 {
 	return kbdx_scan(& kbd0, v);
@@ -409,11 +400,6 @@ uint_fast8_t dtmf_scan(uint_fast16_t * v)
 #else /* WITHSUBTONES */
 	return 0;
 #endif /* WITHSUBTONES */
-}
-
-void kbd_pass(void)
-{
-	kbdx_pass(& kbd0);
 }
 
 uint_fast8_t kbd_get_ishold(uint_fast8_t flag)
@@ -478,10 +464,6 @@ uint_fast8_t kbd_scan(uint_fast16_t * v)
 uint_fast8_t dtmf_scan(uint_fast16_t * v)
 {
 	return 0;
-}
-
-void kbd_pass(void)
-{
 }
 
 #endif /* WITHKEYBOARD */

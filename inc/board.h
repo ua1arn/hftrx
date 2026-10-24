@@ -58,8 +58,6 @@ uint_fast16_t board_pll1_get_divider(pllhint_t hint);	/* получение зн
 void board_pll1_set_vco(pllhint_t hint);		/* установка конфигурации ГУН на основании hint */
 void board_pll1_set_vcodivider(pllhint_t hint);	/* установка выходного делителя ГУН на основании hint */
 
-extern int_fast32_t si570_get_xtall_base(void); 
-extern uint_fast16_t si570_xtall_offset; 
 #define OSCSHIFT 15000UL	/* половина диапазона перестройки частоты опорного генератора (в герцах). */
 
 void prog_pll2_n(const phase_t * value);
@@ -97,21 +95,20 @@ void board_set_bcdfreq1k(uint_fast16_t bcdfreq);	/* Для выбора диап
 void board_set_narrow(uint_fast8_t v);	/* установка режима према телеграфа (НЧ) */
 void board_set_notch(uint_fast8_t v);		/* не нулевой аргумент - включение НЧ режекторного фильтра */
 void board_set_notchnarrow(uint_fast8_t v);		/* не нулевой аргумент - включение НЧ режекторного фильтра в режиме CW */
-void board_set_vox(uint_fast8_t v);		/* не нулевой аргумент - включение VOX (для внешних схем) */
 void board_set_preamp(uint_fast8_t v); /* включение УВЧ */
 void board_set_xvrtr(uint_fast8_t v);	/* Разрешить работу конвертора */
 void board_set_dacstraight(uint_fast8_t v);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 void board_set_dactest(uint_fast8_t v);	/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 void board_set_tx_inh_enable(uint_fast8_t v);	/* разрешение реакции на вход tx_inh */
-void board_set_tx_bpsk_enable(uint_fast8_t v);	/* разрешение прямого формирования модуляции в FPGA */
-void board_set_seqphase(uint_fast8_t v);	// состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
-void board_set_mode_wfm(uint_fast8_t v);
+//void board_set_tx_bpsk_enable(uint_fast8_t v);	/* разрешение прямого формирования модуляции в FPGA */
+//void board_set_mode_wfm(uint_fast8_t v);
 void board_set_dither(uint_fast8_t v);	/* управление зашумлением в LTC2208 */
 void board_set_adcrand(uint_fast8_t v);	/* управление интерфейсом в LTC2208 */
-void board_set_dacscale(uint_fast16_t n);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100.00% */
-void board_set_digiscale(uint_fast16_t n);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-void board_set_designscale(uint_fast16_t n);	/* используется при калибровке параметров интерполятора */
-void board_set_cwscale(uint_fast16_t n);	/* Уменьшение усиления при передаче в CW режимах 50..100% */
+void board_set_dacscale(uint_fast16_t n);	/* 0..10000 Использование амплитуды сигнала с ЦАП передатчика - 0..100.00% */
+void board_set_designDUCscale(uint_fast16_t n);	/* используется при калибровке параметров интерполятора */
+void board_set_digiscale(uint_fast16_t n);	/* Увеличение усиления при передаче в цифровых режимах */
+void board_set_cwscale(uint_fast16_t n);	/* Уменьшение усиления при передаче в CW, AB, NFM режимах 50..100% */
+void board_set_ssbscale(uint_fast16_t n);	/* Увеличение усиления при передаче в SSB 100..300% */
 void board_set_dac1(uint_fast8_t n);	/* подстройка опорного генератора */
 void board_set_bglight(uint_fast8_t dispoff, uint_fast8_t dispbright);	/* Включение подсветки дисплея */
 void board_set_kblight(uint_fast8_t v);	/* Включение подсветки клавиатуры */
@@ -161,6 +158,22 @@ void board_lcd_reset(uint_fast8_t v);	// выставить уровень на 
 void board_set_modem_mode(uint_fast8_t v);	// применяемая модуляция
 void board_set_nb_enable(uint_fast8_t pathi, uint_fast8_t v);	/* Управлением включением RX Noise Blanker */
 void board_set_displayfps(uint_fast8_t v);
+
+void board_set_rtty_parametrs(int_fast32_t baudrate10, int_fast32_t shift, uint_fast8_t inverted);
+
+void board_set_eth_dhcp(uint_fast8_t v);
+uint_fast8_t board_get_eth_dhcp(void);
+
+/* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
+// Параметр функции board_set_seqphase()
+//enum
+//{
+//	SEQPHASE_INIT,	// RX
+//	SEQPHASE_FULLTX,	// TX
+//	//
+//	SEQPHASE_count
+//};
+//void board_set_seqphase(uint_fast8_t v);	// состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
 
 enum
 {
@@ -337,7 +350,7 @@ void board_gpu_initialize(void);	// Graphic processor unit
 uint_fast8_t hardware_usbd_get_vbusnow(void);
 uint_fast8_t hardware_usbd_get_vbusbefore(void);
 
-uint_fast8_t board_get_adcinputs(void);	/* получить количество каналов АЦП, задействованных в устройстве */
+uint_fast8_t board_get_adcinputs(void);	/* получить количество каналов АЦП, задействованных в устройстве - без MRR (mirror, cache) */
 uint_fast8_t board_get_adcch(uint_fast8_t index);	/* получить канал АЦП но индексу в таблице */
 
 void board_adc_store_data(uint_fast8_t i, adcvalholder_t v);
@@ -372,6 +385,7 @@ uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t i, uint_fast8_t lower, uint
 uint_fast16_t board_getadc_unfiltered_u16(uint_fast8_t i, uint_fast16_t lower, uint_fast16_t upper);	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast32_t board_getadc_unfiltered_u32(uint_fast8_t i, uint_fast32_t lower, uint_fast32_t upper);	/* получить значение от АЦП в диапазоне 0..255 */
 adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t i);	/* получить значение от АЦП */
+adcvalholder_t board_getadc_filtered_truevalue2(uint_fast8_t adci, adcvalholder_t * peakv); /* получить пару значений от фильтра АЦП */
 adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t i);	/* получить значение от АЦП */
 adcvalholder_t board_getadc_fsval(uint_fast8_t i);	/* получить максимальное возможное значение от АЦП */
 
