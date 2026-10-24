@@ -425,8 +425,9 @@
 
 #endif /* WITHENCODER */
 
+// WITHI2S0HW
 #define I2S0HW_INITIALIZE(master) do { \
-		/*arm_hardware_piob_altfn20(UINT32_C(1) << 4,	GPIO_CFG_AF3); */ /* PIx I2S0-MCLK	*/ \
+		/*arm_hardware_piob_altfn20(UINT32_C(1) << 4,	GPIO_CFG_AF3); */ /* PB4 I2S0-MCLK	*/ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 6,	GPIO_CFG_AF3); /* PB6 I2S0-LRCK	*/ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PB5 I2S0-BCLK	*/ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PB4 I2S0-DOUT0 to FPGA */ \
@@ -1045,6 +1046,7 @@
 
 #endif /* WITHSPIHW */
 
+// WITHUART0HW
 #define HARDWARE_UART0_INITIALIZE() do { \
 		const portholder_t TXMASK = UINT32_C(1) << 0; /* PB0 UART0_TX */ \
 		const portholder_t RXMASK = UINT32_C(1) << 1; /* PB1 UART0_RX - pull-up RX data */  \
@@ -1347,7 +1349,7 @@
 		0 * 0x0F * (UINT32_C(1) << 0) |		/* LCD_LVDS_DATA_POL: 0: reverse, 1: normal */ \
 		0)
 
-	#define xHARDWARE_LVDS_INITIALIZE() do { \
+	#define HARDWARE_LVDS_INITIALIZE() do { \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF3); 	/* PD0 LVDS0_V0P */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF3); 	/* PD1 LVDS0_V0N */ \
 		arm_hardware_piod_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF3); 	/* PD2 LVDS0_V1P */ \
@@ -1360,10 +1362,6 @@
 		arm_hardware_piod_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF3); 	/* PD9 LVDS0_V3N */ \
 	} while (0)
 
-	#define HARDWARE_LVDS_INITIALIZE() do { \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 16, GPIO_CFG_AF3); 	/* PD16 LVDS1_CKP */ \
-		arm_hardware_piod_altfn50(UINT32_C(1) << 17, GPIO_CFG_AF3); 	/* PD17 LVDS1_CKN */ \
-	} while (0)
 	#define HARDWARE_HDMI_INITIALIZE() do { \
 	} while (0)
 
@@ -1474,28 +1472,28 @@
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_XPT2046) */
 
-#define BOARD_BLINK_BIT (UINT32_C(1) << 4)	// PE4 BOOT_LED
-#define BOARD_FRONT_RED_BIT (UINT32_C(1) << 5)	// PE5 FRONTLED_RED
-#define BOARD_FRONT_GREEN_BIT (UINT32_C(1) << 6)	// PE6 FRONTLED_GREEN
+#define BOARD_BLINK_BIT (UINT32_C(1) << 2)	// PL2 BOOT_LED
+#define BOARD_FRONT_RED_BIT (UINT32_C(1) << 12)	// PL12 FRONTLED_RED
+#define BOARD_FRONT_GREEN_BIT (UINT32_C(1) << 13)	// PL13 FRONTLED_GREEN
 
 #define BOARD_BLINK_INITIALIZE() do { \
-	arm_hardware_pioe_outputs(BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
-	arm_hardware_pioe_outputs(BOARD_FRONT_RED_BIT, 1 * BOARD_FRONT_RED_BIT); \
-	arm_hardware_pioe_outputs(BOARD_FRONT_GREEN_BIT, 1 * BOARD_FRONT_GREEN_BIT); \
+	s_gpioX_prog(S_GPIOL, BOARD_BLINK_BIT, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
+	s_gpioX_prog(S_GPIOL, BOARD_FRONT_RED_BIT, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
+	s_gpioX_prog(S_GPIOL, BOARD_FRONT_GREEN_BIT, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
 } while (0)
 
 #define BOARD_BLINK_SETSTATE(state) do { \
-	gpioX_setstate(GPIOE, BOARD_BLINK_BIT, !! (state) * BOARD_BLINK_BIT); \
-	gpioX_setstate(GPIOE, 0*BOARD_FRONT_RED_BIT, !! (state) * BOARD_FRONT_RED_BIT); \
-	gpioX_setstate(GPIOE, 0*BOARD_FRONT_GREEN_BIT, !! (state) * BOARD_FRONT_GREEN_BIT); \
+	s_gpioX_setstate(S_GPIOL, BOARD_BLINK_BIT, !! (state) * BOARD_BLINK_BIT); \
+	s_gpioX_setstate(S_GPIOL, BOARD_FRONT_RED_BIT, !! (state) * BOARD_FRONT_RED_BIT); \
+	s_gpioX_setstate(S_GPIOL, BOARD_FRONT_GREEN_BIT, !! (state) * BOARD_FRONT_GREEN_BIT); \
 } while (0)
 
 #define BOARD_FRONT_RED_SETSTATE(state) do { \
-	gpioX_setstate(GPIOE, BOARD_FRONT_RED_BIT, !! (state) * BOARD_FRONT_RED_BIT); \
+	s_gpioX_setstate(S_GPIOL, BOARD_FRONT_RED_BIT, !! (state) * BOARD_FRONT_RED_BIT); \
 } while (0)
 
 #define BOARD_FRONT_GREEN_SETSTATE(state) do { \
-	gpioX_setstate(GPIOE, BOARD_FRONT_GREEN_BIT, !! (state) * BOARD_FRONT_GREEN_BIT); \
+	s_gpioX_setstate(S_GPIOL, BOARD_FRONT_GREEN_BIT, !! (state) * BOARD_FRONT_GREEN_BIT); \
 } while (0)
 
 /* запрос на вход в режим загрузчика */
