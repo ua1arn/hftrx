@@ -827,7 +827,7 @@ static uint16_t emac_mdio_read(uint8_t phy_addr, uint8_t reg_addr) {
     }
 
     /* Form read command with safe clock divider */
-    uint32_t cmd = ((phy_addr & 0x1F) << 16) |
+    uint32_t cmd = ((phy_addr & 0x1F) << 12) |
                    ((reg_addr & 0x1F) << 4)  |
                    EMAC_MII_CLK_DIV_64       |
                    EMAC_MII_BUSY;
@@ -852,7 +852,7 @@ static void emac_mdio_write(uint8_t phy_addr, uint8_t reg_addr, uint16_t reg_val
 	}
 
     /* Form read command with safe clock divider */
-    uint32_t cmd = ((phy_addr & 0x1F) << 16) |
+    uint32_t cmd = ((phy_addr & 0x1F) << 12) |
                    ((reg_addr & 0x1F) << 4)  |
                    EMAC_MII_CLK_DIV_64       |
 				   EMAC_MII_WRITE |
@@ -1046,6 +1046,19 @@ static void allwinner_emac_phy_init(EMAC_TypeDef * const emac_peripheral)
 //	emac_peripheral->EMAC_ADDR [0].LOW = USBD_peek_u32(hwaddr + 0);	// lower 32 bits of the 6-byte first MAC address
 
 	//emac_mdio_write(RTL8211F_PHY_ADDR, RTL8211F_IER, insr_mask);
+
+	if (0)
+	{
+		// address test
+		unsigned a;
+
+		for (a = 0; a < 32; ++ a)
+		{
+		    const uint16_t physr = emac_mdio_read(a, RTL8211F_PHYSR);
+		    PRINTF("a=%02X, physr=0x%04X \n", a, (unsigned) physr);
+
+		}
+	}
 }
 
 static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct netif *netif, uint8_t port_index)

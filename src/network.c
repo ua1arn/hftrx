@@ -18,6 +18,7 @@
 #if WITHLWIP
 
 #include "sdcard.h"
+#include "clocks.h"
 
 #include <stdbool.h>
 #include "lwip/opt.h"
