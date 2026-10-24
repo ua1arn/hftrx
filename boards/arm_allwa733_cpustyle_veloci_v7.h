@@ -1090,6 +1090,7 @@
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 	#define WITHSTWI0HW 1	// S_TWI0
 
+	// PMU control
 	// PL0 S_TWI0_SCK
 	// PL1 S_TWI0_SDL
 	#define TARGET_S_TWI_TWCK		(UINT32_C(1) << 0)
@@ -1100,28 +1101,27 @@
 		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWCK, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
 		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWD, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SDA */ \
 	} while (0)
-	#define TWIHARD_S_PTR S_TWI0
 	#define	TWIHARD_S_TWI0_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_a733_get_apb2_freq() or allwnr_a733_get_apbs2_freq()
+	#define TWIHARD_S_PTR S_TWI0
 #endif
 
 #if 1
 	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-	#define WITHTWI2HW 1
+	#define WITHSTWI1HW 1	// S_TWI1
 
-	// 26-pin CON4 pin 01, 17 - +3.3, pin 09, 25, 6, 14, 20, 30, 34 - GND
-	// PD16 TWI2-SCK pin 28
-	// PD17 TWI2-SDA pin 27
-	#define TARGET_TWI_TWCK		(UINT32_C(1) << 28)
-	#define TARGET_TWI_TWD		(UINT32_C(1) << 27)
+	// PL8 S_TWI1-SCK
+	// PL9 S_TWI0-SDA
+	#define TARGET_TWI_TWCK		(UINT32_C(1) << 8)
+	#define TARGET_TWI_TWD		(UINT32_C(1) << 9)
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	HARDWARE_TWI2_INITIALIZE() do { \
-		arm_hardware_piod_altfn2m(TARGET_TWI_TWCK, GPIO_CFG_AF6);	/* PD16 TWI2-SCK */ \
-		arm_hardware_piod_altfn2m(TARGET_TWI_TWD, GPIO_CFG_AF6);		/* PD17 TWI2-SDA */ \
+	#define	HARDWARE_S_TWI1_INITIALIZE() do { \
+		s_gpioX_prog(S_GPIOL, TARGET_TWI_TWCK, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL8 - S_TWI1_SCK */ \
+		s_gpioX_prog(S_GPIOL, TARGET_TWI_TWD, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL9 - S_TWI1_SDA */ \
 	} while (0)
-	#define	TWIHARD_PTR TWI2	/* 0 - TWI0, 1: TWI1... */
-	#define	TWIHARD_FREQ (allwnr_a733_get_twi_freq()) // APBS2_CLK allwnr_a733_get_apb2_freq() or allwnr_a733_get_apbs2_freq()
+	#define	TWIHARD_S_TWI1_FREQ (allwnr_a733_get_twi_freq()) // APBS2_CLK allwnr_a733_get_apb2_freq() or allwnr_a733_get_apbs2_freq()
+	#define	TWIHARD_PTR S_TWI1
 
 #endif /* WITHTWISW || WITHTWIHW */
 
