@@ -155,7 +155,7 @@
 	//#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
 
 #if ! LCDMODE_DUMMY
-	#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
+	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через интерфйс LVDS	*/
 	//#define WITHGPUHW	1	/* Graphic processor unit - Mali G31 MP2 (Panfrost)*/
@@ -179,8 +179,8 @@
 		#define WITHI2S1HW	(1 && WITHHDMITVHW)	/* Использование I2S1 - звук через HDMI */
 		//#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 
-		#define WITHAPBIFMAP_RX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_RX для I2S0, I2S1, I2S2, I2S3.
-		#define WITHAPBIFMAP_TX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_TX для I2S0, I2S1, I2S2, I2S3.
+//		#define WITHAPBIFMAP_RX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_RX для I2S0, I2S1, I2S2, I2S3.
+//		#define WITHAPBIFMAP_TX 0, 1, 1, 2	// Используемые каналы AHUB_APBIF_TX для I2S0, I2S1, I2S2, I2S3.
 
 		//#define HARDWARE_I2S0HW_USEDMA 0	// test
 
@@ -1486,7 +1486,7 @@
 	#define HARDWARE_EMAC_PTR EMAC0
 	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
 	#define HARDWARE_EMAC_IRQ EMAC0_IRQn
-	#define RTL8211F_PHY_ADDR           0//1  // Зависит от аппаратной схемы (обычно 1)
+	#define RTL8211F_PHY_ADDR           1  // Зависит от аппаратной схемы (обычно 1)
 
 #endif /* WITHETHHW */
 
