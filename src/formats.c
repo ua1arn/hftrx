@@ -668,6 +668,18 @@ printhex64(uintptr_t voffs, const void * buff, unsigned length)
 {
 }
 
+void printhex_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title)
+{
+}
+
+void printhex32_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title)
+{
+}
+
+void printhex64_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title)
+{
+}
+
 void
 mem2hex(uintptr_t address, unsigned size)
 {
