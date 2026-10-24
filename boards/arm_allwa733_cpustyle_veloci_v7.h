@@ -1501,37 +1501,37 @@
 
 #if WITHETHHW
 	#define HARDWARE_ETH_INITIALIZE() do { \
-		const portholder_t NRSTB = UINT32_C(1) << 6; /* PI6 PHYRSTB */ \
+		const portholder_t NRSTB = UINT32_C(1) << 16; /* PH16 PHYRSTB */ \
 		\
-		arm_hardware_pioi_outputs(UINT32_C(1) << 0, 1 * UINT32_C(1) << 0); /* PI0 PHYAD0 RGMII_RXD3 */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 4, 0 * UINT32_C(1) << 4); /* PI4 PHYAD1 RGMII_RXCK */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 5, 0 * UINT32_C(1) << 5); /* PI5 PHYAD2 RGMII_RXCTL */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 1, 0 * UINT32_C(1) << 1); /* PI1 PLLOFF RGMII_RXD2 */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 2, 0 * UINT32_C(1) << 2); /* PI2 TXDLY RGMII_RXD1 */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 3, 1 * UINT32_C(1) << 3); /* PI3 RXDLY RGMII_RXD0 */ \
+		arm_hardware_pioh_outputs(UINT32_C(1) << 10, 1 * UINT32_C(1) << 10); 	/* PH10 PHYAD0 RGMII0_RXD3 */ \
+		arm_hardware_pioh_outputs(UINT32_C(1) << 12, 0 * UINT32_C(1) << 12); 	/* PH12 PHYAD1 RGMII0_RXCK */ \
+		arm_hardware_pioh_outputs(UINT32_C(1) << 2, 0 * UINT32_C(1) << 2); 		/* PH2 PHYAD2 RGMII0_RXCTL */ \
+		arm_hardware_pioh_outputs(UINT32_C(1) << 11, 0 * UINT32_C(1) << 11); 	/* PH11 PLLOFF RGMII0_RXD2 */ \
+		arm_hardware_pioh_outputs(UINT32_C(1) << 0, 0 * UINT32_C(1) << 0); 		/* PH0 TXDLY RGMII0_RXD1 */ \
+		arm_hardware_pioh_outputs(UINT32_C(1) << 1, 1 * UINT32_C(1) << 1); 		/* PH1 RXDLY RGMII0_RXD0 */ \
 		\
-		arm_hardware_pioi_outputs(NRSTB, 0 * NRSTB); /* PI6 PHYRSTB */ \
+		arm_hardware_pioh_outputs(NRSTB, 0 * NRSTB); /* PH16 PHYRSTB */ \
 		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
-		arm_hardware_pioi_outputs(NRSTB, 1 * NRSTB); /* PI6 PHYRSTB */ \
+		arm_hardware_pioh_outputs(NRSTB, 1 * NRSTB); /* PH16 PHYRSTB */ \
 		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
 		\
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF2); 	/* PI0 RGMII_RXD3 */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2); 	/* PI1 RGMII_RXD2 */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF2); 	/* PI2 RGMII_RXD1 */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF2); 	/* PI3 RGMII_RXD0 */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF2); 	/* PI4 RGMII_RXCK */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF2); 	/* PI5 RGMII_RXCTL */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF2); 	/* PI7 RGMII_TXD3 */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF2); 	/* PI8 RGMII_TXD2 */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF2); 	/* PI9 RGMII_TXD1 */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF2); /* PI10 RGMII_TXD0 */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF2); /* PI11 RGMII_TXCK */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF2); /* PI12 RGMII_TXCTL */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF2); /* PI13 RGMII_CLKIN */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF2); /* PI14 MDC */ \
-		arm_hardware_pioi_altfn50(UINT32_C(1) << 15, GPIO_CFG_AF2); /* PI15 MDIO */ \
-		arm_hardware_pioi_updown(UINT32_C(1) << 14, UINT32_C(1) << 14, 0); /* PI14 MDC */ \
-		arm_hardware_pioi_updown(UINT32_C(1) << 15, UINT32_C(1) << 15, 0); /*  PI15 MDIO */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF5); 	/* PH10 RGMII0_RXD3 */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF5); 	/* PH11 RGMII0_RXD2 */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF5); 		/* PH0 RGMII0_RXD1 */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF5); 		/* PH1 RGMII0_RXD0 */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 12, GPIO_CFG_AF5); 	/* PH12 RGMII0_RXCK */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 2, GPIO_CFG_AF5); 		/* PH2 RGMII0_RXCTL */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 13, GPIO_CFG_AF5); 	/* PH13 RGMII0_TXD3 */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 14, GPIO_CFG_AF5); 	/* PH14 RGMII0_TXD2 */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 4, GPIO_CFG_AF5); 		/* PH4 RGMII0_TXD1 */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 5, GPIO_CFG_AF5); 		/* PH5 RGMII0_TXD0 */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 6, GPIO_CFG_AF5); 		/* PH6 RGMII0_TXCK */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 7, GPIO_CFG_AF5); 		/* PH7 RGMII0_TXCTL */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF5); 		/* PH3 RGMII0_CLKIN */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF5); 		/* PH8 MDC */ \
+		arm_hardware_pioh_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF5); 		/* PH9 MDIO */ \
+		arm_hardware_pioh_updown(UINT32_C(1) << 8, UINT32_C(1) << 14, 0); /* PH8 MDC */ \
+		arm_hardware_pioh_updown(UINT32_C(1) << 9, UINT32_C(1) << 15, 0); /*  PH9 MDIO */ \
 		\
 	} while (0)
 	// T507:
