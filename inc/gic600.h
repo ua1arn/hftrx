@@ -1169,6 +1169,47 @@ __STATIC_FORCEINLINE void __set_ICC_SGI1R_EL1(uint64_t value)
     __MCR32(sICC_SGI1R_EL1, value);
 }
 
+__STATIC_FORCEINLINE void __set_ICC_SGI0R_EL1(uint64_t value)
+{
+    __MCR32(sICC_SGI0R_EL1, value);
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL3(uint64_t value)
+{
+    __MCR32(sICC_SRE_EL3, value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL3(void)
+{
+	uint32_t result;
+    __MRC32(sICC_SRE_EL3, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL2(uint64_t value)
+{
+    __MCR32(sICC_SRE_EL2, value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL2(void)
+{
+	uint32_t result;
+    __MRC32(sICC_SRE_EL2, &result);
+    return result;
+}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE_EL1(uint64_t value)
+{
+    __MCR32(sICC_SRE_EL1, value);
+}
+
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL1(void)
+{
+	uint32_t result;
+    __MRC32(sICC_SRE_EL1, &result);
+    return result;
+}
+
 #endif	/* defined (__aarch64__) */
 
 /** \brief Enable the CPU's interrupt interface.
@@ -1487,7 +1528,7 @@ __STATIC_INLINE void *GIC_GetRdistSGIBase(void *rd_base)
 
 static uint64_t sread_mpidr(void)
 {
-#if __aarch64__
+#if defined (__aarch64__)
 	return __get_MPIDR_EL1();
 #else /* defined(__aarch64__) */
 	return __get_MPIDR();
@@ -1592,11 +1633,9 @@ __STATIC_INLINE void GIC_RedistInit(void)
 	/* Wait until the interface is operational (ChildrenAsleep bit must become 0) */
 	while (GICR->LPI.GICR_WAKER & (UINT32_C(1) << 2))
 		;
-
 	__set_ICC_SRE_EL3(__get_ICC_SRE_EL3() | 0x0F);	// Enable SRE (bit 0), Disable IRQ/FIQ Bypass (bits 1,2), Enable Enable (bit 3)
 	__set_ICC_SRE_EL1(__get_ICC_SRE_EL1() | 0x0F);	// Enable SRE (bit 0), Disable IRQ/FIQ Bypass (bits 1,2), Enable Enable (bit 3)
 //	__set_ICC_SRE_EL2(__get_ICC_SRE_EL2() | 0x0F);	// Enable SRE (bit 0), Disable IRQ/FIQ Bypass (bits 1,2), Enable Enable (bit 3)
-
 
 	//GICR->SGI_PPI.GICR_NSACR = 0x55555555;
 
