@@ -33,12 +33,12 @@
 	#define WITHUART0HW	1		/* отлдочный порт */
 #endif /* WITHDEBUG */
 
-//#define WITHUART5HW_FIFO	1	/* испольование FIFO */
-#define WITHUART5HW	1		/* mini dinn8	*/
-//#define WITHCAT_UART5 1
+//#define WITHUART2HW_FIFO	1	/* испольование FIFO */
+#define WITHUART2HW	1		/* mini dinn8	*/
+//#define WITHCAT_UART2 1
 
 #if WITHMGLOOP
-	#define WITHMGLOOP_UART5 1
+	#define WITHMGLOOP_UART2 1
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 #else /* WITHMGLOOP */
 	#define WITHCAT_MUX 1		/* переключаемый USB UAC или UART канал управления. */
@@ -444,7 +444,7 @@
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_UART5)
+#if (WITHCAT && WITHCAT_UART2)
 	// CAT control lines
 	//#define FROMCAT_TARGET_PIN_RTS		(gpioX_getinputs(GPIOA))
 	//#define FROMCAT_BIT_RTS				(UINT32_C(1) << 11)	/* PA11 сигнал RTS от FT232RL	*/
@@ -461,7 +461,7 @@
 	#define FROMCAT_RTS_INITIALIZE() do { \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_UART5) */
+#endif /* (WITHCAT && WITHCAT_UART2) */
 
 #if (WITHCAT && WITHCAT_CDC)
 
@@ -487,17 +487,17 @@
 #endif /* (WITHCAT && WITHCAT_CDC) */
 
 
-#if (WITHCAT && WITHCAT_MUX && WITHUART5HW)
+#if (WITHCAT && WITHCAT_MUX && WITHUART2HW)
 
 	////////////////////////////////////
-	// CAT функции работают через UART5
+	// CAT функции работают через UART2
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
-			hardware_uart5_initialize(0, DEBUGSPEED, 8, 0, 0); \
+			hardware_uart2_initialize(0, DEBUGSPEED, 8, 0, 0); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_SET_SPEED(baudrate) do { \
-			hardware_uart5_set_speed(baudrate); \
+			hardware_uart2_set_speed(baudrate); \
 		} while (0)
 
 	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния RTS
@@ -509,35 +509,35 @@
 	// вызывается из обработчика перерываний (или из user-mode программы) для получения состояния DTR
 	#define HARDWARE_CAT2_GET_DTR() (board_get_catmux() == BOARD_CATMUX_USBCDC ? usbd_cdc2_getdtr() : 0)
 
-	// вызывается из обработчика прерываний UART5
+	// вызывается из обработчика прерываний UART2
 	// с принятым символом
-	#define HARDWARE_UART5_ONRXCHAR(c) do { \
+	#define HARDWARE_UART2_ONRXCHAR(c) do { \
 		if (board_get_catmux() == BOARD_CATMUX_DIN8) { \
 			cat2_parsechar(c); \
 		} else { \
-			hardware_uart5_enablerx(0); \
+			hardware_uart2_enablerx(0); \
 		} \
 	} while (0)
-	// вызывается из обработчика прерываний UART5
-	#define HARDWARE_UART5_ONOVERFLOW() do { \
+	// вызывается из обработчика прерываний UART2
+	#define HARDWARE_UART2_ONOVERFLOW() do { \
 		if (board_get_catmux() == BOARD_CATMUX_DIN8) { \
 			cat2_rxoverflow(); \
 		} else { \
-			hardware_uart5_enablerx(0); \
+			hardware_uart2_enablerx(0); \
 		} \
 	} while (0)
-	// вызывается из обработчика прерываний UART5
+	// вызывается из обработчика прерываний UART2
 	// по готовности передатчика
-	#define HARDWARE_UART5_ONTXCHAR(ctx) do { \
+	#define HARDWARE_UART2_ONTXCHAR(ctx) do { \
 		if (board_get_catmux() == BOARD_CATMUX_DIN8) { \
 			cat2_sendchar(ctx); \
 		} else { \
-			hardware_uart5_enabletx(0); \
+			hardware_uart2_enabletx(0); \
 		} \
 	} while (0)
-	// вызывается из обработчика прерываний UART5
+	// вызывается из обработчика прерываний UART2
 	// по окончании передачи (сдвиговый регистр передатчика пуст)
-	#define HARDWARE_UART5_ONTXDONE(ctx) do { \
+	#define HARDWARE_UART2_ONTXDONE(ctx) do { \
 		if (board_get_catmux() == BOARD_CATMUX_DIN8) { \
 			cat2_txdone(ctx); \
 		} \
@@ -548,14 +548,14 @@
 	// для управления разрешением последующих вызовов прерывания
 	#define HARDWARE_CAT_ENABLETX(v) do { \
 		if (board_get_catmux() == BOARD_CATMUX_USBCDC) { \
-			hardware_uart5_enabletx(0); \
+			hardware_uart2_enabletx(0); \
 			usbd_cdc_enabletx(v); \
 		} else if (board_get_catmux() == BOARD_CATMUX_BTSPP) { \
-			hardware_uart5_enabletx(0); \
+			hardware_uart2_enabletx(0); \
 			btspp_enabletx(v); \
 		} else { \
 			usbd_cdc_enabletx(0); \
-			hardware_uart5_enabletx(v); \
+			hardware_uart2_enabletx(v); \
 		} \
 	} while (0)
 	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
@@ -563,20 +563,20 @@
 	#define HARDWARE_CAT_ENABLERX(v) do { \
 		usbd_cdc_enablerx(v); \
 		btspp_enablerx(v); \
-		hardware_uart5_enablerx(v); \
+		hardware_uart2_enablerx(v); \
 	} while (0)
 	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
 	// для передачи символа
 	#define HARDWARE_CAT_TX(ctx, c) do { \
 		if (board_get_catmux() == BOARD_CATMUX_USBCDC) { \
 			usbd_cdc_tx((ctx), (c)); \
-			hardware_uart5_enabletx(0); \
+			hardware_uart2_enabletx(0); \
 		} else if (board_get_catmux() == BOARD_CATMUX_BTSPP) { \
 			btspp_tx((ctx), (c)); \
-			hardware_uart5_enabletx(0); \
+			hardware_uart2_enabletx(0); \
 		} else { \
 			usbd_cdc_enabletx(0); \
-			hardware_uart5_tx((ctx), (c)); \
+			hardware_uart2_tx((ctx), (c)); \
 		} \
 	} while (0)
 
@@ -629,15 +629,15 @@
 	#define FROMCAT_RTS_INITIALIZE() do { \
 		} while (0)
 
-#else /* (WITHCAT && WITHCAT_MUX && WITHUART5HW) */
+#else /* (WITHCAT && WITHCAT_MUX && WITHUART2HW) */
 
-	void user_uart5_onrxchar(uint_fast8_t c);
-	void user_uart5_ontxchar(void * ctx);
+	void user_uart2_onrxchar(uint_fast8_t c);
+	void user_uart2_ontxchar(void * ctx);
 
-	#define HARDWARE_UART5_ONRXCHAR(c) do { user_uart5_onrxchar((c)); } while (0)
-	#define HARDWARE_UART5_ONTXCHAR(ctx) do { user_uart5_ontxchar((ctx)); } while (0)
+	#define HARDWARE_UART2_ONRXCHAR(c) do { user_uart2_onrxchar((c)); } while (0)
+	#define HARDWARE_UART2_ONTXCHAR(ctx) do { user_uart2_ontxchar((ctx)); } while (0)
 
-#endif /* (WITHCAT && WITHCAT_MUX && WITHUART5HW) */
+#endif /* (WITHCAT && WITHCAT_MUX && WITHUART2HW) */
 
 #if WITHSDHCHW && WITHSDHC0HW
 	// SD CARD
@@ -1053,14 +1053,14 @@
 		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
 	} while (0)
 
-// WITHUART5HW
-// Используется периферийный контроллер последовательного порта UART5 (rear panel) */
-#define HARDWARE_UART5_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 2; /* PH2 UART5-TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 3; /* PH3 UART5-RX - pull-up RX data */  \
-		arm_hardware_pioh_altfn2m(TXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_altfn2m(RXMASK, GPIO_CFG_AF2); \
-		arm_hardware_pioh_updown(RXMASK | TXMASK, RXMASK, 0); \
+// WITHUART2HW
+// Используется периферийный контроллер последовательного порта UART2 (rear panel) */
+#define HARDWARE_UART2_INITIALIZE() do { \
+		const portholder_t TXMASK = UINT32_C(1) << 26; /* PJ26 UART2-TX */ \
+		const portholder_t RXMASK = UINT32_C(1) << 27; /* PJ27 UART2-RX - pull-up RX data */  \
+		arm_hardware_pioj_altfn2m(TXMASK, GPIO_CFG_AF5); \
+		arm_hardware_pioj_altfn2m(RXMASK, GPIO_CFG_AF5); \
+		arm_hardware_pioj_updown(RXMASK | TXMASK, RXMASK, 0); \
 	} while (0)
 
 #if WITHKEYBOARD
