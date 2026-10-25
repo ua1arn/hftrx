@@ -1367,6 +1367,40 @@ static void calculate_passthrough_fir(FLOAT_t *const h, const FLOAT_t *const pre
     ARM_MORPH(arm_mult)(h, preformed_window, h, num_taps);
 }
 
+
+/* расчёт паарметров - частота для функций постоения фильтров */
+#define GETNORMFREQ(freq)	((freq) * 2 / (FLOAT_t) ARMSAIRATE)
+#define GETNORMFREQAUDIO(freq)	((freq) * 2 / (FLOAT_t) ARMI2SRATE)
+#define GETNORMFREQAUDIOL(freq)	((freq) * 2 / (double) ARMI2SRATE)
+
+static FLOAT_t fir_design_normfreq(int freq)
+{
+	return GETNORMFREQAUDIO(freq);
+}
+
+// Расчёт фильтра нижних частот
+// Расчёт фильтра без наложения оконной функции
+static void fir_design_lowpass(FLOAT_t *dCoeff, int iCoefNum, int iCoefNumLimited, FLOAT_t m_fCutHigh)
+{
+	const int iHalfLen = (iCoefNum - 1) / 2;
+	const int iHalfLenLimited = (iCoefNumLimited - 1) / 2;
+	//float dCoeff [iHalfLen + 1];	/* Use GCC extension */
+	int iCnt;
+
+	/*------------------*/
+	/*  Lowpass filter  */
+	/*------------------*/
+
+	dCoeff [iHalfLen] = m_fCutHigh;
+	for (iCnt = 1; iCnt <= iHalfLenLimited; iCnt ++)
+	{
+		const FLOAT_t a = (FLOAT_t) M_PI * iCnt;
+		const FLOAT_t k = SINF(m_fCutHigh * a) / a;
+		dCoeff [iHalfLen - iCnt] = k;
+		dCoeff [iHalfLen + iCnt] = k;
+	}
+}
+
 //////////////////////////////////////////
 
 #if ! WITHDSPEXTDDC
@@ -2478,11 +2512,15 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, 
 	else
 	{
 		const int cutfreq = fullbw6 / 2;
-
+#if 0
+		fir_design_lowpass(dCoeff_trx_IQ, Ntap_trxi_IQ, Ntap_trxi_IQ, fir_design_normfreq(cutfreq));
+		ARM_MORPH(arm_mult)(dCoeff_trx_IQ, wiver_window_buf, dCoeff_trx_IQ, Ntap_trxi_IQ);
+#else
 		if (tx)
 			calculate_duc_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq);
 		else
 			calculate_variable_slope_ddc_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq, transition);
+#endif
 
 	//	PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
 
@@ -2531,6 +2569,15 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, 
 	//calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
 
 #if WITHDSPEXTDDC
+	if (1)
+	{
+		// нормировние усидления на постоянном токе к 1
+		FLOAT_t sum;
+		ARM_MORPH(arm_accumulate)(dCoeff_trx_IQ, Ntap_trxi_IQ, & sum);
+		sum = FABSF(sum);
+		if (sum > 1)
+			ARM_MORPH(arm_scale)(dCoeff_trx_IQ, 1 / sum, dCoeff_trx_IQ, Ntap_trxi_IQ);
+	}
 	if (1)
 	{
 		// Предотвращение выхода значений коэффициентов за пределы [-1..+1]
