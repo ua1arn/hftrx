@@ -1401,6 +1401,24 @@ static void fir_design_lowpass(FLOAT_t *dCoeff, int iCoefNum, int iCoefNumLimite
 	}
 }
 
+// Без наложения оконной функции
+static void fir_design_bandpass(FLOAT_t * dCoeff, int iCoefNum, int iCoefNumLimited, FLOAT_t fCutLow, FLOAT_t fCutHigh)
+{
+	const int iHalfLen = (iCoefNum - 1) / 2;
+	const int iHalfLenLimited = (iCoefNumLimited - 1) / 2;
+	int iCnt;
+
+	dCoeff [iHalfLen] = fCutHigh - fCutLow;
+	for (iCnt = 1; iCnt <= iHalfLenLimited; iCnt ++)
+	{
+		const FLOAT_t a = (FLOAT_t) M_PI_2 * iCnt;	// M_PI_2 - constant pi/2
+		const FLOAT_t k = SINF((fCutHigh - fCutLow) * a) *
+										 COSF((fCutHigh + fCutLow) * a) / a;
+		dCoeff [iHalfLen - iCnt] = k;
+		dCoeff [iHalfLen + iCnt] = k;
+	}
+}
+
 //////////////////////////////////////////
 
 #if ! WITHDSPEXTDDC
@@ -2479,11 +2497,16 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, 
 	{
 		const FLOAT_t fbypascut = fs * 4 / 10;
 		// make bypass filter
+#if 0
+		fir_design_lowpass(dCoeff_trx_IQ, Ntap_trxi_IQ, Ntap_trxi_IQ, fir_design_normfreq(fbypascut));
+		ARM_MORPH(arm_mult)(dCoeff_trx_IQ, wiver_window_buf, dCoeff_trx_IQ, Ntap_trxi_IQ);
+#else
 		//calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
 		if (tx)
 			calculate_duc_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, fbypascut);
 		else
 			calculate_variable_slope_ddc_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, fbypascut, 0);
+#endif
 	#if WITHDSPLOCALRXFIR
 		if (isdspmoderx(dspmode))
 		{
@@ -2615,12 +2638,17 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
+#if 0
+		fir_design_bandpass(tx_firEQcoeff, Ntap_tx_MIKE, Ntap_tx_MIKE, fir_design_normfreq(glob_aflowcuttx), fir_design_normfreq(glob_afhighcuttx));
+		ARM_MORPH(arm_mult)(tx_firEQcoeff, tx_mike_window_buf, tx_firEQcoeff, Ntap_tx_MIKE);
+		break;
+#else
 		if (glob_mikeequal)
 			calculate_bpf_with_variable_eq(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, tx_eq, ARRAY_SIZE(tx_eq));
 		else
 			calculate_sloped_bpf(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
 		break;
-
+#endif
 	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_RX_RTTY:
 	case DSPCTL_MODE_TX_RTTY:
@@ -2709,6 +2737,11 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 	case DSPCTL_MODE_RX_NFM:
 	case DSPCTL_MODE_RX_RTTY:
 	case DSPCTL_MODE_TX_RTTY:
+#if 0
+		fir_design_bandpass(dCoeff, iCoefNum, iCoefNum, fir_design_normfreq(cutfreqlow), fir_design_normfreq(cutfreqhigh));
+		ARM_MORPH(arm_mult)(dCoeff, rx_audio_window_buf, dCoeff, iCoefNum);
+		break;
+#else
 		if (! glob_afwiderx [pathi])
 		{
 			// audio - полосовой фильтр на телеграфную полосу
@@ -2725,8 +2758,10 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 			calculate_sloped_bpf(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, 1, db2ratio(targetdb));
 			// EQUALIZER TEST
 			//calculate_bpf_with_variable_eq(dCoeff, rx_audio_window_buf, Ntap_rx_AUDIO, fs, cutfreqlow, cutfreqhigh, tx_eq, ARRAY_SIZE(tx_eq));
+
 		}
 		break;
+#endif
 
 	case DSPCTL_MODE_TX_CW:
 		break;
