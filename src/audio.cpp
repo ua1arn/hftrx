@@ -2210,7 +2210,8 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ(local_rx_iq_fir_t * con
 }
 
 void local_rx_iq_fir_init(local_rx_iq_fir_t * self) {
-	ARM_MORPH(arm_blackman_harris_92db)(self->window_buf, Ntap_rx_SSB_IQ);
+	//ARM_MORPH(arm_blackman_harris_92db)(self->window_buf, Ntap_rx_SSB_IQ);
+    ARM_MORPH(localwindow_harris)(self->window_buf, Ntap_rx_SSB_IQ);
 	self->fir_head = 0;
 	ARM_MORPH(arm_fill)(0, self->fir_x[0].ivqv, 2 * ARRAY_SIZE(self->fir_x));
 }
@@ -2430,7 +2431,8 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(local_tx_iq_fir_t * sel
 
 void local_tx_iq_fir_init(local_tx_iq_fir_t * self) {
 	self->fir_head = 0;
-	ARM_MORPH(arm_blackman_harris_92db)(self->window_buf, Ntap_tx_SSB_IQ);
+	//ARM_MORPH(arm_blackman_harris_92db)(self->window_buf, Ntap_tx_SSB_IQ);
+	ARM_MORPH(localwindow_harris)(self->window_buf, Ntap_tx_SSB_IQ);
 	ARM_MORPH(arm_fill)(0, self->fir_x [0].ivqv, 3 * ARRAY_SIZE(self->fir_x));
 }
 
@@ -6130,6 +6132,187 @@ void dsp_processtx(unsigned nsamples0)
 	}
 }
 
+
+// Calculate window function (blackman-harris, hamming, rectangular)
+// https://www.edn.com/windowing-functions-improve-fft-results-part-i/
+// https://en.wikipedia.org/wiki/Window_function
+// https://www.weisang.com/en/documentation/fourierspectrumtaperingwindows_en/
+
+static FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
+{
+	const FLOAT_t n = iCoefNum - 1;
+	const FLOAT_t a = (FLOAT_t) M_TWOPI * iCnt / n;
+	const FLOAT_t a2 = 2 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
+	const FLOAT_t a3 = 3 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
+	const FLOAT_t a4 = 4 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
+	const FLOAT_t a5 = 5 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
+	const FLOAT_t a6 = 6 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
+
+	switch (wtype)
+	{
+	default:
+	case BOARD_WTYPE_BLACKMAN_HARRIS:
+		// Blackman-Harris (same as MATLAB)
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.35875
+				- (FLOAT_t) 0.48829 * COSF(a)
+				+ (FLOAT_t) 0.14128 * COSF(a2)
+				- (FLOAT_t) 0.01168 * COSF(a3)
+				);
+			return w;
+		}
+	case BOARD_WTYPE_BLACKMAN_HARRIS_MOD:
+		// Modified Blackman-Harris (classic)
+		// http://nsg.sourceforge.net/doc/windows/winfuns_code.php
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.35872
+				- (FLOAT_t) 0.48832 * COSF(a)
+				+ (FLOAT_t) 0.14128 * COSF(a2)
+				- (FLOAT_t) 0.01168 * COSF(a3)
+				);	// blackman-harris
+			return w;
+		}
+	case BOARD_WTYPE_BLACKMAN_HARRIS_3TERM:
+		// Blackman-Harris 3-term
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.42323
+				- (FLOAT_t) 0.49755 * COSF(a)
+				+ (FLOAT_t) 0.07922 * COSF(a2)
+				);	// blackman-harris
+			return w;
+		}
+	case BOARD_WTYPE_BLACKMAN_HARRIS_3TERM_MOD:
+		// Blackman-Harris 3-term
+		// in https://www.dsprelated.com/freebooks/sasp/Three_Term_Blackman_Harris_Window.html
+		// 0.4243801 0.4973406 0.0782793
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.4243801
+				- (FLOAT_t) 0.4973406 * COSF(a)
+				+ (FLOAT_t) 0.0782793 * COSF(a2)
+				);	// blackman-harris
+			return w;
+		}
+	case BOARD_WTYPE_BLACKMAN_HARRIS_4TERM:
+		// Blackman-Harris (4-term)
+		// Cos4 Blackman-Harris -74dB W=4
+		// 0.40217-0.49703*cos(2*π*i/(n-1))+0.09892*cos(4*π*i/(n-1))-0.00188*cos(6*π*i/(n-1)), i=0..n-1
+		// https://www.edn.com/windowing-functions-improve-fft-results-part-ii/
+		// 0.40217, 0.49703, 0.09892, and 0.00188.
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.40217
+				- (FLOAT_t) 0.49703 * COSF(a)
+				+ (FLOAT_t) 0.09892 * COSF(a2)
+				- (FLOAT_t) 0.00188 * COSF(a3)
+				);
+			return w;
+		}
+	case BOARD_WTYPE_BLACKMAN_HARRIS_7TERM:
+		// Blackman-Harris 7-term
+		// На float с одинарной точностью не имеет смысла переходить с BOARD_WTYPE_BLACKMAN_HARRIS
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.27105140069342
+				- (FLOAT_t) 0.43329793923448 * COSF(a)
+				+ (FLOAT_t) 0.21812299954311 * COSF(a2)
+				- (FLOAT_t) 0.06592544638803 * COSF(a3)
+				+ (FLOAT_t) 0.01081174209837 * COSF(a4)
+				- (FLOAT_t) 0.00077658482522 * COSF(a5)
+				+ (FLOAT_t) 0.00001388721735 * COSF(a6)
+			);
+			return w;
+		}
+	case BOARD_WTYPE_BLACKMAN_NUTTALL:
+		// Blackman-Nuttall
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.3635819
+				- (FLOAT_t) 0.4891775 * COSF(a)
+				+ (FLOAT_t) 0.1365995 * COSF(a2)
+				- (FLOAT_t) 0.0106411 * COSF(a3)
+				);
+			return w;
+		}
+	case BOARD_WTYPE_NUTTALL:
+		// Nuttall window, continuous first derivative
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.355768
+				- (FLOAT_t) 0.487396 * COSF(a)
+				+ (FLOAT_t) 0.144232 * COSF(a2)
+				- (FLOAT_t) 0.012604 * COSF(a3)
+				);
+			return w;
+		}
+	case BOARD_WTYPE_HAMMING:
+		// Hamming
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.54
+				- (FLOAT_t) 0.46 * COSF(a)
+				);
+			return w;
+		}
+	case BOARD_WTYPE_HANN:
+		// Hann
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.5
+				- (FLOAT_t) 0.5 * COSF(a)
+				);
+			return w;
+		}
+	case BOARD_WTYPE_RECTANGULAR:
+		// rectangular
+		{
+			const FLOAT_t w = 1;
+			return w;
+		}
+	}
+}
+
+
+// подготовка буфера с оконной функцией
+void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum, int wtype)
+{
+#if 0
+	// в этом случае внеполосные излучения
+	switch (wtype)
+	{
+	case BOARD_WTYPE_NUTTALL:
+		ARM_MORPH(arm_nuttall4b)(dWindow, iCoefNum);
+		break;
+	case BOARD_WTYPE_BLACKMAN_HARRIS_7TERM:
+		ARM_MORPH(arm_blackman_harris_92db)(dWindow, iCoefNum);
+		break;
+	default:
+		ASSERT(0);
+		break;
+	}
+#else
+	int iCnt;
+
+    ASSERT((iCoefNum % 2) == 1);
+    for (iCnt = 0; iCnt < iCoefNum; iCnt ++)
+	{
+		dWindow [iCnt] = fir_design_window(iCnt, iCoefNum, wtype);
+	}
+#endif
+}
+
+static void ARM_MORPH(localwindow_hamming)(FLOAT_t * w, int nTaps)
+{
+	fir_design_windowbuff(w, nTaps, BOARD_WTYPE_HAMMING);
+}
+
+static void ARM_MORPH(localwindow_harris)(FLOAT_t * w, int nTaps)
+{
+	fir_design_windowbuff(w, nTaps, BOARD_WTYPE_BLACKMAN_HARRIS_7TERM);
+}
 //#include "isb.h"
 
 
@@ -6216,7 +6399,8 @@ void dsp_isb_rx_init(isb_demodulator_t * const self)
 //    ARM_MORPH(arm_hanning)(window_weights, ISB_FIR_TAPS);
 //    dsp_isb_sub_generate_kaiser(window_weights, ISB_FIR_TAPS, 9.0);
 //    dsp_isb_sub_generate_blackman_harris(window_weights, ISB_FIR_TAPS);
-    ARM_MORPH(arm_blackman_harris_92db)(window_weights, ISB_FIR_TAPS);
+    //ARM_MORPH(arm_blackman_harris_92db)(window_weights, ISB_FIR_TAPS);
+    ARM_MORPH(localwindow_harris)(window_weights, ISB_FIR_TAPS);
 
     /* 3. GENERATE THE CRrisp 90-DEGREE HILBERT PHASE SHIFTER IMPULSE RESPONSE */
     for (int32_t n = 0; n < ISB_FIR_TAPS; n++)
@@ -7270,11 +7454,17 @@ void hftrx_init(void)
 	//PRINTF("DMABUFFSIZE32RX=%d, DMABUFFSTEP32RX=%d\n", (int) DMABUFFSIZE32RX, (int) DMABUFFSTEP32RX);
 
 	//fft_lookup = spx_fft_init(2*SPEEXNN);
-
-    ARM_MORPH(arm_hamming)(tx_mike_window_buf, Ntap_tx_MIKE);
+#if 0
+    //ARM_MORPH(arm_hamming)(tx_mike_window_buf, Ntap_tx_MIKE);
     ARM_MORPH(arm_blackman_harris_92db)(tx_mike_window_buf, Ntap_tx_MIKE);
     ARM_MORPH(arm_blackman_harris_92db)(rx_audio_window_buf, Ntap_rx_AUDIO);
     ARM_MORPH(arm_blackman_harris_92db)(wiver_window_buf, Ntap_trxi_IQ);
+#else
+    //ARM_MORPH(localwindow_hamming)(tx_mike_window_buf, Ntap_tx_MIKE);
+    ARM_MORPH(localwindow_harris)(tx_mike_window_buf, Ntap_tx_MIKE);
+    ARM_MORPH(localwindow_harris)(rx_audio_window_buf, Ntap_rx_AUDIO);
+    ARM_MORPH(localwindow_harris)(wiver_window_buf, Ntap_trxi_IQ);
+#endif
 
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);	// SAM detector support
 	precalc_agclogof10 = LOGF(10);	// AGC support

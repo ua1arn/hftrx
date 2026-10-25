@@ -41,8 +41,10 @@ enum
 	BOARD_WTYPE_count
 };
 
-#define BOARD_WTYPE_FILTERS BOARD_WTYPE_BLACKMAN_HARRIS_4TERM
-#define BOARD_WTYPE_SPECTRUM BOARD_WTYPE_NUTTALL	// такой же тип окна испольуется по умолчанию в HDSDR
+void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum, int wtype);	// подготовка буфера с оконной функцией
+
+//#define BOARD_WTYPE_FILTERS BOARD_WTYPE_BLACKMAN_HARRIS_4TERM
+//#define BOARD_WTYPE_SPECTRUM BOARD_WTYPE_NUTTALL	// такой же тип окна испольуется по умолчанию в HDSDR
 
 // Ограничение алгоритма генерации параметров фильтра - нечётное значение Ntap.
 // Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap

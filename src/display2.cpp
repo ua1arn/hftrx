@@ -5794,7 +5794,8 @@ display2_af_spectre15_init(
 	afsp->rawfillix = 0;
 
 	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_rfft_fast_init)(& afsp->rfft_instance, WITHFFTSIZEAF));
-	ARM_MORPH(arm_nuttall4b)(gvars.afspec_wndfn, WITHFFTSIZEAF);	/* оконная функция для показа звукового спектра */
+	//ARM_MORPH(arm_nuttall4b)(gvars.afspec_wndfn, WITHFFTSIZEAF);	/* оконная функция для показа звукового спектра */
+	fir_design_windowbuff(gvars.afspec_wndfn, WITHFFTSIZEAF, BOARD_WTYPE_NUTTALL);
 
 	subscribefloat(& speexoutfloat, & afsp->afspectreregister, & gvars.afsp, afsp_save_sample);	// выход speex и фильтра
 }
@@ -7030,7 +7031,8 @@ display2_wfl_init(
 {
 	static subscribeint32_t rtsregister;
 
-    ARM_MORPH(arm_nuttall4b)(gvars.ifspec_wndfn, WITHFFTSIZEWIDE);	/* оконная функция для показа радиоспектра */
+    //ARM_MORPH(arm_nuttall4b)(gvars.ifspec_wndfn, WITHFFTSIZEWIDE);	/* оконная функция для показа радиоспектра */
+	fir_design_windowbuff(gvars.ifspec_wndfn, WITHFFTSIZEWIDE, BOARD_WTYPE_NUTTALL);
 
 	//printsigwnd();	// печать оконных коэффициентов для формирования таблицы во FLASH
 	//toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
