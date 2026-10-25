@@ -2469,7 +2469,7 @@ static int_fast16_t audio_validatebw6(int_fast16_t n)
 	return (n == INT16_MAX || n < bw6limit) ? n : INT16_MAX;
 }
 
-// Установка параметров тракта приёмника
+// Установка параметров тракта приёмника/или передатчика - с общей частью тракта
 static void audio_setup_wiver(const uint_fast8_t pathi, uint_fast8_t tx)
 {
     //hftxpath_t * const txpath = & tx_path;
@@ -7551,7 +7551,6 @@ void
 prog_fltlreg(void)
 {
 	const uint_fast8_t tx = isdspmodetx(glob_dspmodes [0]);
-	const uint_fast8_t pathn = NTRX;//tx ? 1 : NTRX;	// при передаче только тракт с идексом 0
 	// Обновление расчитываемых параметров
 	//const uint_fast8_t spf = ! gwprof;	// индекс профиля для подготовки параметров DSP
 
@@ -7564,7 +7563,7 @@ prog_fltlreg(void)
 	else
 	{
 		uint_fast8_t pathi;
-		for (pathi = 0; pathi < pathn; ++ pathi)
+		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
 			audio_setup_wiver(pathi, 0);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
 			audio_setup_lo6_rx(pathi);

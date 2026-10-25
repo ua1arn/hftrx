@@ -12849,7 +12849,7 @@ static void speex_update_rx(void)
 
 void filters_update_rx(uint_fast8_t pathi)
 {
-	const uint_fast8_t amode = getamode(pathi);
+	//const uint_fast8_t amode = getamode(pathi);
 	rxaproc_t * const nrp = & rxaprocs [pathi];
 
 	// Получение параметров эквалайзера
