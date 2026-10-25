@@ -13740,7 +13740,7 @@ updateboard_noui(
 
 			board_set_lo6(freqlo6);	/* иначе, в случае WITHIF4DSP - управление знаком частоты */
 			board_set_fullbw6(getif6bw(amode, gtx, wide));	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
-			board_set_dspmode(Xpamodetempl->dspmode [gtx]);
+			board_set_dspmode(Xpamodetempl->dspmode [gtx], mdt [txmode].dspmode [1]);
 			#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 				board_set_dactest(param_val(& xgdactest));		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 				board_set_dacstraight(gdacstraight);	/* Требуется формирование кода для ЦАП в режиме беззнакового кода */

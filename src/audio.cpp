@@ -99,6 +99,7 @@ static int_fast16_t 	glob_agcfence10 = - 73 * 10;
 static uint_fast8_t		glob_skipfilteraf;
 
 static uint_fast8_t 	glob_dspmodes [2] = { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE, };
+static uint_fast8_t 	glob_dsptxmode = DSPCTL_MODE_IDLE;
 
 static uint_fast8_t		glob_agcrate [2] = { 20, 20 }; //10	// 10 дБ изменение входного на 1 дБ выходного
 static uint_fast8_t 	glob_agc_scale [2] = { 100, 100 }; // scale в процентах - Для эксперементов по улучшению приема АМ
@@ -7557,7 +7558,7 @@ prog_fltlreg(void)
 	// Обновление расчитываемых параметров
 	//const uint_fast8_t spf = ! gwprof;	// индекс профиля для подготовки параметров DSP
 
-	audio_setup_txfir(glob_dspmodes [0]);
+	audio_setup_txfir(glob_dsptxmode);
 	if (tx)
 	{
 		audio_setup_wiver(0, 1);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
@@ -8279,14 +8280,16 @@ board_set_afmute(uint_fast8_t n)
 
 // Параметр для установки режима работы приёмника A/передатчика A
 void
-board_set_dspmode(uint_fast8_t v)
+board_set_dspmode(uint_fast8_t v, uint_fast8_t txmode)
 {
-	if (glob_dspmodes [target_pathi] != v)
+	if (glob_dspmodes [target_pathi] != v || glob_dsptxmode != txmode)
 	{
 		glob_dspmodes [target_pathi] = v;
+		glob_dsptxmode = txmode;
 		board_flt1regchanged();		// параметры этой функции используются в audio_setup_lo6();
 	}
 }
+
 
 void board_set_lo6(int_fast32_t f)
 {
