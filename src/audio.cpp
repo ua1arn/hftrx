@@ -391,9 +391,8 @@ static FLOAT_t txlevelfenceNFM = (FLOAT_t) 1 / 2;
 static FLOAT_t txlevelfenceBPSK = (FLOAT_t) 1 / 2;
 static FLOAT_t txlevelfenceCW = (FLOAT_t) 1 / 2;
 
-static uint_fast8_t gwprof = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
-
-static uint_fast8_t globDSPMode [NPROF] [2] = { { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE }, { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE } };
+//static uint_fast8_t gwprof = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
+//static uint_fast8_t globDSPMode [NPROF] [2] = { { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE }, { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE } };
 
 /* --- Struct Defs for Single EQ Band --- */
 typedef struct {
@@ -3669,10 +3668,10 @@ static void audio_setup_wiver(const uint_fast8_t pathi, uint_fast8_t tx)
 }
 
 // Установка параметров тракта передатчика
-static void audio_setup_mike(const uint_fast8_t spf)
+static void audio_setup_txfir(uint_fast8_t dspmode)
 {
 	const FLOAT_t fs = ARMI2SRATE;
-	switch (glob_dspmodes [0])	// 0 - для передатчика
+	switch (dspmode)	// 0 - для передатчика
 	{
 	case DSPCTL_MODE_TX_BPSK:
 		// 15-ти герцовый ФНЧ перед модулятором - из "канонического" описания модуляции в статье в QEX July/Aug 1999 7 - x9907003.pdf
@@ -3687,7 +3686,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
-		PRINTF(PSTR("1 audio_setup_mike: construct bandpass %u..%u (slope=%d)\n"), (unsigned) glob_aflowcuttx, (unsigned) glob_afhighcuttx, (int) glob_afresponcetx);
+		PRINTF(PSTR("1 audio_setup_txfir: construct bandpass %u..%u (slope=%d)\n"), (unsigned) glob_aflowcuttx, (unsigned) glob_afhighcuttx, (int) glob_afresponcetx);
 #if 0
 		fir_design_bandpass(tx_firEQcoeff, Ntap_tx_MIKE, fir_design_normfreq(glob_aflowcuttx), fir_design_normfreq(glob_afhighcuttx));
 		ARM_MORPH(arm_mult)(tx_firEQcoeff, tx_mike_window_buf, tx_firEQcoeff, Ntap_tx_MIKE);
@@ -3699,16 +3698,17 @@ static void audio_setup_mike(const uint_fast8_t spf)
 			calculate_sloped_bpf(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
 		break;
 #endif
-	PRINTF(PSTR("2 audio_setup_mike: construct bandpass %u..%u (slope=%d)\n"), (unsigned) glob_aflowcuttx, (unsigned) glob_afhighcuttx, (int) glob_afresponcetx);
+
 	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_RX_RTTY:
 	case DSPCTL_MODE_TX_RTTY:
+		PRINTF(PSTR("2 audio_setup_txfir: construct bandpass %u..%u (slope=%d)\n"), (unsigned) glob_aflowcuttx, (unsigned) glob_afhighcuttx, (int) glob_afresponcetx);
 		calculate_sloped_bpf(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
 	break;
 
 	// в режиме приема или в режимах передачи без микрофона - ничего не делаем
 	default:
-		PRINTF(PSTR("3 audio_setup_mike: construct bypass\n"));
+		PRINTF(PSTR("3 audio_setup_txfir: construct bypass\n"));
 		calculate_passthrough_fir(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE);
 		break;
 	}
@@ -3717,10 +3717,11 @@ static void audio_setup_mike(const uint_fast8_t spf)
 
 // установить частоты среза тракта ПЧ
 // Вызывается из пользовательской программы, но может быть вызвана и до инициализации DSP - вызывается из updateboard.
-static void audio_setup_lo6_rx(const uint_fast8_t spf, uint_fast8_t pathi)
+static void audio_setup_lo6_rx(uint_fast8_t pathi)
 {
     hfrxpath_t * const path = & rx_paths[pathi];
-    globDSPMode  [spf] [pathi] = glob_dspmodes [pathi];
+    //globDSPMode  [spf] [pathi] = glob_dspmodes [pathi];
+    const uint_fast8_t dspmode = glob_dspmodes [pathi];
 
 	const int lo6 = - glob_lo6 [pathi];
 	PRINTF("audio_setup_lo6_rx: pathi=%u, lo6=%d\n", (unsigned) pathi, lo6);
@@ -3735,15 +3736,16 @@ static void audio_setup_lo6_rx(const uint_fast8_t spf, uint_fast8_t pathi)
 #elif WITHDSPLOCALTXFIR
 	const unsigned rxfirdelay = 2 * Ntap_rx_SSB_IQ / 2;
 #endif
-	nco_setlo6rx_ftw(path, lo6_ftw, globDSPMode  [spf] [pathi], rxfirdelay);
+	nco_setlo6rx_ftw(path, lo6_ftw, dspmode, rxfirdelay);
 }
 
 // установить частоты среза тракта ПЧ
 // Вызывается из пользовательской программы, но может быть вызвана и до инициализации DSP - вызывается из updateboard.
-static void audio_setup_lo6_tx(const uint_fast8_t spf)
+static void audio_setup_lo6_tx(void)
 {
     hftxpath_t * const txpath = & tx_path;
-    globDSPMode [spf] [0] = glob_dspmodes [0];
+    //globDSPMode  [spf] [pathi] = glob_dspmodes [pathi];
+    const uint_fast8_t dspmode = glob_dspmodes [0];
 
 	const int lo6 = - glob_lo6 [0];
 	PRINTF("audio_setup_lo6_tx: lo6=%d\n", lo6);
@@ -3753,7 +3755,7 @@ static void audio_setup_lo6_tx(const uint_fast8_t spf)
 #elif WITHDSPLOCALTXFIR
 	const unsigned txfirdelay = 2 * Ntap_tx_SSB_IQ / 2;
 #endif
-	nco_setlo6tx_ftw(txpath, lo6_ftw, globDSPMode  [spf] [0], txfirdelay);
+	nco_setlo6tx_ftw(txpath, lo6_ftw, dspmode, txfirdelay);
 }
 
 // calculate full array of coefficients
@@ -5620,7 +5622,7 @@ static FLOAT_t baseband_demodulator(
 
 int isISBMode(uint_fast8_t pathi)
 {
-	return globDSPMode [gwprof] [pathi] == DSPCTL_MODE_RX_ISB;
+	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_ISB;
 }
 
 // ПРИЁМ ISB
@@ -5893,9 +5895,9 @@ void dsp_extbuffer32wfm(const int32_t * buff)
 void dsp_fillphones(unsigned nsamples)
 {
 	enum { L = 0, R = 1 };
-	ASSERT(gwprof < NPROF);
+	//ASSERT(gwprof < NPROF);
     hftxpath_t * const txpath = & tx_path;
-	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
+	const uint_fast8_t dspmodeA = glob_dspmodes [0];
 	const uint_fast8_t tx = isdspmodetx(dspmodeA);
 	unsigned i;
 	while (nsamples --)
@@ -6075,12 +6077,12 @@ void inject_testsignals(IFADCvalue_t * const dbuff)
 void dsp_processtx(unsigned nsamples0)
 {
 	const uint_fast8_t pathi = 0;
-    hfrxpath_t * const path = & rx_paths [pathi];
+    //hfrxpath_t * const path = & rx_paths [pathi];
     hftxpath_t * const txpath = & tx_path;
 	ASSERT(tx_MIKE_blockSize == nsamples0);
 	unsigned i;
 
-	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [pathi];
+	const uint_fast8_t dspmodeA = glob_dspmodes [pathi];
 	/* обработка передачи */
 	FLOAT_t txfirbuff [tx_MIKE_blockSize];
 	FLOAT32P_t monitorbuff [tx_MIKE_blockSize];
@@ -6479,9 +6481,9 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 {
     hfrxpath_t * const path = & rx_paths [pathi];
 
-	ASSERT(gwprof < NPROF);
-	const uint_fast8_t tx = isdspmodetx(globDSPMode [gwprof] [0]);
-	const uint_fast8_t dspmode = tx ? DSPCTL_MODE_IDLE : globDSPMode [gwprof] [pathi];
+	//ASSERT(gwprof < NPROF);
+	const uint_fast8_t tx = isdspmodetx(glob_dspmodes [0]);
+	const uint_fast8_t dspmode = tx ? DSPCTL_MODE_IDLE : glob_dspmodes [pathi];
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
 	const int rxgate = ! tx * getRxGate() * switchmode_delayrx(path);
 
@@ -7176,7 +7178,7 @@ void modemsendchar(char c)
 	hftxpath_t * const txpath = & tx_path;
 	const int uc = (unsigned char) toupper((unsigned char) c);
 	display_vtty_putchar(c);
-	switch (globDSPMode [gwprof] [0])
+	switch (glob_dspmodes [0])
 	{
 	case DSPCTL_MODE_TX_RTTY:
 		dsp_rtty_tx_push_char(& txpath->rtty_tx, uc);
@@ -7495,18 +7497,17 @@ void hftrx_init(void)
 	gwagcproftx = tprofile;
 
 	{
-		const uint_fast8_t spf = ! gwprof;	// индекс профиля для подготовки параметров DSP
+		//const uint_fast8_t spf = ! gwprof;	// индекс профиля для подготовки параметров DSP
 		uint_fast8_t pathi;
 
-		audio_setup_mike(spf);
 
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
 			// второй фильтр грузится только в режиме приёма (обеспечиватся внешним циклом).
 			audio_setup_wiver(pathi, 0);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
-			audio_setup_lo6_rx(spf, pathi);
+			audio_setup_lo6_rx(pathi);
 		}
-		gwprof = spf;
+		//gwprof = spf;
 	}
 
 	{
@@ -7551,16 +7552,16 @@ prog_dsplreg(void)
 void 
 prog_fltlreg(void)
 {
-	const uint_fast8_t tx = isdspmodetx(globDSPMode [gwprof] [0]);
+	const uint_fast8_t tx = isdspmodetx(glob_dspmodes [0]);
 	const uint_fast8_t pathn = NTRX;//tx ? 1 : NTRX;	// при передаче только тракт с идексом 0
 	// Обновление расчитываемых параметров
-	const uint_fast8_t spf = ! gwprof;	// индекс профиля для подготовки параметров DSP
+	//const uint_fast8_t spf = ! gwprof;	// индекс профиля для подготовки параметров DSP
 
-	audio_setup_mike(spf);
+	audio_setup_txfir(glob_dspmodes [0]);
 	if (tx)
 	{
 		audio_setup_wiver(0, 1);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
-		audio_setup_lo6_tx(spf);
+		audio_setup_lo6_tx();
 	}
 	else
 	{
@@ -7568,11 +7569,11 @@ prog_fltlreg(void)
 		for (pathi = 0; pathi < pathn; ++ pathi)
 		{
 			audio_setup_wiver(pathi, 0);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
-			audio_setup_lo6_rx(spf, pathi);
+			audio_setup_lo6_rx(pathi);
 			filters_update_rx(pathi);
 		}
 	}
-	gwprof = spf;
+	//gwprof = spf;
 
 	modem_update();
 }
