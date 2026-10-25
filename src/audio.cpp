@@ -2470,7 +2470,7 @@ static int_fast16_t audio_validatebw6(int_fast16_t n)
 }
 
 // Установка параметров тракта приёмника
-static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, uint_fast8_t tx)
+static void audio_setup_wiver(const uint_fast8_t pathi, uint_fast8_t tx)
 {
     hftxpath_t * const txpath = & tx_path;
     hfrxpath_t * const path = & rx_paths[pathi];
@@ -3717,44 +3717,43 @@ static void audio_setup_mike(const uint_fast8_t spf)
 
 // установить частоты среза тракта ПЧ
 // Вызывается из пользовательской программы, но может быть вызвана и до инициализации DSP - вызывается из updateboard.
-static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi, uint_fast8_t tx)
+static void audio_setup_lo6_rx(const uint_fast8_t spf, uint_fast8_t pathi)
 {
     hfrxpath_t * const path = & rx_paths[pathi];
-    hftxpath_t * const txpath = & tx_path;
     globDSPMode  [spf] [pathi] = glob_dspmodes [pathi];
 
-	// второй фильтр грузится только в режиме приёма (обеспечиватся внешним циклом).
-	audio_setup_wiver(spf, pathi, tx);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
-
-	{
-		const ncoftw_t lo6_ftw = FTWAF(- glob_lo6 [pathi]);
-	#if WITHDSPEXTRXFIR
-		const unsigned txfirdelay = 2 * Ntap_trxi_IQ / 2;
-	#elif WITHDSPLOCALTXFIR
-		const unsigned txfirdelay = 2 * Ntap_tx_SSB_IQ / 2;
-	#endif
-	#if WITHDSPEXTRXFIR
-		const unsigned rxfirdelay = 2 * Ntap_trxi_IQ / 2;
-	#elif WITHDSPLOCALTXFIR
-		const unsigned rxfirdelay = 2 * Ntap_rx_SSB_IQ / 2;
-	#endif
-		nco_setlo6rx_ftw(path, lo6_ftw, globDSPMode  [spf] [pathi], rxfirdelay);
-		nco_setlo6tx_ftw(txpath, lo6_ftw, globDSPMode  [spf] [0], txfirdelay);
-	}
-
-	debug_cleardtmax();		// сброс максимального значения в тесте производительности DSP
-
-#if 0
-	PRINTF("audio_update tx=%d [pathi=%d]: dsp_mode=%d, bw6=%d, lo6=%d, rx=%d..%d, tx=%d..%d\n",
-		(int) isdspmodetx(glob_dspmodes [pathi]),
-		(int) pathi, 
-		(int) glob_dspmodes [pathi], 
-		(int) glob_fullbw6 [pathi], 
-		(int) glob_lo6 [pathi], 
-		glob_aflowcutrx [pathi], glob_afhighcutrx [pathi], 
-		glob_aflowcuttx, glob_afhighcuttx
-		);
+	const int lo6 = - glob_lo6 [pathi];
+	PRINTF("audio_setup_lo6_rx: pathi=%u, lo6=%d\n", (unsigned) pathi, lo6);
+	const ncoftw_t lo6_ftw = FTWAF(lo6);
+#if WITHDSPEXTRXFIR
+	const unsigned txfirdelay = 2 * Ntap_trxi_IQ / 2;
+#elif WITHDSPLOCALTXFIR
+	const unsigned txfirdelay = 2 * Ntap_tx_SSB_IQ / 2;
 #endif
+#if WITHDSPEXTRXFIR
+	const unsigned rxfirdelay = 2 * Ntap_trxi_IQ / 2;
+#elif WITHDSPLOCALTXFIR
+	const unsigned rxfirdelay = 2 * Ntap_rx_SSB_IQ / 2;
+#endif
+	nco_setlo6rx_ftw(path, lo6_ftw, globDSPMode  [spf] [pathi], rxfirdelay);
+}
+
+// установить частоты среза тракта ПЧ
+// Вызывается из пользовательской программы, но может быть вызвана и до инициализации DSP - вызывается из updateboard.
+static void audio_setup_lo6_tx(const uint_fast8_t spf)
+{
+    hftxpath_t * const txpath = & tx_path;
+    globDSPMode [spf] [0] = glob_dspmodes [0];
+
+	const int lo6 = - glob_lo6 [0];
+	PRINTF("audio_setup_lo6_tx: lo6=%d\n", lo6);
+	const ncoftw_t lo6_ftw = FTWAF(lo6);
+#if WITHDSPEXTRXFIR
+	const unsigned txfirdelay = 2 * Ntap_trxi_IQ / 2;
+#elif WITHDSPLOCALTXFIR
+	const unsigned txfirdelay = 2 * Ntap_tx_SSB_IQ / 2;
+#endif
+	nco_setlo6tx_ftw(txpath, lo6_ftw, globDSPMode  [spf] [0], txfirdelay);
 }
 
 // calculate full array of coefficients
@@ -7500,8 +7499,13 @@ void hftrx_init(void)
 		uint_fast8_t pathi;
 
 		audio_setup_mike(spf);
+
 		for (pathi = 0; pathi < NTRX; ++ pathi)
-			audio_update(spf, pathi, 0);
+		{
+			// второй фильтр грузится только в режиме приёма (обеспечиватся внешним циклом).
+			audio_setup_wiver(pathi, 0);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
+			audio_setup_lo6_rx(spf, pathi);
+		}
 		gwprof = spf;
 	}
 
@@ -7555,14 +7559,16 @@ prog_fltlreg(void)
 	audio_setup_mike(spf);
 	if (tx)
 	{
-		audio_update(spf, 0, 1);
+		audio_setup_wiver(0, 1);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
+		audio_setup_lo6_tx(spf);
 	}
 	else
 	{
 		uint_fast8_t pathi;
 		for (pathi = 0; pathi < pathn; ++ pathi)
 		{
-			audio_update(spf, pathi, tx);
+			audio_setup_wiver(pathi, 0);	/* Установка параметров ФНЧ в тракте обработки сигнала алгоритм Уивера */
+			audio_setup_lo6_rx(spf, pathi);
 			filters_update_rx(pathi);
 		}
 	}
@@ -7871,7 +7877,7 @@ board_set_notch_freq(uint_fast16_t n)	/* частота NOTCH фильтра */
 	if (glob_notch_freq != n)
 	{
 		glob_notch_freq = n;
-		board_flt1regchanged();		// параметры этой функции используются в audio_update();
+		board_flt1regchanged();		// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
@@ -7882,7 +7888,7 @@ board_set_notch_width(uint_fast16_t n)	/* полоса NOTCH фильтра */
 	if (glob_notch_width != n)
 	{
 		glob_notch_width = n;
-		board_flt1regchanged();		// параметры этой функции используются в audio_update();
+		board_flt1regchanged();		// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
@@ -7895,7 +7901,7 @@ board_set_notch_mode(uint_fast8_t n)	/* включение NOTCH фильтра 
 	if (glob_notch_mode != n)
 	{
 		glob_notch_mode = n;
-		board_flt1regchanged();		// параметры этой функции используются в audio_update();
+		board_flt1regchanged();		// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
@@ -8228,7 +8234,7 @@ board_set_mikeequal(uint_fast8_t n)
 	if (glob_mikeequal != v)
 	{
 		glob_mikeequal = v;
-		board_flt1regchanged();		// параметры этой функции используются в audio_update();
+		board_flt1regchanged();		// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 #if WITHINTEGRATEDDSP
@@ -8253,7 +8259,7 @@ void board_set_mikeequalparams(const uint_fast8_t * p, unsigned nbands)
 	}
 	if (changed)
 	{
-		board_flt1regchanged();		// параметры этой функции используются в audio_update();
+		board_flt1regchanged();		// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
@@ -8266,7 +8272,7 @@ board_set_afmute(uint_fast8_t n)
 	{
 		glob_afmute = v;
 		board_codec1regchanged();
-		board_flt1regchanged();		// параметры этой функции используются в audio_update();
+		board_flt1regchanged();		// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
@@ -8277,7 +8283,7 @@ board_set_dspmode(uint_fast8_t v)
 	if (glob_dspmodes [target_pathi] != v)
 	{
 		glob_dspmodes [target_pathi] = v;
-		board_flt1regchanged();		// параметры этой функции используются в audio_update();
+		board_flt1regchanged();		// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
@@ -8297,7 +8303,7 @@ void board_set_fullbw6(int_fast16_t n)
 	if (glob_fullbw6 [target_pathi] != n)
 	{
 		glob_fullbw6 [target_pathi] = n;
-		board_flt1regchanged();	// параметры этой функции используются в audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
@@ -8306,7 +8312,7 @@ void board_set_flttransition(uint_fast16_t n)	/* Ширина переходно
 	if (glob_flttransition [target_pathi] != n)
 	{
 		glob_flttransition [target_pathi] = n;
-		board_flt1regchanged();	// параметры этой функции используются в audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
@@ -8316,7 +8322,7 @@ board_set_aflowcutrx(int_fast16_t n)	/* Нижняя частота среза �
 	if (glob_aflowcutrx [target_pathi] != n)
 	{
 		glob_aflowcutrx [target_pathi] = n;
-		board_flt1regchanged();	// параметры этой функции используются в audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
@@ -8326,7 +8332,7 @@ board_set_afhighcutrx(int_fast16_t n)	/* Верхняя частота срез�
 	if (glob_afhighcutrx [target_pathi] != n)
 	{
 		glob_afhighcutrx [target_pathi] = n;
-		board_flt1regchanged();	// параметры этой функции используются в audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
@@ -8337,7 +8343,7 @@ void board_set_afwide(uint_fast8_t n)
 	if (glob_afwiderx [target_pathi] != n)
 	{
 		glob_afwiderx [target_pathi] = n;
-		board_flt1regchanged();	// параметры этой функции используются в audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
@@ -8347,7 +8353,7 @@ board_set_aflowcuttx(int_fast16_t n)	/* Нижняя частота среза �
 	if (glob_aflowcuttx != n)
 	{
 		glob_aflowcuttx = n;
-		board_flt1regchanged();	// параметры этой функции используются в audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
@@ -8357,7 +8363,7 @@ board_set_afhighcuttx(int_fast16_t n)	/* Верхняя частота срез�
 	if (glob_afhighcuttx != n)
 	{
 		glob_afhighcuttx = n;
-		board_flt1regchanged();	// параметры этой функции используются в audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
@@ -8378,7 +8384,7 @@ board_set_gainnfmrx(int_fast16_t n)	/* дополнительное усилен
 	if (glob_gainnfmrx [target_pathi] != n)
 	{
 		glob_gainnfmrx [target_pathi] = n;
-		board_flt1regchanged();	// параметры этой функции используются в audio_update();
+		board_flt1regchanged();	// параметры этой функции используются в audio_setup_lo6();
 	}
 }
 
