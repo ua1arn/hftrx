@@ -1402,14 +1402,13 @@ static void fir_design_lowpass(FLOAT_t *dCoeff, int iCoefNum, int iCoefNumLimite
 }
 
 // Без наложения оконной функции
-static void fir_design_bandpass(FLOAT_t * dCoeff, int iCoefNum, int iCoefNumLimited, FLOAT_t fCutLow, FLOAT_t fCutHigh)
+static void fir_design_bandpass(FLOAT_t * dCoeff, int iCoefNum,FLOAT_t fCutLow, FLOAT_t fCutHigh)
 {
 	const int iHalfLen = (iCoefNum - 1) / 2;
-	const int iHalfLenLimited = (iCoefNumLimited - 1) / 2;
 	int iCnt;
 
 	dCoeff [iHalfLen] = fCutHigh - fCutLow;
-	for (iCnt = 1; iCnt <= iHalfLenLimited; iCnt ++)
+	for (iCnt = 1; iCnt <= iHalfLen; iCnt ++)
 	{
 		const FLOAT_t a = (FLOAT_t) M_PI_2 * iCnt;	// M_PI_2 - constant pi/2
 		const FLOAT_t k = SINF((fCutHigh - fCutLow) * a) *
@@ -2491,7 +2490,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, 
 //	const FLOAT_t txfiltergain = 2;	// Для IQ фильтра можно так - для компенсации 0.5 усиления из-за перемножителя перед ним.
 //#endif /* WITHDSPEXTDDC */
 
-//	PRINTF(PSTR("audio_setup_wiver: construct bypass glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
+	PRINTF(PSTR("audio_setup_wiver: construct lowpass pathi=%u, fullbw6=%u\n"), (unsigned) pathi, (unsigned) fullbw6);
 	if (fullbw6 == INT16_MAX || dspmode == DSPCTL_MODE_TX_NFM)
 	{
 		const FLOAT_t fbypascut = fs * 4 / 10;
@@ -3688,8 +3687,9 @@ static void audio_setup_mike(const uint_fast8_t spf)
 	case DSPCTL_MODE_TX_SSB:
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_FREEDV:
+		PRINTF(PSTR("1 audio_setup_mike: construct bandpass %u..%u (slope=%d)\n"), (unsigned) glob_aflowcuttx, (unsigned) glob_afhighcuttx, (int) glob_afresponcetx);
 #if 0
-		fir_design_bandpass(tx_firEQcoeff, Ntap_tx_MIKE, Ntap_tx_MIKE, fir_design_normfreq(glob_aflowcuttx), fir_design_normfreq(glob_afhighcuttx));
+		fir_design_bandpass(tx_firEQcoeff, Ntap_tx_MIKE, fir_design_normfreq(glob_aflowcuttx), fir_design_normfreq(glob_afhighcuttx));
 		ARM_MORPH(arm_mult)(tx_firEQcoeff, tx_mike_window_buf, tx_firEQcoeff, Ntap_tx_MIKE);
 		break;
 #else
@@ -3699,6 +3699,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 			calculate_sloped_bpf(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE, fs, glob_aflowcuttx, glob_afhighcuttx, 1, db2ratio(glob_afresponcetx));
 		break;
 #endif
+	PRINTF(PSTR("2 audio_setup_mike: construct bandpass %u..%u (slope=%d)\n"), (unsigned) glob_aflowcuttx, (unsigned) glob_afhighcuttx, (int) glob_afresponcetx);
 	case DSPCTL_MODE_TX_DIGI:
 	case DSPCTL_MODE_RX_RTTY:
 	case DSPCTL_MODE_TX_RTTY:
@@ -3707,6 +3708,7 @@ static void audio_setup_mike(const uint_fast8_t spf)
 
 	// в режиме приема или в режимах передачи без микрофона - ничего не делаем
 	default:
+		PRINTF(PSTR("3 audio_setup_mike: construct bypass\n"));
 		calculate_passthrough_fir(tx_firEQcoeff, tx_mike_window_buf, Ntap_tx_MIKE);
 		break;
 	}
@@ -3788,7 +3790,7 @@ void dsp_recalceq_coeffs_rx_AUDIO(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoe
 	case DSPCTL_MODE_RX_RTTY:
 	case DSPCTL_MODE_TX_RTTY:
 #if 0
-		fir_design_bandpass(dCoeff, iCoefNum, iCoefNum, fir_design_normfreq(cutfreqlow), fir_design_normfreq(cutfreqhigh));
+		fir_design_bandpass(dCoeff, iCoefNum, fir_design_normfreq(cutfreqlow), fir_design_normfreq(cutfreqhigh));
 		ARM_MORPH(arm_mult)(dCoeff, rx_audio_window_buf, dCoeff, iCoefNum);
 		break;
 #else
@@ -6296,7 +6298,7 @@ void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum, int wtype)
 #else
 	int iCnt;
 
-    ASSERT((iCoefNum % 2) == 1);
+    //ASSERT((iCoefNum % 2) == 1);
     for (iCnt = 0; iCnt < iCoefNum; iCnt ++)
 	{
 		dWindow [iCnt] = fir_design_window(iCnt, iCoefNum, wtype);
@@ -6311,6 +6313,8 @@ static void ARM_MORPH(localwindow_hamming)(FLOAT_t * w, int nTaps)
 
 static void ARM_MORPH(localwindow_harris)(FLOAT_t * w, int nTaps)
 {
+	// BOARD_WTYPE_BLACKMAN_HARRIS
+	// BOARD_WTYPE_BLACKMAN_HARRIS_7TERM
 	fir_design_windowbuff(w, nTaps, BOARD_WTYPE_BLACKMAN_HARRIS_7TERM);
 }
 //#include "isb.h"
