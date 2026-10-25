@@ -1442,8 +1442,6 @@ static FLOAT32P_t get_float4_iflo(void)
 
 //////////////////////////////////////////
 
-static adapter_t localfircoefs;	/* Адаптер для локальных целочисленных FIR */
-
 //////////////////////////////////////////
 
 #if 1
@@ -2477,8 +2475,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, 
     hfrxpath_t * const path = & rx_paths[pathi];
 	const FLOAT_t fs = ARMSAIRATE;
 
-	FLOAT_t dCoeff_trx_IQ [Ntap_trxi_IQ];	// расчитываем тут
-	const adapter_t * const adptfir = & localfircoefs;			/* Адаптер для локальных целочисленных FIR */
+	FLOAT_t dCoeff [Ntap_trxi_IQ];	// расчитываем тут
 
 	const uint_fast8_t dspmode = glob_dspmodes [pathi];
 	const uint_fast16_t fullbw6 = audio_validatebw6(glob_fullbw6 [pathi]);
@@ -2498,14 +2495,14 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, 
 		const FLOAT_t fbypascut = fs * 4 / 10;
 		// make bypass filter
 #if 0
-		fir_design_lowpass(dCoeff_trx_IQ, Ntap_trxi_IQ, Ntap_trxi_IQ, fir_design_normfreq(fbypascut));
-		ARM_MORPH(arm_mult)(dCoeff_trx_IQ, wiver_window_buf, dCoeff_trx_IQ, Ntap_trxi_IQ);
+		fir_design_lowpass(dCoeff, Ntap_trxi_IQ, Ntap_trxi_IQ, fir_design_normfreq(fbypascut));
+		ARM_MORPH(arm_mult)(dCoeff, wiver_window_buf, dCoeff, Ntap_trxi_IQ);
 #else
-		//calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
+		//calculate_passthrough_fir(dCoeff, wiver_window_buf, Ntap_trxi_IQ);
 		if (tx)
-			calculate_duc_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, fbypascut);
+			calculate_duc_lpf(dCoeff, wiver_window_buf, Ntap_trxi_IQ, fs, fbypascut);
 		else
-			calculate_variable_slope_ddc_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, fbypascut, 0);
+			calculate_variable_slope_ddc_lpf(dCoeff, wiver_window_buf, Ntap_trxi_IQ, fs, fbypascut, 0);
 #endif
 	#if WITHDSPLOCALRXFIR
 		if (isdspmoderx(dspmode))
@@ -2516,7 +2513,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, 
 		}
 		#if WITHDSPEXTDDC
 			// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
-			calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
+			calculate_passthrough_fir(dCoeff, wiver_window_buf, Ntap_trxi_IQ);
 		#endif /* WITHDSPEXTDDC */
 	#endif /* WITHDSPLOCALRXFIR */
 	#if WITHDSPLOCALTXFIR
@@ -2528,7 +2525,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, 
 		}
 		#if WITHDSPEXTDDC
 			// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
-			calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
+			calculate_passthrough_fir(dCoeff, wiver_window_buf, Ntap_trxi_IQ);
 		#endif /* WITHDSPEXTDDC */
 	#endif /* WITHDSPLOCALTXFIR */
 	}
@@ -2536,13 +2533,13 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, 
 	{
 		const int cutfreq = fullbw6 / 2;
 #if 0
-		fir_design_lowpass(dCoeff_trx_IQ, Ntap_trxi_IQ, Ntap_trxi_IQ, fir_design_normfreq(cutfreq));
-		ARM_MORPH(arm_mult)(dCoeff_trx_IQ, wiver_window_buf, dCoeff_trx_IQ, Ntap_trxi_IQ);
+		fir_design_lowpass(dCoeff, Ntap_trxi_IQ, Ntap_trxi_IQ, fir_design_normfreq(cutfreq));
+		ARM_MORPH(arm_mult)(dCoeff, wiver_window_buf, dCoeff, Ntap_trxi_IQ);
 #else
 		if (tx)
-			calculate_duc_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq);
+			calculate_duc_lpf(dCoeff, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq);
 		else
-			calculate_variable_slope_ddc_lpf(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq, transition);
+			calculate_variable_slope_ddc_lpf(dCoeff, wiver_window_buf, Ntap_trxi_IQ, fs, cutfreq, transition);
 #endif
 
 	//	PRINTF(PSTR("audio_setup_wiver: construct filter glob_fullbw6[%u]=%u\n"), (unsigned) pathi, (unsigned) glob_fullbw6 [pathi]);
@@ -2556,7 +2553,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, 
 		}
 		#if WITHDSPEXTDDC
 			// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
-			calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
+			calculate_passthrough_fir(dCoeff, wiver_window_buf, Ntap_trxi_IQ);
 		#endif /* WITHDSPEXTDDC */
 	#endif /* WITHDSPLOCALRXFIR */
 	#if WITHDSPLOCALTXFIR
@@ -2568,7 +2565,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, 
 		}
 		#if WITHDSPEXTDDC
 			// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
-			calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
+			calculate_passthrough_fir(dCoeff, wiver_window_buf, Ntap_trxi_IQ);
 		#endif /* WITHDSPEXTDDC */
 	#endif /* WITHDSPLOCALTXFIR */
 
@@ -2577,45 +2574,50 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi, 
 	// Диагностика
 #if 0
 	{
+
+		adapter_t localfircoefs;	/* Адаптер для локальных целочисленных FIR */
 		unsigned i;
 		unsigned n = Ntap_trxi_IQ / 2 + 1;
+		/* Адаптер для локальных целочисленных FIR */
+		adpt_initialize(& localfircoefs, 32, 0, "localfircoefs");
+		const adapter_t * const adptfir = & localfircoefs;			/* Адаптер для локальных целочисленных FIR */
 		for (i = 0; i < n; ++ i)
 		{
-			PRINTF("%-4u: k=%d, kf=%f, conv=%d\n", i, FIRCoef_trxi_IQ [i], dCoeff_trx_IQ [i], adpt_output(adptfir, dCoeff_trx_IQ [i]));
-			ASSERT(FIRCoef_trxi_IQ [i] == adpt_output(adptfir, dCoeff_trx_IQ [i]));
+			PRINTF("%-4u: k=%d, kf=%f, conv=%d\n", i, FIRCoef_trxi_IQ [i], dCoeff [i], adpt_output(adptfir, dCoeff [i]));
+			ASSERT(FIRCoef_trxi_IQ [i] == adpt_output(adptfir, dCoeff [i]));
 		}
-		PRINTF("FIR Filter Ntap=%u gain=%f\n", Ntap_trxi_IQ, testgain_float_DC(dCoeff_trx_IQ, Ntap_trxi_IQ));
+		PRINTF("FIR Filter Ntap=%u gain=%f\n", Ntap_trxi_IQ, testgain_float_DC(dCoeff, Ntap_trxi_IQ));
 	}
 #endif
 
 	// test
-	//calculate_passthrough_fir(dCoeff_trx_IQ, wiver_window_buf, Ntap_trxi_IQ);
+	//calculate_passthrough_fir(dCoeff, wiver_window_buf, Ntap_trxi_IQ);
 
 #if WITHDSPEXTDDC
 	if (1)
 	{
-		// нормировние усидления на постоянном токе к 1
+		// нормировние усиления на постоянном токе к 1
 		FLOAT_t sum;
-		ARM_MORPH(arm_accumulate)(dCoeff_trx_IQ, Ntap_trxi_IQ, & sum);
+		ARM_MORPH(arm_accumulate)(dCoeff, Ntap_trxi_IQ, & sum);
 		sum = FABSF(sum);
-		if (sum > 1)
-			ARM_MORPH(arm_scale)(dCoeff_trx_IQ, 1 / sum, dCoeff_trx_IQ, Ntap_trxi_IQ);
+		if (sum > 1e-6)
+			ARM_MORPH(arm_scale)(dCoeff, 1 / sum, dCoeff, Ntap_trxi_IQ);
 	}
 	if (1)
 	{
 		// Предотвращение выхода значений коэффициентов за пределы [-1..+1]
 		FLOAT_t minv, maxv;
-		ARM_MORPH(arm_min_no_idx)(dCoeff_trx_IQ, Ntap_trxi_IQ, & minv);
-		ARM_MORPH(arm_max_no_idx)(dCoeff_trx_IQ, Ntap_trxi_IQ, & maxv);
+		ARM_MORPH(arm_min_no_idx)(dCoeff, Ntap_trxi_IQ, & minv);
+		ARM_MORPH(arm_max_no_idx)(dCoeff, Ntap_trxi_IQ, & maxv);
 		const FLOAT_t lim = FMAXF(FABSF(minv), FABSF(maxv));
 		if (lim > 1)
-			ARM_MORPH(arm_scale)(dCoeff_trx_IQ, 1 / lim, dCoeff_trx_IQ, Ntap_trxi_IQ);
+			ARM_MORPH(arm_scale)(dCoeff, 1 / lim, dCoeff, Ntap_trxi_IQ);
 	}
 
 	// загрузка коэффициентов фильтра в FPGA (если апаратура требует только LOCAL обработки, сделать заглушку).
 	// Загрузка pass trough в фильтр требуется если тестируется локальная обработка
 	//writecoefs(FIRCoef_trxi_IQ, Ntap_trxi_IQ);	/* печать коэффициентов фильтра */
-	board_reload_fir(pathi, dCoeff_trx_IQ, Ntap_trxi_IQ, HARDWARE_COEFWIDTH);
+	board_reload_fir(pathi, dCoeff, Ntap_trxi_IQ, HARDWARE_COEFWIDTH);
 #endif /* WITHDSPEXTDDC */
 }
 
@@ -6231,8 +6233,6 @@ void hftrx_init(void)
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);	// SAM detector support
 	precalc_agclogof10 = LOGF(10);	// AGC support
 
-	/* Адаптер для локальных целочисленных FIR */
-	adpt_initialize(& localfircoefs, 32, 0, "localfircoefs");
 
 	hftxpath_init(& tx_path);
 
@@ -6313,11 +6313,18 @@ prog_fltlreg(void)
 	const uint_fast8_t spf = ! gwprof;	// индекс профиля для подготовки параметров DSP
 
 	audio_setup_mike(spf);
-	uint_fast8_t pathi;
-	for (pathi = 0; pathi < pathn; ++ pathi)
+	if (tx)
 	{
-		audio_update(spf, pathi, tx);
-		filters_update_rx(pathi);
+		audio_update(spf, 0, 1);
+	}
+	else
+	{
+		uint_fast8_t pathi;
+		for (pathi = 0; pathi < pathn; ++ pathi)
+		{
+			audio_update(spf, pathi, tx);
+			filters_update_rx(pathi);
+		}
 	}
 	gwprof = spf;
 
