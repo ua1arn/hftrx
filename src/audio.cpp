@@ -477,8 +477,8 @@ static FLOAT32P_t getsincosf(ncoftw_t angle)
 	FLOAT32P_t v;
 	//q31_t sincosv [2];
 #if 1
-	FLOAT_t sinv = arm_sin_q31(FTW2_COS_Q31(angle));
-	FLOAT_t cosv = arm_cos_q31(FTW2_COS_Q31(angle));
+	const q31_t sinv = arm_sin_q31(FTW2_COS_Q31(angle));
+	const q31_t cosv = arm_cos_q31(FTW2_COS_Q31(angle));
 #else
 	arm_sin_cos_q31(FTW2_SINCOS_Q31(angle), & sincosv [0], & sincosv [1]);
 	// at index 0 all fine
