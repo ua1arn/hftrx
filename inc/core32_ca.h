@@ -89,16 +89,12 @@ __STATIC_FORCEINLINE void __set_CPUECTLR(uint64_t cpuectlr)
 __STATIC_INLINE uint64_t __get_ICC_CTLR_EL3(void)
 {
 	uint64_t result;
-    //__MRC32(sICC_CTLR_EL3, &result);		// mrc	15, 6, r0, cr12, cr12, {4}
-	//__get_CP(15, 6, result, 12, 12, 4);	// mrc	15, 6, r0, cr12, cr12, {4}
-	__get_CP(15, 6, result, 12, 12, 4);	// mrc	15, 0, r0, cr12, cr12, {4} - недоступно в aarch64
+ 	__get_CP(15, 6, result, 12, 12, 4);	// mrc	15, 0, r0, cr12, cr12, {4} - недоступно в aarch64
     return result;
 }
 __STATIC_INLINE void __set_ICC_CTLR_EL3(uint64_t value)
 {
-    //__MCR32(sICC_CTLR_EL3, value);
 	__set_CP(15, 6, value, 12, 12, 4);	// mcr	15, 6, r0, cr12, cr12, {4} - недоступно в aarch64
-	//__set_RG32("ICC_CTLR", result);
 }
 
 // ICC_CTLR_EL1, Interrupt Controller Control Register (EL1)

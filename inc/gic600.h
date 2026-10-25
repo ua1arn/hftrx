@@ -1064,16 +1064,23 @@ __STATIC_FORCEINLINE void __set_ICC_SGI0R_EL1(uint64_t value)
 	#define sICC_SGI0R_EL1          "p15, 0, %0, C12, C11, 7"
 	#define sICC_SGI1R_EL1          "p15, 0, %0, C12, C11, 5"
 	#define sICC_SRE_EL1            "p15, 0, %0, C12, C12, 5"
-	#define sICC_SRE_EL2            "p15, 4, %0, C12, C9, 5"
-	#define sICC_SRE_EL3            "p15, 6, %0, C12, C12, 5"
+	#define sICC_SRE	            "p15, 0, %0, C12, C12, 5"
+//	#define sICC_SRE_EL2            "p15, 4, %0, C12, C9, 5"
+//	#define sICC_SRE_EL3            "p15, 6, %0, C12, C12, 5"
 #endif /* __GNUC__ */
 
 // write to register
 #define __MCR32(sysreg, val) \
   __asm volatile ("MCR " sysreg "\n" : : "r"((uint32_t)(val)))
+// write to register
+#define __MCR64(sysreg, val) \
+  __asm volatile ("MCR " sysreg "\n" : : "r"((uint64_t)(val)))
 
 // read from regioster
 #define __MRC32(sysreg, pVal) \
+  __asm volatile ("MRC  " sysreg "\n" : "=r"((*pVal)))
+// read from regioster
+#define __MRC64(sysreg, pVal) \
   __asm volatile ("MRC  " sysreg "\n" : "=r"((*pVal)))
 
 __STATIC_FORCEINLINE uint32_t __get_ICC_HPPIR0_EL1(void)
@@ -1166,48 +1173,60 @@ __STATIC_FORCEINLINE void __set_ICC_PMR_EL1(uint32_t value)
 
 __STATIC_FORCEINLINE void __set_ICC_SGI1R_EL1(uint64_t value)
 {
-    __MCR32(sICC_SGI1R_EL1, value);
+    __MCR64(sICC_SGI1R_EL1, value);
 }
 
 __STATIC_FORCEINLINE void __set_ICC_SGI0R_EL1(uint64_t value)
 {
-    __MCR32(sICC_SGI0R_EL1, value);
+    __MCR64(sICC_SGI0R_EL1, value);
 }
 
-__STATIC_FORCEINLINE void __set_ICC_SRE_EL3(uint64_t value)
+//__STATIC_FORCEINLINE void __set_ICC_SRE_EL3(uint64_t value)
+//{
+//	__MCR64(sICC_SRE_EL3, value);
+//}
+//
+//__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL3(void)
+//{
+//	uint32_t result;
+//    __MRC32(sICC_SRE_EL3, &result);
+//    return result;
+//}
+//
+//__STATIC_FORCEINLINE void __set_ICC_SRE_EL2(uint64_t value)
+//{
+//	__MCR64(sICC_SRE_EL2, value);
+//}
+//
+//__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL2(void)
+//{
+//	uint32_t result;
+//    __MRC32(sICC_SRE_EL2, &result);
+//    return result;
+//}
+
+__STATIC_FORCEINLINE void __set_ICC_SRE(uint32_t value)
 {
-    __MCR32(sICC_SRE_EL3, value);
+	__MCR32(sICC_SRE, value);
 }
 
-__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL3(void)
+__STATIC_FORCEINLINE uint32_t __get_ICC_SRE(void)
 {
 	uint32_t result;
-    __MRC32(sICC_SRE_EL3, &result);
+    __MRC32(sICC_SRE, &result);
     return result;
 }
 
-__STATIC_FORCEINLINE void __set_ICC_SRE_EL2(uint64_t value)
+// 12.5.22 ICC_SGI0R, Interrupt Controller Software Generated Interrupt Group 0 Register
+__STATIC_FORCEINLINE void __set_ICC_SGI0R(uint64_t value)
 {
-    __MCR32(sICC_SRE_EL2, value);
+	__set_CP64(15, 2, value, 12);
 }
 
-__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL2(void)
+// 12.5.23 ICC_SGI1R, Interrupt Controller Software Generated Interrupt Group 1 Register
+__STATIC_FORCEINLINE void __set_ICC_SGI1R(uint64_t value)
 {
-	uint32_t result;
-    __MRC32(sICC_SRE_EL2, &result);
-    return result;
-}
-
-__STATIC_FORCEINLINE void __set_ICC_SRE_EL1(uint64_t value)
-{
-    __MCR32(sICC_SRE_EL1, value);
-}
-
-__STATIC_FORCEINLINE uint32_t __get_ICC_SRE_EL1(void)
-{
-	uint32_t result;
-    __MRC32(sICC_SRE_EL1, &result);
-    return result;
+	__set_CP64(15, 0, value, 12);
 }
 
 #endif	/* defined (__aarch64__) */
@@ -1385,8 +1404,13 @@ __STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t aff, uint16_t tlis
 	//PRINTF("xGIC_SendSGI_ARE: aff=0x%02X, tlist=0x%02X, filter_list=0x%02X (val=0x%016lX)\n", (unsigned) aff, (unsigned) tlist, (unsigned) filter_list, val);
 
 	__DSB();
+#if defined (__aarch64__)
 	__set_ICC_SGI1R_EL1(val);
 	__set_ICC_SGI0R_EL1(val);	/* added by mgs - у меня пока работает толькоо группа 0 */
+#else
+	__set_ICC_SGI1R(val);
+	__set_ICC_SGI0R(val);
+#endif
 	__ISB();
 }
 
@@ -1633,10 +1657,14 @@ __STATIC_INLINE void GIC_RedistInit(void)
 	/* Wait until the interface is operational (ChildrenAsleep bit must become 0) */
 	while (GICR->LPI.GICR_WAKER & (UINT32_C(1) << 2))
 		;
-	__set_ICC_SRE_EL3(__get_ICC_SRE_EL3() | 0x0F);	// Enable SRE (bit 0), Disable IRQ/FIQ Bypass (bits 1,2), Enable Enable (bit 3)
-	__set_ICC_SRE_EL1(__get_ICC_SRE_EL1() | 0x0F);	// Enable SRE (bit 0), Disable IRQ/FIQ Bypass (bits 1,2), Enable Enable (bit 3)
-//	__set_ICC_SRE_EL2(__get_ICC_SRE_EL2() | 0x0F);	// Enable SRE (bit 0), Disable IRQ/FIQ Bypass (bits 1,2), Enable Enable (bit 3)
 
+#if defined (__aarch64__)
+	__set_ICC_SRE_EL3(__get_ICC_SRE_EL3() | 0x0F);	// Enable SRE (bit 0), Disable IRQ/FIQ Bypass (bits 1,2), Enable Enable (bit 3)
+//	__set_ICC_SRE_EL1(__get_ICC_SRE_EL1() | 0x0F);	// Enable SRE (bit 0), Disable IRQ/FIQ Bypass (bits 1,2), Enable Enable (bit 3)
+//	__set_ICC_SRE_EL2(__get_ICC_SRE_EL2() | 0x0F);	// Enable SRE (bit 0), Disable IRQ/FIQ Bypass (bits 1,2), Enable Enable (bit 3)
+#else
+	__set_ICC_SRE(__get_ICC_SRE() | 0x07);	// Enable SRE (bit 0), Disable IRQ/FIQ Bypass (bits 1,2), Enable Enable (bit 3)
+#endif
 	//GICR->SGI_PPI.GICR_NSACR = 0x55555555;
 
 	for (unsigned i = 0; i < 32; i++)
