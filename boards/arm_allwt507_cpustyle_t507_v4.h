@@ -692,20 +692,23 @@
 	} while (0)
 
 #if WITHETHHW
+	#define RTL8211F_PHY_ADDR           5  // Зависит от аппаратной схемы (обычно 1)
 	#define HARDWARE_ETH_INITIALIZE() do { \
+		const unsigned a = RTL8211F_PHY_ADDR; \
 		const portholder_t NRSTB = UINT32_C(1) << 6; /* PI6 PHYRSTB */ \
-		\
-		arm_hardware_pioi_outputs(UINT32_C(1) << 0, 1 * UINT32_C(1) << 0); /* PI0 RGMII_RXD3 */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 1, 0 * UINT32_C(1) << 1); /* PI1 RGMII_RXD2 */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 2, 0 * UINT32_C(1) << 2); /* PI2 RGMII_RXD1 */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 3, 1 * UINT32_C(1) << 3); /* PI3 RGMII_RXD0 */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 4, 0 * UINT32_C(1) << 4); /* PI4 RGMII_RXCK */ \
-		arm_hardware_pioi_outputs(UINT32_C(1) << 5, 0 * UINT32_C(1) << 5); /* PI5 RGMII_RXCTL */ \
 		\
 		arm_hardware_pioi_outputs(NRSTB, 0 * NRSTB); /* PI6 PHYRSTB */ \
 		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
+		\
+		arm_hardware_pioi_outputs(UINT32_C(1) << 0, !! (a & 0x01) * UINT32_C(1) << 0); /* PI0 PHYAD0 RGMII_RXD3 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 4, !! (a & 0x02) * UINT32_C(1) << 4); /* PI4 PHYAD1 RGMII_RXCK */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 5, !! (a & 0x04) * UINT32_C(1) << 5); /* PI5 PHYAD2 RGMII_RXCTL */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 1, 0 * UINT32_C(1) << 1); /* PI1 PLLOFF RGMII_RXD2 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 2, 0 * UINT32_C(1) << 2); /* PI2 TXDLY RGMII_RXD1 */ \
+		arm_hardware_pioi_outputs(UINT32_C(1) << 3, 1 * UINT32_C(1) << 3); /* PI3 RXDLY RGMII_RXD0 */ \
+		\
 		arm_hardware_pioi_outputs(NRSTB, 1 * NRSTB); /* PI6 PHYRSTB */ \
-		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
+		local_delay_ms(75); /* 50 - for address setup For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
 		\
 		arm_hardware_pioi_altfn50(UINT32_C(1) << 0, GPIO_CFG_AF2); 	/* PI0 RGMII_RXD3 */ \
 		arm_hardware_pioi_altfn50(UINT32_C(1) << 1, GPIO_CFG_AF2); 	/* PI1 RGMII_RXD2 */ \
@@ -733,7 +736,6 @@
 	#define HARDWARE_EMAC_PTR EMAC0
 	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
 	#define HARDWARE_EMAC_IRQ EMAC0_IRQn
-	#define RTL8211F_PHY_ADDR           0//1  // Зависит от аппаратной схемы (обычно 1)
 
 #endif /* WITHETHHW */
 

@@ -1445,12 +1445,14 @@
 #define BOARD_IS_USERBOOT() (board_getadc_unfiltered_u8(KI5, 0, 15) == 0)	/* проверка нажатия кнопки дополнительного валкодера */
 
 #if WITHETHHW
+	#define RTL8211F_PHY_ADDR           1  // Зависит от аппаратной схемы (обычно 1)
 	#define HARDWARE_ETH_INITIALIZE() do { \
 		const portholder_t NRSTB = UINT32_C(1) << 16; /* PH16 PHYRSTB */ \
+		const unsigned a = RTL8211F_PHY_ADDR; \
 		\
-		arm_hardware_pioh_outputs(UINT32_C(1) << 10, 1 * UINT32_C(1) << 10); 	/* PH10 PHYAD0 RGMII0_RXD3 */ \
-		arm_hardware_pioh_outputs(UINT32_C(1) << 12, 0 * UINT32_C(1) << 12); 	/* PH12 PHYAD1 RGMII0_RXCK */ \
-		arm_hardware_pioh_outputs(UINT32_C(1) << 2, 0 * UINT32_C(1) << 2); 		/* PH2 PHYAD2 RGMII0_RXCTL */ \
+		arm_hardware_pioh_outputs(UINT32_C(1) << 10, !! (a & 0x01) * UINT32_C(1) << 10); 	/* PH10 PHYAD0 RGMII0_RXD3 */ \
+		arm_hardware_pioh_outputs(UINT32_C(1) << 12, !! (a & 0x02) * UINT32_C(1) << 12); 	/* PH12 PHYAD1 RGMII0_RXCK */ \
+		arm_hardware_pioh_outputs(UINT32_C(1) << 2, !! (a & 0x04) * UINT32_C(1) << 2); 		/* PH2 PHYAD2 RGMII0_RXCTL */ \
 		arm_hardware_pioh_outputs(UINT32_C(1) << 11, 0 * UINT32_C(1) << 11); 	/* PH11 PLLOFF RGMII0_RXD2 */ \
 		arm_hardware_pioh_outputs(UINT32_C(1) << 0, 0 * UINT32_C(1) << 0); 		/* PH0 TXDLY RGMII0_RXD1 */ \
 		arm_hardware_pioh_outputs(UINT32_C(1) << 1, 1 * UINT32_C(1) << 1); 		/* PH1 RXDLY RGMII0_RXD0 */ \
@@ -1458,7 +1460,7 @@
 		arm_hardware_pioh_outputs(NRSTB, 0 * NRSTB); /* PH16 PHYRSTB */ \
 		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
 		arm_hardware_pioh_outputs(NRSTB, 1 * NRSTB); /* PH16 PHYRSTB */ \
-		local_delay_ms(15); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
+		local_delay_ms(75); /* For a complete PHY reset, this pin must be asserted low for at least 10ms */ \
 		\
 		arm_hardware_pioh_altfn50(UINT32_C(1) << 10, GPIO_CFG_AF5); 	/* PH10 RGMII0_RXD3 */ \
 		arm_hardware_pioh_altfn50(UINT32_C(1) << 11, GPIO_CFG_AF5); 	/* PH11 RGMII0_RXD2 */ \
@@ -1486,7 +1488,6 @@
 	#define HARDWARE_EMAC_PTR EMAC0
 	#define HARDWARE_EMAC_EPHY_CLK_REG (SYS_CFG->EMAC_EPHY_CLK_REG0)
 	#define HARDWARE_EMAC_IRQ EMAC0_IRQn
-	#define RTL8211F_PHY_ADDR           1  // Зависит от аппаратной схемы (обычно 1)
 
 #endif /* WITHETHHW */
 
