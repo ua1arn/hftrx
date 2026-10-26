@@ -23620,7 +23620,7 @@ int infocb_bypass(char * b, size_t len, int * pstate)
 #if WITHAUTOTUNER
 	const uint_fast8_t state = hamradio_get_bypvalue();
 	* pstate = state;
-	return local_snprintf_P(b, len, "%s", state ? "BYP" : "TUN");
+	return local_snprintf_P(b, len, "%s", state ? "BYP" : "TNR");
 #else
 	return 0;
 #endif
