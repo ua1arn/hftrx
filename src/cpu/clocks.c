@@ -13025,12 +13025,13 @@ dbgcountfast_t cpu_getdebugticks(void)
 
 hwtimcountfast_t timestamp_getticks(void)
 {
+	uint_fast32_t high1, high2;
+
+	high1 = TIMESTAMP_STA->CNT_HI_REG;
 	for (;;)
 	{
-		uint_fast32_t high1, high2;
 		uint_fast32_t low;
 
-		high1 = TIMESTAMP_STA->CNT_HI_REG;
 		low = TIMESTAMP_STA->CNT_LOW_REG;
 		high2 = TIMESTAMP_STA->CNT_HI_REG;
 		if (high1 == high2)
@@ -13058,12 +13059,13 @@ hwtimcountfast_t timestamp_getfreq(void)
 
 hwtimcountfast_t timestamp_getticks(void)
 {
+	uint_fast32_t high1, high2;
+
+	high1 = STGENR->CNTCVU;
 	for (;;)
 	{
-		uint_fast32_t high1, high2;
 		uint_fast32_t low;
 
-		high1 = STGENR->CNTCVU;
 		low = STGENR->CNTCVL;
 		high2 = STGENR->CNTCVU;
 		if (high1 == high2)
