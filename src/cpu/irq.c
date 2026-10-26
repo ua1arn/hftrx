@@ -2259,11 +2259,11 @@ static void task_resched(hwtimcountfast_t tn) {
 	// Обрабатываем проверку условия возобновления
 	for (t = threads_listW.Flink; t != & threads_listW; t = tnext) {
 		tnext = t->Flink;
-		thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-		if (task_isready(tp, tn)) {
-			RemoveEntryList(& tp->item);
-			tp->check_ready = NULL;	// признак готовности - для печати
-			task_insertready(tp);
+		thread_item_t * const p = CONTAINING_RECORD(t, thread_item_t, item);
+		if (task_isready(p, tn)) {
+			RemoveEntryList(& p->item);
+			p->check_ready = NULL;	// признак готовности - для печати
+			task_insertready(p);
 		}
 	}
 }
@@ -2302,7 +2302,7 @@ static void timers_check(hwtimcountfast_t tn) {
 		tnext = t->Flink;
 		timer_item_t * const p = CONTAINING_RECORD(t, timer_item_t, item);
 		//
-		if ((cpu_getdebugticksmask() & (tn - p->t0)) >= p->td)
+		if ((timestamp_getmask() & (tn - p->t0)) >= p->td)
 		{
 			// указанное время настало
 			if (p->periodic)
@@ -2407,15 +2407,15 @@ void tasks_print(void)
 
 static int ready_timeout(uint_fast32_t tn, hwtimcountfast_t t0, hwtimcountfast_t td)
 {
-	if (td == cpu_getdebugticksmask())
+	if (td == timestamp_getmask())
 		return 0;
-	return (cpu_getdebugticksmask() & (tn - t0)) >= td;
+	return (0xFFFFFFFF & (tn - t0)) >= td;
 }
 
 static int print_td(char *__restrict buff, size_t size, hwtimcountfast_t td)
 {
 	unsigned n = 0;
-	if (td == cpu_getdebugticksmask())
+	if (td == timestamp_getmask())
 		n += local_snprintf_P(buff + n, size - n, "td=inf ");
 	else
 		n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) td);
