@@ -2490,7 +2490,7 @@ static void audio_setup_wiver(const uint_fast8_t pathi, uint_fast8_t tx)
 //	const FLOAT_t txfiltergain = 2;	// Для IQ фильтра можно так - для компенсации 0.5 усиления из-за перемножителя перед ним.
 //#endif /* WITHDSPEXTDDC */
 
-	//PRINTF(PSTR("audio_setup_wiver: construct lowpass pathi=%u, fullbw6=%u\n"), (unsigned) pathi, (unsigned) fullbw6);
+	//PRINTF(PSTR("audio_setup_wiver: construct lowpass pathi=%u, fullbw6=%u, tx=%d\n"), (unsigned) pathi, (unsigned) fullbw6, (int) tx);
 	if (fullbw6 == INT16_MAX || dspmode == DSPCTL_MODE_TX_NFM)
 	{
 		const FLOAT_t fbypascut = fs * 4 / 10;
@@ -8276,11 +8276,12 @@ board_set_afmute(uint_fast8_t n)
 
 // Параметр для установки режима работы приёмника A/передатчика A
 void
-board_set_dspmode(uint_fast8_t v, uint_fast8_t txmode)
+board_set_dspmode(uint_fast8_t mode, uint_fast8_t txmode)
 {
-	if (glob_dspmodes [target_pathi] != v || glob_dsptxmode != txmode)
+	//PRINTF("board_set_dspmode: mode=%d, txmode=%d\n", mode, txmode);
+	if (glob_dspmodes [target_pathi] != mode || glob_dsptxmode != txmode)
 	{
-		glob_dspmodes [target_pathi] = v;
+		glob_dspmodes [target_pathi] = mode;
 		glob_dsptxmode = txmode;
 		board_flt1regchanged();		// параметры этой функции используются в audio_setup_lo6();
 	}
