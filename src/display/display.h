@@ -653,23 +653,7 @@ pix_display_value_big(
 	char narrowSpace		// символ, отображающийся на месте погашенных точек при отображении. Шириной как точка
 	);
 
-void rendered_value_big_initialize(const gxstyle_t * gxstylep);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
-
-// Used in display2_freqX_b
-//uint_fast16_t
-//pix_display_value_small(
-//	const gxdrawb_t * db,
-//	uint_fast16_t xpix,	// x координата начала вывода значения
-//	uint_fast16_t ypix,	// y координата начала вывода значения
-//	uint_fast16_t w,
-//	uint_fast16_t h,
-//	int_fast32_t freq,
-//	uint_fast8_t width,	// full width (if >= 128 - display with sign)
-//	uint_fast8_t comma,		// comma position (from right, inside width)
-//	uint_fast8_t comma2,
-//	uint_fast8_t rj,		// right truncated
-//	const gxstyle_t * dbstyle	/* foreground and background colors, text alignment */
-//	);
+void rendered_value_big_initialize(const gxstyle_t * gxstyle, const gxstyle_t * gxstyle2);	// Подготовка отображения больщих символов valid chars: "0123456789 #._"
 
 void display_floodfill(
 	const gxdrawb_t * db,

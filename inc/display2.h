@@ -482,8 +482,8 @@ typedef struct
 	#define DSGN_BIGCOLOR 			COLORPIP_RED 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
-	#define DSGN_SPLITFREQTEXT 		COLORPIP_YELLOW 	// цвет частоты и режима дополнительного приёмника
-	#define DSGN_SPLITFREQBACK 		COLORPIP_BLACK
+	#define DSGN_BIGCOLOR2 		COLORPIP_YELLOW 	// цвет частоты и режима дополнительного приёмника
+	#define DSGN_BIGCOLOR2BACK 		COLORPIP_BLACK
 
 	#define DSGN_TIMECOLOR 			COLORPIP_RED 		// цвет отображения времени/даты
 	#define DSGN_TIMECOLORBACK 		COLORPIP_BLACK
@@ -546,8 +546,8 @@ typedef struct
 	#define DSGN_BIGCOLOR 			COLORPIP_YELLOW 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
-	#define DSGN_SPLITFREQTEXT 		COLORPIP_YELLOW 	// цвет частоты и режима дополнительного приёмника
-	#define DSGN_SPLITFREQBACK 		COLORPIP_BLACK
+	#define DSGN_BIGCOLOR2 		COLORPIP_YELLOW 	// цвет частоты и режима дополнительного приёмника
+	#define DSGN_BIGCOLOR2BACK 		COLORPIP_BLACK
 
 	#define DSGN_TIMECOLOR 			COLORPIP_YELLOW 		// цвет отображения времени/даты
 	#define DSGN_TIMECOLORBACK 		COLORPIP_BLACK
@@ -612,8 +612,8 @@ typedef struct
 	#define DSGN_BIGCOLOR 			COLORPIP_WHITE 	// цвет частоты и режима основного приёмника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
-	#define DSGN_SPLITFREQTEXT 		COLORPIP_YELLOW 	// цвет частоты и режима дополнительного приёмника
-	#define DSGN_SPLITFREQBACK 		COLORPIP_BLACK
+	#define DSGN_BIGCOLOR2 		COLORPIP_YELLOW 	// цвет частоты и режима дополнительного приёмника
+	#define DSGN_BIGCOLOR2BACK 		COLORPIP_BLACK
 
 	#define DSGN_TIMECOLOR 			COLORPIP_WHITE 		// цвет отображения времени/даты
 	#define DSGN_TIMECOLORBACK 		COLORPIP_BLACK
@@ -677,8 +677,8 @@ typedef struct
 	#define DSGN_BIGCOLOR 			COLORPIP_DARKCYAN 	// цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK 		COLORPIP_BLACK
 
-	#define DSGN_SPLITFREQTEXT 		COLORPIP_YELLOW 	// цвет частоты и режима дополнительного приёмника
-	#define DSGN_SPLITFREQBACK 		COLORPIP_BLACK
+	#define DSGN_BIGCOLOR2 		COLORPIP_YELLOW 	// цвет частоты и режима дополнительного приёмника
+	#define DSGN_BIGCOLOR2BACK 		COLORPIP_BLACK
 
 	#define DSGN_TIMECOLOR 			COLORPIP_GREEN 		// цвет отображения времени/даты
 	#define DSGN_TIMECOLORBACK 		COLORPIP_BLACK
@@ -743,8 +743,8 @@ typedef struct
 	#define DSGN_BIGCOLOR             COLORPIP_WHITE     // цвет частоты и режима основного приемника
 	#define DSGN_BIGCOLORBACK         COLORPIP_BLACK
 
-	#define DSGN_SPLITFREQTEXT 		COLORPIP_YELLOW 	// цвет частоты и режима дополнительного приёмника
-	#define DSGN_SPLITFREQBACK 		COLORPIP_BLACK
+	#define DSGN_BIGCOLOR2 		COLORPIP_YELLOW 	// цвет частоты и режима дополнительного приёмника
+	#define DSGN_BIGCOLOR2BACK 		COLORPIP_BLACK
 
 	#define DSGN_TIMECOLOR 			COLORPIP_WHITE 		// цвет отображения времени/даты
 	#define DSGN_TIMECOLORBACK 		COLORPIP_BLACK

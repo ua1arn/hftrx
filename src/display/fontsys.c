@@ -220,16 +220,18 @@ const unifont_t unifont_half2 =
 };
 
 
-void rendered_value_big_initialize(const gxstyle_t * gxstylep)
+void rendered_value_big_initialize(const gxstyle_t * gxstyle, const gxstyle_t * gxstyle2)
 {
 #if WITHPRERENDER
-	const COLORPIP_T fg = gxstylep->textcolor;
-	const COLORPIP_T bg = gxstylep->bgcolor;
+	const COLORPIP_T fg = gxstyle->textcolor;
+	const COLORPIP_T bg = gxstyle->bgcolor;
+	const COLORPIP_T fg2 = gxstyle2->textcolor;
+	const COLORPIP_T bg2 = gxstyle2->bgcolor;
 
 	ufcached_prerender(& unifont_big, fg, bg);
 	ufcached_prerender(& unifont_half, fg, bg);
-	ufcached_prerender(& unifont_big2, fg, bg);
-	ufcached_prerender(& unifont_half2, fg, bg);
+	ufcached_prerender(& unifont_big2, fg2, bg2);
+	ufcached_prerender(& unifont_half2, fg2, bg2);
 #endif /* WITHPRERENDER */
 }
 
