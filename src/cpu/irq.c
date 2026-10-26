@@ -2409,7 +2409,7 @@ static int ready_timeout(uint_fast32_t tn, hwtimcountfast_t t0, hwtimcountfast_t
 {
 	if (td == cpu_getdebugticksmask())
 		return 0;
-	return (cpu_getdebugticksmask() & (tn - t0))  >= td;
+	return (cpu_getdebugticksmask() & (tn - t0)) >= td;
 }
 
 static int print_td(char *__restrict buff, size_t size, hwtimcountfast_t td)
