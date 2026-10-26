@@ -2405,11 +2405,11 @@ void tasks_print(void)
 }
 #endif /* WITHDEBUG */
 
-static int ready_timeout(uint_fast32_t tn, hwtimcountfast_t t0, hwtimcountfast_t td)
+static int ready_timeout(hwtimcountfast_t tn, hwtimcountfast_t t0, hwtimcountfast_t td)
 {
 	if (td == timestamp_getmask())
 		return 0;
-	return (0xFFFFFFFF & (tn - t0)) >= td;
+    return (timestamp_getmask() & (tn - t0)) >= td;
 }
 
 static int print_td(char *__restrict buff, size_t size, hwtimcountfast_t td)
