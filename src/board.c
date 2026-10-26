@@ -2437,6 +2437,8 @@ board_update_ctrlreg(void)
 
 #endif
 
+/* инициализация при запрещённых прерываниях.
+*/
 // Обнуление теневых переменных, синхронизация регистров с теневыми переменными.
 // Обнулние выполняется start-up, Выдаём в регистры текущее состояние
 static void board_update_initial(void)
@@ -2476,10 +2478,14 @@ board_update_spi2(void)
 	
 }
 
+static LCLSPINLOCK_t boardupdatelock;
+
 // Выдача в регистры текущего состояния теневых переменных.
 void 
 board_update(void)
 {
+	IRQL_t oldIrql;
+	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 	//PRINTF(PSTR("board_update start.\n"));
 
 	board_update_direct();	// Обновление непосредственно подключенных к процессору сигналов
@@ -2531,6 +2537,8 @@ board_update(void)
 	prog_fltlreg_update();		// услолвное обновление регистров DSP
 	prog_codecreg_update();		// услолвное обновление регистров аудио кодека
 	//PRINTF(PSTR("board_update done.\n"));
+
+	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 }
 
 /* Установка запроса на обновление сигналов управления */

@@ -507,7 +507,7 @@ void board_set_ifgain(uint_fast16_t v);	// Параметр для регули�
 void board_set_agcfence10(int_fast16_t v);	// Точка пергиба характеристики АРУ
 void board_set_skipfilteraf(uint_fast8_t n);
 
-void board_set_dspmode(uint_fast8_t v, uint_fast8_t txmode);	// Параметр для установки режима работы приёмника A/передатчика A
+void board_set_dspmode(uint_fast8_t mode, uint_fast8_t txmode);	// Параметр для установки режима работы приёмника A/передатчика A
 void board_set_lineinput(uint_fast8_t n);	// Включение line input (rear panel mini-din 6 pin input) вместо микрофона
 void board_set_lineamp(uint_fast16_t v);	// Параметр для регулировки уровня на входе аудио-ЦАП при работе с LINE IN
 void board_set_txaudio(uint_fast8_t v);	// Альтернативные источники сигнала при передаче

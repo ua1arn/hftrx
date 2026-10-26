@@ -1641,28 +1641,8 @@
 	& xgdownatcwtune,
 #endif
 #if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
-	(const struct paramdefdef [1]) {
-		QLABEL("RXTX DLY"),  0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
-		ITEM_VALUE,
-		5, WITHMAXRXTXDELAY,						/* 5..100 ms delay */
-		OFFSETOF(struct nvmap, rxtxdelay),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& rxtxdelay,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-	(const struct paramdefdef [1]) {
-		QLABEL("TXRX DLY"),  0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
-		ITEM_VALUE,
-		5, WITHMAXTXRXDELAY,						/* 5..100 ms delay */
-		OFFSETOF(struct nvmap, txrxdelay),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& txrxdelay,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgrxtxdelay,
+	& xgtxrxdelay,
 #endif /* GATEs */
 #endif /* WITHTX */
 #if WITHLO1LEVELADJ

@@ -155,33 +155,33 @@ enum
 {
 	DSPCTL_MODE_IDLE = 0,		/* режим, в котором не выполняется никакая обработка. */
 
-	DSPCTL_MODE_RX_BASE,
+	DSPCTL_MODE_RX_BASE,	// 1
 
-	DSPCTL_MODE_RX_BPSK,
-	DSPCTL_MODE_RX_FREEDV,
-	DSPCTL_MODE_RX_SSB,
-	DSPCTL_MODE_RX_AM,
-	DSPCTL_MODE_RX_SAM,
-	DSPCTL_MODE_RX_NFM,
-	DSPCTL_MODE_RX_DSB,		/* приём двух боковых полос (режим настройки по нулевым биениям */
-	DSPCTL_MODE_RX_DRM,		/* принятиый сигнал транслируется на выход на частоте 12 кГц */
-	DSPCTL_MODE_RX_ISB,		/* прием двух независимых боковых полос */
-	DSPCTL_MODE_RX_WFM,		/* прием WFM (демодуляция в FPGA, только без WITHUSEDUALWATCH)	*/
-	DSPCTL_MODE_RX_RTTY,
+	DSPCTL_MODE_RX_BPSK,	// 2
+	DSPCTL_MODE_RX_FREEDV,	// 3
+	DSPCTL_MODE_RX_SSB,		// 4
+	DSPCTL_MODE_RX_AM,		// 5
+	DSPCTL_MODE_RX_SAM,		// 6
+	DSPCTL_MODE_RX_NFM,		// 7
+	DSPCTL_MODE_RX_DSB,		/* 8 приём двух боковых полос (режим настройки по нулевым биениям */
+	DSPCTL_MODE_RX_DRM,		/* 9 принятиый сигнал транслируется на выход на частоте 12 кГц */
+	DSPCTL_MODE_RX_ISB,		/* 10 прием двух независимых боковых полос */
+	DSPCTL_MODE_RX_WFM,		/* 11 прием WFM (демодуляция в FPGA, только без WITHUSEDUALWATCH)	*/
+	DSPCTL_MODE_RX_RTTY,	// 12
 
-	DSPCTL_MODE_RX_TOP,
+	DSPCTL_MODE_RX_TOP,		// 13
 
-	DSPCTL_MODE_TX_BASE,
+	DSPCTL_MODE_TX_BASE,	// 14
 
-	DSPCTL_MODE_TX_SSB,
-	DSPCTL_MODE_TX_DIGI,
-	DSPCTL_MODE_TX_CW,
-	DSPCTL_MODE_TX_AM,
-	DSPCTL_MODE_TX_NFM,
-	DSPCTL_MODE_TX_ISB,		/* передача двух независимых боковых полос */
-	DSPCTL_MODE_TX_BPSK,
-	DSPCTL_MODE_TX_FREEDV,
-	DSPCTL_MODE_TX_RTTY,
+	DSPCTL_MODE_TX_SSB,		// 15
+	DSPCTL_MODE_TX_DIGI,	// 16
+	DSPCTL_MODE_TX_CW,		// 17
+	DSPCTL_MODE_TX_AM,		// 18
+	DSPCTL_MODE_TX_NFM,		// 19
+	DSPCTL_MODE_TX_ISB,		/* 20 передача двух независимых боковых полос */
+	DSPCTL_MODE_TX_BPSK,	// 21
+	DSPCTL_MODE_TX_FREEDV,	// 22
+	DSPCTL_MODE_TX_RTTY,	// 23
 
 	DSPCTL_MODE_TX_TOP,
 	//

@@ -2285,7 +2285,7 @@ static int thread_print(char *__restrict buff, size_t size, const thread_item_t 
 {
 	int n = 0;
 	exception_frame_t * const f = tp->cpuframe;
-	n += local_snprintf_P(buff + n, size - n, "%s %p: irql=0x%02X (prio=%u), aff=0x%08X, ", title, tp, (unsigned) GICI_ENCODE_IRQL(tp->prio), (unsigned) tp->prio, (unsigned) tp->affinity);
+	n += local_snprintf_P(buff + n, size - n, "%s %p: irql=0x%02X (prio=%u), aff=0x%02X, ", title, tp, (unsigned) GICI_ENCODE_IRQL(tp->prio), (unsigned) tp->prio, (unsigned) tp->affinity);
 	if (tp->bottom)
 		n += local_snprintf_P(buff + n, size - n, "use=%3u%% ", (unsigned) (100 * (tp->top - (uintptr_t) tp->cpuframe) /  (tp->top - tp->bottom)));
 	else
@@ -2377,6 +2377,16 @@ static int ready_timeout(uint_fast32_t tn, hwtimcountfast_t t0, hwtimcountfast_t
 	return (uint32_t) (tn - t0) >= td;
 }
 
+static int print_td(char *__restrict buff, size_t size, hwtimcountfast_t td)
+{
+	unsigned n = 0;
+	if (td == cpu_getdebugticksmask())
+		n += local_snprintf_P(buff + n, size - n, "td=inf ");
+	else
+		n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) td);
+
+	return n;
+}
 
 static int print_suspend(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, volatile void * arg1)
 {
@@ -2386,7 +2396,7 @@ static int print_suspend(char *__restrict buff, size_t size, const check_ready_t
 	ASSERT(param->guard == param);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
 	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
-	n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) param->td);
+	n += print_td(buff + n, size - n, param->td);
 	return n;
 }
 
@@ -2395,7 +2405,7 @@ static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thre
 	volatile struct taskfnparam_suspend * const param = (volatile struct taskfnparam_suspend *) arg1;
 	if (param == NULL || param->guard != param)
 	{
-		PRINTF("readyfn_suspend: '%s' aff=%08X\n", thread->name, thread->affinity);
+		PRINTF("readyfn_suspend: '%s' aff=%02X\n", thread->name, thread->affinity);
 		tasks_print();
 	}
 	ASSERT(param != NULL);
@@ -2412,7 +2422,7 @@ static int print_wait32(char *__restrict buff, size_t size, const check_ready_t 
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
 	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, ", param->flag, (unsigned) param->mask, (unsigned) param->state);
 	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
-	n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) param->td);
+	n += print_td(buff + n, size - n, param->td);
 	return n;
 }
 
@@ -2421,7 +2431,7 @@ static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * threa
 	volatile struct taskfnparam_wait32 * const param = (volatile struct taskfnparam_wait32 *) arg1;
 	if (param == NULL || param->guard != param)
 	{
-		PRINTF("readyfn_wait32: '%s' aff=%08X\n", thread->name, thread->affinity);
+		PRINTF("readyfn_wait32: '%s' aff=%02X\n", thread->name, thread->affinity);
 		tasks_print();
 	}
 	ASSERT(param != NULL);
@@ -2449,7 +2459,7 @@ static int print_wait8(char *__restrict buff, size_t size, const check_ready_t *
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
 	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, ", param->flag, (unsigned) param->mask, (unsigned) param->state);
 	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
-	n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) param->td);
+	n += print_td(buff + n, size - n, param->td);
 	return n;
 }
 
@@ -2479,7 +2489,7 @@ static int print_waitlist(char *__restrict buff, size_t size, const check_ready_
 	ASSERT(param != NULL);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
 	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
-	n += local_snprintf_P(buff + n, size - n, "td=%" PRIu64 " ", (uint64_t) param->td);
+	n += print_td(buff + n, size - n, param->td);
 	return n;
 }
 

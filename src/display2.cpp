@@ -3080,11 +3080,7 @@ static void display_2states(const gxdrawb_t * db,
 	uint_fast8_t yspan
 	)
 {
-#if LCDMODE_COLORED
-	const char * const labels [2] = { state1, state1, };
-#else /* LCDMODE_COLORED */
 	const char * const labels [2] = { state0, state1, };
-#endif /* LCDMODE_COLORED */
 	display2text_states(db, xcell, ycell, labels, dbstylev_2state, state, xspan, yspan);
 }
 
@@ -3575,7 +3571,7 @@ static void display2_byp3(const gxdrawb_t * db,
 #if WITHTX
 	#if WITHAUTOTUNER
 	const uint_fast8_t state = hamradio_get_bypvalue();
-	display_2states(db, x, y, state, "BYP", "", xspan, yspan);
+	display_2states(db, x, y, state, "BYP", "TNR", xspan, yspan);
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
 }
@@ -3592,7 +3588,7 @@ static void display2_byp4alt(const gxdrawb_t * db,
 #if WITHTX
 	#if WITHAUTOTUNER
 	const uint_fast8_t state = hamradio_get_bypvalue();
-	display_2states(db, x, y, state, "BYP", "", xspan, yspan);
+	display_2states(db, x, y, state, "BYP", "TNR", xspan, yspan);
 	#endif /* WITHAUTOTUNER */
 #endif /* WITHTX */
 }

@@ -132,7 +132,7 @@ static void sd_power_enable(
 	)
 {
 	board_set_sdcardpoweron(enable);
-	board_update();
+	board_update();		/* вывести забуферированные изменения в регистры */
 }
 
 static void sd_power_cycle(void)
