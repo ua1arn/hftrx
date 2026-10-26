@@ -377,8 +377,9 @@ static void usb_select_ep(pusb_struct pusb, uint32_t ep_ind)
 	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (UINT32_C(0x0F) << 16)) |
 		ep_ind * (UINT32_C(1) << 16) | // EPIND
 		0;
-	while ((((WITHUSBHW_DEVICE->USB_GCS >> 16)) & 0x0F) != ep_ind)
-		;
+	local_wait32mask(& WITHUSBHW_DEVICE->USB_GCS, (UINT32_C(0x0F) << 16), ep_ind * (UINT32_C(1) << 16), LOCAL_WAITINFINITY);
+//	while ((((WITHUSBHW_DEVICE->USB_GCS >> 16)) & 0x0F) != ep_ind)
+//		;
 }
 
 static void usb_set_test_mode(pusb_struct pusb, uint32_t bm)
@@ -2727,8 +2728,9 @@ static void usb_fifo_accessed_by_dma(pusb_struct pusb, uint32_t ep_no, uint32_t 
 
 	WITHUSBHW_DEVICE->USB_GCS = (WITHUSBHW_DEVICE->USB_GCS & ~ (UINT32_C(0x1F) << 24)) | reg_val;
 
-	while ((WITHUSBHW_DEVICE->USB_GCS & (UINT32_C(1) << 24)) == 0)	// FIFO_BUS_SEL
-		;
+	local_wait32mask(& WITHUSBHW_DEVICE->USB_GCS, (UINT32_C(1) << 24), (UINT32_C(1) << 24), LOCAL_WAITINFINITY);
+//	while ((WITHUSBHW_DEVICE->USB_GCS & (UINT32_C(1) << 24)) == 0)	// FIFO_BUS_SEL
+//		;
 }
 
 static uint32_t set_fifo_ep(pusb_struct pusb, uint32_t ep_no, uint32_t ep_dir, uint32_t maxpktsz, uint32_t is_dpb, uint32_t fifo_addr)
