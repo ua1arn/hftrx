@@ -3722,7 +3722,7 @@ static void audio_setup_lo6_rx(uint_fast8_t pathi)
     const uint_fast8_t dspmode = glob_dspmodes [pathi];
 
 	const int lo6 = - glob_lo6 [pathi];
-	PRINTF("audio_setup_lo6_rx: pathi=%u, lo6=%d\n", (unsigned) pathi, lo6);
+	//PRINTF("audio_setup_lo6_rx: pathi=%u, lo6=%d\n", (unsigned) pathi, lo6);
 	const ncoftw_t lo6_ftw = FTWAF(lo6);
 #if WITHDSPEXTRXFIR
 	const unsigned txfirdelay = 2 * Ntap_trxi_IQ / 2;
@@ -3746,7 +3746,7 @@ static void audio_setup_lo6_tx(void)
     const uint_fast8_t dspmode = glob_dspmodes [0];
 
 	const int lo6 = - glob_lo6 [0];
-	PRINTF("audio_setup_lo6_tx: lo6=%d\n", lo6);
+	//PRINTF("audio_setup_lo6_tx: lo6=%d\n", lo6);
 	const ncoftw_t lo6_ftw = FTWAF(lo6);
 #if WITHDSPEXTRXFIR
 	const unsigned txfirdelay = 2 * Ntap_trxi_IQ / 2;
