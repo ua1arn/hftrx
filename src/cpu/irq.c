@@ -13,6 +13,7 @@
 #include "clocks.h"
 #include <string.h>
 
+#include "hftrx_osal.h"
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
@@ -4475,3 +4476,99 @@ void cpu_initialize(void)
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 	//PRINTF("cpu_initialize done\n");
 }
+
+#if WITHRTOS
+/*
+ * Task with smaller priority value indicates higher task priority
+*/
+hftrx_osal_thread_t hftrx_osal_thread_create(const char *name, uint32_t stack_size, uint32_t prio, hftrx_thread_entry_t entry, void *args);
+void hftrx_osal_thread_delete(hftrx_osal_thread_t thread) {
+
+}
+void hftrx_osal_thread_schedule_other(void) {
+
+}
+hftrx_osal_sem_t hftrx_osal_sem_create(uint32_t initial_count) {
+	return NULL;
+}
+void hftrx_osal_sem_delete(hftrx_osal_sem_t sem) {
+
+}
+int hftrx_osal_sem_take(hftrx_osal_sem_t sem, uint32_t timeout) {
+	return 0;
+
+}
+int hftrx_osal_sem_give(hftrx_osal_sem_t sem) {
+	return 0;
+
+}
+void hftrx_osal_sem_reset(hftrx_osal_sem_t sem) {
+
+}
+
+hftrx_osal_mutex_t hftrx_osal_mutex_create(void) {
+	return NULL;
+}
+void hftrx_osal_mutex_delete(hftrx_osal_mutex_t mutex) {
+
+}
+int hftrx_osal_mutex_take(hftrx_osal_mutex_t mutex) {
+	return 0;
+
+}
+int hftrx_osal_mutex_give(hftrx_osal_mutex_t mutex) {
+	return 0;
+
+}
+
+hftrx_osal_mq_t hftrx_osal_mq_create(uint32_t max_msgs) {
+	return NULL;
+
+}
+void hftrx_osal_mq_delete(hftrx_osal_mq_t mq) {
+
+}
+int hftrx_osal_mq_send(hftrx_osal_mq_t mq, uintptr_t addr) {
+	return 0;
+
+}
+int hftrx_osal_mq_recv(hftrx_osal_mq_t mq, uintptr_t *addr, uint32_t timeout) {
+	return 0;
+
+}
+
+struct hftrx_osal_timer *hftrx_osal_timer_create(const char *name, uint32_t timeout_ms, hftrx_timer_handler_t handler, void *argument, bool is_period) {
+	return NULL;
+
+}
+void hftrx_osal_timer_delete(struct hftrx_osal_timer *timer) {
+
+}
+void hftrx_osal_timer_start(struct hftrx_osal_timer *timer) {
+
+}
+void hftrx_osal_timer_stop(struct hftrx_osal_timer *timer) {
+
+}
+
+size_t hftrx_osal_enter_critical_section(void) {
+	return 0;
+
+}
+void hftrx_osal_leave_critical_section(size_t flag) {
+
+}
+
+void hftrx_osal_msleep(uint32_t delay) {
+
+}
+
+void *hftrx_osal_malloc(size_t size) {
+	return NULL;
+
+}
+void hftrx_osal_free(void *ptr) {
+
+}
+
+#endif /* WITHRTOS */
