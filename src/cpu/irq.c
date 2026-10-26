@@ -2067,7 +2067,6 @@ enum
 	TASKFN_WAIT32,
 	TASKFN_WAIT8,
 	TASKFN_WAITLIST,
-	TASKFN_SETAFFINITY,
 	//
 	TASKFN_count
 };
@@ -2104,13 +2103,6 @@ struct taskfnparam_waitlist
 	hwtimcount_t t0;
 	hwtimcount_t td;
 	volatile void * guard;
-};
-
-
-struct taskfnparam_setaffinity
-{
-	unsigned newaffinity;
-	unsigned oldaffinity;
 };
 
 // не должно ничего ожидать - попадаем сюда, когда нет thread для исполнения
@@ -2591,6 +2583,7 @@ static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile
 	default:
 		task_insertready(thread);
 		return;
+
 	case TASKFN_NOP:
 		//ASSERT(arg1 == NULL);
 		task_insertready(thread);
@@ -2622,17 +2615,6 @@ static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile
 		thread->check_ready_obj = arg1;
 		thread->check_ready = & readytag_waitlist;
 		InsertTailList(& threads_listW, & thread->item);
-		return;
-
-	case TASKFN_SETAFFINITY:
-		{
-			volatile struct taskfnparam_setaffinity * const param = (volatile struct taskfnparam_setaffinity *) arg1;
-			ASSERT(threads_not_started == 0);
-			thread->check_ready_obj = NULL;
-			param->oldaffinity = thread->affinity;
-			thread->affinity = param->newaffinity;
-		}
-		task_insertready(thread);
 		return;
 	}
 }
@@ -2826,19 +2808,6 @@ static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 	const unsigned aff = tp->affinity;
 	tp->affinity = affinity;
 	return aff;
-
-	if (threads_not_started)
-	{
-		return 1U << arm_hardware_cpuid();
-	}
-	else
-	{
-
-		volatile struct taskfnparam_setaffinity v;
-		v.newaffinity = affinity;
-		task_sysfn(TASKFN_SETAFFINITY, & v);
-		return v.oldaffinity;
-	}
 }
 
 #else
@@ -2847,7 +2816,7 @@ static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 
 void task_scheduler_initialize(void)
 {
-	}
+}
 
 void task_scheduler_start(void) {}
 
