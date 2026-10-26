@@ -4208,9 +4208,9 @@ struct nvmap {
 
 	uint8_t gtxgate;	/* разрешение предусилителя */
 	uint8_t grgbeep;	/* разрешение (не-0) или запрещение (0) формирования roger beep */
-	uint8_t rxtxdelay;	/* приём-передача */
+	uint8_t grxtxdelay;	/* приём-передача */
 
-	uint8_t txrxdelay;	/* передача-приём */
+	uint8_t gtxrxdelay;	/* передача-приём */
 
 
 	uint8_t swrcalibr;	/* калибровочный параметр SWR-метра */
@@ -6747,10 +6747,6 @@ enum
 
 	#endif /* WITHVOX */
 
-	#if ! WITHPACLASSA
-		enum { gclassamode = 0 };	/* использование режима клвсс А при передаче */
-	#endif /* WITHPACLASSA */
-
 #if TXPATH_BIT_GATE_RX && CTLSTYLE_SW2011ALL
 	enum { pretxdelay = 1 };	/* признак того, что требуется снятие питания со второго смесителя */
 #else
@@ -6770,8 +6766,32 @@ enum
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	static uint_fast8_t rxtxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода прём-передача */
-	static uint_fast8_t txrxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
+#if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
+	static uint_fast8_t grxtxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода прём-передача */
+	static const struct paramdefdef xgrxtxdelay = {
+		QLABEL("RXTX DLY"),  0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
+		ITEM_VALUE,
+		5, WITHMAXRXTXDELAY,						/* 5..100 ms delay */
+		OFFSETOF(struct nvmap, grxtxdelay),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& grxtxdelay,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static uint_fast8_t gtxrxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
+	static const struct paramdefdef xgtxrxdelay = {
+		QLABEL("TXRX DLY"),  0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
+		ITEM_VALUE,
+		5, WITHMAXTXRXDELAY,						/* 5..100 ms delay */
+		OFFSETOF(struct nvmap, gtxrxdelay),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gtxrxdelay,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+#endif /* GATEs */
 
 #else /* WITHTX */
 	static const uint_fast8_t gvoxenable = 0;	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
@@ -13998,8 +14018,8 @@ updateboard_noui(
 		}
 		#endif /* WITHIF4DSP */
 		seq_set_rgbeep(param_val(& xgrgbeep));	/* разрешение (не-0) или запрещение (0) формирования roger beep */
-		seq_set_rxtxdelay(rxtxdelay, txrxdelay, pretxdelay ? txrxdelay : 0);	/* установить задержку пре переходе на передачу и обратно. */
-		board_sidetone_setfreq(gcwpitch10 * CWPITCHSCALE);	// Минимум - 400 герц (определено набором команд CAT Kenwood).
+		seq_set_rxtxdelay(param_val(& xgrxtxdelay), param_val(& xgtxrxdelay), pretxdelay ? param_val(& xgtxrxdelay) : 0);	/* установить задержку пре переходе на передачу и обратно. */
+		board_sidetone_setfreq(param_val(& xgcwpitch10) * CWPITCHSCALE);	// Минимум - 400 герц (определено набором команд CAT Kenwood).
 	#if WITHPACLASSA
 		board_set_classamode(param_val(& xgclassamode));	/* использование режима клвсс А при передаче */
 	#endif /* WITHPACLASSA */
