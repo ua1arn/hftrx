@@ -20728,7 +20728,7 @@ static uint_fast8_t nvramdiags(void)
 		static const char msg  [] = "KBD fault";
 #if WITHLCDBACKLIGHT
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
-		board_update();
+		board_update();		/* вывести забуферированные изменения в регистры */
 #endif /* WITHLCDBACKLIGHT */
 #if ! LCDMODE_DUMMY
 		display2_fillbg(& dbv);
@@ -20758,7 +20758,7 @@ static uint_fast8_t nvramdiags(void)
 
 #if WITHLCDBACKLIGHT
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
-		board_update();
+		board_update();		/* вывести забуферированные изменения в регистры */
 #endif /* WITHLCDBACKLIGHT */
 
 #if ! LCDMODE_DUMMY
@@ -20826,7 +20826,7 @@ static uint_fast8_t nvramdiags(void)
 
 #if WITHLCDBACKLIGHT
 			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
-			board_update();
+			board_update();		/* вывести забуферированные изменения в регистры */
 #endif /* WITHLCDBACKLIGHT */
 
 #if ! LCDMODE_DUMMY
@@ -20873,7 +20873,7 @@ static uint_fast8_t nvramdiags(void)
 
 #if WITHLCDBACKLIGHT
 			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
-			board_update();
+			board_update();		/* вывести забуферированные изменения в регистры */
 #endif /* WITHLCDBACKLIGHT */
 
 #if ! LCDMODE_DUMMY
@@ -20914,7 +20914,7 @@ static uint_fast8_t nvramdiags(void)
 
 #if WITHLCDBACKLIGHT
 			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
-			board_update();
+			board_update();		/* вывести забуферированные изменения в регистры */
 #endif /* WITHLCDBACKLIGHT */
 
 #if ! LCDMODE_DUMMY
@@ -20958,7 +20958,7 @@ static uint_fast8_t nvramdiags(void)
 
 #if WITHLCDBACKLIGHT
 			board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
-			board_update();
+			board_update();		/* вывести забуферированные изменения в регистры */
 #endif /* WITHLCDBACKLIGHT */
 
 #if ! LCDMODE_DUMMY
@@ -23526,7 +23526,7 @@ application_initialize(void)
 	{
 		hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
 		board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
-		board_update();
+		board_update();		/* вывести забуферированные изменения в регистры */
 	}
 
 	board_init_chips2();	// программирование кодеков при подающейся тактовой частоте
@@ -23535,7 +23535,7 @@ application_initialize(void)
 	{
 		hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
 		board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
-		board_update();
+		board_update();		/* вывести забуферированные изменения в регистры */
 	}
 
 #if WITHTOUCHGUI
