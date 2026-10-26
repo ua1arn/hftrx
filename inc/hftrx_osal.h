@@ -75,5 +75,6 @@ void hftrx_osal_msleep(uint32_t delay);
 void *hftrx_osal_malloc(size_t size);
 void hftrx_osal_free(void *ptr);
 
+void hftrx_osal_init(void);
 
 #endif /* INC_HFTRX_OSAL_H_ */

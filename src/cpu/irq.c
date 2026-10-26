@@ -2045,6 +2045,7 @@ static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 static thread_item_t * startedtask [HARDWARE_NCORES];	// последнее запущенное на core
 static LIST_ENTRY threads_listW;	// threads im wait state
 static LIST_ENTRY threads_listR [PRIOv_count];	// threads in ready state
+static LIST_ENTRY timers_list;
 
 void thread_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 
@@ -2168,7 +2169,7 @@ void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, uns
 	return thread;
 }
 
-void * thread_create_board(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+void * Xthread_create_board(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
 {
 	ASSERT(threads_not_started == 0);
 
@@ -2180,7 +2181,7 @@ void * thread_create_board(int (*fn)(void * ctx), void * ctx, void * rambase, un
 	return thread;
 }
 
-void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
+void * Xthread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
 {
 	ASSERT(threads_not_started == 0);
 
@@ -2205,6 +2206,9 @@ void * Xthread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase
 }
 
 void task_scheduler_initialize(void) {
+	{
+		InitializeListHead(& timers_list);
+	}
 	{
 		unsigned prio;
 		IRQLSPINLOCK_INITIALIZE(& threadslock);
@@ -4635,4 +4639,8 @@ void hftrx_osal_free(void *ptr)
 
 }
 
+void hftrx_osal_init(void)
+{
+
+}
 #endif /* WITHRTOS */
