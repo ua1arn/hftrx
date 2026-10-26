@@ -248,6 +248,7 @@
 	//#define COLORSTYLE_WHITE	1
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 	
+	#define WITHDIMMTIMEDEF 0	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
 
 	#define ENCRES_DEFAULT ENCRES_600
 	#define ENCRES_SUB_DEFAULT ENCRES_600
@@ -256,7 +257,9 @@
 	
 	#define WITHENCODER_SUB	1		/* есть второй валкодер */
 	#define ENCDIV_DEFAULT 2
+	#define ENCDIVSUB_DEFAULT 8
 	#define ENCDYNAMIC_DEFAULT 1
+	#define ENCSUBDYNAMIC_DEFAULT 0
 	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 
 	#define WITHENCODER_1F	1

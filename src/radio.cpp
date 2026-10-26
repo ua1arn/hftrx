@@ -4452,17 +4452,17 @@ static int_fast32_t getzerobase(void)
 
 #if WITHENCODER_SUB
 
-#if defined (ENCDIV_DEFAULT)
-	static uint_fast8_t gencsubdiv = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
-#else /* defined (ENCDIV_DEFAULT) */
+#if defined (ENCDIVSUB_DEFAULT)
+	static uint_fast8_t gencsubdiv = ENCDIVSUB_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
+#else /* defined (ENCDIVSUB_DEFAULT) */
 	static uint_fast8_t gencsubdiv = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
-#endif /* defined (ENCDIV_DEFAULT) */
+#endif /* defined (ENCDIVSUB_DEFAULT) */
 
-#if defined (ENCDYNAMIC_DEFAULT)
-	static uint_fast8_t gencsubdynamic = ENCDYNAMIC_DEFAULT;
-#else /* defined (ENCDYNAMIC_DEFAULT) */
+#if defined (ENCSUBDYNAMIC_DEFAULT)
+	static uint_fast8_t gencsubdynamic = ENCSUBDYNAMIC_DEFAULT;
+#else /* defined (ENCSUBDYNAMIC_DEFAULT) */
 	static uint_fast8_t gencsubdynamic = 1;
-#endif /* defined (ENCDYNAMIC_DEFAULT) */
+#endif /* defined (ENCSUBDYNAMIC_DEFAULT) */
 
 	static const struct paramdefdef xgencsubdynamic =
 	{
@@ -5979,7 +5979,7 @@ enum
 #if WITHNOAUDIPROC
 	static uint_fast8_t gmikehclip = 0;		/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
 #else /* WITHNOAUDIPROC */
-	static uint_fast8_t gmikehclip = 25;		/* Ограничитель */
+	static uint_fast8_t gmikehclip = 35;		/* Ограничитель */
 #endif /* WITHNOAUDIPROC */
 	static const struct paramdefdef xgmikehclip =
 	{
@@ -7513,7 +7513,7 @@ static const struct paramdefdef xgskipfilteraf =
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHMIC1LEVEL
-	static uint_fast16_t gmik1level = (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) / 4 + WITHMIKEINGAINMIN;
+	static uint_fast16_t gmik1level = 55;//(WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) / 4 + WITHMIKEINGAINMIN;
 	/* подстройка усиления микрофонного усилителя через меню. */
 	static const struct paramdefdef xgmik1level =
 	{
@@ -9222,7 +9222,11 @@ static void cat_answer_forming(void);
 
 #define WITHDIMMTIMEMAX 480
 
+#ifdef WITHDIMMTIMEDEF
+static uint_fast16_t gdimmtime = WITHDIMMTIMEDEF;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
+#else /* WITHDIMMTIMEDEF */
 static uint_fast16_t gdimmtime = WITHDIMMTIMEMAX;	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
+#endif /* WITHDIMMTIMEDEF */
 
 static const struct paramdefdef xgdimmtime =
 {
@@ -14002,7 +14006,7 @@ updateboard_noui(
 		board_set_txgate(param_val(& xgtxgate));		/* разрешение драйвера и оконечного усилителя */
 		board_set_forcexvrtr(param_val(& xgforcexvrtr));
 		#if WITHMIC1LEVEL
-			board_set_mik1level(gmik1level);
+			board_set_mik1level(param_val(& xgmik1level));
 		#endif /* WITHMIC1LEVEL */
 		board_set_autotune(txreq_getreqautotune(& txreqst0));
 	#endif /* WITHTX */
