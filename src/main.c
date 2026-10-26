@@ -57,6 +57,8 @@ main(void)
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
 	global_disableIRQ();
+	task_scheduler_initialize();
+	board_dpc_initialize();		/* инициализация списка user-mode опросных функций */
 	cpu_initialize();		// в случае ARM - инициализация прерываний и контроллеров, AVR - запрет JTAG
 	lowinitialize();	/* вызывается при запрещённых прерываниях. */
 	applowinitialize();	/* вызывается при запрещённых прерываниях. */

@@ -4402,8 +4402,6 @@ void cpu_initialize(void)
 //	PRINTF(PSTR("__stack=%p, SystemInit=%p, __Vectors=%p\n"), & __stack, SystemInit, & __Vectors);
 
 //	ca9_ca7_cache_diag();	// print
-	task_scheduler_initialize();
-	board_dpc_initialize();		/* инициализация списка user-mode опросных функций */
 #if (__CORTEX_A != 0)
 
 	cpump_initialize();	// Запуск остальных процессоров
