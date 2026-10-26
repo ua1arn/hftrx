@@ -2027,7 +2027,7 @@ typedef struct check_ready_tag
 typedef struct thread_item_tag
 {
 	LIST_ENTRY item;
-	__ALIGNED(8) uint8_t affinity;
+	uint8_t affinity;
 	exception_frame_t * cpuframe;	// cpu state
 	uint8_t prio;
 	const check_ready_t * check_ready;	// condition check function
@@ -2039,6 +2039,15 @@ typedef struct thread_item_tag
 #endif /* WITHDEBUG */
 } thread_item_t;
 
+typedef struct timer_item_tag
+{
+	LIST_ENTRY item;
+	hwtimcount_t t0;
+	hwtimcount_t td;
+	uint8_t periodic;
+	void * ctx;
+	int (* func)(void * ctx);
+} timer_item_t;
 
 static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 
@@ -2047,7 +2056,6 @@ static LIST_ENTRY threads_listW;	// threads im wait state
 static LIST_ENTRY threads_listR [PRIOv_count];	// threads in ready state
 static LIST_ENTRY timers_list;
 
-void thread_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 
 #if WITHRTOS
 
@@ -2262,7 +2270,6 @@ static void task_resched(hwtimcountfast_t tn) {
 
 // получить готовую у выполнению задачу для ядра, попадающего в affinity
 static thread_item_t * task_getready(unsigned affinity) {
-	const hwtimcountfast_t tn = timestamp_getticks();
 	ASSERT(affinity);
 	unsigned prio;
 
@@ -2272,17 +2279,40 @@ static thread_item_t * task_getready(unsigned affinity) {
 		PRLIST_ENTRY t;
 		PRLIST_ENTRY const listR = & threads_listR [prio];
 		for (t = listR->Flink; t != listR; t = t->Flink) {
-			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-			if ((tp->affinity & affinity))
+			thread_item_t * const p = CONTAINING_RECORD(t, thread_item_t, item);
+			//
+			if ((p->affinity & affinity))
 			{
 				// Нашли подходящий поток
-				RemoveEntryList(& tp->item);
-				return tp;
+				RemoveEntryList(& p->item);
+				return p;
 			}
 		}
 	}
 	ASSERT(0);
 	return NULL;
+}
+
+static void timers_check(hwtimcountfast_t tn) {
+	PRLIST_ENTRY t;
+	PRLIST_ENTRY tnext;
+
+	// Обрабатываем проверку условия возобновления
+	for (t = timers_list.Flink; t != & timers_list; t = tnext) {
+		tnext = t->Flink;
+		timer_item_t * const p = CONTAINING_RECORD(t, timer_item_t, item);
+		//
+		if ((cpu_getdebugticksmask() & (tn - p->t0)) >= p->td)
+		{
+			// указанное время настало
+			if (p->periodic)
+				p->t0 += p->td;
+			else
+				RemoveEntryList(& p->item);
+		}
+		if (p->func)
+			(* p->func)(p->ctx);
+	}
 }
 
 #if WITHDEBUG
@@ -2379,7 +2409,7 @@ static int ready_timeout(uint_fast32_t tn, hwtimcountfast_t t0, hwtimcountfast_t
 {
 	if (td == cpu_getdebugticksmask())
 		return 0;
-	return (uint32_t) (tn - t0) >= td;
+	return (cpu_getdebugticksmask() & (tn - t0))  >= td;
 }
 
 static int print_td(char *__restrict buff, size_t size, hwtimcountfast_t td)
@@ -2653,8 +2683,10 @@ task_scheduler0(exception_frame_t * oldframe, unsigned syscallflag, unsigned cod
 		task_insertready(tp);		// раз сэда попали - значит точно не ждали ничего
 	}
 
+	const hwtimcountfast_t tn = timestamp_getticks();
+	timers_check(tn);
 	// перепланировка
-	task_resched(timestamp_getticks());
+	task_resched(tn);
 
 	// Запуск
 	startedtask [core] = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
@@ -3820,9 +3852,9 @@ uint_fast8_t arm_hardware_cpuid(void)
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
-static RAMDTCM LCLSPINLOCK_t gicdistrib_lock = IRQLSPINLOCK_INIT;
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-#if WITHSMPSYSTEM
+static RAMDTCM LCLSPINLOCK_t gicdistrib_lock = IRQLSPINLOCK_INIT;
 
 static RAMDTCM LCLSPINLOCK_t populate_lock = IRQLSPINLOCK_INIT;
 
@@ -3907,8 +3939,8 @@ void arm_hardware_populte_second_initialize(void)
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 }
 
-#endif /* WITHSMPSYSTEM */
-#endif
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
+#endif /* (CPUSTYLE_ARM || CPUSTYLE_RISCV) */
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_ida, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
@@ -4136,256 +4168,6 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 	arm_hardware_set_handler(int_id, handler, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM);
 }
 
-////////////////////
-/// поддержка отложенного вызова user-mode функций
-
-typedef struct dpcdata
-{
-	void * tag1;
-	LCLSPINLOCK_t lock;
-	LIST_ENTRY dpclistentries;	// list of dpcobj_t - периодичски вызываемые функции
-	LIST_ENTRY dpclistcalls;	// list of dpcobj_t = однократно вызываемые функции
-	void * tag2;
-} DPCDATA_t;
-
-static DPCDATA_t dpcdatas [HARDWARE_NCORES];
-
-/* инициализация списка user-mode опросных функций */
-void board_dpc_initialize(void)
-{
-	unsigned i;
-	for (i = 0; i < ARRAY_SIZE(dpcdatas); ++ i)
-	{
-		DPCDATA_t * const dpc = & dpcdatas [i];
-		IRQLSPINLOCK_INITIALIZE(& dpc->lock);
-		InitializeListHead(& dpc->dpclistentries);
-		InitializeListHead(& dpc->dpclistcalls);
-		dpc->tag1 = dpc;
-		dpc->tag2 = dpc;
-	}
-}
-
-void dpcobj_initialize(dpcobj_t * dp, udpcfn_t func, void * arg, const char * name)
-{
-	dp->flag = 0;
-	dp->fn = func;
-	dp->ctx = arg;
-	dp->tag1 = dp;
-	dp->tag2 = dp;
-	local_snprintf_P(dp->name, ARRAY_SIZE(dp->name), "%s", name);
-}
-
-static void dpcobj_release(dpcobj_t * dp)
-{
-	IRQL_t oldIrql;
-	DPCDATA_t * const dpc = & dpcdatas [dp->coreid];
-	LCLSPINLOCK_t * const lock = & dpc->lock;
-	ASSERT(dpc == dpc->tag1);
-	ASSERT(dpc == dpc->tag2);
-	ASSERT(dp == dp->tag1);
-	ASSERT(dp == dp->tag2);
-	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-	dp->flag = 0;
-	IRQLSPIN_UNLOCK(lock, oldIrql);
-}
-
-// возврат не-0 если уже занято
-static uint_fast8_t dpcobj_accure(dpcobj_t * dp)
-{
-	uint_fast8_t v;
-
-	IRQL_t oldIrql;
-	DPCDATA_t * const dpc = & dpcdatas [dp->coreid];
-	LCLSPINLOCK_t * const lock = & dpc->lock;
-	ASSERT(dpc == dpc->tag1);
-	ASSERT(dpc == dpc->tag2);
-	ASSERT(dp == dp->tag1);
-	ASSERT(dp == dp->tag2);
-
-	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-	v = dp->flag;
-	dp->flag = 1;
-	IRQLSPIN_UNLOCK(lock, oldIrql);
-
-	return v;
-}
-
-/* Удалить функцию для периодического вызова */
-uint_fast8_t board_dpc_delentry(dpcobj_t * dp)
-{
-	IRQL_t oldIrql;
-	DPCDATA_t * const dpc = & dpcdatas [dp->coreid];
-	LCLSPINLOCK_t * const lock = & dpc->lock;
-	ASSERT(dpc == dpc->tag1);
-	ASSERT(dpc == dpc->tag2);
-	ASSERT(dp == dp->tag1);
-	ASSERT(dp == dp->tag2);
-
-	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-	dp->delflag = 1;	/* удаление будет произведено при обработке списка */
-	IRQLSPIN_UNLOCK(lock, oldIrql);
-
-	return 1;
-}
-
-// получить core id текушего потока
-// 0..HARDWARE_NCORES-1
-uint_fast8_t board_dpc_coreid(void)
-{
-	return arm_hardware_cpuid();
-}
-// получить core id потока для обновления дисплея
-// 0..HARDWARE_NCORES-1
-uint_fast8_t board_dpc_display_coreid(void)
-{
-#if HARDWARE_NCORES > 2
-	return 1;
-#else /* */
-	return 0;
-#endif /* */
-}
-
-// Запрос отложенного вызова user-mode функций
-/* добавить функцию для однократного вызова */
-uint_fast8_t board_dpc_call(dpcobj_t * dp, uint_fast8_t coreid)
-{
-	//PRINTF("board_dpc_call: dp=%p, coreid=%u name='%s\n", dp, (unsigned) coreid, dp->name);
-	IRQL_t oldIrql;
-	DPCDATA_t * const dpc = & dpcdatas [coreid];
-	LCLSPINLOCK_t * const lock = & dpc->lock;
-	ASSERT(coreid < HARDWARE_NCORES);
-	ASSERT(dpc == dpc->tag1);
-	ASSERT(dpc == dpc->tag2);
-	ASSERT(dp == dp->tag1);
-	ASSERT(dp == dp->tag2);
-
-	//if (coreid == 1) dbg_putchar('#');
-	// предотвращение повторного включения в очередь того же запроса
-	if (dpcobj_accure(dp))
-		return 0;
-
-	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-	dp->coreid = coreid;
-	InsertHeadList(& dpc->dpclistcalls, & dp->item);
-	IRQLSPIN_UNLOCK(lock, oldIrql);
-
-	return 1;
-}
-
-// Запрос отложенного вызова user-mode функций
-/* добавить функцию для периодического вызова */
-uint_fast8_t board_dpc_addentry(dpcobj_t * dp, uint_fast8_t coreid)
-{
-	//PRINTF("board_dpc_addentry: dp=%p, coreid=%u name='%s\n", dp, (unsigned) coreid, dp->name);
-	IRQL_t oldIrql;
-	DPCDATA_t * const dpc = & dpcdatas [coreid];
-	LCLSPINLOCK_t * const lock = & dpc->lock;
-	ASSERT(coreid < HARDWARE_NCORES);
-	ASSERT(dpc == dpc->tag1);
-	ASSERT(dpc == dpc->tag2);
-	ASSERT(dp == dp->tag1);
-	ASSERT(dp == dp->tag2);
-
-	// предотвращение повторного включения в очередь того же запроса
-	if (dpcobj_accure(dp))
-		return 0;
-
-	IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-	dp->coreid = coreid;
-	dp->delflag = 0;
-	InsertHeadList(& dpc->dpclistentries, & dp->item);
-	IRQLSPIN_UNLOCK(lock, oldIrql);
-
-	return 1;
-}
-
-// user-mode функция обработки списков запросов dpc на текущем процессоре
-void board_dpc_processing(void)
-{
-	const uint_fast8_t coreid = board_dpc_coreid();
-	DPCDATA_t * const dpc = & dpcdatas [coreid];
-	LCLSPINLOCK_t * const lock = & dpc->lock;
-//	char b [32];
-//	local_snprintf_P(b, ARRAY_SIZE(b), "coreid=%u", coreid);
-//	ASSERT3(coreid < HARDWARE_NCORES, __FILE__, __LINE__, b);
-//	ASSERT3(dpc == dpc->tag1, __FILE__, __LINE__, b);
-//	ASSERT3(dpc == dpc->tag2, __FILE__, __LINE__, b);
-	ASSERT(coreid < HARDWARE_NCORES);
-	ASSERT(dpc == dpc->tag1);
-	ASSERT(dpc == dpc->tag2);
-	// Выполнение периодического вызова user-mode функций по списку
-	//if (coreid == 1) dbg_putchar('+');
-	{
-		IRQL_t oldIrql;
-		PRLIST_ENTRY t;
-		IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-		PRLIST_ENTRY const list = & dpc->dpclistentries;
-		PRLIST_ENTRY tnext;
-		for (t = list->Blink; t != list; t = tnext)
-		{
-			ASSERT(t != NULL);
-			tnext = t->Blink;
-			dpcobj_t * const dp = CONTAINING_RECORD(t, dpcobj_t, item);
-			IRQLSPIN_UNLOCK(lock, oldIrql);
-//			ASSERT3(dp == dp->tag1, __FILE__, __LINE__, b);
-//			ASSERT3(dp == dp->tag2, __FILE__, __LINE__, b);
-			ASSERT(dp == dp->tag1);
-			ASSERT(dp == dp->tag2);
-
-			ASSERT(coreid == dp->coreid);
-			if (dp->delflag)
-			{
-				/* удалние функции, ранее помещённой в список */
-				RemoveEntryList(& dp->item);
-				//RemoveEntryList(t);
-			}
-			else
-			{
-				/* выполнение функции, ранее помещённой в список */
-				(* dp->fn)(dp->ctx);
-			}
-
-			IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-		}
-		IRQLSPIN_UNLOCK(lock, oldIrql);
-	}
-	//if (coreid == 1) dbg_putchar('|');
-	// Выполнение однократно вызываемых user-mode функций по списку
-	{
-		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-		PRLIST_ENTRY const list = & dpc->dpclistcalls;
-		while (! IsListEmpty(list))
-		{
-			PRLIST_ENTRY t = RemoveTailList(list);
-			IRQLSPIN_UNLOCK(lock, oldIrql);
-			ASSERT(t != NULL);
-
-			dpcobj_t * const dp = CONTAINING_RECORD(t, dpcobj_t, item);
-			ASSERT(dp == dp->tag1);
-			ASSERT(dp == dp->tag2);
-			ASSERT(coreid == dp->coreid);
-			(* dp->fn)(dp->ctx);
-			dpcobj_release(dp);
-
-			IRQLSPIN_LOCK(lock, & oldIrql, DPCSYS_IRQL);
-		}
-		IRQLSPIN_UNLOCK(lock, oldIrql);
-	}
-#if WITHSMPSYSTEM
-	//__DMB();
-	//__WFI();
-#endif /* WITHSMPSYSTEM */
-	//if (coreid == 1) dbg_putchar('-');
-	thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-}
-
-void testsloopprocessing(void)
-{
-	board_dpc_processing();		// обработка отложенного вызова user mode функций для данного ядра
-	watchdog_ping();
-}
-
 // Вызывается из main - для CORE0
 void cpu_initialize(void)
 {
@@ -4461,15 +4243,17 @@ void cpu_initialize(void)
 	arm_cpu_CMx_initialize_NVIC();
 #endif
 
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-
-	//IRQ_Initialize();	// GIC_Enable(0) inside
-	//GIC_Enable();
 #if CPUSTYLE_R7S721
 	r7s721_intc_initialize();
 #endif /* CPUSTYLE_R7S721 */
 
 	InitializeIrql(IRQL_USER);
+
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+
+	//IRQ_Initialize();	// GIC_Enable(0) inside
+	//GIC_Enable();
+
 
 	#if WITHSMPSYSTEM
 		arm_hardware_populate_initialize();

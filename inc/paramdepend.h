@@ -952,6 +952,7 @@ void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, uns
 void * thread_create_board(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
 void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
 void * thread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
+void thread_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
 
 
 #define LOCAL_WAITINFINITY UINT32_MAX
