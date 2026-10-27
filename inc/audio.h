@@ -706,8 +706,6 @@ enum {
 
 #if WITHINTEGRATEDDSP
 
-#define NPROF 2	/* количество профилей параметров DSP фильтров. */
-
 
 /*
  * Object-oriented NFM Signaling Module for hftrx
@@ -925,7 +923,7 @@ typedef struct {
 
 typedef struct {
 	// Фильтр для квадратурных каналов приёмника (floating point).
-	FLOAT_t FIRCoef_rx_SSB_IQ [NPROF] [Ntap_rx_SSB_IQ];
+	FLOAT_t FIRCoef_rx_SSB_IQ [Ntap_rx_SSB_IQ];
 	FLOAT_t window_buf [Ntap_rx_SSB_IQ];
 	FLOAT32P_t fir_x [Ntap_rx_SSB_IQ * 2];
 	uint_fast16_t fir_head;// = 0;
@@ -933,7 +931,7 @@ typedef struct {
 
 typedef struct {
 	// буфер с сохранёнными значениями сэмплов
-	FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [Ntap_tx_SSB_IQ];
+	FLOAT_t FIRCoef_tx_SSB_IQ [Ntap_tx_SSB_IQ];
 	FLOAT_t window_buf [Ntap_tx_SSB_IQ];
 	FLOAT32P_t fir_x [Ntap_tx_SSB_IQ * 2];
 	uint_fast16_t fir_head;// = 0;
@@ -961,7 +959,7 @@ typedef struct {
     agcparams_t rxsmeterparams;
     agcstate_t rxsmeterstate;	// На каждый приёмник
     agcstate_t rxagcstate;	// На каждый приёмник
-    agcparams_t rxagcparams [NPROF];
+    agcparams_t rxagcparams;
 
     isb_demodulator_t isb_rx;
 	rtty_receiver_t rtty_rx;
@@ -1005,7 +1003,7 @@ typedef struct {
 #endif /* WITHDSPLOCALTXFIR */
 
 	agcstate_t txagcstate;
-	agcparams_t mikeagcparams [NPROF];	// постоянные времени системы АРУ
+	agcparams_t mikeagcparams;	// постоянные времени системы АРУ
 
 	const void * sign2;
 } hftxpath_t;

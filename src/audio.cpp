@@ -4117,39 +4117,24 @@ static FLOAT_t agc_getsigpower(
 }
 
 
-static uint_fast8_t gwagcproftx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 // TODO: remove WITHDACOUTDSPAGC
 static void agc_tx_initialize(hftxpath_t * const txpath)
 {
 	// Установка параметров АРУ передатчика
-	gwagcproftx = 0;
-
-
-	uint_fast8_t profile;
-	for (profile = 0; profile < NPROF; ++ profile)
-	{
-		const uint_fast32_t sr = ARMI2SRATE;
-		// Микрофон всегда с flatgain=1
-		mikeagc_parameters_init(& txpath->mikeagcparams [profile], sr);
-		agc_state_init(& txpath->txagcstate, & txpath->mikeagcparams [profile].levels);
-	}
+	const uint_fast32_t sr = ARMI2SRATE;
+	// Микрофон всегда с flatgain=1
+	mikeagc_parameters_init(& txpath->mikeagcparams, sr);
+	agc_state_init(& txpath->txagcstate, & txpath->mikeagcparams.levels);
 }
-
-static uint_fast8_t gwagcprofrx = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 
 static void agc_rx_initialize(hfrxpath_t * const path, uint_fast32_t const sr)
 {
 	// Установка параметров АРУ приёмника
-	gwagcprofrx = 0;
-	uint_fast8_t profile;
-	for (profile = 0; profile < NPROF; ++ profile)
-	{
-        agc_parameters_init(& path->rxagcparams [profile], sr);
-		agc_state_init(& path->rxagcstate, & path->rxagcparams [profile].levels);
-		// s-meter
-		agc_parameters_init(& path->rxsmeterparams, sr);
-		agc_state_init(& path->rxsmeterstate, & path->rxsmeterparams.levels);
-	}
+    agc_parameters_init(& path->rxagcparams, sr);
+	agc_state_init(& path->rxagcstate, & path->rxagcparams.levels);
+	// s-meter
+	agc_parameters_init(& path->rxsmeterparams, sr);
+	agc_state_init(& path->rxsmeterstate, & path->rxsmeterparams.levels);
 }
 
 // АРУ вперёд для floaing-point тракта
@@ -4161,7 +4146,7 @@ static FLOAT_t agc_measure_float(
 {
 	//BEGIN_STAMP3();
 
-	const agcparams_t * const agcp = & path->rxagcparams [gwagcprofrx];
+	const agcparams_t * const agcp = & path->rxagcparams;
 	agcstate_t * const st = & path->rxagcstate;
 	BEGIN_STAMP();
 	const FLOAT_t strength_log = agccalcstrength_log(& agcp->levels, siglevel0);	// получение логарифмического хначения уровня сигнала
@@ -4185,7 +4170,7 @@ static FLOAT_t agc_getgain_float(
 	FLOAT_t fltstrengthslow
 	)
 {
-	const agcparams_t * const agcp = & path->rxagcparams [gwagcprofrx];
+	const agcparams_t * const agcp = & path->rxagcparams;
 
 	//BEGIN_STAMP();
 	const FLOAT_t gain = agccalcgain_log(& agcp->levels, fltstrengthslow);
@@ -4322,15 +4307,15 @@ int_fast16_t dsp_agcfence10(void)
 	return glob_agcfence10;
 }
 
-static FLOAT_t mickecliplevelp [NPROF] = { + 1, + 1 };	/* positive limit */
-static FLOAT_t mickeclipleveln [NPROF] = { - 1, - 1 };	/* negative limit */
-static FLOAT_t mickeclipscale [NPROF] = { 1, 1 };
+static FLOAT_t mickecliplevelp = + 1;	/* positive limit */
+static FLOAT_t mickeclipleveln = - 1;	/* negative limit */
+static FLOAT_t mickeclipscale = 1;
 
 // ару и компрессор микрофона
 // На входе уже нормированный к txlevelfenceSSB сигнал
 static FLOAT_t txmikeagc(hftxpath_t * const txpath, FLOAT_t vi)
 {
-	const agcparams_t * const agcp = & txpath->mikeagcparams [gwagcproftx];
+	const agcparams_t * const agcp = & txpath->mikeagcparams;
 	if (agcp->levels.agcoff == 0)
 	{
 		const FLOAT_t siglevel0 = FABSF(vi);
@@ -4346,13 +4331,13 @@ static FLOAT_t txmikeagc(hftxpath_t * const txpath, FLOAT_t vi)
 static FLOAT_t txmikeclip(hftxpath_t * const txpath, FLOAT_t vi)
 {
 	// Ограничитель
-	const FLOAT_t levelp = mickecliplevelp [gwagcproftx];
-	const FLOAT_t leveln = mickeclipleveln [gwagcproftx];
+	const FLOAT_t levelp = mickecliplevelp;
+	const FLOAT_t leveln = mickeclipleveln;
 	if (vi > levelp)
 		vi = levelp;
 	else if (vi < leveln)
 		vi = leveln;
-	vi *= mickeclipscale [gwagcproftx];
+	vi *= mickeclipscale;
 
 	return vi;
 }
@@ -4362,7 +4347,7 @@ uint_fast8_t dsp_getmikeadcoverflow(void)
 {
     hftxpath_t * const txpath = & tx_path;
 	agcstate_t * const st = & txpath->txagcstate;
-	const FLOAT_t FS = txpath->mikeagcparams [gwagcproftx].levels.levelfence_ratio;	// txlevelfenceSSB
+	const FLOAT_t FS = txpath->mikeagcparams.levels.levelfence_ratio;	// txlevelfenceSSB
 	return st->agcslowcap >= FS * db2ratio((FLOAT_t) - 1);
 }
 
@@ -7298,7 +7283,6 @@ hfrxpath_init(hfrxpath_t * const self)
 static void 
 hfrxpath_update(
 		hfrxpath_t * const self,
-		uint_fast8_t profile,		// профиль для текущего обновления
 		const uint_fast8_t selfi)				// 0/1: main_RX/sub_RX
 {
 	// Параметры АРУ приёмника
@@ -7310,7 +7294,7 @@ hfrxpath_update(
 		// glob_fsadcpower10
 		const FLOAT_t agc_agcfence = agclevel_from_abspower10(glob_agcfence10);	// из абсолютного уровня преобразовать в отношение к FS
 		
-		rxagc_parameters_update(self, & self->rxagcparams [profile], manualrfgain, (FLOAT_t) agc_agcfence, selfi);	// приёмник #0,#1
+		rxagc_parameters_update(self, & self->rxagcparams, manualrfgain, (FLOAT_t) agc_agcfence, selfi);	// приёмник #0,#1
 
 		//PRINTF("glob_agcfence=%+d, glob_fsadcpower10=%d, agcfence=%f\n", (int) glob_agcfence, (int) glob_fsadcpower10, agc_agcfence);
 
@@ -7379,7 +7363,7 @@ hfrxpath_update(
 // Передача параметров в DSP модуль
 // Обновление параметров передатчика (кроме фильтров).
 static void 
-hftxpath_update(hftxpath_t * const txpath, uint_fast8_t profile)
+hftxpath_update(hftxpath_t * const txpath)
 {
 	const FLOAT_t txlevelfence = 1;	// контролировать по отсутствию индикации переполнения DUC при передаче
 
@@ -7397,15 +7381,15 @@ hftxpath_update(hftxpath_t * const txpath, uint_fast8_t profile)
 	txlevelfenceBPSK = 	txlevelfence * c1CW;
 
 	// Параметры АРУ микрофона
-	mikeagc_parameters_update(& txpath->mikeagcparams [profile], (int) glob_mikeagcgain);
+	mikeagc_parameters_update(& txpath->mikeagcparams, (int) glob_mikeagcgain);
 	TX_Audio_System_Init();
 	{
 		// Настройка ограничителя
-		const FLOAT_t FS_ratio = txpath->mikeagcparams [profile].levels.levelfence_ratio;	// txlevelfenceSSB
+		const FLOAT_t FS_ratio = txpath->mikeagcparams.levels.levelfence_ratio;	// txlevelfenceSSB
 		const FLOAT_t grade = 1 - (glob_mikehclip / (FLOAT_t) 100);
-		mickeclipscale [profile] = 1 / grade;
-		mickecliplevelp [profile] = FS_ratio * grade;
-		mickeclipleveln [profile] = - FS_ratio * grade;
+		mickeclipscale = 1 / grade;
+		mickecliplevelp = FS_ratio * grade;
+		mickeclipleveln = - FS_ratio * grade;
 	}
 	{
 		// компрессор
@@ -7477,22 +7461,18 @@ void hftrx_init(void)
 
 
 	{
-		const uint_fast8_t rprofile = ! gwagcprofrx;	// индекс профиля, который станет рабочим
 		uint_fast8_t pathi;
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
 		    hfrxpath_t * const path = & rx_paths [pathi];
 		    hfrxpath_init(path);
-			hfrxpath_update(path, rprofile, pathi);
+			hfrxpath_update(path, pathi);
 		}
-		gwagcprofrx = rprofile;
 	}
 
 	ARM_MORPH(arm_fir_init)(& tx_fir_instance, Ntap_tx_MIKE, tx_firEQcoeff, tx_fir_state, tx_MIKE_blockSize);
 
-	const uint_fast8_t tprofile = ! gwagcproftx;	// индекс профиля, который станет рабочим
-	hftxpath_update(& tx_path, tprofile);
-	gwagcproftx = tprofile;
+	hftxpath_update(& tx_path);
 
 	{
 		//const uint_fast8_t spf = ! gwprof;	// индекс профиля для подготовки параметров DSP
@@ -7533,18 +7513,14 @@ void
 prog_dsplreg(void)
 {
 	const uint_fast8_t pathn = isdspmodetx(glob_dspmodes [0]) ? 1 : NTRX;	// при передаче только тракт с идексом 0
-	const uint_fast8_t rprofile = ! gwagcprofrx;	// индекс профиля, который станет рабочим
 	uint_fast8_t pathi;
 	for (pathi = 0; pathi < pathn; ++ pathi)
 	{
 	    hfrxpath_t * const path = & rx_paths [pathi];
-		hfrxpath_update(path, rprofile, pathi);
+		hfrxpath_update(path, pathi);
 	}
-	gwagcprofrx = rprofile;
 
-	const uint_fast8_t tprofile = ! gwagcproftx;	// индекс профиля, который станет рабочим
-	hftxpath_update(& tx_path, tprofile);
-	gwagcproftx = tprofile;
+	hftxpath_update(& tx_path);
 }
 
 void 
