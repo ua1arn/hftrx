@@ -629,10 +629,11 @@ void tuh_bth_mount_cb(uint8_t idx)
 
     spp_service_setup();	// трансивер виден как два serial порта
 
+    // https://bluetooth-pentest.narod.ru/software/bluetooth_class_of_device-service_generator.html
 #if WITHUSEUSBBTAUDIO
      gap_set_class_of_device(0x00240414);	// audio+spp
 #else /* WITHUSEUSBBTAUDIO */
-     gap_set_class_of_device(0x00801F00);		// spp only
+     gap_set_class_of_device(0*0x00801F00);		// spp only
 #endif /* WITHUSEUSBBTAUDIO */
 
     gap_set_security_level(LEVEL_2);

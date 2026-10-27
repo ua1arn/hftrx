@@ -55,12 +55,18 @@
 #define MAX_NR_HIDS_CLIENTS 1
 #define MAX_NR_L2CAP_CHANNELS  8 // was: 4
 #define MAX_NR_L2CAP_SERVICES  5 // was: 3
-#define MAX_NR_RFCOMM_CHANNELS 6	// was: 1
-#define MAX_NR_RFCOMM_MULTIPLEXERS 1
-#define MAX_NR_RFCOMM_SERVICES 4	// was: 1
-#define MAX_NR_SERVICE_RECORD_ITEMS 6		// was: 4
+#define MAX_NR_SERVICE_RECORD_ITEMS 30		// was: 4
 #define MAX_NR_SM_LOOKUP_ENTRIES 3
 #define MAX_NR_WHITELIST_ENTRIES 1
+#if WITHUSEUSBBTAUDIO
+#define MAX_NR_RFCOMM_MULTIPLEXERS 1	// was: 1
+#define MAX_NR_RFCOMM_CHANNELS 1	// was: 1
+#define MAX_NR_RFCOMM_SERVICES 1	// was: 1
+#else
+#define MAX_NR_RFCOMM_MULTIPLEXERS 1	// was: 1
+#define MAX_NR_RFCOMM_CHANNELS 1	// was: 1
+#define MAX_NR_RFCOMM_SERVICES 1	// was: 1
+#endif
 
 // Link Key DB and LE Device DB using TLV on top of Flash Sector interface
 #define NVM_NUM_DEVICE_DB_ENTRIES 4
