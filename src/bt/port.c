@@ -168,7 +168,7 @@ static void port_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t 
         gap_ssp_confirmation_response(address);
         break;
     case HCI_EVENT_DISCONNECTION_COMPLETE:
-        PRINTF("port: Disconnection!\n");
+        PRINTF("port: Disconnection!, reason=0x%04X\n", hci_event_disconnection_complete_get_reason(packet));
     	break;
 	default:
 		break;
@@ -629,6 +629,15 @@ void tuh_bth_mount_cb(uint8_t idx)
 
     spp_service_setup();	// трансивер виден как два serial порта
 
+#if WITHUSEUSBBTAUDIO
+     gap_set_class_of_device(0x00240414);	// audio+spp
+#else /* WITHUSEUSBBTAUDIO */
+     gap_set_class_of_device(0x00801F00);		// spp only
+#endif /* WITHUSEUSBBTAUDIO */
+
+    gap_set_security_level(LEVEL_2);
+    gap_ssp_set_authentication_requirement(SSP_IO_AUTHREQ_MITM_PROTECTION_NOT_REQUIRED_GENERAL_BONDING);
+
     //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
     gap_set_local_name(WITHBRANDSTR " BTx");
     gap_discoverable_control(1);
@@ -636,7 +645,7 @@ void tuh_bth_mount_cb(uint8_t idx)
     //gap_ssp_set_io_capability(SSP_IO_CAPABILITY_DISPLAY_YES_NO);
     gap_ssp_set_io_capability(SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
 
-    //gap_set_allow_role_switch(true);
+    gap_set_allow_role_switch(true);
 
     // turn on!
     hci_power_control(HCI_POWER_ON);

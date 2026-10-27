@@ -60,7 +60,7 @@ static uint_fast8_t btspptxbusy = 0;
  
 #include "btstack.h"
 
-#define SPP_COUNTER_RFCOMM_SERVER_CHANNEL 2
+#define SPP_COUNTER_RFCOMM_SERVER_CHANNEL 1
 
 static uint16_t rfcomm_channel_id;
 static uint8_t  spp_service_buffer[150];
@@ -111,11 +111,13 @@ static uint_fast16_t lineBuffer_len;
 /* LISTING_START(SppServerPacketHandler): SPP Server - Heartbeat Counter over RFCOMM */
 static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size){
     UNUSED(channel);
-
 /* LISTING_PAUSE */ 
     bd_addr_t event_addr;
     uint16_t  mtu;
     int i;
+#if 0
+    PRINTF("spp_packet_handler: hci_event=0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
+#endif
 
     switch (packet_type) {
         case HCI_EVENT_PACKET:
