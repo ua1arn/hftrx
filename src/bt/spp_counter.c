@@ -121,20 +121,20 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 
     switch (packet_type) {
         case HCI_EVENT_PACKET:
-            //printf("spp_counter: parse HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
+            //PRINTF("spp_counter: parse HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
             switch (hci_event_packet_get_type(packet)) {
 /* LISTING_RESUME */ 
 //                case HCI_EVENT_PIN_CODE_REQUEST:
 //                    // inform about pin code request
-//                    printf("Pin code request - using '0000'\n");
+//                    PRINTF("Pin code request - using '0000'\n");
 //                    hci_event_pin_code_request_get_bd_addr(packet, event_addr);
 //                    gap_pin_code_response(event_addr, "0000");
 //                    break;
 
 //                case HCI_EVENT_USER_CONFIRMATION_REQUEST:
 //                    // ssp: inform about user confirmation request
-//                    printf("SSP User Confirmation Request with numeric value '%06"PRIu32"'\n", little_endian_read_32(packet, 8));
-//                    printf("SSP User Confirmation Auto accept\n");
+//                    PRINTF("SSP User Confirmation Request with numeric value '%06"PRIu32"'\n", little_endian_read_32(packet, 8));
+//                    PRINTF("SSP User Confirmation Auto accept\n");
 //                    break;
 
                 case RFCOMM_EVENT_INCOMING_CONNECTION:
@@ -143,18 +143,18 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 						rfcomm_event_incoming_connection_get_bd_addr(packet, event_addr);
 						rfcomm_channel_nr = rfcomm_event_incoming_connection_get_server_channel(packet);
 						rfcomm_channel_id = rfcomm_event_incoming_connection_get_rfcomm_cid(packet);
-						printf("spp_counter: RFCOMM channel %u requested for %s\n", rfcomm_channel_nr, bd_addr_to_str(event_addr));
+						PRINTF("spp_counter: RFCOMM channel %u requested for %s\n", rfcomm_channel_nr, bd_addr_to_str(event_addr));
 						rfcomm_accept_connection(rfcomm_channel_id);
 					}
                     break;
                
                 case RFCOMM_EVENT_CHANNEL_OPENED:
                     if (rfcomm_event_channel_opened_get_status(packet)) {
-                        printf("spp_counter: RFCOMM channel open failed, status 0x%02x\n", rfcomm_event_channel_opened_get_status(packet));
+                        PRINTF("spp_counter: RFCOMM channel open failed, status 0x%02x\n", rfcomm_event_channel_opened_get_status(packet));
                     } else {
                         rfcomm_channel_id = rfcomm_event_channel_opened_get_rfcomm_cid(packet);
                         mtu = rfcomm_event_channel_opened_get_max_frame_size(packet);
-                        printf("spp_counter: RFCOMM channel open succeeded. New RFCOMM Channel ID %u, max frame size %u\n", rfcomm_channel_id, mtu);
+                        PRINTF("spp_counter: RFCOMM channel open succeeded. New RFCOMM Channel ID %u, max frame size %u\n", rfcomm_channel_id, mtu);
                     	btspptxbusy = 0;
                     }
                     break;
@@ -164,18 +164,18 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
 
 /* LISTING_PAUSE */                 
                 case RFCOMM_EVENT_CHANNEL_CLOSED:
-                    printf("spp_counter: RFCOMM channel closed\n");
+                    PRINTF("spp_counter: RFCOMM channel closed\n");
                     rfcomm_channel_id = 0;
                     break;
 
                 case HCI_EVENT_TRANSPORT_PACKET_SENT:
-                	//printf("HCI_EVENT_TRANSPORT_PACKET_SENT\n");
+                	//PRINTF("HCI_EVENT_TRANSPORT_PACKET_SENT\n");
                 	//printhex(0, packet, size);
                 	btspptxbusy = 0;
                 	break;
 
                 case HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS:
-                	//printf("HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS\n");
+                	//PRINTF("HCI_EVENT_NUMBER_OF_COMPLETED_PACKETS\n");
                 	break;
                 case HCI_EVENT_COMMAND_COMPLETE:
                 	// Done in port.c
@@ -193,13 +193,13 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
                     //PRINTF("port: HCI_EVENT_QOS_SETUP_COMPLETE!\n");
                     break;
                 default:
-                    //printf("spp_counter: Unhandled HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
+                    //PRINTF("spp_counter: Unhandled HCI event 0x%02X\n", (unsigned) hci_event_packet_get_type(packet));
                     break;
             }
             break;
 
         case RFCOMM_DATA_PACKET:
-            //printf("RCV: '");
+            //PRINTF("RCV: '");
 //			if (size == 0)
 //        		PRINTF("Empty RFCOMM_DATA_PACKET\n");
 //        	else
@@ -217,7 +217,7 @@ static void spp_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t *
            break;
 
         default:
-            printf("spp_counter: Unhandled RFCOMM packet 0x%02X\n", (unsigned) packet_type);
+            PRINTF("spp_counter: Unhandled RFCOMM packet 0x%02X\n", (unsigned) packet_type);
             break;
     }
 }
