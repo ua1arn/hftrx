@@ -4048,7 +4048,7 @@ static void display2_mode3_b(const gxdrawb_t * db,
 		)
 {
 	const char * const labels [1] = { hamradio_get_mode_b_value_P(), };
-	display2text_states(db, x, y, labels, & dbstylev_1state, 0, xspan, yspan);
+	display2text_states(db, x, y, labels, & dbstylev_1freqB, 0, xspan, yspan);
 }
 
 
