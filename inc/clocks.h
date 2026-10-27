@@ -612,21 +612,9 @@ calcdividerselect(
 	//#warning Undefined CPUSTYLE_XXX
 #endif
 
+// Timestamp counter (one for all CPU cores)
 typedef uint64_t hwtimcount_t;
 typedef uint_fast64_t hwtimcountfast_t;
-
-#if defined(__aarch64__) || (defined (__CORTEX_A)) || (defined(__riscv) && (__riscv_xlen == 64))
-	typedef uint64_t dbgcount_t;
-	typedef uint_fast64_t dbgcountfast_t;
-#else
-	typedef uint32_t dbgcount_t;
-	typedef uint_fast32_t dbgcountfast_t;
-#endif
-
-dbgcountfast_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
-dbgcountfast_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
-dbgcountfast_t cpu_getdebugticksmask(void);	// получение маски на разрядность аппаратного счётчика
-
 hwtimcountfast_t timestamp_getticks(void);
 hwtimcountfast_t timestamp_getmask(void);
 hwtimcountfast_t timestamp_getfreq(void);
@@ -645,6 +633,17 @@ hwtimcountfast_t get_td_delta(hwtimcountfast_t start);	// получение и�
 hwtimcountfast_t get_td_us(uint_fast32_t timeUS);
 hwtimcountfast_t get_td_ms(uint_fast32_t timeMS);
 
+// Debug core clocks counter
+#if defined(__aarch64__) || (defined (__CORTEX_A)) || (defined(__riscv) && (__riscv_xlen == 64))
+	typedef uint64_t dbgcount_t;
+	typedef uint_fast64_t dbgcountfast_t;
+#else
+	typedef uint32_t dbgcount_t;
+	typedef uint_fast32_t dbgcountfast_t;
+#endif
+dbgcountfast_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
+dbgcountfast_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
+dbgcountfast_t cpu_getdebugticksmask(void);	// получение маски на разрядность аппаратного счётчика
 
 #include "mslist.h"
 
