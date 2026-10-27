@@ -13,6 +13,25 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#if CPUSTYLE_V3S
+// Allwinner v3s
+void allwnr_v3s_pll_initialize(void);
+uint_fast32_t allwnr_v3s_get_cpu_freq(void);
+uint_fast32_t allwnr_v3s_get_axi_freq(void);
+uint_fast32_t allwnr_v3s_get_sysapb_freq(void);
+uint_fast32_t allwnr_v3s_get_ahb2_freq(void);
+uint_fast32_t allwnr_v3s_get_ahb1_freq(void);
+uint_fast32_t allwnr_v3s_get_apb2_freq(void);
+uint_fast32_t allwnr_v3s_get_apb1_freq(void);
+
+#endif /* CPUSTYLE_V3S */
+
+#if CPUSTYLE_VM14
+uint_fast32_t elveesvm14_get_arm_freq(void);
+uint_fast32_t elveesvm14_get_usart_freq(void);
+#endif /* CPUSTYLE_VM14 */
+
+#if CPUSTYLE_STM32F
 uint_fast32_t stm32f4xx_get_hse_freq(void);
 uint_fast32_t stm32f4xx_get_hsi_freq(void);
 uint_fast32_t stm32f4xx_get_pllreference_freq(void);
@@ -53,7 +72,10 @@ uint_fast32_t stm32f7xx_get_usart6_freq(void);
 uint_fast32_t stm32f7xx_get_uart7_freq(void);
 uint_fast32_t stm32f7xx_get_uart8_freq(void);
 uint_fast32_t stm32f7xx_get_apb1_freq(void);
+uint_fast32_t stm32f7xx_pllq_initialize(void); // Настроить выход PLLQ на 48 МГц
+#endif /* CPUSTYLE_STM32F */
 
+#if CPUSTYLE_STM32H7XX
 uint_fast32_t stm32h7xx_get_hse_freq(void);
 uint_fast32_t stm32h7xx_get_pll1_freq(void);
 uint_fast32_t stm32h7xx_get_pll1_p_freq(void);
@@ -85,7 +107,9 @@ uint_fast32_t stm32h7xx_get_spi1_2_3_freq(void);
 uint_fast32_t stm32h7xx_get_spi4_5_freq(void);
 uint_fast32_t stm32h7xx_get_adc_freq(void);
 uint_fast32_t stm32f7xx_pllq_initialize(void); // Настроить выход PLLQ на 48 МГц
+#endif /* CPUSTYLE_STM32H7XX */
 
+#if CPUSTYLE_STM32MP1
 void stm32mp1_pll_initialize(int forced);
 void stm32mp1_usb_clocks_initialize(void);
 void stm32mp1_audio_clocks_initialize(void);
@@ -134,7 +158,9 @@ uint_fast32_t stm32mp1_get_timg2_freq(void);
 uint_fast32_t stm32mp1_get_spi1_freq(void);
 uint_fast32_t stm32mp1_get_adc_freq(void);
 uint_fast32_t stm32mp1_get_qspi_freq(void);
+#endif /* CPUSTYLE_STM32MP1 */
 
+#if CPUSTYLE_XC7Z
 //unsigned long xc7z_get_pllsreference_freq(void);
 //uint_fast64_t xc7z_get_arm_pll_freq(void);
 //uint_fast64_t xc7z_get_ddr_pll_freq(void);
@@ -146,6 +172,7 @@ unsigned long xc7z_get_uart_freq(void);
 unsigned long xc7z_get_sdio_freq(void);
 unsigned long xc7z_get_spi_freq(void);
 unsigned long xc7z_get_qspi_freq(void);
+#endif /* CPUSTYLE_XC7Z */
 
 // platform-independed functions.
 unsigned long hardware_get_spi_freq(void);	// получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
@@ -428,22 +455,6 @@ void hardware_dcdcfreq_tioc0a_mtu0_setdiv(uint_fast32_t v);
 #define BOARD_PWM_DUTY_MAX 100
 uint_fast32_t hardware_dcdc_calcdivider(uint_fast32_t freq);
 void dcdcsynctest(void);
-
-#if CPUSTYLE_V3S
-// Allwinner v3s
-void allwnr_v3s_pll_initialize(void);
-uint_fast32_t allwnr_v3s_get_cpu_freq(void);
-uint_fast32_t allwnr_v3s_get_axi_freq(void);
-uint_fast32_t allwnr_v3s_get_sysapb_freq(void);
-uint_fast32_t allwnr_v3s_get_ahb2_freq(void);
-uint_fast32_t allwnr_v3s_get_ahb1_freq(void);
-uint_fast32_t allwnr_v3s_get_apb2_freq(void);
-uint_fast32_t allwnr_v3s_get_apb1_freq(void);
-
-#endif /* CPUSTYLE_V3S */
-
-uint_fast32_t elveesvm14_get_arm_freq(void);
-uint_fast32_t elveesvm14_get_usart_freq(void);
 
 uint_fast32_t
 calcdivround2(
