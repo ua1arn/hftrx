@@ -4307,10 +4307,6 @@ int_fast16_t dsp_agcfence10(void)
 	return glob_agcfence10;
 }
 
-static FLOAT_t mickecliplevelp = + 1;	/* positive limit */
-static FLOAT_t mickeclipleveln = - 1;	/* negative limit */
-static FLOAT_t mickeclipscale = 1;
-
 // ару и компрессор микрофона
 // На входе уже нормированный к txlevelfenceSSB сигнал
 static FLOAT_t txmikeagc(hftxpath_t * const txpath, FLOAT_t vi)
@@ -4328,16 +4324,17 @@ static FLOAT_t txmikeagc(hftxpath_t * const txpath, FLOAT_t vi)
 	return vi;
 }
 
+// Ограничитель
 static FLOAT_t txmikeclip(hftxpath_t * const txpath, FLOAT_t vi)
 {
-	// Ограничитель
-	const FLOAT_t levelp = mickecliplevelp;
-	const FLOAT_t leveln = mickeclipleveln;
+	struct mikeclipparams * const mcp = & txpath->mcp;
+	const FLOAT_t levelp = mcp->mickecliplevelp;
+	const FLOAT_t leveln = mcp->mickeclipleveln;
 	if (vi > levelp)
 		vi = levelp;
 	else if (vi < leveln)
 		vi = leveln;
-	vi *= mickeclipscale;
+	vi *= mcp->mickeclipscale;
 
 	return vi;
 }
@@ -7385,11 +7382,12 @@ hftxpath_update(hftxpath_t * const txpath)
 	TX_Audio_System_Init();
 	{
 		// Настройка ограничителя
+		struct mikeclipparams * const mcp = & txpath->mcp;
 		const FLOAT_t FS_ratio = txpath->mikeagcparams.levels.levelfence_ratio;	// txlevelfenceSSB
 		const FLOAT_t grade = 1 - (glob_mikehclip / (FLOAT_t) 100);
-		mickeclipscale = 1 / grade;
-		mickecliplevelp = FS_ratio * grade;
-		mickeclipleveln = - FS_ratio * grade;
+		mcp->mickeclipscale = 1 / grade;
+		mcp->mickecliplevelp = FS_ratio * grade;
+		mcp->mickeclipleveln = - FS_ratio * grade;
 	}
 	{
 		// компрессор

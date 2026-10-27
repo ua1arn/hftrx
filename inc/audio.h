@@ -937,6 +937,13 @@ typedef struct {
 	uint_fast16_t fir_head;// = 0;
 } local_tx_iq_fir_t;
 
+struct mikeclipparams
+{
+	FLOAT_t mickecliplevelp;// = + 1;	/* positive limit */
+	FLOAT_t mickeclipleveln;// = - 1;	/* negative limit */
+	FLOAT_t mickeclipscale;// = 1;
+};
+
 /* Complete RX Signal Path Object Model for hftrx */
 typedef struct {
 	const void * sign1;
@@ -1005,6 +1012,7 @@ typedef struct {
 	agcstate_t txagcstate;
 	agcparams_t mikeagcparams;	// постоянные времени системы АРУ
 
+	struct mikeclipparams mcp;
 	const void * sign2;
 } hftxpath_t;
 
