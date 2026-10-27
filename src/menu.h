@@ -539,7 +539,7 @@
 	& xgdatatx,	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 #endif /* WITHTX */
 	& xguacplayer,	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-#if WITHUSEUSBBT
+#if WITHUSEUSBBT && WITHUSEUSBBTAUDIO
 	& xgbtaudioplayer,	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 #endif /* WITHUSEUSBBT */
 	#if WITHRTS96 || WITHRTS192

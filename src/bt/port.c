@@ -42,6 +42,7 @@
 #if WITHUSEUSBBT
 
 #include "buffers.h"
+#include "clocks.h"
 #include "audio.h"
 
 #include "port.h"
@@ -163,6 +164,8 @@ static void port_packet_handler (uint8_t packet_type, uint16_t channel, uint8_t 
         // ssp: inform about user confirmation request
         PRINTF("port: User Confirmation Request with numeric value '%06" PRIu32 "'\n", little_endian_read_32(packet, 8));
         PRINTF("port: User Confirmation Auto accept\n");
+        hci_event_user_confirmation_request_get_bd_addr(packet, address);
+        gap_ssp_confirmation_response(address);
         break;
     case HCI_EVENT_DISCONNECTION_COMPLETE:
         PRINTF("port: Disconnection!\n");
@@ -240,6 +243,7 @@ static const hal_flash_bank_t hal_fram_bank_impl = {
 
 //////////////////////////////////////////////
 
+#if WITHUSEUSBBTAUDIO
 #define DRIVER_POLL_INTERVAL_MS          ((BTSSCALE * 10) - 1)	// вызов раз в 10 мс btstack_run_loop_embedded_execute_once
 
 // client
@@ -541,7 +545,7 @@ const btstack_audio_sink_t * btstack_audio_storch_sink_get_instance(void){
 const btstack_audio_source_t * btstack_audio_storch_source_get_instance(void){
     return &btstack_audio_storch_source;
 }
-
+#endif /* WITHUSEUSBBTAUDIO */
 
 uint_fast8_t hamradio_get_usbbth_active(void)
 {
@@ -569,6 +573,7 @@ void tuh_bth_mount_cb(uint8_t idx)
     hci_init(hci_transport_h2_stm32_instance(), NULL);
 #endif /* WITHTINYUSB */
 
+#if 0
     // setup TLV Flash Sector implementation
 //    const hal_flash_bank_t * hal_flash_bank_impl = hal_flash_bank_stm32_init_instance(
 //            &hal_flash_bank_context,
@@ -588,14 +593,14 @@ void tuh_bth_mount_cb(uint8_t idx)
     // setup Link Key DB using TLV
     const btstack_link_key_db_t * btstack_link_key_db = btstack_link_key_db_tlv_get_instance(btstack_tlv_impl, &btstack_tlv_flash_bank_context);
     hci_set_link_key_db(btstack_link_key_db);
-
+#endif
     // setup LE Device DB using TLV
     ////le_device_db_tlv_configure(btstack_tlv_impl, &btstack_tlv_flash_bank_context);
-
+#if WITHUSEUSBBTAUDIO
     // setup audio
 	btstack_audio_sink_set_instance(btstack_audio_storch_sink_get_instance());
 	btstack_audio_source_set_instance(btstack_audio_storch_source_get_instance());
-
+#endif /* WITHUSEUSBBTAUDIO */
     // inform about BTstack state
     hci_event_callback_registration.callback = &port_packet_handler;
     hci_add_event_handler(&hci_event_callback_registration);
@@ -616,10 +621,13 @@ void tuh_bth_mount_cb(uint8_t idx)
 
 
     // hand over to btstack embedded code
-    //VERIFY(! a2dp_source_btstack_main(0, NULL));
+#if WITHUSEUSBBTAUDIO
+  //VERIFY(! a2dp_source_btstack_main(0, NULL));
     VERIFY(! a2dp_sink_btstack_main(0, NULL));	// Тарнсивер получает звук - стерео, 44100
     //VERIFY(! hfp_hf_btstack_main(0, NULL));			// Трансивер выглядит как гарнитура - двунаправленная передача, 16000, моно
-    spp_service_setup();	// трансивер виден как два serial порта
+#endif /* WITHUSEUSBBTAUDIO */
+
+    //spp_service_setup();	// трансивер виден как два serial порта
 
     //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
     gap_set_local_name(WITHBRANDSTR " BTx");
@@ -678,14 +686,25 @@ void bt_initialize(void)
 	PRINTF("bt_initialize done\n");
 #endif
 
+#if WITHUSEUSBBTAUDIO
 	{
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 
 		dpcobj_initialize(& dpcobj, dpc_0p01_s_timer_fn, NULL, "dpc_0p01_s_timer_fn");
-		ticker_initialize_user(& ticker, NTICKS(10), & dpcobj);
+		ticker_initialize_user(& ticker, 10, & dpcobj);
 		ticker_add(& ticker);
 	}
+#else
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, dpc_0p01_s_timer_fn, NULL, "dpc_1_s_timer_fn");
+		ticker_initialize_user(& ticker, 100, & dpcobj);
+		ticker_add(& ticker);
+	}
+#endif
 }
 
 #else  /* WITHUSEUSBBT */

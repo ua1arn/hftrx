@@ -227,7 +227,7 @@ static uint_fast8_t istxreplacedusbactive(void)
 
 static uint_fast8_t istxreplacedbtactive(void)
 {
-#if WITHUSEUSBBT
+#if WITHUSEUSBBT && WITHUSEUSBBTAUDIO
 	return (datavox != 0 && buffers_get_btoutactive() != 0);
 #else /* WITHUSEUSBBT */
 	return 0;
@@ -6018,7 +6018,7 @@ void dsp_fillphones(unsigned nsamples)
 #if WITHHDMITVHW
 		elfill_dmabufferhdmi48tx(b.IV, b.QV);
 #endif /* WITHHDMITVHW */
-#if WITHUSEUSBBT
+#if WITHUSEUSBBT && WITHUSEUSBBTAUDIO
 		elfill_dmabufferbtin48(b.IV, b.QV);
 #endif /* WITHUSEUSBBT */
 	}
@@ -8185,7 +8185,7 @@ void board_set_uacplayer(uint_fast8_t v)
 /* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 void board_set_btaudioplayer(uint_fast8_t v)
 {
-#if WITHUSEUSBBT
+#if WITHUSEUSBBT && WITHUSEUSBBTAUDIO
 	btaudioplayer = v;
 #endif /* WITHUSEUSBBT */
 }

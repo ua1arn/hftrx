@@ -170,7 +170,7 @@ void btspp_enablerx(uint_fast8_t state);	/* вызывается из обраб
 void cat_answervariable_btspp(const char * p, uint_fast8_t len);
 void btspp_parsechar(uint_fast8_t c);
 uint_fast8_t cat_answer_ready_btspp(void);
-void btspp_send(const void * buff, size_t length);	/* временное решение для передачи */
+//void btspp_send(const void * buff, size_t length);	/* временное решение для передачи */
 
 
 #if defined(STM32F401xC)

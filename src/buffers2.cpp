@@ -1836,7 +1836,7 @@ int_fast32_t datasize_dmabuffereth0io(void) /* parameter for DMA Ethernet0 buffe
 
 #endif
 
-#if WITHUSEUSBBT
+#if WITHUSEUSBBT && WITHUSEUSBBTAUDIO
 
 
 #define BTIO44P1_SAMPLEBYTES 2
@@ -2841,7 +2841,7 @@ uint_fast8_t getsampmleusb(FLOAT32P_t * v)
 // При отсутствии данных в очереди - возвращаем 0
 uint_fast8_t getsampmlebt(FLOAT32P_t * v)
 {
-#if WITHUSEUSBBT
+#if WITHUSEUSBBT && WITHUSEUSBBTAUDIO
 	return elfetch_dmabufferbtout48(v->ivqv);
 #endif /* WITHUSEUSBBT */
 	return 0;
@@ -3952,7 +3952,7 @@ void colpip_fillrect(
 
 void buffers_diagnostics(void)
 {
-#if WITHUSEUSBBT
+#if WITHUSEUSBBT && WITHUSEUSBBTAUDIO
 	btout44p1k.debug();
 	btout32k.debug();
 	btout16k.debug();
@@ -4006,7 +4006,7 @@ void buffers_diagnostics(void)
 /* вызывается из обработчика таймерного прерывания */
 static void buffers_spool(void * ctx)
 {
-#if WITHUSEUSBBT
+#if WITHUSEUSBBT && WITHUSEUSBBTAUDIO
 	btout44p1k.spool100ms();
 	btout32k.spool100ms();
 	btout16k.spool100ms();
@@ -4301,7 +4301,7 @@ void buffers_initialize(void)
 
 #endif /* WITHRTS192 */
 
-#if WITHUSEUSBBT
+#if WITHUSEUSBBT && WITHUSEUSBBTAUDIO
 
 	#define BTAUDIO_LPF_STAGES 3
 	iir_filter_t f0;
