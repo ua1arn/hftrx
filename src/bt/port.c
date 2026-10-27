@@ -609,6 +609,10 @@ void tuh_bth_mount_cb(uint8_t idx)
 //
     sdp_init();		// везде в примерах убрать
     l2cap_init();	// везде в примерах убрать
+    a2dp_sink_init();
+    avrcp_init();
+    avrcp_controller_init();
+    avrcp_target_init();
     rfcomm_init();	// везде в примерах убрать
 
 //    // Init profiles
@@ -621,7 +625,7 @@ void tuh_bth_mount_cb(uint8_t idx)
 
 
     // hand over to btstack embedded code
-#if WITHUSEUSBBTAUDIO
+#if WITHUSEUSBBTAUDIO || 1
   //VERIFY(! a2dp_source_btstack_main(0, NULL));
     VERIFY(! a2dp_sink_btstack_main(0, NULL));	// Тарнсивер получает звук - стерео, 44100
     //VERIFY(! hfp_hf_btstack_main(0, NULL));			// Трансивер выглядит как гарнитура - двунаправленная передача, 16000, моно
@@ -633,7 +637,7 @@ void tuh_bth_mount_cb(uint8_t idx)
 #if WITHUSEUSBBTAUDIO
      gap_set_class_of_device(0x00240414);	// audio+spp
 #else /* WITHUSEUSBBTAUDIO */
-     gap_set_class_of_device(0*0x00801F00);		// spp only
+     gap_set_class_of_device(0x400500);		// spp only
 #endif /* WITHUSEUSBBTAUDIO */
 
     gap_set_security_level(LEVEL_2);
