@@ -627,7 +627,7 @@ void tuh_bth_mount_cb(uint8_t idx)
     //VERIFY(! hfp_hf_btstack_main(0, NULL));			// Трансивер выглядит как гарнитура - двунаправленная передача, 16000, моно
 #endif /* WITHUSEUSBBTAUDIO */
 
-    //spp_service_setup();	// трансивер виден как два serial порта
+    spp_service_setup();	// трансивер виден как два serial порта
 
     //gap_set_local_name(WITHBRANDSTR " TRX 00:00:00:00:00:00");
     gap_set_local_name(WITHBRANDSTR " BTx");
