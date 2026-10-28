@@ -2619,7 +2619,7 @@ static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile
 	}
 }
 
-static thread_item_t * refreshactivetask(exception_frame_t * oldframe, unsigned core)
+static thread_item_t * refreshactivetask(void * oldframe, uint_fast8_t core)
 {
 	thread_item_t * * const pt = & startedtask [core];	// не NULL - значит запускали из task_scheduler0
 	if (* pt == NULL)  {
@@ -2646,9 +2646,9 @@ static thread_item_t * refreshactivetask(exception_frame_t * oldframe, unsigned 
 
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 static void *
-task_scheduler0(exception_frame_t * oldframe, unsigned syscallflag, unsigned code)
+task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 {
-	const unsigned core = arm_hardware_cpuid();
+	const uint_fast8_t core = arm_hardware_cpuid();
 	IRQL_t irql;
 	if (threads_not_started)
 		return oldframe;
@@ -2802,7 +2802,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 // (EOI должно идти в GIC INTERFACE того же ядра, где и возникло)
 static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 {
-	const unsigned core = arm_hardware_cpuid();
+	const uint_fast8_t core = arm_hardware_cpuid();
 	thread_item_t * const tp = refreshactivetask(oldframe, core);
 
 	const unsigned aff = tp->affinity;
