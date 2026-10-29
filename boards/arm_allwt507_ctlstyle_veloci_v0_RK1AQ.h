@@ -340,6 +340,7 @@
 
 	#if 0
 		#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
+		//#define WITHUSEUSBBTAUDIO 1
 	#endif
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
