@@ -23447,6 +23447,20 @@ application_initialize(void)
 		VERIFY(thread_create_user(blinktest2, NULL, blinktaskram, sizeof blinktaskram, TASK_AFFINITY_ALL, "blinktest2"));
 	}
 #else	/* WITHRTOS */
+	if (0)
+	{
+	#if WITHISBOOTLOADER
+		const unsigned thalf = 100;	// Toggle every 100 ms
+	#else /* WITHISBOOTLOADER */
+		const unsigned thalf = 500;	// Toggle every 500 ms
+	#endif /* WITHISBOOTLOADER */
+		static ticker_t ticker_blinks;
+		static dpcobj_t dpcobj;	// 1s
+		dpcobj_initialize(& dpcobj, blinktest, NULL, "blink");
+		ticker_initialize_user(& ticker_blinks, thalf, & dpcobj);
+		ticker_add(& ticker_blinks);
+	}
+	else
 	{
 	#if WITHISBOOTLOADER
 		const unsigned thalf = 100;	// Toggle every 100 ms
