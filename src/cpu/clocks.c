@@ -5163,8 +5163,8 @@ void sysinit_hwtimer_initialize(void)
 // A733 Один счётчик на весь чип
 void sysinit_timestamp_initialize(void)
 {
-	const uint_fast32_t f = allwnr_a733_get_dcxo_freq();	// 24000000
-	TIMESTAMP_CTRL->CNT_FREQID_REG = 24000000;
+	const uint_fast32_t f = allwnr_a733_get_sysclk24M_freq();	// 24000000
+	TIMESTAMP_CTRL->CNT_FREQID_REG = f;	// проверено - этот счётчик тактируется частотй 24 МГц
 }
 
 // A733
