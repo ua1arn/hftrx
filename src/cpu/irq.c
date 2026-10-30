@@ -2106,7 +2106,7 @@ struct taskfnparam_waitlist
 };
 
 // не должно ничего ожидать - попадаем сюда, когда нет thread для исполнения
-static int task_idle(void * ctx)
+static __NO_RETURN int task_idle(void * ctx)
 {
 	(void) ctx;
 	for (;;)
@@ -2114,7 +2114,7 @@ static int task_idle(void * ctx)
 		//dbg_putchar('a' + arm_hardware_cpuid());
 		thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	}
-	return 0;
+	//return 0;
 }
 
 // сохранить в списке готовых к выполнению
