@@ -5164,7 +5164,7 @@ void sysinit_hwtimer_initialize(void)
 void sysinit_timestamp_initialize(void)
 {
 	const uint_fast32_t f = allwnr_a733_get_dcxo_freq();	// 24000000
-	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+	TIMESTAMP_CTRL->CNT_FREQID_REG = 24000000;
 }
 
 // A733
