@@ -7665,8 +7665,8 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	Timer1_CPUX->TMR_IRQ_EN_REG |= (UINT32_C(1) << (0 + ix));	// TMR1_IRQ_EN
 
-	arm_hardware_set_handler(TIMER1_1_IRQn, TIMER1_1_IRQHandler, ARM_SYSTEM_PRIORITY, 1U << 4);
-	//arm_hardware_set_handler_system(TIMER1_1_IRQn, TIMER1_1_IRQHandler);	// timebase timer
+	//arm_hardware_set_handler(TIMER1_1_IRQn, TIMER1_1_IRQHandler, ARM_SYSTEM_PRIORITY, 1U << 4);
+	arm_hardware_set_handler_system(TIMER1_1_IRQn, TIMER1_1_IRQHandler);	// timebase timer
 
 #elif defined (TIMER) && (CPUSTYLE_H3 || CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_A133 || CPUSTYLE_A733)
 

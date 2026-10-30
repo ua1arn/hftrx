@@ -2342,8 +2342,11 @@ static int tasks_print0(char *__restrict buff, size_t size)
 	for (core = 0; core < ARRAY_SIZE(startedtask); ++ core)
 	{
 		char title [16];
+		const thread_item_t * const tp = startedtask [core];
+		if (tp == NULL)
+			continue;
 		local_snprintf_P(title, ARRAY_SIZE(title), "core%u", core);
-		n += thread_print(buff + n, size - n, startedtask [core], title);
+		n += thread_print(buff + n, size - n, tp, title);
 	}
 
 	n += local_snprintf_P(buff + n, size - n, "tasks_print: Waiting, timestamp_getticks=%" PRIu64 ":\n", (uint64_t) timestamp_getticks());
