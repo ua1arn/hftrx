@@ -3652,11 +3652,12 @@ static void audio_setup_wiver(const uint_fast8_t pathi, uint_fast8_t tx)
 	if (1)
 	{
 		// Предотвращение выхода значений коэффициентов за пределы [-1..+1]
+		const FLOAT_t fence = db2ratio(- 0.5);
 		FLOAT_t minv, maxv;
 		ARM_MORPH(arm_min_no_idx)(dCoeff, Ntap_trxi_IQ, & minv);
 		ARM_MORPH(arm_max_no_idx)(dCoeff, Ntap_trxi_IQ, & maxv);
 		const FLOAT_t lim = FMAXF(FABSF(minv), FABSF(maxv));
-		if (lim > 1)
+		if (lim > fence)
 			ARM_MORPH(arm_scale)(dCoeff, 1 / lim, dCoeff, Ntap_trxi_IQ);
 	}
 
@@ -6033,20 +6034,20 @@ void inject_testsignals(IFADCvalue_t * const dbuff)
 	const FLOAT_t modulation = get_modulation() > 0;
 	// приёмник
 	const FLOAT32P_t simval = scalepair(get_float_monofreq(), simlevelRX * modulation);	// frequency
-	dbuff [DMABUF32RX0I] = adpt_output(& ifcodecrx, simval.IV);
-	dbuff [DMABUF32RX0Q] = adpt_output(& ifcodecrx, simval.QV);
+	dbuff [DMABUF32RX0I] = adpt_outputexact(& ifcodecrx, simval.IV);
+	dbuff [DMABUF32RX0Q] = adpt_outputexact(& ifcodecrx, simval.QV);
 
 #if WITHRTS96
 	// панорама
 	// previous - oldest
 	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), simlevelspec * modulation);	// frequency2
-	dbuff [DMABUF32RXRTS0I] = adpt_output(& ifspectrumin96, simval0.IV);
-	dbuff [DMABUF32RXRTS0Q] = adpt_output(& ifspectrumin96, simval0.QV);
+	dbuff [DMABUF32RXRTS0I] = adpt_outputexact(& ifspectrumin96, simval0.IV);
+	dbuff [DMABUF32RXRTS0Q] = adpt_outputexact(& ifspectrumin96, simval0.QV);
 
 	// current	- newest
 	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), simlevelspec * modulation);	// frequency2
-	dbuff [DMABUF32RXRTS1I] = adpt_output(& ifspectrumin96, simval1.IV);
-	dbuff [DMABUF32RXRTS1Q] = adpt_output(& ifspectrumin96, simval1.QV);
+	dbuff [DMABUF32RXRTS1I] = adpt_outputexact(& ifspectrumin96, simval1.IV);
+	dbuff [DMABUF32RXRTS1Q] = adpt_outputexact(& ifspectrumin96, simval1.QV);
 #endif /* WITHRTS96 */
 
 #endif

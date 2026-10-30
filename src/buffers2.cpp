@@ -4117,38 +4117,12 @@ int32_t adpt_output(const adapter_t * adp, FLOAT_t v)
 	return (int32_t) (adp->outputK * v) << adp->rightspace;
 }
 
-// Преобразование во внешнее представление.
-int32_t adpt_outputL(const adapter_t * adp, double v)
-{
-//	if (v < -1 || v > 1)
-//	{
-//		PRINTF("adpt_outputL: '%s' v=%f\n", adp->name, v);
-//	}
-//	ASSERT(v <= 1);
-//	ASSERT(v >= - 1);
-	v = fmin(v, adp->outmax);	// ограничить сверху
-	v = fmax(v, adp->outmin);	// ограничить снизу
-	return (int32_t) (adp->outputK * v) << adp->rightspace;
-}
-
 // точное преобразование во внешнее представление.
 int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v)
 {
 //	if (v < -1 || v > 1)
 //	{
 //		PRINTF("adpt_outputexact: '%s' v=%f\n", adp->name, v);
-//	}
-//	ASSERT(v <= 1);
-//	ASSERT(v >= - 1);
-	return (int32_t) (adp->outputKexact * v) << adp->rightspace;
-}
-
-// точное преобразование во внешнее представление.
-int32_t adpt_outputexactL(const adapter_t * adp, double v)
-{
-//	if (v < -1 || v > 1)
-//	{
-//		PRINTF("adpt_outputexactL: '%s' v=%f\n", adp->name, v);
 //	}
 //	ASSERT(v <= 1);
 //	ASSERT(v >= - 1);

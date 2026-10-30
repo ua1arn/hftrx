@@ -4170,7 +4170,7 @@ void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap
 	// Приведение разрядности значений коэффициентов к CWidth
 	for (; i <= iHalfLen; ++ i)
 	{
-		int32_t coeff = adpt_output(& plfircoefsout, kf [i]);
+		int32_t coeff = adpt_outputexact(& plfircoefsout, kf [i]);
 		m = coeff > m ? coeff : m;
 	}
 
@@ -4184,7 +4184,7 @@ void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap
 
 	for (i = 0; i <= iHalfLen; ++ i)
 	{
-		const int32_t coeff = adpt_output(& plfircoefsout, kf [i]) << bits;
+		const int32_t coeff = adpt_outputexact(& plfircoefsout, kf [i]) << bits;
 #if WITHDSPEXTRXFIR
 		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff);
 #endif /* WITHDSPEXTRXFIR */
@@ -4196,7 +4196,7 @@ void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap
 	i -= 1;
 	for (; -- i >= 0;)
 	{
-		const int32_t coeff = adpt_output(& plfircoefsout, kf [i]) << bits;
+		const int32_t coeff = adpt_outputexact(& plfircoefsout, kf [i]) << bits;
 #if WITHDSPEXTRXFIR
 		Xil_Out32(XPAR_IQ_MODEM_FIR_RELOAD_RX_BASEADDR, coeff);
 #endif /* WITHDSPEXTRXFIR */
@@ -4231,7 +4231,7 @@ void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap
 	// Приведение разрядности значений коэффициентов к CWidth
 	for (; i <= iHalfLen; ++ i)
 	{
-		int32_t coeff = adpt_output(plfircoefsout, kf [i]);
+		int32_t coeff = adpt_outputexact(plfircoefsout, kf [i]);
 		m = coeff > m ? coeff : m;
 	}
 
@@ -4247,7 +4247,7 @@ void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap
 
 	for (i = 0; i <= iHalfLen; ++ i)
 	{
-		int32_t coeff = adpt_output(plfircoefsout, kf [i]);
+		int32_t coeff = adpt_outputexact(plfircoefsout, kf [i]);
 
 		board_reload_fir_artix7_p1(targetfpga1, 13, coeff << bits);
 	}
@@ -4255,7 +4255,7 @@ void board_reload_fir(uint_fast8_t ifir, const FLOAT_t * const kf, unsigned Ntap
 	i -= 1;
 	for (; -- i >= 0;)
 	{
-		int32_t coeff = adpt_output(plfircoefsout, kf [i]);
+		int32_t coeff = adpt_outputexact(plfircoefsout, kf [i]);
 
 		board_reload_fir_artix7_p2(targetfpga1, 13, coeff << bits);
 	}
@@ -4384,7 +4384,7 @@ static void single_rate_out_write_mcv(SPI_t * spi, const FLOAT_t * kf, int coef_
 		for (i=0; i < zeros_insert; ++ i)
 			tmp_coef [i] = 0;
 		for (i=0; i < coef_length; ++ i)
-			tmp_coef [i + zeros_insert] = adpt_output(& plfircoefsout, kf [i]);
+			tmp_coef [i + zeros_insert] = adpt_outputexact(& plfircoefsout, kf [i]);
 
 		//assert(mcv_coef_length == (coef_length + zeros_insert));
 
