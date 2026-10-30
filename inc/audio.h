@@ -359,6 +359,7 @@ int32_t adpt_output(const adapter_t * adp, FLOAT_t v);
 int32_t adpt_outputL(const adapter_t * adp, double v);
 int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v);	// точное преобразование между внешними целочисленными представлениями.
 int32_t adpt_outputexactL(const adapter_t * adp, double v);	// точное преобразование между внешними целочисленными представлениями.
+void adpt_setclip(adapter_t * adp, FLOAT_t v);
 void adpt_initialize(adapter_t * adp, int leftbit, int rightspace, const char * name);
 int32_t transform_do32(const transform_t * tfm, int32_t v); // точное преобразование между внешними целочисленными представлениями.
 int64_t transform_do64(const transform_t * tfm, int64_t v); // точное преобразование между внешними целочисленными представлениями.

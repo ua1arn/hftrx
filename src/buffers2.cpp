@@ -4089,6 +4089,14 @@ void adpt_initialize(
 	adp->name = name;
 }
 
+
+void adpt_setclip(adapter_t * adp, FLOAT_t v)
+{
+	v = FABSF(v);
+	adp->outmax = FMINF(adp->outmax, + v);
+	adp->outmin = FMAXF(adp->outmin, - v);
+}
+
 // Преобразование значения целочисленного типа во внутреннее представление.
 FLOAT_t adpt_input(const adapter_t * adp, int32_t v)
 {
@@ -4229,6 +4237,7 @@ void buffers_initialize(void)
 	/* IF codec / FPGA */
 	adpt_initialize(& ifcodecrx, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT, "ifcodecrx");
 	adpt_initialize(& ifcodectx, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT, "ifcodectx");
+	adpt_setclip(& ifcodectx, HARDWARE_DUCSCALE);
 #endif /* defined CODEC2_TYPE */
 
 #if WITHUSEAUDIOREC
