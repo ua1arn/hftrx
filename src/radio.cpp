@@ -12835,16 +12835,6 @@ static rxaproc_t rxaprocs [NTRX];
 
 #endif /* ! WITHSKIPUSERMODE */
 
-/* на слабых процессорах второй приемник без NR и автонотч */
-static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
-{
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_ALLWINNER || CPUSTYLE_RK356X
-	return 1;
-#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_ALLWINNER */
-	return pathi == 0;
-#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_ALLWINNER */
-}
-
 static void speex_update_rx(void)
 {
 	uint_fast8_t pathi;
@@ -12853,7 +12843,7 @@ static void speex_update_rx(void)
 	{
 		const uint_fast8_t amode = getamode(pathi);
 #if ! WITHNOSPEEX
-		spx_int32_t denoise = ispathprocessing(pathi) && gnoisereducts [amode];
+		spx_int32_t denoise = gnoisereducts [amode];
 		spx_int32_t supress = - (int) gnoisereductvl;
 #endif /* ! WITHNOSPEEX */
 		rxaproc_t * const nrp = & rxaprocs [pathi];
@@ -12937,8 +12927,8 @@ static void processNoiseReduction(rxaproc_t * nrp, const FLOAT_t * bufferIn, FLO
 static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 {
 	const uint_fast8_t amode = getamode(pathi);
-	const uint_fast8_t denoise = ispathprocessing(pathi) && gnoisereducts [amode];
-	const uint_fast8_t anotch = ispathprocessing(pathi) && gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
+	const uint_fast8_t denoise = gnoisereducts [amode];
+	const uint_fast8_t anotch = gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
@@ -12979,7 +12969,7 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 	if (pathi == 0)
 		AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
 #else /* WITHLEAKYLMSANR */
-	if (denoise && ispathprocessing(pathi))
+	if (denoise)
 	{
 		//ARM_MORPH(arm_fill)(0, nrp->wire1, FIRBUFSIZE);
 		// FIXME: speex внутри использует целочисленные вычисления
