@@ -51,7 +51,7 @@ static void display_vtty_cout(
 
 static volatile int vtty_inited;
 
-static RAMFRAMEBUFF ALIGNX_BEGIN vtty_t vtty0 ALIGNX_END;
+static __NO_INIT ALIGNX_BEGIN vtty_t vtty0 ALIGNX_END;
 
 int display_vtty_putchar(char ch);
 void display_vtty_printf(const char * format, ...);

@@ -319,11 +319,11 @@ void InitializeIrql(IRQL_t newIRQL);
 #if CPUSTYLE_R7S721
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
-	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* память доступная лоя DMA обмена */
+	//#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* память доступная лоя DMA обмена */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -337,7 +337,7 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -347,11 +347,11 @@ void InitializeIrql(IRQL_t newIRQL);
 #elif CPUSTYLE_A64
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	//#define RAMNOINIT_D1	////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -361,11 +361,11 @@ void InitializeIrql(IRQL_t newIRQL);
 #elif CPUSTYLE_T507
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	//#define RAMNOINIT_D1	////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -375,11 +375,11 @@ void InitializeIrql(IRQL_t newIRQL);
 #elif CPUSTYLE_A733
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	//#define RAMNOINIT_D1	////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -389,11 +389,11 @@ void InitializeIrql(IRQL_t newIRQL);
 #elif CPUSTYLE_A133
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	//#define RAMNOINIT_D1	////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -403,11 +403,11 @@ void InitializeIrql(IRQL_t newIRQL);
 #elif CPUSTYLE_T113
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	//#define RAMNOINIT_D1	////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -417,11 +417,11 @@ void InitializeIrql(IRQL_t newIRQL);
 #elif CPUSTYLE_T153
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	//#define RAMNOINIT_D1	////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -431,11 +431,11 @@ void InitializeIrql(IRQL_t newIRQL);
 #elif CPUSTYLE_H3
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	//#define RAMNOINIT_D1	////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -445,11 +445,11 @@ void InitializeIrql(IRQL_t newIRQL);
 #elif CPUSTYLE_V3S
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	//#define RAMNOINIT_D1	////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -459,11 +459,11 @@ void InitializeIrql(IRQL_t newIRQL);
 #elif CPUSTYLE_VM14
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	//#define RAMNOINIT_D1	////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -473,11 +473,11 @@ void InitializeIrql(IRQL_t newIRQL);
 #elif CPUSTYLE_F133
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	//#define RAMNOINIT_D1	////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -491,7 +491,7 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -508,11 +508,11 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 - память доступная лоя DMA обмена */
+	//#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 - память доступная лоя DMA обмена */
 	#define RAM_D1			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			__attribute__((section(".ram_d2"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			__attribute__((section(".ram_d3"))) /* размещение в памяти SRAM_D3 */
-	#define RAMFRAMEBUFF	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		__attribute__((section(".ram_d1"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -525,11 +525,11 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	//__attribute__((section(".sdrambss"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	//__attribute__((section(".sdrambss"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -540,11 +540,11 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	//__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	//__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -555,11 +555,11 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 	#define RAMFUNC_NONILINE  //__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 // __attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -570,11 +570,11 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
-	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -585,11 +585,11 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 	#define RAMFUNC_NONILINE //__attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 //__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -599,11 +599,11 @@ void InitializeIrql(IRQL_t newIRQL);
 #elif CPUSTYLE_RK356X
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	//#define RAMNOINIT_D1	////__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -616,11 +616,11 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	//#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */

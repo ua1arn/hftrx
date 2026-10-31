@@ -38,7 +38,7 @@
 
 static int writeok;
 static unsigned bufoffset;
-static ALIGNX_BEGIN RAMNOINIT_D1 uint8_t appbuff [4096uL * 1024] ALIGNX_END;
+static ALIGNX_BEGIN __NO_INIT uint8_t appbuff [4096uL * 1024] ALIGNX_END;
 
 
 static const uint8_t * findpattern(const uint8_t * buff, unsigned size, const void * pbuff, unsigned psize)

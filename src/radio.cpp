@@ -23443,7 +23443,7 @@ application_initialize(void)
 #if defined (BOARD_BLINK_SETSTATE)
 #if WITHRTOS
 	{
-		static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t blinktaskram [8 * 1024];
+		static __NO_INIT __ALIGNED(DCACHEROWSIZE) uint8_t blinktaskram [8 * 1024];
 		VERIFY(thread_create_user(blinktest2, NULL, blinktaskram, sizeof blinktaskram, TASK_AFFINITY_ALL, "blinktest2"));
 	}
 #else	/* WITHRTOS */
@@ -23525,7 +23525,7 @@ application_initialize(void)
 
 #if WITHRTOS
 
-	static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [16 * 1024 * 1024];
+	static __NO_INIT __ALIGNED(DCACHEROWSIZE) uint8_t procthread [16 * 1024 * 1024];
 	VERIFY(thread_create_user(audioproc_thread, NULL, procthread, sizeof procthread, TTASK_AFFINITY_AUDIOPROC, "audioproc_thread"));
 #else /* WITHRTOS */
 	{
@@ -23592,7 +23592,7 @@ application_initialize(void)
 
 #if WITHRTOS
 	{
-		static RAMNOINIT_D1 __ALIGNED(DCACHEROWSIZE) uint8_t procthread [16 * 1024 * 1024];
+		static __NO_INIT __ALIGNED(DCACHEROWSIZE) uint8_t procthread [16 * 1024 * 1024];
 		VERIFY(thread_create_user(tuner_thread, NULL, procthread, sizeof procthread, TASK_AFFINITY_ALL, "tuner_thread"));
 
 	}

@@ -22,7 +22,7 @@
 
 ///////////////////////////////////////////////////
 
-static ALIGNX_BEGIN RAMNOINIT_D1 FIL wav_file ALIGNX_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+static ALIGNX_BEGIN __NO_INIT FIL wav_file ALIGNX_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 static FSIZE_t wav_lengthpos_riff;	/* position for write length at RIFF header */
 static FSIZE_t wav_lengthpos_data;	/* position for write length at data subchunk*/
 static uint_fast32_t wave_num_bytes;
@@ -322,7 +322,7 @@ static FRESULT write_wav_tail(void)
 // See also: http://en.wikipedia.org/wiki/RF64
 
 static uint_fast32_t wave_irecorded;
-static ALIGNX_BEGIN RAMNOINIT_D1 FATFS wave_Fatfs ALIGNX_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+static ALIGNX_BEGIN __NO_INIT FATFS wave_Fatfs ALIGNX_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 
 static uint_fast8_t waveUnmount(void)
 {
@@ -637,7 +637,7 @@ static void sdcard_doc_process(void * ctx)
 
 void sdcardformat(void)
 {
-	static ALIGNX_BEGIN RAMNOINIT_D1 BYTE work [FF_MAX_SS] ALIGNX_END;
+	static ALIGNX_BEGIN __NO_INIT BYTE work [FF_MAX_SS] ALIGNX_END;
 	FRESULT rc;
 
 	switch (sdstate)
@@ -677,7 +677,7 @@ void sdcarddeinitialize(void)
 #if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
 
 
-static ALIGNX_BEGIN RAMNOINIT_D1 FIL bmp_file ALIGNX_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+static ALIGNX_BEGIN __NO_INIT FIL bmp_file ALIGNX_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 
 // Начинаем запись
 // 1 - неудачно
@@ -868,9 +868,9 @@ void display_snapshot_write(const gxdrawb_t * db)
 
 #if WITHWAVPLAYER || WITHSENDWAV
 
-static ALIGNX_BEGIN RAMNOINIT_D1 FATFS Fatfs ALIGNX_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
-static ALIGNX_BEGIN RAMNOINIT_D1 FIL Fil ALIGNX_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
-static ALIGNX_BEGIN RAMNOINIT_D1 uint8_t rbuff [FF_MAX_SS * 16] ALIGNX_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static ALIGNX_BEGIN __NO_INIT FATFS Fatfs ALIGNX_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+static ALIGNX_BEGIN __NO_INIT FIL Fil ALIGNX_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+static ALIGNX_BEGIN __NO_INIT uint8_t rbuff [FF_MAX_SS * 16] ALIGNX_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 static UINT ibr = 0;		//  количество считанных байтов
 static UINT ipos = 0;			// номер выводимого байта
 

@@ -201,8 +201,8 @@ void display_lvgl_initialize(void)
 	    lv_display_set_driver_data(disp, & maindisplay);
 	    lv_display_set_flush_cb(disp, maindisplay_flush);
 
-	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t fb1 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
-	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t fb2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+	    static LV_ATTRIBUTE_MEM_ALIGN __NO_INIT uint8_t fb1 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
+	    static LV_ATTRIBUTE_MEM_ALIGN __NO_INIT uint8_t fb2 [GXSIZE(DIM_X, DIM_Y) * LCDMODE_PIXELSIZE];
 
 	    //LV_DRAW_BUF_DEFINE_STATIC(dbuf_3_3, DIM_X, DIM_Y, LV_COLOR_FORMAT_ARGB8888);
 
@@ -234,8 +234,8 @@ void display_lvgl_initialize(void)
 	    lv_display_set_driver_data(disp, & subdisplay);
 	    lv_display_set_flush_cb(disp, subdisplay_flush);
 
-	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t fb1 [GXSIZE(TVD_WIDTH, TVD_HEIGHT) * TVMODE_PIXELSIZE];
-	    static LV_ATTRIBUTE_MEM_ALIGN RAMFRAMEBUFF uint8_t fb2 [GXSIZE(TVD_WIDTH, TVD_HEIGHT) * TVMODE_PIXELSIZE];
+	    static LV_ATTRIBUTE_MEM_ALIGN __NO_INIT uint8_t fb1 [GXSIZE(TVD_WIDTH, TVD_HEIGHT) * TVMODE_PIXELSIZE];
+	    static LV_ATTRIBUTE_MEM_ALIGN __NO_INIT uint8_t fb2 [GXSIZE(TVD_WIDTH, TVD_HEIGHT) * TVMODE_PIXELSIZE];
 
 	    //LV_DRAW_BUF_DEFINE_STATIC(dbuf_3_3, DIM_X, DIM_Y, LV_COLOR_FORMAT_ARGB8888);
 

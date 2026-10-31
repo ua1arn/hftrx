@@ -80,7 +80,7 @@ void fb_initialize(struct fb * p)
 #endif
 }
 
-static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbwruff [FF_MAX_SS * 32] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static __NO_INIT FATFSALIGN_BEGIN uint8_t rbwruff [FF_MAX_SS * 32] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 
 
 static void showprogress(
@@ -98,7 +98,7 @@ static void printtextfile(const char * filename)
 	UINT i = 0;			// номер выводимого байта
 	
 	FRESULT rc;				/* Result code */
-	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static __NO_INIT FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	// чтение файла
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc) 
@@ -179,7 +179,7 @@ static uint_fast8_t rxqpeek(char * ch)
 // сохранение потока данных с CNC на флэшке
 static void dosaveserialport(const char * fname)
 {
-	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static __NO_INIT FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	unsigned i;
 	FRESULT rc;				/* Result code */
 
@@ -290,8 +290,8 @@ static int dosaveblocks(const char * fname)
 {
 	int manualstop = 0;
 	unsigned long long kbs = 0;
-	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
-	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static __NO_INIT FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static __NO_INIT FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	FRESULT rc;				/* Result code */
 
 	PRINTF(PSTR("FAT FS test - write file '%s'.\n"), fname);
@@ -529,8 +529,8 @@ static void diskio_test(BYTE drv)
 {
 	const unsigned long MMC_SUCCESS2 = 0x00;
 	unsigned long lba_sector = 0;
-	static RAMNOINIT_D1 FATFSALIGN_BEGIN unsigned char sectbuffr [MMC_SECTORSIZE] FATFSALIGN_END;
-	static RAMNOINIT_D1 FATFSALIGN_BEGIN unsigned char sectbuffw [MMC_SECTORSIZE] FATFSALIGN_END;
+	static __NO_INIT FATFSALIGN_BEGIN unsigned char sectbuffr [MMC_SECTORSIZE] FATFSALIGN_END;
+	static __NO_INIT FATFSALIGN_BEGIN unsigned char sectbuffw [MMC_SECTORSIZE] FATFSALIGN_END;
 
 	PRINTF(PSTR("Test SD/eMMC storage (drv=%d)\n"), (int) drv);
 	mmcInitialize(drv);
@@ -840,7 +840,7 @@ static void fatfs_filesystest(int speedtest)
 {
 	FATFSALIGN_BEGIN BYTE work [FF_MAX_SS] FATFSALIGN_END;
 	FRESULT rc;  
-	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static __NO_INIT FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	static const char testfile [] = VOLPREFIX "readme.txt";
 	char testlog [FF_MAX_LFN + 1];
 	//int nlog = 0;
@@ -1122,7 +1122,7 @@ bootloaderFLASH(const char * volPrefix, BYTE targetDEV)
 	}
 
 startProgramming:
-	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static __NO_INIT FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 
 	if (disk_initialize(targetDEV) != 0)
 	{
@@ -1139,8 +1139,8 @@ startProgramming:
 	displfiles_buff(volPrefix);	// Заполнение буфера имён файлов в памяти
 	for (i = 0; i < ARRAY_SIZE(jobs); ++ i)
 	{
-		static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
-		static RAMNOINIT_D1 char filename [128];
+		static __NO_INIT FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+		static __NO_INIT char filename [128];
 		local_snprintf_P(filename, ARRAY_SIZE(filename), "%s%s", volPrefix, jobs [i].name);
 		// чтение файла
 		rc = f_open(& Fil, filename, FA_READ);
@@ -1522,7 +1522,7 @@ static int parsehex(void * ctx, const TCHAR * filename, int (* usedata)(void * c
 	UINT i = 0;			// номер выводимого байта
 	
 	FRESULT rc;				/* Result code */
-	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static __NO_INIT FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	// чтение файла
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc) 
@@ -1753,7 +1753,7 @@ fatfs_proghexfile(void * ctx, const char * hexfile)
 static void
 fatfs_progspi(void)
 {
-	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static __NO_INIT FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	f_mount(& Fatfs, VOLPREFIX "", 0);		/* Register volume work area (never fails) */
 	fatfs_proghexfile(NULL, "tc1_r7s721_rom.hex");
 	f_mount(NULL, VOLPREFIX "", 0);		/* Unregister volume work area (never fails) */
@@ -2349,8 +2349,8 @@ typedef struct
 	float i;
 } cplxf;
 
-static RAMFRAMEBUFF ALIGNX_BEGIN cplxf src [FFTZS] ALIGNX_END;
-static RAMFRAMEBUFF ALIGNX_BEGIN cplxf dst [FFTZS] ALIGNX_END;
+static __NO_INIT ALIGNX_BEGIN cplxf src [FFTZS] ALIGNX_END;
+static __NO_INIT ALIGNX_BEGIN cplxf dst [FFTZS] ALIGNX_END;
 static RAMDTCM ALIGNX_BEGIN cplxf refv [FFTZS] ALIGNX_END;
 
 static void RAMFUNC_NONILINE cplxmla(cplxf *s, cplxf *d, cplxf *ref, int len) {
@@ -6765,7 +6765,7 @@ static void lv_example_canvas_7(lv_obj_t * parent)
     /*Create a buffer for the canvas*/
 //    LV_DRAW_BUF_DEFINE_STATIC(draw_buf_16bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_RGB565);
 //    LV_DRAW_BUF_INIT_STATIC(draw_buf_16bpp);
-	static RAMFRAMEBUFF __ALIGNED(64) uint8_t db1 [GXSIZE(CANVAS_WIDTH, CANVAS_HEIGHT) * 2];
+	static __NO_INIT __ALIGNED(64) uint8_t db1 [GXSIZE(CANVAS_WIDTH, CANVAS_HEIGHT) * 2];
 	static lv_draw_buf_t draw_buf_16bpp;
     lv_draw_buf_init(& draw_buf_16bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_RGB565, 2 * GXADJ(CANVAS_WIDTH), db1, sizeof (db1)); \
     lv_draw_buf_set_flag(& draw_buf_16bpp, LV_IMAGE_FLAGS_MODIFIABLE);
@@ -6795,7 +6795,7 @@ static void lv_example_canvas_7(lv_obj_t * parent)
      *So use previous canvas as image and rotate it to the new canvas*/
 //    LV_DRAW_BUF_DEFINE_STATIC(draw_buf_32bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_ARGB8888);
 //    LV_DRAW_BUF_INIT_STATIC(draw_buf_32bpp);
-	static RAMFRAMEBUFF __ALIGNED(64) uint8_t db2 [GXSIZE(CANVAS_WIDTH, CANVAS_HEIGHT) * 4];
+	static __NO_INIT __ALIGNED(64) uint8_t db2 [GXSIZE(CANVAS_WIDTH, CANVAS_HEIGHT) * 4];
 	static lv_draw_buf_t draw_buf_32bpp;
     lv_draw_buf_init(& draw_buf_32bpp, CANVAS_WIDTH, CANVAS_HEIGHT, LV_COLOR_FORMAT_ARGB8888, 4 * GXADJ(CANVAS_WIDTH), db2, sizeof (db2)); \
     lv_draw_buf_set_flag(& draw_buf_32bpp, LV_IMAGE_FLAGS_MODIFIABLE);
@@ -10473,11 +10473,11 @@ void hightests(void)
 
 		arm_hardware_piog_outputs(WORKMASK, 0);
 
-		static RAMNOINIT_D1 FATFSALIGN_BEGIN float Etalon [2048] FATFSALIGN_END;
-		static RAMNOINIT_D1 FATFSALIGN_BEGIN float TM [2048] FATFSALIGN_END;
-		static RAMNOINIT_D1 FIL WPFile;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+		static __NO_INIT FATFSALIGN_BEGIN float Etalon [2048] FATFSALIGN_END;
+		static __NO_INIT FATFSALIGN_BEGIN float TM [2048] FATFSALIGN_END;
+		static __NO_INIT FIL WPFile;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 		static const char fmname [] = "tstdata.dat";
-		static RAMNOINIT_D1 FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+		static __NO_INIT FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	
 		int CountZap=0;
 		int LC=2048;

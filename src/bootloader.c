@@ -296,8 +296,8 @@ void bootloader_fatfs_mainloop(void * ctx)
 {
 	static const char IMAGENAME [] = WITHISBOOTLOADERIMAGE;
 	static FATFSALIGN_BEGIN BYTE header [sizeof (struct stm32_header)] FATFSALIGN_END;
-	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
-	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static __NO_INIT FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static __NO_INIT FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	FRESULT rc;
 	UINT br = 0;		//  количество считанных байтов
 	struct stm32_header * const hdr = (struct stm32_header *) & header;
