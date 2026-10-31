@@ -1185,11 +1185,11 @@ typedef struct DMAC_Type
         __IOM uint32_t DMAC_EN_REGN;                  /*!< Offset 0x100 DMAC Channel Enable Register N (N = 0 to 15) 0x0100 + N*0x0040 */
         __IOM uint32_t DMAC_PAU_REGN;                 /*!< Offset 0x104 DMAC Channel Pause Register N (N = 0 to 15) 0x0104 + N*0x0040 */
         __IOM uint32_t DMAC_DESC_ADDR_REGN;           /*!< Offset 0x108 DMAC Channel Start Address Register N (N = 0 to 15) 0x0108 + N*0x0040 */
-        __IM  uint32_t DMAC_CFG_REGN;                 /*!< Offset 0x10C DMAC Channel Configuration Register N (N = 0 to 15) 0x010C + N*0x0040 */
+        __IM  uint32_t DMA_CFG_REGN;                  /*!< Offset 0x10C DMAC Channel Configuration Register N (N = 0 to 15) 0x010C + N*0x0040 */
         __IM  uint32_t DMAC_CUR_SRC_REGN;             /*!< Offset 0x110 DMAC Channel Current Source Register N (N = 0 to 15) 0x0110 + N*0x0040 */
         __IM  uint32_t DMAC_CUR_DEST_REGN;            /*!< Offset 0x114 DMAC Channel Current Destination Register N (N = 0 to 15) 0x0114 + N*0x0040 */
         __IM  uint32_t DMAC_BCNT_LEFT_REGN;           /*!< Offset 0x118 DMAC Channel Byte Counter Left Register N (N = 0 to 15) 0x0118 + N*0x0040 */
-        __IM  uint32_t DMAC_PARA_REGN;                /*!< Offset 0x11C DMAC Channel Parameter Register N (N = 0 to 15) 0x011C + N*0x0040 */
+        __IM  uint32_t DMA_PARA_REGN;                 /*!< Offset 0x11C DMAC Channel Parameter Register N (N = 0 to 15) 0x011C + N*0x0040 */
              RESERVED(0x020[0x0028 - 0x0020], uint8_t)
         __IOM uint32_t DMAC_MODE_REGN;                /*!< Offset 0x128 DMAC Mode Register N (N = 0 to 15) 0x0128 + N*0x0040 */
         __IM  uint32_t DMAC_FDESC_ADDR_REGN;          /*!< Offset 0x12C DMAC Former Descriptor Address Register N (N = 0 to 15) 0x012C + N*0x0040 */

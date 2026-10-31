@@ -5237,8 +5237,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>DMAC_CFG_REGN</name>
-      <displayName>DMAC_CFG_REGN</displayName>
+      <name>DMA_CFG_REGN</name>
+      <displayName>DMA_CFG_REGN</displayName>
       <description>DMAC Channel Configuration Register N (N = 0 to 15) 0x010C + N*0x0040</description>
       <addressOffset>0x00C</addressOffset>
       <size>0x20</size>
@@ -5273,8 +5273,8 @@
       <resetValue>0x00000000</resetValue>
      </register>
      <register>
-      <name>DMAC_PARA_REGN</name>
-      <displayName>DMAC_PARA_REGN</displayName>
+      <name>DMA_PARA_REGN</name>
+      <displayName>DMA_PARA_REGN</displayName>
       <description>DMAC Channel Parameter Register N (N = 0 to 15) 0x011C + N*0x0040</description>
       <addressOffset>0x01C</addressOffset>
       <size>0x20</size>
