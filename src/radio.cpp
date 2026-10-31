@@ -12831,7 +12831,7 @@ typedef struct rxaproc_tag
 } rxaproc_t;
 
 /* Не требует работы с DMA, но размер приличный... */
-static RAM_D1 rxaproc_t rxaprocs [NTRX];
+static rxaproc_t rxaprocs [NTRX];
 
 #endif /* ! WITHSKIPUSERMODE */
 
