@@ -66,8 +66,6 @@ CORE = -mcpu=cortex-a55 -mfpu=vfpv4 --specs=nosys.specs -mfloat-abi=softfp
 #OPT = -Og
 #OPT = -Ofast -flto
 OPT = -Ofast
-#OPT = -Ofast -flto
-#OPT = -Os -flto
 
 USBXDIR = $(PRJROOT)/src/hal
 

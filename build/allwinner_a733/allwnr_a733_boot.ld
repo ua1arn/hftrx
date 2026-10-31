@@ -2,12 +2,12 @@
 /* sun60iw2p1 Allwinner A733 Radaxa Cubie A7Z layout */
 /* Linker script to configure memory regions. */
 /* compatible = "radxa,cubie-a7z", "arm,sun60iw2p1", "allwinner,sun60i-a733"; */
-
+/* for xfel image: use 0x0007400 (boottestRAM1) and uncomment memset implementation in gccsupport.c */
 MEMORY
 {
   RAM (rwx)	 : ORIGIN = 0x00047000 + 256, 	LENGTH = (0x00074000 - 0x00047000) + 512k - 256		/* 180k + 512k */
-  boottestRAM1 (rwx)    : ORIGIN = 0x00074000 + 256,     LENGTH = 512k - 32k - 256        /* base addres for bootloader tests */
-  boottestRAM2 (rwx)    : ORIGIN = 0x00048c00 + 256,     LENGTH = 32k + 240k - 256        /* base addres for bootloader tests */
+  boottestRAM1 (rwx)    : ORIGIN = 0x00074000,     LENGTH = 512k - 32k        /* base addres for bootloader tests */
+  boottestRAM2 (rwx)    : ORIGIN = 0x00048c00,     LENGTH = 32k + 240k        /* base addres for bootloader tests */
   DDR3 (rwx) : ORIGIN = 0x40000000 + 128M, 	LENGTH = 1024M - 128M		/*  */
 }
 
