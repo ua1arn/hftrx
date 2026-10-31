@@ -13127,8 +13127,8 @@ static void codec1_directupdate(void)
 // Печать частоты в формате dddddd.ddd
 static void printfreq(int_fast32_t freq)
 {
-	 ldiv_t v = ldiv(freq, 1000);
-	PRINTF(PSTR("%s%ld.%03ld"), (v.quot >= 0 && freq < 0) ? "-" : "", v.quot, freq < 0 ? - v.rem : v.rem);
+	ldiv_t v = ldiv(freq, 1000);
+	PRINTF("%s%ld.%03ld", (v.quot >= 0 && freq < 0) ? "-" : "", v.quot, freq < 0 ? - v.rem : v.rem);
 }
 #endif /* WITHDEBUG */
 
@@ -13377,45 +13377,40 @@ uint_fast16_t hamradio_get_lfmtinterval(void)
 
 void hamradio_set_lfmtinterval(uint_fast16_t v)
 {
-	if (lfmtinterval < 60 * 60)
-		lfmtinterval = v;
+	param_setvalue(& xlfmtinterval, v);
+	updateboard();
 }
 
 uint_fast8_t hamradio_get_lfmmode(void)
 {
-	return lfmmode;
+	return param_val(& xlfmmode);
 }
 
 void hamradio_set_lfmmode(uint_fast8_t v)
 {
-	lfmmode = v != 0;
-
+	param_setvalue(& xlfmmode, !! v);
 	updateboard();
 }
 
 uint_fast16_t hamradio_get_lfmstop100k(void)
 {
-	return lfmstop100k;
+	return param_val(& xlfmstop100k);
 }
 
 void hamradio_set_lfmstop100k(uint_fast16_t v)
 {
-	if (v > 80 && v <= 350)
-		lfmstop100k = v;
-
+	param_setvalue(& xlfmstop100k, v);
 	updateboard();
 }
 
 uint_fast16_t hamradio_get_lfmtoffset(void)
 {
-	return lfmtoffset;
+	return param_val(& xlfmtoffset);
 }
 
 void hamradio_set_lfmtoffset(uint_fast16_t v)
 {
-	if (v < 60)
-		lfmtoffset = v;
-
+	param_setvalue(& xlfmtoffset, v);
 	updateboard();
 }
 
