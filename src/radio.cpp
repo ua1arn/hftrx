@@ -12965,12 +12965,11 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 		hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
 	}
 
-#if WITHLEAKYLMSANR
-	if (pathi == 0)
-		AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
-#else /* WITHLEAKYLMSANR */
 	if (denoise)
 	{
+#if WITHLEAKYLMSANR
+		AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
+#else /* WITHLEAKYLMSANR */
 		//ARM_MORPH(arm_fill)(0, nrp->wire1, FIRBUFSIZE);
 		// FIXME: speex внутри использует целочисленные вычисления
 		static const FLOAT_t ki = 32768;
@@ -12979,8 +12978,9 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 		speex_preprocess_run(nrp->st_handle, nrp->wire1);
 		ARM_MORPH(arm_scale)(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
 		//ARM_MORPH(arm_fill)(0, nrp->wire1, FIRBUFSIZE);
-	}
 #endif /* WITHLEAKYLMSANR */
+	}
+
 	return nrp->wire1;
 
 #endif /* WITHNOSPEEX */
