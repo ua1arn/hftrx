@@ -2166,6 +2166,19 @@ static FLOAT32P_t scalepair(FLOAT32P_t a, FLOAT_t b)
 }
 #endif
 
+
+static void ARM_MORPH(localwindow_hamming)(FLOAT_t * w, int nTaps)
+{
+	fir_design_windowbuff(w, nTaps, BOARD_WTYPE_HAMMING);
+}
+
+static void ARM_MORPH(localwindow_harris)(FLOAT_t * w, int nTaps)
+{
+	// BOARD_WTYPE_BLACKMAN_HARRIS
+	// BOARD_WTYPE_BLACKMAN_HARRIS_7TERM
+	fir_design_windowbuff(w, nTaps, BOARD_WTYPE_BLACKMAN_HARRIS_7TERM);
+}
+
 #if WITHDSPEXTDDC
 
 
@@ -2174,7 +2187,7 @@ static FLOAT32P_t scalepair(FLOAT32P_t a, FLOAT_t b)
 // Используется в случае внешнего DDCV
 static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ(local_rx_iq_fir_t * const self, FLOAT32P_t NewSample)
 {
-	const FLOAT_t * const k = self->FIRCoef_rx_SSB_IQ [gwprof];
+	const FLOAT_t * const k = self->FIRCoef_rx_SSB_IQ;
 	enum { Ntap = Ntap_rx_SSB_IQ, NtapHalf = Ntap / 2 };
 	// буфер с сохранёнными значениями сэмплов
 
@@ -2395,7 +2408,7 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_tx_SSB_IQ(FLOAT32P_t NewSample, u
 // Используется в случае внешнего DUC
 static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(local_tx_iq_fir_t * self, FLOAT32P_t NewSample)
 {
-	const FLOAT_t * const k = self->FIRCoef_tx_SSB_IQ [gwprof];
+	const FLOAT_t * const k = self->FIRCoef_tx_SSB_IQ;
 	enum { Ntap = Ntap_tx_SSB_IQ, NtapHalf = Ntap / 2 };
 
 	// shift the old samples
@@ -2508,9 +2521,11 @@ static void audio_setup_wiver(const uint_fast8_t pathi, uint_fast8_t tx)
 	#if WITHDSPLOCALRXFIR
 		if (isdspmoderx(dspmode))
 		{
+		    //hftxpath_t * const txpath = & tx_path;
+		    hfrxpath_t * const path = & rx_paths[pathi];
 			local_rx_iq_fir_t * const fir = & path->rx_iq_fir;
-			calculate_passthrough_fir(fir->FIRCoef_rx_SSB_IQ [spf], fir->window_buf, Ntap_rx_SSB_IQ);
-			ARM_MORPH(arm_scale)(fir->FIRCoef_rx_SSB_IQ [spf], 2, fir->FIRCoef_rx_SSB_IQ [spf], Ntap_rx_SSB_IQ);
+			calculate_passthrough_fir(fir->FIRCoef_rx_SSB_IQ, fir->window_buf, Ntap_rx_SSB_IQ);
+			ARM_MORPH(arm_scale)(fir->FIRCoef_rx_SSB_IQ, 2, fir->FIRCoef_rx_SSB_IQ, Ntap_rx_SSB_IQ);
 		}
 		#if WITHDSPEXTDDC
 			// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
@@ -2520,9 +2535,11 @@ static void audio_setup_wiver(const uint_fast8_t pathi, uint_fast8_t tx)
 	#if WITHDSPLOCALTXFIR
 		if (isdspmodetx(dspmode))
 		{
+		    hftxpath_t * const txpath = & tx_path;
+		    //hfrxpath_t * const path = & rx_paths[pathi];
 			local_tx_iq_fir_t * const fir = & txpath->tx_iq_fir;
-			calculate_passthrough_fir(fir->FIRCoef_tx_SSB_IQ [spf], fir->window_buf, Ntap_tx_SSB_IQ);
-			ARM_MORPH(arm_scale)(fir->FIRCoef_tx_SSB_IQ [spf], 2, fir->FIRCoef_tx_SSB_IQ [spf], Ntap_tx_SSB_IQ);
+			calculate_passthrough_fir(fir->FIRCoef_tx_SSB_IQ, fir->window_buf, Ntap_tx_SSB_IQ);
+			ARM_MORPH(arm_scale)(fir->FIRCoef_tx_SSB_IQ, 2, fir->FIRCoef_tx_SSB_IQ, Ntap_tx_SSB_IQ);
 		}
 		#if WITHDSPEXTDDC
 			// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
@@ -2548,9 +2565,11 @@ static void audio_setup_wiver(const uint_fast8_t pathi, uint_fast8_t tx)
 	#if WITHDSPLOCALRXFIR
 		if (isdspmoderx(dspmode))
 		{
+			//hftxpath_t * const txpath = & tx_path;
+		    hfrxpath_t * const path = & rx_paths[pathi];
 			local_rx_iq_fir_t * const fir = & path->rx_iq_fir;
-			calculate_variable_slope_ddc_lpf(fir->FIRCoef_rx_SSB_IQ [spf], fir->window_buf, Ntap_rx_SSB_IQ, fs, cutfreq, transition);
-			ARM_MORPH(arm_scale)(fir->FIRCoef_rx_SSB_IQ [spf], 2, fir->FIRCoef_rx_SSB_IQ [spf], Ntap_rx_SSB_IQ);
+			calculate_variable_slope_ddc_lpf(fir->FIRCoef_rx_SSB_IQ, fir->window_buf, Ntap_rx_SSB_IQ, fs, cutfreq, transition);
+			ARM_MORPH(arm_scale)(fir->FIRCoef_rx_SSB_IQ, 2, fir->FIRCoef_rx_SSB_IQ, Ntap_rx_SSB_IQ);
 		}
 		#if WITHDSPEXTDDC
 			// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
@@ -2560,9 +2579,11 @@ static void audio_setup_wiver(const uint_fast8_t pathi, uint_fast8_t tx)
 	#if WITHDSPLOCALTXFIR
 		if (isdspmodetx(dspmode))
 		{
+		    hftxpath_t * const txpath = & tx_path;
+		    //hfrxpath_t * const path = & rx_paths[pathi];
 			local_tx_iq_fir_t * const fir = & txpath->tx_iq_fir;
-			calculate_duc_lpf(fir->FIRCoef_tx_SSB_IQ [spf], fir->window_buf, Ntap_tx_SSB_IQ, fs, cutfreq);
-			ARM_MORPH(arm_scale)(fir->FIRCoef_tx_SSB_IQ [spf], 2, fir->FIRCoef_tx_SSB_IQ [spf], Ntap_tx_SSB_IQ);
+			calculate_duc_lpf(fir->FIRCoef_tx_SSB_IQ, fir->window_buf, Ntap_tx_SSB_IQ, fs, cutfreq);
+			ARM_MORPH(arm_scale)(fir->FIRCoef_tx_SSB_IQ, 2, fir->FIRCoef_tx_SSB_IQ, Ntap_tx_SSB_IQ);
 		}
 		#if WITHDSPEXTDDC
 			// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
@@ -3719,7 +3740,7 @@ static void audio_setup_txfir(uint_fast8_t dspmode)
 static void audio_setup_lo6_rx(uint_fast8_t pathi)
 {
     hfrxpath_t * const path = & rx_paths[pathi];
-    //globDSPMode  [spf] [pathi] = glob_dspmodes [pathi];
+    //globDSPMode  [pathi] = glob_dspmodes [pathi];
     const uint_fast8_t dspmode = glob_dspmodes [pathi];
 
 	const int lo6 = - glob_lo6 [pathi];
@@ -3743,7 +3764,7 @@ static void audio_setup_lo6_rx(uint_fast8_t pathi)
 static void audio_setup_lo6_tx(void)
 {
     hftxpath_t * const txpath = & tx_path;
-    //globDSPMode  [spf] [pathi] = glob_dspmodes [pathi];
+    //globDSPMode  [pathi] = glob_dspmodes [pathi];
     const uint_fast8_t dspmode = glob_dspmodes [0];
 
 	const int lo6 = - glob_lo6 [0];
@@ -6286,18 +6307,6 @@ void fir_design_windowbuff(FLOAT_t *dWindow, int iCoefNum, int wtype)
 		dWindow [iCnt] = fir_design_window(iCnt, iCoefNum, wtype);
 	}
 #endif
-}
-
-static void ARM_MORPH(localwindow_hamming)(FLOAT_t * w, int nTaps)
-{
-	fir_design_windowbuff(w, nTaps, BOARD_WTYPE_HAMMING);
-}
-
-static void ARM_MORPH(localwindow_harris)(FLOAT_t * w, int nTaps)
-{
-	// BOARD_WTYPE_BLACKMAN_HARRIS
-	// BOARD_WTYPE_BLACKMAN_HARRIS_7TERM
-	fir_design_windowbuff(w, nTaps, BOARD_WTYPE_BLACKMAN_HARRIS_7TERM);
 }
 //#include "isb.h"
 
