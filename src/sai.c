@@ -36,6 +36,11 @@ static void hardware_dummy_enable(uint_fast8_t state)
 
 }
 
+#if CPUSTYLE_A733
+#define DMAC DMA0
+#define DMAC_NS_IRQn DMA0_CPUX_NS_IRQn
+#endif
+
 #ifndef HARDWARE_I2S0HW_USEDMA
 	#define HARDWARE_I2S0HW_USEDMA 1
 #endif /* HARDWARE_I2S0HW_USEDMA */
@@ -3571,6 +3576,20 @@ static void DMAC_NS_IRQHandler(void)
 
 #elif CPUSTYLE_A733
 	#warning CPUSTYLE_A733 to be implemented
+//	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
+//	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
+//	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
+//	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
+
+	for (dmach = 0; dmach < 16; ++ dmach)
+	{
+		const portholder_t pending = DMAC->CH [dmach].DMA_IRQ_PEND_REG & DMAC->CH [dmach].DMA_IRQ_EN_REG;
+		DMAC->CH [dmach].DMA_IRQ_PEND_REG = pending;	// reset interrupt
+		if ((pending) != 0)
+		{
+			dmac_handlers [dmach](dmac_ctx [dmach], dmach, pending);
+		}
+	}
 
 #else /* CPUSTYLE_A64 || CPUSTYLE_V3S */
 
@@ -3730,6 +3749,8 @@ static void DMAC_SetHandler(unsigned dmach, void * ctx, unsigned flag, void (* h
 
 #elif CPUSTYLE_A733
 	#warning CPUSTYLE_A733 to be implemented
+	DMAC->CH [dmach].DMA_IRQ_EN_REG = (DMAC->CH [dmach].DMA_IRQ_EN_REG & ~ UINT32_C(0x0F)) | flag;
+    arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 
 #else
 	#error Unhandled CPUSTYLE_xxx

@@ -5136,7 +5136,7 @@
   </registers>
   </peripheral>
   <peripheral>
-  <name>DMAC</name>
+  <name>DMA0</name>
   <description></description>
   <baseAddress>0x04601000</baseAddress>
   <interrupt>
@@ -5308,36 +5308,39 @@
       <access>read-write</access>
       <resetValue>0x00000000</resetValue>
      </register>
+     <register>
+      <name>DMA_IRQ_EN_REG</name>
+      <displayName>DMA_IRQ_EN_REG</displayName>
+      <description>DMA IRQ Enable Register</description>
+      <addressOffset>0x034</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>DMA_IRQ_PEND_REG</name>
+      <displayName>DMA_IRQ_PEND_REG</displayName>
+      <description>DMA IRQ Pending Status Register</description>
+      <addressOffset>0x038</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>DMA_DESC_HIG_ADDR_REG</name>
+      <displayName>DMA_DESC_HIG_ADDR_REG</displayName>
+      <description>DMA Channel Descriptor Highes Address Register</description>
+      <addressOffset>0x03C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
     </registers>
     <dimIncrement>0x400</dimIncrement>
    </cluster>
   </registers>
   </peripheral>
-  <peripheral derivedFrom="DMAC">
-  <name>DMA0</name>
-  <baseAddress>0x04601000</baseAddress>
-  <interrupt>
-   <name>DMA0_CPUX_NS</name>
-   <value>143</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>DMA0_CPUX_S</name>
-   <value>144</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>DMA1_CPUX_NS</name>
-   <value>145</value>
-   <description></description>
-  </interrupt>
-  <interrupt>
-   <name>DMA1_CPUX_S</name>
-   <value>146</value>
-   <description></description>
-  </interrupt>
-  </peripheral>
-  <peripheral derivedFrom="DMAC">
+  <peripheral derivedFrom="DMA0">
   <name>DMA1</name>
   <baseAddress>0x04024000</baseAddress>
   <interrupt>
