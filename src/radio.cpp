@@ -12991,6 +12991,7 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 static void speexel_processing(speexel_t * p)
 {
 	unsigned score;
+	// Сохранить поток ДО обработки
 	for (score = 0; score < FIRBUFSIZE; )
 	{
 		const unsigned len = 256;
@@ -13014,8 +13015,8 @@ static void speexel_processing(speexel_t * p)
 		outsp [pathi] = afpcw(pathi, nrp, p + pathi * FIRBUFSIZE);
 	}
 	//////////////////////////////////////////////
+	// Сохранить поток ПОСЛЕ обработки
 	// Save results
-	//unsigned score;
 	for (score = 0; score < FIRBUFSIZE; )
 	{
 		const unsigned len = 256;
