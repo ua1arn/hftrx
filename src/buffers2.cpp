@@ -436,6 +436,7 @@ struct buffitem
 	void * tag3;
 };
 
+// HASCHECKREADY - функция get_readybuffer может вернуть false
 template <typename buffitem_t, int hasresample, int HASCHECKREADY, int SKIPSAMPLES>
 class blists
 {
@@ -690,6 +691,10 @@ public:
 		}
 		else
 		{
+			if (timeMS)
+			{
+				return get_readybuffer_raw(dest, timeMS);
+			}
 			if (HASCHECKREADY && ! stoutready)
 				return false;
 			return get_readybuffer_raw(dest, timeMS);
