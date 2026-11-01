@@ -1986,8 +1986,7 @@ static uint64_t task_sysfn(unsigned arg0, void * arg1)
     register uint64_t x1_val __asm__("x1") = (uintptr_t) arg1;
 
 	__ASM volatile(
-			//"\t" "SVC 0x0000\n"
-			"\t" "\n"
+			"\t" "ecall \n"
 	        : "+r" (x0_val)  // "+r" означает чтение и запись (вход и выход в x0)
 	        : "r" (x1_val)   // "r" на входе (компилятор знает, что x1_val привязан к x1)
 	        : "memory"       // Указываем, что вызов может изменить память
