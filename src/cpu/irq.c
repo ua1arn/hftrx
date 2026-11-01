@@ -1718,7 +1718,7 @@ void IRQ15_Handler(void)
 #endif /* CPUSTYLE_RISCV */
 
 typedef struct thread_item_tag thread_item_t;
-static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1);
+static void task_syscall_handler(thread_item_t * thread, unsigned arg0, void * arg1);
 
 
 #if defined(__aarch64__)
@@ -1787,20 +1787,19 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static uint64_t task_sysfn(unsigned arg0, volatile void * arg1)
+static uint64_t task_sysfn(unsigned arg0, void * arg1)
 {
-	uint64_t result;
+    register uint64_t x0_val __asm__("x0") = arg0;
+    register uint64_t x1_val __asm__("x1") = (uintptr_t) arg1;
+
 	__ASM volatile(
-			"\t" "mov x0,%1\n"
-			"\t" "mov x1,%2\n"
 			"\t" "SVC 0x0000\n"
-			"\t" "mov %0,x0\n":
-			"=r"(result) : 		// OutputOperands
-			"r"(arg0), "ra"(arg1) :  // InputOperands
-			"x0", "x1", "memory"	// Clobbers
+	        : "+r" (x0_val)  // "+r" означает чтение и запись (вход и выход в x0)
+	        : "r" (x1_val)   // "r" на входе (компилятор знает, что x1_val привязан к x1)
+	        : "memory"       // Указываем, что вызов может изменить память
 	);
 
-	return result;
+	return x0_val;
 }
 
 #elif __CORTEX_A != 0 && ! defined(__aarch64__)
@@ -1862,20 +1861,19 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static uint32_t task_sysfn(unsigned arg0, volatile void * arg1)
+static uint32_t task_sysfn(unsigned arg0, void * arg1)
 {
-	uint32_t result = 0;
+    register uint32_t r0_val __asm__("r0") = arg0;
+    register uint32_t r1_val __asm__("r1") = (uintptr_t) arg1;
+
 	__ASM volatile(
-		"\t" "mov r0,%1\n"
-		"\t" "mov r1,%2\n"
-		"\t" "SVC 0x0000\n"
-		"\t" "mov %0,r0\n":
-		"=r"(result) :		// OutputOperands
-		"r"(arg0), "ra"(arg1) : // InputOperands
-		"r0", "r1", "memory"	// Clobbers
+			"\t" "SVC 0x0000\n"
+	        : "+r" (r0_val)  // "+r" означает чтение и запись (вход и выход в r0)
+	        : "r" (r1_val)   // "r" на входе (компилятор знает, что r1_val привязан к r1)
+	        : "memory"       // Указываем, что вызов может изменить память
 	);
 
-	return result;
+	return r0_val;
 }
 
 #elif __CORTEX_M != 0
@@ -1931,20 +1929,19 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static uint32_t task_sysfn(unsigned arg0, volatile void * arg1)
+static uint32_t task_sysfn(unsigned arg0, void * arg1)
 {
-	uint32_t result = 0;
+    register uint32_t r0_val __asm__("r0") = arg0;
+    register uint32_t r1_val __asm__("r1") = (uintptr_t) arg1;
+
 	__ASM volatile(
-		"\t" "mov r0,%1\n"
-		"\t" "mov r1,%2\n"
-		"\t" "SVC 0x0000\n"
-		"\t" "mov %0,r0\n":
-		"=r"(result) :		// OutputOperands
-		"r"(arg0), "ra"(arg1) : // InputOperands
-		"r0", "r1", "memory"	// Clobbers
+			"\t" "SVC 0x0000\n"
+	        : "+r" (r0_val)  // "+r" означает чтение и запись (вход и выход в r0)
+	        : "r" (r1_val)   // "r" на входе (компилятор знает, что r1_val привязан к r1)
+	        : "memory"       // Указываем, что вызов может изменить память
 	);
 
-	return result;
+	return r0_val;
 }
 
 
@@ -1983,19 +1980,20 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, exception_f
 }
 
 // user-mode entry
-static uint64_t task_sysfn(unsigned arg0, volatile void * arg1)
+static uint64_t task_sysfn(unsigned arg0, void * arg1)
 {
-	uint64_t result = 0;
+    register uint64_t x0_val __asm__("x0") = arg0;
+    register uint64_t x1_val __asm__("x1") = (uintptr_t) arg1;
+
 	__ASM volatile(
-		"\t" "mv x3,%1\n"
-		"\t" "mv x4,%2\n"
-		//"\t" "SVC 0x0000\n"
-		"\t" "mv %0,x3\n":
-		"=r"(result) :		// OutputOperands
-		"r"(arg0), "ra"(arg1) : // InputOperands
-		"x3", "x4", "memory"	// Clobbers
+			//"\t" "SVC 0x0000\n"
+			"\t" "\n"
+	        : "+r" (x0_val)  // "+r" означает чтение и запись (вход и выход в x0)
+	        : "r" (x1_val)   // "r" на входе (компилятор знает, что x1_val привязан к x1)
+	        : "memory"       // Указываем, что вызов может изменить память
 	);
-	return result;
+
+	return x0_val;
 }
 
 
@@ -2019,8 +2017,8 @@ static volatile uint8_t threads_not_started = 1;
 
 typedef struct check_ready_tag
 {
-	int (* ready)(const struct check_ready_tag * ch, struct thread_item_tag * thread, hwtimcountfast_t tn, volatile void * arg1);
-	int (* print)(char *__restrict buff, size_t size, const struct check_ready_tag * ch, volatile void * arg1);
+	int (* ready)(const struct check_ready_tag * ch, struct thread_item_tag * thread, hwtimcountfast_t tn, void * arg1);
+	int (* print)(char *__restrict buff, size_t size, const struct check_ready_tag * ch, void * arg1);
 	const char * name;
 } check_ready_t;
 
@@ -2031,7 +2029,7 @@ typedef struct thread_item_tag
 	exception_frame_t * cpuframe;	// cpu state
 	uint8_t prio;
 	const check_ready_t * check_ready;	// condition check function
-	volatile void * check_ready_obj;	// user-space wait condition parameters
+	void * check_ready_obj;	// user-space wait condition parameters
 #if WITHDEBUG
 	uintptr_t bottom, top;	// memory area bounds
 	const char * name;
@@ -2418,10 +2416,10 @@ static int print_td(char *__restrict buff, size_t size, hwtimcountfast_t td)
 	return n;
 }
 
-static int print_suspend(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, volatile void * arg1)
+static int print_suspend(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1)
 {
 	unsigned n = 0;
-	volatile struct taskfnparam_suspend * const param = (volatile struct taskfnparam_suspend *) arg1;
+	struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
@@ -2430,9 +2428,9 @@ static int print_suspend(char *__restrict buff, size_t size, const check_ready_t
 	return n;
 }
 
-static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, volatile void * arg1)
+static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, void * arg1)
 {
-	volatile struct taskfnparam_suspend * const param = (volatile struct taskfnparam_suspend *) arg1;
+	struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
 	if (param == NULL || param->guard != param)
 	{
 		PRINTF("readyfn_suspend: '%s' aff=%02X\n", thread->name, thread->affinity);
@@ -2443,10 +2441,10 @@ static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thre
 	return ready_timeout(tn, param->t0, param->td);
 }
 
-static int print_wait32(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, volatile void * arg1)
+static int print_wait32(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1)
 {
 	unsigned n = 0;
-	volatile struct taskfnparam_wait32 * const param = (volatile struct taskfnparam_wait32 *) arg1;
+	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
@@ -2456,9 +2454,9 @@ static int print_wait32(char *__restrict buff, size_t size, const check_ready_t 
 	return n;
 }
 
-static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, volatile void * arg1)
+static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, void * arg1)
 {
-	volatile struct taskfnparam_wait32 * const param = (volatile struct taskfnparam_wait32 *) arg1;
+	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
 	if (param == NULL || param->guard != param)
 	{
 		PRINTF("readyfn_wait32: '%s' aff=%02X\n", thread->name, thread->affinity);
@@ -2480,10 +2478,10 @@ static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * threa
 	return 0;
 }
 
-static int print_wait8(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, volatile void * arg1)
+static int print_wait8(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1)
 {
 	unsigned n = 0;
-	volatile struct taskfnparam_wait8 * const param = (volatile struct taskfnparam_wait8 *) arg1;
+	struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
 	ASSERT(param != NULL);
 	ASSERT(param->guard == param);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
@@ -2493,9 +2491,9 @@ static int print_wait8(char *__restrict buff, size_t size, const check_ready_t *
 	return n;
 }
 
-static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, volatile void * arg1)
+static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, void * arg1)
 {
-	volatile struct taskfnparam_wait8 * const param = (volatile struct taskfnparam_wait8 *) arg1;
+	struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
 	ASSERT(param != NULL);
 	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
 	ASSERT(param->flag != NULL);
@@ -2512,10 +2510,10 @@ static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread
 	return 0;
 }
 
-static int print_waitlist(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, volatile void * arg1)
+static int print_waitlist(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1)
 {
 	unsigned n = 0;
-	volatile struct taskfnparam_waitlist * const param = (volatile struct taskfnparam_waitlist *) arg1;
+	struct taskfnparam_waitlist * const param = (struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
 	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
 	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
@@ -2523,9 +2521,9 @@ static int print_waitlist(char *__restrict buff, size_t size, const check_ready_
 	return n;
 }
 
-static int readyfn_waitlist(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, volatile void * arg1)
+static int readyfn_waitlist(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, void * arg1)
 {
-	volatile struct taskfnparam_waitlist * const param = (volatile struct taskfnparam_waitlist *) arg1;
+	struct taskfnparam_waitlist * const param = (struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
 	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
 	if (LCLSPIN_TRAYLOCK(param->lock))
@@ -2579,7 +2577,7 @@ static const check_ready_t readytag_waitlist =
 };
 
 // thread может быть включена в список ожидающих
-static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
+static void task_syscall_handler(thread_item_t * thread, unsigned arg0, void * arg1)
 {
 	switch (arg0)
 	{
@@ -2710,7 +2708,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 	}
 	else
 	{
-		volatile struct taskfnparam_suspend v;
+		struct taskfnparam_suspend v;
 		v.t0 = timestamp_getticks();
 		v.td = get_td_ms(timeMS);
 		v.guard = & v;
@@ -2741,7 +2739,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 	}
 	else
 	{
-		volatile struct taskfnparam_wait8 v;
+		struct taskfnparam_wait8 v;
 		v.t0 = timestamp_getticks();
 		v.td = get_td_ms(timeMS);
 		v.flag = flag;
@@ -2773,7 +2771,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 	}
 	else
 	{
-		volatile struct taskfnparam_wait32 v;
+		struct taskfnparam_wait32 v;
 		v.t0 = timestamp_getticks();
 		v.td = get_td_ms(timeMS);
 		v.flag = flag;
@@ -2791,7 +2789,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 {
 	ASSERT(threads_not_started == 0);
 
-	volatile struct taskfnparam_waitlist v;
+	struct taskfnparam_waitlist v;
 	v.t0 = timestamp_getticks();
 	v.td = get_td_ms(timeMS);
 	v.list = list;
@@ -2843,7 +2841,7 @@ void * thread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase,
 	return NULL;
 }
 
-static void task_syscall_handler(thread_item_t * thread, unsigned arg0, volatile void * arg1)
+static void task_syscall_handler(thread_item_t * thread, unsigned arg0, void * arg1)
 {
 }
 
