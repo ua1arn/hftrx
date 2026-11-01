@@ -21,7 +21,7 @@
 //#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 #define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 2-м проводам */
-//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
+#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с поддержкой QSPI подключения по 4-м проводам */
 
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
@@ -1141,7 +1141,7 @@
 #endif
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_IS_USERBOOT() (board_getadc_unfiltered_u8(KI5, 0, 15) == 0)	/* проверка нажатия кнопки дополнительного валкодера */
+	#define BOARD_IS_USERBOOT() 0//(board_getadc_unfiltered_u8(KI5, 0, 15) == 0)	/* проверка нажатия кнопки дополнительного валкодера */
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
