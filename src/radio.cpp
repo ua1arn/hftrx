@@ -21164,7 +21164,7 @@ static void keyspoolprocess(void * ctx)
 #ifdef TCONTV_PTR
 	    	PRINTF("TV_DEBUG_REG=%08X ", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
 #endif /* TCONTV_PTR */
-	    	PRINTF("\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
+	    	PRINTF("\n");
 			break;
 
 #if 1//WITHRTOS
