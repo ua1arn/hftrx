@@ -14150,6 +14150,64 @@
   </interrupt>
   </peripheral>
   <peripheral>
+  <name>COMBO_PHY_TX_DSI0</name>
+  <description></description>
+  <baseAddress>0x05506000</baseAddress>
+  <interrupt>
+   <name>DSI0</name>
+   <value>91</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>DSI1</name>
+   <value>92</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>r_0x705c</name>
+    <displayName>r_0x705c</displayName>
+    <description>3 set 0x04B30410</description>
+    <addressOffset>0x105C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>r_0x7110</name>
+    <displayName>r_0x7110</displayName>
+    <description>1 set 0x00000007 - combophy0 enable LVDS related functions</description>
+    <addressOffset>0x1110</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>r_0x7114</name>
+    <displayName>r_0x7114</displayName>
+    <description>2 set 0x00000053 - lvds vref tuning, lvds ibias tuning</description>
+    <addressOffset>0x1114</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="COMBO_PHY_TX_DSI0">
+  <name>COMBO_PHY_TX_DSI1</name>
+  <baseAddress>0x05508000</baseAddress>
+  <interrupt>
+   <name>DSI0</name>
+   <value>91</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>DSI1</name>
+   <value>92</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
+  <peripheral>
   <name>PCIe</name>
   <description></description>
   <baseAddress>0x06400000</baseAddress>

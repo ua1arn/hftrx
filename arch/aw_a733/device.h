@@ -2335,6 +2335,18 @@ typedef struct I2S_PCM_Type
     __IOM uint32_t ASRCMBISTSTAT;                     /*!< Offset 0x0A0 ASRC MBIST Test Status Register */
 } I2S_PCM_TypeDef; /* size of structure = 0x0A4 */
 /*
+ * @brief MIPI_DSI
+ */
+/*!< MIPI_DSI  */
+typedef struct MIPI_DSI_Type
+{
+         RESERVED(0x000[0x105C - 0x0000], uint8_t)
+    __IOM uint32_t r_0x705c;                          /*!< Offset 0x105C 3 set 0x04B30410 */
+         RESERVED(0x1060[0x1110 - 0x1060], uint8_t)
+    __IOM uint32_t r_0x7110;                          /*!< Offset 0x1110 1 set 0x00000007 - combophy0 enable LVDS related functions */
+    __IOM uint32_t r_0x7114;                          /*!< Offset 0x1114 2 set 0x00000053 - lvds vref tuning, lvds ibias tuning */
+} MIPI_DSI_TypeDef; /* size of structure = 0x1118 */
+/*
  * @brief PCIe
  */
 /*!< PCIe  */
@@ -3225,6 +3237,8 @@ typedef struct USB_OHCI_Capability_Type
 #define DISPLAY0_TOP ((DISPLAY0_TOP_TypeDef *) DISPLAY0_TOP_BASE)/*!< DISPLAY0_TOP VIDE0_OUT1_SYS register set access pointer */
 #define TCON_LCD0 ((TCON_LCD_TypeDef *) TCON_LCD0_BASE)/*!< TCON_LCD0 Timing Controller_LCD (TCON_LCD) register set access pointer */
 #define TCON_LCD1 ((TCON_LCD_TypeDef *) TCON_LCD1_BASE)/*!< TCON_LCD1 Timing Controller_LCD (TCON_LCD) register set access pointer */
+#define COMBO_PHY_TX_DSI0 ((MIPI_DSI_TypeDef *) COMBO_PHY_TX_DSI0_BASE)/*!< COMBO_PHY_TX_DSI0  register set access pointer */
+#define COMBO_PHY_TX_DSI1 ((MIPI_DSI_TypeDef *) COMBO_PHY_TX_DSI1_BASE)/*!< COMBO_PHY_TX_DSI1  register set access pointer */
 #define DISPLAY1_TOP ((DISPLAY1_TOP_TypeDef *) DISPLAY1_TOP_BASE)/*!< DISPLAY1_TOP VIDEO_OUT1_SYS register set access pointer */
 #define HDMI_TX0 ((HDMI_TX_TypeDef *) HDMI_TX0_BASE)  /*!< HDMI_TX0  register set access pointer */
 #define TCON_TV0 ((TCON_TV_TypeDef *) TCON_TV0_BASE)  /*!< TCON_TV0 TV Output register set access pointer */

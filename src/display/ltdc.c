@@ -2999,10 +2999,10 @@ static void hardware_de_global_initialize(void)
 
 		CCU->VO0_TCONLCD1_CLK_REG  = (lvdsdivider - 1);
 		CCU->VO0_TCONLCD1_CLK_REG |= (UINT32_C(1) << 31);
-		DISPLAY0_TOP->VO0_MODULE_GATING = 0;	// LCD1_DSI_GATE, LCD0_DSI_GATE
+		DISPLAY0_TOP->VO0_MODULE_GATING = ~ 0;	// LCD1_DSI_GATE, LCD0_DSI_GATE
 		//DISPLAY1_TOP->VO1_MODULE_GATING;
 
-
+		DISPLAY0_TOP->LCD_CLK_SRC_COMB_CLK_SRC = 0;
 		CCU->LVDS0_BGR_REG |= (UINT32_C(1) << 16);	// LVDS0_RST
 		CCU->LVDS1_BGR_REG |= (UINT32_C(1) << 16);	// LVDS1_RST
 
@@ -3214,6 +3214,31 @@ static void hardware_de_global_initialize(void)
 //    CCU->TVE0_CLK_REG = 0x82000001;
 //    CCU->TVE_BGR_REG = 0x00030003;
 
+	CCU->DSI0_CLK_REG |= (UINT32_C(1) << 31);
+	CCU->DSI1_CLK_REG |= (UINT32_C(1) << 31);
+
+	CCU->DSI0_BGR_REG |= (UINT32_C(1) << 0);		// DSI0_GATING Open the clock gate
+	CCU->DSI0_BGR_REG |= (UINT32_C(1) << 16);	// DSI0_RST. De-assert reset
+
+	CCU->DSI1_BGR_REG |= (UINT32_C(1) << 0);		// DSI1_GATING Open the clock gate
+	CCU->DSI1_BGR_REG |= (UINT32_C(1) << 16);	// DSI1_RST. De-assert reset
+
+//    PRINTF("CCU->DSI0_BGR_REG: %p %08X\n", & CCU->DSI0_BGR_REG, (unsigned) CCU->DSI0_BGR_REG);
+//    PRINTF("CCU->DSI1_BGR_REG: %p %08X\n", & CCU->DSI1_BGR_REG, (unsigned) CCU->DSI1_BGR_REG);
+
+//    TCON_LCD0->r_0x705c = 0x04B30410;
+    COMBO_PHY_TX_DSI0->r_0x7110 = 0x00000007;
+    COMBO_PHY_TX_DSI0->r_0x7114 = 0x00000053;
+    COMBO_PHY_TX_DSI0->r_0x705c = 0x04B30410;
+
+    COMBO_PHY_TX_DSI1->r_0x7110 = 0x00000007;
+    COMBO_PHY_TX_DSI1->r_0x7114 = 0x00000053;
+    COMBO_PHY_TX_DSI1->r_0x705c = 0x04B30410;
+
+//    PRINTF("COMBO_PHY_TX_DSI0: %p %08X\n", & COMBO_PHY_TX_DSI0->r_0x705c, (unsigned) COMBO_PHY_TX_DSI0->r_0x705c);
+//    PRINTF("COMBO_PHY_TX_DSI1: %p %08X\n", & COMBO_PHY_TX_DSI1->r_0x705c, (unsigned) COMBO_PHY_TX_DSI1->r_0x705c);
+//    printhex32_titled(COMBO_PHY_TX_DSI0_BASE, COMBO_PHY_TX_DSI0, 256, "COMBO_PHY_TX_DSI0");
+//    printhex32_titled(COMBO_PHY_TX_DSI1_BASE, COMBO_PHY_TX_DSI1, 256, "COMBO_PHY_TX_DSI1");
     local_delay_us(10);
 
 // https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v3x/de_lcd_type.h
@@ -7928,8 +7953,7 @@ void hardware_tvout_set_format(void)
 
 void hardware_ltdc_initialize(void)
 {
-    //PRINTF("hardware_ltdc_initialize\n");
-
+    PRINTF("hardware_ltdc_initialize\n");
 	typedef struct initstruct_tag
 	{
 		int rtmixid;

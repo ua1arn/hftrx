@@ -42,6 +42,16 @@
 #regdef; LCD_SYNC_CTL_REG; 0x0230; LCD Sync Control Register
 #regdef; LCD_LVDS_LMAP_REG; 0x0248 2; LCD LVDS Lane Map Register0/1
 
-
 #regdef; padding 0; 0x01000; set size
+#typeend;
+
+
+## mipi dsi
+
+#type; MIPI_DSI
+
+#regdef; r_0x705c; 0x105c; 3 set 0x04B30410
+#regdef; r_0x7110; 0x1110; 1 set 0x00000007 - combophy0 enable LVDS related functions
+#regdef; r_0x7114; 0x1114; 2 set 0x00000053 - lvds vref tuning, lvds ibias tuning
+
 #typeend;
