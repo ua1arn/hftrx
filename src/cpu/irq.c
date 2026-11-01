@@ -2109,7 +2109,6 @@ static __NO_RETURN int task_idle(void * ctx)
 	(void) ctx;
 	for (;;)
 	{
-		//dbg_putchar('a' + arm_hardware_cpuid());
 		thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	}
 	//return 0;
