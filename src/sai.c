@@ -3430,7 +3430,7 @@ static uintptr_t DMAC_get_linkreg(uint_fast32_t regv)
 {
 	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
-		return regv;				// Link Address
+		return regv & ~ UINT32_C(0x03);				// Link Address
 	}
 	else
 	{
@@ -3438,12 +3438,13 @@ static uintptr_t DMAC_get_linkreg(uint_fast32_t regv)
 	}
 }
 
+// Помещает 34 бита адреса в значение
 static uint_fast32_t DMAC_pack_linkreg(uintptr_t addr)
 {
 	ASSERT((addr & UINT32_C(0x03)) == 0);
 	if (sizeof (uintptr_t) == sizeof (uint32_t))
 	{
-		return addr;				// Link Address
+		return addr & ~ UINT32_C(0x03);				// Link Address
 	}
 	else
 	{
@@ -3562,7 +3563,7 @@ static void DMAC_NS_IRQHandler(void)
 
 #if CPUSTYLE_A64 || CPUSTYLE_V3S
 
-	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG & DMAC->DMAC_IRQ_EN_REG;
+	const uint_fast32_t reg0 = DMAC->DMAC_IRQ_PEND_REG & DMAC->DMAC_IRQ_EN_REG;
 	DMAC->DMAC_IRQ_PEND_REG = reg0;	// Write 1 to clear the pending status.
 
 	for (dmach = 0; dmach < 8; ++ dmach)
@@ -3583,7 +3584,7 @@ static void DMAC_NS_IRQHandler(void)
 
 	for (dmach = 0; dmach < 16; ++ dmach)
 	{
-		const portholder_t pending = DMAC->CH [dmach].DMA_IRQ_PEND_REG & DMAC->CH [dmach].DMA_IRQ_EN_REG;
+		const uint_fast32_t pending = DMAC->CH [dmach].DMA_IRQ_PEND_REG & DMAC->CH [dmach].DMA_IRQ_EN_REG;
 		DMAC->CH [dmach].DMA_IRQ_PEND_REG = pending;	// reset interrupt
 		if ((pending) != 0)
 		{
@@ -3593,14 +3594,14 @@ static void DMAC_NS_IRQHandler(void)
 
 #else /* CPUSTYLE_A64 || CPUSTYLE_V3S */
 
-	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
-	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
+	const uint_fast32_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
+	const uint_fast32_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
 	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
 	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
 
 	for (dmach = 0; dmach < 8; ++ dmach)
 	{
-		const portholder_t maskreg0 = DMAC_REG0_MASK(dmach) * flag;
+		const uint_fast32_t maskreg0 = DMAC_REG0_MASK(dmach) * flag;
 		if ((reg0 & maskreg0) != 0)
 		{
 			dmac_handlers [dmach](dmac_ctx [dmach], dmach, reg0 >> (dmach - 0) * 4);
@@ -3608,7 +3609,7 @@ static void DMAC_NS_IRQHandler(void)
 	}
 	for (dmach = 8; dmach < 16; ++ dmach)
 	{
-		const portholder_t maskreg1 = DMAC_REG1_MASK(dmach) * flag;
+		const uint_fast32_t maskreg1 = DMAC_REG1_MASK(dmach) * flag;
 		if ((reg1 & maskreg1) != 0)
 		{
 			dmac_handlers [dmach](dmac_ctx [dmach], dmach, reg1 >> (dmach - 8) * 4);
