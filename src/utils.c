@@ -541,6 +541,17 @@ void memset32(void * d, uint32_t v, unsigned sz)
 	}
 }
 
+void memcpy32(void * d, const void * s, unsigned sz)
+{
+	uint32_t volatile * dst = (uint32_t volatile *) d;
+	uint32_t * src = (uint32_t *) s;
+	while (sz > 4)
+	{
+		* dst ++ = * src ++;
+		sz -= 4;
+	}
+}
+
 int_fast32_t iabs32(int_fast32_t v)
 {
 	return v > 0 ? v : - v;

@@ -2921,6 +2921,24 @@ static void hardware_de_global_initialize(void)
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 
 
+	if (1)
+	{
+		static const uint32_t a [] =
+		{
+				0x00010001, 0x00010001, 0x00000011, 0x00000000,
+				0x0000fff4, 0x03520100, 0x6ddb6000, 0x00000234,
+				0x00000000, 0x00000000, 0x00000000, 0x00000000,
+				0x00a98210, 0x00000000, 0x00000000, 0x00000000,
+				0x00000000, 0x00000000, 0x00000000, 0x00000000,
+				0x00002000, 0x00000800, 0x00000800, 0x00000800,
+				0x01000100, 0x01000100, 0x01000100, 0x00000000,
+				0x01000100, 0x01000100, 0x01000100, 0x00000000,
+				0x0800ffff, 0x0000ffff, 0x0000ffff, 0x0000ffff,
+				0x01000100, 0x01000008, 0x3fd1e680, 0x00000000,
+		};
+		memcpy32(DE_TOP, a, sizeof a);
+	}
+
 	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << 0;	// COREx_SCLK_GATE
 	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << 0;	// COREx_HCLK_GATE
 	// Only one bit writable
