@@ -21157,6 +21157,16 @@ static void keyspoolprocess(void * ctx)
 		default:
 			PRINTF("key=%02X\n", (unsigned char) c);
 			break;
+		case 'v':
+#ifdef TCONLCD_PTR
+	    	PRINTF("LCD_DEBUG_REG=%08X ", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
+#endif /* TCONLCD_PTR */
+#ifdef TCONTV_PTR
+	    	PRINTF("TV_DEBUG_REG=%08X ", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
+#endif /* TCONTV_PTR */
+	    	PRINTF("\n", (unsigned) TCONTV_PTR->TV_DEBUG_REG);
+			break;
+
 #if 1//WITHRTOS
 		case 't':
 			tasks_print();
