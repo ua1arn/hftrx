@@ -55,88 +55,86 @@
 	#define PMIC_I2C_W (0x36 << 1)	// 7bit: 0x36/0x37
 	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-	int board_radaxa_cubie_axp318w_initialize(void);
+	int board_radaxa_helperboard_a733_initialize(void);
 
 	/* Контроллер питания AXP313 */
 	#define BOARD_PMIC_INITIALIZE() do { \
-		board_radaxa_cubie_axp318w_initialize(); \
+		board_radaxa_helperboard_a733_initialize(); \
 	} while (0)
 #endif /* WITHISBOOTLOADER */
 
 #if WITHISBOOTLOADER
 
-	#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-
-	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-	#define WITHSDHC0HW	1		/* TF CARD */
-	//#define WITHSDHC1HW	1		/* SDIO */
-	//#define WITHSDHC2HW	1		/* EMMC */
-
-#if 1
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
+
 	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR4
-	#define CONFIG_DRAM_CLK 720
-	#define CONFIG_SUNXI_DRAM_T507_LPDDR4 1
-	#define CONFIG_MACH_SUN50I_T507 1
+	#define CONFIG_DRAM_CLK 800
+	//#define CONFIG_MACH_SUN50I_H616 1
+	#define CONFIG_SUNXI_DRAM_A733_LPDDR4 1
 	// szbaijie HelperBoard 1.2 with LPDDR4
-	#define BOARD_DDR_PHY_INIT_DATA \
-		0x03, 0x00, 0x17, 0x05, 0x02, 0x19, 0x06, 0x07, \
+	#define xBOARD_DDR_PHY_INIT_DATA \
+		0x02, 0x00, 0x17, 0x05, 0x04, 0x19, 0x06, 0x07, \
 		0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, \
 		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x01, \
-		0x18, 0x04, 0x1a
-#else
-	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
-	#define BOARD_CONFIG_DRAM_TYPE SUNXI_DRAM_TYPE_LPDDR3
-	#define CONFIG_DRAM_CLK 792
-	#define CONFIG_SUNXI_DRAM_T507_LPDDR3 1
-	#define CONFIG_MACH_SUN50I_T507 1
-	// szbaijie HelperBoard 1.2 with LPDDR4
-	#define BOARD_DDR_PHY_INIT_DATA \
-		0x03, 0x00, 0x17, 0x05, 0x02, 0x19, 0x06, 0x07, \
-		0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, \
-		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x01, \
-		0x18, 0x04, 0x1a
+		0x18, 0x03, 0x1a
 
-#endif
+
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
-	//#define WITHGPUHW	1	/* Graphic processor unit - Mali G31 MP2 (Panfrost) */
-	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
-
-	//#define WITHUSBHW_DEVICE	USB20_OTG_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	//#define WITHGPUHW	1	/* Graphic processor unit */
+	////#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	//#define WITHUSBHW_DEVICE	USB0_DEVICE	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
-	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
-	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB0_DP & USB0_DM
+	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HIGHSPEEDULPI	1
+	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USBH_HS_DP & USBH_HS_DM
 	//#define WITHUSBDEV_DMAENABLE 1
 	
-	//#define WITHUSBHW_EHCI		USB20_HOST1_EHCI
-	//#define WITHUSBHW_OHCI		USB20_HOST1_OHCI
+	//#define WITHUSBHW_HOST		USB_OTG_HS
+	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
+	#define WITHUSBHOST_DMAENABLE 1
 
+	//	#define WITHTINYUSB 1
+	//
+	//
+	#if WITHTINYUSB
+		#define BOARD_TUH_RHPORT 1
+		#define CFG_TUH_ENABLED 1
+		//#define TUP_USBIP_OHCI 1
+		#define TUP_USBIP_EHCI 1
+	#endif /* WITHTINYUSB */
+
+	//#define WITHUSBHW_EHCI		USB1_EHCI
+	//#define WITHUSBHW_EHCI_IRQ	USB1_EHCI_IRQn
+	//#define WITHUSBHW_EHCI_IX	1
+	//
+	//#define WITHUSBHW_OHCI		USB1_OHCI
+	//#define WITHUSBHW_OHCI_IRQ	USB1_OHCI_IRQn
+	//#define WITHUSBHW_OHCI_IX	1
+
+	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB1_DP & USB1_DM
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port
 	#define WITHOHCIHW_OHCIPORT 0
 
 
-//	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-//	#define WITHMODEM_CDC	1
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHMODEM_CDC	1
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	//#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 
-	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
+	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
 
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 
-	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	#define WITHUSBWCID	1
+	//#define WITHUSBWCID	1
 
 	//#define WITHLWIP 1
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
-	//#define WITHUSBDMTP	1	/* MTP USB Device */
-	//#define WITHUSBDMSC	1	/* MSC USB device */
 
 #else /* WITHISBOOTLOADER */
 

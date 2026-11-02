@@ -417,7 +417,27 @@ int board_radaxa_cubie_axp318w_initialize(void)
 
 }
 
+int board_radaxa_helperboard_a733_initialize(void)
+{
 
+	PRINTF("START PMIC \n");
+	int ret;
+
+	ret = axpXXX_bus_init();
+	if (ret)
+	{
+		PRINTF("axpXXX_bus_init() failure.\n");
+			dbg_flush();
+		return ret;
+	}
+
+
+
+
+	PRINTF("1 axp318 INIT END\n");
+	dbg_flush();
+	return 0;
+}
 // board-specific
 
 int board_orangepi4pro_axp318w_initialize(void)
