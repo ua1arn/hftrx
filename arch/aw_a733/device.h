@@ -1328,7 +1328,9 @@ typedef struct G2D_TOP_Type
     __IOM uint32_t G2D_AHB_RST;                       /*!< Offset 0x008 G2D AHB reset   */
     __IOM uint32_t G2D_SCLK_DIV;                      /*!< Offset 0x00C G2D SCLK div    */
     __IM  uint32_t G2D_VERSION;                       /*!< Offset 0x010  */
-         RESERVED(0x014[0x0020 - 0x0014], uint8_t)
+    __IOM uint32_t reg0x14;                           /*!< Offset 0x014  */
+    __IOM uint32_t reg0x18;                           /*!< Offset 0x018  */
+         RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
     __IOM uint32_t RCQ_IRQ_CTL;                       /*!< Offset 0x020  */
     __IOM uint32_t RCQ_STATUS;                        /*!< Offset 0x024  */
     __IOM uint32_t RCQ_CTRL;                          /*!< Offset 0x028  */

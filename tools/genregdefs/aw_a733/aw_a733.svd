@@ -6207,6 +6207,24 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
+    <name>reg0x14</name>
+    <displayName>reg0x14</displayName>
+    <description></description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>reg0x18</name>
+    <displayName>reg0x18</displayName>
+    <description></description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
     <name>RCQ_IRQ_CTL</name>
     <displayName>RCQ_IRQ_CTL</displayName>
     <description></description>

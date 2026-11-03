@@ -5,6 +5,8 @@
 #regdef; G2D_AHB_RST  ; 0x08 ; G2D AHB reset  
 #regdef; G2D_SCLK_DIV   ; 0x0C ; G2D SCLK div   
 #regdefr; G2D_VERSION;	0x010;
+#regdef; reg0x14;	0x014;
+#regdef; reg0x18;	0x018;
 #regdef; RCQ_IRQ_CTL;	0x020;
 #regdef; RCQ_STATUS;	0x024;
 #regdef; RCQ_CTRL;		0x028;

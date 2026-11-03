@@ -338,7 +338,7 @@ static void awxx_g2d_rtmix_startandwait(void)
 	G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;	// clear interrupt flag - не работает без этого ожидание сброса G2D_MIXER_CTRL
 	G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
 	(void) G2D_MIXER->G2D_MIXER_CTRL;
-#if 1
+#if 0
 	hwacc_rtmx_waitdone();
 #else
 	if (local_wait32mask(& G2D_MIXER->G2D_MIXER_INTERRUPT, INT_MASK, INT_MASK, 100))
@@ -1901,14 +1901,18 @@ void arm_hardware_mdma_initialize(void)
 	G2D_TOP->G2D_AHB_RST |= (UINT32_C(1) << 1) | (UINT32_C(1) << 0);	// De-assert reset: 0x02: rot, 0x01: mixer
 	(void) G2D_TOP->G2D_AHB_RST;
 
-    memset32((void *) (G2D_TOP_BASE + 0), ~0, 256);	// strange line for G2D_ROT
-    //memset32(G2D_ROT, ~0, 256);
-//	G2D_TOP->G2D_SCLK_GATE = ~0;
-//	G2D_TOP->G2D_HCLK_GATE = ~0;
-//	G2D_TOP->G2D_AHB_RST = ~0;
+	G2D_TOP->G2D_SCLK_GATE = ~0;
+	G2D_TOP->G2D_HCLK_GATE = ~0;
+	G2D_TOP->G2D_AHB_RST = ~0;
+
+	//G2D_TOP->reg0x14 = ~0u;
+	G2D_TOP->reg0x18 = ~0u;
+	G2D_TOP->G2D_SCLK_DIV = 0;
+
+//    PRINTF("After fill 2\n");
+//    printhex32(G2D_TOP_BASE, G2D_TOP, 32);
 
 //	memset32((void *) (G2D_TOP_BASE + 0), ~0, 256 * 1024);	// strange line for G2D_ROT
-//    printhex32(G2D_TOP_BASE, G2D_TOP, 4 * 1024);
 //    printhex32(G2D_ROT_BASE, G2D_ROT, 1 * 1024);
 
 	local_delay_ms(10);
