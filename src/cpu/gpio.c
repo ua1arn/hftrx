@@ -1410,6 +1410,15 @@ static void ALLW_GPIO_IRQ_Handler_GPIOI(void)
 #endif /* defined (GPIOINTI) */
 }
 
+static void ALLW_GPIO_IRQ_Handler_GPIOK(void)
+{
+#if defined (GPIOINTK)
+	const unsigned status = GPIOINTK->EINT_STATUS;
+	GPIOINTK->EINT_STATUS = status;
+	gpioX_invokeinterrupt(& einthead ['K' - 'A'], status);
+#endif /* defined (GPIOINTK) */
+}
+
 static void ALLW_GPIO_IRQ_Handler_GPIOL(void)
 {
 #if defined (GPIOINTL)
@@ -9416,11 +9425,11 @@ arm_hardware_pioi_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 {
 #if CPUSTYLE_STM32F1XX
 
-	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PH, priority, tgcpu, h);	// PORT I
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PI, priority, tgcpu, h);	// PORT I
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority, h);	// PORT I
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PI, priority, h);	// PORT I
 
 #elif CPUSTYLE_STM32MP1
 
@@ -9452,6 +9461,53 @@ arm_hardware_pioi_onchangeinterrupt(portholder_t ipins, portholder_t raise, port
 }
 
 #endif /* defined (GPIOI) */
+
+
+#if defined (GPIOK)
+// эти функции не меняют программирование выводов (на ввод или на вывод),
+// только подключают прерывания. Требуется иногда прерывания по переходу выводов присоединённых к периферии.
+void
+arm_hardware_piok_onchangeinterrupt(portholder_t ipins, portholder_t raise, portholder_t fall, uint32_t priority, uint32_t tgcpu, einthandler_t * h)
+{
+#if CPUSTYLE_STM32F1XX
+
+	stm32f10x_pioX_onchangeinterrupt(ipins, raise, fall, AFIO_EXTICR1_EXTI0_PK, priority, tgcpu, h);	// PORT K
+
+#elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PK, priority, h);	// PORT K
+
+#elif CPUSTYLE_STM32MP1
+
+	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PK, priority, tgcpu, h);	// PORT K
+
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
+
+	gpioX_onchangeinterrupt(GPIOK, GPIOINTK, GPIOK_NS_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOK, & einthead ['K' - 'A'], h);	// PORT H
+
+#elif (CPUSTYLE_A64)
+
+	gpioX_onchangeinterrupt(GPIOK, GPIOINTK, PH_EINT_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOK, & einthead ['K' - 'A'], h);	// PORT H
+
+#elif (CPUSTYLE_T507)
+
+	gpioX_onchangeinterrupt(GPIOK, GPIOINTK, GPIOK_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOK, & einthead ['K' - 'A'], h);	// PORT H
+
+#elif (CPUSTYLE_A133)
+
+	gpioX_onchangeinterrupt(GPIOK, GPIOINTK, GPIOK_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOK, & einthead ['K' - 'A'], h);	// PORT H
+
+#elif CPUSTYLE_A733
+
+	gpioX_onchangeinterrupt(GPIOK, GPIOINTK, GPIOK_IRQn, ipins, raise, fall, priority, tgcpu, ALLW_GPIO_IRQ_Handler_GPIOK, & einthead ['K' - 'A'], h);	// PORT H
+
+#else
+	#error Undefined CPUSTYLE_XXX
+
+#endif
+}
+
+#endif /* defined (GPIOK) */
 
 #endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
 
