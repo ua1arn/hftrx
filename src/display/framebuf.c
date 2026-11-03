@@ -348,9 +348,9 @@ static void awxx_g2d_rtmix_startandwait(void)
 	G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;	// clear interrupt flag
 #endif
 
-	if (local_wait32mask(& G2D_MIXER->G2D_MIXER_CTRL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
-		TP();
-	//ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
+//	if (local_wait32mask(& G2D_MIXER->G2D_MIXER_CTRL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
+//		TP();
+	ASSERT((G2D_MIXER->G2D_MIXER_CTRL & (UINT32_C(1) << 31)) == 0);
 }
 
 static void awg2d_set_vi_oneplan(
@@ -1168,8 +1168,8 @@ static void awxx_g2d_rot_startandwait(void)
 //		PRINTF("awxx_g2d_rot_startandwait: timeout G2D_ROT->ROT_CTL=%08X\n", (unsigned) G2D_ROT->ROT_CTL);
 //		ASSERT(0);
 //	}
-	if (local_wait32mask(& G2D_ROT->ROT_CTL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
-		TP();
+//	if (local_wait32mask(& G2D_ROT->ROT_CTL, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100))
+//		TP();
 	//ASSERT((G2D_ROT->ROT_CTL & (UINT32_C(1) << 31)) == 0);
 }
 
