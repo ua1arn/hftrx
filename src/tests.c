@@ -9215,7 +9215,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && (CPUSTYLE_H3) && WITHDEBUG
+#if 0 && WITHDEBUG
 	{
 		PRINTF("CPU_FREQ=%u MHz\n", (unsigned) (CPU_FREQ / 1000 / 1000));
 //		PRINTF("allwnr_h3_get_axi_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_axi_freq() / 1000 / 1000));
@@ -9227,7 +9227,7 @@ void hightests(void)
 //		PRINTF("allwnr_h3_get_pll_peri1_x1_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_pll_peri1_x1_freq() / 1000 / 1000));
 //		PRINTF("allwnr_h3_get_ahbs_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_ahbs_freq() / 1000 / 1000));
 //		PRINTF("allwnr_h3_get_apbs1_freq()=%u MHz\n", (unsigned) (allwnr_h3_get_apbs1_freq() / 1000 / 1000));
-		//t507_hdmi_edid_test();
+		hardware_edid_test();
 	}
 #endif
 #if 0 && (CPUSTYLE_T507) && WITHDEBUG
