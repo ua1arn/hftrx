@@ -64,7 +64,7 @@ static void tlv320aic23_setreg(
 #elif WITHTWIHW
 
 	uint8_t buf[2] = { (fulldata >> 8), (fulldata & 0xFF), };
-	i2chw_write(TLV320AIC23_ADDRESS_W, buf, 2);
+	i2chwx_write(TWIHARD_PTR, TLV320AIC23_ADDRESS_W, buf, 2);
 
 #endif /* WITHTWISW */
 

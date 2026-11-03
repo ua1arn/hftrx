@@ -89,7 +89,7 @@ static void nau8822_setreg_16(
 
 	#if WITHTWIHW
 		const uint8_t buff [] = { fulldata >> 8, fulldata >> 0, };
-		i2chw_write(NAU8822_ADDRESS_W, buff, ARRAY_SIZE(buff));
+		i2chwx_write(TWIHARD_PTR, NAU8822_ADDRESS_W, buff, ARRAY_SIZE(buff));
 	#elif WITHTWISW
 		// кодек управляется по I2C
 		i2c_start(NAU8822_ADDRESS_W);
