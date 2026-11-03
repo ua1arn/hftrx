@@ -4112,6 +4112,9 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 
 	}
 #elif CPUSTYLE_T507
+#elif CPUSTYLE_A133
+#elif CPUSTYLE_A733
+
 #endif /* */
 }
 
