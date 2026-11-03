@@ -30,6 +30,17 @@ PRJROOT := ../..
 OBJDIR = o
 OBJDIR64 = x
 
+#BOORPARAM=bootparam_radxa_a7z_a733_lpddr4.mak
+#DDRINITBLOB=ddrinit_radxa_a7z_a733_lpddr4.bin
+
+#BOORPARAM=bootparam_orangepi_4_pro.mak
+#DDRINITBLOB=ddrinit_orangepi_4_pro.bin
+
+BOORPARAM=bootparam_helperboard_a733_lpddr5.mak
+DDRINITBLOB=ddrinit_helperboard_a733_lpddr5.bin
+
+-include ./$(BOORPARAM)
+
 # Define project name here
 PROJECT = tc1_awa733
 PROJECT64 = tc1_awa733_64
@@ -252,22 +263,8 @@ bootloader: BOOT2
 	./egontool -base 0x00040000 -reset 0x00040100 $(PROJECT)_boot.bin fsbl.bt0
 	
 lib: bootloader
-	$(BUSYBOX) grep -E -e ' Reset_Handler$$' -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort >bootparam.mak
+	$(BUSYBOX) grep -E -e ' Reset_Handler$$' -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort >$(BOORPARAM)
 	$(BUSYBOX) cp $(PROJECT)_boot.bin $(DDRINITBLOB)
-
-# Take from tc1_a733_boot.map - address of SystemDRAMInit, SystemExecAARCH64
-ifeq (1, 1)
-# Radaxa Cubie A7Z
--include ./bootparam.mak
-#SystemDRAMInit = 0x0007809c
-#SystemExecAARCH64 = 0x0007500c
-DDRINITBLOB=ddrinit_a733_lpddr4.bin
-else
-# Orange pi 4 pro
-SystemDRAMInit = 0x00079e30
-SystemExecAARCH64 = 0x000750d4
-DDRINITBLOB=ddrinit_a733_lpddr5.bin
-endif
 
 ddrinit_a733_:
 	$(XFEL) ddr lpddr4

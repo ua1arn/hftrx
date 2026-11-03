@@ -15,7 +15,7 @@
 #include "clocks.h"
 #include <string.h>
 
-#if CONFIG_SUNXI_DRAM_A733_LPDDR5
+#if CONFIG_SUNXI_DRAM_A733_LPDDR5 && 0
 // Orange pi 4 pro
 uint32_t dram_para [128] = {
 		CONFIG_DRAM_CLK, //2400,	   // dram_clk
@@ -44,6 +44,45 @@ uint32_t dram_para [128] = {
 		0,		   // dram_tpr1
 		0x170b070, // dram_tpr2
 		0x3800,	   // dram_tpr3
+		0x3514,	   // dram_tpr6
+		0x325f0000,// dram_tpr10
+		0,		   // dram_tpr11
+		0,		   // dram_tpr12
+		0x10061,   // dram_tpr13
+		0		   // dram_tpr14
+};
+#endif /* CONFIG_SUNXI_DRAM_A733_LPDDR5 */
+
+#if CONFIG_SUNXI_DRAM_A733_LPDDR5 && 1
+// Helperboard A733 v1.5
+// para1 = a0fa, para2 = 8000001, dram_tpr13 = 6067
+uint32_t dram_para [128] = {
+		CONFIG_DRAM_CLK, //2400,	   // dram_clk
+		9,		   // dram_type
+		0x0e0e0e0e,// dram_dx_odt
+		0x0f0f0f0f,// dram_dx_dri
+		0xec030e0f,// dram_ca_dri
+		0,		   // dram_para0
+		0xa0fa,//0xa10a,	   // dram_para1
+		0x8000001,//0x1001,	   // dram_para2
+		0,		   // dram_mr0
+		0,		   // dram_mr1
+		0,		   // dram_mr2
+		0x6,	   // dram_mr3
+		0,		   // dram_mr4
+		0,		   // dram_mr5
+		0,		   // dram_mr6
+		0x12,	   // dram_mr11
+		0x44,	   // dram_mr12
+		0,		   // dram_mr13
+		0x34,	   // dram_mr14
+		0,		   // dram_mr16
+		0x06,	   // dram_mr17
+		0,		   // dram_mr22
+		0x4040,	   // dram_tpr0
+		0,		   // dram_tpr1
+		0x170b070, // dram_tpr2
+		0x6067,//0x3800,	   // dram_tpr3
 		0x3514,	   // dram_tpr6
 		0x325f0000,// dram_tpr10
 		0,		   // dram_tpr11
