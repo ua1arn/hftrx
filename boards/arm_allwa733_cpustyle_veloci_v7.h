@@ -950,7 +950,7 @@
 		switch (target) { \
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); } break; *//* PC3 SPI0_CS */ \
 		case targetctl1: { gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
-		case targetnvram: { gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
+		case targetnvram: { gpioX_setstate(GPIOK, (target), 0 * (target)); } break; \
 		case targetadck: { gpioX_setstate(GPIOK, (target), 0 * (target)); } break; \
 		case targetxad2: { gpioX_setstate(GPIOK, (target), 0 * (target)); } break; \
 		case targetfpga1gate: { gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
@@ -965,7 +965,7 @@
 		switch (target) { \
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); } break; *//* PC3 SPI0_CS */ \
 		case targetctl1: { gpioX_setstate(GPIOE, targetctl1, 1 * targetctl1); gpioX_setstate(GPIOE, OE_CTL1_BIT, 0 * OE_CTL1_BIT); } break; \
-		case targetnvram: { gpioX_setstate(GPIOE, (target), 1 * (target)); } break; \
+		case targetnvram: { gpioX_setstate(GPIOK, (target), 1 * (target)); } break; \
 		case targetadck: { gpioX_setstate(GPIOK, (target), 1 * (target)); } break; \
 		case targetxad2: { gpioX_setstate(GPIOK, (target), 1 * (target)); } break; \
 		case targetfpga1gate: { gpioX_setstate(GPIOE, (target), 1 * (target)); } break; \
@@ -996,6 +996,7 @@
 		\
 		gpioX_prog(GPIOK, targetnvram, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /*  */ \
 		gpioX_setstate(GPIOK, targetnvram, 1 * targetnvram); /*  */ \
+		\
 		arm_hardware_pioe_outputs20m(targetctl1, 1 * targetctl1); /*  */ \
 		\
 		gpioX_prog(GPIOK, targetadck, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /*  */ \
