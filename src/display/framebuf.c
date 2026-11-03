@@ -338,7 +338,7 @@ static void awxx_g2d_rtmix_startandwait(void)
 	G2D_MIXER->G2D_MIXER_INTERRUPT = INT_MASK;	// clear interrupt flag - не работает без этого ожидание сброса G2D_MIXER_CTRL
 	G2D_MIXER->G2D_MIXER_CTRL |= (UINT32_C(1) << 31);	/* start the module */
 	(void) G2D_MIXER->G2D_MIXER_CTRL;
-#if 0
+#if 1
 	hwacc_rtmx_waitdone();
 #else
 	if (local_wait32mask(& G2D_MIXER->G2D_MIXER_INTERRUPT, INT_MASK, INT_MASK, 100))
