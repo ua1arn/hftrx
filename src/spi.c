@@ -1119,7 +1119,10 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 
 	/* Do a soft reset */
 	spi->SPI_GCR = (UINT32_C(1) << 31);	// SRST soft reset
-	local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100); // Wait de-assert Reset
+	if (local_wait32mask(& spi->SPI_GCR, (UINT32_C(1) << 31), 0 * (UINT32_C(1) << 31), 100)) // Wait de-assert Reset
+	{
+		TP();
+	}
 //	while ((spi->SPI_GCR & (UINT32_C(1) << 31)) != 0)
 //		;
 
@@ -2500,7 +2503,10 @@ void spi_initialize(void)
 	hardware_spi_master_initialize(SPIBASENAME(6), 6);
 	HARDWARE_SPI6_INITIALIZE();
 #endif
-
+#if WITHSSPI0HW
+	hardware_spi_master_initialize(S_SPI, 0);
+	HARDWARE_S_SPI0_INITIALIZE();
+#endif /* WITHSSPIHW */
 	prog_select_init();		// spi CS initialize
 
 #elif WITHSPISW

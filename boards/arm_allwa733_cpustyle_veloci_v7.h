@@ -939,24 +939,23 @@
 	#define targetadck		(UINT32_C(1) << 17)		// PK17 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
 	#define targetxad2		(UINT32_C(1) << 16)		// PK16 ext2 external SPI device (PA BOARD ADC) CSEXT2
 	#define targetfpga1gate	(UINT32_C(1) << 13)		// PE13 data gate for all FPGA SPI operations (0: active)
-	#define targetfpga1only	(UINT32_C(1) << 17)		// PE17 FPGA control registers CS1
+	#define targetfpga1only	(UINT32_C(1) << 2)		// PB2 FPGA control registers CS1
 	#define targetfpga1		(targetfpga1only | targetfpga1gate)
-
-	#define SPI_DRIVE(drv) do { \
-		s_gpioX_prog(S_GPIOL, SPI_SCLK_BIT, GPIO_CFG_AF4, (drv), GPIO_PULL_NONE); 	/* PL5 SPI1_CLK */ \
-		s_gpioX_prog(S_GPIOL, SPI_MOSI_BIT, GPIO_CFG_AF4, (drv), GPIO_PULL_NONE); 	/* PL6 SPI1_MOSI */ \
-	} while (0)
 
 	/* Вызывается до выдачи chip select */
 	#define HARDWARE_SPI_CONNECT() do { \
-			SPI_DRIVE(GPIO_DRV_3); /* FPGA image loader, FIR parameters loader. */ \
 	} while (0)
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target) do { \
 		switch (target) { \
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); } break; *//* PC3 SPI0_CS */ \
-		case targetctl1: { SPI_DRIVE(GPIO_DRV_1); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
-		default: { gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
+		case targetctl1: { gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
+		case targetnvram: { gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
+		case targetadck: { gpioX_setstate(GPIOK, (target), 0 * (target)); } break; \
+		case targetxad2: { gpioX_setstate(GPIOK, (target), 0 * (target)); } break; \
+		case targetfpga1gate: { gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
+		case targetfpga1only: { gpioX_setstate(GPIOB, (target), 0 * (target)); } break; \
+		case targetfpga1: { gpioX_setstate(GPIOE, (targetfpga1gate), 0 * (targetfpga1gate)); gpioX_setstate(GPIOB, (targetfpga1only), 0 * (targetfpga1only)); } break; \
 		case targetnone: { } break; /* FPGA image loader */ \
 		} \
 	} while (0)
@@ -966,7 +965,12 @@
 		switch (target) { \
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); } break; *//* PC3 SPI0_CS */ \
 		case targetctl1: { gpioX_setstate(GPIOE, targetctl1, 1 * targetctl1); gpioX_setstate(GPIOE, OE_CTL1_BIT, 0 * OE_CTL1_BIT); } break; \
-		default: { gpioX_setstate(GPIOE, (target), 1 * (target)); } break; \
+		case targetnvram: { gpioX_setstate(GPIOE, (target), 1 * (target)); } break; \
+		case targetadck: { gpioX_setstate(GPIOK, (target), 1 * (target)); } break; \
+		case targetxad2: { gpioX_setstate(GPIOK, (target), 1 * (target)); } break; \
+		case targetfpga1gate: { gpioX_setstate(GPIOE, (target), 1 * (target)); } break; \
+		case targetfpga1only: { gpioX_setstate(GPIOB, (target), 1 * (target)); } break; \
+		case targetfpga1: { gpioX_setstate(GPIOE, (targetfpga1gate), 1 * (targetfpga1gate)); gpioX_setstate(GPIOB, (targetfpga1only), 1 * (targetfpga1only)); } break; \
 		case targetnone: { } break; /* FPGA image loader */ \
 		} \
 	} while (0)
@@ -983,21 +987,28 @@
 		} \
 	} while (0)
 
-	#define SPI_ALLCS_INITIALIZE() do { \
-		} while (0)
 	/* инициализация линий выбора периферийных микросхем */
-	#define xSPI_ALLCS_INITIALIZE() do { \
+	#define SPI_ALLCS_INITIALIZE() do { \
 		if (gpioX_checkcfg(GPIOE, OE_CTL1_BIT, GPIO_CFG_OUT)) break; /* preventing power hang-off */ \
 		/*arm_hardware_pioc_outputs20m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
-		arm_hardware_pioi_outputs20m(OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
-		/*arm_hardware_pioe_outputs20m(targettsc1, 1 * targettsc1); *//*  */ \
-		arm_hardware_piok_outputs20m(targetnvram, 1 * targetnvram); /*  */ \
+		gpioX_prog(GPIOE, OE_CTL1_BIT, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /*  */ \
+		gpioX_setstate(GPIOE, OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
+		\
+		gpioX_prog(GPIOK, targetnvram, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /*  */ \
+		gpioX_setstate(GPIOK, targetnvram, 1 * targetnvram); /*  */ \
 		arm_hardware_pioe_outputs20m(targetctl1, 1 * targetctl1); /*  */ \
-		/*arm_hardware_pioe_outputs20m(targetcodec1, 1 * targetcodec1); *//*  */ \
-		arm_hardware_piok_outputs20m(targetadck, 1 * targetadck); /*  */ \
-		arm_hardware_piok_outputs20m(targetxad2, 1 * targetxad2); /*  */ \
-		arm_hardware_pioe_outputs20m(targetfpga1only, 1 * targetfpga1only); /*  */ \
-		arm_hardware_pioe_outputs20m(targetfpga1gate, 1 * targetfpga1gate); /*  */ \
+		\
+		gpioX_prog(GPIOK, targetadck, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /*  */ \
+		gpioX_setstate(GPIOK, targetadck, 1 * targetadck); /*  */ \
+		\
+		gpioX_prog(GPIOK, targetxad2, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /*  */ \
+		gpioX_setstate(GPIOK, targetxad2, 1 * targetxad2); /*  */ \
+		\
+		gpioX_prog(GPIOB, targetfpga1only, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /*  */ \
+		gpioX_setstate(GPIOB, targetfpga1only, 1 * targetfpga1only); /*  */ \
+		\
+		gpioX_prog(GPIOE, targetfpga1gate, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /*  */ \
+		gpioX_setstate(GPIOE, targetfpga1gate, 1 * targetfpga1gate); /*  */ \
 	} while (0)
 	/* разрешение обмена с FPGA  использованием SPI */
 	#define TARGET_FPGA_GATE(_on) do { \
@@ -1033,11 +1044,11 @@
 	#define SPI_GET_PTR(target) SPIHARD_PTR//((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )
 
 	#define HARDWARE_S_SPI0_INITIALIZE() do { \
-		arm_hardware_piol_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF6); 	/* PL5 S_SPI0_CLK */ \
-		arm_hardware_piol_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF6); 	/* PL6 S_SPI0_MOSI */ \
-		arm_hardware_piol_altfn50(SPI_MISO_BIT, GPIO_CFG_AF6); 	/* PL7 S_SPI0_MISO */ \
+		s_gpioX_prog(S_GPIOL, SPI_SCLK_BIT, GPIO_CFG_AF4, GPIO_DRV_3, GPIO_PULL_NONE); 	/* PL5 SPI1_CLK */ \
+		s_gpioX_prog(S_GPIOL, SPI_MOSI_BIT, GPIO_CFG_AF4, GPIO_DRV_3, GPIO_PULL_NONE); 	/* PL6 SPI1_MOSI */ \
+		s_gpioX_prog(S_GPIOL, SPI_MISO_BIT, GPIO_CFG_AF4, GPIO_DRV_3, GPIO_PULL_NONE); 	/* PL7 S_SPI0_MISO */ \
 	} while (0)
-	#define WITHSSPIHW	1	// Use S_SPI
+	#define WITHSSPI0HW	1	// Use S_SPI
 
 #endif /* WITHSPIHW */
 
