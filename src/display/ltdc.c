@@ -6794,7 +6794,7 @@ static void awxx_deoutmapping(int rtmixid)
 	// from registers dump:
 	// DE ch0 - HDMI tvout 0
 	DE_TOP->DE2TCON_MUX =
-		0x0000FFF4 | /* 0x0000FFF4 @ 0x010  */
+		//0x0000FFF4 | /* 0x0000FFF4 @ 0x010  */
 		0;
 
 	DE_TOP->DE_CHN2CORE_MUX =
