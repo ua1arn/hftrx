@@ -153,7 +153,7 @@
 	//#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
 
 #if ! LCDMODE_DUMMY
-	//#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
+	#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через интерфйс LVDS	*/
 	//#define WITHGPUHW	1	/* Graphic processor unit - Mali G31 MP2 (Panfrost)*/
