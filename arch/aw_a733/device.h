@@ -143,7 +143,6 @@ typedef enum IRQn
 
 /* Peripheral and RAM base address */
 
-#define GPIOINTD_BASE ((uintptr_t) 0x00020002)        /*!< GPIOINT  Base */
 #define DE_DNS1_BASE ((uintptr_t) 0x01114000)         /*!< DE_DNS Denoise (DNS) Base */
 #define DE_DNS2_BASE ((uintptr_t) 0x01134000)         /*!< DE_DNS Denoise (DNS) Base */
 #define DE_DNS3_BASE ((uintptr_t) 0x01151400)         /*!< DE_DNS Denoise (DNS) Base */
@@ -156,6 +155,7 @@ typedef enum IRQn
 #define GPIOC_BASE ((uintptr_t) 0x02000180)           /*!< GPIO Port Controller Base */
 #define GPIOINTC_BASE ((uintptr_t) 0x020001C0)        /*!< GPIOINT  Base */
 #define GPIOD_BASE ((uintptr_t) 0x02000200)           /*!< GPIO Port Controller Base */
+#define GPIOINTD_BASE ((uintptr_t) 0x02000240)        /*!< GPIOINT  Base */
 #define GPIOE_BASE ((uintptr_t) 0x02000280)           /*!< GPIO Port Controller Base */
 #define GPIOINTE_BASE ((uintptr_t) 0x020002C0)        /*!< GPIOINT  Base */
 #define GPIOF_BASE ((uintptr_t) 0x02000300)           /*!< GPIO Port Controller Base */
@@ -3111,7 +3111,6 @@ typedef struct USB_OHCI_Capability_Type
 
 /* Access pointers */
 
-#define GPIOINTD ((GPIOINT_TypeDef *) GPIOINTD_BASE)  /*!< GPIOINTD  register set access pointer */
 #define DE_DNS1 ((DE_DNS_TypeDef *) DE_DNS1_BASE)     /*!< DE_DNS1 Denoise (DNS) register set access pointer */
 #define DE_DNS2 ((DE_DNS_TypeDef *) DE_DNS2_BASE)     /*!< DE_DNS2 Denoise (DNS) register set access pointer */
 #define DE_DNS3 ((DE_DNS_TypeDef *) DE_DNS3_BASE)     /*!< DE_DNS3 Denoise (DNS) register set access pointer */
@@ -3124,6 +3123,7 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOC ((GPIO_TypeDef *) GPIOC_BASE)           /*!< GPIOC Port Controller register set access pointer */
 #define GPIOINTC ((GPIOINT_TypeDef *) GPIOINTC_BASE)  /*!< GPIOINTC  register set access pointer */
 #define GPIOD ((GPIO_TypeDef *) GPIOD_BASE)           /*!< GPIOD Port Controller register set access pointer */
+#define GPIOINTD ((GPIOINT_TypeDef *) GPIOINTD_BASE)  /*!< GPIOINTD  register set access pointer */
 #define GPIOE ((GPIO_TypeDef *) GPIOE_BASE)           /*!< GPIOE Port Controller register set access pointer */
 #define GPIOINTE ((GPIOINT_TypeDef *) GPIOINTE_BASE)  /*!< GPIOINTE  register set access pointer */
 #define GPIOF ((GPIO_TypeDef *) GPIOF_BASE)           /*!< GPIOF Port Controller register set access pointer */

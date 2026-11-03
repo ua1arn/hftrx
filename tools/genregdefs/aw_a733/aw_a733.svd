@@ -8382,7 +8382,7 @@
   </peripheral>
   <peripheral derivedFrom="GPIOINTB">
   <name>GPIOINTD</name>
-  <baseAddress>0x00020002</baseAddress>
+  <baseAddress>0x02000240</baseAddress>
   <interrupt>
    <name>GPIOB</name>
    <value>101</value>
