@@ -40,7 +40,13 @@
 #ifndef NAU8822_SPEEDC
 	#define NAU8822_SPEEDC 		SPIC_SPEED1M	// УМЕНЬШЕНО С 10 МГц до 1 - помехи
 #endif /* NAU8822_SPEEDC */
-#define NAU8822_ADDRESS_W		0x34	// 8-bit I2C address: 0x34
+
+#ifndef NAU8822_ADDRESS7
+	#define NAU8822_ADDRESS7		0x1A
+#endif /* NAU8822_ADDRESS7 */
+
+#define NAU8822_ADDRESS_W		(NAU8822_ADDRESS7 * 2)	// 8-bit I2C address: 0x34
+#define NAU8822_ADDRESS_R		(NAU8822_ADDRESS7 * 2 + 1)	// 8-bit I2C address: 0x34
 
 /* data is
 *   D15..D9 NAU8822 register offset

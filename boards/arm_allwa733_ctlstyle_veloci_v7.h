@@ -272,6 +272,7 @@
 	//#define CODEC_TYPE_WM8731_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
 	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
+	#define NAU8822_ADDRESS7		0x1A	// 8-bit I2C address: 0x34
 	//#define CODEC_TYPE_NAU8822_USE_SPI	1
 	//#define NAU8822_USE_SPI4	1	// SPI 4-Wire 24-bit Write and 32-bit Read Operation
 	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
