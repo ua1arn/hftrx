@@ -1077,7 +1077,7 @@
 
 #if WITHKEYBOARD
 
-	#define TARGET_POWERBTN_BIT (UINT32_C(1) << 18)	// PD18 - ~CPU_POWER_SW signal
+	#define TARGET_POWERBTN_BIT (UINT32_C(1) << 24)	// PJ24 - ~CPU_POWER_SW signal
 
 #if WITHPWBUTTON
 	// P5_3 - ~CPU_POWER_SW signal
@@ -1085,8 +1085,8 @@
 #endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_piod_inputs(TARGET_POWERBTN_BIT); \
-			arm_hardware_piod_updown(TARGET_POWERBTN_BIT, TARGET_POWERBTN_BIT, 0);	/* PD18: pull-up button */ \
+			arm_hardware_pioj_inputs(TARGET_POWERBTN_BIT); \
+			arm_hardware_pioj_updown(TARGET_POWERBTN_BIT, TARGET_POWERBTN_BIT, 0);	/* PJ24: pull-up button */ \
 		} while (0)
 
 #else /* WITHKEYBOARD */
