@@ -1097,6 +1097,14 @@ void s_gpioX_prog(
 	s_gpioX_progUnsafe(gpio, iopins, cfg, drv, pull);
 //	s_gpioX_unlock(gpio, oldIrql);
 }
+
+portholder_t s_gpioX_getinputs(
+	S_GPIO_TypeDef * gpio
+	)
+{
+	return gpio->DATA;
+}
+
 #endif /* CPUSTYLE_A733 */
 
 portholder_t gpioX_getinputs(

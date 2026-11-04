@@ -618,6 +618,9 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 	portholder_t gpioX_getinputs(
 		GPIO_TypeDef * gpio
 		);
+	portholder_t s_gpioX_getinputs(
+		S_GPIO_TypeDef * gpio
+		);
 	void gpioX_prog(
 		GPIO_TypeDef * gpio,
 		portholder_t iopins,	// mask

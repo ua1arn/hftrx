@@ -839,19 +839,22 @@
 	// +++
 	// PTT input - PD10
 	// PTT2 input - PD9
-	#define PTT_TARGET_PIN				gpioX_getinputs(GPIOE)
-	#define PTT_BIT_PTT					(UINT32_C(1) << 10)		// PE10 - PTT_FRONT
+	#define PTT_TARGET_PIN				s_gpioX_getinputs(S_GPIOL)
+	#define PTT_BIT_PTT					(UINT32_C(1) << 3)		// PL3 - PTT_FRONT
+
 //	#define PTT2_TARGET_PIN				gpioX_getinputs(GPIOD)
 //	#define PTT2_BIT_PTT				(UINT32_C(1) << 26)		// PD26 - PTT ??? - unused
+
 	#define PTT3_TARGET_PIN				gpioX_getinputs(GPIOD)
-	#define PTT3_BIT_PTT				(UINT32_C(1) << 25)		// PD25 - Rear panel PTT
+	#define PTT3_BIT_PTT				(UINT32_C(1) << 11)		// PD11 - Rear panel PTT
 
 	// FT-710 specific bits
 	#define DAKY_TARGET_PIN				gpioX_getinputs(GPIOD)
-	#define DAKY_BIT_PTT				(UINT32_C(1) << 23)		// PD23 - READ DAKY
+	#define DAKY_BIT_PTT				(UINT32_C(1) << 13)		// PD13 - READ DAKY
 	#define HARDWARE_GET_DAKY()			((DAKY_TARGET_PIN & DAKY_BIT_PTT) == 0)
+
 	#define SHIFT_TARGET_PIN			gpioX_getinputs(GPIOD)
-	#define SHIFT_BIT_PTT				(UINT32_C(1) << 24)		// PD24 - READ SHIFT
+	#define SHIFT_BIT_PTT				(UINT32_C(1) << 12)		// PD12 - READ SHIFT
 	#define HARDWARE_GET_SHIFT() ((SHIFT_TARGET_PIN & SHIFT_BIT_PTT) == 0)
 
 	// получить бит запроса оператором перехода на пердачу
@@ -863,8 +866,7 @@
 			0 \
 		)
 	#define PTT_INITIALIZE() do { \
-			arm_hardware_pioe_inputs(PTT_BIT_PTT); \
-			arm_hardware_pioe_updown(PTT_BIT_PTT, PTT_BIT_PTT, 0); \
+			s_gpioX_prog(S_GPIOL, PTT_BIT_PTT, GPIO_CFG_IN, GPIO_DRV_0, GPIO_PULL_UP); \
 			/*arm_hardware_piod_inputs(PTT2_BIT_PTT); */\
 			/*arm_hardware_piod_updown(PTT2_BIT_PTT, PTT2_BIT_PTT, 0); */\
 			arm_hardware_piod_inputs(PTT3_BIT_PTT); \
@@ -876,6 +878,7 @@
 		} while (0)
 	// ---
 	// TUNE input - PJ23
+	// Никуда не идёт
 	#define TUNE_TARGET_PIN				gpioX_getinputs(GPIOJ)
 	#define TUNE_BIT_TUNE				(UINT32_C(1) << 23)		// PJ23
 	#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
