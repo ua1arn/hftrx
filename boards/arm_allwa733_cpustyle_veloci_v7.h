@@ -1465,8 +1465,8 @@
 		arm_hardware_pioh_altfn50(UINT32_C(1) << 3, GPIO_CFG_AF5); 		/* PH3 RGMII0_CLKIN */ \
 		arm_hardware_pioh_altfn50(UINT32_C(1) << 8, GPIO_CFG_AF5); 		/* PH8 MDC */ \
 		arm_hardware_pioh_altfn50(UINT32_C(1) << 9, GPIO_CFG_AF5); 		/* PH9 MDIO */ \
-		arm_hardware_pioh_updown(UINT32_C(1) << 8, UINT32_C(1) << 14, 0); /* PH8 MDC */ \
-		arm_hardware_pioh_updown(UINT32_C(1) << 9, UINT32_C(1) << 15, 0); /*  PH9 MDIO */ \
+		arm_hardware_pioh_updown(UINT32_C(1) << 8, UINT32_C(1) << 8, 0); /* PH8 MDC */ \
+		arm_hardware_pioh_updown(UINT32_C(1) << 9, UINT32_C(1) << 9, 0); /*  PH9 MDIO */ \
 		\
 	} while (0)
 	// T507:
