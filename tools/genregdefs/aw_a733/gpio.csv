@@ -3,7 +3,7 @@
 #regdef; DATA; 0x0010; Data Register
 #regdef; DATA_SET; 0x0014; Data Set Register
 #regdef; DATA_CLR; 0x0018; Data Clear Register
-#regdef; DRV; 0x020 2; Multi_Driving Register
+#regdef; DRV; 0x020 4; Multi_Driving Register
 #regdef; PULL; 0x030 2; Pull Register
 #regdef; INT_CFG; 0x040 4; External Interrupt Configure Register
 #regdef; INT_CTL; 0x050; External Interrupt Control Register
@@ -28,7 +28,7 @@
 #regdef; DATA; 0x0010; Data Register
 #regdef; DATA_SET; 0x0014; Data Set Register
 #regdef; DATA_CLR; 0x0018; Data Clear Register
-#regdef; DRV; 0x020 2; Multi_Driving Register
+#regdef; DRV; 0x020 4; Multi_Driving Register
 #regdef; PULL; 0x030 2; Pull Register
 #regdef; INT_CFG; 0x040 4; External Interrupt Configure Register
 #regdef; INT_CTL; 0x050; External Interrupt Control Register

@@ -1707,8 +1707,7 @@ typedef struct GPIO_Type
     __IOM uint32_t DATA_SET;                          /*!< Offset 0x014 Data Set Register */
     __IOM uint32_t DATA_CLR;                          /*!< Offset 0x018 Data Clear Register */
          RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
-    __IOM uint32_t DRV [0x002];                       /*!< Offset 0x020 Multi_Driving Register */
-         RESERVED(0x028[0x0030 - 0x0028], uint8_t)
+    __IOM uint32_t DRV [0x004];                       /*!< Offset 0x020 Multi_Driving Register */
     __IOM uint32_t PULL [0x002];                      /*!< Offset 0x030 Pull Register */
          RESERVED(0x038[0x0040 - 0x0038], uint8_t)
     __IOM uint32_t INT_CFG [0x004];                   /*!< Offset 0x040 External Interrupt Configure Register */
@@ -1732,8 +1731,7 @@ typedef struct GPIOBLOCK_Type
         __IOM uint32_t DATA_SET;                      /*!< Offset 0x014 Data Set Register */
         __IOM uint32_t DATA_CLR;                      /*!< Offset 0x018 Data Clear Register */
              RESERVED(0x01C[0x0020 - 0x001C], uint8_t)
-        __IOM uint32_t DRV [0x002];                   /*!< Offset 0x020 Multi_Driving Register */
-             RESERVED(0x028[0x0030 - 0x0028], uint8_t)
+        __IOM uint32_t DRV [0x004];                   /*!< Offset 0x020 Multi_Driving Register */
         __IOM uint32_t PULL [0x002];                  /*!< Offset 0x030 Pull Register */
              RESERVED(0x038[0x0040 - 0x0038], uint8_t)
         __IOM uint32_t INT_CFG [0x004];               /*!< Offset 0x040 External Interrupt Configure Register */

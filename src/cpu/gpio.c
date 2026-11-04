@@ -1038,7 +1038,7 @@ static void s_gpioX_progUnsafe(
 	unsigned pull
 	)
 {
-#if 0//CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_A733
+#if 0//CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133
 	const portholder_t cfg0 = power4(iopins >> 0);	/* CFG0 bits */
 	const portholder_t cfg1 = power4(iopins >> 8);	/* CFG1 bits */
 	const portholder_t cfg2 = power4(iopins >> 16);	/* CFG2 bits */
@@ -1084,6 +1084,7 @@ static void s_gpioX_progUnsafe(
 	gpio->PULL [1] = (gpio->PULL [1] & ~ (pull1 * 0x03)) | (pull * pull1);
 #endif
 }
+
 void s_gpioX_prog(
 	S_GPIO_TypeDef * gpio,
 	portholder_t iopins,	// mask
@@ -1122,7 +1123,7 @@ static void gpioX_progUnsafe(
 	unsigned pull
 	)
 {
-#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_A733
+#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133
 	const portholder_t cfg0 = power4(iopins >> 0);	/* CFG0 bits */
 	const portholder_t cfg1 = power4(iopins >> 8);	/* CFG1 bits */
 	const portholder_t cfg2 = power4(iopins >> 16);	/* CFG2 bits */
@@ -1176,7 +1177,7 @@ static void gpioX_progUnsafeNoPull(
 	unsigned drv
 	)
 {
-#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133 || CPUSTYLE_A733
+#if CPUSTYLE_A64 || CPUSTYLE_T507 || CPUSTYLE_V3S || CPUSTYLE_H3 || CPUSTYLE_A133
 	const portholder_t cfg0 = power4(iopins >> 0);	/* CFG0 bits */
 	const portholder_t cfg1 = power4(iopins >> 8);	/* CFG1 bits */
 	const portholder_t cfg2 = power4(iopins >> 16);	/* CFG2 bits */
