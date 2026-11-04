@@ -1368,7 +1368,7 @@
 		#define BOARD_TCONLCDFREQ (allwnr_a733_get_v0_tconlcd0_freq())
 		#define TCONLCD_IRQ TCON0_LCD0_IRQn
 		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
-		#define TCONLCD_LVDSIX 0	/* 0 -LVDS0 - сейчас не влияет */
+		#define TCONLCD_LVDSIX 0	/* 0: LVDS0 - если выполнять инициализацию DSI1 - будут программироваться выходы PD10..PD19 вне зависимости от GPIO */
 		#define RTMIXIDLCD 1	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#endif
 

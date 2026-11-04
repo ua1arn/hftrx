@@ -2921,7 +2921,7 @@ static void hardware_de_global_initialize(void)
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 
 
-	if (1)
+	if (0)
 	{
 		static const uint32_t a [] =
 		{
@@ -3189,69 +3189,76 @@ static void hardware_de_global_initialize(void)
 	CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
 	//PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
 
-	{
-		uint32_t Zclk_val = (UINT32_C(1) << 31) | (UINT32_C(3) << 24) | 0x0;
-		CCU->COMBPHY0_CLK_REG =Zclk_val;//|= (UINT32_C(1) << 31);	// COMBPHY0_CLK_GATING
-		CCU->COMBPHY1_CLK_REG =Zclk_val;//|= (UINT32_C(1) << 31);	// COMBPHY0_CLK_GATING
-		/* =========================================================================
-       ШАГ 1: Переключение системных MUX Combo PHY в режим HDMI
-       ========================================================================= */
-
-		// COMBPHY0: сбрасываем нижние биты [1:0] и выставляем режим HDMI (0x2)
-		COMBPHY0->COMBPHY_CFG_REG = (COMBPHY0->COMBPHY_CFG_REG & ~((UINT32_C(1) << 1) | (UINT32_C(1) << 0)))
-									| (UINT32_C(1) << 1);
-
-		// COMBPHY1: проделываем аналогичное переключение
-		COMBPHY1->COMBPHY_CFG_REG = (COMBPHY1->COMBPHY_CFG_REG & ~((UINT32_C(1) << 1) | (UINT32_C(1) << 0)))
-									| (UINT32_C(1) << 1);
-
-		/* =========================================================================
-		   ШАГ 2: Управление аналоговой изоляцией падов и внутренним питанием PHY
-		   ========================================================================= */
-
-		// COMBPHY0: Сбрасываем BIT(0) (Отключаем ISO), взводим BIT(1) (Включаем Power)
-		uint32_t ctrl0_val = COMBPHY0->COMBPHY_CTRL_REG;
-		ctrl0_val &= ~(UINT32_C(1) << 0); // Отключаем Analog Isolation
-		ctrl0_val |= (UINT32_C(1) << 1);  // Активируем внутреннее питание ячейки
-		COMBPHY0->COMBPHY_CTRL_REG = ctrl0_val;
-
-		// COMBPHY1: Выполняем аналогичные действия
-		uint32_t ctrl1_val = COMBPHY1->COMBPHY_CTRL_REG;
-		ctrl1_val &= ~(UINT32_C(1) << 0); // Отключаем Analog Isolation
-		ctrl1_val |= (UINT32_C(1) << 1);  // Активируем внутреннее питание ячейки
-		COMBPHY1->COMBPHY_CTRL_REG = ctrl1_val;
-
-		/* Аппаратная пауза для стабилизации переходных процессов ключей */
-		local_delay_us(200);
-
-		PRINTHEX32(*COMBPHY0);
-		PRINTHEX32(*COMBPHY1);
-	}
+//	{
+//		uint32_t Zclk_val = (UINT32_C(1) << 31) | (UINT32_C(3) << 24) | 0x0;
+//		CCU->COMBPHY0_CLK_REG =Zclk_val;//|= (UINT32_C(1) << 31);	// COMBPHY0_CLK_GATING
+//		CCU->COMBPHY1_CLK_REG =Zclk_val;//|= (UINT32_C(1) << 31);	// COMBPHY0_CLK_GATING
+//		/* =========================================================================
+//       ШАГ 1: Переключение системных MUX Combo PHY в режим HDMI
+//       ========================================================================= */
+//
+//		// COMBPHY0: сбрасываем нижние биты [1:0] и выставляем режим HDMI (0x2)
+//		COMBPHY0->COMBPHY_CFG_REG = (COMBPHY0->COMBPHY_CFG_REG & ~((UINT32_C(1) << 1) | (UINT32_C(1) << 0)))
+//									| (UINT32_C(1) << 1);
+//
+//		// COMBPHY1: проделываем аналогичное переключение
+//		COMBPHY1->COMBPHY_CFG_REG = (COMBPHY1->COMBPHY_CFG_REG & ~((UINT32_C(1) << 1) | (UINT32_C(1) << 0)))
+//									| (UINT32_C(1) << 1);
+//
+//		/* =========================================================================
+//		   ШАГ 2: Управление аналоговой изоляцией падов и внутренним питанием PHY
+//		   ========================================================================= */
+//
+//		// COMBPHY0: Сбрасываем BIT(0) (Отключаем ISO), взводим BIT(1) (Включаем Power)
+//		uint32_t ctrl0_val = COMBPHY0->COMBPHY_CTRL_REG;
+//		ctrl0_val &= ~(UINT32_C(1) << 0); // Отключаем Analog Isolation
+//		ctrl0_val |= (UINT32_C(1) << 1);  // Активируем внутреннее питание ячейки
+//		COMBPHY0->COMBPHY_CTRL_REG = ctrl0_val;
+//
+//		// COMBPHY1: Выполняем аналогичные действия
+//		uint32_t ctrl1_val = COMBPHY1->COMBPHY_CTRL_REG;
+//		ctrl1_val &= ~(UINT32_C(1) << 0); // Отключаем Analog Isolation
+//		ctrl1_val |= (UINT32_C(1) << 1);  // Активируем внутреннее питание ячейки
+//		COMBPHY1->COMBPHY_CTRL_REG = ctrl1_val;
+//
+//		/* Аппаратная пауза для стабилизации переходных процессов ключей */
+//		local_delay_us(200);
+//
+//		PRINTHEX32(*COMBPHY0);
+//		PRINTHEX32(*COMBPHY1);
+//	}
 #endif
 
 //    CCU->TVE0_CLK_REG = 0x82000001;
 //    CCU->TVE_BGR_REG = 0x00030003;
 
-	CCU->DSI0_CLK_REG |= (UINT32_C(1) << 31);
-	CCU->DSI1_CLK_REG |= (UINT32_C(1) << 31);
 
-	CCU->DSI0_BGR_REG |= (UINT32_C(1) << 0);		// DSI0_GATING Open the clock gate
-	CCU->DSI0_BGR_REG |= (UINT32_C(1) << 16);	// DSI0_RST. De-assert reset
-
-	CCU->DSI1_BGR_REG |= (UINT32_C(1) << 0);		// DSI1_GATING Open the clock gate
-	CCU->DSI1_BGR_REG |= (UINT32_C(1) << 16);	// DSI1_RST. De-assert reset
 
 //    PRINTF("CCU->DSI0_BGR_REG: %p %08X\n", & CCU->DSI0_BGR_REG, (unsigned) CCU->DSI0_BGR_REG);
 //    PRINTF("CCU->DSI1_BGR_REG: %p %08X\n", & CCU->DSI1_BGR_REG, (unsigned) CCU->DSI1_BGR_REG);
 
-//    TCON_LCD0->r_0x705c = 0x04B30410;
-    COMBO_PHY_TX_DSI0->r_0x7110 = 0x00000007;
-    COMBO_PHY_TX_DSI0->r_0x7114 = 0x00000053;
-    COMBO_PHY_TX_DSI0->r_0x705c = 0x04B30410;
+	switch (TCONLCD_LVDSIX)
+	{
+	case 0:
+		CCU->DSI0_CLK_REG |= (UINT32_C(1) << 31);
+		CCU->DSI0_BGR_REG |= (UINT32_C(1) << 0);		// DSI0_GATING Open the clock gate
+		CCU->DSI0_BGR_REG |= (UINT32_C(1) << 16);	// DSI0_RST. De-assert reset
+		//    TCON_LCD0->r_0x705c = 0x04B30410;
+		COMBO_PHY_TX_DSI0->r_0x7110 = 0x00000007;
+		COMBO_PHY_TX_DSI0->r_0x7114 = 0x00000053;
+		COMBO_PHY_TX_DSI0->r_0x705c = 0x04B30410;
+		break;
+	case 1:
+		CCU->DSI1_CLK_REG |= (UINT32_C(1) << 31);
+		CCU->DSI1_BGR_REG |= (UINT32_C(1) << 0);		// DSI1_GATING Open the clock gate
+		CCU->DSI1_BGR_REG |= (UINT32_C(1) << 16);	// DSI1_RST. De-assert reset
 
-    COMBO_PHY_TX_DSI1->r_0x7110 = 0x00000007;
-    COMBO_PHY_TX_DSI1->r_0x7114 = 0x00000053;
-    COMBO_PHY_TX_DSI1->r_0x705c = 0x04B30410;
+		COMBO_PHY_TX_DSI1->r_0x7110 = 0x00000007;
+		COMBO_PHY_TX_DSI1->r_0x7114 = 0x00000053;
+		COMBO_PHY_TX_DSI1->r_0x705c = 0x04B30410;
+		break;
+	}
+
 
 //    PRINTF("COMBO_PHY_TX_DSI0: %p %08X\n", & COMBO_PHY_TX_DSI0->r_0x705c, (unsigned) COMBO_PHY_TX_DSI0->r_0x705c);
 //    PRINTF("COMBO_PHY_TX_DSI1: %p %08X\n", & COMBO_PHY_TX_DSI1->r_0x705c, (unsigned) COMBO_PHY_TX_DSI1->r_0x705c);
