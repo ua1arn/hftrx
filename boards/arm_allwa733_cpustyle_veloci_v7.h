@@ -837,13 +837,7 @@
 	#define HARDWARE_GET_TXDISABLE() (board_fpgastatus_gettxdisable())
 
 	// +++
-	// PTT input - PD10
-	// PTT2 input - PD9
-	#define PTT_TARGET_PIN				s_gpioX_getinputs(S_GPIOL)
 	#define PTT_BIT_PTT					(UINT32_C(1) << 3)		// PL3 - PTT_FRONT
-
-//	#define PTT2_BIT_PTT				(UINT32_C(1) << 26)		// PD26 - PTT ??? - unused
-
 	#define PTT3_BIT_PTT				(UINT32_C(1) << 11)		// PD11 - Rear panel PTT
 
 	// FT-710 specific bits
@@ -855,7 +849,6 @@
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() ( \
 			(s_gpioX_getinputs(S_GPIOL) & PTT_BIT_PTT) == 0 || /* PL3 - PTT_FRONT */ \
-			/* (gpioX_getinputs(GPIOD) & PTT2_BIT_PTT) == 0 || */ \
 			(gpioX_getinputs(GPIOD) & PTT3_BIT_PTT) == 0 || /* rear PTT */ \
 			HOSTBB_GET_PTT() || \
 			0 \
