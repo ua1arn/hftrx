@@ -15,6 +15,42 @@
 #include "clocks.h"
 #include <string.h>
 
+struct dram_parax {
+	uint32_t dram_clk;
+	uint32_t dram_type;
+	uint32_t dram_dx_odt;
+	uint32_t dram_dx_dri;
+	uint32_t dram_ca_dri;
+	uint32_t dram_para0;
+	uint32_t dram_para1;
+	uint32_t dram_para2;
+	uint32_t dram_mr0;
+	uint32_t dram_mr1;
+	uint32_t dram_mr2;
+	uint32_t dram_mr3;
+	uint32_t dram_mr4;
+	uint32_t dram_mr5;
+	uint32_t dram_mr6;
+	uint32_t dram_mr11;
+	uint32_t dram_mr12;
+	uint32_t dram_mr13;
+	uint32_t dram_mr14;
+	uint32_t dram_mr16;
+	uint32_t dram_mr17;
+	uint32_t dram_mr22;
+	uint32_t dram_tpr0;
+	uint32_t dram_tpr1;
+	uint32_t dram_tpr2;
+	uint32_t dram_tpr3;
+	uint32_t dram_tpr6;
+	uint32_t dram_tpr10;
+	uint32_t dram_tpr11;
+	uint32_t dram_tpr12;
+	uint32_t dram_tpr13;
+	uint32_t dram_tpr14;
+
+	uint32_t pad [128];
+};
 #if CONFIG_SUNXI_DRAM_A733_LPDDR5 && 0
 // Orange pi 4 pro
 uint32_t dram_para [128] = {
@@ -53,9 +89,11 @@ uint32_t dram_para [128] = {
 };
 #endif /* CONFIG_SUNXI_DRAM_A733_LPDDR5 */
 
-#if CONFIG_SUNXI_DRAM_A733_LPDDR5 && 1
+#if CONFIG_SUNXI_DRAM_A733_LPDDR5 && 0
 // Helperboard A733 v1.5
 // para1 = a0fa, para2 = 8000001, dram_tpr13 = 6067
+// Даёт 1.5 GB памяти вместо двух
+
 uint32_t dram_para [128] = {
 		CONFIG_DRAM_CLK, //2400,	   // dram_clk
 		9,		   // dram_type
@@ -82,7 +120,7 @@ uint32_t dram_para [128] = {
 		0x4040,	   // dram_tpr0
 		0,		   // dram_tpr1
 		0x170b070, // dram_tpr2
-		0x6067,//0x3800,	   // dram_tpr3
+		0x3800,	   // dram_tpr3
 		0x3514,	   // dram_tpr6
 		0x325f0000,// dram_tpr10
 		0,		   // dram_tpr11
@@ -92,6 +130,48 @@ uint32_t dram_para [128] = {
 };
 #endif /* CONFIG_SUNXI_DRAM_A733_LPDDR5 */
 
+
+#if CONFIG_SUNXI_DRAM_A733_LPDDR5 && 1
+// Helperboard A733 v1.5
+// DRAM SIZE =2048 MBytes, para1 = a0fa, para2 = 8000001, dram_tpr13 = 6067
+
+struct dram_parax dram_para0 = {
+		.dram_clk       = 2400,
+		.dram_type      = 9,
+		.dram_dx_odt    = 0x0e0e0e0e,
+		.dram_dx_dri    = 0x0f0f0f0f,
+		.dram_ca_dri    = 0xec030e0f,
+		.dram_para0     = 0,
+		.dram_para1     = 0xa0fa,
+		.dram_para2     = 0x8000001,//0x1001,
+		.dram_mr0       = 0,
+		.dram_mr1       = 0,
+		.dram_mr2       = 0,
+		.dram_mr3       = 0x6,
+		.dram_mr4       = 0,
+		.dram_mr5       = 0,
+		.dram_mr6       = 0,
+		.dram_mr11      = 0x13,
+		.dram_mr12      = 0x44,
+		.dram_mr13      = 0,
+		.dram_mr14      = 0x2e,
+		.dram_mr16      = 0,
+		.dram_mr17      = 0x06,
+		.dram_mr22      = 0,
+		.dram_tpr0      = 0x4040,
+		.dram_tpr1      = 0,
+		.dram_tpr2      = 0x170b0703,
+		.dram_tpr3      = 0x3800,
+		.dram_tpr6      = 0x3514,
+		.dram_tpr10     = 0x325f0000,
+		.dram_tpr11     = 0,
+		.dram_tpr12     = 0,
+		.dram_tpr13     = 0x6067,//0x64,
+		.dram_tpr14     = 0,
+
+};
+static uint32_t * const dram_para = (uint32_t *) & dram_para0;
+#endif /* CONFIG_SUNXI_DRAM_A733_LPDDR5 */
 
 #if CONFIG_SUNXI_DRAM_A733_LPDDR4
 // https://github.com/chainsx/u-boot-sun60i/blob/8ffffe4f175ffa7591965075c351070967b1e86a/device-a733/configs/cubie_a7z/sys_config.fex#L461
