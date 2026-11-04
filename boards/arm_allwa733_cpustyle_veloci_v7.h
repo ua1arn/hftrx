@@ -1077,16 +1077,13 @@
 
 #if WITHKEYBOARD
 
-	#define TARGET_POWERBTN_BIT (UINT32_C(1) << 24)	// PJ24 - ~CPU_POWER_SW signal
 
-#if WITHPWBUTTON
-	// P5_3 - ~CPU_POWER_SW signal
-	#define TARGET_POWERBTN_GET	((gpioX_getinputs(GPIOD) & TARGET_POWERBTN_BIT) == 0)
-#endif /* WITHPWBUTTON */
+	#define TARGET_POWERBTN_BIT (UINT32_C(1) << 24)	// PJ24 - ~POWERON_CPU signal
+	#define TARGET_POWERBTN_GET	((gpioX_getinputs(GPIOJ) & TARGET_POWERBTN_BIT) == 0)
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_pioj_inputs(TARGET_POWERBTN_BIT); \
-			arm_hardware_pioj_updown(TARGET_POWERBTN_BIT, TARGET_POWERBTN_BIT, 0);	/* PJ24: pull-up button */ \
+			arm_hardware_pioj_inputs(TARGET_POWERBTN_BIT);	/* PJ24: pull-up button */ \
+			arm_hardware_pioj_updown(TARGET_POWERBTN_BIT, TARGET_POWERBTN_BIT, 0); \
 		} while (0)
 
 #else /* WITHKEYBOARD */
