@@ -30,16 +30,7 @@ PRJROOT := ../..
 OBJDIR = o
 OBJDIR64 = x
 
-#BOORPARAM=bootparam_radxa_a7z_a733_lpddr4.mak
-#DDRINITBLOB=ddrinit_radxa_a7z_a733_lpddr4.bin
-
-#BOORPARAM=bootparam_orangepi_4_pro.mak
-#DDRINITBLOB=ddrinit_orangepi_4_pro.bin
-
-BOORPARAM=bootparam_helperboard_a733_lpddr5.mak
-DDRINITBLOB=ddrinit_helperboard_a733_lpddr5.bin
-
--include ./$(BOORPARAM)
+include xfelparam.mak
 
 # Define project name here
 PROJECT = tc1_awa733
