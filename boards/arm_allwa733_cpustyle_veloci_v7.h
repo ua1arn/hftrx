@@ -842,49 +842,40 @@
 	#define PTT_TARGET_PIN				s_gpioX_getinputs(S_GPIOL)
 	#define PTT_BIT_PTT					(UINT32_C(1) << 3)		// PL3 - PTT_FRONT
 
-//	#define PTT2_TARGET_PIN				gpioX_getinputs(GPIOD)
 //	#define PTT2_BIT_PTT				(UINT32_C(1) << 26)		// PD26 - PTT ??? - unused
 
-	#define PTT3_TARGET_PIN				gpioX_getinputs(GPIOD)
 	#define PTT3_BIT_PTT				(UINT32_C(1) << 11)		// PD11 - Rear panel PTT
 
 	// FT-710 specific bits
-	#define DAKY_TARGET_PIN				gpioX_getinputs(GPIOD)
 	#define DAKY_BIT_PTT				(UINT32_C(1) << 13)		// PD13 - READ DAKY
-	#define HARDWARE_GET_DAKY()			((DAKY_TARGET_PIN & DAKY_BIT_PTT) == 0)
-
-	#define SHIFT_TARGET_PIN			gpioX_getinputs(GPIOD)
+	#define HARDWARE_GET_DAKY()			((gpioX_getinputs(GPIOD) & DAKY_BIT_PTT) == 0)
 	#define SHIFT_BIT_PTT				(UINT32_C(1) << 12)		// PD12 - READ SHIFT
-	#define HARDWARE_GET_SHIFT() ((SHIFT_TARGET_PIN & SHIFT_BIT_PTT) == 0)
+	#define HARDWARE_GET_SHIFT() ((gpioX_getinputs(GPIOD) & SHIFT_BIT_PTT) == 0)
 
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() ( \
-			(PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || /* PTT_FRONT */ \
-			/* (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || */ \
-			(PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0 || /* rear PTT */ \
+			(s_gpioX_getinputs(S_GPIOL) & PTT_BIT_PTT) == 0 || /* PL3 - PTT_FRONT */ \
+			/* (gpioX_getinputs(GPIOD) & PTT2_BIT_PTT) == 0 || */ \
+			(gpioX_getinputs(GPIOD) & PTT3_BIT_PTT) == 0 || /* rear PTT */ \
 			HOSTBB_GET_PTT() || \
 			0 \
 		)
 	#define PTT_INITIALIZE() do { \
 			s_gpioX_prog(S_GPIOL, PTT_BIT_PTT, GPIO_CFG_IN, GPIO_DRV_0, GPIO_PULL_UP); \
-			/*arm_hardware_piod_inputs(PTT2_BIT_PTT); */\
-			/*arm_hardware_piod_updown(PTT2_BIT_PTT, PTT2_BIT_PTT, 0); */\
-			arm_hardware_piod_inputs(PTT3_BIT_PTT); \
-			arm_hardware_piod_updown(PTT3_BIT_PTT, PTT3_BIT_PTT, 0); \
-			arm_hardware_piod_inputs(DAKY_BIT_PTT); \
-			arm_hardware_piod_updown(DAKY_BIT_PTT, DAKY_BIT_PTT, 0); \
-			arm_hardware_piod_inputs(SHIFT_BIT_PTT); \
-			arm_hardware_piod_updown(SHIFT_BIT_PTT, SHIFT_BIT_PTT, 0); \
+			/*gpioX_prog(GPIOD, PTT2_BIT_PTT, GPIO_CFG_IN, GPIO_DRV_0, GPIO_PULL_UP); */\
+			gpioX_prog(GPIOD, PTT3_BIT_PTT, GPIO_CFG_IN, GPIO_DRV_0, GPIO_PULL_UP);	/* PD11 - Rear panel PTT */ \
+			gpioX_prog(GPIOD, DAKY_BIT_PTT, GPIO_CFG_IN, GPIO_DRV_0, GPIO_PULL_UP); /* PD13 - READ DAKY */ \
+			gpioX_prog(GPIOD, SHIFT_BIT_PTT, GPIO_CFG_IN, GPIO_DRV_0, GPIO_PULL_UP); /* PD11 - PD12 - READ SHIFT */ \
 		} while (0)
 	// ---
-	// TUNE input - PJ23
+
+	// External TUNE input - PJ23
 	// Никуда не идёт
-	#define TUNE_TARGET_PIN				gpioX_getinputs(GPIOJ)
+
 	#define TUNE_BIT_TUNE				(UINT32_C(1) << 23)		// PJ23
-	#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
+	#define HARDWARE_GET_TUNE() ((gpioX_getinputs(GPIOJ) & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() do { \
-			arm_hardware_pioj_inputs(TUNE_BIT_TUNE); \
-			arm_hardware_pioj_updown(TUNE_BIT_TUNE, TUNE_BIT_TUNE, 0); \
+			gpioX_prog(GPIOJ, TUNE_BIT_TUNE, GPIO_CFG_IN, GPIO_DRV_0, GPIO_PULL_UP); 	/* PJ23 External TUNE request */ \
 		} while (0)
 
 #else /* WITHTX */
@@ -902,18 +893,12 @@
 	#define ELKEY_BIT_LEFT				(UINT32_C(1) << 15)		// PD15
 	#define ELKEY_BIT_RIGHT				(UINT32_C(1) << 16)		// PD16
 
-	#define ELKEY_LEFT_TARGET_PIN			gpioX_getinputs(GPIOD)
-	#define ELKEY_RIGHT_TARGET_PIN			gpioX_getinputs(GPIOD)
-
-	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_LEFT_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
-	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_RIGHT_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
-
+	#define HARDWARE_GET_ELKEY_LEFT() 	((gpioX_getinputs(GPIOD) & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((gpioX_getinputs(GPIOD) & ELKEY_BIT_RIGHT) == 0)
 
 	#define ELKEY_INITIALIZE() do { \
-		arm_hardware_piod_inputs(ELKEY_BIT_LEFT); \
-		arm_hardware_piod_inputs(ELKEY_BIT_RIGHT); \
-		arm_hardware_piod_updown(ELKEY_BIT_LEFT, ELKEY_BIT_LEFT, 0); \
-		arm_hardware_piod_updown(ELKEY_BIT_RIGHT, ELKEY_BIT_RIGHT, 0); \
+		gpioX_prog(GPIOD, ELKEY_BIT_LEFT, GPIO_CFG_IN, GPIO_DRV_0, GPIO_PULL_UP); 	/* PD15 Left side */ \
+		gpioX_prog(GPIOD, ELKEY_BIT_RIGHT, GPIO_CFG_IN, GPIO_DRV_0, GPIO_PULL_UP); 	/* PD16 Right side */ \
 	} while (0)
 
 #endif /* WITHELKEY */
@@ -1058,21 +1043,15 @@
 
 // WITHUART0HW
 #define HARDWARE_UART0_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 0; /* PB0 UART0_TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 1; /* PB1 UART0_RX - pull-up RX data */  \
-		arm_hardware_piob_altfn2m(TXMASK, GPIO_CFG_AF3); \
-		arm_hardware_piob_altfn2m(RXMASK, GPIO_CFG_AF3); \
-		arm_hardware_piob_updown(RXMASK, RXMASK, 0); \
+		gpioX_prog(GPIOB, UINT32_C(1) << 0, GPIO_CFG_AF3, GPIO_DRV_1, GPIO_PULL_NONE); 	/* PB0 UART0_TX */ \
+		gpioX_prog(GPIOB, UINT32_C(1) << 1, GPIO_CFG_AF3, GPIO_DRV_0, GPIO_PULL_UP); 	/* PB1 UART0_RX - pull-up RX data */ \
 	} while (0)
 
 // WITHUART2HW
 // Используется периферийный контроллер последовательного порта UART2 (rear panel) */
 #define HARDWARE_UART2_INITIALIZE() do { \
-		const portholder_t TXMASK = UINT32_C(1) << 26; /* PJ26 UART2-TX */ \
-		const portholder_t RXMASK = UINT32_C(1) << 27; /* PJ27 UART2-RX - pull-up RX data */  \
-		arm_hardware_pioj_altfn2m(TXMASK, GPIO_CFG_AF5); \
-		arm_hardware_pioj_altfn2m(RXMASK, GPIO_CFG_AF5); \
-		arm_hardware_pioj_updown(RXMASK | TXMASK, RXMASK, 0); \
+		gpioX_prog(GPIOJ, UINT32_C(1) << 26, GPIO_CFG_AF5, GPIO_DRV_1, GPIO_PULL_NONE); /* PJ26 UART2-TX */ \
+		gpioX_prog(GPIOJ, UINT32_C(1) << 27, GPIO_CFG_AF5, GPIO_DRV_0, GPIO_PULL_UP); 	/* PJ27 UART2-RX - pull-up RX data */ \
 	} while (0)
 
 #if WITHKEYBOARD
@@ -1082,8 +1061,7 @@
 	#define TARGET_POWERBTN_GET	((gpioX_getinputs(GPIOJ) & TARGET_POWERBTN_BIT) == 0)
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_pioj_inputs(TARGET_POWERBTN_BIT);	/* PJ24: pull-up button */ \
-			arm_hardware_pioj_updown(TARGET_POWERBTN_BIT, TARGET_POWERBTN_BIT, 0); \
+			gpioX_prog(GPIOJ, TARGET_POWERBTN_BIT, GPIO_CFG_IN, GPIO_DRV_0, GPIO_PULL_UP); 	/* PJ24: pull-up button */ \
 		} while (0)
 
 #else /* WITHKEYBOARD */
