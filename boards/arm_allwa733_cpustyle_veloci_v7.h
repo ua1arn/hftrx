@@ -312,38 +312,38 @@
 	// Выводы подключения енкодера #1
 	#define ENCODER_INPUT_PORT	(gpioX_getinputs(GPIOK))
 	#define ENCODER_BITB_POS 	10
-	#define ENCODER_BITB		(UINT32_C(1) << 21)		// PK11
-	#define ENCODER_BITA		(UINT32_C(1) << 22)		// PK10
+	#define ENCODER_BITB		(UINT32_C(1) << 11)		// PK11
+	#define ENCODER_BITA		(UINT32_C(1) << 10)		// PK10
 
 	// Выводы подключения енкодера #2
 	#define ENCODER_SUB_INPUT_PORT	(gpioX_getinputs(GPIOK))
 	#define ENCODER_SUB_BITB_POS 	12
-	#define ENCODER_SUB_BITB		(UINT32_C(1) << 19)		// PK13
-	#define ENCODER_SUB_BITA		(UINT32_C(1) << 20)		// PK12
+	#define ENCODER_SUB_BITB		(UINT32_C(1) << 13)		// PK13
+	#define ENCODER_SUB_BITA		(UINT32_C(1) << 12)		// PK12
 
 	// Выводы подключения енкодера ENC1F
 	#define ENC1F_INPUT_PORT	(gpioX_getinputs(GPIOC))
 	#define ENC1F_BITB_POS 	2
-	#define ENC1F_BITA		(UINT32_C(1) << 17)		// PC3
-	#define ENC1F_BITB		(UINT32_C(1) << 16)		// PC2
+	#define ENC1F_BITA		(UINT32_C(1) << 3)		// PC3
+	#define ENC1F_BITB		(UINT32_C(1) << 2)		// PC2
 
 	// Выводы подключения енкодера ENC2F
 	#define ENC2F_INPUT_PORT	(gpioX_getinputs(GPIOC))
 	//#define ENC2F_BITB_POS 	14
-	#define ENC2F_BITA		(UINT32_C(1) << 15)		// PC7
-	#define ENC2F_BITB		(UINT32_C(1) << 14)		// PC4
+	#define ENC2F_BITA		(UINT32_C(1) << 7)		// PC7
+	#define ENC2F_BITB		(UINT32_C(1) << 4)		// PC4
 
 	// Выводы подключения енкодера ENC3F
 	#define ENC3F_INPUT_PORT	(gpioX_getinputs(GPIOC))
 	#define ENC3F_BITB_POS 	13
-	#define ENC3F_BITA		(UINT32_C(1) << 13)		// PC13
-	#define ENC3F_BITB		(UINT32_C(1) << 12)		// PC14
+	#define ENC3F_BITA		(UINT32_C(1) << 14)		// PC14
+	#define ENC3F_BITB		(UINT32_C(1) << 13)		// PC13
 
 	// Выводы подключения енкодера ENC4F
 	#define ENC4F_INPUT_PORT	(gpioX_getinputs(GPIOC))
 	#define ENC4F_BITB_POS 	15
-	#define ENC4F_BITA		(UINT32_C(1) << 11)		// PC16
-	#define ENC4F_BITB		(UINT32_C(1) << 10)		// PC15
+	#define ENC4F_BITA		(UINT32_C(1) << 16)		// PC16
+	#define ENC4F_BITB		(UINT32_C(1) << 15)		// PC15
 
 	/* Определения масок битов для формирования обработчиков прерываний в нужном GPIO */
 	#define BOARD_ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
