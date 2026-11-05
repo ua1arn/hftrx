@@ -206,6 +206,8 @@ extern const unifont_t unifont_msgothic_15x17_mono;
 #define SMALLCHARH2 16 /* Font height */
 #define SMALLCHARW2 10 /* Font width */
 
+uint_fast16_t xTFT_PutChar(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char Ch, const uint8_t *PtrFont, COLORPIP_T fg);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

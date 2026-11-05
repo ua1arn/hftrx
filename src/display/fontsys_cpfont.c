@@ -82,6 +82,94 @@ static const uint8_t * cpfont_bitpacknormal_getcharraster(const struct unifont_t
 	return blob + rastersstart;
 }
 
+#if 1
+
+//выводит символ Ch в позицию x, y шрифтом PtrFont, цветом Fcolor, на фоне цвета Bcolor
+//возвращает ширину выведенного символа
+//в отличии от стандартной функции  void TFT_Write_Char(unsigned int c, unsigned int x, unsigned int y)
+//затирает ранее выведенные символы
+//использует стандартные шрифты MIKROELEKTRONIKA
+uint_fast16_t xTFT_PutChar(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, char Ch, const uint8_t *PtrFont, COLORPIP_T fg)
+{
+	unsigned char first_ch, last_ch; //номера первого и последнего символа в массиве шрифта
+	unsigned int ch_addr;             //адрес символа в массиве
+	unsigned char height_ch;         //высота символа
+
+	//загрузка параметров шрифта
+	first_ch = PtrFont[2];            //номер первого символа
+	last_ch = PtrFont[4];            //номер последнего символа
+	height_ch = PtrFont[6];           //высота символа
+
+	//проверяем есть ли шрифт для символа
+	if ((Ch >= first_ch) || (Ch <= last_ch)) //если символ находится в диапазоне, то рисуем
+			{
+		unsigned int glyph_addr;          //адрес глифа для символа
+		unsigned char i, k, p;
+		static const unsigned char bit_mask [8] =
+		{
+				0x01, 0x02, 0x04, 0x08, 0x10, 0x20,
+				0x40, 0x80
+		};
+		unsigned char width_ch,          //ширина символа
+				width_b;           //количество полных байт в ширине символа
+		glyph_addr = (Ch - 32) * 4 + 8;     //адрес глифа символа
+
+		ch_addr = (PtrFont[glyph_addr + 2] * 256 + PtrFont[glyph_addr + 1]); //адрес символа
+		width_ch = PtrFont[glyph_addr + 0];                     //ширина символа
+
+
+		if (width_ch > 8)
+			height_ch = height_ch + PtrFont[glyph_addr + 0] + 2; //если ширина символа 2 байта
+//		if (width_ch > 16)
+//			height_ch = height_ch + PtrFont[glyph_addr + 0] + 2; //если ширина символа 3 байта
+//		if (width_ch > 24)
+//			height_ch = height_ch + PtrFont[glyph_addr + 0] + 2; //если ширина символа 4 байта
+//		if (width_ch > 32)
+//			height_ch = height_ch + PtrFont[glyph_addr + 0] + 2; //если ширина символа 5 байт
+//		if (width_ch > 40)
+//			height_ch = height_ch + PtrFont[glyph_addr + 0] + 2; //если ширина символа 6 байт
+//		if (width_ch > 48)
+//			height_ch = height_ch + PtrFont[glyph_addr + 0] + 2; //если ширина символа 7 байт
+//		if (width_ch > 56)
+//			height_ch = height_ch + PtrFont[glyph_addr + 0] + 2; //если ширина символа 8 байт
+//		if (width_ch > 64)
+//			height_ch = height_ch + PtrFont[glyph_addr + 0] + 2;
+
+		for (i = 0; i <= height_ch - 1;) {
+			for (k = 0; k <= width_ch - 1; k++) //выводим width_ch точек в строке
+					{
+				p = k & 0x07;
+				if (k == 8)
+					i = i + 1;                //если ширина два байта
+				if (k == 16)
+					i = i + 1;                //если ширина символа 3 байта
+				if (k == 24)
+					i = i + 1;                //если ширина символа 4 байта
+				if (k == 32)
+					i = i + 1;                //если ширина символа 5 байт
+				if (k == 40)
+					i = i + 1;                //если ширина символа 6 байт
+				if (k == 48)
+					i = i + 1;                //если ширина символа 7 байт
+				if (k == 56)
+					i = i + 1;                //если ширина символа 8 байт
+				if (k == 64)
+					i = i + 1;                //если ширина символа 8 байт
+
+				if (PtrFont[ch_addr + i] & bit_mask[p]) //выводим байт по точкам
+				{
+					colpip_putpixel(db, xpix + k, ypix + i, fg); //зажигаем точку (цвет шрифта)
+				}
+			}
+			i++;
+		}
+		return xpix + width_ch;
+	}
+	return xpix;
+
+}
+#endif
+
 uint_fast16_t cpfont_bitpacknormal_draw(const gxdrawb_t * db, uint_fast16_t xpix, uint_fast16_t ypix, const struct unifont_tag * font, uint_fast16_t ci, COLORPIP_T fg)
 {
 	const uint8_t * const blob = (const uint8_t * const) font->fontraster;
