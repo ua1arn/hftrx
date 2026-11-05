@@ -903,7 +903,7 @@
 
 #if WITHSPIHW
 	// Набор определений для работы без внешнего дешифратора
-	#define OE_CTL1_BIT	(UINT32_C(1) << 12)	/* PE12 */
+	#define OE_CTL1_BIT	(UINT32_C(1) << 13)	/* PE13 */
 	//#define targetdataflash 0xFF
 	#define targetnone 0x00
 
@@ -919,7 +919,7 @@
 	#define targetnvram		(UINT32_C(1) << 15)		// PK15 NVRAM FM25W256
 	#define targetadck		(UINT32_C(1) << 17)		// PK17 on-board ADC MCP3208-BI/SL chip select (KEYBOARD) ADC2CS
 	#define targetxad2		(UINT32_C(1) << 16)		// PK16 ext2 external SPI device (PA BOARD ADC) CSEXT2
-	#define targetfpga1gate	(UINT32_C(1) << 13)		// PE13 data gate for all FPGA SPI operations (0: active)
+	#define targetfpga1gate	(UINT32_C(1) << 14)		// PE14 data gate for all FPGA SPI operations (0: active)
 	#define targetfpga1only	(UINT32_C(1) << 2)		// PB2 FPGA control registers CS1
 	#define targetfpga1		(targetfpga1only | targetfpga1gate)
 
