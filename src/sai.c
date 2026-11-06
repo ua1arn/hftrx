@@ -3365,6 +3365,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 #define WITHSHORTLIST 1
 
 #if WITHSHORTLIST
+	// A733: 0x08 - DMA_TIMEOUT_IRQ_EN
 	#define DMAC_IRQ_EN_FLAG_VALUE (1*(UINT32_C(1) << 2) | 0*(UINT32_C(1) << 1))	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	#define DMACRINGSTAGES 1
 #else
@@ -3388,7 +3389,7 @@ enum
 	DMAC_AudioCodec_RX_Ch, DMAC_DMIC_RX_Ch = DMAC_AudioCodec_RX_Ch,	// Audio
 	DMAC_USBUAC48_TX_Ch,	// Audio UAC48 IN
 	DMAC_USBUAC48_RX_Ch,	// Audio UAC48 OUT
-	DMAC_USBUACRTS_TX_Ch,	// Specrum UACRTS IN
+	DMAC_USBUACRTS_TX_Ch,	// Spectrum UACRTS IN
 	//
 	DMAC_HDMI_TX_Ch,		// Audio to HDMI
 	//
@@ -3890,7 +3891,7 @@ static void aw_i2s_setchsrc(I2S_PCM_TypeDef * i2s, unsigned ch, unsigned slot, u
 	i2s->I2Sn_SDINCHMAP [3] = (i2s->I2Sn_SDINCHMAP [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
 
 #elif CPUSTYLE_A64
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A733
 
 	/* в каждом регистре управления для восьми каналов */
 	const portholder_t mask3 = power8((UINT32_C(1) << ch) >> 0);	// биты в I2S_PCM_RXCHMAP3 - каналы 3..0
@@ -3938,7 +3939,7 @@ static void I2S_fill_TXxCHMAP(
 	I2S_PCM_TypeDef * i2s,
 	unsigned txoffs,	// 0..3 - I2S_PCM_TX0..I2S_PCM_TX3
 	unsigned txsdo_UNUSED,		// 0..3 - DOUT0..DOUT3
-	unsigned NCH
+	unsigned NSLOTS
 	)
 {
 #if CPUSTYLE_A64
@@ -3950,12 +3951,12 @@ static void I2S_fill_TXxCHMAP(
 #elif CPUSTYLE_T507
 	//#warning Implement for CPUSTYLE_T507
 
-#elif CPUSTYLE_T113 || CPUSTYLE_F133
+#elif CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_A733
 
 	__IO uint32_t * const reg = & i2s->I2S_PCM_TX0CHMAP0 + txoffs * 2;
 
 	unsigned chnl;
-	for (chnl = 0; chnl < NCH; ++ chnl)
+	for (chnl = 0; chnl < NSLOTS; ++ chnl)
 	{
 		const portholder_t mask1 = power4((UINT32_C(1) << chnl) >> 0);	// биты в I2S_PCM_TX0CHMAP1 - каналы 7..0
 		const portholder_t mask0 = power4((UINT32_C(1) << chnl) >> 8);	// биты в I2S_PCM_TX0CHMAP0 - каналы 15..8
@@ -4825,6 +4826,7 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		i2s->I2S_PCM_FCTL = (i2s->I2S_PCM_FCTL & ~ (0x07uL)) |
 			1 * (UINT32_C(1) << 2) |	// TXIM Mode 1: TXFIFO[31:0] = {APB_WDATA[19:0], 12’h0}
 			3 * (UINT32_C(1) << 0) |	// RXOM Mode 3: APB_RDATA[31:0] = {16{RXFIFO[31], RXFIFO[31:16]}
+			//(UINT32_C(1) << 31) |	// A733: hub?
 			0;
 	}
 
@@ -4857,19 +4859,25 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	}
 	else
 	{
-		i2s->I2S_PCM_CLKD = 0xFF;
+		i2s->I2S_PCM_CLKD =
+		!! master * (UINT32_C(1) << 8) |		// MCLKO_EN (0)
+		0x0F * (UINT32_C(1) << 0) |		/* MCLKDIV */
+		0x0F * (UINT32_C(1) << 4) |		/* BCLKDIV */
+		0;
 	}
 
 	const unsigned txrx_offset = 1;		// I2S format
+	const unsigned dinmask = 1U << din;
+	const unsigned doutmask = 1U << dout;
 
 	ASSERT(din < 4);
 	ASSERT(dout < 4);
 	// I2S/PCM Control Register
 	i2s->I2S_PCM_CTL = 0;
 	i2s->I2S_PCM_CTL =
-		(UINT32_C(1) << dout) * (UINT32_C(1) << 8) |	// mask: DOUT3_EN..DOUT0_EN
-		master * (UINT32_C(1) << 18) | // BCLK_OUT
-		master * (UINT32_C(1) << 17) | // LRCK_OUT
+		doutmask * (UINT32_C(1) << 8) |	// mask: DOUT3_EN..DOUT0_EN
+		!! master * (UINT32_C(1) << 18) | // BCLK_OUT
+		!! master * (UINT32_C(1) << 17) | // LRCK_OUT
 		1 * (UINT32_C(1) << 4) |	// left mode, need offset=1 for I2S
 		0;
 
@@ -8755,7 +8763,7 @@ static const codechw_t * const channels [] =
 	#if WITHFPGAIF_I2S0_DUPLEX_MASTER	// allwinner A64
 		& fpgacodechw_i2s0_duplex_master,					// Интерфейс к IF кодеку/FPGA
 	#endif /* WITHFPGAIF_I2S0_DUPLEX_MASTER */
-	#if WITHFPGAIF_I2S0_DUPLEX_SLAVE	// allwinner A64
+	#if WITHFPGAIF_I2S0_DUPLEX_SLAVE	// allwinner A64, T507, A733
 		& fpgacodechw_i2s0_duplex_slave,					// Интерфейс к IF кодеку/FPGA
 	#endif /* WITHFPGAIF_I2S0_DUPLEX_SLAVE */
 	#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER	// allwinner t113-s3 or F133
