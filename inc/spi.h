@@ -181,6 +181,8 @@ void prog_spi_exchange(
 	unsigned int size
 	);
 
+void prog_pulse_ioupdate(void);
+
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 // Выдача и прием ответных байтов

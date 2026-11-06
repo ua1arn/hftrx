@@ -47,8 +47,6 @@ static void spi_wait32mask(volatile uint32_t * flag, uint_fast32_t mask, uint_fa
 			;
 }
 
-void prog_pulse_ioupdate(void);
-
 static void prog_select(
 	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
 	);
