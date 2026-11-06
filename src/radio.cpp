@@ -14085,9 +14085,9 @@ updateboard_noui(
 		board_set_dac1(dac1level);	/* подстройка частоты опорного генератора */
 	#endif /* defined (DAC1_TYPE) */
 
-	#if (WITHSWRMTR || WITHSHOWSWRPWR)
+	#if (WITHSWRMTR || WITHSHOWSWRPWR) && ! LCDMODE_DUMMY
 		display2_set_smetertype(param_val(& xgsmetertype));
-	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) && ! LCDMODE_DUMMY */
 
 		codec1_directupdate();
 		board_update();		/* вывести забуферированные изменения в регистры */
