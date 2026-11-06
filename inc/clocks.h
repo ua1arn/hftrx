@@ -353,8 +353,8 @@ uint_fast32_t allwnr_a733_get_s_spi_freq(void);
 uint_fast32_t allwnr_a733_get_spi0_freq(void);
 uint_fast32_t allwnr_a733_get_spi1_freq(void);
 uint_fast32_t allwnr_a733_get_spi2_freq(void);
+uint_fast32_t allwnr_a733_get_spi3_freq(void);
 uint_fast32_t allwnr_a733_get_spif_freq(void);
-uint_fast32_t allwnr_a733_get_spi23_freq(void);
 
 uint_fast32_t allwnr_a733_get_hdmi_tv_freq(void);
 uint_fast32_t allwnr_a733_get_tcon_dsi0_freq(void);

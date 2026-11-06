@@ -1093,7 +1093,7 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 	unsigned value;
 	const int_fast32_t upspeed = SPISPEEDUFAST * 2;	// 50 MHz
 	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, upspeed), ALLWNT_SPI_CLK_WIDTH, ALLWNT_SPI_CLK_TAPS, & value, 1);
-	PRINTF("hardware_spi_master_initialize: prei=%u, value=%u, upspeed=%u, (clk=%u)\n", prei, value, (unsigned) upspeed, HARDWARE_SPI_FREQ);
+	//PRINTF("hardware_spi_master_initialize: prei=%u, value=%u, upspeed=%u, (clk=%u)\n", prei, value, (unsigned) upspeed, HARDWARE_SPI_FREQ);
 	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
 	const uint_fast32_t ccu_spi_clk_reg =
@@ -1707,7 +1707,7 @@ void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, 
 		1 * (UINT32_C(1) << 12) |		// DRS 1: Select Clock Divide Rate 2
 		(0xFF & divider) * (UINT32_C(1) << 0) |		// CDR2_N: SPI_CLK = Source_CLK / (2*(CDR2_N + 1)).
 		0;
-	PRINTF("hardware_spi_master_setfreq 2: spispeed=%u, divider=%u, HW=%u\n", (unsigned) spispeed, (unsigned) divider, (unsigned) spiclockfreq);
+	//PRINTF("hardware_spi_master_setfreq 2: spispeed=%u, divider=%u, HW=%u\n", (unsigned) spispeed, (unsigned) divider, (unsigned) spiclockfreq);
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
 	// CPOL at bit 1, CPHA at bit 0
@@ -2869,8 +2869,8 @@ void spidf_initialize(void)
 #endif /* ! USESPIDFSHARESPI */
 	hardware_spi_master_initialize(SPIDFHARD_PTR, SPIDFHARD_IX);
 	prog_select_init();		// spi CS initialize
-	hardware_spi_master_setfreq(SPIDFHARD_PTR, SPIC_SPEEDUFAST, SPISPEEDUFAST);
-	hardware_spi_master_setfreq(SPIDFHARD_PTR, SPIC_SPEEDFAST, SPISPEED);
+	hardware_spi_master_setfreq(SPIDFHARD_PTR, SPIC_SPEEDUFAST, SPISPEEDUFAST, HARDWARE_SPI_FREQ);
+	hardware_spi_master_setfreq(SPIDFHARD_PTR, SPIC_SPEEDFAST, SPISPEED, HARDWARE_SPI_FREQ);
 }
 
 static void spidf_unselect(QSPI_t * qspi, IRQL_t irql)

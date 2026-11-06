@@ -4571,6 +4571,27 @@ uint_fast32_t allwnr_a733_get_pll_peri0_2x_freq(void)
 	return allwnr_a733_get_dcxo_freq() * N / (M1 * P0);
 }
 
+// Default: 1200 MHz
+uint_fast32_t allwnr_a733_get_pll_peri1_2x_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_PERI1_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t P2 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	PERI0PLL2X = 24MHz*N/M1/P0.
+	//	PERI0_800M = 24MHz*N/M1/P1.
+	//	PERI0_480M = 24MHz*N/M1/P2.
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P0);
+}
+
 uint_fast32_t allwnr_a733_get_pll_peri0_800M_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_PERI0_CTRL_REG;
@@ -4594,6 +4615,26 @@ uint_fast32_t allwnr_a733_get_pll_peri0_800M_freq(void)
 uint_fast32_t allwnr_a733_get_pll_peri0_480M_freq(void)
 {
 	const uint_fast32_t pllreg = CCU->PLL_PERI0_CTRL_REG;
+	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
+	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
+	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t P2 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
+	const uint_fast32_t M1 = UINT32_C(1) + ((pllreg >> 1) & 0x01);
+	//	PERI0PLL2X = 24MHz*N/M1/P0.
+	//	PERI0_800M = 24MHz*N/M1/P1.
+	//	PERI0_480M = 24MHz*N/M1/P2.
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_dcxo_freq() * N / (M1 * P2);
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri1_480M_freq(void)
+{
+	const uint_fast32_t pllreg = CCU->PLL_PERI1_CTRL_REG;
 	const uint_fast32_t N = (pllreg >> 8) & 0xFF;
 	const uint_fast32_t P0 = UINT32_C(1) + ((pllreg >> 20) & 0x07);
 	const uint_fast32_t P1 = UINT32_C(1) + ((pllreg >> 16) & 0x07);
@@ -4644,11 +4685,25 @@ uint_fast32_t allwnr_a733_get_pll_peri0_600M_freq(void)
 	return allwnr_a733_get_pll_peri0_2x_freq() / 2;
 }
 
+uint_fast32_t allwnr_a733_get_pll_peri1_600M_freq(void)
+{
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	return allwnr_a733_get_pll_peri1_2x_freq() / 2;
+}
+
 uint_fast32_t allwnr_a733_get_pll_peri0_400M_freq(void)
 {
 	//	PERI0_600M = PERI0PLL2X/2.
 	//	PERI0_400M = PERI0PLL2X/3.
 	return allwnr_a733_get_pll_peri0_2x_freq() / 3;
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri1_400M_freq(void)
+{
+	//	PERI0_600M = PERI0PLL2X/2.
+	//	PERI0_400M = PERI0PLL2X/3.
+	return allwnr_a733_get_pll_peri1_2x_freq() / 3;
 }
 
 uint_fast32_t allwnr_a733_get_pll_peri0_300M_freq(void)
@@ -4660,6 +4715,15 @@ uint_fast32_t allwnr_a733_get_pll_peri0_300M_freq(void)
 	return allwnr_a733_get_pll_peri0_600M_freq() / 2;
 }
 
+uint_fast32_t allwnr_a733_get_pll_peri1_300M_freq(void)
+{
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_peri1_600M_freq() / 2;
+}
+
 uint_fast32_t allwnr_a733_get_pll_peri0_200M_freq(void)
 {
 	//	PERI0_300M = PERI0_600M/2.
@@ -4669,6 +4733,15 @@ uint_fast32_t allwnr_a733_get_pll_peri0_200M_freq(void)
 	return allwnr_a733_get_pll_peri0_400M_freq() / 2;
 }
 
+uint_fast32_t allwnr_a733_get_pll_peri1_200M_freq(void)
+{
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_peri1_400M_freq() / 2;
+}
+
 uint_fast32_t allwnr_a733_get_pll_peri0_160M_freq(void)
 {
 	//	PERI0_300M = PERI0_600M/2.
@@ -4676,6 +4749,15 @@ uint_fast32_t allwnr_a733_get_pll_peri0_160M_freq(void)
 	//	PERI0_160M = PERI0_480M/3.
 	//	PERI0_150M = PERI0_300M/2.
 	return allwnr_a733_get_pll_peri0_480M_freq() / 3;
+}
+
+uint_fast32_t allwnr_a733_get_pll_peri1_160M_freq(void)
+{
+	//	PERI0_300M = PERI0_600M/2.
+	//	PERI0_200M = PERI0_400M/2.
+	//	PERI0_160M = PERI0_480M/3.
+	//	PERI0_150M = PERI0_300M/2.
+	return allwnr_a733_get_pll_peri1_480M_freq() / 3;
 }
 
 uint_fast32_t allwnr_a733_get_pll_peri0_150M_freq(void)
@@ -4776,27 +4858,198 @@ uint_fast32_t allwnr_a733_get_s_twi_freq(void)
 
 uint_fast32_t allwnr_a733_get_s_spi_freq(void)
 {
-	return allwnr_a733_get_apb1_freq();
+	return allwnr_a733_get_dcxo_freq();
+	//return allwnr_a733_get_apb1_freq();
 }
 
 uint_fast32_t allwnr_a733_get_spi0_freq(void)
 {
-	return allwnr_a733_get_sysclk24M_freq();
+	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) + ((clkreg >> 8) & 0x1F);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x1F);
+	// SPI0_CLK = Clock Source/M/N.
+	//	CLK_SRC_SEL
+	//	Clock Source Select
+	//	000:SYS_CLK24M
+	//	001: PERI0_300M
+	//	010: PERI0_200M
+	//	011: PERI1_300M
+	//	100: PERI1_200M
+	//	101: PERI0_480M
+	//	110: PERI1_480M
+	//	111: DCXO
+	switch ((clkreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		return allwnr_a733_get_sysclk24M_freq() / (N * M);
+	case 0x01:
+		return allwnr_a733_get_pll_peri0_300M_freq() / (N * M);
+	case 0x02:
+		return allwnr_a733_get_pll_peri0_200M_freq() / (N * M);
+	case 0x03:
+		return allwnr_a733_get_pll_peri1_300M_freq() / (N * M);
+	case 0x04:
+		return allwnr_a733_get_pll_peri1_200M_freq() / (N * M);
+	case 0x05:
+		return allwnr_a733_get_pll_peri0_480M_freq() / (N * M);
+	case 0x06:
+		return allwnr_a733_get_pll_peri1_480M_freq() / (N * M);
+	case 0x07:
+		return allwnr_a733_get_dcxo_freq() / (N * M);
+	}
 }
 
 uint_fast32_t allwnr_a733_get_spi1_freq(void)
 {
-	return allwnr_a733_get_sysclk24M_freq();
+	const uint_fast32_t clkreg = CCU->SPI1_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) + ((clkreg >> 8) & 0x1F);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x1F);
+	// SPI1_CLK = Clock Source/M/N.
+	//	CLK_SRC_SEL
+	//	Clock Source Select
+	//	000:SYS_CLK24M
+	//	001: PERI0_300M
+	//	010: PERI0_200M
+	//	011: PERI1_300M
+	//	100: PERI1_200M
+	//	101: PERI0_480M
+	//	110: PERI1_480M
+	//	111: DCXO
+	switch ((clkreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		return allwnr_a733_get_sysclk24M_freq() / (N * M);
+	case 0x01:
+		return allwnr_a733_get_pll_peri0_300M_freq() / (N * M);
+	case 0x02:
+		return allwnr_a733_get_pll_peri0_200M_freq() / (N * M);
+	case 0x03:
+		return allwnr_a733_get_pll_peri1_300M_freq() / (N * M);
+	case 0x04:
+		return allwnr_a733_get_pll_peri1_200M_freq() / (N * M);
+	case 0x05:
+		return allwnr_a733_get_pll_peri0_480M_freq() / (N * M);
+	case 0x06:
+		return allwnr_a733_get_pll_peri1_480M_freq() / (N * M);
+	case 0x07:
+		return allwnr_a733_get_dcxo_freq() / (N * M);
+	}
 }
 
 uint_fast32_t allwnr_a733_get_spi2_freq(void)
 {
-	return allwnr_a733_get_sysclk24M_freq();
+	const uint_fast32_t clkreg = CCU->SPI2_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) + ((clkreg >> 8) & 0x1F);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x1F);
+	// SPI2_CLK = Clock Source/M/N.
+	//	CLK_SRC_SEL
+	//	Clock Source Select
+	//	000:SYS_CLK24M
+	//	001: PERI0_300M
+	//	010: PERI0_200M
+	//	011: PERI1_300M
+	//	100: PERI1_200M
+	//	101: PERI0_480M
+	//	110: PERI1_480M
+	//	111: DCXO
+	switch ((clkreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		return allwnr_a733_get_sysclk24M_freq() / (N * M);
+	case 0x01:
+		return allwnr_a733_get_pll_peri0_300M_freq() / (N * M);
+	case 0x02:
+		return allwnr_a733_get_pll_peri0_200M_freq() / (N * M);
+	case 0x03:
+		return allwnr_a733_get_pll_peri1_300M_freq() / (N * M);
+	case 0x04:
+		return allwnr_a733_get_pll_peri1_200M_freq() / (N * M);
+	case 0x05:
+		return allwnr_a733_get_pll_peri0_480M_freq() / (N * M);
+	case 0x06:
+		return allwnr_a733_get_pll_peri1_480M_freq() / (N * M);
+	case 0x07:
+		return allwnr_a733_get_dcxo_freq() / (N * M);
+	}
 }
 
 uint_fast32_t allwnr_a733_get_spi3_freq(void)
 {
-	return allwnr_a733_get_sysclk24M_freq();
+	const uint_fast32_t clkreg = CCU->SPI3_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) + ((clkreg >> 8) & 0x1F);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x1F);
+	// SPI3_CLK = Clock Source/M/N.
+	//	CLK_SRC_SEL
+	//	Clock Source Select
+	//	000:SYS_CLK24M
+	//	001: PERI0_300M
+	//	010: PERI0_200M
+	//	011: PERI1_300M
+	//	100: PERI1_200M
+	//	101: PERI0_480M
+	//	110: PERI1_480M
+	//	111: DCXO
+	switch ((clkreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		return allwnr_a733_get_sysclk24M_freq() / (N * M);
+	case 0x01:
+		return allwnr_a733_get_pll_peri0_300M_freq() / (N * M);
+	case 0x02:
+		return allwnr_a733_get_pll_peri0_200M_freq() / (N * M);
+	case 0x03:
+		return allwnr_a733_get_pll_peri1_300M_freq() / (N * M);
+	case 0x04:
+		return allwnr_a733_get_pll_peri1_200M_freq() / (N * M);
+	case 0x05:
+		return allwnr_a733_get_pll_peri0_480M_freq() / (N * M);
+	case 0x06:
+		return allwnr_a733_get_pll_peri1_480M_freq() / (N * M);
+	case 0x07:
+		return allwnr_a733_get_dcxo_freq() / (N * M);
+	}
+}
+
+uint_fast32_t allwnr_a733_get_spif_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->SPIF_CLK_REG;
+	const uint_fast32_t N = UINT32_C(1) + ((clkreg >> 8) & 0x1F);
+	const uint_fast32_t M = UINT32_C(1) + ((clkreg >> 0) & 0x1F);
+	// SPIF_CLK = Clock Source/M/N.
+	//	CLK_SRC_SEL
+	//	Clock Source Select
+	//	000:SYS_CLK24M
+	//	001: PERI0_400M
+	//	010: PERI0_300M
+	//	011: PERI1_400M
+	//	100: PERI1_300M
+	//	101: PERI0_160M
+	//	110: PERI1_160M
+	//	111: DCXO
+	switch ((clkreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		return allwnr_a733_get_sysclk24M_freq() / (N * M);
+	case 0x01:
+		return allwnr_a733_get_pll_peri0_400M_freq() / (N * M);
+	case 0x02:
+		return allwnr_a733_get_pll_peri0_300M_freq() / (N * M);
+	case 0x03:
+		return allwnr_a733_get_pll_peri1_400M_freq() / (N * M);
+	case 0x04:
+		return allwnr_a733_get_pll_peri1_300M_freq() / (N * M);
+	case 0x05:
+		return allwnr_a733_get_pll_peri0_160M_freq() / (N * M);
+	case 0x06:
+		return allwnr_a733_get_pll_peri1_160M_freq() / (N * M);
+	case 0x07:
+		return allwnr_a733_get_dcxo_freq() / (N * M);
+	}
 }
 
 uint_fast32_t allwnr_a733_get_hdmi_tv_freq(void)
