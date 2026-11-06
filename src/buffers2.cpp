@@ -6,6 +6,7 @@
 //
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "buffers.h"
+#include "clocks.h"
 #include "formats.h"	// for debug prints
 
 #include "mslist.h"
