@@ -61,11 +61,11 @@ typedef enum IRQn
     SPI1_IRQn = 57,                                   /*!< SPI Serial Peripheral Interface */
     SPI2_IRQn = 58,                                   /*!< SPI Serial Peripheral Interface */
     SPI3_IRQn = 59,                                   /*!< SPI Serial Peripheral Interface */
-    I2S_PCM4_IRQn = 61,                               /*!< I2S_PCM  */
-    I2S_PCM0_IRQn = 74,                               /*!< I2S_PCM  */
-    I2S_PCM1_IRQn = 75,                               /*!< I2S_PCM  */
-    I2S_PCM2_IRQn = 76,                               /*!< I2S_PCM  */
-    I2S_PCM3_IRQn = 77,                               /*!< I2S_PCM  */
+    I2S4_IRQn = 61,                                   /*!< I2S_PCM  */
+    I2S0_IRQn = 74,                                   /*!< I2S_PCM  */
+    I2S1_IRQn = 75,                                   /*!< I2S_PCM  */
+    I2S2_IRQn = 76,                                   /*!< I2S_PCM  */
+    I2S3_IRQn = 77,                                   /*!< I2S_PCM  */
     DE_IRQn = 82,                                     /*!< DE_TOP DE interrupt */
     G2D_IRQn = 83,                                    /*!< G2D_TOP Graphic 2D top */
     TCON0_LCD0_IRQn = 86,                             /*!< TCON_LCD Timing Controller_LCD (TCON_LCD) */

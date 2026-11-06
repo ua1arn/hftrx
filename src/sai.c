@@ -3577,11 +3577,6 @@ static void DMAC_NS_IRQHandler(void)
 	}
 
 #elif CPUSTYLE_A733
-	#warning CPUSTYLE_A733 to be implemented
-//	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
-//	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
-//	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
-//	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
 
 	for (dmach = 0; dmach < 16; ++ dmach)
 	{
@@ -3750,7 +3745,7 @@ static void DMAC_SetHandler(unsigned dmach, void * ctx, unsigned flag, void (* h
     #warning CPUSTYLE_A133 to be implemented
 
 #elif CPUSTYLE_A733
-	#warning CPUSTYLE_A733 to be implemented
+
 	DMAC->CH [dmach].DMA_IRQ_EN_REG = (DMAC->CH [dmach].DMA_IRQ_EN_REG & ~ UINT32_C(0x0F)) | flag;
     arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 
@@ -4462,7 +4457,7 @@ static void hardware_i2s_clock(unsigned ix, I2S_PCM_TypeDef * i2s, int master, u
     #warning CPUSTYLE_A133 to be implemented
 
 #elif CPUSTYLE_A733
-	#warning CPUSTYLE_A733 to be implemented
+
 	volatile uint32_t * clk_reg;
 	volatile uint32_t * bgr_reg;
 	switch (ix)
@@ -4776,10 +4771,10 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		(NSLOTS - 1) * (UINT32_C(1) << 0) |	// TX3 Channel (Slot) Number Select for Each Output
 		0;
 
-	i2s->I2S_PCM_TX0CHSEL = txchsel;
-	i2s->I2S_PCM_TX1CHSEL = 0*txchsel;
-	i2s->I2S_PCM_TX2CHSEL = 0*txchsel;
-	i2s->I2S_PCM_TX3CHSEL = 0*txchsel;
+	i2s->I2S_PCM_TX0CHSEL = !! (doutmask & 0x01) * txchsel;
+	i2s->I2S_PCM_TX1CHSEL = !! (doutmask & 0x02) * txchsel;
+	i2s->I2S_PCM_TX2CHSEL = !! (doutmask & 0x04) * txchsel;
+	i2s->I2S_PCM_TX3CHSEL = !! (doutmask & 0x08) * txchsel;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
 	I2S_fill_RXCHMAP(i2s, din, NSLOTS);
@@ -4907,10 +4902,10 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 		0;
 		/* 2x TX slots (32b/slot) for 1x DOUTx. The calculated NSLOT here is 2 (with 64b frame / DINx), -1 = 1, bin 0001 - Ok */
 
-	i2s->I2S_PCM_TX0CHSEL = txchsel;
-	i2s->I2S_PCM_TX1CHSEL = txchsel;
-	i2s->I2S_PCM_TX2CHSEL = txchsel;
-	i2s->I2S_PCM_TX3CHSEL = txchsel;
+	i2s->I2S_PCM_TX0CHSEL = !! (doutmask & 0x01) * txchsel;
+	i2s->I2S_PCM_TX1CHSEL = !! (doutmask & 0x02) * txchsel;
+	i2s->I2S_PCM_TX2CHSEL = !! (doutmask & 0x04) * txchsel;
+	i2s->I2S_PCM_TX3CHSEL = !! (doutmask & 0x08) * txchsel;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
 	#if WITHFPGAIF_FRAMEBITS == 64 && WITHFPGAIF_USE_I2S_DIN12 == 1

@@ -309,11 +309,11 @@
 #base; I2S3 0x02034000
 #base; I2S4 0x02034000
 
-#irq; I2S_PCM0 74
-#irq; I2S_PCM1 75
-#irq; I2S_PCM2 76
-#irq; I2S_PCM3 77
-#irq; I2S_PCM4 61
+#irq; I2S0 74
+#irq; I2S1 75
+#irq; I2S2 76
+#irq; I2S3 77
+#irq; I2S4 61
 
 #typeend;
 

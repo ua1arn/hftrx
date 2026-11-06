@@ -13695,27 +13695,27 @@
   <description></description>
   <baseAddress>0x02033000</baseAddress>
   <interrupt>
-   <name>I2S_PCM0</name>
+   <name>I2S0</name>
    <value>74</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM1</name>
+   <name>I2S1</name>
    <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM2</name>
+   <name>I2S2</name>
    <value>76</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM3</name>
+   <name>I2S3</name>
    <value>77</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM4</name>
+   <name>I2S4</name>
    <value>61</value>
    <description></description>
   </interrupt>
@@ -14055,27 +14055,27 @@
   <name>I2S1</name>
   <baseAddress>0x02033000</baseAddress>
   <interrupt>
-   <name>I2S_PCM0</name>
+   <name>I2S0</name>
    <value>74</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM1</name>
+   <name>I2S1</name>
    <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM2</name>
+   <name>I2S2</name>
    <value>76</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM3</name>
+   <name>I2S3</name>
    <value>77</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM4</name>
+   <name>I2S4</name>
    <value>61</value>
    <description></description>
   </interrupt>
@@ -14084,27 +14084,27 @@
   <name>I2S2</name>
   <baseAddress>0x02034000</baseAddress>
   <interrupt>
-   <name>I2S_PCM0</name>
+   <name>I2S0</name>
    <value>74</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM1</name>
+   <name>I2S1</name>
    <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM2</name>
+   <name>I2S2</name>
    <value>76</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM3</name>
+   <name>I2S3</name>
    <value>77</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM4</name>
+   <name>I2S4</name>
    <value>61</value>
    <description></description>
   </interrupt>
@@ -14113,27 +14113,27 @@
   <name>I2S3</name>
   <baseAddress>0x02034000</baseAddress>
   <interrupt>
-   <name>I2S_PCM0</name>
+   <name>I2S0</name>
    <value>74</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM1</name>
+   <name>I2S1</name>
    <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM2</name>
+   <name>I2S2</name>
    <value>76</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM3</name>
+   <name>I2S3</name>
    <value>77</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM4</name>
+   <name>I2S4</name>
    <value>61</value>
    <description></description>
   </interrupt>
@@ -14142,27 +14142,27 @@
   <name>I2S4</name>
   <baseAddress>0x02034000</baseAddress>
   <interrupt>
-   <name>I2S_PCM0</name>
+   <name>I2S0</name>
    <value>74</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM1</name>
+   <name>I2S1</name>
    <value>75</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM2</name>
+   <name>I2S2</name>
    <value>76</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM3</name>
+   <name>I2S3</name>
    <value>77</value>
    <description></description>
   </interrupt>
   <interrupt>
-   <name>I2S_PCM4</name>
+   <name>I2S4</name>
    <value>61</value>
    <description></description>
   </interrupt>
