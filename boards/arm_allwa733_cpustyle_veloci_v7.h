@@ -428,7 +428,7 @@
 		/*arm_hardware_piob_altfn20(UINT32_C(1) << 4,	GPIO_CFG_AF3); */ /* PB4 I2S0-MCLK	*/ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 6,	GPIO_CFG_AF3); /* PB6 I2S0-LRCK	*/ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 5,	GPIO_CFG_AF3); /* PB5 I2S0-BCLK	*/ \
-		arm_hardware_piob_altfn20(UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PB4 I2S0-DOUT0 to FPGA */ \
+		arm_hardware_piob_altfn20(UINT32_C(1) << 7,	GPIO_CFG_AF3); /* PB7 I2S0-DOUT0 to FPGA */ \
 		arm_hardware_piob_altfn20(UINT32_C(1) << 8,	GPIO_CFG_AF3); /* PB8 I2S0-DIN0 from FPGA */ \
 	} while (0)
 #define HARDWARE_I2S0HW_DIN 0	/* DIN0 used */
