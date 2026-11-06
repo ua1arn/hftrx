@@ -4215,7 +4215,7 @@ void board_fpga_fir_initialize(void)
 	/* FPGA FIR коэффициенты */
 	plfircoefsout = malloc(sizeof(adapter_t));
 	adpt_initialize(plfircoefsout, HARDWARE_COEFWIDTH, 0, "plfircoefsout");
-	hardware_spi_master_setfreq(HARDWARE_FPGA_FIR_SPIHARD_PTR, SPIC_SPEEDUFAST, SPISPEEDUFAST);
+	hardware_spi_master_setfreq(HARDWARE_FPGA_FIR_SPIHARD_PTR, SPIC_SPEEDUFAST, SPISPEEDUFAST, HARDWARE_SPI_FREQ);
 }
 
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные).если апаратура требует только LOCAL обработки, сделать заглушку */
@@ -4275,7 +4275,7 @@ void board_fpga_fir_initialize(void)
 
 	TARGET_FPGA_FIR_INITIALIZE();
 
-	hardware_spi_master_setfreq(HARDWARE_FPGA_FIR_SPIHARD_PTR, SPIC_SPEEDUFAST, SPISPEEDUFAST);
+	hardware_spi_master_setfreq(HARDWARE_FPGA_FIR_SPIHARD_PTR, SPIC_SPEEDUFAST, SPISPEEDUFAST, HARDWARE_SPI_FREQ);
 
 	/* Сброс fir filter в FPGA */
 	board_set_flt_reset_n(1);	// снять сигнал сброса
@@ -4721,7 +4721,7 @@ static void board_rtc_initialize(void)
 		static ticker_t ticker;
 
 		dpcobj_initialize(& dpcobj, board_rtc_cache_update, NULL, "board_rtc_cache_update");
-		ticker_initialize_user(& ticker, 500, & dpcobj);	// 0.5 s period
+		ticker_initialize_user(& ticker, 500, & dpcobj, "rtc");	// 0.5 s period
 		ticker_add(& ticker);
 	}
 }

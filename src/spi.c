@@ -1093,7 +1093,7 @@ void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix)
 	unsigned value;
 	const int_fast32_t upspeed = SPISPEEDUFAST * 2;	// 50 MHz
 	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, upspeed), ALLWNT_SPI_CLK_WIDTH, ALLWNT_SPI_CLK_TAPS, & value, 1);
-	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%u)\n", prei, value, (unsigned) spispeed, HARDWARE_SPI_FREQ);
+	PRINTF("hardware_spi_master_initialize: prei=%u, value=%u, upspeed=%u, (clk=%u)\n", prei, value, (unsigned) upspeed, HARDWARE_SPI_FREQ);
 	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
 	const uint_fast32_t ccu_spi_clk_reg =
@@ -1411,7 +1411,7 @@ static void spi_transfer_b8(SPI_t * spi, spitarget_t target, const uint8_t * txb
 #if WITHSPIHW
 
 
-void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, int_fast32_t spispeed)
+void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, int_fast32_t spispeed, int_fast32_t spiclockfreq)
 {
 	//PRINTF("hardware_spi_master_setfreq: %p %d %d\n", spi, spispeedindex, spispeed);
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -1493,7 +1493,7 @@ void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(spiclockfreq, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 
 	const uint_fast32_t cr1baudrate = (prei * SPI_CR1_BR_0) & SPI_CR1_BR;
 	// When the SSM bit is set, the NSS pin input is replaced with the value from the SSI bit.
@@ -1525,7 +1525,7 @@ void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, 
 #elif CPUSTYLE_STM32F7XX
 
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(spiclockfreq, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 
 	const uint_fast32_t cr1baudrate = (prei * SPI_CR1_BR_0) & SPI_CR1_BR;
 	const uint_fast32_t cr1bits = SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR | SPI_CR1_SPE | cr1baudrate;
@@ -1552,7 +1552,7 @@ void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(spiclockfreq, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 	const uint_fast32_t cfg1baudrate = (prei * SPI_CFG1_MBR_0) & SPI_CFG1_MBR_Msk;
 	const uint_fast32_t cfg1 = cfg1baudrate;// | (SPI_CFG1_CRCSIZE_0 * 7);
 	//PRINTF(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
@@ -1663,7 +1663,7 @@ void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, 
 	};
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(HARDWARE_SPI_FREQ, spispeed), XC7Z_SPI_BR_WIDTH, XC7Z_SPI_BR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(spiclockfreq, spispeed), XC7Z_SPI_BR_WIDTH, XC7Z_SPI_BR_TAPS, & value, 1);
 
 	unsigned brdiv = ulmin(prei + 1, 7);
 	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, brdiv=%u (clk=%lu)\n", prei, value, spispeed, brdiv, xc7z_get_spi_freq());
@@ -1698,16 +1698,16 @@ void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, 
 
 	const portholder_t wcr_reg = 0;
 
-	//SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];	// чтобы работал HARDWARE_SPI_FREQ
+	//SPIHARD_CCU_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];	// чтобы работал spiclockfreq
 
 	unsigned divider;
-	calcdivider(calcdivround2(HARDWARE_SPI_FREQ, spispeed * 2), ALLWNT_SPI_CCI_WIDTH, ALLWNT_SPI_CCI_TAPS, & divider, 1);
+	calcdivider(calcdivround2(spiclockfreq, spispeed * 2), ALLWNT_SPI_CCI_WIDTH, ALLWNT_SPI_CCI_TAPS, & divider, 1);
 	/* В случае переключения на делитель со степенями, точный делитель игнорируется */
 	const portholder_t ccr_reg =
 		1 * (UINT32_C(1) << 12) |		// DRS 1: Select Clock Divide Rate 2
 		(0xFF & divider) * (UINT32_C(1) << 0) |		// CDR2_N: SPI_CLK = Source_CLK / (2*(CDR2_N + 1)).
 		0;
-	//PRINTF("hardware_spi_master_setfreq 2: spispeed=%u, divpower2=%u, divider2=%u, HW=%u\n", (unsigned) spispeed, (unsigned) divpower2, (unsigned) divider2, (unsigned) HARDWARE_SPI_FREQ);
+	PRINTF("hardware_spi_master_setfreq 2: spispeed=%u, divider=%u, HW=%u\n", (unsigned) spispeed, (unsigned) divider, (unsigned) spiclockfreq);
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
 	// CPOL at bit 1, CPHA at bit 0
@@ -2522,19 +2522,19 @@ void spi_initialize(void)
 #if WITHSPIHW
 	// аппаратный SPI
 	SPI_t * const spi = SPIHARD_PTR;
-	hardware_spi_master_setfreq(spi, SPIC_SPEED200k, 200000);	/* 200 kHz для XPT2046 */
-	hardware_spi_master_setfreq(spi, SPIC_SPEED400k, 400000);	/* 400 kHz для MCP3208, DS1305 */
-	hardware_spi_master_setfreq(spi, SPIC_SPEED1M, 1000000);	/* 1 MHz для XPT2046 */
-	hardware_spi_master_setfreq(spi, SPIC_SPEED2M, 2000000);	/* 2 MHz */
-	hardware_spi_master_setfreq(spi, SPIC_SPEED4M, 4000000);	/* 4 MHz для CS4272 */
-	hardware_spi_master_setfreq(spi, SPIC_SPEED10M, 10000000);	/* 10 MHz для ILI9341 */
-	hardware_spi_master_setfreq(spi, SPIC_SPEED12M, 12000000);	/* 12 MHz */
-	hardware_spi_master_setfreq(spi, SPIC_SPEED24M, 24000000);	/* 24 MHz  */
-	hardware_spi_master_setfreq(spi, SPIC_SPEED25M, 25000000);	/* 25 MHz  */
-	hardware_spi_master_setfreq(spi, SPIC_SPEED50M, 50000000);	/* 50 MHz  */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED200k, 200000, HARDWARE_SPI_FREQ);	/* 200 kHz для XPT2046 */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED400k, 400000, HARDWARE_SPI_FREQ);	/* 400 kHz для MCP3208, DS1305 */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED1M, 1000000, HARDWARE_SPI_FREQ);	/* 1 MHz для XPT2046 */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED2M, 2000000, HARDWARE_SPI_FREQ);	/* 2 MHz */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED4M, 4000000, HARDWARE_SPI_FREQ);	/* 4 MHz для CS4272 */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED10M, 10000000, HARDWARE_SPI_FREQ);	/* 10 MHz для ILI9341 */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED12M, 12000000, HARDWARE_SPI_FREQ);	/* 12 MHz */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED24M, 24000000, HARDWARE_SPI_FREQ);	/* 24 MHz  */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED25M, 25000000, HARDWARE_SPI_FREQ);	/* 25 MHz  */
+	hardware_spi_master_setfreq(spi, SPIC_SPEED50M, 50000000, HARDWARE_SPI_FREQ);	/* 50 MHz  */
 
-	hardware_spi_master_setfreq(spi, SPIC_SPEEDFAST, SPISPEED);
-	hardware_spi_master_setfreq(spi, SPIC_SPEEDUFAST, SPISPEEDUFAST);
+	hardware_spi_master_setfreq(spi, SPIC_SPEEDFAST, SPISPEED, HARDWARE_SPI_FREQ);
+	hardware_spi_master_setfreq(spi, SPIC_SPEEDUFAST, SPISPEEDUFAST, HARDWARE_SPI_FREQ);
 
 #endif /* WITHSPIHW */
 }

@@ -294,7 +294,7 @@ void ticker_initialize_user_display(ticker_t * p, uint_fast32_t timeMS, dpcobj_t
 
 void ticker_add(ticker_t * p)
 {
-	PRINTF("ticker_add: '%s', period=%u\n", p->name, (unsigned) (p->td / (timestamp_getfreq() / 1000)));
+	//PRINTF("ticker_add: '%s', period=%u\n", p->name, (unsigned) (p->td / (timestamp_getfreq() / 1000)));
 	IRQL_t oldIrql;
 	ASSERT(p->guard == p);
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);

@@ -194,7 +194,7 @@ void prog_spi_exchange32(
 	);
 
 void hardware_spi_master_initialize(SPI_t * const spi, unsigned ix);		/* инициализация и перевод в состояние "отключено" */
-void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, int_fast32_t spispeed);
+void hardware_spi_master_setfreq(SPI_t * const spi, spi_speeds_t spispeedindex, int_fast32_t spispeed, int_fast32_t spiclockfreq);
 
 void board_reload_fir_artix7_p1(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2);
 void board_reload_fir_artix7_p2(spitarget_t target, uint_fast8_t v1, uint_fast32_t v2);
