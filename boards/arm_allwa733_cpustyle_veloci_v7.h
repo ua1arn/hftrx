@@ -960,6 +960,9 @@
 	#define SPI_CS_DELAY(target) do { \
 		switch (target) { \
 		case targetnvram: break; /* NVRAM FM25W256 */ \
+		case targetadck: break; /* on-board ADC */ \
+		case targetfpga1gate: break; /* data gate for all FPGA SPI operations (0: active) */ \
+		case targetfpga1only: break; /* FPGA control registers CS1 */ \
 		case targetfpga1: break; /* FPGA control registers CS1 */ \
 		case targetxad2: local_delay_us(5); break; /* external SPI device (PA BOARD ADC) */ \
 		case targetctl1: local_delay_us(5); break; /* board control registers chain */ \
@@ -972,25 +975,25 @@
 	#define SPI_ALLCS_INITIALIZE() do { \
 		if (gpioX_checkcfg(GPIOE, OE_CTL1_BIT, GPIO_CFG_OUT)) break; /* preventing power hang-off */ \
 		/*arm_hardware_pioc_outputs20m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); */	/* PC3 SPI0_CS */ \
-		gpioX_prog(GPIOE, OE_CTL1_BIT, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_NONE); /*  */ \
 		gpioX_setstate(GPIOE, OE_CTL1_BIT, 1 * OE_CTL1_BIT); /*  */ \
+		gpioX_prog(GPIOE, OE_CTL1_BIT, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_NONE); /*  */ \
 		\
-		gpioX_prog(GPIOK, targetnvram, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_NONE); /*  */ \
 		gpioX_setstate(GPIOK, targetnvram, 1 * targetnvram); /*  */ \
+		gpioX_prog(GPIOK, targetnvram, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_NONE); /*  */ \
 		\
 		arm_hardware_pioe_outputs20m(targetctl1, 1 * targetctl1); /*  */ \
 		\
-		gpioX_prog(GPIOK, targetadck, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_NONE); /*  */ \
 		gpioX_setstate(GPIOK, targetadck, 1 * targetadck); /*  */ \
+		gpioX_prog(GPIOK, targetadck, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_NONE); /*  */ \
 		\
-		gpioX_prog(GPIOK, targetxad2, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_NONE); /*  */ \
 		gpioX_setstate(GPIOK, targetxad2, 1 * targetxad2); /*  */ \
+		gpioX_prog(GPIOK, targetxad2, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_NONE); /*  */ \
 		\
-		gpioX_prog(GPIOB, targetfpga1only, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_NONE); /*  */ \
 		gpioX_setstate(GPIOB, targetfpga1only, 1 * targetfpga1only); /*  */ \
+		gpioX_prog(GPIOB, targetfpga1only, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_NONE); /*  */ \
 		\
-		gpioX_prog(GPIOE, targetfpga1gate, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_NONE); /*  */ \
 		gpioX_setstate(GPIOE, targetfpga1gate, 1 * targetfpga1gate); /*  */ \
+		gpioX_prog(GPIOE, targetfpga1gate, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_NONE); /*  */ \
 	} while (0)
 	/* разрешение обмена с FPGA  использованием SPI */
 	#define TARGET_FPGA_GATE(_on) do { \
