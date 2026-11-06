@@ -378,7 +378,6 @@ extern "C" {
 #define MASK2LSB(mask)  ((mask) & (0 - (mask)))
 
 /* макрооределение для расчёта количества "тиков" для выдержки величин задержек. */
-//#define NTICKS(t_mS) ((uint_fast16_t) (((uint_fast32_t) (t_mS) * TICKS_FREQUENCY + 500) / 1000))
 
 #define OFFSETOF(s, m) ((size_t) (uintptr_t) & (((s *) (uintptr_t) 0) -> m))
 

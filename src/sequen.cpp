@@ -535,7 +535,7 @@ static void vox_spool(void * ctx)
 /* инициализация сиквенсора и телеграфного ключа. Выполняется при запрещённых прерываниях. */
 void seq_initialize(void)
 {
-	ticker_initialize(& seqticker, SEQNTICKS(SEQ_TICKS_PERIOD), seq_spool_ticks, NULL);
+	ticker_initialize(& seqticker, SEQNTICKS(SEQ_TICKS_PERIOD), seq_spool_ticks, NULL, "sequencer");
 	ticker_add(& seqticker);
 #if WITHTX && WITHVOX
 	adcdone_initialize(& voxoribet, vox_spool, NULL);

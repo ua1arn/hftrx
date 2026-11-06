@@ -255,7 +255,7 @@ static LCLSPINLOCK_t adcdoneslock = IRQLSPINLOCK_INIT;
 static VLIST_ENTRY tickers;
 static VLIST_ENTRY adcdones;
 
-static void ticker_initialize_ext(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, enum ticker_mode mode)
+static void ticker_initialize_ext(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, enum ticker_mode mode, const char * name)
 {
 	p->t0 = timestamp_getticks();
 	p->td = get_td_ms(timeMS);
@@ -263,11 +263,12 @@ static void ticker_initialize_ext(ticker_t * p, uint_fast32_t timeMS, void (* cb
 	p->ctx = ctx;
 	p->mode = mode;
 	p->guard = p;
+	local_snprintf_P(p->name, ARRAY_SIZE(p->name), "%s", name);
 }
 
-void ticker_initialize(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx)
+void ticker_initialize(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, const char * name)
 {
-	ticker_initialize_ext(p, timeMS, cb, ctx, TICKERMD_PERIODIC);
+	ticker_initialize_ext(p, timeMS, cb, ctx, TICKERMD_PERIODIC, name);
 }
 
 static void ticker_trampoline(void * ctx)
@@ -280,19 +281,20 @@ static void ticker_trampoline_display(void * ctx)
 	board_dpc_call((dpcobj_t *) ctx, board_dpc_display_coreid());	// Запрос отложенного выполнения USER-MODE функции на ядре 1
 }
 
-void ticker_initialize_user(ticker_t * p, uint_fast32_t timeMS, dpcobj_t * dpc)
+void ticker_initialize_user(ticker_t * p, uint_fast32_t timeMS, dpcobj_t * dpc, const char * name)
 {
-	ticker_initialize(p, timeMS, ticker_trampoline, dpc);
+	ticker_initialize(p, timeMS, ticker_trampoline, dpc, name);
 }
 
 // DPC будет вызываться на ядре board_dpc_display_coreid()
-void ticker_initialize_user_display(ticker_t * p, uint_fast32_t timeMS, dpcobj_t * dpc)
+void ticker_initialize_user_display(ticker_t * p, uint_fast32_t timeMS, dpcobj_t * dpc, const char * name)
 {
-	ticker_initialize(p, timeMS, ticker_trampoline_display, dpc);
+	ticker_initialize(p, timeMS, ticker_trampoline_display, dpc, name);
 }
 
 void ticker_add(ticker_t * p)
 {
+	PRINTF("ticker_add: '%s', period=%u\n", p->name, (unsigned) (p->td / (timestamp_getfreq() / 1000)));
 	IRQL_t oldIrql;
 	ASSERT(p->guard == p);
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
@@ -404,9 +406,9 @@ void tickers_initialize(void)
 	{
 		static ticker_t adcticker;
 	#if WITHCPUADCHW
-		ticker_initialize(& adcticker, KBD_TICKS_PERIOD, adcstart_event, NULL);
+		ticker_initialize(& adcticker, KBD_TICKS_PERIOD, adcstart_event, NULL, "ADC");
 	#else /* WITHCPUADCHW */
-		ticker_initialize(& adcticker, KBD_TICKS_PERIOD, adcdones_event, NULL);
+		ticker_initialize(& adcticker, KBD_TICKS_PERIOD, adcdones_event, NULL, "ADC");
 	#endif /* WITHCPUADCHW */
 		ticker_add(& adcticker);
 	}
@@ -470,16 +472,17 @@ uint32_t board_millis(void)
 }
 
 //#include "hal_time_ms.h"
-uint32_t hal_time_ms(void)
-{
-	return sys_now();
-}
+//uint32_t hal_time_ms(void)
+//{
+//	return sys_now();
+//}
 
 /* Машинно-независимый обработчик прерываний. */
 // Функции с побочным эффектом - отсчитывание времени.
 // При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 void spool_systimerbundle(void)
 {
+	//dbg_putchar('.');
 	//beacon_255();
 #ifdef USE_HAL_DRIVER
 	HAL_IncTick();

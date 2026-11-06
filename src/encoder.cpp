@@ -459,11 +459,11 @@ void encoders_initialize(void)
 	encoder_initialize(& encoder_kbd, hardware_get_encoderummy_bits);
 
 #if WITHENCODER
-	ticker_initialize(& encticker, ENC_TICKS_PERIOD, encspeed_spool, & encoder1);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& encticker, ENC_TICKS_PERIOD, encspeed_spool, & encoder1, "encodermain");	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker);
 #endif /* WITHENCODER */
 #if WITHENCODER_SUB
-	ticker_initialize(& encticker_sub, ENC_TICKS_PERIOD, encspeed_spool, & encoder_sub);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& encticker_sub, ENC_TICKS_PERIOD, encspeed_spool, & encoder_sub, "encodersub");	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker_sub);
 #endif /* WITHENCODER */
 #if WITHENCODER2 && ! ENCODER2_NOSPOOL

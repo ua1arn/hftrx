@@ -7570,6 +7570,7 @@ void hardware_spi_io_delay(void)
 void
 hardware_timer_initialize(uint_fast32_t ticksfreq)
 {
+	PRINTF("hardware_timer_initialize: ticksfreq=%u Hz\n", (unsigned) ticksfreq);
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 

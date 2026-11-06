@@ -671,13 +671,14 @@ typedef struct ticker_tag
 	void (* cb)(void *);
 	void * ctx;
 	enum ticker_mode mode;
+	char name [32];
 	void * guard;
 } ticker_t;
 
 struct dpcobj_tag;
-void ticker_initialize(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx);
-void ticker_initialize_user(ticker_t * p, uint_fast32_t timeMS, struct dpcobj_tag * dpc);
-void ticker_initialize_user_display(ticker_t * p, uint_fast32_t timeMS, dpcobj_t * dpc);	// DPC будет вызываться на ядре board_dpc_display_coreid()
+void ticker_initialize(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, const char * name);
+void ticker_initialize_user(ticker_t * p, uint_fast32_t timeMS, struct dpcobj_tag * dpc, const char * name);
+void ticker_initialize_user_display(ticker_t * p, uint_fast32_t timeMS, dpcobj_t * dpc, const char * name);	// DPC будет вызываться на ядре board_dpc_display_coreid()
 //void ticker_initialize_ext(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, enum ticker_mode mode);
 void ticker_setperiod(ticker_t * p, uint_fast32_t timeMS);	/* изменение периода запущенного тикера */
 void ticker_start(ticker_t * p);	/* начало интервала в случае TICKERMD_MANUAL */
