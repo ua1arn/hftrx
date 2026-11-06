@@ -169,11 +169,6 @@ typedef enum IRQn
 #define GPIOK_BASE ((uintptr_t) 0x02000580)           /*!< GPIO Port Controller Base */
 #define GPIOINTK_BASE ((uintptr_t) 0x020005C0)        /*!< GPIOINT  Base */
 #define CCU_BASE ((uintptr_t) 0x02002000)             /*!< CCU Clock Controller Unit (CCU) Base */
-#define I2S0_BASE ((uintptr_t) 0x02033000)            /*!< I2S_PCM  Base */
-#define I2S1_BASE ((uintptr_t) 0x02033000)            /*!< I2S_PCM  Base */
-#define I2S2_BASE ((uintptr_t) 0x02034000)            /*!< I2S_PCM  Base */
-#define I2S3_BASE ((uintptr_t) 0x02034000)            /*!< I2S_PCM  Base */
-#define I2S4_BASE ((uintptr_t) 0x02034000)            /*!< I2S_PCM  Base */
 #define Timer1_CPUX_BASE ((uintptr_t) 0x02052000)     /*!< TIMER1  Base */
 #define CPUS_INTERRUPT_CTRL_BASE ((uintptr_t) 0x02055000)/*!< CPUS_INTERRUPT_CTRL  Base */
 #define RV_INTERRUPT_CTRL_BASE ((uintptr_t) 0x02056000)/*!< RV_INTERRUPT_CTRL  Base */
@@ -197,6 +192,11 @@ typedef enum IRQn
 #define TWI10_BASE ((uintptr_t) 0x0251A000)           /*!< TWI Two Wire Interface (TWI) Base */
 #define TWI11_BASE ((uintptr_t) 0x0251B000)           /*!< TWI Two Wire Interface (TWI) Base */
 #define TWI12_BASE ((uintptr_t) 0x0251C000)           /*!< TWI Two Wire Interface (TWI) Base */
+#define I2S0_BASE ((uintptr_t) 0x02532000)            /*!< I2S_PCM  Base */
+#define I2S1_BASE ((uintptr_t) 0x02533000)            /*!< I2S_PCM  Base */
+#define I2S2_BASE ((uintptr_t) 0x02534000)            /*!< I2S_PCM  Base */
+#define I2S3_BASE ((uintptr_t) 0x02535000)            /*!< I2S_PCM  Base */
+#define I2S4_BASE ((uintptr_t) 0x02536000)            /*!< I2S_PCM  Base */
 #define SPI0_BASE ((uintptr_t) 0x02540000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI1_BASE ((uintptr_t) 0x02541000)            /*!< SPI Serial Peripheral Interface Base */
 #define SPI2_BASE ((uintptr_t) 0x02542000)            /*!< SPI Serial Peripheral Interface Base */
@@ -3137,11 +3137,6 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOK ((GPIO_TypeDef *) GPIOK_BASE)           /*!< GPIOK Port Controller register set access pointer */
 #define GPIOINTK ((GPIOINT_TypeDef *) GPIOINTK_BASE)  /*!< GPIOINTK  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
-#define I2S0 ((I2S_PCM_TypeDef *) I2S0_BASE)          /*!< I2S0  register set access pointer */
-#define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
-#define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2  register set access pointer */
-#define I2S3 ((I2S_PCM_TypeDef *) I2S3_BASE)          /*!< I2S3  register set access pointer */
-#define I2S4 ((I2S_PCM_TypeDef *) I2S4_BASE)          /*!< I2S4  register set access pointer */
 #define Timer1_CPUX ((TIMER1_TypeDef *) Timer1_CPUX_BASE)/*!< Timer1_CPUX  register set access pointer */
 #define CPUS_INTERRUPT_CTRL ((CPUS_INTERRUPT_CTRL_TypeDef *) CPUS_INTERRUPT_CTRL_BASE)/*!< CPUS_INTERRUPT_CTRL  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
@@ -3164,6 +3159,11 @@ typedef struct USB_OHCI_Capability_Type
 #define TWI10 ((TWI_TypeDef *) TWI10_BASE)            /*!< TWI10 Two Wire Interface (TWI) register set access pointer */
 #define TWI11 ((TWI_TypeDef *) TWI11_BASE)            /*!< TWI11 Two Wire Interface (TWI) register set access pointer */
 #define TWI12 ((TWI_TypeDef *) TWI12_BASE)            /*!< TWI12 Two Wire Interface (TWI) register set access pointer */
+#define I2S0 ((I2S_PCM_TypeDef *) I2S0_BASE)          /*!< I2S0  register set access pointer */
+#define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
+#define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2  register set access pointer */
+#define I2S3 ((I2S_PCM_TypeDef *) I2S3_BASE)          /*!< I2S3  register set access pointer */
+#define I2S4 ((I2S_PCM_TypeDef *) I2S4_BASE)          /*!< I2S4  register set access pointer */
 #define SPI0 ((SPI_TypeDef *) SPI0_BASE)              /*!< SPI0 Serial Peripheral Interface register set access pointer */
 #define SPI1 ((SPI_TypeDef *) SPI1_BASE)              /*!< SPI1 Serial Peripheral Interface register set access pointer */
 #define SPI2 ((SPI_TypeDef *) SPI2_BASE)              /*!< SPI2 Serial Peripheral Interface register set access pointer */

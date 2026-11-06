@@ -13693,7 +13693,7 @@
   <peripheral>
   <name>I2S0</name>
   <description></description>
-  <baseAddress>0x02033000</baseAddress>
+  <baseAddress>0x02532000</baseAddress>
   <interrupt>
    <name>I2S0</name>
    <value>74</value>
@@ -14053,7 +14053,7 @@
   </peripheral>
   <peripheral derivedFrom="I2S0">
   <name>I2S1</name>
-  <baseAddress>0x02033000</baseAddress>
+  <baseAddress>0x02533000</baseAddress>
   <interrupt>
    <name>I2S0</name>
    <value>74</value>
@@ -14082,7 +14082,7 @@
   </peripheral>
   <peripheral derivedFrom="I2S0">
   <name>I2S2</name>
-  <baseAddress>0x02034000</baseAddress>
+  <baseAddress>0x02534000</baseAddress>
   <interrupt>
    <name>I2S0</name>
    <value>74</value>
@@ -14111,7 +14111,7 @@
   </peripheral>
   <peripheral derivedFrom="I2S0">
   <name>I2S3</name>
-  <baseAddress>0x02034000</baseAddress>
+  <baseAddress>0x02535000</baseAddress>
   <interrupt>
    <name>I2S0</name>
    <value>74</value>
@@ -14140,7 +14140,7 @@
   </peripheral>
   <peripheral derivedFrom="I2S0">
   <name>I2S4</name>
-  <baseAddress>0x02034000</baseAddress>
+  <baseAddress>0x02536000</baseAddress>
   <interrupt>
    <name>I2S0</name>
    <value>74</value>
