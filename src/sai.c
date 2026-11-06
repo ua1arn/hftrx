@@ -4692,13 +4692,15 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	//	BCLK_POLARITY = 0, EDGE_TRANSFER = 1, DIN sample data at negative edge;
 	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 0, DIN sample data at negative edge;
 	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 1, DIN sample data at positive edge.
-	i2s->I2S_PCM_FMT0 =
+	const uint_fast32_t fmt0 =
 		0 * (UINT32_C(1) << 19) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
 		0 * (UINT32_C(1) << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
 		((framebits / 2) - 1) * (UINT32_C(1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
 		width2fmt(framebits / NSLOTS) * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
 		width2fmt(framebits / NSLOTS) * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
+	i2s->I2S_PCM_FMT0 = fmt0;
+	ASSERT(i2s->I2S_PCM_FMT0 == fmt0);
 	i2s->I2S_PCM_FMT1 =
 		0;
 
@@ -4804,13 +4806,15 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	//	BCLK_POLARITY = 0, EDGE_TRANSFER = 1, DIN sample data at negative edge;
 	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 0, DIN sample data at negative edge;
 	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 1, DIN sample data at positive edge.
-	i2s->I2S_PCM_FMT0 =
+	const uint_fast32_t fmt0 =
 		0 * (UINT32_C(1) << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
 		0 * (UINT32_C(1) << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
 		((framebits / 2) - 1) * (UINT32_C(1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
 		width2fmt(framebits / NSLOTS) * (UINT32_C(1) << 4) |	// SR Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
 		width2fmt(framebits / NSLOTS) * (UINT32_C(1) << 0) |	// SW Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
+	i2s->I2S_PCM_FMT0 = fmt0;
+	ASSERT(i2s->I2S_PCM_FMT0 == fmt0);
 	i2s->I2S_PCM_FMT1 =
 		0;
 
