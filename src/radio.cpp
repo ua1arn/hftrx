@@ -23464,7 +23464,7 @@ application_initialize(void)
 		const unsigned thalf = 500;	// Toggle every 500 ms
 	#endif /* WITHISBOOTLOADER */
 		static ticker_t ticker_blinks;
-		ticker_initialize(& ticker_blinks, thalf, blinktest, NULL, "blibk");
+		ticker_initialize(& ticker_blinks, thalf, blinktest, NULL, "blink");
 		ticker_add(& ticker_blinks);
 	}
 #endif /* WITHRTOS */
