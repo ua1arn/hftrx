@@ -16005,31 +16005,55 @@ processcatmsg(
 	{
 	case 0x80:
 		// lock off
-		PRINTF("CAT LOCK Off\n");
+		//PRINTF("CAT LOCK Off\n");
+		cat_ask_buffer [0] = 0x00;
+		cat_answervariable(cat_ask_buffer, 1);
 		break;
 	case 0x00:
 		// lock ON
-		PRINTF("CAT LOCK ON\n");
+		//PRINTF("CAT LOCK ON\n");
+		cat_ask_buffer [0] = 0x00;
+		cat_answervariable(cat_ask_buffer, 1);
 		break;
+
 	case 0x08:
 		// PTT On
-		PRINTF("CAT PTT ON\n");
+		//PRINTF("CAT PTT ON\n");
+		txreq_mox(& txreqst0);
+		cat_ask_buffer [0] = 0x00;
+		cat_answervariable(cat_ask_buffer, 1);
 		break;
 	case 0x88:
 		// PTT OFF
-		PRINTF("CAT PTT OFF\n");
+		//PRINTF("CAT PTT OFF\n");
+		txreq_rx(& txreqst0, NULL);
+		cat_ask_buffer [0] = 0x00;
+		cat_answervariable(cat_ask_buffer, 1);
+		break;
+
+	case 0x85:
+		// RIT OFF
+		//PRINTF("CAT RIT OFF\n");
+		cat_ask_buffer [0] = 0x00;
+		cat_answervariable(cat_ask_buffer, 1);
 		break;
 	case 0x02:
 		// SPLIT On
-		PRINTF("CAT SPLIT ON\n");
+		//PRINTF("CAT SPLIT ON\n");
+		cat_ask_buffer [0] = 0x00;
+		cat_answervariable(cat_ask_buffer, 1);
 		break;
 	case 0x82:
 		// SPLIT OFF
-		PRINTF("CAT SPLIT OFF\n");
+		//PRINTF("CAT SPLIT OFF\n");
+		cat_ask_buffer [0] = 0x00;
+		cat_answervariable(cat_ask_buffer, 1);
 		break;
 	case 0x81:
 		// VFO A/B
-		PRINTF("CAT VFO A/B\n");
+		//PRINTF("CAT VFO A/B\n");
+		cat_ask_buffer [0] = 0x00;
+		cat_answervariable(cat_ask_buffer, 1);
 		break;
 	case 0xBB:
 		// 0x00 0x54 0x00 0x00 0xBB
@@ -16040,7 +16064,7 @@ processcatmsg(
 			cat_ask_buffer [0] = 0x00;
 			cat_ask_buffer [1] = 0x00;
 			cat_answervariable(cat_ask_buffer, 2);
-			PRINTF("CAT READ EEPROM, addr=0x%4X\n", addr);
+			//PRINTF("CAT READ EEPROM, addr=0x%04X\n", addr);
 		}
 		break;
 	case 0x01:
@@ -16060,9 +16084,11 @@ processcatmsg(
 					(catp [3] % 16) * 10 +
 					0;
 
-			PRINTF("CAT Set freq=%u\n", (unsigned) f);
+			//PRINTF("CAT Set freq=%u\n", (unsigned) f);
 			catchangefreq(vfy32up(f, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), bi);
 			updateboard();	/* полная перенастройка (как после смены режима) */
+			cat_ask_buffer [0] = 0x00;
+			cat_answervariable(cat_ask_buffer, 1);
 
 		}
 		break;
@@ -16082,7 +16108,7 @@ processcatmsg(
 			cat_ask_buffer [3] = ((f % 1000) / 100) * 16 + (f % 100) / 10;
 			cat_ask_buffer [4] = ymode;
 			cat_answervariable(cat_ask_buffer, 5);
-			PRINTF("CAT GetState freq=%u, mode=%s\n", (unsigned) f, submodes [getsubmode(bi)].qlabel);
+			//PRINTF("CAT GetState freq=%u, mode=%s\n", (unsigned) f, submodes [getsubmode(bi)].qlabel);
 		}
 		break;
 
@@ -16091,13 +16117,8 @@ processcatmsg(
 		{
 			// Read RX status
 			cat_ask_buffer [0] = 0x00;
-			cat_ask_buffer [1] = 0x00;
-			cat_ask_buffer [2] = 0x00;
-			cat_ask_buffer [3] = 0x00;
-			cat_ask_buffer [4] = 0x00;
-
-			cat_answervariable(cat_ask_buffer, 5);
-			PRINTF("CAT ReadRxStatus\n");
+			cat_answervariable(cat_ask_buffer, 1);
+			//PRINTF("CAT ReadRxStatus\n");
 		}
 		break;
 
@@ -16105,14 +16126,10 @@ processcatmsg(
 		if (cat_answer_ready())
 		{
 			// Read TX status
-			cat_ask_buffer [0] = 0x00;
-			cat_ask_buffer [1] = 0x10;
-			cat_ask_buffer [2] = 0x00;
-			cat_ask_buffer [3] = 0x00;
-			cat_ask_buffer [4] = 0x00;
+			cat_ask_buffer [0] = ! gtx * 0x80 | 0x20;
 
-			cat_answervariable(cat_ask_buffer, 5);
-			PRINTF("CAT ReadTxStatus\n");
+			cat_answervariable(cat_ask_buffer, 1);
+			//PRINTF("CAT ReadTxStatus\n");
 		}
 		break;
 
@@ -16128,10 +16145,18 @@ processcatmsg(
 			const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
 			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
 			updateboard();	/* полная перенастройка (как после смены режима) */
-			PRINTF("CAT Set mode=%s (yaesu=0x%02X)\n", submodes [defsubmode].qlabel, catp [0]);
+			//PRINTF("CAT Set mode=%s (yaesu=0x%02X)\n", submodes [defsubmode].qlabel, catp [0]);
+			cat_ask_buffer [0] = 0x00;
+			cat_answervariable(cat_ask_buffer, 1);
 		}
 		break;
-
+	case 0xF5:
+		{
+			// [pmRit0]
+			cat_ask_buffer [0] = 0x00;
+			cat_answervariable(cat_ask_buffer, 1);
+		}
+		break;
 	default:
 		{
 			printhex_titled(0, catp, 5, "undefined cat command");
@@ -16170,14 +16195,14 @@ static void cattimeout_cb(void * ctx)
 {
 	(void) ctx;
 	catstatein = CATSTATE_WAITCOMMAND1;
-	TP();
+	//TP();
 }
 
 /* вызывается из обработчика прерываний */
 void cat2_parsechar(uint_fast8_t c)
 {
 	static uint8_t yaesubuf [5];
-	PRINTF("0x%02X ", c);
+	//PRINTF("0x%02X ", c);
 	ticker_timeout_restart(& cat_ticker, CAT_TIMEOUT);	// Перезапуск тайм-аута
 
 	switch (catstatein)
