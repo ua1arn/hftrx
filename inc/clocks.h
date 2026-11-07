@@ -631,18 +631,18 @@ hwtimcountfast_t timestamp_getmask(void);
 hwtimcountfast_t timestamp_getfreq(void);
 
 //	Функции для программных ожиданий
-//	const hwtimcountfast_t t0 = get_td_delta(0);
-//	const hwtimcountfast_t dt = get_td_ms(100);	// количество тактов до срабатывания
+//	const hwtimcountfast_t t0 = timestamp_get_delta(0);
+//	const hwtimcountfast_t dt = timestamp_get_ms(100);	// количество тактов до срабатывания
 //	do {
 //		val = hdmi_read(hdmi, HDMI_PHY_STAT0);
 //		if (!(val & HDMI_PHY_TX_PHY_LOCK))
 //			return 0;
 //
-//	} while (get_td_delta(t0) < dt);
+//	} while (timestamp_get_delta(t0) < dt);
 
-hwtimcountfast_t get_td_delta(hwtimcountfast_t start);	// получение интервала, прошедшего с момента start
-hwtimcountfast_t get_td_us(uint_fast32_t timeUS);
-hwtimcountfast_t get_td_ms(uint_fast32_t timeMS);
+hwtimcountfast_t timestamp_get_delta(hwtimcountfast_t start);	// получение интервала, прошедшего с момента start
+hwtimcountfast_t timestamp_get_us(uint_fast32_t timeUS);
+hwtimcountfast_t timestamp_get_ms(uint_fast32_t timeMS);
 
 // Debug core clocks counter
 #if defined(__aarch64__) || (defined (__CORTEX_A)) || (defined(__riscv) && (__riscv_xlen == 64))

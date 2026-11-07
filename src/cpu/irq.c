@@ -2699,16 +2699,16 @@ void local_delay_ms(uint_fast32_t timeMS)
 	{
 
 		const hwtimcountfast_t t0 = timestamp_getticks();
-		const hwtimcountfast_t td = get_td_ms(timeMS);
+		const hwtimcountfast_t td = timestamp_get_ms(timeMS);
 		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) GIC_GetInterfacePriorityMask());
-		while (get_td_delta(t0) < td)
+		while (timestamp_get_delta(t0) < td)
 			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	}
 	else
 	{
 		struct taskfnparam_suspend v;
 		v.t0 = timestamp_getticks();
-		v.td = get_td_ms(timeMS);
+		v.td = timestamp_get_ms(timeMS);
 		v.guard = & v;
 		//PRINTF("local_delay_ms: t0=0x%08X, td=0x%08X\n", (unsigned) v.t0, (unsigned) v.td);
 		//PRINTF("2 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) v.t0, (unsigned) v.td, (unsigned) GIC_GetInterfacePriorityMask());
@@ -2724,7 +2724,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 	if (threads_not_started)
 	{
 		const hwtimcountfast_t t0 = timestamp_getticks();
-		const hwtimcountfast_t td = get_td_ms(timeMS);
+		const hwtimcountfast_t td = timestamp_get_ms(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
@@ -2732,14 +2732,14 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 				return 0;
 			}
 			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while (get_td_delta(t0) < td);
+		} while (timestamp_get_delta(t0) < td);
 		return 1;
 	}
 	else
 	{
 		struct taskfnparam_wait8 v;
 		v.t0 = timestamp_getticks();
-		v.td = get_td_ms(timeMS);
+		v.td = timestamp_get_ms(timeMS);
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
@@ -2756,7 +2756,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 	if (threads_not_started)
 	{
 		const hwtimcountfast_t t0 = timestamp_getticks();
-		const hwtimcountfast_t td = get_td_ms(timeMS);
+		const hwtimcountfast_t td = timestamp_get_ms(timeMS);
 		do
 		{
 			if (((* flag & mask) == state))
@@ -2764,14 +2764,14 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 				return 0;
 			}
 			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
-		} while (get_td_delta(t0) < td);
+		} while (timestamp_get_delta(t0) < td);
 		return 1;
 	}
 	else
 	{
 		struct taskfnparam_wait32 v;
 		v.t0 = timestamp_getticks();
-		v.td = get_td_ms(timeMS);
+		v.td = timestamp_get_ms(timeMS);
 		v.flag = flag;
 		v.mask = mask;
 		v.state = state;
@@ -2789,7 +2789,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 
 	struct taskfnparam_waitlist v;
 	v.t0 = timestamp_getticks();
-	v.td = get_td_ms(timeMS);
+	v.td = timestamp_get_ms(timeMS);
 	v.list = list;
 	v.lock = lock;
 	v.guard = & v;
@@ -2809,7 +2809,7 @@ static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 	return aff;
 }
 
-#else
+#else /* WITHRTOS */
 
 // Non-linux, non-scheduler
 
@@ -2876,8 +2876,8 @@ void local_delay_ms(uint_fast32_t timeMS)
 		return;
 
     const hwtimcountfast_t t0 = timestamp_getticks();
-    const hwtimcountfast_t td = get_td_ms(timeMS);
-    while (get_td_delta(t0) < td)
+    const hwtimcountfast_t td = timestamp_get_ms(timeMS);
+    while (timestamp_get_delta(t0) < td)
     	thread_yield();
 }
 
@@ -2887,14 +2887,14 @@ void local_delay_ms(uint_fast32_t timeMS)
 int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS)
 {
 	const hwtimcountfast_t t0 = timestamp_getticks();
-	const hwtimcountfast_t td = get_td_ms(timeMS);
+	const hwtimcountfast_t td = timestamp_get_ms(timeMS);
 	do
 	{
 		const uint_fast8_t f = * flag & mask;
 		if (f == state)
 			return 0;
     	thread_yield();
-	} while (get_td_delta(t0) < td);
+	} while (timestamp_get_delta(t0) < td);
 	return 1;
 }
 
@@ -2904,7 +2904,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast8_t errstate, uint_fast32_t timeMS)
 {
 	const hwtimcountfast_t t0 = timestamp_getticks();
-	const hwtimcountfast_t td = get_td_ms(timeMS);
+	const hwtimcountfast_t td = timestamp_get_ms(timeMS);
 	do
 	{
 		const uint_fast8_t f = * flag & mask;
@@ -2913,7 +2913,7 @@ int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast
 		if (f == errstate)
 			return 1;
     	thread_yield();
-	} while (get_td_delta(t0) < td);
+	} while (timestamp_get_delta(t0) < td);
 	return 1;
 }
 
@@ -2922,7 +2922,7 @@ int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast
 int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t errstate, uint_fast32_t timeMS)
 {
 	const hwtimcountfast_t t0 = timestamp_getticks();
-	const hwtimcountfast_t td = get_td_ms(timeMS);
+	const hwtimcountfast_t td = timestamp_get_ms(timeMS);
 	//PRINTF("local_wait32mask: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
 	{
@@ -2932,7 +2932,7 @@ int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_f
 		if (f == errstate)
 			return 1;
     	thread_yield();
-	} while (get_td_delta(t0) < td);
+	} while (timestamp_get_delta(t0) < td);
 	return 1;
 }
 
@@ -2941,7 +2941,7 @@ int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_f
 int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS)
 {
 	const hwtimcountfast_t t0 = timestamp_getticks();
-	const hwtimcountfast_t td = get_td_ms(timeMS);
+	const hwtimcountfast_t td = timestamp_get_ms(timeMS);
 	//PRINTF("local_wait32mask: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
 	{
@@ -2949,7 +2949,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		if (f == state)
 			return 0;
     	thread_yield();
-	} while (get_td_delta(t0) < td);
+	} while (timestamp_get_delta(t0) < td);
 	return 1;
 }
 
@@ -2958,7 +2958,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fast32_t timeMS)
 {
 	const hwtimcountfast_t t0 = timestamp_getticks();
-	const hwtimcountfast_t td = get_td_ms(timeMS);
+	const hwtimcountfast_t td = timestamp_get_ms(timeMS);
 	//PRINTF("local_waitlist: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
 	do
 	{
@@ -2972,7 +2972,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 			}
 		}
     	thread_yield();
-	} while (get_td_delta(t0) < td);
+	} while (timestamp_get_delta(t0) < td);
 	return 1;	// Завершение по таймауту
 }
 
@@ -2983,140 +2983,18 @@ static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
 	return 0;
 }
 
-#endif /* */
+#endif /* WITHRTOS */
 
-#if 0
-
-static unsigned long
-local_delay_uscycles(unsigned timeUS)
-{
-	const unsigned cpufreqMHz = CPU_FREQ / 1000000;
-#if CPUSTYLE_AT91SAM7S
-	#warning TODO: calibrate constant	 looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 175uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_ATSAM3S
-	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 270uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_ATSAM4S
-	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 270uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_STM32F0XX
-	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 190uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_RP20XX
-	const unsigned long top = timeUS * 1480uL / cpufreq_MHz;
-#elif CPUSTYLE_STM32L0XX
-	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 20uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_STM32F1XX
-	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 345uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_STM32F30X
-	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 430uL / cpufreq_MHz;
-	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_STM32F4XX
-	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = timeUS * 3800uL / cpufreq_MHz;
-#elif CPUSTYLE_STM32F7XX
-	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_STM32H7XX
-	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = 77uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_R7S721
-	const unsigned long top = 105uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_XC7Z
-	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
-	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_STM32MP1
-	// калибровано для 800 МГц Cortex-A7 процессора
-	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_H3
-	// калибровано для 800 МГц Cortex-A7 процессора
-	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
-#elif __CORTEX_A == 53
-	// калибровано для Cortex-A53 процессора
-	const unsigned long top = 145uL * cpufreq_MHz * timeUS / 1000;
-#elif __CORTEX_A == 55
-	// калибровано для Cortex-A55 ядра процессора Allwinner A733
-	const unsigned long top = 142uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_T113
-	// калибровано для 1200 МГц Cortex-A7 процессора
-	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_V3S
-	// калибровано для 1200 МГц Cortex-A7 процессора
-	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_F133
-	// калибровано для 1200 МГц RISC-V C906 процессора
-	const unsigned long top = 165uL * cpufreq_MHz * timeUS / 1000;
-#elif CPUSTYLE_VM14
-	// калибровано для 1200 МГц процессора
-	const unsigned long top = 165uL * cpufreq_MHz * timeUS / 1000;
-#else
-	#error TODO: calibrate constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
-#endif
-	return top;
-}
-
-// Атрибут RAMFUNC_NONILINE убран, так как функция
-// используется в инициализации SDRAM на процессорах STM32F746.
-// TODO: перекалибровать для FLASH контроллеров.
-void /* RAMFUNC_NONILINE */ local_delay_us(uint_fast32_t timeUS)
-{
-	if (timeUS == 0)
-		return;
-#if 0
-	// Частота процессора приволится к мегагерцам.
-	const unsigned long top = local_delay_uscycles(timeUS);
-	//
-	volatile unsigned long t;
-	for (t = 0; t < top; ++ t)
-	{
-	}
-#endif /*  */
-}
-// exactly as required
-//
-void local_delay_ms(uint_fast32_t timeMS)
-{
-#if 0
-	if (timeMS == 0)
-		return;
-	// Частота процессора приволится к мегагерцам.
-	const unsigned long top = local_delay_uscycles(1000);
-	int n;
-	for (n = 0; n < timeMS; ++ n)
-	{
-		volatile unsigned long t;
-		for (t = 0; t < top; ++ t)
-		{
-		}
-	}
-#endif /* */
-}
-
-#else
 
 void local_delay_us(uint_fast32_t timeUS)
 {
 	if (timeUS == 0)
 		return;
 	const hwtimcountfast_t t0 = timestamp_getticks();	// Счетчик увеличивается с частотой процессора
-	const hwtimcountfast_t td = get_td_us(timeUS);
-	while (get_td_delta(t0) < td)
+	const hwtimcountfast_t td = timestamp_get_us(timeUS);
+	while (timestamp_get_delta(t0) < td)
 		;
 }
-
-#endif /* CPUSTYLE_ARM || CPUSTYLE_RISCV */
 
 #if defined(__aarch64__)
 

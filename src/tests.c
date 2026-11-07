@@ -7963,20 +7963,20 @@ void hightests(void)
 #endif
 #if 0
 	{
-		PRINTF("get_td_delta() test started\n");
+		PRINTF("timestamp_get_delta() test started\n");
 		// Hardware timers test
 		unsigned i;
 		for (i = 0; i < 10; ++ i)
 		{
 			//	Функции для программных ожиданий
-			const hwtimcountfast_t t0 = get_td_delta(0);	// начальное значение счетчика тактов
-			const hwtimcountfast_t dt = get_td_ms(1000);	// количество тактов до срабатывания
+			const hwtimcountfast_t t0 = timestamp_get_delta(0);	// начальное значение счетчика тактов
+			const hwtimcountfast_t dt = timestamp_get_ms(1000);	// количество тактов до срабатывания
 			do {
 				// проверяем что-то...
-			} while (get_td_delta(t0) < dt);
+			} while (timestamp_get_delta(t0) < dt);
 			PRINTF("Time elapsad...\n");
 		}
-		PRINTF("get_td_delta() test done\n");
+		PRINTF("timestamp_get_delta() test done\n");
 	}
 #endif
 #if 0

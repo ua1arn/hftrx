@@ -20694,13 +20694,13 @@ static int blinktest2(void * ctx)
 static uint_fast8_t
 keyboard_test(void)
 {
-	const hwtimcountfast_t t0 = get_td_delta(0);
-	const hwtimcountfast_t dt = get_td_ms(1000);	// 1 second total
+	const hwtimcountfast_t t0 = timestamp_get_delta(0);
+	const hwtimcountfast_t dt = timestamp_get_ms(1000);	// 1 second total
 	do {
 		if (kbd_is_tready() != 0)
 			return 1;
 
-	} while (get_td_delta(t0) < dt);
+	} while (timestamp_get_delta(t0) < dt);
 
 
 	return 0;

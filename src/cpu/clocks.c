@@ -13253,6 +13253,28 @@ dbgcountfast_t cpu_getdebugticksfreq(void)
 #endif /* WITHISBOOTLOADER */
 }
 
+// получение маски на разрядность аппаратного счётчика
+dbgcountfast_t cpu_getdebugticksmask(void)
+{
+#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
+	return UINT32_C(0xFFFFFFFF);	// DWT->CYCCNT width is 32
+
+#elif defined(__aarch64__)
+	return UINT64_C(0xFFFFFFFFFFFFFFFF);	// PMCCNTR width is 64
+
+#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
+	return UINT32_C(0xFFFFFFFF);	// PMCCNTR width is 32
+
+#elif defined(__riscv)
+	return UINT64_C(0xFFFFFFFFFFFFFFFF);	// mcycle width is 64
+
+#else
+	#warning Wrong CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
+	return UINT32_C(0xFFFFFFFF);
+
+#endif
+}
+
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 // получение из аппаратного счетчика монотонно увеличивающегося кода
 // see sysinit_perfmeter_initialize() in hardware.c
@@ -13385,14 +13407,14 @@ hwtimcountfast_t timestamp_getfreq(void)
 
 #endif /* WITHONETIMESTAMP */
 
-hwtimcountfast_t get_td_us(uint_fast32_t timeUS)
+hwtimcountfast_t timestamp_get_us(uint_fast32_t timeUS)
 {
 	return timeUS == LOCAL_WAITINFINITY ?
 			timestamp_getmask() :
 			timeUS * (timestamp_getfreq() / (1000 * 1000));
 }
 
-hwtimcountfast_t get_td_ms(uint_fast32_t timeMS)
+hwtimcountfast_t timestamp_get_ms(uint_fast32_t timeMS)
 {
 	return timeMS == LOCAL_WAITINFINITY ?
 			timestamp_getmask() :
@@ -13400,31 +13422,9 @@ hwtimcountfast_t get_td_ms(uint_fast32_t timeMS)
 }
 
 // получение интервала, прошедшего с момента start
-hwtimcountfast_t get_td_delta(hwtimcountfast_t t0)
+hwtimcountfast_t timestamp_get_delta(hwtimcountfast_t t0)
 {
 	return timestamp_getmask() & (timestamp_getticks() - t0);
-}
-
-// получение маски на разрядность аппаратного счётчика
-dbgcountfast_t cpu_getdebugticksmask(void)
-{
-#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
-	return UINT32_C(0xFFFFFFFF);	// DWT->CYCCNT width is 32
-
-#elif defined(__aarch64__)
-	return UINT64_C(0xFFFFFFFFFFFFFFFF);	// PMCCNTR width is 64
-
-#elif ((__CORTEX_A != 0) || CPUSTYLE_ARM9)
-	return UINT32_C(0xFFFFFFFF);	// PMCCNTR width is 32
-
-#elif defined(__riscv)
-	return UINT64_C(0xFFFFFFFFFFFFFFFF);	// mcycle width is 64
-
-#else
-	#warning Wrong CPUSTYLE_xxx - cpu_getdebugticks, local_delay_us can not work
-	return UINT32_C(0xFFFFFFFF);
-
-#endif
 }
 
 // Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c

@@ -258,7 +258,7 @@ static VLIST_ENTRY adcdones;
 static void ticker_initialize_ext(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, enum ticker_mode mode, const char * name)
 {
 	p->t0 = timestamp_getticks();
-	p->td = get_td_ms(timeMS);
+	p->td = timestamp_get_ms(timeMS);
 	p->cb = cb;
 	p->ctx = ctx;
 	p->mode = mode;
@@ -337,7 +337,7 @@ void ticker_setperiod(ticker_t * p, uint_fast32_t timeMS)
 
 	ASSERT(p->guard == p);
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
-	p->td = get_td_ms(timeMS);
+	p->td = timestamp_get_ms(timeMS);
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
 
