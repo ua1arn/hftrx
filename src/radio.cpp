@@ -23533,6 +23533,8 @@ application_initialize(void)
 		board_dpc_addentry(& user_audioproc_dpc, 0);
 	#elif (HARDWARE_NCORES == 2)
 		board_dpc_addentry(& user_audioproc_dpc, 1);
+	#elif (HARDWARE_NCORES == 8)
+		board_dpc_addentry(& user_audioproc_dpc, 6);
 	#elif WITHINTEGRATEDDSP
 		board_dpc_addentry(& user_audioproc_dpc, 2);
 	#endif /* WITHINTEGRATEDDSP */
