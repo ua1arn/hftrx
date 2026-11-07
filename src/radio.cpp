@@ -169,7 +169,7 @@ processmessages(
 		//board_wakeup();
 #if WITHCAT
 		{
-			// check MSGBUFFERSIZE8 valie
+			// check MSGBUFFERSIZE8 value
 			// 12 bytes as parameter
 			//PRINTF(PSTR("processmessages: MSGT_CAT\n"));
 			if (processcatmsg(buff [0], buff [1], buff [2], buff [8], buff + 9))
@@ -8933,6 +8933,7 @@ typedef struct submodeprops_tag
 	uint_least8_t qflags;		/* флаги подрежима */
 	uint_least8_t mode;			/* код семейства режимов */
 	uint_least8_t qcatmodecode;		/* Kenwood cat mode code */
+	uint_least8_t ycatmodecode;		/* Yaesu cat mode code */
 	uint_fast16_t qcatwidth;		/* полоса режима, рапортуемая через CAT */
 									// The FW command cannot be used in SSB or AM mode (an error tone will sound).
 
@@ -8986,6 +8987,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		0,
 		MODE_SSB, 	/* индекс семейства режимов */
 		2,			/* Kenwood cat mode code */
+		0x01,		/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"USB",
 	},
@@ -8994,6 +8996,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		QMODEF_HARDLSB,
 		MODE_SSB, 	/* индекс семейства режимов */
 		1,			/* Kenwood cat mode code */
+		0x00,		/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"LSB",
 	},
@@ -9002,6 +9005,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		0,
 		MODE_CW, 	/* индекс семейства режимов */
 		3,			/* Kenwood cat mode code */
+		0x02,		/* Yaesu cat mode code */
 		500,		/* полоса фильтра режима, возвращаемая через CAT */
 		"CW",
 	},
@@ -9010,6 +9014,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		QMODEF_HARDLSB,
 		MODE_CW, 	/* индекс семейства режимов */
 		7,			/* Kenwood cat mode code */
+		0x03,		/* Yaesu cat mode code */
 		500,		/* полоса фильтра режима, возвращаемая через CAT */
 		"CWR",
 	},
@@ -9018,6 +9023,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		QMODEF_SMARTLSB,
 		MODE_CWZ, 	/* индекс семейства режимов */
 		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
+		UINT8_MAX,	/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 	  	"CWZ",
 	},
@@ -9026,6 +9032,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		QMODEF_SMARTLSB,
 		MODE_AM, 	/* индекс семейства режимов */
 		5,			/* Kenwood cat mode code */
+		0x04,		/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"AM",
 	},
@@ -9035,6 +9042,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		QMODEF_SMARTLSB,
 		MODE_SAM, 	/* индекс семейства режимов */
 		UINT8_MAX,	/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"SAM",
 	},
@@ -9044,6 +9052,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		QMODEF_SMARTLSB,
 		MODE_DRM, 	/* индекс семейства режимов */
 		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
+		UINT8_MAX,	/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"DRM",
 	},
@@ -9052,6 +9061,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		QMODEF_HARDLSB,
 		MODE_DIGI, 	/* индекс семейства режимов */
 		9,			/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"DGL",
 	},
@@ -9060,6 +9070,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		QMODEF_SMARTLSB,
 		MODE_DIGI, 	/* индекс семейства режимов */
 		6,			/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"DGU",
 	},
@@ -9069,6 +9080,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		QMODEF_SMARTLSB,
 		MODE_NFM, 	/* индекс семейства режимов */
 		4,			/* Kenwood cat mode code */
+		0x88,		/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"NFM",
 	},
@@ -9079,6 +9091,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		QMODEF_SMARTLSB,
 		MODE_WFM, 	/* индекс семейства режимов */
 		8,			/* Kenwood cat mode code - придуман мною. В описаниях такого нет. */
+		UINT8_MAX,	/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"WFM",
 	},
@@ -9089,6 +9102,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		0,
 		MODE_MODEM, /* индекс семейства режимов */
 		UINT8_MAX,	/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
 		500,		/* полоса фильтра режима, возвращаемая через CAT */
 		"PSK",
 	},
@@ -9098,6 +9112,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		0,
 		MODE_ISB, 	/* индекс семейства режимов */
 		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
+		UINT8_MAX,	/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 	  	"ISB",
 	},
@@ -9107,6 +9122,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		0,
 		MODE_FREEDV,/* индекс семейства режимов */
 		UINT8_MAX,	/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"FDV",
 	},
@@ -9117,6 +9133,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		0,
 		MODE_RTTY,/* индекс семейства режимов */
 		UINT8_MAX,	/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"TTY",
 	},
@@ -9192,7 +9209,9 @@ enum
 	CATSTATE_WAITMORSE,		/* состояние ожидания приёма символа за KY */
 #endif /* WITHELKEY */
 	CATSTATE_WAITCOMMAND1,	/* состояние ожидания приёма первого байта команды */
-	CATSTATE_WAITCOMMAND2	/* состояние ожидания приёма второго байта команды */
+	// Для Yaesu принимем 5 байт
+
+	CATSTATE_WAITCOMMAND2 = CATSTATE_WAITCOMMAND1 + 10	/* состояние ожидания приёма второго байта команды */
 };
 
 enum
@@ -9218,6 +9237,23 @@ findkenwoodsubmode(uint_fast8_t catmode, uint_fast8_t defsubmode)
 		if (v == UINT8_MAX)
 			continue;		/* на этот режим через CAT не переключиться */
 		if (v == catmode)
+			return submode;
+	}
+	return defsubmode;
+}
+
+/* поиск по коду Yaesu */
+static uint_fast8_t
+findyesusubmode(uint_fast8_t ycatmode, uint_fast8_t defsubmode)
+{
+	uint_fast8_t submode;
+
+	for (submode = 0; submode < (sizeof submodes / sizeof submodes [0]); submode ++)
+	{
+		const uint_fast8_t v = submodes [submode].ycatmodecode;
+		if (v == UINT8_MAX)
+			continue;		/* на этот режим через CAT не переключиться */
+		if (v == ycatmode)
 			return submode;
 	}
 	return defsubmode;
@@ -15945,6 +15981,11 @@ uint_fast8_t cat_get_keydown(void)
 }
 
 #if WITHCAT && WITHCAT_YAESU
+
+#define YCAT_ASKBUFF_SIZE (5)
+
+static char cat_ask_buffer [YCAT_ASKBUFF_SIZE];
+
 /* возврат ненуля - была какая-либо команда
 	требуется обновление дисплея */
 static uint_fast8_t
@@ -15956,7 +15997,49 @@ processcatmsg(
 	const uint8_t * catp	// массив символов
 	)
 {
-	return 0;
+	printhex_titled(0, catp, 5, "cat command");
+	switch (catp [4])
+	{
+	case 0x88:
+		break;
+	case 0xBB:
+		if (cat_answer_ready())
+		{
+			// [Адрес MSB] [Адрес LSB] [0x00] [0x00] [0x00] [0xBB]
+			cat_ask_buffer [0] = 0x00;
+			cat_ask_buffer [1] = 0x00;
+			cat_answervariable(cat_ask_buffer, 2);
+		}
+		break;
+	case 0x03:
+		if (cat_answer_ready())
+		{
+			// запрос режима работы
+			const uint_fast8_t bi = getbankindex_ab(0);	/* vfo A bank index */
+			const uint_fast8_t ymode = submodes [getsubmode(bi)].ycatmodecode;
+			const uint_fast32_t f = gfreqs [bi];
+			cat_ask_buffer [0] = (f / 10000000) * 16 + (f % 10000000) / 1000000;
+			cat_ask_buffer [4] = ymode;
+			cat_answervariable(cat_ask_buffer, 5);
+		}
+		break;
+
+	case 0x07:
+		{
+			// В качестве первого байта передается ID модуляции.
+			// Обычно: 0x00 (LSB), 0x01 (USB), 0x02 (CW), 0x03 (CWR), 0x04 (AM), 0x08 (FM).
+			const uint_fast8_t defsubmode = findyesusubmode(catp [0], gsubmode);	/* поиск по кенвудовскому номеру */
+			const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+			vindex_t vi = getvfoindex(bi);
+			//defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
+			// todo: не очень хорошо, если locatesubmode не находит режима, она обнуляет row.
+			const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
+			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
+			updateboard();	/* полная перенастройка (как после смены режима) */
+		}
+		break;
+	}
+	return 1;
 }
 
 /* вызывается из обработчика прерываний */
@@ -15976,9 +16059,45 @@ static void cat_answer_request(uint_fast8_t code)
 
 }
 
+static int isyaesucmd(uint_fast8_t c)
+{
+	const unsigned hi = c / 16;
+	const unsigned lo = c % 16;
+	return (hi > 9) || (lo > 9);
+}
 /* вызывается из обработчика прерываний */
 void cat2_parsechar(uint_fast8_t c)
 {
+	static uint8_t yaesubuf [5];
+	//PRINTF("0x%02X ", c);
+	switch (catstatein)
+	{
+	case CATSTATE_WAITCOMMAND1 + 0:
+	case CATSTATE_WAITCOMMAND1 + 1:
+	case CATSTATE_WAITCOMMAND1 + 2:
+	case CATSTATE_WAITCOMMAND1 + 3:
+		if (isyaesucmd(c))
+		{
+			catstatein = CATSTATE_WAITCOMMAND1;
+			break;
+		}
+	case CATSTATE_WAITCOMMAND1 + 4:
+		yaesubuf [catstatein - CATSTATE_WAITCOMMAND1] = c;
+		catstatein += 1;
+		break;
+	}
+	if (catstatein == (CATSTATE_WAITCOMMAND1 + 5))
+	{
+		uint8_t * buff;
+		if (takemsgbufferfree(& buff) != 0)
+		{
+			// check MSGBUFFERSIZE8 value
+			memcpy(buff + 9, yaesubuf, 5);
+
+			placesemsgbuffer(MSGT_CAT, buff);
+		}
+		catstatein = CATSTATE_WAITCOMMAND1;	/* в user-mode нечего делать - ответ не формируем  */
+	}
 }
 
 /* вызывается из обработчика прерываний */
@@ -16002,6 +16121,39 @@ static void processcat_enable(uint_fast8_t enable)
 	if (catprocenable == enable)
 		return;
 	catprocenable = enable;
+	catstatein = CATSTATE_WAITCOMMAND1;
+	catstateout = CATSTATEO_SENDREADY;
+	if (! catprocenable)
+	{
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+		HARDWARE_CAT_ENABLERX(0);
+		HARDWARE_CAT_ENABLETX(0);
+		catstatein = CATSTATE_HALTED;
+		catstateout = CATSTATEO_HALTED;
+		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
+	}
+	else
+	{
+//		uint_fast8_t i;
+//		for (i = 0; i < (sizeof cat_answer_map / sizeof cat_answer_map [0]); ++ i)
+//			cat_answer_map [i] = 0;
+
+#if WITHTX
+//		sendmorsepos  [0] =
+//		inpmorselength [0]=
+//		sendmorsepos  [1] =
+//		inpmorselength [1] = 0;
+#endif /* WITHTX */
+
+		aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+		HARDWARE_CAT_ENABLERX(1);
+		catstatein = CATSTATE_WAITCOMMAND1;
+		catstateout = CATSTATEO_SENDREADY;
+		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
+	}
 }
 
 #endif /* WITHCAT && WITHCAT_YAESU */
@@ -16184,7 +16336,7 @@ void cat2_parsechar(uint_fast8_t c)
 			if (takemsgbufferfree(& buff) != 0)
 			{
 				uint_fast8_t i;
-				// check MSGBUFFERSIZE8 valie
+				// check MSGBUFFERSIZE8 value
 				buff [0] = catcommand1;
 				buff [1] = catcommand2;
 				buff [2] = cathasparam;
