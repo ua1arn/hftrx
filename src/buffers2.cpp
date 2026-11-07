@@ -38,8 +38,9 @@ static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 
 #define VOICE16RX_CAPACITY 		(16 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY 		(32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
-#define VOICE16TXMONI_CAPACITY 	(64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
-//#define VOICE16TXMONI_CAPACITY 	(16 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+//#define VOICE16TXMONI_CAPACITY 	(64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+#define VOICE16TXMONI_CAPACITY 	(16 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+#define VOICE16REC_CAPACITY		(64 * BUFOVERSIZE)
 #define HDMI48TX_CAPACITY 		(32 * BUFOVERSIZE)
 
 #if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
@@ -1408,7 +1409,7 @@ static unsigned getcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t * dest)
 typedef dmahandle<FLOAT_t, moni16buf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> moni16txdma_t;
 
 static __NO_INIT moni16buf_t moni16buf [VOICE16TXMONI_CAPACITY];
-static __NO_INIT moni16buf_t rx16recbuf [VOICE16TXMONI_CAPACITY];
+static __NO_INIT moni16buf_t rx16recbuf [VOICE16REC_CAPACITY];
 
 static moni16txdma_t moni16(IRQL_REALTIME, "16moni", moni16buf, ARRAY_SIZE(moni16buf));		// аудиоданные - самоконтроль (ключ, голос).
 static moni16txdma_t rx16rec(IRQL_REALTIME, "rx16rec", rx16recbuf, ARRAY_SIZE(rx16recbuf));	// аудиоданные - выход приемника
