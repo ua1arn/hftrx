@@ -661,8 +661,10 @@ dbgcountfast_t cpu_getdebugticksmask(void);	// получение маски н�
 enum ticker_mode
 {
 	TICKERMD_PERIODIC,
+	TICKERMD_TIMEOUT,	// Дошли до времени - сработали, поставили на INFINITY
 	TICKERMD_MANUAL
 };
+
 typedef struct ticker_tag
 {
 	VLIST_ENTRY item;
@@ -677,6 +679,8 @@ typedef struct ticker_tag
 
 struct dpcobj_tag;
 void ticker_initialize(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, const char * name);
+void ticker_timeout_init(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, const char * name);
+void ticker_timeout_restart(ticker_t * p, uint_fast32_t timeMS);
 void ticker_initialize_user(ticker_t * p, uint_fast32_t timeMS, struct dpcobj_tag * dpc, const char * name);
 void ticker_initialize_user_display(ticker_t * p, uint_fast32_t timeMS, dpcobj_t * dpc, const char * name);	// DPC будет вызываться на ядре board_dpc_display_coreid()
 //void ticker_initialize_ext(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, enum ticker_mode mode);

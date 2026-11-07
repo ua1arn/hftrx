@@ -255,6 +255,17 @@ static LCLSPINLOCK_t adcdoneslock = IRQLSPINLOCK_INIT;
 static VLIST_ENTRY tickers;
 static VLIST_ENTRY adcdones;
 
+void ticker_timeout_restart(ticker_t * p, uint_fast32_t timeMS)
+{
+	IRQL_t oldIrql;
+	ASSERT(p->guard == p);
+	ASSERT(p->mode == TICKERMD_TIMEOUT);
+	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+	p->t0 = timestamp_getticks();
+	p->td = timestamp_get_ms(timeMS);
+	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
+}
+
 static void ticker_initialize_ext(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, enum ticker_mode mode, const char * name)
 {
 	p->t0 = timestamp_getticks();
@@ -269,6 +280,11 @@ static void ticker_initialize_ext(ticker_t * p, uint_fast32_t timeMS, void (* cb
 void ticker_initialize(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, const char * name)
 {
 	ticker_initialize_ext(p, timeMS, cb, ctx, TICKERMD_PERIODIC, name);
+}
+
+void ticker_timeout_init(ticker_t * p, uint_fast32_t timeMS, void (* cb)(void *), void * ctx, const char * name)
+{
+	ticker_initialize_ext(p, timeMS, cb, ctx, TICKERMD_TIMEOUT, name);
 }
 
 static void ticker_trampoline(void * ctx)
@@ -294,7 +310,7 @@ void ticker_initialize_user_display(ticker_t * p, uint_fast32_t timeMS, dpcobj_t
 
 void ticker_add(ticker_t * p)
 {
-	//PRINTF("ticker_add: '%s', period=%u\n", p->name, (unsigned) (p->td / (timestamp_getfreq() / 1000)));
+	//PRINTF("ticker_add: '%s', period=%u, mode=%d\n", p->name, (unsigned) (p->td / (timestamp_getfreq() / 1000)), p->mode);
 	IRQL_t oldIrql;
 	ASSERT(p->guard == p);
 	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
@@ -360,27 +376,32 @@ static void tickers_event(void)
 		switch (p->mode)
 		{
 		case TICKERMD_MANUAL:
+			{
+
+			}
 			break;
 		case TICKERMD_PERIODIC:
+			if ((timestamp_getmask() & (tn - p->t0)) >= p->td)
+			{
+				p->t0 += p->td;
+				if (p->cb != NULL)
+					(p->cb)(p->ctx);
+			}
+			break;
+		case TICKERMD_TIMEOUT:
+			if (timestamp_getmask() == p->td)
+				; // Уже сработало
+			else if ((timestamp_getmask() & (tn - p->t0)) >= p->td)
+			{
+				p->td = timestamp_getmask();	// Больше не сработает
+				if (p->cb != NULL)
+					(p->cb)(p->ctx);
+			}
 			break;
 		default:
 			break;
 		}
 
-		if ((timestamp_getmask() & (tn - p->t0)) >= p->td)
-		{
-			p->t0 += p->td;
-			if (p->cb != NULL)
-				(p->cb)(p->ctx);
-			switch (p->mode)
-			{
-			case TICKERMD_MANUAL:
-				//RemoveEntryVList(t);
-				break;
-			default:
-				break;
-			}
-		}
 		t = tnext;
 	}
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);

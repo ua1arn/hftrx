@@ -15767,6 +15767,9 @@ static std::atomic<uint_fast8_t> catstateout(CATSTATEO_HALTED);
 static volatile const char * catsendptr;
 static volatile uint_fast8_t catsendcount;
 
+static ticker_t cat_ticker;
+#define CAT_TIMEOUT 100 // 100 mS
+
 //A communication error occurred, such as an overrun or framing error during a serial data transmission.
 //static const char processingcmd [2] = "E;";	// ответ на команду которая ещё выполняется
 
@@ -15997,18 +16000,47 @@ processcatmsg(
 	const uint8_t * catp	// массив символов
 	)
 {
-	//printhex_titled(0, catp, 5, "cat command");
+	//printhex_titled(0, catp, 5, "undefined cat command");
 	switch (catp [4])
 	{
+	case 0x80:
+		// lock off
+		PRINTF("CAT LOCK Off\n");
+		break;
+	case 0x00:
+		// lock ON
+		PRINTF("CAT LOCK ON\n");
+		break;
+	case 0x08:
+		// PTT On
+		PRINTF("CAT PTT ON\n");
+		break;
 	case 0x88:
+		// PTT OFF
+		PRINTF("CAT PTT OFF\n");
+		break;
+	case 0x02:
+		// SPLIT On
+		PRINTF("CAT SPLIT ON\n");
+		break;
+	case 0x82:
+		// SPLIT OFF
+		PRINTF("CAT SPLIT OFF\n");
+		break;
+	case 0x81:
+		// VFO A/B
+		PRINTF("CAT VFO A/B\n");
 		break;
 	case 0xBB:
+		// 0x00 0x54 0x00 0x00 0xBB
 		if (cat_answer_ready())
 		{
 			// [Адрес MSB] [Адрес LSB] [0x00] [0x00] [0x00] [0xBB]
+			const unsigned addr = catp [0] * 256 + catp [1];
 			cat_ask_buffer [0] = 0x00;
 			cat_ask_buffer [1] = 0x00;
 			cat_answervariable(cat_ask_buffer, 2);
+			PRINTF("CAT READ EEPROM, addr=0x%4X\n", addr);
 		}
 		break;
 	case 0x01:
@@ -16036,18 +16068,21 @@ processcatmsg(
 		break;
 
 	case 0x03:
+		// 0x00 0x00 0x00 0x00 0x03
 		if (cat_answer_ready())
 		{
 			// запрос режима работы и частоты
 			const uint_fast8_t bi = getbankindex_ab(0);	/* vfo A bank index */
 			const uint_fast8_t ymode = submodes [getsubmode(bi)].ycatmodecode;
 			const uint_fast32_t f = gfreqs [bi];
+
 			cat_ask_buffer [0] = ((f % 1000000000) / 100000000) * 16 + (f % 100000000) / 10000000;
 			cat_ask_buffer [1] = ((f % 10000000) / 1000000) * 16 + (f % 1000000) / 100000;
 			cat_ask_buffer [2] = ((f % 100000) / 10000) * 16 + (f % 10000) / 1000;
 			cat_ask_buffer [3] = ((f % 1000) / 100) * 16 + (f % 100) / 10;
 			cat_ask_buffer [4] = ymode;
 			cat_answervariable(cat_ask_buffer, 5);
+			PRINTF("CAT GetState freq=%u, mode=%s\n", (unsigned) f, submodes [getsubmode(bi)].qlabel);
 		}
 		break;
 
@@ -16062,6 +16097,7 @@ processcatmsg(
 			cat_ask_buffer [4] = 0x00;
 
 			cat_answervariable(cat_ask_buffer, 5);
+			PRINTF("CAT ReadRxStatus\n");
 		}
 		break;
 
@@ -16076,6 +16112,7 @@ processcatmsg(
 			cat_ask_buffer [4] = 0x00;
 
 			cat_answervariable(cat_ask_buffer, 5);
+			PRINTF("CAT ReadTxStatus\n");
 		}
 		break;
 
@@ -16092,6 +16129,12 @@ processcatmsg(
 			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
 			updateboard();	/* полная перенастройка (как после смены режима) */
 			PRINTF("CAT Set mode=%s (yaesu=0x%02X)\n", submodes [defsubmode].qlabel, catp [0]);
+		}
+		break;
+
+	default:
+		{
+			printhex_titled(0, catp, 5, "undefined cat command");
 		}
 		break;
 	}
@@ -16115,28 +16158,39 @@ static void cat_answer_request(uint_fast8_t code)
 
 }
 
-static int isyaesucmd(uint_fast8_t c)
+//static int isyaesucmd(uint_fast8_t c)
+//{
+//	const unsigned hi = c / 16;
+//	const unsigned lo = c % 16;
+//	return (hi > 11) || (lo > 11);
+//}
+
+// Конец тайм-аута
+static void cattimeout_cb(void * ctx)
 {
-	const unsigned hi = c / 16;
-	const unsigned lo = c % 16;
-	return (hi > 11) || (lo > 11);
+	(void) ctx;
+	catstatein = CATSTATE_WAITCOMMAND1;
+	TP();
 }
+
 /* вызывается из обработчика прерываний */
 void cat2_parsechar(uint_fast8_t c)
 {
 	static uint8_t yaesubuf [5];
-	//PRINTF("0x%02X ", c);
+	PRINTF("0x%02X ", c);
+	ticker_timeout_restart(& cat_ticker, CAT_TIMEOUT);	// Перезапуск тайм-аута
+
 	switch (catstatein)
 	{
 	case CATSTATE_WAITCOMMAND1 + 0:
 	case CATSTATE_WAITCOMMAND1 + 1:
 	case CATSTATE_WAITCOMMAND1 + 2:
 	case CATSTATE_WAITCOMMAND1 + 3:
-		if (isyaesucmd(c))
-		{
-			catstatein = CATSTATE_WAITCOMMAND1;
-			break;
-		}
+//		if (isyaesucmd(c))
+//		{
+//			catstatein = CATSTATE_WAITCOMMAND1;
+//			break;
+//		}
 	case CATSTATE_WAITCOMMAND1 + 4:
 		yaesubuf [catstatein - CATSTATE_WAITCOMMAND1] = c;
 		catstatein += 1;
@@ -16325,6 +16379,12 @@ void cat2_disconnect(void)
 	catstateout = CATSTATEO_SENDREADY;
 }
 
+// Конец тайм-аута
+static void cattimeout_cb(void * ctx)
+{
+	(void) ctx;
+}
+
 
 static uint_fast8_t local_isdigit(char c)
 {
@@ -16342,6 +16402,7 @@ void cat2_parsechar(uint_fast8_t c)
 	static uint_fast8_t catpcount;
 
    // PRINTF(PSTR("c=%02x, catstatein=%d, c1=%02X, c2=%02X\n"), c, catstatein, catcommand1, catcommand2);
+	ticker_timeout_restart(& cat_ticker, CAT_TIMEOUT);	// Перезапуск тайм-аута
 	switch (catstatein)
 	{
 	case CATSTATE_HALTED:
@@ -18233,6 +18294,9 @@ static void cat_initialize(void)
 
 	dpcobj_initialize(& cat_dpc, cat_dpc_func, NULL, "cat_dpc");
 	board_dpc_addentry(& cat_dpc, board_dpc_coreid());
+
+	ticker_timeout_init(& cat_ticker, CAT_TIMEOUT, cattimeout_cb, NULL, "cat_timeout");	// Конец тайм-аута
+	ticker_add(& cat_ticker);
 }
 #endif /* WITHCAT */
 
@@ -24172,7 +24236,6 @@ void hamradio_main_start(void)
 		ticker_initialize(& ticker, UI_TICKS_PERIOD, refreshticker_cb, NULL, "UI");	// вызывается с частотой 1/UI_TICKS_PERIOD (например, 20 Гц) с запрещенными прерываниями.
 		ticker_add(& ticker);
 	}
-
 	{
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;	// 1s
