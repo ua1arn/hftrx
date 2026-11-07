@@ -16125,7 +16125,7 @@ static int isyaesucmd(uint_fast8_t c)
 void cat2_parsechar(uint_fast8_t c)
 {
 	static uint8_t yaesubuf [5];
-	PRINTF("0x%02X ", c);
+	//PRINTF("0x%02X ", c);
 	switch (catstatein)
 	{
 	case CATSTATE_WAITCOMMAND1 + 0:
