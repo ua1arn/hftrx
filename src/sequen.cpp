@@ -19,13 +19,14 @@ static adcdone_t voxoribet;
 
 
 // вызывается из SYSTEM обработчика прерываний
+// keydown - ормирование незадержанного сигнвлв самоконтроля
 static void
 seq_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
 {
 #if WITHINTEGRATEDDSP
 	dsp_txpath_set(txpathstate, keydown);
 #endif
-	hardware_txpath_set(txpathstate);
+	hardware_txpath_set(txpathstate, keydown);
 }
 
 enum {

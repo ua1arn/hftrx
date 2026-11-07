@@ -6668,12 +6668,12 @@ static int getRxGate(void)
 
 // манипуляция и переключение на передачу
 // вызывается из SYSTEM обработчика прерываний
-void dsp_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
+void dsp_txpath_set(portholder_t txpathstate, uint_fast8_t sdtnkeydown)
 {
 #if WITHINTEGRATEDDSP
 	txgateInput = (txpathstate & (TXGFV_TX_CW | TXGFV_TX_SSB | TXGFV_TX_AM | TXGFV_TX_NFM)) != 0;
 	rxgateflag = (txpathstate & (TXGFV_RX)) != 0;
-	hftrx_txgetpath()->shapeCWSSBSidetoneInpit = keydown;
+	hftrx_txgetpath()->shapeCWSSBSidetoneInpit = sdtnkeydown;
 #endif /* WITHINTEGRATEDDSP */
 //	PRINTF("%u", shapeCWSSBSidetoneInpit);
 }

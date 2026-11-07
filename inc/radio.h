@@ -423,8 +423,8 @@ uint_fast8_t hardware_get_tune(void);	/* запрос от внешней апп
 uint_fast8_t hardware_get_txdisable(void);
 
 void hardware_txpath_initialize(void);
-void hardware_txpath_set(portholder_t txpathstate);
-void dsp_txpath_set(portholder_t txpathstate, uint_fast8_t keydown);	// вызывается из SYSTEM обработчика прерываний
+void hardware_txpath_set(portholder_t txpathstate, uint_fast8_t sdtnkeydown);
+void dsp_txpath_set(portholder_t txpathstate, uint_fast8_t sdtnkeydown);	// вызывается из SYSTEM обработчика прерываний
 void dsp_sidetone_setfreq(uint_least16_t tonefreq01);	/* tonefreq01 - частота в десятых долях герца. . */
 
 /* сиквенсор приём-передача - и по таймерным и по 1/ELKEY_DISCRETE точки */

@@ -5432,9 +5432,7 @@ hardware_ptt_port_initialize(void)
 }
 
 /* функция вызывается из SYSTEM обработчиков прерывания или при запрещённых прерываниях. */
-void hardware_txpath_set(
-	portholder_t txpathstate
-	)
+void hardware_txpath_set(portholder_t txpathstate, uint_fast8_t sdtnkeydown)
 {
 #if defined (TXPATH_BIT_GATE)
 	const portholder_t mask = TXPATH_BIT_GATE;
@@ -5491,9 +5489,7 @@ hardware_get_ptt(void)
 }
 
 /* функция вызывается из обработчиков прерывания или при запрещённых прерываниях. */
-void hardware_txpath_set(
-	portholder_t txpathstate
-	)
+void hardware_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
 {
 }
 
