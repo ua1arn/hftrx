@@ -9070,7 +9070,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		QMODEF_SMARTLSB,
 		MODE_DIGI, 	/* индекс семейства режимов */
 		6,			/* Kenwood cat mode code */
-		UINT8_MAX,	/* Yaesu cat mode code */
+		0x0A,	/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"DGU",
 	},
@@ -9080,7 +9080,7 @@ static const submodeprops_t submodes [SUBMODE_COUNT] =
 		QMODEF_SMARTLSB,
 		MODE_NFM, 	/* индекс семейства режимов */
 		4,			/* Kenwood cat mode code */
-		0x88,		/* Yaesu cat mode code */
+		0x08,		/* Yaesu cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"NFM",
 	},
@@ -16091,7 +16091,7 @@ processcatmsg(
 			const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
 			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
 			updateboard();	/* полная перенастройка (как после смены режима) */
-			PRINTF("CAT Set mode=%u\n", (unsigned) defsubmode);
+			PRINTF("CAT Set mode=%s (yaesu=0x%02X)\n", submodes [defsubmode].qlabel, catp [0]);
 		}
 		break;
 	}
