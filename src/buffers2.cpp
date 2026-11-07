@@ -39,6 +39,7 @@ static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 #define VOICE16RX_CAPACITY 		(16 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY 		(32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 #define VOICE16TXMONI_CAPACITY 	(64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+//#define VOICE16TXMONI_CAPACITY 	(16 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 #define HDMI48TX_CAPACITY 		(32 * BUFOVERSIZE)
 
 #define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
