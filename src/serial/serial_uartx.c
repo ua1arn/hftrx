@@ -403,7 +403,7 @@ hardware_uartx_putchar(UART_t * uart, uint_fast8_t c)
 	return 1;
 }
 
-void hardware_uartx_initialize(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t fifo)
+void hardware_uartx_initialize(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t fifo, uint_fast8_t stopext)
 {
 #if CPUSTYLE_STM32MP1
 
@@ -552,11 +552,13 @@ void hardware_uartx_initialize(UART_t * uart, uint_fast32_t busfreq, uint_fast32
 	uart->UART_DLH_IER = (divisor >> 8) & 0xff;
 	uart->UART_LCR &= ~ (UINT32_C(1) << 7);	// Divisor Latch Access Bit
 	//
+	const unsigned dls = UINT32_C(0x03) & (bits - 5);	// 00: 5 bits, 01 - 6 bits, ...
 	uart->UART_LCR = (uart->UART_LCR & ~ UINT32_C(0x3F)) |
-			((UINT32_C(0x03) & (bits - 5)) << 0) | (0 << 2) | // DAT_LEN_8_BITS ONE_STOP_BIT
-			(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
-			(!! parity << 3) |	// bit3 1: parity enable
-			0;
+		(!! odd << 4) |	// bit5:bit4 0 - even, 1 - odd
+		(!! parity << 3) |	// bit3 1: parity enable
+		(!! stopext << 2) |	// 0: one stop bit
+		(dls << 0) | // DAT_LEN_8_BITS ONE_STOP_BIT
+		0;
 
 #elif CPUSTYLE_VM14
 

@@ -342,7 +342,7 @@ void hardware_uart7_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate)
 	RCC->APB1RSTCLRR = RCC_APB1RSTCLRR_UART7RST; // Снять брос UART7.
 	(void) RCC->APB1RSTCLRR;
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), stm32mp1_uart7_8_get_freq(), defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), stm32mp1_uart7_8_get_freq(), defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART7_INITIALIZE();	/* Присоединить периферию к выводам */
 	if (debug == 0)
 	{

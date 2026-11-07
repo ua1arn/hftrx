@@ -1410,6 +1410,12 @@ void local_delay_ms(uint_fast32_t timeMS);	// may be LOCAL_WAITINFINITY
 	#error RTC_TYPE_GPS and WITHNMEA must be used in same time
 #endif /* defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_GPS) && ! defined WITHNMEA */
 
+#if WITHCAT_YAESU
+	#define CATSTOPEXT 1
+#else /* WITHCAT_YAESU */
+	#define CATSTOPEXT 0
+#endif /* WITHCAT_YAESU */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

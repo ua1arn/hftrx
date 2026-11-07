@@ -67,7 +67,7 @@ void modem_sendchar(void * ctx);							/* вызывается из обрабо
 void nmea_format(const char * format, ...) __attribute__ ((__format__ (__printf__, 1, 2)));
 int nmea_putc(int c);
 
-void hardware_uartx_initialize(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t fifo);
+void hardware_uartx_initialize(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t fifo, uint_fast8_t stopext);
 void hardware_uartx_set_speed(UART_t * uart, uint_fast32_t busfreq, uint_fast32_t baudrate);
 void hardware_uartx_tx(UART_t * uart, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uartx_enabletx(UART_t * uart, uint_fast8_t state);	/* вызывается из обработчика прерываний */
@@ -77,7 +77,7 @@ uint_fast8_t hardware_uartx_getchar(UART_t * uart, char * cp); /* приём с�
 void hardware_uartx_flush(UART_t * uart);	/* дождаться, когда будет всё передано */
 void hardware_uartx_set_rs485(UART_t * uart, uint_fast8_t state);	/* разрешить упрвлять аппаратным сигналом разрешения передачи */
 
-void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd);
+void hardware_uart0_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t stopext);
 void hardware_uart0_set_speed(uint_fast32_t baudrate);
 void hardware_uart0_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart0_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
@@ -87,7 +87,7 @@ uint_fast8_t hardware_uart0_getchar(char * cp); /* приём символа, е
 void hardware_uart0_flush(void);	/* дождаться, когда будет всё передано */
 void hardware_uart0_set_rs485(uint_fast8_t state);	/* разрешить упрвлять аппаратным сигналом разрешения передачи */
 
-void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd);
+void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t stopext);
 void hardware_uart1_set_speed(uint_fast32_t baudrate);
 void hardware_uart1_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart1_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
@@ -97,7 +97,7 @@ uint_fast8_t hardware_uart1_getchar(char * cp); /* приём символа, е
 void hardware_uart1_flush(void);	/* дождаться, когда будет всё передано */
 void hardware_uart1_set_rs485(uint_fast8_t state);	/* разрешить упрвлять аппаратным сигналом разрешения передачи */
 
-void hardware_uart2_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd);
+void hardware_uart2_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t stopext);
 void hardware_uart2_set_speed(uint_fast32_t baudrate);
 void hardware_uart2_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart2_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
@@ -107,7 +107,7 @@ uint_fast8_t hardware_uart2_getchar(char * cp); /* приём символа, е
 void hardware_uart2_flush(void);	/* дождаться, когда будет всё передано */
 void hardware_uart2_set_rs485(uint_fast8_t state);	/* разрешить упрвлять аппаратным сигналом разрешения передачи */
 
-void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd);
+void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t stopext);
 void hardware_uart3_set_speed(uint_fast32_t baudrate);
 void hardware_uart3_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart3_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
@@ -117,7 +117,7 @@ uint_fast8_t hardware_uart3_getchar(char * cp); /* приём символа, е
 void hardware_uart3_flush(void);	/* дождаться, когда будет всё передано */
 void hardware_uart3_set_rs485(uint_fast8_t state);	/* разрешить упрвлять аппаратным сигналом разрешения передачи */
 
-void hardware_uart4_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd);
+void hardware_uart4_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t stopext);
 void hardware_uart4_set_speed(uint_fast32_t baudrate);
 void hardware_uart4_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart4_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
@@ -127,7 +127,7 @@ uint_fast8_t hardware_uart4_getchar(char * cp); /* приём символа, е
 void hardware_uart4_flush(void);	/* дождаться, когда будет всё передано */
 void hardware_uart4_set_rs485(uint_fast8_t state);	/* разрешить упрвлять аппаратным сигналом разрешения передачи */
 
-void hardware_uart5_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd);
+void hardware_uart5_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t stopext);
 void hardware_uart5_set_speed(uint_fast32_t baudrate);
 void hardware_uart5_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart5_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
@@ -137,7 +137,7 @@ uint_fast8_t hardware_uart5_getchar(char * cp); /* приём символа, е
 void hardware_uart5_flush(void);	/* дождаться, когда будет всё передано */
 void hardware_uart5_set_rs485(uint_fast8_t state);	/* разрешить упрвлять аппаратным сигналом разрешения передачи */
 
-void hardware_uart6_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd);
+void hardware_uart6_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t stopext);
 void hardware_uart6_set_speed(uint_fast32_t baudrate);
 void hardware_uart6_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart6_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
@@ -147,7 +147,7 @@ uint_fast8_t hardware_uart6_getchar(char * cp); /* приём символа, е
 void hardware_uart6_flush(void);	/* дождаться, когда будет всё передано */
 void hardware_uart6_set_rs485(uint_fast8_t state);	/* разрешить упрвлять аппаратным сигналом разрешения передачи */
 
-void hardware_uart7_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd);
+void hardware_uart7_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t stopext);
 void hardware_uart7_set_speed(uint_fast32_t baudrate);
 void hardware_uart7_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
 void hardware_uart7_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */

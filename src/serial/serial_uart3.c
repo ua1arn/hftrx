@@ -206,7 +206,7 @@ hardware_uart3_putchar(uint_fast8_t c)
 	return hardware_uartx_putchar(UARTBASENAME(thisPORT), c);
 }
 
-void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd)
+void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t stopext)
 {
 #if WITHUART3HW_FIFO
 	int fifo = 1;
@@ -333,7 +333,7 @@ void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	RCC->APB1RSTCLRR = RCC_APB1RSTCLRR_USART3RST; // Снять брос USART3.
 	(void) RCC->APB1RSTCLRR;
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), stm32mp1_uart3_5_get_freq(), defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), stm32mp1_uart3_5_get_freq(), defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART3_INITIALIZE();	/* Присоединить периферию к выводам */
 	if (debug == 0)
 	{
@@ -350,7 +350,7 @@ void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart3 reset */
 	CCU-> BUS_SOFT_RST_REG4 |= (1u << (ix + 16));	//  UART3_RST
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART3_INITIALIZE();
 
 	if (debug == 0)
@@ -368,7 +368,7 @@ void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart3 reset */
 	CCU->UART_BGR_REG |= (1u << (ix + 16));
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART3_INITIALIZE();
 
 	if (debug == 0)
@@ -386,7 +386,7 @@ void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart0 reset */
 	CCU->UART_BGR_REG |= (UINT32_C(1) << (ix + 16));
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART3_INITIALIZE();
 	if (debug == 0)
 	{
@@ -401,7 +401,7 @@ void hardware_uart3_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart0 reset */
 	CCU->UART3_BGR_REG |= (UINT32_C(1) << 16);
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART3_INITIALIZE();
 	if (debug == 0)
 	{

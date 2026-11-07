@@ -468,7 +468,7 @@ void encoders_initialize(void)
 #endif /* WITHENCODER */
 #if WITHENCODER2 && ! ENCODER2_NOSPOOL
 	// второй енкодер всегда по опросу (если это не назначено при инициализации)
-	ticker_initialize(& encticker2, ENC_TICKS_PERIOD, spool_encinterrupt2_local, NULL);	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& encticker2, ENC_TICKS_PERIOD, spool_encinterrupt2_local, NULL, "enc2");	// вызывается с частотой ENCTICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& encticker2);
 #endif /* WITHENCODER2 && ! ENCODER2_NOSPOOL */
 }

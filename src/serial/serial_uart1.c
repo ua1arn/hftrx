@@ -232,7 +232,7 @@ hardware_uart1_putchar(uint_fast8_t c)
 	return hardware_uartx_putchar(UARTBASENAME(thisPORT), c);
 }
 
-void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd)
+void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, uint_fast8_t bits, uint_fast8_t parity, uint_fast8_t odd, uint_fast8_t stopext)
 {
 #if WITHUART1HW_FIFO
 	int fifo = 1;
@@ -433,7 +433,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	RCC->APB5RSTCLRR = RCC_APB5RSTCLRR_USART1RST; // Снять брос USART1.
 	(void) RCC->APB5RSTCLRR;
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), BOARD_USART1_FREQ, defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), BOARD_USART1_FREQ, defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 	if (debug == 0)
 	{
@@ -454,7 +454,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 			(0x01 << ix) |	// CLKACT1 - UART 1 reference clock active
 			0;
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), xc7z_get_uart_freq(), defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), xc7z_get_uart_freq(), defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 	if (debug == 0)
 	{
@@ -471,7 +471,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart1 reset */
 	CCU-> BUS_SOFT_RST_REG4 |= (1u << (ix + 16));	//  UART1_RST
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART1_INITIALIZE();
 	if (debug == 0)
 	{
@@ -488,7 +488,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart1 reset */
 	CCU->UART_BGR_REG |= (1u << (ix + 16));
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART1_INITIALIZE();
 
 	if (debug == 0)
@@ -506,7 +506,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart0 reset */
 	CCU->UART_BGR_REG |= (UINT32_C(1) << (ix + 16));
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART1_INITIALIZE();
 	if (debug == 0)
 	{
@@ -521,7 +521,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart0 reset */
 	CCU->UART1_BGR_REG |= (UINT32_C(1) << 16);
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART1_INITIALIZE();
 	if (debug == 0)
 	{
@@ -538,7 +538,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 	/* De-assert uart1 reset */
 	CCU->BUS_SOFT_RST_REG4 |= (1u << (ix + 16));
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), HARDWARE_UART_FREQ, defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART1_INITIALIZE();
 	if (debug == 0)
 	{
@@ -551,7 +551,7 @@ void hardware_uart1_initialize(uint_fast8_t debug, uint_fast32_t defbaudrate, ui
 
 	CMCTR->GATE_SYS_CTR |= ((1u << 12) << ix); // UART1_EN Enable CLK
 
-	hardware_uartx_initialize(UARTBASENAME(thisPORT), elveesvm14_get_usart_freq(), defbaudrate, bits, parity, odd, fifo);
+	hardware_uartx_initialize(UARTBASENAME(thisPORT), elveesvm14_get_usart_freq(), defbaudrate, bits, parity, odd, fifo, stopext);
 	HARDWARE_UART1_INITIALIZE();
 	if (debug == 0)
 	{

@@ -489,7 +489,7 @@
 	// CAT функции работают через UART5
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_INITIALIZE() do { \
-			hardware_uart5_initialize(0, DEBUGSPEED, 8, 0, 0); \
+			hardware_uart5_initialize(0, DEBUGSPEED, 8, 0, 0, CATSTOPEXT); \
 		} while (0)
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT_SET_SPEED(baudrate) do { \
