@@ -140,6 +140,7 @@
 	//#include "boards/arm_allwt507_ctlstyle_veloci_v0.h"			// Rrfboard_v3a.pcb
 	//#include "boards/arm_allwt507_ctlstyle_veloci_v0_UA1CEI.h"	// Rrfboard_v3a.pcb, old PA thermo sensor
 	#include "boards/arm_allwt507_ctlstyle_veloci_v0_RK1AQ.h"	// Rrfboard_v3a.pcb
+	//#include "boards/arm_allwt507_ctlstyle_veloci_v0_UA1ATD.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwt507_cpustyle_veloci_v0.h"	// Rrfboard_v3a.pcb
 #elif (CPUSTYLE_T507) && CTLSTYLE_STORCH_V7 && 1

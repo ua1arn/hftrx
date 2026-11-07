@@ -15768,7 +15768,7 @@ static volatile const char * catsendptr;
 static volatile uint_fast8_t catsendcount;
 
 static ticker_t cat_ticker;
-#define CAT_TIMEOUT 100 // 100 mS
+#define CAT_TIMEOUT 200 // 200 mS
 
 //A communication error occurred, such as an overrun or framing error during a serial data transmission.
 //static const char processingcmd [2] = "E;";	// ответ на команду которая ещё выполняется
