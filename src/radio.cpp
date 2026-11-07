@@ -15997,7 +15997,7 @@ processcatmsg(
 	const uint8_t * catp	// массив символов
 	)
 {
-	printhex_titled(0, catp, 5, "cat command");
+	//printhex_titled(0, catp, 5, "cat command");
 	switch (catp [4])
 	{
 	case 0x88:
@@ -16011,15 +16011,70 @@ processcatmsg(
 			cat_answervariable(cat_ask_buffer, 2);
 		}
 		break;
+	case 0x01:
+		{
+			// Set Frequency
+			const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
+			vindex_t vi = getvfoindex(bi);
+
+			const uint_fast32_t f =
+					(catp [0] / 16) * 100000000 +
+					(catp [0] % 16) * 10000000 +
+					(catp [1] / 16) * 1000000 +
+					(catp [1] % 16) * 100000 +
+					(catp [2] / 16) * 10000 +
+					(catp [2] % 16) * 1000 +
+					(catp [3] / 16) * 100 +
+					(catp [3] % 16) * 10 +
+					0;
+
+			PRINTF("CAT Set freq=%u\n", (unsigned) f);
+			catchangefreq(vfy32up(f, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), bi);
+			updateboard();	/* полная перенастройка (как после смены режима) */
+
+		}
+		break;
+
 	case 0x03:
 		if (cat_answer_ready())
 		{
-			// запрос режима работы
+			// запрос режима работы и частоты
 			const uint_fast8_t bi = getbankindex_ab(0);	/* vfo A bank index */
 			const uint_fast8_t ymode = submodes [getsubmode(bi)].ycatmodecode;
 			const uint_fast32_t f = gfreqs [bi];
-			cat_ask_buffer [0] = (f / 10000000) * 16 + (f % 10000000) / 1000000;
+			cat_ask_buffer [0] = ((f % 1000000000) / 100000000) * 16 + (f % 100000000) / 10000000;
+			cat_ask_buffer [1] = ((f % 10000000) / 1000000) * 16 + (f % 1000000) / 100000;
+			cat_ask_buffer [2] = ((f % 100000) / 10000) * 16 + (f % 10000) / 1000;
+			cat_ask_buffer [3] = ((f % 1000) / 100) * 16 + (f % 100) / 10;
 			cat_ask_buffer [4] = ymode;
+			cat_answervariable(cat_ask_buffer, 5);
+		}
+		break;
+
+	case 0xE7:
+		if (cat_answer_ready())
+		{
+			// Read RX status
+			cat_ask_buffer [0] = 0x00;
+			cat_ask_buffer [1] = 0x00;
+			cat_ask_buffer [2] = 0x00;
+			cat_ask_buffer [3] = 0x00;
+			cat_ask_buffer [4] = 0x00;
+
+			cat_answervariable(cat_ask_buffer, 5);
+		}
+		break;
+
+	case 0xF7:
+		if (cat_answer_ready())
+		{
+			// Read TX status
+			cat_ask_buffer [0] = 0x00;
+			cat_ask_buffer [1] = 0x10;
+			cat_ask_buffer [2] = 0x00;
+			cat_ask_buffer [3] = 0x00;
+			cat_ask_buffer [4] = 0x00;
+
 			cat_answervariable(cat_ask_buffer, 5);
 		}
 		break;
@@ -16036,6 +16091,7 @@ processcatmsg(
 			const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
 			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
 			updateboard();	/* полная перенастройка (как после смены режима) */
+			PRINTF("CAT Set mode=%u\n", (unsigned) defsubmode);
 		}
 		break;
 	}
