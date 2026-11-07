@@ -42,8 +42,13 @@ static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 //#define VOICE16TXMONI_CAPACITY 	(16 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 #define HDMI48TX_CAPACITY 		(32 * BUFOVERSIZE)
 
-#define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
-#define VOICE16TX_RESAMPLING 1	// передача в кодек - требуется ли resampling
+#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
+	#define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
+	#define VOICE16TX_RESAMPLING 1	// передача в кодек - требуется ли resampling
+#else /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
+	#define VOICE16RX_RESAMPLING 0	// прием от кодека - требуется ли resampling
+	#define VOICE16TX_RESAMPLING 0	// передача в кодек - требуется ли resampling
+#endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
 #define HDMI48TX_RESAMPLING 1
 
 #define UACINRTS192_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
