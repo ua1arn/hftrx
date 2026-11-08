@@ -407,7 +407,7 @@
 	//#define WITHVITA49RX	1	/* VITA 49.0-2015 streaming source support */
 
 	#define WITHCAT		1	/* используется CAT */
-//	#define WITHCAT_YAESU		1	/* используется CAT с системой команл Yaesu FT-817 */
+	#define WITHCAT_YAESU		1	/* используется CAT с системой команл Yaesu FT-817 */
 //	#define WITHCAT_ICOM		1
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
