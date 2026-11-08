@@ -150,7 +150,7 @@
 	////#define WITHSDHC2HW	1		/* EMMC */
 
 	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания
-	//#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
+	#define WITHBLPWMCTL	1		// Имеется управление яркостью подсветки дисплея через PWM
 
 #if ! LCDMODE_DUMMY
 	#define WITHMDMAHW		1	/* Использование G2D для формирования изображений */
@@ -1254,7 +1254,7 @@
 	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
-#if WITHBLPWMCTL
+#if WITHBLPWMCTL && 0
 	/* Управление яркостью подсветки через выход PWN */
 	#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
 	#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
