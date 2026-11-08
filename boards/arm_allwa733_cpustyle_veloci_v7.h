@@ -1254,7 +1254,7 @@
 	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
-#if WITHBLPWMCTL && 0
+#if WITHBLPWMCTL
 	/* Управление яркостью подсветки через выход PWN */
 	#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
 	#define WITHLCDBACKLIGHT	1	// Имеется управление яркостью дисплея
@@ -1264,6 +1264,7 @@
 	//#define WITHKBDBACKLIGHT	1	// Имеется управление подсветкой клавиатуры
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	/* Яркость Управлятся через PWM */
+	#define PWM PWM0
 	#define HARDWARE_BL_PWMCH 4	/* PWM0-4 */
 	#define HARDWARE_BL_FREQ 	10000	/* Частота PWM управления подсветкой */
 	#define	HARDWARE_BL_INITIALIZE() do { \
