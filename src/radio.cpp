@@ -5679,8 +5679,6 @@ enum
 		}
 		#endif /* WITHCAT_MUX */
 
-		enum { nopttsig = BOARD_CATSIG_NONE };
-		enum { nokeysig = BOARD_CATSIG_NONE };
 		static uint_fast8_t gcatmux;
 		static const struct paramdefdef xgcatmux =
 		{
@@ -5695,6 +5693,19 @@ enum
 			getvaltextcatmux, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 
+		static uint_fast8_t findcatmux(uint_fast8_t old, uint_fast8_t code)
+		{
+			uint_fast8_t i;
+			for (i = 0; i < ARRAY_SIZE(catmuxmodes); ++ i)
+			{
+				if (catmuxmodes [i].code == code)
+					return i;
+			}
+			return old;
+		}
+
+		enum { nopttsig = BOARD_CATSIG_NONE };
+		enum { nokeysig = BOARD_CATSIG_NONE };
 	#elif WITHCAT_CDC
 		#if LCDMODE_DUMMY || ! WITHKEYBOARD
 			enum { nopttsig = BOARD_CATSIG_NONE /*BOARD_CATSIG_SER1_DTR */};		// устройство без органов управления и индикации
@@ -23718,6 +23729,11 @@ application_initialize(void)
 #else
 	gcatbaudrate = findcatbaudrate(param_val(& xgcatbaudrate), 9600);
 #endif
+
+#if WITHCAT_MUX && defined WITHCAT_MUX_DEFAULT
+	gcatmux = findcatmux(gcatmux, BOARD_CATMUX_DIN8);
+#endif
+
 #endif /* WITHCAT */
 #if ! HARDWARE_IGNORENONVRAM
 #if WITHTX

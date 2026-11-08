@@ -335,6 +335,7 @@
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
+	#define WITHCAT_MUX_DEFAULT BOARD_CATMUX_DIN8
 	#if 0
 		#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
 		//#define WITHUSEUSBBTAUDIO 1
