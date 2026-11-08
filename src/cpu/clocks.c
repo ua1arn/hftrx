@@ -11444,6 +11444,7 @@ sysinit_pll_initialize(int forced)
 #elif (CPUSTYLE_A733)
 	// Note: The working clock of PWM is from APB1 or OSC24M.
 	#define PWMTICKSFREQ (24000000)	/* Allwinner A733 */
+	#define PWM PWM0
 
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	#define PWMTICKSFREQ (allwnr_t113_get_apb0_freq() / 2)	/* Allwinner t113-s3 */
@@ -12184,11 +12185,28 @@ found:
 			0;
 
 	#elif (CPUSTYLE_A733)
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround2(allwnr_a733_get_apb1_freq(), PWMTICKSFREQ), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
+
 		CCU->PWM0_BGR_REG |= (UINT32_C(1) << 0);	// PWM0_GATING
 		CCU->PWM0_BGR_REG |= (UINT32_C(1) << 16);	// PWM0_RST
 
-		CCU->PWM1_BGR_REG |= (UINT32_C(1) << 0);	// PWM1_GATING
-		CCU->PWM1_BGR_REG |= (UINT32_C(1) << 16);	// PWM1_RST
+//		CCU->PWM1_BGR_REG |= (UINT32_C(1) << 0);	// PWM1_GATING
+//		CCU->PWM1_BGR_REG |= (UINT32_C(1) << 16);	// PWM1_RST
+
+		//	00: SYS_CLK24M
+		//	01: APB0
+		const unsigned sel = 0x01;	// APB1
+		PWM0->PCCR [pwmch / 2] = 0;
+		PWM0->PCCR [pwmch / 2] |= sel * (UINT32_C(1) << 7);
+		PWM0->PCCR [pwmch / 2] |= prei * (UINT32_C(1) << 0);	// PWM01_CLK_DIV_M
+		//PWM0->PCCR [pwmch / 2] |= (UINT32_C(1) << (5 + (pwmch % 2)));	/* PWM01_CLK_SRC_BYPASS_TO_PWM0 - не использовать делитель */
+		PWM0->PCCR [pwmch / 2] |= (UINT32_C(1) << 4);	/* PWM01_CLK_GATING */
+		PWM0->CH [pwmch].PCR = (PWM0->CH [pwmch].PCR & ~ (UINT32_C(0xFF) << 0) & ~ (UINT32_C(1) << 9)) |
+			0 * (UINT32_C(1) << 9) | /* PWM_MODE 0: Cycle mode */
+			value * (UINT32_C(1) << 0) | /* PWM_PRESCAL_K */
+			0;
+		PWM0->PCGR |= (UINT32_C(1) << pwmch);
 
 	#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 		unsigned value;
@@ -12251,13 +12269,12 @@ found:
 	{
 		const unsigned cycle = calcdivround2(PWMTICKSFREQ, freq);
 		const unsigned duty = cycle - cycle * d / BOARD_PWM_DUTY_MAX;
-		PRINTF("hardware_bl_pwm_set_duty: pwmch=%u, cycle=%u, duty=%u\n", pwmch, (unsigned) cycle, (unsigned) duty);
+		//PRINTF("hardware_bl_pwm_set_duty: pwmch=%u, cycle=%u, duty=%u\n", pwmch, (unsigned) cycle, (unsigned) duty);
 		PWM->PER |= (UINT32_C(1) << (0 + pwmch));
 		PWM->CH [pwmch].PPR =
 			(cycle - 1) * (UINT32_C(1) << 16) |	/* PWM_ENTIRE_CYCLE */
 			(duty) * (UINT32_C(1) << 0) |	/* PWM_ACT_CYCLE */
 			0;
-		// 0: PWM period register is ready to write
 		// 0: PWM period register is ready to write
 		if (local_wait32mask(& PWM->CH [pwmch].PCR, (UINT32_C(1) << 11), 0 * (UINT32_C(1) << 11), 100))
 			TP();

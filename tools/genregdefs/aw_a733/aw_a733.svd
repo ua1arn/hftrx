@@ -15017,51 +15017,20 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>PCCR01</name>
-    <displayName>PCCR01</displayName>
-    <description>PWM01 Clock Configuration Register</description>
-    <addressOffset>0x020</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PCCR23</name>
-    <displayName>PCCR23</displayName>
-    <description>PWM23 Clock Configuration Register</description>
-    <addressOffset>0x024</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PCCR45</name>
-    <displayName>PCCR45</displayName>
-    <description>PWM45 Clock Configuration Register</description>
-    <addressOffset>0x028</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PCCR67</name>
-    <displayName>PCCR67</displayName>
-    <description>PWM67 Clock Configuration Register</description>
-    <addressOffset>0x02C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PCCR89</name>
-    <displayName>PCCR89</displayName>
-    <description>PWM89 Clock Configuration Register</description>
-    <addressOffset>0x030</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>5</dim>
+    <addressOffset>0x00000020</addressOffset>
+    <register>
+     <name>PCCR</name>
+     <displayName>PCCR</displayName>
+     <description>PWM01..PWM89 Clock Configuration Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x014</dimIncrement>
+   </cluster>
    <register>
     <name>PCGR</name>
     <displayName>PCGR</displayName>
@@ -15071,51 +15040,20 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
-   <register>
-    <name>PDZCR01</name>
-    <displayName>PDZCR01</displayName>
-    <description>PWM01 Dead Zone Control Register</description>
-    <addressOffset>0x060</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PDZCR23</name>
-    <displayName>PDZCR23</displayName>
-    <description>PWM23 Dead Zone Control Register</description>
-    <addressOffset>0x064</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PDZCR45</name>
-    <displayName>PDZCR45</displayName>
-    <description>PWM45 Dead Zone Control Register</description>
-    <addressOffset>0x068</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PDZCR67</name>
-    <displayName>PDZCR67</displayName>
-    <description>PWM67 Dead Zone Control Register</description>
-    <addressOffset>0x06C</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
-    <name>PDZCR89</name>
-    <displayName>PDZCR89</displayName>
-    <description>PWM89 Dead Zone Control Register</description>
-    <addressOffset>0x070</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
+   <cluster>
+    <dim>5</dim>
+    <addressOffset>0x00000060</addressOffset>
+    <register>
+     <name>PDZCR</name>
+     <displayName>PDZCR</displayName>
+     <description>PWM01..PWM89 Dead Zone Control Register</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x014</dimIncrement>
+   </cluster>
    <register>
     <name>PER</name>
     <displayName>PER</displayName>

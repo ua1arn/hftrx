@@ -6,19 +6,22 @@
 #regdef; CISR		; 0x0014 ; Capture IRQ Status Register
 #regdef; CCCIER		; 0x0018 ; Capture Cycle Counter IRQ Enable Register
 #regdef; CCCISR		; 0x001C ; Capture Cycle Counter IRQ Status Register
-#regdef; PCCR01		; 0x0020 ; PWM01 Clock Configuration Register
-#regdef; PCCR23		; 0x0024 ; PWM23 Clock Configuration Register
-#regdef; PCCR45		; 0x0028 ; PWM45 Clock Configuration Register
-#regdef; PCCR67		; 0x002c ; PWM67 Clock Configuration Register
-#regdef; PCCR89		; 0x0030 ; PWM89 Clock Configuration Register
+
+#regdef; PCCR		; 0x0020 5; PWM01..PWM89 Clock Configuration Register
+##regdef; PCCR01		; 0x0020 ; PWM01 Clock Configuration Register
+##regdef; PCCR23		; 0x0024 ; PWM23 Clock Configuration Register
+##regdef; PCCR45		; 0x0028 ; PWM45 Clock Configuration Register
+##regdef; PCCR67		; 0x002c ; PWM67 Clock Configuration Register
+##regdef; PCCR89		; 0x0030 ; PWM89 Clock Configuration Register
 
 #regdef; PCGR		; 0x0040 ; PWM Clock Gating Register
 
-#regdef; PDZCR01	; 0x0060 ; PWM01 Dead Zone Control Register
-#regdef; PDZCR23	; 0x0064 ; PWM23 Dead Zone Control Register
-#regdef; PDZCR45	; 0x0068 ; PWM45 Dead Zone Control Register
-#regdef; PDZCR67	; 0x006c ; PWM67 Dead Zone Control Register
-#regdef; PDZCR89	; 0x0070 ; PWM89 Dead Zone Control Register
+#regdef; PDZCR	; 0x0060 5; PWM01..PWM89 Dead Zone Control Register
+##regdef; PDZCR01	; 0x0060 ; PWM01 Dead Zone Control Register
+##regdef; PDZCR23	; 0x0064 ; PWM23 Dead Zone Control Register
+##regdef; PDZCR45	; 0x0068 ; PWM45 Dead Zone Control Register
+##regdef; PDZCR67	; 0x006c ; PWM67 Dead Zone Control Register
+##regdef; PDZCR89	; 0x0070 ; PWM89 Dead Zone Control Register
 
 #regdef; PER		; 0x0080 ; PWM Enable Register
 #regdef; PGR0		; 0x0090 ; PWM Group0 Register

@@ -2493,19 +2493,11 @@ typedef struct PWM_Type
     __IOM uint32_t CISR;                              /*!< Offset 0x014 Capture IRQ Status Register */
     __IOM uint32_t CCCIER;                            /*!< Offset 0x018 Capture Cycle Counter IRQ Enable Register */
     __IOM uint32_t CCCISR;                            /*!< Offset 0x01C Capture Cycle Counter IRQ Status Register */
-    __IOM uint32_t PCCR01;                            /*!< Offset 0x020 PWM01 Clock Configuration Register */
-    __IOM uint32_t PCCR23;                            /*!< Offset 0x024 PWM23 Clock Configuration Register */
-    __IOM uint32_t PCCR45;                            /*!< Offset 0x028 PWM45 Clock Configuration Register */
-    __IOM uint32_t PCCR67;                            /*!< Offset 0x02C PWM67 Clock Configuration Register */
-    __IOM uint32_t PCCR89;                            /*!< Offset 0x030 PWM89 Clock Configuration Register */
+    __IOM uint32_t PCCR [0x005];                      /*!< Offset 0x020 PWM01..PWM89 Clock Configuration Register */
          RESERVED(0x034[0x0040 - 0x0034], uint8_t)
     __IOM uint32_t PCGR;                              /*!< Offset 0x040 PWM Clock Gating Register */
          RESERVED(0x044[0x0060 - 0x0044], uint8_t)
-    __IOM uint32_t PDZCR01;                           /*!< Offset 0x060 PWM01 Dead Zone Control Register */
-    __IOM uint32_t PDZCR23;                           /*!< Offset 0x064 PWM23 Dead Zone Control Register */
-    __IOM uint32_t PDZCR45;                           /*!< Offset 0x068 PWM45 Dead Zone Control Register */
-    __IOM uint32_t PDZCR67;                           /*!< Offset 0x06C PWM67 Dead Zone Control Register */
-    __IOM uint32_t PDZCR89;                           /*!< Offset 0x070 PWM89 Dead Zone Control Register */
+    __IOM uint32_t PDZCR [0x005];                     /*!< Offset 0x060 PWM01..PWM89 Dead Zone Control Register */
          RESERVED(0x074[0x0080 - 0x0074], uint8_t)
     __IOM uint32_t PER;                               /*!< Offset 0x080 PWM Enable Register */
          RESERVED(0x084[0x0090 - 0x0084], uint8_t)
