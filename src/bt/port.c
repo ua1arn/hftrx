@@ -706,7 +706,7 @@ void bt_initialize(void)
 		static dpcobj_t dpcobj;
 
 		dpcobj_initialize(& dpcobj, dpc_0p01_s_timer_fn, NULL, "dpc_0p01_s_timer_fn");
-		ticker_initialize_user(& ticker, 10, & dpcobj);
+		ticker_initialize_user(& ticker, 10, & dpcobj, "dpc_1_s_timer_fn");
 		ticker_add(& ticker);
 	}
 #else
@@ -715,10 +715,15 @@ void bt_initialize(void)
 		static dpcobj_t dpcobj;
 
 		dpcobj_initialize(& dpcobj, dpc_0p01_s_timer_fn, NULL, "dpc_1_s_timer_fn");
-		ticker_initialize_user(& ticker, 100, & dpcobj);
+		ticker_initialize_user(& ticker, 100, & dpcobj, "dpc_1_s_timer_fn");
 		ticker_add(& ticker);
 	}
 #endif
+}
+
+uint32_t hal_time_ms(void)
+{
+	return sys_now();
 }
 
 #else  /* WITHUSEUSBBT */
