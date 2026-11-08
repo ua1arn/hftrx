@@ -2921,6 +2921,31 @@ static void hardware_de_global_initialize(void)
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 
 
+	//PRINTF("allwnr_a733_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_de_freq() / 1000 / 1000);
+	//PRINTF("allwnr_a733_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_mbus_freq() / 1000 / 1000);
+
+    //CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// DESYS_MBUS_GATE_SW_CFG
+	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1: De-assert
+	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
+	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
+    local_delay_us(10);
+
+
+    PRINTF("CCU->DE_SYS_BGR_REG=%08X\n", (unsigned) CCU->DE_SYS_BGR_REG);
+    PRINTF("CCU->DE0_BGR_REG=%08X\n", (unsigned) CCU->DE0_BGR_REG);
+
+	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
+	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
+
+	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 1);	// DCXO_HDMI_GATING
+	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 1));
+
+	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 5);	// DCXO_SERDES1_GATING
+	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 5));
+
+	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 4);	// DCXO_SERDES0_GATING
+	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 4));
+
 	if (0)
 	{
 		static const uint32_t a [] =
@@ -2969,37 +2994,12 @@ static void hardware_de_global_initialize(void)
 
     local_delay_us(10);
 
-	//PRINTF("allwnr_a733_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_de_freq() / 1000 / 1000);
-	//PRINTF("allwnr_a733_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_mbus_freq() / 1000 / 1000);
-
-    //CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// DESYS_MBUS_GATE_SW_CFG
-	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1: De-assert
-	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
-    local_delay_us(10);
-
-
-    PRINTF("CCU->DE_SYS_BGR_REG=%08X\n", (unsigned) CCU->DE_SYS_BGR_REG);
-    PRINTF("CCU->DE0_BGR_REG=%08X\n", (unsigned) CCU->DE0_BGR_REG);
-
-	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
-	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
-
-	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 1);	// DCXO_HDMI_GATING
-	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 1));
-
-	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 5);	// DCXO_SERDES1_GATING
-	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 5));
-
-	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 4);	// DCXO_SERDES0_GATING
-	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 4));
-
 	const uint_fast32_t lvdsclock = 232848000;
 	const uint_fast32_t lcddotclock = 55000000;
 	uint_fast32_t hdmidotclock = 360 * 1000 * 1000; //  80291880;
 
 
-#ifdef TCONLCD_PTR
+	#ifdef TCONLCD_PTR
 
 
 		// lvds
@@ -3037,6 +3037,30 @@ static void hardware_de_global_initialize(void)
 	#endif
 	#ifdef TCONLCD_PTR
 		//TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
+	#endif
+
+	#ifdef TCONLCD_PTR
+		switch (TCONLCD_LVDSIX)
+		{
+		case 0:
+			CCU->DSI0_CLK_REG |= (UINT32_C(1) << 31);
+			CCU->DSI0_BGR_REG |= (UINT32_C(1) << 0);		// DSI0_GATING Open the clock gate
+			CCU->DSI0_BGR_REG |= (UINT32_C(1) << 16);	// DSI0_RST. De-assert reset
+			//    TCON_LCD0->r_0x705c = 0x04B30410;
+			COMBO_PHY_TX_DSI0->r_0x7110 = 0x00000007;
+			COMBO_PHY_TX_DSI0->r_0x7114 = 0x00000053;
+			COMBO_PHY_TX_DSI0->r_0x705c = 0x04B30410;
+			break;
+		case 1:
+			CCU->DSI1_CLK_REG |= (UINT32_C(1) << 31);
+			CCU->DSI1_BGR_REG |= (UINT32_C(1) << 0);		// DSI1_GATING Open the clock gate
+			CCU->DSI1_BGR_REG |= (UINT32_C(1) << 16);	// DSI1_RST. De-assert reset
+
+			COMBO_PHY_TX_DSI1->r_0x7110 = 0x00000007;
+			COMBO_PHY_TX_DSI1->r_0x7114 = 0x00000053;
+			COMBO_PHY_TX_DSI1->r_0x705c = 0x04B30410;
+			break;
+		}
 	#endif
 
 	//CCU->VIDEO_IN_BGR_REG = 0x00010000;
@@ -3236,29 +3260,6 @@ static void hardware_de_global_initialize(void)
 
 //    PRINTF("CCU->DSI0_BGR_REG: %p %08X\n", & CCU->DSI0_BGR_REG, (unsigned) CCU->DSI0_BGR_REG);
 //    PRINTF("CCU->DSI1_BGR_REG: %p %08X\n", & CCU->DSI1_BGR_REG, (unsigned) CCU->DSI1_BGR_REG);
-
-	switch (TCONLCD_LVDSIX)
-	{
-	case 0:
-		CCU->DSI0_CLK_REG |= (UINT32_C(1) << 31);
-		CCU->DSI0_BGR_REG |= (UINT32_C(1) << 0);		// DSI0_GATING Open the clock gate
-		CCU->DSI0_BGR_REG |= (UINT32_C(1) << 16);	// DSI0_RST. De-assert reset
-		//    TCON_LCD0->r_0x705c = 0x04B30410;
-		COMBO_PHY_TX_DSI0->r_0x7110 = 0x00000007;
-		COMBO_PHY_TX_DSI0->r_0x7114 = 0x00000053;
-		COMBO_PHY_TX_DSI0->r_0x705c = 0x04B30410;
-		break;
-	case 1:
-		CCU->DSI1_CLK_REG |= (UINT32_C(1) << 31);
-		CCU->DSI1_BGR_REG |= (UINT32_C(1) << 0);		// DSI1_GATING Open the clock gate
-		CCU->DSI1_BGR_REG |= (UINT32_C(1) << 16);	// DSI1_RST. De-assert reset
-
-		COMBO_PHY_TX_DSI1->r_0x7110 = 0x00000007;
-		COMBO_PHY_TX_DSI1->r_0x7114 = 0x00000053;
-		COMBO_PHY_TX_DSI1->r_0x705c = 0x04B30410;
-		break;
-	}
-
 
 //    PRINTF("COMBO_PHY_TX_DSI0: %p %08X\n", & COMBO_PHY_TX_DSI0->r_0x705c, (unsigned) COMBO_PHY_TX_DSI0->r_0x705c);
 //    PRINTF("COMBO_PHY_TX_DSI1: %p %08X\n", & COMBO_PHY_TX_DSI1->r_0x705c, (unsigned) COMBO_PHY_TX_DSI1->r_0x705c);
