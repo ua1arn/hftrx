@@ -2354,7 +2354,7 @@ static int tasks_print0(char *__restrict buff, size_t size)
 		{
 			tnext = t->Flink;
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-			n += thread_print(buff + n, size - n, tp, "     ");
+			n += thread_print(buff + n, size - n, tp, " wait");
 		}
 	}
 
@@ -2371,7 +2371,7 @@ static int tasks_print0(char *__restrict buff, size_t size)
 		{
 			tnext = t->Flink;
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
-			n += thread_print(buff + n, size - n, tp, "     ");
+			n += thread_print(buff + n, size - n, tp, "ready");
 		}
 	}
 	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
