@@ -12174,8 +12174,9 @@ found:
 		//PRINTF("prei=%u, value=%u\n", prei, value);
 		// 9.10.4.1 Configuring Clock
 		//	Step 1 PWM gating: When using PWM, write 1 to PCGR[PWMx_CLK_GATING].
+		const unsigned sel = 0x01;	// APB1
 		PWM->PCCR [pwmch / 2] = 0;
-		PWM->PCCR [pwmch / 2] |= 0x01 * (UINT32_C(1) << 7);	// APB1
+		PWM->PCCR [pwmch / 2] |= sel * (UINT32_C(1) << 7);	// APB1
 		PWM->PCCR [pwmch / 2] |= prei * (UINT32_C(1) << 0);	// PWM01_CLK_DIV_M
 		//PWM->PCCR [pwmch / 2] |= (UINT32_C(1) << (5 + (pwmch % 2)));	/* PWM01_CLK_SRC_BYPASS_TO_PWM0 - не использовать делитель */
 		PWM->PCCR [pwmch / 2] |= (UINT32_C(1) << 4);	/* PWM01_CLK_GATING */
@@ -12186,7 +12187,7 @@ found:
 
 	#elif (CPUSTYLE_A733)
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(allwnr_a733_get_apb1_freq(), PWMTICKSFREQ), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
+		const uint_fast8_t prei = calcdivider(calcdivround2(allwnr_a733_get_apb1_freq(), PWMTICKSFREQ / 2), ALLWNR_PWM_WIDTH, ALLWNR_PWM_TAPS, & value, 1);
 
 		CCU->PWM0_BGR_REG |= (UINT32_C(1) << 0);	// PWM0_GATING
 		CCU->PWM0_BGR_REG |= (UINT32_C(1) << 16);	// PWM0_RST
@@ -12201,12 +12202,23 @@ found:
 		PWM0->PCCR [pwmch / 2] |= sel * (UINT32_C(1) << 7);
 		PWM0->PCCR [pwmch / 2] |= prei * (UINT32_C(1) << 0);	// PWM01_CLK_DIV_M
 		//PWM0->PCCR [pwmch / 2] |= (UINT32_C(1) << (5 + (pwmch % 2)));	/* PWM01_CLK_SRC_BYPASS_TO_PWM0 - не использовать делитель */
-		PWM0->PCCR [pwmch / 2] |= (UINT32_C(1) << 4);	/* PWM01_CLK_GATING */
-		PWM0->CH [pwmch].PCR = (PWM0->CH [pwmch].PCR & ~ (UINT32_C(0xFF) << 0) & ~ (UINT32_C(1) << 9)) |
+		PWM0->CH [pwmch].PCR =
 			0 * (UINT32_C(1) << 9) | /* PWM_MODE 0: Cycle mode */
 			value * (UINT32_C(1) << 0) | /* PWM_PRESCAL_K */
 			0;
-		PWM0->PCGR |= (UINT32_C(1) << pwmch);
+		//PWM0->CH [pwmch].PCR |= (UINT32_C(1) << 10);	// PWM_PUL_START
+		PWM0->PCGR |= (UINT32_C(1) << pwmch);	// Clock Gating
+		PWM0->CER &= ~ (UINT32_C(1) << pwmch);
+
+//		unsigned m = 1U << 22;
+//		arm_hardware_piod_outputs(m, m);
+//		for (;;)
+//		{
+//			gpioX_setstate(GPIOD, m, 1*m);
+//			local_delay_us(50);
+//			gpioX_setstate(GPIOD, m, 0*m);
+//			local_delay_us(50);
+//		}
 
 	#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 		unsigned value;
@@ -12269,7 +12281,7 @@ found:
 	{
 		const unsigned cycle = calcdivround2(PWMTICKSFREQ, freq);
 		const unsigned duty = cycle - cycle * d / BOARD_PWM_DUTY_MAX;
-		//PRINTF("hardware_bl_pwm_set_duty: pwmch=%u, cycle=%u, duty=%u\n", pwmch, (unsigned) cycle, (unsigned) duty);
+		//PRINTF("hardware_bl_pwm_set_duty: pwmch=%u, freq=%u, cycle=%u, duty=%u\n", pwmch, (unsigned) freq, (unsigned) cycle, (unsigned) duty);
 		PWM->PER |= (UINT32_C(1) << (0 + pwmch));
 		PWM->CH [pwmch].PPR =
 			(cycle - 1) * (UINT32_C(1) << 16) |	/* PWM_ENTIRE_CYCLE */

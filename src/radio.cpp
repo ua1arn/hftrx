@@ -21439,6 +21439,13 @@ __WEAK void modem_spool(void * ctx) {
 }
 __WEAK void modem_send(uint_fast8_t c) {}
 
+#ifdef DE_TOP
+static void testadd(int d)
+{
+	DE_TOP->DE2TCON_MUX += d;
+	PRINTF("DE_TOP->DE2TCON_MUX=0x%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+}
+#endif
 static void keyspoolprocess(void * ctx)
 {
 	(void) ctx;	// unused parameter
@@ -21474,7 +21481,14 @@ static void keyspoolprocess(void * ctx)
 #endif /* TCONTV_PTR */
 	    	PRINTF("\n");
 			break;
-
+#ifdef DE_TOP
+		case '+':
+			testadd(+ 1);
+			break;
+		case '-':
+			testadd(- 1);
+			break;
+#endif
 #if 1//WITHRTOS
 		case 't':
 			tasks_print();

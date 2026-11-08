@@ -69,16 +69,9 @@
 
 	#define CTLREGMODE_VELOCI_V0	1	/* T507-H portable trx */
 	//#define CTLREGMODE_NOCTLREG 1
-
-	
-	
-
 	// +++ Особые варианты расположения кнопок на клавиатуре
-	//#define KEYB_VELOCI24_V0	1	/* 24 кнопки на 6 линий */
-	#define KEYB_VELOCI24_V0_UA1CEI	1	/* 24 кнопки на 6 линий */
-
-	
-	
+	#define KEYB_VELOCI24_V0	1	/* 24 кнопки на 6 линий */
+	//#define KEYB_VELOCI24_V0_UA1CEI	1	/* 24 кнопки на 6 линий */
 
 	/* коды входов коммутатора источников сигнала для УНЧ приёмника */
 	#define BOARD_DETECTOR_SSB 	0		// Заглушка
@@ -93,15 +86,12 @@
 	#define WITHPREAMPATT2_6DB 1	/* LTC2208 Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 	
-
-	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
+	//#define WITHDIMMTIMEDEF	15	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
 
 	// --- Особые варианты расположения кнопок на клавиатуре
-	
-	
 
-	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
+// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #if WITHISBOOTLOADER
 
 	#define LCDMODE_DUMMY	1
@@ -239,7 +229,6 @@
 	//#define COLORSTYLE_BLUE2 1
 	//#define COLORSTYLE_WHITE	1
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
-	
 
 	#define ENCRES_DEFAULT ENCRES_600
 	#define ENCRES_SUB_DEFAULT ENCRES_600
