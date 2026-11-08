@@ -11441,6 +11441,11 @@ sysinit_pll_initialize(int forced)
 	// Note: The working clock of PWM is from APB1 or OSC24M.
 	#define PWMTICKSFREQ (allwnr_t507_get_apb1_freq())	/* Allwinner t507 / H616 */
 
+#elif (CPUSTYLE_A733)
+	// Note: The working clock of PWM is from APB1 or OSC24M.
+	#define PWMTICKSFREQ (24000000)	/* Allwinner A733 */
+	#define PWM PWM0
+
 #elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 	#define PWMTICKSFREQ (allwnr_t113_get_apb0_freq() / 2)	/* Allwinner t113-s3 */
 
@@ -12154,7 +12159,7 @@ found:
 		MTU2.TGRC_0 = v - 1;	// Use C intstead of A
 	}
 
-#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507)
+#elif (CPUSTYLE_T113 || CPUSTYLE_F133 || CPUSTYLE_T507 || CPUSTYLE_A733)
 
 	void hardware_dcdcfreq_pwm_initialize(unsigned pwmch)
 	{
@@ -12178,6 +12183,8 @@ found:
 			0 * (UINT32_C(1) << 9) | /* PWM_MODE 0: Cycle mode */
 			value * (UINT32_C(1) << 0) | /* PWM_PRESCAL_K */
 			0;
+
+	#elif (CPUSTYLE_A733)
 
 	#elif (CPUSTYLE_T113 || CPUSTYLE_F133)
 		unsigned value;
@@ -12222,6 +12229,9 @@ found:
 
 	void hardware_dcdcfreq_pwm_setdiv(unsigned pwmch, uint_fast32_t cycle)
 	{
+#if CPUSTYLE_A733
+		return;
+#endif
 		//PRINTF("hardware_dcdcfreq_pwm_setdiv: pwmch=%u, cycle=%u (PER=%08u)\n", pwmch, (unsigned) cycle, (unsigned) PWM->PER);
 		PWM->PER |= (UINT32_C(1) << (0 + pwmch));
 		PWM->CH [pwmch].PPR =
@@ -12236,6 +12246,9 @@ found:
 	// d: 0..BOARD_PWM_DUTY_MAX - требуемое заполнение выходного сигнала
 	void hardware_bl_pwm_set_duty(unsigned pwmch, uint_fast32_t freq, uint_fast32_t d)
 	{
+#if CPUSTYLE_A733
+		return;
+#endif
 		const unsigned cycle = calcdivround2(PWMTICKSFREQ, freq);
 		const unsigned duty = cycle - cycle * d / BOARD_PWM_DUTY_MAX;
 		//PRINTF("hardware_bl_pwm_set_duty: pwmch=%u, cycle=%u, duty=%u\n", pwmch, (unsigned) cycle, (unsigned) duty);

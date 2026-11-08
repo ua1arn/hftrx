@@ -1,0 +1,49 @@
+#type; PWM; Pulse Width Modulation (PWM) module
+
+#regdef; PIER		; 0x0000 ; PWM IRQ Enable Register
+#regdef; PISR		; 0x0004 ; PWM IRQ Status Register
+#regdef; CIER		; 0x0010 ; Capture IRQ Enable Register
+#regdef; CISR		; 0x0014 ; Capture IRQ Status Register
+#regdef; CCCIER		; 0x0018 ; Capture Cycle Counter IRQ Enable Register
+#regdef; CCCISR		; 0x001C ; Capture Cycle Counter IRQ Status Register
+#regdef; PCCR01		; 0x0020 ; PWM01 Clock Configuration Register
+#regdef; PCCR23		; 0x0024 ; PWM23 Clock Configuration Register
+#regdef; PCCR45		; 0x0028 ; PWM45 Clock Configuration Register
+#regdef; PCCR67		; 0x002c ; PWM67 Clock Configuration Register
+#regdef; PCCR89		; 0x0030 ; PWM89 Clock Configuration Register
+
+#regdef; PCGR		; 0x0040 ; PWM Clock Gating Register
+
+#regdef; PDZCR01	; 0x0060 ; PWM01 Dead Zone Control Register
+#regdef; PDZCR23	; 0x0064 ; PWM23 Dead Zone Control Register
+#regdef; PDZCR45	; 0x0068 ; PWM45 Dead Zone Control Register
+#regdef; PDZCR67	; 0x006c ; PWM67 Dead Zone Control Register
+#regdef; PDZCR89	; 0x0070 ; PWM89 Dead Zone Control Register
+
+#regdef; PER		; 0x0080 ; PWM Enable Register
+#regdef; PGR0		; 0x0090 ; PWM Group0 Register
+#regdef; PGR1		; 0x0094 ; PWM Group1 Register
+#regdef; PGR2		; 0x0098 ; PWM Group2 Register
+#regdef; PGR3		; 0x009c ; PWM Group3 Register
+
+#regdef; CCCER		; 0x00a0 ; Capture Cycle Counter Enable Register
+#regdef; CER		; 0x00c0 ; Capture Enable Register
+
+#aggreg; CH; 0x100 10; Channel [0..9]
+
+#regdef; PCR 	; 0x0000 ; (N= 0~9) PWM Control Register
+#regdef; PPR 	; 0x0004 ; (N= 0~9) PWM Period Register
+#regdef; PCNTR 	; 0x0008 ; (N= 0~9) PWM Counter Register
+#regdef; PPCNTR ; 0x000C ; (N= 0~9) PWM Pulse Counter Register
+#regdef; CCR 	; 0x0010 ; (N= 0~9) Capture Control Register
+#regdef; CRLR 	; 0x0014 ; (N= 0~9) Capture Rise Lock Register
+#regdef; CFLR 	; 0x0018 ; (N= 0~9) Capture Fall Lock Register
+#regdef; CCCSR 	; 0x001C ; (N= 0~9) Capture Cycle Counter Status Register
+#regdef; CCCNR 	; 0x0020 ; (N= 0~9) Capture Cycle Counter Number Register
+#regdef; CCCR 	; 0x0024 ; (N= 0~9) Capture Cycle Counter Register
+
+#regdef; pad 0; 0x040; Align
+
+#aggregend;
+
+#typeend;

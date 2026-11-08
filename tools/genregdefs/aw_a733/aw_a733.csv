@@ -1,4 +1,4 @@
-# Allwinner A733 peripherials #base
+# Allwinner A733 peripherials
 
 #type; GPIO; Port Controller
 
@@ -508,6 +508,14 @@
 
 #type; G2D_ROT; Graphic 2D Rotate
 #base; G2D_ROT 0x05468000
+#typeend;
+
+#type; PWM; Pulse Width Modulation (PWM) module
+
+#base; PWM0 0x02527000
+#base; PWM1 0x02528000
+#base; S_PWM 0x07023000
+
 #typeend;
 
 

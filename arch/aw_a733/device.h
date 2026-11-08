@@ -192,6 +192,8 @@ typedef enum IRQn
 #define TWI10_BASE ((uintptr_t) 0x0251A000)           /*!< TWI Two Wire Interface (TWI) Base */
 #define TWI11_BASE ((uintptr_t) 0x0251B000)           /*!< TWI Two Wire Interface (TWI) Base */
 #define TWI12_BASE ((uintptr_t) 0x0251C000)           /*!< TWI Two Wire Interface (TWI) Base */
+#define PWM0_BASE ((uintptr_t) 0x02527000)            /*!< PWM Pulse Width Modulation (PWM) module Base */
+#define PWM1_BASE ((uintptr_t) 0x02528000)            /*!< PWM Pulse Width Modulation (PWM) module Base */
 #define I2S0_BASE ((uintptr_t) 0x02532000)            /*!< I2S_PCM  Base */
 #define I2S1_BASE ((uintptr_t) 0x02533000)            /*!< I2S_PCM  Base */
 #define I2S2_BASE ((uintptr_t) 0x02534000)            /*!< I2S_PCM  Base */
@@ -289,6 +291,7 @@ typedef enum IRQn
 #define COMBPHY0_BASE ((uintptr_t) 0x06C80000)        /*!< COMBPHY  Base */
 #define COMBPHY1_BASE ((uintptr_t) 0x06CA0000)        /*!< COMBPHY  Base */
 #define S_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< PRCM Power Reset Clock Management (PRCM) Base */
+#define S_PWM_BASE ((uintptr_t) 0x07023000)           /*!< PWM Pulse Width Modulation (PWM) module Base */
 #define S_GPIOL_BASE ((uintptr_t) 0x07025000)         /*!< S_GPIO Secure Port Controller Base */
 #define S_GPIOM_BASE ((uintptr_t) 0x07025030)         /*!< S_GPIO Secure Port Controller Base */
 #define R_CPUCFG_BASE ((uintptr_t) 0x07050000)        /*!< R_CPUCFG SUNXI_R_CPUCFG_BASE Base */
@@ -2478,6 +2481,58 @@ typedef struct PRCM_Type
          RESERVED(0x3EC[0x0400 - 0x03EC], uint8_t)
 } PRCM_TypeDef; /* size of structure = 0x400 */
 /*
+ * @brief PWM
+ */
+/*!< PWM Pulse Width Modulation (PWM) module */
+typedef struct PWM_Type
+{
+    __IOM uint32_t PIER;                              /*!< Offset 0x000 PWM IRQ Enable Register */
+    __IOM uint32_t PISR;                              /*!< Offset 0x004 PWM IRQ Status Register */
+         RESERVED(0x008[0x0010 - 0x0008], uint8_t)
+    __IOM uint32_t CIER;                              /*!< Offset 0x010 Capture IRQ Enable Register */
+    __IOM uint32_t CISR;                              /*!< Offset 0x014 Capture IRQ Status Register */
+    __IOM uint32_t CCCIER;                            /*!< Offset 0x018 Capture Cycle Counter IRQ Enable Register */
+    __IOM uint32_t CCCISR;                            /*!< Offset 0x01C Capture Cycle Counter IRQ Status Register */
+    __IOM uint32_t PCCR01;                            /*!< Offset 0x020 PWM01 Clock Configuration Register */
+    __IOM uint32_t PCCR23;                            /*!< Offset 0x024 PWM23 Clock Configuration Register */
+    __IOM uint32_t PCCR45;                            /*!< Offset 0x028 PWM45 Clock Configuration Register */
+    __IOM uint32_t PCCR67;                            /*!< Offset 0x02C PWM67 Clock Configuration Register */
+    __IOM uint32_t PCCR89;                            /*!< Offset 0x030 PWM89 Clock Configuration Register */
+         RESERVED(0x034[0x0040 - 0x0034], uint8_t)
+    __IOM uint32_t PCGR;                              /*!< Offset 0x040 PWM Clock Gating Register */
+         RESERVED(0x044[0x0060 - 0x0044], uint8_t)
+    __IOM uint32_t PDZCR01;                           /*!< Offset 0x060 PWM01 Dead Zone Control Register */
+    __IOM uint32_t PDZCR23;                           /*!< Offset 0x064 PWM23 Dead Zone Control Register */
+    __IOM uint32_t PDZCR45;                           /*!< Offset 0x068 PWM45 Dead Zone Control Register */
+    __IOM uint32_t PDZCR67;                           /*!< Offset 0x06C PWM67 Dead Zone Control Register */
+    __IOM uint32_t PDZCR89;                           /*!< Offset 0x070 PWM89 Dead Zone Control Register */
+         RESERVED(0x074[0x0080 - 0x0074], uint8_t)
+    __IOM uint32_t PER;                               /*!< Offset 0x080 PWM Enable Register */
+         RESERVED(0x084[0x0090 - 0x0084], uint8_t)
+    __IOM uint32_t PGR0;                              /*!< Offset 0x090 PWM Group0 Register */
+    __IOM uint32_t PGR1;                              /*!< Offset 0x094 PWM Group1 Register */
+    __IOM uint32_t PGR2;                              /*!< Offset 0x098 PWM Group2 Register */
+    __IOM uint32_t PGR3;                              /*!< Offset 0x09C PWM Group3 Register */
+    __IOM uint32_t CCCER;                             /*!< Offset 0x0A0 Capture Cycle Counter Enable Register */
+         RESERVED(0x0A4[0x00C0 - 0x00A4], uint8_t)
+    __IOM uint32_t CER;                               /*!< Offset 0x0C0 Capture Enable Register */
+         RESERVED(0x0C4[0x0100 - 0x00C4], uint8_t)
+    struct
+    {
+        __IOM uint32_t PCR;                           /*!< Offset 0x100 (N= 0~9) PWM Control Register */
+        __IOM uint32_t PPR;                           /*!< Offset 0x104 (N= 0~9) PWM Period Register */
+        __IOM uint32_t PCNTR;                         /*!< Offset 0x108 (N= 0~9) PWM Counter Register */
+        __IOM uint32_t PPCNTR;                        /*!< Offset 0x10C (N= 0~9) PWM Pulse Counter Register */
+        __IOM uint32_t CCR;                           /*!< Offset 0x110 (N= 0~9) Capture Control Register */
+        __IOM uint32_t CRLR;                          /*!< Offset 0x114 (N= 0~9) Capture Rise Lock Register */
+        __IOM uint32_t CFLR;                          /*!< Offset 0x118 (N= 0~9) Capture Fall Lock Register */
+        __IOM uint32_t CCCSR;                         /*!< Offset 0x11C (N= 0~9) Capture Cycle Counter Status Register */
+        __IOM uint32_t CCCNR;                         /*!< Offset 0x120 (N= 0~9) Capture Cycle Counter Number Register */
+        __IOM uint32_t CCCR;                          /*!< Offset 0x124 (N= 0~9) Capture Cycle Counter Register */
+             RESERVED(0x028[0x0040 - 0x0028], uint8_t)
+    } CH [0x00A];                                     /*!< Offset 0x100 Channel [0..9] */
+} PWM_TypeDef; /* size of structure = 0x380 */
+/*
  * @brief RTC
  */
 /*!< RTC Real Time Clock (RTC) */
@@ -3159,6 +3214,8 @@ typedef struct USB_OHCI_Capability_Type
 #define TWI10 ((TWI_TypeDef *) TWI10_BASE)            /*!< TWI10 Two Wire Interface (TWI) register set access pointer */
 #define TWI11 ((TWI_TypeDef *) TWI11_BASE)            /*!< TWI11 Two Wire Interface (TWI) register set access pointer */
 #define TWI12 ((TWI_TypeDef *) TWI12_BASE)            /*!< TWI12 Two Wire Interface (TWI) register set access pointer */
+#define PWM0 ((PWM_TypeDef *) PWM0_BASE)              /*!< PWM0 Pulse Width Modulation (PWM) module register set access pointer */
+#define PWM1 ((PWM_TypeDef *) PWM1_BASE)              /*!< PWM1 Pulse Width Modulation (PWM) module register set access pointer */
 #define I2S0 ((I2S_PCM_TypeDef *) I2S0_BASE)          /*!< I2S0  register set access pointer */
 #define I2S1 ((I2S_PCM_TypeDef *) I2S1_BASE)          /*!< I2S1  register set access pointer */
 #define I2S2 ((I2S_PCM_TypeDef *) I2S2_BASE)          /*!< I2S2  register set access pointer */
@@ -3247,6 +3304,7 @@ typedef struct USB_OHCI_Capability_Type
 #define COMBPHY0 ((COMBPHY_TypeDef *) COMBPHY0_BASE)  /*!< COMBPHY0  register set access pointer */
 #define COMBPHY1 ((COMBPHY_TypeDef *) COMBPHY1_BASE)  /*!< COMBPHY1  register set access pointer */
 #define S_PRCM ((PRCM_TypeDef *) S_PRCM_BASE)         /*!< S_PRCM Power Reset Clock Management (PRCM) register set access pointer */
+#define S_PWM ((PWM_TypeDef *) S_PWM_BASE)            /*!< S_PWM Pulse Width Modulation (PWM) module register set access pointer */
 #define S_GPIOL ((S_GPIO_TypeDef *) S_GPIOL_BASE)     /*!< S_GPIOL Secure Port Controller register set access pointer */
 #define S_GPIOM ((S_GPIO_TypeDef *) S_GPIOM_BASE)     /*!< S_GPIOM Secure Port Controller register set access pointer */
 #define R_CPUCFG ((R_CPUCFG_TypeDef *) R_CPUCFG_BASE) /*!< R_CPUCFG SUNXI_R_CPUCFG_BASE register set access pointer */

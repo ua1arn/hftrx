@@ -4,8 +4,7 @@ SET CONVERTER=..\Debug\genregdefs.exe --cortexa5x "core_ca55.h:gic600.h" --corte
 SET OUTFILE=..\..\..\arch\aw_a733\device.h
 SET FILELIST= ^
 	timer.csv gic600.csv gpio.csv twi.csv spi.csv uart.csv smhc.csv ^
-	dmac.csv ^
-	i2s_pcm.csv ^
+	dmac.csv pwm.csv i2s_pcm.csv ^
 	..\aw_generic\usb_ehci_capability.csv ..\aw_generic\usb_ohci_capability.csv ..\aw_generic\usbehci.csv ..\aw_generic\usbotg.csv ^
 	ccu.csv ppu.csv rtc.csv prcm.csv sid.csv sysctrl.csv r_cpucfg.csv cpu_subsys.csv intctrl.csv ^
 	g2d.csv de33.csv tcon_tv.csv tconlcd.csv hdmi.csv ^

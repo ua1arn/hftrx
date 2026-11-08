@@ -14959,6 +14959,334 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>PWM0</name>
+  <description>Pulse Width Modulation (PWM) module</description>
+  <baseAddress>0x02527000</baseAddress>
+  <registers>
+   <register>
+    <name>PIER</name>
+    <displayName>PIER</displayName>
+    <description>PWM IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PISR</name>
+    <displayName>PISR</displayName>
+    <description>PWM IRQ Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CIER</name>
+    <displayName>CIER</displayName>
+    <description>Capture IRQ Enable Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CISR</name>
+    <displayName>CISR</displayName>
+    <description>Capture IRQ Status Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCCIER</name>
+    <displayName>CCCIER</displayName>
+    <description>Capture Cycle Counter IRQ Enable Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCCISR</name>
+    <displayName>CCCISR</displayName>
+    <description>Capture Cycle Counter IRQ Status Register</description>
+    <addressOffset>0x01C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PCCR01</name>
+    <displayName>PCCR01</displayName>
+    <description>PWM01 Clock Configuration Register</description>
+    <addressOffset>0x020</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PCCR23</name>
+    <displayName>PCCR23</displayName>
+    <description>PWM23 Clock Configuration Register</description>
+    <addressOffset>0x024</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PCCR45</name>
+    <displayName>PCCR45</displayName>
+    <description>PWM45 Clock Configuration Register</description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PCCR67</name>
+    <displayName>PCCR67</displayName>
+    <description>PWM67 Clock Configuration Register</description>
+    <addressOffset>0x02C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PCCR89</name>
+    <displayName>PCCR89</displayName>
+    <description>PWM89 Clock Configuration Register</description>
+    <addressOffset>0x030</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PCGR</name>
+    <displayName>PCGR</displayName>
+    <description>PWM Clock Gating Register</description>
+    <addressOffset>0x040</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PDZCR01</name>
+    <displayName>PDZCR01</displayName>
+    <description>PWM01 Dead Zone Control Register</description>
+    <addressOffset>0x060</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PDZCR23</name>
+    <displayName>PDZCR23</displayName>
+    <description>PWM23 Dead Zone Control Register</description>
+    <addressOffset>0x064</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PDZCR45</name>
+    <displayName>PDZCR45</displayName>
+    <description>PWM45 Dead Zone Control Register</description>
+    <addressOffset>0x068</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PDZCR67</name>
+    <displayName>PDZCR67</displayName>
+    <description>PWM67 Dead Zone Control Register</description>
+    <addressOffset>0x06C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PDZCR89</name>
+    <displayName>PDZCR89</displayName>
+    <description>PWM89 Dead Zone Control Register</description>
+    <addressOffset>0x070</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PER</name>
+    <displayName>PER</displayName>
+    <description>PWM Enable Register</description>
+    <addressOffset>0x080</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PGR0</name>
+    <displayName>PGR0</displayName>
+    <description>PWM Group0 Register</description>
+    <addressOffset>0x090</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PGR1</name>
+    <displayName>PGR1</displayName>
+    <description>PWM Group1 Register</description>
+    <addressOffset>0x094</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PGR2</name>
+    <displayName>PGR2</displayName>
+    <description>PWM Group2 Register</description>
+    <addressOffset>0x098</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>PGR3</name>
+    <displayName>PGR3</displayName>
+    <description>PWM Group3 Register</description>
+    <addressOffset>0x09C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CCCER</name>
+    <displayName>CCCER</displayName>
+    <description>Capture Cycle Counter Enable Register</description>
+    <addressOffset>0x0A0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CER</name>
+    <displayName>CER</displayName>
+    <description>Capture Enable Register</description>
+    <addressOffset>0x0C0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>10</dim>
+    <addressOffset>0x00000100</addressOffset>
+    <registers>
+     <register>
+      <name>PCR</name>
+      <displayName>PCR</displayName>
+      <description>(N= 0~9) PWM Control Register</description>
+      <addressOffset>0x000</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>PPR</name>
+      <displayName>PPR</displayName>
+      <description>(N= 0~9) PWM Period Register</description>
+      <addressOffset>0x004</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>PCNTR</name>
+      <displayName>PCNTR</displayName>
+      <description>(N= 0~9) PWM Counter Register</description>
+      <addressOffset>0x008</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>PPCNTR</name>
+      <displayName>PPCNTR</displayName>
+      <description>(N= 0~9) PWM Pulse Counter Register</description>
+      <addressOffset>0x00C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CCR</name>
+      <displayName>CCR</displayName>
+      <description>(N= 0~9) Capture Control Register</description>
+      <addressOffset>0x010</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CRLR</name>
+      <displayName>CRLR</displayName>
+      <description>(N= 0~9) Capture Rise Lock Register</description>
+      <addressOffset>0x014</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CFLR</name>
+      <displayName>CFLR</displayName>
+      <description>(N= 0~9) Capture Fall Lock Register</description>
+      <addressOffset>0x018</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CCCSR</name>
+      <displayName>CCCSR</displayName>
+      <description>(N= 0~9) Capture Cycle Counter Status Register</description>
+      <addressOffset>0x01C</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CCCNR</name>
+      <displayName>CCCNR</displayName>
+      <description>(N= 0~9) Capture Cycle Counter Number Register</description>
+      <addressOffset>0x020</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+     <register>
+      <name>CCCR</name>
+      <displayName>CCCR</displayName>
+      <description>(N= 0~9) Capture Cycle Counter Register</description>
+      <addressOffset>0x024</addressOffset>
+      <size>0x20</size>
+      <access>read-write</access>
+      <resetValue>0x00000000</resetValue>
+     </register>
+    </registers>
+    <dimIncrement>0x280</dimIncrement>
+   </cluster>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="PWM0">
+  <name>PWM1</name>
+  <baseAddress>0x02528000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="PWM0">
+  <name>S_PWM</name>
+  <baseAddress>0x07023000</baseAddress>
+  </peripheral>
+  <peripheral>
   <name>RTC</name>
   <description>Real Time Clock (RTC)</description>
   <baseAddress>0x07090000</baseAddress>
