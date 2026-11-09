@@ -3096,6 +3096,8 @@ static void hardware_de_global_initialize(void)
 
 #ifdef TCONTV_PTR
 
+	uint_fast32_t hdmidotclock = 360 * 1000 * 1000; //  80291880;
+	hdmidotclock = 145500000;	// Одна из разрешённых частот
 
 	// PLL_VIDEO0 as source
 	//const uint_fast32_t pllref = allwnr_a733_get_pll_ref_freq();
@@ -3104,13 +3106,6 @@ static void hardware_de_global_initialize(void)
 	PRINTF("allwnr_a733_get_pll_peri0_2x_freq()=%u\n", (unsigned) pllout);
 	PRINTF("7 hdmidotclock=%u kHz\n", (unsigned) (hdmidotclock / 1000));
 
-	hdmidotclock = 145500000;
-	unsigned M_HDMI = ulmax(1, ulmin(calcdivround2(pllout, hdmidotclock), 16));
-	unsigned N_HDMI = 1;
-	PRINTF("7 N_HDMI=%u, M_HDMI=%u\n", N_HDMI, M_HDMI);
-	ASSERT(M_HDMI >= 1 && N_HDMI <= 32);
-	ASSERT(N_HDMI >= 1 && N_HDMI <= 32);
-
 	// HDMI_TV_CLK_REG
 	//	CLK_SRC_SEL.
 	//	Clock Source Select
@@ -3118,10 +3113,16 @@ static void hardware_de_global_initialize(void)
 	//	001: VIDEO1PLL4X
 	//	010: VIDEO2PLL4X
 	//	011: PERI0PLL2X
+	unsigned sel = 0x03;
+	unsigned M_HDMI = ulmax(1, ulmin(calcdivround2(pllout, hdmidotclock), 16));
+	unsigned N_HDMI = 1;
+	PRINTF("7 N_HDMI=%u, M_HDMI=%u\n", N_HDMI, M_HDMI);
+	ASSERT(M_HDMI >= 1 && N_HDMI <= 32);
+	ASSERT(N_HDMI >= 1 && N_HDMI <= 32);
 
 	const unsigned HDMI_CLK_REG_M = M_HDMI;
 	CCU->HDMI_TV_CLK_REG =
-		0x03 * (UINT32_C(1) << 24) | 	// 011: PERI0PLL2X
+		sel * (UINT32_C(1) << 24) | 	// 011: PERI0PLL2X
 		(N_HDMI - 1) * (UINT32_C(1) << 8)|
 		(M_HDMI - 1) * (UINT32_C(1) << 0)|
 		0;
