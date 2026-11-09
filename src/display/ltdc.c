@@ -3039,29 +3039,6 @@ static void hardware_de_global_initialize(void)
 		//TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
 	#endif
 
-	#ifdef TCONLCD_PTR
-		switch (TCONLCD_LVDSIX)
-		{
-		case 0:
-			CCU->DSI0_CLK_REG |= (UINT32_C(1) << 31);
-			CCU->DSI0_BGR_REG |= (UINT32_C(1) << 0);		// DSI0_GATING Open the clock gate
-			CCU->DSI0_BGR_REG |= (UINT32_C(1) << 16);	// DSI0_RST. De-assert reset
-			//    TCON_LCD0->r_0x705c = 0x04B30410;
-			COMBO_PHY_TX_DSI0->r_0x7110 = 0x00000007;
-			COMBO_PHY_TX_DSI0->r_0x7114 = 0x00000053;
-			COMBO_PHY_TX_DSI0->r_0x705c = 0x04B30410;
-			break;
-		case 1:
-			CCU->DSI1_CLK_REG |= (UINT32_C(1) << 31);
-			CCU->DSI1_BGR_REG |= (UINT32_C(1) << 0);		// DSI1_GATING Open the clock gate
-			CCU->DSI1_BGR_REG |= (UINT32_C(1) << 16);	// DSI1_RST. De-assert reset
-
-			COMBO_PHY_TX_DSI1->r_0x7110 = 0x00000007;
-			COMBO_PHY_TX_DSI1->r_0x7114 = 0x00000053;
-			COMBO_PHY_TX_DSI1->r_0x705c = 0x04B30410;
-			break;
-		}
-	#endif
 
 	//CCU->VIDEO_IN_BGR_REG = 0x00010000;
 	//CCU->VIDEOPLL_GATE_EN_REG = 0x00770000; /* 0x00770000 @ 0x1910 */
@@ -4122,6 +4099,30 @@ static void t113_DSI_controller_configuration(const videomode_t * vdmode)
 #elif CPUSTYLE_T507
 #elif CPUSTYLE_A133
 #elif CPUSTYLE_A733
+
+	#ifdef TCONLCD_PTR
+		switch (TCONLCD_LVDSIX)
+		{
+		case 0:
+			CCU->DSI0_CLK_REG |= (UINT32_C(1) << 31);
+			CCU->DSI0_BGR_REG |= (UINT32_C(1) << 0);		// DSI0_GATING Open the clock gate
+			CCU->DSI0_BGR_REG |= (UINT32_C(1) << 16);	// DSI0_RST. De-assert reset
+			//    TCON_LCD0->r_0x705c = 0x04B30410;
+			COMBO_PHY_TX_DSI0->r_0x7110 = 0x00000007;
+			COMBO_PHY_TX_DSI0->r_0x7114 = 0x00000053;
+			COMBO_PHY_TX_DSI0->r_0x705c = 0x04B30410;
+			break;
+		case 1:
+			CCU->DSI1_CLK_REG |= (UINT32_C(1) << 31);
+			CCU->DSI1_BGR_REG |= (UINT32_C(1) << 0);		// DSI1_GATING Open the clock gate
+			CCU->DSI1_BGR_REG |= (UINT32_C(1) << 16);	// DSI1_RST. De-assert reset
+
+			COMBO_PHY_TX_DSI1->r_0x7110 = 0x00000007;
+			COMBO_PHY_TX_DSI1->r_0x7114 = 0x00000053;
+			COMBO_PHY_TX_DSI1->r_0x705c = 0x04B30410;
+			break;
+		}
+	#endif
 
 #endif /* */
 }
@@ -7636,7 +7637,7 @@ static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
 	const uint_fast32_t lvdsfreq = display_getdotclock(vdmode) * 7;
-	PRINTF("t113_tcon_lvds_initsteps: lvdsfreq=%u\n", (unsigned) lvdsfreq);
+	PRINTF("t113_tcon_lvds_initsteps: lvdsfreq=%u (dotclock=%u)\n", (unsigned) lvdsfreq, (unsigned) (lvdsfreq / 7));
 #if defined (TCONLCD_PTR)
 	// step0 - CCU configuration
 	t113_tconlvds_PLL_configuration(lvdsfreq);
