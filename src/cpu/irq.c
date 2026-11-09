@@ -1943,7 +1943,22 @@ static uint32_t task_sysfn(unsigned arg0, void * arg1)
 
 	return r0_val;
 }
+// user-mode entry
+static uint32_t task_sysfn_old(unsigned arg0, volatile void * arg1)
+{
+	uint32_t result = 0;
+	__ASM volatile(
+		"\t" "mov r0,%1\n"
+		"\t" "mov r1,%2\n"
+		"\t" "SVC 0x0000\n"
+		"\t" "mov %0,r0\n":
+		"=r"(result) :		// OutputOperands
+		"r"(arg0), "ra"(arg1) : // InputOperands
+		"r0", "r1", "memory"	// Clobbers
+	);
 
+	return result;
+}
 
 static size_t context_size(void)
 {
@@ -1993,6 +2008,22 @@ static uint64_t task_sysfn(unsigned arg0, void * arg1)
 	);
 
 	return x0_val;
+}
+
+// user-mode entry
+static uint64_t task_sysfn_old(unsigned arg0, volatile void * arg1)
+{
+	uint64_t result = 0;
+	__ASM volatile(
+		"\t" "mv x3,%1\n"
+		"\t" "mv x4,%2\n"
+		//"\t" "SVC 0x0000\n"
+		"\t" "mv %0,x3\n":
+		"=r"(result) :		// OutputOperands
+		"r"(arg0), "ra"(arg1) : // InputOperands
+		"x3", "x4", "memory"	// Clobbers
+	);
+	return result;
 }
 
 
