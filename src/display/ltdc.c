@@ -2994,10 +2994,6 @@ static void hardware_de_global_initialize(void)
 
     local_delay_us(10);
 
-	const uint_fast32_t lvdsclock = 232848000;
-	const uint_fast32_t lcddotclock = 55000000;
-	uint_fast32_t hdmidotclock = 360 * 1000 * 1000; //  80291880;
-
 
 	#ifdef TCONLCD_PTR
 
@@ -3006,33 +3002,11 @@ static void hardware_de_global_initialize(void)
 		CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DPSS_TOP0_GATING Open the clock gate
 		CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DPSS_TOP0_RST. De-assert reset
 
-		uint_fast32_t srcfreq = allwnr_a733_get_pll_video0_4x_freq();
-		unsigned lvdsdivider = calcdivround2(srcfreq, lvdsclock);
-		ASSERT(lvdsdivider >= 1 && lvdsdivider <= 32);
-		lvdsdivider = 8;
-		PRINTF("lvdsdivider=%u\n", lvdsdivider);
-		PRINTF("PLL_VIDEO0_CTRL_REG=%08X\n", (unsigned) CCU->PLL_VIDEO0_CTRL_REG);
-		CCU->VO0_TCONLCD0_CLK_REG  = (lvdsdivider - 1);
-		CCU->VO0_TCONLCD0_CLK_REG |= (UINT32_C(1) << 31);	// 000: VIDEO0PLL4X
 
-		CCU->VO0_TCONLCD1_CLK_REG  = (lvdsdivider - 1);
-		CCU->VO0_TCONLCD1_CLK_REG |= (UINT32_C(1) << 31);
 		DISPLAY0_TOP->VO0_MODULE_GATING = ~ 0;	// LCD1_DSI_GATE, LCD0_DSI_GATE
 		//DISPLAY1_TOP->VO1_MODULE_GATING;
 
 		DISPLAY0_TOP->LCD_CLK_SRC_COMB_CLK_SRC = 0;
-		CCU->LVDS0_BGR_REG |= (UINT32_C(1) << 16);	// LVDS0_RST
-		CCU->LVDS1_BGR_REG |= (UINT32_C(1) << 16);	// LVDS1_RST
-
-
-		CCU->VO0_TCONLCD0_BGR_REG  |= (UINT32_C(1) << 16);
-		CCU->VO0_TCONLCD0_BGR_REG  |= (UINT32_C(1) << 0);
-
-		CCU->VO0_TCONLCD1_BGR_REG  |= (UINT32_C(1) << 16);
-		CCU->VO0_TCONLCD1_BGR_REG  |= (UINT32_C(1) << 0);
-
-		CCU->VO0_TCONLCD0_CLK_REG  |= (UINT32_C(1) << 31);
-		CCU->VO0_TCONLCD1_CLK_REG  |= (UINT32_C(1) << 31);
 
 	#endif
 	#ifdef TCONLCD_PTR
@@ -3594,6 +3568,8 @@ static void t113_tconlvds_PLL_configuration(uint_fast32_t needfreq)
 
 #elif CPUSTYLE_A733
 	#warning CPUSTYLE_A733 not implemented
+	//	const uint_fast32_t lcddotclock = 55000000;
+	//	uint_fast32_t hdmidotclock = 360 * 1000 * 1000; //  80291880;
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -3698,7 +3674,58 @@ static void t113_tconlvds_CCU_configuration(uint_fast32_t needfreq)
 
 #elif CPUSTYLE_A733
 	#warning CPUSTYLE_A733 To be done
-	const unsigned ix = TCONLCD_IX;	// TCON_LCD0
+
+	unsigned src = 0x03;
+	uint_fast32_t srcfreq;
+	// See VO0_TCONLCD0_CLK_REG or VO0_TCONLCD1_CLK_REG
+	switch (src)
+	{
+	default:
+	case 0:
+		srcfreq = allwnr_a733_get_pll_video0_4x_freq();
+		break;
+	case 1:
+		srcfreq = allwnr_a733_get_pll_video1_4x_freq();
+		break;
+	case 2:
+		srcfreq = allwnr_a733_get_pll_video2_4x_freq();
+		break;
+	case 3:
+		srcfreq = allwnr_a733_get_pll_peri0_2x_freq();
+		break;
+	}
+	unsigned lvdsdivider = calcdivround2(srcfreq, needfreq);
+	ASSERT(lvdsdivider >= 1 && lvdsdivider <= 32);
+	PRINTF("lvdsdivider=%u\n", lvdsdivider);
+
+
+	switch (TCONLCD_LVDSIX)
+	{
+	case 0:
+		CCU->VO0_TCONLCD0_CLK_REG  =
+			src * (UINT32_C(1) << 24) |
+			(lvdsdivider - 1) * (UINT32_C(1) << 0) |
+			0;
+		CCU->VO0_TCONLCD0_CLK_REG |= (UINT32_C(1) << 31);	// 000: VIDEO0PLL4X
+
+		CCU->VO0_TCONLCD0_BGR_REG  |= (UINT32_C(1) << 16);
+		CCU->VO0_TCONLCD0_BGR_REG  |= (UINT32_C(1) << 0);
+		PRINTF("allwnr_a733_get_v0_tconlcd0_freq()=%u MHz\n", (unsigned) (allwnr_a733_get_v0_tconlcd0_freq() / 1000 / 1000));
+		break;
+
+	case 1:
+		CCU->VO0_TCONLCD1_CLK_REG  = (lvdsdivider - 1);
+		CCU->VO0_TCONLCD1_CLK_REG |= (UINT32_C(1) << 31);
+
+		CCU->VO0_TCONLCD1_BGR_REG  |= (UINT32_C(1) << 16);
+		CCU->VO0_TCONLCD1_BGR_REG  |= (UINT32_C(1) << 0);
+		PRINTF("allwnr_a733_get_v0_tconlcd0_freq()=%u MHz\n", (unsigned) (allwnr_a733_get_v0_tconlcd1_freq() / 1000 / 1000));
+		break;
+	}
+
+	CCU->LVDS0_BGR_REG |= (UINT32_C(1) << 16);	// LVDS0_RST
+	CCU->LVDS1_BGR_REG |= (UINT32_C(1) << 16);	// LVDS1_RST
+
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -7637,7 +7664,7 @@ static void t113_tcontv_initsteps0(const videomode_t * vdmode)
 static void t113_tcon_lvds_initsteps(const videomode_t * vdmode)
 {
 	const uint_fast32_t lvdsfreq = display_getdotclock(vdmode) * 7;
-	PRINTF("t113_tcon_lvds_initsteps: lvdsfreq=%u (dotclock=%u)\n", (unsigned) lvdsfreq, (unsigned) (lvdsfreq / 7));
+	PRINTF("t113_tcon_lvds_initsteps: need lvdsfreq=%u (need dotclock=%u)\n", (unsigned) lvdsfreq, (unsigned) (lvdsfreq / 7));
 #if defined (TCONLCD_PTR)
 	// step0 - CCU configuration
 	t113_tconlvds_PLL_configuration(lvdsfreq);
