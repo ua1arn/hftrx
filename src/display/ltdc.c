@@ -7250,7 +7250,9 @@ static void t113_tcontv_set_sequence_parameters(const videomode_t * vdmode)
 	//	 111: Gridding Check
 
 	//TCONTV_PTR->TV_CEU_CTL_REG &= ~ (UINT32_C(1) << 31);	// недокументированно, но требуется
-	TCONTV_PTR->TV_SRC_CTL_REG = 0;             // bit 0 - test, bits 2..1 - type of test
+#warning TV OUT USE TEST PATTERN, change to zero
+	TCONTV_PTR->TV_SRC_CTL_REG = 1;             // bit 0 - test, bits 2..1 - type of test
+
 	TCONTV_PTR->TV_GCTL_REG =
 		0 * (UINT32_C(1) << 5) | // a733: PIXEL_MODE
 		1 * (UINT32_C(1) << 1) | // t507: enable TCONTV - не документирвано, но без этого не работает EDID
