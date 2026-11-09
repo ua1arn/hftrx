@@ -21439,11 +21439,19 @@ __WEAK void modem_spool(void * ctx) {
 }
 __WEAK void modem_send(uint_fast8_t c) {}
 
-#ifdef DE_TOP
+#if defined DE_TOP && 0
 static void testadd(int d)
 {
 	DE_TOP->DE2TCON_MUX += d;
 	PRINTF("DE_TOP->DE2TCON_MUX=0x%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+//
+//	unsigned i;
+//	for (i = 0; i < 0x10000; ++ i)
+//	{
+//		DE_TOP->DE2TCON_MUX = i;
+//		PRINTF("DE_TOP->DE2TCON_MUX=0x%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+//
+//	}
 }
 #endif
 static void keyspoolprocess(void * ctx)
@@ -21481,7 +21489,7 @@ static void keyspoolprocess(void * ctx)
 #endif /* TCONTV_PTR */
 	    	PRINTF("\n");
 			break;
-#ifdef DE_TOP
+#if defined DE_TOP && 0
 		case '+':
 			testadd(+ 1);
 			break;
