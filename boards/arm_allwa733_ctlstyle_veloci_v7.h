@@ -87,7 +87,7 @@
 	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
 	
 	#define WITHMIC1LEVEL		1	// установка усиления микрофона
-	//#define WITHDIMMTIMEDEF	15	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
+	#define WITHDIMMTIMEDEF	0	/* количество секунд до гашения индикатора, 0 - не гасим. Регулируется из меню. */
 
 	// --- Особые варианты расположения кнопок на клавиатуре
 
@@ -420,7 +420,7 @@
 	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
-	#define WITHAFGAINDEFAULT    (150 * BOARD_AFGAIN_MAX / 255)
+//	#define WITHAFGAINDEFAULT    (150 * BOARD_AFGAIN_MAX / 255)
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
