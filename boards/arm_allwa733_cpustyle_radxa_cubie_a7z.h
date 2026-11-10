@@ -10,8 +10,8 @@
 // Radaxa Cubie A7Z
 // https://radxa.com/products/cubie/a7z/
 
-#ifndef ARM_ALW_A733_CPU_RADAXA_CUBIE_A7Z_H_INCLUDED
-#define ARM_ALW_A733_CPU_RADAXA_CUBIE_A7Z_H_INCLUDED 1
+#ifndef ARM_ALW_A733_CPU_RADXA_CUBIE_A7Z_H_INCLUDED
+#define ARM_ALW_A733_CPU_RADXA_CUBIE_A7Z_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1018,11 +1018,11 @@
 	#define PMIC_I2C_W (0x36 << 1)	// 7bit: 0x36/0x37
 	#define PMIC_I2C_R (PMIC_I2C_W | 0x01)
 
-	int board_radaxa_cubie_axp318w_initialize(void);
+	int board_radxa_cubie_axp318w_initialize(void);
 
 	/* Контроллер питания AXP313 */
 	#define BOARD_PMIC_INITIALIZE() do { \
-		board_radaxa_cubie_axp318w_initialize(); \
+		board_radxa_cubie_axp318w_initialize(); \
 	} while (0)
 #endif /* WITHISBOOTLOADER */
 
@@ -1089,4 +1089,4 @@
 	// TUSB parameters
 	#define TUP_DCD_ENDPOINT_MAX    6
 
-#endif /* ARM_ALW_A733_CPU_RADAXA_CUBIE_A7Z_H_INCLUDED */
+#endif /* ARM_ALW_A733_CPU_RADXA_CUBIE_A7Z_H_INCLUDED */

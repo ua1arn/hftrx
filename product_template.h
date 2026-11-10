@@ -117,9 +117,9 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_allwa733_cpustyle_veloci_v7.h"// Rrfboard_v7.pcb
 #elif (CPUSTYLE_A733) && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_allwa733_ctlstyle_radaxa_cubie_a7z.h"
+	#include "boards/arm_allwa733_ctlstyle_radxa_cubie_a7z.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_allwa733_cpustyle_radaxa_cubie_a7z.h"
+	#include "boards/arm_allwa733_cpustyle_radxa_cubie_a7z.h"
 #elif (CPUSTYLE_A733) && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_allwa733_ctlstyle_orangepi_4_pro.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */

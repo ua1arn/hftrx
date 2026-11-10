@@ -325,7 +325,7 @@ static int axp318w_versioncheck(void)
 }
 // board-specific
 
-int board_radaxa_cubie_axp318w_initialize(void)
+int board_radxa_cubie_axp318w_initialize(void)
 {
 
 	PRINTF("START PMIC \n");
