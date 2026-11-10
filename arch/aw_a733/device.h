@@ -108,6 +108,7 @@ typedef enum IRQn
     TIMER1_1_IRQn = 132,                              /*!< TIMER1  */
     TIMER1_2_IRQn = 133,                              /*!< TIMER1  */
     TIMER1_3_IRQn = 134,                              /*!< TIMER1  */
+    WDT0_IRQn = 138,                                  /*!< WDT  */
     DMA0_CPUX_NS_IRQn = 143,                          /*!< DMAC  */
     DMA0_CPUX_S_IRQn = 144,                           /*!< DMAC  */
     DMA1_CPUX_NS_IRQn = 145,                          /*!< DMAC  */
@@ -123,6 +124,7 @@ typedef enum IRQn
     SMHC2_IRQn = 195,                                 /*!< SMHC SD-MMC Host Controller */
     SMHC3_IRQn = 196,                                 /*!< SMHC SD-MMC Host Controller */
     PCK600_QCHANNEL_IRQn = 221,                       /*!< PPU STBY PCK600 Q-CHANNEL interrupt. */
+    S_WDT_IRQn = 223,                                 /*!< WDT  */
     RTC_ALARM_IRQn = 228,                             /*!< RTC Real Time Clock (RTC) */
     S_GPIOL_S_IRQn = 229,                             /*!< GPIOINT  */
     S_GPIOL_IRQn = 230,                               /*!< GPIOINT S_GPIOL_NS */
@@ -169,6 +171,7 @@ typedef enum IRQn
 #define GPIOK_BASE ((uintptr_t) 0x02000580)           /*!< GPIO Port Controller Base */
 #define GPIOINTK_BASE ((uintptr_t) 0x020005C0)        /*!< GPIOINT  Base */
 #define CCU_BASE ((uintptr_t) 0x02002000)             /*!< CCU Clock Controller Unit (CCU) Base */
+#define WDT0_CPUX_BASE ((uintptr_t) 0x02050000)       /*!< WDT  Base */
 #define Timer1_CPUX_BASE ((uintptr_t) 0x02052000)     /*!< TIMER1  Base */
 #define CPUS_INTERRUPT_CTRL_BASE ((uintptr_t) 0x02055000)/*!< CPUS_INTERRUPT_CTRL  Base */
 #define RV_INTERRUPT_CTRL_BASE ((uintptr_t) 0x02056000)/*!< RV_INTERRUPT_CTRL  Base */
@@ -291,6 +294,7 @@ typedef enum IRQn
 #define COMBPHY0_BASE ((uintptr_t) 0x06C80000)        /*!< COMBPHY  Base */
 #define COMBPHY1_BASE ((uintptr_t) 0x06CA0000)        /*!< COMBPHY  Base */
 #define S_PRCM_BASE ((uintptr_t) 0x07010000)          /*!< PRCM Power Reset Clock Management (PRCM) Base */
+#define WDT_CPUS_BASE ((uintptr_t) 0x07021000)        /*!< WDT  Base */
 #define S_PWM_BASE ((uintptr_t) 0x07023000)           /*!< PWM Pulse Width Modulation (PWM) module Base */
 #define S_GPIOL_BASE ((uintptr_t) 0x07025000)         /*!< S_GPIO Secure Port Controller Base */
 #define S_GPIOM_BASE ((uintptr_t) 0x07025030)         /*!< S_GPIO Secure Port Controller Base */
@@ -3150,6 +3154,20 @@ typedef struct USB_OHCI_Capability_Type
     __IOM uint32_t O_HcRhStatus;                      /*!< Offset 0x050 OHCI Root Hub Status Register */
     __IOM uint32_t O_HcRhPortStatus [0x001];          /*!< Offset 0x054 OHCI Root Hub Port Status Register */
 } USB_OHCI_Capability_TypeDef; /* size of structure = 0x058 */
+/*
+ * @brief WDT
+ */
+/*!< WDT  */
+typedef struct WDT_Type
+{
+    __IOM uint32_t WDT_IRQ_EN_REG;                    /*!< Offset 0x000 WDT IRQ Enable Register */
+    __IOM uint32_t WDT_IRQ_STAT_REG;                  /*!< Offset 0x004 WDT Status Register */
+    __IOM uint32_t WDT_SRST_REG;                      /*!< Offset 0x008 WDT Software Reset Register */
+    __IOM uint32_t WDT_CTRL_REG;                      /*!< Offset 0x00C WDT Control Register */
+    __IOM uint32_t WDT_CFG_REG;                       /*!< Offset 0x010 WDT Configuration Register */
+    __IOM uint32_t WDT_MODE_REG;                      /*!< Offset 0x014 WDT Mode Register */
+    __IOM uint32_t WDT_OCFG_REG;                      /*!< Offset 0x018 WDT Output Configuration Register */
+} WDT_TypeDef; /* size of structure = 0x01C */
 
 
 /* Defines */
@@ -3184,6 +3202,7 @@ typedef struct USB_OHCI_Capability_Type
 #define GPIOK ((GPIO_TypeDef *) GPIOK_BASE)           /*!< GPIOK Port Controller register set access pointer */
 #define GPIOINTK ((GPIOINT_TypeDef *) GPIOINTK_BASE)  /*!< GPIOINTK  register set access pointer */
 #define CCU ((CCU_TypeDef *) CCU_BASE)                /*!< CCU Clock Controller Unit (CCU) register set access pointer */
+#define WDT0_CPUX ((WDT_TypeDef *) WDT0_CPUX_BASE)    /*!< WDT0_CPUX  register set access pointer */
 #define Timer1_CPUX ((TIMER1_TypeDef *) Timer1_CPUX_BASE)/*!< Timer1_CPUX  register set access pointer */
 #define CPUS_INTERRUPT_CTRL ((CPUS_INTERRUPT_CTRL_TypeDef *) CPUS_INTERRUPT_CTRL_BASE)/*!< CPUS_INTERRUPT_CTRL  register set access pointer */
 #define UART0 ((UART_TypeDef *) UART0_BASE)           /*!< UART0  register set access pointer */
@@ -3296,6 +3315,7 @@ typedef struct USB_OHCI_Capability_Type
 #define COMBPHY0 ((COMBPHY_TypeDef *) COMBPHY0_BASE)  /*!< COMBPHY0  register set access pointer */
 #define COMBPHY1 ((COMBPHY_TypeDef *) COMBPHY1_BASE)  /*!< COMBPHY1  register set access pointer */
 #define S_PRCM ((PRCM_TypeDef *) S_PRCM_BASE)         /*!< S_PRCM Power Reset Clock Management (PRCM) register set access pointer */
+#define WDT_CPUS ((WDT_TypeDef *) WDT_CPUS_BASE)      /*!< WDT_CPUS  register set access pointer */
 #define S_PWM ((PWM_TypeDef *) S_PWM_BASE)            /*!< S_PWM Pulse Width Modulation (PWM) module register set access pointer */
 #define S_GPIOL ((S_GPIO_TypeDef *) S_GPIOL_BASE)     /*!< S_GPIOL Secure Port Controller register set access pointer */
 #define S_GPIOM ((S_GPIO_TypeDef *) S_GPIOM_BASE)     /*!< S_GPIOM Secure Port Controller register set access pointer */

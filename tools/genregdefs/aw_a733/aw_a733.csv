@@ -114,6 +114,13 @@
 #irq; S_SPI 242
 #typeend;
 
+#type; WDT
+#base; WDT0_CPUX 0x02050000 
+#base; WDT_CPUS 0x07021000
+#irq; WDT0 138
+#irq; S_WDT 223
+#typeend;
+
 #type; TIMER0
 
 #base; Timer0_CPUX 0x03009000 

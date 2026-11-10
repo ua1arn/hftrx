@@ -1,0 +1,10 @@
+#type; WDT
+
+#regdef; WDT_IRQ_EN_REG ;	0x0000 ; WDT IRQ Enable Register
+#regdef; WDT_IRQ_STAT_REG ;	0x0004 ; WDT Status Register
+#regdef; WDT_SRST_REG ;		0x0008 ; WDT Software Reset Register
+#regdef; WDT_CTRL_REG ;		0x000C ; WDT Control Register
+#regdef; WDT_CFG_REG ;		0x0010 ; WDT Configuration Register
+#regdef; WDT_MODE_REG ;		0x0014 ; WDT Mode Register
+#regdef; WDT_OCFG_REG ;		0x0018 ; WDT Output Configuration Register
+#typeend;

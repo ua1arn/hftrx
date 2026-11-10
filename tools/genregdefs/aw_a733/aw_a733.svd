@@ -20287,6 +20287,100 @@
    <description></description>
   </interrupt>
   </peripheral>
+  <peripheral>
+  <name>WDT0_CPUX</name>
+  <description></description>
+  <baseAddress>0x02050000</baseAddress>
+  <interrupt>
+   <name>WDT0</name>
+   <value>138</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>S_WDT</name>
+   <value>223</value>
+   <description></description>
+  </interrupt>
+  <registers>
+   <register>
+    <name>WDT_IRQ_EN_REG</name>
+    <displayName>WDT_IRQ_EN_REG</displayName>
+    <description>WDT IRQ Enable Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDT_IRQ_STAT_REG</name>
+    <displayName>WDT_IRQ_STAT_REG</displayName>
+    <description>WDT Status Register</description>
+    <addressOffset>0x004</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDT_SRST_REG</name>
+    <displayName>WDT_SRST_REG</displayName>
+    <description>WDT Software Reset Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDT_CTRL_REG</name>
+    <displayName>WDT_CTRL_REG</displayName>
+    <description>WDT Control Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDT_CFG_REG</name>
+    <displayName>WDT_CFG_REG</displayName>
+    <description>WDT Configuration Register</description>
+    <addressOffset>0x010</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDT_MODE_REG</name>
+    <displayName>WDT_MODE_REG</displayName>
+    <description>WDT Mode Register</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>WDT_OCFG_REG</name>
+    <displayName>WDT_OCFG_REG</displayName>
+    <description>WDT Output Configuration Register</description>
+    <addressOffset>0x018</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral derivedFrom="WDT0_CPUX">
+  <name>WDT_CPUS</name>
+  <baseAddress>0x07021000</baseAddress>
+  <interrupt>
+   <name>WDT0</name>
+   <value>138</value>
+   <description></description>
+  </interrupt>
+  <interrupt>
+   <name>S_WDT</name>
+   <value>223</value>
+   <description></description>
+  </interrupt>
+  </peripheral>
  </peripherals>
  <vendor>
  </vendor>

@@ -2797,6 +2797,23 @@ void watchdog_initialize(void)
 {
 #if WITHWATCHDOG
 #if CPUSTYLE_STM32MP1
+
+#elif CPUSTYLE_ALLWINNER && defined (WDT0_CPUX)
+	// Allwinner A733
+	WDT0_CPUX->WDT_CFG_REG =
+		0x16AA * (UINT32_C(1) << 16) |		// t113 specific field
+		0x00 * (UINT32_C(1) << 8) | // 0: HOSC_32K, that is, OSC24M/750
+		0x01 |	// To whole system
+		0;
+	WDT0_CPUX->WDT_MODE_REG =
+		0x16AA * (UINT32_C(1) << 16) |		// t113 specific field
+		0x07 * (UINT32_C(1) << 4) |	// 0111: 256000 cycles (8s)
+		0;
+	WDT0_CPUX->WDT_MODE_REG =
+			WDT0_CPUX->WDT_MODE_REG |
+		0x16AA * (UINT32_C(1) << 16) |		// t113 specific field
+		(0x01 * (UINT32_C(1) << 0)) | // WDOG_EN
+		0;
 #elif CPUSTYLE_ALLWINNER && defined (TIMER)
 	TIMER->WDOG_CFG_REG =
 		0x16AA * (UINT32_C(1) << 16) |		// t113 specific field
@@ -2821,6 +2838,13 @@ void watchdog_ping(void)
 {
 #if WITHWATCHDOG
 #if CPUSTYLE_STM32MP1
+
+#elif CPUSTYLE_ALLWINNER && defined (WDT0_CPUX)
+	// Allwinner A733
+	WDT0_CPUX->WDT_CTRL_REG =
+		0xA57 * (UINT32_C(1) << 1) |
+		0x01 * (UINT32_C(1) << 0) |
+		0;
 #elif CPUSTYLE_ALLWINNER && defined (TIMER)
 	TIMER->WDOG_CTRL_REG =
 		0xA57 * (UINT32_C(1) << 1) |
