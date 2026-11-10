@@ -667,7 +667,7 @@ enum ticker_mode
 
 typedef struct ticker_tag
 {
-	VLIST_ENTRY item;
+	LIST_ENTRY item;
 	hwtimcount_t t0;
 	hwtimcount_t td;
 	void (* cb)(void *);
@@ -691,7 +691,7 @@ void ticker_remove(ticker_t * p);
 
 typedef struct adcdone_tag
 {
-	VLIST_ENTRY item;
+	LIST_ENTRY item;
 	void (* cb)(void *);
 	void * ctx;
 } adcdone_t;
