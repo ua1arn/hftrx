@@ -1015,7 +1015,14 @@ typedef struct DE_TOP_Type
     __IOM uint32_t DE_RTWB_MUX;                       /*!< Offset 0x020 DE_RTWB_MUX_OFFSET */
     __IOM uint32_t DE_CHN2CORE_MUX;                   /*!< Offset 0x024 DE_CHN2CORE_MUX_OFFSET */
     __IOM uint32_t DE_PORT2CHN_MUX [0x004];           /*!< Offset 0x028 DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4) */
-         RESERVED(0x038[0x00E0 - 0x0038], uint8_t)
+#error Need offset 0x038 of field 'reg_0x030' type 'uint32_t' at (0x030)
+    __IOM uint32_t reg_0x030;                         /*!< Offset 0x030 hdmi+tcon  =0x0000a810, hdmi=0x00a98210 */
+         RESERVED(0x03C[0x0094 - 0x003C], uint8_t)
+    __IOM uint32_t reg_0x094;                         /*!< Offset 0x094 hdmi+tcon  =0x01000000, hdmi=0x01000008 */
+    __IOM uint32_t reg_0x098;                         /*!< Offset 0x098 hdmi+tcon  =0x3fe62950, hdmi=0x3fd1e680 */
+         RESERVED(0x09C[0x00D0 - 0x009C], uint8_t)
+    __IOM uint32_t reg_0x0D0;                         /*!< Offset 0x0D0 hdmi+tcon  =0x00000010, hdmi=0x00000000 */
+         RESERVED(0x0D4[0x00E0 - 0x00D4], uint8_t)
     __IOM uint32_t DE_DEBUG_CTL;                      /*!< Offset 0x0E0 DE_DEBUG_CTL_OFFSET */
 } DE_TOP_TypeDef; /* size of structure = 0x0E4 */
 /*
