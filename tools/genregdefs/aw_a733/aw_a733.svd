@@ -4269,15 +4269,6 @@
     <dimIncrement>0x010</dimIncrement>
    </cluster>
    <register>
-    <name>reg_0x030</name>
-    <displayName>reg_0x030</displayName>
-    <description>hdmi+tcon  =0x0000a810, hdmi=0x00a98210</description>
-    <addressOffset>0x030</addressOffset>
-    <size>0x20</size>
-    <access>read-write</access>
-    <resetValue>0x00000000</resetValue>
-   </register>
-   <register>
     <name>reg_0x094</name>
     <displayName>reg_0x094</displayName>
     <description>hdmi+tcon  =0x01000000, hdmi=0x01000008</description>

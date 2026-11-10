@@ -29,7 +29,7 @@
 #regdef; DE_RTWB_MUX; 0x020; DE_RTWB_MUX_OFFSET
 #regdef; DE_CHN2CORE_MUX; 0x024; DE_CHN2CORE_MUX_OFFSET
 #regdef; DE_PORT2CHN_MUX; 0x028 4; DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4)
-#regdef; reg_0x030; 0x030; hdmi+tcon  =0x0000a810, hdmi=0x00a98210
+##regdef; reg_0x030; 0x030; hdmi+tcon  =0x0000a810, hdmi=0x00a98210
 #regdef; reg_0x094; 0x094; hdmi+tcon  =0x01000000, hdmi=0x01000008
 #regdef; reg_0x098; 0x098; hdmi+tcon  =0x3fe62950, hdmi=0x3fd1e680
 #regdef; reg_0x0D0; 0x0D0; hdmi+tcon  =0x00000010, hdmi=0x00000000
