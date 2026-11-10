@@ -5356,8 +5356,8 @@ static void a733_set_pll_cpux_axi(void)
 {
 	// DynamIQ big.LITTLE Architecture Arm® CPU, up to 2.0 GHz
 	/* Set A76 Core 1.008GHz, A55 Core 1.008GHz, DSU 744MHz */
-	const unsigned cpuLfreq = (sunxi_clk_get_hosc_type() == 24) ? 1008 : CPUL_FREQ_MHz; // 1014
-	const unsigned cpuBfreq = (sunxi_clk_get_hosc_type() == 24) ? 1008 : CPUB_FREQ_MHz; // 1014
+	const unsigned cpuLfreq = CPUL_FREQ_MHz; // 1014
+	const unsigned cpuBfreq = CPUB_FREQ_MHz; // 1014
 	const unsigned dsufreq = (sunxi_clk_get_hosc_type() == 24) ? 744 : 780;
 
 	// CPU_L

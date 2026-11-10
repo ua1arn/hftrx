@@ -2007,7 +2007,7 @@ static void cortexa_cpuinfo(void)
 {
 #if defined(__aarch64__)
 	dbg_putchar('$');
-	PRINTF("CPU%u: VBAR_EL3=%08" PRIX64 ", TTBR0_EL3=%08" PRIX64 ", SCTLR_EL1=%08" PRIX64 ", SCTLR_EL3=%08" PRIX64 ", TCR_EL3=%08X, sp=%08" PRIX64 ", MPIDR_EL1=%08" PRIX64 "\n",
+	PRINTF("CPU%u: VBAR_EL3=%08" PRIX64 ", TTBR0_EL3=%08" PRIX64 ", SCTLR_EL1=%08" PRIX64 ", SCTLR_EL3=%08" PRIX64 ", TCR_EL3=%08X, sp=%08" PRIX64 ", MPIDR_EL1=%08" PRIX64 " %u MHz\n",
 			(unsigned) arm_hardware_cpuid(),
 			__get_VBAR_EL3(),
 			__get_TTBR0_EL3(),
@@ -2015,12 +2015,13 @@ static void cortexa_cpuinfo(void)
 			__get_SCTLR_EL3(),
 			(unsigned) __get_TCR_EL3(),
 			__get_SP64(),
-			__get_MPIDR_EL1()
+			__get_MPIDR_EL1(),
+			(unsigned) (CPU_FREQ / 1000 / 1000)
 			);
 	dbg_flush();
 #else /* defined(__aarch64__) */
 	dbg_putchar('$');
-	PRINTF("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08X, SCTLR=%08X, ACTLR=%08X, sp=%08" PRIX32 ", MPIDR=%08" PRIX32 "\n",
+	PRINTF("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08X, SCTLR=%08X, ACTLR=%08X, sp=%08" PRIX32 ", MPIDR=%08" PRIX32 " %u MHz\n",
 			(unsigned) arm_hardware_cpuid(),
 			(void *) __get_VBAR(),
 			(void *) __get_TTBR0(),
@@ -2028,7 +2029,8 @@ static void cortexa_cpuinfo(void)
 			(unsigned) __get_SCTLR(),
 			(unsigned) __get_ACTLR(),
 			__get_SP(),
-			__get_MPIDR()
+			__get_MPIDR(),
+			(unsigned) (CPU_FREQ / 1000 / 1000)
 			);
 	dbg_flush();
 #endif /* defined(__aarch64__) */
