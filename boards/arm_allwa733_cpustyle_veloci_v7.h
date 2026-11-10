@@ -157,7 +157,7 @@
 	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	#define WITHFLATLINK 1	/* Работа с TFT панелью через интерфйс LVDS	*/
 	//#define WITHGPUHW	1	/* Graphic processor unit - Mali G31 MP2 (Panfrost)*/
-	//#define WITHHDMITVHW 1	/* HDMI hardware output */
+	#define WITHHDMITVHW 1	/* HDMI hardware output */
 //	#define TARGETCPU_OVRT_VBLANK 	(1u << 2)		// CPU #0 - отличающийся от CPU для телеграфного ключа
 //	//#define WITHLTDCHWVBLANKIRQ 1	/* Смена framebuffer по прерыванию */
 //	#define WITHLTDCHWVBLANKIRQ_CPU TARGETCPU_OVRT_VBLANK	/* CPU отличающийся от CPU для телеграфного ключа */
@@ -1360,7 +1360,7 @@
 		#define TCONTV_IRQ TCON_TV0_IRQn
 		#define TCONTV_GINT0_REG (TCON_TV0->TV_GINT0_REG)
 		#define BOARD_TCONTVFREQ (allwnr_a733_get_tcon_tv0_freq())
-		#define RTMIXIDTV 2	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
+		#define RTMIXIDTV 1	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#endif
 	#if 1
 		// LCD
@@ -1372,7 +1372,7 @@
 		#define TCONLCD_IRQ TCON0_LCD0_IRQn
 		#define TCONLCD_GINT0_REG (TCON_LCD0->LCD_GINT0_REG)
 		#define TCONLCD_LVDSIX 0	/* 0: LVDS0 - если выполнять инициализацию DSI1 - будут программироваться выходы PD10..PD19 вне зависимости от GPIO */
-		#define RTMIXIDLCD 1	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
+		#define RTMIXIDLCD 2	/* 1 or 2 for RTMIX0 or RTMIX1:  DE_PORT1->TCON_TV0, DE_PORT0->TCON_LCD0 */
 	#endif
 
 	#if 0

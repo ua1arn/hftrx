@@ -6824,7 +6824,7 @@ static void awxx_deoutmapping(int rtmixid)
 		0;
 #else
 	DE_TOP->DE2TCON_MUX =
-		//0x0000FFF4 | /* 0x0000FFF4 @ 0x010  */
+		0x0000FF40 | /* 0x0000FFF4 @ 0x010  */
 		0;
 #endif
 
@@ -6840,17 +6840,20 @@ static void awxx_deoutmapping(int rtmixid)
 		0x00000000 |
 		0;
 
-	DE_TOP->DE_PORT2CHN_MUX [0] =  /* TCON_LCD0(4K45f) 0x00000000 @ 0x028 */
-		0x00000000 |
+	DE_TOP->DE_PORT2CHN_MUX [0] =		// RTMIX0
+		0x00 * (UINT32_C(1) << (4 * 0)) | 	// VI1
+		0x08 * (UINT32_C(1) << (4 * 1)) | 	// UI1
 		0;
-	DE_TOP->DE_PORT2CHN_MUX [1] =  	/* TCON_LCD1(1080P) 0x00000000 @ 0x02C */
-		0x00000000 |
+	DE_TOP->DE_PORT2CHN_MUX [1] =		// RTMIX1
+		0x01 * (UINT32_C(1) << (4 * 0)) | 	// VI2
+		0x09 * (UINT32_C(1) << (4 * 1)) | 	// UI2
 		0;
-	DE_TOP->DE_PORT2CHN_MUX [2] =	/* tcontv0 HDMI 360MHz (4pixel/148.5MHz) 0x00A98210 @ 0x030 */
-		0x00A98210 |
+    DE_TOP->DE_PORT2CHN_MUX [2] =    /*???  tcontv0 HDMI 360MHz (4pixel/148.5MHz) 0x00A98210 @ 0x030 */
+		0x01 * (UINT32_C(1) << (4 * 0)) | 	// VI2
+		0x09 * (UINT32_C(1) << (4 * 1)) | 	// UI2
 		0;
-	DE_TOP->DE_PORT2CHN_MUX [3] =  	/* tcontv1 eDP 297MHz (2pixel) 0x00000000 @ 0x034 */
-		0x00000000 |
+	// test
+	DE_TOP->DE_PORT2CHN_MUX [3] =		// RTMIX3	??????
 		0;
 
 	//	DE2TCON_MUX=0000FFF4
