@@ -173,7 +173,7 @@ struct dram_parax dram_para0 = {
 static uint32_t * const dram_para = (uint32_t *) & dram_para0;
 #endif /* CONFIG_SUNXI_DRAM_A733_LPDDR5 */
 
-#if CONFIG_SUNXI_DRAM_A733_LPDDR4
+#if CONFIG_SUNXI_DRAM_A733_LPDDR4 && CONFIG_SUNXI_DRAM_A733_LPDDR4_a7z
 // https://github.com/chainsx/u-boot-sun60i/blob/8ffffe4f175ffa7591965075c351070967b1e86a/device-a733/configs/cubie_a7z/sys_config.fex#L461
 
 // Radaxa Cubie A7Z

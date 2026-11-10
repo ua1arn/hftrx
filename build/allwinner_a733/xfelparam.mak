@@ -13,3 +13,8 @@ DDRINITBLOB=ddrinit_helperboard_a733_lpddr5.bin
 LIBDRAM=libdram.a
 
 -include ./$(BOORPARAM)
+
+ddrinit: $(DDRINITBLOB)
+	$(XFEL) write $(Reset_Handler) $(DDRINITBLOB)
+	$(XFEL) exec $(SystemDRAMInit)
+	$(BUSYBOX) sleep 3s

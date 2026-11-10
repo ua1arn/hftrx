@@ -1018,9 +1018,6 @@
 	#define SPIHARD_CCU_CLK_SRC_SEL_VAL 0x00	/* A733: 0X00: osc24m */
 	#define HARDWARE_SPI_FREQ (allwnr_a733_get_s_spi_freq())
 
-	#define SPISPEED 		(13000000)
-	#define SPISPEEDUFAST 	(26000000)
-
 	#define	SPIHARD_PTR S_SPI	/* 0 - SPI0, 1: SPI1... */
 	#define	SPIDFHARD_PTR SPIHARD_PTR
 	#define SPIDFHARD_IX SPIHARD_IX

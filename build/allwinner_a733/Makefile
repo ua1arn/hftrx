@@ -60,9 +60,9 @@ OBJDUMP = $(TRGT)objdump
 #CORE = -mcpu=cortex-a55+fp+simd -mstrict-align -momit-leaf-frame-pointer --specs=nosys.specs
 #CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
 
-CORE = -mcpu=cortex-a55 -mfpu=vfpv4 --specs=nosys.specs -mfloat-abi=hard
+#CORE = -mcpu=cortex-a55 -mfpu=vfpv4 --specs=nosys.specs -mfloat-abi=hard
 # for SyterKit
-#CORE = -mcpu=cortex-a55 -mfpu=vfpv4 --specs=nosys.specs -mfloat-abi=softfp
+CORE = -mcpu=cortex-a55 -mfpu=vfpv4 --specs=nosys.specs -mfloat-abi=softfp
 
 # Define optimisation level here
 #OPT = -Og
@@ -256,15 +256,6 @@ bootloader: BOOT2
 lib: bootloader
 	$(BUSYBOX) grep -E -e ' Reset_Handler$$' -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort >$(BOORPARAM)
 	$(BUSYBOX) cp $(PROJECT)_boot.bin $(DDRINITBLOB)
-
-ddrinit_a733_:
-	$(XFEL) ddr lpddr4
-	$(BUSYBOX) sleep 2s
-
-ddrinit: $(DDRINITBLOB)
-	$(XFEL) write $(Reset_Handler) $(DDRINITBLOB)
-	$(XFEL) exec $(SystemDRAMInit)
-	$(BUSYBOX) sleep 2s
 
 app_run64: $(PROJECT)_app.alw32 $(DDRINIT)
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
