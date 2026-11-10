@@ -28,9 +28,11 @@
 	#define WITHCPUXOSC 26000000u	/* На процессоре установлен генератор 26.000 МГц */
 
 	#if 0
+		// need 0.97 volt on cores
 		#define CPUB_FREQ_MHz 2002	// кратно 26 МГц
 		#define CPUL_FREQ_MHz 1794	// кратно 26 МГц
 	#else
+		// 0.9 volt on cores is enough
 		#define CPUB_FREQ_MHz 1300
 		#define CPUL_FREQ_MHz 1300
 	#endif

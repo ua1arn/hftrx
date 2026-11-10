@@ -417,7 +417,7 @@ int board_radaxa_cubie_axp318w_initialize(void)
 
 }
 
-int board_radaxa_helperboard_a733_initialize(void)
+int board_helperboard_a733_axp318w_initialize(void)
 {
 
 	PRINTF("START PMIC \n");
