@@ -51,7 +51,7 @@ struct dram_parax {
 
 	uint32_t pad [128];
 };
-#if CONFIG_SUNXI_DRAM_A733_LPDDR5 && 0
+#if CONFIG_SUNXI_DRAM_A733_LPDDR5 && CONFIG_SUNXI_DRAM_A733_LPDDR5_opi4pro
 // Orange pi 4 pro
 uint32_t dram_para [128] = {
 		CONFIG_DRAM_CLK, //2400,	   // dram_clk
@@ -131,7 +131,7 @@ uint32_t dram_para [128] = {
 #endif /* CONFIG_SUNXI_DRAM_A733_LPDDR5 */
 
 
-#if CONFIG_SUNXI_DRAM_A733_LPDDR5 && 1
+#if CONFIG_SUNXI_DRAM_A733_LPDDR5 && ! CONFIG_SUNXI_DRAM_A733_LPDDR5_opi4pro
 // Helperboard A733 v1.5
 // DRAM SIZE =2048 MBytes, para1 = a0fa, para2 = 8000001, dram_tpr13 = 6067
 
