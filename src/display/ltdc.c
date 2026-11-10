@@ -6818,9 +6818,15 @@ static void awxx_deoutmapping(int rtmixid)
 	};
 	// from registers dump:
 	// DE ch0 - HDMI tvout 0
+#if defined TCONTV_PTR && ! defined TCONLCD_PTR
+	DE_TOP->DE2TCON_MUX =
+		0x0000FFF4 | /* 0x0000FFF4 @ 0x010  */
+		0;
+#else
 	DE_TOP->DE2TCON_MUX =
 		//0x0000FFF4 | /* 0x0000FFF4 @ 0x010  */
 		0;
+#endif
 
 	DE_TOP->DE_CHN2CORE_MUX =
 		decore0 * (UINT32_C(1) << (2 * 0x00)) | 	// VI1 - CORE0
@@ -7879,6 +7885,7 @@ static void t113_tcon_HV_PLL_configuration(void)
 #endif
 }
 
+#ifdef RTMIXIDLCD
 // Parallel RGB mode
 static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 {
@@ -7905,6 +7912,7 @@ static void t113_tcon_hw_initsteps(const videomode_t * vdmode)
 	PRINTF("TCONLCD_PTR->LCD_DEBUG_REG=0x%08X\n", (unsigned) TCONLCD_PTR->LCD_DEBUG_REG);
 #endif
 }
+#endif /* RTMIXIDLCD */
 
 #if WITHHDMITVHW
 
