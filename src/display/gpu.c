@@ -255,18 +255,6 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
 //#include <string.h>
 //#include "bifrost_v7.h"
 
-/**
- * Multi-Target Framebuffer Descriptor (MFBD) для Bifrost v7:
- * 1. MALI_FRAMEBUFFER_PACKED_T (128 байт: PARAMETERS + PADDING)
- * 2. Массив MALI_RENDER_TARGET_PACKED_T (по 64 байта на каждый RT)
- */
-typedef struct {
-    MALI_FRAMEBUFFER_PACKED_T fbd;
-    MALI_RGB_RENDER_TARGET_PACKED_T rt0;
-} GPU_ALIGN bifrost_v7_mfbd_t;
-
-static GPU_ALIGN bifrost_v7_mfbd_t fb_desc;
-static GPU_ALIGN MALI_FRAGMENT_JOB_PACKED_T frag_job;
 
 /**
  * @brief Заполняет прямоугольник в видеобуфере ARGB8888 однотонным цветом
@@ -292,10 +280,23 @@ static int gpu_fill_rect_fragment_v7(
     uint32_t y,
     uint32_t width,
     uint32_t height,
-    uint32_t color_argb
+	PACKEDCOLORPIP_T color_argb
 	)
 {
-    if (!fb_addr || width == 0 || height == 0) {
+	/**
+	 * Multi-Target Framebuffer Descriptor (MFBD) для Bifrost v7:
+	 * 1. MALI_FRAMEBUFFER_PACKED_T (128 байт: PARAMETERS + PADDING)
+	 * 2. Массив MALI_RENDER_TARGET_PACKED_T (по 64 байта на каждый RT)
+	 */
+	typedef struct {
+	    MALI_FRAMEBUFFER_PACKED_T fbd;
+	    MALI_RGB_RENDER_TARGET_PACKED_T rt0;
+	} GPU_ALIGN bifrost_v7_mfbd_t;
+
+	static GPU_ALIGN bifrost_v7_mfbd_t fb_desc;
+	static GPU_ALIGN MALI_FRAGMENT_JOB_PACKED_T frag_job;
+
+	if (!fb_addr || width == 0 || height == 0) {
         return 0;
     }
 
@@ -345,11 +346,19 @@ static int gpu_fill_rect_fragment_v7(
     uint32_t b = (color_argb >> 0)  & 0xFFU;
 
     // Swizzle из внутреннего R8G8B8A8 в ARGB8888 (в Little-Endian памяти: байты B, G, R, A)
+    // swizzle_bgra = 0000060A
+
+    // bit 0..2 - byte 0
+    // bit 3..5 - byte 1
+    // bit 6..8 - byte 2
+    // bit 9..1 - byte 3
     uint32_t swizzle_bgra = ((uint32_t)MALI_CHANNEL_B << 0) |
                             ((uint32_t)MALI_CHANNEL_G << 3) |
                             ((uint32_t)MALI_CHANNEL_R << 6) |
                             ((uint32_t)MALI_CHANNEL_A << 9);
+    swizzle_bgra = 0x00000688;
 
+    //PRINTHEX32(swizzle_bgra);
     struct MALI_RGB_RENDER_TARGET rt_rgb = {
         MALI_RGB_RENDER_TARGET_header,
         .internal_buffer_offset = 0,
@@ -370,14 +379,14 @@ static int gpu_fill_rect_fragment_v7(
             .surface_stride = (uint64_t)fb_stride * fb_height
         },
         .clear = {
-            .color_0 = 0xFF00FF00,//r * 0x01010101U,
-            .color_1 = g * 0x01010101U,
-            .color_2 = b * 0x01010101U,
-            .color_3 = 0xFF00FF00//a * 0x01010101U
+            .color_0 = color_argb,//r * 0x01010101U,
+            .color_1 = 0,//g * 0x01010101U,
+            .color_2 = 0,//b * 0x01010101U,
+            .color_3 = color_argb //a * 0x01010101U
         }
     };
     MALI_RGB_RENDER_TARGET_pack(&fb_desc.rt0, &rt_rgb);
-    PRINTHEX32(fb_desc.rt0);
+    //PRINTHEX32(fb_desc.rt0);
 
 
     // =========================================================================
