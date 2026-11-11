@@ -1741,19 +1741,19 @@ typedef struct exception_frame_tag
 	uint64_t x1, x2, x3, x4, x5, x6, x7, x8, x9, x10;
 	uint64_t x11, x12, x13, x14, x15, x16, x17, x18, x19, x20;
 	uint64_t x21, x22, x23, x24, x25, x26, x27, x28, x29, x30;
-} exception_frame_t;
+} irq_stack_frame_top_t;
 
 
 static size_t context_size(void)
 {
-	return sizeof (exception_frame_t);
+	return sizeof (irq_stack_frame_top_t);
 }
 
 
 // Установить параметры потока для запуска
-static void context_init(exception_frame_t * __restrict oldframe, void * fn, void * arg)
+static void context_init(irq_stack_frame_top_t * __restrict oldframe, void * fn, void * arg)
 {
-	exception_frame_t * const f = (exception_frame_t *) oldframe;
+	irq_stack_frame_top_t * const f = (irq_stack_frame_top_t *) oldframe;
 	memset(oldframe, 0, context_size());	// CPU/FPU registers,
 
 	// (spsr<4> == '1');
@@ -1774,14 +1774,14 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 	f->x0 = (uintptr_t) arg;
 }
 
-static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
+static void context_set_ec(irq_stack_frame_top_t * __restrict cpuframe, unsigned ec)
 {
-	exception_frame_t * const f = cpuframe;
+	irq_stack_frame_top_t * const f = cpuframe;
 	f->x0 = ec;
 }
 
 // scheduler-mode entry
-static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
+static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * f)
 {
 	task_syscall_handler(thread, (unsigned) f->x0, (void *) f->x1);
 }
@@ -1806,53 +1806,89 @@ static uint64_t task_sysfn(unsigned arg0, void * arg1)
 
 #define IDLETASKRAM_SIZE (8 * 1024)
 
-typedef struct exception_frame_tag
-{
-	uint64_t vfpregs [32];
-	uint32_t sp_adjmod4, fpscr;
-	//uint32_t r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, lr;
-	uint32_t r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr;
-	//uint32_t SPSR_irq;	// 0
-	uint32_t LR_irq;
-	uint32_t cpsr;	// saved by irq
-} exception_frame_t;
-// Save LR_irq and SPSR_irq on to the SYS stack
-//push    {r0-r3, r4-r11, r12, lr}            // Save APCS corruptible registers
-// Store stack adjustment(R3) and user data(R4)
-// FPSCR, FPEXC
-//VPUSH.F32	{D0-D15}
-//VPUSH.F32	{D16-D31}
+#include <stdint.h>
+
+#include <stdint.h>
+
+/**
+ * Upper part of the IRQ stack frame (always at a fixed offset from R0 / SP).
+ */
+typedef struct {
+    // 1. VFP/NEON double-precision registers (VPUSH {D16-D31}, then VPUSH {D0-D15})
+    // D16 is at the lowest memory address, D31 at the highest (16 * 8 = 128 bytes)
+    uint64_t d16_d31[16];
+    // D0 is at the lowest memory address, D15 at the highest (16 * 8 = 128 bytes)
+    uint64_t d0_d15[16];
+
+    // 2. Alignment and FPU status metadata (push {r3, r4})
+    uint32_t stack_adj;   // R3: Stack alignment adjustment in bytes (0..3)
+    uint32_t fpscr;       // R4: Saved Floating-Point Status and Control Register
+} irq_stack_frame_top_t;
+
+/**
+ * Lower part of the IRQ stack frame (shifted by 'stack_adj' bytes in memory).
+ */
+typedef struct {
+    // 3. General-purpose registers from SYS mode (push {r0-r12, lr})
+    uint32_t r0;
+    uint32_t r1;
+    uint32_t r2;
+    uint32_t r3;
+    uint32_t r4;
+    uint32_t r5;
+    uint32_t r6;
+    uint32_t r7;
+    uint32_t r8;
+    uint32_t r9;
+    uint32_t r10;         // sl (Stack Limit)
+    uint32_t r11;         // fp (Frame Pointer)
+    uint32_t r12;         // ip (Intra-Procedure-call scratch register)
+    uint32_t lr_sys;      // SYS/USR mode Link Register
+
+    // 4. Exception return context (srsfd sp!, #ARM_MODE_SYS)
+    uint32_t pc_irq;      // Adjusted LR_irq (return address)
+    uint32_t spsr_irq;    // Saved SPSR_irq (CPSR of the interrupted context)
+
+//    uint32_t dummy_fp / arg0  (4 байта:   0x00000000 — маркер дна стека для GDB / аргумент)
+//    uint32_t dummy_lr / arg1  (4 байта:   0x00000000 — маркер дна стека для GDB / выравнивание)
+} irq_stack_frame_bottom_t;
 
 static size_t context_size(void)
 {
-	return sizeof (exception_frame_t);
+	return sizeof (irq_stack_frame_top_t) +
+			sizeof (irq_stack_frame_bottom_t) +
+			2 * sizeof (uint32_t);
 }
 
 // Установить параметры потока для запуска
-static void context_init(exception_frame_t * __restrict oldframe, void * fn, void * arg)
+static void context_init(irq_stack_frame_top_t * __restrict frame_top, void * fn, void * arg)
 {
 
-	exception_frame_t * const f = (exception_frame_t *) oldframe;
-	memset(oldframe, 0, context_size());	// CPU/FPU registers,
-	f->cpsr =
+	memset(frame_top, 0, context_size());	// CPU/FPU registers,
+    const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
+    irq_stack_frame_bottom_t * const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+    frame_bottom->spsr_irq =
 		1 * (UINT32_C(1) << 8) |	// A - SError exception mask
 		0x1F * (UINT32_C(1) << 0) |	// System sys 11111
 		0;
-	f->LR_irq = (uintptr_t) fn;
-	f->r0 = (uintptr_t) arg;
+	frame_bottom->pc_irq = (uintptr_t) fn;
+	frame_bottom->r0 = (uintptr_t) arg;
 }
 
 // scheduler-mode entry - set svc exit code
-static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
+static void context_set_ec(irq_stack_frame_top_t * __restrict frame_top, unsigned ec)
 {
-	exception_frame_t * const f = cpuframe;
-	f->r0 = ec;
+    const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
+    irq_stack_frame_bottom_t * const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+    frame_bottom->r0 = ec;
 }
 
 // scheduler-mode entry
-static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
+static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * frame_top)
 {
-	task_syscall_handler(thread, (unsigned) f->r0, (void *) f->r1);
+    const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
+    irq_stack_frame_bottom_t * const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+	task_syscall_handler(thread, (unsigned) frame_bottom->r0, (void *) frame_bottom->r1);
 }
 
 // user-mode entry
@@ -1907,18 +1943,18 @@ typedef struct {
     uint32_t s15;
     uint32_t fpscr;    /* Floating-point Status and Control Register */
     uint32_t reserved; /* Highest address — Padding to maintain 8-byte alignment */
-} __attribute__((packed)) exception_frame_t;
+} __attribute__((packed)) irq_stack_frame_top_t;
 
 
 // scheduler-mode entry - set svc exit code
-static void context_set_ec(exception_frame_t * __restrict cpuframe, unsigned ec)
+static void context_set_ec(irq_stack_frame_top_t * __restrict cpuframe, unsigned ec)
 {
-	exception_frame_t * const f = cpuframe;
+	irq_stack_frame_top_t * const f = cpuframe;
 	f->r0 = ec;
 }
 
 // scheduler-mode entry
-static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
+static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * f)
 {
 	task_syscall_handler(thread, (unsigned) f->r0, (void *) f->r1);
 }
@@ -1957,12 +1993,12 @@ static uint32_t task_sysfn_old(unsigned arg0, volatile void * arg1)
 
 static size_t context_size(void)
 {
-	return sizeof (exception_frame_t);
+	return sizeof (irq_stack_frame_top_t);
 }
 
 
 // Установить параметры потока для запуска
-static void context_init(exception_frame_t * __restrict oldframe, void * fn, void * arg)
+static void context_init(irq_stack_frame_top_t * __restrict oldframe, void * fn, void * arg)
 {
 }
 
@@ -1974,17 +2010,17 @@ typedef struct exception_frame_tag
 {
 	uint64_t x0, x1, x2, x3, x4;
 	uint64_t xx [32];
-} exception_frame_t;
+} irq_stack_frame_top_t;
 
 // scheduler-mode entry - set svc exit code
 static void context_set_ec(void * __restrict cpuframe, unsigned ec)
 {
-	exception_frame_t * const f = cpuframe;
+	irq_stack_frame_top_t * const f = cpuframe;
 	f->x3 = ec;
 }
 
 // scheduler-mode entry
-static void task_svc(struct thread_item_tag * thread, unsigned code, exception_frame_t * f)
+static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * f)
 {
 	task_syscall_handler(thread, (unsigned) f->x3, (void *) f->x4);
 }
@@ -2024,12 +2060,12 @@ static uint64_t task_sysfn_old(unsigned arg0, volatile void * arg1)
 
 static size_t context_size(void)
 {
-	return sizeof (exception_frame_t);
+	return sizeof (irq_stack_frame_top_t);
 }
 
 
 // Установить параметры потока для запуска
-static void context_init(exception_frame_t * __restrict oldframe, void * fn, void * arg)
+static void context_init(irq_stack_frame_top_t * __restrict oldframe, void * fn, void * arg)
 {
 }
 
@@ -2038,6 +2074,7 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 #endif
 
 static volatile uint8_t threads_not_started = 1;
+static volatile uint8_t threads_not_halted = 1;
 
 
 typedef struct check_ready_tag
@@ -2051,7 +2088,7 @@ typedef struct thread_item_tag
 {
 	LIST_ENTRY item;
 	uint8_t affinity;
-	exception_frame_t * cpuframe;	// cpu state
+	irq_stack_frame_top_t * cpuframe;	// cpu state
 	uint8_t prio;
 	const check_ready_t * check_ready;	// condition check function
 	void * check_ready_obj;	// user-space wait condition parameters
@@ -2155,7 +2192,7 @@ static void thread_add(
 	ASSERT(NULL != thread);
 	ASSERT(NULL != stackbase);
 	const uintptr_t top = (uintptr_t) stackbase + stacksize;
-	exception_frame_t * stackframe = (exception_frame_t *) (top - context_size());
+	irq_stack_frame_top_t * const stackframe = (irq_stack_frame_top_t *) (top - context_size());
 	// Установить параметры потока для запуска
 	context_init(stackframe, fn, ctx);
 	thread->affinity = affinity;
@@ -2333,7 +2370,7 @@ static void timers_check(hwtimcountfast_t tn) {
 static int thread_print(char *__restrict buff, size_t size, const thread_item_t * const tp, const char * title)
 {
 	int n = 0;
-	exception_frame_t * const f = tp->cpuframe;
+	irq_stack_frame_top_t * const f = tp->cpuframe;
 	n += local_snprintf_P(buff + n, size - n, "%s %p: irql=0x%02X (prio=%u), aff=0x%02X, ", title, tp, (unsigned) GICI_ENCODE_IRQL(tp->prio), (unsigned) tp->prio, (unsigned) tp->affinity);
 	if (tp->bottom)
 		n += local_snprintf_P(buff + n, size - n, "use=%3u%% ", (unsigned) (100 * (tp->top - (uintptr_t) tp->cpuframe) /  (tp->top - tp->bottom)));
@@ -2698,17 +2735,18 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 	// Запуск
 	startedtask [core] = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
 	IRQLSPIN_UNLOCK(& threadslock, GICI_ENCODE_IRQL(startedtask [core]->prio));
+	while (!threads_not_halted) ;
 	return startedtask [core]->cpuframe;
 }
 
 static void * task_scheduler2(unsigned code, void * oldframe)
 {
-	return task_scheduler0((exception_frame_t *) oldframe, 1, code);
+	return task_scheduler0((irq_stack_frame_top_t *) oldframe, 1, code);
 }
 
 static void * task_scheduler(void * oldframe)
 {
-	return task_scheduler0((exception_frame_t *) oldframe, 0, 0);
+	return task_scheduler0((irq_stack_frame_top_t *) oldframe, 0, 0);
 }
 
 // хотим завершить выполнение кванта, не дожидаясь прерывания
@@ -2871,19 +2909,19 @@ static void task_syscall_handler(thread_item_t * thread, unsigned arg0, void * a
 
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 static void *
-task_scheduler0(exception_frame_t * oldframe, unsigned svcflag, unsigned code)
+task_scheduler0(irq_stack_frame_top_t * oldframe, unsigned svcflag, unsigned code)
 {
 	return oldframe;
 }
 
 static void * task_scheduler2(unsigned code, void * oldframe)
 {
-	return task_scheduler0((exception_frame_t *) oldframe, 1, code);
+	return task_scheduler0((irq_stack_frame_top_t *) oldframe, 1, code);
 }
 
 static void * task_scheduler(void * oldframe)
 {
-	return task_scheduler0((exception_frame_t *) oldframe, 0, 0);
+	return task_scheduler0((irq_stack_frame_top_t *) oldframe, 0, 0);
 }
 
 void tasks_print(void)
@@ -3140,7 +3178,12 @@ uint32_t __get_DFAR(void)
 // AARCH32
 void IRQ_Handler_aarch32(void * frame)
 {
-	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
+    // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
+	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
+    const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
+    irq_stack_frame_bottom_t * const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+
+    const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	IRQ_Handler_GIC();			// Group 1 handler
 	thread_set_affinity(frame, aff);
 	run_task_curr_aarch32(task_scheduler(frame));
@@ -3148,18 +3191,38 @@ void IRQ_Handler_aarch32(void * frame)
 
 void FIQ_Handler_aarch32(void * frame)
 {
-	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
+    // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
+	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
+    const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
+    irq_stack_frame_bottom_t * const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+
+    const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	FIQ_Handler_GIC();			// Group 0 handler
 	thread_set_affinity(frame, aff);
 	run_task_curr_aarch32(task_scheduler(frame));
 }
 
+void __NO_RETURN SWI_Handler_aarch32(void * frame)
+{
+    // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
+	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
+    const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
+    irq_stack_frame_bottom_t * const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+
+    irq_stack_frame_top_t * const f = (irq_stack_frame_top_t *) frame;
+	const unsigned esr_el3 = 0;//__get_DFSR();
+	run_task_curr_aarch32(task_scheduler2(esr_el3 & 0xFFFF, frame));
+}
+
 void Undef_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
+	threads_not_halted = 0;
 
-	PRINTF("UndefHandler trapped[%p,sp~%p]\n", Undef_Handler, & marker);
-	PRINTF("CPUID=%d\n", (int) (arm_hardware_cpuid()));
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+	PRINTF("Undef_Handler trapped. CPUID=%u, DFSR=%08X, IFAR=%08X, pc=%08X, sp~%08x __get_MPIDR()=%08X\n", arm_hardware_cpuid(), (unsigned) __get_DFSR(), (unsigned) __get_IFAR(), (unsigned) (& marker) [2], (unsigned) (uintptr_t) & marker, (unsigned) __get_MPIDR());
+#pragma GCC diagnostic pop
 	unsigned i;
 	for (i = 0; i < 8; ++ i)
 	{
@@ -3182,24 +3245,15 @@ void Undef_Handler(void)
 
 #if (__CORTEX_A != 0) && ! defined __riscv
 
-
-void __NO_RETURN SWI_Handler_aarch32(void * frame)
-{
-	exception_frame_t * const f = (exception_frame_t *) frame;
-	const unsigned esr_el3 = 0;//__get_DFSR();
-	run_task_curr_aarch32(task_scheduler2(esr_el3 & 0xFFFF, frame));
-}
-
 // Prefetch Abort
 void PAbort_Handler(void)
 {
+	threads_not_halted = 0;
 	const volatile uint32_t marker = 0xDEADBEEF;
-	dbg_puts("PAbort_Handler trapped. CPUID=");
-	dbg_putchar('0' + (arm_hardware_cpuid()));
-	dbg_putchar('\n');
+	//PRINTF("PAbort_Handler trapped. CPUID=%u\n", arm_hardware_cpuid());
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
-	PRINTF("DFSR=%08X, IFAR=%08X, pc=%08X, sp~%08x __get_MPIDR()=%08X\n", (unsigned) __get_DFSR(), (unsigned) __get_IFAR(), (unsigned) (& marker) [2], (unsigned) (uintptr_t) & marker, (unsigned) __get_MPIDR());
+	PRINTF("PAbort_Handler trapped. CPUID=%u, DFSR=%08X, IFAR=%08X, pc=%08X, sp~%08x __get_MPIDR()=%08X\n", arm_hardware_cpuid(), (unsigned) __get_DFSR(), (unsigned) __get_IFAR(), (unsigned) (& marker) [2], (unsigned) (uintptr_t) & marker, (unsigned) __get_MPIDR());
 #pragma GCC diagnostic pop
 	const int WnR = (__get_DFSR() & (1uL << 11)) != 0;
 	const int Status = (__get_DFSR() & (0x0FuL << 0));
@@ -3263,13 +3317,11 @@ void PAbort_Handler(void)
 // Data Abort.
 void DAbort_Handler(void)
 {
+	threads_not_halted = 0;
 	const volatile uint32_t marker = 0xDEADBEEF;
-	dbg_puts("DAbort_Handler trapped. CPUID=");
-	dbg_putchar('0' + (arm_hardware_cpuid()));
-	dbg_putchar('\n');
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
-	PRINTF(PSTR("DFSR=%08X, DFAR=%08X, pc=%08X, sp~%08X\n"), (unsigned) __get_DFSR(), (unsigned) __get_DFAR(), (unsigned) (& marker) [2], (unsigned) (uintptr_t) & marker);
+	PRINTF("DAbort_Handler trapped. CPUID=%u, DFSR=%08X, IFAR=%08X, pc=%08X, sp~%08x __get_MPIDR()=%08X\n", arm_hardware_cpuid(), (unsigned) __get_DFSR(), (unsigned) __get_IFAR(), (unsigned) (& marker) [2], (unsigned) (uintptr_t) & marker, (unsigned) __get_MPIDR());
 #pragma GCC diagnostic pop
 	const unsigned WnR = (__get_DFSR() & (UINT32_C(1) << 11)) != 0;
 	const unsigned Status = (__get_DFSR() & (UINT32_C(0x0F) << 0));
@@ -3332,6 +3384,7 @@ void DAbort_Handler(void)
 
 void Hyp_Handler(void)
 {
+	threads_not_halted = 0;
 	dbg_puts(PSTR("Hyp_Handler trapped. CPUID="));
 	dbg_putchar('0' + (arm_hardware_cpuid()));
 	dbg_putchar('\n');

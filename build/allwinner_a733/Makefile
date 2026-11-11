@@ -60,7 +60,7 @@ OBJDUMP = $(TRGT)objdump
 #CORE = -mcpu=cortex-a55+fp+simd -mstrict-align -momit-leaf-frame-pointer --specs=nosys.specs
 #CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
 
-CORE = -mcpu=cortex-a55 -mfpu=vfpv4 --specs=nosys.specs -mfloat-abi=hard
+CORE = -mcpu=cortex-a55 -mfpu=neon-vfpv4 --specs=nosys.specs -mfloat-abi=hard
 # for SyterKit
 #CORE = -mcpu=cortex-a55 -mfpu=vfpv4 --specs=nosys.specs -mfloat-abi=softfp
 

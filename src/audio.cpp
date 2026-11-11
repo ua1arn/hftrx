@@ -83,9 +83,9 @@
 	#include <arm_acle.h>
 #endif /* __ARM_ACLE */
 
-#if __ARM_NEON
-	#include <arm_neon.h>
-#endif /* __ARM_NEON */
+//#if __ARM_NEON
+//	#include <arm_neon.h>
+//#endif /* __ARM_NEON */
 
 // ARMSAIRATE - sample rate IF кодека в герцах
 #define NSAITICKS(t_ms) ((uint_fast16_t) (((uint_fast32_t) (t_ms) * ARMSAIRATE + 500) / 1000))
