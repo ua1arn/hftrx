@@ -198,8 +198,9 @@ static void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
 static int gpu_submit_job(unsigned slot, uintptr_t job)
 {
 	unsigned as = 0;
-//	PRINTF("gpu_submit_job: head=%p, slot=%u\n", (void *) head, slot);
-//	printhex32((uintptr_t) job, job, 64);
+	//PRINTF("gpu_submit_job: head=%p, slot=%u\n", (void *) head, slot);
+//	PRINTF("Job before run:\n");
+//	printhex32((uintptr_t) job, (void *) job, 512);
     // Записываем физический адрес начала структуры v_job в регистр указателя слота 0
     GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_HI = ptr_hi32(job);//(uint32_t)(((uintptr_t)&v_job >> 32) & 0xFFFFFFFF);
     GPU_JOB_CONTROL->LOOP[slot].JS_HEAD_NEXT_LO = ptr_lo32(job);//(uint32_t)((uintptr_t)&v_job & 0xFFFFFFFF);
@@ -244,6 +245,230 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
         return 0;
     }
 }
+
+
+//==============
+
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+#include <string.h>
+#include "bifrost_v7.h"
+
+/**
+ * Multi-Target Framebuffer Descriptor (MFBD) для Bifrost v7:
+ * 1. MALI_FRAMEBUFFER_PACKED_T (128 байт: PARAMETERS + PADDING)
+ * 2. Массив MALI_RENDER_TARGET_PACKED_T (по 64 байта на каждый RT)
+ */
+typedef struct {
+    MALI_FRAMEBUFFER_PACKED_T fbd;
+    MALI_RGB_RENDER_TARGET_PACKED_T rt0;
+} GPU_ALIGN bifrost_v7_mfbd_t;
+
+GPU_ALIGN static bifrost_v7_mfbd_t fb_desc;
+GPU_ALIGN static MALI_FRAGMENT_JOB_PACKED_T frag_job;
+
+/**
+ * @brief Заполняет прямоугольник в видеобуфере ARGB8888 однотонным цветом
+ *        средствами аппаратного Clear в MALI_JOB_TYPE_FRAGMENT (Bifrost v7).
+ *
+ * @param fb_addr    Указатель на начало видеобуфера (физический адрес для GPU).
+ * @param fb_width   Полная ширина видеобуфера в пикселях.
+ * @param fb_height  Полная высота видеобуфера в пикселях.
+ * @param fb_stride  Шаг строки видеобуфера в БАЙТАХ (должен быть кратен 64 байтам).
+ * @param x          Координата X левого верхнего угла прямоугольника.
+ * @param y          Координата Y левого верхнего угла прямоугольника.
+ * @param width      Ширина прямоугольника в пикселях.
+ * @param height     Высота прямоугольника в пикселях.
+ * @param color_argb Цвет в формате ARGB8888 (0xAARRGGBB).
+ * @return int       0 при успехе, ненулевой код при ошибке.
+ */
+int gpu_fill_rect_fragment_v7(
+    uint32_t *fb_addr,
+    uint32_t fb_width,
+    uint32_t fb_height,
+    uint32_t fb_stride,
+    uint32_t x,
+    uint32_t y,
+    uint32_t width,
+    uint32_t height,
+    uint32_t color_argb
+) {
+    if (!fb_addr || width == 0 || height == 0) {
+        return 0;
+    }
+
+    if (x >= fb_width || y >= fb_height) {
+        return 0;
+    }
+
+    uint32_t max_x = (x + width > fb_width) ? (fb_width - 1) : (x + width - 1);
+    uint32_t max_y = (y + height > fb_height) ? (fb_height - 1) : (y + height - 1);
+
+    memset(&fb_desc, 0, sizeof(fb_desc));
+    memset(&frag_job, 0, sizeof(frag_job));
+
+    // =========================================================================
+    // 1. Упаковка Framebuffer Descriptor (PARAMETERS + PADDING)
+    // =========================================================================
+    struct MALI_FRAMEBUFFER_PARAMETERS fbd_params = {
+        MALI_FRAMEBUFFER_PARAMETERS_header,
+        .pre_frame_0 = MALI_PRE_POST_FRAME_SHADER_MODE_NEVER,
+        .pre_frame_1 = MALI_PRE_POST_FRAME_SHADER_MODE_NEVER,
+        .post_frame  = MALI_PRE_POST_FRAME_SHADER_MODE_NEVER,
+        .width = fb_width,
+        .height = fb_height,
+        .bound_min_x = x,
+        .bound_min_y = y,
+        .bound_max_x = max_x,
+        .bound_max_y = max_y,
+        .sample_count = 1,
+        .sample_pattern = MALI_SAMPLE_PATTERN_SINGLE_SAMPLED,
+        .tie_break_rule = MALI_TIE_BREAK_RULE_0_IN_180_OUT,
+        .effective_tile_size = 16,
+        .render_target_count = 1,
+        .color_buffer_allocation = 1024, // 16 * 16 * 4 байта
+        .has_zs_crc_extension = false
+    };
+    MALI_FRAMEBUFFER_PARAMETERS_pack(&fb_desc.fbd.PARAMETERS, &fbd_params);
+
+    static GPU_ALIGN struct MALI_FRAMEBUFFER_PADDING fbd_pad = { MALI_FRAMEBUFFER_PADDING_header };
+    MALI_FRAMEBUFFER_PADDING_pack(&fb_desc.fbd.PADDING, &fbd_pad);
+
+    // =========================================================================
+    // 2. Упаковка Render Target 0 (MALI_RGB_RENDER_TARGET -> rt0)
+    // =========================================================================
+    uint32_t a = (color_argb >> 24) & 0xFFU;
+    uint32_t r = (color_argb >> 16) & 0xFFU;
+    uint32_t g = (color_argb >> 8)  & 0xFFU;
+    uint32_t b = (color_argb >> 0)  & 0xFFU;
+
+    // Swizzle из внутреннего R8G8B8A8 в ARGB8888 (в Little-Endian памяти: байты B, G, R, A)
+    uint32_t swizzle_bgra = ((uint32_t)MALI_CHANNEL_B << 0) |
+                            ((uint32_t)MALI_CHANNEL_G << 3) |
+                            ((uint32_t)MALI_CHANNEL_R << 6) |
+                            ((uint32_t)MALI_CHANNEL_A << 9);
+
+    struct MALI_RGB_RENDER_TARGET rt_rgb = {
+        MALI_RGB_RENDER_TARGET_header,
+        .internal_buffer_offset = 0,
+        .yuv_enable = false,
+        .dithered_clear = false,
+        .internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8,
+        .write_enable = true,
+        .writeback_format = MALI_COLOR_FORMAT_R8G8B8A8,
+        .writeback_block_format = MALI_BLOCK_FORMAT_LINEAR,
+        .writeback_msaa = MALI_MSAA_SINGLE,
+        .srgb = false,
+        .dithering_enable = false,
+        .swizzle = swizzle_bgra,
+        .clean_tile_write_enable = true,
+        .writeback_buffer = {
+            .base = (uintptr_t)fb_addr,
+            .row_stride = fb_stride,
+            .surface_stride = (uint64_t)fb_stride * fb_height
+        },
+        .clear = {
+            .color_0 = r * 0x01010101U,
+            .color_1 = g * 0x01010101U,
+            .color_2 = b * 0x01010101U,
+            .color_3 = a * 0x01010101U
+        }
+    };
+    MALI_RGB_RENDER_TARGET_pack(&fb_desc.rt0, &rt_rgb);
+
+    // =========================================================================
+    // 3. Упаковка указателя на Framebuffer (MALI_FRAMEBUFFER_POINTER)
+    // =========================================================================
+    struct MALI_FRAMEBUFFER_POINTER fb_ptr_struct = {
+        MALI_FRAMEBUFFER_POINTER_header,
+        .type = true,
+        .zs_crc_extension_present = false,
+        .render_target_count = 1,
+        .pointer = (uintptr_t)&fb_desc.fbd
+    };
+    static GPU_ALIGN MALI_FRAMEBUFFER_POINTER_PACKED_T fb_ptr_packed;
+    MALI_FRAMEBUFFER_POINTER_pack(&fb_ptr_packed, &fb_ptr_struct);
+
+    // =========================================================================
+    // 4. Упаковка Fragment Job (HEADER и PAYLOAD)
+    // =========================================================================
+    struct MALI_JOB_HEADER jh = {
+        MALI_JOB_HEADER_header,
+        .type = MALI_JOB_TYPE_FRAGMENT,
+        .exception_status = 0,
+        .barrier = true,
+        .index = 1,
+        .next = 0
+    };
+    MALI_JOB_HEADER_pack(&frag_job.HEADER, &jh);
+
+    struct MALI_FRAGMENT_JOB_PAYLOAD fjp = {
+        MALI_FRAGMENT_JOB_PAYLOAD_header,
+        .bound_min_x = x >> 4,
+        .bound_min_y = y >> 4,
+        .bound_max_x = max_x >> 4,
+        .bound_max_y = max_y >> 4,
+        .has_tile_enable_map = false,
+        .framebuffer = (uint64_t)&fb_desc//(uint64_t)& fb_ptr_packed | 1
+    };
+    MALI_FRAGMENT_JOB_PAYLOAD_pack(&frag_job.PAYLOAD, &fjp);
+
+    // =========================================================================
+    // 5. Синхронизация D-Cache и отправка задачи в Job Slot 0
+    // =========================================================================
+    dcache_clean_invalidate((uintptr_t)&fb_desc, sizeof(fb_desc));
+    dcache_clean_invalidate((uintptr_t)&frag_job, sizeof(frag_job));
+
+    uintptr_t dirty_start = (uintptr_t)fb_addr + (uintptr_t)y * fb_stride;
+    size_t dirty_size = (size_t)(max_y - y + 1) * fb_stride;
+    dcache_clean_invalidate(dirty_start, dirty_size);
+
+    PRINTHEX32(fb_desc);
+    PRINTHEX32(frag_job);
+    PRINTHEX32(fb_ptr_packed);
+	PRINTF("Job before run:\n");
+	printhex32((uintptr_t)&frag_job, &frag_job, 512);
+   if (gpu_submit_job(0, (uintptr_t)&frag_job)) {
+        return -1;
+    }
+
+    dcache_clean_invalidate(dirty_start, dirty_size);
+    return 0;
+}
+// Параметры видеобуфера 800x480 (ARGB8888)
+#define FB_WIDTH   800U
+#define FB_HEIGHT  480U
+#define FB_STRIDE  (FB_WIDTH * sizeof(uint32_t)) // 3200 байт (кратно 64 байтам)
+
+// Выровненный по 64 байтам видеобуфер (или указатель на ваш существующий framebuffer)
+GPU_ALIGN static uint32_t framebuffer[FB_HEIGHT][FB_WIDTH];
+
+void draw_example(void) {
+    // Цвет в формате ARGB8888: 0xAARRGGBB
+    // Например, непрозрачный красный цвет: A=0xFF, R=0xFF, G=0x00, B=0x00
+    uint32_t color_red = 0xFFFF0000U;
+
+    dcache_clean_invalidate((uintptr_t)&framebuffer, sizeof(framebuffer));
+   // Заливка прямоугольника 200x200 в позиции (x = 100, y = 100)
+    int res = gpu_fill_rect_fragment_v7(
+        &framebuffer[0][0], // Указатель на начало видеобуфера (физический адрес)
+        FB_WIDTH,           // 800
+        FB_HEIGHT,          // 480
+        FB_STRIDE,          // 3200 байт
+        0,                // x
+        0,                // y
+		FB_WIDTH,                // width
+		FB_HEIGHT,                // height
+        color_red           // 0xFFFF0000
+    );
+    printhex32(0, framebuffer, 256);
+    if (res != 0) {
+        PRINTF("gpu_fill_rect_fragment_v7 failed: %d\n", res);
+    }
+}
+
+//==============
 
 static int gpu_run_write_value_test_mesa(void) {
 	PRINTF("gpu_run_write_value_test_mesa:\n");
@@ -736,12 +961,13 @@ static void mali_bifrost_l2_ready(void)
 void gpu_test(void)
 {
 #if 1
+	draw_example();
 	gpu_run_write_value_test_mesa();
-	gpu_computejob();
+	//gpu_computejob();
 	gpu_run_write_value_test_mesa2();
-	gpu_computejob();
+	//gpu_computejob();
 	gpu_run_write_value_test_mesa();
-	gpu_computejob();
+	//gpu_computejob();
 	return;
 #endif
 #if 0
