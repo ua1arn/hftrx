@@ -3392,15 +3392,6 @@ hwaccel_fillrect_u32(
 	ASSERT((DMA2D->ISR & DMA2D_ISR_TEIF) == 0);	// Transfer Error
 	return 1;
 
-#elif WITHGPUHW && 0
-
-	const uintptr_t taddr = (uintptr_t) buffer;
-	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
-
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	gpu_fillrect(buffer, dx, taddr, tstride, tsizehw, alpha, COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color);
-	return 1;
-
 #elif WITHMDMAHW && CPUSTYLE_ALLWINNER
 	/* Использование G2D для формирования изображений */
 
@@ -3520,7 +3511,16 @@ hwaccel_fillrect_mux(
 	)
 {
 	int done = 0;
-#if LCDMODE_PALETTE256
+
+#if WITHGPUHW && 0
+
+	const uintptr_t taddr = (uintptr_t) buffer;
+	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
+	done = gpu_fillrect(buffer, dx, taddr, tstride, tsizehw, alpha, COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color);
+
+#elif LCDMODE_PALETTE256
 	done = hwaccel_fillrect_u8(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
 
 #elif LCDMODE_RGB565

@@ -247,7 +247,7 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
  * @return int       0 при успехе, ненулевой код при ошибке.
  */
 static int gpu_fill_rect_fragment_v7(
-    uint32_t *fb_addr,
+    void *fb_addr,
     uint32_t fb_width,
     uint32_t fb_height,
     uint32_t fb_stride,
@@ -255,7 +255,7 @@ static int gpu_fill_rect_fragment_v7(
     uint32_t y,
     uint32_t width,
     uint32_t height,
-	PACKEDCOLORPIP_T color_argb
+	COLORPIP_T color_argb
 	)
 {
 	/**
@@ -315,10 +315,10 @@ static int gpu_fill_rect_fragment_v7(
     // =========================================================================
     // 2. Упаковка Render Target 0 (MALI_RGB_RENDER_TARGET -> rt0)
     // =========================================================================
-    uint32_t a = (color_argb >> 24) & 0xFFU;
-    uint32_t r = (color_argb >> 16) & 0xFFU;
-    uint32_t g = (color_argb >> 8)  & 0xFFU;
-    uint32_t b = (color_argb >> 0)  & 0xFFU;
+    const uint32_t a = COLORPIP_A(color_argb);
+    const uint32_t r = COLORPIP_R(color_argb);
+    const uint32_t g = COLORPIP_G(color_argb);
+    const uint32_t b = COLORPIP_B(color_argb);
 
     // Swizzle из внутреннего R8G8B8A8 в ARGB8888 (в Little-Endian памяти: байты B, G, R, A)
     // swizzle_bgra = 0000060A
@@ -332,7 +332,6 @@ static int gpu_fill_rect_fragment_v7(
                             ((uint32_t)MALI_CHANNEL_R << 6) |
                             ((uint32_t)MALI_CHANNEL_A << 9);
     swizzle_bgra = 0x00000688;
-
     //PRINTHEX32(swizzle_bgra);
     struct MALI_RGB_RENDER_TARGET rt_rgb = {
         MALI_RGB_RENDER_TARGET_header,
@@ -360,6 +359,22 @@ static int gpu_fill_rect_fragment_v7(
             .color_3 = color_argb //a * 0x01010101U
         }
     };
+#if LCDMODE_RGB565
+    // Упаковка из 8-битных компонентов r, g, b (0..255) во внутренний R8G8B8A8 (Little-Endian: R в младшем байте)
+    const uint32_t clear_rgba8 = (a << 24) | (b << 16) | (g << 8) | r;
+    const uint32_t swizzle_rgb565 = ((uint32_t)MALI_CHANNEL_R << 0) |
+                              ((uint32_t)MALI_CHANNEL_G << 3) |
+                              ((uint32_t)MALI_CHANNEL_B << 6) |
+                              ((uint32_t)MALI_CHANNEL_1 << 9);
+
+    rt_rgb.clear.color_0 = clear_rgba8;
+    rt_rgb.clear.color_1 = 0;
+    rt_rgb.clear.color_2 = 0;
+    rt_rgb.clear.color_3 = clear_rgba8;
+    rt_rgb.swizzle = swizzle_rgb565;
+    rt_rgb.writeback_format = MALI_COLOR_FORMAT_R5G6B5;
+#endif
+
     MALI_RGB_RENDER_TARGET_pack(&fb_desc.rt0, &rt_rgb);
     //PRINTHEX32(fb_desc.rt0);
 
@@ -414,7 +429,7 @@ static int gpu_fill_rect_fragment_v7(
 static LCLSPINLOCK_t gpulock;
 
 // dcache_clean_invalidate уже выполнено
-void gpu_fillrect(
+int gpu_fillrect(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uintptr_t taddr,
@@ -428,11 +443,11 @@ void gpu_fillrect(
 	)
 {
 	if (w == 0 || h == 0)
-		return;
+		return 1;
 	if (w == 1 && h == 1)
 	{
-		* buffer = TFTALPHA(alpha, color24);
-		return;
+		//* buffer = TFTALPHA(alpha, color24);
+		return 0;
 	}
 	IRQL_t irql;
 	IRQLSPIN_LOCK(& gpulock, & irql, BRDSYS_IRQL);
@@ -451,6 +466,7 @@ void gpu_fillrect(
     );
     ASSERT(res == 0);
 	IRQLSPIN_UNLOCK(& gpulock, irql);
+	return 1;
 }
 
 void draw_example(void) {

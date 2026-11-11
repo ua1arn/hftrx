@@ -611,7 +611,7 @@ void display_transparency(const gxdrawb_t * db,
 	uint_fast8_t alpha	// на сколько затемнять цвета (0 - чёрный, 255 - без изменений)
 	);
 
-void gpu_fillrect(
+int gpu_fillrect(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uintptr_t taddr,
