@@ -249,11 +249,11 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
 
 //==============
 
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
-#include <string.h>
-#include "bifrost_v7.h"
+//#include <stdint.h>
+//#include <stddef.h>
+//#include <stdbool.h>
+//#include <string.h>
+//#include "bifrost_v7.h"
 
 /**
  * Multi-Target Framebuffer Descriptor (MFBD) для Bifrost v7:
@@ -265,8 +265,8 @@ typedef struct {
     MALI_RGB_RENDER_TARGET_PACKED_T rt0;
 } GPU_ALIGN bifrost_v7_mfbd_t;
 
-GPU_ALIGN static bifrost_v7_mfbd_t fb_desc;
-GPU_ALIGN static MALI_FRAGMENT_JOB_PACKED_T frag_job;
+static GPU_ALIGN bifrost_v7_mfbd_t fb_desc;
+static GPU_ALIGN MALI_FRAGMENT_JOB_PACKED_T frag_job;
 
 /**
  * @brief Заполняет прямоугольник в видеобуфере ARGB8888 однотонным цветом
@@ -283,7 +283,7 @@ GPU_ALIGN static MALI_FRAGMENT_JOB_PACKED_T frag_job;
  * @param color_argb Цвет в формате ARGB8888 (0xAARRGGBB).
  * @return int       0 при успехе, ненулевой код при ошибке.
  */
-int gpu_fill_rect_fragment_v7(
+static int gpu_fill_rect_fragment_v7(
     uint32_t *fb_addr,
     uint32_t fb_width,
     uint32_t fb_height,
@@ -293,7 +293,8 @@ int gpu_fill_rect_fragment_v7(
     uint32_t width,
     uint32_t height,
     uint32_t color_argb
-) {
+	)
+{
     if (!fb_addr || width == 0 || height == 0) {
         return 0;
     }
@@ -424,11 +425,11 @@ int gpu_fill_rect_fragment_v7(
     size_t dirty_size = (size_t)(max_y - y + 1) * fb_stride;
     dcache_clean_invalidate(dirty_start, dirty_size);
 
-    PRINTHEX32(fb_desc);
-    PRINTHEX32(frag_job);
-    PRINTHEX32(fb_ptr_packed);
-	PRINTF("Job before run:\n");
-	printhex32((uintptr_t)&frag_job, &frag_job, 512);
+//    PRINTHEX32(fb_desc);
+//    PRINTHEX32(frag_job);
+//    PRINTHEX32(fb_ptr_packed);
+//	PRINTF("Job before run:\n");
+//	printhex32((uintptr_t)&frag_job, &frag_job, 512);
    if (gpu_submit_job(0, (uintptr_t)&frag_job)) {
         return -1;
     }
@@ -436,36 +437,36 @@ int gpu_fill_rect_fragment_v7(
     dcache_clean_invalidate(dirty_start, dirty_size);
     return 0;
 }
-// Параметры видеобуфера 800x480 (ARGB8888)
-#define FB_WIDTH   800U
-#define FB_HEIGHT  480U
-#define FB_STRIDE  (FB_WIDTH * sizeof(uint32_t)) // 3200 байт (кратно 64 байтам)
-
-// Выровненный по 64 байтам видеобуфер (или указатель на ваш существующий framebuffer)
-GPU_ALIGN static uint32_t framebuffer[FB_HEIGHT][FB_WIDTH];
 
 void draw_example(void) {
     // Цвет в формате ARGB8888: 0xAARRGGBB
     // Например, непрозрачный красный цвет: A=0xFF, R=0xFF, G=0x00, B=0x00
-    uint32_t color_red = 0xFFFF0000U;
+	COLORPIP_T color_red = TFTRGB(255, 0, 0);
+	PRINTF("color_red=0x%08X\n", (unsigned) color_red);
+	uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
+    memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * LCDMODE_PIXELSIZE);
 
-    dcache_clean_invalidate((uintptr_t)&framebuffer, sizeof(framebuffer));
+    dcache_clean_invalidate(fbaddr, DIM_Y * GXADJ(DIM_X) * LCDMODE_PIXELSIZE);
    // Заливка прямоугольника 200x200 в позиции (x = 100, y = 100)
     int res = gpu_fill_rect_fragment_v7(
-        &framebuffer[0][0], // Указатель на начало видеобуфера (физический адрес)
-        FB_WIDTH,           // 800
-        FB_HEIGHT,          // 480
-        FB_STRIDE,          // 3200 байт
-        0,                // x
+        (void *) fbaddr, // Указатель на начало видеобуфера (физический адрес)
+        DIM_X,           // 800
+        DIM_Y,          // 480
+        GXADJ(DIM_X) * LCDMODE_PIXELSIZE,          // 3200 байт
+        5,                // x
         0,                // y
-		FB_WIDTH,                // width
-		FB_HEIGHT,                // height
+		202,                // width
+		203,                // height
         color_red           // 0xFFFF0000
     );
-    printhex32(0, framebuffer, 256);
+	PRINTF("framebuffer:\n");
+    printhex32(0, (void *) fbaddr, 256);
     if (res != 0) {
         PRINTF("gpu_fill_rect_fragment_v7 failed: %d\n", res);
     }
+    colmain_nextfb();
+    for (;;)
+    	;
 }
 
 //==============
