@@ -145,31 +145,6 @@ void GPU_EVENT_IRQHandler(void)
 	ASSERT(0);
 }
 
-void gpu_fillrect(
-	PACKEDCOLORPIP_T * __restrict buffer,
-	uint_fast16_t dx,	// ширина буфера
-	uintptr_t taddr,
-	uint_fast32_t tstride,
-	uint_fast32_t tsizehw,
-	unsigned alpha,
-	COLOR24_T color24,
-	uint_fast16_t w,	// ширниа
-	uint_fast16_t h,	// высота
-	COLORPIP_T color	// цвет
-	)
-{
-	if (w == 0 || h == 0)
-		return;
-	if (w == 1 && h == 1)
-	{
-		* buffer = TFTALPHA(alpha, color24);
-		return;
-	}
-
-	int32_t triangle0 [3] [2] = { { 0, 0 }, { 0, h - 1}, { w - 1, 0 } };
-	int32_t triangle1 [3] [2] = { { w - 1, h - 1 }, { 0, h - 1}, { w - 1, 0 } };
-}
-
 // Регистры отправки команд в слот (сверьтесь со структурой GPU_JOB_CONTROL в panfrost_regs.h)
 // Обычные имена регистров в драйвере Panfrost: JS_COMMAND, JS_HEAD_NEXT
 static void gpu_diagnose_slot_fault(unsigned slot, unsigned as)
@@ -436,6 +411,48 @@ static int gpu_fill_rect_fragment_v7(
     return 0;
 }
 
+static LCLSPINLOCK_t gpulock;
+
+// dcache_clean_invalidate уже выполнено
+void gpu_fillrect(
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uintptr_t taddr,
+	uint_fast32_t tstride,
+	uint_fast32_t tsizehw,
+	unsigned alpha,
+	COLOR24_T color24,
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color	// цвет
+	)
+{
+	if (w == 0 || h == 0)
+		return;
+	if (w == 1 && h == 1)
+	{
+		* buffer = TFTALPHA(alpha, color24);
+		return;
+	}
+	IRQL_t irql;
+	IRQLSPIN_LOCK(& gpulock, & irql, BRDSYS_IRQL);
+
+    // Заливка прямоугольника 200x200 в позиции (x = 100, y = 100)
+    int res = gpu_fill_rect_fragment_v7(
+    	buffer, // Указатель на начало видеобуфера (физический адрес)
+        dx,           // 800
+        DIM_Y,          // 480
+		tstride,          // 3200 байт
+        0,                // x
+        0,                // y
+		w,                // width
+		h,                // height
+		color           // 0xFFFF0000
+    );
+    ASSERT(res == 0);
+	IRQLSPIN_UNLOCK(& gpulock, irql);
+}
+
 void draw_example(void) {
     // Цвет в формате ARGB8888: 0xAARRGGBB
     // Например, непрозрачный красный цвет: A=0xFF, R=0xFF, G=0x00, B=0x00
@@ -445,7 +462,7 @@ void draw_example(void) {
     memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * LCDMODE_PIXELSIZE);
 
     dcache_clean_invalidate(fbaddr, DIM_Y * GXADJ(DIM_X) * LCDMODE_PIXELSIZE);
-   // Заливка прямоугольника 200x200 в позиции (x = 100, y = 100)
+    // Заливка прямоугольника 200x200 в позиции (x = 100, y = 100)
     int res = gpu_fill_rect_fragment_v7(
         (void *) fbaddr, // Указатель на начало видеобуфера (физический адрес)
         DIM_X,           // 800
