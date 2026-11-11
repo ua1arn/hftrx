@@ -362,18 +362,15 @@ VIRQ_Handler:
 	cpsid   if,#ARM_MODE_SYS                   // Change to SYS mode and disable interrupts
 	push    {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}            // Save APCS corruptible registers
 
-	mov     r3, sp                      // Move SP into R3
-	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
-	sub     sp, sp, r3                  // Adjust stack
-	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
-
 	// Wait VFP operations done
  	VMRS	R1, FPSID
 	VMSR	FPSID, R1
 
-	VMRS	R1, FPSCR
-	//VMRS	R2, FPEXC
- 	PUSH 	{R1, R2}
+	mov     r3, sp                      // Move SP into R3
+	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
+	sub     sp, sp, r3                  // Adjust stack
+	VMRS	R4, FPSCR
+	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
 
 	VPUSH.F32	{D0-D15}
 	VPUSH.F32	{D16-D31}
@@ -399,18 +396,15 @@ SWI_Handler:
 	cpsid   if,#ARM_MODE_SYS                   // Change to SYS mode and disable interrupts
 	push    {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}            // Save APCS corruptible registers
 
-	mov     r3, sp                      // Move SP into R3
-	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
-	sub     sp, sp, r3                  // Adjust stack
-	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
-
 	// Wait VFP operations done
  	VMRS	R1, FPSID
 	VMSR	FPSID, R1
 
-	VMRS	R1, FPSCR
-	//VMRS	R2, FPEXC
- 	PUSH 	{R1, R2}
+	mov     r3, sp                      // Move SP into R3
+	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
+	sub     sp, sp, r3                  // Adjust stack
+	VMRS	R4, FPSCR
+	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
 
 	VPUSH.F32	{D0-D15}
 	VPUSH.F32	{D16-D31}
@@ -437,18 +431,16 @@ VFRQ_Handler:
 	cpsid   if,#ARM_MODE_SYS                   // Change to SYS mode and disable interrupts
 	push    {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}            // Save APCS corruptible registers
 
-	mov     r3, sp                      // Move SP into R3
-	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
-	sub     sp, sp, r3                  // Adjust stack
-	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
-
 	// Wait VFP operations done
  	VMRS	R1, FPSID
 	VMSR	FPSID, R1
 
-	VMRS	R1, FPSCR
-	//VMRS	R2, FPEXC
- 	PUSH 	{R1, R2}	// FPSCR, FPEXC
+	mov     r3, sp                      // Move SP into R3
+	and     r3, r3, #7                  // Get stack adjustment to ensure 8-byte alignment
+	sub     sp, sp, r3                  // Adjust stack
+
+	VMRS	R4, FPSCR
+	push    {r3, r4}                    // Store stack adjustment(R3) and user data(R4)
 
 	VPUSH.F32	{D0-D15}
 	VPUSH.F32	{D16-D31}
@@ -479,12 +471,11 @@ run_task_curr_aarch32:
 
 	VPOP.F32	{D16-D31}
  	VPOP.F32	{D0-D15}
-	POP 	{R1, R2}
-	VMSR	FPSCR, R1
-	//VMSR	FPEXC, R2
 
 	pop     {r3, r4}                    // Restore stack adjustment(R3) and user data(R4)
 	add     sp, sp, r3                  // Unadjust stack
+
+	VMSR	FPSCR, R4
 	//clrex                               // Clear exclusive monitor for interrupted code
 	pop     {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}            // Restore stacked APCS registers
 	rfefd   sp!                         // Return from IRQ handler - RFEIA instruction

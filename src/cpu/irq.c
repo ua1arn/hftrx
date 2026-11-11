@@ -1809,8 +1809,7 @@ static uint64_t task_sysfn(unsigned arg0, void * arg1)
 typedef struct exception_frame_tag
 {
 	uint64_t vfpregs [32];
-	uint32_t fpscr, fpexc;
-	uint32_t sp_adjmod4, r4_doubled;
+	uint32_t sp_adjmod4, fpscr;
 	//uint32_t r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, lr;
 	uint32_t r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr;
 	//uint32_t SPSR_irq;	// 0
