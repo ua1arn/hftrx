@@ -3219,7 +3219,6 @@ void __NO_RETURN SWI_Handler_aarch32(void * frame)
 void Undef_Handler(void)
 {
 	const volatile uint32_t marker = 0xDEADBEEF;
-	threads_not_halted = 0;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
@@ -3230,6 +3229,7 @@ void Undef_Handler(void)
 	{
 		PRINTF("marker[%2d]=%08X\n", i, (unsigned) (& marker) [i]);
 	}
+	threads_not_halted = 0;
 #if defined (BOARD_BLINK_INITIALIZE)
 	BOARD_BLINK_INITIALIZE();;
 	for (;;)
@@ -3250,7 +3250,6 @@ void Undef_Handler(void)
 // Prefetch Abort
 void PAbort_Handler(void)
 {
-	threads_not_halted = 0;
 	const volatile uint32_t marker = 0xDEADBEEF;
 	//PRINTF("PAbort_Handler trapped. CPUID=%u\n", arm_hardware_cpuid());
 #pragma GCC diagnostic push
@@ -3301,6 +3300,7 @@ void PAbort_Handler(void)
 //	{
 //		PRINTF("marker [%2d] = %08X\n", i, (unsigned) (& marker) [i]);
 //	}
+	threads_not_halted = 0;
 #if defined (BOARD_BLINK_INITIALIZE)
 	BOARD_BLINK_INITIALIZE();;
 	for (;;)
@@ -3319,7 +3319,6 @@ void PAbort_Handler(void)
 // Data Abort.
 void DAbort_Handler(void)
 {
-	threads_not_halted = 0;
 	const volatile uint32_t marker = 0xDEADBEEF;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
@@ -3369,6 +3368,7 @@ void DAbort_Handler(void)
 	{
 		PRINTF("marker [%2d] = %08X\n", i, (unsigned) (& marker) [i]);
 	}
+	threads_not_halted = 0;
 #if defined (BOARD_BLINK_INITIALIZE)
 	BOARD_BLINK_INITIALIZE();;
 	for (;;)
