@@ -1855,9 +1855,10 @@ typedef struct {
 
 static size_t context_size(void)
 {
-	return sizeof (irq_stack_frame_top_t) +
+	size_t sz = sizeof (irq_stack_frame_top_t) +
 			sizeof (irq_stack_frame_bottom_t) +
-			2 * sizeof (uint32_t);
+			22 * sizeof (uint32_t);
+	return (sz + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
 }
 
 // Установить параметры потока для запуска
@@ -1865,29 +1866,30 @@ static void context_init(irq_stack_frame_top_t * __restrict frame_top, void * fn
 {
 
 	memset(frame_top, 0, context_size());	// CPU/FPU registers,
-    const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
-    irq_stack_frame_bottom_t * const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+    const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + 0;
+    volatile irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
     frame_bottom->spsr_irq =
 		1 * (UINT32_C(1) << 8) |	// A - SError exception mask
 		0x1F * (UINT32_C(1) << 0) |	// System sys 11111
 		0;
 	frame_bottom->pc_irq = (uintptr_t) fn;
 	frame_bottom->r0 = (uintptr_t) arg;
+	dcache_clean_invalidate((uintptr_t) frame_top, context_size());
 }
 
 // scheduler-mode entry - set svc exit code
 static void context_set_ec(irq_stack_frame_top_t * __restrict frame_top, unsigned ec)
 {
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
-    irq_stack_frame_bottom_t * const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+    irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
     frame_bottom->r0 = ec;
 }
 
 // scheduler-mode entry
-static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * frame_top)
+static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * __restrict frame_top)
 {
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
-    irq_stack_frame_bottom_t * const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+    irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
 	task_syscall_handler(thread, (unsigned) frame_bottom->r0, (void *) frame_bottom->r1);
 }
 
@@ -3181,7 +3183,7 @@ void IRQ_Handler_aarch32(void * frame)
     // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
 	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
-    irq_stack_frame_bottom_t * const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+    irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
 
     const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	IRQ_Handler_GIC();			// Group 1 handler
@@ -3194,7 +3196,7 @@ void FIQ_Handler_aarch32(void * frame)
     // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
 	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
-    irq_stack_frame_bottom_t * const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+    irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
 
     const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	FIQ_Handler_GIC();			// Group 0 handler
@@ -3207,7 +3209,7 @@ void __NO_RETURN SWI_Handler_aarch32(void * frame)
     // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
 	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
-    irq_stack_frame_bottom_t * const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+    irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
 
     irq_stack_frame_top_t * const f = (irq_stack_frame_top_t *) frame;
 	const unsigned esr_el3 = 0;//__get_DFSR();
