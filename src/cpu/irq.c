@@ -2127,6 +2127,7 @@ enum
 	TASKFN_NOP,
 	TASKFN_SUSPEND,
 	TASKFN_WAIT32,
+	TASKFN_WAIT32_V2,
 	TASKFN_WAIT8,
 	TASKFN_WAITLIST,
 	//
@@ -2144,6 +2145,15 @@ struct taskfnparam_wait32
 {
 	const volatile uint32_t * flag;
 	uint32_t mask, state;
+	hwtimcount_t t0;
+	hwtimcount_t td;
+	volatile void * guard;
+};
+
+struct taskfnparam_wait32_v2
+{
+	const volatile uint32_t * flag;
+	uint32_t mask, state, errstate;
 	hwtimcount_t t0;
 	hwtimcount_t td;
 	volatile void * guard;
@@ -2541,6 +2551,49 @@ static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * threa
 	return 0;
 }
 
+static int print_wait32_v2(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1)
+{
+	unsigned n = 0;
+	struct taskfnparam_wait32_v2 * const param = (struct taskfnparam_wait32_v2 *) arg1;
+	ASSERT(param != NULL);
+	ASSERT(param->guard == param);
+	n += local_snprintf_P(buff + n, size - n, "%s: ", chrdyttag->name);
+	n += local_snprintf_P(buff + n, size - n, "flag=%p, mask=0x%08x, state=0x%08x, ", param->flag, (unsigned) param->mask, (unsigned) param->state);
+	n += local_snprintf_P(buff + n, size - n, "t0=%" PRIu64 " ", (uint64_t) param->t0);
+	n += print_td(buff + n, size - n, param->td);
+	return n;
+}
+
+static int readyfn_wait32_v2(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, void * arg1)
+{
+	struct taskfnparam_wait32_v2 * const param = (struct taskfnparam_wait32_v2 *) arg1;
+	if (param == NULL || param->guard != param)
+	{
+		PRINTF("readyfn_wait32_v2: '%s' aff=%02X\n", thread->name, thread->affinity);
+		tasks_print();
+	}
+	ASSERT(param != NULL);
+	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
+	ASSERT(param->flag != NULL);
+	const uint_fast32_t f = * param->flag & param->mask;
+	if (f == param->state)
+	{
+		context_set_ec(thread->cpuframe, 0);
+		return 1;
+	}
+	if (f == param->errstate)
+	{
+		context_set_ec(thread->cpuframe, 1);
+		return 1;
+	}
+	if (ready_timeout(tn, param->t0, param->td))
+	{
+		context_set_ec(thread->cpuframe, 1);
+		return 1;
+	}
+	return 0;
+}
+
 static int print_wait8(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1)
 {
 	unsigned n = 0;
@@ -2623,6 +2676,14 @@ static const check_ready_t readytag_wait32 =
 	.name = "wait32"
 };
 
+static const check_ready_t readytag_wait32_v2 =
+{
+	.ready = readyfn_wait32_v2,
+	.print = print_wait32_v2,
+	//
+	.name = "wait32_v2"
+};
+
 static const check_ready_t readytag_suspend =
 {
 	.ready = readyfn_suspend,
@@ -2664,6 +2725,13 @@ static void task_syscall_handler(thread_item_t * thread, unsigned arg0, void * a
 		ASSERT(threads_not_started == 0);
 		thread->check_ready_obj = arg1;
 		thread->check_ready = & readytag_wait32;
+		InsertTailList(& threads_listW, & thread->item);
+		return;
+
+	case TASKFN_WAIT32_V2:
+		ASSERT(threads_not_started == 0);
+		thread->check_ready_obj = arg1;
+		thread->check_ready = & readytag_wait32_v2;
 		InsertTailList(& threads_listW, & thread->item);
 		return;
 
@@ -2844,6 +2912,40 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		v.guard = & v;
 		//PRINTF("local_wait32mask: flag=%p, mask=0x%08X, state=0x%08X, t0=0x%08X, td=0x%08X\n", flag, (unsigned) mask, (unsigned) state, (unsigned) v.t0, (unsigned) v.td);
 		return task_sysfn(TASKFN_WAIT32, & v);
+	}
+}
+// wait expected state of variable
+// return non-zero: timeout error or errormask
+int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t errstate, uint_fast32_t timeMS)
+{
+	if (threads_not_started)
+	{
+		const hwtimcountfast_t t0 = timestamp_getticks();
+		const hwtimcountfast_t td = timestamp_get_ms(timeMS);
+		//PRINTF("local_wait32mask: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
+		do
+		{
+			const uint_fast32_t f = * flag & mask;
+			if (f == state)
+				return 0;
+			if (f == errstate)
+				return 1;
+	    	thread_yield();
+		} while (timestamp_get_delta(t0) < td);
+		return 1;
+	}
+	else
+	{
+		struct taskfnparam_wait32_v2 v;
+		v.t0 = timestamp_getticks();
+		v.td = timestamp_get_ms(timeMS);
+		v.flag = flag;
+		v.mask = mask;
+		v.state = state;
+		v.errstate = errstate;
+		v.guard = & v;
+		//PRINTF("local_wait32mask: flag=%p, mask=0x%08X, state=0x%08X, t0=0x%08X, td=0x%08X\n", flag, (unsigned) mask, (unsigned) state, (unsigned) v.t0, (unsigned) v.td);
+		return task_sysfn(TASKFN_WAIT32_V2, & v);
 	}
 }
 
