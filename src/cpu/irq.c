@@ -1808,12 +1808,12 @@ static uint64_t task_sysfn(unsigned arg0, void * arg1)
 
 typedef struct exception_frame_tag
 {
-	uint32_t vfpregs [64];
+	uint64_t vfpregs [32];
 	uint32_t fpscr, fpexc;
 	uint32_t sp_adjmod4, r4_doubled;
-	uint32_t r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11;	// 68..71: R0, R1 R2 R3
-	uint32_t lr;
-	uint32_t SPSR_irq;	// 0
+	//uint32_t r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, lr;
+	uint32_t r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr;
+	//uint32_t SPSR_irq;	// 0
 	uint32_t LR_irq;
 	uint32_t cpsr;	// saved by irq
 } exception_frame_t;
@@ -1835,10 +1835,6 @@ static void context_init(exception_frame_t * __restrict oldframe, void * fn, voi
 
 	exception_frame_t * const f = (exception_frame_t *) oldframe;
 	memset(oldframe, 0, context_size());	// CPU/FPU registers,
-	f->SPSR_irq = 0;
-	f->sp_adjmod4 = 0;
-	f->fpscr = 0;
-	f->fpexc = 0x40000700;
 	f->cpsr =
 		1 * (UINT32_C(1) << 8) |	// A - SError exception mask
 		0x1F * (UINT32_C(1) << 0) |	// System sys 11111
