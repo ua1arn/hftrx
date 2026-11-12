@@ -359,17 +359,11 @@ static int gpu_fill_rect_fragment_v7(
         }
     };
 #if LCDMODE_RGB565
-    // Упаковка из 8-битных компонентов r, g, b (0..255) во внутренний R8G8B8A8 (Little-Endian: R в младшем байте)
-    const uint32_t clear_rgba8 = (a << 24) | (b << 16) | (g << 8) | r;
-    const uint32_t swizzle_rgb565 = ((uint32_t)MALI_CHANNEL_R << 0) |
-                              ((uint32_t)MALI_CHANNEL_G << 3) |
-                              ((uint32_t)MALI_CHANNEL_B << 6) |
-                              ((uint32_t)MALI_CHANNEL_1 << 9);
 
-    rt_rgb.clear.color_0 = color_argb;
+    rt_rgb.clear.color_0 = ((uint32_t) color_argb << 16) | color_argb;
     rt_rgb.clear.color_1 = 0;
     rt_rgb.clear.color_2 = 0;
-    rt_rgb.clear.color_3 = color_argb;
+    rt_rgb.clear.color_3 = ((uint32_t) color_argb << 16) | color_argb;
     rt_rgb.swizzle = 0;
     rt_rgb.writeback_format = MALI_COLOR_FORMAT_RAW16;
 
