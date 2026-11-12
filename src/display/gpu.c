@@ -260,18 +260,6 @@ static int gpu_fill_rect_fragment_v7(
 	unsigned alpha	// 0..255 for FILL_FLAG_MIXBG in fillmask
 	)
 {
-	/**
-	 * Multi-Target Framebuffer Descriptor (MFBD) для Bifrost v7:
-	 * 1. MALI_FRAMEBUFFER_PACKED_T (128 байт: PARAMETERS + PADDING)
-	 * 2. Массив MALI_RENDER_TARGET_PACKED_T (по 64 байта на каждый RT)
-	 */
-	typedef struct {
-	    MALI_FRAMEBUFFER_PACKED_T fbd;
-	    MALI_RGB_RENDER_TARGET_PACKED_T rt0;
-	} GPU_ALIGN bifrost_v7_mfbd_t;
-
-	static GPU_ALIGN bifrost_v7_mfbd_t fb_desc;
-	static GPU_ALIGN MALI_FRAGMENT_JOB_PACKED_T frag_job;
 
 	if (!fb_addr || width == 0 || height == 0) {
         return 0;
@@ -281,16 +269,13 @@ static int gpu_fill_rect_fragment_v7(
         return 0;
     }
 
-    uint32_t max_x = (x + width > fb_width) ? (fb_width - 1) : (x + width - 1);
-    uint32_t max_y = (y + height > fb_height) ? (fb_height - 1) : (y + height - 1);
-
-    memset(&fb_desc, 0, sizeof(fb_desc));
-    memset(&frag_job, 0, sizeof(frag_job));
+    const uint32_t max_x = (x + width > fb_width) ? (fb_width - 1) : (x + width - 1);
+    const uint32_t max_y = (y + height > fb_height) ? (fb_height - 1) : (y + height - 1);
 
     // =========================================================================
     // 1. Упаковка Framebuffer Descriptor (PARAMETERS + PADDING)
     // =========================================================================
-    struct MALI_FRAMEBUFFER_PARAMETERS fbd_params = {
+    MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE fbd_params = {
         MALI_FRAMEBUFFER_PARAMETERS_header,
         .pre_frame_0 = MALI_PRE_POST_FRAME_SHADER_MODE_NEVER,
         .pre_frame_1 = MALI_PRE_POST_FRAME_SHADER_MODE_NEVER,
@@ -309,10 +294,22 @@ static int gpu_fill_rect_fragment_v7(
         .color_buffer_allocation = 1024, // 16 * 16 * 4 байта
         .has_zs_crc_extension = false
     };
-    MALI_FRAMEBUFFER_PARAMETERS_pack(&fb_desc.fbd.PARAMETERS, &fbd_params);
 
-    static GPU_ALIGN struct MALI_FRAMEBUFFER_PADDING fbd_pad = { MALI_FRAMEBUFFER_PADDING_header };
+	/**
+	 * Multi-Target Framebuffer Descriptor (MFBD) для Bifrost v7:
+	 * 1. MALI_FRAMEBUFFER_PACKED_T (128 байт: PARAMETERS + PADDING)
+	 * 2. Массив MALI_RENDER_TARGET_PACKED_T (по 64 байта на каждый RT)
+	 */
+	typedef struct {
+	    MALI_FRAMEBUFFER_PACKED_T fbd;
+	    MALI_RGB_RENDER_TARGET_PACKED_T rt0;
+	} GPU_ALIGN bifrost_v7_mfbd_t;
+
+	static GPU_ALIGN bifrost_v7_mfbd_t fb_desc;
+    static GPU_ALIGN MALI_FRAMEBUFFER_SECTION_PADDING_TYPE fbd_pad = { MALI_FRAMEBUFFER_PADDING_header };
+
     MALI_FRAMEBUFFER_PADDING_pack(&fb_desc.fbd.PADDING, &fbd_pad);
+    MALI_FRAMEBUFFER_PARAMETERS_pack(&fb_desc.fbd.PARAMETERS, &fbd_params);
 
     // =========================================================================
     // 2. Упаковка Render Target 0 (MALI_RGB_RENDER_TARGET -> rt0)
@@ -442,7 +439,7 @@ static int gpu_fill_rect_fragment_v7(
     // =========================================================================
     // 4. Упаковка Fragment Job (HEADER и PAYLOAD)
     // =========================================================================
-    struct MALI_JOB_HEADER jh = {
+    MALI_FRAGMENT_JOB_SECTION_HEADER_TYPE jh = {
         MALI_JOB_HEADER_header,
         .type = MALI_JOB_TYPE_FRAGMENT,
         .exception_status = 0,
@@ -450,16 +447,17 @@ static int gpu_fill_rect_fragment_v7(
         .index = 1,
         .next = 0
     };
+	static GPU_ALIGN MALI_FRAGMENT_JOB_PACKED_T frag_job;
     MALI_JOB_HEADER_pack(&frag_job.HEADER, &jh);
 
-    struct MALI_FRAGMENT_JOB_PAYLOAD fjp = {
+    MALI_FRAGMENT_JOB_SECTION_PAYLOAD_TYPE fjp = {
         MALI_FRAGMENT_JOB_PAYLOAD_header,
-        .bound_min_x = x >> 4,
-        .bound_min_y = y >> 4,
-        .bound_max_x = max_x >> 4,
-        .bound_max_y = max_y >> 4,
+        .bound_min_x = x / 16,
+        .bound_min_y = y / 16,
+        .bound_max_x = max_x / 16,
+        .bound_max_y = max_y / 16,
         .has_tile_enable_map = false,
-        .framebuffer = (uint64_t)&fb_desc//(uint64_t)& fb_ptr_packed | 1
+        .framebuffer = (uint64_t) & fb_desc
     };
     MALI_FRAGMENT_JOB_PAYLOAD_pack(&frag_job.PAYLOAD, &fjp);
 
@@ -469,20 +467,10 @@ static int gpu_fill_rect_fragment_v7(
     dcache_clean_invalidate((uintptr_t)&fb_desc, sizeof(fb_desc));
     dcache_clean_invalidate((uintptr_t)&frag_job, sizeof(frag_job));
 
-    uintptr_t dirty_start = (uintptr_t)fb_addr + (uintptr_t)y * fb_stride;
-    size_t dirty_size = (size_t)(max_y - y + 1) * fb_stride;
-    dcache_clean_invalidate(dirty_start, dirty_size);
-
-//    PRINTHEX32(fb_desc);
-//    PRINTHEX32(frag_job);
-//    PRINTHEX32(fb_ptr_packed);
-//	PRINTF("Job before run:\n");
-//	printhex32((uintptr_t)&frag_job, &frag_job, 512);
    if (gpu_submit_job(0, (uintptr_t)&frag_job)) {
         return -1;
     }
 
-    dcache_clean_invalidate(dirty_start, dirty_size);
     return 0;
 }
 

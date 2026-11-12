@@ -11543,7 +11543,7 @@ void hightests(void)
 		// t507, soft
 		// BarTest: 50000 rectangles, 3, 4256 mS, pixelsize=4 @1200 MHz
 		// t507, Mali G31
-		// BarTest: 50000 rectangles, 1, 19117 mS, pixelsize=4 @1200 MHz
+		// BarTest: 50000 rectangles, 2, 22059 mS, pixelsize=4 @1200 MHz
 	}
 #endif
 #if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
