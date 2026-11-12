@@ -255,7 +255,9 @@ static int gpu_fill_rect_fragment_v7(
     uint32_t y,
     uint32_t width,
     uint32_t height,
-	COLORPIP_T color_argb
+	COLORPIP_T color_argb,
+	unsigned fillmask,
+	unsigned alpha	// 0..255 for FILL_FLAG_MIXBG in fillmask
 	)
 {
 	/**
@@ -522,7 +524,9 @@ int gpu_fillrect(
         0,                // y
 		w,                // width
 		h,                // height
-		color           // 0xFFFF0000
+		color,           // 0xFFFF0000
+		fillmask,
+		alpha
     );
     ASSERT(res == 0);
 	IRQLSPIN_UNLOCK(& gpulock, irql);
@@ -558,7 +562,9 @@ void draw_example(void) {
         0,                // y
 		202,                // width
 		203,                // height
-		color           // 0xFFFF0000
+		color,           // 0xFFFF0000
+		FILL_FLAG_NONE,
+		255	// alpha for FILL_FLAG_MIXBG
     );
 	PRINTF("framebuffer:\n");
     printhex32(0, (void *) fb, 256);
@@ -1074,6 +1080,27 @@ void board_gpu_initialize(void)
 
 	PRINTF("board_gpu_initialize done.\n");
 }
+#else
 
+int gpu_fillrect(
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	unsigned tstride,
+	PACKEDCOLORPIP_T * __restrict buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t w,	// ширниа
+	uint_fast16_t h,	// высота
+	COLORPIP_T color,	// цвет
+	unsigned fillmask,
+	unsigned alpha	// 0..255 for FILL_FLAG_MIXBG
+	)
+{
+	return 0;
+}
+
+void board_gpu_initialize(void)
+{
+}
 #endif /* WITHGPUHW */
 

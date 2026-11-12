@@ -41,7 +41,7 @@ static COLORPIP_T softmixalpha(COLORPIP_T oldpixel, COLORPIP_T newpixel, unsigne
 	);
 }
 
-static void softfill(
+static void soft_fillrect(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t w,	// ширниа
@@ -2161,7 +2161,7 @@ draw_awg2d_fill(lv_draw_task_t * t, const lv_draw_fill_dsc_t * dsc, const lv_are
 
 	if (aw_g2d_fillrect(dstinvalidateaddr, dstinvalidatesize, buffer, dx, taddr, tstride, tsizehw, alpha, w, h, color, fillmask))
 		return;
-	softfill(buffer, dx, w, h, color, fillmask, alpha);	// программная реализация для lvgl
+	soft_fillrect(buffer, dx, w, h, color, fillmask, alpha);	// программная реализация для lvgl
 
 }
 
@@ -3531,7 +3531,7 @@ hwaccel_fillrect_mux(
 #endif
 	if (done)
 		return;
-	softfill(buffer, dx, w, h, color, fillmask, alpha);	// программная реализация
+	soft_fillrect(buffer, dx, w, h, color, fillmask, alpha);	// программная реализация
 }
 
 // заполнение прямоугольной области в видеобуфере
