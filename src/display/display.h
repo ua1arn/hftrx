@@ -189,9 +189,9 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 		// Get color components from framebuffer value
 		#define COLORPIP_A(v) (255)
-		#define COLORPIP_R(v) ((((v) & 0xF800) >> 8) | (((v) & 0xE000) >> 13))
-		#define COLORPIP_G(v) ((((v) & 0x07E0) >> 3) | (((v) & 0x0600) >> 9))
-		#define COLORPIP_B(v) ((((v) & 0x001F) << 3) | (((v) & 0x001C) >> 2))
+		#define COLORPIP_R(v) ((((v) & 0xF800) >> 8) | (((v) & 0xE000) >> 13))	// приведение к 8 бит с повторением старших как 3-х младшиз
+		#define COLORPIP_G(v) ((((v) & 0x07E0) >> 3) | (((v) & 0x0600) >> 9))	// приведение к 8 бит с повторением старших как 2-х младшиз
+		#define COLORPIP_B(v) ((((v) & 0x001F) << 3) | (((v) & 0x001C) >> 2))	// приведение к 8 бит с повторением старших как 3-х младшиз
 
 	#endif /* LCDMODE_PALETTE256 */
 
