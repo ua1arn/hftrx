@@ -247,7 +247,7 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
  * @return int       0 при успехе, ненулевой код при ошибке.
  */
 static int gpu_fill_rect_fragment_v7(
-    void *fb_addr,
+	PACKEDCOLORPIP_T *fb_addr,
     uint32_t fb_width,
     uint32_t fb_height,
     uint32_t fb_stride,
@@ -428,18 +428,18 @@ static int gpu_fill_rect_fragment_v7(
 
 static LCLSPINLOCK_t gpulock;
 
-// dcache_clean_invalidate уже выполнено
 int gpu_fillrect(
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	unsigned tstride,
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
-	uintptr_t taddr,
-	uint_fast32_t tstride,
-	uint_fast32_t tsizehw,
-	unsigned alpha,
-	COLOR24_T color24,
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	COLORPIP_T color	// цвет
+	COLORPIP_T color,	// цвет
+	unsigned fillmask,
+	unsigned alpha	// 0..255 for FILL_FLAG_MIXBG
 	)
 {
 	if (w == 0 || h == 0)
@@ -449,6 +449,8 @@ int gpu_fillrect(
 		//* buffer = TFTALPHA(alpha, color24);
 		return 0;
 	}
+
+	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	IRQL_t irql;
 	IRQLSPIN_LOCK(& gpulock, & irql, BRDSYS_IRQL);
 

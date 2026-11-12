@@ -3513,12 +3513,7 @@ hwaccel_fillrect_mux(
 	int done = 0;
 
 #if WITHGPUHW && 0
-
-	const uintptr_t taddr = (uintptr_t) buffer;
-	const uint_fast32_t tsizehw = ((h - 1) << 16) | ((w - 1) << 0);
-
-	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	done = gpu_fillrect(buffer, dx, taddr, tstride, tsizehw, alpha, COLOR24(COLORPIP_R(color), COLORPIP_G(color), COLORPIP_B(color)), w, h, color);
+	done = gpu_fillrect(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
 
 #elif LCDMODE_PALETTE256
 	done = hwaccel_fillrect_u8(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);

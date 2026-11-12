@@ -612,16 +612,17 @@ void display_transparency(const gxdrawb_t * db,
 	);
 
 int gpu_fillrect(
+	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
+	int_fast32_t dstinvalidatesize,
+	unsigned tstride,
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
-	uintptr_t taddr,
-	uint_fast32_t tstride,
-	uint_fast32_t tsizehw,
-	unsigned alpha,
-	COLOR24_T color24,
+	uint_fast16_t dy,	// высота буфера
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
-	COLORPIP_T color	// цвет
+	COLORPIP_T color,	// цвет
+	unsigned fillmask,
+	unsigned alpha	// 0..255 for FILL_FLAG_MIXBG
 	);
 
 void colpip_line(
