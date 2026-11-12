@@ -261,6 +261,22 @@ static int gpu_fill_rect_fragment_v7(
 	)
 {
 
+	/**
+	 * Multi-Target Framebuffer Descriptor (MFBD) для Bifrost v7:
+	 * 1. MALI_FRAMEBUFFER_PACKED_T (128 байт: PARAMETERS + PADDING)
+	 * 2. Массив MALI_RENDER_TARGET_PACKED_T (по 64 байта на каждый RT)
+	 */
+	typedef struct {
+	    MALI_FRAMEBUFFER_PACKED_T fbd;
+	    MALI_RGB_RENDER_TARGET_PACKED_T rt0;
+	} GPU_ALIGN bifrost_v7_mfbd_t;
+
+	static GPU_ALIGN struct
+	{
+		GPU_ALIGN bifrost_v7_mfbd_t fb_desc;
+		GPU_ALIGN MALI_FRAGMENT_JOB_PACKED_T frag_job;
+	} st;
+
 	if (!fb_addr || width == 0 || height == 0) {
         return 0;
     }
@@ -294,22 +310,10 @@ static int gpu_fill_rect_fragment_v7(
         .color_buffer_allocation = 1024, // 16 * 16 * 4 байта
         .has_zs_crc_extension = false
     };
+    MALI_FRAMEBUFFER_PARAMETERS_pack(&st.fb_desc.fbd.PARAMETERS, &fbd_params);
 
-	/**
-	 * Multi-Target Framebuffer Descriptor (MFBD) для Bifrost v7:
-	 * 1. MALI_FRAMEBUFFER_PACKED_T (128 байт: PARAMETERS + PADDING)
-	 * 2. Массив MALI_RENDER_TARGET_PACKED_T (по 64 байта на каждый RT)
-	 */
-	typedef struct {
-	    MALI_FRAMEBUFFER_PACKED_T fbd;
-	    MALI_RGB_RENDER_TARGET_PACKED_T rt0;
-	} GPU_ALIGN bifrost_v7_mfbd_t;
-
-	static GPU_ALIGN bifrost_v7_mfbd_t fb_desc;
-    static GPU_ALIGN MALI_FRAMEBUFFER_SECTION_PADDING_TYPE fbd_pad = { MALI_FRAMEBUFFER_PADDING_header };
-
-    MALI_FRAMEBUFFER_PADDING_pack(&fb_desc.fbd.PADDING, &fbd_pad);
-    MALI_FRAMEBUFFER_PARAMETERS_pack(&fb_desc.fbd.PARAMETERS, &fbd_params);
+    MALI_FRAMEBUFFER_SECTION_PADDING_TYPE fbd_pad = { MALI_FRAMEBUFFER_PADDING_header };
+    MALI_FRAMEBUFFER_PADDING_pack(&st.fb_desc.fbd.PADDING, &fbd_pad);
 
     // =========================================================================
     // 2. Упаковка Render Target 0 (MALI_RGB_RENDER_TARGET -> rt0)
@@ -432,7 +436,7 @@ static int gpu_fill_rect_fragment_v7(
 
 #endif
 
-    MALI_RGB_RENDER_TARGET_pack(&fb_desc.rt0, &rt_rgb);
+    MALI_RGB_RENDER_TARGET_pack(&st.fb_desc.rt0, &rt_rgb);
     //PRINTHEX32(fb_desc.rt0);
 
 
@@ -447,8 +451,7 @@ static int gpu_fill_rect_fragment_v7(
         .index = 1,
         .next = 0
     };
-	static GPU_ALIGN MALI_FRAGMENT_JOB_PACKED_T frag_job;
-    MALI_JOB_HEADER_pack(&frag_job.HEADER, &jh);
+    MALI_JOB_HEADER_pack(&st.frag_job.HEADER, &jh);
 
     MALI_FRAGMENT_JOB_SECTION_PAYLOAD_TYPE fjp = {
         MALI_FRAGMENT_JOB_PAYLOAD_header,
@@ -457,17 +460,16 @@ static int gpu_fill_rect_fragment_v7(
         .bound_max_x = max_x / 16,
         .bound_max_y = max_y / 16,
         .has_tile_enable_map = false,
-        .framebuffer = (uint64_t) & fb_desc
+        .framebuffer = (uint64_t) & st.fb_desc
     };
-    MALI_FRAGMENT_JOB_PAYLOAD_pack(&frag_job.PAYLOAD, &fjp);
+    MALI_FRAGMENT_JOB_PAYLOAD_pack(&st.frag_job.PAYLOAD, &fjp);
 
     // =========================================================================
     // 5. Синхронизация D-Cache и отправка задачи в Job Slot 0
     // =========================================================================
-    dcache_clean_invalidate((uintptr_t)&fb_desc, sizeof(fb_desc));
-    dcache_clean_invalidate((uintptr_t)&frag_job, sizeof(frag_job));
+    dcache_clean_invalidate((uintptr_t)&st, sizeof st);
 
-   if (gpu_submit_job(0, (uintptr_t)&frag_job)) {
+   if (gpu_submit_job(0, (uintptr_t)&st.frag_job)) {
         return -1;
     }
 
