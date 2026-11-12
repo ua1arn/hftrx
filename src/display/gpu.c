@@ -246,7 +246,7 @@ static int gpu_submit_job(unsigned slot, uintptr_t job)
  * @param color_argb Цвет в формате ARGB8888 (0xAARRGGBB).
  * @return int       0 при успехе, ненулевой код при ошибке.
  */
-static int gpu_fill_rect_fragment_v7(
+static int gpu_fill_rect_fragment_v7_old(
 	PACKEDCOLORPIP_T *fb_addr,
     uint32_t fb_width,
     uint32_t fb_height,
@@ -476,6 +476,544 @@ static int gpu_fill_rect_fragment_v7(
     return 0;
 }
 
+
+/* =========================================================================
+ * Константы и макросы для MALI_TEXTURE и MALI_BLEND (Mali Bifrost v7)
+ * ========================================================================= */
+
+#ifndef MALI_PACK_PIXEL_FORMAT
+#define MALI_PACK_PIXEL_FORMAT(fmt, type, swizzle) \
+    (((uint32_t)(swizzle) & 0xFFFU) | \
+     (((uint32_t)(fmt) & 0x3FFU) << 12) | \
+     (((uint32_t)(type) & 0x7U) << 22))
+#endif
+
+enum mali_format_type {
+    MALI_FORMAT_TYPE_FLOAT = 0,
+    MALI_FORMAT_TYPE_UINT  = 1,
+    MALI_FORMAT_TYPE_SINT  = 2,
+    MALI_FORMAT_TYPE_UNORM = 3,
+    MALI_FORMAT_TYPE_SNORM = 4,
+};
+
+//enum mali_blend_mode {
+//    MALI_BLEND_MODE_OFF            = 0,
+//    MALI_BLEND_MODE_OPAQUE         = 1,
+//    MALI_BLEND_MODE_FIXED_FUNCTION = 2,
+//    MALI_BLEND_MODE_SHADER         = 3,
+//};
+
+enum mali_blend_func {
+    MALI_BLEND_FUNC_SINGLE_ADD              = 0,
+    MALI_BLEND_FUNC_SINGLE_SUBTRACT         = 1,
+    MALI_BLEND_FUNC_SINGLE_REVERSE_SUBTRACT = 2,
+    MALI_BLEND_FUNC_SINGLE_MIN              = 3,
+    MALI_BLEND_FUNC_SINGLE_MAX              = 4,
+};
+
+//enum mali_blend_operand_a {
+//    MALI_BLEND_OPERAND_A_ZERO = 0,
+//    MALI_BLEND_OPERAND_A_SRC  = 1,
+//    MALI_BLEND_OPERAND_A_DST  = 2,
+//};
+
+enum mali_blend_operand_bX {
+    //MALI_BLEND_OPERAND_B_SRC                 = 0,
+    MALI_BLEND_OPERAND_B_SRC_ALPHA           = 1,
+    MALI_BLEND_OPERAND_B_DST_ALPHA           = 2,
+    MALI_BLEND_OPERAND_B_CONSTANT            = 3,
+    MALI_BLEND_OPERAND_B_ONE                 = 4,
+    MALI_BLEND_OPERAND_B_ONE_MINUS_SRC       = 5,
+    MALI_BLEND_OPERAND_B_ONE_MINUS_SRC_ALPHA = 6,
+    MALI_BLEND_OPERAND_B_ONE_MINUS_DST_ALPHA = 7,
+    MALI_BLEND_OPERAND_B_ONE_MINUS_CONSTANT  = 8,
+};
+
+enum mali_blend_operand_cX {
+//    MALI_BLEND_OPERAND_C_ZERO                = 0,
+//    MALI_BLEND_OPERAND_C_SRC                 = 1,
+    MALI_BLEND_OPERAND_C_DST                 = 2,
+//    MALI_BLEND_OPERAND_C_SRC_ALPHA           = 3,
+    MALI_BLEND_OPERAND_C_DST_ALPHA           = 4,
+//    MALI_BLEND_OPERAND_C_CONSTANT            = 5,
+    MALI_BLEND_OPERAND_C_ONE_MINUS_SRC_ALPHA = 6,
+    MALI_BLEND_OPERAND_C_ONE_MINUS_DST_ALPHA = 7,
+};
+
+enum mali_blend_operand_d {
+    MALI_BLEND_OPERAND_D_ZERO                = 0,
+    MALI_BLEND_OPERAND_D_ONE                 = 1,
+    MALI_BLEND_OPERAND_D_SRC_ALPHA           = 2,
+    MALI_BLEND_OPERAND_D_DST_ALPHA           = 3,
+    MALI_BLEND_OPERAND_D_CONSTANT            = 4,
+    MALI_BLEND_OPERAND_D_ONE_MINUS_SRC_ALPHA = 5,
+    MALI_BLEND_OPERAND_D_ONE_MINUS_DST_ALPHA = 6,
+    MALI_BLEND_OPERAND_D_ONE_MINUS_CONSTANT  = 7,
+};
+
+enum mali_register_file_format {
+    MALI_REGISTER_FILE_FORMAT_F16 = 0,
+    MALI_REGISTER_FILE_FORMAT_F32 = 1,
+    MALI_REGISTER_FILE_FORMAT_I32 = 2,
+    MALI_REGISTER_FILE_FORMAT_U32 = 3,
+    MALI_REGISTER_FILE_FORMAT_I16 = 4,
+    MALI_REGISTER_FILE_FORMAT_U16 = 5,
+};
+
+/*
+ * Скомпилированные бинарные шейдеры для ARM Mali-G31 (Bifrost v7):
+ * 1. blit_shader: копирует пиксель из Texture 0 (fb_addr) по gl_FragCoord в RT0
+ * 2. solid_shader: читает vec4(r, g, b, alpha) из UBO 0 и передаёт в Blend Unit
+ */
+static const uint32_t GPU_ALIGN bifrost_g31_blit_shader[8] = {
+    0x00001800, 0x00000000, 0x20000000, 0x00000055, /* TEX_SINGLE.v4.f16 R0, frag_coord */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000  /* BLEND / END */
+};
+
+static const uint32_t GPU_ALIGN bifrost_g31_solid_shader[8] = {
+    0x00001800, 0x00400000, 0x28000000, 0x00000045, /* LD_UBO.v4.f32 R0, ubo=0, offset=0 */
+    0x00000000, 0x00000000, 0x00000000, 0x00000000  /* BLEND / END */
+};
+
+static int gpu_fill_rect_fragment_v7(
+    PACKEDCOLORPIP_T *fb_addr,
+    uint32_t fb_width,
+    uint32_t fb_height,
+    uint32_t fb_stride,
+    uint32_t x,
+    uint32_t y,
+    uint32_t width,
+    uint32_t height,
+    COLORPIP_T color_argb,
+    unsigned fillmask,
+    unsigned alpha  // 0..255 for FILL_FLAG_MIXBG in fillmask
+    )
+{
+    /**
+     * Multi-Target Framebuffer Descriptor (MFBD) для Bifrost v7:
+     * 1. MALI_FRAMEBUFFER_PACKED_T (128 байт: PARAMETERS + PADDING)
+     * 2. Массив MALI_RENDER_TARGET_PACKED_T (по 64 байта на каждый RT)
+     */
+    typedef struct {
+        MALI_FRAMEBUFFER_PACKED_T fbd;
+        MALI_RGB_RENDER_TARGET_PACKED_T rt0;
+    } GPU_ALIGN bifrost_v7_mfbd_t;
+
+    typedef struct {
+        MALI_RENDERER_STATE_PACKED_T rsd;
+        MALI_BLEND_PACKED_T blend;
+    } GPU_ALIGN bifrost_v7_rsd_t;
+
+    static GPU_ALIGN struct {
+    	GPU_ALIGN bifrost_v7_mfbd_t fb_desc;
+    	GPU_ALIGN MALI_FRAGMENT_JOB_PACKED_T frag_job;
+
+        /* Дескрипторы для режима смешивания (FILL_FLAG_MIXBG) */
+    	GPU_ALIGN MALI_DRAW_PACKED_T frame_dcds[3]; /* [0]=pre_frame_0 (blit), [1]=pre_frame_1, [2]=post_frame (blend) */
+    	GPU_ALIGN bifrost_v7_rsd_t rsd_blit;
+    	GPU_ALIGN bifrost_v7_rsd_t rsd_blend;
+    	GPU_ALIGN MALI_TEXTURE_PACKED_T tex_fb;
+    	GPU_ALIGN MALI_SURFACE_WITH_STRIDE_PACKED_T surf_fb;
+    	GPU_ALIGN MALI_SAMPLER_PACKED_T sampler_fb;
+    	GPU_ALIGN MALI_UNIFORM_BUFFER_PACKED_T ubo_desc;
+    	GPU_ALIGN float ubo_color[4];
+    } st;
+
+    if (!fb_addr || width == 0 || height == 0) {
+        return 0;
+    }
+
+    if (x >= fb_width || y >= fb_height) {
+        return 0;
+    }
+
+    const uint32_t max_x = (x + width > fb_width) ? (fb_width - 1) : (x + width - 1);
+    const uint32_t max_y = (y + height > fb_height) ? (fb_height - 1) : (y + height - 1);
+
+    const bool use_blend = ((fillmask & FILL_FLAG_MIXBG) != 0) && (alpha < 255U);
+    if (use_blend && alpha == 0U) {
+        return 0; /* Полностью прозрачный прямоугольник — рисовать нечего */
+    }
+
+    const uint32_t a = COLORPIP_A(color_argb);
+    const uint32_t r = COLORPIP_R(color_argb);
+    const uint32_t g = COLORPIP_G(color_argb);
+    const uint32_t b = COLORPIP_B(color_argb);
+
+    /*
+     * Порядок байт в памяти для A8B8G8R8 (Little-Endian: R - байт 0, G - байт 1, B - байт 2, A - байт 3):
+     * Внутренний буфер R8G8B8A8 уже имеет ровно такой порядок каналов -> прямой swizzle (R, G, B, A).
+     */
+    const uint32_t swizzle_abgr = ((uint32_t)MALI_CHANNEL_R << 0) |
+                                  ((uint32_t)MALI_CHANNEL_G << 3) |
+                                  ((uint32_t)MALI_CHANNEL_B << 6) |
+                                  ((uint32_t)MALI_CHANNEL_A << 9); /* 0x00000688 */
+
+    // =========================================================================
+    // 1. Упаковка Framebuffer Descriptor (PARAMETERS + PADDING)
+    // =========================================================================
+    MALI_FRAMEBUFFER_SECTION_PARAMETERS_TYPE fbd_params = {
+        MALI_FRAMEBUFFER_PARAMETERS_header,
+        .pre_frame_0 = use_blend ? MALI_PRE_POST_FRAME_SHADER_MODE_ALWAYS
+                                 : MALI_PRE_POST_FRAME_SHADER_MODE_NEVER,
+        .pre_frame_1 = MALI_PRE_POST_FRAME_SHADER_MODE_NEVER,
+        .post_frame  = use_blend ? MALI_PRE_POST_FRAME_SHADER_MODE_ALWAYS
+                                 : MALI_PRE_POST_FRAME_SHADER_MODE_NEVER,
+        .frame_shader_dcds = use_blend ? (uintptr_t)st.frame_dcds : 0,
+        .width = fb_width,
+        .height = fb_height,
+        .bound_min_x = x,
+        .bound_min_y = y,
+        .bound_max_x = max_x,
+        .bound_max_y = max_y,
+        .sample_count = 1,
+        .sample_pattern = MALI_SAMPLE_PATTERN_SINGLE_SAMPLED,
+        .tie_break_rule = MALI_TIE_BREAK_RULE_0_IN_180_OUT,
+        .effective_tile_size = 16,
+        .render_target_count = 1,
+        .color_buffer_allocation = 1024, /* 16 * 16 * 4 байта */
+        .has_zs_crc_extension = false
+    };
+    MALI_FRAMEBUFFER_PARAMETERS_pack(&st.fb_desc.fbd.PARAMETERS, &fbd_params);
+
+    MALI_FRAMEBUFFER_SECTION_PADDING_TYPE fbd_pad = { MALI_FRAMEBUFFER_PADDING_header };
+    MALI_FRAMEBUFFER_PADDING_pack(&st.fb_desc.fbd.PADDING, &fbd_pad);
+
+    // =========================================================================
+    // 2. Упаковка Render Target 0 (MALI_RGB_RENDER_TARGET -> rt0)
+    // =========================================================================
+    struct MALI_RGB_RENDER_TARGET rt_rgb = {
+        MALI_RGB_RENDER_TARGET_header,
+        .internal_buffer_offset = 0,
+        .yuv_enable = false,
+        .dithered_clear = false,
+        .internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8,
+        .write_enable = true,
+        .writeback_format = MALI_COLOR_FORMAT_R8G8B8A8,
+        .writeback_block_format = MALI_BLOCK_FORMAT_LINEAR,
+        .writeback_msaa = MALI_MSAA_SINGLE,
+        .srgb = false,
+        .dithering_enable = false,
+        .swizzle = 0,   // дальше переписывается
+        .clean_tile_write_enable = true,
+        .writeback_buffer = {
+            .base = (uintptr_t)fb_addr,
+            .row_stride = fb_stride,
+            .surface_stride = (uint64_t)fb_stride * fb_height
+        },
+        .clear = {
+            .color_0 = r * UINT32_C(0x01010101),
+            .color_1 = g * UINT32_C(0x01010101),
+            .color_2 = b * UINT32_C(0x01010101),
+            .color_3 = a * UINT32_C(0x01010101)
+        }
+    };
+
+#if 0
+    // dummy section
+#elif LCDMODE_RGB565 && 0
+    // вариант с использованием swizzle
+    // color_argb в формате RGB565
+    const uint32_t packedABGR = (a << 24) | (b << 16) | (g << 8) | (r << 0);
+    rt_rgb.clear.color_0 = packedABGR;
+    rt_rgb.clear.color_1 = 0;
+    rt_rgb.clear.color_2 = 0;
+    rt_rgb.clear.color_3 = packedABGR;
+    rt_rgb.swizzle =
+        ((uint32_t)MALI_CHANNEL_B << 0) |
+        ((uint32_t)MALI_CHANNEL_G << 3) |
+        ((uint32_t)MALI_CHANNEL_R << 6) |
+        ((uint32_t)MALI_CHANNEL_A << 9);
+    rt_rgb.writeback_format = MALI_COLOR_FORMAT_R5G6B5;
+    rt_rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8;
+
+#elif LCDMODE_RGB565
+    // вариант с заполнением цветом без интерпретации отдельных компонент
+    // color_argb в формате RGB565
+    rt_rgb.clear.color_0 = color_argb * UINT32_C(0x00010001);
+    rt_rgb.clear.color_1 = 0;
+    rt_rgb.clear.color_2 = 0;
+    rt_rgb.clear.color_3 = color_argb * UINT32_C(0x00010001);
+    rt_rgb.swizzle = 0;
+    rt_rgb.writeback_format = MALI_COLOR_FORMAT_RAW16;
+    rt_rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_RAW16;
+
+#elif LCDMODE_ARGB8888 && 1
+    // вариант с использованием swizzle
+    const uint32_t packedABGR = (a << 24) | (b << 16) | (g << 8) | (r << 0);
+    rt_rgb.clear.color_0 = packedABGR;
+    rt_rgb.clear.color_1 = 0;
+    rt_rgb.clear.color_2 = 0;
+    rt_rgb.clear.color_3 = packedABGR;
+    rt_rgb.swizzle =
+        ((uint32_t)MALI_CHANNEL_B << 0) |
+        ((uint32_t)MALI_CHANNEL_G << 3) |
+        ((uint32_t)MALI_CHANNEL_R << 6) |
+        ((uint32_t)MALI_CHANNEL_A << 9);
+    rt_rgb.writeback_format = MALI_COLOR_FORMAT_R8G8B8A8;
+    rt_rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8;
+
+#elif LCDMODE_BGRA8888 && 1
+    // вариант с использованием swizzle
+    const uint32_t packedARGB = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+    rt_rgb.clear.color_0 = packedARGB;
+    rt_rgb.clear.color_1 = 0;
+    rt_rgb.clear.color_2 = 0;
+    rt_rgb.clear.color_3 = packedARGB;
+    rt_rgb.swizzle =
+        ((uint32_t)MALI_CHANNEL_A << 0) |
+        ((uint32_t)MALI_CHANNEL_R << 3) |
+        ((uint32_t)MALI_CHANNEL_G << 6) |
+        ((uint32_t)MALI_CHANNEL_B << 9);
+    rt_rgb.writeback_format = MALI_COLOR_FORMAT_R8G8B8A8;
+    rt_rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8;
+
+#elif LCDMODE_ABGR8888 || LCDMODE_RGBA8888
+    // Формат A8B8G8R8 (в памяти Little-Endian байты R, G, B, A)
+    const uint32_t packedABGR = (a << 24) | (b << 16) | (g << 8) | (r << 0);
+    rt_rgb.clear.color_0 = packedABGR;
+    rt_rgb.clear.color_1 = 0;
+    rt_rgb.clear.color_2 = 0;
+    rt_rgb.clear.color_3 = packedABGR;
+    rt_rgb.swizzle = swizzle_abgr;
+    rt_rgb.writeback_format = MALI_COLOR_FORMAT_R8G8B8A8;
+    rt_rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8;
+
+#elif (LCDMODE_ARGB8888 || LCDMODE_BGRA8888)
+    // вариант с заполнением цветом без интерпретации отдельных компонент
+    rt_rgb.clear.color_0 = color_argb;
+    rt_rgb.clear.color_1 = 0;
+    rt_rgb.clear.color_2 = 0;
+    rt_rgb.clear.color_3 = color_argb;
+    rt_rgb.swizzle = 0;
+    rt_rgb.writeback_format = MALI_COLOR_FORMAT_RAW32;
+    rt_rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_RAW32;
+
+#endif
+
+    if (use_blend) {
+        /* Принудительно настраиваем RT0 под A8B8G8R8 для режима смешивания */
+        const uint32_t packedABGR = (a << 24) | (b << 16) | (g << 8) | (r << 0);
+        rt_rgb.clear.color_0 = packedABGR;
+        rt_rgb.clear.color_1 = 0;
+        rt_rgb.clear.color_2 = 0;
+        rt_rgb.clear.color_3 = packedABGR;
+        rt_rgb.swizzle = swizzle_abgr;
+        rt_rgb.writeback_format = MALI_COLOR_FORMAT_R8G8B8A8;
+        rt_rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8;
+    }
+
+    MALI_RGB_RENDER_TARGET_pack(&st.fb_desc.rt0, &rt_rgb);
+
+    // =========================================================================
+    // 3. Настройка пайплайна смешивания (только если включён FILL_FLAG_MIXBG)
+    // =========================================================================
+    if (use_blend) {
+        memset(st.frame_dcds, 0, sizeof(st.frame_dcds));
+
+        /* 3.1. Описание текущего видеобуфера как входной текстуры для pre_frame_0 */
+        struct MALI_SURFACE_WITH_STRIDE surf_cfg = {
+            MALI_SURFACE_WITH_STRIDE_header,
+            .pointer = (uintptr_t)fb_addr,
+            .row_stride = fb_stride,
+            .surface_stride = (uint64_t)fb_stride * fb_height
+        };
+        MALI_SURFACE_WITH_STRIDE_pack(&st.surf_fb, &surf_cfg);
+
+        struct MALI_TEXTURE tex_cfg = {
+            MALI_TEXTURE_header,
+            .dimension = MALI_TEXTURE_DIMENSION_2D,
+            .format = MALI_PACK_PIXEL_FORMAT(MALI_COLOR_FORMAT_R8G8B8A8,
+            					MALI_FORMAT_TYPE_UNORM,
+                                             swizzle_abgr),
+            .width = fb_width,
+            .height = fb_height,
+            .depth = 1,
+            .array_size = 1,
+            .levels = 1,
+            .texel_ordering = MALI_TEXTURE_LAYOUT_LINEAR,
+            .surfaces = (uintptr_t)&st.surf_fb
+        };
+        MALI_TEXTURE_pack(&st.tex_fb, &tex_cfg);
+
+        struct MALI_SAMPLER samp_cfg = {
+            MALI_SAMPLER_header,
+            .magnify_nearest = true,
+            .minify_nearest = true,
+            .wrap_mode_s = MALI_WRAP_MODE_CLAMP_TO_EDGE,
+            .wrap_mode_t = MALI_WRAP_MODE_CLAMP_TO_EDGE,
+            .wrap_mode_r = MALI_WRAP_MODE_CLAMP_TO_EDGE,
+            .normalized_coordinates = false
+        };
+        MALI_SAMPLER_pack(&st.sampler_fb, &samp_cfg);
+
+        /* 3.2. RSD + Blend для pre_frame_0 (копирование старого фона в тайл без смешивания) */
+        struct MALI_RENDERER_STATE rsd_blit_cfg = {
+            MALI_RENDERER_STATE_header,
+            .shader = {
+                .shader = (uintptr_t)bifrost_g31_blit_shader,
+                .texture_count = 1,
+                .sampler_count = 1
+            },
+            .multisample_misc = {
+                .sample_mask = 0xFFFF,
+                .depth_function = MALI_FUNC_ALWAYS
+            },
+            .preload = {
+                .fragment = { .fragment_position = true }
+            }
+        };
+        MALI_RENDERER_STATE_pack(&st.rsd_blit.rsd, &rsd_blit_cfg);
+
+        struct MALI_BLEND blend_opaque_cfg = {
+            MALI_BLEND_header,
+            .load_destination = false,
+            .round_to_fb_precision = true,
+            .internal = {
+                .mode = MALI_BLEND_MODE_OPAQUE,
+                .fixed_function = {
+                    .num_comps = 4,
+                    .rt = 0,
+                    .conversion = {
+                        .register_format = MALI_REGISTER_FILE_FORMAT_F16,
+                        .memory_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8
+                    }
+                }
+            }
+        };
+        MALI_BLEND_pack(&st.rsd_blit.blend, &blend_opaque_cfg);
+
+        struct MALI_DRAW dcd_pre0 = {
+            MALI_DRAW_header,
+            .state = (uintptr_t)&st.rsd_blit,
+            .textures = (uintptr_t)&st.tex_fb,
+            .samplers = (uintptr_t)&st.sampler_fb,
+            //.texture_descriptor_types = MALI_TEXTURE_DESCRIPTOR_TYPE_STANDARD
+        };
+        MALI_DRAW_pack(&st.frame_dcds[0], &dcd_pre0);
+
+        /* 3.3. UBO с цветом прямоугольника и параметром alpha (0..255 -> 0.0f..1.0f) */
+        st.ubo_color[0] = (float)r * (1.0f / 255.0f);
+        st.ubo_color[1] = (float)g * (1.0f / 255.0f);
+        st.ubo_color[2] = (float)b * (1.0f / 255.0f);
+        st.ubo_color[3] = (float)alpha * (1.0f / 255.0f);
+
+        struct MALI_UNIFORM_BUFFER ubo_cfg = {
+            MALI_UNIFORM_BUFFER_header,
+            .entries = 1, /* 16 байт (vec4) */
+            .pointer = (uintptr_t)& st.ubo_color
+        };
+        MALI_UNIFORM_BUFFER_pack(&st.ubo_desc, &ubo_cfg);
+
+        /* 3.4. RSD + Blend для post_frame (аппаратное смешивание: Src * alpha + Dst * (1 - alpha)) */
+        struct MALI_RENDERER_STATE rsd_blend_cfg = {
+            MALI_RENDERER_STATE_header,
+            .shader = {
+                .shader = (uintptr_t)bifrost_g31_solid_shader
+            },
+            .properties = {
+                .uniform_buffer_count = 1
+            },
+            .multisample_misc = {
+                .sample_mask = 0xFFFF,
+                .depth_function = MALI_FUNC_ALWAYS
+            },
+            .preload = {
+                .fragment = { .coverage = true }
+            }
+        };
+        MALI_RENDERER_STATE_pack(&st.rsd_blend.rsd, &rsd_blend_cfg);
+
+        struct MALI_BLEND blend_alpha_cfg = {
+            MALI_BLEND_header,
+            .load_destination = true,
+            .round_to_fb_precision = true,
+            .internal = {
+                .mode = MALI_BLEND_MODE_FIXED_FUNCTION,
+                .fixed_function = {
+                    .num_comps = 4,
+                    .rt = 0,
+                    .conversion = {
+                        .register_format = MALI_REGISTER_FILE_FORMAT_F16,
+                        .memory_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8
+                    }
+                }
+            },
+			.equation = {
+			    .rgb = {
+			        .a = MALI_BLEND_OPERAND_A_SRC,
+			        .negate_a = false,
+			        .b = MALI_BLEND_OPERAND_B_SRC_ALPHA,
+			        .negate_b = false,
+			        .c = MALI_BLEND_OPERAND_C_DST,
+			        .invert_c = true   /* Аппаратно вычисляет C * (1.0 - B) = Dst * (1.0 - SrcAlpha) */
+			    },
+			    .alpha = {
+			        .a = MALI_BLEND_OPERAND_A_ZERO,
+			        .negate_a = false,
+			        .b = MALI_BLEND_OPERAND_B_ONE,
+			        .negate_b = false,
+			        .c = MALI_BLEND_OPERAND_C_DST_ALPHA,
+			        .invert_c = false  /* Сохраняет исходную альфу фона: 0 * 1 + DstAlpha = DstAlpha */
+			    },
+			    .color_mask = 0xF
+            }
+        };
+
+        MALI_BLEND_pack(&st.rsd_blend.blend, &blend_alpha_cfg);
+
+        struct MALI_DRAW dcd_post = {
+            MALI_DRAW_header,
+            .state = (uintptr_t)&st.rsd_blend,
+            .uniform_buffers = (uintptr_t)&st.ubo_desc
+        };
+        MALI_DRAW_pack(&st.frame_dcds[2], &dcd_post);
+    }
+
+    // =========================================================================
+    // 4. Упаковка Fragment Job (HEADER и PAYLOAD)
+    // =========================================================================
+    MALI_FRAGMENT_JOB_SECTION_HEADER_TYPE jh = {
+        MALI_JOB_HEADER_header,
+        .type = MALI_JOB_TYPE_FRAGMENT,
+        .exception_status = 0,
+        .barrier = true,
+        .index = 1,
+        .next = 0
+    };
+    MALI_JOB_HEADER_pack(&st.frag_job.HEADER, &jh);
+
+    MALI_FRAGMENT_JOB_SECTION_PAYLOAD_TYPE fjp = {
+        MALI_FRAGMENT_JOB_PAYLOAD_header,
+        .bound_min_x = x / 16,
+        .bound_min_y = y / 16,
+        .bound_max_x = max_x / 16,
+        .bound_max_y = max_y / 16,
+        .has_tile_enable_map = false,
+        .framebuffer = (uint64_t)&st.fb_desc
+    };
+    MALI_FRAGMENT_JOB_PAYLOAD_pack(&st.frag_job.PAYLOAD, &fjp);
+
+    // =========================================================================
+    // 5. Синхронизация D-Cache и отправка задачи в Job Slot 0
+    // =========================================================================
+    dcache_clean_invalidate((uintptr_t)&st, sizeof(st));
+    if (use_blend) {
+        dcache_clean_invalidate((uintptr_t)bifrost_g31_blit_shader, sizeof(bifrost_g31_blit_shader));
+        dcache_clean_invalidate((uintptr_t)bifrost_g31_solid_shader, sizeof(bifrost_g31_solid_shader));
+    }
+
+    if (gpu_submit_job(0, (uintptr_t)&st.frag_job)) {
+        return -1;
+    }
+
+    return 0;
+}
+
+
+
+
+
 static LCLSPINLOCK_t gpulock;
 
 int gpu_fillrect(
@@ -515,7 +1053,7 @@ int gpu_fillrect(
 		w,                // width
 		h,                // height
 		color,           // 0xFFFF0000
-		fillmask,
+		0*fillmask,
 		alpha
     );
     ASSERT(res == 0);
