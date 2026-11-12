@@ -3512,7 +3512,7 @@ hwaccel_fillrect_mux(
 {
 	int done = 0;
 
-#if WITHGPUHW && CPUSTYLE_T507 && 1
+#if WITHGPUHW && CPUSTYLE_T507 && 0
 	done = gpu_fillrect(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
 
 #elif LCDMODE_PALETTE256
