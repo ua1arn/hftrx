@@ -352,14 +352,35 @@ static int gpu_fill_rect_fragment_v7(
             .surface_stride = (uint64_t)fb_stride * fb_height
         },
         .clear = {
-            .color_0 = r * 0x01010101U,
-            .color_1 = g * 0x01010101U,
-            .color_2 = b * 0x01010101U,
-            .color_3 = a * 0x01010101U
+            .color_0 = r * UINT32_C(0x01010101),
+            .color_1 = g * UINT32_C(0x01010101),
+            .color_2 = b * UINT32_C(0x01010101),
+            .color_3 = a * UINT32_C(0x01010101)
         }
     };
-#if LCDMODE_RGB565
-
+#if 0
+    // dummy section
+#elif LCDMODE_RGB565 && 1
+    // вариант с использованием swizzle
+    // color_argb в формате RGB565
+    const uint32_t packedargb = (a << 24) | (b << 16) | (g << 8) | (r << 0);
+    rt_rgb.clear.color_0 = packedargb;//color_argb * UINT32_C(0x00010001);
+    rt_rgb.clear.color_1 = packedargb;//color_argb * UINT32_C(0x00010001);
+    rt_rgb.clear.color_2 = packedargb;//color_argb * UINT32_C(0x00010001);
+    rt_rgb.clear.color_3 = packedargb;//color_argb * UINT32_C(0x00010001);
+    // описывает упаковку цвета в color0..color3
+    rt_rgb.swizzle =
+		((uint32_t)MALI_CHANNEL_B << 0) |
+		((uint32_t)MALI_CHANNEL_G << 3) |
+		((uint32_t)MALI_CHANNEL_R << 6) |
+		((uint32_t)MALI_CHANNEL_A << 9) |
+		0;
+    rt_rgb.writeback_format = MALI_COLOR_FORMAT_R5G6B5;
+    rt_rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8;
+    // also see blender - memory_format
+#elif LCDMODE_RGB565
+    // вариант с заполнением цветом без интерпретации отдельных компонент
+    // color_argb в формате RGB565
     rt_rgb.clear.color_0 = color_argb * UINT32_C(0x00010001);
     rt_rgb.clear.color_1 = 0;
     rt_rgb.clear.color_2 = 0;
@@ -368,7 +389,40 @@ static int gpu_fill_rect_fragment_v7(
     rt_rgb.writeback_format = MALI_COLOR_FORMAT_RAW16;
     rt_rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_RAW16;
 
-#elif LCDMODE_ARGB8888 || LCDMODE_BGRA8888
+#elif LCDMODE_ARGB8888 && 1
+    // вариант с использованием swizzle
+    const uint32_t packedargb = (a << 24) | (b << 16) | (g << 8) | (r << 0);
+	rt_rgb.clear.color_0 = packedargb;
+	rt_rgb.clear.color_1 = 0;
+	rt_rgb.clear.color_2 = 0;
+	rt_rgb.clear.color_3 = packedargb;
+    rt_rgb.swizzle =
+            ((uint32_t)MALI_CHANNEL_B << 0) |
+			((uint32_t)MALI_CHANNEL_G << 3) |
+			((uint32_t)MALI_CHANNEL_R << 6) |
+    		((uint32_t)MALI_CHANNEL_A << 9) |
+			0;
+    rt_rgb.writeback_format = MALI_COLOR_FORMAT_R8G8B8A8;
+    rt_rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8;
+
+#elif LCDMODE_BGRA8888 && 1
+    // вариант с использованием swizzle
+    const uint32_t packedargb = (a << 24) | (b << 16) | (g << 8) | (r << 0);
+	rt_rgb.clear.color_0 = packedargb;
+	rt_rgb.clear.color_1 = 0;
+	rt_rgb.clear.color_2 = 0;
+	rt_rgb.clear.color_3 = packedargb;
+    rt_rgb.swizzle =
+            ((uint32_t)MALI_CHANNEL_A << 0) |
+			((uint32_t)MALI_CHANNEL_R << 3) |
+			((uint32_t)MALI_CHANNEL_G << 6) |
+    		((uint32_t)MALI_CHANNEL_B << 9) |
+			0;
+    rt_rgb.writeback_format = MALI_COLOR_FORMAT_R8G8B8A8;
+    rt_rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8;
+
+#elif (LCDMODE_ARGB8888 || LCDMODE_BGRA8888)
+    // вариант с заполнением цветом без интерпретации отдельных компонент
     rt_rgb.clear.color_0 = color_argb;
     rt_rgb.clear.color_1 = 0;
     rt_rgb.clear.color_2 = 0;
@@ -478,15 +532,17 @@ int gpu_fillrect(
 void draw_example(void) {
     // Цвет в формате ARGB8888: 0xAARRGGBB
     // Например, непрозрачный красный цвет: A=0xFF, R=0xFF, G=0x00, B=0x00
-	COLORPIP_T color_red = TFTRGB(255, 0, 0);
-	PRINTF("color_red=0x%08X\n", (unsigned) color_red);
-	uintptr_t fbaddr = (uintptr_t) colmain_fb_draw();
-    memset32((void *) fbaddr, COLORPIP_DARKCYAN, DIM_X * DIM_Y * LCDMODE_PIXELSIZE);
+	COLORPIP_T color = TFTRGB(255, 0, 0);
+//	COLORPIP_T color = TFTRGB(0, 255, 0);
+//	COLORPIP_T color = TFTRGB(0, 0, 255);
+	PRINTF("color=0x%08X\n", (unsigned) color);
+	PACKEDCOLORPIP_T * fb = colmain_fb_draw();
+    memset32(fb, 0x55555555, DIM_X * DIM_Y * LCDMODE_PIXELSIZE);
 
-    dcache_clean_invalidate(fbaddr, DIM_Y * GXADJ(DIM_X) * LCDMODE_PIXELSIZE);
+    dcache_clean_invalidate((uintptr_t) fb, DIM_Y * GXADJ(DIM_X) * LCDMODE_PIXELSIZE);
     // Заливка прямоугольника 200x200 в позиции (x = 100, y = 100)
     int res = gpu_fill_rect_fragment_v7(
-        (void *) fbaddr, // Указатель на начало видеобуфера (физический адрес)
+    	fb, // Указатель на начало видеобуфера (физический адрес)
         DIM_X,           // 800
         DIM_Y,          // 480
         GXADJ(DIM_X) * LCDMODE_PIXELSIZE,          // 3200 байт
@@ -494,10 +550,10 @@ void draw_example(void) {
         0,                // y
 		202,                // width
 		203,                // height
-        color_red           // 0xFFFF0000
+		color           // 0xFFFF0000
     );
 	PRINTF("framebuffer:\n");
-    printhex32(0, (void *) fbaddr, 256);
+    printhex32(0, (void *) fb, 256);
     if (res != 0) {
         PRINTF("gpu_fill_rect_fragment_v7 failed: %d\n", res);
     }
