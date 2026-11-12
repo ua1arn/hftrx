@@ -344,7 +344,7 @@ static int gpu_fill_rect_fragment_v7(
         .writeback_msaa = MALI_MSAA_SINGLE,
         .srgb = false,
         .dithering_enable = false,
-        .swizzle = swizzle_bgra,
+        .swizzle = 0,	// дальше переписывается
         .clean_tile_write_enable = true,
         .writeback_buffer = {
             .base = (uintptr_t)fb_addr,
@@ -360,7 +360,7 @@ static int gpu_fill_rect_fragment_v7(
     };
 #if 0
     // dummy section
-#elif LCDMODE_RGB565 && 1
+#elif LCDMODE_RGB565 && 0
     // вариант с использованием swizzle
     // color_argb в формате RGB565
     const uint32_t packedABGR = (a << 24) | (b << 16) | (g << 8) | (r << 0);
@@ -532,13 +532,21 @@ int gpu_fillrect(
 void draw_example(void) {
     // Цвет в формате ARGB8888: 0xAARRGGBB
     // Например, непрозрачный красный цвет: A=0xFF, R=0xFF, G=0x00, B=0x00
-	COLORPIP_T color = TFTRGB(255, 0, 0);
+	COLORPIP_T color = DSGN_SPECTRUMBG2;//TFTRGB(255, 0, 0);
+//	COLORPIP_T color = TFTRGB(255, 0, 0);
 //	COLORPIP_T color = TFTRGB(0, 255, 0);
 //	COLORPIP_T color = TFTRGB(0, 0, 255);
 	PRINTF("color=0x%08X\n", (unsigned) color);
 	PACKEDCOLORPIP_T * fb = colmain_fb_draw();
     memset32(fb, 0x55555555, DIM_X * DIM_Y * LCDMODE_PIXELSIZE);
-
+    {
+    	const COLORPIP_T c = 0x0124;
+        const unsigned a = COLORPIP_A(c);
+        const unsigned r = COLORPIP_R(c);
+        const unsigned g = COLORPIP_G(c);
+        const unsigned b = COLORPIP_B(c);
+        PRINTF("c=%08X, argb=%02X%02X%02X%02X\n", (unsigned) c, a, r, g, b);
+    }
     dcache_clean_invalidate((uintptr_t) fb, DIM_Y * GXADJ(DIM_X) * LCDMODE_PIXELSIZE);
     // Заливка прямоугольника 200x200 в позиции (x = 100, y = 100)
     int res = gpu_fill_rect_fragment_v7(
