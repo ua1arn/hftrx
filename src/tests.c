@@ -2195,11 +2195,12 @@ static int local_randomgr(unsigned long num)
 /*      RANDOMBARS: Display random bars                                 */
 /*                                                                      */
 
-static void BarTest(void)
+static int BarTest(void)
 {
+	enum { TESTS = 50000 };
 	//PRINTF("BarTest\n");
 	int forever = 0;
-	unsigned n = 20000;
+	unsigned n = TESTS;
 	for (;forever || n --;)
 	{                    /* Until user enters a key...   */
 		const int r = local_randomgr(256);
@@ -2215,11 +2216,11 @@ static void BarTest(void)
 
 		display_solidbar(x, y, x2, y2, color);	// MDMA работает минуя кеш-память
 
-		colmain_nextfb();
-		testsloopprocessing();		// обработка отложенного вызова user mode функций
 	}
+	colmain_nextfb();
 
 	//getch();             /* Pause for user's response    */
+	return TESTS;
 }
 
 static  void
@@ -11516,15 +11517,17 @@ void hightests(void)
 		board_update();
 		TP();
 		unsigned cnt;
-		display2_fillbg(db);
+		display2_fillbg(& dbv);
 		//printAllEnabledIRQs();
 		for (cnt = 0; ; ++ cnt)
 		{
-			const time_t tstart = time(NULL);
+			const hwtimcountfast_t t0 = timestamp_getticks();
 			//GridTest();
-			BarTest();
-			const time_t tend = time(NULL);
-			PRINTF("BarTest: %u, %ds, pixelsize=%d @%u MHz\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE, (unsigned) (CPU_FREQ / 1000000));
+			const int n = BarTest();
+			const hwtimcountfast_t te = timestamp_getticks();
+			const int ms = (te - t0) / (timestamp_getfreq() / 1000);
+			PRINTF("BarTest: %d rectangles, %u, %d mS, pixelsize=%d @%u MHz\n", n, cnt, ms, LCDMODE_PIXELSIZE, (unsigned) (CPU_FREQ / 1000000));
+			testsloopprocessing();		// обработка отложенного вызова user mode функций
 		}
 		// Divide result by 10
 		// 800x480, Renesas RZ/A1L, @360 MHz, L8, software (w cache: 5.6s..5.7s)
@@ -11537,6 +11540,10 @@ void hightests(void)
 		// 800x480, Allwinner F133-A, @1200 MHz, RGB565, hardware G2D 0.7s
 		// 800x480, Allwinner F133-A, @1200 MHz, XRGB8888, hardware G2D 0.9s
 		// 800x480, Allwinner t507, @1200 MHz, RGB565, software 0.4s
+		// t507, soft
+		// BarTest: 50000 rectangles, 3, 4256 mS, pixelsize=4 @1200 MHz
+		// t507, Mali G31
+		// BarTest: 50000 rectangles, 1, 19117 mS, pixelsize=4 @1200 MHz
 	}
 #endif
 #if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
