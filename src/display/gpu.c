@@ -363,11 +363,11 @@ static int gpu_fill_rect_fragment_v7(
 #elif LCDMODE_RGB565 && 1
     // вариант с использованием swizzle
     // color_argb в формате RGB565
-    const uint32_t packedargb = (a << 24) | (b << 16) | (g << 8) | (r << 0);
-    rt_rgb.clear.color_0 = packedargb;//color_argb * UINT32_C(0x00010001);
-    rt_rgb.clear.color_1 = packedargb;//color_argb * UINT32_C(0x00010001);
-    rt_rgb.clear.color_2 = packedargb;//color_argb * UINT32_C(0x00010001);
-    rt_rgb.clear.color_3 = packedargb;//color_argb * UINT32_C(0x00010001);
+    const uint32_t packedABGR = (a << 24) | (b << 16) | (g << 8) | (r << 0);
+    rt_rgb.clear.color_0 = packedABGR;//color_argb * UINT32_C(0x00010001);
+    rt_rgb.clear.color_1 = 0;//color_argb * UINT32_C(0x00010001);
+    rt_rgb.clear.color_2 = 0;//color_argb * UINT32_C(0x00010001);
+    rt_rgb.clear.color_3 = packedABGR;//color_argb * UINT32_C(0x00010001);
     // описывает упаковку цвета в color0..color3
     rt_rgb.swizzle =
 		((uint32_t)MALI_CHANNEL_B << 0) |
@@ -391,11 +391,11 @@ static int gpu_fill_rect_fragment_v7(
 
 #elif LCDMODE_ARGB8888 && 1
     // вариант с использованием swizzle
-    const uint32_t packedargb = (a << 24) | (b << 16) | (g << 8) | (r << 0);
-	rt_rgb.clear.color_0 = packedargb;
+    const uint32_t packedABGR = (a << 24) | (b << 16) | (g << 8) | (r << 0);
+	rt_rgb.clear.color_0 = packedABGR;
 	rt_rgb.clear.color_1 = 0;
 	rt_rgb.clear.color_2 = 0;
-	rt_rgb.clear.color_3 = packedargb;
+	rt_rgb.clear.color_3 = packedABGR;
     rt_rgb.swizzle =
             ((uint32_t)MALI_CHANNEL_B << 0) |
 			((uint32_t)MALI_CHANNEL_G << 3) |
@@ -407,7 +407,7 @@ static int gpu_fill_rect_fragment_v7(
 
 #elif LCDMODE_BGRA8888 && 1
     // вариант с использованием swizzle
-    const uint32_t packedargb = (a << 24) | (b << 16) | (g << 8) | (r << 0);
+    const uint32_t packedABGR = (a << 24) | (b << 16) | (g << 8) | (r << 0);
 	rt_rgb.clear.color_0 = packedargb;
 	rt_rgb.clear.color_1 = 0;
 	rt_rgb.clear.color_2 = 0;
