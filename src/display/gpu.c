@@ -331,7 +331,6 @@ static int gpu_fill_rect_fragment_v7(
                             ((uint32_t)MALI_CHANNEL_G << 3) |
                             ((uint32_t)MALI_CHANNEL_R << 6) |
                             ((uint32_t)MALI_CHANNEL_A << 9);
-    swizzle_bgra = 0x00000688;
     //PRINTHEX32(swizzle_bgra);
     struct MALI_RGB_RENDER_TARGET rt_rgb = {
         MALI_RGB_RENDER_TARGET_header,
@@ -353,10 +352,10 @@ static int gpu_fill_rect_fragment_v7(
             .surface_stride = (uint64_t)fb_stride * fb_height
         },
         .clear = {
-            .color_0 = color_argb,//r * 0x01010101U,
-            .color_1 = 0,//g * 0x01010101U,
-            .color_2 = 0,//b * 0x01010101U,
-            .color_3 = color_argb //a * 0x01010101U
+            .color_0 = r * 0x01010101U,
+            .color_1 = g * 0x01010101U,
+            .color_2 = b * 0x01010101U,
+            .color_3 = a * 0x01010101U
         }
     };
 #if LCDMODE_RGB565
@@ -367,12 +366,21 @@ static int gpu_fill_rect_fragment_v7(
                               ((uint32_t)MALI_CHANNEL_B << 6) |
                               ((uint32_t)MALI_CHANNEL_1 << 9);
 
-    rt_rgb.clear.color_0 = clear_rgba8;
+    rt_rgb.clear.color_0 = color_argb;
     rt_rgb.clear.color_1 = 0;
     rt_rgb.clear.color_2 = 0;
-    rt_rgb.clear.color_3 = clear_rgba8;
-    rt_rgb.swizzle = swizzle_rgb565;
-    rt_rgb.writeback_format = MALI_COLOR_FORMAT_R5G6B5;
+    rt_rgb.clear.color_3 = color_argb;
+    rt_rgb.swizzle = 0;
+    rt_rgb.writeback_format = MALI_COLOR_FORMAT_RAW16;
+
+#elif LCDMODE_ARGB8888
+    rt_rgb.clear.color_0 = color_argb;
+    rt_rgb.clear.color_1 = 0;
+    rt_rgb.clear.color_2 = 0;
+    rt_rgb.clear.color_3 = color_argb;
+    rt_rgb.swizzle = 0;
+    rt_rgb.writeback_format = MALI_COLOR_FORMAT_RAW32;
+
 #endif
 
     MALI_RGB_RENDER_TARGET_pack(&fb_desc.rt0, &rt_rgb);
