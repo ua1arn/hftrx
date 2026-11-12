@@ -360,10 +360,10 @@ static int gpu_fill_rect_fragment_v7(
     };
 #if LCDMODE_RGB565
 
-    rt_rgb.clear.color_0 = ((uint32_t) color_argb << 16) | color_argb;
+    rt_rgb.clear.color_0 = color_argb * UINT32_C(0x00010001);
     rt_rgb.clear.color_1 = 0;
     rt_rgb.clear.color_2 = 0;
-    rt_rgb.clear.color_3 = ((uint32_t) color_argb << 16) | color_argb;
+    rt_rgb.clear.color_3 = color_argb * UINT32_C(0x00010001);
     rt_rgb.swizzle = 0;
     rt_rgb.writeback_format = MALI_COLOR_FORMAT_RAW16;
     rt_rgb.internal_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_RAW16;
