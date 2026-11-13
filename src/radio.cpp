@@ -14253,8 +14253,8 @@ uint_fast8_t hamradio_get_bkin_value(void)
 static void
 uif_key_voxtoggle(void)
 {
-	param_keyclick(& xgvoxenable);
-	updateboard();
+	if (param_keyclick(& xgvoxenable))
+		updateboard();
 }
 
 // текущее состояние VOX
@@ -14780,8 +14780,8 @@ uif_key_click_attenuator(void)
 static void
 uif_key_click_pwr(void)
 {
-	param_keyclick(& xgpwri);
-	updateboard();
+	if (param_keyclick(& xgpwri))
+		updateboard();
 }
 #endif /* WITHPOWERLPHP */
 
@@ -14790,8 +14790,8 @@ uif_key_click_pwr(void)
 static void
 uif_key_click_notch(void)
 {
-	param_keyclick(& xgnotch);
-	updateboard();
+	if (param_keyclick(& xgnotch))
+		updateboard();
 }
 
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
@@ -14883,8 +14883,8 @@ uif_key_changenr(void)
 static void
 uif_key_click_datamode(void)
 {
-	param_keyclick(& xgdatamode);
-	updateboard();
+	if (param_keyclick(& xgdatamode))
+		updateboard();
 }
 
 #endif /* WITHUSBHW && WITHUSBUAC */
@@ -16436,7 +16436,7 @@ void cat2_parsechar(uint_fast8_t c)
 	static uint_fast8_t cathasparam;
 	static uint_fast8_t catp [CATPCOUNTSIZE];
 	static uint_fast8_t catpcount;
-
+	//PRINTF("%c", c);
    // PRINTF(PSTR("c=%02x, catstatein=%d, c1=%02X, c2=%02X\n"), c, catstatein, catcommand1, catcommand2);
 	ticker_timeout_restart(& cat_ticker, CAT_TIMEOUT);	// Перезапуск тайм-аута
 	switch (catstatein)
@@ -23090,8 +23090,8 @@ void display2_set_page_temp(uint_fast8_t page)
 
 void hamradio_set_gdactest(uint8_t v)
 {
-	param_keyclick(& xgdactest);
-	updateboard();
+	if (param_keyclick(& xgdactest))
+		updateboard();
 }
 
 uint32_t hamradio_get_gadcrand(void)
