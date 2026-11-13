@@ -364,6 +364,7 @@ uint_fast32_t allwnr_a733_get_v0_tconlcd1_freq(void);
 uint_fast32_t allwnr_a733_get_de0_freq(void);
 uint_fast32_t allwnr_a733_get_pll_peri0_2x_freq(void);
 
+uint_fast32_t allwnr_a733_get_pll_peri0_480M_freq(void);
 uint_fast32_t allwnr_a733_get_pll_video0_4x_freq(void);
 uint_fast32_t allwnr_a733_get_pll_video1_4x_freq(void);
 uint_fast32_t allwnr_a733_get_pll_video2_4x_freq(void);

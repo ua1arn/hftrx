@@ -2890,6 +2890,9 @@ static void hardware_de_global_initialize(void)
 	/* переключить память к DE & VI */
     // https://github.com/bigtreetech/CB1-Kernel/blob/244c0fd1a2a8e7f2748b2a9ae3a84b8670465351/u-boot/drivers/video/sunxi/sunxi_de2.c#L39
 	////SYS_CFG->MEMMAP_REG &= ~ (UINT32_C(1) << 24);
+//	PRINTF("7 allwnr_a733_get_pll_peri0_2x_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_pll_peri0_2x_freq() / 1000 / 1000);
+//	PRINTF("7 allwnr_a733_get_pll_peri0_480M_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_pll_peri0_480M_freq() / 1000 / 1000);
+//	PRINTF("7 CCU->PLL_PERI0_CTRL_REG=%" PRIx32 "\n", CCU->PLL_PERI0_CTRL_REG);
 
 //	allwnr_a733_module_pll_spr(& CCU->PLL_DE_CTRL_REG, & CCU->PLL_DE_PAT0_CTRL_REG);	// Set Spread Frequency Mode
 //	allwnr_a733_module_pll_enable(& CCU->PLL_DE_CTRL_REG, 36);
@@ -2906,30 +2909,24 @@ static void hardware_de_global_initialize(void)
 	//    100: PERI0_300M
 	//    101: VIDEO0PLL4X
 	//    110: VIDEO2PLL4X
+    unsigned de_sel = 0;
 	unsigned de_divider = 1;
 	ASSERT(de_divider >= 1 && de_divider <= 32);
     CCU->DE0_CLK_REG = (CCU->DE0_CLK_REG & ~ (UINT32_C(1) << 24) & ~ (UINT32_C(0x07) << 0)) |
-		0*0x04 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 100: PERI0_300M
+		0x03 * (UINT32_C(1) << 24) |	// CLK_SRC_SEL 100: PERI0_300M
 		(de_divider - 1) * (UINT32_C(1) << 0) |	// FACTOR_M 300 MHz
 		0;
-    CCU->DE0_CLK_REG = 0;	// from dump
-    CCU->DE0_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-
-
-	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1: De-assert
-	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
-	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
-
-
-	PRINTF("allwnr_a733_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_de0_freq() / 1000 / 1000);
 	//PRINTF("allwnr_a733_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_mbus_freq() / 1000 / 1000);
+
+	//CCU->DE0_CLK_REG = 0;	// from dump
+    CCU->DE0_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+	PRINTF("7 allwnr_a733_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_de0_freq() / 1000 / 1000);
 
     //CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// DESYS_MBUS_GATE_SW_CFG
 	CCU->DE_SYS_BGR_REG |= (UINT32_C(1) << 16);	// DE_SYS_RST 1: De-assert
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 0);		// DE0_GATING Open the clock gate
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
     local_delay_us(10);
-
 
     PRINTF("CCU->DE_SYS_BGR_REG=%08X\n", (unsigned) CCU->DE_SYS_BGR_REG);
     PRINTF("CCU->DE0_BGR_REG=%08X\n", (unsigned) CCU->DE0_BGR_REG);
