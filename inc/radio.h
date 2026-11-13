@@ -727,7 +727,7 @@ typedef struct paramdefdef
 	uint16_t qbottom, qupper;	/* ограничения на редактируемое значение (upper - включая) */
 
 	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
-	unsigned (* qselector)(unsigned * count);
+	unsigned (* qselector)(unsigned * count, unsigned bi);
 	nvramaddress_t (* qnvramoffs)(nvramaddress_t base, unsigned sel, unsigned bi);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
 	ptrdiff_t (* valoffs)(unsigned sel);		/* индекс для работы с массивом переменных */
 

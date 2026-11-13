@@ -486,7 +486,7 @@ savemenuvalue(
 	if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
 	{
 		unsigned nvalues;
-		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
+		const unsigned sel = pd->qselector(& nvalues, bi); // индекс параметра в массиве
 		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -525,7 +525,7 @@ raw_param_setvalue(
 	if (ismenukinddp(pd, ITEM_VALUE))
 	{
 		unsigned nvalues;
-		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
+		const unsigned sel = pd->qselector(& nvalues, bi); // индекс параметра в массиве
 		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -608,10 +608,11 @@ param_val(
 	const struct paramdefdef * pd
 	)
 {
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 	if (ismenukinddp(pd, ITEM_VALUE))
 	{
 		unsigned nvalues;
-		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
+		const unsigned sel = pd->qselector(& nvalues, bi); // индекс параметра в массиве
 		//const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -641,7 +642,7 @@ param_load(
 	if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
 	{
 		unsigned nvalues;
-		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
+		const unsigned sel = pd->qselector(& nvalues, bi); // индекс параметра в массиве
 		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -748,7 +749,7 @@ param_keyclick(const struct paramdefdef * pd)
 {
 	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 	unsigned nvalues;
-	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
+	const unsigned sel = pd->qselector(& nvalues, bi); // индекс параметра в массиве
 	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -1015,7 +1016,7 @@ param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e, void (* bring)
 	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 	/* редактирование паратметра */
 	unsigned nvalues;
-	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
+	const unsigned sel = pd->qselector(& nvalues, bi); // индекс параметра в массиве
 	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -1075,7 +1076,7 @@ param_rotate(const struct paramdefdef * pd, int_fast32_t nrotate)
 	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 	/* редактирование паратметра */
 	unsigned nvalues;
-	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
+	const unsigned sel = pd->qselector(& nvalues, bi); // индекс параметра в массиве
 	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
@@ -4437,8 +4438,9 @@ static ptrdiff_t valueoffs0(unsigned sel)
 	return 0;
 }
 
-static unsigned getselector0(unsigned * count)
+static unsigned getselector0(unsigned * count, unsigned bi)
 {
+	(void) bi;
 	* count = 1;
 	return 0;
 }
@@ -4599,7 +4601,7 @@ static uint_fast16_t gstep_ENC_MAIN;
 static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
 static uint_fast16_t gencderate = 1;
 
-static unsigned nvramoffs_selector(unsigned * count)
+static unsigned nvramoffs_modeselector(unsigned * count, unsigned bi)
 {
 	const uint_fast8_t mode = gmode;
 	* count = MODE_COUNT;
@@ -4651,7 +4653,7 @@ static const struct paramdefdef xgnoisereduct =
 	ITEM_VALUE,
 	0, 1,
 	RMT_NR_BASE(0),							/* включение NR */
-	nvramoffs_selector, nvramoffs_mode, valueoffs_mode,
+	nvramoffs_modeselector, nvramoffs_mode, valueoffs_mode,
 	NULL,	// uint_fast16_t value pointer
 	& gnoisereducts [0],	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
@@ -5295,10 +5297,9 @@ static const struct paramdefdef xgethmacaddr =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
-	static unsigned getselector_bandprops(unsigned * count)
+	static unsigned getselector_bandprops(unsigned * count, unsigned bi)
 	{
 		const uint_fast8_t bandset_no_check = 0;
-		const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 		const uint_fast32_t freq = gfreqs [bi];
 		const uint_fast8_t b = getfreqband(freq, bandset_no_check);
 		* count = HBANDS_COUNT + XBANDS_COUNT;
@@ -10447,7 +10448,7 @@ static void micproc_load(void)
 //
 // работа со вторым валкодером
 
-static unsigned getselector_bandgroupant(unsigned * count)
+static unsigned getselector_bandgroupant(unsigned * count, unsigned bi)
 {
     * count = 1;
 
@@ -19009,7 +19010,7 @@ param_loadarrays(unsigned bi)
 		{
 			unsigned sel;
 			unsigned nvalues;
-			pd->qselector(& nvalues);
+			pd->qselector(& nvalues, bi);
 			if (pd->qnvram == MENUNONVRAM)
 				continue;
 			for (sel = 0; sel < nvalues; ++ sel)
