@@ -633,7 +633,7 @@ param_val(
 }
 
 // Считать значение параметра из nvram
-void
+static void
 param_load(
 	const struct paramdefdef * pd,
 	uint_fast8_t bi
@@ -4601,7 +4601,7 @@ static uint_fast16_t gstep_ENC_MAIN;
 static uint_fast16_t gstep_ENC2;	/* шаг для второго валкодера в режимие подстройки частоты */
 static uint_fast16_t gencderate = 1;
 
-static unsigned nvramoffs_modeselector(unsigned * count, unsigned bi)
+static unsigned nvramoffsselector_mode(unsigned * count, unsigned bi)
 {
 	const uint_fast8_t mode = gmode;
 	* count = MODE_COUNT;
@@ -4653,7 +4653,7 @@ static const struct paramdefdef xgnoisereduct =
 	ITEM_VALUE,
 	0, 1,
 	RMT_NR_BASE(0),							/* включение NR */
-	nvramoffs_modeselector, nvramoffs_mode, valueoffs_mode,
+	nvramoffsselector_mode, nvramoffs_mode, valueoffs_mode,
 	NULL,	// uint_fast16_t value pointer
 	& gnoisereducts [0],	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */

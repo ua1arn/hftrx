@@ -1020,11 +1020,6 @@ int_fast32_t
 param_val(
 	const struct paramdefdef * pd
 	);
-void
-param_load(
-	const struct paramdefdef * pd,
-	uint_fast8_t bi
-	);
 // Минимальное и максимальное значение, которое можно передать в param_setvalue
 void
 param_getminmax(
