@@ -9300,6 +9300,7 @@ void lv_wtrf2_draw(lv_layer_t * layer, const lv_area_t * coords)
 
 #include <string.h>
 #include <stdexcept>
+#include <string>
 
 
 namespace litehtml
@@ -9332,19 +9333,19 @@ public:
 	void on_anchor_click(const char *url, const litehtml::element::ptr &el);
 	void on_mouse_event(const litehtml::element::ptr &el, litehtml::mouse_event event);
 	void set_cursor(const char *cursor);
-	void transform_text(litehtml::string &text, litehtml::text_transform tt);
-	void import_css(litehtml::string &text, const litehtml::string &url, litehtml::string &baseurl);
+	void transform_text(std::string& text, litehtml::text_transform tt);
+	void import_css(std::string &text, const std::string &url, std::string &baseurl);
 	void set_clip(const litehtml::position &pos, const litehtml::border_radiuses &bdr_radius);
 	void del_clip();
 	void get_client_rect(litehtml::position &client) const;
 	void get_viewport(litehtml::position& viewport) const;
-	litehtml::element::ptr create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc);
+	litehtml::element::ptr create_element(const char* tag_name, const litehtml::string_map& attributes, const std::shared_ptr<litehtml::document>& doc);
 
 	void get_media_features(litehtml::media_features &media) const;
-	void get_language(litehtml::string &language, litehtml::string &culture) const;
-//	litehtml::string resolve_color(const litehtml::string& /*color*/) const
+	void get_language(std::string &language, std::string &culture) const;
+//	std::string resolve_color(const std::string& /*color*/) const
 //	{
-//		return litehtml::string();
+//		return std::string();
 //	}
 //	void split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space);
 	hftrxgd(int dx, int dy) :
@@ -9571,11 +9572,11 @@ void hftrxgd::set_cursor(const char *cursor)
 	PRINTF("set_cursor: cursor='%s'\n", cursor);
 }
 
-void hftrxgd::transform_text(litehtml::string &text, litehtml::text_transform tt)
+void hftrxgd::transform_text(std::string &text, litehtml::text_transform tt)
 {
 	TP();
 }
-void hftrxgd::import_css(litehtml::string &text, const litehtml::string &url, litehtml::string &baseurl)
+void hftrxgd::import_css(std::string &text, const std::string &url, std::string &baseurl)
 {
 	//TP();
 }
@@ -9739,7 +9740,7 @@ void hftrxgd::get_media_features(litehtml::media_features &media) const
 	media.device_height = client.height; //1000; //GetDeviceCaps(m_tmp_hdc, VERTRES);
 }
 
-void hftrxgd::get_language(litehtml::string &language, litehtml::string &culture) const
+void hftrxgd::get_language(std::string &language, std::string &culture) const
 {
 	language = "en";
 	culture = "";
@@ -9924,8 +9925,8 @@ uint_fast8_t display2_mouse(uint_fast16_t xe, uint_fast16_t ye, unsigned evcode,
 
 #elif WITHRENDERHTML
 	litehtml::position::vector redraw_boxes;
-	hftrxmain_docs [menuset]->on_lbutton_down(xe, ye, 0, 0, redraw_boxes);
-	hftrxmain_docs [menuset]->on_lbutton_up(xe, ye, 0, 0, redraw_boxes);
+//	hftrxmain_docs [menuset]->on_lbutton_down(xe, ye, 0, 0, redraw_boxes);
+//	hftrxmain_docs [menuset]->on_lbutton_up(xe, ye, 0, 0, redraw_boxes);
 	return 0;
 
 #else
