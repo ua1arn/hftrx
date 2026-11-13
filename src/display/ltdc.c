@@ -2921,7 +2921,7 @@ static void hardware_de_global_initialize(void)
 	CCU->DE0_BGR_REG |= (UINT32_C(1) << 16);		// DE0_RST. De-assert reset
 
 
-	//PRINTF("allwnr_a733_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_de_freq() / 1000 / 1000);
+	PRINTF("allwnr_a733_get_de_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_de0_freq() / 1000 / 1000);
 	//PRINTF("allwnr_a733_get_mbus_freq()=%" PRIuFAST32 " MHz\n", allwnr_a733_get_mbus_freq() / 1000 / 1000);
 
     //CCU->MBUS_MAT_CLK_GATING_REG |= (UINT32_C(1) << 11);	// DESYS_MBUS_GATE_SW_CFG
@@ -3096,37 +3096,6 @@ static void hardware_de_global_initialize(void)
 
 #ifdef TCONTV_PTR
 
-	uint_fast32_t hdmidotclock = 360 * 1000 * 1000; //  80291880;
-	hdmidotclock = 145500000;	// Одна из разрешённых частот
-
-	// PLL_VIDEO0 as source
-	//const uint_fast32_t pllref = allwnr_a733_get_pll_ref_freq();
-	const uint_fast32_t pllout = allwnr_a733_get_pll_peri0_2x_freq();
-	//PRINTF("allwnr_a733_get_pll_ref_freq()=%u\n", (unsigned) pllref);
-	PRINTF("allwnr_a733_get_pll_peri0_2x_freq()=%u\n", (unsigned) pllout);
-	PRINTF("7 hdmidotclock=%u kHz\n", (unsigned) (hdmidotclock / 1000));
-
-	// HDMI_TV_CLK_REG
-	//	CLK_SRC_SEL.
-	//	Clock Source Select
-	//	000: VIDEO0PLL4X
-	//	001: VIDEO1PLL4X
-	//	010: VIDEO2PLL4X
-	//	011: PERI0PLL2X
-	unsigned sel = 0x03;
-	unsigned M_HDMI = ulmax(1, ulmin(calcdivround2(pllout, hdmidotclock), 16));
-	unsigned N_HDMI = 1;
-	PRINTF("7 N_HDMI=%u, M_HDMI=%u\n", N_HDMI, M_HDMI);
-	ASSERT(M_HDMI >= 1 && N_HDMI <= 32);
-	ASSERT(N_HDMI >= 1 && N_HDMI <= 32);
-
-	const unsigned HDMI_CLK_REG_M = M_HDMI;
-	CCU->HDMI_TV_CLK_REG =
-		sel * (UINT32_C(1) << 24) | 	// 011: PERI0PLL2X
-		(N_HDMI - 1) * (UINT32_C(1) << 8)|
-		(M_HDMI - 1) * (UINT32_C(1) << 0)|
-		0;
-	CCU->HDMI_TV_CLK_REG |= (UINT32_C(1) << 31);
     // 15.2.9.1 0x0000 TCON_TV Clock Select and EDP I2S1 Select Register
     DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC |= (UINT32_C(1) << 3);	// TCON_TV0_HDMIPHY_CCU_CK_SEL 1: TCON_TV0 clock sources from CCU
 
@@ -3165,44 +3134,6 @@ static void hardware_de_global_initialize(void)
 	CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
 	//PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
 
-//	{
-//		uint32_t Zclk_val = (UINT32_C(1) << 31) | (UINT32_C(3) << 24) | 0x0;
-//		CCU->COMBPHY0_CLK_REG =Zclk_val;//|= (UINT32_C(1) << 31);	// COMBPHY0_CLK_GATING
-//		CCU->COMBPHY1_CLK_REG =Zclk_val;//|= (UINT32_C(1) << 31);	// COMBPHY0_CLK_GATING
-//		/* =========================================================================
-//       ШАГ 1: Переключение системных MUX Combo PHY в режим HDMI
-//       ========================================================================= */
-//
-//		// COMBPHY0: сбрасываем нижние биты [1:0] и выставляем режим HDMI (0x2)
-//		COMBPHY0->COMBPHY_CFG_REG = (COMBPHY0->COMBPHY_CFG_REG & ~((UINT32_C(1) << 1) | (UINT32_C(1) << 0)))
-//									| (UINT32_C(1) << 1);
-//
-//		// COMBPHY1: проделываем аналогичное переключение
-//		COMBPHY1->COMBPHY_CFG_REG = (COMBPHY1->COMBPHY_CFG_REG & ~((UINT32_C(1) << 1) | (UINT32_C(1) << 0)))
-//									| (UINT32_C(1) << 1);
-//
-//		/* =========================================================================
-//		   ШАГ 2: Управление аналоговой изоляцией падов и внутренним питанием PHY
-//		   ========================================================================= */
-//
-//		// COMBPHY0: Сбрасываем BIT(0) (Отключаем ISO), взводим BIT(1) (Включаем Power)
-//		uint32_t ctrl0_val = COMBPHY0->COMBPHY_CTRL_REG;
-//		ctrl0_val &= ~(UINT32_C(1) << 0); // Отключаем Analog Isolation
-//		ctrl0_val |= (UINT32_C(1) << 1);  // Активируем внутреннее питание ячейки
-//		COMBPHY0->COMBPHY_CTRL_REG = ctrl0_val;
-//
-//		// COMBPHY1: Выполняем аналогичные действия
-//		uint32_t ctrl1_val = COMBPHY1->COMBPHY_CTRL_REG;
-//		ctrl1_val &= ~(UINT32_C(1) << 0); // Отключаем Analog Isolation
-//		ctrl1_val |= (UINT32_C(1) << 1);  // Активируем внутреннее питание ячейки
-//		COMBPHY1->COMBPHY_CTRL_REG = ctrl1_val;
-//
-//		/* Аппаратная пауза для стабилизации переходных процессов ключей */
-//		local_delay_us(200);
-//
-//		PRINTHEX32(*COMBPHY0);
-//		PRINTHEX32(*COMBPHY1);
-//	}
 #endif
 
 //    CCU->TVE0_CLK_REG = 0x82000001;
@@ -3236,8 +3167,7 @@ static void hardware_de_global_initialize(void)
 	//	7 BOARD_TCONLCDFREQ()=148500 kHz
 
 	//PRINTF("7 allwnr_a733_get_hdmi_hdcp_freq()=%u kHz\n", (unsigned) (allwnr_a733_get_hdmi_hdcp_freq() / 1000));
-//	PRINTF("7 allwnr_a733_get_hdmi_freq()=%u kHz\n", (unsigned) (allwnr_a733_get_hdmi_tv_freq() / 1000));
-//	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));
+	//PRINTF("7 allwnr_a733_get_tcon_tv0_freq()=%u kHz\n", (unsigned) (allwnr_a733_get_tcon_tv0_freq() / 1000));
 
 #elif CPUSTYLE_T507
 	/* Global DE settings */
@@ -6633,7 +6563,36 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_A733
 
-	const unsigned ix = TCONTV_IX;
+	// HDMI_TV_CLK_REG
+	//	CLK_SRC_SEL.
+	//	Clock Source Select
+	//	000: VIDEO0PLL4X
+	//	001: VIDEO1PLL4X
+	//	010: VIDEO2PLL4X
+	//	011: PERI0PLL2X
+	const freqsrc_t sources [] =
+	{
+		{ 0x00, allwnr_a733_get_pll_video0_4x_freq() },	// 000: VIDEO0PLL4X
+		{ 0x01, allwnr_a733_get_pll_video1_4x_freq() },	// 001: VIDEO1PLL4X
+		{ 0x02, allwnr_a733_get_pll_video2_4x_freq() },	// 010: VIDEO2PLL4X
+		{ 0x03, allwnr_a733_get_pll_peri0_2x_freq() },	// 011: PERI0PLL2X
+	};
+	unsigned hdmi_sel = UINT_MAX;
+	unsigned hdmi_divider;
+ 	unsigned hdmi_prei = calcdividerselect(hdmiclock, sources, ARRAY_SIZE(sources), 5, 1, & hdmi_divider, & hdmi_sel, 1);
+ 	ASSERT(hdmi_sel != UINT_MAX);
+	ASSERT(hdmi_divider >= 1 && hdmi_divider <= 32);
+
+	PRINTF("hdmi_sel=%u, hdmi_divider=%u\n", hdmi_sel, hdmi_divider + 1);
+
+
+	CCU->HDMI_TV_CLK_REG =
+			hdmi_sel * (UINT32_C(1) << 24) | 	// 011: PERI0PLL2X
+		(hdmi_prei) * (UINT32_C(1) << 8)|
+		(hdmi_divider) * (UINT32_C(1) << 0)|
+		0;
+	CCU->HDMI_TV_CLK_REG |= (UINT32_C(1) << 31);
+	PRINTF("7 allwnr_a733_get_hdmi_tv_freq()=%u kHz\n", (unsigned) (allwnr_a733_get_hdmi_tv_freq() / 1000));
 
 #elif CPUSTYLE_T507
 
