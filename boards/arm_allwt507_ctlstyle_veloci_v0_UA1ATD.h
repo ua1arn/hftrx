@@ -335,7 +335,6 @@
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
-	#define WITHCAT_MUX_DEFAULT BOARD_CATMUX_DIN8
 	#if 0
 		#define WITHUSEUSBBT		1	// Включение поддержки USB BT stick
 		//#define WITHUSEUSBBTAUDIO 1
@@ -416,6 +415,8 @@
 	#define WITHCAT				1	/* используется CAT */
 	#define WITHCAT_YAESU		1	/* используется CAT с системой команл Yaesu FT-817 */
 //	#define WITHCAT_ICOM		1
+	#define WITHCAT_MUX_DEFAULT BOARD_CATMUX_DIN8
+
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//
