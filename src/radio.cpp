@@ -7358,12 +7358,12 @@ uint_fast8_t actpageix(void)
 	return gmenuset;
 }
 
-/* состояние для мерцающих индикаторов на диспле - 50% активен */
+/* состояние для мерцающих индикаторов на дисплее - 50% активен */
 uint_fast8_t hamradio_get_blinkphase50(void)
 {
 	return gblinkphase < 50 * BLINKPERIOD / 100;
 }
-/* состояние для мерцающих индикаторов на диспле - 75% активен */
+/* состояние для мерцающих индикаторов на дисплее - 75% активен */
 uint_fast8_t hamradio_get_blinkphase75(void)
 {
 	return gblinkphase < 75 * BLINKPERIOD / 100;
