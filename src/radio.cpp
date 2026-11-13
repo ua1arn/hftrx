@@ -510,9 +510,12 @@ savemenuvalue(
 	}
 }
 
-// Установить значение параметра и сохранить в nvram
-void
-param_setvalue(
+/*
+ *  Установить значение параметра и сохранить в nvram
+ * - возврат не-0  в случае модификации
+ */
+static uint_fast8_t
+raw_param_setvalue(
 	const struct paramdefdef * pd,
 	int_fast32_t v
 	)
@@ -525,6 +528,7 @@ param_setvalue(
 		const ptrdiff_t offs = pd->valoffs(sel);
 		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
+		uint_fast8_t modified = 0;
 		// new value validation
 		v = v - pd->funcoffs();
 		if (v < pd->qbottom)
@@ -534,14 +538,44 @@ param_setvalue(
 
 		if (pv16 != NULL)
 		{
+			modified = (int_fast32_t) * pv16 != v;
 			* pv16 = v;
 		}
 		else if (pv8 != NULL)
 		{
+			modified = (int_fast32_t) * pv8 != v;
 			* pv8 = v;
 		}
+		return modified;
+	}
+	return 0;
+}
+
+/*
+ *  Установить значение параметра и сохранить в nvram
+ * - возврат не-0  в случае модификации
+ * Эта функция не сохраняет хначение параметра в nvram
+ */
+static uint_fast8_t
+cat_param_setvalue(
+	const struct paramdefdef * pd,
+	int_fast32_t v
+	)
+{
+	return raw_param_setvalue(pd, v);
+}
+
+uint_fast8_t
+param_setvalue(
+	const struct paramdefdef * pd,
+	int_fast32_t v
+	)
+{
+	if (raw_param_setvalue(pd, v))
+	{
 		savemenuvalue(pd);	// ITEM_NOINITNVRAM validation here
 	}
+	return 0;
 }
 
 // Минимальное и максимальное значение, которое можно передать в param_setvalue
@@ -5373,8 +5407,8 @@ uint_fast8_t hamradio_get_viewstyle(void)
 void hamradio_settemp_viewstyle(uint_fast8_t v)
 {
 	ASSERT(v < VIEW_count);
-	param_setvalue(& xgviewstyle, v);
-	updateboard();
+	if (param_setvalue(& xgviewstyle, v))
+		updateboard();
 }
 
 
@@ -5459,23 +5493,23 @@ uint_fast8_t hamradio_get_gzoomxpow2(void)
 
 void hamradio_set_gzoomxpow2(uint_fast8_t v)
 {
-	param_setvalue(& xgzoomxpow2, v);	// Установить значение параметра и сохранить в nvram
-	updateboard();
+	if (param_setvalue(& xgzoomxpow2, v))	// Установить значение параметра и сохранить в nvram
+		updateboard();
 }
 #endif
 
 /* значения со знаком */
 void hamradio_set_bottomdb(int_fast16_t v)
 {
-	param_setvalue(& xgbottomdb, v);
-	updateboard();
+	if (param_setvalue(& xgbottomdb, v))
+		updateboard();
 }
 
 /* значения со знаком */
 void hamradio_set_topdb(int_fast16_t v)
 {
-	param_setvalue(& xgtopdb, v);
-	updateboard();
+	if (param_setvalue(& xgtopdb, v))
+		updateboard();
 }
 
 /* значения со знаком */
@@ -5497,8 +5531,8 @@ uint8_t hamradio_get_spectrumpart(void)
 
 void hamradio_set_spectrumpart(uint8_t v)
 {
-	param_setvalue(& xgspectrumpart, v);
-	updateboard();
+	if (param_setvalue(& xgspectrumpart, v))
+		updateboard();
 }
 
 #endif
@@ -6403,8 +6437,8 @@ enum
 		{
 			if (band < BOARD_AFPROC_BANDS)
 			{
-				param_setvalue(xgtxeqs [band], v - EQUALIZERBASE);
-				updateboard();
+				if (param_setvalue(xgtxeqs [band], v - EQUALIZERBASE))
+					updateboard();
 			}
 		}
 		int hamradio_get_af_equalizer_base(void)
@@ -6417,8 +6451,8 @@ enum
 		}
 		void hamradio_set_eqalizer_tx(int state)
 		{
-			param_setvalue(& xgmikeequalizer, state);
-			updateboard();
+			if (param_setvalue(& xgmikeequalizer, state))
+				updateboard();
 		}
 #endif /* WITHIF4DSP */
 
@@ -7500,8 +7534,8 @@ static const struct paramdefdef xsi570_xtall_offset =
 
 void hamradio_set_si570reference(int_fast32_t f)
 {
-	param_setvalue(& xsi570_xtall_offset);
-	updateboard();
+	if (param_setvalue(& xsi570_xtall_offset))
+		updateboard();
 }
 
 #endif /* defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570) */
@@ -13424,8 +13458,8 @@ uint_fast16_t hamradio_get_lfmtinterval(void)
 
 void hamradio_set_lfmtinterval(uint_fast16_t v)
 {
-	param_setvalue(& xlfmtinterval, v);
-	updateboard();
+	if (param_setvalue(& xlfmtinterval, v))
+		updateboard();
 }
 
 uint_fast8_t hamradio_get_lfmmode(void)
@@ -13435,8 +13469,8 @@ uint_fast8_t hamradio_get_lfmmode(void)
 
 void hamradio_set_lfmmode(uint_fast8_t v)
 {
-	param_setvalue(& xlfmmode, !! v);
-	updateboard();
+	if (param_setvalue(& xlfmmode, !! v))
+		updateboard();
 }
 
 uint_fast16_t hamradio_get_lfmstop100k(void)
@@ -13446,8 +13480,8 @@ uint_fast16_t hamradio_get_lfmstop100k(void)
 
 void hamradio_set_lfmstop100k(uint_fast16_t v)
 {
-	param_setvalue(& xlfmstop100k, v);
-	updateboard();
+	if (param_setvalue(& xlfmstop100k, v))
+		updateboard();
 }
 
 uint_fast16_t hamradio_get_lfmtoffset(void)
@@ -13457,8 +13491,8 @@ uint_fast16_t hamradio_get_lfmtoffset(void)
 
 void hamradio_set_lfmtoffset(uint_fast16_t v)
 {
-	param_setvalue(& xlfmtoffset, v);
-	updateboard();
+	if (param_setvalue(& xlfmtoffset, v))
+		updateboard();
 }
 
 void hamradio_lfm_disable(void)
@@ -16629,7 +16663,7 @@ static void daanswer(uint_fast8_t arg)
 
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) 0	// 0/1: data mode on/off
+		(int) param_val(& xgdatamode)	// 0/1: data mode on/off
 		);
 	cat_answer(len);
 }
@@ -17520,9 +17554,15 @@ processcatmsg(
 			{
 			case 0:
 				// DATA mode OFF
+				if (cat_param_setvalue(& xgdatamode, 0))
+					updateboard();
+				rc = 1;
 				break;
 			case 1:
 				// DATA mode ON
+				if (cat_param_setvalue(& xgdatamode, 1))
+					updateboard();
+				rc = 1;
 				break;
 			default:
 				cat_answer_request(CAT_BADCOMMAND_INDEX);
@@ -17598,8 +17638,9 @@ processcatmsg(
 		{
 			const uint_fast32_t v = catparam;
 			// Минимальный тон телеграфа - 400 герц.
-			gcwpitch10 = vfy32up(v, 0, 14, 6) * 5 + 40;
-			updateboard();	/* полная перенастройка (как после смены режима) */
+			const int_fast32_t vq = vfy32up(v, 0, 14, 6) * 5 + 40;
+			if (cat_param_setvalue(& xgcwpitch10, vq))
+				updateboard();
 			rc = 1;
 		}
 		else
@@ -17690,7 +17731,7 @@ processcatmsg(
 			{
 				//const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
 				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), 0, SQUELCHMAX, 0);
-				if (flagne_u8(& gsquelch.value, p2))
+				if (cat_param_setvalue(& xgsquelch, p2))
 				{
 					updateboard();	/* полная перенастройка (как после смены режима) */
 					rc = 1;
@@ -17723,7 +17764,7 @@ processcatmsg(
 				//const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
 				const uint_fast32_t p2 = vfy32up(catscanint(catp + 1, 3), 0, 255, 255);
 				const unsigned p2board = p2 * (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) / 255 + BOARD_AFGAIN_MIN;	// масштабирование кода от CAT (0..255) во внутренний диапазоны
-				if (flagne_u16(& afgain1.value, p2board) | flagne_u16(& afgain2.value, p2board))
+				if (cat_param_setvalue(& xafgain1, p2board) || cat_param_setvalue(& xafgain2, p2board))
 				{
 					updateboard();	/* полная перенастройка (как после смены режима) */
 					rc = 1;
@@ -17753,7 +17794,7 @@ processcatmsg(
 		{
 			const uint_fast32_t p2 = vfy32up(catparam, 0, 255, 255);
 			const unsigned p2board = p2 * (BOARD_IFGAIN_MAX - BOARD_IFGAIN_MIN) / 255 + BOARD_IFGAIN_MIN;	// масштабирование кода от CAT (0..255) во внутренний диапазон
-			if (flagne_u16(& rfgain1.value, p2board))
+			if (cat_param_setvalue(& xrfgain1, p2board))
 			{
 				updateboard();	/* полная перенастройка (как после смены режима) */
 				rc = 1;
@@ -17774,21 +17815,11 @@ processcatmsg(
 			const uint_fast32_t p2 = vfy32up(catparam, 5, 100, 100);
 			// Нормирование Значений Kenwook CAT к диапазону WITHPOWERTRIMMIN..WITHPOWERTRIMMAX
 			const int_fast32_t v = (p2 - 5) * (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) / 95 + WITHPOWERTRIMMIN;
-#if 0
-			const int_fast32_t vold = param_val(& xgnormalpower);
-			param_setvalue(& xgnormalpower, v);
-			if (v != vold)
+			if (cat_param_setvalue(& xgnormalpower, v))
 			{
 				updateboard();	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 			}
-#else
-			if (flagne_u8(& gnormalpower.value, v))
-			{
-				updateboard();	/* полная перенастройка (как после смены режима) */
-				rc = 1;
-			}
-#endif
 		}
 		else
 		{
@@ -18202,7 +18233,7 @@ processcatmsg(
 		{
 			// Скорость передачи от 10 до 60 WPM (в TS-590 от 4 до 60).
 			const uint_fast32_t p1 = vfy32up(catparam, CWWPMMIN, CWWPMMAX, 20);
-			if (flagne_u8(& elkeywpm.value, p1))
+			if (cat_param_setvalue(& xgelkeywpm, p1))
 			{
 				updateboard();	/* полная перенастройка (как после смены режима) */
 			}
@@ -21971,8 +22002,8 @@ uint_fast8_t hamradio_get_gmutespkr(void)
 
 void hamradio_set_gmutespkr(uint_fast8_t v)
 {
-	param_setvalue(& xgmutespkr, v);
-	updateboard();
+	if (param_setvalue(& xgmutespkr, v))
+		updateboard();
 }
 
 #if WITHIF4DSP
@@ -21985,8 +22016,8 @@ uint_fast16_t hamradio_get_afgain(void)
 #if ! WITHPOTAFGAIN
 void hamradio_set_afgain(uint_fast16_t v)
 {
-	param_setvalue(& xafgain1, v);
-	updateboard();
+	if (param_setvalue(& xafgain1, v))
+		updateboard();
 }
 
 #endif /* ! WITHPOTAFGAIN */
@@ -22011,8 +22042,8 @@ void hamradio_set_tx_tune_power(uint_fast8_t v)
 {
 	ASSERT(v >= WITHPOWERTRIMMIN);
 	ASSERT(v <= WITHPOWERTRIMMAX);
-	param_setvalue(& xgtunepower, v);
-	updateboard();
+	if (param_setvalue(& xgtunepower, v))
+		updateboard();
 }
 
 uint_fast8_t hamradio_get_tx_tune_power(void)
@@ -22026,8 +22057,8 @@ void hamradio_set_tx_power(uint_fast8_t v)
 {
 	ASSERT(v >= WITHPOWERTRIMMIN);
 	ASSERT(v <= WITHPOWERTRIMMAX);
-	param_setvalue(& xgnormalpower, v);
-	updateboard();
+	if (param_setvalue(& xgnormalpower, v))
+		updateboard();
 }
 
 uint_fast8_t hamradio_get_tx_power(void)
@@ -22076,8 +22107,8 @@ uint_fast8_t hamradio_verify_freq_bands(uint_fast32_t freq, uint_fast32_t * bott
 
 void hamradio_set_gvoxenable(uint_fast8_t v)
 {
-	param_setvalue(& xgvoxenable, !! v);
-	updateboard();
+	if (param_setvalue(& xgvoxenable, !! v))
+		updateboard();
 }
 
 uint_fast8_t hamradio_get_gvoxenable(void)
@@ -22100,8 +22131,8 @@ uint_fast8_t hamradio_get_vox_delay(void)
 
 void hamradio_set_vox_delay(uint_fast8_t v)
 {
-	param_setvalue(& xgvoxdelay, v);
-	updateboard();
+	if (param_setvalue(& xgvoxdelay, v))
+		updateboard();
 }
 
 void hamradio_get_vox_level_limits(uint_fast8_t * min, uint_fast8_t * max)
@@ -22119,8 +22150,8 @@ uint_fast8_t hamradio_get_vox_level(void)
 
 void hamradio_set_vox_level(uint_fast8_t v)
 {
-	param_setvalue(& xgvoxlevel, v);
-	updateboard();
+	if (param_setvalue(& xgvoxlevel, v))
+		updateboard();
 }
 
 void hamradio_get_antivox_level_limits(uint_fast8_t * min, uint_fast8_t * max)
@@ -22138,8 +22169,8 @@ uint_fast8_t hamradio_get_antivox_level(void)
 
 void hamradio_set_antivox_level(uint_fast8_t v)
 {
-	param_setvalue(& xgavoxlevel, v);
-	updateboard();
+	if (param_setvalue(& xgavoxlevel, v))
+		updateboard();
 }
 
 #endif /* WITHVOX && WITHTX */
@@ -22176,26 +22207,25 @@ uint_fast8_t hamradio_get_reverb_loss(void)
 
 void hamradio_set_reverb_delay(uint_fast8_t v)
 {
-	param_setvalue(& xgreverbdelay, v);
-	updateboard();
+	if (param_setvalue(& xgreverbdelay, v))
+		updateboard();
 }
 
 void hamradio_set_reverb_loss(uint_fast8_t v)
 {
-	param_setvalue(& xgreverbloss, v);
-	updateboard();
+	if (param_setvalue(& xgreverbloss, v))
+		updateboard();
 }
 
 void hamradio_set_greverb(uint_fast8_t v)
 {
-	greverb = v != 0;
-	save_i8(OFFSETOF(struct nvmap, greverb), greverb);
-	updateboard();
+	if (param_setvalue(& xgreverb, !! v))
+		updateboard();
 }
 
 uint_fast8_t hamradio_get_greverb(void)
 {
-	return greverb;
+	return param_val(& xgreverb);
 }
 
 #endif /* WITHREVERB */
@@ -22248,19 +22278,19 @@ void hamradio_set_mik1level(uint_fast8_t v)
 {
 	ASSERT(v >= WITHMIKEINGAINMIN);
 	ASSERT(v <= WITHMIKEINGAINMAX);
-	param_setvalue(& xgmik1level, v);
-	updateboard();
+	if (param_setvalue(& xgmik1level, v))
+		updateboard();
 }
 
 uint_fast8_t hamradio_get_gmikeagc(void)
 {
-	return gmikeagc;
+	return param_val(& xgmikeagc);
 }
 
 void hamradio_set_gmikeagc(uint_fast8_t v)
 {
-	param_setvalue(& xgmikeagc, !!v);
-	updateboard();
+	if (param_setvalue(& xgmikeagc, !!v))
+		updateboard();
 }
 
 void hamradio_get_mic_agc_limits(uint_fast8_t * min, uint_fast8_t * max)
@@ -22280,8 +22310,8 @@ void hamradio_set_gmikeagcgain(uint_fast8_t v)
 {
 	ASSERT(v >= WITHMIKEINGAINMIN);
 	ASSERT(v <= WITHMIKEINGAINMAX);
-	param_setvalue(& xgmikeagcgain, v);
-	updateboard();
+	if (param_setvalue(& xgmikeagcgain, v))
+		updateboard();
 }
 
 #endif /* WITHIF4DSP */
@@ -22293,8 +22323,8 @@ uint_fast8_t hamradio_get_gmikeboost20db(void)
 
 void hamradio_set_gmikeboost20db(uint_fast8_t v)
 {
-	param_setvalue(& xgmikeboost20db, !! v);
-	updateboard();
+	if (param_setvalue(& xgmikeboost20db, !! v))
+		updateboard();
 }
 
 uint_fast8_t hamradio_get_gmikeequalizer(void)
@@ -22304,8 +22334,8 @@ uint_fast8_t hamradio_get_gmikeequalizer(void)
 
 void hamradio_set_gmikeequalizer(uint_fast8_t v)
 {
-	param_setvalue(& xgmikeequalizer, v != 0);	// Установить значение параметра и сохранить в nvram
-	updateboard();
+	if (param_setvalue(& xgmikeequalizer, v != 0))	// Установить значение параметра и сохранить в nvram
+		updateboard();
 }
 
 uint_fast8_t hamradio_get_gmikeequalizerparams(uint_fast8_t i)
@@ -22318,9 +22348,8 @@ void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v)
 {
 	ASSERT(i < BOARD_AFPROC_BANDS);
 	ASSERT(v <= EQUALIZERBASE * 2);
-	gmikeequalizerparams [i] = v;
-	param_setvalue(xgtxeqs [i], (int) v - EQUALIZERBASE);
-	updateboard();
+	if (param_setvalue(xgtxeqs [i], (int) v - EQUALIZERBASE))
+		updateboard();
 }
 
 int_fast32_t hamradio_getequalizerbase(void)

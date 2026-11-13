@@ -1011,7 +1011,7 @@ param_formatabel(
 	size_t count,	// размер буфера
 	const char * (* getlabel)(const struct paramdefdef * pd)	// функция получения указателя на строку с названием параметра
 	);
-void
+uint_fast8_t
 param_setvalue(
 	const struct paramdefdef * pd,
 	int_fast32_t v
