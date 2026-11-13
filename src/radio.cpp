@@ -4441,12 +4441,14 @@ static ptrdiff_t valueoffs0(unsigned sel)
 static unsigned getselector0(unsigned * count, unsigned bi)
 {
 	(void) bi;
+	ASSERT(bi < 2);
 	* count = 1;
 	return 0;
 }
 
 static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned sel, unsigned bi)
 {
+	ASSERT(bi < 2);
 	(void) sel;
 	(void) bi;
 	return base;
@@ -4611,6 +4613,7 @@ static unsigned nvramoffsselector_mode(unsigned * count, unsigned bi)
 static nvramaddress_t nvramoffs_mode(nvramaddress_t base, unsigned mode, unsigned bi)
 {
 	(void) bi;
+	ASSERT(bi < 2);
 	ASSERT(base != MENUNONVRAM);
 
 	if (base == MENUNONVRAM)
@@ -5309,6 +5312,7 @@ static const struct paramdefdef xgethmacaddr =
 	static nvramaddress_t nvramoffs_bandprops(nvramaddress_t base, unsigned bp, unsigned bi)
 	{
 		ASSERT(base != MENUNONVRAM);
+		ASSERT(bi < 2);
 
 		if (base == MENUNONVRAM)
 			return MENUNONVRAM;
@@ -5322,6 +5326,7 @@ static const struct paramdefdef xgethmacaddr =
 	// зависит от выбранной антенны
 	static nvramaddress_t nvramoffs_bandprops_rxants(nvramaddress_t base, unsigned bp, unsigned bi)
 	{
+		ASSERT(bi < 2);
 		ASSERT(base != MENUNONVRAM);
 
 		if (base == MENUNONVRAM)
@@ -10458,6 +10463,7 @@ static unsigned getselector_bandgroupant(unsigned * count, unsigned bi)
 static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel, unsigned bi)
 {
 	const uint_fast8_t bandset_no_check = 0;
+	ASSERT(bi < 2);
 	ASSERT(base != MENUNONVRAM);
 
 	if (base == MENUNONVRAM)
