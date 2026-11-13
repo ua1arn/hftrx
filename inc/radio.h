@@ -728,7 +728,7 @@ typedef struct paramdefdef
 
 	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
 	unsigned (* qselector)(unsigned * count);
-	nvramaddress_t (* qnvramoffs)(nvramaddress_t base, unsigned sel);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
+	nvramaddress_t (* qnvramoffs)(nvramaddress_t base, unsigned sel, unsigned bi);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
 	ptrdiff_t (* valoffs)(unsigned sel);		/* индекс для работы с массивом переменных */
 
 	uint_fast16_t * apval16;			/* переменная, которую подстраиваем - если она 16 бит */
@@ -1022,7 +1022,8 @@ param_val(
 	);
 void
 param_load(
-	const struct paramdefdef * pd
+	const struct paramdefdef * pd,
+	uint_fast8_t bi
 	);
 // Минимальное и максимальное значение, которое можно передать в param_setvalue
 void

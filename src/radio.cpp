@@ -479,14 +479,15 @@ ismenukinddp(
 /* Сохранить параметр после редактирования */
 static void
 savemenuvalue(
-	const struct paramdefdef * pd
+	const struct paramdefdef * pd,
+	uint_fast8_t bi
 	)
 {
 	if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
 	{
 		unsigned nvalues;
 		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
-		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
@@ -517,14 +518,15 @@ savemenuvalue(
 static uint_fast8_t
 raw_param_setvalue(
 	const struct paramdefdef * pd,
-	int_fast32_t v
+	int_fast32_t v,
+	uint_fast8_t bi
 	)
 {
 	if (ismenukinddp(pd, ITEM_VALUE))
 	{
 		unsigned nvalues;
 		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
-		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
@@ -562,7 +564,8 @@ cat_param_setvalue(
 	int_fast32_t v
 	)
 {
-	return raw_param_setvalue(pd, v);
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
+	return raw_param_setvalue(pd, v, bi);
 }
 
 uint_fast8_t
@@ -571,9 +574,10 @@ param_setvalue(
 	int_fast32_t v
 	)
 {
-	if (raw_param_setvalue(pd, v))
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
+	if (raw_param_setvalue(pd, v, bi))
 	{
-		savemenuvalue(pd);	// ITEM_NOINITNVRAM validation here
+		savemenuvalue(pd, bi);	// ITEM_NOINITNVRAM validation here
 	}
 	return 0;
 }
@@ -630,14 +634,15 @@ param_val(
 // Считать значение параметра из nvram
 void
 param_load(
-	const struct paramdefdef * pd
+	const struct paramdefdef * pd,
+	uint_fast8_t bi
 	)
 {
 	if (ismenukinddp(pd, ITEM_VALUE) && ! ismenukinddp(pd, ITEM_NOINITNVRAM))
 	{
 		unsigned nvalues;
 		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
-		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
@@ -741,9 +746,10 @@ calc_delta(uint_fast16_t v, uint_fast16_t low, uint_fast16_t high, int delta)
 static uint_fast8_t
 param_keyclick(const struct paramdefdef * pd)
 {
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 	unsigned nvalues;
 	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
-	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
@@ -757,7 +763,7 @@ param_keyclick(const struct paramdefdef * pd)
 	else if (pv8)
 		* pv8 = calc_next(* pv8, pd->qbottom, pd->qupper);
 
-	savemenuvalue(pd);
+	savemenuvalue(pd, bi);
 	return 1;
 }
 
@@ -1006,10 +1012,11 @@ static int_fast32_t get_paramvalue_knob_hires(knobevent_t * e)
 static uint_fast8_t
 param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e, void (* bring)(void))
 {
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 	/* редактирование паратметра */
 	unsigned nvalues;
 	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
-	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
@@ -1055,7 +1062,7 @@ param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e, void (* bring)
 				nextfreq(* pv8, * pv8 + (nrotate * step), step, upper + (uint_fast32_t) step);
 		}
 	}
-	savemenuvalue(pd);
+	savemenuvalue(pd, bi);
 	return 1;
 }
 #endif
@@ -1065,10 +1072,11 @@ param_rotate_knob(const struct paramdefdef * pd, knobevent_t * e, void (* bring)
 static uint_fast8_t
 param_rotate(const struct paramdefdef * pd, int_fast32_t nrotate)
 {
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 	/* редактирование паратметра */
 	unsigned nvalues;
 	const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
-	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
 	const ptrdiff_t offs = pd->valoffs(sel);
 	uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 	uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
@@ -1109,7 +1117,7 @@ param_rotate(const struct paramdefdef * pd, int_fast32_t nrotate)
 				nextfreq(* pv8, * pv8 + (nrotate * step), step, upper + (uint_fast32_t) step);
 		}
 	}
-	savemenuvalue(pd);
+	savemenuvalue(pd, bi);
 	return 1;
 }
 
@@ -4058,7 +4066,7 @@ struct nvmap {
 	uint8_t gantmanual;		/* 0 - выбор антенны автоматический */
 #endif /* WITHANTSELECT2 */
 	uint8_t splitmode;		/* не-0, если работа с фиксированными ячейками (vfo/vfoa/vfob/mem) */
-	uint8_t vfoab;		/* 1, если работа с VFO B, 0 - с VFO A */
+	uint8_t gvfoab;		/* 1, если работа с VFO B, 0 - с VFO A */
 #if WITHRPTOFFSET
 	uint8_t rptrhfenable;		/* Repeater offset HF */
 	uint16_t rptroffshf1k;		/* Repeater offset HF */
@@ -4357,7 +4365,7 @@ struct nvmap {
 #define RMT_SIGNATURE_BASE(i) OFFSETOF(struct nvmap, signature [(i)])			/* расположение сигнатуры */
 
 #define RMT_SPLITMODE_BASE OFFSETOF(struct nvmap, splitmode)		/* (vfo/vfoa/vfob/mem) */
-#define RMT_VFOAB_BASE OFFSETOF(struct nvmap, vfoab)		/* (vfoa/vfob) */
+#define RMT_VFOAB_BASE OFFSETOF(struct nvmap, gvfoab)		/* (vfoa/vfob) */
 #define RMT_MBAND_BASE OFFSETOF(struct nvmap, gmband)		/* ячейка памяти фиксированных частот */
 #define RMT_ANTMANUAL_BASE OFFSETOF(struct nvmap, gantmanual)		/* 0 - выбор антенны автоматический */
 
@@ -4435,9 +4443,10 @@ static unsigned getselector0(unsigned * count)
 	return 0;
 }
 
-static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned sel)
+static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned sel, unsigned bi)
 {
 	(void) sel;
+	(void) bi;
 	return base;
 }
 
@@ -4597,8 +4606,9 @@ static unsigned nvramoffs_selector(unsigned * count)
 	return mode;
 }
 
-static nvramaddress_t nvramoffs_mode(nvramaddress_t base, unsigned mode)
+static nvramaddress_t nvramoffs_mode(nvramaddress_t base, unsigned mode, unsigned bi)
 {
+	(void) bi;
 	ASSERT(base != MENUNONVRAM);
 
 	if (base == MENUNONVRAM)
@@ -5295,7 +5305,7 @@ static const struct paramdefdef xgethmacaddr =
 		return b;
 	}
 
-	static nvramaddress_t nvramoffs_bandprops(nvramaddress_t base, unsigned bp)
+	static nvramaddress_t nvramoffs_bandprops(nvramaddress_t base, unsigned bp, unsigned bi)
 	{
 		ASSERT(base != MENUNONVRAM);
 
@@ -5309,9 +5319,8 @@ static const struct paramdefdef xgethmacaddr =
 	}
 
 	// зависит от выбранной антенны
-	static nvramaddress_t nvramoffs_bandprops_ant(nvramaddress_t base, unsigned bp)
+	static nvramaddress_t nvramoffs_bandprops_rxants(nvramaddress_t base, unsigned bp, unsigned bi)
 	{
-		const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 		ASSERT(base != MENUNONVRAM);
 
 		if (base == MENUNONVRAM)
@@ -5322,11 +5331,10 @@ static const struct paramdefdef xgethmacaddr =
 		const uint_fast8_t rxant = geteffrxantenna(freq);
 		//
 		// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
-		#define RMT_BANDPOS(bp) (OFFSETOF(struct nvmap, bandprops [(bp)].otxants))	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
-		return base + RMT_BANDPOS(bp) - RMT_BANDPOS(0);
+		return base + RMT_PAMPBG3_BASE(bp, ant, rxant) - RMT_PAMPBG3_BASE(0, ant, rxant);
 	}
 
-/* управление выбраной антенной (зависит от номера иапазона) */
+/* управление выбраной антенной (зависит от диапазона) */
 static const struct paramdefdef xgantenna =
 {
 	QLABEL3("ANT", "ANTENNA", "ANTENNA"), 0, RJ_UNSIGNED,	ISTEP1,
@@ -5340,14 +5348,14 @@ static const struct paramdefdef xgantenna =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
-/* управление приёмной антенной (зависит от номера антенны) */
+/* управление приёмной антенной (зависит от диапазона) */
 static const struct paramdefdef xgrxantenna =
 {
 	QLABEL3("RXANT", "RX ANT", "RX ANT"), 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	0, RXANTMODE_COUNT - 1,
-	MENUNONVRAM,//OFFSETOF(struct nvmap, bandprops [0].rxant),
-	getselector_bandprops, nvramoffs_bandprops_ant, valueoffs0,
+	OFFSETOF(struct nvmap, bandprops [0].rxant),
+	getselector_bandprops, nvramoffs_bandprops, valueoffs0,
 	NULL,
 	& grxantenna,
 	getzerobase, /* складывается со смещением и отображается */
@@ -5360,8 +5368,8 @@ static const struct paramdefdef xgatt =
 	QLABEL3("RXANT", "RX ANTENNA", "RX ANTENNA"), 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	0, ATTMODE_COUNT - 1,
-	MENUNONVRAM,//OFFSETOF(struct nvmap, bandprops [0].orxants [0].att),
-	getselector_bandprops, nvramoffs_bandprops_ant, valueoffs0,
+	OFFSETOF(struct nvmap, bandprops [0].orxants [0].att),
+	getselector_bandprops, nvramoffs_bandprops_rxants, valueoffs0,
 	NULL,
 	& gatt,
 	getzerobase, /* складывается со смещением и отображается */
@@ -5374,8 +5382,8 @@ static const struct paramdefdef xgpamp =
 	QLABEL3("PREAMP", "RX PREAMP", "RX PREAMP"), 0, RJ_UNSIGNED,	ISTEP1,
 	ITEM_VALUE,
 	0, PREAMPMODE_COUNT - 1,
-	MENUNONVRAM,//OFFSETOF(struct nvmap, bandprops [0].orxants [0].pamp),
-	getselector_bandprops, nvramoffs_bandprops_ant, valueoffs0,
+	OFFSETOF(struct nvmap, bandprops [0].orxants [0].pamp),
+	getselector_bandprops, nvramoffs_bandprops_rxants, valueoffs0,
 	NULL,
 	& gpamp,
 	getzerobase, /* складывается со смещением и отображается */
@@ -10180,41 +10188,41 @@ static void loadzoom(uint_fast8_t bp)
 
 #endif /* WITHSPECTRUMWF */
 
-static void storebandprops(uint_fast8_t bp, uint_fast8_t ant, uint_fast8_t rxant)
+static void storebandprops(uint_fast8_t bp, uint_fast8_t ant, uint_fast8_t rxant, uint_fast8_t bi)
 {
 	ASSERT(bp < BANDPROPS_COUNT);
 
 #if WITHANTSELECTRX || WITHANTSELECT1RX
 
 	#if ! WITHONEATTONEAMP
-		save_i8(RMT_PAMPBG3_BASE(bp, gantenna, grxantenna), gpamp);
+		savemenuvalue(& xgpamp, bi);
 	#endif /* ! WITHONEATTONEAMP */
-	save_i8(RMT_RXANTENNABG_BASE(bp), grxantenna);
-	save_i8(RMT_ANTENNABG_BASE(bp), gantenna);
-	save_i8(RMT_ATTBG3_BASE(bp, gantenna, grxantenna), gatt);
+	savemenuvalue(& xgrxantenna, bi);
+	savemenuvalue(& xgantenna, bi);
+	savemenuvalue(& xgatt, bi);
 
 #elif WITHANTSELECT
 
 	#if ! WITHONEATTONEAMP
-		save_i8(RMT_PAMPBG3_BASE(bp, gantenna, grxantenna), gpamp);
+		savemenuvalue(& xgpamp, bi);
 	#endif /* ! WITHONEATTONEAMP */
-	save_i8(RMT_ANTENNABG_BASE(bp), gantenna);
-	save_i8(RMT_ATTBG3_BASE(bp, gantenna, grxantenna), gatt);
+	savemenuvalue(& xgantenna, bi);
+	savemenuvalue(& xgatt, bi);
 
 #elif WITHANTSELECT2
 
 	#if ! WITHONEATTONEAMP
-		save_i8(RMT_PAMPBG3_BASE(bp, gantennabym, grxantenna), gpamp);
+		savemenuvalue(& xgpamp, bi);
 	#endif /* ! WITHONEATTONEAMP */
-	save_i8(RMT_ATTBG3_BASE(bp, gantennabym, grxantenna), gatt);
-	save_i8(RMT_ANTENNABG_BASE(bp), gantennabym);
+	savemenuvalue(& xgatt, bi);
+	savemenuvalue(& xgantennabym, bi);
 
 #else
 
 	#if ! WITHONEATTONEAMP
-		save_i8(RMT_PAMPBG3_BASE(bp, gantenna, grxantenna), gpamp);
+		savemenuvalue(& xgpamp, bi);
 	#endif /* ! WITHONEATTONEAMP */
-	save_i8(RMT_ATTBG3_BASE(bp, gantenna, grxantenna), gatt);
+	savemenuvalue(& xgatt, bi);
 
 #endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
 
@@ -10298,7 +10306,7 @@ storebandstate(const vindex_t vi, const uint_fast8_t bi)
 
 	savemodeinfo(RMT_BAND(vi), bi);
 
-	storebandprops(bp, ant, rxant);
+	storebandprops(bp, ant, rxant, bi);
 }
 // возврат не-0 если частота не поменялась.
 static int loadbandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t mi)
@@ -10446,7 +10454,7 @@ static unsigned getselector_bandgroupant(unsigned * count)
     return 0;
 }
 
-static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
+static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel, unsigned bi)
 {
 	const uint_fast8_t bandset_no_check = 0;
 	ASSERT(base != MENUNONVRAM);
@@ -10456,7 +10464,6 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel)
 
 	(void) sel;
 
-	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
     const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
     const uint_fast8_t rxant = geteffrxantenna(gfreqs [bi]);
@@ -11158,13 +11165,26 @@ enum {
 };
 
 static uint_fast8_t gvfoab;	/* 0/1: какой bank index яаляется vfo a. Это не переключение между A и B */
+static const struct paramdefdef xgvfoab =
+{
+	QLABEL3("VFOAB", "VFOAB", "VFOAB"), 0, RJ_UNSIGNED,	ISTEP1,
+	ITEM_VALUE,
+	0, 1,
+	OFFSETOF(struct nvmap, gvfoab),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gvfoab,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
 static uint_fast8_t gsplitmode = SPLITMODES_OFF;	/* (vfo/vfoa/vfob/mem) */
 
 static uint_fast8_t
 getbankindex_raw(const uint_fast8_t ab)
 {
 	ASSERT(ab < VFOS_COUNT);
-	return (gvfoab + ab) % VFOS_COUNT;
+	return (param_val(& xgvfoab) + ab) % VFOS_COUNT;
 }
 
 // программирование трактов для двойного приема
@@ -14484,9 +14504,8 @@ uif_key_click_b_from_a(void)
 static void
 uif_key_click_a_ex_b(void)
 {
-	gvfoab = calc_next(gvfoab, 0, VFOS_COUNT - 1);	/* меняем текущий VFO на протвоположный */
-	save_i8(RMT_VFOAB_BASE, gvfoab);
-	updateboard();
+	if (param_keyclick(& xgvfoab))
+		updateboard();
 	bring_tuneB();
 	bring_tuneA();
 }
@@ -14716,12 +14735,12 @@ uif_key_click_agcmode(void)
 /* действительно выбранная антенна с учетом ручного или автоматического переключения */
 static uint_fast8_t geteffantenna(uint_fast32_t f)
 {
-	return gantenna;
+	return param_val(& xgantenna);
 }
 
 static uint_fast8_t geteffrxantenna(uint_fast32_t f)
 {
-	return grxantenna;
+	return param_val(& xgrxantenna);
 }
 
 /* Antenna switch
@@ -14729,13 +14748,14 @@ static uint_fast8_t geteffrxantenna(uint_fast32_t f)
 static void
 uif_key_next_antenna(void)
 {
+
+	param_keyclick(& xgantenna);
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
 
-	param_keyclick(& xgantenna);
-	loadbandprops(b, gantenna, grxantenna);
+	loadbandprops(b, param_val(& xgantenna), param_val(& xgrxantenna));
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard();
 }
@@ -14745,13 +14765,14 @@ uif_key_next_antenna(void)
 static void
 uif_key_next_rxantenna(void)
 {
+
+	param_keyclick(& xgrxantenna);
+
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
-
-	param_keyclick(& xgrxantenna);
-	loadbandprops(b, gantenna, grxantenna);
+	loadbandprops(b, param_val(& xgantenna), param_val(& xgrxantenna));
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard();
 }
@@ -14769,12 +14790,12 @@ static uint_fast8_t getdefantenna(uint_fast32_t f)
 /* действительно выбранная антенна с учетом ручного или автоматического переключения */
 static uint_fast8_t geteffantenna(uint_fast32_t f)
 {
-	return gantmanual ? gantennabym : getdefantenna(f);
+	return param_val(& xgantmanual) ? param_val(& xgantennabym) : getdefantenna(f);
 }
 
 static uint_fast8_t geteffrxantenna(uint_fast32_t f)
 {
-	return grxantenna;
+	return param_val(& xgrxantenna);
 }
 
 /* Antenna switch
@@ -14799,10 +14820,10 @@ uif_key_next_antenna(void)
 static void
 uif_key_next_autoantmode(void)
 {
+	param_keyclick(& xgantmanual);
+
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-	gantmanual = calc_next(gantmanual, 0, 1);
-	save_i8(RMT_ANTMANUAL_BASE, gantmanual);
 	const uint_fast8_t bg = getfreqband(gfreqs [bi], bandset_no_check);
 	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
 	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
@@ -14815,12 +14836,12 @@ uif_key_next_autoantmode(void)
 /* действительно выбранная антенна с учетом ручного или автоматического переключения */
 static uint_fast8_t geteffantenna(uint_fast32_t f)
 {
-	return gantenna;
+	return param_val(& xgantenna);
 }
 
 static uint_fast8_t geteffrxantenna(uint_fast32_t f)
 {
-	return grxantenna;
+	return param_val(& xgrxantenna);
 }
 
 /* Antenna switch
@@ -14828,13 +14849,13 @@ static uint_fast8_t geteffrxantenna(uint_fast32_t f)
 static void
 uif_key_next_antenna(void)
 {
+	param_keyclick(& xgantenna));
+	loadbandprops(b, param_val(& xgantenna), param_val(& xgrxantenna));
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 	const uint_fast8_t bg = getfreqband(gfreqs [bi], bandset_no_check);
 
-	gantenna = calc_next(gantenna, 0, ANTMODE_COUNT - 1);
-	loadbandprops(bg, gantenna, grxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard();
 }
@@ -14844,12 +14865,12 @@ uif_key_next_antenna(void)
 /* действительно выбранная антенна с учетом ручного или автоматического переключения */
 static uint_fast8_t geteffantenna(uint_fast32_t f)
 {
-	return gantenna;
+	return param_val(& xgantenna);
 }
 
 static uint_fast8_t geteffrxantenna(uint_fast32_t f)
 {
-	return grxantenna;
+	return param_val(& xgrxantenna);
 }
 
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -14859,14 +14880,7 @@ static uint_fast8_t geteffrxantenna(uint_fast32_t f)
 static void
 uif_key_click_pamp(void)
 {
-	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-	const vindex_t vi = getvfoindex(bi);
-
-	verifyband(vi);
-
-	const int modified = param_keyclick(& xgpamp);
-	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
-	if (modified)
+	if (param_keyclick(& xgpamp))
 		updateboard();
 }
 #endif /* ! WITHONEATTONEAMP */
@@ -14876,14 +14890,8 @@ uif_key_click_pamp(void)
 static void
 uif_key_click_attenuator(void)
 {
-	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-	const vindex_t vi = getvfoindex(bi);
-
-	verifyband(vi);
-
-	gatt = calc_next(gatt, 0, ATTMODE_COUNT - 1);
-	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
-	updateboard();
+	if (param_keyclick(& xgatt))
+		updateboard();
 }
 
 #if WITHPOWERLPHP
@@ -18988,7 +18996,7 @@ static uint_fast8_t getinmenu(const struct menudef * * mp)
    see also loadsavedstate().
    */
 static void
-param_loadarrays(void)
+param_loadarrays(unsigned bi)
 {
 	const struct menudesc * const pmd = & mdsc0;
 	uint_fast16_t i;
@@ -19008,7 +19016,7 @@ param_loadarrays(void)
 			{
 				const uint_fast16_t bottom = pd->qbottom;
 				const uint_fast16_t upper = pd->qupper;
-				const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+				const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
 				const ptrdiff_t offs = pd->valoffs(sel);
 				uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 				uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
@@ -19521,6 +19529,7 @@ static uint_fast8_t processknobmenunavigation(inputevent_t * ev, knobevent_t * k
 static uint_fast8_t
 processmenukeyandencoder(inputevent_t * ev)
 {
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);
 	const struct menudesc * const pmd = & mdsc0;
 	uint_fast16_t firstitem = gmenufirstitem [gmenulevel];
 	uint_fast16_t lastitem = gmenulastitem [gmenulevel];
@@ -19649,7 +19658,7 @@ processmenukeyandencoder(inputevent_t * ev)
 		return 1;	// требуется обновление индикатора
 
 //	case KBD_CODE_LOCK:
-//		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+//		savemenuvalue(mp->pd, bi);		/* сохраняем отредактированное значение */
 //		uif_key_lockencoder();
 //		return 1;	// требуется обновление индикатора
 #if WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC
@@ -19660,40 +19669,40 @@ processmenukeyandencoder(inputevent_t * ev)
 #endif /* WITHDISPLAYSNAPSHOT && WITHUSEAUDIOREC */
 
 	case KBD_CODE_POWEROFF:
-		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		savemenuvalue(mp->pd, bi);		/* сохраняем отредактированное значение */
 		uif_pwbutton_press();
 		ev->frontkeyevent.kbready = 0;
 		return 0;
 
 	case KBD_CODE_LDSPTGL:
-		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		savemenuvalue(mp->pd, bi);		/* сохраняем отредактированное значение */
 		uif_key_loudsp();
 		ev->frontkeyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 
 #if WITHTX
 	case KBD_CODE_MOX:
-		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		savemenuvalue(mp->pd, bi);		/* сохраняем отредактированное значение */
 		/* выключить режим настройки или приём/передача */
 		uif_key_moxclick();
 		ev->frontkeyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_TXTUNE:
-		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		savemenuvalue(mp->pd, bi);		/* сохраняем отредактированное значение */
 		/* выключить режим настройки или приём/передача */
 		uif_key_tune();
 		return 1;	// требуется обновление индикатора
 
 #if WITHAUTOTUNER
 	case KBD_CODE_ATUSTART:
-		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		savemenuvalue(mp->pd, bi);		/* сохраняем отредактированное значение */
 		uif_key_atunerstart();
 		ev->frontkeyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_ATUBYPASS:
-		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		savemenuvalue(mp->pd, bi);		/* сохраняем отредактированное значение */
 		uif_key_bypasstoggle();
 		ev->frontkeyevent.kbready = 0;
 		return 1;	// требуется обновление индикатора
@@ -19703,7 +19712,7 @@ processmenukeyandencoder(inputevent_t * ev)
 
 	case KBD_CODE_BAND_DOWN:
 #if WITHENCODER2 || WITHENCODER_4F
-		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		savemenuvalue(mp->pd, bi);		/* сохраняем отредактированное значение */
 		/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 		uif_key_click_banddown();
 		ev->frontkeyevent.kbready = 0;
@@ -19712,7 +19721,7 @@ processmenukeyandencoder(inputevent_t * ev)
 
 	case KBD_CODE_MENU_DOWN:
 		/* переход на предыдущий пункт/группу меню */
-		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		savemenuvalue(mp->pd, bi);		/* сохраняем отредактированное значение */
 		do
 		{
 			/* проход по определённому типу элементов (itemmask) */
@@ -19724,7 +19733,7 @@ processmenukeyandencoder(inputevent_t * ev)
 
 	case KBD_CODE_BAND_UP:
 #if WITHENCODER2 || WITHENCODER_4F
-		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		savemenuvalue(mp->pd, bi);		/* сохраняем отредактированное значение */
 		/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
 		uif_key_click_bandup();
 		ev->frontkeyevent.kbready = 0;
@@ -19733,7 +19742,7 @@ processmenukeyandencoder(inputevent_t * ev)
 
 	case KBD_CODE_MENU_UP:
 		/* переход на следующий пункт/группу меню */
-		savemenuvalue(mp->pd);		/* сохраняем отредактированное значение */
+		savemenuvalue(mp->pd, bi);		/* сохраняем отредактированное значение */
 		do
 		{
 			/* если спецпункты запрещены - ищем обычный */
@@ -23230,7 +23239,7 @@ void hamradio_split_vfo_swap(void)
 // кандидат на удаление (VFO A всегда на большом индикаторе)
 uint_fast8_t hamradio_get_gvfoab(void)
 {
-	return gvfoab;
+	return param_val(& xgvfoab);
 }
 
 // основной цикл программы при работе в режиме любительского премника
@@ -23777,7 +23786,7 @@ static const struct paramdefdef * nomenulist [] =
 
 // split, s-meter display
 static void
-loadsavedstate(void)
+loadsavedstate(uint_fast8_t bi)
 {
 #if WITHENCODER2
 	enc2state = loadvfy8up(RMT_ENC2STATE_BASE, ENC2STATE_INITIALIZE, ENC2STATE_COUNT - 1, enc2state);	/* вытаскиваем режим режактирования паарметров вторым валкодером */
@@ -23786,7 +23795,6 @@ loadsavedstate(void)
 	gmenuset = loadvfy8up(RMT_MENUSET_BASE, 0, display_getpagesmax(), gmenuset);		/* вытаскиваем номер субменю, с которым работаем сейчас */
 
 	gsplitmode = loadvfy8up(RMT_SPLITMODE_BASE, 0, VFOMODES_COUNT - 1, gsplitmode); /* (vfo/vfoa/vfob/mem) */
-	gvfoab = loadvfy8up(RMT_VFOAB_BASE, 0, VFOS_COUNT - 1, gvfoab); /* (vfoa/vfob) */
 
 	// тюнер запоминается подиапазонно
 //#if WITHAUTOTUNER
@@ -23827,7 +23835,7 @@ loadsavedstate(void)
 		unsigned i;
 		for (i = 0; i < ARRAY_SIZE(nomenulist); ++ i)
 		{
-			param_load(nomenulist [i]);
+			param_load(nomenulist [i], bi);
 		}
 	}
 	{
@@ -23838,7 +23846,7 @@ loadsavedstate(void)
 		for (i = 0; i < pmd->menusize; ++ i)
 		{
 			const struct menudef * const mp = & pmd->menutable [i];
-			param_load(mp->pd);
+			param_load(mp->pd, bi);
 		}
 
 	}
@@ -23874,8 +23882,10 @@ application_initialize(void)
 	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
 	bandf2adjust_initialize();
 #endif /* WITHTX */
-	loadsavedstate();	// split, s-meter display, see also param_loadarrays().
-	param_loadarrays();		/* arrays, загрузка всех установок из nvram. */
+	param_load(& xgvfoab, 0);	// bi - dummy value
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);
+	loadsavedstate(bi);	// split, s-meter display, see also param_loadarrays().
+	param_loadarrays(bi);		/* arrays, загрузка всех установок из nvram. */
 #endif /* ! HARDWARE_IGNORENONVRAM */
 #endif /* WITHMENU */
 	/* NVRAM уже можно пользоваться */
