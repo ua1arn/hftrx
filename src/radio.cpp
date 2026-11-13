@@ -11191,7 +11191,7 @@ static uint_fast8_t
 getbankindex_raw(const uint_fast8_t ab)
 {
 	ASSERT(ab < VFOS_COUNT);
-	return (param_val(& xgvfoab) + ab) % VFOS_COUNT;
+	return (gvfoab + ab) % VFOS_COUNT;
 }
 
 // программирование трактов для двойного приема
