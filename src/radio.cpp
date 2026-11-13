@@ -608,7 +608,7 @@ param_val(
 	{
 		unsigned nvalues;
 		const unsigned sel = pd->qselector(& nvalues); // индекс параметра в массиве
-		const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
+		//const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel);
 		const ptrdiff_t offs = pd->valoffs(sel);
 		const uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		const uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
@@ -641,6 +641,8 @@ param_load(
 		const ptrdiff_t offs = pd->valoffs(sel);
 		uint_fast16_t * const pv16 = pd->apval16 ? pd->apval16 + offs : NULL;
 		uint_fast8_t * const pv8 = pd->apval8 ? pd->apval8 + offs : NULL;
+
+		// Проверка на MENUNONVRAM делается внутри loadvfy16up т loadvfy8up
 		if (pv16 != NULL)
 		{
 			// проверка на MENUNONVRAM уже внутри есть
@@ -1629,7 +1631,7 @@ static size_t getvaltexttxaudio(char * buff, size_t count, int_fast32_t value)
 
 #define PWRMODE_COUNT (sizeof pwrmodes / sizeof pwrmodes [0])
 #define NOTCHMODE_COUNT (sizeof notchmodes / sizeof notchmodes [0])
-#define PAMPMODE_COUNT (sizeof pampmodes / sizeof pampmodes [0])
+#define PREAMPMODE_COUNT (sizeof pampmodes / sizeof pampmodes [0])
 #define ATTMODE_COUNT (sizeof attmodes / sizeof attmodes [0])
 #define AGCMODE_COUNT (sizeof agcmodes / sizeof agcmodes [0])
 #define MAINSUBRXMODE_COUNT (sizeof mainsubrxmodes / sizeof mainsubrxmodes [0])
@@ -5283,28 +5285,102 @@ static const struct paramdefdef xgethmacaddr =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
-static unsigned getselector_bandprops(unsigned * count)
+	static unsigned getselector_bandprops(unsigned * count)
+	{
+		const uint_fast8_t bandset_no_check = 0;
+		const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
+		const uint_fast32_t freq = gfreqs [bi];
+		const uint_fast8_t b = getfreqband(freq, bandset_no_check);
+		* count = HBANDS_COUNT + XBANDS_COUNT;
+		return b;
+	}
+
+	static nvramaddress_t nvramoffs_bandprops(nvramaddress_t base, unsigned bp)
+	{
+		ASSERT(base != MENUNONVRAM);
+
+		if (base == MENUNONVRAM)
+			return MENUNONVRAM;
+		ASSERT(bp < BANDPROPS_COUNT);
+		//
+		// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
+		#define RMT_BANDPOS(bp) (OFFSETOF(struct nvmap, bandprops [(bp)].otxants))	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
+		return base + RMT_BANDPOS(bp) - RMT_BANDPOS(0);
+	}
+
+	// зависит от выбранной антенны
+	static nvramaddress_t nvramoffs_bandprops_ant(nvramaddress_t base, unsigned bp)
+	{
+		const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
+		ASSERT(base != MENUNONVRAM);
+
+		if (base == MENUNONVRAM)
+			return MENUNONVRAM;
+		ASSERT(bp < BANDPROPS_COUNT);
+		const uint_fast32_t freq = gfreqs [bi];
+		const uint_fast8_t ant = geteffantenna(freq);
+		const uint_fast8_t rxant = geteffrxantenna(freq);
+		//
+		// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
+		#define RMT_BANDPOS(bp) (OFFSETOF(struct nvmap, bandprops [(bp)].otxants))	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
+		return base + RMT_BANDPOS(bp) - RMT_BANDPOS(0);
+	}
+
+/* управление выбраной антенной (зависит от номера иапазона) */
+static const struct paramdefdef xgantenna =
 {
-	const uint_fast8_t bandset_no_check = 0;
-	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
-	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
-	* count = HBANDS_COUNT + XBANDS_COUNT;
-	return b;
-}
+	QLABEL3("ANT", "ANTENNA", "ANTENNA"), 0, RJ_UNSIGNED,	ISTEP1,
+	ITEM_VALUE,
+	0, ANTMODE_COUNT - 1,
+	OFFSETOF(struct nvmap, bandprops [0].ant),
+	getselector_bandprops, nvramoffs_bandprops, valueoffs0,
+	NULL,
+	& gantenna,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 
-static nvramaddress_t nvramoffs_bandprops(nvramaddress_t base, unsigned bp)
+/* управление приёмной антенной (зависит от номера антенны) */
+static const struct paramdefdef xgrxantenna =
 {
-	ASSERT(base != MENUNONVRAM);
+	QLABEL3("RXANT", "RX ANT", "RX ANT"), 0, RJ_UNSIGNED,	ISTEP1,
+	ITEM_VALUE,
+	0, RXANTMODE_COUNT - 1,
+	MENUNONVRAM,//OFFSETOF(struct nvmap, bandprops [0].rxant),
+	getselector_bandprops, nvramoffs_bandprops_ant, valueoffs0,
+	NULL,
+	& grxantenna,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 
-	if (base == MENUNONVRAM)
-		return MENUNONVRAM;
-	ASSERT(bp < BANDPROPS_COUNT);
-	//
-	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
-	#define RMT_BANDPOS(bp) (OFFSETOF(struct nvmap, bandprops [(bp)].otxants))	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
-	return base + RMT_BANDPOS(bp) - RMT_BANDPOS(0);
-}
+/* управление аттенюатором (зависит от номера антенны) */
+static const struct paramdefdef xgatt =
+{
+	QLABEL3("RXANT", "RX ANTENNA", "RX ANTENNA"), 0, RJ_UNSIGNED,	ISTEP1,
+	ITEM_VALUE,
+	0, ATTMODE_COUNT - 1,
+	MENUNONVRAM,//OFFSETOF(struct nvmap, bandprops [0].orxants [0].att),
+	getselector_bandprops, nvramoffs_bandprops_ant, valueoffs0,
+	NULL,
+	& gatt,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 
+/* управление предусилителем (зависит от номера антенны) */
+static const struct paramdefdef xgpamp =
+{
+	QLABEL3("PREAMP", "RX PREAMP", "RX PREAMP"), 0, RJ_UNSIGNED,	ISTEP1,
+	ITEM_VALUE,
+	0, PREAMPMODE_COUNT - 1,
+	MENUNONVRAM,//OFFSETOF(struct nvmap, bandprops [0].orxants [0].pamp),
+	getselector_bandprops, nvramoffs_bandprops_ant, valueoffs0,
+	NULL,
+	& gpamp,
+	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
 
 static const char * const view_types [VIEW_count] =
 {
@@ -10196,7 +10272,7 @@ static void loadbandprops(uint_fast8_t bp, uint_fast8_t ant, uint_fast8_t rxant)
 	ASSERT(bp < BANDPROPS_COUNT);
 
 #if ! WITHONEATTONEAMP
-	gpamp = loadvfy8up(RMT_PAMPBG3_BASE(bp, ant, rxant), 0, PAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
+	gpamp = loadvfy8up(RMT_PAMPBG3_BASE(bp, ant, rxant), 0, PREAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
 #endif /* ! WITHONEATTONEAMP */
 	gatt = loadvfy8up(RMT_ATTBG3_BASE(bp, ant, rxant), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
 
@@ -11408,7 +11484,7 @@ modemchangefreq(
 	tune_bottom_active [bi] = get_band_bottom(hb);
 	tune_top_active [bi] = get_band_top(hb);
 #endif
-	//gpamps [bi] = loadvfy8up(RMT_PAMP_BASE(b), 0, PAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
+	//gpamps [bi] = loadvfy8up(RMT_PAMP_BASE(b), 0, PREAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
 	//gatts [bi] = loadvfy8up(RMT_ATT_BASE(b), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
 	//gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем код включённой антенны */
 	updateboard();	/* полная перенастройка (как после смены режима) */
@@ -13896,8 +13972,8 @@ updateboard_noui(
 			board_set_attvalue(attmodes [gatt].atten10 / 10);
 		#else /* WITHONEATTONEAMP */
 			board_set_att(attmodes [gatt].code);
-			board_set_preamp(pampmodes [gpamp].code);
-			board_set_attvalue(attmodes [gatt].atten10 / 10);
+			board_set_preamp(pampmodes [param_val(& xgpamp)].code);
+			board_set_attvalue(attmodes [param_val(& xgatt)].atten10 / 10);
 		#endif /* WITHONEATTONEAMP */
 		#if ! WITHAGCMODENONE
 			board_set_dspagc(gagcoff ? BOARD_AGCCODE_OFF : agcmodes [gagcmode].code);
@@ -13995,7 +14071,7 @@ updateboard_noui(
 		board_set_digigainmax(gdigigainmax);
 		board_set_fsadcpower10(	/*	Мощность, соответствующая full scale от IF ADC */
 				param_val(lo0side != LOCODE_INVALID ? & xgfsadcpower10xv : & xgfsadcpower10) +
-				gerflossdb10(lo0side != LOCODE_INVALID, gatt, gpamp));
+				gerflossdb10(lo0side != LOCODE_INVALID, param_val(& xgatt), param_val(& xgpamp)));
 		display2_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 		#if WITHUSEDUALWATCH
 			board_set_mainsubrxmode(mainsubrxmodes [param_val(& xdwatchmode)].code);		// Левый/правый, A - main RX, B - sub RX
@@ -14658,7 +14734,7 @@ uif_key_next_antenna(void)
 	const vindex_t vi = getvfoindex(bi);
 	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
 
-	gantenna = calc_next(gantenna, 0, ANTMODE_COUNT - 1);
+	param_keyclick(& xgantenna);
 	loadbandprops(b, gantenna, grxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard();
@@ -14674,7 +14750,7 @@ uif_key_next_rxantenna(void)
 	const vindex_t vi = getvfoindex(bi);
 	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
 
-	grxantenna = calc_next(grxantenna, 0, RXANTMODE_COUNT - 1);
+	param_keyclick(& xgrxantenna);
 	loadbandprops(b, gantenna, grxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard();
@@ -14788,9 +14864,10 @@ uif_key_click_pamp(void)
 
 	verifyband(vi);
 
-	gpamp = calc_next(gpamp, 0, PAMPMODE_COUNT - 1);
+	const int modified = param_keyclick(& xgpamp);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
-	updateboard();
+	if (modified)
+		updateboard();
 }
 #endif /* ! WITHONEATTONEAMP */
 
@@ -15347,7 +15424,7 @@ const char * hamradio_get_rxbw_value4(void)
 const char * hamradio_get_pre_value(void)
 {
 #if ! WITHONEATTONEAMP
-	return pampmodes [gpamp].label;
+	return pampmodes [param_val(& xgpamp)].label;
 #else /* ! WITHONEATTONEAMP */
 	return PSTR("");
 #endif /* ! WITHONEATTONEAMP */
@@ -17174,7 +17251,7 @@ static void raanswer(uint_fast8_t arg)
 static void paanswer(uint_fast8_t arg)
 {
 #if ! WITHONEATTONEAMP
-	uint_fast8_t v = (gpamp != 0);
+	uint_fast8_t v = (param_val(& xgpamp) != 0);
 #else /* ! WITHONEATTONEAMP */
 	enum { v = 0 };
 #endif /* ! WITHONEATTONEAMP */
@@ -17943,8 +18020,9 @@ processcatmsg(
 		if (cathasparam /* && (catparam == 0 || catparam == 1) */)
 		{
 #if ! WITHONEATTONEAMP
-			gpamp = vfy32up(catparam, 0, PAMPMODE_COUNT - 1, 0);	/* 0..1 */;	// one step or fully attenuated
-			updateboard();	/* полная перенастройка (как после смены режима) */
+			const uint_fast32_t paval = vfy32up(catparam, 0, PREAMPMODE_COUNT - 1, 0);	/* 0..1 */;	// one step or fully attenuated
+			if (cat_param_setvalue(& xgpamp, paval))
+				updateboard();	/* полная перенастройка (как после смены режима) */
 #endif /* ! WITHONEATTONEAMP */
 			cat_answer_request(CAT_PA_INDEX);
 			rc = 1;
@@ -17970,13 +18048,16 @@ processcatmsg(
 				if (p1 != 9)
 				{
 	#if WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT
-					gantenna = vfy32up(p1, 1, ANTMODE_COUNT, 1) - 1;	/* 0..1 */;	// one step or fully attenuated
+					const uint32_t gantennaval = vfy32up(p1, 1, ANTMODE_COUNT, 1) - 1;	/* 0..1 */;	// one step or fully attenuated
+					if (cat_param_setvalue(& xgrxantenna, gantennaval))
+						updateboard();	/* полная перенастройка (как после смены режима) */
 	#endif /* WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT */
 				}
 				if (p2 != 9)
 				{
 	#if WITHANTSELECTRX || WITHANTSELECT1RX
-					grxantenna = p2 == 1;
+					if (cat_param_setvalue(& xgrxantenna, p2 == 1))
+						updateboard();	/* полная перенастройка (как после смены режима) */
 	#endif /* WITHANTSELECTRX || WITHANTSELECT1RX */
 				}
 				if (p3 != 9)
@@ -22976,9 +23057,9 @@ int_fast8_t hamradio_afresponce(int_fast8_t v)
 const char * hamradio_get_preamp_value(void)
 {
 #if ! WITHONEATTONEAMP
-	return pampmodes [gpamp].label;
+	return pampmodes [param_val(& xgpamp)].label;
 #else
-	return attmodes [gatt].label;
+	return attmodes [param_val(& xgatt)].label;
 #endif
 }
 
@@ -23021,8 +23102,9 @@ void hamradio_change_att(void)
 #if ! WITHONEATTONEAMP
 uint_fast8_t hamradio_change_preamp(uint_fast8_t v)
 {
-	if (v) uif_key_click_pamp();
-	return pampmodes [gpamp].code;
+	if (v)
+		uif_key_click_pamp();
+	return pampmodes [param_val(& xgpamp)].code;
 }
 #endif /* ! WITHONEATTONEAMP */
 
