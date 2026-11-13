@@ -806,7 +806,8 @@ uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit);
 uint_fast8_t hamradio_get_atuvalue(void);
 uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, uint_fast8_t is_bcast_need);
 uint_fast8_t hamradio_get_bkin_value(void);
-uint_fast8_t hamradio_get_blinkphase(void);	/* состояние для мерцающих индикаторов на диспле */
+uint_fast8_t hamradio_get_blinkphase50(void);	/* состояние для мерцающих индикаторов на диспле */
+uint_fast8_t hamradio_get_blinkphase75(void);	/* состояние для мерцающих индикаторов на диспле */
 uint_fast8_t hamradio_get_bp_type_wide(void);	// не-0: параметры полосы пропускания - пара нижний срез/верхний срез
 uint_fast8_t hamradio_get_bringENC1F(void);	// Вращали 3-й валкодер (ENC1F)
 uint_fast8_t hamradio_get_bringENC2F(void);	// Вращали 4-й валкодер (ENC2F)

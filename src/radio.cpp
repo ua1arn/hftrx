@@ -7349,6 +7349,7 @@ static uint_fast8_t gmenuset; 	/* номер комплекта функций �
 static uint_fast8_t dimmstate;	/* не-0: притушить дисплей. */
 static uint_fast8_t sleepstate;	/* не-0: выключить дисплей и звук. */
 static uint_fast8_t gblinkphase;
+enum { BLINKPERIOD = 20 };
 
 uint_fast8_t actpageix(void)
 {
@@ -7357,10 +7358,15 @@ uint_fast8_t actpageix(void)
 	return gmenuset;
 }
 
-/* состояние для мерцающих индикаторов на диспле */
-uint_fast8_t hamradio_get_blinkphase(void)
+/* состояние для мерцающих индикаторов на диспле - 50% активен */
+uint_fast8_t hamradio_get_blinkphase50(void)
 {
-	return gblinkphase;
+	return gblinkphase < 50 * BLINKPERIOD / 100;
+}
+/* состояние для мерцающих индикаторов на диспле - 75% активен */
+uint_fast8_t hamradio_get_blinkphase75(void)
+{
+	return gblinkphase < 75 * BLINKPERIOD / 100;
 }
 
 uint_fast8_t hamradio_get_classa(void)
@@ -18701,7 +18707,6 @@ static void dpc_1s_timer_fn(void * arg)
 	//gui_gnssupdate();
 #endif /*WITHTOUCHGUI || WITHLVGL*/
 
-	gblinkphase = ! gblinkphase;
 #if defined (GET_CPU_TEMPERATURE) && ! WITHTOUCHGUI && 0
 	uint8_t c = GET_CPU_TEMPERATURE();
 	PRINTF(PSTR("CPU temp: %dC\n"), c);
@@ -21040,6 +21045,7 @@ static void dpc_0p1_s_timer_fn(void * ctx)
 	doadcmirror();
 	main_speed_diagnostics();
 	looptests();		// Периодически вызывается в главном цикле - тесты
+	gblinkphase = (gblinkphase + 1) % BLINKPERIOD;
 }
 
 #endif /* ! WITHISBOOTLOADER */

@@ -3067,7 +3067,7 @@ static void display2_rec3(const gxdrawb_t * db,
 	const char * const labels [2] = { text_pau, text_rec };
 
 	/* формирование мигающей надписи REC */
-	display2text_states(db, xcell, ycell, labels, hamradio_get_blinkphase() ? dbstylev_2state_rec : dbstylev_2state, state, xspan, yspan);
+	display2text_states(db, xcell, ycell, labels, hamradio_get_blinkphase50() ? dbstylev_2state_rec : dbstylev_2state, state, xspan, yspan);
 
 #endif /* WITHUSEAUDIOREC */
 }

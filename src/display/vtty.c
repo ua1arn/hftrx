@@ -146,7 +146,7 @@ static void display_vtty_show(const gxdrawb_t * tdb,
 				vt->VTTY_DX, tgh2,	// размеры окна источника
 				BITBLT_FLAG_NONE, 0);
 	}
-	if (hamradio_get_blinkphase())
+	if (hamradio_get_blinkphase75())
 	{
 		// курсор
 #if 1
