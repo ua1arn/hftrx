@@ -11573,6 +11573,9 @@ catchangefreq(
 #if WITHKEYBOARD || WITHTOUCHGUI
 	// не должно быть при удаленном управлении
 	loadantenna(b);
+	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
+	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
+	loadbandprops(b, effantenna, effrxantenna);
 #else
 	//#warning No automatic antenna select - manual only
 #endif /* WITHKEYBOARD || WITHTOUCHGUI */
@@ -16131,7 +16134,9 @@ processcatmsg(
 	const uint8_t * catp	// массив символов
 	)
 {
-	//printhex_titled(0, catp, 5, "undefined cat command");
+	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
+	vindex_t vi = getvfoindex(bi);
+	//printhex_titled(0, catp, 5, "processcatmsg");
 	switch (catp [4])
 	{
 	case 0x80:
@@ -16201,8 +16206,6 @@ processcatmsg(
 	case 0x01:
 		{
 			// Set Frequency
-			const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
-			vindex_t vi = getvfoindex(bi);
 
 			const uint_fast32_t f =
 					(catp [0] / 16) * 100000000 +
@@ -17605,6 +17608,8 @@ processcatmsg(
 	const uint8_t * catp	// массив символов
 	)
 {
+	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
+	vindex_t vi = getvfoindex(bi);
 	//PRINTF(PSTR("processcatmsg: c1=%02X, c2=%02X, chp=%d, cp=%lu\n"), catcommand1, catcommand2, cathasparam, catparam);
 	uint_fast8_t rc = 0;
 	const uint_fast32_t catparam = catscanint(catp, catpcount);
@@ -18076,6 +18081,8 @@ processcatmsg(
 	#endif /* WITHTX */
 
 				}
+				// изменение частоты вызывает обязательное чтение новых настроек тюнера
+				// и выбраных антенн
 				{
 					const uint_fast8_t bandset_no_check = 0;
 					const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
