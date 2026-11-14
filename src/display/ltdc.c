@@ -1867,52 +1867,73 @@ static const rtmixstack_t * const gmixers [] =
 		& rtmix0def, & rtmix1def,
 };
 
+#elif CPUSTYLE_T113 || CPUSTYLE_F133
+static const visurface_t mix0_vi1 = { DE_MIXER0_VI1, DE_MIXER0_VSU1, 0, };
+static const uisurface_t mix0_ui1 = { DE_MIXER0_UI1, DE_MIXER0_UIS1, 0, };
+static const visurface_t mix1_vi1 = { DE_MIXER1_VI1, DE_MIXER1_VSU1, 0, };
+
+// набор surfaces, обслуживающих RTMIX0
+static const visurface_t * const rtset0vi [] = { & mix0_vi1, };
+static const uisurface_t * const rtset0ui [] = { & mix0_ui1, };
+
+// набор surfaces, обслуживающих RTMIX1
+static const visurface_t * const rtset1vi [] = { & mix1_vi1, };
+
+static const rtmixstack_t rtmix0def =
+{
+		DE_MIXER0_GLB,
+		DE_MIXER0_BLD,
+		rtset0vi, ARRAY_SIZE(rtset0vi),
+		rtset0ui, ARRAY_SIZE(rtset0ui),
+};
+
+static const rtmixstack_t rtmix1def =
+{
+		DE_MIXER1_GLB,
+		DE_MIXER1_BLD,
+		rtset1vi, ARRAY_SIZE(rtset1vi),
+		NULL, 0,
+};
+
+static const rtmixstack_t * const gmixers [] =
+{
+		& rtmix0def, & rtmix1def,
+};
+
 #elif CPUSTYLE_A64 || CPUSTYLE_H3
 
-static DE_VI_TypeDef * const rtmix0_vimap [] =
+static const visurface_t mix0_vi1 = { DE_MIXER0_VI1, DE_MIXER0_VSU1, 0, };
+static const uisurface_t mix0_ui1 = { DE_MIXER0_UI1, DE_MIXER0_UIS1, 0, };
+static const uisurface_t mix0_ui2 = { DE_MIXER0_UI2, DE_MIXER0_UIS2, 1, };
+static const uisurface_t mix0_ui3 = { DE_MIXER0_UI3, DE_MIXER0_UIS3, 2, };
+static const visurface_t mix1_vi1 = { DE_MIXER1_VI1, DE_MIXER1_VSU1, 0, };
+
+// набор surfaces, обслуживающих RTMIX0
+static const visurface_t * const rtset0vi [] = { & mix0_vi1, };
+static const uisurface_t * const rtset0ui [] = { & mix0_ui1, & mix0_ui2, & mix0_ui3, };
+
+// набор surfaces, обслуживающих RTMIX1
+static const visurface_t * const rtset1vi [] = { & mix1_vi1, };
+
+static const rtmixstack_t rtmix0def =
 {
-		DE_MIXER0_VI1,
+		DE_MIXER0_GLB,
+		DE_MIXER0_BLD,
+		rtset0vi, ARRAY_SIZE(rtset0vi),
+		rtset0ui, ARRAY_SIZE(rtset0ui),
 };
 
-static DE_VSU_TypeDef * const rtmix0_vsumap [] =
+static const rtmixstack_t rtmix1def =
 {
-		DE_MIXER0_VSU1,
+		DE_MIXER1_GLB,
+		DE_MIXER1_BLD,
+		rtset1vi, ARRAY_SIZE(rtset1vi),
+		NULL, 0,
 };
 
-static DE_UI_TypeDef * const rtmix0_uimap [] =
+static const rtmixstack_t * const gmixers [] =
 {
-		DE_MIXER0_UI1,
-		DE_MIXER0_UI2,
-		DE_MIXER0_UI3,
-};
-
-static DE_UIS_TypeDef * const rtmix0_uismap [] =
-{
-		DE_MIXER0_UIS1,
-		DE_MIXER0_UIS2,
-		DE_MIXER0_UIS3,
-};
-
-static DE_VI_TypeDef * const rtmix1_vimap [] =
-{
-		DE_MIXER1_VI1,
-};
-
-static DE_VSU_TypeDef * const rtmix1_vsumap [] =
-{
-		DE_MIXER1_VSU1,
-};
-
-// UI surfaces
-static DE_UI_TypeDef * const rtmix1_uimap [] =
-{
-		DE_MIXER1_UI1,
-};
-
-// UI scalers
-static DE_UIS_TypeDef * const rtmix1_uismap [] =
-{
-		DE_MIXER1_UIS1,
+		& rtmix0def, & rtmix1def,
 };
 
 #else
