@@ -1354,6 +1354,7 @@
 		//	CON_TV0 controls HDMI interface
 		//	CON_TV1 controls eDP interface
 		#define	TCONTV_IX 0	/* 0 - TCON_TV0, 1: TCON_TV1 */
+		#define	TCONTV_DEPORT TG_DE2TCONTV0	/*  */
 		#define	TCONTV_PTR TCON_TV0	/* 0 - TCON_TV0, 1: TCON_TV0 */
 		//#define	TCONTV_CCU_CLK_REG (CCU->TCON_TV0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1, 2: TCON_TV0, 3: TCON_TV1 */
 		#define	TCONTV_CCU_BGR_REG (CCU->TCONTV0_BGR_REG)	/* 0 - TCON_TV0, 1: TCON_TV1 */
@@ -1365,6 +1366,7 @@
 	#if 1
 		// LCD
 		#define	TCONLCD_IX 0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
+		#define	TCONLCD_DEPORT TG_DE2TCONLCD0	/*  */
 		#define	TCONLCD_PTR TCON_LCD0	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_CCU_CLK_REG (CCU->TCON_LCD0_CLK_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */
 		#define	TCONLCD_CCU_BGR_REG (CCU->TCON_LCD_BGR_REG)	/* 0 - TCON_LCD0, 1: TCON_LCD1 */

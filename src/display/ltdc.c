@@ -1763,46 +1763,19 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 
 //	RTMIX0: VI1, UI1, [vi3]
 //	RTMIX1: VI2, UI2, UI3
+static DE_VI_TypeDef * const rtmix0_vimap [] = { DE_VI1, };
+static DE_VI_TypeDef * const rtmix1_vimap [] = { DE_VI2, };
+static DE_UI_TypeDef * const rtmix0_uimap [] = { DE_UI1, };
+static DE_UI_TypeDef * const rtmix1_uimap [] = { DE_UI2, };
+static DE_VSU_TypeDef * const rtmix0_vsumap [] = { DE_VSU1, };
+static DE_VSU_TypeDef * const rtmix1_vsumap [] = { DE_VSU2, };
+static DE_UIS_TypeDef * const rtmix0_uismap [] = { DE_UIS1, };
+static DE_UIS_TypeDef * const rtmix1_uismap [] = { DE_UIS2, };
 
-static DE_VI_TypeDef * const rtmix0_vimap [] =
-{
-		DE_VI1,
-};
-
-static DE_VI_TypeDef * const rtmix1_vimap [] =
-{
-		DE_VI2,
-};
-
-static DE_UI_TypeDef * const rtmix0_uimap [] =
-{
-		DE_UI1,
-};
-
-static DE_UI_TypeDef * const rtmix1_uimap [] =
-{
-		DE_UI2,
-};
-
-static DE_VSU_TypeDef * const rtmix0_vsumap [] =
-{
-		DE_VSU1,
-};
-
-static DE_VSU_TypeDef * const rtmix1_vsumap [] =
-{
-		DE_VSU2,
-};
-
-static DE_UIS_TypeDef * const rtmix0_uismap [] =
-{
-		DE_UIS1,
-};
-
-static DE_UIS_TypeDef * const rtmix1_uismap [] =
-{
-		DE_UIS2,
-};
+static const unsigned rtmix0_vi [] = { 0, };	// VI0 used
+static const unsigned rtmix0_ui [] = { 0, };	// UI0 used
+static const unsigned rtmix1_vi [] = { 1, };	// VI1 used
+static const unsigned rtmix1_ui [] = { 1, };	// UI1 used
 
 #elif CPUSTYLE_A733
 	#warning Unimplemented CPUSTYLE_A733
@@ -1812,45 +1785,19 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 //	RTMIX0: VI1, UI1, [vi3]
 //	RTMIX1: VI2, UI2, UI3
 
-static DE_VI_TypeDef * const rtmix0_vimap [] =
-{
-		DE_VI1,
-};
+static DE_VI_TypeDef * const rtmix0_vimap [] = { DE_VI1, };
+static DE_VI_TypeDef * const rtmix1_vimap [] = { DE_VI2, };
+static DE_UI_TypeDef * const rtmix0_uimap [] = { DE_UI1, };
+static DE_UI_TypeDef * const rtmix1_uimap [] = { DE_UI2, };
+static DE_VSU_TypeDef * const rtmix0_vsumap [] = { DE_VSU1, };
+static DE_VSU_TypeDef * const rtmix1_vsumap [] = { DE_VSU2, };
+static DE_UIS_TypeDef * const rtmix0_uismap [] = { DE_UIS1, };
+static DE_UIS_TypeDef * const rtmix1_uismap [] = { DE_UIS2, };
 
-static DE_VI_TypeDef * const rtmix1_vimap [] =
-{
-		DE_VI2,
-};
-
-static DE_UI_TypeDef * const rtmix0_uimap [] =
-{
-		DE_UI1,
-};
-
-static DE_UI_TypeDef * const rtmix1_uimap [] =
-{
-		DE_UI2,
-};
-
-static DE_VSU_TypeDef * const rtmix0_vsumap [] =
-{
-		DE_VSU1,
-};
-
-static DE_VSU_TypeDef * const rtmix1_vsumap [] =
-{
-		DE_VSU2,
-};
-
-static DE_UIS_TypeDef * const rtmix0_uismap [] =
-{
-		DE_UIS1,
-};
-
-static DE_UIS_TypeDef * const rtmix1_uismap [] =
-{
-		DE_UIS2,
-};
+static const unsigned rtmix0_vi [] = { 2, };	// VI0 used
+static const unsigned rtmix0_ui [] = { 2, };	// UI0 used
+static const unsigned rtmix1_vi [] = { 1, };	// VI1 used
+static const unsigned rtmix1_ui [] = { 1, };	// UI1 used
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
 
@@ -2321,6 +2268,18 @@ static DE_VI_TypeDef * de3_getvi(int rtmixid, int id)
 	}
 }
 
+static unsigned de3_getviix(int rtmixid, int id)
+{
+	ASSERT(rtmixid >= 1);
+	ASSERT(id >= 1);
+	switch (rtmixid)
+	{
+	default: return 15;
+	case 1: return id <= ARRAY_SIZE(rtmix0_vi) ? rtmix0_vi [id - 1] : 15;
+	case 2: return id <= ARRAY_SIZE(rtmix1_vi) ? rtmix1_vi [id - 1] : 15;
+	}
+}
+
 static DE_UI_TypeDef * de3_getui(int rtmixid, int id)
 {
 	ASSERT(rtmixid >= 1);
@@ -2330,6 +2289,18 @@ static DE_UI_TypeDef * de3_getui(int rtmixid, int id)
 	default: return NULL;
 	case 1: return id <= ARRAY_SIZE(rtmix0_uimap) ? rtmix0_uimap [id - 1] : NULL;
 	case 2: return id <= ARRAY_SIZE(rtmix1_uimap) ? rtmix1_uimap [id - 1] : NULL;
+	}
+}
+
+static unsigned de3_getuiix(int rtmixid, int id)
+{
+	ASSERT(rtmixid >= 1);
+	ASSERT(id >= 1);
+	switch (rtmixid)
+	{
+	default: return 15;
+	case 1: return id <= ARRAY_SIZE(rtmix0_ui) ? rtmix0_ui [id - 1] : 15;
+	case 2: return id <= ARRAY_SIZE(rtmix1_ui) ? rtmix1_ui [id - 1] : 15;
 	}
 }
 
@@ -6799,26 +6770,48 @@ static void awxx_deoutmapping(int rtmixid)
 		0;
 #endif
 
-	DE_TOP->DE_CHN2CORE_MUX =
-		decore0 * (UINT32_C(1) << (2 * 0x00)) | 	// VI1 - CORE0
-		decore0 * (UINT32_C(1) << (2 * 0x08)) | 	// UI1 - CORE0
-		decore1 * (UINT32_C(1) << (2 * 0x01)) | 	// VI2 - CORE1
-		decore1 * (UINT32_C(1) << (2 * 0x09)) | 	// UI2 - CORE1
-		decore2 * (UINT32_C(1) << (2 * 0x02)) | 	// VI3 - CORE2 test
-		decore2 * (UINT32_C(1) << (2 * 0x0A)) | 	// UI3 - CORE2 test
-		0;
+//	DE_TOP->DE_CHN2CORE_MUX =
+//		decore0 * (UINT32_C(1) << (2 * 0x00)) | 	// VI1 - CORE0
+//		decore0 * (UINT32_C(1) << (2 * 0x08)) | 	// UI1 - CORE0
+//		decore1 * (UINT32_C(1) << (2 * 0x01)) | 	// VI2 - CORE1
+//		decore1 * (UINT32_C(1) << (2 * 0x09)) | 	// UI2 - CORE1
+//		decore2 * (UINT32_C(1) << (2 * 0x02)) | 	// VI3 - CORE2 test
+//		decore2 * (UINT32_C(1) << (2 * 0x0A)) | 	// UI3 - CORE2 test
+//		0;
 	DE_TOP->DE_CHN2CORE_MUX =  		/* 0x00000000 @ 0x024 */
 		0x00000000 |
 		0;
 
+#if 1
+#if defined TCONLCD_PTR
+	DE_TOP->DE_PORT2CHN_MUX [TCONLCD_DEPORT] =		//
+		(0x00 | de3_getviix(RTMIXIDLCD, 1)) * (UINT32_C(1) << (4 * 0)) | 	// VI1
+		(0x08 | de3_getuiix(RTMIXIDLCD, 1)) * (UINT32_C(1) << (4 * 1)) | 	// UI1
+		0;
+#endif /* TCONLCD_PTR */
+//	DE_TOP->DE_PORT2CHN_MUX [1] =		//
+//		0x02 * (UINT32_C(1) << (4 * 0)) | 	// VI3
+//		0x0A * (UINT32_C(1) << (4 * 1)) | 	// UI3
+//		0;
+#if defined TCONTV_PTR
+    DE_TOP->DE_PORT2CHN_MUX [TCONTV_DEPORT] =    /*???  tcontv0 HDMI 360MHz (4pixel/148.5MHz) 0x00A98210 @ 0x030 */
+		(0x00 | de3_getviix(RTMIXIDTV, 1)) * (UINT32_C(1) << (4 * 0)) | 	// VI2
+		(0x08 | de3_getuiix(RTMIXIDTV, 1)) * (UINT32_C(1) << (4 * 1)) | 	// UI2
+		0;
+#endif /* TCONTV_PTR */
+	PRINTHEX32(DE_TOP->DE_PORT2CHN_MUX);
+
+#endif
+
+#if 1
 	DE_TOP->DE_PORT2CHN_MUX [0] =		//
 		0x00 * (UINT32_C(1) << (4 * 0)) | 	// VI1
 		0x08 * (UINT32_C(1) << (4 * 1)) | 	// UI1
 		0;
-	DE_TOP->DE_PORT2CHN_MUX [1] =		//
-		0x02 * (UINT32_C(1) << (4 * 0)) | 	// VI3
-		0x0A * (UINT32_C(1) << (4 * 1)) | 	// UI3
-		0;
+//	DE_TOP->DE_PORT2CHN_MUX [1] =		//
+//		0x02 * (UINT32_C(1) << (4 * 0)) | 	// VI3
+//		0x0A * (UINT32_C(1) << (4 * 1)) | 	// UI3
+//		0;
     DE_TOP->DE_PORT2CHN_MUX [2] =    /*???  tcontv0 HDMI 360MHz (4pixel/148.5MHz) 0x00A98210 @ 0x030 */
 		0x01 * (UINT32_C(1) << (4 * 0)) | 	// VI2
 		0x09 * (UINT32_C(1) << (4 * 1)) | 	// UI2
@@ -6826,6 +6819,9 @@ static void awxx_deoutmapping(int rtmixid)
 	// test
 	DE_TOP->DE_PORT2CHN_MUX [3] =		// RTMIX3	??????
 		0;
+
+	PRINTHEX32(DE_TOP->DE_PORT2CHN_MUX);
+#endif
 
 	//	DE2TCON_MUX=0000FFF4
 	//	DE_CHN2CORE_MUX=00000000
