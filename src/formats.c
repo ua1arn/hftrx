@@ -423,7 +423,7 @@ toprintc(int c)
 }
 
 void
-printhex(uintptr_t voffs, const void * vbuff, unsigned length)
+printhex(uintptr_t voffs, const volatile void * vbuff, unsigned length)
 {
 	const volatile uint8_t * buff = (const volatile uint8_t *) vbuff;
 	enum { ROWSIZE = 16 };	/* elements in one row */
@@ -449,7 +449,7 @@ printhex(uintptr_t voffs, const void * vbuff, unsigned length)
 }
 
 void
-printhex16(uintptr_t voffs, const void * vbuff, unsigned length)
+printhex16(uintptr_t voffs, const volatile void * vbuff, unsigned length)
 {
 	const volatile uint16_t * buff = (const volatile uint16_t *) vbuff;
 	enum { ROWSIZE = 16 };	/* elements in one row */
@@ -469,7 +469,7 @@ printhex16(uintptr_t voffs, const void * vbuff, unsigned length)
 }
 
 void
-printhex32(uintptr_t voffs, const void * vbuff, unsigned length)
+printhex32(uintptr_t voffs, const volatile void * vbuff, unsigned length)
 {
 	const volatile uint32_t * buff = (const volatile uint32_t *) vbuff;
 	enum { ROWSIZE = 8 };	/* elements in one row */
@@ -489,7 +489,7 @@ printhex32(uintptr_t voffs, const void * vbuff, unsigned length)
 }
 
 void
-printhex64(uintptr_t voffs, const void * vbuff, unsigned length)
+printhex64(uintptr_t voffs, const volatile void * vbuff, unsigned length)
 {
 	const volatile uint64_t * buff = (const volatile uint64_t *) vbuff;
 	enum { ROWSIZE = 4 };	/* elements in one row */
@@ -511,19 +511,25 @@ printhex64(uintptr_t voffs, const void * vbuff, unsigned length)
 	}
 }
 
-void printhex_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title)
+void printhex_titled(uintptr_t voffs, const volatile void * vbuff, size_t length, const char * title)
 {
 	PRINTF("%s @ %p:\n", title, vbuff);
 	printhex(voffs, vbuff, length);
 }
 
-void printhex32_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title)
+void printhex16_titled(uintptr_t voffs, const volatile void * vbuff, size_t length, const char * title)
+{
+	PRINTF("%s @ %p:\n", title, vbuff);
+	printhex16(voffs, vbuff, length);
+}
+
+void printhex32_titled(uintptr_t voffs, const volatile void * vbuff, size_t length, const char * title)
 {
 	PRINTF("%s @ %p:\n", title, vbuff);
 	printhex32(voffs, vbuff, length);
 }
 
-void printhex64_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title)
+void printhex64_titled(uintptr_t voffs, const volatile void * vbuff, size_t length, const char * title)
 {
 	PRINTF("%s @ %p:\n", title, vbuff);
 	printhex64(voffs, vbuff, length);
