@@ -1756,6 +1756,19 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 #define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
 #define VI_CFG_INDEX 0
 
+typedef struct visurface
+{
+	DE_VI_TypeDef * block;
+	DE_VSU_TypeDef * scaler;
+	unsigned ix;
+} visurface_t;
+
+typedef struct uisurface
+{
+	DE_UI_TypeDef * block;
+	DE_UIS_TypeDef * scaler;
+	unsigned ix;
+} uisurface_t;
 
 #if CPUSTYLE_T507
 
@@ -1763,6 +1776,21 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 
 //	RTMIX0: VI1, UI1, [vi3]
 //	RTMIX1: VI2, UI2, UI3
+
+static const visurface_t iovi0 = { DE_VI1, DE_VSU1, 0, };
+static const visurface_t iovi1 = { DE_VI2, DE_VSU2, 1, };
+static const visurface_t iovi2 = { DE_VI3, DE_VSU3, 2, };
+static const uisurface_t ioui0 = { DE_UI1, DE_UIS1, 0, };
+static const uisurface_t ioui1 = { DE_UI2, DE_UIS2, 1, };
+static const uisurface_t ioui2 = { DE_UI3, DE_UIS3, 2, };
+
+// набор surfaces, обслуживающих RTMIX0
+const visurface_t * const rtset0vi [] = { & iovi0, };
+const uisurface_t * const rtset0ui [] = { & ioui0, };
+
+// набор surfaces, обслуживающих RTMIX1
+const visurface_t * const rtset1vi [] = { & iovi1, };
+const uisurface_t * const rtset1ui [] = { & ioui1, };
 
 // RTMIX0 blocks
 static DE_VI_TypeDef * const rtmix0_vimap [] = { DE_VI1, };
@@ -1773,11 +1801,11 @@ static const unsigned rtmix0_vi [] = { 0, };	// VI1 used
 static const unsigned rtmix0_ui [] = { 0, };	// UI1 used
 
 // RTMIX1 blocks
-static DE_VI_TypeDef * const rtmix1_vimap [] = { DE_VI2, };
+static DE_VI_TypeDef * const rtmix1_vimap [] = { DE_VI3, };
 static DE_UI_TypeDef * const rtmix1_uimap [] = { DE_UI2, };
-static DE_VSU_TypeDef * const rtmix1_vsumap [] = { DE_VSU2, };
+static DE_VSU_TypeDef * const rtmix1_vsumap [] = { DE_VSU3, };
 static DE_UIS_TypeDef * const rtmix1_uismap [] = { DE_UIS2, };
-static const unsigned rtmix1_vi [] = { 1, };	// VI2 used
+static const unsigned rtmix1_vi [] = { 2, };	// VI2 used
 static const unsigned rtmix1_ui [] = { 1, };	// UI2 used
 
 #elif CPUSTYLE_A733
