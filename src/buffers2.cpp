@@ -12,6 +12,7 @@
 #include "mslist.h"
 #include "audio.h"
 #include "display/display.h"
+#include "fontsys.h"
 #include <atomic>
 
 //#define WITHSEQTEST (1 && WITHDEBUG)
@@ -3775,6 +3776,7 @@ void colmain_nextfb(void)
 			);
 		// тестирование двухмониторной системы с отличающимся изображением
 		colpip_fillrect(& fbtvdb, TVD_WIDTH / 4, TVD_HEIGHT / 4, TVD_WIDTH / 2, TVD_HEIGHT / 2, COLOR_RED);
+		unifont_text(& fbtvdb, TVD_WIDTH / 4, TVD_HEIGHT / 4, & unifont_FreeMono24pt7b, "HDMI TEST", TEXTSIZE_AUTO, COLOR_WHITEALL);
 		tvout_nextfb();
 #endif /* WITHHDMITVHW */
 		dcache_clean_invalidate(fb0, cachesize_dmabuffercolmain0fb());
@@ -3900,6 +3902,7 @@ void colmain_nextfb(void)
 			);
 		// тестирование двухмониторной системы с отличающимся изображением
 		colpip_fillrect(& fbtvdb, TVD_WIDTH / 4, TVD_HEIGHT / 4, TVD_WIDTH / 2, TVD_HEIGHT / 2, COLOR_RED);
+		unifont_text(& fbtvdb, TVD_WIDTH / 4, TVD_HEIGHT / 4, & unifont_FreeMono24pt7b, "HDMI TEST", TEXTSIZE_AUTO, COLOR_WHITEALL);
 		tvout_nextfb();
 	}
 #else

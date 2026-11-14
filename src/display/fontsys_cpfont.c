@@ -76,9 +76,9 @@ static const uint8_t * cpfont_bitpacknormal_getcharraster(const struct unifont_t
 	const uint_fast16_t width2 = blob [paramstart + 2];
 	const uint_fast16_t height2 = font->font_drawheight(font);
 	unsigned bytestotal = (width2 * height2 + 7) / 8;
-	PRINTF("cpfont_bitpacknormal_getcharraster: ci=%u, bytespervertical=%u, w2/h2=%u/%u\n", ci, bytespervertical, width2, height2);
-	printhex(paramstart, blob + paramstart, PARAMSIZE);
-	printhex(rastersstart, blob + rastersstart, bytestotal);
+//	PRINTF("cpfont_bitpacknormal_getcharraster: ci=%u, bytespervertical=%u, w2/h2=%u/%u\n", ci, bytespervertical, width2, height2);
+//	printhex(paramstart, blob + paramstart, PARAMSIZE);
+//	printhex(rastersstart, blob + rastersstart, bytestotal);
 	return blob + rastersstart;
 }
 
