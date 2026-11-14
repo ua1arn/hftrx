@@ -1770,6 +1770,14 @@ typedef struct uisurface
 	unsigned ix;
 } uisurface_t;
 
+typedef const struct rtmixstack
+{
+	const visurface_t * const * vi;
+	unsigned vicount;
+	const uisurface_t * const * ui;
+	unsigned uicount;
+} rtmixstack_t;
+
 #if CPUSTYLE_T507
 
 // Требуется заполнение в соответствии с инициализацией DE_PORT2CHN_MUX
@@ -1785,12 +1793,24 @@ static const uisurface_t ioui1 = { DE_UI2, DE_UIS2, 1, };
 static const uisurface_t ioui2 = { DE_UI3, DE_UIS3, 2, };
 
 // набор surfaces, обслуживающих RTMIX0
-const visurface_t * const rtset0vi [] = { & iovi0, };
-const uisurface_t * const rtset0ui [] = { & ioui0, };
+static const visurface_t * const rtset0vi [] = { & iovi0, };
+static const uisurface_t * const rtset0ui [] = { & ioui0, };
 
 // набор surfaces, обслуживающих RTMIX1
-const visurface_t * const rtset1vi [] = { & iovi1, };
-const uisurface_t * const rtset1ui [] = { & ioui1, };
+static const visurface_t * const rtset1vi [] = { & iovi1, };
+static const uisurface_t * const rtset1ui [] = { & ioui1, };
+
+static const rtmixstack_t rtmix0def =
+{
+		rtset0vi, ARRAY_SIZE(rtset0vi),
+		rtset0ui, ARRAY_SIZE(rtset0ui),
+};
+
+static const rtmixstack_t rtmix1def =
+{
+		rtset1vi, ARRAY_SIZE(rtset1vi),
+		rtset1ui, ARRAY_SIZE(rtset1ui),
+};
 
 // RTMIX0 blocks
 static DE_VI_TypeDef * const rtmix0_vimap [] = { DE_VI1, };
