@@ -1772,6 +1772,7 @@ typedef struct uisurface
 
 typedef const struct rtmixstack
 {
+	DE_GLB_TypeDef * mixer;
 	const visurface_t * const * vi;
 	unsigned vicount;
 	const uisurface_t * const * ui;
@@ -1802,12 +1803,14 @@ static const uisurface_t * const rtset1ui [] = { & ioui1, };
 
 static const rtmixstack_t rtmix0def =
 {
+		DE_MIXER0_GLB,
 		rtset0vi, ARRAY_SIZE(rtset0vi),
 		rtset0ui, ARRAY_SIZE(rtset0ui),
 };
 
 static const rtmixstack_t rtmix1def =
 {
+		DE_MIXER1_GLB,
 		rtset1vi, ARRAY_SIZE(rtset1vi),
 		rtset1ui, ARRAY_SIZE(rtset1ui),
 };
