@@ -4166,6 +4166,15 @@
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
+   <register>
+    <name>reg_0x014</name>
+    <displayName>reg_0x014</displayName>
+    <description>??? 0xffff3fc0 in dump</description>
+    <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
   </registers>
   </peripheral>
   <peripheral derivedFrom="DE_MIXER0_GLB">
@@ -4230,8 +4239,17 @@
    <register>
     <name>DE_VER_CTL</name>
     <displayName>DE_VER_CTL</displayName>
-    <description>DE_VER_CTL_OFFSET</description>
+    <description></description>
     <addressOffset>0x014</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DE_RTWB_CTL</name>
+    <displayName>DE_RTWB_CTL</displayName>
+    <description></description>
+    <addressOffset>0x020</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
@@ -4239,28 +4257,60 @@
    <register>
     <name>DE_RTWB_MUX</name>
     <displayName>DE_RTWB_MUX</displayName>
-    <description>DE_RTWB_MUX_OFFSET</description>
-    <addressOffset>0x020</addressOffset>
+    <description></description>
+    <addressOffset>0x024</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>DE_CHN2CORE_MUX</name>
-    <displayName>DE_CHN2CORE_MUX</displayName>
-    <description>DE_CHN2CORE_MUX_OFFSET</description>
-    <addressOffset>0x024</addressOffset>
+    <name>DE_VCH2CORE_MUX</name>
+    <displayName>DE_VCH2CORE_MUX</displayName>
+    <description></description>
+    <addressOffset>0x028</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DE_UCH2CORE_MUX</name>
+    <displayName>DE_UCH2CORE_MUX</displayName>
+    <description></description>
+    <addressOffset>0x02C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
     <dim>4</dim>
-    <addressOffset>0x00000028</addressOffset>
+    <addressOffset>0x00000030</addressOffset>
     <register>
      <name>DE_PORT2CHN_MUX</name>
      <displayName>DE_PORT2CHN_MUX</displayName>
-     <description>DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4)</description>
+     <description></description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x010</dimIncrement>
+   </cluster>
+   <register>
+    <name>DE_ASYNC_BRIDGE</name>
+    <displayName>DE_ASYNC_BRIDGE</displayName>
+    <description></description>
+    <addressOffset>0x04C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <cluster>
+    <dim>4</dim>
+    <addressOffset>0x00000050</addressOffset>
+    <register>
+     <name>DE_BUF_DEPTH</name>
+     <displayName>DE_BUF_DEPTH</displayName>
+     <description></description>
      <addressOffset>0x000</addressOffset>
      <size>0x20</size>
      <access>read-write</access>
@@ -4300,6 +4350,24 @@
     <displayName>DE_DEBUG_CTL</displayName>
     <description>DE_DEBUG_CTL_OFFSET</description>
     <addressOffset>0x0E0</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DE_AHB_TIMEOUT</name>
+    <displayName>DE_AHB_TIMEOUT</displayName>
+    <description></description>
+    <addressOffset>0x0E4</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>DE_GATING_CTL</name>
+    <displayName>DE_GATING_CTL</displayName>
+    <description></description>
+    <addressOffset>0x0E8</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>

@@ -6912,7 +6912,8 @@ static void awxx_deoutmapping(int rtmixid)
 		0;
 #elif defined TCONTV_PTR && defined TCONLCD_PTR
 	DE_TOP->DE2TCON_MUX =
-		0x0000FF40 | /* 0x0000FFF4 @ 0x010  */
+		//0x0000FF40 | /* 0x0000FFF4 @ 0x010  */
+		0x0000FF04 | /* 0x0000FFF4 @ 0x010  */
 		0;
 #else
 	DE_TOP->DE2TCON_MUX =
@@ -6928,11 +6929,49 @@ static void awxx_deoutmapping(int rtmixid)
 //		decore2 * (UINT32_C(1) << (2 * 0x02)) | 	// VI3 - CORE2 test
 //		decore2 * (UINT32_C(1) << (2 * 0x0A)) | 	// UI3 - CORE2 test
 //		0;
-	DE_TOP->DE_CHN2CORE_MUX =  		/* 0x00000000 @ 0x024 */
-		0x00000000 |
+	// Действительны только три младших бита
+//	DE_TOP->DE_CHN2CORE_MUX =  		/* 0x00000000 @ 0x024 */
+//		0x00000000 |
+//		0;
+
+	//	## CONFIG_ARCH_SUN60IW2,
+	//	## D:\user\Allwinner A733\allwinner-bsp\drivers\video\sunxi\disp2\disp\de\lowlevel_v35x\de35x
+
+	//	static int de_top_set_chn2core_mux_v2(struct de_top_handle *hdl, u32 disp,
+	//		u32 chn_type_id, bool is_video)
+	//	{
+	//		u8 __iomem *reg_base = hdl->cinfo.de_reg_base;
+	//		u32 reg_val;
+	//		reg_base += is_video ? DE_VCH2CORE_MUX_OFFSET : DE_UCH2CORE_MUX_OFFSET;
+	//		reg_val = readl(reg_base);
+	//		reg_val = SET_BITS(chn_type_id << 2, 4, reg_val, disp);
+	//		writel(reg_val, reg_base);
+	//		return 0;
+	//	}
+	// по 4 бита на surface
+	//  writeable bits 0x00333333
+	DE_TOP->DE_VCH2CORE_MUX =
+#if defined TCONLCD_PTR
+		(RTMIXIDLCD - 1) * (UINT32_C(1) << (4 * de3_getviix(RTMIXIDLCD, 1))) | 	// VI1 - CORE0
+#endif /* TCONLCD_PTR */
+#if defined TCONTV_PTR
+		(RTMIXIDTV - 1) * (UINT32_C(1) << (4 * de3_getviix(RTMIXIDTV, 1))) | 	// VI2 - CORE1
+#endif /* TCONTV_PTR */
+		0;
+	//  writeable bits 0x00333333
+	DE_TOP->DE_UCH2CORE_MUX =
+#if defined TCONLCD_PTR
+		(RTMIXIDLCD - 1) * (UINT32_C(1) << (4 * de3_getuiix(RTMIXIDLCD, 1))) | 	// UI1 - CORE0
+#endif /* TCONLCD_PTR */
+#if defined TCONTV_PTR
+		(RTMIXIDTV - 1) * (UINT32_C(1) << (4 * de3_getuiix(RTMIXIDTV, 1))) | 	// UI2 - CORE1
+#endif /* TCONTV_PTR */
 		0;
 
-#if 1
+	PRINTHEX32(DE_TOP->DE_VCH2CORE_MUX);
+	PRINTHEX32(DE_TOP->DE_UCH2CORE_MUX);
+
+
 #if defined TCONLCD_PTR
 	DE_TOP->DE_PORT2CHN_MUX [TCONLCD_DEPORT] =		//
 		(0x00 | de3_getviix(RTMIXIDLCD, 1)) * (UINT32_C(1) << (4 * 0)) | 	// VI1
@@ -6950,6 +6989,10 @@ static void awxx_deoutmapping(int rtmixid)
 		0;
 #endif /* TCONTV_PTR */
 	//PRINTHEX32(DE_TOP->DE_PORT2CHN_MUX);
+
+//    memset32((void *) DE_TOP_BASE + 0x30, ~ 0U, 16);
+//    PRINTHEX32(* DE_TOP);
+//    for (;;) ;
 
 	//	DE2TCON_MUX=0000FFF4
 	//	DE_CHN2CORE_MUX=00000000
@@ -7800,7 +7843,7 @@ void foundblocks(const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDM
 	uintptr_t start = 0x0000000001100000;
 	//uintptr_t top = start + 0x200000;
 	uintptr_t base;
-	start = 0x0000000001104000;
+	start = DE_VI1_BASE;
 	//top = start + 0x100000;
 
 //	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x0000000001124000, vdmodeDESIGN, vdmodeHDMI, 1);

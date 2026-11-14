@@ -1003,8 +1003,23 @@ typedef struct DE_GLB_Type
     __IOM uint32_t GLB_SIZE;                          /*!< Offset 0x008 Global size register */
     __IOM uint32_t GLB_CLK;                           /*!< Offset 0x00C Global clock register */
     __IOM uint32_t GLB_DBUFFER;                       /*!< Offset 0x010 Global double buffer control register */
-         RESERVED(0x014[0x0040 - 0x0014], uint8_t)
+    __IOM uint32_t reg_0x014;                         /*!< Offset 0x014 ??? 0xffff3fc0 in dump */
+         RESERVED(0x018[0x0040 - 0x0018], uint8_t)
 } DE_GLB_TypeDef; /* size of structure = 0x040 */
+/*
+ * @brief DE_GLB33
+ */
+/*!< DE_GLB33 Display Engine (DE) - Global Control */
+typedef struct DE_GLB33_Type
+{
+    __IOM uint32_t RTMX_GLB_CTL;                      /*!< Offset 0x000  */
+    __IOM uint32_t RTMX_GLB_STS;                      /*!< Offset 0x004  */
+    __IOM uint32_t RTMX_OUT_SIZE;                     /*!< Offset 0x008  */
+    __IOM uint32_t RTMX_AUTO_CLK;                     /*!< Offset 0x00C  */
+    __IOM uint32_t RTMX_RCQ_CTL;                      /*!< Offset 0x010  */
+    __IOM uint32_t reg_0x014;                         /*!< Offset 0x014 ??? 0xffff3fc0 in dump */
+         RESERVED(0x018[0x0040 - 0x0018], uint8_t)
+} DE_GLB33_TypeDef; /* size of structure = 0x040 */
 /*
  * @brief DE_TOP
  */
@@ -1016,19 +1031,26 @@ typedef struct DE_TOP_Type
     __IOM uint32_t DE_AHB_RESET;                      /*!< Offset 0x008 DE AHB Reset Register DE_MBUS_CLOCK_ADDR */
     __IOM uint32_t DE_SCLK_DIV;                       /*!< Offset 0x00C DE SCLK Division Register  */
     __IOM uint32_t DE2TCON_MUX;                       /*!< Offset 0x010 DE MUX Register DE2TCON_MUX_OFFSET */
-    __IOM uint32_t DE_VER_CTL;                        /*!< Offset 0x014 DE_VER_CTL_OFFSET */
+    __IOM uint32_t DE_VER_CTL;                        /*!< Offset 0x014  */
          RESERVED(0x018[0x0020 - 0x0018], uint8_t)
-    __IOM uint32_t DE_RTWB_MUX;                       /*!< Offset 0x020 DE_RTWB_MUX_OFFSET */
-    __IOM uint32_t DE_CHN2CORE_MUX;                   /*!< Offset 0x024 DE_CHN2CORE_MUX_OFFSET */
-    __IOM uint32_t DE_PORT2CHN_MUX [0x004];           /*!< Offset 0x028 DE_PORT2CHN_MUX_OFFSET(disp) (0x8028 + (disp) * 0x4) */
-         RESERVED(0x038[0x0094 - 0x0038], uint8_t)
+    __IOM uint32_t DE_RTWB_CTL;                       /*!< Offset 0x020  */
+    __IOM uint32_t DE_RTWB_MUX;                       /*!< Offset 0x024  */
+    __IOM uint32_t DE_VCH2CORE_MUX;                   /*!< Offset 0x028  */
+    __IOM uint32_t DE_UCH2CORE_MUX;                   /*!< Offset 0x02C  */
+    __IOM uint32_t DE_PORT2CHN_MUX [0x004];           /*!< Offset 0x030  */
+         RESERVED(0x040[0x004C - 0x0040], uint8_t)
+    __IOM uint32_t DE_ASYNC_BRIDGE;                   /*!< Offset 0x04C  */
+    __IOM uint32_t DE_BUF_DEPTH [0x004];              /*!< Offset 0x050  */
+         RESERVED(0x060[0x0094 - 0x0060], uint8_t)
     __IOM uint32_t reg_0x094;                         /*!< Offset 0x094 hdmi+tcon  =0x01000000, hdmi=0x01000008 */
     __IOM uint32_t reg_0x098;                         /*!< Offset 0x098 hdmi+tcon  =0x3fe62950, hdmi=0x3fd1e680 */
          RESERVED(0x09C[0x00D0 - 0x009C], uint8_t)
     __IOM uint32_t reg_0x0D0;                         /*!< Offset 0x0D0 hdmi+tcon  =0x00000010, hdmi=0x00000000 */
          RESERVED(0x0D4[0x00E0 - 0x00D4], uint8_t)
     __IOM uint32_t DE_DEBUG_CTL;                      /*!< Offset 0x0E0 DE_DEBUG_CTL_OFFSET */
-} DE_TOP_TypeDef; /* size of structure = 0x0E4 */
+    __IOM uint32_t DE_AHB_TIMEOUT;                    /*!< Offset 0x0E4  */
+    __IOM uint32_t DE_GATING_CTL;                     /*!< Offset 0x0E8  */
+} DE_TOP_TypeDef; /* size of structure = 0x0EC */
 /*
  * @brief DE_UI
  */
