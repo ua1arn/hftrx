@@ -7087,22 +7087,35 @@ static void awxx_deoutmapping(int rtmixid)
 //	PRINTF("3 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
 
 	// DE_PORT_PERH_SEL - all 32 bits writeable
+	// DE Source Select TCON RRegister
 	DISP_IF_TOP->DE_PORT_PERH_SEL =
-//		TG_DE_PORT_PERH_TCONTV1 * (UINT32_C(1) << 12) | // DE_PORT3 PERH Select. undocumented
-//		TG_DE_PORT_PERH_TCONLCD1 * (UINT32_C(1) << 8) |	// DE_PORT2 PERH Select. undocumented
-		TG_DE_PORT_PERH_TCONTV0 * (UINT32_C(1) << 4) | // DE_PORT1 PERH Select.
-		TG_DE_PORT_PERH_TCONLCD0 * (UINT32_C(1) << 0) |	// DE_PORT0 PERH Select.
+//		TG_DE_PORT_PERH_TCONTV1 * (UINT32_C(1) << (3 * 4)) | // DE_PORT3 PERH Select. undocumented
+//		TG_DE_PORT_PERH_TCONLCD1 * (UINT32_C(1) << (2 * 4)) |	// DE_PORT2 PERH Select. undocumented
+		TG_DE_PORT_PERH_TCONTV0 * (UINT32_C(1) << (1 * 4)) | // DE_PORT1 PERH Select.
+		TG_DE_PORT_PERH_TCONLCD0 * (UINT32_C(1) << (0 * 4)) |	// DE_PORT0 PERH Select.
 		0;
+	PRINTF("4 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
 
 	// Undocumented
+//	DE_TOP->DE2TCON_MUX =
+//		TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
+//		TG_DE2TCONTV0 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
+//		TG_DE2TCONLCD1 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
+//		TG_DE2TCONLCD0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
+//		0;
+
 	DE_TOP->DE2TCON_MUX =
-		TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
-		TG_DE2TCONTV0 * (UINT32_C(1) << (2 * 2)) |		/* CORE2 output */
-		TG_DE2TCONLCD1 * (UINT32_C(1) << (1 * 2)) |		/* CORE1 output */
-		TG_DE2TCONLCD0 * (UINT32_C(1) << (0 * 2)) |		/* CORE0 output */
+		0x03 * (UINT32_C(1) << (3 * 2)) |		/* xxx */
+		0x02 * (UINT32_C(1) << (2 * 2)) |		/* xxx */
+#if defined TCONLCD_PTR
+		(RTMIXIDLCD - 1) * (UINT32_C(1) << (0 * 2)) |		/* TCON0 input - от RTMIXx */
+#endif /* TCONLCD_PTR */
+#if defined TCONTV_PTR
+		(RTMIXIDTV - 1) * (UINT32_C(1) << (1 * 2)) |		/* TCON1 input - от RTMIXx */
+#endif /* TCONTV_PTR */
 		0;
-//	PRINTF("4 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
-//	PRINTF("4 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
+
+	PRINTF("4 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 // https://github.com/MYIR-ALLWINNER/myir-t5-kernel/blob/a7089355dd727f5aaedade642f5fbc5b354b215a/drivers/video/fbdev/sunxi/disp2/disp/de/lowlevel_v3x/de_lcd_type.h
 //  0x200
