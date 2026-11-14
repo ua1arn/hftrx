@@ -433,18 +433,29 @@
 #typeend;
 
 #type; DE_VSU; Video Scaler Unit (VSU)
-
-#base; DE_VSU1 0x05104000; VI1 Scaler
-#base; DE_VSU2 0x05124000; VI2 Scaler
-#base; DE_VSU3 0x05144000; VI3 Scaler
+#base; DE_VSU1 0x05124000; VI1 Scaler
+#base; DE_VSU2 0x05144000; VI2 Scaler
+#base; DE_VSU3 0x051C4000; VI3 Scaler
+#base; DE_VSU4 0x051E4000; VI4 Scaler
+#base; DE_VSU5 0x05204000; VI5 Scaler
+#base; DE_VSU6 0x05224000; VI6 Scaler
 #typeend;
 
 #type; DE_UIS; UI Scaler(UIS) provides RGB format image resizing function
-
-#base; DE_UIS1 0x051C4000; UI1 Scaler
-#base; DE_UIS2 0x051E4000; UI2 Scaler
-#base; DE_UIS3 0x05204000; UI3 Scaler
+#base; DE_UIS1 0x05124000; UI1 Scaler
+#base; DE_UIS2 0x05144000; UI2 Scaler
+#base; DE_UIS3 0x051C4000; UI3 Scaler
+#base; DE_UIS4 0x051E4000; UI4 Scaler
+#base; DE_UIS5 0x05204000; UI5 Scaler
+#base; DE_UIS6 0x05224000; UI6 Scaler
 #typeend;
+
+##================== t507_de2_uis_init: uis=0x05124000: init complete!
+##================== t507_de2_uis_init: uis=0x05144000: init complete!
+##================== t507_de2_uis_init: uis=0x051C4000: init complete!
+##================== t507_de2_uis_init: uis=0x051E4000: init complete!
+##================== t507_de2_uis_init: uis=0x05204000: init complete!
+##================== t507_de2_uis_init: uis=0x05224000: init complete!
 
 # define SUN50I_MIXER_FCE_EN			0x70000: 10A0000
 #type; DE_FCE; Fresh and Contrast Enhancement (FCE)

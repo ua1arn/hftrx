@@ -4421,7 +4421,7 @@
   <peripheral>
   <name>DE_UIS1</name>
   <description>UI Scaler(UIS) provides RGB format image resizing function</description>
-  <baseAddress>0x051C4000</baseAddress>
+  <baseAddress>0x05124000</baseAddress>
   <registers>
    <register>
     <name>UIS_CTRL_REG</name>
@@ -4613,11 +4613,23 @@
   </peripheral>
   <peripheral derivedFrom="DE_UIS1">
   <name>DE_UIS2</name>
-  <baseAddress>0x051E4000</baseAddress>
+  <baseAddress>0x05144000</baseAddress>
   </peripheral>
   <peripheral derivedFrom="DE_UIS1">
   <name>DE_UIS3</name>
+  <baseAddress>0x051C4000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_UIS1">
+  <name>DE_UIS4</name>
+  <baseAddress>0x051E4000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_UIS1">
+  <name>DE_UIS5</name>
   <baseAddress>0x05204000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_UIS1">
+  <name>DE_UIS6</name>
+  <baseAddress>0x05224000</baseAddress>
   </peripheral>
   <peripheral>
   <name>DE_VI1</name>
@@ -4806,7 +4818,7 @@
   <peripheral>
   <name>DE_VSU1</name>
   <description>Video Scaler Unit (VSU)</description>
-  <baseAddress>0x05104000</baseAddress>
+  <baseAddress>0x05124000</baseAddress>
   <registers>
    <register>
     <name>VSU_CTRL_REG</name>
@@ -5058,6 +5070,20 @@
    </cluster>
    <cluster>
     <dim>64</dim>
+    <addressOffset>0x00000300</addressOffset>
+    <register>
+     <name>VSU_Y_HCOEF1_REGN</name>
+     <displayName>VSU_Y_HCOEF1_REGN</displayName>
+     <description>0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x100</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>64</dim>
     <addressOffset>0x00000400</addressOffset>
     <register>
      <name>VSU_Y_VCOEF_REGN</name>
@@ -5084,15 +5110,55 @@
     </register>
     <dimIncrement>0x100</dimIncrement>
    </cluster>
+   <cluster>
+    <dim>64</dim>
+    <addressOffset>0x00000700</addressOffset>
+    <register>
+     <name>VSU_C_HCOEF1_REGN</name>
+     <displayName>VSU_C_HCOEF1_REGN</displayName>
+     <description>0x700+N*4 VSU C Channel Horizontal Filter Coefficient1 Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x100</dimIncrement>
+   </cluster>
+   <cluster>
+    <dim>64</dim>
+    <addressOffset>0x00000800</addressOffset>
+    <register>
+     <name>VSU_C_VCOEF_REGN</name>
+     <displayName>VSU_C_VCOEF_REGN</displayName>
+     <description>0x400+N*4 VSU Cs Channel Vertical Filter Coefficient Register N N = M 1))</description>
+     <addressOffset>0x000</addressOffset>
+     <size>0x20</size>
+     <access>read-write</access>
+     <resetValue>0x00000000</resetValue>
+    </register>
+    <dimIncrement>0x100</dimIncrement>
+   </cluster>
   </registers>
   </peripheral>
   <peripheral derivedFrom="DE_VSU1">
   <name>DE_VSU2</name>
-  <baseAddress>0x05124000</baseAddress>
+  <baseAddress>0x05144000</baseAddress>
   </peripheral>
   <peripheral derivedFrom="DE_VSU1">
   <name>DE_VSU3</name>
-  <baseAddress>0x05144000</baseAddress>
+  <baseAddress>0x051C4000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VSU1">
+  <name>DE_VSU4</name>
+  <baseAddress>0x051E4000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VSU1">
+  <name>DE_VSU5</name>
+  <baseAddress>0x05204000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VSU1">
+  <name>DE_VSU6</name>
+  <baseAddress>0x05224000</baseAddress>
   </peripheral>
   <peripheral>
   <name>DISPLAY0_TOP</name>
