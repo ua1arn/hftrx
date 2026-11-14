@@ -1772,7 +1772,8 @@ typedef struct uisurface
 
 typedef const struct rtmixstack
 {
-	DE_GLB_TypeDef * mixer;
+	DE_GLB_TypeDef * glb;
+	DE_BLD_TypeDef * bld;
 	const visurface_t * const * vi;
 	unsigned vicount;
 	const uisurface_t * const * ui;
@@ -1804,6 +1805,7 @@ static const uisurface_t * const rtset1ui [] = { & ioui1, };
 static const rtmixstack_t rtmix0def =
 {
 		DE_MIXER0_GLB,
+		DE_MIXER0_BLD,
 		rtset0vi, ARRAY_SIZE(rtset0vi),
 		rtset0ui, ARRAY_SIZE(rtset0ui),
 };
@@ -1811,10 +1813,17 @@ static const rtmixstack_t rtmix0def =
 static const rtmixstack_t rtmix1def =
 {
 		DE_MIXER1_GLB,
+		DE_MIXER1_BLD,
 		rtset1vi, ARRAY_SIZE(rtset1vi),
 		rtset1ui, ARRAY_SIZE(rtset1ui),
 };
 
+static const rtmixstack_t * const gmixers [] =
+{
+		& rtmix0def, & rtmix1def,
+};
+
+#if 0
 // RTMIX0 blocks
 static DE_VI_TypeDef * const rtmix0_vimap [] = { DE_VI1, };
 static DE_UI_TypeDef * const rtmix0_uimap [] = { DE_UI1, };
@@ -1830,6 +1839,7 @@ static DE_VSU_TypeDef * const rtmix1_vsumap [] = { DE_VSU3, };
 static DE_UIS_TypeDef * const rtmix1_uismap [] = { DE_UIS2, };
 static const unsigned rtmix1_vi [] = { 2, };	// VI2 used
 static const unsigned rtmix1_ui [] = { 1, };	// UI2 used
+#endif
 
 #elif CPUSTYLE_A733
 	#warning Unimplemented CPUSTYLE_A733
@@ -1954,12 +1964,111 @@ static DE_UIS_TypeDef * const rtmix1_uismap [] =
 #endif
 
 /* BLD_EN_COLOR_CTL positions 8..11 */
-#define VI_LASTIX(rtmixid) (((rtmixid) == 1) ? ARRAY_SIZE(rtmix0_vimap) : ARRAY_SIZE(rtmix1_vimap))
-#define UI_LASTIX(rtmixid) (((rtmixid) == 1) ? ARRAY_SIZE(rtmix0_uimap) : ARRAY_SIZE(rtmix1_uimap))
+#define VI_LASTIX(rtmixid) (gmixers[(rtmixid) - 1]->vicount)
+#define UI_LASTIX(rtmixid) (gmixers[(rtmixid) - 1]->uicount)
 
 #define VI_POS_BIT(rtmixid, vi) (UINT32_C(0x100) << ((vi) - 1))
 #define UI_POS_BIT(rtmixid, ui) (UINT32_C(0x100) << ((ui) - 1 + VI_LASTIX((rtmixid))))
 
+static DE_GLB_TypeDef * de3_getglb(int rtmixid)
+{
+	ASSERT(rtmixid >= 1);
+	if (rtmixid > ARRAY_SIZE(gmixers))
+		return NULL;
+	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
+	//
+	return mix->glb;
+}
+
+static DE_BLD_TypeDef * de3_getbld(int rtmixid)
+{
+	ASSERT(rtmixid >= 1);
+	if (rtmixid > ARRAY_SIZE(gmixers))
+		return NULL;
+	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
+	//
+	return mix->bld;
+}
+
+static DE_VI_TypeDef * de3_getvi(int rtmixid, int id)
+{
+	ASSERT(rtmixid >= 1);
+	if (rtmixid > ARRAY_SIZE(gmixers))
+		return NULL;
+	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
+	//
+	ASSERT(id >= 1);
+	if (id > mix->vicount)
+		return NULL;
+	return mix->vi [id - 1]->block;
+}
+
+static unsigned de3_getviix(int rtmixid, int id)
+{
+	ASSERT(rtmixid >= 1);
+	if (rtmixid > ARRAY_SIZE(gmixers))
+		return 0;
+	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
+	//
+	ASSERT(id >= 1);
+	if (id > mix->vicount)
+		return 0;
+	return mix->vi [id - 1]->ix;
+}
+
+static DE_UI_TypeDef * de3_getui(int rtmixid, int id)
+{
+	ASSERT(rtmixid >= 1);
+	if (rtmixid > ARRAY_SIZE(gmixers))
+		return NULL;
+	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
+	//
+	ASSERT(id >= 1);
+	if (id > mix->uicount)
+		return NULL;
+	return mix->ui [id - 1]->block;
+}
+
+static unsigned de3_getuiix(int rtmixid, int id)
+{
+	ASSERT(rtmixid >= 1);
+	if (rtmixid > ARRAY_SIZE(gmixers))
+		return 0;
+	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
+	//
+	ASSERT(id >= 1);
+	if (id > mix->uicount)
+		return 0;
+	return mix->ui [id - 1]->ix;
+}
+
+// Video Scaler Unit (VSU)
+static DE_VSU_TypeDef * de3_getvsu(int rtmixid, int id)
+{
+	ASSERT(rtmixid >= 1);
+	if (rtmixid > ARRAY_SIZE(gmixers))
+		return NULL;
+	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
+	//
+	ASSERT(id >= 1);
+	if (id > mix->vicount)
+		return NULL;
+	return mix->vi [id - 1]->scaler;
+}
+
+// UI Scaler(UIS) provides RGB format image resizing function
+static DE_UIS_TypeDef * de3_getuis(int rtmixid, int id)
+{
+	ASSERT(rtmixid >= 1);
+	if (rtmixid > ARRAY_SIZE(gmixers))
+		return NULL;
+	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
+	//
+	ASSERT(id >= 1);
+	if (id > mix->uicount)
+		return NULL;
+	return mix->ui [id - 1]->scaler;
+}
 
 #ifndef SETMASK
 #define SETMASK(width, shift)   (((width)?((-INT32_C(1)) >> (32-(width))):0)  << (shift))
@@ -2299,6 +2408,7 @@ static int32_t de_rtmx_set_chn_mux(uint32_t disp)
 	//#error Undefined CPUSTYLE_xxx
 #endif
 
+#if 0
 static DE_GLB_TypeDef * de3_getglb(int rtmixid)
 {
 	ASSERT(rtmixid >= 1);
@@ -2358,25 +2468,6 @@ static unsigned de3_getuiix(int rtmixid, int id)
 	}
 }
 
-static LCLSPINLOCK_t rtmixlock [2];
-
-/* Установка новых адресов видеобуфера производится из прерываний на IRQL_OVERREALTIME */
-static void de3_lockbld(int rtmixid, IRQL_t * oldIrql)
-{
-	ASSERT(rtmixid >= 1);
-	const int disp = rtmixid - 1;
-	ASSERT(disp < ARRAY_SIZE(rtmixlock));
-	IRQLSPIN_LOCK(& rtmixlock [disp], oldIrql, IRQL_OVERREALTIME);
-}
-
-static void de3_unlockbld(int rtmixid, IRQL_t oldIrql)
-{
-	ASSERT(rtmixid >= 1);
-	const int disp = rtmixid - 1;
-	ASSERT(disp < ARRAY_SIZE(rtmixlock));
-	IRQLSPIN_UNLOCK(& rtmixlock [disp], oldIrql);
-}
-
 static DE_BLD_TypeDef * de3_getbld(int rtmixid)
 {
 	ASSERT(rtmixid >= 1);
@@ -2410,6 +2501,26 @@ static DE_UIS_TypeDef * de3_getuis(int rtmixid, int id)
 	case 1: return id <= ARRAY_SIZE(rtmix0_uismap) ? rtmix0_uismap [id - 1] : NULL;
 	case 2: return id <= ARRAY_SIZE(rtmix1_uismap) ? rtmix1_uismap [id - 1] : NULL;
 	}
+}
+#endif
+
+static LCLSPINLOCK_t rtmixlock [2];
+
+/* Установка новых адресов видеобуфера производится из прерываний на IRQL_OVERREALTIME */
+static void de3_lockbld(int rtmixid, IRQL_t * oldIrql)
+{
+	ASSERT(rtmixid >= 1);
+	const int disp = rtmixid - 1;
+	ASSERT(disp < ARRAY_SIZE(rtmixlock));
+	IRQLSPIN_LOCK(& rtmixlock [disp], oldIrql, IRQL_OVERREALTIME);
+}
+
+static void de3_unlockbld(int rtmixid, IRQL_t oldIrql)
+{
+	ASSERT(rtmixid >= 1);
+	const int disp = rtmixid - 1;
+	ASSERT(disp < ARRAY_SIZE(rtmixlock));
+	IRQLSPIN_UNLOCK(& rtmixlock [disp], oldIrql);
 }
 
 
