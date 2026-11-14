@@ -531,7 +531,7 @@ uint_fast32_t ptr_lo32(uintptr_t v)
 /* Для обнуления регистров периферии не очень
  * подходит системный memset - иногда может группировать обращения к соседним ячейкам
 */
-void memset32(void * d, uint32_t v, unsigned sz)
+void memset32(volatile void * d, uint32_t v, unsigned sz)
 {
 	uint32_t volatile * dst = (uint32_t volatile *) d;
 	while (sz > 4)
@@ -541,7 +541,7 @@ void memset32(void * d, uint32_t v, unsigned sz)
 	}
 }
 
-void memcpy32(void * d, const void * s, unsigned sz)
+void memcpy32(volatile void * d, const void * s, unsigned sz)
 {
 	uint32_t volatile * dst = (uint32_t volatile *) d;
 	uint32_t * src = (uint32_t *) s;
