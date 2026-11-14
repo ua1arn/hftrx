@@ -6877,6 +6877,7 @@ static void awxx_deoutmapping(int rtmixid)
 	//	RTMIX1: VI2, UI2, [UI3]
 	// каждлая четверка битов в DE_PORT2CHN_MUX говорит, какому из битов-источников в
 	// bld->BLD_EN_COLOR_CTL соответствует оверлей. Номера оверлеев начиная с 0 - VI, с 8 - UI
+#if 1
 	DE_TOP->DE_PORT2CHN_MUX [0] =		// RTMIX0
 		0x00 * (UINT32_C(1) << (4 * 0)) | 	// VI1
 		0x08 * (UINT32_C(1) << (4 * 1)) | 	// UI1
@@ -6886,14 +6887,34 @@ static void awxx_deoutmapping(int rtmixid)
 		0x09 * (UINT32_C(1) << (4 * 1)) | 	// UI2
 		0;
 	// test
-	DE_TOP->DE_PORT2CHN_MUX [2] =		// RTMIX2	??????
-		0x02 * (UINT32_C(1) << (4 * 0)) | 	// VI3
-		0x0A * (UINT32_C(1) << (4 * 1)) | 	// UI3
-		0;
-	// test
-	DE_TOP->DE_PORT2CHN_MUX [3] =		// RTMIX3	??????
-		0;
-
+//	DE_TOP->DE_PORT2CHN_MUX [2] =		// RTMIX2	??????
+//		0x02 * (UINT32_C(1) << (4 * 0)) | 	// VI3
+//		0x0A * (UINT32_C(1) << (4 * 1)) | 	// UI3
+//		0;
+//	// test
+//	DE_TOP->DE_PORT2CHN_MUX [3] =		// RTMIX3	??????
+//		0;
+	PRINTHEX32(DE_TOP->DE_PORT2CHN_MUX);
+#endif
+#if 1
+	#if defined TCONLCD_PTR
+		DE_TOP->DE_PORT2CHN_MUX [RTMIXIDLCD - 1] =		//
+			(0x00 | de3_getviix(RTMIXIDLCD, 1)) * (UINT32_C(1) << (4 * 0)) | 	// VI1
+			(0x08 | de3_getuiix(RTMIXIDLCD, 1)) * (UINT32_C(1) << (4 * 1)) | 	// UI1
+			0;
+	#endif /* TCONLCD_PTR */
+//		DE_TOP->DE_PORT2CHN_MUX [1] =		//
+//			0x02 * (UINT32_C(1) << (4 * 0)) | 	// VI3
+//			0x0A * (UINT32_C(1) << (4 * 1)) | 	// UI3
+//			0;
+	#if defined TCONTV_PTR
+		DE_TOP->DE_PORT2CHN_MUX [RTMIXIDTV - 1] =    /*???  tcontv0 HDMI 360MHz (4pixel/148.5MHz) 0x00A98210 @ 0x030 */
+			(0x00 | de3_getviix(RTMIXIDTV, 1)) * (UINT32_C(1) << (4 * 0)) | 	// VI2
+			(0x08 | de3_getuiix(RTMIXIDTV, 1)) * (UINT32_C(1) << (4 * 1)) | 	// UI2
+			0;
+	#endif /* TCONTV_PTR */
+		PRINTHEX32(DE_TOP->DE_PORT2CHN_MUX);
+#endif
 	DE_TOP->DE_CHN2CORE_MUX =
 		decore0 * (UINT32_C(1) << (2 * 0x00)) | 	// VI1 - CORE0
 		decore0 * (UINT32_C(1) << (2 * 0x08)) | 	// UI1 - CORE0

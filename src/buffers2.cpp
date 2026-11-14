@@ -3772,6 +3772,8 @@ void colmain_nextfb(void)
 			0, 0, DIM_X, DIM_Y,			/* позиция прямоугольника и размеры источника */
 			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, 0
 			);
+		// тестирование двухмониторной системы с отличающимся изображением
+		//colpip_fillrect(& fbtvdb, TVD_WIDTH / 4, TVD_HEIGHT / 4, TVD_WIDTH / 2, TVD_HEIGHT / 2, COLOR_RED);
 		tvout_nextfb();
 #endif /* WITHHDMITVHW */
 		dcache_clean_invalidate(fb0, cachesize_dmabuffercolmain0fb());
