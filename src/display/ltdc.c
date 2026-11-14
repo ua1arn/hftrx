@@ -1758,15 +1758,15 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 
 typedef struct visurface
 {
-	DE_VI_TypeDef * block;
-	DE_VSU_TypeDef * scaler;
+	DE_VI_TypeDef * viblock;
+	DE_VSU_TypeDef * viscaler;
 	unsigned ix;
 } visurface_t;
 
 typedef struct uisurface
 {
-	DE_UI_TypeDef * block;
-	DE_UIS_TypeDef * scaler;
+	DE_UI_TypeDef * uiblock;
+	DE_UIS_TypeDef * uiscaler;
 	unsigned ix;
 } uisurface_t;
 
@@ -1779,6 +1779,95 @@ typedef const struct rtmixstack
 	const uisurface_t * const * ui;
 	unsigned uicount;
 } rtmixstack_t;
+
+static const rtmixstack_t * de3_getmix(int rtmixid);
+static int de3_getmixcount(void);
+
+static DE_GLB_TypeDef * de3_getglb(int rtmixid)
+{
+	const rtmixstack_t * const mix = de3_getmix(rtmixid);
+	return mix == NULL ? NULL : mix->glb;
+}
+
+static DE_BLD_TypeDef * de3_getbld(int rtmixid)
+{
+	const rtmixstack_t * const mix = de3_getmix(rtmixid);
+	return mix == NULL ? NULL : mix->bld;
+}
+
+static DE_VI_TypeDef * de3_getvi(int rtmixid, int id)
+{
+	const rtmixstack_t * const mix = de3_getmix(rtmixid);
+	if (mix == NULL)
+		return NULL;
+	//
+	ASSERT(id >= 1);
+	if (id > mix->vicount)
+		return NULL;
+	return mix->vi [id - 1]->viblock;
+}
+
+static unsigned de3_getviix(int rtmixid, int id)
+{
+	const rtmixstack_t * const mix = de3_getmix(rtmixid);
+	if (mix == NULL)
+		return 0;
+	//
+	ASSERT(id >= 1);
+	if (id > mix->vicount)
+		return 0;
+	return mix->vi [id - 1]->ix;
+}
+
+static DE_UI_TypeDef * de3_getui(int rtmixid, int id)
+{
+	const rtmixstack_t * const mix = de3_getmix(rtmixid);
+	if (mix == NULL)
+		return NULL;
+	//
+	ASSERT(id >= 1);
+	if (id > mix->uicount)
+		return NULL;
+	return mix->ui [id - 1]->uiblock;
+}
+
+static unsigned de3_getuiix(int rtmixid, int id)
+{
+	const rtmixstack_t * const mix = de3_getmix(rtmixid);
+	if (mix == NULL)
+		return 0;
+	//
+	ASSERT(id >= 1);
+	if (id > mix->uicount)
+		return 0;
+	return mix->ui [id - 1]->ix;
+}
+
+// Video Scaler Unit (VSU)
+static DE_VSU_TypeDef * de3_getvsu(int rtmixid, int id)
+{
+	const rtmixstack_t * const mix = de3_getmix(rtmixid);
+	if (mix == NULL)
+		return NULL;
+	//
+	ASSERT(id >= 1);
+	if (id > mix->vicount)
+		return NULL;
+	return mix->vi [id - 1]->viscaler;
+}
+
+// UI Scaler(UIS) provides RGB format image resizing function
+static DE_UIS_TypeDef * de3_getuis(int rtmixid, int id)
+{
+	const rtmixstack_t * const mix = de3_getmix(rtmixid);
+	if (mix == NULL)
+		return NULL;
+	//
+	ASSERT(id >= 1);
+	if (id > mix->uicount)
+		return NULL;
+	return mix->ui [id - 1]->uiscaler;
+}
 
 #if CPUSTYLE_T507
 
@@ -1948,104 +2037,18 @@ static const rtmixstack_t * const gmixers [] =
 #define VI_POS_BIT(rtmixid, vi) (UINT32_C(0x100) << ((vi) - 1))
 #define UI_POS_BIT(rtmixid, ui) (UINT32_C(0x100) << ((ui) - 1 + VI_LASTIX((rtmixid))))
 
-static DE_GLB_TypeDef * de3_getglb(int rtmixid)
+static const rtmixstack_t * de3_getmix(int rtmixid)
 {
 	ASSERT(rtmixid >= 1);
+	ASSERT(rtmixid <= ARRAY_SIZE(gmixers));
 	if (rtmixid > ARRAY_SIZE(gmixers))
 		return NULL;
-	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
-	//
-	return mix->glb;
+	return gmixers [rtmixid - 1];
 }
 
-static DE_BLD_TypeDef * de3_getbld(int rtmixid)
+static int de3_getmixcount(void)
 {
-	ASSERT(rtmixid >= 1);
-	if (rtmixid > ARRAY_SIZE(gmixers))
-		return NULL;
-	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
-	//
-	return mix->bld;
-}
-
-static DE_VI_TypeDef * de3_getvi(int rtmixid, int id)
-{
-	ASSERT(rtmixid >= 1);
-	if (rtmixid > ARRAY_SIZE(gmixers))
-		return NULL;
-	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
-	//
-	ASSERT(id >= 1);
-	if (id > mix->vicount)
-		return NULL;
-	return mix->vi [id - 1]->block;
-}
-
-static unsigned de3_getviix(int rtmixid, int id)
-{
-	ASSERT(rtmixid >= 1);
-	if (rtmixid > ARRAY_SIZE(gmixers))
-		return 0;
-	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
-	//
-	ASSERT(id >= 1);
-	if (id > mix->vicount)
-		return 0;
-	return mix->vi [id - 1]->ix;
-}
-
-static DE_UI_TypeDef * de3_getui(int rtmixid, int id)
-{
-	ASSERT(rtmixid >= 1);
-	if (rtmixid > ARRAY_SIZE(gmixers))
-		return NULL;
-	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
-	//
-	ASSERT(id >= 1);
-	if (id > mix->uicount)
-		return NULL;
-	return mix->ui [id - 1]->block;
-}
-
-static unsigned de3_getuiix(int rtmixid, int id)
-{
-	ASSERT(rtmixid >= 1);
-	if (rtmixid > ARRAY_SIZE(gmixers))
-		return 0;
-	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
-	//
-	ASSERT(id >= 1);
-	if (id > mix->uicount)
-		return 0;
-	return mix->ui [id - 1]->ix;
-}
-
-// Video Scaler Unit (VSU)
-static DE_VSU_TypeDef * de3_getvsu(int rtmixid, int id)
-{
-	ASSERT(rtmixid >= 1);
-	if (rtmixid > ARRAY_SIZE(gmixers))
-		return NULL;
-	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
-	//
-	ASSERT(id >= 1);
-	if (id > mix->vicount)
-		return NULL;
-	return mix->vi [id - 1]->scaler;
-}
-
-// UI Scaler(UIS) provides RGB format image resizing function
-static DE_UIS_TypeDef * de3_getuis(int rtmixid, int id)
-{
-	ASSERT(rtmixid >= 1);
-	if (rtmixid > ARRAY_SIZE(gmixers))
-		return NULL;
-	const rtmixstack_t * const mix = gmixers [rtmixid - 1];
-	//
-	ASSERT(id >= 1);
-	if (id > mix->uicount)
-		return NULL;
-	return mix->ui [id - 1]->scaler;
+	return ARRAY_SIZE(gmixers);
 }
 
 #ifndef SETMASK
