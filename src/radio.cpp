@@ -5340,6 +5340,8 @@ static const struct paramdefdef xgethmacaddr =
 		return base + RMT_PAMPBG3_BASE(bp, ant, rxant) - RMT_PAMPBG3_BASE(0, ant, rxant);
 	}
 
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX
+
 /* управление выбраной антенной (зависит от диапазона) */
 static const struct paramdefdef xgantenna =
 {
@@ -5353,7 +5355,9 @@ static const struct paramdefdef xgantenna =
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
+#endif /*  WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
 
+#if WITHANTSELECTRX || WITHANTSELECT1RX
 /* управление приёмной антенной (зависит от диапазона) */
 static const struct paramdefdef xgrxantenna =
 {
@@ -5367,6 +5371,7 @@ static const struct paramdefdef xgrxantenna =
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
+#endif /* WITHANTSELECTRX || WITHANTSELECT1RX */
 
 /* управление аттенюатором (зависит от номера антенны) */
 static const struct paramdefdef xgatt =
@@ -14877,16 +14882,16 @@ uif_key_next_antenna(void)
 }
 
 #else
-
+#warning No ANT select options
 /* действительно выбранная антенна с учетом ручного или автоматического переключения */
 static uint_fast8_t geteffantenna(uint_fast32_t f)
 {
-	return param_val(& xgantenna);
+	return 0;//param_val(& xgantenna);
 }
 
 static uint_fast8_t geteffrxantenna(uint_fast32_t f)
 {
-	return param_val(& xgrxantenna);
+	return 0;//param_val(& xgrxantenna);
 }
 
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
