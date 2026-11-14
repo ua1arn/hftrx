@@ -5015,7 +5015,7 @@
   <peripheral>
   <name>DE_UIS1</name>
   <description>UI Scaler(UIS) provides RGB format image resizing function</description>
-  <baseAddress>0x011C4000</baseAddress>
+  <baseAddress>0x01104000</baseAddress>
   <registers>
    <register>
     <name>UIS_CTRL_REG</name>
@@ -5207,10 +5207,22 @@
   </peripheral>
   <peripheral derivedFrom="DE_UIS1">
   <name>DE_UIS2</name>
-  <baseAddress>0x011E4000</baseAddress>
+  <baseAddress>0x01124000</baseAddress>
   </peripheral>
   <peripheral derivedFrom="DE_UIS1">
   <name>DE_UIS3</name>
+  <baseAddress>0x01144000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_UIS1">
+  <name>DE_UIS4</name>
+  <baseAddress>0x011C4000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_UIS1">
+  <name>DE_UIS5</name>
+  <baseAddress>0x011E4000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_UIS1">
+  <name>DE_UIS6</name>
   <baseAddress>0x01204000</baseAddress>
   </peripheral>
   <peripheral>
@@ -5729,6 +5741,18 @@
   <peripheral derivedFrom="DE_VSU1">
   <name>DE_VSU3</name>
   <baseAddress>0x01144000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VSU1">
+  <name>DE_VSU4</name>
+  <baseAddress>0x011C4000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VSU1">
+  <name>DE_VSU5</name>
+  <baseAddress>0x011E4000</baseAddress>
+  </peripheral>
+  <peripheral derivedFrom="DE_VSU1">
+  <name>DE_VSU6</name>
+  <baseAddress>0x01204000</baseAddress>
   </peripheral>
   <peripheral>
   <name>DISP_IF_TOP</name>

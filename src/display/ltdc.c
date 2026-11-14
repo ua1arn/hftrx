@@ -1876,13 +1876,15 @@ static DE_UIS_TypeDef * de3_getuis(int rtmixid, int id)
 //	RTMIX0: VI1, UI1, [vi3]
 //	RTMIX1: VI2, UI2, UI3
 
+// DE_VSU1==DE_UIS1, но это единственный scaler, поддерживающий VIDEO scale
+// все вместе они поддерживают RGB scale
 static const visurface_t iovi0 = { DE_VI1, DE_VSU1, 0, };
 static const visurface_t iovi1 = { DE_VI2, DE_VSU2, 1, };
 static const visurface_t iovi2 = { DE_VI3, DE_VSU3, 2, };
 
-static const uisurface_t ioui0 = { DE_UI1, DE_UIS1, 0, };
-static const uisurface_t ioui1 = { DE_UI2, DE_UIS2, 1, };
-static const uisurface_t ioui2 = { DE_UI3, DE_UIS3, 2, };
+static const uisurface_t ioui0 = { DE_UI1, DE_UIS4, 0, };
+static const uisurface_t ioui1 = { DE_UI2, DE_UIS5, 1, };
+static const uisurface_t ioui2 = { DE_UI3, DE_UIS6, 2, };
 
 // набор surfaces, обслуживающих RTMIX0
 static const visurface_t * const rtset0vi [] = { & iovi0, };
@@ -7459,6 +7461,7 @@ static void t113_tconlcd_open_module_enable(const videomode_t * vdmode)
 
 #if CPUSTYLE_T507 || CPUSTYLE_A733
 
+// RGB Video Scaler Unit
 static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int uich)
 {
 	DE_UIS_TypeDef * const uis = de3_getuis(rtmixid, uich);
