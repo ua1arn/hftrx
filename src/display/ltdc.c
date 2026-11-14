@@ -6913,15 +6913,20 @@ static void awxx_deoutmapping(int rtmixid)
 			(0x08 | de3_getuiix(RTMIXIDTV, 1)) * (UINT32_C(1) << (4 * 1)) | 	// UI2
 			0;
 	#endif /* TCONTV_PTR */
-		PRINTHEX32(DE_TOP->DE_PORT2CHN_MUX);
+		//PRINTHEX32(DE_TOP->DE_PORT2CHN_MUX);
 #endif
+	// распределение UI/VI по каналам RTMIX
 	DE_TOP->DE_CHN2CORE_MUX =
-		decore0 * (UINT32_C(1) << (2 * 0x00)) | 	// VI1 - CORE0
-		decore0 * (UINT32_C(1) << (2 * 0x08)) | 	// UI1 - CORE0
-		decore1 * (UINT32_C(1) << (2 * 0x01)) | 	// VI2 - CORE1
-		decore1 * (UINT32_C(1) << (2 * 0x09)) | 	// UI2 - CORE1
-		decore2 * (UINT32_C(1) << (2 * 0x02)) | 	// VI3 - CORE2 test
-		decore2 * (UINT32_C(1) << (2 * 0x0A)) | 	// UI3 - CORE2 test
+#if defined TCONLCD_PTR
+		(RTMIXIDLCD - 1) * (UINT32_C(1) << (2 * (0x00 | de3_getviix(RTMIXIDLCD, 1)))) | 	// VI1 - CORE0
+		(RTMIXIDLCD - 1) * (UINT32_C(1) << (2 * (0x08 | de3_getuiix(RTMIXIDLCD, 1)))) | 	// UI1 - CORE0
+#endif /* TCONLCD_PTR */
+#if defined TCONTV_PTR
+		(RTMIXIDTV - 1) * (UINT32_C(1) << (2 * (0x00 | de3_getviix(RTMIXIDTV, 1)))) | 	// VI2 - CORE1
+		(RTMIXIDTV - 1) * (UINT32_C(1) << (2 * (0x08 | de3_getuiix(RTMIXIDTV, 1)))) | 	// UI2 - CORE1
+#endif /* TCONTV_PTR */
+//		decore2 * (UINT32_C(1) << (2 * 0x02)) | 	// VI3 - CORE2 test
+//		decore2 * (UINT32_C(1) << (2 * 0x0A)) | 	// UI3 - CORE2 test
 		0;
 
 	/* перенаправление выхода DE */
