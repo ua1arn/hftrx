@@ -21643,6 +21643,12 @@ static void keyspoolprocess(void * ctx)
 		case '-':
 			testadd(- 1);
 			break;
+		case '*':
+			testadd(+ 16);
+			break;
+		case '/':
+			testadd(- 16);
+			break;
 #endif
 #if 1//WITHRTOS
 		case 't':
