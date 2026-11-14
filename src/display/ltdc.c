@@ -6763,6 +6763,12 @@ static void awxx_deoutmapping(int rtmixid)
 #elif CPUSTYLE_A733
 	// awxx_deoutmapping
 	// values in fields of DE_CHN2CORE_MUX
+#ifdef RTMIXIDLCD
+	const unsigned lcdix = RTMIXIDLCD - 1;
+#endif /* RTMIXIDLCD */
+#ifdef RTMIXIDTV
+	const unsigned hdmiix = RTMIXIDTV - 1;
+#endif /* RTMIXIDTV */
 	enum { decore0, decore1, decore2 };
 
 	enum
@@ -6777,6 +6783,15 @@ static void awxx_deoutmapping(int rtmixid)
 #if defined TCONTV_PTR && ! defined TCONLCD_PTR
 	DE_TOP->DE2TCON_MUX =
 		0x0000FFF4 | /* 0x0000FFF4 @ 0x010  */
+		0;
+#elif ! defined TCONTV_PTR && defined TCONLCD_PTR
+	DE_TOP->DE2TCON_MUX =
+		//0x0000FF40 | /* 0x0000FFF4 @ 0x010  */
+			//0x0000FFF0 |
+		0;
+#elif defined TCONTV_PTR && defined TCONLCD_PTR
+	DE_TOP->DE2TCON_MUX =
+		0x0000FF40 | /* 0x0000FFF4 @ 0x010  */
 		0;
 #else
 	DE_TOP->DE2TCON_MUX =
@@ -6796,13 +6811,13 @@ static void awxx_deoutmapping(int rtmixid)
 		0x00000000 |
 		0;
 
-	DE_TOP->DE_PORT2CHN_MUX [0] =		// RTMIX0
+	DE_TOP->DE_PORT2CHN_MUX [0] =		//
 		0x00 * (UINT32_C(1) << (4 * 0)) | 	// VI1
 		0x08 * (UINT32_C(1) << (4 * 1)) | 	// UI1
 		0;
-	DE_TOP->DE_PORT2CHN_MUX [1] =		// RTMIX1
-		0x01 * (UINT32_C(1) << (4 * 0)) | 	// VI2
-		0x09 * (UINT32_C(1) << (4 * 1)) | 	// UI2
+	DE_TOP->DE_PORT2CHN_MUX [1] =		//
+		0x02 * (UINT32_C(1) << (4 * 0)) | 	// VI3
+		0x0A * (UINT32_C(1) << (4 * 1)) | 	// UI3
 		0;
     DE_TOP->DE_PORT2CHN_MUX [2] =    /*???  tcontv0 HDMI 360MHz (4pixel/148.5MHz) 0x00A98210 @ 0x030 */
 		0x01 * (UINT32_C(1) << (4 * 0)) | 	// VI2
