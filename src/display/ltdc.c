@@ -6882,22 +6882,22 @@ static void awxx_deoutmapping(int rtmixid)
 	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 
 #elif CPUSTYLE_A733
-	// awxx_deoutmapping
-	// values in fields of DE_CHN2CORE_MUX
+
 #ifdef RTMIXIDLCD
 	const unsigned lcdix = RTMIXIDLCD - 1;
 #endif /* RTMIXIDLCD */
 #ifdef RTMIXIDTV
 	const unsigned hdmiix = RTMIXIDTV - 1;
 #endif /* RTMIXIDTV */
-	enum { decore0, decore1, decore2 };
 
 	enum
 	{
-		TG_DE2TCONLCD0 = 0,
-		TG_DE2TCONLCD1,
-		TG_DE2TCONTV0,
-		TG_DE2TCONTV1,
+		// VIDEOOUT0_subsytem
+		TG_DE2TCONLCD0 = 0,	// MIPIDSI0/LVDS0/RGBTCON_LCD0(4K45f)
+		TG_DE2TCONLCD1,		// MIPIDSI1/LVDS1/RGB
+		// VIDEOOUT1_subsytem
+		TG_DE2TCONTV0,	// HDMI 360MHz (4pixel/148.5MHz)
+		TG_DE2TCONTV1,	// Embedded Display Port (eDP) 297MHz (2pixel)
 	};
 	// from registers dump:
 	// DE ch0 - HDMI tvout 0
@@ -6971,26 +6971,61 @@ static void awxx_deoutmapping(int rtmixid)
 	PRINTHEX32(DE_TOP->DE_VCH2CORE_MUX);
 	PRINTHEX32(DE_TOP->DE_UCH2CORE_MUX);
 
+	//	s32 de_top_set_port2vchn_mux(u32 phy_disp,
+	//		u32 port, u32 phy_chn)
+	//	{
+	//		u32 hw_disp = de_feat_get_hw_disp(phy_disp);
+	//		u8 __iomem *reg_base = de_base
+	//			+ DE_PORT2CHN_MUX_OFFSET(hw_disp);
+	//		u32 width = 4;
+	//		u32 shift = port << 2;
+	//		u32 reg_val = readl(reg_base);
+	//
+	//		reg_val = SET_BITS(shift, width, reg_val, phy_chn);
+	//		writel(reg_val, reg_base);
+	//		return 0;
+	//	}
+	//
+	//	s32 de_top_set_port2uchn_mux(u32 phy_disp,
+	//		u32 port, u32 phy_chn)
+	//	{
+	//		u32 hw_disp = de_feat_get_hw_disp(phy_disp);
+	//		u8 __iomem *reg_base = de_base
+	//			+ DE_PORT2CHN_MUX_OFFSET(hw_disp);
+	//		u32 width = 4;
+	//		u32 shift = port << 2;
+	//		u32 reg_val = readl(reg_base);
+	//
+	//		reg_val = SET_BITS(shift, width, reg_val, (phy_chn + 2));
+	//		writel(reg_val, reg_base);
+	//		return 0;
+	//	}
+	// SET_BITS(shift, width, old_reg_val, val)
 
+	// В каждом из 6-ти регистров DE_PORT2CHN_MUX модифицируемые 0x00FFFFFF
 #if defined TCONLCD_PTR
-	DE_TOP->DE_PORT2CHN_MUX [TCONLCD_DEPORT] =		//
+	DE_TOP->DE_PORT2CHN_MUX [TCONLCD_DEPORT] =
 		(0x00 | de3_getviix(RTMIXIDLCD, 1)) * (UINT32_C(1) << (4 * 0)) | 	// VI1
-		(0x08 | de3_getuiix(RTMIXIDLCD, 1)) * (UINT32_C(1) << (4 * 1)) | 	// UI1
+		(0x02 | de3_getuiix(RTMIXIDLCD, 1)) * (UINT32_C(1) << (4 * 1)) | 	// UI1
 		0;
 #endif /* TCONLCD_PTR */
-//	DE_TOP->DE_PORT2CHN_MUX [1] =		//
-//		0x02 * (UINT32_C(1) << (4 * 0)) | 	// VI3
-//		0x0A * (UINT32_C(1) << (4 * 1)) | 	// UI3
-//		0;
 #if defined TCONTV_PTR
     DE_TOP->DE_PORT2CHN_MUX [TCONTV_DEPORT] =    /*???  tcontv0 HDMI 360MHz (4pixel/148.5MHz) 0x00A98210 @ 0x030 */
 		(0x00 | de3_getviix(RTMIXIDTV, 1)) * (UINT32_C(1) << (4 * 0)) | 	// VI2
-		(0x08 | de3_getuiix(RTMIXIDTV, 1)) * (UINT32_C(1) << (4 * 1)) | 	// UI2
+		(0x02 | de3_getuiix(RTMIXIDTV, 1)) * (UINT32_C(1) << (4 * 1)) | 	// UI2
 		0;
 #endif /* TCONTV_PTR */
 	//PRINTHEX32(DE_TOP->DE_PORT2CHN_MUX);
 
-//    memset32((void *) DE_TOP_BASE + 0x30, ~ 0U, 16);
+	//    05008000: 00011111 00011111 00000011 0000FFFF 0000FFFF 03520100 6DDB6000 00000234
+	//    05008020: FFFF0010 00000007 00333333 00333333 00FFFFFF 00FFFFFF 00FFFFFF 00FFFFFF
+	//    05008040: 00FFFFFF 00FFFFFF 000000FF 00000001 0000FFFF 0000FFFF 0000FFFF 0000FFFF
+	//    05008060: 0FFF0FFF 0FFF0FFF 0FFF0FFF 00000000 0FFF0FFF 0FFF0FFF 0FFF0FFF 00000000
+	//    05008080: 0000FFFF 0000FFFF 0000FFFF 0000FFFF 01000100 01000000 103EF270 00000000
+	//    050080A0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+	//    050080C0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+	//    050080E0: 00000000 00000000 00000000
+//    memset32(DE_TOP, ~ 0U, 128);
 //    PRINTHEX32(* DE_TOP);
 //    for (;;) ;
 
