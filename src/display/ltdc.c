@@ -7086,7 +7086,7 @@ static void awxx_deoutmapping(int rtmixid)
 //	PRINTF("3 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 //	PRINTF("3 DISP_IF_TOP->DE_PORT_PERH_SEL=%08X\n", (unsigned) DISP_IF_TOP->DE_PORT_PERH_SEL);
 
-#if 1
+#if 0
 	// Undocumented
 	const uint_fast32_t de2tcon_muxX =
 		TG_DE2TCONTV1 * (UINT32_C(1) << (3 * 2)) |		/* CORE3 output */
@@ -7098,7 +7098,7 @@ static void awxx_deoutmapping(int rtmixid)
 	PRINTF("4 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
 #endif
 	// Undocumented
-	const uint_fast32_t de2tcon_mux =
+	DE_TOP->DE2TCON_MUX =
 		0x03 * (UINT32_C(1) << (3 * 2)) |		/* xxx */
 		0x02 * (UINT32_C(1) << (2 * 2)) |		/* xxx */
 #if defined TCONLCD_PTR
@@ -7108,11 +7108,10 @@ static void awxx_deoutmapping(int rtmixid)
 		(RTMIXIDTV - 1) * (UINT32_C(1) << (1 * 2)) |		/* TCON1 input - от RTMIXx */
 #endif /* TCONTV_PTR */
 		0;
-	DE_TOP->DE2TCON_MUX = de2tcon_mux;
-	DE_TOP->DE2TCON_MUX = de2tcon_mux;
-	PRINTF("4 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+	local_delay_ms(20);
 
-	ASSERT(de2tcon_muxX == de2tcon_mux);
+	PRINTF("4 DE_TOP->DE2TCON_MUX=%08X\n", (unsigned) DE_TOP->DE2TCON_MUX);
+	//ASSERT(de2tcon_muxX == de2tcon_mux);
 
 	// DE_PORT_PERH_SEL - all 32 bits writeable
 #if 1
