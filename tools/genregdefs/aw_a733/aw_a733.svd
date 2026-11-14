@@ -4266,7 +4266,7 @@
    <register>
     <name>DE_VCH2CORE_MUX</name>
     <displayName>DE_VCH2CORE_MUX</displayName>
-    <description></description>
+    <description>writeable bits 0x00333333</description>
     <addressOffset>0x028</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
@@ -4275,14 +4275,14 @@
    <register>
     <name>DE_UCH2CORE_MUX</name>
     <displayName>DE_UCH2CORE_MUX</displayName>
-    <description></description>
+    <description>writeable bits 0x00333333</description>
     <addressOffset>0x02C</addressOffset>
     <size>0x20</size>
     <access>read-write</access>
     <resetValue>0x00000000</resetValue>
    </register>
    <cluster>
-    <dim>4</dim>
+    <dim>6</dim>
     <addressOffset>0x00000030</addressOffset>
     <register>
      <name>DE_PORT2CHN_MUX</name>
@@ -4293,7 +4293,7 @@
      <access>read-write</access>
      <resetValue>0x00000000</resetValue>
     </register>
-    <dimIncrement>0x010</dimIncrement>
+    <dimIncrement>0x018</dimIncrement>
    </cluster>
    <register>
     <name>DE_ASYNC_BRIDGE</name>

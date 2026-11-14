@@ -1035,10 +1035,10 @@ typedef struct DE_TOP_Type
          RESERVED(0x018[0x0020 - 0x0018], uint8_t)
     __IOM uint32_t DE_RTWB_CTL;                       /*!< Offset 0x020  */
     __IOM uint32_t DE_RTWB_MUX;                       /*!< Offset 0x024  */
-    __IOM uint32_t DE_VCH2CORE_MUX;                   /*!< Offset 0x028  */
-    __IOM uint32_t DE_UCH2CORE_MUX;                   /*!< Offset 0x02C  */
-    __IOM uint32_t DE_PORT2CHN_MUX [0x004];           /*!< Offset 0x030  */
-         RESERVED(0x040[0x004C - 0x0040], uint8_t)
+    __IOM uint32_t DE_VCH2CORE_MUX;                   /*!< Offset 0x028 writeable bits 0x00333333 */
+    __IOM uint32_t DE_UCH2CORE_MUX;                   /*!< Offset 0x02C writeable bits 0x00333333 */
+    __IOM uint32_t DE_PORT2CHN_MUX [0x006];           /*!< Offset 0x030  */
+         RESERVED(0x048[0x004C - 0x0048], uint8_t)
     __IOM uint32_t DE_ASYNC_BRIDGE;                   /*!< Offset 0x04C  */
     __IOM uint32_t DE_BUF_DEPTH [0x004];              /*!< Offset 0x050  */
          RESERVED(0x060[0x0094 - 0x0060], uint8_t)

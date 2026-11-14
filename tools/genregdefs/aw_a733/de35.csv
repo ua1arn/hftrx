@@ -17,7 +17,7 @@
 #regdef; DE_RTWB_MUX ;          0x0024 ;
 #regdef; DE_VCH2CORE_MUX ;      0x0028 ; writeable bits 0x00333333
 #regdef; DE_UCH2CORE_MUX ;      0x002C ; writeable bits 0x00333333
-#regdef; DE_PORT2CHN_MUX ; 		0x0030 4;
+#regdef; DE_PORT2CHN_MUX ; 		0x0030 6;
 
 #regdef; DE_ASYNC_BRIDGE ; 		0x004C ;
 #regdef; DE_BUF_DEPTH ;    		0x0050 4;
