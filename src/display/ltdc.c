@@ -1879,6 +1879,7 @@ static DE_UIS_TypeDef * de3_getuis(int rtmixid, int id)
 static const visurface_t iovi0 = { DE_VI1, DE_VSU1, 0, };
 static const visurface_t iovi1 = { DE_VI2, DE_VSU2, 1, };
 static const visurface_t iovi2 = { DE_VI3, DE_VSU3, 2, };
+
 static const uisurface_t ioui0 = { DE_UI1, DE_UIS1, 0, };
 static const uisurface_t ioui1 = { DE_UI2, DE_UIS2, 1, };
 static const uisurface_t ioui2 = { DE_UI3, DE_UIS3, 2, };
@@ -7463,9 +7464,10 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	DE_UIS_TypeDef * const uis = de3_getuis(rtmixid, uich);
 	if (uis == NULL)
 		return;
+	PRINTF("t507_de2_uis_init: uis=%p\n", uis);
 	if (vdmodeDESIGN->width == vdmodeHDMI->width && vdmodeDESIGN->height == vdmodeHDMI->height)
 	{
-		uis->UIS_CTRL_REG = 0;	// EN Video Scaler Unit disable
+		uis->UIS_CTRL_REG = 0;	// RGB Video Scaler Unit disable
 		return;
 	}
 
@@ -7477,12 +7479,12 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	const uint_fast32_t VSTEP = (((uint_fast64_t) vdmodeDESIGN->height << FRAСTWIDTH) / HEIGHT) << 1;
 
 	uis->UIS_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
-	uis->UIS_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+	uis->UIS_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN RGB Scaler Unit enable
 
 //	memset32(uis, 0xFFFFFFFF, 0x1000);
 //	printhex32((uintptr_t) uis, uis, 0x1000);	// вызывает сбой цветов на HDMI
 
-	uis->UIS_OUTSIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	uis->UIS_OUT_SIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
 
 	uis->UIS_Y_INSIZE_REG = APPDIMS_SIZE;	// source size
 	uis->UIS_Y_HSTEP_REG = HSTEP;
@@ -7492,19 +7494,41 @@ static void t507_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	uis->UIS_C_HSTEP_REG = HSTEP;
 	uis->UIS_C_VSTEP_REG = VSTEP;
 
+//	memset32(uis->UIS_Y_VCOEF_REGN, ~0, sizeof uis->UIS_Y_VCOEF_REGN);
+//	memset32(uis->UIS_Y_HCOEF0_REGN, ~0, sizeof uis->UIS_Y_HCOEF0_REGN);	// 30 elements
+//	memset32(uis->UIS_C_HCOEF0_REGN, ~0, sizeof uis->UIS_C_HCOEF0_REGN);
+//	PRINTHEX32(uis->UIS_Y_VCOEF_REGN);
+//	PRINTHEX32(uis->UIS_Y_HCOEF0_REGN);
+//	PRINTHEX32(uis->UIS_C_HCOEF0_REGN);
 	for (int n = 0; n < 64; n ++)
 	{
-		// предварительные попытки назвать
-		uis->UIS_Y_HCOEF0_REGN [n] = 1*0x40000000;	// 0x200
-		uis->UIS_Y_VCOEF_REGN [n] = 1*0x40000000;	// 0x400
-		uis->UIS_C_HCOEF0_REGN [n] = 1*0x40000000;	// 0x600
-	}
+		//PRINTF("uis: n=%d\n", n);
+//        mmio_write32(uis_base + SCALER_Y_HCOEF0_OFFSET + offset, 0x00004000U);
+//        mmio_write32(uis_base + SCALER_Y_VCOEF_OFFSET  + offset, 0x00004000U);
+//        mmio_write32(uis_base + SCALER_C_HCOEF0_OFFSET + offset, 0x00004000U);
+//		// предварительные попытки назвать
+		uis->UIS_Y_HCOEF0_REGN [n] = 0x00004000U;	// 0x200
+		uis->UIS_Y_VCOEF_REGN [n] = 0x00004000U;	// 0x400
+		uis->UIS_C_HCOEF0_REGN [n] = 0x00004000U;	// 0x600
+//		ASSERT(uis->UIS_Y_HCOEF0_REGN [n] == 0x00004000U);	// 0x200
+//		ASSERT(uis->UIS_Y_VCOEF_REGN [n] == 0x00004000U);	// 0x400
+//		ASSERT(uis->UIS_C_HCOEF0_REGN [n] == 0x00004000U);	// 0x600
+
+        // предварительные попытки назвать
+        uis->UIS_Y_HCOEF0_REGN [n] = 1*0x40000000;    // 0x200
+        uis->UIS_Y_VCOEF_REGN [n] = 1*0x40000000;    // 0x400
+        uis->UIS_C_HCOEF0_REGN [n] = 1*0x40000000;    // 0x600
+    }
+	PRINTF("================== t507_de2_uis_init: uis=%p: init complete!\n", uis);
+//	PRINTHEX32(uis->UIS_Y_VCOEF_REGN);
+//	PRINTHEX32(uis->UIS_Y_HCOEF0_REGN);
+//	PRINTHEX32(uis->UIS_C_HCOEF0_REGN);
 
 	uis->UIS_GLOBAL_ALPHA_REG = 0x00;
 
 	uis->UIS_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 	if (local_wait32mask(& uis->UIS_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
-		PRINTF("t507_de2_uis_init: timeout\n");
+		PRINTF("t507_de2_uis_init: uis=%p: timeout\n", uis);
 }
 
 static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI, int vich)
@@ -7512,7 +7536,7 @@ static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	DE_VSU_TypeDef * const vsu = de3_getvsu(rtmixid, vich);
 	if (vsu == NULL)
 		return;
-
+	PRINTF("t507_de2_vsu_init: vsu=%p\n", vsu);
 //	ASSERT(DIM_X == vdmodeDESIGN->width);
 //	ASSERT(DIM_Y == vdmodeDESIGN->height);
 	if (vdmodeDESIGN->width == vdmodeHDMI->width && vdmodeDESIGN->height == vdmodeHDMI->height)
@@ -7541,18 +7565,275 @@ static void t507_de2_vsu_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	vsu->VSU_C_HSTEP_REG = HSTEP;
 	vsu->VSU_C_VSTEP_REG = VSTEP;
 
+	ASSERT(vsu->VSU_CTRL_REG == (UINT32_C(1) << 0));
+	ASSERT(vsu->VSU_OUT_SIZE_REG == (((HEIGHT - 1) << 16) | (WIDTH - 1)));
+	ASSERT(vsu->VSU_Y_SIZE_REG == APPDIMS_SIZE);
+	ASSERT(vsu->VSU_Y_HSTEP_REG == HSTEP);
+	ASSERT(vsu->VSU_Y_VSTEP_REG == VSTEP);
+	ASSERT(vsu->VSU_C_SIZE_REG == APPDIMS_SIZE);
+	ASSERT(vsu->VSU_C_HSTEP_REG == HSTEP);
+	ASSERT(vsu->VSU_C_VSTEP_REG == VSTEP);
+
+//	ASSERT(ARRAY_SIZE(vsu->VSU_Y_VCOEF_REGN) == 64);
+//	ASSERT(ARRAY_SIZE(vsu->VSU_Y_HCOEF0_REGN) == 64);
+//	ASSERT(ARRAY_SIZE(vsu->VSU_C_HCOEF0_REGN) == 64);
+//	memset32(vsu->VSU_Y_VCOEF_REGN, ~0, sizeof vsu->VSU_Y_VCOEF_REGN);
+//	memset32(vsu->VSU_Y_HCOEF0_REGN, ~0, sizeof vsu->VSU_Y_HCOEF0_REGN);	// 30 elements
+//	memset32(vsu->VSU_C_HCOEF0_REGN, ~0, sizeof vsu->VSU_C_HCOEF0_REGN);
+//	PRINTHEX32(vsu->VSU_Y_VCOEF_REGN);
+//	PRINTHEX32(vsu->VSU_Y_HCOEF0_REGN);
+//	PRINTHEX32(vsu->VSU_Y_HCOEF0_REGN);
 	for (int n = 0; n < 64; n ++)
 	{
-		vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;	// 0x200
-		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;	// 0x400
-		vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;	// 0x600
-	}
+		//PRINTF("vsu: n=%d\n", n);
+
+        /* Горизонталь VSU — 8-tap (центральный отвод C4 = 64 в банке HCOEF1) */
+//        mmio_write32(vsu_base + SCALER_Y_HCOEF0_OFFSET + offset, 0x00000000U);
+//        mmio_write32(vsu_base + SCALER_Y_HCOEF1_OFFSET + offset, 0x00000040U);
+//
+//        mmio_write32(vsu_base + SCALER_C_HCOEF0_OFFSET + offset, 0x00000000U);
+//        mmio_write32(vsu_base + SCALER_C_HCOEF1_OFFSET + offset, 0x00000040U);
+//
+//        /* Вертикаль VSU — 4-tap (центральный отвод C1 = 64) */
+//        mmio_write32(vsu_base + SCALER_Y_VCOEF_OFFSET  + offset, 0x00004000U);
+//        mmio_write32(vsu_base + SCALER_C_VCOEF_OFFSET  + offset, 0x00004000U);
+
+ 		vsu->VSU_Y_HCOEF0_REGN [n] = 0x00000000U;	// 0x200
+		ASSERT(vsu->VSU_Y_HCOEF0_REGN [n] == 0x00000000U);
+ 		vsu->VSU_Y_HCOEF1_REGN [n] = 0x00000040U;	// 0x300
+		//ASSERT(vsu->VSU_Y_HCOEF1_REGN [n] == 0x00000040U);
+
+		vsu->VSU_C_HCOEF0_REGN [n] = 0x00000000U;	// 0x600
+		ASSERT(vsu->VSU_C_HCOEF0_REGN [n] == 0x00000000U);
+		vsu->VSU_C_HCOEF1_REGN [n] = 0x00000040U;	// 0x700
+		//ASSERT(vsu->VSU_C_HCOEF1_REGN [n] == 0x00000040U);
+
+		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000U;	// 0x400
+		ASSERT(vsu->VSU_Y_VCOEF_REGN [n] == 0x00004000U);
+		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000U;	// 0x800
+		//ASSERT(vsu->VSU_C_VCOEF_REGN [n] == 0x00004000U);
+        // предварительные попытки назвать
+        // предварительные попытки назвать
+        vsu->VSU_Y_HCOEF0_REGN [n] = 0x40000000;    // 0x200
+        vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000;    // 0x400
+        vsu->VSU_C_HCOEF0_REGN [n] = 0x40000000;    // 0x600
+    }
+	PRINTF("================== t507_de2_vsu_init: vsu=%p: init complete!\n", vsu);
+//	PRINTHEX32(vsu->VSU_Y_VCOEF_REGN);
+//	PRINTHEX32(vsu->VSU_Y_HCOEF0_REGN);
+//	PRINTHEX32(vsu->VSU_Y_HCOEF0_REGN);
 
 	vsu->VSU_GLOBAL_ALPHA_REG = 0x00;
 
 	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
 	if (local_wait32mask(& vsu->VSU_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
-		PRINTF("t507_de2_vsu_init: timeout\n");
+		PRINTF("t507_de2_vsu_init: vsu=%p: timeout\n", vsu);
+}
+
+static int t507_de2_uis_init_diag(DE_UIS_TypeDef * const uis, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
+{
+	//PRINTF("t507_de2_uis_init: uis=%p\n", uis);
+	if (vdmodeDESIGN->width == vdmodeHDMI->width && vdmodeDESIGN->height == vdmodeHDMI->height)
+	{
+//		uis->UIS_CTRL_REG = 0;	// EN Video Scaler Unit disable
+//		return;
+	}
+
+	enum { FRAСTWIDTH = 19 };
+	const unsigned HEIGHT = vdmodeHDMI->height;	/* height */
+	const unsigned WIDTH = vdmodeHDMI->width;	/* width */
+	const uint32_t APPDIMS_SIZE = ((vdmodeDESIGN->height - 1) << 16) | (vdmodeDESIGN->width - 1);	// source size
+	const uint_fast32_t HSTEP = (((uint_fast64_t) vdmodeDESIGN->width << FRAСTWIDTH) / WIDTH) << 1;
+	const uint_fast32_t VSTEP = (((uint_fast64_t) vdmodeDESIGN->height << FRAСTWIDTH) / HEIGHT) << 1;
+
+	uis->UIS_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
+	uis->UIS_CTRL_REG     = (UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+
+//	memset32(uis, 0xFFFFFFFF, 0x1000);
+//	printhex32((uintptr_t) uis, uis, 0x1000);	// вызывает сбой цветов на HDMI
+
+	uis->UIS_OUT_SIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+
+	uis->UIS_Y_INSIZE_REG = APPDIMS_SIZE;	// source size
+	uis->UIS_Y_HSTEP_REG = HSTEP;
+	uis->UIS_Y_VSTEP_REG = VSTEP;
+
+	uis->UIS_C_INSIZE_REG = APPDIMS_SIZE;	// source size
+	uis->UIS_C_HSTEP_REG = HSTEP;
+	uis->UIS_C_VSTEP_REG = VSTEP;
+
+	if (! ((uis->UIS_CTRL_REG == (UINT32_C(1) << 0)))) goto fail;
+	if (! ((uis->UIS_OUT_SIZE_REG == (((HEIGHT - 1) << 16) | (WIDTH - 1))))) goto fail;
+	//if (! ((uis->UIS_Y_SIZE_REG == APPDIMS_SIZE))) goto fail;
+	if (! ((uis->UIS_Y_HSTEP_REG == HSTEP))) goto fail;
+	if (! ((uis->UIS_Y_VSTEP_REG == VSTEP))) goto fail;
+	//if (! ((uis->UIS_C_SIZE_REG == APPDIMS_SIZE))) goto fail;
+	if (! ((uis->UIS_C_HSTEP_REG == HSTEP))) goto fail;
+	if (! ((uis->UIS_C_VSTEP_REG == VSTEP))) goto fail;
+
+//	memset32(uis->UIS_Y_VCOEF_REGN, ~0, sizeof uis->UIS_Y_VCOEF_REGN);
+//	memset32(uis->UIS_Y_HCOEF0_REGN, ~0, sizeof uis->UIS_Y_HCOEF0_REGN);	// 30 elements
+//	memset32(uis->UIS_C_HCOEF0_REGN, ~0, sizeof uis->UIS_C_HCOEF0_REGN);
+//	PRINTHEX32(uis->UIS_Y_VCOEF_REGN);
+//	PRINTHEX32(uis->UIS_Y_HCOEF0_REGN);
+//	PRINTHEX32(uis->UIS_C_HCOEF0_REGN);
+	for (int n = 0; n < 64; n ++)
+	{
+		//PRINTF("uis: n=%d\n", n);
+//        mmio_write32(uis_base + SCALER_Y_HCOEF0_OFFSET + offset, 0x00004000U);
+//        mmio_write32(uis_base + SCALER_Y_VCOEF_OFFSET  + offset, 0x00004000U);
+//        mmio_write32(uis_base + SCALER_C_HCOEF0_OFFSET + offset, 0x00004000U);
+//		// предварительные попытки назвать
+		uis->UIS_Y_HCOEF0_REGN [n] = 0x00004000U;	// 0x200
+		uis->UIS_Y_VCOEF_REGN [n] = 0x00004000U;	// 0x400
+		uis->UIS_C_HCOEF0_REGN [n] = 0x00004000U;	// 0x600
+		if (uis->UIS_Y_HCOEF0_REGN [n] != 0x00004000U) goto fail;	// 0x200
+		if(uis->UIS_Y_VCOEF_REGN [n] != 0x00004000U) goto fail;	// 0x400
+		if(uis->UIS_C_HCOEF0_REGN [n] != 0x00004000U) goto fail;	// 0x600
+	}
+//	PRINTHEX32(uis->UIS_Y_VCOEF_REGN);
+//	PRINTHEX32(uis->UIS_Y_HCOEF0_REGN);
+//	PRINTHEX32(uis->UIS_C_HCOEF0_REGN);
+	uis->UIS_GLOBAL_ALPHA_REG = 0x00;
+
+	uis->UIS_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
+	if (local_wait32mask(& uis->UIS_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
+	{
+		PRINTF("t507_de2_uis_init: uis=0x%p: timeout\n", uis);
+		return 0;
+	}
+	else
+		PRINTF("================== t507_de2_uis_init: uis=0x%p: init complete!\n", uis);
+	return 1;
+fail:
+	//PRINTF("------------------ t507_de2_uis_init: uis=0x%p: fail!\n", uis);
+	return 0;
+}
+
+static int t507_de2_vsu_init_diag(DE_VSU_TypeDef * const vsu, const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
+{
+//	ASSERT(DIM_X == vdmodeDESIGN->width);
+//	ASSERT(DIM_Y == vdmodeDESIGN->height);
+	if (vdmodeDESIGN->width == vdmodeHDMI->width && vdmodeDESIGN->height == vdmodeHDMI->height)
+	{
+//		vsu->VSU_CTRL_REG = 0;	// EN Video Scaler Unit disable
+//		return;
+	}
+
+	enum { FRAСTWIDTH = 19 };	// При масштабе 1:1 о ширине изображения нет - для теста делаю уменьшение на 0.9
+	const unsigned HEIGHT = vdmodeHDMI->height;	/* height */
+	const unsigned WIDTH = vdmodeHDMI->width;	/* width */
+	const uint32_t APPDIMS_SIZE = ((vdmodeDESIGN->height - 1) << 16) | (vdmodeDESIGN->width - 1);	// source size
+
+	const uint_fast32_t HSTEP = (((uint_fast64_t) vdmodeDESIGN->width << FRAСTWIDTH) / WIDTH) << 1;
+	const uint_fast32_t VSTEP = (((uint_fast64_t) vdmodeDESIGN->height << FRAСTWIDTH) / HEIGHT) << 1;
+
+	vsu->VSU_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
+	vsu->VSU_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
+
+	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0);
+	vsu->VSU_OUT_SIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	vsu->VSU_Y_SIZE_REG = APPDIMS_SIZE;
+	vsu->VSU_Y_HSTEP_REG = HSTEP;
+	vsu->VSU_Y_VSTEP_REG = VSTEP;
+	vsu->VSU_C_SIZE_REG = APPDIMS_SIZE;
+	vsu->VSU_C_HSTEP_REG = HSTEP;
+	vsu->VSU_C_VSTEP_REG = VSTEP;
+
+	if (! ((vsu->VSU_CTRL_REG == (UINT32_C(1) << 0)))) goto fail;
+	if (! ((vsu->VSU_OUT_SIZE_REG == (((HEIGHT - 1) << 16) | (WIDTH - 1))))) goto fail;
+	if (! ((vsu->VSU_Y_SIZE_REG == APPDIMS_SIZE))) goto fail;
+	if (! ((vsu->VSU_Y_HSTEP_REG == HSTEP))) goto fail;
+	if (! ((vsu->VSU_Y_VSTEP_REG == VSTEP))) goto fail;
+	if (! ((vsu->VSU_C_SIZE_REG == APPDIMS_SIZE))) goto fail;
+	if (! ((vsu->VSU_C_HSTEP_REG == HSTEP))) goto fail;
+	if (! ((vsu->VSU_C_VSTEP_REG == VSTEP))) goto fail;
+
+//	ASSERT(ARRAY_SIZE(vsu->VSU_Y_VCOEF_REGN) == 64);
+//	ASSERT(ARRAY_SIZE(vsu->VSU_Y_HCOEF0_REGN) == 64);
+//	ASSERT(ARRAY_SIZE(vsu->VSU_C_HCOEF0_REGN) == 64);
+//	memset32(vsu->VSU_Y_VCOEF_REGN, ~0, sizeof vsu->VSU_Y_VCOEF_REGN);
+//	memset32(vsu->VSU_Y_HCOEF0_REGN, ~0, sizeof vsu->VSU_Y_HCOEF0_REGN);	// 30 elements
+//	memset32(vsu->VSU_C_HCOEF0_REGN, ~0, sizeof vsu->VSU_C_HCOEF0_REGN);
+//	PRINTHEX32(vsu->VSU_Y_VCOEF_REGN);
+//	PRINTHEX32(vsu->VSU_Y_HCOEF0_REGN);
+//	PRINTHEX32(vsu->VSU_Y_HCOEF0_REGN);
+	for (int n = 0; n < 64; n ++)
+	{
+		//PRINTF("vsu: n=%d\n", n);
+
+        /* Горизонталь VSU — 8-tap (центральный отвод C4 = 64 в банке HCOEF1) */
+//        mmio_write32(vsu_base + SCALER_Y_HCOEF0_OFFSET + offset, 0x00000000U);
+//        mmio_write32(vsu_base + SCALER_Y_HCOEF1_OFFSET + offset, 0x00000040U);
+//
+//        mmio_write32(vsu_base + SCALER_C_HCOEF0_OFFSET + offset, 0x00000000U);
+//        mmio_write32(vsu_base + SCALER_C_HCOEF1_OFFSET + offset, 0x00000040U);
+//
+//        /* Вертикаль VSU — 4-tap (центральный отвод C1 = 64) */
+//        mmio_write32(vsu_base + SCALER_Y_VCOEF_OFFSET  + offset, 0x00004000U);
+//        mmio_write32(vsu_base + SCALER_C_VCOEF_OFFSET  + offset, 0x00004000U);
+
+ 		vsu->VSU_Y_HCOEF0_REGN [n] = 0x00000000U;	// 0x200
+ 		vsu->VSU_Y_HCOEF1_REGN [n] = 0x00000040U;	// 0x300
+
+		vsu->VSU_C_HCOEF0_REGN [n] = 0x00000000U;	// 0x600
+		vsu->VSU_C_HCOEF1_REGN [n] = 0x00000040U;	// 0x700
+
+		vsu->VSU_Y_VCOEF_REGN [n] = 0x00004000U;	// 0x400
+		vsu->VSU_C_VCOEF_REGN [n] = 0x00004000U;	// 0x800
+
+		if (! (vsu->VSU_Y_HCOEF0_REGN [n] == 0x00000000U)) goto fail;
+		if (! (vsu->VSU_Y_HCOEF1_REGN [n] == 0x00000040U)) goto fail;
+		if (! (vsu->VSU_C_HCOEF0_REGN [n] == 0x00000000U)) goto fail;
+		if (! (vsu->VSU_C_HCOEF1_REGN [n] == 0x00000040U)) goto fail;
+		if (! (vsu->VSU_Y_VCOEF_REGN [n] == 0x00004000U)) goto fail;
+		if (! (vsu->VSU_C_VCOEF_REGN [n] == 0x00004000U)) goto fail;
+	}
+//	PRINTHEX32(vsu->VSU_Y_VCOEF_REGN);
+//	PRINTHEX32(vsu->VSU_Y_HCOEF0_REGN);
+//	PRINTHEX32(vsu->VSU_Y_HCOEF0_REGN);
+
+	vsu->VSU_GLOBAL_ALPHA_REG = 0x00;
+
+	vsu->VSU_CTRL_REG = (UINT32_C(1) << 0) | (UINT32_C(1) << 4);
+	if (local_wait32mask(& vsu->VSU_CTRL_REG, (UINT32_C(1) << 4), 0 * (UINT32_C(1) << 4), 100))
+	{
+		PRINTF("t507_de2_vsu_init: vsu=0x%p: timeout\n", vsu);
+		return 0;
+	}
+	PRINTF("================== t507_de2_vsu_init: vsu=0x%p: init complete!\n", vsu);
+	return 1;
+fail:
+	//PRINTF("------------------ t507_de2_vsu_init: %#p: fail!\n", vsu);
+	return 0;
+}
+
+void foundblocks(const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
+{
+ 	hardware_de_initialize(1);
+	t113_de_rtmix_initialize(1);
+ 	hardware_de_initialize(2);
+ 	t113_de_rtmix_initialize(2);
+
+	uintptr_t start = 0x0000000001100000;
+	//uintptr_t top = start + 0x200000;
+	uintptr_t base;
+	start = 0x0000000001104000;
+	//top = start + 0x100000;
+
+//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x0000000001124000, vdmodeDESIGN, vdmodeHDMI, 1);
+//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x0000000001144000, vdmodeDESIGN, vdmodeHDMI, 1);
+//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x00000000011C4000, vdmodeDESIGN, vdmodeHDMI, 1);
+//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x00000000011C9000, vdmodeDESIGN, vdmodeHDMI, 1);
+//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x00000000011CC000, vdmodeDESIGN, vdmodeHDMI, 1);
+//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x00000000011E4000, vdmodeDESIGN, vdmodeHDMI, 1);
+
+	for (base = start ; base < DE_MIXER0_BLD_BASE; base += 4096)
+	{
+			if (t507_de2_vsu_init_diag((DE_VSU_TypeDef *) base, vdmodeDESIGN, vdmodeHDMI))
+				continue;
+			t507_de2_uis_init_diag((DE_UIS_TypeDef *) base, vdmodeDESIGN, vdmodeHDMI);
+	}
 }
 #endif /* CPUSTYLE_T507 */
 
@@ -7578,7 +7859,7 @@ static void t113_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, con
 	uis->UIS_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
 	uis->UIS_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
 
-	uis->UIS_OUTSIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	uis->UIS_OUT_SIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
 
 	uis->UIS_INSIZE_REG = ((vdmodeDESIGN->height - 1) << 16) | (vdmodeDESIGN->width - 1);	// source size
 	uis->UIS_HSTEP_REG = (((uint_fast64_t) vdmodeDESIGN->width << FRAСTWIDTH) / WIDTH) << 2;
@@ -7674,7 +7955,7 @@ static void h3_de2_uis_init(int rtmixid, const videomode_t * vdmodeDESIGN, const
 	uis->UIS_CTRL_REG     = (UINT32_C(1) << 30); // CORE_RST
 	uis->UIS_CTRL_REG     = 0*(UINT32_C(1) << 0);	// EN Video Scaler Unit enable
 
-	uis->UIS_OUTSIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
+	uis->UIS_OUT_SIZE_REG = ((HEIGHT - 1) << 16) | (WIDTH - 1);
 
 	uis->UIS_INSIZE_REG = ((vdmodeDESIGN->height - 1) << 16) | (vdmodeDESIGN->width - 1);	// source size
 	uis->UIS_HSTEP_REG = (((uint_fast64_t) vdmodeDESIGN->width << FRAСTWIDTH) / WIDTH) << 2;
@@ -8184,6 +8465,10 @@ void hardware_ltdc_initialize(void)
 
 	hardware_de_global_initialize();	/* Инициализация системы тактирования, общей для всех видеовыходов */
 
+
+	//TP();
+	//foundblocks(get_videomode_DESIGN(), get_videomode_TVOUT());
+	//TP();
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(initstructs); ++ i)
 	{
