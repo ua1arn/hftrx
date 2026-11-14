@@ -6877,26 +6877,7 @@ static void awxx_deoutmapping(int rtmixid)
 	//	RTMIX1: VI2, UI2, [UI3]
 	// каждлая четверка битов в DE_PORT2CHN_MUX говорит, какому из битов-источников в
 	// bld->BLD_EN_COLOR_CTL соответствует оверлей. Номера оверлеев начиная с 0 - VI, с 8 - UI
-#if 1
-	DE_TOP->DE_PORT2CHN_MUX [0] =		// RTMIX0
-		0x00 * (UINT32_C(1) << (4 * 0)) | 	// VI1
-		0x08 * (UINT32_C(1) << (4 * 1)) | 	// UI1
-		0;
-	DE_TOP->DE_PORT2CHN_MUX [1] =		// RTMIX1
-		0x01 * (UINT32_C(1) << (4 * 0)) | 	// VI2
-		0x09 * (UINT32_C(1) << (4 * 1)) | 	// UI2
-		0;
-	// test
-//	DE_TOP->DE_PORT2CHN_MUX [2] =		// RTMIX2	??????
-//		0x02 * (UINT32_C(1) << (4 * 0)) | 	// VI3
-//		0x0A * (UINT32_C(1) << (4 * 1)) | 	// UI3
-//		0;
-//	// test
-//	DE_TOP->DE_PORT2CHN_MUX [3] =		// RTMIX3	??????
-//		0;
-	PRINTHEX32(DE_TOP->DE_PORT2CHN_MUX);
-#endif
-#if 1
+
 	#if defined TCONLCD_PTR
 		DE_TOP->DE_PORT2CHN_MUX [RTMIXIDLCD - 1] =		//
 			(0x00 | de3_getviix(RTMIXIDLCD, 1)) * (UINT32_C(1) << (4 * 0)) | 	// VI1
@@ -6914,7 +6895,7 @@ static void awxx_deoutmapping(int rtmixid)
 			0;
 	#endif /* TCONTV_PTR */
 		//PRINTHEX32(DE_TOP->DE_PORT2CHN_MUX);
-#endif
+
 	// распределение UI/VI по каналам RTMIX
 	DE_TOP->DE_CHN2CORE_MUX =
 #if defined TCONLCD_PTR
