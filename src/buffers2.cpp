@@ -3756,7 +3756,8 @@ void colmain_nextfb(void)
 	//	char s [32];
 	//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) fb0);
 	//	display_text(db, 0, 0, s, & dbstylev);
-#if WITHHDMITVHW && 1
+#if WITHHDMITVHW && 0
+		// тест с отличающимся изображением
 		// дублирование буфера
 		gxdrawb_t fbtfb0;
 		gxdrawb_initialize(& fbtfb0, (PACKEDCOLORPIP_T *) fb0, DIM_X, DIM_Y);
@@ -3773,7 +3774,7 @@ void colmain_nextfb(void)
 			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, 0
 			);
 		// тестирование двухмониторной системы с отличающимся изображением
-		//colpip_fillrect(& fbtvdb, TVD_WIDTH / 4, TVD_HEIGHT / 4, TVD_WIDTH / 2, TVD_HEIGHT / 2, COLOR_RED);
+		colpip_fillrect(& fbtvdb, TVD_WIDTH / 4, TVD_HEIGHT / 4, TVD_WIDTH / 2, TVD_HEIGHT / 2, COLOR_RED);
 		tvout_nextfb();
 #endif /* WITHHDMITVHW */
 		dcache_clean_invalidate(fb0, cachesize_dmabuffercolmain0fb());
@@ -3874,20 +3875,45 @@ colmain_fb_draw(void)
 /* поставить на отображение этот буфер, запросить следующий */
 void colmain_nextfb(void)
 {
-	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
-	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain0fb());
+	const uintptr_t fb0 = (uintptr_t) colmain_fb_draw();
+	dcache_clean_invalidate(fb0, cachesize_dmabuffercolmain0fb());
 
-#if defined(RTMIXIDLCD)
-	hardware_ltdc_main_set(RTMIXIDLCD, frame);
-#endif /* RTMIXIDLCD */
 #if defined(RTMIXIDTV)
-	hardware_ltdc_main_set(RTMIXIDTV, frame);
+#if 0
+	// тест с отличающимся изображением
+	{
+		const uintptr_t fb1 = (uintptr_t) tvout_fb_draw();
+		// дублирование буфера
+		gxdrawb_t fbtfb0;
+		gxdrawb_initialize(& fbtfb0, (PACKEDCOLORPIP_T *) fb0, DIM_X, DIM_Y);
+		gxdrawb_t fbtvdb;
+		gxdrawb_initialize(& fbtvdb, (PACKEDCOLORPIP_T *) fb1, TVD_WIDTH, TVD_HEIGHT);
+
+		colpip_bitblt(
+			fbtvdb.cachebase, fbtvdb.cachesize,
+			& fbtvdb,
+			0, 0,			/* позиция прямоугольника - получателя */
+			(uintptr_t) fb0, datasize_dmabuffercolmain0fb(),
+			& fbtfb0,
+			0, 0, DIM_X, DIM_Y,			/* позиция прямоугольника и размеры источника */
+			BITBLT_FLAG_NONE | 0*BITBLT_FLAG_CKEY, 0
+			);
+		// тестирование двухмониторной системы с отличающимся изображением
+		colpip_fillrect(& fbtvdb, TVD_WIDTH / 4, TVD_HEIGHT / 4, TVD_WIDTH / 2, TVD_HEIGHT / 2, COLOR_RED);
+		tvout_nextfb();
+	}
+#else
+	hardware_ltdc_main_set(RTMIXIDTV, fb0);
+#endif
 #endif /* WITHHDMITVHW */
+#if defined(RTMIXIDLCD)
+	hardware_ltdc_main_set(RTMIXIDLCD, fb0);
+#endif /* RTMIXIDLCD */
 
 	drawframe = (drawframe + 1) % LCDMODE_MAIN_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
 }
 
-#if defined (TCONTV_PTR) && 0
+#if defined (TCONTV_PTR)
 
 static uint_fast8_t drawtvframe;
 
@@ -3902,7 +3928,7 @@ void tvout_nextfb(void)
 {
 	const uintptr_t frame = (uintptr_t) tvout_fb_draw();
 	dcache_clean_invalidate(frame, cachesize_dmabuffercolmain1fb());
-	hardware_ltdc_tvout_set2(RTMIXIDTV, frame, 0);
+	hardware_ltdc_main_set(RTMIXIDTV, frame);
 	drawtvframe = (drawtvframe + 1) % LCDMODE_TVOUT_PAGES;	// переключиться на использование для DRAW следующего фреймбуфера
 }
 
