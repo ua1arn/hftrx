@@ -174,7 +174,7 @@
 #regdef; UIS_STATUS_REG; 0x008; Status register
 #regdef; UIS_FIELD_CTRL_REG; 0x00C; Field control register
 #regdef; UIS_BIST_REG; 0x010; BIST control register
-#regdef; UIS_OUTSIZE_REG; 0x040; Output size register
+#regdef; UIS_OUT_SIZE_REG; 0x040; Output size register
 #regdef; UIS_GLOBAL_ALPHA_REG; 0x0044; VSU Output Global Alpha Register
 
 #regdef; UIS_Y_INSIZE_REG; 0x080; Y Channel Input size register
@@ -194,6 +194,10 @@
 #regdef; UIS_C_HCOEF0_REGN; 0x600 64; 0x600+N*4 C Channel Horizontal Filter Coefficient0 Register N N = M 1))
 
 #typeend;
+
+##define SCALER_Y_HCOEF0_OFFSET      0x200
+##define SCALER_Y_VCOEF_OFFSET       0x400
+##define SCALER_C_HCOEF0_OFFSET      0x600   /* Для UIS (хрома) или VSU (C_HCOEF0) */
 
 #type; DE_VSU; Video Scaler Unit (VSU)
 #regdef; VSU_CTRL_REG; 0x0000; VSU Module Control Register
@@ -224,9 +228,20 @@
 #regdef; VSU_C_VPHASE1_REG; 0x00DC; VSU C Channel Vertical Initial Phase 1 Register
 
 #regdef; VSU_Y_HCOEF0_REGN; 0x200 64; 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; VSU_Y_HCOEF1_REGN; 0x300 64; 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1))
 #regdef; VSU_Y_VCOEF_REGN; 0x400 64; 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1))
 #regdef; VSU_C_HCOEF0_REGN; 0x600 64; 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1))
+#regdef; VSU_C_HCOEF1_REGN; 0x700 64; 0x700+N*4 VSU C Channel Horizontal Filter Coefficient1 Register N N = M 1))
+#regdef; VSU_C_VCOEF_REGN; 0x800 64; 0x400+N*4 VSU Cs Channel Vertical Filter Coefficient Register N N = M 1))
+
 #typeend;
+
+##define SCALER_Y_HCOEF0_OFFSET      0x200
+##define SCALER_Y_HCOEF1_OFFSET      0x300   /* Только для VSU (8-tap по горизонтали) */
+##define SCALER_Y_VCOEF_OFFSET       0x400
+##define SCALER_C_HCOEF0_OFFSET      0x600   /* Для UIS (хрома) или VSU (C_HCOEF0) */
+##define SCALER_C_HCOEF1_OFFSET      0x700   /* Только для VSU */
+##define SCALER_C_VCOEF_OFFSET       0x800   /* Только для VSU */
 
 #type; DE_FCE; Fresh and Contrast Enhancement (FCE)
 #regdef; GCTRL_REG; 0x000; Control register

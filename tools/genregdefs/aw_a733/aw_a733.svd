@@ -4460,8 +4460,8 @@
     <resetValue>0x00000000</resetValue>
    </register>
    <register>
-    <name>UIS_OUTSIZE_REG</name>
-    <displayName>UIS_OUTSIZE_REG</displayName>
+    <name>UIS_OUT_SIZE_REG</name>
+    <displayName>UIS_OUT_SIZE_REG</displayName>
     <description>Output size register</description>
     <addressOffset>0x040</addressOffset>
     <size>0x20</size>

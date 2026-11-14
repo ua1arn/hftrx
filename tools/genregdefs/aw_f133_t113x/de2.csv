@@ -119,7 +119,7 @@
 #regdef; UIS_STATUS_REG; 0x008; Status register
 #regdef; UIS_FIELD_CTRL_REG; 0x00C; Field control register
 #regdef; UIS_BIST_REG; 0x010; BIST control register
-#regdef; UIS_OUTSIZE_REG; 0x040; Output size register
+#regdef; UIS_OUT_SIZE_REG; 0x040; Output size register
 #regdef; UIS_INSIZE_REG; 0x080; Input size register
 #regdef; UIS_HSTEP_REG; 0x088; Horizontal step register
 #regdef; UIS_VSTEP_REG; 0x08C; Vertical step register

@@ -1153,7 +1153,7 @@ typedef struct DE_UIS_Type
     __IOM uint32_t UIS_FIELD_CTRL_REG;                /*!< Offset 0x00C Field control register */
     __IOM uint32_t UIS_BIST_REG;                      /*!< Offset 0x010 BIST control register */
          RESERVED(0x014[0x0040 - 0x0014], uint8_t)
-    __IOM uint32_t UIS_OUTSIZE_REG;                   /*!< Offset 0x040 Output size register */
+    __IOM uint32_t UIS_OUT_SIZE_REG;                  /*!< Offset 0x040 Output size register */
     __IOM uint32_t UIS_GLOBAL_ALPHA_REG;              /*!< Offset 0x044 VSU Output Global Alpha Register */
          RESERVED(0x048[0x0080 - 0x0048], uint8_t)
     __IOM uint32_t UIS_Y_INSIZE_REG;                  /*!< Offset 0x080 Y Channel Input size register */
@@ -1245,11 +1245,13 @@ typedef struct DE_VSU_Type
     __IOM uint32_t VSU_C_VPHASE1_REG;                 /*!< Offset 0x0DC VSU C Channel Vertical Initial Phase 1 Register */
          RESERVED(0x0E0[0x0200 - 0x00E0], uint8_t)
     __IOM uint32_t VSU_Y_HCOEF0_REGN [0x040];         /*!< Offset 0x200 0x200+N*4 VSU Y Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
-         RESERVED(0x300[0x0400 - 0x0300], uint8_t)
+    __IOM uint32_t VSU_Y_HCOEF1_REGN [0x040];         /*!< Offset 0x300 0x300+N*4 VSU Y Channel Horizontal Filter Coefficient1 Register N N = M 1)) */
     __IOM uint32_t VSU_Y_VCOEF_REGN [0x040];          /*!< Offset 0x400 0x400+N*4 VSU Y Channel Vertical Filter Coefficient Register N N = M 1)) */
          RESERVED(0x500[0x0600 - 0x0500], uint8_t)
     __IOM uint32_t VSU_C_HCOEF0_REGN [0x040];         /*!< Offset 0x600 0x600+N*4 VSU C Channel Horizontal Filter Coefficient0 Register N N = M 1)) */
-} DE_VSU_TypeDef; /* size of structure = 0x700 */
+    __IOM uint32_t VSU_C_HCOEF1_REGN [0x040];         /*!< Offset 0x700 0x700+N*4 VSU C Channel Horizontal Filter Coefficient1 Register N N = M 1)) */
+    __IOM uint32_t VSU_C_VCOEF_REGN [0x040];          /*!< Offset 0x800 0x400+N*4 VSU Cs Channel Vertical Filter Coefficient Register N N = M 1)) */
+} DE_VSU_TypeDef; /* size of structure = 0x900 */
 /*
  * @brief DISP_IF_TOP
  */

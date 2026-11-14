@@ -850,7 +850,7 @@ typedef struct DE_UIS_Type
     __IOM uint32_t UIS_FIELD_CTRL_REG;                /*!< Offset 0x00C Field control register */
     __IOM uint32_t UIS_BIST_REG;                      /*!< Offset 0x010 BIST control register */
          RESERVED(0x014[0x0040 - 0x0014], uint8_t)
-    __IOM uint32_t UIS_OUTSIZE_REG;                   /*!< Offset 0x040 Output size register */
+    __IOM uint32_t UIS_OUT_SIZE_REG;                  /*!< Offset 0x040 Output size register */
          RESERVED(0x044[0x0080 - 0x0044], uint8_t)
     __IOM uint32_t UIS_INSIZE_REG;                    /*!< Offset 0x080 Input size register */
          RESERVED(0x084[0x0088 - 0x0084], uint8_t)
