@@ -1763,19 +1763,22 @@ void hardware_ltdc_main_set4(int rtmixid, uintptr_t layer0, uintptr_t layer1, ui
 
 //	RTMIX0: VI1, UI1, [vi3]
 //	RTMIX1: VI2, UI2, UI3
-static DE_VI_TypeDef * const rtmix0_vimap [] = { DE_VI1, };
-static DE_VI_TypeDef * const rtmix1_vimap [] = { DE_VI2, };
-static DE_UI_TypeDef * const rtmix0_uimap [] = { DE_UI1, };
-static DE_UI_TypeDef * const rtmix1_uimap [] = { DE_UI2, };
-static DE_VSU_TypeDef * const rtmix0_vsumap [] = { DE_VSU1, };
-static DE_VSU_TypeDef * const rtmix1_vsumap [] = { DE_VSU2, };
-static DE_UIS_TypeDef * const rtmix0_uismap [] = { DE_UIS1, };
-static DE_UIS_TypeDef * const rtmix1_uismap [] = { DE_UIS2, };
 
-static const unsigned rtmix0_vi [] = { 0, };	// VI0 used
-static const unsigned rtmix0_ui [] = { 0, };	// UI0 used
-static const unsigned rtmix1_vi [] = { 1, };	// VI1 used
-static const unsigned rtmix1_ui [] = { 1, };	// UI1 used
+// RTMIX0 blocks
+static DE_VI_TypeDef * const rtmix0_vimap [] = { DE_VI1, };
+static DE_UI_TypeDef * const rtmix0_uimap [] = { DE_UI1, };
+static DE_VSU_TypeDef * const rtmix0_vsumap [] = { DE_VSU1, };
+static DE_UIS_TypeDef * const rtmix0_uismap [] = { DE_UIS1, };
+static const unsigned rtmix0_vi [] = { 0, };	// VI1 used
+static const unsigned rtmix0_ui [] = { 0, };	// UI1 used
+
+// RTMIX1 blocks
+static DE_VI_TypeDef * const rtmix1_vimap [] = { DE_VI2, };
+static DE_UI_TypeDef * const rtmix1_uimap [] = { DE_UI2, };
+static DE_VSU_TypeDef * const rtmix1_vsumap [] = { DE_VSU2, };
+static DE_UIS_TypeDef * const rtmix1_uismap [] = { DE_UIS2, };
+static const unsigned rtmix1_vi [] = { 1, };	// VI2 used
+static const unsigned rtmix1_ui [] = { 1, };	// UI2 used
 
 #elif CPUSTYLE_A733
 	#warning Unimplemented CPUSTYLE_A733
