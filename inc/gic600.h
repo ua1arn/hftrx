@@ -1648,6 +1648,10 @@ __STATIC_INLINE void GIC_RedistInit(void)
 //    GIC_SetRedistPriority((IRQn_Type)31U, 0xFFU);
 //    priority_field = GIC_GetRedistPriority((IRQn_Type)31U);
 //
+	 /* Power on the GIC */
+	GICR->LPI.GICR_PWRR = 0;
+	while ((GICR->LPI.GICR_PWRR & 0x01) != 0)
+		__NOP();
   /* Wakeup the GIC */
 	/* Step 1: Wake up the core's Redistributor interface */
 	uint32_t waker = GICR->LPI.GICR_WAKER;
