@@ -7860,13 +7860,15 @@ void foundblocks(const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDM
 	start = DE_VI1_BASE;
 	//top = start + 0x100000;
 
-//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x0000000001124000, vdmodeDESIGN, vdmodeHDMI, 1);
-//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x0000000001144000, vdmodeDESIGN, vdmodeHDMI, 1);
-//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x00000000011C4000, vdmodeDESIGN, vdmodeHDMI, 1);
-//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x00000000011C9000, vdmodeDESIGN, vdmodeHDMI, 1);
-//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x00000000011CC000, vdmodeDESIGN, vdmodeHDMI, 1);
-//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x00000000011E4000, vdmodeDESIGN, vdmodeHDMI, 1);
-
+	memset32((void *) 0x05101000, ~0u, 256);
+	printhex32(0x05101000, (void *) 0x05101000, 256);
+//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x05101000, vdmodeDESIGN, vdmodeHDMI);
+//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x0000000001144000, vdmodeDESIGN, vdmodeHDMI);
+//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x00000000011C4000, vdmodeDESIGN, vdmodeHDMI);
+//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x00000000011C9000, vdmodeDESIGN, vdmodeHDMI);
+//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x00000000011CC000, vdmodeDESIGN, vdmodeHDMI);
+//	t507_de2_uis_init_diag((DE_UIS_TypeDef *) 0x00000000011E4000, vdmodeDESIGN, vdmodeHDMI);
+	return;
 	for (base = start ; base < DE_MIXER0_BLD_BASE; base += 4096)
 	{
 			if (t507_de2_vsu_init_diag((DE_VSU_TypeDef *) base, vdmodeDESIGN, vdmodeHDMI))
