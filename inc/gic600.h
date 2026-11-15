@@ -33,8 +33,8 @@ typedef struct xGICR_LPI_Type
 {
     __IOM uint32_t GICR_CTLR;                         /*!< Offset 0x000 Redistributor Control Register */
     __IM  uint32_t GICR_IIDR;                         /*!< Offset 0x004  */
-    __IOM uint32_t GICR_TYPER;                        /*!< Offset 0x008 4.4.2 Interrupt Controller Type Register, GICR_TYPER on page 4-128 */
-         RESERVED(0x00C[0x0014 - 0x000C], uint8_t)
+    __IOM uint64_t GICR_TYPER;                        /*!< Offset 0x008 4.4.2 Interrupt Controller Type Register, GICR_TYPER on page 4-128 */
+         RESERVED(0x010[0x0014 - 0x0010], uint8_t)
     __IOM uint32_t GICR_WAKER;                        /*!< Offset 0x014  */
          RESERVED(0x018[0x0020 - 0x0018], uint8_t)
     __IOM uint32_t GICR_FCTLR;                        /*!< Offset 0x020  */
@@ -120,9 +120,9 @@ typedef struct
 __STATIC_INLINE GICRedistributor_Type *GIC_GetRdist(void);	// for current core
 
 // https://developer.arm.com/documentation/ddi0601/2025-12/External-Registers/GICR-CTLR--Redistributor-Control-Register?lang=en
-__STATIC_FORCEINLINE void GIC_RedistributorWait(void)
+__STATIC_FORCEINLINE void GIC_RedistributorWait(GICRedistributor_Type * redist)
 {
-	while ((GICRedistributor->LPI.GICR_CTLR & (UINT32_C(1) << 3)) != 0)	// Bit 3, not a 31
+	while ((redist->LPI.GICR_CTLR & (UINT32_C(1) << 3)) != 0)	// Bit 3, not a 31
 			;
 }
 
@@ -230,7 +230,7 @@ typedef struct
 /* GICDistributor TYPER Register */
 #define GICDistributor_TYPER_ITLinesNumber_Pos 0U                                                    /*!< GICDistributor TYPER: ITLinesNumber Position */
 #define GICDistributor_TYPER_ITLinesNumber_Msk (0x1FU /*<< GICDistributor_TYPER_ITLinesNumber_Pos*/) /*!< GICDistributor TYPER: ITLinesNumber Mask */
-#define GICDistributor_TYPER_ITLinesNumber(x)  (((uint32_t)(((uint32_t)(x)) /*<< GICDistributor_TYPER_ITLinesNumber_Pos*/)) & GICDistributor_CTLR_ITLinesNumber_Msk)
+#define GICDistributor_TYPER_ITLinesNumber(x)  (((uint32_t)(((uint32_t)(x)) /*<< GICDistributor_TYPER_ITLinesNumber_Pos*/)) & GICDistributor_TYPER_ITLinesNumber_Msk)
 
 #define GICDistributor_TYPER_CPUNumber_Pos    5U                                                   /*!< GICDistributor TYPER: CPUNumber Position */
 #define GICDistributor_TYPER_CPUNumber_Msk    (0x7U << GICDistributor_TYPER_CPUNumber_Pos)         /*!< GICDistributor TYPER: CPUNumber Mask */
@@ -345,7 +345,7 @@ typedef struct
 #define GICDistributor_IROUTER_Aff2(x)        (((uint64_t)(((uint64_t)(x)) << GICDistributor_IROUTER_Aff2_Pos)) & GICDistributor_IROUTER_Aff2_Msk)
 
 #define GICDistributor_IROUTER_IRM_Pos        31UL                                                 /*!< GICDistributor IROUTER: IRM Position */
-#define GICDistributor_IROUTER_IRM_Msk        (0xFFUL << GICDistributor_IROUTER_IRM_Pos)           /*!< GICDistributor IROUTER: IRM Mask */
+#define GICDistributor_IROUTER_IRM_Msk        (0x01UL << GICDistributor_IROUTER_IRM_Pos)           /*!< GICDistributor IROUTER: IRM Mask */
 #define GICDistributor_IROUTER_IRM(x)         (((uint64_t)(((uint64_t)(x)) << GICDistributor_IROUTER_IRM_Pos)) & GICDistributor_IROUTER_IRM_Msk)
 
 #define GICDistributor_IROUTER_Aff3_Pos       32UL                                                 /*!< GICDistributor IROUTER: Aff3 Position */
@@ -873,7 +873,7 @@ __STATIC_INLINE uint32_t GIC_GetBinaryPoint(void)
 
 #ifndef __MSR
   #define __MSR(sysreg, val) \
-    __asm volatile ("msr " __STRINGIFY(sysreg) ", %0\n" : : "r"((uint64_t)(val)))
+    __asm volatile ("msr " __STRINGIFY(sysreg) ", %0\n" : : "r"((uint64_t)(val)) : "memory")
 #endif
 
 #ifndef __MRS

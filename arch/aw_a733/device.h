@@ -1597,8 +1597,8 @@ typedef struct GICR_LPI_Type
 {
     __IOM uint32_t GICR_CTLR;                         /*!< Offset 0x000 Redistributor Control Register */
     __IM  uint32_t GICR_IIDR;                         /*!< Offset 0x004  */
-    __IOM uint32_t GICR_TYPER;                        /*!< Offset 0x008 4.4.2 Interrupt Controller Type Register, GICR_TYPER on page 4-128 */
-         RESERVED(0x00C[0x0014 - 0x000C], uint8_t)
+    __IOM uint64_t GICR_TYPER;                        /*!< Offset 0x008 4.4.2 Interrupt Controller Type Register, GICR_TYPER on page 4-128 */
+         RESERVED(0x010[0x0014 - 0x0010], uint8_t)
     __IOM uint32_t GICR_WAKER;                        /*!< Offset 0x014  */
          RESERVED(0x018[0x0020 - 0x0018], uint8_t)
     __IOM uint32_t GICR_FCTLR;                        /*!< Offset 0x020  */

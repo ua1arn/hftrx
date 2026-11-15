@@ -162,7 +162,7 @@
 
 #regdef;  	GICR_CTLR;  		0x0000; 	Redistributor Control Register
 #regdefr; 	GICR_IIDR; 			0x0004; 
-#regdef;  	GICR_TYPER; 		0x0008; 	4.4.2 Interrupt Controller Type Register, GICR_TYPER on page 4-128
+#regdef;  	GICR_TYPER 8; 		0x0008; 	4.4.2 Interrupt Controller Type Register, GICR_TYPER on page 4-128
 #regdef;  	GICR_WAKER; 		0x0014; 
 #regdef;  	GICR_FCTLR; 		0x0020; 
 #regdef;  	GICR_PWRR; 			0x0024; 
