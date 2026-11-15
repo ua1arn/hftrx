@@ -1926,17 +1926,6 @@ int sysinit_getconfigtype(void)
 #endif
 }
 
-// отладка загрузчиков - проход этой функции мигает светодиодом один раз
-static void hp(void)
-{
-#ifdef BOARD_BLINK_INITIALIZE_UNSAFE
-	BOARD_BLINK_INITIALIZE_UNSAFE();
-	BOARD_BLINK_SETSTATE_UNSAFE(1);
-	local_delay_ms(250);
-	BOARD_BLINK_SETSTATE_UNSAFE(0);
-	local_delay_ms(250);
-#endif
-}
 // watchdog disable, clock initialize, cache enable
 void
 SystemInit(void)
