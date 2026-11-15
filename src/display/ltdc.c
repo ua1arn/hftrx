@@ -2927,6 +2927,99 @@ static void t113_select_HV_interface_type(const videomode_t * vdmode)
 #endif /* defined (TCONLCD_PTR) */
 }
 
+#if CPUSTYLE_A733
+static void a733_de_clkinit(void)
+{
+	// hdmi
+	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DPSS_TOP1_GATING Open the clock gate
+	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 16);		// DPSS_TOP1_RST. De-assert reset
+
+	// HDMI
+	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 0);		// TCONTV0_GATING Open the clock gate
+	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV0_RST. De-assert reset
+
+	// eDP
+//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 0);		// TCONTV1_GATING Open the clock gate
+//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV1_RST. De-assert reset
+	local_delay_us(10);
+
+
+	// Разрешает доступ к HDMI_TX0
+	CCU->HDMI_SFR_CLK_REG |= (UINT32_C(1) << 31);	// HDMI_SFR_CLK_GATING
+	// from dump
+	CCU->HDCP_ESM_CLK_REG |= (UINT32_C(1) << 31);	// HDCP_ESM_CLK_GATING
+
+
+
+    // page 723, Figure 15-18 TCON_TV Environment Diagram
+    // tcontv0: input 360MHz (4pixel/148.5MHz)
+    // tcontv1: input 297MHz (2pixel)
+    // test (все 32 бита могут быть установлены)
+    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE - HDMI
+    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 21);	// TV1_GATE	- DP/eDP
+
+    //DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
+    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
+
+    // from dump
+    //DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// станавливает работу tcontv
+    DISPLAY1_TOP->VO1_MODULE_GATING = 0x10100000;
+// from dump
+	* (volatile uint32_t *) (DISPLAY1_TOP_BASE + 0x0F4) = 0x0000010d;
+	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
+
+	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
+	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
+
+	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 1);	// DCXO_HDMI_GATING
+	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 1));
+
+	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 5);	// DCXO_SERDES1_GATING
+	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 5));
+
+	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 4);	// DCXO_SERDES0_GATING
+	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 4));
+
+    // 15.2.9.1 0x0000 TCON_TV Clock Select and EDP I2S1 Select Register
+    DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC |= (UINT32_C(1) << 3);	// TCON_TV0_HDMIPHY_CCU_CK_SEL 1: TCON_TV0 clock sources from CCU
+
+
+	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_GATING
+	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 1);	// HDMI_GATING
+	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 18);	// HDMI_HDCP_RST
+	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST (19 & 18 - hdmi1 ?)
+	CCU->HDMI_BGR_REG |= ~0u;
+	PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
+
+	////CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
+	//PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
+
+	//---- HDCP: High-bandwidth Digital Content Protection
+	CCU->HDMI_CEC_CLK_REG =
+		(UINT32_C(1) << 31) |	// HDMI_CEC_CLK_GATING.
+		//(UINT32_C(1) << 30) |	// PERI_GATING.
+		0x00 * (UINT32_C(1) << 24) |	// 000: RTC_32K
+		0;
+	//CCU->HDMI_HDCP_CLK_REG = 0x81000001;
+	//PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
+
+	//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
+	//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
+	//PRINTF("CCU->HDMI_HDCP_BGR_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_BGR_REG);
+
+	/*
+	* First clock parent (osc32K) is unusable for CEC. But since there
+	* is no good way to force parent switch (both run with same frequency),
+	* just set second clock parent here.
+	*/
+	CCU->HDMI_CEC_CLK_REG = 0x01 * (UINT32_C(1) << 24);
+
+	CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+	CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
+	//PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
+}
+#endif
+
 /* Инициализация системы тактирования, общей для всех видеовыходов */
 /* Global DE settings */
 static void hardware_de_global_initialize(void)
@@ -3124,47 +3217,7 @@ static void hardware_de_global_initialize(void)
     //PRINTF("TCONTV_CCU_CLK_REG=%08X\n", (unsigned) TCONTV_CCU_CLK_REG);
 #endif
 
-#ifdef TCONTV_PTR
-
-    // 15.2.9.1 0x0000 TCON_TV Clock Select and EDP I2S1 Select Register
-    DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC |= (UINT32_C(1) << 3);	// TCON_TV0_HDMIPHY_CCU_CK_SEL 1: TCON_TV0 clock sources from CCU
-
-
-	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_GATING
-	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 1);	// HDMI_GATING
-	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 18);	// HDMI_HDCP_RST
-	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST (19 & 18 - hdmi1 ?)
-	CCU->HDMI_BGR_REG |= ~0u;
-	PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
-
-	////CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
-	//PRINTF("CCU->HDMI0_SLOW_CLK_REG=%08X\n", (unsigned) CCU->HDMI0_SLOW_CLK_REG);
-
-	//---- HDCP: High-bandwidth Digital Content Protection
-	CCU->HDMI_CEC_CLK_REG =
-		(UINT32_C(1) << 31) |	// HDMI_CEC_CLK_GATING.
-		//(UINT32_C(1) << 30) |	// PERI_GATING.
-		0x00 * (UINT32_C(1) << 24) |	// 000: RTC_32K
-		0;
-	//CCU->HDMI_HDCP_CLK_REG = 0x81000001;
-	//PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
-
-	//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 0);	// HDMI_HDCP_GATING
-	//    CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 16);	// HDMI_HDCP_RST
-	//PRINTF("CCU->HDMI_HDCP_BGR_REG=%08X\n", (unsigned) CCU->HDMI_HDCP_BGR_REG);
-
-	/*
-	* First clock parent (osc32K) is unusable for CEC. But since there
-	* is no good way to force parent switch (both run with same frequency),
-	* just set second clock parent here.
-	*/
-	CCU->HDMI_CEC_CLK_REG = 0x01 * (UINT32_C(1) << 24);
-
-	CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
-	CCU->HDMI_CEC_CLK_REG |= (UINT32_C(1) << 30);	// PLL_PERI_GATING
-	//PRINTF("CCU->HDMI_CEC_CLK_REG=%08X\n", (unsigned) CCU->HDMI_CEC_CLK_REG);
-
-#endif
+	a733_de_clkinit();
 
 //    CCU->TVE0_CLK_REG = 0x82000001;
 //    CCU->TVE_BGR_REG = 0x00030003;
@@ -6453,7 +6506,6 @@ static void t113_vi_scaler_setup(int rtmixid, const videomode_t * srcvdmode, con
 }
 
 #endif
-
 // H3: PLL_VIDEO
 // A64: PLL_VIDEO0
 // T113: PLL_VIDEO0
@@ -6603,56 +6655,7 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 
 #elif CPUSTYLE_A733
 
-	// hdmi
-	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DPSS_TOP1_GATING Open the clock gate
-	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 16);		// DPSS_TOP1_RST. De-assert reset
-
-	// HDMI
-	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 0);		// TCONTV0_GATING Open the clock gate
-	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV0_RST. De-assert reset
-
-	// eDP
-//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 0);		// TCONTV1_GATING Open the clock gate
-//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV1_RST. De-assert reset
-	local_delay_us(10);
-
-
-	// Разрешает доступ к HDMI_TX0
-	CCU->HDMI_SFR_CLK_REG |= (UINT32_C(1) << 31);	// HDMI_SFR_CLK_GATING
-	// from dump
-	CCU->HDCP_ESM_CLK_REG |= (UINT32_C(1) << 31);	// HDCP_ESM_CLK_GATING
-
-
-
-    // page 723, Figure 15-18 TCON_TV Environment Diagram
-    // tcontv0: input 360MHz (4pixel/148.5MHz)
-    // tcontv1: input 297MHz (2pixel)
-    // test (все 32 бита могут быть установлены)
-    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE - HDMI
-    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 21);	// TV1_GATE	- DP/eDP
-
-    //DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
-    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
-
-    // from dump
-    //DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// станавливает работу tcontv
-    DISPLAY1_TOP->VO1_MODULE_GATING = 0x10100000;
-// from dump
-	* (volatile uint32_t *) (DISPLAY1_TOP_BASE + 0x0F4) = 0x0000010d;
-	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
-
-	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
-	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
-
-	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 1);	// DCXO_HDMI_GATING
-	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 1));
-
-	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 5);	// DCXO_SERDES1_GATING
-	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 5));
-
-	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 4);	// DCXO_SERDES0_GATING
-	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 4));
-
+	a733_de_clkinit();
 	// HDMI_TV_CLK_REG
 	//	CLK_SRC_SEL.
 	//	Clock Source Select
