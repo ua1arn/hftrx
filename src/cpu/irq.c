@@ -1087,6 +1087,60 @@ void irqlog_print(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
+#if __aarch64__
+typedef uint64_t DAIF_t;
+
+static inline uint64_t global_disable_irq_save(void)
+{
+    uint64_t daif;
+    __asm__ volatile (
+        "mrs %0, daif       \n\t"   /* Читаем текущие маски DAIF */
+        "msr daifset, #3    \n\t"   /* #3 = 0b0011 -> закрываем FIQ (1) и IRQ (2) */
+        : "=r" (daif)
+        :
+        : "memory"
+    );
+    return daif;
+}
+
+static inline void global_restore_irq(uint64_t daif)
+{
+    __asm__ volatile (
+        "msr daif, %0       \n\t"   /* Возвращаем прежние маски DAIF */
+        :
+        : "r" (daif)
+        : "memory"
+    );
+}
+#else
+typedef uint32_t DAIF_t;
+
+/* Сохранить CPSR и запретить IRQ + FIQ */
+static inline uint32_t global_disable_irq_save(void)
+{
+    uint32_t cpsr;
+    __asm__ volatile (
+        "mrs %0, cpsr       \n\t"   /* Читаем текущее состояние CPSR */
+        "cpsid if           \n\t"   /* Запрещаем IRQ и FIQ (только IRQ: cpsid i) */
+        : "=r" (cpsr)
+        :
+        : "memory", "cc"
+    );
+    return cpsr;
+}
+
+/* Восстановить прежнее состояние IRQ/FIQ из сохранённого CPSR */
+static inline void global_restore_irq(uint32_t cpsr)
+{
+    __asm__ volatile (
+        "msr cpsr_c, %0     \n\t"   /* Восстанавливаем только управляющий байт CPSR[7:0] */
+        :
+        : "r" (cpsr)
+        : "memory", "cc"
+    );
+}
+#endif
+
 //#define INT_ID_MASK		0x3ffuL
 /* Interrupt IDs reported by the HPPIR and IAR registers */
 //#define PENDING_G1_INTID	1022uL
@@ -2092,6 +2146,7 @@ typedef struct thread_item_tag
 	uint8_t affinity;
 	irq_stack_frame_top_t * cpuframe;	// cpu state
 	uint8_t prio;
+	DAIF_t daif;
 	const check_ready_t * check_ready;	// condition check function
 	void * check_ready_obj;	// user-space wait condition parameters
 #if WITHDEBUG
@@ -2111,13 +2166,24 @@ typedef struct timer_item_tag
 	int (* func)(void * ctx);
 } timer_item_t;
 
-static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t threadslockx = IRQLSPINLOCK_INIT;
 static IRQL_t next_task_irql [HARDWARE_NCORES];
+static DAIF_t next_task_daif [HARDWARE_NCORES];
 
 static thread_item_t * startedtask [HARDWARE_NCORES];	// последнее запущенное на core
 static LIST_ENTRY threads_listW;	// threads im wait state
 static LIST_ENTRY threads_listR [PRIOv_count];	// threads in ready state
 static LIST_ENTRY timers_list;
+
+#define SCHED_LOCK(pirql, pdaif) do {                   \
+        *(pdaif) = global_disable_irq_save();                    \
+        IRQLSPIN_LOCK(& threadslockx, pirql, IRQL_IPC);  \
+    } while (0)
+
+#define SCHED_UNLOCK(irql, daif) do {                   \
+        IRQLSPIN_UNLOCK(& threadslockx, irql);           \
+        global_restore_irq(daif);                        \
+    } while (0)
 
 #if WITHRTOS
 
@@ -2210,6 +2276,7 @@ static void thread_add(
 	thread->affinity = affinity;
 	thread->cpuframe = stackframe;
 	thread->prio = prio;
+	thread->daif = 0;	// разрешены
 	thread->check_ready = NULL;
 	ASSERT(thread->affinity);
 #if WITHDEBUG
@@ -2220,10 +2287,11 @@ static void thread_add(
 #endif /* WITHDEBUG */
 
 	IRQL_t lockIrql;
+	DAIF_t daif;
 	// включаем в список задач
-	IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
+	SCHED_LOCK(& lockIrql, & daif);
 	task_insertready(thread);	// Поскольку готово у выполнению - в список готовых
-	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
+	SCHED_UNLOCK(lockIrql, daif);
 
 	//PRINTF("Added thread at prio=%d, aff=%02X (frame=%p), stack[%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
 }
@@ -2282,7 +2350,7 @@ void task_scheduler_initialize(void) {
 	}
 	{
 		unsigned prio;
-		IRQLSPINLOCK_INITIALIZE(& threadslock);
+		IRQLSPINLOCK_INITIALIZE(& threadslockx);
 		// На каждый IRQL свой список
 		for (prio = 0; prio < PRIOv_count; ++ prio)
 		{
@@ -2405,11 +2473,12 @@ static int tasks_print0(char *__restrict buff, size_t size)
 {
 	int n = 0;
 	IRQL_t lockIrql;
+	DAIF_t lockDAIF;
 	unsigned prio;
 	unsigned core;
 
 	n += local_snprintf_P(buff + n, size - n, "tasks_print: started (for each core):\n");
-	IRQLSPIN_LOCK(& threadslock, & lockIrql, IRQL_IPC);
+	SCHED_LOCK(& lockIrql, & lockDAIF);
 	for (core = 0; core < ARRAY_SIZE(startedtask); ++ core)
 	{
 		char title [16];
@@ -2449,7 +2518,7 @@ static int tasks_print0(char *__restrict buff, size_t size)
 			n += thread_print(buff + n, size - n, tp, "ready");
 		}
 	}
-	IRQLSPIN_UNLOCK(& threadslock, lockIrql);
+	SCHED_UNLOCK(lockIrql, lockDAIF);
 	n += local_snprintf_P(buff + n, size - n, "tasks_print done\n");
 
 	//
@@ -2782,13 +2851,13 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 {
 	const uint_fast8_t core = arm_hardware_cpuid();
 	IRQL_t irql;
-	if (threads_not_started)
-		return oldframe;
-	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC);
+	DAIF_t daif;
+	SCHED_LOCK(& irql, & daif);
 	ASSERT(threads_not_started == 0);
 	thread_item_t * const tp = refreshactivetask(oldframe, core);	// also set cpuframe
 	ASSERT(tp);
 	tp->prio = GICI_DECODE_IRQL(irql);
+	tp->daif = daif;
 
 	if (syscallflag)  {
 		// обработка системныз вызовов
@@ -2805,6 +2874,7 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 	// Запуск
 	startedtask [core] = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
 	next_task_irql [core] = GICI_ENCODE_IRQL(startedtask [core]->prio);
+	next_task_daif [core] = startedtask [core]->daif;
 
 	// еще не переключились на новый стек в aarch32
 	while (!threads_not_halted)
@@ -2815,12 +2885,16 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 // вызывается после переключения на новый стек
 void task_unlock_after_switch(void)
 {
-    if (threads_not_started == 0)
-    {
-        const uint_fast8_t core = arm_hardware_cpuid();
-        IRQLSPIN_UNLOCK(& threadslock, next_task_irql [core]);
-    }
+    const uint_fast8_t core = arm_hardware_cpuid();
+	SCHED_UNLOCK(next_task_irql [core], next_task_daif [core]);
 }
+//
+//static void task_stamp(void)
+//{
+//    const uint_fast8_t core = arm_hardware_cpuid();
+//	next_task_irql [core] = GIC_GetInterfacePriorityMask();
+//	next_task_daif [core] = global_disable_irq_save();
+//}
 
 static void * task_scheduler2(unsigned code, void * oldframe)
 {
@@ -3205,6 +3279,8 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 // 0x280
 void __NO_RETURN VIRQ_Handler(void * frame)
 {
+	if (threads_not_started)
+		run_notask_curr(frame);
 	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	IRQ_Handler_GIC();		// Group 1 handler
 	thread_set_affinity(frame, aff);
@@ -3216,6 +3292,8 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 // 0x300
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
+	if (threads_not_started)
+		run_notask_curr(frame);
 	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	FIQ_Handler_GIC();		// Group 0 handler
 	thread_set_affinity(frame, aff);
@@ -3233,6 +3311,8 @@ void SError_Handler(void * frame)
 	unsigned iss = (esr_el3 >> 0) & 0x1FFFFFF;
 	if (ec == 0x15)
 	{
+		if (threads_not_started)
+			return run_notask_curr(frame);
 		// SVC instruction execution in AArch64 state.
 		run_task_curr(task_scheduler2(esr_el3 & 0xFFFF, frame));
 	}
@@ -3299,6 +3379,8 @@ uint32_t __get_DFAR(void)
 // AARCH32
 void IRQ_Handler_aarch32(void * frame)
 {
+	if (threads_not_started)
+		run_notask_curr_aarch32(frame);
     // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
 	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
@@ -3312,6 +3394,8 @@ void IRQ_Handler_aarch32(void * frame)
 
 void FIQ_Handler_aarch32(void * frame)
 {
+	if (threads_not_started)
+		run_notask_curr_aarch32(frame);
     // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
 	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
@@ -3325,6 +3409,8 @@ void FIQ_Handler_aarch32(void * frame)
 
 void __NO_RETURN SWI_Handler_aarch32(void * frame)
 {
+	if (threads_not_started)
+		run_notask_curr_aarch32(frame);
     // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
 	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
@@ -3517,12 +3603,13 @@ void Hyp_Handler(void)
 
 #if CPUSTYLE_ARM && WITHSMPSYSTEM
 
-#define SPINLOCKLOOPS 0xFFFFFFFF
+#define SPINLOCKLOOPS (0xFFFFFFF * arm_hardware_cpuid())
 
 #if defined(__aarch64__) //defined(__ARM_ARCH) && (__ARM_ARCH == 8)
 
 static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 {
+	const DAIF_t daif = global_disable_irq_save();
 #if WITHDEBUG
 	unsigned v = SPINLOCKLOOPS;
 #endif /* WITHDEBUG */
@@ -3568,6 +3655,7 @@ else /* WITHDEBUG */
 	p->line = line;
 	p->cpuid = arm_hardware_cpuid();
 #endif /* WITHDEBUG */
+	global_restore_irq(daif);
 }
 
 static int lclspin_traylock_work(LCLSPINLOCK_t * __restrict p, const char * file, int line)
@@ -3633,6 +3721,7 @@ static int lclspin_traylock_work(LCLSPINLOCK_t * __restrict p, const char * file
 }
 static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 {
+	const DAIF_t daif = global_disable_irq_save();
 #if WITHDEBUG
 	unsigned v = SPINLOCKLOOPS;
 #endif /* WITHDEBUG */
@@ -3664,6 +3753,7 @@ static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, i
 	p->line = line;
 	p->cpuid = arm_hardware_cpuid();
 #endif /* WITHDEBUG */
+	global_restore_irq(daif);
 }
 /*
 

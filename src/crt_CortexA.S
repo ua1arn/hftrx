@@ -487,6 +487,32 @@ run_task_curr_aarch32:
 	.endfunc
    	.ltorg
 
+ 	.align 	4, 0
+    .func   run_notask_curr_aarch32
+    .global run_notask_curr_aarch32
+run_notask_curr_aarch32:
+
+   MOV     SP, R0                      // 1. Ушли со старого стека на новый!
+
+ 	// Wait VFP operations done
+ 	VMRS	R1, FPSID
+	VMSR	FPSID, R1
+
+	VPOP.F32	{D16-D31}
+ 	VPOP.F32	{D0-D15}
+
+	pop     {r3, r4}                    // Restore stack adjustment(R3) and user data(R4)
+	add     sp, sp, r3                  // Unadjust stack
+
+	VMSR	FPSCR, R4
+	clrex                               // Clear exclusive monitor for interrupted code
+	pop     {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}            // Restore stacked APCS registers
+	dsb sy
+	rfefd   sp!                         // Return from IRQ handler - RFEIA instruction
+
+	.endfunc
+   	.ltorg
+
 	.section ".noinit"
 	.align 4
 

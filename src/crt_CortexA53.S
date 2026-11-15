@@ -91,6 +91,7 @@ __Vectors64:
    
 	.global Reset_Handler
 	.global run_task_curr
+	.global run_notask_curr
 
    	.extern addr64_preparedata
    	.extern SystemInit
@@ -472,6 +473,14 @@ _curr_el_spx_fiq:
 run_task_curr:
 	mov	sp, x0
 	bl	task_unlock_after_switch
+	restore_trapframe	/* Total 48 bytes = 6 qwords */
+	pop_trapframe_float	/* total 544 bytes = 68 qwords */
+	pop_trapframe_int	/* total 240 bytes = 30 qwords */
+	ERET
+
+	text_align
+run_notask_curr:
+	mov	sp, x0
 	restore_trapframe	/* Total 48 bytes = 6 qwords */
 	pop_trapframe_float	/* total 544 bytes = 68 qwords */
 	pop_trapframe_int	/* total 240 bytes = 30 qwords */
