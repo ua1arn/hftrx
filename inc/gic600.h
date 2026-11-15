@@ -1650,7 +1650,8 @@ __STATIC_INLINE void GIC_RedistInit(void)
 	GICR->LPI.GICR_PWRR = 0;
 	while ((GICR->LPI.GICR_PWRR & 0x0F) != 0)
 		__NOP();
-  /* Wakeup the GIC */
+	__DSB();
+	/* Wakeup the GIC */
 	/* Step 1: Wake up the core's Redistributor interface */
 	uint32_t waker = GICR->LPI.GICR_WAKER;
 	waker &= ~ (UINT32_C(1) << 1); /* Clear ProcessorSleep bit */
