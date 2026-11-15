@@ -2807,17 +2807,19 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 	next_task_irql [core] = GICI_ENCODE_IRQL(startedtask [core]->prio);
 
 	// еще не переключились на новый стек в aarch32
-    IRQLSPIN_UNLOCK(& threadslock, next_task_irql [core]);
-
 	while (!threads_not_halted)
 		;
 	return startedtask [core]->cpuframe;
 }
 
+// вызывается после переключения на новый стек
 void task_unlock_after_switch(void)
 {
-    const uint_fast8_t core = arm_hardware_cpuid();
-    //IRQLSPIN_UNLOCK(& threadslock, next_task_irql [core]);
+    if (threads_not_started == 0)
+    {
+        const uint_fast8_t core = arm_hardware_cpuid();
+        IRQLSPIN_UNLOCK(& threadslock, next_task_irql [core]);
+    }
 }
 
 static void * task_scheduler2(unsigned code, void * oldframe)

@@ -471,6 +471,7 @@ _curr_el_spx_fiq:
 	text_align
 run_task_curr:
 	mov	sp, x0
+	bl	task_unlock_after_switch
 	restore_trapframe	/* Total 48 bytes = 6 qwords */
 	pop_trapframe_float	/* total 544 bytes = 68 qwords */
 	pop_trapframe_int	/* total 240 bytes = 30 qwords */
