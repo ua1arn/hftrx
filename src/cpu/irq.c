@@ -1926,7 +1926,13 @@ static void context_init(irq_stack_frame_top_t * __restrict frame_top, void * fn
 		1 * (UINT32_C(1) << 8) |	// A - SError exception mask
 		0x1F * (UINT32_C(1) << 0) |	// System sys 11111
 		0;
-	frame_bottom->pc_irq = (uintptr_t) fn;
+    frame_bottom->spsr_irq =
+        (0U << 8) |     // A = 0 (SError / Async Abort разрешён)
+        (0U << 7) |     // I = 0 (IRQ разрешён)
+        (0U << 6) |     // F = 0 (FIQ разрешён)
+        (0U << 5) |     // T = 0 (набор команд ARM; если функция задачи в Thumb — ставится 1)
+        (0x1FU << 0);   // M[4:0] = 0b11111 (ARM_MODE_SYS — System mode)
+    frame_bottom->pc_irq = (uintptr_t) fn;
 	frame_bottom->r0 = (uintptr_t) arg;
 	dcache_clean_invalidate((uintptr_t) frame_top, context_size());
 }
