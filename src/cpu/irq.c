@@ -2166,7 +2166,7 @@ typedef struct timer_item_tag
 	int (* func)(void * ctx);
 } timer_item_t;
 
-static LCLSPINLOCK_t threadslockx = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 static IRQL_t next_task_irql [HARDWARE_NCORES];
 static DAIF_t next_task_daif [HARDWARE_NCORES];
 
@@ -2177,11 +2177,11 @@ static LIST_ENTRY timers_list;
 
 #define SCHED_LOCK(pirql, pdaif) do {                   \
         *(pdaif) = global_disable_irq_save();                    \
-        IRQLSPIN_LOCK(& threadslockx, pirql, IRQL_IPC);  \
+        IRQLSPIN_LOCK(& threadslock, pirql, IRQL_IPC);  \
     } while (0)
 
 #define SCHED_UNLOCK(irql, daif) do {                   \
-        IRQLSPIN_UNLOCK(& threadslockx, irql);           \
+        IRQLSPIN_UNLOCK(& threadslock, irql);           \
         global_restore_irq(daif);                        \
     } while (0)
 
@@ -2350,7 +2350,7 @@ void task_scheduler_initialize(void) {
 	}
 	{
 		unsigned prio;
-		IRQLSPINLOCK_INITIALIZE(& threadslockx);
+		IRQLSPINLOCK_INITIALIZE(& threadslock);
 		// На каждый IRQL свой список
 		for (prio = 0; prio < PRIOv_count; ++ prio)
 		{
@@ -2872,9 +2872,10 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 	task_resched(tn);
 
 	// Запуск
-	startedtask [core] = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
-	next_task_irql [core] = GICI_ENCODE_IRQL(startedtask [core]->prio);
-	next_task_daif [core] = startedtask [core]->daif;
+	thread_item_t * const te = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
+	startedtask [core] = te;
+	next_task_irql [core] = GICI_ENCODE_IRQL(te->prio);
+	next_task_daif [core] = te->daif;
 
 	// еще не переключились на новый стек в aarch32
 	while (!threads_not_halted)
