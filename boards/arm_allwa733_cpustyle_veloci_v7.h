@@ -1419,6 +1419,20 @@
 	s_gpioX_setstate(S_GPIOL, BOARD_FRONT_GREEN_BIT, !! (state) * BOARD_FRONT_GREEN_BIT); \
 } while (0)
 
+/* для тестов загрузчика */
+#define BOARD_BLINK_INITIALIZE_UNSAFE() do { \
+	s_gpioX_progUnsafe(S_GPIOL, BOARD_BLINK_BIT, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
+	s_gpioX_progUnsafe(S_GPIOL, BOARD_FRONT_RED_BIT, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
+	s_gpioX_progUnsafe(S_GPIOL, BOARD_FRONT_GREEN_BIT, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
+} while (0)
+
+	/* для тестов загрузчика */
+#define BOARD_BLINK_SETSTATE_UNSAFE(state) do { \
+	s_gpioX_setstateUnsafe(S_GPIOL, BOARD_BLINK_BIT, !! (state) * BOARD_BLINK_BIT); \
+	s_gpioX_setstateUnsafe(S_GPIOL, BOARD_FRONT_RED_BIT, !! (state) * BOARD_FRONT_RED_BIT); \
+	s_gpioX_setstateUnsafe(S_GPIOL, BOARD_FRONT_GREEN_BIT, !! (state) * BOARD_FRONT_GREEN_BIT); \
+} while (0)
+
 #define BOARD_FRONT_RED_SETSTATE(state) do { \
 	s_gpioX_setstate(S_GPIOL, BOARD_FRONT_RED_BIT, !! (state) * BOARD_FRONT_RED_BIT); \
 } while (0)

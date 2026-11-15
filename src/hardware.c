@@ -1930,6 +1930,19 @@ int sysinit_getconfigtype(void)
 void
 SystemInit(void)
 {
+#if 0
+	// тест bootloader-а
+	{
+		BOARD_BLINK_INITIALIZE_UNSAFE();
+		for (;;)
+		{
+			BOARD_BLINK_SETSTATE_UNSAFE(1);
+			softdelay();
+			BOARD_BLINK_SETSTATE_UNSAFE(0);
+			softdelay();
+		}
+	}
+#endif
 	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */
 	sysinit_timestamp_initialize();
 	//PRINTF("CCU->PLL_CPU_CTRL_REG=%08X\n", (unsigned) CCU->PLL_CPU_CTRL_REG);

@@ -1030,7 +1030,7 @@ void s_gpioX_setstate(
 	//s_gpioX_unlock(gpio, oldIrql);
 }
 
-static void s_gpioX_progUnsafe(
+void s_gpioX_progUnsafe(
 	S_GPIO_TypeDef * gpio,
 	portholder_t iopins,
 	unsigned cfg,

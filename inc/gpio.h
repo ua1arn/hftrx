@@ -652,6 +652,13 @@ void arm_hardware_irqn_interrupt(portholder_t irq, int edge, uint32_t priority, 
 	portholder_t s_gpioX_getinputs(
 		S_GPIO_TypeDef * gpio
 		);
+	void s_gpioX_progUnsafe(
+		S_GPIO_TypeDef * gpio,
+		portholder_t iopins,
+		unsigned cfg,
+		unsigned drv,
+		unsigned pull
+		);
 #endif /* CPUSTYLE_A733 */
 #endif /* (CPUSTYLE_ALLWINNER || CPUSTYLE_T507 || CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX || CPUSTYLE_VM14) */
 
