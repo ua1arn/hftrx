@@ -2956,14 +2956,14 @@ static void a733_de_clkinit(void)
     // tcontv1: input 297MHz (2pixel)
     // test (все 32 бита могут быть установлены)
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE - HDMI
-    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 21);	// TV1_GATE	- DP/eDP
+    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 21);	// TV1_GATE	- DP/eDP ???? may be not need
 
     //DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
-    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
+    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE
 
     // from dump
     //DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// станавливает работу tcontv
-    DISPLAY1_TOP->VO1_MODULE_GATING = 0x10100000;
+    DISPLAY1_TOP->VO1_MODULE_GATING |= 0x10100000;
 // from dump
 	* (volatile uint32_t *) (DISPLAY1_TOP_BASE + 0x0F4) = 0x0000010d;
 	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
