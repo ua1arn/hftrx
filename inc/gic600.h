@@ -1369,176 +1369,6 @@ __STATIC_INLINE uint32_t GIC_GetIRQStatus(IRQn_Type IRQn)
 
 #define MPIDR_TO_RS(mpidr) (MPIDR_TO_AFF_LEVEL(mpidr, 0) >> 4)
 
-/** \brief Generate a software interrupt (Affinity Routing version).
-* \param [in] IRQn Software interrupt to be generated.
-* \param [in] target_aff Target affinity in MPIDR form.
-* \param [in] tlist List of CPUs the software interrupt should be forwarded to.
-*/
-// compatibility with GIC v2
-// filter_list (bit 25:24 of GICD_SGIR):
-// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
-// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
-// 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
-__STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t aff, uint16_t tlist, uint32_t filter_list)
-{
-//    uint32_t aff3, aff2, aff1;
-	uint32_t rs;
-	uint64_t val;
-	const int sendtoallexceptself = (0x01 == filter_list);
-
-//    aff1 = MPIDR_TO_AFF_LEVEL(target_aff, 1);
-//    aff2 = MPIDR_TO_AFF_LEVEL(target_aff, 2);
-//    aff3 = MPIDR_TO_AFF_LEVEL(target_aff, 3);
-	rs = 0;//MPIDR_TO_RS(target_aff);
-	//val = COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, IRQn, 0, rs, tlist);
-	rs = 0; /* RangeSelector */
-	val =
-			//(target_aff & 0xFF) * (UINT64_C(1) << 48) |	/* aff3 */
-			(rs & 0x0F) * (UINT64_C(1) << 44) |	/* RangeSelector RS */
-			(sendtoallexceptself) * (UINT64_C(1) << 40) |	/* IRM 0b1 Interrupts routed to all PEs in the system, excluding "self". */
-			//(target_aff & 0xFF) * (UINT64_C(1) << 32) |	/* aff2 */
-			(IRQn & 0xF) * (UINT64_C(1) << 24) | /* INTID */
-			(aff & 0xFF) * (UINT64_C(1) << 16) |	/* aff1 */
-			(tlist & 0xFFFF) * (UINT64_C(1) << 0) |
-		0;
-	//PRINTF("xGIC_SendSGI_ARE: aff=0x%02X, tlist=0x%02X, filter_list=0x%02X (val=0x%016lX)\n", (unsigned) aff, (unsigned) tlist, (unsigned) filter_list, val);
-
-	__DSB();
-#if defined (__aarch64__)
-	__set_ICC_SGI1R_EL1(val);
-	__set_ICC_SGI0R_EL1(val);	/* added by mgs - у меня пока работает толькоо группа 0 */
-#else
-	__set_ICC_SGI1R(val);
-	__set_ICC_SGI0R(val);
-#endif
-	__ISB();
-}
-
-/** \brief Calculate log2 rounded up
-*  - log(0)  => 0
-*  - log(1)  => 0
-*  - log(2)  => 1
-*  - log(3)  => 2
-*  - log(4)  => 2
-*  - log(5)  => 3
-*        :      :
-*  - log(16) => 4
-*  - log(32) => 5
-*        :      :
-* \param [in] n input value parameter
-* \return log2(n)
-*/
-__STATIC_FORCEINLINE uint8_t __log2_upX(uint32_t n)
-{
-  if (n < 2U) {
-    return 0U;
-  }
-  uint8_t log = 0U;
-  uint32_t t = n;
-  while(t > 1U)
-  {
-    log++;
-    t >>= 1U;
-  }
-  if (n & 1U) { log++; }
-  return log;
-}
-
-/** \brief Generate a software interrupt using GIC's SGIR register.
-* \param [in] IRQn Software interrupt to be generated.
-* \param [in] target_list List of CPUs the software interrupt should be forwarded to.
-* \param [in] filter_list Filter to be applied to determine interrupt receivers.
-*/
-// compatibility with GIC v2
-// filter_list (bit 25:24 of GICD_SGIR):
-// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
-// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
-// 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
-__STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
-{
-	if (IRQn < 16 && GIC_GetARE()) {
-		/* affinity routing */
-		const uint64_t target_aff = __log2_upX(target_list);
-		GIC_SendSGI_ARE(IRQn, target_aff, 0xFFFF, filter_list);
-	}
-}
-
-#if defined (GIC_INTERFACE_BASE)
-
-/** \brief Get the interrupt number of the highest interrupt pending from CPU's HPPIR register.
-* \return GICInterface_Type::HPPIR
-*/
-__STATIC_INLINE uint32_t GIC_GetHighPendingIRQ(void)
-{
-  return GICInterface->HPPIR;
-}
-
-/** \brief Provides information about the implementer and revision of the CPU interface.
-* \return GICInterface_Type::IIDR
-*/
-__STATIC_INLINE uint32_t GIC_GetInterfaceId(void)
-{
-  return GICInterface->IIDR;
-}
-#endif /* GIC_INTERFACE_BASE */
-
-#if defined (GIC_DISTRIBUTOR_BASE)
-/** \brief Set the interrupt group from the GIC's IGROUPR register.
-* \param [in] IRQn The interrupt to be queried.
-* \param [in] group Interrupt group number: 0 - Group 0, 1 - Group 1
-*/
-__STATIC_INLINE void GIC_SetGroup(IRQn_Type IRQn, uint32_t group)
-{
-	uint32_t secure = 0;
-	uint32_t shift   = (IRQn % 32U);
-
-	if (IRQn < 32 && GIC_GetARE()) {
-		GICRedistributor_Type * const GICR = GIC_GetRdist();
-		//
-		uint32_t igroupr = GICR->SGI_PPI.GICR_IGROUPR0;
-		igroupr &= (~(1U          << shift));
-		igroupr |= ( (group & 1U) << shift);
-		GICR->SGI_PPI.GICR_IGROUPR0 = igroupr;
-
-		// All routed to FIQ
-		uint32_t igroupmodr = GICR->SGI_PPI.GICR_IGRPMODR0;
-		igroupmodr &= (~(1U          << shift));	 /* 0 = Non-Secure (when coupled with IGROUPR=1) */
-		igroupmodr |= ( (secure & 1U)   << shift);
-		GICR->SGI_PPI.GICR_IGRPMODR0 = igroupmodr;
-
-	} else {
-		uint32_t igroupr = GICDistributor->GICD_IGROUPR[IRQn / 32U];
-		igroupr &= (~(1U          << shift));
-		igroupr |= ( (group & 1U) << shift);
-		GICDistributor->GICD_IGROUPR[IRQn / 32U] = igroupr;
-
-		// All routed to FIQ
-		uint32_t igroupmodr = GICDistributor->GICD_IGRPMODR[IRQn / 32U];
-		igroupmodr &= (~(1U          << shift));	 /* 0 = Non-Secure (when coupled with IGROUPR=1) */
-		igroupmodr |= ( (secure & 1U)   << shift);
-		GICDistributor->GICD_IGRPMODR[IRQn / 32U] = igroupmodr;
-	}
-}
-#define GIC_SetSecurity         GIC_SetGroup
-
-/** \brief Get the interrupt group from the GIC's IGROUPR register.
-* \param [in] IRQn The interrupt to be queried.
-* \return 0 - Group 0, 1 - Group 1
-*/
-__STATIC_INLINE uint32_t GIC_GetGroup(IRQn_Type IRQn)
-{
-	if (IRQn < 32 && GIC_GetARE()) {
-		GICRedistributor_Type * const GICR = GIC_GetRdist();
-		//
-		return (GICR->SGI_PPI.GICR_IGROUPR0 >> (IRQn % 32U)) & 1UL;
-
-	} else {
-		return (GICDistributor->GICD_IGROUPR[IRQn / 32U] >> (IRQn % 32U)) & 1UL;
-	}
-}
-#define GIC_GetSecurity         GIC_GetGroup
-
-
 
 #if defined(GIC_REDISTRIBUTOR_BASE)
 
@@ -1682,6 +1512,226 @@ __STATIC_INLINE void GIC_RedistInit(void)
 //	GICR->SGI_PPI.GICR_IGRPMODR0 = 0*0xFFFFFFFF;	// bits 19..16 are zero
 }
 #endif /* GIC_REDISTRIBUTOR_BASE */
+
+
+#if 0
+
+/** \brief Calculate log2 rounded up
+*  - log(0)  => 0
+*  - log(1)  => 0
+*  - log(2)  => 1
+*  - log(3)  => 2
+*  - log(4)  => 2
+*  - log(5)  => 3
+*        :      :
+*  - log(16) => 4
+*  - log(32) => 5
+*        :      :
+* \param [in] n input value parameter
+* \return log2(n)
+*/
+__STATIC_FORCEINLINE uint8_t __log2_upX(uint32_t n)
+{
+  if (n < 2U) {
+    return 0U;
+  }
+  uint8_t log = 0U;
+  uint32_t t = n;
+  while(t > 1U)
+  {
+    log++;
+    t >>= 1U;
+  }
+  if (n & 1U) { log++; }
+  return log;
+}
+
+/** \brief Generate a software interrupt (Affinity Routing version).
+* \param [in] IRQn Software interrupt to be generated.
+* \param [in] target_aff Target affinity in MPIDR form.
+* \param [in] tlist List of CPUs the software interrupt should be forwarded to.
+*/
+// compatibility with GIC v2
+// filter_list (bit 25:24 of GICD_SGIR):
+// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
+// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
+// 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
+__STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t aff, uint16_t tlist, uint32_t filter_list)
+{
+//    uint32_t aff3, aff2, aff1;
+	uint32_t rs;
+	uint64_t val;
+	const int sendtoallexceptself = (0x01 == filter_list);
+
+//    aff1 = MPIDR_TO_AFF_LEVEL(target_aff, 1);
+//    aff2 = MPIDR_TO_AFF_LEVEL(target_aff, 2);
+//    aff3 = MPIDR_TO_AFF_LEVEL(target_aff, 3);
+	rs = 0;//MPIDR_TO_RS(target_aff);
+	//val = COMPOSE_ICC_SGIR_VALUE(aff3, aff2, aff1, IRQn, 0, rs, tlist);
+	rs = 0; /* RangeSelector */
+	val =
+			//(target_aff & 0xFF) * (UINT64_C(1) << 48) |	/* aff3 */
+			(rs & 0x0F) * (UINT64_C(1) << 44) |	/* RangeSelector RS */
+			(sendtoallexceptself) * (UINT64_C(1) << 40) |	/* IRM 0b1 Interrupts routed to all PEs in the system, excluding "self". */
+			//(target_aff & 0xFF) * (UINT64_C(1) << 32) |	/* aff2 */
+			(IRQn & 0xF) * (UINT64_C(1) << 24) | /* INTID */
+			(aff & 0xFF) * (UINT64_C(1) << 16) |	/* aff1 */
+			(tlist & 0xFFFF) * (UINT64_C(1) << 0) |
+		0;
+	//PRINTF("xGIC_SendSGI_ARE: aff=0x%02X, tlist=0x%02X, filter_list=0x%02X (val=0x%016lX)\n", (unsigned) aff, (unsigned) tlist, (unsigned) filter_list, val);
+
+	__DSB();
+#if defined (__aarch64__)
+	__set_ICC_SGI1R_EL1(val);
+	__set_ICC_SGI0R_EL1(val);	/* added by mgs - у меня пока работает толькоо группа 0 */
+#else
+	__set_ICC_SGI1R(val);
+	__set_ICC_SGI0R(val);
+#endif
+	__ISB();
+}
+
+/** \brief Generate a software interrupt using GIC's SGIR register.
+* \param [in] IRQn Software interrupt to be generated.
+* \param [in] target_list List of CPUs the software interrupt should be forwarded to.
+* \param [in] filter_list Filter to be applied to determine interrupt receivers.
+*/
+// compatibility with GIC v2
+// filter_list (bit 25:24 of GICD_SGIR):
+// 0b00 Forward the interrupt to the CPU interfaces specified by GICD_SGIR.CPUTargetList
+// 0b01 Forward the interrupt to all CPU interfaces except that of the PE that requested the interrupt.
+// 0b10 Forward the interrupt only to the CPU interface of the PE that requested the interrupt.
+__STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
+{
+	if (IRQn < 16 && GIC_GetARE()) {
+		/* affinity routing */
+		const uint64_t target_aff = __log2_upX(target_list);
+		GIC_SendSGI_ARE(IRQn, target_aff, 0xFFFF, filter_list);
+	}
+}
+
+#else
+
+__STATIC_INLINE void GIC_SendSGI_ARE(IRQn_Type IRQn, uint64_t aff1, uint16_t tlist, uint32_t filter_list)
+{
+    const uint64_t irm = (filter_list == 0x01U) ? UINT64_C(1) : UINT64_C(0);
+
+    uint64_t val =
+        (irm << 40) |                                  /* IRM: 1 = всем PE, кроме текущего */
+        (((uint64_t)IRQn & 0x0FULL) << 24) |           /* INTID (0..15) */
+        ((aff1 & 0xFFULL) << 16) |                     /* Aff1 = индекс ядра (0..7) */
+        ((uint64_t)tlist & 0xFFFFULL);                 /* TargetList: бит 0 для Aff0 = 0 */
+
+    __DSB();
+#if defined (__aarch64__)
+    __set_ICC_SGI1R_EL1(val);
+    __set_ICC_SGI0R_EL1(val);
+#else
+    __set_ICC_SGI1R(val);
+    __set_ICC_SGI0R(val);
+#endif
+    __ISB();
+}
+
+__STATIC_INLINE void GIC_SendSGI(IRQn_Type IRQn, uint32_t target_list, uint32_t filter_list)
+{
+    if (IRQn >= 16 || !GIC_GetARE()) {
+        return;
+    }
+
+    if (filter_list == 0x01U) {
+        /* 0b01: Отправить всем ядрам, кроме текущего (IRM = 1, aff1 и tlist игнорируются аппаратно) */
+        GIC_SendSGI_ARE(IRQn, 0, 0, 0x01U);
+    } else if (filter_list == 0x02U) {
+        /* 0b10: Отправить только самому себе (извлекаем Aff1 текущего ядра из MPIDR) */
+        uint32_t self_aff1 = (GIC_MPIDRtoAffinity() >> 8) & 0xFFU;
+        GIC_SendSGI_ARE(IRQn, self_aff1, 0x0001U, 0x00U);
+    } else {
+        /* 0b00: Отправить по битовой маске target_list (бит N -> Aff1 = N, Aff0 = 0 -> tlist = 1) */
+        for (uint32_t core = 0; core < 8U; core++) {
+            if (target_list & (1U << core)) {
+                GIC_SendSGI_ARE(IRQn, core, 0x0001U, 0x00U);
+            }
+        }
+    }
+}
+
+#endif
+
+#if defined (GIC_INTERFACE_BASE)
+
+/** \brief Get the interrupt number of the highest interrupt pending from CPU's HPPIR register.
+* \return GICInterface_Type::HPPIR
+*/
+__STATIC_INLINE uint32_t GIC_GetHighPendingIRQ(void)
+{
+  return GICInterface->HPPIR;
+}
+
+/** \brief Provides information about the implementer and revision of the CPU interface.
+* \return GICInterface_Type::IIDR
+*/
+__STATIC_INLINE uint32_t GIC_GetInterfaceId(void)
+{
+  return GICInterface->IIDR;
+}
+#endif /* GIC_INTERFACE_BASE */
+
+#if defined (GIC_DISTRIBUTOR_BASE)
+/** \brief Set the interrupt group from the GIC's IGROUPR register.
+* \param [in] IRQn The interrupt to be queried.
+* \param [in] group Interrupt group number: 0 - Group 0, 1 - Group 1
+*/
+__STATIC_INLINE void GIC_SetGroup(IRQn_Type IRQn, uint32_t group)
+{
+	uint32_t secure = 0;
+	uint32_t shift   = (IRQn % 32U);
+
+	if (IRQn < 32 && GIC_GetARE()) {
+		GICRedistributor_Type * const GICR = GIC_GetRdist();
+		//
+		uint32_t igroupr = GICR->SGI_PPI.GICR_IGROUPR0;
+		igroupr &= (~(1U          << shift));
+		igroupr |= ( (group & 1U) << shift);
+		GICR->SGI_PPI.GICR_IGROUPR0 = igroupr;
+
+		// All routed to FIQ
+		uint32_t igroupmodr = GICR->SGI_PPI.GICR_IGRPMODR0;
+		igroupmodr &= (~(1U          << shift));	 /* 0 = Non-Secure (when coupled with IGROUPR=1) */
+		igroupmodr |= ( (secure & 1U)   << shift);
+		GICR->SGI_PPI.GICR_IGRPMODR0 = igroupmodr;
+
+	} else {
+		uint32_t igroupr = GICDistributor->GICD_IGROUPR[IRQn / 32U];
+		igroupr &= (~(1U          << shift));
+		igroupr |= ( (group & 1U) << shift);
+		GICDistributor->GICD_IGROUPR[IRQn / 32U] = igroupr;
+
+		// All routed to FIQ
+		uint32_t igroupmodr = GICDistributor->GICD_IGRPMODR[IRQn / 32U];
+		igroupmodr &= (~(1U          << shift));	 /* 0 = Non-Secure (when coupled with IGROUPR=1) */
+		igroupmodr |= ( (secure & 1U)   << shift);
+		GICDistributor->GICD_IGRPMODR[IRQn / 32U] = igroupmodr;
+	}
+}
+#define GIC_SetSecurity         GIC_SetGroup
+
+/** \brief Get the interrupt group from the GIC's IGROUPR register.
+* \param [in] IRQn The interrupt to be queried.
+* \return 0 - Group 0, 1 - Group 1
+*/
+__STATIC_INLINE uint32_t GIC_GetGroup(IRQn_Type IRQn)
+{
+	if (IRQn < 32 && GIC_GetARE()) {
+		GICRedistributor_Type * const GICR = GIC_GetRdist();
+		//
+		return (GICR->SGI_PPI.GICR_IGROUPR0 >> (IRQn % 32U)) & 1UL;
+
+	} else {
+		return (GICDistributor->GICD_IGROUPR[IRQn / 32U] >> (IRQn % 32U)) & 1UL;
+	}
+}
+#define GIC_GetSecurity         GIC_GetGroup
 
 
 /** \brief Initialize the interrupt distributor.
