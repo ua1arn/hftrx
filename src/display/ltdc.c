@@ -2961,8 +2961,15 @@ static void a733_de_clkinit(void)
     //DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE
 
+    CCU->SYSDAP_REQ_CTRL_REG = 0x00000001;	// from dump
+    CCU->CCMU_FAN_GATE_REG |= 0x0F;
+    CCU->CCMU_FAN_REG |= (0x0F << 24);
+    CCU->CLK27M_FAN_REG |= (UINT32_C(1) << 31);
+    // 15.2.9.1 0x0000 TCON_TV Clock Select and EDP I2S1 Select Register
+    DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC |= (UINT32_C(1) << 3);	// TCON_TV0_HDMIPHY_CCU_CK_SEL 1: TCON_TV0 clock sources from CCU
     // from dump
-    //DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// станавливает работу tcontv
+    //DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// станавливает работу tcontv (clocks from CCMU)
+
     DISPLAY1_TOP->VO1_MODULE_GATING |= 0x10100000;
 // from dump
 	* (volatile uint32_t *) (DISPLAY1_TOP_BASE + 0x0F4) = 0x0000010d;
@@ -2980,15 +2987,12 @@ static void a733_de_clkinit(void)
 	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 4);	// DCXO_SERDES0_GATING
 	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 4));
 
-    // 15.2.9.1 0x0000 TCON_TV Clock Select and EDP I2S1 Select Register
-    DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC |= (UINT32_C(1) << 3);	// TCON_TV0_HDMIPHY_CCU_CK_SEL 1: TCON_TV0 clock sources from CCU
-
 
 	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 0);	// HDMI_GATING
-	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 1);	// HDMI_GATING
+	//CCU->HDMI_BGR_REG |= (UINT32_C(1) << 1);	// HDMI_GATING
 	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 18);	// HDMI_HDCP_RST
 	CCU->HDMI_BGR_REG |= (UINT32_C(1) << 17) | (UINT32_C(1) << 16);	// HDMI0_SUB_RST HDMI0_MAIN_RST (19 & 18 - hdmi1 ?)
-	CCU->HDMI_BGR_REG |= ~0u;
+	//CCU->HDMI_BGR_REG |= ~0u;
 	PRINTF("CCU->HDMI_BGR_REG=%08X\n", (unsigned) CCU->HDMI_BGR_REG);
 
 	////CCU->HDMI0_SLOW_CLK_REG |= (UINT32_C(1) << 31);
