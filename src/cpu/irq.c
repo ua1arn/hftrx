@@ -2860,7 +2860,7 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 	tp->daif = daif;
 
 	if (syscallflag)  {
-		// обработка системныз вызовов
+		// обработка системных вызовов
 		task_svc(tp, code, oldframe);	// thread переходит в список ждущих или готовых - или исчезает
 	} else {
 		task_insertready(tp);		// раз сюда попали - значит точно не ждали ничего
