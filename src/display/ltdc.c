@@ -2961,6 +2961,8 @@ static void a733_de_clkinit(void)
     //DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
     DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE
 
+    //PRINTHEX32(CCU->DEPLL_GATE_EN_REG);
+    CCU->DEPLL_GATE_EN_REG = 0x00030000;	// from dump
     CCU->SYSDAP_REQ_CTRL_REG = 0x00000001;	// from dump
     CCU->CCMU_FAN_GATE_REG |= 0x0F;
     CCU->CCMU_FAN_REG |= (0x0F << 24);
@@ -7847,7 +7849,7 @@ fail:
 	return 0;
 }
 
-void foundblocks(const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
+static void foundblocks(const videomode_t * vdmodeDESIGN, const videomode_t * vdmodeHDMI)
 {
  	hardware_de_initialize(1);
 	t113_de_rtmix_initialize(1);
