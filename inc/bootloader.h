@@ -107,8 +107,13 @@ void ctlboardt507_mainloop(void * ctx);
 	/* DFU device разделяет по приходящему адресу куда писать */
 	#define BOOTLOADER_FLASHSIZE (1024L * 1024 * 16)	// 16M FLASH CHIP
 	#define BOOTLOADER_SELFBASE 0x30000000	/* Воображаемый адрес, где лежит во FLASH образ application */
-	#define BOOTLOADER_SELFSIZE (1024L * 256)	// 256k - начиная отсюда находится образ application
-	#define EMMC_EGON_OFFSET 0x00002000	// смещение, на котором в eMMC или SD CARD должен находиться загрузчик
+	#if CPUSTYLE_A733
+		#define BOOTLOADER_SELFSIZE (1024L * 1024)	// 1 MB - начиная отсюда находится образ application
+		#define EMMC_EGON_OFFSET (128L * 1024)	// смещение, на котором в eMMC или SD CARD должен находиться загрузчик
+	#else
+		#define BOOTLOADER_SELFSIZE (1024L * 256)	// 256k - начиная отсюда находится образ application
+		#define EMMC_EGON_OFFSET (8L * 1024)	// смещение, на котором в eMMC или SD CARD должен находиться загрузчик
+	#endif
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* Воображаемый адрес, адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_APPSIZE (chipsizeDATAFLASH() - BOOTLOADER_SELFSIZE)	// 2048 - 128
@@ -135,7 +140,7 @@ void ctlboardt507_mainloop(void * ctx);
 	#define BOOTLOADER_FLASHSIZE (1024L * 1024 * 16)	// 16M FLASH CHIP
 	#define BOOTLOADER_SELFBASE 0x30000000	/* Воображаемый адрес, где лежит во FLASH образ application */
 	#define BOOTLOADER_SELFSIZE (1024L * 256)	// 256k - начиная отсюда находится образ application
-	#define EMMC_EGON_OFFSET 0x00002000	// смещение, на котором в eMMC или SD CARD должен находиться загрузчик
+	#define EMMC_EGON_OFFSET (8L * 1024)	// смещение, на котором в eMMC или SD CARD должен находиться загрузчик
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* Воображаемый адрес, адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_APPSIZE (chipsizeDATAFLASH() - BOOTLOADER_SELFSIZE)	// 2048 - 128
