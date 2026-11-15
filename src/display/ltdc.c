@@ -3052,36 +3052,6 @@ static void hardware_de_global_initialize(void)
     PRINTF("CCU->DE_SYS_BGR_REG=%08X\n", (unsigned) CCU->DE_SYS_BGR_REG);
     PRINTF("CCU->DE0_BGR_REG=%08X\n", (unsigned) CCU->DE0_BGR_REG);
 
-	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
-	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
-
-	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 1);	// DCXO_HDMI_GATING
-	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 1));
-
-	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 5);	// DCXO_SERDES1_GATING
-	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 5));
-
-	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 4);	// DCXO_SERDES0_GATING
-	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 4));
-
-	if (0)
-	{
-		static const uint32_t a [] =
-		{
-				0x00010001, 0x00010001, 0x00000011, 0x00000000,
-				0x0000fff4, 0x03520100, 0x6ddb6000, 0x00000234,
-				0x00000000, 0x00000000, 0x00000000, 0x00000000,
-				0x00a98210, 0x00000000, 0x00000000, 0x00000000,
-				0x00000000, 0x00000000, 0x00000000, 0x00000000,
-				0x00002000, 0x00000800, 0x00000800, 0x00000800,
-				0x01000100, 0x01000100, 0x01000100, 0x00000000,
-				0x01000100, 0x01000100, 0x01000100, 0x00000000,
-				0x0800ffff, 0x0000ffff, 0x0000ffff, 0x0000ffff,
-				0x01000100, 0x01000008, 0x3fd1e680, 0x00000000,
-		};
-		memcpy32(DE_TOP, a, sizeof a);
-	}
-
 	DE_TOP->DE_SCLK_GATE |= UINT32_C(1) << 0;	// COREx_SCLK_GATE
 	DE_TOP->DE_HCLK_GATE |= UINT32_C(1) << 0;	// COREx_HCLK_GATE
 	// Only one bit writable
@@ -3113,69 +3083,11 @@ static void hardware_de_global_initialize(void)
     local_delay_us(10);
 
 
-	#ifdef TCONLCD_PTR
-
-
-		// lvds
-		CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DPSS_TOP0_GATING Open the clock gate
-		CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DPSS_TOP0_RST. De-assert reset
-
-
-		DISPLAY0_TOP->VO0_MODULE_GATING = ~ 0;	// LCD1_DSI_GATE, LCD0_DSI_GATE
-		//DISPLAY1_TOP->VO1_MODULE_GATING;
-
-		DISPLAY0_TOP->LCD_CLK_SRC_COMB_CLK_SRC = 0;
-
-	#endif
-	#ifdef TCONLCD_PTR
-		//TCONLCD_PTR->LCD_IO_TRI_REG = UINT32_C(0xFFFFFFFF);
-	#endif
 
 
 	//CCU->VIDEO_IN_BGR_REG = 0x00010000;
 	//CCU->VIDEOPLL_GATE_EN_REG = 0x00770000; /* 0x00770000 @ 0x1910 */
 
-	#ifdef TCONTV_PTR
-
-		// hdmi
-		CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DPSS_TOP1_GATING Open the clock gate
-		CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 16);		// DPSS_TOP1_RST. De-assert reset
-
-		// HDMI
-		CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 0);		// TCONTV0_GATING Open the clock gate
-		CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV0_RST. De-assert reset
-
-		// eDP
-//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 0);		// TCONTV1_GATING Open the clock gate
-//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV1_RST. De-assert reset
-		local_delay_us(10);
-
-
-		// Разрешает доступ к HDMI_TX0
-		CCU->HDMI_SFR_CLK_REG |= (UINT32_C(1) << 31);	// HDMI_SFR_CLK_GATING
-		// from dump
-		CCU->HDCP_ESM_CLK_REG |= (UINT32_C(1) << 31);	// HDCP_ESM_CLK_GATING
-
-
-
-	    // page 723, Figure 15-18 TCON_TV Environment Diagram
-	    // tcontv0: input 360MHz (4pixel/148.5MHz)
-	    // tcontv1: input 297MHz (2pixel)
-	    // test (все 32 бита могут быть установлены)
-	    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE - HDMI
-	    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 21);	// TV1_GATE	- DP/eDP
-
-	    //DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
-	    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
-
-	    // from dump
-	    //DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// станавливает работу tcontv
-	    DISPLAY1_TOP->VO1_MODULE_GATING = 0x10100000;
-	// from dump
-		* (volatile uint32_t *) (DISPLAY1_TOP_BASE + 0x0F4) = 0x0000010d;
-		PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
-
-	#endif
 
 	//	Note: Before operating ADDA/GPADC/RES_CAL/CSI/DSI/LVDS/HDMI (only
 	//	for T507-H/T517-H)/TVOUT modules, please make sure that this bit is
@@ -3406,6 +3318,7 @@ static void hardware_de_initialize(int rtmixid)
 	//    050080A0: 00000011 0000FFFF 00000000 00000000 00000000 00000000 00000000 00000000
 	//    050080C0: 00000000 00000000 00000000 00000000 00000011 30003111 000000FF FFFFFFFF
 	//    050080E0: 00000011 10000000 03F73F3F 00000000 00000000 00000000 00000000 00000000
+	//
 	//    05008100: 000302D1 00000100 1FFF1FFF 00000001 00000001 FFFFFFFF 000000FF 0000FFFF
 	//    05008120: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 	//    05008140: 000302D1 00000100 1FFF1FFF 00000001 00000001 FFFFFFFF 000000FF 0000FFFF
@@ -3732,10 +3645,15 @@ static void t113_tconlvds_CCU_configuration(unsigned lvds_num, uint_fast32_t nee
  	ASSERT(lvds_sel != UINT_MAX);
 	ASSERT(lvds_divider >= 1 && lvds_divider <= 32);
 
+
+
+	DISPLAY0_TOP->LCD_CLK_SRC_COMB_CLK_SRC = 0;
+
 	PRINTF("lvds_sel=%u, lvds_divider=%u\n", lvds_sel, lvds_divider + 1);
 	switch (lvds_num)
 	{
 	case 0:
+		//DISPLAY0_TOP->VO0_MODULE_GATING |= (UINT32_C(1) << 16);	// LCD0_DSI_GATE
 		CCU->VO0_TCONLCD0_CLK_REG  =
 			(lvds_sel) * (UINT32_C(1) << 24) |
 			(lvds_divider) * (UINT32_C(1) << 0) |
@@ -3744,10 +3662,12 @@ static void t113_tconlvds_CCU_configuration(unsigned lvds_num, uint_fast32_t nee
 
 		CCU->VO0_TCONLCD0_BGR_REG  |= (UINT32_C(1) << 16);
 		CCU->VO0_TCONLCD0_BGR_REG  |= (UINT32_C(1) << 0);
+		CCU->LVDS0_BGR_REG |= (UINT32_C(1) << 16);	// LVDS0_RST
 		PRINTF("allwnr_a733_get_v0_tconlcd0_freq()=%u MHz\n", (unsigned) (allwnr_a733_get_v0_tconlcd0_freq() / 1000 / 1000));
 		break;
 
 	case 1:
+		//DISPLAY0_TOP->VO0_MODULE_GATING |= (UINT32_C(1) << 17);	// LCD1_DSI_GATE
 		CCU->VO0_TCONLCD1_CLK_REG  =
 			(lvds_sel) * (UINT32_C(1) << 24) |
 			(lvds_divider) * (UINT32_C(1) << 0) |
@@ -3756,12 +3676,14 @@ static void t113_tconlvds_CCU_configuration(unsigned lvds_num, uint_fast32_t nee
 
 		CCU->VO0_TCONLCD1_BGR_REG  |= (UINT32_C(1) << 16);
 		CCU->VO0_TCONLCD1_BGR_REG  |= (UINT32_C(1) << 0);
-		PRINTF("allwnr_a733_get_v0_tconlcd0_freq()=%u MHz\n", (unsigned) (allwnr_a733_get_v0_tconlcd1_freq() / 1000 / 1000));
+		CCU->LVDS1_BGR_REG |= (UINT32_C(1) << 16);	// LVDS1_RST
+		PRINTF("allwnr_a733_get_v0_tconlcd1_freq()=%u MHz\n", (unsigned) (allwnr_a733_get_v0_tconlcd1_freq() / 1000 / 1000));
 		break;
 	}
 
-	CCU->LVDS0_BGR_REG |= (UINT32_C(1) << 16);	// LVDS0_RST
-	CCU->LVDS1_BGR_REG |= (UINT32_C(1) << 16);	// LVDS1_RST
+	// lvds
+	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 0);		// DPSS_TOP0_GATING Open the clock gate
+	CCU->DPSS_TOP0_BGR_REG |= (UINT32_C(1) << 16);		// DPSS_TOP0_RST. De-assert reset
 
 
 #elif CPUSTYLE_T113 || CPUSTYLE_F133
@@ -6680,6 +6602,56 @@ static void t113_tcontv_CCU_configuration(uint_fast32_t dotclock)
 //	PRINTF("7 BOARD_TCONTVFREQ()=%u kHz\n", (unsigned) (BOARD_TCONTVFREQ / 1000));	// 74.25 MHz
 
 #elif CPUSTYLE_A733
+
+	// hdmi
+	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 0);		// DPSS_TOP1_GATING Open the clock gate
+	CCU->DPSS_TOP1_BGR_REG |= (UINT32_C(1) << 16);		// DPSS_TOP1_RST. De-assert reset
+
+	// HDMI
+	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 0);		// TCONTV0_GATING Open the clock gate
+	CCU->TCONTV0_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV0_RST. De-assert reset
+
+	// eDP
+//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 0);		// TCONTV1_GATING Open the clock gate
+//		CCU->TCONTV1_BGR_REG |= (UINT32_C(1) << 16);	// TCONTV1_RST. De-assert reset
+	local_delay_us(10);
+
+
+	// Разрешает доступ к HDMI_TX0
+	CCU->HDMI_SFR_CLK_REG |= (UINT32_C(1) << 31);	// HDMI_SFR_CLK_GATING
+	// from dump
+	CCU->HDCP_ESM_CLK_REG |= (UINT32_C(1) << 31);	// HDCP_ESM_CLK_GATING
+
+
+
+    // page 723, Figure 15-18 TCON_TV Environment Diagram
+    // tcontv0: input 360MHz (4pixel/148.5MHz)
+    // tcontv1: input 297MHz (2pixel)
+    // test (все 32 бита могут быть установлены)
+    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 20);	// TV0_GATE - HDMI
+    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 21);	// TV1_GATE	- DP/eDP
+
+    //DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << (20 + ix));	//  TV0_GATE, TV1_GATE
+    DISPLAY1_TOP->VO1_MODULE_GATING |= (UINT32_C(1) << 28);	// TV0_HDMI_GATE ???? may be not need
+
+    // from dump
+    //DISPLAY1_TOP->TV_CLK_EDP_I2S1_SRC = 0;	// станавливает работу tcontv
+    DISPLAY1_TOP->VO1_MODULE_GATING = 0x10100000;
+// from dump
+	* (volatile uint32_t *) (DISPLAY1_TOP_BASE + 0x0F4) = 0x0000010d;
+	PRINTF("DISPLAY1_TOP->VO1_MODULE_GATING=%08X\n", (unsigned) DISPLAY1_TOP->VO1_MODULE_GATING);
+
+	CCU->VIDEO_OUT0_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT0_RST 1: De-assert
+	CCU->VIDEO_OUT1_BGR_REG |= (UINT32_C(1) << 16);	// VIDEO_OUT1_RST 1: De-assert
+
+	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 1);	// DCXO_HDMI_GATING
+	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 1));
+
+	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 5);	// DCXO_SERDES1_GATING
+	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 5));
+
+	RTC->XO_CTRL1_REG |= (UINT32_C(1) << 4);	// DCXO_SERDES0_GATING
+	ASSERT(RTC->XO_CTRL1_REG & (UINT32_C(1) << 4));
 
 	// HDMI_TV_CLK_REG
 	//	CLK_SRC_SEL.
