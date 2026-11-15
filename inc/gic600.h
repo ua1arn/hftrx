@@ -1599,9 +1599,7 @@ __STATIC_INLINE GICRedistributor_Type *GIC_GetRdist(void)
   do {
 	    uint32_t rd_aff;
 	    rd_typer = ((GICRedistributor_Type *)rd_addr)->LPI.GICR_TYPER;
-	    //PRINTF("rd_typer=%08X\n", (unsigned) rd_typer);
         rd_aff = rd_typer >> GICR_TYPER_AFF_SHIFT;
-        rd_aff = rd_typer & (0xFF << 8);
 
         if (rd_aff == aff)
             return (GICRedistributor_Type *)rd_addr;
