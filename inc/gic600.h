@@ -1650,7 +1650,7 @@ __STATIC_INLINE void GIC_RedistInit(void)
 //
 	 /* Power on the GIC */
 	GICR->LPI.GICR_PWRR = 0;
-	while ((GICR->LPI.GICR_PWRR & 0x01) != 0)
+	while ((GICR->LPI.GICR_PWRR & 0x0F) != 0)
 		__NOP();
   /* Wakeup the GIC */
 	/* Step 1: Wake up the core's Redistributor interface */
