@@ -1408,9 +1408,13 @@
 #define BOARD_FRONT_GREEN_BIT (UINT32_C(1) << 13)	// PL13 FRONTLED_GREEN
 
 #define BOARD_BLINK_INITIALIZE() do { \
+	enum { state = 1 }; \
 	s_gpioX_prog(S_GPIOL, BOARD_BLINK_BIT, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
 	s_gpioX_prog(S_GPIOL, BOARD_FRONT_RED_BIT, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
 	s_gpioX_prog(S_GPIOL, BOARD_FRONT_GREEN_BIT, GPIO_CFG_OUT, GPIO_DRV_3, GPIO_PULL_NONE); \
+	s_gpioX_setstate(S_GPIOL, BOARD_BLINK_BIT, !! (state) * BOARD_BLINK_BIT); \
+	s_gpioX_setstate(S_GPIOL, BOARD_FRONT_RED_BIT, !! (state) * BOARD_FRONT_RED_BIT); \
+	s_gpioX_setstate(S_GPIOL, BOARD_FRONT_GREEN_BIT, !! (state) * BOARD_FRONT_GREEN_BIT); \
 } while (0)
 
 #define BOARD_BLINK_SETSTATE(state) do { \
