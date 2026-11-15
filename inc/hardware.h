@@ -604,6 +604,7 @@ void __NO_RETURN VIRQ_Handler(void * frame);
 void __NO_RETURN VFIQ_Handler(void * frame);
 
 void __NO_RETURN run_task_curr(void * frame);	// run task with frame
+void task_unlock_after_switch(void);			// вызываем после переклбчения на новый стек (aarch32)
 
 void __NO_RETURN IRQ_Handler_aarch32(void * frame);	// crt_CortexA.S
 void __NO_RETURN FIQ_Handler_aarch32(void * frame);	// crt_CortexA.S

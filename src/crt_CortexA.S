@@ -108,6 +108,8 @@ FIQAddr:    .word VFRQ_Handler
    .extern _start
    /*.extern __libc_init_array*/
    .extern SystemInit
+   .extern task_unlock_after_switch
+
    .global Reset_Handler
  /****************************************************************************/
 /*                           Reset handler                                  */
@@ -131,7 +133,8 @@ rrrr:
     mov   	lr, #0
 	cpsid   if
 	mrc     p15, 0, r0, c0, c0, 5      /* Read MPIDR */
-	ands    r0, r0, #3
+	mov    	r1, #65535
+	ands    r0, r0, r1
 gotosleep:
 	wfine
 	bne     gotosleep
@@ -377,8 +380,7 @@ VIRQ_Handler:
 
     // Initialise FPSCR to a known state
     // FPSCR Loaded in to R1
- 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
-	AND     R1,R1,R3
+ 	LDR     R1,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
 	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
 
 	MOV		R0, SP
@@ -411,8 +413,7 @@ SWI_Handler:
 
     // Initialise FPSCR to a known state
     // FPSCR Loaded in to R1
- 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
-	AND     R1,R1,R3
+ 	LDR     R1,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
 	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
 
 	MOV		R0, SP
@@ -447,8 +448,7 @@ VFRQ_Handler:
 
     // Initialise FPSCR to a known state
     // FPSCR Loaded in to R1
- 	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
-	AND     R1,R1,R3
+ 	LDR     R1,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
 	VMSR    FPSCR,R1	// Initialise FPSCR to a known state
 
  	MOV		R0, SP
@@ -463,7 +463,10 @@ VFRQ_Handler:
     .func   run_task_curr_aarch32
     .global run_task_curr_aarch32
 run_task_curr_aarch32:
-	MOV		SP, R0
+    MOV     SP, R0                      // 1. Ушли со старого стека на новый!
+	LDR		r0, =task_unlock_after_switch
+	MOV		LR, PC
+    bx      r0    						// 2. Отпускаем threadslock и ставим IRQL новой задачи
 
  	// Wait VFP operations done
  	VMRS	R1, FPSID
@@ -476,8 +479,9 @@ run_task_curr_aarch32:
 	add     sp, sp, r3                  // Unadjust stack
 
 	VMSR	FPSCR, R4
-	//clrex                               // Clear exclusive monitor for interrupted code
+	clrex                               // Clear exclusive monitor for interrupted code
 	pop     {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}            // Restore stacked APCS registers
+	dsb sy
 	rfefd   sp!                         // Return from IRQ handler - RFEIA instruction
 
 	.endfunc

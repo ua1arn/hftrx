@@ -2112,12 +2112,12 @@ typedef struct timer_item_tag
 } timer_item_t;
 
 static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
+static IRQL_t next_task_irql [HARDWARE_NCORES];
 
 static thread_item_t * startedtask [HARDWARE_NCORES];	// последнее запущенное на core
 static LIST_ENTRY threads_listW;	// threads im wait state
 static LIST_ENTRY threads_listR [PRIOv_count];	// threads in ready state
 static LIST_ENTRY timers_list;
-
 
 #if WITHRTOS
 
@@ -2794,7 +2794,7 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 		// обработка системныз вызовов
 		task_svc(tp, code, oldframe);	// thread переходит в список ждущих или готовых - или исчезает
 	} else {
-		task_insertready(tp);		// раз сэда попали - значит точно не ждали ничего
+		task_insertready(tp);		// раз сюда попали - значит точно не ждали ничего
 	}
 
 	const hwtimcountfast_t tn = timestamp_getticks();
@@ -2804,19 +2804,30 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 
 	// Запуск
 	startedtask [core] = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
-	IRQLSPIN_UNLOCK(& threadslock, GICI_ENCODE_IRQL(startedtask [core]->prio));
-	while (!threads_not_halted) ;
+	next_task_irql [core] = GICI_ENCODE_IRQL(startedtask [core]->prio);
+
+	// еще не переключились на новый стек в aarch32
+    IRQLSPIN_UNLOCK(& threadslock, next_task_irql [core]);
+
+	while (!threads_not_halted)
+		;
 	return startedtask [core]->cpuframe;
+}
+
+void task_unlock_after_switch(void)
+{
+    const uint_fast8_t core = arm_hardware_cpuid();
+    //IRQLSPIN_UNLOCK(& threadslock, next_task_irql [core]);
 }
 
 static void * task_scheduler2(unsigned code, void * oldframe)
 {
-	return task_scheduler0((irq_stack_frame_top_t *) oldframe, 1, code);
+	return task_scheduler0(oldframe, 1, code);
 }
 
 static void * task_scheduler(void * oldframe)
 {
-	return task_scheduler0((irq_stack_frame_top_t *) oldframe, 0, 0);
+	return task_scheduler0(oldframe, 0, 0);
 }
 
 // хотим завершить выполнение кванта, не дожидаясь прерывания
@@ -3013,19 +3024,23 @@ static void task_syscall_handler(thread_item_t * thread, unsigned arg0, void * a
 
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 static void *
-task_scheduler0(irq_stack_frame_top_t * oldframe, unsigned svcflag, unsigned code)
+task_scheduler0(void * oldframe, unsigned svcflag, unsigned code)
 {
 	return oldframe;
 }
 
 static void * task_scheduler2(unsigned code, void * oldframe)
 {
-	return task_scheduler0((irq_stack_frame_top_t *) oldframe, 1, code);
+	return task_scheduler0(oldframe, 1, code);
 }
 
 static void * task_scheduler(void * oldframe)
 {
-	return task_scheduler0((irq_stack_frame_top_t *) oldframe, 0, 0);
+	return task_scheduler0(oldframe, 0, 0);
+}
+
+void task_unlock_after_switch(void)
+{
 }
 
 void tasks_print(void)
