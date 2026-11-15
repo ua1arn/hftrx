@@ -660,29 +660,29 @@ void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 }
 
 void
-printhex(uintptr_t voffs, const void * buff, unsigned length)
+printhex(uintptr_t voffs, const volatile void * buff, unsigned length)
 {
 }
 
 void
-printhex32(uintptr_t voffs, const void * buff, unsigned length)
+printhex32(uintptr_t voffs, const volatile void * buff, unsigned length)
 {
 }
 
 void
-printhex64(uintptr_t voffs, const void * buff, unsigned length)
+printhex64(uintptr_t voffs, const volatile void * buff, unsigned length)
 {
 }
 
-void printhex_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title)
+void printhex_titled(uintptr_t voffs, const volatile void * vbuff, size_t length, const char * title)
 {
 }
 
-void printhex32_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title)
+void printhex32_titled(uintptr_t voffs, const volatile void * vbuff, size_t length, const char * title)
 {
 }
 
-void printhex64_titled(uintptr_t voffs, const void * vbuff, size_t length, const char * title)
+void printhex64_titled(uintptr_t voffs, const volatile void * vbuff, size_t length, const char * title)
 {
 }
 
