@@ -667,6 +667,30 @@ portholder_t power2(uint_fast8_t v);	// Перенос каждого бита �
 portholder_t power4(uint_fast8_t v);	// Перенос каждого бита в байте в позицию с увеличенным в 4 раза номером.
 portholder_t power8(uint_fast8_t v);	// Перенос каждого бита в байте в позицию с увеличенным в 8 раз номером.
 
+// отладка загрузчиков - проход этой функции мигает светодиодом один раз
+#ifdef BOARD_BLINK_INITIALIZE_UNSAFE
+	#define HP() do { \
+		BOARD_BLINK_INITIALIZE_UNSAFE(); \
+		BOARD_BLINK_SETSTATE_UNSAFE(1); \
+		local_delay_ms(250); \
+		BOARD_BLINK_SETSTATE_UNSAFE(0); \
+		local_delay_ms(250); \
+	} while (0)
+#else
+	#define HP() do {
+		} while (0)
+#endif
+
+#if WITHDEBUG
+	#define TP() do { \
+			static const char this_file [] = __FILE__; \
+			PRINTF(PSTR("At %d in %s - %s.\n"), __LINE__, this_file, __func__); \
+			dbg_flush(); \
+		} while (0)
+#else /* WITHDEBUG */
+	#define TP() do { } while(0)
+#endif /* WITHDEBUG */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

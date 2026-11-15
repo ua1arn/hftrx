@@ -46,29 +46,6 @@ int dbg_writechar(int c);	/* вывод символа без преобразо
 int dbg_getchar(char * r);
 void dbg_flush(void); /* дождаться, пока будут переданы все символы, ы том числе и из FIFO */
 
-// отладка загрузчиков - проход этой функции мигает светодиодом один раз
-#ifdef BOARD_BLINK_INITIALIZE_UNSAFE
-	#define HP() do { \
-		BOARD_BLINK_INITIALIZE_UNSAFE(); \
-		BOARD_BLINK_SETSTATE_UNSAFE(1); \
-		local_delay_ms(250); \
-		BOARD_BLINK_SETSTATE_UNSAFE(0); \
-		local_delay_ms(250); \
-	} while (0)
-#else
-	#define HP() do {
-		} while (0)
-#endif
-
-#if WITHDEBUG
-	#define TP() do { \
-			static const char this_file [] = __FILE__; \
-			PRINTF(PSTR("At %d in %s - %s.\n"), __LINE__, this_file, __func__); \
-			dbg_flush(); \
-		} while (0)
-#else /* WITHDEBUG */
-	#define TP() do { } while(0)
-#endif /* WITHDEBUG */
 
 #if WITHDEBUG
 	#define PRINTF	debug_printf_P
