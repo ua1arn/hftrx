@@ -116,7 +116,7 @@ UINCDIR += $(PRJROOT) $(PRJROOT)/inc
 ULIBDIR +=
 
 # List all user libraries here
-ULIBS += $(LIBDRAM)
+ULIBS += libdram_patched.a
 
 # taken from
 # https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
@@ -261,12 +261,12 @@ app_run64: $(PROJECT)_app.alw32 $(DDRINIT)
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec $(SystemExecAARCH64)
 
-app_run: $(PROJECT)_app.alw32 ddrinit
+Sapp_run: $(PROJECT)_app.alw32 ddrinit
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec $(SystemExecAARCH64)
 
 # debug for bootloader - check .ld file
-_app_run: bootloader
+app_run: bootloader
 	$(XFEL) write $(Reset_Handler) $(PROJECT)_boot.bin
 	$(XFEL) exec $(Reset_Handler) 
 
@@ -277,6 +277,9 @@ flash:
 erase:
 	$(XFEL) spinor erase 0x00000000 1024
 	$(XFEL) spinor erase 0x00040000 1024
+
+libdram_patched.a: $(LIBDRAM)
+	$(CP) --redefine-sym memcpy=dram_safe_memcpy $(LIBDRAM) libdram_patched.a
 
 BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
@@ -301,7 +304,7 @@ $(OBJSA_APP) $(ZOBJSA):
 	$(AS) -o $@ -c $(ASFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
 # add libsun50iw9p1_spinor.a 
-%_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT)
+%_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT) libdram_patched.a
 	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
@@ -320,7 +323,7 @@ $(OBJSA_APP) $(ZOBJSA):
 clean: version
 	-$(RM) -R $(OBJDIR)
 	-$(RM) -R $(OBJDIR64)
-	-$(RM) fsbl.bt0
+	-$(RM) fsbl.bt0 libdram_patched.a
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 	-$(RM) $(PROJECT)_app.alw32 $(PROJECT)_app.bin $(PROJECT)_boot.bin

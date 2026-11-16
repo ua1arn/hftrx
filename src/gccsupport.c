@@ -191,6 +191,15 @@ _READ_WRITE_RETURN_TYPE __attribute__((used)) (_write)(int fd, const void * ptr,
 	return (i);
 }
 
+void * dram_safe_memcpy(void * __RESTRICT  dst, const void * __RESTRICT  src, size_t n)
+{
+	volatile uint8_t * __RESTRICT  d = (volatile uint8_t *) dst;
+	const volatile uint8_t * __RESTRICT  s = (const volatile uint8_t *) src;
+	while (n --)
+		* d ++ = * s ++;
+	return dst;
+}
+
 
 #if defined(__aarch64__) && 0
 
