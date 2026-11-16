@@ -2229,7 +2229,6 @@ typedef struct thread_item_tag
 	uint8_t affinity;
 	irq_stack_frame_top_t * cpuframe;	// cpu state
 	uint8_t prio;
-	DAIF_t daif;
 	const check_ready_t * check_ready;	// condition check function
 	void * check_ready_obj;	// user-space wait condition parameters
 #if WITHDEBUG
@@ -2251,7 +2250,6 @@ typedef struct timer_item_tag
 
 static LCLSPINLOCK_t threadslock = IRQLSPINLOCK_INIT;
 static IRQL_t next_task_irql [HARDWARE_NCORES];
-static DAIF_t next_task_daif [HARDWARE_NCORES];
 
 static thread_item_t * startedtask [HARDWARE_NCORES];	// последнее запущенное на core
 static LIST_ENTRY threads_listW;	// threads im wait state
@@ -2260,12 +2258,12 @@ static LIST_ENTRY timers_list;
 
 #define SCHED_LOCK(pirql, pdaif) do {                   \
         *(pdaif) = global_disable_irq_save();                    \
-        IRQLSPIN_LOCK(& threadslock, pirql, IRQL_IPC);  \
+        IRQLSPIN_LOCK(& threadslock, (pirql), IRQL_IPC);  \
     } while (0)
 
 #define SCHED_UNLOCK(irql, daif) do {                   \
-        IRQLSPIN_UNLOCK(& threadslock, irql);           \
-        global_restore_irq(daif);                        \
+        IRQLSPIN_UNLOCK(& threadslock, (irql));           \
+        global_restore_irq((daif));                        \
     } while (0)
 
 #if WITHRTOS
@@ -2363,7 +2361,6 @@ static void thread_add(
 	thread->affinity = affinity;
 	thread->cpuframe = stackframe;
 	thread->prio = prio;
-	thread->daif = 0;	// разрешены
 	thread->check_ready = NULL;
 	ASSERT(thread->affinity);
 #if WITHDEBUG
@@ -2543,7 +2540,7 @@ static int thread_print(char *__restrict buff, size_t size, const thread_item_t 
 		n += local_snprintf_P(buff + n, size - n, "use=%3u%% ", (unsigned) (100 * (tp->top - (uintptr_t) tp->cpuframe) /  (tp->top - tp->bottom)));
 	else
 		n += local_snprintf_P(buff + n, size - n, "         ");
-	n += local_snprintf_P(buff + n, size - n, "t=%p,b=%p ", (void*)tp->top, (void*)tp->bottom);
+	n += local_snprintf_P(buff + n, size - n, "t=%p,b=%p ", (void*) tp->top, (void*) tp->bottom);
 	n += local_snprintf_P(buff + n, size - n, "name='%s' ", tp->name);
 	//n += local_snprintf_P(buff + n, size - n, "fpcr=%08X, fpsr=%08X ", (unsigned) f->fpcr, (unsigned) f->fpsr);
 
@@ -2940,13 +2937,11 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 {
 	const uint_fast8_t core = arm_hardware_cpuid();
 	IRQL_t irql;
-	DAIF_t daif;
-	SCHED_LOCK(& irql, & daif);
+	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC);
 	ASSERT(threads_not_started == 0);
 	thread_item_t * const tp = refreshactivetask(oldframe, core);	// also set cpuframe
 	ASSERT(tp);
 	tp->prio = GICI_DECODE_IRQL(irql);
-	tp->daif = daif;
 
 	if (syscallflag)  {
 		// обработка системных вызовов
@@ -2964,7 +2959,6 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 	thread_item_t * const te = task_getready(UINT32_C(1) << core);	// смена текущего потока на данном ядре
 	startedtask [core] = te;
 	next_task_irql [core] = GICI_ENCODE_IRQL(te->prio);
-	next_task_daif [core] = te->daif;
 
 	// еще не переключились на новый стек в aarch32
 //	while (!threads_not_halted)
@@ -2976,7 +2970,6 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 void task_unlock_after_switch(void)
 {
     const uint_fast8_t core = arm_hardware_cpuid();
-	//SCHED_UNLOCK(next_task_irql [core], next_task_daif [core]);
     IRQLSPIN_UNLOCK(& threadslock, next_task_irql [core]);           \
 }
 //
