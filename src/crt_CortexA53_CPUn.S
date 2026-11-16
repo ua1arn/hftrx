@@ -51,32 +51,40 @@ aarch64_stack_top:
 	.section ".text"
 	.align 4, 0
 
-  	.extern Reset_CPUn_Handler
+	.extern Reset_CPUn_Handler
 
-  	.global Reset_CPUx_Handler
-    .func   Reset_CPUx_Handler
-    /* invoked at ARM_MODE_SVC */
+	.global Reset_CPUx_Handler
+	.func   Reset_CPUx_Handler
+	/* Invoked in AArch64 EL3 */
 Reset_CPUx_Handler:
-	ldr x29, = STACKSIZEALL
-	ldr x30, = aarch64_stack_top
-	ldr x30, [x30]
+	/* Ensure all exceptions are masked (D, A, I, F) */
+	msr     daifset, #0xF
 
-	MSR SPSR_fiq, x30
-	sub x30, x30, x29
-	MSR SPSR_und, x30
-	sub x30, x30, x29
-	MSR SPSR_abt, x30
-	sub x30, x30, x29
-	MSR SPSR_irq, x30
-	sub x30, x30, x29
-	mov sp, x30
-	mov x30, XZR
-	B Reset_CPUn_Handler
+	/* Select SP_EL3 as the active stack pointer (SPSel = 1) */
+	msr     spsel, #1
+	isb
+
+	/* Load top of allocated stack and enforce 16-byte alignment */
+	ldr     x30, =aarch64_stack_top
+	ldr     x30, [x30]
+	and     x30, x30, #~0xF
+	mov     sp, x30
+
+	/* Optionally initialize lower EL stack pointers to zero */
+	msr     sp_el0, xzr
+	msr     sp_el1, xzr
+	msr     sp_el2, xzr
+
+	/* Enable FP/SIMD access in EL3 (clear TFP bit 10 in CPTR_EL3) */
+	mrs     x0, cptr_el3
+	bic     x0, x0, #(1 << 10)
+	msr     cptr_el3, x0
+	isb
+
+	mov     x30, xzr
+	b       Reset_CPUn_Handler
 
 	.endfunc
-
-   .ltorg
-
-
+	.ltorg
 
 /*** EOF ***/   

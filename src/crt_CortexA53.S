@@ -101,50 +101,64 @@ __Vectors64:
 /****************************************************************************/
 /*                           Reset handler                                  */
 /****************************************************************************/
+	.global Reset_Handler
 Reset_Handler:
-	ldr x30, =__stack_cpu0_fiq_end
-	MSR SPSR_fiq, x30
-	ldr x30, =__stack_cpu0_und_end
-	MSR SPSR_und, x30
-	ldr x30, =__stack_cpu0_abt_end
-	MSR SPSR_abt, x30
-	ldr x30, =__stack_cpu0_irq_end
-	MSR SPSR_irq, x30
-	ldr x30, =__stack_cpu0_sys_end
-	mov sp, x30
+	/* Mask all exceptions (D, A, I, F) and select SP_EL3 */
+	msr     daifset, #0xF
+	msr     spsel, #1
+	isb
 
-	mov x30, XZR
-	//BL addr64_preparedata	/* fill .bss and prepare constant data */
-	BL SystemInit
-	BL addr64_preparedata	/* fill .bss and prepare constant data */
-
-	ldr x29, = STACKSIZESYSBOOT
-	ldr x30, =__stack
-	MSR SPSR_fiq, x30
-	sub x30, x30, x29
-	MSR SPSR_und, x30
-	sub x30, x30, x29
-	MSR SPSR_abt, x30
-	sub x30, x30, x29
-	MSR SPSR_irq, x30
-	sub x30, x30, x29
-	mov sp, x30
-	mov x30, XZR
-/*
- * Boot CPU general-purpose register settings:
- *   x0 = physical address of device tree blob (dtb) in system RAM.
- *   x1 = 0 (reserved for future use)
- *   x2 = 0 (reserved for future use)
- *   x3 = 0 (reserved for future use)
- */
- 	mov	x0, XZR
- 	mov	x1, XZR
- 	mov	x2, XZR
- 	mov	x3, XZR
-
-	BL _start
+	/* Park any secondary cores that might wake up prematurely */
+	mrs     x0, mpidr_el1
+	/* Extract Aff0 [7:0], Aff1 [15:8], Aff2 [23:16] -> all zero only on CPU0 */
+	and     x0, x0, #0x00FFFFFF
+	cbz     x0, 1f
+0:
+	wfe
+	b       0b
 1:
-	b 1b
+	/* Mask all exceptions (D, A, I, F) and select SP_EL3 */
+	msr     daifset, #0xF
+	msr     spsel, #1
+	isb
+
+	/* Set initial boot stack in SRAM/OCM (16-byte aligned) */
+	ldr     x30, =__stack_cpu0_sys_end
+	and     x30, x30, #~0xF
+	mov     sp, x30
+
+	msr     sp_el0, xzr
+	msr     sp_el1, xzr
+	msr     sp_el2, xzr
+	mov     x30, xzr
+
+	/* Enable FP/SIMD access in EL3 (clear TFP bit 10 in CPTR_EL3) */
+	mrs     x0, cptr_el3
+	bic     x0, x0, #(1 << 10)
+	msr     cptr_el3, x0
+	isb
+
+	/* Initialize clocks, MMU, caches, and SDRAM */
+	bl      SystemInit
+	/* Copy .data and clear .bss sections */
+	bl      addr64_preparedata
+
+	/* Switch to the main stack in DDR RAM (16-byte aligned) */
+	ldr     x30, =__stack
+	and     x30, x30, #~0xF
+	mov     sp, x30
+	mov     x30, xzr
+
+	/* Clear boot arguments (x0..x3) before entering C runtime */
+	mov     x0, xzr
+	mov     x1, xzr
+	mov     x2, xzr
+	mov     x3, xzr
+
+	bl      _start
+1:
+	wfe
+	b       1b
 
    .ltorg
 
@@ -192,7 +206,7 @@ Reset_Handler:
 /*
  * exception_frame offset definitions
  */
-#define EXC_FRAME_SIZE (784)	/* sizeof(struct _exception_frame) */
+#define EXC_FRAME_SIZE (816)	/* sizeof(struct _exception_frame) */
 #define EXC_EXC_TYPE_OFFSET (0)	/* __asm_offsetof(struct _exception_frame, exc_type) */
 #define EXC_EXC_ESR_OFFSET (8)	/* __asm_offsetof(struct _exception_frame, exc_esr) */
 #define EXC_EXC_SP_OFFSET (16)	/* __asm_offsetof(struct _exception_frame, exc_sp) */
@@ -608,24 +622,9 @@ _lower_el_aarch32_serror:
 	.section ".noinit"
 	.align 4
 
-	.space	STACKSIZEUND
-__stack_cpu0_und_end = .
-	.space	STACKSIZEABT
-__stack_cpu0_abt_end = .
-	.space	STACKSIZEFIQ
-__stack_cpu0_fiq_end = .
-	.space	STACKSIZEMON
-__stack_cpu0_mon_end = .
-//	.space	STACKSIZEHYP
-//__stack_cpu0_hyp_end = .
-	.space	STACKSIZESVC
-__stack_cpu0_svc_end = .
 
 	.space	STACKSIZESYSBOOT
 __stack_cpu0_sys_end = .
-
-	.space	STACKSIZEIRQ
-__stack_cpu0_irq_end = .
 
 	.word 0		/* fix non-zero size of this section */
 
