@@ -677,7 +677,7 @@ portholder_t power8(uint_fast8_t v);	// Перенос каждого бита �
 		local_delay_ms(250); \
 	} while (0)
 #else
-	#define HP() do {
+	#define HP() do { \
 		} while (0)
 #endif
 
