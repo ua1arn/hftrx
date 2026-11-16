@@ -1090,10 +1090,10 @@ void irqlog_print(void)
 #if __aarch64__
 typedef uint64_t DAIF_t;
 
-static inline uint64_t global_disable_irq_save(void)
+__STATIC_FORCEINLINE uint64_t global_disable_irq_save(void)
 {
     uint64_t daif;
-    __asm__ volatile (
+    __ASM volatile (
         "mrs %0, daif       \n\t"   /* Читаем текущие маски DAIF */
         "msr daifset, #3    \n\t"   /* #3 = 0b0011 -> закрываем FIQ (1) и IRQ (2) */
         : "=r" (daif)
@@ -1103,9 +1103,9 @@ static inline uint64_t global_disable_irq_save(void)
     return daif;
 }
 
-static inline void global_restore_irq(uint64_t daif)
+__STATIC_FORCEINLINE void global_restore_irq(uint64_t daif)
 {
-    __asm__ volatile (
+	__ASM volatile (
         "msr daif, %0       \n\t"   /* Возвращаем прежние маски DAIF */
         :
         : "r" (daif)
@@ -1113,13 +1113,14 @@ static inline void global_restore_irq(uint64_t daif)
     );
 }
 #else
+
 typedef uint32_t DAIF_t;
 
 /* Сохранить CPSR и запретить IRQ + FIQ */
-static inline uint32_t global_disable_irq_save(void)
+__STATIC_FORCEINLINE uint32_t global_disable_irq_save(void)
 {
     uint32_t cpsr;
-    __asm__ volatile (
+    __ASM volatile (
         "mrs %0, cpsr       \n\t"   /* Читаем текущее состояние CPSR */
         "cpsid if           \n\t"   /* Запрещаем IRQ и FIQ (только IRQ: cpsid i) */
         : "=r" (cpsr)
@@ -1130,15 +1131,16 @@ static inline uint32_t global_disable_irq_save(void)
 }
 
 /* Восстановить прежнее состояние IRQ/FIQ из сохранённого CPSR */
-static inline void global_restore_irq(uint32_t cpsr)
+__STATIC_FORCEINLINE void global_restore_irq(uint32_t cpsr)
 {
-    __asm__ volatile (
+    __ASM volatile (
         "msr cpsr_c, %0     \n\t"   /* Восстанавливаем только управляющий байт CPSR[7:0] */
         :
         : "r" (cpsr)
         : "memory", "cc"
     );
 }
+
 #endif
 
 //#define INT_ID_MASK		0x3ffuL
@@ -1943,9 +1945,9 @@ typedef struct {
 
 static size_t context_size(void)
 {
-	size_t sz = sizeof (irq_stack_frame_top_t) +
+	const size_t sz = sizeof (irq_stack_frame_top_t) +
 			sizeof (irq_stack_frame_bottom_t) +
-			22 * sizeof (uint32_t);
+			2 * sizeof (uint32_t);	// dummy_fp, dummy_lr
 	return (sz + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
 }
 
@@ -1969,7 +1971,6 @@ static void context_init(irq_stack_frame_top_t * __restrict frame_top, void * fn
     frame_bottom->pc_irq = (uintptr_t) fn;
 	frame_bottom->r0 = (uintptr_t) arg;
 	frame_bottom->lr_sys = (uintptr_t) thread_exit_trap;
-	dcache_clean_invalidate((uintptr_t) frame_top, context_size());
 }
 
 // scheduler-mode entry - set svc exit code
@@ -2132,7 +2133,8 @@ static __attribute__((noinline)) uint32_t task_sysfn_old(unsigned arg0, volatile
 
 static size_t context_size(void)
 {
-	return sizeof (irq_stack_frame_top_t);
+	const size_t sz = sizeof (irq_stack_frame_top_t);
+	return (sz + DCACHEROWSIZE - 1) / DCACHEROWSIZE * DCACHEROWSIZE;
 }
 
 
@@ -2213,7 +2215,7 @@ static void context_init(irq_stack_frame_top_t * __restrict oldframe, void * fn,
 #endif
 
 static volatile uint8_t threads_not_started = 1;
-static volatile uint8_t threads_not_halted = 1;
+//static volatile uint8_t threads_not_halted = 1;
 
 
 typedef struct check_ready_tag
@@ -2354,7 +2356,8 @@ static void thread_add(
 
 	ASSERT(NULL != thread);
 	ASSERT(NULL != stackbase);
-	const uintptr_t top = (uintptr_t) stackbase + stacksize;
+	const uintptr_t top = ((uintptr_t) stackbase + stacksize) & ~ ((uintptr_t) DCACHEROWSIZE - 1);
+
 	irq_stack_frame_top_t * const stackframe = (irq_stack_frame_top_t *) (top - context_size());
 	// Установить параметры потока для запуска
 	context_init(stackframe, fn, ctx);
@@ -2377,7 +2380,7 @@ static void thread_add(
 	task_insertready(thread);	// Поскольку готово у выполнению - в список готовых
 	SCHED_UNLOCK(lockIrql, daif);
 
-	//PRINTF("Added thread at prio=%d, aff=%02X (frame=%p), stack[%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
+	//PRINTF("Added thread at prio=%d, aff=%02X (frame=%p), [%p..%p] '%s'\n", prio, affinity, stackframe, stackframe, (void *) top, name);
 }
 
 void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name)
@@ -2531,8 +2534,7 @@ static void timers_check(hwtimcountfast_t tn) {
 }
 
 #if WITHDEBUG
-static int thread_print(char *__restrict buff, size_t size, const thread_item_t * const tp, const char * title)
-{
+static int thread_print(char *__restrict buff, size_t size, const thread_item_t * const tp, const char * title) {
 	int n = 0;
 	irq_stack_frame_top_t * const f = tp->cpuframe;
 	n += local_snprintf_P(buff + n, size - n, "%s %p: irql=0x%02X (prio=%u), aff=0x%02X, ", title, tp, (unsigned) GICI_ENCODE_IRQL(tp->prio), (unsigned) tp->prio, (unsigned) tp->affinity);
@@ -2540,12 +2542,11 @@ static int thread_print(char *__restrict buff, size_t size, const thread_item_t 
 		n += local_snprintf_P(buff + n, size - n, "use=%3u%% ", (unsigned) (100 * (tp->top - (uintptr_t) tp->cpuframe) /  (tp->top - tp->bottom)));
 	else
 		n += local_snprintf_P(buff + n, size - n, "         ");
-	n += local_snprintf_P(buff + n, size - n, "t=%p,b=%p ", (void*) tp->top, (void*) tp->bottom);
+	n += local_snprintf_P(buff + n, size - n, "[%p..%p] ", (void*) tp->bottom, (void*) tp->top);
 	n += local_snprintf_P(buff + n, size - n, "name='%s' ", tp->name);
 	//n += local_snprintf_P(buff + n, size - n, "fpcr=%08X, fpsr=%08X ", (unsigned) f->fpcr, (unsigned) f->fpsr);
 
-	if (0 && tp->check_ready)
-	{
+	if (0 && tp->check_ready) {
 		ASSERT(tp->check_ready->print);
 		ASSERT(tp->check_ready_obj);
 		n += tp->check_ready->print(buff + n, size - n, tp->check_ready, tp->check_ready_obj);
@@ -2555,8 +2556,7 @@ static int thread_print(char *__restrict buff, size_t size, const thread_item_t 
 }
 
 
-static int tasks_print0(char *__restrict buff, size_t size)
-{
+static int tasks_print0(char *__restrict buff, size_t size) {
 	int n = 0;
 	IRQL_t lockIrql;
 	DAIF_t lockDAIF;
@@ -2589,16 +2589,14 @@ static int tasks_print0(char *__restrict buff, size_t size)
 	}
 
 	n += local_snprintf_P(buff + n, size - n, "tasks_print: Ready lists:\n");
-	for (prio = 0; prio < PRIOv_count; ++ prio)
-	{
+	for (prio = 0; prio < PRIOv_count; ++ prio) {
 		PRLIST_ENTRY const list = & threads_listR [prio];
 		if (IsListEmpty(list))
 			continue;	// На данном PRIORITY ничего нет
 		//n += local_snprintf_P(buff + n, size - n, "tasks_print: prio=%u\n", prio);
 		PRLIST_ENTRY t;
 		PRLIST_ENTRY tnext;
-		for (t = list->Flink; t != list; t = tnext)
-		{
+		for (t = list->Flink; t != list; t = tnext) {
 			tnext = t->Flink;
 			thread_item_t * const tp = CONTAINING_RECORD(t, thread_item_t, item);
 			n += thread_print(buff + n, size - n, tp, "ready");
@@ -2611,30 +2609,27 @@ static int tasks_print0(char *__restrict buff, size_t size)
 	return n;
 }
 
-void tasks_print(void)
-{
+void tasks_print(void) {
 	char buff [8192];
 	size_t size = ARRAY_SIZE(buff);
 	tasks_print0(buff, size);
 	// use result
 	dbg_puts(buff);
 }
+
 #else /* WITHDEBUG */
-void tasks_print(void)
-{
+void tasks_print(void) {
 
 }
 #endif /* WITHDEBUG */
 
-static int ready_timeout(hwtimcountfast_t tn, hwtimcountfast_t t0, hwtimcountfast_t td)
-{
+static int ready_timeout(hwtimcountfast_t tn, hwtimcountfast_t t0, hwtimcountfast_t td) {
 	if (td == timestamp_getmask())
 		return 0;
     return (timestamp_getmask() & (tn - t0)) >= td;
 }
 
-static int print_td(char *__restrict buff, size_t size, hwtimcountfast_t td)
-{
+static int print_td(char *__restrict buff, size_t size, hwtimcountfast_t td) {
 	unsigned n = 0;
 	if (td == timestamp_getmask())
 		n += local_snprintf_P(buff + n, size - n, "td=inf ");
@@ -2644,8 +2639,7 @@ static int print_td(char *__restrict buff, size_t size, hwtimcountfast_t td)
 	return n;
 }
 
-static int print_suspend(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1)
-{
+static int print_suspend(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1) {
 	unsigned n = 0;
 	struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
 	ASSERT(param != NULL);
@@ -2656,8 +2650,7 @@ static int print_suspend(char *__restrict buff, size_t size, const check_ready_t
 	return n;
 }
 
-static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, void * arg1)
-{
+static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, void * arg1) {
 	struct taskfnparam_suspend * const param = (struct taskfnparam_suspend *) arg1;
 	if (param == NULL || param->guard != param)
 	{
@@ -2669,8 +2662,7 @@ static int readyfn_suspend(const check_ready_t * chrdyttag, thread_item_t * thre
 	return ready_timeout(tn, param->t0, param->td);
 }
 
-static int print_wait32(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1)
-{
+static int print_wait32(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1) {
 	unsigned n = 0;
 	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
 	ASSERT(param != NULL);
@@ -2682,8 +2674,7 @@ static int print_wait32(char *__restrict buff, size_t size, const check_ready_t 
 	return n;
 }
 
-static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, void * arg1)
-{
+static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, void * arg1) {
 	struct taskfnparam_wait32 * const param = (struct taskfnparam_wait32 *) arg1;
 	if (param == NULL || param->guard != param)
 	{
@@ -2706,8 +2697,7 @@ static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * threa
 	return 0;
 }
 
-static int print_wait32_v2(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1)
-{
+static int print_wait32_v2(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1) {
 	unsigned n = 0;
 	struct taskfnparam_wait32_v2 * const param = (struct taskfnparam_wait32_v2 *) arg1;
 	ASSERT(param != NULL);
@@ -2719,11 +2709,9 @@ static int print_wait32_v2(char *__restrict buff, size_t size, const check_ready
 	return n;
 }
 
-static int readyfn_wait32_v2(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, void * arg1)
-{
+static int readyfn_wait32_v2(const check_ready_t * chrdyttag, thread_item_t * thread, hwtimcountfast_t tn, void * arg1) {
 	struct taskfnparam_wait32_v2 * const param = (struct taskfnparam_wait32_v2 *) arg1;
-	if (param == NULL || param->guard != param)
-	{
+	if (param == NULL || param->guard != param)  {
 		PRINTF("readyfn_wait32_v2: '%s' aff=%02X\n", thread->name, thread->affinity);
 		tasks_print();
 	}
@@ -2731,26 +2719,22 @@ static int readyfn_wait32_v2(const check_ready_t * chrdyttag, thread_item_t * th
 	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
 	ASSERT(param->flag != NULL);
 	const uint_fast32_t f = * param->flag & param->mask;
-	if (f == param->state)
-	{
+	if (f == param->state)  {
 		context_set_ec(thread->cpuframe, 0);
 		return 1;
 	}
-	if (f == param->errstate)
-	{
+	if (f == param->errstate) {
 		context_set_ec(thread->cpuframe, 1);
 		return 1;
 	}
-	if (ready_timeout(tn, param->t0, param->td))
-	{
+	if (ready_timeout(tn, param->t0, param->td)) {
 		context_set_ec(thread->cpuframe, 1);
 		return 1;
 	}
 	return 0;
 }
 
-static int print_wait8(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1)
-{
+static int print_wait8(char *__restrict buff, size_t size, const check_ready_t * chrdyttag, void * arg1)  {
 	unsigned n = 0;
 	struct taskfnparam_wait8 * const param = (struct taskfnparam_wait8 *) arg1;
 	ASSERT(param != NULL);
@@ -2768,13 +2752,11 @@ static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread
 	ASSERT(param != NULL);
 	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
 	ASSERT(param->flag != NULL);
-	if ((* param->flag & param->mask) == param->state)
-	{
+	if ((* param->flag & param->mask) == param->state)  {
 		context_set_ec(thread->cpuframe, 0);
 		return 1;
 	}
-	if (ready_timeout(tn, param->t0, param->td))
-	{
+	if (ready_timeout(tn, param->t0, param->td)) {
 		context_set_ec(thread->cpuframe, 1);
 		return 1;
 	}
@@ -2797,18 +2779,15 @@ static int readyfn_waitlist(const check_ready_t * chrdyttag, thread_item_t * thr
 	struct taskfnparam_waitlist * const param = (struct taskfnparam_waitlist *) arg1;
 	ASSERT(param != NULL);
 	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
-	if (LCLSPIN_TRAYLOCK(param->lock))
-	{
+	if (LCLSPIN_TRAYLOCK(param->lock)) {
 		const int f = IsListEmpty(param->list);
 		LCLSPIN_UNLOCK(param->lock);
-		if (! f)
-		{
+		if (! f) {
 			context_set_ec(thread->cpuframe, 0);
 			return 1;
 		}
 	}
-	if (ready_timeout(tn, param->t0, param->td))
-	{
+	if (ready_timeout(tn, param->t0, param->td)) {
 		context_set_ec(thread->cpuframe, 1);
 		return 1;
 	}
@@ -2858,8 +2837,7 @@ static const check_ready_t readytag_waitlist =
 // thread может быть включена в список ожидающих
 static void task_syscall_handler(thread_item_t * thread, unsigned arg0, void * arg1)
 {
-	switch (arg0)
-	{
+	switch (arg0)  {
 	default:
 		task_insertready(thread);
 		return;
@@ -2906,10 +2884,9 @@ static void task_syscall_handler(thread_item_t * thread, unsigned arg0, void * a
 	}
 }
 
-static thread_item_t * refreshactivetask(void * oldframe, uint_fast8_t core)
-{
+static thread_item_t * refreshactivetask(void * oldframe, uint_fast8_t core)  {
 	thread_item_t * * const pt = & startedtask [core];	// не NULL - значит запускали из task_scheduler0
-	if (* pt == NULL)  {
+	if (* pt == NULL) {
 		static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
 		// ещё не имеет своей структуры - создан в момент start-up системы.
 		thread_item_t * const thread = & base_threads [core];
@@ -2943,7 +2920,7 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 	ASSERT(tp);
 	tp->prio = GICI_DECODE_IRQL(irql);
 
-	if (syscallflag)  {
+	if (syscallflag) {
 		// обработка системных вызовов
 		task_svc(tp, code, oldframe);	// thread переходит в список ждущих или готовых - или исчезает
 	} else {
@@ -3138,10 +3115,9 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 // Set thread affinity - return old value
 // функция нужна для запрета смены процессора при выполнении обработчика преерываний.
 // (EOI должно идти в GIC INTERFACE того же ядра, где и возникло)
-static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
+static unsigned thread_set_affinity(void * oldframe, unsigned affinity, uint_fast8_t core)
 {
-	const uint_fast8_t core = arm_hardware_cpuid();
-	thread_item_t * const tp = refreshactivetask(oldframe, core);
+	thread_item_t * const tp = refreshactivetask(oldframe, core);	// also set cpuframe
 
 	const unsigned aff = tp->affinity;
 	tp->affinity = affinity;
@@ -3305,11 +3281,11 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 
 
 // Set thread affinity - return old value
-static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
-{
-	return 0;
-}
-
+//static unsigned thread_set_affinity(void * oldframe, unsigned affinity)
+//{
+//	return 0;
+//}
+//
 #endif /* WITHRTOS */
 
 
@@ -3350,9 +3326,10 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 #if WITHRTOS
 	if (threads_not_started)
 		run_notask_curr(frame);
-	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
+	const uint_fast8_t core = arm_hardware_cpuid();
+	const unsigned aff = thread_set_affinity(frame, 1U << core, core);
 	IRQ_Handler_GIC();		// Group 1 handler
-	thread_set_affinity(frame, aff);
+	thread_set_affinity(frame, aff, core);
 	run_task_curr(task_scheduler(frame));
 #else /* WITHRTOS */
 	IRQ_Handler_GIC();		// Group 1 handler
@@ -3368,9 +3345,10 @@ void __NO_RETURN VFIQ_Handler(void * frame)
 #if WITHRTOS
 	if (threads_not_started)
 		run_notask_curr(frame);
-	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
+	const uint_fast8_t core = arm_hardware_cpuid();
+	const unsigned aff = thread_set_affinity(frame, 1U << core, core);
 	FIQ_Handler_GIC();		// Group 0 handler
-	thread_set_affinity(frame, aff);
+	thread_set_affinity(frame, aff, core);
 	run_task_curr(task_scheduler(frame));
 #else /* WITHRTOS */
 	FIQ_Handler_GIC();		// Group 0 handler
@@ -3438,7 +3416,7 @@ void SError_Handler(void * frame)
 /** \brief  Get IFAR
 \return		Instruction Fault Address register value
 */
-uint32_t __get_IFAR(void)
+__STATIC_FORCEINLINE uint32_t __get_IFAR(void)
 {
 	uint32_t result;
 	__get_CP(15, 0, result, 6, 0, 2);
@@ -3451,7 +3429,7 @@ uint32_t __get_IFAR(void)
 /** \brief  Get DFAR
 \return		Data Fault Address register value
 */
-uint32_t __get_DFAR(void)
+__STATIC_FORCEINLINE uint32_t __get_DFAR(void)
 {
 	uint32_t result;
 	__get_CP(15, 0, result, 6, 0, 0);
@@ -3469,9 +3447,10 @@ void IRQ_Handler_aarch32(void * frame)
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
     irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
 
-    const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
+	const uint_fast8_t core = arm_hardware_cpuid();
+	const unsigned aff = thread_set_affinity(frame, 1U << core, core);
 	IRQ_Handler_GIC();			// Group 1 handler
-	thread_set_affinity(frame, aff);
+	thread_set_affinity(frame, aff, core);
 	run_task_curr_aarch32(task_scheduler(frame));
 #else /* WITHRTOS */
 	IRQ_Handler_GIC();			// Group 1 handler
@@ -3489,9 +3468,10 @@ void FIQ_Handler_aarch32(void * frame)
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
     irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
 
-    const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
+	const uint_fast8_t core = arm_hardware_cpuid();
+    const unsigned aff = thread_set_affinity(frame, 1U << core, core);
 	FIQ_Handler_GIC();			// Group 0 handler
-	thread_set_affinity(frame, aff);
+	thread_set_affinity(frame, aff, core);
 	run_task_curr_aarch32(task_scheduler(frame));
 #else /* WITHRTOS */
 	FIQ_Handler_GIC();			// Group 0 handler
@@ -3517,8 +3497,7 @@ void __NO_RETURN SWI_Handler_aarch32(void * frame)
 #endif /* WITHRTOS */
 }
 
-void Undef_Handler(void)
-{
+void Undef_Handler(void)  {
 	const volatile uint32_t marker = 0xDEADBEEF;
 
 #pragma GCC diagnostic push
@@ -3526,8 +3505,7 @@ void Undef_Handler(void)
 	PRINTF("Undef_Handler trapped. CPUID=%u, DFSR=%08X, IFAR=%08X, pc=%08X, sp~%08x __get_MPIDR()=%08X\n", arm_hardware_cpuid(), (unsigned) __get_DFSR(), (unsigned) __get_IFAR(), (unsigned) (& marker) [2], (unsigned) (uintptr_t) & marker, (unsigned) __get_MPIDR());
 #pragma GCC diagnostic pop
 	unsigned i;
-	for (i = 0; i < 8; ++ i)
-	{
+	for (i = 0; i < 8; ++ i)  {
 		PRINTF("marker[%2d]=%08X\n", i, (unsigned) (& marker) [i]);
 	}
 	//threads_not_halted = 0;
@@ -3599,11 +3577,10 @@ void PAbort_Handler(void)
 //	{
 //		PRINTF("marker [%2d] = %08X\n", i, (unsigned) (& marker) [i]);
 //	}
-	threads_not_halted = 0;
+	//threads_not_halted = 0;
 #if defined (BOARD_BLINK_INITIALIZE)
 	BOARD_BLINK_INITIALIZE();;
-	for (;;)
-	{
+	for (;;) {
 		BOARD_BLINK_SETSTATE(1);
 		local_delay_us(750 * 1000);
 		BOARD_BLINK_SETSTATE(0);
@@ -3667,7 +3644,7 @@ void DAbort_Handler(void)
 	{
 		PRINTF("marker [%2d] = %08X\n", i, (unsigned) (& marker) [i]);
 	}
-	threads_not_halted = 0;
+	//threads_not_halted = 0;
 #if defined (BOARD_BLINK_INITIALIZE)
 	BOARD_BLINK_INITIALIZE();;
 	for (;;)
@@ -3710,7 +3687,7 @@ static uint32_t get_sp_sys(void)
 
 void DAbort_Handler_c(uint32_t fault_pc, uint32_t fault_spsr, uint32_t fault_sp)
 {
-    threads_not_halted = 0;
+    //threads_not_halted = 0;
     PRINTF("\n=== DAbort_Handler_c CPU=%u ===\n", arm_hardware_cpuid());
     PRINTF("PC=%08X SPSR=%08X SP_sys=%08X\n", (unsigned)fault_pc, (unsigned)fault_spsr, (unsigned)get_sp_sys());
     PRINTF("DFSR=%08X DFAR=%08X\n", (unsigned)__get_DFSR(), (unsigned)__get_DFAR());
@@ -3719,7 +3696,7 @@ void DAbort_Handler_c(uint32_t fault_pc, uint32_t fault_spsr, uint32_t fault_sp)
 
 void PAbort_Handler_c(uint32_t fault_pc, uint32_t fault_spsr, uint32_t fault_sp)
 {
-    threads_not_halted = 0;
+    //threads_not_halted = 0;
     PRINTF("\n=== PAbort_Handler_c CPU=%u ===\n", arm_hardware_cpuid());
     PRINTF("PC=%08X SPSR=%08X SP_sys=%08X\n", (unsigned)fault_pc, (unsigned)fault_spsr, (unsigned)get_sp_sys());
     PRINTF("DFSR=%08X DFAR=%08X\n", (unsigned)__get_DFSR(), (unsigned)__get_DFAR());
@@ -3728,7 +3705,7 @@ void PAbort_Handler_c(uint32_t fault_pc, uint32_t fault_spsr, uint32_t fault_sp)
 
 void Undef_Handler_c(uint32_t fault_pc, uint32_t fault_spsr, uint32_t fault_sp)
 {
-    threads_not_halted = 0;
+    //threads_not_halted = 0;
     PRINTF("\n=== Undef_Handler_c CPU=%u ===\n", arm_hardware_cpuid());
     PRINTF("PC=%08X SPSR=%08X SP_sys=%08X\n", (unsigned)fault_pc, (unsigned)fault_spsr, (unsigned)get_sp_sys());
     PRINTF("DFSR=%08X DFAR=%08X\n", (unsigned)__get_DFSR(), (unsigned)__get_DFAR());
