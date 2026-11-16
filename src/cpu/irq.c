@@ -3980,7 +3980,7 @@ uint_fast8_t arm_hardware_cpuid(void)
 	// Cortex-A53 computers
 	return __get_MPIDR_EL1() & 0xFF;	// Aff0
 
-#elif (__ARM_ARCH == 8)
+#elif (__CORTEX_A != 0)//(__ARM_ARCH == 8)
 	// Cortex-A computers
     const uint64_t mpidr = __get_MPIDR();
     /* Check Bit 24 (MT - Multi-threading flag) to determine layout style */
