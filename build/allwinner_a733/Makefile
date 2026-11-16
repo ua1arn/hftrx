@@ -50,6 +50,7 @@ GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
+RANLIB = $(TRGT)ranlib
 HEX  = $(CP) -O ihex
 BIN  = $(CP) -O binary
 AR   = $(TRGT)ar rcs --plugin ../libexec/gcc/$(TRGT2)/14.2.1/liblto_plugin.dll
@@ -61,7 +62,8 @@ OBJDUMP = $(TRGT)objdump
 #CORE = -mcpu=cortex-a55 -mfloat-abi=hard -mfpu=neon-vfpv4 --specs=nosys.specs
 
 CORE = -mcpu=cortex-a55 -mfpu=neon-vfpv4 --specs=nosys.specs -mfloat-abi=hard
-# for SyterKit
+
+# Uncomment this  for SyterKit compatibility thn bootloader build, comment previous
 #CORE = -mcpu=cortex-a55 -mfpu=vfpv4 --specs=nosys.specs -mfloat-abi=softfp
 
 # Define optimisation level here
@@ -236,6 +238,9 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 #CPFLAGS += -fno-inline-functions 
 #CPFLAGS += -fwhole-program
 
+# for SyterKit compatibility
+LDFLAGS_BOOT += -Wl,--no-enum-size-warning 
+LDFLAGS_BOOT += -Wl,-z,noexecstack
 
 #
 # makefile rules
@@ -281,8 +286,9 @@ erase:
 	$(XFEL) spinor erase 0x00040000 1024
 
 libdram_patched.a: $(LIBDRAM)
-	$(CP) --redefine-sym memcpy=dram_safe_memcpy $(LIBDRAM) libdram_patched.a
-
+	$(CP) --redefine-sym memcpy=dram_safe_memcpy $(LIBDRAM) $@
+	$(RANLIB) $@
+	
 BOOT2: $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
