@@ -265,7 +265,7 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
     USBx->SYSCFG0 |= USB_DPRPU;
 
 //    InterruptHandlerRegister(USBIX_IRQn, &_usbisr);
-//    GIC_SetPriority(USBIX_IRQn, 16);
+//    GIC_SetPriority_Atomic(USBIX_IRQn, 16);
 //    GIC_SetConfiguration(USBIX_IRQn, 1);
 //    GIC_EnableIRQ(USBIX_IRQn);
 	//arm_hardware_set_handler_system(USBIX_IRQn, _usbisr);

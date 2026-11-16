@@ -1080,11 +1080,6 @@ void irqlog_print(void)
 }
 #endif
 
-//#define INTC_LEVEL_SENSITIVE    (0)     /* Level sense  */
-//#define INTC_EDGE_TRIGGER       (1)     /* Edge trigger */
-
-/* ==== Interrupt detection ==== */
-
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 #if __aarch64__
@@ -1143,6 +1138,11 @@ __STATIC_FORCEINLINE void global_restore_irq(uint32_t cpsr)
 
 #endif
 
+
+//#define INTC_LEVEL_SENSITIVE    (0)     /* Level sense  */
+//#define INTC_EDGE_TRIGGER       (1)     /* Edge trigger */
+
+/* ==== Interrupt detection ==== */
 //#define INT_ID_MASK		0x3ffuL
 /* Interrupt IDs reported by the HPPIR and IAR registers */
 //#define PENDING_G1_INTID	1022uL
@@ -1175,7 +1175,6 @@ __STATIC_FORCEINLINE void global_restore_irq(uint32_t cpsr)
 //	return id;
 //}
 
-//static RAMDTCM LCLSPINLOCK_t giclock = IRQLSPINLOCK_INIT;
 
 /* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
 // See ARM IHI 0048B.b document
@@ -1215,26 +1214,13 @@ static void IRQ_Handler_GIC_G1(void)
 
 	// IHI0048B_b_gic_architecture_specification.pdf
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
-	if (int_id == 1022)
-	{
-#if WITHIRQTRACE
-		dbg_putchar('@');
-		dbg_putchar('a' + arm_hardware_cpuid());
-#endif /* WITHIRQTRACE */
-	}
-
 	if (int_id >= 1020)
 	{
 #if WITHIRQTRACE
 		dbg_putchar('#');
 		dbg_putchar('a' + arm_hardware_cpuid());
 #endif /* WITHIRQTRACE */
-		//LCLSPIN_LOCK(& giclock);
-		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
-		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
-		//LCLSPIN_UNLOCK(& giclock);
-
+		GIC_SetPriority_Atomic((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
 	}
 	else if (int_id != 0 /* || GIC_GetIRQStatus(0) != 0 */)
 	{
@@ -1258,18 +1244,15 @@ static void IRQ_Handler_GIC_G1(void)
 			global_disableIRQ();					/* modify I bit in CPSR */
 		}
 
+		GIC_EndInterrupt((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
+		//GICInterface->EOIR = gicc_iar;
 	}
 	else
 	{
-		//LCLSPIN_LOCK(& giclock);
-		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
-		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
-		//LCLSPIN_UNLOCK(& giclock);
+		GIC_SetPriority_Atomic((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
+		GIC_EndInterrupt((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
 	}
 
-	GIC_EndInterrupt((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
-	//GICInterface->EOIR = gicc_iar;
 }
 
 #if (__CORTEX_A == 55U)
@@ -1320,13 +1303,6 @@ static void FIQ_Handler_GIC_G0(void)
 //	dbg_putchar('y');
 //	dbg_putchar('a' + arm_hardware_cpuid());
 #endif /* WITHIRQTRACE */
-	if (int_id == 1022)
-	{
-#if WITHIRQTRACE
-		dbg_putchar('-');
-		dbg_putchar('a' + arm_hardware_cpuid());
-#endif /* WITHIRQTRACE */
-	}
 
 	if (int_id >= 1020)
 	{
@@ -1334,12 +1310,8 @@ static void FIQ_Handler_GIC_G0(void)
 		dbg_putchar('=');
 		dbg_putchar('a' + arm_hardware_cpuid());
 #endif /* WITHIRQTRACE */
-		//LCLSPIN_LOCK(& giclock);
-		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
-		//GICDistributor->GICD_IPRIORITYR [0] = GICDistributor->GICD_IPRIORITYR [0];
-		//GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
-		//LCLSPIN_UNLOCK(& giclock);
 
+		GIC_SetPriority_Atomic((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
 	}
 	else if (int_id != 0 /* || GIC_GetIRQStatus(0) != 0 */)
 	{
@@ -1361,18 +1333,15 @@ static void FIQ_Handler_GIC_G0(void)
 			(* f)();	    /* Call interrupt handler */
 			global_disableIRQ();					/* modify I bit in CPSR */
 		}
-
+		GIC_EndInterruptG0((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
+		//GICInterface->EOIR = gicc_iar;
 	}
 	else
 	{
-		//LCLSPIN_LOCK(& giclock);
-		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-		//GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
-		GIC_SetPriority((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
-		//LCLSPIN_UNLOCK(& giclock);
+		GIC_SetPriority_Atomic((IRQn_Type) 0, GIC_GetPriority((IRQn_Type) 0));
+		GIC_EndInterruptG0((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
+		//GICInterface->EOIR = gicc_iar;
 	}
-	GIC_EndInterruptG0((IRQn_Type) gicc_iar);	/* CPUID, EOINTID */
-	//GICInterface->EOIR = gicc_iar;
 }
 #endif /* (__CORTEX_A == 55U) */
 
@@ -4118,7 +4087,7 @@ static void arm_hardware_gicsfetch(void)
 	LCLSPIN_LOCK(& gicdistrib_lock);
 	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
-		GIC_SetPriority((IRQn_Type) int_id, gicshadow_prio [int_id]);	// non-atomic operation
+		GIC_SetPriority_Atomic((IRQn_Type) int_id, gicshadow_prio [int_id]);	// non-atomic operation
 		if (gicshadow_enab [int_id])
 			GIC_EnableIRQ((IRQn_Type) int_id);	// atomic operation
 		else
@@ -4153,7 +4122,7 @@ static void arm_hardware_populate_initialize(void)
 	ASSERT(arm_hardware_cpuid() == 0);
 	//PRINTF("arm_hardware_populate_initialize\n");
 	LCLSPIN_LOCK(& gicdistrib_lock);
-	GIC_SetPriority(BOARD_SGI_IRQ, ARM_IPC_PRIORITY);	// non-atomic operation
+	GIC_SetPriority_Atomic(BOARD_SGI_IRQ, ARM_IPC_PRIORITY);	// non-atomic operation
 	// Get ITLinesNumber
 	const unsigned ITLinesNumber = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
 	unsigned int_id;
@@ -4180,7 +4149,7 @@ void arm_hardware_populte_second_initialize(void)
 	//PRINTF("arm_hardware_populte_second_initialize\n");
 
 	LCLSPIN_LOCK(& gicdistrib_lock);
-	GIC_SetPriority(BOARD_SGI_IRQ, ARM_IPC_PRIORITY);	// non-atomic operation
+	GIC_SetPriority_Atomic(BOARD_SGI_IRQ, ARM_IPC_PRIORITY);	// non-atomic operation
 	LCLSPIN_UNLOCK(& gicdistrib_lock);
 }
 
@@ -4216,8 +4185,8 @@ _unused
 
 	LCLSPIN_LOCK(& gicdistrib_lock);
 
-	VERIFY(IRQ_SetPriority(int_id, priority) == 0);	// non-atomic operation
-	GIC_SetTarget(int_id, targetcpu);	// non-atomic operation
+	GIC_SetPriority_Atomic(int_id, priority);
+	GIC_SetTarget(int_id, targetcpu);	// non-atomic operation fov GIC v2
 	if (int_id >= 32)
 	{
 //		PRINTF("targetcpu[%u]: set=%02X get=%02X\n", (unsigned) int_id, (unsigned) targetcpu, (unsigned) GIC_GetTarget(int_id));

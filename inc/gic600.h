@@ -411,7 +411,7 @@ __STATIC_INLINE int GIC_GetARE(void)
 */
 __STATIC_INLINE void GIC_SetTarget(IRQn_Type IRQn, uint32_t cpu_target)
 {
-	if (IRQn >= 32 && GIC_GetARE())
+	if ((uint32_t) IRQn >= 32 && GIC_GetARE())
 	{
 		if ((cpu_target == 0) || (cpu_target & (cpu_target - 1))) {
 			/* If multiple bits are set in the mask (or mask is 0), enable 1-of-N routing mode.
@@ -445,7 +445,7 @@ __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
 {
     uint64_t cpu_target = 0;
 
-    if (IRQn >= 32 && GIC_GetARE())
+    if ((uint32_t) IRQn >= 32 && GIC_GetARE())
     {
 		/* affinity routing */
 		cpu_target = (GICDistributor->GICD_IROUTER[IRQn] & GICDistributor_IROUTER_Aff1_Msk) >> GICDistributor_IROUTER_Aff1_Pos;
@@ -468,7 +468,7 @@ __STATIC_INLINE uint32_t GIC_GetTarget(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_EnableIRQ(IRQn_Type IRQn)
 {
-	if (IRQn < 32 && GIC_GetARE()) {
+	if ((uint32_t) IRQn < 32 && GIC_GetARE()) {
 		GICRedistributor_Type * const GICR = GIC_GetRdist();
 		//
 		GICR->SGI_PPI.GICR_ISENABLER0 = UINT32_C(1) << (IRQn % 32U);
@@ -482,7 +482,7 @@ __STATIC_INLINE void GIC_EnableIRQ(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_DisableIRQ(IRQn_Type IRQn)
 {
-	if (IRQn < 32 && GIC_GetARE()) {
+	if ((uint32_t) IRQn < 32 && GIC_GetARE()) {
 		GICRedistributor_Type * const GICR = GIC_GetRdist();
 		GICR->SGI_PPI.GICR_ICENABLER0 = UINT32_C(1) << (IRQn % 32U);
 	}
@@ -498,7 +498,7 @@ __STATIC_INLINE void GIC_DisableIRQ(IRQn_Type IRQn)
 */
 __STATIC_INLINE uint32_t GIC_GetEnableIRQ(IRQn_Type IRQn)
 {
-	if (IRQn < 32 && GIC_GetARE()) {
+	if ((uint32_t) IRQn < 32 && GIC_GetARE()) {
 		GICRedistributor_Type * const GICR = GIC_GetRdist();
 		return (GICR->SGI_PPI.GICR_ISENABLER0 >> (IRQn % 32U)) & UINT32_C(1);
 	}
@@ -516,7 +516,7 @@ __STATIC_INLINE uint32_t GIC_GetPendingIRQ(IRQn_Type IRQn)
 {
 	uint32_t pend;
 
-	if (IRQn >= 16) {
+	if ((uint32_t) IRQn >= 16) {
 		pend = (GICDistributor->GICD_ISPENDR[IRQn / 32U] >> (IRQn % 32U)) & UINT32_C(1);
 	} else {
 	// INTID 0-15 Software Generated Interrupt
@@ -537,7 +537,7 @@ __STATIC_INLINE uint32_t GIC_GetPendingIRQ(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_SetPendingIRQ(IRQn_Type IRQn)
 {
-	if (IRQn >= 16) {
+	if ((uint32_t) IRQn >= 16) {
 		GICDistributor->GICD_ISPENDR[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
 	} else {
 		// INTID 0-15 Software Generated Interrupt
@@ -552,7 +552,7 @@ __STATIC_INLINE void GIC_SetPendingIRQ(IRQn_Type IRQn)
 */
 __STATIC_INLINE void GIC_ClearPendingIRQ(IRQn_Type IRQn)
 {
-	if (IRQn >= 16U) {
+	if ((uint32_t) IRQn >= 16U) {
 		GICDistributor->GICD_ICPENDR[IRQn / 32U] = UINT32_C(1) << (IRQn % 32U);
 	} else {
 		// INTID 0-15 Software Generated Interrupt
@@ -574,7 +574,7 @@ __STATIC_INLINE void GIC_SetConfiguration(IRQn_Type IRQn, uint32_t int_config)
 	icfgr &= (~ (UINT32_C(0x03) << shift));                   /* clear bits to change */
 	icfgr |= (  int_config 	    << shift);                    /* set new configuration */
 	GICDistributor->GICD_ICFGR[IRQn / 16U] = icfgr;           /* write new register content */
-	if (IRQn < 32 && GIC_GetARE()) {
+	if ((uint32_t) IRQn < 32 && GIC_GetARE()) {
 		GICRedistributor_Type * const GICR = GIC_GetRdist();
 		//
 		uint32_t icfgr = GICR->SGI_PPI.GICR_ICFGR [IRQn / 16U];  /* read current register content */
@@ -593,7 +593,7 @@ __STATIC_INLINE void GIC_SetConfiguration(IRQn_Type IRQn, uint32_t int_config)
 */
 __STATIC_INLINE uint32_t GIC_GetConfiguration(IRQn_Type IRQn)
 {
-	if (IRQn < 32 && GIC_GetARE()) {
+	if ((uint32_t) IRQn < 32 && GIC_GetARE()) {
 		GICRedistributor_Type * const GICR = GIC_GetRdist();
 		//
 		return (GICR->SGI_PPI.GICR_ICFGR[IRQn / 16U] >> ((IRQn % 16U) << 1U)) & UINT32_C(0x03);
@@ -606,8 +606,27 @@ __STATIC_INLINE void GIC_SetRedistPriority(IRQn_Type IRQn, uint32_t priority)
 {
 	GICRedistributor_Type * const GICR = GIC_GetRdist();
 	//
-	const uint32_t mask = GICR->SGI_PPI.GICR_IPRIORITYR [IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
-	GICR->SGI_PPI.GICR_IPRIORITYR [IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
+    /* SGI (0..15) и PPI (16..31) — в GICv3 лежат в GICR конкретного ядра (per-CPU) */
+    volatile uint8_t * const gicr_prio = (volatile uint8_t *) & GICR->SGI_PPI.GICR_IPRIORITYR [0];
+    gicr_prio [(uint32_t)IRQn] = priority;
+}
+
+// gic v3, v4, gic600
+__STATIC_INLINE void GIC_SetPriority_Atomic(IRQn_Type IRQn, uint32_t priority)
+{
+    if ((uint32_t) IRQn < 32 && GIC_GetARE())
+    {
+		GICRedistributor_Type * const GICR = GIC_GetRdist();
+        /* SGI (0..15) и PPI (16..31) — в GICv3 лежат в GICR конкретного ядра (per-CPU) */
+        volatile uint8_t * const gicr_prio = (volatile uint8_t *) & GICR->SGI_PPI.GICR_IPRIORITYR [0];
+        gicr_prio [(uint32_t)IRQn] = priority;
+    }
+    else
+    {
+        /* SPI (32..1019) — байтовая запись STRB в GICD_IPRIORITYR */
+        volatile uint8_t * const gicd_prio = (volatile uint8_t *)&GICDistributor->GICD_IPRIORITYR[0];
+        gicd_prio[(uint32_t)IRQn] = priority;
+    }
 }
 
 /** \brief Set the priority for the given interrupt in the GIC's IPRIORITYR register.
@@ -616,15 +635,17 @@ __STATIC_INLINE void GIC_SetRedistPriority(IRQn_Type IRQn, uint32_t priority)
 */
 __STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 {
-	if (IRQn < 32 && GIC_GetARE()) {
-		GICRedistributor_Type * const GICR = GIC_GetRdist();
-		//
-		const uint32_t mask = GICR->SGI_PPI.GICR_IPRIORITYR [IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
-		GICR->SGI_PPI.GICR_IPRIORITYR [IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
-} else {
-		uint32_t mask = GICDistributor->GICD_IPRIORITYR[IRQn / 4U] & ~ (UINT32_C(0xFF) << ((IRQn % 4U) * 8U));
-		GICDistributor->GICD_IPRIORITYR [IRQn / 4U] = mask | ((priority & UINT32_C(0xFF)) << ((IRQn % 4U) * 8U));
-	}
+	GIC_SetPriority_Atomic(IRQn, priority);
+
+//	if ((uint32_t) IRQn < 32 && GIC_GetARE()) {
+//		GICRedistributor_Type * const GICR = GIC_GetRdist();
+//		//
+//		const uint32_t mask = GICR->SGI_PPI.GICR_IPRIORITYR [IRQn / 4U] & ~(0xFFUL << ((IRQn % 4U) * 8U));
+//		GICR->SGI_PPI.GICR_IPRIORITYR [IRQn / 4U] = mask | ((priority & 0xFFUL) << ((IRQn % 4U) * 8U));
+//	} else {
+//		uint32_t mask = GICDistributor->GICD_IPRIORITYR[IRQn / 4U] & ~ (UINT32_C(0xFF) << ((IRQn % 4U) * 8U));
+//		GICDistributor->GICD_IPRIORITYR [IRQn / 4U] = mask | ((priority & UINT32_C(0xFF)) << ((IRQn % 4U) * 8U));
+//	}
 }
 
 /** \brief Read the current interrupt priority from GIC's IPRIORITYR register.
@@ -632,7 +653,7 @@ __STATIC_INLINE void GIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 */
 __STATIC_INLINE uint32_t GIC_GetPriority(IRQn_Type IRQn)
 {
-	if (IRQn < 32 && GIC_GetARE()) {
+	if ((uint32_t) IRQn < 32 && GIC_GetARE()) {
 		GICRedistributor_Type * const GICR = GIC_GetRdist();
 		//
 		return (GICR->SGI_PPI.GICR_IPRIORITYR[IRQn / 4U] >> ((IRQn % 4U) * 8U)) & UINT32_C(0xFF);
@@ -1757,9 +1778,9 @@ __STATIC_INLINE void GIC_DistInit(void)
 //   Use PPI, as it is always accessible, even for a Guest OS using a hypervisor.
 //   Then restore the initial state.*/
 //    ppi_priority = GIC_GetPriority((IRQn_Type)31U);
-//    GIC_SetPriority((IRQn_Type)31U, 0xFFU);
+//    GIC_SetPriority_Atomic((IRQn_Type)31U, 0xFFU);
 //    priority_field = GIC_GetPriority((IRQn_Type)31U);
-//    GIC_SetPriority((IRQn_Type)31U, ppi_priority);
+//    GIC_SetPriority_Atomic((IRQn_Type)31U, ppi_priority);
 //
   for (i = 32U; i < num_irq; i++)
   {
@@ -1768,7 +1789,7 @@ __STATIC_INLINE void GIC_DistInit(void)
       //Set level-sensitive (and N-N model)
       //GIC_SetConfiguration((IRQn_Type)i, 0U);
       //Set priority
-      //GIC_SetPriority((IRQn_Type)i, priority_field/2U);
+      //GIC_SetPriority_Atomic((IRQn_Type)i, priority_field/2U);
       //Set target list to CPU0
       //GIC_SetTarget((IRQn_Type)i, 1U);
   }

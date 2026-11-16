@@ -2611,7 +2611,7 @@ __NO_RETURN void Reset_CPUn_Handler(void)
 	LCLSPIN_UNLOCK(& cpu1init);
 	LCLSPIN_LOCK(& cpu1userstart [core]);		/* ждем пока основной user thread не разрешит выполняться */
 	LCLSPIN_UNLOCK(& cpu1userstart [core]);
-	GIC_SetPriority(SGI15_IRQn, ARM_SYSTEM_PRIORITY);	// for tests, non-atomic operation
+	GIC_SetPriority_Atomic(SGI15_IRQn, ARM_SYSTEM_PRIORITY);
 
 	InitializeIrql(IRQL_USER);	// nested interrupts support
 

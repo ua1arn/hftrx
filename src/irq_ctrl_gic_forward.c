@@ -263,50 +263,6 @@ uint32_t IRQ_GetMode (IRQn_ID_t irqn) {
 }
 
 
-/// Get ID number of current interrupt request (IRQ).
-IRQn_ID_t IRQ_GetActiveIRQ (void) {
-  IRQn_ID_t irqn;
-  uint32_t prio;
-
-  /* Dummy read to avoid GIC 390 errata 801120 */
-  GIC_GetHighPendingIRQ();
-
-  irqn = GIC_AcknowledgePending();
-
-  __DSB();
-
-  /* Workaround GIC 390 errata 733075 (GIC-390_Errata_Notice_v6.pdf, 09-Jul-2014)  */
-  /* The following workaround code is for a single-core system.  It would be       */
-  /* different in a multi-core system.                                             */
-  /* If the ID is 0 or 0x3FE or 0x3FF, then the GIC CPU interface may be locked-up */
-  /* so unlock it, otherwise service the interrupt as normal.                      */
-  /* Special IDs 1020=0x3FC and 1021=0x3FD are reserved values in GICv1 and GICv2  */
-  /* so will not occur here.                                                       */
-
-  if ((irqn == 0) || (irqn >= 0x3FE)) {
-    /* Unlock the CPU interface with a dummy write to Interrupt Priority Register */
-    prio = GIC_GetPriority((IRQn_Type)0);
-    GIC_SetPriority ((IRQn_Type)0, prio);
-
-    __DSB();
-
-    if ((irqn == 0U) && ((GIC_GetIRQStatus ((IRQn_Type)irqn) & 1U) != 0U) && (IRQ_ID0 == 0U)) {
-      /* If the ID is 0, is active and has not been seen before */
-      IRQ_ID0 = 1U;
-    }
-    /* End of Workaround GIC 390 errata 733075 */
-  }
-
-  return (irqn);
-}
-
-
-/// Get ID number of current fast interrupt request (FIQ).
-IRQn_ID_t IRQ_GetActiveFIQ (void) {
-  return ((IRQn_ID_t)-1);
-}
-
-
 /// Signal end of interrupt processing.
 int32_t IRQ_EndOfInterrupt (IRQn_ID_t irqn) {
   int32_t status;
@@ -370,35 +326,6 @@ int32_t IRQ_ClearPending (IRQn_ID_t irqn) {
   }
 
   return (status);
-}
-
-
-/// Set interrupt priority value.
-int32_t IRQ_SetPriority (IRQn_ID_t irqn, uint32_t priority) {
-  int32_t status;
-
-  if ((irqn >= 0) && (irqn < (IRQn_ID_t)IRQ_GIC_LINE_COUNT)) {
-    GIC_SetPriority ((IRQn_Type)irqn, priority);
-    status = 0;
-  } else {
-    status = -1;
-  }
-
-  return (status);
-}
-
-
-/// Get interrupt priority.
-uint32_t IRQ_GetPriority (IRQn_ID_t irqn) {
-  uint32_t priority;
-
-  if ((irqn >= 0) && (irqn < (IRQn_ID_t)IRQ_GIC_LINE_COUNT)) {
-    priority = GIC_GetPriority ((IRQn_Type)irqn);
-  } else {
-    priority = IRQ_PRIORITY_ERROR;
-  }
-
-  return (priority);
 }
 
 

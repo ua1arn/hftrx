@@ -726,6 +726,15 @@ void IRQ_Handler(void);			// No GIC
 
 void Reset_CPUn_Handler(void);
 
+#if defined (GICDistributor) && ! defined (GIC_REDISTRIBUTOR_BASE)
+// gicv2
+__STATIC_INLINE void GIC_SetPriority_Atomic(IRQn_Type IRQn, uint32_t priority)
+{
+	volatile uint8_t * const gicd_prio = (volatile uint8_t *) & GICDistributor->IPRIORITYR [0];
+	gicd_prio [IRQn] = priority;
+}
+
+#endif
 // Set interrupt vector wrappers
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu);
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void));

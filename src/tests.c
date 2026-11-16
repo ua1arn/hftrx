@@ -8008,11 +8008,11 @@ void hightests(void)
 			{
 				// PPI/SGI priority test
 				unsigned o0 = GIC_GetPriority(irqn);
-				GIC_SetPriority(irqn, 0x40);
+				GIC_SetPriority_Atomic(irqn, 0x40);
 				unsigned o1 = GIC_GetPriority(irqn);
-				GIC_SetPriority(irqn, 0x80);
+				GIC_SetPriority_Atomic(irqn, 0x80);
 				unsigned o2 = GIC_GetPriority(irqn);
-				GIC_SetPriority(irqn, o0);
+				GIC_SetPriority_Atomic(irqn, o0);
 				unsigned o3 = GIC_GetPriority(irqn);
 				PRINTF("prio[%u]: o0=0x%02X,o1=0x%02X,o2=0x%02X,o3=0x%02X\n", (unsigned) irqn, o0, o1, o2, o3);
 				ASSERT(o1 == 0x40);
