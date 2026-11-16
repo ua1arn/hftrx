@@ -1849,7 +1849,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_f
 }
 
 // user-mode entry
-static uint64_t task_sysfn(unsigned arg0, void * arg1)
+static __attribute__((noinline)) uint64_t task_sysfnS(unsigned arg0, void * arg1)
 {
     register uint64_t x0_val __asm__("x0") = arg0;
     register uint64_t x1_val __asm__("x1") = (uintptr_t) arg1;
@@ -1858,10 +1858,36 @@ static uint64_t task_sysfn(unsigned arg0, void * arg1)
 			"\t" "SVC 0x0000\n"
 	        : "+r" (x0_val)  // "+r" означает чтение и запись (вход и выход в x0)
 	        : "r" (x1_val)   // "r" на входе (компилятор знает, что x1_val привязан к x1)
-	        : "memory"       // Указываем, что вызов может изменить память
+	        : "memory","cc"       // Указываем, что вызов может изменить память
 	);
 
 	return x0_val;
+}
+static __attribute__((noinline)) uint64_t task_sysfn(unsigned arg0, void * arg1)
+{
+    register uint64_t x0_val __asm__("x0") = arg0;
+    register uint64_t x1_val __asm__("x1") = (uintptr_t) arg1;
+
+    if (arg1 != NULL)
+    {
+        __ASM volatile (
+            "svc #0"
+            : "+r" (x0_val)
+            : "r" (x1_val), "m" (*(const char (*)[]) arg1)
+            : "memory"
+        );
+    }
+    else
+    {
+        __ASM volatile (
+            "svc #0"
+            : "+r" (x0_val)
+            : "r" (x1_val)
+            : "memory"
+        );
+    }
+
+    return x0_val;
 }
 
 #elif __CORTEX_A != 0 && ! defined(__aarch64__)
@@ -1961,9 +1987,25 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_f
     irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
 	task_syscall_handler(thread, (unsigned) frame_bottom->r0, (void *) frame_bottom->r1);
 }
+// user-mode entry
+	static __attribute__((noinline)) uint32_t task_sysfn_old(unsigned arg0, volatile void * arg1)
+	{
+		uint32_t result = 0;
+		__ASM volatile(
+			"\t" "mov r0,%1\n"
+			"\t" "mov r1,%2\n"
+			"\t" "SVC 0x0000\n"
+			"\t" "mov %0,r0\n":
+			"=r"(result) :		// OutputOperands
+			"r"(arg0), "ra"(arg1) : // InputOperands
+			"r0", "r1", "memory", "cc"	// Clobbers
+		);
+
+		return result;
+	}
 
 // user-mode entry
-static uint32_t task_sysfn(unsigned arg0, void * arg1)
+static __attribute__((noinline)) uint32_t task_sysfnS(unsigned arg0, void * arg1)
 {
     register uint32_t r0_val __asm__("r0") = arg0;
     register uint32_t r1_val __asm__("r1") = (uintptr_t) arg1;
@@ -1972,10 +2014,36 @@ static uint32_t task_sysfn(unsigned arg0, void * arg1)
 			"\t" "SVC 0x0000\n"
 	        : "+r" (r0_val)  // "+r" означает чтение и запись (вход и выход в r0)
 	        : "r" (r1_val)   // "r" на входе (компилятор знает, что r1_val привязан к r1)
-	        : "memory"       // Указываем, что вызов может изменить память
+	        : "memory","cc"       // Указываем, что вызов может изменить память
 	);
 
 	return r0_val;
+}
+static __attribute__((noinline)) uint32_t task_sysfn(unsigned arg0, void * arg1)
+{
+    register uint32_t r0_val __asm__("r0") = arg0;
+    register uint32_t r1_val __asm__("r1") = (uintptr_t) arg1;
+
+    if (arg1 != NULL)
+    {
+        __ASM volatile (
+            "svc #0"
+            : "+r" (r0_val)
+            : "r" (r1_val), "m" (*(const char (*)[]) arg1)
+            : "memory"
+        );
+    }
+    else
+    {
+        __ASM volatile (
+            "svc #0"
+            : "+r" (r0_val)
+            : "r" (r1_val)
+            : "memory"
+        );
+    }
+
+    return r0_val;
 }
 
 #elif __CORTEX_M != 0
@@ -2031,7 +2099,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_f
 }
 
 // user-mode entry
-static uint32_t task_sysfn(unsigned arg0, void * arg1)
+static __attribute__((noinline)) uint32_t task_sysfn(unsigned arg0, void * arg1)
 {
     register uint32_t r0_val __asm__("r0") = arg0;
     register uint32_t r1_val __asm__("r1") = (uintptr_t) arg1;
@@ -2046,7 +2114,7 @@ static uint32_t task_sysfn(unsigned arg0, void * arg1)
 	return r0_val;
 }
 // user-mode entry
-static uint32_t task_sysfn_old(unsigned arg0, volatile void * arg1)
+static __attribute__((noinline)) uint32_t task_sysfn_old(unsigned arg0, volatile void * arg1)
 {
 	uint32_t result = 0;
 	__ASM volatile(
@@ -2097,7 +2165,7 @@ static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_f
 }
 
 // user-mode entry
-static uint64_t task_sysfn(unsigned arg0, void * arg1)
+static __attribute__((noinline)) uint64_t task_sysfn(unsigned arg0, void * arg1)
 {
     register uint64_t x0_val __asm__("x0") = arg0;
     register uint64_t x1_val __asm__("x1") = (uintptr_t) arg1;
@@ -2113,7 +2181,7 @@ static uint64_t task_sysfn(unsigned arg0, void * arg1)
 }
 
 // user-mode entry
-static uint64_t task_sysfn_old(unsigned arg0, volatile void * arg1)
+static __attribute__((noinline)) uint64_t task_sysfn_old(unsigned arg0, volatile void * arg1)
 {
 	uint64_t result = 0;
 	__ASM volatile(
