@@ -623,11 +623,11 @@ static FLOAT_t get_singletonefloat(void)
 
 // Dual tone signal generator for SSB TX IMD3 tests - 1200 Hz spacing
 // Document: Procedure Manual 2011 with page breaks.pdf, page 16
-static RAMDTCM ncoftw_t anglestep_af1 = FTWAF(700);
-static RAMDTCM ncoftw_t anglestep_af2 = FTWAF(1900);
+static ncoftw_t anglestep_af1 = FTWAF(700);
+static ncoftw_t anglestep_af2 = FTWAF(1900);
 
-static RAMDTCM ncoftw_t angle_af1;
-static RAMDTCM ncoftw_t angle_af2;
+static ncoftw_t angle_af1;
+static ncoftw_t angle_af2;
 
 // двухтональный генератор для настройки
 static FLOAT_t get_dualtonefloat(void)
@@ -639,6 +639,25 @@ static FLOAT_t get_dualtonefloat(void)
 	angle_af2 = FTWROUND(angle_af2 + anglestep_af2);
 	return (v1 + v2) / 2;
 }
+
+// Dual tone signal generator for SSB TX IMD3 tests - 200 Hz spacing
+static ncoftw_t anglestep_af1_02k = FTWAF(1500);
+static ncoftw_t anglestep_af2_02k = FTWAF(1700);
+
+static ncoftw_t angle_af1_02k;
+static ncoftw_t angle_af2_02k;
+
+// двухтональный генератор для настройки - разнос 200 Гц
+static FLOAT_t get_dualtonefloat02k(void)
+{
+	// Формирование значения выборки
+	const FLOAT_t v1 = getcosf(angle_af1_02k);
+	const FLOAT_t v2 = getcosf(angle_af2_02k);
+	angle_af1 = FTWROUND(angle_af1_02k + anglestep_af1_02k);
+	angle_af2 = FTWROUND(angle_af2_02k + anglestep_af2_02k);
+	return (v1 + v2) / 2;
+}
+
 
 // установить частоту, закрыть тракт на время прохождения сигнала через фильтр
 static void nco_setlo6rx_ftw(hfrxpath_t * const path, ncoftw_t ftw, uint_fast8_t dspmode, unsigned rxfirdelay)
@@ -4946,6 +4965,10 @@ static FLOAT_t mikeinmux(
 		case BOARD_TXAUDIO_2TONE:
 			// источник - двухтоновый сигнал
 			return get_dualtonefloat() * txlevelXXX;		// источник сигнала - двухтональный генератор для настройки
+
+		case BOARD_TXAUDIO_2T02k:
+			// источник - двухтоновый сигнал
+			return get_dualtonefloat02k() * txlevelXXX;		// источник сигнала - двухтональный генератор для настройки
 
 		case BOARD_TXAUDIO_1TONE:
 			// источник - синусоидальный сигнал
