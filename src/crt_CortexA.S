@@ -55,17 +55,17 @@
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 64
-	 STACKSIZEABT = 64
-	 STACKSIZEFIQ = 64
-	 STACKSIZEHYP = 64
-	 STACKSIZEMON = 64
-	 STACKSIZESVC = 64
-	 STACKSIZEIRQ = 64
+	 STACKSIZEUND = 640
+	 STACKSIZEABT = 640
+	 STACKSIZEFIQ = 640
+	 STACKSIZEHYP = 640
+	 STACKSIZEMON = 640
+	 STACKSIZESVC = 640
+	 STACKSIZEIRQ = 640
 
-	 STACKSIZESYSBOOT = 512
+	 STACKSIZESYSBOOT = 5120
 
-	 STACKSIZEALL = 512
+	 STACKSIZEALL = 5120
   
 	.section ".isr_vector", "ax"
 	.code 32
@@ -87,10 +87,10 @@ __Vectors:
 	ldr pc, FIQAddr      /* FIQ interrupt         */
 
 ResetAddr:	.word Reset_Handler
-UndefAddr:  .word Undef_Handler
+UndefAddr:  .word Undef_Handler_asm
 SWIAddr:    .word SWI_Handler
-PAbortAddr: .word PAbort_Handler
-DAbortAddr: .word DAbort_Handler
+PAbortAddr: .word PAbort_Handler_asm
+DAbortAddr: .word DAbort_Handler_asm
 HypAddr:  	.word Hyp_Handler
 IRQAddr:    .word VIRQ_Handler
 FIQAddr:    .word VFRQ_Handler
@@ -512,6 +512,26 @@ run_notask_curr_aarch32:
 
 	.endfunc
    	.ltorg
+    .global Undef_Handler_asm
+Undef_Handler_asm:
+    sub     r0, lr, #4          // Точный PC инструкции, вызвавшей Undefined Instruction
+    mrs     r1, spsr            // CPSR в момент исключения
+    mov     r2, sp              // SP_und
+    b       Undef_Handler_c
+
+    .global PAbort_Handler_asm
+PAbort_Handler_asm:
+    sub     r0, lr, #4          // Точный PC, на котором не удалось выбрать инструкцию
+    mrs     r1, spsr
+    mov     r2, sp
+    b       PAbort_Handler_c
+
+    .global DAbort_Handler_asm
+DAbort_Handler_asm:
+    sub     r0, lr, #8          // Точный PC инструкции, обратившейся к неверному адресу
+    mrs     r1, spsr
+    mov     r2, sp
+    b       DAbort_Handler_c
 
 	.section ".noinit"
 	.align 4

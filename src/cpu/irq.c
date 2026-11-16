@@ -2340,6 +2340,10 @@ static __NO_RETURN int task_idle(void * ctx)
 // сохранить в списке готовых к выполнению
 static void task_insertready(thread_item_t * const tp) {
 	ASSERT(tp->check_ready == NULL);
+	if (tp->bottom != 0)
+	{
+	    ASSERT((uintptr_t)tp->cpuframe > tp->bottom + 2048);
+	}
 	InsertTailList(& threads_listR [tp->prio], & tp->item);
 }
 
@@ -2539,9 +2543,11 @@ static int thread_print(char *__restrict buff, size_t size, const thread_item_t 
 		n += local_snprintf_P(buff + n, size - n, "use=%3u%% ", (unsigned) (100 * (tp->top - (uintptr_t) tp->cpuframe) /  (tp->top - tp->bottom)));
 	else
 		n += local_snprintf_P(buff + n, size - n, "         ");
+	n += local_snprintf_P(buff + n, size - n, "t=%p,b=%p ", (void*)tp->top, (void*)tp->bottom);
 	n += local_snprintf_P(buff + n, size - n, "name='%s' ", tp->name);
 	//n += local_snprintf_P(buff + n, size - n, "fpcr=%08X, fpsr=%08X ", (unsigned) f->fpcr, (unsigned) f->fpsr);
-	if (tp->check_ready)
+
+	if (0 && tp->check_ready)
 	{
 		ASSERT(tp->check_ready->print);
 		ASSERT(tp->check_ready_obj);
@@ -2961,8 +2967,8 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 	next_task_daif [core] = te->daif;
 
 	// еще не переключились на новый стек в aarch32
-	while (!threads_not_halted)
-		;
+//	while (!threads_not_halted)
+//		;
 	return startedtask [core]->cpuframe;
 }
 
@@ -2970,7 +2976,8 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 void task_unlock_after_switch(void)
 {
     const uint_fast8_t core = arm_hardware_cpuid();
-	SCHED_UNLOCK(next_task_irql [core], next_task_daif [core]);
+	//SCHED_UNLOCK(next_task_irql [core], next_task_daif [core]);
+    IRQLSPIN_UNLOCK(& threadslock, next_task_irql [core]);           \
 }
 //
 //static void task_stamp(void)
@@ -3518,7 +3525,7 @@ void Undef_Handler(void)
 	{
 		PRINTF("marker[%2d]=%08X\n", i, (unsigned) (& marker) [i]);
 	}
-	threads_not_halted = 0;
+	//threads_not_halted = 0;
 #if defined (BOARD_BLINK_INITIALIZE)
 	BOARD_BLINK_INITIALIZE();;
 	for (;;)
@@ -3533,8 +3540,6 @@ void Undef_Handler(void)
 		;
 #endif /* defined (BOARD_BLINK_INITIALIZE) */
 }
-
-#if (__CORTEX_A != 0) && ! defined __riscv
 
 // Prefetch Abort
 void PAbort_Handler(void)
@@ -3611,7 +3616,7 @@ void DAbort_Handler(void)
 	const volatile uint32_t marker = 0xDEADBEEF;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
-	PRINTF("DAbort_Handler trapped. CPUID=%u, DFSR=%08X, IFAR=%08X, pc=%08X, sp~%08x __get_MPIDR()=%08X\n", arm_hardware_cpuid(), (unsigned) __get_DFSR(), (unsigned) __get_IFAR(), (unsigned) (& marker) [2], (unsigned) (uintptr_t) & marker, (unsigned) __get_MPIDR());
+	PRINTF("DAbort_Handler trapped. CPUID=%u, DFAR=%08X, FSR=%08X, IFAR=%08X, pc=%08X, sp~%08x __get_MPIDR()=%08X\n", arm_hardware_cpuid(), (unsigned) __get_DFAR(), (unsigned) __get_DFSR(), (unsigned) __get_IFAR(), (unsigned) (& marker) [2], (unsigned) (uintptr_t) & marker, (unsigned) __get_MPIDR());
 #pragma GCC diagnostic pop
 	const unsigned WnR = (__get_DFSR() & (UINT32_C(1) << 11)) != 0;
 	const unsigned Status = (__get_DFSR() & (UINT32_C(0x0F) << 0));
@@ -3675,14 +3680,56 @@ void DAbort_Handler(void)
 
 void Hyp_Handler(void)
 {
-	threads_not_halted = 0;
+	//threads_not_halted = 0;
 	dbg_puts(PSTR("Hyp_Handler trapped. CPUID="));
 	dbg_putchar('0' + (arm_hardware_cpuid()));
 	dbg_putchar('\n');
 	for (;;)
 		;
 }
-#endif /* __CORTEX_A */
+
+static uint32_t get_sp_sys(void)
+{
+    uint32_t sp_sys;
+    __asm__ volatile (
+        "mrs r1, cpsr       \n\t"
+        "cps #0x1F          \n\t"   /* Переключаемся в SYS mode */
+        "mov %0, sp         \n\t"   /* Читаем SP_sys */
+        "msr cpsr_c, r1     \n\t"   /* Возвращаемся в режим исключения */
+        : "=r" (sp_sys)
+        :
+        : "r1", "memory"
+    );
+    return sp_sys;
+}
+
+void DAbort_Handler_c(uint32_t fault_pc, uint32_t fault_spsr, uint32_t fault_sp)
+{
+    threads_not_halted = 0;
+    PRINTF("\n=== DAbort_Handler_c CPU=%u ===\n", arm_hardware_cpuid());
+    PRINTF("PC=%08X SPSR=%08X SP_sys=%08X\n", (unsigned)fault_pc, (unsigned)fault_spsr, (unsigned)get_sp_sys());
+    PRINTF("DFSR=%08X DFAR=%08X\n", (unsigned)__get_DFSR(), (unsigned)__get_DFAR());
+    for (;;);
+}
+
+void PAbort_Handler_c(uint32_t fault_pc, uint32_t fault_spsr, uint32_t fault_sp)
+{
+    threads_not_halted = 0;
+    PRINTF("\n=== PAbort_Handler_c CPU=%u ===\n", arm_hardware_cpuid());
+    PRINTF("PC=%08X SPSR=%08X SP_sys=%08X\n", (unsigned)fault_pc, (unsigned)fault_spsr, (unsigned)get_sp_sys());
+    PRINTF("DFSR=%08X DFAR=%08X\n", (unsigned)__get_DFSR(), (unsigned)__get_DFAR());
+    for (;;);
+}
+
+void Undef_Handler_c(uint32_t fault_pc, uint32_t fault_spsr, uint32_t fault_sp)
+{
+    threads_not_halted = 0;
+    PRINTF("\n=== Undef_Handler_c CPU=%u ===\n", arm_hardware_cpuid());
+    PRINTF("PC=%08X SPSR=%08X SP_sys=%08X\n", (unsigned)fault_pc, (unsigned)fault_spsr, (unsigned)get_sp_sys());
+    PRINTF("DFSR=%08X DFAR=%08X\n", (unsigned)__get_DFSR(), (unsigned)__get_DFAR());
+    for (;;);
+}
+
 #endif
 
 #if CPUSTYLE_ARM && WITHSMPSYSTEM
