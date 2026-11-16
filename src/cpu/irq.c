@@ -3616,7 +3616,6 @@ void Hyp_Handler(void)
 
 static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 {
-	const DAIF_t daif = global_disable_irq_save();
 #if WITHDEBUG
 	unsigned v = SPINLOCKLOOPS;
 #endif /* WITHDEBUG */
@@ -3662,7 +3661,6 @@ else /* WITHDEBUG */
 	p->line = line;
 	p->cpuid = arm_hardware_cpuid();
 #endif /* WITHDEBUG */
-	global_restore_irq(daif);
 }
 
 static int lclspin_traylock_work(LCLSPINLOCK_t * __restrict p, const char * file, int line)
@@ -3728,7 +3726,6 @@ static int lclspin_traylock_work(LCLSPINLOCK_t * __restrict p, const char * file
 }
 static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 {
-	const DAIF_t daif = global_disable_irq_save();
 #if WITHDEBUG
 	unsigned v = SPINLOCKLOOPS;
 #endif /* WITHDEBUG */
@@ -3760,7 +3757,6 @@ static void lclspin_lock_work(LCLSPINLOCK_t * __restrict p, const char * file, i
 	p->line = line;
 	p->cpuid = arm_hardware_cpuid();
 #endif /* WITHDEBUG */
-	global_restore_irq(daif);
 }
 /*
 
