@@ -1795,7 +1795,7 @@ typedef struct exception_frame_tag
 	uint64_t x1, x2, x3, x4, x5, x6, x7, x8, x9, x10;
 	uint64_t x11, x12, x13, x14, x15, x16, x17, x18, x19, x20;
 	uint64_t x21, x22, x23, x24, x25, x26, x27, x28, x29, x30;
-} irq_stack_frame_top_t;
+} __attribute__((packed)) irq_stack_frame_top_t;
 
 
 static size_t context_size(void)
@@ -1877,7 +1877,7 @@ typedef struct {
     // 2. Alignment and FPU status metadata (push {r3, r4})
     uint32_t stack_adj;   // R3: Stack alignment adjustment in bytes (0..3)
     uint32_t fpscr;       // R4: Saved Floating-Point Status and Control Register
-} irq_stack_frame_top_t;
+} __attribute__((packed)) irq_stack_frame_top_t;
 
 /**
  * Lower part of the IRQ stack frame (shifted by 'stack_adj' bytes in memory).
@@ -1905,7 +1905,7 @@ typedef struct {
 
 //    uint32_t dummy_fp / arg0  (4 байта:   0x00000000 — маркер дна стека для GDB / аргумент)
 //    uint32_t dummy_lr / arg1  (4 байта:   0x00000000 — маркер дна стека для GDB / выравнивание)
-} irq_stack_frame_bottom_t;
+} __attribute__((packed)) irq_stack_frame_bottom_t;
 
 static size_t context_size(void)
 {
@@ -2072,7 +2072,7 @@ typedef struct exception_frame_tag
 {
 	uint64_t x0, x1, x2, x3, x4;
 	uint64_t xx [32];
-} irq_stack_frame_top_t;
+} __attribute__((packed)) irq_stack_frame_top_t;
 
 // scheduler-mode entry - set svc exit code
 static void context_set_ec(void * __restrict cpuframe, unsigned ec)
