@@ -3355,7 +3355,8 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 	thread_set_affinity(frame, aff);
 	run_task_curr(task_scheduler(frame));
 #else /* WITHRTOS */
-		run_notask_curr(frame);
+	IRQ_Handler_GIC();		// Group 1 handler
+	run_notask_curr(frame);
 #endif /* WITHRTOS */
 }
 
@@ -3372,7 +3373,8 @@ void __NO_RETURN VFIQ_Handler(void * frame)
 	thread_set_affinity(frame, aff);
 	run_task_curr(task_scheduler(frame));
 #else /* WITHRTOS */
-		run_notask_curr(frame);
+	FIQ_Handler_GIC();		// Group 0 handler
+	run_notask_curr(frame);
 #endif /* WITHRTOS */
 }
 
@@ -3472,6 +3474,7 @@ void IRQ_Handler_aarch32(void * frame)
 	thread_set_affinity(frame, aff);
 	run_task_curr_aarch32(task_scheduler(frame));
 #else /* WITHRTOS */
+	IRQ_Handler_GIC();			// Group 1 handler
 	run_notask_curr_aarch32(frame);
 #endif /* WITHRTOS */
 }
@@ -3491,6 +3494,7 @@ void FIQ_Handler_aarch32(void * frame)
 	thread_set_affinity(frame, aff);
 	run_task_curr_aarch32(task_scheduler(frame));
 #else /* WITHRTOS */
+	FIQ_Handler_GIC();			// Group 0 handler
 	run_notask_curr_aarch32(frame);
 #endif /* WITHRTOS */
 }
