@@ -1765,8 +1765,15 @@ enum
 	TXAPROFIG_count
 };
 
+static const char * const mikprofiles [] =
+{
+		"Normal",
+		"Forced",
+		"Contest",
+		"HiFi",
+};
 //
-#define NMICPROFILES 1	// оличество профилей управления обработкой звука
+#define NMICPROFILES (ARRAY_SIZE(mikprofiles))	// оличество профилей управления обработкой звука
 //static uint8_t gtxaprofiles [TXAPROFIG_count];	// индекс профиля для группы режимов передачи - значения 0..NMICPROFILES-1
 
 // параметры фильтра на приеме
@@ -4177,7 +4184,7 @@ struct nvmap {
 
 	uint16_t glineamp;	// усиление с LINE IN
 	uint8_t gmikeboost20db;	// предусилитель микрофона
-
+	uint8_t gmikeprofile;	// выбраный профиль микрофона (пока не зависитт от режима работы)
 	mikeprop_t mkps [NMICPROFILES];	// группа парметров обработки сигнала микрофона - по профилям
 
 	#if WITHCOMPRESSOR
@@ -4685,7 +4692,7 @@ static const struct paramdefdef xgnoisereduct =
 	RMT_NR_BASE(0),							/* включение NR */
 	nvramoffsselector_mode, nvramoffs_mode, valueoffs_mode,
 	NULL,	// uint_fast16_t value pointer
-	& gnoisereducts [0],	// uint_fast8_t value pointer
+	gnoisereducts,	// uint_fast8_t value pointer
 	getzerobase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
@@ -6077,31 +6084,6 @@ enum
 	};
 
 
-	// доступ к паарметрам микрофона по профилю
-	static unsigned getselector_mkpi(unsigned * count, unsigned bi)
-	{
-		const uint_fast8_t mkpi = 0;
-		* count = NMICPROFILES;
-		return mkpi;
-	}
-
-	static nvramaddress_t nvramoffs_mkpi(nvramaddress_t base, unsigned mkpi, unsigned bi)
-	{
-		(void) bi;
-
-		if (base == MENUNONVRAM)
-			return MENUNONVRAM;
-
-		//
-		// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
-		return base + OFFSETOF(struct nvmap, mkps [(mkpi)].mikeagc) - OFFSETOF(struct nvmap, mkps [(0)].mikeagc);
-	}
-
-	static ptrdiff_t valueoffs_mkpi(unsigned mkpi)
-	{
-		return mkpi;
-	}
-
 	static uint_fast8_t gtxaudio [MODE_COUNT];
 	static const struct paramdefdef xgmike_ssb =
 	{
@@ -6152,36 +6134,105 @@ enum
 		getvaltexttxaudio, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
-	static uint_fast8_t gmikeagc [NMICPROFILES] = { 1 };	/* Включение программной АРУ перед модулятором */
-	static uint_fast8_t gmikehcompressor [NMICPROFILES];	/* Включение компрессора */
-	static uint_fast8_t gmikeagcgain [NMICPROFILES] = { 30 };	/* Максимальное усидение АРУ микрофона */
-#if WITHNOAUDIPROC
-	static uint_fast8_t gmikehclip [NMICPROFILES] = { 0 };		/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
-#else /* WITHNOAUDIPROC */
-	static uint_fast8_t gmikehclip [NMICPROFILES] = { 35 };		/* Ограничитель */
-#endif /* WITHNOAUDIPROC */
 
+	uint_fast8_t gamikeagc [NMICPROFILES];	/* Включение программной АРУ перед модулятором */
+	uint_fast8_t gamikehcompressor [NMICPROFILES];	/* Включение компрессора */
+	uint_fast8_t gamikeagcgain [NMICPROFILES];	/* Максимальное усидение АРУ микрофона */
+	uint_fast8_t gamikehclip [NMICPROFILES];		/* Ограничитель */
+#if WITHREVERB
+	uint_fast8_t gareverb [NMICPROFILES];		/* ревербератор */
+	uint_fast8_t gareverbdelay [NMICPROFILES];		/* ревербератор - задержка (ms) */
+	uint_fast8_t gareverbloss [NMICPROFILES];		/* ревербератор - ослабление на возврате */
+#endif /* WITHREVERB */
+
+	// заполнение параметров по умолчанию для профилей обработки микрофона
+	static void mkpsvals_fill(void)
+	{
+		unsigned i;
+		for (i = 0; i < NMICPROFILES; ++ i)
+		{
+			//
+			gamikeagc [i] = 1;	/* Включение программной АРУ перед модулятором */
+			gamikehcompressor [i] = 0;	/* Включение компрессора */
+			gamikeagcgain [i] = 30;	/* Максимальное усидение АРУ микрофона */
+		#if WITHNOAUDIPROC
+			gamikehclip [i] = 0;		/* Ограничитель (0 - не действует, 90 – ограничение наступает на 10 процентах от полной амплитуды) */
+		#else /* WITHNOAUDIPROC */
+			gamikehclip [i] = 35;		/* Ограничитель */
+		#endif /* WITHNOAUDIPROC */
+		#if WITHREVERB
+			gareverb [i] = 0;		/* ревербератор */
+			gareverbdelay [i] = 5;		/* ревербератор - задержка (ms) */
+			gareverbloss [i] = WITHREVERBLOSSDEF;		/* ревербератор - ослабление на возврате */
+		#endif /* WITHREVERB */
+
+		}
+	}
+
+	static size_t getvaltextmikeprofile(char * buff, size_t count, int_fast32_t value)
+	{
+		return local_snprintf_P(buff, count, "%s", mikprofiles [value]);
+	}
+
+	static uint_fast8_t gmikeprofile;	// выбраный профиль микрофона
+
+	// доступ к паарметрам микрофона по профилю
+	static unsigned getselector_mkpi(unsigned * count, unsigned bi)
+	{
+		* count = NMICPROFILES;
+		return gmikeprofile;
+	}
+
+	static nvramaddress_t nvramoffs_mkpi(nvramaddress_t base, unsigned mkpi, unsigned bi)
+	{
+		(void) bi;
+
+		if (base == MENUNONVRAM)
+			return MENUNONVRAM;
+
+		//
+		// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
+		return base + OFFSETOF(struct nvmap, mkps [(mkpi)].mikeagc) - OFFSETOF(struct nvmap, mkps [(0)].mikeagc);
+	}
+
+	static ptrdiff_t valueoffs_mkpi(unsigned mkpi)
+	{
+		return mkpi;
+	}
+
+	static const struct paramdefdef xgmikeprofile =
+	{
+		QLABEL3("MICPROF", "Mike PROFILE", "MIC PROF"), 0, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_SELECTOR | ITEM_LISTSELECT,
+		0, NMICPROFILES - 1, 					// выбраный профиль микрофона
+		OFFSETOF(struct nvmap, gmikeprofile),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gmikeprofile,
+		getzerobase, /* складывается со смещением и отображается */
+		getvaltextmikeprofile, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 	static const struct paramdefdef xgmikeagc =
 	{
 		QLABEL3("MIC AGC", "Mike AGC", "MIC AGC"), 0, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_SUBGROUP,
 		0, 1, 					/* Включение программной АРУ перед модулятором */
 		OFFSETOF(struct nvmap, mkps [(0)].mikeagc),
 		getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 		NULL,
-		gmikeagc,
+		gamikeagc,
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	static const struct paramdefdef xgmikehcompressor =
 	{
 		QLABEL3("MIC COMP", "Mike Comp", "MIC COMP"), 0, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_SUBGROUP,
 		0, 1, 					/* Включение программной АРУ перед модулятором */
 		OFFSETOF(struct nvmap, mkps [(0)].mikehcompressor),
 		getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 		NULL,
-		gmikehcompressor,
+		gamikehcompressor,
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
@@ -6189,24 +6240,24 @@ enum
 	static const struct paramdefdef xgmikeagcgain =
 	{
 		QLABEL("MICAGCGN"),  0, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_SUBGROUP,
 		WITHMIKEAGCMIN, WITHMIKEAGCMAX, 	/* максимальное усиление АРУ микрофона в дБ */
 		OFFSETOF(struct nvmap, mkps [(0)].mikeagcgain),
 		getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 		NULL,
-		gmikeagcgain,
+		gamikeagcgain,
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	static const struct paramdefdef xgmikehclip =
 	{
 		QLABEL3("MIC CLIP", "Mike CLIP", "MIKE CLIP"),  0, RJ_UNSIGNED, ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_SUBGROUP,
 		0, 90, 					/* Ограничение */
 		OFFSETOF(struct nvmap, mkps [(0)].mikehclip),
 		getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 		NULL,
-		gmikehclip,
+		gamikehclip,
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
@@ -6281,42 +6332,39 @@ enum
 	#endif /* WITHCOMPRESSOR */
 
 	#if WITHREVERB
-		static uint_fast8_t greverb [NMICPROFILES];		/* ревербератор */
-		static uint_fast8_t greverbdelay [NMICPROFILES] = { 50 };		/* ревербератор - задержка (ms) */
-		static uint_fast8_t greverbloss  [NMICPROFILES] = { WITHREVERBLOSSDEF };		/* ревербератор - ослабление на возврате */
 		static const struct paramdefdef xgreverb =
 		{
 			QLABEL2("REVERB", "Reverberator"), 0, RJ_ON,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			0, 1, 					/* ревербератор */
 			OFFSETOF(struct nvmap, mkps [(0)].reverb),
 			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			greverb,
+			gareverb,
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgreverbdelay =
 		{
 			QLABEL2("RVB TIME", "Reverb Delay"),  0, RJ_UNSIGNED, ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			WITHREVERBDELAYMIN, WITHREVERBDELAYMAX, 					/* ревербератор - задержка */
 			OFFSETOF(struct nvmap, mkps [(0)].reverbdelay),
 			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			greverbdelay,
+			gareverbdelay,
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgreverbloss =
 		{
 			QLABEL2("RVB LOSS", "Reverb Loss"),  0, RJ_UNSIGNED, ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			WITHREVERBLOSSMIN, WITHREVERBLOSSMAX, 					/* ревербератор - ослабление на возврате */
 			OFFSETOF(struct nvmap, mkps [(0)].reverbloss),
 			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			greverbloss,
+			gareverbloss,
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
@@ -19326,7 +19374,19 @@ static void display2_multilinemenu_block_params(const struct menudesc * pmd, con
 			if ((index_params - menu_block_scroll_offset_params) > window.multilinemenu_max_rows)
 				continue;
 
-			if (el == index)
+			if (0)
+				;
+			else if (ismenukinddp(mv->pd, ITEM_SELECTOR))
+			{
+				// от этого параметра зависят другие
+				gxstyle_textcolor(& dbstylev, COLOR_BLACK, COLOR_VIOLET);
+			}
+			else if (ismenukinddp(mv->pd, ITEM_SUBGROUP))
+			{
+				/* подсветить в меню - групповй параметр */
+				gxstyle_textcolor(& dbstylev, COLOR_BLACK, COLOR_DARKVIOLET);
+			}
+			else if (el == index)
 			{
 				//подсвечиваем выбранный элемент
 				gxstyle_textcolor(& dbstylev, DSGN_MENUVALSELCOLOR, DSGN_MENUVALSELBGCOLOR);
@@ -23998,6 +24058,9 @@ application_initialize(void)
 #endif
 
 #endif /* WITHCAT */
+#if WITHIF4DSP
+	mkpsvals_fill();	// заполнение параметров по умолчанию для профилей обработки микрофона
+#endif /* WITHIF4DSP */
 #if ! HARDWARE_IGNORENONVRAM
 #if WITHTX
 	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */

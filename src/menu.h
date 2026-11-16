@@ -421,6 +421,7 @@
 	& xgmike_dig,
 	& xgmike_am,
 	& xgmike_fm,
+	& xgmikeprofile,	// выбраный профиль микрофона
 	& xgmikeagc,
 	& xgmikeagcgain,
 	& xgmikehcompressor,
