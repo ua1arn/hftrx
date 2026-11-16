@@ -1774,6 +1774,13 @@ void IRQ15_Handler(void)
 typedef struct thread_item_tag thread_item_t;
 static void task_syscall_handler(thread_item_t * thread, unsigned arg0, void * arg1);
 
+static void thread_exit_trap(void)
+{
+    PRINTF("ERROR: Thread returned! CPU=%u\n", arm_hardware_cpuid());
+    for (;;)
+    	;
+}
+
 
 #if defined(__aarch64__)
 
@@ -1826,6 +1833,7 @@ static void context_init(irq_stack_frame_top_t * __restrict oldframe, void * fn,
 	//f->fpexc32_el2 = 0;
 	f->exc_elr_el3 = (uintptr_t) fn;
 	f->x0 = (uintptr_t) arg;
+	f->x30 = (uintptr_t) thread_exit_trap;
 }
 
 static void context_set_ec(irq_stack_frame_top_t * __restrict cpuframe, unsigned ec)
@@ -1934,6 +1942,7 @@ static void context_init(irq_stack_frame_top_t * __restrict frame_top, void * fn
         (0x1FU << 0);   // M[4:0] = 0b11111 (ARM_MODE_SYS — System mode)
     frame_bottom->pc_irq = (uintptr_t) fn;
 	frame_bottom->r0 = (uintptr_t) arg;
+	frame_bottom->lr_sys = (uintptr_t) thread_exit_trap;
 	dcache_clean_invalidate((uintptr_t) frame_top, context_size());
 }
 
