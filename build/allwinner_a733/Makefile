@@ -251,7 +251,7 @@ allZ:
 
 bootloader: BOOT2
 	$(BUSYBOX) grep -E -e ' Reset_Handler$$' -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
-	./egontool -base 0x00040000 -reset 0x00040100 $(PROJECT)_boot.bin fsbl.bt0
+	./egontool -base 0x00047000 -reset 0x00047100 $(PROJECT)_boot.bin fsbl.bt0
 	
 lib: bootloader
 	$(BUSYBOX) grep -E -e ' Reset_Handler$$' -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort >$(BOORPARAM)
