@@ -745,9 +745,8 @@ calc_delta(uint_fast16_t v, uint_fast16_t low, uint_fast16_t high, int delta)
  * - возврат не-0  в случае модификации
  * */
 static uint_fast8_t
-param_keyclick(const struct paramdefdef * pd)
+raw_param_keyclick(const struct paramdefdef * pd, const uint_fast8_t bi)
 {
-	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
 	unsigned nvalues;
 	const unsigned sel = pd->qselector(& nvalues, bi); // индекс параметра в массиве
 	const nvramaddress_t nvram = pd->qnvramoffs(pd->qnvram, sel, bi);
@@ -768,6 +767,31 @@ param_keyclick(const struct paramdefdef * pd)
 	return 1;
 }
 
+/* модификация паметра по нажатиям - выбор следующего значения
+ * из допустимых (с "заворотом" через границы)
+ * - возврат не-0  в случае модификации
+ * */
+static uint_fast8_t
+param_keyclick(const struct paramdefdef * pd)
+{
+	const uint_fast8_t bi = getbankindex_ab_forcontrols(0);	/* VFO A modifications */
+	if (raw_param_keyclick(pd, bi))
+	{
+		savemenuvalue(pd, bi);
+		return 1;
+	}
+	return 0;
+}
+
+/* модификация паметра по нажатиям - выбор следующего значения
+ * из допустимых (с "заворотом" через границы)
+ * - возврат не-0  в случае модификации
+ * */
+static uint_fast8_t
+cat_param_keyclick(const struct paramdefdef * pd, uint_fast8_t bi)
+{
+	return raw_param_keyclick(pd, bi);
+}
 
 void appsendchar(char c)
 {
@@ -4394,8 +4418,6 @@ struct nvmap {
 
 #define RMT_PWR_BASE OFFSETOF(struct nvmap, gpwri)								/* большая мощность sw2012sf */
 #define RMT_NOTCH_BASE OFFSETOF(struct nvmap, gnotch)							/* NOTCH on/off */
-#define RMT_NOTCHTYPE_BASE OFFSETOF(struct nvmap, gnotchtype)					/* NOTCH filter type */
-//#define RMT_NOTCHFREQ_BASE OFFSETOF(struct nvmap, gnotchfreq)					/* Manual NOTCH filter frequency */
 
 #define RMT_BWSETPOS_BASE(i) OFFSETOF(struct nvmap, bwsetpos [(i)])
 
@@ -4833,7 +4855,7 @@ static const struct paramdefdef xgusefast =
 		QLABEL("NOTCH"), 0, RJ_CB,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE | ITEM_LISTSELECT,
 		0, NOTCHMODE_COUNT - 1,
-		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
+		OFFSETOF(struct nvmap, gnotchtype),							/* управление режимом NOTCH */
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gnotchtype,
@@ -4851,7 +4873,7 @@ static const struct paramdefdef xgusefast =
 		QLABEL("NOTCH"), 0, RJ_CB,	ISTEP1,		/* управление режимом NOTCH */
 		ITEM_VALUE | ITEM_LISTSELECT,
 		0, NOTCHMODE_COUNT - 1,
-		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
+		OFFSETOF(struct nvmap, gnotchtype),							/* управление режимом NOTCH */
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gnotchtype,
@@ -13151,7 +13173,7 @@ static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 {
 	const uint_fast8_t amode = getamode(pathi);
 	const uint_fast8_t denoise = gnoisereducts [amode];
-	const uint_fast8_t anotch = gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
+	const uint_fast8_t anotch = gnotch && notchmodes [param_val(& xgnotchtype)].code == BOARD_NOTCH_AUTO;
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
@@ -14550,6 +14572,17 @@ uif_key_click_b_from_a(void)
 	bring_tuneB();
 }
 
+static void
+cat_click_b_from_a(void)
+{
+	const uint_fast8_t sbi = getbankindex_ab(0);	// bank index A - исходных данных
+	const uint_fast8_t tbi = getbankindex_ab(1);	// bank index B - куда копируются данные
+	const vindex_t tgvi = getvfoindex(tbi);		// vfo index куда копируются данные
+
+	copybankstate(sbi, tbi, 0);
+	updateboard();
+}
+
 /* обмен частотой между VFO */
 static void
 uif_key_click_a_ex_b(void)
@@ -15041,9 +15074,8 @@ uif_key_changebw(void)
 static void
 uif_key_changenr(void)
 {
-	gnoisereducts [gmode] = calc_next(gnoisereducts [gmode], 0, 1);
-	save_i8(RMT_NR_BASE(gmode), gnoisereducts [gmode]);
-	updateboard();
+	if (param_keyclick(& xgnoisereduct))
+		updateboard();
 }
 
 #if WITHUSBHW && WITHUSBUAC
@@ -15174,12 +15206,12 @@ uint_fast8_t hamradio_get_notchvalue(int_fast32_t * p)
 #else /* WITHNOTCHFREQ */
 	* p = 0;
 #endif /* WITHNOTCHFREQ */
-	return gnotch && notchmodes [gnotchtype].code != BOARD_NOTCH_OFF;
+	return gnotch && notchmodes [param_val(& xgnotchtype)].code != BOARD_NOTCH_OFF;
 }
 
 const char * hamradio_get_notchtype5_P(void)
 {
-	return notchmodes [gnotchtype].label;
+	return notchmodes [param_val(& xgnotchtype)].label;
 }
 
 
@@ -15189,8 +15221,8 @@ const char * hamradio_get_notchtype5_P(void)
 // NR ON/OFF
 uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p)
 {
-	* p = gnoisereductvl;
-	return gnoisereducts [gmode] != 0;
+	* p = param_val(& xgnoisereductvl);
+	return param_val(& xgnoisereduct) != 0;
 }
 #endif /* WITHINTEGRATEDDSP */
 
@@ -16181,10 +16213,12 @@ processcatmsg(
 	)
 {
 	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
-	vindex_t vi = getvfoindex(bi);
 	//printhex_titled(0, catp, 5, "processcatmsg");
 	switch (catp [4])
 	{
+	case 0xF9:
+		// repeater offset
+		break;
 	case 0x80:
 		// lock off
 		//PRINTF("CAT LOCK Off\n");
@@ -16222,18 +16256,24 @@ processcatmsg(
 	case 0x02:
 		// SPLIT On
 		//PRINTF("CAT SPLIT ON\n");
+		gsplitmode = SPLITMODES_ON;
+		updateboard();
 		cat_ask_buffer [0] = 0x00;
 		cat_answervariable(cat_ask_buffer, 1);
 		break;
 	case 0x82:
 		// SPLIT OFF
 		//PRINTF("CAT SPLIT OFF\n");
+		gsplitmode = SPLITMODES_OFF;
+		updateboard();
 		cat_ask_buffer [0] = 0x00;
 		cat_answervariable(cat_ask_buffer, 1);
 		break;
 	case 0x81:
-		// VFO A/B
-		//PRINTF("CAT VFO A/B\n");
+		// Toggle VFO A/B
+		//PRINTF("CAT Toggle VFO A/B\n");
+		if (cat_param_keyclick(& xgvfoab, bi))
+			updateboard();
 		cat_ask_buffer [0] = 0x00;
 		cat_answervariable(cat_ask_buffer, 1);
 		break;
@@ -16316,16 +16356,20 @@ processcatmsg(
 	case 0x07:
 		{
 			// В качестве первого байта передается ID модуляции.
-			// Обычно: 0x00 (LSB), 0x01 (USB), 0x02 (CW), 0x03 (CWR), 0x04 (AM), 0x08 (FM).
+			// FT-857D_OM_ENG_EH007M108.pdf
+			// 0x00 - LSB, 0x01 - USB, 0x02 - CW, 0x03 - CWR
+			// 0x04 - AM
+			// 0x08 - FM, 0x88 - FM-N
+			// 0x0A - DIG, 0x0C - PKT
 			const uint_fast8_t defsubmode = findyesusubmode(catp [0], gsubmode);	/* поиск по кенвудовскому номеру */
-			const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-			vindex_t vi = getvfoindex(bi);
+			const vindex_t vi = getvfoindex(bi);
 			//defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
 			// todo: не очень хорошо, если locatesubmode не находит режима, она обнуляет row.
 			const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
 			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
 			updateboard();	/* полная перенастройка (как после смены режима) */
-			//PRINTF("CAT Set mode=%s (yaesu=0x%02X)\n", submodes [defsubmode].qlabel, catp [0]);
+			PRINTF("CAT Set mode=%s (yaesu=0x%02X)\n", submodes [defsubmode].qlabel, catp [0]);
+			printhex_titled(0, catp, 5, "CAT Set mode");
 			cat_ask_buffer [0] = 0x00;
 			cat_answervariable(cat_ask_buffer, 1);
 		}
@@ -17017,10 +17061,10 @@ static void nranswer(uint_fast8_t arg)
 		"NR"			// 2 characters - status information code
 		"%1d"			// P1 NR0: nr off, NR1: nr1 on NR2: nr2 on
 		";";			// 1 char - line terminator
-
+	const int p1 = param_val(& xgnoisereduct) ? 2 : 0;
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) (gnoisereducts [gmode] != 0 ? 2 : 0)
+		(int) p1
 		);
 	cat_answer(len);
 }
@@ -17654,8 +17698,6 @@ processcatmsg(
 	const uint8_t * catp	// массив символов
 	)
 {
-	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
-	vindex_t vi = getvfoindex(bi);
 	//PRINTF(PSTR("processcatmsg: c1=%02X, c2=%02X, chp=%d, cp=%lu\n"), catcommand1, catcommand2, cathasparam, catparam);
 	uint_fast8_t rc = 0;
 	const uint_fast32_t catparam = catscanint(catp, catpcount);
@@ -17742,7 +17784,7 @@ processcatmsg(
 		if (cathasparam != 0)
 		{
 			const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
-			vindex_t vi = getvfoindex(bi);
+			//const vindex_t vi = getvfoindex(bi);
 			const uint_fast32_t v = catparam;
 			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), bi);
 			updateboard();	/* полная перенастройка (как после смены режима) */
@@ -17758,7 +17800,7 @@ processcatmsg(
 		if (cathasparam != 0)
 		{
 			const uint_fast8_t bi = getbankindex_ab(1);	/* VFO B bank index */
-			vindex_t vi = getvfoindex(bi);
+			//const vindex_t vi = getvfoindex(bi);
 			const uint_fast32_t v = catparam;
 			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), bi);
 			updateboard();	/* полная перенастройка (как после смены режима) */
@@ -17791,8 +17833,8 @@ processcatmsg(
 		{
 			const uint_fast32_t v = catparam;
 
-			const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-			vindex_t vi = getvfoindex(bi);
+			const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
+			//const vindex_t vi = getvfoindex(bi);
 			const uint_fast8_t defsubmode = findkenwoodsubmode(v, gsubmode);	/* поиск по кенвудовскому номеру */
 			//defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
 			// todo: не очень хорошо, если locatesubmode не находит режима, она обнуляет row.
@@ -17970,7 +18012,7 @@ processcatmsg(
 		if (cathasparam == 0)
 		{
 			// Performs the VFO copy (A=B) function.
-			uif_key_click_b_from_a();
+			cat_click_b_from_a();
 			rc = 1;
 		}
 		else
@@ -18063,8 +18105,9 @@ processcatmsg(
 		// Attenuator status set/query
 		if (cathasparam /* && (catparam == 0 || catparam == 1) */)
 		{
-			gatt = vfy32up(catparam, 0, ATTMODE_COUNT - 1, 0);	/* 0..1 */;	// one step or fully attenuated
-			updateboard();	/* полная перенастройка (как после смены режима) */
+			const uint_fast32_t vgatt = vfy32up(catparam, 0, ATTMODE_COUNT - 1, 0);	/* 0..1 */;	// one step or fully attenuated
+			if (cat_param_setvalue(& xgatt, vgatt))
+				updateboard();	/* полная перенастройка (как после смены режима) */
 			cat_answer_request(CAT_RA_INDEX);
 			rc = 1;
 		}
@@ -18326,8 +18369,7 @@ processcatmsg(
 //				catautotuner_p3 = p3;
 
 				const uint_fast8_t bandset_no_check = 0;
-				const uint_fast8_t tx = 1;
-				const uint_fast8_t bi = getbankindex_tx(tx);
+				const uint_fast8_t bi = getbankindex_tx(1);
 				const uint_fast8_t bp = getfreqband(gfreqs [bi], bandset_no_check);
 			    const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
 
@@ -18335,7 +18377,7 @@ processcatmsg(
 
 				txreq_reqautotune(& txreqst0, !! p3);
 
-				storetuner(bp, ant);
+				storetuner(bp, ant);	// умышленно оставлено тут - остальные CAT-команды не модифицируют запомненную конфигурацию
 				updateboard();	/* полная перенастройка (как после смены режима) */
 				rc = 1;
 				cat_answer_request(CAT_AC_INDEX);
@@ -18405,9 +18447,11 @@ processcatmsg(
 				{
 					const uint_fast8_t mode = submodes [submode].mode;
 					gnoisereducts [mode] = vfy32up(catscanint(catp + 1, 1), 0, 1, 0);
-					gnoisereductvl = vfy32up(catscanint(catp + 2, 2), 0, NRLEVELMAX, gnoisereductvl);
-					updateboard();	/* полная перенастройка (как после смены режима) */
-					rc = 1;
+					if (cat_param_setvalue(& xgnoisereductvl, vfy32up(catscanint(catp + 2, 2), 0, NRLEVELMAX, gnoisereductvl)))
+					{
+						updateboard();	/* полная перенастройка (как после смены режима) */
+						rc = 1;
+					}
 				}
 			}
 			else if (catpcount == 1)
@@ -22560,49 +22604,36 @@ void hamradio_set_gnotch(uint_fast8_t v)
 
 uint_fast8_t hamradio_get_gnotchtype(void)
 {
-	return notchmodes [gnotchtype].code;
+	return notchmodes [param_val(& xgnotchtype)].code;
 }
 
 void hamradio_set_gnotchtype(uint_fast8_t v)
 {
-	gnotchtype = v;
-	updateboard();
+	if (param_setvalue(& xgnotchtype, v))
+		updateboard();
 }
 
 uint_fast16_t hamradio_notch_freq(int_fast8_t step)
 {
 	if (step != 0)
 	{
-		uint_fast16_t val = gnotchfreq.value + step * ISTEP50;
-
-		if (val < WITHNOTCHFREQMIN)
-			val = WITHNOTCHFREQMIN;
-
-		if (val > WITHNOTCHFREQMAX)
-			val = WITHNOTCHFREQMAX;
-
-		gnotchfreq.value = val;
-		updateboard();
+		uint_fast16_t val = param_val(& xgnotchfreq) + step * ISTEP50;
+		if (param_setvalue(& xgnotchfreq, val))
+			updateboard();
 	}
-	return gnotchfreq.value;
+	return param_val(& xgnotchfreq);
 }
 
 uint_fast16_t hamradio_notch_width(int_fast8_t step)
 {
+
 	if (step != 0)
 	{
-		uint_fast16_t val = gnotchwidth.value + step * ISTEP50;
-
-		if (val < WITHNOTCHWIDTHMIN)
-			val = WITHNOTCHWIDTHMIN;
-
-		if (val > WITHNOTCHWIDTHMAX)
-			val = WITHNOTCHWIDTHMAX;
-
-		gnotchwidth.value = val;
-		updateboard();
+		uint_fast16_t val = param_val(& xgnotchwidth) + step * ISTEP50;
+		if (param_setvalue(& xgnotchwidth, val))
+			updateboard();
 	}
-	return gnotchwidth.value;
+	return param_val(& xgnotchwidth);
 }
 
 #endif /* WITHNOTCHFREQ */
@@ -23933,7 +23964,7 @@ application_initialize(void)
 #endif
 
 #if WITHCAT_MUX && defined WITHCAT_MUX_DEFAULT
-	gcatmux = findcatmux(gcatmux, BOARD_CATMUX_DIN8);
+	gcatmux = findcatmux(gcatmux, WITHCAT_MUX_DEFAULT);
 #endif
 
 #endif /* WITHCAT */
