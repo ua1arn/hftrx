@@ -261,12 +261,12 @@ app_run64: $(PROJECT)_app.alw32 $(DDRINIT)
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec $(SystemExecAARCH64)
 
-Sapp_run: $(PROJECT)_app.alw32 ddrinit
+app_run: $(PROJECT)_app.alw32 ddrinit
 	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
 	$(XFEL) exec $(SystemExecAARCH64)
 
 # debug for bootloader - check .ld file
-app_run: bootloader
+_app_run: bootloader
 	$(XFEL) write $(Reset_Handler) $(PROJECT)_boot.bin
 	$(XFEL) exec $(Reset_Handler) 
 
