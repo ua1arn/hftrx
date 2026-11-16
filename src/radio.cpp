@@ -2116,7 +2116,7 @@ enum
 };
 
 /* структура хранения параметров в NVRAM */
-struct agcseti_tag
+typedef struct agcseti_tag
 {
 	/* параметры АРУ по режимам работы */
 	uint8_t rate;
@@ -2125,7 +2125,7 @@ struct agcseti_tag
 	uint8_t release10;
 	uint8_t t4;
 	uint8_t thung10;
-} __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+} __PACKED agcseti_t;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 struct afsetitempl
 {
@@ -3928,6 +3928,16 @@ struct bandprops_tag {
 	struct onetxant_tag otxants [ANTMODE_COUNT];	// Параметры, связанные с антенами, которые могут использоваться на передачу (параметры тюнера)
 } __PACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
+#if WITHIF4DSP
+typedef struct bwsetprop_tag
+{
+	uint8_t bwleft10_width10;			/* значения границ полосы пропускания */
+	uint8_t bwright100;			/* значения границ полосы пропускания */
+	uint8_t squareness10;	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
+	uint8_t afresponce;		/* Наклон АЧХ */
+} __PACKED bwsetprop_t;
+#endif /* WITHIF4DSP */
+
 enum { BANDS_COUNT = HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT };
 enum { BANDPROPS_COUNT = HBANDS_COUNT + XBANDS_COUNT };
 /* структура - расположение байтов в конфигурационном ОЗУ.
@@ -4123,14 +4133,10 @@ struct nvmap {
 	uint16_t	ggrpagcdigi; // последний выбраный пункт группы
 
 	uint8_t gnoisereductvl;	// noise reduction level
+
 	uint8_t bwsetpos [BWSETI_count];	/* выбор одной из полос пропускания */
-
-	uint8_t bwpropsleft [BWPROPI_count];	/* значения границ полосы пропускания */
-	uint8_t bwpropsright [BWPROPI_count];	/* значения границ полосы пропускания */
-	uint8_t bwpropssquareness10 [BWPROPI_count];	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
-	uint8_t bwpropsafresponce [BWPROPI_count];	/* Наклон АЧХ */
-
-	struct agcseti_tag afsets [AGCSETI_COUNT];	/* режимы приема */
+	bwsetprop_t bwprops [BWPROPI_count];	// частоты среза полосы пропускания и доугие параметры фильтров
+	agcseti_t afsets [AGCSETI_COUNT];	/* режимы приема */
 
 	uint8_t gsquareness10;	// Коэффициент прямоугольности фильтра в десятых долях
 
@@ -4421,10 +4427,10 @@ struct nvmap {
 
 #define RMT_BWSETPOS_BASE(i) OFFSETOF(struct nvmap, bwsetpos [(i)])
 
-#define RMT_BWPROPSLEFT_BASE(i) OFFSETOF(struct nvmap, bwpropsleft [(i)])
-#define RMT_BWPROPSRIGHT_BASE(i) OFFSETOF(struct nvmap, bwpropsright [(i)])
-#define RMT_BWPROPSTRANSITION10_BASE(i) OFFSETOF(struct nvmap, bwpropssquareness10 [(i)])
-#define RMT_BWPROPSAFRESPONCE_BASE(i) OFFSETOF(struct nvmap, bwpropsafresponce [(i)])
+#define RMT_BWPROPSLEFT_BASE(i) OFFSETOF(struct nvmap, bwprops [(i)].bwleft10_width10)
+#define RMT_BWPROPSRIGHT_BASE(i) OFFSETOF(struct nvmap, bwprops [(i)].bwright100)
+#define RMT_BWPROPSTRANSITION10_BASE(i) OFFSETOF(struct nvmap, bwprops [(i)].squareness10)
+#define RMT_BWPROPSAFRESPONCE_BASE(i) OFFSETOF(struct nvmap, bwprops [(i)].afresponce)
 
 #define RMT_MICLEVEL_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].level)
 #define RMT_MICCLIP_BASE(c) OFFSETOF(struct nvmap, micprof_cells [(c)].clip)
@@ -22823,8 +22829,8 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 	mp->agcgain = gmikeagcgain;
 	mp->clip = gmikehclip;
 
-	mp->mikeboost20db = gmikeboost20db;
-	mp->eq_enable = gmikeequalizer;
+	mp->mikeboost20db = param_val(& xgmikeboost20db);
+	mp->eq_enable = param_val(& xgmikeequalizer);
 
 	for(uint_fast8_t j = 0; j < BOARD_AFPROC_BANDS; j ++)
 	{
@@ -22850,8 +22856,8 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 
 	if (mp->cell_saved && set)
 	{
-		gmikeboost20db = mp->mikeboost20db;
-		gmikeequalizer = mp->eq_enable;
+		param_setvalue(& xgmikeboost20db, mp->mikeboost20db);
+		param_setvalue(& xgmikeequalizer, mp->eq_enable);
 
 		for(uint_fast8_t j = 0; j < BOARD_AFPROC_BANDS; j ++)
 			gmikeequalizerparams [j] = mp->eq_params [j];
