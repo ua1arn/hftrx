@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 #if defined   (__GNUC__)        /* GNU Compiler */
 	#include <stdint.h>
@@ -286,7 +287,7 @@ int main(int argc, char* argv[])
 
 	if (printFLAG && argc >= 1)
 	{
-		int i;
+		//int i;
 		const char * const infilename = argv [1];
 		FILE * infile = fopen(infilename,"rb");
 		if (infile == NULL)
@@ -316,12 +317,19 @@ int main(int argc, char* argv[])
 		const char * const outfilename = argv [2]; //"../../build/allwinner_t113_s3/fsbl.bt0";
 		int code;
 
-		FILE * infile = fopen(infilename,"rb");
-		FILE * outfile = fopen(outfilename,"wb");
+		FILE * infile;
+		FILE * outfile;
 
-		if (infile == NULL || outfile == NULL)
+		infile = fopen(infilename,"rb");
+		if (infile == NULL)
 		{
-			fprintf(stderr, "Can not open files...\n");
+			fprintf(stderr, "Can not open input file '%s'\n", infilename);
+			return 1;
+		}
+		outfile = fopen(outfilename,"wb");
+		if (outfile == NULL)
+		{
+			fprintf(stderr, "Can not create output file '%s'\n", outfilename);
 			return 1;
 		}
 		
