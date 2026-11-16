@@ -1751,20 +1751,6 @@ typedef struct micprof_cell	micprof_t;
 static micprof_t micprof_cells [NMICPROFCELLS];
 #endif /* WITHTOUCHGUI */
 
-static mikproc_t micprofiles [] =
-{
-	{
-		0,
-		0,
-	},
-	{
-		0,
-		0,
-	},
-};
-
-#define NMICPROFILES (sizeof micprofiles / sizeof micprofiles [0])
-
 // индекс номера банка параметров обработки звука для данного режима
 enum
 {
@@ -1779,8 +1765,9 @@ enum
 	TXAPROFIG_count
 };
 
-
-static uint8_t gtxaprofiles [TXAPROFIG_count];	// индекс профиля для группы режимов передачи - значения 0..NMICPROFILES-1
+//
+#define NMICPROFILES 1	// оличество профилей управления обработкой звука
+//static uint8_t gtxaprofiles [TXAPROFIG_count];	// индекс профиля для группы режимов передачи - значения 0..NMICPROFILES-1
 
 
 // параметры фильтра на приеме
@@ -3873,7 +3860,7 @@ struct modeprops_tag
 
 	uint8_t noisereduct;	/* включение NR для данного режима */
 	uint8_t txaudioindex;	/* источник звука для передачи (индекс) */
-	uint8_t	gmidmenupos;	/* активный пункт в middlemenu */
+	uint8_t	midmenupos;	/* активный пункт в middlemenu */
 
 } __PACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -3936,6 +3923,21 @@ typedef struct bwsetprop_tag
 	uint8_t squareness10;	/* Код управления сглаживанием скатов фильтра основной селекции на приёме */
 	uint8_t afresponce;		/* Наклон АЧХ */
 } __PACKED bwsetprop_t;
+#endif /* WITHIF4DSP */
+
+#if WITHIF4DSP
+typedef struct mikeprop_tag
+{
+	uint8_t mikeagc;	/* Включение программной АРУ перед модулятором */
+	uint8_t mikehcompressor;
+	uint8_t mikeagcgain;	/* Максимальное усидение АРУ микрофона */
+	uint8_t mikehclip;		/* Ограничитель */
+#if WITHREVERB
+	uint8_t reverb;		/* ревербератор */
+	uint8_t reverbdelay;		/* ревербератор - задержка */
+	uint8_t reverbloss;		/* ревербератор - ослабление на возврате */
+#endif /* WITHREVERB */
+} __PACKED mikeprop_t;
 #endif /* WITHIF4DSP */
 
 enum { BANDS_COUNT = HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT };
@@ -4176,10 +4178,9 @@ struct nvmap {
 
 	uint16_t glineamp;	// усиление с LINE IN
 	uint8_t gmikeboost20db;	// предусилитель микрофона
-	uint8_t gmikeagc;	/* Включение программной АРУ перед модулятором */
-	uint8_t gmikehcompressor;
-	uint8_t gmikeagcgain;	/* Максимальное усидение АРУ микрофона */
-	uint8_t gmikehclip;		/* Ограничитель */
+
+	mikeprop_t mkps [NMICPROFILES];	// группа парметров обработки сигнала микрофона - по профилям
+
 	#if WITHCOMPRESSOR
 		uint8_t	gcompressor_attack;		/* Компрессор - время атаки */
 		uint8_t gcompressor_release;	/* Компрессор - время освобождения */
@@ -4187,11 +4188,7 @@ struct nvmap {
 		uint8_t gcompressor_gain;		/* Компрессор - отношение компрессии */
 		uint8_t gcompressor_threshold;	/* Компрессор - порог срабатывания */
 	#endif /* WITHCOMPRESSOR */
-	#if WITHREVERB
-		uint8_t greverb;		/* ревербератор */
-		uint8_t greverbdelay;		/* ревербератор - задержка */
-		uint8_t greverbloss;		/* ревербератор - ослабление на возврате */
-	#endif /* WITHREVERB */
+
 	#if WITHUSBHW && WITHUSBUAC
 		uint8_t gdatatx;	/* автоматическое изменение источника при появлении звука со стороны компьютера */
 		uint8_t gdatamode;	/* передача звука с USB вместо обычного источника */
@@ -4203,10 +4200,12 @@ struct nvmap {
 		#endif /* WITHRTS96 || WITHRTS192 */
 		uint8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 	#endif /* WITHUSBHW && WITHUSBUAC */
-		uint8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-		uint8_t gmikeequalizerparams [BOARD_AFPROC_BANDS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
-	struct micproc gmicprocs [NMICPROFILES];
-	uint8_t txaprofile [TXAPROFIG_count];	/* параметры обработки звука перед модулятором */
+
+	uint8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
+	uint8_t gmikeequalizerparams [BOARD_AFPROC_BANDS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
+
+//	struct micproc gmicprocs [NMICPROFILES];
+//	uint8_t txaprofile [TXAPROFIG_count];	/* параметры обработки звука перед модулятором */
 
 	uint8_t enc1f_sel;
 	uint8_t enc2f_sel;
@@ -4407,7 +4406,7 @@ struct nvmap {
 #define RMT_TXAUDIO_BASE(i)	OFFSETOF(struct nvmap, modes [(i)].txaudioindex)
 
 #define RMT_TXAUDIOINDEX_BASE(i) OFFSETOF(struct nvmap, modes [(i)].txaudioindex)
-#define RMT_MIDDLEMENUPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].gmidmenupos)
+#define RMT_MIDDLEMENUPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].midmenupos)
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
 
 #define RMT_BAND(b) 			(OFFSETOF(struct nvmap, bands [(b)]))		// хранимые диапазоны
@@ -6135,7 +6134,7 @@ enum
 		QLABEL3("MIC AGC", "Mike AGC", "MIC AGC"), 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 					/* Включение программной АРУ перед модулятором */
-		OFFSETOF(struct nvmap, gmikeagc),
+		OFFSETOF(struct nvmap, mkps [(0)].mikeagc),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikeagc,
@@ -6148,7 +6147,7 @@ enum
 		QLABEL3("MIC COMP", "Mike Comp", "MIC COMP"), 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 					/* Включение программной АРУ перед модулятором */
-		OFFSETOF(struct nvmap, gmikehcompressor),
+		OFFSETOF(struct nvmap, mkps [(0)].mikehcompressor),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikehcompressor,
@@ -6162,7 +6161,7 @@ enum
 		QLABEL("MICAGCGN"),  0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		WITHMIKEAGCMIN, WITHMIKEAGCMAX, 	/* максимальное усиление АРУ микрофона в дБ */
-		OFFSETOF(struct nvmap, gmikeagcgain),
+		OFFSETOF(struct nvmap, mkps [(0)].mikeagcgain),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikeagcgain,
@@ -6179,7 +6178,7 @@ enum
 		QLABEL3("MIC CLIP", "Mike CLIP", "MIKE CLIP"),  0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		0, 90, 					/* Ограничение */
-		OFFSETOF(struct nvmap, gmikehclip),
+		OFFSETOF(struct nvmap, mkps [(0)].mikehclip),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gmikehclip,
@@ -6262,7 +6261,7 @@ enum
 			QLABEL2("REVERB", "Reverberator"), 0, RJ_ON,	ISTEP1,
 			ITEM_VALUE,
 			0, 1, 					/* ревербератор */
-			OFFSETOF(struct nvmap, greverb),
+			OFFSETOF(struct nvmap, mkps [(0)].reverb),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& greverb,
@@ -6275,7 +6274,7 @@ enum
 			QLABEL2("RVB TIME", "Reverb Delay"),  0, RJ_UNSIGNED, ISTEP1,
 			ITEM_VALUE,
 			WITHREVERBDELAYMIN, WITHREVERBDELAYMAX, 					/* ревербератор - задержка */
-			OFFSETOF(struct nvmap, greverbdelay),
+			OFFSETOF(struct nvmap, mkps [(0)].reverbdelay),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& greverbdelay,
@@ -6288,7 +6287,7 @@ enum
 			QLABEL2("RVB LOSS", "Reverb Loss"),  0, RJ_UNSIGNED, ISTEP1,
 			ITEM_VALUE,
 			WITHREVERBLOSSMIN, WITHREVERBLOSSMAX, 					/* ревербератор - ослабление на возврате */
-			OFFSETOF(struct nvmap, greverbloss),
+			OFFSETOF(struct nvmap, mkps [(0)].reverbloss),
 			getselector0, nvramoffs0, valueoffs0,
 			NULL,
 			& greverbloss,
@@ -10480,19 +10479,19 @@ static void micproc_load(void)
 	uint_fast8_t proci;
 	uint_fast8_t i;
 
-	for (proci = 0; proci < NMICPROFILES; ++ proci)
-	{
-		mikproc_t * const p = & micprofiles [proci];
-
-		p->comp = loadvfy8up(OFFSETOF(struct nvmap, gmicprocs [proci].comp), 0, 1, p->comp);
-		p->complevel = loadvfy8up(OFFSETOF(struct nvmap, gmicprocs [proci].complevel), 0, 1, p->complevel);
-	}
-
-	/* загрузка настроек - профиль аудиообработки для групп режимов работы */
-	for (i = 0; i < TXAPROFIG_count; ++ i)
-	{
-		gtxaprofiles [i] = loadvfy8up(RMT_TXAPROFIGLE_BASE(i), 0, NMICPROFILES - 1, gtxaprofiles [i]);
-	}
+//	for (proci = 0; proci < NMICPROFILES; ++ proci)
+//	{
+//		mikproc_t * const p = & micprofiles [proci];
+//
+//		p->comp = loadvfy8up(OFFSETOF(struct nvmap, gmicprocs [proci].comp), 0, 1, p->comp);
+//		p->complevel = loadvfy8up(OFFSETOF(struct nvmap, gmicprocs [proci].complevel), 0, 1, p->complevel);
+//	}
+//
+//	/* загрузка настроек - профиль аудиообработки для групп режимов работы */
+//	for (i = 0; i < TXAPROFIG_count; ++ i)
+//	{
+//		gtxaprofiles [i] = loadvfy8up(RMT_TXAPROFIGLE_BASE(i), 0, NMICPROFILES - 1, gtxaprofiles [i]);
+//	}
 
 #if WITHTOUCHGUI
 	for (i = 0; i < NMICPROFCELLS; i++)
@@ -14142,7 +14141,7 @@ updateboard_noui(
 		board_set_ifgain(sleepstate == 0  ? param_val(& xrfgain1) : BOARD_IFGAIN_MIN);	// Параметр для регулировки усиления ПЧ
 		board_set_agcfence10(param_val(& xagcfenceenable) ? param_val(& xagcfence1) * 10 : INT16_MAX);
 
-		const uint_fast8_t txaprofile = gtxaprofiles [getmodetempl(txsubmode)->txaprofgp];	// значения 0..NMICPROFILES-1
+		//const uint_fast8_t txaprofile = gtxaprofiles [getmodetempl(txsubmode)->txaprofgp];	// значения 0..NMICPROFILES-1
 
 		#if ! defined (CODEC1_TYPE) && WITHUSBHW && WITHUSBUACOUT
 			/* если конфигурация без автнонмного аудиокодека - все входы модулятора получают звук с USB AUDIO */
@@ -22432,41 +22431,41 @@ uint_fast8_t hamradio_get_greverb(void)
 
 void hamradio_set_gmoniflag(uint_fast8_t v)
 {
-	gmoniflag = v != 0;
-	save_i8(OFFSETOF(struct nvmap, gmoniflag), gmoniflag);
-	updateboard();
+	if (param_setvalue(& xgmoniflag, !! v))
+		updateboard();
 }
 
 uint_fast8_t hamradio_get_gmoniflag(void)
 {
-	return gmoniflag;
+	return param_val(& xgmoniflag);
 }
 
 
 void hamradio_get_mic_clip_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
-	* min = WITHMIKECLIPMIN;
-	* max = WITHMIKECLIPMAX;
+	int_fast32_t vmin, vmax;
+	param_getminmax(& xgmikehclip, & vmin, & vmax);
+	* min = vmin;
+	* max = vmax;
 }
 
 uint_fast8_t hamradio_get_gmikehclip(void)
 {
-	return gmikehclip;
+	return param_val(& xgmikehclip);
 }
 
 void hamradio_set_gmikehclip(uint_fast8_t v)
 {
-	ASSERT(v >= WITHMIKECLIPMIN);
-	ASSERT(v <= WITHMIKECLIPMAX);
-	gmikehclip = v;
-	save_i8(OFFSETOF(struct nvmap, gmikehclip), gmikehclip);
-	updateboard();
+	if (param_setvalue(& xgmikehclip, v))
+		updateboard();
 }
 
 void hamradio_get_mic_level_limits(uint_fast8_t * min, uint_fast8_t * max)
 {
-	* min = WITHMIKEINGAINMIN;
-	* max = WITHMIKEINGAINMAX;
+	int_fast32_t vmin, vmax;
+	param_getminmax(& xgmik1level, & vmin, & vmax);
+	* min = vmin;
+	* max = vmax;
 }
 
 uint_fast8_t hamradio_get_mik1level(void)
@@ -22824,17 +22823,17 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 	micprof_t * mp = & micprof_cells [cell];
 
 	mp->cell_saved = 1;
-	mp->level = gmik1level;
-	mp->agc = gmikeagc;
-	mp->agcgain = gmikeagcgain;
-	mp->clip = gmikehclip;
+	mp->level = param_val(& xgmik1level);
+	mp->agc = param_val(& xgmikeagc);
+	mp->agcgain = param_val(& xgmikeagcgain);
+	mp->clip = param_val(& xgmikehclip);
 
 	mp->mikeboost20db = param_val(& xgmikeboost20db);
 	mp->eq_enable = param_val(& xgmikeequalizer);
 
 	for(uint_fast8_t j = 0; j < BOARD_AFPROC_BANDS; j ++)
 	{
-		mp->eq_params [j] = gmikeequalizerparams [j];
+		mp->eq_params [j] = param_val(xgtxeqs [j]) + EQUALIZERBASE;
 		save_i8(RMT_MICEQPARAMS_BASE(cell, j), mp->eq_params [j]);
 	}
 
@@ -22860,11 +22859,11 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 		param_setvalue(& xgmikeequalizer, mp->eq_enable);
 
 		for(uint_fast8_t j = 0; j < BOARD_AFPROC_BANDS; j ++)
-			gmikeequalizerparams [j] = mp->eq_params [j];
-		gmik1level = mp->level;
-		gmikeagc = mp->agc;
-		gmikeagcgain = mp->agcgain;
-		gmikehclip = mp->clip;
+			param_setvalue(xgtxeqs [j], mp->eq_params [j] - EQUALIZERBASE);
+		param_setvalue(& xgmik1level,mp->level);
+		param_setvalue(& xgmikeagc, mp->agc);
+		param_setvalue(& xgmikeagcgain, mp->agcgain);
+		param_setvalue(& xgmikehclip, mp->clip);
 
 		updateboard();
 	}
