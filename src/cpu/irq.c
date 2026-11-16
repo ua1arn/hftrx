@@ -3182,25 +3182,9 @@ static void task_syscall_handler(thread_item_t * thread, unsigned arg0, void * a
 {
 }
 
-/* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
-static void *
-task_scheduler0(void * oldframe, unsigned svcflag, unsigned code)
-{
-	return oldframe;
-}
-
-static void * task_scheduler2(unsigned code, void * oldframe)
-{
-	return task_scheduler0(oldframe, 1, code);
-}
-
-static void * task_scheduler(void * oldframe)
-{
-	return task_scheduler0(oldframe, 0, 0);
-}
-
 void task_unlock_after_switch(void)
 {
+
 }
 
 void tasks_print(void)
@@ -3363,12 +3347,16 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 // 0x280
 void __NO_RETURN VIRQ_Handler(void * frame)
 {
+#if WITHRTOS
 	if (threads_not_started)
 		run_notask_curr(frame);
 	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	IRQ_Handler_GIC();		// Group 1 handler
 	thread_set_affinity(frame, aff);
 	run_task_curr(task_scheduler(frame));
+#else /* WITHRTOS */
+		run_notask_curr(frame);
+#endif /* WITHRTOS */
 }
 
 // was: uncommon_trap_handler_7
@@ -3376,12 +3364,16 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 // 0x300
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
+#if WITHRTOS
 	if (threads_not_started)
 		run_notask_curr(frame);
 	const unsigned aff = thread_set_affinity(frame, 1U << arm_hardware_cpuid());
 	FIQ_Handler_GIC();		// Group 0 handler
 	thread_set_affinity(frame, aff);
 	run_task_curr(task_scheduler(frame));
+#else /* WITHRTOS */
+		run_notask_curr(frame);
+#endif /* WITHRTOS */
 }
 
 // was: uncommon_trap_handler_5
@@ -3395,10 +3387,14 @@ void SError_Handler(void * frame)
 	unsigned iss = (esr_el3 >> 0) & 0x1FFFFFF;
 	if (ec == 0x15)
 	{
+#if WITHRTOS
 		if (threads_not_started)
 			return run_notask_curr(frame);
 		// SVC instruction execution in AArch64 state.
 		run_task_curr(task_scheduler2(esr_el3 & 0xFFFF, frame));
+#else /* WITHRTOS */
+		run_notask_curr(frame);
+#endif /* WITHRTOS */
 	}
 	TP();
 	PRINTF("SError_Handler (core=%u), stack~%p:\n", (unsigned) arm_hardware_cpuid(), frame);
@@ -3463,6 +3459,7 @@ uint32_t __get_DFAR(void)
 // AARCH32
 void IRQ_Handler_aarch32(void * frame)
 {
+#if WITHRTOS
 	if (threads_not_started)
 		run_notask_curr_aarch32(frame);
     // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
@@ -3474,10 +3471,14 @@ void IRQ_Handler_aarch32(void * frame)
 	IRQ_Handler_GIC();			// Group 1 handler
 	thread_set_affinity(frame, aff);
 	run_task_curr_aarch32(task_scheduler(frame));
+#else /* WITHRTOS */
+	run_notask_curr_aarch32(frame);
+#endif /* WITHRTOS */
 }
 
 void FIQ_Handler_aarch32(void * frame)
 {
+#if WITHRTOS
 	if (threads_not_started)
 		run_notask_curr_aarch32(frame);
     // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
@@ -3489,10 +3490,14 @@ void FIQ_Handler_aarch32(void * frame)
 	FIQ_Handler_GIC();			// Group 0 handler
 	thread_set_affinity(frame, aff);
 	run_task_curr_aarch32(task_scheduler(frame));
+#else /* WITHRTOS */
+	run_notask_curr_aarch32(frame);
+#endif /* WITHRTOS */
 }
 
 void __NO_RETURN SWI_Handler_aarch32(void * frame)
 {
+#if WITHRTOS
 	if (threads_not_started)
 		run_notask_curr_aarch32(frame);
     // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
@@ -3503,6 +3508,9 @@ void __NO_RETURN SWI_Handler_aarch32(void * frame)
     irq_stack_frame_top_t * const f = (irq_stack_frame_top_t *) frame;
 	const unsigned esr_el3 = 0;//__get_DFSR();
 	run_task_curr_aarch32(task_scheduler2(esr_el3 & 0xFFFF, frame));
+#else /* WITHRTOS */
+	run_notask_curr_aarch32(frame);
+#endif /* WITHRTOS */
 }
 
 void Undef_Handler(void)
