@@ -3610,7 +3610,7 @@ void Hyp_Handler(void)
 
 #if CPUSTYLE_ARM && WITHSMPSYSTEM
 
-#define SPINLOCKLOOPS (0xFFFFFFF * arm_hardware_cpuid())
+#define SPINLOCKLOOPS (0xFFFFFFF * (1 + arm_hardware_cpuid()))
 
 #if defined(__aarch64__) //defined(__ARM_ARCH) && (__ARM_ARCH == 8)
 
