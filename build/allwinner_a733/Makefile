@@ -116,7 +116,7 @@ UINCDIR += $(PRJROOT) $(PRJROOT)/inc
 ULIBDIR +=
 
 # List all user libraries here
-ULIBS += libdram_patched.a
+ULIBS +=
 
 # taken from
 # https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
@@ -202,6 +202,8 @@ OBJSA_APP 	+= $(patsubst $(PRJROOT)/%.S,$(OBJDIR)/%.o, $(ASRC_APP))
 OBJSA_BOOT 	+= $(patsubst $(PRJROOT)/%.S,$(OBJDIR)/%.o, $(ASRC_BOOT))
 OBJSC 	+= $(patsubst $(PRJROOT)/%.c,$(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp,$(OBJDIR)/%.o, $(CPPSRC))
+
+OBJSA_BOOT += libdram_patched.a
 
 OBJS = $(OBJSC) $(OBJSCPP)
 
@@ -304,7 +306,7 @@ $(OBJSA_APP) $(ZOBJSA):
 	$(AS) -o $@ -c $(ASFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
 # add libsun50iw9p1_spinor.a 
-%_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT) libdram_patched.a
+%_boot.elf: $(OBJS) $(OBJSA_BOOT) $(LDSCRIPT_BOOT)
 	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
