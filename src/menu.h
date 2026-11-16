@@ -329,7 +329,7 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
-	& xgcatenable,
+	& xgcattype,
 #if WITHCAT_ICOM
 	& xgcataddress,
 #endif /* WITHCAT_ICOM */

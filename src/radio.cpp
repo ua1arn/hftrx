@@ -4218,7 +4218,7 @@ struct nvmap {
 
 #if WITHCAT
 	uint16_t	ggrpcat; // последний выбраный пункт группы
-	uint8_t gcatenable;	/* удаленное управление разрешено */
+	uint8_t gcattype;	/* удаленное управление разрешено */
 	uint8_t gcatbaudrate;	/* номер скорости работы по CAT */
 	uint8_t gcataddress;	/* адрес устройства в протоколе YAESU */
 	#if WITHTX
@@ -5734,20 +5734,48 @@ enum
 
 #if WITHCAT
 
-	static uint_fast8_t gcatenable = 1;	/* модифицируется через меню. */
 	static uint_fast8_t gcatbaudrate = 3;	/* 3 is a 9600 */ /* модифицируется через меню. - номер скорости при работе по CAT */
-
-	static const struct paramdefdef xgcatenable =
+	enum
 	{
-		QLABEL3("CAT ENAB", "CAT Enable", "CAT ENABLE"), 0, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		OFFSETOF(struct nvmap, gcatenable),
+		BOARD_CATTYPE_KENWOOD,
+		BOARD_CATTYPE_YAESU,
+		BOARD_CATTYPE_ICOM,
+		//
+		BOARD_CATTYPE_OFF
+	};
+	static const struct cattypes_tag
+	{
+		uint8_t code;
+		const char * label;
+	} cattypes [] =
+	{
+#if WITHCAT_YAESU
+		{	BOARD_CATTYPE_YAESU, "YAESU", },
+#endif /* WITHCAT_YAESU */
+#if WITHCAT_ICOM
+		{	BOARD_CATTYPE_ICOM, "ICOM", },
+#endif /* WITHCAT_ICOM */
+#if WITHCAT_KENWOOD
+		{	BOARD_CATTYPE_KENWOOD, "KENWOOD", },
+#endif /* WITHCAT_KENWOOD */
+		{	BOARD_CATTYPE_OFF, "OFF", },
+	};
+	static size_t getvaltextcattype(char * buff, size_t count, int_fast32_t value)
+	{
+		return local_snprintf_P(buff, count, "%s", cattypes [value].label);
+	}
+	static uint_fast8_t gcattype = 0;	/* модифицируется через меню. */
+	static const struct paramdefdef xgcattype =
+	{
+		QLABEL3("CAT TYP", "CAT Type", "CAT TYPE"), 0, RJ_CB,	ISTEP1,
+		ITEM_VALUE | ITEM_LISTSELECT,
+		0, ARRAY_SIZE(cattypes) - 1,
+		OFFSETOF(struct nvmap, gcattype),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
-		& gcatenable,
+		& gcattype,
 		getzerobase,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		getvaltextcattype, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
 #if WITHCAT_ICOM
@@ -5812,7 +5840,7 @@ enum
 		static uint_fast8_t gcatmux;
 		static const struct paramdefdef xgcatmux =
 		{
-			QLABEL3("CAT SEL", "CAT Select", "CAT SEL"), 0, RJ_CB,	ISTEP1,
+			QLABEL3("CAT SEL", "CAT Port", "CAT SEL"), 0, RJ_CB,	ISTEP1,
 			ITEM_VALUE | ITEM_LISTSELECT,
 			0, ARRAY_SIZE(catmuxmodes) - 1,
 			OFFSETOF(struct nvmap, gcatmux),
@@ -5893,10 +5921,6 @@ enum
 		getzerobase,
 		getvaltextcatsig, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-
-#else /* WITHCAT */
-
-	enum { gcatenable = 0 };
 
 #endif /* WITHCAT */
 
@@ -14261,24 +14285,28 @@ updateboard_noui(
 	board_set_displayfps(glatchfps);
 		/* просто настройки тракта и не относящиеся к приёму-пеердаче. */
 	#if WITHCAT
-		processcat_enable(param_val(& xgcatenable));
+		processcat_enable(cattypes[param_val(& xgcattype)].code != BOARD_CATTYPE_OFF);
 		cat_set_speed(catbr2int [param_val(& xgcatbaudrate)] * BRSCALE);
 		#if WITHCAT_MUX
-			board_set_catmux(catmuxmodes [gcatmux].code);	// BOARD_CATMUX_USBCDC or BOARD_CATMUX_DIN8
+			board_set_catmux(catmuxmodes [param_val(& xgcatmux)].code);	// BOARD_CATMUX_USBCDC or BOARD_CATMUX_DIN8
 		#endif /* WITHCAT_MUX */
 	#endif	/* WITHCAT */
 
 	#if WITHMODEM
-		board_set_modem_speed100(modembr2int100 [gmodemspeed]);	// скорость передачи (модуляция, не последовательный порт) с точностью 1/100 бод
-		board_set_modem_mode(gmodemmode);	// применяемая модуляция
+		board_set_modem_speed100(modembr2int100 [param_val(& xgmodemspeed)]);	// скорость передачи (модуляция, не последовательный порт) с точностью 1/100 бод
+		board_set_modem_mode(param_val(& xgmodemmode));	// применяемая модуляция
 	#endif /* WITHMODEM */
 
 	#if WITHLFM
-		synth_lfm_setparams(lfmstart100k * 100000ul + (int32_t) lfmfreqbias - LFMFREQBIAS, lfmstop100k * 100000ul + (int32_t) lfmfreqbias - LFMFREQBIAS, lfmspeed1k * 1000ul, getlo1div(gtx));
+		synth_lfm_setparams(
+				param_val(& xlfmstart100k) * 100000ul +
+				(int32_t) param_val(& xlfmfreqbias) - LFMFREQBIAS,
+				param_val(& xlfmstop100k) * 100000ul +
+				(int32_t) param_val(& xlfmfreqbias) - LFMFREQBIAS, param_val(& xlfmspeed1k * 1000ul), getlo1div(gtx));
 	#endif /* WITHLFM */
 
 	#if WITHLO1LEVELADJ
-		prog_dds1_setlevel(lo1level);
+		prog_dds1_setlevel(param_val(& xlo1level));
 	#endif /* WITHLO1LEVELADJ */
 	#if defined (DAC1_TYPE)
 		board_set_dac1(dac1level);	/* подстройка частоты опорного генератора */

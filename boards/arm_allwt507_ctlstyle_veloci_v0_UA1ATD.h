@@ -413,8 +413,9 @@
 	//#define WITHVITA49RX	1	/* VITA 49.0-2015 streaming source support */
 	
 	#define WITHCAT				1	/* используется CAT */
-	#define WITHCAT_YAESU		1	/* используется CAT с системой команл Yaesu FT-817 */
-//	#define WITHCAT_ICOM		1
+	#define WITHCAT_YAESU		1	/* используется CAT с системой команд Yaesu FT-817 */
+//	#define WITHCAT_ICOM		1	/* используется CAT с системой команд ICOM IC-718 */
+//	#define WITHCAT_KENWOOD		1	/* используется CAT с системой команд Kenwood TS-590S */
 	#define WITHCAT_MUX_DEFAULT BOARD_CATMUX_DIN8
 
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
