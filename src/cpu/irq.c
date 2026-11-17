@@ -1814,7 +1814,7 @@ static void context_set_ec(irq_stack_frame_top_t * __restrict cpuframe, unsigned
 }
 
 // scheduler-mode entry
-static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * f)
+static void context_syscall(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * f)
 {
 	task_syscall_handler(thread, (unsigned) f->x0, (void *) f->x1);
 }
@@ -1951,7 +1951,7 @@ static void context_set_ec(irq_stack_frame_top_t * __restrict frame_top, unsigne
 }
 
 // scheduler-mode entry
-static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * __restrict frame_top)
+static void context_syscall(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * __restrict frame_top)
 {
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
     irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
@@ -2063,7 +2063,7 @@ static void context_set_ec(irq_stack_frame_top_t * __restrict cpuframe, unsigned
 }
 
 // scheduler-mode entry
-static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * f)
+static void context_syscall(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * f)
 {
 	task_syscall_handler(thread, (unsigned) f->r0, (void *) f->r1);
 }
@@ -2130,7 +2130,7 @@ static void context_set_ec(void * __restrict cpuframe, unsigned ec)
 }
 
 // scheduler-mode entry
-static void task_svc(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * f)
+static void context_syscall(struct thread_item_tag * thread, unsigned code, irq_stack_frame_top_t * f)
 {
 	task_syscall_handler(thread, (unsigned) f->x3, (void *) f->x4);
 }
@@ -2854,7 +2854,7 @@ static void task_syscall_handler(thread_item_t * thread, unsigned arg0, void * a
 }
 
 static thread_item_t * refreshactivetask(void * oldframe, uint_fast8_t core)  {
-	thread_item_t * * const pt = & startedtask [core];	// не NULL - значит запускали из task_scheduler0
+	thread_item_t * * const pt = & startedtask [core];	// не NULL - значит запускали из task_scheduler_mux
 	if (* pt == NULL) {
 		static thread_item_t base_threads [HARDWARE_NCORES];	// состояния получаем при первом прерывании
 		// ещё не имеет своей структуры - создан в момент start-up системы.
@@ -2871,7 +2871,7 @@ static thread_item_t * refreshactivetask(void * oldframe, uint_fast8_t core)  {
 		thread->affinity = 1U << core;
 		* pt = thread;
 
-		//PRINTF("task_scheduler0: add default %p, flag=%u, core=%u, irql=%u\n", thread, flag, core, irql);
+		//PRINTF("task_scheduler_mux: add default %p, flag=%u, core=%u, irql=%u\n", thread, flag, core, irql);
 	}
 	(* pt)->cpuframe = oldframe;
 	return (* pt);
@@ -2879,7 +2879,7 @@ static thread_item_t * refreshactivetask(void * oldframe, uint_fast8_t core)  {
 
 /* получаем stack frame старой задачи, возвращаем stack frame новой задачи */
 static void *
-task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
+task_scheduler_mux(void * oldframe, unsigned syscallflag, unsigned code)
 {
 	const uint_fast8_t core = arm_hardware_cpuid();
 	IRQL_t irql;
@@ -2891,7 +2891,7 @@ task_scheduler0(void * oldframe, unsigned syscallflag, unsigned code)
 
 	if (syscallflag) {
 		// обработка системных вызовов
-		task_svc(tp, code, oldframe);	// thread переходит в список ждущих или готовых - или исчезает
+		context_syscall(tp, code, oldframe);	// thread переходит в список ждущих или готовых - или исчезает
 	} else {
 		task_insertready(tp);		// раз сюда попали - значит точно не ждали ничего
 	}
@@ -2926,14 +2926,14 @@ void task_unlock_after_switch(void)
 //	next_task_daif [core] = global_disable_irq_save();
 //}
 
-static void * task_scheduler2(unsigned code, void * oldframe)
+static void * task_scheduler_syscall(unsigned code, void * oldframe)
 {
-	return task_scheduler0(oldframe, 1, code);
+	return task_scheduler_mux(oldframe, 1, code);
 }
 
 static void * task_scheduler(void * oldframe)
 {
-	return task_scheduler0(oldframe, 0, 0);
+	return task_scheduler_mux(oldframe, 0, 0);
 }
 
 // хотим завершить выполнение кванта, не дожидаясь прерывания
@@ -3293,16 +3293,20 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 void __NO_RETURN VIRQ_Handler(void * frame)
 {
 #if WITHRTOS
-	if (threads_not_started)
-		run_notask_curr(frame);
+	if (threads_not_started) {
+		run_notask_curr(frame);	// __NO_RETURN
+	}
+
 	const uint_fast8_t core = arm_hardware_cpuid();
 	const unsigned aff = thread_set_affinity(frame, 1U << core, core);
+
 	IRQ_Handler_GIC();		// Group 1 handler
+
 	thread_set_affinity(frame, aff, core);
-	run_task_curr(task_scheduler(frame));
+	run_task_curr(task_scheduler(frame));	// __NO_RETURN
 #else /* WITHRTOS */
 	IRQ_Handler_GIC();		// Group 1 handler
-	run_notask_curr(frame);
+	run_notask_curr(frame);	// __NO_RETURN
 #endif /* WITHRTOS */
 }
 
@@ -3312,16 +3316,20 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
 #if WITHRTOS
-	if (threads_not_started)
-		run_notask_curr(frame);
+	if (threads_not_started) {
+		run_notask_curr(frame);	// __NO_RETURN
+	}
+
 	const uint_fast8_t core = arm_hardware_cpuid();
 	const unsigned aff = thread_set_affinity(frame, 1U << core, core);
+
 	FIQ_Handler_GIC();		// Group 0 handler
+
 	thread_set_affinity(frame, aff, core);
-	run_task_curr(task_scheduler(frame));
+	run_task_curr(task_scheduler(frame));	// __NO_RETURN
 #else /* WITHRTOS */
 	FIQ_Handler_GIC();		// Group 0 handler
-	run_notask_curr(frame);
+	run_notask_curr(frame);	// __NO_RETURN
 #endif /* WITHRTOS */
 }
 
@@ -3338,11 +3346,11 @@ void SError_Handler(void * frame)
 	{
 #if WITHRTOS
 		if (threads_not_started)
-			return run_notask_curr(frame);
+			run_notask_curr(frame);	// __NO_RETURN
 		// SVC instruction execution in AArch64 state.
-		run_task_curr(task_scheduler2(esr_el3 & 0xFFFF, frame));
+		run_task_curr(task_scheduler_syscall(esr_el3 & 0xFFFF, frame));	// __NO_RETURN
 #else /* WITHRTOS */
-		run_notask_curr(frame);
+		run_notask_curr(frame);	// __NO_RETURN
 #endif /* WITHRTOS */
 	}
 	TP();
@@ -3392,9 +3400,11 @@ void IRQ_Handler_aarch32(void * frame)
 
 	const uint_fast8_t core = arm_hardware_cpuid();
 	const unsigned aff = thread_set_affinity(frame, 1U << core, core);
+
 	IRQ_Handler_GIC();			// Group 1 handler
+
 	thread_set_affinity(frame, aff, core);
-	run_task_curr_aarch32(task_scheduler(frame));
+	run_task_curr_aarch32(task_scheduler(frame));	// __NO_RETURN
 #else /* WITHRTOS */
 	IRQ_Handler_GIC();			// Group 1 handler
 	run_notask_curr_aarch32(frame);
@@ -3413,9 +3423,11 @@ void FIQ_Handler_aarch32(void * frame)
 
 	const uint_fast8_t core = arm_hardware_cpuid();
     const unsigned aff = thread_set_affinity(frame, 1U << core, core);
+
 	FIQ_Handler_GIC();			// Group 0 handler
+
 	thread_set_affinity(frame, aff, core);
-	run_task_curr_aarch32(task_scheduler(frame));
+	run_task_curr_aarch32(task_scheduler(frame));	// __NO_RETURN
 #else /* WITHRTOS */
 	FIQ_Handler_GIC();			// Group 0 handler
 	run_notask_curr_aarch32(frame);
@@ -3434,7 +3446,7 @@ void __NO_RETURN SWI_Handler_aarch32(void * frame)
 
     irq_stack_frame_top_t * const f = (irq_stack_frame_top_t *) frame;
 	const unsigned esr_el3 = 0;//__get_DFSR();
-	run_task_curr_aarch32(task_scheduler2(esr_el3 & 0xFFFF, frame));
+	run_task_curr_aarch32(task_scheduler_syscall(esr_el3 & 0xFFFF, frame));	// __NO_RETURN
 #else /* WITHRTOS */
 	run_notask_curr_aarch32(frame);
 #endif /* WITHRTOS */
