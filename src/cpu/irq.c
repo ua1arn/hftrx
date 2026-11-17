@@ -3379,32 +3379,6 @@ void SError_Handler(void * frame)
 
 #elif (__CORTEX_A != 0) && ! defined(__aarch64__) && ! defined(__riscv)
 
-//	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
-//	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
-
-/** \brief  Get IFAR
-\return		Instruction Fault Address register value
-*/
-__STATIC_FORCEINLINE uint32_t __get_IFAR(void)
-{
-	uint32_t result;
-	__get_CP(15, 0, result, 6, 0, 2);
-	return result;
-}
-
-//	MRC p15, 0, <Rt>, c6, c0, 0 ; Read DFAR into Rt
-//	MCR p15, 0, <Rt>, c6, c0, 0 ; Write Rt to DFAR
-
-/** \brief  Get DFAR
-\return		Data Fault Address register value
-*/
-__STATIC_FORCEINLINE uint32_t __get_DFAR(void)
-{
-	uint32_t result;
-	__get_CP(15, 0, result, 6, 0, 0);
-	return result;
-}
-
 // AARCH32
 void IRQ_Handler_aarch32(void * frame)
 {
@@ -3464,6 +3438,42 @@ void __NO_RETURN SWI_Handler_aarch32(void * frame)
 #else /* WITHRTOS */
 	run_notask_curr_aarch32(frame);
 #endif /* WITHRTOS */
+}
+
+void Hyp_Handler(void)
+{
+	//threads_not_halted = 0;
+	dbg_puts(PSTR("Hyp_Handler trapped. CPUID="));
+	dbg_putchar('0' + (arm_hardware_cpuid()));
+	dbg_putchar('\n');
+	for (;;)
+		;
+}
+
+//	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
+//	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
+
+/** \brief  Get IFAR
+\return		Instruction Fault Address register value
+*/
+__STATIC_FORCEINLINE uint32_t __get_IFAR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 6, 0, 2);
+	return result;
+}
+
+//	MRC p15, 0, <Rt>, c6, c0, 0 ; Read DFAR into Rt
+//	MCR p15, 0, <Rt>, c6, c0, 0 ; Write Rt to DFAR
+
+/** \brief  Get DFAR
+\return		Data Fault Address register value
+*/
+__STATIC_FORCEINLINE uint32_t __get_DFAR(void)
+{
+	uint32_t result;
+	__get_CP(15, 0, result, 6, 0, 0);
+	return result;
 }
 
 void Undef_Handler(void)  {
@@ -3627,16 +3637,6 @@ void DAbort_Handler(void)
 	for (;;)
 		;
 #endif /* defined (BOARD_BLINK_INITIALIZE) */
-}
-
-void Hyp_Handler(void)
-{
-	//threads_not_halted = 0;
-	dbg_puts(PSTR("Hyp_Handler trapped. CPUID="));
-	dbg_putchar('0' + (arm_hardware_cpuid()));
-	dbg_putchar('\n');
-	for (;;)
-		;
 }
 
 static uint32_t get_sp_sys(void)
