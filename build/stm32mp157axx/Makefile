@@ -22,6 +22,7 @@ TRGT = $(TRGT2)-
 
 DFUUTIL = ./dfu-util
 BUSYBOX = busybox
+EGONTOOL = ./egontool
 
 #UADEFS += -D"WITHSMPSYSTEM"
 

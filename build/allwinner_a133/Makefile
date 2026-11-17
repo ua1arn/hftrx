@@ -24,6 +24,7 @@ TRGT = $(TRGT2)-
 _XFEL = ../../tools/xfel-windows-v1.3.4/xfel
 XFEL = ./xfel_lpddr4
 BUSYBOX = busybox
+EGONTOOL = ./egontool
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -242,7 +243,7 @@ allZ:
 
 bootloader: BOOT2
 	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
-	./egontool -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
+	$(EGONTOOL) -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a133_boot.map - address of SystemDRAMInit
 ifeq (1, 1)

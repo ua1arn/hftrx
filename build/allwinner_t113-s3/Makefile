@@ -23,6 +23,7 @@ TRGT = $(TRGT2)-
 #XFEL = ../../tools/xfel-windows-v1.3.6/xfel
 XFEL = ./xfel_fixed_t113-s3
 BUSYBOX = busybox
+EGONTOOL = ./egontool
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -307,7 +308,7 @@ APP2: $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.bt0: $(PROJECT)_boot.bin
 	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
-	./egontool -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
+	$(EGONTOOL) -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 lib: bootloader
 	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort >bootparam.mak

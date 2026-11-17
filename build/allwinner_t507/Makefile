@@ -23,6 +23,7 @@ TRGT = $(TRGT2)-
 
 XFEL = ../../tools/xfel-windows-v1.3.6/xfel
 BUSYBOX = busybox
+EGONTOOL = ./egontool
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -256,7 +257,7 @@ allZ:
 
 bootloader: BOOT2
 	$(BUSYBOX) grep -E -e ' Reset_Handler$$' -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
-	./egontool -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
+	$(EGONTOOL) -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 lib: bootloader
 	$(BUSYBOX) grep -E -e ' Reset_Handler$$' -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort >$(DDRINITPARAM)

@@ -22,6 +22,7 @@ TRGT = $(TRGT2)-
 
 XFEL = ../../tools/xfel-windows-v1.3.6/xfel
 BUSYBOX = busybox
+EGONTOOL = ./egontool
 
 #UADEFS += -D"WITHSMPSYSTEM"
 
@@ -248,7 +249,7 @@ BOOT2: fsbl.bt0
 
 fsbl.bt0: $(PROJECT)_boot.bin
 	$(BUSYBOX) grep -E -e ' SystemDRAMInit$$' -e ' SystemExecAARCH64$$' $(PROJECT)_boot.map | $(BUSYBOX) awk -e '{ print $$2, "=", $$1 }' | $(BUSYBOX) sort
-	./egontool -old -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
+	$(EGONTOOL) -old -base 0x00020000 -reset 0x00020100 $(PROJECT)_boot.bin fsbl.bt0
 	
 # Take from tc1_a64_boot.map
 SystemDRAMInit = 0x0001badc
