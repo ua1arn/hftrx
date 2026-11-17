@@ -885,7 +885,7 @@
 #if WITHIF4DSP
 	& xgfsadcpower10,	// параметры frontend - для коррекции показаний S-meter
 	& xgfsadcpower10xv,	// параметры frontend - для коррекции показаний S-meter с трансвертором
-	& xgdacscale,
+	//& xgdacscale,
 	& xggainssbtx,	/* Увеличение усиления при передаче в SSB */
 	& xggaincwtx,		/* Увеличение усиления при передаче в цифровых режимах */
 #if WITHTX && WITHUSBUAC

@@ -4131,18 +4131,8 @@ void adpt_initialize(
 	adp->leftbit = leftbit;
 	adp->lshift32 = 32 - leftbit - rightspace;
 	adp->rshift32 = 32 - leftbit;
-	adp->outmax = outfence;
-	adp->outmin = - outfence;
 	//PRINTF("adpt_initialize: leftbit=%d, rightspace=%d, lshift32=%d, rshift32=%d\n", leftbit, rightspace, adp->lshift32, adp->rshift32);
 	adp->name = name;
-}
-
-
-void adpt_setclip(adapter_t * adp, FLOAT_t v)
-{
-	v = FABSF(v);
-	adp->outmax = FMINF(adp->outmax, + v);
-	adp->outmin = FMAXF(adp->outmin, - v);
 }
 
 // Преобразование значения целочисленного типа во внутреннее представление.
@@ -4154,26 +4144,14 @@ FLOAT_t adpt_input(const adapter_t * adp, int32_t v)
 // Преобразование во внешнее (целочисленное) представление.
 int32_t adpt_output(const adapter_t * adp, FLOAT_t v)
 {
-//	if (v < -1 || v > 1)
-//	{
-//		PRINTF("adpt_output: '%s' v=%f\n", adp->name, v);
-//	}
-//	ASSERT(v <= 1);
-//	ASSERT(v >= - 1);
-	v = FMINF(v, adp->outmax);	// ограничить сверху
-	v = FMAXF(v, adp->outmin);	// ограничить снизу
+	v = FMINF(FMAXF(v, - 1), + 1);	// ограничить
 	return (int32_t) (adp->outputK * v) << adp->rightspace;
 }
 
 // точное преобразование во внешнее представление.
 int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v)
 {
-//	if (v < -1 || v > 1)
-//	{
-//		PRINTF("adpt_outputexact: '%s' v=%f\n", adp->name, v);
-//	}
-//	ASSERT(v <= 1);
-//	ASSERT(v >= - 1);
+	v = FMINF(FMAXF(v, - 1), + 1);	// ограничить
 	return (int32_t) (adp->outputKexact * v) << adp->rightspace;
 }
 
@@ -4259,7 +4237,6 @@ void buffers_initialize(void)
 	/* IF codec / FPGA */
 	adpt_initialize(& ifcodecrx, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT, "ifcodecrx");
 	adpt_initialize(& ifcodectx, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT, "ifcodectx");
-	adpt_setclip(& ifcodectx, HARDWARE_DUCSCALE);
 #endif /* defined CODEC2_TYPE */
 
 #if WITHUSEAUDIOREC

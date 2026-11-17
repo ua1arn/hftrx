@@ -4153,7 +4153,7 @@ struct nvmap {
 	uint16_t gnfmdeviation;
 	uint16_t gtxtot;			/* разрешённое время передачи */
 	uint8_t ggainnfmrx10;		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
-	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
+	//uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	uint16_t ggaindigitx;		/* Увеличение усиления при передаче в цифровых режимах */
 	uint16_t ggaincwtx;		/* Увеличение усиления при передаче в CW, AM. NFM режимах 30..150% */
 	uint16_t ggainssbtx;		/* Увеличение усиления при передаче в SSB 30..150% */
@@ -7933,16 +7933,16 @@ static const struct paramdefdef xgskipfilteraf =
 	static uint_fast16_t ggaindigitx = 100;		/* Увеличение усиления при передаче в цифровых режимах */
 	static uint_fast16_t ggainssbtx = 100;		/* Увеличение усиления при передаче в SSB */
 #elif 1
-	static uint_fast16_t ggaincwtx = 60;		/* Увеличение усиления при передаче в CW режимах */
+	static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в CW режимах */
 	static uint_fast16_t ggaindigitx = 160;		/* Увеличение усиления при передаче в цифровых режимах */
-	static uint_fast16_t ggainssbtx = 100;		/* Увеличение усиления при передаче в SSB */
+	static uint_fast16_t ggainssbtx = 115;		/* Увеличение усиления при передаче в SSB */
 #endif
 	/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 	static const struct paramdefdef xggaindigitx =
 	{
 		QLABEL3("FT8BOOST", "FT8 Boost", "FT8BOOST"),	 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 		ITEM_VALUE,
-		30, 200,
+		0, 300,
 		OFFSETOF(struct nvmap, ggaindigitx),
 		getselector0, nvramoffs0, valueoffs0,
 		& ggaindigitx,
@@ -7955,7 +7955,7 @@ static const struct paramdefdef xgskipfilteraf =
 	{
 		QLABEL3("CW BOOST", "CW Boost", "CW BOOST"),	 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в CW режимах 30..150% */
 		ITEM_VALUE,
-		30, 200,
+		0, 300,
 		OFFSETOF(struct nvmap, ggaincwtx),
 		getselector0, nvramoffs0, valueoffs0,
 		& ggaincwtx,
@@ -7968,7 +7968,7 @@ static const struct paramdefdef xgskipfilteraf =
 	{
 		QLABEL3("SSB BOOST", "SSB Boost", "SSB BOOST"),	 2, RJ_UNSIGNED, ISTEP1,		/* Увеличение усиления при передаче в CW режимах 30..150% */
 		ITEM_VALUE,
-		30, 200,
+		0, 300,
 		OFFSETOF(struct nvmap, ggainssbtx),
 		getselector0, nvramoffs0, valueoffs0,
 		& ggainssbtx,
@@ -7991,18 +7991,18 @@ static const struct paramdefdef xgskipfilteraf =
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-	static uint_fast8_t gdacscale = 100;	/* настраивается под прегруз драйвера. */
-	static const struct paramdefdef xgdacscale = {
-		QLABEL3("DAC SCALE", "DAC Scale", "DAC SCALE"),  0, RJ_UNSIGNED,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		OFFSETOF(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& gdacscale,
-		getzerobase, /* складывается со смещением и отображается */
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	};
+//	static uint_fast8_t gdacscale = 100;	/* настраивается под прегруз драйвера. */
+//	static const struct paramdefdef xgdacscale = {
+//		QLABEL3("DAC SCALE", "DAC Scale", "DAC SCALE"),  0, RJ_UNSIGNED,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+//		ITEM_VALUE,
+//		BOARDDACSCALEMIN, 100,
+//		OFFSETOF(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+//		getselector0, nvramoffs0, valueoffs0,
+//		NULL,
+//		& gdacscale,
+//		getzerobase, /* складывается со смещением и отображается */
+//		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+//	};
 
 #endif /* WITHTX */
 
@@ -12423,10 +12423,10 @@ getactualdownpower(txreq_t * txreqp)
 #if WITHTX
 
 /* возвращаем 0..100 для кода на разъеме ACC (bandf3hint) */
-static uint_fast8_t
+static int_fast32_t
 makebandf2adjust(
 	uint_fast8_t lpfno, 	// 0..15 - код диапазона bandf3hint
-	int amplitude	// 0..WITHPOWERTRIMMAX 0..100 - относительная мощность
+	int_fast32_t amplitude	// 0..WITHPOWERTRIMMAX 0..100 - относительная мощность
 	)
 {
 	if (lpfno >= ARRAY_SIZE(gbandf2adj))
@@ -12486,19 +12486,21 @@ static const struct paramdefdef xgtunepowerlphp =
 #endif /* WITHTX */
 
 /* возвращает 0..WITHPOWERTRIMMAX */
-static uint_fast8_t
+static int_fast32_t
 getactualtxpwr(void)
 {
-	return getactualdownpower(& txreqst0) ? gtunepower : gnormalpower.value;
+	return getactualdownpower(& txreqst0) ?
+			param_val(& xgtunepower) :
+			param_val(& xgnormalpower);
 }
 
 /* Возвращает 0..WITHPOWERTRIMMAX */
-static uint_fast8_t
+static int_fast32_t
 getactualtxampl(void)
 {
 #if WITHPOWERTRIM
-	unsigned v = getactualtxpwr();
-	return sqrtf((float) v / WITHPOWERTRIMMAX) * WITHPOWERTRIMMAX;
+	int_fast32_t v = getactualtxpwr();
+	return SQRTF((FLOAT_t) v / WITHPOWERTRIMMAX) * WITHPOWERTRIMMAX;
 
 #elif WITHPOWERLPHP
 	return WITHPOWERTRIMMAX;
@@ -14318,12 +14320,10 @@ updateboard_noui(
 			board_set_afresponcetx(bwseti_getafresponce(bwseti));	/* коррекция АЧХ НЧ тракта передатчика */
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
 			// 0..10000
-			board_set_dacscale(makebandf2adjust(bandf3hint, getactualtxampl()) * param_val(& xgdacscale));	// See BOARDDACSCALEDENOM
-
 			board_set_digiscale(param_val(& xggaindigitx));	/* Увеличение усиления при передаче в цифровых режимах */
 			board_set_cwscale(param_val(& xggaincwtx));	/* Увеличение усиления при передаче в CW, AM, NFM режимах 50..100% */
 			board_set_ssbscale(param_val(& xggainssbtx));	/* Увеличение усиления при передаче в CW, AM, NFM режимах 50..100% */
-			board_set_designDUCscale(param_val(& xgdesignDUCscale));	/* используется при калибровке параметров интерполятора */
+			board_set_DUCscale(makebandf2adjust(bandf3hint, getactualtxampl()) * param_val(& xgdesignDUCscale));	/* используется при калибровке параметров интерполятора */
 			board_set_amdepth(param_val(& xgamdepth));	/* Глубина модуляции в АМ - 0..100% */
 			board_set_nfmdeviation(param_val(& xgnfmdeviation));
 			board_rgrbeep_setfreq(1000);	/* roger beep - установка тона */

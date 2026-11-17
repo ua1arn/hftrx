@@ -168,12 +168,11 @@ static uint_fast8_t 	glob_cwedgetime = 4;		/* CW Rise Time (in 1 ms discrete) */
 static uint_fast8_t 	glob_sidetonelevel = 10;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 static uint_fast8_t 	glob_moniflag = 1;		/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
 static uint_fast8_t		glob_cwssbtx = 1;		/* разрешение передачи телеграфа как тона в режиме SSB */
+#if WITHIF4DSP
 static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 static int_fast16_t 	glob_fmdeviation = 3500;
-#if WITHIF4DSP
-static uint_fast16_t	glob_designDUCscale = BOARDDUCSCALEDENOM;	/* используется при калибровке параметров интерполятора */
-static uint_fast16_t	glob_dacscale = BOARDDACSCALEDENOM;	/* На какую часть (в процентах в квадрате) от полной амплитуды использцется ЦАП передатчика */
+static int_fast32_t		glob_DUCscale = BOARDDUCSCALEDENOM;	/* используется при калибровке параметров интерполятора */
 static uint_fast8_t 	glob_dspagc = BOARD_AGCCODE_ON;
 #endif /* WITHIF4DSP */
 static uint_fast16_t	glob_digiscale = 100;	/* Увеличение усиления при передаче в цифровых режимах */
@@ -653,8 +652,8 @@ static FLOAT_t get_dualtonefloat02k(void)
 	// Формирование значения выборки
 	const FLOAT_t v1 = getcosf(angle_af1_02k);
 	const FLOAT_t v2 = getcosf(angle_af2_02k);
-	angle_af1 = FTWROUND(angle_af1_02k + anglestep_af1_02k);
-	angle_af2 = FTWROUND(angle_af2_02k + anglestep_af2_02k);
+	angle_af1_02k = FTWROUND(angle_af1_02k + anglestep_af1_02k);
+	angle_af2_02k = FTWROUND(angle_af2_02k + anglestep_af2_02k);
 	return (v1 + v2) / 2;
 }
 
@@ -5005,7 +5004,7 @@ static FLOAT32P_t baseband_modulator(
 	int32_t * deltanfm
 	)
 {
-	const FLOAT_t shape = switchmode_delaytx(txpath) * shapeTXEnvelopStep(txpath) * txpath->scaleDAC;	// 0..1 - огибающая
+	const FLOAT_t shape = switchmode_delaytx(txpath) * shapeTXEnvelopStep(txpath);	// 0..1 - огибающая
 	switch (dspmode)
 	{
 	default:
@@ -7246,7 +7245,6 @@ hftxpath_init(hftxpath_t * const self)
 	self->sign1 = self;
 	self->sign2 = self;
 
-	self->scaleDAC = 1;
 	self->shapeSidetonePos = 0;
 	self->shapeSidetoneInpit = 0;
 	self->shapeCWSSBSidetoneInpit = 0;
@@ -7397,10 +7395,10 @@ hftxpath_update(hftxpath_t * const txpath)
 {
 	const FLOAT_t txlevelfence = 1;	// контролировать по отсутствию индикации переполнения DUC при передаче
 
-	const FLOAT_t c1MODES = (FLOAT_t) glob_designDUCscale / BOARDDUCSCALEDENOM;	// предотвращение переполнения в DUC тракте
-	const FLOAT_t c1DIGI = c1MODES * (FLOAT_t) glob_digiscale / 100;
-	const FLOAT_t c1CW = c1MODES * (FLOAT_t) glob_cwscale / 100;
-	const FLOAT_t c1SSB = c1MODES * (FLOAT_t) glob_ssbcale / 100;
+	const FLOAT_t c1MODES = (FLOAT_t) glob_DUCscale / (BOARDDUCSCALEDENOM * 100);	// предотвращение переполнения в DUC тракте
+	const FLOAT_t c1DIGI = c1MODES * glob_digiscale / 100;
+	const FLOAT_t c1CW = c1MODES * glob_cwscale / 100;
+	const FLOAT_t c1SSB = c1MODES * glob_ssbcale / 100;
 
 	txlevelfenceAM = 	txlevelfence * c1CW;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
 	txlevelfenceNFM = 	txlevelfence * c1CW;
@@ -7453,8 +7451,6 @@ hftxpath_update(hftxpath_t * const txpath)
 		dsp_rtty_tx_init(& txpath->rtty_tx, ARMSAIRATE, glob_rtty_shift, glob_rtty_baudrate10 / (FLOAT_t) 10, 1);
 		dsp_rtty_tx_set_reverse(& txpath->rtty_tx, glob_rtty_inverted);
 	}
-
-	txpath->scaleDAC = (FLOAT_t) (int) glob_dacscale / BOARDDACSCALEDENOM;
 
 	subtonevolume = (glob_subtonelevel / (FLOAT_t) 100);
 
@@ -8016,23 +8012,24 @@ board_set_ssbscale(uint_fast16_t n)	/* Увеличение усиления п�
 	}
 }
 
-void
-board_set_dacscale(uint_fast16_t n)	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100.00% */
-{
-	if (glob_dacscale != n)
-	{
-		glob_dacscale = n;	// BOARDDACSCALEMIN..BOARDDACSCALEMAX
-		board_dsp1regchanged();
-	}
-	//PRINTF("board_set_dacscale = %u\n", (unsigned) glob_dacscale);
-}
+//void
+//board_set_dacscale(uint_fast16_t n)	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100.00% */
+//{
+//	if (glob_dacscale != n)
+//	{
+//		glob_dacscale = n;	// BOARDDACSCALEMIN..BOARDDACSCALEMAX
+//		board_dsp1regchanged();
+//	}
+//	//PRINTF("board_set_dacscale = %u\n", (unsigned) glob_dacscale);
+//}
 
 void
-board_set_designDUCscale(uint_fast16_t n)	/* 0..1000 используется при калибровке параметров интерполятора */
+board_set_DUCscale(int_fast32_t n)	/* 0..10000 используется при калибровке параметров интерполятора */
 {
-	if (glob_designDUCscale != n)
+	//PRINTF("board_set_DUCscale:%u\n", (unsigned) n);
+	if (glob_DUCscale != n)
 	{
-		glob_designDUCscale = n;
+		glob_DUCscale = n;
 		board_dsp1regchanged();
 	}
 }

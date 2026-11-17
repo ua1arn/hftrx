@@ -342,8 +342,6 @@ typedef struct adapter_tag
 	int rightspace;
 	int lshift32;	// input conversion
 	int rshift32;
-//	FLOAT_t outmax;
-//	FLOAT_t outmin;
 	const char * name;
 } adapter_t;
 
@@ -358,7 +356,6 @@ typedef struct transform_tag
 FLOAT_t adpt_input(const adapter_t * adp, int32_t v);
 int32_t adpt_output(const adapter_t * adp, FLOAT_t v);
 int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v);	// точное преобразование между внешними целочисленными представлениями.
-void adpt_setclip(adapter_t * adp, FLOAT_t v);
 void adpt_initialize(adapter_t * adp, int leftbit, int rightspace, const char * name);
 int32_t transform_do32(const transform_t * tfm, int32_t v); // точное преобразование между внешними целочисленными представлениями.
 int64_t transform_do64(const transform_t * tfm, int64_t v); // точное преобразование между внешними целочисленными представлениями.
@@ -984,7 +981,6 @@ typedef struct {
 typedef struct {
 	const void * sign1;
 
-	volatile FLOAT_t scaleDAC;// = 1;
 	unsigned shapeSidetonePos;// = 0;
 	volatile uint_fast8_t shapeSidetoneInpit;// = 0;
 	volatile uint_fast8_t shapeCWSSBSidetoneInpit;// = 0;
