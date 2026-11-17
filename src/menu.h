@@ -586,10 +586,8 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
-	& xgfsadcpower10,
-	& xgfsadcpower10xv,
-	& xgagcoff,
 	& xgdigigainmax,
+	& xgagcoff,
 /* group name +++ */
 	(const struct paramdefdef [1]) {
 		QLABEL("AGC SSB"), 0, 0, 0,
@@ -884,6 +882,22 @@
 #if (WITHCURRLEVEL || WITHCURRLEVEL2)
 	& xgipacali,	// Корректировка показаний измерителя тока оконечного каскада
 #endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
+#if WITHIF4DSP
+	& xgfsadcpower10,	// параметры frontend - для коррекции показаний S-meter
+	& xgfsadcpower10xv,	// параметры frontend - для коррекции показаний S-meter с трансвертором
+	& xgdacscale,
+	& xggainssbtx,	/* Увеличение усиления при передаче в SSB */
+	& xggaincwtx,		/* Увеличение усиления при передаче в цифровых режимах */
+#if WITHTX && WITHUSBUAC
+	& xggaindigitx,	/* Увеличение усиления при передаче в цифровых режимах */
+#endif /* WITHTX && WITHUSBUAC */
+#if WITHTXCPATHCALIBRATE
+	& xgdesignDUCscale,
+#endif /* WITHTXCPATHCALIBRATE */
+#if WITHDSPEXTDDC
+	& xgdactest,
+#endif /* WITHDSPEXTDDC */
+#endif /* WITHIF4DSP */
 #if WITHTX
 	& xswrcalibr,	/* калибровка SWR-метра */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
@@ -891,9 +905,6 @@
 	& xmaxpwrcali,
 #endif
 #endif /* WITHTX */
-#if WITHTXCPATHCALIBRATE
-	& xgdesignDUCscale,
-#endif /* WITHTXCPATHCALIBRATE */
 
 #if WITHTX
 /* settings page header */
@@ -926,11 +937,6 @@
 #if WITHIF4DSP
 
 	& xgtxtot,			/* разрешённое время передачи */
-	& xggainssbtx,	/* Увеличение усиления при передаче в SSB */
-	& xggaincwtx,		/* Увеличение усиления при передаче в цифровых режимах */
-#if WITHTX && WITHUSBUAC
-	& xggaindigitx,	/* Увеличение усиления при передаче в цифровых режимах */
-#endif /* WITHTX && WITHUSBUAC */
 	& xgamdepth,		/* Глубина модуляции в АМ - 0..100% */
 	& xgnfmdeviation,
 #endif /* WITHIF4DSP */
@@ -956,12 +962,6 @@
 #endif /* (WITHTHERMOLEVEL || WITHTHERMOLEVEL2) */
 	& xgtxgate,	/* разрешение драйвера и оконечного усилителя */
 
-#if WITHDSPEXTDDC
-	& xgdactest,
-#endif /* WITHDSPEXTDDC */
-#if WITHIF4DSP
-	& xgdacscale,
-#endif /* WITHIF4DSP */
 
 #if WITHIF4DSP
 
