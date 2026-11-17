@@ -990,10 +990,9 @@ typedef struct fader_tag
 typedef struct {
 	const void * sign1;
 
-	unsigned shapeSidetonePos;// = 0;
-
-	unsigned shapeTXEnvelopPos;// = 0;
-	unsigned shapeCWSSBEnvelopPos;// = 0;
+	fader_t shapeSidetone;
+	fader_t shapeTXEnvelop;
+	fader_t shapeCWSSBEnvelop;
 
 	unsigned enveloplen0;// = NSAITICKS(5) + 1;	/* Изменяется через меню. */
 

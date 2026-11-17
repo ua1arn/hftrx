@@ -6658,66 +6658,51 @@ static FLOAT_t fader_shapeStep(fader_t * fader)
 	return v;
 }
 
+static unsigned getShapeEnvelop0(void)
+{
+	return hftrx_txgetpath()->enveloplen0;
+}
+
+static int getshapeSidetoneInpit(void)
+{
+	return shapeSidetoneInpit;
+}
+
 // Формирование огибающей для самоконтрола
 // 0..1
 static FLOAT_t shapeSidetoneStep(hftxpath_t * const txpath)
 {
-	const unsigned enveloplen = txpath->enveloplen0;
-	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
-	if (txpath->shapeSidetonePos >= enveloplen)
-		txpath->shapeSidetonePos = enveloplen;
+	return fader_shapeStep(& txpath->shapeSidetone);
+}
 
-	const FLOAT_t v = peakshapef(txpath->shapeSidetonePos, enveloplen);
-	
-	if (shapeSidetoneInpit != 0)
-		txpath->shapeSidetonePos = txpath->shapeSidetonePos >= enveloplen ? enveloplen : (txpath->shapeSidetonePos + 1);
-	else
-		txpath->shapeSidetonePos = txpath->shapeSidetonePos == 0 ? 0 : (txpath->shapeSidetonePos - 1);
-	return v;
+static int getsTXEnvelopInpit(void)
+{
+	return txgateInput;
 }
 
 // Формирование огибающей для передачи
 // 0..1
 static FLOAT_t shapeTXEnvelopStep(hftxpath_t * const txpath)
 {
-	const unsigned enveloplen = txpath->enveloplen0;
-	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
-	if (txpath->shapeTXEnvelopPos >= enveloplen)
-		txpath->shapeTXEnvelopPos = enveloplen;
-	const FLOAT_t v = peakshapef(txpath->shapeTXEnvelopPos, txpath->enveloplen0);
+	return fader_shapeStep(& txpath->shapeTXEnvelop);
+}
 
-	if (txgateInput != 0)
-		txpath->shapeTXEnvelopPos = txpath->shapeTXEnvelopPos >= enveloplen ? enveloplen : (txpath->shapeTXEnvelopPos + 1);
-	else
-		txpath->shapeTXEnvelopPos = txpath->shapeTXEnvelopPos == 0 ? 0 : (txpath->shapeTXEnvelopPos - 1);
-	return v;
+static int getshapeCWSSBSidetoneInpit(void)
+{
+	return shapeCWSSBSidetoneInpit;
 }
 
 // Формирование огибающей для передачи
 // 0..1
 static FLOAT_t shapeCWSSBEnvelopStep(hftxpath_t * const txpath)
 {
-	const unsigned enveloplen = txpath->enveloplen0;
-	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
-	if (txpath->shapeCWSSBEnvelopPos >= enveloplen)
-		txpath->shapeCWSSBEnvelopPos = enveloplen;
-	const FLOAT_t v = peakshapef(txpath->shapeCWSSBEnvelopPos, enveloplen);
-
-	if (shapeCWSSBSidetoneInpit != 0)
-		txpath->shapeCWSSBEnvelopPos = txpath->shapeCWSSBEnvelopPos >= enveloplen ? enveloplen : (txpath->shapeCWSSBEnvelopPos + 1);
-	else
-		txpath->shapeCWSSBEnvelopPos = txpath->shapeCWSSBEnvelopPos == 0 ? 0 : (txpath->shapeCWSSBEnvelopPos - 1);
-	return v;
+	return fader_shapeStep(& txpath->shapeCWSSBEnvelop);
 }
 
 // Возврат признака того, что передавать модему ещё рано - не полностью завершено формирование огибающей
 static uint_fast8_t getTxShapeNotComplete(hftxpath_t * const txpath)
 {
-	const unsigned enveloplen = txpath->enveloplen0;
-	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
-	if (txpath->shapeTXEnvelopPos >= enveloplen)
-		txpath->shapeTXEnvelopPos = enveloplen;
-	return txpath->shapeTXEnvelopPos != enveloplen;
+	return ! fader_shapeCompeted(& txpath->shapeTXEnvelop);
 }
 
 // манипуляция и переключение на передачу
@@ -7277,10 +7262,10 @@ hftxpath_init(hftxpath_t * const self)
 	self->sign1 = self;
 	self->sign2 = self;
 
-	self->shapeSidetonePos = 0;
 
-	self->shapeTXEnvelopPos = 0;
-	self->shapeCWSSBEnvelopPos = 0;
+	fader_init(& self->shapeSidetone, getshapeSidetoneInpit, getShapeEnvelop0);
+	fader_init(& self->shapeTXEnvelop, getsTXEnvelopInpit, getShapeEnvelop0);
+	fader_init(& self->shapeCWSSBEnvelop, getshapeCWSSBSidetoneInpit, getShapeEnvelop0);
 
 	self->angle_aflotx = 0;
 	self->delayblanklo6tx = 0;
