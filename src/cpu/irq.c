@@ -3257,7 +3257,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 //
 #endif /* WITHRTOS */
 
-
+// задержка без переключения
 void local_delay_us(uint_fast32_t timeUS)
 {
 	if (timeUS == 0)
@@ -3265,7 +3265,7 @@ void local_delay_us(uint_fast32_t timeUS)
 	const hwtimcountfast_t t0 = timestamp_getticks();	// Счетчик увеличивается с частотой процессора
 	const hwtimcountfast_t td = timestamp_get_us(timeUS);
 	while (timestamp_get_delta(t0) < td)
-		;
+		__NOP();
 }
 
 #if defined(__aarch64__)
@@ -3294,6 +3294,7 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 {
 #if WITHRTOS
 	if (threads_not_started) {
+		IRQ_Handler_GIC();		// Group 1 handler
 		run_notask_curr(frame);	// __NO_RETURN
 	}
 
@@ -3317,6 +3318,7 @@ void __NO_RETURN VFIQ_Handler(void * frame)
 {
 #if WITHRTOS
 	if (threads_not_started) {
+		FIQ_Handler_GIC();		// Group 0 handler
 		run_notask_curr(frame);	// __NO_RETURN
 	}
 
@@ -3391,8 +3393,10 @@ void SError_Handler(void * frame)
 void IRQ_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
-	if (threads_not_started)
-		run_notask_curr_aarch32(frame);
+	if (threads_not_started) {
+		IRQ_Handler_GIC();			// Group 1 handler
+		run_notask_curr_aarch32(frame);	// __NO_RETURN
+	}
     // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
 	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
@@ -3407,15 +3411,17 @@ void IRQ_Handler_aarch32(void * frame)
 	run_task_curr_aarch32(task_scheduler(frame));	// __NO_RETURN
 #else /* WITHRTOS */
 	IRQ_Handler_GIC();			// Group 1 handler
-	run_notask_curr_aarch32(frame);
+	run_notask_curr_aarch32(frame);	// __NO_RETURN
 #endif /* WITHRTOS */
 }
 
 void FIQ_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
-	if (threads_not_started)
-		run_notask_curr_aarch32(frame);
+	if (threads_not_started) {
+		FIQ_Handler_GIC();			// Group 0 handler
+		run_notask_curr_aarch32(frame);	// __NO_RETURN
+	}
     // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
 	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
@@ -3430,7 +3436,7 @@ void FIQ_Handler_aarch32(void * frame)
 	run_task_curr_aarch32(task_scheduler(frame));	// __NO_RETURN
 #else /* WITHRTOS */
 	FIQ_Handler_GIC();			// Group 0 handler
-	run_notask_curr_aarch32(frame);
+	run_notask_curr_aarch32(frame);	// __NO_RETURN
 #endif /* WITHRTOS */
 }
 
@@ -3438,7 +3444,7 @@ void __NO_RETURN SWI_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
 	if (threads_not_started)
-		run_notask_curr_aarch32(frame);
+		run_notask_curr_aarch32(frame);	// __NO_RETURN
     // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
 	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
