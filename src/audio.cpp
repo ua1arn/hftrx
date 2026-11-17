@@ -233,6 +233,47 @@ static uint_fast8_t istxreplacedbtactive(void)
 #endif /* WITHUSEUSBBTT */
 }
 
+
+// 0..1
+static FLOAT_t peakshapef(unsigned shapePos, unsigned enveloplen)	/* shapePos: от 0 до enveloplen0 включительно. */
+{
+	const q31_t halfcircle = INT32_MAX / 2;
+	// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*M_PI).
+	const q31_t cosv = arm_cos_q31((int_fast64_t) shapePos * halfcircle / enveloplen);
+	const FLOAT_t v = ((FLOAT_t) 1 - FAST_Q31_2_FLOAT(cosv)) * (FLOAT_t) 0.5;	// todo: use arm_q31_to_float
+	return v;
+}
+
+static void fader_init(fader_t * fader, int_fast8_t (* getIn)(void), unsigned (* getEnvelopLength)(void))
+{
+	fader->pos = 0;
+	fader->getIn = getIn;
+	fader->getEnvelopLength = getEnvelopLength;
+}
+
+static int fader_shapeCompeted(fader_t * fader)
+{
+	return fader->pos >= fader->getEnvelopLength();
+}
+
+// 0..1
+static FLOAT_t fader_shapeStep(fader_t * fader)
+{
+	const unsigned pos = fader->pos;
+	const unsigned enveloplen = fader->getEnvelopLength();
+	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
+	if (fader->pos >= enveloplen)
+		fader->pos = enveloplen;
+
+	const FLOAT_t v = peakshapef(pos, enveloplen);
+
+	if (fader->getIn())
+		fader->pos = pos >= enveloplen ? enveloplen : (pos + 1);
+	else
+		fader->pos = pos == 0 ? 0 : (pos - 1);
+	return v;
+}
+
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
 
@@ -661,12 +702,6 @@ static FLOAT_t get_dualtonefloat02k(void)
 // установить частоту, закрыть тракт на время прохождения сигнала через фильтр
 static void nco_setlo6rx_ftw(hfrxpath_t * const path, ncoftw_t ftw, uint_fast8_t dspmode, unsigned rxfirdelay)
 {
-	// Установка звдержки открывания тракта по смене режима
-	if (path->delaylo6lastmoderx != dspmode)
-	{
-		path->delaylo6lastmoderx = dspmode;
-		path->delayblanklo6rx = rxfirdelay;
-	}
 	// частота устанавливается сразу
 	path->anglestep_aflorx = ftw;
 }
@@ -674,33 +709,8 @@ static void nco_setlo6rx_ftw(hfrxpath_t * const path, ncoftw_t ftw, uint_fast8_t
 // установить частоту, закрыть тракт на время прохождения сигнала через фильтр
 static void nco_setlo6tx_ftw(hftxpath_t * const path, ncoftw_t ftw, uint_fast8_t dspmode, unsigned txfirdelay)
 {
-	// Установка звдержки открывания тракта по смене режима
-	if (path->delaylo6lastmodetx != dspmode)
-	{
-		path->delaylo6lastmodetx = dspmode;
-		path->delayblanklo6tx = txfirdelay;
-	}
 	// частота устанавливается сразу
 	path->anglestep_aflotx = ftw;
-}
-
-/* задержка установки нового значение частоты генератора
- * возврат 1 если закончилась отработка времени
- */
-static int switchmode_delaytx(hftxpath_t * const path)
-{
-	if (path->delayblanklo6tx)
-		path->delayblanklo6tx -= 1;
-
-	return ! path->delayblanklo6tx;
-}
-
-static int switchmode_delayrx(hfrxpath_t * const path)
-{
-	if (path->delayblanklo6rx)
-		path->delayblanklo6rx -= 1;
-
-	return ! path->delayblanklo6rx;
 }
 
 // Получение квадратурных значений для данной частоты со смещением фазы
@@ -5004,7 +5014,7 @@ static FLOAT32P_t baseband_modulator(
 	int32_t * deltanfm
 	)
 {
-	const FLOAT_t shape = switchmode_delaytx(txpath) * shapeTXEnvelopStep(txpath);	// 0..1 - огибающая
+	const FLOAT_t shape = shapeTXEnvelopStep(txpath);	// 0..1 - огибающая
 	switch (dspmode)
 	{
 	default:
@@ -5673,8 +5683,7 @@ static FLOAT_t processifadcsampleIQ(
 	hfrxpath_t * const path,
 	IFADCvalue_t iv0,	// Квадратурные значения выборки
 	IFADCvalue_t qv0,	// Квадратурные значения выборки
-	uint_fast8_t dspmode
-	)
+	uint_fast8_t dspmode	)
 {
 #if WITHDSPLOCALRXFIR
 	if (isdspmoderx(dspmode))
@@ -5685,7 +5694,7 @@ static FLOAT_t processifadcsampleIQ(
 		vp0 = filter_firp_rx_SSB_IQ(& path->rx_iq_fir, vp0);
 
 		//END_STAMP();
-		return baseband_demodulator(path, vp0, dspmode);
+		return baseband_demodulator(path, vp0, dspmode, rxFade);
 	}
 	else
 	{
@@ -5718,7 +5727,7 @@ static FLOAT_t processifadcsamplei(
 		BEGIN_STAMP();
 		const FLOAT32P_t vp0 = filter_fir4_rx_SSB_IQ(scalepair(if_lo, adpt_input(& ifcodecrx, v1)), if_lo.IV != 0); // частота 12 кГц - 1/4 частоты выборок АЦП - можно воспользоваться целыми значениями.
 		END_STAMP();
-		return baseband_demodulator(path, vp0, dspmode);
+		return baseband_demodulator(path, vp0, dspmode, rxFade);
 	}
 	else
 	{
@@ -6497,15 +6506,15 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 	const uint_fast8_t tx = isdspmodetx(glob_dspmodes [0]);
 	const uint_fast8_t dspmode = tx ? DSPCTL_MODE_IDLE : glob_dspmodes [pathi];
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
-	const int rxgate = ! tx * getRxGate() * switchmode_delayrx(path);
+	const FLOAT_t rxFade = fader_shapeStep(& path->rxFader);
 
 #if WITHDSPEXTDDC
 
-	return processifadcsampleIQ(path, iv, qv, rxgate ? dspmode : DSPCTL_MODE_IDLE);
+	return rxFade * processifadcsampleIQ(path, iv, qv, dspmode);
 
 #else /* WITHDSPEXTDDC */
 
-	return processifadcsamplei(path, iv * rxgate, dspmode);
+	return rxFade * processifadcsamplei(path, iv * rxgate, dspmode);
 
 #endif /* WITHDSPEXTDDC */
 }
@@ -6603,60 +6612,11 @@ void rxEqIni(void)
  ///      doRX_EQ((float32_t *) pOutLms, FRAME_SIZE);
 #endif
 
-//////////////////////////////////////////
-// glob_cwedgetime - длительность нарастания/спада огибающей CW (и сигнала самоконтроля) в единицах милисекунд
-
-// 0..1
-static FLOAT_t peakshapef(unsigned shapePos, unsigned enveloplen)	/* shapePos: от 0 до enveloplen0 включительно. */
-{
-	const q31_t halfcircle = INT32_MAX / 2;
-	// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*M_PI).
-	const q31_t cosv = arm_cos_q31((int_fast64_t) shapePos * halfcircle / enveloplen);
-	const FLOAT_t v = ((FLOAT_t) 1 - FAST_Q31_2_FLOAT(cosv)) * (FLOAT_t) 0.5;	// todo: use arm_q31_to_float
-	return v;
-}
-
 
 static uint_fast8_t txgateInput;
 static uint_fast8_t rxgateflag;
 static uint_fast8_t shapeCWSSBSidetoneInpit;
 static uint_fast8_t shapeSidetoneInpit;
-
-/* разрешение работы тракта в режиме приёма */
-static int getRxGate(void)
-{
-	return ! txgateInput && rxgateflag;
-}
-
-static void fader_init(fader_t * fader, int_fast8_t (* getIn)(void), unsigned (* getEnvelopLength)(void))
-{
-	fader->pos = 0;
-	fader->getIn = getIn;
-	fader->getEnvelopLength = getEnvelopLength;
-}
-
-static int fader_shapeCompeted(fader_t * fader)
-{
-	return fader->pos >= fader->getEnvelopLength();
-}
-
-// 0..1
-static FLOAT_t fader_shapeStep(fader_t * fader)
-{
-	const unsigned pos = fader->pos;
-	const unsigned enveloplen = fader->getEnvelopLength();
-	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
-	if (fader->pos >= enveloplen)
-		fader->pos = enveloplen;
-
-	const FLOAT_t v = peakshapef(pos, enveloplen);
-
-	if (shapeSidetoneInpit != 0)
-		fader->pos = pos >= enveloplen ? enveloplen : (pos + 1);
-	else
-		fader->pos = pos == 0 ? 0 : (pos - 1);
-	return v;
-}
 
 static unsigned getShapeEnvelop0(void)
 {
@@ -7268,7 +7228,6 @@ hftxpath_init(hftxpath_t * const self)
 	fader_init(& self->shapeCWSSBEnvelop, getshapeCWSSBSidetoneInpit, getShapeEnvelop0);
 
 	self->angle_aflotx = 0;
-	self->delayblanklo6tx = 0;
 
 	self->gnfmdeviationftw = FTWAF(7500);	// 7.5 kHz (-7.5..+7.5) deviation
 	self->enveloplen0 = NSAITICKS(5) + 1;	/* Изменяется через меню. */
@@ -7285,6 +7244,17 @@ hftxpath_init(hftxpath_t * const self)
 	agc_tx_initialize(self);	// RX and TX parameters
 }
 
+/* разрешение работы тракта в режиме приёма */
+static int getRxGateOpen(void)
+{
+	return ! txgateInput && rxgateflag;
+}
+
+static unsigned getRxGateOpenTime(void)
+{
+	return NSAITICKS(5);
+}
+
 static void
 hfrxpath_init(hfrxpath_t * const self)
 {
@@ -7293,7 +7263,7 @@ hfrxpath_init(hfrxpath_t * const self)
 	self->sign2 = self;
 
 	self->angle_aflorx = 0;
-	self->delayblanklo6rx = 0;
+	fader_init(& self->rxFader, getRxGateOpen, getRxGateOpenTime);
 	self->manualsquelch = 0;
 	{
 		// AGC

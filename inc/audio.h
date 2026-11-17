@@ -942,18 +942,22 @@ struct mikeclipparams
 	FLOAT_t mickeclipscale;// = 1;
 };
 
+
+typedef struct fader_tag
+{
+	unsigned pos;		// 0..enveloplen	0 - минимальный сигнал на выходе, enveloplen - максимальный
+	int_fast8_t (* getIn)(void);	// функция получения входного состояния
+	unsigned (* getEnvelopLength)(void);	// функция получения длительности формируемой огибающей
+} fader_t;
+
 /* Complete RX Signal Path Object Model for hftrx */
 typedef struct {
 	const void * sign1;
+
+	fader_t rxFader;
 	// NFM
 	nfm_rx_t nfm_rx;
     FLOAT_t manualsquelch;
-
-//	ncoftwi_t prev_fi;
-//	volatile int32_t saved_delta_fi;
-
-    unsigned delayblanklo6rx;
-    uint8_t delaylo6lastmoderx;
 
     ncoftw_t anglestep_aflorx;
     ncoftw_t angle_aflorx;
@@ -978,14 +982,6 @@ typedef struct {
 	const void * sign2;
 } hfrxpath_t;
 
-
-typedef struct fader_tag
-{
-	unsigned pos;		// 0..enveloplen	0 - минимальный сигнал на выходе, enveloplen - максимальный
-	int_fast8_t (* getIn)(void);	// функция получения входного состояния
-	unsigned (* getEnvelopLength)(void);	// функция получения длительности формируемой огибающей
-} fader_t;
-
 /* Complete TX Signal Path Object Model for hftrx */
 typedef struct {
 	const void * sign1;
@@ -996,8 +992,6 @@ typedef struct {
 
 	unsigned enveloplen0;// = NSAITICKS(5) + 1;	/* Изменяется через меню. */
 
-    unsigned delayblanklo6tx;
-    uint8_t delaylo6lastmodetx;
     ncoftw_t anglestep_aflotx;
     ncoftw_t angle_aflotx;
 
