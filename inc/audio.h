@@ -169,6 +169,55 @@ typedef int32_t hdmi48bufv_t;
 	typedef int32_t IFADCvalue_t;
 	typedef int16_t IFDACvalue_t;
 
+#elif defined (DDS1_TYPE) && DDS1_TYPE == DDS_TYPE_FPGAV1
+	// DDS_TYPE_FPGAV1 - Quartus project
+
+	// CIC 1 (1/128) decimator parameters in DDC path
+	#define DDC_CIC1_STAGES     9
+	#define DDC_CIC1_DELAY      1
+	#define DDC_CIC1_DECIMATION 128
+
+	// CIC 2 (1/20) decimator parameters in DDC path
+	#define DDC_CIC2_STAGES     9
+	#define DDC_CIC2_DELAY      1
+	#define DDC_CIC2_DECIMATION 20
+
+	// Parameters of the single CIC interpolator (1/2560) in DUC path
+	#define DUC_CIC_STAGES     9
+	#define DUC_CIC_DELAY      1
+	#define DUC_CIC_INTERP     2560
+	// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+
+	#define HARDWARE_DUCSCALE	(0.670)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+
+	/* параметры входного/выходного адаптеров */
+	// IF RX
+	#define WITHADAPTERIFADCWIDTH	28		// 1 бит знак и 27 бит значащих
+	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
+	// RTS96
+	#define WITHADAPTERRTS96_WIDTH	28		// 1 бит знак и 27 бит значащих
+	#define WITHADAPTERRTS96_SHIFT	0		// количество незанятых битов справа.
+	// RTS192
+	#define WITHADAPTERRTS192_WIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERRTS192_SHIFT	0		// количество незанятых битов справа.
+	// IF TX
+	#define WITHADAPTERIFDACWIDTH	28		// 1 бит знак и 27 бит значащих
+	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
+	typedef int32_t IFADCvalue_t;
+	typedef int32_t IFDACvalue_t;
+
+	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
+	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
+	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
+
+	#define FPGADECIMATION (DDC_CIC1_DECIMATION * DDC_CIC2_DECIMATION)
+	#define FPGADIVIDERATIO 5		// Делитель DUCDDC_FREQ для получения сигнала BCLK - тактирование обмена с процессором
+	#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+	#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+
+	#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
+	#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_RK356X || CPUSTYLE_BROADCOM
 	/* параметры входного/выходного адаптеров */
@@ -203,54 +252,6 @@ typedef int32_t hdmi48bufv_t;
 	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
 	typedef int32_t IFADCvalue_t;
 	typedef int32_t IFDACvalue_t;
-
-#elif defined (DDS1_TYPE) && DDS1_TYPE == DDS_TYPE_FPGAV1 && WITHDSPEXTDDC && (WITHDSPEXTTXFIR || WITHDSPEXTRXFIR)
-	/* параметры входного/выходного адаптеров */
-	// IF RX
-	#define WITHADAPTERIFADCWIDTH	28		// 1 бит знак и 27 бит значащих
-	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
-	// RTS96
-	#define WITHADAPTERRTS96_WIDTH	28		// 1 бит знак и 27 бит значащих
-	#define WITHADAPTERRTS96_SHIFT	0		// количество незанятых битов справа.
-	// RTS192
-	#define WITHADAPTERRTS192_WIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHADAPTERRTS192_SHIFT	0		// количество незанятых битов справа.
-	// IF TX
-	#define WITHADAPTERIFDACWIDTH	28		// 1 бит знак и 27 бит значащих
-	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
-	typedef int32_t IFADCvalue_t;
-	typedef int32_t IFDACvalue_t;
-
-	// CIC 1 (1/128) decimator parameters in DDC path
-	#define DDC_CIC1_STAGES     9
-	#define DDC_CIC1_DELAY      1
-	#define DDC_CIC1_DECIMATION 128
-
-	// CIC 2 (1/20) decimator parameters in DDC path
-	#define DDC_CIC2_STAGES     9
-	#define DDC_CIC2_DELAY      1
-	#define DDC_CIC2_DECIMATION 20
-
-	// Parameters of the single CIC interpolator (1/2560) in DUC path
-	#define DUC_CIC_STAGES     9
-	#define DUC_CIC_DELAY      1
-	#define DUC_CIC_INTERP     2560
-
-	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
-	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
-	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
-	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
-	// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
-	//#define HARDWARE_DUCSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-	#define HARDWARE_DUCSCALE	(0.675)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
-
-	#define FPGADECIMATION 2560
-	#define FPGADIVIDERATIO 5		// Делитель DUCDDC_FREQ для получения сигнала BCLK - тактирование обмена с процессором
-	#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
-	#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
-
-	#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
-	#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
 
 #else /* CPUSTYLE_XC7Z */
 
@@ -341,8 +342,8 @@ typedef struct adapter_tag
 	int rightspace;
 	int lshift32;	// input conversion
 	int rshift32;
-	FLOAT_t outmax;
-	FLOAT_t outmin;
+//	FLOAT_t outmax;
+//	FLOAT_t outmin;
 	const char * name;
 } adapter_t;
 
