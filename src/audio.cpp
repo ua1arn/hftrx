@@ -6606,19 +6606,50 @@ void rxEqIni(void)
 //////////////////////////////////////////
 // glob_cwedgetime - длительность нарастания/спада огибающей CW (и сигнала самоконтроля) в единицах милисекунд
 
-static uint_fast8_t txgateInput = 0;
-static uint_fast8_t rxgateflag = 0;
-
 // 0..1
-static FLOAT_t peakshapef(hftxpath_t * const txpath, unsigned shapePos)	/* shapePos: от 0 до enveloplen0 включительно. */
+static FLOAT_t peakshapef(unsigned shapePos, unsigned enveloplen)	/* shapePos: от 0 до enveloplen0 включительно. */
 {
 	const q31_t halfcircle = INT32_MAX / 2;
 	// The Q31 input value is in the range [0 +0.9999] and is mapped to a radian value in the range [0 2*M_PI).
-	const q31_t cosv = arm_cos_q31((int_fast64_t) shapePos * halfcircle / txpath->enveloplen0);
+	const q31_t cosv = arm_cos_q31((int_fast64_t) shapePos * halfcircle / enveloplen);
 	const FLOAT_t v = ((FLOAT_t) 1 - FAST_Q31_2_FLOAT(cosv)) * (FLOAT_t) 0.5;	// todo: use arm_q31_to_float
 	return v;
 }
 
+
+static uint_fast8_t txgateInput;
+static uint_fast8_t rxgateflag;
+static uint_fast8_t shapeCWSSBSidetoneInpit;
+static uint_fast8_t shapeSidetoneInpit;
+
+/* разрешение работы тракта в режиме приёма */
+static int getRxGate(void)
+{
+	return ! txgateInput && rxgateflag;
+}
+
+static void fader_init(fader_t * fader, int_fast8_t (* getIn)(void), unsigned (* getEnvelopLength)(void))
+{
+	fader->pos = 0;
+	fader->getIn = getIn;
+	fader->getEnvelopLength = getEnvelopLength;
+}
+
+static FLOAT_t fader_shapeStep(fader_t * fader)
+{
+	const unsigned enveloplen = fader->getEnvelopLength();
+	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
+	if (fader->pos >= enveloplen)
+		fader->pos = enveloplen;
+
+	const FLOAT_t v = peakshapef(fader->pos, enveloplen);
+
+	if (shapeSidetoneInpit != 0)
+		fader->pos = fader->pos >= enveloplen ? enveloplen : (fader->pos + 1);
+	else
+		fader->pos = fader->pos == 0 ? 0 : (fader->pos - 1);
+	return v;
+}
 // Формирование огибающей для самоконтрола
 // 0..1
 static FLOAT_t shapeSidetoneStep(hftxpath_t * const txpath)
@@ -6628,9 +6659,9 @@ static FLOAT_t shapeSidetoneStep(hftxpath_t * const txpath)
 	if (txpath->shapeSidetonePos >= enveloplen)
 		txpath->shapeSidetonePos = enveloplen;
 
-	const FLOAT_t v = peakshapef(txpath, txpath->shapeSidetonePos);
+	const FLOAT_t v = peakshapef(txpath->shapeSidetonePos, enveloplen);
 	
-	if (txpath->shapeSidetoneInpit != 0)
+	if (shapeSidetoneInpit != 0)
 		txpath->shapeSidetonePos = txpath->shapeSidetonePos >= enveloplen ? enveloplen : (txpath->shapeSidetonePos + 1);
 	else
 		txpath->shapeSidetonePos = txpath->shapeSidetonePos == 0 ? 0 : (txpath->shapeSidetonePos - 1);
@@ -6645,7 +6676,7 @@ static FLOAT_t shapeTXEnvelopStep(hftxpath_t * const txpath)
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
 	if (txpath->shapeTXEnvelopPos >= enveloplen)
 		txpath->shapeTXEnvelopPos = enveloplen;
-	const FLOAT_t v = peakshapef(txpath, txpath->shapeTXEnvelopPos);
+	const FLOAT_t v = peakshapef(txpath->shapeTXEnvelopPos, txpath->enveloplen0);
 
 	if (txgateInput != 0)
 		txpath->shapeTXEnvelopPos = txpath->shapeTXEnvelopPos >= enveloplen ? enveloplen : (txpath->shapeTXEnvelopPos + 1);
@@ -6662,9 +6693,9 @@ static FLOAT_t shapeCWSSBEnvelopStep(hftxpath_t * const txpath)
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
 	if (txpath->shapeCWSSBEnvelopPos >= enveloplen)
 		txpath->shapeCWSSBEnvelopPos = enveloplen;
-	const FLOAT_t v = peakshapef(txpath, txpath->shapeCWSSBEnvelopPos);
+	const FLOAT_t v = peakshapef(txpath->shapeCWSSBEnvelopPos, enveloplen);
 
-	if (txpath->shapeCWSSBSidetoneInpit != 0)
+	if (shapeCWSSBSidetoneInpit != 0)
 		txpath->shapeCWSSBEnvelopPos = txpath->shapeCWSSBEnvelopPos >= enveloplen ? enveloplen : (txpath->shapeCWSSBEnvelopPos + 1);
 	else
 		txpath->shapeCWSSBEnvelopPos = txpath->shapeCWSSBEnvelopPos == 0 ? 0 : (txpath->shapeCWSSBEnvelopPos - 1);
@@ -6681,13 +6712,6 @@ static uint_fast8_t getTxShapeNotComplete(hftxpath_t * const txpath)
 	return txpath->shapeTXEnvelopPos != enveloplen;
 }
 
-/* разрешение работы тракта в режиме приёма */
-static int getRxGate(void)
-{
-	return ! txgateInput && rxgateflag;
-}
-
-
 // манипуляция и переключение на передачу
 // вызывается из SYSTEM обработчика прерываний
 void dsp_txpath_set(portholder_t txpathstate, uint_fast8_t sdtnkeydown)
@@ -6695,7 +6719,7 @@ void dsp_txpath_set(portholder_t txpathstate, uint_fast8_t sdtnkeydown)
 #if WITHINTEGRATEDDSP
 	txgateInput = (txpathstate & (TXGFV_TX_CW | TXGFV_TX_SSB | TXGFV_TX_AM | TXGFV_TX_NFM)) != 0;
 	rxgateflag = (txpathstate & (TXGFV_RX)) != 0;
-	hftrx_txgetpath()->shapeCWSSBSidetoneInpit = sdtnkeydown;
+	shapeCWSSBSidetoneInpit = sdtnkeydown;
 #endif /* WITHINTEGRATEDDSP */
 //	PRINTF("%u", shapeCWSSBSidetoneInpit);
 }
@@ -7086,7 +7110,7 @@ void process_dmabuffer32rx(const IFADCvalue_t * buff)
 /* после изменения набора формируемых звуков - обновление программирования таймера. */
 void hardware_sounds_disable(void)
 {
-	hftrx_txgetpath()->shapeSidetoneInpit = 0;	// Для отработки shape
+	shapeSidetoneInpit = 0;	// Для отработки shape
 }
 
 // called from interrupt or with disabled interrupts
@@ -7097,7 +7121,7 @@ void hardware_sounds_setfreq(
 	)
 {
 	anglestep_sidetone = value;
-	hftrx_txgetpath()->shapeSidetoneInpit = 1;	// Для отработки shape
+	shapeSidetoneInpit = 1;	// Для отработки shape
 
 }
 
@@ -7246,8 +7270,6 @@ hftxpath_init(hftxpath_t * const self)
 	self->sign2 = self;
 
 	self->shapeSidetonePos = 0;
-	self->shapeSidetoneInpit = 0;
-	self->shapeCWSSBSidetoneInpit = 0;
 
 	self->shapeTXEnvelopPos = 0;
 	self->shapeCWSSBEnvelopPos = 0;

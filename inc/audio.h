@@ -977,18 +977,24 @@ typedef struct {
 	const void * sign2;
 } hfrxpath_t;
 
-	/* Complete TX Signal Path Object Model for hftrx */
+
+typedef struct fader_tag
+{
+	unsigned pos;
+	int_fast8_t (* getIn)(void);	// функция получения входного состояния
+	unsigned (* getEnvelopLength)(void);	// функция получения длительности формируемой огибающей
+} fader_t;
+
+/* Complete TX Signal Path Object Model for hftrx */
 typedef struct {
 	const void * sign1;
 
 	unsigned shapeSidetonePos;// = 0;
-	volatile uint_fast8_t shapeSidetoneInpit;// = 0;
-	volatile uint_fast8_t shapeCWSSBSidetoneInpit;// = 0;
 
 	unsigned shapeTXEnvelopPos;// = 0;
 	unsigned shapeCWSSBEnvelopPos;// = 0;
 
-	volatile unsigned enveloplen0;// = NSAITICKS(5) + 1;	/* Изменяется через меню. */
+	unsigned enveloplen0;// = NSAITICKS(5) + 1;	/* Изменяется через меню. */
 
     unsigned delayblanklo6tx;
     uint8_t delaylo6lastmodetx;
