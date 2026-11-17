@@ -2309,10 +2309,12 @@ static __NO_RETURN int task_idle(void * ctx)
 // сохранить в списке готовых к выполнению
 static void task_insertready(thread_item_t * const tp) {
 	ASSERT(tp->check_ready == NULL);
+#if WITHDEBUG
 	if (tp->bottom != 0)
 	{
 	    ASSERT((uintptr_t)tp->cpuframe > tp->bottom + 2048);
 	}
+#endif /* WITHDEBUG */
 	InsertTailList(& threads_listR [tp->prio], & tp->item);
 }
 
