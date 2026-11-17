@@ -24,6 +24,7 @@
 //#define WITHHEATPROT 0			/* ОТЛАДКА - отключена защитa по перегреву */
 //#define WITHRTOS (1 && ! WITHISBOOTLOADER)
 //#define FORMATFROMLIBRARY 	1
+//#define WITHTXCPATHCALIBRATE 1	/* при изменении параметров интерполятора в FPGA выполняем калибровку HARDWARE_DUCSCALE */
 
 //#define DEBUGSPEED 500000
 #define DEBUGSPEED 115200

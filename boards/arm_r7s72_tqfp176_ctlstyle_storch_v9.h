@@ -332,9 +332,6 @@
 
 	#define WITHIF4DSP	1	// "Дятел"
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
-	
-	
-	//#define WITHTXCPATHCALIBRATE 1	/* при изменении параметров интерполятора в FPGA выполняем калибровку */
 
 	// выбор накопителя
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD

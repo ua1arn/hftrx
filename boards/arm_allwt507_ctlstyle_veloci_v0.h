@@ -317,9 +317,6 @@
 
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	
-	
-	//#define WITHTXCPATHCALIBRATE 1	/* при изменении параметров интерполятора в FPGA выполняем калибровку HARDWARE_DUCSCALE */
-
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */

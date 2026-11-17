@@ -6635,21 +6635,29 @@ static void fader_init(fader_t * fader, int_fast8_t (* getIn)(void), unsigned (*
 	fader->getEnvelopLength = getEnvelopLength;
 }
 
+static int fader_shapeCompeted(fader_t * fader)
+{
+	return fader->pos >= fader->getEnvelopLength();
+}
+
+// 0..1
 static FLOAT_t fader_shapeStep(fader_t * fader)
 {
+	const unsigned pos = fader->pos;
 	const unsigned enveloplen = fader->getEnvelopLength();
 	/* при регулировке длительности нарастания/спада из меню текущая позиция не корректируется */
 	if (fader->pos >= enveloplen)
 		fader->pos = enveloplen;
 
-	const FLOAT_t v = peakshapef(fader->pos, enveloplen);
+	const FLOAT_t v = peakshapef(pos, enveloplen);
 
 	if (shapeSidetoneInpit != 0)
-		fader->pos = fader->pos >= enveloplen ? enveloplen : (fader->pos + 1);
+		fader->pos = pos >= enveloplen ? enveloplen : (pos + 1);
 	else
-		fader->pos = fader->pos == 0 ? 0 : (fader->pos - 1);
+		fader->pos = pos == 0 ? 0 : (pos - 1);
 	return v;
 }
+
 // Формирование огибающей для самоконтрола
 // 0..1
 static FLOAT_t shapeSidetoneStep(hftxpath_t * const txpath)

@@ -187,8 +187,9 @@ typedef int32_t hdmi48bufv_t;
 	#define DUC_CIC_DELAY      1
 	#define DUC_CIC_INTERP     2560
 	// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+	// проверяить и на телеграфе - на отсутствие выбросов при манипуляции
 
-	#define HARDWARE_DUCSCALE	(0.670)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+	#define HARDWARE_DUCSCALE	(0.650)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
 	/* параметры входного/выходного адаптеров */
 	// IF RX
@@ -980,7 +981,7 @@ typedef struct {
 
 typedef struct fader_tag
 {
-	unsigned pos;
+	unsigned pos;		// 0..enveloplen	0 - минимальный сигнал на выходе, enveloplen - максимальный
 	int_fast8_t (* getIn)(void);	// функция получения входного состояния
 	unsigned (* getEnvelopLength)(void);	// функция получения длительности формируемой огибающей
 } fader_t;
