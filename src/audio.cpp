@@ -7941,21 +7941,23 @@ board_set_cwssbtx(uint_fast8_t v)	/* разрешение передачи те�
 }
 
 void
-board_set_subtonelevel(uint_fast8_t n)	/* Уровень сигнала CTCSS в процентах - 0%..100% */
-{
-	if (glob_subtonelevel != n)
-	{
-		glob_subtonelevel = n;
-		board_dsp1regchanged();
-	}
-}
-
-void 
 board_set_cwedgetime(uint_fast8_t n)	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 {
 	if (glob_cwedgetime != n)
 	{
 		glob_cwedgetime = n;
+		board_dsp1regchanged();
+	}
+}
+
+#if WITHIF4DSP
+
+void
+board_set_subtonelevel(uint_fast8_t n)	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+{
+	if (glob_subtonelevel != n)
+	{
+		glob_subtonelevel = n;
 		board_dsp1regchanged();
 	}
 }
@@ -7979,8 +7981,6 @@ board_set_nfmdeviation(int_fast16_t n)	/* deviation */
 		board_dsp1regchanged();
 	}
 }
-
-#if WITHIF4DSP
 
 void 
 board_set_digiscale(uint_fast16_t n)	/* Увеличение усиления при передаче в цифровых режимах */
