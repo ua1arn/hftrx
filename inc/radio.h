@@ -35,6 +35,7 @@ extern "C" {
 	#define DEFAULTDIALFREQ	7012000L
 #endif
 
+#define WITHFADERDELAY		3		/* задержка для включения/выключения тракта приёма */
 #define WITHMAXRXTXDELAY	100
 #define WITHMAXTXRXDELAY	100
 
@@ -408,7 +409,7 @@ void seq_ask_txstate(
 	uint_fast8_t tx);	/* 0 - периферия находимся в состоянии приёма, иначе - в состоянии передачи */
 
 void seq_purge(void);	/* очистка запомненных нажатий до этого момента. Вызывается из user-mode программы */
-
+int seq_rxfaderopen(void);	// Разрешение звука на приёме
 uint_fast8_t seq_get_phase(void);	// состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
 
 uint_fast8_t hardware_getshutdown(void);	/* возвращаем запрос на выключение - от компаратора питания */

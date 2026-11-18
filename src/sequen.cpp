@@ -31,7 +31,7 @@ seq_txpath_set(portholder_t txpathstate, uint_fast8_t keydown)
 
 enum {
 	SEQST_INITIALIZE,			// ничего не передается - начальное состояние сиквенсора
-	// electronic key modes and SSB modes
+	SEQST_RXFADEOUT,			// Плавное выключение звука на приёме
 	SEQST_PUSHED_WAIT_ACK_TX,	// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
 	SEQST_WAIT_ACK_TX,			// ждем перехода на передачу от пользовательской программы
 	SEQST_PUSHED_HOLDTX,		// ждём, когда переключится антенное реле на передачу
@@ -39,6 +39,7 @@ enum {
 	SEQST_RGBEEP,				// перед переходом на приём, после отпускания тангенты - формирование звукового сигнала (roger beep)
 	SEQST_PUSHED_SWITCHTORX,	// ждем перехода на на приём от пользовательской программы
 	SEQST_SWITCHTORX,			// ожидание перепрограммирования переиферии на приём - пока переключаем SPI регистры
+	SEQST_RXFADEIN,				// Плавное включение звука на приёме
 	//
 	SEQST_MAX		// не используется в сиквенсоре.- количество состояний
 };
@@ -48,6 +49,7 @@ enum {
 static const uint_fast8_t seqtxgfi [SEQST_MAX] [2] =
 {
 	{ TXGFI_RX,			TXGFI_RX,		},	// SEQST_INITIALIZE,		// ничего не передается - начальное состояние сиквенсора
+	{ TXGFI_TRANSIENT,	TXGFI_TRANSIENT, },	// SEQST_RXFADEOUT,			// Плавное выключение звука на приёме
 	{ TXGFI_TRANSIENT,	TXGFI_TRANSIENT, }, // SEQST_PUSHED_WAIT_ACK_TX,// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
 	{ TXGFI_TRANSIENT,	TXGFI_TRANSIENT, }, // SEQST_WAIT_ACK_TX,		// ждем перехода на передачу от пользовательской программы
 	{ TXGFI_TRANSIENT,	TXGFI_TRANSIENT, }, // SEQST_PUSHED_HOLDTX,		// ждём, когда переключится антенное реле на передачу
@@ -55,6 +57,7 @@ static const uint_fast8_t seqtxgfi [SEQST_MAX] [2] =
 	{ TXGFI_TX_KEYUP,	TXGFI_TX_KEYDOWN, }, // SEQST_RGBEEP,			// перед переходом на приём, после отпускания тангенты - формирование звукового сигнала (roger beep)
 	{ TXGFI_TRANSIENT,	TXGFI_TRANSIENT, },	// SEQST_PUSHED_SWITCHTORX,	// ждем перехода на на приём от пользовательской программы
 	{ TXGFI_TRANSIENT,	TXGFI_TRANSIENT, },	// SEQST_SWITCHTORX,		// ожидание перепрограммирования переиферии на приём - пока переключаем SPI регистры
+	{ TXGFI_TRANSIENT,	TXGFI_TRANSIENT, },	// SEQST_RXFADEIN,			// Плавное включение звука на приёме
 };
 
 // Значения для выбора из таблицы управления трактом.
@@ -62,6 +65,7 @@ static const uint_fast8_t seqtxgfi [SEQST_MAX] [2] =
 static const uint_fast8_t seqtxstate [SEQST_MAX] =
 {
 	0,	// SEQST_INITIALIZE,			// ничего не передается - начальное состояние сиквенсора
+	0,	// SEQST_RXFADEOUT,			// Плавное выключение звука на приёме
 	0,	// SEQST_PUSHED_WAIT_ACK_TX,	// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
 	1,	// SEQST_WAIT_ACK_TX,			// ждем перехода на передачу от пользовательской программы
 	1,	// SEQST_PUSHED_HOLDTX,			// ждём, когда переключится антенное реле на передачу
@@ -69,24 +73,39 @@ static const uint_fast8_t seqtxstate [SEQST_MAX] =
 	1,	// SEQST_RGBEEP,				// перед переходом на приём, после отпускания тангенты - формирование звукового сигнала (roger beep)
 	1,	// SEQST_PUSHED_SWITCHTORX,		// ждем перехода на на приём от пользовательской программы
 	0,	// SEQST_SWITCHTORX,			// ожидание перепрограммирования переиферии на приём - пока переключаем SPI регистры
+	0,	// SEQST_RXFADEIN,			// Плавное включение звука на приёме
 };
 
-#if WITHDEBUG
+// состояния на вход rx fader
+static const uint_fast8_t seqtfadertate [SEQST_MAX] =
+{
+	1,	// SEQST_INITIALIZE,			// ничего не передается - начальное состояние сиквенсора
+	0,	// SEQST_RXFADEOUT,			// Плавное выключение звука на приёме
+	0,	// SEQST_PUSHED_WAIT_ACK_TX,	// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
+	0,	// SEQST_WAIT_ACK_TX,			// ждем перехода на передачу от пользовательской программы
+	0,	// SEQST_PUSHED_HOLDTX,			// ждём, когда переключится антенное реле на передачу
+	0,	// SEQST_HOLDTX,				// ждём пока не исчезнет запрос на передачу
+	0,	// SEQST_RGBEEP,				// перед переходом на приём, после отпускания тангенты - формирование звукового сигнала (roger beep)
+	0,	// SEQST_PUSHED_SWITCHTORX,		// ждем перехода на на приём от пользовательской программы
+	0,	// SEQST_SWITCHTORX,			// ожидание перепрограммирования переиферии на приём - пока переключаем SPI регистры
+	1,	// SEQST_RXFADEIN,			// Плавное включение звука на приёме
+};
 
 // Названия состояний сиквенсора - для отладочной печати
 static const char * const seqnames [SEQST_MAX] =
 {
 	"SEQST_INITIALIZE",			// ничего не передается - начальное состояние сиквенсора
+	"SEQST_RXFADEOUT",			// Плавное выключение звука на приёме
 	"SEQST_PUSHED_WAIT_ACK_TX",	// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
 	"SEQST_WAIT_ACK_TX",		// ждем перехода на передачу от пользовательской программы
 	"SEQST_PUSHED_HOLDTX",		// ждём, когда переключится антенное реле на передачу
 	"SEQST_HOLDTX[4]",			// ждём пока не исчезнет запрос на передачу
 	"SEQST_RGBEEP",				// перед переходом на приём, после отпускания тангенты - формирование звукового сигнала (roger beep)
 	"SEQST_PUSHED_SWITCHTORX",	// ждем перехода на на приём от пользовательской программы
+	"SEQST_RXFADEIN",			// Плавное включение звука на приёме
 	"SEQST_SWITCHTORX",			// ожидание перепрограммирования переиферии на приём - пока переключаем SPI регистры
 };
 
-#endif /* WITHDEBUG */
 
 // vox and mox parameters
 // здесь используются 16-битные переменные
@@ -95,7 +114,6 @@ static const char * const seqnames [SEQST_MAX] =
 
 static	uint_fast32_t bkin_delay;	/* задержка отпускания qsk в тиках (смотри TICKS_FREQUENCY) */
 static 	uint_fast32_t vox_delay;	/* задержка отпускания vox в тиках (смотри TICKS_FREQUENCY) */
-
 
 static std::atomic<uint_fast32_t> bkin_count;
 static std::atomic<uint_fast32_t> vox_count;
@@ -113,6 +131,7 @@ static uint_fast32_t rxtxticks;
 static uint_fast32_t txrxticks;
 static uint_fast32_t pretxticks;	// время выключения тракта RX в слуаче совмещённого тракта перед коммутацией на передачу.
 static uint_fast32_t rgbeepticks;	// время формирование roger beep
+static uint_fast32_t faderticks;	/* задержка для включения/выключения тракта приёма */
 
 static std::atomic<uint_fast32_t> ptt;	// запрос на передачу от пользовательской программы
 static std::atomic<uint_fast32_t> usertxstate;	/* 0 - периферия находимся в состоянии приёма, иначе - в состоянии передачи */
@@ -391,6 +410,14 @@ seq_spool_ticks(void * ctc)
 		}
 		break;
 
+	case SEQST_RXFADEOUT:
+		// Плавное выключение звука на приёме
+		break;
+
+	case SEQST_RXFADEIN:
+		// Плавное включение звука на приёме
+		break;
+
 	case SEQST_PUSHED_SWITCHTORX:	
 		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
 		// ждем перехода на на приём от пользовательской программы
@@ -499,6 +526,11 @@ seq_spool_ticks(void * ctc)
 	}
 }
 
+// Разрешение звука на приёме
+int seq_rxfaderopen(void)
+{
+	return seqtfadertate [seqstate];
+}
 
 /* обработка меню - установить задержку пре переходе на передачу и обратно. */
 void seq_set_rxtxdelay(
@@ -550,7 +582,7 @@ void seq_initialize(void)
 	seq_txpath_set(TXGFV_RX, 0);	// - аппаратное управление выдачей несущей - в состояние приём
 	board_sidetone_enable(0); // - остановить выдачу сигнала самоконтроля
 
-
+	faderticks = SEQNTICKS(WITHFADERDELAY);
 	rxtxticks = SEQNTICKS(WITHMAXRXTXDELAY);	// 15 ms задержка пре переходе на передачу
 	txrxticks = SEQNTICKS(WITHMAXTXRXDELAY);	// 15 ms задержка пре переходе на приём
 	pretxticks = SEQNTICKS(WITHMAXTXRXDELAY);

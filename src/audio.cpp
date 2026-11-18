@@ -7247,12 +7247,13 @@ hftxpath_init(hftxpath_t * const self)
 /* разрешение работы тракта в режиме приёма */
 static int getRxGateOpen(void)
 {
+	return seq_rxfaderopen();
 	return ! txgateInput && rxgateflag;
 }
 
 static unsigned getRxGateOpenTime(void)
 {
-	return NSAITICKS(5);
+	return NSAITICKS(WITHFADERDELAY);
 }
 
 static void
