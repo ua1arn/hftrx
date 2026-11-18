@@ -6075,7 +6075,11 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+#ifdef WITHMIKEBOOSTDEF
+	static uint_fast8_t gmikeboost20db = WITHMIKEBOOSTDEF;	// предусилитель микрофона
+#else /* WITHMIKEBOOSTDEF */
 	static uint_fast8_t gmikeboost20db;	// предусилитель микрофона
+#endif /* WITHMIKEBOOSTDEF */
 	static const struct paramdefdef xgmikeboost20db =
 	{
 		QLABEL2("MICBOOST", "Mike boost"), 0, RJ_ON,	ISTEP1,
@@ -16328,83 +16332,161 @@ processcatmsg(
 	)
 {
 	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
+	const unsigned powerv = 2;
 	//printhex_titled(0, catp, 5, "processcatmsg");
 	switch (catp [4])
 	{
 	case 0xF9:
-		// repeater offset
+		if (cat_answer_ready())
+		{
+			// repeater offset
+			PRINTF("CAT Repeater Offset VFO A/B\n");
+		}
+		else
+		{
+			TP();
+		}
 		break;
 	case 0x80:
+		if (cat_answer_ready())
+		{
 		// lock off
-		//PRINTF("CAT LOCK Off\n");
-		cat_ask_buffer [0] = 0x00;
-		cat_answervariable(cat_ask_buffer, 1);
+			PRINTF("CAT LOCK Off\n");
+			cat_ask_buffer [0] = 0x00;
+			cat_answervariable(cat_ask_buffer, 1);
+		}
+		else
+		{
+			TP();
+		}
 		break;
 	case 0x00:
-		// lock ON
-		//PRINTF("CAT LOCK ON\n");
-		cat_ask_buffer [0] = 0x00;
-		cat_answervariable(cat_ask_buffer, 1);
+		if (cat_answer_ready())
+		{
+			// lock ON
+			PRINTF("CAT LOCK ON\n");
+			cat_ask_buffer [0] = 0x00;
+			cat_answervariable(cat_ask_buffer, 1);
+		}
+		else
+		{
+			TP();
+		}
 		break;
 
 	case 0x08:
 		// PTT On
-		//PRINTF("CAT PTT ON\n");
-		txreq_mox(& txreqst0);
-		cat_ask_buffer [0] = 0x00;
-		cat_answervariable(cat_ask_buffer, 1);
+		if (cat_answer_ready())
+		{
+			PRINTF("CAT PTT ON\n");
+			txreq_mox(& txreqst0);
+			cat_ask_buffer [0] = 0x00;
+			//cat_ask_buffer [0] = ! gtx * 0x80 | 0x20| powerv;
+			cat_answervariable(cat_ask_buffer, 1);
+		}
+		else
+		{
+			TP();
+		}
 		break;
 	case 0x88:
-		// PTT OFF
-		//PRINTF("CAT PTT OFF\n");
-		txreq_rx(& txreqst0, NULL);
-		cat_ask_buffer [0] = 0x00;
-		cat_answervariable(cat_ask_buffer, 1);
+		if (cat_answer_ready())
+		{
+			// PTT OFF
+			PRINTF("CAT PTT OFF\n");
+			txreq_rx(& txreqst0, NULL);
+			cat_ask_buffer [0] = 0x00;
+			//cat_ask_buffer [0] = ! gtx * 0x80 | 0x20 | powerv;
+			cat_answervariable(cat_ask_buffer, 1);
+		}
+		else
+		{
+			TP();
+		}
 		break;
 
 	case 0x85:
-		// RIT OFF
-		//PRINTF("CAT RIT OFF\n");
-		cat_ask_buffer [0] = 0x00;
-		cat_answervariable(cat_ask_buffer, 1);
+		if (cat_answer_ready())
+		{
+			// RIT OFF
+			PRINTF("CAT RIT OFF\n");
+			cat_ask_buffer [0] = 0x00;
+			cat_answervariable(cat_ask_buffer, 1);
+		}
+		else
+		{
+			TP();
+		}
 		break;
 	case 0x02:
-		// SPLIT On
-		//PRINTF("CAT SPLIT ON\n");
-		gsplitmode = SPLITMODES_ON;
-		updateboard();
-		cat_ask_buffer [0] = 0x00;
-		cat_answervariable(cat_ask_buffer, 1);
+		if (cat_answer_ready())
+		{
+			// SPLIT On
+			PRINTF("CAT SPLIT ON\n");
+			gsplitmode = SPLITMODES_ON;
+			updateboard();
+			cat_ask_buffer [0] = 0x00;
+			cat_answervariable(cat_ask_buffer, 1);
+		}
+		else
+		{
+			TP();
+		}
 		break;
 	case 0x82:
 		// SPLIT OFF
-		//PRINTF("CAT SPLIT OFF\n");
-		gsplitmode = SPLITMODES_OFF;
-		updateboard();
-		cat_ask_buffer [0] = 0x00;
-		cat_answervariable(cat_ask_buffer, 1);
+		if (cat_answer_ready())
+		{
+			PRINTF("CAT SPLIT OFF\n");
+			gsplitmode = SPLITMODES_OFF;
+			updateboard();
+			cat_ask_buffer [0] = 0x00;
+			cat_answervariable(cat_ask_buffer, 1);
+		}
+		else
+		{
+			TP();
+		}
 		break;
 	case 0x81:
 		// Toggle VFO A/B
-		//PRINTF("CAT Toggle VFO A/B\n");
-		if (cat_param_keyclick(& xgvfoab, bi))
-			updateboard();
-		cat_ask_buffer [0] = 0x00;
-		cat_answervariable(cat_ask_buffer, 1);
+		if (cat_answer_ready())
+		{
+			PRINTF("CAT Toggle VFO A/B\n");
+			if (cat_param_keyclick(& xgvfoab, bi))
+				updateboard();
+			cat_ask_buffer [0] = 0x00;
+			cat_answervariable(cat_ask_buffer, 1);
+		}
+		else
+		{
+			TP();
+		}
 		break;
 	case 0xBB:
 		// 0x00 0x54 0x00 0x00 0xBB
+		// ft-857d
+		//	0x00 0x78 0x00 0x00 0xBB CAT READ EEPROM, addr=0x0078
+		//	0x00 0x00 0x00 0x00 0xF7 CAT ReadTxStatus
+		//	0x00 0x68 0x00 0x00 0xBB CAT READ EEPROM, addr=0x0068
+		//	0x00 0x00 0x00 0x00 0xF7 CAT ReadTxStatus
+		//	0x00 0x8C 0x00 0x00 0xBB CAT READ EEPROM, addr=0x008C		if (cat_answer_ready())
 		if (cat_answer_ready())
 		{
 			// [Адрес MSB] [Адрес LSB] [0x00] [0x00] [0x00] [0xBB]
 			const unsigned addr = catp [0] * 256 + catp [1];
-			cat_ask_buffer [0] = 0x00;
-			cat_ask_buffer [1] = 0x00;
+			cat_ask_buffer [0] = addr >> 8;
+			cat_ask_buffer [1] = addr >> 0;
 			cat_answervariable(cat_ask_buffer, 2);
-			//PRINTF("CAT READ EEPROM, addr=0x%04X\n", addr);
+			PRINTF("CAT READ EEPROM, addr=0x%04X\n", addr);
+		}
+		else
+		{
+			TP();
 		}
 		break;
 	case 0x01:
+		if (cat_answer_ready())
 		{
 			// Set Frequency
 
@@ -16419,12 +16501,16 @@ processcatmsg(
 					(catp [3] % 16) * 10 +
 					0;
 
-			//PRINTF("CAT Set freq=%u\n", (unsigned) f);
+			PRINTF("CAT Set freq=%u\n", (unsigned) f);
 			catchangefreq(vfy32up(f, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), bi);
 			updateboard();	/* полная перенастройка (как после смены режима) */
 			cat_ask_buffer [0] = 0x00;
 			cat_answervariable(cat_ask_buffer, 1);
 
+		}
+		else
+		{
+			TP();
 		}
 		break;
 
@@ -16443,7 +16529,11 @@ processcatmsg(
 			cat_ask_buffer [3] = ((f % 1000) / 100) * 16 + (f % 100) / 10;
 			cat_ask_buffer [4] = ymode;
 			cat_answervariable(cat_ask_buffer, 5);
-			//PRINTF("CAT GetState freq=%u, mode=%s\n", (unsigned) f, submodes [getsubmode(bi)].qlabel);
+			PRINTF("CAT GetState freq=%u, mode=%s\n", (unsigned) f, submodes [getsubmode(bi)].qlabel);
+		}
+		else
+		{
+			TP();
 		}
 		break;
 
@@ -16453,7 +16543,11 @@ processcatmsg(
 			// Read RX status
 			cat_ask_buffer [0] = 0x00;
 			cat_answervariable(cat_ask_buffer, 1);
-			//PRINTF("CAT ReadRxStatus\n");
+			PRINTF("CAT ReadRxStatus\n");
+		}
+		else
+		{
+			TP();
 		}
 		break;
 
@@ -16461,14 +16555,19 @@ processcatmsg(
 		if (cat_answer_ready())
 		{
 			// Read TX status
-			cat_ask_buffer [0] = ! gtx * 0x80 | 0x20;
+			cat_ask_buffer [0] = ! gtx * 0x80 | 0x20| powerv;
 
 			cat_answervariable(cat_ask_buffer, 1);
-			//PRINTF("CAT ReadTxStatus\n");
+			PRINTF("CAT ReadTxStatus\n");
+		}
+		else
+		{
+			TP();
 		}
 		break;
 
 	case 0x07:
+		if (cat_answer_ready())
 		{
 			// В качестве первого байта передается ID модуляции.
 			// FT-857D_OM_ENG_EH007M108.pdf
@@ -16484,16 +16583,26 @@ processcatmsg(
 			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
 			updateboard();	/* полная перенастройка (как после смены режима) */
 			PRINTF("CAT Set mode=%s (yaesu=0x%02X)\n", submodes [defsubmode].qlabel, catp [0]);
-			printhex_titled(0, catp, 5, "CAT Set mode");
+			//printhex_titled(0, catp, 5, "CAT Set mode");
 			cat_ask_buffer [0] = 0x00;
 			cat_answervariable(cat_ask_buffer, 1);
 		}
+		else
+		{
+			TP();
+		}
 		break;
 	case 0xF5:
+		if (cat_answer_ready())
 		{
+			PRINTF("CAT code = 0xF5\n");
 			// [pmRit0]
 			cat_ask_buffer [0] = 0x00;
 			cat_answervariable(cat_ask_buffer, 1);
+		}
+		else
+		{
+			TP();
 		}
 		break;
 	default:
@@ -16541,7 +16650,7 @@ static void cattimeout_cb(void * ctx)
 void cat2_parsechar(uint_fast8_t c)
 {
 	static uint8_t yaesubuf [5];
-	//PRINTF("0x%02X ", c);
+	PRINTF("0x%02X ", c);
 	ticker_timeout_restart(& cat_ticker, CAT_TIMEOUT);	// Перезапуск тайм-аута
 
 	switch (catstatein)
@@ -20554,10 +20663,10 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;
 #endif /* WITHELKEY */
 
-#if WITHELKEY && 0
+#if WITHELKEY && 1
 
 	case KBD_CODE_CWMSG1:
-		uif_key_sendcw("CQ UA1ATD/P RR0106");
+		uif_key_sendcw("CQ UA1ATD/P");	// was rr...
 		return 1;
 	case KBD_CODE_CWMSG2:
 		uif_key_sendcw("UA1ATD/P");

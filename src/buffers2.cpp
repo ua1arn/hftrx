@@ -1478,7 +1478,7 @@ int_fast32_t datasize_dmabuffer32tx(void)
 static unsigned putcbf_dmabuffer32tx(IFDACvalue_t * buff, FLOAT_t ch0, FLOAT_t ch1, int32_t delta)
 {
 
-#if WITHTXCPATHCALIBRATE
+#if WITHTXCPATHCALIBRATE && 0
 	buff [DMABUF32TXI] = adpt_outputexact(& ifcodectx, ch0);
 	buff [DMABUF32TXQ] = adpt_outputexact(& ifcodectx, ch1);
 #else /* WITHTXCPATHCALIBRATE */
