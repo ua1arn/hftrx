@@ -71,10 +71,15 @@ static void nau8822_setreg_16(
 {
 	const uint_fast16_t fulldata = (0x7F & regv) * (UINT16_C(1) << 9) | (datav & 0x1ff);
 	//PRINTF("nau8822_setreg: regv=%02X, datav=%03X\n", (unsigned) regv, (unsigned) datav);
-
 #if CODEC_TYPE_NAU8822_USE_SPI
-	// кодек управляется по SPI
-	const spitarget_t target = targetcodec1;	/* addressing to chip */
+	#if NAU8822_USE_SPI4_ACTUAL
+		// кодек управляется по SPI
+		const spitarget_t target = targetcodec1widepulse;	/* addressing to chip */
+	#else
+		// кодек управляется по SPI
+		const spitarget_t target = targetcodec1;	/* импульс в конце обращения.  addressing to chip */
+	#endif
+
 
 #if WITHSPIHW || WITHSPISW
 	const uint8_t txbuf [] =
@@ -115,8 +120,13 @@ static void nau8822_setreg_16_2(
 	//PRINTF("nau8822_setreg: regv=%02X, datav=%03X\n", (unsigned) regv, (unsigned) datav);
 
 #if CODEC_TYPE_NAU8822_USE_SPI
-	// кодек управляется по SPI
-	const spitarget_t target = targetcodec1;	/* addressing to chip */
+	#if NAU8822_USE_SPI4_ACTUAL
+		// кодек управляется по SPI
+		const spitarget_t target = targetcodec1widepulse;	/* addressing to chip */
+	#else
+		// кодек управляется по SPI
+		const spitarget_t target = targetcodec1;	/* импульс в конце обращения. addressing to chip */
+	#endif
 
 #if WITHSPIHW || WITHSPISW
 	const uint8_t txbuf [] =

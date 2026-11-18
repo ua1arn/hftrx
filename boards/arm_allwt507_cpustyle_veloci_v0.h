@@ -930,7 +930,7 @@
 	#define OE_CTL1_BIT	(UINT32_C(1) << 16)	/* PI16 */
 	//#define targetdataflash 0xFF
 	#define targetnone 0x00
-	#define targetcodec1pulse 0xFE	// pulse for NAU8822L
+	#define targetcodec1widepulse 0xFE	// pulse for NAU8822L
 
 	#define FPGALOADER_SPEEDC SPIC_SPEED4M
 	#define FPGAREG_V1_SPEEDC SPIC_SPEED4M
@@ -965,8 +965,8 @@
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target) do { \
 		switch (target) { \
-		case targetcodec1pulse: SPI_DRIVE(SPI_DRIVE_CODEC1); break; /* on-board codec1 NAU8822L */ \
-		case targetcodec1: { SPI_DRIVE(SPI_DRIVE_CODEC1); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
+		case targetcodec1widepulse: { SPI_DRIVE(SPI_DRIVE_CODEC1); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
+		case targetcodec1: SPI_DRIVE(SPI_DRIVE_CODEC1); break; /* on-board codec1 NAU8822L */ \
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 0 * (SPDIF_NCS_BIT)); } break; *//* PC3 SPI0_CS */ \
 		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 1 * (target)); } break; */\
 		case targetctl1: { SPI_DRIVE(GPIO_DRV_1); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
@@ -979,7 +979,8 @@
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
 		switch (target) { \
-		case targetcodec1pulse:  { gpioX_setstate(GPIOE, targetcodec1, 0 * targetcodec1); gpioX_setstate(GPIOE, targetcodec1, 1 * targetcodec1); } break; /* Pulse on CS for on-board codec1 NAU8822L */ \
+		case targetcodec1widepulse:  { gpioX_setstate(GPIOE, targetcodec1, 1 * targetcodec1); } break; /* Pulse on CS for on-board codec1 NAU8822L */ \
+		case targetcodec1:  { gpioX_setstate(GPIOE, targetcodec1, 0 * targetcodec1); gpioX_setstate(GPIOE, targetcodec1, 1 * targetcodec1); } break; /* Pulse on CS for on-board codec1 NAU8822L */ \
 		/*case targetdataflash: { gpioX_setstate(GPIOI, SPDIF_NCS_BIT, 1 * (SPDIF_NCS_BIT)); } break; *//* PC3 SPI0_CS */ \
 		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 0 * (target)); } break; */\
 		case targetctl1: { gpioX_setstate(GPIOE, targetctl1, 1 * targetctl1); gpioX_setstate(GPIOI, OE_CTL1_BIT, 0 * OE_CTL1_BIT); } break; \
@@ -993,7 +994,7 @@
 		switch (target) { \
 		case targetnvram: __DSB(); break; /* NVRAM FM25W256 */ \
 		case targetcodec1: __DSB(); break; /* on-board codec1 NAU8822L */ \
-		case targetcodec1pulse: __DSB(); break; /* Pulse on CS for on-board codec1 NAU8822L */ \
+		case targetcodec1widepulse: __DSB(); break; /* Pulse on CS for on-board codec1 NAU8822L */ \
 		case targetfpga1only: __DSB(); break; \
 		case targetfpga1gate: __DSB(); break; \
 		case targetfpga1: __DSB(); break; /* FPGA control registers CS1 */ \
