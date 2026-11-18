@@ -87,9 +87,6 @@
 //	#include <arm_neon.h>
 //#endif /* __ARM_NEON */
 
-// ARMSAIRATE - sample rate IF кодека в герцах
-#define NSAITICKS(t_ms) ((uint_fast16_t) (((uint_fast32_t) (t_ms) * ARMSAIRATE + 500) / 1000))
-#define NSAITICKS2(t_ms, sr) ((uint_fast16_t) (((uint_fast32_t) (t_ms) * (sr) + 500) / 1000))
 
 ///////////////////////////////////////
 //
@@ -6621,11 +6618,6 @@ static int getRxGateOpen(void)
 	//return ! txgateInput && rxgateflag;
 }
 
-unsigned getRxGateOpenTime(void)
-{
-	return NSAITICKS(WITHFADERDELAY);
-}
-
 static unsigned getShapeEnvelop0(void)
 {
 	return hftrx_txgetpath()->enveloplen0;
@@ -7227,7 +7219,7 @@ hftxpath_init(hftxpath_t * const self)
 	fader_init(& self->shapeSidetone, getshapeSidetoneInpit, getShapeEnvelop0);
 	fader_init(& self->shapeTXEnvelop, getsTXEnvelopInpit, getShapeEnvelop0);
 	fader_init(& self->shapeCWSSBEnvelop, getshapeCWSSBSidetoneInpit, getShapeEnvelop0);
-	fader_init(& self->shapeMoni, seq_monifaderopen, getRxGateOpenTime);
+	fader_init(& self->shapeMoni, seq_monifaderopen, hamradio_get_rxfadertime);
 
 	self->angle_aflotx = 0;
 
@@ -7254,7 +7246,7 @@ hfrxpath_init(hfrxpath_t * const self)
 	self->sign2 = self;
 
 	self->angle_aflorx = 0;
-	fader_init(& self->rxFader, getRxGateOpen, getRxGateOpenTime);
+	fader_init(& self->rxFader, getRxGateOpen, hamradio_get_rxfadertime);
 	self->manualsquelch = 0;
 	{
 		// AGC

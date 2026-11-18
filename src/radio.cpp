@@ -4295,8 +4295,8 @@ struct nvmap {
 
 	uint8_t gtxgate;	/* разрешение предусилителя */
 	uint8_t grgbeep;	/* разрешение (не-0) или запрещение (0) формирования roger beep */
+	uint8_t gfadertime;
 	uint8_t grxtxdelay;	/* приём-передача */
-
 	uint8_t gtxrxdelay;	/* передача-приём */
 
 
@@ -7037,10 +7037,24 @@ enum
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-#if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
+#if WITHIF4DSP
+	static uint_fast8_t gfadertime = WITHFADERDELAY;	/* в единицах mS. модифицируется через меню - задержка на проход сигнала через фильтры FPGA */
+	unsigned hamradio_get_rxfadertime(void) { return NSAITICKS(gfadertime); }
+	static const struct paramdefdef xgfadertime = {
+		QLABEL3("FADE DLY", "FADE Delay", "FADE DELAY"),  0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
+		ITEM_VALUE,
+		5, WITHMAXRXTXDELAY,						/* 5..100 ms delay */
+		OFFSETOF(struct nvmap, gfadertime),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gfadertime,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
 	static uint_fast8_t grxtxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода прём-передача */
 	static const struct paramdefdef xgrxtxdelay = {
-		QLABEL("RXTX DLY"),  0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
+		QLABEL3("RXTX DLY", "RX-TX Delay", "RXTX DELAY"),  0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
 		ITEM_VALUE,
 		5, WITHMAXRXTXDELAY,						/* 5..100 ms delay */
 		OFFSETOF(struct nvmap, grxtxdelay),
@@ -7052,7 +7066,7 @@ enum
 	};
 	static uint_fast8_t gtxrxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
 	static const struct paramdefdef xgtxrxdelay = {
-		QLABEL("TXRX DLY"),  0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
+		QLABEL3("TXRX DLY", "RX-TX Delay", "TXRX DELAY"),  0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
 		ITEM_VALUE,
 		5, WITHMAXTXRXDELAY,						/* 5..100 ms delay */
 		OFFSETOF(struct nvmap, gtxrxdelay),
@@ -14336,7 +14350,7 @@ updateboard_noui(
 		}
 		#endif /* WITHIF4DSP */
 		seq_set_rgbeep(param_val(& xgrgbeep));	/* разрешение (не-0) или запрещение (0) формирования roger beep */
-		seq_set_rxtxdelay(param_val(& xgrxtxdelay), param_val(& xgtxrxdelay), pretxdelay ? param_val(& xgtxrxdelay) : 0);	/* установить задержку пре переходе на передачу и обратно. */
+		seq_set_rxtxdelay(param_val(& xgrxtxdelay), param_val(& xgtxrxdelay), pretxdelay ? param_val(& xgtxrxdelay) : 0, param_val(& xgfadertime));	/* установить задержку пре переходе на передачу и обратно. */
 		board_sidetone_setfreq(param_val(& xgcwpitch10) * CWPITCHSCALE);	// Минимум - 400 герц (определено набором команд CAT Kenwood).
 	#if WITHPACLASSA
 		board_set_classamode(param_val(& xgclassamode));	/* использование режима клвсс А при передаче */

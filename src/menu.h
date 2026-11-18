@@ -1641,7 +1641,8 @@
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	& xgdownatcwtune,
 #endif
-#if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
+#if WITHIF4DSP
+	& xgfadertime,
 	& xgrxtxdelay,
 	& xgtxrxdelay,
 #endif /* GATEs */

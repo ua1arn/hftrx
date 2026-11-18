@@ -564,16 +564,19 @@ int seq_monifaderopen(void)
 void seq_set_rxtxdelay(
 	uint_fast8_t rxtxdelay, 
 	uint_fast8_t txrxdelay,
-	uint_fast8_t pretxdelay
+	uint_fast8_t pretxdelay,
+	uint_fast8_t fadertime
 	)
 {
-	const uint_fast8_t arxtxticks = SEQNTICKS(rxtxdelay); // задержка пре переходе на передачу
-	const uint_fast8_t atxrxticks = SEQNTICKS(txrxdelay); // и обратно
-	const uint_fast8_t apretxticks = SEQNTICKS(pretxdelay); // задержка перед переходом на передачу
-	if (arxtxticks != rxtxticks || atxrxticks != txrxticks || apretxticks != pretxticks)
+	const uint_fast32_t afaderticks = SEQNTICKS(fadertime);
+	const uint_fast32_t arxtxticks = SEQNTICKS(rxtxdelay); // задержка пре переходе на передачу
+	const uint_fast32_t atxrxticks = SEQNTICKS(txrxdelay); // и обратно
+	const uint_fast32_t apretxticks = SEQNTICKS(pretxdelay); // задержка перед переходом на передачу
+	if (arxtxticks != rxtxticks || atxrxticks != txrxticks || apretxticks != pretxticks || afaderticks != faderticks)
 	{
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
+		faderticks = afaderticks;
 		rxtxticks = arxtxticks;
 		txrxticks = atxrxticks;
 		pretxticks = apretxticks;

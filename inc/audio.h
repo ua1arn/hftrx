@@ -1081,6 +1081,10 @@ extern volatile phase_t mirror_ncorts;
 
 #define BOARD_AFPROC_BANDS 	10
 #define EQUALIZERBASE 12	// -12..+12
+// ARMSAIRATE - sample rate IF кодека в герцах
+#define NSAITICKS(t_ms) ((uint_fast16_t) (((uint_fast32_t) (t_ms) * ARMSAIRATE + 500) / 1000))
+#define NSAITICKS2(t_ms, sr) ((uint_fast16_t) (((uint_fast32_t) (t_ms) * (sr) + 500) / 1000))
+unsigned hamradio_get_rxfadertime(void);
 
 #ifdef __cplusplus
 }
