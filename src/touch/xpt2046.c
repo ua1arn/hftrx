@@ -18,6 +18,7 @@
 
 #include "spi.h"
 #include "touch.h"
+#include "clocks.h"
 
 // При необходимости разместить в файле конфигурации платы.
 //#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.

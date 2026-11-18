@@ -14,6 +14,7 @@
 
 #include "gpio.h"
 #include "touch.h"
+#include "clocks.h"
 
 #define TSC_I2C_ADDR (0x20 * 2)
 

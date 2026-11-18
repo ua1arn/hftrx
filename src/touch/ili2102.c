@@ -13,6 +13,7 @@
 #if defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102)
 #include "gpio.h"
 #include "touch.h"
+#include "clocks.h"
 
 #define TSC_ILI2102_ADDR		0x82
 
