@@ -1807,7 +1807,8 @@ static void context_init(irq_stack_frame_top_t * __restrict oldframe, void * fn,
 	f->x30 = (uintptr_t) thread_exit_trap;
 }
 
-static void context_set_ec(irq_stack_frame_top_t * __restrict cpuframe, unsigned ec)
+// native size return value
+static void context_set_ec(irq_stack_frame_top_t * __restrict cpuframe, uintptr_t ec)
 {
 	irq_stack_frame_top_t * const f = cpuframe;
 	f->x0 = ec;
@@ -1942,8 +1943,9 @@ static void context_init(irq_stack_frame_top_t * __restrict frame_top, void * fn
 	frame_bottom->lr_sys = (uintptr_t) thread_exit_trap;
 }
 
+// native size return value
 // scheduler-mode entry - set svc exit code
-static void context_set_ec(irq_stack_frame_top_t * __restrict frame_top, unsigned ec)
+static void context_set_ec(irq_stack_frame_top_t * __restrict frame_top, uintptr_t ec)
 {
     const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
     irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
@@ -2055,8 +2057,9 @@ typedef struct {
 } __attribute__((packed)) irq_stack_frame_top_t;
 
 
+// native size return value
 // scheduler-mode entry - set svc exit code
-static void context_set_ec(irq_stack_frame_top_t * __restrict cpuframe, unsigned ec)
+static void context_set_ec(irq_stack_frame_top_t * __restrict cpuframe, uintptr_t ec)
 {
 	irq_stack_frame_top_t * const f = cpuframe;
 	f->r0 = ec;
@@ -2122,11 +2125,11 @@ typedef struct exception_frame_tag
 	uint64_t xx [32];
 } __attribute__((packed)) irq_stack_frame_top_t;
 
+// native size return value
 // scheduler-mode entry - set svc exit code
-static void context_set_ec(void * __restrict cpuframe, unsigned ec)
+static void context_set_ec(irq_stack_frame_top_t * __restrict cpuframe, uintptr_t ec)
 {
-	irq_stack_frame_top_t * const f = cpuframe;
-	f->x3 = ec;
+	cpuframe->x3 = ec;
 }
 
 // scheduler-mode entry
@@ -2594,6 +2597,13 @@ void tasks_print(void) {
 }
 #endif /* WITHDEBUG */
 
+// native size return value
+static void thread_set_ec(thread_item_t * thread, uintptr_t ec)
+{
+	context_set_ec(thread->cpuframe, ec);
+
+}
+
 static int ready_timeout(hwtimcountfast_t tn, hwtimcountfast_t t0, hwtimcountfast_t td) {
 	if (td == timestamp_getmask())
 		return 0;
@@ -2657,12 +2667,12 @@ static int readyfn_wait32(const check_ready_t * chrdyttag, thread_item_t * threa
 	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)
 	{
-		context_set_ec(thread->cpuframe, 0);
+		thread_set_ec(thread, 0);
 		return 1;
 	}
 	if (ready_timeout(tn, param->t0, param->td))
 	{
-		context_set_ec(thread->cpuframe, 1);
+		thread_set_ec(thread, 1);
 		return 1;
 	}
 	return 0;
@@ -2691,15 +2701,15 @@ static int readyfn_wait32_v2(const check_ready_t * chrdyttag, thread_item_t * th
 	ASSERT(param->flag != NULL);
 	const uint_fast32_t f = * param->flag & param->mask;
 	if (f == param->state)  {
-		context_set_ec(thread->cpuframe, 0);
+		thread_set_ec(thread, 0);
 		return 1;
 	}
 	if (f == param->errstate) {
-		context_set_ec(thread->cpuframe, 1);
+		thread_set_ec(thread, 1);
 		return 1;
 	}
 	if (ready_timeout(tn, param->t0, param->td)) {
-		context_set_ec(thread->cpuframe, 1);
+		thread_set_ec(thread, 1);
 		return 1;
 	}
 	return 0;
@@ -2724,11 +2734,11 @@ static int readyfn_wait8(const check_ready_t * chrdyttag, thread_item_t * thread
 	ASSERT3(param->guard == param, __FILE__, __LINE__, thread->name);
 	ASSERT(param->flag != NULL);
 	if ((* param->flag & param->mask) == param->state)  {
-		context_set_ec(thread->cpuframe, 0);
+		thread_set_ec(thread, 0);
 		return 1;
 	}
 	if (ready_timeout(tn, param->t0, param->td)) {
-		context_set_ec(thread->cpuframe, 1);
+		thread_set_ec(thread, 1);
 		return 1;
 	}
 	return 0;
@@ -2754,12 +2764,12 @@ static int readyfn_waitlist(const check_ready_t * chrdyttag, thread_item_t * thr
 		const int f = IsListEmpty(param->list);
 		LCLSPIN_UNLOCK(param->lock);
 		if (! f) {
-			context_set_ec(thread->cpuframe, 0);
+			thread_set_ec(thread, 0);
 			return 1;
 		}
 	}
 	if (ready_timeout(tn, param->t0, param->td)) {
-		context_set_ec(thread->cpuframe, 1);
+		thread_set_ec(thread, 1);
 		return 1;
 	}
 	return 0;
