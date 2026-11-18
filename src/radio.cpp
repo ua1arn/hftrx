@@ -7103,10 +7103,10 @@ enum
 	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
-	static const struct {
+	static struct {
 		uint8_t code;
 		const char * label;
-	}  elkeymodes [] =
+	}  const elkeymodes [] =
 	{
 		{ ELKEY_MODE_ACS, "ACS", },
 		{ ELKEY_MODE_ELE, "ELE", },
@@ -7119,6 +7119,7 @@ enum
 	static uint_fast8_t elkeyreverse;
 	static uint_fast8_t elkeymode = 1;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	static uint_fast8_t elkeyslope;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
+
 	static uint_fast8_t elkeywpmv = 20;
 	static const struct paramdefdef xgelkeywpm =
 	{
@@ -7132,7 +7133,7 @@ enum
 #endif /* WITHPOTWPM */
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
-		& elkeywpm.value,
+		& elkeywpmv,
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
