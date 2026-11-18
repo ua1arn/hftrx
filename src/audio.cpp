@@ -4365,6 +4365,11 @@ static FLOAT_t txmikeagc(hftxpath_t * const txpath, FLOAT_t vi)
 		const FLOAT_t gain = agccalcgain_log(& agcp->levels, agc_result_slow(st));
 		vi *= gain;
 	}
+	if (1)
+	{
+		const FLOAT_t fence = 0.9;
+		vi = FMAXF(FMINF(vi, fence), - fence);
+	}
 	return vi;
 }
 
@@ -4923,6 +4928,12 @@ static FLOAT_t mikeinmux(
 #if WITHCOMPRESSOR
 	vi0fmike = audio_compressor_calc(vi0fmike);		// Компрессор
 #endif /* WITHCOMPRESSOR */
+	if (1)
+	{
+		const FLOAT_t fence = 0.9;
+		vi0fmike = FMAXF(FMINF(vi0fmike, fence), - fence);
+	}
+
 	voxmeasure(vi0fmike);	// Поддержка работы VOX
 
 	switch (dspmode)
@@ -6115,6 +6126,11 @@ void dsp_processtx(unsigned nsamples0)
 		monitorbuff [i].IV = 0;
 		monitorbuff [i].QV = 0;
 		txfirbuff [i] = mikeinmux(txpath, dspmodeA, & monitorbuff [i]);	// AGC, reverb, compressor - are here
+		if (1)
+		{
+			const FLOAT_t fence = 0.9;
+			txfirbuff [i] = FMAXF(FMINF(txfirbuff [i], fence), - fence);
+		}
 	}
 	/* формирование АЧХ перед модулятором */
 	ARM_MORPH(arm_fir)(& tx_fir_instance, txfirbuff, txfirbuff, tx_MIKE_blockSize);

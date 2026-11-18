@@ -7959,7 +7959,7 @@ static const struct paramdefdef xgskipfilteraf =
 #elif 1
 	static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в CW режимах */
 	static uint_fast16_t ggaindigitx = 160;		/* Увеличение усиления при передаче в цифровых режимах */
-	static uint_fast16_t ggainssbtx = 115;		/* Увеличение усиления при передаче в SSB */
+	static uint_fast16_t ggainssbtx = 70;		/* Увеличение усиления при передаче в SSB */
 #endif
 	/* Увеличение усиления при передаче в цифровых режимах 90..300% */
 	static const struct paramdefdef xggaindigitx =
