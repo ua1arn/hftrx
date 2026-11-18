@@ -3858,10 +3858,16 @@ static void display2_ovf3(const gxdrawb_t * db,
 		gxstyle_textcolor(& dbstylev, DSGN_BGCOLOR, DSGN_OVFCOLOR);
 		display_text(db, x, y, "MIK", xspan, yspan, & dbstylev);
 	}
+	else if (hamradio_get_bringINFO(labels))
+	{
+		gxstyle_textcolor(& dbstylev, DSGN_LABELACTIVETEXT, DSGN_LABELACTIVEBACK);
+		display_text(db, x, y, labels [0], xspan, yspan, & dbstylev);
+	}
 	else
 	{
-		gxstyle_textcolor(& dbstylev, DSGN_BGCOLOR, DSGN_BGCOLOR);
-		display_text(db, x, y, "", xspan, yspan, & dbstylev);
+		// в этом поле ничего иначе не выводится
+//		gxstyle_textcolor(& dbstylev, DSGN_BGCOLOR, DSGN_BGCOLOR);
+//		display_text(db, x, y, "", xspan, yspan, & dbstylev);
 	}
 #endif /* WITHDSPEXTDDC */
 }
@@ -3887,6 +3893,10 @@ static void display2_preovf3(const gxdrawb_t * db,
 	else if (boad_mike_adcoverflow() != 0)
 	{
 		display_text(db, x, y, "MIK", xspan, yspan, & dbstylev_ovf);
+	}
+	else if (hamradio_get_bringINFO(labels))
+	{
+		display_text(db, x, y, labels [0], xspan, yspan, & dbstylev_1state);
 	}
 	else
 	{

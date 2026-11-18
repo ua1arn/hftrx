@@ -820,6 +820,7 @@ uint_fast8_t hamradio_get_bringENC2F(void);	// Вращали 4-й валкод�
 uint_fast8_t hamradio_get_bringENC3F(void);	// Вращали 5-й валкодер (ENC3F)
 uint_fast8_t hamradio_get_bringENC4F(void);	// Вращали 6-й валкодер (ENC4F)
 uint_fast8_t hamradio_get_bringSWR(const char * * label);	// Была ошибка SWR или что-то другое
+uint_fast8_t hamradio_get_bringINFO(const char * * label);
 uint_fast8_t hamradio_get_bringtuneA(void);	// Разрешить отображение текущей частоты на водопаде
 uint_fast8_t hamradio_get_bringtuneB(void);	// Разрешить отображение текущей частоты на водопаде
 uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);

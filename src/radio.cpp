@@ -8313,6 +8313,9 @@ static const uint_fast16_t swrbring_time = BOARD_ERRBEEP_LENGTH / 100;	// 0.6 se
 static const char * bring_swr_text = "---";
 static uint_fast16_t actbring_swr;
 
+static const char * bring_info_text = "---";
+static uint_fast16_t actbring_info;
+
 // Начать отображение перегруза по SWR
 static void bring_swr(const char * label)
 {
@@ -8320,6 +8323,14 @@ static void bring_swr(const char * label)
 	bring_swr_text = label;
 	actbring_swr = swrbring_time;
 	board_errbeep_enable(1);
+}
+
+// Начать отображение перегруза по SWR
+static void bring_info(const char * label)
+{
+	PRINTF("bring_info: %s\n", label);
+	bring_info_text = label;
+	actbring_info = actbring_time;
 }
 
 ///
@@ -8375,6 +8386,12 @@ uint_fast8_t hamradio_get_bringSWR(const char * * label)
 {
 	* label = bring_swr_text;
 	return actbring_swr != 0;
+}
+
+uint_fast8_t hamradio_get_bringINFO(const char * * label)
+{
+	* label = bring_info_text;
+	return actbring_info != 0;
 }
 
 ///
@@ -8586,15 +8603,14 @@ static void bringtimers(void)
 //	actbring_rfvolume = actbring_rfvolume ? (actbring_rfvolume - 1) : 0;
 	actbring_tuneA = actbring_tuneA ? (actbring_tuneA - 1) : 0;
 	actbring_tuneB = actbring_tuneB ? (actbring_tuneB - 1) : 0;
-#if WITHTX
-	actbring_swr = actbring_swr ? (actbring_swr - 1) : 0;
-	board_errbeep_enable(actbring_swr != 0);
-#endif /* WITHTX */
+	actbring_info = actbring_info ? (actbring_info - 1) : 0;	// информационные сообщения
 	actbring_ENC1F = actbring_ENC1F ? (actbring_ENC1F - 1) : 0;	// енкодер ENC1F
 	actbring_ENC2F = actbring_ENC2F ? (actbring_ENC2F - 1) : 0;	// енкодер ENC2F
 	actbring_ENC3F = actbring_ENC3F ? (actbring_ENC3F - 1) : 0;	// енкодер ENC3F
 	actbring_ENC4F = actbring_ENC4F ? (actbring_ENC4F - 1) : 0;	// енкодер ENC4F
+	actbring_swr = actbring_swr ? (actbring_swr - 1) : 0;
 
+	board_errbeep_enable(actbring_swr != 0);
 }
 
 #if WITHTX
@@ -14897,6 +14913,7 @@ static void uif_key_hold_memo(void)
 		savebandmemortstate(b, bi, miclass);
 		PRINTF("%s: b=%u, bi=%u, miclass=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) miclass, (unsigned) gfreqs [bi]);
 	}
+	bring_info("MEM");
 }
 
 #if ! WITHAGCMODENONE
@@ -21023,6 +21040,7 @@ void txreq_initialize(txreq_t * txreqp)
 static void
 txreq_rx0(txreq_t * txreqp, const char * label)
 {
+	//dbg_putchar('-');
 	if (label)
 		bring_swr(label);
 	txreqp->state = TXREQST_RX;
@@ -21070,9 +21088,15 @@ txreq_process0(txreq_t * txreqp)
 	else if (rxreq)
 		txreq_rx0(txreqp, NULL);	// просто переход на приём
 	else if (tunereq)
+	{
+		//dbg_putchar('+');
 		txreqp->state = TXREQST_TXTONE;
+	}
 	else if (txreq)
+	{
+		//dbg_putchar('+');
 		txreqp->state = TXREQST_TX;
+	}
 
 #if WITHSENDWAV
 	if (isplayfile())
