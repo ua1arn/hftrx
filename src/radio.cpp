@@ -340,6 +340,12 @@ typedef struct dualctl32_tag
 	uint_fast32_t potvalue;	/* значение после функции гистерезиса от потенциометра */
 } dualctl32_t;
 
+typedef struct dualctl_tag
+{
+	const struct paramdefdef * pd;	/* результирующее знаяение для формирования управляющего воздействия и инфопмирования по CAT */
+	int_fast32_t potvalue;	/* значение после функции гистерезиса от потенциометра */
+} dualctl_t;
+
 #define BRSCALE 1200U
 
 /* скорость 115200 не добавлена из соображений невозможностти точного формирования на atmega
@@ -7108,13 +7114,12 @@ enum
 		{ ELKEY_MODE_BUG, "BUG", },
 	};
 
-	static dualctl8_t elkeywpm = { 20, 20 };	/* скорость электронного ключа */
 	static uint_fast8_t dashratio = 30;	/* отношение тире к длительности точки - в десятках процентов */
 	static uint_fast8_t spaceratio = 10;	/* отношение паузы к длительности точки - в десятках процентов */
 	static uint_fast8_t elkeyreverse;
 	static uint_fast8_t elkeymode = 1;		/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	static uint_fast8_t elkeyslope;		/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
-
+	static uint_fast8_t elkeywpmv = 20;
 	static const struct paramdefdef xgelkeywpm =
 	{
 		QLABEL3("CW SPEED", "CW Speed", "CW SPEED"),  0, RJ_UNSIGNED, ISTEP1,
@@ -17205,7 +17210,7 @@ static void ksanswer(uint_fast8_t arg)
 
 	// keyer speed information
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) elkeywpm.value
+		(int) param_val(& xgelkeywpm)
 		);
 	cat_answer(len);
 }
@@ -22650,7 +22655,7 @@ int_fast16_t hamradio_if_shift(int_fast8_t step)
 
 uint_fast8_t hamradio_get_cw_wpm(void)
 {
-	return elkeywpm.value;
+	return param_val(& xgelkeywpm);
 }
 #endif /* WITHELKEY */
 
