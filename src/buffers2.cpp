@@ -1667,7 +1667,7 @@ uintptr_t getfilled_dmabuffer32rx(void)
 
 #else /* WITHRTOS */
 	// Обработка сразу в прерывании
-	#define TXSPOOLCOND (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM))
+	//#define TXSPOOLCOND (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM))
 	//#define TXSPOOLCOND 1	// Force in-interrupt 32rx stream parsing
 	#if ! TXSPOOLCOND
 	#define TXSPOOLCORE (HARDWARE_NCORES - 1)
