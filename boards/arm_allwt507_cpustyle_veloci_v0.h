@@ -972,7 +972,7 @@
 		case targetctl1: { SPI_DRIVE(GPIO_DRV_1); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
 		case targettsc1: { SPI_DRIVE(GPIO_DRV_1); gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
 		default: { gpioX_setstate(GPIOE, (target), 0 * (target)); } break; \
-		case targetnone: { } break; /* FPGA image loader */ \
+		case targetnone: { __DSB(); } break; /* FPGA image loader */ \
 		} \
 	} while (0)
 
@@ -984,21 +984,23 @@
 		/*case targetrtc1: { gpioX_setstate(GPIOI, (target), 0 * (target)); } break; */\
 		case targetctl1: { gpioX_setstate(GPIOE, targetctl1, 1 * targetctl1); gpioX_setstate(GPIOI, OE_CTL1_BIT, 0 * OE_CTL1_BIT); } break; \
 		default: { gpioX_setstate(GPIOE, (target), 1 * (target)); } break; \
-		case targetnone: { } break; /* FPGA image loader */ \
+		case targetnone: { __DSB(); } break; /* FPGA image loader */ \
 		} \
 	} while (0)
 
 	/* Perform delay after assert or de-assert specific CS line */
 	#define SPI_CS_DELAY(target) do { \
 		switch (target) { \
-		case targetnvram: break; /* NVRAM FM25W256 */ \
-		case targetcodec1: break; /* on-board codec1 NAU8822L */ \
-		case targetcodec1pulse: break; /* Pulse on CS for on-board codec1 NAU8822L */ \
-		case targetfpga1: break; /* FPGA control registers CS1 */ \
+		case targetnvram: __DSB(); break; /* NVRAM FM25W256 */ \
+		case targetcodec1: __DSB(); break; /* on-board codec1 NAU8822L */ \
+		case targetcodec1pulse: __DSB(); break; /* Pulse on CS for on-board codec1 NAU8822L */ \
+		case targetfpga1only: __DSB(); break; \
+		case targetfpga1gate: __DSB(); break; \
+		case targetfpga1: __DSB(); break; /* FPGA control registers CS1 */ \
 		case targettsc1: /*local_delay_us(1); */ break; /* XPT2046 SPI chip select signal */ \
 		case targetxad2: local_delay_us(5); break; /* external SPI device (PA BOARD ADC) */ \
 		case targetctl1: local_delay_us(5); break; /* board control registers chain */ \
-		case targetnone: break; \
+		case targetnone: __DSB(); break; \
 		default: local_delay_us(1); break; \
 		} \
 	} while (0)
