@@ -2549,7 +2549,6 @@ static void audio_setup_wiver(const uint_fast8_t pathi, uint_fast8_t tx)
 		    hfrxpath_t * const path = & rx_paths[pathi];
 			local_rx_iq_fir_t * const fir = & path->rx_iq_fir;
 			calculate_passthrough_fir(fir->FIRCoef_rx_SSB_IQ, fir->window_buf, Ntap_rx_SSB_IQ);
-			ARM_MORPH(arm_scale)(fir->FIRCoef_rx_SSB_IQ, 2, fir->FIRCoef_rx_SSB_IQ, Ntap_rx_SSB_IQ);
 		}
 		#if WITHDSPEXTDDC
 			// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
@@ -2563,7 +2562,6 @@ static void audio_setup_wiver(const uint_fast8_t pathi, uint_fast8_t tx)
 		    //hfrxpath_t * const path = & rx_paths[pathi];
 			local_tx_iq_fir_t * const fir = & txpath->tx_iq_fir;
 			calculate_passthrough_fir(fir->FIRCoef_tx_SSB_IQ, fir->window_buf, Ntap_tx_SSB_IQ);
-			ARM_MORPH(arm_scale)(fir->FIRCoef_tx_SSB_IQ, 2, fir->FIRCoef_tx_SSB_IQ, Ntap_tx_SSB_IQ);
 		}
 		#if WITHDSPEXTDDC
 			// если есть и внешний и внутренний фильтр - внешний перводится в режим passtrough - для тестирования
