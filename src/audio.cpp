@@ -6504,7 +6504,8 @@ FLOAT_t rxdmaproc(uint_fast8_t pathi, IFADCvalue_t iv, IFADCvalue_t qv)
 
 	//ASSERT(gwprof < NPROF);
 	const uint_fast8_t tx = isdspmodetx(glob_dspmodes [0]);
-	const uint_fast8_t dspmode = tx ? DSPCTL_MODE_IDLE : glob_dspmodes [pathi];
+	//const uint_fast8_t dspmode = tx ? DSPCTL_MODE_IDLE : glob_dspmodes [pathi];
+	const uint_fast8_t dspmode = glob_dspmodes [pathi];
 	/* отсрочка установки частоты lo6 на время прохождения сигнала через FPGA FIR - аосле смены частоты LO1 */
 	const FLOAT_t rxFade = fader_shapeStep(& path->rxFader);
 
@@ -6614,9 +6615,21 @@ void rxEqIni(void)
 
 
 static uint_fast8_t txgateInput;
-static uint_fast8_t rxgateflag;
+//static uint_fast8_t rxgateflag;
 static uint_fast8_t shapeCWSSBSidetoneInpit;
 static uint_fast8_t shapeSidetoneInpit;
+
+/* разрешение работы тракта в режиме приёма */
+static int getRxGateOpen(void)
+{
+	return seq_rxfaderopen();
+	//return ! txgateInput && rxgateflag;
+}
+
+unsigned getRxGateOpenTime(void)
+{
+	return NSAITICKS(WITHFADERDELAY);
+}
 
 static unsigned getShapeEnvelop0(void)
 {
@@ -6671,7 +6684,7 @@ void dsp_txpath_set(portholder_t txpathstate, uint_fast8_t sdtnkeydown)
 {
 #if WITHINTEGRATEDDSP
 	txgateInput = (txpathstate & (TXGFV_TX_CW | TXGFV_TX_SSB | TXGFV_TX_AM | TXGFV_TX_NFM)) != 0;
-	rxgateflag = (txpathstate & (TXGFV_RX)) != 0;
+	//rxgateflag = (txpathstate & (TXGFV_RX)) != 0;
 	shapeCWSSBSidetoneInpit = sdtnkeydown;
 #endif /* WITHINTEGRATEDDSP */
 //	PRINTF("%u", shapeCWSSBSidetoneInpit);
@@ -7226,6 +7239,7 @@ hftxpath_init(hftxpath_t * const self)
 	fader_init(& self->shapeSidetone, getshapeSidetoneInpit, getShapeEnvelop0);
 	fader_init(& self->shapeTXEnvelop, getsTXEnvelopInpit, getShapeEnvelop0);
 	fader_init(& self->shapeCWSSBEnvelop, getshapeCWSSBSidetoneInpit, getShapeEnvelop0);
+	fader_init(& self->shapeMoni, seq_monifaderopen, getRxGateOpenTime);
 
 	self->angle_aflotx = 0;
 
@@ -7242,18 +7256,6 @@ hftxpath_init(hftxpath_t * const self)
 #endif /* WITHDSPLOCALTXFIR */
 	voxmeter_initialize(self);
 	agc_tx_initialize(self);	// RX and TX parameters
-}
-
-/* разрешение работы тракта в режиме приёма */
-static int getRxGateOpen(void)
-{
-	return seq_rxfaderopen();
-	return ! txgateInput && rxgateflag;
-}
-
-static unsigned getRxGateOpenTime(void)
-{
-	return NSAITICKS(WITHFADERDELAY);
 }
 
 static void

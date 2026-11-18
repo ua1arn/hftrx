@@ -554,6 +554,12 @@ int seq_rxfaderopen(void)
 	return seqtfadertate [seqstate];
 }
 
+// Разрешение звука самопрослушивания
+int seq_monifaderopen(void)
+{
+	return ! seqtfadertate [seqstate];
+}
+
 /* обработка меню - установить задержку пре переходе на передачу и обратно. */
 void seq_set_rxtxdelay(
 	uint_fast8_t rxtxdelay, 

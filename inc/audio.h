@@ -989,6 +989,7 @@ typedef struct {
 	fader_t shapeSidetone;
 	fader_t shapeTXEnvelop;
 	fader_t shapeCWSSBEnvelop;
+	fader_t shapeMoni;
 
 	unsigned enveloplen0;// = NSAITICKS(5) + 1;	/* Изменяется через меню. */
 

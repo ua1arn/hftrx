@@ -410,6 +410,7 @@ void seq_ask_txstate(
 
 void seq_purge(void);	/* очистка запомненных нажатий до этого момента. Вызывается из user-mode программы */
 int seq_rxfaderopen(void);	// Разрешение звука на приёме
+int seq_monifaderopen(void);	// Разрешение звука самопрослушивания
 uint_fast8_t seq_get_phase(void);	// состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
 
 uint_fast8_t hardware_getshutdown(void);	/* возвращаем запрос на выключение - от компаратора питания */
