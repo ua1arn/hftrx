@@ -464,7 +464,6 @@ static eq_band_t tx_eq [] =
 static FLOAT_t amshapesignalHALF;
 static FLOAT_t amcarrierHALF;
 
-static FLOAT_t shapeSidetoneStep(hftxpath_t * const txpath);		// 0..1
 static FLOAT_t shapeTXEnvelopStep(hftxpath_t * const txpath);	// 0..1
 static FLOAT_t shapeCWSSBEnvelopStep(hftxpath_t * const txpath);	// 0..1
 static uint_fast8_t getTxShapeNotComplete(hftxpath_t * const txpath);
@@ -4798,6 +4797,12 @@ void TX_Audio_System_Init(void)
 //    AUDIO_Send_To_Modulator(tx_output_sample);
 //}
 
+static FLOAT_t mixsamples(FLOAT_t s1, FLOAT_t s2, FLOAT_t s1volume)
+{
+	const FLOAT_t s2volume = 1 - s1volume;
+	return s1 * s1volume + s2 * s2volume;
+}
+
 /* Значения 0..1 */
 
 static FLOAT_t sidetonevolume = 0; //(glob_sidetonelevel / (FLOAT_t) 100);
@@ -4809,8 +4814,9 @@ static FLOAT_t injectsidetone(FLOAT_t v, FLOAT_t sdtn)
 {
 	if (uacoutplayer || btaudioplayer)
 		return sdtn;
-	const FLOAT_t mainvolumerx = 1 - sidetonevolume;
-	return v * mainvolumerx + sdtn * sidetonevolume;
+	return mixsamples(sdtn, v, sidetonevolume);
+//	const FLOAT_t mainvolumerx = 1 - sidetonevolume;
+//	return v * mainvolumerx + sdtn * sidetonevolume;
 }
 
 // sdtn, moni: значение выборки в диапазоне, допустимом для кодека
@@ -4819,14 +4825,16 @@ static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 {
 	if (uacoutplayer || btaudioplayer)
 		return moni;
-	return sdtn * shape + moni * glob_moniflag * (1 - shape);
+	return mixsamples(sdtn, moni, shape);
+//	return sdtn * shape + moni * glob_moniflag * (1 - shape);
 }
 
 // Здесь значение выборки в диапазоне, допустимом для кодека
 static FLOAT_t injectsubtone(FLOAT_t v, FLOAT_t ctcss)
 {
-	const FLOAT_t mainvolumetx = 1 - subtonevolume;
-	return v * mainvolumetx + ctcss * subtonevolume;
+	return mixsamples(ctcss, v, subtonevolume);
+//	const FLOAT_t mainvolumetx = 1 - subtonevolume;
+//	return v * mainvolumetx + ctcss * subtonevolume;
 }
 
 // Поддержка генерации белого шума
@@ -5931,14 +5939,14 @@ void dsp_fillphones(unsigned nsamples)
 	//ASSERT(gwprof < NPROF);
     hftxpath_t * const txpath = & tx_path;
 	const uint_fast8_t dspmodeA = glob_dspmodes [0];
-	const uint_fast8_t tx = isdspmodetx(dspmodeA);
 	unsigned i;
 	while (nsamples --)
 	{
 		FLOAT32P_t b;
 		FLOAT32P_t voice;
 		FLOAT32P_t moni;
-		const FLOAT_t sdtnenvelop = shapeSidetoneStep(txpath);	// 0..1: 0 - monitor, 1 - sidetone
+		const FLOAT_t moniShape = fader_shapeStep(& txpath->shapeMoni);	// Устранение щелчков на приеме при переходе на передачу
+		const FLOAT_t sdtnenvelop = fader_shapeStep(& txpath->shapeSidetone);	// 0..1: 0 - monitor, 1 - sidetone
 		const FLOAT_t sdtnv = get_float_sidetone();
 		ASSERT(sdtnenvelop >= 0 && sdtnenvelop <= 1);
 		ASSERT(sdtnv >= - 1 && sdtnv <= + 1);
@@ -5953,11 +5961,6 @@ void dsp_fillphones(unsigned nsamples)
 			moni.IV =  0;	// левый канал
 			moni.QV = 0; 	// правый канал
 		}
-
-		// Устранение щелчков на приеме при переходе на передачу
-//		const FLOAT_t gate = 1 - sdtnenvelop;
-//		voice.IV *= gate;
-//		voice.QV *= gate;
 
 		/* Замещаем звук из мониторинга на sidetone пропорционально огибающей */
 		const FLOAT_t moniL = mixmonitor(sdtnenvelop, sdtnv, moni.IV);
@@ -5996,23 +5999,15 @@ void dsp_fillphones(unsigned nsamples)
 			}
 		}
 #endif /*  */
-		if (tx)
-		{
-			left = 0;
-			right = 0;
-		}
-		if (1 && tx)
-		{
-			recordsampleSD(moniL, moniR);	// Запись самоконтроля и самопрослушки
-			recordsampleUAC(moniL, moniR);	// Запись самоконтроля и самопрослушки
-		}
-		else
-		{
-			const FLOAT_t recleft = injectsidetone(left, moniL);
-			const FLOAT_t recright = injectsidetone(right, moniR);
-			recordsampleSD(recleft, recright);	// Запись демодулированного сигнала без озвучки клавиш
-			recordsampleUAC(recleft, recright);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-		}
+		const FLOAT_t recleft = mixsamples(moniL, left, moniShape);
+		const FLOAT_t recright = mixsamples(moniR, right, moniShape);
+		recordsampleSD(recleft, recright);	// Запись самоконтроля и самопрослушки
+		recordsampleUAC(recleft, recright);	// Запись самоконтроля и самопрослушки
+
+		// добавляем самопрослушивание
+		left = mixsamples(0, left, moniShape);
+		right = mixsamples(0, right, moniShape);
+
 
 #if WITHLFM
 		b.ivqv [L] = left;
@@ -6639,13 +6634,6 @@ static unsigned getShapeEnvelop0(void)
 static int getshapeSidetoneInpit(void)
 {
 	return shapeSidetoneInpit;
-}
-
-// Формирование огибающей для самоконтрола
-// 0..1
-static FLOAT_t shapeSidetoneStep(hftxpath_t * const txpath)
-{
-	return fader_shapeStep(& txpath->shapeSidetone);
 }
 
 static int getsTXEnvelopInpit(void)
