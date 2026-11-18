@@ -2934,7 +2934,7 @@ void task_unlock_after_switch(void)
 //static void task_stamp(void)
 //{
 //    const uint_fast8_t core = arm_hardware_cpuid();
-//	next_task_irql [core] = GIC_GetInterfacePriorityMask();
+//	next_task_irql [core] = IRQL_GET_CURRENT();
 //	next_task_daif [core] = global_disable_irq_save();
 //}
 
@@ -2963,7 +2963,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 
 		const hwtimcountfast_t t0 = timestamp_getticks();
 		const hwtimcountfast_t td = timestamp_get_ms(timeMS);
-		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) GIC_GetInterfacePriorityMask());
+		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) IRQL_GET_CURRENT());
 		while (timestamp_get_delta(t0) < td)
 			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 	}
@@ -2974,7 +2974,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 		v.td = timestamp_get_ms(timeMS);
 		v.guard = & v;
 		//PRINTF("local_delay_ms: t0=0x%08X, td=0x%08X\n", (unsigned) v.t0, (unsigned) v.td);
-		//PRINTF("2 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) v.t0, (unsigned) v.td, (unsigned) GIC_GetInterfacePriorityMask());
+		//PRINTF("2 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) v.t0, (unsigned) v.td, (unsigned) IRQL_GET_CURRENT());
 		task_sysfn(TASKFN_SUSPEND, & v);
 		//TP();
 	}
@@ -3965,7 +3965,7 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 #endif /* WITHDEBUG */
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-	const IRQL_t oldv = GIC_GetInterfacePriorityMask();
+	const IRQL_t oldv = IRQL_GET_CURRENT();
 //	ASSERT2(oldv != 0, file, line);
 //	ASSERT2(lastirql [core] == oldv, file, line);
 	if (IRQL_LT(newIRQL, oldv))
@@ -3977,7 +3977,7 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	}
 	* oldIrql = oldv;
 	GIC_SetInterfacePriorityMask(newIRQL);
-	ASSERT2(GIC_GetInterfacePriorityMask() == newIRQL, file, line);
+	ASSERT2(IRQL_GET_CURRENT() == newIRQL, file, line);
 
 #elif defined (__CORTEX_M)
 	const IRQL_t oldv = __get_BASEPRI();
@@ -4019,7 +4019,7 @@ void LowerIrql_DEBUG(IRQL_t newIRQL, const char * file, int line)
 
     //ASSERT2(newIRQL != 0, file, line);
 	GIC_SetInterfacePriorityMask(newIRQL);
-	ASSERT2(GIC_GetInterfacePriorityMask() == newIRQL, file, line);
+	ASSERT2(IRQL_GET_CURRENT() == newIRQL, file, line);
 
 #elif defined (__CORTEX_M)
 	__set_BASEPRI(newIRQL);
