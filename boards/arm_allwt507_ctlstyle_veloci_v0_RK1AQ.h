@@ -533,11 +533,10 @@
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
-
 	#define WITHMODESETFULLNFM 1
+	#define WITHRTTY 1			/* подержка работы RTTY */
 //	#define WITHSUBTONES	1	/* tone squelch, выполняется формирование субтона при передаче NFM */
 //	#define WITHLOCKFULL	1	/* блокировка всего управления, а не только перестройки */
-	#define WITHRTTY 1			/* подержка работы RTTY */
 
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
