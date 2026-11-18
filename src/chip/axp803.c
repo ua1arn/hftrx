@@ -38,6 +38,7 @@
 #include <string.h>
 #include "gpio.h"
 #include "formats.h"
+#include "clocks.h"
 
 #include "axp803.h"
 

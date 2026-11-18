@@ -5697,7 +5697,7 @@ static FLOAT_t processifadcsampleIQ(
 		vp0 = filter_firp_rx_SSB_IQ(& path->rx_iq_fir, vp0);
 
 		//END_STAMP();
-		return baseband_demodulator(path, vp0, dspmode, rxFade);
+		return baseband_demodulator(path, vp0, dspmode);
 	}
 	else
 	{

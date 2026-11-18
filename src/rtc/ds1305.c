@@ -13,6 +13,7 @@
 
 #include "formats.h"
 #include "board.h"
+#include "clocks.h"
 #include "spi.h"
 
 #define DS1305_SPIMODE SPIC_MODE3

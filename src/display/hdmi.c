@@ -11,6 +11,7 @@
 #include "formats.h"	// for debug prints
 #include "display.h"
 #include "audio.h"
+#include "clocks.h"
 
 #include <string.h>
 #include "dw-hdmi_modified.h"

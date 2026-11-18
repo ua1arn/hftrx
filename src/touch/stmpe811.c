@@ -15,6 +15,7 @@
 #include "touch.h"
 #include "stmpe811.h"
 #include "board.h"
+#include "clocks.h"
 #include "gpio.h"
 
 #ifndef STMPE811_TWIPTR

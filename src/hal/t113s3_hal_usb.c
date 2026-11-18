@@ -15,6 +15,7 @@
 #include "buffers.h"
 #include "audio.h"
 #include "formats.h"
+#include "clocks.h"
 
 #include "usb_device.h"
 #include "usbd_def.h"

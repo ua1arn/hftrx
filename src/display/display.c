@@ -9,6 +9,7 @@
 
 #include "hardware.h"
 #include "board.h"
+#include "clocks.h"
 #include "display.h"
 #include "fontsys.h"
 #include "formats.h"

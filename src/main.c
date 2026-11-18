@@ -9,6 +9,7 @@
 #include "board.h"
 #include "bootloader.h"
 #include "formats.h"
+#include "clocks.h"
 
 /* вызывается при запрещённых прерываниях. */
 void

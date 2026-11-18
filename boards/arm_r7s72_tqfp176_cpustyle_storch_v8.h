@@ -578,6 +578,7 @@
 	#define SPIHARD_PTR (& RSPI1)
 	#define HARDWARE_FPGA_FIR_SPIHARD_PTR SPIHARD_PTR
 	#define HARDWARE_FPGA_LOADER_SPIHARD_PTR SPIHARD_PTR
+	#define HARDWARE_SPI_FREQ (r7s7_need_function_get_freq())
 
 	// сделать зависящим от target
 	#define SPI_GET_PTR(target) ((targetnone == (target)) ? HARDWARE_FPGA_LOADER_SPIHARD_PTR : SPIHARD_PTR )

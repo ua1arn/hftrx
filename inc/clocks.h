@@ -657,7 +657,44 @@ dbgcountfast_t cpu_getdebugticks(void);	// получение из аппара�
 dbgcountfast_t cpu_getdebugticksfreq(void);	// получение частоты, с которой инкрементируется счетчик
 dbgcountfast_t cpu_getdebugticksmask(void);	// получение маски на разрядность аппаратного счётчика
 
+int thread_userwait(int (checkready)(void * ctx, hwtimcountfast_t tn));
+
 #include "mslist.h"
+
+#define TASK_AFFINITY_ALL (UINT_MAX)
+
+#if CPUSTYLE_A733 && __aarch64__
+	#define TTASK_AFFINITY_AUDIOPROC ((1U << 6) | (1U << 7))
+#else
+#define TTASK_AFFINITY_AUDIOPROC TASK_AFFINITY_ALL
+#endif
+
+void task_scheduler_initialize(void);
+void task_scheduler_start(void);
+void tasks_print(void);
+
+void * thread_create_user(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
+void * thread_create_board(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
+void * thread_create_system(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
+void * thread_create_realtime(int (*fn)(void * ctx), void * ctx, void * rambase, unsigned ramsize, unsigned affinity, const char * name);
+void thread_yield(void);	// хотим завершить выполнение кванта, не дожидаясь прерывания
+
+#define LOCAL_WAITINFINITY UINT32_MAX
+// wait expected state of variable
+// return non-zero: timeout error
+// timeMS may be LOCAL_WAITINFINITY
+int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS);
+int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast8_t errstate, uint_fast32_t timeMS);
+int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS);
+int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t errstate, uint_fast32_t timeMS);
+
+// wait non-zero state of variable
+// return non-zero: timeout error
+// timeMS may be LOCAL_WAITINFINITY
+int local_waitevent(volatile uint8_t * flag, uint_fast32_t timeMS);
+
+void local_delay_us(uint_fast32_t timeUS);	// may be LOCAL_WAITINFINITY
+void local_delay_ms(uint_fast32_t timeMS);	// may be LOCAL_WAITINFINITY
 
 enum ticker_mode
 {

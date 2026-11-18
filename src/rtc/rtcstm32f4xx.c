@@ -10,6 +10,7 @@
 #include "hardware.h"
 #include "formats.h"
 #include "board.h"
+#include "clocks.h"
 
 #if defined(RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_STM32F4xx)
 

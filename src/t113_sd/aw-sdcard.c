@@ -4,6 +4,7 @@
 
 #include "formats.h"
 #include "gpio.h"
+#include "clocks.h"
 
 #if WITHUSESDCARD
 

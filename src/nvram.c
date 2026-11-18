@@ -8,6 +8,7 @@
 #include "hardware.h"
 #include "board.h"
 #include "formats.h"	// for debug
+#include "clocks.h"
 
 #include <stdlib.h>
 #include <string.h>		// for memcpy

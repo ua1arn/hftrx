@@ -8,6 +8,7 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"
 #include "utils.h"
+#include "clocks.h"
 #include <machine/endian.h>
 
 // битовые маски, соответствующие биту в байте по его номеру.

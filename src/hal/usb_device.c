@@ -24,6 +24,7 @@
 #include "board.h"
 #include "formats.h"
 #include "gpio.h"
+#include "clocks.h"
 
 #if WITHUSBHW
 
