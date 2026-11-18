@@ -14,8 +14,6 @@
 #include "clocks.h"
 #include <atomic>
 
-static ticker_t seqticker;
-static adcdone_t voxoribet;
 
 
 // вызывается из SYSTEM обработчика прерываний
@@ -127,17 +125,17 @@ static std::atomic<uint_fast32_t>	seq_rgbeep;			/* разрешение форм
 //static uint_fast8_t	seq_rgbeeptype;		/* вид roger beep */
 
 // sequenser parameers
-static uint_fast32_t rxtxticks;
-static uint_fast32_t txrxticks;
-static uint_fast32_t pretxticks;	// время выключения тракта RX в слуаче совмещённого тракта перед коммутацией на передачу.
-static uint_fast32_t rgbeepticks;	// время формирование roger beep
-static uint_fast32_t faderticks;	/* задержка для включения/выключения тракта приёма */
+static int_fast32_t rxtxticks;
+static int_fast32_t txrxticks;
+static int_fast32_t pretxticks;	// время выключения тракта RX в слуаче совмещённого тракта перед коммутацией на передачу.
+static int_fast32_t rgbeepticks;	// время формирование roger beep
+static int_fast32_t faderticks;	/* задержка для включения/выключения тракта приёма */
 
 static std::atomic<uint_fast32_t> ptt;	// запрос на передачу от пользовательской программы
 static std::atomic<uint_fast32_t> usertxstate;	/* 0 - периферия находимся в состоянии приёма, иначе - в состоянии передачи */
 
 static std::atomic<uint_fast32_t> seqstate;
-static uint_fast32_t seqpushtime;	// Возможные количства "тиков" на передачу и на приём
+static int_fast32_t seqpushtime;	// Возможные количства "тиков" на передачу и на приём
 static LCLSPINLOCK_t seqlock = IRQLSPINLOCK_INIT;
 
 
@@ -362,6 +360,11 @@ seqhastxrequest(void)
 static void 
 seq_spool_ticks(void * ctc)
 {
+	ASSERT(0 <= rxtxticks);
+	ASSERT(0 <= txrxticks);
+	ASSERT(0 <= pretxticks);	// время выключения тракта RX в слуаче совмещённого тракта перед коммутацией на передачу.
+	ASSERT(0 <= rgbeepticks);	// время формирование roger beep
+	ASSERT(0 <= faderticks);	/* задержка для включения/выключения тракта приёма */
 	// Поместить в линию задержки данные со стороны источника манипуляции
 	//
 	const uint_fast8_t keyptt = elkey_get_ptt();	// а так же состояния ручной манипуляции, манипуляции от CAT...
@@ -415,11 +418,12 @@ seq_spool_ticks(void * ctc)
 		break;
 
 	case SEQST_RXFADEOUT:
+		ASSERT(seqpushtime > 0);
 		// Плавное выключение звука на приёме
 		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
 		if (seqhastxrequest() == 0)
 		{
-			seqpushtime = faderticks - seqpushtime;
+			seqpushtime = faderticks - (seqpushtime - 1);
 			seqstate = SEQST_RXFADEIN;
 		}
 		else if (-- seqpushtime == 0)
@@ -439,6 +443,7 @@ seq_spool_ticks(void * ctc)
 		break;
 
 	case SEQST_PUSHED_SWITCHTORX:	
+		ASSERT(seqpushtime > 0);
 		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
 		// ждем перехода на на приём от пользовательской программы
 		// обработка ожиданий времени при переходах между состояниями.
@@ -450,6 +455,7 @@ seq_spool_ticks(void * ctc)
 
 
 	case SEQST_PUSHED_HOLDTX:
+		ASSERT(seqpushtime > 0);
 		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
 		// обработка ожиданий времени при переходах между состояниями.
 		// ждём, когда переключится антенное реле на передачу
@@ -461,6 +467,7 @@ seq_spool_ticks(void * ctc)
 
 	// перед переходом на приём, после отпускания тангенты - формирование звукового сигнала (roger beep)
 	case SEQST_RGBEEP:
+		ASSERT(seqpushtime > 0);
 		seq_txpath_set(txgfp [seqtxgfi [seqstate] [keydowndly]], keydown);	// - аппаратное управление выдачей несущей
 		if (-- seqpushtime != 0)
 		{
@@ -479,6 +486,7 @@ seq_spool_ticks(void * ctc)
 		break;
 
 	case SEQST_PUSHED_WAIT_ACK_TX:
+		ASSERT(seqpushtime > 0);
 		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
 		// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
 		if (-- seqpushtime == 0)
@@ -546,12 +554,13 @@ seq_spool_ticks(void * ctc)
 		break;
 
 	case SEQST_RXFADEIN:
+		ASSERT(seqpushtime > 0);
 		// Плавное включение звука на приёме
 		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
 		if (seqhastxrequest() != 0)
 		{
-			seqpushtime = faderticks - seqpushtime;
-			seqstate = SEQST_RXFADEOUT;
+			seqpushtime = faderticks - (seqpushtime - 1);
+			seqstate = SEQST_RXFADEOUT;	// авключение звука
 		}
 		else if (-- seqpushtime == 0)
 		{
@@ -578,16 +587,16 @@ int seq_monifaderopen(void)
 
 /* обработка меню - установить задержку пре переходе на передачу и обратно. */
 void seq_set_rxtxdelay(
-	uint_fast32_t rxtxdelay,
-	uint_fast32_t txrxdelay,
-	uint_fast32_t pretxdelay,
-	uint_fast32_t fadertime
+	int_fast32_t rxtxdelay,
+	int_fast32_t txrxdelay,
+	int_fast32_t pretxdelay,
+	int_fast32_t fadertime
 	)
 {
-	const uint_fast32_t afaderticks = SEQNTICKS(fadertime);
-	const uint_fast32_t arxtxticks = SEQNTICKS(rxtxdelay); // задержка пре переходе на передачу
-	const uint_fast32_t atxrxticks = SEQNTICKS(txrxdelay); // и обратно
-	const uint_fast32_t apretxticks = SEQNTICKS(pretxdelay); // задержка перед переходом на передачу
+	const int_fast32_t afaderticks = SEQNTICKS(fadertime);
+	const int_fast32_t arxtxticks = SEQNTICKS(rxtxdelay); // задержка пре переходе на передачу
+	const int_fast32_t atxrxticks = SEQNTICKS(txrxdelay); // и обратно
+	const int_fast32_t apretxticks = SEQNTICKS(pretxdelay); // задержка перед переходом на передачу
 	if (arxtxticks != rxtxticks || atxrxticks != txrxticks || apretxticks != pretxticks || afaderticks != faderticks)
 	{
 		IRQL_t oldIrql;
@@ -613,14 +622,34 @@ static void vox_spool(void * ctx)
 #endif /* WITHTX && WITHVOX */
 }
 
+static void diagprint(void * ctx)
+{
+	PRINTF(PSTR("t=%s\n"), seqnames [seqstate]);
+
+}
 /* инициализация сиквенсора и телеграфного ключа. Выполняется при запрещённых прерываниях. */
 void seq_initialize(void)
 {
-	ticker_initialize(& seqticker, SEQNTICKS(SEQ_TICKS_PERIOD), seq_spool_ticks, NULL, "sequencer");
-	ticker_add(& seqticker);
+#if WITHDEBUG
+	if (0)
+	{
+		static ticker_t tkdebug;
+		ticker_initialize(& tkdebug, 500, diagprint, NULL, "diagprint");
+		ticker_add(& tkdebug);
+	}
+#endif
+	{
+		static ticker_t seqticker;
+		ticker_initialize(& seqticker, SEQNTICKS(SEQ_TICKS_PERIOD), seq_spool_ticks, NULL, "sequencer");
+		ticker_add(& seqticker);
+	}
 #if WITHTX && WITHVOX
-	adcdone_initialize(& voxoribet, vox_spool, NULL);
-	adcdone_add(& voxoribet);
+	{
+		static adcdone_t voxoribet;
+		adcdone_initialize(& voxoribet, vox_spool, NULL);
+		adcdone_add(& voxoribet);
+
+	}
 #endif /* WITHTX && WITHVOX */
 
 	hardware_ptt_port_initialize();		// инициализация входов управления режимом передачи и запрета передачи

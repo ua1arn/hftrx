@@ -395,10 +395,10 @@ uint_fast8_t vox_getbkin(void);
 
 /* обработка меню - установить задержку пре переходе на передачу и обратно. */
 void seq_set_rxtxdelay(
-	uint_fast32_t rxtxdelay,
-	uint_fast32_t txrxdelay,
-	uint_fast32_t pretxdelay,
-	uint_fast32_t fadertime
+	int_fast32_t rxtxdelay,
+	int_fast32_t txrxdelay,
+	int_fast32_t pretxdelay,
+	int_fast32_t fadertime
 	);
 // запрос из user-mode части программы на переход на передачу и для для tune.
 void seq_txrequest(uint_fast8_t ptt);

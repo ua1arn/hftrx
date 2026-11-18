@@ -194,7 +194,6 @@ enum
  при наполнении таблицы использовалась статья http://en.wikipedia.org/wiki/Morse_code
  */
 static uint_fast16_t
-
 get_morse(
 	uint_fast8_t c		// символ для передачи (только верхний регистр).
 	)
@@ -502,7 +501,6 @@ get_morse(
 // на нажатость точек
 // в автоматическом режиме
 static uint_fast8_t 
-
 dit_auto(
 	elkey_t * const elkey,
 	uint_fast8_t pl /* hardware paddle value */
@@ -519,7 +517,6 @@ dit_auto(
 // на нажатость тире
 // в автоматическом режиме
 static uint_fast8_t 
-
 dash_auto(
 	elkey_t * const elkey,
 	uint_fast8_t pl /* hardware paddle value */
@@ -538,7 +535,6 @@ dash_auto(
 // на нажатость точек
 // в ручном режиме
 static uint_fast8_t 
-
 dit_manual(
 	uint_fast8_t pl /* hardware paddle value */
 	)
@@ -552,7 +548,6 @@ dit_manual(
 // на нажатость тире
 // в ручном режиме
 static uint_fast8_t 
-
 dash_manual(
 	uint_fast8_t pl /* hardware paddle value */
 	)
