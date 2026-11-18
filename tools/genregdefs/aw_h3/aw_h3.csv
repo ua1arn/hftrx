@@ -48,3 +48,7 @@
 #irq; USB20_HOST3_OHCI 111
 
 #typeend;
+
+#type; CNT64;
+#base; CNT64 0x01F01E80; Timestamp Control Register
+#typeend;

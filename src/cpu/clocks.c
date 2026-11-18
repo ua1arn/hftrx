@@ -2252,7 +2252,7 @@ void sysinit_hwtimer_initialize(void)
 #else
 	__set_CNTFRQ(f);
 #endif
-	TIMESTAMP_CTRL->CNT_FREQID_REG = f;
+	//CNT64->CNT64_FREQID_REG = f;
 }
 
 // Allwinner H3 Один счётчик на весь чип
@@ -13395,6 +13395,40 @@ hwtimcountfast_t timestamp_getmask(void)
 hwtimcountfast_t timestamp_getfreq(void)
 {
 	return TIMESTAMP_CTRL->CNT_FREQID_REG;
+}
+
+#elif CPUSTYLE_ALLWINNER && defined (CNT64)
+// Allwinner timestamp registers
+
+hwtimcountfast_t timestamp_getticks(void)
+{
+	uint_fast32_t high1, high2;
+
+	high1 = CNT64->CNT64_HI_REG;
+	for (;;)
+	{
+		uint_fast32_t low;
+
+		low = CNT64->CNT64_LOW_REG;
+		high2 = CNT64->CNT64_HI_REG;
+		if (high1 == high2)
+			return ((uint_fast64_t) high2 << 32) | low;
+		low = CNT64->CNT64_LOW_REG;
+		high1 = CNT64->CNT64_HI_REG;
+		if (high1 == high2)
+			return ((uint_fast64_t) high1 << 32) | low;
+	}
+
+}
+
+hwtimcountfast_t timestamp_getmask(void)
+{
+	return UINT64_C(0xFFFFFFFFFFFFFFFF);	// TIMESTAMP_STA->CNT width is 64
+}
+
+hwtimcountfast_t timestamp_getfreq(void)
+{
+	return (hwtimcountfast_t) WITHCPUXTAL;
 }
 
 #elif defined STGENR

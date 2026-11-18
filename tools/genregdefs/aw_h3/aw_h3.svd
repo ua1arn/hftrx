@@ -702,6 +702,40 @@
   </registers>
   </peripheral>
   <peripheral>
+  <name>CNT64</name>
+  <description></description>
+  <baseAddress>0x01F01E80</baseAddress>
+  <registers>
+   <register>
+    <name>CNT64_CTRL_REG</name>
+    <displayName>CNT64_CTRL_REG</displayName>
+    <description>Timestamp Control Register</description>
+    <addressOffset>0x000</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT64_LOW_REG</name>
+    <displayName>CNT64_LOW_REG</displayName>
+    <description>Counter Low Register</description>
+    <addressOffset>0x008</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+   <register>
+    <name>CNT64_HI_REG</name>
+    <displayName>CNT64_HI_REG</displayName>
+    <description>Counter High Register</description>
+    <addressOffset>0x00C</addressOffset>
+    <size>0x20</size>
+    <access>read-write</access>
+    <resetValue>0x00000000</resetValue>
+   </register>
+  </registers>
+  </peripheral>
+  <peripheral>
   <name>CPUCFG</name>
   <description>CPU Configuration</description>
   <baseAddress>0x01F01C00</baseAddress>

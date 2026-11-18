@@ -141,6 +141,7 @@ typedef enum IRQn
 #define RTC_BASE ((uintptr_t) 0x01F00000)             /*!< RTC  Base */
 #define R_PRCM_BASE ((uintptr_t) 0x01F01400)          /*!< R_PRCM  Base */
 #define CPUCFG_BASE ((uintptr_t) 0x01F01C00)          /*!< CPUCFG CPU Configuration Base */
+#define CNT64_BASE ((uintptr_t) 0x01F01E80)           /*!< CNT64  Base */
 #define R_UART_BASE ((uintptr_t) 0x01F02800)          /*!< UART  Base */
 #define GPIOL_BASE ((uintptr_t) 0x01F02C00)           /*!< GPIO  Base */
 
@@ -267,6 +268,17 @@ typedef struct CCU_Type
     __IOM uint32_t PS_CNT_REG;                        /*!< Offset 0x304 PS Counter Register */
          RESERVED(0x308[0x0400 - 0x0308], uint8_t)
 } CCU_TypeDef; /* size of structure = 0x400 */
+/*
+ * @brief CNT64
+ */
+/*!< CNT64  */
+typedef struct CNT64_Type
+{
+    __IOM uint32_t CNT64_CTRL_REG;                    /*!< Offset 0x000 Timestamp Control Register */
+         RESERVED(0x004[0x0008 - 0x0004], uint8_t)
+    __IOM uint32_t CNT64_LOW_REG;                     /*!< Offset 0x008 Counter Low Register */
+    __IOM uint32_t CNT64_HI_REG;                      /*!< Offset 0x00C Counter High Register */
+} CNT64_TypeDef; /* size of structure = 0x010 */
 /*
  * @brief CPUCFG
  */
@@ -1562,6 +1574,7 @@ typedef struct USB_OHCI_Capability_Type
 #define RTC ((RTC_TypeDef *) RTC_BASE)                /*!< RTC  register set access pointer */
 #define R_PRCM ((R_PRCM_TypeDef *) R_PRCM_BASE)       /*!< R_PRCM  register set access pointer */
 #define CPUCFG ((CPUCFG_TypeDef *) CPUCFG_BASE)       /*!< CPUCFG CPU Configuration register set access pointer */
+#define CNT64 ((CNT64_TypeDef *) CNT64_BASE)          /*!< CNT64  register set access pointer */
 #define R_UART ((UART_TypeDef *) R_UART_BASE)         /*!< R_UART  register set access pointer */
 #define GPIOL ((GPIO_TypeDef *) GPIOL_BASE)           /*!< GPIOL  register set access pointer */
 

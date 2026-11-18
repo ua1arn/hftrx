@@ -1,0 +1,8 @@
+
+#type; CNT64;
+
+#regdef; CNT64_CTRL_REG; 0x0000; Timestamp Control Register
+#regdef; CNT64_LOW_REG; 0x0008; Counter Low Register
+#regdef; CNT64_HI_REG; 0x000C; Counter High Register
+
+#typeend;
