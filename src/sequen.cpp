@@ -49,7 +49,7 @@ enum {
 static const uint_fast8_t seqtxgfi [SEQST_MAX] [2] =
 {
 	{ TXGFI_RX,			TXGFI_RX,		},	// SEQST_INITIALIZE,		// ничего не передается - начальное состояние сиквенсора
-	{ TXGFI_TRANSIENT,	TXGFI_TRANSIENT, },	// SEQST_RXFADEOUT,			// Плавное выключение звука на приёме
+	{ TXGFI_RX,			TXGFI_RX, 		},	// SEQST_RXFADEOUT,			// Плавное выключение звука на приёме
 	{ TXGFI_TRANSIENT,	TXGFI_TRANSIENT, }, // SEQST_PUSHED_WAIT_ACK_TX,// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
 	{ TXGFI_TRANSIENT,	TXGFI_TRANSIENT, }, // SEQST_WAIT_ACK_TX,		// ждем перехода на передачу от пользовательской программы
 	{ TXGFI_TRANSIENT,	TXGFI_TRANSIENT, }, // SEQST_PUSHED_HOLDTX,		// ждём, когда переключится антенное реле на передачу
@@ -411,11 +411,8 @@ seq_spool_ticks(void * ctc)
 		break;
 
 	case SEQST_RXFADEOUT:
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
 		// Плавное выключение звука на приёме
-		break;
-
-	case SEQST_RXFADEIN:
-		// Плавное включение звука на приёме
 		break;
 
 	case SEQST_PUSHED_SWITCHTORX:	
@@ -514,12 +511,21 @@ seq_spool_ticks(void * ctc)
 	case SEQST_SWITCHTORX:
 		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
 		// ожидание перепрограммирования переиферии на приём - пока переключаем SPI регистры
-	// ожидание перепрограммирования переиферии на приём - пока переключаем SPI регистры
-	// ждём перехода user mode программы на приём
+		// ждём перехода user mode программы на приём
 		if (usertxstate == 0)
 		{
 			// уже всё перепрограммировалось на приём
 			// переход в состояние ожидания
+			seqstate = SEQST_RXFADEIN;
+			seqpushtime = faderticks;
+		}
+		break;
+
+	case SEQST_RXFADEIN:
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
+		// Плавное включение звука на приёме
+		if (-- seqpushtime == 0)
+		{
 			seqstate = SEQST_INITIALIZE;
 		}
 		break;
