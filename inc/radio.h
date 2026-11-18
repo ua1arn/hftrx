@@ -35,7 +35,7 @@ extern "C" {
 	#define DEFAULTDIALFREQ	7012000L
 #endif
 
-#define WITHFADERDELAY		10		/* задержка для включения/выключения тракта приёма - и прохода сигнала в фильтрах FPGA */
+#define WITHMAXFADERDELAY	100		/* задержка для включения/выключения тракта приёма - и прохода сигнала в фильтрах FPGA */
 #define WITHMAXRXTXDELAY	100
 #define WITHMAXTXRXDELAY	100
 

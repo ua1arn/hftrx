@@ -246,7 +246,7 @@ uint_fast8_t vox_getbkin(void)
 
 ////////////////////////////////
 
-enum { QUEUEUESIZE = 2 * (SEQNTICKS(WITHMAXRXTXDELAY) + SEQNTICKS(WITHMAXTXRXDELAY) * 2 + SEQNTICKS(WITHFADERDELAY) + 4) };
+enum { QUEUEUESIZE = 2 * (SEQNTICKS(WITHMAXRXTXDELAY) + SEQNTICKS(WITHMAXTXRXDELAY) * 2 + SEQNTICKS(WITHMAXFADERDELAY) + 4) };
 
 // очередь организована как массив битов
 static uint8_t keyqueuebuff [(QUEUEUESIZE + 7) / 8];
@@ -256,7 +256,7 @@ static unsigned keyqueueget;
 
 static void keyqueuein(uint_fast8_t v)
 {
-	const uint_fast8_t next = (keyqueueput + 1) % QUEUEUESIZE;
+	const unsigned next = (keyqueueput + 1) % QUEUEUESIZE;
 	if (next != keyqueueget)
 	{
 		// очередь организована как массив битов
@@ -396,8 +396,21 @@ seq_spool_ticks(void * ctc)
 		if (seqhastxrequest() != 0)
 		{
 			// Если запрос на передачу появился - выполняем всю последовательность действий до перехода на передачу.
-			seqpushtime = faderticks;
-			seqstate = SEQST_RXFADEOUT;
+			if ((seqpushtime = faderticks) != 0)
+			{
+				// Плавное выключение звука на приёме
+				seqstate = SEQST_RXFADEOUT;
+			}
+			else if ((seqpushtime = pretxticks) == 0)
+			{
+				// обычная работа
+				seqstate = SEQST_WAIT_ACK_TX;
+			}
+			else
+			{
+				// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
+				seqstate = SEQST_PUSHED_WAIT_ACK_TX;
+			}
 		}
 		break;
 
@@ -463,7 +476,7 @@ seq_spool_ticks(void * ctc)
 			/* ждём указанное время и перепрограммируем (через SPI) на приём */
 			seqstate = SEQST_PUSHED_SWITCHTORX;	// ждем перехода на на приём от пользовательской программы
 		}
-	break;
+		break;
 
 	case SEQST_PUSHED_WAIT_ACK_TX:
 		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
@@ -526,7 +539,7 @@ seq_spool_ticks(void * ctc)
 		if (usertxstate == 0)
 		{
 			// уже всё перепрограммировалось на приём
-			// переход в состояние ожидания
+			// Плавное включение звука на приёме
 			seqstate = SEQST_RXFADEIN;
 			seqpushtime = faderticks;
 		}
@@ -542,6 +555,9 @@ seq_spool_ticks(void * ctc)
 		}
 		else if (-- seqpushtime == 0)
 		{
+			// звук восстановили
+			// уже всё перепрограммировалось на приём
+			// переход в состояние ожидания
 			seqstate = SEQST_INITIALIZE;
 		}
 		break;
@@ -580,8 +596,9 @@ void seq_set_rxtxdelay(
 		rxtxticks = arxtxticks;
 		txrxticks = atxrxticks;
 		pretxticks = apretxticks;
+
 		keyqueueclear();
-		uint_fast8_t n = (pretxticks + rxtxticks) * 2 + faderticks;
+		uint_fast8_t n = (apretxticks + arxtxticks) * 2 + afaderticks;
 		while (n --)
 			keyqueuein(0);
 		IRQLSPIN_UNLOCK(& seqlock, oldIrql);
@@ -613,7 +630,7 @@ void seq_initialize(void)
 	seq_txpath_set(TXGFV_RX, 0);	// - аппаратное управление выдачей несущей - в состояние приём
 	board_sidetone_enable(0); // - остановить выдачу сигнала самоконтроля
 
-	faderticks = SEQNTICKS(WITHFADERDELAY);
+	faderticks = SEQNTICKS(WITHMAXFADERDELAY);
 	rxtxticks = SEQNTICKS(WITHMAXRXTXDELAY);	// 15 ms задержка пре переходе на передачу
 	txrxticks = SEQNTICKS(WITHMAXTXRXDELAY);	// 15 ms задержка пре переходе на приём
 	pretxticks = SEQNTICKS(WITHMAXTXRXDELAY);

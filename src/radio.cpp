@@ -7038,12 +7038,12 @@ enum
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 #if WITHIF4DSP
-	static uint_fast8_t gfadertime = WITHFADERDELAY;	/* в единицах mS. модифицируется через меню - задержка на проход сигнала через фильтры FPGA */
+	static uint_fast8_t gfadertime = 10;	/* в единицах mS. модифицируется через меню - задержка на проход сигнала через фильтры FPGA */
 	unsigned hamradio_get_rxfadertime(void) { return NSAITICKS(gfadertime); }
 	static const struct paramdefdef xgfadertime = {
-		QLABEL3("FADE DLY", "FADE Delay", "FADE DELAY"),  0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
+		QLABEL3("FADE DLY", "FADE Delay", "FADE DELAY"),  0, RJ_UNSIGNED, ISTEP1,	/* 5 mS step of changing value */
 		ITEM_VALUE,
-		5, WITHMAXRXTXDELAY,						/* 5..100 ms delay */
+		1, WITHMAXRXTXDELAY,						/* 5..100 ms delay */
 		OFFSETOF(struct nvmap, gfadertime),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
@@ -7054,7 +7054,7 @@ enum
 
 	static uint_fast8_t grxtxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода прём-передача */
 	static const struct paramdefdef xgrxtxdelay = {
-		QLABEL3("RXTX DLY", "RX-TX Delay", "RXTX DELAY"),  0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
+		QLABEL3("RXTX DLY", "RX-TX Delay", "RXTX DELAY"),  0, RJ_UNSIGNED, ISTEP1,	/* 5 mS step of changing value */
 		ITEM_VALUE,
 		5, WITHMAXRXTXDELAY,						/* 5..100 ms delay */
 		OFFSETOF(struct nvmap, grxtxdelay),
@@ -7066,7 +7066,7 @@ enum
 	};
 	static uint_fast8_t gtxrxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
 	static const struct paramdefdef xgtxrxdelay = {
-		QLABEL3("TXRX DLY", "RX-TX Delay", "TXRX DELAY"),  0, RJ_UNSIGNED, ISTEP5,	/* 5 mS step of changing value */
+		QLABEL3("TXRX DLY", "RX-TX Delay", "TXRX DELAY"),  0, RJ_UNSIGNED, ISTEP1,	/* 5 mS step of changing value */
 		ITEM_VALUE,
 		5, WITHMAXTXRXDELAY,						/* 5..100 ms delay */
 		OFFSETOF(struct nvmap, gtxrxdelay),
