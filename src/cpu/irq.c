@@ -1959,22 +1959,23 @@ static void context_syscall(struct thread_item_tag * thread, unsigned code, irq_
     irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
 	task_syscall_handler(thread, (unsigned) frame_bottom->r0, (void *) frame_bottom->r1);
 }
-// user-mode entry
-	static __attribute__((noinline)) uint32_t task_sysfn_old(unsigned arg0, volatile void * arg1)
-	{
-		uint32_t result = 0;
-		__ASM volatile(
-			"\t" "mov r0,%1\n"
-			"\t" "mov r1,%2\n"
-			"\t" "SVC 0x0000\n"
-			"\t" "mov %0,r0\n":
-			"=r"(result) :		// OutputOperands
-			"r"(arg0), "ra"(arg1) : // InputOperands
-			"r0", "r1", "memory", "cc"	// Clobbers
-		);
 
-		return result;
-	}
+// user-mode entry
+static __attribute__((noinline)) uint32_t task_sysfn_old(unsigned arg0, volatile void * arg1)
+{
+	uint32_t result = 0;
+	__ASM volatile(
+		"\t" "mov r0,%1\n"
+		"\t" "mov r1,%2\n"
+		"\t" "SVC 0x0000\n"
+		"\t" "mov %0,r0\n":
+		"=r"(result) :		// OutputOperands
+		"r"(arg0), "ra"(arg1) : // InputOperands
+		"r0", "r1", "memory", "cc"	// Clobbers
+	);
+
+	return result;
+}
 
 // user-mode entry
 static __attribute__((noinline)) uint32_t task_sysfnS(unsigned arg0, void * arg1)
@@ -2056,6 +2057,7 @@ typedef struct {
     uint32_t reserved; /* Highest address — Padding to maintain 8-byte alignment */
 } __attribute__((packed)) irq_stack_frame_top_t;
 
+typedef uint32_t DAIF_t;
 
 // native size return value
 // scheduler-mode entry - set svc exit code
@@ -3305,18 +3307,18 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 void __NO_RETURN VIRQ_Handler(void * frame)
 {
 #if WITHRTOS
-	if (threads_not_started) {
+	if (IRQL_LT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
 		IRQ_Handler_GIC();		// Group 1 handler
 		run_notask_curr(frame);	// __NO_RETURN
+	} else {
+		const uint_fast8_t core = arm_hardware_cpuid();
+		const unsigned aff = thread_set_affinity(frame, 1U << core, core);
+
+		IRQ_Handler_GIC();		// Group 1 handler
+
+		thread_set_affinity(frame, aff, core);
+		run_task_curr(task_scheduler(frame));	// __NO_RETURN
 	}
-
-	const uint_fast8_t core = arm_hardware_cpuid();
-	const unsigned aff = thread_set_affinity(frame, 1U << core, core);
-
-	IRQ_Handler_GIC();		// Group 1 handler
-
-	thread_set_affinity(frame, aff, core);
-	run_task_curr(task_scheduler(frame));	// __NO_RETURN
 #else /* WITHRTOS */
 	IRQ_Handler_GIC();		// Group 1 handler
 	run_notask_curr(frame);	// __NO_RETURN
@@ -3329,18 +3331,18 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
 #if WITHRTOS
-	if (threads_not_started) {
+	if (IRQL_LT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
 		FIQ_Handler_GIC();		// Group 0 handler
 		run_notask_curr(frame);	// __NO_RETURN
+	} else {
+		const uint_fast8_t core = arm_hardware_cpuid();
+		const unsigned aff = thread_set_affinity(frame, 1U << core, core);
+
+		FIQ_Handler_GIC();		// Group 0 handler
+
+		thread_set_affinity(frame, aff, core);
+		run_task_curr(task_scheduler(frame));	// __NO_RETURN
 	}
-
-	const uint_fast8_t core = arm_hardware_cpuid();
-	const unsigned aff = thread_set_affinity(frame, 1U << core, core);
-
-	FIQ_Handler_GIC();		// Group 0 handler
-
-	thread_set_affinity(frame, aff, core);
-	run_task_curr(task_scheduler(frame));	// __NO_RETURN
 #else /* WITHRTOS */
 	FIQ_Handler_GIC();		// Group 0 handler
 	run_notask_curr(frame);	// __NO_RETURN

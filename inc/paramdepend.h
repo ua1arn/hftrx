@@ -806,7 +806,8 @@ extern "C" {
 
 	enum
 	{
-		PRIOv_IPC = 0,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
+		PRIOv_ENCODER = 0,
+		PRIOv_IPC,		/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
 		PRIOv_IPC_ONLY,
 		PRIOv_OVERREALTIME,
 		PRIOv_REALTIME,
@@ -829,13 +830,14 @@ extern "C" {
 
 	*/
 
-	#define GIC_BINARY_POINT 2//(GIC_GetBinaryPoint())
+	#define GIC_BINARY_POINT 2	//(GIC_GetBinaryPoint())
 
 	#define GICD_ENCODE_PRIORITY(priov) 	((uint32_t) ((priov) << (GIC_BINARY_POINT + 1)))	// Value for GICDistributor->IPRIORITYR[n]
 	#define GICI_ENCODE_IRQL(priov) 		((IRQL_t) ((priov) << (GIC_BINARY_POINT + 1)))	// value for GICInterface->PMR
 	#define GICI_DECODE_IRQL(irql) 			(((uint32_t) (irql) >> (GIC_BINARY_POINT + 1)))	// value from GICInterface->PMR
 
 	// value for GIC_SetInterfacePriorityMask
+	#define IRQL_ENCODER 		(GICI_ENCODE_IRQL(PRIOv_ENCODER))
 	#define IRQL_IPC 			(GICI_ENCODE_IRQL(PRIOv_IPC))
 	#define IRQL_IPC_ONLY 		(GICI_ENCODE_IRQL(PRIOv_IPC_ONLY))
 	#define IRQL_OVERREALTIME 	(GICI_ENCODE_IRQL(PRIOv_OVERREALTIME))
@@ -847,6 +849,7 @@ extern "C" {
 
 	// A lower priority value indicating a higher priority
 	// Value for GICD
+	#define ARM_ENCODER_PRIORITY		(GICD_ENCODE_PRIORITY(PRIOv_ENCODER))
 	#define ARM_IPC_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_IPC))
 	#define ARM_OVERREALTIME_PRIORITY	(GICD_ENCODE_PRIORITY(PRIOv_OVERREALTIME))	/* валкодер и телеграф */
 	#define ARM_REALTIME_PRIORITY		(GICD_ENCODE_PRIORITY(PRIOv_REALTIME))	/* звук */
