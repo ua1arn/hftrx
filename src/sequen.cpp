@@ -112,15 +112,15 @@ static const char * const seqnames [SEQST_MAX] =
 // так как максимальная задержка VOX - 2.5 секунды (500 тиков),
 // и максимальная задержка QSK - 1.6 секунды (320 тиков).
 
-static	uint_fast32_t bkin_delay;	/* задержка отпускания qsk в тиках (смотри TICKS_FREQUENCY) */
-static 	uint_fast32_t vox_delay;	/* задержка отпускания vox в тиках (смотри TICKS_FREQUENCY) */
+static	uint_fast32_t bkin_ticks;	/* задержка отпускания qsk в тиках (смотри TICKS_FREQUENCY) */
+static 	uint_fast32_t vox_ticks;	/* задержка отпускания vox в тиках (смотри TICKS_FREQUENCY) */
 
 static std::atomic<uint_fast32_t> bkin_count;
 static std::atomic<uint_fast32_t> vox_count;
 
 #if WITHVOX
-static uint_fast8_t	vox_level;	/* уровень срабатывания VOX */
-static uint_fast8_t	avox_level;	/* уровень срабатывания anti-VOX */
+static int	vox_level;	/* уровень срабатывания VOX */
+static int	avox_level;	/* уровень срабатывания anti-VOX */
 #endif /* WITHVOX */
 
 static std::atomic<uint_fast32_t>	seq_rgbeep;			/* разрешение формирование roger beep */
@@ -165,7 +165,7 @@ void vox_set_levels(uint_fast8_t vlevel, uint_fast8_t alevel)
 
 }
 
-static int vscale(uint_fast8_t v, uint_fast8_t mag)
+static int vscale(int v, int mag)
 {
 	return v * mag / 100;
 }
@@ -178,19 +178,19 @@ static void vox_probe(uint_fast8_t vlevel, uint_fast8_t alevel)
 	// vlevel, alevel - значение 0..UINT8_MAX
 	if (vscale(vlevel, vox_level) > vscale(alevel, avox_level))
 	{
-		vox_count = vox_delay;
+		vox_count = vox_ticks;
 	}
 }
 
 /* разрешение (не-0) или запрещение (0) работы vox. */
 void 
 seq_set_vox_time(
-	uint_fast8_t vox_delay_tens	/* задержка отпускания vox в 1/100 секундных интервалах */
+	int_fast32_t argvox_delay_tens	/* задержка отпускания vox в 1/100 секундных интервалах */
 	)
 {
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
-	vox_delay = SEQNTICKS(10 * vox_delay_tens);
+	vox_ticks = SEQNTICKS(10 * argvox_delay_tens);
 	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }
 
@@ -199,12 +199,12 @@ seq_set_vox_time(
 /* разрешение (не-0) или запрещение (0) работы BREAK-IN. */
 void 
 seq_set_bkin_time(
-	uint_fast8_t bkin_delay_tens	/* задержка отпускания break-in в 1/100 секундных интервалах */
+	int_fast32_t abkin_delay	/* задержка отпускания break-in в 1/100 секундных интервалах */
 	)
 {
 	IRQL_t oldIrql;
 	IRQLSPIN_LOCK(& seqlock, & oldIrql, IRQL_SYSTEM);
-	bkin_delay = SEQNTICKS(10 * bkin_delay_tens);
+	bkin_ticks = SEQNTICKS(abkin_delay);
 	IRQLSPIN_UNLOCK(& seqlock, oldIrql);
 }
 
@@ -226,8 +226,8 @@ void
 vox_initialize(void)
 {
 	//bkin_count = vox_count = vox_count_stk = 0;
-	bkin_delay = SEQNTICKS(250);
-	vox_delay = SEQNTICKS(1000); /* Одна секунда */
+	bkin_ticks = SEQNTICKS(250);
+	vox_ticks = SEQNTICKS(1000); /* Одна секунда */
 	//vox_level = avox_level = 0;
 	//seq_voxenable = 0;
 	//seq_cwenable = 0;
@@ -246,7 +246,7 @@ uint_fast8_t vox_getbkin(void)
 
 ////////////////////////////////
 
-enum { QUEUEUESIZE = 2 * (SEQNTICKS(WITHMAXRXTXDELAY) + SEQNTICKS(WITHMAXTXRXDELAY) * 2 + SEQNTICKS(WITHMAXFADERDELAY) + 4) };
+enum { QUEUEUESIZE = 5 * SEQNTICKS(WITHMAXRXTXDELAY) + SEQNTICKS(WITHMAXTXRXDELAY) * 2 + SEQNTICKS(WITHMAXFADERDELAY) };
 
 // очередь организована как массив битов
 static uint8_t keyqueuebuff [(QUEUEUESIZE + 7) / 8];
@@ -368,7 +368,7 @@ seq_spool_ticks(void * ctc)
 	const uint_fast8_t keydown = elkey_get_output();	// а так же состояния ручной манипуляции, манипуляции от CAT...
 	if ((keydown || keyptt))
 	{
-		bkin_count = bkin_delay;
+		bkin_count = bkin_ticks;
 	}
 
 	// Выдача сигнала самоконтроля в зависимости от состояния сиквенсора.
@@ -578,10 +578,10 @@ int seq_monifaderopen(void)
 
 /* обработка меню - установить задержку пре переходе на передачу и обратно. */
 void seq_set_rxtxdelay(
-	uint_fast8_t rxtxdelay, 
-	uint_fast8_t txrxdelay,
-	uint_fast8_t pretxdelay,
-	uint_fast8_t fadertime
+	uint_fast32_t rxtxdelay,
+	uint_fast32_t txrxdelay,
+	uint_fast32_t pretxdelay,
+	uint_fast32_t fadertime
 	)
 {
 	const uint_fast32_t afaderticks = SEQNTICKS(fadertime);
@@ -598,7 +598,7 @@ void seq_set_rxtxdelay(
 		pretxticks = apretxticks;
 
 		keyqueueclear();
-		uint_fast8_t n = (apretxticks + arxtxticks) + afaderticks;
+		uint_fast32_t n = (apretxticks + arxtxticks + afaderticks) + SEQNTICKS(40);
 		while (n --)
 			keyqueuein(0);
 		IRQLSPIN_UNLOCK(& seqlock, oldIrql);
@@ -636,7 +636,7 @@ void seq_initialize(void)
 	pretxticks = SEQNTICKS(WITHMAXTXRXDELAY);
 
 	keyqueueclear();
-	uint_fast8_t n = (pretxticks + rxtxticks) * 2;	// Умножение на 2 просто "от балды", в некоторых состояниях основного цикла задержка больше той, что в скобках.
+	uint_fast32_t n = (pretxticks + rxtxticks) * 2 + faderticks;	// Умножение на 2 просто "от балды", в некоторых состояниях основного цикла задержка больше той, что в скобках.
 	while (n --)
 		keyqueuein(0);
 	

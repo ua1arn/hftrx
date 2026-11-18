@@ -4291,7 +4291,7 @@ struct nvmap {
 	#endif /* WITHVOX */
 
 	uint8_t gbkinenable;	/* автоматическое управление передатчиком (от телеграфного манипулятора) */
-	uint8_t gbkindelay;	/* задержка отпускания BREAK-IN */
+	uint16_t gbkindelay;	/* задержка отпускания BREAK-IN */
 
 	uint8_t gtxgate;	/* разрешение предусилителя */
 	uint8_t grgbeep;	/* разрешение (не-0) или запрещение (0) формирования roger beep */
@@ -7066,7 +7066,7 @@ enum
 	};
 	static uint_fast8_t gtxrxdelay = 25;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
 	static const struct paramdefdef xgtxrxdelay = {
-		QLABEL3("TXRX DLY", "RX-TX Delay", "TXRX DELAY"),  0, RJ_UNSIGNED, ISTEP1,	/* 5 mS step of changing value */
+		QLABEL3("TXRX DLY", "TX-RX Delay", "TXRX DELAY"),  0, RJ_UNSIGNED, ISTEP1,	/* 5 mS step of changing value */
 		ITEM_VALUE,
 		5, WITHMAXTXRXDELAY,						/* 5..100 ms delay */
 		OFFSETOF(struct nvmap, gtxrxdelay),
@@ -7097,16 +7097,16 @@ enum
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	static uint_fast8_t gbkindelay = 10;	/* в десятках mS. модифицируется через меню - задержка отпускания BREAK-IN */
+	static uint_fast16_t gbkindelay = 100;	/* в единицах mS. модифицируется через меню - задержка отпускания BREAK-IN */
 	static const struct paramdefdef xgbkindelay =
 	{
-		QLABEL("CW DELAY"),  2, RJ_UNSIGNED, ISTEP1,	/* задержка в десятках ms */
+		QLABEL("CW DELAY"),  3, RJ_UNSIGNED, ISTEP5,	/* задержка в единицах ms */
 		ITEM_VALUE,
-		5, 160,						/* 0.05..1.6 секунды */
+		5, 500,						/* 0.005..0.5 секунды */
 		OFFSETOF(struct nvmap, gbkindelay),
 		getselector0, nvramoffs0, valueoffs0,
-		NULL,
 		& gbkindelay,
+		NULL,
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
@@ -14195,15 +14195,15 @@ updateboard_noui(
 	#endif /* WITHANTSELECT || WITHANTSELECTRX */
 	#if WITHELKEY
 		board_set_wpm(param_val(& xgelkeywpm));	/* скорость электронного ключа */
+		elkey_set_format(param_val(& xgdashratio), param_val(& xgspaceratio));	/* соотношение тире к точке (в десятках процентов) */
+		elkey_set_mode(elkeymodes [param_val(& xgelkeymode)].code, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 		#if WITHVIBROPLEX
 			elkey_set_slope(param_val(& xgelkeyslope));	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		#endif /* WITHVIBROPLEX */
-			elkey_set_format(param_val(& xgdashratio), param_val(& xgspaceratio));	/* соотношение тире к точке (в десятках процентов) */
-			elkey_set_mode(elkeymodes [param_val(& xgelkeymode)].code, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
-		#if WITHTX && WITHELKEY
-			seq_set_bkin_time(gbkindelay);			/* параметры BREAK-IN */
+		#if WITHTX
+			seq_set_bkin_time(param_val(& xgbkindelay));			/* параметры BREAK-IN */
 			/*seq_rgbeep(0); */								/* формирование roger beep */
-		#endif /* WITHTX && WITHELKEY */
+		#endif /* WITHTX */
 	#endif /* WITHELKEY */
 
 	#if WITHIF4DSP

@@ -309,8 +309,8 @@ void vox_initialize(void);
 void vox_set_levels(uint_fast8_t level, uint_fast8_t alevel);	/* установить уровень срабатывания vox и anti-vox */
 uint_fast8_t vox_getptt(void);
 
-void seq_set_bkin_time(uint_fast8_t bkin_delay_tens);
-void seq_set_vox_time(uint_fast8_t vox_delay_tens);
+void seq_set_bkin_time(int_fast32_t bkin_delay);
+void seq_set_vox_time(int_fast32_t vox_delay_tens);
 void seq_set_rgbeep(uint_fast8_t state);	/* разрешение (не-0) или запрещение (0) формирования roger beep */
 
 // Для управления трактом надо задать управляющие слова dsp/фппаратуры для следующих состояний:
@@ -395,10 +395,10 @@ uint_fast8_t vox_getbkin(void);
 
 /* обработка меню - установить задержку пре переходе на передачу и обратно. */
 void seq_set_rxtxdelay(
-	uint_fast8_t rxtxdelay,
-	uint_fast8_t txrxdelay,
-	uint_fast8_t pretxdelay,
-	uint_fast8_t fadertime
+	uint_fast32_t rxtxdelay,
+	uint_fast32_t txrxdelay,
+	uint_fast32_t pretxdelay,
+	uint_fast32_t fadertime
 	);
 // запрос из user-mode части программы на переход на передачу и для для tune.
 void seq_txrequest(uint_fast8_t ptt);
