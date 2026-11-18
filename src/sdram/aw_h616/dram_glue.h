@@ -9,6 +9,7 @@
 #define SRC_SDRAM_AW_H616_DRAM_GLUE_H_
 
 #include "hardware.h"
+#include "clocks.h"
 
 #if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_H618_LPDDR4 || CONFIG_SUNXI_DRAM_H616_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR4 || CONFIG_SUNXI_DRAM_T507_LPDDR3)
 #include "formats.h"

@@ -8,6 +8,7 @@
 // https://github.com/iuncuim/u-boot/blob/t507-lpddr4/arch/arm/mach-sunxi/dram_sun50i_h616.c
 
 #include "hardware.h"
+#include "clocks.h"
 
 #if WITHSDRAMHW && (CONFIG_SUNXI_DRAM_A733_LPDDR5 || CONFIG_SUNXI_DRAM_A733_LPDDR4)
 

@@ -9,6 +9,7 @@
 #define SRC_SDRAM_STM32MP1_PLATFORM_DEF_H_
 
 #include "formats.h"
+#include "clocks.h"
 
 #include BOARD_DDR_CONFIG
 

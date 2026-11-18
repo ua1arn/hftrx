@@ -1,6 +1,7 @@
 #include "hardware.h"
 
 #if WITHSDRAMHW && CPUSTYLE_H3
+#include "clocks.h"
 /*
  * sys-dram.c
  *
