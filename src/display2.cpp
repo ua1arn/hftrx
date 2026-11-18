@@ -3881,10 +3881,10 @@ static void display2_preovf3(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	const char * labels [1];
-	if (hamradio_get_bringSWR(labels))
+	const char * label;
+	if (hamradio_get_bringSWR(& label))
 	{
-		display_text(db, x, y, labels [0], xspan, yspan, & dbstylev_ovf);
+		display_text(db, x, y, label, xspan, yspan, & dbstylev_ovf);
 	}
 	else if (boad_fpga_adcoverflow() != 0)
 	{
@@ -3894,9 +3894,9 @@ static void display2_preovf3(const gxdrawb_t * db,
 	{
 		display_text(db, x, y, "MIK", xspan, yspan, & dbstylev_ovf);
 	}
-	else if (hamradio_get_bringINFO(labels))
+	else if (hamradio_get_bringINFO(& label))
 	{
-		display_text(db, x, y, labels [0], xspan, yspan, & dbstylev_1state);
+		display_text(db, x, y, label, xspan, yspan, & dbstylev_1state);
 	}
 	else
 	{
