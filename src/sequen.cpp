@@ -246,7 +246,7 @@ uint_fast8_t vox_getbkin(void)
 
 ////////////////////////////////
 
-enum { QUEUEUESIZE = 2 * (SEQNTICKS(WITHMAXRXTXDELAY) +  SEQNTICKS(WITHMAXTXRXDELAY) * 2 + 4) };
+enum { QUEUEUESIZE = 2 * (SEQNTICKS(WITHMAXRXTXDELAY) + SEQNTICKS(WITHMAXTXRXDELAY) * 2 + SEQNTICKS(WITHFADERDELAY) + 4) };
 
 // очередь организована как массив битов
 static uint8_t keyqueuebuff [(QUEUEUESIZE + 7) / 8];
@@ -391,11 +391,26 @@ seq_spool_ticks(void * ctc)
 	switch (seqstate)
 	{
 	case SEQST_INITIALIZE:
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
 		// начальное состояние - проверяются источники запросов на переход в режим передачи
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
 		if (seqhastxrequest() != 0)
 		{
 			// Если запрос на передачу появился - выполняем всю последовательность действий до перехода на передачу.
+			seqpushtime = faderticks;
+			seqstate = SEQST_RXFADEOUT;
+		}
+		break;
+
+	case SEQST_RXFADEOUT:
+		// Плавное выключение звука на приёме
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
+		if (seqhastxrequest() == 0)
+		{
+			seqpushtime = faderticks - seqpushtime;
+			seqstate = SEQST_RXFADEIN;
+		}
+		else if (-- seqpushtime == 0)
+		{
 			// Начинаем переключаться на передачу
 			if ((seqpushtime = pretxticks) == 0)
 			{
@@ -410,13 +425,8 @@ seq_spool_ticks(void * ctc)
 		}
 		break;
 
-	case SEQST_RXFADEOUT:
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
-		// Плавное выключение звука на приёме
-		break;
-
 	case SEQST_PUSHED_SWITCHTORX:	
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
 		// ждем перехода на на приём от пользовательской программы
 		// обработка ожиданий времени при переходах между состояниями.
 		if (-- seqpushtime == 0)
@@ -438,7 +448,7 @@ seq_spool_ticks(void * ctc)
 
 	// перед переходом на приём, после отпускания тангенты - формирование звукового сигнала (roger beep)
 	case SEQST_RGBEEP:
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [keydowndly]], 0);	// - аппаратное управление выдачей несущей
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [keydowndly]], keydown);	// - аппаратное управление выдачей несущей
 		if (-- seqpushtime != 0)
 		{
 		}
@@ -456,7 +466,7 @@ seq_spool_ticks(void * ctc)
 	break;
 
 	case SEQST_PUSHED_WAIT_ACK_TX:
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
 		// Ждём, пока в SW-2011-RDX выключится сигнал TX1 и будем переходить на передачу.
 		if (-- seqpushtime == 0)
 		{
@@ -493,6 +503,7 @@ seq_spool_ticks(void * ctc)
 	// ожидание перепрограммирования переиферии на передачу - пока переключаем SPI регистры
 	// ждём перехода user mode программы на передачу
 	case SEQST_WAIT_ACK_TX:
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
 		if (usertxstate != 0)
 		{
 			// дождались ответа от user-mode программы - переключение на передачу произошло
@@ -509,7 +520,7 @@ seq_spool_ticks(void * ctc)
 		break;
 
 	case SEQST_SWITCHTORX:
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
 		// ожидание перепрограммирования переиферии на приём - пока переключаем SPI регистры
 		// ждём перехода user mode программы на приём
 		if (usertxstate == 0)
@@ -522,9 +533,14 @@ seq_spool_ticks(void * ctc)
 		break;
 
 	case SEQST_RXFADEIN:
-		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], 0);	// - аппаратное управление выдачей несущей
 		// Плавное включение звука на приёме
-		if (-- seqpushtime == 0)
+		seq_txpath_set(txgfp [seqtxgfi [seqstate] [0]], keydown);	// - аппаратное управление выдачей несущей
+		if (seqhastxrequest() != 0)
+		{
+			seqpushtime = faderticks - seqpushtime;
+			seqstate = SEQST_RXFADEOUT;
+		}
+		else if (-- seqpushtime == 0)
 		{
 			seqstate = SEQST_INITIALIZE;
 		}
@@ -556,7 +572,7 @@ void seq_set_rxtxdelay(
 		txrxticks = atxrxticks;
 		pretxticks = apretxticks;
 		keyqueueclear();
-		uint_fast8_t n = (pretxticks + rxtxticks) * 2;
+		uint_fast8_t n = (pretxticks + rxtxticks) * 2 + faderticks;
 		while (n --)
 			keyqueuein(0);
 		IRQLSPIN_UNLOCK(& seqlock, oldIrql);
