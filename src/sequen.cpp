@@ -598,7 +598,7 @@ void seq_set_rxtxdelay(
 		pretxticks = apretxticks;
 
 		keyqueueclear();
-		uint_fast8_t n = (apretxticks + arxtxticks) * 2 + afaderticks;
+		uint_fast8_t n = (apretxticks + arxtxticks) + afaderticks;
 		while (n --)
 			keyqueuein(0);
 		IRQLSPIN_UNLOCK(& seqlock, oldIrql);
