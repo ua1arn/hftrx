@@ -7137,7 +7137,7 @@ enum
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	static uint_fast16_t gbkindelay = 100;	/* в единицах mS. модифицируется через меню - задержка отпускания BREAK-IN */
+	static uint_fast16_t gbkindelay = 150;	/* в единицах mS. модифицируется через меню - задержка отпускания BREAK-IN */
 	static const struct paramdefdef xgbkindelay =
 	{
 		QLABEL("CW DELAY"),  3, RJ_UNSIGNED, ISTEP5,	/* задержка в единицах ms */
