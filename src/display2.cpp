@@ -3086,6 +3086,21 @@ static void display_2states(const gxdrawb_t * db,
 	display2text_states(db, xcell, ycell, labels, dbstylev_2state, state, xspan, yspan);
 }
 
+static void display_2statesStyled(const gxdrawb_t * db,
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
+	uint_fast8_t state,
+	const char * state1,	// активное
+	const char * state0,
+	uint_fast8_t xspan,
+	uint_fast8_t yspan,
+	const gxstyle_t * style
+	)
+{
+	const char * const labels [2] = { state0, state1, };
+	display2text_states(db, xcell, ycell, labels, style, state, xspan, yspan);
+}
+
 // Параметры, не меняющие состояния цветом
 static void display_1state(const gxdrawb_t * db,
 	uint_fast8_t x, 
@@ -3440,7 +3455,7 @@ static void display2_vfomode3(const gxdrawb_t * db,
 	static const char text_SPL [] = "SPL";
 	uint_fast8_t state;
 	hamradio_get_vfomode3_value(& state);
-	display_2states(db, x, y, state, text_SPL, text_SPL, xspan, yspan);
+	display_2statesStyled(db, x, y, state, text_SPL, text_SPL, xspan, yspan, dbstylev_2state_rec);
 	(void) pctx;
 }
 
@@ -3467,10 +3482,9 @@ static void display2_vfomode5(const gxdrawb_t * db,
 		dctx_t * pctx
 		)
 {
-	static const char text_SPL [] = "SPLIT";
 	uint_fast8_t state;
-	hamradio_get_vfomode5_value(& state);
-	display_2states(db, x, y, state, text_SPL, text_SPL, xspan, yspan);
+	const char * const label = hamradio_get_vfomode5_value(& state);
+	display_2statesStyled(db, x, y, state, label, label, xspan, yspan, dbstylev_2state_rec);
 	(void) pctx;
 }
 

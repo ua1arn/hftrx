@@ -22,6 +22,7 @@ enum
 	KBD_CODE_SPLIT_HOLDED,
 	KBD_CODE_A_EX_B,		// A/B symbol on key
 	KBD_CODE_A_EQ_B,		// A=B symbol on key
+	KBD_CODE_RIT, KBD_CODE_RIT_HOLDED,
 	KBD_CODE_ATT,
 	KBD_CODE_BW,	// IF Bandwidth
 	KBD_CODE_NR,	// AF Noise Reduction

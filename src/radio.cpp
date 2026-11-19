@@ -11373,9 +11373,9 @@ static const struct paramdefdef xgdummy =
 enum {
 	SPLITMODES_OFF,
 	SPLITMODES_ON,
-//	SPLITMODES_RIT,
-//	SPLITMODES_XIT,
-//	SPLITMODES_FIXED,
+	SPLITMODES_RIT,
+	SPLITMODES_XIT,
+	SPLITMODES_MEM,
 	//
 	VFOMODES_COUNT
 };
@@ -11428,6 +11428,8 @@ getbankindex_tx(const uint_fast8_t tx)
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
 	case SPLITMODES_OFF:
+	case SPLITMODES_RIT:
+	case SPLITMODES_XIT:
 		return getbankindex_raw(0);	// без split - передаем на VFO A
 
 	case SPLITMODES_ON:
@@ -11447,6 +11449,8 @@ getbankindex_ab_fordisplay(const uint_fast8_t ab)
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
 	case SPLITMODES_OFF:
+	case SPLITMODES_RIT:
+	case SPLITMODES_XIT:
 		return getbankindex_raw(ab);
 
 	case SPLITMODES_ON:
@@ -11469,36 +11473,48 @@ getbankindex_ab_forcontrols(const uint_fast8_t ab)
 // Через flag возвращается признак активного SPLIT (0/1)
 const char * hamradio_get_vfomode3_value(uint_fast8_t * flag)
 {
-	static const char spl [] = "SPL";
-	static const char sp3 [] = "";
-
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
 	default:
 	case SPLITMODES_OFF:	/* no SPLIT -  Обычная перестройка */
 		* flag = 0;
-		return sp3;
+		return "";
 	case SPLITMODES_ON:
 		* flag = 1;
-		return spl;
+		return "SPL";
+	case SPLITMODES_XIT:
+		* flag = 1;
+		return "XIT";
+	case SPLITMODES_RIT:
+		* flag = 1;
+		return "RIT";
+	case SPLITMODES_MEM:
+		* flag = 1;
+		return "MEM";
 	}
 }
 
 // VFO mode
 const char * hamradio_get_vfomode5_value(uint_fast8_t * flag)
 {
-	static const char spl [] = "SPLIT";
-	static const char sp5 [] = "";
-
 	switch (gsplitmode)	/* (vfo/vfoa/vfob/mem) */
 	{
 	default:
 	case SPLITMODES_OFF:	/* no SPLIT -  Обычная перестройка */
 		* flag = 0;
-		return sp5;
+		return "";
 	case SPLITMODES_ON:
 		* flag = 1;
-		return spl;
+		return "SPLIT";
+	case SPLITMODES_XIT:
+		* flag = 1;
+		return "XIT";
+	case SPLITMODES_RIT:
+		* flag = 1;
+		return "RIT";
+	case SPLITMODES_MEM:
+		* flag = 1;
+		return "MEM";
 	}
 }
 
@@ -14930,6 +14946,20 @@ static void
 uif_key_splitoff(void)
 {
 	gsplitmode = SPLITMODES_OFF;
+	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
+	updateboard();
+}
+
+static void uif_key_rit_on(void)
+{
+	gsplitmode = SPLITMODES_RIT;
+	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
+	updateboard();
+}
+
+static void uif_key_xit_on(void)
+{
+	gsplitmode = SPLITMODES_XIT;
 	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
 	updateboard();
 }
@@ -20622,20 +20652,60 @@ process_key_menuset0(uint_fast8_t kbch)
 {
 	switch (kbch)
 	{
+	case KBD_CODE_RIT:
+		switch (gsplitmode)
+		{
+		case SPLITMODES_OFF:
+			uif_key_rit_on();
+			break;
+		case SPLITMODES_RIT:
+			uif_key_splitoff();
+			break;
+		case SPLITMODES_XIT:
+			uif_key_splitoff();
+			break;
+		}
+		return 1;	// требуется обновление индикатора
+
+	case KBD_CODE_RIT_HOLDED:
+		switch (gsplitmode)
+		{
+		case SPLITMODES_OFF:
+			uif_key_xit_on();
+			break;
+		case SPLITMODES_RIT:
+			uif_key_xit_on();
+			break;
+		case SPLITMODES_XIT:
+			uif_key_xit_on();
+			break;
+		}
+		return 1;	// требуется обновление индикатора
+
 	case KBD_CODE_SPLIT:
 		/* Переключение VFO
 			 - не вызывает сохранение состояния диапазона */
-		if (gsplitmode == SPLITMODES_OFF)
+		switch (gsplitmode)
+		{
+		case SPLITMODES_OFF:
 			uif_key_spliton(0);
-		else
+			break;
+		case SPLITMODES_ON:
 			uif_key_splitoff();
+			break;
+		}
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_SPLIT_HOLDED:
-		if (gsplitmode == SPLITMODES_OFF)
+		switch (gsplitmode)
+		{
+		case SPLITMODES_OFF:
 			uif_key_spliton(1);
-		else
+			break;
+		case SPLITMODES_ON:
 			uif_key_splitoff();
+			break;
+		}
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_A_EX_B:

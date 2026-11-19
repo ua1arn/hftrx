@@ -500,9 +500,9 @@ uint_fast16_t geterasekey(void)
 	return KBD_CODE_SPLIT;
 }
 
-#elif KEYB_VELOCI24_V0
+#elif KEYB_VELOCI24_V0_UA1ATD
 
-/* 24 кнопки на 6 линий */
+/* 24 кнопки на 6 линий,  RIT, CW_MSG */
 static const struct qmkey qmdefs [NQMKEYS] =
 {
 	{ KIF_NONE,		KBD_CODE_23,			KBD_CODE_23,			' ', },		// 0  reserved
@@ -516,6 +516,45 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_CODE_CWMSG3,		KBD_CODE_MAX, 			' ', },		// 8  F3
 	{ KIF_NONE,		KBD_CODE_CWMSG2,		KBD_CODE_MAX,			' ', },		// 9  F2
 	{ KIF_NONE,		KBD_CODE_CWMSG1,		KBD_CODE_MAX,			' ', },		// 10 F1
+	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_MAX, 			' ', },		// 11 FILTER - 2nd small encoder (encoder_ENC2F object)
+	{ KIF_NONE,		KBD_CODE_MEMO,			KBD_CODE_MEMO_HOLDED, 	' ', },		// 12 MEMO
+	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 13 BAND DOWN on front panel
+	{ KIF_NONE,		KBD_CODE_DISPMODE,		KBD_CODE_MENU,			' ', },		// 14 FUNC A - 3rd small encoder (encoder_ENC3F object)
+	{ KIF_NONE,		KBD_CODE_MODE,			KBD_CODE_MODEMOD,		' ', },		// 15 FUNC B - 4th small encoder (encoder_ENC4F object)
+	{ KIF_NONE,		KBD_CODE_A_EQ_B,		KBD_CODE_MAX,			' ', },		// 16 A=B
+	{ KIF_ERASE,	KBD_CODE_RIT,			KBD_CODE_RIT_HOLDED,	' ', },		// 17 RIT
+	{ KIF_NONE,		KBD_CODE_A_EX_B,		KBD_CODE_MAX,			' ', },		// 18 A/B
+	{ KIF_NONE,		KBD_ENC1F_PRESS,		KBD_ENC1F_HOLD,			' ', },		// 19 RF/SPD - 1st small encoder (encoder_ENC1F object)
+	{ KIF_NONE,		KBD_CODE_ATT,			KBD_CODE_PAMP, 			' ', },		// 20 ATT/IPO ATT/PRE
+	{ KIF_NONE,		KBD_CODE_ANTNN_HOLDED,	KBD_CODE_MAX,			' ', },		// 21 ANT1/ANT2
+	{ KIF_NONE,		KBD_CODE_ATUBYPASS,		KBD_CODE_ATUSTART,		' ', },		// 22 TUNER BYP/ATU START
+	{ KIF_NONE,		KBD_CODE_MOX,			KBD_CODE_TXTUNE,		' ', },		// 23 MOX/TUNE
+
+	/* кнопка выключения питания (включение аппаратно) */
+	{ KIF_POWER, 	KBD_CODE_LDSPTGL,		KBD_CODE_POWEROFF, 		' ', },		// 24 SPK/POWER
+};
+
+uint_fast16_t geterasekey(void)
+{
+	return KBD_CODE_SPLIT;
+}
+
+#elif KEYB_VELOCI24_V0
+
+/* 24 кнопки на 6 линий */
+static const struct qmkey qmdefs [NQMKEYS] =
+{
+	{ KIF_NONE,		KBD_CODE_23,			KBD_CODE_23,			' ', },		// 0  reserved
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 1  MH31 FST
+	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP, 		' ', },		// 2  MH31 UP
+	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 3  MH31 DOWN
+	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP,	 	' ', },		// 4  BAND UP on front panel
+	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// 5  LOCK
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 6  STEP?
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 7  F4
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 8  F3
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 9  F2
+	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 10 F1
 	{ KIF_NONE,		KBD_CODE_BW,			KBD_CODE_MAX, 			' ', },		// 11 FILTER - 2nd small encoder (encoder_ENC2F object)
 	{ KIF_NONE,		KBD_CODE_MEMO,			KBD_CODE_MEMO_HOLDED, 	' ', },		// 12 MEMO
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 13 BAND DOWN on front panel
