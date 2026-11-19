@@ -3502,7 +3502,7 @@ locatesubmode(
 	return 0;
 }
 
-static uint_fast32_t gfreqs [BANKINDEX_COUNT] = { DEFAULTDIALFREQ, DEFAULTDIALFREQ };		/* отображаемая на дисплее частота работы */
+static uint_fast32_t gdialfreqs [BANKINDEX_COUNT] = { DEFAULTDIALFREQ, DEFAULTDIALFREQ };		/* отображаемая на дисплее частота работы */
 static uint_fast8_t glocks [BANKINDEX_COUNT];
 
 static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом используется результат функции getbankindex_xxx(tx) */
@@ -3511,6 +3511,14 @@ static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* инде�
 
 static int_fast32_t gritoffset;
 static int_fast32_t gxitoffset;
+
+static int_fast32_t getritxitoffset(uint_fast8_t pathi)
+{
+//	if (pathi)
+//		return 0;
+	return pathi ? gxitoffset : gritoffset;
+}
+
 #define RITXITDELTA (20000)
 
 
@@ -5406,7 +5414,7 @@ static const struct paramdefdef xgethmacaddr =
 	static unsigned getselector_bandprops(unsigned * count, unsigned bi)
 	{
 		const uint_fast8_t bandset_no_check = 0;
-		const uint_fast32_t freq = gfreqs [bi];
+		const uint_fast32_t freq = gdialfreqs [bi];
 		const uint_fast8_t b = getfreqband(freq, bandset_no_check);
 		* count = HBANDS_COUNT + XBANDS_COUNT;
 		return b;
@@ -5435,7 +5443,7 @@ static const struct paramdefdef xgethmacaddr =
 		if (base == MENUNONVRAM)
 			return MENUNONVRAM;
 		ASSERT(bp < BANDPROPS_COUNT);
-		const uint_fast32_t freq = gfreqs [bi];
+		const uint_fast32_t freq = gdialfreqs [bi];
 		const uint_fast8_t ant = geteffantenna(freq);
 		const uint_fast8_t rxant = geteffrxantenna(freq);
 		//
@@ -8903,7 +8911,7 @@ static void auto_tune0_init(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t tx = 1;
 	const uint_fast8_t bi = getbankindex_tx(tx);
-	const uint_fast32_t freq = gfreqs [bi];
+	const uint_fast32_t freq = gdialfreqs [bi];
 	tuner_bp = getfreqband(freq, bandset_no_check);
 	tuner_ant = geteffantenna(freq);
 }
@@ -9070,7 +9078,7 @@ static enum phases auto_tune0(void)
 	unsigned ndummies;
 	const uint_fast8_t tx = 1;
 	const uint_fast8_t bi = getbankindex_tx(tx);
-	const uint_fast32_t freq = gfreqs [bi];
+	const uint_fast32_t freq = gdialfreqs [bi];
 	tuner_bp = getfreqband(freq, bandset_no_check);
 	tuner_ant = geteffantenna(freq);
 
@@ -10391,7 +10399,7 @@ copybankstate(
 	)
 {
 	ASSERT(tbi != sbi);
-	gfreqs [tbi] = vfy32up(gfreqs [sbi] + deltaf, tune_bottom(sbi), tune_top(sbi) - 1, gfreqs [sbi]);
+	gdialfreqs [tbi] = vfy32up(gdialfreqs [sbi] + deltaf, tune_bottom(sbi), tune_top(sbi) - 1, gdialfreqs [sbi]);
 	gmoderows [tbi] = gmoderows [sbi];
 
 	memcpy(gmodecolmaps [tbi], gmodecolmaps [sbi], sizeof gmodecolmaps [tbi]);
@@ -10401,10 +10409,10 @@ copybankstate(
 static void
 storebandfreq(const vindex_t b, const uint_fast8_t bi)
 {
-	//PRINTF(PSTR("storebandfreq: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
+	//PRINTF(PSTR("storebandfreq: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gdialfreqs [bi]);
 	verifyband(b);
 
-	save_i32(RMT_BFREQ_BASE(b), gfreqs [bi]);	/* сохранить в области диапазона частоту */
+	save_i32(RMT_BFREQ_BASE(b), gdialfreqs [bi]);	/* сохранить в области диапазона частоту */
 }
 
 
@@ -10484,7 +10492,7 @@ static void loadantenna(uint_fast8_t bp)
 	grxantenna = loadvfy8up(RMT_RXANTENNABG_BASE(bp), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bp), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 #elif WITHANTSELECT2
-	gantennabym = loadvfy8up(RMT_ANTENNABG_BASE(bp), 0, ANTMODE_COUNT - 1, getdefantenna(gfreqs [bi]));	/* вытаскиваем номер включённой антенны */
+	gantennabym = loadvfy8up(RMT_ANTENNABG_BASE(bp), 0, ANTMODE_COUNT - 1, getdefantenna(gdialfreqs [bi]));	/* вытаскиваем номер включённой антенны */
 #elif WITHANTSELECT
 	gantenna = loadvfy8up(RMT_ANTENNABG_BASE(bp), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 #endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
@@ -10539,9 +10547,9 @@ static void
 storebandstate(const vindex_t vi, const uint_fast8_t bi)
 {
 	const uint_fast8_t bandset_no_check = 0;
-	//PRINTF(PSTR("storebandstate: vi=%d, bi=%d, freq=%ld\n"), vi, bi, (unsigned long) gfreqs [bi]);
+	//PRINTF(PSTR("storebandstate: vi=%d, bi=%d, freq=%ld\n"), vi, bi, (unsigned long) gdialfreqs [bi]);
 	verifyband(vi);
-	const uint_fast32_t freq = gfreqs [bi];
+	const uint_fast32_t freq = gdialfreqs [bi];
 	const uint_fast8_t bp = getfreqband(freq, bandset_no_check);
 	const uint_fast8_t ant = geteffantenna(freq);
 	const uint_fast8_t rxant = geteffrxantenna(freq);
@@ -10553,23 +10561,23 @@ storebandstate(const vindex_t vi, const uint_fast8_t bi)
 // возврат не-0 если частота не поменялась.
 static int loadbandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t mi)
 {
-	const uint_fast32_t oldfreq = gfreqs [bi];
+	const uint_fast32_t oldfreq = gdialfreqs [bi];
 	ASSERT(bp < BANDPROPS_COUNT);
-	gfreqs [bi] = loadvfy32(RMT_MIBFREQ_BASE(bp, mi), get_band_bottom(bp), get_band_top(bp), get_band_init(bp));
+	gdialfreqs [bi] = loadvfy32(RMT_MIBFREQ_BASE(bp, mi), get_band_bottom(bp), get_band_top(bp), get_band_init(bp));
 #if WITHONLYBANDS
-	const vindex_t hb = getfreqband(gfreqs [bi], bandset_no_check);
+	const vindex_t hb = getfreqband(gdialfreqs [bi], bandset_no_check);
 	tune_bottom_active [bi] = get_band_bottom(hb);
 	tune_top_active [bi] = get_band_top(hb);
 #endif
 
-	loadmodeinfo(RMT_MIBAND(bp, mi), bi, gfreqs [bi]);
+	loadmodeinfo(RMT_MIBAND(bp, mi), bi, gdialfreqs [bi]);
 	//
-	return (oldfreq == gfreqs [bi]);
+	return (oldfreq == gdialfreqs [bi]);
 }
 
 static void savebandmemortstate(uint_fast8_t bp, uint_fast8_t bi, uint_fast8_t miclass)
 {
-	save_i32(RMT_MIBFREQ_BASE(bp, miclass), gfreqs [bi]);
+	save_i32(RMT_MIBFREQ_BASE(bp, miclass), gdialfreqs [bi]);
 	savemodeinfo(RMT_MIBAND(bp, miclass), bi);
 }
 
@@ -10707,9 +10715,9 @@ static nvramaddress_t nvramoffs_bandgroupant(nvramaddress_t base, unsigned sel, 
 
 	(void) sel;
 
-	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
-    const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
-    const uint_fast8_t rxant = geteffrxantenna(gfreqs [bi]);
+	const uint_fast8_t b = getfreqband(gdialfreqs [bi], bandset_no_check);
+    const uint_fast8_t ant = geteffantenna(gdialfreqs [bi]);
+    const uint_fast8_t rxant = geteffrxantenna(gdialfreqs [bi]);
 
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
@@ -11552,7 +11560,7 @@ uint_fast32_t hamradio_get_freq_rx(void)
 	if (iflfmactive())
 		return getlfmfreq();
 #endif /* WITHLFM */
-	return gfreqs [getbankindex_tx(0)];
+	return gdialfreqs [getbankindex_tx(0)];
 }
 
 // Частота VFO A для отображения на дисплее
@@ -11562,17 +11570,27 @@ uint_fast32_t hamradio_get_freq_a(void)
 	if (iflfmactive())
 		return getlfmfreq();
 #endif /* WITHLFM */
-	return gfreqs [getbankindex_ab_fordisplay(0)];		/* VFO A modifications */
+	return gdialfreqs [getbankindex_ab_fordisplay(0)];		/* VFO A modifications */
 }
 // Частота VFO A для отображения на дисплее
-uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi)
+uint_fast32_t hamradio_get_dialfreq_pathi(uint_fast8_t pathi)
 {
 #if WITHLFM
 	if (iflfmactive())
 		return getlfmfreq();
 #endif /* WITHLFM */
-	return gfreqs [getbankindex_pathi(pathi)];
+	return gdialfreqs [getbankindex_pathi(pathi)];
 }
+// Частота VFO A/B без учёта расстройки
+uint_fast32_t hamradio_get_bpfreq_pathi(uint_fast8_t pathi)
+{
+#if WITHLFM
+	if (iflfmactive())
+		return getlfmfreq();
+#endif /* WITHLFM */
+	return gdialfreqs [getbankindex_pathi(pathi)];
+}
+
 // SSB/CW/AM/FM/..
 const char * hamradio_get_mode_a_value_P(void)
 {
@@ -11593,7 +11611,7 @@ uint_fast32_t hamradio_get_freq_b(void)
 	if (iflfmactive())
 		return getlfmfreq();
 #endif /* WITHLFM */
-	return gfreqs [getbankindex_ab_fordisplay(1)];	/* VFO B modifications */
+	return gdialfreqs [getbankindex_ab_fordisplay(1)];	/* VFO B modifications */
 }
 
 #if WITHIF4DSP
@@ -11666,21 +11684,21 @@ loadnewband(
 {
 	const uint_fast8_t bandset_no_check = 0;
 	ASSERT(bi < 2);
-	//PRINTF(PSTR("loadnewband: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
+	//PRINTF(PSTR("loadnewband: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gdialfreqs [bi]);
 
-	gfreqs [bi] = loadvfy32freq(b);		/* восстанавливаем частоту */
-	const uint_fast32_t freq = gfreqs [bi];
+	gdialfreqs [bi] = loadvfy32freq(b);		/* восстанавливаем частоту */
+	const uint_fast32_t freq = gdialfreqs [bi];
 	const uint_fast8_t bp = getfreqband(freq, bandset_no_check);
 	const uint_fast8_t ant = geteffantenna(freq);
 	const uint_fast8_t rxant = geteffrxantenna(freq);
 
 #if WITHONLYBANDS
-	const vindex_t hb = getfreqband(gfreqs [bi], bandset_no_check);
+	const vindex_t hb = getfreqband(gdialfreqs [bi], bandset_no_check);
 	tune_bottom_active [bi] = get_band_bottom(hb);
 	tune_top_active [bi] = get_band_top(hb);
 #endif
 
-	loadmodeinfo(RMT_BAND(b), bi, gfreqs [bi]);
+	loadmodeinfo(RMT_BAND(b), bi, gdialfreqs [bi]);
 	loadantenna(bp);
 	loadbandprops(bp, ant, rxant);
 }
@@ -11756,10 +11774,10 @@ modemchangefreq(
 	)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);
-	gfreqs [bi] = vfy32up(f, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]);
+	gdialfreqs [bi] = vfy32up(f, TUNE_BOTTOM, TUNE_TOP - 1, gdialfreqs [bi]);
 
 #if WITHONLYBANDS
-	const vindex_t hb = getfreqband(gfreqs [bi], bandset_no_check);
+	const vindex_t hb = getfreqband(gdialfreqs [bi], bandset_no_check);
 	tune_bottom_active [bi] = get_band_bottom(hb);
 	tune_top_active [bi] = get_band_top(hb);
 #endif
@@ -11824,7 +11842,7 @@ static void catmux_enable(uint_fast8_t enable)
 		caticom_enable(enable);
 		break;
 #endif
-#if WITHCAT_WITHCAT_KENWOOD
+#if WITHCAT_KENWOOD
 	case BOARD_CATTYPE_KENWOOD:
 		catkenwood_enable(enable);
 		break;
@@ -11851,7 +11869,7 @@ static void catmux_answer_request(uint_fast8_t i)	// call from user-mode
 		caticom_answer_request(i);
 		break;
 #endif
-#if WITHCAT_WITHCAT_KENWOOD
+#if WITHCAT_KENWOOD
 	case BOARD_CATTYPE_KENWOOD:
 		catkenwood_answer_request(i);
 		break;
@@ -11878,7 +11896,7 @@ static void catmux_cattimeout_cb(void * ctx)
 		caticom_cattimeout_cb(ctx);
 		break;
 #endif
-#if WITHCAT_WITHCAT_KENWOOD
+#if WITHCAT_KENWOOD
 	case BOARD_CATTYPE_KENWOOD:
 		catkenwood_cattimeout_cb(ctx);
 		break;
@@ -11906,7 +11924,7 @@ static void catmux_answer_forming(void)
 		caticom_answer_forming();
 		break;
 #endif
-#if WITHCAT_WITHCAT_KENWOOD
+#if WITHCAT_KENWOOD
 	case BOARD_CATTYPE_KENWOOD:
 		catkenwood_answer_forming();
 		break;
@@ -11940,7 +11958,7 @@ catmux_processcatmsg(
 	case BOARD_CATTYPE_ICOM:
 		return caticom_processcatmsg(c1, c2, hasparam, pcount, catp);
 #endif
-#if WITHCAT_WITHCAT_KENWOOD
+#if WITHCAT_KENWOOD
 	case BOARD_CATTYPE_KENWOOD:
 		return catkenwood_processcatmsg(c1, c2, hasparam, pcount, catp);
 #endif
@@ -11968,7 +11986,7 @@ void cat2_parsechar(uint_fast8_t c)
 		caticom_parsechar(c);
 		break;
 #endif
-#if WITHCAT_WITHCAT_KENWOOD
+#if WITHCAT_KENWOOD
 	case BOARD_CATTYPE_KENWOOD:
 		catkenwood_parsechar(c);
 		break;
@@ -11996,7 +12014,7 @@ void cat2_disconnect(void)
 		caticom_disconnect();
 		break;
 #endif
-#if WITHCAT_WITHCAT_KENWOOD
+#if WITHCAT_KENWOOD
 	case BOARD_CATTYPE_KENWOOD:
 		catkenwood_disconnect();
 		break;
@@ -12023,7 +12041,7 @@ static char catmux_getnextcw(void)
 	case BOARD_CATTYPE_ICOM:
 		return caticom_getnextcw();
 #endif
-#if WITHCAT_WITHCAT_KENWOOD
+#if WITHCAT_KENWOOD
 	case BOARD_CATTYPE_KENWOOD:
 		return catkenwood_getnextcw();
 #endif
@@ -12042,7 +12060,7 @@ catchangefreq(
 	const uint_fast8_t bandset_no_check = 0;
 	const vindex_t b = getfreqband(f, bandset_no_check);	/* определяем по частоте, в какоq диапазон переходим */
 
-	gfreqs [bi] = f;
+	gdialfreqs [bi] = f;
 #if WITHONLYBANDS
 	tune_bottom_active [bi] = get_band_bottom(b);
 	tune_top_active [bi] = get_band_top(b);
@@ -12058,14 +12076,14 @@ catchangefreq(
 #if WITHKEYBOARD || WITHTOUCHGUI
 	// не должно быть при удаленном управлении
 	loadantenna(b);
-	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
-	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
+	const uint_fast8_t effantenna = geteffantenna(gdialfreqs [bi]);
+	const uint_fast8_t effrxantenna = geteffrxantenna(gdialfreqs [bi]);
 	loadbandprops(b, effantenna, effrxantenna);
 #else
 	//#warning No automatic antenna select - manual only
 #endif /* WITHKEYBOARD || WITHTOUCHGUI */
-//	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
-//	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
+//	const uint_fast8_t effantenna = geteffantenna(gdialfreqs [bi]);
+//	const uint_fast8_t effrxantenna = geteffrxantenna(gdialfreqs [bi]);
 //	loadbandprops(bg, effantenna, effrxantenna);
 }
 
@@ -12140,7 +12158,7 @@ gsubmodechange(
 	uint_fast8_t bi				/* bank index */
 	)
 {
-	uint_fast32_t freq = gfreqs [bi];
+	uint_fast32_t freq = gdialfreqs [bi];
 	const uint_fast8_t forcelsb = getforcelsb(freq);
 
 	/* коррекция частоты настройки для сохранения постоянного тона при переходе на узкую плолсу */
@@ -12157,7 +12175,7 @@ gsubmodechange(
 		/* автоматическое изменение "вниз" */
 		//const uint_fast32_t lowfreq = bandsmap [b].bottom;
 		freq = prevfreq(freq, freq - (- delta), 10UL, TUNE_BOTTOM);
-		gfreqs [bi] = freq;
+		gdialfreqs [bi] = freq;
 
 		{
 			const vindex_t vi = getvfoindex(bi);
@@ -12171,7 +12189,7 @@ gsubmodechange(
 		//const uint_fast32_t topfreq =  bandsmap [b].top;
 		//freq = nextfreq(freq, freq + delta10 * 10UL, 10UL, topfreq);
 		freq = nextfreq(freq, freq + delta, 10UL, TUNE_TOP);
-		gfreqs [bi] = freq;
+		gdialfreqs [bi] = freq;
 
 		{
 			const vindex_t vi = getvfoindex(bi);
@@ -12550,7 +12568,7 @@ int_fast16_t
 hamradio_getleft_bp(uint_fast8_t pathi)
 {
 	const uint_fast8_t bi = getbankindex_pathi(pathi);
-	const uint_fast32_t freq = gfreqs [bi];
+	const uint_fast32_t freq = gdialfreqs [bi];
 	const uint_fast8_t forcelsb = getforcelsb(freq);
 	const uint_fast8_t submode = getsubmode(bi);	// брать модуляцию нужного приемника
 	const uint_fast8_t alsbmode = getsubmodelsb(submode, forcelsb);	// Принимаемая модуляция на нижней боковой
@@ -12578,7 +12596,7 @@ int_fast16_t
 hamradio_getright_bp(uint_fast8_t pathi)
 {
 	const uint_fast8_t bi = getbankindex_pathi(pathi);
-	const uint_fast32_t freq = gfreqs [bi];
+	const uint_fast32_t freq = gdialfreqs [bi] + getritxitoffset(pathi);
 	const uint_fast8_t forcelsb = getforcelsb(freq);
 	const uint_fast8_t submode = getsubmode(bi);	// брать модуляцию нужного приемника
 	const uint_fast8_t alsbmode = getsubmodelsb(submode, forcelsb);	// Принимаемая модуляция на нижней боковой
@@ -14173,7 +14191,7 @@ updateboard_noui(
 	for (pathi = 0; pathi < pathn; ++ pathi)
 	{
 		const uint_fast8_t bi = getbankindex_pathi(pathi);
-		const int_fast32_t freq = gfreqs [bi];
+		const int_fast32_t freq = gdialfreqs [bi] + getritxitoffset(pathi);
 		/* "Эти параметры для расчёта частот выясняем здесь, так как они (могут) зависить от частоты */
 		full2 |= flagne_u8(& lo1side [pathi], getsidelo1(freq));	// LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 		full2 |= flagne_u8(& lo2hint [pathi], gethintlo2(freq));
@@ -14186,9 +14204,9 @@ updateboard_noui(
 	{
 		const uint_fast8_t bi = getbankindex_pathi(0); //getbankindex_tx(gtx);
 #if WITHLFM
-		const int_fast32_t freq = iflfmactive() ? getlfmfreq() : gfreqs [bi];
+		const int_fast32_t freq = iflfmactive() ? getlfmfreq() : gdialfreqs [bi] + getritxitoffset(pathi);
 #else /* WITHLFM */
-		const int_fast32_t freq = gfreqs [bi];
+		const int_fast32_t freq = gdialfreqs [bi] + getritxitoffset(pathi);
 #endif /*  WITHLFM */
 
 	#if WITHMGLOOP
@@ -14333,7 +14351,7 @@ updateboard_noui(
 	#if 0 && WITHDEBUG
 			{
 				const uint_fast8_t bi = getbankindex_pathi(pathi);
-				const int_fast32_t freq = gfreqs [bi];
+				const int_fast32_t freq = gdialfreqs [bi] + getritxitoffset(pathi);
 				PRINTF(submodes [asubmode].qlabel);
 				PRINTF(PSTR(" pathi=%d"), pathi);
 				PRINTF(PSTR(" f="));	printfreq(freq);
@@ -14766,7 +14784,7 @@ updateboard_noui(
 	if (userfsg)
 	{
 		const uint_fast8_t bi = getbankindex_tx(gtx);
-		const int_fast32_t freq = gfreqs [bi];
+		const int_fast32_t freq = gdialfreqs [bi];
 		synth_lo1_setfrequ(0, freq, getlo1div(gtx));
 		//synth_bfo_setfreq(0);
 		//synth_lopbt_setfreq(0);
@@ -14776,12 +14794,13 @@ updateboard_noui(
 		for (pathi = 0; pathi < pathn; ++ pathi)
 		{
 			const uint_fast8_t bi = getbankindex_pathi(pathi);
-			const int_fast32_t freq = gfreqs [bi];
+			const int_fast32_t dialfreq = gdialfreqs [bi];	// центр панорамы
+			const int_fast32_t freq = gdialfreqs [bi] + getritxitoffset(pathi);	// частота тракта
 
 			/* частота первого гетеродина может оказаться отрицательной */
 			const uint_fast32_t lo1 = synth_freq2lo1(freq, pathi);
 			synth_lo1_setfreq(pathi, lo1, getlo1div(gtx)); /* установка частоты первого гетеродина */
-			synth_rts1_setfreq(pathi, getlo0(lo0hint) - freq);	// Установка центральной частоты панорамного индикатора
+			synth_rts1_setfreq(pathi, getlo0(lo0hint) - dialfreq);	// Установка центральной частоты панорамного индикатора
 		}
 	}
 
@@ -14941,7 +14960,7 @@ const char * hamradio_get_ant5_value(void)
 	static char b [6];
 	local_snprintf_P(b, ARRAY_SIZE(b),
 			PSTR("%s %s"),
-			antmodes [geteffantenna(gfreqs [bi])].label,
+			antmodes [geteffantenna(gdialfreqs [bi])].label,
 			gantmanual ? "MN" : "AU"
 	);
 	return b;
@@ -15084,7 +15103,7 @@ uif_key_click_moderow(void)
 
 	uint_fast8_t defrow = gmoderows [bi];		/* строка таблицы режимов, которую покидаем */
 	uint_fast8_t defcol = getmodecol(defrow, bi);
-	const uint_fast8_t forcelsb = getforcelsb(gfreqs [bi]);
+	const uint_fast8_t forcelsb = getforcelsb(gdialfreqs [bi]);
 
 	gmoderows [bi] = calc_next(gmoderows [bi], 0, MODEROW_COUNT - 1);		/* идём на следующую строку таблицы запомненых режимов */
 	/* переустановка частот всех гетеродинов после смены режимов */
@@ -15105,12 +15124,12 @@ uif_key_click_bandup(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t b = getfreqband(gdialfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 	////const uint_fast8_t bg = getbandgroup(b);
 	verifyband(b);
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	storebandfreq(b, bi);
-	const vindex_t bn = getnext_ham_band(b, gfreqs [bi]);
+	const vindex_t bn = getnext_ham_band(b, gdialfreqs [bi]);
 	loadnewband(bn, bi);	/* загрузка всех параметров (и частоты) нового режима */
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
 	storebandstate(vi, bi); // записать все параметры настройки (кроме частоты)  в текущем VFO */
@@ -15128,12 +15147,12 @@ uif_key_click_banddown(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t b = getfreqband(gdialfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 	////const uint_fast8_t bg = getbandgroup(b);
 	verifyband(b);
 	storebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	storebandfreq(b, bi);
-	const uint_fast8_t bn = getprev_ham_band(b, gfreqs [bi]);
+	const uint_fast8_t bn = getprev_ham_band(b, gdialfreqs [bi]);
 
 	loadnewband(bn, bi);	/* загрузка всех параметров (и частоты) нового режима */
 	storebandfreq(vi, bi);	/* сохранение частоты в текущем VFO */
@@ -15150,7 +15169,7 @@ uif_key_click_bandjump(uint_fast32_t f)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const vindex_t bo = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t bo = getfreqband(gdialfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 	vindex_t bn = getfreqband(f, bandset_no_check);
 
 	verifyband(bo);
@@ -15173,7 +15192,7 @@ uif_key_click_bandjump2(uint_fast32_t f, uint_fast8_t bandset_no_check)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const vindex_t bo = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t bo = getfreqband(gdialfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 	const vindex_t bn = getfreqband(f, bandset_no_check);
 
 	verifyband(bo);
@@ -15196,7 +15215,7 @@ static void uif_key_click_memo(void)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 
-	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t b = getfreqband(gdialfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 
 	const uint_fast8_t miclass = getmodetempl(gsubmode)->miclass;
 	if (miclass < MICLASS_count)
@@ -15206,7 +15225,7 @@ static void uif_key_click_memo(void)
 			// Выбрать следующий класс
 			const uint_fast8_t miclassnext = calc_next(getmodetempl(gsubmode)->miclass, 0, MICLASS_count - 1);
 			loadbandmemortstate(b, bi, miclassnext);
-			PRINTF("%s: b=%u, bi=%u, miclassnext=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) miclassnext, (unsigned) gfreqs [bi]);
+			PRINTF("%s: b=%u, bi=%u, miclassnext=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) miclassnext, (unsigned) gdialfreqs [bi]);
 		}
 	}
 
@@ -15229,7 +15248,7 @@ static void uif_key_hold_memo(void)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 
-	const vindex_t b = getfreqband(gfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t b = getfreqband(gdialfreqs [bi], bandset_no_check);	/* определяем по частоте, в каком диапазоне находимся */
 
 	// сохранить текушее состояние
 	verifyband(b);
@@ -15240,7 +15259,7 @@ static void uif_key_hold_memo(void)
 	if (miclass < MICLASS_count)
 	{
 		savebandmemortstate(b, bi, miclass);
-		PRINTF("%s: b=%u, bi=%u, miclass=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) miclass, (unsigned) gfreqs [bi]);
+		PRINTF("%s: b=%u, bi=%u, miclass=%u, freq=%u\n", __func__, (unsigned) b, (unsigned) bi, (unsigned) miclass, (unsigned) gdialfreqs [bi]);
 	}
 	bring_info("MEM");
 }
@@ -15280,7 +15299,7 @@ uif_key_next_antenna(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
+	const uint_fast8_t b = getfreqband(gdialfreqs [bi], bandset_no_check);
 
 	loadbandprops(b, param_val(& xgantenna), param_val(& xgrxantenna));
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
@@ -15298,7 +15317,7 @@ uif_key_next_rxantenna(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
+	const uint_fast8_t b = getfreqband(gdialfreqs [bi], bandset_no_check);
 	loadbandprops(b, param_val(& xgantenna), param_val(& xgrxantenna));
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard();
@@ -15333,11 +15352,11 @@ uif_key_next_antenna(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
+	const uint_fast8_t b = getfreqband(gdialfreqs [bi], bandset_no_check);
 
 	gantennabym = calc_next(gantennabym, 0, ANTMODE_COUNT - 1);
-	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
-	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
+	const uint_fast8_t effantenna = geteffantenna(gdialfreqs [bi]);
+	const uint_fast8_t effrxantenna = geteffrxantenna(gdialfreqs [bi]);
 	loadbandprops(bg, effantenna, effrxantenna);
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard();
@@ -15351,9 +15370,9 @@ uif_key_next_autoantmode(void)
 
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
-	const uint_fast8_t bg = getfreqband(gfreqs [bi], bandset_no_check);
-	const uint_fast8_t effantenna = geteffantenna(gfreqs [bi]);
-	const uint_fast8_t effrxantenna = geteffrxantenna(gfreqs [bi]);
+	const uint_fast8_t bg = getfreqband(gdialfreqs [bi], bandset_no_check);
+	const uint_fast8_t effantenna = geteffantenna(gdialfreqs [bi]);
+	const uint_fast8_t effrxantenna = geteffrxantenna(gdialfreqs [bi]);
 	loadbandprops(bg, effantenna, effrxantenna);
 	updateboard();
 }
@@ -15381,7 +15400,7 @@ uif_key_next_antenna(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t bg = getfreqband(gfreqs [bi], bandset_no_check);
+	const uint_fast8_t bg = getfreqband(gdialfreqs [bi], bandset_no_check);
 
 	storebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
 	updateboard();
@@ -15582,8 +15601,8 @@ uif_key_bypasstoggle(void)
 	const uint_fast8_t bandset_no_check = 0;
 	const uint_fast8_t tx = 1;
 	const uint_fast8_t bi = getbankindex_tx(tx);
-	const uint_fast8_t b = getfreqband(gfreqs [bi], bandset_no_check);
-    const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
+	const uint_fast8_t b = getfreqband(gdialfreqs [bi], bandset_no_check);
+    const uint_fast8_t ant = geteffantenna(gdialfreqs [bi]);
 
 	tunerwork = calc_next(tunerwork, 0, 1);	// переключаем в противоположное состояние
 
@@ -15603,7 +15622,7 @@ uif_key_atunerstart(void)
 	const uint_fast8_t tx = 1;
 	const uint_fast8_t bi = getbankindex_tx(tx);
 	const vindex_t b = getvfoindex(bi);
-	const uint_fast32_t freq = gfreqs [bi];
+	const uint_fast32_t freq = gdialfreqs [bi];
 	const uint_fast8_t bp = getfreqband(freq, bandset_no_check);
 	const uint_fast8_t ant = geteffantenna(freq);
 
@@ -16827,7 +16846,7 @@ catyaesu_processcatmsg(
 					0;
 
 			PRINTF("CAT Set freq=%u\n", (unsigned) f);
-			catchangefreq(vfy32up(f, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), bi);
+			catchangefreq(vfy32up(f, TUNE_BOTTOM, TUNE_TOP - 1, gdialfreqs [bi]), bi);
 			updateboard();	/* полная перенастройка (как после смены режима) */
 			cat_ask_buffer [0] = 0x00;
 			cat_answervariable(cat_ask_buffer, 1);
@@ -16846,7 +16865,7 @@ catyaesu_processcatmsg(
 			// запрос режима работы и частоты
 			const uint_fast8_t bi = getbankindex_ab(0);	/* vfo A bank index */
 			const uint_fast8_t ymode = submodes [getsubmode(bi)].ycatmodecode;
-			const uint_fast32_t f = gfreqs [bi];
+			const uint_fast32_t f = gdialfreqs [bi];
 
 			cat_ask_buffer [0] = ((f % 1000000000) / 100000000) * 16 + (f % 100000000) / 10000000;
 			cat_ask_buffer [1] = ((f % 10000000) / 1000000) * 16 + (f % 1000000) / 100000;
@@ -16902,7 +16921,7 @@ catyaesu_processcatmsg(
 			// 0x0A - DIG, 0x0C - PKT
 			const uint_fast8_t defsubmode = findyesusubmode(catp [0], gsubmode);	/* поиск по кенвудовскому номеру */
 			const vindex_t vi = getvfoindex(bi);
-			//defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
+			//defsubmode = getdefaultbandsubmode(gdialfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
 			// todo: не очень хорошо, если locatesubmode не находит режима, она обнуляет row.
 			const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
 			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
@@ -17397,7 +17416,7 @@ static void faanswer(uint_fast8_t arg)
 		";";				// 1 char - line terminator
 	// answer VFO A frequency
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(signed long) gfreqs [bi]
+		(signed long) gdialfreqs [bi]
 		);
 	catkenwood_answer(len);
 }
@@ -17412,7 +17431,7 @@ static void fbanswer(uint_fast8_t arg)
 
 	// answer VFO B frequency
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(signed long) gfreqs [bi]
+		(signed long) gdialfreqs [bi]
 		);
 	catkenwood_answer(len);
 }
@@ -17918,7 +17937,7 @@ static void paanswer(uint_fast8_t arg)
 
 static void ananswer(uint_fast8_t arg)
 {
-	const uint_fast32_t f = gfreqs [getbankindex_tx(gtx)];
+	const uint_fast32_t f = gdialfreqs [getbankindex_tx(gtx)];
 	const int p1 = (geteffantenna(f) != 0) ? 2 : 1;
 	const int p2 = (geteffrxantenna(f) != 0) ? 1 : 0;
 	const int p3 = gtxgate ? 1 : 0;
@@ -18049,7 +18068,7 @@ static void ifanswer(uint_fast8_t arg)
 		";";				// 1 char - line terminator
 
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_5,
-		(signed long) gfreqs [getbankindex_tx(gtx)],
+		(signed long) gdialfreqs [getbankindex_tx(gtx)],
 		(int) gtx,
 		(int) submodes [gsubmode].qcatmodecode,	// P9
 		(int) 0,	// P10: FR/FT state
@@ -18327,7 +18346,7 @@ catkenwood_processcatmsg(
 			const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
 			//const vindex_t vi = getvfoindex(bi);
 			const uint_fast32_t v = catparam;
-			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), bi);
+			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gdialfreqs [bi]), bi);
 			updateboard();	/* полная перенастройка (как после смены режима) */
 			rc = 1;
 		}
@@ -18343,7 +18362,7 @@ catkenwood_processcatmsg(
 			const uint_fast8_t bi = getbankindex_ab(1);	/* VFO B bank index */
 			//const vindex_t vi = getvfoindex(bi);
 			const uint_fast32_t v = catparam;
-			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gfreqs [bi]), bi);
+			catchangefreq(vfy32up(v, TUNE_BOTTOM, TUNE_TOP - 1, gdialfreqs [bi]), bi);
 			updateboard();	/* полная перенастройка (как после смены режима) */
 			rc = 1;
 		}
@@ -18377,7 +18396,7 @@ catkenwood_processcatmsg(
 			const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
 			//const vindex_t vi = getvfoindex(bi);
 			const uint_fast8_t defsubmode = findkenwoodsubmode(v, gsubmode);	/* поиск по кенвудовскому номеру */
-			//defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
+			//defsubmode = getdefaultbandsubmode(gdialfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
 			// todo: не очень хорошо, если locatesubmode не находит режима, она обнуляет row.
 			const uint_fast8_t defcol = locatesubmode(defsubmode, & gmoderows [bi]);	/* строка/колонка для SSB. Что делать, если не нашли? */
 			putmodecol(gmoderows [bi], defcol, bi);	/* внести новое значение в битовую маску */
@@ -18716,7 +18735,7 @@ catkenwood_processcatmsg(
 				{
 					const uint_fast8_t bandset_no_check = 0;
 					const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
-					const uint_fast32_t freq = gfreqs [bi];
+					const uint_fast32_t freq = gdialfreqs [bi];
 					const uint_fast8_t b = getfreqband(freq, bandset_no_check);
 					const uint_fast8_t ant = geteffantenna(freq);
 				#if WITHAUTOTUNER
@@ -18911,8 +18930,8 @@ catkenwood_processcatmsg(
 
 				const uint_fast8_t bandset_no_check = 0;
 				const uint_fast8_t bi = getbankindex_tx(1);
-				const uint_fast8_t bp = getfreqband(gfreqs [bi], bandset_no_check);
-			    const uint_fast8_t ant = geteffantenna(gfreqs [bi]);
+				const uint_fast8_t bp = getfreqband(gdialfreqs [bi], bandset_no_check);
+			    const uint_fast8_t ant = geteffantenna(gdialfreqs [bi]);
 
 				tunerwork = p1 || p2;
 
@@ -21263,7 +21282,7 @@ processmainloopkeyboard(inputevent_t * ev)
 			{
 				const uint_fast8_t bi = getbankindex_tx(gtx);
 				vindex_t vi = getvfoindex(bi);
-				gfreqs [bi] = editfreq;
+				gdialfreqs [bi] = editfreq;
 				editfreqmode = 0;
 				storebandfreq(vi, bi);		/* сохранение частоты в текущем VFO */
 				updateboard();
@@ -21273,7 +21292,7 @@ processmainloopkeyboard(inputevent_t * ev)
 				/* опять к начальному состоянию */
 				blinkpos = DISPLAY_LEFTBLINKPOS;		/* позиция курсора */
 				editfreqmode = 1;
-				editfreq = gfreqs [getbankindex_tx(gtx)];
+				editfreq = gdialfreqs [getbankindex_tx(gtx)];
 			}
 			return 1;
 		}
@@ -21283,7 +21302,7 @@ processmainloopkeyboard(inputevent_t * ev)
 		ev->frontkeyevent.kbready = 0;
 		blinkpos = DISPLAY_LEFTBLINKPOS;		/* позиция курсора */
 		editfreqmode = 1;
-		editfreq = gfreqs [getbankindex_tx(gtx)];
+		editfreq = gdialfreqs [getbankindex_tx(gtx)];
 		return 1;
 	}
 #endif /* WITHDIRECTFREQENER */
@@ -22408,7 +22427,7 @@ dpc_displatch_refresh_fn(void * ctx)
 
 		editfreq2_t ef;
 
-		ef.freq = gfreqs [bi];
+		ef.freq = gdialfreqs [bi];
 		ef.blinkpos = blinkpos;
 		ef.blinkstate = blinkstate;
 
@@ -22492,7 +22511,7 @@ static uint_fast8_t knobsmodfreq(
 	uint_fast8_t bi	// vfo bank index
 	)
 {
-	uint_fast32_t * const piknob = & gfreqs [bi];
+	uint_fast32_t * const piknob = & gdialfreqs [bi];
 	/* Обработка накопленного количества импульсов от валкодера */
 	if (nrotate != 0)
 	{
@@ -23204,7 +23223,7 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 	if (freqvalid(freq, 0))
 	{
 		const uint_fast8_t bi = getbankindex_tx(gtx);
-		gfreqs [bi] = freq;
+		gdialfreqs [bi] = freq;
 		sthrl = STHRL_RXTX_FQCHANGED;
 		updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 		bring_tuneA();	// Начать отображение текущей частоты на водопаде
@@ -25196,8 +25215,8 @@ void hamradio_main_start(void)
 	seq_purge();
 
 #if FQMODEL_GEN500
-	gfreqs [getbankindex_raw(0)] = 434085900UL;
-	gfreqs [getbankindex_raw(1)] = 434085900UL;
+	gdialfreqs [getbankindex_raw(0)] = 434085900UL;
+	gdialfreqs [getbankindex_raw(1)] = 434085900UL;
 #endif /* FQMODEL_GEN500 */
 
 	updateboard();	/* полная перенастройка (как после смены режима) - режим приема */

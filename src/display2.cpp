@@ -7127,13 +7127,13 @@ deltafreq2x_abs(
 static void display2_getdispmap(struct dispmap * p)
 {
 	const int_fast32_t bw = display2_zoomedbw();
-	const int_fast32_t f0 = hamradio_get_freq_pathi(0);	// частота центра экрана
+	const int_fast32_t f0 = hamradio_get_dialfreq_pathi(0);	// частота центра экрана
 	const int_fast32_t fz = 10000000;	// расчёт положений отногсительно одной и той же частоты - изюежать "прыгания" ихображения при перестройке
 	unsigned pathi;
 
 	for (pathi = 0; pathi < 2; ++ pathi)
 	{
-		const int_fast32_t df = hamradio_get_freq_pathi(pathi) - f0;
+		const int_fast32_t df = hamradio_get_bpfreq_pathi(pathi) - f0;
 		p->xleft [pathi] = deltafreq2x_abs(fz, hamradio_getleft_bp(pathi) + df, bw, ALLDX);	// левый край шторки
 		p->xright [pathi] = deltafreq2x_abs(fz, hamradio_getright_bp(pathi) + df, bw, ALLDX);	// правый край шторки
 	}
@@ -9497,7 +9497,7 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 
 		enum { blinkpos = UINT8_MAX, blinkstate = 0 };
 
-		const uint_fast32_t freq = hamradio_get_freq_pathi(pathi);
+		const uint_fast32_t freq = hamradio_get_dialfreq_pathi(pathi);
 
 		pix_display_value_big(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, & dbstylev_1freqA, & unifont_big, & unifont_half, '#');	// отрисовываем верхнюю часть строки
 	}
