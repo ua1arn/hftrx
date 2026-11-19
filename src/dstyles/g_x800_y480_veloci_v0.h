@@ -115,9 +115,8 @@ static const dzone_t dzones [] =
 	//{	15,	8,	14, 8,	display2_freqX_a_x075,	& dzi_freqa, PGALL, },	// MAIN FREQ Частота Герцы маленьким шрифтом.
 
 
-	//{	36,	5,	4,	5,	display2_vfomode3,	& dzi_vfomode, PGALL, },	// SPL
-	//{	40, 5,	4,	5,	display2_mainsub3,	& dzi_compat, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
-	//{	44, 5, 6,	5, xxxx },
+	{	36, 5, 	8,	5, 	display_ritxitoffset, & dzi_default, PGALL, },	//
+	{	44,	5, 	6,	5,	display2_vfomode5,	& dzi_vfomode, PGALL, },	// SPL
 
 	{	36, 10,	4,	5,	display2_mode3_a,	& dzi_modea,	PGALL, },	// SSB/CW/AM/FM/...
 	{	40, 10,	4,	5,	display2_rxbw3,	& dzi_rxbw, PGALL, },	// 3.1 / 0,5 / WID / NAR
@@ -134,7 +133,7 @@ static const dzone_t dzones [] =
 	{	32, 20,	4,	5,	display2_mode3_b,	& dzi_modeb,	PGALL, },	// SSB/CW/AM/FM/...
 	{	36, 20, 4,	5,	display2_bkin3,	& dzi_bkin, PGALL, },	// BREAK-IN
 	{	40, 20,	4,	5,	display2_voxtune3,	& dzi_voxtune, PGALL, },	// VOX
-	{	44,	20,	6,	5,	display2_vfomode5,	& dzi_vfomode, PGALL, },	// SPL
+	//{	44,	20,	6,	5,	display2_vfomode5,	& dzi_vfomode, PGALL, },	// SPL
 
 	// размещены под S-метром (15 ячеек)
 	{	0, 	25,	6,	5,	display2_voltlevelV, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
@@ -143,7 +142,6 @@ static const dzone_t dzones [] =
 	{	18,	25,	6,	5,	display2_ant5,	& dzi_antenna, PGALL, },
 	{	24, 25,	4,	5,	display2_byp3,	& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
 	////{ 	28, 25, 4,	5,	display2_dummy, & dzi_default, PGALL, },	// Placeholder
-	{	32,	25,	8,	5, 	display_ritxitoffset, & dzi_default, PGALL, },	//
 //	{	32, 25,	4,	5,	display2_rec3,	& dzi_rec, PGALL, },	// Отображение режима записи аудио фрагмента
 //	{	36, 25,	4,	5,	display2_spk3,	& dzi_spk, PGALL, },	// отображение признака включения динамика
 	{	40, 25,	4,	5,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator

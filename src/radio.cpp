@@ -3509,10 +3509,35 @@ static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом испол
 										/* номер режима работы в маске (номер тройки бит) */
 static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
 
-static int_fast32_t gritoffset;
-static int_fast32_t gxitoffset;
 
-#define RITXITDELTA (20000)
+static uint_fast16_t gzero;
+
+static ptrdiff_t valueoffs0(unsigned sel)
+{
+	(void) sel;
+	return 0;
+}
+
+static unsigned getselector0(unsigned * count, unsigned bi)
+{
+	(void) bi;
+	ASSERT(bi < 2);
+	* count = 1;
+	return 0;
+}
+
+static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned sel, unsigned bi)
+{
+	ASSERT(bi < 2);
+	(void) sel;
+	(void) bi;
+	return base;
+}
+
+static int_fast32_t getzerobase(void)
+{
+	return 0;
+}
 
 
 /** \brief Calculate log2 rounded up
@@ -4180,6 +4205,7 @@ struct nvmap {
 	uint8_t gantmanual;		/* 0 - выбор антенны автоматический */
 #endif /* WITHANTSELECT2 */
 	uint8_t splitmode;		/* не-0, если работа с фиксированными ячейками (vfo/vfoa/vfob/mem) */
+	uint16_t gritxitoffset;
 	uint8_t gvfoab;		/* 1, если работа с VFO B, 0 - с VFO A */
 #if WITHRPTOFFSET
 	uint8_t rptrhfenable;		/* Repeater offset HF */
@@ -4533,35 +4559,6 @@ static int_fast32_t getagcfencebase(void)
 
 #endif /* ! WITHISBOOTLOADER */
 
-
-static uint_fast16_t gzero;
-
-static ptrdiff_t valueoffs0(unsigned sel)
-{
-	(void) sel;
-	return 0;
-}
-
-static unsigned getselector0(unsigned * count, unsigned bi)
-{
-	(void) bi;
-	ASSERT(bi < 2);
-	* count = 1;
-	return 0;
-}
-
-static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned sel, unsigned bi)
-{
-	ASSERT(bi < 2);
-	(void) sel;
-	(void) bi;
-	return base;
-}
-
-static int_fast32_t getzerobase(void)
-{
-	return 0;
-}
 
 #if WITHENCODER
 
@@ -11419,6 +11416,30 @@ static const struct paramdefdef xgvfoab =
 	NULL,
 	& gvfoab,
 	getzerobase, /* складывается со смещением и отображается */
+	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+};
+
+static int_fast32_t gritoffset;
+static int_fast32_t gxitoffset;
+
+#define RITXITDELTA (20000)
+
+static int_fast32_t getrifxitbase(void)
+{
+	return - RITXITDELTA;
+}
+
+static uint_fast16_t gritxitoffset;
+static const struct paramdefdef xgritxitoffset =
+{
+	QLABEL3("RITXITOFFSET", "RITXITOFFSET", "RITXITOFFSET"),  0, RJ_SIGNED,	ISTEP1,
+	ITEM_VALUE,
+	0, 2 * RITXITDELTA,							/* сколько не показывать сверху */
+	OFFSETOF(struct nvmap, gritxitoffset),
+	getselector0, nvramoffs0, valueoffs0,
+	NULL,
+	& gritxitoffset,
+	getrifxitbase, /* складывается со смещением и отображается */
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
@@ -24529,6 +24550,7 @@ static const struct paramdefdef * nomenulist [] =
 #if WITHUSEDUALWATCH
 	& xdwatchmode,
 #endif /* WITHUSEDUALWATCH */
+	& xgritxitoffset,
 #if WITHPOWERLPHP
 	& xgpwri,
 #endif /* WITHPOWERLPHP */
