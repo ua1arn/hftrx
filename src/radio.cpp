@@ -343,12 +343,12 @@ processmessages(
 #define WITHPOWERTRIMMAX    100    	// Верхний предел регулировки (показываемый на дисплее)
 #define WITHPOWERTRIMATU    10    	// Значение для работы автотюнера
 
-static uint_fast32_t
-nextfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
-							   uint_fast32_t step, uint_fast32_t top);
-static uint_fast32_t
-prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
-							   uint_fast32_t step, uint_fast32_t bottom);
+static int_fast32_t
+nextfreq(int_fast32_t oldfreq, int_fast32_t freq,
+		int_fast32_t step, int_fast32_t top);
+static int_fast32_t
+prevfreq(int_fast32_t oldfreq, int_fast32_t freq,
+		int_fast32_t step, int_fast32_t bottom);
 
 static uint_fast8_t getdefantenna(uint_fast32_t f);
 static uint_fast8_t geteffantenna(uint_fast32_t f);	/* действительно выбранная антенна с учетом ручного или автоматического переключения */
@@ -702,9 +702,9 @@ param_load(
 
 /* выравнивание после перехода на следующую частоту, кратную указаному шагу */
 /* freq - новая частота, step - шаг */
-static uint_fast32_t
-nextfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
-							   uint_fast32_t step, uint_fast32_t top)
+static int_fast32_t
+nextfreq(int_fast32_t oldfreq, int_fast32_t freq,
+		int_fast32_t step, int_fast32_t top)
 {
 	//const ldiv_t r = ldiv(freq, step);
 	//freq -= r.rem;
@@ -718,11 +718,11 @@ nextfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 
 /* выравнивание после перехода на предидущую частоту, кратную указаному шагу */
 /* freq - новая частота, step - шаг */
-static uint_fast32_t
-prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
-							   uint_fast32_t step, uint_fast32_t bottom)
+static int_fast32_t
+prevfreq(int_fast32_t oldfreq, int_fast32_t freq,
+		int_fast32_t step, int_fast32_t bottom)
 {
-	const uint_fast32_t rem = (freq % step);
+	const int_fast32_t rem = (freq % step);
 	if (rem != 0)
 		freq += (step - rem);
 	//const ldiv_t r = ldiv(freq, step);
