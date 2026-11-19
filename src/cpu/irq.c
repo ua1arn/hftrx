@@ -2465,11 +2465,12 @@ static void task_resched(hwtimcountfast_t tn) {
 // получить готовую у выполнению задачу для ядра, попадающего в affinity
 static thread_item_t * task_getready(unsigned affinity) {
 	ASSERT(affinity);
-	unsigned prio;
+	IRQL_t irql;
 
 	// Ищем среди готовых
 	// Начинаем от высшего IRQL к низшему - ищем подходящий к исполнению на данном ядре.
-	for (prio = 0; prio < PRIOv_count; ++ prio) {
+	for (irql = IRQL_HIGHEST; IRQL_GE(irql, IRQL_LOWEST); irql = IRQL_DECREMENT(irql)) {
+		const unsigned prio = GICI_DECODE_IRQL(irql);
 		PRLIST_ENTRY t;
 		PRLIST_ENTRY const listR = & threads_listR [prio];
 		for (t = listR->Flink; t != listR; t = t->Flink) {

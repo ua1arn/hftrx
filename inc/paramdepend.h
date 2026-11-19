@@ -800,9 +800,9 @@ extern "C" {
 #elif (__GIC_PRESENT == 1)
 
 	typedef uint8_t IRQL_t;
-	#define IRQL_EQ(a, b) ((a) == (b))	// A имеет равный приоритет с B
+	#define IRQL_EQ(a, b) ((a) == (b))	// A имеет равный с B приоритет
 	#define IRQL_GT(a, b) ((a) < (b))	// A более приоритетно чем B
-	#define IRQL_GE(a, b) ((a) =< (b))	// A более приоритетно чем B или A имеет равный приоритет B
+	#define IRQL_GE(a, b) ((a) <= (b))	// A более приоритетно чем B или A имеет равный приоритет B
 	#define IRQL_LT(a, b) ((a) > (b))	// A менее приоритетно чем B
 	#define IRQL_LE(a, b) ((a) >= (b))	// A менее приоритетно чем B или A имеет равный приоритет B
 
@@ -816,7 +816,7 @@ extern "C" {
 		PRIOv_SYSTEM,		/* таймеры, USB */
 		PRIOv_BOARD,		/* параметры фильтров, board_set_xxx */
 		PRIOv_USER,
-		PRIOv_IDLE,
+		PRIOv_IDLE,			/* тспользуется только поанировщиком для IDLE потоков */
 		//
 		PRIOv_count
 	};
@@ -834,11 +834,11 @@ extern "C" {
 
 	#define GIC_BINARY_POINT 2	//(GIC_GetBinaryPoint())
 
-	#define GICD_ENCODE_PRIORITY(priov) 	((uint32_t) ((priov) << (GIC_BINARY_POINT + 1)))	// Value for GICDistributor->IPRIORITYR[n]
+
+	// value for GIC_SetInterfacePriorityMask
 	#define GICI_ENCODE_IRQL(priov) 		((IRQL_t) ((priov) << (GIC_BINARY_POINT + 1)))	// value for GICInterface->PMR
 	#define GICI_DECODE_IRQL(irql) 			(((uint32_t) (irql) >> (GIC_BINARY_POINT + 1)))	// value from GICInterface->PMR
 
-	// value for GIC_SetInterfacePriorityMask
 	#define IRQL_ENCODER 		(GICI_ENCODE_IRQL(PRIOv_ENCODER))
 	#define IRQL_IPC 			(GICI_ENCODE_IRQL(PRIOv_IPC))
 	#define IRQL_IPC_ONLY 		(GICI_ENCODE_IRQL(PRIOv_IPC_ONLY))
@@ -849,8 +849,15 @@ extern "C" {
 	#define IRQL_USER 			(GICI_ENCODE_IRQL(PRIOv_USER))
 	#define IRQL_IDLE 			(GICI_ENCODE_IRQL(PRIOv_IDLE))
 
+	/* для итератора в планировщике */
+	#define IRQL_HIGHEST 		IRQL_ENCODER
+	#define IRQL_LOWEST 		IRQL_IDLE
+	#define IRQL_DECREMENT(v) 	((v) + 1)	// получить значение следующего, меньшего приоритетв
+
 	// A lower priority value indicating a higher priority
 	// Value for GICD
+	#define GICD_ENCODE_PRIORITY(priov) ((uint32_t) ((priov) << (GIC_BINARY_POINT + 1)))	// Value for GICDistributor->IPRIORITYR[n]
+
 	#define ARM_ENCODER_PRIORITY		(GICD_ENCODE_PRIORITY(PRIOv_ENCODER))
 	#define ARM_IPC_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_IPC))
 	#define ARM_OVERREALTIME_PRIORITY	(GICD_ENCODE_PRIORITY(PRIOv_OVERREALTIME))	/* валкодер и телеграф */
