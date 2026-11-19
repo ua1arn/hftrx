@@ -249,16 +249,15 @@
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 	
 
-	#define ENCRES_DEFAULT ENCRES_600
-	#define ENCRES_SUB_DEFAULT ENCRES_600
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
-	#define WITHENCODER_SUB	1		/* есть второй валкодер */
-	#define ENCDIV_DEFAULT 2
-	#define ENCDIVSUB_DEFAULT 16
+	#define ENCRES_DEFAULT ENCRES_600
+	#define ENCDIV_DEFAULT 4
 	#define ENCDYNAMIC_DEFAULT 0
-	#define ENCSUBDYNAMIC_DEFAULT 0
 
-	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
+	#define WITHENCODER_SUB	1		/* есть второй валкодер */
+	#define ENCRES_SUB_DEFAULT ENCRES_600
+	#define ENCDIVSUB_DEFAULT 16
+	#define ENCSUBDYNAMIC_DEFAULT 0
 
 	#define WITHENCODER_1F	1
 	#define WITHENCODER_2F	1
@@ -316,9 +315,6 @@
 	//#define WITHDSPLOCALRXFIR 1			/* Фильтрация квадратур на приёме осуществляется программно */
 
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
-	
-	
-	//
 
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
@@ -409,6 +405,8 @@
 	#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
 	#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 	//#define WITHANTSELECT	1	/* Управление переключением антенн */
+
+	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 
 	//#define WITHVITA49RX	1	/* VITA 49.0-2015 streaming source support */
 	
