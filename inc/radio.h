@@ -797,7 +797,8 @@ uint_fast16_t hamradio_notch_freq(int_fast8_t step);
 uint_fast16_t hamradio_notch_width(int_fast8_t step);
 uint_fast32_t hamradio_get_freq_a(void);		// Частота VFO A для отображения на дисплее
 uint_fast32_t hamradio_get_freq_b(void);		// Частота VFO B для отображения на дисплее
-uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi);		// Частота VFO A/B для отображения на дисплее
+uint_fast32_t hamradio_get_dialfreq_pathi(uint_fast8_t pathi);		// Частота VFO A/B для отображения на дисплее
+uint_fast32_t hamradio_get_bpfreq_pathi(uint_fast8_t pathi);		// Частота VFO A/B без учёта расстройки
 uint_fast32_t hamradio_get_freq_rx(void);		// Частота VFO A для маркировки файлов
 uint_fast32_t hamradio_get_modem_baudrate100(void);	// скорость передачи BPSK * 100
 uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set);
