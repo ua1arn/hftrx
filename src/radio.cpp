@@ -737,6 +737,29 @@ prevfreq(int_fast32_t oldfreq, int_fast32_t freq,
 	return freq;
 }
 
+static int_fast32_t modifyfreq(
+		int_fast32_t v,
+		int_fast32_t nrotate,	// сколько шагов
+		int_fast32_t step, int_fast32_t jumpsize,	// параметры ускорения
+		int_fast32_t bottom, int_fast32_t top	// нижний и верхний по значению пределы. top не входит в интервал
+		)
+{
+	if (nrotate < 0)
+	{
+		/* вращали "вниз" */
+		return prevfreq(v, v - (step * jumpsize * - nrotate), step, bottom);
+	}
+	else if (nrotate > 0)
+	{
+		/* вращали "вверх" */
+		return nextfreq(v, v + (step * jumpsize * nrotate), step, top);
+	}
+	else
+	{
+		return v;
+	}
+}
+
 /* получение следующего числа в диапазоне low..high с "заворотом" */
 /* используется при переборе режимов кнопками */
 static uint_fast16_t
@@ -3485,6 +3508,10 @@ static uint_fast8_t glocks [BANKINDEX_COUNT];
 static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом используется результат функции getbankindex_xxx(tx) */
 										/* номер режима работы в маске (номер тройки бит) */
 static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
+
+static int_fast32_t gritoffset;
+static int_fast32_t gxitoffset;
+#define RITXITDELTA (20000)
 
 
 /** \brief Calculate log2 rounded up
@@ -14926,6 +14953,8 @@ const char * hamradio_get_ant5_value(void)
 static void
 uif_key_spliton(uint_fast8_t holded)
 {
+	gritoffset = 0;
+	gxitoffset = 0;
 	if (holded)
 	{
 		// Тогда копируем VFO A в VFO B со смещением частоты
@@ -14945,6 +14974,8 @@ uif_key_spliton(uint_fast8_t holded)
 static void
 uif_key_splitoff(void)
 {
+	gritoffset = 0;
+	gxitoffset = 0;
 	gsplitmode = SPLITMODES_OFF;
 	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
 	updateboard();
@@ -14952,6 +14983,8 @@ uif_key_splitoff(void)
 
 static void uif_key_rit_on(void)
 {
+	gritoffset = 0;
+	gxitoffset = 0;
 	gsplitmode = SPLITMODES_RIT;
 	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
 	updateboard();
@@ -14959,6 +14992,8 @@ static void uif_key_rit_on(void)
 
 static void uif_key_xit_on(void)
 {
+	gritoffset = 0;
+	gxitoffset = 0;
 	gsplitmode = SPLITMODES_XIT;
 	save_i8(RMT_SPLITMODE_BASE, gsplitmode);
 	updateboard();
@@ -22452,23 +22487,16 @@ appspoolprocess(void * ctx)
 //}
 
 static uint_fast8_t knobsmodfreq(
-	uint_fast32_t * piknob,	// что меняем
 	int_fast32_t nrotate,	// сколько шагов
-	int_fast32_t step, uint_fast8_t jumpsize,	// параметры ускорения
+	int_fast32_t step, int_fast32_t jumpsize,	// параметры ускорения
 	uint_fast8_t bi	// vfo bank index
 	)
 {
+	uint_fast32_t * const piknob = & gfreqs [bi];
 	/* Обработка накопленного количества импульсов от валкодера */
-	if (nrotate < 0)
+	if (nrotate != 0)
 	{
-		/* Валкодер A: вращали "вниз" */
-		* piknob = prevfreq(* piknob, * piknob - ((uint_fast32_t) step * jumpsize * - nrotate), step, tune_bottom(bi));
-		return 1;
-	}
-	else if (nrotate > 0)
-	{
-		/* Валкодер A: вращали "вверх" */
-		* piknob = nextfreq(* piknob, * piknob + ((uint_fast32_t) step * jumpsize * nrotate), step, tune_top(bi));
+		* piknob = modifyfreq(* piknob, nrotate, step, jumpsize, tune_bottom(bi), tune_top(bi));
 		return 1;
 	}
 	else
@@ -22486,16 +22514,37 @@ static uint_fast8_t performtune(
 	uint_fast8_t freqchanged = 0;
 	const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);		/* состояние выбора банков может измениться */
 	const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);		/* состояние выбора банков может измениться */
-	uint_fast32_t * const pimain = & gfreqs [bi_main];
-	uint_fast32_t * const pisub = & gfreqs [bi_sub];
-
-	if (glocks [bi_main] == 0)
+	const uint_fast8_t unlocked = glocks [bi_main] == 0;
+	switch (gsplitmode)
 	{
-		freqchanged |= knobsmodfreq(pimain, nrotate_main, step_main, jumpsize_main, bi_main);
-#if ! WITHTOUCHGUI
-		freqchanged |= knobsmodfreq(pisub, nrotate_sub, step_sub, jumpsize_sub, bi_sub);
-#endif /* ! WITHTOUCHGUI */
+	case SPLITMODES_OFF:
+	case SPLITMODES_ON:
+		if (unlocked)
+		{
+			freqchanged |= knobsmodfreq(nrotate_main, step_main, jumpsize_main, bi_main);
+	#if ! WITHTOUCHGUI
+			freqchanged |= knobsmodfreq(nrotate_sub, step_sub, jumpsize_sub, bi_sub);
+	#endif /* ! WITHTOUCHGUI */
+		}
+		break;
+	case SPLITMODES_RIT:
+		if (unlocked)
+		{
+			freqchanged |= knobsmodfreq(nrotate_main, step_main, jumpsize_main, bi_main);
+		}
+		gritoffset = modifyfreq(gritoffset, nrotate_sub, step_sub, jumpsize_sub, - RITXITDELTA, + RITXITDELTA + step_sub);
+		freqchanged = freqchanged || (nrotate_sub |= 0);
+		break;
+	case SPLITMODES_XIT:
+		if (unlocked)
+		{
+			freqchanged |= knobsmodfreq(nrotate_main, step_main, jumpsize_main, bi_main);
+		}
+		gxitoffset = modifyfreq(gxitoffset, nrotate_sub, step_sub, jumpsize_sub, - RITXITDELTA, + RITXITDELTA + step_sub);
+		freqchanged = freqchanged || (nrotate_sub |= 0);
+		break;
 	}
+	//PRINTF("gritoffset=%d, gxitoffset=%d\n", (int) gritoffset, (int) gxitoffset);
 	return freqchanged;
 }
 
@@ -22559,11 +22608,13 @@ processmainloopTuneKnobs(inputevent_t * ev)
 		//display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
 #endif /* WITHTOUCHGUI */
 	}
-	freqchanged = performtune(nrotate_main, step_main, jumpsize_main, nrotate_sub, step_sub, jumpsize_sub, gsplitmode);
 
 #if WITHTOUCHGUI && WITHENCODER2
+	freqchanged |= performtune(nrotate_main, step_main, jumpsize_main, 0, step_sub, jumpsize_sub, gsplitmode);
 	gui_set_encoder2_rotate(nrotate_sub);
 	freqchanged = freqchanged || !! nrotate_sub;
+#else
+	freqchanged = performtune(nrotate_main, step_main, jumpsize_main, nrotate_sub, step_sub, jumpsize_sub, gsplitmode);
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 
 
