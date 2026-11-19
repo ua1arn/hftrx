@@ -3307,7 +3307,7 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 void __NO_RETURN VIRQ_Handler(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_LT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
 		IRQ_Handler_GIC();		// Group 1 handler
 		run_notask_curr(frame);	// __NO_RETURN
 	} else {
@@ -3331,7 +3331,7 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_LT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
 		FIQ_Handler_GIC();		// Group 0 handler
 		run_notask_curr(frame);	// __NO_RETURN
 	} else {
@@ -3407,23 +3407,24 @@ void SError_Handler(void * frame)
 void IRQ_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
-	if (threads_not_started) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
 		IRQ_Handler_GIC();			// Group 1 handler
 		run_notask_curr_aarch32(frame);	// __NO_RETURN
+	} else {
+	   // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
+		irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
+		const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
+		irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+
+		const uint_fast8_t core = arm_hardware_cpuid();
+		const unsigned aff = thread_set_affinity(frame, 1U << core, core);
+
+		IRQ_Handler_GIC();			// Group 1 handler
+
+		thread_set_affinity(frame, aff, core);
+		run_task_curr_aarch32(task_scheduler(frame));	// __NO_RETURN
 	}
-    // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
-	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
-    const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
-    irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
-
-	const uint_fast8_t core = arm_hardware_cpuid();
-	const unsigned aff = thread_set_affinity(frame, 1U << core, core);
-
-	IRQ_Handler_GIC();			// Group 1 handler
-
-	thread_set_affinity(frame, aff, core);
-	run_task_curr_aarch32(task_scheduler(frame));	// __NO_RETURN
-#else /* WITHRTOS */
+ #else /* WITHRTOS */
 	IRQ_Handler_GIC();			// Group 1 handler
 	run_notask_curr_aarch32(frame);	// __NO_RETURN
 #endif /* WITHRTOS */
@@ -3432,22 +3433,23 @@ void IRQ_Handler_aarch32(void * frame)
 void FIQ_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
-	if (threads_not_started) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
 		FIQ_Handler_GIC();			// Group 0 handler
 		run_notask_curr_aarch32(frame);	// __NO_RETURN
+	} else {
+		// Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
+		irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
+		const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
+		irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+
+		const uint_fast8_t core = arm_hardware_cpuid();
+		const unsigned aff = thread_set_affinity(frame, 1U << core, core);
+
+		FIQ_Handler_GIC();			// Group 0 handler
+
+		thread_set_affinity(frame, aff, core);
+		run_task_curr_aarch32(task_scheduler(frame));	// __NO_RETURN
 	}
-    // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
-	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
-    const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
-    irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
-
-	const uint_fast8_t core = arm_hardware_cpuid();
-    const unsigned aff = thread_set_affinity(frame, 1U << core, core);
-
-	FIQ_Handler_GIC();			// Group 0 handler
-
-	thread_set_affinity(frame, aff, core);
-	run_task_curr_aarch32(task_scheduler(frame));	// __NO_RETURN
 #else /* WITHRTOS */
 	FIQ_Handler_GIC();			// Group 0 handler
 	run_notask_curr_aarch32(frame);	// __NO_RETURN

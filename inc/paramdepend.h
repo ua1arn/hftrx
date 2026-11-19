@@ -802,7 +802,9 @@ extern "C" {
 	typedef uint8_t IRQL_t;
 	#define IRQL_EQ(a, b) ((a) == (b))	// A имеет равный приоритет с B
 	#define IRQL_GT(a, b) ((a) < (b))	// A более приоритетно чем B
+	#define IRQL_GE(a, b) ((a) =< (b))	// A более приоритетно чем B или A имеет равный приоритет B
 	#define IRQL_LT(a, b) ((a) > (b))	// A менее приоритетно чем B
+	#define IRQL_LE(a, b) ((a) >= (b))	// A менее приоритетно чем B или A имеет равный приоритет B
 
 	enum
 	{
