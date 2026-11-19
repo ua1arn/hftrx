@@ -4379,6 +4379,16 @@ void display2_mla9(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fa
 #endif /* WITHMGLOOP */
 }
 
+void display_ritxitoffset(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+	const int offs = hamradio_getritxitoffset(0);
+	const div_t d = div(offs, 1000);
+	char b [xspan + 1];
+
+	local_snprintf_P(b, ARRAY_SIZE(b), "%+2d.%03d", d.quot, iabs(d.rem));
+	display_text(db, x, y, b, xspan, yspan, & dbstylev_1statePSU);
+}
+
 // Отображение КСВ в меню
 void display2_swrsts20(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
