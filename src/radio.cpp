@@ -16130,7 +16130,7 @@ static uint_fast8_t processpots(void)
 	return changed;
 }
 
-static uint_fast8_t processmainloopencoders(uint_fast8_t inmenu, inputevent_t * ev)
+static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 {
 	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
 	const uint_fast8_t submode = getsubmode(bi);
@@ -22451,6 +22451,54 @@ appspoolprocess(void * ctx)
 //	return STTE_OK;
 //}
 
+static uint_fast8_t knobsmodfreq(
+	uint_fast32_t * piknob,	// что меняем
+	int_fast32_t nrotate,	// сколько шагов
+	int_fast32_t step, uint_fast8_t jumpsize,	// параметры ускорения
+	uint_fast8_t bi	// vfo bank index
+	)
+{
+	/* Обработка накопленного количества импульсов от валкодера */
+	if (nrotate < 0)
+	{
+		/* Валкодер A: вращали "вниз" */
+		* piknob = prevfreq(* piknob, * piknob - ((uint_fast32_t) step * jumpsize * - nrotate), step, tune_bottom(bi));
+		return 1;
+	}
+	else if (nrotate > 0)
+	{
+		/* Валкодер A: вращали "вверх" */
+		* piknob = nextfreq(* piknob, * piknob + ((uint_fast32_t) step * jumpsize * nrotate), step, tune_top(bi));
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+static uint_fast8_t performtune(
+	int_fast32_t nrotate_main, int_fast32_t step_main, uint_fast8_t jumpsize_main,
+	int_fast32_t nrotate_sub, int_fast32_t step_sub, uint_fast8_t jumpsize_sub,
+	uint_fast8_t splitmode
+	)
+{
+	uint_fast8_t freqchanged = 0;
+	const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);		/* состояние выбора банков может измениться */
+	const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);		/* состояние выбора банков может измениться */
+	uint_fast32_t * const pimain = & gfreqs [bi_main];
+	uint_fast32_t * const pisub = & gfreqs [bi_sub];
+
+	if (glocks [bi_main] == 0)
+	{
+		freqchanged |= knobsmodfreq(pimain, nrotate_main, step_main, jumpsize_main, bi_main);
+#if ! WITHTOUCHGUI
+		freqchanged |= knobsmodfreq(pisub, nrotate_sub, step_sub, jumpsize_sub, bi_sub);
+#endif /* ! WITHTOUCHGUI */
+	}
+	return freqchanged;
+}
+
 enum
 {
 	//STHTL_IDLE,
@@ -22466,11 +22514,9 @@ static uint_fast8_t sthrl = STHRL_RXTX;
 
 /* Возвращаем не-0, если было изменение частоты настройки */
 static uint_fast8_t
-processmainlooptuneknobs(inputevent_t * ev)
+processmainloopTuneKnobs(inputevent_t * ev)
 {
 	uint_fast8_t freqchanged = 0;
-	const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);		/* состояние выбора банков может измениться */
-	const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);		/* состояние выбора банков может измениться */
 	//const uint_fast8_t locked = glocks [getbankindex_ab_forcontrols(0)];
 	uint_fast8_t jumpsize_main;
 	uint_fast8_t jumpsize_sub;
@@ -22504,6 +22550,7 @@ processmainlooptuneknobs(inputevent_t * ev)
 	// обработка меню FN, если выключено - работает как перестройка частоты с крупным шагом
 	if (uif_encoder2_rotate(nrotate_sub))
 	{
+		freqchanged = 1;
 		nrotate_sub = 0;
 #if WITHTOUCHGUI
 		hamradio_gui_enc2_update();
@@ -22512,45 +22559,7 @@ processmainlooptuneknobs(inputevent_t * ev)
 		//display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
 #endif /* WITHTOUCHGUI */
 	}
-
-	if (glocks [bi_main] == 0)
-	{
-		if (nrotate_main || nrotate_sub)
-		{
-			//PRINTF("m=%d J=%d  ", nrotate_main, jumpsize_main);
-		}
-		uint_fast32_t * const pimain = & gfreqs [bi_main];
-		uint_fast32_t * const pisub = & gfreqs [bi_sub];
-		/* Обработка накопленного количества импульсов от валкодера */
-		if (nrotate_main < 0)
-		{
-			/* Валкодер A: вращали "вниз" */
-			* pimain = prevfreq(* pimain, * pimain - ((uint_fast32_t) step_main * jumpsize_main * - nrotate_main), step_main, tune_bottom(bi_main));
-			freqchanged = 1;
-		}
-		else if (nrotate_main > 0)
-		{
-			/* Валкодер A: вращали "вверх" */
-			* pimain = nextfreq(* pimain, * pimain + ((uint_fast32_t) step_main * jumpsize_main * nrotate_main), step_main, tune_top(bi_main));
-			freqchanged = 1;
-		}
-
-#if ! WITHTOUCHGUI
-		/* Обработка накопленного количества импульсов от валкодера */
-		if (nrotate_sub < 0)
-		{
-			/* Валкодер B: вращали "вниз" */
-			* pisub = prevfreq(* pisub, * pisub - ((uint_fast32_t) step_sub * jumpsize_sub * - nrotate_sub), step_sub, tune_bottom(bi_sub));
-			freqchanged = 1;
-		}
-		else if (nrotate_sub > 0)
-		{
-			/* Валкодер B: вращали "вверх" */
-			* pisub = nextfreq(* pisub, * pisub + ((uint_fast32_t) step_sub * jumpsize_sub * nrotate_sub), step_sub, tune_top(bi_sub));
-			freqchanged = 1;
-		}
-#endif /* ! WITHTOUCHGUI */
-	}
+	freqchanged = performtune(nrotate_main, step_main, jumpsize_main, nrotate_sub, step_sub, jumpsize_sub, gsplitmode);
 
 #if WITHTOUCHGUI && WITHENCODER2
 	gui_set_encoder2_rotate(nrotate_sub);
@@ -22732,7 +22741,7 @@ hamradio_main_step(void)
 
 		} // end potentiometers processing
 
-		if (processmainloopencoders(ginmenu0, & event))
+		if (processmainFNknobs(ginmenu0, & event))
 		{
 	#if WITHTOUCHGUI
 			display_redrawfreqstimed(1);
@@ -22740,7 +22749,7 @@ hamradio_main_step(void)
 
 		}
 		// Knobs rotation processing
-		if (! ginmenu0 && processmainlooptuneknobs(& event))
+		if (! ginmenu0 && processmainloopTuneKnobs(& event))
 		{
 			updateboard_freq();	/* частичная перенастройка - без смены режима работы. может вызвать полную перенастройку */
 			// Ограничение по скорости обновления дисплея уже заложено в него
