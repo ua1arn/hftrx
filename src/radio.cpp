@@ -3512,13 +3512,6 @@ static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* инде�
 static int_fast32_t gritoffset;
 static int_fast32_t gxitoffset;
 
-static int_fast32_t getritxitoffset(uint_fast8_t pathi)
-{
-//	if (pathi)
-//		return 0;
-	return pathi ? gxitoffset : gritoffset;
-}
-
 #define RITXITDELTA (20000)
 
 
@@ -11581,15 +11574,6 @@ uint_fast32_t hamradio_get_dialfreq_pathi(uint_fast8_t pathi)
 #endif /* WITHLFM */
 	return gdialfreqs [getbankindex_pathi(pathi)];
 }
-// Частота VFO A/B без учёта расстройки
-uint_fast32_t hamradio_get_bpfreq_pathi(uint_fast8_t pathi)
-{
-#if WITHLFM
-	if (iflfmactive())
-		return getlfmfreq();
-#endif /* WITHLFM */
-	return gdialfreqs [getbankindex_pathi(pathi)];
-}
 
 // SSB/CW/AM/FM/..
 const char * hamradio_get_mode_a_value_P(void)
@@ -11655,6 +11639,14 @@ static const struct paramdefdef xdwatchmode =
 // Показ маркера полосы пропускания второго VFO
 uint_fast8_t hamradio_get_shofvfobmarker(void)
 {
+	switch (gsplitmode)
+	{
+	case SPLITMODES_RIT:
+	case SPLITMODES_XIT:
+		return 1;
+	default:
+		break;
+	}
 	switch (mainsubrxmodes [param_val(& xdwatchmode)].code)
 	{
 	case BOARD_RXMAINSUB_A_A:
@@ -12493,6 +12485,25 @@ getsidelo6(
 #endif /* WITHIF4DSP */
 }
 
+static int_fast32_t getritxitoffset(uint_fast8_t pathi)
+{
+	switch (gsplitmode)
+	{
+	default:
+	case SPLITMODES_OFF:
+	case SPLITMODES_ON:
+		return 0;
+	case SPLITMODES_RIT:
+		return pathi == 0 ? gritoffset : 0;
+	case SPLITMODES_XIT:
+		return pathi != 0 ? gxitoffset : 0;
+
+	}
+//	if (pathi)
+//		return 0;
+	return pathi ? gxitoffset : gritoffset;
+}
+
 #if WITHIF4DSP
 
 // Значение частоты среза для фильтра ПЧ
@@ -12567,34 +12578,7 @@ getif6bw(
 int_fast16_t
 hamradio_getleft_bp(uint_fast8_t pathi)
 {
-	const uint_fast8_t bi = getbankindex_pathi(pathi);
-	const uint_fast32_t freq = gdialfreqs [bi];
-	const uint_fast8_t forcelsb = getforcelsb(freq);
-	const uint_fast8_t submode = getsubmode(bi);	// брать модуляцию нужного приемника
-	const uint_fast8_t alsbmode = getsubmodelsb(submode, forcelsb);	// Принимаемая модуляция на нижней боковой
-	const struct modetempl * const pmodet = getmodetempl(submode);
-	const uint_fast8_t bwseti = pmodet->bwsetis [gtx];
-	const uint_fast8_t mode = submodes [submode].mode;
-	const int_fast16_t cwpitch = gcwpitch10 * CWPITCHSCALE;
-
-	switch (mode)
-	{
-	case MODE_SSB:
-	case MODE_DIGI:
-		return alsbmode ? - bwseti_gethigh(bwseti) : bwseti_getlow(bwseti);
-
-	case MODE_CW:
-		return alsbmode ? - bwseti_gethigh(bwseti) + cwpitch: bwseti_getlow(bwseti) - cwpitch;
-
-	default:
-		return - getif6bw(mode, gtx, bwseti_getwide(bwseti)) / 2;	// TODO: учесть возврат INT16_MAX
-	}
-}
-
-/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
-int_fast16_t
-hamradio_getright_bp(uint_fast8_t pathi)
-{
+	int_fast16_t offs = 0;
 	const uint_fast8_t bi = getbankindex_pathi(pathi);
 	const uint_fast32_t freq = gdialfreqs [bi] + getritxitoffset(pathi);
 	const uint_fast8_t forcelsb = getforcelsb(freq);
@@ -12609,14 +12593,51 @@ hamradio_getright_bp(uint_fast8_t pathi)
 	{
 	case MODE_SSB:
 	case MODE_DIGI:
-		return alsbmode ? - bwseti_getlow(bwseti) : bwseti_gethigh(bwseti);
+		offs = alsbmode ? - bwseti_gethigh(bwseti) : bwseti_getlow(bwseti);
+		break;
 
 	case MODE_CW:
-		return alsbmode ? - bwseti_getlow(bwseti) + cwpitch : bwseti_gethigh(bwseti) - cwpitch;
+		offs = alsbmode ? - bwseti_gethigh(bwseti) + cwpitch: bwseti_getlow(bwseti) - cwpitch;
+		break;
 
 	default:
-		return getif6bw(mode, gtx, bwseti_getwide(bwseti)) / 2;	// TODO: учесть возврат INT16_MAX
+		offs = - getif6bw(mode, gtx, bwseti_getwide(bwseti)) / 2;	// TODO: учесть возврат INT16_MAX
+		break;
 	}
+	return offs + getritxitoffset(pathi);
+}
+
+/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
+int_fast16_t
+hamradio_getright_bp(uint_fast8_t pathi)
+{
+	int_fast16_t offs = 0;
+	const uint_fast8_t bi = getbankindex_pathi(pathi);
+	const uint_fast32_t freq = gdialfreqs [bi] + getritxitoffset(pathi);
+	const uint_fast8_t forcelsb = getforcelsb(freq);
+	const uint_fast8_t submode = getsubmode(bi);	// брать модуляцию нужного приемника
+	const uint_fast8_t alsbmode = getsubmodelsb(submode, forcelsb);	// Принимаемая модуляция на нижней боковой
+	const struct modetempl * const pmodet = getmodetempl(submode);
+	const uint_fast8_t bwseti = pmodet->bwsetis [gtx];
+	const uint_fast8_t mode = submodes [submode].mode;
+	const int_fast16_t cwpitch = gcwpitch10 * CWPITCHSCALE;
+
+	switch (mode)
+	{
+	case MODE_SSB:
+	case MODE_DIGI:
+		offs = alsbmode ? - bwseti_getlow(bwseti) : bwseti_gethigh(bwseti);
+		break;
+
+	case MODE_CW:
+		offs = alsbmode ? - bwseti_getlow(bwseti) + cwpitch : bwseti_gethigh(bwseti) - cwpitch;
+		break;
+
+	default:
+		offs = getif6bw(mode, gtx, bwseti_getwide(bwseti)) / 2;	// TODO: учесть возврат INT16_MAX
+		break;
+	}
+	return offs + getritxitoffset(pathi);
 }
 
 #endif /* WITHIF4DSP */
@@ -14791,16 +14812,15 @@ updateboard_noui(
 	}
 	else
 	{
+		const int_fast32_t dialfreq = hamradio_get_dialfreq_pathi(0);	// центр панорамы
+		synth_rts1_setfreq(0, getlo0(lo0hint) - dialfreq);	// Установка центральной частоты тракта панорамного индикатора
 		for (pathi = 0; pathi < pathn; ++ pathi)
 		{
-			const uint_fast8_t bi = getbankindex_pathi(pathi);
-			const int_fast32_t dialfreq = gdialfreqs [bi];	// центр панорамы
-			const int_fast32_t freq = gdialfreqs [bi] + getritxitoffset(pathi);	// частота тракта
+			const int_fast32_t freq = dialfreq + getritxitoffset(pathi);	// частота тракта
 
 			/* частота первого гетеродина может оказаться отрицательной */
 			const uint_fast32_t lo1 = synth_freq2lo1(freq, pathi);
 			synth_lo1_setfreq(pathi, lo1, getlo1div(gtx)); /* установка частоты первого гетеродина */
-			synth_rts1_setfreq(pathi, getlo0(lo0hint) - dialfreq);	// Установка центральной частоты панорамного индикатора
 		}
 	}
 
