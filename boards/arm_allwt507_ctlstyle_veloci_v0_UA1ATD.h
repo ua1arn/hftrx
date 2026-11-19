@@ -251,12 +251,11 @@
 
 	#define ENCRES_DEFAULT ENCRES_600
 	#define ENCRES_SUB_DEFAULT ENCRES_600
-	//#define WITHDIRECTFREQENER	1
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	#define WITHENCODER_SUB	1		/* есть второй валкодер */
 	#define ENCDIV_DEFAULT 2
 	#define ENCDIVSUB_DEFAULT 16
-	#define ENCDYNAMIC_DEFAULT 1
+	#define ENCDYNAMIC_DEFAULT 0
 	#define ENCSUBDYNAMIC_DEFAULT 0
 
 	#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
@@ -451,6 +450,7 @@
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
+	//#define WITHDIRECTFREQENER	1
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
 	//#define WITHBCBANDS		1		/* в таблице диапазонов присутствуют вещательные диапазоны */
 	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
