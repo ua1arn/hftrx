@@ -60,14 +60,46 @@
 #include "src/speex/speex_preprocess.h"
 
 static uint_fast8_t board_wakeup(void);
-static uint_fast8_t
-processcatmsg(
-	char catcommand1,
-	char catcommand2,
-	uint_fast8_t cathasparam,
-	uint_fast8_t catpcount,	// количество символов за кодом команды
-	const uint8_t * catp	// массив символов
-	);
+
+static uint_fast8_t catmux_processcatmsg(char c1, char c2, uint_fast8_t hasparam, uint_fast8_t pcount, const uint8_t * catp);
+static uint_fast8_t catyaesu_processcatmsg(char c1, char c2, uint_fast8_t hasparam, uint_fast8_t pcount, const uint8_t * catp);
+static uint_fast8_t caticom_processcatmsg(char c1, char c2, uint_fast8_t hasparam, uint_fast8_t pcount, const uint8_t * catp);
+static uint_fast8_t catkenwood_processcatmsg(char c1, char c2, uint_fast8_t hasparam, uint_fast8_t pcount, const uint8_t * catp);
+
+static void catmux_enable(uint_fast8_t enable);
+static void catyaesu_enable(uint_fast8_t enable);
+static void caticom_enable(uint_fast8_t enable);
+static void catkenwood_enable(uint_fast8_t enable);
+
+static void catmux_parsechar(uint_fast8_t c);
+static void catyaesu_parsechar(uint_fast8_t c);
+static void caticom_parsechar(uint_fast8_t c);
+static void catkenwood_parsechar(uint_fast8_t c);
+
+static void catmux_answer_request(uint_fast8_t i);
+static void catyaesu_answer_request(uint_fast8_t i);
+static void caticom_answer_request(uint_fast8_t i);
+static void catkenwood_answer_request(uint_fast8_t i);
+
+static char catmux_getnextcw(void);
+static char catyaesu_getnextcw(void);
+static char caticom_getnextcw(void);
+static char catkenwood_getnextcw(void);
+
+static void catmux_answer_forming(void);
+static void catyaesu_answer_forming(void);
+static void caticom_answer_forming(void);
+static void catkenwood_answer_forming(void);
+
+void cat2_disconnect(void);
+static void catyaesu_disconnect(void);
+static void caticom_disconnect(void);
+static void catkenwood_disconnect(void);
+
+static void catmux_cattimeout_cb(void * ctx);
+static void catyaesu_cattimeout_cb(void * ctx);
+static void caticom_cattimeout_cb(void * ctx);
+static void catkenwood_cattimeout_cb(void * ctx);
 
 
 /* система отказа от передачи при аварийных ситуациях */
@@ -172,7 +204,7 @@ processmessages(
 			// check MSGBUFFERSIZE8 value
 			// 12 bytes as parameter
 			//PRINTF(PSTR("processmessages: MSGT_CAT\n"));
-			if (processcatmsg(buff [0], buff [1], buff [2], buff [8], buff + 9))
+			if (catmux_processcatmsg(buff [0], buff [1], buff [2], buff [8], buff + 9))
 			{
 				//display2_needupdate();			/* Обновление дисплея - всё, включая частоту */
 			}
@@ -1154,8 +1186,7 @@ param_rotate(const struct paramdefdef * pd, int_fast32_t nrotate)
 
 #if WITHCAT
 
-static void processcat_enable(uint_fast8_t enable);
-static void cat_answer_request(uint_fast8_t catindex);	// call from user-mode
+#if WITHCAT // && WITHCAT_KENWOOD
 
 static uint_fast8_t aistate;		/* autoinformation state flag */
 static uint_fast8_t rmstate;		/* RM answer state type (1..3) */
@@ -1219,19 +1250,24 @@ enum
 	CAT_MAX_INDEX
 };
 
+#endif /* WITHCAT && WITHCAT_KENWOOD */
+
+#if WITHCAT && WITHCAT_KENWOOD
+
 static uint8_t cat_answer_map [CAT_MAX_INDEX];
 static uint8_t cat_answerparam_map [CAT_MAX_INDEX];
 
+#endif /* WITHCAT && WITHCAT_KENWOOD */
 
-static uint_fast32_t savedbaudrate;	// Скорость, на которую в последний раз был запрограммирован порт.
+static uint_fast32_t catsavedbaudrate;	// Скорость, на которую в последний раз был запрограммирован порт.
 
 static void
 cat_set_speed(uint_fast32_t baudrate)
 {
 	/* перепрограммирование вызывает сбой при приёме если идёт передача из контроллера. */
-	if (savedbaudrate == baudrate)
+	if (catsavedbaudrate == baudrate)
 		return;
-	savedbaudrate = baudrate;
+	catsavedbaudrate = baudrate;
 	HARDWARE_CAT_SET_SPEED(baudrate);
 }
 
@@ -9580,9 +9616,6 @@ getkenwoodfw(
 	return submodes [submode].qcatwidth;
 }
 
-static uint_fast8_t cat_getstateout(void);
-static void cat_answer_forming(void);
-
 #endif /* WITHCAT */
 
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
@@ -11728,6 +11761,233 @@ modemchangemode(
 #endif /* WITHMODEM */
 
 #if WITHCAT
+
+static void catmux_enable(uint_fast8_t enable)
+{
+	switch (cattypes [gcattype].code)
+	{
+	default:
+		ASSERT(0);
+		break;
+	case BOARD_CATTYPE_OFF:
+		break;
+#if WITHCAT_YAESU
+	case BOARD_CATTYPE_YAESU:
+		catyaesu_enable(enable);
+		break;
+#endif
+#if WITHCAT_ICOM
+	case BOARD_CATTYPE_ICOM:
+		caticom_enable(enable);
+		break;
+#endif
+#if WITHCAT_WITHCAT_KENWOOD
+	case BOARD_CATTYPE_KENWOOD:
+		catkenwood_enable(enable);
+		break;
+#endif
+	}
+}
+
+static void catmux_answer_request(uint_fast8_t i)	// call from user-mode
+{
+	switch (cattypes [gcattype].code)
+	{
+	default:
+		ASSERT(0);
+		break;
+	case BOARD_CATTYPE_OFF:
+		break;
+#if WITHCAT_YAESU
+	case BOARD_CATTYPE_YAESU:
+		catyaesu_answer_request(i);
+		break;
+#endif
+#if WITHCAT_ICOM
+	case BOARD_CATTYPE_ICOM:
+		caticom_answer_request(i);
+		break;
+#endif
+#if WITHCAT_WITHCAT_KENWOOD
+	case BOARD_CATTYPE_KENWOOD:
+		catkenwood_answer_request(i);
+		break;
+#endif
+	}
+}
+
+static void catmux_cattimeout_cb(void * ctx)
+{
+	switch (cattypes [gcattype].code)
+	{
+	default:
+		ASSERT(0);
+		break;
+	case BOARD_CATTYPE_OFF:
+		break;
+#if WITHCAT_YAESU
+	case BOARD_CATTYPE_YAESU:
+		catyaesu_cattimeout_cb(ctx);
+		break;
+#endif
+#if WITHCAT_ICOM
+	case BOARD_CATTYPE_ICOM:
+		caticom_cattimeout_cb(ctx);
+		break;
+#endif
+#if WITHCAT_WITHCAT_KENWOOD
+	case BOARD_CATTYPE_KENWOOD:
+		catkenwood_cattimeout_cb(ctx);
+		break;
+#endif
+	}
+
+}
+
+static void catmux_answer_forming(void)
+{
+	switch (cattypes [gcattype].code)
+	{
+	default:
+		ASSERT(0);
+		break;
+	case BOARD_CATTYPE_OFF:
+		break;
+#if WITHCAT_YAESU
+	case BOARD_CATTYPE_YAESU:
+		catyaesu_answer_forming();
+		break;
+#endif
+#if WITHCAT_ICOM
+	case BOARD_CATTYPE_ICOM:
+		caticom_answer_forming();
+		break;
+#endif
+#if WITHCAT_WITHCAT_KENWOOD
+	case BOARD_CATTYPE_KENWOOD:
+		catkenwood_answer_forming();
+		break;
+#endif
+	}
+
+}
+
+static uint_fast8_t
+catmux_processcatmsg(
+	char c1,
+	char c2,
+	uint_fast8_t hasparam,
+	uint_fast8_t pcount,	// количество символов за кодом команды
+	const uint8_t * catp	// массив символов
+	)
+{
+
+	switch (cattypes [gcattype].code)
+	{
+	default:
+		ASSERT(0);
+		return 0;
+	case BOARD_CATTYPE_OFF:
+		return 0;
+#if WITHCAT_YAESU
+	case BOARD_CATTYPE_YAESU:
+		return catyaesu_processcatmsg(c1, c2, hasparam, pcount, catp);
+#endif
+#if WITHCAT_ICOM
+	case BOARD_CATTYPE_ICOM:
+		return caticom_processcatmsg(c1, c2, hasparam, pcount, catp);
+#endif
+#if WITHCAT_WITHCAT_KENWOOD
+	case BOARD_CATTYPE_KENWOOD:
+		return catkenwood_processcatmsg(c1, c2, hasparam, pcount, catp);
+#endif
+	}
+	return 0;
+}
+
+/* вызывается из обработчика прерываний */
+void cat2_parsechar(uint_fast8_t c)
+{
+	switch (cattypes [gcattype].code)
+	{
+	default:
+		ASSERT(0);
+		break;
+	case BOARD_CATTYPE_OFF:
+		break;
+#if WITHCAT_YAESU
+	case BOARD_CATTYPE_YAESU:
+		catyaesu_parsechar(c);
+		break;
+#endif
+#if WITHCAT_ICOM
+	case BOARD_CATTYPE_ICOM:
+		caticom_parsechar(c);
+		break;
+#endif
+#if WITHCAT_WITHCAT_KENWOOD
+	case BOARD_CATTYPE_KENWOOD:
+		catkenwood_parsechar(c);
+		break;
+#endif
+	}
+}
+
+/* вызывается из обработчика прерываний */
+void cat2_disconnect(void)
+{
+	switch (cattypes [gcattype].code)
+	{
+	default:
+		ASSERT(0);
+		break;
+	case BOARD_CATTYPE_OFF:
+		break;
+#if WITHCAT_YAESU
+	case BOARD_CATTYPE_YAESU:
+		catyaesu_disconnect();
+		break;
+#endif
+#if WITHCAT_ICOM
+	case BOARD_CATTYPE_ICOM:
+		caticom_disconnect();
+		break;
+#endif
+#if WITHCAT_WITHCAT_KENWOOD
+	case BOARD_CATTYPE_KENWOOD:
+		catkenwood_disconnect();
+		break;
+#endif
+	}
+}
+
+/* вызывается из обработчика прерываний */
+/* Получить следующий символ для передачи (только верхний регистр) */
+static char catmux_getnextcw(void)
+{
+	switch (cattypes [gcattype].code)
+	{
+	default:
+		ASSERT(0);
+		return '\0';
+	case BOARD_CATTYPE_OFF:
+		return '\0';
+#if WITHCAT_YAESU
+	case BOARD_CATTYPE_YAESU:
+		return catyaesu_getnextcw();
+#endif
+#if WITHCAT_ICOM
+	case BOARD_CATTYPE_ICOM:
+		return caticom_getnextcw();
+#endif
+#if WITHCAT_WITHCAT_KENWOOD
+	case BOARD_CATTYPE_KENWOOD:
+		return catkenwood_getnextcw();
+#endif
+	}
+}
+
+
 /* функция для cat */
 /* по диапазону вытащить все параметры (частота из f) нового диапазона. Старый НЕ записывать - идея в том, что записываются только по ручным операциям. */
 static void
@@ -11747,10 +12007,10 @@ catchangefreq(
 	if (aistate != 0)
 	{
 #if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
-		cat_answer_request(CAT_AN_INDEX);
+		catmux_answer_request(CAT_AN_INDEX);
 #endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2 */
-		cat_answer_request(CAT_RA_INDEX);
-		cat_answer_request(CAT_PA_INDEX);
+		catmux_answer_request(CAT_RA_INDEX);
+		catmux_answer_request(CAT_PA_INDEX);
 	}
 #if WITHKEYBOARD || WITHTOUCHGUI
 	// не должно быть при удаленном управлении
@@ -13556,7 +13816,7 @@ flagne_u8_cat(dualctl8_t * oldval, uint_fast8_t v, uint_fast8_t catindex)
 		oldval->value = v;
 		if (aistate != 0)
 		{
-			cat_answer_request(catindex);
+			catmux_answer_request(catindex);
 		}
 		return 1;
 	}
@@ -13572,7 +13832,7 @@ flagne_u16_cat(dualctl16_t * oldval, uint_fast16_t v, uint_fast8_t catindex)
 		oldval->value = v;
 		if (aistate != 0)
 		{
-			cat_answer_request(catindex);
+			catmux_answer_request(catindex);
 		}
 		return 1;
 	}
@@ -13588,7 +13848,7 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 		oldval->value = v;
 		if (aistate != 0)
 		{
-			cat_answer_request(catindex);
+			catmux_answer_request(catindex);
 		}
 		return 1;
 	}
@@ -13812,7 +14072,7 @@ encoder_flagne(const struct paramdefdef * pd, int_least16_t delta, uint_fast8_t 
 #if WITHCAT
 		if (aistate != 0)
 		{
-			cat_answer_request(catindex);
+			catmux_answer_request(catindex);
 		}
 #endif /* WITHCAT */
 		return 1;
@@ -13918,20 +14178,20 @@ updateboard_noui(
 	{
 		if (full)
 		{
-			cat_answer_request(CAT_IF_INDEX);
-			cat_answer_request(CAT_MD_INDEX);
-			cat_answer_request(CAT_FA_INDEX);	// добавлено для обновления индикатора частоты в ACRP-590 при переходе по диапазонам клавишами на устройстве. И помогло при нажатиях на цифры дисплея.
-			cat_answer_request(gtx ? CAT_TX_INDEX : CAT_RX_INDEX);	// ignore main/sub rx selection (0 - main. 1 - sub);
+			catmux_answer_request(CAT_IF_INDEX);
+			catmux_answer_request(CAT_MD_INDEX);
+			catmux_answer_request(CAT_FA_INDEX);	// добавлено для обновления индикатора частоты в ACRP-590 при переходе по диапазонам клавишами на устройстве. И помогло при нажатиях на цифры дисплея.
+			catmux_answer_request(gtx ? CAT_TX_INDEX : CAT_RX_INDEX);	// ignore main/sub rx selection (0 - main. 1 - sub);
 #if WITHIF4DSP
-			cat_answer_request(CAT_NR_INDEX);
+			catmux_answer_request(CAT_NR_INDEX);
 #endif /* WITHIF4DSP */
 #if WITHTX && WITHAUTOTUNER
-			cat_answer_request(CAT_AC_INDEX);
+			catmux_answer_request(CAT_AC_INDEX);
 #endif /* WITHTX && WITHAUTOTUNER */
 		}
 		else
 		{
-			cat_answer_request(CAT_FA_INDEX);
+			catmux_answer_request(CAT_FA_INDEX);
 		}
 	}
 #endif /* WITHCAT */
@@ -14425,7 +14685,7 @@ updateboard_noui(
 	board_set_displayfps(glatchfps);
 		/* просто настройки тракта и не относящиеся к приёму-пеердаче. */
 	#if WITHCAT
-		processcat_enable(cattypes[param_val(& xgcattype)].code != BOARD_CATTYPE_OFF);
+		catmux_enable(cattypes[param_val(& xgcattype)].code != BOARD_CATTYPE_OFF);
 		cat_set_speed(catbr2int [param_val(& xgcatbaudrate)] * BRSCALE);
 		#if WITHCAT_MUX
 			board_set_catmux(catmuxmodes [param_val(& xgcatmux)].code);	// BOARD_CATMUX_USBCDC or BOARD_CATMUX_DIN8
@@ -16316,14 +16576,10 @@ uint_fast8_t cat_get_keydown(void)
 
 #if WITHCAT && WITHCAT_YAESU
 
-#define YCAT_ASKBUFF_SIZE (5)
-
-static char cat_ask_buffer [YCAT_ASKBUFF_SIZE];
-
 /* возврат ненуля - была какая-либо команда
 	требуется обновление дисплея */
 static uint_fast8_t
-processcatmsg(
+catyaesu_processcatmsg(
 	char catcommand1,
 	char catcommand2,
 	uint_fast8_t cathasparam,
@@ -16331,9 +16587,13 @@ processcatmsg(
 	const uint8_t * catp	// массив символов
 	)
 {
+
+	#define YCAT_ASKBUFF_SIZE (5)
+
+	static char cat_ask_buffer [YCAT_ASKBUFF_SIZE];
 	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
 	const unsigned powerv = 2;
-	//printhex_titled(0, catp, 5, "processcatmsg");
+	//printhex_titled(0, catp, 5, "catmux_processcatmsg");
 	switch (catp [4])
 	{
 	case 0xF9:
@@ -16616,17 +16876,17 @@ processcatmsg(
 
 /* вызывается из обработчика прерываний */
 /* Получить следующий символ для передачи (только верхний регистр) */
-static char cat_getnextcw(void)
+static char catyaesu_getnextcw(void)
 {
 	return '\0';
 }
 
-static void cat_answer_forming(void)
+static void catyaesu_answer_forming(void)
 {
 
 }
 
-static void cat_answer_request(uint_fast8_t code)
+static void catyaesu_answer_request(uint_fast8_t code)
 {
 
 }
@@ -16639,7 +16899,7 @@ static void cat_answer_request(uint_fast8_t code)
 //}
 
 // Конец тайм-аута
-static void cattimeout_cb(void * ctx)
+static void catyaesu_cattimeout_cb(void * ctx)
 {
 	(void) ctx;
 	catstatein = CATSTATE_WAITCOMMAND1;
@@ -16647,7 +16907,7 @@ static void cattimeout_cb(void * ctx)
 }
 
 /* вызывается из обработчика прерываний */
-void cat2_parsechar(uint_fast8_t c)
+void catyaesu_parsechar(uint_fast8_t c)
 {
 	static uint8_t yaesubuf [5];
 	PRINTF("0x%02X ", c);
@@ -16685,21 +16945,21 @@ void cat2_parsechar(uint_fast8_t c)
 
 /* вызывается из обработчика прерываний */
 // произошла потеря символа (символов) при получении данных с CAT компорта
-void cat2_rxoverflow(void)
+void catyaesu_rxoverflow(void)
 {
 
 }
 
 /* вызывается из обработчика прерываний */
 // произошёл разрыв связи при работе по USB CDC
-void cat2_disconnect(void)
+void catyaesu_disconnect(void)
 {
 	catstatein = CATSTATE_WAITCOMMAND1;
 	catstateout = CATSTATEO_SENDREADY;
 }
 
 /* эта операция вызывается неоднократно - не должна мешать работе при уже разрешённом CAT */
-static void processcat_enable(uint_fast8_t enable)
+static void catyaesu_enable(uint_fast8_t enable)
 {
 	if (catprocenable == enable)
 		return;
@@ -16763,7 +17023,7 @@ static char cat_ask_buffer [CAT_ASKBUFF_SIZE];
 
 static void
 
-cat_answer(uint_fast8_t len)
+catkenwood_answer(uint_fast8_t len)
 {
 	cat_answervariable(cat_ask_buffer, len);
 }
@@ -16794,7 +17054,6 @@ morseswitchnext(void)
 
 /* todo: переделать на обновление параметра KY в ответе, если KY запрошен. */
 static void
-
 cat_set_kyanswer(uint_fast8_t force)
 {
 	// проверка что все буферы заполнены
@@ -16808,7 +17067,7 @@ cat_set_kyanswer(uint_fast8_t force)
 
 /* вызывается из обработчика прерываний */
 /* Получить следующий символ для передачи (только верхний регистр) */
-static char cat_getnextcw(void)
+static char catkenwood_getnextcw(void)
 {
 	morseswitchnext();	/* переключение на следующий буфер, если можно */
 	cat_set_kyanswer(0);	// KEYER BUFFER STATUS: 0 - BUFFER SPACE AVALIABLE, 1 - BUFFER FULL
@@ -16826,15 +17085,8 @@ static char cat_getnextcw(void)
 #endif /* WITHELKEY */
 
 /* вызывается из обработчика прерываний */
-// произошла потеря символа (символов) при получении данных с CAT компорта
-void cat2_rxoverflow(void)
-{
-
-}
-
-/* вызывается из обработчика прерываний */
 // произошёл разрыв связи при работе по USB CDC
-void cat2_disconnect(void)
+void catkenwood_disconnect(void)
 {
 	uint_fast8_t i;
 	for (i = 0; i < (sizeof cat_answer_map / sizeof cat_answer_map [0]); ++ i)
@@ -16853,7 +17105,7 @@ void cat2_disconnect(void)
 }
 
 // Конец тайм-аута
-static void cattimeout_cb(void * ctx)
+static void catkenwood_cattimeout_cb(void * ctx)
 {
 	(void) ctx;
 }
@@ -16866,7 +17118,7 @@ static uint_fast8_t local_isdigit(char c)
 }
 
 /* вызывается из обработчика прерываний */
-void cat2_parsechar(uint_fast8_t c)
+void catkenwood_parsechar(uint_fast8_t c)
 {
 	static uint_fast8_t catcommand1;
 	static uint_fast8_t catcommand2;
@@ -17027,7 +17279,7 @@ static void acanswer(uint_fast8_t arg)
 		(int) tunerwork != 0,
 		(int) txreq_getreqautotune(& txreqst0) != 0
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 #endif /* WITHTX && WITHAUTOTUNER */
@@ -17041,7 +17293,7 @@ static void idanswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) 21	// 021 - code of TS-590S model
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void fvanswer(uint_fast8_t arg)
@@ -17054,7 +17306,7 @@ static void fvanswer(uint_fast8_t arg)
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_0
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void daanswer(uint_fast8_t arg)
@@ -17068,7 +17320,7 @@ static void daanswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) param_val(& xgdatamode)	// 0/1: data mode on/off
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void faanswer(uint_fast8_t arg)
@@ -17082,7 +17334,7 @@ static void faanswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(signed long) gfreqs [bi]
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void fbanswer(uint_fast8_t arg)
@@ -17097,7 +17349,7 @@ static void fbanswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(signed long) gfreqs [bi]
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void spanswer(uint_fast8_t arg)
@@ -17112,7 +17364,7 @@ static void spanswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) (gsplitmode != SPLITMODES_OFF)
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 
@@ -17129,7 +17381,7 @@ static void franswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) gvfosplit [0]	// At index 0: RX VFO A or B, at index 1: TX VFO A or B
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void ftanswer(uint_fast8_t arg)
@@ -17144,7 +17396,7 @@ static void ftanswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) gvfosplit [1]	// At index 0: RX VFO A or B, at index 1: TX VFO A or B
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void mdanswer(uint_fast8_t arg)
@@ -17159,7 +17411,7 @@ static void mdanswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) submodes [getsubmode(bi)].qcatmodecode
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void fwanswer(uint_fast8_t arg)
@@ -17173,7 +17425,7 @@ static void fwanswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) getkenwoodfw(gsubmode, 0) // полоса пропускания в герцах или код полосы пропускания
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 #if WITHIF4DSP
@@ -17196,7 +17448,7 @@ static void zyanswer(uint_fast8_t arg)
 		(int) gnoisereducts [mode],
 		(int) gnoisereductvl
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void zzanswer(uint_fast8_t arg)
@@ -17223,7 +17475,7 @@ static void zzanswer(uint_fast8_t arg)
 		(int) p->right100,
 		(int) p->afresponce
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 #endif
 
@@ -17244,7 +17496,7 @@ static void aganswer(uint_fast8_t arg)
 		(int) arg,
 		(int) p2
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void rganswer(uint_fast8_t arg)
@@ -17260,7 +17512,7 @@ static void rganswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) p1
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void sqanswer(uint_fast8_t arg)
@@ -17276,7 +17528,7 @@ static void sqanswer(uint_fast8_t arg)
 		(int) arg,
 		(int) gsquelch.value
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void nranswer(uint_fast8_t arg)
@@ -17290,7 +17542,7 @@ static void nranswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) p1
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 #endif /* WITHIF4DSP */
 
@@ -17307,7 +17559,7 @@ static void pcanswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) ((param_val(& xgnormalpower) - WITHPOWERTRIMMIN) * 95 / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + 5)
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 #endif /* WITHPOWERTRIM && WITHTX */
@@ -17325,7 +17577,7 @@ static void ky0answer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(char) '0'
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void ky1answer(uint_fast8_t arg)
@@ -17339,7 +17591,7 @@ static void ky1answer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(char) '1'
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void ksanswer(uint_fast8_t arg)
@@ -17353,7 +17605,7 @@ static void ksanswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) param_val(& xgelkeywpm)
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 #endif /* WITHELKEY */
 
@@ -17368,7 +17620,7 @@ static void txanswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) (getactualtune() ? 2 : 0)
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void rxanswer(uint_fast8_t arg)
@@ -17380,7 +17632,7 @@ static void rxanswer(uint_fast8_t arg)
 	// answer mode
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_0
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void aianswer(uint_fast8_t arg)
@@ -17394,7 +17646,7 @@ static void aianswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) (aistate ? 2 : 0)
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void psanswer(uint_fast8_t arg)
@@ -17408,7 +17660,7 @@ static void psanswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) 1
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static uint_fast8_t
@@ -17532,7 +17784,7 @@ static void sm0answer(uint_fast8_t arg)
 		p1,
 		p2
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 
 }
 
@@ -17553,7 +17805,7 @@ static void sm9answer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt9_1,
 		(int) (tracemaxi10 / 10)
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 
 }
 
@@ -17571,7 +17823,7 @@ static void raanswer(uint_fast8_t arg)
 		(int) gatt
 
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void paanswer(uint_fast8_t arg)
@@ -17594,7 +17846,7 @@ static void paanswer(uint_fast8_t arg)
 		(int) v
 
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 #if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX || WITHANTSELECT2
@@ -17618,7 +17870,7 @@ static void ananswer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		p1, p2, p3
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 #endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
@@ -17640,7 +17892,7 @@ static void rm1answer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) kenwoodswrmeter()
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 // COMP
@@ -17658,7 +17910,7 @@ static void rm2answer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) kenwoodcompmeter()
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 // ALC
@@ -17676,7 +17928,7 @@ static void rm3answer(uint_fast8_t arg)
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
 		(int) kenwoodalcmeter()
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 #endif /* WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR) */
@@ -17705,7 +17957,7 @@ static void ptanswer(uint_fast8_t arg)
 		(int) ((adjust8(gcwpitch10, 40, 190) - 40) / 5)
 		);
 
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 // information request
@@ -17738,7 +17990,7 @@ static void ifanswer(uint_fast8_t arg)
 		(int) 0,	// P10: FR/FT state
 		(int) (gsplitmode == SPLITMODES_ON) // P12
 		);
-	cat_answer(len);
+	catkenwood_answer(len);
 }
 
 static void badcommandanswer(uint_fast8_t arg)
@@ -17749,7 +18001,7 @@ static void badcommandanswer(uint_fast8_t arg)
 }
 
 static void
-cat_answer_request(uint_fast8_t catindex)
+catkenwood_answer_request(uint_fast8_t catindex)
 {
 	if (CAT_MAX_INDEX <= catindex)
 		return;
@@ -17760,12 +18012,12 @@ cat_answer_request(uint_fast8_t catindex)
 			cat_answer_map [i] = 0;
 
 	}
-	//PRINTF(PSTR("cat_answer_request: catindex=%u\n"), catindex);
+	//PRINTF(PSTR("catmux_answer_request: catindex=%u\n"), catindex);
 	cat_answer_map [catindex] = 1;
 }
 
 /* эта операция вызывается неоднократно - не должна мешать работе при уже разрешённом CAT */
-static void processcat_enable(uint_fast8_t enable)
+static void catkenwood_enable(uint_fast8_t enable)
 {
 	if (catprocenable == enable)
 		return;
@@ -17867,7 +18119,7 @@ static const canapfn catanswers [CAT_MAX_INDEX] =
 
 // user-mode function
 static void
-cat_answer_forming(void)
+catkenwood_answer_forming(void)
 {
 	static uint_fast8_t ilast;
 	uint_fast8_t original;
@@ -17914,7 +18166,7 @@ static unsigned packcmd2(char c1, char c2)
 /* возврат ненуля - была какая-либо команда
 	требуется обновление дисплея */
 static uint_fast8_t
-processcatmsg(
+catkenwood_processcatmsg(
 	char catcommand1,
 	char catcommand2,
 	uint_fast8_t cathasparam,
@@ -17922,7 +18174,7 @@ processcatmsg(
 	const uint8_t * catp	// массив символов
 	)
 {
-	//PRINTF(PSTR("processcatmsg: c1=%02X, c2=%02X, chp=%d, cp=%lu\n"), catcommand1, catcommand2, cathasparam, catparam);
+	//PRINTF(PSTR("catmux_processcatmsg: c1=%02X, c2=%02X, chp=%d, cp=%lu\n"), catcommand1, catcommand2, cathasparam, catparam);
 	uint_fast8_t rc = 0;
 	const uint_fast32_t catparam = catscanint(catp, catpcount);
 	const uint_fast16_t pcmd = packcmd2(catcommand1, catcommand2);
@@ -17931,22 +18183,22 @@ processcatmsg(
 	{
 		if (cathasparam != 0)
 		{
-			cat_answer_request(CAT_BADCOMMAND_INDEX);	// сброс всех ранее запрошенных запросов на ответ
+			catmux_answer_request(CAT_BADCOMMAND_INDEX);	// сброс всех ранее запрошенных запросов на ответ
 		}
 		else
 		{
-			cat_answer_request(CAT_ID_INDEX);
+			catmux_answer_request(CAT_ID_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('F', 'V'))
 	{
 		if (cathasparam != 0)
 		{
-			cat_answer_request(CAT_BADCOMMAND_INDEX);	// сброс всех ранее запрошенных запросов на ответ
+			catmux_answer_request(CAT_BADCOMMAND_INDEX);	// сброс всех ранее запрошенных запросов на ответ
 		}
 		else
 		{
-			cat_answer_request(CAT_FV_INDEX);
+			catmux_answer_request(CAT_FV_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('D', 'A'))
@@ -17968,13 +18220,13 @@ processcatmsg(
 				rc = 1;
 				break;
 			default:
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				catmux_answer_request(CAT_BADCOMMAND_INDEX);
 				break;
 			};
 		}
 		else
 		{
-			cat_answer_request(CAT_DA_INDEX);
+			catmux_answer_request(CAT_DA_INDEX);
 		}
 	}
 	// parse receieved command
@@ -17990,17 +18242,17 @@ processcatmsg(
 				break;
 			case 2:
 				aistate = 1;
-				cat_answer_request(CAT_IF_INDEX);	/* следующим ответом пойдёт состоние */
-				cat_answer_request(CAT_MD_INDEX);	/* следующим ответом пойдёт состоние */
+				catmux_answer_request(CAT_IF_INDEX);	/* следующим ответом пойдёт состоние */
+				catmux_answer_request(CAT_MD_INDEX);	/* следующим ответом пойдёт состоние */
 				break;
 			default:
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				catmux_answer_request(CAT_BADCOMMAND_INDEX);
 				break;
 			}
 		}
 		else
 		{
-			cat_answer_request(CAT_AI_INDEX);
+			catmux_answer_request(CAT_AI_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('F', 'A'))
@@ -18016,7 +18268,7 @@ processcatmsg(
 		}
 		else
 		{
-			cat_answer_request(CAT_FA_INDEX);
+			catmux_answer_request(CAT_FA_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('F', 'B'))
@@ -18032,7 +18284,7 @@ processcatmsg(
 		}
 		else
 		{
-			cat_answer_request(CAT_FB_INDEX);
+			catmux_answer_request(CAT_FB_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('P', 'T'))
@@ -18048,7 +18300,7 @@ processcatmsg(
 		}
 		else
 		{
-			cat_answer_request(CAT_PT_INDEX);
+			catmux_answer_request(CAT_PT_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('M', 'D'))
@@ -18070,7 +18322,7 @@ processcatmsg(
 		}
 		else
 		{
-			cat_answer_request(CAT_MD_INDEX);
+			catmux_answer_request(CAT_MD_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('I', 'F'))
@@ -18080,7 +18332,7 @@ processcatmsg(
 		}
 		else
 		{
-			cat_answer_request(CAT_IF_INDEX);
+			catmux_answer_request(CAT_IF_INDEX);
 		}
 	}
 #if WITHIF4DSP
@@ -18088,12 +18340,12 @@ processcatmsg(
 	{
 		// Sets and reads the Beat Cancel function status.
 		// Auto Notch
-		cat_answer_request(CAT_BADCOMMAND_INDEX);
+		catmux_answer_request(CAT_BADCOMMAND_INDEX);
 	}
 	else if (pcmd == packcmd2('R', 'L'))
 	{
 		// откуда взялось?
-		cat_answer_request(CAT_BADCOMMAND_INDEX);
+		catmux_answer_request(CAT_BADCOMMAND_INDEX);
 	}
 	else if (pcmd == packcmd2('N', 'R'))
 	{
@@ -18112,18 +18364,18 @@ processcatmsg(
 		else
 		{
 			// NR;
-			cat_answer_request(CAT_NR_INDEX);	// nranswer()
+			catmux_answer_request(CAT_NR_INDEX);	// nranswer()
 		}
 	}
 	else if (pcmd == packcmd2('N', 'T'))
 	{
 		// Sets and reads the Notch Filter status.
-		cat_answer_request(CAT_BADCOMMAND_INDEX);
+		catmux_answer_request(CAT_BADCOMMAND_INDEX);
 	}
 	else if (pcmd == packcmd2('B', 'P'))
 	{
 		// Adjusts the Notch Frequency of the Manual Notch Filter.
-		cat_answer_request(CAT_BADCOMMAND_INDEX);
+		catmux_answer_request(CAT_BADCOMMAND_INDEX);
 	}
 	else if (pcmd == packcmd2('S', 'Q'))
 	{
@@ -18144,17 +18396,17 @@ processcatmsg(
 			{
 				const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
 				cat_answerparam_map [CAT_SQ_INDEX] = p1;
-				cat_answer_request(CAT_SQ_INDEX);	// sqanswer
+				catmux_answer_request(CAT_SQ_INDEX);	// sqanswer
 				rc = 1;
 			}
 			else
 			{
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				catmux_answer_request(CAT_BADCOMMAND_INDEX);
 			}
 		}
 		else
 		{
-			cat_answer_request(CAT_BADCOMMAND_INDEX);
+			catmux_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('A', 'G'))
@@ -18177,17 +18429,17 @@ processcatmsg(
 			{
 				const uint_fast32_t p1 = vfy32up(catscanint(catp + 0, 1), 0, 0, 0);
 				cat_answerparam_map [CAT_AG_INDEX] = p1;
-				cat_answer_request(CAT_AG_INDEX);	// aganswer
+				catmux_answer_request(CAT_AG_INDEX);	// aganswer
 				//rc = 1;
 			}
 			else
 			{
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				catmux_answer_request(CAT_BADCOMMAND_INDEX);
 			}
 		}
 		else
 		{
-			cat_answer_request(CAT_BADCOMMAND_INDEX);
+			catmux_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('R', 'G'))
@@ -18205,7 +18457,7 @@ processcatmsg(
 		}
 		else
 		{
-			cat_answer_request(CAT_RG_INDEX);	// rganswer
+			catmux_answer_request(CAT_RG_INDEX);	// rganswer
 		}
 	}
 #if WITHPOWERTRIM && WITHTX
@@ -18226,7 +18478,7 @@ processcatmsg(
 		}
 		else
 		{
-			cat_answer_request(CAT_PC_INDEX);	// pcanswer
+			catmux_answer_request(CAT_PC_INDEX);	// pcanswer
 		}
 	}
 #endif /* WITHPOWERTRIM && WITHTX */
@@ -18241,7 +18493,7 @@ processcatmsg(
 		}
 		else
 		{
-			cat_answer_request(CAT_BADCOMMAND_INDEX);
+			catmux_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 
 	}
@@ -18260,13 +18512,13 @@ processcatmsg(
 			}
 			else
 			{
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				catmux_answer_request(CAT_BADCOMMAND_INDEX);
 			}
 			rc = 1;
 		}
 		else
 		{
-			cat_answer_request(CAT_SP_INDEX);	// spanswer()
+			catmux_answer_request(CAT_SP_INDEX);	// spanswer()
 		}
 	}
 	else if (pcmd == packcmd2('F', 'R'))
@@ -18288,14 +18540,14 @@ processcatmsg(
 				// Set VFO B to Memory Channel
 				break;
 			default:
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				catmux_answer_request(CAT_BADCOMMAND_INDEX);
 				break;
 			}
 			rc = 1;
 		}
 		else
 		{
-			cat_answer_request(CAT_FR_INDEX);
+			catmux_answer_request(CAT_FR_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('F', 'T'))
@@ -18314,14 +18566,14 @@ processcatmsg(
 				gvfosplit [1] = 1;
 				break;
 			default:
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				catmux_answer_request(CAT_BADCOMMAND_INDEX);
 				break;
 			}
 			rc = 1;
 		}
 		else
 		{
-			cat_answer_request(CAT_FT_INDEX);
+			catmux_answer_request(CAT_FT_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('R', 'A'))
@@ -18332,13 +18584,13 @@ processcatmsg(
 			const uint_fast32_t vgatt = vfy32up(catparam, 0, ATTMODE_COUNT - 1, 0);	/* 0..1 */;	// one step or fully attenuated
 			if (cat_param_setvalue(& xgatt, vgatt))
 				updateboard();	/* полная перенастройка (как после смены режима) */
-			cat_answer_request(CAT_RA_INDEX);
+			catmux_answer_request(CAT_RA_INDEX);
 			rc = 1;
 		}
 		else
 		{
 			// read attenuator state
-			cat_answer_request(CAT_RA_INDEX);
+			catmux_answer_request(CAT_RA_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('P', 'A'))
@@ -18351,13 +18603,13 @@ processcatmsg(
 			if (cat_param_setvalue(& xgpamp, paval))
 				updateboard();	/* полная перенастройка (как после смены режима) */
 #endif /* ! WITHONEATTONEAMP */
-			cat_answer_request(CAT_PA_INDEX);
+			catmux_answer_request(CAT_PA_INDEX);
 			rc = 1;
 		}
 		else
 		{
 			// read preamplifier state
-			cat_answer_request(CAT_PA_INDEX);
+			catmux_answer_request(CAT_PA_INDEX);
 		}
 	}
 #if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX
@@ -18408,18 +18660,18 @@ processcatmsg(
 					updateboard();	/* полная перенастройка (как после смены режима) */
 
 				}
-				cat_answer_request(CAT_AN_INDEX);
+				catmux_answer_request(CAT_AN_INDEX);
 			}
 			else
 			{
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				catmux_answer_request(CAT_BADCOMMAND_INDEX);
 			}
 			rc = 1;
 		}
 		else
 		{
 			// read antenna selection
-			cat_answer_request(CAT_AN_INDEX);
+			catmux_answer_request(CAT_AN_INDEX);
 		}
 	}
 #endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT1RX */
@@ -18428,12 +18680,12 @@ processcatmsg(
 		if (cathasparam)
 		{
 			// set param
-			//cat_answer_request(CAT_PS_INDEX);
+			//catmux_answer_request(CAT_PS_INDEX);
 		}
 		else
 		{
 			// read state
-			cat_answer_request(CAT_PS_INDEX);
+			catmux_answer_request(CAT_PS_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('S', 'M'))
@@ -18441,15 +18693,15 @@ processcatmsg(
 		// The SM command reads the S-meter during reception and the RF (power) meter during transmission.
 		if (cathasparam && catparam == 0)
 		{
-			cat_answer_request(CAT_SM0_INDEX);
+			catmux_answer_request(CAT_SM0_INDEX);
 		}
 		else if (cathasparam && catparam == 9)
 		{
-			cat_answer_request(CAT_SM9_INDEX);
+			catmux_answer_request(CAT_SM9_INDEX);
 		}
 		else
 		{
-			cat_answer_request(CAT_BADCOMMAND_INDEX);
+			catmux_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('U', 'P'))
@@ -18506,14 +18758,14 @@ processcatmsg(
 			}
 			// В переходе на передачу может быть отказано - ответ идёт в updateboard
 //			if (aistate != 0)
-//				cat_answer_request(CAT_TX_INDEX);	// ignore main/sub rx selection (0 - main. 1 - sub);
+//				catmux_answer_request(CAT_TX_INDEX);	// ignore main/sub rx selection (0 - main. 1 - sub);
 		}
 		else
 		{
 			// В переходе на передачу может быть отказано - ответ идёт в updateboard
 			txreq_mox(& txreqst0);
 //			if (aistate != 0)
-//				cat_answer_request(CAT_TX_INDEX);
+//				catmux_answer_request(CAT_TX_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('R', 'X'))
@@ -18532,14 +18784,14 @@ processcatmsg(
 			txreq_rx(& txreqst0, NULL);
 			// ответ идёт в updateboard
 //			if (aistate != 0)
-//				cat_answer_request(CAT_RX_INDEX);	// POSSIBLE: ignore main/sub rx selection (0 - main. 1 - sub);
+//				catmux_answer_request(CAT_RX_INDEX);	// POSSIBLE: ignore main/sub rx selection (0 - main. 1 - sub);
 		}
 		else
 		{
 			// ответ идёт в updateboard
 			txreq_rx(& txreqst0, NULL);
 //			if (aistate != 0)
-//				cat_answer_request(CAT_RX_INDEX);
+//				catmux_answer_request(CAT_RX_INDEX);
 		}
 	}
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
@@ -18556,7 +18808,7 @@ processcatmsg(
 				rmstate = catparam;
 				break;
 			default:
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				catmux_answer_request(CAT_BADCOMMAND_INDEX);
 				break;
 			}
 		}
@@ -18566,13 +18818,13 @@ processcatmsg(
 			{
 			default:
 			case 1:
-				cat_answer_request(CAT_RM1_INDEX);	// SWR
+				catmux_answer_request(CAT_RM1_INDEX);	// SWR
 				break;
 			case 2:
-				cat_answer_request(CAT_RM2_INDEX);	// COMP
+				catmux_answer_request(CAT_RM2_INDEX);	// COMP
 				break;
 			case 3:
-				cat_answer_request(CAT_RM3_INDEX);	// ALC
+				catmux_answer_request(CAT_RM3_INDEX);	// ALC
 				break;
 			}
 		}
@@ -18604,16 +18856,16 @@ processcatmsg(
 				storetuner(bp, ant);	// умышленно оставлено тут - остальные CAT-команды не модифицируют запомненную конфигурацию
 				updateboard();	/* полная перенастройка (как после смены режима) */
 				rc = 1;
-				cat_answer_request(CAT_AC_INDEX);
+				catmux_answer_request(CAT_AC_INDEX);
 			}
 			else
 			{
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				catmux_answer_request(CAT_BADCOMMAND_INDEX);
 			}
 		}
 		else
 		{
-			cat_answer_request(CAT_AC_INDEX);
+			catmux_answer_request(CAT_AC_INDEX);
 		}
 	}
 #endif /* WITHTX && WITHAUTOTUNER */
@@ -18631,7 +18883,7 @@ processcatmsg(
 		}
 		else
 		{
-			cat_answer_request(CAT_FW_INDEX);
+			catmux_answer_request(CAT_FW_INDEX);
 		}
 	}
 #if WITHELKEY
@@ -18649,7 +18901,7 @@ processcatmsg(
 		}
 		else
 		{
-			cat_answer_request(CAT_KS_INDEX);
+			catmux_answer_request(CAT_KS_INDEX);
 		}
 	}
 #endif	/* WITHELKEY */
@@ -18665,7 +18917,7 @@ processcatmsg(
 				const uint_fast8_t submode = findkenwoodsubmode(v, UINT8_MAX);	/* поиск по кенвудовскому номеру */
 				if (submode == UINT8_MAX)
 				{
-					cat_answer_request(CAT_BADCOMMAND_INDEX);
+					catmux_answer_request(CAT_BADCOMMAND_INDEX);
 				}
 				else
 				{
@@ -18683,16 +18935,16 @@ processcatmsg(
 				/* report about NR state for specified submode and global level */
 				const uint_fast32_t v = catp [0] - '0';
 				cat_answerparam_map [CAT_ZY_INDEX] = v;
-				cat_answer_request(CAT_ZY_INDEX);	// zyanswer
+				catmux_answer_request(CAT_ZY_INDEX);	// zyanswer
 			}
 			else
 			{
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				catmux_answer_request(CAT_BADCOMMAND_INDEX);
 			}
 		}
 		else
 		{
-			cat_answer_request(CAT_BADCOMMAND_INDEX);
+			catmux_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
 	else if (pcmd == packcmd2('Z', 'Z'))
@@ -18706,7 +18958,7 @@ processcatmsg(
 				const uint_fast8_t submode = findkenwoodsubmode(v, UINT8_MAX);	/* поиск по кенвудовскому номеру */
 				if (submode == UINT8_MAX)
 				{
-					cat_answer_request(CAT_BADCOMMAND_INDEX);
+					catmux_answer_request(CAT_BADCOMMAND_INDEX);
 				}
 				else
 				{
@@ -18727,23 +18979,23 @@ processcatmsg(
 			{
 				const uint_fast32_t v = catp [0] - '0';
 				cat_answerparam_map [CAT_ZZ_INDEX] = v;
-				cat_answer_request(CAT_ZZ_INDEX);	// zzanswer
+				catmux_answer_request(CAT_ZZ_INDEX);	// zzanswer
 			}
 			else
 			{
-				cat_answer_request(CAT_BADCOMMAND_INDEX);
+				catmux_answer_request(CAT_BADCOMMAND_INDEX);
 			}
 		}
 		else
 		{
-			cat_answer_request(CAT_BADCOMMAND_INDEX);
+			catmux_answer_request(CAT_BADCOMMAND_INDEX);
 		}
 	}
 #endif
 	else
 	{
 		// нераспознанная команда - ожидание следующей.
-		cat_answer_request(CAT_BADCOMMAND_INDEX);
+		catmux_answer_request(CAT_BADCOMMAND_INDEX);
 	}
 
 #endif // WITHCAT
@@ -18760,7 +19012,7 @@ static void cat_dpc_func(void * ctx)
 {
 	if (cat_getstateout() == CATSTATEO_SENDREADY)
 	{
-		cat_answer_forming();
+		catmux_answer_forming();
 	}
 }
 
@@ -18773,7 +19025,7 @@ static void cat_initialize(void)
 	dpcobj_initialize(& cat_dpc, cat_dpc_func, NULL, "cat_dpc");
 	board_dpc_addentry(& cat_dpc, board_dpc_coreid());
 
-	ticker_timeout_init(& cat_ticker, CAT_TIMEOUT, cattimeout_cb, NULL, "cat_timeout");	// Конец тайм-аута
+	ticker_timeout_init(& cat_ticker, CAT_TIMEOUT, catmux_cattimeout_cb, NULL, "cat_timeout");	// Конец тайм-аута
 	ticker_add(& cat_ticker);
 }
 #endif /* WITHCAT */
@@ -18858,7 +19110,7 @@ static char beacon_getnextcw(void)
 uint_fast8_t elkey_getnextcw(void)
 {
 #if WITHCAT
-	const uint_fast8_t chcat = cat_getnextcw();
+	const uint_fast8_t chcat = catmux_getnextcw();
 	const uint_fast8_t ch = (chcat != '\0') ? chcat : beacon_getnextcw();
 	return ch;
 #else
@@ -19019,11 +19271,11 @@ static void dpc_1s_timer_fn(void * arg)
 #if WITHCAT
 	if (aistate != 0)
 	{
-		cat_answer_request(CAT_SM0_INDEX);
+		catmux_answer_request(CAT_SM0_INDEX);
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
-		cat_answer_request(CAT_RM1_INDEX);
-		cat_answer_request(CAT_RM2_INDEX);
-		cat_answer_request(CAT_RM3_INDEX);
+		catmux_answer_request(CAT_RM1_INDEX);
+		catmux_answer_request(CAT_RM2_INDEX);
+		catmux_answer_request(CAT_RM3_INDEX);
 #endif
 	}
 #endif /* WITHCAT */
