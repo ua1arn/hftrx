@@ -14706,25 +14706,25 @@ updateboard_noui(
 			if (param_val(& xgtxloopback) && gtx)
 			{
 				board_set_topdb(param_val(& xgtopdbtx));		/* верхний предел FFT */
-				board_set_bottomdb(param_val(& xgbottomdbtx));		/* нижний предел FFT */
+				board_set_bottomdb(param_val(& xgbottomdbtx) * param_val(& xgzoomxpow2) * 301 / 100);		/* нижний предел FFT */
 				board_set_tx_loopback(1);	/* включение спектроанализатора сигнала передачи */
 			}
 			else
 			{
 				board_set_topdb(param_val(& xgtopdb));		/* верхний предел FFT */
-				board_set_bottomdb(param_val(& xgbottomdb));		/* нижний предел FFT */
+				board_set_bottomdb(param_val(& xgbottomdb) * param_val(& xgzoomxpow2) * 301 / 100);		/* нижний предел FFT */
 				board_set_tx_loopback(0);	/* включение спектроанализатора сигнала передачи */
 			}
-			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
-			display2_set_lvlgridstep(glvlgridstep);	/* Шаг сетки уровней в децибелах */
+			board_set_zoomxpow2(param_val(& xgzoomxpow2));	/* уменьшение отображаемого участка спектра */
+			display2_set_lvlgridstep(param_val(& xglvlgridstep));	/* Шаг сетки уровней в децибелах */
 			board_set_view_style(param_val(& xgviewstyle));			/* стиль отображения спектра и панорамы */
-			board_set_view3dss_mark(gview3dss_mark);	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+			board_set_view3dss_mark(param_val(& xgview3dss_mark));	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
 			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
-			display2_set_rxbwsatu(grxbwsatu);	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
-			display2_set_filter_spe(gspecbeta100);	/* beta - парамеры видеофильтра спектра */
-			display2_set_filter_wfl(gwflbeta100);	/* beta - парамеры видеофильтра водопада */
-			display2_set_spectrumpart(gspectrumpart);	/* Часть отведенной под спектр высоты экрана 0..100 */
+			display2_set_rxbwsatu(param_val(& xgrxbwsatu));	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+			display2_set_filter_spe(param_val(& xgspecbeta100));	/* beta - парамеры видеофильтра спектра */
+			display2_set_filter_wfl(param_val(& xgwflbeta100));	/* beta - парамеры видеофильтра водопада */
+			display2_set_spectrumpart(param_val(& xgspectrumpart));	/* Часть отведенной под спектр высоты экрана 0..100 */
 		#endif /* (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
 	#endif /* WITHIF4DSP */
 
