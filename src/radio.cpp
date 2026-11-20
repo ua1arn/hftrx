@@ -22619,25 +22619,20 @@ static uint_fast8_t performtune(
 		}
 		break;
 	case SPLITMODES_RIT:
-		if (unlocked)
-		{
-			freqchanged |= knobsmodfreq(nrotate_main, step_main, jumpsize_main, bi_main);
-		}
-		param_rotate(& xgritxitoffset, nrotate_sub);
-		//gritoffset = modifyfreq(gritoffset, nrotate_sub, step_sub, jumpsize_sub, - RITXITDELTA, + RITXITDELTA + step_sub);
-		freqchanged = freqchanged || (nrotate_sub |= 0);
-		break;
 	case SPLITMODES_XIT:
 		if (unlocked)
 		{
 			freqchanged |= knobsmodfreq(nrotate_main, step_main, jumpsize_main, bi_main);
 		}
-		param_rotate(& xgritxitoffset, nrotate_sub);
-		//gxitoffset = modifyfreq(gxitoffset, nrotate_sub, step_sub, jumpsize_sub, - RITXITDELTA, + RITXITDELTA + step_sub);
+		param_rotate(& xgritxitoffset, nrotate_sub * step_sub * jumpsize_sub);
+		//gritoffset = modifyfreq(gritoffset, nrotate_sub, step_sub, jumpsize_sub, - RITXITDELTA, + RITXITDELTA + step_sub);
 		freqchanged = freqchanged || (nrotate_sub |= 0);
 		break;
 	}
-	//PRINTF("gritoffset=%d, gxitoffset=%d\n", (int) gritoffset, (int) gxitoffset);
+	if (freqchanged)
+	{
+		//PRINTF("gritoffset=%d, gxitoffset=%d\n", (int) gritoffset, (int) gxitoffset);
+	}
 	return freqchanged;
 }
 
