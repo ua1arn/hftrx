@@ -14706,13 +14706,13 @@ updateboard_noui(
 			if (param_val(& xgtxloopback) && gtx)
 			{
 				board_set_topdb(param_val(& xgtopdbtx));		/* верхний предел FFT */
-				board_set_bottomdb(param_val(& xgbottomdbtx) * param_val(& xgzoomxpow2) * 301 / 100);		/* нижний предел FFT */
+				board_set_bottomdb(param_val(& xgbottomdbtx) * (1 << param_val(& xgzoomxpow2)) * 301 / 100);		/* нижний предел FFT */
 				board_set_tx_loopback(1);	/* включение спектроанализатора сигнала передачи */
 			}
 			else
 			{
 				board_set_topdb(param_val(& xgtopdb));		/* верхний предел FFT */
-				board_set_bottomdb(param_val(& xgbottomdb) * param_val(& xgzoomxpow2) * 301 / 100);		/* нижний предел FFT */
+				board_set_bottomdb(param_val(& xgbottomdb) * (1 << param_val(& xgzoomxpow2)) * 301 / 100);		/* нижний предел FFT */
 				board_set_tx_loopback(0);	/* включение спектроанализатора сигнала передачи */
 			}
 			board_set_zoomxpow2(param_val(& xgzoomxpow2));	/* уменьшение отображаемого участка спектра */
