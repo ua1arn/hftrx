@@ -3327,6 +3327,35 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 	return bandsmap [b].label;
 }
 
+static uint_fast16_t gzero;
+
+static ptrdiff_t valueoffs0(unsigned sel)
+{
+	(void) sel;
+	return 0;
+}
+
+static unsigned getselector0(unsigned * count, unsigned bi)
+{
+	(void) bi;
+	ASSERT(bi < 2);
+	* count = 1;
+	return 0;
+}
+
+static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned sel, unsigned bi)
+{
+	ASSERT(bi < 2);
+	(void) sel;
+	(void) bi;
+	return base;
+}
+
+static int_fast32_t getzerobase(void)
+{
+	return 0;
+}
+
 #if ! WITHISBOOTLOADER
 
 /* "карта" режимов,
@@ -3509,35 +3538,6 @@ static uint_fast8_t gmoderows [BANKINDEX_COUNT];		/* индексом испол
 										/* номер режима работы в маске (номер тройки бит) */
 static uint_fast8_t gmodecolmaps [BANKINDEX_COUNT] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
 
-
-static uint_fast16_t gzero;
-
-static ptrdiff_t valueoffs0(unsigned sel)
-{
-	(void) sel;
-	return 0;
-}
-
-static unsigned getselector0(unsigned * count, unsigned bi)
-{
-	(void) bi;
-	ASSERT(bi < 2);
-	* count = 1;
-	return 0;
-}
-
-static nvramaddress_t nvramoffs0(nvramaddress_t base, unsigned sel, unsigned bi)
-{
-	ASSERT(bi < 2);
-	(void) sel;
-	(void) bi;
-	return base;
-}
-
-static int_fast32_t getzerobase(void)
-{
-	return 0;
-}
 
 
 /** \brief Calculate log2 rounded up
