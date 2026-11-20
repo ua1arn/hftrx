@@ -4825,7 +4825,7 @@ static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 {
 	if (uacoutplayer || btaudioplayer)
 		return moni;
-	return mixsamples(sdtn, moni, shape);
+	return mixsamples(sdtn, moni * (int) glob_moniflag, shape);
 //	return sdtn * shape + moni * glob_moniflag * (1 - shape);
 }
 
