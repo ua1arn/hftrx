@@ -7133,6 +7133,8 @@ deltafreq2x_abs(
 	return pm - pixleft;
 }
 
+#if 0
+// rit/xit
 /* получение оконных координат границ полосы пропускания и центра спектра */
 static void display2_getdispmap(struct dispmap * p)
 {
@@ -7151,6 +7153,28 @@ static void display2_getdispmap(struct dispmap * p)
 	p->bw = bw;
 	p->f0 = f0;
 }
+#else
+// split
+/* получение оконных координат границ полосы пропускания и центра спектра */
+static void display2_getdispmap(struct dispmap * p)
+{
+	const int_fast32_t bw = display2_zoomedbw();
+	const int_fast32_t f0 = hamradio_get_dialfreq_pathi(0);	// частота центра экрана
+	const int_fast32_t fz = 10000000;	// расчёт положений отногсительно одной и той же частоты - изюежать "прыгания" ихображения при перестройке
+	unsigned pathi;
+
+	for (pathi = 0; pathi < 2; ++ pathi)
+	{
+		const int_fast32_t df = hamradio_get_dialfreq_pathi(pathi) - f0;
+		p->xleft [pathi] = deltafreq2x_abs(fz, hamradio_getleft_bp(pathi) + df, bw, ALLDX);	// левый край шторки
+		p->xright [pathi] = deltafreq2x_abs(fz, hamradio_getright_bp(pathi) + df, bw, ALLDX);	// правый край шторки
+	}
+	p->xcenter = deltafreq2x_abs(fz, 0, bw, ALLDX);	// маркер центральной частоты
+	p->f0pix = deltafreq2abspix(f0, bw, ALLDX);	/* pixel of frequency at middle of spectrum */
+	p->bw = bw;
+	p->f0 = f0;
+}
+#endif
 
 static uint_fast8_t
 isvisibletext(
