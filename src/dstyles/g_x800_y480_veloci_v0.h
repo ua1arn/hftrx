@@ -142,8 +142,8 @@ static const dzone_t dzones [] =
 	{	18,	25,	6,	5,	display2_ant5,	& dzi_antenna, PGALL, },
 	{	24, 25,	4,	5,	display2_byp3,	& dzi_bypass, PGALL, },	// TUNER BYPASS state (optional)
 	////{ 	28, 25, 4,	5,	display2_dummy, & dzi_default, PGALL, },	// Placeholder
-//	{	32, 25,	4,	5,	display2_rec3,	& dzi_rec, PGALL, },	// Отображение режима записи аудио фрагмента
-//	{	36, 25,	4,	5,	display2_spk3,	& dzi_spk, PGALL, },	// отображение признака включения динамика
+	//{	32, 25,	4,	5,	display2_rec3,	& dzi_rec, PGALL, },	// Отображение режима записи аудио фрагмента
+	{	36, 25,	4,	5,	display2_spk3,	& dzi_spk, PGALL, },	// отображение признака включения динамика
 	{	40, 25,	4,	5,	display2_datamode3,	& dzi_datamode, PGALL, },	// DATA mode indicator
 	{	44,	25,	6,	5,	display2_lockstate4, & dzi_lock, PGALL, },	// LOCK
 
