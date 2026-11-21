@@ -11396,13 +11396,13 @@ static const struct paramdefdef xgdummy =
 #if ! WITHISBOOTLOADER
 
 enum {
-	SPLITMODES_OFF,
-	SPLITMODES_ON,
-	SPLITMODES_RIT,
-	SPLITMODES_XIT,
-	SPLITMODES_MEM,
+	VFOMODES_OFF,
+	VFOMODES_ON,
+	VFOMODES_RIT,
+	VFOMODES_XIT,
+	VFOMODES_MEM,
 	//
-	VFOMODES_COUNT
+	VFOMODES_count
 };
 
 static uint_fast8_t gvfoab;	/* 0/1: какой bank index яаляется vfo a. Это не переключение между A и B */
@@ -11440,12 +11440,12 @@ static const struct paramdefdef xgritxitoffset =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 
-static uint_fast8_t gsplitmode = SPLITMODES_OFF;	/* normal/split/rit/xit/mem */
+static uint_fast8_t gsplitmode = VFOMODES_OFF;	/* normal/split/rit/xit/mem */
 static const struct paramdefdef xgsplitmode =
 {
 	QLABEL3("SPLITMD", "SPLITMD", "SPLITMD"),  0, RJ_ON,	ISTEP1,
 	ITEM_VALUE,
-	0, VFOMODES_COUNT - 1,							/* сколько не показывать сверху */
+	0, VFOMODES_count - 1,							/* сколько не показывать сверху */
 	OFFSETOF(struct nvmap, gsplitmode),
 	getselector0, nvramoffs0, valueoffs0,
 	NULL,
@@ -11482,9 +11482,9 @@ getbankindex_pathi(const uint_fast8_t pathi)
 	ASSERT(pathi < 2);
 	switch (param_val(& xgsplitmode))	/* (vfo/vfoa/vfob/mem) */
 	{
-	case SPLITMODES_OFF:
-	case SPLITMODES_RIT:
-	case SPLITMODES_XIT:
+	case VFOMODES_OFF:
+	case VFOMODES_RIT:
+	case VFOMODES_XIT:
 		return getbankindex_raw(0);	// без split - передаем на VFO A
 	}
 	if (gtx == 0)
@@ -11506,12 +11506,12 @@ getbankindex_tx(const uint_fast8_t tx)
 {
 	switch (param_val(& xgsplitmode))	/* (vfo/vfoa/vfob/mem) */
 	{
-	case SPLITMODES_OFF:
-	case SPLITMODES_RIT:
-	case SPLITMODES_XIT:
+	case VFOMODES_OFF:
+	case VFOMODES_RIT:
+	case VFOMODES_XIT:
 		return getbankindex_raw(0);	// без split - передаем на VFO A
 
-	case SPLITMODES_ON:
+	case VFOMODES_ON:
 		return getbankindex_raw(tx);	// передача на vfo B
 
 	default:
@@ -11527,12 +11527,12 @@ getbankindex_ab_fordisplay(const uint_fast8_t ab)
 {
 	switch (param_val(& xgsplitmode))	/* (vfo/vfoa/vfob/mem) */
 	{
-	case SPLITMODES_OFF:
-	case SPLITMODES_RIT:
-	case SPLITMODES_XIT:
+	case VFOMODES_OFF:
+	case VFOMODES_RIT:
+	case VFOMODES_XIT:
 		return getbankindex_raw(ab);
 
-	case SPLITMODES_ON:
+	case VFOMODES_ON:
 		return getbankindex_raw(gtx ? ! ab : ab);
 
 	default:
@@ -11555,19 +11555,19 @@ const char * hamradio_get_vfomode3_value(uint_fast8_t * flag)
 	switch (param_val(& xgsplitmode))	/* (vfo/vfoa/vfob/mem) */
 	{
 	default:
-	case SPLITMODES_OFF:	/* no SPLIT -  Обычная перестройка */
+	case VFOMODES_OFF:	/* no SPLIT -  Обычная перестройка */
 		* flag = 0;
 		return "";
-	case SPLITMODES_ON:
+	case VFOMODES_ON:
 		* flag = 1;
 		return "SPL";
-	case SPLITMODES_XIT:
+	case VFOMODES_XIT:
 		* flag = 1;
 		return "XIT";
-	case SPLITMODES_RIT:
+	case VFOMODES_RIT:
 		* flag = 1;
 		return "RIT";
-	case SPLITMODES_MEM:
+	case VFOMODES_MEM:
 		* flag = 1;
 		return "MEM";
 	}
@@ -11579,19 +11579,19 @@ const char * hamradio_get_vfomode5_value(uint_fast8_t * flag)
 	switch (param_val(& xgsplitmode))	/* (vfo/vfoa/vfob/mem) */
 	{
 	default:
-	case SPLITMODES_OFF:	/* no SPLIT -  Обычная перестройка */
+	case VFOMODES_OFF:	/* no SPLIT -  Обычная перестройка */
 		* flag = 0;
 		return "";
-	case SPLITMODES_ON:
+	case VFOMODES_ON:
 		* flag = 1;
 		return "SPLIT";
-	case SPLITMODES_XIT:
+	case VFOMODES_XIT:
 		* flag = 1;
 		return "XIT";
-	case SPLITMODES_RIT:
+	case VFOMODES_RIT:
 		* flag = 1;
 		return "RIT";
-	case SPLITMODES_MEM:
+	case VFOMODES_MEM:
 		* flag = 1;
 		return "MEM";
 	}
@@ -11692,8 +11692,8 @@ uint_fast8_t hamradio_get_shofvfobmarker(void)
 {
 	switch (param_val(& xgsplitmode))
 	{
-	case SPLITMODES_RIT:
-	case SPLITMODES_XIT:
+	case VFOMODES_RIT:
+	case VFOMODES_XIT:
 		return 1;
 	default:
 		break;
@@ -11701,7 +11701,7 @@ uint_fast8_t hamradio_get_shofvfobmarker(void)
 	switch (mainsubrxmodes [param_val(& xdwatchmode)].code)
 	{
 	case BOARD_RXMAINSUB_A_A:
-		return param_val(& xgsplitmode) == SPLITMODES_ON;
+		return param_val(& xgsplitmode) == VFOMODES_ON;
 	default:
 		return gsubmode != SUBMODE_ISB;
 	}
@@ -12135,7 +12135,7 @@ static void catchangesplit(
 	int_fast16_t delta
 	)
 {
-	cat_param_setvalue(& xgsplitmode, enable ? SPLITMODES_ON : SPLITMODES_OFF);
+	cat_param_setvalue(& xgsplitmode, enable ? VFOMODES_ON : VFOMODES_OFF);
 }
 
 #endif /* WITHCAT */
@@ -12541,12 +12541,12 @@ int_fast16_t hamradio_getritxitoffset(uint_fast8_t pathi)
 	switch (param_val(& xgsplitmode))
 	{
 	default:
-	case SPLITMODES_OFF:
-	case SPLITMODES_ON:
+	case VFOMODES_OFF:
+	case VFOMODES_ON:
 		return 0;
-	case SPLITMODES_RIT:
+	case VFOMODES_RIT:
 		return pathi == 0 ? param_val(& xgritxitoffset) : 0;
-	case SPLITMODES_XIT:
+	case VFOMODES_XIT:
 		return pathi != 0 ? param_val(& xgritxitoffset) : 0;
 
 	}
@@ -15041,7 +15041,7 @@ uif_key_spliton(uint_fast8_t holded)
 		storebandstate(tgvi, tgbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
 		storebandfreq(tgvi, tgbi);
 	}
-	if (param_setvalue(& xgsplitmode, SPLITMODES_ON))
+	if (param_setvalue(& xgsplitmode, VFOMODES_ON))
 		updateboard();
 }
 
@@ -15050,19 +15050,19 @@ static void
 uif_key_splitoff(void)
 {
 	//param_setvalue(& xgritxitoffset, 0);
-	if (param_setvalue(& xgsplitmode, SPLITMODES_OFF))
+	if (param_setvalue(& xgsplitmode, VFOMODES_OFF))
 		updateboard();
 }
 
 static void uif_key_rit_on(void)
 {
-	if (param_setvalue(& xgritxitoffset, 0) | param_setvalue(& xgsplitmode, SPLITMODES_RIT))
+	if (param_setvalue(& xgritxitoffset, 0) | param_setvalue(& xgsplitmode, VFOMODES_RIT))
 		updateboard();
 }
 
 static void uif_key_xit_on(void)
 {
-	if (param_setvalue(& xgritxitoffset, 0) | param_setvalue(& xgsplitmode, SPLITMODES_XIT))
+	if (param_setvalue(& xgritxitoffset, 0) | param_setvalue(& xgsplitmode, VFOMODES_XIT))
 		updateboard();
 }
 
@@ -15113,7 +15113,7 @@ uif_key_click_a_ex_b(void)
 //uif_key_memmode(uint_fast8_t tx)
 //{
 //while (repeat --)
-//	gsplitmode = calc_next(gsplitmode, 0, VFOMODES_COUNT - 1); /* (vfo/vfoa/vfob/mem) */
+//	gsplitmode = calc_next(gsplitmode, 0, VFOMODES_count - 1); /* (vfo/vfoa/vfob/mem) */
 //save_i8(RMT_SPLITMODE_BASE, gsplitmode);
 //updateboard();
 //}
@@ -16815,7 +16815,7 @@ catyaesu_processcatmsg(
 		{
 			// SPLIT On
 			PRINTF("CAT SPLIT ON\n");
-			gsplitmode = SPLITMODES_ON;
+			gsplitmode = VFOMODES_ON;
 			updateboard();
 			cat_ask_buffer [0] = 0x00;
 			cat_answervariable(cat_ask_buffer, 1);
@@ -16830,7 +16830,7 @@ catyaesu_processcatmsg(
 		if (cat_answer_ready())
 		{
 			PRINTF("CAT SPLIT OFF\n");
-			gsplitmode = SPLITMODES_OFF;
+			gsplitmode = VFOMODES_OFF;
 			updateboard();
 			cat_ask_buffer [0] = 0x00;
 			cat_answervariable(cat_ask_buffer, 1);
@@ -17494,7 +17494,7 @@ static void spanswer(uint_fast8_t arg)
 
 	// answer VFO B frequency
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) (gsplitmode != SPLITMODES_OFF)
+		(int) (gsplitmode != VFOMODES_OFF)
 		);
 	catkenwood_answer(len);
 }
@@ -18120,7 +18120,7 @@ static void ifanswer(uint_fast8_t arg)
 		(int) gtx,
 		(int) submodes [gsubmode].qcatmodecode,	// P9
 		(int) 0,	// P10: FR/FT state
-		(int) (gsplitmode == SPLITMODES_ON) // P12
+		(int) (gsplitmode == VFOMODES_ON) // P12
 		);
 	catkenwood_answer(len);
 }
@@ -20778,13 +20778,13 @@ process_key_menuset0(uint_fast8_t kbch)
 	case KBD_CODE_RIT:
 		switch (gsplitmode)
 		{
-		case SPLITMODES_OFF:
+		case VFOMODES_OFF:
 			uif_key_rit_on();
 			break;
-		case SPLITMODES_RIT:
+		case VFOMODES_RIT:
 			uif_key_splitoff();
 			break;
-		case SPLITMODES_XIT:
+		case VFOMODES_XIT:
 			uif_key_splitoff();
 			break;
 		}
@@ -20793,13 +20793,13 @@ process_key_menuset0(uint_fast8_t kbch)
 	case KBD_CODE_RIT_HOLDED:
 		switch (gsplitmode)
 		{
-		case SPLITMODES_OFF:
+		case VFOMODES_OFF:
 			uif_key_xit_on();
 			break;
-		case SPLITMODES_RIT:
+		case VFOMODES_RIT:
 			uif_key_xit_on();
 			break;
-		case SPLITMODES_XIT:
+		case VFOMODES_XIT:
 			uif_key_xit_on();
 			break;
 		}
@@ -20810,10 +20810,10 @@ process_key_menuset0(uint_fast8_t kbch)
 			 - не вызывает сохранение состояния диапазона */
 		switch (gsplitmode)
 		{
-		case SPLITMODES_OFF:
+		case VFOMODES_OFF:
 			uif_key_spliton(0);
 			break;
-		case SPLITMODES_ON:
+		case VFOMODES_ON:
 			uif_key_splitoff();
 			break;
 		}
@@ -20822,10 +20822,10 @@ process_key_menuset0(uint_fast8_t kbch)
 	case KBD_CODE_SPLIT_HOLDED:
 		switch (gsplitmode)
 		{
-		case SPLITMODES_OFF:
+		case VFOMODES_OFF:
 			uif_key_spliton(1);
 			break;
-		case SPLITMODES_ON:
+		case VFOMODES_ON:
 			uif_key_splitoff();
 			break;
 		}
@@ -22605,8 +22605,8 @@ static uint_fast8_t performtune(
 	const uint_fast8_t unlocked = glocks [bi_main] == 0;
 	switch (gsplitmode)
 	{
-	case SPLITMODES_OFF:
-	case SPLITMODES_ON:
+	case VFOMODES_OFF:
+	case VFOMODES_ON:
 		if (unlocked)
 		{
 			freqchanged |= knobsmodfreq(nrotate_main, step_main, jumpsize_main, bi_main);
@@ -22615,8 +22615,8 @@ static uint_fast8_t performtune(
 	#endif /* ! WITHTOUCHGUI */
 		}
 		break;
-	case SPLITMODES_RIT:
-	case SPLITMODES_XIT:
+	case VFOMODES_RIT:
+	case VFOMODES_XIT:
 		if (unlocked)
 		{
 			freqchanged |= knobsmodfreq(nrotate_main, step_main, jumpsize_main, bi_main);
@@ -24024,12 +24024,12 @@ uint32_t hamradio_get_gadcrand(void)
 
 uint_fast8_t hamradio_split_toggle(void)
 {
-	if (param_val(& xgsplitmode) == SPLITMODES_OFF)
+	if (param_val(& xgsplitmode) == VFOMODES_OFF)
 		uif_key_spliton(0);
 	else
 		uif_key_splitoff();
 
-	return param_val(& xgsplitmode) != SPLITMODES_OFF;
+	return param_val(& xgsplitmode) != VFOMODES_OFF;
 }
 
 void hamradio_split_vfo_swap(void)
@@ -24597,7 +24597,7 @@ loadsavedstate(uint_fast8_t bi)
 #endif /* WITHENCODER2 */
 	gmenuset = loadvfy8up(RMT_MENUSET_BASE, 0, display_getpagesmax(), gmenuset);		/* вытаскиваем номер субменю, с которым работаем сейчас */
 
-	//gsplitmode = loadvfy8up(RMT_SPLITMODE_BASE, 0, VFOMODES_COUNT - 1, gsplitmode); /* (vfo/vfoa/vfob/mem) */
+	//gsplitmode = loadvfy8up(RMT_SPLITMODE_BASE, 0, VFOMODES_count - 1, gsplitmode); /* (vfo/vfoa/vfob/mem) */
 
 	// тюнер запоминается подиапазонно
 //#if WITHAUTOTUNER
