@@ -14854,7 +14854,7 @@ updateboard_noui(
 		synth_rts1_setfreq(0, getlo0(lo0hint) - dialfreq);	// Установка центральной частоты тракта панорамного индикатора
 		for (pathi = 0; pathi < pathn; ++ pathi)
 		{
-			const int_fast32_t freq = dialfreq + hamradio_getritxitoffset(pathi);	// частота тракта
+			const int_fast32_t freq =  hamradio_get_dialfreq_pathi(pathi) + hamradio_getritxitoffset(pathi);	// частота тракта
 
 			/* частота первого гетеродина может оказаться отрицательной */
 			const uint_fast32_t lo1 = synth_freq2lo1(freq, pathi);
