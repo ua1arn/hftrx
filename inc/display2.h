@@ -428,9 +428,9 @@ typedef struct
 
 	#elif COLORSTYLE_BLUE
 		// Spectrum/waterfall colors
-		#define DSGN_GRIDCOLOR      	COLORPIP_OLIVE        // center marker
-		#define DSGN_GRIDCOLOR0     	COLORPIP_DARKRED        // other markers
-		#define DSGN_GRIDCOLOR2     	COLORPIP_DARKRED        // other markers
+		#define DSGN_GRIDCOLOR      	COLORPIP_WHITE;        // center marker
+		#define DSGN_GRIDCOLOR0     	COLORPIP_DARKGRAY        // other markers
+		#define DSGN_GRIDCOLOR2     	COLORPIP_DARKGRAY        // other markers
 
 		#define DSGN_SPECTRUMBG     	COLORPIP_BLACK
 		#define DSGN_SPECTRUMBG2    	COLORPIP_DARKCYAN        //  полоса пропускания приемника
