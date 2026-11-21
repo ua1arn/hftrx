@@ -439,24 +439,26 @@ static void spi_operate(lowspiio_t * iospi)
 	const spitarget_t target = iospi->target;
 	unsigned i;
 	IRQL_t oldIrql;
-
+	spi_speeds_t speed = iospi->spispeedindex;
 	spi_operate_lock(spi, & oldIrql);
-
+#if defined SPI_SPEED_OVERRIDE
+	speed = SPI_SPEED_OVERRIDE(target, speed);
+#endif
 	switch (iospi->spiiosize)
 	{
 	case SPIIOSIZE_U8:
-		hardware_spi_connect(spi, iospi->spispeedindex, iospi->spimode);
+		hardware_spi_connect(spi, speed, iospi->spimode);
 		prog_select(target);
 		break;
 #if WITHSPI16BIT
 	case SPIIOSIZE_U16:
-		hardware_spi_connect_b16(spi, iospi->spispeedindex, iospi->spimode);
+		hardware_spi_connect_b16(spi, speed, iospi->spimode);
 		prog_select(target);
 		break;
 #endif /* WITHSPI16BIT */
 #if WITHSPI32BIT
 	case SPIIOSIZE_U32:
-		hardware_spi_connect_b32(spi, iospi->spispeedindex, iospi->spimode);
+		hardware_spi_connect_b32(spi, speed, iospi->spimode);
 		prog_select(target);
 		break;
 #endif /* WITHSPI32BIT */

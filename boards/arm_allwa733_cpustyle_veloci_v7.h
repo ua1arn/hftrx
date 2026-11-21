@@ -971,6 +971,12 @@
 		} \
 	} while (0)
 
+	#define SPI_SPEED_OVERRIDE(target, speed) \
+			((target) == targetxad2 ? SPIC_SPEED400k : \
+				(target) == targetadck ? SPIC_SPEED1M : \
+			(speed) \
+			)
+
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
 		if (gpioX_checkcfg(GPIOE, OE_CTL1_BIT, GPIO_CFG_OUT)) break; /* preventing power hang-off */ \

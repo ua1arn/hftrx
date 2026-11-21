@@ -493,7 +493,7 @@
 	#define DDS1_TYPE DDS_TYPE_FPGAV1
 	//#define DDS1_TYPE DDS_TYPE_FPGA_NONE
 	//#define RTC1_TYPE RTC_TYPE_DS1305	/* MAXIM DS1305EN RTC clock chip with SPI interface */
-	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
+	#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
 	//#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
 	//#define WITHRTCLSI	1				/* тестирование без кварца 32.768 кГц */
 
