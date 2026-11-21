@@ -3491,13 +3491,15 @@ static void display2_vfomode5(const gxdrawb_t * db,
 void display_ritxitoffset(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
 {
 	uint_fast8_t state;
-	hamradio_get_vfomode5_value(& state);
-	const int offs = hamradio_getritxitoffset(0);
+	const int offs = hamradio_getritxitoffset2(0, & state);
 	const div_t d = div(offs, 1000);
 	char b [xspan + 1];
 
-	local_snprintf_P(b, ARRAY_SIZE(b), "%+2d.%03d", d.quot, iabs(d.rem));
-	display_2statesStyled(db, x, y, state, b, b, xspan, yspan, dbstylev_2state_rec);
+	if (state)
+	{
+		local_snprintf_P(b, ARRAY_SIZE(b), "%+2d.%03d", d.quot, iabs(d.rem));
+		display_2statesStyled(db, x, y, state, b, b, xspan, yspan, dbstylev_2state_rec);
+	}
 }
 
 // Отображение режима передачи аудио с USB

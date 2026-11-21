@@ -780,6 +780,7 @@ int_fast16_t hamradio_get_topdb(void);	/* значения со знаком */
 int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 int_fast16_t hamradio_getritxitoffset(uint_fast8_t pathi);
+int_fast16_t hamradio_getritxitoffset2(uint_fast8_t pathi, uint_fast8_t * active);
 int_fast16_t hamradio_if_shift(int_fast8_t step);
 int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее
 int_fast32_t hamradio_getequalizerbase(void);
