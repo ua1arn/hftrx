@@ -636,6 +636,8 @@ static int gpu_fill_rect_fragment_v7(
     	GPU_ALIGN MALI_UNIFORM_BUFFER_PACKED_T ubo_desc;
     	GPU_ALIGN float ubo_color[4];
     	GPU_ALIGN uint64_t tex_ptr; // в структуре st (выровнять по 8 байтам)
+    	GPU_ALIGN MALI_VIEWPORT_PACKED_T vp_full;
+    	GPU_ALIGN MALI_VIEWPORT_PACKED_T vp_rect;
     } st;
 
     if (!fb_addr || width == 0 || height == 0) {
@@ -810,7 +812,7 @@ static int gpu_fill_rect_fragment_v7(
 
 #endif
 
-    if (use_blend) {
+    if (0 && use_blend) {
         /* Принудительно настраиваем RT0 под A8B8G8R8 для режима смешивания */
         const uint32_t packedABGR = (a << 24) | (b << 16) | (g << 8) | (r << 0);
         rt_rgb.clear.color_0 = packedABGR;
@@ -835,34 +837,38 @@ static int gpu_fill_rect_fragment_v7(
             MALI_SURFACE_WITH_STRIDE_header,
             .pointer = (uintptr_t)fb_addr,
             .row_stride = fb_stride,
-            .surface_stride = (uint64_t)fb_stride * fb_height
+            .surface_stride = 0
         };
         MALI_SURFACE_WITH_STRIDE_pack(&st.surf_fb, &surf_cfg);
 
         struct MALI_TEXTURE tex_cfg = {
             MALI_TEXTURE_header,
             .dimension = MALI_TEXTURE_DIMENSION_2D,
-            .format = MALI_PACK_PIXEL_FORMAT(MALI_COLOR_FORMAT_R8G8B8A8,
-            					MALI_FORMAT_TYPE_UNORM,
-                                             swizzle_abgr),
+            .normalize_coordinates = true,
+            .format = MALI_PACK_PIXEL_FORMAT(MALI_RGBA8_UNORM, 0, MALI_RGB_COMPONENT_ORDER_RGBA),
             .width = fb_width,
             .height = fb_height,
-            .depth = 1,
-            .array_size = 1,
-            .levels = 1,
+            .swizzle = rt_rgb.swizzle,
             .texel_ordering = MALI_TEXTURE_LAYOUT_LINEAR,
-            .surfaces = (uintptr_t)&st.surf_fb
+            .levels = 1,
+            .minimum_level = 0,
+            .minimum_lod = 0.0f,
+            .sample_count = 1,
+            .maximum_lod = 0.0f,
+            .surfaces = (uintptr_t)&st.surf_fb,
+            .array_size = 1,
+            .depth = 1
         };
         MALI_TEXTURE_pack(&st.tex_fb, &tex_cfg);
 
         struct MALI_SAMPLER samp_cfg = {
             MALI_SAMPLER_header,
+			.normalized_coordinates = true,
             .magnify_nearest = true,
             .minify_nearest = true,
             .wrap_mode_s = MALI_WRAP_MODE_CLAMP_TO_EDGE,
             .wrap_mode_t = MALI_WRAP_MODE_CLAMP_TO_EDGE,
-            .wrap_mode_r = MALI_WRAP_MODE_CLAMP_TO_EDGE,
-            .normalized_coordinates = false
+            .wrap_mode_r = MALI_WRAP_MODE_CLAMP_TO_EDGE
         };
         MALI_SAMPLER_pack(&st.sampler_fb, &samp_cfg);
 
@@ -904,11 +910,30 @@ static int gpu_fill_rect_fragment_v7(
 
 		st.tex_ptr = (uintptr_t)&st.tex_fb;
 
+		struct MALI_VIEWPORT vp_full_cfg = {
+		    MALI_VIEWPORT_header,
+		    .scissor_minimum_x = 0,
+		    .scissor_minimum_y = 0,
+		    .scissor_maximum_x = fb_width - 1,
+		    .scissor_maximum_y = fb_height - 1,
+		};
+		MALI_VIEWPORT_pack(&st.vp_full, &vp_full_cfg);
+
+		struct MALI_VIEWPORT vp_rect_cfg = {
+		    MALI_VIEWPORT_header,
+		    .scissor_minimum_x = x,
+		    .scissor_minimum_y = y,
+		    .scissor_maximum_x = max_x,
+		    .scissor_maximum_y = max_y,
+		};
+		MALI_VIEWPORT_pack(&st.vp_rect, &vp_rect_cfg);
+
 		struct MALI_DRAW dcd_pre0 = {
 		    MALI_DRAW_header,
 		    .state = (uintptr_t)&st.rsd_blit,
-		    .textures = (uintptr_t)&st.tex_ptr,
+		    .textures = (uintptr_t)&st.tex_fb,
 		    .samplers = (uintptr_t)&st.sampler_fb,
+		    .viewport = (uintptr_t)&st.vp_full,
 		};
 		MALI_DRAW_pack(&st.frame_dcds[0], &dcd_pre0);
 
@@ -964,18 +989,18 @@ static int gpu_fill_rect_fragment_v7(
 			    .rgb = {
 			        .a = MALI_BLEND_OPERAND_A_SRC,
 			        .negate_a = false,
-			        .b = MALI_BLEND_OPERAND_B_SRC_ALPHA,
+			        .b = MALI_BLEND_OPERAND_B_DEST,
 			        .negate_b = false,
-			        .c = MALI_BLEND_OPERAND_C_DST,
-			        .invert_c = true   /* Аппаратно вычисляет C * (1.0 - B) = Dst * (1.0 - SrcAlpha) */
+			        .c = MALI_BLEND_OPERAND_C_SRC_ALPHA,
+			        .invert_c = true   /* A * C + B * (1 - C) = Src * SrcAlpha + Dst * (1 - SrcAlpha) */
 			    },
 			    .alpha = {
 			        .a = MALI_BLEND_OPERAND_A_ZERO,
 			        .negate_a = false,
-			        .b = MALI_BLEND_OPERAND_B_ONE,
+			        .b = MALI_BLEND_OPERAND_B_DEST,
 			        .negate_b = false,
-			        .c = MALI_BLEND_OPERAND_C_DST_ALPHA,
-			        .invert_c = false  /* Сохраняет исходную альфу фона: 0 * 1 + DstAlpha = DstAlpha */
+			        .c = MALI_BLEND_OPERAND_C_ZERO,
+			        .invert_c = true   /* 0 * 0 + DstAlpha * (1 - 0) = DstAlpha */
 			    },
 			    .color_mask = 0xF
             }
@@ -986,7 +1011,8 @@ static int gpu_fill_rect_fragment_v7(
         struct MALI_DRAW dcd_post = {
             MALI_DRAW_header,
             .state = (uintptr_t)&st.rsd_blend,
-            .uniform_buffers = (uintptr_t)&st.ubo_desc
+            .uniform_buffers = (uintptr_t)&st.ubo_desc,
+            .viewport = (uintptr_t)&st.vp_rect,
         };
         MALI_DRAW_pack(&st.frame_dcds[2], &dcd_post);
     }
@@ -1079,7 +1105,7 @@ int gpu_fillrect(
 		w,                // width
 		h,                // height
 		color,           // 0xFFFF0000
-		0*fillmask,
+		fillmask,
 		alpha
     );
     ASSERT(res == 0);
