@@ -392,6 +392,36 @@ __STATIC_FORCEINLINE uint64_t __get_ID_AA64PFR1_EL1(void) {
 	return result;
 }
 
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if defined (GICInterface)
+	/**
+	  \brief   Get Running Priority (GICv1/v2)
+	  \details Reads the running interrupt priority from GIC's GICC_RPR register.
+	  \return  Current running priority (0..255, 0xFF if no active interrupt).
+	 */
+	__STATIC_INLINE uint32_t GIC_GetRunningPriority(void)
+	{
+		return (GICInterface->RPR & 0xFFUL);
+	}
+#else
+
+
+	/**
+	  \brief   Get Running Priority (GICv3/v4 AArch64)
+	  \details Reads the ICC_RPR_EL1 system register.
+	  \return  Current running priority (0..255, 0xFF if no active interrupt).
+	 */
+	__STATIC_INLINE uint32_t GIC_GetRunningPriority(void)
+	{
+	    uint64_t result;
+	    /* S3_0_C12_C11_3 corresponds to ICC_RPR_EL1 */
+	    __asm volatile ("MRS %0, S3_0_C12_C11_3" : "=r" (result));
+	    return (uint32_t)(result & 0xFFULL);
+	}
+#endif
+
+#endif
+
 
 #if 1
 

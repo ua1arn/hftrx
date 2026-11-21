@@ -19,6 +19,8 @@
 
 #include "a-profile/irq_ctrl.h" // CMSIS_6 file
 
+
+
 #if 0
 
 static const char * mode_trig(uint32_t mode)
@@ -2933,13 +2935,6 @@ void task_unlock_after_switch(void)
     const uint_fast8_t core = arm_hardware_cpuid();
     IRQLSPIN_UNLOCK(& threadslock, next_task_irql [core]);           \
 }
-//
-//static void task_stamp(void)
-//{
-//    const uint_fast8_t core = arm_hardware_cpuid();
-//	next_task_irql [core] = IRQL_GET_CURRENT();
-//	next_task_daif [core] = global_disable_irq_save();
-//}
 
 static void * task_scheduler_syscall(unsigned code, void * oldframe)
 {
@@ -3974,7 +3969,7 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 #endif /* WITHDEBUG */
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-	const IRQL_t oldv = IRQL_GET_CURRENT();
+	const IRQL_t oldv = GIC_GetInterfacePriorityMask();
 //	ASSERT2(oldv != 0, file, line);
 //	ASSERT2(lastirql [core] == oldv, file, line);
 	if (IRQL_LT(newIRQL, oldv))
@@ -3986,7 +3981,7 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 	}
 	* oldIrql = oldv;
 	GIC_SetInterfacePriorityMask(newIRQL);
-	ASSERT2(IRQL_GET_CURRENT() == newIRQL, file, line);
+	ASSERT2(GIC_GetInterfacePriorityMask() == newIRQL, file, line);
 
 #elif defined (__CORTEX_M)
 	const IRQL_t oldv = __get_BASEPRI();
@@ -4028,7 +4023,7 @@ void LowerIrql_DEBUG(IRQL_t newIRQL, const char * file, int line)
 
     //ASSERT2(newIRQL != 0, file, line);
 	GIC_SetInterfacePriorityMask(newIRQL);
-	ASSERT2(IRQL_GET_CURRENT() == newIRQL, file, line);
+	ASSERT2(GIC_GetInterfacePriorityMask() == newIRQL, file, line);
 
 #elif defined (__CORTEX_M)
 	__set_BASEPRI(newIRQL);

@@ -174,6 +174,37 @@ __STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRDN(void)
 
 #endif /* (__CORTEX_A == 55U)  */
 
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if 1//defined (GICInterface)
+	/**
+	  \brief   Get Running Priority (GICv1/v2)
+	  \details Reads the running interrupt priority from GIC's GICC_RPR register.
+	  \return  Current running priority (0..255, 0xFF if no active interrupt).
+	 */
+	__STATIC_INLINE uint32_t GIC_GetRunningPriority(void)
+	{
+		return (GICInterface->RPR & 0xFFUL);
+	}
+#else
+
+/**
+  \brief   Get Running Priority (GICv3/v4 AArch32)
+  \details Reads the ICC_RPR system register via CP15.
+  \return  Current running priority (0..255, 0xFF if no active interrupt).
+ */
+__STATIC_INLINE uint32_t GIC_GetRunningPriority(void)
+{
+    uint32_t result;
+    /* MRC p15, 0, <Rt>, c12, c11, 3 */
+    __get_CP(15, 0, result, 12, 11, 3);
+    return (result & 0xFFUL);
+}
+
+#endif
+#endif
+
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#endif
 
 /* Register MPIDR_EL1 */
 typedef union

@@ -866,7 +866,8 @@ extern "C" {
 
 	#define BOARD_SGI_IRQ 	SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
 
-	#define IRQL_GET_CURRENT() (GIC_GetInterfacePriorityMask())
+	#define IRQL_GET_CURRENT() (GIC_GetRunningPriority())	// возвращает в формате, совпадающим с IRQL
+
 	// https://github.com/NienfengYao/armv8-bare-metal/blob/572c6f95880e70aa92fe9fed4b8ad7697082a764/aarch64.c#L63
 	#if defined(__aarch64__)
 		// MSR DAIFCLR, #IRQ_bit and #FIR_bit
