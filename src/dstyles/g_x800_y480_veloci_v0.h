@@ -136,7 +136,7 @@ static const dzone_t dzones [] =
 	//{	44,	20,	6,	5,	display2_vfomode5,	& dzi_vfomode, PGALL, },	// SPL
 
 	// размещены под S-метром (15 ячеек)
-	{	0, 	25,	6,	5,	display2_voltlevelV, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
+	//{	0, 	25,	6,	5,	display2_voltlevelV, & dzi_voltlevel, PGALL, },	// voltmeter with "V"
 	{	6, 	25,	6,	5,	display2_currlevelA, & dzi_currlevel, PGALL, },	// PA drain current d.dd with "A"
 
 	{	18,	25,	6,	5,	display2_ant5,	& dzi_antenna, PGALL, },
@@ -163,7 +163,8 @@ static const dzone_t dzones [] =
 	{	29, DLEB,	4,	5,	display2_usbsts3,		& dzi_usbact, PG1_1, },	// USB host status
 	{	33, DLEB,	3,	5,	display2_btsts2,		& dzi_btact, PG1_1, },	// отображение состояния USB BT
 	{	36, DLEB,	8,	5,	display2_classa7,		& dzi_classa, PG1_1, },	// Class-A power amplifier
-	{	44, DLEB, 	6,  5, 	display2_rxctcss5, 		& dzi_compat, PG1_1, },
+	//{	44, DLEB, 	6,  5, 	display2_rxctcss5, 		& dzi_compat, PG1_1, },
+	{	44, DLEB,	6,	5,	display2_voltlevelV, 	& dzi_voltlevel, PG1_1, },	// voltmeter with "V"
 	//{	28, DLEB,	10,	5,	display2_freqmeter10, 	& dzi_default, PGALL, },	// измеренная частота опоры
 
 #if WITHMENU
