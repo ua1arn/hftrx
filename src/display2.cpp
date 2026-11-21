@@ -1936,8 +1936,6 @@ static void sm_draw_dial_tx_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 	const uint_fast16_t xc = x0 + smpr->xcneddle;
 	const uint_fast16_t yc = y0 + smpr->ycneddle;
 
-	/* фильтрация - (в градусах) */
-
 	adcvalholder_t powerTraceV;
 	const adcvalholder_t powerV = board_getadc_filtered_truevalue2(PWRMRRIX, & powerTraceV);	// без возможных тормозов на SPI при чтении
 	const int_fast32_t gp = smpr->gs + normalize(powerV, 0, maxpwrcali * 16, smpr->ge - smpr->gs);
@@ -2000,7 +1998,7 @@ static void sm_draw_dial_rx_rle(const gxdrawb_t * db, uint_fast16_t x0, uint_fas
 }
 
 static void
-display2_smeter15_layout_tx_dial_rle(smeter_params_t * const smpr)
+display2_smeter15_dimensions_tx_dial_rle(smeter_params_t * const smpr)
 {
 	display2_smeter15_layout_dial_rle(smpr);
 	// Raster buffers
@@ -2018,7 +2016,7 @@ display2_smeter15_layout_tx_dial_rle(smeter_params_t * const smpr)
 }
 
 static void
-display2_smeter15_layout_rx_dial_rle(smeter_params_t * const smpr)
+display2_smeter15_dimensions_rx_dial_rle(smeter_params_t * const smpr)
 {
 	display2_smeter15_layout_dial_rle(smpr);
 	// Raster buffers
@@ -2037,8 +2035,16 @@ display2_smeter15_layout_rx_dial_rle(smeter_params_t * const smpr)
 
 #else /* WITHRLEDECOMPRESS */
 
+static void display2_smeter15_fillbg(const gxdrawb_t * db)
+{
+	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
+//	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, smeterbgcolor, 1);
+//	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
+//	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
+}
+
 static void
-display2_smeter15_layout_dial(smeter_params_t * smpr)
+display2_smeter15_dimensions_dial(smeter_params_t * smpr)
 {
 	const uint_fast8_t halfsect = 30;	// Градусы
 	const int stripewidth = 12; //16;
@@ -2120,7 +2126,7 @@ static void
 display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 {
 	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
-	display2_smeter15_layout_dial(smpr);
+	display2_smeter15_dimensions_dial(smpr);
 	const int32_t markers [] =
 	{
 		//smpr->gs + 0 * smpr->step1,
@@ -2159,9 +2165,8 @@ display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
 	// Angles (positions)
 	int32_t * const smeteranglesRX = smpr->smeterangles;
-	// Фон для RX
 
-	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
+	display2_smeter15_fillbg(db);	// Фон для RX
 
 	for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 	{
@@ -2252,7 +2257,7 @@ static void sm_draw_dial_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 	}
 
 	// Стрелка в три точки - пиковое значение мощности
-	const COLORPIP_T color2 = COLORPIP_DARKGREEN;
+	const COLORPIP_T color2 = COLORPIP_RED;
 	colpip_radius(db, xc - 1, 	yc, gptrace, smpr->rv1, smpr->rv2, color2, 0, 1);
 	colpip_radius(db, xc, 		yc, gptrace, smpr->rv1, smpr->rv2, color2, 0, 1);
 	colpip_radius(db, xc + 1, 	yc, gptrace, smpr->rv1, smpr->rv2, color2, 0, 1);
@@ -2272,7 +2277,7 @@ static void
 display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 {
 	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
-	display2_smeter15_layout_dial(smpr);
+	display2_smeter15_dimensions_dial(smpr);
 	const int32_t markersTX_pwr [] =
 	{
 		smpr->gs,
@@ -2303,8 +2308,8 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
 	// Angles (positions)
 	int32_t * const smeteranglesTX = smpr->smeterangles;
+	display2_smeter15_fillbg(db);	// Фон для TX
 
-	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
 
 	// Разметка шкалы мощности
 	for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr) - 1; ++ i, p += 10)
@@ -2425,7 +2430,7 @@ static void sm_draw_bars_tx(const gxdrawb_t * db, uint_fast16_t x0, uint_fast16_
 }
 
 static void
-display2_smeter15_layout_bars(smeter_params_t * smpr)
+display2_smeter15_dimensions_bars(smeter_params_t * smpr)
 {
 	smpr->gs = 20;
 	smpr->ge = 220;
@@ -2441,7 +2446,7 @@ static void
 display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 {
 	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
-	display2_smeter15_layout_bars(smpr);
+	display2_smeter15_dimensions_bars(smpr);
 	const int32_t markersTX_pwr [] =
 	{
 		smpr->gs,
@@ -2475,10 +2480,8 @@ display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
 	// Angles (positions)
 	int32_t * const smeteranglesTX = smpr->smeterangles;
-	// Фон для TX
-	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, smeterbgcolor, 1);
-//		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
-//		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
+
+	display2_smeter15_fillbg(db);	// Фон для TX
 
 	// Power meter
 	// smpr->r1: горизонталь первой шкалы
@@ -2523,7 +2526,7 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 {
 	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
 	const unifont_t * const fontsm2 = & unifont_small2;	// SMALL2
-	display2_smeter15_layout_bars(smpr);
+	display2_smeter15_dimensions_bars(smpr);
 	const int32_t markers [] =
 	{
 		//smpr->gs + 0 * smpr->step1,
@@ -2562,10 +2565,8 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
 	// Angles (positions)
 	int32_t * const smeteranglesRX = smpr->smeterangles;
-	// Фон для RX
-	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, smeterbgcolor, 1);
-//		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_WHITE, 0);
-//		colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
+
+	display2_smeter15_fillbg(db);	// Фон для RX
 
 	colpip_line(db, smpr->gs, smpr->r1, smpr->gm, smpr->r1, COLORPIP_WHITE, 0);
 	colpip_line(db, smpr->gm, smpr->r1, smpr->ge, smpr->r1, COLORPIP_RED, 0);
@@ -2629,8 +2630,8 @@ display2_smeter15_init(
 			return;
 
 #if WITHRLEDECOMPRESS
-	display2_smeter15_layout_tx_dial_rle(& smprms [SMETER_TYPE_DIAL] [SM_STATE_TX]);
-	display2_smeter15_layout_rx_dial_rle(& smprms [SMETER_TYPE_DIAL] [SM_STATE_RX]);
+	display2_smeter15_dimensions_tx_dial_rle(& smprms [SMETER_TYPE_DIAL] [SM_STATE_TX]);
+	display2_smeter15_dimensions_rx_dial_rle(& smprms [SMETER_TYPE_DIAL] [SM_STATE_RX]);
 #else /* WITHRLEDECOMPRESS */
 	display2_smeter15_layout_tx_dial(& smprms [SMETER_TYPE_DIAL] [SM_STATE_TX]);
 	display2_smeter15_layout_rx_dial(& smprms [SMETER_TYPE_DIAL] [SM_STATE_RX]);
