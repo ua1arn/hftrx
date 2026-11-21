@@ -1003,6 +1003,9 @@ static int gpu_fill_rect_fragment_v7(
         dcache_clean_invalidate((uintptr_t)bifrost_g31_solid_shader, sizeof(bifrost_g31_solid_shader));
     }
 
+//    PRINTHEX32(bifrost_g31_blit_shader);
+//    PRINTHEX32(bifrost_g31_solid_shader);
+//    PRINTHEX32(st);
     if (gpu_submit_job(0, (uintptr_t)&st.frag_job)) {
         return -1;
     }
@@ -1023,6 +1026,8 @@ int gpu_fillrect(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// ширниа
+	uint_fast16_t y,	// высота
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
 	COLORPIP_T color,	// цвет
@@ -1048,8 +1053,8 @@ int gpu_fillrect(
         dx,           // 800
         DIM_Y,          // 480
 		tstride,          // 3200 байт
-        0,                // x
-        0,                // y
+        x,                // x
+        y,                // y
 		w,                // width
 		h,                // height
 		color,           // 0xFFFF0000

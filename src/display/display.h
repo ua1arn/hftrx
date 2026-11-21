@@ -618,6 +618,8 @@ int gpu_fillrect(
 	PACKEDCOLORPIP_T * __restrict buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t x,	// ширниа
+	uint_fast16_t y,	// высота
 	uint_fast16_t w,	// ширниа
 	uint_fast16_t h,	// высота
 	COLORPIP_T color,	// цвет

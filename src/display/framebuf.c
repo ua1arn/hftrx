@@ -3514,10 +3514,7 @@ hwaccel_fillrect_mux(
 {
 	int done = 0;
 
-#if WITHGPUHW && CPUSTYLE_T507 && 1
-	done = gpu_fillrect(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
-
-#elif LCDMODE_PALETTE256
+#if LCDMODE_PALETTE256
 	done = hwaccel_fillrect_u8(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
 
 #elif LCDMODE_RGB565
@@ -3551,16 +3548,19 @@ void colpip_rectangle(
 	//PACKEDCOLORPIP_T * const buffer = db->buffer;
 	const uint_fast16_t dx = db->dx;
 	const uint_fast16_t dy = db->dy;
+	const uintptr_t dstinvalidateaddr = db->cachebase;	// параметры invalidate получателя
+	const int_fast32_t dstinvalidatesize = db->cachesize;
 	ASSERT(x < dx);
 	ASSERT((x + w) <= dx);
 	ASSERT(y < dy);
 	ASSERT((y + h) <= dy);
-
+#if WITHGPUHW && CPUSTYLE_T507 && 0
+	gpu_fillrect(dstinvalidateaddr, dstinvalidatesize, db->stride, db->buffer, dx, dy, x, y, w, h, color, fillmask, alpha);
+#else
 	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
-	const uintptr_t dstinvalidateaddr = db->cachebase;	// параметры invalidate получателя
-	const int_fast32_t dstinvalidatesize = db->cachesize;
 
 	hwaccel_fillrect_mux(dstinvalidateaddr, dstinvalidatesize, tgr, db->stride, dx, dy, w, h, color, fillmask, alpha);
+#endif
 }
 
 // заполнение прямоугольной области в видеобуфере
