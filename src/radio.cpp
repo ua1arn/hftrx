@@ -11480,6 +11480,13 @@ static uint_fast8_t
 getbankindex_pathi(const uint_fast8_t pathi)
 {
 	ASSERT(pathi < 2);
+	switch (param_val(& xgsplitmode))	/* (vfo/vfoa/vfob/mem) */
+	{
+	case SPLITMODES_OFF:
+	case SPLITMODES_RIT:
+	case SPLITMODES_XIT:
+		return getbankindex_raw(0);	// без split - передаем на VFO A
+	}
 	if (gtx == 0)
 		return getbankindex_raw(pathi);
 	else
@@ -12619,9 +12626,8 @@ getif6bw(
 int_fast16_t
 hamradio_getleft_bp(uint_fast8_t pathi)
 {
-	int_fast16_t offs = 0;
 	const uint_fast8_t bi = getbankindex_pathi(pathi);
-	const uint_fast32_t freq = gdialfreqs [bi] + hamradio_getritxitoffset(pathi);
+	const uint_fast32_t freq = hamradio_get_dialfreq_pathi(pathi);
 	const uint_fast8_t forcelsb = getforcelsb(freq);
 	const uint_fast8_t submode = getsubmode(bi);	// брать модуляцию нужного приемника
 	const uint_fast8_t alsbmode = getsubmodelsb(submode, forcelsb);	// Принимаемая модуляция на нижней боковой
@@ -12634,27 +12640,22 @@ hamradio_getleft_bp(uint_fast8_t pathi)
 	{
 	case MODE_SSB:
 	case MODE_DIGI:
-		offs = alsbmode ? - bwseti_gethigh(bwseti) : bwseti_getlow(bwseti);
-		break;
+		return alsbmode ? - bwseti_gethigh(bwseti) : bwseti_getlow(bwseti);
 
 	case MODE_CW:
-		offs = alsbmode ? - bwseti_gethigh(bwseti) + cwpitch: bwseti_getlow(bwseti) - cwpitch;
-		break;
+		return alsbmode ? - bwseti_gethigh(bwseti) + cwpitch: bwseti_getlow(bwseti) - cwpitch;
 
 	default:
-		offs = - getif6bw(mode, gtx, bwseti_getwide(bwseti)) / 2;	// TODO: учесть возврат INT16_MAX
-		break;
+		return - getif6bw(mode, gtx, bwseti_getwide(bwseti)) / 2;	// TODO: учесть возврат INT16_MAX
 	}
-	return offs + hamradio_getritxitoffset(pathi);
 }
 
 /* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 int_fast16_t
 hamradio_getright_bp(uint_fast8_t pathi)
 {
-	int_fast16_t offs = 0;
 	const uint_fast8_t bi = getbankindex_pathi(pathi);
-	const uint_fast32_t freq = gdialfreqs [bi] + hamradio_getritxitoffset(pathi);
+	const uint_fast32_t freq = hamradio_get_dialfreq_pathi(pathi);
 	const uint_fast8_t forcelsb = getforcelsb(freq);
 	const uint_fast8_t submode = getsubmode(bi);	// брать модуляцию нужного приемника
 	const uint_fast8_t alsbmode = getsubmodelsb(submode, forcelsb);	// Принимаемая модуляция на нижней боковой
@@ -12667,18 +12668,14 @@ hamradio_getright_bp(uint_fast8_t pathi)
 	{
 	case MODE_SSB:
 	case MODE_DIGI:
-		offs = alsbmode ? - bwseti_getlow(bwseti) : bwseti_gethigh(bwseti);
-		break;
+		return alsbmode ? - bwseti_getlow(bwseti) : bwseti_gethigh(bwseti);
 
 	case MODE_CW:
-		offs = alsbmode ? - bwseti_getlow(bwseti) + cwpitch : bwseti_gethigh(bwseti) - cwpitch;
-		break;
+		return alsbmode ? - bwseti_getlow(bwseti) + cwpitch : bwseti_gethigh(bwseti) - cwpitch;
 
 	default:
-		offs = getif6bw(mode, gtx, bwseti_getwide(bwseti)) / 2;	// TODO: учесть возврат INT16_MAX
-		break;
+		return getif6bw(mode, gtx, bwseti_getwide(bwseti)) / 2;	// TODO: учесть возврат INT16_MAX
 	}
-	return offs + hamradio_getritxitoffset(pathi);
 }
 
 #endif /* WITHIF4DSP */
