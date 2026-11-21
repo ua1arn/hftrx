@@ -792,7 +792,7 @@ aw_g2d_fillrect(
 	const uint_fast32_t toffset = 0;	// не может быть использован в случае использования информации в буфере (FILL_FLAG_MIXBG) ((row) << 16) | ((col) << 0);
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
-	if (fillmask & FILL_FLAG_MIXBG)
+	if ((fillmask & FILL_FLAG_MIXBG) && (alpha < 255))
 	{
 		/* установка поверхности - источника (анализируется) */
 		ui2->UI_ATTR = awxx_g2d_get_ui_attr(UI_ImageFormat);
@@ -1282,6 +1282,8 @@ aw_g2d_fillrect(
 //		const uint_fast32_t flag = (UINT32_C(1) << 8) | 0*(UINT32_C(1) << 1);
 //		hwaccel_rotcopy((uintptr_t) colorscreen, GXADJ(hf) * sizeof (PACKEDCOLORPIP_T), ssizehw, taddr, tstride, tsizehw, flag);
 //	}
+	else if (w == 0 || h == 0)
+		return 1;
 	else if (w > 1 && h > 1 && color == bgcolor && ! (fillmask & FILL_FLAG_MIXBG))
 	{
 		const uint_fast32_t ssizehw = tsizehw;
@@ -3512,7 +3514,7 @@ hwaccel_fillrect_mux(
 {
 	int done = 0;
 
-#if WITHGPUHW && CPUSTYLE_T507 && 0
+#if WITHGPUHW && CPUSTYLE_T507 && 1
 	done = gpu_fillrect(dstinvalidateaddr, dstinvalidatesize, tstride, buffer, dx, dy, w, h, color, fillmask, alpha);
 
 #elif LCDMODE_PALETTE256
@@ -4717,8 +4719,6 @@ void display_gpu_initialize(void)
 	// Image construction hardware
 	arm_hardware_awg2d_initialize();
 #endif /* WITHAWG2DHW */
-#if WITHGPUHW
 	board_gpu_initialize();		// GPU controller
-#endif /* WITHGPUHW */
 }
 
