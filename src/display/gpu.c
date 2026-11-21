@@ -560,19 +560,37 @@ enum mali_register_file_format {
     MALI_REGISTER_FILE_FORMAT_U16 = 5,
 };
 
-/*
- * Скомпилированные бинарные шейдеры для ARM Mali-G31 (Bifrost v7):
- * 1. blit_shader: копирует пиксель из Texture 0 (fb_addr) по gl_FragCoord в RT0
- * 2. solid_shader: читает vec4(r, g, b, alpha) из UBO 0 и передаёт в Blend Unit
- */
-static const uint32_t GPU_ALIGN bifrost_g31_blit_shader[8] = {
-    0x00001800, 0x00000000, 0x20000000, 0x00000055, /* TEX_SINGLE.v4.f16 R0, frag_coord */
-    0x00000000, 0x00000000, 0x00000000, 0x00000000  /* BLEND / END */
+/* Сгенерировано Mesa Panfrost Compiler для Allwinner T507-H (Mali-G31, Bifrost v7) */
+static const uint32_t GPU_ALIGN bifrost_g31_solid_shader[] = {
+    0x0F3C4029U, 0x80CB186CU, 0xC00765B7U, 0x13400F8CU,
+    0xC0000503U, 0x80CB185BU, 0x00023DE3U, 0xC0000000U,
+    0x00000071U, 0xF8000000U, 0x00000003U, 0x30000000U,
+    0x0000004BU, 0x80CB1844U, 0xC0003493U, 0x6080080CU,
+    0x0000004EU, 0x80CB1C78U, 0x0005F1A3U, 0x03000784U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U
 };
 
-static const uint32_t GPU_ALIGN bifrost_g31_solid_shader[8] = {
-    0x00001800, 0x00400000, 0x28000000, 0x00000045, /* LD_UBO.v4.f32 R0, ubo=0, offset=0 */
-    0x00000000, 0x00000000, 0x00000000, 0x00000000  /* BLEND / END */
+static const uint32_t GPU_ALIGN bifrost_g31_blit_shader[] = {
+    0xB0000029U, 0x8066C043U, 0xC00765B3U, 0x68C2004CU,
+    0xB0824003U, 0x8066402BU, 0x0005CDCFU, 0xC0000000U,
+    0x00000071U, 0x41868000U, 0x00000001U, 0x10000000U,
+    0x0F3C4029U, 0x80CB186CU, 0xC00765B7U, 0x63400F8CU,
+    0xC0000503U, 0x80CB185BU, 0x00023DE3U, 0xC0000000U,
+    0x00000071U, 0xF8000000U, 0x00000003U, 0x30000000U,
+    0x2000004EU, 0x80CB1C78U, 0x0005F1A3U, 0x03000784U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U,
+    0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U
 };
 
 static int gpu_fill_rect_fragment_v7(
@@ -617,6 +635,7 @@ static int gpu_fill_rect_fragment_v7(
     	GPU_ALIGN MALI_SAMPLER_PACKED_T sampler_fb;
     	GPU_ALIGN MALI_UNIFORM_BUFFER_PACKED_T ubo_desc;
     	GPU_ALIGN float ubo_color[4];
+    	GPU_ALIGN uint64_t tex_ptr; // в структуре st (выровнять по 8 байтам)
     } st;
 
     if (!fb_addr || width == 0 || height == 0) {
@@ -874,23 +893,25 @@ static int gpu_fill_rect_fragment_v7(
                 .fixed_function = {
                     .num_comps = 4,
                     .rt = 0,
-                    .conversion = {
-                        .register_format = MALI_REGISTER_FILE_FORMAT_F16,
-                        .memory_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8
-                    }
+					.conversion = {
+					    .register_format = MALI_REGISTER_FILE_FORMAT_F32,
+					    .memory_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8
+					}
                 }
             }
         };
         MALI_BLEND_pack(&st.rsd_blit.blend, &blend_opaque_cfg);
 
-        struct MALI_DRAW dcd_pre0 = {
-            MALI_DRAW_header,
-            .state = (uintptr_t)&st.rsd_blit,
-            .textures = (uintptr_t)&st.tex_fb,
-            .samplers = (uintptr_t)&st.sampler_fb,
-            //.texture_descriptor_types = MALI_TEXTURE_DESCRIPTOR_TYPE_STANDARD
-        };
-        MALI_DRAW_pack(&st.frame_dcds[0], &dcd_pre0);
+		st.tex_ptr = (uintptr_t)&st.tex_fb;
+
+		struct MALI_DRAW dcd_pre0 = {
+		    MALI_DRAW_header,
+		    .state = (uintptr_t)&st.rsd_blit,
+		    .textures = (uintptr_t)&st.tex_ptr,
+		    .samplers = (uintptr_t)&st.sampler_fb,
+		};
+		MALI_DRAW_pack(&st.frame_dcds[0], &dcd_pre0);
+
 
         /* 3.3. UBO с цветом прямоугольника и параметром alpha (0..255 -> 0.0f..1.0f) */
         st.ubo_color[0] = (float)r * (1.0f / 255.0f);
@@ -933,10 +954,10 @@ static int gpu_fill_rect_fragment_v7(
                 .fixed_function = {
                     .num_comps = 4,
                     .rt = 0,
-                    .conversion = {
-                        .register_format = MALI_REGISTER_FILE_FORMAT_F16,
-                        .memory_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8
-                    }
+					.conversion = {
+					    .register_format = MALI_REGISTER_FILE_FORMAT_F32,
+					    .memory_format = MALI_COLOR_BUFFER_INTERNAL_FORMAT_R8G8B8A8
+					}
                 }
             },
 			.equation = {
@@ -1006,7 +1027,7 @@ static int gpu_fill_rect_fragment_v7(
 //    PRINTHEX32(bifrost_g31_blit_shader);
 //    PRINTHEX32(bifrost_g31_solid_shader);
 //    PRINTHEX32(st);
-    if (gpu_submit_job(0, (uintptr_t)&st.frag_job)) {
+     if (gpu_submit_job(0, (uintptr_t)&st.frag_job)) {
         return -1;
     }
 
