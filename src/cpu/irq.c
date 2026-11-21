@@ -3309,6 +3309,7 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 {
 #if WITHRTOS
 	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
+		//HARDWARE_DEBUG_PUTCHAR('.');
 		IRQ_Handler_GIC();		// Group 1 handler
 		run_notask_curr(frame);	// __NO_RETURN
 	} else {
@@ -3333,6 +3334,7 @@ void __NO_RETURN VFIQ_Handler(void * frame)
 {
 #if WITHRTOS
 	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
+		//HARDWARE_DEBUG_PUTCHAR('.');
 		FIQ_Handler_GIC();		// Group 0 handler
 		run_notask_curr(frame);	// __NO_RETURN
 	} else {
@@ -3362,7 +3364,7 @@ void SError_Handler(void * frame)
 	if (ec == 0x15)
 	{
 #if WITHRTOS
-		if (threads_not_started)
+		if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started)
 			run_notask_curr(frame);	// __NO_RETURN
 		// SVC instruction execution in AArch64 state.
 		run_task_curr(task_scheduler_syscall(esr_el3 & 0xFFFF, frame));	// __NO_RETURN
@@ -3460,16 +3462,18 @@ void FIQ_Handler_aarch32(void * frame)
 void __NO_RETURN SWI_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
-	if (threads_not_started)
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
 		run_notask_curr_aarch32(frame);	// __NO_RETURN
-    // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
-	irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
-    const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
-    irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
+	} else {
+	    // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
+		irq_stack_frame_top_t * const frame_top = (irq_stack_frame_top_t *) frame;
+	    const uintptr_t bottom_addr = (uintptr_t)frame_top + sizeof(irq_stack_frame_top_t) + frame_top->stack_adj;
+	    irq_stack_frame_bottom_t * __restrict const frame_bottom = (irq_stack_frame_bottom_t *)bottom_addr;
 
-    irq_stack_frame_top_t * const f = (irq_stack_frame_top_t *) frame;
-	const unsigned esr_el3 = 0;//__get_DFSR();
-	run_task_curr_aarch32(task_scheduler_syscall(esr_el3 & 0xFFFF, frame));	// __NO_RETURN
+	    irq_stack_frame_top_t * const f = (irq_stack_frame_top_t *) frame;
+		const unsigned esr_el3 = 0;//__get_DFSR();
+		run_task_curr_aarch32(task_scheduler_syscall(esr_el3 & 0xFFFF, frame));	// __NO_RETURN
+	}
 #else /* WITHRTOS */
 	run_notask_curr_aarch32(frame);
 #endif /* WITHRTOS */

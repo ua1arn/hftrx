@@ -3488,6 +3488,18 @@ static void display2_vfomode5(const gxdrawb_t * db,
 	(void) pctx;
 }
 
+void display_ritxitoffset(const gxdrawb_t * db, uint_fast8_t x, uint_fast8_t y, uint_fast8_t xspan, uint_fast8_t yspan, dctx_t * pctx)
+{
+	uint_fast8_t state;
+	hamradio_get_vfomode5_value(& state);
+	const int offs = hamradio_getritxitoffset(0);
+	const div_t d = div(offs, 1000);
+	char b [xspan + 1];
+
+	local_snprintf_P(b, ARRAY_SIZE(b), "%+2d.%03d", d.quot, iabs(d.rem));
+	display_2statesStyled(db, x, y, state, b, b, xspan, yspan, dbstylev_2state_rec);
+}
+
 // Отображение режима передачи аудио с USB
 static void display_datamode4(const gxdrawb_t * db,
 		uint_fast8_t x,
@@ -7133,9 +7145,10 @@ static void display2_getdispmap(struct dispmap * p)
 
 	for (pathi = 0; pathi < 2; ++ pathi)
 	{
-		const int_fast32_t df = hamradio_get_bpfreq_pathi(pathi) - f0;
-		p->xleft [pathi] = deltafreq2x_abs(fz, hamradio_getleft_bp(pathi) + df, bw, ALLDX);	// левый край шторки
-		p->xright [pathi] = deltafreq2x_abs(fz, hamradio_getright_bp(pathi) + df, bw, ALLDX);	// правый край шторки
+		const int_fast16_t offs = hamradio_getritxitoffset(pathi);
+		const int_fast32_t df = hamradio_get_dialfreq_pathi(pathi) - f0;
+		p->xleft [pathi] = deltafreq2x_abs(fz, hamradio_getleft_bp(pathi) + df + offs, bw, ALLDX);	// левый край шторки
+		p->xright [pathi] = deltafreq2x_abs(fz, hamradio_getright_bp(pathi) + df + offs, bw, ALLDX);	// правый край шторки
 	}
 	p->xcenter = deltafreq2x_abs(fz, 0, bw, ALLDX);	// маркер центральной частоты
 	p->f0pix = deltafreq2abspix(f0, bw, ALLDX);	/* pixel of frequency at middle of spectrum */

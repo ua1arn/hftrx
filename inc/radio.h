@@ -779,6 +779,7 @@ int_fast16_t hamradio_get_pacurrent_value(void);	// Ток в десятках �
 int_fast16_t hamradio_get_topdb(void);	/* значения со знаком */
 int_fast16_t hamradio_getleft_bp(uint_fast8_t pathi);	/* получить левый (низкочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
 int_fast16_t hamradio_getright_bp(uint_fast8_t pathi);	/* получить правый (высокочастотный) скат полосы пропускания для отображения "шторки" на спектранализаторе */
+int_fast16_t hamradio_getritxitoffset(uint_fast8_t pathi);
 int_fast16_t hamradio_if_shift(int_fast8_t step);
 int_fast32_t hamradio_get_pbtvalue(void);	// Для отображения на дисплее
 int_fast32_t hamradio_getequalizerbase(void);
@@ -798,7 +799,6 @@ uint_fast16_t hamradio_notch_width(int_fast8_t step);
 uint_fast32_t hamradio_get_freq_a(void);		// Частота VFO A для отображения на дисплее
 uint_fast32_t hamradio_get_freq_b(void);		// Частота VFO B для отображения на дисплее
 uint_fast32_t hamradio_get_dialfreq_pathi(uint_fast8_t pathi);		// Частота VFO A/B для отображения на дисплее
-uint_fast32_t hamradio_get_bpfreq_pathi(uint_fast8_t pathi);		// Частота VFO A/B без учёта расстройки
 uint_fast32_t hamradio_get_freq_rx(void);		// Частота VFO A для маркировки файлов
 uint_fast32_t hamradio_get_modem_baudrate100(void);	// скорость передачи BPSK * 100
 uint_fast32_t hamradio_load_memory_cells(uint_fast8_t cell, uint_fast8_t set);
