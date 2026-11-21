@@ -175,7 +175,7 @@ __STATIC_FORCEINLINE uint32_t __get_CLUSTERPWRDN(void)
 #endif /* (__CORTEX_A == 55U)  */
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-#if 1//defined (GICInterface)
+#if defined (GICInterface)
 	/**
 	  \brief   Get Running Priority (GICv1/v2)
 	  \details Reads the running interrupt priority from GIC's GICC_RPR register.
