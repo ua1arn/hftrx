@@ -51,8 +51,15 @@ static void soft_fillrect(
 	unsigned alpha	// 0..255 for FILL_FLAG_MIXBG
 	)
 {
+    const int use_blend = ((fillmask & FILL_FLAG_MIXBG) != 0) && (alpha < 255U);
+    if (use_blend && alpha == 0U) {
+        return; /* Полностью прозрачный прямоугольник — рисовать нечего */
+    }
+	if (w == 0 || h == 0) {
+		return;
+	}
 
-	if (fillmask & FILL_FLAG_MIXBG)	// alpha со старым содержимым буферв
+	if (use_blend)	// alpha со старым содержимым буферв
 	{
 		const unsigned oldalpha = 255 - alpha;
 		const unsigned t = GXADJ(dx) - w;
@@ -3497,7 +3504,8 @@ uint_fast8_t colpip_hasalpha(void)
 #endif
 }
 
-static void
+// если не отработало hwaccel, возвращаем 0
+static int
 hwaccel_fillrect_mux(
 	uintptr_t dstinvalidateaddr,	// параметры invalidate получателя
 	int_fast32_t dstinvalidatesize,
@@ -3528,9 +3536,7 @@ hwaccel_fillrect_mux(
 #else
 	done = 0;
 #endif
-	if (done)
-		return;
-	soft_fillrect(buffer, dx, w, h, color, fillmask, alpha);	// программная реализация
+	return done;
 }
 
 // заполнение прямоугольной области в видеобуфере
@@ -3545,6 +3551,7 @@ void colpip_rectangle(
 	unsigned alpha
 	)
 {
+	int done = 0;
 	//PACKEDCOLORPIP_T * const buffer = db->buffer;
 	const uint_fast16_t dx = db->dx;
 	const uint_fast16_t dy = db->dy;
@@ -3555,12 +3562,17 @@ void colpip_rectangle(
 	ASSERT(y < dy);
 	ASSERT((y + h) <= dy);
 #if WITHGPUHW && CPUSTYLE_T507 && 0
-	gpu_fillrect(dstinvalidateaddr, dstinvalidatesize, db->stride, db->buffer, dx, dy, x, y, w, h, color, fillmask, alpha);
-#else
-	PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
-
-	hwaccel_fillrect_mux(dstinvalidateaddr, dstinvalidatesize, tgr, db->stride, dx, dy, w, h, color, fillmask, alpha);
+	done = gpu_fillrect(dstinvalidateaddr, dstinvalidatesize, db->stride, db->buffer, dx, dy, x, y, w, h, color, fillmask, alpha);
 #endif
+	if (! done)
+	{
+		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
+		done = hwaccel_fillrect_mux(dstinvalidateaddr, dstinvalidatesize, tgr, db->stride, dx, dy, w, h, color, fillmask, alpha);
+		if (! done)
+		{
+			soft_fillrect(tgr, dx, w, h, color, fillmask, alpha);	// программная реализация
+		}
+	}
 }
 
 // заполнение прямоугольной области в видеобуфере
