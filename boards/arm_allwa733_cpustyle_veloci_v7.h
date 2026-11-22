@@ -34,7 +34,7 @@
 #endif /* WITHDEBUG */
 
 //#define WITHUART2HW_FIFO	1	/* испольование FIFO */
-#define WITHUART2HW	1		/* mini dinn8	*/
+#define WITHUART2HW	1		/* mini din8	*/
 //#define WITHCAT_UART2 1
 
 #if WITHMGLOOP
