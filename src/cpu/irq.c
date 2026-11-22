@@ -2922,20 +2922,23 @@ void task_unlock_after_switch(void)
     IRQLSPIN_UNLOCK(& threadslock, next_task_irql [core]);           \
 }
 
-static void * task_scheduler_syscall(unsigned code, void * oldframe)
+static void * task_scheduler_syscall(void * frame, unsigned code)
 {
-	return task_scheduler_mux(oldframe, 1, code);
+	return task_scheduler_mux(frame, 1, code);
 }
 
-static void * task_scheduler(void * oldframe)
+static void * task_scheduler(void * frame)
 {
-	return task_scheduler_mux(oldframe, 0, 0);
+	return task_scheduler_mux(frame, 0, 0);
 }
 
 // хотим завершить выполнение кванта, не дожидаясь прерывания
 void thread_yield(void)
 {
-	task_sysfn(TASKFN_NOP, NULL);
+	if (threads_not_started == 0)
+	{
+		task_sysfn(TASKFN_NOP, NULL);
+	}
 }
 
 void local_delay_ms(uint_fast32_t timeMS)
@@ -2949,7 +2952,7 @@ void local_delay_ms(uint_fast32_t timeMS)
 		const hwtimcountfast_t td = timestamp_get_ms(timeMS);
 		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) IRQL_GET_CURRENT());
 		while (timestamp_get_delta(t0) < td)
-			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
+			;
 	}
 	else
 	{
@@ -2978,7 +2981,6 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 			{
 				return 0;
 			}
-			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 		} while (timestamp_get_delta(t0) < td);
 		return 1;
 	}
@@ -3010,7 +3012,6 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 			{
 				return 0;
 			}
-			thread_yield();	// хотим завершить выполнение кванта, не дожидаясь прерывания
 		} while (timestamp_get_delta(t0) < td);
 		return 1;
 	}
@@ -3043,7 +3044,6 @@ int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_f
 				return 0;
 			if (f == errstate)
 				return 1;
-	    	thread_yield();
 		} while (timestamp_get_delta(t0) < td);
 		return 1;
 	}
@@ -3080,7 +3080,6 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 					return 0;	// дождались
 				}
 			}
-	    	thread_yield();
 		} while (timestamp_get_delta(t0) < td);
 		return 1;	// Завершение по таймауту
 
@@ -3164,7 +3163,7 @@ void local_delay_ms(uint_fast32_t timeMS)
     const hwtimcountfast_t t0 = timestamp_getticks();
     const hwtimcountfast_t td = timestamp_get_ms(timeMS);
     while (timestamp_get_delta(t0) < td)
-    	thread_yield();
+    	;
 }
 
 
@@ -3179,7 +3178,6 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 		const uint_fast8_t f = * flag & mask;
 		if (f == state)
 			return 0;
-    	thread_yield();
 	} while (timestamp_get_delta(t0) < td);
 	return 1;
 }
@@ -3198,7 +3196,7 @@ int local_wait8mask2(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast
 			return 0;
 		if (f == errstate)
 			return 1;
-    	thread_yield();
+    	//thread_yield();
 	} while (timestamp_get_delta(t0) < td);
 	return 1;
 }
@@ -3217,7 +3215,7 @@ int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_f
 			return 0;
 		if (f == errstate)
 			return 1;
-    	thread_yield();
+    	//thread_yield();
 	} while (timestamp_get_delta(t0) < td);
 	return 1;
 }
@@ -3234,7 +3232,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		const uint_fast32_t f = * flag & mask;
 		if (f == state)
 			return 0;
-    	thread_yield();
+    	//thread_yield();
 	} while (timestamp_get_delta(t0) < td);
 	return 1;
 }
@@ -3256,7 +3254,7 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 				return 0;	// дождались
 			}
 		}
-    	thread_yield();
+    	//thread_yield();
 	} while (timestamp_get_delta(t0) < td);
 	return 1;	// Завершение по таймауту
 
@@ -3365,7 +3363,7 @@ void SError_Handler(void * frame)
 		if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started)
 			run_notask_curr(frame);	// __NO_RETURN
 		// SVC instruction execution in AArch64 state.
-		run_task_curr(task_scheduler_syscall(esr_el3 & 0xFFFF, frame));	// __NO_RETURN
+		run_task_curr(task_scheduler_syscall(frame, esr_el3 & 0xFFFF));	// __NO_RETURN
 #else /* WITHRTOS */
 		run_notask_curr(frame);	// __NO_RETURN
 #endif /* WITHRTOS */
@@ -3470,7 +3468,7 @@ void __NO_RETURN SWI_Handler_aarch32(void * frame)
 
 	    irq_stack_frame_top_t * const f = (irq_stack_frame_top_t *) frame;
 		const unsigned esr_el3 = 0;//__get_DFSR();
-		run_task_curr_aarch32(task_scheduler_syscall(esr_el3 & 0xFFFF, frame));	// __NO_RETURN
+		run_task_curr_aarch32(task_scheduler_syscall(frame, esr_el3 & 0xFFFF));	// __NO_RETURN
 	}
 #else /* WITHRTOS */
 	run_notask_curr_aarch32(frame);
