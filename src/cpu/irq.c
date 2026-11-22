@@ -3239,23 +3239,34 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 // return non-zero: timeout error
 int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fast32_t timeMS)
 {
-	const hwtimcountfast_t t0 = timestamp_getticks();
-	const hwtimcountfast_t td = timestamp_get_ms(timeMS);
-	//PRINTF("local_waitlist: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
-	do
-	{
-		if (LCLSPIN_TRAYLOCK(lock))
+	if (1 || threads_not_started) {
+		const hwtimcountfast_t t0 = timestamp_getticks();
+		const hwtimcountfast_t td = timestamp_get_ms(timeMS);
+		//PRINTF("local_waitlist: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
+		do
 		{
-			const int f = IsListEmpty(list);
-			LCLSPIN_UNLOCK(lock);
-			if (! f)
+			if (LCLSPIN_TRAYLOCK(lock))
 			{
-				return 0;	// дождались
+				const int f = IsListEmpty(list);
+				LCLSPIN_UNLOCK(lock);
+				if (! f)
+				{
+					return 0;	// дождались
+				}
 			}
-		}
-    	thread_yield();
-	} while (timestamp_get_delta(t0) < td);
-	return 1;	// Завершение по таймауту
+	    	//thread_yield();
+		} while (timestamp_get_delta(t0) < td);
+		return 1;	// Завершение по таймауту
+
+	} else {
+		struct taskfnparam_waitlist v;
+		v.t0 = timestamp_getticks();
+		v.td = timestamp_get_ms(timeMS);
+		v.list = list;
+		v.lock = lock;
+		v.guard = & v;
+		return task_sysfn(TASKFN_WAITLIST, & v);
+	}
 }
 
 
