@@ -663,7 +663,7 @@ int thread_userwait(int (checkready)(void * ctx, hwtimcountfast_t tn));
 
 #define TASK_AFFINITY_ALL (UINT_MAX)
 
-#if CPUSTYLE_A733 && (HARDWARE_NCORES > 4)
+#if CPUSTYLE_A733 && (HARDWARE_NCORES >= 7)
 	#define TTASK_AFFINITY_AUDIOPROC ((1U << 6) | (1U << 7))
 #else
 #define TTASK_AFFINITY_AUDIOPROC TASK_AFFINITY_ALL
