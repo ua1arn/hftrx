@@ -906,9 +906,9 @@ extern "C" {
 		PRIOv_BOARD,			/* установка параметров */
 		PRIOv_SYSTEM,		/* таймеры, USB */
 		PRIOv_REALTIME,		/* звук */
-		PRIOv_OVERREALTIME,	/* валкодер и телеграф */
-		PRIOv_IPC_ONLY,
+		PRIOv_OVERREALTIME,	/* телеграф */
 		PRIOv_IPC,
+		PRIOv_ENCODER,	/* валкодер */
 		//
 		PRIOv_count
 	};
@@ -919,7 +919,6 @@ extern "C" {
 	#define IRQL_BOARD				PRIOv_BOARD
 	#define IRQL_REALTIME 			PRIOv_REALTIME
 	#define IRQL_OVERREALTIME		PRIOv_OVERREALTIME
-	#define IRQL_IPC_ONLY			PRIOv_IPC_ONLY
 	#define IRQL_IPC				PRIOv_IPC
 
 	#define ARM_IPC_PRIORITY			PRIOv_IPC
@@ -929,8 +928,10 @@ extern "C" {
 	#define ARM_USER_PRIORITY			PRIOv_USER
 
 	//#define GICD_ENCODE_PRIORITY(priov) 	(priov)	// Value for GICDistributor->IPRIORITYR[n]
-	#define GICI_ENCODE_IRQL(priov) 		((IRQL_t) (priov))	// value for GICInterface->PMR
-	#define GICI_DECODE_IRQL(irql) 			((unsigned) (irql))	// value from GICInterface->PMR
+	#define GICI_ENCODE_IRQL(priov) 	((IRQL_t) (priov))	// value for GICInterface->PMR
+	#define GICI_DECODE_IRQL(irql) 		((unsigned) (irql))	// value from GICInterface->PMR
+	#define IRQL_DECREMENT(v) 			((v) + 1)	// получить значение следующего, меньшего приоритета
+	#define IRQL_IPC_ONLY				(IRQL_DECREMENT(IRQL_IPC))
 
 	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 	#define global_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
