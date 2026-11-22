@@ -90,7 +90,6 @@ uint_fast8_t hardware_get_encoder4_bits(void);	/* Состояние фазы A 
 uint_fast8_t hardware_get_encoder5_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 uint_fast8_t hardware_get_encoder6_bits(void);	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 
-#define ENCODER_IRQL IRQL_OVERREALTIME
 #define ENCODER_PRIORITY ARM_ENCODER_PRIORITY
 #define ENCODER_TARGETCPU TARGETCPU_OVRT
 

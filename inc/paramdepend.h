@@ -810,7 +810,6 @@ extern "C" {
 	{
 		PRIOv_ENCODER = 0,
 		PRIOv_IPC,		/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
-		PRIOv_IPC_ONLY,
 		PRIOv_OVERREALTIME,
 		PRIOv_REALTIME,
 		PRIOv_SYSTEM,		/* таймеры, USB */
@@ -841,7 +840,6 @@ extern "C" {
 
 	#define IRQL_ENCODER 		(GICI_ENCODE_IRQL(PRIOv_ENCODER))
 	#define IRQL_IPC 			(GICI_ENCODE_IRQL(PRIOv_IPC))
-	#define IRQL_IPC_ONLY 		(GICI_ENCODE_IRQL(PRIOv_IPC_ONLY))
 	#define IRQL_OVERREALTIME 	(GICI_ENCODE_IRQL(PRIOv_OVERREALTIME))
 	#define IRQL_REALTIME	 	(GICI_ENCODE_IRQL(PRIOv_REALTIME))
 	#define IRQL_SYSTEM 		(GICI_ENCODE_IRQL(PRIOv_SYSTEM))
@@ -852,21 +850,23 @@ extern "C" {
 	/* для итератора в планировщике */
 	#define IRQL_HIGHEST 		IRQL_ENCODER
 	#define IRQL_LOWEST 		IRQL_IDLE
-	#define IRQL_DECREMENT(v) 	((v) + 1)	// получить значение следующего, меньшего приоритетв
+	#define IRQL_DECREMENT(v) 	((v) + (1 << (GIC_BINARY_POINT + 1)))	// получить значение следующего, меньшего приоритета
+
+	#define IRQL_IPC_ONLY	(IRQL_DECREMENT(IRQL_IPC))
 
 	// A lower priority value indicating a higher priority
 	// Value for GICD
 	#define GICD_ENCODE_PRIORITY(priov) ((uint32_t) ((priov) << (GIC_BINARY_POINT + 1)))	// Value for GICDistributor->IPRIORITYR[n]
 
-	#define ARM_ENCODER_PRIORITY		(GICD_ENCODE_PRIORITY(PRIOv_ENCODER))
+	#define ARM_ENCODER_PRIORITY		(GICD_ENCODE_PRIORITY(PRIOv_ENCODER))	/* валкодер */
 	#define ARM_IPC_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_IPC))
-	#define ARM_OVERREALTIME_PRIORITY	(GICD_ENCODE_PRIORITY(PRIOv_OVERREALTIME))	/* валкодер и телеграф */
+	#define ARM_OVERREALTIME_PRIORITY	(GICD_ENCODE_PRIORITY(PRIOv_OVERREALTIME))	/* смена видеобуферов, телеграфнай ключ */
 	#define ARM_REALTIME_PRIORITY		(GICD_ENCODE_PRIORITY(PRIOv_REALTIME))	/* звук */
 	#define ARM_SYSTEM_PRIORITY			(GICD_ENCODE_PRIORITY(PRIOv_SYSTEM))	/* таймеры, USB */
 
 	#define BOARD_SGI_IRQ 	SGI1_IRQn		/* Прерывание для синхронизации приоритетов GIC на остальных процессорах  */
 
-	#define IRQL_GET_CURRENT() (GIC_GetRunningPriority())	// возвращает в формате, совпадающим с IRQL
+	#define IRQL_GET_CURRENT() (GIC_GetRunningPriority())	// возвращает в формате, совпадающим с IRQL_t
 
 	// https://github.com/NienfengYao/armv8-bare-metal/blob/572c6f95880e70aa92fe9fed4b8ad7697082a764/aarch64.c#L63
 	#if defined(__aarch64__)
