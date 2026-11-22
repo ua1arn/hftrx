@@ -1980,20 +1980,6 @@ static __attribute__((noinline)) uint32_t task_sysfn_old(unsigned arg0, volatile
 }
 
 // user-mode entry
-static __attribute__((noinline)) uint32_t task_sysfnS(unsigned arg0, void * arg1)
-{
-    register uint32_t r0_val __asm__("r0") = arg0;
-    register uint32_t r1_val __asm__("r1") = (uintptr_t) arg1;
-
-	__ASM volatile(
-			"\t" "SVC 0x0000\n"
-	        : "+r" (r0_val)  // "+r" означает чтение и запись (вход и выход в r0)
-	        : "r" (r1_val)   // "r" на входе (компилятор знает, что r1_val привязан к r1)
-	        : "memory","cc"       // Указываем, что вызов может изменить память
-	);
-
-	return r0_val;
-}
 static __attribute__((noinline)) uint32_t task_sysfn(unsigned arg0, void * arg1)
 {
     register uint32_t r0_val __asm__("r0") = arg0;
