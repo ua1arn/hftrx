@@ -782,8 +782,8 @@ extern "C" {
 	#define IRQL_IPC_ONLY ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_IPC_ONLY, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 	#define IRQL_IPC ((NVIC_EncodePriority(NVIC_GetPriorityGrouping(), PRIOv_IPC, 0) << (8 - __NVIC_PRIO_BITS)) & 0xff)	// value for __set_BASEPRI
 
-	#define GICI_DECODE_IRQL(irql) 		(irql)	// TODO: use NVIC_DecodePriority
-	#define GICI_ENCODE_IRQL(prio) 		(prio)
+	#define GICI_DECODE_IRQL(irql) 		((unsigned) (irql))	// TODO: use NVIC_DecodePriority
+	#define GICI_ENCODE_IRQL(prio) 		((IRQL_t) (prio))
 
 	#define global_enableIRQ() do { __enable_irq(); } while (0)
 	#define global_disableIRQ() do { __disable_irq(); } while (0)
@@ -837,7 +837,7 @@ extern "C" {
 
 	// value for GIC_SetInterfacePriorityMask
 	#define GICI_ENCODE_IRQL(priov) 		((IRQL_t) ((priov) << (GIC_BINARY_POINT + 1)))	// value for GICInterface->PMR
-	#define GICI_DECODE_IRQL(irql) 			(((uint32_t) (irql) >> (GIC_BINARY_POINT + 1)))	// value from GICInterface->PMR
+	#define GICI_DECODE_IRQL(irql) 			((unsigned) ((uint32_t) (irql) >> (GIC_BINARY_POINT + 1)))	// value from GICInterface->PMR
 
 	#define IRQL_ENCODER 		(GICI_ENCODE_IRQL(PRIOv_ENCODER))
 	#define IRQL_IPC 			(GICI_ENCODE_IRQL(PRIOv_IPC))
@@ -928,9 +928,9 @@ extern "C" {
 	#define ARM_SYSTEM_PRIORITY			PRIOv_SYSTEM		/* таймеры, USB */
 	#define ARM_USER_PRIORITY			PRIOv_USER
 
-	#define GICD_ENCODE_PRIORITY(priov) 	(priov)	// Value for GICDistributor->IPRIORITYR[n]
-	#define GICI_ENCODE_IRQL(priov) 		(priov)	// value for GICInterface->PMR
-	#define GICI_DECODE_IRQL(irql) 			(irql)	// value from GICInterface->PMR
+	//#define GICD_ENCODE_PRIORITY(priov) 	(priov)	// Value for GICDistributor->IPRIORITYR[n]
+	#define GICI_ENCODE_IRQL(priov) 		((IRQL_t) (priov))	// value for GICInterface->PMR
+	#define GICI_DECODE_IRQL(irql) 			((unsigned) (irql))	// value from GICInterface->PMR
 
 	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 	#define global_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
