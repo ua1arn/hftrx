@@ -19265,7 +19265,7 @@ uint_fast8_t elkey_getnextcw(void)
 
 #if ! WITHISBOOTLOADER
 // User-mode function.
-// Called every secound
+// Called once per second
 static void dpc_1s_timer_fn(void * arg)
 {
 #if WITHWAVPLAYER || WITHSENDWAV
@@ -19279,22 +19279,25 @@ static void dpc_1s_timer_fn(void * arg)
 		}
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
-		if (param_val(& xgdimmtime) == 0)
 		{
-			// Функция выключена
-			if (dimmstate != 0)
+			const int_fast32_t dimmtime = param_val(& xgdimmtime);
+			if (dimmtime == 0)
 			{
-				dimmstate = 0;
-				dimmstatechanged = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+				// Функция выключена
+				if (dimmstate != 0)
+				{
+					dimmstate = 0;
+					dimmstatechanged = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+				}
+				dimmcount = 0;
 			}
-			dimmcount = 0;
-		}
-		else if (dimmstate == 0)		// ещё не выключили
-		{
-			if (++ dimmcount >= param_val(& xgdimmtime))
+			else if (dimmstate == 0)		// ещё не выключили
 			{
-				dimmstate = 1;
-				dimmstatechanged = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+				if (++ dimmcount >= dimmtime)
+				{
+					dimmstate = 1;
+					dimmstatechanged = 1;		// запрос на обновление состояния аппаратуры из user mode программы
+				}
 			}
 		}
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
