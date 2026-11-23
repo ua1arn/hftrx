@@ -458,6 +458,7 @@ public:
 #if WITHBUFFERSDEBUG
 	int errallocate;
 	int saveount;
+	int errforced;
 #endif /* WITHBUFFERSDEBUG */
 
 	int readycount;
@@ -491,6 +492,7 @@ public:
 #if WITHBUFFERSDEBUG
 		errallocate(0),
 		saveount(0),
+		errforced(0),
 #endif /* WITHBUFFERSDEBUG */
 		readycount(0),
 		freecount(capacity),
@@ -728,6 +730,9 @@ public:
 		LIST_ENTRY list;
 		take_readys(& list, NORMLEVEL);
 		save_frees(& list);
+#if WITHBUFFERSDEBUG
+		++ errforced;
+#endif /* WITHBUFFERSDEBUG */
 
 		return get_freebuffer_raw(dest);
 	}
@@ -735,7 +740,12 @@ public:
 	// получить из списка свободных, если нет - из готовых
 	bool get_readybufferforced_nopurge(element_t * * dest)
 	{
-		return get_readybuffer_raw(dest) ||  get_freebuffer_raw(dest);
+		if (get_readybuffer_raw(dest))
+			return true;
+#if WITHBUFFERSDEBUG
+		++ errforced;
+#endif /* WITHBUFFERSDEBUG */
+		return get_freebuffer_raw(dest);
 	}
 
 	static int_fast32_t get_cachesize(void)
@@ -757,7 +767,7 @@ public:
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
-		PRINTF(" %s:e=%d,y=%d,f=%d,%uk/%uk", name, errallocate, readycount, freecount, (unsigned) ((fin + 500) / 1000), (unsigned) ((fout + 500) / 1000));
+		PRINTF(" %s:e=%d,E=%d,y=%d,f=%d,%uk/%uk", name, errallocate, errforced, readycount, freecount, (unsigned) ((fin + 500) / 1000), (unsigned) ((fout + 500) / 1000));
 		if (hasresample)
 		{
 			PRINTF("+%u,-%u", wbadded, wbdeleted);
