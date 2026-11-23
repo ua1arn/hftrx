@@ -1084,34 +1084,38 @@
 	#define TARGET_S_TWI_TWD		(UINT32_C(1) << 1)
 	// Сброс подчинённых устройств
 	#define	HARDWARE_S_TWI0_RESET() do { \
-		s_gpioX_setstate(S_GPIOL, TARGET_S_TWI_TWD, 0); \
-		s_gpioX_setstate(S_GPIOL, TARGET_S_TWI_TWCK, 0); \
-		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWD, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SDA */ \
-		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWCK, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
+		const uint_fast32_t SDA = TARGET_S_TWI_TWD; \
+		const uint_fast32_t SCL = TARGET_S_TWI_TWCK; \
+		s_gpioX_setstate(S_GPIOL, SDA, 0); \
+		s_gpioX_setstate(S_GPIOL, SCL, 0); \
+		s_gpioX_prog(S_GPIOL, SDA, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SDA */ \
+		s_gpioX_prog(S_GPIOL, SCL, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
 		local_delay_us(10); \
-		if (! (s_gpioX_getinputs(S_GPIOL) & TARGET_S_TWI_TWCK)) break; \
+		if (! (s_gpioX_getinputs(S_GPIOL) & SCL)) break; \
 		unsigned i; for (i = 0; i < 9; ++ i) { \
-			s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWCK, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
+			s_gpioX_prog(S_GPIOL, SCL, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
 			local_delay_us(10); \
-			s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWCK, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
+			s_gpioX_prog(S_GPIOL, SCL, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
 			local_delay_us(10); \
-			if (s_gpioX_getinputs(S_GPIOL) & TARGET_S_TWI_TWD) break; \
+			if (s_gpioX_getinputs(S_GPIOL) & SDA) break; \
 		} \
-		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWCK, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
+		s_gpioX_prog(S_GPIOL, SCL, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
 		local_delay_us(10); \
-		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWD, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SDA */ \
+		s_gpioX_prog(S_GPIOL, SDA, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SDA */ \
 		local_delay_us(10); \
-		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWCK, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SCK */ \
+		s_gpioX_prog(S_GPIOL, SCL, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SCK */ \
 		local_delay_us(10); \
-		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWD, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SDA */ \
+		s_gpioX_prog(S_GPIOL, SDA, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SDA */ \
 		local_delay_us(10); \
 	} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	HARDWARE_S_TWI0_INITIALIZE() do { \
+		const uint_fast32_t SDA = TARGET_S_TWI_TWD; \
+		const uint_fast32_t SCL = TARGET_S_TWI_TWCK; \
 		HARDWARE_S_TWI0_RESET(); \
-		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWCK, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
-		s_gpioX_prog(S_GPIOL, TARGET_S_TWI_TWD, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SDA */ \
+		s_gpioX_prog(S_GPIOL, SCL, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL0 - S_TWI0_SCK */ \
+		s_gpioX_prog(S_GPIOL, SDA, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL1 - S_TWI0_SDA */ \
 	} while (0)
 	#define	TWIHARD_S_TWI0_FREQ (allwnr_a733_get_s_twi_freq()) // APBS2_CLK allwnr_a733_get_apb2_freq() or allwnr_a733_get_apbs2_freq()
 	#define TWIHARD_S_PTR S_TWI0
@@ -1128,34 +1132,38 @@
 
 	// Сброс подчинённых устройств
 	#define	HARDWARE_S_TWI1_RESET() do { \
-		s_gpioX_setstate(S_GPIOL, TARGET_TWI_TWD, 0); \
-		s_gpioX_setstate(S_GPIOL, TARGET_TWI_TWCK, 0); \
-		s_gpioX_prog(S_GPIOL, TARGET_TWI_TWD, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL9 - TWI1_SDA */ \
-		s_gpioX_prog(S_GPIOL, TARGET_TWI_TWCK, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL8 - TWI1_SCK */ \
+		const uint_fast32_t SDA = TARGET_TWI_TWD; \
+		const uint_fast32_t SCL = TARGET_TWI_TWCK; \
+		s_gpioX_setstate(S_GPIOL, SDA, 0); \
+		s_gpioX_setstate(S_GPIOL, SCL, 0); \
+		s_gpioX_prog(S_GPIOL, SDA, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL9 - TWI1_SDA */ \
+		s_gpioX_prog(S_GPIOL, SCL, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL8 - TWI1_SCK */ \
 		local_delay_us(10); \
-		if (! (s_gpioX_getinputs(S_GPIOL) & TARGET_TWI_TWCK)) break; \
+		if (! (s_gpioX_getinputs(S_GPIOL) & SCL)) break; \
 		unsigned i; for (i = 0; i < 9; ++ i) { \
-			s_gpioX_prog(S_GPIOL, TARGET_TWI_TWCK, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /* PL8 - TWI1_SCK */ \
+			s_gpioX_prog(S_GPIOL, SCL, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /* PL8 - TWI1_SCK */ \
 			local_delay_us(10); \
-			s_gpioX_prog(S_GPIOL, TARGET_TWI_TWCK, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL8 - TWI0_SCK */ \
+			s_gpioX_prog(S_GPIOL, SCL, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL8 - TWI0_SCK */ \
 			local_delay_us(10); \
-			if (s_gpioX_getinputs(S_GPIOL) & TARGET_TWI_TWD) break; \
+			if (s_gpioX_getinputs(S_GPIOL) & SDA) break; \
 		} \
-		s_gpioX_prog(S_GPIOL, TARGET_TWI_TWCK, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /* PL8 - TWI1_SCK */ \
+		s_gpioX_prog(S_GPIOL, SCL, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /* PL8 - TWI1_SCK */ \
 		local_delay_us(10); \
-		s_gpioX_prog(S_GPIOL, TARGET_TWI_TWD, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /* PL9 - TWI1_SDA */ \
+		s_gpioX_prog(S_GPIOL, SDA, GPIO_CFG_OUT, GPIO_DRV_1, GPIO_PULL_UP); /* PL9 - TWI1_SDA */ \
 		local_delay_us(10); \
-		s_gpioX_prog(S_GPIOL, TARGET_TWI_TWCK, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL8 - TWI1_SCK */ \
+		s_gpioX_prog(S_GPIOL, SCL, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL8 - TWI1_SCK */ \
 		local_delay_us(10); \
-		s_gpioX_prog(S_GPIOL, TARGET_TWI_TWD, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL9 - TWI1_SDA */ \
+		s_gpioX_prog(S_GPIOL, SDA, GPIO_CFG_IN, GPIO_DRV_1, GPIO_PULL_UP); /* PL9 - TWI1_SDA */ \
 		local_delay_us(10); \
 	} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	HARDWARE_S_TWI1_INITIALIZE() do { \
+		const uint_fast32_t SDA = TARGET_TWI_TWD; \
+		const uint_fast32_t SCL = TARGET_TWI_TWCK; \
 		HARDWARE_S_TWI1_RESET(); \
-		s_gpioX_prog(S_GPIOL, TARGET_TWI_TWCK, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL8 - S_TWI1_SCK */ \
-		s_gpioX_prog(S_GPIOL, TARGET_TWI_TWD, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL9 - S_TWI1_SDA */ \
+		s_gpioX_prog(S_GPIOL, SCL, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL8 - S_TWI1_SCK */ \
+		s_gpioX_prog(S_GPIOL, SDA, GPIO_CFG_AF2, GPIO_DRV_1, GPIO_PULL_UP); /* PL9 - S_TWI1_SDA */ \
 	} while (0)
 	#define	TWIHARD_S_TWI1_FREQ (allwnr_a733_get_twi_freq()) // APBS2_CLK allwnr_a733_get_apb2_freq() or allwnr_a733_get_apbs2_freq()
 	#define	TWIHARD_PTR S_TWI1
