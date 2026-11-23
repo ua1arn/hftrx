@@ -2033,6 +2033,11 @@ display2_smeter15_dimensions_rx_dial_rle(smeter_params_t * const smpr)
 	smpr->draw = sm_draw_dial_rx_rle;
 }
 
+static void display2_smeter15_fillbg(const gxdrawb_t * db)
+{
+	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
+}
+
 #else /* WITHRLEDECOMPRESS */
 
 static void display2_smeter15_fillbg(const gxdrawb_t * db)
