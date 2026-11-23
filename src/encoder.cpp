@@ -176,7 +176,7 @@ void spool_encinterrupts_ccw(void * ctx)
 /* механика - прерывание по изменению сигнала на входах от валкодера */
 void spool_encinterrupts4_cw(void * ctx)
 {
-//	const IRQL_t irql = IRQL_GET_CURRENT();
+//	const IRQL_t irql = IRQL_GET_RUNNING();
 //	PRINTF("irql=0x%02X prio=%u\n", irql, GICI_DECODE_IRQL(irql));
 	encoder_t * const e = (encoder_t *) ctx;
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
@@ -190,7 +190,7 @@ void spool_encinterrupts4_cw(void * ctx)
 /* механика - прерывание по изменению сигнала на входах от валкодера */
 void spool_encinterrupts4_ccw(void * ctx)
 {
-//	const IRQL_t irql = IRQL_GET_CURRENT();
+//	const IRQL_t irql = IRQL_GET_RUNNING();
 //	PRINTF("irql=0x%02X prio=%u\n", irql, GICI_DECODE_IRQL(irql));
 	encoder_t * const e = (encoder_t *) ctx;
 	const uint_fast8_t new_val = e->getpins();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */

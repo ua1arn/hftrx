@@ -2877,47 +2877,41 @@ static void * task_scheduler(void * frame)
 	return task_scheduler_mux(frame, 0, 0);
 }
 
+// user-mode function
 // хотим завершить выполнение кванта, не дожидаясь прерывания
-void thread_yield(void)
-{
-	if (threads_not_started == 0)
-	{
+void thread_yield(void) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
+	} else {
 		task_sysfn(TASKFN_NOP, NULL);
 	}
 }
 
-void local_delay_ms(uint_fast32_t timeMS)
-{
+// user-mode function
+void local_delay_ms(uint_fast32_t timeMS) {
 	if (timeMS == 0)
 		return;
-	if (threads_not_started)
-	{
-
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
 		const hwtimcountfast_t t0 = timestamp_getticks();
 		const hwtimcountfast_t td = timestamp_get_ms(timeMS);
-		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) IRQL_GET_CURRENT());
+		//PRINTF("1 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) t0, (unsigned) td, (unsigned) IRQL_GET_RUNNING());
 		while (timestamp_get_delta(t0) < td)
 			;
-	}
-	else
-	{
+	} else {
 		struct taskfnparam_suspend v;
 		v.t0 = timestamp_getticks();
 		v.td = timestamp_get_ms(timeMS);
 		v.guard = & v;
 		//PRINTF("local_delay_ms: t0=0x%08X, td=0x%08X\n", (unsigned) v.t0, (unsigned) v.td);
-		//PRINTF("2 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) v.t0, (unsigned) v.td, (unsigned) IRQL_GET_CURRENT());
+		//PRINTF("2 local_delay_ms: t0=0x%08X, td=0x%08X, irql=%u\n", (unsigned) v.t0, (unsigned) v.td, (unsigned) IRQL_GET_RUNNING());
 		task_sysfn(TASKFN_SUSPEND, & v);
 		//TP();
 	}
 }
-
+//
 // wait expected state of variable
 // return non-zero: timeout error
-int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS)
-{
-	if (threads_not_started)
-	{
+int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8_t state, uint_fast32_t timeMS) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
 		const hwtimcountfast_t t0 = timestamp_getticks();
 		const hwtimcountfast_t td = timestamp_get_ms(timeMS);
 		do
@@ -2928,9 +2922,7 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 			}
 		} while (timestamp_get_delta(t0) < td);
 		return 1;
-	}
-	else
-	{
+	} else {
 		struct taskfnparam_wait8 v;
 		v.t0 = timestamp_getticks();
 		v.td = timestamp_get_ms(timeMS);
@@ -2943,12 +2935,11 @@ int local_wait8mask(volatile const uint8_t * flag, uint_fast8_t mask, uint_fast8
 	}
 }
 
+// user-mode function
 // wait expected state of variable
 // return non-zero: timeout error
-int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS)
-{
-	if (threads_not_started)
-	{
+int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t timeMS) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
 		const hwtimcountfast_t t0 = timestamp_getticks();
 		const hwtimcountfast_t td = timestamp_get_ms(timeMS);
 		do
@@ -2959,9 +2950,7 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 			}
 		} while (timestamp_get_delta(t0) < td);
 		return 1;
-	}
-	else
-	{
+	} else {
 		struct taskfnparam_wait32 v;
 		v.t0 = timestamp_getticks();
 		v.td = timestamp_get_ms(timeMS);
@@ -2973,12 +2962,12 @@ int local_wait32mask(volatile const uint32_t * flag, uint_fast32_t mask, uint_fa
 		return task_sysfn(TASKFN_WAIT32, & v);
 	}
 }
+
+// user-mode function
 // wait expected state of variable
 // return non-zero: timeout error or errormask
-int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t errstate, uint_fast32_t timeMS)
-{
-	if (threads_not_started)
-	{
+int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_fast32_t state, uint_fast32_t errstate, uint_fast32_t timeMS) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
 		const hwtimcountfast_t t0 = timestamp_getticks();
 		const hwtimcountfast_t td = timestamp_get_ms(timeMS);
 		//PRINTF("local_wait32mask: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
@@ -2991,9 +2980,7 @@ int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_f
 				return 1;
 		} while (timestamp_get_delta(t0) < td);
 		return 1;
-	}
-	else
-	{
+	} else {
 		struct taskfnparam_wait32_v2 v;
 		v.t0 = timestamp_getticks();
 		v.td = timestamp_get_ms(timeMS);
@@ -3010,7 +2997,7 @@ int local_wait32mask2(volatile const uint32_t * flag, uint_fast32_t mask, uint_f
 // wait expected state of variable
 // return non-zero: timeout error
 int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fast32_t timeMS) {
-	if (threads_not_started) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
 		const hwtimcountfast_t t0 = timestamp_getticks();
 		const hwtimcountfast_t td = timestamp_get_ms(timeMS);
 		//PRINTF("local_waitlist: t0=%" PRIXFAST64 " td=%" PRIXFAST64 "\n", t0, td);
@@ -3027,7 +3014,6 @@ int local_waitlist(PRLIST_ENTRY list, LCLSPINLOCK_t * lock, IRQL_t irql, uint_fa
 			}
 		} while (timestamp_get_delta(t0) < td);
 		return 1;	// Завершение по таймауту
-
 	} else {
 		struct taskfnparam_waitlist v;
 		v.t0 = timestamp_getticks();
@@ -3249,7 +3235,7 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 void __NO_RETURN VIRQ_Handler(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
+	if (IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started) {
 		//HARDWARE_DEBUG_PUTCHAR('.');
 		IRQ_Handler_GIC();		// Group 1 handler
 		run_notask_curr(frame);	// __NO_RETURN
@@ -3274,7 +3260,7 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
+	if (IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started) {
 		//HARDWARE_DEBUG_PUTCHAR('.');
 		FIQ_Handler_GIC();		// Group 0 handler
 		run_notask_curr(frame);	// __NO_RETURN
@@ -3305,7 +3291,7 @@ void SError_Handler(void * frame)
 	if (ec == 0x15)
 	{
 #if WITHRTOS
-		if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started)
+		if (IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started)
 			run_notask_curr(frame);	// __NO_RETURN
 		// SVC instruction execution in AArch64 state.
 		run_task_curr(task_scheduler_syscall(frame, esr_el3 & 0xFFFF));	// __NO_RETURN
@@ -3351,7 +3337,7 @@ void SError_Handler(void * frame)
 void IRQ_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
+	if (IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started) {
 		IRQ_Handler_GIC();			// Group 1 handler
 		run_notask_curr_aarch32(frame);	// __NO_RETURN
 	} else {
@@ -3377,7 +3363,7 @@ void IRQ_Handler_aarch32(void * frame)
 void FIQ_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
+	if (IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started) {
 		FIQ_Handler_GIC();			// Group 0 handler
 		run_notask_curr_aarch32(frame);	// __NO_RETURN
 	} else {
@@ -3403,7 +3389,7 @@ void FIQ_Handler_aarch32(void * frame)
 void __NO_RETURN SWI_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
+	if (IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started) {
 		run_notask_curr_aarch32(frame);	// __NO_RETURN
 	} else {
 	    // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
