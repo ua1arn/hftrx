@@ -8085,6 +8085,12 @@ void hightests(void)
 		//PRINTF("IPC interrupts demo, GIC_GetARE()=%d\n", (int) GIC_GetARE());
 		PRINTF("IPC interrupts demo start:\n");
 		arm_hardware_set_handler_system(int_id, sgitesthandler);
+		PRINTF("IPC interrupts demo -  self: ");
+		GIC_SendSGI(int_id, 0, 0x02U);	// to self
+		local_delay_ms(250);
+		GIC_SendSGI(int_id, 0, 0x02U);	// to self
+		local_delay_ms(250);
+		PRINTF(" - IPC interrupts demo - self done\n");
 		for (core = 0; core < HARDWARE_NCORES && core < arm_hardware_clustersize(); ++ core)
 		{
 			unsigned target_list = UINT32_C(1) << core;
@@ -8097,7 +8103,10 @@ void hightests(void)
 			PRINTF(" - IPC interrupts demo - core%u (aff=0x%02X) done\n", core, target_aff);
 		}
 		arm_hardware_disable_handler(int_id);
-		PRINTF("IPC interrupts demo - all  : ");
+		PRINTF("IPC interrupts demo - ~self: ");
+		GIC_SendSGI(int_id, 0, 0x01);	// other cores, except self
+		local_delay_ms(250);
+		PRINTF("IPC interrupts demo - ~self: ");
 		GIC_SendSGI(int_id, 0, 0x01);	// other cores, except self
 		local_delay_ms(250);
 		PRINTF(" - IPC interrupts demo done\n");
