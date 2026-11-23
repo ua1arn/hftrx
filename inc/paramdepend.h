@@ -878,6 +878,30 @@ extern "C" {
 		#define global_disableIRQ() do { \
 			__ASM volatile("MSR DAIFSet, %0\n\t" : : "i" (3)  : "memory"); \
 			} while (0)
+	typedef uint64_t DAIF_t;
+
+	__STATIC_FORCEINLINE uint64_t global_disable_irq_save(void)
+	{
+	    uint64_t daif;
+	    __ASM volatile (
+	        "mrs %0, daif       \n\t"   /* Читаем текущие маски DAIF */
+	        "msr daifset, #3    \n\t"   /* #3 = 0b0011 -> закрываем FIQ (1) и IRQ (2) */
+	        : "=r" (daif)
+	        :
+	        : "memory"
+	    );
+	    return daif;
+	}
+
+	__STATIC_FORCEINLINE void global_restore_irq(uint64_t daif)
+	{
+		__ASM volatile (
+	        "msr daif, %0       \n\t"   /* Возвращаем прежние маски DAIF */
+	        :
+	        : "r" (daif)
+	        : "memory"
+	    );
+	}
 
 	#else /* defined(__aarch64__) */
 
@@ -889,6 +913,33 @@ extern "C" {
 			__disable_irq(); \
 			__disable_fault_irq(); \
 			} while (0)
+
+	typedef uint32_t DAIF_t;
+
+	/* Сохранить CPSR и запретить IRQ + FIQ */
+	__STATIC_FORCEINLINE uint32_t global_disable_irq_save(void)
+	{
+	    uint32_t cpsr;
+	    __ASM volatile (
+	        "mrs %0, cpsr       \n\t"   /* Читаем текущее состояние CPSR */
+	        "cpsid if           \n\t"   /* Запрещаем IRQ и FIQ (только IRQ: cpsid i) */
+	        : "=r" (cpsr)
+	        :
+	        : "memory", "cc"
+	    );
+	    return cpsr;
+	}
+
+	/* Восстановить прежнее состояние IRQ/FIQ из сохранённого CPSR */
+	__STATIC_FORCEINLINE void global_restore_irq(uint32_t cpsr)
+	{
+	    __ASM volatile (
+	        "msr cpsr_c, %0     \n\t"   /* Восстанавливаем только управляющий байт CPSR[7:0] */
+	        :
+	        : "r" (cpsr)
+	        : "memory", "cc"
+	    );
+	}
 
 	#endif /* defined(__aarch64__) */
 
