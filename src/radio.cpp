@@ -14980,7 +14980,7 @@ static void uif_key_sendcw(const char * msg)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& lockcwmsg, & oldIrql, ELKEY_IRQL);
+	IRQLSPIN_LOCK_YIELD(& lockcwmsg, & oldIrql, ELKEY_IRQL);
 	if (usersend != 0 && * usersend != '\0')
 		usersend = NULL;
 	else
@@ -19279,7 +19279,7 @@ static char beacon_getnextcw(void)
 #elif WITHELKEY && WITHTX
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& lockcwmsg, & oldIrql, ELKEY_IRQL);
+	IRQLSPIN_LOCK_YIELD(& lockcwmsg, & oldIrql, ELKEY_IRQL);
 	if (usersend != NULL && * usersend != '\0')
 	{
 		const char c = * usersend ++;
