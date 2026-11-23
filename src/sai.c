@@ -3988,16 +3988,81 @@ static void I2S_fill_TXxCHMAP(
 //	PRINTF("I2S_PCM2_IrqHandler: ista=%08" PRIXFAST32 "\n", ista);
 //	ASSERT(0);
 //}
-
-//void I2S_PCMx_IrqHandler(void)
-//{
-////	const uint_fast32_t ista = I2S1->I2S_PCM_ISTA;
-////	I2S1->I2S_PCM_ISTA = ista;
-////	PRINTF("I2S_PCM1_IrqHandler: ista=%08" PRIXFAST32 "\n", ista);
+#if 0
+void I2S_PCMx_IrqHandler(I2S_PCM_TypeDef * const i2s)
+{
+	const uint_fast32_t ista = i2s->I2S_PCM_ISTA & i2s->I2S_PCM_INT;
+	i2s->I2S_PCM_ISTA = ista;
+	return;
+	//PRINTF("I2S_PCM1_IrqHandler: ista=%08" PRIXFAST32 "\n", ista);
+	if (ista & (UINT32_C(1) << 6))	// TXU_INT
+		HARDWARE_DEBUG_PUTCHAR('t');
+	if (ista & (UINT32_C(1) << 5))	// TXO_INT
+		HARDWARE_DEBUG_PUTCHAR('o');
+	if (ista & (UINT32_C(1) << 2))	// RXU_INT
+		HARDWARE_DEBUG_PUTCHAR('z');
+	if (ista & (UINT32_C(1) << 1))	// RXO_INT
+		HARDWARE_DEBUG_PUTCHAR('r');
+	if (ista)
+		HARDWARE_DEBUG_PUTCHAR('S');
 //	ASSERT(0);
 //	for (;;)
 //		;
-//}
+}
+
+#if defined I2S0
+void I2S_PCM0_IrqHandler(void)
+{
+	I2S_PCMx_IrqHandler(I2S0);
+	return;
+	I2S_PCM_TypeDef * const i2s = I2S0;
+	const uint_fast32_t ista = i2s->I2S_PCM_ISTA & i2s->I2S_PCM_INT;
+	i2s->I2S_PCM_ISTA = ista;
+	return;
+	//PRINTF("I2S_PCM1_IrqHandler: ista=%08" PRIXFAST32 "\n", ista);
+	if (ista & (UINT32_C(1) << 6))	// TXU_INT
+		HARDWARE_DEBUG_PUTCHAR('t');
+	if (ista & (UINT32_C(1) << 5))	// TXO_INT
+		HARDWARE_DEBUG_PUTCHAR('o');
+	if (ista & (UINT32_C(1) << 2))	// RXU_INT
+		HARDWARE_DEBUG_PUTCHAR('z');
+	if (ista & (UINT32_C(1) << 1))	// RXO_INT
+		HARDWARE_DEBUG_PUTCHAR('r');
+	if (ista)
+		HARDWARE_DEBUG_PUTCHAR('S');
+//	ASSERT(0);
+//	for (;;)
+//		;
+}
+#endif	/* defined I2S0 */
+
+#if defined I2S1
+void I2S_PCM1_IrqHandler(void)
+{
+	I2S_PCMx_IrqHandler(I2S1);
+	return;
+	I2S_PCM_TypeDef * const i2s = I2S1;
+	const uint_fast32_t ista = i2s->I2S_PCM_ISTA & i2s->I2S_PCM_INT;
+	i2s->I2S_PCM_ISTA = ista;
+	return;
+	//PRINTF("I2S_PCM1_IrqHandler: ista=%08" PRIXFAST32 "\n", ista);
+	if (ista & (UINT32_C(1) << 6))	// TXU_INT
+		HARDWARE_DEBUG_PUTCHAR('t');
+	if (ista & (UINT32_C(1) << 5))	// TXO_INT
+		HARDWARE_DEBUG_PUTCHAR('o');
+	if (ista & (UINT32_C(1) << 2))	// RXU_INT
+		HARDWARE_DEBUG_PUTCHAR('z');
+	if (ista & (UINT32_C(1) << 1))	// RXO_INT
+		HARDWARE_DEBUG_PUTCHAR('r');
+	if (ista)
+		HARDWARE_DEBUG_PUTCHAR('S');
+//	ASSERT(0);
+//	for (;;)
+//		;
+}
+#endif	/* defined I2S1 */
+
+#endif
 
 #if defined (AHUB) && CPUSTYLE_T507
 
@@ -4791,8 +4856,8 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	i2s->I2S_PCM_INT |= (UINT32_C(1) << 7); // TX_DRQ
 	i2s->I2S_PCM_INT |= (UINT32_C(1) << 3); // RX_DRQ
 
-//	i2s->I2S_PCM_INT |= (UINT32_C(1) << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
-//	i2s->I2S_PCM_INT |= (UINT32_C(1) << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
+	i2s->I2S_PCM_INT |= (UINT32_C(1) << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
+	i2s->I2S_PCM_INT |= (UINT32_C(1) << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
 
 	//i2s->I2S_PCM_INT |= 0xFF;
 //	arm_hardware_set_handler_system(I2S_PCMx_IRQn, I2S_PCMx_IrqHandler);
@@ -4928,10 +4993,14 @@ static void hardware_i2s_initialize(unsigned ix, I2S_PCM_TypeDef * i2s, int mast
 	i2s->I2S_PCM_INT |= (UINT32_C(1) << 7); // TX_DRQ
 	i2s->I2S_PCM_INT |= (UINT32_C(1) << 3); // RX_DRQ
 
-//	i2s->I2S_PCM_INT |= (UINT32_C(1) << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
-//	i2s->I2S_PCM_INT |= (UINT32_C(1) << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
+	i2s->I2S_PCM_INT |= (UINT32_C(1) << 6); // TXUI_EN TXFIFO Underrun Interrupt Enable
+	i2s->I2S_PCM_INT |= (UINT32_C(1) << 2); // RXUI_EN RXFIFO Overrun Interrupt Enable
 
-	//arm_hardware_set_handler_realtime(irq, I2S_PCMx_IrqHandler);
+#if 0
+	//arm_hardware_set_handler_system(I2S1_IRQn + ix - 1, I2S_PCMx_IrqHandler);
+	arm_hardware_set_handler_system(I2S0_IRQn, I2S_PCM0_IrqHandler);
+	arm_hardware_set_handler_system(I2S1_IRQn, I2S_PCM1_IrqHandler);
+#endif
 
 #elif CPUSTYLE_A133
     #warning CPUSTYLE_A133 to be implemented

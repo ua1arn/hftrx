@@ -4020,9 +4020,11 @@ void buffers_diagnostics(void)
 #if 1
 	// USB
 #if WITHUSBHW && WITHUSBUACOUT && defined (WITHUSBHW_DEVICE) && 1
+	// OUT pipes
 	uacout48.debug();
 #endif
 #if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 0
+	// IN pipes
 #if WITHRTS192
 	uacinrts192.debug();
 #endif
