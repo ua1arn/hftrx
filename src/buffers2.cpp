@@ -1653,6 +1653,7 @@ uintptr_t allocate_dmabuffer32rx(void)
 }
 
 // can be zero
+// not used
 uintptr_t getfilled_dmabuffer32rx(void)
 {
 	voice32rx_t * dest;
@@ -1661,55 +1662,41 @@ uintptr_t getfilled_dmabuffer32rx(void)
 	return (uintptr_t) dest->buff;
 }
 
-#if WITHRTOS
 
-	static int buffprocess_thread(void * ctx)
-	{
-		(void) ctx;
-		for (;;)
-		{
-			voice32rx_t * dest;
-			if (voice32rx.get_readybuffer(& dest, LOCAL_WAITINFINITY) == false)
-				continue;
-			process_dmabuffer32rx(dest->buff);
-			voice32rx.release_buffer(dest);
-
-			dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
-		}
-		return 0;
-	}
-
-#else /* WITHRTOS */
-	// Обработка сразу в прерывании
-	//#define TXSPOOLCOND (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM))
-	//#define TXSPOOLCOND 1	// Force in-interrupt 32rx stream parsing
-	#if ! TXSPOOLCOND
-	#define TXSPOOLCORE (HARDWARE_NCORES - 1)
-	#endif
-
-	static void dsphftrxproc_spool_user(void * ctx)
+// thread function
+static int buffprocess_thread(void * ctx)
+{
+	(void) ctx;
+	for (;;)
 	{
 		voice32rx_t * dest;
+		if (voice32rx.get_readybuffer(& dest, LOCAL_WAITINFINITY) == false)
+			continue;
+		process_dmabuffer32rx(dest->buff);
+		voice32rx.release_buffer(dest);
 
-		while (voice32rx.get_readybuffer(& dest))
-		{
-			process_dmabuffer32rx(dest->buff);
-			voice32rx.release_buffer(dest);
-			dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
-		}
+		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 	}
+	return 0;
+}
 
-#endif /* WITHRTOS */
+// dpc function
+static void dsphftrxproc_spool_user(void * ctx)
+{
+	voice32rx_t * dest;
+
+	if (voice32rx.get_readybuffer(& dest))
+	{
+		process_dmabuffer32rx(dest->buff);
+		voice32rx.release_buffer(dest);
+		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
+	}
+}
 
 void save_dmabuffer32rx(uintptr_t addr)
 {
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 	voice32rx.save_readybuffer(p);
-	// dsphftrxproc_spool_user on other CPUs
-#if ! WITHRTOS && TXSPOOLCOND
-	#warning rx process in interrupt
-	dsphftrxproc_spool_user(hftrx_rxgetpathA());
-#endif /* TXSPOOLCOND */
 }
 
 ///////////////////////////////////////
@@ -4210,17 +4197,19 @@ void buffers_start(void)
 {
 #if WITHINTEGRATEDDSP
 
-#if WITHRTOS
+#if WITHRTOS && 1
+	#warning rx process in thread
 	static __NO_INIT __ALIGNED(DCACHEROWSIZE) uint8_t procthread [16 * 1024 * 1024];
 	VERIFY(thread_create_user(buffprocess_thread, NULL, procthread, sizeof procthread, TTASK_AFFINITY_AUDIOPROC, "buffprocess_thread"));
 
-#elif ! TXSPOOLCOND
+#else
 
-	#warning rx process in spool
 
 
 	{
-		PRINTF("buffers_start: rx process in spool, TXSPOOLCORE=%u\n", TXSPOOLCORE);
+		#warning rx process in spool
+		enum { TXSPOOLCORE = HARDWARE_NCORES - 1 };
+		PRINTF("buffers_start: rx process in spool, TXSPOOLCORE=%d\n", (int) TXSPOOLCORE);
 		static dpcobj_t dpc;
 		dpcobj_initialize(& dpc, dsphftrxproc_spool_user, NULL, "dsphftrxproc_spool_dpc");
 		board_dpc_addentry(& dpc, TXSPOOLCORE);
