@@ -238,16 +238,12 @@ int printf_dram(const char *format, ...)
 	char b [256];	// see stack sizes for interrupt handlers
 	va_list	ap;
 
-//	IRQL_t irql;
-//	IRQLSPIN_LOCK(& printflock, & irql, IRQL_IPC_ONLY);
-
 	va_start(ap, format);
 	int n = vsnprintf(b, sizeof b / sizeof b [0], format, ap);
 	va_end(ap);
 	b [ARRAY_SIZE(b) - 1] = '\0';
 
 	dbg_puts(b);
-//	IRQLSPIN_UNLOCK(& printflock, irql);
 	return n;
 }
 int arm_hardware_sdram_initialize(int configtype)
