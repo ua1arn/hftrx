@@ -3906,8 +3906,8 @@ void RiseIrql_DEBUG(IRQL_t newIRQL, IRQL_t * oldIrql, const char * file, int lin
 //	ASSERT2(lastirql [core] == oldv, file, line);
 	if (IRQL_LT(newIRQL, oldv))
 	{
-		PRINTF("Last set irqlp=%u irqlv=%u by core=%u at %s/%d:\n", (unsigned) lastirql [core], (unsigned) GICI_DECODE_IRQL(lastirql [core]), core, lastfile [core], lastline [core]);
-		PRINTF("irq fail at %s/%d, newIRQLp=%u, oldp=%u\n", file, line, (unsigned) newIRQL, (unsigned) oldv);
+		PRINTF("Last set irql=0x%02X irqlv=%u by core=%u at %s/%d:\n", (unsigned) lastirql [core], (unsigned) GICI_DECODE_IRQL(lastirql [core]), core, lastfile [core], lastline [core]);
+		PRINTF("irq fail at %s/%d, newIRQLp=0x%02X, oldp=0x%02X\n", file, line, (unsigned) newIRQL, (unsigned) oldv);
 		PRINTF("irq fail at %s/%d, newIRQLv=%u, oldv=%u\n", file, line, (unsigned) GICI_DECODE_IRQL(newIRQL), (unsigned) GICI_DECODE_IRQL(oldv));
 		ASSERT2(oldv >= newIRQL, file, line);	/* Не понижаем приоритет */
 	}
