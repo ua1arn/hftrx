@@ -903,8 +903,11 @@ public:
 	{
 		if (wb == NULL)
 		{
-			if (! parent_t::get_freebuffer(& wb))
-				return;
+			while (! parent_t::get_freebufferforced(& wb))
+			{
+				// первичное получение должно срабатывать.
+				ASSERT3(0, __FILE__, __LINE__, parent_t::name);
+			}
 			wbn = 0;
 		}
 		wbn += putcbf(wb->buff + wbn, ch0, ch1, v3);
@@ -920,8 +923,11 @@ public:
 	{
 		if (wb == NULL)
 		{
-			if (! parent_t::get_freebuffer(& wb))
-				return;
+			while (! parent_t::get_freebufferforced(& wb))
+			{
+				// первичное получение должно срабатывать.
+				ASSERT3(0, __FILE__, __LINE__, parent_t::name);
+			}
 			wbn = 0;
 		}
 		wbn += putcbf(wb->buff + wbn, ch0, ch1);
@@ -954,8 +960,11 @@ public:
 		if (rb == NULL)
 		{
 			if (! parent_t::get_freebuffer(& rb))
-				return 0;
-			if (!fillresampled(rb->buff, ARRAY_SIZE(rb->buff), rb->nch, nsrc, nsrcch))
+			{
+				//ASSERT3(0, __FILE__, __LINE__, name);
+				return 0;	// данных на входе просто нет
+			}
+			if (! fillresampled(rb->buff, ARRAY_SIZE(rb->buff), rb->nch, nsrc, nsrcch))
 			{
 				parent_t::release_buffer(rb);
 				rb = NULL;
@@ -1028,11 +1037,11 @@ uint_fast8_t takespeexready(speexel_t * * dest, uint_fast32_t timeMS)
 speexel_t * allocatespeexbuffer(void)
 {
 	denoise16_t * addr;
-	if (denoise16list.get_freebufferforced(& addr))
+	while (! denoise16list.get_freebufferforced(& addr))
 	{
-		return addr->buff;
+		ASSERT(0);
 	}
-	return NULL;
+	return addr->buff;
 }
 
 // Освобождение буфера
