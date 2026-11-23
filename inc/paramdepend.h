@@ -918,7 +918,7 @@ extern "C" {
 	typedef uint32_t DAIF_t;
 
 	/* Сохранить CPSR и запретить IRQ + FIQ */
-	__STATIC_FORCEINLINE uint32_t global_disable_irq_save(void)
+	__STATIC_FORCEINLINE DAIF_t global_disable_irq_save(void)
 	{
 	    uint32_t cpsr;
 	    __ASM volatile (
@@ -932,7 +932,7 @@ extern "C" {
 	}
 
 	/* Восстановить прежнее состояние IRQ/FIQ из сохранённого CPSR */
-	__STATIC_FORCEINLINE void global_restore_irq(uint32_t cpsr)
+	__STATIC_FORCEINLINE void global_restore_irq(DAIF_t cpsr)
 	{
 	    __ASM volatile (
 	        "msr cpsr_c, %0     \n\t"   /* Восстанавливаем только управляющий байт CPSR[7:0] */
@@ -947,9 +947,12 @@ extern "C" {
 #elif CPUSTYLE_RISCV
 
 	typedef uint_xlen_t IRQL_t;
+	typedef uint_xlen_t DAIF_t;
 	#define IRQL_EQ(a, b) ((a) == (b))	// A имеет равный приоритет с B
 	#define IRQL_GT(a, b) ((a) > (b))	// A более приоритетно чем B
+	#define IRQL_GE(a, b) ((a) >= (b))	// A более приоритетно чем B или равно
 	#define IRQL_LT(a, b) ((a) < (b))	// A менее приоритетно чем B
+	#define IRQL_LE(a, b) ((a) <= (b))	// A менее приоритетно чем B или равно
 
 	enum
 	{
@@ -978,15 +981,32 @@ extern "C" {
 	#define ARM_REALTIME_PRIORITY		PRIOv_REALTIME		/* звук */
 	#define ARM_SYSTEM_PRIORITY			PRIOv_SYSTEM		/* таймеры, USB */
 	#define ARM_USER_PRIORITY			PRIOv_USER
+	#define ARM_ENCODER_PRIORITY			PRIOv_ENCODER
 
 	//#define GICD_ENCODE_PRIORITY(priov) 	(priov)	// Value for GICDistributor->IPRIORITYR[n]
 	#define GICI_ENCODE_IRQL(priov) 	((IRQL_t) (priov))	// value for GICInterface->PMR
 	#define GICI_DECODE_IRQL(irql) 		((unsigned) (irql))	// value from GICInterface->PMR
-	#define IRQL_DECREMENT(v) 			((v) + 1)	// получить значение следующего, меньшего приоритета
+
 	#define IRQL_IPC_ONLY				(IRQL_DECREMENT(IRQL_IPC))
+	#define IRQL_HIGHEST 		PRIOv_ENCODER
+	#define IRQL_LOWEST 		IRQL_IDLE
+	#define IRQL_DECREMENT(v) 	((v) - 1)	// получить значение следующего, меньшего приоритета
+	#define IRQL_GET_RUNNING() (0)	// возвращает в формате, совпадающим с IRQL_t
+	#define IRQL_GET_CURRENT() (0)	// возвращает в формате, совпадающим с IRQL_t
 
 	#define global_enableIRQ() do { csr_set_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
 	#define global_disableIRQ() do { csr_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK); } while (0)
+	/* Сохранить CPSR и запретить IRQ + FIQ */
+	__STATIC_FORCEINLINE DAIF_t global_disable_irq_save(void)
+	{
+		return csr_read_clr_bits_mstatus(MSTATUS_MIE_BIT_MASK);
+	}
+
+	/* Восстановить прежнее состояние IRQ/FIQ из сохранённого CPSR */
+	__STATIC_FORCEINLINE void global_restore_irq(DAIF_t mstatus)
+	{
+		csr_write_mstatus(mstatus);
+	}
 
 #else /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 */
 
