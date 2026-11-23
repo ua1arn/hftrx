@@ -318,12 +318,12 @@
 		gpio_input2(TARGET_ENC2_A_EMIO, pinmode_emio); \
 		gpio_input2(TARGET_ENC2_B_EMIO, pinmode_emio); \
 		gpio_input2(TARGET_ENC2_BUTTON_EMIO, pinmode_emio); \
-		gpio_onchangeinterrupt(TARGET_ENCODER_A_EMIO, spool_encinterrupts, & encoder1, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
-		gpio_onchangeinterrupt(TARGET_ENCODER_B_EMIO, spool_encinterrupts, & encoder1, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+		gpio_onchangeinterrupt(TARGET_ENCODER_A_EMIO, spool_encinterrupts, & encoder1, ENCODER_PRIORITY, TARGETCPU_OVRT); \
+		gpio_onchangeinterrupt(TARGET_ENCODER_B_EMIO, spool_encinterrupts, & encoder1, ENCODER_PRIORITY, TARGETCPU_OVRT); \
 	} while (0)
 
-//arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT);
-//arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT);
+//arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ENCODER_PRIORITY, TARGETCPU_OVRT);
+//arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ENCODER_PRIORITY, TARGETCPU_OVRT);
 
 #endif
 

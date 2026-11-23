@@ -329,11 +329,11 @@
 			arm_hardware_pioe_inputs(EENCODER_BITS); \
 			arm_hardware_pioe_updown(EENCODER_BITS, EENCODER_BITS, 0); \
 			einthandler_initialize(& eh1, EENCODER_BITS, spool_encinterrupts, & encoder1); \
-			arm_hardware_pioe_onchangeinterrupt(EENCODER_BITS, EENCODER_BITS, EENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh1); \
+			arm_hardware_pioe_onchangeinterrupt(EENCODER_BITS, EENCODER_BITS, EENCODER_BITS, ENCODER_PRIORITY, TARGETCPU_OVRT, & eh1); \
 			arm_hardware_pioe_inputs(EENCODER2_BITS); \
 			arm_hardware_pioe_updown(EENCODER2_BITS, EENCODER2_BITS, 0); \
 			einthandler_initialize(& eh2, EENCODER2_BITS, spool_encinterrupts, & encoder2); \
-			arm_hardware_pioe_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh2); \
+			arm_hardware_pioe_onchangeinterrupt(EENCODER2_BITS, EENCODER2_BITS, EENCODER2_BITS, ENCODER_PRIORITY, TARGETCPU_OVRT, & eh2); \
 			/* ticker for spool */ \
 			ticker_initialize(& th2, ENC_TICKS_PERIOD, spool_encinterrupts, & encoder2, "enc2"); \
 			ticker_add(& th2); \

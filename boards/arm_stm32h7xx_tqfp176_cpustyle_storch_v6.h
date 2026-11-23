@@ -213,11 +213,11 @@
 			arm_hardware_pioh_inputs(ENCODER_BITS); \
 			arm_hardware_pioh_updown(ENCODER_BITS, ENCODER_BITS, 0); \
 			einthandler_initialize(& eh1, ENCODER_BITS, spool_encinterrupts, & encoder1); \
-			arm_hardware_pioh_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh1); \
+			arm_hardware_pioh_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ENCODER_PRIORITY, TARGETCPU_OVRT, & eh1); \
 			arm_hardware_pioh_inputs(ENCODER2_BITS); \
 			arm_hardware_pioh_updown(ENCODER2_BITS, ENCODER2_BITS, 0); \
 			einthandler_initialize(& eh2, ENCODER2_BITS, spool_encinterrupts, & encoder2); \
-			arm_hardware_pioh_onchangeinterrupt(0*ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT, & eh2); \
+			arm_hardware_pioh_onchangeinterrupt(0*ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ENCODER_PRIORITY, TARGETCPU_OVRT, & eh2); \
 		} while (0)
 
 #endif
