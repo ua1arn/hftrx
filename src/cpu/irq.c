@@ -15,10 +15,11 @@
 
 #include "hftrx_osal.h"
 
+#define IRQL_SCHEDULER IRQL_IPC
+
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
 #include "a-profile/irq_ctrl.h" // CMSIS_6 file
-
 
 
 #if 0
@@ -2166,7 +2167,7 @@ static LIST_ENTRY timers_list;
 
 #define SCHED_LOCK(pirql, pdaif) do {                   \
         *(pdaif) = global_disable_irq_save();                    \
-        IRQLSPIN_LOCK(& threadslock, (pirql), IRQL_IPC);  \
+        IRQLSPIN_LOCK(& threadslock, (pirql), IRQL_SCHEDULER);  \
     } while (0)
 
 #define SCHED_UNLOCK(irql, daif) do {                   \
@@ -2830,7 +2831,7 @@ task_scheduler_mux(void * oldframe, unsigned syscallflag, unsigned code)
 {
 	const uint_fast8_t core = arm_hardware_cpuid();
 	IRQL_t irql;
-	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_IPC);
+	IRQLSPIN_LOCK(& threadslock, & irql, IRQL_SCHEDULER);
 	ASSERT(threads_not_started == 0);
 	thread_item_t * const tp = refreshactivetask(oldframe, core);	// also set cpuframe
 	ASSERT(tp);
@@ -3248,7 +3249,7 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 void __NO_RETURN VIRQ_Handler(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
 		//HARDWARE_DEBUG_PUTCHAR('.');
 		IRQ_Handler_GIC();		// Group 1 handler
 		run_notask_curr(frame);	// __NO_RETURN
@@ -3273,7 +3274,7 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
 		//HARDWARE_DEBUG_PUTCHAR('.');
 		FIQ_Handler_GIC();		// Group 0 handler
 		run_notask_curr(frame);	// __NO_RETURN
@@ -3304,7 +3305,7 @@ void SError_Handler(void * frame)
 	if (ec == 0x15)
 	{
 #if WITHRTOS
-		if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started)
+		if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started)
 			run_notask_curr(frame);	// __NO_RETURN
 		// SVC instruction execution in AArch64 state.
 		run_task_curr(task_scheduler_syscall(frame, esr_el3 & 0xFFFF));	// __NO_RETURN
@@ -3350,7 +3351,7 @@ void SError_Handler(void * frame)
 void IRQ_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
 		IRQ_Handler_GIC();			// Group 1 handler
 		run_notask_curr_aarch32(frame);	// __NO_RETURN
 	} else {
@@ -3376,7 +3377,7 @@ void IRQ_Handler_aarch32(void * frame)
 void FIQ_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
 		FIQ_Handler_GIC();			// Group 0 handler
 		run_notask_curr_aarch32(frame);	// __NO_RETURN
 	} else {
@@ -3402,7 +3403,7 @@ void FIQ_Handler_aarch32(void * frame)
 void __NO_RETURN SWI_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_IPC) || threads_not_started) {
+	if (IRQL_GT(IRQL_GET_CURRENT(), IRQL_SCHEDULER) || threads_not_started) {
 		run_notask_curr_aarch32(frame);	// __NO_RETURN
 	} else {
 	    // Calculate the base address of the GPR block accounting for dynamic 8-byte alignment
