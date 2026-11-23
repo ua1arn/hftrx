@@ -671,7 +671,7 @@ public:
 			const unsigned SKIPBUFFS = SKIPSAMPLES / (total / wbgss);
 
 			if (! stoutready)
-				return false;
+				return false;	// входной буфер ещё не включился
 			if (wbskip != 0)
 			{
 				-- wbskip;	// statistics
@@ -685,7 +685,7 @@ public:
 			}
 			else if (streadycount >= MAXLEVEL)
 			{
-				++ wbdeleted;	// statistics
+				++ wbdeleted;	// statistics - входных буферов больше чем надо - медленно читают..
 				wbskip = SKIPBUFFS;
 				return get_readybufferarj(dest, false, true);
 			}
@@ -759,7 +759,9 @@ public:
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
-		PRINTF(" %s:e=%d,E=%d,y=%d,f=%d,%uk/%uk", name, errallocate, errforced, readycount, freecount, (unsigned) ((fin + 500) / 1000), (unsigned) ((fout + 500) / 1000));
+		const int r = readycount;
+		const int f = freecount;
+		PRINTF(" %s:e=%d,E=%d,y=%d,f=%d,%uk/%uk", name, errallocate, errforced, r, f, (unsigned) ((fin + 500) / 1000), (unsigned) ((fout + 500) / 1000));
 		if (hasresample)
 		{
 			PRINTF("+%u,-%u", wbadded, wbdeleted);
