@@ -54,7 +54,7 @@ static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
 #define BUFUSBSCALE3 2
 
 
-#define UACOUT48_CAPACITY (2 * (48 / OUTSAMPLES_AUDIO48) * BUFUSBSCALE * BUFOVERSIZE * BUFUSBSCALE2)
+#define UACOUT48_CAPACITY (4 * (48 / OUTSAMPLES_AUDIO48) * BUFUSBSCALE * BUFOVERSIZE * BUFUSBSCALE2)
 
 #define HDMI48TX_CAPACITY 		(32 * BUFOVERSIZE * BUFUSBSCALE2 * BUFUSBSCALE3)
 #define VOICE16RX_CAPACITY 		(16 * BUFOVERSIZE * BUFUSBSCALE2 * BUFUSBSCALE3)	// прием от кодекв
@@ -536,7 +536,7 @@ public:
 		ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
 		ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 
 		InsertHeadList(& freelist, & p->item);
 		++ freecount;
@@ -553,7 +553,7 @@ public:
 		ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 
 		InsertHeadList(& readylist, & p->item);
 		++ readycount;
@@ -570,7 +570,7 @@ public:
 	bool get_readybuffer_raw(element_t * * dest, uint_fast32_t timeMS = 0)
 	{
 		IRQL_t oldIrql;
-		//IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		//IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		if (timeMS != 0)
 		{
 			// Запрос с ненулевым аргументром timeMS может возникнуть только из выделенных потоков
@@ -580,7 +580,7 @@ public:
 			}
 		}
 		//IRQLSPIN_UNLOCK(& irqllock, oldIrql);
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& readylist))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(& readylist);
@@ -605,7 +605,7 @@ public:
 	bool get_freebuffer_raw(element_t * * dest)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& freelist))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(& freelist);
@@ -633,7 +633,7 @@ public:
 		IRQL_t oldIrql;
 
 		InitializeListHead(list);
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		while (n -- && ! IsListEmpty(& readylist))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(& readylist);
@@ -651,7 +651,7 @@ public:
 	{
 		IRQL_t oldIrql;
 
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		while (! IsListEmpty(list))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(list);
@@ -668,7 +668,7 @@ public:
 	bool get_readybuffer(element_t * * dest, uint_fast32_t timeMS = 0)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		const bool stoutready = outready;
 		const int streadycount = readycount;
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
@@ -763,7 +763,7 @@ public:
 	{
 #if WITHBUFFERSDEBUG
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		unsigned fin = fqin.getfreq();
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
@@ -780,7 +780,7 @@ public:
 	{
 #if WITHBUFFERSDEBUG
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		unsigned fin = fqin.getfreq();
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
@@ -3493,7 +3493,7 @@ void deliveryfloat(deliverylist_t * RESTRICTED_POINTER list, FLOAT_t ch0, FLOAT_
 	PRLIST_ENTRY t;
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
@@ -3508,7 +3508,7 @@ void deliveryfloat_buffer(deliverylist_t * RESTRICTED_POINTER list, const FLOAT_
 	IRQL_t oldIrql;
 	PRLIST_ENTRY t;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
@@ -3526,7 +3526,7 @@ void deliveryint(deliverylist_t * RESTRICTED_POINTER list, int_fast32_t ch0, int
 	IRQL_t oldIrql;
 	PRLIST_ENTRY t;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribeint32_t * const p = CONTAINING_RECORD(t, subscribeint32_t, item);
@@ -3541,7 +3541,7 @@ void subscribefloat(deliverylist_t * RESTRICTED_POINTER list, subscribefloat_t *
 
 	target->cb = pfn;
 	target->ctx = ctx;
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	InsertHeadList(& list->head, & target->item);
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
@@ -3550,7 +3550,7 @@ void unsubscribefloat(deliverylist_t * RESTRICTED_POINTER list, subscribefloat_t
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	RemoveEntryList(& target->item);
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
@@ -3561,7 +3561,7 @@ void subscribeint32(deliverylist_t * RESTRICTED_POINTER list, subscribeint32_t *
 
 	target->cb = pfn;
 	target->ctx = ctx;
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	InsertHeadList(& list->head, & target->item);
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
@@ -3570,7 +3570,7 @@ void unsubscribeint32(deliverylist_t * RESTRICTED_POINTER list, subscribeint32_t
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	RemoveEntryList(& target->item);
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }

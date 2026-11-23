@@ -320,7 +320,7 @@ kbd_spool(void * ctx)
 		board_keybeep_enable(1);	/* начать формирование звукового сигнала */
 
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, IRQL_SYSTEM);
 
 		uint16_queue_put(& kbdp->kbdq, code);
 
@@ -368,7 +368,7 @@ uint_fast8_t kbdx_get_ishold(kbdst_t * kbdp, uint_fast8_t flag)
 {
 	uint_fast8_t r;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
+	IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, IRQL_SYSTEM);
 	uint_fast8_t f = !! kbdp->kbd_press && kbdp->pkbd_last != NULL;
 
 	r = f && (kbdp->pkbd_last->flags & flag);
@@ -380,7 +380,7 @@ static uint_fast16_t kbdx_scan(kbdst_t * kbdp, uint_fast16_t * v)
 {
 	uint_fast16_t f;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& irqllock, & oldIrql, IRQL_SYSTEM);
+	IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, IRQL_SYSTEM);
 
 	f = uint16_queue_get(& kbdp->kbdq, v);
 

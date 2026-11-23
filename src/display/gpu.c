@@ -1092,7 +1092,7 @@ int gpu_fillrect(
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	IRQL_t irql;
-	IRQLSPIN_LOCK(& gpulock, & irql, BRDSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& gpulock, & irql, BRDSYS_IRQL);
 
     // Заливка прямоугольника 200x200 в позиции (x = 100, y = 100)
     int res = gpu_fill_rect_fragment_v7(

@@ -5998,7 +5998,7 @@ static LCLSPINLOCK_t fftlistlock = IRQLSPINLOCK_INIT;
 static uint_fast8_t allocate_fftbuffer(fftbuff_t * * dest)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
+	IRQLSPIN_LOCK_YIELD(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
 	if (! IsListEmpty(& fftbuffree))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftbuffree);
@@ -6026,7 +6026,7 @@ static int saveready_fftbuffer(fftbuff_t * p)
 {
 	int flag = 1;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
+	IRQLSPIN_LOCK_YIELD(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
 	while (! IsListEmpty(& fftlistready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftlistready);
@@ -6042,7 +6042,7 @@ static int saveready_fftbuffer(fftbuff_t * p)
 static void release_fftbuffer(fftbuff_t * p)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
+	IRQLSPIN_LOCK_YIELD(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
 	InsertHeadList(& fftbuffree, & p->item);
 	IRQLSPIN_UNLOCK(& fftlistlock, oldIrql);
 }
@@ -6051,7 +6051,7 @@ static void release_fftbuffer(fftbuff_t * p)
 static int_fast8_t getfilled_fftbuffer(fftbuff_t * * dest)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
+	IRQLSPIN_LOCK_YIELD(& fftlistlock, & oldIrql, FFTLOCL_IRQL);
 	if (! IsListEmpty(& fftlistready))
 	{
 		const PLIST_ENTRY t = RemoveTailList(& fftlistready);

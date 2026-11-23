@@ -206,7 +206,7 @@ static volatile unsigned press;
 uint_fast8_t board_tsc_getraw(uint_fast16_t * xr, uint_fast16_t * yr, uint_fast16_t * zr)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& tsclock, & oldIrql, IRQL_SYSTEM);
+	IRQLSPIN_LOCK_YIELD(& tsclock, & oldIrql, IRQL_SYSTEM);
 	const uint_fast8_t f = gready;
 	* xr = gx;
 	* yr = gy;
@@ -223,7 +223,7 @@ static void xpt204_spool(void * ctx)
 	(void) ctx;
 	const uint_fast8_t f = xpt2046_getxy_spi(& x, & y, & z1);
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& tsclock, & oldIrql, IRQL_SYSTEM);
+	IRQLSPIN_LOCK_YIELD(& tsclock, & oldIrql, IRQL_SYSTEM);
 	//PRINTF("%d: p=%u, r=%u\n", f, press, release);
 	if (f)
 	{

@@ -261,7 +261,7 @@ void ticker_timeout_restart(ticker_t * p, uint_fast32_t timeMS)
 	IRQL_t oldIrql;
 	ASSERT(p->guard == p);
 	ASSERT(p->mode == TICKERMD_TIMEOUT);
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+	IRQLSPIN_LOCK_YIELD(& tickerslock, & oldIrql, TICKER_IRQL);
 	RemoveEntryList(& p->item);
 	InsertTailList(& tickers, & p->item);
 	p->t0 = timestamp_getticks();
@@ -316,7 +316,7 @@ void ticker_add(ticker_t * p)
 	//PRINTF("ticker_add: '%s', period=%u, mode=%d\n", p->name, (unsigned) (p->td / (timestamp_getfreq() / 1000)), p->mode);
 	IRQL_t oldIrql;
 	ASSERT(p->guard == p);
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+	IRQLSPIN_LOCK_YIELD(& tickerslock, & oldIrql, TICKER_IRQL);
 	ASSERT(tickers.Blink != NULL && tickers.Flink != NULL);
 	InsertHeadList(& tickers, & p->item);
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
@@ -327,7 +327,7 @@ void ticker_add(ticker_t * p)
 //	IRQL_t oldIrql;
 //	ASSERT(p->guard == p);
 //
-//	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+//	IRQLSPIN_LOCK_YIELD(& tickerslock, & oldIrql, TICKER_IRQL);
 //	RemoveEntryVList(& p->item);
 //	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 //}
@@ -338,7 +338,7 @@ void ticker_add(ticker_t * p)
 //	IRQL_t oldIrql;
 //	ASSERT(p->guard == p);
 //
-//	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+//	IRQLSPIN_LOCK_YIELD(& tickerslock, & oldIrql, TICKER_IRQL);
 //	switch (p->mode)
 //	{
 //	case TICKERMD_MANUAL:
@@ -355,7 +355,7 @@ void ticker_setperiod(ticker_t * p, uint_fast32_t timeMS)
 	IRQL_t oldIrql;
 
 	ASSERT(p->guard == p);
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+	IRQLSPIN_LOCK_YIELD(& tickerslock, & oldIrql, TICKER_IRQL);
 	p->td = timestamp_get_ms(timeMS);
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
@@ -366,7 +366,7 @@ static void tickers_event(void)
 	IRQL_t oldIrql;
 	const hwtimcountfast_t tn = timestamp_getticks();
 
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+	IRQLSPIN_LOCK_YIELD(& tickerslock, & oldIrql, TICKER_IRQL);
 	PRLIST_ENTRY t;
 	ASSERT(tickers.Blink != NULL && tickers.Flink != NULL);
 	for (t = tickers.Blink; t != & tickers;)
@@ -442,7 +442,7 @@ void tickers_deinitialize(void)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& tickerslock, & oldIrql, TICKER_IRQL);
+	IRQLSPIN_LOCK_YIELD(& tickerslock, & oldIrql, TICKER_IRQL);
 	RemoveEntryList(& tickers);
 	IRQLSPIN_UNLOCK(& tickerslock, oldIrql);
 }
@@ -459,7 +459,7 @@ void adcdone_add(adcdone_t * p)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& adcdoneslock, & oldIrql, TICKER_IRQL);
+	IRQLSPIN_LOCK_YIELD(& adcdoneslock, & oldIrql, TICKER_IRQL);
 	InsertHeadList(& adcdones, & p->item);
 	IRQLSPIN_UNLOCK(& adcdoneslock, oldIrql);
 }
@@ -469,7 +469,7 @@ static void adcdones_event(void * ctx)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& adcdoneslock, & oldIrql, TICKER_IRQL);
+	IRQLSPIN_LOCK_YIELD(& adcdoneslock, & oldIrql, TICKER_IRQL);
 	PRLIST_ENTRY t;
 	for (t = adcdones.Blink; t != & adcdones; t = t->Blink)
 	{

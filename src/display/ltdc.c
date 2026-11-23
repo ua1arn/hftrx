@@ -2497,7 +2497,7 @@ static void de3_lockbld(int rtmixid, IRQL_t * oldIrql)
 	ASSERT(rtmixid >= 1);
 	const int disp = rtmixid - 1;
 	ASSERT(disp < ARRAY_SIZE(rtmixlock));
-	IRQLSPIN_LOCK(& rtmixlock [disp], oldIrql, IRQL_OVERREALTIME);
+	IRQLSPIN_LOCK_YIELD(& rtmixlock [disp], oldIrql, IRQL_OVERREALTIME);
 }
 
 static void de3_unlockbld(int rtmixid, IRQL_t oldIrql)

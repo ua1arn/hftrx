@@ -2485,7 +2485,7 @@ void
 board_update(void)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 	//PRINTF(PSTR("board_update start.\n"));
 
 	board_update_direct();	// Обновление непосредственно подключенных к процессору сигналов
@@ -5689,7 +5689,7 @@ board_calcs_setfreq(
 
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+	IRQLSPIN_LOCK_YIELD(& gpreilock, & oldIrql, IRQL_SYSTEM);
 	gprei [sndi] = prei;
 	gvalue [sndi] = value;
 	IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
@@ -5726,7 +5726,7 @@ board_keybeep_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+		IRQLSPIN_LOCK_YIELD(& gpreilock, & oldIrql, IRQL_SYSTEM);
 		board_sounds_resched();
 		IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 	}
@@ -5743,7 +5743,7 @@ board_errbeep_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+		IRQLSPIN_LOCK_YIELD(& gpreilock, & oldIrql, IRQL_SYSTEM);
 		board_sounds_resched();
 		IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 	}
@@ -5761,7 +5761,7 @@ board_sidetone_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+		IRQLSPIN_LOCK_YIELD(& gpreilock, & oldIrql, IRQL_SYSTEM);
 		board_sounds_resched();
 		IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 #if WITHIF4DSP
@@ -5783,7 +5783,7 @@ board_rgrbeep_setfreq(
 	{
 		IRQL_t oldIrql;
 
-		IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+		IRQLSPIN_LOCK_YIELD(& gpreilock, & oldIrql, IRQL_SYSTEM);
 		board_sounds_resched();
 		IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 	}
@@ -5797,7 +5797,7 @@ void board_rgrbeep_enable(uint_fast8_t state)
 
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+	IRQLSPIN_LOCK_YIELD(& gpreilock, & oldIrql, IRQL_SYSTEM);
 
 	if (gstate [sndi] != v)
 	{
@@ -5824,7 +5824,7 @@ void board_errbeep_enable(uint_fast8_t state)
 	enum { sndi = SNDI_ERRBEEP };
 
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+	IRQLSPIN_LOCK_YIELD(& gpreilock, & oldIrql, IRQL_SYSTEM);
 
 	if (gstate [sndi] != v)
 	{
@@ -5842,7 +5842,7 @@ void board_keybeep_enable(uint_fast8_t state)
 	enum { sndi = SNDI_KEYBEEP };
 
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+	IRQLSPIN_LOCK_YIELD(& gpreilock, & oldIrql, IRQL_SYSTEM);
 
 	if (gstate [sndi] != v)
 	{
@@ -5860,7 +5860,7 @@ void board_sidetone_enable(uint_fast8_t state)
 	enum { sndi = SNDI_SIDETONE };
 
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+	IRQLSPIN_LOCK_YIELD(& gpreilock, & oldIrql, IRQL_SYSTEM);
 
 	if (gstate [sndi] != v)
 	{
@@ -5879,7 +5879,7 @@ void board_testsound_enable(uint_fast8_t state)
 	enum { sndi = SNDI_DEBUG };
 
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+	IRQLSPIN_LOCK_YIELD(& gpreilock, & oldIrql, IRQL_SYSTEM);
 
 	if (gstate [sndi] != v)
 	{
@@ -5904,7 +5904,7 @@ void board_set_ctcsstx(
 	{
 		IRQL_t oldIrql;
 
-		IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+		IRQLSPIN_LOCK_YIELD(& gpreilock, & oldIrql, IRQL_SYSTEM);
 		board_sounds_resched();
 		IRQLSPIN_UNLOCK(& gpreilock, oldIrql);
 	}
@@ -5912,7 +5912,7 @@ void board_set_ctcsstx(
 	{
 		IRQL_t oldIrql;
 
-		IRQLSPIN_LOCK(& gpreilock, & oldIrql, IRQL_SYSTEM);
+		IRQLSPIN_LOCK_YIELD(& gpreilock, & oldIrql, IRQL_SYSTEM);
 		gstate [sndi] = v;
 		board_sounds_resched();
 		IRQLSPIN_UNLOCK(& gpreilock, oldIrql);

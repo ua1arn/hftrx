@@ -3866,6 +3866,12 @@ void lclspin_lock(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 	lclspin_lock_p(p, file, line);
 }
 
+void lclspin_lock_yield(LCLSPINLOCK_t * __restrict p, const char * file, int line)
+{
+	while (! lclspin_traylock_p(p, file, line))
+		thread_yield();
+}
+
 int lclspin_traylock(LCLSPINLOCK_t * __restrict p, const char * file, int line)
 {
 	return lclspin_traylock_p(p, file, line);
