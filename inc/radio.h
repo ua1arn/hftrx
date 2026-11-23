@@ -564,10 +564,10 @@ enum
 
 #define IF3_TYPE_BYPASS	1
 
-extern uint_fast16_t minforward;
-extern uint_fast8_t swrcalibr;
-extern uint_fast8_t maxpwrcali;
-extern uint_fast8_t swrmode;
+extern uint16_t minforward;
+extern uint8_t swrcalibr;
+extern uint8_t maxpwrcali;
+extern uint8_t swrmode;
 
 void updateboard(void);	/* полная перенастройка */
 
@@ -737,8 +737,8 @@ typedef struct paramdefdef
 	nvramaddress_t (* qnvramoffs)(nvramaddress_t base, unsigned sel, unsigned bi);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
 	ptrdiff_t (* valoffs)(unsigned sel);		/* индекс для работы с массивом переменных */
 
-	uint_fast16_t * apval16;			/* переменная, которую подстраиваем - если она 16 бит */
-	uint_fast8_t * apval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
+	uint16_t * apval16;			/* переменная, которую подстраиваем - если она 16 бит */
+	uint8_t * apval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
 	size_t (* getvaltext)(char * buff, size_t count, int_fast32_t value);	/* получить текст значения параметра - see RJ_CB */
 } paramdefdef_t;

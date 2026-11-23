@@ -1611,32 +1611,12 @@
 #endif /* WITHTX */
 
 #if WITHONLYBANDS
-	(const struct paramdefdef [1]) {
-		QLABEL("BANDONLY"), 0, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, withonlybands),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& withonlybands,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgwithonlybands,
 #endif /* WITHONLYBANDS */
 	& xstayfreq,
 #if WITHTX
 #if WITHSWRMTR && ! WITHSHOWSWRPWR
-	(const struct paramdefdef [1]) {
-		QLABEL("SWR SHOW"), 0, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		OFFSETOF(struct nvmap, swrmode),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		& swrmode,
-		getzerobase, 
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
+	& xgswrmode,
 #endif /* WITHSWRMTR && ! WITHSHOWSWRPWR */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	& xgdownatcwtune,
