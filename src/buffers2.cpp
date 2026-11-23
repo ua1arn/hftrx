@@ -18,6 +18,8 @@
 //#define WITHSEQTEST (1 && WITHDEBUG)
 //#define WITHBUFFERSDEBUG (1 && WITHDEBUG)
 
+#define DBG_PERIOD 100    // ms
+
 #ifndef BUFOVERSIZE
 	#define BUFOVERSIZE 1
 #endif /* BUFOVERSIZE */
@@ -35,39 +37,28 @@ static const unsigned SKIPSAMPLES_USB = 5000;	// раз в 5000 сэмплов �
 static const unsigned SKIPSAMPLES_ETH = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
 
 static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
-#define DBG_PERIOD 100	// ms
+#define VOICE16RX_CAPACITY 		(16 * BUFOVERSIZE)	// прием от кодекв
+#define VOICE16TX_CAPACITY 		(32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define VOICE16TXMONI_CAPACITY 	(64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+#define VOICE16REC_CAPACITY 	(64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+#define HDMI48TX_CAPACITY 		(32 * BUFOVERSIZE)
 
-#define VOICE32RX_CAPACITY (24 * BUFOVERSIZE)
-
-#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
-	#define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
-	#define VOICE16TX_RESAMPLING 1	// передача в кодек - требуется ли resampling
-#else /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
-	#define VOICE16RX_RESAMPLING 0	// прием от кодека - требуется ли resampling
-	#define VOICE16TX_RESAMPLING 0	// передача в кодек - требуется ли resampling
-#endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
+#define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
+#define VOICE16TX_RESAMPLING 1	// передача в кодек - требуется ли resampling
 #define HDMI48TX_RESAMPLING 1
 
-#define BUFUSBSCALE 8
+#define UACINRTS192_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
+#define UACINRTS96_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
+#define UACIN48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 
-#define BUFUSBSCALE2 8
-#define BUFUSBSCALE3 2
+#define UACOUT48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
 
+#define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
-#define UACOUT48_CAPACITY (4 * (48 / OUTSAMPLES_AUDIO48) * BUFUSBSCALE * BUFOVERSIZE * BUFUSBSCALE2)
+#define VOICE32RX_CAPACITY (16 * BUFOVERSIZE)
+#define VOICE32TX_CAPACITY (16 * BUFOVERSIZE)
 
-#define HDMI48TX_CAPACITY 		(32 * BUFOVERSIZE * BUFUSBSCALE2 * BUFUSBSCALE3)
-#define VOICE16RX_CAPACITY 		(16 * BUFOVERSIZE * BUFUSBSCALE2 * BUFUSBSCALE3)	// прием от кодекв
-#define VOICE16TX_CAPACITY 		(32 * BUFOVERSIZE * BUFUSBSCALE2 * BUFUSBSCALE3)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
-#define VOICE32TX_CAPACITY 		(16 * BUFOVERSIZE * BUFUSBSCALE2 * BUFUSBSCALE3)
-#define AUDIOREC_CAPACITY 		(18 * BUFOVERSIZE * BUFUSBSCALE2 * BUFUSBSCALE3)
-#define SPEEX_CAPACITY 			(5 * BUFOVERSIZE * BUFUSBSCALE2 * BUFUSBSCALE3)
-//#define VOICE16TXMONI_CAPACITY 	(64 * BUFOVERSIZE * BUFUSBSCALE2 * 2)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
-#define VOICE16TXMONI_CAPACITY 	(16 * BUFOVERSIZE * BUFUSBSCALE2 * BUFUSBSCALE3)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
-#define VOICE16REC_CAPACITY		(64 * BUFOVERSIZE * BUFUSBSCALE2 * BUFUSBSCALE3)
-#define UACINRTS192_CAPACITY ((192 / OUTSAMPLES_AUDIO48) * BUFUSBSCALE * BUFOVERSIZE * BUFUSBSCALE2 * BUFUSBSCALE3)
-#define UACINRTS96_CAPACITY ((96 / OUTSAMPLES_AUDIO48) * BUFUSBSCALE * BUFOVERSIZE * BUFUSBSCALE2 * BUFUSBSCALE3)
-#define UACIN48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * BUFUSBSCALE * BUFOVERSIZE * BUFUSBSCALE2 * BUFUSBSCALE3)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
 
 
 #define BTIN48_CAPACITY 8
