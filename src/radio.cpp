@@ -4038,6 +4038,8 @@ typedef struct mikeprop_tag
 	uint8_t reverbdelay;		/* ревербератор - задержка */
 	uint8_t reverbloss;		/* ревербератор - ослабление на возврате */
 #endif /* WITHREVERB */
+	uint8_t equalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
+	uint8_t equalizerparams [BOARD_AFPROC_BANDS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 } __PACKED mikeprop_t;
 #endif /* WITHIF4DSP */
 
@@ -4305,8 +4307,6 @@ struct nvmap {
 		uint8_t	gusb_ft8cn;	/* совместимость VID/PID для работы с программой FT8CN */
 	#endif /* WITHUSBHW && WITHUSBUAC */
 
-	uint8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-	uint8_t gmikeequalizerparams [BOARD_AFPROC_BANDS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 
 //	struct micproc gmicprocs [NMICPROFILES];
 //	uint8_t txaprofile [TXAPROFIG_count];	/* параметры обработки звука перед модулятором */
@@ -6558,152 +6558,165 @@ enum
 		enum { gusb_hs = 0 };
 		uint_fast8_t hamradio_get_ft8cn(void) { return 0; }
 	#endif /* WITHUSBHW && WITHUSBUAC */
-		static int_fast32_t getequalizerbase(void)
-		{
-			return - EQUALIZERBASE;
-		}
-		static uint_fast8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
+		static uint_fast8_t gmikeequalizer [NMICPROFILES];	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 		// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 		static const struct paramdefdef xgmikeequalizer =
 		{
 			QLABEL("MIC EQUA"), 0, RJ_ON,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			0, 1,
-			OFFSETOF(struct nvmap, gmikeequalizer),
-			getselector0, nvramoffs0, valueoffs0,
+			OFFSETOF(struct nvmap, mkps [(0)].equalizer),
+			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			& gmikeequalizer,	// 8-bit value
+			& gmikeequalizer [0],	// 8-bit value
 			getzerobase, /* складывается со смещением и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
 		//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
 		//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
-		static uint_fast8_t gmikeequalizerparams [BOARD_AFPROC_BANDS] =
+		static uint_fast8_t gmikeequalizerparams [BOARD_AFPROC_BANDS] [NMICPROFILES];
+		static void gmikeequalizerparams_fill(void)
 		{
-			- 12 + EQUALIZERBASE, - 12 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE,
-			+ 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE,
-		};
+			static const uint_fast8_t tparams [BOARD_AFPROC_BANDS] =
+			{
+				- 12 + EQUALIZERBASE, - 12 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE,
+				+ 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE, + 0 + EQUALIZERBASE,
+			};
+			unsigned profile;
+			for (profile = 0; profile < NMICPROFILES; ++ profile)
+			{
+				unsigned band;
+				for (band = 0; band < BOARD_AFPROC_BANDS; ++ band)
+				{
+					gmikeequalizerparams [band] [profile] = tparams [band];
+				}
+			}
+		}
+		static int_fast32_t getequalizerbase(void)
+		{
+			return - EQUALIZERBASE;
+		}
 		//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
 		//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
 		//	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
 		static const struct paramdefdef xgmikeequalizer_param0 =
 		{
 			QLABEL3("BAND .10", "Band .10", "BAND .10"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			0, EQUALIZERBASE * 2,	// -12..+12
-			OFFSETOF(struct nvmap, gmikeequalizerparams [0]),
-			getselector0, nvramoffs0, valueoffs0,
+			OFFSETOF(struct nvmap, mkps [(0)].equalizerparams [0]),
+			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			& gmikeequalizerparams [0],
+			& gmikeequalizerparams [0] [0],
 			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgmikeequalizer_param1 =
 		{
 			QLABEL3("BAND .20", "Band .20", "BAND .20"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			0, EQUALIZERBASE * 2,	// -12..+12
-			OFFSETOF(struct nvmap, gmikeequalizerparams [1]),
-			getselector0, nvramoffs0, valueoffs0,
+			OFFSETOF(struct nvmap, mkps [(0)].equalizerparams [1]),
+			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			& gmikeequalizerparams [1],
+			& gmikeequalizerparams [1] [0],
 			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgmikeequalizer_param2 =
 		{
 			QLABEL3("BAND .30", "Band .30", "BAND .30"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			0, EQUALIZERBASE * 2,	// -12..+12
-			OFFSETOF(struct nvmap, gmikeequalizerparams [2]),
-			getselector0, nvramoffs0, valueoffs0,
+			OFFSETOF(struct nvmap, mkps [(0)].equalizerparams [2]),
+			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			& gmikeequalizerparams [2],
+			& gmikeequalizerparams [2] [0],
 			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgmikeequalizer_param3 =
 		{
 			QLABEL3("BAND .60", "Band .60", "BAND .60"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			0, EQUALIZERBASE * 2,	// -12..+12
-			OFFSETOF(struct nvmap, gmikeequalizerparams [3]),
-			getselector0, nvramoffs0, valueoffs0,
+			OFFSETOF(struct nvmap, mkps [(0)].equalizerparams [3]),
+			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			& gmikeequalizerparams [3],
+			& gmikeequalizerparams [3] [0],
 			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgmikeequalizer_param4 =
 		{
 			QLABEL3("BAND 1.0", "Band 1.0", "BAND 1.0"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			0, EQUALIZERBASE * 2,	// -12..+12
-			OFFSETOF(struct nvmap, gmikeequalizerparams [4]),
-			getselector0, nvramoffs0, valueoffs0,
+			OFFSETOF(struct nvmap, mkps [(0)].equalizerparams [4]),
+			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			& gmikeequalizerparams [4],
+			& gmikeequalizerparams [4] [0],
 			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgmikeequalizer_param5 =
 		{
 			QLABEL3("BAND 1.4", "Band 1.4", "BAND 1.4"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			0, EQUALIZERBASE * 2,	// -12..+12
-			OFFSETOF(struct nvmap, gmikeequalizerparams [5]),
-			getselector0, nvramoffs0, valueoffs0,
+			OFFSETOF(struct nvmap, mkps [(0)].equalizerparams [5]),
+			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			& gmikeequalizerparams [5],
+			& gmikeequalizerparams [5] [0],
 			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgmikeequalizer_param6 =
 		{
 			QLABEL3("BAND 1.9", "Band 1.9", "BAND 1.9"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			0, EQUALIZERBASE * 2,	// -12..+12
-			OFFSETOF(struct nvmap, gmikeequalizerparams [6]),
-			getselector0, nvramoffs0, valueoffs0,
+			OFFSETOF(struct nvmap, mkps [(0)].equalizerparams [6]),
+			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			& gmikeequalizerparams [6],
+			& gmikeequalizerparams [6] [0],
 			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgmikeequalizer_param7 =
 		{
 			QLABEL3("BAND 2.4", "Band 2.4", "BAND 2.4"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			0, EQUALIZERBASE * 2,	// -12..+12
-			OFFSETOF(struct nvmap, gmikeequalizerparams [7]),
-			getselector0, nvramoffs0, valueoffs0,
+			OFFSETOF(struct nvmap, mkps [(0)].equalizerparams [7]),
+			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			& gmikeequalizerparams [7],
+			& gmikeequalizerparams [7] [0],
 			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgmikeequalizer_param8 =
 		{
 			QLABEL3("BAND 2.9", "Band 2.9", "BAND 2.9"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			0, EQUALIZERBASE * 2,	// -12..+12
-			OFFSETOF(struct nvmap, gmikeequalizerparams [8]),
-			getselector0, nvramoffs0, valueoffs0,
+			OFFSETOF(struct nvmap, mkps [(0)].equalizerparams [8]),
+			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			& gmikeequalizerparams [8],
+			& gmikeequalizerparams [8] [0],
 			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
 		static const struct paramdefdef xgmikeequalizer_param9 =
 		{
 			QLABEL3("BAND 3.4", "Band 3.4", "BAND 3.4"),  0, RJ_SIGNED,	ISTEP1,
-			ITEM_VALUE,
+			ITEM_VALUE | ITEM_SUBGROUP,
 			0, EQUALIZERBASE * 2,	// -12..+12
-			OFFSETOF(struct nvmap, gmikeequalizerparams [9]),
-			getselector0, nvramoffs0, valueoffs0,
+			OFFSETOF(struct nvmap, mkps [(0)].equalizerparams [9]),
+			getselector_mkpi, nvramoffs_mkpi, valueoffs_mkpi,
 			NULL,
-			& gmikeequalizerparams [9],
+			& gmikeequalizerparams [9] [0],
 			getequalizerbase, /* складывается с -12 и отображается */
 			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 		};
@@ -6715,6 +6728,15 @@ enum
 				& xgmikeequalizer_param6, & xgmikeequalizer_param7, & xgmikeequalizer_param8,
 				& xgmikeequalizer_param9,
 		};
+		static void board_set_mikeequalparams(void)
+		{
+			const int_fast32_t profile = param_val(& xgmikeprofile);
+			unsigned band;
+			for (band = 0; band < BOARD_AFPROC_BANDS; ++ band)
+			{
+				board_set_mikeequalparam(band, param_val(xgtxeqs [band]));
+			}
+		}
 
 		// поскольку в GUI используются "сырые" значения - смещение на EQUALIZERBASE
 		int hamradio_get_af_equalizer_gain_tx(int band)
@@ -14701,7 +14723,7 @@ updateboard_noui(
 				board_set_reverb(! txreq_gettxdata(& txreqst0) && param_val(& xgreverb), param_val(& xgreverbdelay), param_val(& xgreverbloss));	/* ревербератор */
 			#endif /* WITHREVERB */
 				board_set_mikeequal(! txreq_gettxdata(& txreqst0) && param_val(& xgmikeequalizer));	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-				board_set_mikeequalparams(gmikeequalizerparams, ARRAY_SIZE(gmikeequalizerparams));	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
+				board_set_mikeequalparams();	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 			#if WITHELKEY
 				board_set_cwedgetime(param_val(& xgcwedgetime));	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 				board_set_cwssbtx(param_val(& xgcwssbtx));	/* разрешение передачи телеграфа как тона в режиме SSB */
@@ -24693,6 +24715,7 @@ application_initialize(void)
 #endif /* WITHCAT */
 #if WITHIF4DSP
 	mkpsvals_fill();	// заполнение параметров по умолчанию для профилей обработки микрофона
+	gmikeequalizerparams_fill();
 #endif /* WITHIF4DSP */
 #if ! HARDWARE_IGNORENONVRAM
 #if WITHTX

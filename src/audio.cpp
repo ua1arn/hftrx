@@ -8226,23 +8226,12 @@ board_set_mikeequal(uint_fast8_t n)
 //	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
 //	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц
 //	• ВЧ-блок: 1900 Гц, 2400 Гц, 2900 Гц, 3400 Гц (последняя полоса работает, только если включена расширенная передача ESSB).
-void board_set_mikeequalparams(const uint_fast8_t * p, unsigned nbands)
+void board_set_mikeequalparam(unsigned band, int_fast32_t gain)
 {
-	ASSERT(BOARD_AFPROC_BANDS == nbands);
-	// 
-	unsigned i;
-	int changed = 0;
-	for (i = 0; i < nbands; ++ i)
+	ASSERT(ARRAY_SIZE(tx_eq) > band);
+	if (tx_eq [band].gain_db != gain)
 	{
-		const int_fast32_t gain = (int_fast32_t) p [i] - EQUALIZERBASE;
-		if (tx_eq [i].gain_db != gain)
-		{
-			changed = 1;
-			tx_eq [i].gain_db = gain;
-		}
-	}
-	if (changed)
-	{
+		tx_eq [band].gain_db = gain;
 		board_flt1regchanged();		// параметры этой функции используются в audio_setup_lo6();
 	}
 }

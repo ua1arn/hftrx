@@ -512,7 +512,7 @@ void board_set_txaudio(uint_fast8_t v);	// Альтернативные исто
 void board_set_mikeboost20db(uint_fast8_t n);	// Включение предусилителя за микрофоном
 void board_set_afmute(uint_fast8_t n);	// Отключение звука
 void board_set_mikeequal(uint_fast8_t n);	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
-void board_set_mikeequalparams(const uint_fast8_t * p, unsigned nbands);	// Эквалайзер НЧ тракта передатчика
+void board_set_mikeequalparam(unsigned band, int_fast32_t gain);	// Эквалайзер НЧ тракта передатчика
 void board_set_mikeagc(uint_fast8_t n, uint_fast8_t gain);		/* Включение программной АРУ перед модулятором */
 void board_set_mikeacomp(uint_fast8_t v);	/* Compressor */
 void board_set_afresponcerx(int_fast8_t v);	/* изменение тембра звука в канале приемника */
