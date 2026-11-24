@@ -3235,7 +3235,7 @@ void uncommon_trap_handler_16(void * frame) { PRINTF("uncommon_trap_handler_16:\
 void __NO_RETURN VIRQ_Handler(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started) {
+	if (1 || IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started) {
 		//HARDWARE_DEBUG_PUTCHAR('.');
 		IRQ_Handler_GIC();		// Group 1 handler
 		run_notask_curr(frame);	// __NO_RETURN
@@ -3260,7 +3260,7 @@ void __NO_RETURN VIRQ_Handler(void * frame)
 void __NO_RETURN VFIQ_Handler(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started) {
+	if (1 || IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started) {
 		//HARDWARE_DEBUG_PUTCHAR('.');
 		FIQ_Handler_GIC();		// Group 0 handler
 		run_notask_curr(frame);	// __NO_RETURN
@@ -3337,7 +3337,7 @@ void SError_Handler(void * frame)
 void IRQ_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started) {
+	if (1 || IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started) {
 		IRQ_Handler_GIC();			// Group 1 handler
 		run_notask_curr_aarch32(frame);	// __NO_RETURN
 	} else {
@@ -3363,7 +3363,7 @@ void IRQ_Handler_aarch32(void * frame)
 void FIQ_Handler_aarch32(void * frame)
 {
 #if WITHRTOS
-	if (IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started) {
+	if (1 || IRQL_GT(IRQL_GET_RUNNING(), IRQL_SCHEDULER) || threads_not_started) {
 		FIQ_Handler_GIC();			// Group 0 handler
 		run_notask_curr_aarch32(frame);	// __NO_RETURN
 	} else {
