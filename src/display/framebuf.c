@@ -3561,7 +3561,7 @@ void colpip_rectangle(
 	ASSERT((x + w) <= dx);
 	ASSERT(y < dy);
 	ASSERT((y + h) <= dy);
-#if WITHGPUHW && CPUSTYLE_T507 && 0
+#if WITHGPUHW && CPUSTYLE_T507 && 1
 	done = gpu_fillrect(dstinvalidateaddr, dstinvalidatesize, db->stride, db->buffer, dx, dy, x, y, w, h, color, fillmask, alpha);
 #endif
 	if (! done)
