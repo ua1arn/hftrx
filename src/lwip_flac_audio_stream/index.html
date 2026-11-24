@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>lwIP Uncompressed FLAC Live Stream</title>
-    <style>
-        body { font-family: sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
-        audio { width: 100%; margin-top: 16px; }
-    </style>
+  <meta charset="UTF-8">
+  <title>lwIP Live Uncompressed OggFLAC Stream</title>
 </head>
 <body>
-    <h2>Live Uncompressed Audio Stream</h2>
-    <p>Format: 16 kHz, 16-bit, Mono (FLAC Verbatim)</p>
-    <!-- Replace IP address if hosting this HTML file outside the microcontroller -->
-    <audio id="player" controls autoplay src="http://192.168.16.86/stream"></audio>
+  <h2>Live Uncompressed OggFLAC Audio Stream</h2>
+  <audio id="player" controls autoplay>
+    <source src="http://192.168.16.86/stream" type="audio/ogg">
+    Your browser does not support HTML5 audio.
+  </audio>
+
+  <script>
+    const player = document.getElementById('player');
+
+    /* Automatically reconnect if network drops */
+    player.addEventListener('error', () => {
+      setTimeout(() => {
+        player.src = 'http://192.168.16.86/stream?t=' + Date.now();
+        player.play().catch(() => {});
+      }, 1000);
+    });
+  </script>
 </body>
 </html>

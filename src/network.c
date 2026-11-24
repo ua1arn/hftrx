@@ -615,7 +615,7 @@ void network_initialize(void)
 	}
 	if (1)
 	{
-		audio_server_init();
+		audio_server_init(48000, 1, 16);
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 

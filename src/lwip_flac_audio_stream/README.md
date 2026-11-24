@@ -1,13 +1,19 @@
-# lwIP Infinite Uncompressed Audio Stream (FLAC Verbatim)
+# lwIP Configurable Uncompressed OggFLAC Audio Stream Server
 
-This project implements a zero-compression, infinite-duration HTTP audio streamer using **lwIP Raw API** and **HTML5 `<audio>`**.
+Infinite, lossless, uncompressed PCM audio streaming over HTTP using **lwIP Raw API** and **OggFLAC (VERBATIM mode)** with runtime configuration for **sample rate**, **channel count**, and **bit depth**.
 
-## Key Fixes in v3
-1. **FLAC Frame Header (`0x78`)**: Fixed block size code from `0x68` (8-bit size) to `0x78` (16-bit size) so browsers properly parse 512-sample frames (`0x01FF`).
-2. **Default Page (`GET /`)**: Added explicit `Content-Length` and deferred `tcp_close()` until `html_sent_callback` triggers on TCP ACK.
-3. **Socket Cleanup Safety**: Added `tcp_arg(newpcb, newpcb)` so closing a stale/secondary browser connection does not clear `active_client_pcb`.
+## Fix in v8
+- Fixed C string literal formatting (`\r\n` CRLF line endings instead of unescaped newlines) in `http_header` and `response` inside `audio_server.c`.
 
-## Usage
-1. Call `audio_server_init()` after lwIP network interface initialization.
-2. Every 32 ms (when 512 samples are ready at 16 kHz), call `audio_server_push_pcm(pcm_buffer)`.
-   * *Note for FreeRTOS users:* Wrap `audio_server_push_pcm` inside `tcpip_callback()` to keep lwIP Raw API calls thread-safe.
+## Quick Start
+
+1. Initialize the server with your desired format parameters:
+   ```c
+   /* Example: 48 kHz, 2 channels (stereo), 16-bit PCM */
+   audio_server_init(48000, 2, 16);
+   ```
+
+2. Every time your I2S/ADC DMA collects `FLAC_BLOCK_SIZE` (512) frames (samples per channel), pass the interleaved buffer to `audio_server_push_pcm()`:
+   - **8-bit:** `int8_t buf[512 * channels]`
+   - **16-bit:** `int16_t buf[512 * channels]` (e.g. `[L0, R0, L1, R1, ...]`)
+   - **24-bit:** `int32_t buf[512 * channels]` (24-bit signed values in 32-bit words)

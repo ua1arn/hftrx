@@ -2,22 +2,30 @@
 #define AUDIO_SERVER_H
 
 #include <stdint.h>
+#include "flac_stream.h"
 
 /**
- * Initialize the lwIP Raw API HTTP audio streaming server on port 80.
- * Call once after lwIP stack initialization.
+ * Initializes the lwIP HTTP audio streaming server on port 80 with configurable
+ * audio stream parameters. Call once after lwIP stack initialization.
+ *
+ * @param sample_rate_hz   Sample rate in Hz (e.g., 16000, 44100, 48000)
+ * @param channels         Number of audio channels: 1 (mono) to 8
+ * @param bits_per_sample  Sample bit depth: 8, 16, or 24 bits
+ * @return                 0 on success, -1 if parameters are invalid or bind failed
  */
-void audio_server_init(void);
+int audio_server_init(uint32_t sample_rate_hz, uint8_t channels, uint8_t bits_per_sample);
 
 /**
- * Push a buffer of 512 raw 16-bit PCM samples to the connected HTTP client.
- * At 16 kHz sample rate, call this function every 32 ms.
+ * Pushes one block of FLAC_BLOCK_SIZE (512) interleaved PCM samples to the connected client.
  *
- * NOTE: If using an RTOS (e.g. FreeRTOS), invoke this function from the lwIP
- * tcpip_thread context (via tcpip_callback) since lwIP Raw API is not thread-safe.
+ * Expected buffer type & size (FLAC_BLOCK_SIZE * channels samples):
+ * - 8-bit:  const int8_t*  (512 * channels bytes)
+ * - 16-bit: const int16_t* (512 * channels * 2 bytes)
+ * - 24-bit: const int32_t* (512 * channels * 4 bytes, 24-bit signed values in 32-bit words)
  *
- * @param pcm_512_samples Pointer to 512 16-bit signed PCM samples
+ * IMPORTANT: If using FreeRTOS, do NOT call directly from an ISR or external task.
+ * Schedule execution inside the tcpip_thread context via tcpip_callback().
  */
-void audio_server_push_pcm(const int16_t *pcm_512_samples);
+void audio_server_push_pcm(const void *pcm_interleaved_samples);
 
 #endif /* AUDIO_SERVER_H */
