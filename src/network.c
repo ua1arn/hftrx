@@ -565,7 +565,21 @@ static err_t udpapperv_app_init(void)
 	return ERR_OK;
 }
 
+#include "audio.h"
+#include "lwip_flac_audio_stream/audio_server.h"
+#include "lwip_flac_audio_stream/flac_stream.h"
 
+static void audio_32ms(void * ctx)
+{
+	int16_t buff [512];
+	unsigned i;
+	for (i = 0; i < ARRAY_SIZE(buff); ++ i)
+	{
+		FLOAT_t v = get_lout();
+		buff [i] = v * 32767;
+	}
+	audio_server_push_pcm(buff);
+}
 void network_initialize(void)
 {
 	struct netif  *netif = & nic_netif_data;
@@ -590,7 +604,7 @@ void network_initialize(void)
 	  init_htserv();
 #endif /* LWIP_HTTPD_CGI */
 	  //echo_init();
-
+	  audio_server_init();
 	udpapperv_app_init();
 	{
 		static ticker_t ticker;
@@ -598,6 +612,14 @@ void network_initialize(void)
 
 		dpcobj_initialize(& dpcobj, lwip_1s_spool, & nic_netif_data, "lwip_1s_spool");
 		ticker_initialize_user(& ticker, 1000, & dpcobj, "lwip_1s_spool");
+		ticker_add(& ticker);
+	}
+	{
+		static ticker_t ticker;
+		static dpcobj_t dpcobj;
+
+		dpcobj_initialize(& dpcobj, audio_32ms, NULL, "sudio_send");
+		ticker_initialize_user(& ticker, 32, & dpcobj, "sudio_send");
 		ticker_add(& ticker);
 	}
 }
