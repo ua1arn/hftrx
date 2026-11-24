@@ -1,14 +1,18 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>HTML5 Live Uncompressed FLAC Stream</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lwIP Uncompressed FLAC Live Stream</title>
+    <style>
+        body { font-family: sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
+        audio { width: 100%; margin-top: 16px; }
+    </style>
 </head>
 <body>
-  <h3>Прямой эфир с микроконтроллера (16 кГц, 16 бит, Моно, без сжатия)</h3>
-  <audio controls autoplay>
-    <source src="/stream" type="audio/flac">
-    Ваш браузер не поддерживает воспроизведение FLAC.
-  </audio>
+    <h2>Live Uncompressed Audio Stream</h2>
+    <p>Format: 16 kHz, 16-bit, Mono (FLAC Verbatim)</p>
+    <!-- Replace IP address if hosting this HTML file outside the microcontroller -->
+    <audio id="player" controls autoplay src="http://192.168.16.86/stream"></audio>
 </body>
 </html>

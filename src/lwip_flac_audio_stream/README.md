@@ -1,16 +1,13 @@
-# Бесконечный аудиопоток без компрессии (Uncompressed FLAC) на базе lwIP
+# lwIP Infinite Uncompressed Audio Stream (FLAC Verbatim)
 
-Архив содержит исходные файлы для организации бесконечной передачи несжатого звука (16 кГц, 16 бит, моно) с микроконтроллера в HTML5-браузер без ограничения WAV в 4 ГБ.
+This project implements a zero-compression, infinite-duration HTTP audio streamer using **lwIP Raw API** and **HTML5 `<audio>`**.
 
-## Состав архива
-- `flac_stream.h` / `flac_stream.c` — упаковщик сырых 16-битных PCM-семплов в фреймы FLAC режима `VERBATIM` (без сжатия) с расчетом CRC-8 и CRC-16.
-- `audio_server.h` / `audio_server.c` — HTTP-сервер на базе lwIP Raw API, отдающий бесконечный поток по адресу `/stream` и веб-страницу с плеером по `/`.
-- `index.html` — пример HTML5-клиента со стандартным тегом `<audio>`.
-- `lwipopts_example.h` — рекомендуемые размеры TCP-буферов для `lwipopts.h`.
+## Key Fixes in v3
+1. **FLAC Frame Header (`0x78`)**: Fixed block size code from `0x68` (8-bit size) to `0x78` (16-bit size) so browsers properly parse 512-sample frames (`0x01FF`).
+2. **Default Page (`GET /`)**: Added explicit `Content-Length` and deferred `tcp_close()` until `html_sent_callback` triggers on TCP ACK.
+3. **Socket Cleanup Safety**: Added `tcp_arg(newpcb, newpcb)` so closing a stale/secondary browser connection does not clear `active_client_pcb`.
 
-## Порядок интеграции
-1. Добавьте `flac_stream.c` и `audio_server.c` в ваш проект.
-2. Увеличьте `TCP_SND_BUF` и `TCP_SND_QUEUELEN` в `lwipopts.h` согласно `lwipopts_example.h`.
-3. После инициализации сетевого стека lwIP вызовите `audio_server_init()`.
-4. Каждые 32 мс (по мере накопления 512 семплов с I2S или АЦП) вызывайте `audio_server_push_pcm(buffer)`.
-   *Примечание: при использовании FreeRTOS вызов `audio_server_push_pcm()` необходимо выполнять в контексте задачи `tcpip_thread` через `tcpip_callback()`.*
+## Usage
+1. Call `audio_server_init()` after lwIP network interface initialization.
+2. Every 32 ms (when 512 samples are ready at 16 kHz), call `audio_server_push_pcm(pcm_buffer)`.
+   * *Note for FreeRTOS users:* Wrap `audio_server_push_pcm` inside `tcpip_callback()` to keep lwIP Raw API calls thread-safe.

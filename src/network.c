@@ -571,7 +571,7 @@ static err_t udpapperv_app_init(void)
 
 static void audio_32ms(void * ctx)
 {
-	int16_t buff [512];
+	int16_t buff [FLAC_BLOCK_SIZE];
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(buff); ++ i)
 	{
@@ -621,7 +621,7 @@ void network_initialize(void)
 
 		dpcobj_initialize(& dpcobj, audio_32ms, NULL, "sudio_send");
 		ticker_initialize_user(& ticker, 32, & dpcobj, "sudio_send");
-		//ticker_add(& ticker);
+		ticker_add(& ticker);
 	}
 }
 

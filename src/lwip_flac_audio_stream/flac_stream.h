@@ -4,21 +4,21 @@
 #include <stdint.h>
 #include <stddef.h>
 
-// Размер одного блока (рекомендуется 512, чтобы фрейм целиком влезал в один TCP-пакет)
+/* Block size in samples (512 samples * 2 bytes + header fits within standard 1460-byte TCP MSS) */
 #define FLAC_BLOCK_SIZE 512
 
-// Глобальный 42-байтный заголовок потока (16 кГц, 16 бит, моно, бесконечная длина)
+/* Global 42-byte FLAC stream header: 16 kHz, 16-bit, Mono, infinite stream length (0 samples) */
 extern const uint8_t FLAC_STREAM_HEADER[42];
 
 /**
- * Упаковывает 512 сырых 16-битных семплов (Little-Endian, как обычно отдают АЦП/I2S)
- * в готовый FLAC-фрейм (режим VERBATIM - без сжатия).
- * 
- * @param pcm_in      Указатель на массив из FLAC_BLOCK_SIZE (512) семплов
- * @param frame_num   Порядковый номер фрейма (инкрементируется с каждым пакетом: 0, 1, 2...)
- * @param out_buf     Выходной буфер (размер должен быть не менее FLAC_BLOCK_SIZE * 2 + 16 байт)
- * @return            Итоговый размер сформированного FLAC-фрейма в байтах
+ * Encodes 512 raw 16-bit signed PCM samples (Little-Endian) into an uncompressed
+ * FLAC frame (SUBFRAME_VERBATIM) with valid CRC-8 and CRC-16 checksums.
+ *
+ * @param pcm_in      Pointer to an array of FLAC_BLOCK_SIZE (512) 16-bit samples
+ * @param frame_num   Sequential frame counter (0, 1, 2, ...)
+ * @param out_buf     Output buffer (must be at least FLAC_BLOCK_SIZE * 2 + 20 bytes)
+ * @return            Total size of the encoded FLAC frame in bytes
  */
 size_t flac_encode_verbatim_frame(const int16_t *pcm_in, uint32_t frame_num, uint8_t *out_buf);
 
-#endif // FLAC_STREAM_H
+#endif /* FLAC_STREAM_H */
