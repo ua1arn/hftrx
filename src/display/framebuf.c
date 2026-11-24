@@ -32,12 +32,12 @@
 
 #endif /* WITHLVGL */
 
-static COLORPIP_T softmixalpha(COLORPIP_T oldpixel, COLORPIP_T newpixel, unsigned alpha, unsigned oldalpha)
+__STATIC_FORCEINLINE COLORPIP_T softmixalpha(COLORPIP_T oldpixel, uint16_t r, uint16_t g, uint16_t b, uint8_t oldalpha)
 {
 	return TFTRGB(
-			(oldalpha * COLORPIP_R(oldpixel) + alpha * COLORPIP_R(newpixel)) / 255,
-			(oldalpha * COLORPIP_G(oldpixel) + alpha * COLORPIP_G(newpixel)) / 255,
-			(oldalpha * COLORPIP_B(oldpixel) + alpha * COLORPIP_B(newpixel)) / 255
+			(oldalpha * COLORPIP_R(oldpixel) + r) / 255,
+			(oldalpha * COLORPIP_G(oldpixel) + g) / 255,
+			(oldalpha * COLORPIP_B(oldpixel) + b) / 255
 	);
 }
 
@@ -61,7 +61,10 @@ static void soft_fillrect(
 
 	if (use_blend)	// alpha со старым содержимым буферв
 	{
-		const unsigned oldalpha = 255 - alpha;
+		const uint8_t oldalpha = 255 - alpha;
+		const uint16_t r = alpha * COLORPIP_R(color);
+		const uint16_t g = alpha * COLORPIP_G(color);
+		const uint16_t b = alpha * COLORPIP_B(color);
 		const unsigned t = GXADJ(dx) - w;
 		while (h --)
 		{
@@ -71,13 +74,21 @@ static void soft_fillrect(
 				switch (n)
 				{
 				default:
-					* buffer = softmixalpha(* buffer, color, alpha, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
+					* buffer = softmixalpha(* buffer, r, g, b, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
+				case 7:
+					* buffer = softmixalpha(* buffer, r, g, b, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
+				case 6:
+					* buffer = softmixalpha(* buffer, r, g, b, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
+				case 5:
+					* buffer = softmixalpha(* buffer, r, g, b, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
+				case 4:
+					* buffer = softmixalpha(* buffer, r, g, b, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
 				case 3:
-					* buffer = softmixalpha(* buffer, color, alpha, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
+					* buffer = softmixalpha(* buffer, r, g, b, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
 				case 2:
-					* buffer = softmixalpha(* buffer, color, alpha, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
+					* buffer = softmixalpha(* buffer, r, g, b, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
 				case 1:
-					* buffer = softmixalpha(* buffer, color, alpha, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
+					* buffer = softmixalpha(* buffer, r, g, b, oldalpha); ++ buffer; -- n; // @suppress("No break at end of case")
 				}
 			}
 			buffer += t;
