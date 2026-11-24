@@ -1,3 +1,4 @@
+#include "hardware.h"
 #include "flac_stream.h"
 
 // Заголовок: 'fLaC' + STREAMINFO (16000 Гц, 1 канал, 16 бит, 0 семплов = бесконечность)

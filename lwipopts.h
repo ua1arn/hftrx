@@ -229,6 +229,11 @@ void board_update_time(uint32_t sec);
 //#define TCP_MSS                         (1500 /*mtu*/ - 20 /*iphdr*/ - 20 /*tcphhr*/)
 //#define TCP_SND_BUF                     (2 * TCP_MSS)
 
+/* audioserver Рекомендуемые настройки для lwipopts.h */
+#define TCP_MSS                 1460
+#define TCP_SND_BUF             (6 * TCP_MSS)
+#define TCP_SND_QUEUELEN        (2 * TCP_SND_BUF / TCP_MSS)
+
 #define MEMP_SEPARATE_POOLS 		1
 #define MEMP_NUM_FRAG_PBUF 			256
 #define IP_OPTIONS_ALLOWED 			0
@@ -246,9 +251,9 @@ void board_update_time(uint32_t sec);
 #define LWIP_ICMP                   1
 #define LWIP_RAW                    1
 #define TCP_WND                     (8 * TCP_MSS)
-#define TCP_MSS                     1460
-#define TCP_SND_BUF                 (8 * TCP_MSS)
-#define TCP_SND_QUEUELEN            ((4 * (TCP_SND_BUF) + (TCP_MSS - 1)) / (TCP_MSS))
+//#define TCP_MSS                     1460
+//#define TCP_SND_BUF                 (8 * TCP_MSS)
+//#define TCP_SND_QUEUELEN            ((4 * (TCP_SND_BUF) + (TCP_MSS - 1)) / (TCP_MSS))
 #define LWIP_NETIF_STATUS_CALLBACK  1
 #define LWIP_NETIF_LINK_CALLBACK    1
 #define LWIP_NETIF_HOSTNAME         1

@@ -1,3 +1,4 @@
+#include "hardware.h"
 #include "audio_server.h"
 #include "flac_stream.h"
 #include "lwip/tcp.h"
@@ -32,8 +33,8 @@ static void close_audio_client(struct tcp_pcb *tpcb) {
 static err_t audio_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err) {
     (void)arg;
     (void)err;
-
     if (p == NULL) {
+        TP();
         // Клиент закрыл вкладку или нажал стоп
         close_audio_client(tpcb);
         return ERR_OK;
@@ -41,6 +42,7 @@ static err_t audio_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
 
     // Проверяем, что пришел запрос GET /stream
     if (strncmp((char *)p->payload, "GET /stream", 11) == 0) {
+        TP();
         // Если уже был подключен другой клиент — отключаем его
         if (active_client_pcb != NULL && active_client_pcb != tpcb) {
             close_audio_client(active_client_pcb);
@@ -62,7 +64,8 @@ static err_t audio_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
         tcp_write(tpcb, FLAC_STREAM_HEADER, sizeof(FLAC_STREAM_HEADER), TCP_WRITE_FLAG_COPY);
         tcp_output(tpcb);
     } else {
-        // На любой другой запрос (например, GET /) отдаем простую HTML-страницу с плеером
+        TP();
+       // На любой другой запрос (например, GET /) отдаем простую HTML-страницу с плеером
         const char *html_page = 
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: text/html; charset=utf-8\r\n\r\n"
@@ -97,7 +100,7 @@ static err_t audio_accept_callback(void *arg, struct tcp_pcb *newpcb, err_t err)
 void audio_server_init(void) {
     struct tcp_pcb *pcb = tcp_new();
     if (pcb != NULL) {
-        if (tcp_bind(pcb, IP_ADDR_ANY, 8080) == ERR_OK) {
+        if (tcp_bind(pcb, IP_ADDR_ANY, 80) == ERR_OK) {
             pcb = tcp_listen(pcb);
             tcp_accept(pcb, audio_accept_callback);
         }

@@ -601,10 +601,9 @@ void network_initialize(void)
 
 #if LWIP_HTTPD_CGI
 	  PRINTF("network_initialize: start HTTP server\n");
-	  init_htserv();
+	  //init_htserv();
 #endif /* LWIP_HTTPD_CGI */
 	  //echo_init();
-	  audio_server_init();
 	udpapperv_app_init();
 	{
 		static ticker_t ticker;
@@ -614,13 +613,15 @@ void network_initialize(void)
 		ticker_initialize_user(& ticker, 1000, & dpcobj, "lwip_1s_spool");
 		ticker_add(& ticker);
 	}
+	if (1)
 	{
+		audio_server_init();
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 
 		dpcobj_initialize(& dpcobj, audio_32ms, NULL, "sudio_send");
 		ticker_initialize_user(& ticker, 32, & dpcobj, "sudio_send");
-		ticker_add(& ticker);
+		//ticker_add(& ticker);
 	}
 }
 
