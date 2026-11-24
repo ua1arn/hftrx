@@ -620,7 +620,7 @@ void network_initialize(void)
 		static dpcobj_t dpcobj;
 
 		dpcobj_initialize(& dpcobj, audio_32ms, NULL, "sudio_send");
-		ticker_initialize_user(& ticker, 32, & dpcobj, "sudio_send");
+		ticker_initialize_user(& ticker, 10, & dpcobj, "sudio_send");
 		ticker_add(& ticker);
 	}
 }
