@@ -421,6 +421,21 @@
 	& xgmike_dig,
 	& xgmike_am,
 	& xgmike_fm,
+#endif /* WITHTX && WITHIF4DSP */
+/* group name +++ */
+	(const struct paramdefdef [1]) {
+		QLABEL3("MIKEPROC", "Mike Proc", "MIKE PROC"), 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		OFFSETOF(struct nvmap, ggrpmikeeq),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		NULL,
+		NULL,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	},
+/* group name --- */
+#if WITHTX && WITHIF4DSP
 	& xgmikeprofile,	// выбраный профиль микрофона
 	& xgmikeagc,
 	& xgmikeagcgain,
@@ -438,19 +453,6 @@
 	& xgreverbdelay,
 	& xgreverbloss,
 #endif /* WITHREVERB */
-/* group name +++ */
-	(const struct paramdefdef [1]) {
-		QLABEL3("MIKE EQ", "Mike EQ", "MIKE EQ"), 0, 0, 0,
-		ITEM_GROUP,
-		0, 0,
-		OFFSETOF(struct nvmap, ggrpmikeeq),
-		getselector0, nvramoffs0, valueoffs0,
-		NULL,
-		NULL,
-		NULL,
-		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
-	},
-/* group name --- */
 	& xgmikeequalizer,	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 	//	• НЧ-блок: 100 Гц, 200 Гц, 300 Гц
 	//	• СЧ-блок: 600 Гц, 1000 Гц (1 кГц), 1400 Гц

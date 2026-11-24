@@ -11232,7 +11232,7 @@ static const struct paramdefdef * enc2menus [] =
 	& xgmik1level,
 #endif /* ITHMIC1LEVEL */
 #if WITHIF4DSP
-	& xgmikehclip,
+	& xgmikeprofile,	// выбраный профиль микрофона
 #endif /* WITHIF4DSP */
 #endif /* WITHTX */
 #if WITHNOTCHFREQ && ! WITHPOTNOTCH
