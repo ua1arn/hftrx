@@ -268,6 +268,7 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define TARGETCPU_OVRT (1u << 0)		// CPU #0
 
 	#define LCLSPIN_LOCK(p) do { (void) p; } while (0)
+	#define LCLSPIN_LOCK_YIELD(p) do { (void) p; } while (0)
 	#define LCLSPIN_TRAYLOCK(p) ((void) p, 1)
 	#define LCLSPIN_UNLOCK(p) do { (void) p; } while (0)
 	#define SPIN_LOCK2(p, f, l) do { (void) p; } while (0)
