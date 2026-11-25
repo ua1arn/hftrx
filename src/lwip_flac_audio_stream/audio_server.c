@@ -1,3 +1,6 @@
+#include "hardware.h"
+#include "clocks.h"
+
 #include "audio_server.h"
 #include "webm_flac_stream.h"
 #include "lwip/tcp.h"
@@ -10,6 +13,7 @@ static struct tcp_pcb *active_client_pcb = NULL;
 /* Sequential frame counter and total samples transmitted since client connection */
 static uint32_t current_frame_num = 0;
 static uint64_t total_samples_sent = 0;
+static hwtimcount_t ts_connetat;
 
 /* Active audio configuration (defaults to 48 kHz, 1 channel, 16-bit) */
 static flac_audio_config_t server_audio_cfg = {48000, 1, 16};
@@ -69,6 +73,8 @@ static err_t audio_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
         active_client_pcb = tpcb;
         current_frame_num = 0;
         total_samples_sent = 0;
+
+        ts_connetat = timestamp_getticks();
 
         /* HTTP/1.1 streaming response without Content-Length and with Accept-Ranges disabled */
         static const char http_header[] =
@@ -147,8 +153,6 @@ void audio_server_init(uint32_t sample_rate_hz, uint8_t channels, uint8_t bits_p
     }
 }
 
-#include "clocks.h"
-
 void audio_server_push_pcm(const void *pcm_480_samples_per_ch) {
     if (active_client_pcb == NULL || server_audio_cfg.sample_rate_hz == 0) {
         return;
@@ -156,7 +160,7 @@ void audio_server_push_pcm(const void *pcm_480_samples_per_ch) {
 
     /* Compute exact cluster timestamp in milliseconds from total transmitted samples */
     //uint32_t timestamp_ms = (uint32_t)((total_samples_sent * 1000ULL) / server_audio_cfg.sample_rate_hz);
-    uint32_t timestamp_ms = timestamp_getticks() / (timestamp_getfreq() / 1000);
+    uint32_t timestamp_ms = (timestamp_getmask() & (timestamp_getticks() - ts_connetat)) / (timestamp_getfreq() / 1000);
 
     size_t cluster_len = webm_flac_encode_cluster(&server_audio_cfg, pcm_480_samples_per_ch,
                                                   current_frame_num, timestamp_ms, webm_cluster_buf);
