@@ -1,3 +1,5 @@
+#include "hardware.h"
+#if WITHLWIP
 #include "audio_server.h"
 #include "webm_flac_stream.h"
 #include "lwip/tcp.h"
@@ -228,3 +230,6 @@ void audio_server_push_pcm(const void *pcm_480_samples_per_ch) {
     }
 }
 #endif
+
+#endif
+

@@ -1,4 +1,5 @@
 #include "hardware.h"
+#if WITHLWIP
 #include "clocks.h"
 
 #include "audio_server.h"
@@ -257,3 +258,4 @@ void audio_server_push_pcm(const void *pcm_480_samples_per_ch) {
         }
     }
 }
+#endif
