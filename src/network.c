@@ -577,6 +577,7 @@ static void audio_32ms(void * ctx)
 	{
 		FLOAT_t v = get_lout();
 		get_lout(), get_lout(), get_lout();
+		get_lout(), get_lout(), get_lout(), get_lout();
 		buff [i] = v * 32767;
 	}
 	audio_server_push_pcm(buff);
@@ -616,12 +617,12 @@ void network_initialize(void)
 	}
 	if (1)
 	{
-		audio_server_init(12000, 1, 16);
+		audio_server_init(6000, 1, 16);
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 
 		dpcobj_initialize(& dpcobj, audio_32ms, NULL, "sudio_send");
-		ticker_initialize_user(& ticker, 40, & dpcobj, "sudio_send");
+		ticker_initialize_user(& ticker, 80, & dpcobj, "sudio_send");
 		ticker_add(& ticker);
 	}
 }

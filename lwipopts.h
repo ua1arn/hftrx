@@ -117,10 +117,6 @@ void board_update_time(uint32_t sec);
 #define LINK_STATS                      0
 #define LWIP_CHKSUM_ALGORITHM           3
 
-/* Debug settings */
-#define LWIP_DBG_MIN_LEVEL              LWIP_DBG_LEVEL_ALL
-#define LWIP_DBG_TYPES_ON               (LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
-#define PBUF_DEBUG                      LWIP_DBG_ON
 
 /**
  * SYS_LIGHTWEIGHT_PROT==1: if you want inter-task protection for certain
@@ -189,15 +185,19 @@ extern uint8_t LWIP_RAM_HEAP_POINTER[MEM_SIZE];
 #endif /* CPUSTYLE_ALLWINNER */
 
 
-#define LWIP_DEBUG                     1
+//#define LWIP_DEBUG                     1
 /* Debug settings */
 #define LWIP_DBG_MIN_LEVEL              LWIP_DBG_LEVEL_ALL
-#define LWIP_DBG_TYPES_ON               (LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
+//#define LWIP_DBG_TYPES_ON               (LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
+/* Debug settings */
+#define LWIP_DBG_MIN_LEVEL              LWIP_DBG_LEVEL_ALL
+//#define LWIP_DBG_TYPES_ON               (LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
+#define LWIP_DBG_TYPES_ON           	(LWIP_DBG_ON|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH|LWIP_DBG_HALT)
 
 //#define HTTPD_DEBUG           LWIP_DBG_ON
 //#define ETHARP_DEBUG           LWIP_DBG_ON
 //#define NETIF_DEBUG            LWIP_DBG_ON
-//#define PBUF_DEBUG                      LWIP_DBG_ON
+#define PBUF_DEBUG               LWIP_DBG_ON
 //#define API_LIB_DEBUG          LWIP_DBG_ON
 //#define API_MSG_DEBUG          LWIP_DBG_ON
 //#define SOCKETS_DEBUG          LWIP_DBG_ON
