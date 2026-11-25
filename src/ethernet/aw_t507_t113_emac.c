@@ -1194,7 +1194,7 @@ void nic_initialize(struct netif *netif)
 	if (1)
 	{
 //		static ticker_t ticker_rx;
-//		static ticker_t ticker_tx;
+		static ticker_t ticker_tx;
 
 		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 		dpcobj_initialize(& dpcrxirq, emac_rxhandler, netif, "dpcrxirq");
@@ -1204,8 +1204,8 @@ void nic_initialize(struct netif *netif)
 		//ticker_initialize_user(& ticker_rx, 250, & dpcrxirq, "spool_nic_rx");
 		//ticker_add(& ticker_rx);
 
-		//ticker_initialize_user(& ticker_tx, 250, & dpctxirq, "spool_nic_tx");	// требуется чтобы не прекращалась передаяа
-		//ticker_add(& ticker_tx);
+		ticker_initialize_user(& ticker_tx, 250, & dpctxirq, "spool_nic_tx");	// требуется чтобы не прекращалась передаяа
+		ticker_add(& ticker_tx);
 
 		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 
