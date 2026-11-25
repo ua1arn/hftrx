@@ -576,7 +576,7 @@ static void audio_32ms(void * ctx)
 	for (i = 0; i < ARRAY_SIZE(buff); ++ i)
 	{
 		FLOAT_t v = get_lout();
-		//get_lout(), get_lout(), get_lout();
+		get_lout(), get_lout(), get_lout();
 		buff [i] = v * 32767;
 	}
 	audio_server_push_pcm(buff);
