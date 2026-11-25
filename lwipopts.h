@@ -216,7 +216,7 @@ void board_update_time(uint32_t sec);
 #define ARP_TABLE_SIZE 				100
 #define ARP_QUEUEING 				1
 
-#define NO_SYS                          0
+#define NO_SYS                          1
 #define LWIP_PROVIDE_ERRNO 1
 
 #define LWIP_RAW                        1
