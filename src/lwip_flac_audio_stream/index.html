@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>lwIP Live Uncompressed OggFLAC Stream</title>
+  <meta charset="utf-8">
+  <title>Live WebM FLAC Stream</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    audio { width: 100%; max-width: 480px; margin-top: 1rem; }
+  </style>
 </head>
 <body>
-  <h2>Live Uncompressed OggFLAC Audio Stream</h2>
-  <audio id="player" controls autoplay>
-    <source src="http://192.168.16.86/stream" type="audio/ogg">
-    Your browser does not support HTML5 audio.
-  </audio>
+  <h3>Live Uncompressed WebM-FLAC Audio Stream</h3>
+  <audio id="player" controls autoplay src="http://192.168.16.86/stream"></audio>
 
   <script>
     const player = document.getElementById('player');
-
-    /* Automatically reconnect if network drops */
+    /* Automatically reconnect if network drops temporarily */
     player.addEventListener('error', () => {
       setTimeout(() => {
         player.src = 'http://192.168.16.86/stream?t=' + Date.now();
