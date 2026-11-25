@@ -2608,6 +2608,7 @@ static unsigned getcbf_dmabufferbtin44p1(FLOAT_t * b, FLOAT_t * dest)
 // Функции обмена звуком черз Bluetooth
 // Resampling к/от 44.1 делается прозрачно
 
+// Эта функция получает вудиосэмплы на 48k
 uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest)
 {
 	// auto-select by not-empty source
@@ -2640,6 +2641,7 @@ static unsigned putcbf_dmabufferbtio48(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1, in
 //	return 2;
 //}
 
+// функция вызываетя с частотой 48k
 void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1)
 {
 	btin48k.savedata(ch0, ch1, 0, putcbf_dmabufferbtio48);
