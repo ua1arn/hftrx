@@ -567,11 +567,12 @@ static err_t udpapperv_app_init(void)
 
 #include "audio.h"
 #include "lwip_flac_audio_stream/audio_server.h"
+#include "lwip_flac_audio_stream/ws_audio_server.h"
 #include "lwip_flac_audio_stream/webm_pcm_stream.h"
 
 static adapter_t audionet_out;
 
-static void audio_32ms(void * ctx)
+static void audio_60ms(void * ctx)
 {
 	int16_t buff [WEBM_BLOCK_SAMPLES * 2];
 	unsigned i;
@@ -588,7 +589,7 @@ static void audio_32ms(void * ctx)
 			buff [i + 1] = adpt_output(& audionet_out, r);
 		}
 	}
-	audio_server_push_pcm(buff);
+	ws_audio_server_push_pcm(buff);
 }
 void network_initialize(void)
 {
@@ -627,11 +628,12 @@ void network_initialize(void)
 	}
 	if (1)
 	{
-		audio_server_init(8000, 2, 16);
+		//audio_server_init(8000, 2, 16);
+		ws_audio_server_init(8000, 2);
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 
-		dpcobj_initialize(& dpcobj, audio_32ms, NULL, "sudio_send");
+		dpcobj_initialize(& dpcobj, audio_60ms, NULL, "sudio_send");
 		ticker_initialize_user(& ticker, 60, & dpcobj, "sudio_send");
 		ticker_add(& ticker);
 	}
