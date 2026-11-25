@@ -3447,7 +3447,7 @@ static int_fast32_t getzerobase(void)
 		#if WITHRTTY
 			{ 4, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, SUBMODE_RTTY, },
 		#else /* WITHRTTY */
-		//	{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },
+			{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },
 		#endif /* WITHRTTY */
 		};
 
