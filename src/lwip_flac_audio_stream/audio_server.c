@@ -147,13 +147,15 @@ static err_t audio_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
         char html_body[448];
         int body_len = snprintf(html_body, sizeof html_body,
             "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Live WebM FLAC</title></head><body>"
-            "<h3>Live Uncompressed WebM FLAC (%lu Hz, %u ch, %u-bit)</h3>"
+			"<h3>Live Uncompressed WebM FLAC (%lu Hz, %u ch, %u-bit)</h3>"
+			"<h3>RX Frequency: (%u Hz)</h3>"
             "<p>Listeners: %u / %u</p>"
             "<audio controls autoplay src='/stream'></audio>"
             "</body></html>",
             (unsigned long)server_audio_cfg.sample_rate_hz,
             (unsigned int)server_audio_cfg.channels,
             (unsigned int)server_audio_cfg.bits_per_sample,
+			(unsigned) hamradio_get_freq_rx(),
             active_count, (unsigned int)MAX_AUDIO_CLIENTS);
 
         char response[704];
