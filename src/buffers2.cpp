@@ -29,6 +29,7 @@
 #define RAMNCRX RAMNC	// память буферов приёма откуда-либо
 #define RAMNCTX RAMNC	// память буферов передачи куда-либо
 
+// Adaptive Jitter Buffer / Sample Slipping
 // Одна из задач resampler - привести частоту кодека к требуемой для 48 кГц (lrckf=24576000, (clk=24571428)) = 0.99981396484375
 // Для USB - исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 static const unsigned SKIPSAMPLES_HDMI = 2000; // раз в 50 сэмплов добавление/удаление одного сэмпла
@@ -36,16 +37,16 @@ static const unsigned SKIPSAMPLES_BT = 50; // раз в 50 сэмплов доб
 static const unsigned SKIPSAMPLES_USB = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
 static const unsigned SKIPSAMPLES_ETH = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
 
-static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
+static const unsigned SKIPSAMPLES_NOSLIPPING = 5;	//
 #define VOICE16RX_CAPACITY 		(16 * BUFOVERSIZE)	// прием от кодекв
 #define VOICE16TX_CAPACITY 		(32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
 #define VOICE16TXMONI_CAPACITY 	(64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 #define VOICE16REC_CAPACITY 	(64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 #define HDMI48TX_CAPACITY 		(32 * BUFOVERSIZE)
 
-#define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
-#define VOICE16TX_RESAMPLING 1	// передача в кодек - требуется ли resampling
-#define HDMI48TX_RESAMPLING 1
+#define VOICE16RX_SLIPPING 1	// прием от кодека - требуется ли sample slipping
+#define VOICE16TX_SLIPPING 1	// передача в кодек - требуется ли sample slipping
+#define HDMI48TX_SLIPPING 1
 
 #define UACINRTS192_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
 #define UACINRTS96_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
@@ -440,7 +441,7 @@ struct buffitem
 };
 
 // HASCHECKREADY - функция get_readybuffer может вернуть false
-template <typename buffitem_t, int hasresample, int HASCHECKREADY, int SKIPSAMPLES>
+template <typename buffitem_t, int needsampleslipping, int HASCHECKREADY, int SKIPSAMPLES>
 class blists
 {
 	typedef typeof(buffitem_t::v) element_t;
@@ -494,9 +495,9 @@ public:
 		wbdeleted(0),
 		wbgatix(ARRAY_SIZE(wbgatsize)),	// состояние - нет ничего для формирования нового блокв
 		workbuff(NULL),
-		MINMLEVEL(hasresample ? 1 * capacity / 4 : 0),
-		NORMLEVEL(hasresample ? 2 * capacity / 4 : capacity / 4),	// без resample используется только этот параметр
-		MAXLEVEL(hasresample ? 3 * capacity / 4 : 0),
+		MINMLEVEL(needsampleslipping ? 1 * capacity / 4 : 0),
+		NORMLEVEL(needsampleslipping ? 2 * capacity / 4 : capacity / 4),	// без sampleslipping используется только этот параметр
+		MAXLEVEL(needsampleslipping ? 3 * capacity / 4 : 0),
 		outready(false)	// накоплено нужное количество буферов для старта
 	{
 		InitializeListHead(& freelist);
@@ -664,7 +665,7 @@ public:
 		const int streadycount = readycount;
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 
-		if (hasresample)
+		if (needsampleslipping)
 		{
 			const unsigned wbgss = element_t::ss * element_t::nch;	// кодчиество байтов одного сэмпла на вссе каналы
 			const unsigned total = get_datasize();	// полный размер буфера
@@ -762,7 +763,7 @@ public:
 		const int r = readycount;
 		const int f = freecount;
 		PRINTF(" %s:e=%d,E=%d,y=%d,f=%d,%uk/%uk", name, errallocate, errforced, r, f, (unsigned) ((fin + 500) / 1000), (unsigned) ((fout + 500) / 1000));
-		if (hasresample)
+		if (needsampleslipping)
 		{
 			PRINTF("+%u,-%u", wbadded, wbdeleted);
 		}
@@ -779,7 +780,7 @@ public:
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, (unsigned) freecount);
 		PRINTF(" %s:e=%d,y=%d,f=%d,%uH/%uH", name, errallocate, (unsigned) readycount, (unsigned) freecount, (unsigned) fin, (unsigned) fout);
-		if (hasresample)
+		if (needsampleslipping)
 		{
 			PRINTF("+%u,-%u", wbadded, wbdeleted);
 		}
@@ -795,7 +796,7 @@ public:
 	}
 
 	///////////
-	/// resampler
+	/// Adaptive Jitter Buffer / Sample Slipping
 
 	// Гарантированно получене полного буфера или отказ
 	// исполнение команд на добавление или удаление одного семплв
@@ -877,10 +878,10 @@ public:
 	}
 };
 
-template <typename sample_t, typename element_t, int hasresample, int HASCHECKREADY, int skipsamples>
-class dmahandle: public blists<element_t, hasresample, HASCHECKREADY, skipsamples>
+template <typename sample_t, typename element_t, int needsampleslipping, int HASCHECKREADY, int skipsamples>
+class dmahandle: public blists<element_t, needsampleslipping, HASCHECKREADY, skipsamples>
 {
-	typedef blists<element_t, hasresample, HASCHECKREADY, skipsamples> parent_t;
+	typedef blists<element_t, needsampleslipping, HASCHECKREADY, skipsamples> parent_t;
 	typedef typeof (element_t::v) wel_t;
 	typedef typeof (wel_t::buff [0]) rawsample_t;
 	wel_t * wb;
@@ -957,7 +958,7 @@ public:
 		return 1;
 	}
 
-	uint_fast8_t fetchdata_resample(sample_t * dest, unsigned (* getcbf)(typeof (wel_t::buff [0]) * b, sample_t * dest), bool (fillresampled)(sample_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch), unsigned nsrc, unsigned nsrcch)
+	uint_fast8_t fetchdata_sampleslipping(sample_t * dest, unsigned (* getcbf)(typeof (wel_t::buff [0]) * b, sample_t * dest), bool (fillslipping)(sample_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch), unsigned nsrc, unsigned nsrcch)
 	{
 		if (rb == NULL)
 		{
@@ -966,7 +967,7 @@ public:
 				//ASSERT3(0, __FILE__, __LINE__, name);
 				return 0;	// данных на входе просто нет
 			}
-			if (! fillresampled(rb->buff, ARRAY_SIZE(rb->buff), rb->nch, nsrc, nsrcch))
+			if (! fillslipping(rb->buff, ARRAY_SIZE(rb->buff), rb->nch, nsrc, nsrcch))
 			{
 				parent_t::release_buffer(rb);
 				rb = NULL;
@@ -1012,11 +1013,11 @@ enum { CNT32TX = DMABUFFSIZE32TX / DMABUFFSTEP32TX };
 typedef ALIGNX_BEGIN struct denoise16
 {
 	ALIGNX_BEGIN speexel_t buff [NTRX * FIRBUFSIZE] ALIGNX_END;
-	enum { ss = 1, nch = NTRX };	// stub for resampling support
+	enum { ss = 1, nch = NTRX };	// stub for sample slipping support
 } ALIGNX_END denoise16_t;
 
 typedef buffitem<denoise16_t> denoise16buf_t;
-typedef dmahandle<FLOAT_t, denoise16buf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> denoise16dma_t;
+typedef dmahandle<FLOAT_t, denoise16buf_t, 0, 0, SKIPSAMPLES_NOSLIPPING> denoise16dma_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
 static __NO_INIT denoise16buf_t denoise16buf [SPEEX_CAPACITY];
@@ -1067,7 +1068,7 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 {
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16RX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16RX };	// resampling support
+	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16RX };	// sample slipping support
 } ALIGNX_END voice16rx_t;
 
 typedef buffitem<voice16rx_t> voice16rxbuf_t;
@@ -1077,15 +1078,15 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 {
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16TX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16TX };	// resampling support
+	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16TX };	// sample slipping support
 } ALIGNX_END voice16tx_t;
 
 typedef buffitem<voice16tx_t> voice16txbuf_t;
 
 //typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
 
-typedef dmahandle<FLOAT_t, voice16rxbuf_t, VOICE16RX_RESAMPLING, 1, SKIPSAMPLES_HDMI> voice16rxdma_t;
-typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_RESAMPLING, 1, SKIPSAMPLES_HDMI> voice16txdma_t;
+typedef dmahandle<FLOAT_t, voice16rxbuf_t, VOICE16RX_SLIPPING, 1, SKIPSAMPLES_HDMI> voice16rxdma_t;
+typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_SLIPPING, 1, SKIPSAMPLES_HDMI> voice16txdma_t;
 
 #if WITHFPGAPIPE_CODEC1
 static voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
@@ -1298,12 +1299,12 @@ typedef ALIGNX_BEGIN struct hdmi48tx_tag
 {
 	ALIGNX_BEGIN hdmi48bufv_t buff [DMABUFFSIZEHDMI48TX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (hdmi48bufv_t), nch = DMABUFFSTEPHDMI48TX };	// resampling support
+	enum { ss = sizeof (hdmi48bufv_t), nch = DMABUFFSTEPHDMI48TX };	// sample slipping support
 } ALIGNX_END hdmi48tx_t;
 
 typedef buffitem<hdmi48tx_t> hdmi48txbuf_t;
 
-typedef dmahandle<FLOAT_t, hdmi48txbuf_t, HDMI48TX_RESAMPLING, 1, SKIPSAMPLES_HDMI> hdmi48txdma_t;
+typedef dmahandle<FLOAT_t, hdmi48txbuf_t, HDMI48TX_SLIPPING, 1, SKIPSAMPLES_HDMI> hdmi48txdma_t;
 
 static RAMNCTX hdmi48txbuf_t hdmi48txbuf [HDMI48TX_CAPACITY];
 
@@ -1397,7 +1398,7 @@ void elfill_dmabufferhdmi48tx(FLOAT_t ch0, FLOAT_t ch1)
 typedef ALIGNX_BEGIN struct moni16_tag
 {
 	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16MONI] ALIGNX_END;
-	enum { ss = sizeof (FLOAT_t), nch = DMABUFFSTEP16MONI };	// stub for resampling support
+	enum { ss = sizeof (FLOAT_t), nch = DMABUFFSTEP16MONI };	// stub for sample slipping support
 } ALIGNX_END moni16_t;
 
 typedef buffitem<moni16_t> moni16buf_t;
@@ -1422,7 +1423,7 @@ static unsigned getcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t * dest)
 
 
 
-typedef dmahandle<FLOAT_t, moni16buf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> moni16txdma_t;
+typedef dmahandle<FLOAT_t, moni16buf_t, 0, 1, SKIPSAMPLES_NOSLIPPING> moni16txdma_t;
 
 static __NO_INIT moni16buf_t moni16buf [VOICE16TXMONI_CAPACITY];
 static __NO_INIT moni16buf_t rx16recbuf [VOICE16REC_CAPACITY];
@@ -1466,14 +1467,14 @@ typedef ALIGNX_BEGIN struct voices32tx_tag
 {
 	ALIGNX_BEGIN IFDACvalue_t buff [DMABUFFSIZE32TX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (IFDACvalue_t), nch = DMABUFFSTEP32TX };	// resampling support
+	enum { ss = sizeof (IFDACvalue_t), nch = DMABUFFSTEP32TX };	// sample slipping support
 } ALIGNX_END voice32tx_t;
 
 typedef buffitem<voice32tx_t> voice32txbuf_t;
 
 static RAMNCTX voice32txbuf_t voice32txbuf [VOICE32TX_CAPACITY];
 
-typedef dmahandle<FLOAT_t, voice32txbuf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> voice32txdma_t;
+typedef dmahandle<FLOAT_t, voice32txbuf_t, 0, 1, SKIPSAMPLES_NOSLIPPING> voice32txdma_t;
 
 //static voice32txlist_t voice32tx(IRQL_REALTIME, "32tx");
 static voice32txdma_t voice32tx(IRQL_REALTIME, "32tx", voice32txbuf, ARRAY_SIZE(voice32txbuf));
@@ -1614,14 +1615,14 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 {
 	ALIGNX_BEGIN IFADCvalue_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (IFADCvalue_t), nch = DMABUFFSTEP32RX };	// resampling support
+	enum { ss = sizeof (IFADCvalue_t), nch = DMABUFFSTEP32RX };	// sample slipping support
 } ALIGNX_END voice32rx_t;
 
 typedef buffitem<voice32rx_t> voice32rxbuf_t;
 
 static RAMNCRX voice32rxbuf_t voice32rxbuf [VOICE32RX_CAPACITY];
 
-typedef dmahandle<int_fast32_t, voice32rxbuf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> voice32rxdma_t;
+typedef dmahandle<int_fast32_t, voice32rxbuf_t, 0, 1, SKIPSAMPLES_NOSLIPPING> voice32rxdma_t;
 
 static voice32rxdma_t voice32rx(IRQL_REALTIME, "32rx", voice32rxbuf, ARRAY_SIZE(voice32rxbuf));
 
@@ -1710,7 +1711,7 @@ typedef struct
 {
 	ALIGNX_BEGIN  uint8_t buff [UAC_GROUPING_DMAC * UACOUT_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
 	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = UACOUT_AUDIO48_SAMPLEBYTES, nch = UACOUT_FMT_CHANNELS_AUDIO48 };	// resampling support
+	enum { ss = UACOUT_AUDIO48_SAMPLEBYTES, nch = UACOUT_FMT_CHANNELS_AUDIO48 };	// sample slipping support
 } uacout48_t;
 
 typedef buffitem<uacout48_t> uacout48buf_t;
@@ -1877,7 +1878,7 @@ typedef struct
 {
 	ALIGNX_BEGIN  FLOAT_t buff [BTSSCALE * 480 * 2] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = sizeof (FLOAT_t), nch = 2 };	// resampling support
+	enum { ss = sizeof (FLOAT_t), nch = 2 };	// sample slipping support
 } btio48k_t;
 
 
@@ -1886,7 +1887,7 @@ typedef struct
 {
 	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 441 * BTIO44P1_CHANNELS] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = sizeof (int16_t), nch = BTIO44P1_CHANNELS };	// resampling support
+	enum { ss = sizeof (int16_t), nch = BTIO44P1_CHANNELS };	// sample slipping support
 } btio44p1k_t;
 
 // Буфер на стороне 32 кГц
@@ -1894,7 +1895,7 @@ typedef struct
 {
 	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 320 * BTIO32_CHANNELS] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = sizeof (int16_t), nch = BTIO32_CHANNELS };	// resampling support
+	enum { ss = sizeof (int16_t), nch = BTIO32_CHANNELS };	// sample slipping support
 } btio32k_t;
 
 // Буфер на стороне 16 кГц
@@ -1902,7 +1903,7 @@ typedef struct
 {
 	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 160 * 1] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = sizeof (int16_t), nch = BTIO16_CHANNELS };	// resampling support
+	enum { ss = sizeof (int16_t), nch = BTIO16_CHANNELS };	// sample slipping support
 } btio16k_t;
 
 // Буфер на стороне 8 кГц
@@ -1910,7 +1911,7 @@ typedef struct
 {
 	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 80 * 1] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = sizeof (int16_t), nch = BTIO8_CHANNELS };	// resampling support
+	enum { ss = sizeof (int16_t), nch = BTIO8_CHANNELS };	// sample slipping support
 } btio8k_t;
 
 typedef adapters<FLOAT_t, (int) BTIO44P1_SAMPLEBYTES, (int) BTIO44P1_CHANNELS> btioadpt_t;
@@ -2311,16 +2312,16 @@ uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest)
 {
 	// auto-select by not-empty source
 	return
-		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout44p1k, ARRAY_SIZE(btio44p1k_t::buff), btio44p1k_t::nch) ||
-		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout32k, ARRAY_SIZE(btio32k_t::buff), btio32k_t::nch) ||
-		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout16k, ARRAY_SIZE(btio16k_t::buff), btio16k_t::nch) ||
-		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout8k, ARRAY_SIZE(btio8k_t::buff), btio8k_t::nch) ||
+		btout48k.fetchdata_sampleslipping(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout44p1k, ARRAY_SIZE(btio44p1k_t::buff), btio44p1k_t::nch) ||
+		btout48k.fetchdata_sampleslipping(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout32k, ARRAY_SIZE(btio32k_t::buff), btio32k_t::nch) ||
+		btout48k.fetchdata_sampleslipping(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout16k, ARRAY_SIZE(btio16k_t::buff), btio16k_t::nch) ||
+		btout48k.fetchdata_sampleslipping(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout8k, ARRAY_SIZE(btio8k_t::buff), btio8k_t::nch) ||
 		0;
 }
 
 //uint_fast8_t elfetch_dmabufferbtin44p1(FLOAT_t * dest)
 //{
-//	return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtin44p1, fetchdata_RS_btin48, ARRAY_SIZE(btio48k_t::buff), btio48k_t::nch);
+//	return btout48k.fetchdata_sampleslipping(dest, getcbf_dmabufferbtin44p1, fetchdata_RS_btin48, ARRAY_SIZE(btio48k_t::buff), btio48k_t::nch);
 //}
 
 // Возвращает количество элементов буфера, обработанных за вызов
@@ -2550,7 +2551,7 @@ typedef enum
 		uacintag_t tag;
 		ALIGNX_BEGIN  uint8_t buff [UAC_GROUPING_DMAC * UACIN_RTS192_DATASIZE_DMAC] ALIGNX_END;
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-		enum { ss = UACIN_RTS192_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS192 };	// resampling support
+		enum { ss = UACIN_RTS192_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS192 };	// sample slipping support
 	} uacinrts192_t;
 
 	typedef buffitem<uacinrts192_t> uacinrts192buf_t;
@@ -2630,7 +2631,7 @@ typedef enum
 		uacintag_t tag;
 		ALIGNX_BEGIN  uint8_t buff [UAC_GROUPING_DMAC * UACIN_RTS96_DATASIZE_DMAC] ALIGNX_END;
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-		enum { ss = UACIN_RTS96_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS96 };	// resampling support
+		enum { ss = UACIN_RTS96_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS96 };	// sample slipping support
 	} uacinrts96_t;
 
 	typedef buffitem<uacinrts96_t> uacinrts96buf_t;
@@ -2881,14 +2882,14 @@ typedef struct
 {
 	messagetypes_t type;
 	uint8_t buff [MSGBUFFERSIZE8];
-	enum { ss = 1, nch = 1 };	// stub for resampling support
+	enum { ss = 1, nch = 1 };	// stub for sample slipping support
 } message8buff_t;
 
 typedef buffitem<message8buff_t> message8v_t;
 static __NO_INIT message8v_t message8v [MESSAGE_CAPACITY];
 
 // Данному интерфейсу не требуется побайтный доступ или ресэмплниг
-typedef blists<message8v_t, 0, 0, SKIPSAMPLES_NORESAMPLER> message8list_t;
+typedef blists<message8v_t, 0, 0, SKIPSAMPLES_NOSLIPPING> message8list_t;
 
 static message8list_t message8(MESSAGE_IRQL, "msg8", message8v, ARRAY_SIZE(message8v));
 
@@ -3016,9 +3017,9 @@ typedef ALIGNX_BEGIN struct recordswav48
 //	unsigned startdata;
 //	unsigned topdata;
 #if WITHUSEAUDIOREC2CH
-	enum { ss = 1, nch = 2 };	// stub for resampling support
+	enum { ss = 1, nch = 2 };	// stub for sample slipping support
 #else /* WITHUSEAUDIOREC2CH */
-	enum { ss = 1, nch = 1 };	// stub for resampling support
+	enum { ss = 1, nch = 1 };	// stub for sample slipping support
 #endif /* WITHUSEAUDIOREC2CH */
 } ALIGNX_END recordswav48_t;
 
@@ -3027,7 +3028,7 @@ typedef buffitem<recordswav48_t> recordswav48buf_t;
 static __NO_INIT recordswav48buf_t recordswav48buf [AUDIOREC_CAPACITY];
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
-typedef dmahandle<FLOAT_t, recordswav48buf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> recordswav48dma_t;
+typedef dmahandle<FLOAT_t, recordswav48buf_t, 0, 0, SKIPSAMPLES_NOSLIPPING> recordswav48dma_t;
 
 static recordswav48dma_t recordswav48dma(IRQL_REALTIME, "rec", recordswav48buf, ARRAY_SIZE(recordswav48buf));
 
@@ -3583,13 +3584,13 @@ typedef ALIGNX_BEGIN struct colmain0fb
 {
 	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = 1, nch = GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T) };	// stub for resampling support
+	enum { ss = 1, nch = GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T) };	// stub for sample slipping support
 } ALIGNX_END colmain0fb_t;
 
 typedef buffitem<colmain0fb_t> colmain0fbbuf_t;
 
 static __NO_INIT colmain0fbbuf_t colmain0fbbuf [LCDMODE_MAIN_PAGES];
-typedef blists<colmain0fbbuf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> colmain0fblist_t;
+typedef blists<colmain0fbbuf_t, 0, 0, SKIPSAMPLES_NOSLIPPING> colmain0fblist_t;
 static colmain0fblist_t colmain0fblist(IRQL_OVERREALTIME, "fb0", colmain0fbbuf, ARRAY_SIZE(colmain0fbbuf));
 
 // can not be zero
@@ -3643,13 +3644,13 @@ typedef ALIGNX_BEGIN struct colmain1fb
 {
 	ALIGNX_BEGIN PACKEDTVBUFF_T buff [(TVD_SIZE * 3 + 1) / 2] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = 1, nch = GXSIZE(DIM_X, DIM_Y) * sizeof (uint8_t) };	// stub for resampling support
+	enum { ss = 1, nch = GXSIZE(DIM_X, DIM_Y) * sizeof (uint8_t) };	// stub for sample slipping support
 } ALIGNX_END colmain1fb_t;
 
 typedef buffitem<colmain1fb_t> colmain1fbbuf_t;
 
 static __NO_INIT colmain1fbbuf_t colmain1fbbuf [LCDMODE_TVOUT_PAGES];
-typedef blists<colmain1fbbuf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> colmain1fblist_t;
+typedef blists<colmain1fbbuf_t, 0, 0, SKIPSAMPLES_NOSLIPPING> colmain1fblist_t;
 static colmain1fblist_t colmain1fblist(IRQL_OVERREALTIME, "fb1", colmain1fbbuf, ARRAY_SIZE(colmain1fbbuf));
 
 // can not be zero
