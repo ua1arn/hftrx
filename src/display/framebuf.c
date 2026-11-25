@@ -32,6 +32,8 @@
 
 #endif /* WITHLVGL */
 
+#if ! (LCDMODE_DUMMY)
+
 __STATIC_FORCEINLINE COLORPIP_T softmixalpha(COLORPIP_T oldpixel, uint16_t r, uint16_t g, uint16_t b, uint8_t oldalpha)
 {
 	return TFTRGB(
@@ -118,6 +120,7 @@ static void soft_fillrect(
 		}
 	}
 }
+#endif
 
 #if CPUSTYLE_ALLWINNER && WITHMDMAHW
 	/* Использование G2D для формирования изображений */
