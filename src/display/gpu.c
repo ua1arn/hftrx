@@ -460,7 +460,7 @@ static int gpu_fill_rect_fragment_v7_old(
         .bound_max_x = max_x / 16,
         .bound_max_y = max_y / 16,
         .has_tile_enable_map = false,
-        .framebuffer = (uint64_t) & st.fb_desc
+        .framebuffer = (uintptr_t) & st.fb_desc
     };
     MALI_FRAGMENT_JOB_PAYLOAD_pack(&st.frag_job.PAYLOAD, &fjp);
 
@@ -1037,7 +1037,7 @@ static int gpu_fill_rect_fragment_v7(
         .bound_max_x = max_x / 16,
         .bound_max_y = max_y / 16,
         .has_tile_enable_map = false,
-        .framebuffer = (uint64_t)&st.fb_desc
+        .framebuffer = (uintptr_t)&st.fb_desc
     };
     MALI_FRAGMENT_JOB_PAYLOAD_pack(&st.frag_job.PAYLOAD, &fjp);
 
