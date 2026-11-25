@@ -223,14 +223,15 @@ void audio_server_push_pcm(const void *pcm_480_samples_per_ch) {
     /* Encode FLAC frame once (using frame_num = 0; WebM SimpleBlock uses Cluster Timecode for sync) */
     static uint32_t global_frame_num = 0; // Добавьте в начало audio_server.c
 
+    const hwtimcount_t now = timestamp_getticks();
+    const uint32_t ticks_per_ms = timestamp_getfreq() / 1000;
+    const uint32_t encoder_ts_ms = now / ticks_per_ms;
+
     size_t cluster_len = webm_flac_encode_cluster(&server_audio_cfg, pcm_480_samples_per_ch,
-                                                  global_frame_num++, 0, webm_cluster_buf);
+                                                  global_frame_num++, encoder_ts_ms, webm_cluster_buf);
     if (cluster_len == 0) {
         return;
     }
-
-    hwtimcount_t now = timestamp_getticks();
-    uint32_t ticks_per_ms = timestamp_getfreq() / 1000;
 
     /* Broadcast the encoded cluster to all connected listeners */
     for (int i = 0; i < MAX_AUDIO_CLIENTS; i++) {
