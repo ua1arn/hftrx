@@ -569,6 +569,8 @@ static err_t udpapperv_app_init(void)
 #include "lwip_flac_audio_stream/audio_server.h"
 #include "lwip_flac_audio_stream/webm_pcm_stream.h"
 
+static adapter_t audionet_out;
+
 static void audio_32ms(void * ctx)
 {
 	int16_t buff [WEBM_BLOCK_SAMPLES];
@@ -578,13 +580,15 @@ static void audio_32ms(void * ctx)
 		FLOAT_t v = get_lout();
 		get_lout(), get_lout(), get_lout();
 		get_lout(), get_lout(), get_lout(), get_lout();
-		buff [i] = v * 32767;
+		buff [i] = adpt_output(& audionet_out, v);
 	}
 	audio_server_push_pcm(buff);
 }
 void network_initialize(void)
 {
 	struct netif  *netif = & nic_netif_data;
+
+	adpt_initialize(& audionet_out, 16, 0, "audionet_out");
 	init_lwip();
 	//nic_buffers_initialize();
 	nic_initialize(netif);
