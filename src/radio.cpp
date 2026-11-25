@@ -3447,7 +3447,7 @@ static int_fast32_t getzerobase(void)
 		#if WITHRTTY
 			{ 4, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, SUBMODE_RTTY, },
 		#else /* WITHRTTY */
-		//	{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },
+			{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },
 		#endif /* WITHRTTY */
 		};
 
@@ -8799,7 +8799,7 @@ static void updateboard_tuner(void)
 	board_set_tuner_group();
 #else
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 	board_set_tuner_group();
 	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 #endif /* WITHTOUCHGUI */
@@ -11232,7 +11232,7 @@ static const struct paramdefdef * enc2menus [] =
 	& xgmik1level,
 #endif /* ITHMIC1LEVEL */
 #if WITHIF4DSP
-	& xgmikehclip,
+	& xgmikeprofile,	// выбраный профиль микрофона
 #endif /* WITHIF4DSP */
 #endif /* WITHTX */
 #if WITHNOTCHFREQ && ! WITHPOTNOTCH
@@ -12052,6 +12052,7 @@ catmux_processcatmsg(
 /* вызывается из обработчика прерываний */
 void cat2_parsechar(uint_fast8_t c)
 {
+	//PRINTF("0x%02X ", c);
 	switch (cattypes [gcattype].code)
 	{
 	default:
@@ -14932,7 +14933,7 @@ void updateboard(void)
 		gui_update();
 #else
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 	updateboard_noui(1);
 	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 #endif /* WITHTOUCHGUI */
@@ -14946,7 +14947,7 @@ static void updateboard_freq(void)
 		gui_update();
 #else
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 	updateboard_noui(0);
 	IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 #endif /* WITHTOUCHGUI */
@@ -14980,7 +14981,7 @@ static void uif_key_sendcw(const char * msg)
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& lockcwmsg, & oldIrql, ELKEY_IRQL);
+	IRQLSPIN_LOCK_YIELD(& lockcwmsg, & oldIrql, ELKEY_IRQL);
 	if (usersend != 0 && * usersend != '\0')
 		usersend = NULL;
 	else
@@ -16527,7 +16528,7 @@ static uint_fast8_t cat_answer_ready_cdcacm(void)
 {
 	uint_fast8_t f;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& usbsyslock, & oldIrql, USBSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& usbsyslock, & oldIrql, USBSYS_IRQL);
 	f = usbd_cdc_ready();
 	IRQLSPIN_UNLOCK(& usbsyslock, oldIrql);
 	return f;
@@ -16595,7 +16596,7 @@ static void
 cat_answervariable_cdcacm(const char * p, uint_fast8_t len)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
 		// Сейчас ещё передается сообщение - новое игнорируем.
@@ -16613,7 +16614,7 @@ static void
 cat_answervariable_uart(const char * p, uint_fast8_t len)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
 	if (catstateout != CATSTATEO_SENDREADY)
 	{
 		// Сейчас ещё передается сообщение - новое игнорируем.
@@ -16639,7 +16640,7 @@ cat_answervariable_uart(const char * p, uint_fast8_t len)
 void btspp_parsechar(uint_fast8_t c)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
 	cat2_parsechar(c);
 	IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 }
@@ -16725,7 +16726,7 @@ cat_get_hwptt(void)
 	if (catprocenable != 0)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
 		const uint_fast8_t r = cat_get_signal(catsigptt);
 		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 
@@ -16750,7 +16751,7 @@ uint_fast8_t cat_get_keydown(void)
 	if (catprocenable != 0)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
 		const uint_fast8_t r = cat_get_signal(catsigkey);
 		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 
@@ -17097,7 +17098,7 @@ static void catyaesu_cattimeout_cb(void * ctx)
 void catyaesu_parsechar(uint_fast8_t c)
 {
 	static uint8_t yaesubuf [5];
-	PRINTF("0x%02X ", c);
+	//PRINTF("0x%02X ", c);
 	ticker_timeout_restart(& cat_ticker, CAT_TIMEOUT);	// Перезапуск тайм-аута
 
 	switch (catstatein)
@@ -17156,7 +17157,7 @@ static void catyaesu_enable(uint_fast8_t enable)
 	if (! catprocenable)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
 		HARDWARE_CAT_ENABLERX(0);
 		HARDWARE_CAT_ENABLETX(0);
 		catstatein = CATSTATE_HALTED;
@@ -17178,7 +17179,7 @@ static void catyaesu_enable(uint_fast8_t enable)
 
 		aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
 		HARDWARE_CAT_ENABLERX(1);
 		catstatein = CATSTATE_WAITCOMMAND1;
 		catstateout = CATSTATEO_SENDREADY;
@@ -18212,7 +18213,7 @@ static void catkenwood_enable(uint_fast8_t enable)
 	if (! catprocenable)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
 		HARDWARE_CAT_ENABLERX(0);
 		HARDWARE_CAT_ENABLETX(0);
 		catstatein = CATSTATE_HALTED;
@@ -18234,7 +18235,7 @@ static void catkenwood_enable(uint_fast8_t enable)
 
 		aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
 		HARDWARE_CAT_ENABLERX(1);
 		catstatein = CATSTATE_WAITCOMMAND1;
 		catstateout = CATSTATEO_SENDREADY;
@@ -18316,7 +18317,7 @@ catkenwood_answer_forming(void)
 		const uint_fast8_t i = ilast;
 		ilast = calc_next(i, 0, (sizeof cat_answer_map / sizeof cat_answer_map [0]) - 1);
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& catsyslock, & oldIrql, CATSYS_IRQL);
+		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
 		if (cat_answer_map [i] != 0)
 		{
 			const uint_fast8_t answerparam = cat_answerparam_map [i];
@@ -19279,7 +19280,7 @@ static char beacon_getnextcw(void)
 #elif WITHELKEY && WITHTX
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& lockcwmsg, & oldIrql, ELKEY_IRQL);
+	IRQLSPIN_LOCK_YIELD(& lockcwmsg, & oldIrql, ELKEY_IRQL);
 	if (usersend != NULL && * usersend != '\0')
 	{
 		const char c = * usersend ++;
@@ -19748,7 +19749,7 @@ static uint_fast16_t gmenulastitem [2] = { ARRAY_SIZE(menutable0) - 1, ARRAY_SIZ
 static void setinmenu(uint_fast8_t inmenu, const struct menudef * mp)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 
 	ginmenu0 = inmenu;
 	gmp0 = mp;
@@ -19760,7 +19761,7 @@ static uint_fast8_t getinmenu(const struct menudef * * mp)
 {
 	uint_fast8_t f;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 
 	f = ginmenu0;
 	* mp = gmp0;
@@ -22527,7 +22528,7 @@ dpc_displatch_timer_fn(void * ctx)
 {
 	(void) ctx;
 	IRQL_t oldIrql;
-	//IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+	//IRQLSPIN_LOCK_YIELD(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 	display2_latch();
 	//IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 }
@@ -22560,7 +22561,7 @@ dpc_displatch_refresh_fn(void * ctx)
 		dctx.pv = & ef;
 
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+		IRQLSPIN_LOCK_YIELD(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 		display2_bgprocess(0, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
 		IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 	}
@@ -22573,7 +22574,7 @@ dpc_displatch_refresh_fn(void * ctx)
 		dctx.pv = mp;
 
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+		IRQLSPIN_LOCK_YIELD(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 		display2_bgprocess(1, actpageix(), & dctx);			/* выполнение шагов state machine отображения дисплея */
 		IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 	}
@@ -22581,7 +22582,7 @@ dpc_displatch_refresh_fn(void * ctx)
 	else
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
+		IRQLSPIN_LOCK_YIELD(& boardupdatelock, & oldIrql, BRDSYS_IRQL);
 		display2_bgprocess(0, actpageix(), NULL);			/* выполнение шагов state machine отображения дисплея */
 		IRQLSPIN_UNLOCK(& boardupdatelock, oldIrql);
 	}

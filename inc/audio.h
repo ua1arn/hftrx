@@ -597,6 +597,8 @@ void elfill_dmabuffermoni16(FLOAT_t ch0, FLOAT_t ch1);
 uint_fast8_t voicerec16_get(FLOAT32P_t * v);
 uint_fast8_t voicemoni16_get(FLOAT32P_t * v);
 
+uint_fast8_t elfetch_dmabufferbtin8k(int16_t * dest);
+
 void modem_initialze(void);
 uint_fast8_t modem_get_ptt(void);
 

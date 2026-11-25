@@ -460,7 +460,7 @@ static int gpu_fill_rect_fragment_v7_old(
         .bound_max_x = max_x / 16,
         .bound_max_y = max_y / 16,
         .has_tile_enable_map = false,
-        .framebuffer = (uint64_t) & st.fb_desc
+        .framebuffer = (uintptr_t) & st.fb_desc
     };
     MALI_FRAGMENT_JOB_PAYLOAD_pack(&st.frag_job.PAYLOAD, &fjp);
 
@@ -1037,7 +1037,7 @@ static int gpu_fill_rect_fragment_v7(
         .bound_max_x = max_x / 16,
         .bound_max_y = max_y / 16,
         .has_tile_enable_map = false,
-        .framebuffer = (uint64_t)&st.fb_desc
+        .framebuffer = (uintptr_t)&st.fb_desc
     };
     MALI_FRAGMENT_JOB_PAYLOAD_pack(&st.frag_job.PAYLOAD, &fjp);
 
@@ -1084,15 +1084,23 @@ int gpu_fillrect(
 {
 	if (w == 0 || h == 0)
 		return 1;
-	if (w == 1 && h == 1)
+    const bool use_blend = ((fillmask & FILL_FLAG_MIXBG) != 0) && (alpha < 255U);
+    if (use_blend && alpha == 0U) {
+        return 1; /* Полностью прозрачный прямоугольник — рисовать нечего */
+    }
+    if (use_blend) {
+        return 0; /* пока не работает */
+    }
+	if (w == 1 || h == 1)
 	{
-		//* buffer = TFTALPHA(alpha, color24);
+//		PACKEDCOLORPIP_T * const tgr = colpip_mem_at(db, x, y);
+//		* buffer = color;
 		return 0;
 	}
 
 	dcache_clean_invalidate(dstinvalidateaddr, dstinvalidatesize);
 	IRQL_t irql;
-	IRQLSPIN_LOCK(& gpulock, & irql, BRDSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& gpulock, & irql, BRDSYS_IRQL);
 
     // Заливка прямоугольника 200x200 в позиции (x = 100, y = 100)
     int res = gpu_fill_rect_fragment_v7(
@@ -1544,8 +1552,8 @@ void board_gpu_initialize(void)
 //#endif /* WITHGPUHW */
 	{
 		//PRINTF("1 CCU->PLL_GPU0_CTRL_REG = %08X\n", (unsigned) CCU->PLL_GPU0_CTRL_REG);
-
-		const unsigned N = 600 * 2 / 24;
+		// PLL_GPU0 = 24 MHz*N/M0/M1.
+		const unsigned N = 600 * 1000 * 1000 * 2 / allwnr_t507_get_hosc_freq();
 		const unsigned M1 = 1;
 		const unsigned M0 = 2;
 		// PLL_GPU0 = 24 MHz*N/M0/M1
@@ -1568,8 +1576,11 @@ void board_gpu_initialize(void)
 
 	//t507_spc_unlock_gpu();
 
-	CCU->GPU_CLK1_REG |= (UINT32_C(1) << 31);	// PLL_PERI_BAK_CLK_GATING
+	CCU->GPU_CLK0_REG &= ~ (UINT32_C(1) << 24);	// CLK_SRC_SEL=0: Clock Source Select=PLL_GPU0
+	CCU->GPU_CLK0_REG &= ~ (UINT32_C(0x03) << 0); // FACTOR_M=0
 	CCU->GPU_CLK0_REG |= (UINT32_C(1) << 31);	// SCLK_GATING
+
+	CCU->GPU_CLK1_REG |= (UINT32_C(1) << 31);	// PLL_PERI_BAK_CLK_GATING
 
 	PRCM->GPU_PWROFF_GATING = 0;
 

@@ -75,7 +75,7 @@ static void encoder_clear(encoder_t * e)
 
 	e->position = 0;
 	e->account = 0;
-	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
+	IRQLSPIN_LOCK_YIELD(& e->encspeedlock, & oldIrql, TICKER_IRQL);
 	arm_fill_q31(0, e->enchist, HISTLEN);
 	e->tichist = 0;
 	IRQLSPIN_UNLOCK(& e->encspeedlock, oldIrql);
@@ -269,7 +269,7 @@ encspeed_spool(void * ctx)
 	encoder_pushback(e, p1sum);	// обратно внести накопленные шаги
 
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
+	IRQLSPIN_LOCK_YIELD(& e->encspeedlock, & oldIrql, TICKER_IRQL);
 
 	/* запоминание данных для расчёта скорости вращения валкодера */
 	/* при расчёте скорости игнорируется направление вращения - улучшается обработка синтуйии, когда при уже
@@ -326,7 +326,7 @@ encoder_get_snapshotproportional(
 	unsigned tdelta;	// Время измерения
 
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& e->encspeedlock, & oldIrql, TICKER_IRQL);
+	IRQLSPIN_LOCK_YIELD(& e->encspeedlock, & oldIrql, TICKER_IRQL);
 
 	// параметры изменерения скорости не модифицируем
 	// 1. количество шагов за время измерения

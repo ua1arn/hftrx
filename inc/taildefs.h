@@ -251,11 +251,13 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define TARGETCPU_OVRT 	(1u << 0)		// CPU #0
 
 	void lclspin_lock(LCLSPINLOCK_t * __restrict lock, const char * file, int line);
+	void lclspin_lock_yield(LCLSPINLOCK_t * __restrict lock, const char * file, int line);
 	int lclspin_traylock(LCLSPINLOCK_t * __restrict lock, const char * file, int line);
 	void lclspin_unlock(LCLSPINLOCK_t * __restrict lock);
 	void lclspin_enable(void);	// Allwinner H3 - может работать с блокировками только после включения MMU
 
 	#define LCLSPIN_LOCK(p) do { lclspin_lock(p, __FILE__, __LINE__); } while (0)
+	#define LCLSPIN_LOCK_YIELD(p) do { lclspin_lock_yield(p, __FILE__, __LINE__); } while (0)
 	#define LCLSPIN_TRAYLOCK(p) (lclspin_traylock(p, __FILE__, __LINE__))
 	#define LCLSPIN_UNLOCK(p) do { lclspin_unlock(p); } while (0)
 
@@ -266,6 +268,7 @@ void InitializeIrql(IRQL_t newIRQL);
 	#define TARGETCPU_OVRT (1u << 0)		// CPU #0
 
 	#define LCLSPIN_LOCK(p) do { (void) p; } while (0)
+	#define LCLSPIN_LOCK_YIELD(p) do { (void) p; } while (0)
 	#define LCLSPIN_TRAYLOCK(p) ((void) p, 1)
 	#define LCLSPIN_UNLOCK(p) do { (void) p; } while (0)
 	#define SPIN_LOCK2(p, f, l) do { (void) p; } while (0)
@@ -275,6 +278,7 @@ void InitializeIrql(IRQL_t newIRQL);
 
 	/* Захват spinlock с установкой требуемого IRQL и сохранением ранее установленного */
 	#define IRQLSPIN_LOCK(p, oldIrql, newirql) do { RiseIrql((newirql), (oldIrql)); LCLSPIN_LOCK((p)); } while (0)
+	#define IRQLSPIN_LOCK_YIELD(p, oldIrql, newirql) do { RiseIrql((newirql), (oldIrql)); LCLSPIN_LOCK_YIELD((p)); } while (0)
 	#define IRQLSPIN_UNLOCK(p, oldIrql) do { LCLSPIN_UNLOCK((p)); LowerIrql(oldIrql); } while (0)
 
 #include "mslist.h"

@@ -207,7 +207,7 @@ uint_fast8_t usbd_cdc1_getrts(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
@@ -221,7 +221,7 @@ uint_fast8_t usbd_cdc1_getdtr(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
 		0;
@@ -236,7 +236,7 @@ uint_fast8_t usbd_cdc2_getrts(void)
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
@@ -254,7 +254,7 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
 		0;
@@ -273,7 +273,7 @@ static volatile uint8_t usbd_cdc_txstate [WITHUSBCDCACM_N];	/* склько ос
 void usbd_cdc_send(const void * buff, size_t length)
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	const unsigned offset = MAIN_CDC_OFFSET;
 	if (gpdev != NULL && usbd_cdc_txstate [offset] == 0)
 	{
@@ -311,7 +311,7 @@ void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обра
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	usbd_cdc_txenabled [offset] = state;
 	IRQLSPIN_UNLOCK(& catlock, oldIrql);
 }
@@ -322,7 +322,7 @@ void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обра
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	usbd_cdcX_rxenabled [offset] = state;
 	IRQLSPIN_UNLOCK(& catlock, oldIrql);
 }
@@ -334,7 +334,7 @@ void usbd_cdc_tx(void * ctx, uint_fast8_t c)
 	USBD_HandleTypeDef * const pdev = (USBD_HandleTypeDef *) ctx;
 
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	ASSERT(cdcXbuffinlevel  [offset] < VIRTUAL_COM_PORT_IN_DATA_SIZE);
 	cdcXbuffin [offset] [cdcXbuffinlevel [offset] ++] = c;
 	IRQLSPIN_UNLOCK(& catlock, oldIrql);
@@ -797,7 +797,7 @@ static uint_fast8_t debugusb_ci_qempty(void)
 uint_fast8_t debugusb_putchar(uint_fast8_t c)/* передача символа если готов порт */
 {
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t f = debugusb_qput(c);
 	if (f)
 		HARDWARE_DEBUG_ENABLETX(1);
@@ -809,7 +809,7 @@ uint_fast8_t debugusb_getchar(char * cp) /* приём символа, если 
 {
 	uint_fast8_t c;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t f = debugusb_ci_qget(& c);
 	IRQLSPIN_UNLOCK(& catlock, oldIrql);
 	if (f)

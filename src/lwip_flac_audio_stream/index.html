@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Live WebM-FLAC Audio Stream</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; }
+    audio { width: 100%; margin-top: 12px; }
+    .status { font-size: 0.9em; color: #555; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h3>Live Uncompressed WebM-FLAC Stream</h3>
+  <audio id="player" controls autoplay src="/stream"></audio>
+  <div class="status" id="status">Connecting...</div>
+
+  <script>
+    const player = document.getElementById('player');
+    const status = document.getElementById('status');
+
+    function reconnect() {
+      status.textContent = 'Reconnecting...';
+      player.src = '/stream?t=' + Date.now();
+      player.play().catch(() => {
+        status.textContent = 'Click Play to start audio';
+      });
+    }
+
+    player.addEventListener('playing', () => status.textContent = 'Playing live stream');
+    player.addEventListener('waiting', () => status.textContent = 'Buffering...');
+    player.addEventListener('error', () => setTimeout(reconnect, 1000));
+    player.addEventListener('ended', () => setTimeout(reconnect, 500));
+  </script>
+</body>
+</html>

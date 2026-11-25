@@ -123,7 +123,7 @@ static LCLSPINLOCK_t elkey_lock = IRQLSPINLOCK_INIT;
 	static void elkeyx_set_slope(elkey_t * const elkey, uint_fast8_t slope)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& elkey_lock, & oldIrql, ELKEY_IRQL);
+		IRQLSPIN_LOCK_YIELD(& elkey_lock, & oldIrql, ELKEY_IRQL);
 		if (elkey->vibroplex_slope > slope)
 		{
 			elkey->vibroplex_grade = 0;
@@ -866,7 +866,7 @@ void elkey_set_format(
 {
 #if WITHELKEY
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& elkey_lock, & oldIrql, ELKEY_IRQL);
+	IRQLSPIN_LOCK_YIELD(& elkey_lock, & oldIrql, ELKEY_IRQL);
 
 	delay_space = spaceratio * ELKEY_DISCRETE / 10;
 	delay_dash = dashratio * ELKEY_DISCRETE / 10;

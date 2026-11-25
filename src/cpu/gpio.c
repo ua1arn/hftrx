@@ -684,7 +684,7 @@ void sysinit_gpio_initialize(void)
 void gpiobank_lock(unsigned bank, IRQL_t * oldIrql)
 {
 	LCLSPINLOCK_t * const lck = & gpiobank_ctx [bank];
-	IRQLSPIN_LOCK(lck, oldIrql, GPIOIRQL);
+	IRQLSPIN_LOCK_YIELD(lck, oldIrql, GPIOIRQL);
 }
 
 void gpiobank_unlock(unsigned bank, IRQL_t oldIrql)
@@ -948,7 +948,7 @@ typedef uint32_t irqstatus_t;
 static void gpioX_lock(const GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
 	LCLSPINLOCK_t * const lck = & gpioX_get_ctx(gpio)->lock;
-	IRQLSPIN_LOCK(lck, oldIrql, GPIOIRQL);
+	IRQLSPIN_LOCK_YIELD(lck, oldIrql, GPIOIRQL);
 }
 
 static void gpioX_unlock(const GPIO_TypeDef * gpio, IRQL_t irql)
@@ -961,7 +961,7 @@ static void gpioX_unlock(const GPIO_TypeDef * gpio, IRQL_t irql)
 static void s_gpioX_lock(const S_GPIO_TypeDef * gpio, IRQL_t * oldIrql)
 {
 	LCLSPINLOCK_t * const lck = & s_gpioX_get_ctx(gpio)->lock;
-	IRQLSPIN_LOCK(lck, oldIrql, GPIOIRQL);
+	IRQLSPIN_LOCK_YIELD(lck, oldIrql, GPIOIRQL);
 }
 
 static void s_gpioX_unlock(const S_GPIO_TypeDef * gpio, IRQL_t irql)
@@ -1551,7 +1551,7 @@ static LCLSPINLOCK_t * stm32mp1xx_getgpiolock(GPIO_TypeDef * gpio)
 
 static void stm32mp1_pio_lock(GPIO_TypeDef * gpio, IRQL_t * irqlp)
 {
-	IRQLSPIN_LOCK(stm32mp1xx_getgpiolock(gpio), irqlp, GPIOIRQL);
+	IRQLSPIN_LOCK_YIELD(stm32mp1xx_getgpiolock(gpio), irqlp, GPIOIRQL);
 }
 
 static void stm32mp1_pio_unlock(GPIO_TypeDef * gpio, IRQL_t irql)

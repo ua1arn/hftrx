@@ -549,7 +549,7 @@ void nvram_initialize(void)
 void nvram_write(nvramaddress_t addr, const uint8_t * data, unsigned len)
 {
 	IRQL_t oldIrql;
-	//IRQLSPIN_LOCK(& nvramlock, & oldIrql, BRDSYS_IRQL);
+	//IRQLSPIN_LOCK_YIELD(& nvramlock, & oldIrql, BRDSYS_IRQL);
 	nvram_write_baremetal(addr, data, len);
 	//IRQLSPIN_UNLOCK(& nvramlock, oldIrql);
 }
@@ -557,7 +557,7 @@ void nvram_write(nvramaddress_t addr, const uint8_t * data, unsigned len)
 void nvram_read(nvramaddress_t addr, uint8_t * data, unsigned len)
 {
 	IRQL_t oldIrql;
-	//IRQLSPIN_LOCK(& nvramlock, & oldIrql, BRDSYS_IRQL);
+	//IRQLSPIN_LOCK_YIELD(& nvramlock, & oldIrql, BRDSYS_IRQL);
 	nvram_read_baremetal(addr, data, len);
 	//IRQLSPIN_UNLOCK(& nvramlock, oldIrql);
 }

@@ -18,6 +18,10 @@
 //#define WITHSEQTEST (1 && WITHDEBUG)
 //#define WITHBUFFERSDEBUG (1 && WITHDEBUG)
 
+#define DBG_PERIOD 100    // ms
+
+#define WITHRESAMPLERS 1//(WITHUSEUSBBT && WITHUSEUSBBTAUDIO)
+
 #ifndef BUFOVERSIZE
 	#define BUFOVERSIZE 1
 #endif /* BUFOVERSIZE */
@@ -27,6 +31,7 @@
 #define RAMNCRX RAMNC	// память буферов приёма откуда-либо
 #define RAMNCTX RAMNC	// память буферов передачи куда-либо
 
+// Adaptive Jitter Buffer / Sample Slipping
 // Одна из задач resampler - привести частоту кодека к требуемой для 48 кГц (lrckf=24576000, (clk=24571428)) = 0.99981396484375
 // Для USB - исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 static const unsigned SKIPSAMPLES_HDMI = 2000; // раз в 50 сэмплов добавление/удаление одного сэмпла
@@ -34,39 +39,29 @@ static const unsigned SKIPSAMPLES_BT = 50; // раз в 50 сэмплов доб
 static const unsigned SKIPSAMPLES_USB = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
 static const unsigned SKIPSAMPLES_ETH = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
 
-static const unsigned SKIPSAMPLES_NORESAMPLER = 5;	//
-#define DBG_PERIOD 100	// ms
+static const unsigned SKIPSAMPLES_NOSLIPPING = 5;	//
+#define VOICE16RX_CAPACITY 		(16 * BUFOVERSIZE)	// прием от кодекв
+#define VOICE16TX_CAPACITY 		(32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define VOICE16TXMONI_CAPACITY 	(64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+#define VOICE16REC_CAPACITY 	(64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+#define HDMI48TX_CAPACITY 		(32 * BUFOVERSIZE)
+
+#define VOICE16RX_SLIPPING 1	// прием от кодека - требуется ли sample slipping
+#define VOICE16TX_SLIPPING 1	// передача в кодек - требуется ли sample slipping
+#define HDMI48TX_SLIPPING 1
+
+#define UACINRTS192_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
+#define UACINRTS96_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
+#define UACIN48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+
+#define UACOUT48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
+
+#define SPEEX_CAPACITY (5 * BUFOVERSIZE)
 
 #define VOICE32RX_CAPACITY (16 * BUFOVERSIZE)
+#define VOICE32TX_CAPACITY (16 * BUFOVERSIZE)
 
-#if WITHCODEC1_WHBLOCK_DUPLEX_MASTER
-	#define VOICE16RX_RESAMPLING 1	// прием от кодека - требуется ли resampling
-	#define VOICE16TX_RESAMPLING 1	// передача в кодек - требуется ли resampling
-#else /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
-	#define VOICE16RX_RESAMPLING 0	// прием от кодека - требуется ли resampling
-	#define VOICE16TX_RESAMPLING 0	// передача в кодек - требуется ли resampling
-#endif /* WITHCODEC1_WHBLOCK_DUPLEX_MASTER */
-#define HDMI48TX_RESAMPLING 1
-
-#define BUFUSBSCALE 8
-#define UACINRTS192_CAPACITY ((192 / OUTSAMPLES_AUDIO48) * BUFUSBSCALE * BUFOVERSIZE)
-#define UACINRTS96_CAPACITY ((96 / OUTSAMPLES_AUDIO48) * BUFUSBSCALE * BUFOVERSIZE)
-#define UACIN48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * BUFUSBSCALE * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
-
-#define BUFUSBSCALE2 1
-
-
-#define UACOUT48_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * BUFUSBSCALE * BUFOVERSIZE * BUFUSBSCALE2)
-
-#define HDMI48TX_CAPACITY 		(32 * BUFOVERSIZE * BUFUSBSCALE2)
-#define VOICE16RX_CAPACITY 		(16 * BUFOVERSIZE * BUFUSBSCALE2)	// прием от кодекв
-#define VOICE16TX_CAPACITY 		(32 * BUFOVERSIZE * BUFUSBSCALE2)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
-#define VOICE32TX_CAPACITY 		(16 * BUFOVERSIZE * BUFUSBSCALE2)
-#define AUDIOREC_CAPACITY 		(18 * BUFOVERSIZE * BUFUSBSCALE2)
-#define SPEEX_CAPACITY 			(5 * BUFOVERSIZE * BUFUSBSCALE2)
-//#define VOICE16TXMONI_CAPACITY 	(64 * BUFOVERSIZE * BUFUSBSCALE2)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
-#define VOICE16TXMONI_CAPACITY 	(16 * BUFOVERSIZE * BUFUSBSCALE2)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
-#define VOICE16REC_CAPACITY		(64 * BUFOVERSIZE * BUFUSBSCALE2)
+#define AUDIOREC_CAPACITY (18 * BUFOVERSIZE)
 
 
 #define BTIN48_CAPACITY 8
@@ -448,7 +443,7 @@ struct buffitem
 };
 
 // HASCHECKREADY - функция get_readybuffer может вернуть false
-template <typename buffitem_t, int hasresample, int HASCHECKREADY, int SKIPSAMPLES>
+template <typename buffitem_t, int needsampleslipping, int HASCHECKREADY, int SKIPSAMPLES>
 class blists
 {
 	typedef typeof(buffitem_t::v) element_t;
@@ -502,9 +497,9 @@ public:
 		wbdeleted(0),
 		wbgatix(ARRAY_SIZE(wbgatsize)),	// состояние - нет ничего для формирования нового блокв
 		workbuff(NULL),
-		MINMLEVEL(hasresample ? 1 * capacity / 4 : 0),
-		NORMLEVEL(hasresample ? 2 * capacity / 4 : capacity / 4),	// без resample используется только этот параметр
-		MAXLEVEL(hasresample ? 3 * capacity / 4 : 0),
+		MINMLEVEL(needsampleslipping ? 1 * capacity / 4 : 0),
+		NORMLEVEL(needsampleslipping ? 2 * capacity / 4 : capacity / 4),	// без sampleslipping используется только этот параметр
+		MAXLEVEL(needsampleslipping ? 3 * capacity / 4 : 0),
 		outready(false)	// накоплено нужное количество буферов для старта
 	{
 		InitializeListHead(& freelist);
@@ -535,7 +530,7 @@ public:
 		ASSERT3(p->tag2 == p, __FILE__, __LINE__, name);
 		ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 
 		InsertHeadList(& freelist, & p->item);
 		++ freecount;
@@ -552,7 +547,7 @@ public:
 		ASSERT3(p->tag3 == p, __FILE__, __LINE__, name);
 
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 
 		InsertHeadList(& readylist, & p->item);
 		++ readycount;
@@ -569,7 +564,7 @@ public:
 	bool get_readybuffer_raw(element_t * * dest, uint_fast32_t timeMS = 0)
 	{
 		IRQL_t oldIrql;
-		//IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		//IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		if (timeMS != 0)
 		{
 			// Запрос с ненулевым аргументром timeMS может возникнуть только из выделенных потоков
@@ -579,7 +574,7 @@ public:
 			}
 		}
 		//IRQLSPIN_UNLOCK(& irqllock, oldIrql);
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& readylist))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(& readylist);
@@ -604,7 +599,7 @@ public:
 	bool get_freebuffer_raw(element_t * * dest)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		if (! IsListEmpty(& freelist))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(& freelist);
@@ -632,7 +627,7 @@ public:
 		IRQL_t oldIrql;
 
 		InitializeListHead(list);
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		while (n -- && ! IsListEmpty(& readylist))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(& readylist);
@@ -650,7 +645,7 @@ public:
 	{
 		IRQL_t oldIrql;
 
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		while (! IsListEmpty(list))
 		{
 			const PRLIST_ENTRY t = RemoveTailList(list);
@@ -667,19 +662,19 @@ public:
 	bool get_readybuffer(element_t * * dest, uint_fast32_t timeMS = 0)
 	{
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		const bool stoutready = outready;
 		const int streadycount = readycount;
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 
-		if (hasresample)
+		if (needsampleslipping)
 		{
 			const unsigned wbgss = element_t::ss * element_t::nch;	// кодчиество байтов одного сэмпла на вссе каналы
 			const unsigned total = get_datasize();	// полный размер буфера
 			const unsigned SKIPBUFFS = SKIPSAMPLES / (total / wbgss);
 
 			if (! stoutready)
-				return false;
+				return false;	// входной буфер ещё не включился
 			if (wbskip != 0)
 			{
 				-- wbskip;	// statistics
@@ -693,7 +688,7 @@ public:
 			}
 			else if (streadycount >= MAXLEVEL)
 			{
-				++ wbdeleted;	// statistics
+				++ wbdeleted;	// statistics - входных буферов больше чем надо - медленно читают..
 				wbskip = SKIPBUFFS;
 				return get_readybufferarj(dest, false, true);
 			}
@@ -762,13 +757,15 @@ public:
 	{
 #if WITHBUFFERSDEBUG
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		unsigned fin = fqin.getfreq();
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, freecount);
-		PRINTF(" %s:e=%d,E=%d,y=%d,f=%d,%uk/%uk", name, errallocate, errforced, readycount, freecount, (unsigned) ((fin + 500) / 1000), (unsigned) ((fout + 500) / 1000));
-		if (hasresample)
+		const int r = readycount;
+		const int f = freecount;
+		PRINTF(" %s:e=%d,E=%d,y=%d,f=%d,%uk/%uk", name, errallocate, errforced, r, f, (unsigned) ((fin + 500) / 1000), (unsigned) ((fout + 500) / 1000));
+		if (needsampleslipping)
 		{
 			PRINTF("+%u,-%u", wbadded, wbdeleted);
 		}
@@ -779,13 +776,13 @@ public:
 	{
 #if WITHBUFFERSDEBUG
 		IRQL_t oldIrql;
-		IRQLSPIN_LOCK(& irqllock, & oldIrql, irqllockarg);
+		IRQLSPIN_LOCK_YIELD(& irqllock, & oldIrql, irqllockarg);
 		unsigned fin = fqin.getfreq();
 		unsigned fout = fqout.getfreq();
 		IRQLSPIN_UNLOCK(& irqllock, oldIrql);
 		//PRINTF("%s:s=%d,a=%d,o=%d,f=%d ", name, saveount, errallocate, readycount, (unsigned) freecount);
 		PRINTF(" %s:e=%d,y=%d,f=%d,%uH/%uH", name, errallocate, (unsigned) readycount, (unsigned) freecount, (unsigned) fin, (unsigned) fout);
-		if (hasresample)
+		if (needsampleslipping)
 		{
 			PRINTF("+%u,-%u", wbadded, wbdeleted);
 		}
@@ -801,7 +798,7 @@ public:
 	}
 
 	///////////
-	/// resampler
+	/// Adaptive Jitter Buffer / Sample Slipping
 
 	// Гарантированно получене полного буфера или отказ
 	// исполнение команд на добавление или удаление одного семплв
@@ -883,10 +880,10 @@ public:
 	}
 };
 
-template <typename sample_t, typename element_t, int hasresample, int HASCHECKREADY, int skipsamples>
-class dmahandle: public blists<element_t, hasresample, HASCHECKREADY, skipsamples>
+template <typename sample_t, typename element_t, int needsampleslipping, int HASCHECKREADY, int skipsamples>
+class dmahandle: public blists<element_t, needsampleslipping, HASCHECKREADY, skipsamples>
 {
-	typedef blists<element_t, hasresample, HASCHECKREADY, skipsamples> parent_t;
+	typedef blists<element_t, needsampleslipping, HASCHECKREADY, skipsamples> parent_t;
 	typedef typeof (element_t::v) wel_t;
 	typedef typeof (wel_t::buff [0]) rawsample_t;
 	wel_t * wb;
@@ -911,8 +908,11 @@ public:
 	{
 		if (wb == NULL)
 		{
-			if (! parent_t::get_freebuffer(& wb))
-				return;
+			while (! parent_t::get_freebufferforced(& wb))
+			{
+				// первичное получение должно срабатывать.
+				ASSERT3(0, __FILE__, __LINE__, parent_t::name);
+			}
 			wbn = 0;
 		}
 		wbn += putcbf(wb->buff + wbn, ch0, ch1, v3);
@@ -928,8 +928,11 @@ public:
 	{
 		if (wb == NULL)
 		{
-			if (! parent_t::get_freebuffer(& wb))
-				return;
+			while (! parent_t::get_freebufferforced(& wb))
+			{
+				// первичное получение должно срабатывать.
+				ASSERT3(0, __FILE__, __LINE__, parent_t::name);
+			}
 			wbn = 0;
 		}
 		wbn += putcbf(wb->buff + wbn, ch0, ch1);
@@ -957,13 +960,16 @@ public:
 		return 1;
 	}
 
-	uint_fast8_t fetchdata_resample(sample_t * dest, unsigned (* getcbf)(typeof (wel_t::buff [0]) * b, sample_t * dest), bool (fillresampled)(sample_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch), unsigned nsrc, unsigned nsrcch)
+	uint_fast8_t fetchdata_sampleslipping(sample_t * dest, unsigned (* getcbf)(typeof (wel_t::buff [0]) * b, sample_t * dest), bool (fillslipping)(sample_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch), unsigned nsrc, unsigned nsrcch)
 	{
 		if (rb == NULL)
 		{
 			if (! parent_t::get_freebuffer(& rb))
-				return 0;
-			if (!fillresampled(rb->buff, ARRAY_SIZE(rb->buff), rb->nch, nsrc, nsrcch))
+			{
+				//ASSERT3(0, __FILE__, __LINE__, name);
+				return 0;	// данных на входе просто нет
+			}
+			if (! fillslipping(rb->buff, ARRAY_SIZE(rb->buff), rb->nch, nsrc, nsrcch))
 			{
 				parent_t::release_buffer(rb);
 				rb = NULL;
@@ -1009,11 +1015,11 @@ enum { CNT32TX = DMABUFFSIZE32TX / DMABUFFSTEP32TX };
 typedef ALIGNX_BEGIN struct denoise16
 {
 	ALIGNX_BEGIN speexel_t buff [NTRX * FIRBUFSIZE] ALIGNX_END;
-	enum { ss = 1, nch = NTRX };	// stub for resampling support
+	enum { ss = 1, nch = NTRX };	// stub for sample slipping support
 } ALIGNX_END denoise16_t;
 
 typedef buffitem<denoise16_t> denoise16buf_t;
-typedef dmahandle<FLOAT_t, denoise16buf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> denoise16dma_t;
+typedef dmahandle<FLOAT_t, denoise16buf_t, 0, 0, SKIPSAMPLES_NOSLIPPING> denoise16dma_t;
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
 static __NO_INIT denoise16buf_t denoise16buf [SPEEX_CAPACITY];
@@ -1036,11 +1042,11 @@ uint_fast8_t takespeexready(speexel_t * * dest, uint_fast32_t timeMS)
 speexel_t * allocatespeexbuffer(void)
 {
 	denoise16_t * addr;
-	if (denoise16list.get_freebufferforced(& addr))
+	while (! denoise16list.get_freebufferforced(& addr))
 	{
-		return addr->buff;
+		ASSERT(0);
 	}
-	return NULL;
+	return addr->buff;
 }
 
 // Освобождение буфера
@@ -1064,7 +1070,7 @@ typedef ALIGNX_BEGIN struct voice16rx_tag
 {
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16RX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16RX };	// resampling support
+	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16RX };	// sample slipping support
 } ALIGNX_END voice16rx_t;
 
 typedef buffitem<voice16rx_t> voice16rxbuf_t;
@@ -1074,15 +1080,15 @@ typedef ALIGNX_BEGIN struct voice16tx_tag
 {
 	ALIGNX_BEGIN aubufv_t buff [DMABUFFSIZE16TX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16TX };	// resampling support
+	enum { ss = sizeof (aubufv_t), nch = DMABUFFSTEP16TX };	// sample slipping support
 } ALIGNX_END voice16tx_t;
 
 typedef buffitem<voice16tx_t> voice16txbuf_t;
 
 //typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
 
-typedef dmahandle<FLOAT_t, voice16rxbuf_t, VOICE16RX_RESAMPLING, 1, SKIPSAMPLES_HDMI> voice16rxdma_t;
-typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_RESAMPLING, 1, SKIPSAMPLES_HDMI> voice16txdma_t;
+typedef dmahandle<FLOAT_t, voice16rxbuf_t, VOICE16RX_SLIPPING, 1, SKIPSAMPLES_HDMI> voice16rxdma_t;
+typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_SLIPPING, 1, SKIPSAMPLES_HDMI> voice16txdma_t;
 
 #if WITHFPGAPIPE_CODEC1
 static voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
@@ -1295,12 +1301,12 @@ typedef ALIGNX_BEGIN struct hdmi48tx_tag
 {
 	ALIGNX_BEGIN hdmi48bufv_t buff [DMABUFFSIZEHDMI48TX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (hdmi48bufv_t), nch = DMABUFFSTEPHDMI48TX };	// resampling support
+	enum { ss = sizeof (hdmi48bufv_t), nch = DMABUFFSTEPHDMI48TX };	// sample slipping support
 } ALIGNX_END hdmi48tx_t;
 
 typedef buffitem<hdmi48tx_t> hdmi48txbuf_t;
 
-typedef dmahandle<FLOAT_t, hdmi48txbuf_t, HDMI48TX_RESAMPLING, 1, SKIPSAMPLES_HDMI> hdmi48txdma_t;
+typedef dmahandle<FLOAT_t, hdmi48txbuf_t, HDMI48TX_SLIPPING, 1, SKIPSAMPLES_HDMI> hdmi48txdma_t;
 
 static RAMNCTX hdmi48txbuf_t hdmi48txbuf [HDMI48TX_CAPACITY];
 
@@ -1394,7 +1400,7 @@ void elfill_dmabufferhdmi48tx(FLOAT_t ch0, FLOAT_t ch1)
 typedef ALIGNX_BEGIN struct moni16_tag
 {
 	ALIGNX_BEGIN FLOAT_t buff [DMABUFFSIZE16MONI] ALIGNX_END;
-	enum { ss = sizeof (FLOAT_t), nch = DMABUFFSTEP16MONI };	// stub for resampling support
+	enum { ss = sizeof (FLOAT_t), nch = DMABUFFSTEP16MONI };	// stub for sample slipping support
 } ALIGNX_END moni16_t;
 
 typedef buffitem<moni16_t> moni16buf_t;
@@ -1419,7 +1425,7 @@ static unsigned getcbf_dmabuffer16moni(FLOAT_t * b, FLOAT_t * dest)
 
 
 
-typedef dmahandle<FLOAT_t, moni16buf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> moni16txdma_t;
+typedef dmahandle<FLOAT_t, moni16buf_t, 0, 1, SKIPSAMPLES_NOSLIPPING> moni16txdma_t;
 
 static __NO_INIT moni16buf_t moni16buf [VOICE16TXMONI_CAPACITY];
 static __NO_INIT moni16buf_t rx16recbuf [VOICE16REC_CAPACITY];
@@ -1463,14 +1469,14 @@ typedef ALIGNX_BEGIN struct voices32tx_tag
 {
 	ALIGNX_BEGIN IFDACvalue_t buff [DMABUFFSIZE32TX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (IFDACvalue_t), nch = DMABUFFSTEP32TX };	// resampling support
+	enum { ss = sizeof (IFDACvalue_t), nch = DMABUFFSTEP32TX };	// sample slipping support
 } ALIGNX_END voice32tx_t;
 
 typedef buffitem<voice32tx_t> voice32txbuf_t;
 
 static RAMNCTX voice32txbuf_t voice32txbuf [VOICE32TX_CAPACITY];
 
-typedef dmahandle<FLOAT_t, voice32txbuf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> voice32txdma_t;
+typedef dmahandle<FLOAT_t, voice32txbuf_t, 0, 1, SKIPSAMPLES_NOSLIPPING> voice32txdma_t;
 
 //static voice32txlist_t voice32tx(IRQL_REALTIME, "32tx");
 static voice32txdma_t voice32tx(IRQL_REALTIME, "32tx", voice32txbuf, ARRAY_SIZE(voice32txbuf));
@@ -1611,14 +1617,14 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 {
 	ALIGNX_BEGIN IFADCvalue_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = sizeof (IFADCvalue_t), nch = DMABUFFSTEP32RX };	// resampling support
+	enum { ss = sizeof (IFADCvalue_t), nch = DMABUFFSTEP32RX };	// sample slipping support
 } ALIGNX_END voice32rx_t;
 
 typedef buffitem<voice32rx_t> voice32rxbuf_t;
 
 static RAMNCRX voice32rxbuf_t voice32rxbuf [VOICE32RX_CAPACITY];
 
-typedef dmahandle<int_fast32_t, voice32rxbuf_t, 0, 1, SKIPSAMPLES_NORESAMPLER> voice32rxdma_t;
+typedef dmahandle<int_fast32_t, voice32rxbuf_t, 0, 1, SKIPSAMPLES_NOSLIPPING> voice32rxdma_t;
 
 static voice32rxdma_t voice32rx(IRQL_REALTIME, "32rx", voice32rxbuf, ARRAY_SIZE(voice32rxbuf));
 
@@ -1650,6 +1656,7 @@ uintptr_t allocate_dmabuffer32rx(void)
 }
 
 // can be zero
+// not used
 uintptr_t getfilled_dmabuffer32rx(void)
 {
 	voice32rx_t * dest;
@@ -1658,55 +1665,41 @@ uintptr_t getfilled_dmabuffer32rx(void)
 	return (uintptr_t) dest->buff;
 }
 
-#if WITHRTOS
 
-	static int buffprocess_thread(void * ctx)
-	{
-		(void) ctx;
-		for (;;)
-		{
-			voice32rx_t * dest;
-			if (voice32rx.get_readybuffer(& dest, LOCAL_WAITINFINITY) == false)
-				continue;
-			process_dmabuffer32rx(dest->buff);
-			voice32rx.release_buffer(dest);
-
-			dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
-		}
-		return 0;
-	}
-
-#else /* WITHRTOS */
-	// Обработка сразу в прерывании
-	//#define TXSPOOLCOND (WITHINTEGRATEDDSP && ((HARDWARE_NCORES < 4) || ! WITHSMPSYSTEM))
-	//#define TXSPOOLCOND 1	// Force in-interrupt 32rx stream parsing
-	#if ! TXSPOOLCOND
-	#define TXSPOOLCORE (HARDWARE_NCORES - 1)
-	#endif
-
-	static void dsphftrxproc_spool_user(void * ctx)
+// thread function
+static int buffprocess_thread(void * ctx)
+{
+	(void) ctx;
+	for (;;)
 	{
 		voice32rx_t * dest;
+		if (voice32rx.get_readybuffer(& dest, LOCAL_WAITINFINITY) == false)
+			continue;
+		process_dmabuffer32rx(dest->buff);
+		voice32rx.release_buffer(dest);
 
-		while (voice32rx.get_readybuffer(& dest))
-		{
-			process_dmabuffer32rx(dest->buff);
-			voice32rx.release_buffer(dest);
-			dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
-		}
+		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
 	}
+	return 0;
+}
 
-#endif /* WITHRTOS */
+// dpc function
+static void dsphftrxproc_spool_user(void * ctx)
+{
+	voice32rx_t * dest;
+
+	if (voice32rx.get_readybuffer(& dest))
+	{
+		process_dmabuffer32rx(dest->buff);
+		voice32rx.release_buffer(dest);
+		dsp_processtx(CNT32RX);	/* выборка семплов из источников звука и формирование потока на передатчик */
+	}
+}
 
 void save_dmabuffer32rx(uintptr_t addr)
 {
 	voice32rx_t * const p = CONTAINING_RECORD(addr, voice32rx_t, buff);
 	voice32rx.save_readybuffer(p);
-	// dsphftrxproc_spool_user on other CPUs
-#if ! WITHRTOS && TXSPOOLCOND
-	#warning rx process in interrupt
-	dsphftrxproc_spool_user(hftrx_rxgetpathA());
-#endif /* TXSPOOLCOND */
 }
 
 ///////////////////////////////////////
@@ -1720,7 +1713,7 @@ typedef struct
 {
 	ALIGNX_BEGIN  uint8_t buff [UAC_GROUPING_DMAC * UACOUT_AUDIO48_DATASIZE_DMAC] ALIGNX_END;
 	ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = UACOUT_AUDIO48_SAMPLEBYTES, nch = UACOUT_FMT_CHANNELS_AUDIO48 };	// resampling support
+	enum { ss = UACOUT_AUDIO48_SAMPLEBYTES, nch = UACOUT_FMT_CHANNELS_AUDIO48 };	// sample slipping support
 } uacout48_t;
 
 typedef buffitem<uacout48_t> uacout48buf_t;
@@ -1865,7 +1858,302 @@ int_fast32_t datasize_dmabuffereth0io(void) /* parameter for DMA Ethernet0 buffe
 
 #endif
 
-#if WITHUSEUSBBT && WITHUSEUSBBTAUDIO
+/**
+ * @brief Instance structure for the floating-point transposed direct form II Biquad cascade filter.
+ */
+typedef struct
+{
+        uint8_t numStages;         /**< number of 2nd order stages in the filter.  Overall order is 2*numStages. */
+        float64_t *pState;         /**< points to the array of state coefficients.  The array is of length 4*numStages. */
+  const float64_t *pCoeffs;        /**< points to the array of coefficients.  The array is of length 5*numStages. */
+} arm_biquad_cascade_stereo_df2T_instance_f64;
+
+/**
+  @ingroup groupFilters
+ */
+
+/**
+  @addtogroup BiquadCascadeDF2T
+  @{
+ */
+
+/**
+  @brief         Initialization function for the floating-point transposed direct form II Biquad cascade filter.
+  @param[in,out] S           points to an instance of the filter data structure.
+  @param[in]     numStages   number of 2nd order stages in the filter.
+  @param[in]     pCoeffs     points to the filter coefficients.
+  @param[in]     pState      points to the state buffer.
+
+  @par           Coefficient and State Ordering
+                   The coefficients are stored in the array <code>pCoeffs</code> in the following order:
+  <pre>
+      {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
+  </pre>
+  @par
+                   where <code>b1x</code> and <code>a1x</code> are the coefficients for the first stage,
+                   <code>b2x</code> and <code>a2x</code> are the coefficients for the second stage,
+                   and so on.  The <code>pCoeffs</code> array contains a total of <code>5*numStages</code> values.
+  @par
+                   The <code>pState</code> is a pointer to state array.
+                   Each Biquad stage has 2 state variables <code>d1,</code> and <code>d2</code> for each channel.
+                   The 2 state variables for stage 1 are first, then the 2 state variables for stage 2, and so on.
+                   The state array has a total length of <code>2*numStages</code> values.
+                   The state variables are updated after each block of data is processed; the coefficients are untouched.
+ */
+
+ARM_DSP_ATTRIBUTE void arm_biquad_cascade_stereo_df2T_init_f64(
+        arm_biquad_cascade_stereo_df2T_instance_f64 * S,
+        uint8_t numStages,
+  const float64_t * pCoeffs,
+        float64_t * pState)
+{
+  /* Assign filter stages */
+  S->numStages = numStages;
+
+  /* Assign coefficient pointer */
+  S->pCoeffs = pCoeffs;
+
+  /* Clear state buffer and size is always 4 * numStages */
+  memset(pState, 0, (4U * (uint32_t) numStages) * sizeof(float64_t));
+
+  /* Assign state pointer */
+  S->pState = pState;
+}
+
+ARM_DSP_ATTRIBUTE void arm_biquad_cascade_stereo_df2T_f64(
+  const arm_biquad_cascade_stereo_df2T_instance_f64 * S,
+  const float64_t * pSrc,
+        float64_t * pDst,
+        uint32_t blockSize)
+{
+  const float64_t *pIn = pSrc;                         /* Source pointer */
+        float64_t *pOut = pDst;                        /* Destination pointer */
+        float64_t *pState = S->pState;                 /* State pointer */
+  const float64_t *pCoeffs = S->pCoeffs;               /* Coefficient pointer */
+        float64_t acc1a, acc1b;                        /* Accumulator */
+        float64_t b0, b1, b2, a1, a2;                  /* Filter coefficients */
+        float64_t Xn1a, Xn1b;                          /* Temporary input */
+        float64_t d1a, d2a, d1b, d2b;                  /* State variables */
+        uint32_t sample, stage = S->numStages;         /* Loop counters */
+
+    do
+    {
+        /* Reading the coefficients */
+        b0 = pCoeffs[0];
+        b1 = pCoeffs[1];
+        b2 = pCoeffs[2];
+        a1 = pCoeffs[3];
+        a2 = pCoeffs[4];
+
+        /* Reading the state values */
+        d1a = pState[0];
+        d2a = pState[1];
+        d1b = pState[2];
+        d2b = pState[3];
+
+        pCoeffs += 5U;
+
+#if defined (ARM_MATH_LOOPUNROLL)
+
+    /* Loop unrolling: Compute 8 outputs at a time */
+        sample = blockSize >> 3U;
+
+        while (sample > 0U) {
+          /* y[n] = b0 * x[n] + d1 */
+          /* d1 = b1 * x[n] + a1 * y[n] + d2 */
+          /* d2 = b2 * x[n] + a2 * y[n] */
+
+/*  1 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  2 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  3 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  4 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  5 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  6 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  7 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  8 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+          /* decrement loop counter */
+          sample--;
+        }
+
+        /* Loop unrolling: Compute remaining outputs */
+        sample = blockSize & 0x7U;
+
+#else
+
+        /* Initialize blkCnt with number of samples */
+        sample = blockSize;
+
+#endif /* #if defined (ARM_MATH_LOOPUNROLL) */
+
+        while (sample > 0U) {
+          /* Read the input */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          /* y[n] = b0 * x[n] + d1 */
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          /* Store the result in the accumulator in the destination buffer. */
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          /* Every time after the output is computed state should be updated. */
+          /* d1 = b1 * x[n] + a1 * y[n] + d2 */
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          /* d2 = b2 * x[n] + a2 * y[n] */
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+          /* decrement loop counter */
+          sample--;
+        }
+
+        /* Store the updated state variables back into the state array */
+        pState[0] = d1a;
+        pState[1] = d2a;
+
+        pState[2] = d1b;
+        pState[3] = d2b;
+
+        pState += 4U;
+
+        /* The current stage output is given as the input to the next stage */
+        pIn = pDst;
+
+        /* Reset the output working pointer */
+        pOut = pDst;
+
+        /* Decrement the loop counter */
+        stage--;
+
+    } while (stage > 0U);
+
+}
+
+#if WITHRESAMPLERS
 
 
 #define BTIO44P1_SAMPLEBYTES 2
@@ -1887,7 +2175,7 @@ typedef struct
 {
 	ALIGNX_BEGIN  FLOAT_t buff [BTSSCALE * 480 * 2] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = sizeof (FLOAT_t), nch = 2 };	// resampling support
+	enum { ss = sizeof (FLOAT_t), nch = 2 };	// sample slipping support
 } btio48k_t;
 
 
@@ -1896,7 +2184,7 @@ typedef struct
 {
 	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 441 * BTIO44P1_CHANNELS] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = sizeof (int16_t), nch = BTIO44P1_CHANNELS };	// resampling support
+	enum { ss = sizeof (int16_t), nch = BTIO44P1_CHANNELS };	// sample slipping support
 } btio44p1k_t;
 
 // Буфер на стороне 32 кГц
@@ -1904,23 +2192,23 @@ typedef struct
 {
 	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 320 * BTIO32_CHANNELS] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = sizeof (int16_t), nch = BTIO32_CHANNELS };	// resampling support
+	enum { ss = sizeof (int16_t), nch = BTIO32_CHANNELS };	// sample slipping support
 } btio32k_t;
 
 // Буфер на стороне 16 кГц
 typedef struct
 {
-	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 160 * 1] ALIGNX_END;
+	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 160 * BTIO16_CHANNELS] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = sizeof (int16_t), nch = BTIO16_CHANNELS };	// resampling support
+	enum { ss = sizeof (int16_t), nch = BTIO16_CHANNELS };	// sample slipping support
 } btio16k_t;
 
 // Буфер на стороне 8 кГц
 typedef struct
 {
-	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 80 * 1] ALIGNX_END;
+	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 80 * BTIO8_CHANNELS] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-	enum { ss = sizeof (int16_t), nch = BTIO8_CHANNELS };	// resampling support
+	enum { ss = sizeof (int16_t), nch = BTIO8_CHANNELS };	// sample slipping support
 } btio8k_t;
 
 typedef adapters<FLOAT_t, (int) BTIO44P1_SAMPLEBYTES, (int) BTIO44P1_CHANNELS> btioadpt_t;
@@ -1969,129 +2257,34 @@ static btio16kdmaRS_t btout16k(IRQL_REALTIME, "btout16k", btout16kbuf, ARRAY_SIZ
 static btio8kdmaRS_t btout8k(IRQL_REALTIME, "btout8k", btout8kbuf, ARRAY_SIZE(btout8kbuf));
 static btio48kdma_t btout48k(IRQL_REALTIME, "btout48k", btout48kbuf, ARRAY_SIZE(btout48kbuf));
 
+/* Канал из BT в трансивер */
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout44p1k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout32k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout16k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout8k;
 
+/* Канал из трансивера в BT */
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltin44p1k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltin32k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltin16k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltin8k;
 
-// Заполнение с ресэмплингом буфера данными из btin48k
-// n - требуемое количество samples
-// возвращает признак того, что данные в источнике есть
-// btin48k -> resampler -> btin44p1k
-static bool fetchdata_downRS_btin44p1k(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+
+// Continuous linear interpolation helper across 10 ms buffer boundaries
+static inline FLOAT_t lerp_sample(FLOAT_t a, FLOAT_t b, FLOAT_t frac)
 {
-	btio48k_t * addr;
-	if (! btin48k.get_readybuffer(& addr))
-		return false;
-	FLOAT_t * const src = addr->buff;
-	//unsigned nsrc = ARRAY_SIZE(addr->buff);
-	ASSERT(ndst == BTSSCALE * 441 * ndstch);
-	ASSERT(nsrc == BTSSCALE * 480 * nsrcch);
-	ASSERT(2 == ndstch);
-	ASSERT(2 == nsrcch);
-
-	const unsigned srcframes = nsrc / nsrcch;
-	const unsigned dstframes = ndst / ndstch;
-	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-
-	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin44p1k, src, src, srcframes);
-	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
-	{
-		const unsigned srci = dsti * srcframes / dstframes;
-		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, src [srci * nsrcch + 0]) * scale;	// получить sample
-		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * nsrcch + 1]) * scale;	// получить sample
-//		dst [dsti * 2 + 0] = get_lout();
-//		dst [dsti * 2 + 1] = get_rout();
-
-	}
-
-	btin48k.release_buffer(addr);
-	return true;
+	return a + (b - a) * frac;
 }
 
-// Заполнение с ресэмплингом буфера данными из btin48k
-// n - требуемое количество samples
-// возвращает признак того, что данные в источнике есть
-// btin48k -> resampler -> btin32k
-static bool fetchdata_downRS_btin32k(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
-{
-	btio48k_t * addr;
-	if (! btin48k.get_readybuffer(& addr))
-		return false;
-	FLOAT_t * const src = addr->buff;
-	//unsigned nsrc = ARRAY_SIZE(addr->buff);
-	ASSERT(ndst == BTSSCALE * 320 * ndstch);
-	ASSERT(nsrc == BTSSCALE * 480 * nsrcch);
-	ASSERT(2 == ndstch);
-	ASSERT(2 == nsrcch);
-
-	const unsigned srcframes = nsrc / nsrcch;
-	const unsigned dstframes = ndst / ndstch;
-	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-
-	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin32k, src, src, srcframes);
-	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
-	{
-		const unsigned srci = dsti * srcframes / dstframes;
-		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
-		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
-//		dst [dsti * 2 + 0] = get_lout();
-//		dst [dsti * 2 + 1] = get_rout();
-
-	}
-
-	btin48k.release_buffer(addr);
-	return true;
-}
-
-// Заполнение с ресэмплингом буфера данными из btin48k
-// n - требуемое количество samples
-// возвращает признак того, что данные в источнике есть
-// btin48k -> resampler -> btin16k
-static bool fetchdata_downRS_btin16k(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
-{
-	btio48k_t * addr;
-	if (! btin48k.get_readybuffer(& addr))
-		return false;
-	FLOAT_t * const src = addr->buff;
-	//unsigned nsrc = ARRAY_SIZE(addr->buff);
-	ASSERT(ndst == BTSSCALE * 160 * ndstch);
-	ASSERT(nsrc == BTSSCALE * 480 * nsrcch);
-	ASSERT(1 == ndstch);
-	ASSERT(2 == nsrcch);
-
-	const unsigned srcframes = nsrc / nsrcch;
-	const unsigned dstframes = ndst / ndstch;
-	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-
-	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin16k, src, src, srcframes);
-	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
-	{
-		const unsigned srci = dsti * srcframes / dstframes;
-		dst [dsti] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
-		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
-	}
-
-	btin48k.release_buffer(addr);
-	return true;
-}
-
-// Заполнение с ресэмплингом буфера данными из btin48k
-// n - требуемое количество samples
-// возвращает признак того, что данные в источнике есть
-// btin48k -> resampler -> btin8k
+// Decimate and downmix btin8k (8 kHz mono) from btin48k (48 kHz stereo)
+// Ratio: 480 -> 80 frames per 10 ms block (6:1)
 static bool fetchdata_downRS_btin8k(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio48k_t * addr;
 	if (! btin48k.get_readybuffer(& addr))
 		return false;
+
 	FLOAT_t * const src = addr->buff;
-	//unsigned nsrc = ARRAY_SIZE(addr->buff);
 	ASSERT(ndst == BTSSCALE * 80 * ndstch);
 	ASSERT(nsrc == BTSSCALE * 480 * nsrcch);
 	ASSERT(1 == ndstch);
@@ -2099,168 +2292,68 @@ static bool fetchdata_downRS_btin8k(int16_t * dst, unsigned ndst, unsigned ndstc
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
-	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
 
+	// Apply anti-aliasing low-pass filter prior to 6:1 decimation
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin8k, src, src, srcframes);
+
+	// Exact 6:1 decimation with stereo-to-mono downmix (0.5 * (L + R))
+	// Fixes previous out-of-bounds write to dst[dsti * 2 + 1] and 6x gain clipping
 	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
 	{
-		const unsigned srci = dsti * srcframes / dstframes;
-		dst [dsti] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
-		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
+		const unsigned srci = dsti * 6;
+		const FLOAT_t mono = (FLOAT_t) 0.5 * (src [srci * 2 + 0] + src [srci * 2 + 1]);
+		dst [dsti] = adpt_output(& btioadpt.adp, mono);
 	}
 
 	btin48k.release_buffer(addr);
 	return true;
 }
 
-// Заполнение с ресэмплингом буфера данными из btout44p1k
-// n - требуемое количество samples
-// возвращает признак того, что данные в источнике есть
-// btout44p1k -> resampler -> btout48k
-static bool fetchdata_upRS_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+// Decimate and downmix btin8k (8 kHz stereo) from btin48k (48 kHz stereo)
+// Ratio: 480 -> 80 frames per 10 ms block (6:1)
+static bool fetchdata_downRS_btin8k2ch(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
-	btio44p1k_t * addr;
-	if (! btout44p1k.get_readybuffer(& addr))
+	btio48k_t * addr;
+	if (! btin48k.get_readybuffer(& addr))
 		return false;
-	const int16_t * const src = addr->buff;
-	ASSERT(ndst == BTSSCALE * 480 * ndstch);
-	ASSERT(nsrc == BTSSCALE * 441 * nsrcch);
+
+	FLOAT_t * const src = addr->buff;
+	ASSERT(ndst == BTSSCALE * 80 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 480 * nsrcch);
 	ASSERT(2 == ndstch);
 	ASSERT(2 == nsrcch);
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
-	if (0)
-	{
-		// up-sampler: свободные места заполняются 0
-		const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	    ARM_MORPH(arm_fill)(0, dst, ndst);
-		for (unsigned srci = 0; srci < srcframes; ++ srci)
-		{
-			unsigned dsti = srci * dstframes / srcframes;
-			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
-			dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
 
-		}
-	}
-	else
-	{
-		// up-sampler: свободные места заполняются соседними данными
-		for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
-		{
-			unsigned srci = dsti * srcframes / dstframes;
-			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]);	// получить sample
-			dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]);	// получить sample
+	// Apply anti-aliasing low-pass filter prior to 6:1 decimation
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin8k, src, src, srcframes);
 
-		}
+	// Exact 6:1 decimation with stereo-to-mono downmix (0.5 * (L + R))
+	// Fixes previous out-of-bounds write to dst[dsti * 2 + 1] and 6x gain clipping
+	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
+	{
+		const unsigned srci = dsti * 6;
+		//const FLOAT_t mono = (FLOAT_t) 0.5 * (src [srci * 2 + 0] + src [srci * 2 + 1]);
+		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]);
+		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]);
 	}
-	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout44p1k, dst, dst, dstframes);
-	btout44p1k.release_buffer(addr);
+
+	btin48k.release_buffer(addr);
 	return true;
 }
 
-// Заполнение с ресэмплингом буфера данными из btout32k
-// n - требуемое количество samples
-// возвращает признак того, что данные в источнике есть
-// btout32k -> resampler -> btout48k
-static bool fetchdata_upRS_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
-{
-	btio32k_t * addr;
-	if (! btout32k.get_readybuffer(& addr))
-		return false;
-	const int16_t * const src = addr->buff;
-	ASSERT(ndst == BTSSCALE * 480 * ndstch);
-	ASSERT(nsrc == BTSSCALE * 320 * nsrcch);
-	ASSERT(2 == ndstch);
-	ASSERT(2 == nsrcch);
-
-	const unsigned srcframes = nsrc / nsrcch;
-	const unsigned dstframes = ndst / ndstch;
-	const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	if (0)
-	{
-		// up-sampler: свободные места заполняются 0
-		const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	    ARM_MORPH(arm_fill)(0, dst, ndst);
-		for (unsigned srci = 0; srci < srcframes; ++ srci)
-		{
-			unsigned dsti = srci * dstframes / srcframes;
-			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]) * scale;	// получить sample
-			dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]) * scale;	// получить sample
-
-		}
-	}
-	else
-	{
-		// up-sampler: свободные места заполняются соседними данными
-		for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
-		{
-			unsigned srci = dsti * srcframes / dstframes;
-			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci * 2 + 0]);	// получить sample
-			dst [dsti * 2 + 1] = adpt_input(& btioadpt.adp, src [srci * 2 + 1]);	// получить sample
-
-		}
-	}
-	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout32k, dst, dst, dstframes);
-	btout32k.release_buffer(addr);
-	return true;
-}
-
-// Заполнение с ресэмплингом буфера данными из btout16k
-// n - требуемое количество samples
-// возвращает признак того, что данные в источнике есть
-// btout16k -> resampler -> btout48k
-static bool fetchdata_upRS_btout16k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
-{
-	btio16k_t * addr;
-	if (! btout16k.get_readybuffer(& addr))
-		return false;
-	const int16_t * const src = addr->buff;
-	ASSERT(ndst == BTSSCALE * 480 * ndstch);
-	ASSERT(nsrc == BTSSCALE * 160 * nsrcch);
-	ASSERT(2 == ndstch);
-	ASSERT(1 == nsrcch);
-
-	const unsigned srcframes = nsrc / nsrcch;
-	const unsigned dstframes = ndst / ndstch;
-	if (0)
-	{
-		// up-sampler: свободные места заполняются 0
-		const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	    ARM_MORPH(arm_fill)(0, dst, ndst);
-		for (unsigned srci = 0; srci < srcframes; ++ srci)
-		{
-			unsigned dsti = srci * dstframes / srcframes;
-			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
-			dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// получить sample
-
-		}
-	}
-	else
-	{
-		// up-sampler: свободные места заполняются соседними данными
-		for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
-		{
-			unsigned srci = dsti * srcframes / dstframes;
-			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]);	// получить sample
-			dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// получить sample
-
-		}
-	}
-	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout16k, dst, dst, dstframes);
-	btout16k.release_buffer(addr);
-	return true;
-}
-
-// Заполнение с ресэмплингом буфера данными из btout8k
-// n - требуемое количество samples
-// возвращает признак того, что данные в источнике есть
-// btout8k -> resampler -> btout48k
+// Upsample and upmix btout8k (8 kHz mono) to btout48k (48 kHz stereo)
+// Ratio: 80 -> 480 frames per 10 ms block (1:6)
 static bool fetchdata_upRS_btout8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
+	// Retain last sample from the previous 10 ms block to eliminate boundary clicks
+	static FLOAT_t prev_m = 0;
+
 	btio8k_t * addr;
 	if (! btout8k.get_readybuffer(& addr))
 		return false;
+
 	const int16_t * const src = addr->buff;
 	ASSERT(ndst == BTSSCALE * 480 * ndstch);
 	ASSERT(nsrc == BTSSCALE * 80 * nsrcch);
@@ -2269,32 +2362,266 @@ static bool fetchdata_upRS_btout8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
-	if (0)
-	{
-		// up-sampler: свободные места заполняются 0
-		const FLOAT_t scale = (FLOAT_t) srcframes / dstframes;
-	    ARM_MORPH(arm_fill)(0, dst, ndst);
-		for (unsigned srci = 0; srci < srcframes; ++ srci)
-		{
-			unsigned dsti = srci * dstframes / srcframes;
-			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]) * scale;	// получить sample
-			dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// получить sample
 
+	// Exact 1:6 linear interpolation with mono-to-stereo channel duplication
+	for (unsigned srci = 0; srci < srcframes; ++ srci)
+	{
+		const FLOAT_t s0 = (srci == 0) ? prev_m : adpt_input(& btioadpt.adp, src [srci - 1]);
+		const FLOAT_t s1 = adpt_input(& btioadpt.adp, src [srci]);
+
+		for (unsigned k = 0; k < 6; ++ k)
+		{
+			const FLOAT_t y = lerp_sample(s0, s1, (FLOAT_t) (k + 1) / (FLOAT_t) 6.0);
+			const unsigned base = (srci * 6 + k) * 2;
+			dst [base + 0] = y;
+			dst [base + 1] = y;
 		}
 	}
-	else
-	{
-		// up-sampler: свободные места заполняются соседними данными
-		for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
-		{
-			unsigned srci = dsti * srcframes / dstframes;
-			dst [dsti * 2 + 0] = adpt_input(& btioadpt.adp, src [srci]);	// получить sample
-			dst [dsti * 2 + 1] = dst [dsti * 2 + 0];	// получить sample
 
-		}
-	}
+	prev_m = adpt_input(& btioadpt.adp, src [srcframes - 1]);
+
+	// Anti-imaging low-pass filter
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout8k, dst, dst, dstframes);
 	btout8k.release_buffer(addr);
+	return true;
+}
+
+// Resample and fill btin32k (32 kHz stereo) from btin48k (48 kHz stereo)
+// Ratio: 480 -> 320 frames per 10 ms block (3:2)
+static bool fetchdata_downRS_btin32k(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+{
+	btio48k_t * addr;
+	if (! btin48k.get_readybuffer(& addr))
+		return false;
+
+	FLOAT_t * const src = addr->buff;
+	ASSERT(ndst == BTSSCALE * 320 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 480 * nsrcch);
+	ASSERT(2 == ndstch);
+	ASSERT(2 == nsrcch);
+
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+
+	// Apply anti-aliasing low-pass filter prior to 3:2 decimation
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin32k, src, src, srcframes);
+
+	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
+	{
+		const FLOAT_t pos = (FLOAT_t) dsti * (FLOAT_t) srcframes / (FLOAT_t) dstframes;
+		const unsigned idx0 = (unsigned) pos;
+		const unsigned idx1 = (idx0 + 1 < srcframes) ? (idx0 + 1) : idx0;
+		const FLOAT_t frac = pos - (FLOAT_t) idx0;
+
+		const FLOAT_t l = lerp_sample(src [idx0 * 2 + 0], src [idx1 * 2 + 0], frac);
+		const FLOAT_t r = lerp_sample(src [idx0 * 2 + 1], src [idx1 * 2 + 1], frac);
+
+		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, l);
+		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, r);
+	}
+
+	btin48k.release_buffer(addr);
+	return true;
+}
+
+// Upsample btout32k (32 kHz stereo) to btout48k (48 kHz stereo)
+// Ratio: 320 -> 480 frames per 10 ms block (2:3)
+static bool fetchdata_upRS_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+{
+	static FLOAT_t prev_l = 0;
+	static FLOAT_t prev_r = 0;
+
+	btio32k_t * addr;
+	if (! btout32k.get_readybuffer(& addr))
+		return false;
+
+	const int16_t * const src = addr->buff;
+	ASSERT(ndst == BTSSCALE * 480 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 320 * nsrcch);
+	ASSERT(2 == ndstch);
+	ASSERT(2 == nsrcch);
+
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+
+	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
+	{
+		const FLOAT_t pos = (FLOAT_t) dsti * (FLOAT_t) srcframes / (FLOAT_t) dstframes;
+		const unsigned idx1 = (unsigned) pos;
+		const FLOAT_t frac = pos - (FLOAT_t) idx1;
+
+		const FLOAT_t s0_l = (idx1 == 0) ? prev_l : adpt_input(& btioadpt.adp, src [(idx1 - 1) * 2 + 0]);
+		const FLOAT_t s0_r = (idx1 == 0) ? prev_r : adpt_input(& btioadpt.adp, src [(idx1 - 1) * 2 + 1]);
+		const FLOAT_t s1_l = adpt_input(& btioadpt.adp, src [idx1 * 2 + 0]);
+		const FLOAT_t s1_r = adpt_input(& btioadpt.adp, src [idx1 * 2 + 1]);
+
+		dst [dsti * 2 + 0] = lerp_sample(s0_l, s1_l, frac);
+		dst [dsti * 2 + 1] = lerp_sample(s0_r, s1_r, frac);
+	}
+
+	prev_l = adpt_input(& btioadpt.adp, src [(srcframes - 1) * 2 + 0]);
+	prev_r = adpt_input(& btioadpt.adp, src [(srcframes - 1) * 2 + 1]);
+
+	// Anti-imaging low-pass filter
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout32k, dst, dst, dstframes);
+	btout32k.release_buffer(addr);
+	return true;
+}
+
+// Decimate and downmix btin16k (16 kHz mono) from btin48k (48 kHz stereo)
+// Ratio: 480 -> 160 frames per 10 ms block (3:1)
+static bool fetchdata_downRS_btin16k(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+{
+	btio48k_t * addr;
+	if (! btin48k.get_readybuffer(& addr))
+		return false;
+
+	FLOAT_t * const src = addr->buff;
+	ASSERT(ndst == BTSSCALE * 160 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 480 * nsrcch);
+	ASSERT(1 == ndstch);
+	ASSERT(2 == nsrcch);
+
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+
+	// Apply anti-aliasing low-pass filter prior to 3:1 decimation
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin16k, src, src, srcframes);
+
+	// Exact 3:1 decimation with stereo-to-mono downmix (0.5 * (L + R))
+	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
+	{
+		const unsigned srci = dsti * 3;
+		const FLOAT_t mono = (FLOAT_t) 0.5 * (src [srci * 2 + 0] + src [srci * 2 + 1]);
+		dst [dsti] = adpt_output(& btioadpt.adp, mono);
+	}
+
+	btin48k.release_buffer(addr);
+	return true;
+}
+
+// Upsample and upmix btout16k (16 kHz mono) to btout48k (48 kHz stereo)
+// Ratio: 160 -> 480 frames per 10 ms block (1:3)
+static bool fetchdata_upRS_btout16k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+{
+	static FLOAT_t prev_m = 0;
+
+	btio16k_t * addr;
+	if (! btout16k.get_readybuffer(& addr))
+		return false;
+
+	const int16_t * const src = addr->buff;
+	ASSERT(ndst == BTSSCALE * 480 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 160 * nsrcch);
+	ASSERT(2 == ndstch);
+	ASSERT(1 == nsrcch);
+
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+
+	// Exact 1:3 linear interpolation with mono-to-stereo channel duplication
+	for (unsigned srci = 0; srci < srcframes; ++ srci)
+	{
+		const FLOAT_t s0 = (srci == 0) ? prev_m : adpt_input(& btioadpt.adp, src [srci - 1]);
+		const FLOAT_t s1 = adpt_input(& btioadpt.adp, src [srci]);
+
+		const FLOAT_t y0 = lerp_sample(s0, s1, (FLOAT_t) (1.0 / 3.0));
+		const FLOAT_t y1 = lerp_sample(s0, s1, (FLOAT_t) (2.0 / 3.0));
+		const FLOAT_t y2 = s1;
+
+		const unsigned base = srci * 3 * 2;
+		dst [base + 0] = y0; dst [base + 1] = y0;
+		dst [base + 2] = y1; dst [base + 3] = y1;
+		dst [base + 4] = y2; dst [base + 5] = y2;
+	}
+
+	prev_m = adpt_input(& btioadpt.adp, src [srcframes - 1]);
+
+	// Anti-imaging low-pass filter
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout16k, dst, dst, dstframes);
+	btout16k.release_buffer(addr);
+	return true;
+}
+
+// Resample and fill btin44p1k (44.1 kHz stereo) from btin48k (48 kHz stereo)
+// Ratio: 480 -> 441 frames per 10 ms block (160:147)
+static bool fetchdata_downRS_btin44p1k(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+{
+	btio48k_t * addr;
+	if (! btin48k.get_readybuffer(& addr))
+		return false;
+
+	FLOAT_t * const src = addr->buff;
+	ASSERT(ndst == BTSSCALE * 441 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 480 * nsrcch);
+	ASSERT(2 == ndstch);
+	ASSERT(2 == nsrcch);
+
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+
+	// Apply anti-aliasing low-pass filter prior to decimation
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin44p1k, src, src, srcframes);
+
+	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
+	{
+		const FLOAT_t pos = (FLOAT_t) dsti * (FLOAT_t) srcframes / (FLOAT_t) dstframes;
+		const unsigned idx0 = (unsigned) pos;
+		const unsigned idx1 = (idx0 + 1 < srcframes) ? (idx0 + 1) : idx0;
+		const FLOAT_t frac = pos - (FLOAT_t) idx0;
+
+		const FLOAT_t l = lerp_sample(src [idx0 * 2 + 0], src [idx1 * 2 + 0], frac);
+		const FLOAT_t r = lerp_sample(src [idx0 * 2 + 1], src [idx1 * 2 + 1], frac);
+
+		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, l);
+		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, r);
+	}
+
+	btin48k.release_buffer(addr);
+	return true;
+}
+
+// Upsample btout44p1k (44.1 kHz stereo) to btout48k (48 kHz stereo)
+// Ratio: 441 -> 480 frames per 10 ms block (147:160)
+static bool fetchdata_upRS_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+{
+	static FLOAT_t prev_l = 0;
+	static FLOAT_t prev_r = 0;
+
+	btio44p1k_t * addr;
+	if (! btout44p1k.get_readybuffer(& addr))
+		return false;
+
+	const int16_t * const src = addr->buff;
+	ASSERT(ndst == BTSSCALE * 480 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 441 * nsrcch);
+	ASSERT(2 == ndstch);
+	ASSERT(2 == nsrcch);
+
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+
+	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
+	{
+		const FLOAT_t pos = (FLOAT_t) dsti * (FLOAT_t) srcframes / (FLOAT_t) dstframes;
+		const unsigned idx1 = (unsigned) pos;
+		const FLOAT_t frac = pos - (FLOAT_t) idx1;
+
+		const FLOAT_t s0_l = (idx1 == 0) ? prev_l : adpt_input(& btioadpt.adp, src [(idx1 - 1) * 2 + 0]);
+		const FLOAT_t s0_r = (idx1 == 0) ? prev_r : adpt_input(& btioadpt.adp, src [(idx1 - 1) * 2 + 1]);
+		const FLOAT_t s1_l = adpt_input(& btioadpt.adp, src [idx1 * 2 + 0]);
+		const FLOAT_t s1_r = adpt_input(& btioadpt.adp, src [idx1 * 2 + 1]);
+
+		dst [dsti * 2 + 0] = lerp_sample(s0_l, s1_l, frac);
+		dst [dsti * 2 + 1] = lerp_sample(s0_r, s1_r, frac);
+	}
+
+	prev_l = adpt_input(& btioadpt.adp, src [(srcframes - 1) * 2 + 0]);
+	prev_r = adpt_input(& btioadpt.adp, src [(srcframes - 1) * 2 + 1]);
+
+	// Anti-imaging low-pass filter
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltout44p1k, dst, dst, dstframes);
+	btout44p1k.release_buffer(addr);
 	return true;
 }
 
@@ -2317,20 +2644,21 @@ static unsigned getcbf_dmabufferbtin44p1(FLOAT_t * b, FLOAT_t * dest)
 // Функции обмена звуком черз Bluetooth
 // Resampling к/от 44.1 делается прозрачно
 
+// Эта функция получает вудиосэмплы на 48k
 uint_fast8_t elfetch_dmabufferbtout48(FLOAT_t * dest)
 {
 	// auto-select by not-empty source
 	return
-		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout44p1k, ARRAY_SIZE(btio44p1k_t::buff), btio44p1k_t::nch) ||
-		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout32k, ARRAY_SIZE(btio32k_t::buff), btio32k_t::nch) ||
-		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout16k, ARRAY_SIZE(btio16k_t::buff), btio16k_t::nch) ||
-		btout48k.fetchdata_resample(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout8k, ARRAY_SIZE(btio8k_t::buff), btio8k_t::nch) ||
+		btout48k.fetchdata_sampleslipping(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout44p1k, ARRAY_SIZE(btio44p1k_t::buff), btio44p1k_t::nch) ||
+		btout48k.fetchdata_sampleslipping(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout32k, ARRAY_SIZE(btio32k_t::buff), btio32k_t::nch) ||
+		btout48k.fetchdata_sampleslipping(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout16k, ARRAY_SIZE(btio16k_t::buff), btio16k_t::nch) ||
+		btout48k.fetchdata_sampleslipping(dest, getcbf_dmabufferbtout48, fetchdata_upRS_btout8k, ARRAY_SIZE(btio8k_t::buff), btio8k_t::nch) ||
 		0;
 }
 
 //uint_fast8_t elfetch_dmabufferbtin44p1(FLOAT_t * dest)
 //{
-//	return btout48k.fetchdata_resample(dest, getcbf_dmabufferbtin44p1, fetchdata_RS_btin48, ARRAY_SIZE(btio48k_t::buff), btio48k_t::nch);
+//	return btout48k.fetchdata_sampleslipping(dest, getcbf_dmabufferbtin44p1, fetchdata_RS_btin48, ARRAY_SIZE(btio48k_t::buff), btio48k_t::nch);
 //}
 
 // Возвращает количество элементов буфера, обработанных за вызов
@@ -2349,6 +2677,7 @@ static unsigned putcbf_dmabufferbtio48(FLOAT_t * b, FLOAT_t ch0, FLOAT_t ch1, in
 //	return 2;
 //}
 
+// функция вызываетя с частотой 48k
 void elfill_dmabufferbtin48(FLOAT_t ch0, FLOAT_t ch1)
 {
 	btin48k.savedata(ch0, ch1, 0, putcbf_dmabufferbtio48);
@@ -2515,6 +2844,7 @@ int_fast32_t datasize_dmabufferbtin16k(void)
 ///
 
 // can be zero
+/* take from queue BT audio from radio, sample rate 8000 */
 uintptr_t getfilled_dmabufferbtin8k(void)
 {
 	btio8k_t * dest;
@@ -2532,6 +2862,20 @@ void release_dmabufferbtin8k(uintptr_t addr)
 int_fast32_t datasize_dmabufferbtin8k(void)
 {
 	return btin8k.get_datasize();
+}
+
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned getcbf_dmabufferbtin8k(int16_t * b, int16_t * dest)
+{
+	dest [0] = b [0];
+	dest [1] = b [1];
+	return 2;
+}
+
+// Возвращает не-ноль если данные есть
+uint_fast8_t elfetch_dmabufferbtin8k(int16_t * dest)
+{
+	return btout8k.fetchdata_sampleslipping(dest, getcbf_dmabufferbtin8k, fetchdata_downRS_btin8k2ch, ARRAY_SIZE(btio48k_t::buff), btio48k_t::nch);
 }
 
 ///////////////////////////////
@@ -2560,7 +2904,7 @@ typedef enum
 		uacintag_t tag;
 		ALIGNX_BEGIN  uint8_t buff [UAC_GROUPING_DMAC * UACIN_RTS192_DATASIZE_DMAC] ALIGNX_END;
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-		enum { ss = UACIN_RTS192_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS192 };	// resampling support
+		enum { ss = UACIN_RTS192_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS192 };	// sample slipping support
 	} uacinrts192_t;
 
 	typedef buffitem<uacinrts192_t> uacinrts192buf_t;
@@ -2640,7 +2984,7 @@ typedef enum
 		uacintag_t tag;
 		ALIGNX_BEGIN  uint8_t buff [UAC_GROUPING_DMAC * UACIN_RTS96_DATASIZE_DMAC] ALIGNX_END;
 		ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
-		enum { ss = UACIN_RTS96_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS96 };	// resampling support
+		enum { ss = UACIN_RTS96_SAMPLEBYTES, nch = UACIN_FMT_CHANNELS_RTS96 };	// sample slipping support
 	} uacinrts96_t;
 
 	typedef buffitem<uacinrts96_t> uacinrts96buf_t;
@@ -2891,14 +3235,14 @@ typedef struct
 {
 	messagetypes_t type;
 	uint8_t buff [MSGBUFFERSIZE8];
-	enum { ss = 1, nch = 1 };	// stub for resampling support
+	enum { ss = 1, nch = 1 };	// stub for sample slipping support
 } message8buff_t;
 
 typedef buffitem<message8buff_t> message8v_t;
 static __NO_INIT message8v_t message8v [MESSAGE_CAPACITY];
 
 // Данному интерфейсу не требуется побайтный доступ или ресэмплниг
-typedef blists<message8v_t, 0, 0, SKIPSAMPLES_NORESAMPLER> message8list_t;
+typedef blists<message8v_t, 0, 0, SKIPSAMPLES_NOSLIPPING> message8list_t;
 
 static message8list_t message8(MESSAGE_IRQL, "msg8", message8v, ARRAY_SIZE(message8v));
 
@@ -3026,9 +3370,9 @@ typedef ALIGNX_BEGIN struct recordswav48
 //	unsigned startdata;
 //	unsigned topdata;
 #if WITHUSEAUDIOREC2CH
-	enum { ss = 1, nch = 2 };	// stub for resampling support
+	enum { ss = 1, nch = 2 };	// stub for sample slipping support
 #else /* WITHUSEAUDIOREC2CH */
-	enum { ss = 1, nch = 1 };	// stub for resampling support
+	enum { ss = 1, nch = 1 };	// stub for sample slipping support
 #endif /* WITHUSEAUDIOREC2CH */
 } ALIGNX_END recordswav48_t;
 
@@ -3037,7 +3381,7 @@ typedef buffitem<recordswav48_t> recordswav48buf_t;
 static __NO_INIT recordswav48buf_t recordswav48buf [AUDIOREC_CAPACITY];
 
 // буферы: один заполняется, один воспроизводлится и два свободных (с одинм бывают пропуски).
-typedef dmahandle<FLOAT_t, recordswav48buf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> recordswav48dma_t;
+typedef dmahandle<FLOAT_t, recordswav48buf_t, 0, 0, SKIPSAMPLES_NOSLIPPING> recordswav48dma_t;
 
 static recordswav48dma_t recordswav48dma(IRQL_REALTIME, "rec", recordswav48buf, ARRAY_SIZE(recordswav48buf));
 
@@ -3492,7 +3836,7 @@ void deliveryfloat(deliverylist_t * RESTRICTED_POINTER list, FLOAT_t ch0, FLOAT_
 	PRLIST_ENTRY t;
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
@@ -3507,7 +3851,7 @@ void deliveryfloat_buffer(deliverylist_t * RESTRICTED_POINTER list, const FLOAT_
 	IRQL_t oldIrql;
 	PRLIST_ENTRY t;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribefloat_t * const p = CONTAINING_RECORD(t, subscribefloat_t, item);
@@ -3525,7 +3869,7 @@ void deliveryint(deliverylist_t * RESTRICTED_POINTER list, int_fast32_t ch0, int
 	IRQL_t oldIrql;
 	PRLIST_ENTRY t;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	for (t = list->head.Blink; t != & list->head; t = t->Blink)
 	{
 		subscribeint32_t * const p = CONTAINING_RECORD(t, subscribeint32_t, item);
@@ -3540,7 +3884,7 @@ void subscribefloat(deliverylist_t * RESTRICTED_POINTER list, subscribefloat_t *
 
 	target->cb = pfn;
 	target->ctx = ctx;
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	InsertHeadList(& list->head, & target->item);
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
@@ -3549,7 +3893,7 @@ void unsubscribefloat(deliverylist_t * RESTRICTED_POINTER list, subscribefloat_t
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	RemoveEntryList(& target->item);
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
@@ -3560,7 +3904,7 @@ void subscribeint32(deliverylist_t * RESTRICTED_POINTER list, subscribeint32_t *
 
 	target->cb = pfn;
 	target->ctx = ctx;
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	InsertHeadList(& list->head, & target->item);
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
@@ -3569,7 +3913,7 @@ void unsubscribeint32(deliverylist_t * RESTRICTED_POINTER list, subscribeint32_t
 {
 	IRQL_t oldIrql;
 
-	IRQLSPIN_LOCK(& list->listlock, & oldIrql, list->irql);
+	IRQLSPIN_LOCK_YIELD(& list->listlock, & oldIrql, list->irql);
 	RemoveEntryList(& target->item);
 	IRQLSPIN_UNLOCK(& list->listlock, oldIrql);
 }
@@ -3593,13 +3937,13 @@ typedef ALIGNX_BEGIN struct colmain0fb
 {
 	ALIGNX_BEGIN PACKEDCOLORPIP_T buff [GXSIZE(DIM_X, DIM_Y)] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = 1, nch = GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T) };	// stub for resampling support
+	enum { ss = 1, nch = GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORPIP_T) };	// stub for sample slipping support
 } ALIGNX_END colmain0fb_t;
 
 typedef buffitem<colmain0fb_t> colmain0fbbuf_t;
 
 static __NO_INIT colmain0fbbuf_t colmain0fbbuf [LCDMODE_MAIN_PAGES];
-typedef blists<colmain0fbbuf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> colmain0fblist_t;
+typedef blists<colmain0fbbuf_t, 0, 0, SKIPSAMPLES_NOSLIPPING> colmain0fblist_t;
 static colmain0fblist_t colmain0fblist(IRQL_OVERREALTIME, "fb0", colmain0fbbuf, ARRAY_SIZE(colmain0fbbuf));
 
 // can not be zero
@@ -3653,13 +3997,13 @@ typedef ALIGNX_BEGIN struct colmain1fb
 {
 	ALIGNX_BEGIN PACKEDTVBUFF_T buff [(TVD_SIZE * 3 + 1) / 2] ALIGNX_END;
 	ALIGNX_BEGIN uint8_t pad ALIGNX_END;
-	enum { ss = 1, nch = GXSIZE(DIM_X, DIM_Y) * sizeof (uint8_t) };	// stub for resampling support
+	enum { ss = 1, nch = GXSIZE(DIM_X, DIM_Y) * sizeof (uint8_t) };	// stub for sample slipping support
 } ALIGNX_END colmain1fb_t;
 
 typedef buffitem<colmain1fb_t> colmain1fbbuf_t;
 
 static __NO_INIT colmain1fbbuf_t colmain1fbbuf [LCDMODE_TVOUT_PAGES];
-typedef blists<colmain1fbbuf_t, 0, 0, SKIPSAMPLES_NORESAMPLER> colmain1fblist_t;
+typedef blists<colmain1fbbuf_t, 0, 0, SKIPSAMPLES_NOSLIPPING> colmain1fblist_t;
 static colmain1fblist_t colmain1fblist(IRQL_OVERREALTIME, "fb1", colmain1fbbuf, ARRAY_SIZE(colmain1fbbuf));
 
 // can not be zero
@@ -4024,9 +4368,9 @@ void buffers_diagnostics(void)
 	codec16rx.debug();
 	codec16tx.debug();
 #endif
-//	moni16.debug();
-//	voice32tx.debug();
-//	voice32rx.debug();
+	moni16.debug();
+	voice32tx.debug();
+	voice32rx.debug();
 #endif
 #if 1
 	// USB
@@ -4034,7 +4378,7 @@ void buffers_diagnostics(void)
 	// OUT pipes
 	uacout48.debug();
 #endif
-#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 0
+#if WITHUSBHW && WITHUSBUACIN && defined (WITHUSBHW_DEVICE) && 1
 	// IN pipes
 #if WITHRTS192
 	uacinrts192.debug();
@@ -4207,17 +4551,19 @@ void buffers_start(void)
 {
 #if WITHINTEGRATEDDSP
 
-#if WITHRTOS
+#if WITHRTOS && 1
+	#warning rx process in thread
 	static __NO_INIT __ALIGNED(DCACHEROWSIZE) uint8_t procthread [16 * 1024 * 1024];
 	VERIFY(thread_create_user(buffprocess_thread, NULL, procthread, sizeof procthread, TTASK_AFFINITY_AUDIOPROC, "buffprocess_thread"));
 
-#elif ! TXSPOOLCOND
+#else
 
-	#warning rx process in spool
 
 
 	{
-		PRINTF("buffers_start: rx process in spool, TXSPOOLCORE=%u\n", TXSPOOLCORE);
+		#warning rx process in spool
+		enum { TXSPOOLCORE = HARDWARE_NCORES - 1 };
+		PRINTF("buffers_start: rx process in spool, TXSPOOLCORE=%d\n", (int) TXSPOOLCORE);
 		static dpcobj_t dpc;
 		dpcobj_initialize(& dpc, dsphftrxproc_spool_user, NULL, "dsphftrxproc_spool_dpc");
 		board_dpc_addentry(& dpc, TXSPOOLCORE);
@@ -4322,7 +4668,7 @@ void buffers_initialize(void)
 
 #endif /* WITHRTS192 */
 
-#if WITHUSEUSBBT && WITHUSEUSBBTAUDIO
+#if WITHRESAMPLERS
 
 	#define BTAUDIO_LPF_STAGES 3
 	iir_filter_t f0;

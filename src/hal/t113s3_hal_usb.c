@@ -2118,7 +2118,7 @@ uint_fast8_t usbd_cdc1_getrts(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
@@ -2132,7 +2132,7 @@ uint_fast8_t usbd_cdc1_getdtr(void)
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
 		0;
@@ -2147,7 +2147,7 @@ uint_fast8_t usbd_cdc2_getrts(void)
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [offset] & CDC_ACTIVATE_CARRIER) != 0) ||
 		0;
@@ -2165,7 +2165,7 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 #if WITHUSBCDCACM_N > 1
 	const unsigned offset = SECOND_CDC_OFFSET;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	const uint_fast8_t state =
 		((usb_cdc_control_state [offset] & CDC_DTE_PRESENT) != 0) ||
 		0;
@@ -2287,7 +2287,7 @@ void usbd_cdc_send(const void * buff, size_t length)
 //	PRINTF("cdc_acm Send:\n");
 //	printhex((uintptr_t) tdata, tdata, count);
 
-	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& lockusbdev, & oldIrql, USBSYS_IRQL);
 	if (gpusb != NULL)
 	{
 		usb_select_ep(gpusb, bo_ep_in);
@@ -2299,13 +2299,13 @@ void usbd_cdc_send(const void * buff, size_t length)
 	if (gpusb != NULL)
 	{
 		dcache_clean((uintptr_t) tdata, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
-		IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
+		IRQLSPIN_LOCK_YIELD(& lockusbdev, & oldIrql, USBSYS_IRQL);
 		setup_dma_tx(dmach, bo_ep_in, (uintptr_t) tdata, VIRTUAL_COM_PORT_OUT_DATA_SIZE, count);
 		IRQLSPIN_UNLOCK(& lockusbdev, oldIrql);
 	}
 
 #else
-	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& lockusbdev, & oldIrql, USBSYS_IRQL);
 
 	if (gpusb != NULL)
 	{
@@ -2337,7 +2337,7 @@ uint_fast8_t usbd_cdc_ready(void)	/* временное решение для п
 #if WITHCDCWITHDMA_IN
 	return ! (WITHUSBHW_DEVICE->USB_DMA [CDC_PIPEINDMA(offset)].CHAN_CFG & (UINT32_C(1) << 31));	// DMA Channel Enable
 #else
-	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& lockusbdev, & oldIrql, USBSYS_IRQL);
 	if (gpusb != NULL)
 	{
 		usb_struct * const pusb = gpusb;
@@ -2356,7 +2356,7 @@ void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обра
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	usbd_cdc_txenabled [offset] = state;
 	IRQLSPIN_UNLOCK(& catlock, oldIrql);
 }
@@ -2367,7 +2367,7 @@ void usbd_cdc_enablerx(uint_fast8_t state)	/* вызывается из обра
 {
 	const unsigned offset = MAIN_CDC_OFFSET;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	usbd_cdcX_rxenabled [offset] = state;
 	IRQLSPIN_UNLOCK(& catlock, oldIrql);
 }
@@ -2380,7 +2380,7 @@ usbd_cdc_tx(void * ctx, uint_fast8_t c)
 	//USBD_HandleTypeDef * const pdev = ctx;
 	(void) ctx;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& catlock, & oldIrql, CATSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& catlock, & oldIrql, CATSYS_IRQL);
 	ASSERT(cdcXbuffinlevel  [offset] < VIRTUAL_COM_PORT_IN_DATA_SIZE);
 	cdcXbuffin [offset] [cdcXbuffinlevel [offset] ++] = c;
 	IRQLSPIN_UNLOCK(& catlock, oldIrql);
@@ -4977,7 +4977,7 @@ static uint32_t usb_device_function(PCD_HandleTypeDef *hpcd)
 //	PCD_HandleTypeDef * hpcd = (PCD_HandleTypeDef*) pdev->pData;
 //	ASSERT(hpcd != NULL);
 //	IRQL_t oldIrql;
-//	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
+//	IRQLSPIN_LOCK_YIELD(& lockusbdev, & oldIrql, USBSYS_IRQL);
 //
 //	//usb_device_function(hpcd);
 //
@@ -4990,7 +4990,7 @@ void usbd_pipes_initialize(USBD_HandleTypeDef * pdev)
 	ASSERT(hpcd != NULL);
 	usb_struct * const pusb = & hpcd->awxx_usb;
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& lockusbdev, & oldIrql, USBSYS_IRQL);
 
 	awxx_setup_fifo(pusb);
 
@@ -5110,7 +5110,7 @@ void usb_init(PCD_HandleTypeDef *hpcd)
 	//uint32_t temp;
 
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& lockusbdev, & oldIrql, USBSYS_IRQL);
 
   	usb_struct_init(pusb);	// так же сбрасывается адрес в регистрах
 
@@ -5288,7 +5288,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	usb_struct * const pusb = & hpcd->awxx_usb;
 
 	IRQL_t oldIrql;
-	IRQLSPIN_LOCK(& lockusbdev, & oldIrql, USBSYS_IRQL);
+	IRQLSPIN_LOCK_YIELD(& lockusbdev, & oldIrql, USBSYS_IRQL);
 
 	const uint32_t irqstatus = usb_get_bus_interrupt_status(pusb) & usb_get_bus_interrupt_enable(pusb);
 
