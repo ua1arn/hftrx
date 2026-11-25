@@ -748,7 +748,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
 	return ERR_OK;
 }
 
-static dpcobj_t dpclinkspoolirq;
+//static dpcobj_t dpclinkspoolirq;
 static dpcobj_t dpcrxirq;
 static dpcobj_t dpctxirq;
 
@@ -758,7 +758,7 @@ static void EMAC_Handler(void)
 	const portholder_t sta0 = emac_peripheral->EMAC_INT_STA;
 	const portholder_t stamask = emac_peripheral->EMAC_INT_EN;
 	const portholder_t sta = sta0 & stamask;
-	emac_peripheral->EMAC_INT_STA = sta;
+	emac_peripheral->EMAC_INT_STA = sta0;
 
 //	if (sta & (UINT32_C(1) << 16))	// RGMII_LINK_STA_P
 //	{
@@ -1192,10 +1192,20 @@ void nic_initialize(struct netif *netif)
 
 	if (1)
 	{
+		static ticker_t ticker_rx;
+		static ticker_t ticker_tx;
+
 		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 		dpcobj_initialize(& dpcrxirq, emac_rxhandler, netif, "dpcrxirq");
 		dpcobj_initialize(& dpctxirq, emac_txhandler, netif, "dpctxirq");
-		dpcobj_initialize(& dpclinkspoolirq, nic_linkspool, netif, "dpclinkspoolirq");
+		//dpcobj_initialize(& dpclinkspoolirq, nic_linkspool, netif, "dpclinkspoolirq");
+
+		ticker_initialize_user(& ticker_rx, 250, & dpcrxirq, "spool_nic_rx");
+		//ticker_add(& ticker_rx);
+
+		ticker_initialize_user(& ticker_tx, 250, & dpctxirq, "spool_nic_tx");	// требуется чтобы не прекращалась передаяа
+		ticker_add(& ticker_tx);
+
 		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 
 		netif->linkoutput = low_level_output; // используется внутри etharp_output
