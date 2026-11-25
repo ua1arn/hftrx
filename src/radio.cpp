@@ -12052,6 +12052,7 @@ catmux_processcatmsg(
 /* вызывается из обработчика прерываний */
 void cat2_parsechar(uint_fast8_t c)
 {
+	//PRINTF("0x%02X ", c);
 	switch (cattypes [gcattype].code)
 	{
 	default:
@@ -17097,7 +17098,7 @@ static void catyaesu_cattimeout_cb(void * ctx)
 void catyaesu_parsechar(uint_fast8_t c)
 {
 	static uint8_t yaesubuf [5];
-	PRINTF("0x%02X ", c);
+	//PRINTF("0x%02X ", c);
 	ticker_timeout_restart(& cat_ticker, CAT_TIMEOUT);	// Перезапуск тайм-аута
 
 	switch (catstatein)
