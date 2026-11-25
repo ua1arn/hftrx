@@ -185,7 +185,7 @@ void display_vtty_printf(const char * format, ...);
 void board_update_time(uint32_t sec);
 
 #define LWIP_RAW                    1
-#define NO_SYS 						1
+//#define NO_SYS 						1
 #define LWIP_SOCKET 				0
 #define LWIP_COMPAT_SOCKETS			0
 #define LWIP_NETCONN 				0
@@ -201,7 +201,7 @@ void board_update_time(uint32_t sec);
 #define MEMP_NUM_UDP_PCB 			4
 #define MEMP_NUM_TCP_PCB 			32
 #define MEMP_NUM_TCP_PCB_LISTEN 	8
-#define MEMP_NUM_TCP_SEG 			256
+//#define MEMP_NUM_TCP_SEG 			256
 #define MEMP_NUM_SYS_TIMEOUT 		8
 #define MEMP_NUM_NETBUF 			8
 #define MEMP_NUM_NETCONN 			16
@@ -216,7 +216,9 @@ void board_update_time(uint32_t sec);
 #define ARP_TABLE_SIZE 				100
 #define ARP_QUEUEING 				1
 
-#define NO_SYS                          1
+#define NO_SYS                          0
+#define LWIP_PROVIDE_ERRNO 1
+
 #define LWIP_RAW                        1
 #define LWIP_NETCONN                    0
 #define LWIP_SOCKET                     0
@@ -230,9 +232,17 @@ void board_update_time(uint32_t sec);
 //#define TCP_SND_BUF                     (2 * TCP_MSS)
 
 /* audioserver Рекомендуемые настройки для lwipopts.h */
+/* Recommended TCP buffer settings for lwipopts.h */
+/* TCP Segment and Send Buffer sizes (at least 16 * MSS for 48 kHz stereo stability) */
 #define TCP_MSS                 1460
-#define TCP_SND_BUF             (6 * TCP_MSS)
+#define TCP_SND_BUF             (16 * TCP_MSS)
 #define TCP_SND_QUEUELEN        (2 * TCP_SND_BUF / TCP_MSS)
+#define MEMP_NUM_TCP_SEG	TCP_SND_QUEUELEN
+/* Ensure enough PBUF pool buffers for outgoing audio frames + incoming ACKs */
+//#define PBUF_POOL_SIZE          32
+
+/* Essential for thread-safe tcpip_try_callback() calls from Audio Task / DMA ISR */
+#define TCPIP_MBOX_SIZE         32
 
 #define MEMP_SEPARATE_POOLS 		1
 #define MEMP_NUM_FRAG_PBUF 			256

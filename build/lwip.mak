@@ -1,4 +1,4 @@
-ifeq (1, 0)
+ifeq (1, 1)
 # LWIP
 LWIPDIR = $(PRJROOT)/lib/lwip
 DINCDIR += \
