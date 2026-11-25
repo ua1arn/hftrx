@@ -21,13 +21,6 @@ size_t flac_write_stream_header(const flac_audio_config_t *cfg, uint8_t *out_buf
 
 /**
  * Encodes FLAC_BLOCK_SIZE (480) uncompressed PCM samples per channel into a valid FLAC frame.
- *
- * Input format in pcm_in:
- * - bits_per_sample == 8:  pointer to int8_t array  [480 * channels]
- * - bits_per_sample == 16: pointer to int16_t array [480 * channels]
- * - bits_per_sample == 24: pointer to int32_t array [480 * channels] (lower 24 bits used)
- *
- * @return Frame size in bytes, or 0 if configuration is invalid.
  */
 size_t flac_encode_verbatim_frame(const flac_audio_config_t *cfg, const void *pcm_in, uint32_t frame_num, uint8_t *out_buf);
 

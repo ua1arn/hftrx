@@ -567,11 +567,11 @@ static err_t udpapperv_app_init(void)
 
 #include "audio.h"
 #include "lwip_flac_audio_stream/audio_server.h"
-#include "lwip_flac_audio_stream/flac_stream.h"
+#include "lwip_flac_audio_stream/webm_pcm_stream.h"
 
 static void audio_32ms(void * ctx)
 {
-	int16_t buff [FLAC_BLOCK_SIZE];
+	int16_t buff [WEBM_BLOCK_SAMPLES];
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(buff); ++ i)
 	{

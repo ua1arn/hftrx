@@ -1,19 +1,13 @@
-# lwIP Configurable Uncompressed OggFLAC Audio Stream Server
+# lwIP Infinite Uncompressed WebM-FLAC Audio Streamer
 
-Infinite, lossless, uncompressed PCM audio streaming over HTTP using **lwIP Raw API** and **OggFLAC (VERBATIM mode)** with runtime configuration for **sample rate**, **channel count**, and **bit depth**.
+Streams live uncompressed PCM audio wrapped in lossless `SUBFRAME_VERBATIM` FLAC frames inside an infinite WebM (`audio/webm`, `CodecID: A_FLAC`) container over HTTP using lwIP Raw API.
 
-## Fix in v8
-- Fixed C string literal formatting (`\r\n` CRLF line endings instead of unescaped newlines) in `http_header` and `response` inside `audio_server.c`.
+## Timing
+* `FLAC_BLOCK_SIZE = 480` samples per channel.
+* At **48,000 Hz**, call `audio_server_push_pcm()` every **10.0 ms** (100 times/sec).
+* At **16,000 Hz**, call `audio_server_push_pcm()` every **30.0 ms**.
 
-## Quick Start
-
-1. Initialize the server with your desired format parameters:
-   ```c
-   /* Example: 48 kHz, 2 channels (stereo), 16-bit PCM */
-   audio_server_init(48000, 2, 16);
-   ```
-
-2. Every time your I2S/ADC DMA collects `FLAC_BLOCK_SIZE` (512) frames (samples per channel), pass the interleaved buffer to `audio_server_push_pcm()`:
-   - **8-bit:** `int8_t buf[512 * channels]`
-   - **16-bit:** `int16_t buf[512 * channels]` (e.g. `[L0, R0, L1, R1, ...]`)
-   - **24-bit:** `int32_t buf[512 * channels]` (24-bit signed values in 32-bit words)
+## Files
+* `flac_stream.h` / `flac_stream.c`: Encodes raw Little-Endian PCM samples into uncompressed FLAC frames (`VERBATIM`).
+* `webm_flac_stream.h` / `webm_flac_stream.c`: Wraps the FLAC header (`CodecPrivate`) and FLAC frames (`SimpleBlock`) into infinite-length WebM `Cluster` elements supported natively by Edge and Chrome.
+* `audio_server.h` / `audio_server.c`: lwIP Raw API HTTP server.

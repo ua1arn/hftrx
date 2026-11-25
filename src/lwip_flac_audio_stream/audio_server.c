@@ -1,16 +1,17 @@
 #include "audio_server.h"
-#include "ogg_flac_stream.h"
+#include "webm_flac_stream.h"
 #include "lwip/tcp.h"
 #include <string.h>
 #include <stdio.h>
 
 static struct tcp_pcb *active_client_pcb = NULL;
 static uint32_t current_frame_num = 0;
+static uint64_t total_samples_sent = 0;
 static flac_audio_config_t server_audio_cfg = {48000, 1, 16};
 
-// Buffer for Ogg Page (480 samples * 8 ch * 3 bytes + headers <= 11650 bytes)
-// Can be reduced to 2100 bytes if you only use up to 2 channels / 16-bit
-static uint8_t ogg_page_buf[FLAC_BLOCK_SIZE * 8 * 3 + 128];
+// Buffer for WebM Cluster + Uncompressed FLAC frame (480 samples * 2 ch * 3 bytes + 64 bytes header = 2944 bytes)
+// Increase multiplier from 2 to 8 if using more than 2 channels.
+static uint8_t webm_cluster_buf[FLAC_BLOCK_SIZE * 2 * 3 + 64];
 
 static void close_audio_client(struct tcp_pcb *tpcb) {
     if (tpcb == NULL) return;
@@ -49,29 +50,30 @@ static err_t audio_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
 
         active_client_pcb = tpcb;
         current_frame_num = 0;
+        total_samples_sent = 0;
 
         const char *http_header =
             "HTTP/1.1 200 OK\r\n"
-            "Content-Type: audio/ogg; codecs=\"flac\"\r\n"
+            "Content-Type: audio/webm\r\n"
             "Accept-Ranges: none\r\n"
             "Cache-Control: no-cache, no-store\r\n"
             "Connection: close\r\n\r\n";
 
-        uint8_t ogg_hdr[160];
-        size_t ogg_hdr_len = ogg_flac_write_headers(&server_audio_cfg, ogg_hdr);
+        uint8_t webm_hdr[160];
+        size_t webm_hdr_len = webm_flac_write_stream_header(&server_audio_cfg, webm_hdr);
 
         tcp_recved(tpcb, p->tot_len);
         pbuf_free(p);
 
         tcp_write(tpcb, http_header, strlen(http_header), TCP_WRITE_FLAG_COPY);
-        tcp_write(tpcb, ogg_hdr, ogg_hdr_len, TCP_WRITE_FLAG_COPY);
+        tcp_write(tpcb, webm_hdr, webm_hdr_len, TCP_WRITE_FLAG_COPY);
         tcp_output(tpcb);
         return ERR_OK;
     } else {
         char html_body[320];
         int body_len = snprintf(html_body, sizeof(html_body),
-            "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Live OggFLAC</title></head><body>"
-            "<h3>Live Uncompressed OggFLAC (%lu Hz, %u ch, %u-bit)</h3>"
+            "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Live WebM FLAC</title></head><body>"
+            "<h3>Live Uncompressed WebM FLAC (%lu Hz, %u ch, %u-bit)</h3>"
             "<audio controls autoplay src='/stream'></audio>"
             "</body></html>",
             (unsigned long)server_audio_cfg.sample_rate_hz,
@@ -120,20 +122,24 @@ void audio_server_init(uint32_t sample_rate_hz, uint8_t channels, uint8_t bits_p
 }
 
 void audio_server_push_pcm(const void *pcm_480_samples_per_ch) {
-    if (active_client_pcb == NULL) {
+    if (active_client_pcb == NULL || server_audio_cfg.sample_rate_hz == 0) {
         return;
     }
 
-    size_t page_len = ogg_flac_encode_page(&server_audio_cfg, pcm_480_samples_per_ch, current_frame_num, ogg_page_buf);
-    if (page_len == 0) {
+    uint32_t timestamp_ms = (uint32_t)((total_samples_sent * 1000ULL) / server_audio_cfg.sample_rate_hz);
+
+    size_t cluster_len = webm_flac_encode_cluster(&server_audio_cfg, pcm_480_samples_per_ch,
+                                                  current_frame_num, timestamp_ms, webm_cluster_buf);
+    if (cluster_len == 0) {
         return;
     }
 
-    if (tcp_sndbuf(active_client_pcb) >= page_len) {
-        err_t err = tcp_write(active_client_pcb, ogg_page_buf, page_len, TCP_WRITE_FLAG_COPY);
+    if (tcp_sndbuf(active_client_pcb) >= cluster_len) {
+        err_t err = tcp_write(active_client_pcb, webm_cluster_buf, cluster_len, TCP_WRITE_FLAG_COPY);
         if (err == ERR_OK) {
             tcp_output(active_client_pcb);
             current_frame_num++;
+            total_samples_sent += FLAC_BLOCK_SIZE;
         }
     }
 }

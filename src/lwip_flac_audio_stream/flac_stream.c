@@ -66,9 +66,9 @@ static uint8_t get_sample_rate_code(uint32_t sr) {
         case 48000:  return 0x0A;
         case 96000:  return 0x0B;
         default:
-            if (sr <= 255000 && (sr % 1000 == 0)) return 0x0C; // 8-bit kHz at end of header
-            if (sr <= 65535) return 0x0D;                      // 16-bit Hz at end of header
-            if (sr <= 655350 && (sr % 10 == 0)) return 0x0E;   // 16-bit tens of Hz at end of header
+            if (sr <= 255000 && (sr % 1000 == 0)) return 0x0C;
+            if (sr <= 65535) return 0x0D;
+            if (sr <= 655350 && (sr % 10 == 0)) return 0x0E;
             return 0x00;
     }
 }
@@ -88,20 +88,15 @@ static uint8_t get_sample_size_code(uint8_t bps) {
 size_t flac_write_stream_header(const flac_audio_config_t *cfg, uint8_t *out_buf) {
     memset(out_buf, 0, FLAC_STREAM_HEADER_SIZE);
 
-    // Signature + Last metadata block flag (1) + STREAMINFO type (0) + length (34)
     out_buf[0] = 'f'; out_buf[1] = 'L'; out_buf[2] = 'a'; out_buf[3] = 'C';
     out_buf[4] = 0x80;
     out_buf[5] = 0x00; out_buf[6] = 0x00; out_buf[7] = 0x22;
 
-    // Min & Max block size = FLAC_BLOCK_SIZE (480 = 0x01E0)
     out_buf[8]  = (uint8_t)(FLAC_BLOCK_SIZE >> 8);
     out_buf[9]  = (uint8_t)(FLAC_BLOCK_SIZE & 0xFF);
     out_buf[10] = (uint8_t)(FLAC_BLOCK_SIZE >> 8);
     out_buf[11] = (uint8_t)(FLAC_BLOCK_SIZE & 0xFF);
 
-    // Min/Max frame size = 0 (unknown) -> bytes 12..17 remain 0
-
-    // Bytes 18..21: Sample rate (20 bits) | (Channels - 1) (3 bits) | (BitsPerSample - 1) (5 bits) | Total samples top 4 bits (0)
     uint32_t sr = cfg->sample_rate_hz;
     uint8_t ch_minus_1 = (cfg->channels - 1) & 0x07;
     uint8_t bps_minus_1 = (cfg->bits_per_sample - 1) & 0x1F;
@@ -111,8 +106,6 @@ size_t flac_write_stream_header(const flac_audio_config_t *cfg, uint8_t *out_buf
     out_buf[20] = (uint8_t)(((sr & 0x0F) << 4) | (ch_minus_1 << 1) | (bps_minus_1 >> 4));
     out_buf[21] = (uint8_t)((bps_minus_1 & 0x0F) << 4);
 
-    // Bytes 22..25: Total samples lower 32 bits = 0 (infinite stream)
-    // Bytes 26..41: MD5 signature = 0 (allowed for live streams)
     return FLAC_STREAM_HEADER_SIZE;
 }
 
@@ -127,25 +120,18 @@ size_t flac_encode_verbatim_frame(const flac_audio_config_t *cfg, const void *pc
 
     size_t idx = 0;
 
-    // 1. Frame sync code (14 bits) + reserved (0) + fixed-blocksize strategy (0)
     out_buf[idx++] = 0xFF;
     out_buf[idx++] = 0xF8;
-
-    // Block size code = 0x07 (read 16-bit block_size-1 at end of header) | Sample rate code
     out_buf[idx++] = (uint8_t)(0x70 | (sr_code & 0x0F));
 
-    // Channel assignment (0..7 for 1..8 independent channels) | Sample size code | Reserved (0)
     uint8_t ch_assign = (cfg->channels - 1) & 0x0F;
     out_buf[idx++] = (uint8_t)((ch_assign << 4) | ((ss_code & 0x07) << 1));
 
-    // Frame number in UTF-8
     idx += encode_utf8_uint32(frame_num, &out_buf[idx]);
 
-    // 16-bit (block_size - 1) in Big-Endian (480 - 1 = 479 = 0x01DF)
     out_buf[idx++] = (uint8_t)((FLAC_BLOCK_SIZE - 1) >> 8);
     out_buf[idx++] = (uint8_t)((FLAC_BLOCK_SIZE - 1) & 0xFF);
 
-    // Optional sample rate value if non-standard code (0x0C, 0x0D, 0x0E)
     if (sr_code == 0x0C) {
         out_buf[idx++] = (uint8_t)(cfg->sample_rate_hz / 1000);
     } else if (sr_code == 0x0D) {
@@ -157,14 +143,11 @@ size_t flac_encode_verbatim_frame(const flac_audio_config_t *cfg, const void *pc
         out_buf[idx++] = (uint8_t)(sr_tens & 0xFF);
     }
 
-    // Frame header CRC-8
     out_buf[idx] = calc_crc8(out_buf, idx);
     idx++;
 
-    // 2. Subframes (one per channel, non-interleaved inside FLAC frame)
     uint8_t ch_count = cfg->channels;
     for (uint8_t ch = 0; ch < ch_count; ch++) {
-        // Subframe header: 0 (pad) | 000001 (SUBFRAME_VERBATIM) | 0 (no wasted bits)
         out_buf[idx++] = 0x02;
 
         if (cfg->bits_per_sample == 8) {
@@ -190,7 +173,6 @@ size_t flac_encode_verbatim_frame(const flac_audio_config_t *cfg, const void *pc
         }
     }
 
-    // 3. Frame footer CRC-16
     uint16_t crc16 = calc_crc16(out_buf, idx);
     out_buf[idx++] = (uint8_t)(crc16 >> 8);
     out_buf[idx++] = (uint8_t)(crc16 & 0xFF);
