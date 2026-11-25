@@ -499,8 +499,8 @@ static void emac_txhandler(void * ctx)
 	};
    	unsigned deleted = 0;
    	unsigned total = 0;
-   	PLIST_ENTRY t;
-   	PLIST_ENTRY next;
+   	PRLIST_ENTRY t;
+   	PRLIST_ENTRY next;
 	for (t = TxList.Flink; t != & TxList; t = next)
 	{
 		ASSERT(t != NULL);
@@ -774,7 +774,7 @@ static void EMAC_Handler(void)
 
 	if (sta & (UINT32_C(1) << 8))	// // RX_INT
 		board_dpc_call(& dpcrxirq, board_dpc_coreid());
-	if (sta & (UINT32_C(1) << 0))	// // TX_INT
+	if (sta & ((UINT32_C(1) << 1) | (UINT32_C(1) << 0)))	// TX_DMA_STOPPED_INT_P, TX_INT_P
 		board_dpc_call(& dpctxirq, board_dpc_coreid());
 }
 
@@ -1154,6 +1154,7 @@ static err_t allwinner_emac_init_port0(EMAC_TypeDef *emac_peripheral, struct net
     }
 
 	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 0); // TX_INT_EN
+	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 1); // TX_DMA_STOPPED_INT_EN
 	emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 8); // RX_INT_EN
 
 	//emac_peripheral->EMAC_INT_EN |= (UINT32_C(1) << 10); // RX_DMA_STOPPED_INT_EN
@@ -1192,19 +1193,19 @@ void nic_initialize(struct netif *netif)
 
 	if (1)
 	{
-		static ticker_t ticker_rx;
-		static ticker_t ticker_tx;
+//		static ticker_t ticker_rx;
+//		static ticker_t ticker_tx;
 
 		allwinner_emac_init_port0(HARDWARE_EMAC_PTR, netif, HARDWARE_EMAC_IX);
 		dpcobj_initialize(& dpcrxirq, emac_rxhandler, netif, "dpcrxirq");
 		dpcobj_initialize(& dpctxirq, emac_txhandler, netif, "dpctxirq");
 		//dpcobj_initialize(& dpclinkspoolirq, nic_linkspool, netif, "dpclinkspoolirq");
 
-		ticker_initialize_user(& ticker_rx, 250, & dpcrxirq, "spool_nic_rx");
+		//ticker_initialize_user(& ticker_rx, 250, & dpcrxirq, "spool_nic_rx");
 		//ticker_add(& ticker_rx);
 
-		ticker_initialize_user(& ticker_tx, 250, & dpctxirq, "spool_nic_tx");	// требуется чтобы не прекращалась передаяа
-		ticker_add(& ticker_tx);
+		//ticker_initialize_user(& ticker_tx, 250, & dpctxirq, "spool_nic_tx");	// требуется чтобы не прекращалась передаяа
+		//ticker_add(& ticker_tx);
 
 		arm_hardware_set_handler_system(HARDWARE_EMAC_IRQ, EMAC_Handler);
 
