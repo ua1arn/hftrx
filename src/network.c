@@ -573,13 +573,17 @@ static adapter_t audionet_out;
 
 static void audio_32ms(void * ctx)
 {
-	int16_t buff [WEBM_BLOCK_SAMPLES];
+	int16_t buff [WEBM_BLOCK_SAMPLES * 2];
 	unsigned i;
-	for (i = 0; i < ARRAY_SIZE(buff); ++ i)
+	for (i = 0; i < ARRAY_SIZE(buff); i += 2)
 	{
-		FLOAT_t v = get_lout();
+		FLOAT_t l = get_lout();
 		get_lout(), get_lout(), get_lout(), get_lout(), get_lout();
-		buff [i] = adpt_output(& audionet_out, v);
+		buff [i + 0] = adpt_output(& audionet_out, l);
+
+		FLOAT_t r = get_rout();
+		get_rout(), get_rout(), get_rout(), get_rout(), get_rout();
+		buff [i + 1] = adpt_output(& audionet_out, r);
 	}
 	audio_server_push_pcm(buff);
 }
@@ -620,7 +624,7 @@ void network_initialize(void)
 	}
 	if (1)
 	{
-		audio_server_init(8000, 1, 16);
+		audio_server_init(8000, 2, 16);
 		static ticker_t ticker;
 		static dpcobj_t dpcobj;
 
