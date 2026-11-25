@@ -64,11 +64,14 @@ static void audio_err_callback(void *arg, err_t err) {
     }
 }
 
-/* Sent callback for static HTML page: closes connection after browser ACKs all HTML bytes */
+/* Sent callback for static HTML page: closes connection once all queued TCP segments are ACKed */
 static err_t html_sent_callback(void *arg, struct tcp_pcb *tpcb, u16_t len) {
     (void)arg;
     (void)len;
-    close_tcp_connection(tpcb);
+
+    if (tpcb->snd_queuelen == 0) {
+        close_tcp_connection(tpcb);
+    }
     return ERR_OK;
 }
 
@@ -145,37 +148,45 @@ static err_t audio_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p
             if (clients[i].pcb != NULL) active_count++;
         }
 
-        char html_body[448];
-        int body_len = snprintf(html_body, sizeof html_body,
-            "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Live WebM FLAC</title></head><body>"
-			"<h3>Live Uncompressed WebM FLAC (%lu Hz, %u ch, %u-bit)</h3>"
+        static const char html_template[] =
+            "<!DOCTYPE html><html><head><meta charset='utf-8'>"
+            "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+            "<title>Live WebM FLAC</title></head><body>"
+            "<h3>Live Uncompressed WebM FLAC (%lu Hz, %u ch, %u-bit)</h3>"
 			"<h3>RX Frequency: (%u Hz)</h3>"
-            "<p>Listeners: %u / %u</p>"
+			"<p>Listeners: %u / %u</p>"
             "<audio controls autoplay src='/stream'></audio>"
-            "</body></html>",
+            "</body></html>";
+
+        char html_body[512];
+        char http_hdr[256];
+
+        int body_len = snprintf(html_body, sizeof html_body, html_template,
             (unsigned long)server_audio_cfg.sample_rate_hz,
             (unsigned int)server_audio_cfg.channels,
             (unsigned int)server_audio_cfg.bits_per_sample,
-			(unsigned) hamradio_get_freq_rx(),
-            active_count, (unsigned int)MAX_AUDIO_CLIENTS);
+            (unsigned) hamradio_get_freq_rx(),
+			active_count, (unsigned int)MAX_AUDIO_CLIENTS);
 
-        char response[704];
-        int resp_len = snprintf(response, sizeof response,
+        int hdr_len = snprintf(http_hdr, sizeof http_hdr,
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: text/html; charset=utf-8\r\n"
             "Content-Length: %d\r\n"
-            "Connection: close\r\n\r\n"
-            "%s",
-            body_len, html_body);
+            "Connection: close\r\n\r\n",
+            body_len);
 
         tcp_recved(tpcb, p->tot_len);
         pbuf_free(p);
 
         tcp_sent(tpcb, html_sent_callback);
-        tcp_write(tpcb, response, resp_len, TCP_WRITE_FLAG_COPY);
+
+        /* Enqueue HTTP header and HTML body separately, then flush once */
+        tcp_write(tpcb, http_hdr, hdr_len, TCP_WRITE_FLAG_COPY);
+        tcp_write(tpcb, html_body, body_len, TCP_WRITE_FLAG_COPY);
         tcp_output(tpcb);
         return ERR_OK;
     }
+
 }
 
 /* Accepts new incoming TCP connections on port 80 */
