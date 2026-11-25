@@ -2387,7 +2387,7 @@ static bool fetchdata_upRS_btout8k(FLOAT_t * dst, unsigned ndst, unsigned ndstch
 }
 
 // Resample and fill btin32k (32 kHz stereo) from btin48k (48 kHz stereo)
-// Ratio: 480 -> 320 frames per 10 ms block (3:2)
+// Ratio: 480 -> 320 frames per 10 ms block (3:2) using integer phase accumulator
 static bool fetchdata_downRS_btin32k(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio48k_t * addr;
@@ -2402,22 +2402,30 @@ static bool fetchdata_downRS_btin32k(int16_t * dst, unsigned ndst, unsigned ndst
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
+	const FLOAT_t inv_dst = (FLOAT_t) 1.0 / (FLOAT_t) dstframes;
 
 	// Apply anti-aliasing low-pass filter prior to 3:2 decimation
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin32k, src, src, srcframes);
 
+	unsigned idx0 = 0;
+	unsigned acc = 0;
 	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
 	{
-		const FLOAT_t pos = (FLOAT_t) dsti * (FLOAT_t) srcframes / (FLOAT_t) dstframes;
-		const unsigned idx0 = (unsigned) pos;
 		const unsigned idx1 = (idx0 + 1 < srcframes) ? (idx0 + 1) : idx0;
-		const FLOAT_t frac = pos - (FLOAT_t) idx0;
+		const FLOAT_t frac = (FLOAT_t) acc * inv_dst;
 
 		const FLOAT_t l = lerp_sample(src [idx0 * 2 + 0], src [idx1 * 2 + 0], frac);
 		const FLOAT_t r = lerp_sample(src [idx0 * 2 + 1], src [idx1 * 2 + 1], frac);
 
 		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, l);
 		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, r);
+
+		acc += srcframes;
+		while (acc >= dstframes)
+		{
+			acc -= dstframes;
+			++ idx0;
+		}
 	}
 
 	btin48k.release_buffer(addr);
@@ -2425,7 +2433,7 @@ static bool fetchdata_downRS_btin32k(int16_t * dst, unsigned ndst, unsigned ndst
 }
 
 // Upsample btout32k (32 kHz stereo) to btout48k (48 kHz stereo)
-// Ratio: 320 -> 480 frames per 10 ms block (2:3)
+// Ratio: 320 -> 480 frames per 10 ms block (2:3) using integer phase accumulator
 static bool fetchdata_upRS_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	static FLOAT_t prev_l = 0;
@@ -2443,12 +2451,13 @@ static bool fetchdata_upRS_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstc
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
+	const FLOAT_t inv_dst = (FLOAT_t) 1.0 / (FLOAT_t) dstframes;
 
+	unsigned idx1 = 0;
+	unsigned acc = 0;
 	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
 	{
-		const FLOAT_t pos = (FLOAT_t) dsti * (FLOAT_t) srcframes / (FLOAT_t) dstframes;
-		const unsigned idx1 = (unsigned) pos;
-		const FLOAT_t frac = pos - (FLOAT_t) idx1;
+		const FLOAT_t frac = (FLOAT_t) acc * inv_dst;
 
 		const FLOAT_t s0_l = (idx1 == 0) ? prev_l : adpt_input(& btioadpt.adp, src [(idx1 - 1) * 2 + 0]);
 		const FLOAT_t s0_r = (idx1 == 0) ? prev_r : adpt_input(& btioadpt.adp, src [(idx1 - 1) * 2 + 1]);
@@ -2457,6 +2466,13 @@ static bool fetchdata_upRS_btout32k(FLOAT_t * dst, unsigned ndst, unsigned ndstc
 
 		dst [dsti * 2 + 0] = lerp_sample(s0_l, s1_l, frac);
 		dst [dsti * 2 + 1] = lerp_sample(s0_r, s1_r, frac);
+
+		acc += srcframes;
+		if (acc >= dstframes)
+		{
+			acc -= dstframes;
+			++ idx1;
+		}
 	}
 
 	prev_l = adpt_input(& btioadpt.adp, src [(srcframes - 1) * 2 + 0]);
@@ -2544,7 +2560,7 @@ static bool fetchdata_upRS_btout16k(FLOAT_t * dst, unsigned ndst, unsigned ndstc
 }
 
 // Resample and fill btin44p1k (44.1 kHz stereo) from btin48k (48 kHz stereo)
-// Ratio: 480 -> 441 frames per 10 ms block (160:147)
+// Ratio: 480 -> 441 frames per 10 ms block (160:147) using integer phase accumulator
 static bool fetchdata_downRS_btin44p1k(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	btio48k_t * addr;
@@ -2559,22 +2575,30 @@ static bool fetchdata_downRS_btin44p1k(int16_t * dst, unsigned ndst, unsigned nd
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
+	const FLOAT_t inv_dst = (FLOAT_t) 1.0 / (FLOAT_t) dstframes;
 
 	// Apply anti-aliasing low-pass filter prior to decimation
 	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin44p1k, src, src, srcframes);
 
+	unsigned idx0 = 0;
+	unsigned acc = 0;
 	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
 	{
-		const FLOAT_t pos = (FLOAT_t) dsti * (FLOAT_t) srcframes / (FLOAT_t) dstframes;
-		const unsigned idx0 = (unsigned) pos;
 		const unsigned idx1 = (idx0 + 1 < srcframes) ? (idx0 + 1) : idx0;
-		const FLOAT_t frac = pos - (FLOAT_t) idx0;
+		const FLOAT_t frac = (FLOAT_t) acc * inv_dst;
 
 		const FLOAT_t l = lerp_sample(src [idx0 * 2 + 0], src [idx1 * 2 + 0], frac);
 		const FLOAT_t r = lerp_sample(src [idx0 * 2 + 1], src [idx1 * 2 + 1], frac);
 
 		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, l);
 		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, r);
+
+		acc += srcframes;
+		while (acc >= dstframes)
+		{
+			acc -= dstframes;
+			++ idx0;
+		}
 	}
 
 	btin48k.release_buffer(addr);
@@ -2582,7 +2606,7 @@ static bool fetchdata_downRS_btin44p1k(int16_t * dst, unsigned ndst, unsigned nd
 }
 
 // Upsample btout44p1k (44.1 kHz stereo) to btout48k (48 kHz stereo)
-// Ratio: 441 -> 480 frames per 10 ms block (147:160)
+// Ratio: 441 -> 480 frames per 10 ms block (147:160) using integer phase accumulator
 static bool fetchdata_upRS_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
 {
 	static FLOAT_t prev_l = 0;
@@ -2600,12 +2624,13 @@ static bool fetchdata_upRS_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned nds
 
 	const unsigned srcframes = nsrc / nsrcch;
 	const unsigned dstframes = ndst / ndstch;
+	const FLOAT_t inv_dst = (FLOAT_t) 1.0 / (FLOAT_t) dstframes;
 
+	unsigned idx1 = 0;
+	unsigned acc = 0;
 	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
 	{
-		const FLOAT_t pos = (FLOAT_t) dsti * (FLOAT_t) srcframes / (FLOAT_t) dstframes;
-		const unsigned idx1 = (unsigned) pos;
-		const FLOAT_t frac = pos - (FLOAT_t) idx1;
+		const FLOAT_t frac = (FLOAT_t) acc * inv_dst;
 
 		const FLOAT_t s0_l = (idx1 == 0) ? prev_l : adpt_input(& btioadpt.adp, src [(idx1 - 1) * 2 + 0]);
 		const FLOAT_t s0_r = (idx1 == 0) ? prev_r : adpt_input(& btioadpt.adp, src [(idx1 - 1) * 2 + 1]);
@@ -2614,6 +2639,13 @@ static bool fetchdata_upRS_btout44p1k(FLOAT_t * dst, unsigned ndst, unsigned nds
 
 		dst [dsti * 2 + 0] = lerp_sample(s0_l, s1_l, frac);
 		dst [dsti * 2 + 1] = lerp_sample(s0_r, s1_r, frac);
+
+		acc += srcframes;
+		if (acc >= dstframes)
+		{
+			acc -= dstframes;
+			++ idx1;
+		}
 	}
 
 	prev_l = adpt_input(& btioadpt.adp, src [(srcframes - 1) * 2 + 0]);
