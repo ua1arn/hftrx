@@ -121,12 +121,15 @@ void audio_server_init(uint32_t sample_rate_hz, uint8_t channels, uint8_t bits_p
     }
 }
 
+#include "clocks.h"
+
 void audio_server_push_pcm(const void *pcm_480_samples_per_ch) {
     if (active_client_pcb == NULL || server_audio_cfg.sample_rate_hz == 0) {
         return;
     }
 
     uint32_t timestamp_ms = (uint32_t)((total_samples_sent * 1000ULL) / server_audio_cfg.sample_rate_hz);
+    //uint32_t timestamp_ms = timestamp_getticks() / (timestamp_getfreq() / 1000);
 
     size_t cluster_len = webm_flac_encode_cluster(&server_audio_cfg, pcm_480_samples_per_ch,
                                                   current_frame_num, timestamp_ms, webm_cluster_buf);
