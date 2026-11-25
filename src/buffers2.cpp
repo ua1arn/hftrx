@@ -20,6 +20,8 @@
 
 #define DBG_PERIOD 100    // ms
 
+#define WITHRESAMPLERS 1//(WITHUSEUSBBT && WITHUSEUSBBTAUDIO)
+
 #ifndef BUFOVERSIZE
 	#define BUFOVERSIZE 1
 #endif /* BUFOVERSIZE */
@@ -1856,7 +1858,300 @@ int_fast32_t datasize_dmabuffereth0io(void) /* parameter for DMA Ethernet0 buffe
 
 #endif
 
-#define WITHRESAMPLERS (WITHUSEUSBBT && WITHUSEUSBBTAUDIO)
+/**
+ * @brief Instance structure for the floating-point transposed direct form II Biquad cascade filter.
+ */
+typedef struct
+{
+        uint8_t numStages;         /**< number of 2nd order stages in the filter.  Overall order is 2*numStages. */
+        float64_t *pState;         /**< points to the array of state coefficients.  The array is of length 4*numStages. */
+  const float64_t *pCoeffs;        /**< points to the array of coefficients.  The array is of length 5*numStages. */
+} arm_biquad_cascade_stereo_df2T_instance_f64;
+
+/**
+  @ingroup groupFilters
+ */
+
+/**
+  @addtogroup BiquadCascadeDF2T
+  @{
+ */
+
+/**
+  @brief         Initialization function for the floating-point transposed direct form II Biquad cascade filter.
+  @param[in,out] S           points to an instance of the filter data structure.
+  @param[in]     numStages   number of 2nd order stages in the filter.
+  @param[in]     pCoeffs     points to the filter coefficients.
+  @param[in]     pState      points to the state buffer.
+
+  @par           Coefficient and State Ordering
+                   The coefficients are stored in the array <code>pCoeffs</code> in the following order:
+  <pre>
+      {b10, b11, b12, a11, a12, b20, b21, b22, a21, a22, ...}
+  </pre>
+  @par
+                   where <code>b1x</code> and <code>a1x</code> are the coefficients for the first stage,
+                   <code>b2x</code> and <code>a2x</code> are the coefficients for the second stage,
+                   and so on.  The <code>pCoeffs</code> array contains a total of <code>5*numStages</code> values.
+  @par
+                   The <code>pState</code> is a pointer to state array.
+                   Each Biquad stage has 2 state variables <code>d1,</code> and <code>d2</code> for each channel.
+                   The 2 state variables for stage 1 are first, then the 2 state variables for stage 2, and so on.
+                   The state array has a total length of <code>2*numStages</code> values.
+                   The state variables are updated after each block of data is processed; the coefficients are untouched.
+ */
+
+ARM_DSP_ATTRIBUTE void arm_biquad_cascade_stereo_df2T_init_f64(
+        arm_biquad_cascade_stereo_df2T_instance_f64 * S,
+        uint8_t numStages,
+  const float64_t * pCoeffs,
+        float64_t * pState)
+{
+  /* Assign filter stages */
+  S->numStages = numStages;
+
+  /* Assign coefficient pointer */
+  S->pCoeffs = pCoeffs;
+
+  /* Clear state buffer and size is always 4 * numStages */
+  memset(pState, 0, (4U * (uint32_t) numStages) * sizeof(float64_t));
+
+  /* Assign state pointer */
+  S->pState = pState;
+}
+
+ARM_DSP_ATTRIBUTE void arm_biquad_cascade_stereo_df2T_f64(
+  const arm_biquad_cascade_stereo_df2T_instance_f64 * S,
+  const float64_t * pSrc,
+        float64_t * pDst,
+        uint32_t blockSize)
+{
+  const float64_t *pIn = pSrc;                         /* Source pointer */
+        float64_t *pOut = pDst;                        /* Destination pointer */
+        float64_t *pState = S->pState;                 /* State pointer */
+  const float64_t *pCoeffs = S->pCoeffs;               /* Coefficient pointer */
+        float64_t acc1a, acc1b;                        /* Accumulator */
+        float64_t b0, b1, b2, a1, a2;                  /* Filter coefficients */
+        float64_t Xn1a, Xn1b;                          /* Temporary input */
+        float64_t d1a, d2a, d1b, d2b;                  /* State variables */
+        uint32_t sample, stage = S->numStages;         /* Loop counters */
+
+    do
+    {
+        /* Reading the coefficients */
+        b0 = pCoeffs[0];
+        b1 = pCoeffs[1];
+        b2 = pCoeffs[2];
+        a1 = pCoeffs[3];
+        a2 = pCoeffs[4];
+
+        /* Reading the state values */
+        d1a = pState[0];
+        d2a = pState[1];
+        d1b = pState[2];
+        d2b = pState[3];
+
+        pCoeffs += 5U;
+
+#if defined (ARM_MATH_LOOPUNROLL)
+
+    /* Loop unrolling: Compute 8 outputs at a time */
+        sample = blockSize >> 3U;
+
+        while (sample > 0U) {
+          /* y[n] = b0 * x[n] + d1 */
+          /* d1 = b1 * x[n] + a1 * y[n] + d2 */
+          /* d2 = b2 * x[n] + a2 * y[n] */
+
+/*  1 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  2 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  3 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  4 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  5 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  6 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  7 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+/*  8 */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+          /* decrement loop counter */
+          sample--;
+        }
+
+        /* Loop unrolling: Compute remaining outputs */
+        sample = blockSize & 0x7U;
+
+#else
+
+        /* Initialize blkCnt with number of samples */
+        sample = blockSize;
+
+#endif /* #if defined (ARM_MATH_LOOPUNROLL) */
+
+        while (sample > 0U) {
+          /* Read the input */
+          Xn1a = *pIn++; /* Channel a */
+          Xn1b = *pIn++; /* Channel b */
+
+          /* y[n] = b0 * x[n] + d1 */
+          acc1a = (b0 * Xn1a) + d1a;
+          acc1b = (b0 * Xn1b) + d1b;
+
+          /* Store the result in the accumulator in the destination buffer. */
+          *pOut++ = acc1a;
+          *pOut++ = acc1b;
+
+          /* Every time after the output is computed state should be updated. */
+          /* d1 = b1 * x[n] + a1 * y[n] + d2 */
+          d1a = ((b1 * Xn1a) + (a1 * acc1a)) + d2a;
+          d1b = ((b1 * Xn1b) + (a1 * acc1b)) + d2b;
+
+          /* d2 = b2 * x[n] + a2 * y[n] */
+          d2a = (b2 * Xn1a) + (a2 * acc1a);
+          d2b = (b2 * Xn1b) + (a2 * acc1b);
+
+          /* decrement loop counter */
+          sample--;
+        }
+
+        /* Store the updated state variables back into the state array */
+        pState[0] = d1a;
+        pState[1] = d2a;
+
+        pState[2] = d1b;
+        pState[3] = d2b;
+
+        pState += 4U;
+
+        /* The current stage output is given as the input to the next stage */
+        pIn = pDst;
+
+        /* Reset the output working pointer */
+        pOut = pDst;
+
+        /* Decrement the loop counter */
+        stage--;
+
+    } while (stage > 0U);
+
+}
 
 #if WITHRESAMPLERS
 
