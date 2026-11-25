@@ -2198,7 +2198,7 @@ typedef struct
 // Буфер на стороне 16 кГц
 typedef struct
 {
-	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 160 * 1] ALIGNX_END;
+	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 160 * BTIO16_CHANNELS] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = sizeof (int16_t), nch = BTIO16_CHANNELS };	// sample slipping support
 } btio16k_t;
@@ -2206,7 +2206,7 @@ typedef struct
 // Буфер на стороне 8 кГц
 typedef struct
 {
-	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 80 * 1] ALIGNX_END;
+	ALIGNX_BEGIN  int16_t buff [BTSSCALE * 80 * BTIO8_CHANNELS] ALIGNX_END;
 	//ALIGNX_BEGIN  uint8_t pad ALIGNX_END;	// для вычисления размера требуемого для операций с кеш памятью
 	enum { ss = sizeof (int16_t), nch = BTIO8_CHANNELS };	// sample slipping support
 } btio8k_t;
@@ -2257,11 +2257,13 @@ static btio16kdmaRS_t btout16k(IRQL_REALTIME, "btout16k", btout16kbuf, ARRAY_SIZ
 static btio8kdmaRS_t btout8k(IRQL_REALTIME, "btout8k", btout8kbuf, ARRAY_SIZE(btout8kbuf));
 static btio48kdma_t btout48k(IRQL_REALTIME, "btout48k", btout48kbuf, ARRAY_SIZE(btout48kbuf));
 
+/* Канал из BT в трансивер */
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout44p1k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout32k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout16k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltout8k;
 
+/* Канал из трансивера в BT */
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltin44p1k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltin32k;
 static ARM_MORPH(arm_biquad_cascade_stereo_df2T_instance) fltin16k;
@@ -2301,6 +2303,40 @@ static bool fetchdata_downRS_btin8k(int16_t * dst, unsigned ndst, unsigned ndstc
 		const unsigned srci = dsti * 6;
 		const FLOAT_t mono = (FLOAT_t) 0.5 * (src [srci * 2 + 0] + src [srci * 2 + 1]);
 		dst [dsti] = adpt_output(& btioadpt.adp, mono);
+	}
+
+	btin48k.release_buffer(addr);
+	return true;
+}
+
+// Decimate and downmix btin8k (8 kHz stereo) from btin48k (48 kHz stereo)
+// Ratio: 480 -> 80 frames per 10 ms block (6:1)
+static bool fetchdata_downRS_btin8k2ch(int16_t * dst, unsigned ndst, unsigned ndstch, unsigned nsrc, unsigned nsrcch)
+{
+	btio48k_t * addr;
+	if (! btin48k.get_readybuffer(& addr))
+		return false;
+
+	FLOAT_t * const src = addr->buff;
+	ASSERT(ndst == BTSSCALE * 80 * ndstch);
+	ASSERT(nsrc == BTSSCALE * 480 * nsrcch);
+	ASSERT(2 == ndstch);
+	ASSERT(2 == nsrcch);
+
+	const unsigned srcframes = nsrc / nsrcch;
+	const unsigned dstframes = ndst / ndstch;
+
+	// Apply anti-aliasing low-pass filter prior to 6:1 decimation
+	ARM_MORPH(arm_biquad_cascade_stereo_df2T)(& fltin8k, src, src, srcframes);
+
+	// Exact 6:1 decimation with stereo-to-mono downmix (0.5 * (L + R))
+	// Fixes previous out-of-bounds write to dst[dsti * 2 + 1] and 6x gain clipping
+	for (unsigned dsti = 0; dsti < dstframes; ++ dsti)
+	{
+		const unsigned srci = dsti * 6;
+		//const FLOAT_t mono = (FLOAT_t) 0.5 * (src [srci * 2 + 0] + src [srci * 2 + 1]);
+		dst [dsti * 2 + 0] = adpt_output(& btioadpt.adp, src [srci * 2 + 0]);
+		dst [dsti * 2 + 1] = adpt_output(& btioadpt.adp, src [srci * 2 + 1]);
 	}
 
 	btin48k.release_buffer(addr);
@@ -2808,6 +2844,7 @@ int_fast32_t datasize_dmabufferbtin16k(void)
 ///
 
 // can be zero
+/* take from queue BT audio from radio, sample rate 8000 */
 uintptr_t getfilled_dmabufferbtin8k(void)
 {
 	btio8k_t * dest;
@@ -2825,6 +2862,20 @@ void release_dmabufferbtin8k(uintptr_t addr)
 int_fast32_t datasize_dmabufferbtin8k(void)
 {
 	return btin8k.get_datasize();
+}
+
+// Возвращает количество элементов буфера, обработанных за вызов
+static unsigned getcbf_dmabufferbtin8k(int16_t * b, int16_t * dest)
+{
+	dest [0] = b [0];
+	dest [1] = b [1];
+	return 2;
+}
+
+// Возвращает не-ноль если данные есть
+uint_fast8_t elfetch_dmabufferbtin8k(int16_t * dest)
+{
+	return btout8k.fetchdata_sampleslipping(dest, getcbf_dmabufferbtin8k, fetchdata_downRS_btin8k2ch, ARRAY_SIZE(btio48k_t::buff), btio48k_t::nch);
 }
 
 ///////////////////////////////

@@ -577,13 +577,16 @@ static void audio_32ms(void * ctx)
 	unsigned i;
 	for (i = 0; i < ARRAY_SIZE(buff); i += 2)
 	{
-		FLOAT_t l = get_lout();
-		get_lout(), get_lout(), get_lout(), get_lout(), get_lout();
-		buff [i + 0] = adpt_output(& audionet_out, l);
+		if (! elfetch_dmabufferbtin8k(buff + i))
+		{
+			FLOAT_t l = get_lout();
+			get_lout(), get_lout(), get_lout(), get_lout(), get_lout();
+			buff [i + 0] = adpt_output(& audionet_out, l);
 
-		FLOAT_t r = get_rout();
-		get_rout(), get_rout(), get_rout(), get_rout(), get_rout();
-		buff [i + 1] = adpt_output(& audionet_out, r);
+			FLOAT_t r = get_rout();
+			get_rout(), get_rout(), get_rout(), get_rout(), get_rout();
+			buff [i + 1] = adpt_output(& audionet_out, r);
+		}
 	}
 	audio_server_push_pcm(buff);
 }
