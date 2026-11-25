@@ -255,7 +255,7 @@ static err_t ws_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, e
             if (ws_clients[i] != NULL) active_count++;
         }
 
-        static const int WS_JITTER_BUFFER_MS = 600;
+        static const int WS_JITTER_BUFFER_MS = 300;
 
         static const char html_template[] =
             "<!DOCTYPE html><html><head><meta charset='utf-8'>"
