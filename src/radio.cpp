@@ -12408,8 +12408,6 @@ static void board_setrtcstrobe(uint_fast8_t val)
 
 #endif /* defined (RTC1_TYPE) */
 
-#endif /* ! WITHISBOOTLOADER */
-
 
 static uint_fast8_t findcatbaudrate(uint_fast8_t old, uint_fast32_t baudrate)
 {
@@ -12433,8 +12431,6 @@ static uint_fast8_t findcattype(uint_fast8_t old, uint_fast8_t code)
 	}
 	return old;
 }
-
-#if ! WITHISBOOTLOADER
 
 static int_fast32_t
 
