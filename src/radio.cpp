@@ -7484,7 +7484,7 @@ enum
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	static uint16_t gbkindelay = 150;	/* в единицах mS. модифицируется через меню - задержка отпускания BREAK-IN */
+	static uint16_t gbkindelay = 200;	/* в единицах mS. модифицируется через меню - задержка отпускания BREAK-IN */
 	static const struct paramdefdef xgbkindelay =
 	{
 		QLABEL("CW DELAY"),  3, RJ_UNSIGNED, ISTEP5,	/* задержка в единицах ms */
@@ -14756,11 +14756,11 @@ updateboard_noui(
 		#if WITHNOATTNOPREAMP
 			// без управления аттенюатором и УВЧ
 		#elif WITHONEATTONEAMP
-			board_set_att(attmodes [gatt].codeatt);
-			board_set_preamp(attmodes [gatt].codepre);
-			board_set_attvalue(attmodes [gatt].atten10 / 10);
+			board_set_att(attmodes [param_val(& xgatt)].codeatt);
+			board_set_preamp(attmodes [param_val(& xgatt)].codepre);
+			board_set_attvalue(attmodes [param_val(& xgatt)].atten10 / 10);
 		#else /* WITHONEATTONEAMP */
-			board_set_att(attmodes [gatt].code);
+			board_set_att(attmodes [param_val(& xgatt)].code);
 			board_set_preamp(pampmodes [param_val(& xgpamp)].code);
 			board_set_attvalue(attmodes [param_val(& xgatt)].atten10 / 10);
 		#endif /* WITHONEATTONEAMP */
@@ -14787,7 +14787,7 @@ updateboard_noui(
 		board_setrtcstrobe(param_val(& xgrtcstrobe));
 	#endif /* defined (RTC1_TYPE) */
 	#if WITHANTSELECTRX || WITHANTSELECT1RX
-		board_set_rxantenna(rxantmodes [grxantenna].code);
+		board_set_rxantenna(rxantmodes [param_val(& xgrxantenna)].code);
 		board_set_antenna(antmodes [ant2hint].code);
 	#elif WITHANTSELECT2
 		board_set_antenna(antmodes [ant2hint].code);
@@ -14797,7 +14797,7 @@ updateboard_noui(
 	#if WITHELKEY
 		board_set_wpm(param_val(& xgelkeywpm));	/* скорость электронного ключа */
 		elkey_set_format(param_val(& xgdashratio), param_val(& xgspaceratio));	/* соотношение тире к точке (в десятках процентов) */
-		elkey_set_mode(elkeymodes [param_val(& xgelkeymode)].code, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+		elkey_set_mode(elkeymodes [param_val(& xgelkeymode)].code, param_val(& xgelkeyreverse));	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 		#if WITHVIBROPLEX
 			elkey_set_slope(param_val(& xgelkeyslope));	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		#endif /* WITHVIBROPLEX */
@@ -15113,14 +15113,13 @@ static void updateboard_freq(void)
 
 void uif_key_bkintoggle(void)
 {
-	gbkinenable = calc_next(gbkinenable, 0, 1);
-	save_i8(OFFSETOF(struct nvmap, gbkinenable), gbkinenable);
-	updateboard();
+	if (param_keyclick(& xgbkinenable))
+		updateboard();
 }
 
 uint_fast8_t hamradio_get_bkin_value(void)
 {
-	return gbkinenable;
+	return param_val(& xgbkinenable);
 }
 
 static LCLSPINLOCK_t lockcwmsg = IRQLSPINLOCK_INIT;
