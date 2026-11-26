@@ -425,6 +425,11 @@ static uint_fast8_t getbankindex_ab_forcontrols(uint_fast8_t ab);
 static uint_fast8_t getsubmode(uint_fast8_t bi);		/* bi: vfo bank index */
 
 
+static const char * getlabelENCFN(const struct paramdefdef * pd)
+{
+	return pd->encFNlabel;
+}
+
 static const char * pd_getlonglabel(const struct paramdefdef * pd)
 {
 	return pd->label;
@@ -6293,7 +6298,7 @@ enum
 	// Громкость в процентах
 	static const struct paramdefdef xafgain1 =
 	{
-		QLABEL3("VolumeL", "Volume Left", "VOLUME_L"), 0, RJ_PERCENTS, ISTEP1,
+		QLABEL4("VolumeL", "Volume Left", "VOLUME_L", "LEFT:"), 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 #if WITHPOTAFGAIN
@@ -6310,7 +6315,7 @@ enum
 	// Громкость в процентах
 	static const struct paramdefdef xafgain2 =
 	{
-		QLABEL3("VolumeR", "Volume Right", "VOLUME_R"), 0, RJ_PERCENTS, ISTEP1,
+		QLABEL4("VolumeR", "Volume Right", "VOLUME_R", "RIGHT:"), 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 #if WITHPOTAFGAIN
@@ -6371,7 +6376,7 @@ enum
 	// Усиление ПЧ/ВЧ в процентах
 	static const struct paramdefdef xrfgain1 =
 	{
-		QLABEL3("RF GAIN", "RF Gain", "RF GAIN"), 0, RJ_PERCENTS, ISTEP1,
+		QLABEL4("RF GAIN", "RF Gain", "RF GAIN", "RF:"), 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 #if WITHPOTIFGAIN
@@ -7519,7 +7524,7 @@ enum
 	static uint8_t elkeywpmv = 20;
 	static const struct paramdefdef xgelkeywpm =
 	{
-		QLABEL3("CW SPEED", "CW Speed", "CW SPEED"),  0, RJ_UNSIGNED, ISTEP1,
+		QLABEL4("CW SPEED", "CW Speed", "CW SPEED", "WPM:"),  0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 #if WITHPOTWPM
@@ -8816,16 +8821,6 @@ static int defdelta(const void * ctx, int delta)
 	return param_rotate(pd, delta);
 }
 
-static int getlabelAFGAIN(const void * ctx, char * buff, size_t count)
-{
-	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
-	const int_fast32_t value = param_val(pd);
-	int n = 0;
-	n += local_snprintf_P(buff + n, count - n, "AF:");
-	n += param_formatpercents(pd, buff + n, count - n, value);
-	return n;
-}
-
 static int getlabelCWPITCH(const void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
@@ -8835,15 +8830,17 @@ static int getlabelCWPITCH(const void * ctx, char * buff, size_t count)
 	return n;
 }
 
-static int getlabelCWWPM(const void * ctx, char * buff, size_t count)
+static int getlabeldefault(const void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
+	ASSERT(pd);
 	const int_fast32_t value = param_val(pd);
 	int n = 0;
-	n += local_snprintf_P(buff + n, count - n, "WPM:%d", (int) value);
+
+	n += param_formatabel(pd, buff + n, count - n, getlabelENCFN);
+	n += param_format(pd, buff + n, count - n, value);
 	return n;
 }
-
 
 static int getlabelRXBW(const void * ctx, char * buff, size_t count)
 {
@@ -8859,23 +8856,20 @@ static int getlabelRXBW(const void * ctx, char * buff, size_t count)
 		return 0;
 	}
 	const int_fast32_t value = param_val(pd);
+	int n = 0;
 
-	return param_format(pd, buff, count, value);
-}
-
-static int getlabelAFGAINss(const void * ctx, char * buff, size_t count)
-{
-	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
-	const int_fast32_t value = param_val(pd);
-	return local_snprintf_P(buff, count, "AF %2d", (int) value);
+	n += param_formatabel(pd, buff + n, count - n, getlabelENCFN);
+	n += param_format(pd, buff + n, count - n, value);
+	return n;
 }
 
 static int getlabelRFGAIN(const void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
+	ASSERT(pd);
 	const int_fast32_t value = param_val(pd);
 	int n = 0;
-	n += local_snprintf_P(buff + n, count - n, "RF ");
+	n += local_snprintf_P(buff + n, count - n, "RF:");
 	n += param_formatpercents(pd, buff + n, count - n, value);
 	return n;
 }
@@ -8883,16 +8877,9 @@ static int getlabelRFGAIN(const void * ctx, char * buff, size_t count)
 static int getlabelAGCFENCE(const void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
+	ASSERT(pd);
 	const int_fast32_t value = param_val(pd);
-	return local_snprintf_P(buff, count, "AGC %+d", (int) value);
-}
-
-
-static int getlabelRFGAINsss(const void * ctx, char * buff, size_t count)
-{
-	const struct paramdefdef * const pd = & xrfgain1;
-	const int_fast32_t value = param_val(pd);
-	return local_snprintf_P(buff, count, "RF %2d", (int) value);
+	return local_snprintf_P(buff, count, "AGC:%+d", (int) value);
 }
 
 static int getlabelENC2F(const void * ctx, char * buff, size_t count)
@@ -8909,13 +8896,6 @@ static int getlabelENC4F(const void * ctx, char * buff, size_t count)
 {
 	return local_snprintf_P(buff, count, "ENC4F");
 }
-
-static const encfnitem_t enclabelsENC1FN [] =
-{
-	{ & xafgain1, getlabelAFGAIN, defdelta, defholded, },
-	{ & xrfgain1, getlabelRFGAIN, defdelta, defholded, },
-	{ & xagcfence1, getlabelAGCFENCE, defdelta, defholded, },
-};
 
 static int bwadjdelta(const void * ctx, int delta)
 {
@@ -8949,10 +8929,17 @@ static int bwadjholded(const void * ctx, uint_fast8_t sel)
 	return 0;
 }
 
+static const encfnitem_t enclabelsENC1FN [] =
+{
+	{ & xafgain1, getlabeldefault, defdelta, defholded, },
+	{ & xrfgain1, getlabeldefault, defdelta, defholded, },
+	{ & xagcfence1, getlabelAGCFENCE, defdelta, defholded, },
+	{ & xafgain2, getlabeldefault, defdelta, defholded, },
+};
+
 static const encfnitem_t enclabelsENC2FN [] =
 {
-	{ & xafgain2, getlabelAFGAIN, defdelta, defholded, },
-	{ & xgelkeywpm, getlabelCWWPM, defdelta, defholded, },
+	{ & xgelkeywpm, getlabeldefault, defdelta, defholded, },
 	{ & xgcwpitch10, getlabelCWPITCH, defdelta, defholded, },
 	{ NULL, getlabelRXBW, bwadjdelta, bwadjholded, },
 };
@@ -11077,7 +11064,7 @@ static int sq2transition(int_fast8_t sq10, int_fast16_t bw)
 // CW filter bandwidth for WIDE
 static const struct paramdefdef xfltbw_cwwide =
 {
-	QLABEL3("CW W WDT", "CW W WIDTH", "CW W WIDTH"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for WIDE
+	QLABEL4("CW W WDT", "CW W WIDTH", "CW W WIDTH", "WIDTH:"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for WIDE
 	ITEM_VALUE,
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
@@ -11090,7 +11077,7 @@ static const struct paramdefdef xfltbw_cwwide =
 // CW filter bandwidth for NARROW
 static const struct paramdefdef xfltbw_cwnarrow =
 {
-	QLABEL3("CW N WDT", "CW N WIDTH", "CW N WIDTH"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for NARROW
+	QLABEL4("CW N WDT", "CW N WIDTH", "CW N WIDTH", "WIDTH:"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for NARROW
 	ITEM_VALUE,
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
@@ -11101,7 +11088,7 @@ static const struct paramdefdef xfltbw_cwnarrow =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbwide_high = {
-	QLABEL("SSB W HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
+	QLABEL4("SSB W HI", "SSB W HI", "SSB W HI", "HIGH:"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
 	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
@@ -11112,7 +11099,7 @@ static const struct paramdefdef xgssbwide_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbwide_low = {
-	QLABEL("SSB W LO"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
+	QLABEL4("SSB W LO", "SSB W LO", "SSB W LO", "LOW:"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
 	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
@@ -11199,7 +11186,7 @@ static const struct paramdefdef xgssbnarrow_afr = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamwide_high = {
-	QLABEL("AM W HI"), 1, RJ_UNSIGNED,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
+	QLABEL4("AM W HI", "AM W HI", "AM W HI", "HIGH:"), 1, RJ_UNSIGNED,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
 	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE),
@@ -11210,7 +11197,7 @@ static const struct paramdefdef xgamwide_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamwide_low = {
-	QLABEL("AM W LO"), 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
+	QLABEL4("AM W LO", "AM W LO", "AM W LO", "LOW:"), 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
 	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
@@ -20386,8 +20373,6 @@ param_format(
 		return local_snprintf_P(buff, count, "%s", value ? "YES" : "NO");
 	case RJ_ON:
 		return local_snprintf_P(buff, count, "%s", value ? "ON" : "OFF");
-	case RJ_PERCENTS:
-		return local_snprintf_P(buff, count, "%d", (int) ((value - pd->qbottom) * 100 / (pd->qupper - pd->qbottom)));
 
 	case RJ_SIGNED:
 		switch (pd->qcomma)
@@ -20402,6 +20387,9 @@ param_format(
 		case 3:
 			return local_snprintf_P(buff, count, "%+" PRIdFAST32 ".%03" PRIdFAST32, value / 1000, iabs32(value % 1000));
 		}
+
+	case RJ_PERCENTS:
+		return local_snprintf_P(buff, count, "%d%%", (int) ((value - pd->qbottom) * 100 / (pd->qupper - pd->qbottom)));
 
 	default:
 	case RJ_UNSIGNED:
