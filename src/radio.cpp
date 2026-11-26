@@ -9011,28 +9011,28 @@ static const struct paramdefdef xenc4f_sel =
 /* получить надпись для отображения состояние ENC1F */
 int hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count)
 {
-	const encfnitem_t * const ei = & enclabelsENC1FN [enc1f_sel];
+	const encfnitem_t * const ei = & enclabelsENC1FN [param_val(& xenc1f_sel)];
 	return ei->getlabel(ei->ctx, buff, count);
 }
 
 /* получить надпись для отображения состояние ENC2F */
 int hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t count)
 {
-	const encfnitem_t * const ei = & enclabelsENC2FN [enc2f_sel];
+	const encfnitem_t * const ei = & enclabelsENC2FN [param_val(& xenc2f_sel)];
 	return ei->getlabel(ei->ctx, buff, count);
 }
 
 /* получить надпись для отображения состояние ENC3F */
 int hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t count)
 {
-	const encfnitem_t * const ei = & enclabelsENC3FN [enc3f_sel];
+	const encfnitem_t * const ei = & enclabelsENC3FN [param_val(& xenc3f_sel)];
 	return ei->getlabel(ei->ctx, buff, count);
 }
 
 /* получить надпись для отображения состояние ENC4F */
 int hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t count)
 {
-	const encfnitem_t * const ei = & enclabelsENC4FN [enc4f_sel];
+	const encfnitem_t * const ei = & enclabelsENC4FN [param_val(& xenc4f_sel)];
 	return ei->getlabel(ei->ctx, buff, count);
 }
 
@@ -16449,7 +16449,7 @@ static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 		if (delta)
 		{
 			bring_enc1f();
-			switch (enc1f_sel)
+			switch (param_val(& xenc1f_sel))
 			{
 			default:
 				break;
@@ -16475,21 +16475,9 @@ static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 		if (delta)
 		{
 			bring_enc2f();
-			const encfnitem_t * const ei = & enclabelsENC2FN [enc2f_sel];
+			const encfnitem_t * const ei = & enclabelsENC2FN [param_val(& xenc2f_sel)];
 			ASSERT(ei->ondelta);
 			changed |= ei->ondelta(ei->ctx, delta);
-			switch (enc2f_sel)
-			{
-			default:
-				break;
-			case 0:
-				/* установка громкости */
-				changed |= encoder_flagne(& xafgain2, delta, CATINDEX(CAT_AG_INDEX), NULL);
-				break;
-			case 1:
-				/* регулировка полосы пропускания */
-				break;
-			}
 		}
 	}
 #endif /* WITHENCODER_2F */
@@ -16511,25 +16499,6 @@ static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 			const struct paramdefdef * const pd = mdt [mode].middlemenu(& nitems) [gmiddlepos [mode]];
 
 			changed |= param_rotate(pd, delta);	// модификация и сохранение параметра
-//			switch (enc4f_sel)
-//			{
-//			default:
-//				break;
-//			case 0:
-//				while (delta < 0)
-//				{
-//					uif_key_click_banddown();
-//					++ delta;
-//					changed = 1;
-//				}
-//				while (delta > 0)
-//				{
-//					uif_key_click_bandup();
-//					-- delta;
-//					changed = 1;
-//				}
-//				break;
-//			}
 		}
 	}
 #endif /* WITHENCODER_4F */
@@ -16551,13 +16520,6 @@ static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 			gmiddlepos [mode] = calc_delta(gmiddlepos [mode], 0, middlerowsize - 1, delta);
 			save_i8(RMT_MIDDLEMENUPOS_BASE(mode), gmiddlepos [mode]);
 			changed = 1;
-//			switch (enc4f_sel)
-//			{
-//			default:
-//				break;
-//			case 0:
-//				break;
-//			}
 		}
 	}
 #endif /* WITHENCODER_3F */
