@@ -508,14 +508,12 @@
 	},
 /* group name --- */
 	& xgdialspeedmain100,
-	& xgdialspeedsub100,
 	& xgenc1pulses,
 	& xgenc1dynamic,
-	& xgenc1div,
 #if WITHENCODER_SUB
+	& xgdialspeedsub100,
 	& xgencsubdynamic,
 	& xgencsubpulses,
-	& xgencsubdiv,
 #endif /* WITHENCODER_SUB */
 
 	& xgbigstep,

@@ -215,10 +215,16 @@ static int safegetposition_kbd(void)
 /* значение используется вне прерываний - модификация без запрета прерываний */
 
 
-void encoder_set_resolution(encoder_t * e, unsigned v, uint_fast8_t encdynamic)
+void encoder_set_resolution4(encoder_t * e, unsigned v, uint_fast8_t encdynamic)
 {
 	e->actualresulution = v * 4 * ENCRESSCALE;	/* используется учетверение шагов */
 	e->dynamic = encdynamic;
+}
+
+void encoder_set_resolution1(encoder_t * e, unsigned v)
+{
+	e->actualresulution = v * ENCRESSCALE;	/* используется учетверение шагов */
+	e->dynamic = 0;
 }
 
 // возвращает количество инкрементов на оборот
