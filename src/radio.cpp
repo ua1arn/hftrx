@@ -11830,7 +11830,7 @@ setgsubmode(
 	{
 		gstep_ENC_MAIN = 500;
 		gstep_ENC2 = pmodet->step10 [1] * 10;
-		gencderate = 1;
+		gencderate = 6;
 	}
 	else if (param_val(& xgbigstep))
 	{
