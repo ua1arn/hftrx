@@ -17032,8 +17032,6 @@ catyaesu_processcatmsg(
 			updateboard();	/* полная перенастройка (как после смены режима) */
 			//PRINTF("CAT Set mode=%s (yaesu=0x%02X)\n", submodes [defsubmode].qlabel, catp [0]);
 			//printhex_titled(0, catp, 5, "CAT Set mode");
-			cat_ask_buffer [0] = 0x00;
-			cat_answervariable(cat_ask_buffer, 1);
 		}
 		else
 		{
