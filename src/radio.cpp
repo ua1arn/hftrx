@@ -11826,7 +11826,13 @@ setgsubmode(
 
 	}
 #else
-	if (gusefast || gbigstep)
+	if (param_val(& xgusefast))
+	{
+		gstep_ENC_MAIN = 500;
+		gstep_ENC2 = pmodet->step10 [1] * 10;
+		gencderate = 1;
+	}
+	else if (param_val(& xgbigstep))
 	{
 		gstep_ENC_MAIN = pmodet->step10 [1] * 10;
 		gstep_ENC2 = pmodet->step10 [1] * 10;
@@ -21218,12 +21224,10 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHBCBANDS */
 
-
-#if WITHUSEFAST
 	case KBD_CODE_USEFAST:
 		uif_key_usefast();
 		return 1;	/* клавиша уже обработана */
-#endif /* WITHUSEFAST */
+
 #if WITHPOWERLPHP
 	case KBD_CODE_PWRTOGGLE:
 		/* переключение режима мощности (для sw2012sf) */
