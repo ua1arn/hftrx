@@ -11795,25 +11795,21 @@ getsubmode(
 	return modes [moderow] [modecol + 1];	/* выборка из битовой маски */
 }
 
+// расчёт делителя импульсов валкодера для заданного шага перестройки и перестройки на оборот
+static int_fast32_t calcderate(int_fast32_t actualresolution, int_fast32_t step, int_fast32_t needed, const char * label)
+{
+	int_fast32_t d = (actualresolution * step) / needed;
+	PRINTF("'%s': d=%i, act=%d, step=%d, needed=%d\n", label, d, actualresolution, step, needed);
+	return d ? d : 1;
+}
+
 /* функция вызывается из updateboard при измененияя параметров приёма
- * Устанавливает "кэшированные" состояния режима работы -
+ * Устанавливает "кэшированные" состояния работы валкодеров -
    gsubmode, gstep_ENC_MAIN, gagcmode, gfi, gmode.
 */
-
-
-static void
-setgsubmode(
-	uint_fast8_t submode
-   )
+static void setgencparams(const struct modetempl * const pmodet)
 {
-	/* подправить фильтр, АРУ и шаг перестройки в соответствии с новым режимим работы */
-	/* выбор фильтра */
-	const struct modetempl * const pmodet = getmodetempl(submode);
-	const uint_fast8_t mode = submodes [submode].mode;
-
-	gsubmode = submode;
-	gmode = mode;
-
+	const int_fast32_t actualresolution = encoder_get_actualresolution(& encoder1);
 #if ! WITHAGCMODENONE
 	gagcmode = loadvfy8up(RMT_AGC_BASE(mode), 0, AGCMODE_COUNT - 1, pmodet->defagcmode);
 #endif /* ! WITHAGCMODENONE */
@@ -11830,21 +11826,46 @@ setgsubmode(
 	{
 		gstep_ENC_MAIN = 500;
 		gstep_ENC2 = pmodet->step10 [1] * 10;
+		gencderate = calcderate(actualresolution, gstep_ENC_MAIN, 50000, pmodet->label);
 		gencderate = 6;
 	}
 	else if (param_val(& xgbigstep))
 	{
 		gstep_ENC_MAIN = pmodet->step10 [1] * 10;
 		gstep_ENC2 = pmodet->step10 [1] * 10;
+		gencderate = calcderate(actualresolution, gstep_ENC_MAIN, 4000, pmodet->label);
 		gencderate = 1;
 	}
 	else
 	{
 		gstep_ENC_MAIN = pmodet->step10 [0] * 10;
 		gstep_ENC2 = pmodet->step10 [1] * 10;
+		gencderate = calcderate(actualresolution, gstep_ENC_MAIN, 4000, pmodet->label);
 		gencderate = gstep_ENC_MAIN / STEP_MINIMAL;
 	}
 #endif
+}
+
+/* функция вызывается из updateboard при измененияя параметров приёма
+ * Устанавливает "кэшированные" состояния режима работы -
+   gsubmode, gagcmode, gfi, gmode.
+*/
+
+static void
+setgsubmode(
+	uint_fast8_t submode
+   )
+{
+	/* подправить фильтр, АРУ и шаг перестройки в соответствии с новым режимим работы */
+	/* выбор фильтра */
+	const struct modetempl * const pmodet = getmodetempl(submode);
+	const uint_fast8_t mode = submodes [submode].mode;
+
+	gsubmode = submode;
+	gmode = mode;
+
+	setgencparams(pmodet);
+
 	//PRINTF("gstep_ENC_MAIN=%u, gstep_ENC2=%u, gencderate=%u\n", (unsigned) gstep_ENC_MAIN, (unsigned) gstep_ENC2, (unsigned) gencderate);
 }
 #if ! WITHAGCMODENONE
