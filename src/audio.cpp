@@ -2707,6 +2707,10 @@ static void fpgawivers_init(void)
 	fpgawiver_init(& fpgawivers_rx [1]);
 	fpgawiver_init(& fpgawiver_tx);
 	fpgawiver_init(& fpgawiver_bypass);
+
+	const FLOAT_t fs = ARMSAIRATE;
+	const FLOAT_t fbypascut = fs * 4 / 10;
+	fpgawiver_design_bypass(& fpgawiver_bypass, fbypascut, 0);
 }
 #endif /* WITHDSPEXTDDC */
 
@@ -2727,9 +2731,7 @@ static void audio_setup_wiver(const uint_fast8_t pathi, uint_fast8_t tx)
 
 	if (fullbw6 == INT16_MAX || dspmode == DSPCTL_MODE_TX_NFM)
 	{
-		const FLOAT_t fs = ARMSAIRATE;
-		const FLOAT_t fbypascut = fs * 4 / 10;
-		fpgawiver_design_bypass(& fpgawiver_bypass, fbypascut, 0);
+		// todo: использованть LPF с коррекцией CIC
 		fpgawiver_send(& fpgawiver_bypass, pathi);
 	}
 	else if (tx)
