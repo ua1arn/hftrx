@@ -4199,7 +4199,7 @@ struct nvmap {
 	uint8_t gspecbeta100;	/* beta - парамеры видеофильтра спектра */
 	uint8_t gwflbeta100;	/* beta - парамеры видеофильтра водопада */
 	uint8_t glvlgridstep;	/* Шаг сетки уровней в децибелах */
-	uint8_t grxbwsatu;		/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+	uint8_t grxbwindicator;		/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 	uint8_t gspectrumpart;	/* Часть отведенной под спектр высоты экрана 0..100 */
 #endif /* WITHSPECTRUMWF */
 #if WITHHDMITVHW
@@ -4298,6 +4298,8 @@ struct nvmap {
 	#endif /* ! WITHPOTIFGAIN */
 	uint8_t agcfence1;	// Параметр для регулировки точки перегиба АРУ
 	uint8_t agcfenceenable;	// Параметр для регулировки точки перегиба АРУ
+
+	uint16_t grxbwadj;
 
 	uint16_t glineamp;	// усиление с LINE IN
 	uint8_t gmikeboost20db;	// предусилитель микрофона
@@ -4543,7 +4545,7 @@ struct nvmap {
 #define RMT_PWR_BASE OFFSETOF(struct nvmap, gpwri)								/* большая мощность sw2012sf */
 #define RMT_NOTCH_BASE OFFSETOF(struct nvmap, gnotch)							/* NOTCH on/off */
 
-#define RMT_BWSETPOS_BASE(i) OFFSETOF(struct nvmap, bwsetpos [(i)])
+#define RMT_BWSETPOS_BASE(bwseti) OFFSETOF(struct nvmap, bwsetpos [(bwseti)])
 
 #define RMT_BWPROPSLEFT_BASE(i) OFFSETOF(struct nvmap, bwprops [(i)].bwleft10_width10)
 #define RMT_BWPROPSRIGHT_BASE(i) OFFSETOF(struct nvmap, bwprops [(i)].bwright100)
@@ -5333,7 +5335,7 @@ static const struct paramdefdef xgethmacaddr =
 	static uint8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 	static uint8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
 	static uint8_t glvlgridstep = 12;	/* Шаг сетки уровней в децибелах */
-	static uint8_t grxbwsatu = 50;	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+	static uint8_t grxbwindicator = 50;	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
 
@@ -5361,15 +5363,15 @@ static const struct paramdefdef xgethmacaddr =
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	static const struct paramdefdef xgrxbwsatu =
+	static const struct paramdefdef xgrxbwindicator =
 	{
 		QLABEL2("RXBW IND", "RX BW Indicator"),  0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		0, 100,			/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
-		OFFSETOF(struct nvmap, grxbwsatu),
+		OFFSETOF(struct nvmap, grxbwindicator),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
-		& grxbwsatu,
+		& grxbwindicator,
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
@@ -6077,6 +6079,48 @@ enum
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+
+	// код полосы пропускания
+
+	static int
+	uif_key_rotatebw(int delta)
+	{
+		PRINTF("uif_key_rotatebw: delta=%d\n", delta);
+		if (delta)
+		{
+			const uint_fast8_t bwseti = mdt [gmode].bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
+
+			ASSERT(bwsetsc [bwseti].last < BWSET_WIDTHS);
+			bwsetpos [bwseti] = calc_dir(delta < 0, bwsetpos [bwseti], 0, bwsetsc [bwseti].last);
+			save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
+			updateboard();
+			return 1;
+		}
+		return 0;
+	}
+
+	// код полосы пропускания
+	static size_t getvaltextrxbw(char * buff, size_t count, int_fast32_t value)
+	{
+		return local_snprintf_P(buff, count, "%d", (int) value);
+	}
+	static uint16_t grxbwadj;
+	static const struct paramdefdef xgrxbwadj =
+	{
+		QLABEL3("RX BW", "RX BW", "RX BW"), 0, RJ_CB, ISTEP1,
+		ITEM_VALUE,
+		0, 3, 					// Громкость в процентах
+#if WITHPOTAFGAIN
+		MENUNONVRAM,
+#else /* WITHPOTAFGAIN */
+		OFFSETOF(struct nvmap, grxbwadj),
+#endif /* WITHPOTAFGAIN */
+		getselector0, nvramoffs0, valueoffs0,
+		& grxbwadj,	/* переменная, которую подстраиваем  - если она 16 бит*/
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		getvaltextrxbw, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
 	static dualctl16_t rfgain1 = { BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX };	// Усиление ПЧ на максимуме
@@ -8519,6 +8563,14 @@ static int getlabelAFGAIN(const void * ctx, char * buff, size_t count)
 	return n;
 }
 
+
+static int getlabelRXBW(const void * ctx, char * buff, size_t count)
+{
+	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
+	const int_fast32_t value = param_val(pd);
+	return local_snprintf_P(buff, count, "BW %2d", (int) value);
+}
+
 static int getlabelAFGAINss(const void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
@@ -8576,6 +8628,7 @@ static const encfnitem_t enclabelsENC1FN [] =
 static const encfnitem_t enclabelsENC2FN [] =
 {
 	{ & xafgain2, getlabelAFGAIN, },
+	{ & xgrxbwadj, getlabelRXBW, },
 };
 
 static const encfnitem_t enclabelsENC3FN [] =
@@ -11932,6 +11985,8 @@ static void catmux_enable(uint_fast8_t code)
 
 static void catmux_answer_request(uint_fast8_t i)	// call from user-mode
 {
+	if (i == UINT8_MAX)
+		return;
 	switch (cattypes [gcattype].code)
 	{
 	default:
@@ -14774,7 +14829,7 @@ updateboard_noui(
 			board_set_view3dss_mark(param_val(& xgview3dss_mark));	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
 			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
-			display2_set_rxbwsatu(param_val(& xgrxbwsatu));	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+			display2_set_rxbwsatu(param_val(& xgrxbwindicator));	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 			display2_set_filter_spe(param_val(& xgspecbeta100));	/* beta - парамеры видеофильтра спектра */
 			display2_set_filter_wfl(param_val(& xgwflbeta100));	/* beta - парамеры видеофильтра водопада */
 			display2_set_spectrumpart(param_val(& xgspectrumpart));	/* Часть отведенной под спектр высоты экрана 0..100 */
@@ -15637,6 +15692,16 @@ uif_key_changebw(void)
 	updateboard();
 }
 
+void hamradio_set_bw(uint_fast8_t v)
+{
+	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
+	ASSERT(bwsetsc [bwseti].last < BWSET_WIDTHS);
+	ASSERT(v <= bwsetsc [bwseti].last);
+	bwsetpos [bwseti] = v;
+	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
+	updateboard();
+}
+
 /* Переключение шумоподавления
 	 - не вызывает сохранение состояния диапазона */
 
@@ -15658,15 +15723,6 @@ uif_key_click_datamode(void)
 }
 
 #endif /* WITHUSBHW && WITHUSBUAC */
-
-
-#else /* WITHIF4DSP */
-/* Переключение фильтров приёмника
-	 - не вызывает сохранение состояния диапазона */
-static void
-uif_key_changefilter(void)
-{
-}
 
 #endif /* WITHIF4DSP */
 
@@ -16336,6 +16392,10 @@ static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 			case 0:
 				/* установка громкости */
 				changed |= encoder_flagne(& xafgain2, delta, CATINDEX(CAT_AG_INDEX), NULL);
+				break;
+			case 1:
+				/* регулировка полосы пропускания */
+				changed |= encoder_flagne(& xgrxbwadj, delta, CATINDEX(UINT8_MAX), NULL);
 				break;
 			}
 		}
@@ -20972,10 +21032,6 @@ process_key_menuset_common(uint_fast8_t kbch, inputevent_t * ev)
 		/* Переключение фильтров
 			 - не вызывает сохранение состояния диапазона */
 		uif_key_changebw();
-#else /* WITHIF4DSP */
-		/* Переключение фильтров
-			 - не вызывает сохранение состояния диапазона */
-		uif_key_changefilter();
 #endif /* WITHIF4DSP */
 		return 1;	/* клавиша уже обработана */
 
@@ -23677,16 +23733,6 @@ uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit)
 	}
 
 	return count;
-}
-
-void hamradio_set_bw(uint_fast8_t v)
-{
-	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
-	ASSERT(bwsetsc [bwseti].last < BWSET_WIDTHS);
-	ASSERT(v <= bwsetsc [bwseti].last);
-	bwsetpos [bwseti] = v;
-	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
-	updateboard();
 }
 
 void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq)
