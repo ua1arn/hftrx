@@ -11064,7 +11064,7 @@ static int sq2transition(int_fast8_t sq10, int_fast16_t bw)
 // CW filter bandwidth for WIDE
 static const struct paramdefdef xfltbw_cwwide =
 {
-	QLABEL4("CW W WDT", "CW W WIDTH", "CW W WIDTH", "WIDTH:"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for WIDE
+	QLABEL4("CW W WDT", "CW W WIDTH", "CW W WIDTH", "BW:"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for WIDE
 	ITEM_VALUE,
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
@@ -11077,7 +11077,7 @@ static const struct paramdefdef xfltbw_cwwide =
 // CW filter bandwidth for NARROW
 static const struct paramdefdef xfltbw_cwnarrow =
 {
-	QLABEL4("CW N WDT", "CW N WIDTH", "CW N WIDTH", "WIDTH:"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for NARROW
+	QLABEL4("CW N WDT", "CW N WIDTH", "CW N WIDTH", "BW:"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for NARROW
 	ITEM_VALUE,
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
@@ -11088,7 +11088,7 @@ static const struct paramdefdef xfltbw_cwnarrow =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbwide_high = {
-	QLABEL4("SSB W HI", "SSB W HI", "SSB W HI", "HIGH:"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
+	QLABEL4("SSB W HI", "SSB W HI", "SSB W HI", "HI:"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
 	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
@@ -11099,7 +11099,7 @@ static const struct paramdefdef xgssbwide_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbwide_low = {
-	QLABEL4("SSB W LO", "SSB W LO", "SSB W LO", "LOW:"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
+	QLABEL4("SSB W LO", "SSB W LO", "SSB W LO", "LO:"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
 	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
@@ -11186,7 +11186,7 @@ static const struct paramdefdef xgssbnarrow_afr = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamwide_high = {
-	QLABEL4("AM W HI", "AM W HI", "AM W HI", "HIGH:"), 1, RJ_UNSIGNED,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
+	QLABEL4("AM W HI", "AM W HI", "AM W HI", "HI:"), 1, RJ_UNSIGNED,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
 	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE),
@@ -11197,7 +11197,7 @@ static const struct paramdefdef xgamwide_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamwide_low = {
-	QLABEL4("AM W LO", "AM W LO", "AM W LO", "LOW:"), 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
+	QLABEL4("AM W LO", "AM W LO", "AM W LO", "LO:"), 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
 	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
@@ -19610,14 +19610,24 @@ const struct paramdefdef * const * getbwmenu_digi(unsigned * size)
 
 const struct paramdefdef * const * getbwmenu_nfm(unsigned * size)
 {
-	* size = 0;
-	return NULL;
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgdummy,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
 }
 
 const struct paramdefdef * const * getbwmenu_wfm(unsigned * size)
 {
-	* size = 0;
-	return NULL;
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgdummy,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
 }
 
 ////////////
