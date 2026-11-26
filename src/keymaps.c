@@ -472,7 +472,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 3  MH31 DOWN
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP,	 	' ', },		// 4  BAND UP on front panel
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// 5  LOCK
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 6  STEP?
+	{ KIF_NONE,		KBD_CODE_USEFAST,		KBD_CODE_MAX, 			' ', },		// 6  FAST
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 7  F4
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 8  F3
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 9  F2
@@ -511,7 +511,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 3  MH31 DOWN
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP,	 	' ', },		// 4  BAND UP on front panel
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// 5  LOCK
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 6  STEP?
+	{ KIF_NONE,		KBD_CODE_USEFAST,		KBD_CODE_MAX, 			' ', },		// 6  FAST
 	{ KIF_NONE,		KBD_CODE_CWMSG4,		KBD_CODE_MAX, 			' ', },		// 7  F4
 	{ KIF_NONE,		KBD_CODE_CWMSG3,		KBD_CODE_MAX, 			' ', },		// 8  F3
 	{ KIF_NONE,		KBD_CODE_CWMSG2,		KBD_CODE_MAX,			' ', },		// 9  F2
@@ -550,7 +550,7 @@ static const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_SLOW,		KBD_CODE_BAND_DOWN,		KBD_CODE_BAND_DOWN, 	' ', },		// 3  MH31 DOWN
 	{ KIF_SLOW,		KBD_CODE_BAND_UP,		KBD_CODE_BAND_UP,	 	' ', },		// 4  BAND UP on front panel
 	{ KIF_NONE,		KBD_CODE_LOCK,			KBD_CODE_LOCK_HOLDED, 	' ', },		// 5  LOCK
-	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 6  STEP?
+	{ KIF_NONE,		KBD_CODE_USEFAST,		KBD_CODE_MAX, 			' ', },		// 6  FAST
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 7  F4
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX, 			' ', },		// 8  F3
 	{ KIF_NONE,		KBD_CODE_MAX,			KBD_CODE_MAX,			' ', },		// 9  F2

@@ -30,6 +30,7 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void));
 
 int encoder_get_delta(encoder_t * e);
 void encoder_pushback(encoder_t * const e, int outsteps);
+void encoder_clear(encoder_t * e);	// удалить накопленнные шаги (при смене шага)
 
 int
 encoder_getrotatehires(
@@ -46,7 +47,8 @@ void encoder_kbdctl(
 	uint_fast8_t accel		// 0 - одиночное нажатие на клавишу, иначе автоповтор
 	);
 
-void encoder_set_resolution(encoder_t * e, unsigned resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
+void encoder_set_resolution4(encoder_t * e, unsigned resolution, uint_fast8_t dynamic);	// параметр - делённое на ENCRESSCALE значение.
+void encoder_set_resolution1(encoder_t * e, unsigned resolution);
 unsigned encoder_get_actualresolution(const encoder_t * e);	// возвращает количество инкрементов на оборот
 
 #define ENCODER_NORMALIZED_RESOLUTION (1440)	// виртуальных импульсов за оборот в секунду - нормализованная скорость

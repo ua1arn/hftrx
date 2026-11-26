@@ -507,13 +507,11 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
-	& xgenc1pulses,
+	& xgdialspeedmain100,
 	& xgenc1dynamic,
-	& xgenc1div,
 #if WITHENCODER_SUB
+	& xgdialspeedsub100,
 	& xgencsubdynamic,
-	& xgencsubpulses,
-	& xgencsubdiv,
 #endif /* WITHENCODER_SUB */
 
 	& xgbigstep,
@@ -1583,6 +1581,12 @@
 /* group name --- */
 
 /* settings page list */
+#if WITHENCODER
+	& xgenc1pulses,
+#if WITHENCODER_SUB
+	& xgencsubpulses,
+#endif /* WITHENCODER_SUB */
+#endif /* WITHENCODER */
 #if WITHRFSG
 	(const struct paramdefdef [1]) {
 		QLABEL("RFSG MOD"), 0, RJ_ON,	ISTEP1,
