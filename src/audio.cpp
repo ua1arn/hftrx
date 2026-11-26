@@ -5256,7 +5256,7 @@ void dsp_fillphones(unsigned nsamples)
 #if WITHHDMITVHW
 		elfill_dmabufferhdmi48tx(b.IV, b.QV);
 #endif /* WITHHDMITVHW */
-#if 1//WITHUSEUSBBT && WITHUSEUSBBTAUDIO
+#if WITHUSEUSBBT && WITHUSEUSBBTAUDIO
 		elfill_dmabufferbtin48(b.IV, b.QV);
 #endif /* WITHUSEUSBBT */
 	}
