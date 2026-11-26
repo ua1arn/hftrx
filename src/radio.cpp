@@ -15600,7 +15600,9 @@ static void
 uif_key_usefast(void)
 {
 	if (param_keyclick(& xgusefast))
+	{
 		updateboard();
+	}
 }
 
 /* Включение-выключение динамика */
@@ -20958,7 +20960,7 @@ freqvalid(
 /* возврат ненуля - было какое-либо нажатие, клавиша уже обработана
 	требуется обновление дисплея */
 static uint_fast8_t
-process_key_menuset_common(uint_fast8_t kbch)
+process_key_menuset_common(uint_fast8_t kbch, inputevent_t * ev)
 {
 #if WITHAUTOTUNER
 	//const vindex_t v = getvfoindex(bi);
@@ -21207,6 +21209,16 @@ process_key_menuset_common(uint_fast8_t kbch)
 #endif /* WITHBCBANDS */
 
 	case KBD_CODE_USEFAST:
+#if WITHENCODER
+		// поглотить шаги, которые могут возникнуть при уменьшении derate
+		ev->encMAIN.delta = 0;
+		encoder_clear(& encoder1);
+		encoder_clear(& encoder_kbd);
+	#if WITHENCODER_SUB
+		ev->encSUB.delta = 0;
+		encoder_clear(& encoder_sub);
+	#endif /* WITHENCODER_SUB */
+#endif /* WITHENCODER */
 		uif_key_usefast();
 		return 1;	/* клавиша уже обработана */
 
@@ -21477,7 +21489,7 @@ processmainloopkeyboard(inputevent_t * ev)
 
 	if (process_key_menuset0(ev->frontkeyevent.kbch))
 		return 1;
-	if (process_key_menuset_common(ev->frontkeyevent.kbch))
+	if (process_key_menuset_common(ev->frontkeyevent.kbch, ev))
 		return 1;	/* клавиша уже обработана */
 	return 0;	// не требуется обновления индикатора
 }
@@ -22716,6 +22728,11 @@ getmodestep(uint_fast8_t bi)
 	return pmodet->step10 [!! param_val(& xgbigstep)] * 10;
 }
 
+static int_fast32_t
+scaledialres(int_fast32_t res)
+{
+	return param_val(& xgusefast) ? res * 10 : res;
+}
 // производится на каждом цикле получения состояния органов управления
 static void inputevent_init(inputevent_t * e)
 {
@@ -22724,9 +22741,9 @@ static void inputevent_init(inputevent_t * e)
 	mouseevent_initialize(& e->mouse);
 
 #if WITHENCODER
-	knobevent_initialize(& e->encMAIN, & encoder1, getmodestep(getbankindex_ab_forcontrols(0)), param_val(& xgdialspeedmain100) * 100);
+	knobevent_initialize(& e->encMAIN, & encoder1, getmodestep(getbankindex_ab_forcontrols(0)), scaledialres(param_val(& xgdialspeedmain100) * 100));
 #if WITHENCODER_SUB
-	knobevent_initialize(& e->encSUB, & encoder_sub, getmodestep(getbankindex_ab_forcontrols(1)), param_val(& xgdialspeedsub100) * 100);
+	knobevent_initialize(& e->encSUB, & encoder_sub, getmodestep(getbankindex_ab_forcontrols(1)), scaledialres(param_val(& xgdialspeedsub100) * 100));
 #endif /* WITHENCODER_SUB */
 #if WITHENCODER2
 	knobevent_initialize2(& e->encFN, & encoder2, param_val(& xgenc2div));

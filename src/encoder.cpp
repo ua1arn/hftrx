@@ -69,7 +69,7 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void))
 	e->dynamic = 0;
 }
 
-static void encoder_clear(encoder_t * e)
+void encoder_clear(encoder_t * e)
 {
 	IRQL_t oldIrql;
 

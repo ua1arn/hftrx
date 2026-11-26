@@ -30,6 +30,7 @@ void encoder_initialize(encoder_t * e, uint_fast8_t (* agetpins)(void));
 
 int encoder_get_delta(encoder_t * e);
 void encoder_pushback(encoder_t * const e, int outsteps);
+void encoder_clear(encoder_t * e);	// удалить накопленнные шаги (при смене шага)
 
 int
 encoder_getrotatehires(
