@@ -418,6 +418,7 @@
 //	#define WITHCAT_KENWOOD		1	/* используется CAT с системой команд Kenwood TS-590S */
 //	#define WITHCAT_MUX_DEFAULT BOARD_CATMUX_USBCDC
 	#define WITHCAT_MUX_DEFAULT BOARD_CATMUX_DIN8
+	#define WITHCAT_DEFAULT 	BOARD_CATTYPE_YAESU
 
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
