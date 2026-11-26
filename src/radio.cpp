@@ -31,6 +31,9 @@
 	#define WITHCAT_KENWOOD 1
 #endif
 
+#define WITHCAT_KENWOOD 1
+#define WITHCAT_YAESU	 1
+
 #define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 //#define WITHRPTOFFSET 1
 #define WITHAGCMODENONE		1	/* Режимами АРУ с кнопок не управляем */
@@ -67,9 +70,6 @@ static uint_fast8_t caticom_processcatmsg(char c1, char c2, uint_fast8_t haspara
 static uint_fast8_t catkenwood_processcatmsg(char c1, char c2, uint_fast8_t hasparam, uint_fast8_t pcount, const uint8_t * catp);
 
 static void catmux_enable(uint_fast8_t enable);
-static void catyaesu_enable(uint_fast8_t enable);
-static void caticom_enable(uint_fast8_t enable);
-static void catkenwood_enable(uint_fast8_t enable);
 
 static void catmux_parsechar(uint_fast8_t c);
 static void catyaesu_parsechar(uint_fast8_t c);
@@ -11906,30 +11906,44 @@ modemchangemode(
 
 #if WITHCAT
 
-static void catmux_enable(uint_fast8_t enable)
+static LCLSPINLOCK_t catsyslock = IRQLSPINLOCK_INIT;
+static LCLSPINLOCK_t usbsyslock = IRQLSPINLOCK_INIT;
+static uint_fast8_t catstatein = CATSTATE_HALTED;
+
+static std::atomic<uint_fast8_t> catstateout(CATSTATEO_HALTED);
+
+static uint_fast8_t catproccode = UINT8_MAX;
+static void catkenwood_reset(void);
+
+static void catmux_enable(uint_fast8_t code)
 {
-	switch (cattypes [gcattype].code)
-	{
-	default:
-		ASSERT(0);
-		break;
-	case BOARD_CATTYPE_OFF:
-		break;
-#if WITHCAT_YAESU
-	case BOARD_CATTYPE_YAESU:
-		catyaesu_enable(enable);
-		break;
-#endif
-#if WITHCAT_ICOM
-	case BOARD_CATTYPE_ICOM:
-		caticom_enable(enable);
-		break;
-#endif
+	const uint_fast8_t enable = code != BOARD_CATTYPE_OFF;
+	if (catproccode == code)
+		return;
+	catproccode = code;
+
 #if WITHCAT_KENWOOD
-	case BOARD_CATTYPE_KENWOOD:
-		catkenwood_enable(enable);
-		break;
+	catkenwood_reset();
 #endif
+
+	if (! enable)
+	{
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
+		HARDWARE_CAT_ENABLERX(0);
+		HARDWARE_CAT_ENABLETX(0);
+		catstatein = CATSTATE_HALTED;
+		catstateout = CATSTATEO_HALTED;
+		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
+	}
+	else
+	{
+		IRQL_t oldIrql;
+		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
+		HARDWARE_CAT_ENABLERX(1);
+		catstatein = CATSTATE_WAITCOMMAND1;
+		catstateout = CATSTATEO_SENDREADY;
+		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
 	}
 }
 
@@ -16520,9 +16534,6 @@ ascii_toupper(uint_fast8_t c)
 
 
 
-static LCLSPINLOCK_t catsyslock = IRQLSPINLOCK_INIT;
-static LCLSPINLOCK_t usbsyslock = IRQLSPINLOCK_INIT;
-
 #if WITHUSBHW && WITHUSBCDCACM
 static uint_fast8_t cat_answer_ready_cdcacm(void)
 {
@@ -16536,9 +16547,6 @@ static uint_fast8_t cat_answer_ready_cdcacm(void)
 #endif /* WITHUSBHW && WITHUSBCDCACM */
 
 #if WITHCAT
-static uint_fast8_t catstatein = CATSTATE_HALTED;
-
-static std::atomic<uint_fast8_t> catstateout(CATSTATEO_HALTED);
 static volatile const char * catsendptr;
 static volatile uint_fast8_t catsendcount;
 
@@ -16697,10 +16705,6 @@ cat_answervariable(const char * p, uint_fast8_t len)
 }
 #endif /* WITHCAT */
 
-#if WITHCAT
-	static uint_fast8_t catprocenable;	/* разрешена работа подсистемы CAT */
-#endif /* WITHCAT */
-
 #if WITHTX && WITHCAT
 
 static uint_fast8_t
@@ -16723,7 +16727,7 @@ cat_get_signal(uint_fast8_t selector)
 static uint_fast8_t
 cat_get_hwptt(void)
 {
-	if (catprocenable != 0)
+	if (catproccode != BOARD_CATTYPE_OFF)
 	{
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
@@ -16748,7 +16752,7 @@ cat_get_hwptt(void)
 uint_fast8_t cat_get_keydown(void)
 {
 #if WITHELKEY && WITHTX && WITHCAT
-	if (catprocenable != 0)
+	if (catproccode != BOARD_CATTYPE_OFF)
 	{
 		IRQL_t oldIrql;
 		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
@@ -17032,6 +17036,8 @@ catyaesu_processcatmsg(
 			updateboard();	/* полная перенастройка (как после смены режима) */
 			//PRINTF("CAT Set mode=%s (yaesu=0x%02X)\n", submodes [defsubmode].qlabel, catp [0]);
 			//printhex_titled(0, catp, 5, "CAT Set mode");
+			cat_ask_buffer [0] = 0x00;		// hamlib + jtdx - ожидают этот байт. При 0x00 qso-log после смены диапазона ошибочно считывает частоту
+			cat_answervariable(cat_ask_buffer, 1);
 		}
 		else
 		{
@@ -17096,7 +17102,7 @@ static void catyaesu_cattimeout_cb(void * ctx)
 void catyaesu_parsechar(uint_fast8_t c)
 {
 	static uint8_t yaesubuf [5];
-	//PRINTF("0x%02X ", c);
+	PRINTF("Y0x%02X ", c);
 	ticker_timeout_restart(& cat_ticker, CAT_TIMEOUT);	// Перезапуск тайм-аута
 
 	switch (catstatein)
@@ -17144,46 +17150,6 @@ void catyaesu_disconnect(void)
 	catstateout = CATSTATEO_SENDREADY;
 }
 
-/* эта операция вызывается неоднократно - не должна мешать работе при уже разрешённом CAT */
-static void catyaesu_enable(uint_fast8_t enable)
-{
-	if (catprocenable == enable)
-		return;
-	catprocenable = enable;
-	catstatein = CATSTATE_WAITCOMMAND1;
-	catstateout = CATSTATEO_SENDREADY;
-	if (! catprocenable)
-	{
-		IRQL_t oldIrql;
-		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
-		HARDWARE_CAT_ENABLERX(0);
-		HARDWARE_CAT_ENABLETX(0);
-		catstatein = CATSTATE_HALTED;
-		catstateout = CATSTATEO_HALTED;
-		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
-	}
-	else
-	{
-//		uint_fast8_t i;
-//		for (i = 0; i < (sizeof cat_answer_map / sizeof cat_answer_map [0]); ++ i)
-//			cat_answer_map [i] = 0;
-
-#if WITHTX
-//		sendmorsepos  [0] =
-//		inpmorselength [0]=
-//		sendmorsepos  [1] =
-//		inpmorselength [1] = 0;
-#endif /* WITHTX */
-
-		aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
-		IRQL_t oldIrql;
-		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
-		HARDWARE_CAT_ENABLERX(1);
-		catstatein = CATSTATE_WAITCOMMAND1;
-		catstateout = CATSTATEO_SENDREADY;
-		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
-	}
-}
 
 #endif /* WITHCAT && WITHCAT_YAESU */
 
@@ -17311,7 +17277,7 @@ void catkenwood_parsechar(uint_fast8_t c)
 	static uint_fast8_t cathasparam;
 	static uint_fast8_t catp [CATPCOUNTSIZE];
 	static uint_fast8_t catpcount;
-	//PRINTF("%c", c);
+	PRINTF("K0x%02X ", c);
    // PRINTF(PSTR("c=%02x, catstatein=%d, c1=%02X, c2=%02X\n"), c, catstatein, catcommand1, catcommand2);
 	ticker_timeout_restart(& cat_ticker, CAT_TIMEOUT);	// Перезапуск тайм-аута
 	switch (catstatein)
@@ -18202,43 +18168,21 @@ catkenwood_answer_request(uint_fast8_t catindex)
 	cat_answer_map [catindex] = 1;
 }
 
-/* эта операция вызывается неоднократно - не должна мешать работе при уже разрешённом CAT */
-static void catkenwood_enable(uint_fast8_t enable)
+static void catkenwood_reset(void)
 {
-	if (catprocenable == enable)
-		return;
-	catprocenable = enable;
-	if (! catprocenable)
-	{
-		IRQL_t oldIrql;
-		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
-		HARDWARE_CAT_ENABLERX(0);
-		HARDWARE_CAT_ENABLETX(0);
-		catstatein = CATSTATE_HALTED;
-		catstateout = CATSTATEO_HALTED;
-		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
-	}
-	else
-	{
-		uint_fast8_t i;
-		for (i = 0; i < (sizeof cat_answer_map / sizeof cat_answer_map [0]); ++ i)
-			cat_answer_map [i] = 0;
+	uint_fast8_t i;
+	for (i = 0; i < (sizeof cat_answer_map / sizeof cat_answer_map [0]); ++ i)
+		cat_answer_map [i] = 0;
 
 #if WITHTX
-		sendmorsepos  [0] =
-		inpmorselength [0]=
-		sendmorsepos  [1] =
-		inpmorselength [1] = 0;
+	sendmorsepos  [0] =
+	inpmorselength [0]=
+	sendmorsepos  [1] =
+	inpmorselength [1] = 0;
 #endif /* WITHTX */
 
-		aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
-		IRQL_t oldIrql;
-		IRQLSPIN_LOCK_YIELD(& catsyslock, & oldIrql, CATSYS_IRQL);
-		HARDWARE_CAT_ENABLERX(1);
-		catstatein = CATSTATE_WAITCOMMAND1;
-		catstateout = CATSTATEO_SENDREADY;
-		IRQLSPIN_UNLOCK(& catsyslock, oldIrql);
-	}
+	aistate = 0; /* Power-up state of AI mode = 0 (TS-590). */
+
 }
 
 /* вызывается из USER-MODE программы для отправки ответов на CAT-запросы */
