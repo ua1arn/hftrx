@@ -1754,7 +1754,6 @@ static COLORPIP_T smeterpluscolor = COLORPIP_DARKRED;
 	static const char  gridfmt_2 [] = ".%0*ld";
 #endif
 	static unsigned gbwalpha = 128;	/* Полупрозрачность при отрисовке прямоугольникв ("шторки") полосы пропускания на водопаде. */
-
 // waterfall/spectrum parameters
 static uint_fast8_t glob_view_style = VIEW_COLOR;		/* стиль отображения спектра и панорамы */
 static uint_fast8_t gview3dss_mark;			/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
@@ -1780,6 +1779,24 @@ static uint_fast8_t glob_displayfps = 15;
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
 static void fftzoom_af(FLOAT_t * buffer, unsigned zoompow2, unsigned normalFFT);
+
+static int_fast16_t getgidstep(void)
+{
+	switch (glob_zoomxpow2)
+	{
+	case 0:
+		return glob_gridstep;
+	case 1:
+		return glob_gridstep / 2;
+	case 2:
+		return glob_gridstep / 5;
+	case 3:
+		return glob_gridstep / 10;
+	case 4:
+		return glob_gridstep / 20;
+	}
+	return glob_gridstep / (1U << glob_zoomxpow2);
+}
 
 #if LCDMODE_LTDC && WITHBARS
 
@@ -7185,9 +7202,9 @@ display_colorgrid(
 	const struct dispmap * dm
 	)
 {
-	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
-	const int_fast32_t go = dm->f0 % (int) glob_gridstep;	// шаг сетки
-	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
+	const unifont_t * const font = & unifont_small2;	// шрифт, используемый при отрисовке надписей на шкале
+	const int_fast32_t go = dm->f0 % (int) getgidstep();	// шаг сетки
+	const int_fast32_t gs = (int) getgidstep();	// шаг сетки
 	const int_fast32_t halfbw = dm->bw / 2;
 	int_fast32_t df;	// кратное сетке значение
 	const int_fast16_t agcfence10 = dsp_agcfence10();
@@ -7218,7 +7235,7 @@ display_colorgrid(
 	{
 		if (df > - halfbw)
 		{
-			// Маркер частоты кратной glob_gridstep - XOR линию
+			// Маркер частоты кратной getgidstep() - XOR линию
 			const uint_fast16_t xmarker = deltafreq2x_abs(dm->f0, df, dm->bw, ALLDX);
 			if (xmarker != UINT16_MAX)
 			{
@@ -7257,15 +7274,15 @@ display_colorgrid_3dss(
 {
 	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
 	const uint_fast16_t ytext = h + 3;
-	const int_fast32_t go = dm->f0 % (int) glob_gridstep;	// шаг сетки
-	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
+	const int_fast32_t go = dm->f0 % (int) getgidstep();	// шаг сетки
+	const int_fast32_t gs = (int) getgidstep();	// шаг сетки
 	const int_fast32_t halfbw = dm->bw / 2;
 	int_fast32_t df;	// кратное сетке значение
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
 		if (df > - halfbw)
 		{
-			// Маркер частоты кратной glob_gridstep - XOR линию
+			// Маркер частоты кратной getgidstep() - XOR линию
 			const uint_fast16_t xmarker = deltafreq2x_abs(dm->f0, df, dm->bw, w);
 			if (xmarker != UINT16_MAX)
 			{
@@ -8076,8 +8093,8 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
     	const uint_fast32_t f0 = dm->f0;	/* frequency at middle of spectrum */
     	const int_fast32_t bw = dm->bw;
 
-    	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
-    	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
+    	const int_fast32_t go = f0 % (int) getgidstep();	// шаг сетки
+    	const int_fast32_t gs = (int) getgidstep();	// шаг сетки
     	const int_fast32_t halfbw = bw / 2;
     	int_fast32_t df;	// кратное сетке значение
 
@@ -8111,7 +8128,7 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
     	{
     		if (df > - halfbw)
     		{
-    			// Маркер частоты кратной glob_gridstep - XOR линию
+    			// Маркер частоты кратной getgidstep() - XOR линию
     			const uint_fast16_t xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
     			if (xmarker != UINT16_MAX)
     			{
@@ -9033,8 +9050,8 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	const uint_fast32_t f0 = dm->f0;	/* frequency at middle of spectrum */
     	const int_fast32_t bw = dm->bw;
 
-    	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
-    	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
+    	const int_fast32_t go = f0 % (int) getgidstep();	// шаг сетки
+    	const int_fast32_t gs = (int) getgidstep();	// шаг сетки
     	const int_fast32_t halfbw = bw / 2;
     	int_fast32_t df;	// кратное сетке значение
 
@@ -9068,7 +9085,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	{
     		if (df > - halfbw)
     		{
-    			// Маркер частоты кратной glob_gridstep - линия и надпись
+    			// Маркер частоты кратной getgidstep() - линия и надпись
     			const uint_fast16_t xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
     			if (xmarker != UINT16_MAX)
     			{
