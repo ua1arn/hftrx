@@ -25,14 +25,9 @@
 #include "dspdefines.h"
 #include <atomic>
 
-//#define WITHCAT_YAESU 1
-//#define WITHCAT_ICOM 1
-#if ! defined (WITHCAT_YAESU) && ! defined (WITHCAT_ICOM)
-	#define WITHCAT_KENWOOD 1
-#endif
-
 #define WITHCAT_KENWOOD 1
-#define WITHCAT_YAESU	 1
+#define WITHCAT_YAESU	1
+//#define WITHCAT_ICOM 	1
 
 #define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
 //#define WITHRPTOFFSET 1
@@ -5845,15 +5840,15 @@ enum
 		const char * label;
 	} cattypes [] =
 	{
+#if WITHCAT_KENWOOD
+		{	BOARD_CATTYPE_KENWOOD, "KENWOOD", },
+#endif /* WITHCAT_KENWOOD */
 #if WITHCAT_YAESU
 		{	BOARD_CATTYPE_YAESU, "YAESU", },
 #endif /* WITHCAT_YAESU */
 #if WITHCAT_ICOM
 		{	BOARD_CATTYPE_ICOM, "ICOM", },
 #endif /* WITHCAT_ICOM */
-#if WITHCAT_KENWOOD
-		{	BOARD_CATTYPE_KENWOOD, "KENWOOD", },
-#endif /* WITHCAT_KENWOOD */
 		{	BOARD_CATTYPE_OFF, "OFF", },
 	};
 	static size_t getvaltextcattype(char * buff, size_t count, int_fast32_t value)
@@ -12428,6 +12423,17 @@ static uint_fast8_t findcatbaudrate(uint_fast8_t old, uint_fast32_t baudrate)
 	return old;
 }
 
+static uint_fast8_t findcattype(uint_fast8_t old, uint_fast8_t code)
+{
+	uint_fast8_t i;
+	for (i = 0; i < ARRAY_SIZE(cattypes); ++ i)
+	{
+		if (cattypes [i].code == code)
+			return i;
+	}
+	return old;
+}
+
 #if ! WITHISBOOTLOADER
 
 static int_fast32_t
@@ -17102,7 +17108,7 @@ static void catyaesu_cattimeout_cb(void * ctx)
 void catyaesu_parsechar(uint_fast8_t c)
 {
 	static uint8_t yaesubuf [5];
-	PRINTF("Y0x%02X ", c);
+	//PRINTF("Y0x%02X ", c);
 	ticker_timeout_restart(& cat_ticker, CAT_TIMEOUT);	// Перезапуск тайм-аута
 
 	switch (catstatein)
@@ -17277,8 +17283,8 @@ void catkenwood_parsechar(uint_fast8_t c)
 	static uint_fast8_t cathasparam;
 	static uint_fast8_t catp [CATPCOUNTSIZE];
 	static uint_fast8_t catpcount;
-	PRINTF("K0x%02X ", c);
-   // PRINTF(PSTR("c=%02x, catstatein=%d, c1=%02X, c2=%02X\n"), c, catstatein, catcommand1, catcommand2);
+	//PRINTF("K0x%02X ", c);
+	//PRINTF(PSTR("c=%02x, catstatein=%d, c1=%02X, c2=%02X\n"), c, catstatein, catcommand1, catcommand2);
 	ticker_timeout_restart(& cat_ticker, CAT_TIMEOUT);	// Перезапуск тайм-аута
 	switch (catstatein)
 	{
@@ -24668,9 +24674,14 @@ application_initialize(void)
 	// Инициализируем то что не получается иниитить в описании перменных.
 #if WITHCAT
 #ifdef WITHCATSPEED
-	gcatbaudrate = findcatbaudrate(param_val(& xgcatbaudrate), WITHCATSPEED);
+	gcatbaudrate = findcatbaudrate(gcatbaudrate, WITHCATSPEED);
 #else
-	gcatbaudrate = findcatbaudrate(param_val(& xgcatbaudrate), 9600);
+	gcatbaudrate = findcatbaudrate(gcatbaudrate, 9600);
+#endif
+#ifdef WITHCAT_DEFAULT
+	gcattype = findcattype(gcattype, WITHCAT_DEFAULT);
+#else
+	gcattype = findcattype(gcattype, BOARD_CATTYPE_KENWOOD);
 #endif
 
 #if WITHCAT_MUX && defined WITHCAT_MUX_DEFAULT
