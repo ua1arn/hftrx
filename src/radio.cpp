@@ -880,8 +880,9 @@ typedef struct knobevent_tag
 // расчёт делителя импульсов валкодера для заданного шага перестройки и перестройки на оборот
 static int_fast32_t calcderate(const encoder_t * enc, int_fast32_t step, int_fast32_t needed)
 {
-	const int_fast32_t d = (encoder_get_actualresolution(enc) * step) / needed;
-	//PRINTF("d=%i, act=%d, step=%d, needed=%d\n", d, actualresolution, step, needed);
+	const int_fast32_t res = encoder_get_actualresolution(enc);
+	const int_fast32_t d = (res * step) / needed;
+	//PRINTF("d=%i, res=%d, step=%d, needed=%d\n", d, res, step, needed);
 	return d ? d : 1;
 }
 
@@ -896,11 +897,11 @@ void knobevent_initialize(knobevent_t * e, encoder_t * aenc, int_fast32_t step, 
 }
 
 // трещётки
-void knobevent_initialize2(knobevent_t * e, encoder_t * aenc, uint_fast8_t alowres, int aderate)
+void knobevent_initialize2(knobevent_t * e, encoder_t * aenc, int aderate)
 {
 	e->delta = 0;
 	e->enc = aenc;
-	e->lowres = alowres;
+	e->lowres = 1;
 	e->derate = aderate;
 	e->step = 50;
 }
@@ -11799,7 +11800,6 @@ loadnewband(
 /* Получить текущий submode для указанного банка
 */
 static uint_fast8_t
-
 getsubmode(
 	uint_fast8_t bi		/* vfo bank index */
    )
@@ -11809,49 +11809,6 @@ getsubmode(
 	const uint_fast8_t modecol = getmodecol(moderow, bi);	/* выборка из битовой маски, Возможно, значение modecolmap бует откорректировано. */
 	return modes [moderow] [modecol + 1];	/* выборка из битовой маски */
 }
-
-/* функция вызывается из updateboard при измененияя параметров приёма
- * Устанавливает "кэшированные" состояния работы валкодеров -
-   gsubmode, gstep_ENC_MAIN, gagcmode, gfi, gmode.
-*/
-//static void setgencparams(const struct modetempl * const pmodet)
-//{
-//	const int_fast32_t actualresolution = encoder_get_actualresolution(& encoder1);
-//#if ! WITHAGCMODENONE
-//	gagcmode = loadvfy8up(RMT_AGC_BASE(mode), 0, AGCMODE_COUNT - 1, pmodet->defagcmode);
-//#endif /* ! WITHAGCMODENONE */
-//#if WITHENCODER2 && ENCODER2_HIRES
-//	// ENCODER2 - тоже высокого разрешения, для перестройки по частоте второго тракта
-//	{
-//		gstep_ENC_MAIN = pmodet->step10 [0] * 10;
-//		gstep_ENC2 = pmodet->step10 [0] * 10;
-//		gencderate = 1;
-//
-//	}
-//#else
-//	if (param_val(& xgusefast))
-//	{
-//		gstep_ENC_MAIN = 500;
-//		gstep_ENC2 = pmodet->step10 [1] * 10;
-//		gencderate = calcderate(actualresolution, gstep_ENC_MAIN, 50000, pmodet->label);
-//		gencderate = 6;
-//	}
-//	else if (param_val(& xgbigstep))
-//	{
-//		gstep_ENC_MAIN = pmodet->step10 [1] * 10;
-//		gstep_ENC2 = pmodet->step10 [1] * 10;
-//		gencderate = calcderate(actualresolution, gstep_ENC_MAIN, 4000, pmodet->label);
-//		gencderate = 1;
-//	}
-//	else
-//	{
-//		gstep_ENC_MAIN = pmodet->step10 [0] * 10;
-//		gstep_ENC2 = pmodet->step10 [1] * 10;
-//		gencderate = calcderate(actualresolution, gstep_ENC_MAIN, 4000, pmodet->label);
-//		gencderate = gstep_ENC_MAIN / STEP_MINIMAL;
-//	}
-//#endif
-//}
 
 /* функция вызывается из updateboard при измененияя параметров приёма
  * Устанавливает "кэшированные" состояния режима работы -
@@ -11865,16 +11822,13 @@ setgsubmode(
 {
 	/* подправить фильтр, АРУ и шаг перестройки в соответствии с новым режимим работы */
 	/* выбор фильтра */
-	const struct modetempl * const pmodet = getmodetempl(submode);
+	//const struct modetempl * const pmodet = getmodetempl(submode);
 	const uint_fast8_t mode = submodes [submode].mode;
 
 	gsubmode = submode;
 	gmode = mode;
-
-	//setgencparams(pmodet);
-
-	//PRINTF("gstep_ENC_MAIN=%u, gstep_ENC2=%u, gencderate=%u\n", (unsigned) gstep_ENC_MAIN, (unsigned) gstep_ENC2, (unsigned) gencderate);
 }
+
 #if ! WITHAGCMODENONE
 #endif /* ! WITHAGCMODENONE */
 
@@ -22752,6 +22706,15 @@ processmainloopTuneKnobs(inputevent_t * ev)
 	return freqchanged;
 }
 
+// получить шаг перестройки в герцах для режима, действующего для bi
+static int_fast32_t
+getmodestep(uint_fast8_t bi)
+{
+	if (param_val(& xgusefast))
+		return 500;
+	const struct modetempl * const pmodet = getmodetempl(getsubmode(bi));
+	return pmodet->step10 [!! param_val(& xgbigstep)] * 10;
+}
 
 // производится на каждом цикле получения состояния органов управления
 static void inputevent_init(inputevent_t * e)
@@ -22761,24 +22724,24 @@ static void inputevent_init(inputevent_t * e)
 	mouseevent_initialize(& e->mouse);
 
 #if WITHENCODER
-	knobevent_initialize(& e->encMAIN, & encoder1, 10, param_val(& xgdialspeedmain100) * 100);
+	knobevent_initialize(& e->encMAIN, & encoder1, getmodestep(getbankindex_ab_forcontrols(0)), param_val(& xgdialspeedmain100) * 100);
 #if WITHENCODER_SUB
-	knobevent_initialize(& e->encSUB, & encoder_sub, 10, param_val(& xgdialspeedsub100) * 100);
+	knobevent_initialize(& e->encSUB, & encoder_sub, getmodestep(getbankindex_ab_forcontrols(1)), param_val(& xgdialspeedsub100) * 100);
 #endif /* WITHENCODER_SUB */
 #if WITHENCODER2
-	knobevent_initialize2(& e->encFN, & encoder2, 1, param_val(& xgenc2div));
+	knobevent_initialize2(& e->encFN, & encoder2, param_val(& xgenc2div));
 #endif /* WITHENCODER2 */
 #if WITHENCODER_1F
-	knobevent_initialize2(& e->encF1, & encoder_ENC1F, 1, BOARD_ENC1F_DIVIDE);
+	knobevent_initialize2(& e->encF1, & encoder_ENC1F, BOARD_ENC1F_DIVIDE);
 #endif /* WITHENCODER_1F */
 #if WITHENCODER_2F
-	knobevent_initialize2(& e->encF2, & encoder_ENC2F, 1, BOARD_ENC2F_DIVIDE);
+	knobevent_initialize2(& e->encF2, & encoder_ENC2F, BOARD_ENC2F_DIVIDE);
 #endif /* WITHENCODER_2F */
 #if WITHENCODER_3F
-	knobevent_initialize2(& e->encF3, & encoder_ENC3F, 1, BOARD_ENC3F_DIVIDE);
+	knobevent_initialize2(& e->encF3, & encoder_ENC3F, BOARD_ENC3F_DIVIDE);
 #endif /* WITHENCODER_3F */
 #if WITHENCODER_4F
-	knobevent_initialize2(& e->encF4, & encoder_ENC4F, 1, BOARD_ENC4F_DIVIDE);
+	knobevent_initialize2(& e->encF4, & encoder_ENC4F, BOARD_ENC4F_DIVIDE);
 #endif /* WITHENCODER_4F */
 #endif /* WITHENCODER */
 }
