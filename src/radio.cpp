@@ -4431,6 +4431,9 @@ struct nvmap {
 	uint8_t gencsubdiv;
 	uint8_t gmutespkr;		/* выключение динамика */
 
+	uint16_t gdialspeedmain100;	// Main tuning knob Dial speed
+	uint16_t gdialspeedsub100;		// Sub tuning knob Dial speed
+
 #if LO1FDIV_ADJ
 	uint8_t lo1powrx;		/* на сколько раз по 2 делим выходную частоту синтезатора первого гетеродина */
 	uint8_t lo1powtx;		/* на сколько раз по 2 делим выходную частоту синтезатора первого гетеродина */
@@ -4556,6 +4559,34 @@ static int_fast32_t getagcfencebase(void)
 
 
 #if WITHENCODER
+	// Main encoder Tuning Rate (Dial Speed)
+	static uint16_t gdialspeedmain100 = 50;	// 5 kHz/rev
+	static const struct paramdefdef xgdialspeedmain100 =
+	{
+		QLABEL3("MAIN DS", "Dial Speed A", "MAIN D S"),  1, RJ_UNSIGNED, ISTEP1,
+		ITEM_VALUE,
+		20, 500, 	/* 2 kHz..50 khz */
+		OFFSETOF(struct nvmap, gdialspeedmain100),
+		getselector0, nvramoffs0, valueoffs0,
+		& gdialspeedmain100,
+		NULL,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	// Sub encoder Tuning Rate (Dial Speed)
+	static uint16_t gdialspeedsub100 = 50;	// 5 kHz/rev
+	static const struct paramdefdef xgdialspeedsub100 =
+	{
+		QLABEL3("SUB DS", "Dial Speed B", "SUB D S"),  1, RJ_UNSIGNED, ISTEP1,
+		ITEM_VALUE,
+		20, 500, 	/* 2 kHz..50 khz */
+		OFFSETOF(struct nvmap, gdialspeedsub100),
+		getselector0, nvramoffs0, valueoffs0,
+		& gdialspeedsub100,
+		NULL,
+		getzerobase,
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
 
 	#if defined (ENCDIV_DEFAULT)
 		static uint8_t genc1div = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */

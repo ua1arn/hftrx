@@ -507,6 +507,8 @@
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	},
 /* group name --- */
+	& xgdialspeedmain100,
+	& xgdialspeedsub100,
 	& xgenc1pulses,
 	& xgenc1dynamic,
 	& xgenc1div,
