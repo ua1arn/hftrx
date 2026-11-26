@@ -443,6 +443,7 @@ static const char * pd_getenc2label(const struct paramdefdef * pd)
 }
 
 static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8_t * active);
+static const struct paramdefdef * getbwmenu(uint_fast8_t section, uint_fast8_t * active);
 
 // Интерфейсные функции доступа к NVRAM
 static uint_fast8_t
@@ -2316,6 +2317,12 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size);
 const struct paramdefdef * const * getmiddlemenu_digi(unsigned * size);
 const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * size);
 
+const struct paramdefdef * const * getbwmenu_cw(unsigned * size);
+const struct paramdefdef * const * getbwmenu_ssb(unsigned * size);
+const struct paramdefdef * const * getbwmenu_am(unsigned * size);
+const struct paramdefdef * const * getbwmenu_nfm(unsigned * size);
+const struct paramdefdef * const * getbwmenu_digi(unsigned * size);
+const struct paramdefdef * const * getbwmenu_wfm(unsigned * size);
 
 #define	DEFAULT_DRM_PITCH	12000	/* тон DRM - 12 кГц*/
 // The standard mark and space tones are 2125 hz and 2295 hz respectively
@@ -2448,7 +2455,8 @@ struct modetempl
 #else /* WITHIF4DSP */
 	uint8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
-	const struct paramdefdef * const * (* middlemenu)(unsigned * size);
+	const struct paramdefdef * const * (* middlemenu)(unsigned * size);	// параметры в middle menu
+	const struct paramdefdef * const * (* bwmenu)(unsigned * size);		// параметры регулирвки полосы
 	uint8_t miclass;			// для запоминания memory
 	const char * label;					// для контроля правильности инициализации структуры
 };
@@ -2499,6 +2507,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_cw,
+		getbwmenu_cw,
 		MICLASS_CW,
 		"CW",
 	},
@@ -2534,6 +2543,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_ssb,
+		getbwmenu_ssb,
 		MICLASS_PHONE,
 		"SSB",
 	},
@@ -2569,6 +2579,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_am,
+		getbwmenu_am,
 		MICLASS_PHONE,
 		"AM",
 	},
@@ -2605,6 +2616,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_am,
+		getbwmenu_am,
 		MICLASS_PHONE,
 		"SAM",
 	},
@@ -2641,6 +2653,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_FM, BOARD_DETECTOR_FM, }, 		/* FM detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_nfm,
+		getbwmenu_nfm,
 		MICLASS_PHONE,
 		"NFM",
 	},
@@ -2676,6 +2689,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_MUTE, BOARD_DETECTOR_MUTE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_am,
+		getbwmenu_am,
 		MICLASS_count,
 		"DRM",
 	},
@@ -2711,6 +2725,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_TUNE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_am,
+		getbwmenu_am,
 		MICLASS_count,
 		"CWZ",
 	},
@@ -2748,6 +2763,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_WFM, BOARD_DETECTOR_WFM, },		/* WFM detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_wfm,
+		getbwmenu_wfm,
 		MICLASS_count,
 		"WFM",
 	},
@@ -2788,6 +2804,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_digi,
+		getbwmenu_digi,
 		MICLASS_DIGI,
 		"DIG",
 	},
@@ -2827,6 +2844,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_digi,
+		getbwmenu_digi,
 		MICLASS_count,
 		"TTY",
 	},
@@ -2863,6 +2881,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_digi,
+		getbwmenu_digi,
 		MICLASS_count,
 		"MDM",
 	},
@@ -2903,6 +2922,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_ssb,
+		getbwmenu_ssb,
 		MICLASS_count,
 		"ISB",
 	},
@@ -2939,12 +2959,234 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_ssb,
+		getbwmenu_ssb,
 		MICLASS_count,
 		"FDV",
 	},
 #endif /* WITHFREEDV */
 };
 
+/* описатели режимов. код режима - индекс в этом массиве
+*/
+typedef struct submodeprops_tag
+{
+	uint_least8_t qflags;		/* флаги подрежима */
+	uint_least8_t mode;			/* код семейства режимов */
+	uint_least8_t qcatmodecode;		/* Kenwood cat mode code */
+	uint_least8_t ycatmodecode;		/* Yaesu cat mode code */
+	uint_fast16_t qcatwidth;		/* полоса режима, рапортуемая через CAT */
+									// The FW command cannot be used in SSB or AM mode (an error tone will sound).
+
+	const char * qlabel;
+} submodeprops_t;
+
+/* флаги подрежима */
+#define QMODEF_HARDLSB	0x01		// для режимов приема на нижней боковой	 (CWR, LSB)
+#define QMODEF_SMARTLSB	0x02	// для режимов приема на нижней боковой	 (CWR, LSB) в зависимости от частоты
+
+// Порядок элементов в этом массиве должен совпадать с элементми enum,
+// в котором определён SUBMODE_COUNT
+static const submodeprops_t submodes [SUBMODE_COUNT] =
+{
+#if WITHMODESETSMART
+	/* SUBMODE_SSBSMART */
+	{
+		QMODEF_SMARTLSB,
+		MODE_SSB, 	/* индекс семейства режимов */
+		2,			/* Kenwood cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"SSB",
+	},
+	/* SUBMODE_CWSMART */
+	{
+		QMODEF_SMARTLSB,
+		MODE_CW, 	/* индекс семейства режимов */
+		3,			/* Kenwood cat mode code */
+		500,		/* полоса фильтра режима, возвращаемая через CAT */
+		"CW",
+	},
+	/* SUBMODE_CWZSMART */
+	{
+		QMODEF_SMARTLSB,
+		MODE_CWZ, 	/* индекс семейства режимов */
+		3,			/* Kenwood cat mode code */
+		500,		/* полоса фильтра режима, возвращаемая через CAT */
+		"CWZ",
+	},
+	/* SUBMODE_DIGISMART */
+	{
+		QMODEF_SMARTLSB,
+		MODE_DIGI, 	/* индекс семейства режимов */
+		9,			/* Kenwood cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"DIG",
+	},
+#else /* WITHMODESETSMART */
+	/* SUBMODE_USB */
+	{
+		0,
+		MODE_SSB, 	/* индекс семейства режимов */
+		2,			/* Kenwood cat mode code */
+		0x01,		/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"USB",
+	},
+	/* SUBMODE_LSB */
+	{
+		QMODEF_HARDLSB,
+		MODE_SSB, 	/* индекс семейства режимов */
+		1,			/* Kenwood cat mode code */
+		0x00,		/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"LSB",
+	},
+	/* SUBMODE_CW */
+	{
+		0,
+		MODE_CW, 	/* индекс семейства режимов */
+		3,			/* Kenwood cat mode code */
+		0x02,		/* Yaesu cat mode code */
+		500,		/* полоса фильтра режима, возвращаемая через CAT */
+		"CW",
+	},
+	/* SUBMODE_CWR */
+	{
+		QMODEF_HARDLSB,
+		MODE_CW, 	/* индекс семейства режимов */
+		7,			/* Kenwood cat mode code */
+		0x03,		/* Yaesu cat mode code */
+		500,		/* полоса фильтра режима, возвращаемая через CAT */
+		"CWR",
+	},
+	/* SUBMODE_CWZ */
+	{
+		QMODEF_SMARTLSB,
+		MODE_CWZ, 	/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+	  	"CWZ",
+	},
+	/* SUBMODE_AM */
+	{
+		QMODEF_SMARTLSB,
+		MODE_AM, 	/* индекс семейства режимов */
+		5,			/* Kenwood cat mode code */
+		0x04,		/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"AM",
+	},
+	#if WITHSAM
+	/* SUBMODE_SAM */
+	{
+		QMODEF_SMARTLSB,
+		MODE_SAM, 	/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"SAM",
+	},
+	#endif /* WITHSAM */
+	/* SUBMODE_DRM */
+	{
+		QMODEF_SMARTLSB,
+		MODE_DRM, 	/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"DRM",
+	},
+	/* SUBMODE_DGL */
+	{
+		QMODEF_HARDLSB,
+		MODE_DIGI, 	/* индекс семейства режимов */
+		9,			/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"DGL",
+	},
+	/* SUBMODE_DGU */
+	{
+		QMODEF_SMARTLSB,
+		MODE_DIGI, 	/* индекс семейства режимов */
+		6,			/* Kenwood cat mode code */
+		0x0A,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"DGU",
+	},
+#if WITHMODESETFULLNFM || WITHMODESETMIXONLY3NFM || WITHMODESETFULLNFMWFM	// чтобы через CAT не включился этот режтим - если нет - в комментарии.
+	/* SUBMODE_NFM */
+	{
+		QMODEF_SMARTLSB,
+		MODE_NFM, 	/* индекс семейства режимов */
+		4,			/* Kenwood cat mode code */
+		0x08,		/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"NFM",
+	},
+#endif /* WITHMODESETFULLNFM || WITHMODESETMIXONLY3NFM || WITHMODESETFULLNFMWFM  */
+#if WITHWFM || WITHMODESETFULLNFMWFM
+	/* SUBMODE_WFM */
+	{
+		QMODEF_SMARTLSB,
+		MODE_WFM, 	/* индекс семейства режимов */
+		8,			/* Kenwood cat mode code - придуман мною. В описаниях такого нет. */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"WFM",
+	},
+#endif /* WITHWFM || WITHMODESETFULLNFMWFM */
+#if WITHMODEM
+	/* SUBMODE_PSK */
+	{
+		0,
+		MODE_MODEM, /* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		500,		/* полоса фильтра режима, возвращаемая через CAT */
+		"PSK",
+	},
+#endif /* WITHMODEM */
+	/* SUBMODE_ISB */
+	{
+		0,
+		MODE_ISB, 	/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+	  	"ISB",
+	},
+#if WITHFREEDV
+	/* SUBMODE_FDV */
+	{
+		0,
+		MODE_FREEDV,/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"FDV",
+	},
+#endif /* WITHFREEDV */
+#if WITHRTTY
+	/* SUBMODE_RTTY */
+	{
+		0,
+		MODE_RTTY,/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"TTY",
+	},
+#endif /* WITHRTTY */
+#endif /* WITHMODESETSMART */
+};
+
+/* функция работает с кэшем параметров режима работы */
+static const struct modetempl *
+getmodetempl(uint_fast8_t submode)
+{
+	return & mdt [submodes [submode].mode];
+}
 
 
 enum
@@ -3979,6 +4221,7 @@ struct modeprops_tag
 	uint8_t noisereduct;	/* включение NR для данного режима */
 	uint8_t txaudioindex;	/* источник звука для передачи (индекс) */
 	uint8_t	midmenupos;	/* активный пункт в middlemenu */
+	uint8_t	bwadjpos;	/* активный пункт в middlemenu */
 
 } __PACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -4528,6 +4771,7 @@ struct nvmap {
 
 #define RMT_TXAUDIOINDEX_BASE(i) OFFSETOF(struct nvmap, modes [(i)].txaudioindex)
 #define RMT_MIDDLEMENUPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].midmenupos)
+#define RMT_BWADJPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].bwadjpos)
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
 
 #define RMT_BAND(b) 			(OFFSETOF(struct nvmap, bands [(b)]))		// хранимые диапазоны
@@ -8544,31 +8788,79 @@ uint_fast8_t hamradio_get_bringINFO(const char * * label)
 }
 
 ///
+static uint_fast8_t gmiddlepos [MODE_COUNT];
 
 #if WITHIF4DSP
+
+static uint_fast8_t gbwadjpos [MODE_COUNT];
 
 typedef struct encfnitem_tag
 {
 	const void * ctx;
 	int (* getlabel)(const void * ctx, char * buff, size_t count);
+	int (* ondelta)(const void * ctx, int delta);
+	int (* onholded)(const void * ctx, uint_fast8_t sel);
 } encfnitem_t;
+
+
+static int defholded(const void * ctx, uint_fast8_t sel)
+{
+	return 0;
+}
+
+static int defdelta(const void * ctx, int delta)
+{
+	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
+	if (pd == NULL)
+		return 0;
+	return param_rotate(pd, delta);
+}
 
 static int getlabelAFGAIN(const void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
 	const int_fast32_t value = param_val(pd);
 	int n = 0;
-	n += local_snprintf_P(buff + n, count - n, "AF ");
+	n += local_snprintf_P(buff + n, count - n, "AF:");
 	n += param_formatpercents(pd, buff + n, count - n, value);
+	return n;
+}
+
+static int getlabelCWPITCH(const void * ctx, char * buff, size_t count)
+{
+	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
+	const int_fast32_t value = param_val(pd);
+	int n = 0;
+	n += local_snprintf_P(buff + n, count - n, "TONE:%d", (int) (value * 10));
+	return n;
+}
+
+static int getlabelCWWPM(const void * ctx, char * buff, size_t count)
+{
+	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
+	const int_fast32_t value = param_val(pd);
+	int n = 0;
+	n += local_snprintf_P(buff + n, count - n, "WPM:%d", (int) value);
 	return n;
 }
 
 
 static int getlabelRXBW(const void * ctx, char * buff, size_t count)
 {
-	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
+	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
+	const uint_fast8_t submode = getsubmode(bi);
+	const uint_fast8_t mode = submodes [submode].mode;
+	unsigned nitems;
+	const unsigned apos = gbwadjpos [mode];
+	const struct paramdefdef * const pd = mdt [mode].bwmenu(& nitems) [gbwadjpos [mode]];
+	if (pd == NULL)
+	{
+		buff [0] = '\0';
+		return 0;
+	}
 	const int_fast32_t value = param_val(pd);
-	return local_snprintf_P(buff, count, "BW %2d", (int) value);
+
+	return param_format(pd, buff, count, value);
 }
 
 static int getlabelAFGAINss(const void * ctx, char * buff, size_t count)
@@ -8620,25 +8912,59 @@ static int getlabelENC4F(const void * ctx, char * buff, size_t count)
 
 static const encfnitem_t enclabelsENC1FN [] =
 {
-	{ & xafgain1, getlabelAFGAIN, },
-	{ & xrfgain1, getlabelRFGAIN, },
-	{ & xagcfence1, getlabelAGCFENCE, },
+	{ & xafgain1, getlabelAFGAIN, defdelta, defholded, },
+	{ & xrfgain1, getlabelRFGAIN, defdelta, defholded, },
+	{ & xagcfence1, getlabelAGCFENCE, defdelta, defholded, },
 };
+
+static int bwadjdelta(const void * ctx, int delta)
+{
+	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
+	const uint_fast8_t submode = getsubmode(bi);
+	const uint_fast8_t mode = submodes [submode].mode;
+	unsigned nitems;
+	const unsigned apos = gbwadjpos [mode];
+	const struct paramdefdef * const pd = mdt [mode].bwmenu(& nitems) [gbwadjpos [mode]];
+	(void) ctx;
+	if (pd)
+	{
+		return param_rotate(pd, delta);	// модификация и сохранение параметра
+	}
+	return 0;
+}
+
+static int bwadjholded(const void * ctx, uint_fast8_t sel)
+{
+	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
+	const uint_fast8_t submode = getsubmode(bi);
+	const uint_fast8_t mode = submodes [submode].mode;
+	unsigned nitems;
+	const unsigned apos = gbwadjpos [mode];
+	const struct paramdefdef * const pd = mdt [mode].bwmenu(& nitems) [gbwadjpos [mode]];
+	(void) ctx;
+	(void) sel;
+	// modify gbwadjpos [mode]
+	gbwadjpos [mode] = calc_next(gbwadjpos [mode], 0, nitems - 1);
+	save_i8(RMT_BWADJPOS_BASE(mode), gbwadjpos [mode]);
+	return 0;
+}
 
 static const encfnitem_t enclabelsENC2FN [] =
 {
-	{ & xafgain2, getlabelAFGAIN, },
-	{ & xgrxbwadj, getlabelRXBW, },
+	{ & xafgain2, getlabelAFGAIN, defdelta, defholded, },
+	{ & xgelkeywpm, getlabelCWWPM, defdelta, defholded, },
+	{ & xgcwpitch10, getlabelCWPITCH, defdelta, defholded, },
+	{ NULL, getlabelRXBW, bwadjdelta, bwadjholded, },
 };
 
 static const encfnitem_t enclabelsENC3FN [] =
 {
-	{ NULL, getlabelENC3F, },
+	{ NULL, getlabelENC3F, defdelta, defholded, },
 };
 
 static const encfnitem_t enclabelsENC4FN [] =
 {
-	{ NULL, getlabelENC4F, },
+	{ NULL, getlabelENC4F, defdelta, defholded, },
 };
 
 static uint8_t enc1f_sel;
@@ -9391,221 +9717,6 @@ initnvrampattern(void)
 
 #endif /* defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
 
-/* описатели режимов. код режима - индекс в этом массиве
-*/
-typedef struct submodeprops_tag
-{
-	uint_least8_t qflags;		/* флаги подрежима */
-	uint_least8_t mode;			/* код семейства режимов */
-	uint_least8_t qcatmodecode;		/* Kenwood cat mode code */
-	uint_least8_t ycatmodecode;		/* Yaesu cat mode code */
-	uint_fast16_t qcatwidth;		/* полоса режима, рапортуемая через CAT */
-									// The FW command cannot be used in SSB or AM mode (an error tone will sound).
-
-	const char * qlabel;
-} submodeprops_t;
-
-/* флаги подрежима */
-#define QMODEF_HARDLSB	0x01		// для режимов приема на нижней боковой	 (CWR, LSB)
-#define QMODEF_SMARTLSB	0x02	// для режимов приема на нижней боковой	 (CWR, LSB) в зависимости от частоты
-
-// Порядок элементов в этом массиве должен совпадать с элементми enum,
-// в котором определён SUBMODE_COUNT
-static const submodeprops_t submodes [SUBMODE_COUNT] =
-{
-#if WITHMODESETSMART
-	/* SUBMODE_SSBSMART */
-	{
-		QMODEF_SMARTLSB,
-		MODE_SSB, 	/* индекс семейства режимов */
-		2,			/* Kenwood cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"SSB",
-	},
-	/* SUBMODE_CWSMART */
-	{
-		QMODEF_SMARTLSB,
-		MODE_CW, 	/* индекс семейства режимов */
-		3,			/* Kenwood cat mode code */
-		500,		/* полоса фильтра режима, возвращаемая через CAT */
-		"CW",
-	},
-	/* SUBMODE_CWZSMART */
-	{
-		QMODEF_SMARTLSB,
-		MODE_CWZ, 	/* индекс семейства режимов */
-		3,			/* Kenwood cat mode code */
-		500,		/* полоса фильтра режима, возвращаемая через CAT */
-		"CWZ",
-	},
-	/* SUBMODE_DIGISMART */
-	{
-		QMODEF_SMARTLSB,
-		MODE_DIGI, 	/* индекс семейства режимов */
-		9,			/* Kenwood cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"DIG",
-	},
-#else /* WITHMODESETSMART */
-	/* SUBMODE_USB */
-	{
-		0,
-		MODE_SSB, 	/* индекс семейства режимов */
-		2,			/* Kenwood cat mode code */
-		0x01,		/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"USB",
-	},
-	/* SUBMODE_LSB */
-	{
-		QMODEF_HARDLSB,
-		MODE_SSB, 	/* индекс семейства режимов */
-		1,			/* Kenwood cat mode code */
-		0x00,		/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"LSB",
-	},
-	/* SUBMODE_CW */
-	{
-		0,
-		MODE_CW, 	/* индекс семейства режимов */
-		3,			/* Kenwood cat mode code */
-		0x02,		/* Yaesu cat mode code */
-		500,		/* полоса фильтра режима, возвращаемая через CAT */
-		"CW",
-	},
-	/* SUBMODE_CWR */
-	{
-		QMODEF_HARDLSB,
-		MODE_CW, 	/* индекс семейства режимов */
-		7,			/* Kenwood cat mode code */
-		0x03,		/* Yaesu cat mode code */
-		500,		/* полоса фильтра режима, возвращаемая через CAT */
-		"CWR",
-	},
-	/* SUBMODE_CWZ */
-	{
-		QMODEF_SMARTLSB,
-		MODE_CWZ, 	/* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-	  	"CWZ",
-	},
-	/* SUBMODE_AM */
-	{
-		QMODEF_SMARTLSB,
-		MODE_AM, 	/* индекс семейства режимов */
-		5,			/* Kenwood cat mode code */
-		0x04,		/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"AM",
-	},
-	#if WITHSAM
-	/* SUBMODE_SAM */
-	{
-		QMODEF_SMARTLSB,
-		MODE_SAM, 	/* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"SAM",
-	},
-	#endif /* WITHSAM */
-	/* SUBMODE_DRM */
-	{
-		QMODEF_SMARTLSB,
-		MODE_DRM, 	/* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"DRM",
-	},
-	/* SUBMODE_DGL */
-	{
-		QMODEF_HARDLSB,
-		MODE_DIGI, 	/* индекс семейства режимов */
-		9,			/* Kenwood cat mode code */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"DGL",
-	},
-	/* SUBMODE_DGU */
-	{
-		QMODEF_SMARTLSB,
-		MODE_DIGI, 	/* индекс семейства режимов */
-		6,			/* Kenwood cat mode code */
-		0x0A,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"DGU",
-	},
-#if WITHMODESETFULLNFM || WITHMODESETMIXONLY3NFM || WITHMODESETFULLNFMWFM	// чтобы через CAT не включился этот режтим - если нет - в комментарии.
-	/* SUBMODE_NFM */
-	{
-		QMODEF_SMARTLSB,
-		MODE_NFM, 	/* индекс семейства режимов */
-		4,			/* Kenwood cat mode code */
-		0x08,		/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"NFM",
-	},
-#endif /* WITHMODESETFULLNFM || WITHMODESETMIXONLY3NFM || WITHMODESETFULLNFMWFM  */
-#if WITHWFM || WITHMODESETFULLNFMWFM
-	/* SUBMODE_WFM */
-	{
-		QMODEF_SMARTLSB,
-		MODE_WFM, 	/* индекс семейства режимов */
-		8,			/* Kenwood cat mode code - придуман мною. В описаниях такого нет. */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"WFM",
-	},
-#endif /* WITHWFM || WITHMODESETFULLNFMWFM */
-#if WITHMODEM
-	/* SUBMODE_PSK */
-	{
-		0,
-		MODE_MODEM, /* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		500,		/* полоса фильтра режима, возвращаемая через CAT */
-		"PSK",
-	},
-#endif /* WITHMODEM */
-	/* SUBMODE_ISB */
-	{
-		0,
-		MODE_ISB, 	/* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-	  	"ISB",
-	},
-#if WITHFREEDV
-	/* SUBMODE_FDV */
-	{
-		0,
-		MODE_FREEDV,/* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"FDV",
-	},
-#endif /* WITHFREEDV */
-#if WITHRTTY
-	/* SUBMODE_RTTY */
-	{
-		0,
-		MODE_RTTY,/* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"TTY",
-	},
-#endif /* WITHRTTY */
-#endif /* WITHMODESETSMART */
-};
-
 #if WITHRTTY
 
 static uint16_t grttybaudrate10 = 500;	// rtty baudrate в десятых долях
@@ -9918,12 +10029,6 @@ static const uint_fast8_t am_steps10 [] =
 };
 #endif
 
-/* функция работает с кэшем параметров режима работы */
-static const struct modetempl *
-getmodetempl(uint_fast8_t submode)
-{
-	return & mdt [submodes [submode].mode];
-}
 
 #if WITHAMHIGHKBDADJ
 
@@ -10687,8 +10792,6 @@ putmodecol(
 	gmodecolmaps [bi] [index] = col;
 }
 
-
-static uint_fast8_t gmiddlepos [MODE_COUNT];
 
 #if WITHIF4DSP
 
@@ -16385,6 +16488,9 @@ static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 		if (delta)
 		{
 			bring_enc2f();
+			const encfnitem_t * const ei = & enclabelsENC2FN [enc2f_sel];
+			ASSERT(ei->ondelta);
+			changed |= ei->ondelta(ei->ctx, delta);
 			switch (enc2f_sel)
 			{
 			default:
@@ -16395,7 +16501,6 @@ static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 				break;
 			case 1:
 				/* регулировка полосы пропускания */
-				changed |= encoder_flagne(& xgrxbwadj, delta, CATINDEX(UINT8_MAX), NULL);
 				break;
 			}
 		}
@@ -19506,6 +19611,69 @@ static uint_fast32_t ipow10(uint_fast8_t v)
 
 #if WITHMENU
 
+const struct paramdefdef * const * getbwmenu_cw(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xfltbw_cwwide,
+		//& xfltbw_cwnarrow,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getbwmenu_ssb(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgssbwide_high,
+		& xgssbwide_low,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getbwmenu_am(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgamwide_high,
+		& xgamwide_low,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getbwmenu_digi(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgdigiwide_high,
+		& xgdigiwide_low,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getbwmenu_nfm(unsigned * size)
+{
+	* size = 0;
+	return NULL;
+}
+
+const struct paramdefdef * const * getbwmenu_wfm(unsigned * size)
+{
+	* size = 0;
+	return NULL;
+}
+
+////////////
+
+
 const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 {
 	static const struct paramdefdef * const middlemenu [] =
@@ -20907,7 +21075,11 @@ process_key_menuset0(uint_fast8_t kbch)
 
 	case KBD_ENC1F_HOLD:
 		bring_enc1f();
-		//param_keyclick(& xenc1f_sel);
+		{
+			const encfnitem_t * const ei = & enclabelsENC1FN [param_val(& xenc1f_sel)];
+			ASSERT(ei->onholded);
+			ei->onholded(ei->ctx, param_val(& xenc1f_sel));
+		}
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_1F */
 
@@ -20919,7 +21091,11 @@ process_key_menuset0(uint_fast8_t kbch)
 
 	case KBD_ENC2F_HOLD:
 		bring_enc2f();
-		//param_keyclick(& xenc2f_sel);
+		{
+			const encfnitem_t * const ei = & enclabelsENC2FN [param_val(& xenc2f_sel)];
+			ASSERT(ei->onholded);
+			ei->onholded(ei->ctx, param_val(& xenc2f_sel));
+		}
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_2F */
 
@@ -20931,6 +21107,7 @@ process_key_menuset0(uint_fast8_t kbch)
 
 	case KBD_ENC3F_HOLD:
 		bring_enc3f();
+		//
 		//param_keyclick(& xenc3f_sel);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_3F */
@@ -24680,8 +24857,11 @@ loadsavedstate(uint_fast8_t bi)
 	for (mode = 0; mode < MODE_COUNT; ++ mode)
 	{
 		unsigned middlerowsize;
+		unsigned bwadjrowsize;
 		mdt [mode].middlemenu(& middlerowsize);
+		mdt [mode].bwmenu(& bwadjrowsize);
 		gmiddlepos [mode] = loadvfy8up(RMT_MIDDLEMENUPOS_BASE(mode), 0, middlerowsize - 1, gmiddlepos [mode]);
+		gbwadjpos [mode] = loadvfy8up(RMT_BWADJPOS_BASE(mode), 0, bwadjrowsize - 1, gbwadjpos [mode]);
 	#if WITHIF4DSP && WITHTX
 		// источник звука
 		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIOINDEX_BASE(mode), 0, TXAUDIOSRC_COUNT - 1, findtxaudioindex(mdt [mode].txaudiocode));
