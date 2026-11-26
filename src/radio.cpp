@@ -8850,7 +8850,7 @@ static int getlabelRXBW(const void * ctx, char * buff, size_t count)
 	unsigned nitems;
 	const unsigned apos = gbwadjpos [mode];
 	const struct paramdefdef * const pd = mdt [mode].bwmenu(& nitems) [gbwadjpos [mode]];
-	if (pd == NULL)
+	if (nitems <= apos)
 	{
 		buff [0] = '\0';
 		return 0;
@@ -8906,11 +8906,9 @@ static int bwadjdelta(const void * ctx, int delta)
 	const unsigned apos = gbwadjpos [mode];
 	const struct paramdefdef * const pd = mdt [mode].bwmenu(& nitems) [gbwadjpos [mode]];
 	(void) ctx;
-	if (pd)
-	{
-		return param_rotate(pd, delta);	// модификация и сохранение параметра
-	}
-	return 0;
+	if (nitems <= apos)
+		return 0;
+	return param_rotate(pd, delta);	// модификация и сохранение параметра
 }
 
 static int bwadjholded(const void * ctx, uint_fast8_t sel)
@@ -8923,6 +8921,8 @@ static int bwadjholded(const void * ctx, uint_fast8_t sel)
 	const struct paramdefdef * const pd = mdt [mode].bwmenu(& nitems) [gbwadjpos [mode]];
 	(void) ctx;
 	(void) sel;
+	if (nitems <= apos)
+		return 0;
 	// modify gbwadjpos [mode]
 	gbwadjpos [mode] = calc_next(gbwadjpos [mode], 0, nitems - 1);
 	save_i8(RMT_BWADJPOS_BASE(mode), gbwadjpos [mode]);
