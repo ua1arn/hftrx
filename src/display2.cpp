@@ -2050,18 +2050,31 @@ display2_smeter15_dimensions_rx_dial_rle(smeter_params_t * const smpr)
 	smpr->draw = sm_draw_dial_rx_rle;
 }
 
-static void display2_smeter15_fillbg(const gxdrawb_t * db)
+static void display2_smeter15_fillbg_dial(const gxdrawb_t * db)
+{
+	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
+}
+
+static void display2_smeter15_fillbg_bars(const gxdrawb_t * db)
 {
 	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
 }
 
 #else /* WITHRLEDECOMPRESS */
 
-static void display2_smeter15_fillbg(const gxdrawb_t * db)
+static void display2_smeter15_fillbg_dial(const gxdrawb_t * db)
 {
 //	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
 	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, smeterbgcolor, 1);
 	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_GRAY, 0);
+//	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
+}
+
+static void display2_smeter15_fillbg_bars(const gxdrawb_t * db)
+{
+	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
+//	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, smeterbgcolor, 1);
+//	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_GRAY, 0);
 //	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
 }
 
@@ -2188,7 +2201,7 @@ display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 	// Angles (positions)
 	int32_t * const smeteranglesRX = smpr->smeterangles;
 
-	display2_smeter15_fillbg(db);	// Фон для RX
+	display2_smeter15_fillbg_dial(db);	// Фон для RX
 
 	for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 	{
@@ -2330,7 +2343,7 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
 	// Angles (positions)
 	int32_t * const smeteranglesTX = smpr->smeterangles;
-	display2_smeter15_fillbg(db);	// Фон для TX
+	display2_smeter15_fillbg_dial(db);	// Фон для TX
 
 
 	// Разметка шкалы мощности
@@ -2503,7 +2516,7 @@ display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 	// Angles (positions)
 	int32_t * const smeteranglesTX = smpr->smeterangles;
 
-	display2_smeter15_fillbg(db);	// Фон для TX
+	display2_smeter15_fillbg_bars(db);	// Фон для TX
 
 	// Power meter
 	// smpr->r1: горизонталь первой шкалы
@@ -2588,7 +2601,7 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 	// Angles (positions)
 	int32_t * const smeteranglesRX = smpr->smeterangles;
 
-	display2_smeter15_fillbg(db);	// Фон для RX
+	display2_smeter15_fillbg_bars(db);	// Фон для RX
 
 	colpip_line(db, smpr->gs, smpr->r1, smpr->gm, smpr->r1, COLORPIP_WHITE, 0);
 	colpip_line(db, smpr->gm, smpr->r1, smpr->ge, smpr->r1, COLORPIP_RED, 0);
