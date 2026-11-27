@@ -9518,23 +9518,38 @@ private:
 	int m_dy;
 };
 
+
 static COLORPIP_T getCOLORPIP(const litehtml::web_color &color)
 {
 	return TFTALPHA(color.alpha, TFTRGB(color.red, color.green, color.blue));
 }
 
+static void fill_rect(const gxdrawb_t * const db, litehtml::pixel_t x, litehtml::pixel_t y, litehtml::pixel_t width,
+                                  litehtml::pixel_t height, litehtml::web_color color)
+{
+	//const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
+	colpip_fillrect(db, int(x), int(y), int(width), int(height), getCOLORPIP(color));
+	//    Graphics graphics(hdc);
+//
+//    SolidBrush brush(gdiplus_color(color));
+//    graphics.FillRectangle(&brush, x, y, width, height);
+}
+
 litehtml::uint_ptr hftrxgd::create_font(const font_description &descr, const document *doc, litehtml::font_metrics *fm)
 {
 	const unifont_t * const font = & unifont_small;
-	PRINTF("create_font: faceName='%s', size=%d\n", faceName, size);
+	//PRINTF("create_font: faceName='%s', size=%d\n", faceName, size);
 	if (fm)
 	{
-//		fm->font_size = font->font_drawheight(font); //?????size;
-//		fm->ascent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_ascent(metrics));
-//		fm->descent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_descent(metrics));
-//		fm->height = font->font_drawheight(font); //PANGO_PIXELS((double)pango_font_metrics_get_height(metrics));
-//		fm->x_height = font->font_drawheight(font);
-//		fm->draw_spaces = true;
+        fm->font_size   = 12;//descr.size;
+        fm->ascent      = 0;
+        fm->descent     = 0;
+        fm->height      = 12;
+        fm->x_height    = 1;//tm.tmHeight / 2; // this is an estimate; call GetGlyphOutline to get the real value
+        fm->ch_width    = 1;//tm.tmAveCharWidth;
+        fm->draw_spaces = 1;//descr.style == font_style_italic || descr.decoration_line != text_decoration_line_none;
+        fm->sub_shift   = 1;//descr.size / 5;
+        fm->super_shift = 1;//descr.size / 3;
 	}
 	return litehtml::uint_ptr(font);
 }
@@ -9669,6 +9684,8 @@ void hftrxgd::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &la
 
 	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, getCOLORPIP(color));
 #endif
+    auto border_box = layer.border_box;
+    fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, color);
 }
 
 void hftrxgd::draw_linear_gradient(litehtml::uint_ptr hdc,
@@ -9677,26 +9694,19 @@ void hftrxgd::draw_linear_gradient(litehtml::uint_ptr hdc,
 		const litehtml::clipping *clip)
 {
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
-#if 0
-	//TP();
-	COLORPIP_T color = COLORPIP_RED;
-
-	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
-#endif
+    auto border_box = layer.border_box;
+    fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, web_color::black);
 
 }
+
 void hftrxgd::draw_radial_gradient(litehtml::uint_ptr hdc,
 		const background_layer &layer,
 		const background_layer::radial_gradient &gradient,
 		const litehtml::clipping *clip)
 {
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
-#if 0
-	//TP();
-	COLORPIP_T color = COLORPIP_GREEN;
-
-	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
-#endif
+    auto border_box = layer.border_box;
+    fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, web_color::black);
 
 }
 
@@ -9706,13 +9716,8 @@ void hftrxgd::draw_conic_gradient(litehtml::uint_ptr hdc,
 		const litehtml::clipping *clip)
 {
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
-#if 0
-	//TP();
-	COLORPIP_T color = COLORPIP_BLUE;
-
-	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
-
-#endif
+    auto border_box = layer.border_box;
+    fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, web_color::black);
 }
 
 void hftrxgd::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &borders,
