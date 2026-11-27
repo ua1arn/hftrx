@@ -10062,7 +10062,8 @@ using namespace litehtml;
 static litehtml::hftrxgd hfrx_cont(DIM_X, DIM_Y);
 static const litehtml::position hfrx_wndclip(0, 0, DIM_X, DIM_Y);
 static document::ptr hftrxmain_docs [DISPLC_MODCOUNT];
-static litehtml::elements_list hftrx_timeels;
+static litehtml::elements_list hftrx_thermoels;	// градусники
+static litehtml::elements_list hftrx_txrxels;	// приём/передача
 
 static const char hftrx_css [] =
 R"##(
@@ -10279,51 +10280,30 @@ void display2_bgprocess(
 	const litehtml::uint_ptr hftrx_hdc = (uintptr_t) & dbv;
 	if (1)
 	{
-
-		for (litehtml::element::ptr& el : hftrx_timeels)
+		for (litehtml::element::ptr& el : hftrx_txrxels)
 		{
-//			uint_fast8_t hour, minute, seconds;
-//			board_rtc_cached_gettime(& hour, & minute, & seconds);
-
-//			const litehtml::element::ptr & old = el->children().back();	// Единственный элемент
-//
-//			char s [16];
-//			local_snprintf_P(s, sizeof s, "%08X", (unsigned) sys_now());
-//
-//			litehtml::element::ptr tp(std::make_shared<el_text2>(s, doc));
-
+			// по всем индикаторам режима
 			const int phase = (sys_now() & 0x200) != 0;
-			el->set_class("on", !! phase);
-			el->set_class("off", ! phase);
-			el->compute_styles(true);
+		    //PRINTF("phase=%d\n", phase);
+
+			el->set_class("state-tx", !! phase);
+			el->set_class("state-rx", ! phase);
+			//el->set_data(phase ? "EN" : "DIS");
 			el->refresh_styles();
-
-//			if (sys_now() & 0x200)
-//			{
-//				//el->set_attr("style", "background-color:red; color:green;");
-//				//el->set_data("1");
-//			}
-//			else
-//			{
-//				//el->set_attr("style", "background-color:green; color:red;");
-//				//el->set_data("2");
-//			}
-
-
-
-			//doc->append_children_from_string(* el, s);
-//			ASSERT(el->appendChild(tp));
-//			ASSERT(el->removeChild(old));
-
-			//PRINTF("***** old = %p\n", old);
-			//tp->compute_styles(false);
-			//el->compute_styles(true);
-
-			//doc->refreshh();
-			//TP();
+			el->compute_styles(true);
+		}
+		for (litehtml::element::ptr& el : hftrx_thermoels)
+		{
+			// по всем градусникам
+		    // 2. Получаем текстовый узел и меняем его содержимое
+		    // В ветке main текстовый элемент создается через doc->create_element("text", ...)
+		    // или заменяется пересозданием текстового узла:
+		    el->clearRecursive();
+		    auto text_el = std::make_shared<litehtml::el_text>("+33", doc);
+		    el->appendChild(text_el);
 		}
 	}
-
+    //doc->refreshh();
 	doc->render(hfrx_wndclip.width, litehtml::render_all);
 	doc->draw(hftrx_hdc, 0, 0, & hfrx_wndclip);
 	//TP();
@@ -10720,20 +10700,18 @@ void display2_initialize(void)
 			if (1)
 			{
 				litehtml::css_selector sel;
-				sel.parse("#id3", no_quirks_mode);	// select by id
+				sel.parse("#thermo", no_quirks_mode);	// select by id
 				//sel.parse(".BIG-FREQ", no_quirks_mode);	// Select by class
-				hftrx_timeels = hftrxmain_docs [page]->root()->select_all(sel);
-				PRINTF("hftrx_timeels size=%d\n", (int) hftrx_timeels.size());
-	//			for (litehtml::element::ptr& el : hftrx_timeels)
-	//			{
-	//				for (const litehtml::element::ptr& el2 : el->children())
-	//				{
-	//					string t;
-	//					el2->get_text(t);
-	//					PRINTF(" children: name='%s'\n", el2->dump_get_name().c_str());
-	//					PRINTF(" children: text='%s'\n", t.c_str());
-	//				}
-	//			}
+				hftrx_thermoels = hftrxmain_docs [page]->root()->select_all(sel);
+				PRINTF("hftrx_thermoels size=%d\n", (int) hftrx_thermoels.size());
+			}
+			if (1)
+			{
+				litehtml::css_selector sel;
+				sel.parse("#txrx", no_quirks_mode);	// select by id
+				//sel.parse(".BIG-FREQ", no_quirks_mode);	// Select by class
+				hftrx_txrxels = hftrxmain_docs [page]->root()->select_all(sel);
+				PRINTF("hftrx_txrxels size=%d\n", (int) hftrx_txrxels.size());
 			}
 		}
 	}

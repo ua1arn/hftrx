@@ -223,6 +223,8 @@ R"##(
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <!--link rel="stylesheet" type="text/css" href="hftrx.css"-->
 <style>
+ .state-tx { background-color:black; color:red; }
+ .state-rx { background-color:black; color:green; }
  #id1 { position:absolute; left:0px; top:0px; width:160px; height:25px; }
  #id2 { position:absolute; left:160px; top:0px; width:144px; height:25px; }
  #txrx { position:absolute; left:304px; top:0px; width:48px; height:25px; }
@@ -265,7 +267,7 @@ R"##(
 <body style="background-color:orange;">
  <div id="id1" style="background-color:blue; color:black;">WWWWWWWWWW</div>
  <div id="id2" style="background-color:blue; color:black;">WWWWWWWWW</div>
- <div id="txrx" style="background-color:blue; color:black;"><img src='txrx'/></div>
+ <div id="txrx" class="state-rx state-tx">RX</div>
  <div id="ant" style="background-color:blue; color:black;"><img src='ant'/></div>
  <div id="ant" style="background-color:blue; color:black;"><img src='ant'/></div>
  <div id="id6" style="background-color:blue; color:black;">WWWWWWWWW</div>
@@ -292,7 +294,7 @@ R"##(
  <div id="lock" style="background-color:blue; color:black;"><img src='lock'/></div>
  <div id="gcombo" style="background-color:blue; color:black;"><img src='gcombo'/></div>
  <div id="datetime12" style="background-color:blue; color:black;"><img src='datetime12'/></div>
- <div id="thermo" style="background-color:blue; color:black;"><img src='thermo'/></div>
+ <div id="thermo" style="background-color:blue; color:black;">TEMPE</div>
  <div id="usbact" style="background-color:blue; color:black;"><img src='usbact'/></div>
  <div id="bt" style="background-color:blue; color:black;"><img src='bt'/></div>
  <div id="classa" style="background-color:blue; color:black;"><img src='classa'/></div>
