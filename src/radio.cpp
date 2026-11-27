@@ -17005,8 +17005,8 @@ catyaesu_processcatmsg(
 		{
 			// SPLIT On
 			//PRINTF("CAT SPLIT ON\n");
-			gsplitmode = VFOMODES_SPLIT;
-			updateboard();
+			if (cat_param_setvalue(& xgsplitmode, VFOMODES_SPLIT))
+				updateboard();
 			cat_ask_buffer [0] = 0x00;
 			cat_answervariable(cat_ask_buffer, 1);
 		}
@@ -17020,8 +17020,8 @@ catyaesu_processcatmsg(
 		if (cat_answer_ready())
 		{
 			//PRINTF("CAT SPLIT OFF\n");
-			gsplitmode = VFOMODES_OFF;
-			updateboard();
+			if (cat_param_setvalue(& xgsplitmode, VFOMODES_OFF))
+				updateboard();
 			cat_ask_buffer [0] = 0x00;
 			cat_answervariable(cat_ask_buffer, 1);
 		}
@@ -17644,7 +17644,7 @@ static void spanswer(uint_fast8_t arg)
 
 	// answer VFO B frequency
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) (gsplitmode != VFOMODES_OFF)
+		(int) (param_val(& xgsplitmode) != VFOMODES_OFF)
 		);
 	catkenwood_answer(len);
 }
@@ -18270,7 +18270,7 @@ static void ifanswer(uint_fast8_t arg)
 		(int) gtx,
 		(int) submodes [gsubmode].qcatmodecode,	// P9
 		(int) 0,	// P10: FR/FT state
-		(int) (gsplitmode == VFOMODES_SPLIT) // P12
+		(int) (param_val(& xgsplitmode) == VFOMODES_SPLIT) // P12
 		);
 	catkenwood_answer(len);
 }
@@ -20978,7 +20978,7 @@ process_key_menuset0(uint_fast8_t kbch)
 	switch (kbch)
 	{
 	case KBD_CODE_RIT:
-		switch (gsplitmode)
+		switch (param_val(& xgsplitmode))
 		{
 		case VFOMODES_OFF:
 			uif_key_rit_on();
@@ -20993,7 +20993,7 @@ process_key_menuset0(uint_fast8_t kbch)
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_RIT_HOLDED:
-		switch (gsplitmode)
+		switch (param_val(& xgsplitmode))
 		{
 		case VFOMODES_OFF:
 			uif_key_xit_on();
@@ -21010,7 +21010,7 @@ process_key_menuset0(uint_fast8_t kbch)
 	case KBD_CODE_SPLIT:
 		/* Переключение VFO
 			 - не вызывает сохранение состояния диапазона */
-		switch (gsplitmode)
+		switch (param_val(& xgsplitmode))
 		{
 		case VFOMODES_OFF:
 			uif_key_spliton(0);
@@ -21022,7 +21022,7 @@ process_key_menuset0(uint_fast8_t kbch)
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_SPLIT_HOLDED:
-		switch (gsplitmode)
+		switch (param_val(& xgsplitmode))
 		{
 		case VFOMODES_OFF:
 			uif_key_spliton(1);
@@ -21667,7 +21667,7 @@ processmainloopkeyboard(inputevent_t * ev)
 	}
 
 #if WITHWAVPLAYER || WITHSENDWAV
-	switch (kbch)
+	switch (ev->frontkeyevent.kbch)
 	{
 	case KBD_CODE_PLAYFILE1:
 		playhandler(1);
@@ -22818,7 +22818,7 @@ static uint_fast8_t performtune(
 	const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);		/* состояние выбора банков может измениться */
 	const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);		/* состояние выбора банков может измениться */
 	const uint_fast8_t unlocked = glocks [bi_main] == 0;
-	switch (gsplitmode)
+	switch (param_val(& xgsplitmode))
 	{
 	case VFOMODES_OFF:
 	case VFOMODES_SPLIT:
