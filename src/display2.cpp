@@ -9383,56 +9383,135 @@ namespace litehtml
 
 class hftrxgd: public litehtml::document_container
 {
-	// call back interface to draw text, images and other elements
 public:
-	litehtml::uint_ptr create_font(const font_description& descr, const document* doc, litehtml::font_metrics* fm);
+	hftrxgd(int dx, int dy);
+	litehtml::uint_ptr create_font(const font_description &descr,
+			const document *doc, litehtml::font_metrics *fm);
 	void delete_font(litehtml::uint_ptr hFont);
 	pixel_t text_width(const char *text, litehtml::uint_ptr hFont);
-	void draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos);
+	void draw_text(litehtml::uint_ptr hdc, const char *text,
+			litehtml::uint_ptr hFont, litehtml::web_color color,
+			const litehtml::position &pos, const litehtml::clipping *clip);
 	pixel_t pt_to_px(float pt) const;
 	pixel_t get_default_font_size() const;
 	const char* get_default_font_name() const;
-	void draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_marker &marker);
+	void draw_list_marker(litehtml::uint_ptr hdc,
+			const litehtml::list_marker &marker,
+			const litehtml::clipping *clip);
 	void load_image(const char *src, const char *baseurl, bool redraw_on_ready);
-	void get_image_size(const char *src, const char *baseurl, litehtml::size &sz);
-	void draw_image(litehtml::uint_ptr hdc, const background_layer &layer, const std::string &url, const std::string &base_url);
-	void draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer, const web_color &color);
-	void draw_linear_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::linear_gradient &gradient);
-	void draw_radial_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::radial_gradient &gradient);
-	void draw_conic_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::conic_gradient &gradient);
-	void draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &borders, const litehtml::position &draw_pos, bool root);
+	void get_image_size(const char *src, const char *baseurl,
+			litehtml::size &sz);
+	void draw_image(litehtml::uint_ptr hdc, const background_layer &layer,
+			const std::string &url, const std::string &base_url,
+			const litehtml::clipping *clip);
+	void draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer,
+			const web_color &color, const litehtml::clipping *clip);
+	void draw_linear_gradient(litehtml::uint_ptr hdc,
+			const background_layer &layer,
+			const background_layer::linear_gradient &gradient,
+			const litehtml::clipping *clip);
+	void draw_radial_gradient(litehtml::uint_ptr hdc,
+			const background_layer &layer,
+			const background_layer::radial_gradient &gradient,
+			const litehtml::clipping *clip);
+	void draw_conic_gradient(litehtml::uint_ptr hdc,
+			const background_layer &layer,
+			const background_layer::conic_gradient &gradient,
+			const litehtml::clipping *clip);
+	void draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &borders,
+			const litehtml::position &draw_pos, bool root,
+			const litehtml::clipping *clip);
+
+	// Draws one box shadow. `box` is the border box for outset shadows and the padding box for
+	// inset shadows; `radius` is the border radius of that box. `shadow` holds pixel offsets.
+	// An outset shadow paints outside the rounded `box` only and must be clipped out of it;
+	// an inset shadow paints inside the rounded `box`. Both must honour `clip`.
+	void draw_box_shadow(litehtml::uint_ptr /*hdc*/,
+			const litehtml::position& /*box*/,
+			const litehtml::border_radiuses& /*radius*/,
+			const litehtml::shadow_paint& /*shadow*/,
+			const litehtml::clipping* /*clip*/);
+
+	// Draw the dropdown marker of a one-line select (a down-pointing chevron) inside pos.
+	void draw_combobox_marker(litehtml::uint_ptr hdc,
+			const litehtml::position &pos, const litehtml::web_color &color,
+			const litehtml::clipping *clip);
+
+	// Draw the check mark of a checked checkbox inside pos.
+	void draw_checkbox_marker(litehtml::uint_ptr hdc,
+			const litehtml::position &pos, const litehtml::web_color &color,
+			const litehtml::clipping *clip);
 
 	void set_caption(const char *caption);
 	void set_base_url(const char *base_url);
-	void link(const std::shared_ptr<litehtml::document> &doc, const litehtml::element::ptr &el);
+	void link(const std::shared_ptr<litehtml::document> &doc,
+			const litehtml::element::ptr &el);
 	void on_anchor_click(const char *url, const litehtml::element::ptr &el);
-	void on_mouse_event(const litehtml::element::ptr &el, litehtml::mouse_event event);
+	bool on_element_click(const litehtml::element::ptr& /*el*/);
+	void on_mouse_event(const litehtml::element::ptr &el,
+			litehtml::mouse_event event);
 	void set_cursor(const char *cursor);
-	void transform_text(std::string& text, litehtml::text_transform tt);
-	void import_css(std::string &text, const std::string &url, std::string &baseurl);
-	void set_clip(const litehtml::position &pos, const litehtml::border_radiuses &bdr_radius);
-	void del_clip();
-	void get_client_rect(litehtml::position &client) const;
-	void get_viewport(litehtml::position& viewport) const;
-	litehtml::element::ptr create_element(const char* tag_name, const litehtml::string_map& attributes, const std::shared_ptr<litehtml::document>& doc);
+	void transform_text(std::string &text, litehtml::text_transform tt);
+	void import_css(std::string &text, const std::string &url,
+			std::string &baseurl);
+	void get_viewport(litehtml::position &viewport) const;
+	litehtml::element::ptr create_element(const char *tag_name,
+			const litehtml::string_map &attributes,
+			const std::shared_ptr<litehtml::document> &doc);
 
 	void get_media_features(litehtml::media_features &media) const;
 	void get_language(std::string &language, std::string &culture) const;
-//	std::string resolve_color(const std::string& /*color*/) const
-//	{
-//		return std::string();
-//	}
-//	void split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space);
-	hftrxgd(int dx, int dy) :
-			m_dx(dx), m_dy(dy)
+	std::string resolve_color(const std::string& /*color*/) const;
+	void split_text(const char *text,
+			const std::function<void(const char*)> &on_word,
+			const std::function<void(const char*)> &on_space);
+
+	// Form controls integration. All of these functions have default implementations, so
+	// containers that do not support controls keep working.
+
+	// Called when the focused element changes. el is nullptr when the focus is removed.
+	// element_id is nullptr when the element has no id attribute. control_data contains the
+	// current state of the control: bool for checkbox/radio, text_control_data for text-like
+	// controls, select_control_data for select and monostate for other elements.
+	void on_focus_change(const litehtml::element::ptr& /*el*/,
+			const char* /*element_id*/, litehtml::control_type /*type*/,
+			const litehtml::control_data& /*data*/)
 	{
 	}
-	virtual ~hftrxgd() = default;
 
-private:
-	int m_dx;
-	int m_dy;
+	// Lets the container provide the authoritative text state of a text-like control. The
+	// control fills data with its cached state before the call; the container may replace it.
+	void get_text_data(const litehtml::element::ptr& /*el*/,
+			litehtml::text_control_data& /*data*/)
+	{
+	}
 
+	// Called when the value of a control changes (not when only the caret moves). The payload is
+	// bool for checkbox/radio, text_control_data for text-like controls and select_control_data
+	// for select.
+	void on_change(const litehtml::element::ptr& /*el*/,
+			const char* /*element_id*/, const litehtml::control_data& /*data*/)
+	{
+	}
+
+	// Called when a form is submitted.
+	void on_submit(const litehtml::form_data& /*data*/)
+	{
+	}
+
+	// Requests the container to show the option list of a one-line select (dropdown). Listbox selects
+	// (multiple or size > 1) are rendered inline and select their rows directly, so they never call this.
+	// Returns true when the popup was shown; the container applies the chosen item with
+	// document::update_focused.
+	bool show_select_popup(const litehtml::element::ptr& /*el*/,
+			const char* /*element_id*/,
+			const litehtml::select_control_data& /*data*/)
+	{
+		return false;
+	}
+
+protected:
+//   ~document_container() = default;
 };
 
 static COLORPIP_T getCOLORPIP(const litehtml::web_color &color)
@@ -9440,18 +9519,18 @@ static COLORPIP_T getCOLORPIP(const litehtml::web_color &color)
 	return TFTALPHA(color.alpha, TFTRGB(color.red, color.green, color.blue));
 }
 
-litehtml::uint_ptr hftrxgd::create_font(const font_description& descr, const document* doc, litehtml::font_metrics* fm)
+litehtml::uint_ptr hftrxgd::create_font(const font_description &descr, const document *doc, litehtml::font_metrics *fm)
 {
 	const unifont_t * const font = & unifont_small;
 	//PRINTF("create_font: faceName='%s', size=%d\n", faceName, size);
 	if (fm)
 	{
-		fm->font_size = font->font_drawheight(font); //?????size;
-		fm->ascent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_ascent(metrics));
-		fm->descent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_descent(metrics));
-		fm->height = font->font_drawheight(font); //PANGO_PIXELS((double)pango_font_metrics_get_height(metrics));
-		fm->x_height = font->font_drawheight(font);
-		fm->draw_spaces = true;
+//		fm->font_size = font->font_drawheight(font); //?????size;
+//		fm->ascent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_ascent(metrics));
+//		fm->descent = 0; //PANGO_PIXELS((double)pango_font_metrics_get_descent(metrics));
+//		fm->height = font->font_drawheight(font); //PANGO_PIXELS((double)pango_font_metrics_get_height(metrics));
+//		fm->x_height = font->font_drawheight(font);
+//		fm->draw_spaces = true;
 	}
 	return litehtml::uint_ptr(font);
 }
@@ -9463,21 +9542,24 @@ void hftrxgd::delete_font(litehtml::uint_ptr hFont)
 
 pixel_t hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
 {
-	const unifont_t * const font = (const unifont_t *) hFont;
-	//PRINTF("text_width: text='%s'\n", text);
-	uint_fast16_t height_str;
-	const uint_fast16_t width_str = unifont_textsize(font, text, TEXTSIZE_AUTO, & height_str);
-	return width_str;
+//	const unifont_t * const font = (const unifont_t *) hFont;
+//	//PRINTF("text_width: text='%s'\n", text);
+//	uint_fast16_t height_str;
+//	const uint_fast16_t width_str = unifont_textsize(font, text, TEXTSIZE_AUTO, & height_str);
+//	return width_str;
+	return 0;
 }
 
-void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text, litehtml::uint_ptr hFont, litehtml::web_color color, const litehtml::position &pos)
+void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text,
+		litehtml::uint_ptr hFont, litehtml::web_color color,
+		const litehtml::position &pos, const litehtml::clipping *clip)
 {
 	const unifont_t * const font = (const unifont_t *) hFont;
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//PRINTF("draw_text: text='%s'\n", text);
 
 	//colpip_fillrect(db, pos.left(), pos.top(), pos.width, pos.height, getCOLORPIP(color));
-	unifont_text(db, pos.left(), pos.top(), font, text, TEXTSIZE_AUTO, getCOLORPIP(color));
+	//unifont_text(db, pos.left(), pos.top(), font, text, TEXTSIZE_AUTO, getCOLORPIP(color));
 }
 
 pixel_t hftrxgd::pt_to_px(float pt) const
@@ -9495,12 +9577,14 @@ const char* hftrxgd::get_default_font_name() const
 	return "Times New Roman";
 }
 
-void hftrxgd::draw_list_marker(litehtml::uint_ptr hdc, const litehtml::list_marker &marker)
+void hftrxgd::draw_list_marker(litehtml::uint_ptr hdc,
+		const litehtml::list_marker &marker,
+		const litehtml::clipping *clip)
 {
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	TP();
 
-	colpip_fillrect(db, marker.pos.left(), marker.pos.top(), marker.pos.width, marker.pos.height, getCOLORPIP(marker.color));
+//	colpip_fillrect(db, marker.pos.left(), marker.pos.top(), marker.pos.width, marker.pos.height, getCOLORPIP(marker.color));
 
 //	int top_margin = marker.pos.height / 3;
 //	if (top_margin < 4)
@@ -9526,8 +9610,11 @@ void hftrxgd::get_image_size(const char *src, const char *baseurl, litehtml::siz
 	sz = sss;
 }
 
-void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, const std::string &url, const std::string &base_url)
+void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer,
+		const std::string &url, const std::string &base_url,
+		const litehtml::clipping *clip)
 {
+#if 0
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//PRINTF("draw_image: url='%s', base_url='%s'\n", url.c_str(), base_url.c_str());
@@ -9567,47 +9654,69 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer, 
 	{
 		colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, COLORPIP_RED);
 	}
+#endif
 }
 
-void hftrxgd::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer, const web_color &color)
+void hftrxgd::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer,
+		const web_color &color, const litehtml::clipping *clip)
 {
+#if 0
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//PRINTF("draw_solid_fill: bottom_left_x=%d\n", layer.border_radius.bottom_left_x);
 
 	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, getCOLORPIP(color));
+#endif
 }
 
-void hftrxgd::draw_linear_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::linear_gradient &gradient)
+void hftrxgd::draw_linear_gradient(litehtml::uint_ptr hdc,
+		const background_layer &layer,
+		const background_layer::linear_gradient &gradient,
+		const litehtml::clipping *clip)
 {
+#if 0
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//TP();
 	COLORPIP_T color = COLORPIP_RED;
 
 	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
+#endif
 
 }
-void hftrxgd::draw_radial_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::radial_gradient &gradient)
+void hftrxgd::draw_radial_gradient(litehtml::uint_ptr hdc,
+		const background_layer &layer,
+		const background_layer::radial_gradient &gradient,
+		const litehtml::clipping *clip)
 {
+#if 0
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//TP();
 	COLORPIP_T color = COLORPIP_GREEN;
 
 	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
+#endif
 
 }
 
-void hftrxgd::draw_conic_gradient(litehtml::uint_ptr hdc, const background_layer &layer, const background_layer::conic_gradient &gradient)
+void hftrxgd::draw_conic_gradient(litehtml::uint_ptr hdc,
+		const background_layer &layer,
+		const background_layer::conic_gradient &gradient,
+		const litehtml::clipping *clip)
 {
+#if 0
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//TP();
 	COLORPIP_T color = COLORPIP_BLUE;
 
 	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, color);
 
+#endif
 }
 
-void hftrxgd::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &borders, const litehtml::position &draw_pos, bool root)
+void hftrxgd::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &borders,
+		const litehtml::position &draw_pos, bool root,
+		const litehtml::clipping *clip)
 {
+#if 0
 	//PRINTF("draw_borders: bottom_left_x=%d\n", borders.radius.bottom_left_x);
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	COLORPIP_T top_color = getCOLORPIP(borders.top.color);
@@ -9615,6 +9724,33 @@ void hftrxgd::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &bord
 	COLORPIP_T left_color = getCOLORPIP(borders.left.color);
 	COLORPIP_T right_color = getCOLORPIP(borders.right.color);
 	colpip_rect(db, draw_pos.left(), draw_pos.top(), draw_pos.right() - 1, draw_pos.bottom() - 1, top_color, 0);
+#endif
+}
+// Draws one box shadow. `box` is the border box for outset shadows and the padding box for
+// inset shadows; `radius` is the border radius of that box. `shadow` holds pixel offsets.
+// An outset shadow paints outside the rounded `box` only and must be clipped out of it;
+// an inset shadow paints inside the rounded `box`. Both must honour `clip`.
+void hftrxgd::draw_box_shadow(litehtml::uint_ptr /*hdc*/,
+		const litehtml::position& /*box*/,
+		const litehtml::border_radiuses& /*radius*/,
+		const litehtml::shadow_paint& /*shadow*/,
+		const litehtml::clipping* /*clip*/)
+{
+}
+
+// Draw the dropdown marker of a one-line select (a down-pointing chevron) inside pos.
+void hftrxgd::draw_combobox_marker(litehtml::uint_ptr hdc,
+		const litehtml::position &pos, const litehtml::web_color &color,
+		const litehtml::clipping *clip)
+{
+
+}
+// Draw the check mark of a checked checkbox inside pos.
+void hftrxgd::draw_checkbox_marker(litehtml::uint_ptr hdc,
+		const litehtml::position &pos, const litehtml::web_color &color,
+		const litehtml::clipping *clip)
+{
+
 }
 
 void hftrxgd::set_caption(const char *caption)
@@ -9635,6 +9771,11 @@ void hftrxgd::on_anchor_click(const char *url, const litehtml::element::ptr &el)
 {
 	TP();
 }
+bool hftrxgd::on_element_click(const litehtml::element::ptr& /*el*/)
+{
+	TP();
+	return false;
+};
 
 // вызывается если попадаем в элемент
 void hftrxgd::on_mouse_event(const litehtml::element::ptr &el, litehtml::mouse_event event)
@@ -9656,19 +9797,25 @@ void hftrxgd::import_css(std::string &text, const std::string &url, std::string 
 	//TP();
 }
 
-void hftrxgd::set_clip(const litehtml::position &pos, const litehtml::border_radiuses &bdr_radius)
+hftrxgd::hftrxgd(int dx, int dy)
 {
-	TP();
+
 }
-void hftrxgd::del_clip()
-{
-	TP();
-}
-void hftrxgd::get_client_rect(litehtml::position &client) const
-{
-	client = litehtml::position(0, 0, DIM_X, DIM_Y);
-}
-void hftrxgd::get_viewport(litehtml::position& viewport) const
+
+//void hftrxgd::set_clip(const litehtml::position &pos, const litehtml::border_radiuses &bdr_radius)
+//{
+//	TP();
+//}
+//void hftrxgd::del_clip()
+//{
+//	TP();
+//}
+//void hftrxgd::get_client_rect(litehtml::position &client) const
+//{
+//	client = litehtml::position(0, 0, DIM_X, DIM_Y);
+//}
+
+void hftrxgd::get_viewport(litehtml::position &viewport) const
 {
 	//ASSERT(0);
 }
@@ -9801,18 +9948,18 @@ litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const liteh
 
 void hftrxgd::get_media_features(litehtml::media_features &media) const
 {
-	position client;
-	get_client_rect(client);
-
-	media.type = media_type_screen;
-	media.width = client.width;
-	media.height = client.height;
-	media.color = 8;
-	media.monochrome = 0;
-	media.color_index = 256;
-	media.resolution = 96; //GetDeviceCaps(m_tmp_hdc, LOGPIXELSX);
-	media.device_width = client.width; //1000; //GetDeviceCaps(m_tmp_hdc, HORZRES);
-	media.device_height = client.height; //1000; //GetDeviceCaps(m_tmp_hdc, VERTRES);
+//	position client;
+//	get_client_rect(client);
+//
+//	media.type = media_type_screen;
+//	media.width = client.width;
+//	media.height = client.height;
+//	media.color = 8;
+//	media.monochrome = 0;
+//	media.color_index = 256;
+//	media.resolution = 96; //GetDeviceCaps(m_tmp_hdc, LOGPIXELSX);
+//	media.device_width = client.width; //1000; //GetDeviceCaps(m_tmp_hdc, HORZRES);
+//	media.device_height = client.height; //1000; //GetDeviceCaps(m_tmp_hdc, VERTRES);
 }
 
 void hftrxgd::get_language(std::string &language, std::string &culture) const
@@ -9821,18 +9968,25 @@ void hftrxgd::get_language(std::string &language, std::string &culture) const
 	culture = "";
 }
 
-//void hftrxgd::split_text(const char *text, const std::function<void(const char*)> &on_word, const std::function<void(const char*)> &on_space)
-//{
-//	//PRINTF("split_text: text='%s'\n", text);
-//	//on_word("zzzzzz");
-//	on_word(text);
-//}
+void hftrxgd::split_text(const char *text,
+		const std::function<void(const char*)> &on_word,
+		const std::function<void(const char*)> &on_space)
+{
+	//PRINTF("split_text: text='%s'\n", text);
+	//on_word("zzzzzz");
+	//on_word(text);
+}
+
+std::string hftrxgd::resolve_color(const std::string& /*color*/) const
+{
+	return  {};
+}
 
 void hftrxgd::link(const std::shared_ptr<litehtml::document> &doc, const litehtml::element::ptr &el)
 {
 	//TP();
 }
-
+#if 0
 
 	class el_text2: public litehtml::el_text
 	{
@@ -9875,6 +10029,7 @@ void hftrxgd::link(const std::shared_ptr<litehtml::document> &doc, const litehtm
 		ret->parent(parent_ri);
 		return ret;
 	}
+#endif
 
 }
 
