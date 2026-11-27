@@ -9563,7 +9563,7 @@ void hftrxgd::delete_font(litehtml::uint_ptr hFont)
 pixel_t hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
 {
 	const unifont_t * const font = (const unifont_t *) hFont;
-	//PRINTF("text_width: text='%s'\n", text);
+	PRINTF("text_width: text='%s'\n", text);
 	uint_fast16_t height_str;
 	const uint_fast16_t width_str = unifont_textsize(font, text, TEXTSIZE_AUTO, & height_str);
 	return int(width_str);
@@ -9577,10 +9577,11 @@ void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text,
 	const unifont_t * const font = (const unifont_t *) hFont;
 	PRINTF("draw_text: text='%s'\n", text);
 
-	colpip_fillrect(db, int(pos.x), int(pos.y), int(pos.width), int(pos.height), getCOLORPIP(color));
+	//colpip_fillrect(db, int(pos.x), int(pos.y), int(pos.width), int(pos.height), getCOLORPIP(color));
+    auto border_box = pos;
+    PRINTF("draw_text: %d %d %d %d\n", int(pos.x), int(pos.y), int(pos.width), int(pos.height));
+    fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, color);
 	unifont_text(db, int(pos.x), int(pos.y), font, text, TEXTSIZE_AUTO, getCOLORPIP(color));
-//    auto border_box = layer.border_box;
-//    fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, color);
 }
 
 pixel_t hftrxgd::pt_to_px(float pt) const
@@ -9627,7 +9628,7 @@ void hftrxgd::load_image(const char *src, const char *baseurl, bool redraw_on_re
 void hftrxgd::get_image_size(const char *src, const char *baseurl, litehtml::size &sz)
 {
 	//TP();
-	litehtml::size sss(5, 10);
+	litehtml::size sss(8, 8);
 	sz = sss;
 }
 
@@ -9676,6 +9677,9 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer,
 		colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, COLORPIP_RED);
 	}
 #endif
+    auto box = layer.origin_box;
+    PRINTF("draw_image: '%s' %d %d %d %d\n", url.c_str(), int(box.x), int(box.y), int(box.width), int(box.height));
+    fill_rect(db, box.x, box.y, box.width, box.height, web_color::black);
 }
 
 void hftrxgd::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer,
@@ -9688,6 +9692,7 @@ void hftrxgd::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &la
 	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, getCOLORPIP(color));
 #endif
     auto border_box = layer.border_box;
+    PRINTF("draw_solid_fill: %d %d %d %d\n", int(border_box.x), int(border_box.y), int(border_box.width), int(border_box.height));
     fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, color);
 }
 
@@ -9698,7 +9703,8 @@ void hftrxgd::draw_linear_gradient(litehtml::uint_ptr hdc,
 {
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
     auto border_box = layer.border_box;
-    fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, web_color::black);
+    PRINTF("draw_linear_gradient: %d %d %d %d\n", int(border_box.left()), int(border_box.top()), int(border_box.right()), int(border_box.bottom()));
+   fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, web_color::black);
 
 }
 
@@ -9709,6 +9715,7 @@ void hftrxgd::draw_radial_gradient(litehtml::uint_ptr hdc,
 {
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
     auto border_box = layer.border_box;
+    PRINTF("draw_radial_gradient: %d %d %d %d\n", int(border_box.left()), int(border_box.top()), int(border_box.right()), int(border_box.bottom()));
     fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, web_color::black);
 
 }
@@ -9720,7 +9727,8 @@ void hftrxgd::draw_conic_gradient(litehtml::uint_ptr hdc,
 {
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
     auto border_box = layer.border_box;
-    fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, web_color::black);
+    PRINTF("draw_conic_gradient: %d %d %d %d\n", int(border_box.left()), int(border_box.top()), int(border_box.right()), int(border_box.bottom()));
+   fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, web_color::black);
 }
 
 void hftrxgd::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &borders,
@@ -9728,13 +9736,13 @@ void hftrxgd::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &bord
 		const litehtml::clipping *clip)
 {
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
-#if 0
-	//PRINTF("draw_borders: bottom_left_x=%d\n", borders.radius.bottom_left_x);
+#if 1
+	PRINTF("draw_borders: %d %d %d %d\n", int(draw_pos.left()), int(draw_pos.top()), int(draw_pos.right()), int(draw_pos.bottom()));
 	COLORPIP_T top_color = getCOLORPIP(borders.top.color);
 	COLORPIP_T botom_color = getCOLORPIP(borders.bottom.color);
 	COLORPIP_T left_color = getCOLORPIP(borders.left.color);
 	COLORPIP_T right_color = getCOLORPIP(borders.right.color);
-	colpip_rect(db, draw_pos.left(), draw_pos.top(), draw_pos.right() - 1, draw_pos.bottom() - 1, top_color, 0);
+	//colpip_rect(db, int(draw_pos.left()), int(draw_pos.top()), int(draw_pos.right() - 1), int(draw_pos.bottom() - 1), top_color, 0);
 #endif
 }
 // Draws one box shadow. `box` is the border box for outset shadows and the padding box for
@@ -10704,7 +10712,7 @@ void display2_initialize(void)
 		for (page = 0; page < DISPLC_MODCOUNT; ++ page)
 		{
 			TP();
-			hftrxmain_docs [page] = litehtml::document::createFromString(display2_gethtml(page), & hfrx_cont/*, hftrx_css*/);
+			hftrxmain_docs [page] = litehtml::document::createFromString(display2_gethtml(page), & hfrx_cont, hftrx_css);
 			TP();
 			if (1)
 			{
