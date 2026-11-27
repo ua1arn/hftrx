@@ -9512,6 +9512,10 @@ public:
 
 protected:
 //   ~document_container() = default;
+
+private:
+	int m_dx;
+	int m_dy;
 };
 
 static COLORPIP_T getCOLORPIP(const litehtml::web_color &color)
@@ -9522,7 +9526,7 @@ static COLORPIP_T getCOLORPIP(const litehtml::web_color &color)
 litehtml::uint_ptr hftrxgd::create_font(const font_description &descr, const document *doc, litehtml::font_metrics *fm)
 {
 	const unifont_t * const font = & unifont_small;
-	//PRINTF("create_font: faceName='%s', size=%d\n", faceName, size);
+	PRINTF("create_font: faceName='%s', size=%d\n", faceName, size);
 	if (fm)
 	{
 //		fm->font_size = font->font_drawheight(font); //?????size;
@@ -9542,12 +9546,11 @@ void hftrxgd::delete_font(litehtml::uint_ptr hFont)
 
 pixel_t hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
 {
-//	const unifont_t * const font = (const unifont_t *) hFont;
-//	//PRINTF("text_width: text='%s'\n", text);
-//	uint_fast16_t height_str;
-//	const uint_fast16_t width_str = unifont_textsize(font, text, TEXTSIZE_AUTO, & height_str);
-//	return width_str;
-	return 0;
+	const unifont_t * const font = (const unifont_t *) hFont;
+	//PRINTF("text_width: text='%s'\n", text);
+	uint_fast16_t height_str;
+	const uint_fast16_t width_str = unifont_textsize(font, text, TEXTSIZE_AUTO, & height_str);
+	return int(width_str);
 }
 
 void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text,
@@ -9614,9 +9617,9 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer,
 		const std::string &url, const std::string &base_url,
 		const litehtml::clipping *clip)
 {
+	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 #if 0
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
-	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	//PRINTF("draw_image: url='%s', base_url='%s'\n", url.c_str(), base_url.c_str());
 	if (0)
 	{
@@ -9660,8 +9663,8 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer,
 void hftrxgd::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer,
 		const web_color &color, const litehtml::clipping *clip)
 {
-#if 0
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
+#if 0
 	//PRINTF("draw_solid_fill: bottom_left_x=%d\n", layer.border_radius.bottom_left_x);
 
 	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, getCOLORPIP(color));
@@ -9673,8 +9676,8 @@ void hftrxgd::draw_linear_gradient(litehtml::uint_ptr hdc,
 		const background_layer::linear_gradient &gradient,
 		const litehtml::clipping *clip)
 {
-#if 0
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
+#if 0
 	//TP();
 	COLORPIP_T color = COLORPIP_RED;
 
@@ -9687,8 +9690,8 @@ void hftrxgd::draw_radial_gradient(litehtml::uint_ptr hdc,
 		const background_layer::radial_gradient &gradient,
 		const litehtml::clipping *clip)
 {
-#if 0
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
+#if 0
 	//TP();
 	COLORPIP_T color = COLORPIP_GREEN;
 
@@ -9702,8 +9705,8 @@ void hftrxgd::draw_conic_gradient(litehtml::uint_ptr hdc,
 		const background_layer::conic_gradient &gradient,
 		const litehtml::clipping *clip)
 {
-#if 0
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
+#if 0
 	//TP();
 	COLORPIP_T color = COLORPIP_BLUE;
 
@@ -9716,9 +9719,9 @@ void hftrxgd::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &bord
 		const litehtml::position &draw_pos, bool root,
 		const litehtml::clipping *clip)
 {
+	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 #if 0
 	//PRINTF("draw_borders: bottom_left_x=%d\n", borders.radius.bottom_left_x);
-	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	COLORPIP_T top_color = getCOLORPIP(borders.top.color);
 	COLORPIP_T botom_color = getCOLORPIP(borders.bottom.color);
 	COLORPIP_T left_color = getCOLORPIP(borders.left.color);
@@ -9730,12 +9733,13 @@ void hftrxgd::draw_borders(litehtml::uint_ptr hdc, const litehtml::borders &bord
 // inset shadows; `radius` is the border radius of that box. `shadow` holds pixel offsets.
 // An outset shadow paints outside the rounded `box` only and must be clipped out of it;
 // an inset shadow paints inside the rounded `box`. Both must honour `clip`.
-void hftrxgd::draw_box_shadow(litehtml::uint_ptr /*hdc*/,
-		const litehtml::position& /*box*/,
-		const litehtml::border_radiuses& /*radius*/,
-		const litehtml::shadow_paint& /*shadow*/,
-		const litehtml::clipping* /*clip*/)
+void hftrxgd::draw_box_shadow(litehtml::uint_ptr hdc,
+		const litehtml::position& box,
+		const litehtml::border_radiuses& radius,
+		const litehtml::shadow_paint& shadow,
+		const litehtml::clipping* clip)
 {
+	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 }
 
 // Draw the dropdown marker of a one-line select (a down-pointing chevron) inside pos.
@@ -9743,6 +9747,7 @@ void hftrxgd::draw_combobox_marker(litehtml::uint_ptr hdc,
 		const litehtml::position &pos, const litehtml::web_color &color,
 		const litehtml::clipping *clip)
 {
+	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 
 }
 // Draw the check mark of a checked checkbox inside pos.
@@ -9750,8 +9755,9 @@ void hftrxgd::draw_checkbox_marker(litehtml::uint_ptr hdc,
 		const litehtml::position &pos, const litehtml::web_color &color,
 		const litehtml::clipping *clip)
 {
-
+	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 }
+
 
 void hftrxgd::set_caption(const char *caption)
 {
@@ -9797,9 +9803,8 @@ void hftrxgd::import_css(std::string &text, const std::string &url, std::string 
 	//TP();
 }
 
-hftrxgd::hftrxgd(int dx, int dy)
+hftrxgd::hftrxgd(int dx, int dy) : m_dx(dx), m_dy(dy)
 {
-
 }
 
 //void hftrxgd::set_clip(const litehtml::position &pos, const litehtml::border_radiuses &bdr_radius)
