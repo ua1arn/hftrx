@@ -9528,6 +9528,7 @@ static void fill_rect(const gxdrawb_t * const db, litehtml::pixel_t x, litehtml:
                                   litehtml::pixel_t height, litehtml::web_color color)
 {
 	//const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
+//	TP();
 	colpip_fillrect(db, int(x), int(y), int(width), int(height), getCOLORPIP(color));
 	//    Graphics graphics(hdc);
 //
@@ -9538,16 +9539,16 @@ static void fill_rect(const gxdrawb_t * const db, litehtml::pixel_t x, litehtml:
 litehtml::uint_ptr hftrxgd::create_font(const font_description &descr, const document *doc, litehtml::font_metrics *fm)
 {
 	const unifont_t * const font = & unifont_small;
-	//PRINTF("create_font: faceName='%s', size=%d\n", faceName, size);
+	PRINTF("create_font: faceName='%s', size=%d\n", descr.family.c_str(), int(descr.size.value()));
 	if (fm)
 	{
         fm->font_size   = 12;//descr.size;
         fm->ascent      = 0;
         fm->descent     = 0;
         fm->height      = 12;
-        fm->x_height    = 1;//tm.tmHeight / 2; // this is an estimate; call GetGlyphOutline to get the real value
-        fm->ch_width    = 1;//tm.tmAveCharWidth;
-        fm->draw_spaces = 1;//descr.style == font_style_italic || descr.decoration_line != text_decoration_line_none;
+        fm->x_height    = 6;//tm.tmHeight / 2; // this is an estimate; call GetGlyphOutline to get the real value
+        fm->ch_width    = 12;//tm.tmAveCharWidth;
+        fm->draw_spaces = 12;//descr.style == font_style_italic || descr.decoration_line != text_decoration_line_none;
         fm->sub_shift   = 1;//descr.size / 5;
         fm->super_shift = 1;//descr.size / 3;
 	}
@@ -9572,12 +9573,14 @@ void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text,
 		litehtml::uint_ptr hFont, litehtml::web_color color,
 		const litehtml::position &pos, const litehtml::clipping *clip)
 {
-	const unifont_t * const font = (const unifont_t *) hFont;
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
-	//PRINTF("draw_text: text='%s'\n", text);
+	const unifont_t * const font = (const unifont_t *) hFont;
+	PRINTF("draw_text: text='%s'\n", text);
 
-	//colpip_fillrect(db, pos.left(), pos.top(), pos.width, pos.height, getCOLORPIP(color));
-	//unifont_text(db, pos.left(), pos.top(), font, text, TEXTSIZE_AUTO, getCOLORPIP(color));
+	colpip_fillrect(db, int(pos.x), int(pos.y), int(pos.width), int(pos.height), getCOLORPIP(color));
+	unifont_text(db, int(pos.x), int(pos.y), font, text, TEXTSIZE_AUTO, getCOLORPIP(color));
+//    auto border_box = layer.border_box;
+//    fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, color);
 }
 
 pixel_t hftrxgd::pt_to_px(float pt) const
@@ -10701,7 +10704,7 @@ void display2_initialize(void)
 		for (page = 0; page < DISPLC_MODCOUNT; ++ page)
 		{
 			TP();
-			hftrxmain_docs [page] = litehtml::document::createFromString(display2_gethtml(page), & hfrx_cont, hftrx_css);
+			hftrxmain_docs [page] = litehtml::document::createFromString(display2_gethtml(page), & hfrx_cont/*, hftrx_css*/);
 			TP();
 			if (1)
 			{
