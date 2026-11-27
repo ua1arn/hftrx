@@ -9625,7 +9625,7 @@ void hftrxgd::draw_list_marker(litehtml::uint_ptr hdc,
 
 void hftrxgd::load_image(const char *src, const char *baseurl, bool redraw_on_ready)
 {
-	PRINTF("load_image: src='%s', baseurl='%s'\n", src, baseurl);
+	//PRINTF("load_image: src='%s', baseurl='%s'\n", src, baseurl);
 }
 
 void hftrxgd::get_image_size(const char *src, const char *baseurl, litehtml::size &sz)
