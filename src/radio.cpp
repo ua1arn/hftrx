@@ -16472,24 +16472,10 @@ static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 		const int_least32_t delta = event_getRotate(& ev->encF1);
 		if (delta)
 		{
+			const encfnitem_t * const ei = & enclabelsENC1FN [param_val(& xenc1f_sel)];
 			bring_enc1f();
-			switch (param_val(& xenc1f_sel))
-			{
-			default:
-				break;
-			case 0:
-				/* установка громкости */
-				changed |= encoder_flagne(& xafgain1, delta, CATINDEX(CAT_AG_INDEX), NULL);
-				break;
-			case 1:
-				/* установка IF GAIN */
-				changed |= encoder_flagne(& xrfgain1, delta, CATINDEX(CAT_RG_INDEX), NULL);
-				break;
-			case 2:
-				/* установка AGC FENCE */
-				changed |= encoder_flagne(& xagcfence1, delta, CATINDEX(CAT_RG_INDEX), NULL);
-				break;
-			}
+			ASSERT(ei->ondelta);
+			changed |= ei->ondelta(ei->ctx, delta);
 		}
 	}
 #endif /* WITHENCODER_1F */
@@ -16498,8 +16484,8 @@ static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 		const int_least32_t delta = event_getRotate(& ev->encF2);
 		if (delta)
 		{
-			bring_enc2f();
 			const encfnitem_t * const ei = & enclabelsENC2FN [param_val(& xenc2f_sel)];
+			bring_enc2f();
 			ASSERT(ei->ondelta);
 			changed |= ei->ondelta(ei->ctx, delta);
 		}
