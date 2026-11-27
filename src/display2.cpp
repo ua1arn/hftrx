@@ -1754,7 +1754,6 @@ static COLORPIP_T smeterpluscolor = COLORPIP_DARKRED;
 	static const char  gridfmt_2 [] = ".%0*ld";
 #endif
 	static unsigned gbwalpha = 128;	/* Полупрозрачность при отрисовке прямоугольникв ("шторки") полосы пропускания на водопаде. */
-
 // waterfall/spectrum parameters
 static uint_fast8_t glob_view_style = VIEW_COLOR;		/* стиль отображения спектра и панорамы */
 static uint_fast8_t gview3dss_mark;			/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
@@ -1780,6 +1779,24 @@ static uint_fast8_t glob_displayfps = 15;
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
 static void fftzoom_af(FLOAT_t * buffer, unsigned zoompow2, unsigned normalFFT);
+
+static int_fast16_t getgidstep(void)
+{
+	switch (glob_zoomxpow2)
+	{
+	case 0:
+		return glob_gridstep;
+	case 1:
+		return glob_gridstep / 2;
+	case 2:
+		return glob_gridstep / 5;
+	case 3:
+		return glob_gridstep / 10;
+	case 4:
+		return glob_gridstep / 20;
+	}
+	return glob_gridstep / (1U << glob_zoomxpow2);
+}
 
 #if LCDMODE_LTDC && WITHBARS
 
@@ -2033,18 +2050,31 @@ display2_smeter15_dimensions_rx_dial_rle(smeter_params_t * const smpr)
 	smpr->draw = sm_draw_dial_rx_rle;
 }
 
-static void display2_smeter15_fillbg(const gxdrawb_t * db)
+static void display2_smeter15_fillbg_dial(const gxdrawb_t * db)
+{
+	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
+}
+
+static void display2_smeter15_fillbg_bars(const gxdrawb_t * db)
 {
 	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
 }
 
 #else /* WITHRLEDECOMPRESS */
 
-static void display2_smeter15_fillbg(const gxdrawb_t * db)
+static void display2_smeter15_fillbg_dial(const gxdrawb_t * db)
 {
 //	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
 	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, smeterbgcolor, 1);
 	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_GRAY, 0);
+//	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
+}
+
+static void display2_smeter15_fillbg_bars(const gxdrawb_t * db)
+{
+	colpip_fillrect(db, 0, 0, SM_BG_W, SM_BG_H, smeterbgcolor);
+//	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, smeterbgcolor, 1);
+//	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORPIP_GRAY, 0);
 //	colpip_rect(db, 0, 0, SM_BG_W - 1, SM_BG_H / 2, COLORPIP_WHITE, 0);
 }
 
@@ -2171,7 +2201,7 @@ display2_smeter15_layout_rx_dial(smeter_params_t * const smpr)
 	// Angles (positions)
 	int32_t * const smeteranglesRX = smpr->smeterangles;
 
-	display2_smeter15_fillbg(db);	// Фон для RX
+	display2_smeter15_fillbg_dial(db);	// Фон для RX
 
 	for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
 	{
@@ -2313,7 +2343,7 @@ display2_smeter15_layout_tx_dial(smeter_params_t * const smpr)
 	gxdrawb_initialize(db, smpr->smeter_bg, SM_BG_W, SM_BG_H);
 	// Angles (positions)
 	int32_t * const smeteranglesTX = smpr->smeterangles;
-	display2_smeter15_fillbg(db);	// Фон для TX
+	display2_smeter15_fillbg_dial(db);	// Фон для TX
 
 
 	// Разметка шкалы мощности
@@ -2486,7 +2516,7 @@ display2_smeter15_layout_tx_bars(smeter_params_t * const smpr)
 	// Angles (positions)
 	int32_t * const smeteranglesTX = smpr->smeterangles;
 
-	display2_smeter15_fillbg(db);	// Фон для TX
+	display2_smeter15_fillbg_bars(db);	// Фон для TX
 
 	// Power meter
 	// smpr->r1: горизонталь первой шкалы
@@ -2571,7 +2601,7 @@ display2_smeter15_layout_rx_bars(smeter_params_t * const smpr)
 	// Angles (positions)
 	int32_t * const smeteranglesRX = smpr->smeterangles;
 
-	display2_smeter15_fillbg(db);	// Фон для RX
+	display2_smeter15_fillbg_bars(db);	// Фон для RX
 
 	colpip_line(db, smpr->gs, smpr->r1, smpr->gm, smpr->r1, COLORPIP_WHITE, 0);
 	colpip_line(db, smpr->gm, smpr->r1, smpr->ge, smpr->r1, COLORPIP_RED, 0);
@@ -7185,9 +7215,9 @@ display_colorgrid(
 	const struct dispmap * dm
 	)
 {
-	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
-	const int_fast32_t go = dm->f0 % (int) glob_gridstep;	// шаг сетки
-	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
+	const unifont_t * const font = & unifont_small2;	// шрифт, используемый при отрисовке надписей на шкале
+	const int_fast32_t go = dm->f0 % (int) getgidstep();	// шаг сетки
+	const int_fast32_t gs = (int) getgidstep();	// шаг сетки
 	const int_fast32_t halfbw = dm->bw / 2;
 	int_fast32_t df;	// кратное сетке значение
 	const int_fast16_t agcfence10 = dsp_agcfence10();
@@ -7218,7 +7248,7 @@ display_colorgrid(
 	{
 		if (df > - halfbw)
 		{
-			// Маркер частоты кратной glob_gridstep - XOR линию
+			// Маркер частоты кратной getgidstep() - XOR линию
 			const uint_fast16_t xmarker = deltafreq2x_abs(dm->f0, df, dm->bw, ALLDX);
 			if (xmarker != UINT16_MAX)
 			{
@@ -7257,15 +7287,15 @@ display_colorgrid_3dss(
 {
 	const unifont_t * const font = & unifont_small3;	// шрифт, используемый при отрисовке надписей на шкале
 	const uint_fast16_t ytext = h + 3;
-	const int_fast32_t go = dm->f0 % (int) glob_gridstep;	// шаг сетки
-	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
+	const int_fast32_t go = dm->f0 % (int) getgidstep();	// шаг сетки
+	const int_fast32_t gs = (int) getgidstep();	// шаг сетки
 	const int_fast32_t halfbw = dm->bw / 2;
 	int_fast32_t df;	// кратное сетке значение
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
 		if (df > - halfbw)
 		{
-			// Маркер частоты кратной glob_gridstep - XOR линию
+			// Маркер частоты кратной getgidstep() - XOR линию
 			const uint_fast16_t xmarker = deltafreq2x_abs(dm->f0, df, dm->bw, w);
 			if (xmarker != UINT16_MAX)
 			{
@@ -8076,8 +8106,8 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
     	const uint_fast32_t f0 = dm->f0;	/* frequency at middle of spectrum */
     	const int_fast32_t bw = dm->bw;
 
-    	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
-    	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
+    	const int_fast32_t go = f0 % (int) getgidstep();	// шаг сетки
+    	const int_fast32_t gs = (int) getgidstep();	// шаг сетки
     	const int_fast32_t halfbw = bw / 2;
     	int_fast32_t df;	// кратное сетке значение
 
@@ -8111,7 +8141,7 @@ void lv_sscp3dss_draw(lv_sscp3dss_t * const sscp3dss, lv_layer_t * layer, const 
     	{
     		if (df > - halfbw)
     		{
-    			// Маркер частоты кратной glob_gridstep - XOR линию
+    			// Маркер частоты кратной getgidstep() - XOR линию
     			const uint_fast16_t xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
     			if (xmarker != UINT16_MAX)
     			{
@@ -9033,8 +9063,8 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	const uint_fast32_t f0 = dm->f0;	/* frequency at middle of spectrum */
     	const int_fast32_t bw = dm->bw;
 
-    	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
-    	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
+    	const int_fast32_t go = f0 % (int) getgidstep();	// шаг сетки
+    	const int_fast32_t gs = (int) getgidstep();	// шаг сетки
     	const int_fast32_t halfbw = bw / 2;
     	int_fast32_t df;	// кратное сетке значение
 
@@ -9068,7 +9098,7 @@ void lv_sscp2_draw(lv_sscp2_t * const sscp2, lv_layer_t * layer, const lv_area_t
     	{
     		if (df > - halfbw)
     		{
-    			// Маркер частоты кратной glob_gridstep - линия и надпись
+    			// Маркер частоты кратной getgidstep() - линия и надпись
     			const uint_fast16_t xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
     			if (xmarker != UINT16_MAX)
     			{

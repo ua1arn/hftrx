@@ -83,8 +83,8 @@ static const dzone_t dzones [] =
 {
 	{	0,	0,	0, 0, display2_preparebg,	& dzi_default, REDRSUBSET_SHOW, }, // Стирание фона
 
-	{	0,	0,	9,	5,	display2_ENC1F,	& dzi_compat, PGALL, },
-	{	9,	0,	9,	5,	display2_ENC2F,	& dzi_compat, PGALL, },
+	{	0,	0,	10,	5,	display2_ENC1F,	& dzi_compat, PGALL, },
+	{	10,	0,	9,	5,	display2_ENC2F,	& dzi_compat, PGALL, },
 
 //	{	0,	0, 	7,	5,	display2_siglevel7, 	& dzi_siglevel, PGALL, },	// signal level dBm
 	//{	0,	0, 	5,	5,	display2_smeors5, 	& dzi_compat, PGALL, },	// уровень сигнала в баллах S или dBm

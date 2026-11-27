@@ -425,6 +425,11 @@ static uint_fast8_t getbankindex_ab_forcontrols(uint_fast8_t ab);
 static uint_fast8_t getsubmode(uint_fast8_t bi);		/* bi: vfo bank index */
 
 
+static const char * getlabelENCFN(const struct paramdefdef * pd)
+{
+	return pd->encFNlabel;
+}
+
 static const char * pd_getlonglabel(const struct paramdefdef * pd)
 {
 	return pd->label;
@@ -443,6 +448,7 @@ static const char * pd_getenc2label(const struct paramdefdef * pd)
 }
 
 static const struct paramdefdef * getmiddlemenu(uint_fast8_t section, uint_fast8_t * active);
+static const struct paramdefdef * getbwmenu(uint_fast8_t section, uint_fast8_t * active);
 
 // Интерфейсные функции доступа к NVRAM
 static uint_fast8_t
@@ -2316,6 +2322,12 @@ const struct paramdefdef * const * getmiddlemenu_nfm(unsigned * size);
 const struct paramdefdef * const * getmiddlemenu_digi(unsigned * size);
 const struct paramdefdef * const * getmiddlemenu_wfm(unsigned * size);
 
+const struct paramdefdef * const * getbwmenu_cw(unsigned * size);
+const struct paramdefdef * const * getbwmenu_ssb(unsigned * size);
+const struct paramdefdef * const * getbwmenu_am(unsigned * size);
+const struct paramdefdef * const * getbwmenu_nfm(unsigned * size);
+const struct paramdefdef * const * getbwmenu_digi(unsigned * size);
+const struct paramdefdef * const * getbwmenu_wfm(unsigned * size);
 
 #define	DEFAULT_DRM_PITCH	12000	/* тон DRM - 12 кГц*/
 // The standard mark and space tones are 2125 hz and 2295 hz respectively
@@ -2448,7 +2460,8 @@ struct modetempl
 #else /* WITHIF4DSP */
 	uint8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
-	const struct paramdefdef * const * (* middlemenu)(unsigned * size);
+	const struct paramdefdef * const * (* middlemenu)(unsigned * size);	// параметры в middle menu
+	const struct paramdefdef * const * (* bwmenu)(unsigned * size);		// параметры регулирвки полосы
 	uint8_t miclass;			// для запоминания memory
 	const char * label;					// для контроля правильности инициализации структуры
 };
@@ -2499,6 +2512,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_cw,
+		getbwmenu_cw,
 		MICLASS_CW,
 		"CW",
 	},
@@ -2534,6 +2548,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_ssb,
+		getbwmenu_ssb,
 		MICLASS_PHONE,
 		"SSB",
 	},
@@ -2569,6 +2584,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_am,
+		getbwmenu_am,
 		MICLASS_PHONE,
 		"AM",
 	},
@@ -2605,6 +2621,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_am,
+		getbwmenu_am,
 		MICLASS_PHONE,
 		"SAM",
 	},
@@ -2641,6 +2658,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_FM, BOARD_DETECTOR_FM, }, 		/* FM detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_nfm,
+		getbwmenu_nfm,
 		MICLASS_PHONE,
 		"NFM",
 	},
@@ -2676,6 +2694,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_MUTE, BOARD_DETECTOR_MUTE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_am,
+		getbwmenu_am,
 		MICLASS_count,
 		"DRM",
 	},
@@ -2711,6 +2730,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_TUNE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_am,
+		getbwmenu_am,
 		MICLASS_count,
 		"CWZ",
 	},
@@ -2748,6 +2768,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_WFM, BOARD_DETECTOR_WFM, },		/* WFM detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_wfm,
+		getbwmenu_wfm,
 		MICLASS_count,
 		"WFM",
 	},
@@ -2788,6 +2809,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_digi,
+		getbwmenu_digi,
 		MICLASS_DIGI,
 		"DIG",
 	},
@@ -2827,6 +2849,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_digi,
+		getbwmenu_digi,
 		MICLASS_count,
 		"TTY",
 	},
@@ -2863,6 +2886,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_digi,
+		getbwmenu_digi,
 		MICLASS_count,
 		"MDM",
 	},
@@ -2903,6 +2927,7 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_ssb,
+		getbwmenu_ssb,
 		MICLASS_count,
 		"ISB",
 	},
@@ -2939,12 +2964,234 @@ static const struct modetempl mdt [MODE_COUNT] =
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
 		getmiddlemenu_ssb,
+		getbwmenu_ssb,
 		MICLASS_count,
 		"FDV",
 	},
 #endif /* WITHFREEDV */
 };
 
+/* описатели режимов. код режима - индекс в этом массиве
+*/
+typedef struct submodeprops_tag
+{
+	uint_least8_t qflags;		/* флаги подрежима */
+	uint_least8_t mode;			/* код семейства режимов */
+	uint_least8_t qcatmodecode;		/* Kenwood cat mode code */
+	uint_least8_t ycatmodecode;		/* Yaesu cat mode code */
+	uint_fast16_t qcatwidth;		/* полоса режима, рапортуемая через CAT */
+									// The FW command cannot be used in SSB or AM mode (an error tone will sound).
+
+	const char * qlabel;
+} submodeprops_t;
+
+/* флаги подрежима */
+#define QMODEF_HARDLSB	0x01		// для режимов приема на нижней боковой	 (CWR, LSB)
+#define QMODEF_SMARTLSB	0x02	// для режимов приема на нижней боковой	 (CWR, LSB) в зависимости от частоты
+
+// Порядок элементов в этом массиве должен совпадать с элементми enum,
+// в котором определён SUBMODE_COUNT
+static const submodeprops_t submodes [SUBMODE_COUNT] =
+{
+#if WITHMODESETSMART
+	/* SUBMODE_SSBSMART */
+	{
+		QMODEF_SMARTLSB,
+		MODE_SSB, 	/* индекс семейства режимов */
+		2,			/* Kenwood cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"SSB",
+	},
+	/* SUBMODE_CWSMART */
+	{
+		QMODEF_SMARTLSB,
+		MODE_CW, 	/* индекс семейства режимов */
+		3,			/* Kenwood cat mode code */
+		500,		/* полоса фильтра режима, возвращаемая через CAT */
+		"CW",
+	},
+	/* SUBMODE_CWZSMART */
+	{
+		QMODEF_SMARTLSB,
+		MODE_CWZ, 	/* индекс семейства режимов */
+		3,			/* Kenwood cat mode code */
+		500,		/* полоса фильтра режима, возвращаемая через CAT */
+		"CWZ",
+	},
+	/* SUBMODE_DIGISMART */
+	{
+		QMODEF_SMARTLSB,
+		MODE_DIGI, 	/* индекс семейства режимов */
+		9,			/* Kenwood cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"DIG",
+	},
+#else /* WITHMODESETSMART */
+	/* SUBMODE_USB */
+	{
+		0,
+		MODE_SSB, 	/* индекс семейства режимов */
+		2,			/* Kenwood cat mode code */
+		0x01,		/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"USB",
+	},
+	/* SUBMODE_LSB */
+	{
+		QMODEF_HARDLSB,
+		MODE_SSB, 	/* индекс семейства режимов */
+		1,			/* Kenwood cat mode code */
+		0x00,		/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"LSB",
+	},
+	/* SUBMODE_CW */
+	{
+		0,
+		MODE_CW, 	/* индекс семейства режимов */
+		3,			/* Kenwood cat mode code */
+		0x02,		/* Yaesu cat mode code */
+		500,		/* полоса фильтра режима, возвращаемая через CAT */
+		"CW",
+	},
+	/* SUBMODE_CWR */
+	{
+		QMODEF_HARDLSB,
+		MODE_CW, 	/* индекс семейства режимов */
+		7,			/* Kenwood cat mode code */
+		0x03,		/* Yaesu cat mode code */
+		500,		/* полоса фильтра режима, возвращаемая через CAT */
+		"CWR",
+	},
+	/* SUBMODE_CWZ */
+	{
+		QMODEF_SMARTLSB,
+		MODE_CWZ, 	/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+	  	"CWZ",
+	},
+	/* SUBMODE_AM */
+	{
+		QMODEF_SMARTLSB,
+		MODE_AM, 	/* индекс семейства режимов */
+		5,			/* Kenwood cat mode code */
+		0x04,		/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"AM",
+	},
+	#if WITHSAM
+	/* SUBMODE_SAM */
+	{
+		QMODEF_SMARTLSB,
+		MODE_SAM, 	/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"SAM",
+	},
+	#endif /* WITHSAM */
+	/* SUBMODE_DRM */
+	{
+		QMODEF_SMARTLSB,
+		MODE_DRM, 	/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"DRM",
+	},
+	/* SUBMODE_DGL */
+	{
+		QMODEF_HARDLSB,
+		MODE_DIGI, 	/* индекс семейства режимов */
+		9,			/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"DGL",
+	},
+	/* SUBMODE_DGU */
+	{
+		QMODEF_SMARTLSB,
+		MODE_DIGI, 	/* индекс семейства режимов */
+		6,			/* Kenwood cat mode code */
+		0x0A,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"DGU",
+	},
+#if WITHMODESETFULLNFM || WITHMODESETMIXONLY3NFM || WITHMODESETFULLNFMWFM	// чтобы через CAT не включился этот режтим - если нет - в комментарии.
+	/* SUBMODE_NFM */
+	{
+		QMODEF_SMARTLSB,
+		MODE_NFM, 	/* индекс семейства режимов */
+		4,			/* Kenwood cat mode code */
+		0x08,		/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"NFM",
+	},
+#endif /* WITHMODESETFULLNFM || WITHMODESETMIXONLY3NFM || WITHMODESETFULLNFMWFM  */
+#if WITHWFM || WITHMODESETFULLNFMWFM
+	/* SUBMODE_WFM */
+	{
+		QMODEF_SMARTLSB,
+		MODE_WFM, 	/* индекс семейства режимов */
+		8,			/* Kenwood cat mode code - придуман мною. В описаниях такого нет. */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"WFM",
+	},
+#endif /* WITHWFM || WITHMODESETFULLNFMWFM */
+#if WITHMODEM
+	/* SUBMODE_PSK */
+	{
+		0,
+		MODE_MODEM, /* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		500,		/* полоса фильтра режима, возвращаемая через CAT */
+		"PSK",
+	},
+#endif /* WITHMODEM */
+	/* SUBMODE_ISB */
+	{
+		0,
+		MODE_ISB, 	/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+	  	"ISB",
+	},
+#if WITHFREEDV
+	/* SUBMODE_FDV */
+	{
+		0,
+		MODE_FREEDV,/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"FDV",
+	},
+#endif /* WITHFREEDV */
+#if WITHRTTY
+	/* SUBMODE_RTTY */
+	{
+		0,
+		MODE_RTTY,/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code */
+		UINT8_MAX,	/* Yaesu cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"TTY",
+	},
+#endif /* WITHRTTY */
+#endif /* WITHMODESETSMART */
+};
+
+/* функция работает с кэшем параметров режима работы */
+static const struct modetempl *
+getmodetempl(uint_fast8_t submode)
+{
+	return & mdt [submodes [submode].mode];
+}
 
 
 enum
@@ -3979,6 +4226,7 @@ struct modeprops_tag
 	uint8_t noisereduct;	/* включение NR для данного режима */
 	uint8_t txaudioindex;	/* источник звука для передачи (индекс) */
 	uint8_t	midmenupos;	/* активный пункт в middlemenu */
+	uint8_t	bwadjpos;	/* активный пункт в middlemenu */
 
 } __PACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -4199,7 +4447,7 @@ struct nvmap {
 	uint8_t gspecbeta100;	/* beta - парамеры видеофильтра спектра */
 	uint8_t gwflbeta100;	/* beta - парамеры видеофильтра водопада */
 	uint8_t glvlgridstep;	/* Шаг сетки уровней в децибелах */
-	uint8_t grxbwsatu;		/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+	uint8_t grxbwindicator;		/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 	uint8_t gspectrumpart;	/* Часть отведенной под спектр высоты экрана 0..100 */
 #endif /* WITHSPECTRUMWF */
 #if WITHHDMITVHW
@@ -4298,6 +4546,8 @@ struct nvmap {
 	#endif /* ! WITHPOTIFGAIN */
 	uint8_t agcfence1;	// Параметр для регулировки точки перегиба АРУ
 	uint8_t agcfenceenable;	// Параметр для регулировки точки перегиба АРУ
+
+	uint16_t grxbwadj;
 
 	uint16_t glineamp;	// усиление с LINE IN
 	uint8_t gmikeboost20db;	// предусилитель микрофона
@@ -4526,6 +4776,7 @@ struct nvmap {
 
 #define RMT_TXAUDIOINDEX_BASE(i) OFFSETOF(struct nvmap, modes [(i)].txaudioindex)
 #define RMT_MIDDLEMENUPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].midmenupos)
+#define RMT_BWADJPOS_BASE(i) OFFSETOF(struct nvmap, modes [(i)].bwadjpos)
 #define RMT_TXAPROFIGLE_BASE(i) OFFSETOF(struct nvmap, txaprofile[(i)])
 
 #define RMT_BAND(b) 			(OFFSETOF(struct nvmap, bands [(b)]))		// хранимые диапазоны
@@ -4543,7 +4794,7 @@ struct nvmap {
 #define RMT_PWR_BASE OFFSETOF(struct nvmap, gpwri)								/* большая мощность sw2012sf */
 #define RMT_NOTCH_BASE OFFSETOF(struct nvmap, gnotch)							/* NOTCH on/off */
 
-#define RMT_BWSETPOS_BASE(i) OFFSETOF(struct nvmap, bwsetpos [(i)])
+#define RMT_BWSETPOS_BASE(bwseti) OFFSETOF(struct nvmap, bwsetpos [(bwseti)])
 
 #define RMT_BWPROPSLEFT_BASE(i) OFFSETOF(struct nvmap, bwprops [(i)].bwleft10_width10)
 #define RMT_BWPROPSRIGHT_BASE(i) OFFSETOF(struct nvmap, bwprops [(i)].bwright100)
@@ -5333,7 +5584,7 @@ static const struct paramdefdef xgethmacaddr =
 	static uint8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 	static uint8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
 	static uint8_t glvlgridstep = 12;	/* Шаг сетки уровней в децибелах */
-	static uint8_t grxbwsatu = 50;	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+	static uint8_t grxbwindicator = 50;	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
 
@@ -5361,15 +5612,15 @@ static const struct paramdefdef xgethmacaddr =
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	static const struct paramdefdef xgrxbwsatu =
+	static const struct paramdefdef xgrxbwindicator =
 	{
 		QLABEL2("RXBW IND", "RX BW Indicator"),  0, RJ_UNSIGNED,	ISTEP1,
 		ITEM_VALUE,
 		0, 100,			/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
-		OFFSETOF(struct nvmap, grxbwsatu),
+		OFFSETOF(struct nvmap, grxbwindicator),
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
-		& grxbwsatu,
+		& grxbwindicator,
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
@@ -6047,7 +6298,7 @@ enum
 	// Громкость в процентах
 	static const struct paramdefdef xafgain1 =
 	{
-		QLABEL3("VolumeL", "Volume Left", "VOLUME_L"), 0, RJ_PERCENTS, ISTEP1,
+		QLABEL4("VolumeL", "Volume Left", "VOLUME_L", "LEFT:"), 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 #if WITHPOTAFGAIN
@@ -6064,7 +6315,7 @@ enum
 	// Громкость в процентах
 	static const struct paramdefdef xafgain2 =
 	{
-		QLABEL3("VolumeR", "Volume Right", "VOLUME_R"), 0, RJ_PERCENTS, ISTEP1,
+		QLABEL4("VolumeR", "Volume Right", "VOLUME_R", "RIGHT:"), 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 #if WITHPOTAFGAIN
@@ -6079,11 +6330,74 @@ enum
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
+
+	// код полосы пропускания
+	static size_t getvaltextrxbw(char * buff, size_t count, int_fast32_t value)
+	{
+		return local_snprintf_P(buff, count, "%d", (int) value);
+	}
+	static uint16_t grxbwadj;
+	static const struct paramdefdef xgrxbwadj =
+	{
+		QLABEL3("RX BW", "RX BW", "RX BW"), 0, RJ_CB, ISTEP1,
+		ITEM_VALUE,
+		0, 3, 					// Громкость в процентах
+#if WITHPOTAFGAIN
+		MENUNONVRAM,
+#else /* WITHPOTAFGAIN */
+		OFFSETOF(struct nvmap, grxbwadj),
+#endif /* WITHPOTAFGAIN */
+		getselector0, nvramoffs0, valueoffs0,
+		& grxbwadj,	/* переменная, которую подстраиваем  - если она 16 бит*/
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		getvaltextrxbw, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	// при переборе полос пропускания через поворот валкодера
+	static int switchbwdelta(const void * ctx, int delta)
+	{
+		const uint_fast8_t bwseti = mdt [gmode].bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
+		const struct paramdefdef xgbwi =
+		{
+			QLABEL(""), 0, RJ_UNSIGNED, ISTEP1,
+			ITEM_VALUE,
+			0, bwsetsc [bwseti].last, 					// Громкость в процентах
+			RMT_BWSETPOS_BASE(bwseti),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& bwsetpos [bwseti],	/* переменная, которую подстраиваем  - если она 16 бит*/
+			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+
+		ASSERT(bwsetsc [bwseti].last < BWSET_WIDTHS);
+		if (param_rotate(& xgbwi, delta))
+		{
+			updateboard();
+			return 1;
+		}
+		return 0;
+	}
+
+	// при переборе полос пропускания через поворот валкодера
+	static int getlabelswitchbw(const void * ctx, char * buff, size_t count)
+	{
+		const uint_fast8_t bwseti = mdt [gmode].bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
+
+		ASSERT(bwsetsc [bwseti].last < BWSET_WIDTHS);
+
+		int n = 0;
+
+		n += local_snprintf_P(buff + n, count - n, "BW:%s", bwsetsc [bwseti].labels [bwsetpos[bwseti]]);
+
+		return n;
+}
+
 	static dualctl16_t rfgain1 = { BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX };	// Усиление ПЧ на максимуме
 	// Усиление ПЧ/ВЧ в процентах
 	static const struct paramdefdef xrfgain1 =
 	{
-		QLABEL3("RF GAIN", "RF Gain", "RF GAIN"), 0, RJ_PERCENTS, ISTEP1,
+		QLABEL4("RF GAIN", "RF Gain", "RF GAIN", "RF:"), 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 #if WITHPOTIFGAIN
@@ -7191,7 +7505,7 @@ enum
 		getzerobase,
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	static uint16_t gbkindelay = 150;	/* в единицах mS. модифицируется через меню - задержка отпускания BREAK-IN */
+	static uint16_t gbkindelay = 200;	/* в единицах mS. модифицируется через меню - задержка отпускания BREAK-IN */
 	static const struct paramdefdef xgbkindelay =
 	{
 		QLABEL("CW DELAY"),  3, RJ_UNSIGNED, ISTEP5,	/* задержка в единицах ms */
@@ -7231,7 +7545,7 @@ enum
 	static uint8_t elkeywpmv = 20;
 	static const struct paramdefdef xgelkeywpm =
 	{
-		QLABEL3("CW SPEED", "CW Speed", "CW SPEED"),  0, RJ_UNSIGNED, ISTEP1,
+		QLABEL4("CW SPEED", "CW Speed", "CW SPEED", "WPM:"),  0, RJ_UNSIGNED, ISTEP1,
 		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 #if WITHPOTWPM
@@ -8500,38 +8814,83 @@ uint_fast8_t hamradio_get_bringINFO(const char * * label)
 }
 
 ///
+static uint_fast8_t gmiddlepos [MODE_COUNT];
 
 #if WITHIF4DSP
+
+static uint_fast8_t gbwadjpos [MODE_COUNT];
 
 typedef struct encfnitem_tag
 {
 	const void * ctx;
 	int (* getlabel)(const void * ctx, char * buff, size_t count);
+	int (* ondelta)(const void * ctx, int delta);
+	int (* onholded)(const void * ctx, uint_fast8_t sel);
 } encfnitem_t;
 
-static int getlabelAFGAIN(const void * ctx, char * buff, size_t count)
+
+static int defholded(const void * ctx, uint_fast8_t sel)
+{
+	return 0;
+}
+
+static int defdelta(const void * ctx, int delta)
+{
+	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
+	if (pd == NULL)
+		return 0;
+	return param_rotate(pd, delta);
+}
+
+static int getlabelCWPITCH(const void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
 	const int_fast32_t value = param_val(pd);
 	int n = 0;
-	n += local_snprintf_P(buff + n, count - n, "AF ");
-	n += param_formatpercents(pd, buff + n, count - n, value);
+	n += local_snprintf_P(buff + n, count - n, "TONE:%d", (int) (value * 10));
 	return n;
 }
 
-static int getlabelAFGAINss(const void * ctx, char * buff, size_t count)
+static int getlabeldefault(const void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
+	ASSERT(pd);
 	const int_fast32_t value = param_val(pd);
-	return local_snprintf_P(buff, count, "AF %2d", (int) value);
+	int n = 0;
+
+	n += param_formatabel(pd, buff + n, count - n, getlabelENCFN);
+	n += param_format(pd, buff + n, count - n, value);
+	return n;
+}
+
+static int getlabelRXBW(const void * ctx, char * buff, size_t count)
+{
+	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
+	const uint_fast8_t submode = getsubmode(bi);
+	const uint_fast8_t mode = submodes [submode].mode;
+	unsigned nitems;
+	const unsigned apos = gbwadjpos [mode];
+	const struct paramdefdef * const pd = mdt [mode].bwmenu(& nitems) [gbwadjpos [mode]];
+	if (nitems <= apos)
+	{
+		buff [0] = '\0';
+		return 0;
+	}
+	const int_fast32_t value = param_val(pd);
+	int n = 0;
+
+	n += param_formatabel(pd, buff + n, count - n, getlabelENCFN);
+	n += param_format(pd, buff + n, count - n, value);
+	return n;
 }
 
 static int getlabelRFGAIN(const void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
+	ASSERT(pd);
 	const int_fast32_t value = param_val(pd);
 	int n = 0;
-	n += local_snprintf_P(buff + n, count - n, "RF ");
+	n += local_snprintf_P(buff + n, count - n, "RF:");
 	n += param_formatpercents(pd, buff + n, count - n, value);
 	return n;
 }
@@ -8539,16 +8898,9 @@ static int getlabelRFGAIN(const void * ctx, char * buff, size_t count)
 static int getlabelAGCFENCE(const void * ctx, char * buff, size_t count)
 {
 	const struct paramdefdef * const pd = (const struct paramdefdef *) ctx;
+	ASSERT(pd);
 	const int_fast32_t value = param_val(pd);
-	return local_snprintf_P(buff, count, "AGC %+d", (int) value);
-}
-
-
-static int getlabelRFGAINsss(const void * ctx, char * buff, size_t count)
-{
-	const struct paramdefdef * const pd = & xrfgain1;
-	const int_fast32_t value = param_val(pd);
-	return local_snprintf_P(buff, count, "RF %2d", (int) value);
+	return local_snprintf_P(buff, count, "AGC:%+d", (int) value);
 }
 
 static int getlabelENC2F(const void * ctx, char * buff, size_t count)
@@ -8566,26 +8918,65 @@ static int getlabelENC4F(const void * ctx, char * buff, size_t count)
 	return local_snprintf_P(buff, count, "ENC4F");
 }
 
+static int bwadjdelta(const void * ctx, int delta)
+{
+	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
+	const uint_fast8_t submode = getsubmode(bi);
+	const uint_fast8_t mode = submodes [submode].mode;
+	unsigned nitems;
+	const unsigned apos = gbwadjpos [mode];
+	const struct paramdefdef * const pd = mdt [mode].bwmenu(& nitems) [gbwadjpos [mode]];
+	(void) ctx;
+	if (nitems <= apos)
+		return 0;
+	return param_rotate(pd, delta);	// модификация и сохранение параметра
+}
+
+static int bwadjholded(const void * ctx, uint_fast8_t sel)
+{
+	const uint_fast8_t bi = getbankindex_ab(0);	/* VFO A bank index */
+	const uint_fast8_t submode = getsubmode(bi);
+	const uint_fast8_t mode = submodes [submode].mode;
+	unsigned nitems;
+	const unsigned apos = gbwadjpos [mode];
+	const struct paramdefdef * const pd = mdt [mode].bwmenu(& nitems) [gbwadjpos [mode]];
+	(void) ctx;
+	(void) sel;
+	if (nitems <= apos)
+		return 0;
+	// modify gbwadjpos [mode]
+	gbwadjpos [mode] = calc_next(gbwadjpos [mode], 0, nitems - 1);
+	save_i8(RMT_BWADJPOS_BASE(mode), gbwadjpos [mode]);
+	return 0;
+}
+
 static const encfnitem_t enclabelsENC1FN [] =
 {
-	{ & xafgain1, getlabelAFGAIN, },
-	{ & xrfgain1, getlabelRFGAIN, },
-	{ & xagcfence1, getlabelAGCFENCE, },
+	{ & xafgain1, getlabeldefault, defdelta, defholded, },
+	{ & xrfgain1, getlabeldefault, defdelta, defholded, },
+	{ & xagcfence1, getlabelAGCFENCE, defdelta, defholded, },
+	{ & xafgain2, getlabeldefault, defdelta, defholded, },
 };
 
 static const encfnitem_t enclabelsENC2FN [] =
 {
-	{ & xafgain2, getlabelAFGAIN, },
+	{ & xgelkeywpm, getlabeldefault, defdelta, defholded, },
+	{ & xgcwpitch10, getlabelCWPITCH, defdelta, defholded, },
+#if KEYB_VELOCI24_V0_UA1ATD
+	{ NULL, getlabelRXBW, bwadjdelta, bwadjholded, },
+#else
+	{ NULL, getlabelswitchbw, switchbwdelta, defholded, },
+#endif
 };
 
 static const encfnitem_t enclabelsENC3FN [] =
 {
-	{ NULL, getlabelENC3F, },
+	{ NULL, getlabelENC3F, defdelta, defholded, },
 };
 
 static const encfnitem_t enclabelsENC4FN [] =
 {
-	{ NULL, getlabelENC4F, },
+	{ NULL, getlabelENC4F, defdelta, defholded, },
 };
 
 static uint8_t enc1f_sel;
@@ -8645,28 +9036,28 @@ static const struct paramdefdef xenc4f_sel =
 /* получить надпись для отображения состояние ENC1F */
 int hamradio_get_label_ENC1F(uint_fast8_t active, char * buff, size_t count)
 {
-	const encfnitem_t * const ei = & enclabelsENC1FN [enc1f_sel];
+	const encfnitem_t * const ei = & enclabelsENC1FN [param_val(& xenc1f_sel)];
 	return ei->getlabel(ei->ctx, buff, count);
 }
 
 /* получить надпись для отображения состояние ENC2F */
 int hamradio_get_label_ENC2F(uint_fast8_t active, char * buff, size_t count)
 {
-	const encfnitem_t * const ei = & enclabelsENC2FN [enc2f_sel];
+	const encfnitem_t * const ei = & enclabelsENC2FN [param_val(& xenc2f_sel)];
 	return ei->getlabel(ei->ctx, buff, count);
 }
 
 /* получить надпись для отображения состояние ENC3F */
 int hamradio_get_label_ENC3F(uint_fast8_t active, char * buff, size_t count)
 {
-	const encfnitem_t * const ei = & enclabelsENC3FN [enc3f_sel];
+	const encfnitem_t * const ei = & enclabelsENC3FN [param_val(& xenc3f_sel)];
 	return ei->getlabel(ei->ctx, buff, count);
 }
 
 /* получить надпись для отображения состояние ENC4F */
 int hamradio_get_label_ENC4F(uint_fast8_t active, char * buff, size_t count)
 {
-	const encfnitem_t * const ei = & enclabelsENC4FN [enc4f_sel];
+	const encfnitem_t * const ei = & enclabelsENC4FN [param_val(& xenc4f_sel)];
 	return ei->getlabel(ei->ctx, buff, count);
 }
 
@@ -9338,221 +9729,6 @@ initnvrampattern(void)
 
 #endif /* defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING) */
 
-/* описатели режимов. код режима - индекс в этом массиве
-*/
-typedef struct submodeprops_tag
-{
-	uint_least8_t qflags;		/* флаги подрежима */
-	uint_least8_t mode;			/* код семейства режимов */
-	uint_least8_t qcatmodecode;		/* Kenwood cat mode code */
-	uint_least8_t ycatmodecode;		/* Yaesu cat mode code */
-	uint_fast16_t qcatwidth;		/* полоса режима, рапортуемая через CAT */
-									// The FW command cannot be used in SSB or AM mode (an error tone will sound).
-
-	const char * qlabel;
-} submodeprops_t;
-
-/* флаги подрежима */
-#define QMODEF_HARDLSB	0x01		// для режимов приема на нижней боковой	 (CWR, LSB)
-#define QMODEF_SMARTLSB	0x02	// для режимов приема на нижней боковой	 (CWR, LSB) в зависимости от частоты
-
-// Порядок элементов в этом массиве должен совпадать с элементми enum,
-// в котором определён SUBMODE_COUNT
-static const submodeprops_t submodes [SUBMODE_COUNT] =
-{
-#if WITHMODESETSMART
-	/* SUBMODE_SSBSMART */
-	{
-		QMODEF_SMARTLSB,
-		MODE_SSB, 	/* индекс семейства режимов */
-		2,			/* Kenwood cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"SSB",
-	},
-	/* SUBMODE_CWSMART */
-	{
-		QMODEF_SMARTLSB,
-		MODE_CW, 	/* индекс семейства режимов */
-		3,			/* Kenwood cat mode code */
-		500,		/* полоса фильтра режима, возвращаемая через CAT */
-		"CW",
-	},
-	/* SUBMODE_CWZSMART */
-	{
-		QMODEF_SMARTLSB,
-		MODE_CWZ, 	/* индекс семейства режимов */
-		3,			/* Kenwood cat mode code */
-		500,		/* полоса фильтра режима, возвращаемая через CAT */
-		"CWZ",
-	},
-	/* SUBMODE_DIGISMART */
-	{
-		QMODEF_SMARTLSB,
-		MODE_DIGI, 	/* индекс семейства режимов */
-		9,			/* Kenwood cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"DIG",
-	},
-#else /* WITHMODESETSMART */
-	/* SUBMODE_USB */
-	{
-		0,
-		MODE_SSB, 	/* индекс семейства режимов */
-		2,			/* Kenwood cat mode code */
-		0x01,		/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"USB",
-	},
-	/* SUBMODE_LSB */
-	{
-		QMODEF_HARDLSB,
-		MODE_SSB, 	/* индекс семейства режимов */
-		1,			/* Kenwood cat mode code */
-		0x00,		/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"LSB",
-	},
-	/* SUBMODE_CW */
-	{
-		0,
-		MODE_CW, 	/* индекс семейства режимов */
-		3,			/* Kenwood cat mode code */
-		0x02,		/* Yaesu cat mode code */
-		500,		/* полоса фильтра режима, возвращаемая через CAT */
-		"CW",
-	},
-	/* SUBMODE_CWR */
-	{
-		QMODEF_HARDLSB,
-		MODE_CW, 	/* индекс семейства режимов */
-		7,			/* Kenwood cat mode code */
-		0x03,		/* Yaesu cat mode code */
-		500,		/* полоса фильтра режима, возвращаемая через CAT */
-		"CWR",
-	},
-	/* SUBMODE_CWZ */
-	{
-		QMODEF_SMARTLSB,
-		MODE_CWZ, 	/* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-	  	"CWZ",
-	},
-	/* SUBMODE_AM */
-	{
-		QMODEF_SMARTLSB,
-		MODE_AM, 	/* индекс семейства режимов */
-		5,			/* Kenwood cat mode code */
-		0x04,		/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"AM",
-	},
-	#if WITHSAM
-	/* SUBMODE_SAM */
-	{
-		QMODEF_SMARTLSB,
-		MODE_SAM, 	/* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"SAM",
-	},
-	#endif /* WITHSAM */
-	/* SUBMODE_DRM */
-	{
-		QMODEF_SMARTLSB,
-		MODE_DRM, 	/* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"DRM",
-	},
-	/* SUBMODE_DGL */
-	{
-		QMODEF_HARDLSB,
-		MODE_DIGI, 	/* индекс семейства режимов */
-		9,			/* Kenwood cat mode code */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"DGL",
-	},
-	/* SUBMODE_DGU */
-	{
-		QMODEF_SMARTLSB,
-		MODE_DIGI, 	/* индекс семейства режимов */
-		6,			/* Kenwood cat mode code */
-		0x0A,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"DGU",
-	},
-#if WITHMODESETFULLNFM || WITHMODESETMIXONLY3NFM || WITHMODESETFULLNFMWFM	// чтобы через CAT не включился этот режтим - если нет - в комментарии.
-	/* SUBMODE_NFM */
-	{
-		QMODEF_SMARTLSB,
-		MODE_NFM, 	/* индекс семейства режимов */
-		4,			/* Kenwood cat mode code */
-		0x08,		/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"NFM",
-	},
-#endif /* WITHMODESETFULLNFM || WITHMODESETMIXONLY3NFM || WITHMODESETFULLNFMWFM  */
-#if WITHWFM || WITHMODESETFULLNFMWFM
-	/* SUBMODE_WFM */
-	{
-		QMODEF_SMARTLSB,
-		MODE_WFM, 	/* индекс семейства режимов */
-		8,			/* Kenwood cat mode code - придуман мною. В описаниях такого нет. */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"WFM",
-	},
-#endif /* WITHWFM || WITHMODESETFULLNFMWFM */
-#if WITHMODEM
-	/* SUBMODE_PSK */
-	{
-		0,
-		MODE_MODEM, /* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		500,		/* полоса фильтра режима, возвращаемая через CAT */
-		"PSK",
-	},
-#endif /* WITHMODEM */
-	/* SUBMODE_ISB */
-	{
-		0,
-		MODE_ISB, 	/* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code - на этот режим через CAT не переключиться */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-	  	"ISB",
-	},
-#if WITHFREEDV
-	/* SUBMODE_FDV */
-	{
-		0,
-		MODE_FREEDV,/* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"FDV",
-	},
-#endif /* WITHFREEDV */
-#if WITHRTTY
-	/* SUBMODE_RTTY */
-	{
-		0,
-		MODE_RTTY,/* индекс семейства режимов */
-		UINT8_MAX,	/* Kenwood cat mode code */
-		UINT8_MAX,	/* Yaesu cat mode code */
-		0,			/* полоса фильтра режима, возвращаемая через CAT */
-		"TTY",
-	},
-#endif /* WITHRTTY */
-#endif /* WITHMODESETSMART */
-};
-
 #if WITHRTTY
 
 static uint16_t grttybaudrate10 = 500;	// rtty baudrate в десятых долях
@@ -9865,12 +10041,6 @@ static const uint_fast8_t am_steps10 [] =
 };
 #endif
 
-/* функция работает с кэшем параметров режима работы */
-static const struct modetempl *
-getmodetempl(uint_fast8_t submode)
-{
-	return & mdt [submodes [submode].mode];
-}
 
 #if WITHAMHIGHKBDADJ
 
@@ -10635,8 +10805,6 @@ putmodecol(
 }
 
 
-static uint_fast8_t gmiddlepos [MODE_COUNT];
-
 #if WITHIF4DSP
 
 // Начальная загрузка значений из NVRAM
@@ -10921,7 +11089,7 @@ static int sq2transition(int_fast8_t sq10, int_fast16_t bw)
 // CW filter bandwidth for WIDE
 static const struct paramdefdef xfltbw_cwwide =
 {
-	QLABEL3("CW W WDT", "CW W WIDTH", "CW W WIDTH"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for WIDE
+	QLABEL4("CW W WDT", "CW W WIDTH", "CW W WIDTH", "BW:"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for WIDE
 	ITEM_VALUE,
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
@@ -10934,7 +11102,7 @@ static const struct paramdefdef xfltbw_cwwide =
 // CW filter bandwidth for NARROW
 static const struct paramdefdef xfltbw_cwnarrow =
 {
-	QLABEL3("CW N WDT", "CW N WIDTH", "CW N WIDTH"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for NARROW
+	QLABEL4("CW N WDT", "CW N WIDTH", "CW N WIDTH", "BW:"), 2, RJ_UNSIGNED, ISTEP10,	// CW bandwidth for NARROW
 	ITEM_VALUE,
 	10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 	RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
@@ -10945,7 +11113,7 @@ static const struct paramdefdef xfltbw_cwnarrow =
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbwide_high = {
-	QLABEL("SSB W HI"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
+	QLABEL4("SSB W HI", "SSB W HI", "SSB W HI", "HI:"),  1, RJ_UNSIGNED, ISTEP1,		/* Подстройка полосы пропускания - SSB WIDE */
 	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
@@ -10956,7 +11124,7 @@ static const struct paramdefdef xgssbwide_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgssbwide_low = {
-	QLABEL("SSB W LO"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
+	QLABEL4("SSB W LO", "SSB W LO", "SSB W LO", "LO:"), 2, RJ_UNSIGNED, ISTEP5,		/* Подстройка полосы пропускания - SSB WIDE */
 	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
@@ -11043,7 +11211,7 @@ static const struct paramdefdef xgssbnarrow_afr = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamwide_high = {
-	QLABEL("AM W HI"), 1, RJ_UNSIGNED,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
+	QLABEL4("AM W HI", "AM W HI", "AM W HI", "HI:"), 1, RJ_UNSIGNED,	ISTEP2,		/* Подстройка полосы пропускания - AM WIDE */
 	ITEM_VALUE,
 	BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 	RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE),
@@ -11054,7 +11222,7 @@ static const struct paramdefdef xgamwide_high = {
 	NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 };
 static const struct paramdefdef xgamwide_low = {
-	QLABEL("AM W LO"), 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
+	QLABEL4("AM W LO", "AM W LO", "AM W LO", "LO:"), 2, RJ_UNSIGNED, ISTEP5,		/* подстройка полосы пропускания - AM WIDE */
 	ITEM_VALUE,
 	BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 	RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
@@ -11932,6 +12100,8 @@ static void catmux_enable(uint_fast8_t code)
 
 static void catmux_answer_request(uint_fast8_t i)	// call from user-mode
 {
+	if (i == UINT8_MAX)
+		return;
 	switch (cattypes [gcattype].code)
 	{
 	default:
@@ -14611,11 +14781,11 @@ updateboard_noui(
 		#if WITHNOATTNOPREAMP
 			// без управления аттенюатором и УВЧ
 		#elif WITHONEATTONEAMP
-			board_set_att(attmodes [gatt].codeatt);
-			board_set_preamp(attmodes [gatt].codepre);
-			board_set_attvalue(attmodes [gatt].atten10 / 10);
+			board_set_att(attmodes [param_val(& xgatt)].codeatt);
+			board_set_preamp(attmodes [param_val(& xgatt)].codepre);
+			board_set_attvalue(attmodes [param_val(& xgatt)].atten10 / 10);
 		#else /* WITHONEATTONEAMP */
-			board_set_att(attmodes [gatt].code);
+			board_set_att(attmodes [param_val(& xgatt)].code);
 			board_set_preamp(pampmodes [param_val(& xgpamp)].code);
 			board_set_attvalue(attmodes [param_val(& xgatt)].atten10 / 10);
 		#endif /* WITHONEATTONEAMP */
@@ -14642,7 +14812,7 @@ updateboard_noui(
 		board_setrtcstrobe(param_val(& xgrtcstrobe));
 	#endif /* defined (RTC1_TYPE) */
 	#if WITHANTSELECTRX || WITHANTSELECT1RX
-		board_set_rxantenna(rxantmodes [grxantenna].code);
+		board_set_rxantenna(rxantmodes [param_val(& xgrxantenna)].code);
 		board_set_antenna(antmodes [ant2hint].code);
 	#elif WITHANTSELECT2
 		board_set_antenna(antmodes [ant2hint].code);
@@ -14652,7 +14822,7 @@ updateboard_noui(
 	#if WITHELKEY
 		board_set_wpm(param_val(& xgelkeywpm));	/* скорость электронного ключа */
 		elkey_set_format(param_val(& xgdashratio), param_val(& xgspaceratio));	/* соотношение тире к точке (в десятках процентов) */
-		elkey_set_mode(elkeymodes [param_val(& xgelkeymode)].code, elkeyreverse);	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
+		elkey_set_mode(elkeymodes [param_val(& xgelkeymode)].code, param_val(& xgelkeyreverse));	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 		#if WITHVIBROPLEX
 			elkey_set_slope(param_val(& xgelkeyslope));	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		#endif /* WITHVIBROPLEX */
@@ -14774,7 +14944,7 @@ updateboard_noui(
 			board_set_view3dss_mark(param_val(& xgview3dss_mark));	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
 			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
-			display2_set_rxbwsatu(param_val(& xgrxbwsatu));	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
+			display2_set_rxbwsatu(param_val(& xgrxbwindicator));	/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 			display2_set_filter_spe(param_val(& xgspecbeta100));	/* beta - парамеры видеофильтра спектра */
 			display2_set_filter_wfl(param_val(& xgwflbeta100));	/* beta - парамеры видеофильтра водопада */
 			display2_set_spectrumpart(param_val(& xgspectrumpart));	/* Часть отведенной под спектр высоты экрана 0..100 */
@@ -14968,14 +15138,13 @@ static void updateboard_freq(void)
 
 void uif_key_bkintoggle(void)
 {
-	gbkinenable = calc_next(gbkinenable, 0, 1);
-	save_i8(OFFSETOF(struct nvmap, gbkinenable), gbkinenable);
-	updateboard();
+	if (param_keyclick(& xgbkinenable))
+		updateboard();
 }
 
 uint_fast8_t hamradio_get_bkin_value(void)
 {
-	return gbkinenable;
+	return param_val(& xgbkinenable);
 }
 
 static LCLSPINLOCK_t lockcwmsg = IRQLSPINLOCK_INIT;
@@ -15637,6 +15806,16 @@ uif_key_changebw(void)
 	updateboard();
 }
 
+void hamradio_set_bw(uint_fast8_t v)
+{
+	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
+	ASSERT(bwsetsc [bwseti].last < BWSET_WIDTHS);
+	ASSERT(v <= bwsetsc [bwseti].last);
+	bwsetpos [bwseti] = v;
+	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
+	updateboard();
+}
+
 /* Переключение шумоподавления
 	 - не вызывает сохранение состояния диапазона */
 
@@ -15658,15 +15837,6 @@ uif_key_click_datamode(void)
 }
 
 #endif /* WITHUSBHW && WITHUSBUAC */
-
-
-#else /* WITHIF4DSP */
-/* Переключение фильтров приёмника
-	 - не вызывает сохранение состояния диапазона */
-static void
-uif_key_changefilter(void)
-{
-}
 
 #endif /* WITHIF4DSP */
 
@@ -16303,7 +16473,7 @@ static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 		if (delta)
 		{
 			bring_enc1f();
-			switch (enc1f_sel)
+			switch (param_val(& xenc1f_sel))
 			{
 			default:
 				break;
@@ -16329,15 +16499,9 @@ static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 		if (delta)
 		{
 			bring_enc2f();
-			switch (enc2f_sel)
-			{
-			default:
-				break;
-			case 0:
-				/* установка громкости */
-				changed |= encoder_flagne(& xafgain2, delta, CATINDEX(CAT_AG_INDEX), NULL);
-				break;
-			}
+			const encfnitem_t * const ei = & enclabelsENC2FN [param_val(& xenc2f_sel)];
+			ASSERT(ei->ondelta);
+			changed |= ei->ondelta(ei->ctx, delta);
 		}
 	}
 #endif /* WITHENCODER_2F */
@@ -16359,25 +16523,6 @@ static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 			const struct paramdefdef * const pd = mdt [mode].middlemenu(& nitems) [gmiddlepos [mode]];
 
 			changed |= param_rotate(pd, delta);	// модификация и сохранение параметра
-//			switch (enc4f_sel)
-//			{
-//			default:
-//				break;
-//			case 0:
-//				while (delta < 0)
-//				{
-//					uif_key_click_banddown();
-//					++ delta;
-//					changed = 1;
-//				}
-//				while (delta > 0)
-//				{
-//					uif_key_click_bandup();
-//					-- delta;
-//					changed = 1;
-//				}
-//				break;
-//			}
 		}
 	}
 #endif /* WITHENCODER_4F */
@@ -16399,13 +16544,6 @@ static uint_fast8_t processmainFNknobs(uint_fast8_t inmenu, inputevent_t * ev)
 			gmiddlepos [mode] = calc_delta(gmiddlepos [mode], 0, middlerowsize - 1, delta);
 			save_i8(RMT_MIDDLEMENUPOS_BASE(mode), gmiddlepos [mode]);
 			changed = 1;
-//			switch (enc4f_sel)
-//			{
-//			default:
-//				break;
-//			case 0:
-//				break;
-//			}
 		}
 	}
 #endif /* WITHENCODER_3F */
@@ -16867,8 +17005,8 @@ catyaesu_processcatmsg(
 		{
 			// SPLIT On
 			//PRINTF("CAT SPLIT ON\n");
-			gsplitmode = VFOMODES_SPLIT;
-			updateboard();
+			if (cat_param_setvalue(& xgsplitmode, VFOMODES_SPLIT))
+				updateboard();
 			cat_ask_buffer [0] = 0x00;
 			cat_answervariable(cat_ask_buffer, 1);
 		}
@@ -16882,8 +17020,8 @@ catyaesu_processcatmsg(
 		if (cat_answer_ready())
 		{
 			//PRINTF("CAT SPLIT OFF\n");
-			gsplitmode = VFOMODES_OFF;
-			updateboard();
+			if (cat_param_setvalue(& xgsplitmode, VFOMODES_OFF))
+				updateboard();
 			cat_ask_buffer [0] = 0x00;
 			cat_answervariable(cat_ask_buffer, 1);
 		}
@@ -17506,7 +17644,7 @@ static void spanswer(uint_fast8_t arg)
 
 	// answer VFO B frequency
 	const uint_fast8_t len = local_snprintf_P(cat_ask_buffer, CAT_ASKBUFF_SIZE, fmt_1,
-		(int) (gsplitmode != VFOMODES_OFF)
+		(int) (param_val(& xgsplitmode) != VFOMODES_OFF)
 		);
 	catkenwood_answer(len);
 }
@@ -18132,7 +18270,7 @@ static void ifanswer(uint_fast8_t arg)
 		(int) gtx,
 		(int) submodes [gsubmode].qcatmodecode,	// P9
 		(int) 0,	// P10: FR/FT state
-		(int) (gsplitmode == VFOMODES_SPLIT) // P12
+		(int) (param_val(& xgsplitmode) == VFOMODES_SPLIT) // P12
 		);
 	catkenwood_answer(len);
 }
@@ -19446,6 +19584,79 @@ static uint_fast32_t ipow10(uint_fast8_t v)
 
 #if WITHMENU
 
+const struct paramdefdef * const * getbwmenu_cw(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xfltbw_cwwide,
+		//& xfltbw_cwnarrow,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getbwmenu_ssb(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgssbwide_high,
+		& xgssbwide_low,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getbwmenu_am(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgamwide_high,
+		& xgamwide_low,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getbwmenu_digi(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgdigiwide_high,
+		& xgdigiwide_low,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getbwmenu_nfm(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgdummy,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+const struct paramdefdef * const * getbwmenu_wfm(unsigned * size)
+{
+	static const struct paramdefdef * const middlemenu [] =
+	{
+		& xgdummy,
+	};
+
+	* size = ARRAY_SIZE(middlemenu);
+	return middlemenu;
+}
+
+////////////
+
+
 const struct paramdefdef * const * getmiddlemenu_cw(unsigned * size)
 {
 	static const struct paramdefdef * const middlemenu [] =
@@ -20158,8 +20369,6 @@ param_format(
 		return local_snprintf_P(buff, count, "%s", value ? "YES" : "NO");
 	case RJ_ON:
 		return local_snprintf_P(buff, count, "%s", value ? "ON" : "OFF");
-	case RJ_PERCENTS:
-		return local_snprintf_P(buff, count, "%d", (int) ((value - pd->qbottom) * 100 / (pd->qupper - pd->qbottom)));
 
 	case RJ_SIGNED:
 		switch (pd->qcomma)
@@ -20174,6 +20383,9 @@ param_format(
 		case 3:
 			return local_snprintf_P(buff, count, "%+" PRIdFAST32 ".%03" PRIdFAST32, value / 1000, iabs32(value % 1000));
 		}
+
+	case RJ_PERCENTS:
+		return local_snprintf_P(buff, count, "%d%%", (int) ((value - pd->qbottom) * 100 / (pd->qupper - pd->qbottom)));
 
 	default:
 	case RJ_UNSIGNED:
@@ -20766,7 +20978,7 @@ process_key_menuset0(uint_fast8_t kbch)
 	switch (kbch)
 	{
 	case KBD_CODE_RIT:
-		switch (gsplitmode)
+		switch (param_val(& xgsplitmode))
 		{
 		case VFOMODES_OFF:
 			uif_key_rit_on();
@@ -20781,7 +20993,7 @@ process_key_menuset0(uint_fast8_t kbch)
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_RIT_HOLDED:
-		switch (gsplitmode)
+		switch (param_val(& xgsplitmode))
 		{
 		case VFOMODES_OFF:
 			uif_key_xit_on();
@@ -20798,7 +21010,7 @@ process_key_menuset0(uint_fast8_t kbch)
 	case KBD_CODE_SPLIT:
 		/* Переключение VFO
 			 - не вызывает сохранение состояния диапазона */
-		switch (gsplitmode)
+		switch (param_val(& xgsplitmode))
 		{
 		case VFOMODES_OFF:
 			uif_key_spliton(0);
@@ -20810,7 +21022,7 @@ process_key_menuset0(uint_fast8_t kbch)
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_SPLIT_HOLDED:
-		switch (gsplitmode)
+		switch (param_val(& xgsplitmode))
 		{
 		case VFOMODES_OFF:
 			uif_key_spliton(1);
@@ -20847,7 +21059,11 @@ process_key_menuset0(uint_fast8_t kbch)
 
 	case KBD_ENC1F_HOLD:
 		bring_enc1f();
-		//param_keyclick(& xenc1f_sel);
+		{
+			const encfnitem_t * const ei = & enclabelsENC1FN [param_val(& xenc1f_sel)];
+			ASSERT(ei->onholded);
+			ei->onholded(ei->ctx, param_val(& xenc1f_sel));
+		}
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_1F */
 
@@ -20859,7 +21075,11 @@ process_key_menuset0(uint_fast8_t kbch)
 
 	case KBD_ENC2F_HOLD:
 		bring_enc2f();
-		//param_keyclick(& xenc2f_sel);
+		{
+			const encfnitem_t * const ei = & enclabelsENC2FN [param_val(& xenc2f_sel)];
+			ASSERT(ei->onholded);
+			ei->onholded(ei->ctx, param_val(& xenc2f_sel));
+		}
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_2F */
 
@@ -20871,6 +21091,7 @@ process_key_menuset0(uint_fast8_t kbch)
 
 	case KBD_ENC3F_HOLD:
 		bring_enc3f();
+		//
 		//param_keyclick(& xenc3f_sel);
 		return 1;	// требуется обновление индикатора
 #endif /* WITHENCODER_3F */
@@ -20972,10 +21193,6 @@ process_key_menuset_common(uint_fast8_t kbch, inputevent_t * ev)
 		/* Переключение фильтров
 			 - не вызывает сохранение состояния диапазона */
 		uif_key_changebw();
-#else /* WITHIF4DSP */
-		/* Переключение фильтров
-			 - не вызывает сохранение состояния диапазона */
-		uif_key_changefilter();
 #endif /* WITHIF4DSP */
 		return 1;	/* клавиша уже обработана */
 
@@ -21450,7 +21667,7 @@ processmainloopkeyboard(inputevent_t * ev)
 	}
 
 #if WITHWAVPLAYER || WITHSENDWAV
-	switch (kbch)
+	switch (ev->frontkeyevent.kbch)
 	{
 	case KBD_CODE_PLAYFILE1:
 		playhandler(1);
@@ -22601,7 +22818,7 @@ static uint_fast8_t performtune(
 	const uint_fast8_t bi_main = getbankindex_ab_fordisplay(0);		/* состояние выбора банков может измениться */
 	const uint_fast8_t bi_sub = getbankindex_ab_fordisplay(1);		/* состояние выбора банков может измениться */
 	const uint_fast8_t unlocked = glocks [bi_main] == 0;
-	switch (gsplitmode)
+	switch (param_val(& xgsplitmode))
 	{
 	case VFOMODES_OFF:
 	case VFOMODES_SPLIT:
@@ -23679,16 +23896,6 @@ uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit)
 	return count;
 }
 
-void hamradio_set_bw(uint_fast8_t v)
-{
-	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
-	ASSERT(bwsetsc [bwseti].last < BWSET_WIDTHS);
-	ASSERT(v <= bwsetsc [bwseti].last);
-	bwsetpos [bwseti] = v;
-	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
-	updateboard();
-}
-
 void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* VFO bank index */
@@ -24634,8 +24841,11 @@ loadsavedstate(uint_fast8_t bi)
 	for (mode = 0; mode < MODE_COUNT; ++ mode)
 	{
 		unsigned middlerowsize;
+		unsigned bwadjrowsize;
 		mdt [mode].middlemenu(& middlerowsize);
+		mdt [mode].bwmenu(& bwadjrowsize);
 		gmiddlepos [mode] = loadvfy8up(RMT_MIDDLEMENUPOS_BASE(mode), 0, middlerowsize - 1, gmiddlepos [mode]);
+		gbwadjpos [mode] = loadvfy8up(RMT_BWADJPOS_BASE(mode), 0, bwadjrowsize - 1, gbwadjpos [mode]);
 	#if WITHIF4DSP && WITHTX
 		// источник звука
 		gtxaudio [mode] = loadvfy8up(RMT_TXAUDIOINDEX_BASE(mode), 0, TXAUDIOSRC_COUNT - 1, findtxaudioindex(mdt [mode].txaudiocode));

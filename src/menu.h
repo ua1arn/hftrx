@@ -100,7 +100,7 @@
 	& xgtopdb,	/* нижний предел FFT */
 	& xgbottomdb,	/* верхний предел FFT */
 	& xglvlgridstep,
-	& xgrxbwsatu,
+	& xgrxbwindicator,
 #if BOARD_FFTZOOM_POW2MAX > 0
 	& xgzoomxpow2,	/* уменьшение отображаемого участка спектра */
 #endif /* BOARD_FFTZOOM_POW2MAX > 0 */

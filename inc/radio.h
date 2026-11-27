@@ -715,16 +715,18 @@ enum
 #define ITEM_NOINITNVRAM	(UINT8_C(1) << 4)	/* значение этого пункта не используется при начальной инициализации NVRAM */
 #define ITEM_LISTSELECT	(UINT8_C(1) << 5)	/* отображение этого элемента в lvgl списком значений на выбор */
 
-#define QLABEL(s1) (s1), (s1), (s1)
-#define QLABEL2(s1, s2) (s1), (s2), (s2)
-#define QLABEL3(s1, s2, s3) (s1), (s2), (s3)
-#define QLABELENC2(s1) (s1), (s1), (s1)
+#define QLABEL(s1) (s1), (s1), (s1), (s1)
+#define QLABEL2(s1, s2) (s1), (s2), (s2), (s1)
+#define QLABEL3(s1, s2, s3) (s1), (s2), (s3), (s1)
+#define QLABELENC2(s1) (s1), (s1), (s1), (s1)
+#define QLABEL4(s1, s2, s3, s4) (s1), (s2), (s3), (s4)
 
 typedef struct paramdefdef
 {
 	const char * qlabel;		/* название пункта меню для компактного отображения */
 	const char * label;			/* название пункта меню для широкого меню */
 	const char * enc2label;		/* название пункта меню для FUNC меню */
+	const char * encFNlabel;	/* название пункта меню для функциональных регулировок */
 
 	uint8_t qcomma, qrj;
 	uint8_t qistep;

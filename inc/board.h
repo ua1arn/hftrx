@@ -288,7 +288,7 @@ void nvram_initialize(void);
 void nvram_sync(void);
 void nvram_close(void);
 void nvram_set_abytes(uint_fast8_t v);
-typedef uint_least16_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
+typedef size_t nvramaddress_t;				/* можно сделать 8 бит. смещение в NVRAM. Если MENUNONVRAM - только меняем в памяти */
 
 #define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
 
