@@ -6330,24 +6330,6 @@ enum
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
-	// код полосы пропускания
-
-	static int
-	uif_key_rotatebw(int delta)
-	{
-		PRINTF("uif_key_rotatebw: delta=%d\n", delta);
-		if (delta)
-		{
-			const uint_fast8_t bwseti = mdt [gmode].bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
-
-			ASSERT(bwsetsc [bwseti].last < BWSET_WIDTHS);
-			bwsetpos [bwseti] = calc_dir(delta < 0, bwsetpos [bwseti], 0, bwsetsc [bwseti].last);
-			save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
-			updateboard();
-			return 1;
-		}
-		return 0;
-	}
 
 	// код полосы пропускания
 	static size_t getvaltextrxbw(char * buff, size_t count, int_fast32_t value)
@@ -6371,6 +6353,45 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		getvaltextrxbw, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
+	// при переборе полос пропускания через поворот валкодера
+	static int switchbwdelta(const void * ctx, int delta)
+	{
+		const uint_fast8_t bwseti = mdt [gmode].bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
+		const struct paramdefdef xgbwi =
+		{
+			QLABEL(""), 0, RJ_UNSIGNED, ISTEP1,
+			ITEM_VALUE,
+			0, bwsetsc [bwseti].last, 					// Громкость в процентах
+			RMT_BWSETPOS_BASE(bwseti),
+			getselector0, nvramoffs0, valueoffs0,
+			NULL,
+			& bwsetpos [bwseti],	/* переменная, которую подстраиваем  - если она 16 бит*/
+			getzerobase, /* складывается со смещением и отображается */
+			NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+		};
+
+		ASSERT(bwsetsc [bwseti].last < BWSET_WIDTHS);
+		if (param_rotate(& xgbwi, delta))
+		{
+			updateboard();
+			return 1;
+		}
+		return 0;
+	}
+
+	// при переборе полос пропускания через поворот валкодера
+	static int getlabelswitchbw(const void * ctx, char * buff, size_t count)
+	{
+		const uint_fast8_t bwseti = mdt [gmode].bwsetis [0];	// индекс банка полос пропускания для данного режима на приеме
+
+		ASSERT(bwsetsc [bwseti].last < BWSET_WIDTHS);
+
+		int n = 0;
+
+		n += local_snprintf_P(buff + n, count - n, "BW:%s", bwsetsc [bwseti].labels [bwsetpos[bwseti]]);
+
+		return n;
+}
 
 	static dualctl16_t rfgain1 = { BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX };	// Усиление ПЧ на максимуме
 	// Усиление ПЧ/ВЧ в процентах
@@ -8941,7 +8962,11 @@ static const encfnitem_t enclabelsENC2FN [] =
 {
 	{ & xgelkeywpm, getlabeldefault, defdelta, defholded, },
 	{ & xgcwpitch10, getlabelCWPITCH, defdelta, defholded, },
+#if KEYB_VELOCI24_V0_UA1ATD
 	{ NULL, getlabelRXBW, bwadjdelta, bwadjholded, },
+#else
+	{ NULL, getlabelswitchbw, switchbwdelta, defholded, },
+#endif
 };
 
 static const encfnitem_t enclabelsENC3FN [] =
