@@ -223,35 +223,33 @@ R"##(
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <!--link rel="stylesheet" type="text/css" href="hftrx.css"-->
 <style>
- #id1 { position:absolute; left:0px; top:0px; width:144px; height:25px; }
- #id2 { position:absolute; left:144px; top:0px; width:144px; height:25px; }
+ #id1 { position:absolute; left:0px; top:0px; width:160px; height:25px; }
+ #id2 { position:absolute; left:160px; top:0px; width:144px; height:25px; }
  #txrx { position:absolute; left:304px; top:0px; width:48px; height:25px; }
  #ant { position:absolute; left:352px; top:0px; width:80px; height:25px; }
  #ant { position:absolute; left:432px; top:0px; width:64px; height:25px; }
  #id6 { position:absolute; left:512px; top:0px; width:144px; height:25px; }
  #id7 { position:absolute; left:656px; top:0px; width:144px; height:25px; }
  #id9 { position:absolute; left:0px; top:25px; width:240px; height:100px; }
- #freq-a { position:absolute; left:240px; top:40px; width:336px; height:55px; }
+ #freq-a { position:absolute; left:272px; top:25px; width:288px; height:55px; }
+ #default { position:absolute; left:576px; top:25px; width:128px; height:25px; }
+
+ #vfomode { position:absolute; left:704px; top:25px; width:96px; height:25px; }
  #mode-a { position:absolute; left:576px; top:50px; width:64px; height:25px; }
  #rxbw { position:absolute; left:640px; top:50px; width:64px; height:25px; }
  #rxbwval { position:absolute; left:704px; top:50px; width:96px; height:25px; }
  #nr { position:absolute; left:576px; top:75px; width:64px; height:25px; }
- #datamode { position:absolute; left:640px; top:75px; width:64px; height:25px; }
  #notch { position:absolute; left:704px; top:75px; width:96px; height:25px; }
- #id18 { position:absolute; left:256px; top:100px; width:64px; height:25px; }
- #vfomode { position:absolute; left:320px; top:100px; width:64px; height:25px; }
- #freq-b { position:absolute; left:384px; top:100px; width:192px; height:25px; }
- #mode-b { position:absolute; left:576px; top:100px; width:64px; height:25px; }
+ #freq-b { position:absolute; left:272px; top:85px; width:224px; height:40px; }
+ #mode-b { position:absolute; left:512px; top:100px; width:64px; height:25px; }
+ #bkin { position:absolute; left:576px; top:100px; width:64px; height:25px; }
  #voxtune { position:absolute; left:640px; top:100px; width:64px; height:25px; }
- #default { position:absolute; left:704px; top:100px; width:96px; height:25px; }
- #voltlevel { position:absolute; left:0px; top:125px; width:96px; height:25px; }
+
  #currlevel { position:absolute; left:96px; top:125px; width:96px; height:25px; }
  #ant { position:absolute; left:288px; top:125px; width:96px; height:25px; }
  #byp { position:absolute; left:384px; top:125px; width:64px; height:25px; }
- #default { position:absolute; left:448px; top:125px; width:64px; height:25px; }
- #rec { position:absolute; left:512px; top:125px; width:64px; height:25px; }
  #spk { position:absolute; left:576px; top:125px; width:64px; height:25px; }
- #bkin { position:absolute; left:640px; top:125px; width:64px; height:25px; }
+ #datamode { position:absolute; left:640px; top:125px; width:64px; height:25px; }
  #lock { position:absolute; left:704px; top:125px; width:96px; height:25px; }
  #gcombo { position:absolute; left:0px; top:195px; width:800px; height:250px; }
  #datetime12 { position:absolute; left:0px; top:450px; width:208px; height:25px; }
@@ -259,12 +257,13 @@ R"##(
  #usbact { position:absolute; left:464px; top:450px; width:64px; height:25px; }
  #bt { position:absolute; left:528px; top:450px; width:48px; height:25px; }
  #classa { position:absolute; left:576px; top:450px; width:128px; height:25px; }
- #id41 { position:absolute; left:704px; top:450px; width:96px; height:25px; }
- #id44 { position:absolute; left:0px; top:150px; width:800px; height:40px; }
+
+ #voltlevel { position:absolute; left:704px; top:450px; width:96px; height:25px; }
+ #id40 { position:absolute; left:0px; top:150px; width:800px; height:40px; }
 </style>
 </head>
 <body style="background-color:orange;">
- <div id="id1" style="background-color:blue; color:black;">WWWWWWWWW</div>
+ <div id="id1" style="background-color:blue; color:black;">WWWWWWWWWW</div>
  <div id="id2" style="background-color:blue; color:black;">WWWWWWWWW</div>
  <div id="txrx" style="background-color:blue; color:black;"><img src='txrx'/></div>
  <div id="ant" style="background-color:blue; color:black;"><img src='ant'/></div>
@@ -272,27 +271,24 @@ R"##(
  <div id="id6" style="background-color:blue; color:black;">WWWWWWWWW</div>
  <div id="id7" style="background-color:blue; color:black;">WWWWWWWWW</div>
  <div id="id9" style="background-color:blue; color:black;">WWWWWWWWWWWWWWW</div>
+
  <div id="freq-a" style="background-color:blue; color:black;"><img src='freq-a'/></div>
+ <div id="default" style="background-color:blue; color:black;"><img src='default'/></div>
+ <div id="vfomode" style="background-color:blue; color:black;"><img src='vfomode'/></div>
  <div id="mode-a" style="background-color:blue; color:black;"><img src='mode-a'/></div>
  <div id="rxbw" style="background-color:blue; color:black;"><img src='rxbw'/></div>
  <div id="rxbwval" style="background-color:blue; color:black;"><img src='rxbwval'/></div>
  <div id="nr" style="background-color:blue; color:black;"><img src='nr'/></div>
- <div id="datamode" style="background-color:blue; color:black;"><img src='datamode'/></div>
  <div id="notch" style="background-color:blue; color:black;"><img src='notch'/></div>
- <div id="id18" style="background-color:blue; color:black;">WWWW</div>
- <div id="vfomode" style="background-color:blue; color:black;"><img src='vfomode'/></div>
  <div id="freq-b" style="background-color:blue; color:black;"><img src='freq-b'/></div>
  <div id="mode-b" style="background-color:blue; color:black;"><img src='mode-b'/></div>
+ <div id="bkin" style="background-color:blue; color:black;"><img src='bkin'/></div>
  <div id="voxtune" style="background-color:blue; color:black;"><img src='voxtune'/></div>
- <div id="default" style="background-color:blue; color:black;"><img src='default'/></div>
- <div id="voltlevel" style="background-color:blue; color:black;"><img src='voltlevel'/></div>
  <div id="currlevel" style="background-color:blue; color:black;"><img src='currlevel'/></div>
  <div id="ant" style="background-color:blue; color:black;"><img src='ant'/></div>
  <div id="byp" style="background-color:blue; color:black;"><img src='byp'/></div>
- <div id="default" style="background-color:blue; color:black;"><img src='default'/></div>
- <div id="rec" style="background-color:blue; color:black;"><img src='rec'/></div>
  <div id="spk" style="background-color:blue; color:black;"><img src='spk'/></div>
- <div id="bkin" style="background-color:blue; color:black;"><img src='bkin'/></div>
+ <div id="datamode" style="background-color:blue; color:black;"><img src='datamode'/></div>
  <div id="lock" style="background-color:blue; color:black;"><img src='lock'/></div>
  <div id="gcombo" style="background-color:blue; color:black;"><img src='gcombo'/></div>
  <div id="datetime12" style="background-color:blue; color:black;"><img src='datetime12'/></div>
@@ -300,8 +296,8 @@ R"##(
  <div id="usbact" style="background-color:blue; color:black;"><img src='usbact'/></div>
  <div id="bt" style="background-color:blue; color:black;"><img src='bt'/></div>
  <div id="classa" style="background-color:blue; color:black;"><img src='classa'/></div>
- <div id="id41" style="background-color:blue; color:black;">WWWWWW</div>
- <div id="id44" style="background-color:blue; color:black;">             WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW</div>
+ <div id="voltlevel" style="background-color:blue; color:black;"><img src='voltlevel'/></div>
+ <div id="id40" style="background-color:blue; color:black;">             WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW</div>
 </body>
 </html>
 )##";

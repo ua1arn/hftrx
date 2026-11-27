@@ -9462,9 +9462,9 @@ public:
 	void get_media_features(litehtml::media_features &media) const;
 	void get_language(std::string &language, std::string &culture) const;
 	std::string resolve_color(const std::string& /*color*/) const;
-	void split_text(const char *text,
-			const std::function<void(const char*)> &on_word,
-			const std::function<void(const char*)> &on_space);
+//	void split_text(const char *text,
+//			const std::function<void(const char*)> &on_word,
+//			const std::function<void(const char*)> &on_space);
 
 	// Form controls integration. All of these functions have default implementations, so
 	// containers that do not support controls keep working.
@@ -9516,6 +9516,7 @@ protected:
 private:
 	int m_dx;
 	int m_dy;
+	void get_client_rect(litehtml::position &client) const;
 };
 
 
@@ -9563,10 +9564,11 @@ void hftrxgd::delete_font(litehtml::uint_ptr hFont)
 pixel_t hftrxgd::text_width(const char *text, litehtml::uint_ptr hFont)
 {
 	const unifont_t * const font = (const unifont_t *) hFont;
-	PRINTF("text_width: text='%s'\n", text);
+	//PRINTF("text_width: text='%s'\n", text);
 	uint_fast16_t height_str;
 	const uint_fast16_t width_str = unifont_textsize(font, text, TEXTSIZE_AUTO, & height_str);
-	return int(width_str);
+	//return int(width_str);
+	return litehtml::pixel_t(int(width_str));
 }
 
 void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text,
@@ -9575,18 +9577,19 @@ void hftrxgd::draw_text(litehtml::uint_ptr hdc, const char *text,
 {
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
 	const unifont_t * const font = (const unifont_t *) hFont;
-	PRINTF("draw_text: text='%s'\n", text);
+//	PRINTF("draw_text: text='%s'\n", text);
 
 	//colpip_fillrect(db, int(pos.x), int(pos.y), int(pos.width), int(pos.height), getCOLORPIP(color));
-    auto border_box = pos;
-    PRINTF("draw_text: %d %d %d %d\n", int(pos.x), int(pos.y), int(pos.width), int(pos.height));
-    fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, color);
-	unifont_text(db, int(pos.x), int(pos.y), font, text, TEXTSIZE_AUTO, getCOLORPIP(color));
+//    if (clip)
+//    	PRINTF("draw_text clip: %d %d %d %d\n", int(clip->pos().left()), int(clip->pos().top()), int(clip->pos().width), int(clip->pos().height));
+//    PRINTF("draw_text: %d %d %d %d\n", int(pos.left()), int(pos.top()), int(pos.width), int(pos.height));
+    //fill_rect(db, pos.left(), pos.top(), pos.width, pos.height, color);
+	unifont_text(db, int(pos.left()), int(pos.top()), font, text, TEXTSIZE_AUTO, getCOLORPIP(color));
 }
 
 pixel_t hftrxgd::pt_to_px(float pt) const
 {
-	return pt;
+	return litehtml::pixel_t(int(pt));
 }
 
 pixel_t hftrxgd::get_default_font_size() const
@@ -9678,22 +9681,17 @@ void hftrxgd::draw_image(litehtml::uint_ptr hdc, const background_layer &layer,
 	}
 #endif
     auto box = layer.origin_box;
-    PRINTF("draw_image: '%s' %d %d %d %d\n", url.c_str(), int(box.x), int(box.y), int(box.width), int(box.height));
-    fill_rect(db, box.x, box.y, box.width, box.height, web_color::black);
+    //PRINTF("draw_image: '%s' %d %d %d %d\n", url.c_str(), int(box.left()), int(box.top()), int(box.width), int(box.height));
+    fill_rect(db, box.x, box.y, box.width, box.height, web_color(0, 255, 255));
 }
 
 void hftrxgd::draw_solid_fill(litehtml::uint_ptr hdc, const background_layer &layer,
 		const web_color &color, const litehtml::clipping *clip)
 {
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
-#if 0
-	//PRINTF("draw_solid_fill: bottom_left_x=%d\n", layer.border_radius.bottom_left_x);
-
-	colpip_fillrect(db, layer.border_box.left(), layer.border_box.top(), layer.border_box.width, layer.border_box.height, getCOLORPIP(color));
-#endif
     auto border_box = layer.border_box;
-    PRINTF("draw_solid_fill: %d %d %d %d\n", int(border_box.x), int(border_box.y), int(border_box.width), int(border_box.height));
-    fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, color);
+    //PRINTF("draw_solid_fill: %d %d %d %d\n", int(border_box.left()), int(border_box.top()), int(border_box.width), int(border_box.height));
+    fill_rect(db, border_box.left(), border_box.top(), border_box.width, border_box.height, color);
 }
 
 void hftrxgd::draw_linear_gradient(litehtml::uint_ptr hdc,
@@ -9702,9 +9700,9 @@ void hftrxgd::draw_linear_gradient(litehtml::uint_ptr hdc,
 		const litehtml::clipping *clip)
 {
 	const gxdrawb_t * const db = (const gxdrawb_t *) hdc;
-    auto border_box = layer.border_box;
-    PRINTF("draw_linear_gradient: %d %d %d %d\n", int(border_box.left()), int(border_box.top()), int(border_box.right()), int(border_box.bottom()));
-   fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, web_color::black);
+	auto border_box = layer.border_box;
+	//PRINTF("draw_linear_gradient: %d %d %d %d\n", int(border_box.left()), int(border_box.top()), int(border_box.right()), int(border_box.bottom()));
+	fill_rect(db, border_box.x, border_box.y, border_box.width, border_box.height, web_color::black);
 
 }
 
@@ -9816,7 +9814,8 @@ void hftrxgd::transform_text(std::string &text, litehtml::text_transform tt)
 }
 void hftrxgd::import_css(std::string &text, const std::string &url, std::string &baseurl)
 {
-	//TP();
+	PRINTF("import_css: cursor='%s'\n", url.c_str());
+	ASSERT(0);
 }
 
 hftrxgd::hftrxgd(int dx, int dy) : m_dx(dx), m_dy(dy)
@@ -9831,14 +9830,17 @@ hftrxgd::hftrxgd(int dx, int dy) : m_dx(dx), m_dy(dy)
 //{
 //	TP();
 //}
-//void hftrxgd::get_client_rect(litehtml::position &client) const
-//{
-//	client = litehtml::position(0, 0, DIM_X, DIM_Y);
-//}
+void hftrxgd::get_client_rect(litehtml::position &client) const
+{
+	client = litehtml::position(0, 0, DIM_X, DIM_Y);
+}
 
 void hftrxgd::get_viewport(litehtml::position &viewport) const
 {
-	//ASSERT(0);
+	viewport.width   = DIM_X;
+	viewport.height  = DIM_Y;
+    viewport.x       = 0;
+    viewport.y       = 0;
 }
 
 #if 0
@@ -9933,10 +9935,12 @@ void freqel::on_click()
 }
 #endif
 
-litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const litehtml::string_map &attributes, const std::shared_ptr<litehtml::document> &doc)
+litehtml::element::ptr hftrxgd::create_element(const char *tag_name,
+		const litehtml::string_map &attributes,
+		const std::shared_ptr<litehtml::document> &doc)
 {
 //	PRINTF("create_element: tag_name='%s'\n", tag_name);
-//	for (const std::pair<string, string> &p: attributes)
+//	for (const std::pair<std::string, std::string> &p: attributes)
 //	{
 //		PRINTF(" create_element: '%s'='%s'\n", p.first.c_str(), p.second.c_str());
 //	}
@@ -9969,18 +9973,17 @@ litehtml::element::ptr hftrxgd::create_element(const char *tag_name, const liteh
 
 void hftrxgd::get_media_features(litehtml::media_features &media) const
 {
-//	position client;
-//	get_client_rect(client);
-//
-//	media.type = media_type_screen;
-//	media.width = client.width;
-//	media.height = client.height;
-//	media.color = 8;
-//	media.monochrome = 0;
-//	media.color_index = 256;
-//	media.resolution = 96; //GetDeviceCaps(m_tmp_hdc, LOGPIXELSX);
-//	media.device_width = client.width; //1000; //GetDeviceCaps(m_tmp_hdc, HORZRES);
-//	media.device_height = client.height; //1000; //GetDeviceCaps(m_tmp_hdc, VERTRES);
+    litehtml::position client;
+    get_client_rect(client);
+    media.type = litehtml::media_type_screen;
+    media.width = client.width;
+    media.height = client.height;
+    media.device_width = client.width;
+    media.device_height = client.height;
+    media.color = 8;
+    media.monochrome = 0;
+    media.color_index = 256;
+    media.resolution = 96;
 }
 
 void hftrxgd::get_language(std::string &language, std::string &culture) const
@@ -9989,14 +9992,14 @@ void hftrxgd::get_language(std::string &language, std::string &culture) const
 	culture = "";
 }
 
-void hftrxgd::split_text(const char *text,
-		const std::function<void(const char*)> &on_word,
-		const std::function<void(const char*)> &on_space)
-{
-	//PRINTF("split_text: text='%s'\n", text);
-	//on_word("zzzzzz");
-	//on_word(text);
-}
+//void hftrxgd::split_text(const char *text,
+//		const std::function<void(const char*)> &on_word,
+//		const std::function<void(const char*)> &on_space)
+//{
+//	//PRINTF("split_text: text='%s'\n", text);
+//	//on_word("zzzzzz");
+//	//on_word(text);
+//}
 
 std::string hftrxgd::resolve_color(const std::string& /*color*/) const
 {
