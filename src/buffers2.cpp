@@ -40,14 +40,14 @@ static const unsigned SKIPSAMPLES_USB = 5000;	// раз в 5000 сэмплов �
 static const unsigned SKIPSAMPLES_ETH = 5000;	// раз в 5000 сэмплов добавление/удаление одного сэмпла
 
 static const unsigned SKIPSAMPLES_NOSLIPPING = 5;	//
-#define VOICE16RX_CAPACITY 		(16 * BUFOVERSIZE)	// прием от кодекв
-#define VOICE16TX_CAPACITY 		(32 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
-#define VOICE16TXMONI_CAPACITY 	(64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
-#define VOICE16REC_CAPACITY 	(64 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+#define VOICE16RX_CAPACITY 		(8 * BUFOVERSIZE)	// прием от кодекв
+#define VOICE16TX_CAPACITY 		(16 * BUFOVERSIZE)	// должно быть достаточное количество буферов чтобы запомнить буфер с выхода speex
+#define VOICE16TXMONI_CAPACITY 	(32 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
+#define VOICE16REC_CAPACITY 	(32 * BUFOVERSIZE)	// во столько же на сколько буфр от кодека больше чем буфер к кодеку (если наоборот - минимум)
 #define HDMI48TX_CAPACITY 		(32 * BUFOVERSIZE)
 
-#define VOICE16RX_SLIPPING 1	// прием от кодека - требуется ли sample slipping
-#define VOICE16TX_SLIPPING 1	// передача в кодек - требуется ли sample slipping
+#define VOICE16RX_SLIPPING 0	// прием от кодека - требуется ли sample slipping
+#define VOICE16TX_SLIPPING 0	// передача в кодек - требуется ли sample slipping
 #define HDMI48TX_SLIPPING 1
 
 #define UACINRTS192_CAPACITY ((48 / OUTSAMPLES_AUDIO48) * 32 * BUFOVERSIZE)
@@ -1087,8 +1087,8 @@ typedef buffitem<voice16tx_t> voice16txbuf_t;
 
 //typedef adapters<FLOAT_t, (int) UACOUT_AUDIO48_SAMPLEBYTES, (int) UACOUT_FMT_CHANNELS_AUDIO48> voice16txadpt_t;
 
-typedef dmahandle<FLOAT_t, voice16rxbuf_t, VOICE16RX_SLIPPING, 1, SKIPSAMPLES_HDMI> voice16rxdma_t;
-typedef dmahandle<FLOAT_t, voice16txbuf_t, VOICE16TX_SLIPPING, 1, SKIPSAMPLES_HDMI> voice16txdma_t;
+typedef dmahandle<FLOAT_t, voice16rxbuf_t, 1, 1, SKIPSAMPLES_HDMI> voice16rxdma_t;
+typedef dmahandle<FLOAT_t, voice16txbuf_t, 1, 1, SKIPSAMPLES_HDMI> voice16txdma_t;
 
 #if WITHFPGAPIPE_CODEC1
 static voice16rxbuf_t voice16rxbuf [VOICE16RX_CAPACITY];
@@ -1476,7 +1476,7 @@ typedef buffitem<voice32tx_t> voice32txbuf_t;
 
 static RAMNCTX voice32txbuf_t voice32txbuf [VOICE32TX_CAPACITY];
 
-typedef dmahandle<FLOAT_t, voice32txbuf_t, 0, 1, SKIPSAMPLES_NOSLIPPING> voice32txdma_t;
+typedef dmahandle<FLOAT_t, voice32txbuf_t, 0, 0, SKIPSAMPLES_NOSLIPPING> voice32txdma_t;
 
 //static voice32txlist_t voice32tx(IRQL_REALTIME, "32tx");
 static voice32txdma_t voice32tx(IRQL_REALTIME, "32tx", voice32txbuf, ARRAY_SIZE(voice32txbuf));
@@ -1624,7 +1624,7 @@ typedef buffitem<voice32rx_t> voice32rxbuf_t;
 
 static RAMNCRX voice32rxbuf_t voice32rxbuf [VOICE32RX_CAPACITY];
 
-typedef dmahandle<int_fast32_t, voice32rxbuf_t, 0, 1, SKIPSAMPLES_NOSLIPPING> voice32rxdma_t;
+typedef dmahandle<int_fast32_t, voice32rxbuf_t, 0, 0, SKIPSAMPLES_NOSLIPPING> voice32rxdma_t;
 
 static voice32rxdma_t voice32rx(IRQL_REALTIME, "32rx", voice32rxbuf, ARRAY_SIZE(voice32rxbuf));
 
