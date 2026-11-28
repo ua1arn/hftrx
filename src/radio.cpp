@@ -6290,7 +6290,7 @@ enum
 	// Громкость в процентах
 	static const struct paramdefdef xafgain1 =
 	{
-		QLABEL4("VolumeL", "Volume Left", "VOLUME_L", "LEFT:"), 0, RJ_PERCENTS, ISTEP1,
+		QLABEL4("VOL_A", "Volume A", "VOL_A", "AF_A:"), 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 #if WITHPOTAFGAIN
@@ -6307,7 +6307,7 @@ enum
 	// Громкость в процентах
 	static const struct paramdefdef xafgain2 =
 	{
-		QLABEL4("VolumeR", "Volume Right", "VOLUME_R", "RIGHT:"), 0, RJ_PERCENTS, ISTEP1,
+		QLABEL4("VOL_B", "Volume B", "VOL_B", "AF_B:"), 0, RJ_PERCENTS, ISTEP1,
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 #if WITHPOTAFGAIN
