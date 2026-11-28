@@ -4360,8 +4360,9 @@ struct nvmap {
 #endif /* WITHUSEDUALWATCH */
 #if WITHENCODER
 	uint8_t genc1pulses;		/* индекс в таблице разрешений валкодера */
-	uint8_t gencsubpulses;		/* индекс в таблице разрешений валкодера */
 	uint8_t genc1dynamic;	/* включение динамического енкодера */
+
+	uint8_t gencsubpulses;		/* индекс в таблице разрешений валкодера */
 	uint8_t gencsubdynamic;
 #endif /* WITHENCODER */
 
@@ -4402,12 +4403,9 @@ struct nvmap {
 		uint8_t ALCMNGAIN;// = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
 	#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #endif /* defined(CODEC1_TYPE)  */
-#if WITHMIC1LEVEL
 	uint16_t gmik1level;
-#endif /* WITHMIC1LEVEL */
 #if WITHTX
 	uint16_t	ggrptxparams; // последний выбраный пункт группы
-	//uint8_t gfitx;		/* номер используемого фильтра на передачу */
 	uint8_t gbandf2adj_a [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
 	uint8_t gbandf2adj_b [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
 #if WITHPACLASSA
@@ -4523,10 +4521,8 @@ struct nvmap {
 	uint16_t ggaincwtx;		/* Увеличение усиления при передаче в CW, AM. NFM режимах 30..150% */
 	uint16_t ggainssbtx;		/* Увеличение усиления при передаче в SSB 30..150% */
 	uint16_t gdesignDUCscale;	/* используется при калибровке параметров интерполятора */
-#if WITHELKEY
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t gcwssbtx;		/* разрешение самопрослушивания */
-#endif /* WITHELKEY */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	uint8_t gmoniflag;		/* разрешение самопрослушивания */
 	uint8_t	gsubtonelevel;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
@@ -4537,14 +4533,10 @@ struct nvmap {
 	uint16_t gsquelch;		/* уровень открытия шумоподавителя */
 	uint16_t gsquelchNFM;	/* sуровень открытия шумоподавителя для NFM */
 	uint16_t gfsadcpower10 [2];	/*	Мощность, соответствующая full scale от IF ADC (с тояностью 0.1 дБмВт */
-	#if ! WITHPOTAFGAIN
 	uint16_t afgain1;	// Параметр для регулировки уровня на выходе аудио-ЦАП
 	uint16_t afgain2;	// Параметр для регулировки уровня на выходе аудио-ЦАП
+	uint16_t rfgain1;	// Параметр для регулировки усиления по ПЧ
 	uint8_t afbalance1;	// "баданс" аудио
-	#endif /* ! WITHPOTAFGAIN */
-	#if ! WITHPOTIFGAIN
-		uint16_t rfgain1;	// Параметр для регулировки усиления по ПЧ
-	#endif /* ! WITHPOTIFGAIN */
 	uint8_t agcfence1;	// Параметр для регулировки точки перегиба АРУ
 	uint8_t agcfenceenable;	// Параметр для регулировки точки перегиба АРУ
 
