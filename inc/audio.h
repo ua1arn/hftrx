@@ -504,6 +504,8 @@ void board_set_afgain(uint_fast16_t gainL, uint_fast16_t gainR);	// Параме
 void board_set_ifgain(uint_fast16_t v);	// Параметр для регулировки усиления ПЧ/ВЧ
 void board_set_agcfence10(int_fast16_t v);	// Точка пергиба характеристики АРУ
 void board_set_skipfilteraf(uint_fast8_t n);
+void board_set_specpeakhold01rx(uint_fast8_t v);	// задержка индикатора мозности приёма в 0.1 с
+void board_set_specpeakhold01tx(uint_fast8_t v);	// задержка индикатора мозности пердачи в 0.1 с
 
 void board_set_dspmode(uint_fast8_t mode, uint_fast8_t txmode);	// Параметр для установки режима работы приёмника A/передатчика A
 void board_set_lineinput(uint_fast8_t n);	// Включение line input (rear panel mini-din 6 pin input) вместо микрофона

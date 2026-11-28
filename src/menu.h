@@ -107,6 +107,8 @@
 	& xgtxloopback,
 	& xgspecbeta100,
 	& xgwflbeta100,
+	& xgspecpeakhold01rx,
+	& xgspecpeakhold01tx,
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	& xgsmetertype,
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */

@@ -4448,6 +4448,8 @@ struct nvmap {
 	uint8_t grxbwindicator;		/* 0..100 - насыщнность цвета заполнения "шторки" - индикатор полосы пропускания примника на спкктре. */
 	uint8_t gspectrumpart;	/* Часть отведенной под спектр высоты экрана 0..100 */
 #endif /* WITHSPECTRUMWF */
+	uint8_t gspecpeakhold01rx;
+	uint8_t gspecpeakhold01tx;
 #if WITHHDMITVHW
 	uint8_t ghdmiformat;	/* Видеорежим внешнего HDMI монитора */
 #endif /* WITHHDMITVHW */
@@ -5648,6 +5650,32 @@ static const struct paramdefdef xgethmacaddr =
 		getselector0, nvramoffs0, valueoffs0,
 		NULL,
 		& gwflbeta100,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static uint8_t gspecpeakhold01rx = 20;
+	static const struct paramdefdef xgspecpeakhold01rx =
+	{
+		QLABEL("PHOLD RX"),  1, RJ_UNSIGNED,	ISTEP1,
+		ITEM_VALUE,
+		5, 100,							/* beta - парамеры видеофильтра водопада */
+		OFFSETOF(struct nvmap, gspecpeakhold01rx),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gspecpeakhold01rx,
+		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	static uint8_t gspecpeakhold01tx = 20;
+	static const struct paramdefdef xgspecpeakhold01tx =
+	{
+		QLABEL("PHOLD RX"),  1, RJ_UNSIGNED,	ISTEP1,
+		ITEM_VALUE,
+		5, 100,							/* beta - парамеры видеофильтра водопада */
+		OFFSETOF(struct nvmap, gspecpeakhold01tx),
+		getselector0, nvramoffs0, valueoffs0,
+		NULL,
+		& gspecpeakhold01tx,
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
@@ -14926,7 +14954,9 @@ updateboard_noui(
 		board_set_fsadcpower10(	/*	Мощность, соответствующая full scale от IF ADC */
 				param_val(lo0side != LOCODE_INVALID ? & xgfsadcpower10xv : & xgfsadcpower10) +
 				gerflossdb10(lo0side != LOCODE_INVALID, param_val(& xgatt), param_val(& xgpamp)));
-		display2_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+		display2_set_showdbm(param_val(& xgshowdbm));		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
+		board_set_specpeakhold01rx(param_val(& xgspecpeakhold01rx));
+		board_set_specpeakhold01tx(param_val(& xgspecpeakhold01tx));
 		#if WITHUSEDUALWATCH
 			board_set_mainsubrxmode(mainsubrxmodes [param_val(& xdwatchmode)].code);		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
@@ -14988,6 +15018,8 @@ updateboard_noui(
 			display2_set_filter_spe(param_val(& xgspecbeta100));	/* beta - парамеры видеофильтра спектра */
 			display2_set_filter_wfl(param_val(& xgwflbeta100));	/* beta - парамеры видеофильтра водопада */
 			display2_set_spectrumpart(param_val(& xgspectrumpart));	/* Часть отведенной под спектр высоты экрана 0..100 */
+
+
 		#endif /* (WITHSPECTRUMWF && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
 	#endif /* WITHIF4DSP */
 

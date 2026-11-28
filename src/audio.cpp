@@ -97,7 +97,8 @@ static uint_fast8_t		glob_skipfilteraf;
 
 static uint_fast8_t 	glob_dspmodes [2] = { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE, };
 static uint_fast8_t 	glob_dsptxmode = DSPCTL_MODE_IDLE;
-
+static uint_fast8_t 	glob_specpeakhold01rx = 20;	// 2 secounda
+static uint_fast8_t 	glob_specpeakhold01tx = 20;	// 2 secounda
 static uint_fast8_t		glob_agcrate [2] = { 20, 20 }; //10	// 10 дБ изменение входного на 1 дБ выходного
 static uint_fast8_t 	glob_agc_scale [2] = { 100, 100 }; // scale в процентах - Для эксперементов по улучшению приема АМ
 static uint_fast8_t 	glob_agc_t0 [2] = { 0, 0 }; // chargespeedfast в милисекундах
@@ -1971,8 +1972,7 @@ void agc_parameters_peaks_init(agctime_t * agcp, uint_fast32_t sr)
 
 	agcp->chargespeedslow = tauFAST;
 	agcp->dischargespeedslow = MAKETAU((FLOAT_t) 1, sr);
-
-	agcp->hungticks = NSAITICKS2(1000, sr);			// 1 second
+	agcp->hungticks = NSAITICKS2((FLOAT_t) glob_specpeakhold01rx / 10, sr);			// 2 second
 
 	//PRINTF(PSTR("agc_parameters_init: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
@@ -1988,7 +1988,7 @@ void agc_parameters_pwrpeaks_init(agctime_t * agcp, uint_fast32_t sr)
 	agcp->dischargespeedfast = tauFAST;
 	agcp->chargespeedslow = tauFAST;
 	agcp->dischargespeedslow = MAKETAU((FLOAT_t) 1, sr);
-	agcp->hungticks = NSAITICKS2(1000, sr);			// 1 second
+	agcp->hungticks = NSAITICKS2((FLOAT_t) glob_specpeakhold01tx / 10, sr);			// 2 second
 
 	//PRINTF(PSTR("agc_parameters_init: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
@@ -6928,6 +6928,26 @@ board_set_fsadcpower10(int_fast16_t v)
 	if (glob_fsadcpower10 != v)
 	{
 		glob_fsadcpower10 = v;
+		board_dsp1regchanged();
+	}
+}
+
+void
+board_set_specpeakhold01rx(uint_fast8_t v)
+{
+	if (glob_specpeakhold01rx != v)
+	{
+		glob_specpeakhold01rx = v;
+		board_dsp1regchanged();
+	}
+}
+
+void
+board_set_specpeakhold01tx(uint_fast8_t v)
+{
+	if (glob_specpeakhold01tx != v)
+	{
+		glob_specpeakhold01tx = v;
 		board_dsp1regchanged();
 	}
 }
