@@ -4540,6 +4540,7 @@ struct nvmap {
 	#if ! WITHPOTAFGAIN
 	uint16_t afgain1;	// Параметр для регулировки уровня на выходе аудио-ЦАП
 	uint16_t afgain2;	// Параметр для регулировки уровня на выходе аудио-ЦАП
+	uint16_t afbalance1;	// Параметр для регулировки уровня на выходе аудио-ЦАП
 	#endif /* ! WITHPOTAFGAIN */
 	#if ! WITHPOTIFGAIN
 		uint16_t rfgain1;	// Параметр для регулировки усиления по ПЧ
@@ -6294,7 +6295,11 @@ enum
 	static dualctl16_t afgain1 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
 	static dualctl16_t afgain2 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
 #endif /* defined WITHAFGAINDEFAULT */
-
+	static dualctl16_t afbalance1 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };
+	static int_fast32_t getafbalancebase(void)
+	{
+		return - BOARD_AFGAIN_MAX;
+	}
 	// Громкость в процентах
 	static const struct paramdefdef xafgain1 =
 	{
@@ -6327,6 +6332,23 @@ enum
 		& afgain2.value,	/* переменная, которую подстраиваем  - если она 16 бит*/
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
+		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
+	};
+	// Громкость в процентах
+	static const struct paramdefdef xafbalance1 =
+	{
+		QLABEL4("Balance", "Balance", "Balance", "BAL:"), 0, RJ_SIGNED, ISTEP1,
+		ITEM_VALUE,
+		0, 2 * BOARD_AFGAIN_MAX, 					// Громкость в процентах
+#if WITHPOTAFGAIN
+		MENUNONVRAM,
+#else /* WITHPOTAFGAIN */
+		OFFSETOF(struct nvmap, afbalance1),
+#endif /* WITHPOTAFGAIN */
+		getselector0, nvramoffs0, valueoffs0,
+		& afbalance1.value,	/* переменная, которую подстраиваем  - если она 16 бит*/
+		NULL,
+		getafbalancebase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
 
@@ -8955,7 +8977,11 @@ static const encfnitem_t enclabelsENC1FN [] =
 	{ & xafgain1, getlabeldefault, defdelta, defholded, },
 	{ & xrfgain1, getlabeldefault, defdelta, defholded, },
 	{ & xagcfence1, getlabelAGCFENCE, defdelta, defholded, },
+#if KEYB_VELOCI24_V0_UA1ATD
+	{ & xafbalance1, getlabeldefault, defdelta, defholded, },
+#else
 	{ & xafgain2, getlabeldefault, defdelta, defholded, },
+#endif
 };
 
 static const encfnitem_t enclabelsENC2FN [] =
@@ -14427,6 +14453,52 @@ encoder_flagne(const struct paramdefdef * pd, int_least16_t delta, uint_fast8_t 
 }
 
 #if ! WITHISBOOTLOADER
+
+
+#if WITHIF4DSP
+
+// установить громкость в левом и правом каналах в зависимости от регуляторов
+static void setafgains(void)
+{
+	int_fast32_t bmin, bmax;
+	param_getminmax(& xafbalance1, & bmin, & bmax);
+	const int_fast16_t balance = param_val(& xafbalance1);	// максимально отрицательное число - выключен правый
+	const int_fast16_t gain = param_val(& xafgain1);
+
+#if KEYB_VELOCI24_V0_UA1ATD
+	int_fast32_t gainL = gain * (bmax - slmax16(0, balance)) / bmax;
+	int_fast32_t gainR = gain * (bmax + slmin16(0, balance)) / bmax;
+
+#else
+	int_fast32_t gainL = param_val(& xafgain1);
+#if WITHENCODER_2F
+	int_fast32_t gainR = param_val(& xafgain2);
+#else /* WITHENCODER_2F */
+	int_fast32_t gainR = gainL;
+#endif /* WITHENCODER_2F */
+#endif
+	//PRINTF("setafgains: gain=%d, bal=%+d, gainL=%d, gainR=%d\n", (int) gain, (int) balance, (int) gainL, (int) gainR);
+
+#if WITHUSEDUALWATCH
+	switch (mainsubrxmodes [param_val(& xdwatchmode)].code)
+	{
+	default:
+	case BOARD_RXMAINSUB_TWO:
+	case BOARD_RXMAINSUB_A_A:
+	case BOARD_RXMAINSUB_B_B:
+		gainR = gainL;
+		break;
+	case BOARD_RXMAINSUB_A_B:
+	case BOARD_RXMAINSUB_B_A:
+		break;
+	}
+#endif
+	board_set_afgain(
+			sleepstate == 0 ? gainL : BOARD_AFGAIN_MIN,	// Параметр для регулировки уровня на выходе аудио-ЦАП
+			sleepstate == 0 ? gainR : BOARD_AFGAIN_MIN
+					);
+}
+#endif
 /*
  параметры:
  tx - не-0: переключение аппаратуры в режим передачи
@@ -14833,32 +14905,7 @@ updateboard_noui(
 	#endif /* WITHELKEY */
 
 	#if WITHIF4DSP
-			{
-				int_fast32_t gainL = param_val(& xafgain1);
-#if WITHENCODER_2F
-				int_fast32_t gainR = param_val(& xafgain2);
-#else /* WITHENCODER_2F */
-				int_fast32_t gainR = gainL;
-#endif /* WITHENCODER_2F */
-#if WITHUSEDUALWATCH
-				switch (mainsubrxmodes [param_val(& xdwatchmode)].code)
-				{
-				default:
-				case BOARD_RXMAINSUB_TWO:
-				case BOARD_RXMAINSUB_A_A:
-				case BOARD_RXMAINSUB_B_B:
-					gainR = gainL;
-					break;
-				case BOARD_RXMAINSUB_A_B:
-				case BOARD_RXMAINSUB_B_A:
-					break;
-				}
-#endif
-				board_set_afgain(
-						sleepstate == 0 ? gainL : BOARD_AFGAIN_MIN,	// Параметр для регулировки уровня на выходе аудио-ЦАП
-						sleepstate == 0 ? gainR : BOARD_AFGAIN_MIN
-								);
-			}
+		setafgains();
 		board_set_ifgain(sleepstate == 0  ? param_val(& xrfgain1) : BOARD_IFGAIN_MIN);	// Параметр для регулировки усиления ПЧ
 		board_set_agcfence10(param_val(& xagcfenceenable) ? param_val(& xagcfence1) * 10 : INT16_MAX);
 
@@ -24771,6 +24818,7 @@ static const struct paramdefdef * nomenulist [] =
 #endif /* WITHUSBHW && WITHUSBUAC */
 	& xgsquareness10,	/* Коэффициент прямоугольности фильтра в десятых долях */
 	& xagcfence1,
+	& xafbalance1,
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	& xgnotch,
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
