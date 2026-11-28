@@ -14905,7 +14905,7 @@ updateboard_noui(
 	#endif /* WITHELKEY */
 
 	#if WITHIF4DSP
-		setafgains();
+		setafgains();	// установить громкость в левом и правом каналах в зависимости от регуляторов
 		board_set_ifgain(sleepstate == 0  ? param_val(& xrfgain1) : BOARD_IFGAIN_MIN);	// Параметр для регулировки усиления ПЧ
 		board_set_agcfence10(param_val(& xagcfenceenable) ? param_val(& xagcfence1) * 10 : INT16_MAX);
 
