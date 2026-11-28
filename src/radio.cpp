@@ -4540,7 +4540,7 @@ struct nvmap {
 	#if ! WITHPOTAFGAIN
 	uint16_t afgain1;	// Параметр для регулировки уровня на выходе аудио-ЦАП
 	uint16_t afgain2;	// Параметр для регулировки уровня на выходе аудио-ЦАП
-	uint16_t afbalance1;	// Параметр для регулировки уровня на выходе аудио-ЦАП
+	uint8_t afbalance1;	// "баданс" аудио
 	#endif /* ! WITHPOTAFGAIN */
 	#if ! WITHPOTIFGAIN
 		uint16_t rfgain1;	// Параметр для регулировки усиления по ПЧ
@@ -6295,11 +6295,6 @@ enum
 	static dualctl16_t afgain1 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
 	static dualctl16_t afgain2 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
 #endif /* defined WITHAFGAINDEFAULT */
-	static dualctl16_t afbalance1 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };
-	static int_fast32_t getafbalancebase(void)
-	{
-		return - BOARD_AFGAIN_MAX;
-	}
 	// Громкость в процентах
 	static const struct paramdefdef xafgain1 =
 	{
@@ -6334,20 +6329,26 @@ enum
 		getzerobase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
-	// Громкость в процентах
+	// "баданс" аудио
+	#define	BOARD_AFBALANCE_MIDDLE	12
+	static dualctl8_t afbalance1 = { BOARD_AFBALANCE_MIDDLE, BOARD_AFBALANCE_MIDDLE };
+	static int_fast32_t getafbalancebase(void)
+	{
+		return - BOARD_AFBALANCE_MIDDLE;
+	}
 	static const struct paramdefdef xafbalance1 =
 	{
 		QLABEL4("Balance", "Balance", "Balance", "BAL:"), 0, RJ_SIGNED, ISTEP1,
 		ITEM_VALUE,
-		0, 2 * BOARD_AFGAIN_MAX, 					// Громкость в процентах
+		0, 2 * BOARD_AFBALANCE_MIDDLE,
 #if WITHPOTAFGAIN
 		MENUNONVRAM,
 #else /* WITHPOTAFGAIN */
 		OFFSETOF(struct nvmap, afbalance1),
 #endif /* WITHPOTAFGAIN */
 		getselector0, nvramoffs0, valueoffs0,
-		& afbalance1.value,	/* переменная, которую подстраиваем  - если она 16 бит*/
-		NULL,
+		NULL,	/* переменная, которую подстраиваем  - если она 16 бит*/
+		& afbalance1.value,
 		getafbalancebase, /* складывается со смещением и отображается */
 		NULL, /* getvaltext получить текст значения параметра - see RJ_CB */
 	};
